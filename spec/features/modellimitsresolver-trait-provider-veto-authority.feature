@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @context-window
@@ -27,7 +28,7 @@ Feature: ModelLimitsResolver Trait — Provider Veto Authority
   #   1. Claude resolver with max_context_window=Some(200_000): registry says 1M → resolve returns 200k (clamped)
   #   2. OpenAI resolver with max_context_window=None: registry says 128k → resolve returns 128k (trusted)
   #   3. User override of 500k on Claude (max 200k): resolve returns 200k (user override clamped by provider max)
-  #   4. No registry data, no user override for Codex: resolve returns 272k (provider default)
+  #   4. No registry data, no user override: resolve returns the provider default (Codex declares none: 0 = unavailable)
   #   5. OPENAI_CONTEXT_WINDOW env var set to 256000: OpenAI resolver uses this as the env-derived default, overriding compile-time 128k
   #   6. Codex resolver returns should_send_max_output_tokens()=false — API rejects this parameter
   #

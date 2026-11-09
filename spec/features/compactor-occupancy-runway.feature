@@ -1,8 +1,10 @@
+@BUG-582
 @BUG-229
 @phase-1
 @agent-core
 @context-management
 @compaction
+@BUG-305
 Feature: Compactor occupancy runway
   """
   The shared compactor execution checks complete provider-serialized exploration

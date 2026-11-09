@@ -1,5 +1,7 @@
 @done
 @CMPCT-010
+@agent-core
+@history-search
 Feature: SessionSearch Trimming Integration
   """
   Modify rust/napi/src/session_search_handler.rs: extend create_handler() to accept Arc<AtomicBool>, add conditional trimming in handle_show() and handle_search() after resolve_message_content() calls

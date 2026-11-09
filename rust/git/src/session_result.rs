@@ -11,10 +11,12 @@
 
 use crate::error::{GitError, Result};
 use crate::open_repo;
+use crate::shared_state::{refuse_changed_shared_state, without_shared};
 use crate::three_way_merge::write_conflict_markers;
 use crate::tree_snapshot::TreeSnapshot;
 use crate::tree_utils::{collect_worktree_files, get_tree_files};
 use crate::worktree::{remove_worktree, FSPEC_WORKTREES_DIR};
+use codelet_common::spec_lock::SpecLock;
 use std::fs;
 use std::path::Path;
 
@@ -73,11 +75,12 @@ pub fn get_session_diff(repo_path: impl AsRef<Path>, session_id: &str) -> Result
     let base_commit = fs::read_to_string(&head_path)?.trim().to_string();
 
     // Get the base commit tree (WT-006: rich snapshot with symlinks,
-    // gitlinks, and the executable bit)
-    let base_tree_files = get_tree_files(&repo, &base_commit)?;
+    // gitlinks, and the executable bit). WT-017: shared spec state never
+    // takes part in a merge, so it is left out of the diff.
+    let base_tree_files = without_shared(get_tree_files(&repo, &base_commit)?);
 
     // Get current worktree files (WT-006: + gitignored `ignored` list)
-    let worktree_files = collect_worktree_files(&worktree_path)?;
+    let worktree_files = without_shared(collect_worktree_files(&worktree_path)?);
 
     // Compute differences (WT-006: snapshot-aware — symlinks by target,
     // gitlinks atomic, ignored files excluded from the tracked set)
@@ -141,12 +144,24 @@ pub fn apply_session_changes(
     // Get current worktree files
     let worktree_files = collect_worktree_files(&worktree_path)?;
 
+    // WT-017: a changed worktree copy of shared spec state refuses the
+    // merge before anything is locked or copied; otherwise shared paths
+    // are left out of conflict detection and the apply.
+    refuse_changed_shared_state(&base_tree_files, &worktree_files)?;
+    let base_tree_files = without_shared(base_tree_files);
+    let worktree_files = without_shared(worktree_files);
+
     // Get current main repo working directory state
     let main_workdir = repo
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?
         .to_path_buf();
-    let main_files = collect_worktree_files(&main_workdir)?;
+    // WT-014: hold main's spec write lock from the snapshot used for
+    // conflict detection until the last file is applied, so no fspec or
+    // TUI board write lands in between or is overwritten. Released on
+    // every return path when the guard drops.
+    let _spec_lock = lock_main_spec_dir(&main_workdir, &base_tree_files, &worktree_files)?;
+    let main_files = without_shared(collect_worktree_files(&main_workdir)?);
 
     // BUG-099: Check for pending conflict state BEFORE detect_conflicts().
     // This prevents the infinite loop where detect_conflicts() re-fires on
@@ -181,7 +196,7 @@ pub fn apply_session_changes(
         }
 
         // Re-read worktree files after deleting state file
-        let resolved_worktree_files = collect_worktree_files(&worktree_path)?;
+        let resolved_worktree_files = without_shared(collect_worktree_files(&worktree_path)?);
 
         // Apply resolved worktree content directly to main (WT-006:
         // snapshot-aware — symlinks, gitlinks, and exec bits preserved)
@@ -221,7 +236,7 @@ pub fn apply_session_changes(
             // All conflicts were auto-resolved by three-way merge.
             // Re-read worktree files since write_conflict_markers updated them
             // with auto-merged content, then fall through to apply.
-            let merged_worktree_files = collect_worktree_files(&worktree_path)?;
+            let merged_worktree_files = without_shared(collect_worktree_files(&worktree_path)?);
             crate::session_diff::apply_snapshot_to_main(
                 &base_tree_files,
                 &merged_worktree_files,
@@ -240,12 +255,45 @@ pub fn apply_session_changes(
     // copied into main, post auto-merge / post resolution) BEFORE the
     // worktree is deleted, so `commit_merged_session` can build the
     // merge commit tree from exactly the applied state.
-    let applied = collect_worktree_files(&worktree_path)?;
+    let applied = without_shared(collect_worktree_files(&worktree_path)?);
 
     // Remove session worktree
     remove_worktree(repo_path, session_id)?;
 
     Ok(applied)
+}
+
+/// The directory holding main's spec state, whose write lock every fspec
+/// writer takes (BUG-477). WT-015 replaces this with the state-root
+/// resolver.
+const MAIN_SPEC_DIR: &str = "spec";
+
+/// WT-014: take main's spec write lock for a merge apply.
+///
+/// Main has spec state when `<main>/spec` is a directory; a session whose
+/// base or worktree has paths under `spec/` will write there, so the
+/// directory is created first and locked too. Otherwise there is no spec
+/// state to protect and no lock is taken. A lock held past the timeout is
+/// the standard BUG-477 error, returned before anything is applied.
+fn lock_main_spec_dir(
+    main_workdir: &Path,
+    base: &TreeSnapshot,
+    worktree: &TreeSnapshot,
+) -> Result<Option<SpecLock>> {
+    let spec_dir = main_workdir.join(MAIN_SPEC_DIR);
+    if !spec_dir.is_dir() {
+        let prefix = format!("{MAIN_SPEC_DIR}/");
+        let touches_spec = base
+            .all_paths()
+            .into_iter()
+            .chain(worktree.all_paths())
+            .any(|path| path.starts_with(&prefix));
+        if !touches_spec {
+            return Ok(None);
+        }
+        fs::create_dir_all(&spec_dir)?;
+    }
+    Ok(Some(SpecLock::acquire(&spec_dir)?))
 }
 
 /// Abort a session by removing its worktree without applying changes

@@ -46,7 +46,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "let assistant = value[\"role\"] == \"assistant\";",
+              "lastLine": "}"
             }
           ]
         }
@@ -98,7 +100,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "let assistant = value[\"role\"] == \"assistant\";",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,7 +154,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "let assistant = value[\"role\"] == \"assistant\";",
+              "lastLine": "}"
             }
           ]
         }

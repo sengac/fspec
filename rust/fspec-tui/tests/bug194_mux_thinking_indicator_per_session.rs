@@ -18,8 +18,9 @@
 //! compile because `SessionContext::input_transition` / the new
 //! store scan methods do not exist yet.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, dead_code)]
+#![allow(dead_code)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::time::Duration;
 
 use codelet_fspec_tui::store::{AgentViewStore, BoardStore, SessionContext};
@@ -27,7 +28,7 @@ use codelet_fspec_tui::theme::Theme;
 use codelet_fspec_tui::views::agent::input_transition::InputTransitionState;
 use codelet_fspec_tui::views::agent::spinner::DOTS_FRAMES;
 use codelet_fspec_tui::views::agent::INPUT_PLACEHOLDER_HINT;
-use codelet_fspec_tui::views::multiplex::MuxPaneKind;
+use codelet_fspec_tui::views::multiplex::{MuxLayout, MuxPaneKind};
 use codelet_fspec_tui::views::{Navigator, ViewMode};
 use codelet_rpc_types::{SessionId, SessionStatus};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -59,7 +60,9 @@ fn seed_sessions(agent: &mut AgentViewStore, n: usize) {
 
 /// Enable mux with the given pane list + active view Mux.
 fn enable_mux(nav: &mut Navigator, panes: &[MuxPaneKind]) {
-    nav.mux.set_pane_list(panes.to_vec(), None);
+    if let Some(mux_layout) = MuxLayout::columns(panes) {
+        nav.mux.set_layout(mux_layout);
+    }
     nav.active_view = ViewMode::Mux;
 }
 
@@ -72,13 +75,13 @@ fn render(
     nav: &mut Navigator,
     board: &BoardStore,
     agent: &mut AgentViewStore,
-) -> ratatui::buffer::Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+) -> Result<ratatui::buffer::Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Flatten `rect` into one string per row.
@@ -123,13 +126,14 @@ fn render_until(
     board: &BoardStore,
     agent: &mut AgentViewStore,
     mut predicate: impl FnMut(&AgentViewStore) -> bool,
-) {
+) -> Result<(), codelet_test_helpers::TestError> {
     for _ in 0..300 {
         if predicate(agent) {
-            return;
+            return Ok(());
         }
-        render(nav, board, agent);
+        render(nav, board, agent)?;
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -139,7 +143,8 @@ fn render_until(
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_agent_pane() {
+fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_agent_pane(
+) -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -157,7 +162,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_
     // @step And the agent 1 pane is focused
     nav.mux.set_focus(1);
     // @step When the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent1 = pane_lines(&buf, rects[1]);
     // @step Then the agent 1 pane input shows the live thinking spinner
@@ -168,7 +173,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_
     // @step When focus moves to the agent 2 pane
     nav.mux.set_focus(2);
     // @step And the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent1 = pane_lines(&buf, rects[1]);
     let agent2 = pane_lines(&buf, rects[2]);
@@ -190,6 +195,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_
         "a",
         "the focused pane's composer receives the keystroke"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -199,7 +205,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_after_focus_moves_to_another_
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focused() {
+fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focused() -> TestResult {
     // @step Given mux mode is active with the pane list board and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -212,8 +218,9 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focuse
     // @step And the agent pane is focused
     nav.mux.set_focus(1);
     // @step When the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
+    // @step Then the agent pane input shows the live thinking spinner
     assert!(
         pane_contains(&pane_lines(&buf, rects[1]), "Thinking... (Esc to stop)"),
         "focused running pane paints its spinner"
@@ -221,7 +228,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focuse
     // @step When focus moves to the board pane
     nav.mux.set_focus(0);
     // @step And the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent_pane = pane_lines(&buf, rects[1]);
     // @step Then the agent pane input still shows the live thinking spinner
@@ -236,6 +243,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focuse
         result.is_consumed(),
         "the focused board pane consumes its keys"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -245,7 +253,7 @@ fn a_running_agent_pane_keeps_its_thinking_spinner_when_the_board_pane_is_focuse
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused() {
+fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -260,11 +268,11 @@ fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused(
     // @step And the agent 2 pane is focused
     nav.mux.set_focus(1);
     // prime: one render so agent 1's spinner paints frame 0 + caches its line
-    let _ = render(&mut nav, &board, &mut agent);
+    let _ = render(&mut nav, &board, &mut agent)?;
     // @step When the agent 1 session becomes idle
     set_status(&mut agent, &sid(1), SessionStatus::Idle);
     // @step And the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent1 = pane_lines(&buf, rects[0]);
     // @step Then the agent 1 pane input shows the captured spinner line shrinking
@@ -285,8 +293,8 @@ fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused(
     // clock also advanced 16ms/frame). After 2 frames the captured
     // line has shrunk by 5+ chars: the "(Esc to stop)" tail is cut
     // off.
-    let _ = render(&mut nav, &board, &mut agent);
-    let buf = render(&mut nav, &board, &mut agent);
+    let _ = render(&mut nav, &board, &mut agent)?;
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent1 = pane_lines(&buf, rects[0]);
     assert!(
@@ -299,17 +307,12 @@ fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused(
     );
     // @step When the agent 1 finish sweep completes
     render_until(&mut nav, &board, &mut agent, |store| {
-        matches!(
-            store
-                .session_context_for(&sid(1))
-                .unwrap()
-                .input_transition
-                .state,
-            InputTransitionState::Idle
-        )
-    });
+        store.session_context_for(&sid(1)).is_some_and(|context| {
+            matches!(context.input_transition.state, InputTransitionState::Idle)
+        })
+    })?;
     // @step And the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     // @step Then the agent 1 pane input shows its ghost draft
     let agent1 = pane_lines(&buf, rects[0]);
@@ -323,6 +326,7 @@ fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused(
         pane_contains(&agent2, "Type a message"),
         "the focused pane is untouched by the other session's sweep: {agent2:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -332,7 +336,8 @@ fn a_running_agent_pane_plays_its_finish_sweep_after_going_idle_while_unfocused(
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn a_compacting_agent_pane_keeps_its_compacting_spinner_while_another_pane_is_focused() {
+fn a_compacting_agent_pane_keeps_its_compacting_spinner_while_another_pane_is_focused() -> TestResult
+{
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -350,7 +355,7 @@ fn a_compacting_agent_pane_keeps_its_compacting_spinner_while_another_pane_is_fo
     // @step And the agent 1 pane is focused
     nav.mux.set_focus(1);
     // @step When the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent2 = pane_lines(&buf, rects[2]);
     // @step Then the agent 2 pane input shows the live compacting spinner
@@ -364,6 +369,7 @@ fn a_compacting_agent_pane_keeps_its_compacting_spinner_while_another_pane_is_fo
         pane_contains(&agent1, "Type a message"),
         "the focused idle pane paints its composer: {agent1:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -373,7 +379,7 @@ fn a_compacting_agent_pane_keeps_its_compacting_spinner_while_another_pane_is_fo
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn an_unfocused_running_pane_paints_the_identical_spinner_row_as_a_focused_one() {
+fn an_unfocused_running_pane_paints_the_identical_spinner_row_as_a_focused_one() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -387,14 +393,14 @@ fn an_unfocused_running_pane_paints_the_identical_spinner_row_as_a_focused_one()
     // @step And the agent 1 pane is focused
     nav.mux.set_focus(0);
     // @step When the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent1 = pane_lines(&buf, rects[0]);
     let agent2 = pane_lines(&buf, rects[1]);
     // @step Then the agent 1 pane spinner row contains "Thinking... (Esc to stop)" with a braille glyph
     assert!(pane_contains(&agent1, "Thinking... (Esc to stop)"));
     let g1 = spinner_glyph(&agent1, "Thinking... (Esc to stop)")
-        .expect("focused pane paints a braille glyph");
+        .or_fail("focused pane paints a braille glyph")?;
     assert!(
         DOTS_FRAMES.iter().any(|f| f.starts_with(g1)),
         "focused pane glyph must be a braille dot, got {g1:?}"
@@ -405,11 +411,12 @@ fn an_unfocused_running_pane_paints_the_identical_spinner_row_as_a_focused_one()
         "BUG-194: the unfocused running pane paints the SAME spinner row: {agent2:?}"
     );
     let g2 = spinner_glyph(&agent2, "Thinking... (Esc to stop)")
-        .expect("unfocused pane paints a braille glyph");
+        .or_fail("unfocused pane paints a braille glyph")?;
     assert_eq!(
         g1, g2,
         "both panes arm their spinner in the same frame → same frame-0 glyph"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -419,7 +426,7 @@ fn an_unfocused_running_pane_paints_the_identical_spinner_row_as_a_focused_one()
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock() {
+fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -435,10 +442,12 @@ fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock(
     nav.mux.set_focus(0);
     // @step When the grid is rendered
     for _ in 0..3 {
-        render(&mut nav, &board, &mut agent);
+        render(&mut nav, &board, &mut agent)?;
     }
     // @step Then the agent 1 pane spinner has a recorded elapsed time since start
-    let ctx = agent.session_context_for(&sid(1)).expect("session 1 open");
+    let ctx = agent
+        .session_context_for(&sid(1))
+        .or_fail("session 1 open")?;
     assert!(
         matches!(
             ctx.input_transition.state,
@@ -449,16 +458,18 @@ fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock(
     let start_before = ctx
         .input_transition
         .spinner_started_at
-        .expect("spinner start recorded per session");
+        .or_fail("spinner start recorded per session")?;
     // @step When focus moves to the agent 2 pane and back to the agent 1 pane
     nav.mux.set_focus(1);
-    render(&mut nav, &board, &mut agent);
+    render(&mut nav, &board, &mut agent)?;
     nav.mux.set_focus(0);
     // @step And the grid is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     // @step Then the agent 1 pane spinner elapsed time is strictly greater than before
-    let ctx = agent.session_context_for(&sid(1)).expect("session 1 open");
+    let ctx = agent
+        .session_context_for(&sid(1))
+        .or_fail("session 1 open")?;
     assert!(
         matches!(
             ctx.input_transition.state,
@@ -469,7 +480,7 @@ fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock(
     let start_after = ctx
         .input_transition
         .spinner_started_at
-        .expect("spinner start still recorded");
+        .or_fail("spinner start still recorded")?;
     assert_eq!(
         start_after - start_before,
         Duration::ZERO,
@@ -481,6 +492,7 @@ fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock(
         pane_contains(&lines, "Thinking... (Esc to stop)"),
         "the spinner row is still live: {lines:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -490,7 +502,7 @@ fn moving_focus_away_and_back_does_not_restart_a_running_sessions_spinner_clock(
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn the_run_loop_keeps_redrawing_while_an_unfocused_panes_finish_sweep_is_in_flight() {
+fn the_run_loop_keeps_redrawing_while_an_unfocused_panes_finish_sweep_is_in_flight() -> TestResult {
     // @step Given mux mode is active with the pane list board and agent
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -500,13 +512,13 @@ fn the_run_loop_keeps_redrawing_while_an_unfocused_panes_finish_sweep_is_in_flig
     seed_sessions(&mut agent, 1);
     set_status(&mut agent, &sid(1), SessionStatus::Running);
     nav.mux.set_focus(1);
-    render(&mut nav, &board, &mut agent); // spinner active (Loading)
-                                          // @step And the agent session just became idle
+    render(&mut nav, &board, &mut agent)?; // spinner active (Loading)
+                                           // @step And the agent session just became idle
     set_status(&mut agent, &sid(1), SessionStatus::Idle);
     // @step And the board pane is focused
     nav.mux.set_focus(0);
     // one render: the per-session sweep enters Hiding
-    let _ = render(&mut nav, &board, &mut agent);
+    let _ = render(&mut nav, &board, &mut agent)?;
     // @step When the redraw gate is evaluated while the agent session's finish sweep is in progress
     let any_animating = agent.any_session_transition_animating();
     // @step Then the redraw gate stays open even though no session is busy
@@ -524,23 +536,19 @@ fn the_run_loop_keeps_redrawing_while_an_unfocused_panes_finish_sweep_is_in_flig
     );
     // @step When the grid is rendered repeatedly
     render_until(&mut nav, &board, &mut agent, |store| {
-        matches!(
-            store
-                .session_context_for(&sid(1))
-                .unwrap()
-                .input_transition
-                .state,
-            InputTransitionState::Idle
-        )
-    });
+        store.session_context_for(&sid(1)).is_some_and(|context| {
+            matches!(context.input_transition.state, InputTransitionState::Idle)
+        })
+    })?;
     // @step Then the agent pane finish sweep advances and ends with the agent pane showing its ghost draft
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     let rects = nav.mux.pane_rects().to_vec();
     let agent_pane = pane_lines(&buf, rects[1]);
     assert!(
         pane_contains(&agent_pane, "Type a message"),
         "the sweep must complete down to the ghost draft row: {agent_pane:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -550,7 +558,7 @@ fn the_run_loop_keeps_redrawing_while_an_unfocused_panes_finish_sweep_is_in_flig
 
 /// Feature: spec/features/mux-thinking-indicator-disappears-when-focus-moves-off-a-running-agent-pane.feature
 #[test]
-fn single_view_mode_keeps_its_existing_spinner_and_finish_sweep_behavior() {
+fn single_view_mode_keeps_its_existing_spinner_and_finish_sweep_behavior() -> TestResult {
     // @step Given mux mode is inactive
     let (mut nav, _rx) = fresh();
     let board = BoardStore::default();
@@ -560,7 +568,7 @@ fn single_view_mode_keeps_its_existing_spinner_and_finish_sweep_behavior() {
     seed_sessions(&mut agent, 1);
     set_status(&mut agent, &sid(1), SessionStatus::Running);
     // @step When the agent view is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     // @step Then the agent input row shows the live thinking spinner exactly as before
     assert!(
         pane_contains(
@@ -572,23 +580,18 @@ fn single_view_mode_keeps_its_existing_spinner_and_finish_sweep_behavior() {
     // @step When the agent session becomes idle
     set_status(&mut agent, &sid(1), SessionStatus::Idle);
     // @step And the agent view is rendered
-    let buf = render(&mut nav, &board, &mut agent);
+    let buf = render(&mut nav, &board, &mut agent)?;
     // @step Then the agent input row plays the finish sweep exactly as before
     assert!(
         pane_contains(&pane_lines(&buf, Rect::new(0, 0, 120, 24)), "(Esc to stop)"),
         "single-view finish sweep unchanged (full captured line on frame 0)"
     );
     render_until(&mut nav, &board, &mut agent, |store| {
-        matches!(
-            store
-                .session_context_for(&sid(1))
-                .unwrap()
-                .input_transition
-                .state,
-            InputTransitionState::Idle
-        )
-    });
-    let buf = render(&mut nav, &board, &mut agent);
+        store.session_context_for(&sid(1)).is_some_and(|context| {
+            matches!(context.input_transition.state, InputTransitionState::Idle)
+        })
+    })?;
+    let buf = render(&mut nav, &board, &mut agent)?;
     assert!(
         pane_contains(
             &pane_lines(&buf, Rect::new(0, 0, 120, 24)),
@@ -596,4 +599,5 @@ fn single_view_mode_keeps_its_existing_spinner_and_finish_sweep_behavior() {
         ),
         "the sweep ends at the live composer"
     );
+    Ok(())
 }

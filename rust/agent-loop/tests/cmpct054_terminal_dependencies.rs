@@ -5,7 +5,6 @@ pub mod support;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_agent_loop::agent_loop::agent_loop;
 use codelet_cli::compactor_sub_agent::{
@@ -19,7 +18,12 @@ use tokio::sync::mpsc;
 #[serial]
 async fn scenario_terminal_recovery_invokes_the_turn_builder_before_cleanup() {
     // @step Given a background session with compactable history and an overflowing terminal error
-    let (_directory, session, input_rx) = support::fixture();
+    let (directory, session, input_rx) = support::fixture();
+    // BUG-310: the builder's tool calls are attributed to the session's
+    // registered invoking context, as SessionManager does for live sessions.
+    let _admission =
+        codelet_tools::tool_admission::register_auxiliary(session.id, directory.path().into())
+            .expect("register invoking context");
     let server = wiremock::MockServer::start().await;
     let builder_target = format!("Target session: {}", session.id);
     let expected_target = builder_target.clone();
@@ -71,7 +75,7 @@ async fn scenario_terminal_recovery_invokes_the_turn_builder_before_cleanup() {
     session
         .send_input("resolve failure".into(), None)
         .expect("queue input");
-    let error = tokio::time::timeout(Duration::from_secs(5), async {
+    let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut terminal_error = None;
         loop {
             match chunks.recv().await.expect("stream open") {
@@ -110,10 +114,17 @@ async fn scenario_terminal_recovery_invokes_the_turn_builder_before_cleanup() {
     assert!(!codelet_tools::has_generate_compaction_handler(session.id));
     assert!(!codelet_tools::has_inject_summary_handler(session.id));
     // @step And its failure leaves committed history unchanged without completion
-    assert_eq!(
-        serde_json::to_value(&session.inner.lock().await.messages).expect("snapshot"),
-        before
+    // BUG-310: committed history is unchanged; the turn may only append the
+    // revision-gated work-unit focus reminder.
+    let after = serde_json::to_value(&session.inner.lock().await.messages).expect("snapshot");
+    let (after, before) = (
+        after.as_array().expect("messages"),
+        before.as_array().expect("snapshot messages"),
     );
+    assert_eq!(&after[..before.len()], before.as_slice());
+    assert!(after[before.len()..]
+        .iter()
+        .all(|message| message.to_string().contains("<system-reminder>")));
     assert!(
         session
             .inner
@@ -144,8 +155,8 @@ async fn scenario_missing_recovery_dependencies_fail_without_replacing_context()
     drop(inner);
     let mut chunks = session.subscribe_to_stream();
     // @step When terminal overflow recovery is requested
-    let outcome = tokio::time::timeout(
-        Duration::from_secs(2),
+    let outcome = codelet_test_helpers::deadlock_guard(
+        "codelet_agent_loop::terminal_overflow_recovery::try_termi...",
         codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
             session.clone(),
             &support::overflow_error(),
@@ -162,10 +173,17 @@ async fn scenario_missing_recovery_dependencies_fail_without_replacing_context()
         "unavailable: {outcome:?}"
     );
     // @step And committed history remains unchanged without completion
-    assert_eq!(
-        serde_json::to_value(&session.inner.lock().await.messages).expect("snapshot"),
-        before
+    // BUG-310: committed history is unchanged; the turn may only append the
+    // revision-gated work-unit focus reminder.
+    let after = serde_json::to_value(&session.inner.lock().await.messages).expect("snapshot");
+    let (after, before) = (
+        after.as_array().expect("messages"),
+        before.as_array().expect("snapshot messages"),
     );
+    assert_eq!(&after[..before.len()], before.as_slice());
+    assert!(after[before.len()..]
+        .iter()
+        .all(|message| message.to_string().contains("<system-reminder>")));
     // @step And inference remains blocked until the selected operation is resolved
     assert!(
         session

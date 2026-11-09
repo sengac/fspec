@@ -9,10 +9,10 @@ PREREQUISITES
   • spec/work-units.json exists with work units
 
 USAGE
-  fspec dependencies <work-unit-id> [options]
+  fspec dependencies <workUnitId> [options]
 
 ARGUMENTS
-  <work-unit-id> (required)
+  <workUnitId> (required)
     Work unit ID to show dependencies for
 
 OPTIONS
@@ -28,7 +28,6 @@ fspec dependencies UI-001
 #   Blocked by: AUTH-001, API-001
 #
 # Decision: Wait for AUTH-001 and API-001 to complete
-    undefined
 
   • Understanding Impact
     Example: # Check what will be unblocked after completing this work
@@ -38,14 +37,12 @@ fspec dependencies AUTH-001
 #   Blocks: AUTH-002, AUTH-003, UI-001
 #
 # Completing AUTH-001 will unblock 3 work units
-    undefined
 
   • Dependency Tree Visualization
     Example: # View full dependency tree
 fspec dependencies AUTH-001 --graph
 
 # Shows cascading dependencies
-    undefined
 
   • Integration with add-dependency
     Example: # Add dependency
@@ -54,11 +51,10 @@ fspec add-dependency UI-001 AUTH-001
 # Verify it was added
 fspec dependencies UI-001
 # Output: Depends on: AUTH-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <id> → 4. Plan implementation order based on dependencies
+  1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <workUnitId> → 4. Plan implementation order based on dependencies
 
 EXAMPLES
   1. Show dependencies for work unit with no relationships
@@ -102,27 +98,8 @@ RELATED COMMANDS
   fspec show-work-unit - Show complete work unit details (includes dependencies)
 
 NOTES
-  • Simplified Command (BUG-019):
-  •   - This command was simplified from multi-action to single-purpose
-  •   - Old: fspec dependencies <action> <work-unit-id>
-  •   - New: fspec dependencies <work-unit-id>
-  •   - Other actions now use dedicated commands (add-dependency, remove-dependency, etc.)
-  • 
-  • Relationship types displayed:
-  •   blocks: Work units blocked by this work unit
-  •   blockedBy: Work units blocking this work unit
-  •   dependsOn: Soft dependencies (ordering hints)
-  •   relatesTo: Related work units (no blocking)
-  • 
-  • Error handling:
-  •   - Non-existent work units show AI-friendly system-reminder
-  •   - System-reminder includes troubleshooting steps
-  •   - Wrapped for visibility in Claude Code
-  • 
-  • For comprehensive dependency management:
-  •   - add-dependency: Create relationships
-  •   - remove-dependency: Delete relationships
-  •   - clear-dependencies: Remove all relationships
-  •   - export-dependencies: Visualize full graph
-  •   - query-bottlenecks: Find critical path issues
+  • Single purpose since BUG-019: fspec dependencies <workUnitId> shows one work unit's relationships; add-dependency, remove-dependency and clear-dependencies change them
+  • Relationship types: blocks (work units this one blocks), blockedBy (work units blocking this one), dependsOn (soft ordering hints), relatesTo (related, no blocking)
+  • A work unit that does not exist is reported in a system-reminder with troubleshooting steps
+  • export-dependencies shows the whole graph; query-bottlenecks finds critical-path issues
 

@@ -4,6 +4,7 @@
 @daemon
 @in-memory
 @RPC-433
+@code-analysis
 Feature: Daemon-side session removal broadcast + in-memory live-session snapshot
   """
   SessionManager-level support for RPC-433's wire fan-out (rules R2/R3 of

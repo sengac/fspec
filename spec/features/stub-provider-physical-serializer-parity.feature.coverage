@@ -26,7 +26,9 @@
                 23,
                 24,
                 25
-              ]
+              ],
+              "firstLine": "pub(super) fn serialize(request: &CompletionRequest) -> Result<Vec<u8>, CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/stub_model.rs",
@@ -34,7 +36,6 @@
                 80,
                 81,
                 82,
-                102,
                 103,
                 104,
                 105,
@@ -89,8 +90,16 @@
                 154,
                 155,
                 156,
-                157
-              ]
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "fn prepare_request(&self, request: CompletionRequest) -> Result<Vec<u8>, CompletionError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -142,12 +151,13 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub(super) fn tool_call(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/stub_model.rs",
               "lines": [
-                102,
                 103,
                 104,
                 105,
@@ -202,8 +212,16 @@
                 154,
                 155,
                 156,
-                157
-              ]
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "async fn stream(",
+              "lastLine": "}"
             }
           ]
         }
@@ -221,6 +239,6 @@
       "rust/providers/src/stub_request.rs",
       "rust/providers/src/stub_model.rs"
     ],
-    "totalLinesCovered": 264
+    "totalLinesCovered": 274
   }
 }

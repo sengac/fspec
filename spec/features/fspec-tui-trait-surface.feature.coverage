@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "23-93",
+          "lines": "22-93",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/transport/mod.rs",
@@ -71,8 +71,11 @@
                 59,
                 60,
                 61,
-                62
-              ]
+                62,
+                63
+              ],
+              "firstLine": "//! Transport-agnostic backend surface for the fspec ratatui frontend.",
+              "lastLine": "ProviderSettings(String),"
             }
           ]
         }
@@ -83,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "94-130",
+          "lines": "95-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/transport/mod.rs",
@@ -149,8 +152,11 @@
                 59,
                 60,
                 61,
-                62
-              ]
+                62,
+                63
+              ],
+              "firstLine": "//! Transport-agnostic backend surface for the fspec ratatui frontend.",
+              "lastLine": "ProviderSettings(String),"
             }
           ]
         }
@@ -161,7 +167,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "133-168",
+          "lines": "136-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mod.rs",
@@ -181,11 +187,9 @@
                 13,
                 14,
                 15,
-                16,
                 17,
                 18,
                 19,
-                20,
                 21,
                 22,
                 23,
@@ -203,9 +207,6 @@
                 35,
                 36,
                 37,
-                38,
-                39,
-                40,
                 41,
                 42,
                 43,
@@ -277,17 +278,21 @@
                 109,
                 110,
                 111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "//! Component trait + Priority enum + EventResult + Action types.",
+              "lastLine": "/// RPC-009 extension: seven new variants threaded through the App's"
             }
           ]
         }
@@ -298,7 +303,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "169-228",
+          "lines": "175-238",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mod.rs",
@@ -318,11 +323,9 @@
                 13,
                 14,
                 15,
-                16,
                 17,
                 18,
                 19,
-                20,
                 21,
                 22,
                 23,
@@ -340,9 +343,6 @@
                 35,
                 36,
                 37,
-                38,
-                39,
-                40,
                 41,
                 42,
                 43,
@@ -414,17 +414,21 @@
                 109,
                 110,
                 111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "//! Component trait + Priority enum + EventResult + Action types.",
+              "lastLine": "/// RPC-009 extension: seven new variants threaded through the App's"
             }
           ]
         }
@@ -442,6 +446,6 @@
       "rust/fspec-tui/src/transport/mod.rs",
       "rust/fspec-tui/src/components/mod.rs"
     ],
-    "totalLinesCovered": 570
+    "totalLinesCovered": 572
   }
 }

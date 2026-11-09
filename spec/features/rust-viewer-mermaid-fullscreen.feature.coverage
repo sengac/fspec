@@ -28,7 +28,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "pub const HEAD_SCRIPTS: &str = r#\"",
+              "lastLine": "}"
             }
           ]
         }
@@ -44,10 +46,12 @@
             {
               "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
-                12,
                 13,
-                14
-              ]
+                14,
+                15
+              ],
+              "firstLine": "/// Panzoom v4.5.1 CDN `<script>` tag (loaded before the modal script).",
+              "lastLine": "\"  <script src=\\\"https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js\\\"></script>\";"
             }
           ]
         }
@@ -92,7 +96,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "wheel = super::mermaid_wheel::WHEEL_JS",
+              "lastLine": "'<button class=\"mermaid-download-btn\" data-index=\"' + index + '\" title=\"Download SVG\">' +"
             }
           ]
         }
@@ -181,7 +187,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "el.style.transformOrigin = '0 0';",
+              "lastLine": "if (!panzoomInstance || !currentModalDiagram) return;"
             }
           ]
         }
@@ -222,7 +230,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "const worldX = (centerX - ownPanX) / ownScale, worldY = (centerY - ownPanY) / ownScale;",
+              "lastLine": "if (!currentModalDiagram) return;"
             }
           ]
         }
@@ -238,6 +248,7 @@
             {
               "file": "rust/attachment-viewer/src/markdown/template/mermaid_modal.rs",
               "lines": [
+                163,
                 164,
                 165,
                 166,
@@ -246,8 +257,23 @@
                 169,
                 170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "function downloadDiagram(index) {",
+              "lastLine": "});"
             }
           ]
         }
@@ -300,7 +326,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "/// Build the full HTML viewer document for a rendered markdown fragment.",
+              "lastLine": "modal_script = mermaid_modal::modal_script(),"
             }
           ]
         }
@@ -316,11 +344,15 @@
             {
               "file": "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
                 44,
                 45,
                 46,
@@ -356,8 +388,13 @@
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "function handleModalWheel(event) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -383,7 +420,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "else if (Math.abs(deltaX) > 0) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -408,7 +447,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "function showModeIndicator() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -434,7 +475,9 @@
                 157,
                 158,
                 159
-              ]
+              ],
+              "firstLine": "function updateModeIndicator() {",
+              "lastLine": "else { indicator.textContent = 'Zoom Mode (hold Space for Pan)'; indicator.classList.remove('active'); indicator.style.opacity = '0.5'; }"
             }
           ]
         }
@@ -454,6 +497,6 @@
       "rust/attachment-viewer/src/markdown/template/mod.rs",
       "rust/attachment-viewer/src/markdown/template/mermaid_wheel.rs"
     ],
-    "totalLinesCovered": 514
+    "totalLinesCovered": 535
   }
 }

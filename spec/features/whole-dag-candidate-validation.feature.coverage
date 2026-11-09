@@ -10,7 +10,6 @@
             {
               "file": "rust/core/src/compaction/dag_validation.rs",
               "lines": [
-                102,
                 103,
                 104,
                 105,
@@ -34,7 +33,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "let files = parse_files(content).map_err(DagValidationError::InvalidCandidate)?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,7 +51,6 @@
             {
               "file": "rust/core/src/compaction/dag_syntax.rs",
               "lines": [
-                10,
                 11,
                 12,
                 13,
@@ -138,7 +138,6 @@
                 95,
                 96,
                 97,
-                98,
                 99,
                 100,
                 101,
@@ -170,8 +169,22 @@
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "pub(super) fn parse_nodes(content: &str) -> Result<Vec<ParsedNode>, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -187,7 +200,6 @@
             {
               "file": "rust/core/src/compaction/dag_validation.rs",
               "lines": [
-                102,
                 103,
                 104,
                 105,
@@ -211,7 +223,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "let files = parse_files(content).map_err(DagValidationError::InvalidCandidate)?;",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/compaction/dag_syntax.rs",
@@ -233,7 +247,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "let (start, end) = values[\"turns\"]",
+              "lastLine": "if captures[2].contains(\"<dag-node\") || captures[2].contains(\"<dag-files\") {"
             }
           ]
         }
@@ -249,7 +265,6 @@
             {
               "file": "rust/core/src/compaction/dag_syntax.rs",
               "lines": [
-                10,
                 11,
                 12,
                 13,
@@ -332,8 +347,14 @@
                 90,
                 91,
                 92,
-                93
-              ]
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "pub(super) fn parse_nodes(content: &str) -> Result<Vec<ParsedNode>, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -469,7 +490,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "pub(super) fn parse_nodes(content: &str) -> Result<Vec<ParsedNode>, String> {",
+              "lastLine": ".ok_or_else(invalid_entry)?;"
             },
             {
               "file": "rust/core/src/compaction/dag_validation.rs",
@@ -487,7 +510,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "let source = context",
+              "lastLine": ".unwrap_or_default();"
             }
           ]
         }
@@ -505,6 +530,6 @@
       "rust/core/src/compaction/dag_validation.rs",
       "rust/core/src/compaction/dag_syntax.rs"
     ],
-    "totalLinesCovered": 514
+    "totalLinesCovered": 525
   }
 }

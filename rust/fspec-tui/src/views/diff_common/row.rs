@@ -12,7 +12,7 @@ use crate::sanitize_for_terminal;
 use codelet_rpc_types::ChangedFile;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
-use unicode_width::UnicodeWidthStr;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// Map a single-letter change type to its UI color.
 ///
@@ -28,22 +28,29 @@ pub fn status_color(change_type: &str) -> Color {
     }
 }
 
-/// Truncate `path` to fit `max_width` columns, appending an ellipsis
-/// when it overflows. `max_width == 0` yields an empty string.
+/// Shorten `path` to fit `max_width` columns. TUI-131: an overflowing
+/// path loses its START, behind a leading ellipsis, so the file name
+/// stays visible (`…/provider_settings/oauth_login.rs`). `max_width == 0`
+/// yields an empty string.
 pub fn truncate_path(path: &str, max_width: usize) -> String {
-    let len = path.width();
     if max_width == 0 {
         return String::new();
     }
-    if len <= max_width {
+    if path.width() <= max_width {
         return path.to_string();
     }
-    if max_width == 1 {
-        return "…".to_string();
+    let budget = max_width - 1;
+    let mut used = 0;
+    let mut tail: Vec<char> = Vec::new();
+    for ch in path.chars().rev() {
+        let width = ch.width().unwrap_or(0);
+        if used + width > budget {
+            break;
+        }
+        used += width;
+        tail.push(ch);
     }
-    let keep = max_width - 1;
-    let truncated: String = path.chars().take(keep).collect();
-    format!("{truncated}…")
+    std::iter::once('…').chain(tail.into_iter().rev()).collect()
 }
 
 /// Build the styled `Line` for one file row. `selected` drives the
@@ -90,10 +97,17 @@ mod tests {
     }
 
     #[test]
-    fn truncate_path_appends_ellipsis_when_too_long() {
+    fn truncate_path_keeps_the_file_name_behind_a_leading_ellipsis() {
         assert_eq!(truncate_path("short.txt", 20), "short.txt");
-        assert_eq!(truncate_path("verylongpath.txt", 5), "very…");
+        assert_eq!(truncate_path("verylongpath.txt", 5), "….txt");
         assert_eq!(truncate_path("anything", 0), "");
+        assert_eq!(
+            truncate_path(
+                "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
+                34
+            ),
+            "…/provider_settings/oauth_login.rs"
+        );
     }
 
     // Feature: spec/features/sanitize-file-paths-and-labels-in-changed-files-and-checkpoint-views.feature

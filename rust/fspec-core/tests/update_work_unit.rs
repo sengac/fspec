@@ -406,3 +406,66 @@ fn dispatcher_is_the_single_source_of_truth_for_update_work_unit() {
         Some("Same")
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher auto-creates spec/work-units.json before reporting a missing work unit
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn dispatcher_auto_creates_work_units_json_before_reporting_a_missing_work_unit() {
+    // @step Given a project root tempdir with a spec/ directory and no spec/work-units.json
+    let tmp = TempDir::new().expect("tempdir");
+    fs::create_dir_all(tmp.path().join("spec")).expect("mkdir spec");
+    assert!(!tmp.path().join("spec/work-units.json").exists());
+
+    // @step When I dispatch update-work-unit with workUnitId='AUTH-001' and title='New Title'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "title": "New Title" }),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected success=false; got {result:?}");
+
+    // @step And the error message contains the substring "Work unit 'AUTH-001' does not exist"
+    let msg = result.error.as_deref().unwrap_or("");
+    assert!(
+        msg.contains("Work unit 'AUTH-001' does not exist"),
+        "error must name the missing work unit, not a missing file; got: {msg}"
+    );
+
+    // @step And spec/work-units.json now exists on disk with an empty workUnits object
+    let raw = fs::read_to_string(tmp.path().join("spec/work-units.json"))
+        .expect("spec/work-units.json must be auto-created");
+    let on_disk: Value = serde_json::from_str(&raw).expect("auto-created file is valid JSON");
+    assert_eq!(
+        on_disk["workUnits"].as_object().map(serde_json::Map::len),
+        Some(0)
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher updates a work unit description
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn dispatcher_updates_description() {
+    // @step Given spec/work-units.json contains work unit 'AUTH-001' with title 'Login'
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &one_unit("AUTH-001", "Login"));
+
+    // @step When I dispatch update-work-unit with workUnitId='AUTH-001' and description='Updated description'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "description": "Updated description" }),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And spec/work-units.json work unit 'AUTH-001' has description 'Updated description' and title 'Login'
+    let on_disk = read_work_units(tmp.path());
+    let wu = &on_disk["workUnits"]["AUTH-001"];
+    assert_eq!(wu["description"].as_str(), Some("Updated description"));
+    assert_eq!(wu["title"].as_str(), Some("Login"));
+}

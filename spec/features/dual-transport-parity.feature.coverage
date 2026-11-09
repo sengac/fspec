@@ -5,17 +5,16 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/parity.rs",
-          "lines": "20-51",
+          "lines": "25-63",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/workspace.rs",
               "lines": [
-                78,
-                79,
-                80,
-                81,
-                82
-              ]
+                5,
+                6
+              ],
+              "firstLine": "/// Return every work unit currently known to the shared service impl.",
+              "lastLine": "async fn list_work_units() -> Vec<WorkUnitInfo>;"
             }
           ]
         }
@@ -26,7 +25,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/parity.rs",
-          "lines": "53-86",
+          "lines": "65-105",
           "implMappings": [
             {
               "file": "rust/rpc/src/lib.rs",
@@ -45,18 +44,19 @@
                 47,
                 48,
                 49,
-                50,
                 51,
                 52,
                 53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
+                61,
+                62,
+                63,
+                64,
+                65,
+                67,
+                69
+              ],
+              "firstLine": "ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,",
+              "lastLine": "pub use log_layer::{register_log_layer, BroadcastLogLayer};"
             }
           ]
         }
@@ -71,8 +71,9 @@
       "rust/rpc-server/tests/parity.rs"
     ],
     "implFiles": [
+      "rust/rpc/src/service_declaration/workspace.rs",
       "rust/rpc/src/lib.rs"
     ],
-    "totalLinesCovered": 96
+    "totalLinesCovered": 106
   }
 }

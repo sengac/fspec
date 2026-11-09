@@ -68,11 +68,11 @@ async fn published_identity_is_adopted_despite_lost_acknowledgement() -> TestRes
         inner.provider_manager().selected_model_string(),
         Some(durable.provider)
     );
-    let model = fixture.manager.get_session_model(&fixture.session_id);
+    let model = fixture.manager.get_session_model(&fixture.session_id)?;
     assert_eq!(model.provider_id, "openai:Strada");
     assert_eq!(model.model_id, PROFILE_MODEL);
-    assert_eq!(model.context_window, 200000);
-    assert_eq!(model.max_output_tokens, 4096);
+    assert_eq!(model.context_window, Some(200000));
+    assert_eq!(model.max_output_tokens, Some(4096));
     assert_eq!(std::env::var("OPENAI_BASE_URL")?, "http://127.0.0.1:1/v1");
     assert_eq!(std::env::var("OPENAI_CONTEXT_WINDOW")?, "200000");
     Ok(())

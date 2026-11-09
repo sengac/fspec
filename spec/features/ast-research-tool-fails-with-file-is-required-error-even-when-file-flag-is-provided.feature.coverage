@@ -6,31 +6,7 @@
         {
           "file": "src/research-tools/__tests__/ast-argument-parsing.test.ts",
           "lines": "10-37",
-          "implMappings": [
-            {
-              "file": "src/research-tools/ast.ts",
-              "lines": [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -40,31 +16,7 @@
         {
           "file": "src/research-tools/__tests__/ast-argument-parsing.test.ts",
           "lines": "39-62",
-          "implMappings": [
-            {
-              "file": "src/research-tools/ast.ts",
-              "lines": [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -76,9 +28,7 @@
     "testFiles": [
       "src/research-tools/__tests__/ast-argument-parsing.test.ts"
     ],
-    "implFiles": [
-      "src/research-tools/ast.ts"
-    ],
-    "totalLinesCovered": 88
+    "implFiles": [],
+    "totalLinesCovered": 52
   }
 }

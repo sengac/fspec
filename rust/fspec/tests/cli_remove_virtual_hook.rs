@@ -155,7 +155,7 @@ fn scenario_clap_exposes_remove_virtual_hook_with_flag_aware_help() {
 
 #[test]
 fn scenario_cli_removes_existing_hook_and_prints_canonical_success_lines() {
-    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',...,blocking:true}]
+    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',event:'post-implementing',command:'eslint .',blocking:true}]
     let ws = tempfile::tempdir().expect("tempdir");
     let hook = eslint_hook();
     write_work_units(
@@ -256,7 +256,7 @@ fn scenario_cli_fails_with_exit_1_when_work_unit_does_not_exist() {
 
 #[test]
 fn scenario_cli_fails_with_exit_1_when_named_hook_not_found() {
-    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',...,blocking:true}]
+    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',event:'post-implementing',command:'eslint .',blocking:true}]
     let ws = tempfile::tempdir().expect("tempdir");
     let hook = eslint_hook();
     write_work_units(
@@ -283,7 +283,7 @@ fn scenario_cli_fails_with_exit_1_when_named_hook_not_found() {
 
 #[test]
 fn scenario_cli_deletes_associated_script_file_on_removal() {
-    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',...,command:'spec/hooks/.virtual/AUTH-001-eslint.sh',blocking:true,gitContext:true}]
+    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',event:'post-implementing',command:'spec/hooks/.virtual/AUTH-001-eslint.sh',blocking:true,gitContext:true}]
     let ws = tempfile::tempdir().expect("tempdir");
     let hook = serde_json::json!({
         "name": "eslint",
@@ -324,7 +324,7 @@ fn scenario_cli_deletes_associated_script_file_on_removal() {
 
 #[test]
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
-    // @step Given a project root whose spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',...,blocking:true}]
+    // @step Given a project root whose spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',event:'post-implementing',command:'eslint .',blocking:true}]
     let ws = tempfile::tempdir().expect("tempdir");
     let hook = eslint_hook();
     write_work_units(

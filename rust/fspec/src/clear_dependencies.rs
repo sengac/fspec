@@ -25,10 +25,10 @@
 //!     (parity with the TS chalk-red error path at
 //!     `src/commands/clear-dependencies.ts:116-121`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::clear_dependencies;
 use serde_json::json;
 
@@ -47,7 +47,7 @@ pub struct CliArgs {
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CLI args into the canonical JSON shape consumed by
     // fspec_core::commands::clear_dependencies::run.

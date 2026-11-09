@@ -1,4 +1,6 @@
 @EXT-013
+@browser
+@screenshot
 Feature: Screenshot crashes native messaging connection — image data exceeds Chrome 1MB port limit
   """
   Uses OffscreenCanvas and createImageBitmap for resize/conversion in service worker (no DOM needed)

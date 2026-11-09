@@ -15,7 +15,6 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
 use std::path::PathBuf;
 
 /// Workspace root resolved from `CARGO_MANIFEST_DIR` (= `rust/sessions`).
@@ -28,7 +27,8 @@ fn workspace_root() -> PathBuf {
 
 fn read_source(rel_from_workspace: &str) -> String {
     let path = workspace_root().join(rel_from_workspace);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 // ===========================================================================

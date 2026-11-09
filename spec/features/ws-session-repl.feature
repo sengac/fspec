@@ -6,6 +6,7 @@
 @rpc
 @websocket
 @RPC-007
+@BUG-520
 Feature: WebSocket session REPL push channel
   """
   codelet-rpc-server gains five new session RPCs (list_sessions, create_session,
@@ -16,6 +17,11 @@ Feature: WebSocket session REPL push channel
   fan-out tasks. The cross-transport parity invariant: byte-equal chunk
   sequences on the embedded path and the WS path for the same StubProvider
   input.
+  BUG-520: the stub ends a turn about 5 ms after send_input, so polling the
+  status during or after the turn raced it. The status scenario holds the
+  stub's turn open while it polls for Running, then releases it and waits for
+  the session's Idle status change on the WebSocket push channel before
+  polling again.
   """
 
   Background: User Story
@@ -47,9 +53,10 @@ Feature: WebSocket session REPL push channel
 
   Scenario: WebSocket get_session_status reflects Idle to Running to Idle transitions
     Given a session is created via create_session on the WebSocket transport with the StubProvider
+    And the stub provider holds each turn open until the caller releases it
     When the caller calls get_session_status(session_id) before any send_input
     Then the returned SessionStatus is Idle
-    When the caller calls send_input(session_id, "hi") and immediately calls get_session_status(session_id)
+    When the caller calls send_input(session_id, "hi") and calls get_session_status(session_id) while the turn is held
     Then the returned SessionStatus is Running
-    When the stub provider has emitted StreamChunk::Done and the caller calls get_session_status(session_id) again
+    When the caller releases the turn, receives the session's Idle status change on the WebSocket client and calls get_session_status(session_id) again
     Then the returned SessionStatus is Idle

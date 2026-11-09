@@ -32,7 +32,7 @@ async fn scenario_spawning_a_worker_does_not_assign_caller_attribution_to_the_ch
         Some("AUTH-001".into()),
         Some("bound".into()),
         Some("implementing".into()),
-    );
+    )?;
     fixture
         .manager
         .set_session_focus(&fixture.first, Some("AUTH-003"), "setup")?;
@@ -160,7 +160,7 @@ async fn scenario_targeted_management_preserves_session_isolation_and_strict_adm
         Some("AUTH-001".into()),
         Some("bound".into()),
         Some("implementing".into()),
-    );
+    )?;
     let calls = Calls::default();
     let (actor, _handler) = server(&fixture, &fixture.first, calls.clone()).await?;
     let target_before = fixture.manager.get_work_unit_focus(&fixture.second)?;

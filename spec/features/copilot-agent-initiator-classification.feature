@@ -1,4 +1,6 @@
 @PROV-059
+@providers
+@agent-interaction
 Feature: Copilot x-initiator header always set to 'user' — metadata.mode agent never injected, burning premium quota on every request
   """
   The existing PROV-055 three-layer architecture (CopilotRequestClassifier → CopilotHeaderFacade → CopilotHttpClient) is correct and does not need changes. The fix injects metadata.mode='agent' into the request body at the call sites that construct API requests.

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @agent-core
@@ -7,6 +8,7 @@
 @RPC-087
 @rust
 @agent-loop
+@BUG-306
 Feature: Agent loop: error classification + retry (recovery_network/compaction/thinking/truncation/stall/image)
   """
   Regression-shape coverage card following the established
@@ -89,24 +91,24 @@ Feature: Agent loop: error classification + retry (recovery_network/compaction/t
   Scenario: stream_loop.rs wires every classifier predicate and has at least one call site each
     Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
-    Then the body contains the substring "use super::error_classifiers::{"
+    Then the body contains the substring "error_classifiers::{"
     And the body contains the substring "is_stall_timeout_error("
-    And the body contains the substring "is_prompt_too_long_error("
+    And the body contains the substring "is_context_overflow_error("
     And the body contains the substring "is_image_content_error("
     And the body contains the substring "is_truncated_tool_call_error("
-    And the body contains the substring "is_transient_network_error("
+    And the body contains the substring "should_retry_network_error("
     And the body contains the substring "classify_compaction_branch("
 
   Scenario: stream_loop.rs guards retry with MAX_NETWORK_RETRIES and uses network_retry_delay
     Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
-    Then the body contains the substring "use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}"
+    Then the body imports both MAX_NETWORK_RETRIES and network_retry_delay from super::recovery_network
     And the body contains the substring "network_retry_count <= MAX_NETWORK_RETRIES"
-    And the body contains the substring "network_retry_delay(network_retry_count)"
+    And the body contains the substring "network_retry_delay(state.network_retry_count)"
 
   Scenario: stream_loop.rs sanitises image content after classifying an image-content rejection
     Given the source file rust/cli/src/interactive/stream_loop.rs
     When I read the file as a string
-    Then the body contains the substring "sanitize_image_content(&mut session.messages)"
+    Then the body contains the substring "sanitize_image_content(&mut context.session.messages)"
     And the body contains the substring "is_image_content_error(&error_str)"
-    And the byte offset of "is_image_content_error(&error_str)" is less than the byte offset of "sanitize_image_content(&mut session.messages)"
+    And the byte offset of "is_image_content_error(&error_str)" is less than the byte offset of "sanitize_image_content(&mut context.session.messages)"

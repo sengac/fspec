@@ -636,19 +636,25 @@ mod tests {
                 }
             });
 
-            // @step Then the envelope should parse as a session input
-            let env: crate::bridge_multiplexed::Envelope =
-                serde_json::from_value(envelope_json).unwrap();
-            assert_eq!(env.service, crate::bridge_multiplexed::Service::Session);
-            assert_eq!(env.msg_type, "input");
-
-            let action = crate::bridge_multiplexed::route_inbound(&env);
-            match action {
-                crate::bridge_multiplexed::InboundAction::SessionInput { message, .. } => {
-                    assert_eq!(message, "build the app");
-                }
-                other => panic!("Expected SessionInput, got {other:?}"),
-            }
+            // @step Then the agent should receive "build the app" as user input
+            let injected: std::sync::Arc<std::sync::Mutex<Vec<String>>> = Default::default();
+            let injected_by_relay = injected.clone();
+            let injector: crate::bridge_relay::InputInjector =
+                std::sync::Arc::new(move |input: crate::bridge_relay::InjectedInput| {
+                    injected_by_relay.lock().unwrap().push(input.message);
+                });
+            let response = crate::bridge_relay::handle_multiplexed_inbound(
+                &envelope_json.to_string(),
+                session_id,
+                injector,
+                None,
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+            assert!(response.is_none(), "session input sends no reply");
+            assert_eq!(*injected.lock().unwrap(), vec!["build the app".to_string()]);
         }
     }
 

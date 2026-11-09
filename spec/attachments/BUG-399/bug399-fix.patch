@@ -1,0 +1,1201 @@
+diff --git a/rust/agent-loop/tests/bug219_codex_interruption_output.rs b/rust/agent-loop/tests/bug219_codex_interruption_output.rs
+index 5651d3557..3c6fea4d9 100644
+--- a/rust/agent-loop/tests/bug219_codex_interruption_output.rs
++++ b/rust/agent-loop/tests/bug219_codex_interruption_output.rs
+@@ -35,7 +35,7 @@ async fn scenario_ordinary_interrupted_streaming_stays_silent_in_session_output(
+     codelet_common::set_data_directory(temporary.path().to_owned())?;
+     let manager = SessionManager::new();
+     manager.set_default_model("openai/o3");
+-    let id = SessionManagerHandle::create_session(&manager, None);
++    let id = SessionManagerHandle::create_session_checked(&manager, None)?;
+     let session = manager.get_session(&id.value)?;
+     let extensions = ProviderSession::for_provider("codex");
+     session.prepare_provider_status(&extensions, "codex");
+diff --git a/rust/agent-loop/tests/prov145_profile_config_applied.rs b/rust/agent-loop/tests/prov145_profile_config_applied.rs
+index c2b953b4c..f0e7d80d5 100644
+--- a/rust/agent-loop/tests/prov145_profile_config_applied.rs
++++ b/rust/agent-loop/tests/prov145_profile_config_applied.rs
+@@ -95,7 +95,7 @@ async fn fresh_background_session() -> (
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("openai/o3");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let session = manager
+         .get_session(&sid.value)
+         .expect("session must exist after create_session");
+diff --git a/rust/agent-loop/tests/prov149_codex_reload.rs b/rust/agent-loop/tests/prov149_codex_reload.rs
+index 857410426..bcff8e365 100644
+--- a/rust/agent-loop/tests/prov149_codex_reload.rs
++++ b/rust/agent-loop/tests/prov149_codex_reload.rs
+@@ -46,7 +46,7 @@ async fn backend_checkpoint_survives_session_reload_and_new_user_turn() -> TestR
+     let _directory = setup()?;
+     let manager = SessionManager::new();
+     manager.set_default_model("anthropic/claude-opus-4-5");
+-    let session_id = SessionManagerHandle::create_session(&manager, None);
++    let session_id = SessionManagerHandle::create_session_checked(&manager, None)?;
+     let session = manager.get_session(&session_id.value)?;
+     {
+         let mut inner = session.inner.lock().await;
+@@ -99,7 +99,7 @@ async fn legacy_and_non_codex_sessions_keep_ordinary_history_behavior() -> TestR
+     let _directory = setup()?;
+     let manager = SessionManager::new();
+     manager.set_default_model("anthropic/claude-opus-4-5");
+-    let session_id = SessionManagerHandle::create_session(&manager, None);
++    let session_id = SessionManagerHandle::create_session_checked(&manager, None)?;
+     let session = manager.get_session(&session_id.value)?;
+     let mut manifest = codelet_core::persistence::load_session(session.id)?;
+     codelet_core::persistence::append_message(&mut manifest, "user", "legacy")?;
+@@ -128,7 +128,7 @@ async fn conversation_replacement_invalidates_typed_continuation() -> TestResult
+     let _directory = setup()?;
+     let manager = SessionManager::new();
+     manager.set_default_model("anthropic/claude-opus-4-5");
+-    let session_id = SessionManagerHandle::create_session(&manager, None);
++    let session_id = SessionManagerHandle::create_session_checked(&manager, None)?;
+     let session = manager.get_session(&session_id.value)?;
+     {
+         let mut inner = session.inner.lock().await;
+diff --git a/rust/agent-loop/tests/prov153_codex_session_status.rs b/rust/agent-loop/tests/prov153_codex_session_status.rs
+index 8c22968bd..5bdf0d8f4 100644
+--- a/rust/agent-loop/tests/prov153_codex_session_status.rs
++++ b/rust/agent-loop/tests/prov153_codex_session_status.rs
+@@ -27,7 +27,7 @@ async fn session_presentation_retains_diagnostics_without_routine_notices(
+     codelet_common::set_data_directory(temporary.path().to_path_buf())?;
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("openai/o3");
+-    let session_id = SessionManagerHandle::create_session(manager.as_ref(), None);
++    let session_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
+     let session = manager.get_session(&session_id.value)?;
+     let mut chunks = manager.chunks_tx().subscribe();
+     let extensions = codelet_providers::session::ProviderSession::for_provider("codex");
+diff --git a/rust/agent-loop/tests/prov160_reconnect_status.rs b/rust/agent-loop/tests/prov160_reconnect_status.rs
+index c7ba000d7..91ef6b1d9 100644
+--- a/rust/agent-loop/tests/prov160_reconnect_status.rs
++++ b/rust/agent-loop/tests/prov160_reconnect_status.rs
+@@ -68,8 +68,8 @@ async fn reconnect_lifecycle_is_session_scoped_and_reaches_existing_status_outpu
+     codelet_common::set_data_directory(temporary.path().to_owned())?;
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("openai/o3");
+-    let active_id = SessionManagerHandle::create_session(manager.as_ref(), None);
+-    let other_id = SessionManagerHandle::create_session(manager.as_ref(), None);
++    let active_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
++    let other_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
+     let active = manager.get_session(&active_id.value)?;
+     let other = manager.get_session(&other_id.value)?;
+     let active_extensions = ProviderSession::for_provider("codex");
+diff --git a/rust/agent-loop/tests/rpc002_session_persistence.rs b/rust/agent-loop/tests/rpc002_session_persistence.rs
+index 4bb0cf630..958c70c89 100644
+--- a/rust/agent-loop/tests/rpc002_session_persistence.rs
++++ b/rust/agent-loop/tests/rpc002_session_persistence.rs
+@@ -74,7 +74,7 @@ async fn full_round_trip_persist_and_restore_messages() {
+     let handle: &dyn SessionManagerHandle = &*manager;
+ 
+     // Create a session
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+ 
+     // Persist messages through the agent_loop persistence helpers
+@@ -153,7 +153,7 @@ async fn resume_restores_token_state() {
+     manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+     let handle: &dyn SessionManagerHandle = &*manager;
+ 
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+ 
+     // Persist a message and token state
+@@ -203,7 +203,7 @@ async fn resume_preserves_message_ordering() {
+     manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+     let handle: &dyn SessionManagerHandle = &*manager;
+ 
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+ 
+     // Persist messages in order: user, assistant, user, assistant, user
+@@ -292,8 +292,8 @@ async fn multiple_sessions_persist_independently() {
+     manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+     let handle: &dyn SessionManagerHandle = &*manager;
+ 
+-    let sid1 = handle.create_session(None);
+-    let sid2 = handle.create_session(None);
++    let sid1 = handle.create_session_checked(None).expect("the handle creates the session");
++    let sid2 = handle.create_session_checked(None).expect("the handle creates the session");
+     let uuid1 = Uuid::parse_str(&sid1.value).expect("valid UUID");
+     let uuid2 = Uuid::parse_str(&sid2.value).expect("valid UUID");
+ 
+diff --git a/rust/core/src/session_manager_handle/handle_trait_1.rs b/rust/core/src/session_manager_handle/handle_trait_1.rs
+index c965726b1..7a57cad4e 100644
+--- a/rust/core/src/session_manager_handle/handle_trait_1.rs
++++ b/rust/core/src/session_manager_handle/handle_trait_1.rs
+@@ -10,11 +10,9 @@ macro_rules! compose_handle_trait_1 {
+     /// shows sessions belonging to the current project.
+     fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo>;
+     /// Create a new session with an optional role. Returns the
+-    /// freshly-minted [`SessionId`].
+-    fn create_session(&self, role: Option<String>) -> SessionId;
+-    fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {
+-        Ok(self.create_session(role))
+-    }
++    /// freshly-minted [`SessionId`], or the reason creation failed
++    /// (BUG-399: there is no infallible variant).
++    fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String>;
+     /// RPC-444: create a session whose project is `workspace` (canonicalized).
+     fn create_session_in_workspace(
+         &self,
+diff --git a/rust/core/src/session_manager_handle/stub/stub_handle_1.rs b/rust/core/src/session_manager_handle/stub/stub_handle_1.rs
+index 2accf50c4..25242fabe 100644
+--- a/rust/core/src/session_manager_handle/stub/stub_handle_1.rs
++++ b/rust/core/src/session_manager_handle/stub/stub_handle_1.rs
+@@ -15,7 +15,7 @@ macro_rules! compose_stub_handle_1 {
+     fn live_session_infos(&self) -> Vec<SessionInfo> {
+         self.list_sessions("")
+     }
+-    fn create_session(&self, role: Option<String>) -> SessionId {
++    fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {
+         let id = SessionId::new(format!(
+             "stub-{}",
+             self.next_id.fetch_add(1, Ordering::SeqCst)
+@@ -27,14 +27,21 @@ macro_rules! compose_stub_handle_1 {
+             is_isolated: false,
+             worktree_path: None,
+         };
+-        if let Ok(mut sessions) = self.sessions.lock() {
+-            sessions.push(record.clone());
+-        }
++        self.sessions
++            .lock()
++            .map_err(|error| format!("stub session map poisoned: {error}"))?
++            .push(record.clone());
+         // RPC-433: fire the session-created event (multi-client fan-out
+         // tests drive Created through this sender; a lagged subscriber
+         // recovers via RecvError::Lagged — the TUI append is idempotent).
+-        let _ = self.session_created_tx.send(Self::record_info(&record));
+-        id
++        if self
++            .session_created_tx
++            .send(Self::record_info(&record))
++            .is_err()
++        {
++            tracing::debug!(session_id = %id.value, "session created with no event subscribers");
++        }
++        Ok(id)
+     }
+     fn list_live_sessions(&self) -> Vec<SessionId> {
+         self.sessions
+diff --git a/rust/fspec-tui/tests/bug210_progress/support.rs b/rust/fspec-tui/tests/bug210_progress/support.rs
+index 51fb9021a..d55bfcdbb 100644
+--- a/rust/fspec-tui/tests/bug210_progress/support.rs
++++ b/rust/fspec-tui/tests/bug210_progress/support.rs
+@@ -52,7 +52,7 @@ impl Fixture {
+         let manager = Arc::new(SessionManager::new());
+         manager.set_default_model("anthropic/claude-opus-4-5");
+         let handle: Arc<dyn SessionManagerHandle> = manager.clone();
+-        let ids = vec![handle.create_session(None), handle.create_session(None)];
++        let ids = vec![handle.create_session_checked(None)?, handle.create_session_checked(None)?];
+         let mut sessions = Vec::new();
+         for id in &ids {
+             let session = manager.get_session(&id.value)?;
+diff --git a/rust/fspec-tui/tests/cont008_goal_back_sync_test.rs b/rust/fspec-tui/tests/cont008_goal_back_sync_test.rs
+index 3cc024d73..745e56776 100644
+--- a/rust/fspec-tui/tests/cont008_goal_back_sync_test.rs
++++ b/rust/fspec-tui/tests/cont008_goal_back_sync_test.rs
+@@ -81,7 +81,7 @@ async fn fresh_background_session() -> (
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let session = manager
+         .get_session(&sid.value)
+         .expect("session must exist after create_session");
+diff --git a/rust/fspec-tui/tests/rpc055_cross_transport_parity.rs b/rust/fspec-tui/tests/rpc055_cross_transport_parity.rs
+index ba765bcd6..45608f47a 100644
+--- a/rust/fspec-tui/tests/rpc055_cross_transport_parity.rs
++++ b/rust/fspec-tui/tests/rpc055_cross_transport_parity.rs
+@@ -110,7 +110,7 @@ async fn toggle_debug_round_trips_identically_across_transports() {
+     let (embedded, websocket) = dual_backends(service).await;
+ 
+     // @step And a session s-1 has been created on the stub
+-    let session_id = stub.create_session(None);
++    let session_id = stub.create_session_checked(None).expect("the stub creates the session");
+ 
+     let initial = stub.toggle_debug_calls();
+ 
+diff --git a/rust/fspec/tests/client_mcp_approval_regressions.rs b/rust/fspec/tests/client_mcp_approval_regressions.rs
+index 36889af28..1030da658 100644
+--- a/rust/fspec/tests/client_mcp_approval_regressions.rs
++++ b/rust/fspec/tests/client_mcp_approval_regressions.rs
+@@ -22,7 +22,7 @@ async fn checked_handle_rejects_replaced_and_duplicate_pause(
+     let manager = codelet_sessions::SessionManager::new();
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = &manager;
+-    let id = handle.create_session(None);
++    let id = handle.create_session_checked(None)?;
+     let session = manager.get_session(&id.value)?;
+     let pause = PauseState {
+         kind: PauseKind::Confirm,
+diff --git a/rust/fspec/tests/rpc070_create_session_no_panic.rs b/rust/fspec/tests/rpc070_create_session_no_panic.rs
+index fa9babdef..03c771be4 100644
+--- a/rust/fspec/tests/rpc070_create_session_no_panic.rs
++++ b/rust/fspec/tests/rpc070_create_session_no_panic.rs
+@@ -201,20 +201,20 @@ async fn scenario_create_session_does_not_panic_on_multi_thread_worker() {
+     let join = tokio::spawn(async move {
+         // Run inside an async future polled on the worker — this is
+         // structurally identical to the tarpc dispatch path.
+-        handle_for_blocking.create_session(None)
++        handle_for_blocking.create_session_checked(None)
+     });
+ 
+     // @step Then no thread panics with "Cannot start a runtime from within a runtime"
+     let sid: SessionId = tokio::time::timeout(Duration::from_secs(5), join)
+         .await
+         .expect("create_session did not return within 5s")
+-        .expect("create_session task panicked — RPC-070 regression");
++        .expect("create_session task panicked — RPC-070 regression")
++        .expect("the handle creates the session or declines it with an empty id");
+ 
+     // @step And the call returns a SessionId value
+     //
+-    // The inner SessionManager::create_session may legitimately return
+-    // an empty id (no provider/credentials configured in the test env);
+-    // the `.unwrap_or_default()` swallows the inner error. What we care
++    // With no default model the handle declines with an empty id; a real
++    // creation failure is an Err (BUG-399) and fails above. What we care
+     // about for RPC-070 is the NO-PANIC invariant — proven by reaching
+     // this assertion line at all.
+     let _ = sid; // The value itself is unconstrained; reaching here is the assertion.
+@@ -269,7 +269,8 @@ async fn scenario_create_session_over_embedded_tarpc_does_not_panic() {
+     )
+     .await
+     .expect("client.create_session timed out — likely a tarpc worker panicked")
+-    .expect("client.create_session returned an RpcError — RPC-070 regression");
++    .expect("client.create_session returned an RpcError — RPC-070 regression")
++    .expect("the daemon creates the session or declines it with an empty id");
+ 
+     // @step Then the RPC returns Ok(SessionId)
+     let _sid: SessionId = result;
+diff --git a/rust/fspec/tests/rpc073_clear_history_no_panic.rs b/rust/fspec/tests/rpc073_clear_history_no_panic.rs
+index 9ac02b247..6bb21414d 100644
+--- a/rust/fspec/tests/rpc073_clear_history_no_panic.rs
++++ b/rust/fspec/tests/rpc073_clear_history_no_panic.rs
+@@ -182,7 +182,8 @@ async fn scenario_clear_history_over_embedded_tarpc_does_not_panic() {
+     )
+     .await
+     .expect("create_session timed out")
+-    .expect("create_session RpcError");
++    .expect("create_session RpcError")
++    .expect("the daemon creates the session or declines it with an empty id");
+ 
+     // @step When the client calls client.clear_history(context::current(), session_id).await
+     let result = tokio::time::timeout(
+@@ -229,11 +230,12 @@ async fn scenario_clear_history_direct_from_multi_thread_worker_does_not_panic()
+     // when called from inside a multi-thread runtime worker. The
+     // important property: handle.clear_history must not panic.
+     let handle_for_task = Arc::clone(&handle);
+-    let session_id_join = tokio::spawn(async move { handle_for_task.create_session(None) });
++    let session_id_join = tokio::spawn(async move { handle_for_task.create_session_checked(None) });
+     let session_id: SessionId = tokio::time::timeout(Duration::from_secs(5), session_id_join)
+         .await
+         .expect("create_session did not return within 5s")
+-        .expect("create_session task panicked — pre-RPC-070 regression");
++        .expect("create_session task panicked — pre-RPC-070 regression")
++        .expect("the handle creates the session or declines it with an empty id");
+ 
+     // @step When the test spawns an async task that calls handle.clear_history(&session_id) from inside the multi-thread runtime worker
+     let handle_for_clear = Arc::clone(&handle);
+@@ -372,7 +374,8 @@ async fn scenario_clear_history_clears_output_buffer_and_broadcasts_cleared_chun
+     )
+     .await
+     .expect("create_session timed out")
+-    .expect("create_session RpcError");
++    .expect("create_session RpcError")
++    .expect("the daemon creates the session or declines it with an empty id");
+ 
+     // @step Given a subscriber is listening on backend.chunks_rx for that session_id
+     //
+diff --git a/rust/rpc-embedded/tests/embedded_session_repl.rs b/rust/rpc-embedded/tests/embedded_session_repl.rs
+index 1b46b78c0..d3e14bb15 100644
+--- a/rust/rpc-embedded/tests/embedded_session_repl.rs
++++ b/rust/rpc-embedded/tests/embedded_session_repl.rs
+@@ -60,7 +60,8 @@ async fn scenario_embedded_list_sessions_matches_underlying_session_manager() {
+     let seeded: SessionId = client
+         .create_session(context::current(), Some("default".to_string()))
+         .await
+-        .expect("create_session must succeed");
++        .expect("create_session must succeed")
++        .expect("the daemon creates the session");
+ 
+     // @step When a Rust caller invokes FspecServiceClient::list_sessions(context::current()) over the embedded transport
+     let listed: Vec<SessionInfo> = client
+@@ -103,7 +104,8 @@ async fn scenario_embedded_send_input_emits_at_least_one_streamchunk_within_5s()
+     let sid: SessionId = client
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session must succeed");
++        .expect("create_session must succeed")
++        .expect("the daemon creates the session");
+     client
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+         .await
+@@ -138,7 +140,8 @@ async fn scenario_interrupt_flips_state_and_emits_interrupted_chunk() {
+     let sid: SessionId = client
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session must succeed");
++        .expect("create_session must succeed")
++        .expect("the daemon creates the session");
+     client
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+         .await
+@@ -195,7 +198,8 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_embedded() {
+     let sid: SessionId = client
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session must succeed");
++        .expect("create_session must succeed")
++        .expect("the daemon creates the session");
+ 
+     // @step When the caller calls get_session_status(session_id) before any send_input
+     let before = client
+diff --git a/rust/rpc-server/tests/cross_transport_chunk_parity.rs b/rust/rpc-server/tests/cross_transport_chunk_parity.rs
+index e9e0b4b11..9f689f59f 100644
+--- a/rust/rpc-server/tests/cross_transport_chunk_parity.rs
++++ b/rust/rpc-server/tests/cross_transport_chunk_parity.rs
+@@ -58,7 +58,8 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session");
++        .expect("create_session")
++        .expect("the daemon creates the session");
+     embedded
+         .client()
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+diff --git a/rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs b/rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs
+index 5e0858719..58e5599b6 100644
+--- a/rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs
++++ b/rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs
+@@ -75,7 +75,8 @@ async fn two_clients_attached_simultaneously_see_the_same_chunk_stream() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session");
++        .expect("create_session")
++        .expect("the daemon creates the session");
+ 
+     // @step And WS-A calls send_input(S, "hi")
+     ws_a.client()
+diff --git a/rust/rpc-server/tests/rpc433_session_event_fan_out.rs b/rust/rpc-server/tests/rpc433_session_event_fan_out.rs
+index 9e87aee59..70e43886c 100644
+--- a/rust/rpc-server/tests/rpc433_session_event_fan_out.rs
++++ b/rust/rpc-server/tests/rpc433_session_event_fan_out.rs
+@@ -103,7 +103,8 @@ async fn scenario_multi_client_created_and_removed_fan_out() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("client A create_session");
++        .expect("client A create_session")
++        .expect("the daemon creates the session");
+ 
+     // @step Then both client A and client B observe a SessionEvent::Created carrying the new session's SessionInfo on their session-event stream
+     let events_a = collect_events(&mut rx_a, 1).await;
+@@ -160,7 +161,8 @@ async fn scenario_connecting_client_receives_open_session_snapshot() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("client A create_session");
++        .expect("client A create_session")
++        .expect("the daemon creates the session");
+ 
+     // @step And the daemon's in-memory session map holds that session
+     let manager_live = ws_a
+diff --git a/rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs b/rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs
+index 671c7b602..6addc8e90 100644
+--- a/rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs
++++ b/rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs
+@@ -100,7 +100,8 @@ async fn scenario_multi_client_cleared_fan_out() {
+         .client()
+         .create_session(tarpc::context::current(), None)
+         .await
+-        .expect("client A create_session");
++        .expect("client A create_session")
++        .expect("the daemon creates the session");
+ 
+     // @step When client A calls clear_history for that session
+     ws_a.client()
+diff --git a/rust/rpc-server/tests/ws_log_event.rs b/rust/rpc-server/tests/ws_log_event.rs
+index b5287e84f..2d0a0c603 100644
+--- a/rust/rpc-server/tests/ws_log_event.rs
++++ b/rust/rpc-server/tests/ws_log_event.rs
+@@ -106,7 +106,8 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("create_session");
++        .expect("create_session")
++        .expect("the daemon creates the session");
+     ws_client
+         .client()
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+diff --git a/rust/rpc-server/tests/ws_multi_client_chunks.rs b/rust/rpc-server/tests/ws_multi_client_chunks.rs
+index fb2b23765..15ab0bb4d 100644
+--- a/rust/rpc-server/tests/ws_multi_client_chunks.rs
++++ b/rust/rpc-server/tests/ws_multi_client_chunks.rs
+@@ -53,7 +53,8 @@ async fn scenario_multi_client_unfiltered_chunk_fan_out() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("client A create_session");
++        .expect("client A create_session")
++        .expect("the daemon creates the session");
+     ws_a.client()
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+         .await
+diff --git a/rust/rpc-server/tests/ws_session_repl.rs b/rust/rpc-server/tests/ws_session_repl.rs
+index 50f37bbe2..326f30758 100644
+--- a/rust/rpc-server/tests/ws_session_repl.rs
++++ b/rust/rpc-server/tests/ws_session_repl.rs
+@@ -64,7 +64,8 @@ async fn scenario_ws_list_sessions_matches_embedded() {
+     let seeded: SessionId = embedded_client
+         .create_session(context::current(), Some("default".to_string()))
+         .await
+-        .expect("create_session must succeed via embedded path");
++        .expect("create_session must succeed via embedded path")
++        .expect("the daemon creates the session");
+ 
+     // @step When the client calls FspecServiceClient::list_sessions(context::current()) over the WebSocket transport
+     let ws_listed: Vec<SessionInfo> = ws_client
+@@ -125,7 +126,8 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("WS create_session must succeed");
++        .expect("WS create_session must succeed")
++        .expect("the daemon creates the session");
+     ws_client
+         .client()
+         .send_input(context::current(), sid.clone(), "hi".to_string())
+@@ -186,7 +188,8 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_websocket() {
+         .client()
+         .create_session(context::current(), None)
+         .await
+-        .expect("WS create_session must succeed");
++        .expect("WS create_session must succeed")
++        .expect("the daemon creates the session");
+ 
+     // @step When the caller calls get_session_status(session_id) before any send_input
+     let before = ws_client
+diff --git a/rust/rpc/src/mcp_dispatch/group_01.rs b/rust/rpc/src/mcp_dispatch/group_01.rs
+index e054019c1..9767c7e1e 100644
+--- a/rust/rpc/src/mcp_dispatch/group_01.rs
++++ b/rust/rpc/src/mcp_dispatch/group_01.rs
+@@ -21,7 +21,8 @@ pub(super) mod create_session {
+         let value = client
+             .create_session(tarpc::context::current(), args.role)
+             .await
+-            .map_err(|e| InvokeError::Transport(e.to_string()))?;
++            .map_err(|e| InvokeError::Transport(e.to_string()))?
++            .map_err(InvokeError::Daemon)?;
+         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+     }
+ }
+diff --git a/rust/rpc/src/service_declaration/workspace.rs b/rust/rpc/src/service_declaration/workspace.rs
+index deff7379e..fe3ac56b6 100644
+--- a/rust/rpc/src/service_declaration/workspace.rs
++++ b/rust/rpc/src/service_declaration/workspace.rs
+@@ -19,8 +19,8 @@ macro_rules! compose_service_workspace {
+     async fn list_live_sessions() -> Vec<SessionId>;
+ 
+     /// Create a new session with optional role. Returns the freshly-minted
+-    /// session id.
+-    async fn create_session(role: Option<String>) -> SessionId;
++    /// session id, or why creation failed (BUG-399).
++    async fn create_session(role: Option<String>) -> Result<SessionId, String>;
+ 
+     /// Send user input to a live session. Returns once the input is
+     /// accepted — streaming output arrives on the chunks broadcast channel
+diff --git a/rust/rpc/src/service_implementation/interaction_sessions.rs b/rust/rpc/src/service_implementation/interaction_sessions.rs
+index 98930f3d0..d7d849395 100644
+--- a/rust/rpc/src/service_implementation/interaction_sessions.rs
++++ b/rust/rpc/src/service_implementation/interaction_sessions.rs
+@@ -87,11 +87,17 @@ macro_rules! compose_rpc_interaction_sessions {
+         }
+     }
+ 
+-    async fn create_session(self, _ctx: Context, role: Option<String>) -> SessionId {
+-        match self.inner.session_manager() {
+-            Some(handle) => handle.create_session(role),
+-            None => SessionId::new("rpc-no-session-manager"),
+-        }
++    /// BUG-399: a creation failure, or a daemon without a session manager,
++    /// is an error — never a placeholder id.
++    async fn create_session(
++        self,
++        _ctx: Context,
++        role: Option<String>,
++    ) -> Result<SessionId, String> {
++        self.inner
++            .session_manager()
++            .ok_or("Session creation requires a session manager")?
++            .create_session_checked(role)
+     }
+ 
+     async fn create_session_checked(
+diff --git a/rust/sessions/src/handle_impl/handle_impl_1.rs b/rust/sessions/src/handle_impl/handle_impl_1.rs
+index 58143792a..86a4e9c8a 100644
+--- a/rust/sessions/src/handle_impl/handle_impl_1.rs
++++ b/rust/sessions/src/handle_impl/handle_impl_1.rs
+@@ -15,12 +15,6 @@ macro_rules! compose_handle_impl_1 {
+     /// MUST be invoked from a multi-thread tokio runtime — the nested
+     /// `block_on` is only legal because `block_in_place` first detaches
+     /// the worker from the scheduler.
+-    fn create_session(&self, role: Option<String>) -> SessionId {
+-        crate::handle_creation::create_session_checked(self, role).unwrap_or_else(|error| {
+-            tracing::error!(%error, "legacy create_session failed; use create_session_checked for the cause");
+-            SessionId::new(String::new())
+-        })
+-    }
+     fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {
+         crate::handle_creation::create_session_checked(self, role)
+     }
+diff --git a/rust/sessions/tests/bug318_profile_composite_provider.rs b/rust/sessions/tests/bug318_profile_composite_provider.rs
+index 3602dd77e..f62cb9ce2 100644
+--- a/rust/sessions/tests/bug318_profile_composite_provider.rs
++++ b/rust/sessions/tests/bug318_profile_composite_provider.rs
+@@ -46,7 +46,7 @@ async fn a_session_created_from_a_profile_qualified_default_reports_the_provider
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When a new session is created
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(!sid.value.is_empty(), "the session must be created");
+ 
+     // @step Then the session model reports provider "openai" and model "Qwen3-80B"
+diff --git a/rust/sessions/tests/cont009_completion_contract_sync.rs b/rust/sessions/tests/cont009_completion_contract_sync.rs
+index cbffdd5f0..d1fa3e6ab 100644
+--- a/rust/sessions/tests/cont009_completion_contract_sync.rs
++++ b/rust/sessions/tests/cont009_completion_contract_sync.rs
+@@ -38,7 +38,7 @@ async fn fresh_session() -> (
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     // @step And the subsequent create_session() call must return a valid non-empty session ID
+     assert!(
+         !sid.value.is_empty(),
+diff --git a/rust/sessions/tests/exec_stdin_prompt_p2.rs b/rust/sessions/tests/exec_stdin_prompt_p2.rs
+index 77f6a3cc1..d4f332735 100644
+--- a/rust/sessions/tests/exec_stdin_prompt_p2.rs
++++ b/rust/sessions/tests/exec_stdin_prompt_p2.rs
+@@ -57,7 +57,7 @@ fn fresh_session(manager: &SessionManager) -> SessionId {
+     std::env::set_var("ANTHROPIC_API_KEY", "tool022-fake-key");
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(
+         !sid.value.is_empty(),
+         "create_session must succeed (fake env key + default model set)"
+diff --git a/rust/sessions/tests/exec_stdin_push_chunk_bug171.rs b/rust/sessions/tests/exec_stdin_push_chunk_bug171.rs
+index 141fa7b1f..eb7b291b9 100644
+--- a/rust/sessions/tests/exec_stdin_push_chunk_bug171.rs
++++ b/rust/sessions/tests/exec_stdin_push_chunk_bug171.rs
+@@ -54,7 +54,7 @@ fn fresh_session(manager: &SessionManager) -> SessionId {
+     std::env::set_var("ANTHROPIC_API_KEY", "bug171-fake-key");
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(
+         !sid.value.is_empty(),
+         "create_session must succeed (fake env key + default model set)"
+diff --git a/rust/sessions/tests/fixtures/rpc348_facade.rs b/rust/sessions/tests/fixtures/rpc348_facade.rs
+index d66f5c88f..f0076b33e 100644
+--- a/rust/sessions/tests/fixtures/rpc348_facade.rs
++++ b/rust/sessions/tests/fixtures/rpc348_facade.rs
+@@ -93,7 +93,7 @@ impl TestDirectory {
+         let manager = Arc::new(SessionManager::new());
+         manager.set_default_model(default_model);
+         let handle: &dyn SessionManagerHandle = manager.as_ref();
+-        let identifier = handle.create_session(None);
++        let identifier = handle.create_session_checked(None)?;
+         if identifier.value.is_empty() {
+             return Err("session creation must succeed offline".into());
+         }
+diff --git a/rust/sessions/tests/git021_checkpoint_requires_isolation.rs b/rust/sessions/tests/git021_checkpoint_requires_isolation.rs
+index a57b7fe3b..30f813a67 100644
+--- a/rust/sessions/tests/git021_checkpoint_requires_isolation.rs
++++ b/rust/sessions/tests/git021_checkpoint_requires_isolation.rs
+@@ -48,7 +48,7 @@ async fn checkpoint_fails_for_non_isolated_session() -> TestResult {
+     // @step Given a non-isolated session without worktree path
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     let session = manager.get_session(&sid.value)?;
+     assert!(session.worktree_path().is_none());
+     assert_eq!(session.effective_cwd(), PathBuf::from(&session.project));
+diff --git a/rust/sessions/tests/handle_impl.rs b/rust/sessions/tests/handle_impl.rs
+index 39fa41668..af69269b9 100644
+--- a/rust/sessions/tests/handle_impl.rs
++++ b/rust/sessions/tests/handle_impl.rs
+@@ -114,7 +114,7 @@ fn sessions_src_concat() -> String {
+ 
+ const TRAIT_METHODS: &[&str] = &[
+     "list_sessions",
+-    "create_session",
++    "create_session_checked",
+     "send_input",
+     "send_input_with_thinking",
+     "interrupt",
+diff --git a/rust/sessions/tests/handle_impl/impl_block_exists_with.rs b/rust/sessions/tests/handle_impl/impl_block_exists_with.rs
+index d547c78f4..c28365263 100644
+--- a/rust/sessions/tests/handle_impl/impl_block_exists_with.rs
++++ b/rust/sessions/tests/handle_impl/impl_block_exists_with.rs
+@@ -20,7 +20,7 @@ fn scenario_impl_block_exists_with_every_override() {
+     );
+ 
+     // @step And the impl block contains a "fn list_sessions(" override
+-    // @step And the impl block contains a "fn create_session(" override
++    // @step And the impl block contains a "fn create_session_checked(" override
+     // @step And the impl block contains a "fn send_input(" override
+     // @step And the impl block contains a "fn send_input_with_thinking(" override
+     // @step And the impl block contains a "fn interrupt(" override
+diff --git a/rust/sessions/tests/model_switch_durable_identity.rs b/rust/sessions/tests/model_switch_durable_identity.rs
+index 92bd5ad31..45d8052e7 100644
+--- a/rust/sessions/tests/model_switch_durable_identity.rs
++++ b/rust/sessions/tests/model_switch_durable_identity.rs
+@@ -69,7 +69,7 @@ impl Fixture {
+         )?;
+         let manager = Arc::new(SessionManager::new());
+         manager.set_default_model("openai/gpt-4o");
+-        let session_id = SessionManagerHandle::create_session(manager.as_ref(), None);
++        let session_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
+         let mut original = load_session(Uuid::parse_str(&session_id.value)?)?;
+         append_message(&mut original, "user", "original evidence")?;
+         Ok(Self {
+diff --git a/rust/sessions/tests/prov101_no_selection_fallbacks.rs b/rust/sessions/tests/prov101_no_selection_fallbacks.rs
+index c71e62105..cc30aee09 100644
+--- a/rust/sessions/tests/prov101_no_selection_fallbacks.rs
++++ b/rust/sessions/tests/prov101_no_selection_fallbacks.rs
+@@ -68,7 +68,7 @@ async fn create_session_declines_when_no_default_model() -> Result<(), String> {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then the returned session id value is empty
+     assert!(
+@@ -105,7 +105,7 @@ async fn create_session_uses_explicit_default_model() -> Result<(), String> {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then the returned session id value is not empty
+     assert!(
+diff --git a/rust/sessions/tests/prov118_no_session_default_model.rs b/rust/sessions/tests/prov118_no_session_default_model.rs
+index 135783fa8..577632ab1 100644
+--- a/rust/sessions/tests/prov118_no_session_default_model.rs
++++ b/rust/sessions/tests/prov118_no_session_default_model.rs
+@@ -72,7 +72,7 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
+         "precondition: no session exists"
+     );
+     assert!(
+-        handle.create_session(None).value.is_empty(),
++        handle.create_session_checked(None)?.value.is_empty(),
+         "precondition: create_session declines (empty id) before a default model is set"
+     );
+ 
+@@ -80,7 +80,7 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
+     handle.set_default_model("anthropic/claude-opus-4-5");
+ 
+     // @step And create_session is called
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then create_session returns a non-empty session id
+     assert!(
+@@ -117,7 +117,7 @@ async fn set_default_model_ignores_empty_string() -> Result<(), String> {
+     handle.set_default_model("");
+ 
+     // @step Then create_session still declines (no hardcoded anthropic fallback)
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(
+         sid.value.is_empty(),
+         "an empty default-model string must be ignored — PROV-101 policy preserved"
+diff --git a/rust/sessions/tests/prov119_default_model_persistence.rs b/rust/sessions/tests/prov119_default_model_persistence.rs
+index ac701f9f7..0a7759e8a 100644
+--- a/rust/sessions/tests/prov119_default_model_persistence.rs
++++ b/rust/sessions/tests/prov119_default_model_persistence.rs
+@@ -88,7 +88,7 @@ async fn selected_default_model_survives_restart() {
+     );
+ 
+     // @step And the first create_session is no longer declined
+-    let sid = handle2.create_session(None);
++    let sid = handle2.create_session_checked(None).expect("the handle creates the session");
+     assert!(
+         !sid.value.is_empty(),
+         "first create_session must succeed after restart"
+@@ -118,7 +118,7 @@ async fn first_launch_no_config_has_no_default() {
+     );
+ 
+     // @step And the first create_session is declined until a model is selected
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle declines without failing");
+     assert!(
+         sid.value.is_empty(),
+         "create_session must decline (empty id) with no default model"
+diff --git a/rust/sessions/tests/prov123_active_selection_updates_default.rs b/rust/sessions/tests/prov123_active_selection_updates_default.rs
+index 026c77b28..7877d7db6 100644
+--- a/rust/sessions/tests/prov123_active_selection_updates_default.rs
++++ b/rust/sessions/tests/prov123_active_selection_updates_default.rs
+@@ -47,7 +47,7 @@ async fn active_session_switch_updates_global_default() -> Result<(), String> {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step And an active session is running
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(!sid.value.is_empty(), "an active session must be created");
+ 
+     // @step When the user selects model "anthropic/claude-opus-4-8" in the active session and the switch succeeds
+@@ -81,14 +81,14 @@ async fn new_session_inherits_active_session_selection() -> Result<(), String> {
+     let (_data_dir, manager, saved) = manager_with_seeded_cache()?;
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid_a = handle.create_session(None);
++    let sid_a = handle.create_session_checked(None)?;
+     assert!(!sid_a.value.is_empty(), "the first session must be created");
+     handle
+         .set_model(&sid_a, "anthropic", "claude-opus-4-8")
+         .map_err(|e| format!("switch must succeed: {e}"))?;
+ 
+     // @step When the user creates a new session in the same process
+-    let sid_b = handle.create_session(None);
++    let sid_b = handle.create_session_checked(None)?;
+     assert!(!sid_b.value.is_empty(), "the new session must be created");
+ 
+     // @step Then the new session is created using "anthropic/claude-opus-4-8"
+@@ -125,7 +125,7 @@ async fn active_session_switch_persists_default_to_disk() -> Result<(), String>
+     let (data_dir, manager, saved) = manager_with_seeded_cache()?;
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(!sid.value.is_empty(), "an active session must be created");
+ 
+     // @step When the user selects model "anthropic/claude-opus-4-8" in the active session and the switch succeeds
+@@ -219,7 +219,7 @@ async fn profile_qualified_selection_updates_default_and_round_trips() -> Result
+     seed_qwen_profile(data_dir.path());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(!sid.value.is_empty(), "an active session must be created");
+ 
+     // @step When the user selects model "openai:qwen/Qwen3-80B" in the active session and the switch succeeds
+@@ -237,7 +237,7 @@ async fn profile_qualified_selection_updates_default_and_round_trips() -> Result
+     );
+ 
+     // @step And a new session created in the same process resolves "openai:qwen/Qwen3-80B"
+-    let sid_b = handle.create_session(None);
++    let sid_b = handle.create_session_checked(None)?;
+     assert!(
+         !sid_b.value.is_empty(),
+         "a new session must resolve the profile-qualified default and be created"
+@@ -269,7 +269,7 @@ async fn empty_selection_never_overwrites_global_default() -> Result<(), String>
+     let (data_dir, manager, saved) = manager_with_seeded_cache()?;
+     manager.set_default_model("anthropic/claude-opus-4-8");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(!sid.value.is_empty(), "an active session must be created");
+ 
+     // @step When an empty model string is applied to the active-session switch path
+diff --git a/rust/sessions/tests/prov141_session_creation_without_global_credentials.rs b/rust/sessions/tests/prov141_session_creation_without_global_credentials.rs
+index 41e1e7ec7..6a9d6227b 100644
+--- a/rust/sessions/tests/prov141_session_creation_without_global_credentials.rs
++++ b/rust/sessions/tests/prov141_session_creation_without_global_credentials.rs
+@@ -139,7 +139,7 @@ async fn profile_model_session_creation_succeeds_without_global_credentials() ->
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then the returned session id value is not empty
+     assert!(
+@@ -179,13 +179,16 @@ async fn cloud_registry_model_still_fails_without_credentials_for_its_provider(
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
+-
+-    // @step Then the returned session id value is empty
+-    assert!(
+-        sid.value.is_empty(),
+-        "PROV-141: an uncredentialed cloud model must still fail loudly (no silent success)"
+-    );
++    let outcome = handle.create_session_checked(None);
++
++    // @step Then session creation fails with an error
++    // BUG-399: the failure is an Err, never an empty id.
++    if let Ok(sid) = outcome {
++        return Err(format!(
++            "PROV-141: an uncredentialed cloud model must still fail loudly, got '{}'",
++            sid.value
++        ));
++    }
+ 
+     // @step And the error message names the provider "anthropic"
+     // (The per-model credential check in select_model rejects the selection;
+@@ -212,7 +215,7 @@ async fn codex_model_session_creation_succeeds_without_global_credentials() -> R
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then the returned session id value is not empty
+     assert!(
+diff --git a/rust/sessions/tests/prov142_session_seed.rs b/rust/sessions/tests/prov142_session_seed.rs
+index 4c6f0e3a7..20467b39e 100644
+--- a/rust/sessions/tests/prov142_session_seed.rs
++++ b/rust/sessions/tests/prov142_session_seed.rs
+@@ -132,7 +132,7 @@ async fn session_against_profile_with_auto_continue_300_starts_on_with_budget_30
+     // @step When a session is created against a model of that profile
+     manager.set_default_model("openai:spark/o3");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(
+         !sid.value.is_empty(),
+         "PROV-142: profile-model session creation must succeed"
+@@ -181,7 +181,7 @@ async fn session_against_profile_with_auto_continue_0_starts_off() -> Result<(),
+     // @step When a session is created against a model of that profile
+     manager.set_default_model("openai:spark/o3");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(
+         !sid.value.is_empty(),
+         "PROV-142: profile-model session creation must succeed"
+@@ -224,7 +224,7 @@ async fn session_against_profile_without_auto_continue_key_starts_off() -> Resul
+     // @step When a session is created against a model of that profile
+     manager.set_default_model("openai:spark/o3");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+     assert!(
+         !sid.value.is_empty(),
+         "PROV-142: profile-model session creation must succeed"
+diff --git a/rust/sessions/tests/prov143_preserve_thinking_seed.rs b/rust/sessions/tests/prov143_preserve_thinking_seed.rs
+index 3bdd0b3dd..1bc21e3e1 100644
+--- a/rust/sessions/tests/prov143_preserve_thinking_seed.rs
++++ b/rust/sessions/tests/prov143_preserve_thinking_seed.rs
+@@ -109,7 +109,7 @@ fn manager_with_seeded_cache(
+ fn seeded_flag(manager: &Arc<SessionManager>) -> bool {
+     manager.set_default_model("openai:spark/o3");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(
+         !sid.value.is_empty(),
+         "PROV-143: profile-model session creation must succeed"
+diff --git a/rust/sessions/tests/rpc343_mid_session_model_reresolution.rs b/rust/sessions/tests/rpc343_mid_session_model_reresolution.rs
+index b347b4223..a63bc7b5c 100644
+--- a/rust/sessions/tests/rpc343_mid_session_model_reresolution.rs
++++ b/rust/sessions/tests/rpc343_mid_session_model_reresolution.rs
+@@ -75,7 +75,7 @@ async fn manager_with_opus_session() -> (Arc<SessionManager>, SessionId, TestDir
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(
+         !sid.value.is_empty(),
+         "session creation must succeed offline (empty id means create_session errored)"
+diff --git a/rust/sessions/tests/rpc422_session_persistence.rs b/rust/sessions/tests/rpc422_session_persistence.rs
+index 4e508558b..30a8b2448 100644
+--- a/rust/sessions/tests/rpc422_session_persistence.rs
++++ b/rust/sessions/tests/rpc422_session_persistence.rs
+@@ -67,7 +67,7 @@ async fn create_session_persists_manifest_to_disk() {
+     // @step When I call create_session_with_id with a valid UUID, model, project, and name
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // @step Then a session manifest file should exist at {data_dir}/sessions/{uuid}.json
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+@@ -129,7 +129,7 @@ async fn create_session_with_provider_persists_provider_field() {
+     // @step When I call create_session_with_id with model "anthropic/claude-sonnet-4"
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // @step Then the persisted manifest should have provider field set to "anthropic/claude-sonnet-4"
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+@@ -160,7 +160,7 @@ async fn destroy_session_removes_from_memory_preserves_manifest() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+     let manifest_path = data_dir.join("sessions").join(format!("{uuid}.json"));
+@@ -215,7 +215,7 @@ async fn persistence_delete_session_removes_manifest_from_disk() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+     let manifest_path = data_dir.join("sessions").join(format!("{uuid}.json"));
+@@ -247,7 +247,7 @@ async fn list_sessions_includes_persisted_sessions() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // @step And a second session manifest persisted on disk but not in memory
+     // Create a second manifest directly via persistence layer
+@@ -358,7 +358,7 @@ async fn create_session_persists_provider_in_manifest() {
+     // @step When I call create_session_with_id with a specific model
+     manager.set_default_model("anthropic/claude-opus-4-5");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // @step Then the manifest should have the correct provider
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+@@ -390,32 +390,31 @@ async fn create_session_fails_gracefully_when_persistence_fails() {
+     // Remove the sessions directory so persistence fails
+     let sessions_dir = data_dir.join("sessions");
+     if sessions_dir.exists() {
+-        std::fs::remove_dir_all(&sessions_dir).ok();
++        std::fs::remove_dir_all(&sessions_dir).expect("remove the sessions directory");
+     }
+     // Create a file where the sessions directory should be, preventing directory creation
+-    std::fs::write(&sessions_dir, b"blocked").ok();
++    std::fs::write(&sessions_dir, b"blocked").expect("block the sessions directory");
+ 
+     let manager = Arc::new(SessionManager::new());
+ 
+     // @step When I call create_session_with_id
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let _sid = handle.create_session(None);
++    let outcome = handle.create_session_checked(None);
+ 
+     // @step Then the error should propagate and the BackgroundSession should not be created
+-    // The session ID should be empty (PROV-101 decline on error) or the session should not exist
+-    let sessions = manager.list_sessions(
+-        &std::env::current_dir()
+-            .map(|p| p.to_string_lossy().to_string())
+-            .unwrap_or_default(),
++    // BUG-399: the failure is an Err, never an empty id.
++    assert!(
++        outcome.is_err(),
++        "create_session_checked must fail when persistence fails, got {outcome:?}"
+     );
+     assert!(
+-        sessions.is_empty(),
++        manager.list_live_sessions().is_empty(),
+         "no session should be created when persistence fails"
+     );
+ 
+     // Cleanup: remove the blocking file
+-    std::fs::remove_file(&sessions_dir).ok();
++    std::fs::remove_file(&sessions_dir).expect("remove the blocking file");
+ }
+ 
+ // ============================================================================
+@@ -570,7 +569,7 @@ async fn resume_session_already_in_memory_preserves_messages() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // Add messages to the session via persistence layer
+     let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+@@ -630,7 +629,7 @@ async fn session_creation_survives_clean_offline_environment() {
+     // @step When I run the rpc002 and rpc422 session-persistence test suites in that environment
+     // the default model resolves against the seeded offline cache
+     manager.set_default_model("anthropic/claude-sonnet-4");
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+ 
+     // @step Then session creation resolves the default model from the seeded offline cache and succeeds
+     assert!(
+diff --git a/rust/sessions/tests/session_creation_failure_hygiene.rs b/rust/sessions/tests/session_creation_failure_hygiene.rs
+index 855b027b4..9e380ef83 100644
+--- a/rust/sessions/tests/session_creation_failure_hygiene.rs
++++ b/rust/sessions/tests/session_creation_failure_hygiene.rs
+@@ -87,14 +87,16 @@ async fn failed_session_creation_leaves_no_orphaned_manifest() -> Result<(), Str
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let outcome = handle.create_session_checked(None);
+ 
+-    // @step Then the returned session id value is empty (creation declined)
+-    assert!(
+-        sid.value.is_empty(),
+-        "create_session must return an empty id when provider resolution fails, got '{}'",
+-        sid.value
+-    );
++    // @step Then session creation fails with an error
++    // BUG-399: the failure is an Err, never an empty id.
++    if let Ok(sid) = outcome {
++        return Err(format!(
++            "create_session_checked must fail when provider resolution fails, got '{}'",
++            sid.value
++        ));
++    }
+ 
+     // @step And no orphaned session manifest is persisted to disk
+     assert_eq!(
+@@ -126,7 +128,7 @@ async fn successful_session_creation_persists_manifest() -> Result<(), String> {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None)?;
+ 
+     // @step Then the returned session id value is not empty
+     assert!(
+@@ -158,13 +160,16 @@ async fn malformed_model_string_leaves_no_orphaned_manifest() -> Result<(), Stri
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+ 
+     // @step When I call create_session with no role
+-    let sid = handle.create_session(None);
+-
+-    // @step Then the returned session id value is empty
+-    assert!(
+-        sid.value.is_empty(),
+-        "create_session must return an empty id for a malformed model string"
+-    );
++    let outcome = handle.create_session_checked(None);
++
++    // @step Then session creation fails with an error
++    // BUG-399: the failure is an Err, never an empty id.
++    if let Ok(sid) = outcome {
++        return Err(format!(
++            "create_session_checked must fail for a malformed model string, got '{}'",
++            sid.value
++        ));
++    }
+ 
+     // @step And no orphaned session manifest is persisted to disk
+     assert_eq!(
+diff --git a/rust/sessions/tests/tui002_default_thinking_level.rs b/rust/sessions/tests/tui002_default_thinking_level.rs
+index fba1c7ed3..7fe14d87c 100644
+--- a/rust/sessions/tests/tui002_default_thinking_level.rs
++++ b/rust/sessions/tests/tui002_default_thinking_level.rs
+@@ -132,7 +132,7 @@ async fn a_new_session_inherits_a_persisted_high_default() {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+     handle.set_default_model("anthropic/claude-opus-4-5");
+     // @step When a new session is created
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(!sid.value.is_empty(), "session must be created");
+     // @step Then the new session's thinking level is High
+     assert_eq!(handle.get_thinking_level(&sid), ThinkingLevel::High);
+@@ -152,7 +152,7 @@ async fn a_new_session_inherits_a_persisted_off_default() {
+     let handle: &dyn SessionManagerHandle = manager.as_ref();
+     handle.set_default_model("anthropic/claude-opus-4-5");
+     // @step When a new session is created
+-    let sid = handle.create_session(None);
++    let sid = handle.create_session_checked(None).expect("the handle creates the session");
+     assert!(!sid.value.is_empty(), "session must be created");
+     // @step Then the new session's thinking level is Off
+     assert_eq!(handle.get_thinking_level(&sid), ThinkingLevel::Off);
+diff --git a/rust/sessions/tests/tui099_session_list_ordering.rs b/rust/sessions/tests/tui099_session_list_ordering.rs
+index 5116b280d..1f039a767 100644
+--- a/rust/sessions/tests/tui099_session_list_ordering.rs
++++ b/rust/sessions/tests/tui099_session_list_ordering.rs
+@@ -75,7 +75,7 @@ async fn sessions_ordered_by_most_recently_updated_first() {
+     let handle: &dyn SessionManagerHandle = &*manager;
+ 
+     // Create sessions
+-    let sid_a = handle.create_session(None);
++    let sid_a = handle.create_session_checked(None).expect("the handle creates the session");
+     let _info_a = manager
+         .list_sessions(
+             &std::env::current_dir()
+@@ -87,7 +87,7 @@ async fn sessions_ordered_by_most_recently_updated_first() {
+         .cloned()
+         .expect("session A should exist");
+ 
+-    let sid_b = handle.create_session(None);
++    let sid_b = handle.create_session_checked(None).expect("the handle creates the session");
+     let _info_b = manager
+         .list_sessions(
+             &std::env::current_dir()
+@@ -99,7 +99,7 @@ async fn sessions_ordered_by_most_recently_updated_first() {
+         .cloned()
+         .expect("session B should exist");
+ 
+-    let sid_c = handle.create_session(None);
++    let sid_c = handle.create_session_checked(None).expect("the handle creates the session");
+     let _info_c = manager
+         .list_sessions(
+             &std::env::current_dir()
+@@ -202,8 +202,8 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let _sid1 = handle.create_session(None);
+-    let _sid2 = handle.create_session(None);
++    let _sid1 = handle.create_session_checked(None).expect("the handle creates the session");
++    let _sid2 = handle.create_session_checked(None).expect("the handle creates the session");
+     let sessions = manager.list_sessions(
+         &std::env::current_dir()
+             .map(|p| p.to_string_lossy().to_string())
+@@ -294,7 +294,7 @@ async fn sessions_without_timestamp_appear_at_end() {
+     let manager = Arc::new(SessionManager::new());
+     manager.set_default_model("anthropic/claude-sonnet-4");
+     let handle: &dyn SessionManagerHandle = &*manager;
+-    let _sid = handle.create_session(None);
++    let _sid = handle.create_session_checked(None).expect("the handle creates the session");
+     let sessions = manager.list_sessions(
+         &std::env::current_dir()
+             .map(|p| p.to_string_lossy().to_string())
+diff --git a/spec/features/implement-sessionmanagerhandle-for-codelet-sessions-sessionmanager.feature b/spec/features/implement-sessionmanagerhandle-for-codelet-sessions-sessionmanager.feature
+index 92a632c7c..a912cb94d 100644
+--- a/spec/features/implement-sessionmanagerhandle-for-codelet-sessions-sessionmanager.feature
++++ b/spec/features/implement-sessionmanagerhandle-for-codelet-sessions-sessionmanager.feature
+@@ -107,7 +107,7 @@ Feature: Implement SessionManagerHandle for the extracted SessionManager
+     When I read the source bytes and scan them
+     Then exactly one "impl codelet_core::SessionManagerHandle for SessionManager" block exists across the inspected files
+     And the impl block contains a "fn list_sessions(" override
+-    And the impl block contains a "fn create_session(" override
++    And the impl block contains a "fn create_session_checked(" override
+     And the impl block contains a "fn send_input(" override
+     And the impl block contains a "fn send_input_with_thinking(" override
+     And the impl block contains a "fn interrupt(" override
+diff --git a/spec/features/session-creation-without-global-credentials.feature b/spec/features/session-creation-without-global-credentials.feature
+index dadf92d24..5fdfabc61 100644
+--- a/spec/features/session-creation-without-global-credentials.feature
++++ b/spec/features/session-creation-without-global-credentials.feature
+@@ -41,7 +41,7 @@ Feature: Session creation fails on Linux when default model is a profile model a
+     Given a SessionManager with no provider credentials in the environment
+     And the default model is set to "anthropic/claude-opus-4-5"
+     When I call create_session with no role
+-    Then the returned session id value is empty
++    Then session creation fails with an error
+     And the error message names the provider "anthropic"
+ 
+   Scenario: Codex model session creation succeeds without global credentials

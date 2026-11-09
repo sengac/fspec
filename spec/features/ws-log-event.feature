@@ -1,4 +1,5 @@
 @done
+@BUG-572
 @logging
 @rust
 @tarpc
@@ -6,6 +7,7 @@
 @websocket
 @wire-format
 @RPC-007
+@infrastructure
 Feature: WebSocket LogEvent and Event bincode wire format
   """
   Both Envelope::Event { session_id: SessionId, chunk: StreamChunk } and
@@ -16,6 +18,9 @@ Feature: WebSocket LogEvent and Event bincode wire format
   message/timestamp into a LogRecord and the per-connection logs_fanout
   task emits Envelope::LogEvent(record) frames; chunks_fanout emits
   Envelope::Event { session_id, chunk } frames.
+  BUG-572: forwarding a LogEvent frame must not add records to the log
+  broadcast (the transport's own below-warning logging is not broadcast),
+  so the fan-out cannot feed on itself and flood the client.
   """
 
   Background: User Story
@@ -32,3 +37,10 @@ Feature: WebSocket LogEvent and Event bincode wire format
     Then a synthesized Envelope::Event { session_id, chunk } round-trips via bincode without ambiguity
     And a synthesized Envelope::LogEvent(LogRecord) round-trips via bincode without ambiguity
     And neither bincode-encoded frame decodes as JSON nor uses any custom shape outside Envelope
+
+  @rpc
+  @websocket
+  Scenario: Forwarding log records over the WebSocket does not feed the log broadcast
+    Given a WebSocket client is connected and subscribed to logs_rx()
+    When the host emits a "hello" record and, once the client has received it, a "marker" record
+    Then no record the client receives before "marker" has a tungstenite, tokio_tungstenite or tarpc target below WARN

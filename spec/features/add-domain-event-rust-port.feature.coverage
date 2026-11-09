@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "91-121",
+          "lines": "113-159",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -166,8 +165,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -178,12 +192,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "123-157",
+          "lines": "161-198",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -339,8 +352,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -351,12 +379,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "159-182",
+          "lines": "200-223",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -512,8 +539,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -524,12 +566,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "184-215",
+          "lines": "225-260",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -685,8 +726,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -697,12 +753,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "217-239",
+          "lines": "262-284",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -858,8 +913,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -870,12 +940,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "241-266",
+          "lines": "286-311",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -1031,8 +1100,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1043,12 +1127,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "268-290",
+          "lines": "313-335",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -1204,8 +1287,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1216,12 +1314,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_domain_event.rs",
-          "lines": "292-320",
+          "lines": "337-366",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_domain_event.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -1377,8 +1474,23 @@
                 220,
                 221,
                 222,
-                223
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1395,6 +1507,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_domain_event.rs"
     ],
-    "totalLinesCovered": 1479
+    "totalLinesCovered": 1599
   }
 }

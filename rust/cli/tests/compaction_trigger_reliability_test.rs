@@ -27,7 +27,7 @@
 //!     contract.
 //!   * **Behavioural assertions** on the real helpers
 //!     (`begin_compaction_recovery`, `execute_compaction`,
-//!     `classify_compaction_branch`, `resolve_compaction_threshold`,
+//!     `classify_compaction_branch`, `compaction_threshold_for`,
 //!     `CompactionHook::check_compaction_with_payload`) — these prove each
 //!     scenario's helper-level invariants using production code paths and
 //!     fail if any helper regresses.
@@ -36,11 +36,15 @@
 //! success but runtime FAILURES on the structural grep tests, proving the
 //! regression is present. After the fix, all tests pass.
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
-use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
+use codelet_cli::compaction_threshold::{compaction_threshold_for, CompactionThresholdConfig};
 use codelet_cli::interactive::output::{StreamEvent, StreamOutput};
 use codelet_cli::interactive::{
     begin_compaction_recovery, classify_compaction_branch, compaction_retry_prompt,
@@ -62,9 +66,7 @@ use rig::OneOrMany;
 /// Load the `stream_loop.rs` source once per test module so structural
 /// assertions can pin the production contract.
 fn stream_loop_source() -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
-    std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("stream_loop.rs must be readable at {}: {e}", path.display()))
+    stream_loop_source_tree::stream_loop_source()
 }
 
 /// Recording StreamOutput that captures every emitted event for assertion.
@@ -96,7 +98,7 @@ impl StreamOutput for RecordingOutput {
 }
 
 fn fresh_session_with_conversation() -> Session {
-    let provider_manager = codelet_providers::ProviderManager::new()
+    let provider_manager = offline_session::provider_manager()
         .expect("at least one API key must be configured for tests");
     let mut session = Session::from_provider_manager(provider_manager);
     // System reminder so partition_for_compaction has something to preserve.
@@ -200,7 +202,6 @@ async fn final_response_branch_triggers_recovery_when_compaction_needed_is_set()
     // @step And the stream yields Ok(FinalResponse) with stop_reason "end_turn"
     // (Modelled structurally via the stream_loop source check below — no live
     // stream needed because the branch is a pure control-flow decision.)
-    let src = stream_loop_source();
 
     // @step When the stream loop processes the FinalResponse branch
     // Locate the "Normal case" block inside the FinalResponse branch — the
@@ -208,17 +209,16 @@ async fn final_response_branch_triggers_recovery_when_compaction_needed_is_set()
     // exhaustion retry, and BEFORE `emit_done_with_stop_reason`. This is the
     // actual regression site: the Gemini sub-block checks `compaction_needed`
     // via its own handler, but the normal success path does not.
-    let normal_case_marker = "// Normal case: add assistant text to history and finish";
-    let normal_case_idx = src
-        .find(normal_case_marker)
-        .expect("FinalResponse branch must contain the 'Normal case' marker");
-    let normal_slice = &src[normal_case_idx..];
-    // Find the ACTUAL `emit_done_with_stop_reason(` invocation — we must
-    // skip the string match in doc comments that describe the call. The
-    // canonical invocation is: `output.emit_done_with_stop_reason(`.
+    // BUG-306: the clean-exit FinalResponse path is stream_loop/final_response.rs,
+    // which hands off to final_completion::complete (where done is emitted).
+    let final_response = stream_loop_source_tree::stream_loop_module("final_response");
+    let normal_case_idx = final_response
+        .find("let final_response_needs_recovery")
+        .expect("FinalResponse branch must check for pending compaction");
+    let normal_slice = &final_response[normal_case_idx..];
     let emit_done_relative = normal_slice
-        .find("output.emit_done_with_stop_reason(")
-        .expect("Normal case path must call output.emit_done_with_stop_reason(...)");
+        .find("final_completion::complete(")
+        .expect("FinalResponse path must hand off to final_completion::complete");
     let normal_window = &normal_slice[..emit_done_relative];
 
     // @step Then begin_compaction_recovery is invoked with policy EmbedInInstruction("Continue")
@@ -243,7 +243,7 @@ async fn final_response_branch_triggers_recovery_when_compaction_needed_is_set()
     // normal-case path (so the fix can route through the unified macro
     // rather than re-implementing recovery inline).
     assert!(
-        normal_window.contains("in_loop_compaction_restart!"),
+        normal_window.contains("restart::compact("),
         "REGRESSION (CMPCT-032): 'Normal case' FinalResponse path must invoke \
          in_loop_compaction_restart!() when compaction_needed=true so the \
          retry stream is subject to the same error cascade as the original \
@@ -331,7 +331,8 @@ fn in_loop_macro_handles_prompt_cancelled_from_mid_stream_hook_cancellation() {
         "Error arm Path C (PromptCancelled) must retain its in-loop restart wiring"
     );
     assert!(
-        src.matches("in_loop_compaction_restart!(policy)").count() >= 3,
+        // BUG-641: each call also names its trigger (threshold or overflow).
+        src.matches("super::restart::compact(").count() >= 3,
         "in_loop_compaction_restart!(policy) must be invoked from at least three \
          error-arm call sites (Paths B, C, D) after the fix"
     );
@@ -537,7 +538,6 @@ async fn post_loop_safety_net_runs_recovery_when_loop_exits_via_break_with_flag_
     // @step Given a streaming turn is in progress
     // @step And the compaction hook has set token_state.compaction_needed=true
     // @step And the loop breaks via a path that does not invoke the in-loop macro (e.g., thinking-exhaustion retry)
-    let src = stream_loop_source();
 
     // @step When the stream loop reaches the post-loop block
     // @step Then in release builds (not only debug_assertions) the safety net fires
@@ -546,17 +546,10 @@ async fn post_loop_safety_net_runs_recovery_when_loop_exits_via_break_with_flag_
     // `#[cfg(debug_assertions)]`. The current (buggy) commit wraps the
     // entire post-loop compaction check in `#[cfg(debug_assertions)]`, so
     // release builds have no safety net.
-    let post_loop_marker = "CMPCT-032: Production-mode post-loop safety net";
-    let post_loop_idx = src.find(post_loop_marker).expect(
-        "stream_loop.rs must have a production-mode post-loop safety net \
-             marked with 'CMPCT-032: Production-mode post-loop safety net'. \
-             The buggy commit had a `#[cfg(debug_assertions)]`-gated \
-             `CMPCT-027: The post-loop handle_compaction_retry call` block \
-             that only emitted a debug! log. The fix must replace it with a \
-             production-mode safety net that actually invokes recovery.",
-    );
-    // Take the window from the post-loop marker through the end of the file.
-    let post_loop_window = &src[post_loop_idx..];
+    // BUG-306: the production post-loop safety net is stream_loop/finish.rs.
+    let finish = stream_loop_source_tree::stream_loop_module("finish");
+    assert!(finish.contains("CMPCT-032: POST-LOOP safety net fired"));
+    let post_loop_window = finish.as_str();
 
     // The post-loop compaction check MUST NOT be gated behind
     // #[cfg(debug_assertions)]. If it is, release builds have no safety net.
@@ -673,15 +666,13 @@ fn user_interrupt_takes_priority_over_compaction_recovery() {
     // `!is_interrupted.load(Acquire)`. Without that guard, recovery runs
     // against a user-cancelled session — the exact opposite of what the user
     // asked for.
-    let src = stream_loop_source();
-    let post_loop_marker = "CMPCT-032: Production-mode post-loop safety net";
-    let post_loop_idx = src
-        .find(post_loop_marker)
-        .expect("post-loop safety net marker must exist after the CMPCT-032 fix");
-    let post_loop_window = &src[post_loop_idx..];
+    let finish = stream_loop_source_tree::stream_loop_module("finish");
+    assert!(finish.contains("CMPCT-032: POST-LOOP safety net fired"));
+    let post_loop_window = finish.as_str();
 
     assert!(
         post_loop_window.contains("!is_interrupted.load(Acquire)")
+            || post_loop_window.contains("!context.is_interrupted.load(Acquire)")
             || post_loop_window
                 .contains("!is_interrupted.load(std::sync::atomic::Ordering::Acquire)"),
         "REGRESSION (CMPCT-032): post-loop safety net must guard on \
@@ -717,8 +708,8 @@ fn gemini_session_triggers_compaction_at_80_percent_of_context_window() {
     let max_output: u64 = 65_536;
     let model_id = Some("gemini-2.5-pro");
 
-    // @step And resolve_compaction_threshold returns 800,000 tokens for the Gemini family default
-    let threshold = resolve_compaction_threshold(context_window, max_output, model_id, None);
+    // @step And compaction_threshold_for returns 800,000 tokens for the Gemini family default
+    let threshold = compaction_threshold_for(context_window, max_output, model_id, None);
     assert_eq!(
         threshold, 800_000,
         "Gemini family default must be 80% of context window (CTX-007)"
@@ -758,8 +749,8 @@ fn gemini_session_triggers_compaction_at_80_percent_of_context_window() {
     // branch test above — both exercise the real recovery paths.
     let src = stream_loop_source();
     assert!(
-        src.contains("resolve_compaction_threshold"),
-        "stream_loop.rs must call resolve_compaction_threshold to honour per-model thresholds"
+        src.contains("compaction_threshold_for"),
+        "stream_loop.rs must call compaction_threshold_for to honour per-model thresholds"
     );
 }
 
@@ -775,16 +766,15 @@ fn claude_session_honours_user_threshold_override() {
     let model_id = Some("claude-sonnet-4-20250514");
     let user_override = CompactionThresholdConfig::Tokens(150_000);
 
-    // @step And resolve_compaction_threshold returns the override value
+    // @step And compaction_threshold_for returns the override value
     let threshold =
-        resolve_compaction_threshold(context_window, max_output, model_id, Some(&user_override));
+        compaction_threshold_for(context_window, max_output, model_id, Some(&user_override));
     assert_eq!(
         threshold, 150_000,
         "User override must take priority over the universal default (CTX-007)"
     );
 
-    let default_threshold =
-        resolve_compaction_threshold(context_window, max_output, model_id, None);
+    let default_threshold = compaction_threshold_for(context_window, max_output, model_id, None);
     assert_eq!(
         default_threshold, 160_000,
         "Claude default must be 80% of the configured context window"
@@ -802,6 +792,7 @@ fn claude_session_honours_user_threshold_override() {
         output_tokens: 0,
         compaction_needed: false,
     }));
+    // @step Then the compaction hook fires at the override threshold, not the default 80 percent threshold
     let hook = CompactionHook::new(Arc::clone(&state), threshold);
     let cancel_sig = CancelSignal::new();
 
@@ -888,9 +879,9 @@ async fn after_recovery_restart_stream_does_not_immediately_re_trigger_the_hook(
 
     // Structural proof: the in-loop macro in stream_loop.rs MUST reset the
     // flag and fresh-hook the token state after execute_compaction.
-    let src = stream_loop_source();
     assert!(
-        src.contains("state.compaction_needed = false;"),
+        stream_loop_source_tree::stream_loop_module("restart")
+            .contains("tokens.compaction_needed = false;"),
         "in-loop compaction restart must reset compaction_needed=false after \
          execute_compaction so the retry stream is not immediately flagged"
     );

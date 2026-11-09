@@ -5,11 +5,20 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/ws_reserved_variants_after_rpc007.rs",
-          "lines": "30-117",
+          "lines": "29-113",
           "implMappings": [
             {
-              "file": "rust/rpc-server/src/pump.rs",
+              "file": "rust/rpc-server/src/pump/inbound.rs",
               "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
@@ -25,17 +34,10 @@
                 87,
                 88,
                 89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+                90
+              ],
+              "firstLine": "fn on_log_event(&self, _record: LogRecord) {",
+              "lastLine": ""
             }
           ]
         }
@@ -50,8 +52,8 @@
       "rust/rpc-server/tests/ws_reserved_variants_after_rpc007.rs"
     ],
     "implFiles": [
-      "rust/rpc-server/src/pump.rs"
+      "rust/rpc-server/src/pump/inbound.rs"
     ],
-    "totalLinesCovered": 113
+    "totalLinesCovered": 110
   }
 }

@@ -7,10 +7,14 @@
 //! scope so both `ChangedFilesView` and the new `CheckpointsView`
 //! (RPC-364) reuse identical rendering without duplication. Pure
 //! refactor — byte-identical behavior, helpers keep their signatures.
+//!
+//! TUI-131: the diff pane itself (`render_diff_pane`) and its wrapped-row
+//! scroll math live here too, and `truncate_path` keeps the file name.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
+mod diff_pane;
 mod diff_render;
 mod pane;
 mod row;
@@ -19,6 +23,7 @@ mod row;
 #[path = "api_tests.rs"]
 mod api_tests;
 
+pub use diff_pane::{diff_row_count, max_diff_scroll, render_diff_pane};
 pub use diff_render::{classify, diff_line, DiffLineKind};
 pub use pane::{pane_header, render_vertical_divider};
 pub use row::{file_row, status_color, truncate_path};

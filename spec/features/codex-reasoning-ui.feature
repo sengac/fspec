@@ -4,6 +4,7 @@
 @integration
 @streaming
 @phase-1
+@BUG-314
 Feature: Codex reasoning UI delivery
   """
   The production CLI stream loop receives Codex thinking deltas. Completed-only

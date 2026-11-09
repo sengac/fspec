@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @CMPCT-072
 @compaction
 @agent-core
 @phase-1
 @validation
+@CMPCT-085
 Feature: Durable DAG preservation
   """
   All producers supply an authoritative validation context before promotion.
@@ -60,3 +62,9 @@ Feature: Durable DAG preservation
     When source capture promotion or replay checks the persisted evidence
     Then every operation rejects the missing originals before admission or publication
     And the committed manifest bytes remain unchanged
+
+  Scenario: The builder validates candidates against the same file identities as commit
+    Given a captured compaction source whose persisted originals record an authoritative file modification
+    When the compaction evidence builds its validation context
+    Then the context requires that authoritative file identity
+    And a candidate whose file ledger omits it is rejected with "required file identity changed or missing"

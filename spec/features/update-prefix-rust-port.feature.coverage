@@ -22,8 +22,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -86,8 +84,12 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -115,8 +117,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -183,8 +183,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -195,7 +199,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "220-252",
+          "lines": "224-256",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -212,8 +216,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -280,8 +282,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -292,7 +298,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "254-289",
+          "lines": "258-296",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -309,8 +315,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -377,8 +381,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -389,7 +397,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "291-330",
+          "lines": "298-335",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -406,8 +414,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -474,8 +480,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -486,7 +496,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "332-359",
+          "lines": "337-364",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -503,8 +513,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -571,8 +579,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -600,8 +612,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -668,8 +678,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -680,7 +694,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "395-421",
+          "lines": "400-426",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -697,8 +711,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -765,8 +777,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -804,8 +820,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -872,8 +886,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "/// Dispatcher result shape. Returned as pretty-printed JSON from",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -884,7 +902,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_prefix.rs",
-          "lines": "451-486",
+          "lines": "456-496",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_prefix.rs",
@@ -939,8 +957,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -1007,8 +1023,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": "use std::path::Path;",
+              "lastLine": "command: \"update-prefix\","
             }
           ]
         }
@@ -1025,6 +1045,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/update_prefix.rs"
     ],
-    "totalLinesCovered": 1194
+    "totalLinesCovered": 1200
   }
 }

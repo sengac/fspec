@@ -19,6 +19,8 @@ use std::process::Command;
 /// Helper to get HEAD commit SHA
 fn get_head_sha(repo_path: &Path) -> String {
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", "HEAD"])
         .current_dir(repo_path)
         .output()
@@ -38,6 +40,8 @@ fn get_head_sha(repo_path: &Path) -> String {
 /// @step Then the worktree "README.md" should contain "<<<<<<< session (your changes)"
 /// @step And the worktree "README.md" should contain "======="
 /// @step And the worktree "README.md" should contain ">>>>>>> main"
+/// @step And the worktree "README.md" should contain "Da Spec-Driven"
+/// @step And the worktree "README.md" should contain "The Spec-Driven (v2.0)"
 /// @step And a ConflictError should be returned listing "README.md"
 #[test]
 fn test_apply_writes_conflict_markers_to_worktree_file() {
@@ -48,11 +52,15 @@ fn test_apply_writes_conflict_markers_to_worktree_file() {
     let base_content = "line1\nline2\nline3\nline4\nline5\nline6\nThe Spec-Driven\nline8\n";
     fs::write(repo_path.join("README.md"), base_content).expect("write base");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "base state"])
         .current_dir(repo_path)
         .output()
@@ -142,11 +150,15 @@ fn test_apply_auto_merges_non_overlapping_changes() {
     fs::create_dir_all(repo_path.join("src")).expect("mkdir");
     fs::write(repo_path.join("src/app.ts"), &base_content).expect("write base");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "add app.ts"])
         .current_dir(repo_path)
         .output()
@@ -207,6 +219,7 @@ fn test_apply_auto_merges_non_overlapping_changes() {
 /// @step And the main worktree has also added "utils.ts" with content "export const x = 2;"
 /// @step When apply_session_changes is called
 /// @step Then the worktree "utils.ts" should contain "<<<<<<< session (your changes)"
+/// @step And the worktree "utils.ts" should contain ">>>>>>> main"
 /// @step And a ConflictError should be returned listing "utils.ts"
 #[test]
 fn test_apply_new_file_conflict_writes_markers() {
@@ -269,11 +282,15 @@ fn test_apply_binary_conflict_no_markers() {
     let base_binary: Vec<u8> = vec![0x89, 0x50, 0x4E, 0x47, 0x00, 0x01, 0x02, 0x03];
     fs::write(repo_path.join("logo.png"), &base_binary).expect("write base binary");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "add binary"])
         .current_dir(repo_path)
         .output()
@@ -336,11 +353,15 @@ fn test_apply_identical_changes_no_conflict() {
     let base_content = "line1\nline2\nline3\nline4\nline5\nline6\nThe\nline8\n";
     fs::write(repo_path.join("README.md"), base_content).expect("write base");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "identical base"])
         .current_dir(repo_path)
         .output()
@@ -392,11 +413,15 @@ fn test_apply_re_merge_after_resolution_succeeds() {
     let base_content = "line1\nline2\nThe Spec-Driven\nline4\n";
     fs::write(repo_path.join("README.md"), base_content).expect("write base");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "re-merge base"])
         .current_dir(repo_path)
         .output()

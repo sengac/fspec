@@ -10,7 +10,6 @@ use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::time::Duration;
 use tempfile::TempDir;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
@@ -26,7 +25,8 @@ pub async fn connect_with_retry(
     loop {
         match connect_async(url.as_str()).await {
             Ok((s, _)) => return s,
-            Err(_) => tokio::time::sleep(Duration::from_millis(20)).await,
+            // TEST-042: retry between yields, no fixed delay.
+            Err(_) => tokio::task::yield_now().await,
         }
     }
 }

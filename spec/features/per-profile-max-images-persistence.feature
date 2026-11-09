@@ -4,6 +4,7 @@
 @persistence
 @providers
 @high
+@attachment
 Feature: Per-profile Max Images persistence
   """
   The maxImages value round-trips through the on-disk ProfileDef
@@ -15,7 +16,8 @@ Feature: Per-profile Max Images persistence
   continues to mean the default 4. The disk read path
   (rust/sessions/src/profile_sections.rs LocalServerProfile) deserializes
   `maxImages` with the shared lenient u32 deserializer so a TS-written
-  float (e.g. 2.0) saturates rather than dropping the whole profile.
+  integral float (e.g. 2.0) is the same whole number (PROV-175: any other
+  invalid number is an error naming the profile and field).
   """
 
   Background: User Story

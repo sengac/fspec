@@ -1,0 +1,350 @@
+{
+  "scenarios": [
+    {
+      "name": "The board offers New Bot beside New Agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "103-122",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "pub const BOARD_ZONE_C: &[ZoneCButton] = &[",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "action: MenuAction::Foundation,",
+              "lastLine": "action: MenuAction::Attachments,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing b on the board opens the New Bot dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "124-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "// TUI-114: 'b' starts a new orchestrator bot (the New Bot row).",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "pub fn new_bot(preselect: Option<CreateSessionOption>) -> Self {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Confirming New Bot creates an orchestrator session and opens it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "138-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "Action::OpenNewBotDialog => self.handle_open_new_bot_dialog(),",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/session_creation_tasks.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "role,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelling New Bot leaves the board untouched",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "162-177",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "/// the dialog id, like New Agent). Bots are never bound to a card.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar offers New Bot",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "179-193",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "pub(crate) const AGENT_ZONE_C: &[ZoneCButton] = &[",
+              "lastLine": "];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The orchestrator role tells the bot to delegate through AgentManager",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "195-217",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/bot.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "//! TUI-114: the orchestrator \"bot\" role.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bot sessions are marked as bots in the agent bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "219-240",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "pub fn chip_prefix(chip: &MenuChip) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/role_state.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "On a narrow board New Bot gives way before New Agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui114_new_bot.rs",
+          "lines": "242-256",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "// TUI-114: when every button does not fit, the leading (leftmost)",
+              "lastLine": "let zone_c_fits = zone_c_width > 0;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui114_new_bot.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+      "rust/fspec-tui/src/components/menu_bar/items.rs",
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/components/create_session_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+      "rust/fspec-tui/src/app/session_creation_tasks.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/sessions/src/bot.rs",
+      "rust/fspec-tui/src/components/menu_bar/chips.rs",
+      "rust/fspec-tui/src/store/agent_view/role_state.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs"
+    ],
+    "totalLinesCovered": 301
+  }
+}

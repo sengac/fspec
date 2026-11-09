@@ -44,7 +44,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
-use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{ApiTokenUsage, StreamingTokenDisplay, TokenState};
 use codelet_tools::set_tool_progress_callback;
 use tracing::{debug, warn};
@@ -466,25 +465,21 @@ pub async fn execute_compaction_and_capture_events<O: StreamOutput>(
     );
 
     // Capture compaction.triggered event.
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                if let Ok(state) = token_state.lock() {
-                    manager.capture(
-                        "compaction.triggered",
-                        serde_json::json!({
-                            "timing": "hook-triggered",
-                            "inputTokens": state.input_tokens,
-                            "cacheReadInputTokens": state.cache_read_input_tokens,
-                            "threshold": threshold,
-                            "contextWindow": context_window,
-                        }),
-                        None,
-                    );
-                }
-            }
+    codelet_common::debug_capture::with_enabled_capture(|manager| {
+        if let Ok(state) = token_state.lock() {
+            manager.capture(
+                "compaction.triggered",
+                serde_json::json!({
+                    "timing": "hook-triggered",
+                    "inputTokens": state.input_tokens,
+                    "cacheReadInputTokens": state.cache_read_input_tokens,
+                    "threshold": threshold,
+                    "contextWindow": context_window,
+                }),
+                None,
+            );
         }
-    }
+    });
 
     let original_tokens = session.token_tracker.input_tokens;
 
@@ -494,22 +489,18 @@ pub async fn execute_compaction_and_capture_events<O: StreamOutput>(
             let ratio = compression_ratio(original_tokens, compacted_tokens);
 
             // Capture context.update event after compaction.
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "context.update",
-                            serde_json::json!({
-                                "type": "compaction",
-                                "originalTokens": original_tokens,
-                                "compactedTokens": compacted_tokens,
-                                "compressionRatio": ratio,
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
+            codelet_common::debug_capture::with_enabled_capture(|manager| {
+                manager.capture(
+                    "context.update",
+                    serde_json::json!({
+                        "type": "compaction",
+                        "originalTokens": original_tokens,
+                        "compactedTokens": compacted_tokens,
+                        "compressionRatio": ratio,
+                    }),
+                    None,
+                );
+            });
 
             output.emit_compaction_continuing();
             Ok(())
@@ -517,20 +508,16 @@ pub async fn execute_compaction_and_capture_events<O: StreamOutput>(
         Err(e) => {
             output.emit_compaction_failed(&format!("{e} - will retry on next turn"));
 
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "compaction.failed",
-                            serde_json::json!({
-                                "error": e.to_string(),
-                                "inputTokens": session.token_tracker.input_tokens,
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
+            codelet_common::debug_capture::with_enabled_capture(|manager| {
+                manager.capture(
+                    "compaction.failed",
+                    serde_json::json!({
+                        "error": e.to_string(),
+                        "inputTokens": session.token_tracker.input_tokens,
+                    }),
+                    None,
+                );
+            });
 
             Err(anyhow::anyhow!("Compaction failed: {e}"))
         }

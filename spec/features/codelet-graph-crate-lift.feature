@@ -6,6 +6,7 @@
 @migration
 @codelet
 @RPC-092
+@BUG-542
 Feature: Lift rust/napi/src/graph/ (52 files, ~15,013 LOC) into a NAPI-free codelet-graph workspace crate — verbatim relocation, NO cut-downs
   """
   Source-of-truth: rust/napi/src/graph/ (52 .rs files, ~15,013 LOC, zero direct NAPI coupling). Lift target: rust/graph/ as a peer workspace crate. See spec/attachments/RPC-092/inventory.md for the complete file-by-file LOC table.
@@ -36,7 +37,7 @@ Feature: Lift rust/napi/src/graph/ (52 files, ~15,013 LOC) into a NAPI-free code
   # EXAMPLES:
   #   1. After lift, `cargo metadata --no-deps --format-version 1 | jq '.packages[] | select(.name == "codelet-graph").dependencies[].name'` lists nanograph, codelet-providers, ast-grep-core, ast-grep-language, ignore, chrono, globset, serde, serde_json, sha2, tracing, lazy_static, uuid, arrow-array, arrow-schema, rig-core — and NEVER codelet-napi, napi, or napi-derive
   #   2. Running `cargo test -p codelet-graph --test no_napi_dependency` outputs `test codelet_graph_has_no_napi_dependency ... ok` and the test binary completes with status 0 — the maintainer sees a green pass
-  #   3. Running `cargo test -p codelet-graph --test graph_reset_test` reports 8 passed / 0 failed — every scenario from the old in-module graph_reset_tests.rs still proves the reset semantics post-lift
+  #   3. Running the graph_reset_test and graph_schema_validation_test targets (COV-075 moved the schema-match test to the latter) reports each of the 8 lifted graph-reset tests ok by name and no failure — every scenario from the old in-module graph_reset_tests.rs still proves the reset semantics post-lift (BUG-542: no total count, so a file split never breaks it)
   #   4. Running `cargo test -p codelet-napi --tests` produces zero regressions vs the pre-lift baseline — all 24 ast_*_test.rs integration tests still pass through the thin `pub use codelet_graph::*;` shim with zero source modification
   #   5. After the lift, the maintainer adds `codelet-graph = { workspace = true }` to rust/agent-loop/Cargo.toml and `pub mod deep_search_handler;` to rust/agent-loop/src/lib.rs — `cargo check -p codelet-agent-loop` succeeds AND `cargo test -p codelet-agent-loop --test no_napi_dependency` still passes
   #   6. Running `cargo clippy --workspace -- -D warnings` exits 0 — the workspace-scoped lints (no unwrap, no expect, no panic, no todo) propagate cleanly to codelet-graph because no logic was modified
@@ -65,15 +66,9 @@ Feature: Lift rust/napi/src/graph/ (52 files, ~15,013 LOC) into a NAPI-free code
 
   Scenario: Lifted graph reset integration tests still prove the reset semantics
     Given the old in-module rust/napi/src/graph/graph_reset_tests.rs has been lifted to rust/graph/tests/graph_reset_test.rs as a standalone integration test
-    When I run `cargo test -p codelet-graph --test graph_reset_test`
-    Then the test runner reports 8 passed and 0 failed
+    When I run `cargo test -p codelet-graph --profile ci-test --test graph_reset_test --test graph_schema_validation_test`
+    Then each of the 8 lifted graph-reset tests reports ok by name and no test fails
     And every scenario from the original graph_reset_tests.rs is exercised against the lifted codelet_graph modules
-
-  Scenario: All 24 existing NAPI ast_*_test.rs integration tests still pass through the shim
-    Given the rust/napi/src/graph/ directory has been replaced by rust/napi/src/graph.rs containing only `pub use codelet_graph::*;`
-    And no source under rust/napi/tests/ has been modified
-    When I run `cargo test -p codelet-napi --tests`
-    Then all 24 ast_*_test.rs integration tests pass with zero regressions vs the pre-lift baseline
 
   Scenario: codelet-agent-loop can depend on codelet-graph without re-introducing a NAPI edge
     Given the lift has been completed

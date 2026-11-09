@@ -1,5 +1,7 @@
 @done
 @TUI-050
+@tui
+@interactive-cli
 Feature: Slash Command Autocomplete Palette
   """
   Integrate with MultiLineInput.tsx for trigger detection and AgentView.tsx/SplitSessionView.tsx for rendering

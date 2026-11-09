@@ -4,6 +4,7 @@
 // newline bindings — Ctrl+J universal fallback with Shift+Enter best-effort.
 // Scenarios map directly to Gherkin scenarios.
 
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers};
 
 use codelet_fspec_tui::views::agent::multiline_input::{
@@ -15,7 +16,7 @@ use codelet_fspec_tui::views::agent::multiline_input::{
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn ctrl_j_inserts_a_newline_and_grows_the_input_area() {
+fn ctrl_j_inserts_a_newline_and_grows_the_input_area() -> TestResult {
     // @step Given the agent input contains "hello" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("hello");
@@ -50,6 +51,7 @@ fn ctrl_j_inserts_a_newline_and_grows_the_input_area() {
         matches!(outcome, InputEventOutcome::Continued),
         "Ctrl+J must be handled internally (Continued), got {outcome:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -57,7 +59,7 @@ fn ctrl_j_inserts_a_newline_and_grows_the_input_area() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn ctrl_j_mid_word_splits_the_line_at_cursor_position() {
+fn ctrl_j_mid_word_splits_the_line_at_cursor_position() -> TestResult {
     // @step Given the agent input contains "hello world" with the cursor between "hello " and "world"
     let mut input = MultiLineInput::new();
     input.set_value("hello world");
@@ -96,6 +98,7 @@ fn ctrl_j_mid_word_splits_the_line_at_cursor_position() {
         matches!(outcome, InputEventOutcome::Continued),
         "Ctrl+J must be Continued, got {outcome:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -103,7 +106,7 @@ fn ctrl_j_mid_word_splits_the_line_at_cursor_position() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn plain_enter_submits_the_multi_line_buffer_and_resets_the_input() {
+fn plain_enter_submits_the_multi_line_buffer_and_resets_the_input() -> TestResult {
     // @step Given the agent input contains 3 lines composed with Ctrl+J
     let mut input = MultiLineInput::new();
     input.set_value("line1");
@@ -131,6 +134,7 @@ fn plain_enter_submits_the_multi_line_buffer_and_resets_the_input() {
 
     // @step And the input area reports 1 visible row
     assert_eq!(input.visible_rows(), 1, "input must reset to 1 visible row");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -138,7 +142,7 @@ fn plain_enter_submits_the_multi_line_buffer_and_resets_the_input() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn shift_enter_inserts_a_newline_on_enhanced_terminals() {
+fn shift_enter_inserts_a_newline_on_enhanced_terminals() -> TestResult {
     // @step Given the agent input contains "first line" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("first line");
@@ -169,6 +173,7 @@ fn shift_enter_inserts_a_newline_on_enhanced_terminals() {
 
     // @step And the input area reports 2 visible rows
     assert_eq!(input.visible_rows(), 2, "input must grow to 2 rows");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -176,7 +181,7 @@ fn shift_enter_inserts_a_newline_on_enhanced_terminals() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn shift_enter_submits_on_non_enhanced_terminals() {
+fn shift_enter_submits_on_non_enhanced_terminals() -> TestResult {
     // @step Given the agent input contains "hello" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("hello");
@@ -196,6 +201,7 @@ fn shift_enter_submits_on_non_enhanced_terminals() {
 
     // @step And the input buffer is empty
     assert!(input.is_empty(), "input buffer must be empty after submit");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -203,7 +209,7 @@ fn shift_enter_submits_on_non_enhanced_terminals() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn alt_enter_inserts_a_newline_as_legacy_fallback() {
+fn alt_enter_inserts_a_newline_as_legacy_fallback() -> TestResult {
     // @step Given the agent input contains "first line" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("first line");
@@ -226,6 +232,7 @@ fn alt_enter_inserts_a_newline_as_legacy_fallback() {
 
     // @step And the input area reports 2 visible rows
     assert_eq!(input.visible_rows(), 2, "input must grow to 2 rows");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -233,7 +240,7 @@ fn alt_enter_inserts_a_newline_as_legacy_fallback() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn ctrl_j_is_swallowed_while_the_session_is_compacting() {
+fn ctrl_j_is_swallowed_while_the_session_is_compacting() -> TestResult {
     // @step Given the agent input contains "draft"
     let mut input = MultiLineInput::new();
     input.set_value("draft");
@@ -266,6 +273,7 @@ fn ctrl_j_is_swallowed_while_the_session_is_compacting() {
         1,
         "input must stay at 1 row while compacting"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -273,7 +281,7 @@ fn ctrl_j_is_swallowed_while_the_session_is_compacting() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn input_placeholder_shows_ctrl_j_as_the_primary_newline_hint() {
+fn input_placeholder_shows_ctrl_j_as_the_primary_newline_hint() -> TestResult {
     // @step Given the agent input is empty
     // (placeholder is a constant in views/agent.rs)
 
@@ -285,4 +293,5 @@ fn input_placeholder_shows_ctrl_j_as_the_primary_newline_hint() {
         placeholder.contains("Ctrl+J"),
         "placeholder must contain 'Ctrl+J', got '{placeholder}'"
     );
+    Ok(())
 }

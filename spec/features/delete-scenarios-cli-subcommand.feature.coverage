@@ -50,7 +50,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "println!(\"Dry run mode - no files modified\");",
+              "lastLine": "for (name, tags) in entries {"
             }
           ]
         }
@@ -61,7 +63,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_scenarios.rs",
-          "lines": "98-122",
+          "lines": "102-128",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_scenarios.rs",
@@ -70,7 +72,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "println!(\"  - {name} ({tags})\");",
+              "lastLine": "}"
             }
           ]
         }
@@ -81,7 +85,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_scenarios.rs",
-          "lines": "126-145",
+          "lines": "134-155",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_scenarios.rs",
@@ -91,7 +95,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "// Parity with TS: with NO --tag at all, reject before doing any work.",
+              "lastLine": "}"
             }
           ]
         }
@@ -102,7 +108,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_scenarios.rs",
-          "lines": "149-179",
+          "lines": "161-191",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_scenarios.rs",
@@ -126,7 +132,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "let project_root: PathBuf = spec_project_root()?;",
+              "lastLine": "let success = value"
             }
           ]
         }
@@ -137,22 +145,23 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_scenarios.rs",
-          "lines": "185-206",
+          "lines": "197-221",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/cli_registration/route_03.rs",
               "lines": [
-                3124,
-                3125,
-                3126,
-                3127,
-                3128,
-                3129,
-                3130,
-                3131,
-                3132,
-                3133
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "add_command::run,",
+              "lastLine": "),"
             }
           ]
         }
@@ -168,8 +177,8 @@
     ],
     "implFiles": [
       "rust/fspec/src/delete_scenarios.rs",
-      "rust/fspec/src/main.rs"
+      "rust/fspec/src/cli_registration/route_03.rs"
     ],
-    "totalLinesCovered": 207
+    "totalLinesCovered": 213
   }
 }

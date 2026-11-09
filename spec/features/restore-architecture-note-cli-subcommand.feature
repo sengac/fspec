@@ -1,5 +1,7 @@
 @done
 @RPC-287
+@cli
+@foundation-management
 Feature: fspec restore-architecture-note CLI subcommand (Rust port)
   """
   Clap derive subcommand `restore-architecture-note` exposes the same surface as the TS Commander.js registration at src/commands/restore-architecture-note.ts:88-107 — two positional arguments `<workUnitId>` and `<index>`, no flags wired into the action (the help-doc advertises `--ids` but the TS CLI does not implement it; we mirror Commander's actual surface — positional-only).

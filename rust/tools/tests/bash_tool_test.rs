@@ -16,6 +16,7 @@ use uuid::Uuid;
 /// Scenario: Execute simple command successfully
 #[tokio::test]
 async fn test_execute_simple_command_successfully() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Bash tool is available
     let tool = BashTool::new(Uuid::nil());
 
@@ -35,6 +36,7 @@ async fn test_execute_simple_command_successfully() {
 /// Scenario: Execute command that fails returns error with stderr
 #[tokio::test]
 async fn test_execute_command_fails_returns_error() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Bash tool is available
     let tool = BashTool::new(Uuid::nil());
 
@@ -59,6 +61,7 @@ async fn test_execute_command_fails_returns_error() {
 /// Scenario: Long output is truncated at character limit
 #[tokio::test]
 async fn test_long_output_truncated_at_character_limit() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Bash tool is available
     let tool = BashTool::new(Uuid::nil());
 
@@ -82,6 +85,7 @@ async fn test_long_output_truncated_at_character_limit() {
 /// Scenario: Long lines are replaced with omission message
 #[tokio::test]
 async fn test_long_lines_replaced_with_omission_message() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Bash tool is available
     let tool = BashTool::new(Uuid::nil());
 
@@ -102,6 +106,7 @@ async fn test_long_lines_replaced_with_omission_message() {
 /// Scenario: Command timeout returns error
 #[tokio::test]
 async fn test_command_timeout_returns_error() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Bash tool is available with a 1 second timeout
     // Note: BashTool::with_timeout was removed in the rig refactor
     // Timeout behavior is now handled differently - skip this test
@@ -129,6 +134,7 @@ async fn test_command_timeout_returns_error() {
 /// Scenario: BashTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_bash_tool_has_correct_definition() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a BashTool instance
     let tool = BashTool::new(Uuid::nil());
 
@@ -148,6 +154,7 @@ async fn test_bash_tool_has_correct_definition() {
 /// Scenario: Output should not contain "Stderr:" or "Stdout:" labels
 #[tokio::test]
 async fn test_output_does_not_contain_labels() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let tool = BashTool::new(Uuid::nil());
 
     // Test successful command with stderr warnings
@@ -175,6 +182,7 @@ async fn test_output_does_not_contain_labels() {
 /// Scenario: Error output should not contain "Stderr:" or "Stdout:" labels
 #[tokio::test]
 async fn test_error_output_does_not_contain_labels() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let tool = BashTool::new(Uuid::nil());
 
     // Test failed command
@@ -209,6 +217,7 @@ async fn test_error_output_does_not_contain_labels() {
 /// Scenario: Exit code should be clearly indicated in error message
 #[tokio::test]
 async fn test_exit_code_clearly_indicated() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let tool = BashTool::new(Uuid::nil());
 
     // Test command that exits with code 42
@@ -238,6 +247,7 @@ async fn test_exit_code_clearly_indicated() {
 /// Scenario: Execute command in specified working directory
 #[tokio::test]
 async fn test_execute_command_with_cwd_parameter() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given I have a valid directory path "/tmp"
     let tool = BashTool::new(Uuid::nil());
 
@@ -261,6 +271,7 @@ async fn test_execute_command_with_cwd_parameter() {
 /// Scenario: Execute command without cwd parameter (backward compatible)
 #[tokio::test]
 async fn test_execute_command_without_cwd_parameter() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given I do not specify a cwd parameter
     let tool = BashTool::new(Uuid::nil());
 
@@ -286,6 +297,7 @@ async fn test_execute_command_without_cwd_parameter() {
 /// Scenario: Error when cwd directory does not exist
 #[tokio::test]
 async fn test_error_when_cwd_directory_does_not_exist() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given I specify a non-existent directory "/nonexistent/path/to/dir"
     let tool = BashTool::new(Uuid::nil());
 

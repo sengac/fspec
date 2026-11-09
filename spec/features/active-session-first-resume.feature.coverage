@@ -8,21 +8,24 @@
           "lines": "10-118",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_4.rs",
               "lines": [
-                1018
-              ]
+                110
+              ],
+              "firstLine": "let result = create_background_session_inner(params, provider_manager).await?;",
+              "lastLine": "let result = create_background_session_inner(params, provider_manager).await?;"
             },
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
               "lines": [
-                232,
-                233,
-                234,
-                235,
-                236,
-                237
-              ]
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "\"resume_session: session resume complete\"",
+              "lastLine": "fn send_input(&self, session_id: &SessionId, text: String) -> Result<(), String> {"
             }
           ]
         }
@@ -37,9 +40,9 @@
       "rust/fspec-tui/tests/bug244/live_resume.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/session_manager.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/session_manager/manager_impl_4.rs",
+      "rust/sessions/src/handle_impl/handle_impl_1.rs"
     ],
-    "totalLinesCovered": 116
+    "totalLinesCovered": 115
   }
 }

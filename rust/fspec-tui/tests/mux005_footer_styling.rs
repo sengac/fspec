@@ -8,8 +8,7 @@
 //! white foreground text; single-view rendering (mux off) must remain
 //! free of that background (R10 from rust-mux-mode.feature).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_rpc_types::WorkUnitInfo;
@@ -66,13 +65,13 @@ fn render_buffer(
     nav: &mut Navigator,
     board: &BoardStore,
     agent: &mut AgentViewStore,
-) -> ratatui::buffer::Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+) -> Result<ratatui::buffer::Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -82,7 +81,7 @@ fn render_buffer(
 
 /// Scenario: The mux footer bar paints white text on a dark purple background across the full row
 #[test]
-fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
+fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -91,7 +90,7 @@ fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
     let mut agent = AgentViewStore::default();
     seed_agent_session(&mut agent);
     // @step When the mux frame is rendered to a terminal buffer
-    let buf = render_buffer(&mut nav, &board, &mut agent);
+    let buf = render_buffer(&mut nav, &board, &mut agent)?;
     let footer_row = buf.area.height - 1;
     // @step Then the footer row contains the footer label "MUX 2 panes [Board|Agent]"
     let row_text: String = (0..buf.area.width)
@@ -122,7 +121,7 @@ fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
     let last_glyph = (0..buf.area.width)
         .rev()
         .find(|&x| buf[(x, footer_row)].symbol() != " ")
-        .expect("footer label must be painted");
+        .or_fail("footer label must be painted")?;
     assert!(
         last_glyph + 1 < buf.area.width,
         "the footer label must end before the right edge so a tail region exists"
@@ -142,6 +141,7 @@ fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
             cell.symbol()
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ fn footer_bar_paints_white_text_on_dark_purple_across_the_full_row() {
 
 /// Scenario: No footer bar is painted when mux is off
 #[test]
-fn no_footer_bar_is_painted_when_mux_is_off() {
+fn no_footer_bar_is_painted_when_mux_is_off() -> TestResult {
     // @step Given the TUI is in a single-view mode (Board or Agent) with mux disabled
     let (mut nav, _rx) = fresh();
     assert_eq!(nav.active_view, ViewMode::Board);
@@ -159,7 +159,7 @@ fn no_footer_bar_is_painted_when_mux_is_off() {
     board.replace_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut agent = AgentViewStore::default();
     // @step When the frame is rendered to a terminal buffer
-    let buf = render_buffer(&mut nav, &board, &mut agent);
+    let buf = render_buffer(&mut nav, &board, &mut agent)?;
     // @step Then no footer bar is painted at the bottom of the screen
     let last_row: String = (0..buf.area.width)
         .map(|x| buf[(x, buf.area.height - 1)].symbol().to_string())
@@ -178,4 +178,5 @@ fn no_footer_bar_is_painted_when_mux_is_off() {
             );
         }
     }
+    Ok(())
 }

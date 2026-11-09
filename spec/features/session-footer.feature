@@ -1,4 +1,6 @@
 @TUI-091
+@tools
+@ui-refinement
 Feature: SessionFooter component with CWD and git branch name display
   """
   Rust footer poller: ONLY call get_current_branch (reads .git/HEAD). Remove
@@ -47,7 +49,7 @@ Feature: SessionFooter component with CWD and git branch name display
     I want to see the current working directory and git branch in the session footer
     So that I know where commands are running and which branch I'm on without running git commands
 
-  @component:session-footer
+  @session-footer
   Scenario: Display CWD and branch name in git repository
     Given I am in a git repository at "~/projects/fspec"
     And the current branch is "main"
@@ -56,7 +58,7 @@ Feature: SessionFooter component with CWD and git branch name display
     And I should see "[⎇ main]" in the footer
     And the footer should have a dark grey background
 
-  @component:session-footer
+  @session-footer
   Scenario: Display branch name without dirty or untracked indicators
     Given I am in a git repository at "~/projects/fspec"
     And the current branch is "feature-branch"
@@ -66,14 +68,14 @@ Feature: SessionFooter component with CWD and git branch name display
     Then I should see "[⎇ feature-branch]" in the footer
     And the branch indicator should not contain "*" or "%"
 
-  @component:session-footer
+  @session-footer
   Scenario: Display only CWD for non-git directory
     Given I am in a non-git directory at "~/my-project"
     When the SessionFooter renders
     Then I should see "~/my-project" in the footer
     And I should not see any branch indicator
 
-  @component:session-footer
+  @session-footer
   Scenario: Footer has dark grey background spanning full width
     Given I am in a git repository
     When the SessionFooter renders
@@ -81,14 +83,14 @@ Feature: SessionFooter component with CWD and git branch name display
     And the footer should have background color "#333333"
     And the footer should span the full terminal width
 
-  @component:session-footer
+  @session-footer
   Scenario: Display detached HEAD state
     Given I am in a git repository at "~/projects/fspec"
     And the HEAD is detached
     When the SessionFooter renders
     Then I should see "[⎇ (detached)]" in the footer
 
-  @component:session-footer
+  @session-footer
   Scenario: Shorten HOME directory to tilde in CWD display
     Given the HOME directory is "/Users/rquast"
     And I am in a directory at "/Users/rquast/projects/fspec"
@@ -96,7 +98,7 @@ Feature: SessionFooter component with CWD and git branch name display
     Then I should see "~/projects/fspec" in the footer
     And I should not see "/Users/rquast" in the footer
 
-  @component:session-footer
+  @session-footer
   @performance
   Scenario: Footer poller uses near-zero CPU
     Given the footer poller is running
@@ -106,7 +108,7 @@ Feature: SessionFooter component with CWD and git branch name display
     And it should not call get_unstaged_files
     And it should not call get_untracked_files
 
-  @component:session-footer
+  @session-footer
   Scenario: Footer CWD updates when Bash tool uses explicit cwd parameter
     Given a session is started at "~/projects/fspec" on branch "main"
     And the footer shows "~/projects/fspec [⎇ main]"
@@ -114,14 +116,14 @@ Feature: SessionFooter component with CWD and git branch name display
     Then the footer should update to show "/tmp"
     And the git branch indicator should disappear since "/tmp" is not a git repository
 
-  @component:session-footer
+  @session-footer
   Scenario: Footer git branch updates when CWD changes to a different repository
     Given a session is started at "~/projects/fspec" on branch "main"
     When the Bash tool executes a command with cwd pointing to another git repository on branch "develop"
     Then the footer should show the new repository path with "[⎇ develop]"
     And the branch was resolved by reading .git/HEAD in the new cwd not the original session path
 
-  @component:session-footer
+  @session-footer
   Scenario: Each session tracks CWD and git branch independently
     Given Session A is started at "~/projects/fspec" on branch "main"
     And Session B is started at "~/projects/fspec" on branch "main"
@@ -129,7 +131,7 @@ Feature: SessionFooter component with CWD and git branch name display
     Then Session A footer shows "/tmp" with no git branch
     And Session B footer still shows "~/projects/fspec [⎇ main]" unchanged
 
-  @component:session-footer
+  @session-footer
   Scenario: Footer CWD returns to session default when Bash runs without explicit cwd
     Given a session is started at "~/projects/fspec" on branch "main"
     And the Bash tool previously ran with cwd "/tmp"

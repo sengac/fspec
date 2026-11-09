@@ -1,5 +1,5 @@
 use codelet_cli::compaction_threshold::{
-    builtin_compaction_threshold, resolve_compaction_threshold, CompactionThresholdConfig,
+    builtin_compaction_threshold, compaction_threshold_for, CompactionThresholdConfig,
 };
 
 const MODELS: [Option<&str>; 8] = [
@@ -30,7 +30,7 @@ fn all_model_identities_receive_the_same_default() {
             (20_000, 30_000, 0),
         ] {
             assert_eq!(
-                resolve_compaction_threshold(capacity, output, model, None),
+                compaction_threshold_for(capacity, output, model, None),
                 expected,
                 "unexpected threshold for {model:?} with capacity {capacity} and output {output}"
             );
@@ -48,7 +48,7 @@ fn explicit_overrides_retain_priority_over_the_universal_default() {
             (CompactionThresholdConfig::Tokens(300_000), 191_808),
         ] {
             assert_eq!(
-                resolve_compaction_threshold(200_000, 8_192, model, Some(&override_config)),
+                compaction_threshold_for(200_000, 8_192, model, Some(&override_config)),
                 expected,
                 "override lost priority for {model:?}"
             );
@@ -60,12 +60,9 @@ fn explicit_overrides_retain_priority_over_the_universal_default() {
 fn missing_limits_remain_unavailable_under_the_universal_default() {
     for model in MODELS {
         for (capacity, output) in [(0, 8_192), (200_000, 0), (0, 0)] {
+            assert_eq!(compaction_threshold_for(capacity, output, model, None), 0);
             assert_eq!(
-                resolve_compaction_threshold(capacity, output, model, None),
-                0
-            );
-            assert_eq!(
-                resolve_compaction_threshold(
+                compaction_threshold_for(
                     capacity,
                     output,
                     model,

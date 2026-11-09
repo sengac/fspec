@@ -38,6 +38,18 @@ pub use dialog::{DialogPhase, RestoreDialog, RestoreTarget};
 mod tests;
 
 #[cfg(test)]
+mod test_support;
+
+#[cfg(test)]
+mod click_tests;
+
+#[cfg(test)]
+mod loading_tests;
+
+#[cfg(test)]
+mod borders_tests;
+
+#[cfg(test)]
 #[path = "restore_tests.rs"]
 mod restore_tests;
 
@@ -400,13 +412,12 @@ impl CheckpointsView {
             _ => vec!["No changes to display".to_string()],
         };
         if same_key {
-            let viewport = self
-                .last_diff_rect
-                .map(|r| r.height as usize)
-                .filter(|h| *h > 0);
-            let max_scroll = match viewport {
-                Some(v) if self.diff_lines.len() > v => self.diff_lines.len() - v,
-                _ => 0,
+            // TUI-131: clamped in wrapped rows; 0 before the first render.
+            let max_scroll = match self.last_diff_rect.filter(|r| r.height > 0) {
+                Some(rect) => {
+                    crate::views::diff_common::max_diff_scroll(&self.diff_lines, Some(rect))
+                }
+                None => 0,
             };
             self.diff_scroll = self.diff_scroll.min(max_scroll);
         } else {

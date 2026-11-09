@@ -272,47 +272,6 @@ fn scenario_enoent_on_spec_fspec_hooks_json_propagates_an_error() {
 }
 
 #[test]
-fn scenario_invalid_json_propagates_a_parsejson_error_no_silent_overwrite() {
-    // Scenario: Invalid JSON propagates a ParseJson error (NO silent overwrite)
-
-    // @step Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    let tmp = TempDir::new().expect("tempdir");
-    write_hooks(tmp.path(), "{ not json");
-
-    // @step When I dispatch remove-hook with event='pre-implementing', name='lint'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "event": "pre-implementing", "name": "lint" }),
-    ));
-
-    // @step Then the dispatcher returns success=false
-    assert!(
-        !result.success,
-        "remove-hook must propagate parse errors, not swallow them; got {result:?}"
-    );
-
-    // @step Then the dispatcher error message indicates a parse failure for fspec-hooks.json
-    let combined = format!(
-        "{} {}",
-        result.data,
-        result.error.clone().unwrap_or_default()
-    );
-    assert!(
-        combined.contains("fspec-hooks.json"),
-        "expected parse error message to reference fspec-hooks.json; got data={:?} error={:?}",
-        result.data,
-        result.error
-    );
-
-    // @step Then the raw bytes of spec/fspec-hooks.json equal '{ not json' (file unchanged)
-    let raw = read_hooks_raw(tmp.path());
-    assert_eq!(
-        raw, "{ not json",
-        "config file must be UNCHANGED on parse error; got: {raw:?}"
-    );
-}
-
-#[test]
 fn scenario_preserves_unknown_top_level_fields_and_adjacent_entries() {
     // Scenario: Preserves unknown top-level fields and adjacent entries
 

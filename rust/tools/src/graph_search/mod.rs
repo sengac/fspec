@@ -69,15 +69,19 @@ impl Tool for GraphSearchTool {
                     },
                     "path": {
                         "type": "string",
-                        "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search' and 'ast_dead_code'). For 'ast_index', specifies a directory to index with .gitignore disabled (useful for indexing external repos in gitignored directories). Examples: 'src/tui/**/*.tsx', 'rust/napi/src/**/*.rs', 'tmp/my-repo'"
+                        "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search', 'ast_dead_code' and 'ast_complexity'; not accepted by 'ast_index', which takes 'root'). Examples: 'src/tui/**/*.tsx', 'rust/sessions/src/**/*.rs'"
+                    },
+                    "root": {
+                        "type": "string",
+                        "description": "Directory whose code graph an ast_* action uses (optional; default: the session's working directory, the worktree in an isolated session). A relative root joins the session's working directory. Each root has its own graph at <root>/.fspec/graph: 'ast_index' with root 'tmp/my-repo' indexes that directory into its own graph, and later ast_* calls pass the same root to query it. Results name the root used."
                     },
                     "reset": {
                         "type": "boolean",
-                        "description": "When true, deletes the existing on-disk graph database and clears the in-memory cache before re-indexing. Use after schema changes that make the existing database incompatible. Only applies to 'ast_index' action."
+                        "description": "When true, deletes the existing on-disk graph database and the cached file facts before re-indexing, so every file is parsed. Use after schema changes that make the existing database incompatible. Only applies to 'ast_index' action."
                     },
                     "incremental": {
                         "type": "boolean",
-                        "description": "When true, only re-extracts files whose modification time has changed since the last index. Unchanged file entities are reused from the existing graph. Falls back to full extraction when no prior index exists or when >50% of files have changed. Only applies to 'ast_index' action."
+                        "description": "When true, reuses the facts already parsed in this process for every file whose content hash is unchanged and parses only the other files; every edge is still resolved over the whole tree, so the graph is exactly what a full index builds. Nothing is written when the result equals the stored graph. Only applies to 'ast_index' action."
                     },
                     "category": {
                         "type": "string",
@@ -86,7 +90,7 @@ impl Tool for GraphSearchTool {
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "Maximum results to return (optional)",
+                        "description": "Maximum results to return (optional). List results report count (rows returned) and total (all matches); every code graph result names the graph_version and indexed_at it read",
                         "minimum": 1
                     },
                     "node_id": {

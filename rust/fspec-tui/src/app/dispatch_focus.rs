@@ -7,7 +7,7 @@ impl App {
         if !self.completed_story_creations.insert(session.clone()) {
             return;
         }
-        self.initialize_session(session.clone());
+        self.initialize_session(session.clone(), super::session_arrival::SessionFocus::Take);
         if let Some(index) = self
             .agent_view_store
             .open_sessions()
@@ -22,16 +22,6 @@ impl App {
         self.attach_work_unit_to_session(session, card);
     }
 
-    pub(crate) fn handle_legacy_session_attachment(&mut self, card: &str, session: &SessionId) {
-        if self
-            .agent_view_store
-            .work_unit_focus_revision_for(session)
-            .is_none()
-        {
-            self.board_store.attach_session(card, session.clone());
-        }
-    }
-
     pub(crate) fn handle_work_unit_focus_changed(
         &mut self,
         session: SessionId,
@@ -42,9 +32,18 @@ impl App {
         }
     }
 
-    pub(crate) fn handle_session_observed(&mut self, info: SessionInfo) {
+    /// TUI-125: a live announcement keeps the current session
+    /// ([`super::session_arrival::SessionFocus::Keep`]); the startup replay
+    /// takes focus as before.
+    pub(crate) fn handle_session_observed(
+        &mut self,
+        info: SessionInfo,
+        focus: super::session_arrival::SessionFocus,
+    ) {
         let session = SessionId::new(info.id);
-        self.initialize_session(session.clone());
+        self.agent_view_store
+            .set_session_project(session.clone(), info.project);
+        self.initialize_session(session.clone(), focus);
         self.handle_work_unit_focus_changed(session, info.work_unit_focus);
         self.rebuild_focus_occupancy();
     }

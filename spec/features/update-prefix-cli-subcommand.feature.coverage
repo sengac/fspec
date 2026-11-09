@@ -5,13 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "73-105",
+          "lines": "73-118",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -49,8 +47,15 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `update-prefix` clap",
+              "lastLine": "}"
             }
           ]
         }
@@ -61,13 +66,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "106-138",
+          "lines": "120-158",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -105,8 +108,15 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `update-prefix` clap",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,13 +127,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "139-170",
+          "lines": "160-190",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -161,8 +169,15 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `update-prefix` clap",
+              "lastLine": "}"
             }
           ]
         }
@@ -173,17 +188,24 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "171-199",
+          "lines": "192-219",
           "implMappings": [
             {
-              "file": "rust/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
               "lines": [
-                43,
-                44,
-                45,
-                46,
-                47
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "/// RPC-313: update an existing prefix in spec/prefixes.json.",
+              "lastLine": "},"
             }
           ]
         }
@@ -194,17 +216,24 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "200-219",
+          "lines": "221-242",
           "implMappings": [
             {
-              "file": "rust/fspec/src/update_prefix.rs",
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
               "lines": [
-                43,
-                44,
-                45,
-                46,
-                47
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "/// RPC-313: update an existing prefix in spec/prefixes.json.",
+              "lastLine": "},"
             }
           ]
         }
@@ -215,7 +244,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "220-245",
+          "lines": "244-268",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/update_prefix.rs",
@@ -263,7 +292,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "//! `update-prefix` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -274,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "246-270",
+          "lines": "270-293",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
@@ -339,7 +370,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "//!     dispatcher-only `\"Invalid args for fspec command update-prefix: \"`",
+              "lastLine": "// the file landed — exactly matching `node dist/index.js`."
             }
           ]
         }
@@ -350,13 +383,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "271-302",
+          "lines": "295-325",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
               "lines": [
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -394,8 +425,15 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `update-prefix` clap",
+              "lastLine": "}"
             }
           ]
         }
@@ -406,7 +444,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_prefix.rs",
-          "lines": "303-325",
+          "lines": "327-349",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_prefix.rs",
@@ -471,7 +509,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "//!     dispatcher-only `\"Invalid args for fspec command update-prefix: \"`",
+              "lastLine": "// the file landed — exactly matching `node dist/index.js`."
             }
           ]
         }
@@ -487,8 +527,9 @@
     ],
     "implFiles": [
       "rust/fspec/src/update_prefix.rs",
+      "rust/fspec/src/cli_registration/mode_02.rs",
       "rust/fspec-core/src/help/configs/update_prefix.rs"
     ],
-    "totalLinesCovered": 586
+    "totalLinesCovered": 624
   }
 }

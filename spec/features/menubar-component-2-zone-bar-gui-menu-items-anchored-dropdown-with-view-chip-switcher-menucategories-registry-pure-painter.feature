@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @menu-bar
 @tui-component
@@ -51,32 +52,11 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
     So that the board, agent, mux surfaces share one menu component instead of duplicating the layout
 
   @menu-registry
-  Scenario: The Kanban category lists the four board workflow shortcuts in order
-    Given the MenuCategories registry
-    When the Kanban category is read
-    Then it has 4 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
-    And each entry's action matches the bare board key (OpenAgentView, OpenWorkUnitSearch, OpenFoundation, OpenAttachmentPicker)
-
-  @menu-registry
-  Scenario: The Tools category lists the git tools in order
-    Given the MenuCategories registry
-    When the Tools category is read
-    Then it has 2 entries in order: "F Changed Files" and "C Checkpoints"
-    And they emit OpenChangedFilesView and OpenCheckpointsView
-
-  @menu-registry
-  Scenario: The Settings category lists the configuration entries in order
-    Given the MenuCategories registry
-    When the Settings category is read
-    Then it has 2 entries in order: "M Mux" and "P Providers"
-    And they emit OpenMuxConfigDialog and OpenProviderSettingsView
-
-  @menu-registry
-  Scenario: The Help category lists the help and exit entries
+  Scenario: The Help category lists the help and close entries
     Given the MenuCategories registry
     When the Help category is read
-    Then it has 2 entries in order: "? Help" and "Esc Exit"
-    And they emit OpenBoardHelp and OpenBoardExitConfirmation
+    Then it has 2 entries in order: "? Help" and "Esc Close"
+    And they emit OpenBoardHelp and MenuDismissBar (TUI-135: the Close row only closes the menu)
 
   @menu-registry
   Scenario: Every registry entry has a key hint, label, description and a valid action
@@ -167,9 +147,9 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
   @menu-geometry
   Scenario: Extremely tight width degrades to the absolute minimum
     Given a MenuSnapshot with 6 open sessions
-    When the bar is rendered into a 30-column area
+    When the bar is rendered into a 44-column area
     Then the row still fits within the area width
-    And it shows at least the "Kanban" and "Help" items
+    And it shows only the Zone A items "[ Kanban ] [ Tools ] [ Settings ] [ Help ]" (MENU-011: the bracketed Zone A is the absolute minimum; no chips)
 
   @menu-geometry
   Scenario: A zero-width or zero-height area paints nothing
@@ -182,7 +162,7 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
     Given a MenuSnapshot with the Kanban dropdown open at cursor 1
     When the dropdown is rendered
     Then the panel's x equals the Kanban item's x and its y is one row below the bar
-    And its height is 6 rows (4 entries + 2 border rows)
+    And its height is 7 rows (5 entries + 2 border rows)
     And it has no title row and no footer row
 
   @menu-dropdown
@@ -209,6 +189,6 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
   @menu-dropdown
   Scenario: The dropdown bottom-clips with an ellipsis when the terminal is too short
     Given a short render area (6 rows below the bar)
-    When the Kanban dropdown (4 entries) is rendered
+    When the Kanban dropdown (5 entries) is rendered
     Then only 3 entry rows plus a dim "⋯" indicator row are visible (4 content rows inside the borders)
     And the panel never paints below the area

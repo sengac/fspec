@@ -28,6 +28,7 @@ use uuid::Uuid;
 /// Configure a unique temp data dir for the test and return the guard.
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     tmp
@@ -71,7 +72,7 @@ fn message_store_round_trips_via_jsonl_and_idx_from_core() {
     let _data_dir = setup_data_dir();
 
     // @step And a MessageStore is constructed from codelet_core::persistence::messages
-    let mut store = MessageStore::new().expect("MessageStore::new must succeed");
+    let store = MessageStore::new().expect("MessageStore::new must succeed");
     assert_eq!(store.index_len(), 0, "freshly created store must be empty");
 
     // @step When a message with role "user" and content "hello world" plus an empty metadata map is stored via MessageStore::store
@@ -174,7 +175,7 @@ fn jsonl_serialization_layout_is_unchanged_after_lift() {
     // shape the NAPI store emits today. Any drift in serde annotations during
     // the lift will fire this assertion.
     let _data_dir = setup_data_dir();
-    let mut store = MessageStore::new().expect("MessageStore::new");
+    let store = MessageStore::new().expect("MessageStore::new");
 
     // Store a message with a stable seed so JSON byte order is deterministic.
     let id = store

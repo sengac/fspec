@@ -85,7 +85,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::{get_session_messages, load_session};",
+              "lastLine": "for (key, value) in metadata {"
             },
             {
               "file": "rust/core/src/persistence/compaction_commit.rs",
@@ -108,7 +110,6 @@
                 159,
                 160,
                 161,
-                162,
                 163,
                 164,
                 165,
@@ -133,7 +134,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "let generation = candidate.source.generation + 1;",
+              "lastLine": "}"
             }
           ]
         }
@@ -151,6 +154,6 @@
       "rust/core/src/persistence/session_replay.rs",
       "rust/core/src/persistence/compaction_commit.rs"
     ],
-    "totalLinesCovered": 281
+    "totalLinesCovered": 280
   }
 }

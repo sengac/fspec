@@ -8,15 +8,14 @@
 //! `pending_input` store + per-call counters from
 //! `tests/common/mod.rs`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, ViewMode};
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -37,43 +36,51 @@ fn key(code: KeyCode, mods: KeyModifiers) -> Event {
 /// Drain the App's action bus AND every pending tokio task spawned
 /// inside `App::dispatch` so subsequent assertions observe a settled
 /// state. Mirrors the helper in keyboard_cascade_rpc051.rs.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Spin until `predicate()` returns true or 1 second elapses. Used to
 /// observe debounced background tasks without sprinkling magic sleeps.
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 /// Build an App with the supplied MockBackend, in ViewMode::Agent,
 /// with a single open session at `session_id`. Drains the initial
 /// SessionCreated wiring before returning.
-async fn agent_app_with_session(mock: Arc<MockBackend>, session_id: SessionId) -> App {
+async fn agent_app_with_session(
+    mock: Arc<MockBackend>,
+    session_id: SessionId,
+) -> Result<App, codelet_test_helpers::TestError> {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.navigator_mut().active_view = ViewMode::Agent;
     app.dispatch(Action::SessionCreated(session_id));
-    drain_pending(&mut app).await;
-    app
+    drain_pending(&mut app).await?;
+    Ok(app)
 }
 
 /// Build an App in ViewMode::Agent with NO open session yet.
@@ -90,11 +97,11 @@ fn agent_app_no_session(mock: Arc<MockBackend>) -> App {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn typing_fires_pending_input_changed_when_buffer_changes() {
+async fn typing_fires_pending_input_changed_when_buffer_changes() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // @step And the live MultiLineInput is empty
     assert!(app.navigator().agent.input.is_empty());
 
@@ -115,6 +122,7 @@ async fn typing_fires_pending_input_changed_when_buffer_changes() {
     );
     // @step And the AgentView's MultiLineInput value equals "h"
     assert_eq!(app.navigator().agent.input.value(), "h");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -122,15 +130,15 @@ async fn typing_fires_pending_input_changed_when_buffer_changes() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn cursor_only_key_events_do_not_fire_pending_input_changed() {
+async fn cursor_only_key_events_do_not_fire_pending_input_changed() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // @step And the live MultiLineInput contains "hello"
     app.navigator_mut().agent.input.set_value("hello");
     // Drain the priming actions before exercising the cursor move.
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     while app.try_recv_action().is_some() {}
     // @step And the cursor is at the end of the buffer
     // (set_value lands the cursor at end of the last line per
@@ -149,6 +157,7 @@ async fn cursor_only_key_events_do_not_fire_pending_input_changed() {
     }
     // @step And the AgentView's MultiLineInput value still equals "hello"
     assert_eq!(app.navigator().agent.input.value(), "hello");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -157,14 +166,17 @@ async fn cursor_only_key_events_do_not_fire_pending_input_changed() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn single_pending_input_changed_triggers_one_debounced_save() {
+async fn single_pending_input_changed_triggers_one_debounced_save() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     let calls_before = mock.set_pending_input_calls();
 
     // @step When Action::PendingInputChanged("hello") is dispatched
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("hello");
     app.dispatch(Action::PendingInputChanged("hello".to_string()));
     // @step And the debounce timer of 300ms elapses
     // (drain pending then wait for the spawned task to fire)
@@ -174,8 +186,8 @@ async fn single_pending_input_changed_triggers_one_debounced_save() {
         || mock.set_pending_input_calls() == calls_before + 1,
         "set_pending_input to be called once",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
     let last = mock.last_set_pending_input();
     assert_eq!(
         last,
@@ -183,6 +195,7 @@ async fn single_pending_input_changed_triggers_one_debounced_save() {
         "expected last set_pending_input to be (s-1, Some(\"hello\"))"
     );
     assert_eq!(mock.set_pending_input_calls(), calls_before + 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -190,27 +203,31 @@ async fn single_pending_input_changed_triggers_one_debounced_save() {
 // backend save with the final value
 // ─────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn rapid_pending_input_changed_coalesces_into_one_save() {
+// TEST-042: the debounce runs on tokio's paused clock, so the 50ms gap
+// and the 300ms debounce are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn rapid_pending_input_changed_coalesces_into_one_save() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     let calls_before = mock.set_pending_input_calls();
 
     // @step When Action::PendingInputChanged("h") is dispatched
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("h");
     app.dispatch(Action::PendingInputChanged("h".to_string()));
     // @step And Action::PendingInputChanged("hi") is dispatched within 50ms
     tokio::time::sleep(Duration::from_millis(50)).await;
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("hi");
     app.dispatch(Action::PendingInputChanged("hi".to_string()));
 
     // @step And the debounce timer of 300ms elapses since the last edit
-    wait_until(
-        || mock.set_pending_input_calls() > calls_before,
-        "set_pending_input to fire at least once",
-    )
-    .await;
-    drain_pending(&mut app).await;
+    tokio::time::sleep(Duration::from_millis(400)).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.set_pending_input is called exactly once with (s-1, Some("hi"))
     assert_eq!(
@@ -230,6 +247,7 @@ async fn rapid_pending_input_changed_coalesces_into_one_save() {
         mock.last_set_pending_input(),
         Some((sid("s-1"), Some("hi".to_string()))),
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -237,8 +255,10 @@ async fn rapid_pending_input_changed_coalesces_into_one_save() {
 // no-op
 // ─────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pending_input_changed_with_no_session_is_silent_noop() {
+// TEST-042: on tokio's paused clock the 400ms below is virtual: the
+// debounce has certainly elapsed when the assertion runs.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn pending_input_changed_with_no_session_is_silent_noop() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And there is NO current session
@@ -247,10 +267,13 @@ async fn pending_input_changed_with_no_session_is_silent_noop() {
     let calls_before = mock.set_pending_input_calls();
 
     // @step When Action::PendingInputChanged("orphan") is dispatched
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("orphan");
     app.dispatch(Action::PendingInputChanged("orphan".to_string()));
     // @step And the debounce timer of 300ms elapses
     tokio::time::sleep(Duration::from_millis(400)).await;
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then backend.set_pending_input is NEVER called
     assert_eq!(
@@ -258,6 +281,7 @@ async fn pending_input_changed_with_no_session_is_silent_noop() {
         calls_before,
         "no current session must mean set_pending_input is never called"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -266,22 +290,26 @@ async fn pending_input_changed_with_no_session_is_silent_noop() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pending_input_changed_updates_session_context_input_draft_mirror() {
+async fn pending_input_changed_updates_session_context_input_draft_mirror() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
 
     // @step When Action::PendingInputChanged("draft-mirror") is dispatched
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("draft-mirror");
     app.dispatch(Action::PendingInputChanged("draft-mirror".to_string()));
 
     // @step Then AgentViewStore.session_context_for(s-1).input_draft equals "draft-mirror" synchronously
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("s-1 SessionContext exists");
+        .or_fail("s-1 SessionContext exists")?;
     assert_eq!(ctx.input_draft, "draft-mirror");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -290,7 +318,7 @@ async fn pending_input_changed_updates_session_context_input_draft_mirror() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_created_hydrates_live_input_from_backend() {
+async fn session_created_hydrates_live_input_from_backend() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And the MockBackend's get_pending_input is scripted to return Some("restored draft") for s-1
@@ -302,13 +330,13 @@ async fn session_created_hydrates_live_input_from_backend() {
     // @step When Action::SessionCreated(s-1) is dispatched
     app.dispatch(Action::SessionCreated(sid("s-1")));
     // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // Hydration is async — wait until the seed lands.
     wait_until(
         || app.navigator().agent.input.value() == "restored draft",
         "MultiLineInput to be hydrated to \"restored draft\"",
     )
-    .await;
+    .await?;
 
     // @step Then backend.get_pending_input is called exactly once with s-1
     assert!(
@@ -317,6 +345,7 @@ async fn session_created_hydrates_live_input_from_backend() {
     );
     // @step And the AgentView's MultiLineInput value equals "restored draft"
     assert_eq!(app.navigator().agent.input.value(), "restored draft");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -324,8 +353,8 @@ async fn session_created_hydrates_live_input_from_backend() {
 // input empty
 // ─────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_created_with_none_leaves_input_empty() {
+#[tokio::test(flavor = "current_thread")]
+async fn session_created_with_none_leaves_input_empty() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And the MockBackend's get_pending_input is scripted to return None for s-1
@@ -337,10 +366,14 @@ async fn session_created_with_none_leaves_input_empty() {
     // @step When Action::SessionCreated(s-1) is dispatched
     app.dispatch(Action::SessionCreated(sid("s-1")));
     // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-    // Allow any hydrate task to fire.
-    tokio::time::sleep(Duration::from_millis(50)).await;
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+    // TEST-042: let any spawned task run before the negative assertion:
+    // on the current-thread runtime a yield runs every ready task
+    // (scheduler rounds, not a time window).
+    for _ in 0..8 {
+        tokio::task::yield_now().await;
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then backend.get_pending_input is called exactly once with s-1
     assert!(mock.get_pending_input_calls() >= 1);
@@ -349,6 +382,7 @@ async fn session_created_with_none_leaves_input_empty() {
         app.navigator().agent.input.is_empty(),
         "MultiLineInput must remain empty when backend pending_input is None"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -357,11 +391,11 @@ async fn session_created_with_none_leaves_input_empty() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn attach_to_session_hydrates_live_input_from_backend() {
+async fn attach_to_session_hydrates_live_input_from_backend() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is open (already created)
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // @step And the MockBackend's get_pending_input is scripted to return Some("attach-draft") for s-2
     mock.script_pending_input(sid("s-2"), Some("attach-draft".to_string()));
     let get_calls_before = mock.get_pending_input_calls();
@@ -369,12 +403,12 @@ async fn attach_to_session_hydrates_live_input_from_backend() {
     // @step When Action::AttachToSession(s-2) is dispatched
     app.dispatch(Action::AttachToSession(sid("s-2")));
     // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || app.navigator().agent.input.value() == "attach-draft",
         "MultiLineInput to be hydrated to \"attach-draft\" on attach",
     )
-    .await;
+    .await?;
 
     // @step Then backend.get_pending_input is called at least once with s-2
     assert!(
@@ -383,6 +417,7 @@ async fn attach_to_session_hydrates_live_input_from_backend() {
     );
     // @step And the AgentView's MultiLineInput value equals "attach-draft"
     assert_eq!(app.navigator().agent.input.value(), "attach-draft");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -391,11 +426,11 @@ async fn attach_to_session_hydrates_live_input_from_backend() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn seed_pending_input_dropped_when_session_no_longer_focused() {
+async fn seed_pending_input_dropped_when_session_no_longer_focused() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // @step And the AgentView's MultiLineInput contains "typing-now"
     app.navigator_mut().agent.input.set_value("typing-now");
     // Mirror the draft into the SessionContext to mimic the live
@@ -406,7 +441,7 @@ async fn seed_pending_input_dropped_when_session_no_longer_focused() {
     {
         ctx.input_draft = "typing-now".to_string();
     }
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     while app.try_recv_action().is_some() {}
 
     // @step When Action::SeedPendingInput { session_id: s-2, text: "stale" } is dispatched
@@ -414,7 +449,7 @@ async fn seed_pending_input_dropped_when_session_no_longer_focused() {
         session_id: sid("s-2"),
         text: "stale".to_string(),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the AgentView's MultiLineInput value still equals "typing-now"
     assert_eq!(app.navigator().agent.input.value(), "typing-now");
@@ -422,8 +457,9 @@ async fn seed_pending_input_dropped_when_session_no_longer_focused() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("s-1 still open");
+        .or_fail("s-1 still open")?;
     assert_eq!(ctx.input_draft, "typing-now");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -432,17 +468,17 @@ async fn seed_pending_input_dropped_when_session_no_longer_focused() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn seed_pending_input_updates_target_session_draft_even_when_unfocused() {
+async fn seed_pending_input_updates_target_session_draft_even_when_unfocused() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And open sessions are [s-1, s-2] and s-1 is focused
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // Open a second session by attaching to it.
     app.dispatch(Action::AttachToSession(sid("s-2")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // Re-focus s-1 so s-2 is the "background" target.
     app.dispatch(Action::AttachToSession(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.current_session(), Some(sid("s-1")));
     // Snapshot s-1's live input so we can assert it stays unchanged.
     app.navigator_mut().agent.input.set_value("s1-buffer");
@@ -452,16 +488,17 @@ async fn seed_pending_input_updates_target_session_draft_even_when_unfocused() {
         session_id: sid("s-2"),
         text: "background-draft".to_string(),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then AgentViewStore.session_context_for(s-2).input_draft equals "background-draft"
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-2"))
-        .expect("s-2 must be open");
+        .or_fail("s-2 must be open")?;
     assert_eq!(ctx.input_draft, "background-draft");
     // @step And the AgentView's MultiLineInput value still reflects s-1's buffer (unchanged)
     assert_eq!(app.navigator().agent.input.value(), "s1-buffer");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -470,17 +507,19 @@ async fn seed_pending_input_updates_target_session_draft_even_when_unfocused() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn input_submitted_clears_durable_draft_via_set_pending_input_none() {
+async fn input_submitted_clears_durable_draft_via_set_pending_input_none() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     let calls_before = mock.set_pending_input_calls();
 
     // @step When the user submits the input "hello world" via Enter
-    app.dispatch(Action::InputSubmitted("hello world".to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "hello world".to_string()));
+    }
     // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.set_pending_input is called with (s-1, None)
     wait_until(
@@ -491,12 +530,13 @@ async fn input_submitted_clears_durable_draft_via_set_pending_input_none() {
         },
         "set_pending_input(s-1, None) to be observed",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
     assert!(
         mock.set_pending_input_calls() > calls_before,
         "InputSubmitted must trigger at least one set_pending_input call"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -505,16 +545,19 @@ async fn input_submitted_clears_durable_draft_via_set_pending_input_none() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn set_pending_input_error_does_not_panic_or_emit_scrollback() {
+async fn set_pending_input_error_does_not_panic_or_emit_scrollback() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And session s-1 is the current session
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     // @step And the MockBackend's set_pending_input is scripted to return Err("network blip")
     mock.set_set_pending_input_error("network blip".to_string());
     let calls_before = mock.set_pending_input_calls();
 
     // @step When Action::PendingInputChanged("draft") is dispatched
+    // BUG-549: the action reports a composer change; the handler records
+    // the composer text, so the composer holds the reported text.
+    app.navigator_mut().agent.input.set_value("draft");
     app.dispatch(Action::PendingInputChanged("draft".to_string()));
     // @step And the debounce timer of 300ms elapses
     // @step And all pending tasks have drained
@@ -522,8 +565,8 @@ async fn set_pending_input_error_does_not_panic_or_emit_scrollback() {
         || mock.set_pending_input_calls() > calls_before,
         "set_pending_input to be attempted",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
 
     // @step Then the App must not panic
     // (Reaching this line is the proof — no panic propagated.)
@@ -532,13 +575,14 @@ async fn set_pending_input_error_does_not_panic_or_emit_scrollback() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("s-1 SessionContext exists");
+        .or_fail("s-1 SessionContext exists")?;
     let chunk_count = ctx.scrollback.chunk_count();
     assert_eq!(
         chunk_count, 0,
         "no scrollback notices must be emitted on set_pending_input error \
          (chunk_count={chunk_count})"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -546,8 +590,8 @@ async fn set_pending_input_error_does_not_panic_or_emit_scrollback() {
 // leaves the input empty without panicking
 // ─────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn get_pending_input_error_during_hydration_leaves_input_empty() {
+#[tokio::test(flavor = "current_thread")]
+async fn get_pending_input_error_during_hydration_leaves_input_empty() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And the MockBackend's get_pending_input is scripted to return Err("decode failed") for s-1
@@ -559,16 +603,23 @@ async fn get_pending_input_error_during_hydration_leaves_input_empty() {
     // @step When Action::SessionCreated(s-1) is dispatched
     app.dispatch(Action::SessionCreated(sid("s-1")));
     // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-    tokio::time::sleep(Duration::from_millis(50)).await;
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+    // TEST-042: let any spawned task run before the negative assertion:
+    // on the current-thread runtime a yield runs every ready task
+    // (scheduler rounds, not a time window).
+    for _ in 0..8 {
+        tokio::task::yield_now().await;
+    }
+    drain_pending(&mut app).await?;
 
-    // @step Then the App must not panic (reaching here proves it)
+    // @step Then the App must not panic
+    // (reaching here proves it)
     // @step And the AgentView's MultiLineInput is empty
     assert!(
         app.navigator().agent.input.is_empty(),
         "get_pending_input error must leave the live input empty"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -577,15 +628,15 @@ async fn get_pending_input_error_during_hydration_leaves_input_empty() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn shift_arrow_cycling_uses_session_context_input_draft() {
+async fn shift_arrow_cycling_uses_session_context_input_draft() -> TestResult {
     // @step Given an App with a MockBackend
     let mock = Arc::new(MockBackend::new());
     // @step And open sessions are [s-1, s-2] and s-1 is focused
-    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await;
+    let mut app = agent_app_with_session(mock.clone(), sid("s-1")).await?;
     app.dispatch(Action::AttachToSession(sid("s-2")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.current_session(), Some(sid("s-1")));
     // @step And the AgentView's MultiLineInput contains "draft-on-s1"
     app.navigator_mut().agent.input.set_value("draft-on-s1");
@@ -594,13 +645,13 @@ async fn shift_arrow_cycling_uses_session_context_input_draft() {
 
     // @step When the user presses Shift+Right
     app.dispatch(Action::SessionNext);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then AgentViewStore.session_context_for(s-1).input_draft equals "draft-on-s1"
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("s-1 still open");
+        .or_fail("s-1 still open")?;
     assert_eq!(ctx.input_draft, "draft-on-s1");
     // @step And the focused session is s-2
     assert_eq!(app.current_session(), Some(sid("s-2")));
@@ -608,14 +659,14 @@ async fn shift_arrow_cycling_uses_session_context_input_draft() {
     let s2_draft = app
         .agent_view_store()
         .session_context_for(&sid("s-2"))
-        .expect("s-2 open")
+        .or_fail("s-2 open")?
         .input_draft
         .clone();
     assert_eq!(app.navigator().agent.input.value(), s2_draft);
 
     // @step When the user presses Shift+Left
     app.dispatch(Action::SessionPrev);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the focused session is s-1
     assert_eq!(app.current_session(), Some(sid("s-1")));
@@ -628,4 +679,55 @@ async fn shift_arrow_cycling_uses_session_context_input_draft() {
         "Shift+Left/Right must NOT call backend.get_pending_input — the \
          SessionContext.input_draft fast path is preserved"
     );
+    Ok(())
+}
+
+/// Scenario: rust/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers
+#[test]
+fn dispatch_pending_input_hosts_the_debounce_and_hydration_helpers() -> TestResult {
+    let app_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("app");
+    // @step Given the file rust/fspec-tui/src/app/dispatch_pending_input.rs exists
+    let dpi_path = app_dir.join("dispatch_pending_input.rs");
+    assert!(dpi_path.exists(), "dispatch_pending_input.rs must exist");
+
+    // @step When the file is compiled as part of codelet-fspec-tui
+    let dpi = std::fs::read_to_string(&dpi_path).or_fail("read dispatch_pending_input.rs")?;
+
+    // @step Then it must declare impl App methods named handle_pending_input_changed, handle_seed_pending_input, and spawn_hydrate_pending_input
+    let impl_body = dpi
+        .split_once("impl App {")
+        .map(|(_, body)| body)
+        .or_fail("dispatch_pending_input.rs must hold an impl App block")?;
+    for method in [
+        "fn handle_pending_input_changed(",
+        "fn handle_seed_pending_input(",
+        "fn spawn_hydrate_pending_input(",
+    ] {
+        assert!(impl_body.contains(method), "impl App is missing {method}");
+    }
+
+    // @step And rust/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pending_input
+    let app_mod = std::fs::read_to_string(app_dir.join("mod.rs")).or_fail("read app/mod.rs")?;
+    assert!(
+        app_mod
+            .lines()
+            .any(|l| l.trim() == "pub mod dispatch_pending_input;"),
+        "app/mod.rs must declare pub mod dispatch_pending_input"
+    );
+
+    // @step And rust/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines
+    let dispatch =
+        std::fs::read_to_string(app_dir.join("dispatch.rs")).or_fail("read dispatch.rs")?;
+    let logical = dispatch
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with("//"))
+        .count();
+    assert!(
+        logical <= 300,
+        "app/dispatch.rs has {logical} logical lines (> 300)"
+    );
+    Ok(())
 }

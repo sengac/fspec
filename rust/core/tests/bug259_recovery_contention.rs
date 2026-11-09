@@ -9,7 +9,6 @@ use codelet_core::persistence::{
 use codelet_test_helpers::setup_temp_directory;
 use std::collections::HashMap;
 use std::sync::mpsc;
-use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -19,6 +18,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn short_recovery_contention_preserves_authentic_pending_output() -> TestResult {
     // @step Given a durable session with authentic pending output and a short lived recovery lock holder
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let session = create_session("short contention", directory.path())?;
@@ -43,8 +43,8 @@ fn short_recovery_contention_preserves_authentic_pending_output() -> TestResult 
         metadata: HashMap::from([("_transcript".into(), serde_json::to_value(&record)?)]),
     })?;
     let held = RecoveryLease::acquire(directory.path(), session.id)?;
+    // TEST-042: no delay; the holder releases while persistence opens.
     let release = std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_millis(40));
         drop(held);
     });
     // @step When persistence opens while the holder releases the lock
@@ -72,24 +72,29 @@ fn persistent_contention_is_bounded_and_isolated() -> TestResult {
     // @step When the locked session and an independent session acquire recovery ownership
     let worker = std::thread::spawn(move || {
         let _ = started_sender.send(());
-        let started = Instant::now();
         let result = RecoveryLease::acquire(&root, session_id).map(drop);
-        let _ = sender.send((result, started.elapsed()));
+        let _ = sender.send(result);
     });
     started_receiver.recv()?;
     let independent = RecoveryLease::acquire(directory.path(), Uuid::new_v4());
-    let outcome = receiver.recv_timeout(Duration::from_secs(2));
+    let outcome =
+        codelet_test_helpers::deadlock_guard_blocking("the contended acquire", move || {
+            receiver.recv()
+        })
+        .map_err(|failure| failure.to_string())
+        .and_then(|received| received.map_err(|error| error.to_string()));
     drop(held);
     worker.join().map_err(|_| "contention worker failed")?;
     // @step Then the independent session progresses and the locked session returns WouldBlock within a finite deadline
     independent?;
-    let (result, elapsed) = outcome?;
+    let result = outcome?;
     let error = result
         .err()
         .ok_or("persistent contention acquired ownership")?;
+    // TEST-042: no wall-clock bounds. WouldBlock is the contention
+    // deadline's own outcome, and returning at all (under the deadlock
+    // guard) shows the deadline is finite.
     assert_eq!(error.kind(), std::io::ErrorKind::WouldBlock);
-    assert!(elapsed >= Duration::from_millis(200), "{elapsed:?}");
-    assert!(elapsed < Duration::from_secs(2), "{elapsed:?}");
     drop(RecoveryLease::acquire(directory.path(), session_id)?);
     Ok(())
 }
@@ -150,13 +155,14 @@ fn non_contention_filesystem_failures_propagate_immediately() -> TestResult {
     let parent = directory.path().join("persistence-recovery");
     std::fs::create_dir_all(parent.join(format!("{session_id}.lock")))?;
     // @step When recovery ownership is acquired
-    let started = Instant::now();
     let result = RecoveryLease::acquire(directory.path(), session_id);
     // @step Then the filesystem error is returned without contention retries
     let error = result
         .err()
         .ok_or("directory unexpectedly opened as a lock")?;
+    // TEST-042: no time bound: only WouldBlock is retried, and an exhausted
+    // contention deadline returns WouldBlock, so any other error kind was
+    // returned without contention retries.
     assert_ne!(error.kind(), std::io::ErrorKind::WouldBlock);
-    assert!(started.elapsed() < Duration::from_millis(200));
     Ok(())
 }

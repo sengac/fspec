@@ -11,9 +11,11 @@
 
 pub mod agent_view;
 pub mod board;
+mod board_daemons;
 mod board_focus;
 mod board_menu;
 mod board_viewport;
+mod board_workspaces;
 pub mod mux_state;
 pub mod work_unit_sanitize; // TUI-111
 

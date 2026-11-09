@@ -51,48 +51,32 @@ Feature: No support for ULTRATHINK in discovery-driven feedback loop
     Given I am using Claude Code (FSPEC_AGENT=claude)
     And Claude Code has supportsMetaCognition flag set to true
     When I run fspec discover-foundation
-    Then I should see "ULTRATHINK: Read ALL code, understand deeply" in the output
+    Then I should see "you must ULTRATHINK the entire codebase" in the output
     And the output should contain system-reminder tags
     And the guidance should emphasize deep codebase analysis
 
-  Scenario: Cursor IDE agent receives 'think a lot' guidance with emoji warning
+  Scenario: Cursor IDE agent receives 'think a lot' guidance
     Given I am using Cursor (FSPEC_AGENT=cursor)
     And Cursor has supportsMetaCognition flag set to false
     When I run fspec discover-foundation
-    Then I should see "Think a lot" in the output
+    Then I should see "you must think a lot about the entire codebase" in the output
     And I should NOT see "ULTRATHINK" in the output
-    And the output should contain "**⚠️ IMPORTANT:**" format
-    And the output should NOT contain system-reminder tags
 
-  Scenario: Aider CLI agent receives plain text 'think a lot' guidance
+  Scenario: Aider CLI agent receives 'think a lot' guidance
     Given I am using Aider (FSPEC_AGENT=aider)
     And Aider has supportsMetaCognition flag set to false
     When I run fspec discover-foundation
-    Then I should see "Think a lot" in the output
+    Then I should see "you must think a lot about the entire codebase" in the output
     And I should NOT see "ULTRATHINK" in the output
-    And the output should contain "**IMPORTANT:**" format without emoji
-    And the output should NOT contain system-reminder tags
 
-  Scenario: Unknown agent receives 'think a lot' guidance without system-reminders
+  Scenario: Unknown agent receives 'think a lot' guidance
     Given no agent is configured (no FSPEC_AGENT env var or config file)
     When I run fspec discover-foundation
-    Then I should see "Think a lot" in the output
+    Then I should see "you must think a lot about the entire codebase" in the output
     And I should NOT see "ULTRATHINK" in the output
-    And I should NOT see system-reminder tags
-    And the guidance should use safe default plain text format
 
-  Scenario: Initial draft creation uses agent capability detection for ULTRATHINK
-    Given I am implementing the discover-foundation command
-    When the initial draft system-reminder is generated (line ~422)
-    Then the code should call getAgentConfig(cwd) to detect the current agent
-    And the code should check agent.supportsMetaCognition flag
-    And if true, the reminder should include "you must ULTRATHINK the entire codebase"
-    And if false, the reminder should include "you must thoroughly analyze the entire codebase"
-
-  Scenario: Project vision field guidance checks agent capabilities for ULTRATHINK
-    Given I am implementing the project.vision field guidance
-    When the field-specific system-reminder is generated (line ~95)
-    Then the code should call getAgentConfig(cwd) to detect the current agent
-    And the code should check agent.supportsMetaCognition flag
-    And if true, the guidance should include "ULTRATHINK: Read ALL code, understand deeply"
-    And if false, the guidance should include "Carefully analyze the codebase to understand its purpose"
+  Scenario: Project vision field guidance follows the agent's meta-cognition support
+    Given a foundation draft whose next unfilled field after project.name is project.vision
+    When I run fspec update-foundation projectName once with FSPEC_AGENT=claude and once with FSPEC_AGENT=cursor
+    Then the claude reminder for Field 2/8 should include "ULTRATHINK: Read ALL code, understand the system deeply."
+    And the cursor reminder for Field 2/8 should include "Think a lot about the entire codebase."

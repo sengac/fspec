@@ -1,0 +1,188 @@
+{
+  "scenarios": [
+    {
+      "name": "Input sent before a resumed session finishes restoring is refused and changes nothing",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug683_resumed_session_restore_gate.rs",
+          "lines": "149-205",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/transcript.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "/// BUG-683: a session created from its manifest takes no input until",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/compaction_handoff.rs",
+              "lines": [
+                24,
+                25
+              ],
+              "firstLine": "pub fn start_manual_compaction(&self) -> Result<CompactionResult, String> {",
+              "lastLine": "self.ensure_restored()?;"
+            },
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "pub fn receive_incoming_message(",
+              "lastLine": "self.ensure_restored()?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A resumed Codex session continues at its saved generation once its restore completes",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug683_resumed_session_restore_gate.rs",
+          "lines": "207-235",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/transcript.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "pub fn ensure_restored(&self) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "fn start_turn(",
+              "lastLine": "self.ensure_restored()?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider-state failure names its cause once and says how to recover",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug683_provider_state_failure_message.rs",
+          "lines": "15-58",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/request_failure.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "pub fn block_terminal_request_failure(session: &mut Session, error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/interactive/mod.rs",
+              "lines": [
+                65
+              ],
+              "firstLine": "pub use request_failure::block_terminal_request_failure;",
+              "lastLine": "pub use request_failure::block_terminal_request_failure;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug683_resumed_session_restore_gate.rs",
+      "rust/cli/tests/bug683_provider_state_failure_message.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/transcript.rs",
+      "rust/sessions/src/background_session/compaction_handoff.rs",
+      "rust/sessions/src/background_session/messaging.rs",
+      "rust/cli/src/interactive/request_failure.rs",
+      "rust/cli/src/interactive/mod.rs"
+    ],
+    "totalLinesCovered": 215
+  }
+}

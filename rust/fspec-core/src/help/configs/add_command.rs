@@ -63,7 +63,7 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit not found",
-        fix: "Ensure work unit exists: fspec show-work-unit <id>",
+        fix: "Ensure work unit exists: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "spec/work-units.json not found",

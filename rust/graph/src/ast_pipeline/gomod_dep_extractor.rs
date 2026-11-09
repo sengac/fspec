@@ -8,17 +8,23 @@ use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// Extract Go dependencies from go.mod.
-pub fn extract_go_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_go_dependencies(project_root: &Path) -> helpers::Extracted {
     let gomod_path = project_root.join("go.mod");
     if !gomod_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_go_mod(project_root, &gomod_path))
+}
 
-    let content =
-        std::fs::read_to_string(&gomod_path).map_err(|e| format!("Failed to read go.mod: {e}"))?;
+/// The entities of one go.mod, or why it could not be read.
+fn extract_go_mod(
+    project_root: &Path,
+    gomod_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, gomod_path)?;
 
     let rel_path = "go.mod";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     let line_count = content.lines().count() as i32;

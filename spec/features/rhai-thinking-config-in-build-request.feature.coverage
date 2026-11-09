@@ -6,59 +6,7 @@
         {
           "file": "rust/providers/tests/rhai_thinking_config_in_build_request_tests.rs",
           "lines": "41-89",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/request_bridge.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -68,59 +16,7 @@
         {
           "file": "rust/providers/tests/rhai_thinking_config_in_build_request_tests.rs",
           "lines": "91-115",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/request_bridge.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -134,8 +30,6 @@
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
-                156,
-                157,
                 158,
                 159,
                 160,
@@ -150,8 +44,12 @@
                 169,
                 170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174
+              ],
+              "firstLine": "/// The NAPI session-creation path consults this accessor after",
+              "lastLine": "self.script_context_window"
             }
           ]
         }
@@ -162,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_thinking_config_in_build_request_tests.rs",
-          "lines": "169-240",
+          "lines": "211-221",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/custom_provider.rs",
@@ -251,9 +149,15 @@
                 145,
                 146,
                 147
-              ]
+              ],
+              "firstLine": "&self.system_prompt_facade",
+              "lastLine": ""
             }
           ]
+        },
+        {
+          "file": "rust/providers/tests/rhai_thinking_config_in_build_request_tests.rs",
+          "lines": "174-279"
         }
       ]
     }
@@ -266,10 +170,9 @@
       "rust/providers/tests/rhai_thinking_config_in_build_request_tests.rs"
     ],
     "implFiles": [
-      "rust/providers/src/custom/request_bridge.rs",
       "rust/providers/src/custom/provider.rs",
       "rust/providers/src/custom/custom_provider.rs"
     ],
-    "totalLinesCovered": 390
+    "totalLinesCovered": 343
   }
 }

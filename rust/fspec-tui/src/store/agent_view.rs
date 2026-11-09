@@ -33,9 +33,11 @@ pub mod pause_state;
 pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod record_chunk;
+pub mod request_chain; // AMGR-022
 pub mod response_attempt;
 pub mod role_state;
 pub mod scrollback_mutate;
+mod session_arrival; // TUI-125
 pub mod session_context;
 pub mod session_indexing;
 pub mod stderr;
@@ -44,6 +46,7 @@ pub mod token_state;
 pub mod tool_args;
 mod transcript_record;
 pub mod work_unit_state;
+mod workspace_state;
 pub use history_state::HistoryNavState;
 pub use isolation_state::IsolationState;
 pub use navigation::NavTarget;
@@ -58,7 +61,6 @@ pub struct AgentViewStore {
     // ── RPC-024 multi-session container ───────────────────────────────
     open_sessions: Vec<SessionContext>,
     current_session_index: usize,
-
     // ── Legacy navigation slots (preserved from RPC-012) ───────────────
     navigation_target_session: Option<SessionId>,
     current_work_unit_id: Option<String>,
@@ -71,11 +73,10 @@ pub struct AgentViewStore {
     token_state_by_session: HashMap<SessionId, TokenState>,
     thinking_level_by_session: HashMap<SessionId, ThinkingLevel>,
     workspace: Option<WorkspaceInfo>,
-    /// RPC-337: last model id selected for each session (set on
-    /// `Action::ModelSelected`). Seeds the full-screen ModelSelector's
-    /// green `(current)` marker — `ModelInfo` carries only a display
-    /// name, not the api model id, so this is the available source.
-    selected_model_id_by_session: HashMap<SessionId, String>,
+    /// RPC-337: last model id selected per session (`Action::ModelSelected`);
+    /// seeds the ModelSelector's `(current)` marker — `ModelInfo` carries only
+    /// a display name, not the api model id.
+    selected_model_by_session: HashMap<SessionId, (String, String)>, // BUG-576
 
     // ── RPC-025 per-session history-recall state ────────────────────────
     /// Walk position into the cached history snapshot. See
@@ -100,7 +101,7 @@ pub struct AgentViewStore {
     // ── RPC-050 per-session work-unit binding — work_unit_state.rs ──────
     pub(crate) work_unit_context_by_session: HashMap<SessionId, WorkUnitContext>,
     work_unit_focus_by_session: HashMap<SessionId, WorkUnitFocus>,
-    // ── RPC-056 per-session blocklist-disabled set — blocklist_state.rs ─
+    // ── RPC-056 / BUG-601 the daemon's turned-off rules — blocklist_state.rs ─
     pub(crate) blocklist_disabled_by_session: HashMap<SessionId, std::collections::HashSet<String>>,
 
     // RPC-061 supervisor state — accessors in `supervisor_state.rs`.
@@ -114,12 +115,14 @@ pub struct AgentViewStore {
     pub(crate) continue_revision_by_session: HashMap<SessionId, u64>,
     pub(crate) goal_state_by_session: HashMap<SessionId, (String, Option<String>)>,
     pub(crate) continue_live_by_session: HashMap<SessionId, chrome_state::ContinueLiveState>,
-    // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
+    // RPC-406 pause (+ AMGR-020 route) + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
     pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
+    pub(crate) pause_route_by_session: HashMap<SessionId, codelet_rpc_types::RequestRoute>,
     pub(crate) hitl_prompt_by_session: hitl_state::HitlPromptBySession,
-    // TOOL-022 P2: exec-stdin overlay slot — exec_stdin_state.rs
-    pub(crate) exec_stdin_by_session: exec_stdin_state::ExecStdinBySession,
+    pub(crate) exec_stdin_by_session: exec_stdin_state::ExecStdinBySession, // TOOL-022 P2
+    pub(crate) session_workspaces: workspace_state::SessionWorkspaces,      // RPC-445
     pub(crate) triple_pause_selection_by_session: HashMap<SessionId, usize>,
+    pub(crate) chain_requests: request_chain::ChainRequests, // AMGR-022
 }
 
 impl AgentViewStore {
@@ -288,12 +291,9 @@ impl AgentViewStore {
     /// to satisfy the RPC-024 source-shape invariant
     /// `agent_view_store_no_longer_exposes_set_session_index`, which
     /// pins `pub fn session_index` to this file.
-    pub fn session_index(&self) -> (usize, usize) {
+    /// BUG-401: `None` when no session is open (no `(0, 0)` sentinel).
+    pub fn session_index(&self) -> Option<(usize, usize)> {
         let len = self.open_sessions.len();
-        if len == 0 {
-            (0, 0)
-        } else {
-            (self.current_session_index + 1, len)
-        }
+        (len > 0).then(|| (self.current_session_index + 1, len))
     }
 }

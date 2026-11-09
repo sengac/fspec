@@ -38,60 +38,56 @@
 use std::fs;
 use std::path::PathBuf;
 
-fn agent_loop_rs() -> String {
-    let manifest = env!("CARGO_MANIFEST_DIR");
-    let path: PathBuf = [manifest, "src", "agent_loop.rs"].iter().collect();
+fn source(relative: &str) -> String {
+    let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "src", relative]
+        .iter()
+        .collect();
     fs::read_to_string(&path)
         .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
+}
+
+fn agent_loop_rs() -> String {
+    source("agent_loop.rs")
+}
+
+fn lifecycle_rs() -> String {
+    source("agent_loop/lifecycle.rs")
+}
+
+fn prompt_rs() -> String {
+    source("agent_loop/prompt.rs")
 }
 
 fn background_output_rs() -> String {
-    let manifest = env!("CARGO_MANIFEST_DIR");
-    let path: PathBuf = [manifest, "src", "background_output.rs"].iter().collect();
-    fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
+    source("background_output.rs")
+}
+
+/// The offset of `needle` in `src`, failing with `what` when it is absent.
+fn offset(src: &str, needle: &str, what: &str) -> usize {
+    src.find(needle)
+        .unwrap_or_else(|| panic!("{what} must contain `{needle}`"))
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: agent_loop.rs imports all four loop-side hook runners by name
+// Scenario: The agent loop's modules import all four loop-side hook runners by name
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_agent_loop_rs_imports_all_four_loop_side_hook_runners_by_name() {
-    // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
-    // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
-    // @step Then the source must contain "run_session_end"
-    assert!(
-        src.contains("run_session_end"),
-        "agent_loop.rs must import `run_session_end` from codelet_core::lifecycle_hooks so the HOOK-013 session_end hook can fire when input_rx closes (RPC-090)"
+fn scenario_the_agent_loop_modules_import_all_four_loop_side_hook_runners_by_name() {
+    // @step Given I read the sources of rust/agent-loop/src/agent_loop/lifecycle.rs and rust/agent-loop/src/agent_loop/prompt.rs
+    let (lifecycle, prompt) = (lifecycle_rs(), prompt_rs());
+    // @step When I scan the files as strings
+    // @step Then the lifecycle source must contain "use codelet_core::lifecycle_hooks::{run_session_end, run_session_start, HookMessageLevel};"
+    offset(
+        &lifecycle,
+        "use codelet_core::lifecycle_hooks::{run_session_end, run_session_start, HookMessageLevel};",
+        "agent_loop/lifecycle.rs",
     );
-
-    // @step And the source must contain "run_session_start"
-    assert!(
-        src.contains("run_session_start"),
-        "agent_loop.rs must import `run_session_start` from codelet_core::lifecycle_hooks so the HOOK-013 session_start hook can fire before the first turn (RPC-090)"
-    );
-
-    // @step And the source must contain "run_user_prompt"
-    assert!(
-        src.contains("run_user_prompt"),
-        "agent_loop.rs must import `run_user_prompt` from codelet_core::lifecycle_hooks so the HOOK-013 user_prompt_submit hook can mutate or block the prompt per turn (RPC-090)"
-    );
-
-    // @step And the source must contain "HookMessageLevel"
-    assert!(
-        src.contains("HookMessageLevel"),
-        "agent_loop.rs must import `HookMessageLevel` so Warning/Error hook messages can be routed to tracing::warn + StreamChunk::user_notification (RPC-090)"
-    );
-
-    // @step And the source must contain "use codelet_core::lifecycle_hooks::"
-    assert!(
-        src.contains("use codelet_core::lifecycle_hooks::"),
-        "agent_loop.rs must import the loop-side hook runners from `codelet_core::lifecycle_hooks::` — anywhere else is the wrong canonical home (RPC-090)"
+    // @step And the prompt source must contain "use codelet_core::lifecycle_hooks::{run_user_prompt, HookMessageLevel};"
+    offset(
+        &prompt,
+        "use codelet_core::lifecycle_hooks::{run_user_prompt, HookMessageLevel};",
+        "agent_loop/prompt.rs",
     );
 }
 
@@ -101,16 +97,14 @@ fn scenario_agent_loop_rs_imports_all_four_loop_side_hook_runners_by_name() {
 
 #[test]
 fn scenario_run_session_start_fires_with_the_literal_phase_string_startup() {
-    // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
+    // @step Given I read the source of rust/agent-loop/src/agent_loop/lifecycle.rs
+    let lifecycle = lifecycle_rs();
     // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
     // @step Then the source must contain "run_session_start(hooks, &ctx, \"startup\").await"
-    assert!(
-        src.contains("run_session_start(hooks, &ctx, \"startup\").await"),
-        "agent_loop.rs must call `run_session_start(hooks, &ctx, \"startup\").await` with the literal phase string \"startup\" — this is the contract the lifecycle_hooks dispatcher matches on when selecting which hook configs to fire (RPC-090 / HOOK-013)"
+    offset(
+        &lifecycle,
+        "run_session_start(hooks, &ctx, \"startup\").await",
+        "agent_loop/lifecycle.rs",
     );
 }
 
@@ -120,22 +114,21 @@ fn scenario_run_session_start_fires_with_the_literal_phase_string_startup() {
 
 #[test]
 fn scenario_run_session_end_fires_with_the_literal_phase_string_exit_before_break() {
-    // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
-    // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
-    // @step Then the source must contain "run_session_end(hooks, &ctx, \"exit\").await"
-    assert!(
-        src.contains("run_session_end(hooks, &ctx, \"exit\").await"),
-        "agent_loop.rs must call `run_session_end(hooks, &ctx, \"exit\").await` with the literal phase string \"exit\" — this is the contract the lifecycle_hooks dispatcher matches on when selecting which hook configs to fire on session exit (RPC-090 / HOOK-013)"
+    // @step Given I read the sources of rust/agent-loop/src/agent_loop/lifecycle.rs and rust/agent-loop/src/agent_loop.rs
+    let (lifecycle, agent_loop) = (lifecycle_rs(), agent_loop_rs());
+    // @step When I scan the files as strings
+    // @step Then the lifecycle source must contain "run_session_end(hooks, &ctx, \"exit\").await"
+    offset(
+        &lifecycle,
+        "run_session_end(hooks, &ctx, \"exit\").await",
+        "agent_loop/lifecycle.rs",
     );
-
-    // @step And the source must contain "break;"
+    // @step And in the loop source "lifecycle::end_session_hooks(&session).await;" is immediately followed by "break;"
+    let end = "lifecycle::end_session_hooks(&session).await;";
+    let at = offset(&agent_loop, end, "agent_loop.rs") + end.len();
     assert!(
-        src.contains("break;"),
-        "agent_loop.rs must contain `break;` — the only way out of the main agent loop, immediately following the session_end hook invocation in the input_rx.recv() None arm (RPC-090)"
+        agent_loop[at..].trim_start().starts_with("break;"),
+        "session_end hooks must run immediately before the loop breaks"
     );
 }
 
@@ -145,82 +138,54 @@ fn scenario_run_session_end_fires_with_the_literal_phase_string_exit_before_brea
 
 #[test]
 fn scenario_run_user_prompt_is_guarded_by_user_prompt_submit_is_empty() {
-    // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
+    // @step Given I read the source of rust/agent-loop/src/agent_loop/prompt.rs
+    let prompt = prompt_rs();
     // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
     // @step Then the source must contain "!hooks.user_prompt_submit.is_empty()"
-    let guard_offset = src
-        .find("!hooks.user_prompt_submit.is_empty()")
-        .expect("agent_loop.rs must guard the user_prompt_submit call with `!hooks.user_prompt_submit.is_empty()` so the hook_context allocation is skipped when no hooks are configured (RPC-090)");
-
-    // @step And the source must contain "run_user_prompt(hooks, &ctx, input).await"
-    let call_offset = src.find("run_user_prompt(hooks, &ctx, input).await").expect(
-        "agent_loop.rs must call `run_user_prompt(hooks, &ctx, input).await` per turn so HOOK-013 user_prompt_submit hooks can mutate or block the prompt (RPC-090)",
+    let guard = offset(
+        &prompt,
+        "!hooks.user_prompt_submit.is_empty()",
+        "agent_loop/prompt.rs",
     );
-
+    // @step And the source must contain "run_user_prompt(hooks, &ctx, input).await"
+    let call = offset(
+        &prompt,
+        "run_user_prompt(hooks, &ctx, input).await",
+        "agent_loop/prompt.rs",
+    );
     // @step And the offset of "!hooks.user_prompt_submit.is_empty()" must be less than the offset of "run_user_prompt(hooks, &ctx, input).await"
     assert!(
-        guard_offset < call_offset,
-        "the `!hooks.user_prompt_submit.is_empty()` guard MUST appear BEFORE the `run_user_prompt(hooks, &ctx, input).await` call — otherwise the hook_context allocation and hook dispatch fires unconditionally on every turn, defeating the early-exit (RPC-090). guard_offset={guard_offset}, call_offset={call_offset}"
+        guard < call,
+        "the empty-hooks guard must precede run_user_prompt"
     );
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: user_prompt_submit block path emits ordered Idle / done / continue tokens
+// Scenario: user_prompt_submit block path emits ordered Idle / done tokens and skips the turn
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_user_prompt_submit_block_path_emits_ordered_idle_done_continue_tokens() {
-    // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
-    // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
-    // @step Then the source must contain "!outcome.allow_prompt"
-    let block_offset = src.find("!outcome.allow_prompt").expect(
-        "agent_loop.rs must check `!outcome.allow_prompt` to detect a hook-blocked prompt — without this the block_reason path is unreachable (RPC-090)",
-    );
-
-    // @step And the source must contain "set_status(SessionStatus::Idle)"
+fn scenario_user_prompt_submit_block_path_emits_ordered_idle_done_tokens_and_skips_the_turn() {
+    // @step Given I read the sources of rust/agent-loop/src/agent_loop/prompt.rs and rust/agent-loop/src/agent_loop.rs
+    let (prompt, agent_loop) = (prompt_rs(), agent_loop_rs());
+    // @step When I scan the files as strings
+    // @step Then the prompt source must contain "!outcome.allow_prompt"
+    let blocked = offset(&prompt, "!outcome.allow_prompt", "agent_loop/prompt.rs");
+    // @step And after it the prompt source has "set_status(SessionStatus::Idle)", then "StreamChunk::done()", then "return false;"
+    let path = &prompt[blocked..];
+    let idle = offset(path, "set_status(SessionStatus::Idle)", "the block path");
+    let done = offset(path, "StreamChunk::done()", "the block path");
+    let skip = offset(path, "return false;", "the block path");
     assert!(
-        src.contains("set_status(SessionStatus::Idle)"),
-        "agent_loop.rs must call `set_status(SessionStatus::Idle)` in the block path so a blocked prompt returns the session UI to idle (RPC-090)"
+        idle < done && done < skip,
+        "the block path must set Idle, then emit done, then skip the turn"
     );
-
-    // @step And the source must contain "StreamChunk::done()"
+    // @step And the loop source must contain "if !prompt::admit_prompt(&session, &mut pending, &mut state).await {" followed by "continue;"
+    let admit = "if !prompt::admit_prompt(&session, &mut pending, &mut state).await {";
+    let at = offset(&agent_loop, admit, "agent_loop.rs") + admit.len();
     assert!(
-        src.contains("StreamChunk::done()"),
-        "agent_loop.rs must emit `StreamChunk::done()` in the block path so the front-end knows the turn is complete after a blocked prompt (RPC-090)"
-    );
-
-    // @step And the source must contain "continue;"
-    assert!(
-        src.contains("continue;"),
-        "agent_loop.rs must `continue;` in the block path so a blocked prompt skips the LLM dispatch — without this the prompt would still reach the provider (RPC-090)"
-    );
-
-    // @step And the offset of "set_status(SessionStatus::Idle)" must be less than the offset of "StreamChunk::done()" appearing after "!outcome.allow_prompt"
-    let block_tail = &src[block_offset..];
-    let idle_in_tail = block_tail
-        .find("set_status(SessionStatus::Idle)")
-        .expect("set_status(SessionStatus::Idle) must appear AFTER the !outcome.allow_prompt check (RPC-090)");
-    let done_in_tail = block_tail
-        .find("StreamChunk::done()")
-        .expect("StreamChunk::done() must appear AFTER the !outcome.allow_prompt check (RPC-090)");
-    let continue_in_tail = block_tail
-        .find("continue;")
-        .expect("continue; must appear AFTER the !outcome.allow_prompt check (RPC-090)");
-    assert!(
-        idle_in_tail < done_in_tail,
-        "in the user_prompt_submit block path, `set_status(SessionStatus::Idle)` MUST precede `StreamChunk::done()` — order matters because the done chunk is the signal to the front-end that the idle status is final (RPC-090). idle_in_tail={idle_in_tail}, done_in_tail={done_in_tail}"
-    );
-    assert!(
-        done_in_tail < continue_in_tail,
-        "in the user_prompt_submit block path, `StreamChunk::done()` MUST precede `continue;` — order matters because emitting done after continue would never run (RPC-090). done_in_tail={done_in_tail}, continue_in_tail={continue_in_tail}"
+        agent_loop[at..].trim_start().starts_with("continue;"),
+        "a refused prompt must skip the rest of the loop iteration"
     );
 }
 
@@ -231,25 +196,20 @@ fn scenario_user_prompt_submit_block_path_emits_ordered_idle_done_continue_token
 #[test]
 fn scenario_session_start_invocation_precedes_the_main_loop_opening() {
     // @step Given I read the source of rust/agent-loop/src/agent_loop.rs
-    let src = agent_loop_rs();
-
+    let agent_loop = agent_loop_rs();
     // @step When I scan the file as a string
-    // (nothing to do — we just keep the source string)
-
-    // @step Then the source must contain "run_session_start(hooks, &ctx, \"startup\").await"
-    let start_offset = src.find("run_session_start(hooks, &ctx, \"startup\").await").expect(
-        "agent_loop.rs must call `run_session_start(hooks, &ctx, \"startup\").await` once before the main loop opens (RPC-090)",
+    // @step Then the source must contain "lifecycle::start_session_hooks(&session).await;"
+    let start = offset(
+        &agent_loop,
+        "lifecycle::start_session_hooks(&session).await;",
+        "agent_loop.rs",
     );
-
     // @step And the source must contain "loop {"
-    let loop_offset = src
-        .find("loop {")
-        .expect("agent_loop.rs must contain the main `loop {` block — without it the agent never iterates (RPC-090)");
-
-    // @step And the offset of "run_session_start(hooks, &ctx, \"startup\").await" must be less than the offset of the first "loop {"
+    let opening = offset(&agent_loop, "loop {", "agent_loop.rs");
+    // @step And the offset of "lifecycle::start_session_hooks(&session).await;" must be less than the offset of the first "loop {"
     assert!(
-        start_offset < loop_offset,
-        "`run_session_start(hooks, &ctx, \"startup\").await` MUST appear BEFORE the first `loop {{` — session_start fires once on startup, not once per turn. Inverting the order would mean hooks see a session that has already taken its first turn (RPC-090 / HOOK-013). start_offset={start_offset}, loop_offset={loop_offset}"
+        start < opening,
+        "session_start hooks must run before the main loop opens"
     );
 }
 
@@ -327,9 +287,9 @@ fn scenario_post_tool_use_uses_last_tool_call_captured_during_stream_event_tool_
     // @step When I scan the file as a string
     // (nothing to do — we just keep the source string)
 
-    // @step Then the source must contain "last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>"
+    // @step Then the source must contain "last_tool_call: Arc<std::sync::Mutex<Option<(String, serde_json::Value)>>>"
     assert!(
-        src.contains("last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>"),
+        src.contains("last_tool_call: Arc<std::sync::Mutex<Option<(String, serde_json::Value)>>>"),
         "background_output.rs must declare `last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>` — this mutex is the bridge between the StreamEvent::ToolCall arm (which writes it) and the StreamEvent::ToolResult arm (which reads it to pass tool_name + tool_input to run_post_tool) (RPC-090)"
     );
 

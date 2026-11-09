@@ -81,8 +81,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -208,8 +206,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -296,8 +298,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -423,8 +423,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -511,8 +515,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -638,8 +640,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -726,8 +732,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -853,8 +857,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -941,8 +949,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -1068,8 +1074,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -1156,8 +1166,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -1283,8 +1291,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -1498,8 +1510,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -1510,7 +1526,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_attachment.rs",
-          "lines": "393-445",
+          "lines": "397-449",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_attachment.rs",
@@ -1586,8 +1602,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -1713,8 +1727,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -1801,8 +1819,6 @@
                 69,
                 70,
                 71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -1928,8 +1944,12 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! `remove-attachment` — Rust port of `src/commands/remove-attachment.ts` (RPC-268).",
+              "lastLine": "fn args_parse_with_camel_case() {"
             }
           ]
         }
@@ -1946,6 +1966,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_attachment.rs"
     ],
-    "totalLinesCovered": 2160
+    "totalLinesCovered": 2162
   }
 }

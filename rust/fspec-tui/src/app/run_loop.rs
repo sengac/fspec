@@ -75,8 +75,14 @@ impl App {
                     self.poll_transcripts();
                     // COPY-006: drive long-press selection Begin from the tick.
                     self.navigator.agent.poll_selection_tick();
+                    // TUI-130: and the board details strip's long press.
+                    self.navigator
+                        .board
+                        .poll_selection_tick_after(std::time::Duration::ZERO, &self.board_store);
                     let is_busy = self.is_session_busy();
-                    let is_animating = self.is_input_animating();
+                    // TUI-126: a copy confirmation keeps drawing until it ends.
+                    let is_animating =
+                        self.is_input_animating() || self.copy_notice.needs_redraw();
                     // TUI-106: a lazy mode-view cascade (Checkpoints /
                     // Changed Files) keeps the 16ms tick redrawing so the
                     // loading dialog's 80ms-cadence braille spinner
@@ -109,6 +115,7 @@ impl App {
                                 &mut self.agent_view_store,
                             );
                             self.compositor.render(frame.area(), frame.buffer_mut());
+                            self.copy_notice.render(frame.area(), frame.buffer_mut());
                             if let ViewMode::Agent = self.navigator.active_view {
                                 if self.navigator.agent.is_cursor_visible(
                                     &self.agent_view_store,

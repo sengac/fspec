@@ -27,6 +27,12 @@ OPTIONS
     Skip file path validation (useful for skeleton tests in reverse ACDD)
   --skip-step-validation
     Skip step comment validation (ONLY allowed for task work units - story and bug work units require MANDATORY step validation)
+  --test-mapping-index <index>
+    Zero-based test mapping index for implementation-only linking; requires --test-file and --expected-scenario-hash
+  --expected-scenario-hash <hash>
+    Expected canonical scenario SHA-256 from show-coverage --mapping-json; required with --test-mapping-index
+  --replace
+    Replace the scenario's mappings of --test-file with one mapping holding --test-lines, keeping their implementation mappings, and check only the new lines (without it a second link adds another mapping); requires --test-lines
 
 COMMON PATTERNS
   • Forward ACDD Workflow
@@ -37,7 +43,6 @@ fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.
 # After implementing
 <test-command>  # Tests pass (green)
 fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10-24
-    undefined
 
   • Reverse ACDD Workflow
     Example: # Link skeleton test (not implemented yet)
@@ -45,7 +50,6 @@ fspec link-coverage user-login --scenario "Login" --test-file src/__tests__/auth
 
 # Link existing implementation
 fspec link-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/routes/auth.ts --impl-lines 45-67 --skip-validation
-    undefined
 
 
 TYPICAL WORKFLOW
@@ -90,7 +94,7 @@ Note: --skip-step-validation is ONLY allowed for task work units
 
 RELATED COMMANDS
   fspec show-coverage
-  fspec audit-coverage
+  fspec audit
   fspec unlink-coverage
   fspec create-feature
 
@@ -101,7 +105,10 @@ NOTES
   • Coverage tracking is CRITICAL for reverse ACDD to track mapping progress
   • Line ranges: "45-62" for range, "10,11,12,23,24" for specific lines
   • Step validation: Test files must include step comments (// @step Given...) matching feature file steps
-  • Step comments support both @step prefix (recommended) and plain format (backward compatible)
-  • Parameterized steps ({int}, {string}) match via hybrid similarity algorithm
+  • Only @step comments count, and each must repeat its step's keyword and text exactly (runs of spaces count as one); plain comments such as // Given... do not
+  • Long step comments: end the @step line with a backslash and continue on the next comment line; the parts are joined with one space
+  • There is no similarity matching: a step comment with other words, stale wording or different letter case does not match
   • Step validation fails with helpful system-reminder showing exact text to add to test file
+  • Implementation mappings record the text of their first and last line (firstLine, lastLine) so fspec audit detects code that moved; the first line must be non-blank and unique in the file, so start the range at a distinctive line such as a signature
+  • Without --test-lines and --impl-file, --test-file links the scenario's exact @step block (its @step comments in step order with no other @step comment between) when it occurs exactly once in the file; otherwise link-coverage fails naming how often it occurs
 

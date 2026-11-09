@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
-          "lines": "41-71",
+          "lines": "44-74",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
@@ -17,6 +17,9 @@
                 25,
                 26,
                 27,
+                28,
+                28,
+                28,
                 28,
                 29,
                 30,
@@ -31,11 +34,10 @@
                 39,
                 40,
                 41,
-                42,
-                43,
-                44,
-                45
-              ]
+                42
+              ],
+              "firstLine": "pub(crate) fn spawn_delete_checkpoint(&mut self, work_unit_id: String, name: String) {",
+              "lastLine": "/// Spawn the delete-all transport call and fold the outcome back as"
             }
           ]
         }
@@ -46,11 +48,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
-          "lines": "74-97",
+          "lines": "77-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
               "lines": [
+                44,
+                45,
+                46,
                 47,
                 48,
                 49,
@@ -71,11 +76,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70
-              ]
+                67
+              ],
+              "firstLine": "pub(crate) fn spawn_delete_all_checkpoints(&mut self) {",
+              "lastLine": "/// reload / close + counts refresh)."
             }
           ]
         }

@@ -74,7 +74,7 @@ impl rig::tool::Tool for LatchedTool {
 
 pub async fn queued_abandonment_and_default_policy() -> TestResult {
     use codelet_tools::session_search::{set_session_search_handler, SessionSearchTool};
-    use std::{future::Future, task::Poll, time::Duration};
+    use std::{future::Future, task::Poll};
     let session = uuid::Uuid::new_v4();
     let searched = Arc::new(AtomicBool::new(false));
     let seen = searched.clone();
@@ -102,7 +102,7 @@ pub async fn queued_abandonment_and_default_policy() -> TestResult {
             .call_tool("LatchedControl", "{\"work_unit_id\":\"NONE\"}")
             .await
     });
-    tokio::time::timeout(Duration::from_secs(2), started.notified()).await?;
+    codelet_test_helpers::deadlock_guard("started.notified()", started.notified()).await?;
     let mut search = Box::pin(server.call_tool(
         "SessionSearch",
         "{\"action_type\":\"recent\",\"work_unit_id\":\"NONE\"}",
@@ -117,7 +117,8 @@ pub async fn queued_abandonment_and_default_policy() -> TestResult {
     let _ = control.await;
     assert_eq!(completed.load(Ordering::Acquire), 0);
     release.notify_one();
-    tokio::time::timeout(Duration::from_secs(2), server.get_tool_defs(None)).await??;
+    codelet_test_helpers::deadlock_guard("server.get_tool_defs(None)", server.get_tool_defs(None))
+        .await??;
     set_session_search_handler(session, None);
     assert_eq!(
         completed.load(Ordering::Acquire),
@@ -130,7 +131,7 @@ pub async fn queued_abandonment_and_default_policy() -> TestResult {
     );
     let genuine = server.call_tool("LatchedControl", "{\"work_unit_id\":\"NONE\"}");
     release.notify_one();
-    let error = tokio::time::timeout(Duration::from_secs(2), genuine)
+    let error = codelet_test_helpers::deadlock_guard("genuine", genuine)
         .await?
         .expect_err("genuine synthetic error must be returned");
     assert!(error
@@ -164,10 +165,13 @@ impl CompetingWriter {
             Ok(())
         });
         *self.task.lock().expect("writer handle poisoned") = Some(task);
+        // TEST-042: the append finishes while the search is between batches,
+        // or (if the search kept storage) only when the deadlock guard ends.
         self.progressed.store(
-            receiver
-                .recv_timeout(std::time::Duration::from_millis(350))
-                .is_ok(),
+            codelet_test_helpers::deadlock_guard_blocking("the competing append", move || {
+                receiver.recv()
+            })
+            .is_ok_and(|received| received.is_ok()),
             Ordering::Release,
         );
     }
@@ -192,6 +196,7 @@ impl Fixture {
     pub fn new(count: usize) -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
         persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().into())?;
         let mut manifest = persistence::create_session("large history", directory.path())?;
         for index in 0..count {

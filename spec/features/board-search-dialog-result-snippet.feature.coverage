@@ -72,7 +72,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "pub(super) fn build_rows(",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -105,7 +107,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "_ => EventResult::consumed(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -130,7 +134,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "pub fn snippet_for(unit: &WorkUnitInfo, mode: SearchMode) -> String {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -163,7 +169,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "_ => EventResult::consumed(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -188,7 +196,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "pub fn snippet_for(unit: &WorkUnitInfo, mode: SearchMode) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -204,17 +214,18 @@
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
               "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// BUG-160: the snippet width budget for the fixed frame (BUG-159) —",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
@@ -231,7 +242,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "pub fn truncate_to(s: &str, max_chars: usize) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -247,26 +260,6 @@
             {
               "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -290,8 +283,30 @@
                 143,
                 144,
                 145,
-                146
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn label_description_row(label: &str, description: &str, selected: bool) -> DialogRow {",
+              "lastLine": "}"
             }
           ]
         }
@@ -332,7 +347,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "pub fn filter_work_units(",
+              "lastLine": "/// Description mode, otherwise the title (which doubles as the fallback"
             }
           ]
         }
@@ -352,6 +369,6 @@
       "rust/fspec-tui/src/components/work_unit_search_filter.rs",
       "rust/fspec-tui/src/components/dialog_theme_rows.rs"
     ],
-    "totalLinesCovered": 419
+    "totalLinesCovered": 418
   }
 }

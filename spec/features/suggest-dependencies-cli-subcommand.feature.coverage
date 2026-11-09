@@ -31,7 +31,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -68,7 +70,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -105,7 +109,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -142,7 +148,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -166,7 +174,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -203,7 +213,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -214,7 +226,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_suggest_dependencies.rs",
-          "lines": "233-257",
+          "lines": "238-265",
           "implMappings": [
             {
               "file": "rust/fspec/src/suggest_dependencies.rs",
@@ -248,7 +260,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -265,6 +279,6 @@
     "implFiles": [
       "rust/fspec/src/suggest_dependencies.rs"
     ],
-    "totalLinesCovered": 331
+    "totalLinesCovered": 334
   }
 }

@@ -24,16 +24,16 @@ for group in range((len(methods)+2)//3):
   fields=', '.join(f'{n}: {t}' for n,t in m['args']);vals=', '.join('args.'+n for n,_ in m['args'])
   call=f'client.{m["name"]}(tarpc::context::current(){", " if vals else ""}{vals}).await.map_err(|e| InvokeError::Transport(e.to_string()))?'
   if m['return'].startswith('Result<'): call=f'{call}.map_err(|e| InvokeError::Daemon(format!("{{e:?}}")))?'
+  args_binding='args' if vals else '_args'
   lines.append(f'''pub(super) mod {m['name']} {{
     use super::*;
     #[derive(serde::Deserialize, schemars::JsonSchema)]
     #[serde(deny_unknown_fields)]
     pub struct Args {{ {fields} }}
-    pub fn schema() -> Value {{ serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default() }}
+    pub fn schema() -> Result<Value, serde_json::Error> {{ serde_json::to_value(schemars::schema_for!(Args)) }}
     pub fn validate(value: Value) -> Result<(), InvokeError> {{ let _: Args = serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?; Ok(()) }}
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {{
-        let args: Args = serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
+        let {args_binding}: Args = serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let value = {call};
         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
     }}
@@ -41,10 +41,10 @@ for group in range((len(methods)+2)//3):
 ''')
   m['module']=name
  (stage/(name+'.rs')).write_text(''.join(lines))
-lines=['use super::*;\n','#[rustfmt::skip]\npub fn methods() -> Vec<Method> { vec![\n']
+lines=['use super::*;\n','#[rustfmt::skip]\n/// The MCP method catalog; a schema that fails to serialize is an error\n/// naming the method (BUG-413), never a null schema.\npub fn methods() -> Result<Vec<Method>, CatalogError> { Ok(vec![\n']
 for m in methods:
- p=policy[m['name']];lines.append(f'Method {{ name: "{m["name"]}", schema: {m["module"]}::{m["name"]}::schema(), read_only: {str(p["read_only"]).lower()}, destructive: {str(p["destructive"]).lower()}, request_bound: {str(p["request_bound"]).lower()} }},\n')
-lines.append('] }\n')
+ p=policy[m['name']];lines.append(f'Method {{ name: "{m["name"]}", schema: method_schema("{m["name"]}", {m["module"]}::{m["name"]}::schema())?, read_only: {str(p["read_only"]).lower()}, destructive: {str(p["destructive"]).lower()}, request_bound: {str(p["request_bound"]).lower()} }},\n')
+lines.append('])\n}\n\n/// Attach the method name to a schema serialization failure.\npub fn method_schema(\n    method: &\'static str,\n    schema: Result<Value, serde_json::Error>,\n) -> Result<Value, CatalogError> {\n    schema.map_err(|source| CatalogError { method, source })\n}\n')
 (stage/'catalog.rs').write_text(''.join(lines))
 lines=['use super::*;\n','pub fn validate(name: &str, args: Value) -> Result<(), InvokeError> { match name {\n']
 for m in methods:lines.append(f'"{m["name"]}" => {m["module"]}::{m["name"]}::validate(args),\n')
@@ -66,9 +66,17 @@ pub enum InvokeError {
     #[error("Result serialization failed after execution: {0}")] Serialization(String),
     #[error("Unknown RPC method")] Unknown,
 }
+/// BUG-413: a method whose schema could not be built.
+#[derive(Debug, thiserror::Error)]
+#[error("schema for RPC method {method} failed to serialize: {source}")]
+pub struct CatalogError {
+    pub method: &'static str,
+    #[source]
+    pub source: serde_json::Error,
+}
 pub struct Method { pub name: &'static str, pub schema: Value, pub read_only: bool, pub destructive: bool, pub request_bound: bool }
 '''
-mod+='\n'.join(f'mod {x};' for x in modules)+'\nmod catalog;\nmod dispatch;\nmod validate;\npub use catalog::methods;\npub use dispatch::invoke;\npub use validate::validate;\n'
+mod+='\n'.join(f'mod {x};' for x in modules)+'\nmod catalog;\nmod dispatch;\nmod validate;\npub use catalog::{method_schema, methods};\npub use dispatch::invoke;\npub use validate::validate;\n'
 mod+='pub const INTERFACE: &str = env!("FSPEC_RPC_SCHEMA");\n'
 (stage/'mod.rs').write_text(mod)
 print('Generated',len(methods),'typed methods;',len(reads),'read-only,',len(methods)-len(reads),'state-changing')

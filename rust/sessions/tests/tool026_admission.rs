@@ -104,7 +104,8 @@ async fn scenario_none_clears_activity_without_weakening_permissions() -> Result
     // @step Given a session with stage restrictions and isolated-worktree boundaries
     let fixture = Fixture::new().await?;
     let actor = scenarios::restricted_writer(&fixture).await?;
-    let output = fixture.project.path().join("production.rs");
+    // BUG-449: an implementation file (src/), which the specifying stage forbids.
+    let output = fixture.project.path().join("src/production.rs");
     // @step When it invokes a tool attributed to "NONE"
     let input = json!({"work_unit_id":"NONE","file_path":output,"content":"forbidden"});
     let result = actor.call_tool("Write", &input.to_string()).await;
@@ -116,8 +117,8 @@ async fn scenario_none_clears_activity_without_weakening_permissions() -> Result
     assert!(!output.exists());
     assert_eq!(
         codelet_sessions::session_tool_callbacks::work_unit_stage(fixture.first.value.clone())
-            .as_deref(),
-        Some("specifying")
+            .map(|stage| stage.map(|stage| stage.stage)),
+        Ok(Some("specifying".to_string()))
     );
     scenarios::verify_path_restriction(&fixture, &actor, &output).await?;
     // @step And selecting a more permissive unrelated card does not replace its authorization binding
@@ -137,6 +138,12 @@ async fn scenario_metadata_is_removed_before_strict_delegation_while_audit_argum
 ) -> Result {
     // @step Given strict MCP typed dynamic and Rhai-mapped tools
     let fixture = Fixture::new().await?;
+    // BUG-447: the Rhai-mapped file tool resolves isolation through the
+    // shared callbacks; register them here instead of relying on test order.
+    codelet_sessions::session_tool_callbacks::register_manager(fixture.manager.clone());
+    codelet_tools::facade::set_get_effective_cwd_callback(
+        codelet_sessions::session_tool_callbacks::isolation_context,
+    );
     let calls = Arc::new(Mutex::new(Vec::new()));
     let actor = server(&fixture.first.value, calls.clone(), None).await?;
     let original = args("AUTH-003");

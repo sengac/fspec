@@ -53,7 +53,7 @@ const FEATURE_ONE_SCENARIO: &str = "Feature: User Login
     Then I see the dashboard
 ";
 
-const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/generate-coverage.txt");
+const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/refac020/generate-coverage.txt");
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Help output matches the captured TS fixture
@@ -81,7 +81,7 @@ fn scenario_help_output_matches_the_captured_ts_fixture() {
         "generate-coverage --help must exit 0; stderr={stderr}"
     );
 
-    // @step And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/generate-coverage.txt
+    // @step And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/refac020/generate-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
 }
 

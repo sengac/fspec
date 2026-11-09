@@ -80,7 +80,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let result = compute_stats(project_root);
+    let result = compute_stats(project_root)?;
 
     match args.format.as_deref() {
         Some("text") => Ok(render_text(&result)),
@@ -91,8 +91,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 }
 
-fn compute_stats(project_root: &Path) -> TagStatsResult {
-    let (tags_data, tags_file_found) = load_tags_registry(project_root);
+fn compute_stats(project_root: &Path) -> Result<TagStatsResult, FspecCoreError> {
+    let (tags_data, tags_file_found) =
+        load_tags_registry(&crate::io::spec_paths::tags(project_root)?);
 
     let files = match glob_feature_files(project_root) {
         Ok(v) => v,
@@ -101,7 +102,7 @@ fn compute_stats(project_root: &Path) -> TagStatsResult {
     };
 
     if files.is_empty() {
-        return TagStatsResult {
+        return Ok(TagStatsResult {
             success: true,
             total_files: 0,
             unique_tags: 0,
@@ -110,7 +111,7 @@ fn compute_stats(project_root: &Path) -> TagStatsResult {
             unused_tags: Vec::new(),
             tags_file_found,
             invalid_files: Vec::new(),
-        };
+        });
     }
 
     let mut tag_counts: Vec<(String, usize)> = Vec::new();
@@ -144,7 +145,7 @@ fn compute_stats(project_root: &Path) -> TagStatsResult {
     let (categories, unused_tags) =
         build_categories(&tag_counts, tags_data.as_ref(), tags_file_found);
 
-    TagStatsResult {
+    Ok(TagStatsResult {
         success: true,
         total_files: files.len(),
         unique_tags,
@@ -153,12 +154,11 @@ fn compute_stats(project_root: &Path) -> TagStatsResult {
         unused_tags,
         tags_file_found,
         invalid_files,
-    }
+    })
 }
 
-fn load_tags_registry(project_root: &Path) -> (Option<TagsData>, bool) {
-    let path = project_root.join("spec").join("tags.json");
-    let raw = match std::fs::read_to_string(&path) {
+fn load_tags_registry(path: &Path) -> (Option<TagsData>, bool) {
+    let raw = match std::fs::read_to_string(path) {
         Ok(s) => s,
         Err(_) => return (None, false),
     };

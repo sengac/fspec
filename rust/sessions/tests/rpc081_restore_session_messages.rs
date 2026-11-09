@@ -12,8 +12,8 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::sync::Arc;
-use std::time::Duration;
+#[path = "fixtures/offline_catalog.rs"]
+mod offline_catalog;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_rpc_types::{SessionId, StreamChunk};
@@ -32,50 +32,40 @@ use tokio::sync::{broadcast, Mutex};
 /// so serialising the whole body is both correct and async-safe).
 static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
-/// Drain all currently-broadcasted chunks for the given session,
-/// waiting up to `total_timeout` and collecting everything that
-/// arrives until either (a) a `Done` is observed, OR (b) the timeout
-/// elapses, OR (c) `recv` errors. The Done chunk is included in the
-/// returned vector when present.
-async fn drain_chunks_for(
+/// Drain every chunk already broadcast for the given session, without
+/// waiting (TEST-042: restore_session_messages has returned by the time
+/// this runs, and any chunk it emits is broadcast synchronously, so it
+/// would already be here).
+fn drain_chunks_for(
     rx: &mut broadcast::Receiver<(SessionId, StreamChunk)>,
     sid: &str,
-    total_timeout: Duration,
 ) -> Vec<StreamChunk> {
     let mut out = Vec::new();
-    let deadline = tokio::time::Instant::now() + total_timeout;
-    while tokio::time::Instant::now() < deadline {
-        let remaining = deadline - tokio::time::Instant::now();
-        let recv = tokio::time::timeout(remaining.min(Duration::from_millis(100)), rx.recv()).await;
-        match recv {
-            Ok(Ok((session_id, chunk))) => {
-                if session_id.value != sid {
-                    continue;
-                }
-                let is_done = matches!(chunk, StreamChunk::Done);
-                out.push(chunk);
-                if is_done {
-                    return out;
+    loop {
+        match rx.try_recv() {
+            Ok((session_id, chunk)) => {
+                if session_id.value == sid {
+                    out.push(chunk);
                 }
             }
-            Ok(Err(_)) => return out,
-            Err(_) => {
-                // Tick timed out — if we already have something, return.
-                if !out.is_empty() {
-                    return out;
-                }
-            }
+            Err(broadcast::error::TryRecvError::Lagged(_)) => continue,
+            Err(_) => return out,
         }
     }
-    out
 }
 
 /// Create a fresh BackgroundSession via the SessionManagerHandle bridge.
 /// The Noop hooks ensure no agent loop is spawned for the session.
 async fn fresh_session(manager: &SessionManager) -> SessionId {
-    manager.set_default_model("anthropic/claude-opus-4-5");
+    offline_catalog::seed_offline_catalog().expect("seed the offline model catalog");
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = manager;
-    handle.create_session(None)
+    handle
+        .create_session_checked(None)
+        .expect("fresh session must be created")
 }
 
 fn user_envelope(content: serde_json::Value) -> String {
@@ -99,17 +89,26 @@ fn assistant_envelope(content: serde_json::Value) -> String {
 }
 
 // ============================================================================
-// Scenario: restore_session_messages replays a one-user-one-assistant
-// transcript into inner.messages and the output stream
+// Scenario: restore_session_messages installs a one-user-one-assistant
+// transcript into inner.messages
 // ============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output() {
     let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let mut chunks_rx = manager.chunks_tx().subscribe();
     let sid = fresh_session(&manager).await;
 
@@ -139,7 +138,7 @@ async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output(
         "restore_session_messages must succeed: {result:?}"
     );
 
-    // @step Then session.inner.lock().await.messages.len() equals 2 (post-restoration delta)
+    // @step Then session.inner.lock().await.messages.len() equals 2
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
     let added = inner.messages.len() - baseline_len;
@@ -180,47 +179,39 @@ async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output(
     }
     drop(inner);
 
-    // @step And the broadcasted StreamChunks for that session are, in order, UserInput("hello"), Text("hi back"), Done
-    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(2)).await;
-    let user_inputs: Vec<&str> = chunks
+    // @step And no UserInput or Text StreamChunk is built from the envelopes, because the visible transcript is paged from the persisted archival transcript
+    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value);
+    let replayed: Vec<&StreamChunk> = chunks
         .iter()
-        .filter_map(|c| match c {
-            StreamChunk::UserInput { text } => Some(text.as_str()),
-            _ => None,
-        })
+        .filter(|c| matches!(c, StreamChunk::UserInput { .. } | StreamChunk::Text { .. }))
         .collect();
-    let texts: Vec<&str> = chunks
-        .iter()
-        .filter_map(|c| match c {
-            StreamChunk::Text { text, .. } => Some(text.as_str()),
-            _ => None,
-        })
-        .collect();
-    let done_count = chunks
-        .iter()
-        .filter(|c| matches!(c, StreamChunk::Done))
-        .count();
-    assert_eq!(user_inputs, vec!["hello"], "UserInput chunks mismatch");
-    assert_eq!(texts, vec!["hi back"], "Text chunks mismatch");
     assert!(
-        done_count >= 1,
-        "expected at least one Done chunk, got {done_count}"
+        replayed.is_empty(),
+        "envelopes must not become chunks: {replayed:?}"
     );
 }
 
 // ============================================================================
-// Scenario: Assistant restoration replays thinking, text, and tool_use blocks
-// then a terminating Done
+// Scenario: Assistant restoration installs thinking, text, and tool_use blocks
+// as one assistant message
 // ============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
     let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
-    let mut chunks_rx = manager.chunks_tx().subscribe();
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let baseline_len = {
         let session = manager.get_session(&sid.value).expect("session must exist");
@@ -228,7 +219,7 @@ async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
         inner.messages.len()
     };
 
-    // @step And an assistant MessageEnvelope JSON whose content is [{"type":"thinking", ...}, {"type":"text", ...}, {"type":"tool_use", ...}]
+    // @step And an assistant MessageEnvelope JSON whose content is [{"type":"thinking","thinking":"hmm"},{"type":"text","text":"reading"},{"type":"tool_use","id":"t1","name":"Read","input":{"path":"/tmp/x"}}]
     let envelope = assistant_envelope(serde_json::json!([
         { "type": "thinking", "thinking": "hmm" },
         { "type": "text", "text": "reading" },
@@ -248,82 +239,61 @@ async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
         "restore_session_messages must succeed: {result:?}"
     );
 
-    // @step Then the broadcasted StreamChunks for that session are, in order, Thinking("hmm"), Text("reading"), ToolCall{...}, Done
-    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(2)).await;
-    // Filter the relevant content chunks (strip session_state_change/etc. noise).
-    let relevant: Vec<&StreamChunk> = chunks
-        .iter()
-        .filter(|c| {
-            matches!(
-                c,
-                StreamChunk::Thinking { .. }
-                    | StreamChunk::Text { .. }
-                    | StreamChunk::ToolCall { .. }
-                    | StreamChunk::Done
-            )
-        })
-        .collect();
-    assert_eq!(
-        relevant.len(),
-        4,
-        "expected 4 relevant chunks (Thinking, Text, ToolCall, Done); got {} — full chunks: {:?}",
-        relevant.len(),
-        chunks
-    );
-    match relevant[0] {
-        StreamChunk::Thinking { thinking, .. } => assert_eq!(thinking, "hmm"),
-        other => panic!("expected Thinking at [0], got {other:?}"),
-    }
-    match relevant[1] {
-        StreamChunk::Text { text, .. } => assert_eq!(text, "reading"),
-        other => panic!("expected Text at [1], got {other:?}"),
-    }
-    match relevant[2] {
-        StreamChunk::ToolCall { tool_call, .. } => {
-            assert_eq!(tool_call.id, "t1");
-            assert_eq!(tool_call.name, "Read");
-            let parsed: serde_json::Value =
-                serde_json::from_str(&tool_call.input).expect("ToolCall.input must be valid JSON");
-            assert_eq!(parsed, serde_json::json!({ "path": "/tmp/x" }));
-        }
-        other => panic!("expected ToolCall at [2], got {other:?}"),
-    }
-    assert!(matches!(relevant[3], StreamChunk::Done));
-
-    // @step And session.inner.lock().await.messages contains exactly one rig::message::Message::Assistant whose joined text equals "reading"
+    // @step Then session.inner.lock().await.messages contains exactly one rig::message::Message::Assistant
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
-    let added = inner.messages.len() - baseline_len;
-    assert_eq!(added, 1, "expected exactly 1 restored message, got {added}");
     let restored = &inner.messages[baseline_len..];
-    match &restored[0] {
-        rig::message::Message::Assistant { content, .. } => {
-            let joined: String = content
-                .iter()
-                .map(|ac| match ac {
-                    rig::message::AssistantContent::Text(t) => t.text.clone(),
-                    _ => String::new(),
-                })
-                .collect();
-            assert_eq!(joined, "reading");
+    assert_eq!(restored.len(), 1, "expected exactly 1 restored message");
+    let rig::message::Message::Assistant { content, .. } = &restored[0] else {
+        panic!("expected Assistant at restored[0], got {:?}", restored[0]);
+    };
+
+    // @step And its content is, in order, reasoning "hmm", text "reading", and a tool call with id "t1" and name "Read" and arguments {"path":"/tmp/x"}
+    let blocks: Vec<_> = content.iter().collect();
+    assert_eq!(blocks.len(), 3, "{blocks:?}");
+    match blocks[0] {
+        rig::message::AssistantContent::Reasoning(reasoning) => {
+            assert_eq!(reasoning.reasoning.join(""), "hmm")
         }
-        other => panic!("expected Assistant at restored[0], got {other:?}"),
+        other => panic!("expected reasoning first, got {other:?}"),
+    }
+    match blocks[1] {
+        rig::message::AssistantContent::Text(text) => assert_eq!(text.text, "reading"),
+        other => panic!("expected text second, got {other:?}"),
+    }
+    match blocks[2] {
+        rig::message::AssistantContent::ToolCall(call) => {
+            assert_eq!(call.id, "t1");
+            assert_eq!(call.function.name, "Read");
+            assert_eq!(
+                call.function.arguments,
+                serde_json::json!({ "path": "/tmp/x" })
+            );
+        }
+        other => panic!("expected tool call third, got {other:?}"),
     }
 }
 
 // ============================================================================
-// Scenario: User restoration replays tool_result blocks as StreamChunk::ToolResult
-// and does not append to inner messages
+// Scenario: User restoration installs tool_result blocks as a user tool-result message
 // ============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_tool_result_without_appending_inner() {
     let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
-    let mut chunks_rx = manager.chunks_tx().subscribe();
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let baseline_len = {
         let session = manager.get_session(&sid.value).expect("session must exist");
@@ -331,7 +301,7 @@ async fn restore_messages_replays_tool_result_without_appending_inner() {
         inner.messages.len()
     };
 
-    // @step And a user MessageEnvelope JSON whose content is [{"type":"tool_result", ...}]
+    // @step And a user MessageEnvelope JSON whose content is [{"type":"tool_result","tool_use_id":"t1","content":"contents","is_error":false}]
     let envelope = user_envelope(serde_json::json!([
         {
             "type": "tool_result",
@@ -349,46 +319,54 @@ async fn restore_messages_replays_tool_result_without_appending_inner() {
         "restore_session_messages must succeed: {result:?}"
     );
 
-    // @step Then the broadcasted StreamChunks for that session contain a ToolResult with tool_call_id "t1" and content "contents" and is_error false
-    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(1)).await;
-    let tool_results: Vec<_> = chunks
-        .iter()
-        .filter_map(|c| match c {
-            StreamChunk::ToolResult { tool_result, .. } => Some(tool_result),
-            _ => None,
-        })
-        .collect();
-    assert_eq!(
-        tool_results.len(),
-        1,
-        "expected exactly one ToolResult chunk"
-    );
-    let tr = tool_results[0];
-    assert_eq!(tr.tool_call_id, "t1");
-    assert_eq!(tr.content, "contents");
-    assert!(!tr.is_error);
-
-    // @step And session.inner.lock().await.messages.len() equals 0 (no new messages from tool_result-only envelope)
+    // @step Then session.inner.lock().await.messages contains exactly one rig::message::Message::User
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
-    let added = inner.messages.len() - baseline_len;
-    assert_eq!(
-        added, 0,
-        "tool_result-only envelope must NOT append to inner.messages (added: {added})"
-    );
+    let restored = &inner.messages[baseline_len..];
+    assert_eq!(restored.len(), 1, "expected exactly 1 restored message");
+    let rig::message::Message::User { content } = &restored[0] else {
+        panic!("expected User at restored[0], got {:?}", restored[0]);
+    };
+
+    // @step And its only content is a tool result for "t1" whose text is "contents"
+    let blocks: Vec<_> = content.iter().collect();
+    match blocks.as_slice() {
+        [rig::message::UserContent::ToolResult(result)] => {
+            assert_eq!(result.id, "t1");
+            let text: String = result
+                .content
+                .iter()
+                .map(|part| match part {
+                    rig::message::ToolResultContent::Text(text) => text.text.clone(),
+                    _ => String::new(),
+                })
+                .collect();
+            assert_eq!(text, "contents");
+        }
+        other => panic!("expected one tool result, got {other:?}"),
+    }
 }
 
 // ============================================================================
-// Scenario: System-reminder envelopes are silently skipped during restoration
+// Scenario: Replaceable runtime-reminder envelopes are silently skipped during restoration
 // ============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_skips_system_reminder_envelopes_silently() {
     let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let mut chunks_rx = manager.chunks_tx().subscribe();
     let sid = fresh_session(&manager).await;
     let baseline_len = {
@@ -397,13 +375,18 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
         inner.messages.len()
     };
 
-    // @step And a user MessageEnvelope JSON whose content contains a stale system-reminder
-    let envelope = user_envelope(serde_json::json!([
-        {
-            "type": "text",
-            "text": "<system-reminder>\n<!-- type:fspecWorkflow -->\nstale\n</system-reminder>"
+    // @step And a user MessageEnvelope JSON marked "_runtimeReminder" {"version":1,"replaceable":true} whose content is a stale system-reminder
+    let envelope = serde_json::to_string(&serde_json::json!({
+        "_runtimeReminder": { "version": 1, "replaceable": true },
+        "message": {
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": "<system-reminder>\n<!-- type:fspecWorkflow -->\nstale\n</system-reminder>"
+            }]
         }
-    ]));
+    }))
+    .expect("reminder envelope JSON serialises");
 
     // @step When restore_session_messages is invoked with that envelope via SessionManagerHandle
     let handle: &dyn SessionManagerHandle = &*manager;
@@ -413,7 +396,7 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
         "restore_session_messages must succeed: {result:?}"
     );
 
-    // @step Then session.inner.lock().await.messages.len() equals 0 (delta from baseline)
+    // @step Then session.inner.lock().await.messages.len() equals 0
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
     let added = inner.messages.len() - baseline_len;
@@ -424,7 +407,7 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
     drop(inner);
 
     // @step And no StreamChunk is broadcasted to the session's output for that envelope
-    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_millis(500)).await;
+    let chunks = drain_chunks_for(&mut chunks_rx, &sid.value);
     // Filter out non-content chunks emitted by session creation/etc. that
     // are not part of restoration. The restoration path itself MUST emit
     // zero chunks for a system-reminder-only envelope.
@@ -457,9 +440,18 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
 async fn restore_messages_returns_err_on_unknown_session_id_without_panic() {
     let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManagerHandle whose underlying SessionManager has no session registered under the id "00000000-0000-0000-0000-000000000000"
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let unknown = SessionId::from("00000000-0000-0000-0000-000000000000".to_string());
 
     // @step When restore_session_messages is invoked with that id and an empty envelope vector
@@ -485,10 +477,19 @@ async fn restore_messages_returns_err_on_unknown_session_id_without_panic() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_returns_err_on_malformed_envelope_json() {
     let _guard = DATA_DIR_GUARD.lock().await;
-    // @step Given a SessionManager has created a fresh BackgroundSession with baseline inner.messages.len() == N
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    // @step Given a SessionManager has created a fresh BackgroundSession with messages.len() == 0
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
+    codelet_core::persistence::reset_stores_for_tests();
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let baseline_len = {
         let session = manager.get_session(&sid.value).expect("session must exist");
@@ -500,14 +501,14 @@ async fn restore_messages_returns_err_on_malformed_envelope_json() {
     let handle: &dyn SessionManagerHandle = &*manager;
     let result = handle.restore_session_messages(&sid, vec!["{ not json".to_string()]);
 
-    // @step Then the call returns Err whose message contains "Failed to parse envelope"
+    // @step Then the call returns Err whose message contains "invalid replay JSON"
     let err = result.expect_err("expected Err on malformed JSON");
     assert!(
-        err.contains("Failed to parse envelope"),
-        "expected 'Failed to parse envelope' in err message, got: {err}"
+        err.contains("invalid replay JSON"),
+        "expected 'invalid replay JSON' in err message, got: {err}"
     );
 
-    // @step And session.inner.lock().await.messages.len() still equals N (no mutation on parse failure)
+    // @step And session.inner.lock().await.messages.len() still equals 0
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
     assert_eq!(

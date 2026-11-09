@@ -19,12 +19,13 @@ pub(super) struct FocusState {
 
 impl super::MockBackend {
     pub fn clear_focus_after_binding(&self) {
-        self.focus_state
+        self.core
+            .focus_state
             .clear_after_bind
             .store(true, Ordering::SeqCst);
     }
     pub fn focus_fetches(&self) -> usize {
-        self.focus_state.fetches.load(Ordering::SeqCst)
+        self.core.focus_state.fetches.load(Ordering::SeqCst)
     }
 }
 

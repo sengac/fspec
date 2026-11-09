@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-108
+@tools
+@provider-abstraction
 Feature: Codex shell_command facade ignores workdir and timeout_ms params
   """
   Uses the existing codex.rs patterns — add fields to InternalBashParams::Execute, update map_params, update BashToolFacadeWrapper::call match arm

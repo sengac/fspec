@@ -180,7 +180,7 @@ fn the_disk_read_back_tolerates_absent_and_lenient_max_images() {
     // Load the profiles from fspec-config.json
     let guard = EnvGuard::capture(&["FSPEC_USER_DIR"]);
     std::env::set_var("FSPEC_USER_DIR", dir.path());
-    let profiles = load_local_server_profiles();
+    let profiles = load_local_server_profiles().expect("the profiles load");
     let legacy = profiles
         .iter()
         .find(|p| p.name == "legacy")
@@ -207,7 +207,7 @@ fn the_disk_read_back_tolerates_absent_and_lenient_max_images() {
         .unwrap(),
     )
     .unwrap();
-    let profiles = load_local_server_profiles();
+    let profiles = load_local_server_profiles().expect("the profiles load");
     let ts = profiles
         .iter()
         .find(|p| p.name == "ts-written")

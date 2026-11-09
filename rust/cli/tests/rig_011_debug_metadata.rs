@@ -10,6 +10,16 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_cli::session::Session;
+use codelet_providers::{ProviderManager, ProviderType};
+
+/// A Codex session that needs no Codex login on this machine (BUG-548).
+fn codex_session() -> Session {
+    Session::from_provider_manager(ProviderManager::for_testing(
+        ProviderType::Codex,
+        None,
+        None,
+    ))
+}
 
 // =============================================================================
 // Layer 4: Debug metadata model identity
@@ -19,7 +29,7 @@ use codelet_cli::session::Session;
 #[test]
 fn test_session_current_model_id_differs_from_provider_name() {
     // @step Given a session with provider "codex" and model_id "gpt-5.3-codex"
-    let session = Session::new(Some("codex")).expect("Failed to create session");
+    let session = codex_session();
 
     // @step When debug capture session metadata is set via repl_loop
     let provider_name = session.current_provider_name();
@@ -34,7 +44,7 @@ fn test_session_current_model_id_differs_from_provider_name() {
     // @step And the SessionMetadata provider field should be "codex"
     // model_id may be None if no specific model was selected, but it should NOT
     // be equal to provider_name when a model IS selected
-    // Note: Session::new doesn't select a model, so model_id will be None.
+    // Note: the session doesn't select a model, so model_id will be None.
     // The key invariant is: when model_id IS Some, it should be used in metadata.
     // This test documents the API surface that the fix relies on.
     let _model_id: Option<String> = model_id;
@@ -44,7 +54,7 @@ fn test_session_current_model_id_differs_from_provider_name() {
 #[test]
 fn test_debug_api_request_event_should_use_model_id_not_provider_name() {
     // @step Given a debug-enabled session with provider "codex" and model_id "gpt-5.3-codex"
-    let session = Session::new(Some("codex")).expect("Failed to create session");
+    let session = codex_session();
 
     // @step When an api.request event is captured in stream_loop
     // The current buggy code does:

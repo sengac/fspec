@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-187
+@cli
+@foundation-management
 Feature: Port add-policy command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_policy.rs. Reuses io::ensure::ensure_work_units_file,

@@ -1,4 +1,6 @@
 @KGRAPH-018
+@parser
+@code-analysis
 Feature: AST Dependency Graph Population
   """
   Dependency parsers in rust/napi/src/graph/ast_pipeline/ — npm_dep_extractor.rs and cargo_dep_extractor.rs. Uses serde_json for package.json and toml crate for Cargo.toml parsing. Produces GraphEntity values reusing helpers.rs from KGRAPH-017.

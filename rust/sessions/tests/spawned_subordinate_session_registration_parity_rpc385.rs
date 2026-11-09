@@ -24,7 +24,6 @@
 #![allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use tokio::sync::Mutex;
 
@@ -56,8 +55,9 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     Ok((data_dir, manager))
 }
 
@@ -79,10 +79,13 @@ async fn creating_a_session_broadcasts_a_session_created_event() -> Result<(), S
         .await?;
 
     // @step Then the subscriber receives the new session id
-    let received = tokio::time::timeout(Duration::from_millis(500), session_created_rx.recv())
-        .await
-        .map_err(|_| "timed out waiting for session-created broadcast".to_string())?
-        .map_err(|e| format!("broadcast recv error: {e}"))?;
+    let received = codelet_test_helpers::deadlock_guard(
+        "session_created_rx.recv()",
+        session_created_rx.recv(),
+    )
+    .await
+    .map_err(|_| "timed out waiting for session-created broadcast".to_string())?
+    .map_err(|e| format!("broadcast recv error: {e}"))?;
     assert_eq!(
         received.id, id,
         "the broadcast payload must carry the SessionId of the just-created session"

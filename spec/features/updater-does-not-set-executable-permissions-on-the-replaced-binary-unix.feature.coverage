@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/upd004_update_executable_permissions.rs",
-          "lines": "137-168",
+          "lines": "134-173",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/update/replace.rs",
@@ -28,7 +28,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "install_path",
+              "lastLine": "{"
             }
           ]
         }
@@ -45,6 +47,6 @@
     "implFiles": [
       "rust/fspec-core/src/update/replace.rs"
     ],
-    "totalLinesCovered": 50
+    "totalLinesCovered": 58
   }
 }

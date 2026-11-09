@@ -5,23 +5,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov142_auto_continue_persistence.rs",
-          "lines": "38-52",
+          "lines": "42-58",
           "implMappings": [
             {
               "file": "rust/sessions/src/conversions.rs",
               "lines": [
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
                 178,
                 179,
@@ -32,8 +20,22 @@
                 184,
                 185,
                 186,
-                187
-              ]
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "/// (`compaction_threshold_type` / `compaction_threshold_value`) are folded back",
+              "lastLine": "max_output_tokens: wire.max_output_tokens,"
             }
           ]
         }
@@ -44,11 +46,12 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov142_auto_continue_persistence.rs",
-          "lines": "56-106",
+          "lines": "60-112",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
+                162,
                 163,
                 164,
                 165,
@@ -76,9 +79,10 @@
                 187,
                 188,
                 189,
-                190,
-                191
-              ]
+                190
+              ],
+              "firstLine": "fn ensure_object<'a>(",
+              "lastLine": "profile,"
             }
           ]
         }
@@ -96,6 +100,6 @@
       "rust/sessions/src/conversions.rs",
       "rust/sessions/src/profile_persistence.rs"
     ],
-    "totalLinesCovered": 118
+    "totalLinesCovered": 122
   }
 }

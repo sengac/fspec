@@ -141,8 +141,6 @@
                 129,
                 130,
                 131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -178,8 +176,12 @@
                 166,
                 167,
                 168,
-                169
-              ]
+                169,
+                170,
+                171
+              ],
+              "firstLine": "//! Slash command parser invoked by `handle_input_submitted` BEFORE",
+              "lastLine": "// MUX-001: route the entire `/mux …` family to the dedicated parser."
             }
           ]
         }
@@ -190,34 +192,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "110-144",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
-              "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
+          "lines": "207-230",
+          "implMappings": []
+        },
+        {
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
+          "lines": "113-156",
+          "implMappings": []
         }
       ]
     },
@@ -226,34 +207,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "146-175",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
-              "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
+          "lines": "207-230",
+          "implMappings": []
+        },
+        {
+          "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
+          "lines": "158-205",
+          "implMappings": []
         }
       ]
     },
@@ -262,19 +222,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "177-196",
+          "lines": "206-228",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
+                29,
+                30,
                 31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37
-              ]
+                32
+              ],
+              "firstLine": "pub(crate) fn handle_open_role_dialog(&mut self) {",
+              "lastLine": "};"
             }
           ]
         }
@@ -285,24 +244,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "198-226",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209
-              ]
-            }
-          ]
+          "lines": "232-269",
+          "implMappings": []
         }
       ]
     },
@@ -311,18 +254,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "228-255",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                207,
-                208,
-                209,
-                210
-              ]
-            }
-          ]
+          "lines": "270-299",
+          "implMappings": []
         }
       ]
     },
@@ -331,18 +264,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "257-284",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                197,
-                198,
-                199,
-                200
-              ]
-            }
-          ]
+          "lines": "302-331",
+          "implMappings": []
         }
       ]
     },
@@ -351,15 +274,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_role_rpc063.rs",
-          "lines": "286-317",
+          "lines": "334-371",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
-                35,
-                36,
-                37
-              ]
+                33,
+                34,
+                35
+              ],
+              "firstLine": "if self.compositor.contains(ROLE_DIALOG_ID) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -375,9 +300,8 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/slash_parser.rs",
-      "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
-      "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
+      "rust/fspec-tui/src/app/dispatch_role_dialog.rs"
     ],
-    "totalLinesCovered": 475
+    "totalLinesCovered": 511
   }
 }

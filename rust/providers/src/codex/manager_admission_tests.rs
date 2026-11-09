@@ -62,14 +62,14 @@ async fn explicit_overrides_remain_separate_from_catalog_limits() -> TestResult 
     manager.set_model_direct("codex", "shared-model", Some(5000), None, None)?;
     assert_eq!(manager.registry_context_window, Some(10000));
     assert_eq!(manager.registry_max_output_tokens, Some(100));
-    assert_eq!(manager.context_window(), 5000);
-    assert_eq!(manager.max_output_tokens(), 100);
+    assert_eq!(manager.context_window(), Some(5000));
+    assert_eq!(manager.max_output_tokens(), Some(100));
     manager.set_model_direct("codex", "shared-model", None, Some(50), None)?;
-    assert_eq!(manager.context_window(), 10000);
-    assert_eq!(manager.max_output_tokens(), 50);
+    assert_eq!(manager.context_window(), Some(10000));
+    assert_eq!(manager.max_output_tokens(), Some(50));
     manager.set_model_direct("codex", "shared-model", None, None, None)?;
-    assert_eq!(manager.context_window(), 10000);
-    assert_eq!(manager.max_output_tokens(), 100);
+    assert_eq!(manager.context_window(), Some(10000));
+    assert_eq!(manager.max_output_tokens(), Some(100));
     Ok(())
 }
 
@@ -92,7 +92,7 @@ async fn profile_selections_inherit_catalog_limits_for_fields_without_overrides(
     assert_eq!(manager.registry_context_window, Some(10000));
     assert_eq!(manager.registry_max_output_tokens, Some(100));
     assert_eq!(manager.raw_model_max_output_tokens(), Some(100));
-    assert_eq!(manager.max_output_tokens(), 100);
+    assert_eq!(manager.max_output_tokens(), Some(100));
     Ok(())
 }
 
@@ -106,7 +106,7 @@ async fn unknown_selections_clear_previously_known_limits() -> TestResult {
     assert_eq!(manager.raw_model_max_output_tokens(), None);
     assert_eq!(
         (manager.context_window(), manager.max_output_tokens()),
-        (0, 0)
+        (None, None)
     );
     Ok(())
 }

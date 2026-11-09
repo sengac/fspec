@@ -59,7 +59,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": ".and_then(|usage| usage.cache_creation_input_tokens)",
+              "lastLine": ".checked_add(input)"
             },
             {
               "file": "rust/core/src/persistence/compaction_commit.rs",
@@ -82,7 +84,6 @@
                 159,
                 160,
                 161,
-                162,
                 163,
                 164,
                 165,
@@ -107,7 +108,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "let generation = candidate.source.generation + 1;",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/request_settlement_hook.rs",
@@ -165,7 +168,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "async fn on_completion_call(",
+              "lastLine": "}"
             }
           ]
         }
@@ -230,22 +235,30 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": ".and_then(|usage| usage.cache_creation_input_tokens)",
+              "lastLine": ".checked_add(input)"
             },
             {
               "file": "rust/core/src/persistence/manifest_commit.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
                 111,
                 112,
                 113,
@@ -253,8 +266,18 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn locked<Output>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -337,7 +360,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "pub fn replace_request_context(",
+              "lastLine": ".checked_add(input)"
             }
           ]
         }
@@ -357,6 +382,6 @@
       "rust/core/src/request_settlement_hook.rs",
       "rust/core/src/persistence/manifest_commit.rs"
     ],
-    "totalLinesCovered": 410
+    "totalLinesCovered": 423
   }
 }

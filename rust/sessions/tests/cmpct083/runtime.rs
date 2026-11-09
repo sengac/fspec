@@ -105,8 +105,8 @@ where
     M: CompletionModel + 'static,
     M::StreamingResponse: Send + GetTokenUsage,
 {
-    tokio::time::timeout(
-        std::time::Duration::from_secs(15),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, 'next', inner, Arc::new(AtomicBo...",
         run_agent_stream(
             agent,
             "next",

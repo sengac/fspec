@@ -20,17 +20,10 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
-use std::path::PathBuf;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 
 /// Read `rust/cli/src/interactive/<file>` relative to this crate's manifest.
-fn cli_interactive_src(file: &str) -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src")
-        .join("interactive")
-        .join(file);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
-}
 
 // ===========================================================================
 // Scenario: registration site no longer hard-codes Uuid::nil()
@@ -39,7 +32,7 @@ fn cli_interactive_src(file: &str) -> String {
 #[test]
 fn stream_loop_registration_does_not_hardcode_uuid_nil() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = stream_loop_source_tree::stream_loop_source();
 
     // @step When I inspect the tool-progress registration site
     // @step Then it does not bind `let cli_session_id = Uuid::nil();`
@@ -58,7 +51,7 @@ fn stream_loop_registration_does_not_hardcode_uuid_nil() {
 #[test]
 fn stream_loop_registers_and_clears_under_threaded_session_id() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = stream_loop_source_tree::stream_loop_source();
 
     // @step When I inspect the tool-progress registration and clear sites
     // @step Then the callback is registered under the threaded `session_id`
@@ -68,10 +61,12 @@ fn stream_loop_registers_and_clears_under_threaded_session_id() {
     //       Some(Arc::new(...
     // so we assert the call opens with `set_tool_progress_callback(` followed
     // (allowing whitespace) by the `session_id` argument and a `Some(`.
-    let reg_pos = src
+    // BUG-306: registration lives in stream_loop/telemetry.rs.
+    let telemetry = stream_loop_source_tree::stream_loop_module("telemetry");
+    let reg_pos = telemetry
         .find("set_tool_progress_callback(")
         .expect("stream_loop.rs must call set_tool_progress_callback(...)");
-    let reg_tail = &src[reg_pos..];
+    let reg_tail = &telemetry[reg_pos..];
     // First occurrence should be the Some(...) registration.
     let after_open = reg_tail
         .find('(')
@@ -94,7 +89,8 @@ fn stream_loop_registers_and_clears_under_threaded_session_id() {
 
     // @step And the callback is cleared under the threaded `session_id`
     assert!(
-        src.contains("set_tool_progress_callback(session_id, None)"),
+        src.contains("set_tool_progress_callback(session_id, None)")
+            || src.contains("set_tool_progress_callback(context.session_id, None)"),
         "stream_loop.rs must clear the tool-progress callback with the \
          threaded `session_id` param: `set_tool_progress_callback(session_id, None)`"
     );
@@ -114,12 +110,13 @@ fn stream_loop_registers_and_clears_under_threaded_session_id() {
 #[test]
 fn run_agent_stream_internal_declares_session_id_param() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let src = cli_interactive_src("stream_loop.rs");
+    // BUG-306: run_agent_stream_internal became stream_loop/driver.rs::run.
+    let src = stream_loop_source_tree::stream_loop_module("driver");
 
     // @step When I inspect the run_agent_stream_internal signature
     let fn_pos = src
-        .find("async fn run_agent_stream_internal")
-        .expect("stream_loop.rs must declare `async fn run_agent_stream_internal`");
+        .find("async fn run<")
+        .expect("stream_loop/driver.rs must declare `async fn run`");
     let sig_tail = &src[fn_pos..];
     let open = sig_tail.find('(').expect("fn signature must have `(`");
     let close = sig_tail[open..]

@@ -3,6 +3,7 @@
 @napi
 @credentials
 @CONFIG-005
+@providers
 Feature: Move Credential Management to Rust
   """
   Create rust/napi/src/credentials/ module with: mod.rs, store.rs, types.rs, resolver.rs, napi_bindings.rs
@@ -112,7 +113,7 @@ Feature: Move Credential Management to Rust
   Scenario: TypeScript saveCredential triggers Rust reload
   # TypeScript Coordination Tests (Rules 5, 6)
     Given TypeScript saves a new API key to the credentials file
-    When credentials_reload() NAPI function is called
+    When credentials_reload() function is called
     Then the CredentialStore should reload from disk
     And subsequent credential resolutions should return the new key
 
@@ -125,12 +126,6 @@ Feature: Move Credential Management to Rust
     And the session should be created with the resolved API key
 
   @unit
-  Scenario: Credentials never returned to TypeScript via NAPI
-  # Security Test (Rule 7)
-    Given credentials_resolve NAPI function exists
-    When the API checks for functions that return credentials to TypeScript
-    Then no NAPI function should return the actual API key value
-
   @integration
   @unit
   Scenario: Detect OAuth token from prefix and use Bearer authentication

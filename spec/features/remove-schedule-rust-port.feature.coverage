@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_schedule.rs",
-          "lines": "81-110",
+          "lines": "80-120",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_schedule.rs",
@@ -19,8 +19,6 @@
                 75,
                 76,
                 77,
-                78,
-                79,
                 80,
                 81,
                 82,
@@ -55,8 +53,12 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,7 +69,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_schedule.rs",
-          "lines": "113-140",
+          "lines": "122-155",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_schedule.rs",
@@ -81,8 +83,6 @@
                 75,
                 76,
                 77,
-                78,
-                79,
                 80,
                 81,
                 82,
@@ -117,8 +117,12 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -129,7 +133,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_schedule.rs",
-          "lines": "143-168",
+          "lines": "157-184",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_schedule.rs",
@@ -143,8 +147,6 @@
                 75,
                 76,
                 77,
-                78,
-                79,
                 80,
                 81,
                 82,
@@ -179,8 +181,12 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,6 +203,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_schedule.rs"
     ],
-    "totalLinesCovered": 222
+    "totalLinesCovered": 241
   }
 }

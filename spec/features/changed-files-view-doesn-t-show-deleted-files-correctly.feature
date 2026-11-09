@@ -40,10 +40,3 @@ Feature: Changed files view doesn't show deleted files correctly
     When I open the changed files view with the F key
     Then I should see "D test.ts" displayed in red color under staged changes
     And the status indicator should be "D" for deleted
-
-  Scenario: View diff panel for deleted file
-    Given I have deleted a file "config.json"
-    And I have opened the changed files view with the F key
-    When I select the deleted file "config.json"
-    Then the diff panel should display "File was deleted"
-    And the diff panel should not display "No changes to display"

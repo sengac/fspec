@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "67-78",
+          "lines": "79-97",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/header.rs",
@@ -64,7 +64,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "//! Header strip orchestrator — composes the RPC-015 header widgets",
+              "lastLine": "// Apply the `paddingX={1}` from the TS layout: 1 cell of breathing"
             }
           ]
         }
@@ -75,7 +77,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "81-94",
+          "lines": "100-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/checkpoint_status.rs",
@@ -129,7 +131,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "//! Checkpoint status text widget — Rust port of the TS sub-widget",
+              "lastLine": "counts.manual, counts.auto"
             }
           ]
         }
@@ -140,22 +144,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "115-156",
+          "lines": "149-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
+                129,
+                130,
                 131,
                 132,
                 133,
                 134,
-                135,
                 136,
                 137,
                 138,
                 139,
-                140,
-                141,
                 142,
                 143,
                 144,
@@ -165,11 +168,9 @@
                 148,
                 149,
                 150,
-                151,
                 152,
                 153,
                 154,
-                155,
                 156,
                 157,
                 158,
@@ -177,7 +178,6 @@
                 160,
                 161,
                 162,
-                163,
                 164,
                 165,
                 166,
@@ -186,36 +186,22 @@
                 169,
                 170,
                 171,
-                172,
                 173,
                 174,
                 175,
                 176,
                 177,
                 178,
-                179,
-                180,
-                181,
                 182,
                 183,
-                184,
-                185,
-                186,
-                187,
                 188,
                 189,
                 190,
-                191,
-                192,
                 193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
+                194
+              ],
+              "firstLine": "pub fn details_selection(&self) -> Option<Selection> {",
+              "lastLine": "work_unit_id: unit.id.clone(),"
             }
           ]
         }
@@ -226,22 +212,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "220-251",
+          "lines": "285-335",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
+                129,
+                130,
                 131,
                 132,
                 133,
                 134,
-                135,
                 136,
                 137,
                 138,
                 139,
-                140,
-                141,
                 142,
                 143,
                 144,
@@ -251,11 +236,9 @@
                 148,
                 149,
                 150,
-                151,
                 152,
                 153,
                 154,
-                155,
                 156,
                 157,
                 158,
@@ -263,7 +246,6 @@
                 160,
                 161,
                 162,
-                163,
                 164,
                 165,
                 166,
@@ -272,33 +254,22 @@
                 169,
                 170,
                 171,
-                172,
                 173,
                 174,
                 175,
                 176,
                 177,
                 178,
-                179,
-                180,
-                181,
                 182,
                 183,
-                184,
-                185,
-                186,
-                187,
                 188,
                 189,
                 190,
-                191,
-                192,
                 193,
                 194,
                 195,
                 196,
                 197,
-                198,
                 199,
                 200,
                 201,
@@ -352,17 +323,10 @@
                 249,
                 250,
                 251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261
-              ]
+                252
+              ],
+              "firstLine": "pub fn details_selection(&self) -> Option<Selection> {",
+              "lastLine": "self.emit(Action::OpenWorkUnitSearch);"
             }
           ]
         }
@@ -373,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
-          "lines": "159-217",
+          "lines": "204-282",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -402,6 +366,47 @@
                 95,
                 96,
                 97,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                123
+              ],
+              "firstLine": "pub(super) last_content_area: Cell<Option<Rect>>,",
+              "lastLine": "last_menu_bar_geometry: std::cell::RefCell::new(None),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The 2-zone menu bar row is painted in the header",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/view_board_unit_rpc015.rs",
+          "lines": "116-146",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/render.rs",
+              "lines": [
+                95,
+                96,
+                97,
                 98,
                 99,
                 100,
@@ -425,34 +430,41 @@
                 118,
                 119,
                 120,
-                121,
-                122,
-                123,
-                124
-              ]
+                121
+              ],
+              "firstLine": "// MENU-002: the 2-zone menu bar replaces the 'u Actions' chord in",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263
+              ],
+              "firstLine": "pub const CATEGORIES: &[MenuCategory] = &[",
+              "lastLine": "label: \"Kanban\","
             }
           ]
         }
       ]
-    },
-    {
-      "name": "The 2-zone menu bar row is painted in the header",
-      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 6,
-    "coveredScenarios": 5,
-    "coveragePercent": 83,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/view_board_unit_rpc015.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/board/header.rs",
       "rust/fspec-tui/src/views/board/checkpoint_status.rs",
-      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-      "rust/fspec-tui/src/views/board.rs"
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/board/render.rs",
+      "rust/fspec-tui/src/components/menu_bar/items.rs"
     ],
-    "totalLinesCovered": 581
+    "totalLinesCovered": 583
   }
 }

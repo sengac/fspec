@@ -1,0 +1,214 @@
+{
+  "scenarios": [
+    {
+      "name": "Generating TAGS.md waits for the spec lock",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug498_markdown_written_under_the_spec_lock.rs",
+          "lines": "82-96",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_tags_md.rs",
+              "lines": [
+                123,
+                124
+              ],
+              "firstLine": "// BUG-498: under the spec lock, replaced atomically.",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/register_tag.rs",
+              "lines": [
+                180,
+                181
+              ],
+              "firstLine": "// BUG-498: under the spec lock, replaced atomically.",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                209,
+                210
+              ],
+              "firstLine": "// BUG-498: under the spec lock, replaced atomically.",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_tag.rs",
+              "lines": [
+                184,
+                185
+              ],
+              "firstLine": "// BUG-498: under the spec lock, replaced atomically.",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;"
+            },
+            {
+              "file": "rust/fspec-core/src/io/locked_file.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ],
+              "firstLine": "/// Replace `path` with `bytes` (under the spec lock when `path` is a spec",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generating FOUNDATION.md waits for the spec lock",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug498_markdown_written_under_the_spec_lock.rs",
+          "lines": "98-119",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+              "lines": [
+                159,
+                160
+              ],
+              "firstLine": "// BUG-498: under the spec lock, replaced atomically.",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&foundation_md_path, markdown.as_bytes())?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent schedule log appends never interleave",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug498_schedule_log_appends_under_the_spec_lock.rs",
+          "lines": "9-49",
+          "implMappings": [
+            {
+              "file": "rust/core/src/scheduler/job_log.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "/// Append a log entry to the JSONL file. Triggers rotation if the file",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug498_markdown_written_under_the_spec_lock.rs",
+      "rust/core/tests/bug498_schedule_log_appends_under_the_spec_lock.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/generate_tags_md.rs",
+      "rust/fspec-core/src/commands/register_tag.rs",
+      "rust/fspec-core/src/commands/update_tag.rs",
+      "rust/fspec-core/src/commands/delete_tag.rs",
+      "rust/fspec-core/src/io/locked_file.rs",
+      "rust/fspec-core/src/commands/generate_foundation_md.rs",
+      "rust/core/src/scheduler/job_log.rs"
+    ],
+    "totalLinesCovered": 187
+  }
+}

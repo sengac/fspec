@@ -58,53 +58,48 @@ Feature: Provider settings: drop Rust-only list-mode keybinds (r/R, wrap-around,
     And the cursor does NOT wrap to the first nav item (index 0)
     And no other view state changes
 
-  Scenario: PageDown is silently ignored in list mode
+  Scenario: PageDown pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on the Mistral AI nav item (index 5)
     When I press the PageDown key
-    Then the cursor remains on index 5
-    And no jump-by-page occurs
-    And no backend RPC is fired
-    And no scrollback notice, error log, or tracing warning is emitted
+    Then the cursor advances by one page (clamped to the last item)
+    And the key is consumed without emitting an Action
 
-  Scenario: PageUp is silently ignored in list mode
+  Scenario: PageUp pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on index 5
     When I press the PageUp key
-    Then the cursor remains on index 5
-    And no jump-by-page occurs
-    And no scrollback notice, error log, or tracing warning is emitted
+    Then the cursor retreats by one page (clamped to the first item)
+    And the key is consumed without emitting an Action
 
-  Scenario: Home is silently ignored in list mode
+  Scenario: Home jumps to the first item (RPC-353 SUPERSEDES the RPC-157 no-op)
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on index 8
     When I press the Home key
-    Then the cursor remains on index 8
-    And the cursor does NOT jump to index 0
-    And no scrollback notice, error log, or tracing warning is emitted
+    Then the cursor jumps to index 0
+    And the key is consumed without emitting an Action
 
-  Scenario: End is silently ignored in list mode
+  Scenario: End jumps to the last item (RPC-353 SUPERSEDES the RPC-157 no-op)
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on index 8
     When I press the End key
-    Then the cursor remains on index 8
-    And the cursor does NOT jump to the last nav item
-    And no scrollback notice, error log, or tracing warning is emitted
+    Then the cursor jumps to the last nav item (index 16)
+    And the key is consumed without emitting an Action
 
-  Scenario: Lowercase "r" is silently ignored in list mode (no RefreshProviderModels)
+  Scenario: Lowercase "r" is silently ignored in list mode
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on the OpenAI API provider row
     When I press the "r" key
-    Then no Action::RefreshProviderModels is emitted
+    Then no Action is emitted
     And no backend RPC is fired
     And no tracing log fires
     And the view re-renders unchanged
 
-  Scenario: Uppercase "R" is silently ignored in list mode (no RefreshProviderModels)
+  Scenario: Uppercase "R" is silently ignored in list mode
     Given I have opened /provider with the 17 canonical providers loaded
     And the cursor is on the OpenAI API provider row
     When I press the "R" key (shifted)
-    Then no Action::RefreshProviderModels is emitted
+    Then no Action is emitted
     And no backend RPC is fired
     And no tracing log fires
     And the view re-renders unchanged

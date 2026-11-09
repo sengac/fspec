@@ -1,11 +1,12 @@
+@BUG-628
 @testing
 @integration
 @BLOCK-001
 Feature: Blocklist System Integration Tests
   """
-  Integration tests should be placed in rust/tools/tests/ for Rust E2E tests and src/__tests__/integration/ for TypeScript/React E2E tests
-  Use mock file system and mock session context to test complete flows without requiring actual TUI rendering
-  Test NAPI bindings integration: blocklist_load, blocklist_check, blocklist_allow_session must be tested across Rust→Node boundary
+  The end-to-end tests are in rust/tools/tests/blocklist_system_integration.rs: they drive the real Write and Read tools for a session, with HOME and the user directory isolated, a registered work unit stage callback and block notification callback, and a pause handler standing in for the user's triple choice.
+  A TUI restart is a new process: the in-memory session allowances are gone (clear_session_allowances) and the blocklist is initialized again (init_blocklist).
+  Startup initialization is project-blocklist-initialization's (build_service); turning a rule off for a session is BUG-601's.
   """
 
   # ========================================
@@ -17,7 +18,7 @@ Feature: Blocklist System Integration Tests
   #   2. Integration tests must exercise all child feature components together: BLOCK-002 (core), BLOCK-003 (stage), BLOCK-004 (TUI), BLOCK-005 (prompts), BLOCK-006 (notifications)
   #   3. Test realistic TUI interaction flows including session state, navigation, and visual feedback
   #   4. Verify config hierarchy works across system → project → session levels in integrated scenarios
-  #   5. Test Rust ↔ TypeScript ↔ React data flow for all blocklist operations
+  #   5. Session allowances are kept in memory only, so after a restart the same rule prompts again
   #
   # EXAMPLES:
   #   1. E2E flow: System rule blocks git checkout → Project override allows git checkout stash → TUI shows blocklist with merged rules → User disables rule for session → AI runs git checkout stash → Allowed → TUI restart → Rule active again
@@ -53,22 +54,11 @@ Feature: Blocklist System Integration Tests
     I want to run integration tests for the blocklist system
     So that I can verify all components work together correctly
 
-  Scenario: Config hierarchy with session override
-    Given a system blocklist rule blocks "git checkout" commands
-    When the user opens /blocklist
-    Then the merged rules should show the project override
-    And a project blocklist rule allows "git checkout stash"
-    When the user disables the rule for the session
-    And the AI runs "git checkout stash"
-    Then the command should be allowed
-    When the TUI is restarted
-    Then the rule should be active again
-
   Scenario: Stage permissions block and allow based on work unit state
     Given a work unit is in "testing" stage
     When the AI tries to write to "src/auth.ts"
     Then the write should be blocked by stage permissions
-    And a notification should be shown to the user
+    And a block notification is emitted for the session
     When the AI tries to write to "src/__tests__/auth.test.ts"
     Then the write should be allowed
     When the work unit is moved to "implementing" stage
@@ -78,7 +68,7 @@ Feature: Blocklist System Integration Tests
   Scenario: Sensitive path prompts with session memory
     Given a blocklist rule exists prompting for "~/.ssh" access
     When the AI tries to read "~/.ssh/config"
-    Then a prompt dialog should appear
+    Then the read pauses for an Allow Once, Allow Session or Deny choice
     When the user selects "Allow Session"
     Then the file should be read successfully
     When the AI tries to read "~/.ssh/known_hosts"
@@ -86,19 +76,3 @@ Feature: Blocklist System Integration Tests
     When the TUI is restarted
     And the AI tries to read "~/.ssh/id_rsa"
     Then a prompt should appear again
-
-  Scenario: TUI blocklist view with session toggle
-    Given system and project blocklist configs are loaded
-    When the user opens /blocklist
-    Then the merged rules from both configs should be displayed
-    When the user navigates with keyboard and disables a rule
-    And returns to agent view
-    Then the AI action should be allowed
-    When the user re-opens /blocklist
-    Then the rule should show disabled state
-
-  Scenario: Blocklist system initializes automatically at TUI startup
-    Given a blocklist config exists at system level with a blocking rule
-    When the TUI starts up
-    Then blocklist rules should be loaded and active
-    Then blocked commands should be rejected when executed

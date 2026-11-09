@@ -1,4 +1,6 @@
 @KGRAPH-050
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — Kotlin
   """
   Uses KindMatcher and edge_helpers shared functions.

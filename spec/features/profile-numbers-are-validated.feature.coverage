@@ -1,0 +1,145 @@
+{
+  "scenarios": [
+    {
+      "name": "A fractional profile number is an error naming the profile, field and value",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov175_profile_numbers_are_validated.rs",
+          "lines": "24-37",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections/config_io.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "/// Path-injectable core of [`load_local_server_profiles`].",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An oversized profile number is an error, not saturated",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov175_profile_numbers_are_validated.rs",
+          "lines": "39-50",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections/config.rs",
+              "lines": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "/// PROV-175: `value` as a `u32`, or an error naming it.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An integral float is the same whole number",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov175_profile_numbers_are_validated.rs",
+          "lines": "52-66",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections/config.rs",
+              "lines": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "/// PROV-175: `value` as a `u32`, or an error naming it.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov175_profile_numbers_are_validated.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/profile_sections/config_io.rs",
+      "rust/sessions/src/profile_sections/config.rs"
+    ],
+    "totalLinesCovered": 115
+  }
+}

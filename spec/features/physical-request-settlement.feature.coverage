@@ -45,7 +45,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "match error.as_ref() {",
+              "lastLine": "self.reported.store(false, Ordering::Release);"
             }
           ]
         }
@@ -84,7 +86,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "let error = self.error.clone();",
+              "lastLine": "return;"
             }
           ]
         }
@@ -119,7 +123,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "match error.as_ref() {",
+              "lastLine": "return;"
             }
           ]
         }
@@ -135,8 +141,6 @@
             {
               "file": "rust/core/src/request_settlement_hook.rs",
               "lines": [
-                85,
-                86,
                 87,
                 88,
                 89,
@@ -145,22 +149,15 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96
+              ],
+              "firstLine": "async fn on_completion_call(",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/rig_agent.rs",
               "lines": [
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
                 229,
                 230,
                 231,
@@ -175,8 +172,22 @@
                 240,
                 241,
                 242,
-                243
-              ]
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255
+              ],
+              "firstLine": "let hook = crate::request_settlement_hook::RequestSettlementHook::optional(",
+              "lastLine": "})"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -621,7 +632,9 @@
                 916,
                 917,
                 918
-              ]
+              ],
+              "firstLine": "async fn send(self) -> StreamingResult<M::StreamingResponse> {",
+              "lastLine": "content: OneOrMany::one(UserContent::tool_result_with_call_id("
             }
           ]
         }
@@ -640,6 +653,6 @@
       "rust/core/src/rig_agent.rs",
       "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
-    "totalLinesCovered": 726
+    "totalLinesCovered": 727
   }
 }

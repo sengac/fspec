@@ -5,16 +5,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "539-560",
+          "lines": "447-468",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                175,
-                176,
-                177,
-                178
-              ]
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "if let Some(result) = workspace_dropdown::handle_key(self, key, store) {",
+              "lastLine": "if let Some(result) = menu_keys::handle_menu_keys(self, key, store) {"
             }
           ]
         }
@@ -25,18 +27,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "562-582",
+          "lines": "470-490",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                145,
+                146,
+                147,
+                148,
+                150
+              ],
+              "firstLine": "/// single-view mode) this is always false (R7).",
+              "lastLine": "/// Route a keyboard or mouse event to the active sub-view. RPC-023"
             }
           ]
         }
@@ -47,18 +50,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "67-87",
+          "lines": "24-44",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
                 57,
                 58,
                 59,
@@ -69,8 +65,17 @@
                 64,
                 65,
                 66,
-                67
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "/// cursor glyph + the row foreground (cyan when selected, white",
+              "lastLine": "row_style = row_style.add_modifier(Modifier::BOLD);"
             }
           ]
         }
@@ -81,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "121-142",
+          "lines": "46-64",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/diff_common/diff_render.rs",
@@ -96,8 +101,23 @@
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Build the styled `Line` for one diff row.",
+              "lastLine": "DiffLineKind::Hunk => Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),"
             }
           ]
         }
@@ -108,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "144-162",
+          "lines": "66-87",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -135,7 +155,9 @@
                 258,
                 259,
                 260
-              ]
+              ],
+              "firstLine": "if self.selected_index < self.file_scroll {",
+              "lastLine": "/// Test/R6 seam: move the selection to an explicit index (clamped)."
             }
           ]
         }
@@ -146,11 +168,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "164-193",
+          "lines": "89-118",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
                 175,
                 176,
                 177,
@@ -165,7 +198,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "pub fn set_files(&mut self, files: Vec<ChangedFile>) {",
+              "lastLine": "let max_scroll = new_len - visible;"
             }
           ]
         }
@@ -176,19 +211,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "195-212",
+          "lines": "120-137",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "// paint-over pattern as the Checkpoints view).",
+              "lastLine": "render_empty(body, buf);"
             }
           ]
         }
@@ -199,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "214-241",
+          "lines": "139-166",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -224,7 +261,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "/// BUG-182 R6: replace the file list from a git-state refresh,",
+              "lastLine": "pub fn refresh_files_preserving_selection(&mut self, files: Vec<ChangedFile>) {"
             }
           ]
         }
@@ -235,7 +274,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "243-276",
+          "lines": "168-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -257,8 +296,16 @@
                 286,
                 287,
                 288,
-                289
-              ]
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295
+              ],
+              "firstLine": "/// sanitized `files` row still lines up).",
+              "lastLine": "}"
             }
           ]
         }
@@ -269,7 +316,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "280-308",
+          "lines": "212-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -316,7 +363,9 @@
                 258,
                 259,
                 260
-              ]
+              ],
+              "firstLine": "/// BUG-182 R6: replace the file list from a git-state refresh,",
+              "lastLine": "/// Test/R6 seam: move the selection to an explicit index (clamped)."
             }
           ]
         }
@@ -327,7 +376,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "310-343",
+          "lines": "247-280",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -352,7 +401,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "/// BUG-182 R6: replace the file list from a git-state refresh,",
+              "lastLine": "pub fn refresh_files_preserving_selection(&mut self, files: Vec<ChangedFile>) {"
             }
           ]
         }
@@ -363,11 +414,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "360-374",
+          "lines": "282-296",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                181,
+                182,
                 183,
                 184,
                 262,
@@ -389,7 +442,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "self.load.set_list_signature(&list_signature(&self.files));",
+              "lastLine": "return;"
             }
           ]
         }
@@ -400,11 +455,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "376-390",
+          "lines": "298-312",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                181,
+                182,
                 183,
                 184,
                 262,
@@ -426,7 +483,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "self.load.set_list_signature(&list_signature(&self.files));",
+              "lastLine": "return;"
             }
           ]
         }
@@ -437,11 +496,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "392-406",
+          "lines": "314-328",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                181,
+                182,
                 183,
                 184,
                 262,
@@ -453,7 +514,9 @@
                 268,
                 269,
                 270
-              ]
+              ],
+              "firstLine": "self.load.set_list_signature(&list_signature(&self.files));",
+              "lastLine": "/// **TUI-111**: diff lines are sanitized on ingress (the path is"
             }
           ]
         }
@@ -464,11 +527,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "408-430",
+          "lines": "330-355",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                181,
+                182,
                 183,
                 184,
                 239,
@@ -503,7 +568,9 @@
                 268,
                 269,
                 270
-              ]
+              ],
+              "firstLine": "self.load.set_list_signature(&list_signature(&self.files));",
+              "lastLine": "/// **TUI-111**: diff lines are sanitized on ingress (the path is"
             }
           ]
         }
@@ -514,10 +581,102 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "455-474",
+          "lines": "357-380",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "fn render_files_pane(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A diff longer than the pane renders a scrollbar in the diff pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "382-404",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "let (dr, dsb) = render_diff_pane(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/diff_common/diff_pane.rs",
               "lines": [
                 101,
                 102,
@@ -549,46 +708,28 @@
                 128,
                 129,
                 130,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183
-              ]
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn render_diff_pane(",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "A diff longer than the pane renders a scrollbar in the diff pane",
+      "name": "A file list that fits the pane renders no scrollbar",
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "476-498",
+          "lines": "406-445",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
-                132,
-                133,
-                134,
                 135,
                 136,
                 137,
@@ -614,6 +755,9 @@
                 157,
                 158,
                 159,
+                160,
+                161,
+                162,
                 163,
                 164,
                 165,
@@ -627,61 +771,127 @@
                 173,
                 174,
                 175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183
-              ]
+                176
+              ],
+              "firstLine": "fn render_files_pane(",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "A file list that fits the pane renders no scrollbar",
+      "name": "The diff of a file deleted from the working tree is its full removal",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug540_deleted_file_diff.rs",
+          "lines": "54-71",
+          "implMappings": [
+            {
+              "file": "rust/git/src/diff.rs",
+              "lines": [
+                17,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "pub fn get_file_diff(dir: impl AsRef<Path>, filepath: &str) -> Result<Option<String>> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The diff of a deleted and staged file is its full removal",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug540_deleted_file_diff.rs",
+          "lines": "73-90",
+          "implMappings": [
+            {
+              "file": "rust/git/src/diff.rs",
+              "lines": [
+                17,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "pub fn get_file_diff(dir: impl AsRef<Path>, filepath: &str) -> Result<Option<String>> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The diff of a path in neither HEAD nor the working tree fails",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug540_deleted_file_diff.rs",
+          "lines": "92-105",
+          "implMappings": [
+            {
+              "file": "rust/git/src/diff.rs",
+              "lines": [
+                17,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "pub fn get_file_diff(dir: impl AsRef<Path>, filepath: &str) -> Result<Option<String>> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selecting a deleted file shows File was deleted above its removal diff",
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "500-537",
+          "lines": "492-522",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/changed_files/render.rs",
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                273,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294
+              ],
+              "firstLine": "pub fn set_diff(&mut self, path: &str, diff: Option<String>) {",
+              "lastLine": "};"
             }
           ]
         }
@@ -689,11 +899,12 @@
     }
   ],
   "stats": {
-    "totalScenarios": 18,
-    "coveredScenarios": 18,
+    "totalScenarios": 22,
+    "coveredScenarios": 22,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/tests.rs",
+      "rust/git/tests/bug540_deleted_file_diff.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/board.rs",
@@ -701,8 +912,10 @@
       "rust/fspec-tui/src/views/diff_common/row.rs",
       "rust/fspec-tui/src/views/diff_common/diff_render.rs",
       "rust/fspec-tui/src/views/changed_files/mod.rs",
-      "rust/fspec-tui/src/views/changed_files/render.rs"
+      "rust/fspec-tui/src/views/changed_files/render.rs",
+      "rust/fspec-tui/src/views/diff_common/diff_pane.rs",
+      "rust/git/src/diff.rs"
     ],
-    "totalLinesCovered": 826
+    "totalLinesCovered": 1023
   }
 }

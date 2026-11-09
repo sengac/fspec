@@ -57,19 +57,18 @@ Feature: Bash Tool UI Streaming During Execution
     And the LLM result should be truncated to MAX_OUTPUT_CHARS limit
     And a truncation warning should be included in the LLM result
 
-  @timeout
   @error-handling
-  Scenario: Handle timeout with partial streamed output
-    Given a bash command that will exceed the timeout limit
-    When the command times out during execution
-    Then the user should have seen partial output streamed before timeout
-    And the LLM should receive a timeout error
-    And the partial output should be preserved in the error context
+  Scenario: Handle abort (ESC) with partial streamed output
+    Given a bash command that streams some output and then keeps running
+    When the user presses ESC and the bash abort is requested during execution
+    Then the user should have seen the partial output streamed before the abort
+    And the LLM should receive a "Command interrupted by user" error
+    And the command should not run to completion
 
   @integration
   @callback
   Scenario: Emit progress through StreamOutput trait
     Given a bash command is executing
     When stdout chunks are received from the subprocess
-    Then each chunk should trigger an emit_tool_progress callback
-    And the callback should receive the accumulated output so far
+    Then each stdout line should trigger a stream callback
+    And the callback should receive each output line as it is produced

@@ -1,7 +1,6 @@
 //! Feature: spec/features/terminal-recovery-single-owner-locking.feature
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_agent_loop::agent_loop::agent_loop;
 use codelet_rpc_types::StreamChunk;
@@ -24,7 +23,7 @@ async fn scenario_ordinary_terminal_errors_release_the_session_lock() {
     session
         .send_input("exercise terminal failure".into(), None)
         .expect("queue input");
-    let error = tokio::time::timeout(Duration::from_secs(5), async {
+    let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if let StreamChunk::Error { error, .. } = chunks.recv().await.expect("stream open") {
                 break error;
@@ -39,7 +38,7 @@ async fn scenario_ordinary_terminal_errors_release_the_session_lock() {
         .contains("Unsupported provider"));
     // @step And a later status operation can acquire the session lock
     assert!(
-        tokio::time::timeout(Duration::from_secs(1), session.inner.lock())
+        codelet_test_helpers::deadlock_guard("session.inner.lock()", session.inner.lock())
             .await
             .is_ok()
     );
@@ -73,8 +72,8 @@ async fn scenario_failed_overflow_recovery_preserves_committed_context() {
     );
     let mut chunks = session.subscribe_to_stream();
     // @step When terminal overflow recovery runs under the caller ownership boundary
-    let outcome = tokio::time::timeout(
-        Duration::from_secs(2),
+    let outcome = codelet_test_helpers::deadlock_guard(
+        "codelet_agent_loop::terminal_overflow_recovery::try_termi...",
         codelet_agent_loop::terminal_overflow_recovery::try_terminal_overflow_recovery(
             session.clone(),
             &support::overflow_error(),
@@ -140,13 +139,13 @@ async fn scenario_cancellation_releases_recovery_ownership_without_replacing_con
         )
         .await
     });
-    tokio::time::timeout(Duration::from_secs(2), entered.notified())
+    codelet_test_helpers::deadlock_guard("entered.notified()", entered.notified())
         .await
         .expect("builder starts");
     // @step When the user cancels terminal recovery
     session.interrupt();
     // @step Then recovery returns a cancellation within the harness deadline
-    let result = tokio::time::timeout(Duration::from_secs(2), task)
+    let result = codelet_test_helpers::deadlock_guard("task", task)
         .await
         .expect("cancellation terminates")
         .expect("recovery task joins");

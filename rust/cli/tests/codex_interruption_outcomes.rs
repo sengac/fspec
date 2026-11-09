@@ -21,7 +21,6 @@ use rig::message::{Message, ToolResultContent, UserContent};
 use serde_json::{json, Value};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 use tokio::sync::Notify;
 use transport::TestResult;
 
@@ -85,6 +84,7 @@ fn results(messages: &[Message]) -> Vec<(String, String)> {
 async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining_call() -> TestResult
 {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     for (custom, completed, executing) in [
@@ -172,8 +172,8 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             stop_at: if executing { usize::MAX } else { completed + 1 },
             events: Mutex::new(Vec::new()),
         };
-        tokio::time::timeout(
-            Duration::from_secs(10),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), 'i...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 "inspect",
@@ -254,6 +254,7 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
 #[serial_test::serial]
 async fn interrupting_before_any_committed_tool_call_creates_no_cancellation() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     let server = transport::Server::start(Vec::new(), false).await?;
     let manager = ProviderManager::for_testing(ProviderType::Codex, Some(272_000), Some(4096));

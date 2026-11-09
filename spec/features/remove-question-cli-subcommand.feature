@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@example-mapping
 Feature: fspec remove-question CLI subcommand (Rust port)
   """
   Clap derive subcommand `remove-question` exposes the same surface as the TS Commander.js registration at src/commands/remove-question.ts:88-107 — two positional arguments `<workUnitId>` and `<index>`, no flags. The bridge module at rust/fspec/src/remove_question.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::remove_question::run; no validation or rendering logic is duplicated.
@@ -58,3 +59,10 @@ Feature: fspec remove-question CLI subcommand (Rust port)
     Then the command exits 0
     And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/remove-question.txt
     And stdout starts with a blank line followed by 'REMOVE-QUESTION'
+
+  Scenario: CLI prints question text with special characters in the success line
+    Given spec/work-units.json contains work unit 'AUTH-001' in 'specifying' status with one question id=0 text '@human: What happens?'
+    When I run `fspec remove-question AUTH-001 0`
+    Then the command exits 0
+    And stdout contains the line '✓ Removed question: "@human: What happens?"'
+    And stdout does not contain '[object Object]'

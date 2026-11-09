@@ -1,5 +1,7 @@
 @done
 @RPC-264
+@cli
+@interactive-cli
 Feature: Port record-iteration command to Rust
   """
   Core impl at rust/fspec-core/src/commands/record_iteration.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), mutate iterations in WorkUnit.extra, bump updated_at via io::time::iso8601_now, write back via io::locked_file::write_json_atomic (2-space pretty, preserve_order)

@@ -19,7 +19,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  View work unit details: fspec show-work-unit AUTH-001,List attachments: fspec list-attachments AUTH-001,Review attachment files in spec/attachments/AUTH-001/,Add more attachments if needed: fspec add-attachment AUTH-001 <file>
+  View work unit details: fspec show-work-unit AUTH-001. List attachments: fspec list-attachments AUTH-001. Review attachment files in spec/attachments/AUTH-001/. Add more attachments if needed: fspec add-attachment AUTH-001 <file>
 
 EXAMPLES
   1. List attachments for work unit
@@ -51,15 +51,15 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   ✗ No attachments found for work unit AUTH-001
-    Fix: undefined
+    Fix: The work unit exists but has no attachments. Add attachments with 'fspec add-attachment AUTH-001 <file>'.
 
 RELATED COMMANDS
-  fspec fspec add-attachment - Add attachment
-  fspec fspec remove-attachment - Remove attachment
-  fspec fspec show-work-unit - View work unit details (includes attachments)
+  fspec add-attachment - Add attachment
+  fspec remove-attachment - Remove attachment
+  fspec show-work-unit - View work unit details (includes attachments)
 
 NOTES
   • Attachments are stored in spec/attachments/<workUnitId>/

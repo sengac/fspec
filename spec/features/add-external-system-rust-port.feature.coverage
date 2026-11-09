@@ -5,11 +5,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "70-108",
+          "lines": "78-119",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
+                174,
+                175,
+                176,
                 177,
                 178,
                 179,
@@ -26,8 +29,21 @@
                 190,
                 191,
                 192,
-                193
-              ]
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "// [4] Mutate: seed eventStorm if absent, append item, bump nextItemId.",
+              "lastLine": "}"
             }
           ]
         }
@@ -38,7 +54,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "110-129",
+          "lines": "121-140",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
@@ -46,7 +62,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "item_body.insert(",
+              "lastLine": "Value::String(\"external_system\".to_string()),"
             }
           ]
         }
@@ -62,13 +80,32 @@
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
                 83,
                 84,
                 85,
                 86,
                 87,
-                88
-              ]
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "// Build the item body in TS insertion order (type, color, text,",
+              "lastLine": "item_body.insert(\"createdAt\".to_string(), Value::String(iso8601_now()));"
             }
           ]
         }
@@ -79,33 +116,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "176-217",
+          "lines": "195-236",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "let item_id = es.get(\"nextItemId\").and_then(Value::as_u64).unwrap_or(0);",
+              "lastLine": "es.insert(\"nextItemId\".to_string(), Value::from(item_id + 1));"
             }
           ]
         }
@@ -116,22 +152,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "219-245",
+          "lines": "238-267",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "// [2] Validate work unit exists.",
+              "lastLine": "}"
             }
           ]
         }
@@ -142,13 +187,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "247-273",
+          "lines": "269-295",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -157,8 +200,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": ".is_some();",
+              "lastLine": "if st == \"done\" || st == \"blocked\" {"
             }
           ]
         }
@@ -169,13 +216,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "275-301",
+          "lines": "297-323",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
               "lines": [
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -184,8 +229,12 @@
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165,
+                166
+              ],
+              "firstLine": ".is_some();",
+              "lastLine": "if st == \"done\" || st == \"blocked\" {"
             }
           ]
         }
@@ -196,7 +245,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_external_system.rs",
-          "lines": "303-322",
+          "lines": "325-352",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_external_system.rs",
@@ -208,7 +257,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "/// as a raw `serde_json::Value` so unknown top-level keys and existing",
+              "lastLine": "mut item_body: Map<String, Value>,"
             }
           ]
         }
@@ -225,6 +276,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_external_system.rs"
     ],
-    "totalLinesCovered": 332
+    "totalLinesCovered": 381
   }
 }

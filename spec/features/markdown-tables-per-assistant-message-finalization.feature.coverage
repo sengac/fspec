@@ -5,15 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "117-157",
+          "lines": "128-164",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -33,8 +29,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Drop trailing empty in-flight placeholder; finalise non-empty",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,15 +52,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "159-190",
+          "lines": "171-198",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -73,8 +76,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Drop trailing empty in-flight placeholder; finalise non-empty",
+              "lastLine": "}"
             }
           ]
         }
@@ -85,15 +99,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "192-223",
+          "lines": "205-232",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -113,8 +123,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Drop trailing empty in-flight placeholder; finalise non-empty",
+              "lastLine": "}"
             }
           ]
         }
@@ -125,15 +146,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "225-256",
+          "lines": "239-266",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -153,8 +170,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Drop trailing empty in-flight placeholder; finalise non-empty",
+              "lastLine": "}"
             }
           ]
         }
@@ -165,21 +193,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "258-284",
+          "lines": "273-295",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                113,
-                114,
                 115,
                 116,
                 117,
                 118,
                 119,
                 120,
-                121
-              ]
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// Mirrors `processStreamingChunk` Done branch",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,21 +226,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "286-323",
+          "lines": "302-335",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                113,
-                114,
                 115,
                 116,
                 117,
                 118,
                 119,
                 120,
-                121
-              ]
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// Mirrors `processStreamingChunk` Done branch",
+              "lastLine": "}"
             }
           ]
         }
@@ -215,15 +259,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "325-351",
+          "lines": "342-364",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -243,8 +283,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Drop trailing empty in-flight placeholder; finalise non-empty",
+              "lastLine": "}"
             }
           ]
         }
@@ -255,13 +306,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/per_message_table_finalization_rpc432.rs",
-          "lines": "353-391",
+          "lines": "371-401",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
               "lines": [
-                113,
-                114,
                 115,
                 116,
                 117,
@@ -313,8 +362,19 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Mirrors `processStreamingChunk` Done branch",
+              "lastLine": "}"
             }
           ]
         }
@@ -331,6 +391,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/chunk_processor.rs"
     ],
-    "totalLinesCovered": 460
+    "totalLinesCovered": 468
   }
 }

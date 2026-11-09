@@ -5,6 +5,7 @@
 @rpc
 @boundary
 @regression
+@agent-interaction
 Feature: codelet-agent-loop has zero codelet-napi dependency after Phase A lift
   """
   RPC-072 Phase A foundation refit (this card): the NAPI-free

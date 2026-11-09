@@ -41,7 +41,7 @@ use std::sync::RwLock;
 use tokio::sync::{broadcast, mpsc, Mutex, Notify};
 use uuid::Uuid;
 
-use codelet_cli::session::context_gathering::gather_environment_info;
+use codelet_cli::session::context_gathering::gather_environment_info_with_isolation;
 use codelet_common::debug_capture::{DebugCaptureManager, PoisonRecoveryMutex};
 use codelet_core::lifecycle_hooks::{CompiledLifecycleHooks, HookContext};
 use codelet_git::ghost_commit::{
@@ -60,17 +60,24 @@ mod construction;
 mod exec_stdin;
 mod focus;
 mod history;
+mod input_modes;
 mod interactions;
 mod interruption;
 mod messaging;
 mod metrics;
+mod model_identity;
 mod output;
 mod progress;
+mod receipts;
+mod request_routing;
 mod transcript;
 mod types;
 mod workspace;
 
 pub use agent_message::AgentMessageError;
+pub use interactions::PauseReply;
+pub use receipts::input_content;
+pub use request_routing::{AwaitRegistration, PendingInteraction};
 pub use types::{
     format_incoming_message, BridgeImageData, CompactionProgress, IncomingMessage, PromptInput,
     SessionError, WorkUnitContext, SUPERVISOR_BROADCAST_CAPACITY,
@@ -88,12 +95,16 @@ pub struct BackgroundSession {
     pub cached_output_tokens: AtomicU32,
     pub cached_reasoning_tokens: AtomicU32,
     pub(crate) committed_context: std::sync::Mutex<crate::committed_context::ContextProjection>,
-    pub cached_context_window: AtomicU32,
-    pub cached_max_output_tokens: AtomicU32,
-    pub cached_compaction_threshold: AtomicU32,
+    /// PROV-165: the selected model's resolved limits; unavailable limits
+    /// are `None` (read with `model_limits()`).
+    model_limits: RwLock<crate::model_resolution::ResolvedModelLimits>,
     pub inner: Arc<Mutex<codelet_cli::session::Session>>,
     settlement_gate: Arc<Mutex<()>>,
     status: AtomicU8,
+    /// BUG-648: held across a status change, its push and its journal
+    /// entry, so the journal records status changes in the order they
+    /// took effect.
+    status_order: std::sync::Mutex<()>,
     input_tx: mpsc::Sender<PromptInput>,
     output_buffer: RwLock<crate::transcript_journal::TranscriptJournal>,
     transcript_seed: std::sync::Mutex<()>,
@@ -119,7 +130,7 @@ pub struct BackgroundSession {
     pub incoming_message_pending: Arc<AtomicUsize>,
     correlation_counter: AtomicU64,
     pending_observed_correlation_ids: RwLock<Vec<String>>,
-    pause_state: crate::interaction_slot::InteractionSlot<PauseState>,
+    pause_state: crate::interaction_slot::InteractionSlot<interactions::Raised<PauseState>>,
     pause_response_tx: std::sync::mpsc::Sender<PauseResponse>,
     pause_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<PauseResponse>>,
     fspec_response_tx: std::sync::mpsc::Sender<FspecResult>,
@@ -128,10 +139,22 @@ pub struct BackgroundSession {
     hitl_response_rx: std::sync::Mutex<
         std::sync::mpsc::Receiver<codelet_tools::request_user_input::HitlResponse>,
     >,
-    hitl_request:
-        crate::interaction_slot::InteractionSlot<codelet_tools::request_user_input::HitlRequest>,
+    hitl_request: crate::interaction_slot::InteractionSlot<
+        interactions::Raised<codelet_tools::request_user_input::HitlRequest>,
+    >,
+    /// AMGR-021: the sessions this session awaits in AgentManager
+    /// await_idle (one entry per awaited session per call).
+    awaited: std::sync::Mutex<Vec<Uuid>>,
+    /// AMGR-021: human actions await_idle already reported to this session.
+    reported_requests: std::sync::Mutex<std::collections::HashSet<String>>,
     exec_stdin_request: RwLock<Option<codelet_tools::unified_exec::ExecStdinRequest>>,
-    base_thinking_level: AtomicU8,
+    /// MODEL-011: the chosen level exactly as chosen (BUG-455: ModelDefault
+    /// when none was chosen).
+    base_thinking_level: RwLock<codelet_rpc_types::ThinkingLevel>,
+    /// MODEL-011: the selected model's thinking target, cached next to its
+    /// model limits so a level can be checked, and the offered levels
+    /// listed, while a turn holds `inner`.
+    thinking_target: RwLock<Option<codelet_providers::thinking_wire::ThinkingTarget>>,
     continue_enabled: AtomicBool,
     continue_budget: AtomicU32,
     continue_explicit: AtomicBool,
@@ -144,7 +167,6 @@ pub struct BackgroundSession {
     pub(crate) focus_reminder_revision: Arc<AtomicU64>,
     pub(crate) focus_admission: std::sync::Mutex<u64>,
     pub(crate) focus_runtime: tokio::runtime::Handle,
-    base_environment_content: RwLock<String>,
     pub worktree_path: RwLock<Option<PathBuf>>,
     pub base_commit: RwLock<Option<String>>,
     pub compaction_in_progress: Arc<AtomicBool>,

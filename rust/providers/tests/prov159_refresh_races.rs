@@ -36,7 +36,7 @@ async fn scenario_a5_independent_clients_coordinate_rotation() -> TestResult {
         async {
             bounded(issuer.started.notified()).await?;
             issuer.release.add_permits(2);
-            Ok::<_, tokio::time::error::Elapsed>(())
+            Ok::<_, codelet_test_helpers::Failure>(())
         },
         async { tokio::join!(send(&first, &url), send(&second, &url)) }
     );

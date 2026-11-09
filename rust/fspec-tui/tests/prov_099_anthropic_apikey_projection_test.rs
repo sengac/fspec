@@ -1,4 +1,3 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/anthropic-oauth-vs-api-key-classification.feature
 //!
 //! PROV-099 — Projection-layer half of the fix. `project_one` must NOT
@@ -15,6 +14,7 @@
 
 use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 
 /// Build a configured anthropic credential with the given masked_key /
 /// source, mirroring what the backend produces for the two cases.
@@ -35,7 +35,7 @@ fn anthropic_configured(masked_key: Option<&str>, source: Option<&str>) -> Provi
 // ============================================================================
 
 #[test]
-fn anthropic_with_env_api_key_is_not_oauth_logged_in() {
+fn anthropic_with_env_api_key_is_not_oauth_logged_in() -> TestResult {
     // @step Given a configured anthropic credential whose masked_key is Some
     let info = anthropic_configured(Some("sk-ant-••••••••mnop"), Some("env"));
 
@@ -44,7 +44,7 @@ fn anthropic_with_env_api_key_is_not_oauth_logged_in() {
     let anthropic = display
         .iter()
         .find(|d| d.id == "anthropic")
-        .expect("anthropic display info present");
+        .or_fail("anthropic display info present")?;
 
     // @step Then the anthropic display info has_oauth_tokens is false
     assert!(
@@ -64,6 +64,7 @@ fn anthropic_with_env_api_key_is_not_oauth_logged_in() {
         anthropic.requires_api_key,
         "anthropic must still offer the api-key row"
     );
+    Ok(())
 }
 
 // ============================================================================
@@ -71,7 +72,7 @@ fn anthropic_with_env_api_key_is_not_oauth_logged_in() {
 // ============================================================================
 
 #[test]
-fn anthropic_configured_without_env_api_key_shows_logout_row() {
+fn anthropic_configured_without_env_api_key_shows_logout_row() -> TestResult {
     // @step Given a configured anthropic credential whose masked_key is None
     let info = anthropic_configured(None, None);
 
@@ -80,7 +81,7 @@ fn anthropic_configured_without_env_api_key_shows_logout_row() {
     let anthropic = display
         .iter()
         .find(|d| d.id == "anthropic")
-        .expect("anthropic display info present");
+        .or_fail("anthropic display info present")?;
 
     // @step Then the anthropic display info has_oauth_tokens is true
     assert!(
@@ -94,6 +95,7 @@ fn anthropic_configured_without_env_api_key_shows_logout_row() {
         Some("Logout from OAuth [Anthropic]"),
         "anthropic OAuth login must surface the logout row"
     );
+    Ok(())
 }
 
 // ============================================================================
@@ -101,7 +103,7 @@ fn anthropic_configured_without_env_api_key_shows_logout_row() {
 // ============================================================================
 
 #[test]
-fn anthropic_offers_both_oauth_login_rows_and_api_key_row() {
+fn anthropic_offers_both_oauth_login_rows_and_api_key_row() -> TestResult {
     // @step Given a configured anthropic credential whose masked_key is Some
     let info = anthropic_configured(Some("sk-ant-••••••••mnop"), Some("env"));
 
@@ -110,7 +112,7 @@ fn anthropic_offers_both_oauth_login_rows_and_api_key_row() {
     let anthropic = display
         .iter()
         .find(|d| d.id == "anthropic")
-        .expect("anthropic display info present");
+        .or_fail("anthropic display info present")?;
 
     // @step Then the anthropic display info oauth_login_methods is non-empty
     assert!(
@@ -123,4 +125,5 @@ fn anthropic_offers_both_oauth_login_rows_and_api_key_row() {
         anthropic.requires_api_key,
         "anthropic must always offer the api-key row alongside OAuth login"
     );
+    Ok(())
 }

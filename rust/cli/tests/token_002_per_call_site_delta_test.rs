@@ -9,7 +9,11 @@
 //! display values and restore already-settled physical-request billing.
 //! These source guards complement the real streamed BUG-223 integration tests.
 
-const STREAM_LOOP_SRC: &str = include_str!("../src/interactive/stream_loop.rs");
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
+fn stream_loop_src() -> String {
+    stream_loop_source_tree::stream_loop_source()
+}
 #[path = "support/gemini_continuation_source.rs"]
 mod gemini_source;
 const RECOVERY_COMPACTION_SRC: &str = include_str!("../src/interactive/recovery_compaction.rs");
@@ -141,12 +145,12 @@ fn assert_delta_flows_into_api_token_usage(src: &str, needle_ordinal: usize, sit
 /// file.
 #[test]
 fn stream_loop_main_turn_finalization_site_uses_compute_output_delta_result() {
-    // @step Given the fspec codelet-cli Rust crate
+    // @step Given the codelet-cli Rust crate
     // @step When I inspect the main turn finalization call site in stream_loop.rs
     // @step Then the compute_output_delta result is bound to a local variable
     // @step And that variable is passed as the output_tokens arg to ApiTokenUsage::new
     assert_delta_flows_into_api_token_usage(
-        STREAM_LOOP_SRC,
+        &stream_loop_src(),
         1,
         "stream_loop.rs::run_agent_stream (main turn finalization)",
     );
@@ -157,7 +161,7 @@ fn stream_loop_main_turn_finalization_site_uses_compute_output_delta_result() {
 
 #[test]
 fn gemini_continuation_normal_completion_uses_shared_finalization() {
-    // @step Given the fspec codelet-cli Rust crate
+    // @step Given the codelet-cli Rust crate
     // @step When I inspect the normal-completion call site in gemini_continuation.rs
     // @step Then normal helper completion returns evidence to the shared finalization owner
     let source = gemini_source::gemini_continuation_source();
@@ -165,7 +169,7 @@ fn gemini_continuation_normal_completion_uses_shared_finalization() {
     let normalized: String = source.split_whitespace().collect();
     assert!(!normalized.contains(".token_tracker.update_from_usage("));
     assert_delta_flows_into_api_token_usage(
-        STREAM_LOOP_SRC,
+        &stream_loop_src(),
         1,
         "stream_loop.rs shared normal-completion finalization",
     );
@@ -176,7 +180,7 @@ fn gemini_continuation_normal_completion_uses_shared_finalization() {
 
 #[test]
 fn gemini_continuation_exit_restores_settled_billing_without_accumulating_again() {
-    // @step Given the fspec codelet-cli Rust crate
+    // @step Given the codelet-cli Rust crate
     // @step When I inspect the update_token_tracker helper in gemini_continuation.rs
     // @step Then helper exit bookkeeping updates only display values and restores persisted billing
     let source = gemini_source::gemini_continuation_source();

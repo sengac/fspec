@@ -8,17 +8,23 @@ use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// Extract Scala dependencies from build.sbt.
-pub fn extract_sbt_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_sbt_dependencies(project_root: &Path) -> helpers::Extracted {
     let sbt_path = project_root.join("build.sbt");
     if !sbt_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_build_sbt(project_root, &sbt_path))
+}
 
-    let content =
-        std::fs::read_to_string(&sbt_path).map_err(|e| format!("Failed to read build.sbt: {e}"))?;
+/// The entities of one build.sbt, or why it could not be read.
+fn extract_build_sbt(
+    project_root: &Path,
+    sbt_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, sbt_path)?;
 
     let rel_path = "build.sbt";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     let line_count = content.lines().count() as i32;

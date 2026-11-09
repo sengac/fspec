@@ -24,10 +24,10 @@
 //!     written to stderr prefixed with `Error:` and contains the canonical
 //!     substring `Failed to query work units:`.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_work_units;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::{json, Value};
@@ -52,7 +52,7 @@ pub struct CliArgs {
 /// subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     let mut obj = serde_json::Map::new();

@@ -5,23 +5,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
-          "lines": "80-114",
+          "lines": "88-118",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675,
-                676,
-                677
-              ]
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "async fn loop_add(",
+              "lastLine": "}"
             }
           ]
         }
@@ -32,18 +34,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
-          "lines": "115-150",
+          "lines": "124-155",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                679,
-                680,
-                681,
-                682,
-                683,
-                684
-              ]
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "async fn loop_cancel(&self, id: String) -> Result<bool> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -54,15 +58,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
-          "lines": "151-193",
+          "lines": "161-200",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                686,
-                687,
-                688
-              ]
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "async fn loop_list(&self, session_id: SessionId) -> Result<Vec<RegisteredLoop>> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,8 +87,8 @@
       "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs"
     ],
-    "totalLinesCovered": 134
+    "totalLinesCovered": 127
   }
 }

@@ -22,10 +22,10 @@
 //!   - 1 on any [`codelet_fspec_core::FspecCoreError`]; the message is written
 //!     to stderr prefixed with `✗ Failed to update work unit status:`.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::update_work_unit_status;
 use serde_json::json;
 
@@ -46,7 +46,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `update-work-unit-status` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut body = serde_json::Map::new();
     body.insert("workUnitId".to_string(), json!(args.work_unit_id));

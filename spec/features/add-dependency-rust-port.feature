@@ -1,5 +1,7 @@
 @done
 @RPC-177
+@cli
+@dependency-management
 Feature: Port add-dependency command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_dependency.rs. Reuses io::ensure::ensure_work_units_file
@@ -117,3 +119,18 @@ Feature: Port add-dependency command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     And spec/work-units.json now exists on disk with the canonical empty initial structure
+
+  Scenario: Two dependsOn targets added one after another are both kept in order
+    Given a project root tempdir with spec/work-units.json containing API-001, API-002 and UI-001, all status=backlog
+    When I dispatch add-dependency with workUnitId='UI-001' and dependsOn='API-001'
+    And I dispatch add-dependency with workUnitId='UI-001' and dependsOn='API-002'
+    Then the dispatcher returns success=true
+    And spec/work-units.json on disk shows UI-001.dependsOn=['API-001', 'API-002']
+
+  Scenario: blocks, dependsOn and relatesTo edges coexist on one work unit
+    Given a project root tempdir with spec/work-units.json containing AUTH-001, API-001, DB-001 and SEC-001, all status=backlog
+    When I dispatch add-dependency with workUnitId='AUTH-001' and blocks='API-001'
+    And I dispatch add-dependency with workUnitId='AUTH-001' and dependsOn='DB-001'
+    And I dispatch add-dependency with workUnitId='AUTH-001' and relatesTo='SEC-001'
+    Then the dispatcher returns success=true
+    And spec/work-units.json on disk shows AUTH-001.blocks=['API-001'], AUTH-001.dependsOn=['DB-001'] and AUTH-001.relatesTo=['SEC-001']

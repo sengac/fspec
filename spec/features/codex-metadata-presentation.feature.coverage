@@ -25,7 +25,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -40,7 +42,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -51,7 +55,9 @@
                 30,
                 42,
                 51
-              ]
+              ],
+              "firstLine": "pub fn prepare_provider_status(self: &Arc<Self>, extensions: &ProviderSession, provider: &str) {",
+              "lastLine": "codex.metadata.reset();"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -61,17 +67,21 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                171,
-                184,
-                196,
-                199
-              ]
+                174,
+                179,
+                192,
+                204,
+                207
+              ],
+              "firstLine": "fn begin_turn(&self) {",
+              "lastLine": "CodexPresentationEvent::Verification => ProviderStatusEvent::Notification("
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -80,15 +90,9 @@
                 92,
                 100,
                 107
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                982,
-                1027,
-                1755
-              ]
+              ],
+              "firstLine": "let metadata = metadata.scoped_stream();",
+              "lastLine": "metadata.begin_response();"
             }
           ]
         }
@@ -99,7 +103,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
-          "lines": "50-112",
+          "lines": "50-119",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/metadata.rs",
@@ -119,7 +123,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -134,7 +140,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -145,7 +153,9 @@
                 30,
                 42,
                 51
-              ]
+              ],
+              "firstLine": "pub fn prepare_provider_status(self: &Arc<Self>, extensions: &ProviderSession, provider: &str) {",
+              "lastLine": "codex.metadata.reset();"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -155,17 +165,21 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                171,
-                184,
-                196,
-                199
-              ]
+                174,
+                179,
+                192,
+                204,
+                207
+              ],
+              "firstLine": "fn begin_turn(&self) {",
+              "lastLine": "CodexPresentationEvent::Verification => ProviderStatusEvent::Notification("
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -174,15 +188,9 @@
                 92,
                 100,
                 107
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                982,
-                1027,
-                1755
-              ]
+              ],
+              "firstLine": "let metadata = metadata.scoped_stream();",
+              "lastLine": "metadata.begin_response();"
             }
           ]
         }
@@ -193,7 +201,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
-          "lines": "114-195",
+          "lines": "121-202",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/metadata.rs",
@@ -213,7 +221,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -228,7 +238,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -239,7 +251,9 @@
                 30,
                 42,
                 51
-              ]
+              ],
+              "firstLine": "pub fn prepare_provider_status(self: &Arc<Self>, extensions: &ProviderSession, provider: &str) {",
+              "lastLine": "codex.metadata.reset();"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -249,17 +263,21 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                171,
-                184,
-                196,
-                199
-              ]
+                174,
+                179,
+                192,
+                204,
+                207
+              ],
+              "firstLine": "fn begin_turn(&self) {",
+              "lastLine": "CodexPresentationEvent::Verification => ProviderStatusEvent::Notification("
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -268,15 +286,9 @@
                 92,
                 100,
                 107
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                982,
-                1027,
-                1755
-              ]
+              ],
+              "firstLine": "let metadata = metadata.scoped_stream();",
+              "lastLine": "metadata.begin_response();"
             }
           ]
         }
@@ -287,7 +299,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
-          "lines": "197-248",
+          "lines": "204-255",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/metadata.rs",
@@ -307,7 +319,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -322,7 +336,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -333,7 +349,9 @@
                 30,
                 42,
                 51
-              ]
+              ],
+              "firstLine": "pub fn prepare_provider_status(self: &Arc<Self>, extensions: &ProviderSession, provider: &str) {",
+              "lastLine": "codex.metadata.reset();"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -343,17 +361,21 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                171,
-                184,
-                196,
-                199
-              ]
+                174,
+                179,
+                192,
+                204,
+                207
+              ],
+              "firstLine": "fn begin_turn(&self) {",
+              "lastLine": "CodexPresentationEvent::Verification => ProviderStatusEvent::Notification("
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -362,15 +384,9 @@
                 92,
                 100,
                 107
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                982,
-                1027,
-                1755
-              ]
+              ],
+              "firstLine": "let metadata = metadata.scoped_stream();",
+              "lastLine": "metadata.begin_response();"
             }
           ]
         }
@@ -390,9 +406,8 @@
       "rust/sessions/src/provider_status.rs",
       "rust/providers/src/codex/metadata_delivery.rs",
       "rust/providers/src/codex/session.rs",
-      "rust/providers/src/codex/streaming.rs",
-      "rust/sessions/src/background_session.rs"
+      "rust/providers/src/codex/streaming.rs"
     ],
-    "totalLinesCovered": 425
+    "totalLinesCovered": 420
   }
 }

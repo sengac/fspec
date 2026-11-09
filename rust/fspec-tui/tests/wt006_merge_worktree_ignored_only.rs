@@ -9,8 +9,8 @@
 //! sessions emit the nothing-to-merge notice and never open the merge
 //! dialog.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
@@ -29,22 +29,23 @@ fn fresh_app(mock: Arc<MockBackend>) -> App {
     App::new(backend)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Scenario: /merge-worktree with only ignored changes emits
 /// "nothing to merge".
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge() {
+async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose inspect_session_changes returns SessionChangesSummary { files_changed: 0, insertions: 0, deletions: 0, commits: [], files_ignored: 3 }
     let mock = Arc::new(MockBackend::new());
     mock.seed_session_changes_summary(SessionChangesSummary {
@@ -56,13 +57,14 @@ async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge()
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
     app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
         SlashCommandAction::MergeWorktree,
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice carrying "[merge] nothing to merge" for s-1 is observed on the action bus
     let chunks = app
@@ -92,4 +94,5 @@ async fn slash_merge_worktree_with_only_ignored_changes_emits_nothing_to_merge()
         !app.compositor().contains("merge-confirm-dialog"),
         "WT-006: ignored files must never open the merge dialog"
     );
+    Ok(())
 }

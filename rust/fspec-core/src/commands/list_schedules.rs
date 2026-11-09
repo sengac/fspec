@@ -107,7 +107,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let result = load_schedules(project_root);
+    let result = load_schedules(project_root)?;
 
     match args.format.as_deref() {
         Some("json") => {
@@ -130,25 +130,25 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// payload `{schedules: [], columns: [...]}`. The columns array is
 /// emitted on every path (parity with the TS literal at
 /// `list-schedules.ts:39-47` and `:60-68`).
-fn load_schedules(project_root: &Path) -> ListSchedulesResult {
-    let path = project_root.join("spec").join("schedules.json");
+fn load_schedules(project_root: &Path) -> Result<ListSchedulesResult, FspecCoreError> {
+    let path = crate::io::spec_paths::schedules(project_root)?;
 
     let raw = match std::fs::read_to_string(&path) {
         Ok(s) => s,
-        Err(_) => return empty_result(),
+        Err(_) => return Ok(empty_result()),
     };
 
     let parsed: SchedulesFile = match serde_json::from_str(&raw) {
         Ok(p) => p,
-        Err(_) => return empty_result(),
+        Err(_) => return Ok(empty_result()),
     };
 
     let schedules = parsed.schedules.into_iter().map(|(_, v)| v).collect();
 
-    ListSchedulesResult {
+    Ok(ListSchedulesResult {
         schedules,
         columns: COLUMNS.to_vec(),
-    }
+    })
 }
 
 /// Build the canonical empty response. Used by both branches of the

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "110-127",
+          "lines": "112-131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -53,7 +53,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// PROV-135: per-field dim placeholder shown when the field value is empty.",
+              "lastLine": "value.to_string()"
             }
           ]
         }
@@ -64,7 +66,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "133-150",
+          "lines": "136-155",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -112,7 +114,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// PROV-135: per-field dim placeholder shown when the field value is empty.",
+              "lastLine": "value.to_string()"
             }
           ]
         }
@@ -123,7 +127,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "156-174",
+          "lines": "160-180",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -171,7 +175,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// PROV-135: per-field dim placeholder shown when the field value is empty.",
+              "lastLine": "value.to_string()"
             }
           ]
         }
@@ -182,7 +188,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "180-204",
+          "lines": "185-211",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -217,7 +223,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "10 => \"160 (default)\",",
+              "lastLine": "value.to_string()"
             }
           ]
         }
@@ -228,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "210-250",
+          "lines": "216-258",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -248,7 +256,9 @@
                 165,
                 166,
                 167
-              ]
+              ],
+              "firstLine": "// PROV-143: prefill the stored toggle; an absent key ⇒ disabled.",
+              "lastLine": "loop_retries: def.loop_detection_max_retries().to_string(),"
             }
           ]
         }
@@ -266,6 +276,6 @@
       "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
-    "totalLinesCovered": 295
+    "totalLinesCovered": 305
   }
 }

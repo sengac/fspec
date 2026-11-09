@@ -158,7 +158,9 @@ fn dispatch_with_graph_renders_a_depth_first_blocks_tree_with_increasing_indenta
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
 
-    // @step Then the data field equals the TS `traverse` output: every visited node prints its id (root AND each recursed child), and recursion increases indent by two levels
+    // @step Then the data field equals "AUTH-001\n  blocks → AUTH-002\n    AUTH-002\n      blocks → AUTH-004\n        AUTH-004\n  blocks → AUTH-003\n    AUTH-003"
+    // (every visited node prints its id, root and each recursed child, and
+    // recursion increases the indent by two levels)
     // Parity with src/commands/dependencies.ts:837-856 — the TS traverse pushes
     // `${prefix}${id}` for EVERY visited node and recurses with `indent + 2`.
     let expected = "AUTH-001\n  blocks → AUTH-002\n    AUTH-002\n      blocks → AUTH-004\n        AUTH-004\n  blocks → AUTH-003\n    AUTH-003";

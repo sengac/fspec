@@ -3,6 +3,7 @@
 //! Append-only JSONL log for scheduler lifecycle events.
 //! Writes to `spec/schedule-log.jsonl` in the project directory.
 //! Gracefully handles write failures (warn via tracing, never crash).
+//! BUG-498: appends and rotations hold the spec lock on `spec/`.
 
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -37,6 +38,11 @@ pub struct JobLogEntry {
 /// Append a log entry to the JSONL file. Triggers rotation if the file
 /// exceeds `ROTATION_THRESHOLD` entries.
 ///
+/// BUG-498: the rotation check, the rotation itself (an atomic replace) and
+/// the append all run while holding the spec lock on the log's directory
+/// (`spec/`), the lock every fspec writer takes, so concurrent appends never
+/// interleave and a rotation never drops an entry another writer appended.
+///
 /// Never panics or returns an error — write failures are logged as warnings.
 pub async fn append_log_entry(log_path: &Path, entry: &JobLogEntry) {
     // Serialize the entry to a single JSON line
@@ -47,63 +53,49 @@ pub async fn append_log_entry(log_path: &Path, entry: &JobLogEntry) {
             return;
         }
     };
-
-    // Check rotation before appending
-    if let Err(e) = maybe_rotate(log_path).await {
-        warn!("Job log rotation failed for {}: {}", log_path.display(), e);
-        // Continue to try appending anyway
-    }
-
-    // Ensure parent directory exists
-    if let Some(parent) = log_path.parent() {
-        if let Err(e) = tokio::fs::create_dir_all(parent).await {
-            warn!(
-                "Failed to create directory for job log {}: {}",
-                log_path.display(),
-                e
-            );
-            return;
-        }
-    }
-
-    // Append the line
-    use tokio::io::AsyncWriteExt;
-    match tokio::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_path)
-        .await
-    {
-        Ok(mut file) => {
-            let mut buf = line.into_bytes();
-            buf.push(b'\n');
-            if let Err(e) = file.write_all(&buf).await {
-                warn!(
-                    "Failed to write job log entry to {}: {}",
-                    log_path.display(),
-                    e
-                );
-            }
-            // Ensure data is flushed to disk before returning
-            if let Err(e) = file.flush().await {
-                warn!(
-                    "Failed to flush job log entry to {}: {}",
-                    log_path.display(),
-                    e
-                );
-            }
-        }
-        Err(e) => {
-            warn!("Failed to open job log file {}: {}", log_path.display(), e);
-        }
+    let path = log_path.to_path_buf();
+    let appended = tokio::task::spawn_blocking(move || append_locked(&path, &line)).await;
+    match appended {
+        Ok(Ok(())) => {}
+        Ok(Err(e)) => warn!(
+            "Failed to write job log entry to {}: {}",
+            log_path.display(),
+            e
+        ),
+        Err(e) => warn!(
+            "Job log writer for {} did not finish: {}",
+            log_path.display(),
+            e
+        ),
     }
 }
 
+/// Rotate if needed, then append `line`, holding the spec lock throughout.
+fn append_locked(log_path: &Path, line: &str) -> std::io::Result<()> {
+    let dir = log_path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(dir)?;
+    let _lock = codelet_common::spec_lock::SpecLock::acquire(dir)?;
+    if let Err(e) = maybe_rotate(log_path) {
+        warn!("Job log rotation failed for {}: {}", log_path.display(), e);
+        // Continue to try appending anyway
+    }
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)?;
+    let mut buf = line.as_bytes().to_vec();
+    buf.push(b'\n');
+    file.write_all(&buf)?;
+    file.flush()
+}
+
 /// Rotate the log file if it exceeds `ROTATION_THRESHOLD` entries.
-/// Keeps the most recent `ROTATION_KEEP` entries.
-async fn maybe_rotate(log_path: &Path) -> Result<(), std::io::Error> {
+/// Keeps the most recent `ROTATION_KEEP` entries (atomic replace; the caller
+/// holds the spec lock).
+fn maybe_rotate(log_path: &Path) -> Result<(), std::io::Error> {
     // Read existing content — missing file is fine (nothing to rotate)
-    let content = match tokio::fs::read_to_string(log_path).await {
+    let content = match std::fs::read_to_string(log_path) {
         Ok(c) => c,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
         Err(e) => return Err(e),
@@ -121,5 +113,5 @@ async fn maybe_rotate(log_path: &Path) -> Result<(), std::io::Error> {
     let mut output = kept.join("\n");
     output.push('\n');
 
-    tokio::fs::write(log_path, output).await
+    codelet_common::spec_lock::replace_file_atomically(log_path, output.as_bytes())
 }

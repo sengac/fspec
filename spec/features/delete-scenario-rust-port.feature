@@ -1,7 +1,9 @@
+@BUG-628
 @done
 @feature-management
 @parser
 @RPC-219
+@BUG-444
 Feature: Port delete-scenario command to Rust
   """
   Core impl at rust/fspec-core/src/commands/delete_scenario.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate, and gherkin-0.16 Scenario.position.line / Step.position.line (1-based) to compute the removal span; line-based split('\n')/join('\n') edit.
@@ -66,9 +68,45 @@ Feature: Port delete-scenario command to Rust
     And the coverage sidecar no longer lists 'Old scenario'
     And the dispatcher message ends with '  Updated coverage file'
 
-  Scenario: Dispatcher ignores a malformed coverage sidecar
+  Scenario: Dispatcher rejects a malformed coverage sidecar
     Given a project root tempdir with spec/features/login.feature containing scenarios 'Old scenario' and 'Keep scenario'
     And a spec/features/login.feature.coverage sidecar containing invalid JSON
     When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario='Old scenario'
+    Then the dispatcher returns success=false with an error naming login.feature.coverage
+    And spec/features/login.feature still contains 'Old scenario'
+
+  # BUG-444 superseded "Dispatcher ignores a malformed coverage sidecar":
+  # a broken coverage file is reported, not skipped.
+  Scenario: Dispatcher resolves a feature name to a nested path under spec/features
+    Given a project root tempdir with spec/features/auth/login.feature containing scenarios 'Old scenario' and 'Keep scenario'
+    When I dispatch delete-scenario with feature='auth/login' and scenario='Old scenario'
     Then the dispatcher returns success=true
-    And the dispatcher message equals "Successfully deleted scenario 'Old scenario' from login.feature"
+    And spec/features/auth/login.feature no longer contains 'Scenario: Old scenario'
+    And spec/features/auth/login.feature still contains 'Scenario: Keep scenario'
+
+  Scenario: Dispatcher deletes the only scenario and keeps the Feature header and Background
+    Given a project root tempdir with spec/features/login.feature holding a Background and one scenario 'Only scenario'
+    When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario='Only scenario'
+    Then the dispatcher returns success=true
+    And the file on disk equals the Feature header and the Background, ending in one newline
+    And the file on disk parses as a feature with no scenarios
+
+  Scenario: Dispatcher keeps the Background and the other scenarios byte for byte
+    Given a project root tempdir with spec/features/login.feature holding a Background and scenarios 'First scenario', 'Old scenario' and 'Last scenario'
+    When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario='Old scenario'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original text without the 'Old scenario' block
+
+  Scenario: Dispatcher deletes a scenario whose name has quotes and an at sign
+    Given a project root tempdir with spec/features/login.feature containing scenarios "User can't login with @special chars" and 'Keep scenario'
+    When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario="User can't login with @special chars"
+    Then the dispatcher returns success=true
+    And the dispatcher message equals "Successfully deleted scenario 'User can't login with @special chars' from login.feature"
+    And the file on disk still contains 'Scenario: Keep scenario'
+
+  Scenario: Dispatcher rejects a feature file that is not valid Gherkin
+    Given a project root tempdir with spec/features/broken.feature that does not parse as Gherkin
+    When I dispatch delete-scenario with feature='broken' and scenario='Some scenario'
+    Then the dispatcher returns success=false
+    And the dispatcher error reason starts with 'Invalid Gherkin syntax:'
+    And spec/features/broken.feature is unchanged

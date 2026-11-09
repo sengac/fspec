@@ -10,11 +10,18 @@ use super::super::{
     CommonPatternEntry,
 };
 
-const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--dry-run",
-    description: "Preview what coverage files would be created without actually creating them",
-    default_value: None,
-}];
+const OPTIONS: &[CommandOption] = &[
+    CommandOption {
+        flag: "--dry-run",
+        description: "Preview what coverage files would be created without actually creating them",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--feature-name <name>",
+        description: "Generate only the exact selected feature; return a JSON plan, preserve lineage, and block unsafe removals or invalid metadata. With --dry-run, preview the same plan without writes.",
+        default_value: None,
+    },
+];
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
@@ -46,12 +53,7 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &[
-    "create-feature",
-    "link-coverage",
-    "show-coverage",
-    "audit-coverage",
-];
+const RELATED: &[&str] = &["create-feature", "link-coverage", "show-coverage", "audit"];
 
 const NOTES: &[&str] = &[
     "Coverage files are automatically created by fspec create-feature for new features",

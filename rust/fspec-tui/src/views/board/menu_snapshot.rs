@@ -25,12 +25,20 @@ use crate::store::AgentViewStore;
 /// MENU-011 R3: the label is stored BRACKETED — `[ New Agent ]` (a
 /// space between the word and each bracket) — so the layout width, the
 /// cached hit-test rects and the painter all agree (R4).
-pub const BOARD_ZONE_C: &[ZoneCButton] = &[ZoneCButton {
-    label: "[ New Agent ]",
-    action: MenuAction::NewAgent,
-}];
+/// TUI-114: `[ New Bot ]` sits directly left of `[ New Agent ]`.
+pub const BOARD_ZONE_C: &[ZoneCButton] = &[
+    ZoneCButton {
+        label: "[ New Bot ]",
+        action: MenuAction::NewBot,
+    },
+    ZoneCButton {
+        label: "[ New Agent ]",
+        action: MenuAction::NewAgent,
+    },
+];
 
-/// The open sessions the bar PAINTS (R9: `Cleared` dropped; a session
+/// The open sessions the bar PAINTS (R9: `Cleared` dropped; RPC-445:
+/// other workspaces' sessions dropped; a session
 /// with no observed status yet counts as active and paints `Idle`).
 /// Order = `open_sessions` order; the index into this list is the
 /// chip-activation / ring Zone B index.
@@ -42,30 +50,34 @@ pub fn active_menu_session_ids(store: &AgentViewStore) -> Vec<SessionId> {
             Some(status) => *status != SessionStatus::Cleared,
             None => true,
         })
+        // RPC-445: only sessions of the workspace the board shows.
+        .filter(|c| store.session_in_shown_workspace(&c.id))
         .map(|c| c.id.clone())
         .collect()
 }
 
 /// The per-session chip inputs for [`active_menu_session_ids`] —
 /// `index` = the global 1-based slot, `status` = the live status
-/// (defaulting to `Idle` when unobserved), `wu_id` = the bound work
+/// (`None` when unobserved, BUG-400), `wu_id` = the bound work
 /// unit id (chip suffix), `active` = `false` (MENU-010: the surface's
 /// snapshot builder decides which chip, if any, carries the
 /// selected-item highlight — the board never does, the agent view
 /// marks the current session, the mux marks it only when an agent
 /// pane is focused).
 pub fn chip_inputs(store: &AgentViewStore, active: &[SessionId]) -> Vec<ChipInput> {
+    // BUG-391: a session that is not open has no slot, so it gets no chip.
     active
         .iter()
-        .map(|id| ChipInput {
-            index: store.session_index_for(id),
-            status: store
-                .session_status_for(id)
-                .copied()
-                .unwrap_or(SessionStatus::Idle),
+        .filter_map(|id| Some((id, store.session_index_for(id)?)))
+        .map(|(id, index)| ChipInput {
+            index,
+            // BUG-400: an unobserved status stays unknown (None).
+            status: store.session_status_for(id).copied(),
             wu_id: store.work_unit_context_for(id).map(|c| c.id.clone()),
             // MENU-010: the surface decides — always false here.
             active: false,
+            // TUI-114: bot sessions get the `bot:` chip prefix.
+            bot: store.is_bot_session(id),
         })
         .collect()
 }
@@ -93,13 +105,29 @@ pub fn zone_b_and_chips(
     clock_ms: u64,
 ) -> (Vec<ZoneBCell>, Vec<MenuChip>) {
     let inputs = chip_inputs(store, active);
-    let chips = build_chips(&inputs, clock_ms);
+    let mut chips = build_chips(&inputs, clock_ms);
+    mark_waiting_chips(store, active, &mut chips);
     let zone_b = active
         .iter()
         .enumerate()
         .map(|(i, _)| ZoneBCell::Chip(i))
         .collect();
     (zone_b, chips)
+}
+
+/// AMGR-022: a session that waits on a sub-agent's request below it gets
+/// the yellow `?` waiting marker after its status glyph (the glyph text
+/// carries it, so the layout widths follow).
+fn mark_waiting_chips(store: &AgentViewStore, active: &[SessionId], chips: &mut [MenuChip]) {
+    for chip in chips.iter_mut() {
+        let waits = active.iter().any(|id| {
+            store.session_index_for(id) == Some(chip.index) && store.waits_on_request(id)
+        });
+        if waits {
+            chip.glyph.push('?');
+            chip.glyph_style = ratatui::style::Style::default().fg(ratatui::style::Color::Yellow);
+        }
+    }
 }
 
 /// The full per-frame snapshot the board render path paints: the owned

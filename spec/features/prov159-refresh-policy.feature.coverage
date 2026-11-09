@@ -36,7 +36,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub(super) fn bind(access: &str, refresh: &str) -> Result<Option<Binding>, AuthError> {",
+              "lastLine": "freshness: freshness(&document),"
             }
           ]
         }
@@ -89,7 +91,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub(super) fn state(refresh_token: &str) -> Result<TokenState, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -105,6 +109,12 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
                 141,
                 142,
                 143,
@@ -168,8 +178,12 @@
                 201,
                 202,
                 203,
-                204
-              ]
+                204,
+                205,
+                206
+              ],
+              "firstLine": "pub(super) fn reload(state: &mut TokenState, document: &Value) -> Result<(), AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,20 +204,26 @@
                 12,
                 13,
                 14
-              ]
+              ],
+              "firstLine": "pub(super) fn token_expiry(seconds: u64) -> Instant {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                147,
-                205
-              ]
+                150,
+                204
+              ],
+              "firstLine": "state.expires_at = token_expiry(lifetime(document, &state.access_token));",
+              "lastLine": "state.expires_at = token_expiry(response.expires_in.unwrap_or(DEFAULT_EXPIRY_SECS));"
             },
             {
               "file": "rust/providers/src/codex/credential_refresh.rs",
               "lines": [
                 26
-              ]
+              ],
+              "firstLine": "issuer_url,",
+              "lastLine": "issuer_url,"
             }
           ]
         }
@@ -222,6 +242,6 @@
       "rust/providers/src/codex/credential_refresh.rs",
       "rust/providers/src/codex/refreshing_client.rs"
     ],
-    "totalLinesCovered": 229
+    "totalLinesCovered": 237
   }
 }

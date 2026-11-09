@@ -1,7 +1,6 @@
-use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
-    Mutex,
-};
+use crate::common::TaskOutcome;
+use parking_lot::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -36,11 +35,16 @@ impl ModelBackend {
         }
     }
 
+    /// BUG-576: a backend whose provider list is `providers` (bug508 only).
+    #[allow(dead_code)]
+    pub fn with_providers(providers: Vec<ProviderInfo>) -> Self {
+        let backend = Self::new();
+        backend.inner.seed_providers(providers);
+        backend
+    }
+
     fn model(&self) -> String {
-        self.model
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .clone()
+        self.model.lock().clone()
     }
 
     pub async fn wait_started(&self) {
@@ -70,12 +74,16 @@ delegate! {
     async fn list_work_units() -> Vec<WorkUnitInfo>;
     async fn create_session(role: Option<String>) -> SessionId;
     async fn send_input(id: SessionId, text: String) -> ();
+    async fn submit_input(id: SessionId, text: String, mode: InputMode) -> ();
+    async fn configure_session_mcp_servers(id: SessionId, servers: Vec<codelet_rpc_types::SessionMcpServer>) -> Vec<codelet_rpc_types::SessionMcpServerTools>;
+    async fn control_exec_stdin(id: SessionId, exec_session_id: String, control: codelet_rpc_types::ExecStdinControl) -> ();
     async fn interrupt(id: SessionId) -> ();
     async fn health() -> HealthInfo;
     async fn checkpoint_counts() -> CheckpointCounts;
-    async fn move_work_unit_up(id: String) -> ();
-    async fn move_work_unit_down(id: String) -> ();
+    async fn move_work_unit_up(workspace: String, id: String) -> ();
+    async fn move_work_unit_down(workspace: String, id: String) -> ();
     async fn get_thinking_level(session_id: SessionId) -> ThinkingLevel;
+    async fn get_thinking_options(session_id: SessionId) -> codelet_rpc_types::ThinkingOptions;
     async fn get_workspace_info() -> WorkspaceInfo;
     async fn search_files(prefix: String, limit: u32) -> Vec<String>;
     async fn persistence_add_history(session: SessionId, text: String) -> ();
@@ -112,31 +120,34 @@ delegate! {
     }
 
     async fn set_session_model(&self, _session: SessionId, _provider: String, model: String) -> Result<()> {
-        self.writes.lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(model.clone());
+        self.writes.lock().push(model.clone());
         if self.hold_write.swap(false, Ordering::SeqCst) {
             self.started.fetch_add(1, Ordering::SeqCst);
             self.release.acquire().await?.forget();
         }
         anyhow::ensure!(model != "reject", "session busy");
-        *self.model.lock().unwrap_or_else(std::sync::PoisonError::into_inner) =
+        *self.model.lock() =
             if model == "alias" { "B".into() } else { model };
         Ok(())
     }
 }
 
-pub async fn responses(app: &mut App) -> Vec<Action> {
+pub async fn responses(
+    app: &mut App,
+) -> std::result::Result<Vec<Action>, codelet_test_helpers::Failure> {
     while let Some(task) = app.next_pending_task() {
-        assert!(task.await.is_ok());
+        task.await.completed_or_cancelled()?;
     }
     let mut actions = Vec::new();
     while let Some(action) = app.try_recv_action() {
         actions.push(action);
     }
-    actions
+    Ok(actions)
 }
 
-pub async fn settle(app: &mut App) {
-    for action in responses(app).await {
+pub async fn settle(app: &mut App) -> std::result::Result<(), codelet_test_helpers::Failure> {
+    for action in responses(app).await? {
         app.dispatch(action);
     }
+    Ok(())
 }

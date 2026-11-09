@@ -9,13 +9,9 @@
 //! the Compositor must contain `CREATE_SESSION_DIALOG_ID`. The visual
 //! parity tests then assert per-cell bg/fg/modifier on the styled cells.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::create_session_dialog::CreateSessionDialog;
@@ -52,28 +48,28 @@ fn key(code: KeyCode) -> Event {
 fn render_dialog_buffer(
     preselect: Option<CreateSessionOption>,
     work_unit: Option<WorkUnitContext>,
-) -> Buffer {
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let mut dialog = CreateSessionDialog::new(preselect, work_unit);
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         Component::render(&mut dialog, frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Render an entire App (Navigator + Compositor) onto an 80x24
 /// TestBackend and return the buffer. Used for end-to-end Shift+Right
 /// visual assertions.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Collect a buffer into a flat String for substring assertions.
@@ -125,7 +121,7 @@ fn find_text_cell(buf: &Buffer, needle: &str) -> Option<(u16, u16)> {
 
 /// Scenario: Shift+Right with a single open session mounts CreateSessionDialog
 #[test]
-fn shift_right_single_session_mounts_create_session_dialog() {
+fn shift_right_single_session_mounts_create_session_dialog() -> TestResult {
     // @step Given an App in AgentView with one open session at current_session_index 0
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -147,11 +143,12 @@ fn shift_right_single_session_mounts_create_session_dialog() {
     );
     // @step And current_session_index is still 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
+    Ok(())
 }
 
 /// Scenario: Shift+Right at the last index of three open sessions mounts CreateSessionDialog
 #[test]
-fn shift_right_at_last_index_of_three_mounts_create_session_dialog() {
+fn shift_right_at_last_index_of_three_mounts_create_session_dialog() -> TestResult {
     // @step Given an App in AgentView with three open sessions s-1, s-2, s-3 and current_session_index 2
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -170,11 +167,12 @@ fn shift_right_at_last_index_of_three_mounts_create_session_dialog() {
     );
     // @step And current_session_index is still 2
     assert_eq!(app.agent_view_store().current_session_index(), 2);
+    Ok(())
 }
 
 /// Scenario: Shift+Right with zero open sessions mounts CreateSessionDialog with generic title
 #[test]
-fn shift_right_zero_sessions_mounts_with_generic_title() {
+fn shift_right_zero_sessions_mounts_with_generic_title() -> TestResult {
     // @step Given an App in AgentView with zero open sessions
     let mut app = fresh_app();
     app.navigator_mut().active_view = ViewMode::Agent;
@@ -190,16 +188,17 @@ fn shift_right_zero_sessions_mounts_with_generic_title() {
     );
 
     // @step And the rendered dialog title is "Start New Agent?"
-    // @step And the rendered description is "Begin a fresh AI conversation, not linked to any task."
-    let painted = buffer_to_string(&render_app_buffer(&mut app));
+    // @step And the rendered description is "Starts a new agent, not linked to any work unit."
+    let painted = buffer_to_string(&render_app_buffer(&mut app)?);
     assert!(
         painted.contains("Start New Agent?"),
         "expected 'Start New Agent?' in rendered buffer, got:\n{painted}"
     );
     assert!(
-        painted.contains("Begin a fresh AI conversation, not linked to any task."),
+        painted.contains("Starts a new agent, not linked to any work unit."),
         "expected unattached description in rendered buffer, got:\n{painted}"
     );
+    Ok(())
 }
 
 #[path = "shift_right_create_session_dialog/generic.rs"]
@@ -209,22 +208,21 @@ mod generic;
 // Visual parity with TS Ink (the styling drift being fixed)
 // ─────────────────────────────────────────────────────────────────────
 
-/// Scenario: Freshly mounted dialog paints the Yes button blue/white/bold
+/// Scenario: Freshly mounted dialog paints the Start button blue/white/bold
 /// and the other two buttons gray
 #[test]
-fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
+fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() -> TestResult {
     // @step Given an App in AgentView with one open session
     // @step When the user presses Shift+Right
     // @step And I render the App onto an 80x24 TestBackend
-    let buf = render_dialog_buffer(None, None);
+    let buf = render_dialog_buffer(None, None)?;
 
-    // @step Then the cells covering " Yes " have background Color::Blue
-    //   and foreground Color::White and Modifier::BOLD
-    let (x, y) =
-        find_text_cell(&buf, " Yes ").expect("' Yes ' must appear in the rendered dialog buffer");
-    // Inspect every cell in the 5-cell span ' Yes ' — bg/fg/modifier on
+    // @step Then the cells covering " Start " have background Color::Blue and foreground Color::White and Modifier::BOLD
+    let (x, y) = find_text_cell(&buf, " Start    Start in Worktree ")
+        .or_fail("the button row must appear in the rendered dialog buffer")?;
+    // Inspect every cell in the 7-cell span ' Start ' — bg/fg/modifier on
     // each must match the TS contract.
-    for dx in 0..5 {
+    for dx in 0..7 {
         let cell = &buf[(x + dx, y)];
         let style = cell.style();
         assert_eq!(
@@ -254,16 +252,16 @@ fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
         );
     }
 
-    // @step And the cells covering " Yes - Isolated " have foreground Color::Gray
-    let (ix, iy) = find_text_cell(&buf, " Yes - Isolated ")
-        .expect("' Yes - Isolated ' must appear in the rendered dialog buffer");
-    for dx in 0..16 {
+    // @step And the cells covering " Start in Worktree " have foreground Color::Gray
+    let (ix, iy) = find_text_cell(&buf, " Start in Worktree    Cancel ")
+        .or_fail("the button row must appear in the rendered dialog buffer")?;
+    for dx in 0..19 {
         let cell = &buf[(ix + dx, iy)];
         let style = cell.style();
         assert_eq!(
             style.fg,
             Some(Color::Gray),
-            "unselected ' Yes - Isolated ' cell ({},{}) fg must be Gray, got {:?} (char {:?})",
+            "unselected ' Start in Worktree ' cell ({},{}) fg must be Gray, got {:?} (char {:?})",
             ix + dx,
             iy,
             style.fg,
@@ -272,7 +270,7 @@ fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
         assert_ne!(
             style.bg,
             Some(Color::Blue),
-            "unselected ' Yes - Isolated ' cell ({},{}) must NOT have Blue bg",
+            "unselected ' Start in Worktree ' cell ({},{}) must NOT have Blue bg",
             ix + dx,
             iy
         );
@@ -280,7 +278,7 @@ fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
 
     // @step And the cells covering " Cancel " have foreground Color::Gray
     let (cx, cy) = find_text_cell(&buf, " Cancel ")
-        .expect("' Cancel ' must appear in the rendered dialog buffer");
+        .or_fail("' Cancel ' must appear in the rendered dialog buffer")?;
     for dx in 0..8 {
         let cell = &buf[(cx + dx, cy)];
         let style = cell.style();
@@ -313,17 +311,18 @@ fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
         !painted.contains('\u{25cb}'),
         "rendered dialog must not contain ○ marker glyph, got:\n{painted}"
     );
+    Ok(())
 }
 
 /// Scenario: Right arrow cycles selection forward with wrap-around
 #[test]
-fn right_arrow_cycles_forward_with_wrap_around() {
-    // @step Given the CreateSessionDialog is mounted with default selection Yes
+fn right_arrow_cycles_forward_with_wrap_around() -> TestResult {
+    // @step Given the CreateSessionDialog is mounted with default selection Start
     let mut dialog = CreateSessionDialog::new(None, None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
     // @step When the user presses Right
     let _ = dialog.handle_event(&key(KeyCode::Right));
-    // @step Then the selected option is Yes - Isolated
+    // @step Then the selected option is Start in Worktree
     assert_eq!(dialog.selected_option(), CreateSessionOption::Isolated);
     // @step When the user presses Right
     let _ = dialog.handle_event(&key(KeyCode::Right));
@@ -331,30 +330,32 @@ fn right_arrow_cycles_forward_with_wrap_around() {
     assert_eq!(dialog.selected_option(), CreateSessionOption::Cancel);
     // @step When the user presses Right
     let _ = dialog.handle_event(&key(KeyCode::Right));
-    // @step Then the selected option is Yes
+    // @step Then the selected option is Start
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
+    Ok(())
 }
 
-/// Scenario: Left arrow wraps from Yes back to Cancel
+/// Scenario: Left arrow wraps from Start back to Cancel
 #[test]
-fn left_arrow_wraps_from_yes_to_cancel() {
-    // @step Given the CreateSessionDialog is mounted with default selection Yes
+fn left_arrow_wraps_from_yes_to_cancel() -> TestResult {
+    // @step Given the CreateSessionDialog is mounted with default selection Start
     let mut dialog = CreateSessionDialog::new(None, None);
     // @step When the user presses Left
     let _ = dialog.handle_event(&key(KeyCode::Left));
     // @step Then the selected option is Cancel
     assert_eq!(dialog.selected_option(), CreateSessionOption::Cancel);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // Confirmation / cancellation behaviour
 // ─────────────────────────────────────────────────────────────────────
 
-/// Scenario: Enter on Yes emits CreateSessionSubmitted with isolated false
+/// Scenario: Enter on Start emits CreateSessionSubmitted with isolated false
 /// and dismisses the dialog
 #[test]
-fn enter_on_yes_emits_submitted_non_isolated_and_dismisses() {
-    // @step Given the CreateSessionDialog is mounted with selection Yes
+fn enter_on_yes_emits_submitted_non_isolated_and_dismisses() -> TestResult {
+    // @step Given the CreateSessionDialog is mounted with selection Start
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
@@ -376,22 +377,23 @@ fn enter_on_yes_emits_submitted_non_isolated_and_dismisses() {
     }
     assert!(
         saw_submitted_non_isolated,
-        "Enter on Yes must emit Action::CreateSessionSubmitted{{ isolated: false }}"
+        "Enter on Start must emit Action::CreateSessionSubmitted{{ isolated: false }}"
     );
     // @step And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
+    Ok(())
 }
 
-/// Scenario: Enter on Yes - Isolated emits CreateSessionSubmitted with isolated true
+/// Scenario: Enter on Start in Worktree emits CreateSessionSubmitted with isolated true
 #[test]
-fn enter_on_yes_isolated_emits_submitted_isolated_and_dismisses() {
-    // @step Given the CreateSessionDialog is mounted with selection Yes - Isolated
+fn enter_on_yes_isolated_emits_submitted_isolated_and_dismisses() -> TestResult {
+    // @step Given the CreateSessionDialog is mounted with selection Start in Worktree
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
     app.dispatch(Action::SessionNext);
     assert!(app.compositor().contains(CREATE_SESSION_DIALOG_ID));
-    // Advance selection Yes → Yes - Isolated
+    // Advance selection Start → Start in Worktree
     let _ = app.handle_event(&key(KeyCode::Right));
 
     // @step When the user presses Enter
@@ -406,16 +408,17 @@ fn enter_on_yes_isolated_emits_submitted_isolated_and_dismisses() {
     }
     assert!(
         saw_submitted_isolated,
-        "Enter on Yes - Isolated must emit Action::CreateSessionSubmitted{{ isolated: true }}"
+        "Enter on Start in Worktree must emit Action::CreateSessionSubmitted{{ isolated: true }}"
     );
     // @step And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
+    Ok(())
 }
 
 /// Scenario: Enter on Cancel emits CreateSessionCancelled and leaves the
 /// MultiLineInput buffer untouched
 #[test]
-fn enter_on_cancel_emits_cancelled_and_preserves_input() {
+fn enter_on_cancel_emits_cancelled_and_preserves_input() -> TestResult {
     // @step Given an App in AgentView with one open session and MultiLineInput value "hello"
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -445,11 +448,12 @@ fn enter_on_cancel_emits_cancelled_and_preserves_input() {
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
     // @step And the MultiLineInput value is still "hello"
     assert_eq!(app.navigator().agent.input.value(), "hello");
+    Ok(())
 }
 
 /// Scenario: Esc emits CreateSessionCancelled and dismisses the dialog
 #[test]
-fn esc_emits_cancelled_and_dismisses() {
+fn esc_emits_cancelled_and_dismisses() -> TestResult {
     // @step Given the CreateSessionDialog is mounted
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -473,12 +477,13 @@ fn esc_emits_cancelled_and_dismisses() {
     );
     // @step And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
+    Ok(())
 }
 
 /// Scenario: Typed MultiLineInput draft survives the Shift+Right summon
 /// and subsequent Esc
 #[test]
-fn typed_draft_survives_shift_right_summon_and_esc() {
+fn typed_draft_survives_shift_right_summon_and_esc() -> TestResult {
     // @step Given an App in AgentView with one open session and MultiLineInput value "pending"
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -494,11 +499,12 @@ fn typed_draft_survives_shift_right_summon_and_esc() {
     let _ = app.handle_event(&key(KeyCode::Esc));
     // @step Then the MultiLineInput value is still "pending"
     assert_eq!(app.navigator().agent.input.value(), "pending");
+    Ok(())
 }
 
 /// Scenario: Shift+Right is idempotent when the dialog is already mounted
 #[test]
-fn shift_right_is_idempotent_when_dialog_already_mounted() {
+fn shift_right_is_idempotent_when_dialog_already_mounted() -> TestResult {
     // @step Given an App in AgentView with one open session
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -531,6 +537,7 @@ fn shift_right_is_idempotent_when_dialog_already_mounted() {
         second_count, 1,
         "second Shift+Right must not duplicate the dialog (idempotency)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -539,11 +546,11 @@ fn shift_right_is_idempotent_when_dialog_already_mounted() {
 
 /// Scenario: Rendered footer uses ASCII pipe separators not box-drawing pipes
 #[test]
-fn rendered_footer_uses_ascii_pipe_not_box_drawing() {
+fn rendered_footer_uses_ascii_pipe_not_box_drawing() -> TestResult {
     // @step Given an App in AgentView with one open session
     // @step When the user presses Shift+Right
     // @step And I render the App onto an 80x24 TestBackend
-    let buf = render_dialog_buffer(None, None);
+    let buf = render_dialog_buffer(None, None)?;
     let painted = buffer_to_string(&buf);
 
     // @step Then the rendered buffer contains the string "← → Select | Enter Confirm | Esc Cancel"
@@ -557,7 +564,7 @@ fn rendered_footer_uses_ascii_pipe_not_box_drawing() {
     // rounded border with ╭╮╰╯─│ but the FOOTER text uses ASCII |.
     // We check only the footer line by locating its row and confirming
     // the box-drawing pipe is absent within the same row.
-    let (fx, fy) = find_text_cell(&buf, "← → Select").expect("footer prefix must be present");
+    let (fx, fy) = find_text_cell(&buf, "← → Select").or_fail("footer prefix must be present")?;
     let _ = fx;
     let mut footer_row = String::new();
     for x in 0..buf.area.width {
@@ -578,29 +585,31 @@ fn rendered_footer_uses_ascii_pipe_not_box_drawing() {
         pipe_count, 2,
         "footer row must contain exactly two ASCII pipes (got {pipe_count} in {footer_row:?})"
     );
+    Ok(())
 }
 
 /// Scenario: Source-shape budget for the refactored CreateSessionDialog
 #[test]
-fn source_shape_create_session_dialog_under_300_loc() {
+fn source_shape_create_session_dialog_under_300_loc() -> TestResult {
     // @step Given the file rust/fspec-tui/src/components/create_session_dialog.rs
     let source = std::fs::read_to_string("src/components/create_session_dialog.rs")
-        .expect("read create_session_dialog.rs");
+        .or_fail("read create_session_dialog.rs")?;
     // @step Then it has fewer than 300 lines
     let line_count = source.lines().count();
     assert!(
         line_count < 300,
         "create_session_dialog.rs is {line_count} lines; must stay under 300"
     );
+    Ok(())
 }
 
 /// Scenario: CreateSessionDialog renders via dialog_theme::render_dialog
 /// (base dialog primitive reused)
 #[test]
-fn source_shape_create_session_dialog_uses_render_dialog() {
+fn source_shape_create_session_dialog_uses_render_dialog() -> TestResult {
     // @step Given the source of rust/fspec-tui/src/components/create_session_dialog.rs
     let source = std::fs::read_to_string("src/components/create_session_dialog.rs")
-        .expect("read create_session_dialog.rs");
+        .or_fail("read create_session_dialog.rs")?;
     // @step Then it imports render_dialog from super::dialog_theme
     assert!(
         source.contains("dialog_theme::")
@@ -623,6 +632,7 @@ fn source_shape_create_session_dialog_uses_render_dialog() {
         !body.contains("Paragraph::new"),
         "CreateSessionDialog::render must not call Paragraph::new — delegate to render_dialog"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -633,7 +643,7 @@ fn source_shape_create_session_dialog_uses_render_dialog() {
 /// directly on AgentViewStore. This sanity test pins the helper's API
 /// shape so the rendering test above stays linkable.
 #[test]
-fn agent_view_store_exposes_set_work_unit_context() {
+fn agent_view_store_exposes_set_work_unit_context() -> TestResult {
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.agent_view_store_mut().set_work_unit_context(
@@ -647,8 +657,9 @@ fn agent_view_store_exposes_set_work_unit_context() {
     let ctx = app
         .agent_view_store()
         .work_unit_context_for(&sid("s-1"))
-        .expect("work unit context must be bound");
+        .or_fail("work unit context must be bound")?;
     assert_eq!(ctx.id, "X-1");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -723,7 +734,7 @@ fn app_in_boardview(unit_id: &str, status: &str, attach: Option<SessionId>) -> A
 /// dialog overlays the BoardView in-place; cancelling must leave the
 /// user on the Kanban board, not in an empty AgentView.
 #[test]
-fn boardview_first_shift_right_unattached_mounts_dialog_over_board() {
+fn boardview_first_shift_right_unattached_mounts_dialog_over_board() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -752,6 +763,7 @@ fn boardview_first_shift_right_unattached_mounts_dialog_over_board() {
         Some(CREATE_SESSION_DIALOG_ID),
         "dialog must be the topmost compositor layer (overlay on BoardView)"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView first Shift+Right with attached session jumps
@@ -760,7 +772,7 @@ fn boardview_first_shift_right_unattached_mounts_dialog_over_board() {
 /// Guard against over-correction: when a session IS attached, the dialog
 /// must NOT appear — the user is navigating into the existing session.
 #[test]
-fn boardview_first_shift_right_attached_session_no_dialog() {
+fn boardview_first_shift_right_attached_session_no_dialog() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has an attached session "sid-1"
     let mut app = app_in_boardview("AUTH-001", "backlog", Some(SessionId::new("sid-1")));
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -786,13 +798,14 @@ fn boardview_first_shift_right_attached_session_no_dialog() {
         "with attached session, Shift+Right must NOT push the dialog — \
          the user is jumping into the existing session"
     );
+    Ok(())
 }
 
 /// Scenario: Two Shift+Rights from BoardView with unattached work unit
 /// remain idempotent (only one CreateSessionDialog instance in the
 /// compositor at any time) — and active_view stays Board the WHOLE time.
 #[test]
-fn boardview_double_shift_right_unattached_is_idempotent_and_stays_on_board() {
+fn boardview_double_shift_right_unattached_is_idempotent_and_stays_on_board() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
 
@@ -843,12 +856,13 @@ fn boardview_double_shift_right_unattached_is_idempotent_and_stays_on_board() {
         ViewMode::Board,
         "second Shift+Right must also leave the view on Board"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView Shift+Right then Esc cancels and leaves the user
 /// on BoardView (not stranded in an empty AgentView).
 #[test]
-fn boardview_shift_right_then_esc_returns_to_board() {
+fn boardview_shift_right_then_esc_returns_to_board() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
 
@@ -876,13 +890,14 @@ fn boardview_shift_right_then_esc_returns_to_board() {
         ViewMode::Board,
         "Esc must leave the user on BoardView — not strand them in an empty AgentView"
     );
+    Ok(())
 }
 
-/// Scenario: BoardView Shift+Right then Enter on Yes switches to AgentView
+/// Scenario: BoardView Shift+Right then Enter on Start switches to AgentView
 /// and submits create-session — the view switch happens on CONFIRM, not
 /// on dialog open.
 #[test]
-fn boardview_shift_right_then_enter_yes_switches_to_agentview_and_submits() {
+fn boardview_shift_right_then_enter_yes_switches_to_agentview_and_submits() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
 
@@ -909,7 +924,7 @@ fn boardview_shift_right_then_enter_yes_switches_to_agentview_and_submits() {
     }
     assert!(
         saw_submitted,
-        "Enter on Yes must emit Action::CreateSessionSubmitted{{ isolated: false }}"
+        "Enter on Start must emit Action::CreateSessionSubmitted{{ isolated: false }}"
     );
     // @step And navigator.active_view is ViewMode::Agent
     assert_eq!(
@@ -919,6 +934,7 @@ fn boardview_shift_right_then_enter_yes_switches_to_agentview_and_submits() {
     );
     // @step And the Compositor does not contain CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -950,7 +966,7 @@ fn shift_left_event() -> Event {
 /// global session list (sessionGetNext), find sid-A, and navigate to
 /// it. The Rust port must mirror that — NO dialog must appear.
 #[test]
-fn boardview_shift_right_with_open_session_resumes_existing_session_rpc097_reopen2() {
+fn boardview_shift_right_with_open_session_resumes_existing_session_rpc097_reopen2() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -989,12 +1005,13 @@ fn boardview_shift_right_with_open_session_resumes_existing_session_rpc097_reope
         "the CreateSessionDialog MUST NOT be mounted when an open \
          session is available to resume — this is the user-reported bug"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView Shift+Right with two open sessions resumes
 /// the first one (sessionGetFirst semantics).
 #[test]
-fn boardview_shift_right_with_two_open_sessions_resumes_first_rpc097_reopen2() {
+fn boardview_shift_right_with_two_open_sessions_resumes_first_rpc097_reopen2() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
 
@@ -1019,13 +1036,14 @@ fn boardview_shift_right_with_two_open_sessions_resumes_first_rpc097_reopen2() {
     );
     // @step And the Compositor does not contain CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
+    Ok(())
 }
 
 /// Scenario: Full round-trip — user opens agent, returns to board,
 /// then Shift+Right resumes the open session (the canonical user
 /// flow that surfaced the bug).
 #[test]
-fn shift_left_then_shift_right_resumes_open_session_rpc097_reopen2() {
+fn shift_left_then_shift_right_resumes_open_session_rpc097_reopen2() -> TestResult {
     // @step Given an App in AgentView with one open session "sid-A" focused
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -1070,6 +1088,7 @@ fn shift_left_then_shift_right_resumes_open_session_rpc097_reopen2() {
         "this is the exact user-reported failure mode — round-tripping \
          Shift+Left → Shift+Right must NOT re-prompt the create dialog"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView Shift+Right with zero open sessions still
@@ -1077,7 +1096,7 @@ fn shift_left_then_shift_right_resumes_open_session_rpc097_reopen2() {
 /// — ensure the new global-session probe doesn't break the empty
 /// state.
 #[test]
-fn boardview_shift_right_zero_open_sessions_still_mounts_dialog_rpc097_reopen2() {
+fn boardview_shift_right_zero_open_sessions_still_mounts_dialog_rpc097_reopen2() -> TestResult {
     // @step Given an App in BoardView with a selected work unit that has no attached session
     let mut app = app_in_boardview("AUTH-001", "backlog", None);
     // @step And the agent_view_store has zero open sessions
@@ -1099,6 +1118,7 @@ fn boardview_shift_right_zero_open_sessions_still_mounts_dialog_rpc097_reopen2()
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "with zero open sessions, BoardView Shift+Right must still mount the dialog"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────

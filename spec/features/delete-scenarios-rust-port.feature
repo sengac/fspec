@@ -68,3 +68,24 @@ Feature: Port delete-scenarios command to Rust
     When I dispatch delete-scenarios with tags=[]
     Then the dispatcher returns success=false
     And the dispatcher error equals 'At least one --tag is required'
+
+  Scenario: Dispatcher deletes matching scenarios across several files and leaves files without matches untouched
+    Given a project root tempdir with three features holding five @obsolete scenarios between them and a fourth feature with none
+    When I dispatch delete-scenarios with tags=['@obsolete']
+    Then the dispatcher returns success=true with deletedCount=5 and fileCount=3
+    And the dispatcher message equals 'Deleted 5 scenario(s) from 3 file(s). All modified files validated successfully.'
+    And each modified file re-parses as valid Gherkin holding only its untagged scenario
+    And the feature without @obsolete scenarios is byte-equal to its pre-call contents
+
+  Scenario: Dispatcher keeps the feature tags and the Background of a modified file
+    Given a project root tempdir with one feature tagged @feature-tag that has a Background, two scenarios tagged @cleanup and one untagged scenario
+    When I dispatch delete-scenarios with tags=['@cleanup']
+    Then the dispatcher returns success=true with deletedCount=2
+    And the feature file still starts with the @feature-tag line, the Feature line and the Background with its step
+    And the only scenario left is the untagged one
+
+  Scenario: Dispatcher deletes scenarios whose tag contains special characters
+    Given a project root tempdir with one feature containing a scenario tagged @bug-#123, a scenario tagged @bug-123 and an untagged scenario
+    When I dispatch delete-scenarios with tags=['@bug-#123']
+    Then the dispatcher returns success=true with deletedCount=1
+    And the feature file re-parses as valid Gherkin without the @bug-#123 scenario

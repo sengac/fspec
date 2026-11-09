@@ -14,12 +14,11 @@
 //! `maxImages` key, so this target fails to compile until the
 //! implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::{ProfileForm, PROFILE_FORM_FIELDS};
 use codelet_fspec_tui::views::provider_settings::profiles_config::load_openai_profile_configs_from;
 use codelet_fspec_tui::views::{ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -31,12 +30,12 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 /// Build a view sitting in CreateProfile mode with the given form.
@@ -50,22 +49,22 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
 }
 
 /// The Max Images field's index into [`PROFILE_FORM_FIELDS`] (the 9th, last).
-fn max_images_field_index() -> usize {
-    PROFILE_FORM_FIELDS
+fn max_images_field_index() -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(PROFILE_FORM_FIELDS
         .iter()
         .position(|label| *label == "Max Images")
-        .expect("PROFILE_FORM_FIELDS must contain a \"Max Images\" entry")
+        .or_fail("PROFILE_FORM_FIELDS must contain a \"Max Images\" entry")?)
 }
 
 /// A create form past the name step, focused on the Max Images field.
-fn form_focused_on_max_images() -> ProfileForm {
+fn form_focused_on_max_images() -> Result<ProfileForm, codelet_test_helpers::TestError> {
     let mut form = ProfileForm::new_create();
     form.is_editing_name = false;
     form.name = "local".to_string();
     form.base_url = "http://localhost:8888".to_string();
     form.api_key = "sk-test".to_string();
-    form.field_index = max_images_field_index();
-    form
+    form.field_index = max_images_field_index()?;
+    Ok(form)
 }
 
 /// Type a string into the focused field one char at a time.
@@ -77,7 +76,7 @@ fn type_chars(view: &mut ProviderSettingsView, text: &str) {
 
 /// Scenario: Max Images field prefills to the default 4 when absent
 #[test]
-fn max_images_field_prefills_to_the_default_4_when_absent() {
+fn max_images_field_prefills_to_the_default_4_when_absent() -> TestResult {
     // @step Given an OpenAI profile "work-vllm" exists with no maxImages key stored
     let def = ProfileDefinition {
         base_url: "http://localhost:8888".to_string(),
@@ -97,8 +96,8 @@ fn max_images_field_prefills_to_the_default_4_when_absent() {
     let pt_idx = PROFILE_FORM_FIELDS
         .iter()
         .position(|label| *label == "Preserve Thinking")
-        .expect("PROFILE_FORM_FIELDS must contain a \"Preserve Thinking\" entry");
-    let max_idx = max_images_field_index();
+        .or_fail("PROFILE_FORM_FIELDS must contain a \"Preserve Thinking\" entry")?;
+    let max_idx = max_images_field_index()?;
     assert_eq!(
         max_idx,
         pt_idx + 1,
@@ -117,10 +116,10 @@ fn max_images_field_prefills_to_the_default_4_when_absent() {
     form.field_index = max_idx;
     let mut view = create_view(form);
     type_chars(&mut view, "2");
-    let def = form_of(&view)
+    let def = form_of(&view)?
         .build_definition()
-        .expect("a valid form must build without a rejection hint")
-        .expect("a valid form must build a definition");
+        .or_fail("a valid form must build without a rejection hint")?
+        .or_fail("a valid form must build a definition")?;
 
     // @step Then the profile "work-vllm" is stored with maxImages 2
     assert_eq!(
@@ -132,11 +131,12 @@ fn max_images_field_prefills_to_the_default_4_when_absent() {
     // @step And re-opening the form shows the "Max Images" field prefilled with 2
     let reopened = ProfileForm::from_definition("work-vllm", &def);
     assert_eq!(reopened.max_images, "2");
+    Ok(())
 }
 
 /// Scenario: Empty Max Images field saves as absent and resolves to the default
 #[test]
-fn empty_max_images_field_saves_as_absent_and_resolves_to_the_default() {
+fn empty_max_images_field_saves_as_absent_and_resolves_to_the_default() -> TestResult {
     // @step Given an OpenAI profile "work-vllm" stores maxImages 2
     let stored = ProfileDefinition {
         base_url: "http://h".to_string(),
@@ -157,8 +157,8 @@ fn empty_max_images_field_saves_as_absent_and_resolves_to_the_default() {
     // @step And I press save
     let def = form
         .build_definition()
-        .expect("an empty Max Images field must build without a rejection hint")
-        .expect("a valid form must build a definition");
+        .or_fail("an empty Max Images field must build without a rejection hint")?
+        .or_fail("a valid form must build a definition")?;
 
     // @step Then the profile "work-vllm" has no maxImages key on disk
     // (None is the "remove the key" value in the persistence read-modify-write)
@@ -173,18 +173,19 @@ fn empty_max_images_field_saves_as_absent_and_resolves_to_the_default() {
         reopened.max_images, "4",
         "an absent maxImages key must resolve back to the prefilled default 4"
     );
+    Ok(())
 }
 
 /// Scenario: Non-numeric Max Images input rejects the save
 #[test]
-fn non_numeric_max_images_input_rejects_the_save() {
+fn non_numeric_max_images_input_rejects_the_save() -> TestResult {
     // @step Given a profile edit form is open
-    let mut view = create_view(form_focused_on_max_images());
+    let mut view = create_view(form_focused_on_max_images()?);
 
     // @step When I type "abc" into the "Max Images" field and press save
     type_chars(&mut view, "abc");
     assert_eq!(
-        form_of(&view).max_images,
+        form_of(&view)?.max_images,
         "abc",
         "the raw (invalid) text must be visible before the save attempt"
     );
@@ -200,7 +201,7 @@ fn non_numeric_max_images_input_rejects_the_save() {
                 codelet_fspec_tui::components::Action::SaveProfile { .. }
             ) =>
         {
-            panic!("an invalid Max Images value must NOT emit a SaveProfile action")
+            return Err("an invalid Max Images value must NOT emit a SaveProfile action".into())
         }
         _ => true,
     };
@@ -220,18 +221,19 @@ fn non_numeric_max_images_input_rejects_the_save() {
     // (No backend round-trip is dispatched: the form stays open in the same
     // mode with the invalid text still present.)
     assert_eq!(
-        form_of(&view).max_images,
+        form_of(&view)?.max_images,
         "abc",
         "the form must stay open with the invalid value so the user can fix it"
     );
+    Ok(())
 }
 
 /// Scenario: The maxImages value round-trips through wire and disk (disk read)
 #[test]
-fn the_max_images_value_round_trips_through_the_on_disk_read() {
+fn the_max_images_value_round_trips_through_the_on_disk_read() -> TestResult {
     // @step Given a profile definition with maxImages 7
-    let user_dir = tempfile::tempdir().expect("temp user dir");
-    let project_root = tempfile::tempdir().expect("temp project root");
+    let user_dir = tempfile::tempdir().or_fail("temp user dir")?;
+    let project_root = tempfile::tempdir().or_fail("temp project root")?;
 
     // @step When the profile is saved to fspec-config.json
     std::fs::write(
@@ -251,13 +253,13 @@ fn the_max_images_value_round_trips_through_the_on_disk_read() {
         })
         .to_string(),
     )
-    .expect("write fspec-config.json");
+    .or_fail("write fspec-config.json")?;
 
     // @step Then the stored profile object contains "maxImages": 7
     let configs = load_openai_profile_configs_from(user_dir.path(), project_root.path());
     let def = configs
         .get("work-vllm")
-        .expect("the profile must be loaded from disk");
+        .or_fail("the profile must be loaded from disk")?;
     assert_eq!(
         def.max_images,
         Some(7),
@@ -270,14 +272,15 @@ fn the_max_images_value_round_trips_through_the_on_disk_read() {
         7,
         "the effective limit predicate must resolve 7"
     );
+    Ok(())
 }
 
 /// Scenario: A missing maxImages key resolves to the default 4 (disk read)
 #[test]
-fn a_missing_max_images_key_resolves_to_the_default_4_on_read() {
+fn a_missing_max_images_key_resolves_to_the_default_4_on_read() -> TestResult {
     // @step Given a profile definition without a maxImages field
-    let user_dir = tempfile::tempdir().expect("temp user dir");
-    let project_root = tempfile::tempdir().expect("temp project root");
+    let user_dir = tempfile::tempdir().or_fail("temp user dir")?;
+    let project_root = tempfile::tempdir().or_fail("temp project root")?;
 
     // @step When the profile is saved to fspec-config.json
     std::fs::write(
@@ -296,13 +299,13 @@ fn a_missing_max_images_key_resolves_to_the_default_4_on_read() {
         })
         .to_string(),
     )
-    .expect("write fspec-config.json");
+    .or_fail("write fspec-config.json")?;
 
     // @step Then the stored profile object has no maxImages key
     let configs = load_openai_profile_configs_from(user_dir.path(), project_root.path());
     let def = configs
         .get("legacy")
-        .expect("the profile must be loaded from disk");
+        .or_fail("the profile must be loaded from disk")?;
     assert_eq!(
         def.max_images, None,
         "a profile without the maxImages key must load with max_images = None"
@@ -312,4 +315,5 @@ fn a_missing_max_images_key_resolves_to_the_default_4_on_read() {
     // The form prefill applies the effective default:
     let form = ProfileForm::from_definition("legacy", def);
     assert_eq!(form.max_images, "4", "absent key ⇒ effective default 4");
+    Ok(())
 }

@@ -1,8 +1,8 @@
 use super::RecoveryRecord;
 use codelet_core::persistence::transcript::JournalStore;
 use codelet_core::persistence::{
-    conversation_commit::append_message_idempotent, process_envelope_for_blob_storage,
-    MessageEnvelope,
+    conversation_commit::{append_message_idempotent, store_original_idempotent},
+    process_envelope_for_blob_storage, MessageEnvelope,
 };
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -42,7 +42,12 @@ pub(super) fn commit(
             .map_err(|_| "transcript persistence recovery required".into());
     }
     let mut metadata = record.metadata.clone();
-    if metadata.contains_key("message") {
+    let audit_only = metadata.remove(super::AUDIT_ONLY).is_some();
+    // BUG-332: a conversation record must carry its message envelope.
+    if !metadata.contains_key("message") {
+        return Err("conversation record carries no message envelope".into());
+    }
+    {
         let mut envelope: MessageEnvelope = serde_json::from_value(json!(metadata))
             .map_err(|_| "incompatible recovery envelope")?;
         if record.role == "assistant" {
@@ -68,6 +73,11 @@ pub(super) fn commit(
                     .collect(),
             );
         }
+    }
+    if audit_only {
+        store_original_idempotent(record.id, &record.role, &record.content, metadata)
+            .map_err(|_| "persistence archive recovery required")?;
+        return Ok(());
     }
     append_message_idempotent(
         session_id,

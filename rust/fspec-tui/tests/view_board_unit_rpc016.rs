@@ -7,8 +7,7 @@
 //! the last-changed (⏩) and session-attached (🟢) indicators, and the
 //! four new keyboard navigation actions (PageUp/PageDown/Home/End).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
@@ -45,8 +44,13 @@ fn make_unit_at(id: &str, status: &str, ts: &str) -> WorkUnitInfo {
     u
 }
 
-fn render(width: u16, height: u16, view: &BoardView, store: &BoardStore) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+fn render(
+    width: u16,
+    height: u16,
+    view: &BoardView,
+    store: &BoardStore,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -56,11 +60,15 @@ fn render(width: u16, height: u16, view: &BoardView, store: &BoardStore) -> Buff
             false,
         );
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
-fn render_fresh(width: u16, height: u16, store: &BoardStore) -> Buffer {
+fn render_fresh(
+    width: u16,
+    height: u16,
+    store: &BoardStore,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
     render(width, height, &view, store)
 }
@@ -82,7 +90,7 @@ fn join_buffer(buf: &Buffer) -> String {
 /// helper scans every row of the buffer that lies between the cross
 /// junction `├┼┤` row and the bottom junction `├┴┤` row, restricted to
 /// the BACKLOG column's horizontal band.
-fn backlog_content_rows(buf: &Buffer) -> Vec<String> {
+fn backlog_content_rows(buf: &Buffer) -> Result<Vec<String>, codelet_test_helpers::TestError> {
     // Find the cross-junction row (top of content area) and the bottom
     // junction row (just below content area).
     let mut content_start: Option<u16> = None;
@@ -104,8 +112,8 @@ fn backlog_content_rows(buf: &Buffer) -> Vec<String> {
             content_end = Some(y);
         }
     }
-    let start = content_start.expect("expected cross-junction row in buffer");
-    let end = content_end.expect("expected bottom-junction row in buffer");
+    let start = content_start.or_fail("expected cross-junction row in buffer")?;
+    let end = content_end.or_fail("expected bottom-junction row in buffer")?;
 
     // Determine the BACKLOG column horizontal band by scanning the
     // column-header row. Layout (top→bottom) is:
@@ -118,7 +126,7 @@ fn backlog_content_rows(buf: &Buffer) -> Vec<String> {
         header.push_str(buf[(x, header_row)].symbol());
     }
     let upper = header.to_uppercase();
-    let backlog_byte_idx = upper.find("BACKLOG").expect("BACKLOG header missing");
+    let backlog_byte_idx = upper.find("BACKLOG").or_fail("BACKLOG header missing")?;
     // Convert byte index to char index — header is ASCII for the labels.
     let backlog_col_x: u16 = upper[..backlog_byte_idx].chars().count() as u16;
     // Find the next `│` border to the right of the BACKLOG label to
@@ -139,7 +147,7 @@ fn backlog_content_rows(buf: &Buffer) -> Vec<String> {
         }
         rows.push(normalize_wide_char_padding(&row));
     }
-    rows
+    Ok(rows)
 }
 
 /// Ratatui paints 2-cell-wide glyphs (such as ⏩ and 🟢) by writing the
@@ -163,13 +171,13 @@ fn normalize_wide_char_padding(row: &str) -> String {
     out
 }
 
-fn backlog_joined(buf: &Buffer) -> String {
-    backlog_content_rows(buf).join("\n")
+fn backlog_joined(buf: &Buffer) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(backlog_content_rows(buf)?.join("\n"))
 }
 
 /// Scenario: Column with no scroll renders the down arrow on the last viewport row
 #[test]
-fn column_with_no_scroll_renders_the_down_arrow_on_the_last_viewport_row() {
+fn column_with_no_scroll_renders_the_down_arrow_on_the_last_viewport_row() -> TestResult {
     // @step Given a BoardStore seeded with twenty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..20)
@@ -180,25 +188,26 @@ fn column_with_no_scroll_renders_the_down_arrow_on_the_last_viewport_row() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let rows = backlog_content_rows(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let rows = backlog_content_rows(&buf)?;
     // @step Then the column-content rows for the BACKLOG column contain the glyph "↓" on the last viewport row
-    let last = rows.last().expect("backlog rows must not be empty");
+    let last = rows.last().or_fail("backlog rows must not be empty")?;
     assert!(
         last.contains('↓'),
         "last backlog viewport row must contain ↓ when more units exist below; got `{last}` in rows:\n{rows:#?}"
     );
     // @step And the column-content rows for the BACKLOG column do NOT contain the glyph "↑" on the first viewport row
-    let first = rows.first().expect("backlog rows must not be empty");
+    let first = rows.first().or_fail("backlog rows must not be empty")?;
     assert!(
         !first.contains('↑'),
         "first backlog viewport row must NOT contain ↑ when scroll_offset is 0; got `{first}`"
     );
+    Ok(())
 }
 
 /// Scenario: Column with mid-range scroll renders both up and down arrows
 #[test]
-fn column_with_mid_range_scroll_renders_both_up_and_down_arrows() {
+fn column_with_mid_range_scroll_renders_both_up_and_down_arrows() -> TestResult {
     // @step Given a BoardStore seeded with twenty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..20)
@@ -210,25 +219,26 @@ fn column_with_mid_range_scroll_renders_both_up_and_down_arrows() {
     // @step And the focused column is "backlog"
     store.set_focused_column("backlog");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let rows = backlog_content_rows(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let rows = backlog_content_rows(&buf)?;
     // @step Then the column-content rows for the BACKLOG column contain the glyph "↑" on the first viewport row
-    let first = rows.first().expect("backlog rows non-empty");
+    let first = rows.first().or_fail("backlog rows non-empty")?;
     assert!(
         first.contains('↑'),
         "first backlog viewport row must contain ↑ when scroll_offset > 0; got `{first}`"
     );
     // @step And the column-content rows for the BACKLOG column contain the glyph "↓" on the last viewport row
-    let last = rows.last().expect("backlog rows non-empty");
+    let last = rows.last().or_fail("backlog rows non-empty")?;
     assert!(
         last.contains('↓'),
         "last backlog viewport row must contain ↓ when more units exist below; got `{last}`"
     );
+    Ok(())
 }
 
 /// Scenario: Column with fewer units than viewport_height renders no arrows
 #[test]
-fn column_with_fewer_units_than_viewport_height_renders_no_arrows() {
+fn column_with_fewer_units_than_viewport_height_renders_no_arrows() -> TestResult {
     // @step Given a BoardStore seeded with three story work units all in the backlog column
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -239,8 +249,8 @@ fn column_with_fewer_units_than_viewport_height_renders_no_arrows() {
     // @step And the focused column is "backlog"
     store.set_focused_column("backlog");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let joined = backlog_joined(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let joined = backlog_joined(&buf)?;
     // @step Then the column-content rows for the BACKLOG column do NOT contain the glyph "↑"
     assert!(
         !joined.contains('↑'),
@@ -251,11 +261,12 @@ fn column_with_fewer_units_than_viewport_height_renders_no_arrows() {
         !joined.contains('↓'),
         "BACKLOG content must NOT contain ↓ when units.len() < viewport_height; got:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Most-recently-changed work unit renders the ⏩ ⏩ prefix and suffix
 #[test]
-fn most_recently_changed_work_unit_renders_the_marker_prefix_and_suffix() {
+fn most_recently_changed_work_unit_renders_the_marker_prefix_and_suffix() -> TestResult {
     // @step Given a BoardStore seeded with AUTH-001 last_state_change_at "2026-05-13T10:00:00Z" and AUTH-002 last_state_change_at "2026-05-14T10:00:00Z" in the backlog column
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -265,8 +276,8 @@ fn most_recently_changed_work_unit_renders_the_marker_prefix_and_suffix() {
     // @step And the focused column is "specifying" so neither unit is the selected highlighted cell
     store.set_focused_column("specifying");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let joined = backlog_joined(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let joined = backlog_joined(&buf)?;
     // @step Then the column-content rows for the BACKLOG column contain the substring "⏩ AUTH-002"
     assert!(
         joined.contains("⏩ AUTH-002"),
@@ -282,11 +293,12 @@ fn most_recently_changed_work_unit_renders_the_marker_prefix_and_suffix() {
         !joined.contains("⏩ AUTH-001"),
         "BACKLOG content must NOT mark AUTH-001 (older) with ⏩; got:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Work unit with an attached session renders the 🟢 prefix
 #[test]
-fn work_unit_with_an_attached_session_renders_the_green_circle_prefix() {
+fn work_unit_with_an_attached_session_renders_the_green_circle_prefix() -> TestResult {
     // @step Given a BoardStore seeded with AUTH-002 (story, backlog, estimate 5) and AUTH-001 (story, backlog) with last_state_change_at on AUTH-001 strictly greater than AUTH-002
     let mut store = BoardStore::default();
     let mut u2 = make_unit_at("AUTH-002", "backlog", "2026-05-13T10:00:00Z");
@@ -298,18 +310,19 @@ fn work_unit_with_an_attached_session_renders_the_green_circle_prefix() {
     // @step And the focused column is "specifying" so neither unit is the selected highlighted cell
     store.set_focused_column("specifying");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let joined = backlog_joined(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let joined = backlog_joined(&buf)?;
     // @step Then the column-content rows for the BACKLOG column contain the substring "🟢 AUTH-002 [5]"
     assert!(
         joined.contains("🟢 AUTH-002 [5]"),
         "BACKLOG content must contain `🟢 AUTH-002 [5]`; got:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Last-changed and session-attached indicators stack on the same unit
 #[test]
-fn last_changed_and_session_attached_indicators_stack_on_the_same_unit() {
+fn last_changed_and_session_attached_indicators_stack_on_the_same_unit() -> TestResult {
     // @step Given a BoardStore seeded with AUTH-002 (story, backlog) carrying the largest last_state_change_at
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -321,8 +334,8 @@ fn last_changed_and_session_attached_indicators_stack_on_the_same_unit() {
     // @step And the focused column is "specifying" so AUTH-002 is not the selected highlighted cell
     store.set_focused_column("specifying");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
-    let joined = backlog_joined(&buf);
+    let buf = render_fresh(120, 24, &store)?;
+    let joined = backlog_joined(&buf)?;
     // @step Then the column-content rows for the BACKLOG column contain the substring "⏩ 🟢 AUTH-002"
     assert!(
         joined.contains("⏩ 🟢 AUTH-002"),
@@ -333,11 +346,12 @@ fn last_changed_and_session_attached_indicators_stack_on_the_same_unit() {
         joined.contains("AUTH-002 ⏩"),
         "BACKLOG content must contain `AUTH-002 ⏩`; got:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: PageDown advances the focused column's selection by viewport_height rows
 #[test]
-fn pagedown_advances_focused_column_selection_by_viewport_height_rows() {
+fn pagedown_advances_focused_column_selection_by_viewport_height_rows() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..30)
@@ -349,7 +363,7 @@ fn pagedown_advances_focused_column_selection_by_viewport_height_rows() {
     store.set_selected_index_for("backlog", 0);
     let (view, mut rx) = fresh();
     // Drive a render so the view records its last_viewport_height.
-    let _ = render(120, 24, &view, &store);
+    let _ = render(120, 24, &view, &store)?;
     // @step When BoardView handles a PageDown key event against the store
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::PageDown, KeyModifiers::empty())),
@@ -366,11 +380,12 @@ fn pagedown_advances_focused_column_selection_by_viewport_height_rows() {
         got_scroll_down,
         "PageDown must emit Action::ScrollFocusedColumnDown(viewport_height)"
     );
+    Ok(())
 }
 
 /// Scenario: PageUp scrolls the focused column's selection back by viewport_height rows
 #[test]
-fn pageup_scrolls_focused_column_selection_back_by_viewport_height_rows() {
+fn pageup_scrolls_focused_column_selection_back_by_viewport_height_rows() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..30)
@@ -381,7 +396,7 @@ fn pageup_scrolls_focused_column_selection_back_by_viewport_height_rows() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 25);
     let (view, mut rx) = fresh();
-    let _ = render(120, 24, &view, &store);
+    let _ = render(120, 24, &view, &store)?;
     // @step When BoardView handles a PageUp key event against the store
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::PageUp, KeyModifiers::empty())),
@@ -398,11 +413,12 @@ fn pageup_scrolls_focused_column_selection_back_by_viewport_height_rows() {
         got_scroll_up,
         "PageUp must emit Action::ScrollFocusedColumnUp(viewport_height)"
     );
+    Ok(())
 }
 
 /// Scenario: Home jumps the focused column's selection to the first unit
 #[test]
-fn home_jumps_focused_column_selection_to_first_unit() {
+fn home_jumps_focused_column_selection_to_first_unit() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..30)
@@ -413,7 +429,7 @@ fn home_jumps_focused_column_selection_to_first_unit() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 20);
     let (view, mut rx) = fresh();
-    let _ = render(120, 24, &view, &store);
+    let _ = render(120, 24, &view, &store)?;
     // @step When BoardView handles a Home key event against the store
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::empty())),
@@ -427,11 +443,12 @@ fn home_jumps_focused_column_selection_to_first_unit() {
         }
     }
     assert!(got_first, "Home must emit Action::SelectFirstInFocused");
+    Ok(())
 }
 
 /// Scenario: End jumps the focused column's selection to the last unit
 #[test]
-fn end_jumps_focused_column_selection_to_last_unit() {
+fn end_jumps_focused_column_selection_to_last_unit() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = BoardStore::default();
     let units: Vec<WorkUnitInfo> = (0..30)
@@ -442,7 +459,7 @@ fn end_jumps_focused_column_selection_to_last_unit() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     let (view, mut rx) = fresh();
-    let _ = render(120, 24, &view, &store);
+    let _ = render(120, 24, &view, &store)?;
     // @step When BoardView handles an End key event against the store
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::End, KeyModifiers::empty())),
@@ -456,11 +473,12 @@ fn end_jumps_focused_column_selection_to_last_unit() {
         }
     }
     assert!(got_last, "End must emit Action::SelectLastInFocused");
+    Ok(())
 }
 
 /// Scenario: RPC-014 details strip and RPC-015 header are still painted after RPC-016 lands
 #[test]
-fn rpc014_details_strip_and_rpc015_header_still_painted_after_rpc016() {
+fn rpc014_details_strip_and_rpc015_header_still_painted_after_rpc016() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 (story, backlog, title "User Login", description "Sign in with email/password", estimate 5, epic "authentication", no attachments)
     let unit = WorkUnitInfo {
         id: "AUTH-001".to_string(),
@@ -479,7 +497,7 @@ fn rpc014_details_strip_and_rpc015_header_still_painted_after_rpc016() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render_fresh(120, 24, &store);
+    let buf = render_fresh(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "AUTH-001: User Login"
     assert!(
@@ -503,9 +521,10 @@ fn rpc014_details_strip_and_rpc015_header_still_painted_after_rpc016() {
     );
     // @step And the rendered buffer contains the substring "← →"
     assert!(joined.contains("← →"), "missing footer arrows:\n{joined}");
-    // @step And the rendered buffer contains the substring "Work Agent"
+    // @step And the rendered buffer contains the substring "Choose"
     assert!(
-        joined.contains("Work Agent"),
-        "missing footer 'Work Agent':\n{joined}"
+        joined.contains("Choose"),
+        "missing footer 'Choose':\n{joined}"
     );
+    Ok(())
 }

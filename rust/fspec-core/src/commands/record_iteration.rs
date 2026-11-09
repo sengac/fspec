@@ -41,7 +41,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::io_error::format_io_error;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::WorkUnitsData;
 
@@ -88,8 +87,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // string `undefined` for parity.
     let work_unit_id = args.work_unit_id.as_deref().unwrap_or("undefined");
 
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "record-iteration")?;
     // TS reads the file directly (no ensure helper); surface any IO error
     // through the canonical wrapper.
     let raw =
@@ -130,7 +131,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = now;
 
     // Single atomic write (TS `writeFile(workUnitsFile, JSON.stringify(data, null, 2))`).
-    write_json_atomic(&work_units_path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = RecordIterationResult {
         success: true,

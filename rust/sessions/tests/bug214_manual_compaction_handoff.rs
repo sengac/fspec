@@ -2,7 +2,6 @@
 pub mod support;
 
 use std::sync::{atomic::Ordering, Arc, Mutex, PoisonError};
-use std::time::Duration;
 
 use codelet_core::persistence::{append_message, load_session};
 use codelet_core::SessionManagerHandle;
@@ -64,11 +63,11 @@ async fn scenario_cancellation_while_manual_compaction_waits_for_preparation_pre
         let _ = entered.send(());
         compact_manager.compact_session(&compact_id)
     });
-    tokio::time::timeout(Duration::from_secs(3), ready).await??;
+    codelet_test_helpers::deadlock_guard("ready", ready).await??;
     // @step When the session is interrupted before preparation can proceed
     background.interrupt();
     drop(inner);
-    let outcome = tokio::time::timeout(Duration::from_secs(3), operation).await??;
+    let outcome = codelet_test_helpers::deadlock_guard("operation", operation).await??;
     // @step Then manual compaction returns a cancelled outcome without clearing the interrupt
     assert!(
         outcome
@@ -145,8 +144,8 @@ async fn scenario_cancellation_after_manual_continuation_is_queued_prevents_agen
     channels.mcp.close();
     // @step When the session is interrupted before the queued continuation is consumed
     background.interrupt();
-    tokio::time::timeout(
-        Duration::from_secs(5),
+    codelet_test_helpers::deadlock_guard(
+        "codelet_agent_loop::agent_loop::agent_loop( background.cl...",
         codelet_agent_loop::agent_loop::agent_loop(
             background.clone(),
             channels.input,

@@ -6,17 +6,12 @@ use codelet_providers::ProviderRuntimeOptions;
 use codelet_rpc_types::{ProfileDefinition, ProviderProfileConfig, ProviderSettingsConfig};
 use serde_json::{Map, Value};
 
-use crate::profile_sections::{fspec_user_dir, write_config_value};
+use codelet_common::fspec_config::update_config_file;
 
 fn config_path() -> io::Result<PathBuf> {
-    fspec_user_dir()
+    codelet_common::user_dir::fspec_user_dir()
         .map(|directory| directory.join("fspec-config.json"))
-        .ok_or_else(|| {
-            io::Error::new(
-                io::ErrorKind::NotFound,
-                "Cannot resolve fspec user directory",
-            )
-        })
+        .map_err(|error| io::Error::new(io::ErrorKind::NotFound, error))
 }
 
 pub(crate) fn canonical_provider_id(provider: &str) -> &str {
@@ -151,20 +146,23 @@ pub fn save_provider_settings_at(
         ));
     }
     validate_definition(definition)?;
-    let mut root = read_config(path)?;
-    let storage_id = provider_storage_id(&root, provider_id);
-    let providers = object_child(&mut root, "providers")?;
-    let provider = object_child(providers, &storage_id)?;
-    let settings = object_child(provider, "settings")?;
-    let object = settings
-        .as_object_mut()
-        .ok_or_else(|| io::Error::other("Settings must be an object"))?;
-    let definition = crate::conversions::profile_def_from_wire(definition);
-    crate::profile_persistence::merge_profile(object, &definition);
-    object.remove("apiKey");
-    object.remove("baseUrl");
-    let _: ProviderRuntimeOptions = serde_json::from_value(settings.clone())?;
-    write_config_value(path, &root)
+    // BUG-640: one locked read-modify-write; an unreadable or non-object
+    // file is never written over.
+    update_config_file(path, |root| {
+        let storage_id = provider_storage_id(root, provider_id);
+        let providers = object_child(root, "providers")?;
+        let provider = object_child(providers, &storage_id)?;
+        let settings = object_child(provider, "settings")?;
+        let object = settings
+            .as_object_mut()
+            .ok_or_else(|| io::Error::other("Settings must be an object"))?;
+        let definition = crate::conversions::profile_def_from_wire(definition);
+        crate::profile_persistence::merge_profile(object, &definition);
+        object.remove("apiKey");
+        object.remove("baseUrl");
+        let _: ProviderRuntimeOptions = serde_json::from_value(settings.clone())?;
+        Ok(())
+    })
 }
 
 fn object_child<'a>(parent: &'a mut Value, key: &str) -> io::Result<&'a mut Value> {

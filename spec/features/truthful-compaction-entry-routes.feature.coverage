@@ -5,20 +5,42 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/truthful_compaction_routes_bug213.rs",
-          "lines": "12-113",
+          "lines": "11-112",
           "implMappings": [
-            {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [143, 144]},
-            {"file": "rust/cli/src/interactive/stream_loop.rs", "lines": [323, 324, 325, 326, 327]},
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [377, 378]}
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                143,
+                144
+              ],
+              "firstLine": ".and_then(CompactionOperation::deadline_at)",
+              "lastLine": ".ok_or(CompactionFailure::Blocked)?;"
+            },
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                375,
+                376
+              ],
+              "firstLine": "output.emit_compaction_started();",
+              "lastLine": "output.emit_compaction_progress(\"Context limit reached\", 0, 0);"
+            }
           ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 1, "coveredScenarios": 1, "coveragePercent": 100,
-    "testFiles": ["rust/cli/tests/truthful_compaction_routes_bug213.rs"],
-    "implFiles": ["rust/cli/src/compactor_sub_agent.rs", "rust/cli/src/interactive/stream_loop.rs", "rust/cli/src/interactive/recovery_compaction.rs"],
-    "totalLinesCovered": 111
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/truthful_compaction_routes_bug213.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/compactor_sub_agent.rs",
+      "rust/cli/src/interactive/recovery_compaction.rs"
+    ],
+    "totalLinesCovered": 106
   }
 }

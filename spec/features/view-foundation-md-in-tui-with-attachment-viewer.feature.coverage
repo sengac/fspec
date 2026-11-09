@@ -6,30 +6,7 @@
         {
           "file": "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts",
           "lines": "16-45",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -39,14 +16,7 @@
         {
           "file": "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts",
           "lines": "47-75",
-          "implMappings": [
-            {
-              "file": "src/tui/components/KeybindingShortcuts.tsx",
-              "lines": [
-                14
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -56,30 +26,7 @@
         {
           "file": "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts",
           "lines": "77-108",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -89,30 +36,7 @@
         {
           "file": "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts",
           "lines": "110-141",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -122,14 +46,7 @@
         {
           "file": "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts",
           "lines": "143-166",
-          "implMappings": [
-            {
-              "file": "src/tui/components/KeybindingShortcuts.tsx",
-              "lines": [
-                14
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -141,10 +58,7 @@
     "testFiles": [
       "src/tui/components/__tests__/tui-029-foundation-viewer.test.ts"
     ],
-    "implFiles": [
-      "src/tui/components/BoardView.tsx",
-      "src/tui/components/KeybindingShortcuts.tsx"
-    ],
-    "totalLinesCovered": 200
+    "implFiles": [],
+    "totalLinesCovered": 147
   }
 }

@@ -4,7 +4,7 @@ use codelet_core::{persistence::messages::StoredMessage, RigAgent};
 use codelet_sessions::background_session::BackgroundSession;
 use rig::{completion::ToolDefinition, tool::Tool};
 use serde_json::{json, Value};
-use std::{io::Write, path::PathBuf, sync::Arc, time::Duration};
+use std::{io::Write, path::PathBuf, sync::Arc};
 
 #[path = "bug246.rs"]
 pub mod recovery;
@@ -117,7 +117,12 @@ impl Tool for InterruptTool {
             let (sender, receiver) = std::sync::mpsc::channel();
             *gate.release.lock().expect("gate release lock") = Some(sender);
             *gate.worker.lock().expect("gate worker lock") = Some(std::thread::spawn(move || {
-                let acknowledged = receiver.recv_timeout(Duration::from_secs(2)).is_ok();
+                // TEST-042: wait for the release, under the deadlock guard.
+                let acknowledged =
+                    codelet_test_helpers::deadlock_guard_blocking("the gate release", move || {
+                        receiver.recv()
+                    })
+                    .is_ok_and(|received| received.is_ok());
                 drop(lock);
                 acknowledged
             }));
@@ -167,6 +172,7 @@ pub fn index_fixture(
     count: usize,
 ) -> Result<(tempfile::TempDir, Vec<uuid::Uuid>), Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     codelet_core::persistence::reset_stores_for_tests();
     std::fs::create_dir_all(directory.path().join("messages"))?;

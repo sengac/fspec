@@ -5,6 +5,23 @@ impl BackgroundSession {
         self.manifest_restore.load(Ordering::Acquire)
     }
 
+    /// BUG-683: a session created from its manifest takes no input until
+    /// `resume_session` has restored its saved history and provider state.
+    /// A turn run before that sees an empty provider history: its Codex
+    /// checkpoint is refused as a rollback below the saved generation and
+    /// the session stays blocked.
+    pub fn ensure_restored(&self) -> Result<(), String> {
+        if self.requires_model_restore() {
+            return Err(format!(
+                "Session {} is still restoring its saved history, so this input was not \
+                 accepted. Send it once the resume completes; if the resume failed, resume \
+                 the session again.",
+                self.id
+            ));
+        }
+        Ok(())
+    }
+
     pub(crate) fn prepare_manifest_restore(&self) {
         self.manifest_restore.store(true, Ordering::Release);
     }

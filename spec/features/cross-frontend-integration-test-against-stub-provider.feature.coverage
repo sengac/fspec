@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "43-68",
+          "lines": "61-83",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                103,
                 104,
                 105,
                 106,
@@ -27,9 +28,10 @@
                 118,
                 119,
                 120,
-                121,
-                122
-              ]
+                126
+              ],
+              "firstLine": "// RPC-044: construct a real SessionManager and pass it as a",
+              "lastLine": "// RPC-444: sessions default to the start workspace, not the process cwd."
             }
           ]
         }
@@ -40,7 +42,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "71-122",
+          "lines": "89-136",
           "implMappings": [
             {
               "file": "rust/providers/src/stub_provider.rs",
@@ -143,6 +145,277 @@
                 96,
                 97,
                 98,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "//! RPC-007: Deterministic test-only LLM stub provider.",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                126
+              ],
+              "firstLine": "// RPC-044: construct a real SessionManager and pass it as a",
+              "lastLine": "// RPC-444: sessions default to the start workspace, not the process cwd."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "send_input(\"hello\") yields the canned Text and Done chunks within 15 seconds",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cross_frontend_parity.rs",
+          "lines": "142-221",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/stub_provider.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "]",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/providers/src/stub_model.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                96,
+                97,
+                98,
                 99,
                 100,
                 101,
@@ -202,111 +475,10 @@
                 155,
                 156,
                 157,
-                158,
-                159,
-                160
-              ]
-            },
-            {
-              "file": "rust/fspec/src/common.rs",
-              "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "send_input(\"hello\") yields the canned [Text, Done] stream within 5 seconds",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "124-186",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/stub_provider.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                158
+              ],
+              "firstLine": "//! Deterministic test-support completion adapter.",
+              "lastLine": "yield Ok(RawStreamingChoice::Message(text));"
             }
           ]
         }
@@ -317,7 +489,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "283-408",
+          "lines": "407-515",
           "implMappings": [
             {
               "file": "rust/providers/src/stub_provider.rs",
@@ -377,13 +549,117 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "]",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/agent-loop/src/compaction_builder.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "// BUG-543: under test-support the registered stub provider builds its",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/stub_model.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "// BUG-543: a test-set deterministic response wins; otherwise a",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec/Cargo.toml",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "# BUG-543: the crate's standard test run (`cargo test -p codelet-fspec",
+              "lastLine": "test-support = [\"test-stub-provider\"]"
+            },
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ],
+              "firstLine": "// RPC-066: under the `test-stub-provider` feature, install the",
+              "lastLine": "}"
             }
           ]
         }
@@ -394,86 +670,24 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "189-271",
+          "lines": "227-300",
           "implMappings": [
             {
               "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313
-              ]
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402
+              ],
+              "firstLine": "pub fn normalise_chunk_stream(chunks: &[(SessionId, StreamChunk)]) -> Vec<String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -484,13 +698,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "410-440",
+          "lines": "544-576",
           "implMappings": [
             {
               "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
-                283,
-                284,
                 285,
                 286,
                 287,
@@ -614,8 +826,29 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ],
+              "firstLine": "\"tool_call_id must be normalised to <tc>\"",
+              "lastLine": "let regenerate = std::env::var(\"FSPEC_RPC_066_REGENERATE\").ok().as_deref() == Some(\"1\");"
             }
           ]
         }
@@ -626,13 +859,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "442-471",
+          "lines": "582-613",
           "implMappings": [
             {
               "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
-                283,
-                284,
                 285,
                 286,
                 287,
@@ -756,8 +987,29 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ],
+              "firstLine": "\"tool_call_id must be normalised to <tc>\"",
+              "lastLine": "let regenerate = std::env::var(\"FSPEC_RPC_066_REGENERATE\").ok().as_deref() == Some(\"1\");"
             }
           ]
         }
@@ -768,13 +1020,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "473-504",
+          "lines": "620-653",
           "implMappings": [
             {
               "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
-                283,
-                284,
                 285,
                 286,
                 287,
@@ -898,8 +1148,29 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ],
+              "firstLine": "\"tool_call_id must be normalised to <tc>\"",
+              "lastLine": "let regenerate = std::env::var(\"FSPEC_RPC_066_REGENERATE\").ok().as_deref() == Some(\"1\");"
             }
           ]
         }
@@ -910,13 +1181,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "506-533",
+          "lines": "659-686",
           "implMappings": [
             {
               "file": "rust/fspec/tests/cross_frontend_parity.rs",
               "lines": [
-                283,
-                284,
                 285,
                 286,
                 287,
@@ -1040,8 +1309,29 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ],
+              "firstLine": "\"tool_call_id must be normalised to <tc>\"",
+              "lastLine": "let regenerate = std::env::var(\"FSPEC_RPC_066_REGENERATE\").ok().as_deref() == Some(\"1\");"
             }
           ]
         }
@@ -1052,7 +1342,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "535-600",
+          "lines": "693-766",
           "implMappings": [
             {
               "file": "rust/providers/src/stub_provider.rs",
@@ -1112,13 +1402,15 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "]",
+              "lastLine": ""
             }
           ]
         }
@@ -1129,7 +1421,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cross_frontend_parity.rs",
-          "lines": "603-640",
+          "lines": "772-811",
           "implMappings": [
             {
               "file": "rust/fspec/tests/README.md",
@@ -1224,7 +1516,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "# codelet-fspec integration tests",
+              "lastLine": "stream is caught by the current golden."
             }
           ]
         }
@@ -1241,9 +1535,12 @@
     "implFiles": [
       "rust/fspec/src/common.rs",
       "rust/providers/src/stub_provider.rs",
+      "rust/providers/src/stub_model.rs",
+      "rust/agent-loop/src/compaction_builder.rs",
+      "rust/fspec/Cargo.toml",
       "rust/fspec/tests/cross_frontend_parity.rs",
       "rust/fspec/tests/README.md"
     ],
-    "totalLinesCovered": 1624
+    "totalLinesCovered": 1859
   }
 }

@@ -16,7 +16,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 use tokio::sync::Notify;
 
 #[path = "../../../providers/tests/fixtures/prov148.rs"]
@@ -146,6 +145,7 @@ impl Harness {
         bodies: Vec<Option<String>>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         reset_stores_for_tests();
         let manifest = create_session_with_provider("terminal error", directory.path(), "codex")?;
@@ -176,8 +176,8 @@ impl Harness {
             .preamble("Test instructions")
             .tool(WriteTool(self.directory.path().join("effects")))
             .build();
-        tokio::time::timeout(
-            Duration::from_secs(10),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), pr...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 prompt,

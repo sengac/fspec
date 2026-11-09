@@ -1,4 +1,7 @@
+@BUG-582
 @TUI-102
+@tui
+@agent-interaction
 Feature: AgentView scrollback scrollbar click-and-drag integration
   """
   AgentView gains scrollbar_drag: ScrollbarDrag field and last_scrollback_total_rows: usize field for geometry caching

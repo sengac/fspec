@@ -5,15 +5,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
-          "lines": "68-83",
+          "lines": "65-79",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                163,
-                164,
-                165
-              ]
+                238
+              ],
+              "firstLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),",
+              "lastLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),"
             }
           ]
         }
@@ -24,13 +24,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
-          "lines": "89-103",
+          "lines": "85-98",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                162
-              ]
+                237
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),",
+              "lastLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),"
             }
           ]
         }
@@ -41,15 +43,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
-          "lines": "109-122",
+          "lines": "104-117",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                102,
-                103,
-                104
-              ]
+                177,
+                178,
+                238
+              ],
+              "firstLine": "fn cancel_index(&self) -> usize {",
+              "lastLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),"
             }
           ]
         }
@@ -60,15 +64,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs",
-          "lines": "128-153",
+          "lines": "123-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                140,
-                141,
-                142
-              ]
+                215,
+                216
+              ],
+              "firstLine": "if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {",
+              "lastLine": "return ConfirmDialogOutcome::Ignored;"
             }
           ]
         }
@@ -85,6 +90,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/agent/confirm_dialog.rs"
     ],
-    "totalLinesCovered": 81
+    "totalLinesCovered": 76
   }
 }

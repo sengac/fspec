@@ -260,8 +260,16 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     );
 
     // @step And the refreshed tokens should be persisted to claude_auth.json
-    // Allow a small delay for the tokio::spawn persistence task
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: wait for the spawned persistence task's write, not a delay.
+    codelet_test_helpers::wait_until("the refreshed tokens are persisted", || async {
+        claude_auth::read_claude_auth()
+            .await
+            .ok()
+            .flatten()
+            .is_some_and(|auth| auth.access_token == "new_claude_access_tok")
+    })
+    .await
+    .unwrap();
     let persisted = claude_auth::read_claude_auth().await.unwrap().unwrap();
     assert_eq!(
         persisted.access_token, "new_claude_access_tok",
@@ -840,8 +848,16 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
     let _result: rig::http_client::Result<http::Response<rig::http_client::LazyBody<Vec<u8>>>> =
         client.send(req).await;
 
-    // Allow persistence tokio::spawn task to complete
-    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+    // TEST-042: wait for the spawned persistence task's write, not a delay.
+    codelet_test_helpers::wait_until("the refreshed tokens are persisted", || async {
+        claude_auth::read_claude_auth()
+            .await
+            .ok()
+            .flatten()
+            .is_some_and(|auth| auth.access_token == "persist_access_tok")
+    })
+    .await
+    .unwrap();
 
     // @step Then claude_auth.json should contain access_token from the refresh response
     let persisted = claude_auth::read_claude_auth().await.unwrap().unwrap();

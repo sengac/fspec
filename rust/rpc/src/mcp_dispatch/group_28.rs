@@ -7,8 +7,8 @@ pub(super) mod send_fspec_result {
         session_id: SessionId,
         result: FspecResult,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -18,7 +18,6 @@ pub(super) mod send_fspec_result {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .send_fspec_result(tarpc::context::current(), args.session_id, args.result)
             .await
@@ -34,8 +33,8 @@ pub(super) mod create_isolated_session {
     pub struct Args {
         role: Option<String>,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -45,7 +44,6 @@ pub(super) mod create_isolated_session {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .create_isolated_session(tarpc::context::current(), args.role)
             .await
@@ -62,8 +60,8 @@ pub(super) mod set_thinking_level_default {
         session_id: SessionId,
         level: ThinkingLevel,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -73,7 +71,6 @@ pub(super) mod set_thinking_level_default {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .set_thinking_level_default(tarpc::context::current(), args.session_id, args.level)
             .await

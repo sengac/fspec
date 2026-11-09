@@ -24,6 +24,8 @@ codelet-rpc-types = { workspace = true }
 # arrow rpc → napi remains forbidden (enforced by the source-shape
 # regression test in rust/rpc-embedded/tests/rpc_006_source_shape.rs).
 codelet-core = { workspace = true }
+# BUG-431: daemon-side card attachment reads.
+codelet-attachment-viewer = { workspace = true }
 # RPC-015: `FspecServiceImpl::checkpoint_counts` delegates to
 # `codelet_git::ghost_commit::count_checkpoints(cwd)`. The new
 # dependency arrow rpc → git is permitted because both transports
@@ -50,6 +52,9 @@ tokio = { workspace = true }
 # rpc-server (binary + tests) and rpc-embedded can use it.
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+# BUG-572: records bridged from the `log` crate (tungstenite) carry the
+# metadata target "log"; NormalizeEvent recovers their own target.
+tracing-log = "0.2"
 # RPC-011 rule [26]: ArcSwap<WorkUnitsWatcher> inside SharedFspecService
 # so the daemon's SIGHUP handler can atomically replace the watcher
 # without blocking concurrent readers.
@@ -59,6 +64,16 @@ arc-swap = "1.7"
 uuid = { workspace = true }
 
 [dev-dependencies]
+url.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+codelet-providers = { workspace = true, features = ["test-support"] }
+wiremock = "0.6.5"
+base64 = "0.22"
+codelet-test-helpers = { workspace = true }
+# BUG-572: log_layer_cycle_filter emits `log` crate records through the bridge.
+log = "0.4"
+syn = { version = "2", features = ["full"] }
 # RPC-362: checkpoint transport integration tests build real temp git repos.
 tempfile = { workspace = true }
 serde_json = { workspace = true }
+serial_test = { workspace = true }

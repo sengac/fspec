@@ -10,21 +10,25 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                213,
-                214
-              ]
+                212,
+                213
+              ],
+              "firstLine": "m.insert(\"value\".to_string(), Value::from(c.value));",
+              "lastLine": "Value::Object(m)"
             }
           ]
         },
         {
           "file": "rust/sessions/tests/prov144_max_images_persistence.rs",
-          "lines": "126-141",
+          "lines": "49-81",
           "implMappings": [
             {
               "file": "rust/sessions/src/conversions.rs",
               "lines": [
-                190
-              ]
+                202
+              ],
+              "firstLine": "// PROV-142: carry the per-profile auto-continue default through.",
+              "lastLine": "// PROV-142: carry the per-profile auto-continue default through."
             }
           ]
         }
@@ -38,11 +42,13 @@
           "lines": "77-118",
           "implMappings": [
             {
-              "file": "rust/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections/config.rs",
               "lines": [
-                125,
-                126
-              ]
+                49,
+                50
+              ],
+              "firstLine": "/// PROV-143: per-profile preserve-thinking toggle. `None` (absent) or",
+              "lastLine": "/// `Some(false)` mean thinking blocks are STRIPPED from the chat history"
             }
           ]
         }
@@ -59,8 +65,8 @@
     "implFiles": [
       "rust/sessions/src/profile_persistence.rs",
       "rust/sessions/src/conversions.rs",
-      "rust/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections/config.rs"
     ],
-    "totalLinesCovered": 90
+    "totalLinesCovered": 107
   }
 }

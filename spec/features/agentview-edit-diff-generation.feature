@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @agent-view
@@ -18,7 +19,7 @@ Feature: Port Edit/Write diff generation and [R]-/[A]+ marker encoding (Rust TUI
   #   2. A Write diff treats the entire new file content as additions
   #   3. Removed lines encode as '{lineNum} [R]- {content}', added as '{lineNum} [A]+ {content}', context as '{lineNum}   {content}' with no marker
   #   4. Only changed lines plus 3 lines of surrounding context are shown; skipped regions collapse to a '... (N lines)' gap marker
-  #   5. Output longer than DIFF_COLLAPSED_LINES (25) is truncated with a '... +N lines (select turn to /expand)' indicator
+  #   5. Output longer than DIFF_COLLAPSED_LINES (25) is truncated with a '... +N lines (Tab to select, Enter to view full)' indicator
   #   6. Line numbers are offset by startLine and left-padded to at least width 3; tree connectors prefix the first line 'L ' and indent subsequent lines two spaces
   #   7. calculateStartLine returns the 1-based line of the edit, or 1 when the file or string is unavailable, and never panics
   #
@@ -27,7 +28,7 @@ Feature: Port Edit/Write diff generation and [R]-/[A]+ marker encoding (Rust TUI
   #   2. Pure addition (old_string empty) produces only [A]+ lines and no [R]- lines
   #   3. A Write of a 3-line file produces three [A]+ lines
   #   4. A 100-line edit with a single mid-file change shows leading and trailing '... (N lines)' gap markers
-  #   5. A diff exceeding 25 display lines ends with a '... +N lines (select turn to /expand)' indicator
+  #   5. A diff exceeding 25 display lines ends with a '... +N lines (Tab to select, Enter to view full)' indicator
   #   6. calculateStartLine on a missing/unreadable file returns 1
   #   7. calculateStartLine finds new_string at line 250 of a file and returns 250
   #
@@ -65,7 +66,7 @@ Feature: Port Edit/Write diff generation and [R]-/[A]+ marker encoding (Rust TUI
     Given a diff whose display lines exceed the collapse limit of 25
     When I format the edit diff for display
     Then the output is truncated to the first 25 display lines
-    And the last line is '... +N lines (select turn to /expand)'
+    And the last line is '... +N lines (Tab to select, Enter to view full)'
 
   Scenario: calculateStartLine on a missing file returns 1
     Given a file path that does not exist

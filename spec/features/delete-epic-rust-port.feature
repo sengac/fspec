@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-217
 @rust
 @cli
 @mutation
+@epics
 Feature: Port delete-epic command to Rust
   """
   Core impl at rust/fspec-core/src/commands/delete_epic.rs uses read_epics_or_empty to load spec/epics.json (auto-creating an empty store first to match the TS LockedFileManager.transaction side effect), checks for the requested key, and on hit removes it plus dereferences any matching prefixes (Prefix.epicId) and work units (WorkUnit.epic) — all writes go through io::locked_file::write_json_atomic.

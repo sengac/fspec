@@ -17,7 +17,9 @@
                 154,
                 179,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             }
           ]
         }
@@ -35,7 +37,9 @@
               "lines": [
                 11,
                 32
-              ]
+              ],
+              "firstLine": "pub(super) fn sequence(path: &Path) -> Result<u64, String> {",
+              "lastLine": "pub(super) fn read(path: &Path) -> Result<Vec<DiskRecord>, String> {"
             }
           ]
         }

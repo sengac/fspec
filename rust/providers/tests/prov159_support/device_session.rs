@@ -30,7 +30,7 @@ async fn scenario_a13_pending_start_expires_and_request_consumes_budget() -> Tes
         .await;
     let before_request = tokio::time::Instant::now();
     start_device_login().await?;
-    let home = normalized_home(&auth_storage::home());
+    let home = normalized_home(&auth_storage::home())?;
     let recorded_start = PENDING
         .lock()
         .map_err(|_| "pending lock poisoned")?
@@ -47,7 +47,7 @@ async fn scenario_a13_pending_start_expires_and_request_consumes_budget() -> Tes
         .map_err(|_| "pending lock poisoned")?
         .contains_key(&home);
     tokio::time::resume();
-    cancel_pending(&auth_storage::home());
+    cancel_pending(&auth_storage::home())?;
     assert!(
         expired,
         "abandoned device start retained its pending attempt past the deadline"

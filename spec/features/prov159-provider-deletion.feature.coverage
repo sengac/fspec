@@ -8,31 +8,35 @@
           "lines": "15-41",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_8.rs",
               "lines": [
-                1856,
-                1857,
-                1858,
-                1859
-              ]
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "// RPC-056: Blocklist surface.",
+              "lastLine": "// than via `load_blocklist_config`, which merges and loses the"
             },
             {
               "file": "rust/providers/src/codex/auth_storage.rs",
               "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "pub fn clear_codex_oauth() -> Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -47,7 +51,7 @@
       "rust/fspec-tui/tests/prov159_provider_deletion.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/handle_impl/handle_impl_8.rs",
       "rust/providers/src/codex/auth_storage.rs"
     ],
     "totalLinesCovered": 44

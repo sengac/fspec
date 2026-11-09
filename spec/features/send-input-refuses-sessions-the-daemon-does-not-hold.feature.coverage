@@ -1,0 +1,160 @@
+{
+  "scenarios": [
+    {
+      "name": "send_input over a transport reports a session the daemon does not hold",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug328_send_input_refusal.rs",
+          "lines": "45-72",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                9,
+                13,
+                14,
+                15,
+                16,
+                17
+              ],
+              "firstLine": "pub(crate) fn live_session(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "fn send_input(&self, session_id: &SessionId, text: String) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "pub fn session_not_live(session_id: &SessionId) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "async fn send_input(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "async fn send_input(&self, id: SessionId, text: String) -> Result<()> {",
+              "lastLine": ".map_err(anyhow::Error::msg)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A refused send is shown in the session's scrollback",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug328_send_input_refusal.rs",
+          "lines": "114-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": ".await",
+              "lastLine": "// asserting on `MockBackend.send_input_calls()`. Unparked,"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_input_modes.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "Some(context) => match mode {",
+              "lastLine": "\"[TUI-115] no agent-view context to tag a {mode:?} input\""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug328_send_input_refusal.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager/manager_impl_6.rs",
+      "rust/sessions/src/handle_impl/handle_impl_1.rs",
+      "rust/core/src/session_manager_handle.rs",
+      "rust/rpc/src/service_implementation/interaction_sessions.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+      "rust/fspec-tui/src/app/dispatch_input_modes.rs"
+    ],
+    "totalLinesCovered": 121
+  }
+}

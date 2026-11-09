@@ -32,7 +32,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-scenario` clap subcommand.",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -43,7 +45,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_scenario.rs",
-          "lines": "86-108",
+          "lines": "91-118",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_scenario.rs",
@@ -53,7 +55,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "if let Some(w) = parsed.get(\"warning\").and_then(Value::as_str) {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -64,7 +68,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_scenario.rs",
-          "lines": "115-135",
+          "lines": "124-148",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_scenario.rs",
@@ -82,7 +86,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "if let Some(e) = parsed.get(\"error\").and_then(Value::as_str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -93,7 +99,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_scenario.rs",
-          "lines": "142-162",
+          "lines": "154-175",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_scenario.rs",
@@ -109,7 +115,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-scenario` clap subcommand.",
+              "lastLine": ""
             }
           ]
         }
@@ -120,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_scenario.rs",
-          "lines": "169-211",
+          "lines": "181-228",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_scenario.rs",
@@ -136,7 +144,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "match add_scenario::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -153,6 +163,6 @@
     "implFiles": [
       "rust/fspec/src/add_scenario.rs"
     ],
-    "totalLinesCovered": 197
+    "totalLinesCovered": 212
   }
 }

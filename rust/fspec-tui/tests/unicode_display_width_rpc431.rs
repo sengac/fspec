@@ -6,11 +6,12 @@
 //! `.chars().count()` so wide characters (CJK, emojis) render correctly.
 
 use codelet_fspec_tui::views::agent::text_wrap::wrap_to_width;
+use codelet_test_helpers::TestResult;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 // Scenario: Markdown table column width accounts for wide Unicode characters
 #[test]
-fn markdown_table_column_width_accounts_for_wide_unicode_characters() {
+fn markdown_table_column_width_accounts_for_wide_unicode_characters() -> TestResult {
     // @step Given a markdown table with a cell containing the emoji "✅" (display width 2)
     let _input = "| Status |\n|---|\n| ✅ |";
 
@@ -30,11 +31,12 @@ fn markdown_table_column_width_accounts_for_wide_unicode_characters() {
         emoji_width, ascii_width,
         "emoji and OK must have same display width"
     );
+    Ok(())
 }
 
 // Scenario: Dialog title centering accounts for wide Unicode characters
 #[test]
-fn dialog_title_centering_accounts_for_wide_unicode_characters() {
+fn dialog_title_centering_accounts_for_wide_unicode_characters() -> TestResult {
     // @step Given a dialog with a title containing the CJK character "中" (display width 2)
     let cjk_width = "中".width();
     let ascii_width = "OK".width();
@@ -49,11 +51,12 @@ fn dialog_title_centering_accounts_for_wide_unicode_characters() {
         cjk_width, ascii_width,
         "CJK and OK must have same display width for centering"
     );
+    Ok(())
 }
 
 // Scenario: Text wrapping respects Unicode display width
 #[test]
-fn text_wrapping_respects_unicode_display_width() {
+fn text_wrapping_respects_unicode_display_width() -> TestResult {
     // @step Given a line of emoji characters "✅✅✅✅" (display width 8)
     let text = "✅✅✅✅";
     assert_eq!(text.width(), 8, "four emojis must have display width 8");
@@ -72,11 +75,12 @@ fn text_wrapping_respects_unicode_display_width() {
         2,
         "first row must contain 2 emoji characters"
     );
+    Ok(())
 }
 
 // Scenario: Dialog button row centering accounts for wide Unicode characters
 #[test]
-fn dialog_button_row_centering_accounts_for_wide_unicode_characters() {
+fn dialog_button_row_centering_accounts_for_wide_unicode_characters() -> TestResult {
     // @step Given a confirmation dialog with button spans containing wide characters
     let wide_text = "✅";
     let narrow_text = "OK";
@@ -92,11 +96,12 @@ fn dialog_button_row_centering_accounts_for_wide_unicode_characters() {
         narrow_text.width(),
         "both must have same display width for centering"
     );
+    Ok(())
 }
 
 // Scenario: Text truncation respects Unicode display width
 #[test]
-fn text_truncation_respects_unicode_display_width() {
+fn text_truncation_respects_unicode_display_width() -> TestResult {
     // @step Given a string "中文字" (display width 6) that needs to fit in a width of 4
     let text = "中文字";
     assert_eq!(text.width(), 6, "three CJK chars must have display width 6");
@@ -123,11 +128,12 @@ fn text_truncation_respects_unicode_display_width() {
             "each character must be a complete wide character"
         );
     }
+    Ok(())
 }
 
 // Scenario: Text selection copy preserves character count not display width
 #[test]
-fn text_selection_copy_preserves_character_count_not_display_width() {
+fn text_selection_copy_preserves_character_count_not_display_width() -> TestResult {
     // @step Given a selected text region containing wide Unicode characters
     let text = "✅OK";
 
@@ -145,11 +151,12 @@ fn text_selection_copy_preserves_character_count_not_display_width() {
         3,
         "char count is 3 — clipboard uses char count"
     );
+    Ok(())
 }
 
 // Scenario: Secret masking uses character count not display width
 #[test]
-fn secret_masking_uses_character_count_not_display_width() {
+fn secret_masking_uses_character_count_not_display_width() -> TestResult {
     // @step Given a secret string containing wide Unicode characters
     let secret = "中OK";
 
@@ -167,11 +174,12 @@ fn secret_masking_uses_character_count_not_display_width() {
     // @step And the masked output must have the same character count as the input
     assert_eq!(masked.chars().count(), 3, "masked must have 3 characters");
     assert_eq!(masked, "•••", "masked must be three bullets");
+    Ok(())
 }
 
 // Scenario: Animation frame counting uses character count not display width
 #[test]
-fn animation_frame_counting_uses_character_count_not_display_width() {
+fn animation_frame_counting_uses_character_count_not_display_width() -> TestResult {
     // @step Given captured text containing wide Unicode characters
     let text = "✅OK";
 
@@ -189,11 +197,12 @@ fn animation_frame_counting_uses_character_count_not_display_width() {
         "display width is 4 — not used for animation"
     );
     assert_ne!(frame_count, text.width(), "frame count ≠ display width");
+    Ok(())
 }
 
 // Additional regression: wide characters in wrap_to_width produce correct row widths
 #[test]
-fn wrap_to_width_with_wide_characters_produces_correct_display_width() {
+fn wrap_to_width_with_wide_characters_produces_correct_display_width() -> TestResult {
     // Four CJK characters (display width 8) wrapped at width 4.
     let text = "中文英文"; // 4 chars, display width 8
     let rows = wrap_to_width(text, 4);
@@ -211,11 +220,12 @@ fn wrap_to_width_with_wide_characters_produces_correct_display_width() {
     // Concatenation must equal original.
     let concatenated: String = rows.join("");
     assert_eq!(concatenated, text, "concatenation must equal original");
+    Ok(())
 }
 
 // Additional regression: mixed ASCII and wide characters in wrap_to_width
 #[test]
-fn wrap_to_width_with_mixed_ascii_and_wide_characters() {
+fn wrap_to_width_with_mixed_ascii_and_wide_characters() -> TestResult {
     // "OK✅" has display width 4 (1+1+2).
     let text = "OK✅";
     assert_eq!(text.width(), 4, "OK✅ must have display width 4");
@@ -233,4 +243,5 @@ fn wrap_to_width_with_mixed_ascii_and_wide_characters() {
     let rows = wrap_to_width(text, 3);
     assert_eq!(rows.len(), 1, "long word emitted as single row");
     assert_eq!(rows[0], text, "long word emitted intact");
+    Ok(())
 }

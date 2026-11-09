@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug235_cancellation_ownership.rs",
-          "lines": "23-84",
+          "lines": "26-102",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/compaction_retry_state.rs",
@@ -28,36 +28,9 @@
                 19,
                 20,
                 21
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1486,
-                1487,
-                1488,
-                1489,
-                1490,
-                1491,
-                1755,
-                1756,
-                1757,
-                1758,
-                1759,
-                1760,
-                2124,
-                2125,
-                2126,
-                2127,
-                2128,
-                2129,
-                2232,
-                2233,
-                2234,
-                2235,
-                2236,
-                2237
-              ]
+              ],
+              "firstLine": "pub fn retry_compaction_hook(",
+              "lastLine": "}"
             }
           ]
         }
@@ -68,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug235_cancellation_ownership.rs",
-          "lines": "86-104",
+          "lines": "104-124",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/compaction_retry_state.rs",
@@ -91,7 +64,9 @@
                 19,
                 20,
                 21
-              ]
+              ],
+              "firstLine": "pub fn retry_compaction_hook(",
+              "lastLine": "}"
             }
           ]
         }
@@ -102,7 +77,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug235_cancellation_ownership.rs",
-          "lines": "106-129",
+          "lines": "126-156",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -149,7 +124,9 @@
                 310,
                 311,
                 312
-              ]
+              ],
+              "firstLine": ".unwrap_or(false);",
+              "lastLine": "// @step Then the error should bypass the error classifier cascade"
             }
           ]
         }
@@ -165,7 +142,6 @@
     ],
     "implFiles": [
       "rust/cli/src/interactive/compaction_retry_state.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/cli/src/interactive/error_classifiers.rs"
     ],
     "totalLinesCovered": 207

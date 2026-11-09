@@ -3,6 +3,7 @@
 @report-bug-to-github
 @cli
 @RPC-285
+@reporting
 Feature: Report-bug-to-github CLI subcommand
   """
   CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003

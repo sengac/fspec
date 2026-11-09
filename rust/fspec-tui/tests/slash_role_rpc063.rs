@@ -18,10 +18,10 @@
 //! was seeded with. Component-level seed assertions live in
 //! `role_dialog_rpc063.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
@@ -40,20 +40,23 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit_input(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 fn key(code: KeyCode) -> Event {
@@ -70,7 +73,7 @@ fn role_dialog_count(app: &App) -> usize {
 
 /// Scenario Outline: parse_slash_command routes /role variants to the new RoleDialog parse outcome
 #[test]
-fn parse_slash_command_routes_role_variants_to_open_role_dialog() {
+fn parse_slash_command_routes_role_variants_to_open_role_dialog() -> TestResult {
     // @step Given the function parse_slash_command from app/slash_parser.rs
     // @step When it is called with text=<input>
     // @step Then it returns <expected_variant>
@@ -104,15 +107,16 @@ fn parse_slash_command_routes_role_variants_to_open_role_dialog() {
         parse_slash_command("/role  leading space ok"),
         SlashCommandParse::SetRole("leading space ok".to_string())
     );
+    Ok(())
 }
 
 /// Scenario: Palette pick of /role on a session with no role opens the dialog with empty draft
 #[tokio::test]
-async fn palette_pick_role_with_no_role_opens_dialog_with_empty_draft() {
+async fn palette_pick_role_with_no_role_opens_dialog_with_empty_draft() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is None
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(app
         .agent_view_store()
         .role_for(&SessionId::new("s-1"))
@@ -120,8 +124,11 @@ async fn palette_pick_role_with_no_role_opens_dialog_with_empty_draft() {
     let prior_set_role = mock.set_session_role_calls();
 
     // @step When the user picks /role from the slash palette
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
@@ -134,20 +141,23 @@ async fn palette_pick_role_with_no_role_opens_dialog_with_empty_draft() {
     // edits) emits Action::SetSessionRole(sid, None) because an empty
     // draft is treated as a clear.
     let _ = app.handle_event(&key(KeyCode::Enter));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         mock.set_session_role_calls(),
         prior_set_role + 1,
         "Enter on empty draft must round-trip through backend.set_session_role"
     );
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, None, "empty draft must save as None (clear)");
+    Ok(())
 }
 
 /// Scenario: Palette pick of /role on a session with an existing role pre-fills the dialog draft
 #[tokio::test]
-async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() {
+async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is Some("You are a security reviewer")
     let (mut app, mock) = fresh_app();
     // Seed the mock so the SessionCreated → spawn_get_session_role
@@ -158,7 +168,7 @@ async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() {
         Some("You are a security reviewer".to_string()),
     );
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
@@ -168,8 +178,11 @@ async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() {
     let prior_set_role = mock.set_session_role_calls();
 
     // @step When the user picks /role from the slash palette
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
@@ -181,24 +194,30 @@ async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() {
     // Indirect verification: pressing Enter on the seeded dialog (no
     // edits) saves the seeded text verbatim.
     let _ = app.handle_event(&key(KeyCode::Enter));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.set_session_role_calls(), prior_set_role + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, Some("You are a security reviewer".to_string()));
+    Ok(())
 }
 
 /// Scenario: Palette pick of /role with no active session is a silent no-op
 #[tokio::test]
-async fn palette_pick_role_with_no_active_session_is_silent_noop() {
+async fn palette_pick_role_with_no_active_session_is_silent_noop() -> TestResult {
     // @step Given an App with NO open session
     let (mut app, mock) = fresh_app();
     let prior_set_role = mock.set_session_role_calls();
     let prior_chunks = app.navigator().agent.chunk_count(app.agent_view_store());
 
     // @step When the user picks /role from the slash palette
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then no RoleDialog is pushed onto the Compositor
     assert!(!app.compositor().contains(ROLE_DIALOG_ID));
@@ -207,16 +226,17 @@ async fn palette_pick_role_with_no_active_session_is_silent_noop() {
     // @step And no scrollback line is appended
     let chunks_now = app.navigator().agent.chunk_count(app.agent_view_store());
     assert_eq!(chunks_now, prior_chunks);
+    Ok(())
 }
 
 /// Scenario: Submitting bare "/role" opens the RoleDialog (no longer clears the role)
 #[tokio::test]
-async fn submitting_bare_slash_role_opens_the_role_dialog() {
+async fn submitting_bare_slash_role_opens_the_role_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is Some("Reviewer A")
     let (mut app, mock) = fresh_app();
     mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
@@ -227,7 +247,7 @@ async fn submitting_bare_slash_role_opens_the_role_dialog() {
 
     // @step When the input is submitted with text "/role"
     submit_input(&mut app, "/role");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
@@ -245,20 +265,21 @@ async fn submitting_bare_slash_role_opens_the_role_dialog() {
     );
     // @step And no tokio task is spawned that calls backend.set_session_role
     assert_eq!(mock.set_session_role_calls(), prior_set_role);
+    Ok(())
 }
 
 /// Scenario: Submitting "/role You are a code reviewer" sets the role directly without opening the dialog
 #[tokio::test]
-async fn submitting_role_with_text_sets_role_directly_no_dialog() {
+async fn submitting_role_with_text_sets_role_directly_no_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is None
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_set_role = mock.set_session_role_calls();
 
     // @step When the input is submitted with text "/role You are a code reviewer"
     submit_input(&mut app, "/role You are a code reviewer");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then NO RoleDialog is pushed onto the Compositor
     assert!(!app.compositor().contains(ROLE_DIALOG_ID));
@@ -271,25 +292,28 @@ async fn submitting_role_with_text_sets_role_directly_no_dialog() {
     );
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), Some("You are a code reviewer"))
     assert_eq!(mock.set_session_role_calls(), prior_set_role + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, Some("You are a code reviewer".to_string()));
+    Ok(())
 }
 
 /// Scenario: Submitting "/role clear" clears the role directly without opening the dialog
 #[tokio::test]
-async fn submitting_role_clear_clears_role_directly_no_dialog() {
+async fn submitting_role_clear_clears_role_directly_no_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is Some("Reviewer A")
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     app.agent_view_store_mut()
         .set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_set_role = mock.set_session_role_calls();
 
     // @step When the input is submitted with text "/role clear"
     submit_input(&mut app, "/role clear");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then NO RoleDialog is pushed onto the Compositor
     assert!(!app.compositor().contains(ROLE_DIALOG_ID));
@@ -300,24 +324,30 @@ async fn submitting_role_clear_clears_role_directly_no_dialog() {
         .is_none());
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
     assert_eq!(mock.set_session_role_calls(), prior_set_role + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, None);
+    Ok(())
 }
 
 /// Scenario: Opening the RoleDialog is idempotent when the dialog is already on the Compositor
 #[tokio::test]
-async fn opening_role_dialog_is_idempotent() {
+async fn opening_role_dialog_is_idempotent() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role_for(SessionId("s-1")) is Some("Reviewer A")
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     app.agent_view_store_mut()
         .set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And the user has already picked /role once so a RoleDialog is mounted on the Compositor
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
+    drain_pending(&mut app).await?;
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
     assert_eq!(
         role_dialog_count(&app),
@@ -326,8 +356,11 @@ async fn opening_role_dialog_is_idempotent() {
     );
 
     // @step When the user picks /role again from the slash palette
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then exactly one RoleDialog with id "role-dialog" is on the Compositor (no duplicate push)
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
@@ -336,4 +369,5 @@ async fn opening_role_dialog_is_idempotent() {
         1,
         "must remain exactly one role-dialog mounted after second pick"
     );
+    Ok(())
 }

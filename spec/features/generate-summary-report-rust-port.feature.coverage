@@ -170,7 +170,9 @@
                 196,
                 197,
                 198
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "if let Some(Value::Object(by_status)) = report.get(\"byStatus\") {"
             }
           ]
         }
@@ -223,7 +225,9 @@
                 196,
                 197,
                 198
-              ]
+              ],
+              "firstLine": "Value::from(sum as u64)",
+              "lastLine": "if let Some(Value::Object(by_status)) = report.get(\"byStatus\") {"
             }
           ]
         }
@@ -265,7 +269,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "serde_json::to_string_pretty(&Value::Object(report.clone()))",
+              "lastLine": ""
             }
           ]
         }
@@ -276,7 +282,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_summary_report.rs",
-          "lines": "154-176",
+          "lines": "157-181",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
@@ -338,7 +344,9 @@
                 192,
                 193,
                 194
-              ]
+              ],
+              "firstLine": "let full_output = resolve_output(project_root, &output_path);",
+              "lastLine": "md.push_str(&format!(\"**Total Work Units:** {total_work_units}\\n\\n\"));"
             }
           ]
         }
@@ -354,7 +362,6 @@
             {
               "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
               "lines": [
-                70,
                 71,
                 72,
                 73,
@@ -367,15 +374,10 @@
                 80,
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                83
+              ],
+              "firstLine": "// Count by status (preserving insertion order via a Map). TS uses an",
+              "lastLine": "}"
             }
           ]
         }
@@ -405,7 +407,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "// in a try/catch that re-throws as \"Failed to generate summary report\").",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -416,7 +420,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_summary_report.rs",
-          "lines": "211-232",
+          "lines": "217-241",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_summary_report.rs",
@@ -581,7 +585,9 @@
                 196,
                 197,
                 198
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "if let Some(Value::Object(by_status)) = report.get(\"byStatus\") {"
             }
           ]
         }
@@ -598,6 +604,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/generate_summary_report.rs"
     ],
-    "totalLinesCovered": 637
+    "totalLinesCovered": 634
   }
 }

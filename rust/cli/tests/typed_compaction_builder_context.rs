@@ -102,19 +102,25 @@ async fn resetting_provider_state_clears_previous_summary_authority() -> TestRes
     Ok(())
 }
 
+// Scenario: A builder refuses a cached summary after another durable generation is promoted
 #[tokio::test]
 #[serial_test::serial]
 async fn stale_builder_requires_restore_after_a_new_durable_generation() -> TestResult {
+    // @step Given a builder has restored a validated durable summary
     let mut fixture = Fixture::new(3)?;
     fixture.valid_builder();
     fixture.run(&Output).await?;
     let mut stale = cold_session()?;
     stale.restore_compaction_boundary(&codelet_core::persistence::load_session(fixture.id)?)?;
     stale.messages = fixture.session.messages.clone();
+    // @step And another session owner promotes a newer durable compaction generation
     fixture.run(&Output).await?;
     let before = fixture.snapshot()?;
+    // @step When the stale builder prepares its next working view
+    let prepared = stale.prepare_compaction_view(None);
+    // @step Then it fails explicitly without using cached summary authority or mutating history
     assert!(
-        stale.prepare_compaction_view(None).is_err(),
+        prepared.is_err(),
         "a newer durable generation must invalidate cached builder authority"
     );
     assert!(!stale.has_compaction_working_view());
@@ -123,6 +129,7 @@ async fn stale_builder_requires_restore_after_a_new_durable_generation() -> Test
         before,
         "rejected builder mutated durable history"
     );
+    // @step And restoring the current authoritative boundary enables the next builder
     stale.restore_compaction_boundary(&codelet_core::persistence::load_session(fixture.id)?)?;
     stale.messages = fixture.session.messages.clone();
     stale.prepare_compaction_view(None)?;

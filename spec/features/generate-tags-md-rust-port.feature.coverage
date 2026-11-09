@@ -225,7 +225,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "//! `generate-tags-md` — Rust port of `src/commands/generate-tags-md.ts`",
+              "lastLine": "assert!(err.to_string().contains(\"tags.json has validation errors:\"));"
             }
           ]
         }
@@ -456,7 +458,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "//! `generate-tags-md` — Rust port of `src/commands/generate-tags-md.ts`",
+              "lastLine": "assert!(err.to_string().contains(\"tags.json has validation errors:\"));"
             }
           ]
         }
@@ -687,7 +691,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "//! `generate-tags-md` — Rust port of `src/commands/generate-tags-md.ts`",
+              "lastLine": "assert!(err.to_string().contains(\"tags.json has validation errors:\"));"
             }
           ]
         }
@@ -918,7 +924,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "//! `generate-tags-md` — Rust port of `src/commands/generate-tags-md.ts`",
+              "lastLine": "assert!(err.to_string().contains(\"tags.json has validation errors:\"));"
             }
           ]
         }

@@ -1,0 +1,3 @@
+# REFAC-059 design
+
+Move the three resume-overwrites-manifest tests (resume_session_preserves_manifest_*, resume_empty_session_*, resume_session_already_in_memory_*) to their own test file for resume-session-overwrites-manifest-destroying-message-references.feature; move DATA_DIR_GUARD, MODELS_FIXTURE, make_temp_data_dir and set_temp_data_dir to tests/rpc422_session_persistence_support/mod.rs. The eight remaining session-persistence-integration tests are still over 300 lines, so split that feature in two (creation/persistence vs listing/resume/offline) with one test file each. Remap every test mapping (the current ones are already offset); create_session_persists_provider_in_manifest maps to no scenario - map or file it.

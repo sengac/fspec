@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @menu-bar
 @tui-component
 @keyboard-navigation
 @agent-view
 @MENU-007
+@BUG-350
 Feature: Agent view menu bar — single 'Board View' item instead of board-only Actions/Help menus
   """
   The 2-zone menu bar row under the SessionHeader (MENU-003) currently
@@ -25,7 +27,7 @@ Feature: Agent view menu bar — single 'Board View' item instead of board-only 
   Zone B is UNCHANGED in the agent view: one chip per open session, and
   chip activation (click / Enter) still switches to that session's pane
   (BUG-195 behavior). The agent ring is now 'Board View' → chip #1 →
-  … → chip #N → 'New Agent' → 'Close Agent' → wrap (MENU-009: the two
+  … → chip #N → 'New Agent' → 'Close' → wrap (MENU-009: the two
   Zone C buttons are the ring's last stops); bare Left on an empty input
   still enters at Item(0), which is now 'Board View'.
 
@@ -85,13 +87,13 @@ Feature: Agent view menu bar — single 'Board View' item instead of board-only 
 
   Scenario: The agent ring wraps from 'Board View' through the chips and back
     Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
-    When I press Right five times
-    Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
+    When I press Right six times
+    Then the focus lands on chip #1 then chip #2 then 'New Bot' then 'New Agent' then 'Close' and finally back on 'Board View'
 
   Scenario: Left from 'Board View' wraps to the last Zone C button
     Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     When I press Left once
-    Then the 'Close Agent' button paints inverse-video (the ring's last stop — MENU-009)
+    Then the 'Close' button paints inverse-video (the ring's last stop — MENU-009)
 
   Scenario: Chip activation in the agent view is unchanged
     Given the App is in the Agent view with 3 open sessions

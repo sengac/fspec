@@ -5,18 +5,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "119-165",
+          "lines": "157-192",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93
-              ]
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "MuxSubcommand::Config => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -27,282 +29,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "167-193",
+          "lines": "214-236",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux off exits mux mode without opening the dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "196-225",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "the dialog body shows the enabled, orientation and pane rows in order",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "227-291",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/mux_config_dialog_rows.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "cursor wraps and values cycle per highlighted row",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "293-395",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
-              "lines": [
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "adding a third pane and applying it rebuilds the grid",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "397-452",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
-              "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "pane count stays within the 2 to 4 bounds",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "454-501",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
-              "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
                 190,
-                191
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter applies the draft layout and closes the dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "503-547",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                52,
-                53
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
-              "lines": [
+                191,
+                192,
                 193,
                 194,
                 195,
@@ -317,19 +54,96 @@
                 204,
                 205,
                 206,
-                207
-              ]
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ],
+              "firstLine": "fn handle_mux_on(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "S applies the draft and persists it to the shared config",
+      "name": "/mux off exits mux mode without opening the dialog",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "549-599",
+          "lines": "248-273",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
+              "lines": [
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "fn handle_mux_off(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter applies the draft layout and closes the dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
+          "lines": "286-308",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                52,
+                53
+              ],
+              "firstLine": "// — the exact same entry point bare /mux uses (MUX-004 R2:",
+              "lastLine": "// idempotent, seeded from the live mux config)."
+            },
+            {
+              "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                189
+              ],
+              "firstLine": "fn commit(&mut self, save: bool) -> EventResult {",
+              "lastLine": "KeyCode::Enter if key.modifiers.is_empty() => return self.activate(),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Save applies the draft and persists it to the shared config",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
+          "lines": "334-359",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
@@ -337,12 +151,14 @@
                 53,
                 54,
                 55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// idempotent, seeded from the live mux config).",
+              "lastLine": "/// (R7). No session → silent no-op."
             }
           ]
         }
@@ -353,15 +169,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "601-638",
+          "lines": "382-398",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
               "lines": [
-                204,
-                205,
-                206
-              ]
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                188
+              ],
+              "firstLine": "fn remove_callback(&self) -> Callback {",
+              "lastLine": "KeyCode::Esc => return EventResult::Consumed(Some(self.remove_callback())),"
             }
           ]
         }
@@ -372,7 +194,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "640-674",
+          "lines": "417-442",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux_config.rs",
@@ -384,8 +206,12 @@
                 31,
                 32,
                 33,
-                34
-              ]
+                34,
+                35,
+                36
+              ],
+              "firstLine": "pub(crate) fn handle_open_mux_config_dialog(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -396,47 +222,39 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "676-733",
+          "lines": "461-499",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "pub(crate) fn apply_mux_config_draft(&mut self, draft: MuxConfig) {",
+              "lastLine": "self.mux_load_lazy_panes();"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186
-              ]
+                40
+              ],
+              "firstLine": "Action::MuxConfigApplied(draft) => self.apply_mux_config_draft(draft.clone()),",
+              "lastLine": "Action::MuxConfigApplied(draft) => self.apply_mux_config_draft(draft.clone()),"
             }
           ]
         }
@@ -447,49 +265,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "735-770",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186
-              ]
-            }
-          ]
+          "lines": "517-541",
+          "implMappings": []
         }
       ]
     },
@@ -498,13 +275,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "772-831",
+          "lines": "560-607",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
-                177
-              ]
+                178,
+                179
+              ],
+              "firstLine": "action: SlashCommandAction::Mux,",
+              "lastLine": "description: \"Configure the mux layout\","
             }
           ]
         }
@@ -515,16 +295,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "847-889",
+          "lines": "639-668",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
               "lines": [
-                176,
-                177,
                 178,
-                179
-              ]
+                179,
+                180
+              ],
+              "firstLine": "action: SlashCommandAction::Mux,",
+              "lastLine": "},"
             }
           ]
         }
@@ -535,20 +316,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux004_mux_config_dialog.rs",
-          "lines": "880-907",
+          "lines": "690-702",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                17,
+                20,
+                21,
+                22,
+                23,
+                24,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// The `/mux help` notice (MUX-010: the layout grammar, weights, the kept",
+              "lastLine": "}"
             }
           ]
         }
@@ -556,19 +340,19 @@
     }
   ],
   "stats": {
-    "totalScenarios": 16,
-    "coveredScenarios": 16,
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/mux004_mux_config_dialog.rs"
     ],
     "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
       "rust/fspec-tui/src/app/dispatch_mux.rs",
-      "rust/fspec-tui/src/components/mux_config_dialog_rows.rs",
       "rust/fspec-tui/src/components/mux_config_dialog.rs",
       "rust/fspec-tui/src/app/dispatch_mux_config.rs",
       "rust/fspec-tui/src/views/agent/slash_commands.rs"
     ],
-    "totalLinesCovered": 1058
+    "totalLinesCovered": 448
   }
 }

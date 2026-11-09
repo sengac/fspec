@@ -13,7 +13,6 @@ use codelet_providers::request_admission::AdmissionLimits;
 use futures::StreamExt;
 use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::providers::openai;
-use std::time::Duration;
 
 #[tokio::test]
 async fn scenario_dns_failures_enter_cancellable_offline_waiting_on_either_transport(
@@ -45,13 +44,24 @@ async fn scenario_dns_failures_enter_cancellable_offline_waiting_on_either_trans
             .stream(CompletionRequestBuilder::new(model.clone(), "original turn").build())
             .await?
             .filter(attempt_events::is_content);
-        let result = tokio::time::timeout(Duration::from_secs(1), stream.next()).await;
+        // TEST-042: no waiting window; the turn must stay pending until
+        // recovery reports it is waiting for the network.
+        let mut next = stream.next();
+        let result = codelet_test_helpers::pending_until(
+            "recovery waits for the network",
+            &mut next,
+            || {
+                matches!(
+                    recovery.status(),
+                    Some(RecoveryStatus::WaitingForNetwork { .. })
+                )
+            },
+        )
+        .await;
+        drop(next);
 
         // @step Then it waits for network reception until cancellation without publishing a checkpoint
-        assert!(
-            result.is_err(),
-            "DNS outage terminated the turn: {result:?}"
-        );
+        assert!(result.is_ok(), "DNS outage terminated the turn: {result:?}");
         assert!(matches!(
             recovery.status(),
             Some(RecoveryStatus::WaitingForNetwork { attempt: 1 })

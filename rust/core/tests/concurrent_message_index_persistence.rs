@@ -13,6 +13,7 @@ use uuid::Uuid;
 fn scenario_concurrent_session_stores_rebuild_a_shared_message_index(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let messages_dir = data_dir.path().join("messages");
     std::fs::create_dir_all(&messages_dir)?;

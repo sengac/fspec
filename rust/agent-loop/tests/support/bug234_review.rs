@@ -4,6 +4,8 @@ use std::{sync::Arc, time::Duration};
 use wiremock::{Mock, ResponseTemplate};
 
 pub const OPERATION_BUDGET: Duration = Duration::from_secs(3);
+/// How long the mounted model takes to answer the synthesis request.
+pub const SYNTHESIS_DELAY: Duration = Duration::from_millis(1200);
 
 pub struct Budget;
 
@@ -121,7 +123,7 @@ pub async fn mount(harness: &timing::Harness, unfinished_batch: bool) {
                     "usage":{"prompt_tokens":100,"completion_tokens":20,"total_tokens":120}}))
             };
             if tools && gathered { template.set_delay(Duration::from_secs(5)) }
-            else if !tools && !unfinished_batch { template.set_delay(Duration::from_millis(1200)) }
+            else if !tools && !unfinished_batch { template.set_delay(SYNTHESIS_DELAY) }
             else { template }
         }).mount(&harness.server).await;
 }
@@ -167,6 +169,8 @@ pub fn install_streaming(harness: &timing::Harness) {
                     "Summarize the captured original evidence",
                     "zai",
                     20,
+                    codelet_cli::compaction_operation::BuildRequest::First,
+                    &std::sync::Mutex::new(None),
                     codelet_providers::request_admission::AdmissionLimits {
                         context_capacity: Some(200_000),
                         output_reservation: Some(4096),

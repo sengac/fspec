@@ -6,15 +6,7 @@
         {
           "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
           "lines": "15-29",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                51,
-                52
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -24,15 +16,7 @@
         {
           "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
           "lines": "47-66",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                51,
-                52
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -42,17 +26,7 @@
         {
           "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
           "lines": "74-86",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                338,
-                339,
-                340,
-                341
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -64,9 +38,7 @@
     "testFiles": [
       "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts"
     ],
-    "implFiles": [
-      "src/tui/components/BoardView.tsx"
-    ],
-    "totalLinesCovered": 56
+    "implFiles": [],
+    "totalLinesCovered": 48
   }
 }

@@ -147,10 +147,10 @@ fn scenario_add_attachment_help_matches_ts_fixture_byte_for_byte() {
     // @step And stdout contains the section header 'OPTIONS'
     assert!(stdout.contains("OPTIONS\n"), "help must contain OPTIONS");
 
-    // @step And stdout contains the substring 'Fix: undefined'
+    // @step And stdout contains the substring 'Fix: Create the work unit first'
     assert!(
-        stdout.contains("Fix: undefined"),
-        "help must reproduce TS bug 'Fix: undefined'; got:\n{stdout}"
+        stdout.contains("Fix: Create the work unit first") && !stdout.contains("undefined"),
+        "help must print the real fix, never 'Fix: undefined'; got:\n{stdout}"
     );
 }
 

@@ -4,7 +4,21 @@
 use super::test_support::*;
 use super::*;
 
-/// Scenario: Navigation moves through provider headers (TS parity, PROV-104)
+/// Feed `action` (the selector's emitted `ModelSelected`) to a Navigator
+/// that opened the model selector from the Agent view, and return the
+/// view it lands on — the close is the Navigator's job (`apply_action`).
+fn navigator_view_after(action: &Action) -> crate::views::ViewMode {
+    let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
+    let mut nav =
+        crate::views::Navigator::new(std::sync::Arc::new(crate::theme::Theme::default()), tx);
+    nav.apply_action(&Action::EnterWorkUnit("AUTH-001".to_string()));
+    nav.apply_action(&Action::OpenModelSelectorView);
+    assert_eq!(nav.active_view, crate::views::ViewMode::ModelSelector);
+    nav.apply_action(action);
+    nav.active_view
+}
+
+/// Scenario: Navigation moves through provider headers
 #[test]
 fn down_arrow_lands_on_provider_header() {
     // @step Given the model selector shows a provider header followed by model rows
@@ -19,11 +33,12 @@ fn down_arrow_lands_on_provider_header() {
     // @step When I press the down arrow
     v.handle_key(key(KeyCode::Down));
 
-    // @step Then the cursor moves to the next row (the provider header),
-    // matching the TS navigateDown clamp over the full flat list with no
-    // header-skipping; Right/Enter then expands it.
+    // @step Then the cursor moves to the next row (the provider header)
+    // (the TS navigateDown clamp over the full flat list; Right/Enter then
+    // expands it.)
     let after = v.selected_index();
     assert_eq!(after, 3, "clamped move lands on the anthropic header row");
+    // @step And the cursor rests on the non-selectable provider header (TS parity, PROV-104: no header-skipping)
     assert!(
         !v.rows.get(after).map(|r| r.selectable).unwrap_or(true),
         "row 3 is a non-selectable provider header"
@@ -43,21 +58,27 @@ fn enter_with_session_emits_model_selected() {
     let out = v.handle_key(key(KeyCode::Enter));
 
     // @step Then a model selection is emitted for the current session, provider and model
-    match out {
+    let emitted = match out {
         ModelSelectorEvent::Emit(action) => {
-            let Action::ModelSelected(Some(sid), pkey, mid) = *action else {
+            let Action::ModelSelected(Some(sid), pkey, mid) = action.as_ref() else {
                 panic!("expected Emit(ModelSelected(Some(..))), got {action:?}");
             };
             assert_eq!(sid.value, "s-1");
             assert!(!pkey.is_empty());
             assert!(!mid.is_empty());
+            action
         }
         other => panic!("expected Emit(ModelSelected(Some(..))), got {other:?}"),
-    }
+    };
     // @step And the model selector view closes
-    // @step And the session header badge updates to the selected model
-    // (close + badge refresh are driven by Navigator::apply_action +
-    //  App dispatch of ModelSelected — asserted in navigator tests.)
+    assert_eq!(
+        navigator_view_after(&emitted),
+        crate::views::ViewMode::Agent,
+        "the Navigator closes the model selector on ModelSelected"
+    );
+    // The header badge refresh is App-level: see the scenario "The session
+    // header badge shows the model chosen in the model selector"
+    // (rust/fspec-tui/tests/bug508_model_selector_header_badge.rs).
 }
 
 /// Scenario: Selecting a model with no active session still emits the selection
@@ -83,18 +104,23 @@ fn enter_without_session_still_emits_selection() {
     let out = v.handle_key(key(KeyCode::Enter));
 
     // @step Then a model selection is emitted with no session id
-    match out {
+    let emitted = match out {
         ModelSelectorEvent::Emit(action) => {
-            let Action::ModelSelected(None, pkey, mid) = *action else {
+            let Action::ModelSelected(None, pkey, mid) = action.as_ref() else {
                 panic!("expected Emit(ModelSelected(None, ..)), got {action:?}");
             };
             assert!(!pkey.is_empty());
             assert!(!mid.is_empty());
+            action
         }
         other => panic!("expected Emit(ModelSelected(None, ..)), got {other:?}"),
-    }
-    // @step And the view closes
-    // (close is driven by Navigator::apply_action on ModelSelected.)
+    };
+    // @step And the model selector view closes
+    assert_eq!(
+        navigator_view_after(&emitted),
+        crate::views::ViewMode::Agent,
+        "the Navigator closes the model selector on ModelSelected(None, ..)"
+    );
 }
 
 /// Scenario: Open the model selector full-screen via the slash command

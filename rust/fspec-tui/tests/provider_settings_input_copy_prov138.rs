@@ -26,8 +26,7 @@
 //! `CopyToClipboard` is emitted / lands on the clipboard therefore FAILS.
 //! No production source file is touched by this test.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 
@@ -113,7 +112,9 @@ impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0
             .lock()
-            .expect("clipboard buffer mutex")
+            .map_err(|error| {
+                std::io::Error::other(format!("{}: {error}", "clipboard buffer mutex"))
+            })?
             .extend_from_slice(buf);
         Ok(buf.len())
     }
@@ -144,8 +145,8 @@ fn drain(app: &mut App) {
     }
 }
 
-fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
-    buf.lock().expect("clipboard buffer mutex").clone()
+fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Result<Vec<u8>, codelet_test_helpers::TestError> {
+    Ok(buf.lock().or_fail("clipboard buffer mutex")?.clone())
 }
 
 /// The OSC 52 sequence the App emits for `text`: `ESC ] 52 ; c ; <base64> BEL`.
@@ -160,7 +161,7 @@ fn osc52(text: &str) -> Vec<u8> {
 // Scenario: Copying the focused Base URL field copies its plaintext value
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn copying_the_focused_base_url_field_copies_its_plaintext_value() {
+fn copying_the_focused_base_url_field_copies_its_plaintext_value() -> TestResult {
     // @step Given the profile create form is open with the Base URL field focused and containing "https://api.example.com"
     let mut form = form_on_field(0);
     form.base_url = "https://api.example.com".to_string();
@@ -175,13 +176,14 @@ fn copying_the_focused_base_url_field_copies_its_plaintext_value() {
         Some("https://api.example.com"),
         "Base URL Ctrl+C must emit CopyToClipboard with the plaintext URL, got {ev:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Copying the profile form API Key field copies the masked value
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn copying_the_profile_form_api_key_field_copies_the_masked_value() {
+fn copying_the_profile_form_api_key_field_copies_the_masked_value() -> TestResult {
     // @step Given the profile create form is open with the API Key field focused and containing "sk-secret123"
     let mut form = form_on_field(1);
     form.api_key = "sk-secret123".to_string();
@@ -191,8 +193,7 @@ fn copying_the_profile_form_api_key_field_copies_the_masked_value() {
     let ev = view.handle_key(ctrl_c());
 
     // @step Then the clipboard receives 12 bullet dots and not the plaintext secret
-    let text =
-        copied_text(&ev).unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
+    let text = copied_text(&ev).or_fail(&format!("expected CopyToClipboard emit, got {ev:?}"))?;
     assert_eq!(text, "•".repeat(12), "API key must copy 12 bullet dots");
     assert!(
         !text.contains("sk-secret123"),
@@ -211,7 +212,7 @@ fn copying_the_profile_form_api_key_field_copies_the_masked_value() {
     }
     let _ = app.handle_event(&Event::Key(ctrl_c()));
     drain(&mut app);
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52(&"•".repeat(12)),
@@ -221,13 +222,14 @@ fn copying_the_profile_form_api_key_field_copies_the_masked_value() {
         !String::from_utf8_lossy(&bytes).contains("sk-secret123"),
         "the plaintext secret must NEVER appear in the OSC 52 clipboard bytes"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Copying the inline API-key entry copies the masked draft
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
+fn copying_the_inline_api_key_entry_copies_the_masked_draft() -> TestResult {
     // @step Given the inline API-key entry is open with the draft "sk-abcdef"
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("anthropic")]);
@@ -242,8 +244,7 @@ fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
     let ev = view.handle_key(ctrl_c());
 
     // @step Then the clipboard receives 9 bullet dots and not the plaintext secret
-    let text =
-        copied_text(&ev).unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
+    let text = copied_text(&ev).or_fail(&format!("expected CopyToClipboard emit, got {ev:?}"))?;
     assert_eq!(text, "•".repeat(9), "inline draft must copy 9 bullet dots");
     assert!(
         !text.contains("sk-abcdef"),
@@ -263,7 +264,7 @@ fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
     };
     let _ = app.handle_event(&Event::Key(ctrl_c()));
     drain(&mut app);
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52(&"•".repeat(9)),
@@ -273,13 +274,14 @@ fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
         !String::from_utf8_lossy(&bytes).contains("sk-abcdef"),
         "the plaintext draft must NEVER appear in the OSC 52 clipboard bytes"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Pressing Ctrl+C on the provider list copies no field value
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn pressing_ctrl_c_on_the_provider_list_copies_no_field_value() {
+fn pressing_ctrl_c_on_the_provider_list_copies_no_field_value() -> TestResult {
     // @step Given the provider list is focused with no input field open
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("anthropic")]);
@@ -303,7 +305,8 @@ fn pressing_ctrl_c_on_the_provider_list_copies_no_field_value() {
     let _ = app.handle_event(&Event::Key(ctrl_c()));
     drain(&mut app);
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "Ctrl+C on the List must write nothing to the clipboard"
     );
+    Ok(())
 }

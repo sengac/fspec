@@ -3,10 +3,9 @@
 //
 // Validates the acceptance criteria for the Rust port of `delete-step`
 // (RPC-221). Each scenario maps to one #[test] fn with @step comments
-// mirroring the Gherkin steps verbatim.
-//
-// PHASE B (TESTING): the core impl is still a stub, so every dispatch
-// returns FspecCoreError::NotYetPorted. These tests are RED until PHASE C.
+// mirroring the Gherkin steps verbatim. The scenarios from the
+// TypeScript-era delete-step feature that these tests did not prove were
+// merged into delete-step-rust-port (COV-071).
 
 use std::fs;
 use std::path::Path;
@@ -147,6 +146,12 @@ fn scenario_dispatcher_reports_a_missing_step() {
         err.contains("Step 'When nonexistent' not found in scenario 'Login'"),
         "expected missing-step message; got: {err}"
     );
+
+    // @step And the file on disk is unchanged
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/login.feature"),
+        LOGIN_GWT
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -177,5 +182,183 @@ fn scenario_dispatcher_reports_a_missing_scenario() {
     assert!(
         err.contains("Scenario 'Ghost' not found in feature file"),
         "expected missing-scenario message; got: {err}"
+    );
+
+    // @step And the file on disk is unchanged
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/login.feature"),
+        LOGIN_GWT
+    );
+}
+
+fn delete(project_root: &Path, feature: &str, scenario: &str, step: &str) -> Value {
+    let result = dispatch_command(req(
+        project_root,
+        json!({"feature": feature, "scenario": scenario, "step": step}),
+    ));
+    assert!(result.success, "expected success=true, got {result:?}");
+    serde_json::from_str(&result.data).expect("parse data json")
+}
+
+const TEST_FIVE_STEPS: &str = "Feature: Test\n\n  Scenario: Test scenario\n    Given I am logged in\n    And I am on the home page\n    When I click submit\n    Then I should see success\n    Then I should see the summary\n";
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes a Given, a When and a Then step and keeps the rest byte for byte
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_a_given_a_when_and_a_then_step_and_keeps_the_rest_byte_for_byte() {
+    // @step Given a project root tempdir with spec/features/test.feature reading 'Feature: Test\n\n  Scenario: Test scenario\n    Given I am logged in\n    And I am on the home page\n    When I click submit\n    Then I should see success\n    Then I should see the summary\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/test.feature", TEST_FIVE_STEPS);
+
+    // @step When I dispatch delete-step with feature='test', scenario='Test scenario' and step='Given I am logged in'
+    let given = delete(tmp.path(), "test", "Test scenario", "Given I am logged in");
+
+    // @step And I dispatch delete-step with feature='test', scenario='Test scenario' and step='When I click submit'
+    let when = delete(tmp.path(), "test", "Test scenario", "When I click submit");
+
+    // @step And I dispatch delete-step with feature='test', scenario='Test scenario' and step='Then I should see success'
+    let then = delete(
+        tmp.path(),
+        "test",
+        "Test scenario",
+        "Then I should see success",
+    );
+
+    // @step Then each dispatch returns success=true with the message "Successfully deleted step from scenario 'Test scenario' in test.feature"
+    for data in [&given, &when, &then] {
+        assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+        assert_eq!(
+            data["message"].as_str(),
+            Some("Successfully deleted step from scenario 'Test scenario' in test.feature")
+        );
+    }
+
+    // @step And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n    And I am on the home page\n    Then I should see the summary\n'
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/test.feature"),
+        "Feature: Test\n\n  Scenario: Test scenario\n    And I am on the home page\n    Then I should see the summary\n"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes the only step and keeps the scenario header
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_the_only_step_and_keeps_the_scenario_header() {
+    // @step Given a project root tempdir with spec/features/test.feature reading 'Feature: Test\n\n  Scenario: Test scenario\n    Given test\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/test.feature",
+        "Feature: Test\n\n  Scenario: Test scenario\n    Given test\n",
+    );
+
+    // @step When I dispatch delete-step with feature='test', scenario='Test scenario' and step='Given test'
+    let data = delete(tmp.path(), "test", "Test scenario", "Given test");
+
+    // @step Then the dispatcher returns success=true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n'
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/test.feature"),
+        "Feature: Test\n\n  Scenario: Test scenario\n"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes the step only from the named scenario
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_the_step_only_from_the_named_scenario() {
+    // @step Given a project root tempdir with spec/features/test.feature whose scenarios 'First' and 'Second' both have the step 'Given I am logged in'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/test.feature",
+        "Feature: Test\n\n  Scenario: First\n    Given I am logged in\n    Then I see first\n\n  Scenario: Second\n    Given I am logged in\n    Then I see second\n",
+    );
+
+    // @step When I dispatch delete-step with feature='test', scenario='First' and step='Given I am logged in'
+    let data = delete(tmp.path(), "test", "First", "Given I am logged in");
+
+    // @step Then the dispatcher returns success=true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the file on disk reads 'Feature: Test\n\n  Scenario: First\n    Then I see first\n\n  Scenario: Second\n    Given I am logged in\n    Then I see second\n'
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/test.feature"),
+        "Feature: Test\n\n  Scenario: First\n    Then I see first\n\n  Scenario: Second\n    Given I am logged in\n    Then I see second\n"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes a step whose text has an apostrophe and an at sign
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_a_step_whose_text_has_an_apostrophe_and_an_at_sign() {
+    // @step Given a project root tempdir with spec/features/test.feature whose scenario 'Test scenario' has the steps 'Given I can't access @admin features' and 'Then I see a notice'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/test.feature",
+        "Feature: Test\n\n  Scenario: Test scenario\n    Given I can't access @admin features\n    Then I see a notice\n",
+    );
+
+    // @step When I dispatch delete-step with feature='test', scenario='Test scenario' and step="Given I can't access @admin features"
+    let data = delete(
+        tmp.path(),
+        "test",
+        "Test scenario",
+        "Given I can't access @admin features",
+    );
+
+    // @step Then the dispatcher returns success=true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n    Then I see a notice\n'
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/test.feature"),
+        "Feature: Test\n\n  Scenario: Test scenario\n    Then I see a notice\n"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher rejects a feature file that is not valid Gherkin and leaves it unchanged
+// ─────────────────────────────────────────────────────────────────────────
+
+const BROKEN_FEATURE: &str = "Scenario: Some scenario\n  Given test\n";
+
+#[test]
+fn scenario_dispatcher_rejects_a_feature_file_that_is_not_valid_gherkin_and_leaves_it_unchanged() {
+    // @step Given a project root tempdir with spec/features/broken.feature reading 'Scenario: Some scenario\n  Given test\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/broken.feature", BROKEN_FEATURE);
+
+    // @step When I dispatch delete-step with feature='broken', scenario='Some scenario' and step='Given test'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "broken", "scenario": "Some scenario", "step": "Given test"}),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the dispatcher error contains 'Invalid Gherkin syntax: '
+    let err = dispatcher_error(&result);
+    assert!(
+        err.contains("Invalid Gherkin syntax: "),
+        "expected invalid-Gherkin message; got: {err}"
+    );
+
+    // @step And the file on disk is unchanged
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/broken.feature"),
+        BROKEN_FEATURE
     );
 }

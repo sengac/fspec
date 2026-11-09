@@ -3,6 +3,7 @@
 @rust
 @wip
 @RPC-325
+@BUG-286
 Feature: Port validate-work-units command to Rust
   """
   File layout: core impl rust/fspec-core/src/commands/validate_work_units.rs (rewrite stub); help config rust/fspec-core/src/help/configs/validate_work_units.rs; CLI bridge rust/fspec/src/validate_work_units.rs; core test rust/fspec-core/tests/validate_work_units.rs; CLI test rust/fspec/tests/cli_validate_work_units.rs; help fixture rust/fspec/tests/fixtures/help/validate-work-units.txt
@@ -88,6 +89,18 @@ Feature: Port validate-work-units command to Rust
     When I dispatch the validate-work-units command against that project root
     Then the result reports valid=false
     Then the errors include 'AUTH-001: rules array contains empty strings or non-strings at index 0'
+
+  Scenario: Dispatcher accepts stable-index rule and example objects
+    Given spec/work-units.json contains AUTH-001 whose rules and examples are stable-index objects with id, text and deleted fields
+    When I dispatch the validate-work-units command against that project root
+    Then the result reports valid=true
+
+  Scenario: Dispatcher flags a stable-index rule with empty text
+    Given spec/work-units.json contains AUTH-001 whose rules array holds a live stable-index object with empty text at index 0 and a soft-deleted one with empty text at index 1
+    When I dispatch the validate-work-units command against that project root
+    Then the result reports valid=false
+    Then the errors include 'AUTH-001: rules[0] text must be a non-empty string'
+    And no error is reported for the soft-deleted rule at index 1
 
   Scenario: Dispatcher flags a malformed questions item
     Given spec/work-units.json contains AUTH-001 whose questions array contains a string instead of an object

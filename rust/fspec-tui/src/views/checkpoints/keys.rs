@@ -20,6 +20,12 @@ use super::{CheckpointsEvent, CheckpointsView, Pane};
 
 impl CheckpointsView {
     pub(super) fn handle_key(&mut self, key: KeyEvent) -> CheckpointsEvent {
+        let modal = self.dialog().is_some() || self.delete_dialog().is_some();
+        // TUI-130: Ctrl+C, the copy wrapper, copies the name like c.
+        let ctrl_c = key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL;
+        if ctrl_c && !modal && !self.is_loading() {
+            return self.copy_name();
+        }
         if key
             .modifiers
             .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
@@ -61,7 +67,19 @@ impl CheckpointsView {
             // RPC-366: delete single checkpoint (d/D) / all checkpoints (a/A).
             KeyCode::Char('d') | KeyCode::Char('D') => self.open_delete_single(),
             KeyCode::Char('a') | KeyCode::Char('A') => self.open_delete_all(),
+            // TUI-130: c copies the selected checkpoint's name.
+            KeyCode::Char('c') => self.copy_name(),
             _ => CheckpointsEvent::Consumed,
+        }
+    }
+
+    /// TUI-130: copy the selected checkpoint's name.
+    fn copy_name(&self) -> CheckpointsEvent {
+        match self.selected_checkpoint_info() {
+            Some(info) => CheckpointsEvent::Emit(Box::new(
+                crate::components::Action::CopyToClipboard(info.name.clone()),
+            )),
+            None => CheckpointsEvent::Consumed,
         }
     }
 
@@ -142,7 +160,11 @@ impl CheckpointsView {
             if let Some(sb_rect) = self.last_diff_sb_rect {
                 if rect_contains(sb_rect, ev.column, ev.row) {
                     let visible = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
-                    let total = self.diff_lines.len();
+                    // TUI-131: the diff scrolls in wrapped rows.
+                    let total = crate::views::diff_common::diff_row_count(
+                        &self.diff_lines,
+                        self.last_diff_rect,
+                    );
                     if total > visible {
                         let geom = ScrollbarGeometry {
                             area_height: visible,

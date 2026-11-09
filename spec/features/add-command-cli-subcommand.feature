@@ -1,5 +1,7 @@
 @wip
 @RPC-174
+@cli
+@foundation-management
 Feature: fspec add-command CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_command.rs — clap-derived struct mirroring the TS

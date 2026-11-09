@@ -2,11 +2,12 @@
 @RPC-184
 @rust
 @cli
+@lifecycle-hooks
 Feature: Port add-hook command to Rust
   """
   Replace the stub at rust/fspec-core/src/commands/add_hook.rs with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Module exposes the same signature shape as list_hooks::run.
   Local on-disk shapes: `struct HookFile { hooks: IndexMap<String, Vec<HookEntry>>, #[serde(flatten)] extra: Map<String,Value> }` and `struct HookEntry { name: String, command: String, blocking: bool, #[serde(skip_serializing_if=Option::is_none)] timeout: Option<u64>, #[serde(flatten)] extra: Map<String,Value> }`. Local, NOT promoted to types/hooks.rs.
-  Load strategy: `std::fs::read_to_string` + `serde_json::from_str` wrapped in a single helper that returns `HookFile::default()` on EITHER IO error OR parse error (TS bare-catch parity at add-hook.ts:26-32). Do NOT use ensure.rs helpers — they auto-write the default to disk, which would race the subsequent atomic write.
+  Load strategy: command_hooks::config_file::load_for_write (BUG-611). A missing file starts a fresh `{hooks: {}}` config; a broken file is backed up to spec/fspec-hooks.json.broken-<timestamp> with a notice before a fresh config is written.
   Args struct: `#[serde(default, rename_all = "camelCase")] struct AddHookArgs { event: String, name: String, command: String, #[serde(default)] blocking: bool, timeout: Option<u64> }`. The CLI bridge marshals clap fields → JSON, omitting `None` for timeout.
   Persistence: ensure `spec/` exists via `std::fs::create_dir_all(project_root.join("spec"))` then call `write_json_atomic(&path, &config)` (2-space indent, no trailing newline). This mirrors the TS `mkdir(... recursive:true)` + `fileManager.transaction` round-trip.
   Result shape: `pub async fn run` returns `Ok(String::new())` on success (zero bytes — TS Commander action prints nothing). The dispatcher wraps this as `success=true, data=""`.
@@ -19,7 +20,7 @@ Feature: Port add-hook command to Rust
   # BUSINESS RULES:
   #   1. The Rust dispatcher route for `add-hook` MUST replace the NotYetPorted stub and be registered in PORTED_COMMANDS
   #   2. ENOENT on spec/fspec-hooks.json → silently create a fresh `{hooks:{<event>:[<new>]}}` and write it
-  #   3. Invalid JSON in spec/fspec-hooks.json → swallow the parse error and OVERWRITE the file (TS bare catch parity)
+  #   3. A broken spec/fspec-hooks.json is backed up with a notice before a new config is written (BUG-611)
   #   4. Successful read+parse → append the new hook entry to `hooks[event]` (initialising the array if the key is absent)
   #   5. Hook entry on-disk shape is `{name, command, blocking, timeout?}` — `timeout` is OMITTED when not supplied
   #   6. Unknown top-level fields (`global`, etc.) and per-entry fields MUST be preserved across the round-trip
@@ -71,13 +72,6 @@ Feature: Port add-hook command to Rust
     Then the dispatcher returns success=true
     Then the on-disk entry has blocking=true and timeout=300
 
-  Scenario: Swallows invalid JSON and overwrites with the new config
-    Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    When I dispatch add-hook with event='pre-implementing', name='lint', command='lint.sh', blocking=false
-    Then the dispatcher returns success=true
-    Then the on-disk JSON parses successfully
-    Then the on-disk 'hooks' object contains exactly the event 'pre-implementing' with one entry named 'lint'
-
   Scenario: Preserves unknown top-level global section
     Given spec/fspec-hooks.json contains a top-level 'global' object with timeout=30 and an empty 'hooks' object
     When I dispatch add-hook with event='pre-implementing', name='lint', command='lint.sh', blocking=false
@@ -92,7 +86,7 @@ Feature: Port add-hook command to Rust
     Then the on-disk 'pre-implementing' array has exactly two entries both named 'lint'
 
   Scenario: Preserves event-key insertion order across writes
-    Given spec/fspec-hooks.json contains three events declared in order ZED, AAA, MID each with one entry
-    When I dispatch add-hook with event='MID', name='extra', command='extra.sh', blocking=false
+    Given spec/fspec-hooks.json contains three events declared in order pre-validating, post-backlog, pre-implementing each with one entry
+    When I dispatch add-hook with event='pre-implementing', name='extra', command='extra.sh', blocking=false
     Then the dispatcher returns success=true
-    Then the on-disk events appear in the order ZED, AAA, MID
+    Then the on-disk events appear in the order pre-validating, post-backlog, pre-implementing

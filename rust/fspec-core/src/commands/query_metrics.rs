@@ -136,7 +136,7 @@ fn to_json(output: &MetricsOutput) -> Result<String, FspecCoreError> {
 // ─────────────────────────────────────────────────────────────────────────
 
 fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError> {
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&path).map_err(|e| FspecCoreError::InvalidArgs {
         command: "query-metrics",
         reason: wrap(format_io_error(&e, &path.display().to_string())),

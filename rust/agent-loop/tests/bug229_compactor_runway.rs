@@ -38,10 +38,7 @@ async fn scenario_both_compaction_routes_reserve_synthesis_runway_as_originals_g
         assert_eq!(synthesis["model"], "o3");
         assert_eq!(synthesis["max_completion_tokens"], runway::OUTPUT);
         for position in 0..4 {
-            let sentinel = format!(
-                "evidence-{position}-start {} evidence-{position}-end",
-                "x".repeat(10_000)
-            );
+            let sentinel = runway::evidence(position, 10_000);
             assert!(synthesis["messages"].to_string().contains(&sentinel));
         }
         harness.assert_admitted().await?;

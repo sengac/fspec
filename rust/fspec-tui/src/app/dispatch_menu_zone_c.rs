@@ -5,7 +5,7 @@
 //!          spec/features/bug199-agent-bar-zone-c-new-agent-close-agent-esc-semantics.feature
 //!          spec/features/bug204-close-agent-button-always-shows-exit-confirmation-dialog.feature
 //!          spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
-//! Card: MENU-009 (R2, R4), BUG-199 (R1, R2), BUG-204 (Close Agent →
+//! Card: MENU-009 (R2, R4), BUG-199 (R1, R2), BUG-204 (Close →
 //!       always the dialog), BUG-203 (board button parity).
 //!
 //! Split out of `dispatch_menu.rs` for the 300-LoC ceiling (the
@@ -15,18 +15,13 @@
 //! agent bar's `New Agent` (BUG-199 R1: start a NEW agent) and the
 //! board's single `New Agent` (BUG-203: the board button gets the same
 //! BUG-199 semantics — it NEVER resumes the selected unit's session),
-//! and (BUG-204, superseding BUG-199 R2) the `Close Agent` button
+//! and (BUG-204, superseding BUG-199 R2) the `Close` button
 //! ALWAYS mounts the `ExitConfirmationDialog` (RPC-098 L7) — it does
 //! NOT run the `AgentEscPressed` cascade (no interrupt / no draft
 //! clear / no BackToBoard fallback) — so no new backend/RPC work
 //! exists here; this module only resolves the button index against the
 //! ACTIVE surface's own `zone_c` slice.
 
-use codelet_rpc_types::SessionStatus;
-
-use crate::components::exit_confirmation_dialog::{
-    ExitConfirmationDialog, EXIT_CONFIRMATION_DIALOG_ID,
-};
 use crate::components::menu_bar::items::MenuAction;
 use crate::views::ViewMode;
 
@@ -40,11 +35,11 @@ impl App {
     /// surface.
     pub(crate) fn dispatch_menu_zone_c(&mut self, index: usize) {
         if self.navigator.active_view == ViewMode::Agent {
-            // The agent bar's `[ New Agent ]` / `[ Close Agent ]` —
+            // The agent bar's `[ New Agent ]` / `[ Close ]` —
             // resolve through `AGENT_ZONE_C`'s registry `MenuAction`
             // (payload-free: BUG-199 R1 drops the R8 current-session
             // substitution — the button starts a NEW agent, and
-            // `Close Agent` ALWAYS mounts the 'Exit Session?' dialog,
+            // `Close` ALWAYS mounts the 'Close Agent?' dialog,
             // BUG-204 — never an Esc cascade).
             let Some(button) = crate::views::agent::menu_render::AGENT_ZONE_C.get(index) else {
                 return;
@@ -59,8 +54,10 @@ impl App {
                 MenuAction::NewAgent => {
                     self.handle_open_create_session_dialog(None);
                 }
-                // BUG-204 (superseding BUG-199 R2): 'Close Agent' ALWAYS
-                // mounts the 'Exit Session?' ExitConfirmationDialog
+                // TUI-114: New Bot mounts the bot variant of the dialog.
+                MenuAction::NewBot => self.handle_open_new_bot_dialog(),
+                // BUG-204 (superseding BUG-199 R2): 'Close' ALWAYS
+                // mounts the 'Close Agent?' ExitConfirmationDialog
                 // (RPC-098 L7) when a session is open — the button is the
                 // close-action confirmation, NOT the Esc gesture. The
                 // cascade's L4/L5 interrupt branch and the L6
@@ -69,7 +66,7 @@ impl App {
                 // unchanged for Esc). The dialog's `is_busy` flag is
                 // computed from the current session's status; the
                 // options commit through the existing `AgentExitChoice`
-                // bus action (Close Session / Cancel — BUG-205 removed
+                // bus action (Close / Cancel — BUG-205 removed
                 // the Detach option).
                 // No current session → silent no-op (BUG-204 R3: the
                 // dialog is meaningless without a session to exit —
@@ -78,18 +75,10 @@ impl App {
                     let Some(session) = self.agent_view_store.current_session().cloned() else {
                         return;
                     };
-                    // No-double-push: skip if a dialog is already on the
-                    // compositor (the RPC-098 L7 parity guard).
-                    if self.compositor.contains(EXIT_CONFIRMATION_DIALOG_ID) {
-                        return;
-                    }
-                    let is_busy = matches!(
-                        self.agent_view_store.session_status_for(&session).copied(),
-                        Some(SessionStatus::Running) | Some(SessionStatus::Compacting),
-                    );
-                    let dialog =
-                        ExitConfirmationDialog::new(is_busy).with_action_tx(self.action_tx.clone());
-                    self.compositor.push(Box::new(dialog));
+                    // TUI-124: gather what closing will do, then open the
+                    // 'Close Agent?' / 'Close Bot?' dialog (no-double-push
+                    // guard inside).
+                    self.request_close(session);
                 }
                 _ => {}
             }

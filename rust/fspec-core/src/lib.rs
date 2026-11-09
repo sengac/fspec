@@ -22,6 +22,7 @@
 //! its own child work unit of RPC-003.
 
 pub mod canonical;
+pub mod command_hooks;
 pub mod commands;
 pub mod dispatch;
 pub mod error;
@@ -32,11 +33,11 @@ mod help_dispatch;
 mod help_dispatch_table;
 pub mod io;
 pub mod js_compat;
+pub mod session_cards;
 pub mod types;
 pub mod update;
 pub mod utils;
 pub mod validators;
-pub mod virtual_hooks_exec;
 
 pub use dispatch::{dispatch_command, DispatchRequest, DispatchResult};
 pub use error::FspecCoreError;

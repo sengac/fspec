@@ -1,9 +1,11 @@
+@BUG-629
 @done
 @RPC-019
 @rust
 @source-shape
 @tui
 @rpc
+@infrastructure
 Feature: RPC-019 source-shape regression for the AgentView MultiLineInput + ScrollbackList port
   """
   RPC-019 pins the source-shape contract so that future refactors of
@@ -92,9 +94,3 @@ Feature: RPC-019 source-shape regression for the AgentView MultiLineInput + Scro
     When a test scans every *.rs file
     Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
     And no file constructs `tokio::runtime::Builder` or `Runtime::new()`
-
-  Scenario: Existing TS AgentView input + scrollback files are untouched
-    Given the project root after RPC-019 lands
-    Then the file src/tui/components/MultiLineInput.tsx exists
-    And the file src/tui/components/VirtualList.tsx exists
-    And the file src/tui/components/ConversationInputArea.tsx exists

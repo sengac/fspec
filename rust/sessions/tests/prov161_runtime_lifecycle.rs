@@ -69,8 +69,8 @@ async fn scenario_session_lifecycle_applies_current_provider_runtime_settings() 
         assert_eq!(background.get_continue_state(), (true, budget));
         let inner = background.inner.lock().await;
         assert_eq!(inner.preserve_thinking_enabled, preserve);
-        assert_eq!(inner.provider_manager().context_window(), context);
-        assert_eq!(inner.provider_manager().max_output_tokens(), output);
+        assert_eq!(inner.provider_manager().context_window(), Some(context));
+        assert_eq!(inner.provider_manager().max_output_tokens(), Some(output));
         assert_eq!(
             model_resolution::resolve_profile_max_images(inner.provider_manager()),
             Some(images)
@@ -82,9 +82,9 @@ async fn scenario_session_lifecycle_applies_current_provider_runtime_settings() 
             codelet_tools::model_capabilities::session_model_max_images(background.id),
             Some(images)
         );
-        let model = SessionManagerHandle::get_session_model(manager, &SessionId::new(identifier));
-        assert_eq!(model.context_window as usize, context);
-        assert_eq!(model.max_output_tokens as usize, output);
+        let model = SessionManagerHandle::get_session_model(manager, &SessionId::new(identifier))?;
+        assert_eq!(model.context_window, Some(context as i64));
+        assert_eq!(model.max_output_tokens, Some(output as i64));
     }
     Ok(())
 }
@@ -106,14 +106,14 @@ async fn scenario_model_switching_replaces_inherited_settings_without_losing_exp
     }
 
     // @step Then inherited settings and budgets refresh while the explicit continuation choice is preserved
-    assert_eq!(handle.get_continue_state(&inherited), (true, 3));
-    assert_eq!(handle.get_continue_state(&explicit), (false, 23));
+    assert_eq!(handle.get_continue_state(&inherited)?, (true, 3));
+    assert_eq!(handle.get_continue_state(&explicit)?, (false, 23));
     for identifier in [&inherited, &explicit] {
         let background = fixture.manager.get_session(&identifier.value)?;
         let inner = background.inner.lock().await;
         assert!(inner.preserve_thinking_enabled);
-        assert_eq!(inner.provider_manager().context_window(), 300000);
-        assert_eq!(inner.provider_manager().max_output_tokens(), 16000);
+        assert_eq!(inner.provider_manager().context_window(), Some(300000));
+        assert_eq!(inner.provider_manager().max_output_tokens(), Some(16000));
         let loops = model_resolution::resolve_profile_loop_detection(inner.provider_manager());
         assert_eq!(loops.enabled, Some(true));
         assert_eq!(loops.window, Some(240));
@@ -121,24 +121,24 @@ async fn scenario_model_switching_replaces_inherited_settings_without_losing_exp
             codelet_tools::model_capabilities::session_model_max_images(background.id),
             Some(6)
         );
-        let model = handle.get_session_model(identifier);
-        assert_eq!(model.context_window, 300000);
-        assert_eq!(model.max_output_tokens, 16000);
+        let model = handle.get_session_model(identifier)?;
+        assert_eq!(model.context_window, Some(300000));
+        assert_eq!(model.max_output_tokens, Some(16000));
     }
     let previous_key = std::env::var_os("OPENAI_API_KEY");
     let previous_endpoint = std::env::var_os("OPENAI_BASE_URL");
     for identifier in [&inherited, &explicit] {
         handle.set_model(identifier, "anthropic:careful", "claude-sonnet-5")?;
-        let model = handle.get_session_model(identifier);
-        assert_eq!(model.max_output_tokens, 18000);
+        let model = handle.get_session_model(identifier)?;
+        assert_eq!(model.max_output_tokens, Some(18000));
         let background = fixture.manager.get_session(&identifier.value)?;
         assert_eq!(
             codelet_tools::model_capabilities::session_model_max_images(background.id),
             Some(8)
         );
     }
-    assert_eq!(handle.get_continue_state(&inherited), (true, 5));
-    assert_eq!(handle.get_continue_state(&explicit), (false, 23));
+    assert_eq!(handle.get_continue_state(&inherited)?, (true, 5));
+    assert_eq!(handle.get_continue_state(&explicit)?, (false, 23));
     assert_eq!(std::env::var_os("OPENAI_API_KEY"), previous_key);
     assert_eq!(std::env::var_os("OPENAI_BASE_URL"), previous_endpoint);
     Ok(())

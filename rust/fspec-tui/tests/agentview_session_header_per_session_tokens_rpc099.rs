@@ -14,13 +14,9 @@
 //! Each `#[test]` here maps 1:1 to a Scenario in the feature file and uses
 //! the same fixture pattern as `agentview_esc_exit_confirmation_rpc098.rs`.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::TokenState;
@@ -92,14 +88,14 @@ fn agent_app_with_two_sessions() -> (App, Arc<MockBackend>) {
 
 /// Render the full App (Navigator + Compositor) into a 100x24 TestBackend
 /// and return the buffer for substring assertions on the header line.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(100, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Header row text — row 0 holds the SessionHeader strip.
@@ -120,7 +116,7 @@ fn focus_s1(app: &mut App) {
 
 /// Scenario: Shift+Right swaps SessionHeader to the new session's full token totals
 #[test]
-fn shift_right_swaps_session_header_to_new_session_full_token_totals() {
+fn shift_right_swaps_session_header_to_new_session_full_token_totals() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -141,7 +137,7 @@ fn shift_right_swaps_session_header_to_new_session_full_token_totals() {
     ));
 
     // @step When the App renders the AgentView into a 100x24 TestBackend with "s-1" focused
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 100↓ 50↑" and "20🧠" and reflects tokens_per_second=8.5
@@ -160,7 +156,7 @@ fn shift_right_swaps_session_header_to_new_session_full_token_totals() {
 
     // @step When the App dispatches Action::SessionNext and re-renders
     app.dispatch(Action::SessionNext);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 200↓ 75↑" and "60🧠" and reflects tokens_per_second=12.0
@@ -179,7 +175,7 @@ fn shift_right_swaps_session_header_to_new_session_full_token_totals() {
 
     // @step When the App dispatches Action::SessionPrev and re-renders
     app.dispatch(Action::SessionPrev);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 100↓ 50↑" and "20🧠" and reflects tokens_per_second=8.5
@@ -195,11 +191,12 @@ fn shift_right_swaps_session_header_to_new_session_full_token_totals() {
         header.contains("8.5 tok/s"),
         "after Shift+Left header should show s-1 '8.5 tok/s' again, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Background session accumulates token state while not focused
 #[test]
-fn background_session_accumulates_token_state_while_not_focused() {
+fn background_session_accumulates_token_state_while_not_focused() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -219,7 +216,7 @@ fn background_session_accumulates_token_state_while_not_focused() {
 
     // @step And the App dispatches Action::SessionNext to focus "s-2" and renders the AgentView into a 100x24 TestBackend
     app.dispatch(Action::SessionNext);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text immediately contains "tokens: 200↓ 75↑" and "60🧠" with no intermediate zero-state frame
@@ -231,11 +228,12 @@ fn background_session_accumulates_token_state_while_not_focused() {
         header.contains("60🧠"),
         "background-accumulated s-2 reasoning '60🧠' should be visible on first frame, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: cache_read_input_tokens and cache_creation_input_tokens are persisted per-session
 #[test]
-fn cache_tokens_persisted_per_session_across_focus_switches() {
+fn cache_tokens_persisted_per_session_across_focus_switches() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -253,7 +251,7 @@ fn cache_tokens_persisted_per_session_across_focus_switches() {
         .agent_view_store()
         .token_state_for(&sid("s-1"))
         .copied()
-        .expect("token_state_for(s-1) returns Some after TokenUpdate");
+        .or_fail("token_state_for(s-1) returns Some after TokenUpdate")?;
     assert_eq!(
         ts.cache_read_input_tokens, 5000,
         "TokenState.cache_read_input_tokens must equal 5000 after TokenUpdate"
@@ -272,7 +270,7 @@ fn cache_tokens_persisted_per_session_across_focus_switches() {
         .agent_view_store()
         .token_state_for(&sid("s-1"))
         .copied()
-        .expect("token_state_for(s-1) still Some after focus swap");
+        .or_fail("token_state_for(s-1) still Some after focus swap")?;
     assert_eq!(
         ts.cache_read_input_tokens, 5000,
         "TokenState.cache_read_input_tokens persists across focus swap"
@@ -281,11 +279,12 @@ fn cache_tokens_persisted_per_session_across_focus_switches() {
         ts.cache_creation_input_tokens, 800,
         "TokenState.cache_creation_input_tokens persists across focus swap"
     );
+    Ok(())
 }
 
 /// Scenario: Switching to a never-updated session displays zeros (no carry-over)
 #[test]
-fn switching_to_never_updated_session_displays_zeros_no_carry_over() {
+fn switching_to_never_updated_session_displays_zeros_no_carry_over() -> TestResult {
     // @step Given session "s-1" is focused with TokenState { input_tokens: 1234, output_tokens: 567 } from a prior dispatched TokenUpdate
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -307,7 +306,7 @@ fn switching_to_never_updated_session_displays_zeros_no_carry_over() {
 
     // @step When the App dispatches Action::SessionNext to focus "s-2" and renders the AgentView into a 100x24 TestBackend
     app.dispatch(Action::SessionNext);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 0↓ 0↑"
@@ -325,11 +324,12 @@ fn switching_to_never_updated_session_displays_zeros_no_carry_over() {
         !header.contains("567↑"),
         "s-1 output_tokens must NOT leak into s-2 header, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Reasoning brain suffix toggles based on the focused session's reasoning_tokens
 #[test]
-fn reasoning_brain_suffix_toggles_with_focused_session_reasoning_tokens() {
+fn reasoning_brain_suffix_toggles_with_focused_session_reasoning_tokens() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -350,7 +350,7 @@ fn reasoning_brain_suffix_toggles_with_focused_session_reasoning_tokens() {
     ));
 
     // @step When the App renders the AgentView into a 100x24 TestBackend with "s-1" focused
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 100↓ 50↑"
@@ -366,7 +366,7 @@ fn reasoning_brain_suffix_toggles_with_focused_session_reasoning_tokens() {
 
     // @step When the App dispatches Action::SessionNext and re-renders
     app.dispatch(Action::SessionNext);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "tokens: 200↓ 75↑" and "45🧠"
@@ -378,4 +378,5 @@ fn reasoning_brain_suffix_toggles_with_focused_session_reasoning_tokens() {
         header.contains("45🧠"),
         "s-2 reasoning '45🧠' must render after Shift+Right, got: {header:?}"
     );
+    Ok(())
 }

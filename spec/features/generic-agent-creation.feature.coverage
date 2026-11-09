@@ -5,11 +5,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/session_intent/generic.rs",
-          "lines": "6-36",
+          "lines": "6-41",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                35,
+                36,
                 37,
                 38,
                 39,
@@ -47,23 +49,6 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -74,8 +59,25 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                112,
+                114,
+                115,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "/// Idempotent on dialog id — a second open is a no-op.",
+              "lastLine": "originating_session,"
             }
           ]
         }
@@ -86,29 +88,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/session_intent/generic.rs",
-          "lines": "38-99",
+          "lines": "44-115",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
               "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "pub(crate) fn handle_mux_shift_key(&mut self, key: crossterm::event::KeyEvent) -> EventResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -119,32 +129,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/session_intent/generic.rs",
-          "lines": "101-133",
+          "lines": "117-149",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
                 125,
                 126,
                 127,
@@ -187,8 +176,52 @@
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209
+              ],
+              "firstLine": "/// Fold a freshly-created (non-empty) session into the AgentViewStore and",
+              "lastLine": "let _ = action_tx.send(Action::DebugEnabledLoaded(sid, true));"
             }
           ]
         }
@@ -206,6 +239,6 @@
       "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
       "rust/fspec-tui/src/app/dispatch_mux.rs"
     ],
-    "totalLinesCovered": 272
+    "totalLinesCovered": 314
   }
 }

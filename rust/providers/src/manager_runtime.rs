@@ -20,6 +20,18 @@ pub(super) fn apply_script_limits(
     limits.compaction_threshold
 }
 
+/// PROV-171: the OPENAI_* limit overrides of an OpenAI selection (an invalid
+/// value fails the selection); other providers do not read them.
+pub(super) fn openai_env_limits_for(
+    provider: &ProviderType,
+) -> Result<crate::openai::OpenAIEnvLimits, ProviderError> {
+    if *provider == ProviderType::OpenAI {
+        crate::openai::OpenAIEnvLimits::from_env()
+    } else {
+        Ok(crate::openai::OpenAIEnvLimits::default())
+    }
+}
+
 impl ProviderManager {
     pub fn runtime_options(&self) -> &ProviderRuntimeOptions {
         &self.runtime_options
@@ -77,14 +89,16 @@ impl ProviderManager {
                 .as_ref()
                 .and_then(|metadata| metadata.model_options.as_ref()),
         )?;
-        let limits = self
-            .selection_model_info()
-            .map(|model| (model.limit.context as usize, model.limit.output as usize));
-        self.registry_context_window = limits
-            .map(|(context, _)| context)
-            .filter(|value| *value > 0);
-        self.registry_max_output_tokens =
-            limits.map(|(_, output)| output).filter(|value| *value > 0);
+        self.openai_env_limits = openai_env_limits_for(&self.current_provider)?;
+        let limit = self.selection_model_info().map(|model| model.limit.clone());
+        self.registry_context_window = limit
+            .as_ref()
+            .and_then(crate::models::LimitInfo::context_window)
+            .map(|value| value as usize);
+        self.registry_max_output_tokens = limit
+            .as_ref()
+            .and_then(crate::models::LimitInfo::max_output_tokens)
+            .map(|value| value as usize);
         self.compaction_threshold_override = metadata.as_ref().and_then(|metadata| {
             apply_script_limits(&self.current_provider, metadata, &mut options)
         });

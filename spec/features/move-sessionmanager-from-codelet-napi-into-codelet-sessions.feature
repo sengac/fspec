@@ -4,6 +4,7 @@
 @infrastructure
 @rpc
 @RPC-040
+@BUG-492
 Feature: Move SessionManager from codelet-napi into codelet-sessions
   """
   Architecture: This card lifts FOUR things into codelet-sessions: (1) SessionManager struct + impl + Default, (2) ChainOfCommand struct + impl + Default, (3) the entire `crate::navigation` module (~285 lines, no napi deps once its only `use crate::session_manager::{BackgroundSession, ChainOfCommand};` is rewritten to point at codelet_sessions::), (4) the NAPI-free portion of `crate::credentials` (mod.rs / resolver.rs / store.rs / types.rs; only napi_bindings.rs stays in napi as a thin shim). All four lifts collectively eliminate every `crate::*` reference inside the moved SessionManager methods that the attachment names as a problem
@@ -11,6 +12,9 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
   Architecture: The attachment cites SessionManager at lines 3141-4025 but the actual span is 2135-3013 (confirmed by grep of `^pub struct SessionManager` and the matching closing `}`). Methods documented in the attachment exist at slightly shifted lines: instance() at 2246 (not 3250), create_session_with_id at 2264 (not 3268), create_isolated_session_with_id at 2538 (not 3542), list_sessions at 2798 (not 3802), destroy_session at 2939 (not 3943), supervisor delegation at 2989-3011 (not 3993-4013). The ~1100-line offset is consistent — the napi file accumulated ~1100 LOC of additional code (tests, helpers) between the attachment authoring date (2026-05-19) and today (2026-05-21). All implementation work uses the actual current line numbers
   Architecture: IsolatedSessionResult conversion strategy — the `#[napi(object)] pub struct IsolatedSessionResult` at rust/napi/src/session_manager.rs:5258-5267 STAYS in napi (it carries the JS-bridge shape). The moved SessionManager::create_isolated_session_with_id returns `codelet_rpc_types::IsolatedSessionInfo` (already lifted by RPC-036). NAPI provides `impl From<codelet_rpc_types::IsolatedSessionInfo> for IsolatedSessionResult` so the #[napi] free function `session_manager_create_isolated` just maps the result. The TS surface is byte-stable
   Architecture: Following the RPC-039 review-findings pattern, this card adds new dependency-rule tests at rust/sessions/tests/session_manager_shape.rs that mirror background_session_shape.rs — each Gherkin scenario gets one `#[test] fn scenario_*()` with `@step` comments matching every Gherkin step verbatim. We do NOT add new clippy passes here (the same `#![allow(clippy::expect_used, ...)]` carry-overs from napi will need re-tightening — explicitly out of scope, tracked by RPC-042). The new shape test file MUST be added to coverage with accurate line ranges to avoid the line-drift class of bug found in the RPC-039 review (every scenario's testLines must point at the actual #[test] fn span, not a guesstimate)
+  BUG-492: since BUG-427 the RPC handle's create_isolated_session delegates to
+  handle_creation::create_isolated_session_in_project, which forwards to create_isolated_session_with_id
+  and propagates its String error; the shape check follows that delegation.
   """
 
   # ========================================
@@ -59,13 +63,6 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
     Then the build completes successfully with no errors
     And the public paths codelet_sessions::session_manager::SessionManager, codelet_sessions::chain_of_command::ChainOfCommand, codelet_sessions::navigation::{NavigationTarget, build_navigation_list, get_next_target, get_prev_target}, codelet_sessions::credentials::resolve_and_set_env_var, and codelet_sessions::session_manager::{SessionManagerHooks, NoopSessionManagerHooks} all resolve at compile time
 
-  Scenario: codelet-napi still builds against the re-exported SessionManager and ChainOfCommand
-    Given rust/napi/src/session_manager.rs now `pub use`s SessionManager and ChainOfCommand from codelet-sessions
-    And the NAPI-side scheduler/agent_job/trigger/catch_up/engine modules continue to reach `crate::session_manager::SessionManager::instance()` through the re-export
-    When I run `cargo build -p codelet-napi`
-    Then the build completes successfully with no errors
-    And the rest of session_manager.rs (the agent_loop free function, the #[napi] free functions session_manager_create / session_manager_create_isolated / session_manager_list / session_manager_destroy / session_set_global_chunk_callback / session_manager_add_supervisor / etc., the in-file unit-test module) resolves every SessionManager and ChainOfCommand path through the re-exports
-
   Scenario: The moved session_manager.rs and chain_of_command.rs have no napi:: references
     Given the SessionManager and ChainOfCommand code has been moved into rust/sessions/src/
     When I grep rust/sessions/src/session_manager.rs and rust/sessions/src/chain_of_command.rs for the regex `napi::|use napi|#\[napi`
@@ -78,7 +75,7 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
     And every former `crate::navigation::*` path resolves to `codelet_sessions::navigation::*`
     And every former `crate::credentials::*` path resolves to `codelet_sessions::credentials::*`
     And every former `crate::scheduler::*` call resolves to `self.hooks.<method>(...)`
-    And every former GLOBAL_CHUNK_CALLBACK call resolves to `self.hooks.emit_isolation_state_change(...)`
+    And every former GLOBAL_CHUNK_CALLBACK call resolves to `self.chunks_tx.send(...)`
     And every former spawn_footer_poller/stop_footer_poller call resolves to `self.hooks.spawn_footer_poller(...)` / `self.hooks.stop_footer_poller(...)`
     And every former `tokio::spawn(async move { agent_loop(...).await })` call resolves to `self.hooks.spawn_agent_loop(...)`
 
@@ -90,7 +87,7 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
     And the credential resolution call site uses `codelet_sessions::credentials::resolve_and_set_env_var(...)`
     And the agent_loop spawn site calls `self.hooks.spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx)` instead of `tokio::spawn(async move { agent_loop(...).await })`
     And the footer-poller spawn site calls `self.hooks.spawn_footer_poller(id.to_string(), project.to_string(), None)`
-    And the IsolationStateChange emit site calls `self.hooks.emit_isolation_state_change(id.to_string(), false, None)` instead of `GLOBAL_CHUNK_CALLBACK.get().map(|cb| cb.call(...))`
+    And the IsolationStateChange emit site calls `let _ = self.chunks_tx.send((codelet_rpc_types::SessionId::from(id.to_string()), codelet_rpc_types::StreamChunk::isolation_state_change(false, None)))`
 
   Scenario: create_isolated_session_with_id returns the wire-type IsolatedSessionInfo and the NAPI wrapper converts to IsolatedSessionResult
     Given the SessionManager code has been moved into rust/sessions/src/session_manager.rs
@@ -118,12 +115,6 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
     Then the resulting JSON contains zero packages with name `codelet-napi`
     And the existing dependency-rule test at rust/sessions/tests/skeleton_invariants.rs::scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi still passes
 
-  Scenario: Pre-existing ChainOfCommand unit tests in codelet-napi still pass via the re-export
-    Given the ChainOfCommand code has been moved into rust/sessions/src/chain_of_command.rs
-    And rust/napi/src/session_manager.rs `pub use codelet_sessions::chain_of_command::ChainOfCommand;`
-    When I run `cargo test -p codelet-napi --lib session_manager`
-    Then every pre-existing ChainOfCommand test (test_register_supervisor_for_subordinate_session, test_subordinate_with_multiple_supervisors, test_query_subordinate_for_supervisor, test_remove_supervisor_relationship, test_supervisor_can_observe_multiple_subordinates, test_duplicate_subordinate_under_same_supervisor_rejected, test_circular_supervision_prevented, test_regular_session_has_no_subordinate, test_cleanup_supervisors_when_subordinate_removed) passes with status ok
-
   Scenario: codelet-sessions tests assert SessionManager is reachable from its new home and the hooks design is sound
     Given the SessionManager code has been moved into rust/sessions/src/session_manager.rs
     And a new integration test rust/sessions/tests/session_manager_shape.rs has been added
@@ -137,23 +128,3 @@ Feature: Move SessionManager from codelet-napi into codelet-sessions
     And the new shape test asserts the path `codelet_sessions::credentials::resolve_and_set_env_var` resolves at compile-time
     And the new shape test constructs `SessionManager::new()` and calls `.chunks_tx().subscribe()`, `.logs_tx().subscribe()`, `.status_changes_tx().subscribe()` without panicking
     And the new shape test asserts the `SessionManagerHooks` trait and the `NoopSessionManagerHooks` default impl are publicly reachable
-
-  Scenario: NAPI TypeScript surface is byte-stable across the move
-    Given the SessionManager code has been moved into rust/sessions/src/session_manager.rs
-    When I run `cargo build -p codelet-napi --release` regenerating rust/napi/index.d.ts
-    Then no TypeScript interface, function, enum, or type alias in the regenerated rust/napi/index.d.ts is removed
-    And no TypeScript interface, function, enum, or type alias is renamed
-    And the #[napi] free functions session_manager_create, session_manager_create_isolated, session_manager_list, session_manager_destroy, session_set_global_chunk_callback, session_manager_add_supervisor, session_manager_remove_supervisor, session_manager_get_supervisors, session_manager_get_subordinates, session_manager_get_active, session_manager_set_active, session_manager_clear_active each preserve their exact signature
-    And the #[napi(object)] IsolatedSessionResult interface preserves its three fields (session_id, worktree_path, base_commit) in the same order
-
-  Scenario: The napi side installs its hooks at startup so existing TS behaviour is preserved
-    Given the SessionManager code has been moved into rust/sessions/src/session_manager.rs
-    And the NAPI side defines `pub struct NapiSessionManagerHooks` implementing `codelet_sessions::SessionManagerHooks`
-    When the napi addon initializes (either via `#[napi::module_init]` or on the first call into a #[napi] free function that touches SessionManager::instance())
-    Then the napi init path calls `SessionManager::instance().set_hooks(Arc::new(NapiSessionManagerHooks::default()))`
-    And NapiSessionManagerHooks::spawn_agent_loop delegates to `tokio::spawn(async move { agent_loop(session, input_rx, mcp_injection_rx).await })` (where agent_loop is still the napi-side free function at rust/napi/src/session_manager.rs:3620)
-    And NapiSessionManagerHooks::spawn_scheduler delegates to `crate::scheduler::spawn_scheduler(project, rt)`
-    And NapiSessionManagerHooks::spawn_footer_poller delegates to the existing napi-side spawn_footer_poller free function at rust/napi/src/session_manager.rs:5104
-    And NapiSessionManagerHooks::stop_footer_poller delegates to the existing napi-side stop_footer_poller free function at rust/napi/src/session_manager.rs:5223
-    And NapiSessionManagerHooks::cleanup_session_loops delegates to `crate::scheduler::LoopStore::instance().remove_for_session(session_id)`
-    And NapiSessionManagerHooks::emit_isolation_state_change delegates to `GLOBAL_CHUNK_CALLBACK.get().map(|cb| cb.call(session_id, StreamChunk::isolation_state_change(is_isolated, worktree_path)))`

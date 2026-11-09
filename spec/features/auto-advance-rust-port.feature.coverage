@@ -10,6 +10,7 @@
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
+                122,
                 123,
                 124,
                 125,
@@ -26,8 +27,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -108,8 +107,36 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -120,11 +147,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/auto_advance.rs",
-          "lines": "134-168",
+          "lines": "129-162",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
+                122,
                 123,
                 124,
                 125,
@@ -141,8 +169,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -223,8 +249,36 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -235,11 +289,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/auto_advance.rs",
-          "lines": "173-195",
+          "lines": "168-189",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
+                122,
                 123,
                 124,
                 125,
@@ -256,8 +311,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -338,8 +391,36 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -350,11 +431,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/auto_advance.rs",
-          "lines": "200-222",
+          "lines": "195-216",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
+                122,
                 123,
                 124,
                 125,
@@ -371,8 +453,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -453,8 +533,36 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -465,11 +573,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/auto_advance.rs",
-          "lines": "227-247",
+          "lines": "222-243",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
+                122,
                 123,
                 124,
                 125,
@@ -486,8 +595,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -568,8 +675,155 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auto-advance appends a stateHistory entry with reason auto-advance",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/auto_advance.rs",
+          "lines": "264-293",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "// session id of an isolated session on it (WT-018).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A card auto-advanced to done is found by list-work-units --done-since",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/auto_advance.rs",
+          "lines": "295-333",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "wu.updated_at = now.clone();",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auto-advance in an isolated session records the session id on its stateHistory entry",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/auto_advance.rs",
+          "lines": "335-371",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "// session id of an isolated session on it (WT-018).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auto-advance fails with an exact error when stateHistory is not an array",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/auto_advance.rs",
+          "lines": "373-400",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "// BUG-661: the move is recorded in stateHistory; a history that is not",
+              "lastLine": "}"
             }
           ]
         }
@@ -577,8 +831,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/auto_advance.rs"
@@ -586,6 +840,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/auto_advance.rs"
     ],
-    "totalLinesCovered": 644
+    "totalLinesCovered": 948
   }
 }

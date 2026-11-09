@@ -36,9 +36,12 @@ pub enum ProviderError {
     #[error("[{provider}] Model discovery unsupported (HTTP {status})")]
     ModelDiscoveryUnsupported { provider: String, status: u16 },
 
-    #[error("[{provider}] Model discovery failed: {failure}")]
+    /// BUG-309: `endpoint` is the origin only (scheme://host:port), never a
+    /// path, query or credentials.
+    #[error("[{provider}] Model discovery failed for {endpoint}: {failure}")]
     ModelDiscoveryFailed {
         provider: String,
+        endpoint: String,
         failure: ModelDiscoveryFailure,
     },
 
@@ -66,6 +69,15 @@ pub enum ProviderError {
     /// Timeout error - request timed out
     #[error("[{provider}] Timeout: {message}")]
     Timeout { provider: String, message: String },
+
+    /// PROV-171: an explicit limit override environment variable holds a
+    /// value that is not a positive integer.
+    #[error("[{provider}] Invalid {variable}: {value:?} is not a positive integer")]
+    InvalidLimitOverride {
+        provider: String,
+        variable: &'static str,
+        value: String,
+    },
 }
 
 impl ProviderError {
@@ -87,6 +99,7 @@ impl ProviderError {
             ProviderError::Configuration { .. } => false,
             ProviderError::Model { .. } => false,
             ProviderError::Content { .. } => false,
+            ProviderError::InvalidLimitOverride { .. } => false,
         }
     }
 
@@ -115,6 +128,7 @@ impl ProviderError {
             ProviderError::Model { provider, .. } => provider,
             ProviderError::Content { provider, .. } => provider,
             ProviderError::Timeout { provider, .. } => provider,
+            ProviderError::InvalidLimitOverride { provider, .. } => provider,
         }
     }
 

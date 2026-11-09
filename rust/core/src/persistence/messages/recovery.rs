@@ -6,21 +6,22 @@ impl MessageStore {
         if let Some(message) = self.get_locked(id) {
             return Ok(Some(message));
         }
+        if self.lock_state()?.fully_scanned {
+            return Ok(None);
+        }
+        // BUG-625: scan and save outside the index lock (the caller holds
+        // the file lock); only the result is installed under it.
+        let (entries, final_size) = index::scan_jsonl_range(&self.messages_file, 0)?;
+        index::save_index(&self.index_file, &entries, final_size)?;
+        let generation = StoreGeneration::read(self)?;
         {
-            let mut state = self.state.lock().map_err(|error| error.to_string())?;
-            if state.fully_scanned {
-                return Ok(None);
-            }
-            let (entries, final_size) = index::scan_jsonl_range(&self.messages_file, 0)?;
-            index::save_index(&self.index_file, &entries, final_size)?;
+            let mut state = self.lock_state()?;
             state.cache.clear();
             state.index = entries;
-            state.generation = Some(StoreGeneration::read(self)?);
+            state.generation = Some(generation.clone());
             state.fully_scanned = true;
-            if let Some(generation) = &state.generation {
-                super::verified::publish(self, generation);
-            }
         }
+        super::verified::publish(self, &generation);
         Ok(self.get_locked(id))
     }
 }

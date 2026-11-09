@@ -37,7 +37,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "pub fn tracked_pre_compaction_basis(",
+              "lastLine": "}"
             }
           ]
         }
@@ -63,7 +65,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "pub fn observe_input_usage(&mut self, usage: &ApiTokenUsage) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,7 +101,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "pub fn finish(&mut self, tracker: &mut TokenTracker, usage: &rig::completion::Usage) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -130,7 +136,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "pub fn update_display_only(&mut self, usage: &ApiTokenUsage, cumulative_output: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -146,7 +154,6 @@
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
-                85,
                 86,
                 87,
                 88,
@@ -156,8 +163,19 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "pub(super) fn restore_durable_tokens(",
+              "lastLine": "}"
             }
           ]
         }
@@ -178,7 +196,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub struct TokenTracker {",
+              "lastLine": "/// CTX-003: This is what should be displayed to users and used for threshold checks"
             }
           ]
         }
@@ -201,7 +221,9 @@
                 193,
                 194,
                 195
-              ]
+              ],
+              "firstLine": "pub fn reset_after_compaction(&mut self) {",
+              "lastLine": "// Note: reasoning_tokens is NOT reset (TOKEN-003) - it is a"
             }
           ]
         }
@@ -224,7 +246,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "pub fn set_estimated_input(&mut self, tokens: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -246,7 +270,9 @@
                 232,
                 233,
                 234
-              ]
+              ],
+              "firstLine": "pub fn pre_compaction_basis(tracker_input_tokens: u64, messages: &[Message]) -> u64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -267,7 +293,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn reset_provider_state(&mut self) -> Result<(), ExtensionError> {",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -288,6 +316,6 @@
       "rust/core/src/compaction/model.rs",
       "rust/cli/src/session/provider.rs"
     ],
-    "totalLinesCovered": 367
+    "totalLinesCovered": 375
   }
 }

@@ -375,3 +375,166 @@ fn scenario_no_feature_line_is_rejected() {
         "expected canonical no-Feature-line message; got: {err}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenarios merged from add-background (COV-071): the rest of the file is kept
+// ─────────────────────────────────────────────────────────────────────────
+
+/// The original file with a Background block (blank line, keyword, story
+/// lines, blank line) inserted right after `feature_line`.
+fn with_background_after_feature(original: &str, feature_line: &str, story: &[&str]) -> String {
+    let mut block = format!("{feature_line}\n\n  Background: User Story\n");
+    for line in story {
+        block.push_str(&format!("    {line}\n"));
+    }
+    block.push('\n');
+    original.replacen(&format!("{feature_line}\n"), &block, 1)
+}
+
+fn dispatch_text(
+    project_root: &Path,
+    feature: &str,
+    text: &str,
+) -> codelet_fspec_core::DispatchResult {
+    dispatch_command(req(project_root, json!({"feature": feature, "text": text})))
+}
+
+const PAYMENT_FEATURE: &str = "Feature: Payment\n\n  Scenario: Pay by card\n    Given a cart\n    When I pay by card\n    Then the order is placed\n\n  Scenario: Pay by invoice\n    Given a cart\n    When I pay by invoice\n    Then an invoice is sent\n\n  Scenario: Refund\n    Given a paid order\n    When I ask for a refund\n    Then the money is returned\n";
+
+#[test]
+fn scenario_adding_a_background_keeps_every_scenario_and_its_steps() {
+    // @step Given a project root tempdir with spec/features/payment.feature holding the scenarios 'Pay by card', 'Pay by invoice' and 'Refund' with their steps
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/payment.feature", PAYMENT_FEATURE);
+
+    // @step When I dispatch add-background with feature='payment' and text='As a customer\nI want to pay securely\nSo that my data is protected'
+    let result = dispatch_text(
+        tmp.path(),
+        "payment",
+        "As a customer\nI want to pay securely\nSo that my data is protected",
+    );
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the file on disk equals the original file with only the Background block added after the Feature line
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/payment.feature"),
+        with_background_after_feature(
+            PAYMENT_FEATURE,
+            "Feature: Payment",
+            &[
+                "As a customer",
+                "I want to pay securely",
+                "So that my data is protected"
+            ]
+        )
+    );
+}
+
+const AUTH_FEATURE: &str =
+    "@security\n@critical\nFeature: Auth\n\n  Scenario: Sign in\n    Given an account\n    Then I am signed in\n";
+
+#[test]
+fn scenario_adding_a_background_keeps_the_feature_level_tags() {
+    // @step Given a project root tempdir with spec/features/auth.feature tagged @security and @critical
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/auth.feature", AUTH_FEATURE);
+
+    // @step When I dispatch add-background with feature='auth' and text='As a user\nI want authentication\nSo that my data is secure'
+    let result = dispatch_text(
+        tmp.path(),
+        "auth",
+        "As a user\nI want authentication\nSo that my data is secure",
+    );
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the file on disk equals the original file with only the Background block added after the Feature line
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/auth.feature"),
+        with_background_after_feature(
+            AUTH_FEATURE,
+            "Feature: Auth",
+            &[
+                "As a user",
+                "I want authentication",
+                "So that my data is secure"
+            ]
+        )
+    );
+}
+
+const ORDERS_FEATURE: &str = "Feature: Orders\n\n  @smoke\n  @regression\n  Scenario: List orders\n    Given two orders\n    Then both are listed\n";
+
+#[test]
+fn scenario_adding_a_background_keeps_scenario_level_tags() {
+    // @step Given a project root tempdir with spec/features/orders.feature whose scenario is tagged @smoke and @regression
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/orders.feature", ORDERS_FEATURE);
+
+    // @step When I dispatch add-background with feature='orders' and text='As a customer\nI want to manage orders\nSo that I track purchases'
+    let result = dispatch_text(
+        tmp.path(),
+        "orders",
+        "As a customer\nI want to manage orders\nSo that I track purchases",
+    );
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the file on disk equals the original file with only the Background block added after the Feature line
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/orders.feature"),
+        with_background_after_feature(
+            ORDERS_FEATURE,
+            "Feature: Orders",
+            &[
+                "As a customer",
+                "I want to manage orders",
+                "So that I track purchases"
+            ]
+        )
+    );
+}
+
+#[test]
+fn scenario_the_background_holds_the_user_story_lines_in_order_indented_four_spaces() {
+    // @step Given a project root tempdir with spec/features/search.feature containing only 'Feature: Search\n  Scenario: A\n    Given x\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/search.feature",
+        "Feature: Search\n  Scenario: A\n    Given x\n",
+    );
+
+    // @step When I dispatch add-background with feature='search' and text='As a customer\nI want to search products\nSo that I can find what I need'
+    let result = dispatch_text(
+        tmp.path(),
+        "search",
+        "As a customer\nI want to search products\nSo that I can find what I need",
+    );
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the line '  Background: User Story' is followed by the lines '    As a customer', '    I want to search products' and '    So that I can find what I need'
+    let after = read_feature(tmp.path(), "spec/features/search.feature");
+    let lines: Vec<&str> = after.lines().collect();
+    let at = lines
+        .iter()
+        .position(|l| *l == "  Background: User Story")
+        .expect("Background line with two-space indentation");
+    assert_eq!(
+        lines.get(at + 1..at + 4),
+        Some(
+            &[
+                "    As a customer",
+                "    I want to search products",
+                "    So that I can find what I need",
+            ][..]
+        ),
+        "{after}"
+    );
+}

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @testing-framework
 @integration-test
@@ -97,10 +98,12 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
     And within 1 second MockBackend.clear_history_calls() is 1
     And MockBackend.last_clear_history_session() is Some(s-1)
 
-  Scenario: /model pushes the ModelSelectorDialog onto the compositor
+  Scenario: /model activates the full-screen ModelSelector view
     Given a fresh AppTestHarness with focused session s-1
     When I dispatch the slash command "/model"
-    Then the compositor contains a layer with id MODEL_SELECTOR_DIALOG_ID
+    And I drain pending tasks and actions
+    Then the navigator's active_view is ViewMode::ModelSelector
+    And no Compositor modal is pushed
 
   Scenario: /thinking (bare) pushes the ThinkingLevelDialog onto the compositor
     Given a fresh AppTestHarness with focused session s-1
@@ -112,7 +115,7 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
     When I submit the input text "/thinking high"
     Then the compositor does NOT contain a layer with id THINKING_LEVEL_DIALOG_ID
     And within 1 second MockBackend.set_thinking_level_calls() is 1
-    And MockBackend.last_set_thinking_level() is Some((s-1, ThinkingLevel::High))
+    And MockBackend.last_set_thinking_level() is Some((s-1, ThinkingLevel::Effort("high")))
 
   Scenario: /role (bare from palette) pushes the RoleDialog onto the compositor
     Given a fresh AppTestHarness with focused session s-1
@@ -167,12 +170,6 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
     And I drain pending tasks and actions
     Then the navigator's active_view is ViewMode::Blocklist
 
-  Scenario: /detach clears the work-unit context for the focused session
-    Given a fresh AppTestHarness with focused session s-1 bound to a WorkUnitContext
-    When I dispatch the slash command "/detach"
-    Then within 1 second MockBackend.set_work_unit_context_calls() is 1
-    And MockBackend.last_set_work_unit_context() is Some((s-1, None))
-
   Scenario: /merge-worktree calls backend.inspect_session_changes for the focused session
     Given a fresh AppTestHarness with focused session s-1
     When I dispatch the slash command "/merge-worktree"
@@ -210,16 +207,9 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
 
   Scenario: Shift+Up loads the most-recent history entry into the input
     Given a fresh AppTestHarness with focused session s-1
-    And MockBackend has scripted persistence history ["old1", "old2"] for s-1
+    And MockBackend has scripted persistence history ["old2", "old1"] for s-1
     When I press Shift+Up
     Then within 1 second the input value is "old2"
-
-  @ignore
-  Scenario: Tab on a session with seeded scrollback enters turn-selection mode (placeholder for future RPC card)
-    Given a fresh AppTestHarness with focused session s-1 seeded with 3 scrollback chunks
-    When I press Tab
-    Then the AgentView is in turn-selection mode
-    And a turn-selection cursor is visible
 
   Scenario: Ctrl+R opens the SearchHistoryView with no backend call
     Given a fresh AppTestHarness with focused session s-1

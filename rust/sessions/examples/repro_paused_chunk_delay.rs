@@ -16,8 +16,7 @@ use codelet_providers::ProviderManager;
 use codelet_rpc_types::SessionStatus;
 use codelet_sessions::background_session::BackgroundSession;
 use codelet_tools::tool_pause::{
-    pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest, PauseResponse,
-    PauseState,
+    pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest, PauseState,
 };
 use tokio::sync::{broadcast, mpsc};
 use uuid::Uuid;
@@ -83,6 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tool_name: request.tool_name.clone(),
             message: request.message.clone(),
             details: request.details,
+            tool_call_id: None,
         };
         session_for_pause.set_pause_state(Some(state));
         session_for_pause.set_status(SessionStatus::Paused);
@@ -116,7 +116,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::time::sleep(std::time::Duration::from_secs(3)).await;
     println!("[{:>7.3}s] [main] sending Denied", elapsed());
-    session.send_pause_response(PauseResponse::Denied);
+    match session.pending_pause_route() {
+        Some(route) => {
+            if let Err(error) = session.answer_pause(
+                &route.request_id,
+                &codelet_rpc_types::RequestHolder::User,
+                codelet_sessions::background_session::PauseReply::Triple(
+                    codelet_rpc_types::ApprovalChoice::Deny,
+                ),
+            ) {
+                println!("[main] cannot answer the pause: {error}");
+            }
+        }
+        None => println!("[main] no pause is pending"),
+    }
 
     let _ = tool.await;
     tokio::time::sleep(std::time::Duration::from_millis(300)).await;

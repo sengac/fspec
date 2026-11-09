@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "114-131",
+          "lines": "118-137",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_parsing.rs",
@@ -59,7 +59,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "model_part,"
             }
           ]
         }
@@ -70,7 +72,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "135-149",
+          "lines": "139-155",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_parsing.rs",
@@ -124,7 +126,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "model_part,"
             }
           ]
         }
@@ -135,7 +139,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "153-167",
+          "lines": "157-173",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_parsing.rs",
@@ -189,7 +193,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "model_part,"
             }
           ]
         }
@@ -200,7 +206,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "171-184",
+          "lines": "175-190",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_parsing.rs",
@@ -254,7 +260,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "model_part,"
             }
           ]
         }
@@ -265,7 +273,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "188-200",
+          "lines": "192-206",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_parsing.rs",
@@ -319,7 +327,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "model_part,"
             }
           ]
         }
@@ -330,18 +340,18 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/model_parsing.rs",
-          "lines": "235-275",
+          "lines": "240-285",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
               "lines": [
-                595,
-                596,
-                597,
-                598,
-                599,
-                600
-              ]
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "///    (`BackgroundSession.project` — captured at session creation),",
+              "lastLine": "///"
             }
           ]
         }
@@ -357,8 +367,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/model_parsing.rs",
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager/manager_impl_2.rs"
     ],
-    "totalLinesCovered": 367
+    "totalLinesCovered": 380
   }
 }

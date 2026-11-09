@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "108-130",
+          "lines": "123-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -26,9 +25,10 @@
                 52,
                 53,
                 54,
-                55,
-                56
-              ]
+                55
+              ],
+              "firstLine": "///      when a session was already open from a previous round",
+              "lastLine": "Some(sid) => self.open_agent_view_on(sid),"
             }
           ]
         }
@@ -39,12 +39,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "134-153",
+          "lines": "150-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -60,9 +59,10 @@
                 52,
                 53,
                 54,
-                55,
-                56
-              ]
+                55
+              ],
+              "firstLine": "///      when a session was already open from a previous round",
+              "lastLine": "Some(sid) => self.open_agent_view_on(sid),"
             }
           ]
         }
@@ -73,12 +73,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "157-183",
+          "lines": "174-202",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -94,9 +93,10 @@
                 52,
                 53,
                 54,
-                55,
-                56
-              ]
+                55
+              ],
+              "firstLine": "///      when a session was already open from a previous round",
+              "lastLine": "Some(sid) => self.open_agent_view_on(sid),"
             }
           ]
         }
@@ -107,11 +107,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog/generic.rs",
-          "lines": "4-37",
+          "lines": "5-39",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                35,
+                36,
                 37,
                 38,
                 39,
@@ -135,25 +137,122 @@
                 57,
                 58,
                 59,
-                60,
-                61,
-                62
-              ]
+                60
+              ],
+              "firstLine": "/// Idempotent on dialog id — a second open is a no-op.",
+              "lastLine": "/// RPC-060: route an `Action::CreateSessionSubmitted { isolated }`."
             }
           ]
         }
       ]
     },
     {
-      "name": "Freshly mounted dialog paints the Yes button blue/white/bold and the other two buttons gray",
+      "name": "Freshly mounted dialog paints the Start button blue/white/bold and the other two buttons gray",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "224-325",
+          "lines": "213-315",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Right arrow cycles selection forward with wrap-around",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "lines": "318-336",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "pub fn take_pending_action(&mut self) -> Option<Action> {",
+              "lastLine": "/// returns the consumed-and-remove result (R1: one click == Enter on"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left arrow wraps from Start back to Cancel",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "lines": "339-348",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ],
+              "firstLine": "/// Test accessor — the dialog's accent color. Returns the same",
+              "lastLine": "/// Test-only: drain the most recent pending Action."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on Start emits CreateSessionSubmitted with isolated false and dismisses the dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
+          "lines": "356-385",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
                 214,
                 215,
                 216,
@@ -171,166 +270,25 @@
                 228,
                 229,
                 230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297
-              ]
+                231
+              ],
+              "firstLine": "Some(0) => self.commit(CreateSessionOption::Yes),",
+              "lastLine": "&self.id"
             }
           ]
         }
       ]
     },
     {
-      "name": "Right arrow cycles selection forward with wrap-around",
+      "name": "Enter on Start in Worktree emits CreateSessionSubmitted with isolated true",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "329-345",
+          "lines": "388-416",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Left arrow wraps from Yes back to Cancel",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "349-356",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
-              "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on Yes emits CreateSessionSubmitted with isolated false and dismisses the dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "365-392",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
-              "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
                 185,
                 186,
                 187,
@@ -354,71 +312,33 @@
                 205,
                 206,
                 207,
-                208
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on Yes - Isolated emits CreateSessionSubmitted with isolated true",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "396-422",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
-              "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208
-              ]
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "Some(0) => self.commit(CreateSessionOption::Yes),",
+              "lastLine": "&self.id"
             }
           ]
         }
@@ -429,34 +349,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "427-454",
+          "lines": "420-452",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
                 185,
                 186,
                 187,
@@ -480,8 +377,33 @@
                 205,
                 206,
                 207,
-                208
-              ]
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "Some(0) => self.commit(CreateSessionOption::Yes),",
+              "lastLine": "&self.id"
             }
           ]
         }
@@ -492,34 +414,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "458-479",
+          "lines": "455-481",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
                 185,
                 186,
                 187,
@@ -543,8 +442,33 @@
                 205,
                 206,
                 207,
-                208
-              ]
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "Some(0) => self.commit(CreateSessionOption::Yes),",
+              "lastLine": "&self.id"
             }
           ]
         }
@@ -555,12 +479,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "484-500",
+          "lines": "485-503",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -589,15 +512,10 @@
                 57,
                 58,
                 59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                60
+              ],
+              "firstLine": "/// we mirror TS canonical `sessionGetNext()` semantics:",
+              "lastLine": "// src/tui/utils/sessionNavigation.ts::navigateRight()"
             }
           ]
         }
@@ -608,11 +526,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "504-534",
+          "lines": "506-541",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                36,
+                37,
                 38,
                 39,
                 40,
@@ -630,10 +550,10 @@
                 52,
                 53,
                 54,
-                55,
-                56,
-                57
-              ]
+                55
+              ],
+              "firstLine": "pub(crate) fn handle_open_create_session_dialog(",
+              "lastLine": "let dialog ="
             }
           ]
         }
@@ -644,17 +564,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "542-582",
+          "lines": "548-589",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+                62,
+                63,
+                64
+              ],
+              "firstLine": "/// Minimum body content width. Matches the visual breadth of the TS Ink",
+              "lastLine": "const MIN_WIDTH: u16 = 50;"
             }
           ]
         }
@@ -665,311 +585,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "586-596",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297
-              ]
-            }
-          ]
+          "lines": "592-604",
+          "implMappings": []
         }
       ]
     },
@@ -978,311 +595,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "601-626",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297
-              ]
-            }
-          ]
+          "lines": "608-636",
+          "implMappings": []
         }
       ]
     },
@@ -1291,7 +605,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "757-786",
+          "lines": "774-802",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
@@ -1304,7 +618,9 @@
                 21,
                 22,
                 23
-              ]
+              ],
+              "firstLine": "//! RPC-096: at the ends of the list, Shift+Right opens the Create",
+              "lastLine": ""
             }
           ]
         }
@@ -1315,11 +631,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "788-829",
+          "lines": "807-860",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                36,
+                37,
                 38,
                 39,
                 40,
@@ -1337,41 +655,10 @@
                 52,
                 53,
                 54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "776-831",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
-              "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
+                55
+              ],
+              "firstLine": "pub(crate) fn handle_open_create_session_dialog(",
+              "lastLine": "let dialog ="
             }
           ]
         }
@@ -1382,7 +669,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "729-771",
+          "lines": "736-767",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
@@ -1415,10 +702,10 @@
                 52,
                 53,
                 54,
-                55,
-                56,
-                57
-              ]
+                55
+              ],
+              "firstLine": "/// RPC-097: route `Action::OpenAgentView(target)`. When `target` is",
+              "lastLine": "Some(sid) => self.open_agent_view_on(sid),"
             }
           ]
         }
@@ -1429,16 +716,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "835-866",
+          "lines": "864-894",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                147,
-                148,
-                149,
-                150,
-                151,
                 152,
                 153,
                 154,
@@ -1452,26 +734,30 @@
                 162,
                 163,
                 164,
-                165,
-                166,
-                167
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "/// mouse-handling slice sees `Event::Mouse(_)` for wheel scroll and",
+              "lastLine": "pub fn apply_action(&mut self, action: &Action) {"
             }
           ]
         }
       ]
     },
     {
-      "name": "BoardView Shift+Right then Enter on Yes switches to AgentView and submits create-session",
+      "name": "BoardView Shift+Right then Enter on Start switches to AgentView and submits create-session",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "870-911",
+          "lines": "899-938",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                59,
                 60,
                 61,
                 62,
@@ -1489,21 +775,44 @@
                 74,
                 75,
                 76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
                 89,
-                90
-              ]
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "/// RPC-060: route an `Action::CreateSessionSubmitted { isolated }`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1514,7 +823,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "971-1010",
+          "lines": "968-1009",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
@@ -1541,12 +850,10 @@
                 72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                75
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1557,7 +864,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "1014-1038",
+          "lines": "1013-1040",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/navigation.rs",
@@ -1573,7 +880,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "use super::*;",
+              "lastLine": "let store = AgentViewStore::default();"
             }
           ]
         }
@@ -1584,7 +893,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "1042-1086",
+          "lines": "1045-1092",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
@@ -1611,12 +920,10 @@
                 72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                75
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1627,7 +934,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs",
-          "lines": "1090-1112",
+          "lines": "1098-1122",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
@@ -1654,12 +961,10 @@
                 72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                75
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1681,6 +986,6 @@
       "rust/fspec-tui/src/views/navigator.rs",
       "rust/fspec-tui/src/store/agent_view/navigation.rs"
     ],
-    "totalLinesCovered": 2094
+    "totalLinesCovered": 1374
   }
 }

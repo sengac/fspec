@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @phase-1
 @tools
@@ -20,19 +21,7 @@ Feature: DeepSearch diagnostic severity
     And the records retain provider model and ephemeral session correlation
     And the handler emits no WARN or ERROR records
 
-  Scenario: NAPI DeepSearch success stays out of incident logs
-    Given a local custom provider that returns a successful answer
-    When the NAPI DeepSearch handler completes a search
-    Then routine entry routing construction and completion records are DEBUG
-    And the records retain provider model and ephemeral session correlation
-    And the handler emits no WARN or ERROR records
-
   Scenario: Shared DeepSearch failures remain actionable
     Given a local custom provider whose request fails
     When the shared DeepSearch handler returns the failure
-    Then the genuine failure remains visible at WARN or ERROR
-
-  Scenario: NAPI DeepSearch failures remain actionable
-    Given a local custom provider whose request fails
-    When the NAPI DeepSearch handler returns the failure
     Then the genuine failure remains visible at WARN or ERROR

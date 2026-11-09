@@ -30,7 +30,7 @@ pub async fn run_cold_process(
         .env("CMPCT_SESSION_COLD_ID", &session_id.value)
         .kill_on_drop(true)
         .spawn()?;
-    let status = tokio::time::timeout(std::time::Duration::from_secs(30), child.wait()).await??;
+    let status = codelet_test_helpers::deadlock_guard("child.wait()", child.wait()).await??;
     if !status.success() {
         return Err(format!("fresh process restore failed: {status}").into());
     }
@@ -43,7 +43,7 @@ pub struct TestDirectory {
     previous_user_dir: Option<std::ffi::OsString>,
 }
 
-pub fn cold_resume(session_id: &SessionId) -> Result<SessionManager, String> {
+pub fn cold_resume(session_id: &SessionId) -> Result<std::sync::Arc<SessionManager>, String> {
     codelet_core::persistence::reset_stores_for_tests();
     let manager = SessionManager::new();
     manager.resume_session(session_id)?;
@@ -71,8 +71,15 @@ impl Drop for TestDirectory {
     }
 }
 
-pub async fn manager(
-) -> Result<(TestDirectory, SessionManager, SessionId, usize), Box<dyn std::error::Error>> {
+pub async fn manager() -> Result<
+    (
+        TestDirectory,
+        std::sync::Arc<SessionManager>,
+        SessionId,
+        usize,
+    ),
+    Box<dyn std::error::Error>,
+> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
     let directory = TestDirectory {
         directory,
@@ -88,6 +95,8 @@ pub async fn manager(
         include_str!("../fixtures/prov123_models.json"),
     )?;
     codelet_core::persistence::reset_stores_for_tests();
+    // BUG-310: an owning Arc lets created sessions register tool admission
+    // against this manager instead of the process singleton.
     let manager = SessionManager::new();
     let session_id = SessionId::new(
         manager
@@ -169,8 +178,8 @@ where
     );
     inner.bind_provider_persistence(background.id)?;
     inner.begin_provider_turn();
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "codelet_cli::interactive::run_agent_stream( agent, 'next'...",
         codelet_cli::interactive::run_agent_stream(
             agent,
             "next",

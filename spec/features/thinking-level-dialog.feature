@@ -5,7 +5,7 @@
 @TUI-054
 Feature: ThinkingLevelDialog for /thinking command
   """
-  Effective level calculation: Math.max(baseLevel, detectedLevel), except disable keywords always force Off
+  The effective level is the base level; prompt text never changes it (prompt-text-never-changes-the-thinking-level.feature).
   /thinking command accepts optional level argument: off, low, med/medium, high (case insensitive)
   """
 
@@ -19,13 +19,12 @@ Feature: ThinkingLevelDialog for /thinking command
   #   3. Enter key must confirm selection and close dialog, updating base thinking level
   #   4. Escape key must close dialog without changing the thinking level
   #   5. The selected base level persists for all subsequent requests in the session
-  #   6. Effective thinking level is max(baseLevel, detectedLevelFromText) - text keywords can only INCREASE the level
-  #   7. Disable keywords (quickly, briefly, short, fast, rapid) always force level to Off regardless of base level
+  #   6. Effective thinking level is the base level; prompt text never changes it
   #   8. Dialog must use CRITICAL input priority via useInputCompat to capture all keyboard input
   #   9. Slash command palette must be hidden/disabled when ThinkingLevelDialog is open
   #   10. Current thinking level must be visually indicated (highlighted/selected) when dialog opens
   #   11. Base thinking level stored in Rust BackgroundSession as AtomicU8, synced via useRustSessionState hook
-  #   12. SessionHeader shows thinking level badge only when level > Off, shows effective level (max of base and detected) during loading
+  #   12. SessionHeader shows thinking level badge only when level > Off
   #   13. /thinking command requires an active session - shows error message if no session
   #   14. /thinking accepts optional level argument: off, low, med/medium, high (case insensitive)
   #   15. /thinking with no argument opens the dialog, /thinking with argument sets level directly
@@ -35,9 +34,7 @@ Feature: ThinkingLevelDialog for /thinking command
   #   2. Dialog shows Off first, user presses down twice to reach Medium, presses Enter - base level is now Medium
   #   3. User presses up arrow on Off - selection wraps to High (last option)
   #   4. User presses Escape while dialog is open - dialog closes, base level remains unchanged
-  #   5. Base level is High, user types 'explain this code' with no keywords - effective level is High
-  #   6. Base level is Medium, user types 'ultrathink about architecture' - effective level is High (ultrathink > Medium)
-  #   7. Base level is High, user types 'quickly list files' - effective level is Off (disable keywords override base)
+  #   5. Base level is High, user types 'explain this code' - effective level is High
   #   8. User opens /thinking dialog while typing '/thi' - slash command palette closes, ThinkingLevelDialog opens
   #   9. ThinkingLevelDialog renders with accessible labels: Off (no thinking), Low (~4K tokens), Medium (~10K), High (~32K)
   #   10. Base level is Off (default), SessionHeader shows no thinking badge
@@ -92,20 +89,10 @@ Feature: ThinkingLevelDialog for /thinking command
     Then the dialog closes
     And the base thinking level remains Medium
 
-  Scenario: Base level persists and applies to requests without keywords
+  Scenario: Base level persists and applies to every request
     Given the base thinking level is set to High
     When the user submits 'explain this code'
     Then the effective thinking level is High
-
-  Scenario: Text keywords can increase but not decrease effective level
-    Given the base thinking level is set to Medium
-    When the user submits 'ultrathink about architecture'
-    Then the effective thinking level is High (ultrathink overrides Medium)
-
-  Scenario: Disable keywords override base level
-    Given the base thinking level is set to High
-    When the user submits 'quickly list files'
-    Then the effective thinking level is Off (disable keywords always win)
 
   Scenario: Slash command palette closes when thinking dialog opens
     Given the user is typing '/thi' in the input

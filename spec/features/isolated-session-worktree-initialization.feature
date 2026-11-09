@@ -1,4 +1,6 @@
 @GIT-035
+@git
+@multi-session
 Feature: Isolated session worktree initialization
   """
   Fix worktree.rs/isolated_session.rs to run git reset --mixed HEAD or equivalent gix operation after worktree creation to initialize index

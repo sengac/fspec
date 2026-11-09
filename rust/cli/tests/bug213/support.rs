@@ -29,6 +29,7 @@ pub struct Fixture {
 impl Fixture {
     pub fn new() -> TestResult<Self> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         reset_stores_for_tests();
         let mut manifest =

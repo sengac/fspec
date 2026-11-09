@@ -57,7 +57,7 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit not found",
-        fix: "Ensure work unit exists: fspec show-work-unit <id>",
+        fix: "Ensure work unit exists: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "No Event Storm artifacts found",

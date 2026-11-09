@@ -1,4 +1,6 @@
 @GIT-035
+@session
+@board
 Feature: Session Management Panel keyboard input
   """
   Refactor SessionManagementPanel from Dialog overlay to Full-Screen View pattern.

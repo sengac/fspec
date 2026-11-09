@@ -5,19 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
-          "lines": "100-177",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/state.rs",
-              "lines": [
-                398,
-                399,
-                400,
-                401,
-                402
-              ]
-            }
-          ]
+          "lines": "92-163"
         }
       ]
     },
@@ -26,64 +14,74 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
-          "lines": "179-235",
+          "lines": "181-238",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
-              "lines": [
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "Action::BackToBoard => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub(crate) fn apply_back_to_board(&mut self) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "self.handle_open_agent_view(target.clone());",
+              "lastLine": "self.navigator.active_view = ViewMode::Board;"
             }
           ]
         }
@@ -94,7 +92,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak/entry.rs",
-          "lines": "4-56",
+          "lines": "5-61",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
@@ -121,9 +119,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -134,29 +134,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug175_mux_enabled_leak.rs",
-          "lines": "298-318",
+          "lines": "266-281",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "MuxSubcommand::Default => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -172,12 +179,12 @@
       "rust/fspec-tui/tests/bug175_mux_enabled_leak/entry.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/state.rs",
-      "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/navigator_mux.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
-      "rust/fspec-tui/src/app/dispatch_mux.rs"
+      "rust/fspec-tui/src/app/dispatch_mux_apply.rs"
     ],
-    "totalLinesCovered": 302
+    "totalLinesCovered": 295
   }
 }

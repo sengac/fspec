@@ -47,7 +47,7 @@ pub fn spawn_reaper(session_id: String) {
 
             // Check if process exited
             match store.try_wait(&session_id).await {
-                Some(Some(status)) => {
+                Ok(Some(Some(status))) => {
                     // Process exited. If a poller is actively touching the
                     // session, defer removal by one tick (grace) so the
                     // poller can observe the exit + final output itself.
@@ -61,10 +61,14 @@ pub fn spawn_reaper(session_id: String) {
                     store.remove(&session_id).await;
                     break;
                 }
-                Some(None) => {
+                Ok(Some(None)) => {
                     // Still running, keep watching
                 }
-                None => {
+                Err(error) => {
+                    // BUG-363: report it and check again next tick.
+                    tracing::error!(session = %session_id, %error, "reaper cannot check exec session");
+                }
+                Ok(None) => {
                     // Session gone (removed by user or another reaper)
                     break;
                 }

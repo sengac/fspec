@@ -1,4 +1,6 @@
 @BUG-122
+@persistence
+@state-management
 Feature: Lazy persistence initialization
   """
   THREE STORES, THREE ACCESS PATTERNS:
@@ -28,7 +30,7 @@ Feature: Lazy persistence initialization
     I want to start a new session without waiting 5 seconds for loading
     So that I can begin working immediately instead of staring at a loading screen
 
-  @layer-1
+  @layer-one
   Scenario: Lazy per-store initialization — get_history only inits HistoryStore
     Given the persistence layer has not been initialized
     When get_history() is called
@@ -36,7 +38,7 @@ Feature: Lazy persistence initialization
     And MessageStore is NOT initialized
     And SessionStore is NOT initialized
 
-  @layer-1
+  @layer-one
   Scenario: Lazy per-store initialization — store_message inits MessageStore and SessionStore
     Given the persistence layer has not been initialized
     When a message is stored via append_message()
@@ -45,7 +47,7 @@ Feature: Lazy persistence initialization
     But BlobStore is NOT initialized
     And HistoryStore is NOT initialized
 
-  @layer-1
+  @layer-one
   Scenario: Lazy per-store initialization — create_session only inits SessionStore
     Given the persistence layer has not been initialized
     When create_session() is called
@@ -53,7 +55,7 @@ Feature: Lazy persistence initialization
     And MessageStore is NOT initialized
     And HistoryStore is NOT initialized
 
-  @layer-2
+  @layer-two
   Scenario: Session resume loads only that session's messages
     Given a session manifest with 200 message UUIDs
     And a MessageStore with 362000 indexed messages
@@ -61,7 +63,7 @@ Feature: Lazy persistence initialization
     Then only 200 messages are loaded from disk via index seek
     And the remaining 361800 messages are not loaded
 
-  @layer-2
+  @layer-two
   Scenario: SessionSearch loads messages on demand during cross-session search
     Given 10 sessions each with 100 messages
     And a MessageStore with a binary index

@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @streaming
 @validator
 @rust
 @providers
 @PROV-064
+@bridge
 Feature: Custom provider streaming SSE bridge
   """
   SSE frames parsed in Rust via eventsource-stream; Rhai invoked per-event; StreamChunk is a new enum in custom::stream; tool call deltas accumulated in Rust; runtime errors yield single Err; [DONE] terminates

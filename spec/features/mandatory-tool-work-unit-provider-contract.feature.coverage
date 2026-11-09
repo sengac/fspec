@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool025_provider_transports.rs",
-          "lines": "87-141",
+          "lines": "82-136",
           "implMappings": [
             {
               "file": "rust/providers/src/tool_contract.rs",
@@ -15,14 +15,18 @@
                 51,
                 56,
                 85
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_catalog(",
+              "lastLine": ") -> Result<(), ProviderError> {"
             },
             {
               "file": "rust/providers/src/adapter.rs",
               "lines": [
                 174,
                 181
-              ]
+              ],
+              "firstLine": "pub fn convert_tools_to_rig(",
+              "lastLine": "name: t.name.clone(),"
             },
             {
               "file": "rust/patches/rig-core/src/providers/gemini/completion.rs",
@@ -30,7 +34,9 @@
                 55,
                 285,
                 296
-              ]
+              ],
+              "firstLine": "impl TryFrom<completion::ToolDefinition> for FunctionDeclaration {",
+              "lastLine": "fn try_from(tools: Vec<completion::ToolDefinition>) -> Result<Self, Self::Error> {"
             },
             {
               "file": "rust/patches/rig-core/src/completion/tool_catalog.rs",
@@ -38,7 +44,9 @@
                 4,
                 8,
                 11
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_tool_catalog_overrides(&self) -> Result<(), CompletionError> {",
+              "lastLine": "for key in [\"tools\", \"functions\", \"mcp_servers\"] {"
             }
           ]
         }
@@ -49,7 +57,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool025_provider_transports.rs",
-          "lines": "143-217",
+          "lines": "138-215",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/wire_request.rs",
@@ -60,13 +68,17 @@
                 54,
                 58,
                 66
-              ]
+              ],
+              "firstLine": "pub(super) fn wire_request(",
+              "lastLine": "if expected_tools"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
               "lines": [
                 38
-              ]
+              ],
+              "firstLine": "pub(super) fn attributed(mut self) -> Self {",
+              "lastLine": "pub(super) fn attributed(mut self) -> Self {"
             }
           ]
         }
@@ -88,6 +100,6 @@
       "rust/providers/src/codex/wire_request.rs",
       "rust/providers/src/codex/custom_tools.rs"
     ],
-    "totalLinesCovered": 150
+    "totalLinesCovered": 153
   }
 }

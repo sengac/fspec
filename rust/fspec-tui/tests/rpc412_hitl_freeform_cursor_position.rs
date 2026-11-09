@@ -17,10 +17,12 @@
 //! 114-char header wraps to exactly two rows, proving the offset tracks the
 //! real wrapped-header height rather than a constant +1.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{AgentView, AgentViewStore, SessionContext};
-use codelet_rpc_types::{HitlOption, HitlQuestion, HitlRequest, SessionId, SessionStatus};
+use codelet_rpc_types::{
+    HitlOption, HitlQuestion, HitlRequest, RequestHolder, RequestKind, RequestRoute, SessionId,
+    SessionStatus,
+};
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::layout::Rect;
 use ratatui::Terminal;
@@ -28,6 +30,17 @@ use tokio::sync::mpsc::unbounded_channel;
 
 fn sid(s: &str) -> SessionId {
     SessionId::new(s)
+}
+
+/// AMGR-020: the request route a HITL prompt slot carries.
+fn hitl_route(session: &SessionId) -> RequestRoute {
+    RequestRoute {
+        request_id: format!("question-{}", session.value),
+        origin: session.clone(),
+        kind: RequestKind::Question,
+        chain: vec![session.clone()],
+        holder: RequestHolder::User,
+    }
 }
 
 fn opt(label: &str, description: &str) -> HitlOption {
@@ -63,11 +76,18 @@ fn view_harness(session: &str) -> (AgentView, AgentViewStore) {
 
 /// Render one frame on a w x h TestBackend; return the input-area Rect
 /// recorded by the view (rpc411 render harness).
-fn render_frame(w: u16, h: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Rect {
-    let mut term = Terminal::new(TestBackend::new(w, h)).unwrap();
+fn render_frame(
+    w: u16,
+    h: u16,
+    store: &mut AgentViewStore,
+    view: &mut AgentView,
+) -> Result<Rect, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("expected a value")?;
     term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), store))
-        .unwrap();
-    view.last_input_area.expect("input area recorded by render")
+        .or_fail("expected a value")?;
+    Ok(view
+        .last_input_area
+        .or_fail("input area recorded by render")?)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -76,23 +96,27 @@ fn render_frame(w: u16, h: u16, store: &mut AgentViewStore, view: &mut AgentView
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn freeform_question_with_a_single_row_header_places_the_cursor_on_the_input_line() {
+fn freeform_question_with_a_single_row_header_places_the_cursor_on_the_input_line() -> TestResult {
     // @step Given a focused session with an active pure-freeform HITL question whose header fits on one row
     let (mut view, mut store) = view_harness("s-1");
-    store.set_hitl_prompt(sid("s-1"), one_question_request("Header", "Q?", vec![]));
+    store.set_hitl_prompt(
+        sid("s-1"),
+        hitl_route(&sid("s-1")),
+        one_question_request("Header", "Q?", vec![]),
+    );
 
     // @step And no empty-submit hint is showing
     assert!(
         !store
             .hitl_prompt_for(&sid("s-1"))
-            .expect("slot active")
+            .or_fail("slot active")?
             .show_empty_hint,
         "precondition: no empty-submit hint"
     );
 
     // @step When the input area is painted and the hardware cursor position is queried
-    let input = render_frame(100, 14, &mut store, &mut view);
-    let (_x, y) = view.cursor_position().expect("freeform cursor pos");
+    let input = render_frame(100, 14, &mut store, &mut view)?;
+    let (_x, y) = view.cursor_position().or_fail("freeform cursor pos")?;
 
     // @step Then the reported cursor row is one row below the input area top
     assert_eq!(
@@ -109,6 +133,7 @@ fn freeform_question_with_a_single_row_header_places_the_cursor_on_the_input_lin
         input.y + 1,
         "the cursor row must equal the painted '> ' input row (header offset = 1)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -116,20 +141,24 @@ fn freeform_question_with_a_single_row_header_places_the_cursor_on_the_input_lin
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_empty_submit_hint_pushes_the_cursor_down_onto_the_input_line() {
+fn the_empty_submit_hint_pushes_the_cursor_down_onto_the_input_line() -> TestResult {
     // @step Given a focused session with an active pure-freeform HITL question whose header fits on one row
     let (mut view, mut store) = view_harness("s-1");
-    store.set_hitl_prompt(sid("s-1"), one_question_request("Header", "Q?", vec![]));
+    store.set_hitl_prompt(
+        sid("s-1"),
+        hitl_route(&sid("s-1")),
+        one_question_request("Header", "Q?", vec![]),
+    );
 
     // @step And the empty-submit hint is showing
     store
         .hitl_prompt_for_mut(&sid("s-1"))
-        .expect("slot active")
+        .or_fail("slot active")?
         .show_empty_hint = true;
 
     // @step When the input area is painted and the hardware cursor position is queried
-    let input = render_frame(100, 14, &mut store, &mut view);
-    let (_x, y) = view.cursor_position().expect("freeform cursor pos");
+    let input = render_frame(100, 14, &mut store, &mut view)?;
+    let (_x, y) = view.cursor_position().or_fail("freeform cursor pos")?;
 
     // @step Then the reported cursor row is two rows below the input area top
     assert_eq!(
@@ -146,6 +175,7 @@ fn the_empty_submit_hint_pushes_the_cursor_down_onto_the_input_line() {
         input.y + 2,
         "the cursor row must equal the pushed-down '> ' input row (header + hint = offset 2)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -154,21 +184,22 @@ fn the_empty_submit_hint_pushes_the_cursor_down_onto_the_input_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_other_sub_mode_places_the_cursor_on_the_input_line_below_the_header() {
+fn the_other_sub_mode_places_the_cursor_on_the_input_line_below_the_header() -> TestResult {
     // @step Given a focused session with an active options HITL question in the "Other..." freeform sub-mode
     let (mut view, mut store) = view_harness("s-1");
     store.set_hitl_prompt(
         sid("s-1"),
+        hitl_route(&sid("s-1")),
         one_question_request("Header", "Q?", vec![opt("Yes", "y"), opt("No", "n")]),
     );
     store
         .hitl_prompt_for_mut(&sid("s-1"))
-        .expect("slot active")
+        .or_fail("slot active")?
         .other_active = true;
 
     // @step When the input area is painted and the hardware cursor position is queried
-    let input = render_frame(100, 14, &mut store, &mut view);
-    let (_x, y) = view.cursor_position().expect("Other-mode cursor pos");
+    let input = render_frame(100, 14, &mut store, &mut view)?;
+    let (_x, y) = view.cursor_position().or_fail("Other-mode cursor pos")?;
 
     // @step Then the reported cursor row is below the header on the "> " composer input line
     assert_eq!(
@@ -184,6 +215,7 @@ fn the_other_sub_mode_places_the_cursor_on_the_input_line_below_the_header() {
         y, input.y,
         "the cursor must NOT land on the header row (input area top)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -191,19 +223,23 @@ fn the_other_sub_mode_places_the_cursor_on_the_input_line_below_the_header() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_header_wrapped_to_two_rows_offsets_the_cursor_by_two_rows() {
+fn a_header_wrapped_to_two_rows_offsets_the_cursor_by_two_rows() -> TestResult {
     // @step Given a focused session with an active pure-freeform HITL question whose header wraps to two rows at a narrow width
     let (mut view, mut store) = view_harness("s-1");
     // A long header+question forces the wrapped header onto two rows at the
     // narrow padded body width used below.
     let long = "This is a deliberately long freeform question that must wrap across two rows";
-    store.set_hitl_prompt(sid("s-1"), one_question_request("Header", long, vec![]));
+    store.set_hitl_prompt(
+        sid("s-1"),
+        hitl_route(&sid("s-1")),
+        one_question_request("Header", long, vec![]),
+    );
 
     // @step And no empty-submit hint is showing
     assert!(
         !store
             .hitl_prompt_for(&sid("s-1"))
-            .expect("slot active")
+            .or_fail("slot active")?
             .show_empty_hint,
         "precondition: no empty-submit hint"
     );
@@ -211,8 +247,10 @@ fn a_header_wrapped_to_two_rows_offsets_the_cursor_by_two_rows() {
     // @step When the input area is painted and the hardware cursor position is queried
     // 60-wide terminal → padded body 58 cols (width - 2 for the 1-col pads) →
     // ceil(114 / 58) = 2, so the 114-char header wraps to exactly 2 rows.
-    let input = render_frame(60, 14, &mut store, &mut view);
-    let (_x, y) = view.cursor_position().expect("wrapped-header cursor pos");
+    let input = render_frame(60, 14, &mut store, &mut view)?;
+    let (_x, y) = view
+        .cursor_position()
+        .or_fail("wrapped-header cursor pos")?;
 
     // @step Then the reported cursor row is two rows below the input area top
     assert_eq!(
@@ -234,6 +272,7 @@ fn a_header_wrapped_to_two_rows_offsets_the_cursor_by_two_rows() {
         input.y + 3,
         "offset must not exceed two rows — the header must wrap to exactly two rows at this width"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -241,16 +280,17 @@ fn a_header_wrapped_to_two_rows_offsets_the_cursor_by_two_rows() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn an_options_mode_hitl_prompt_shows_no_hardware_cursor() {
+fn an_options_mode_hitl_prompt_shows_no_hardware_cursor() -> TestResult {
     // @step Given a focused session with an active options HITL question that is not in the freeform sub-mode
     let (mut view, mut store) = view_harness("s-1");
     store.set_hitl_prompt(
         sid("s-1"),
+        hitl_route(&sid("s-1")),
         one_question_request("Header", "Q?", vec![opt("Yes", "y"), opt("No", "n")]),
     );
 
     // @step When the cursor visibility is queried for the input area
-    let _input = render_frame(100, 14, &mut store, &mut view);
+    let _input = render_frame(100, 14, &mut store, &mut view)?;
     let visible = view.is_cursor_visible(&store, Some(SessionStatus::Idle));
 
     // @step Then no hardware cursor is reported
@@ -263,6 +303,7 @@ fn an_options_mode_hitl_prompt_shows_no_hardware_cursor() {
     // (No cursor is drawn, so the header-offset seam is never consulted for
     // options mode — the gate short-circuits before any anchor is computed.)
     assert!(!visible, "no cursor ⇒ no offset is applied in options mode");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -270,14 +311,16 @@ fn an_options_mode_hitl_prompt_shows_no_hardware_cursor() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_normal_composer_anchors_the_cursor_at_the_input_area_top() {
+fn the_normal_composer_anchors_the_cursor_at_the_input_area_top() -> TestResult {
     // @step Given a focused session with no active HITL prompt and no pause prompt
     let (mut view, mut store) = view_harness("s-1");
     view.input.set_value("hello");
 
     // @step When the input area is painted and the hardware cursor position is queried
-    let input = render_frame(100, 14, &mut store, &mut view);
-    let (_x, y) = view.cursor_position().expect("normal composer cursor pos");
+    let input = render_frame(100, 14, &mut store, &mut view)?;
+    let (_x, y) = view
+        .cursor_position()
+        .or_fail("normal composer cursor pos")?;
 
     // @step Then the reported cursor row equals the input area top
     assert_eq!(
@@ -292,4 +335,5 @@ fn the_normal_composer_anchors_the_cursor_at_the_input_area_top() {
         y, input.y,
         "no header is painted above the input line, so no offset may be added"
     );
+    Ok(())
 }

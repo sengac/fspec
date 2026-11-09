@@ -273,6 +273,14 @@ fn scenario_invalid_timezone_is_rejected_without_writing() {
         schedule_entry(tmp.path(), "bad-tz").is_none(),
         "no schedule must be written on validation failure"
     );
+
+    // @step And the error suggests valid IANA timezones like UTC, America/New_York, or Australia/Brisbane
+    assert!(
+        err.contains(
+            "Use a valid IANA timezone like UTC, America/New_York, or Australia/Brisbane."
+        ),
+        "error must suggest valid timezones; got: {err}"
+    );
 }
 
 #[test]
@@ -433,4 +441,55 @@ fn scenario_duplicate_schedule_name_is_rejected_and_existing_entry_preserved() {
         Some("echo original"),
         "existing entry's command must be unchanged"
     );
+}
+
+#[test]
+fn scenario_cron_with_out_of_range_hour_is_rejected_without_writing() {
+    // Scenario: Cron expression with an out-of-range hour is rejected without writing
+
+    // @step Given spec/schedules.json already contains a schedule named 'nightly-review'
+    let tmp = TempDir::new().expect("tempdir");
+    let raw = r#"{
+  "version": "1.0.0",
+  "schedules": {
+    "nightly-review": {
+      "name": "nightly-review",
+      "cron": "0 2 * * *",
+      "timezone": "UTC",
+      "jobType": "shell",
+      "overlapPolicy": "skip",
+      "status": "active",
+      "lastRunAt": null,
+      "lastRunStatus": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "command": "echo original"
+    }
+  }
+}"#;
+    write_schedules(tmp.path(), raw);
+
+    // @step When I dispatch the add-schedule command with name 'bad-cron' cron '0 99 * * *' timezone 'UTC' jobType 'shell' command 'echo hi'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "name": "bad-cron",
+            "cron": "0 99 * * *",
+            "timezone": "UTC",
+            "jobType": "shell",
+            "command": "echo hi"
+        }),
+    ));
+
+    // @step Then the dispatcher returns an error mentioning "Number '99' of hours field is bigger than upper limit '23'."
+    assert!(!result.success, "expected failure, got {result:?}");
+    let err = result.error.unwrap_or_default();
+    assert!(
+        err.contains("Number '99' of hours field is bigger than upper limit '23'."),
+        "error must name the out-of-range hour; got: {err}"
+    );
+
+    // @step And spec/schedules.json is byte-for-byte unchanged
+    let after = fs::read_to_string(tmp.path().join("spec").join("schedules.json"))
+        .expect("schedules.json must still exist");
+    assert_eq!(after, raw, "schedules.json must not be modified");
 }

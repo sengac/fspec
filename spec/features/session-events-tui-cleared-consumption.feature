@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @tui
@@ -7,6 +8,8 @@
 @parity
 @websocket
 @RPC-437
+@BUG-351
+@BUG-355
 Feature: TUI consumes the SessionEvent::Cleared lifecycle event (both transports)
   """
   TUI-side half of the RPC-433/RPC-436 session lifecycle event stream:
@@ -94,5 +97,5 @@ Feature: TUI consumes the SessionEvent::Cleared lifecycle event (both transports
   Scenario: Bootstrap spawns the session-cleared subscriber and degenerate defaults leak nothing
     Given an App bootstrapped against a backend whose session-cleared receiver is the degenerate default (closed)
     When the App's bootstrap runs
-    Then bootstrap spawns nine subscriber tasks — the existing eight plus the new session_cleared_rx subscriber
+    Then bootstrap spawns the full bootstrap subscriber set (BOOTSTRAP_SUBSCRIBER_TASKS), which includes the session_cleared_rx subscriber
     And the degenerate (closed) session-cleared receiver must not leak SessionCleared events onto the action bus

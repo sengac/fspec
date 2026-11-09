@@ -80,7 +80,7 @@ impl AgentView {
                         }
                     }
                     // MENU-009 R2/R6: a left click on a Zone C button
-                    // (New Agent / Close Agent, right-aligned) activates
+                    // (New Agent / Close, right-aligned) activates
                     // it — NOT the empty-space de-select below (the
                     // button owns its rect; a click on it is never a
                     // 'leave the bar' gesture).

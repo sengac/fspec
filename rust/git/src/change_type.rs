@@ -13,8 +13,9 @@
 //! issues its own tree lookups: the double-pass pack re-decode is gone.
 
 use crate::error::{GitError, Result};
+use crate::head_tree::ObjectSource;
 use crate::open_repo;
-use crate::status::{staged_files_with_repo, unstaged_files_with_repo, StagedFileVerdict};
+use crate::status::{staged_files_with, unstaged_files_with_repo, StagedFileVerdict};
 use std::path::Path;
 
 /// Single-letter change type for a working-tree / index file.
@@ -92,12 +93,21 @@ pub fn get_staged_files_with_change_type(dir: impl AsRef<Path>) -> Result<Vec<Ch
 pub fn get_staged_files_with_change_type_with_repo(
     repo: &gix::Repository,
 ) -> Result<Vec<ChangedFileStatus>> {
+    get_staged_files_with_change_type_with(repo, repo)
+}
+
+/// BUG-657: staged change-type derivation reading every HEAD tree through
+/// `source`.
+pub(crate) fn get_staged_files_with_change_type_with(
+    repo: &gix::Repository,
+    source: &dyn ObjectSource,
+) -> Result<Vec<ChangedFileStatus>> {
     let workdir = repo
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
     // Single pass: staged detection + in-HEAD verdict in one loop.
-    let verdicts = staged_files_with_repo(repo)?;
+    let verdicts = staged_files_with(repo, source)?;
     Ok(staged_change_types(verdicts, workdir))
 }
 
@@ -135,7 +145,8 @@ pub fn get_unstaged_files_with_change_type_with_repo(
         })
         .collect();
 
-    let index = repo.index().map_err(|e| GitError::Status(e.to_string()))?;
+    // BUG-637: a working tree with no index file reads as an empty index.
+    let index = crate::index_guard::index_or_empty(repo)?;
     for entry in index.entries() {
         let path = String::from_utf8_lossy(entry.path(&index)).to_string();
         if !workdir.join(&path).exists() {

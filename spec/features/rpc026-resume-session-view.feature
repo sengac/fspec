@@ -38,7 +38,7 @@ Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
     Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     And resume_view.selected_index is 1
     When the user presses D
-    Then Action::RequestDeleteSession("s-2") is dispatched
+    Then the view reports a delete request for "s-2"
     And resume_view.delete_confirm is Some(ConfirmDialog) with primary_label "Delete"
     And no backend call has been made
     When the user presses Enter while the ConfirmDialog has Primary focused
@@ -59,3 +59,13 @@ Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
     And pressing Enter is a no-op
     And pressing D is a no-op
     And pressing Esc still dispatches Action::CloseResumeView
+
+  @resume
+  @delete
+  @dialog
+  Scenario: Cancel option closes dialog without deleting
+    Given I am in resume mode with the delete confirmation dialog open
+    When I navigate to Cancel and press Enter
+    Then the dialog closes
+    And no sessions are deleted
+    And resume mode remains active

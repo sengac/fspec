@@ -5,15 +5,34 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_recovery_boundaries.rs",
-          "lines": "57-98",
+          "lines": "56-104",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery_auth.rs",
-              "lines": [12, 23, 24, 25]
+              "lines": [
+                12,
+                23,
+                24,
+                25
+              ],
+              "firstLine": "pub(super) async fn refresh(",
+              "lastLine": ".map_err(super::network_error::http_setup)?;"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
-              "lines": [177, 180, 181, 187, 190, 191, 192, 195, 211]
+              "lines": [
+                177,
+                180,
+                181,
+                187,
+                190,
+                191,
+                192,
+                195,
+                211
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "tokio::time::sleep(delay).await;"
             }
           ]
         }
@@ -24,15 +43,29 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_recovery_boundaries.rs",
-          "lines": "100-143",
+          "lines": "106-149",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery_auth.rs",
-              "lines": [26, 27, 28, 29, 32, 33]
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                32,
+                33
+              ],
+              "firstLine": "if !response.status().is_success() {",
+              "lastLine": "Error::Instance(\"Codex credential refresh returned invalid credentials\".into())"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
-              "lines": [187, 188]
+              "lines": [
+                187,
+                188
+              ],
+              "firstLine": "let Some(failure) = failure else {",
+              "lastLine": "return Err(error);"
             }
           ]
         }
@@ -47,7 +80,25 @@
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/interruption.rs",
-              "lines": [25, 29, 30, 55, 58, 59, 60, 65, 66, 67, 68, 69, 70, 71, 72]
+              "lines": [
+                25,
+                29,
+                30,
+                55,
+                58,
+                59,
+                60,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "for event in events {",
+              "lastLine": ".filter_map(|content| match content {"
             }
           ]
         }
@@ -58,15 +109,35 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_recovery_boundaries.rs",
-          "lines": "145-201",
+          "lines": "151-207",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
-              "lines": [114, 116, 117, 118, 119, 120, 135, 136, 137, 138, 139, 140]
+              "lines": [
+                114,
+                116,
+                117,
+                118,
+                119,
+                120,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "let mut guard = RecoveryGuard { handle: self, finished: false };",
+              "lastLine": "self.handle.update(if success {"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
-              "lines": [216, 217, 218]
+              "lines": [
+                221,
+                222
+              ],
+              "firstLine": "history.commit_for_generation(&request, &output, generation)?;",
+              "lastLine": "for tool in state.tools { yield Choice::ToolCall(tool); }"
             }
           ]
         }
@@ -87,6 +158,6 @@
       "rust/cli/src/interactive/interruption.rs",
       "rust/providers/src/codex/streaming.rs"
     ],
-    "totalLinesCovered": 51
+    "totalLinesCovered": 285
   }
 }

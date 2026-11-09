@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_rule.rs",
-          "lines": "67-83",
+          "lines": "88-108",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_rule.rs",
@@ -54,7 +54,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "//! `remove-rule` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -65,7 +67,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_rule.rs",
-          "lines": "85-105",
+          "lines": "110-133",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_rule.rs",
@@ -101,7 +103,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "/// JSON Value (number when it parses as a finite i64, \"NaN\" string",
+              "lastLine": ".and_then(|v| {"
             }
           ]
         }
@@ -112,7 +116,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_rule.rs",
-          "lines": "124-164",
+          "lines": "179-234",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_rule.rs",
@@ -148,7 +152,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "/// JSON Value (number when it parses as a finite i64, \"NaN\" string",
+              "lastLine": ".and_then(|v| {"
             }
           ]
         }
@@ -174,6 +180,6 @@
       "rust/fspec-core/src/help/configs/remove_rule.rs",
       "rust/fspec/src/remove_rule.rs"
     ],
-    "totalLinesCovered": 232
+    "totalLinesCovered": 207
   }
 }

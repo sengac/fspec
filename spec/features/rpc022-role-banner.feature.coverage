@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "71-97",
+          "lines": "89-115",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
@@ -23,7 +23,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "impl<'a> Widget for RoleBanner<'a> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -34,56 +36,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "98-133",
+          "lines": "117-155",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
               "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                105,
+                106,
+                107,
+                108,
+                117
+              ],
+              "firstLine": "/// RPC-029: the RoleBanner row is present (height 1) iff the session has",
+              "lastLine": "let role_height = role_banner_height(store, sid.as_ref());"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "if areas.role.height > 0 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +76,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "134-158",
+          "lines": "157-180",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
@@ -118,7 +100,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "pub fn collapse_whitespace(text: &str) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -129,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "159-177",
+          "lines": "182-199",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
@@ -147,7 +131,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "impl<'a> Widget for RoleBanner<'a> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,56 +144,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "178-215",
+          "lines": "201-237",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
               "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                105,
+                106,
+                107,
+                108,
+                117
+              ],
+              "firstLine": "/// RPC-029: the RoleBanner row is present (height 1) iff the session has",
+              "lastLine": "let role_height = role_banner_height(store, sid.as_ref());"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "if areas.role.height > 0 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -218,20 +184,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "216-234",
+          "lines": "239-256",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
               "lines": [
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198
-              ]
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "if let Some(v) = self.resume_view.as_mut() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -242,20 +206,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "235-253",
+          "lines": "258-275",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
               "lines": [
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198
-              ]
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "if let Some(v) = self.search_view.as_mut() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,7 +228,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_banner_integration_rpc022.rs",
-          "lines": "254-269",
+          "lines": "284-298",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/role_banner.rs",
@@ -411,7 +373,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "//! RoleBanner — inline single-row banner above scrollback when a",
+              "lastLine": "// Single row, exactly 40 columns wide."
             }
           ]
         }
@@ -427,8 +391,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/role_banner.rs",
-      "rust/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/pane_render.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
-    "totalLinesCovered": 488
+    "totalLinesCovered": 419
   }
 }

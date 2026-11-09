@@ -1,11 +1,12 @@
-use std::{sync::Arc, time::Duration};
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
+use std::sync::Arc;
 
-use codelet_fspec_tui::{Action, App, FspecBackend};
+use codelet_fspec_tui::{Action, App};
 use codelet_rpc_types::{SessionId, WorkUnitContext, WorkUnitFocus};
 
 mod common;
 
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[path = "bug230_focus_recovery/lifecycle.rs"]
 mod lifecycle;
 
@@ -23,49 +24,16 @@ fn units() -> Vec<codelet_rpc_types::WorkUnitInfo> {
     }]
 }
 
-async fn settle(app: &mut App) {
+async fn settle(app: &mut App) -> codelet_test_helpers::TestResult {
     loop {
         while let Some(task) = app.next_pending_task() {
-            assert!(task.await.is_ok());
+            task.await.completed_or_cancelled()?;
         }
         let Some(action) = app.try_recv_action() else {
             break;
         };
         app.dispatch(action);
     }
-}
-
-/// Feature: spec/features/session-work-unit-focus-projection.feature
-#[tokio::test]
-async fn an_attachment_acknowledgement_does_not_rewrite_a_newer_remote_clear() -> TestResult {
-    // @step Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
-    let backend = Arc::new(common::MockBackend::new());
-    let session = SessionId::new("first");
-    let mut app = App::new(backend.clone());
-    app.dispatch(Action::SessionCreated(session.clone()));
-    app.dispatch(Action::WorkUnitsLoaded(units()));
-    backend.clear_focus_after_binding();
-    // @step When the user explicitly assigns card "AUTH-002" to that session
-    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
-    settle(&mut app).await;
-    // @step And a delayed acknowledgement for the previous card cannot replace the newer focus
-    assert!(backend
-        .get_work_unit_focus(session.clone())
-        .await?
-        .context
-        .is_none());
-    assert!(app
-        .agent_view_store()
-        .work_unit_context_for(&session)
-        .is_none());
-    assert!(app.board_store().session_for("AUTH-002").is_none());
-    assert_eq!(
-        backend
-            .get_work_unit_context(session)
-            .await?
-            .map(|context| context.id),
-        Some("AUTH-002".into())
-    );
     Ok(())
 }
 
@@ -100,7 +68,7 @@ async fn remote_creation_before_local_acknowledgement_preserves_board_entry() ->
     app.dispatch(Action::SessionObserved(
         info(&backend, session.clone()).await?,
     ));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then the backend and all card displays identify "AUTH-002"
     assert_eq!(
         backend
@@ -143,7 +111,7 @@ async fn a_reopened_session_restores_an_unchanged_focus_revision() -> TestResult
 }
 
 async fn revision(app: &mut App, session: &SessionId, expected: u64) -> TestResult {
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the focus revision", async {
         loop {
             while let Some(action) = app.try_recv_action() {
                 app.dispatch(action);
@@ -151,7 +119,7 @@ async fn revision(app: &mut App, session: &SessionId, expected: u64) -> TestResu
             if app.agent_view_store().work_unit_focus_revision_for(session) == Some(expected) {
                 break;
             }
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;
@@ -205,9 +173,9 @@ async fn lagged_subscriptions_and_reconnects_refetch_authoritative_focus() -> Te
     assert!(app.board_store().session_for("AUTH-002").is_none());
     let fetches = backend.focus_fetches();
     app.dispatch(Action::Reconnected);
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("a focus fetch", async {
         while backend.focus_fetches() == fetches {
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;

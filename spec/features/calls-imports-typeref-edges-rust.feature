@@ -1,4 +1,6 @@
 @KGRAPH-045
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — Rust
   """
   Follows PHP extractor pattern: extract_functions returns HashSet, extract_imports returns

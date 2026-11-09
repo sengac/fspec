@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-109
+@tools
+@provider-abstraction
 Feature: Codex read_file facade missing mode and indentation params
   """
   Add InternalIndentationParams struct to traits.rs with all 5 optional fields

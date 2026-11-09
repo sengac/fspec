@@ -24,7 +24,7 @@ mod tests {
     fn mock_handler() -> GraphSearchHandler {
         Arc::new(
             |action: GraphSearchAction, _session_id: Uuid| match action {
-                GraphSearchAction::AstStats => {
+                GraphSearchAction::AstStats { .. } => {
                     r#"{"nodes":{"File":0,"Function":0},"edges":{"Contains":0}}"#.to_string()
                 }
                 GraphSearchAction::AstSearch { query, .. } => {
@@ -52,20 +52,23 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given the GraphSearch handler is registered for a session
+        // @step And the graph database is empty
+        // (the mock handler answers like an empty graph: every count is zero)
         set_graph_search_handler(session_id, Some(mock_handler()));
 
         // @step When the agent calls GraphSearch with action_type 'ast_stats'
-        let result = execute_graph_search(session_id, GraphSearchAction::AstStats);
+        let result = execute_graph_search(session_id, GraphSearchAction::AstStats { root: None });
 
-        // @step Then the result contains JSON with AST node and edge type counts
-        assert!(
-            result.contains("\"File\":0"),
-            "Stats should contain File count: {result}"
-        );
-        assert!(
-            result.contains("\"Contains\":0"),
-            "Stats should contain Contains count: {result}"
-        );
+        // @step Then the result contains JSON with AST node and edge type counts all at zero
+        let stats: serde_json::Value = serde_json::from_str(&result).unwrap();
+        for section in ["nodes", "edges"] {
+            let counts = stats[section].as_object().unwrap();
+            assert!(!counts.is_empty(), "{section} counts missing: {result}");
+            assert!(
+                counts.values().all(|count| count == 0),
+                "every {section} count should be zero: {result}"
+            );
+        }
 
         // @step And no error is returned
         assert!(
@@ -91,6 +94,7 @@ mod tests {
         let result = execute_graph_search(
             session_id,
             GraphSearchAction::AstSearch {
+                root: None,
                 query: "login".to_string(),
                 entity_type: None,
                 limit: None,
@@ -102,14 +106,13 @@ mod tests {
         );
 
         // @step Then the result contains matching AST entities
-        assert!(
-            result.contains("results"),
-            "Should contain results array: {result}"
-        );
-        assert!(
-            result.contains("login"),
-            "Should contain queried name: {result}"
-        );
+        let found: serde_json::Value = serde_json::from_str(&result).unwrap();
+        let entities = found["results"].as_array().unwrap();
+        assert_eq!(entities.len(), 1, "one matching entity: {result}");
+
+        // @step And each result includes the entity name and type
+        assert_eq!(entities[0]["name"], "login");
+        assert_eq!(entities[0]["type"], "Function");
 
         // Cleanup
         set_graph_search_handler(session_id, None);
@@ -118,18 +121,47 @@ mod tests {
     // ============================================================================
     // Scenario: Tool is available when agent session starts
     // ============================================================================
-    #[test]
-    fn test_tool_is_available_when_session_starts() {
+    #[tokio::test]
+    async fn test_tool_is_available_when_session_starts() {
+        use rig::tool::Tool;
+
         let session_id = Uuid::new_v4();
 
         // @step Given an agent session is started
         set_graph_search_handler(session_id, Some(mock_handler()));
+        assert!(has_graph_search_handler(session_id));
 
         // @step When the tool definitions are listed
-        let handler_exists = has_graph_search_handler(session_id);
+        let definition = crate::graph_search::GraphSearchTool::new(session_id)
+            .definition(String::new())
+            .await;
 
-        // @step Then GraphSearch appears in the list
-        assert!(handler_exists, "GraphSearch handler should be registered");
+        // @step Then GraphSearch appears in the list with its JSON schema
+        assert_eq!(definition.name, "GraphSearch");
+        assert_eq!(definition.parameters["type"], "object");
+
+        // @step And the schema describes all 16 action types with their parameters
+        let action_types = definition.parameters["properties"]["action_type"]["enum"]
+            .as_array()
+            .unwrap();
+        assert_eq!(action_types.len(), 16, "{action_types:?}");
+        // Every action must be callable with only the parameters the schema
+        // describes: fill each described string parameter and parse.
+        let properties = definition.parameters["properties"].as_object().unwrap();
+        let described: serde_json::Map<String, serde_json::Value> = properties
+            .iter()
+            .filter(|(name, schema)| *name != "action_type" && schema["type"] == "string")
+            .map(|(name, _)| (name.clone(), serde_json::json!("x")))
+            .collect();
+        for action_type in action_types {
+            let mut call = described.clone();
+            call.insert("action_type".to_string(), action_type.clone());
+            let parsed = serde_json::from_value::<GraphSearchAction>(call.into());
+            assert!(
+                parsed.is_ok(),
+                "schema action_type {action_type} lacks a described parameter: {parsed:?}"
+            );
+        }
 
         // Cleanup
         set_graph_search_handler(session_id, None);
@@ -147,7 +179,7 @@ mod tests {
         assert!(!has_graph_search_handler(session_id));
 
         // @step When the agent calls GraphSearch with any action
-        let result = execute_graph_search(session_id, GraphSearchAction::AstStats);
+        let result = execute_graph_search(session_id, GraphSearchAction::AstStats { root: None });
 
         // @step Then the result is a descriptive error message indicating the handler is not available
         assert!(
@@ -156,54 +188,57 @@ mod tests {
                 || result.contains("error"),
             "Should return descriptive error: {result}"
         );
+
+        // @step And no panic or crash occurs
+        // (execute_graph_search returned a message instead of panicking)
     }
 
     // ============================================================================
-    // Scenario: AstIndex action deserializes without path (backwards compatible)
+    // Scenario: AstIndex action deserializes without root (backwards compatible)
     // ============================================================================
     #[test]
-    fn test_ast_index_deserializes_without_path() {
-        // @step Given a JSON payload for ast_index with no path field
+    fn test_ast_index_deserializes_without_root() {
+        // @step Given a JSON payload for ast_index with no root field
         let json = r#"{"action_type":"ast_index"}"#;
 
         // @step When the action is deserialized
         let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
 
-        // @step Then it should succeed with path set to None
+        // @step Then it should succeed with root set to None
         assert!(
             result.is_ok(),
-            "AstIndex should parse without path: {:?}",
+            "AstIndex should parse without root: {:?}",
             result.err()
         );
-        if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
-            assert!(path.is_none(), "Path should be None when omitted");
+        if let Ok(GraphSearchAction::AstIndex { root, .. }) = result {
+            assert!(root.is_none(), "Root should be None when omitted");
         } else {
             panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
         }
     }
 
     // ============================================================================
-    // Scenario: AstIndex action deserializes with explicit path
+    // Scenario: AstIndex action deserializes with explicit root
     // ============================================================================
     #[test]
-    fn test_ast_index_deserializes_with_path() {
-        // @step Given a JSON payload for ast_index with path "tmp/my-repo"
-        let json = r#"{"action_type":"ast_index","path":"tmp/my-repo"}"#;
+    fn test_ast_index_deserializes_with_root() {
+        // @step Given a JSON payload for ast_index with root "tmp/my-repo"
+        let json = r#"{"action_type":"ast_index","root":"tmp/my-repo"}"#;
 
         // @step When the action is deserialized
         let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
 
-        // @step Then it should succeed with path set to "tmp/my-repo"
+        // @step Then it should succeed with root set to "tmp/my-repo"
         assert!(
             result.is_ok(),
-            "AstIndex should parse with path: {:?}",
+            "AstIndex should parse with root: {:?}",
             result.err()
         );
-        if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
+        if let Ok(GraphSearchAction::AstIndex { root, .. }) = result {
             assert_eq!(
-                path.as_deref(),
+                root.as_deref(),
                 Some("tmp/my-repo"),
-                "Path should match provided value"
+                "Root should match provided value"
             );
         } else {
             panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
@@ -211,20 +246,21 @@ mod tests {
     }
 
     // ============================================================================
-    // Scenario: AstIndex action dispatches through handler with path
+    // Scenario: AstIndex action dispatches through handler with root
     // ============================================================================
     #[test]
-    fn test_ast_index_dispatches_with_path() {
+    fn test_ast_index_dispatches_with_root() {
         let session_id = Uuid::new_v4();
 
         // @step Given the GraphSearch handler is registered for a session
         set_graph_search_handler(session_id, Some(mock_handler()));
 
-        // @step When the agent calls GraphSearch with action_type 'ast_index' and path 'tmp/repo'
+        // @step When the agent calls GraphSearch with action_type 'ast_index' and root 'tmp/repo'
         let result = execute_graph_search(
             session_id,
             GraphSearchAction::AstIndex {
-                path: Some("tmp/repo".to_string()),
+                root: Some("tmp/repo".to_string()),
+                path: None,
                 reset: None,
                 incremental: None,
             },
@@ -247,19 +283,20 @@ mod tests {
     }
 
     // ============================================================================
-    // Scenario: AstIndex action dispatches through handler without path
+    // Scenario: AstIndex action dispatches through handler without root
     // ============================================================================
     #[test]
-    fn test_ast_index_dispatches_without_path() {
+    fn test_ast_index_dispatches_without_root() {
         let session_id = Uuid::new_v4();
 
         // @step Given the GraphSearch handler is registered for a session
         set_graph_search_handler(session_id, Some(mock_handler()));
 
-        // @step When the agent calls GraphSearch with action_type 'ast_index' and no path
+        // @step When the agent calls GraphSearch with action_type 'ast_index' and no root
         let result = execute_graph_search(
             session_id,
             GraphSearchAction::AstIndex {
+                root: None,
                 path: None,
                 reset: None,
                 incremental: None,

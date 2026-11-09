@@ -133,7 +133,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let format = args.format.as_deref().unwrap_or("text");
 
-    let outcome = build_outcome(project_root, &feature_input);
+    let outcome = build_outcome(project_root, &feature_input)?;
 
     let rendered = match format {
         "json" => render_json(&outcome)?,
@@ -176,51 +176,51 @@ struct Outcome {
     error: Option<String>,
 }
 
-fn build_outcome(project_root: &Path, feature_input: &str) -> Outcome {
+fn build_outcome(project_root: &Path, feature_input: &str) -> Result<Outcome, FspecCoreError> {
     let abs = match resolve_feature_path(project_root, feature_input) {
         Some(p) => p,
         None => {
-            return Outcome {
+            return Ok(Outcome {
                 success: false,
                 content: String::new(),
                 feature: None,
                 file_basename: String::new(),
                 work_units: Vec::new(),
                 error: Some(format!("Feature file not found: {feature_input}")),
-            };
+            });
         }
     };
 
     let content = match std::fs::read_to_string(&abs) {
         Ok(s) => s,
         Err(_) => {
-            return Outcome {
+            return Ok(Outcome {
                 success: false,
                 content: String::new(),
                 feature: None,
                 file_basename: String::new(),
                 work_units: Vec::new(),
                 error: Some(format!("Feature file not found: {feature_input}")),
-            };
+            });
         }
     };
 
     let feature = match parse_feature_lenient(&content) {
         Ok(f) => f,
         Err(e) => {
-            return Outcome {
+            return Ok(Outcome {
                 success: false,
                 content: String::new(),
                 feature: None,
                 file_basename: String::new(),
                 work_units: Vec::new(),
                 error: Some(format!("Invalid Gherkin syntax: {e}")),
-            };
+            });
         }
     };
 
     let work_unit_tags = extract_work_unit_tags(&feature);
-    let work_units_data = load_work_units_data(project_root);
+    let work_units_data = load_work_units_data(project_root)?;
     let work_units = enrich_work_unit_tags(work_unit_tags, work_units_data.as_ref());
 
     let basename = abs
@@ -229,14 +229,14 @@ fn build_outcome(project_root: &Path, feature_input: &str) -> Outcome {
         .unwrap_or("")
         .to_string();
 
-    Outcome {
+    Ok(Outcome {
         success: true,
         content,
         feature: Some(feature),
         file_basename: basename,
         work_units,
         error: None,
-    }
+    })
 }
 
 /// Resolve a feature reference to an absolute on-disk path. Returns
@@ -360,10 +360,11 @@ fn extract_work_unit_id(tag: &str) -> Option<String> {
 
 /// Load `spec/work-units.json`. Returns `None` on any error (missing /
 /// unreadable / malformed) — parity with the TS bare-catch path.
-fn load_work_units_data(project_root: &Path) -> Option<WorkUnitsData> {
-    let path = project_root.join("spec").join("work-units.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
-    serde_json::from_str(&raw).ok()
+fn load_work_units_data(project_root: &Path) -> Result<Option<WorkUnitsData>, FspecCoreError> {
+    let path = crate::io::spec_paths::work_units(project_root)?;
+    Ok(std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|raw| serde_json::from_str(&raw).ok()))
 }
 
 /// Enrich raw work-unit tags with title/status from `spec/work-units.json`.

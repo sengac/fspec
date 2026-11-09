@@ -8,21 +8,8 @@
           "lines": "21-51",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
                 41,
                 42,
                 43,
@@ -34,29 +21,30 @@
                 49,
                 50,
                 51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "fn apply_mux_subcommand(&mut self, sub: MuxSubcommand) {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "/mux v sets the grid to vertical",
+      "name": "/mux board:2, agent:3 sets an explicit layout with weights",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1028-1041",
+          "lines": "581-601",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/mux_parser.rs",
               "lines": [
+                73,
                 74,
                 75,
                 76,
@@ -75,136 +63,26 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                92
+              ],
+              "firstLine": "pub fn parse_mux_command(line: &str) -> Result<MuxSubcommand, MuxError> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "/mux h sets the grid to horizontal",
+      "name": "the mux files, checkpoints command sets a two-pane layout",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1048-1062",
+          "lines": "607-621",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/mux_parser.rs",
               "lines": [
+                73,
                 74,
                 75,
                 76,
@@ -223,406 +101,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux 3 sets the pane count to three",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1069-1079",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux 4 sets the pane count to four",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1086-1096",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux 2 collapses the pane count to two",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1103-1113",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux board agent 40 sets an explicit pane list and split",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1120-1130",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/mux_parser.rs",
-              "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "the mux files checkpoints command sets a two-pane list",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1137-1150",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/mux_parser.rs",
-              "lines": [
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142
-              ]
+                92
+              ],
+              "firstLine": "pub fn parse_mux_command(line: &str) -> Result<MuxSubcommand, MuxError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -633,22 +115,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1158-1186",
+          "lines": "628-661",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// Apply a parsed `/mux` subcommand (R1–R7). Parse errors surface",
+              "lastLine": "}"
             }
           ]
         }
@@ -659,19 +144,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "94-123",
+          "lines": "132-165",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
@@ -681,8 +158,29 @@
                 46,
                 47,
                 48,
-                49
-              ]
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "pub fn classify_key(layout: &MultiplexLayout, key: &KeyEvent) -> KeyDecision {",
+              "lastLine": "super::MuxPaneKind::Agent => agent_view.handle_event(event),"
             }
           ]
         }
@@ -693,19 +191,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "131-145",
+          "lines": "173-188",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
@@ -715,8 +205,29 @@
                 46,
                 47,
                 48,
-                49
-              ]
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "pub fn classify_key(layout: &MultiplexLayout, key: &KeyEvent) -> KeyDecision {",
+              "lastLine": "super::MuxPaneKind::Agent => agent_view.handle_event(event),"
             }
           ]
         }
@@ -727,7 +238,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "153-178",
+          "lines": "196-224",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/mouse.rs",
@@ -781,7 +292,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "/// The index of the divider whose rect contains `(col, row)` (first",
+              "lastLine": "return MouseDecision::Pane { index: i };"
             }
           ]
         }
@@ -792,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "186-206",
+          "lines": "232-253",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/mouse.rs",
@@ -846,7 +359,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "/// The index of the divider whose rect contains `(col, row)` (first",
+              "lastLine": "return MouseDecision::Pane { index: i };"
             }
           ]
         }
@@ -857,17 +372,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "213-228",
+          "lines": "260-276",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
               "lines": [
-                217,
-                218,
-                219,
-                220,
-                221
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Shift+Left (MUX-012): focus the previous pane in layout order;",
+              "lastLine": "}"
             }
           ]
         }
@@ -878,17 +397,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "235-250",
+          "lines": "283-299",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
               "lines": [
-                217,
-                218,
-                219,
-                220,
-                221
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Shift+Left (MUX-012): focus the previous pane in layout order;",
+              "lastLine": "}"
             }
           ]
         }
@@ -899,15 +422,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "262-288",
+          "lines": "307-329",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
               "lines": [
-                93,
-                94,
-                95
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Shift+Left (MUX-012): focus the previous pane in layout order;",
+              "lastLine": "}"
             }
           ]
         }
@@ -918,7 +447,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "282-302",
+          "lines": "336-362",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/mouse.rs",
@@ -972,22 +501,36 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "/// The index of the divider whose rect contains `(col, row)` (first",
+              "lastLine": "return MouseDecision::Pane { index: i };"
             }
           ]
         }
       ]
     },
     {
-      "name": "split clamping never produces a pane narrower than the minimum width",
+      "name": "/mux save persists the config to the shared fspec-config.json",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "709-731",
+          "lines": "1055-1066",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
               "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
                 87,
                 88,
                 89,
@@ -998,6 +541,30 @@
                 94,
                 95,
                 96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": ".map_err(|err| format!(\"mux: cannot serialize config: {err}\"))?;",
+              "lastLine": "use super::*;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a fresh bootstrap restores the saved mux config",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux001.rs",
+          "lines": "1091-1103",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
                 97,
                 98,
                 99,
@@ -1056,108 +623,10 @@
                 152,
                 153,
                 154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "/mux save persists the config to the shared fspec-config.json",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1193-1211",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/mux_state.rs",
-              "lines": [
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "a fresh bootstrap restores the saved mux config",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1218-1241",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/mux_config_persistence.rs",
-              "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154
-              ]
+                155
+              ],
+              "firstLine": "/// Load the persisted mux config from the shared config.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1168,21 +637,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1248-1266",
+          "lines": "1123-1131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/presets.rs",
               "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
                 20,
                 21,
                 22,
                 23,
                 24,
-                25,
-                26,
-                27,
-                28
-              ]
+                25
+              ],
+              "firstLine": "pub fn default_layout() -> MuxLayout {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1220,9 +697,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1233,18 +712,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1306-1331",
+          "lines": "1151-1166",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                129,
+                130,
+                131,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "if let Some(result) = self.handle_app_shortcut(key) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1255,18 +741,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1339-1352",
+          "lines": "1185-1193",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "let composer_result = self.compositor.handle_event(event);",
+              "lastLine": "}"
             }
           ]
         }
@@ -1304,9 +796,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1317,163 +811,48 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug164_mux_retained_on_session_exit.rs",
-          "lines": "82-162",
+          "lines": "91-173",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "Action::BackToBoard => {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux.rs",
               "lines": [
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "detaching from a session in mux mode retains the mux and focuses the board pane",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug164_mux_retained_on_session_exit.rs",
-          "lines": "165-213",
-          "implMappings": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub(crate) fn apply_back_to_board(&mut self) {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
               "lines": [
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "pressing Esc on the board pane in mux mode with no open agents shows the exit dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
-          "lines": "161-188",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
-          "lines": "91-155",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/events.rs",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "pressing Esc on the agent pane in mux mode with an open agent still shows the agent exit dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
-          "lines": "197-238",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
-              "lines": [
-                39,
-                40,
-                41,
                 42,
                 43,
                 44,
@@ -1494,10 +873,6 @@
                 59,
                 60,
                 61,
-                62,
-                63,
-                64,
-                65,
                 66,
                 67,
                 68,
@@ -1520,28 +895,22 @@
                 85,
                 86,
                 87,
-                88
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "confirming the board exit dialog in mux mode quits the application",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
-          "lines": "162-190",
-          "implMappings": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "pub(crate) fn handle_agent_exit_choice(&mut self, choice: ExitChoice) {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_agent_close.rs",
               "lines": [
-                157,
-                158,
-                159,
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -1565,24 +934,6 @@
                 182,
                 183,
                 184,
-                185
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "releasing the divider stores the released percent without snapping back",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "332-361",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
-              "lines": [
-                184,
                 185,
                 186,
                 187,
@@ -1594,6 +945,175 @@
                 193,
                 194,
                 195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "pub(crate) fn handle_close_finished(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "Action::OpenAgentView(target) => {",
+              "lastLine": "} else {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cancelling the exit dialog in mux mode retains the mux and keeps the agent pane focused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug164_mux_retained_on_session_exit.rs",
+          "lines": "179-224",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "// idempotent per-session local reset (R3).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pressing Esc on the board pane in mux mode with no open agents shows the exit dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
+          "lines": "100-166",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "&& key.modifiers == KeyModifiers::NONE",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pressing Esc on the agent pane in mux mode with an open agent still shows the agent exit dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
+          "lines": "208-252",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "confirming the board exit dialog in mux mode quits the application",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs",
+          "lines": "172-200",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "/// TUI-112: commit a specific choice — the shared path for the Enter",
+              "lastLine": "_ => {}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "releasing the divider stores the released width as weights without snapping back",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux001.rs",
+          "lines": "377-402",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "lines": [
                 196,
                 197,
                 198,
@@ -1621,25 +1141,10 @@
                 220,
                 221,
                 222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240
-              ]
+                223
+              ],
+              "firstLine": "pub fn drag_to(&mut self, col: u16, row: u16) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1650,15 +1155,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "1029-1075",
+          "lines": "888-945",
           "implMappings": []
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 32,
-    "coveredScenarios": 32,
+    "totalScenarios": 26,
+    "coveredScenarios": 26,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/mux001/navigation.rs",
@@ -1667,23 +1172,24 @@
       "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/dispatch_mux.rs",
+      "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
       "rust/fspec-tui/src/app/mux_parser.rs",
-      "rust/fspec-tui/src/views/multiplex/mod.rs",
       "rust/fspec-tui/src/views/multiplex/keys.rs",
       "rust/fspec-tui/src/views/multiplex/mouse.rs",
-      "rust/fspec-tui/src/views/multiplex/window.rs",
-      "rust/fspec-tui/src/views/multiplex/layout.rs",
+      "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
       "rust/fspec-tui/src/store/mux_state.rs",
       "rust/sessions/src/mux_config_persistence.rs",
       "rust/fspec-tui/src/views/multiplex/presets.rs",
       "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
       "rust/fspec-tui/src/app/events.rs",
       "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/navigator_mux.rs",
+      "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
+      "rust/fspec-tui/src/app/dispatch_agent_close.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
-      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
-      "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs"
+      "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs",
+      "rust/fspec-tui/src/views/multiplex/mod.rs"
     ],
-    "totalLinesCovered": 2010
+    "totalLinesCovered": 1441
   }
 }

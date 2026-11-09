@@ -151,7 +151,7 @@ fn scenario_cli_reconfigure_does_not_write_config() {
     // @step Then the exit code is 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
-    // @step And stdout is empty
+    // @step And stdout is empty (TS Commander action discards the reconfigure return value; the RECONFIGURE TOOLS guidance surfaces only via the LLM dispatcher)
     // TS-parity (configure-tools.ts:225-227): the Commander.js action only
     // emits the saved-confirmation line when NOT in --reconfigure mode, and
     // DISCARDS the configureTools() return value. The reconfigure guidance
@@ -235,4 +235,37 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: configure-tools command appears in help output
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_configure_tools_appears_in_help_output() {
+    // @step Given the fspec Rust binary is built and on PATH
+    let ws = tempfile::tempdir().expect("tempdir");
+
+    // @step When I run `fspec --help`
+    let output = Command::new(fspec_bin())
+        .arg("--help")
+        .current_dir(ws.path())
+        .output()
+        .expect("spawn fspec --help");
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+
+    // @step Then the exit code is 0
+    assert_eq!(output.status.code(), Some(0), "stdout={stdout}");
+
+    // @step And stdout lists configure-tools with the summary 'Configure test and quality check commands'
+    let lines: Vec<&str> = stdout.lines().collect();
+    let at = lines
+        .iter()
+        .position(|l| l.trim() == "configure-tools")
+        .unwrap_or_else(|| panic!("configure-tools not listed:\n{stdout}"));
+    assert_eq!(
+        lines.get(at + 1).map(|l| l.trim()),
+        Some("Configure test and quality check commands"),
+        "{stdout}"
+    );
 }

@@ -20,7 +20,7 @@
 //!
 //! ## Persistence
 //!
-//! Single `ensure_work_units_file` load + single `write_json_atomic` write.
+//! Single `ensure_work_units_file` load + single `write_work_units` write.
 //! All field-order preservation is handled by the shared `WorkUnit`
 //! serializer (see `crate::types::work_unit`).
 
@@ -31,7 +31,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -70,6 +69,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "answer-question")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     if !data.work_units.contains_key(&args.work_unit_id) {
@@ -232,16 +233,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                     added_content = Some(ans.clone());
                 }
                 "assumption" | "assumptions" => {
-                    let assumes_entry = wu
-                        .extra
-                        .entry("assumptions".to_string())
-                        .or_insert_with(|| Value::Array(Vec::new()));
-                    if !assumes_entry.is_array() {
-                        *assumes_entry = Value::Array(Vec::new());
-                    }
-                    if let Value::Array(arr) = assumes_entry {
-                        arr.push(Value::String(ans.clone()));
-                    }
+                    // BUG-633: a stable-id assumption item.
+                    super::assumption_items::push(&args.work_unit_id, &mut wu.extra, ans, &now)
+                        .map_err(|reason| FspecCoreError::InvalidArgs {
+                            command: "answer-question",
+                            reason,
+                        })?;
                     added_to = Some("assumptions".to_string());
                     added_content = Some(ans.clone());
                 }
@@ -252,8 +249,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     wu.updated_at = now;
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AnswerQuestionResult {
         success: true,

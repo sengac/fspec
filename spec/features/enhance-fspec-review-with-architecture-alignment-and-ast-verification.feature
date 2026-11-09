@@ -41,20 +41,19 @@ Feature: Enhance fspec review with architecture alignment and AST verification
     And the error message should contain 'Cannot transition to testing - no AST research performed during discovery'
     And the work unit status should remain 'specifying'
 
-  Scenario: AI detects reinvention via AST data in system-reminder
-    Given I have a work unit with AST research attachments showing 'validateFeature' exists in 2 files
-    When I run 'fspec update-work-unit-status WORK-001 testing'
-    Then the command should succeed with status code 0
-    And the work unit has architectural notes and feature file
-    And a system-reminder should be emitted with AST structural data
-    And the system-reminder should show 'validateFeature appears in 2 files'
-    And the AI should revert to specifying state after analyzing the data
-
   Scenario: Pass review with proper architecture documentation and AST research
     Given I have a work unit with architectural note 'Refactoring: Extract validation logic to shared utility'
     When I run 'fspec update-work-unit-status WORK-001 testing'
     Then the command should succeed with status code 0
-    And the work unit has AST research attachments showing 3 copies of validation pattern
+    And the work unit has an AST research attachment
     And the work unit has a completed feature file with no prefill placeholders
     And the work unit status should be 'testing'
     And the review validation should pass all objective ACDD checks
+
+  Scenario: Architectural review reminder lists the AST research attachments for the reinvention check
+    Given I have a work unit with AST research attachment 'spec/attachments/WORK-001/ast-research-validate-feature.md' and architectural notes
+    When I run 'fspec update-work-unit-status WORK-001 testing'
+    Then the command should succeed with status code 0
+    And a system-reminder should list the AST research attachment and the architectural notes
+    And the system-reminder should tell the AI to check for duplicate function names
+    And the system-reminder should tell the AI to revert to specifying if issues are found

@@ -8,13 +8,9 @@
 //! profile_sections append/replace/delete semantics in memory so no disk or
 //! network is touched). Mirrors the RPC-037 parity pattern.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -27,55 +23,63 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::CustomModelDefinition;
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
 /// Build a `SharedFspecService` backed by a fresh deterministic stub.
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 /// Build a `SharedFspecService` with NO session manager attached.
-fn build_service_without_handle() -> (TempDir, Arc<SharedFspecService>) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service_without_handle(
+) -> Result<(TempDir, Arc<SharedFspecService>), codelet_test_helpers::TestError> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let service = Arc::new(SharedFspecService::new(watcher).with_cwd(cwd));
-    (temp, service)
+    Ok((temp, service))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 fn definition(id: &str) -> CustomModelDefinition {
@@ -94,9 +98,9 @@ fn definition(id: &str) -> CustomModelDefinition {
 
 // Scenario: add_custom_model produces identical results across transports
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn scenario_add_custom_model_parity_across_transports() {
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+async fn scenario_add_custom_model_parity_across_transports() -> TestResult {
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     // @step Given an openai profile "work-vllm" exists with no custom models
     // (the stub starts with an empty in-memory custom-model map for every profile)
@@ -106,13 +110,13 @@ async fn scenario_add_custom_model_parity_across_transports() {
     embedded
         .add_custom_model("openai".into(), "p-embedded".into(), def.clone())
         .await
-        .expect("embedded add_custom_model");
+        .or_fail("embedded add_custom_model")?;
 
     // @step And another client calls add_custom_model with the same definition over the websocket transport
     websocket
         .add_custom_model("openai".into(), "p-websocket".into(), def.clone())
         .await
-        .expect("websocket add_custom_model");
+        .or_fail("websocket add_custom_model")?;
 
     // @step Then both calls return Ok
     // @step And both transports persist the identical customModels entry
@@ -123,13 +127,14 @@ async fn scenario_add_custom_model_parity_across_transports() {
         em_models, ws_models,
         "both transports must forward the identical definition to the shared handle"
     );
+    Ok(())
 }
 
-// Scenario: RPC methods are a silent no-op without an attached SessionManagerHandle
+// Scenario: RPC methods are refused without an attached SessionManagerHandle
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn scenario_no_handle_silent_no_op() {
-    let (_temp, service) = build_service_without_handle();
-    let (embedded, websocket) = dual_backends(service).await;
+async fn scenario_no_handle_refused() -> TestResult {
+    let (_temp, service) = build_service_without_handle()?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let def = definition("my-model");
 
     // @step Given a FspecServiceImpl with no SessionManagerHandle attached
@@ -149,15 +154,18 @@ async fn scenario_no_handle_silent_no_op() {
         .delete_custom_model("openai".into(), "work-vllm".into(), "my-model".into())
         .await;
 
-    // @step Then each call returns Ok
-    assert!(add.is_ok(), "add must be Ok without a handle: {add:?}");
+    // @step Then each call returns an error
     assert!(
-        update.is_ok(),
-        "update must be Ok without a handle: {update:?}"
+        add.is_err(),
+        "add must be refused without a handle: {add:?}"
     );
     assert!(
-        delete.is_ok(),
-        "delete must be Ok without a handle: {delete:?}"
+        update.is_err(),
+        "update must be refused without a handle: {update:?}"
+    );
+    assert!(
+        delete.is_err(),
+        "delete must be refused without a handle: {delete:?}"
     );
 
     // @step And the websocket transport behaves identically over its no-handle path
@@ -175,16 +183,17 @@ async fn scenario_no_handle_silent_no_op() {
     let ws_delete = websocket
         .delete_custom_model("openai".into(), "work-vllm".into(), "my-model".into())
         .await;
-    assert!(ws_add.is_ok(), "websocket add must be Ok: {ws_add:?}");
+    assert!(ws_add.is_err(), "websocket add must be refused: {ws_add:?}");
     assert!(
-        ws_update.is_ok(),
-        "websocket update must be Ok: {ws_update:?}"
+        ws_update.is_err(),
+        "websocket update must be refused: {ws_update:?}"
     );
     assert!(
-        ws_delete.is_ok(),
-        "websocket delete must be Ok: {ws_delete:?}"
+        ws_delete.is_err(),
+        "websocket delete must be refused: {ws_delete:?}"
     );
 
     // @step And no configuration is written
-    // (no handle means nothing downstream of the no-op default is invoked)
+    // (no handle means nothing downstream is invoked; the refusal is the only effect)
+    Ok(())
 }

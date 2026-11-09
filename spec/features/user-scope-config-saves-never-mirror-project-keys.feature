@@ -1,3 +1,4 @@
+@BUG-461
 @done
 @BUG-193
 @bug
@@ -65,7 +66,7 @@ Feature: TUI user-scope config writers mirror project-scope keys (tools, agent) 
   Scenario: Saving the default thinking level does not mirror project-scope keys into the user config
     Given the project spec/fspec-config.json holds agent and tools keys
     When the default thinking level High is saved to the user scope
-    Then the user-scope fspec-config.json contains tui.defaultThinkingLevel equal to 3
+    Then the user-scope fspec-config.json contains tui.thinkingLevels with effort:high for the model
     And the user-scope fspec-config.json does NOT contain the tools key
     And the user-scope fspec-config.json does NOT contain the agent key
 
@@ -83,15 +84,15 @@ Feature: TUI user-scope config writers mirror project-scope keys (tools, agent) 
     Then the user-scope fspec-config.json is created with only the tui.mux value
     And the user-scope fspec-config.json does NOT contain the tools or agent keys
 
-  Scenario: A malformed user config file degrades to a fresh save without mirroring project keys
+  Scenario: A malformed user config file fails the save and is left unchanged
     Given the user-scope fspec-config.json contains invalid JSON
     And the project spec/fspec-config.json holds agent and tools keys
-    When the mux config is saved to the user scope
-    Then the user-scope fspec-config.json contains the saved tui.mux value
-    And the user-scope fspec-config.json does NOT contain the tools or agent keys
+    When the default thinking level is saved to the user scope
+    Then the save fails naming fspec-config.json
+    And the user-scope fspec-config.json still contains the invalid JSON
 
   Scenario: Project-scope tui.mux still overrides the user-scope value on load
-    Given the user-scope fspec-config.json holds tui.mux with orientation Horizontal
-    And the project spec/fspec-config.json holds tui.mux with orientation Vertical
+    Given the user-scope fspec-config.json holds tui.mux with layout "board, agent"
+    And the project spec/fspec-config.json holds tui.mux with layout "[board, agent]"
     When the mux config is loaded for the project
-    Then the loaded mux orientation is Vertical
+    Then the loaded mux layout is "[board, agent]"

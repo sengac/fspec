@@ -3,6 +3,7 @@
 @session-management
 @persistence
 @BUG-251
+@BUG-433
 Feature: Faithful multimodal input archives and cold replay
   """
   Accepted input is Unicode text followed by ordered base64 images. The original

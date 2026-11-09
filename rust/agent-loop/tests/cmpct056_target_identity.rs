@@ -1,7 +1,6 @@
 #[path = "cmpct056/support.rs"]
 pub mod support;
 
-use std::time::Duration;
 use support::{assert_clean, assert_no_completion, snapshot, Fixture, Server};
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -13,7 +12,7 @@ async fn scenario_changed_target_identity_rejects_the_captured_candidate() {
     let before = snapshot(&fixture.target).await;
     let mut events = fixture.target.subscribe_to_stream();
     let operation = fixture.start();
-    tokio::time::timeout(Duration::from_secs(3), server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("builder captured target");
     // @step When the selected target model changes before the builder returns
@@ -32,7 +31,7 @@ async fn scenario_changed_target_identity_rejects_the_captured_candidate() {
         )
         .expect("change selected target identity");
     server.release.wait().await;
-    let result = tokio::time::timeout(Duration::from_secs(3), operation)
+    let result = codelet_test_helpers::deadlock_guard("operation", operation)
         .await
         .expect("bounded identity rejection")
         .expect("generation task joins");

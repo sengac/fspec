@@ -502,31 +502,28 @@ impl Tool for FileToolFacadeWrapper {
                 // BLOCK-006: emit the block notification here because the base
                 // WriteTool only re-validates the already-resolved (valid)
                 // path, so its gateway check never rejects in this flow.
-                let resolved_path =
-                    match validate_and_resolve_path_with_block_notification(
-                        self.session_id,
-                        &file_path,
-                        &format!("writing {file_path}"),
-                        "write",
-                    ) {
-                        Ok(path) => path.to_string_lossy().to_string(),
-                        Err(e) => {
-                            return Ok(FileOperationResult {
-                                success: false,
-                                content: None,
-                                error: Some(e.to_string()),
-                            });
-                        }
-                    };
+                let resolved_path = match validate_and_resolve_path_with_block_notification(
+                    self.session_id,
+                    &file_path,
+                    &format!("writing {file_path}"),
+                    "write",
+                ) {
+                    Ok(path) => path.to_string_lossy().to_string(),
+                    Err(e) => {
+                        return Ok(FileOperationResult {
+                            success: false,
+                            content: None,
+                            error: Some(e.to_string()),
+                        });
+                    }
+                };
 
-                // BLOCK-006: Check stage permissions before write
-                // Get the current work unit's stage from the session
-                let stage = get_work_unit_stage(self.session_id);
-                if let Err(blocked) = check_write_permission(&resolved_path, stage.as_deref()) {
-                    // Emit notification to TUI before returning blocked error
-                    let action = format!("writing {file_path}");
-                    emit_block_notification(self.session_id, &action, &blocked.reason);
-
+                // BLOCK-006 / BUG-449: the session's stage permissions.
+                if let Err(blocked) = crate::stage_gate::check_session_write(
+                    self.session_id,
+                    "writing",
+                    &resolved_path,
+                ) {
                     return Ok(FileOperationResult {
                         success: false,
                         content: None,
@@ -561,31 +558,28 @@ impl Tool for FileToolFacadeWrapper {
                 // BLOCK-006: emit the block notification here because the base
                 // EditTool only re-validates the already-resolved (valid)
                 // path, so its gateway check never rejects in this flow.
-                let resolved_path =
-                    match validate_and_resolve_path_with_block_notification(
-                        self.session_id,
-                        &file_path,
-                        &format!("editing {file_path}"),
-                        "edit",
-                    ) {
-                        Ok(path) => path.to_string_lossy().to_string(),
-                        Err(e) => {
-                            return Ok(FileOperationResult {
-                                success: false,
-                                content: None,
-                                error: Some(e.to_string()),
-                            });
-                        }
-                    };
+                let resolved_path = match validate_and_resolve_path_with_block_notification(
+                    self.session_id,
+                    &file_path,
+                    &format!("editing {file_path}"),
+                    "edit",
+                ) {
+                    Ok(path) => path.to_string_lossy().to_string(),
+                    Err(e) => {
+                        return Ok(FileOperationResult {
+                            success: false,
+                            content: None,
+                            error: Some(e.to_string()),
+                        });
+                    }
+                };
 
-                // BLOCK-006: Check stage permissions before edit (same as write)
-                // Get the current work unit's stage from the session
-                let stage = get_work_unit_stage(self.session_id);
-                if let Err(blocked) = check_write_permission(&resolved_path, stage.as_deref()) {
-                    // Emit notification to TUI before returning blocked error
-                    let action = format!("editing {file_path}");
-                    emit_block_notification(self.session_id, &action, &blocked.reason);
-
+                // BLOCK-006 / BUG-449: the session's stage permissions.
+                if let Err(blocked) = crate::stage_gate::check_session_write(
+                    self.session_id,
+                    "editing",
+                    &resolved_path,
+                ) {
                     return Ok(FileOperationResult {
                         success: false,
                         content: None,
@@ -623,7 +617,6 @@ impl Tool for FileToolFacadeWrapper {
 use super::fspec_facade::BoxedFspecToolFacade;
 use super::traits::{BoxedBashToolFacade, InternalBashParams};
 use crate::bash::BashArgs;
-use crate::stage_permissions::check_write_permission;
 use crate::BashTool;
 use uuid::Uuid;
 
@@ -653,9 +646,10 @@ fn check_pre_tool_hook(session_id: Uuid, tool_name: &str, args: &Value) -> Resul
 pub type BlockNotificationCallback = fn(String, String, String);
 
 /// Callback type for getting the current work unit stage from a session.
-/// This is set by the NAPI layer when initializing.
-/// The callback takes session_id_str and returns Option<String> (the stage/status).
-pub type GetWorkUnitStageCallback = fn(String) -> Option<String>;
+/// BUG-449: `Ok(None)` = the session has no work unit stage; `Err` = the
+/// session cannot be looked up (the write is refused).
+pub type GetWorkUnitStageCallback =
+    fn(String) -> Result<Option<crate::stage_gate::SessionStage>, String>;
 
 /// GIT-020: Isolation context for file access control in isolated sessions.
 ///
@@ -672,10 +666,12 @@ pub struct IsolationContext {
 
 /// GIT-020: Callback type for getting the isolation context from a session.
 /// This is set by the NAPI layer when initializing.
-/// The callback takes session_id_str and returns Option<IsolationContext>.
-/// For isolated sessions, this returns Some(IsolationContext) with worktree and blocked_project paths.
-/// For non-isolated sessions, this returns None (no restrictions).
-pub type GetEffectiveCwdCallback = fn(String) -> Option<IsolationContext>;
+/// The callback takes session_id_str and returns
+/// `Ok(Some(IsolationContext))` for an isolated session, `Ok(None)` for a
+/// found non-isolated session (no restrictions), and (BUG-404) `Err` when
+/// the session cannot be looked up — the tool layer then refuses the
+/// operation instead of treating the session as unrestricted.
+pub type GetEffectiveCwdCallback = fn(String) -> Result<Option<IsolationContext>, String>;
 
 /// Global callback for emitting block notifications.
 /// Set by codelet-napi during session initialization.
@@ -710,16 +706,29 @@ pub fn set_get_effective_cwd_callback(callback: GetEffectiveCwdCallback) {
     let _ = GET_EFFECTIVE_CWD_CALLBACK.set(callback);
 }
 
-/// Get the current work unit stage for a session.
-///
-/// Returns None if:
-/// - Callback not registered
-/// - Session not found
-/// - No work unit context attached to session
-fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
-    GET_WORK_UNIT_STAGE_CALLBACK
-        .get()
-        .and_then(|callback| callback(session_id.to_string()))
+/// BUG-447: a process that runs tools with no session manager (no isolation
+/// callback) must say so explicitly; the reason is logged with every
+/// unrestricted lookup's refusal message otherwise.
+static UNRESTRICTED_TOOL_ACCESS: std::sync::OnceLock<&'static str> = std::sync::OnceLock::new();
+
+/// BUG-447: declare that tools in this process have no session isolation
+/// (no session manager hosts sessions here, e.g. a test binary driving tools
+/// directly). Without this or [`set_get_effective_cwd_callback`], tool file
+/// access is refused.
+pub fn declare_unrestricted_tool_access(reason: &'static str) {
+    if UNRESTRICTED_TOOL_ACCESS.set(reason).is_ok() {
+        tracing::info!("tool isolation: unrestricted tool access declared ({reason})");
+    }
+}
+
+/// BUG-449: the registered work-unit stage callback, if any.
+pub(crate) fn work_unit_stage_callback() -> Option<GetWorkUnitStageCallback> {
+    GET_WORK_UNIT_STAGE_CALLBACK.get().copied()
+}
+
+/// BUG-447 / BUG-449: whether this process declared unrestricted tool access.
+pub(crate) fn unrestricted_tool_access_declared() -> bool {
+    UNRESTRICTED_TOOL_ACCESS.get().is_some()
 }
 
 /// GIT-020: Get the isolation context for a session.
@@ -731,18 +740,43 @@ fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
 /// * `session_id` - The session UUID to get isolation context for
 ///
 /// # Returns
-/// * `Some(IsolationContext)` - The isolation context for restricted access
-/// * `None` - No isolation (callback not registered, session not found, or non-isolated session)
-pub fn get_isolation_context(session_id: Uuid) -> Option<IsolationContext> {
-    GET_EFFECTIVE_CWD_CALLBACK
-        .get()
-        .and_then(|callback| callback(session_id.to_string()))
+/// * `Ok(Some(IsolationContext))` - The isolation context for restricted access
+/// * `Ok(None)` - No isolation: a non-isolated session, `Uuid::nil()` (the
+///   explicit no-session id), or (BUG-447) a process that declared
+///   unrestricted tool access
+/// * `Err` - BUG-404: the session lookup failed (malformed id, unknown
+///   session, no manager); callers must refuse the operation
+pub fn get_isolation_context(session_id: Uuid) -> Result<Option<IsolationContext>, String> {
+    if session_id.is_nil() {
+        return Ok(None);
+    }
+    match (
+        GET_EFFECTIVE_CWD_CALLBACK.get(),
+        UNRESTRICTED_TOOL_ACCESS.get(),
+    ) {
+        (Some(callback), _) => callback(session_id.to_string()),
+        (None, Some(_)) => Ok(None),
+        // BUG-447: fail closed — no callback and no explicit declaration.
+        (None, None) => Err(
+            "no isolation callback is registered in this process and unrestricted tool access \
+             was not declared"
+                .to_string(),
+        ),
+    }
 }
 
-/// Legacy alias for get_isolation_context - returns just the worktree path.
-/// Used by code that only needs the effective working directory.
-pub fn get_effective_cwd(session_id: Uuid) -> Option<PathBuf> {
-    get_isolation_context(session_id).map(|ctx| ctx.worktree_path)
+/// get_isolation_context's worktree path — the effective working directory
+/// of an isolated session (BUG-404: a failed lookup is an error).
+pub fn get_effective_cwd(session_id: Uuid) -> Result<Option<PathBuf>, String> {
+    get_isolation_context(session_id).map(|ctx| ctx.map(|ctx| ctx.worktree_path))
+}
+
+/// BUG-404: a failed isolation lookup refuses the tool call.
+pub fn isolation_lookup_error(tool_name: &'static str, message: String) -> ToolError {
+    ToolError::Validation {
+        tool: tool_name,
+        message: format!("cannot resolve the session's isolation context: {message}"),
+    }
 }
 
 /// Emit a block notification to the TUI.
@@ -794,7 +828,8 @@ pub fn validate_and_resolve_path(
     // BUG-130: Normalize Unicode whitespace (U+202F, U+00A0, etc.) to ASCII space
     // BEFORE any path resolution. This is the single gateway for all file tools.
     let normalized = crate::unicode_path::normalize_unicode_whitespace(path);
-    let isolation_ctx = get_isolation_context(session_id);
+    let isolation_ctx = get_isolation_context(session_id)
+        .map_err(|message| isolation_lookup_error(tool_name, message))?;
     validate_and_resolve_path_with_isolation(&normalized, isolation_ctx.as_ref(), tool_name)
 }
 
@@ -1899,6 +1934,12 @@ pub struct ExecOperationResult {
     pub success: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exit_code: Option<i32>,
+    /// BUG-368: the terminating signal, when the command ended without a code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signal: Option<String>,
+    /// BUG-368: `true` when the command ended but its status is unavailable.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exit_status_unavailable: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2077,8 +2118,13 @@ impl Tool for ExecToolFacadeWrapper {
         // Execute via the unified exec tool
         match self.exec_tool.call(UnifiedExecArgs(json_args)).await {
             Ok(result) => Ok(ExecOperationResult {
-                success: result.exit_code.is_none_or(|c| c == 0),
+                // BUG-368: a signal or an unavailable status is not success.
+                success: result.exit_code.is_none_or(|c| c == 0)
+                    && result.signal.is_none()
+                    && result.exit_status_unavailable.is_none(),
                 exit_code: result.exit_code,
+                signal: result.signal,
+                exit_status_unavailable: result.exit_status_unavailable,
                 session_id: result.session_id,
                 output: result.output,
                 wall_time_seconds: result.wall_time_seconds,
@@ -2091,6 +2137,8 @@ impl Tool for ExecToolFacadeWrapper {
                 Ok(ExecOperationResult {
                     success: false,
                     exit_code: None,
+                    signal: None,
+                    exit_status_unavailable: None,
                     session_id: None,
                     output: None,
                     wall_time_seconds: None,
@@ -2101,6 +2149,8 @@ impl Tool for ExecToolFacadeWrapper {
             Err(e) => Ok(ExecOperationResult {
                 success: false,
                 exit_code: None,
+                signal: None,
+                exit_status_unavailable: None,
                 session_id: None,
                 output: None,
                 wall_time_seconds: None,
@@ -2113,277 +2163,7 @@ impl Tool for ExecToolFacadeWrapper {
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
-mod hitl_wrapper_tests {
-    use super::*;
-    use crate::facade::codex::CodexRequestUserInputFacade;
-    use crate::request_user_input::{
-        clear_all_hitl_handlers, set_hitl_handler, HitlAnswer, HitlHandler, HitlResponse,
-    };
-    use serial_test::serial;
-    use std::collections::HashMap;
-    use std::sync::Arc;
-
-    /// Feature: spec/features/codex-request-user-input-facade.feature
-    ///
-    /// Scenario: CodexRequestUserInputFacade maps questions to InternalHitlParams and returns answers
-    #[tokio::test]
-    #[serial]
-    async fn test_hitl_wrapper_returns_answers() {
-        clear_all_hitl_handlers();
-        let session_id = Uuid::new_v4();
-
-        // @step Given a HITL handler is registered for the current session
-        // @step And the handler will return user-selected answers
-        let handler: HitlHandler = Arc::new(move |_sid, req| {
-            let mut answers = HashMap::new();
-            for q in &req.questions {
-                answers.insert(
-                    q.id.clone(),
-                    HitlAnswer {
-                        selected: vec!["Option A".to_string()],
-                        other: Some("notes".to_string()),
-                    },
-                );
-            }
-            Ok(HitlResponse::Answered { answers })
-        });
-        set_hitl_handler(session_id, Some(handler));
-
-        // @step When the Codex model calls request_user_input with 2 questions each having 2 options
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-        let args = FacadeArgs(serde_json::json!({
-            "questions": [
-                {
-                    "id": "approach",
-                    "header": "Approach",
-                    "question": "Which approach?",
-                    "options": [
-                        { "label": "Option A", "description": "First" },
-                        { "label": "Option B", "description": "Second" }
-                    ]
-                },
-                {
-                    "id": "priority",
-                    "header": "Priority",
-                    "question": "What priority?",
-                    "options": [
-                        { "label": "High", "description": "Now" },
-                        { "label": "Low", "description": "Later" }
-                    ]
-                }
-            ]
-        }));
-        let result = wrapper.call(args).await;
-
-        // @step Then the facade passes questions to execute_hitl unchanged
-        // @step And the wrapper returns JSON with answers keyed by question id
-        assert!(result.is_ok());
-        let output = result.unwrap();
-        let value: serde_json::Value = serde_json::from_str(&output.0).unwrap();
-
-        // @step And each answer contains selected labels and optional freeform text
-        assert!(value["answers"]["approach"]["selected"].is_array());
-        assert_eq!(value["answers"]["approach"]["selected"][0], "Option A");
-        assert_eq!(value["answers"]["approach"]["other"], "notes");
-        assert!(value["answers"]["priority"]["selected"].is_array());
-
-        clear_all_hitl_handlers();
-    }
-
-    /// Scenario: Headless mode returns tool error about unavailable session mode
-    #[tokio::test]
-    #[serial]
-    async fn test_hitl_wrapper_headless_mode_error() {
-        clear_all_hitl_handlers();
-        let session_id = Uuid::new_v4();
-
-        // @step Given no HITL handler is registered for the current session
-        // (no handler set)
-
-        // @step When the Codex model calls request_user_input with valid questions
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-        let args = FacadeArgs(serde_json::json!({
-            "questions": [{
-                "id": "test_q",
-                "header": "Test",
-                "question": "A question?",
-                "options": [
-                    { "label": "A", "description": "First" },
-                    { "label": "B", "description": "Second" }
-                ]
-            }]
-        }));
-        let result = wrapper.call(args).await;
-
-        // @step Then the wrapper returns a tool error
-        assert!(result.is_err());
-
-        // @step And the error message contains "request_user_input is unavailable in the current session mode"
-        let err_msg = result.unwrap_err().to_string();
-        assert!(
-            err_msg.contains("request_user_input is unavailable in the current session mode"),
-            "Expected mode error, got: {err_msg}"
-        );
-
-        clear_all_hitl_handlers();
-    }
-
-    /// Scenario: Cancellation converts to Codex-specific tool error
-    #[tokio::test]
-    #[serial]
-    async fn test_hitl_wrapper_cancellation_to_error() {
-        clear_all_hitl_handlers();
-        let session_id = Uuid::new_v4();
-
-        // @step Given a HITL handler is registered for the current session
-        // @step And the handler will return a cancellation
-        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
-        set_hitl_handler(session_id, Some(handler));
-
-        // @step When the Codex model calls request_user_input with valid questions
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-        let args = FacadeArgs(serde_json::json!({
-            "questions": [{
-                "id": "test_q",
-                "header": "Test",
-                "question": "A question?",
-                "options": [
-                    { "label": "A", "description": "First" },
-                    { "label": "B", "description": "Second" }
-                ]
-            }]
-        }));
-        let result = wrapper.call(args).await;
-
-        // @step Then the wrapper returns a tool error
-        assert!(result.is_err());
-
-        // @step And the error message is "request_user_input was cancelled before receiving a response"
-        let err_msg = result.unwrap_err().to_string();
-        assert!(
-            err_msg.contains("request_user_input was cancelled before receiving a response"),
-            "Expected cancellation error, got: {err_msg}"
-        );
-
-        clear_all_hitl_handlers();
-    }
-
-    /// Scenario: Validation rejects invalid questions via execute_hitl
-    #[tokio::test]
-    #[serial]
-    async fn test_hitl_wrapper_validation_error() {
-        clear_all_hitl_handlers();
-        let session_id = Uuid::new_v4();
-
-        // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
-        set_hitl_handler(session_id, Some(handler));
-
-        // @step When the Codex model calls request_user_input with a question header "This Is Too Long"
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-        let args = FacadeArgs(serde_json::json!({
-            "questions": [{
-                "id": "test_q",
-                "header": "This Is Too Long",
-                "question": "A question?",
-                "options": [
-                    { "label": "A", "description": "First" },
-                    { "label": "B", "description": "Second" }
-                ]
-            }]
-        }));
-        let result = wrapper.call(args).await;
-
-        // @step Then the wrapper returns a tool error about header length exceeding 12 characters
-        assert!(result.is_err());
-        let err_msg = result.unwrap_err().to_string();
-        assert!(
-            err_msg.contains("exceeds maximum of 12 characters"),
-            "Expected header length error, got: {err_msg}"
-        );
-
-        clear_all_hitl_handlers();
-    }
-
-    /// Scenario: Freeform-only question without options returns answer
-    #[tokio::test]
-    #[serial]
-    async fn test_hitl_wrapper_freeform_only() {
-        clear_all_hitl_handlers();
-        let session_id = Uuid::new_v4();
-
-        // @step Given a HITL handler is registered for the current session
-        // @step And the handler will return a freeform-only answer
-        let handler: HitlHandler = Arc::new(|_, _| {
-            let mut answers = HashMap::new();
-            answers.insert(
-                "feedback".to_string(),
-                HitlAnswer {
-                    selected: vec![],
-                    other: Some("User typed this".to_string()),
-                },
-            );
-            Ok(HitlResponse::Answered { answers })
-        });
-        set_hitl_handler(session_id, Some(handler));
-
-        // @step When the Codex model calls request_user_input with a question without options
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-        let args = FacadeArgs(serde_json::json!({
-            "questions": [{
-                "id": "feedback",
-                "header": "Feedback",
-                "question": "Any additional feedback?"
-            }]
-        }));
-        let result = wrapper.call(args).await;
-        assert!(result.is_ok());
-
-        // @step Then the wrapper returns JSON with an answer containing empty selected array
-        let output = result.unwrap();
-        let value: serde_json::Value = serde_json::from_str(&output.0).unwrap();
-        let feedback = &value["answers"]["feedback"];
-        assert_eq!(feedback["selected"].as_array().unwrap().len(), 0);
-
-        // @step And the answer contains populated freeform text in the other field
-        assert_eq!(feedback["other"], "User typed this");
-
-        clear_all_hitl_handlers();
-    }
-
-    /// Scenario: Facade is registered in Codex create_rig_agent
-    /// Scenario: Facade schema has additionalProperties false
-    #[tokio::test]
-    async fn test_hitl_wrapper_tool_name_and_definition() {
-        // @step Given a Codex agent built with create_rig_agent
-        // @step Given a CodexRequestUserInputFacade instance
-        let session_id = Uuid::new_v4();
-        let facade = Arc::new(CodexRequestUserInputFacade) as BoxedHitlToolFacade;
-        let wrapper = HitlToolFacadeWrapper::new(facade, session_id);
-
-        // @step When the agent tool definitions are inspected
-        // @step When the tool definition schema is inspected
-        let def = <HitlToolFacadeWrapper as Tool>::definition(&wrapper, String::new()).await;
-
-        // @step Then the tool list contains "request_user_input"
-        assert_eq!(wrapper.name(), "request_user_input");
-
-        // @step And request_user_input uses HitlToolFacadeWrapper with CodexRequestUserInputFacade
-        assert_eq!(wrapper.provider(), "codex");
-
-        // @step Then the schema has additionalProperties set to false
-        assert_eq!(def.parameters["additionalProperties"], false);
-
-        // @step And the schema has "questions" in the required array
-        assert_eq!(def.name, "request_user_input");
-        assert_eq!(def.parameters["required"], serde_json::json!(["questions"]));
-    }
-}
+mod hitl_wrapper_tests;
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
@@ -2487,609 +2267,12 @@ mod bridge_wrapper_tests {
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
-mod worktree_isolation_tests {
-    use super::*;
-
-    // ========================================================================
-    // Tests for validate_and_resolve_path (TOOL-014 IMPLEMENTATION)
-    // ========================================================================
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Tools operate normally with Uuid::nil() in tests
-    #[test]
-    fn test_validate_and_resolve_path_no_worktree() {
-        // @step Given a non-isolated session with Uuid::nil()
-        // (effective_cwd is None)
-
-        // @step When get_effective_cwd is called
-        // @step Then it should return None
-        // @step And tools should operate in the current directory without path validation
-        let result = validate_and_resolve_path_with_cwd("src/file.rs", None, "read");
-        assert!(result.is_ok(), "Should succeed without worktree");
-        assert_eq!(result.unwrap(), PathBuf::from("src/file.rs"));
-
-        let result = validate_and_resolve_path_with_cwd("/absolute/path/file.rs", None, "read");
-        assert!(
-            result.is_ok(),
-            "Absolute path should succeed without worktree"
-        );
-        assert_eq!(result.unwrap(), PathBuf::from("/absolute/path/file.rs"));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: ReadTool resolves relative path to worktree in isolated session
-    #[test]
-    fn test_validate_and_resolve_relative_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When ReadTool reads "src/file.rs"
-        let result = validate_and_resolve_path_with_cwd("src/file.rs", Some(&worktree), "read");
-
-        // @step Then it should read from ".fspec/worktrees/abc123/src/file.rs"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/file.rs"),
-            "Relative path should be resolved to worktree"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: LsTool lists worktree root in isolated session
-    #[test]
-    fn test_validate_and_resolve_dot_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When LsTool lists "."
-        let result = validate_and_resolve_path_with_cwd(".", Some(&worktree), "ls");
-
-        // @step Then it should list contents of ".fspec/worktrees/abc123/"
-        assert!(result.is_ok(), "Should resolve dot path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/.")
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: ReadTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_absolute_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When ReadTool attempts to read "/project/src/main.rs"
-        let result =
-            validate_and_resolve_path_with_cwd("/project/src/main.rs", Some(&worktree), "read");
-
-        // @step Then it should return ToolError::Validation with tool "read"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "read", .. }));
-        assert!(
-            err.to_string().contains("blocked") || err.to_string().contains("outside"),
-            "Error should mention worktree isolation: {err}"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: WriteTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_write_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When WriteTool attempts to write to "/project/src/new.rs"
-        let result =
-            validate_and_resolve_path_with_cwd("/project/src/new.rs", Some(&worktree), "write");
-
-        // @step Then it should return ToolError::Validation with tool "write"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "write", .. }));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: EditTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_edit_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When EditTool attempts to edit "/project/src/lib.rs"
-        let result =
-            validate_and_resolve_path_with_cwd("/project/src/lib.rs", Some(&worktree), "edit");
-
-        // @step Then it should return ToolError::Validation with tool "edit"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "edit", .. }));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GrepTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_grep_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When GrepTool attempts to search with path "/project/src"
-        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "grep");
-
-        // @step Then it should return ToolError::Validation with tool "grep"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "grep", .. }));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GlobTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_glob_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When GlobTool attempts to search with path "/project/src"
-        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "glob");
-
-        // @step Then it should return ToolError::Validation with tool "glob"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "glob", .. }));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: LsTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_ls_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When LsTool attempts to list "/project/src"
-        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "ls");
-
-        // @step Then it should return ToolError::Validation with tool "ls"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "ls", .. }));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_astgrep_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When AstGrepTool attempts to search with path "/project/src"
-        let result =
-            validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "ast_grep");
-
-        // @step Then it should return ToolError::Validation with tool "ast_grep"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(
-            err,
-            ToolError::Validation {
-                tool: "ast_grep",
-                ..
-            }
-        ));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepRefactorTool rejects absolute path outside worktree
-    #[test]
-    fn test_validate_and_resolve_path_rejects_astgrep_refactor_outside_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When AstGrepRefactorTool attempts to refactor "/project/src/lib.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src/lib.rs",
-            Some(&worktree),
-            "ast_grep_refactor",
-        );
-
-        // @step Then it should return ToolError::Validation with tool "ast_grep_refactor"
-        assert!(result.is_err(), "Should reject path outside worktree");
-
-        // @step And the error message should contain "outside isolated worktree"
-        let err = result.unwrap_err();
-        assert!(matches!(
-            err,
-            ToolError::Validation {
-                tool: "ast_grep_refactor",
-                ..
-            }
-        ));
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: WriteTool writes to worktree path in isolated session
-    #[test]
-    fn test_validate_and_resolve_path_resolves_relative_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When WriteTool writes to "src/new.rs"
-        let result = validate_and_resolve_path_with_cwd("src/new.rs", Some(&worktree), "write");
-
-        // @step Then the file should be created at ".fspec/worktrees/abc123/src/new.rs"
-        assert!(result.is_ok(), "Should resolve relative path to worktree");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/new.rs")
-        );
-
-        // @step And the main project directory should be unchanged
-        // (This is verified by the path being within worktree, not main project)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Tools operate normally with Uuid::nil() in tests
-    #[test]
-    fn test_validate_and_resolve_path_allows_all_paths_with_nil_session() {
-        // @step Given a non-isolated session with Uuid::nil()
-        // (effective_cwd is None)
-
-        // @step When get_effective_cwd is called
-        // @step Then it should return None
-        // (simulated by passing None to validate_and_resolve_path_with_cwd)
-
-        // @step And tools should operate in the current directory without path validation
-        let result = validate_and_resolve_path_with_cwd("/any/absolute/path", None, "read");
-        assert!(
-            result.is_ok(),
-            "Should allow any path when no worktree isolation"
-        );
-        assert_eq!(result.unwrap(), PathBuf::from("/any/absolute/path"));
-
-        let result = validate_and_resolve_path_with_cwd("relative/path", None, "write");
-        assert!(
-            result.is_ok(),
-            "Should allow relative paths when no worktree isolation"
-        );
-        assert_eq!(result.unwrap(), PathBuf::from("relative/path"));
-    }
-
-    // ========================================================================
-    // Additional Happy Path Tests for Tool-Specific Scenarios
-    // ========================================================================
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: WriteTool writes to worktree path in isolated session
-    #[test]
-    fn test_write_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When WriteTool writes to "src/new.rs"
-        let result = validate_and_resolve_path_with_cwd("src/new.rs", Some(&worktree), "write");
-
-        // @step Then the file should be created at ".fspec/worktrees/abc123/src/new.rs"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/new.rs")
-        );
-
-        // @step And the main project directory should be unchanged
-        // (Verified by path being within worktree)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: EditTool edits file in worktree in isolated session
-    #[test]
-    fn test_edit_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step And a file exists at ".fspec/worktrees/abc123/src/lib.rs"
-        // (File existence is checked by EditTool, not path validation)
-
-        // @step When EditTool edits "src/lib.rs"
-        let result = validate_and_resolve_path_with_cwd("src/lib.rs", Some(&worktree), "edit");
-
-        // @step Then it should modify ".fspec/worktrees/abc123/src/lib.rs"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/lib.rs")
-        );
-
-        // @step And the main project file should be unchanged
-        // (Verified by path being within worktree)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GrepTool searches within worktree in isolated session
-    #[test]
-    fn test_grep_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When GrepTool searches with path "src/"
-        let result = validate_and_resolve_path_with_cwd("src/", Some(&worktree), "grep");
-
-        // @step Then it should search within ".fspec/worktrees/abc123/src/"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/")
-        );
-
-        // @step And it should not search the main project directory
-        // (Verified by path being within worktree)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GlobTool finds files only within worktree in isolated session
-    #[test]
-    fn test_glob_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When GlobTool searches for "**/*.rs"
-        // Note: GlobTool uses "." as default path if not specified
-        let result = validate_and_resolve_path_with_cwd(".", Some(&worktree), "glob");
-
-        // @step Then it should only return files within ".fspec/worktrees/abc123/"
-        assert!(result.is_ok(), "Should resolve dot path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/.")
-        );
-
-        // @step And it should not return files from the main project
-        // (Verified by search starting within worktree)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepTool searches within worktree in isolated session
-    #[test]
-    fn test_astgrep_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step When AstGrepTool searches with path "src/"
-        let result = validate_and_resolve_path_with_cwd("src/", Some(&worktree), "ast_grep");
-
-        // @step Then it should search within ".fspec/worktrees/abc123/src/"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/")
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepRefactorTool modifies worktree copy only
-    #[test]
-    fn test_astgrep_refactor_tool_resolves_to_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
-
-        // @step And a file exists at ".fspec/worktrees/abc123/src/lib.rs"
-        // (File existence is checked by AstGrepRefactorTool, not path validation)
-
-        // @step When AstGrepRefactorTool refactors "src/lib.rs"
-        let result =
-            validate_and_resolve_path_with_cwd("src/lib.rs", Some(&worktree), "ast_grep_refactor");
-
-        // @step Then it should modify ".fspec/worktrees/abc123/src/lib.rs"
-        assert!(result.is_ok(), "Should resolve relative path");
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("/project/.fspec/worktrees/abc123/src/lib.rs")
-        );
-
-        // @step And the main project file should be unchanged
-        // (Verified by path being within worktree)
-    }
-
-    // ============================================================================
-    // REQUIREMENT 1: CONSTRUCTOR SIGNATURE - session_id IS MANDATORY (TOOL-014)
-    // These tests verify ALL tools REQUIRE session_id in their constructor.
-    // This is a compile-time guarantee - tools cannot be instantiated without session_id.
-    // ============================================================================
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: ReadTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_read_tool_requires_session_id() {
-        use crate::ReadTool;
-
-        // @step Given ReadTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be ReadTool::new(session_id: Uuid)
-        let _tool = ReadTool::new(session_id);
-
-        // @step And calling ReadTool::new() without session_id MUST fail to compile
-        // Verified at compile time - no parameterless constructor exists
-
-        // @step And ReadTool MUST NOT implement Default trait
-        // Verified at compile time - Default is not implemented
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: WriteTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_write_tool_requires_session_id() {
-        use crate::WriteTool;
-
-        // @step Given WriteTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be WriteTool::new(session_id: Uuid)
-        let _tool = WriteTool::new(session_id);
-
-        // @step And calling WriteTool::new() without session_id MUST fail to compile
-        // @step And WriteTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: EditTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_edit_tool_requires_session_id() {
-        use crate::EditTool;
-
-        // @step Given EditTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be EditTool::new(session_id: Uuid)
-        let _tool = EditTool::new(session_id);
-
-        // @step And calling EditTool::new() without session_id MUST fail to compile
-        // @step And EditTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GrepTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_grep_tool_requires_session_id() {
-        use crate::GrepTool;
-
-        // @step Given GrepTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be GrepTool::new(session_id: Uuid)
-        let _tool = GrepTool::new(session_id);
-
-        // @step And calling GrepTool::new() without session_id MUST fail to compile
-        // @step And GrepTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: GlobTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_glob_tool_requires_session_id() {
-        use crate::GlobTool;
-
-        // @step Given GlobTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be GlobTool::new(session_id: Uuid)
-        let _tool = GlobTool::new(session_id);
-
-        // @step And calling GlobTool::new() without session_id MUST fail to compile
-        // @step And GlobTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: LsTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_ls_tool_requires_session_id() {
-        use crate::LsTool;
-
-        // @step Given LsTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be LsTool::new(session_id: Uuid)
-        let _tool = LsTool::new(session_id);
-
-        // @step And calling LsTool::new() without session_id MUST fail to compile
-        // @step And LsTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_ast_grep_tool_requires_session_id() {
-        use crate::AstGrepTool;
-
-        // @step Given AstGrepTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be AstGrepTool::new(session_id: Uuid)
-        let _tool = AstGrepTool::new(session_id);
-
-        // @step And calling AstGrepTool::new() without session_id MUST fail to compile
-        // @step And AstGrepTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: AstGrepRefactorTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_ast_grep_refactor_tool_requires_session_id() {
-        use crate::AstGrepRefactorTool;
-
-        // @step Given AstGrepRefactorTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be AstGrepRefactorTool::new(session_id: Uuid)
-        let _tool = AstGrepRefactorTool::new(session_id);
-
-        // @step And calling AstGrepRefactorTool::new() without session_id MUST fail to compile
-        // @step And AstGrepRefactorTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: WebSearchTool REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_web_search_tool_requires_session_id() {
-        use crate::WebSearchTool;
-
-        // @step Given WebSearchTool is being instantiated
-        let session_id = Uuid::new_v4();
-
-        // @step Then the constructor signature MUST be WebSearchTool::new(session_id: Uuid)
-        let _tool = WebSearchTool::new(session_id);
-
-        // @step And calling WebSearchTool::new() without session_id MUST fail to compile
-        // @step And WebSearchTool MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: SearchToolFacadeWrapper REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_search_tool_facade_wrapper_requires_session_id() {
-        use crate::facade::GeminiSearchFileContentFacade;
-        use std::sync::Arc;
-
-        // @step Given SearchToolFacadeWrapper is being instantiated
-        let session_id = Uuid::new_v4();
-        let facade = Arc::new(GeminiSearchFileContentFacade) as BoxedSearchToolFacade;
-
-        // @step Then the constructor signature MUST be SearchToolFacadeWrapper::new(facade, session_id: Uuid)
-        let _tool = SearchToolFacadeWrapper::new(facade, session_id);
-
-        // @step And calling SearchToolFacadeWrapper::new() without session_id MUST fail to compile
-        // @step And SearchToolFacadeWrapper MUST NOT implement Default trait
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: LsToolFacadeWrapper REQUIRES session_id parameter in constructor
-    #[test]
-    fn test_ls_tool_facade_wrapper_requires_session_id() {
-        use crate::facade::GeminiListDirectoryFacade;
-        use std::sync::Arc;
-
-        // @step Given LsToolFacadeWrapper is being instantiated
-        let session_id = Uuid::new_v4();
-        let facade = Arc::new(GeminiListDirectoryFacade) as BoxedLsToolFacade;
-
-        // @step Then the constructor signature MUST be LsToolFacadeWrapper::new(facade, session_id: Uuid)
-        let _tool = LsToolFacadeWrapper::new(facade, session_id);
-
-        // @step And calling LsToolFacadeWrapper::new() without session_id MUST fail to compile
-        // @step And LsToolFacadeWrapper MUST NOT implement Default trait
-    }
-}
+mod worktree_resolve_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod worktree_reject_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod worktree_session_id_tests;

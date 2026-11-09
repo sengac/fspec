@@ -1,21 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "CreateSessionDialog defaults selection to \"Yes\" when opened without a preselection",
+      "name": "CreateSessionDialog defaults selection to \"Start\" when opened without a preselection",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "105-121",
+          "lines": "116-130",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -35,9 +29,17 @@
                 79,
                 80,
                 81,
-                82,
-                83
-              ]
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "/// CreateSessionDialog rendering at typical terminal widths.",
+              "lastLine": "/// Construct a fresh dialog. `preselect=None` defaults to"
             }
           ]
         }
@@ -48,48 +50,49 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "123-135",
+          "lines": "133-145",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+                101,
+                102,
+                103,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "selected: preselect.unwrap_or(CreateSessionOption::Yes),",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "CreateSessionDialog can be preselected to \"Yes - Isolated\" via /isolation shortcut",
+      "name": "CreateSessionDialog can be preselected to \"Start in Worktree\" via /isolation shortcut",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "137-143",
+          "lines": "148-155",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79,
+                80,
+                81,
+                84,
+                85
+              ],
+              "firstLine": "/// Priority::Foreground modal dialog for picking a session-creation mode.",
+              "lastLine": "pending_action: Option<Action>,"
             }
           ]
         }
@@ -100,20 +103,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "145-164",
+          "lines": "158-177",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "self.title.clone()",
+              "lastLine": "pub fn accent(&self) -> Accent {"
             }
           ]
         }
@@ -124,80 +129,86 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "166-181",
+          "lines": "180-195",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "/// Test accessor — the currently highlighted option.",
+              "lastLine": "/// `\"Start New Agent?\"`."
             }
           ]
         }
       ]
     },
     {
-      "name": "CreateSessionDialog Enter on \"Yes\" emits CreateSessionSubmitted{isolated:false}",
+      "name": "CreateSessionDialog Enter on \"Start\" emits CreateSessionSubmitted{isolated:false}",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "183-209",
+          "lines": "198-224",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "Some(1) => self.commit(CreateSessionOption::Isolated),",
+              "lastLine": "let next = (self.selected_index() + 1) % OPTIONS.len();"
             }
           ]
         }
       ]
     },
     {
-      "name": "CreateSessionDialog Enter on \"Yes - Isolated\" emits CreateSessionSubmitted{isolated:true}",
+      "name": "CreateSessionDialog Enter on \"Start in Worktree\" emits CreateSessionSubmitted{isolated:true}",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "211-237",
+          "lines": "227-253",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "Some(1) => self.commit(CreateSessionOption::Isolated),",
+              "lastLine": "let next = (self.selected_index() + 1) % OPTIONS.len();"
             }
           ]
         }
@@ -208,26 +219,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "239-265",
+          "lines": "256-282",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "Some(1) => self.commit(CreateSessionOption::Isolated),",
+              "lastLine": "let next = (self.selected_index() + 1) % OPTIONS.len();"
             }
           ]
         }
@@ -238,39 +251,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "267-291",
+          "lines": "285-310",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
               "lines": [
-                151,
-                152,
-                153,
-                154,
-                155
-              ]
+                176,
+                177,
+                178
+              ],
+              "firstLine": "/// TUI-112: route a left-button press. A click on a button commits",
+              "lastLine": "/// outside the dialog frame, is Ignored (R4/R5). Wheel behavior is"
             }
           ]
         }
       ]
     },
     {
-      "name": "/isolation slash command opens the CreateSessionDialog with \"Yes - Isolated\" preselected",
+      "name": "/isolation slash command opens the CreateSessionDialog with \"Start in Worktree\" preselected",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "307-330",
+          "lines": "329-374",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// UPD-002: bare palette pick checks + installs the latest",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,11 +296,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "332-373",
+          "lines": "377-422",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                63,
+                64,
                 65,
                 66,
                 67,
@@ -295,23 +312,6 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -325,8 +325,25 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                112,
+                114,
+                115,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "/// returned SessionId is wrapped in `Action::SessionCreated` and",
+              "lastLine": "self.pending_tasks.push(handle);"
             }
           ]
         }
@@ -337,11 +354,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "375-413",
+          "lines": "425-467",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                63,
+                64,
                 65,
                 66,
                 67,
@@ -351,23 +370,6 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -381,8 +383,25 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                112,
+                114,
+                115,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "/// returned SessionId is wrapped in `Action::SessionCreated` and",
+              "lastLine": "self.pending_tasks.push(handle);"
             }
           ]
         }
@@ -393,24 +412,33 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "415-434",
+          "lines": "470-488",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ],
+              "firstLine": "/// wire its chrome/attachments. Extracted from `App::dispatch` so the",
+              "lastLine": "// re-fire the chrome/supervisor/pending-input fetches. A spawned"
             }
           ]
         }
@@ -421,22 +449,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "436-460",
+          "lines": "491-515",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91
-              ]
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "self.navigator.active_view = crate::views::ViewMode::Agent;",
+              "lastLine": ".board_store"
             }
           ]
         }
@@ -447,34 +477,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
-          "lines": "462-484",
+          "lines": "518-541",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
+                68,
+                69,
                 70,
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "/// RPC-097: if the user confirmed the dialog while still on",
+              "lastLine": ".board_store"
             }
           ]
         }
@@ -493,6 +525,6 @@
       "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
       "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
-    "totalLinesCovered": 592
+    "totalLinesCovered": 624
   }
 }

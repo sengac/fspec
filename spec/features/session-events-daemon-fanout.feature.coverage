@@ -5,209 +5,13 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
-          "lines": "87-149",
+          "lines": "85-148",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/sessions.rs",
               "lines": [
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326
-              ]
-            },
-            {
-              "file": "rust/rpc-server/src/envelope.rs",
-              "lines": [
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Session destroyed on any client is pushed to all connected clients",
-      "testMappings": [
-        {
-          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
-          "lines": "87-150",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/session_manager.rs",
-              "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                1327,
-                1328,
-                1329,
-                1330,
-                1331,
-                1332,
-                1333,
-                1334,
-                1335,
-                1336,
-                1337,
-                1338,
-                1339,
-                1340
-              ]
-            },
-            {
-              "file": "rust/rpc-server/src/envelope.rs",
-              "lines": [
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A connecting client is re-told about the sessions that are already open",
-      "testMappings": [
-        {
-          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
-          "lines": "154-193",
-          "implMappings": [
-            {
-              "file": "rust/rpc-server/src/server.rs",
-              "lines": [
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            },
-            {
-              "file": "rust/sessions/src/session_manager.rs",
-              "lines": [
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A connecting client always receives an open-session snapshot even when no sessions are open",
-      "testMappings": [
-        {
-          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
-          "lines": "197-225",
-          "implMappings": [
-            {
-              "file": "rust/rpc-server/src/server.rs",
-              "lines": [
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Client-pushed session event frames are rejected as reserved",
-      "testMappings": [
-        {
-          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
-          "lines": "229-282",
-          "implMappings": [
-            {
-              "file": "rust/rpc-server/src/pump.rs",
-              "lines": [
+                86,
+                87,
                 88,
                 89,
                 90,
@@ -221,30 +25,260 @@
                 98,
                 99,
                 100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
+                115,
                 116,
                 117,
                 118,
                 119,
                 120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                353,
-                354,
-                355,
-                356,
-                357
-              ]
+                121
+              ],
+              "firstLine": "SessionStatus::Idle => \"idle\",",
+              "lastLine": "/// TS shape stays a flat string."
+            },
+            {
+              "file": "rust/rpc-server/src/envelope.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "CmdRes,",
+              "lastLine": "/// variant indices stay stable (forward-compat rule set in RPC-007)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session destroyed on any client is pushed to all connected clients",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "85-149",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                203,
+                203
+              ],
+              "firstLine": "/// RPC-433: per-manager broadcast of session-removed events. Fires",
+              "lastLine": "mod manager_impl_1;"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                5,
+                6,
+                6,
+                10
+              ],
+              "firstLine": "impl SessionManager {",
+              "lastLine": "let (chunks_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ],
+              "firstLine": "tracing::warn!(session_id = %session_id.value, \"input refused: session is not live\");",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/rpc-server/src/envelope.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "CmdRes,",
+              "lastLine": "/// variant indices stay stable (forward-compat rule set in RPC-007)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A connecting client is re-told about the sessions that are already open",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "153-194",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "// RPC-433: connect-time open-session snapshot (rule R5). Sent right",
+              "lastLine": "let _ = envelope_out_tx.send(Envelope::SessionSnapshot(live_sessions));"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                72,
+                73,
+                74,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "/// Accessor for the logs broadcast sender.",
+              "lastLine": "&self.session_created_tx"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A connecting client always receives an open-session snapshot even when no sessions are open",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "194-225",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "// RPC-433: connect-time open-session snapshot (rule R5). Sent right",
+              "lastLine": "let _ = envelope_out_tx.send(Envelope::SessionSnapshot(live_sessions));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Client-pushed session event frames are rejected as reserved",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "227-282",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/pump/inbound.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "/// Called when an `Envelope::SessionEvent(event)` arrives",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-server/src/pump.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "Envelope::SessionEvent(event) => {",
+              "lastLine": "inbound.on_session_snapshot(payload);"
             }
           ]
         }
@@ -259,12 +293,15 @@
       "rust/rpc-server/tests/rpc433_session_event_fan_out.rs"
     ],
     "implFiles": [
-      "rust/rpc-types/src/lib.rs",
+      "rust/rpc-types/src/sessions.rs",
       "rust/rpc-server/src/envelope.rs",
       "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/session_manager/manager_impl_1.rs",
+      "rust/sessions/src/session_manager/manager_impl_6.rs",
       "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/pump/inbound.rs",
       "rust/rpc-server/src/pump.rs"
     ],
-    "totalLinesCovered": 405
+    "totalLinesCovered": 411
   }
 }

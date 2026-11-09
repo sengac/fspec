@@ -12,7 +12,7 @@ use super::super::{
 const EXAMPLE_OUTPUT: &str = "{\n  \"items\": [\n    {\"id\": 0, \"type\": \"domain-event\", \"text\": \"UserRegistered\"},\n    {\"id\": 1, \"type\": \"command\", \"text\": \"RegisterUser\"},\n    {\"id\": 2, \"type\": \"policy\", \"text\": \"Send welcome email\", \"when\": \"UserRegistered\", \"then\": \"SendWelcomeEmail\"}\n  ],\n  \"nextItemId\": 3\n}";
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
-    name: "work-unit-id",
+    name: "workUnitId",
     description: "Work unit ID to query",
     required: true,
 }];
@@ -47,11 +47,11 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit not found",
-        fix: "Ensure work unit exists: fspec show-work-unit <id>",
+        fix: "Ensure work unit exists: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "No Event Storm artifacts",
-        fix: "Add Event Storm items first: fspec add-domain-event <id> <text>",
+        fix: "Add Event Storm items first: fspec add-domain-event <workUnitId> <text>",
     },
 ];
 
@@ -65,7 +65,7 @@ const NOTES: &[&str] = &[
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "show-event-storm",
     description: "Display Event Storm artifacts as JSON (no semantic interpretation)",
-    usage: Some("fspec show-event-storm <work-unit-id>"),
+    usage: Some("fspec show-event-storm <workUnitId>"),
     arguments: ARGUMENTS,
     options: &[],
     examples: EXAMPLES,

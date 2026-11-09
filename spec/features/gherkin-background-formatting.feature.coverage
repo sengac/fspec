@@ -4,8 +4,8 @@
       "name": "Formatting a Background-containing file does not duplicate scenarios",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1009-1033",
+          "file": "rust/fspec-core/src/io/gherkin_format/background_tests.rs",
+          "lines": "28-54",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -51,7 +51,9 @@
                 368,
                 369,
                 370
-              ]
+              ],
+              "firstLine": "// Insert comments before Background.",
+              "lastLine": "find_first_tag_line("
             }
           ]
         }
@@ -61,8 +63,8 @@
       "name": "Formatting a Background-containing file is idempotent",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1037-1049",
+          "file": "rust/fspec-core/src/io/gherkin_format/background_tests.rs",
+          "lines": "56-71",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -108,7 +110,9 @@
                 368,
                 369,
                 370
-              ]
+              ],
+              "firstLine": "// Insert comments before Background.",
+              "lastLine": "find_first_tag_line("
             }
           ]
         }
@@ -118,8 +122,8 @@
       "name": "A Background with steps is formatted with its steps",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1051-1074",
+          "file": "rust/fspec-core/src/io/gherkin_format/background_tests.rs",
+          "lines": "73-98",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -165,7 +169,9 @@
                 368,
                 369,
                 370
-              ]
+              ],
+              "firstLine": "// Insert comments before Background.",
+              "lastLine": "find_first_tag_line("
             }
           ]
         }
@@ -175,8 +181,8 @@
       "name": "A Rule with a Background is formatted without duplication",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1078-1098",
+          "file": "rust/fspec-core/src/io/gherkin_format/background_tests.rs",
+          "lines": "100-121",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -242,7 +248,9 @@
                 468,
                 469,
                 470
-              ]
+              ],
+              "firstLine": "let desc_end = bg",
+              "lastLine": "format_step(step, lines, base_indent + 2, comment_map);"
             }
           ]
         }
@@ -254,11 +262,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-core/src/io/gherkin_format.rs"
+      "rust/fspec-core/src/io/gherkin_format/background_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/io/gherkin_format.rs"
     ],
-    "totalLinesCovered": 267
+    "totalLinesCovered": 275
   }
 }

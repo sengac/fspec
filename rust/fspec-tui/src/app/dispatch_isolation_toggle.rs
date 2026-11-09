@@ -19,7 +19,7 @@
 //!    only the worktree listing disagrees).
 //! 4. Everything else (non-isolated, no tracked worktree) → the
 //!    pre-existing RPC-060 path: open the CreateSessionDialog
-//!    preselecting `Yes - Isolated`.
+//!    preselecting `Start in Worktree`.
 //!
 //! The list probe is best-effort: a `list_session_worktrees` error is
 //! swallowed (the toggle still degrades to the RPC-060 dialog path —

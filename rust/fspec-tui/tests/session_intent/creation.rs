@@ -1,5 +1,6 @@
 //! Feature: spec/features/session-creation-completion.feature
 use super::*;
+use codelet_test_helpers::TestResult;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -24,7 +25,7 @@ async fn story_creation_retains_its_target_across_observation_and_focus_races() 
             app.agent_view_store_mut().focus_session_index(0);
             app.agent_view_store_mut()
                 .set_current_work_unit(Some("AUTH-001".into()), Some("implementing".into()));
-            settle(&mut app).await;
+            settle(&mut app).await?;
             // @step Then only the returned new session is assigned the requested story once
             assert_eq!(backend.set_work_unit_context_calls(), assignments + 1);
             assert_eq!(
@@ -65,13 +66,13 @@ async fn cancelling_story_creation_cannot_leak_intent() -> TestResult {
     let assignments = backend.set_work_unit_context_calls();
     enter(&mut app, false);
     // @step When the user cancels and subsequently creates a generic agent
-    cancel(&mut app).await;
+    cancel(&mut app).await?;
     assert_eq!(backend.set_work_unit_context_calls(), assignments);
     assert_eq!(backend.create_session_calls(), 0);
     script(&backend, false, "blank");
     open_generic(&mut app);
     assert!(text(&mut app).contains("Start New Agent?"));
-    confirm(&mut app, false).await;
+    confirm(&mut app, false).await?;
     // @step Then the new agent has no story and the original agent keeps its story
     assert!(app
         .agent_view_store()
@@ -96,16 +97,16 @@ async fn declined_or_failed_story_creation_cannot_leak_intent() -> TestResult {
         enter(&mut app, false);
         // @step When creation is declined or fails and a generic creation is subsequently confirmed
         if declined {
-            backend.script_create_session(sid(""));
+            backend.script_create_session_error("create_session declined: no default model is set");
         } else {
             backend.seed_create_isolated_session_result(Err("synthetic creation failure".into()));
         }
-        confirm(&mut app, !declined).await;
+        confirm(&mut app, !declined).await?;
         let failure = text(&mut app);
-        cancel(&mut app).await;
+        cancel(&mut app).await?;
         script(&backend, false, "later");
         open_generic(&mut app);
-        confirm(&mut app, false).await;
+        confirm(&mut app, false).await?;
         // @step Then the failure is visible and the later agent has no story
         assert!(failure.contains(if declined {
             "declined"
@@ -133,7 +134,7 @@ async fn duplicate_story_completion_cannot_overwrite_newer_authoritative_focus()
     let mut app = app(backend.clone());
     script(&backend, false, "created");
     enter(&mut app, false);
-    confirm(&mut app, false).await;
+    confirm(&mut app, false).await?;
     app.dispatch(Action::WorkUnitFocusChanged(
         sid("created"),
         WorkUnitFocus {
@@ -148,7 +149,6 @@ async fn duplicate_story_completion_cannot_overwrite_newer_authoritative_focus()
         sid("created"),
         "AUTH-002".into(),
     ));
-    app.dispatch(Action::WorkUnitAttached(sid("created"), card("AUTH-002")));
     app.dispatch(Action::WorkUnitFocusChanged(
         sid("created"),
         WorkUnitFocus {
@@ -157,7 +157,7 @@ async fn duplicate_story_completion_cannot_overwrite_newer_authoritative_focus()
             source: "delayed".into(),
         },
     ));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then the newer cleared focus remains authoritative without another attachment
     assert_eq!(focus(&app, "created"), None);
     assert_eq!(

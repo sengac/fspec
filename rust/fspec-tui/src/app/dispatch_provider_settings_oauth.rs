@@ -9,7 +9,6 @@
 use tokio::task::JoinHandle;
 
 use crate::components::Action;
-use crate::views::provider_settings::nav_item::OAuthMethod;
 
 use super::state::App;
 
@@ -26,6 +25,17 @@ impl App {
                 method,
                 generation,
             } => self.handle_oauth_login_start(provider_id.clone(), *method, *generation),
+            Action::OAuthBrowserReady {
+                provider_id,
+                authorize_url,
+                generation,
+            } => {
+                self.handle_oauth_browser_ready(
+                    provider_id.clone(),
+                    authorize_url.clone(),
+                    *generation,
+                );
+            }
             Action::OAuthHeadlessReady {
                 provider_id,
                 authorize_url,
@@ -72,12 +82,7 @@ impl App {
                 error,
                 generation,
             } => self.handle_oauth_login_failed(provider_id.clone(), error.clone(), *generation),
-            Action::OAuthOpenUrl { url } => {
-                tracing::info!(url = %url, "oauth open-url requested");
-            }
-            Action::OAuthCopyUrl { url } => {
-                tracing::info!(url = %url, "oauth copy-url requested");
-            }
+            Action::OAuthOpenUrl { url } => self.handle_oauth_open_url(url.clone()),
             _ => return false,
         }
         true
@@ -86,58 +91,6 @@ impl App {
     /// PROV-112: clear a provider's OAuth tokens then refresh the nav.
     pub(crate) fn handle_oauth_disconnect(&mut self, provider_id: String) {
         disconnect::start(self, provider_id);
-    }
-
-    /// PROV-113: start a login. Browser runs fire-and-forget; headless routes
-    /// to a `start` whose result Action picks the code-entry/device mode.
-    fn handle_oauth_login_start(&mut self, provider_id: String, method: OAuthMethod, gen: u64) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            match method {
-                OAuthMethod::Browser => {
-                    let result = backend.oauth_browser_login(provider_id.clone()).await;
-                    let _ = action_tx.send(login_terminal_action(provider_id, gen, result));
-                }
-                OAuthMethod::Headless if provider_id == "anthropic" => {
-                    match backend.oauth_headless_start(provider_id.clone()).await {
-                        Ok(start) => {
-                            let _ = action_tx.send(Action::OAuthHeadlessReady {
-                                provider_id,
-                                authorize_url: start.authorize_url,
-                                pkce_verifier: start.pkce_verifier,
-                                generation: gen,
-                            });
-                        }
-                        Err(e) => {
-                            let _ = action_tx.send(fail_action(provider_id, gen, &e));
-                        }
-                    }
-                }
-                OAuthMethod::Headless => {
-                    match backend.oauth_device_start(provider_id.clone()).await {
-                        Ok(start) => {
-                            let _ = action_tx.send(Action::OAuthDeviceReady {
-                                provider_id,
-                                user_code: start.user_code,
-                                verification_url: start.verification_url,
-                                device_auth_id: start.device_auth_id,
-                                interval: start.interval,
-                                generation: gen,
-                            });
-                        }
-                        Err(e) => {
-                            let _ = action_tx.send(fail_action(provider_id, gen, &e));
-                        }
-                    }
-                }
-            }
-        });
-        self.navigator.provider_settings.track_oauth_task(&handle);
-        self.pending_tasks.push(handle);
     }
 
     /// PROV-113: anthropic headless start resolved — enter code-entry (unless
@@ -158,7 +111,20 @@ impl App {
             authorize_url,
             pkce_verifier,
             code_input: String::new(),
+            code_focused: false,
         };
+    }
+
+    /// TUI-126: open a sign-in URL. When no browser opens, the status says
+    /// what to do instead: copy the URL (code entry) or visit the URL shown.
+    fn handle_oauth_open_url(&mut self, url: String) {
+        let instead = match self.navigator.provider_settings.mode {
+            crate::views::ProviderSettingsMode::OAuthHeadlessCodeEntry { .. } => {
+                "Press c to copy the URL."
+            }
+            _ => "Visit the URL shown on screen.",
+        };
+        self.open_url(url, instead);
     }
 
     /// PROV-113: codex device start resolved — show device-waiting and begin
@@ -223,28 +189,20 @@ impl App {
 
     /// PROV-113: a login succeeded — show the success screen and refresh the
     /// nav so the Logout row appears (dropped when the flow was cancelled).
+    /// BUG-664: the refresh is the numbered one every write uses, and it
+    /// returns the cursor to the provider unless the user moves it first.
     fn handle_oauth_login_succeeded(&mut self, provider_id: String, gen: u64) {
-        {
-            let view = &mut self.navigator.provider_settings;
-            if view.oauth_generation() != gen {
-                return;
-            }
-            view.mode = crate::views::ProviderSettingsMode::OAuthSuccess {
-                provider_id: provider_id.clone(),
-            };
-            view.set_navigate_target(provider_id);
-        }
-        if tokio::runtime::Handle::try_current().is_err() {
+        let view = &mut self.navigator.provider_settings;
+        if view.oauth_generation() != gen {
             return;
         }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            if let Ok(list) = backend.list_provider_credentials().await {
-                let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-            }
-        });
-        self.pending_tasks.push(handle);
+        view.mode = crate::views::ProviderSettingsMode::OAuthSuccess {
+            provider_id: provider_id.clone(),
+        };
+        let navigate = self.navigate_request(
+            crate::views::provider_settings::refresh::NavigateTarget::Provider(provider_id),
+        );
+        self.spawn_provider_settings_refresh(Some(navigate));
     }
 
     /// PROV-113: a login failed — show the error screen (dropped when the flow
@@ -283,3 +241,12 @@ fn fail_action(provider_id: String, generation: u64, error: &anyhow::Error) -> A
 
 #[path = "oauth_disconnect.rs"]
 mod disconnect;
+
+#[path = "oauth_start.rs"]
+mod start;
+
+#[path = "oauth_browser.rs"]
+mod browser;
+
+#[path = "oauth_claude_browser.rs"]
+mod claude_browser;

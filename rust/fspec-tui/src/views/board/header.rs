@@ -1,5 +1,6 @@
 //! Header strip orchestrator — composes the RPC-015 header widgets
-//! (`logo` + `checkpoint_status`) into the 4-row strip. Row 3 (the
+//! (`logo` + `checkpoint_status`) into the 4-row strip. Row 1 paints the
+//! RPC-445 workspace selector label. Row 3 (the
 //! former keybinding-chord row) is EXPOSED, not painted: MENU-002
 //! replaces the 'u Actions' chord with the 2-zone menu bar, which the
 //! board render path paints into this row.
@@ -25,6 +26,9 @@ use super::logo;
 pub struct HeaderRows {
     /// The former keybinding-chord row (row 3 of the strip).
     pub bar_row: Rect,
+    /// RPC-445: row 1 — the workspace selector label (zero-width when
+    /// the strip is too small to paint it).
+    pub workspace_row: Rect,
 }
 
 /// Paint rows 0-2 of the header strip (`logo` + `checkpoint_status` +
@@ -38,10 +42,14 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) ->
     if area.width == 0 || area.height < 4 {
         return HeaderRows {
             bar_row: Rect::new(area.x, area.y, 0, 1),
+            workspace_row: Rect::new(area.x, area.y, 0, 1),
         };
     }
     if area.width < 3 {
-        return HeaderRows { bar_row: empty };
+        return HeaderRows {
+            bar_row: empty,
+            workspace_row: empty,
+        };
     }
     // Apply the `paddingX={1}` from the TS layout: 1 cell of breathing
     // room between the left `│` border and the logo, and 1 cell between
@@ -68,7 +76,10 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) ->
     let right_start_x = padded.x.saturating_add(logo_w);
     let padded_end = padded.x + padded.width;
     if right_start_x >= padded_end {
-        return HeaderRows { bar_row: empty };
+        return HeaderRows {
+            bar_row: empty,
+            workspace_row: empty,
+        };
     }
     let right_w = padded_end - right_start_x;
     // Row 0: checkpoint status (matches TS: <CheckpointStatus /> is the
@@ -80,6 +91,12 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) ->
         height: 1,
     };
     checkpoint_status::render(row0, buf, store.checkpoint_counts());
+    // Row 1: RPC-445 workspace selector label.
+    let workspace_row = Rect {
+        y: padded.y + 1,
+        ..row0
+    };
+    super::workspace_dropdown::paint_label(workspace_row, buf, store, theme);
     // Row 2: `─` divider line (TS `borderTop` on KeybindingShortcuts).
     let divider_y = padded.y + 2;
     let divider_style = Style::default().fg(theme.border);
@@ -94,5 +111,6 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) ->
             width: right_w,
             height: 1,
         },
+        workspace_row,
     }
 }

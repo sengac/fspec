@@ -5,6 +5,7 @@
 @integration
 @rust
 @phase-1
+@BUG-426
 Feature: Generic agent creation never inherits ambient work selection
   """
   New Agent and right-edge Shift Right use the shared dialog with absent story

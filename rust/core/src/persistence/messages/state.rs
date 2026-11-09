@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fs::{self, Metadata};
 use std::num::NonZeroUsize;
 use std::path::Path;
+use std::sync::MutexGuard;
 use std::time::SystemTime;
 use uuid::Uuid;
 
@@ -80,18 +81,30 @@ impl FileStamp {
     }
 }
 
+/// BUG-625: the index lock is held only for in-memory work, so a poisoned
+/// one means a bug in that work; it is reported, never recovered silently.
+pub(super) const INDEX_POISONED: &str = "the message store index lock is poisoned";
+
 impl MessageStore {
+    /// BUG-625: lock the in-memory index and cache. Never hold the guard
+    /// across file I/O: the file lock serializes that work.
+    pub(super) fn lock_state(&self) -> Result<MutexGuard<'_, StoreState>, String> {
+        self.state.lock().map_err(|_| INDEX_POISONED.to_string())
+    }
+
     pub(super) fn get_locked(&self, id: Uuid) -> Option<StoredMessage> {
-        let mut state = self.state.lock().ok()?;
-        if let Some(message) = state.cache.get(&id) {
-            return Some(message.clone());
-        }
-        let entry = state.index.get(&id)?;
-        let message = index::read_message_at(&self.messages_file, entry).ok()?;
+        let entry = {
+            let mut state = self.lock_state().ok()?;
+            if let Some(message) = state.cache.get(&id) {
+                return Some(message.clone());
+            }
+            *state.index.get(&id)?
+        };
+        let message = index::read_message_at(&self.messages_file, &entry).ok()?;
         if message.id != id {
             return None;
         }
-        state.cache.put(id, message.clone());
+        self.lock_state().ok()?.cache.put(id, message.clone());
         Some(message)
     }
 }

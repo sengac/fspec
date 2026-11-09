@@ -279,3 +279,52 @@ fn dispatcher_matches_by_title_only_section_arg_informational() {
         result.data
     );
 }
+
+#[test]
+fn dispatcher_regenerates_foundation_md_after_deleting_a_diagram() {
+    // Scenario: Dispatcher regenerates FOUNDATION.md after deleting a diagram (BUG-535)
+
+    // @step Given spec/foundation.json is a complete foundation with diagrams 'Alpha Flow' and 'Beta Flow' and spec/FOUNDATION.md shows both
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(
+        tmp.path(),
+        &json!({
+            "version": "2.0.0",
+            "project": {"name": "fspec", "vision": "Original Vision", "projectType": "cli-tool"},
+            "problemSpace": {"primaryProblem": {
+                "title": "Primary Problem", "description": "Problem description", "impact": "high"}},
+            "solutionSpace": {"overview": "Solution overview", "capabilities": [
+                {"name": "Core Capability", "description": "What the system does"}]},
+            "architectureDiagrams": [
+                {"title": "Alpha Flow", "mermaidCode": "graph TD\n  A-->B"},
+                {"title": "Beta Flow", "mermaidCode": "graph TD\n  C-->D"}
+            ]
+        }),
+    );
+    let generated = dispatch_command(DispatchRequest {
+        command: "generate-foundation-md".to_string(),
+        args_json: "{}".to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(
+        generated.success,
+        "generate-foundation-md failed: {generated:?}"
+    );
+    let foundation_md = tmp.path().join("spec/FOUNDATION.md");
+    let before = fs::read_to_string(&foundation_md).expect("read FOUNDATION.md");
+    assert!(before.contains("### Alpha Flow") && before.contains("### Beta Flow"));
+
+    // @step When I dispatch delete-diagram with section='Architecture' title='Alpha Flow'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "Architecture", "title": "Alpha Flow"}),
+    ));
+    assert!(result.success, "expected success, got {result:?}");
+
+    // @step Then spec/FOUNDATION.md no longer shows 'Alpha Flow'
+    let after = fs::read_to_string(&foundation_md).expect("read FOUNDATION.md");
+    assert!(!after.contains("Alpha Flow"), "{after}");
+
+    // @step And it still shows the heading '### Beta Flow'
+    assert!(after.contains("### Beta Flow"), "{after}");
+}

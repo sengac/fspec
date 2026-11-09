@@ -13,8 +13,8 @@ ARGUMENTS
     Work unit ID
 
 OPTIONS
-  --similar <count>
-    Number of similar work units to analyze
+  -f, --format <format>
+    Output format (text or json)
 
 EXAMPLES
   1. Get estimation guidance

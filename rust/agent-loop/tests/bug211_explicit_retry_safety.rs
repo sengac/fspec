@@ -15,7 +15,7 @@ async fn scenario_cancelling_an_explicit_builder_retry_retains_the_safety_block(
     fixture.until_done().await;
     fixture.fail_builder.store(false, Ordering::SeqCst);
     fixture.send();
-    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while fixture.builders.load(Ordering::SeqCst) < 2 {
             tokio::task::yield_now().await;
         }

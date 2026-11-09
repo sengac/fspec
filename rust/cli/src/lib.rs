@@ -16,6 +16,7 @@ pub mod error_display; // Error message formatting for user display
 pub mod interactive;
 pub mod interactive_helpers; // Compaction helpers for interactive mode (CLI-010)
 pub mod large_write_intent; // CLI-019: Large write intent detection and chunking guidance
+pub mod model_limits; // PROV-165: limits that work requires, or a named error
 mod provider_runtime;
 pub mod session; // Session management
 pub mod terminal; // Terminal display utilities (ANSI codes, etc.)

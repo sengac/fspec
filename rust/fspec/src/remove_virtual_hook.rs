@@ -19,7 +19,7 @@
 //! `scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher` test
 //! which scans this file for forbidden substrings.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -44,7 +44,7 @@ struct CoreResultEnvelope {
 
 /// Entry point invoked from `main.rs` for the `remove-virtual-hook` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let work_unit_id = args.work_unit_id.clone();
     let hook_name = args.hook_name.clone();

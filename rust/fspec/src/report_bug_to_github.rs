@@ -36,7 +36,7 @@
 //! message on stderr (parity with the TS `output.error('Error:', message)` +
 //! `process.exit(1)` catch path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -59,7 +59,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `report-bug-to-github` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by
     // fspec_core::commands::report_bug_to_github::run.

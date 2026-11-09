@@ -16,37 +16,38 @@
 use std::path::Path;
 
 use crate::default_model_persistence::load_default_model_with_dir;
-use crate::profile_sections::{fspec_user_dir, read_config_value, write_config_value};
+use codelet_common::fspec_config::update_config_file;
+use codelet_common::user_dir::fspec_user_dir;
+
+use crate::profile_sections::read_config_value;
 
 /// Path-injectable core: read the persisted model string from the given user
 /// directory (the `~/.fspec` equivalent). Reads `fspec-config.json`
 /// `tui.lastUsedModel`; on absence falls back to the legacy
 /// `default-model.json` `model` key. Returns `None` when neither is present.
-#[must_use]
-pub fn load_persisted_model_string_from(user_dir: &Path) -> Option<String> {
+pub fn load_persisted_model_string_from(user_dir: &Path) -> Result<Option<String>, String> {
     // Primary source of truth (TS parity): fspec-config.json -> tui.lastUsedModel.
-    if let Some(root) = read_config_value(&user_dir.join("fspec-config.json")) {
-        if let Some(model) = root
-            .get("tui")
-            .and_then(|tui| tui.get("lastUsedModel"))
-            .and_then(|m| m.as_str())
-            .map(str::trim)
-            .filter(|m| !m.is_empty())
-        {
-            return Some(model.to_string());
-        }
+    // BUG-461: an unreadable or malformed config is an error naming it.
+    let root = read_config_value(&user_dir.join("fspec-config.json"))?;
+    if let Some(model) = root
+        .get("tui")
+        .and_then(|tui| tui.get("lastUsedModel"))
+        .and_then(|m| m.as_str())
+        .map(str::trim)
+        .filter(|m| !m.is_empty())
+    {
+        return Ok(Some(model.to_string()));
     }
-    // Legacy back-compat (PROV-119 -> PROV-120): default-model.json -> model.
+    // Legacy back-compat (PROV-119 -> PROV-120): default-model.json -> model
+    // (BUG-463: its read failures are errors too).
     load_default_model_with_dir(user_dir)
 }
 
 /// Convenience: read using the env-resolved user directory
-/// (`FSPEC_USER_DIR` / `HOME`-based `~/.fspec`). Returns `None` when the
-/// directory cannot be resolved or neither store records a model.
-#[must_use]
-pub fn load_persisted_model_string() -> Option<String> {
-    let user_dir = fspec_user_dir()?;
-    load_persisted_model_string_from(&user_dir)
+/// (`FSPEC_USER_DIR` / `HOME`-based `~/.fspec`). An unresolvable directory
+/// is an error; `None` when neither store records a model.
+pub fn load_persisted_model_string() -> Result<Option<String>, String> {
+    load_persisted_model_string_from(&fspec_user_dir()?)
 }
 
 /// PROV-122 — path-injectable core of the WRITE side: persist `model` as
@@ -70,37 +71,22 @@ pub fn save_persisted_model_string_to(user_dir: &Path, model: &str) -> Result<()
     if model.trim().is_empty() {
         return Ok(());
     }
-    let config_path = user_dir.join("fspec-config.json");
-
-    // Read-merge-write: start from the existing config (preserving every key)
-    // or an empty object when the file is missing / malformed.
-    let mut root = read_config_value(&config_path).unwrap_or_else(|| serde_json::json!({}));
-
-    // Ensure `root` is an object so we can attach `tui` to it; a non-object
-    // top-level (corrupt config) is replaced with a fresh object rather than
-    // silently dropping the new selection.
-    if !root.is_object() {
-        root = serde_json::json!({});
-    }
-
-    let obj = root
-        .as_object_mut()
-        .ok_or_else(|| "fspec-config.json root is not a JSON object".to_string())?;
-    let tui = obj.entry("tui").or_insert_with(|| serde_json::json!({}));
-    let tui_obj = tui
-        .as_object_mut()
-        .ok_or_else(|| "fspec-config.json `tui` is not a JSON object".to_string())?;
-    tui_obj.insert(
-        "lastUsedModel".to_string(),
-        serde_json::Value::String(model.to_string()),
-    );
-
-    if let Some(parent) = config_path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to create user directory: {e}"))?;
-    }
-    write_config_value(&config_path, &root)
-        .map_err(|e| format!("Failed to write fspec-config.json: {e}"))
+    // BUG-461: a config that cannot be read is never replaced. BUG-640:
+    // the read and the write happen under the config directory's lock.
+    update_config_file(&user_dir.join("fspec-config.json"), |root| {
+        let obj = root
+            .as_object_mut()
+            .ok_or_else(|| "fspec-config.json root is not a JSON object".to_string())?;
+        let tui = obj.entry("tui").or_insert_with(|| serde_json::json!({}));
+        let tui_obj = tui
+            .as_object_mut()
+            .ok_or_else(|| "fspec-config.json `tui` is not a JSON object".to_string())?;
+        tui_obj.insert(
+            "lastUsedModel".to_string(),
+            serde_json::Value::String(model.to_string()),
+        );
+        Ok::<_, String>(())
+    })
 }
 
 /// Convenience: persist `model` to `tui.lastUsedModel` using the env-resolved
@@ -111,7 +97,22 @@ pub fn save_persisted_model_string(model: &str) -> Result<(), String> {
     if model.trim().is_empty() {
         return Ok(());
     }
-    let user_dir =
-        fspec_user_dir().ok_or_else(|| "Could not resolve fspec user directory".to_string())?;
-    save_persisted_model_string_to(&user_dir, model)
+    save_persisted_model_string_to(&fspec_user_dir()?, model)
+}
+
+/// BUG-613: remove `tui.lastUsedModel` from the user config when it is
+/// `model`; any other value, and a config without it, are left alone.
+pub fn forget_persisted_model_string(model: &str) -> Result<(), String> {
+    update_config_file(&fspec_user_dir()?.join("fspec-config.json"), |root| {
+        if let Some(tui) = root
+            .get_mut("tui")
+            .and_then(serde_json::Value::as_object_mut)
+            .filter(|tui| {
+                tui.get("lastUsedModel").and_then(serde_json::Value::as_str) == Some(model)
+            })
+        {
+            tui.remove("lastUsedModel");
+        }
+        Ok::<_, String>(())
+    })
 }

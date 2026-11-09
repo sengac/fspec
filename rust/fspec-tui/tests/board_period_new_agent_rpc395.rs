@@ -10,8 +10,7 @@
 //! CreateSessionDialog — session resume is the Shift+Right CYCLE gesture's
 //! job), plus verifies the header hint row now reads ". New Agent".
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
@@ -42,9 +41,13 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
     }
 }
 
-fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
+fn render(
+    width: u16,
+    height: u16,
+    store: &BoardStore,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -54,8 +57,8 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
             false,
         );
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn join_buffer(buf: &Buffer) -> String {
@@ -71,7 +74,7 @@ fn join_buffer(buf: &Buffer) -> String {
 
 /// Scenario: Pressing '.' with a selected work unit mounts the CreateSessionDialog (BUG-203)
 #[test]
-fn pressing_period_with_a_selected_work_unit_mounts_the_create_session_dialog() {
+fn pressing_period_with_a_selected_work_unit_mounts_the_create_session_dialog() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 in backlog with the focused column "backlog" and selected index 0
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
@@ -101,11 +104,13 @@ fn pressing_period_with_a_selected_work_unit_mounts_the_create_session_dialog() 
         "expected OpenCreateSessionDialog {{ preselect: None }}, got {:?}",
         actions[0]
     );
+    Ok(())
 }
 
 /// Scenario: Pressing '.' with no work unit selected still mounts the CreateSessionDialog
 #[test]
-fn pressing_period_with_no_work_unit_selected_still_mounts_the_create_session_dialog() {
+fn pressing_period_with_no_work_unit_selected_still_mounts_the_create_session_dialog() -> TestResult
+{
     // @step Given an empty BoardStore with no work units
     let store = BoardStore::default();
     let (view, mut rx) = fresh();
@@ -132,6 +137,7 @@ fn pressing_period_with_no_work_unit_selected_still_mounts_the_create_session_di
         "expected OpenCreateSessionDialog {{ preselect: None }}, got {:?}",
         actions[0]
     );
+    Ok(())
 }
 
 /// Scenario: The board header hint row displays the menu bar
@@ -140,22 +146,25 @@ fn pressing_period_with_no_work_unit_selected_still_mounts_the_create_session_di
 /// actions dialog; MENU-002 R1 supersedes that hint with the live 2-zone
 /// menu bar — 'New Agent' now lives in the Actions dropdown)
 #[test]
-fn the_board_header_hint_row_displays_period_new_agent() {
+fn the_board_header_hint_row_displays_period_new_agent() -> TestResult {
     // @step Given a BoardStore with any selection state
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
-    // @step Then the header row 3 shows the 2-zone menu bar's Zone A
-    // items (MENU-002 supersedes the 'u Actions' hint; MENU-008: the
-    // items are now Kanban/Tools/Settings/Help)
-    assert!(
-        joined.contains("Kanban") && joined.contains("Help"),
-        "missing the 2-zone bar's Zone A items (Kanban ... Help): {joined}"
-    );
+    // @step Then the header row 3 shows the 2-zone menu bar Zone A items (Kanban Tools Settings Help)
+    // (MENU-002 supersedes the 'u Actions' hint; MENU-008: the items are
+    // now Kanban/Tools/Settings/Help)
+    for item in ["Kanban", "Tools", "Settings", "Help"] {
+        assert!(
+            joined.contains(item),
+            "missing the 2-zone bar's Zone A item {item:?}: {joined}"
+        );
+    }
     // @step And the rendered buffer does not contain the substring "/ New Agent"
     assert!(
         !joined.contains("/ New Agent"),
         "unexpected '/ New Agent' still present: {joined}"
     );
+    Ok(())
 }

@@ -4,8 +4,8 @@
       "name": "Armed Done registration stays guarded across provider builders",
       "testMappings": [
         {
-          "file": "rust/cli/tests/auto_continue_engine_test.rs",
-          "lines": "405-450",
+          "file": "rust/cli/tests/cont011_completion_registration_layout_guards.rs",
+          "lines": "35-81",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/agent.rs",
@@ -79,7 +79,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "pub fn create_rig_agent(",
+              "lastLine": "if let Some(additional) = thinking_config {"
             }
           ]
         }
@@ -91,11 +93,11 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/tests/auto_continue_engine_test.rs"
+      "rust/cli/tests/cont011_completion_registration_layout_guards.rs"
     ],
     "implFiles": [
       "rust/providers/src/codex/agent.rs"
     ],
-    "totalLinesCovered": 115
+    "totalLinesCovered": 116
   }
 }

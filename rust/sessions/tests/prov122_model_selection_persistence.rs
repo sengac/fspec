@@ -19,7 +19,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::fs;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::last_used_model_persistence::{
@@ -124,7 +124,9 @@ fn active_session_selection_persists_and_round_trips() {
 
     // @step And reloading the persisted model returns "anthropic/claude-opus-4-8"
     assert_eq!(
-        load_persisted_model_string_from(dir.path()).as_deref(),
+        load_persisted_model_string_from(dir.path())
+            .expect("the persisted model loads")
+            .as_deref(),
         Some("anthropic/claude-opus-4-8")
     );
 }
@@ -144,11 +146,14 @@ async fn no_session_selection_writes_both_stores() {
     let dir = tmp.path().to_path_buf();
     codelet_common::set_data_directory(dir.clone()).expect("set data dir");
     std::env::set_var("FSPEC_USER_DIR", &dir);
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When the user selects model "anthropic/claude-opus-4-8" as the default
-    handle.set_default_model("anthropic/claude-opus-4-8");
+    assert_eq!(
+        handle.set_default_model("anthropic/claude-opus-4-8"),
+        Ok(())
+    );
 
     // @step Then fspec-config.json tui.lastUsedModel equals "anthropic/claude-opus-4-8"
     let config = read_config(&dir).expect("fspec-config.json must be written");
@@ -218,7 +223,9 @@ fn profile_qualified_selection_round_trips() {
 
     // @step And reloading the persisted model returns "openai:qwen/Qwen3-80B"
     assert_eq!(
-        load_persisted_model_string_from(dir.path()).as_deref(),
+        load_persisted_model_string_from(dir.path())
+            .expect("the persisted model loads")
+            .as_deref(),
         Some("openai:qwen/Qwen3-80B")
     );
 

@@ -94,7 +94,9 @@ impl Drop for Fixture {
             }
         }
         if let Some(directory) = &self.previous_data {
-            let _ = set_data_directory(directory.clone());
+            if let Err(error) = set_data_directory(directory.clone()) {
+                eprintln!("cannot restore the data directory: {error}");
+            }
         }
         let _ = std::env::set_current_dir(&self.previous_directory);
     }

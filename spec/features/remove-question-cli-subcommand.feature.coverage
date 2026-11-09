@@ -48,7 +48,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "use anyhow::Result;",
+              "lastLine": ".unwrap_or(\"\");"
             }
           ]
         }
@@ -59,7 +61,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_question.rs",
-          "lines": "110-134",
+          "lines": "118-141",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_question.rs",
@@ -88,7 +90,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "/// Raw `--index` flag as the user typed it. We forward to the core as",
+              "lastLine": "// which prints `✓ Removed question: \"${result.removedQuestion}\"`."
             }
           ]
         }
@@ -99,7 +103,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_question.rs",
-          "lines": "136-163",
+          "lines": "147-176",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_question.rs",
@@ -108,7 +112,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "let parsed: Value = serde_json::from_str(&data).unwrap_or(Value::Null);",
+              "lastLine": ".and_then(|v| v.as_str())"
             }
           ]
         }
@@ -119,7 +125,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_question.rs",
-          "lines": "165-189",
+          "lines": "182-211",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_question.rs",
@@ -128,7 +134,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "let parsed: Value = serde_json::from_str(&data).unwrap_or(Value::Null);",
+              "lastLine": ".and_then(|v| v.as_str())"
             }
           ]
         }
@@ -139,7 +147,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_question.rs",
-          "lines": "191-254",
+          "lines": "217-281",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_question.rs",
@@ -168,7 +176,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "/// Raw `--index` flag as the user typed it. We forward to the core as",
+              "lastLine": "// which prints `✓ Removed question: \"${result.removedQuestion}\"`."
             }
           ]
         }
@@ -179,7 +189,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_question.rs",
-          "lines": "256-282",
+          "lines": "289-315",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_question.rs",
@@ -227,7 +237,39 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "//! `remove-question` help configuration — Rust port of the TS Commander.js",
+              "lastLine": "notes: &[],"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints question text with special characters in the success line",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_remove_question.rs",
+          "lines": "322-350",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/remove_question.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "match remove_question::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -235,8 +277,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/tests/cli_remove_question.rs"
@@ -245,6 +287,6 @@
       "rust/fspec/src/remove_question.rs",
       "rust/fspec-core/src/help/configs/remove_question.rs"
     ],
-    "totalLinesCovered": 345
+    "totalLinesCovered": 393
   }
 }

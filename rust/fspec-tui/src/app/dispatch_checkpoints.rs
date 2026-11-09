@@ -37,13 +37,16 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let list = match backend.list_checkpoints().await {
+            // RPC-453: the selected workspace; a failure is shown.
+            let list = match calls.list().await {
                 Ok(list) => list,
                 Err(e) => {
-                    tracing::warn!(error = %e, "list_checkpoints failed");
+                    let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                        "The checkpoints could not be listed: {e:#}"
+                    )));
                     Vec::new()
                 }
             };
@@ -135,16 +138,15 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let files = match backend
-                .checkpoint_diff_files(work_unit_id.clone(), name.clone())
-                .await
-            {
+            let files = match calls.diff_files(work_unit_id.clone(), name.clone()).await {
                 Ok(files) => files,
                 Err(e) => {
-                    tracing::warn!(error = %e, "checkpoint_diff_files failed");
+                    let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                        "The files of checkpoint {name} could not be listed: {e:#}"
+                    )));
                     Vec::new()
                 }
             };

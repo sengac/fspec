@@ -98,8 +98,7 @@ fn default_transform_preamble_prepends_fspec_guidance() {
     // @step When I call facade.transform_preamble("user text")
     let result = facade.transform_preamble("user text");
 
-    // @step Then the result equals FSPEC_WORKFLOW_GUIDANCE concatenated with
-    //       two newlines and "user text"
+    // @step Then the result equals FSPEC_WORKFLOW_GUIDANCE concatenated with two newlines and "user text"
     let expected = prepend_fspec_guidance("user text");
     assert_eq!(
         result, expected,
@@ -167,8 +166,7 @@ fn default_format_for_api_returns_plain_json_string() {
     // @step When I call facade.format_for_api("body")
     let value = facade.format_for_api("body");
 
-    // @step Then the result is a JSON String whose value starts with
-    //       FSPEC_WORKFLOW_GUIDANCE and ends with "body"
+    // @step Then the result is a JSON String whose value starts with FSPEC_WORKFLOW_GUIDANCE and ends with "body"
     assert!(
         value.is_string(),
         "default format_for_api should produce a JSON String, got {value:?}"
@@ -189,9 +187,7 @@ fn default_format_for_api_returns_plain_json_string() {
 // =========================================================================
 #[test]
 fn format_system_prompt_array_preserves_cache_control() {
-    // @step Given a Rhai script whose format_system_prompt returns a map with
-    //       format "array" and two blocks including cache_control ephemeral on
-    //       the second
+    // @step Given a Rhai script whose format_system_prompt returns a map with format "array" and two blocks including cache_control ephemeral on the second
     let engine = test_engine();
     let script = r#"
         fn format_system_prompt(config, preamble, fspec_guidance) {
@@ -219,8 +215,7 @@ fn format_system_prompt_array_preserves_cache_control() {
     // @step When I call facade.format_for_api("body")
     let value = facade.format_for_api("body");
 
-    // @step Then the result is a JSON array whose second block contains
-    //       cache_control.type equal to "ephemeral"
+    // @step Then the result is a JSON array whose second block contains cache_control.type equal to "ephemeral"
     assert!(
         value.is_array(),
         "array-format result should produce a JSON array, got {value:?}"
@@ -329,8 +324,7 @@ fn runtime_error_in_format_system_prompt_falls_back() {
     );
 
     // @step When I call facade.format_for_api("body")
-    // @step Then the process does not panic and the result is a JSON String
-    //       containing the default formatted preamble
+    // @step Then the process does not panic and the result is a JSON String containing the default formatted preamble
     let value = facade.format_for_api("body");
 
     assert!(

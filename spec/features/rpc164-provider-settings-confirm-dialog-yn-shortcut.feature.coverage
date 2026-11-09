@@ -10,11 +10,10 @@
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165
-              ]
+                237
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),",
+              "lastLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),"
             }
           ]
         }
@@ -30,11 +29,10 @@
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165
-              ]
+                237
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),",
+              "lastLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),"
             }
           ]
         }
@@ -50,10 +48,10 @@
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                163,
-                164,
-                165
-              ]
+                238
+              ],
+              "firstLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),",
+              "lastLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),"
             }
           ]
         }
@@ -69,10 +67,10 @@
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                163,
-                164,
-                165
-              ]
+                238
+              ],
+              "firstLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),",
+              "lastLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),"
             }
           ]
         }
@@ -88,10 +86,10 @@
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                163,
-                164,
-                165
-              ]
+                238
+              ],
+              "firstLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),",
+              "lastLine": "KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),"
             }
           ]
         }
@@ -102,16 +100,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "190-203",
+          "lines": "194-207",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165
-              ]
+                237
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),",
+              "lastLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),"
             }
           ]
         }
@@ -122,16 +119,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "208-224",
+          "lines": "213-233",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165
-              ]
+                237
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),",
+              "lastLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),"
             }
           ]
         }
@@ -142,15 +138,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "229-240",
+          "lines": "239-250",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                140,
-                141,
-                142
-              ]
+                215,
+                216
+              ],
+              "firstLine": "if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {",
+              "lastLine": "return ConfirmDialogOutcome::Ignored;"
             }
           ]
         }
@@ -161,15 +158,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "245-256",
+          "lines": "256-267",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                140,
-                141,
-                142
-              ]
+                215,
+                216
+              ],
+              "firstLine": "if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {",
+              "lastLine": "return ConfirmDialogOutcome::Ignored;"
             }
           ]
         }
@@ -180,13 +178,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "261-272",
+          "lines": "273-284",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                166
-              ]
+                239
+              ],
+              "firstLine": "_ => ConfirmDialogOutcome::Ignored,",
+              "lastLine": "_ => ConfirmDialogOutcome::Ignored,"
             }
           ]
         }
@@ -197,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "278-298",
+          "lines": "291-320",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -230,7 +230,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub fn set_status(&mut self, status: impl Into<String>) {",
+              "lastLine": "format!(\"Provider Settings ({} items)\", self.nav_items.len())"
             }
           ]
         }
@@ -241,7 +243,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "303-323",
+          "lines": "327-346",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -274,7 +276,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub fn set_status(&mut self, status: impl Into<String>) {",
+              "lastLine": "format!(\"Provider Settings ({} items)\", self.nav_items.len())"
             }
           ]
         }
@@ -285,37 +289,40 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
-          "lines": "327-365",
+          "lines": "352-391",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167
-              ]
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239
+              ],
+              "firstLine": "pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> ConfirmDialogOutcome {",
+              "lastLine": "_ => ConfirmDialogOutcome::Ignored,"
             }
           ]
         }
@@ -333,6 +340,6 @@
       "rust/fspec-tui/src/views/agent/confirm_dialog.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 348
+    "totalLinesCovered": 342
   }
 }

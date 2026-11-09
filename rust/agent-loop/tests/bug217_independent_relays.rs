@@ -8,11 +8,10 @@ use codelet_rpc_types::StreamChunk;
 use codelet_sessions::subordinate_forwarding::spawn_forwarding;
 use codelet_tools::bridge_relay::{register_subordinate_chunk_channel, SubordinateChunkRx};
 use serde_json::Value;
-use std::time::Duration;
 use support::{Fixture, TestResult};
 
 async fn next(receiver: &mut SubordinateChunkRx) -> Result<Value, Box<dyn std::error::Error>> {
-    let (_, chunk) = tokio::time::timeout(Duration::from_secs(3), receiver.recv())
+    let (_, chunk) = codelet_test_helpers::deadlock_guard("receiver.recv()", receiver.recv())
         .await?
         .ok_or("relay closed")?;
     Ok(chunk)
@@ -48,7 +47,7 @@ async fn scenario_a_stalled_relay_does_not_block_a_healthy_relay_or_lose_its_own
     // @step And disconnecting the healthy relay releases its subscription without new output
     drop(healthy);
     let session = fixture.session()?;
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while session.supervisor_broadcast.receiver_count() != 2 {
             tokio::task::yield_now().await;
         }
@@ -71,7 +70,7 @@ async fn scenario_cancelling_the_forwarding_owner_releases_blocked_relay_subscri
     let relay = register_subordinate_chunk_channel(root);
     let owner = spawn_forwarding(&session, root, stream_chunk_to_json_value)?;
     fixture.burst("independent").await?;
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while relay.len() != 256 {
             tokio::task::yield_now().await;
         }
@@ -81,7 +80,7 @@ async fn scenario_cancelling_the_forwarding_owner_releases_blocked_relay_subscri
     owner.abort();
     let _ = owner.await;
     // @step Then all of its relay subscriptions are released while the relay stays connected
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while session.supervisor_broadcast.receiver_count() != baseline {
             tokio::task::yield_now().await;
         }
@@ -117,7 +116,7 @@ async fn scenario_late_relays_receive_new_output_without_replaying_already_forwa
     drop(session);
     assert_eq!(next(&mut first).await?["type"], "done");
     assert_eq!(next(&mut second).await?["type"], "done");
-    tokio::time::timeout(Duration::from_secs(3), owner).await??;
+    codelet_test_helpers::deadlock_guard("owner", owner).await??;
     assert!(first.try_recv().is_err());
     assert!(second.try_recv().is_err());
     Ok(())

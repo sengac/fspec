@@ -1,5 +1,7 @@
 @done
 @BUG-097
+@providers
+@model-selection
 Feature: Profile-based model selection not restored on session startup
   """
   Broken code in modelInitializationService.ts lines 318-325 uses split('/'). Replace with parseModelString() and findSectionForPersistedModel() from model-selection.ts

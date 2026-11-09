@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "72-100",
+          "lines": "73-110",
           "implMappings": [
             {
               "file": "rust/tools/src/dart_lang.rs",
@@ -66,7 +66,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "//! Dart language support for ast-grep tools.",
+              "lastLine": "clippy::needless_collect"
             }
           ]
         }
@@ -77,13 +79,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "107-148",
+          "lines": "117-147",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
               "lines": [
-                43,
-                44,
                 45,
                 46,
                 47,
@@ -136,8 +136,14 @@
                 94,
                 95,
                 96,
-                97
-              ]
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "/// Create a new AstGrepTool instance.",
+              "lastLine": "}"
             }
           ]
         }
@@ -148,19 +154,21 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "262-288",
+          "lines": "261-282",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
               "lines": [
+                163,
                 164,
                 165,
                 166,
                 167,
                 168,
-                169,
-                170
-              ]
+                169
+              ],
+              "firstLine": "match search_result {",
+              "lastLine": "/// Internal execute method for rig tool delegation."
             }
           ]
         }
@@ -171,7 +179,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "294-360",
+          "lines": "289-353",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
@@ -210,7 +218,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": ".ok()",
+              "lastLine": "SupportLang::Nix => vec![\"nix\"],"
             }
           ]
         }
@@ -221,7 +231,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "150-201",
+          "lines": "154-206",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -242,7 +252,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "fn parse_language(lang: &str) -> Option<LanguageChoice> {",
+              "lastLine": "return Ok(ToolOutput::error("
             }
           ]
         }
@@ -253,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "209-249",
+          "lines": "213-254",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -274,7 +286,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "fn parse_language(lang: &str) -> Option<LanguageChoice> {",
+              "lastLine": "return Ok(ToolOutput::error("
             }
           ]
         }
@@ -285,13 +299,15 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "356-393",
+          "lines": "360-398",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 93
-              ]
+              ],
+              "firstLine": "SupportLang::Lua => vec![\"lua\"],",
+              "lastLine": "SupportLang::Lua => vec![\"lua\"],"
             }
           ]
         }
@@ -302,13 +318,15 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "401-427",
+          "lines": "405-432",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 94
-              ]
+              ],
+              "firstLine": "SupportLang::Elixir => vec![\"ex\", \"exs\"],",
+              "lastLine": "SupportLang::Elixir => vec![\"ex\", \"exs\"],"
             }
           ]
         }
@@ -319,14 +337,16 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_dart_test.rs",
-          "lines": "435-461",
+          "lines": "439-466",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep.rs",
               "lines": [
                 95,
                 96
-              ]
+              ],
+              "firstLine": "SupportLang::Haskell => vec![\"hs\"],",
+              "lastLine": "SupportLang::Solidity => vec![\"sol\"],"
             }
           ]
         }
@@ -345,6 +365,6 @@
       "rust/tools/src/astgrep.rs",
       "rust/tools/src/astgrep_refactor.rs"
     ],
-    "totalLinesCovered": 538
+    "totalLinesCovered": 536
   }
 }

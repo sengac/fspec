@@ -11,6 +11,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn exercise(explicit: bool) -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("tool identity", directory.path(), "openai")?;

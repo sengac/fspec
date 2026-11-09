@@ -1,4 +1,6 @@
 @BUG-129
+@tools
+@multi-session
 Feature: BASH_ABORT_FLAG global AtomicBool causes ESC in one session to abort bash commands in all sessions
   """
   Primary: bash.rs (lines 36-75). Callers: session_manager.rs:1250 (request_bash_abort), session_manager.rs:1260 (clear_bash_abort), bash.rs internal (is_bash_abort_requested at 4 sites, clear_bash_abort at 2 sites). Re-exports: lib.rs:90. Cleanup: unregister_bash_abort_flag called in session_manager.rs destroy_session().

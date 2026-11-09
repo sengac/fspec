@@ -30,7 +30,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub fn finish(&mut self, tracker: &mut TokenTracker, usage: &rig::completion::Usage) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,7 +60,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub fn update_display_only(&mut self, usage: &ApiTokenUsage, cumulative_output: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,17 +74,7 @@
         {
           "file": "rust/cli/tests/bug236_request_settlement.rs",
           "lines": "74-93",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                944,
-                945,
-                946,
-                947
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -94,20 +88,26 @@
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
                 590
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                933,
-                934,
-                935,
-                1205,
-                1206,
-                1207,
-                1208
-              ]
+              ],
+              "firstLine": "let chat_stream_span = info_span!(",
+              "lastLine": "yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::ResponseAttemptStarted));"
             }
           ]
         }
@@ -119,16 +119,7 @@
         {
           "file": "rust/cli/tests/bug236_request_settlement.rs",
           "lines": "124-147",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1807,
-                1808,
-                1809
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -156,7 +147,9 @@
                 158,
                 159,
                 160
-              ]
+              ],
+              "firstLine": "false,",
+              "lastLine": "} else if let Some(update) = state.display.update_from_usage(&usage) {"
             }
           ]
         }
@@ -172,10 +165,9 @@
     ],
     "implFiles": [
       "rust/core/src/compaction/input_accounting.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
       "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs"
     ],
-    "totalLinesCovered": 214
+    "totalLinesCovered": 216
   }
 }

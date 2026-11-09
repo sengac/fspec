@@ -50,16 +50,6 @@ Feature: Event Storming discovery phase for domain understanding and tag naming
     I want to perform Event Storming discovery before Example Mapping
     So that I identify bounded contexts, aggregates, and domain events that inform tag naming and domain structure
 
-  Scenario: Capture domain events and create tags from Event Storm session
-    Given I have a work unit in specifying status
-    When I run Event Storming and identify domain events "UserRegistered", "CheckpointCreated", "WorkUnitStatusChanged"
-    And I add these events using "fspec add-domain-event" command
-    And I identify bounded contexts based on event clusters
-    And I run "fspec suggest-tags-from-events" to analyze Event Storm data
-    Then component tags should be suggested based on bounded contexts and aggregates
-    And feature group tags should be suggested based on domain event clusters
-    And I can register these tags using "fspec sync-tags-with-event-storm"
-
   Scenario: AI-guided Event Storming discovery with structured capture
     Given I have a work unit ready for Event Storming discovery
     When I run Event Storming discovery commands

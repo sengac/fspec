@@ -58,4 +58,4 @@ Feature: Answered questions display as 'true' instead of actual answer text
       3. TTL of 24 hours
       """
     Then the answer text should be stored exactly as provided
-    And feature file comments should show all lines of the answer
+    And the generated feature file should contain every line of the answer

@@ -3,10 +3,11 @@
 @rust
 @cli
 @mutation
+@epics
 Feature: fspec delete-epic CLI subcommand (Rust port)
   """
   Clap derive subcommand `delete-epic` exposes the same surface as the TS Commander.js registration at src/commands/delete-epic.ts:92-108 — a single positional `<epicId>` and an optional `--force` flag. The bridge module at rust/fspec/src/delete_epic.rs marshals these into a JSON object and delegates to codelet_fspec_core::commands::delete_epic::run; --force is parsed for parity but NOT forwarded into the dispatcher's logic because the TS implementation never reads its value (see src/commands/delete-epic.ts:98-99).
-  Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:' (parity with the chalk-red TS error path at src/commands/delete-epic.ts:104-107). The success line is '✓ Epic <id> deleted successfully'.
+  Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with '✗ Failed to delete epic:' (parity with the chalk-red TS error path at src/commands/delete-epic.ts:104-107). The success line is '✓ Epic <id> deleted successfully'.
   The `fspec delete-epic --help` output is byte-for-byte identical to `node dist/index.js delete-epic --help` (TS reference) — captured as rust/fspec/tests/fixtures/help/delete-epic.txt.
   """
 
@@ -41,7 +42,7 @@ Feature: fspec delete-epic CLI subcommand (Rust port)
     Given spec/epics.json contains epic 'dash' with title='Dashboard'
     When I run `./rust/target/release/fspec delete-epic missing`
     Then the command exits with code 1
-    And stderr contains the substring 'Error:'
+    And stderr contains the substring '✗ Failed to delete epic:'
     And stderr contains the substring 'Epic missing not found'
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher

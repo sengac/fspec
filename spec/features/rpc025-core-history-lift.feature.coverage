@@ -5,16 +5,53 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "45-72",
+          "lines": "40-63",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/history.rs",
               "lines": [
-                215,
-                216,
-                217,
-                218
-              ]
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                257,
+                258,
+                259,
+                260
+              ],
+              "firstLine": "/// Append a new entry — writes to disk and inserts at index 0.",
+              "lastLine": "}"
             }
           ]
         }
@@ -25,7 +62,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "74-101",
+          "lines": "65-93",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/history.rs",
@@ -38,7 +75,9 @@
                 225,
                 226,
                 227
-              ]
+              ],
+              "firstLine": "static HISTORY_STORE: Mutex<Option<HistoryStore>> = Mutex::new(None);",
+              "lastLine": "// mismatch with the live data dir means a stale cache from a"
             }
           ]
         }
@@ -49,7 +88,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "103-131",
+          "lines": "99-125",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/history.rs",
@@ -61,7 +100,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "let live_path = codelet_common::get_data_dir()?.join(\"history.jsonl\");",
+              "lastLine": "*guard = Some(HistoryStore::new()?);"
             }
           ]
         }
@@ -72,19 +113,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "133-156",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/mod.rs",
-              "lines": [
-                515,
-                516,
-                517,
-                518,
-                519
-              ]
-            }
-          ]
+          "lines": "123-149",
+          "implMappings": []
         }
       ]
     },
@@ -93,23 +123,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "158-174",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/mod.rs",
-              "lines": [
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529
-              ]
-            }
-          ]
+          "lines": "160-168",
+          "implMappings": []
         }
       ]
     },
@@ -118,20 +133,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "176-192",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/mod.rs",
-              "lines": [
-                531,
-                532,
-                533,
-                534,
-                535,
-                536
-              ]
-            }
-          ]
+          "lines": "176-193",
+          "implMappings": []
         }
       ]
     },
@@ -140,7 +143,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "194-217",
+          "lines": "188-212",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/history.rs",
@@ -157,54 +160,9 @@
                 125,
                 126,
                 127
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The TS Ink TUI persistence path stays byte-identical via the kept NAPI exports",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/core_history_lift_rpc025.rs",
-          "lines": "219-248",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/napi_bindings.rs",
-              "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293
-              ]
+              ],
+              "firstLine": "let sid = self",
+              "lastLine": ""
             }
           ]
         }
@@ -212,17 +170,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/core_history_lift_rpc025.rs"
     ],
     "implFiles": [
-      "rust/core/src/persistence/history.rs",
-      "rust/napi/src/persistence/mod.rs",
-      "rust/napi/src/persistence/napi_bindings.rs"
+      "rust/core/src/persistence/history.rs"
     ],
-    "totalLinesCovered": 279
+    "totalLinesCovered": 225
   }
 }

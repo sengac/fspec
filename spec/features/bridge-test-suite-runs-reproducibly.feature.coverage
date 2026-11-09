@@ -1,0 +1,77 @@
+{
+  "scenarios": [
+    {
+      "name": "The bridge package declares its test runner and test command",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/bridge-test-command.test.ts",
+          "lines": "24-53",
+          "implMappings": [
+            {
+              "file": "bridge/package.json",
+              "lines": [
+                15,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "\"test\": \"vitest run\"",
+              "lastLine": "}"
+            },
+            {
+              "file": "bridge/package-lock.json",
+              "lines": [
+                3448,
+                3449,
+                3450
+              ],
+              "firstLine": "\"node_modules/vitest\": {",
+              "lastLine": "\"resolved\": \"https://registry.npmjs.org/vitest/-/vitest-4.1.12.tgz\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The vitest config runs exactly the bridge tests in node",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/bridge-test-command.test.ts",
+          "lines": "55-70",
+          "implMappings": [
+            {
+              "file": "bridge/vitest.config.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "firstLine": "// BUG-503: the bridge's vitest suite (cd bridge && npm ci && npm test).",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/bridge-test-command.test.ts"
+    ],
+    "implFiles": [
+      "bridge/package.json",
+      "bridge/package-lock.json",
+      "bridge/vitest.config.ts"
+    ],
+    "totalLinesCovered": 62
+  }
+}

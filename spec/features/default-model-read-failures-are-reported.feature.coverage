@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "A malformed default model file is an error naming it",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug463_default_model_read_failures_are_reported.rs",
+          "lines": "18-28",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_model_persistence.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "/// Load a persisted default model from `data_dir`.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restoring the default model into a session manager reports a malformed file",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug463_default_model_read_failures_are_reported.rs",
+          "lines": "30-45",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "/// PROV-119 / BUG-463: load the persisted default model into this",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug463_default_model_read_failures_are_reported.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/default_model_persistence.rs",
+      "rust/sessions/src/session_manager/manager_impl_1.rs"
+    ],
+    "totalLinesCovered": 58
+  }
+}

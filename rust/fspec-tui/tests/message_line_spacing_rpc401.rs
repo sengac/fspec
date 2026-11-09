@@ -11,8 +11,7 @@
 //! `Line::from("")` after EVERY chunk's content. They MUST FAIL (red phase)
 //! against current `wrap_source`, which appends NO separator.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -58,30 +57,35 @@ fn line_text(line: &Line<'static>) -> String {
 }
 
 /// Wrapped lines of the chunk at `idx` (0-based) in s-1.
-fn chunk_lines(app: &App, idx: usize) -> Vec<Line<'static>> {
+fn chunk_lines(
+    app: &App,
+    idx: usize,
+) -> Result<Vec<Line<'static>>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .get(idx)
         .map(|c| c.lines.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 /// All wrapped lines across every chunk in s-1, in order (the combined
 /// scrollback the painter walks).
-fn all_scrollback_lines(app: &App) -> Vec<Line<'static>> {
+fn all_scrollback_lines(app: &App) -> Result<Vec<Line<'static>>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .iter()
         .flat_map(|c| c.lines.clone())
-        .collect()
+        .collect())
 }
 
 /// Build a body of `n` numbered lines: "line-1".."line-n".
@@ -97,7 +101,7 @@ fn numbered_body(n: usize) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn single_user_message_ends_with_one_blank_separator_line() {
+fn single_user_message_ends_with_one_blank_separator_line() -> TestResult {
     let mut app = app_with_session();
     // @step Given a user message with text "hello"
     // @step When the message is wrapped for the scrollback
@@ -106,7 +110,7 @@ fn single_user_message_ends_with_one_blank_separator_line() {
         StreamChunk::user_input("hello".to_string()),
     ));
 
-    let lines = chunk_lines(&app, 0);
+    let lines = chunk_lines(&app, 0)?;
 
     // @step Then the wrapped output has 2 lines
     assert_eq!(
@@ -129,6 +133,7 @@ fn single_user_message_ends_with_one_blank_separator_line() {
         "",
         "last line must be a blank separator"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -136,7 +141,7 @@ fn single_user_message_ends_with_one_blank_separator_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn two_consecutive_assistant_messages_separated_by_one_blank_line() {
+fn two_consecutive_assistant_messages_separated_by_one_blank_line() -> TestResult {
     let mut app = app_with_session();
     // @step Given an assistant message with text "first"
     app.dispatch(Action::ChunkReceived(
@@ -153,18 +158,18 @@ fn two_consecutive_assistant_messages_separated_by_one_blank_line() {
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
     // @step When both messages are wrapped and painted into the scrollback
-    let lines = all_scrollback_lines(&app);
+    let lines = all_scrollback_lines(&app)?;
     let texts: Vec<String> = lines.iter().map(line_text).collect();
 
     // @step Then exactly one blank line appears between the two content blocks
     let first_idx = texts
         .iter()
         .position(|t| t.contains("first"))
-        .expect("'first' content line present");
+        .or_fail("'first' content line present")?;
     let second_idx = texts
         .iter()
         .position(|t| t.contains("second"))
-        .expect("'second' content line present");
+        .or_fail("'second' content line present")?;
     assert!(
         second_idx > first_idx,
         "second content must come after first; got {texts:?}"
@@ -179,6 +184,7 @@ fn two_consecutive_assistant_messages_separated_by_one_blank_line() {
         between[0], "",
         "the row between the two messages must be blank; got {between:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -187,7 +193,7 @@ fn two_consecutive_assistant_messages_separated_by_one_blank_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn collapsed_tool_call_chunk_ends_with_blank_separator_after_indicator() {
+fn collapsed_tool_call_chunk_ends_with_blank_separator_after_indicator() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool-call chunk whose body exceeds the collapse threshold
     app.dispatch(Action::ChunkReceived(
@@ -200,7 +206,7 @@ fn collapsed_tool_call_chunk_ends_with_blank_separator_after_indicator() {
     ));
 
     // @step When the tool-call chunk is wrapped for the scrollback
-    let lines = chunk_lines(&app, 0);
+    let lines = chunk_lines(&app, 0)?;
     let texts: Vec<String> = lines.iter().map(line_text).collect();
     assert!(
         lines.len() >= 2,
@@ -220,6 +226,7 @@ fn collapsed_tool_call_chunk_ends_with_blank_separator_after_indicator() {
         "",
         "last line must be a blank separator; got {texts:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -227,7 +234,7 @@ fn collapsed_tool_call_chunk_ends_with_blank_separator_after_indicator() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn total_visual_rows_include_one_separator_per_message() {
+fn total_visual_rows_include_one_separator_per_message() -> TestResult {
     let mut app = app_with_session();
     // @step Given three single-line messages in the scrollback
     app.dispatch(Action::ChunkReceived(
@@ -250,7 +257,7 @@ fn total_visual_rows_include_one_separator_per_message() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let total: usize = ctx
         .scrollback
         .visible_window(4096)
@@ -263,6 +270,7 @@ fn total_visual_rows_include_one_separator_per_message() {
         total, 6,
         "3 content rows + 3 separator rows must total 6; got {total}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -271,7 +279,7 @@ fn total_visual_rows_include_one_separator_per_message() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn diff_tool_call_chunk_keeps_diff_rows_and_ends_with_blank_separator() {
+fn diff_tool_call_chunk_keeps_diff_rows_and_ends_with_blank_separator() -> TestResult {
     let mut app = app_with_session();
     // @step Given a diff tool-call chunk with typed diff rows
     app.dispatch(Action::ChunkReceived(
@@ -288,7 +296,7 @@ fn diff_tool_call_chunk_keeps_diff_rows_and_ends_with_blank_separator() {
     ));
 
     // @step When the diff tool-call chunk is wrapped for the scrollback
-    let lines = chunk_lines(&app, 0);
+    let lines = chunk_lines(&app, 0)?;
     let texts: Vec<String> = lines.iter().map(line_text).collect();
 
     // @step Then the typed diff rows are preserved
@@ -307,6 +315,7 @@ fn diff_tool_call_chunk_keeps_diff_rows_and_ends_with_blank_separator() {
         "",
         "last line must be a blank separator; got {texts:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -315,12 +324,16 @@ fn diff_tool_call_chunk_keeps_diff_rows_and_ends_with_blank_separator() {
 // ─────────────────────────────────────────────────────────────────────────
 
 /// Render the App and return the rows of glyphs.
-fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_rows(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut rows = Vec::with_capacity(buf.area.height as usize);
     for y in 0..buf.area.height {
@@ -330,11 +343,11 @@ fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
         }
         rows.push(row);
     }
-    rows
+    Ok(rows)
 }
 
 #[test]
-fn item_mode_arrow_bars_occupy_gutter_rows_without_hiding_content() {
+fn item_mode_arrow_bars_occupy_gutter_rows_without_hiding_content() -> TestResult {
     use codelet_fspec_tui::ViewMode;
 
     let mut app = app_with_session();
@@ -361,7 +374,7 @@ fn item_mode_arrow_bars_occupy_gutter_rows_without_hiding_content() {
         let ctx = app
             .agent_view_store_mut()
             .session_context_mut_for(&sid("s-1"))
-            .expect("session context exists");
+            .or_fail("session context exists")?;
         ctx.scrollback.enter_item_mode(); // selects the last turn (idx 2)
         ctx.scrollback
             .navigate_turn(codelet_fspec_tui::views::agent::TurnDir::Up); // 2 -> 1 (middle)
@@ -369,13 +382,13 @@ fn item_mode_arrow_bars_occupy_gutter_rows_without_hiding_content() {
     }
 
     // @step When the scrollback is painted
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
 
     // The selected turn's content row must still be visible.
     let sel_y = rows
         .iter()
         .position(|r| r.contains("turn-1"))
-        .expect("selected turn content row present");
+        .or_fail("selected turn content row present")?;
     assert!(sel_y >= 1, "need a row above the selected turn");
 
     // With one blank separator gutter between every message, the ▼ bar row
@@ -429,4 +442,5 @@ fn item_mode_arrow_bars_occupy_gutter_rows_without_hiding_content() {
         rows.iter().any(|r| r.contains("turn-2")),
         "turn-2 must remain visible (bar landed on a gutter); got rows {rows:?}"
     );
+    Ok(())
 }

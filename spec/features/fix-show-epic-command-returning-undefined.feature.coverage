@@ -4,9 +4,47 @@
       "name": "Show error when epic does not exist",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/show-epic.test.ts",
-          "lines": "29-62",
-          "implMappings": []
+          "file": "rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs",
+          "lines": "50-69",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/show_epic.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/show_epic.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "let epic = epics_data",
+              "lastLine": "})?"
+            }
+          ]
         }
       ]
     },
@@ -14,9 +52,33 @@
       "name": "Show helpful suggestion in error message",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/show-epic.test.ts",
-          "lines": "29-62",
-          "implMappings": []
+          "file": "rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs",
+          "lines": "71-91",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/show_epic.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -24,21 +86,78 @@
       "name": "Show epic details when epic exists",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/show-epic.test.ts",
-          "lines": "64-97",
-          "implMappings": []
+          "file": "rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs",
+          "lines": "93-118",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/show_epic.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "match show_epic::run(&args_json, &project_root).await {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No list-epics hint when epics.json is malformed",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs",
+          "lines": "120-135",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/show_epic.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 3,
-    "coveredScenarios": 3,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/show-epic.test.ts"
+      "rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 102
+    "implFiles": [
+      "rust/fspec/src/show_epic.rs",
+      "rust/fspec-core/src/commands/show_epic.rs"
+    ],
+    "totalLinesCovered": 150
   }
 }

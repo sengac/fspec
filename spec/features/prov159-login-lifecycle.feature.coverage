@@ -10,20 +10,6 @@
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -31,8 +17,24 @@
                 151,
                 152,
                 153,
-                154
-              ]
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "pub async fn commit(&self, tokens: &CodexTokens) -> Result<(), AuthError> {",
+              "lastLine": "if attempts.get(&self.home).is_none_or(|active| active.id != self.id)"
             },
             {
               "file": "rust/providers/src/codex/codex_oauth_server.rs",
@@ -44,7 +46,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "() = attempt.cancelled() => Err(anyhow!(\"Login cancelled\")),",
+              "lastLine": ""
             },
             {
               "file": "rust/providers/src/codex/codex_device_auth.rs",
@@ -68,7 +72,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -84,41 +90,45 @@
             {
               "file": "rust/providers/src/codex/auth_storage.rs",
               "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "pub fn clear_codex_oauth() -> Result<()> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "&self,",
+              "lastLine": "let attempts = ATTEMPTS.lock().map_err(|_| AuthError::Changed)?;"
             }
           ]
         }

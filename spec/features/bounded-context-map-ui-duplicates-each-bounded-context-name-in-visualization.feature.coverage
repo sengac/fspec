@@ -6,22 +6,7 @@
         {
           "file": "src/generators/__tests__/foundation-md.test.ts",
           "lines": "548-583",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -31,22 +16,7 @@
         {
           "file": "src/generators/__tests__/foundation-md.test.ts",
           "lines": "585-622",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -56,22 +26,7 @@
         {
           "file": "src/generators/__tests__/foundation-md.test.ts",
           "lines": "624-677",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -83,9 +38,7 @@
     "testFiles": [
       "src/generators/__tests__/foundation-md.test.ts"
     ],
-    "implFiles": [
-      "src/generators/foundation-md.ts"
-    ],
-    "totalLinesCovered": 155
+    "implFiles": [],
+    "totalLinesCovered": 128
   }
 }

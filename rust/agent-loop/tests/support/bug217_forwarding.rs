@@ -18,6 +18,7 @@ impl Fixture {
     pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
         codelet_core::persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         let cache = directory.path().join("cache");
         std::fs::create_dir_all(&cache)?;
@@ -25,12 +26,12 @@ impl Fixture {
             cache.join("models.json"),
             include_str!("../fixtures/prov101_models.json"),
         )?;
-        let manager = SessionManager::new_arc();
+        let manager = SessionManager::new();
         let root = Uuid::new_v4();
         manager
             .create_session_with_id(
                 &root.to_string(),
-                "codex/gpt-5",
+                "codex/o3",
                 &directory.path().to_string_lossy(),
                 "root",
             )
@@ -39,7 +40,7 @@ impl Fixture {
         manager
             .create_session_with_id(
                 &middle.to_string(),
-                "codex/gpt-5",
+                "codex/o3",
                 &directory.path().to_string_lossy(),
                 "middle",
             )
@@ -48,7 +49,7 @@ impl Fixture {
         let handler = create_handler(
             Some(manager.clone()),
             directory.path().to_string_lossy().into_owned(),
-            Some("codex/gpt-5".into()),
+            Some("codex/o3".into()),
             None,
             None,
         );

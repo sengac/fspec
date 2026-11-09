@@ -81,7 +81,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "impl CompactionOperation {",
+              "lastLine": "}"
             }
           ]
         }
@@ -92,7 +94,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct057_operation_lifecycle.rs",
-          "lines": "50-68",
+          "lines": "51-71",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -168,7 +170,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "impl CompactionOperation {",
+              "lastLine": "}"
             }
           ]
         }
@@ -179,7 +183,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct057_operation_lifecycle.rs",
-          "lines": "70-139",
+          "lines": "73-142",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -255,11 +259,14 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "impl CompactionOperation {",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
               "lines": [
+                88,
                 89,
                 90,
                 91,
@@ -352,8 +359,28 @@
                 178,
                 179,
                 180,
-                181
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "pub async fn run_compactor_sub_agent_round<O: StreamOutput>(",
+              "lastLine": ".await;"
             }
           ]
         }
@@ -364,7 +391,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct057_operation_lifecycle.rs",
-          "lines": "27-48",
+          "lines": "27-49",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -440,7 +467,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "impl CompactionOperation {",
+              "lastLine": "}"
             }
           ]
         }
@@ -458,6 +487,6 @@
       "rust/cli/src/compaction_operation.rs",
       "rust/cli/src/compactor_sub_agent.rs"
     ],
-    "totalLinesCovered": 509
+    "totalLinesCovered": 531
   }
 }

@@ -34,7 +34,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "use codelet_fspec_core::commands::validate_hooks;",
+              "lastLine": "Ok(exit_code)"
             }
           ]
         }
@@ -74,7 +76,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "use codelet_fspec_core::commands::validate_hooks;",
+              "lastLine": "Ok(exit_code)"
             }
           ]
         }
@@ -114,7 +118,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "use codelet_fspec_core::commands::validate_hooks;",
+              "lastLine": "Ok(exit_code)"
             }
           ]
         }
@@ -154,7 +160,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "use codelet_fspec_core::commands::validate_hooks;",
+              "lastLine": "Ok(exit_code)"
             }
           ]
         }
@@ -194,7 +202,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "use codelet_fspec_core::commands::validate_hooks;",
+              "lastLine": "Ok(exit_code)"
             }
           ]
         }

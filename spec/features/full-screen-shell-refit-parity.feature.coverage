@@ -41,7 +41,9 @@
                 284,
                 285,
                 286
-              ]
+              ],
+              "firstLine": "self.visible_rows,",
+              "lastLine": "},"
             }
           ]
         }

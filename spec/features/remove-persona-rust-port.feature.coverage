@@ -36,8 +36,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -108,8 +106,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -151,8 +153,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -223,8 +223,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -266,8 +270,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -338,8 +340,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -381,8 +387,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -453,8 +457,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -496,8 +504,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -568,8 +574,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -611,8 +621,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -683,8 +691,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -726,8 +738,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -798,8 +808,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -810,7 +824,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_persona.rs",
-          "lines": "272-306",
+          "lines": "272-303",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_persona.rs",
@@ -841,8 +855,6 @@
                 72,
                 73,
                 74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -913,8 +925,12 @@
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -931,6 +947,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_persona.rs"
     ],
-    "totalLinesCovered": 1041
+    "totalLinesCovered": 1038
   }
 }

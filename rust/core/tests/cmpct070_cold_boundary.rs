@@ -14,6 +14,7 @@ fn scenario_reject_malformed_committed_memory_during_cold_replay(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a committed generation with corrupted DAG syntax provenance coverage identity or admission
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("cold boundary", directory.path(), "openai")?;
@@ -51,7 +52,6 @@ fn scenario_reject_malformed_committed_memory_during_cold_replay(
         .compaction_commit
         .as_mut()
         .ok_or("missing commit")?;
-    boundary.covered_prefix = all_messages.clone();
     boundary.source.prefix = all_messages;
     boundary.verified_suffix.clear();
     missing_coverage
@@ -131,6 +131,7 @@ fn scenario_invalid_promoted_memory_cannot_be_reconciled() -> Result<(), Box<dyn
 {
     // @step Given a promoted generation whose committed DAG has become invalid
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =

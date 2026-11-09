@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "A zero output limit fails OpenAI provider construction",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov174_openai_positive_output_limit.rs",
+          "lines": "40-56",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager/impl_3.rs",
+              "lines": [
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "let max_output_tokens =",
+              "lastLine": "Ok("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A positive output limit is sent with the provider",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov174_openai_positive_output_limit.rs",
+          "lines": "58-68",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "pub fn with_max_output_tokens(mut self, max_output_tokens: std::num::NonZeroUsize) -> Self {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov174_openai_positive_output_limit.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/manager/impl_3.rs",
+      "rust/providers/src/openai/construction.rs"
+    ],
+    "totalLinesCovered": 40
+  }
+}

@@ -42,16 +42,18 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let diff = match backend
-                .checkpoint_file_diff(work_unit_id.clone(), name.clone(), path.clone())
+            let diff = match calls
+                .file_diff(work_unit_id.clone(), name.clone(), path.clone())
                 .await
             {
                 Ok(diff) => diff,
                 Err(e) => {
-                    tracing::warn!(error = %e, "checkpoint_file_diff failed");
+                    let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                        "The diff of {path} in checkpoint {name} could not be read: {e:#}"
+                    )));
                     None
                 }
             };

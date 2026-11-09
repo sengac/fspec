@@ -17,6 +17,8 @@ OPTIONS
     Output format: text or json (default: text)
   --output <file>
     Write output to file instead of stdout
+  --mapping-json
+    Read ordered mapping indices and canonical scenario hashes as JSON; requires a feature name and leaves --format json unchanged
 
 COMMON PATTERNS
   • Find Coverage Gaps
@@ -28,7 +30,6 @@ fspec show-coverage user-authentication
 
 # Identify scenarios marked ❌ NOT COVERED
 # Link missing tests/implementation
-    undefined
 
   • Reverse ACDD Progress Tracking
     Example: # Check what percentage of scenarios are mapped
@@ -41,7 +42,6 @@ fspec link-coverage ...
 # Check progress
 fspec show-coverage
 # Output: Overall Coverage: 45% (9/20 scenarios)
-    undefined
 
   • Export Coverage for CI/CD
     Example: # Export as JSON for automated checks
@@ -49,7 +49,6 @@ fspec show-coverage --format=json --output=coverage.json
 
 # Parse in CI pipeline to enforce coverage thresholds
 jq '.coveragePercent' coverage.json
-    undefined
 
 
 TYPICAL WORKFLOW
@@ -103,7 +102,7 @@ COMMON ERRORS
 
 RELATED COMMANDS
   fspec link-coverage
-  fspec audit-coverage
+  fspec audit
   fspec unlink-coverage
   fspec list-features
 

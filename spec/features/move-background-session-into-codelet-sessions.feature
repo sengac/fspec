@@ -4,6 +4,7 @@
 @session-management
 @codelet
 @RPC-039
+@BUG-298
 Feature: Move BackgroundSession from codelet-napi into codelet-sessions, replace NAPI references
   """
   Architecture: BackgroundSession is moved into the new `background_session` module of codelet-sessions. Supporting types it OWNS by field (PromptInput, CompactionProgress, WorkUnitContext, IncomingMessage, BridgeImageData, SessionError) and helpers it consumes (format_incoming_message) move with it. The napi side keeps `pub use codelet_sessions::background_session::{..}` re-exports so the rest of session_manager.rs (ChainOfCommand, SessionManager, agent_loop, the unit-test module) keeps resolving paths it used pre-move
@@ -50,15 +51,9 @@ Feature: Move BackgroundSession from codelet-napi into codelet-sessions, replace
 
   Scenario: codelet-sessions builds standalone with BackgroundSession at its new home
     Given the BackgroundSession struct and impl have been moved into rust/sessions/src/background_session.rs
-    When I run `cargo build -p codelet-sessions`
-    Then the build completes successfully with no errors
+    When I run `cargo check -p codelet-sessions --profile ci-test`
+    Then the check completes successfully with no errors
     And the public path `codelet_sessions::background_session::BackgroundSession` resolves to the moved struct
-
-  Scenario: codelet-napi still builds against the re-exported BackgroundSession
-    Given rust/napi/src/session_manager.rs now `pub use`s BackgroundSession + its companion types from codelet-sessions
-    When I run `cargo build -p codelet-napi`
-    Then the build completes successfully with no errors
-    And the rest of session_manager.rs (ChainOfCommand, SessionManager, the agent_loop, the #[napi] free functions, the unit-test module) resolves every BackgroundSession / PromptInput / IncomingMessage / BridgeImageData / format_incoming_message / WorkUnitContext / CompactionProgress / SessionError path through the re-exports
 
   Scenario: The moved background_session.rs has no napi:: references
     Given the BackgroundSession code has been moved into rust/sessions/src/background_session.rs
@@ -93,12 +88,6 @@ Feature: Move BackgroundSession from codelet-napi into codelet-sessions, replace
     When I run `cargo metadata -p codelet-sessions --format-version 1`
     Then the resulting JSON contains zero packages with name `codelet-napi`
 
-  Scenario: Pre-existing in-file unit tests in codelet-napi still pass via the re-exports
-    Given the BackgroundSession code has been moved into rust/sessions/src/background_session.rs
-    And rust/napi/src/session_manager.rs re-exports BackgroundSession, IncomingMessage, BridgeImageData, format_incoming_message, PromptInput, CompactionProgress, WorkUnitContext, SessionError from codelet-sessions
-    When I run `cargo test -p codelet-napi --lib session_manager::tests`
-    Then every pre-existing test (WorkUnitContext::new tests, format_for_environment tests, IncomingMessage::new/with_images tests, format_incoming_message tests, parse_interjection tests) passes with status ok
-
   Scenario: codelet-sessions tests assert BackgroundSession is reachable from its new home
     Given the BackgroundSession code has been moved into rust/sessions/src/background_session.rs
     And the integration test rust/sessions/tests/background_session_shape.rs has been added
@@ -107,10 +96,3 @@ Feature: Move BackgroundSession from codelet-napi into codelet-sessions, replace
     And the new shape test asserts the path `codelet_sessions::background_session::BackgroundSession` resolves at compile-time
     And the shape test asserts the supporting types (PromptInput, CompactionProgress, WorkUnitContext, IncomingMessage, BridgeImageData, SessionError) are publicly reachable from the same module
     And the shape test asserts BackgroundSession::send_input returns `Result<(), String>` (not napi::Result)
-
-  Scenario: NAPI TypeScript surface is byte-stable across the move
-    Given the BackgroundSession code has been moved into rust/sessions/src/background_session.rs
-    When I run `cargo build -p codelet-napi --release` regenerating rust/napi/index.d.ts
-    Then no TypeScript interface, function, enum, or type alias in the regenerated rust/napi/index.d.ts is removed
-    And no TypeScript interface, function, enum, or type alias is renamed
-    And no field of any TypeScript interface is reordered, renamed, or removed

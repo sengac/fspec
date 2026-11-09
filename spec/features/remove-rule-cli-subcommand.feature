@@ -1,5 +1,7 @@
 @done
 @RPC-279
+@cli
+@remove
 Feature: fspec remove-rule CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_rule.rs — clap-derived struct mirroring TS Commander.js registration

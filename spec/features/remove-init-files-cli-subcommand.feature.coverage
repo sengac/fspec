@@ -39,7 +39,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -68,7 +70,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "match remove_init_files::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -89,7 +93,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "let mut payload: Map<String, Value> = Map::new();",
+              "lastLine": "let args_json = json!(payload).to_string();"
             }
           ]
         }
@@ -109,7 +115,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +162,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -165,7 +175,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_init_files.rs",
-          "lines": "207-231",
+          "lines": "211-238",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_init_files.rs",
@@ -211,7 +221,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "/// Strongly-typed args mirrored from the TS Commander.js registration",
+              "lastLine": "}"
             }
           ]
         }
@@ -228,6 +240,6 @@
     "implFiles": [
       "rust/fspec/src/remove_init_files.rs"
     ],
-    "totalLinesCovered": 282
+    "totalLinesCovered": 285
   }
 }

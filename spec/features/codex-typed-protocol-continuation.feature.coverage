@@ -252,7 +252,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -392,7 +394,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -570,7 +574,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -828,7 +834,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -968,7 +976,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -1146,7 +1156,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -1404,7 +1416,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -1544,7 +1558,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -1722,7 +1738,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -1980,7 +1998,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -2120,7 +2140,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -2298,7 +2320,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -2556,7 +2580,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -2696,7 +2722,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -2874,7 +2902,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -3132,7 +3162,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -3272,7 +3304,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -3450,7 +3484,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }
@@ -3708,7 +3744,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -3848,7 +3886,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/protocol_replay.rs",
@@ -4026,7 +4066,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "use super::history::CodexItem;",
+              "lastLine": "}"
             }
           ]
         }

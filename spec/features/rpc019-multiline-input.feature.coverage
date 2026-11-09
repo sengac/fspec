@@ -5,24 +5,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "60-83",
+          "lines": "94-116",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "// Plain Enter → submit, unless suppressed.",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -31,23 +34,45 @@
                 155,
                 156,
                 157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173
-              ]
+                158
+              ],
+              "firstLine": "/// Reset to an empty buffer.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub(super) fn emit_submission(&self, text: String, queue: bool) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "let outcome = self.input.handle_event_gated(event, gate);",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,16 +83,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "85-108",
+          "lines": "124-138",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "Some(insert_newline_gated(input, gate))"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
+                145,
+                146,
                 147,
                 148,
-                149,
-                150
-              ]
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "pub fn visible_rows(&self) -> u16 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -78,19 +128,51 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "110-131",
+          "lines": "146-164",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "/// Current buffer content, lines joined with '\\n'.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "// Plain Enter → submit, unless suppressed.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "let outcome = self.input.handle_event_gated(event, gate);",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,25 +183,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "133-148",
+          "lines": "172-181",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "pub(super) fn handle_paste(",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
+                212,
+                213,
+                214,
+                215,
+                216
+              ],
+              "firstLine": "/// RPC-403 — insert `text` at the cursor (embedded `\\n` preserved);",
+              "lastLine": "}"
             }
           ]
         }
@@ -130,16 +224,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "150-167",
+          "lines": "189-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118
-              ]
+                77,
+                78,
+                79,
+                80,
+                81,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "impl MultiLineInput {",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,11 +251,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "169-188",
+          "lines": "209-236",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
                 200,
                 201,
                 202,
@@ -173,31 +285,31 @@
                 215,
                 216,
                 217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
+                218
+              ],
+              "firstLine": "pub fn render_with_prompt(&self, area: Rect, buf: &mut Buffer, placeholder: &str) {",
+              "lastLine": "Paragraph::new(Line::from(hint)).render(body_area, buf);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_transition.rs",
+              "lines": [
                 236,
                 237,
                 238,
                 239,
-                240,
-                241
-              ]
+                240
+              ],
+              "firstLine": "/// Render the idle input row. Convenience helper so the AgentView",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent.rs",
+              "lines": [
+                112,
+                113
+              ],
+              "firstLine": "pub const INPUT_PLACEHOLDER_HINT: &str =",
+              "lastLine": "\"Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns\";"
             }
           ]
         }
@@ -208,22 +320,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "190-205",
+          "lines": "247-261",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241
-              ]
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "if self.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -234,54 +344,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "207-222",
+          "lines": "272-286",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "fn shift_arrow_to_action(code: KeyCode) -> Option<Action> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -292,54 +377,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "224-239",
+          "lines": "283-302",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "fn shift_arrow_to_action(code: KeyCode) -> Option<Action> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -350,54 +410,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "241-256",
+          "lines": "305-324",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "fn shift_arrow_to_action(code: KeyCode) -> Option<Action> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -408,77 +443,60 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "258-273",
+          "lines": "327-346",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "fn shift_arrow_to_action(code: KeyCode) -> Option<Action> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "ESC inside AgentView emits Action::BackToBoard",
+      "name": "ESC inside AgentView emits Action::AgentEscPressed",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
-          "lines": "275-291",
+          "lines": "368-386",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148
-              ]
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "if key.code == KeyCode::Esc && key.modifiers.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -493,9 +511,15 @@
       "rust/fspec-tui/tests/view_agent_multiline_input_rpc019.rs"
     ],
     "implFiles": [
+      "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
       "rust/fspec-tui/src/views/agent/multiline_input.rs",
+      "rust/fspec-tui/src/views/agent/composer_session.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
+      "rust/fspec-tui/src/views/agent/input_transition.rs",
       "rust/fspec-tui/src/views/agent.rs"
     ],
-    "totalLinesCovered": 513
+    "totalLinesCovered": 440
   }
 }

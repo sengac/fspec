@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "79-105",
+          "lines": "201-226",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -57,7 +57,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -68,7 +70,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "108-134",
+          "lines": "230-252",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -120,7 +122,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -131,7 +135,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "137-161",
+          "lines": "256-278",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -183,7 +187,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -194,7 +200,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "164-182",
+          "lines": "282-298",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -246,7 +252,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -257,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "185-210",
+          "lines": "302-325",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -309,7 +317,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -320,7 +330,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "213-238",
+          "lines": "329-352",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/matcher.rs",
@@ -372,7 +382,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub fn allowed(category: Option<String>, stage: String) -> Self {",
+              "lastLine": ".map(Self::compile_category)"
             }
           ]
         }
@@ -383,11 +395,21 @@
       "testMappings": [
         {
           "file": "rust/tools/src/stage_permissions/matcher.rs",
-          "lines": "360-380",
+          "lines": "356-374",
           "implMappings": [
             {
               "file": "rust/tools/src/stage_permissions/mod.rs",
               "lines": [
+                129,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
                 140,
                 141,
                 142,
@@ -401,15 +423,6 @@
                 150,
                 151,
                 152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -420,11 +433,10 @@
                 169,
                 170,
                 171,
-                172,
-                173,
-                174,
-                175
-              ]
+                172
+              ],
+              "firstLine": "*guard = Some(matcher);",
+              "lastLine": "}"
             }
           ]
         }
@@ -442,6 +454,6 @@
       "rust/tools/src/stage_permissions/matcher.rs",
       "rust/tools/src/stage_permissions/mod.rs"
     ],
-    "totalLinesCovered": 489
+    "totalLinesCovered": 472
   }
 }

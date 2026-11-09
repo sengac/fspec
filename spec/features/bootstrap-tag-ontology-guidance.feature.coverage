@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "The tag ontology section gives the register-tag and generate-tags-md workflow",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug531_bootstrap_tag_ontology_guidance.rs",
+          "lines": "36-72",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/bootstrap_doc.txt",
+              "lines": [
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333
+              ],
+              "firstLine": "### Integration with Tag Ontology (EXMAP-004)",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bootstrap output never names derive-tags-from-foundation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug531_bootstrap_tag_ontology_guidance.rs",
+          "lines": "74-87",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/bootstrap_doc.txt",
+              "lines": [
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333
+              ],
+              "firstLine": "### Integration with Tag Ontology (EXMAP-004)",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug531_bootstrap_tag_ontology_guidance.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/bootstrap_doc.txt"
+    ],
+    "totalLinesCovered": 81
+  }
+}

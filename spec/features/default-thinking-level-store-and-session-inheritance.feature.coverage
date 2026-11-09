@@ -1,0 +1,220 @@
+{
+  "scenarios": [
+    {
+      "name": "Saving a model's thinking level round-trips from disk",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "46-68",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// The level a stored entry holds, or why it is not a level.",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing config file has no saved level",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "70-81",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "%model,",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_thinking_level_default for an unknown session saves nothing",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "83-110",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "fn set_thinking_level_default(",
+              "lastLine": "SessionManager::destroy_session(self, &session_id.value)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/tui002_default_thinking_level.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/default_thinking_level_persistence.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs"
+    ],
+    "totalLinesCovered": 212
+  }
+}

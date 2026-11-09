@@ -5,36 +5,44 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
-          "lines": "66-90",
+          "lines": "65-92",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
               "lines": [
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651,
-                652,
-                653,
-                654,
-                655,
-                656,
-                657,
-                658,
-                659,
-                660,
-                661,
-                662,
-                663,
-                664,
-                665,
-                666,
-                667,
-                668
-              ]
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "let schedules_path =",
+              "lastLine": "return;"
             }
           ]
         }
@@ -49,8 +57,8 @@
       "rust/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager/manager_impl_2.rs"
     ],
-    "totalLinesCovered": 49
+    "totalLinesCovered": 58
   }
 }

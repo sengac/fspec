@@ -67,22 +67,13 @@ Feature: Replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast sender; rewire NAPI
     And `NoopSessionManagerHooks` provides no-op impls for the same six methods only
     And the napi-side `NapiSessionManagerHooks` in rust/napi/src/session_manager.rs implements the same six methods only and no longer references `GLOBAL_CHUNK_CALLBACK`
 
-  Scenario: session_set_global_chunk_callback subscribes to SessionManager::instance().chunks_tx() and fans into the JS ThreadsafeFunction
-    Given the napi free function `session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChunkCallbackArgs>) -> Result<()>` exists at rust/napi/src/session_manager.rs
-    When I inspect the rewritten function body
-    Then it stores the supplied `ThreadsafeFunction<GlobalChunkCallbackArgs>` inside a `static CHUNK_FANOUT_TSFN: OnceCell<parking_lot::Mutex<Option<ThreadsafeFunction<GlobalChunkCallbackArgs>>>>` and returns `Error::from_reason("Global chunk callback already set ...")` on re-registration
-    And it calls `SessionManager::instance().chunks_tx().subscribe()` exactly once
-    And it `tokio::spawn`s an async task that loops on `rx.recv().await` and forwards each `(SessionId, StreamChunk)` into the stored TSFN via `ThreadsafeFunctionCallMode::NonBlocking`
-    And it still calls `init_block_notification_callbacks()`, `install_napi_session_manager_hooks()`, `init_bridge_metadata_providers()`, and `init_bridge_session_and_terminal_creators()` in that order
-    And the public TS signature `sessionSetGlobalChunkCallback(callback: ...): void;` in rust/napi/index.d.ts is byte-stable
-
-  Scenario: emit_block_notification_to_tui and spawn_footer_poller route through SessionManager::instance().chunks_tx().send
+  Scenario: emit_block_notification_to_tui and spawn_footer_poller route through the registered chunks_tx sender
     Given the napi free function `emit_block_notification_to_tui(session_id_str, action, reason)` previously called `GLOBAL_CHUNK_CALLBACK.get()` to emit a `UserNotification` chunk
     And the napi free function `spawn_footer_poller(session_id, cwd, worktree_path)` previously called `GLOBAL_CHUNK_CALLBACK.get()` to emit a `FooterStateUpdate` chunk
     When I inspect the rewritten bodies of both functions
-    Then `emit_block_notification_to_tui` emits the chunk via `let _ = SessionManager::instance().chunks_tx().send((codelet_rpc_types::SessionId::from(session_id_str), chunk))`
+    Then `emit_block_notification_to_tui` emits the chunk via the registered manager-owned `chunks_tx` sender (`sender.send(`), with no SessionManager singleton fallback (BUG-405)
     And the user-visible warning message format `"AI was blocked from {action} - {reason}"` is preserved verbatim
-    And `spawn_footer_poller`'s emit site routes via the registered manager-owned `chunks_tx` sender (the NAPI-free shared poller added by WT-002 defaults to `SessionManager::instance()` when no sender is registered) while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate in the shared poller
+    And `spawn_footer_poller`'s emit site routes via the registered manager-owned `chunks_tx` sender (the NAPI-free shared poller added by WT-002; BUG-405: with no sender registered it emits nothing and reports it) while preserving the `first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch` change-gate in the shared poller
 
   Scenario: The FspecHandler and bridge command_emitter gates consult a new is_global_chunk_callback_registered helper
     Given the FspecHandler closure registered inside the napi agent_loop previously short-circuited via `if GLOBAL_CHUNK_CALLBACK.get().is_none()`
@@ -91,16 +82,6 @@ Feature: Replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast sender; rewire NAPI
     Then both gates use `if !is_global_chunk_callback_registered()` calling a new private helper
     And the helper body consults `CHUNK_FANOUT_TSFN.get().and_then(|m| m.lock().ok()).map(|g| g.is_some()).unwrap_or(false)`
     And the user-facing FspecHandler error string `"Global chunk callback not registered - cannot execute fspec command"` is preserved verbatim
-
-  Scenario: codelet-sessions and codelet-napi continue to build with TS surface byte-stable
-    Given the changes from RPC-041 are applied
-    When I run `cargo build -p codelet-sessions`
-    Then the build completes successfully with no errors
-    When I run `cargo build -p codelet-napi`
-    Then the build completes successfully with no errors
-    When I run `cargo build -p codelet-napi --release` to regenerate rust/napi/index.d.ts
-    Then `git diff rust/napi/index.d.ts` shows zero removed or renamed TypeScript exports
-    And the `sessionSetGlobalChunkCallback` signature and the `GlobalChunkCallbackArgs { session_id: string; chunk: StreamChunk }` field order are preserved byte-for-byte
 
   Scenario: All codelet-sessions shape tests continue to pass with inverted GLOBAL_CHUNK_CALLBACK assertions
     Given the existing shape-test files `rust/sessions/tests/background_session_shape.rs` and `rust/sessions/tests/session_manager_shape.rs` carry RPC-039/RPC-040 invariants

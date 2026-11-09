@@ -128,8 +128,7 @@ async fn loopback(tools: Value) -> Result<Loopback, std::io::Error> {
 
 fn connect_args(url: &str) -> Result<McpConnectArgs, serde_json::Error> {
     serde_json::from_value(json!({
-        "action":"connect", "name":"schema", "transport":"http", "url":url,
-        "timeout":2
+        "action":"connect", "name":"schema", "transport":"http", "url":url
     }))
 }
 
@@ -155,8 +154,8 @@ pub async fn exercise_hot_registration() -> TestResult {
     let mut arguments = serde_json::to_value(connect_args(&endpoint.url)?)?;
     arguments["work_unit_id"] = json!("NONE");
     let arguments = arguments.to_string();
-    let response = tokio::time::timeout(
-        std::time::Duration::from_secs(5),
+    let response = codelet_test_helpers::deadlock_guard(
+        "actor.call_tool('ConnectMCP', &arguments)",
         actor.call_tool("ConnectMCP", &arguments),
     )
     .await??;
@@ -164,7 +163,7 @@ pub async fn exercise_hot_registration() -> TestResult {
         response.contains("Connected:"),
         "loopback handshake failed: {response}"
     );
-    let definitions = tokio::time::timeout(std::time::Duration::from_secs(2), async {
+    let definitions = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             let definitions = actor.get_tool_defs(None).await?;
             if definitions.len() == 2 {
@@ -242,12 +241,12 @@ pub async fn exercise_actor_rejection() -> TestResult {
         .await?;
     set_mcp_tool_server_handle(session.0, actor.clone());
     let arguments = serde_json::to_string(&connect_args(&endpoint.url)?)?;
-    tokio::time::timeout(
-        std::time::Duration::from_secs(5),
+    codelet_test_helpers::deadlock_guard(
+        "actor.call_tool('ConnectMCP', &arguments)",
         actor.call_tool("ConnectMCP", &arguments),
     )
     .await??;
-    let notification = tokio::time::timeout(std::time::Duration::from_secs(2), injections.recv())
+    let notification = codelet_test_helpers::deadlock_guard("injections.recv()", injections.recv())
         .await?
         .ok_or("registration failure notification missing")?;
     let codelet_tools::mcp::McpInjection::Notification(message) = notification else {

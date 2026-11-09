@@ -17,7 +17,7 @@ impl Fixture {
             .await?;
         self.session.install_selected_preparer(preparer);
         Ok(
-            codelet_cli::compactor_sub_agent::retry_failed_compactor_for_user_input(
+            codelet_cli::compactor_sub_agent::retry_failed_compactor_for_next_input(
                 &mut self.session,
                 self.manifest.id,
                 &self.busy,

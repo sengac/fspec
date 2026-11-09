@@ -9,19 +9,17 @@
 //! Strategy (per the RPC-350 findings doc): render the full
 //! `ProviderSettingsView` into a ratatui `TestBackend`/`Buffer` and assert
 //! cell-level fg/bg/modifier styling per column range — the same pattern used
-//! by `provider_settings_row_render_rpc104.rs` and
-//! `provider_settings_test_result_inline_rpc158.rs`. No async, no NAPI.
+//! by `provider_settings_row_render_rpc104.rs`. No async, no NAPI.
 //!
 //! R1 (title two-span), R2 (openai dim profile badge), R3 ("Create new
 //! profile" label), R4 (per-span green/dim/gray + black-on-band when selected)
 //! and R5 (shared blue title guard for non-provider views).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::ResumeSessionView;
 use codelet_fspec_tui::views::provider_settings::nav_item::{NavItemKind, ProviderDisplayInfo};
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_rpc_types::SessionInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier};
@@ -63,11 +61,14 @@ fn find_row(buf: &Buffer, needle: &str) -> Option<u16> {
 /// Display column (x) where the substring `needle` begins on row `y`, in
 /// terms of the joined symbol string (treats each cell symbol as one unit,
 /// which matches single-width chars used in the asserted segments).
-fn col_of(buf: &Buffer, y: u16, needle: &str) -> usize {
+fn col_of(buf: &Buffer, y: u16, needle: &str) -> Result<usize, codelet_test_helpers::TestError> {
     let row = row_string(buf, y);
-    row.find(needle)
+    Ok(row
+        .find(needle)
         .map(|byte_idx| row[..byte_idx].chars().count())
-        .unwrap_or_else(|| panic!("substring {needle:?} not found on row {y}: {row:?}"))
+        .or_fail(&format!(
+            "substring {needle:?} not found on row {y}: {row:?}"
+        ))?)
 }
 
 fn cell_fg(buf: &Buffer, x: u16, y: u16) -> Color {
@@ -127,7 +128,7 @@ fn nineteen_providers() -> Vec<ProviderDisplayInfo> {
 // dim gray
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn title_name_bold_yellow_count_dim_gray() {
+fn title_name_bold_yellow_count_dim_gray() -> TestResult {
     // @step Given the provider settings view has 19 nav items
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(nineteen_providers());
@@ -142,10 +143,10 @@ fn title_name_bold_yellow_count_dim_gray() {
 
     // @step Then the title row reads "Provider Settings (19 items)"
     let ty = find_row(&buf, "Provider Settings (19 items)")
-        .expect("title row 'Provider Settings (19 items)' should be present");
+        .or_fail("title row 'Provider Settings (19 items)' should be present")?;
 
     // @step And the "Provider Settings" name segment is foreground yellow and bold
-    let name_start = col_of(&buf, ty, "Provider Settings") as u16;
+    let name_start = col_of(&buf, ty, "Provider Settings")? as u16;
     let name_len = "Provider Settings".chars().count() as u16;
     for x in name_start..name_start + name_len {
         assert_eq!(
@@ -160,7 +161,7 @@ fn title_name_bold_yellow_count_dim_gray() {
     }
 
     // @step And the " (19 items)" count segment is foreground dim gray
-    let count_start = col_of(&buf, ty, "(19 items)") as u16;
+    let count_start = col_of(&buf, ty, "(19 items)")? as u16;
     let count_len = "(19 items)".chars().count() as u16;
     for x in count_start..count_start + count_len {
         let is_dim = cell_fg(&buf, x, ty) == Color::DarkGray
@@ -177,6 +178,7 @@ fn title_name_bold_yellow_count_dim_gray() {
             "count cell {x} must NOT be Yellow"
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -184,7 +186,7 @@ fn title_name_bold_yellow_count_dim_gray() {
 // profile badge
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn openai_expanded_shows_dim_pluralized_profile_badge() {
+fn openai_expanded_shows_dim_pluralized_profile_badge() -> TestResult {
     // @step Given the openai provider is expanded with one profile named "qwen"
     let mut view = ProviderSettingsView::new();
     let mut openai = plain_provider("openai", "OpenAI API");
@@ -200,7 +202,7 @@ fn openai_expanded_shows_dim_pluralized_profile_badge() {
 
     // @step Then the openai header row contains the suffix " (1 profile)"
     let hy = find_row(&buf, "(1 profile)")
-        .expect("openai header row should contain '(1 profile)' suffix");
+        .or_fail("openai header row should contain '(1 profile)' suffix")?;
     let header = row_string(&buf, hy);
     assert!(
         header.contains("OpenAI API") && header.contains("(1 profile)"),
@@ -212,7 +214,7 @@ fn openai_expanded_shows_dim_pluralized_profile_badge() {
     );
 
     // @step And the " (1 profile)" badge segment is rendered dim
-    let badge_start = col_of(&buf, hy, "(1 profile)") as u16;
+    let badge_start = col_of(&buf, hy, "(1 profile)")? as u16;
     let badge_len = "(1 profile)".chars().count() as u16;
     for x in badge_start..badge_start + badge_len {
         let is_dim = cell_fg(&buf, x, hy) == Color::DarkGray
@@ -234,19 +236,20 @@ fn openai_expanded_shows_dim_pluralized_profile_badge() {
     view2.selected_index = 99;
     let buf2 = render_to_buffer(&mut view2);
     let hy2 = find_row(&buf2, "(2 profiles)")
-        .expect("two-profile openai header should contain '(2 profiles)'");
+        .or_fail("two-profile openai header should contain '(2 profiles)'")?;
     let header2 = row_string(&buf2, hy2);
     assert!(
         header2.contains("(2 profiles)") && !header2.contains("(2 profile)"),
         "two profiles must pluralize, got {header2:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // R3 — Scenario: Add-profile row label reads "Create new profile"
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn add_profile_row_label_reads_create_new_profile() {
+fn add_profile_row_label_reads_create_new_profile() -> TestResult {
     // @step Given the openai provider is expanded
     let mut view = ProviderSettingsView::new();
     let openai = plain_provider("openai", "OpenAI API");
@@ -260,14 +263,14 @@ fn add_profile_row_label_reads_create_new_profile() {
         .position(|item| {
             item.provider_id == "openai" && matches!(item.kind, NavItemKind::AddProfile)
         })
-        .expect("OpenAI add-profile row must be present");
+        .or_fail("OpenAI add-profile row must be present")?;
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
 
     // @step Then the add-profile row label text is "Create new profile"
     let ry = find_row(&buf, "Create new profile")
-        .expect("add-profile row should read 'Create new profile'");
+        .or_fail("add-profile row should read 'Create new profile'")?;
     let row = row_string(&buf, ry);
     assert!(
         !row.contains("Add Profile"),
@@ -279,6 +282,7 @@ fn add_profile_row_label_reads_create_new_profile() {
         row.contains("> ") && row.contains("+ Create new profile"),
         "selected add-profile row should show '> ' marker and '+ ' glyph, got {row:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -286,7 +290,7 @@ fn add_profile_row_label_reads_create_new_profile() {
 // segments
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn configured_unselected_row_paints_per_color_segments() {
+fn configured_unselected_row_paints_per_color_segments() -> TestResult {
     // @step Given an unselected configured "Google Gemini" provider row with masked key "AIza••••••••H3Ck" and source "env"
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![configured_provider(
@@ -301,10 +305,10 @@ fn configured_unselected_row_paints_per_color_segments() {
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
-    let ry = find_row(&buf, "Google Gemini").expect("gemini provider row should render");
+    let ry = find_row(&buf, "Google Gemini").or_fail("gemini provider row should render")?;
 
     // @step Then the provider name segment is foreground white
-    let name_x = col_of(&buf, ry, "Google Gemini") as u16;
+    let name_x = col_of(&buf, ry, "Google Gemini")? as u16;
     assert_eq!(
         cell_fg(&buf, name_x, ry),
         Color::White,
@@ -317,14 +321,14 @@ fn configured_unselected_row_paints_per_color_segments() {
     );
 
     // @step And the "✓ AIza••••••••H3Ck" masked-key segment is foreground green
-    let key_x = col_of(&buf, ry, "AIza") as u16;
+    let key_x = col_of(&buf, ry, "AIza")? as u16;
     assert_eq!(
         cell_fg(&buf, key_x, ry),
         Color::Green,
         "masked-key segment should be green"
     );
     // The check glyph that precedes it is part of the green run too.
-    let check_x = col_of(&buf, ry, "✓") as u16;
+    let check_x = col_of(&buf, ry, "✓")? as u16;
     assert_eq!(
         cell_fg(&buf, check_x, ry),
         Color::Green,
@@ -332,7 +336,7 @@ fn configured_unselected_row_paints_per_color_segments() {
     );
 
     // @step And the "[env]" source segment is foreground dim gray
-    let src_x = col_of(&buf, ry, "[env]") as u16;
+    let src_x = col_of(&buf, ry, "[env]")? as u16;
     let src_len = "[env]".chars().count() as u16;
     for x in src_x..src_x + src_len {
         let is_dim = cell_fg(&buf, x, ry) == Color::DarkGray
@@ -344,6 +348,7 @@ fn configured_unselected_row_paints_per_color_segments() {
             cell_mod(&buf, x, ry)
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -351,7 +356,7 @@ fn configured_unselected_row_paints_per_color_segments() {
 // provider and api-key wording
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
+fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() -> TestResult {
     // @step Given an unselected unconfigured "Cohere" provider row
     let mut view = ProviderSettingsView::new();
     // cohere needs an api-key child on expansion: requires_api_key=true.
@@ -362,10 +367,10 @@ fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
-    let ry = find_row(&buf, "Cohere").expect("cohere provider row should render");
+    let ry = find_row(&buf, "Cohere").or_fail("cohere provider row should render")?;
 
     // @step Then the provider name segment is foreground white
-    let name_x = col_of(&buf, ry, "Cohere") as u16;
+    let name_x = col_of(&buf, ry, "Cohere")? as u16;
     assert_eq!(
         cell_fg(&buf, name_x, ry),
         Color::White,
@@ -373,7 +378,7 @@ fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
     );
 
     // @step And the "(not configured)" segment is foreground gray
-    let nc_x = col_of(&buf, ry, "(not configured)") as u16;
+    let nc_x = col_of(&buf, ry, "(not configured)")? as u16;
     let nc_len = "(not configured)".chars().count() as u16;
     for x in nc_x..nc_x + nc_len {
         let fg = cell_fg(&buf, x, ry);
@@ -391,8 +396,8 @@ fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
     view2.toggle_expansion("cohere");
     view2.selected_index = 99;
     let buf2 = render_to_buffer(&mut view2);
-    let ay = find_row(&buf2, "(not set)").expect("api-key child should read '(not set)'");
-    let ns_x = col_of(&buf2, ay, "(not set)") as u16;
+    let ay = find_row(&buf2, "(not set)").or_fail("api-key child should read '(not set)'")?;
+    let ns_x = col_of(&buf2, ay, "(not set)")? as u16;
     let ns_len = "(not set)".chars().count() as u16;
     for x in ns_x..ns_x + ns_len {
         let fg = cell_fg(&buf2, x, ay);
@@ -401,6 +406,7 @@ fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
             "'(not set)' cell {x} should be gray, got {fg:?}"
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -408,7 +414,7 @@ fn unconfigured_rows_use_gray_empty_state_with_distinct_wording() {
 // over the colour band
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn selected_configured_row_flips_all_segments_black_over_band() {
+fn selected_configured_row_flips_all_segments_black_over_band() -> TestResult {
     // @step Given a selected configured provider row with a masked key and source
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![configured_provider(
@@ -421,7 +427,7 @@ fn selected_configured_row_flips_all_segments_black_over_band() {
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
-    let ry = find_row(&buf, "Google Gemini").expect("gemini provider row should render");
+    let ry = find_row(&buf, "Google Gemini").or_fail("gemini provider row should render")?;
 
     // @step Then the entire row paints a yellow background band
     for x in 0..buf.area.width {
@@ -434,7 +440,7 @@ fn selected_configured_row_flips_all_segments_black_over_band() {
 
     // @step And the name, masked-key and source segments are all foreground black
     for needle in ["Google Gemini", "AIza", "[env]"] {
-        let sx = col_of(&buf, ry, needle) as u16;
+        let sx = col_of(&buf, ry, needle)? as u16;
         let len = needle.chars().count() as u16;
         for x in sx..sx + len {
             assert_eq!(
@@ -444,6 +450,7 @@ fn selected_configured_row_flips_all_segments_black_over_band() {
             );
         }
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -468,7 +475,7 @@ fn fake_session(id: &str) -> SessionInfo {
 }
 
 #[test]
-fn resume_session_view_keeps_shared_blue_title() {
+fn resume_session_view_keeps_shared_blue_title() -> TestResult {
     // @step Given the Resume Session full-screen view with 5 sessions
     let mut view = ResumeSessionView::new();
     view.set_sessions((0..5).map(|i| fake_session(&format!("s{i}"))).collect());
@@ -480,8 +487,8 @@ fn resume_session_view_keeps_shared_blue_title() {
 
     // @step Then its title row "Resume Session (5 available)" keeps the shared blue bold styling
     let ty =
-        find_row(&buf, "Resume Session (5 available)").expect("resume title row should render");
-    let name_x = col_of(&buf, ty, "Resume Session") as u16;
+        find_row(&buf, "Resume Session (5 available)").or_fail("resume title row should render")?;
+    let name_x = col_of(&buf, ty, "Resume Session")? as u16;
     assert_eq!(
         cell_fg(&buf, name_x, ty),
         Color::Blue,
@@ -495,10 +502,11 @@ fn resume_session_view_keeps_shared_blue_title() {
     // @step And the provider-specific two-span title change does not affect it
     // The count segment of the SHARED title is part of the same blue run — it
     // must NOT be DarkGray/dim (which is the provider-only treatment).
-    let count_x = col_of(&buf, ty, "(5 available)") as u16;
+    let count_x = col_of(&buf, ty, "(5 available)")? as u16;
     assert_eq!(
         cell_fg(&buf, count_x, ty),
         Color::Blue,
         "shared title count must stay Blue (not dim gray)"
     );
+    Ok(())
 }

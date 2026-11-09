@@ -1,6 +1,9 @@
 @done
 @codex-oauth
 @PROV-014
+@BUG-489
+@providers
+@authentication
 Feature: Device Auth Flow for Headless Environments
   """
   BUG-279 corrects the original PROV-014 protocol assumptions against official Codex commit 6ba3a84680236c621b93e0b8dc140687a37f41fc: start and poll use JSON, polls carry both original identifiers, usercode aliases and string/missing intervals are accepted, HTTP403/404 remain bounded pending, and token exchange includes the issuer deviceauth callback redirect_uri. Retain the existing shared LoginAttempt cancellation/deadline, account identity and atomic credential commit controls. Original pending/slow-down/expiry/denial/display/persistence/shape/network assertions remain executable in small isolated integration modules using mock keyring and synthetic loopback credentials. Historical example-map comments below are superseded where they claimed no redirect_uri.
@@ -92,6 +95,18 @@ Feature: Device Auth Flow for Headless Environments
     And the usercode endpoint is unreachable
     Then the device auth flow should terminate immediately with a network error
     And no polling should be attempted
+
+  Scenario: Device authorization request posts the client id and parses the device code
+    Given a usercode endpoint that answers only a JSON POST of the Codex client_id
+    When the device authorization is requested
+    Then exactly one request reaches the usercode endpoint
+    And the device_auth_id, user_code and numeric polling interval are returned
+
+  Scenario: A usercode server error is reported without its response body
+    Given a usercode endpoint that answers 500 with a secret-bearing body
+    When the device authorization is requested
+    Then the request fails with an error naming status 500
+    And the error does not contain the response body
 
   Scenario: Token exchange uses correct parameters with device callback redirect_uri
     Given a device auth login received a successful polling response

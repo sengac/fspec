@@ -15,6 +15,10 @@
 //! checks guarantee that the obsolete `run_retry_stream` is gone and that the
 //! primary loop wires in the bounded retry counter.
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -42,6 +46,8 @@ static TEST_DATA_DIR: OnceLock<tempfile::TempDir> = OnceLock::new();
 fn ensure_test_data_dir() {
     TEST_DATA_DIR.get_or_init(|| {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         codelet_common::set_data_directory(temp_dir.path().to_path_buf())
             .expect("Failed to set data directory");
         temp_dir
@@ -77,7 +83,7 @@ impl StreamOutput for RecordingOutput {
 }
 
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 fn fresh_token_state() -> Arc<Mutex<TokenState>> {
@@ -185,13 +191,13 @@ async fn execute_compaction_helper_clears_prior_turns_and_resets_tracker() {
     .await
     .expect("helper must succeed for a compactable session");
 
-    // @step Then execute_compaction has cleared the prior turns and injected the compaction instruction
+    // @step Then the compaction view holds the compaction instruction instead of the prior turns
     // execute_compaction clears compactable turns (user/assistant pairs) and
     // pushes a single User message carrying the compaction instruction. The
     // instruction embeds the original prompt we passed in so the agent knows
     // what to resume after building the DAG.
-    let last = session
-        .messages
+    let view = session.inference_messages().clone();
+    let last = view
         .last()
         .expect("session must have at least the compaction instruction");
     match last {
@@ -214,25 +220,24 @@ async fn execute_compaction_helper_clears_prior_turns_and_resets_tracker() {
     }
 
     // The original user/assistant pair must no longer be present.
-    let has_original_assistant = session.messages.iter().any(|m| matches!(
+    let has_original_assistant = view.iter().any(|m| matches!(
         m,
         rig::message::Message::Assistant { content, .. }
             if content.iter().any(|c| matches!(c, rig::message::AssistantContent::Text(t) if t.text.contains("Rust is a systems language")))
     ));
     assert!(
         !has_original_assistant,
-        "the original assistant turn must have been cleared by execute_compaction"
+        "the compaction view must not carry the original assistant turn"
     );
 
-    // @step Then the session token tracker has been reset via reset_after_compaction
+    // @step Then the session token tracker keeps the committed basis until the summary is durably applied
     // reset_after_compaction zeroes out the last-turn billing but preserves
     // cumulative billing. The critical observable here is the display-level
     // input_tokens: after compaction + reset it reflects the recalculated
     // in-view-DAG context, which is much smaller than the seeded 50_000.
-    assert!(
-        session.token_tracker.input_tokens < 50_000,
-        "token_tracker.input_tokens should have been recalculated by execute_compaction; got {}",
-        session.token_tracker.input_tokens
+    assert_eq!(
+        session.token_tracker.input_tokens, 50_000,
+        "the committed token basis changes only when the summary is applied"
     );
     // The compaction_in_progress flag must have been set by execute_compaction.
     assert!(
@@ -371,7 +376,8 @@ fn stream_loop_declares_compaction_retry_counter_and_checks_budget() {
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
 
     // @step When the stream_loop.rs source is inspected
-    let content = std::fs::read_to_string(&stream_loop).expect("stream_loop.rs must exist");
+    let content = stream_loop_source_tree::stream_loop_source();
+    assert!(stream_loop.is_file(), "stream_loop.rs must exist");
 
     // @step Then it declares a mutable compaction_retry_count counter and checks it against MAX_COMPACTION_RETRIES before each cascaded compaction
     assert!(

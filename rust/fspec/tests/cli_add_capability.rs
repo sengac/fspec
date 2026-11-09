@@ -248,6 +248,14 @@ fn scenario_cli_fails_with_exit_1_when_foundation_missing() {
 
     // @step And no spec/foundation.json file is created
     assert!(!ws.path().join("spec/foundation.json").exists());
+
+    // @step And stderr contains the line '  Run: fspec discover-foundation to create foundation.json'
+    assert!(
+        stderr
+            .lines()
+            .any(|l| l == "  Run: fspec discover-foundation to create foundation.json"),
+        "stderr must point at discover-foundation; got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

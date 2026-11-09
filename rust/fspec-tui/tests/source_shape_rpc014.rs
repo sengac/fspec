@@ -3,55 +3,54 @@
 //!
 //! Feature: spec/features/rpc014-source-shape.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
-fn src_dir() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn src_dir() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
-fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root()
+fn rpc_types_lib() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?
         .join("rpc-types")
         .join("src")
-        .join("lib.rs")
+        .join("lib.rs"))
 }
 
-fn core_work_units() -> std::path::PathBuf {
-    common::workspace_root()
+fn core_work_units() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?
         .join("core")
         .join("src")
-        .join("work_units.rs")
+        .join("work_units.rs"))
 }
 
-fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+fn read_raw(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    common::read_to_string_or_fail(path)
 }
 
-fn read_stripped(rel: &str) -> String {
-    let path = src_dir().join(rel);
-    let body = common::read_to_string_or_panic(&path);
-    common::strip_rust_comments(&body)
+fn read_stripped(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
+    let path = src_dir()?.join(rel);
+    let body = common::read_to_string_or_fail(&path)?;
+    Ok(common::strip_rust_comments(&body))
 }
 
-fn count_lines_path(path: &std::path::Path) -> usize {
-    common::read_to_string_or_panic(path).lines().count()
+fn count_lines_path(path: &std::path::Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(common::read_to_string_or_fail(path)?.lines().count())
 }
 
 /// Scenario: Grid helpers and details_strip modules exist as separate files
 #[test]
-fn grid_and_details_strip_modules_exist_as_separate_files() {
+fn grid_and_details_strip_modules_exist_as_separate_files() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-014 lands
     // @step When a developer scans the views directory
     // @step Then the file rust/fspec-tui/src/views/board/grid.rs exists
-    let grid = src_dir().join("views").join("board").join("grid.rs");
+    let grid = src_dir()?.join("views").join("board").join("grid.rs");
     assert!(
         grid.exists(),
         "rust/fspec-tui/src/views/board/grid.rs must exist after RPC-014"
     );
     // @step And the file rust/fspec-tui/src/views/board/details_strip.rs exists
-    let strip = src_dir()
+    let strip = src_dir()?
         .join("views")
         .join("board")
         .join("details_strip.rs");
@@ -60,25 +59,26 @@ fn grid_and_details_strip_modules_exist_as_separate_files() {
         "rust/fspec-tui/src/views/board/details_strip.rs must exist after RPC-014"
     );
     // @step And the file rust/fspec-tui/src/views/board.rs exists
-    let board = src_dir().join("views").join("board.rs");
+    let board = src_dir()?.join("views").join("board.rs");
     assert!(
         board.exists(),
         "rust/fspec-tui/src/views/board.rs must exist after RPC-014"
     );
+    Ok(())
 }
 
 /// Scenario: New and modified board modules stay under 300 lines
 #[test]
-fn new_and_modified_board_modules_stay_under_300_lines() {
+fn new_and_modified_board_modules_stay_under_300_lines() -> TestResult {
     // @step Given the directory rust/fspec-tui/src/views/board/
-    let board_dir = src_dir().join("views").join("board");
-    let board_orchestrator = src_dir().join("views").join("board.rs");
+    let board_dir = src_dir()?.join("views").join("board");
+    let board_orchestrator = src_dir()?.join("views").join("board.rs");
     // @step When a test counts the line-count of every .rs file in views/board/ plus views/board.rs
     let mut targets: Vec<std::path::PathBuf> = vec![board_orchestrator];
     let entries = std::fs::read_dir(&board_dir)
-        .unwrap_or_else(|e| panic!("read_dir {}: {e}", board_dir.display()));
+        .map_err(|e| format!("read_dir {}: {e}", board_dir.display()))?;
     for entry in entries {
-        let entry = entry.expect("read_dir entry");
+        let entry = entry.or_fail("read_dir entry")?;
         let path = entry.path();
         if path.extension().and_then(|s| s.to_str()) == Some("rs") {
             targets.push(path);
@@ -101,7 +101,7 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
     }
     let mut violations = Vec::new();
     for path in &targets {
-        let lines = count_lines_path(path);
+        let lines = count_lines_path(path)?;
         if lines >= 300 {
             violations.push(format!(
                 "{}: {} lines >= 300 ceiling",
@@ -117,26 +117,28 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
         violations.is_empty(),
         "RPC-014 board modules MUST stay < 300 LoC. Violations: {violations:?}"
     );
+    Ok(())
 }
 
 /// Scenario: WorkUnitInfo gains the attachments field
 #[test]
-fn work_unit_info_gains_the_attachments_field() {
+fn work_unit_info_gains_the_attachments_field() -> TestResult {
     // @step Given rust/rpc-types/src/lib.rs after RPC-014 lands
-    let body = read_raw(&rpc_types_lib());
+    let body = read_tree(&rpc_types_lib()?)?;
     // @step When a developer reads the WorkUnitInfo struct body
     // @step Then the body contains the substring "pub attachments: Vec<String>"
     assert!(
         body.contains("pub attachments: Vec<String>"),
         "rust/rpc-types/src/lib.rs WorkUnitInfo must add `pub attachments: Vec<String>`"
     );
+    Ok(())
 }
 
 /// Scenario: Core work_units parser reads attachments with serde default
 #[test]
-fn core_work_units_parser_reads_attachments_with_serde_default() {
+fn core_work_units_parser_reads_attachments_with_serde_default() -> TestResult {
     // @step Given rust/core/src/work_units.rs after RPC-014 lands
-    let raw = read_raw(&core_work_units());
+    let raw = read_raw(&core_work_units()?)?;
     // @step When a developer reads the WorkUnitRecord struct body
     // @step Then the body contains the field name "attachments"
     assert!(
@@ -159,47 +161,49 @@ fn core_work_units_parser_reads_attachments_with_serde_default() {
         has_default_before_attachments,
         "rust/core/src/work_units.rs `attachments` field must carry `#[serde(default)]`"
     );
+    Ok(())
 }
 
 /// Scenario: RPC-013 invariants preserved
 #[test]
-fn rpc013_invariants_preserved() {
+fn rpc013_invariants_preserved() -> TestResult {
     // @step Given rust/fspec-tui/src/views/navigator.rs after RPC-014 lands
-    let nav = read_stripped("views/navigator.rs");
+    let nav = read_stripped("views/navigator.rs")?;
     // @step Then the file does NOT contain "Constraint::Length(1)"
     assert!(
         !nav.contains("Constraint::Length(1)"),
         "navigator.rs must not re-introduce Constraint::Length(1) after RPC-013/RPC-014"
     );
     // @step And rust/fspec-tui/src/views/mod.rs does NOT contain the identifier "FooterView"
-    let mod_rs = read_stripped("views/mod.rs");
+    let mod_rs = read_stripped("views/mod.rs")?;
     assert!(
         !mod_rs.contains("FooterView"),
         "views/mod.rs must not reference FooterView"
     );
     // @step And rust/fspec-tui/src/lib.rs does NOT contain the identifier "FooterView"
-    let lib_rs = read_stripped("lib.rs");
+    let lib_rs = read_stripped("lib.rs")?;
     assert!(
         !lib_rs.contains("FooterView"),
         "lib.rs must not reference FooterView"
     );
     // @step And the file rust/fspec-tui/src/views/footer.rs does NOT exist
-    let footer = src_dir().join("views").join("footer.rs");
+    let footer = src_dir()?.join("views").join("footer.rs");
     assert!(
         !footer.exists(),
         "rust/fspec-tui/src/views/footer.rs must not exist"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView still emits Action variants and renders the RPC-013 footer
 #[test]
-fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
+fn board_view_still_emits_action_variants_and_renders_rpc013_footer() -> TestResult {
     // @step Given rust/fspec-tui/src/views/board.rs after RPC-014 lands
-    let board = read_raw(&src_dir().join("views").join("board.rs"));
+    let board = read_raw(&src_dir()?.join("views").join("board.rs"))?;
     // RPC-016 moved the footer literal into views/board/footer.rs so the
     // orchestrator can stay under the 300 LoC ceiling — combine both for
     // the literal-string assertions below.
-    let footer = read_raw(&src_dir().join("views").join("board").join("footer.rs"));
+    let footer = read_raw(&src_dir()?.join("views").join("board").join("footer.rs"))?;
     let combined = format!("{board}\n{footer}");
     // @step When a developer scans the file source raw
     // @step Then the file contains the substring "Action::EnterWorkUnit"
@@ -223,46 +227,48 @@ fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
         board.contains("Action::ReorderUp"),
         "missing Action::ReorderUp in board.rs"
     );
-    // @step And the file contains the substring "← → Columns"
+    // @step And the file contains the substring "← →"
     assert!(
         combined.contains("← →"),
         "board.rs|footer.rs must contain the '← →' span"
     );
+    // @step And the file contains the substring "Columns"
     assert!(
         combined.contains("Columns"),
         "board.rs|footer.rs must contain 'Columns' span"
     );
-    // @step And the file contains the substring "↵ Work Agent"
+    // @step And the file contains the substring "↵ Choose"
     assert!(
         combined.contains("↵"),
         "board.rs|footer.rs must contain '↵' span"
     );
     assert!(
-        combined.contains("Work Agent"),
-        "board.rs|footer.rs must contain 'Work Agent' span"
+        combined.contains("Choose"),
+        "board.rs|footer.rs must contain 'Choose' span"
     );
-    // @step And the file contains the substring "ESC Back"
+    // @step And the file contains the substring "ESC Exit"
     assert!(
         combined.contains("ESC"),
         "board.rs|footer.rs must contain 'ESC' span"
     );
     assert!(
-        combined.contains("Back"),
-        "board.rs|footer.rs must contain 'Back' span"
+        combined.contains("Exit"),
+        "board.rs|footer.rs must contain 'Exit' span"
     );
+    Ok(())
 }
 
 /// Scenario: Views still avoid encapsulated transport crates and host runtime construction
 #[test]
-fn views_still_avoid_encapsulated_transport_crates_and_runtime_construction() {
+fn views_still_avoid_encapsulated_transport_crates_and_runtime_construction() -> TestResult {
     // @step Given the directory rust/fspec-tui/src/views/ (including the new board/ subdir)
-    let views_dir = src_dir().join("views");
+    let views_dir = src_dir()?.join("views");
     // @step When a test scans every *.rs file
     let rs_files = common::collect_rs_files(&views_dir);
     assert!(!rs_files.is_empty(), "expected views/*.rs files");
     let mut violations: Vec<String> = Vec::new();
     for path in &rs_files {
-        let body = common::read_to_string_or_panic(path);
+        let body = common::read_to_string_or_fail(path)?;
         let code = common::strip_rust_comments(&body);
         // @step Then NO file imports `codelet_napi::` or `codelet_core::` or `tarpc::` or `tokio_tungstenite::`
         for needle in [
@@ -286,4 +292,14 @@ fn views_still_avoid_encapsulated_transport_crates_and_runtime_construction() {
         violations.is_empty(),
         "RPC-014 must preserve transport-encapsulation + host-runtime invariants. Violations: {violations:?}"
     );
+    Ok(())
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
 }

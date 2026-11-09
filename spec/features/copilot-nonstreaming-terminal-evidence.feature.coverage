@@ -42,7 +42,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,7 +92,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }
@@ -138,7 +142,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }

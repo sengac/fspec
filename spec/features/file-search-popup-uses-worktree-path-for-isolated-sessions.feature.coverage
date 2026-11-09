@@ -1,156 +1,670 @@
 {
   "scenarios": [
     {
-      "name": "File search in non-isolated session searches project root",
+      "name": "Searching files in an isolated session lists its worktree",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "190-215",
+          "file": "rust/rpc/tests/bug541_search_files_in_session.rs",
+          "lines": "43-76",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/rpc/src/service_declaration/session_mcp.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// BUG-541: `search_files` in the session's effective working directory",
+              "lastLine": ") -> Result<Vec<String>, String>;"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ],
+              "firstLine": "async fn search_files_in_session(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_2.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "fn get_effective_cwd(&self, session_id: &SessionId) -> Result<PathBuf, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_impl_2.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9
+              ],
+              "firstLine": "/// BUG-541: give `session` a working directory (an isolated session's",
+              "lastLine": "stub_lock(&self.effective_cwds, \"effective_cwds\").insert(session, cwd);"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub.rs",
+              "lines": [
+                48,
+                49
+              ],
+              "firstLine": "/// BUG-541: working directories given with `set_effective_cwd`.",
+              "lastLine": "effective_cwds: Arc<Mutex<HashMap<SessionId, PathBuf>>>,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_49.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "/// BUG-541: `search_files_in_session` through the daemon.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/catalog.rs",
+              "lines": [
+                152
+              ],
+              "firstLine": "Method { name: \"search_files_in_session\", schema: method_schema(\"search_files_in_session\", group_49::search_files_in_session::schema())?, read_only: true, destructive: false },",
+              "lastLine": "Method { name: \"search_files_in_session\", schema: method_schema(\"search_files_in_session\", group_49::search_files_in_session::schema())?, read_only: true, destructive: false },"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/dispatch.rs",
+              "lines": [
+                197
+              ],
+              "firstLine": "\"search_files_in_session\" => group_49::search_files_in_session::call(client, args).await,",
+              "lastLine": "\"search_files_in_session\" => group_49::search_files_in_session::call(client, args).await,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/validate.rs",
+              "lines": [
+                168
+              ],
+              "firstLine": "\"search_files_in_session\" => group_49::search_files_in_session::validate(args),",
+              "lastLine": "\"search_files_in_session\" => group_49::search_files_in_session::validate(args),"
             }
           ]
         }
       ]
     },
     {
-      "name": "File search before session creation uses project root fallback",
+      "name": "Searching files in a session whose working directory is unknown fails",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "218-239",
+          "file": "rust/rpc/tests/bug541_search_files_in_session.rs",
+          "lines": "78-105",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/rpc/src/service_declaration/session_mcp.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// BUG-541: `search_files` in the session's effective working directory",
+              "lastLine": ") -> Result<Vec<String>, String>;"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ],
+              "firstLine": "async fn search_files_in_session(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_2.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "fn get_effective_cwd(&self, session_id: &SessionId) -> Result<PathBuf, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_impl_2.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9
+              ],
+              "firstLine": "/// BUG-541: give `session` a working directory (an isolated session's",
+              "lastLine": "stub_lock(&self.effective_cwds, \"effective_cwds\").insert(session, cwd);"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub.rs",
+              "lines": [
+                48,
+                49
+              ],
+              "firstLine": "/// BUG-541: working directories given with `set_effective_cwd`.",
+              "lastLine": "effective_cwds: Arc<Mutex<HashMap<SessionId, PathBuf>>>,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_49.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "/// BUG-541: `search_files_in_session` through the daemon.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/catalog.rs",
+              "lines": [
+                152
+              ],
+              "firstLine": "Method { name: \"search_files_in_session\", schema: method_schema(\"search_files_in_session\", group_49::search_files_in_session::schema())?, read_only: true, destructive: false },",
+              "lastLine": "Method { name: \"search_files_in_session\", schema: method_schema(\"search_files_in_session\", group_49::search_files_in_session::schema())?, read_only: true, destructive: false },"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/dispatch.rs",
+              "lines": [
+                197
+              ],
+              "firstLine": "\"search_files_in_session\" => group_49::search_files_in_session::call(client, args).await,",
+              "lastLine": "\"search_files_in_session\" => group_49::search_files_in_session::call(client, args).await,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/validate.rs",
+              "lines": [
+                168
+              ],
+              "firstLine": "\"search_files_in_session\" => group_49::search_files_in_session::validate(args),",
+              "lastLine": "\"search_files_in_session\" => group_49::search_files_in_session::validate(args),"
             }
           ]
         }
       ]
     },
     {
-      "name": "File search in isolated session finds files AI created in worktree",
+      "name": "The agent view searches an isolated session's files in that session",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "101-136",
+          "file": "rust/fspec-tui/tests/bug541_file_search_in_isolated_session.rs",
+          "lines": "128-152",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in a session's working directory (its worktree",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/subscriptions.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/workspace_scoped_calls.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) struct ScopedCalls {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "File search in isolated session does NOT show files AI deleted",
+      "name": "The agent view searches a non-isolated session's files in that session",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "139-159",
+          "file": "rust/fspec-tui/tests/bug541_file_search_in_isolated_session.rs",
+          "lines": "156-180",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in a session's working directory (its worktree",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/subscriptions.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/workspace_scoped_calls.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) struct ScopedCalls {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "File search reflects worktree filesystem state",
+      "name": "A failed session file search is shown",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "162-187",
+          "file": "rust/fspec-tui/tests/bug541_file_search_in_isolated_session.rs",
+          "lines": "182-197",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in a session's working directory (its worktree",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/subscriptions.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ],
+              "firstLine": "// BUG-541: file search in the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/workspace_scoped_calls.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) struct ScopedCalls {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "File search falls back to project root when sessionGetEffectiveCwd returns null",
+      "name": "With no session open, @file search says there are no files to search",
       "testMappings": [
         {
-          "file": "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx",
-          "lines": "242-265",
+          "file": "rust/fspec-tui/tests/bug541_file_search_in_isolated_session.rs",
+          "lines": "202-221",
           "implMappings": [
             {
-              "file": "src/tui/hooks/useFileSearchInput.ts",
+              "file": "rust/fspec-tui/src/app/workspace_scoped_calls.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) struct ScopedCalls {",
+              "lastLine": "}"
             }
           ]
         }
@@ -162,11 +676,24 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx"
+      "rust/rpc/tests/bug541_search_files_in_session.rs",
+      "rust/fspec-tui/tests/bug541_file_search_in_isolated_session.rs"
     ],
     "implFiles": [
-      "src/tui/hooks/useFileSearchInput.ts"
+      "rust/rpc/src/service_declaration/session_mcp.rs",
+      "rust/rpc/src/service_implementation/session_mcp.rs",
+      "rust/core/src/session_manager_handle/stub/stub_handle_2.rs",
+      "rust/core/src/session_manager_handle/stub/stub_impl_2.rs",
+      "rust/core/src/session_manager_handle/stub.rs",
+      "rust/rpc/src/mcp_dispatch/group_49.rs",
+      "rust/rpc/src/mcp_dispatch/catalog.rs",
+      "rust/rpc/src/mcp_dispatch/dispatch.rs",
+      "rust/rpc/src/mcp_dispatch/validate.rs",
+      "rust/fspec-tui/src/transport/backend/subscriptions.rs",
+      "rust/fspec-tui/src/transport/embedded/subscriptions.rs",
+      "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
+      "rust/fspec-tui/src/app/workspace_scoped_calls.rs"
     ],
-    "totalLinesCovered": 215
+    "totalLinesCovered": 535
   }
 }

@@ -111,7 +111,7 @@ mod tests {
     // @step And the agent's stream loop is awaiting the next LLM chunk
     // @step When the LLM SSE stream produces no chunks for 600 seconds
     // @step Then the stream loop should abort with a stall timeout error
-    #[tokio::test]
+    #[tokio::test(start_paused = true)] // TEST-042: virtual time
     async fn stall_timeout_fires_when_stream_produces_no_chunks() {
         use futures::StreamExt;
 
@@ -161,7 +161,7 @@ mod tests {
     // @step Then no stall timeout should fire
     // @step And the agent should complete its response normally
     // @step And the agent should transition to idle status
-    #[tokio::test]
+    #[tokio::test(start_paused = true)] // TEST-042: virtual time
     async fn normal_token_generation_does_not_trigger_stall_timeout() {
         use futures::StreamExt;
 
@@ -198,7 +198,7 @@ mod tests {
     // @step And the stall timeout is configured to 600 seconds
     // @step Then no stall timeout should fire
     // @step And the agent should complete its response successfully
-    #[tokio::test]
+    #[tokio::test(start_paused = true)] // TEST-042: virtual time
     async fn slow_but_active_generation_does_not_trigger_stall_timeout() {
         use futures::StreamExt;
 
@@ -243,7 +243,7 @@ mod tests {
     // @step Then the stall timeout should fire and abort the generation
     // @step And the partial response text should be preserved in the session history
     // @step And the agent should transition to idle status
-    #[tokio::test]
+    #[tokio::test(start_paused = true)] // TEST-042: virtual time
     async fn mid_response_stall_preserves_partial_text() {
         use futures::StreamExt;
 
@@ -297,7 +297,7 @@ mod tests {
     // @step Then the parent agent should receive a timeout error as the tool result string
     // @step And the parent agent should continue processing with the error result
     // @step And the parent agent should not hang or remain in running state
-    #[tokio::test]
+    #[tokio::test(start_paused = true)] // TEST-042: virtual time
     async fn deep_search_wall_clock_timeout_aborts_stalled_sub_agent() {
         // Simulate a sub-agent that never completes
         let never_completing = async {

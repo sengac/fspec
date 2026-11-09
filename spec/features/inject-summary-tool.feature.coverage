@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "7-29",
+          "lines": "5-45",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -166,13 +166,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -183,7 +180,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "33-65",
+          "lines": "54-73",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -344,13 +341,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -361,7 +355,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "69-86",
+          "lines": "87-101",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -522,13 +516,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -539,7 +530,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "90-134",
+          "lines": "111-148",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -700,13 +691,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -717,7 +705,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "138-164",
+          "lines": "159-174",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -878,13 +866,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -895,7 +880,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "168-207",
+          "lines": "192-217",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -1056,13 +1041,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -1073,7 +1055,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/inject_summary/tests.rs",
-          "lines": "210-228",
+          "lines": "227-242",
           "implMappings": [
             {
               "file": "rust/tools/src/inject_summary.rs",
@@ -1234,13 +1216,10 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
+                183
+              ],
+              "firstLine": "/// Result returned by inject_summary handler",
+              "lastLine": "}"
             }
           ]
         }
@@ -1257,6 +1236,6 @@
     "implFiles": [
       "rust/tools/src/inject_summary.rs"
     ],
-    "totalLinesCovered": 1339
+    "totalLinesCovered": 1271
   }
 }

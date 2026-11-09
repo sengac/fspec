@@ -100,31 +100,21 @@ impl EnvironmentInfo {
     }
 }
 
-/// Discover AGENTS.md by searching current and parent directories.
+/// Discover AGENTS.md by searching `start` and its parent directories.
 ///
 /// Search order:
-/// 1. Current directory for AGENTS.md
-/// 2. Parent directory for AGENTS.md
+/// 1. `start` for AGENTS.md
+/// 2. Its parent directory for AGENTS.md
 /// 3. Continue up to filesystem root
 ///
-/// # Arguments
-/// * `start_path` - Directory to start searching from. If None, uses current working directory.
+/// BUG-598: `start` is the session's working directory (its worktree when
+/// isolated, else its project); the daemon process's working directory is
+/// never read.
 ///
 /// # Returns
 /// * `Option<String>` - File content if found, None otherwise
-pub fn discover_agents_md(start_path: Option<&Path>) -> Option<String> {
-    let start = match start_path {
-        Some(p) => p.to_path_buf(),
-        None => match std::env::current_dir() {
-            Ok(cwd) => cwd,
-            Err(e) => {
-                warn!("Failed to get current directory: {}", e);
-                return None;
-            }
-        },
-    };
-
-    let mut current = Some(start.as_path());
+pub fn discover_agents_md(start: &Path) -> Option<String> {
+    let mut current = Some(start);
 
     while let Some(dir) = current {
         // Skip directories named "spec" — AGENTS.md placed there are
@@ -171,7 +161,7 @@ pub fn discover_agents_md(start_path: Option<&Path>) -> Option<String> {
 ///
 /// # Returns
 /// * `EnvironmentInfo` - Gathered environment information
-pub fn gather_environment_info() -> EnvironmentInfo {
+pub fn gather_environment_info(working_dir: &Path) -> EnvironmentInfo {
     let platform = std::env::consts::OS.to_string();
     let arch = std::env::consts::ARCH.to_string();
 
@@ -185,10 +175,10 @@ pub fn gather_environment_info() -> EnvironmentInfo {
         .ok()
         .or_else(|| std::env::var("USERNAME").ok());
 
-    // Get current working directory
-    let cwd = std::env::current_dir()
-        .ok()
-        .map(|p| p.to_string_lossy().to_string());
+    // BUG-581: the session's working directory (its worktree when
+    // isolated, else its project), never the process's: a daemon serves
+    // sessions in many directories.
+    let cwd = Some(working_dir.to_string_lossy().to_string());
 
     // TUI-064: Get current date in ISO 8601 format using local time
     // This ensures AI agents know today's date and don't rely on training data
@@ -217,9 +207,10 @@ pub fn gather_environment_info() -> EnvironmentInfo {
 /// # Returns
 /// * `EnvironmentInfo` - Gathered environment information with isolation context
 pub fn gather_environment_info_with_isolation(
+    working_dir: &Path,
     isolation: Option<&IsolationContext>,
 ) -> EnvironmentInfo {
-    let mut info = gather_environment_info();
+    let mut info = gather_environment_info(working_dir);
     info.isolation = isolation.cloned();
     info
 }
@@ -277,13 +268,13 @@ mod tests {
 
     #[test]
     fn test_gather_environment_info_has_platform() {
-        let info = gather_environment_info();
+        let info = gather_environment_info("/work".as_ref());
         assert!(!info.platform.is_empty());
     }
 
     #[test]
     fn test_gather_environment_info_has_arch() {
-        let info = gather_environment_info();
+        let info = gather_environment_info("/work".as_ref());
         assert!(!info.arch.is_empty());
     }
 
@@ -292,7 +283,7 @@ mod tests {
     #[test]
     fn test_gather_environment_info_has_date_in_iso_format() {
         // @step When the CLI starts an interactive session
-        let info = gather_environment_info();
+        let info = gather_environment_info("/work".as_ref());
 
         // @step Then the environment information should contain "Date:" followed by a date in YYYY-MM-DD format
         assert!(!info.date.is_empty(), "Date field should not be empty");
@@ -312,7 +303,7 @@ mod tests {
     #[test]
     fn test_gather_environment_info_date_is_local_date() {
         // @step When the CLI starts an interactive session
-        let info = gather_environment_info();
+        let info = gather_environment_info("/work".as_ref());
 
         // @step And the date should be the system's local date
         let today = chrono::Local::now().format("%Y-%m-%d").to_string();
@@ -430,7 +421,7 @@ mod tests {
         // We verify that gather_environment_info() returns fresh data
 
         // @step Then the environment information should be reinjected with fresh data
-        let fresh_info = gather_environment_info();
+        let fresh_info = gather_environment_info("/work".as_ref());
         let today = chrono::Local::now().format("%Y-%m-%d").to_string();
 
         // @step And the environment information should contain "Date: 2026-02-14"
@@ -550,7 +541,7 @@ mod tests {
             base_commit: Some("abcdef12".to_string()),
         };
 
-        let info = gather_environment_info_with_isolation(Some(&isolation));
+        let info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
 
         assert!(info.isolation.is_some(), "Isolation context should be set");
         let iso = info.isolation.as_ref().unwrap();
@@ -565,7 +556,7 @@ mod tests {
     /// GIT-034: Test that gather_environment_info_with_isolation(None) has no isolation
     #[test]
     fn test_gather_with_isolation_none_has_no_context() {
-        let info = gather_environment_info_with_isolation(None);
+        let info = gather_environment_info_with_isolation("/work".as_ref(), None);
 
         assert!(info.isolation.is_none(), "Isolation context should be None");
 
@@ -698,7 +689,7 @@ mod tests {
             .expect("write AGENTS.md");
 
         // Start search from within spec/ — simulates an agent launched there
-        let result = discover_agents_md(Some(&spec_dir));
+        let result = discover_agents_md(&spec_dir);
 
         assert!(
             result.is_some(),
@@ -730,7 +721,7 @@ mod tests {
         fs::write(spec_dir.join("AGENTS.md"), "# spec/AGENTS.md").expect("write spec/AGENTS.md");
 
         // Start from project root (not spec/)
-        let result = discover_agents_md(Some(tmp.path()));
+        let result = discover_agents_md(tmp.path());
 
         assert!(result.is_some(), "Should find root AGENTS.md");
         let content = result.unwrap();
@@ -752,7 +743,7 @@ mod tests {
         fs::write(spec_dir.join("AGENTS.md"), "# spec/AGENTS.md").expect("write spec/AGENTS.md");
 
         // No root-level file exists; filesystem root will be reached without finding anything
-        let result = discover_agents_md(Some(&spec_dir));
+        let result = discover_agents_md(&spec_dir);
 
         // We cannot assert None because parent dirs up to fs root may have one,
         // but we CAN assert the spec/ file was not returned

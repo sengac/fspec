@@ -66,14 +66,10 @@
                 54,
                 55,
                 56
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_delete_diagram.rs",
-          "lines": "69-108",
-          "implMappings": [
+              ],
+              "firstLine": "//! `delete-diagram` shell-facing CLI bridge (RPC-216).",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-core/src/help/configs/delete_diagram.rs",
               "lines": [
@@ -122,7 +118,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -194,7 +192,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` shell-facing CLI bridge (RPC-216).",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,7 +266,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` shell-facing CLI bridge (RPC-216).",
+              "lastLine": "}"
             }
           ]
         }
@@ -338,7 +340,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` shell-facing CLI bridge (RPC-216).",
+              "lastLine": "}"
             }
           ]
         }
@@ -410,7 +414,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` shell-facing CLI bridge (RPC-216).",
+              "lastLine": "}"
             }
           ]
         }
@@ -421,7 +427,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_diagram.rs",
-          "lines": "266-287",
+          "lines": "272-296",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/delete_diagram.rs",
@@ -471,7 +477,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "//! `delete-diagram` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -489,6 +497,6 @@
       "rust/fspec/src/delete_diagram.rs",
       "rust/fspec-core/src/help/configs/delete_diagram.rs"
     ],
-    "totalLinesCovered": 629
+    "totalLinesCovered": 592
   }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @RPC-088
@@ -25,11 +26,11 @@ Feature: Agent loop honours Esc and emits StreamChunk::Interrupted
     So that I can recover from a runaway response without restarting the session
 
   Scenario: BackgroundSession owns the AtomicBool + Notify interrupt handles
-    Given the source of `rust/sessions/src/background_session.rs`
-    When I inspect the `BackgroundSession` struct
+    Given a BackgroundSession created via the session test fixture
+    And a second independent BackgroundSession
     Then it declares a `pub is_interrupted: Arc<AtomicBool>` field
     And it declares a `pub interrupt_notify: Arc<Notify>` field
-    And the `new` constructor initialises both fields with `Arc::new(AtomicBool::new(false))` and `Arc::new(Notify::new())`
+    And a fresh session starts un-interrupted with handles not shared with any other session
 
   Scenario: BackgroundSession::interrupt() flips the flag and wakes notifier
     Given a `codelet_sessions::background_session::BackgroundSession` constructed via test helpers
@@ -64,7 +65,7 @@ Feature: Agent loop honours Esc and emits StreamChunk::Interrupted
     And the emitted interruption preserves queued input and its typed reason
 
   Scenario: codelet_rpc_types::StreamChunk declares Interrupted variant + constructor
-    Given the source of `rust/rpc-types/src/lib.rs`
-    When I inspect the `StreamChunk` enum
+    Given the codelet_rpc_types StreamChunk type
+    When I construct StreamChunk::interrupted with one queued input
     Then the enum declares a `Interrupted { queued_inputs: Vec<String> }` variant
     And the impl block defines a `pub fn interrupted(queued_inputs: Vec<String>) -> Self` constructor returning `Self::Interrupted { queued_inputs }`

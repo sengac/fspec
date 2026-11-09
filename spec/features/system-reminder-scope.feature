@@ -1,4 +1,5 @@
-@REMIND-016
+@codelet
+@system-reminders
 Feature: Elevate system-reminder priority handling for Codex and all agents
   """
   Codex ContextualUserFragmentDefinition pattern: Each fragment has a start_marker and end_marker (e.g., '<environment_context>' / '</environment_context>'). Fragment matching is case-insensitive. This pattern is used in contextual_user_message.rs with a central CONTEXTUAL_USER_FRAGMENTS registry. For fspec, the <!-- type:scope --> HTML comment inside <system-reminder> tags serves the same purpose but in a simpler format compatible with all agent platforms.

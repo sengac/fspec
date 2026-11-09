@@ -6,6 +6,7 @@
 @websocket
 @fanout
 @RPC-007
+@interactive-cli
 Feature: WebSocket multi-client unfiltered chunk fan-out
   """
   Multi-client fan-out is unfiltered in this card: every connected WebSocket

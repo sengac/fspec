@@ -17,6 +17,8 @@ use tempfile::TempDir;
 /// Helper to get HEAD commit SHA
 fn get_head_sha(repo_path: &Path) -> String {
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", "HEAD"])
         .current_dir(repo_path)
         .output()
@@ -29,12 +31,16 @@ fn create_second_commit(repo_path: &Path) -> String {
     fs::write(repo_path.join("file2.txt"), "Second file\n").expect("Failed to write file2");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage files");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Second commit"])
         .current_dir(repo_path)
         .output()
@@ -414,11 +420,15 @@ fn test_worktree_provides_filesystem_isolation() {
 
     // Commit the file
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage files");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Add main.rs"])
         .current_dir(repo_path)
         .output()

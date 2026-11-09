@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_session_header_per_session_tokens_rpc099.rs",
-          "lines": "121-194",
+          "lines": "118-195",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
@@ -60,7 +60,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Copy, Default, PartialEq)]",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
@@ -88,7 +90,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let bound = sid.and_then(|s| store.work_unit_context_for(s));",
+              "lastLine": "work_unit_id,"
             }
           ]
         }
@@ -154,7 +158,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Copy, Default, PartialEq)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,7 +226,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Copy, Default, PartialEq)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -259,7 +267,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let bound = sid.and_then(|s| store.work_unit_context_for(s));",
+              "lastLine": "work_unit_id,"
             }
           ]
         }
@@ -298,7 +308,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let bound = sid.and_then(|s| store.work_unit_context_for(s));",
+              "lastLine": "work_unit_id,"
             }
           ]
         }
@@ -316,6 +328,6 @@
       "rust/fspec-tui/src/store/agent_view/token_state.rs",
       "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
-    "totalLinesCovered": 474
+    "totalLinesCovered": 478
   }
 }

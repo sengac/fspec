@@ -30,7 +30,9 @@
                 25,
                 26,
                 27
-              ]
+              ],
+              "firstLine": "pub(super) fn committed_references(directory: &Path) -> Result<HashSet<Uuid>, FramingError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,7 +78,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "struct IdentityVisitor<'identity>(&'identity mut Option<Uuid>);",
+              "lastLine": "}"
             }
           ]
         }

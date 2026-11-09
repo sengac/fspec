@@ -104,7 +104,7 @@ fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<Ses
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (data_dir, home_dir, manager)
 }
 
@@ -275,7 +275,9 @@ async fn run_list_union() {
 
     // @step When list_session_worktrees is called
     let handle: Arc<dyn SessionManagerHandle> = manager.clone() as _;
-    let worktrees = handle.list_session_worktrees();
+    let worktrees = handle
+        .list_session_worktrees()
+        .expect("list_session_worktrees reads the session");
 
     // @step Then the result contains one entry for each session worktree in both project X and project Y
     let ids: Vec<String> = worktrees
@@ -405,7 +407,7 @@ async fn run_merge_manifest_fallback() {
     let _cwd = CwdGuard::to(foreign.path());
 
     // @step When merge_session_worktree is called with that session id
-    let handle: Arc<dyn SessionManagerHandle> = Arc::new(manager) as _;
+    let handle: Arc<dyn SessionManagerHandle> = manager;
     let outcome = handle
         .merge_session_worktree(&SessionId::new(sid), MergeStrategy::FastForward)
         .expect("merge must succeed via the manifest fallback after a restart");

@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "Without a redirect a test build sends no Codex models request",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug544_codex_models_fetch_is_hermetic.rs",
+          "lines": "31-51",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/models_catalog/fetch.rs",
+              "lines": [
+                106,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "let base_url = base_url().map_err(ListingFailure::Failed)?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With a redirect the Codex models request goes to the local mock",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug544_codex_models_fetch_is_hermetic.rs",
+          "lines": "53-77",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/models_catalog/fetch.rs",
+              "lines": [
+                106,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "let base_url = base_url().map_err(ListingFailure::Failed)?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug544_codex_models_fetch_is_hermetic.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/models_catalog/fetch.rs"
+    ],
+    "totalLinesCovered": 80
+  }
+}

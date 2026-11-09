@@ -15,16 +15,16 @@
 //! tree was clean (nothing to capture) or on any
 //! [`codelet_fspec_core::FspecCoreError`].
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::checkpoint;
 use serde_json::{json, Value};
 
 /// Strongly-typed args mirrored from the TS Commander.js registration
 /// (`src/commands/checkpoint.ts:193-199`): two positional arguments,
-/// `<work-unit-id>` and `<checkpoint-name>`, with no `.option(...)` flags.
+/// `<workUnitId>` and `<checkpoint-name>`, with no `.option(...)` flags.
 #[derive(Debug, Default)]
 pub struct CliArgs {
     pub work_unit_id: String,
@@ -33,7 +33,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `checkpoint` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Structured call: drives the exit code from the core's `success` flag
     // (a clean working tree returns `success:false`).

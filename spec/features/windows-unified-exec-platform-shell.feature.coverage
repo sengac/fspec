@@ -8,52 +8,54 @@
           "lines": "49-67",
           "implMappings": [
             {
-              "file": "rust/tools/src/unified_exec/spawning.rs",
+              "file": "rust/tools/src/unified_exec/spawning/pipe.rs",
               "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "let mut child = match cmd.spawn() {",
+              "lastLine": "};"
             }
           ]
         }
@@ -67,26 +69,28 @@
           "lines": "27-45",
           "implMappings": [
             {
-              "file": "rust/tools/src/unified_exec/spawning.rs",
+              "file": "rust/tools/src/unified_exec/spawning/pipe.rs",
               "lines": [
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211
-              ]
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "firstLine": "let mut cmd = match command {",
+              "lastLine": "};"
             }
           ]
         }
@@ -102,6 +106,10 @@
             {
               "file": "rust/tools/src/bash_process.rs",
               "lines": [
+                153,
+                154,
+                155,
+                156,
                 157,
                 158,
                 159,
@@ -111,12 +119,10 @@
                 163,
                 164,
                 165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                166
+              ],
+              "firstLine": "pub fn pty_liveness_anchor_invocation(target_os: &str) -> (String, Vec<String>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -127,18 +133,20 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/windows_unified_exec_platform_shell_test.rs",
-          "lines": "99-124",
+          "lines": "112-133",
           "implMappings": [
             {
               "file": "rust/tools/src/bash_process.rs",
               "lines": [
+                127,
+                128,
+                129,
+                130,
                 131,
-                132,
-                133,
-                134,
-                135,
-                136
-              ]
+                132
+              ],
+              "firstLine": "pub fn platform_shell_invocation(command: &str, target_os: &str) -> (String, Vec<String>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -153,9 +161,9 @@
       "rust/tools/tests/windows_unified_exec_platform_shell_test.rs"
     ],
     "implFiles": [
-      "rust/tools/src/unified_exec/spawning.rs",
+      "rust/tools/src/unified_exec/spawning/pipe.rs",
       "rust/tools/src/bash_process.rs"
     ],
-    "totalLinesCovered": 173
+    "totalLinesCovered": 169
   }
 }

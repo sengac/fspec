@@ -46,8 +46,8 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
 
   Scenario: Left from the New Agent button focuses the last chip
     Given the board has 3 open sessions and the ring is focused on the New Agent button
-    When I press Left once
-    Then the last chip (chip #3) paints inverse-video (the pre-MENU-009 last stop)
+    When I press Left twice
+    Then the last chip (chip #3) paints inverse-video (Left passes the New Bot button first — TUI-114)
 
   Scenario: Enter on an open dropdown executes the highlighted row
     Given the Tools dropdown is open with the cursor on row 1 (Checkpoints)
@@ -66,19 +66,19 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
     Then the focused column keeps its previous card selection and the bar highlight clears
 
   Scenario: Enter on a menu item opens its dropdown at row 0
-    Given the board is focused on the Actions menu item with its dropdown closed
+    Given the board is focused on the Kanban menu item with its dropdown closed
     When I press Enter once
-    Then the Actions dropdown panel paints under the item with its cursor on row 0 (New Agent)
+    Then the Kanban dropdown panel paints under the item with its cursor on row 0 (New Agent)
 
   Scenario: The ring walks items then chips then the New Agent button then wraps to the first column
     Given the board has 1 open session and the last column (blocked) is focused
-    When I press Right seven times
-    Then the focus lands on Kanban then Tools then Settings then Help then chip #1 then the 'New Agent' button and finally back on the first column (backlog) and no cell on the bar row paints inverse-video (the ring wrapped off the bar and the board carries no current-session chip highlight — MENU-010)
+    When I press Right eight times
+    Then the focus lands on Kanban then Tools then Settings then Help then chip #1 then the 'New Bot' button then the 'New Agent' button and finally back on the first column (backlog) and no cell on the bar row paints inverse-video (the ring wrapped off the bar and the board carries no current-session chip highlight — MENU-010)
 
   Scenario: The board header row 3 paints the 2-zone menu bar instead of the u Actions chord
     Given the board has 2 open sessions (one running, one idle)
     When the board view renders
-    Then row 3 of the header right column shows the menu items (Actions Help) a separator and the two session chips and the string 'u Actions' appears nowhere on the board
+    Then row 3 of the header right column shows the menu items (Kanban Tools Settings Help) a separator and the two session chips and the string 'u Actions' appears nowhere on the board
 
   Scenario: Right from the last column focuses the first menu item
     Given the board has no open sessions and the last column (blocked) is focused
@@ -93,12 +93,12 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
   Scenario: The header bar omits the separator and chips when no sessions are open
     Given the board has no open sessions
     When the board view renders
-    Then the bar row shows only the menu items (Actions Help) with no separator and no chips
+    Then the bar row shows only the menu items (Kanban Tools Settings Help) with no separator and no chips
 
   Scenario: Esc closes the open dropdown and keeps the item focused
-    Given the Actions dropdown is open and the cursor is on row 3
+    Given the Kanban dropdown is open and the cursor is on row 3
     When I press Esc once
-    Then the dropdown is closed and the Actions item stays focused
+    Then the dropdown is closed and the Kanban item stays focused
 
   Scenario: Clicking a menu item focuses it and opens its dropdown
     Given the board is focused on a kanban column
@@ -107,18 +107,18 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
 
   Scenario: With no open sessions the ring wraps from the last item to the first column
     Given the board has no open sessions and the menu bar is focused on the last menu item (Help)
-    When I press Right twice
-    Then the first 'New Agent' press focuses the New Agent button (inverse-video) and the second press focuses the first column (backlog) again with the bar highlight cleared (MENU-009: the button is the last ring stop)
+    When I press Right three times
+    Then the first press focuses the New Bot button, the second focuses the New Agent button (inverse-video) and the third focuses the first column (backlog) again with the bar highlight cleared (MENU-009, TUI-114: New Agent is the last ring stop)
 
   Scenario: While a dropdown is open all other keys are swallowed and Up Down move the cursor
-    Given the Actions dropdown is open with the cursor on row 2 (Checkpoints)
+    Given the Kanban dropdown is open with the cursor on row 3 (Attachments)
     When I press the bare C key
-    Then the checkpoints view does not open and the cursor stays on row 2
+    Then the checkpoints view does not open and the cursor stays on row 3
 
   Scenario: Wheel left and right over the bar walk the ring
     Given the board has 3 open sessions and the last column (blocked) is focused
     When I scroll the wheel right once over the bar row
-    Then the Actions item is focused
+    Then the Kanban item is focused
     When I scroll the wheel left once over the bar row
     Then the last column (blocked) is focused again
 
@@ -133,12 +133,12 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
     Then the active view flips to session #1's agent view
 
   Scenario: Clicking the already open item closes the dropdown
-    Given the Actions dropdown is open and the Actions item is focused
-    When I click the Actions menu item again
-    Then the dropdown closes and the Actions item stays focused
+    Given the Kanban dropdown is open and the Kanban item is focused
+    When I click the Kanban menu item again
+    Then the dropdown closes and the Kanban item stays focused
 
   Scenario: Wheel up and down over an open dropdown move the cursor
-    Given the Help dropdown is open with the cursor on row 1 (Exit)
+    Given the Help dropdown is open with the cursor on row 1 (Close)
     When I scroll the wheel down once over the dropdown
     Then the cursor wraps back to row 0 (Help)
 

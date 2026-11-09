@@ -26,7 +26,7 @@
 //!
 //! Reuses shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load.
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write.
+//! * [`crate::io::board::write_work_units`] — single atomic write.
 //!
 //! ## Two-front-doors
 //!
@@ -42,7 +42,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::types::work_unit::WorkUnitsData;
 
 /// CLI arguments accepted by `delete-work-unit`. Mirrors the TS
@@ -78,6 +77,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let id = args.work_unit_id;
     let cascade = args.cascade_dependencies.unwrap_or(false);
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "delete-work-unit")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Existence check (mirrors src/commands/delete-work-unit.ts:33-35).
@@ -183,8 +184,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     data.work_units.shift_remove(&id);
 
     // Single atomic write (TS uses `fileManager.transaction`).
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     // Render the CLI-equivalent output. The dispatcher exposes this verbatim
     // as `DispatchResult.data`; the CLI bridge prints it to stdout.

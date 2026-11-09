@@ -11,10 +11,7 @@ use codelet_tools::session_search::{
     SessionSearchTool,
 };
 use rig::tool::Tool;
-use std::{
-    sync::{atomic::AtomicBool, Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
 use support::{Fixture, TestResult};
 
@@ -25,6 +22,7 @@ async fn scenario_abandoned_search_releases_a_contended_storage_lease() -> TestR
         // @step Given an active history search waiting for storage ownership
         let directory = codelet_test_helpers::setup_temp_directory()?;
         persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().into())?;
         let mut manifest = create_session("search worker", directory.path())?;
         append_message(&mut manifest, "user", "synthetic searchable history")?;
@@ -79,17 +77,23 @@ async fn scenario_abandoned_search_releases_a_contended_storage_lease() -> TestR
                 tool.call(args).await.map_err(|error| error.to_string())
             }
         });
-        tokio::time::timeout(Duration::from_secs(5), started_rx).await??;
+        codelet_test_helpers::deadlock_guard("started_rx", started_rx).await??;
         // @step When its tool future is dropped while storage remains unavailable
         search.abort();
         let aborted = search.await;
         assert!(aborted.is_err());
-        let stopped = tokio::time::timeout(Duration::from_millis(350), &mut finished_rx).await;
+        // TEST-042: wait for the worker while the lease is still held; a
+        // worker that waits for the lease only ends at the deadlock guard.
+        let stopped =
+            codelet_test_helpers::deadlock_guard("the abandoned worker stops", &mut finished_rx)
+                .await;
         let stopped_before_release = stopped.is_ok();
         lease.unlock()?;
         let cancelled = match stopped {
             Ok(result) => result?,
-            Err(_) => tokio::time::timeout(Duration::from_secs(5), finished_rx).await??,
+            Err(_) => {
+                codelet_test_helpers::deadlock_guard("the worker's result", finished_rx).await??
+            }
         };
         set_session_search_handler(id, None);
         // @step Then the actual worker stops without waiting for storage release
@@ -194,7 +198,7 @@ fn scenario_cancellation_interrupts_large_original_and_blob_reads() -> TestResul
     let fixture = Fixture::new(1)?;
     let content = "synthetic large content ".repeat(16_000);
     let hash = persistence::store_blob(content.as_bytes())?;
-    let mut store = persistence::MessageStore::new()?;
+    let store = persistence::MessageStore::new()?;
     let id = store.store("user", &content)?;
     for boundary in ["blob.bytes", "message.bytes"] {
         let cancellation = ReadCancellation::default();

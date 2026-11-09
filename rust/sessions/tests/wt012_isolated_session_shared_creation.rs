@@ -88,7 +88,7 @@ fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<Ses
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (data_dir, home_dir, manager)
 }
 
@@ -128,7 +128,7 @@ fn manager_with_profile_config(
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (
         vec![codex_home, fspec_home, user_dir, data_dir, home_dir],
         manager,
@@ -244,48 +244,54 @@ async fn scenario_an_isolated_session_against_a_registry_model_preserves_the_ful
         .path()
         .join("sessions")
         .join(format!("{session_id}.json"));
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-    while !manifest_path.exists() && std::time::Instant::now() < deadline {
-        tokio::task::yield_now().await;
-        std::thread::sleep(std::time::Duration::from_millis(50));
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let written = codelet_test_helpers::wait_until("the session manifest is written", || {
+        std::future::ready(manifest_path.exists())
+    })
+    .await;
+    assert!(written.is_ok(), "{written:?}");
     assert!(
         manifest_path.exists(),
         "WT-005: the session persistence manifest must be written to disk (best-effort)"
     );
 
     // @step And an IsolationStateChange(true, worktree, base_commit) chunk was broadcast
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    // TEST-042: wait for the chunk under the deadlock guard, not 5 s.
     let mut saw_isolation_chunk = false;
-    while std::time::Instant::now() < deadline {
-        match chunks_rx.recv().await {
-            Ok((sid, chunk)) if sid == codelet_rpc_types::SessionId::new(session_id.clone()) => {
-                if let codelet_rpc_types::StreamChunk::IsolationStateChange {
-                    is_isolated,
-                    worktree_path,
-                    base_commit,
-                } = chunk
+    let _ = codelet_test_helpers::deadlock_guard("the IsolationStateChange chunk", async {
+        loop {
+            match chunks_rx.recv().await {
+                Ok((sid, chunk))
+                    if sid == codelet_rpc_types::SessionId::new(session_id.clone()) =>
                 {
-                    assert!(is_isolated, "chunk must be an isolation ON event");
-                    assert_eq!(
-                        worktree_path.as_deref(),
-                        Some(info.worktree_path.as_str()),
-                        "chunk must carry the worktree path (WT-001)"
-                    );
-                    assert_eq!(
-                        base_commit.as_deref(),
-                        Some(head_sha.as_str()),
-                        "chunk must carry the base commit (WT-001)"
-                    );
-                    saw_isolation_chunk = true;
-                    break;
+                    if let codelet_rpc_types::StreamChunk::IsolationStateChange {
+                        is_isolated,
+                        worktree_path,
+                        base_commit,
+                    } = chunk
+                    {
+                        assert!(is_isolated, "chunk must be an isolation ON event");
+                        assert_eq!(
+                            worktree_path.as_deref(),
+                            Some(info.worktree_path.as_str()),
+                            "chunk must carry the worktree path (WT-001)"
+                        );
+                        assert_eq!(
+                            base_commit.as_deref(),
+                            Some(head_sha.as_str()),
+                            "chunk must carry the base commit (WT-001)"
+                        );
+                        saw_isolation_chunk = true;
+                        break;
+                    }
                 }
+                Ok(_) => {}
+                Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(broadcast::error::RecvError::Closed) => break,
             }
-            Ok(_) => {}
-            Err(broadcast::error::RecvError::Lagged(_)) => continue,
-            Err(broadcast::error::RecvError::Closed) => break,
         }
-    }
+    })
+    .await;
     assert!(
         saw_isolation_chunk,
         "an IsolationStateChange(true, worktree, base_commit) chunk must be broadcast on chunks_tx"
@@ -430,7 +436,7 @@ fn scenario_create_isolated_session_with_id_delegates_shared_bootstrap_to_the_sh
         "load_lifecycle_hooks",
         "register_pre_tool_hook",
         "init_mcp_session",
-        "set_base_thinking_level",
+        "apply_saved_thinking_level",
         "set_model_limits",
         "set_session_model_vision",
     ] {
@@ -463,7 +469,7 @@ fn scenario_create_isolated_session_with_id_delegates_shared_bootstrap_to_the_sh
 async fn scenario_a_pre_tool_use_lifecycle_hook_is_live_for_an_isolated_session() {
     let _guard = ENV_AND_DATA_DIR_GUARD.lock().await;
 
-    // @step Given a project whose spec/fspec-hooks.json defines a pre_tool_use command matching "Bash" that prints {"hookSpecificOutput":{"permissionDecision":"deny","reason":"no bash"}}
+    // @step Given a project whose spec/fspec-hooks.json defines a pre_tool_use command matching "Bash" that prints {"reason":"no bash","hookSpecificOutput":{"permissionDecision":"deny"}}
     let repo = fresh_git_repo();
     std::fs::create_dir_all(repo.path().join("spec")).expect("create spec dir");
     std::fs::write(
@@ -671,7 +677,7 @@ async fn scenario_the_shared_provider_manager_helper_is_behavior_preserving_for_
 
 /// Read a crate source file (relative to `rust/sessions/src/`).
 fn read_source(name: &str) -> String {
-    std::fs::read_to_string(
+    codelet_test_helpers::source_composition::read_tree_or_file(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("src")
             .join(name),

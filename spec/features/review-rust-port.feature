@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @quality-assurance
 @cli
@@ -106,3 +107,10 @@ Feature: Port review command to Rust
     When I dispatch review for that work unit id
     Then the report ACDD Compliance section lists the failure "No Example Mapping data found"
     And the report includes a recommendation to "Complete Example Mapping before specifying"
+
+  Scenario: Reviewing an in-progress work unit shows its current state
+    Given a work unit in testing status with a linked feature file whose coverage is 50 percent
+    When I dispatch review for that work unit id
+    Then the report Summary section contains "**Current State:** testing"
+    And the report Coverage Analysis section lists the uncovered scenario name
+    And the report Priority Actions include "Complete test coverage for all scenarios" and "Continue testing phase"

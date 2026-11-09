@@ -1,0 +1,59 @@
+{
+  "scenarios": [
+    {
+      "name": "Linking a scenario whose name starts with two dashes",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug496_scenario_names_starting_with_dashes.rs",
+          "lines": "68-92",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_08.rs",
+              "lines": [
+                14,
+                15,
+                16
+              ],
+              "firstLine": "// BUG-496: any value, including one starting with `--`.",
+              "lastLine": "scenario: String,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unlinking a scenario whose name starts with two dashes",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug496_scenario_names_starting_with_dashes.rs",
+          "lines": "93-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_07.rs",
+              "lines": [
+                152,
+                153,
+                154
+              ],
+              "firstLine": "// BUG-496: any value, including one starting with `--`.",
+              "lastLine": "scenario: String,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug496_scenario_names_starting_with_dashes.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/cli_registration/mode_08.rs",
+      "rust/fspec/src/cli_registration/mode_07.rs"
+    ],
+    "totalLinesCovered": 48
+  }
+}

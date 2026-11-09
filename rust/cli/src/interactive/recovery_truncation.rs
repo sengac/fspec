@@ -28,6 +28,16 @@ pub fn build_truncation_recovery_message(error_str: &str) -> String {
         .nth(1)
         .unwrap_or("(not available)");
 
+    // BUG-614 (Q5): a DAG cannot be written with Bash; ask for a whole new,
+    // shorter DAG.
+    if tool_name == "inject_summary" {
+        let complete = codelet_tools::inject_summary::complete_dag_nodes(partial_args);
+        return format!(
+            "Your inject_summary tool call reached the output token limit. {}",
+            codelet_tools::inject_summary::truncated_dag_feedback(complete)
+        );
+    }
+
     format!(
         "Your {tool_name} tool call was truncated because it exceeded the output token limit. \
          The model hit max_tokens while generating the tool call arguments.\n\n\

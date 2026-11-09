@@ -1,5 +1,7 @@
 @done
 @RPC-189
+@cli
+@example-mapping
 Feature: fspec add-rule CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_rule.rs — clap-derived struct mirroring TS Commander.js registration

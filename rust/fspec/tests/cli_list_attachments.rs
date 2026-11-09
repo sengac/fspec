@@ -103,7 +103,7 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     // @step Given the fspec Rust binary at rust/target/release/fspec has been compiled
     // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
 
-    // @step And the TS reference binary `node dist/index.js list-attachments --help` produces a documented 69-line block (LIST-ATTACHMENTS header through NOTES section, including the TS-quirks: typicalWorkflow array comma-joined, relatedCommands entries already prefixed with 'fspec ', commonErrors Fix:undefined)
+    // @step And the help config for list-attachments documents its sections from LIST-ATTACHMENTS through NOTES, with a fix for each common error and each related command prefixed by 'fspec ' once
 
     // @step When I run `./rust/target/release/fspec list-attachments --help` piped to non-TTY (no color codes)
     let output = Command::new(fspec_bin())
@@ -170,26 +170,40 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
         "help must contain EXAMPLES section"
     );
 
-    // @step Then stdout contains the section header "COMMON ERRORS" with the literal token "Fix: undefined" twice
+    // @step Then stdout contains the section header "COMMON ERRORS" with two fixes and no "undefined"
     assert!(
         stdout.contains("COMMON ERRORS\n"),
         "help must contain COMMON ERRORS section"
     );
     assert_eq!(
-        stdout.matches("Fix: undefined").count(),
-        2,
-        "help must reproduce TS bug: Fix: undefined appears twice"
+        (
+            stdout.matches("\n    Fix: ").count(),
+            stdout.contains("undefined")
+        ),
+        (2, false),
+        "help must print a real fix for each of its two common errors"
     );
 
-    // @step Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec fspec "
+    // @step Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec " once
     assert!(
         stdout.contains("RELATED COMMANDS\n"),
         "help must contain RELATED COMMANDS section"
     );
+    let related = stdout
+        .split("RELATED COMMANDS\n")
+        .nth(1)
+        .unwrap_or_default();
+    let related = related.split("\n\n").next().unwrap_or_default();
     assert_eq!(
-        stdout.matches("fspec fspec ").count(),
-        3,
-        "help must reproduce TS bug: relatedCommands entries already prefixed with 'fspec ' yielding 'fspec fspec '"
+        (
+            related
+                .lines()
+                .filter(|l| l.starts_with("  fspec "))
+                .count(),
+            related.contains("fspec fspec ")
+        ),
+        (3, false),
+        "help must list three related commands, each prefixed by 'fspec ' once"
     );
 
     // @step Then stdout contains the section header "NOTES"
@@ -230,11 +244,11 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI exits 2 when the required positional argument is missing
+// Scenario: CLI exits 1 when the required positional argument is missing
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_missing_positional_exits_2() {
+fn scenario_cli_missing_positional_exits_1() {
     // @step Given an empty directory is set as the current working directory
     let ws = tempfile::tempdir().expect("tempdir");
 

@@ -44,7 +44,7 @@ pub(crate) const HEADER_BG: Color = Color::Rgb(0x33, 0x33, 0x33);
 /// Built fresh per frame by the AgentView orchestrator so the widget
 /// itself stays free of cloned data on the painter's hot path.
 pub struct SessionHeader<'a> {
-    pub session_index: (usize, usize),
+    pub session_index: Option<(usize, usize)>,
     pub model: Option<&'a ModelInfo>,
     pub thinking: ThinkingLevel,
     pub tokens: TokenState,

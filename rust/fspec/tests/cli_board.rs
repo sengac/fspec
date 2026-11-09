@@ -206,3 +206,137 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         );
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenarios moved from kanban-workflow-state-management (COV-072)
+// ─────────────────────────────────────────────────────────────────────────
+
+fn wu_line(id: &str, status: &str, estimate: u64) -> String {
+    format!(
+        r#""{id}": {{ "id": "{id}", "title": "Title {id}", "status": "{status}", "estimate": {estimate}, "createdAt": "x", "updatedAt": "x" }}"#
+    )
+}
+
+#[test]
+fn scenario_text_board_shows_every_column_with_estimates_and_the_point_summary() {
+    // @step Given a project root whose spec/foundation.json exists and spec/work-units.json contains AUTH-001 (backlog, 5), AUTH-002 (specifying, 8), AUTH-003 (testing, 3), DASH-001 (implementing, 5), API-001 (validating, 5) and SEC-001 (done, 3)
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_foundation(ws.path());
+    let units = [
+        ("AUTH-001", "backlog", 5),
+        ("AUTH-002", "specifying", 8),
+        ("AUTH-003", "testing", 3),
+        ("DASH-001", "implementing", 5),
+        ("API-001", "validating", 5),
+        ("SEC-001", "done", 3),
+    ];
+    let work_units: Vec<String> = units
+        .iter()
+        .map(|(id, status, pts)| wu_line(id, status, *pts))
+        .collect();
+    write_file(
+        ws.path(),
+        "spec/work-units.json",
+        &format!(
+            r#"{{ "version": "0.7.1", "workUnits": {{ {} }}, "states": {{ "backlog": ["AUTH-001"], "specifying": ["AUTH-002"], "testing": ["AUTH-003"], "implementing": ["DASH-001"], "validating": ["API-001"], "done": ["SEC-001"], "blocked": [] }} }}"#,
+            work_units.join(", ")
+        ),
+    );
+
+    // @step When I run `./rust/target/release/fspec board` from that directory
+    let (code, stdout, stderr) = run_board(ws.path(), &[]);
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "must exit 0; stderr={stderr}, stdout={stdout}");
+
+    // @step And stdout has a header line with the work unit count for each of backlog, specifying, testing, implementing, validating, done and blocked
+    for header in [
+        "backlog (1)",
+        "specifying (1)",
+        "testing (1)",
+        "implementing (1)",
+        "validating (1)",
+        "done (1)",
+        "blocked (0)",
+    ] {
+        assert!(
+            stdout.lines().any(|l| l == header),
+            "missing header {header:?} in:\n{stdout}"
+        );
+    }
+
+    // @step And stdout lists each work unit as '<id>  <title>  [<estimate>]', e.g. 'AUTH-001  Title AUTH-001  [5]'
+    for (id, _, pts) in units {
+        let line = format!("  {id}  Title {id}  [{pts}]");
+        assert!(
+            stdout.lines().any(|l| l == line),
+            "missing line {line:?} in:\n{stdout}"
+        );
+    }
+
+    // @step And stdout ends with the summary line '26 points in progress, 3 points completed'
+    assert_eq!(
+        stdout.lines().last(),
+        Some("26 points in progress, 3 points completed"),
+        "got:\n{stdout}"
+    );
+}
+
+#[test]
+fn scenario_text_board_limit_caps_each_column_and_reports_the_overflow() {
+    // @step Given a project root whose spec/foundation.json exists and spec/work-units.json lists AUTH-001 (5), AUTH-002 (3), AUTH-003 (8), AUTH-004 (5) and AUTH-005 (2) in backlog
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_foundation(ws.path());
+    let units = [
+        ("AUTH-001", 5),
+        ("AUTH-002", 3),
+        ("AUTH-003", 8),
+        ("AUTH-004", 5),
+        ("AUTH-005", 2),
+    ];
+    let work_units: Vec<String> = units
+        .iter()
+        .map(|(id, pts)| wu_line(id, "backlog", *pts))
+        .collect();
+    write_file(
+        ws.path(),
+        "spec/work-units.json",
+        &format!(
+            r#"{{ "version": "0.7.1", "workUnits": {{ {} }}, "states": {{ "backlog": ["AUTH-001","AUTH-002","AUTH-003","AUTH-004","AUTH-005"], "specifying": [], "testing": [], "implementing": [], "validating": [], "done": [], "blocked": [] }} }}"#,
+            work_units.join(", ")
+        ),
+    );
+
+    // @step When I run `./rust/target/release/fspec board --limit 2` from that directory
+    let (code, stdout, stderr) = run_board(ws.path(), &["--limit", "2"]);
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "must exit 0; stderr={stderr}, stdout={stdout}");
+
+    // @step And the backlog column lists only 'AUTH-001  Title AUTH-001  [5]' and 'AUTH-002  Title AUTH-002  [3]'
+    let listed: Vec<&str> = stdout
+        .lines()
+        .filter(|l| l.starts_with("  AUTH-"))
+        .collect();
+    assert_eq!(
+        listed,
+        vec![
+            "  AUTH-001  Title AUTH-001  [5]",
+            "  AUTH-002  Title AUTH-002  [3]"
+        ],
+        "got:\n{stdout}"
+    );
+
+    // @step And the backlog column ends with the overflow line '… 3 more'
+    assert!(
+        stdout.lines().any(|l| l == "  … 3 more"),
+        "missing overflow line in:\n{stdout}"
+    );
+
+    // @step And no other column shows an overflow line
+    assert_eq!(
+        stdout.lines().filter(|l| l.contains(" more")).count(),
+        1,
+        "only the backlog column may overflow:\n{stdout}"
+    );
+}

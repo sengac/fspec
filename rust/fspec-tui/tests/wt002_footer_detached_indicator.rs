@@ -9,8 +9,7 @@
 //! worktree → visible `(detached)` indicator) and `is_git_repo=false`
 //! (non-repo CWD → blank branch).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -36,7 +35,7 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn wt002_detached_worktree_footer_keeps_cwd_and_shows_detached_indicator() {
+fn wt002_detached_worktree_footer_keeps_cwd_and_shows_detached_indicator() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -56,7 +55,7 @@ fn wt002_detached_worktree_footer_keeps_cwd_and_shows_detached_indicator() {
     let ws = app
         .agent_view_store()
         .workspace()
-        .expect("workspace info must be set for a detached worktree");
+        .or_fail("workspace info must be set for a detached worktree")?;
     assert_eq!(
         ws.cwd, "/home/u/.fspec/worktrees/s-1",
         "the worktree CWD must reach the footer"
@@ -68,6 +67,7 @@ fn wt002_detached_worktree_footer_keeps_cwd_and_shows_detached_indicator() {
         Some("(detached)"),
         "WT-002: is_git_repo=true + branch=None must render a visible detached indicator, not a blank branch"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ fn wt002_detached_worktree_footer_keeps_cwd_and_shows_detached_indicator() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn wt002_non_repo_footer_still_collapses_to_a_blank_branch() {
+fn wt002_non_repo_footer_still_collapses_to_a_blank_branch() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -95,11 +95,12 @@ fn wt002_non_repo_footer_still_collapses_to_a_blank_branch() {
     let ws = app
         .agent_view_store()
         .workspace()
-        .expect("workspace info must be set");
+        .or_fail("workspace info must be set")?;
     assert_eq!(ws.cwd, "/tmp/not-a-repo");
     // @step And the footer shows no branch indicator for a non-repo CWD
     assert!(
         ws.git_branch.is_none(),
         "a non-repo CWD must not show a branch indicator"
     );
+    Ok(())
 }

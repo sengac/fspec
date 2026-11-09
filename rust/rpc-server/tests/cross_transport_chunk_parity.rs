@@ -23,9 +23,7 @@ use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
-use tokio::time::timeout;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
@@ -58,12 +56,14 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("create_session");
+        .expect("create_session")
+        .expect("the daemon creates the session");
     embedded
         .client()
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("send_input");
+        .expect("send_input")
+        .expect("daemon accepted the input");
 
     async fn drain(
         rx: &mut tokio::sync::broadcast::Receiver<(SessionId, StreamChunk)>,
@@ -71,7 +71,7 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
     ) -> Vec<StreamChunk> {
         let mut out = Vec::new();
         for _ in 0..32 {
-            match timeout(Duration::from_secs(2), rx.recv()).await {
+            match codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv()).await {
                 Ok(Ok((got, c))) if got == *sid => {
                     let done = matches!(c, StreamChunk::Done);
                     out.push(c);

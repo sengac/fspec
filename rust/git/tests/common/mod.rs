@@ -29,6 +29,8 @@ pub fn setup_repo_in(path: &Path) -> PathBuf {
 
     // Initialize git repo
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["init"])
         .current_dir(path)
         .output()
@@ -36,12 +38,16 @@ pub fn setup_repo_in(path: &Path) -> PathBuf {
 
     // Configure git user for commits
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.email", "test@example.com"])
         .current_dir(path)
         .output()
         .expect("Failed to configure git email");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.name", "Test User"])
         .current_dir(path)
         .output()
@@ -56,12 +62,16 @@ pub fn setup_repo_in(path: &Path) -> PathBuf {
     fs::write(src_dir.join("main.rs"), "fn main() {}\n").expect("Failed to write main.rs");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(path)
         .output()
         .expect("Failed to stage files");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Initial commit"])
         .current_dir(path)
         .output()
@@ -80,6 +90,8 @@ pub fn setup_test_repo_with_files() -> TempDir {
 
     // Initialize git repo
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["init"])
         .current_dir(repo_path)
         .output()
@@ -87,12 +99,16 @@ pub fn setup_test_repo_with_files() -> TempDir {
 
     // Configure git user for commits
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.email", "test@example.com"])
         .current_dir(repo_path)
         .output()
         .expect("Failed to configure git email");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.name", "Test User"])
         .current_dir(repo_path)
         .output()
@@ -108,12 +124,16 @@ pub fn setup_test_repo_with_files() -> TempDir {
     fs::write(repo_path.join("README.md"), "# Test Repository\n").expect("Failed to write README");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage files");
 
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Initial commit"])
         .current_dir(repo_path)
         .output()

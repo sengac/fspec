@@ -69,12 +69,26 @@ async fn scenario_malformed_generation_receives_actionable_whole_candidate_corre
         // @step And only the complete validated replacement becomes committed memory
         assert_eq!(outcome.summary.as_deref(), Some(DAG));
         assert!(!outcome.blocked);
+        // @step And the correction continues the same synthesis conversation after the rejected candidate
+        let task = outcome.prompts[0]
+            .split("\n\nThis operation covers exactly")
+            .next()
+            .expect("compactor task");
+        assert!(
+            correction.starts_with(task),
+            "same conversation: {correction}"
+        );
+        let rejected = correction.find(&candidate).expect("rejected candidate");
+        assert!(
+            correction[rejected..].contains("invalid DAG candidate"),
+            "the exact error follows the rejected candidate"
+        );
     }
 }
 
 #[tokio::test]
 #[serial_test::serial]
-async fn scenario_exhausted_malformed_generation_keeps_inference_blocked() {
+async fn scenario_exhausted_malformed_generation_leaves_inference_available() {
     // @step Given every generated candidate has malformed node structure
     let server = wiremock::MockServer::start().await;
     let fixture = durable::Fixture::new(&server.uri()).await;
@@ -90,7 +104,11 @@ async fn scenario_exhausted_malformed_generation_keeps_inference_blocked() {
         error.contains("Close every <dag-node> with </dag-node>"),
         "{error}"
     );
-    // @step And durable originals and committed memory remain unchanged with ordinary inference blocked
-    assert_eq!(outcome.before, outcome.after);
-    assert!(outcome.blocked);
+    // @step And durable originals and committed memory remain unchanged and ordinary inference is not blocked
+    // Durable originals and committed memory stay unchanged; the turn's own
+    // request usage is settled, which is not memory.
+    for field in ["messages", "compaction", "compaction_commit"] {
+        assert_eq!(outcome.before[field], outcome.after[field], "{field}");
+    }
+    assert!(!outcome.blocked);
 }

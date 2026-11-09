@@ -25,10 +25,10 @@
 //!     `output.error('Error:', error.message)` path at
 //!     `src/commands/set-user-story.ts:59-62`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::set_user_story;
 use serde_json::json;
 
@@ -48,7 +48,7 @@ pub struct CliArgs {
 /// subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by fspec_core::commands::
     // set_user_story::run. The dispatcher and CLI both feed the SAME serde

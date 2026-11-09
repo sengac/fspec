@@ -16,11 +16,7 @@ const ARGS: &[CommandArgument] = &[CommandArgument {
     required: true,
 }];
 
-const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--force",
-    description: "Skip confirmation prompt and compact during non-done status (use with caution)",
-    default_value: None,
-}];
+const OPTS: &[CommandOption] = &[];
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
@@ -28,13 +24,6 @@ const EXAMPLES: &[CommandExample] = &[
         description: Some("Compact work unit with confirmation prompt (safe, requires user input)"),
         output: Some(
             "⚠ Warning: This will permanently remove 3 deleted items\nContinue? (y/N) y\n✓ Compacted AUTH-001\nRemoved 3 deleted items, renumbered remaining 7 items to IDs [0-6]",
-        ),
-    },
-    CommandExample {
-        command: "fspec compact-work-unit AUTH-001 --force",
-        description: Some("Force compact without confirmation (use during non-done status)"),
-        output: Some(
-            "⚠ Warning: Compacting during \"specifying\" status permanently removes deleted items\n✓ Compacted AUTH-001\nRemoved 3 deleted items",
         ),
     },
 ];
@@ -48,7 +37,6 @@ const NOTES: &[&str] = &[
     "Resets nextId counters to match remaining item count",
     "Preserves chronological order (sorted by createdAt timestamp)",
     "Auto-compact triggers when moving work unit to \"done\" status",
-    "Requires --force flag when compacting during non-done status",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

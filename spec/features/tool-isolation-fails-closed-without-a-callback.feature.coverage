@@ -1,0 +1,118 @@
+{
+  "scenarios": [
+    {
+      "name": "A session's isolation lookup fails without a callback or declaration",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug447_tool_isolation_fails_closed.rs",
+          "lines": "9-17",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/wrapper.rs",
+              "lines": [
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754,
+                755,
+                756,
+                757,
+                758,
+                759,
+                760,
+                761,
+                762,
+                763,
+                764,
+                765,
+                766
+              ],
+              "firstLine": "/// GIT-020: Get the isolation context for a session.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The explicit no-session id stays unrestricted",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug447_tool_isolation_fails_closed.rs",
+          "lines": "22-29",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/wrapper.rs",
+              "lines": [
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754,
+                755,
+                756,
+                757,
+                758,
+                759,
+                760,
+                761,
+                762,
+                763,
+                764,
+                765,
+                766
+              ],
+              "firstLine": "/// GIT-020: Get the isolation context for a session.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug447_tool_isolation_fails_closed.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/facade/wrapper.rs"
+    ],
+    "totalLinesCovered": 83
+  }
+}

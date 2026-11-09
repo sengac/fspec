@@ -177,6 +177,8 @@ pub async fn run(
             "Summarize originals",
             "codex",
             20,
+            codelet_cli::compaction_operation::BuildRequest::First,
+            &std::sync::Mutex::new(None),
             LIMITS,
         )
         .await;

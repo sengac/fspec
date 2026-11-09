@@ -129,13 +129,13 @@ impl MessageStore {
         let messages_file = messages_dir.join("messages.jsonl");
         let index_file = messages_dir.join("messages.idx");
 
-        let mut store = Self {
+        let store = Self {
             messages_dir,
             messages_file,
             index_file,
             state: Mutex::new(StoreState::new()?),
         };
-        store.with_file_lock(|store| store.load_or_build_index())?;
+        store.with_file_lock(Self::load_or_build_index)?;
         Ok(store)
     }
 

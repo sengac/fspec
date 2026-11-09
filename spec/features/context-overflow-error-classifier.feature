@@ -14,6 +14,10 @@ Feature: Context-overflow error classifier
   robust `is_context_overflow_error` classifier — a strict superset of
   `is_prompt_too_long_error` that walks the full anyhow error chain and
   keeps the PROV-010 thinking-budget exclusion.
+
+  BUG-306: superseded in part by spec/features/structured-terminal-overflow-classification.feature
+  (CMPCT-054) - runtime overflow recovery is classified only from machine-readable
+  provider rejection codes, so the free-text matching scenarios were removed.
   """
 
   Background: User Story
@@ -24,27 +28,10 @@ Feature: Context-overflow error classifier
   @compaction
   @context-management
   @regression
-  Scenario: Overflow classifier matches every error is_prompt_too_long_error matches
-    Given a provider context-overflow error string that the existing is_prompt_too_long_error classifier matches
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-    And the new classifier matches it for the same reason as the old one
-
   @compaction
   @context-management
-  Scenario: Overflow classifier matches provider-variant wording the old classifier misses
-    Given an OpenAI-compatible provider error "Input is too long: 201,000 tokens > 200,000 maximum"
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-    And is_prompt_too_long_error returns false for that same string
-
   @compaction
   @context-management
-  Scenario: Overflow classifier matches Bedrock and Vertex context-limit wording
-    Given a provider error in the style "The input (approximately 200,500 tokens) exceeds the maximum number of input tokens (200,000)"
-    When is_context_overflow_error is called with that error string
-    Then is_context_overflow_error returns true
-
   @compaction
   @context-management
   @regression
@@ -60,10 +47,3 @@ Feature: Context-overflow error classifier
     Given an API error that is NOT a context-overflow error (a truncation, rate-limit, or auth error)
     When is_context_overflow_error is called with that error string
     Then is_context_overflow_error returns false
-
-  @compaction
-  @context-management
-  Scenario: Overflow classifier sees through anyhow context wrapping
-    Given a context-overflow API error that is wrapped with anyhow context layers
-    When is_context_overflow_error is called with the wrapped error
-    Then is_context_overflow_error returns true based on the full error chain

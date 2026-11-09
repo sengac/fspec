@@ -174,7 +174,7 @@ pub async fn create_background_session_inner(
     // so the Read tool can default non-vision sessions to text mode.
     codelet_tools::model_capabilities::set_session_model_vision(
         uuid,
-        crate::model_resolution::resolve_model_vision(&provider_manager),
+        crate::model_resolution::resolve_model_vision(&provider_manager)?,
     );
     // PROV-144: store the resolved per-profile image budget (absent => None so
     // the Read tool applies its default of 4) in the tool-layer registry
@@ -185,18 +185,17 @@ pub async fn create_background_session_inner(
         crate::model_resolution::resolve_profile_max_images(&provider_manager),
     );
 
-    let initial_context_window = resolved.context_window;
-    let initial_max_output_tokens = resolved.max_output_tokens;
-
     let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
     let initial_continue_state = (inner.continue_enabled, inner.continue_budget);
 
     // Inject context reminders (with isolation context for isolated sessions)
+    // BUG-581: the reminder names the session's working directory.
+    let working_dir = worktree_path.as_deref().unwrap_or(project_path);
     if let Some(isolation_ctx) = &isolation {
-        inner.inject_context_reminders_with_isolation(Some(isolation_ctx));
+        inner.inject_context_reminders_with_isolation(working_dir, Some(isolation_ctx));
     } else {
-        inner.inject_context_reminders();
+        inner.inject_context_reminders(working_dir);
     }
 
     let lifecycle_hooks =
@@ -212,6 +211,10 @@ pub async fn create_background_session_inner(
             }
         };
 
+    // MODEL-011: the model's thinking target, cached for level checks.
+    let thinking_target = codelet_providers::thinking_wire::ThinkingTarget::for_provider_manager(
+        inner.provider_manager(),
+    );
     let session = Arc::new(BackgroundSession::new(
         uuid,
         name.to_string(),
@@ -228,22 +231,16 @@ pub async fn create_background_session_inner(
         session_cleared_tx,
     ));
 
-    // TUI-002: re-apply the persisted default thinking level
-    let restored_thinking_level =
-        crate::default_thinking_level_persistence::load_default_thinking_level();
-    tracing::debug!(
-        level = restored_thinking_level as u8,
-        "create_background_session_inner: applying persisted default thinking level"
-    );
-    session.set_base_thinking_level(restored_thinking_level as u8);
+    session.set_thinking_target(thinking_target);
+
+    // MODEL-012: the model's saved level, checked against the target just
+    // cached; not offered or unreadable leaves it not set, with a notice.
+    session.apply_saved_thinking_level();
 
     session.inherit_continue_state(initial_continue_state.0, initial_continue_state.1);
 
-    session.set_model_limits(
-        initial_context_window,
-        initial_max_output_tokens,
-        resolved.compaction_threshold,
-    );
+    // PROV-165: cache the resolved limits as they are (None = unavailable).
+    session.set_model_limits(resolved);
 
     if let Some(ref hooks) = lifecycle_hooks {
         if !hooks.pre_tool_use.is_empty() {
@@ -333,8 +330,8 @@ mod tests {
 
         // @step And thinking level is applied
         assert!(
-            helper_content.contains("set_base_thinking_level"),
-            "Helper must set base thinking level"
+            helper_content.contains("apply_saved_thinking_level"),
+            "Helper must apply the model's saved thinking level (MODEL-012)"
         );
     }
 
@@ -353,18 +350,18 @@ mod tests {
         // @step When it creates a session
         // @step Then the persisted default thinking level is applied
         assert!(
-            helper_content.contains("load_default_thinking_level"),
-            "Helper must load default thinking level"
+            helper_content.contains("apply_saved_thinking_level"),
+            "Helper must apply the model's saved thinking level (MODEL-012)"
         );
         assert!(
-            helper_content.contains("set_base_thinking_level"),
-            "Helper must set base thinking level"
+            helper_content.contains("set_thinking_target"),
+            "Helper must cache the thinking target the saved level is checked against"
         );
 
         // @step And model limits (context window, max output tokens, compaction threshold) are set
         assert!(
-            helper_content.contains("resolved.compaction_threshold"),
-            "Helper must use the resolved compaction threshold"
+            helper_content.contains("set_model_limits(resolved)"),
+            "Helper must cache the resolved limits and compaction threshold"
         );
         assert!(
             helper_content.contains("set_model_limits"),

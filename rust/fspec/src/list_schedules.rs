@@ -33,7 +33,7 @@
 //!     is written to stderr prefixed with `Error:` (parity with the
 //!     TS chalk-red `output.error('Error:', ...)` path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -60,7 +60,7 @@ pub struct CliArgs {
 /// it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CliArgs → JSON object expected by
     // `fspec_core::commands::list_schedules::run`. Translate the TS

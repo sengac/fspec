@@ -5,36 +5,8 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
-          "lines": "140-190",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                984,
-                985,
-                986,
-                987,
-                988,
-                989,
-                990,
-                991,
-                992,
-                993,
-                994,
-                995,
-                996,
-                997,
-                998,
-                999,
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005
-              ]
-            }
-          ]
+          "lines": "149-212",
+          "implMappings": []
         }
       ]
     },
@@ -43,38 +15,8 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
-          "lines": "195-247",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                984,
-                985,
-                986,
-                987,
-                988,
-                989,
-                990,
-                991,
-                1037,
-                1038,
-                1039,
-                1040,
-                1041,
-                1042,
-                1043,
-                1044,
-                1045,
-                1046,
-                1047,
-                1048,
-                1049,
-                1050,
-                1051,
-                1052
-              ]
-            }
-          ]
+          "lines": "217-270",
+          "implMappings": []
         }
       ]
     },
@@ -83,35 +25,8 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
-          "lines": "252-290",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                984,
-                985,
-                986,
-                987,
-                988,
-                989,
-                990,
-                991,
-                1072,
-                1073,
-                1074,
-                1075,
-                1076,
-                1077,
-                1078,
-                1079,
-                1080,
-                1081,
-                1082,
-                1083,
-                1084
-              ]
-            }
-          ]
+          "lines": "275-326",
+          "implMappings": []
         }
       ]
     },
@@ -120,36 +35,8 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/paused_chunk_delivery_rpc409.rs",
-          "lines": "295-327",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                984,
-                985,
-                986,
-                987,
-                988,
-                989,
-                990,
-                991,
-                992,
-                993,
-                994,
-                995,
-                996,
-                997,
-                998,
-                999,
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005
-              ]
-            }
-          ]
+          "lines": "331-383",
+          "implMappings": []
         }
       ]
     }
@@ -161,9 +48,7 @@
     "testFiles": [
       "rust/sessions/tests/paused_chunk_delivery_rpc409.rs"
     ],
-    "implFiles": [
-      "rust/sessions/src/background_session.rs"
-    ],
-    "totalLinesCovered": 265
+    "implFiles": [],
+    "totalLinesCovered": 223
   }
 }

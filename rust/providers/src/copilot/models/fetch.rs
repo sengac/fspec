@@ -67,5 +67,8 @@ pub async fn fetch_models(base_url: &str, token: &str) -> Result<Vec<ModelInfo>,
         message: format!("/models response parse error: {e}"),
     })?;
 
-    Ok(build_catalog_from_response(&parsed))
+    build_catalog_from_response(&parsed).map_err(|message| ProviderError::Api {
+        provider: COPILOT_PROVIDER_ID.to_string(),
+        message,
+    })
 }

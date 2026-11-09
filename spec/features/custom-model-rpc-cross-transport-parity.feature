@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-347
 @rpc
@@ -7,8 +8,8 @@ Feature: Custom-model RPC write surface cross-transport parity
   """
   RPC-347 slice: prove add/update/delete_custom_model behave identically over
   the EmbeddedFspecBackend and WebSocketFspecBackend, both built against the
-  SAME StubSessionManagerHandle, and that they are silent no-ops when no
-  SessionManagerHandle is attached. Mirrors the RPC-037 parity pattern. Test:
+  SAME StubSessionManagerHandle, and that they are refused with an error when no
+  SessionManagerHandle is attached (BUG-325: no silent no-op). Mirrors the RPC-037 parity pattern. Test:
   rust/fspec-tui/tests/rpc347_cross_transport_parity.rs
   """
 
@@ -24,9 +25,9 @@ Feature: Custom-model RPC write surface cross-transport parity
     Then both calls return Ok
     And both transports persist the identical customModels entry
 
-  Scenario: RPC methods are a silent no-op without an attached SessionManagerHandle
+  Scenario: RPC methods are refused without an attached SessionManagerHandle
     Given a FspecServiceImpl with no SessionManagerHandle attached
     When a client calls add_custom_model, update_custom_model, and delete_custom_model
-    Then each call returns Ok
+    Then each call returns an error
     And the websocket transport behaves identically over its no-handle path
     And no configuration is written

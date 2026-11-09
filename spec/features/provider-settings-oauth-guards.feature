@@ -19,7 +19,7 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
   10. Footer Tab hint: 'Switch to models' / 'Switch to providers'
   """
 
-  Background: 
+  Background:
     Given the Provider Settings TUI is open
 
   # --- Provider list composition ---

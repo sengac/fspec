@@ -594,4 +594,22 @@ fn dispatcher_response_text_renders_the_success_block_and_example_mapping_remind
         "missing system-reminder; got:\n{}",
         result.data
     );
+
+    // CLI-007 (merged here): the Example Mapping commands for the new id.
+    for expected in [
+        // @step And the DispatchResult.data contains the substring 'fspec set-user-story AUTH-001'
+        "fspec set-user-story AUTH-001",
+        // @step And the DispatchResult.data contains the substring 'fspec add-rule AUTH-001'
+        "fspec add-rule AUTH-001",
+        // @step And the DispatchResult.data contains the substring 'fspec add-example AUTH-001'
+        "fspec add-example AUTH-001",
+        // @step And the DispatchResult.data contains the substring 'fspec add-question AUTH-001'
+        "fspec add-question AUTH-001",
+    ] {
+        assert!(
+            result.data.contains(expected),
+            "missing {expected:?}; got:\n{}",
+            result.data
+        );
+    }
 }

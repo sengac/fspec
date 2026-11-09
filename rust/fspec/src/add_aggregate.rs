@@ -13,32 +13,21 @@
 //!   - Shell argv         → clap → this module → fspec_core::commands::add_aggregate::run
 //!   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → …::add_aggregate::run
 //!
-//! Console-output contract (parity with TS `logger`):
-//!   The TS `.action()` callback uses `logger.success(...)` on success and
-//!   `logger.error(...)` on failure. The fspec `logger` is a Winston logger
-//!   whose ONLY transport is a file (`~/.fspec/fspec.log`) — it writes
-//!   NOTHING to stdout/stderr. Moreover Winston has no `success` level, so
-//!   `logger.success(...)` throws a `TypeError` that is swallowed by the
-//!   surrounding `try/catch`, which then calls `logger.error(...)` (also
-//!   file-only). Net observable behaviour of `node dist/index.js
-//!   add-aggregate ...`:
-//!     - stdout: EMPTY in every case
-//!     - stderr: EMPTY in every case
-//!     - exit code: ALWAYS 1 (success path falls through the caught
-//!       `TypeError` into `process.exit(1)`; error path is an explicit
-//!       `process.exit(1)`)
-//!     - disk state: the aggregate IS persisted on the success path before
-//!       the (caught) `logger.success` throw, so `eventStorm.items` is
-//!       written exactly as `addAggregate()` mutated it.
-//!   This bridge therefore emits NO console output and ALWAYS returns exit
-//!   code 1, matching the TS binary byte-for-byte. The core `run()` still
-//!   performs the real mutation + atomic write, so disk parity holds.
+//! Console output and exit code (BUG-532):
+//!   - success: `✓ Added aggregate "<text>" to <workUnitId> (ID: <id>)` on
+//!     stdout, exit 0 (like add-domain-event);
+//!   - failure: `✗ Failed to add aggregate: <error>` on stderr, exit 1.
+//!
+//! The TypeScript CLI printed nothing and exited 1 even on success (its
+//! file-only logger had no `success` level); that bug is not kept.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_aggregate;
+
+use crate::common::render_core_error;
 use serde_json::{json, Value};
 
 /// Strongly-typed args mirrored from the TypeScript Commander.js
@@ -54,13 +43,15 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-aggregate` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
+    let work_unit_id = args.work_unit_id;
+    let text = args.text;
 
     // Marshal clap args → JSON object expected by the core. Only present
     // optionals are included so serde's `Option` defaults stay `None`.
     let mut body = json!({
-        "workUnitId": args.work_unit_id.clone(),
-        "text": args.text.clone(),
+        "workUnitId": work_unit_id,
+        "text": text,
     });
     if let Some(map) = body.as_object_mut() {
         if let Some(r) = args.responsibilities {
@@ -78,14 +69,24 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     }
     let args_json = body.to_string();
 
-    // The core performs the real mutation + atomic write. Regardless of
-    // success or failure, the TS binary writes nothing to the console and
-    // always exits 1 (see the module-level Console-output contract): the
-    // `logger.success(...)` call on the success path throws a swallowed
-    // `TypeError` (Winston has no `success` level) and falls through to
-    // `process.exit(1)`, while the error path is an explicit
-    // `process.exit(1)`. Both `logger.*` transports are file-only. We
-    // discard the result and emit no console output for byte-parity.
-    let _ = add_aggregate::run(&args_json, &project_root).await;
-    Ok(1)
+    match add_aggregate::run(&args_json, &project_root).await {
+        Ok(data_json) => {
+            // The core returns {success, aggregateId}.
+            let aggregate_id = serde_json::from_str::<Value>(&data_json)
+                .ok()
+                .and_then(|v| v.get("aggregateId").and_then(Value::as_u64));
+            let Some(id) = aggregate_id else {
+                eprintln!(
+                    "✗ Failed to add aggregate: the result carries no aggregateId: {data_json}"
+                );
+                return Ok(1);
+            };
+            println!("✓ Added aggregate \"{text}\" to {work_unit_id} (ID: {id})");
+            Ok(0)
+        }
+        Err(err) => {
+            eprintln!("✗ Failed to add aggregate: {}", render_core_error(&err));
+            Ok(1)
+        }
+    }
 }

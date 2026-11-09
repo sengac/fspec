@@ -6,26 +6,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "59-81",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -35,58 +16,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "83-93",
-          "implMappings": [
-            {
-              "file": "src/tui/store/sessionStore.ts",
-              "lines": [
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -98,10 +28,7 @@
     "testFiles": [
       "src/tui/components/__tests__/isolated-session-integration.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/BoardView.tsx",
-      "src/tui/store/sessionStore.ts"
-    ],
-    "totalLinesCovered": 92
+    "implFiles": [],
+    "totalLinesCovered": 34
   }
 }

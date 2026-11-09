@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validation
 @coverage-tracking
@@ -25,7 +26,7 @@ Feature: fspec generate-coverage CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec generate-coverage --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/generate-coverage.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/refac020/generate-coverage.txt
 
   Scenario: CLI creates a missing sidecar and prints the success report
     Given a project root tempdir with a feature file "user-login.feature" and no coverage sidecar

@@ -7,18 +7,15 @@
 //!
 //! The MUX-002 window math (window_start / window_session_ids) was applied
 //! to the pane SLOTS only — `AgentView::render_with_store` always painted
-//! `store.current_session()`, so with `/mux board agent agent` the second
+//! `store.current_session()`, so with `/mux board, agent, agent` the second
 //! agent pane duplicated the focused session (identical header, scrollback,
 //! input). These tests render the real grid into a TestBackend buffer and
 //! assert each agent pane paints ITS window session.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::multiplex::MuxPaneKind;
@@ -42,28 +39,35 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 /// Open N sessions (s-1..s-N) and enable mux with the given pane list.
-async fn app_with_sessions_and_panes(app: &mut App, n_sessions: usize, panes: &[MuxPaneKind]) {
+async fn app_with_sessions_and_panes(
+    app: &mut App,
+    n_sessions: usize,
+    panes: &[MuxPaneKind],
+) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n_sessions {
         app.dispatch(Action::SessionCreated(sid(&format!("s-{i}"))));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     let kinds: Vec<&str> = panes
         .iter()
         .map(|k| match k {
@@ -73,19 +77,20 @@ async fn app_with_sessions_and_panes(app: &mut App, n_sessions: usize, panes: &[
             MuxPaneKind::Checkpoints => "checkpoints",
         })
         .collect();
-    submit(app, &format!("/mux {}", kinds.join(" ")));
+    submit(app, &format!("/mux {}", kinds.join(", ")));
+    Ok(())
 }
 
 /// Focus the Nth (0-based) rendered pane by clicking inside its cached
 /// rect — the production click-to-focus path (Navigator → mux_mouse).
-fn click_pane(app: &mut App, pane_index: usize) {
+fn click_pane(app: &mut App, pane_index: usize) -> Result<(), codelet_test_helpers::TestError> {
     let rect = app
         .navigator()
         .mux
         .pane_rects()
         .get(pane_index)
         .copied()
-        .expect("pane rect must exist");
+        .or_fail("pane rect must exist")?;
     let event = Event::Mouse(MouseEvent {
         kind: MouseEventKind::Down(MouseButton::Left),
         column: rect.x + 1,
@@ -93,18 +98,21 @@ fn click_pane(app: &mut App, pane_index: usize) {
         modifiers: KeyModifiers::NONE,
     });
     let _ = app.handle_event(&event);
+    Ok(())
 }
 
 /// Render the app into a 160x30 TestBackend buffer.
-fn render_buf(app: &mut App) -> (ratatui::buffer::Buffer, ratatui::layout::Rect) {
-    let mut term =
-        ratatui::Terminal::new(ratatui::backend::TestBackend::new(160, 30)).expect("Terminal::new");
+fn render_buf(
+    app: &mut App,
+) -> Result<(ratatui::buffer::Buffer, ratatui::layout::Rect), codelet_test_helpers::TestError> {
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(160, 30))
+        .or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    (
+        .or_fail("draw")?;
+    Ok((
         term.backend().buffer().clone(),
         ratatui::layout::Rect::new(0, 0, 160, 30),
-    )
+    ))
 }
 
 /// The cells of one full terminal row (0..159) as one string.
@@ -128,18 +136,22 @@ fn pane_text(buf: &ratatui::buffer::Buffer, pane: ratatui::layout::Rect) -> Stri
 /// The text painted at the top-left of an agent pane (its header cell).
 /// Reads cells directly (not a byte-slice of a joined row string) so
 /// multi-byte glyphs like the `│` divider never break char boundaries.
-fn pane_top_left(buf: &ratatui::buffer::Buffer, pane_index: usize, app: &App) -> String {
+fn pane_top_left(
+    buf: &ratatui::buffer::Buffer,
+    pane_index: usize,
+    app: &App,
+) -> Result<String, codelet_test_helpers::TestError> {
     let pane = app
         .navigator()
         .mux
         .pane_rects()
         .get(pane_index)
         .copied()
-        .expect("pane rect");
+        .or_fail("pane rect")?;
     let end = (pane.x + 40).min(160);
-    (pane.x..end)
+    Ok((pane.x..end)
         .map(|x| buf[(x, pane.y)].symbol().to_string())
-        .collect()
+        .collect())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -148,7 +160,7 @@ fn pane_top_left(buf: &ratatui::buffer::Buffer, pane_index: usize, app: &App) ->
 
 /// Scenario: each agent pane paints the session at its window slot position
 #[tokio::test]
-async fn each_agent_pane_paints_the_session_at_its_window_slot_position() {
+async fn each_agent_pane_paints_the_session_at_its_window_slot_position() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -156,7 +168,7 @@ async fn each_agent_pane_paints_the_session_at_its_window_slot_position() {
         2,
         &[MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     )
-    .await;
+    .await?;
     // @step And two agent sessions are open with distinct scrollback content
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -172,15 +184,15 @@ async fn each_agent_pane_paints_the_session_at_its_window_slot_position() {
         vec![sid("s-1"), sid("s-2")],
     );
     // @step When the grid is rendered
-    let (buf, _area) = render_buf(&mut app);
+    let (buf, _area) = render_buf(&mut app)?;
     // @step Then the left agent pane header shows agent 1's session index
-    let left = pane_top_left(&buf, 1, &app);
+    let left = pane_top_left(&buf, 1, &app)?;
     assert!(
         left.contains("#1"),
         "left agent pane header must show agent 1's #1 (got {left:?})"
     );
     // @step And the right agent pane header shows agent 2's session index
-    let right = pane_top_left(&buf, 2, &app);
+    let right = pane_top_left(&buf, 2, &app)?;
     assert!(
         right.contains("#2"),
         "right agent pane header must show agent 2's #2 (got {right:?})"
@@ -199,6 +211,7 @@ async fn each_agent_pane_paints_the_session_at_its_window_slot_position() {
         right_text.contains("beta-message"),
         "right agent pane must show agent 2's scrollback (beta-message); got: {right_text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -207,7 +220,7 @@ async fn each_agent_pane_paints_the_session_at_its_window_slot_position() {
 
 /// Scenario: no two agent panes render the same session
 #[tokio::test]
-async fn no_two_agent_panes_render_the_same_session() {
+async fn no_two_agent_panes_render_the_same_session() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -215,18 +228,19 @@ async fn no_two_agent_panes_render_the_same_session() {
         2,
         &[MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     )
-    .await;
+    .await?;
     // @step And two agent sessions are open
     assert_eq!(app.agent_view_store().open_sessions().len(), 2);
     // @step When the grid is rendered
-    let (buf, _area) = render_buf(&mut app);
+    let (buf, _area) = render_buf(&mut app)?;
     // @step Then the two agent panes render different sessions
-    let left = pane_top_left(&buf, 1, &app);
-    let right = pane_top_left(&buf, 2, &app);
+    let left = pane_top_left(&buf, 1, &app)?;
+    let right = pane_top_left(&buf, 2, &app)?;
     assert_ne!(
         left, right,
         "the two agent panes must render DIFFERENT sessions (both showed {left:?})"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -236,7 +250,7 @@ async fn no_two_agent_panes_render_the_same_session() {
 
 /// Scenario: an unfilled agent slot shows a single agent pane with the live composer
 #[tokio::test]
-async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer() {
+async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -244,14 +258,14 @@ async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer
         1,
         &[MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     )
-    .await;
+    .await?;
     // @step And one agent session is open
     assert_eq!(app.agent_view_store().open_sessions().len(), 1);
     // @step And the agent pane is focused
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(app.navigator().mux.focus(), 1);
     // @step When the grid is rendered
-    let (buf, _area) = render_buf(&mut app);
+    let (buf, _area) = render_buf(&mut app)?;
     // @step Then exactly one agent pane is rendered
     assert_eq!(
         app.navigator().mux.effective_panes(),
@@ -259,7 +273,7 @@ async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer
         "the second (unfilled) agent slot must not be rendered"
     );
     // @step And the agent pane header shows the open session's model and tokens
-    let agent = pane_top_left(&buf, 1, &app);
+    let agent = pane_top_left(&buf, 1, &app)?;
     assert!(
         agent.contains("#1"),
         "the single agent pane header must show the open session (got {agent:?})"
@@ -277,6 +291,7 @@ async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer
         input_row.contains("Type a message..."),
         "the focused agent pane must paint the live composer (got {input_row:?})"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -286,7 +301,7 @@ async fn an_unfilled_agent_slot_shows_a_single_agent_pane_with_the_live_composer
 
 /// Scenario: moving focus between agent panes keeps the unfocused pane's draft visible
 #[tokio::test]
-async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible() {
+async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -294,11 +309,11 @@ async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible
         2,
         &[MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     )
-    .await;
+    .await?;
     // @step And two agent sessions are open
     assert_eq!(app.agent_view_store().open_sessions().len(), 2);
     // @step And the agent 1 pane is focused
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(app.navigator().mux.focus(), 1);
     // @step And the focused agent composer holds the draft "hello"
     for ch in "hello".chars() {
@@ -308,12 +323,12 @@ async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible
         )));
     }
     app.dispatch(Action::PendingInputChanged("hello".to_string()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step When focus moves to the agent 2 pane
-    click_pane(&mut app, 2);
+    click_pane(&mut app, 2)?;
     assert_eq!(app.navigator().mux.focus(), 2);
     // @step Then the agent 1 pane still shows the draft "hello" as its ghost input
-    let (buf, _area) = render_buf(&mut app);
+    let (buf, _area) = render_buf(&mut app)?;
     let left_pane = app.navigator().mux.pane_rects()[1];
     let left_input = pane_text(&buf, left_pane);
     assert!(
@@ -327,6 +342,7 @@ async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible
         right_input.contains("Type a message..."),
         "the focused agent 2 pane must show the live composer (empty draft placeholder); pane: {right_input}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -345,7 +361,7 @@ async fn moving_focus_between_agent_panes_keeps_the_unfocused_pane_draft_visible
 ///
 /// Feature: spec/features/mux-agent-panes-render-distinct-window-sessions.feature
 #[tokio::test]
-async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() {
+async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     let (mut app, _mock) = fresh_app();
     app_with_sessions_and_panes(
@@ -353,7 +369,7 @@ async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() 
         2,
         &[MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     )
-    .await;
+    .await?;
     // @step And two agent sessions are open
     assert_eq!(app.agent_view_store().open_sessions().len(), 2);
     // @step And the agent 2 session is idle
@@ -362,10 +378,10 @@ async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() 
         codelet_rpc_types::SessionStatus::Idle,
     ));
     // @step And the agent 1 pane is focused
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(app.navigator().mux.focus(), 1);
     // @step When the grid is rendered
-    let (buf, _area) = render_buf(&mut app);
+    let (buf, _area) = render_buf(&mut app)?;
     // @step Then the agent 1 pane input shows the live composer
     let left_pane = app.navigator().mux.pane_rects()[1];
     let left_text = pane_text(&buf, left_pane);
@@ -384,4 +400,5 @@ async fn an_idle_unfocused_agent_pane_renders_its_ghost_draft_with_no_spinner() 
         right_text.contains("Type a message..."),
         "the unfocused idle agent 2 pane (empty draft) must show the placeholder ghost; pane: {right_text}"
     );
+    Ok(())
 }

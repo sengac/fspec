@@ -3,6 +3,8 @@
 #[path = "bug210_progress/support.rs"]
 pub mod support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
 use codelet_cli::interactive::output::StreamOutput;
 use codelet_rpc_types::{CommittedContextSnapshot, ContextFillInfo, StreamChunk, TokenTracker};
 
@@ -49,7 +51,7 @@ async fn scenario_a_pending_automatic_builder_reports_activity_rather_than_messa
     let progress = fixture.sessions[0].get_compaction_progress();
     let row = fixture.footer(0);
     task.abort();
-    let _ = task.await;
+    task.await.completed_or_cancelled()?;
     // @step Then the original session shows the builder's current activity phase
     let progress = progress.ok_or("actual builder activity missing")?;
     assert_eq!(progress.phase, "Compaction builder working");
@@ -92,7 +94,7 @@ async fn scenario_live_activity_remains_attached_to_its_original_session() -> su
         fixture.flush().await?;
         let background = fixture.footer(1);
         task.abort();
-        let _ = task.await;
+        task.await.completed_or_cancelled()?;
         assert_eq!(
             initial.ok_or("builder activity")?.phase,
             "Compaction builder working"
@@ -134,7 +136,7 @@ async fn scenario_terminal_cleanup_removes_activity_without_inventing_success(
                 _ => {
                     let task = fixture.start_recovery(0).await?;
                     task.abort();
-                    let _ = task.await;
+                    task.await.completed_or_cancelled()?;
                 }
             }
             fixture.flush().await?;

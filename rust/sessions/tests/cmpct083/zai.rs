@@ -85,7 +85,12 @@ pub async fn send(
     assert_eq!(wire["model"], "glm-4.7");
     assert_eq!(wire["temperature"], 1.0);
     assert_eq!(wire["top_p"], 0.95);
-    assert_eq!(wire["max_completion_tokens"], provider.max_output_tokens());
+    assert_eq!(
+        wire["max_completion_tokens"],
+        provider
+            .max_output_tokens()
+            .ok_or("Z.AI declares an output limit")?
+    );
     assert!(wire["tools"]
         .as_array()
         .ok_or("Z.AI native tools")?

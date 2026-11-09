@@ -7,7 +7,6 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::Duration;
 use wiremock::{Mock, ResponseTemplate};
 
 struct Environment {
@@ -60,9 +59,9 @@ pub async fn actual_loop(fail: bool, abandon: bool) -> TestResult {
                 .set_body_string(format!("data: {frame}\n\ndata: [DONE]\n\n"))
         }).with_priority(1).mount(&fixture.server).await;
     fixture.send();
-    tokio::time::timeout(Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while !marker.exists() {
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;
@@ -84,7 +83,7 @@ pub async fn actual_loop(fail: bool, abandon: bool) -> TestResult {
         Some(lease)
     };
     fixture.session.interrupt();
-    tokio::time::timeout(Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             let event = fixture.chunks.recv().await?;
             let event = codelet_agent_loop::stream_chunk_json::stream_chunk_to_json_value(&event);
@@ -99,7 +98,7 @@ pub async fn actual_loop(fail: bool, abandon: bool) -> TestResult {
     })
     .await??;
     if fail {
-        tokio::time::timeout(Duration::from_secs(10), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 if fixture.session.inner.try_lock().is_ok() {
                     break;
@@ -138,7 +137,7 @@ pub async fn actual_loop(fail: bool, abandon: bool) -> TestResult {
         })
         .await;
         drop(lease);
-        tokio::time::timeout(Duration::from_secs(10), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 let event = fixture.chunks.recv().await?;
                 let event =

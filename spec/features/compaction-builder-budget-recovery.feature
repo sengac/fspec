@@ -1,9 +1,11 @@
+@BUG-641
 @done
 @BUG-211
 @phase-1
 @agent-core
 @context-management
 @compaction
+@BUG-304
 Feature: Compaction builder budget recovery
   """
   The compactor has a bounded exploration budget and one tool-free synthesis
@@ -41,7 +43,7 @@ Feature: Compaction builder budget recovery
     Then a new summary is committed before ordinary inference resumes
     And the user message completes without replaying the oversized request
 
-  Scenario: Repeated builder failures wait for fresh user input
+  Scenario: Repeated builder failures wait for the next input
     Given automatic compaction failed before committing a summary
     When a fresh user message retries the still failing builder
     Then one builder attempt fails and the session returns idle
@@ -53,8 +55,31 @@ Feature: Compaction builder budget recovery
     Then the existing failure remains blocked
     And neither a builder nor ordinary inference starts
 
-  Scenario: Background notifications cannot authorize a failed builder retry
+  Scenario: Background notifications retry a failed builder
     Given automatic compaction failed before committing a summary
-    When another agent sends a background notification
-    Then the failed operation remains blocked
-    And neither a builder nor ordinary inference starts
+    When another agent sends a background notification after the builder becomes available
+    Then the builder runs again with a fresh budget and commits a summary
+    And the notification runs ordinary inference after the commit
+
+  Scenario: A failed threshold compaction carries on uncompacted while the context fits
+    Given the compaction threshold is below the usage and the usage fits the usable window
+    When a user message triggers threshold compaction and the builder fails
+    Then the UI warns Compaction failed with the exact builder error
+    And the same turn answers from the uncompacted context and the session is not held
+
+  Scenario: A failed in-turn threshold compaction carries on uncompacted while the context fits
+    Given a turn starts below the compaction threshold
+    When a tool round reports usage past the threshold that still fits and the builder fails
+    Then the UI warns Compaction failed with the exact builder error
+    And the turn continues uncompacted to its answer and the session is not held
+
+  Scenario: A failed threshold compaction holds the turn when the context does not fit
+    Given the usage is past the usable window
+    When a user message triggers threshold compaction and the builder fails
+    Then the turn ends with the overflow error naming the usage, the usable window and the builder error
+    And no ordinary inference starts and the session is held
+
+  Scenario: The next input retries a threshold compaction that carried on
+    Given a failed threshold compaction carried on uncompacted
+    When the next user message arrives after the builder becomes available
+    Then a new summary is committed before ordinary inference

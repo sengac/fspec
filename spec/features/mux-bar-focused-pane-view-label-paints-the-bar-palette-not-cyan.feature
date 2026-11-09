@@ -90,6 +90,6 @@ Feature: Mux bar — the focused pane's view label paints the bar palette, not a
   Scenario: Everything else on the bar keeps its existing styling
     Given the mux grid is [Board | Agent | Agent] with 1 Running and 1 Idle session and the Board pane is focused
     When the mux view renders
-    Then the Zone A items and the '[ New Agent ]'-free row paint exactly as before (white items, dim separator)
+    Then the Zone A items paint exactly as before (white items, dim separator) and the row ends with the plain [ New Bot ] and [ New Agent ] buttons (MUX-013)
     And the Running chip's braille glyph stays magenta and the Idle chip's dot stays green-dimmed
     And the focused pane's '[ Board ]' label is bold white — the only view-label change

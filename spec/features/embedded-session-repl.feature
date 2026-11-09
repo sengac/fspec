@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @streaming
 @rust
@@ -6,6 +7,7 @@
 @rpc
 @embedded
 @RPC-007
+@BUG-483
 Feature: Embedded session REPL push channel
   """
   EmbeddedTransport gains five new session RPCs (list_sessions, create_session,
@@ -15,6 +17,9 @@ Feature: Embedded session REPL push channel
   rust/core (trait+handle pattern; concrete SessionManager remains in
   rust/napi). Tests use the StubProvider behind the test-support feature
   emitting deterministic [Text("hi back"), Done].
+  BUG-483: since BUG-445 list_sessions and get_session_status return Result<_, String>. The status scenario holds
+  the stub's turn while it polls for Running, then releases it and waits for the session's Idle status change
+  before polling again (BUG-520), instead of racing the stub's 5 ms turn and a 20 ms sleep.
   """
 
   Background: User Story
@@ -58,10 +63,11 @@ Feature: Embedded session REPL push channel
   @status
   Scenario: get_session_status reflects Idle to Running to Idle transitions equally on both transports
     Given a session is created via create_session on either transport with the StubProvider
+    And the stub provider holds each turn open until the caller releases it
     When the caller calls get_session_status(session_id) before any send_input
     Then the returned SessionStatus is Idle
-    When the caller calls send_input(session_id, "hi") and immediately calls get_session_status(session_id)
+    When the caller calls send_input(session_id, "hi") and calls get_session_status(session_id) while the turn is held
     Then the returned SessionStatus is Running
-    When the stub provider has emitted StreamChunk::Done and the caller calls get_session_status(session_id) again
+    When the caller releases the turn, receives the session's Idle status change and calls get_session_status(session_id) again
     Then the returned SessionStatus is Idle
     And the same sequence holds when the parity scenario is run on the other transport

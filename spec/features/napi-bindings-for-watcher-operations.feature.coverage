@@ -1,30 +1,38 @@
 {
   "scenarios": [
     {
-      "name": "Create watcher session for a parent",
-      "testMappings": [
-        {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_create_watcher_registers_in_watch_graph",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [2980, 2981, 2982, 2983, 2984, 2985, 2986, 2987, 2988, 2989, 2990, 2991, 2992, 2993, 2994, 2995, 2996, 2997, 2998, 2999, 3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3020, 3021, 3022, 3023]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Get parent of a watcher session",
       "testMappings": [
         {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_get_parent_returns_parent_id",
+          "file": "rust/sessions/tests/cov057_napi_watcher_operations.rs",
+          "lines": "43-57",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3025, 3026, 3027, 3028, 3029, 3030, 3031, 3032, 3033, 3034, 3035, 3036]
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "fn get_subordinate(&self, supervisor_id: &SessionId) -> Option<SessionId> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/chain_of_command.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -34,12 +42,35 @@
       "name": "Get parent of a regular session returns None",
       "testMappings": [
         {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_get_parent_returns_none_for_regular_session",
+          "file": "rust/sessions/tests/cov057_napi_watcher_operations.rs",
+          "lines": "59-72",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3026, 3027, 3028, 3029, 3030, 3031, 3032, 3033, 3034, 3035, 3036]
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "fn get_subordinate(&self, supervisor_id: &SessionId) -> Option<SessionId> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/chain_of_command.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -49,12 +80,36 @@
       "name": "Get watchers of a parent session",
       "testMappings": [
         {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_get_watchers_returns_watcher_list",
+          "file": "rust/sessions/tests/cov057_napi_watcher_operations.rs",
+          "lines": "74-92",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3038, 3039, 3040, 3041, 3042, 3043, 3044, 3045, 3046, 3047, 3048, 3049, 3050, 3051, 3052]
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                25,
+                25,
+                25,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "fn get_supervisors(&self, session_id: &SessionId) -> Result<Vec<SessionId>, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/chain_of_command.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "pub fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,61 +119,64 @@
       "name": "Get watchers of a session with no watchers",
       "testMappings": [
         {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_get_watchers_returns_empty_for_no_watchers",
+          "file": "rust/sessions/tests/cov057_napi_watcher_operations.rs",
+          "lines": "94-116",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3039, 3040, 3041, 3042, 3043, 3044, 3045, 3046, 3047, 3048, 3049, 3050, 3051, 3052]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Inject watcher message into parent session",
-      "testMappings": [
-        {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_watcher_inject_formats_and_queues_message",
-          "implMappings": [
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                25,
+                25,
+                25,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "fn get_supervisors(&self, session_id: &SessionId) -> Result<Vec<SessionId>, String> {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3054, 3055, 3056, 3057, 3058, 3059, 3060, 3061, 3062, 3063, 3064, 3065, 3066, 3067, 3068, 3069, 3070, 3071, 3072, 3073, 3074, 3075, 3076, 3077, 3078, 3079, 3080, 3081, 3082, 3083, 3084, 3085, 3086, 3087, 3088, 3089, 3090, 3091, 3092, 3093, 3094]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Inject fails when session has no role",
-      "testMappings": [
-        {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_watcher_inject_fails_without_role",
-          "implMappings": [
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                179,
+                180,
+                181
+              ],
+              "firstLine": "pub fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3064, 3065, 3066]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Inject fails when watcher has no parent",
-      "testMappings": [
-        {
-          "file": "rust/napi/src/session_manager.rs",
-          "testFunction": "test_watcher_inject_fails_without_parent",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [3068, 3069, 3070, 3071]
+              "file": "rust/sessions/src/chain_of_command.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "pub fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/cov057_napi_watcher_operations.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_3.rs",
+      "rust/sessions/src/chain_of_command.rs",
+      "rust/sessions/src/session_manager/manager_impl_6.rs"
+    ],
+    "totalLinesCovered": 128
+  }
 }

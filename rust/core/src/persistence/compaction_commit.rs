@@ -159,7 +159,7 @@ pub fn commit_compaction_admitted(
                     .checked_add(1)
                     .ok_or(ManifestCommitError::RevisionExhausted)?,
             },
-            covered_prefix: candidate.source.prefix.clone(),
+            legacy_covered_prefix: None,
             verified_suffix: current
                 .messages
                 .iter()
@@ -178,6 +178,7 @@ pub fn commit_compaction_admitted(
             .as_ref()
             .map(|commit| commit.identity.clone());
         current.token_usage.current_context_tokens = admitted.input_tokens;
+        current.token_usage.current_context_output_tokens = 0;
         Ok(())
     });
     if let Some(reason) = rejection {

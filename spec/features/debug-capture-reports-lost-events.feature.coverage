@@ -1,0 +1,158 @@
+{
+  "scenarios": [
+    {
+      "name": "Stopping a capture that lost events reports them",
+      "testMappings": [
+        {
+          "file": "rust/common/tests/bug467_debug_capture_reports_lost_events.rs",
+          "lines": "18-35",
+          "implMappings": [
+            {
+              "file": "rust/common/src/debug_capture/manager.rs",
+              "lines": [
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ],
+              "firstLine": "/// Stop the current debug capture session",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stopping a capture that is off is an error",
+      "testMappings": [
+        {
+          "file": "rust/common/tests/bug467_debug_capture_reports_lost_events.rs",
+          "lines": "37-50",
+          "implMappings": [
+            {
+              "file": "rust/common/src/debug_capture/manager.rs",
+              "lines": [
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ],
+              "firstLine": "/// Stop the current debug capture session",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/common/tests/bug467_debug_capture_reports_lost_events.rs"
+    ],
+    "implFiles": [
+      "rust/common/src/debug_capture/manager.rs"
+    ],
+    "totalLinesCovered": 138
+  }
+}

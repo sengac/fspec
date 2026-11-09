@@ -13,8 +13,6 @@
 
 mod iso001_support;
 
-use std::time::Duration;
-
 use codelet_rpc_types::{NotificationSeverity, SessionId, StreamChunk};
 use codelet_tools::astgrep::AstGrepArgs;
 use codelet_tools::astgrep_refactor::AstGrepRefactorArgs;
@@ -84,7 +82,6 @@ async fn scenario_isolated_read_blocked_original_project_file() {
     let chunk = next_user_notification(
         &mut env.chunks_rx,
         &SessionId::new(env.session_id.to_string()),
-        Duration::from_secs(5),
     )
     .await;
     if let StreamChunk::UserNotification { message, severity } = chunk {
@@ -198,7 +195,6 @@ async fn scenario_isolated_write_blocked_original_project() {
     let chunk = next_user_notification(
         &mut env.chunks_rx,
         &SessionId::new(env.session_id.to_string()),
-        Duration::from_secs(5),
     )
     .await;
     assert!(
@@ -237,7 +233,6 @@ async fn scenario_isolated_edit_blocked_original_project() {
     let chunk = next_user_notification(
         &mut env.chunks_rx,
         &SessionId::new(env.session_id.to_string()),
-        Duration::from_secs(5),
     )
     .await;
     assert!(

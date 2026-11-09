@@ -3,26 +3,24 @@ RETAG
 Replace one tag with another across all feature files
 
 USAGE
-  fspec retag <old-tag> <new-tag> [options]
-
-ARGUMENTS
-  <old-tag> (required)
-    Tag to replace
-  <new-tag> (required)
-    New tag name
+  fspec retag --from <tag> --to <tag> [options]
 
 OPTIONS
+  --from <tag>
+    Tag to replace
+  --to <tag>
+    New tag name
   --dry-run
     Preview changes without making modifications
 
 EXAMPLES
   1. Replace @wip with @in-progress in all features
-  $ fspec retag @wip @in-progress
+  $ fspec retag --from=@wip --to=@in-progress
   ✓ Replaced @wip with @in-progress in 5 feature files
 ✓ Updated 12 scenarios
 
   2. Preview tag replacement
-  $ fspec retag @old @new --dry-run
+  $ fspec retag --from=@old --to=@new --dry-run
   [DRY RUN] Would replace @old with @new in:
   - spec/features/login.feature (2 occurrences)
   - spec/features/checkout.feature (1 occurrence)

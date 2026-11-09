@@ -1,4 +1,6 @@
 @CMPCT-014
+@codelet
+@context-management
 Feature: Esc to stop does not interrupt compaction — isCompacting state bypasses interrupt handler
   """
   Fix is in AgentView.tsx Priority 5 Esc handler: change condition from `displayIsLoading && currentSessionId` to `(displayIsLoading || compaction.state.isActive) && currentSessionId`

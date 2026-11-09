@@ -7,6 +7,9 @@
 //! an empty-state message when there are no changed files. Uses the
 //! shared full-screen shell scaffold (RPC-337) for the title + footer
 //! chrome so it matches the other mode-views.
+//!
+//! TUI-131: the diff pane is the shared `diff_common::render_diff_pane`
+//! (diff lines wrapped to the pane, scrolled in wrapped rows).
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -19,10 +22,11 @@ use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
 use super::{ChangedFilesView, Pane};
 use crate::views::diff_common::{
-    diff_line, file_row, pane_header, render_pane_scrollbar, render_vertical_divider,
+    file_row, max_diff_scroll, pane_header, render_diff_pane, render_pane_scrollbar,
+    render_vertical_divider,
 };
 
-const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll";
+const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll | c: Copy Path | C: Copy Diff";
 const EMPTY_MESSAGE: &str = "No changed files";
 
 impl ChangedFilesView {
@@ -90,7 +94,13 @@ impl ChangedFilesView {
                     render_files_pane(panes[0], buf, &files, selected_index, file_scroll, focused);
                 files_rect = Some(fr);
                 files_sb_rect = fsb;
-                let (dr, dsb) = render_diff_pane(panes[2], buf, &diff_lines, diff_scroll, focused);
+                let (dr, dsb) = render_diff_pane(
+                    panes[2],
+                    buf,
+                    &diff_lines,
+                    diff_scroll,
+                    focused == Pane::Diff,
+                );
                 diff_rect = Some(dr);
                 diff_sb_rect = dsb;
             },
@@ -102,6 +112,13 @@ impl ChangedFilesView {
         self.last_diff_rect = diff_rect;
         self.last_files_sb_rect = files_sb_rect;
         self.last_diff_sb_rect = diff_sb_rect;
+        // TUI-131: the offset counts wrapped rows; a wider pane wraps the
+        // diff onto fewer, so keep the offset on the last page painted.
+        if diff_rect.is_some() {
+            self.diff_scroll = self
+                .diff_scroll
+                .min(max_diff_scroll(&self.diff_lines, diff_rect));
+        }
     }
 }
 
@@ -151,47 +168,6 @@ fn render_files_pane(
             height: content.height,
         };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
-        Some(sb)
-    } else {
-        None
-    };
-    (content, sb_rect)
-}
-
-fn render_diff_pane(
-    area: Rect,
-    buf: &mut Buffer,
-    diff_lines: &[String],
-    scroll: usize,
-    focused: Pane,
-) -> (Rect, Option<Rect>) {
-    let content = pane_header(area, buf, "Diff", focused == Pane::Diff);
-    let visible = content.height as usize;
-    let overflow = diff_lines.len() > visible;
-    let list_width = if overflow {
-        content.width.saturating_sub(1)
-    } else {
-        content.width
-    };
-    let lines: Vec<Line<'_>> = diff_lines
-        .iter()
-        .skip(scroll)
-        .take(visible)
-        .map(|l| diff_line(l))
-        .collect();
-    let list_area = Rect {
-        width: list_width,
-        ..content
-    };
-    Paragraph::new(lines).render(list_area, buf);
-    let sb_rect = if overflow {
-        let sb = Rect {
-            x: content.x + list_width,
-            y: content.y,
-            width: 1,
-            height: content.height,
-        };
-        render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
         Some(sb)
     } else {
         None

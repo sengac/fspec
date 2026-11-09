@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @TOOL-005
 @high
@@ -37,7 +38,7 @@ Feature: Search Facades
   # Example 1: Gemini sends {pattern, path} → facade maps to GrepArgs
   Scenario: Map Gemini search_file_content parameters to internal GrepArgs format
     Given a GeminiSearchFileContentFacade is registered
-    When Gemini sends parameters {pattern: 'TODO', path: 'src'} to tool 'search_file_content'
+    When Gemini sends parameters {pattern: 'TODO', dir_path: 'src'} to tool 'search_file_content'
     Then the facade maps to InternalSearchParams::Grep with pattern 'TODO' and path 'src'
     And the base GrepTool executes with the mapped parameters
 
@@ -45,21 +46,21 @@ Feature: Search Facades
   Scenario: GeminiSearchFileContentFacade provides flat JSON schema
     Given a GeminiSearchFileContentFacade is created
     When I request the tool definition
-    Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, dir_path: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
   # Example 3: Gemini sends {pattern, path} → facade maps to GlobArgs
-  Scenario: Map Gemini find_files parameters to internal GlobArgs format
+  Scenario: Map Gemini glob parameters to internal GlobArgs format
     Given a GeminiGlobFacade is registered
-    When Gemini sends parameters {pattern: '**/*.rs', path: 'src'} to tool 'find_files'
-    Then the facade maps to InternalSearchParams::Glob with pattern '**/*.rs' and path 'src'
+    When Gemini sends parameters {pattern: '*.rs', dir_path: 'src'} to tool 'glob'
+    Then the facade maps to InternalSearchParams::Glob with pattern '*.rs' and path 'src'
     And the base GlobTool executes with the mapped parameters
 
   # Example 4: Flat schema without oneOf for find_files
   Scenario: GeminiGlobFacade provides flat JSON schema
     Given a GeminiGlobFacade is created
     When I request the tool definition
-    Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, dir_path: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
   # Rule 7: Wrapper integration with rig for search_file_content
@@ -67,11 +68,11 @@ Feature: Search Facades
     Given a SearchToolFacadeWrapper wrapping GeminiSearchFileContentFacade
     When I call name() on the wrapper
     Then it returns "search_file_content"
-    And when I call definition() it returns a flat schema with pattern and path parameters
+    And when I call definition() it returns a flat schema with pattern and dir_path parameters
 
   # Rule 7: Wrapper integration with rig for find_files
-  Scenario: SearchToolFacadeWrapper integrates with rig Tool trait for find_files
+  Scenario: SearchToolFacadeWrapper integrates with rig Tool trait for glob
     Given a SearchToolFacadeWrapper wrapping GeminiGlobFacade
     When I call name() on the wrapper
-    Then it returns "find_files"
-    And when I call definition() it returns a flat schema with pattern and path parameters
+    Then it returns "glob"
+    And when I call definition() it returns a flat schema with pattern and dir_path parameters

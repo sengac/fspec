@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-465
 @done
 @agent-view
 @RPC-020
@@ -39,11 +41,11 @@ Feature: RPC-020 cross-transport parity for search_files
     When backend.search_files("src".to_string(), 10).await is invoked on BOTH backends
     Then both awaited results are equal
 
-  Scenario: search_files returns an empty Vec when no cwd is attached
+  Scenario: search_files is refused when no cwd is attached
     Given a SharedFspecService constructed via SharedFspecService::new (no cwd attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.search_files("anything".to_string(), 10).await is invoked
-    Then the awaited result is Ok with an empty Vec
+    Then the awaited result is an error saying no workspace directory is attached
 
   Scenario: search_files honours the limit argument across transports
     Given a SharedFspecService constructed via with_cwd against a tempdir containing 25 files matching the prefix "doc"

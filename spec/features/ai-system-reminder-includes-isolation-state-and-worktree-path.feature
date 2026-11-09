@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @GIT-034
+@codelet
+@system-reminders
 Feature: AI System Reminder Includes Isolation State and Worktree Path
   """
   buildEnvironmentReminder in src/utils/system-reminder.ts needs IsolationContext parameter, IsolationStateChange chunk data must be passed through to reminder generation

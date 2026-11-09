@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @refactor
 @rust
@@ -53,7 +54,6 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
   Scenario: A new insta snapshot exists for every migrated dialog
     Given the rust/fspec-tui/src/components/snapshots/ directory
     Then there is a snapshot named help_dialog__centered_popup_80x24
-    And there is a snapshot named disconnect_dialog__centered_popup_80x24
     And there is a snapshot named thinking_level_dialog__centered_popup_80x24
     And there is a snapshot named model_selector_dialog__centered_popup_80x24
     And there is a snapshot named confirm_dialog__centered_popup_80x24

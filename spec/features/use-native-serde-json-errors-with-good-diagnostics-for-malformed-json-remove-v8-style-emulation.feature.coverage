@@ -5,28 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
-          "lines": "47-81",
+          "lines": "40-66",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/locked_file.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -37,8 +20,17 @@
                 79,
                 80,
                 81,
-                82
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "fn read_existing<T: DeserializeOwned>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -49,20 +41,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
-          "lines": "83-113",
+          "lines": "79-99",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/auto_advance.rs",
               "lines": [
-                145,
-                146,
                 147,
                 148,
                 149,
                 150,
-                151,
-                152
-              ]
+                151
+              ],
+              "firstLine": "let mut data: WorkUnitsData =",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -73,7 +64,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
-          "lines": "115-136",
+          "lines": "111-125",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/json_error.rs",
@@ -95,50 +86,9 @@
                 47,
                 48,
                 49
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Lenient parse sites stay silent on malformed input",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
-          "lines": "138-174",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/list_hooks.rs",
-              "lines": [
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174
-              ]
+              ],
+              "firstLine": "pub fn parse_json_diagnostic(",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,7 +99,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/json_parse_diagnostics.rs",
-          "lines": "176-193",
+          "lines": "137-151",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/json_error.rs",
@@ -171,7 +121,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "pub fn parse_json_diagnostic(",
+              "lastLine": "}"
             }
           ]
         }
@@ -179,8 +131,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/json_parse_diagnostics.rs"
@@ -188,9 +140,8 @@
     "implFiles": [
       "rust/fspec-core/src/io/locked_file.rs",
       "rust/fspec-core/src/commands/auto_advance.rs",
-      "rust/fspec-core/src/io/json_error.rs",
-      "rust/fspec-core/src/commands/list_hooks.rs"
+      "rust/fspec-core/src/io/json_error.rs"
     ],
-    "totalLinesCovered": 240
+    "totalLinesCovered": 135
   }
 }

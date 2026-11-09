@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
-          "lines": "86-110",
+          "lines": "95-110",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -91,7 +91,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": ".alignment(Alignment::Center)",
+              "lastLine": ");"
             }
           ]
         }
@@ -102,7 +104,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
-          "lines": "112-133",
+          "lines": "116-136",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -188,7 +190,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": ".alignment(Alignment::Center)",
+              "lastLine": ");"
             }
           ]
         }
@@ -199,7 +203,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
-          "lines": "135-156",
+          "lines": "142-161",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -285,7 +289,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": ".alignment(Alignment::Center)",
+              "lastLine": ");"
             }
           ]
         }
@@ -296,7 +302,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_scrollbar_rpc352.rs",
-          "lines": "158-178",
+          "lines": "167-185",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/list_scrollbar.rs",
@@ -331,7 +337,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "/// item. A zero-height area or empty list paints nothing.",
+              "lastLine": "}"
             }
           ]
         }
@@ -349,6 +357,6 @@
       "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
       "rust/fspec-tui/src/components/list_scrollbar.rs"
     ],
-    "totalLinesCovered": 363
+    "totalLinesCovered": 349
   }
 }

@@ -34,10 +34,12 @@
 //!     `output.error('✗ Failed to add external system:', error.message)`
 //!     path at `src/commands/add-external-system.ts:108-126`).
 
-use std::env;
+use crate::common::spec_project_root;
 
-use anyhow::{Context, Result};
-use codelet_fspec_core::{dispatch_command, DispatchRequest};
+use anyhow::Result;
+// HOOK-018: the CLI entry runs this command's hooks, so the bridge skips the dispatcher's.
+use codelet_fspec_core::dispatch::dispatch_command_without_command_hooks;
+use codelet_fspec_core::DispatchRequest;
 use serde_json::{Map, Value};
 
 use crate::common::strip_dispatch_envelope;
@@ -59,7 +61,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `add-external-system` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root = env::current_dir().context("resolve current working directory")?;
+    let project_root = spec_project_root()?;
 
     // Marshal clap args → the SAME serde shape the dispatcher feeds the
     // core. Optionals are only inserted when present (parity with the TS
@@ -84,7 +86,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     }
     let args_json = Value::Object(body).to_string();
 
-    let result = dispatch_command(DispatchRequest {
+    let result = dispatch_command_without_command_hooks(DispatchRequest {
         command: "add-external-system".to_string(),
         args_json,
         project_root,

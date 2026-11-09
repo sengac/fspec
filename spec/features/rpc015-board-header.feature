@@ -1,5 +1,6 @@
 @done
 @RPC-015
+@BUG-508
 @rust
 @tui
 @ui
@@ -52,14 +53,15 @@ Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + Keybinding
   Scenario: The 2-zone menu bar row is painted in the header
     Given a BoardStore with any selection state
     When the App renders BoardView against a 120x24 TestBackend
-    Then the rendered buffer contains the substring "Actions"
-    And the rendered buffer contains the substring "Help"
+    Then the rendered buffer contains the Zone A items "Kanban", "Tools", "Settings" and "Help" (MENU-008 categories)
     And the rendered buffer does NOT contain the substring "u Actions"
     And the rendered buffer does NOT contain the substring "C Checkpoints"
 
     # MENU-002 R1 supersedes: the old six-action chord (and the later
-    # "u Actions" hint) became the live 2-zone menu bar; a fresh store
-    # paints Zone A "Actions"/"Help" only (no session chips yet).
+    # "u Actions" hint) became the live 2-zone menu bar; MENU-008 renamed
+    # Zone A to "Kanban"/"Tools"/"Settings"/"Help", and a fresh store
+    # paints those items only (no session chips yet). BUG-508 corrected
+    # the stale "Actions" step.
   Scenario: New ├──┤ separator sits between the header strip and the details strip
     Given a BoardStore containing AUTH-001 in backlog
     When the App renders BoardView against a 120x24 TestBackend
@@ -75,7 +77,7 @@ Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + Keybinding
     And the rendered buffer contains the substring "Estimate: 5pts"
     And the rendered buffer contains the substring "Status: backlog"
     And the rendered buffer contains the substring "← →"
-    And the rendered buffer contains the substring "Work Agent"
+    And the rendered buffer contains the substring "Choose"
 
   Scenario: KeybindingShortcuts are visible hints only — no Action wiring lands in this card
     Given the App has rendered BoardView with the new header strip painted

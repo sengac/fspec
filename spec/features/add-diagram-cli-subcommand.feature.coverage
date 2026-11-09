@@ -77,14 +77,10 @@
                 65,
                 66,
                 67
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_add_diagram.rs",
-          "lines": "65-110",
-          "implMappings": [
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-core/src/help/configs/add_diagram.rs",
               "lines": [
@@ -205,7 +201,9 @@
                 115,
                 116,
                 117
-              ]
+              ],
+              "firstLine": "//! `add-diagram` help configuration — Rust port of",
+              "lastLine": "common_errors: COMMON_ERRORS,"
             }
           ]
         }
@@ -288,7 +286,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
             }
           ]
         }
@@ -371,7 +371,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
             }
           ]
         }
@@ -454,7 +456,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
             }
           ]
         }
@@ -537,7 +541,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
             }
           ]
         }
@@ -620,7 +626,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `add-diagram` shell-facing CLI bridge (RPC-178).",
+              "lastLine": "}"
             }
           ]
         }
@@ -631,7 +639,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_diagram.rs",
-          "lines": "314-335",
+          "lines": "317-338",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/add_diagram.rs",
@@ -753,7 +761,9 @@
                 115,
                 116,
                 117
-              ]
+              ],
+              "firstLine": "//! `add-diagram` help configuration — Rust port of",
+              "lastLine": "common_errors: COMMON_ERRORS,"
             }
           ]
         }
@@ -771,6 +781,6 @@
       "rust/fspec/src/add_diagram.rs",
       "rust/fspec-core/src/help/configs/add_diagram.rs"
     ],
-    "totalLinesCovered": 953
+    "totalLinesCovered": 907
   }
 }

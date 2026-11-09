@@ -141,6 +141,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         p.push(".coverage");
         std::path::PathBuf::from(p)
     };
+    // BUG-477: the coverage read-modify-write holds the sidecar transaction
+    // and the rewrite replaces the file atomically.
+    let _transaction = if coverage_path.exists() {
+        Some(
+            crate::commands::coverage_lineage::SidecarTransaction::acquire(
+                &coverage_path,
+                "update-scenario",
+            )?,
+        )
+    } else {
+        None
+    };
     if let Ok(cov_body) = std::fs::read_to_string(&coverage_path) {
         if let Ok(mut cov) = serde_json::from_str::<Value>(&cov_body) {
             let mut changed = false;
@@ -154,7 +166,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             }
             if changed {
                 if let Ok(serialised) = serde_json::to_string_pretty(&cov) {
-                    let _ = std::fs::write(&coverage_path, serialised);
+                    let _ = crate::io::locked_file::write_bytes_atomic(
+                        &coverage_path,
+                        serialised.as_bytes(),
+                    );
                 }
             }
         }

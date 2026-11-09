@@ -24,8 +24,9 @@ fn scenario_stable_message_retries_reconcile_ambiguous_append_acknowledgement() 
         "index.directory",
     ] {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
-        let mut store = MessageStore::new()?;
+        let store = MessageStore::new()?;
         let id = Uuid::new_v4();
         let metadata = HashMap::from([("model".into(), serde_json::json!("stable"))]);
         // @step When message and index acknowledgement boundaries fail before repeated retries
@@ -67,9 +68,10 @@ fn scenario_stable_message_retries_reconcile_ambiguous_append_acknowledgement() 
 fn scenario_stable_message_identities_reject_conflicting_payloads() -> TestResult {
     // @step Given an acknowledged message with a stable identity
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     codelet_core::persistence::reset_stores_for_tests();
-    let mut store = MessageStore::new()?;
+    let store = MessageStore::new()?;
     let id = Uuid::new_v4();
     let metadata = HashMap::from([("model".into(), serde_json::json!("stable"))]);
     store.store_with_id(id, "assistant", "original", metadata.clone())?;
@@ -102,6 +104,7 @@ fn scenario_stable_message_identities_reject_conflicting_payloads() -> TestResul
 fn scenario_concurrent_stable_message_retries_append_exactly_once() -> TestResult {
     // @step Given independent writers with the same stable identity and payload
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let id = Uuid::new_v4();
     let barrier = Arc::new(Barrier::new(2));
@@ -110,7 +113,7 @@ fn scenario_concurrent_stable_message_retries_append_exactly_once() -> TestResul
         .map(|_| {
             let barrier = barrier.clone();
             std::thread::spawn(move || -> Result<_, String> {
-                let mut store = MessageStore::new()?;
+                let store = MessageStore::new()?;
                 barrier.wait();
                 store.store_with_id(id, "user", "same immutable payload", HashMap::new())
             })
@@ -138,6 +141,7 @@ fn scenario_conversation_retry_reconciles_failed_manifest_acknowledgement() -> T
     // @step Given a stable conversation message and committed empty session
     for boundary in ["manifest.sync", "manifest.rename", "manifest.directory"] {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         codelet_core::persistence::reset_stores_for_tests();
         let session = SessionStore::new()?.create("stable conversation", directory.path())?;

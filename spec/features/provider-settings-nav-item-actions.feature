@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @agent-view
 @provider-settings
@@ -51,22 +52,20 @@ Feature: Provider Settings nav-item action dispatch
     And the form is prefilled from the stored "fast" config
     And the form's provider_id is not "anthropic"
 
-  Scenario: Enter on an OAuthStatus row opens the notice for its own provider, not a mismatched one
+  Scenario: Enter on an OAuthStatus row opens the DisconnectOAuth confirm for its own provider, not a mismatched one
     Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     And the anthropic provider is expanded so its OAuthStatus row is visible
     And the cursor is on the anthropic OAuthStatus row
     When I press Enter
-    Then the Detail view that opens has provider_id "anthropic"
-    And the Detail view is the OAuthNotice sub-view
-    And the Detail view's provider_id is not "gemini"
+    Then the DisconnectOAuth confirm that opens has provider_id "anthropic"
+    And the provider_id is not "gemini"
 
-  Scenario: Enter on an OAuthLogin row opens the notice instead of silently doing nothing
+  Scenario: Enter on an OAuthLogin row starts the real login flow instead of silently doing nothing
     Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     And the anthropic provider is expanded so its OAuthLogin row is visible
     And the cursor is on an anthropic OAuthLogin row
     When I press Enter
-    Then the Detail view that opens has provider_id "anthropic"
-    And the Detail view is the OAuthNotice sub-view
+    Then the login flow starts for provider_id "anthropic"
 
   Scenario: Enter on the AddProfile row opens the create form
     Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
@@ -75,14 +74,13 @@ Feature: Provider Settings nav-item action dispatch
     When I press Enter
     Then the view enters CreateProfile mode for "openai"
 
-  Scenario: d on an OAuthStatus row deletes that provider, not a mismatched one
+  Scenario: d on an OAuthStatus row opens the DisconnectOAuth confirm for that provider, not a mismatched one
     Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     And the anthropic provider is expanded so its OAuthStatus row is visible
     And the cursor is on the anthropic OAuthStatus row
     When I press d
-    And I accept the delete confirmation
-    Then the emitted action is ConfirmDeleteProviderCredentials for "anthropic"
-    And the emitted action is not for "gemini"
+    Then the generic delete-credentials confirm is not opened
+    And the DisconnectOAuth confirm targets "anthropic", not "gemini"
 
   Scenario: d on a profile row opens the per-profile delete confirm
     Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
@@ -92,10 +90,8 @@ Feature: Provider Settings nav-item action dispatch
     Then a per-profile delete confirmation dialog is open
     And accepting it emits ConfirmDeleteProfile for openai profile "fast"
 
-  Scenario: Legacy set_providers callers keep their pre-existing Enter and d behavior
+  Scenario: Legacy set_providers callers keep their pre-existing d behavior
     Given a Provider Settings view populated only via set_providers with a configured api_key provider
     And the nav tree is empty
-    When I press Enter on the provider row
-    Then the Detail view that opens is the Summary sub-view for that provider
     When I press d on the configured provider row
     Then a delete confirmation dialog is open

@@ -1,0 +1,99 @@
+{
+  "scenarios": [
+    {
+      "name": "A session RPC without a session manager is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug453_unserved_requests_are_refused.rs",
+          "lines": "25-42",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "firstLine": "async fn schedule_add(self, _ctx: Context, job: ScheduledJob) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A backend method a backend does not implement is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug453_unserved_requests_are_refused.rs",
+          "lines": "44-60",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/backend/interaction.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// RPC-037: create an isolated (worktree-backed) session.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreadable daemon list is shown as an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug453_unserved_requests_are_refused.rs",
+          "lines": "89-106",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_daemons.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "fn open_daemon_switcher(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug453_unserved_requests_are_refused.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_implementation/schedule_loops.rs",
+      "rust/fspec-tui/src/transport/backend/interaction.rs",
+      "rust/fspec-tui/src/app/dispatch_daemons.rs"
+    ],
+    "totalLinesCovered": 80
+  }
+}

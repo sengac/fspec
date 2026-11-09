@@ -1,0 +1,260 @@
+{
+  "scenarios": [
+    {
+      "name": "Details and reordering act on the named workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc450_workspace_card_actions.rs",
+          "lines": "92-131",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "async fn get_work_unit_details(",
+              "lastLine": "self.inner.workspace_entries().map_err(|error| error.to_string())"
+            },
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "/// `list_workspace_work_units` (opened through the registry when it is",
+              "lastLine": "include!(\"service_implementation/interaction_sessions.rs\");"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/workspace_history.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "async fn move_work_unit_up(",
+              "lastLine": "async fn get_model_info(self, _ctx: Context, session_id: SessionId) -> Result<ModelInfo, String> {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The start workspace is addressed by its path",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc450_workspace_card_actions.rs",
+          "lines": "134-152",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "/// `list_workspace_work_units` (opened through the registry when it is",
+              "lastLine": "include!(\"service_implementation/interaction_sessions.rs\");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unknown workspace is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc450_workspace_card_actions.rs",
+          "lines": "155-189",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "/// `list_workspace_work_units` (opened through the registry when it is",
+              "lastLine": "include!(\"service_implementation/interaction_sessions.rs\");"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": ".map(std::path::Path::to_path_buf);",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TUI acts on its selected board workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc450_workspace_card_actions.rs",
+          "lines": "219-277",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                21,
+                22,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                44,
+                45,
+                46,
+                56,
+                57,
+                58,
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "pub(crate) fn handle_reorder(&mut self, direction: Reorder) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_board_card.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "// RPC-450: details come from the workspace the board is showing.",
+              "lastLine": "work_unit_id: id,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc450_workspace_card_actions.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_implementation/schedule_loops.rs",
+      "rust/rpc/src/lib.rs",
+      "rust/rpc/src/service_implementation/workspace_history.rs",
+      "rust/fspec-tui/src/app/dispatch_reorder.rs",
+      "rust/fspec-tui/src/app/dispatch_board_card.rs"
+    ],
+    "totalLinesCovered": 293
+  }
+}

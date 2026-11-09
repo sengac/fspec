@@ -6,14 +6,9 @@
 //! WebSocketFspecBackend, constructed against the SAME deterministic
 //! StubSessionManagerHandle. Mirrors the RPC-049 / RPC-050 parity pattern.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock,
-    clippy::too_many_lines
-)]
+#![allow(clippy::await_holding_lock, clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -26,52 +21,59 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::{ProviderCredentialInfo, ProviderCredentialInput};
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 /// Scenario: Embedded and WebSocket transports both reach the same StubSessionManagerHandle
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn set_provider_credentials_round_trips_identically_across_transports() {
+async fn set_provider_credentials_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle behind both an EmbeddedFspecBackend and a WebSocketFspecBackend
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     let initial_set = stub.set_provider_credentials_calls();
 
@@ -100,14 +102,15 @@ async fn set_provider_credentials_round_trips_identically_across_transports() {
         2,
         "stub.set_provider_credentials_calls() should increment by 2 (once per transport)"
     );
+    Ok(())
 }
 
 /// Scenario: Embedded and WebSocket test_provider_connection both reach the stub
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn test_provider_connection_round_trips_identically_across_transports() {
+async fn test_provider_connection_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle behind both an EmbeddedFspecBackend and a WebSocketFspecBackend
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     let initial = stub.test_provider_connection_calls();
 
@@ -115,13 +118,13 @@ async fn test_provider_connection_round_trips_identically_across_transports() {
     let em = embedded
         .test_provider_connection("openai".to_string())
         .await
-        .expect("embedded test");
+        .or_fail("embedded test")?;
 
     // @step And test_provider_connection("openai") is called via the WebSocket transport
     let ws = websocket
         .test_provider_connection("openai".to_string())
         .await
-        .expect("websocket test");
+        .or_fail("websocket test")?;
 
     // @step Then the stub's test_provider_connection_calls counter equals 2
     let final_calls = stub.test_provider_connection_calls();
@@ -134,12 +137,13 @@ async fn test_provider_connection_round_trips_identically_across_transports() {
     // @step And both calls returned a TestConnectionResult with success=true
     assert!(em.success, "embedded result success");
     assert!(ws.success, "websocket result success");
+    Ok(())
 }
 
 /// Verify list/get/delete/refresh all round-trip cleanly.
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn full_credential_lifecycle_round_trips_across_transports() {
-    let (_temp, service, stub) = build_service();
+async fn full_credential_lifecycle_round_trips_across_transports() -> TestResult {
+    let (_temp, service, stub) = build_service()?;
     // Pre-seed the stub so list/get observe state.
     stub.seed_provider_credential(ProviderCredentialInfo {
         provider_id: "anthropic".to_string(),
@@ -150,16 +154,16 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
         masked_key: None,
         source: None,
     });
-    let (embedded, websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     let em_list = embedded
         .list_provider_credentials()
         .await
-        .expect("embedded list");
+        .or_fail("embedded list")?;
     let ws_list = websocket
         .list_provider_credentials()
         .await
-        .expect("websocket list");
+        .or_fail("websocket list")?;
     assert_eq!(em_list, ws_list);
     assert_eq!(em_list.len(), 1);
     assert_eq!(em_list[0].provider_id, "anthropic");
@@ -167,11 +171,11 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
     let em_get = embedded
         .get_provider_credential("anthropic".to_string())
         .await
-        .expect("embedded get");
+        .or_fail("embedded get")?;
     let ws_get = websocket
         .get_provider_credential("anthropic".to_string())
         .await
-        .expect("websocket get");
+        .or_fail("websocket get")?;
     assert_eq!(em_get, ws_get);
     assert!(em_get.is_some());
 
@@ -179,11 +183,11 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
     embedded
         .refresh_models_cache("anthropic".to_string())
         .await
-        .expect("embedded refresh");
+        .or_fail("embedded refresh")?;
     websocket
         .refresh_models_cache("anthropic".to_string())
         .await
-        .expect("websocket refresh");
+        .or_fail("websocket refresh")?;
     assert_eq!(
         stub.refresh_models_cache_calls() - initial_refresh,
         2,
@@ -194,11 +198,11 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
     embedded
         .delete_provider_credentials("anthropic".to_string())
         .await
-        .expect("embedded delete");
+        .or_fail("embedded delete")?;
     websocket
         .delete_provider_credentials("anthropic".to_string())
         .await
-        .expect("websocket delete");
+        .or_fail("websocket delete")?;
     assert_eq!(
         stub.delete_provider_credentials_calls() - initial_delete,
         2,
@@ -209,10 +213,11 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
     let post = embedded
         .get_provider_credential("anthropic".to_string())
         .await
-        .expect("post-delete get");
+        .or_fail("post-delete get")?;
     assert!(post.is_some());
     assert!(
-        !post.unwrap().configured,
+        !post.or_fail("expected a value")?.configured,
         "row should be unconfigured after delete"
     );
+    Ok(())
 }

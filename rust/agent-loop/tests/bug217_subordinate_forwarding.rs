@@ -6,11 +6,10 @@ mod support;
 use codelet_rpc_types::StreamChunk;
 use codelet_tools::bridge_relay::{register_subordinate_chunk_channel, SubordinateChunkRx};
 use serde_json::Value;
-use std::time::Duration;
 use support::{Fixture, TestResult};
 
 async fn next(receiver: &mut SubordinateChunkRx) -> Result<Value, Box<dyn std::error::Error>> {
-    let (_, chunk) = tokio::time::timeout(Duration::from_secs(5), receiver.recv())
+    let (_, chunk) = codelet_test_helpers::deadlock_guard("receiver.recv()", receiver.recv())
         .await?
         .ok_or("relay closed")?;
     Ok(chunk)
@@ -139,11 +138,11 @@ async fn scenario_destroying_a_subordinate_drains_terminal_output_and_closes_its
         Some(StreamChunk::Done)
     ));
     assert!(
-        tokio::time::timeout(Duration::from_secs(5), subscription.recv())
+        codelet_test_helpers::deadlock_guard("subscription.recv()", subscription.recv())
             .await??
             .is_none()
     );
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while weak.upgrade().is_some() {
             tokio::task::yield_now().await;
         }

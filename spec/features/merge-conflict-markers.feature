@@ -1,6 +1,9 @@
+@BUG-580
 @done
 @gitoxide-integration
 @BUG-098
+@git
+@session-merge
 Feature: Merge conflict markers never written to worktree files — LLM told to resolve markers that don't exist
   """
   Implementation uses the `diffy` crate for three-way merge (diffy::merge). Add `diffy = "1"` to rust/git/Cargo.toml. The `similar` crate already present only supports two-way diff — not three-way merge with conflict markers.

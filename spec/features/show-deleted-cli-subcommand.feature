@@ -44,7 +44,7 @@ Feature: Show deleted CLI subcommand
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./rust/target/release/fspec show-deleted UNKNOWN-999`
     Then the command exits with code 1
-    Then stderr contains the substring 'Error:'
+    Then stderr contains the substring '✗ Failed to show deleted items:'
     Then stderr contains the substring "Work unit 'UNKNOWN-999' does not exist"
 
   Scenario: CLI auto-creates work-units.json before checking for the requested work unit

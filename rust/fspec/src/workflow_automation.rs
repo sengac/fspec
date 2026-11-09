@@ -7,7 +7,7 @@
 //!   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::workflow_automation::run
 //!
 //! Unlike `auto-advance`, the TS Commander shell binds correctly: it passes
-//! the positional `<action>` + `<work-unit-id>` and the `--event` /
+//! the positional `<action>` + `<workUnitId>` and the `--event` /
 //! `--from-state` flags straight into `workflowAutomation(...)`
 //! (`src/commands/workflow-automation.ts:199-218`). This Rust bridge mirrors
 //! that: it marshals those four values into the JSON args shape and delegates
@@ -24,10 +24,10 @@
 //!     environment-specific stack trace is not reproducible and is not part of
 //!     the behavioural contract).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::workflow_automation;
 use codelet_fspec_core::error::FspecCoreError;
 use serde_json::json;
@@ -36,7 +36,7 @@ use crate::common::render_core_error;
 
 /// Strongly-typed args mirrored from the TS Commander.js registration at
 /// `src/commands/workflow-automation.ts:199-218`: required positionals
-/// `<action> <work-unit-id>` plus optional `--event` / `--from-state` flags.
+/// `<action> <workUnitId>` plus optional `--event` / `--from-state` flags.
 #[derive(Debug, Default)]
 pub struct CliArgs {
     pub action: String,
@@ -48,7 +48,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `workflow-automation` clap
 /// subcommand. Returns the process exit code.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Pure JSON marshalling: forward action + id + the optional flags exactly
     // as the TS Commander shell does. Only flags that were supplied are

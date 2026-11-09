@@ -24,7 +24,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -47,7 +49,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -78,7 +82,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "let args_json = Value::Object(obj).to_string();"
             }
           ]
         }
@@ -141,7 +147,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "//! `import-example-map` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -166,7 +174,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "let mut obj = serde_json::Map::new();",
+              "lastLine": "println!(\"{rendered}\");"
             }
           ]
         }

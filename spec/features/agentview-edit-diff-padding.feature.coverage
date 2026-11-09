@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "164-181",
+          "lines": "168-189",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -47,55 +47,9 @@
                 81,
                 82,
                 83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "168-184",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+              ],
+              "firstLine": "/// it is already ≥ that room). This is the wrapped-fragment entry point",
+              "lastLine": "if !is_diff {"
             }
           ]
         }
@@ -106,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "182-199",
+          "lines": "191-210",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -148,55 +102,9 @@
                 81,
                 82,
                 83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "186-202",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+              ],
+              "firstLine": "/// it is already ≥ that room). This is the wrapped-fragment entry point",
+              "lastLine": "if !is_diff {"
             }
           ]
         }
@@ -207,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "200-217",
+          "lines": "212-229",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -237,43 +145,9 @@
                 69,
                 70,
                 71
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "204-221",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
+              ],
+              "firstLine": "/// it is already ≥ that room). This is the wrapped-fragment entry point",
+              "lastLine": "pub fn style_wrapped_line(line: &str, width: usize) -> Vec<Span<'static>> {"
             }
           ]
         }
@@ -284,7 +158,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "219-230",
+          "lines": "231-242",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -296,25 +170,9 @@
                 69,
                 70,
                 71
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "223-234",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
+              ],
+              "firstLine": "/// **RPC-393**: style a single WRAPPED diff body line (a fragment produced by",
+              "lastLine": "pub fn style_wrapped_line(line: &str, width: usize) -> Vec<Span<'static>> {"
             }
           ]
         }
@@ -325,43 +183,47 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "232-248",
+          "lines": "249-266",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "236-252",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273
+              ],
+              "firstLine": "/// Build the spans for ONE Removed/Added visual row: dim gray gutter (line",
+              "lastLine": "}"
             }
           ]
         }
@@ -372,43 +234,47 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "250-260",
+          "lines": "268-279",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "254-264",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273
+              ],
+              "firstLine": "/// Build the spans for ONE Removed/Added visual row: dim gray gutter (line",
+              "lastLine": "}"
             }
           ]
         }
@@ -424,19 +290,23 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "prefix: &str,",
+              "lastLine": "let needs_prefix = j == 0 && !prefix.is_empty();"
             }
           ]
         },
@@ -447,19 +317,23 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "prefix: &str,",
+              "lastLine": "let needs_prefix = j == 0 && !prefix.is_empty();"
             }
           ]
         }
@@ -470,12 +344,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "157-226",
+          "lines": "300-367",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
-                111,
                 112,
                 113,
                 114,
@@ -484,29 +357,11 @@
                 117,
                 118,
                 119,
-                120
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_padding_rpc392.rs",
-          "lines": "281-347",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
-              "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
+                120,
+                121
+              ],
+              "firstLine": "let content_width = geom.content_width;",
+              "lastLine": ".map(|spans| DialogRow {"
             }
           ]
         }
@@ -525,6 +380,6 @@
       "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
       "rust/fspec-tui/src/views/agent/turn_modal.rs"
     ],
-    "totalLinesCovered": 710
+    "totalLinesCovered": 471
   }
 }

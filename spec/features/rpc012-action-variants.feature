@@ -19,10 +19,8 @@ Feature: RPC-012 Action enum — navigator slice variants
     I want the Action enum to carry the navigator-slice variants (EnterWorkUnit, OpenAgentView, BackToBoard, NavigationTargetSet, AttachSession)
     So that BoardView, AgentView, and App::dispatch share one fanout enum without re-inventing per-view enums
 
-  Scenario: Action enum gains four new variants for the navigator slice
+  Scenario: Action enum gains the navigator slice variants
     Given the Action enum in rust/fspec-tui/src/components/mod.rs
     Then it contains the variant EnterWorkUnit(String)
     And it contains the variant OpenAgentView(Option<SessionId>)
     And it contains the variant BackToBoard
-    And it contains the variant NavigationTargetSet(Option<SessionId>)
-    And it contains the variant AttachSession(String, SessionId)

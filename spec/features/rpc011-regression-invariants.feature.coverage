@@ -5,14 +5,11 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
-          "lines": "36-72",
+          "lines": "35-74",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
               "lines": [
-                72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -23,25 +20,6 @@
                 82,
                 83,
                 84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -60,8 +38,32 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                125,
+                126,
+                127,
+                127,
+                127,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// Bind a TCP listener to `127.0.0.1:0` (or the supplied address) and serve",
+              "lastLine": "}"
             }
           ]
         }
@@ -72,25 +74,21 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
-          "lines": "74-104",
+          "lines": "80-108",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "firstLine": "impl WebSocketFspecBackend {",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,7 +99,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
-          "lines": "106-181",
+          "lines": "114-195",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/lib.rs",
@@ -132,7 +130,6 @@
                 24,
                 25,
                 26,
-                27,
                 28,
                 29,
                 30,
@@ -140,23 +137,25 @@
                 32,
                 33,
                 34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "//! codelet-rpc-server: minimal WebSocket transport for the fspec",
+              "lastLine": "/// rejected; Scenario 4: shared impl reached by both transports) without"
             }
           ]
         }
@@ -167,7 +166,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
-          "lines": "216-278",
+          "lines": "231-280",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/lib.rs",
@@ -198,7 +197,6 @@
                 24,
                 25,
                 26,
-                27,
                 28,
                 29,
                 30,
@@ -206,23 +204,25 @@
                 32,
                 33,
                 34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "//! codelet-rpc-server: minimal WebSocket transport for the fspec",
+              "lastLine": "/// rejected; Scenario 4: shared impl reached by both transports) without"
             }
           ]
         }
@@ -238,9 +238,9 @@
     ],
     "implFiles": [
       "rust/rpc-server/src/server.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/transport/websocket/construction.rs",
       "rust/rpc-server/src/lib.rs"
     ],
-    "totalLinesCovered": 371
+    "totalLinesCovered": 357
   }
 }

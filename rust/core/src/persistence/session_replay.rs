@@ -2,6 +2,16 @@ use super::{get_session_messages, load_session};
 use serde_json::{json, Value};
 use uuid::Uuid;
 
+/// Envelope fields every stored conversation row carries (BUG-332).
+const ENVELOPE_KEYS: [&str; 6] = [
+    "parentUuid",
+    "timestamp",
+    "type",
+    "provider",
+    "message",
+    "requestId",
+];
+
 pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, String> {
     let session = load_session(session_id)?;
     envelopes_for_manifest(&session)
@@ -20,22 +30,33 @@ pub fn envelopes_for_manifest(session: &super::SessionManifest) -> Result<Vec<St
         if super::provider_state::legacy::is_checkpoint(&stored) {
             continue;
         }
+        // BUG-327/BUG-332: the replayed envelope is the stored envelope, which
+        // every conversation row must carry. Replay sets only the row identity
+        // and the message role and blob-rehydrated content.
+        if let Some(missing) = ENVELOPE_KEYS
+            .iter()
+            .find(|key| !stored.metadata.contains_key(**key))
+        {
+            return Err(format!(
+                "stored message {} has no message envelope (missing {missing})",
+                stored.id
+            ));
+        }
         let content = stored
             .metadata
             .get("message")
             .and_then(|message| message.get("content"))
             .cloned()
-            .unwrap_or_else(|| json!([{"type":"text","text":stored.content}]));
-        let mut envelope = json!({
-            "uuid":stored.id,"parentUuid":null,"timestamp":stored.created_at.to_rfc3339(),
-            "type":stored.role,"provider":stored.metadata.get("provider").and_then(Value::as_str).unwrap_or("unknown"),
-            "message":{"role":stored.role,"content":content},"requestId":null,
-        });
-        if let Some(fields) = envelope.as_object_mut() {
-            for (key, value) in stored.metadata {
-                fields.entry(key).or_insert(value);
-            }
-        }
+            .ok_or_else(|| format!("stored message {} has no message content", stored.id))?;
+        let mut fields: serde_json::Map<String, Value> = stored.metadata.into_iter().collect();
+        fields.insert("uuid".into(), json!(stored.id));
+        let message = fields
+            .get_mut("message")
+            .and_then(Value::as_object_mut)
+            .ok_or_else(|| format!("stored message {} is not an object", stored.id))?;
+        message.insert("role".into(), json!(stored.role));
+        message.insert("content".into(), content);
+        let mut envelope = Value::Object(ordered(fields));
         super::provider_state::replay::strip_native_metadata(&mut envelope);
         if stored.id == Uuid::nil() {
             envelope["provider"] = json!("compaction");
@@ -73,4 +94,27 @@ pub fn envelopes_for_manifest(session: &super::SessionManifest) -> Result<Vec<St
         envelopes.push(json!({"_sessionReplay":identity}).to_string());
     }
     Ok(envelopes)
+}
+
+/// Envelope fields first in their canonical order, then the remaining stored
+/// keys sorted, so replay output does not depend on map iteration order.
+fn ordered(mut fields: serde_json::Map<String, Value>) -> serde_json::Map<String, Value> {
+    let mut out = serde_json::Map::with_capacity(fields.len());
+    for key in [
+        "uuid",
+        "parentUuid",
+        "timestamp",
+        "type",
+        "provider",
+        "message",
+        "requestId",
+    ] {
+        if let Some(value) = fields.remove(key) {
+            out.insert(key.into(), value);
+        }
+    }
+    let mut rest: Vec<_> = fields.into_iter().collect();
+    rest.sort_by(|left, right| left.0.cmp(&right.0));
+    out.extend(rest);
+    out
 }

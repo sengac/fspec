@@ -114,11 +114,11 @@ fn env_mappings(tool: &str) -> &'static [(&'static str, &'static str)] {
 /// the LIST-only dispatcher surface: when present and unknown it triggers the
 /// not-found guard; when present and known the EXECUTE path is out of scope
 /// (see module docs); when absent the tool listing is produced. `all`,
-/// `query`, `workUnit`, `attach` are accepted (parity with the TS
-/// `ResearchOptions`) but unused in LIST mode — declared so unknown-field
-/// strictness never rejects a forwarded flag.
+/// `query`, `workUnitId`, `attach` are accepted (parity with the TS
+/// `ResearchOptions`) but unused in LIST mode. Any other key is an exact
+/// unknown-field error (CLI-020: no alias for the old `workUnit`).
 #[derive(Debug, Default, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 struct ResearchArgs {
     /// Research tool to execute. Omit to list available tools.
     tool: Option<String>,
@@ -131,7 +131,7 @@ struct ResearchArgs {
     #[allow(dead_code)]
     query: Option<String>,
     #[allow(dead_code)]
-    work_unit: Option<String>,
+    work_unit_id: Option<String>,
     #[allow(dead_code)]
     attach: Option<bool>,
     /// Test-only override for the user config path (mirrors the TS
@@ -194,8 +194,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 reason: format!(
                     "Research tool not found: {tool}\n\n\
                      Available bundled tools: {bundled}\n\
-                     To use custom tools: create spec/research-tools/{tool}.ts \
-                     and run 'fspec build-tool {tool}'\n\
+                     Custom research tools are not ported to the Rust CLI yet\n\
                      For AST code search, use the `fspec astgrep` command instead"
                 ),
             });
@@ -211,10 +210,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // LIST mode: enumerate the full bundled registry with resolved status.
-    let user_config = args.user_config_path.as_deref();
+    // BUG-640: the user config is the one resolver's (an unresolvable user
+    // directory is an error, not a silently skipped layer).
+    let user_config = match args.user_config_path.as_deref() {
+        Some(path) => std::path::PathBuf::from(path),
+        None => codelet_common::user_dir::fspec_user_dir()
+            .map_err(FspecCoreError::Message)?
+            .join("fspec-config.json"),
+    };
+    let project_config = crate::io::spec_paths::config(project_root)?;
     let tools: Vec<ToolStatus> = REGISTRY
         .iter()
-        .map(|t| resolve_status(t, project_root, user_config))
+        .map(|t| resolve_status(t, &project_config, &user_config))
         .collect();
 
     let envelope = json!({
@@ -232,12 +239,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// Resolve the configured status for a single registry tool by merging the
 /// config layers (defaults → project → user → ENV) and checking that every
 /// required field is present and non-empty.
-fn resolve_status(
-    tool: &RegistryTool,
-    project_root: &Path,
-    user_config: Option<&str>,
-) -> ToolStatus {
-    let config = resolve_config(tool.name, project_root, user_config);
+fn resolve_status(tool: &RegistryTool, project_config: &Path, user_config: &Path) -> ToolStatus {
+    let config = resolve_config(tool.name, project_config, user_config);
     let configured = tool.required.iter().all(|field| {
         config
             .get(*field)
@@ -282,7 +285,7 @@ fn resolve_status(
 /// Mirrors the TS `resolveConfig` (`src/utils/config-resolution.ts:74-144`).
 /// All reads are BLOCKING `std::fs`; malformed JSON is silently ignored
 /// (parity with the TS `try { … } catch {}`).
-fn resolve_config(tool_name: &str, project_root: &Path, user_config: Option<&str>) -> Value {
+fn resolve_config(tool_name: &str, project_config: &Path, user_config: &Path) -> Value {
     let mut config = serde_json::Map::new();
 
     // Layer 4: defaults (lowest priority).
@@ -291,15 +294,10 @@ fn resolve_config(tool_name: &str, project_root: &Path, user_config: Option<&str
     }
 
     // Layer 3: project config.
-    let project_config_path = project_root.join("spec").join("fspec-config.json");
-    merge_research_block(&mut config, &project_config_path, tool_name);
+    merge_research_block(&mut config, project_config, tool_name);
 
     // Layer 2: user config (higher priority).
-    let user_config_path = match user_config {
-        Some(p) => std::path::PathBuf::from(p),
-        None => fspec_user_dir().join("fspec-config.json"),
-    };
-    merge_research_block(&mut config, &user_config_path, tool_name);
+    merge_research_block(&mut config, user_config, tool_name);
 
     // Layer 1: environment variables (highest priority).
     for (config_key, env_var) in env_mappings(tool_name) {
@@ -331,26 +329,6 @@ fn merge_research_block(config: &mut serde_json::Map<String, Value>, path: &Path
         for (k, v) in block {
             config.insert(k.clone(), v.clone());
         }
-    }
-}
-
-/// Resolve `~/.fspec` (parity with the TS `getFspecUserDir`
-/// = `join(homedir(), '.fspec')`). Falls back to a relative `.fspec` if the
-/// home directory cannot be resolved — in that case the (almost certainly
-/// absent) file simply doesn't merge, preserving defaults/ENV behaviour.
-fn fspec_user_dir() -> std::path::PathBuf {
-    let home = std::env::var("HOME")
-        .ok()
-        .filter(|h| !h.is_empty())
-        .map(std::path::PathBuf::from)
-        .or_else(|| {
-            std::env::var("USERPROFILE")
-                .ok()
-                .map(std::path::PathBuf::from)
-        });
-    match home {
-        Some(h) => h.join(".fspec"),
-        None => std::path::PathBuf::from(".fspec"),
     }
 }
 
@@ -387,6 +365,8 @@ mod tests {
 
     #[test]
     fn list_mode_enumerates_all_four_tools_without_ast() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         let out = futures_poll(run("{}", tmp.path()));
         let tools = tools_of(&out);
@@ -400,6 +380,8 @@ mod tests {
 
     #[test]
     fn ast_is_not_a_research_tool_anymore_perplexity_is_not_configured() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         let out = futures_poll(run("{}", tmp.path()));
         let tools = tools_of(&out);
@@ -411,6 +393,8 @@ mod tests {
 
     #[test]
     fn project_config_marks_perplexity_configured() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         write_project_config(
             tmp.path(),
@@ -423,6 +407,8 @@ mod tests {
 
     #[test]
     fn stakeholder_configured_when_webhook_present() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         write_project_config(
             tmp.path(),
@@ -435,6 +421,8 @@ mod tests {
 
     #[test]
     fn list_mode_creates_no_files() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         let _ = futures_poll(run("{}", tmp.path()));
         assert!(!tmp.path().join("spec/fspec-config.json").exists());
@@ -442,6 +430,8 @@ mod tests {
 
     #[test]
     fn unknown_tool_is_rejected_with_not_found() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         let err = futures_poll_err(run(r#"{"tool":"does-not-exist"}"#, tmp.path()));
         let msg = err.to_string();
@@ -449,7 +439,8 @@ mod tests {
             msg.contains("Research tool not found: does-not-exist"),
             "msg={msg}"
         );
-        // Parity with the TS 3-line message: bundled-tools list + custom-tool hint.
+        // Bundled-tools list; custom tools are not ported (CLI-016: the old hint
+        // named a `fspec build-tool` command that does not exist).
         // CLI-015: `ast` is no longer bundled — it is rejected like any
         // unknown tool and the message points at `fspec astgrep`.
         assert!(
@@ -457,13 +448,15 @@ mod tests {
             "msg={msg}"
         );
         assert!(
-            msg.contains("create spec/research-tools/does-not-exist.ts and run 'fspec build-tool does-not-exist'"),
+            msg.contains("Custom research tools are not ported to the Rust CLI yet"),
             "msg={msg}"
         );
     }
 
     #[test]
     fn ast_tool_is_rejected_and_points_to_fspec_astgrep() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().unwrap();
         let err = futures_poll_err(run(r#"{"tool":"ast"}"#, tmp.path()));
         let msg = err.to_string();

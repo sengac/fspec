@@ -22,13 +22,10 @@
                 56,
                 57,
                 58,
-                59,
-                60,
                 61,
                 62,
                 63,
                 64,
-                65,
                 66,
                 67,
                 68,
@@ -54,9 +51,10 @@
                 88,
                 89,
                 90,
-                91,
-                92
-              ]
+                91
+              ],
+              "firstLine": "/// COLUMN owns the focus (then `focused_column` is authoritative).",
+              "lastLine": "// can re-anchor the cursor to follow the moved item. Per"
             }
           ]
         }
@@ -84,13 +82,10 @@
                 56,
                 57,
                 58,
-                59,
-                60,
                 61,
                 62,
                 63,
                 64,
-                65,
                 66,
                 67,
                 68,
@@ -116,9 +111,10 @@
                 88,
                 89,
                 90,
-                91,
-                92
-              ]
+                91
+              ],
+              "firstLine": "/// COLUMN owns the focus (then `focused_column` is authoritative).",
+              "lastLine": "// can re-anchor the cursor to follow the moved item. Per"
             }
           ]
         }
@@ -135,6 +131,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/board.rs"
     ],
-    "totalLinesCovered": 150
+    "totalLinesCovered": 142
   }
 }

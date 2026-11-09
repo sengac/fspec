@@ -1,4 +1,6 @@
 @BUG-102
+@tools
+@history-search
 Feature: DeepSearch tool fails with 'Model is required' configuration error
   """
   The deep_search_handler.rs comment says 'v1: Claude-only' but the fix should be provider-agnostic using with_provider_and_model() which works for any provider

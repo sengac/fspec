@@ -27,13 +27,13 @@
 //! - ring state: `app.board_store().menu_focus()` /
 //!   `app.navigator().agent.menu_focus()`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::menu_bar::{paint_menu_bar, MenuChip, MenuSnapshot, ZoneBCell};
 use codelet_fspec_tui::store::AgentViewStore;
-use codelet_fspec_tui::views::multiplex::{menu_snapshot, MultiplexLayout, MuxPaneKind};
+use codelet_fspec_tui::views::multiplex::{menu_snapshot, MultiplexLayout, MuxLayout, MuxPaneKind};
 use codelet_fspec_tui::{App, FspecBackend, SessionContext, Theme, ViewMode};
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -57,16 +57,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -74,11 +75,11 @@ fn key(code: KeyCode, mods: KeyModifiers) -> Event {
 }
 
 /// Render the full App (navigator + compositor) into a 120x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -100,28 +101,35 @@ fn find_x(buf: &Buffer, y: u16, needle: &str) -> Option<u16> {
 }
 
 /// The x of chip `n` (1-based) on row `y`.
-fn chip_x(buf: &Buffer, y: u16, n: usize) -> u16 {
-    find_x(buf, y, &format!("#{n}"))
-        .unwrap_or_else(|| panic!("chip #{n} must paint on row {y}:\n{}", row_text(buf, y)))
+fn chip_x(buf: &Buffer, y: u16, n: usize) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(find_x(buf, y, &format!("#{n}")).or_fail(&format!(
+        "chip #{n} must paint on row {y}:\n{}",
+        row_text(buf, y)
+    ))?)
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
         )));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Flip the App into the Agent view on the given open session (the
 /// RPC-097 jump-into-existing-session path).
-async fn enter_agent_view(app: &mut App, session: &str) {
+async fn enter_agent_view(
+    app: &mut App,
+    session: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(Some(
         SessionId::new(session.to_string()),
     )));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// A pure-painter chip (Idle glyph; `active` marks the current session).
@@ -132,6 +140,7 @@ fn chip(n: usize, wu: Option<&'static str>, active: bool) -> MenuChip {
         glyph_style: Default::default(),
         wu_id: wu.map(str::to_string),
         active,
+        bot: false,
     }
 }
 
@@ -157,27 +166,33 @@ fn snap(
 fn paint_row(
     snap: &MenuSnapshot,
     w: u16,
-) -> (Buffer, codelet_fspec_tui::components::menu_bar::MenuLayout) {
+) -> Result<
+    (Buffer, codelet_fspec_tui::components::menu_bar::MenuLayout),
+    codelet_test_helpers::TestError,
+> {
     let area = Rect::new(0, 0, w, 1);
     let mut buf = Buffer::empty(area);
     let layout = paint_menu_bar(area, &mut buf, snap, &Theme::default())
-        .expect("layout for a non-zero area");
-    (buf, layout)
+        .or_fail("layout for a non-zero area")?;
+    Ok((buf, layout))
 }
 
 /// The y of the 2-zone bar row — the single row carrying a Zone A item
 /// and the chip separator: the board/mux rows carry "Kanban" +
 /// "Help" (MENU-008), while the agent view's row carries the single
 /// "Board View" item (MENU-007).
-fn bar_row(buf: &Buffer) -> u16 {
-    (0..buf.area.height)
+fn bar_row(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok((0..buf.area.height)
         .find(|&y| {
             let row = row_text(buf, y);
             let board_or_mux = row.contains("Kanban") && row.contains("Help") && row.contains('│');
             let agent = row.contains("Board View") && row.contains('│');
             board_or_mux || agent
         })
-        .unwrap_or_else(|| panic!("the 2-zone bar row must render:\n{}", buf_text(buf)))
+        .or_fail(&format!(
+            "the 2-zone bar row must render:\n{}",
+            buf_text(buf)
+        ))?)
 }
 
 fn buf_text(buf: &Buffer) -> String {
@@ -199,12 +214,12 @@ fn is_inverse(buf: &Buffer, x: u16, y: u16) -> bool {
 /// Scenario: The board view does not carry the current session's chip highlight (superseded by MENU-010)
 #[tokio::test]
 async fn scenario_the_board_view_does_not_carry_the_current_sessions_chip_highlight_superseded_by_menu_010(
-) {
+) -> TestResult {
     // @step Given the board has 3 open sessions and session s-2 is the focused session
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
     app.agent_view_store_mut().focus_session_index(1);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store().current_session_index(),
         1,
@@ -217,11 +232,11 @@ async fn scenario_the_board_view_does_not_carry_the_current_sessions_chip_highli
     );
 
     // @step When the bar renders with the ring focus cleared
-    let buf = render_app(&mut app);
-    let y = bar_row(&buf);
+    let buf = render_app(&mut app)?;
+    let y = bar_row(&buf)?;
 
     // @step Then no chip's cells are styled bg Cyan fg Black (the board never carries the current-session highlight — MENU-010)
-    let x2 = chip_x(&buf, y, 2);
+    let x2 = chip_x(&buf, y, 2)?;
     for (x, label) in [(x2, "#2"), (x2 + 2, "#2"), (x2 + 3, "#2")] {
         assert_ne!(
             buf[(x, y)].bg,
@@ -231,8 +246,8 @@ async fn scenario_the_board_view_does_not_carry_the_current_sessions_chip_highli
     }
 
     // @step And chips #1 and #3's cells keep the #333333 background
-    let x1 = chip_x(&buf, y, 1);
-    let x3 = chip_x(&buf, y, 3);
+    let x1 = chip_x(&buf, y, 1)?;
+    let x3 = chip_x(&buf, y, 3)?;
     for (x, label) in [
         (x1, "#1"),
         (x1 + 2, "#1"),
@@ -246,18 +261,19 @@ async fn scenario_the_board_view_does_not_carry_the_current_sessions_chip_highli
             "chip cell {label}@{x} must NOT be highlighted"
         );
     }
+    Ok(())
 }
 
 /// Scenario: The active session's chip keeps its blue background in the Agent view after the ring focus clears
 #[tokio::test]
 async fn scenario_the_active_session_chip_keeps_its_blue_background_in_the_agent_view_after_the_ring_focus_clears(
-) {
+) -> TestResult {
     // @step Given the App is in the Agent view with 3 open sessions and session s-2 is the focused session
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
     // `append_session` focuses the LAST appended session — pin s-2.
     app.agent_view_store_mut().focus_session_index(1);
-    enter_agent_view(&mut app, "s-2").await;
+    enter_agent_view(&mut app, "s-2").await?;
     assert_eq!(
         app.active_view(),
         ViewMode::Agent,
@@ -284,11 +300,11 @@ async fn scenario_the_active_session_chip_keeps_its_blue_background_in_the_agent
         None,
         "Up must clear the bar ring focus"
     );
-    let buf = render_app(&mut app);
-    let y = bar_row(&buf);
+    let buf = render_app(&mut app)?;
+    let y = bar_row(&buf)?;
 
     // @step Then chip #2's cells in the agent bar are styled bg Cyan fg Black
-    let x2 = chip_x(&buf, y, 2);
+    let x2 = chip_x(&buf, y, 2)?;
     assert!(
         is_inverse(&buf, x2, y) && is_inverse(&buf, x2 + 3, y),
         "chip #2 must stay highlighted after the ring cleared:\n{}",
@@ -296,8 +312,8 @@ async fn scenario_the_active_session_chip_keeps_its_blue_background_in_the_agent
     );
 
     // @step And chip #1's and chip #3's cells keep the #333333 background
-    let x1 = chip_x(&buf, y, 1);
-    let x3 = chip_x(&buf, y, 3);
+    let x1 = chip_x(&buf, y, 1)?;
+    let x3 = chip_x(&buf, y, 3)?;
     for (x, label) in [(x1, "#1"), (x1 + 3, "#1"), (x3, "#3"), (x3 + 3, "#3")] {
         assert_ne!(
             buf[(x, y)].bg,
@@ -305,11 +321,13 @@ async fn scenario_the_active_session_chip_keeps_its_blue_background_in_the_agent
             "chip cell {label}@{x} must NOT be highlighted"
         );
     }
+    Ok(())
 }
 
 /// Scenario: A ring-focused active chip with a work-unit id paints the whole cell inverse
 #[test]
-fn scenario_a_ring_focused_active_chip_with_a_work_unit_id_paints_the_whole_cell_inverse() {
+fn scenario_a_ring_focused_active_chip_with_a_work_unit_id_paints_the_whole_cell_inverse(
+) -> TestResult {
     // @step Given a MenuSnapshot with 3 open sessions and session s-2 is the focused session and chip #2 is bound to work unit "MENU-006" and the menu bar ring is focused on chip #2
     let snap = snap(
         vec![
@@ -321,7 +339,7 @@ fn scenario_a_ring_focused_active_chip_with_a_work_unit_id_paints_the_whole_cell
     );
 
     // @step When the bar is rendered into a 120-column row
-    let (buf, layout) = paint_row(&snap, 120);
+    let (buf, layout) = paint_row(&snap, 120)?;
     assert_eq!(layout.level, 0, "no truncation at 120 cols");
     let rect = &layout.cell_rects[1];
 
@@ -337,15 +355,18 @@ fn scenario_a_ring_focused_active_chip_with_a_work_unit_id_paints_the_whole_cell
             "cell {cx} of the active chip must read black (no magenta/dim on top)"
         );
     }
+    Ok(())
 }
 
 /// Scenario: In mux mode the focused Agent pane's session chip paints the blue background while view labels keep their styling
 #[test]
 fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_background_while_view_labels_keep_their_styling(
-) {
+) -> TestResult {
     // @step Given a MenuSnapshot in mux mode with panes Board and Agent, 2 open sessions, and the Agent pane is focused showing session s-1
     let mut layout = MultiplexLayout::new();
-    layout.set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::Agent], None);
+    if let Some(mux_layout) = MuxLayout::columns(&[MuxPaneKind::Board, MuxPaneKind::Agent]) {
+        layout.set_layout(mux_layout);
+    }
     layout.set_focus(1);
     let mut store = AgentViewStore::default();
     store.open_sessions_mut().push(session_ctx("s-1"));
@@ -377,7 +398,7 @@ fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_bac
     );
 
     // @step When the bar is rendered into a 120-column row
-    let (buf, painted) = paint_row(&snap, 120);
+    let (buf, painted) = paint_row(&snap, 120)?;
 
     // @step Then chip #1's cells are styled bg Cyan fg Black
     let chip_cells: Vec<usize> = snap
@@ -390,7 +411,7 @@ fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_bac
     let chip1 = painted
         .cell_rects
         .get(chip_cells[0])
-        .expect("chip #1 cell rect");
+        .or_fail("chip #1 cell rect")?;
     for cx in chip1.x..chip1.x + chip1.width {
         assert!(
             is_inverse(&buf, cx, 0),
@@ -402,7 +423,7 @@ fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_bac
     let chip2 = painted
         .cell_rects
         .get(chip_cells[1])
-        .expect("chip #2 cell rect");
+        .or_fail("chip #2 cell rect")?;
     for cx in chip2.x..chip2.x + chip2.width {
         assert_ne!(
             buf[(cx, 0)].bg,
@@ -416,7 +437,7 @@ fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_bac
         .zone_b
         .iter()
         .position(|c| matches!(c, ZoneBCell::View { label: "Board", .. }))
-        .expect("Board view label");
+        .or_fail("Board view label")?;
     let board_rect = &painted.cell_rects[board_label];
     for cx in board_rect.x..board_rect.x + board_rect.width {
         assert_ne!(
@@ -425,6 +446,7 @@ fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_bac
             "the Board view label cell {cx} must stay unhighlighted"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────

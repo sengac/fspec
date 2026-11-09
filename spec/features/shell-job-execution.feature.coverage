@@ -4,60 +4,9 @@
       "name": "Shell command executes successfully with exit code 0",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "68-112",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/command_execution.rs",
+          "lines": "7-53",
+          "implMappings": []
         }
       ]
     },
@@ -65,60 +14,9 @@
       "name": "Shell command fails with non-zero exit code",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "117-159",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/command_execution.rs",
+          "lines": "57-95",
+          "implMappings": []
         }
       ]
     },
@@ -126,21 +24,9 @@
       "name": "Shell job fails when command string is empty",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "164-214",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/config_and_engine.rs",
+          "lines": "7-52",
+          "implMappings": []
         }
       ]
     },
@@ -148,19 +34,9 @@
       "name": "Shell job fails when shell config is missing entirely",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "219-265",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/config_and_engine.rs",
+          "lines": "56-99",
+          "implMappings": []
         }
       ]
     },
@@ -168,27 +44,9 @@
       "name": "Shell command captures multi-line stdout",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "270-304",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/command_execution.rs",
+          "lines": "99-132",
+          "implMappings": []
         }
       ]
     },
@@ -196,19 +54,9 @@
       "name": "Shell command captures stdout and stderr separately",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "309-354",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                60,
-                61,
-                62,
-                63
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/command_execution.rs",
+          "lines": "136-177",
+          "implMappings": []
         }
       ]
     },
@@ -216,64 +64,9 @@
       "name": "Shell job updates schedules.json timestamps after completion",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "359-401",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/engine.rs",
-              "lines": [
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/config_and_engine.rs",
+          "lines": "103-149",
+          "implMappings": []
         }
       ]
     },
@@ -281,23 +74,9 @@
       "name": "Engine routes shell job_type to trigger_shell_job",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "406-427",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/engine.rs",
-              "lines": [
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/config_and_engine.rs",
+          "lines": "153-180",
+          "implMappings": []
         }
       ]
     },
@@ -305,22 +84,9 @@
       "name": "Shell command runs in the configured project directory",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "432-477",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/command_execution.rs",
+          "lines": "181-227",
+          "implMappings": []
         }
       ]
     },
@@ -328,19 +94,9 @@
       "name": "Shell job with missing shell.command field fails gracefully",
       "testMappings": [
         {
-          "file": "rust/napi/tests/shell_job_test.rs",
-          "lines": "482-514",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/shell_job.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36
-              ]
-            }
-          ]
+          "file": "rust/core/tests/shell_job_test/config_and_engine.rs",
+          "lines": "184-215",
+          "implMappings": []
         }
       ]
     }
@@ -350,12 +106,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/shell_job_test.rs"
+      "rust/core/tests/shell_job_test/command_execution.rs",
+      "rust/core/tests/shell_job_test/config_and_engine.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/scheduler/shell_job.rs",
-      "rust/napi/src/scheduler/engine.rs"
-    ],
-    "totalLinesCovered": 595
+    "implFiles": [],
+    "totalLinesCovered": 406
   }
 }

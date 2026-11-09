@@ -1,5 +1,7 @@
 @done
 @KGRAPH-026
+@parser
+@code-analysis
 Feature: AST extraction pipeline creates duplicate File entities for import targets — @unique constraint violation on File.path
   """
   Fix is in walk_and_extract() (ast_pipeline/mod.rs). After collecting all entities from all files, deduplicate Node entities by (node_type, slug). For File nodes, prefer the node with more properties (full > stub). Use a HashMap<(node_type, slug), index> to track seen nodes.

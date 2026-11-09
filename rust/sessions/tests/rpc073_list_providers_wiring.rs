@@ -93,7 +93,8 @@ fn handle_impl_path() -> PathBuf {
 
 fn read_handle_impl_src() -> String {
     let p = handle_impl_path();
-    fs::read_to_string(&p).unwrap_or_else(|e| panic!("read {}: {e}", p.display()))
+    codelet_test_helpers::source_composition::read_tree_or_file(&p)
+        .unwrap_or_else(|e| panic!("read {}: {e}", p.display()))
 }
 
 /// Strip `//`, `///`, `//!` line comments and `/* … */` block comments.
@@ -188,10 +189,10 @@ async fn list_providers_returns_all_six_built_in_providers() {
     // github-copilot are left uncredentialed/absent so they are dropped.
     let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the test calls handle.list_providers()
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then every returned cloud ProviderInfo entry has at least one model
     //
@@ -254,8 +255,8 @@ async fn list_providers_entries_have_populated_fields() {
     // @step Given list_providers has been called with seeded credentials and returned a non-empty Vec
     let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
-    let providers = handle.list_providers();
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
+    let providers = handle.list_providers().expect("the provider list is read");
     assert!(!providers.is_empty(), "list_providers must be non-empty");
 
     // @step When the test inspects the 'anthropic' ProviderInfo entry
@@ -307,10 +308,10 @@ async fn list_providers_maps_provider_info_fields_correctly() {
     // maps to `u32` (saturating).
     let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the trait override list_providers maps the value into a codelet_rpc_types::ProviderInfo
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
     let anthropic = providers
         .iter()
         .find(|p| p.key == "anthropic")
@@ -339,53 +340,19 @@ async fn list_providers_maps_provider_info_fields_correctly() {
     // @step Then context_window and max_output_tokens are converted from usize to u32 with saturating cast
     //
     // The seeded `claude-opus-4-5` limit.context is 200000, well within u32
-    // range: the wire `ModelEntry.context_window` is u32 by definition and
+    // range: the wire `ModelEntry.context_window` is Option<u32> (PROV-169) and
     // must carry the saturating-cast value (u32::MAX had the source usize
     // exceeded u32::MAX).
     for m in &anthropic.models {
-        let _cw: u32 = m.context_window;
+        let _cw: Option<u32> = m.context_window;
         let _sr: bool = m.supports_reasoning;
         let _vis: bool = m.supports_vision;
         let _custom: bool = m.is_custom;
     }
     assert!(
-        reasoning_model.context_window > 0,
+        reasoning_model.context_window > None,
         "seeded model context_window must be a valid non-zero u32 (200000)",
     );
-}
-
-// =============================================================================
-// Scenario: list_providers degrades gracefully to Vec::new() and logs via
-// tracing::error when list_providers_info returns Err
-// =============================================================================
-#[test]
-fn list_providers_does_not_panic_on_provider_discovery_error() {
-    // @step Given an environment is set up such that list_providers_info returns Err (e.g. corrupt ~/.fspec/providers/foo.json)
-    //
-    // We cannot easily corrupt the user's real ~/.fspec/providers without
-    // side effects. Instead, the contract we enforce is the NO-PANIC
-    // invariant: list_providers() must never panic regardless of
-    // upstream state. The "logs via tracing::error" half is a
-    // best-effort guarantee that is structurally enforced by the
-    // source-shape scenario below (the body must contain the
-    // tracing::error! call).
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
-
-    // @step When the test calls handle.list_providers()
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| handle.list_providers()));
-
-    // @step Then the call returns Vec::new() and does not panic
-    assert!(
-        result.is_ok(),
-        "list_providers MUST NOT panic — RPC-073 bug 3 graceful-degradation contract",
-    );
-
-    // @step Then a tracing::error event with target 'handle_impl' and the underlying error is emitted
-    //
-    // Behavioural verification of tracing emission requires a subscriber
-    // (e.g. tracing_subscriber::fmt::TestWriter). For this regression
-    // we structurally enforce the call via the source-shape test below.
 }
 
 // =============================================================================

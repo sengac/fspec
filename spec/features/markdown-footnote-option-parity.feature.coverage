@@ -18,7 +18,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "let mut options = Options::empty();",
+              "lastLine": "let parser = Parser::new_ext(markdown, options);"
             }
           ]
         }
@@ -42,7 +44,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "let mut options = Options::empty();",
+              "lastLine": "let parser = Parser::new_ext(markdown, options);"
             }
           ]
         }
@@ -66,7 +70,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "let mut options = Options::empty();",
+              "lastLine": "let parser = Parser::new_ext(markdown, options);"
             }
           ]
         }

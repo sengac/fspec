@@ -123,7 +123,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "//! `remove-command-from-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -134,13 +136,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
-          "lines": "129-161",
+          "lines": "134-170",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -150,7 +150,6 @@
                 52,
                 53,
                 54,
-                55,
                 56,
                 57,
                 58,
@@ -167,8 +166,12 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -179,18 +182,20 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
-          "lines": "163-198",
+          "lines": "176-213",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
-                66,
-                67,
                 68,
                 69,
                 70,
-                71
-              ]
+                71,
+                72,
+                73
+              ],
+              "firstLine": "println!(\"✓ {message}\");",
+              "lastLine": "let raw = result.error.unwrap_or_default();"
             }
           ]
         }
@@ -201,14 +206,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_command_from_foundation.rs",
-          "lines": "200-257",
+          "lines": "219-290",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_command_from_foundation.rs",
               "lines": [
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -218,8 +220,12 @@
                 62,
                 63,
                 64,
-                65
-              ]
+                65,
+                66,
+                67
+              ],
+              "firstLine": "command: \"remove-command-from-foundation\".to_string(),",
+              "lastLine": ".unwrap_or_default();"
             }
           ]
         }
@@ -237,6 +243,6 @@
       "rust/fspec-core/src/help/configs/remove_command_from_foundation.rs",
       "rust/fspec/src/remove_command_from_foundation.rs"
     ],
-    "totalLinesCovered": 314
+    "totalLinesCovered": 332
   }
 }

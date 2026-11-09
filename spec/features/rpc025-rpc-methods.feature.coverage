@@ -4,12 +4,342 @@
       "name": "FspecService trait declares the three new history RPC methods",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "58-88",
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025/source_shape.rs",
+          "lines": "2-32",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/workspace.rs",
               "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "/// RPC-025: append a submitted input to the session's command",
+              "lastLine": "async fn persistence_search_history(query: String) -> Result<Vec<HistoryMatch>, String>;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecBackend trait declares the three new history methods with matching signatures",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025/source_shape.rs",
+          "lines": "35-60",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/backend/core.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "fn logs_rx(&self) -> broadcast::Receiver<LogRecord>;",
+              "lastLine": "/// list from the `codelet_git` change-type helpers. The default impl"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_add_history persists into the lifted core store via FspecServiceImpl",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "76-96",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "fn chunks_rx(&self) -> broadcast::Receiver<(SessionId, StreamChunk)> {",
+              "lastLine": "fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+              "lines": [
+                5
+              ],
+              "firstLine": "async fn health(&self) -> Result<HealthInfo> {",
+              "lastLine": "async fn health(&self) -> Result<HealthInfo> {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_get_history returns the texts of the most recent entries newest-first",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "99-124",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "firstLine": "// FspecService::health() method — both transports share the",
+              "lastLine": "Ok(self.client.checkpoint_counts(context::current()).await?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_search_history returns HistoryMatch values with text, session_id, and ISO timestamp",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "127-167",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/workspace_history.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "async fn persistence_search_history(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebSocketFspecBackend round-trips persistence_add_history over tarpc to the same core store",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "170-195",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
+              "lines": [
+                5,
+                6
+              ],
+              "firstLine": "fn work_units_rx(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {",
+              "lastLine": "// Best-effort: read the client slot synchronously via try_read."
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/history_models.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "firstLine": "async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/workspace_history.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "async fn persistence_add_history(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-transport-parity for persistence_get_history",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "198-238",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                26,
+                27,
+                28,
+                30,
+                31
+              ],
+              "firstLine": "// returns a closed receiver — the App's subscriber task observes",
+              "lastLine": "Ok(guard) => match guard.as_ref() {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-transport-parity for persistence_search_history",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "241-289",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/history_models.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "292-317",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
                 145,
                 146,
                 147,
@@ -33,277 +363,10 @@
                 165,
                 166,
                 167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "FspecBackend trait declares the three new history methods with matching signatures",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "90-113",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
-              "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "EmbeddedFspecBackend.persistence_add_history persists into the lifted core store via FspecServiceImpl",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "115-135",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
-              "lines": [
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "EmbeddedFspecBackend.persistence_get_history returns the texts of the most recent entries newest-first",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "137-162",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "EmbeddedFspecBackend.persistence_search_history returns HistoryMatch values with text, session_id, and ISO timestamp",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "164-204",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
-              "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
                 168
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "WebSocketFspecBackend round-trips persistence_add_history over tarpc to the same core store",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "206-232",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
-              "lines": [
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Cross-transport-parity for persistence_get_history",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "234-274",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
-              "lines": [
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Cross-transport-parity for persistence_search_history",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "276-323",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
-              "lines": [
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
-          "lines": "325-349",
-          "implMappings": [
-            {
-              "file": "rust/rpc/src/lib.rs",
-              "lines": [
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630
-              ]
+              ],
+              "firstLine": "/// URL and return latency + success metadata.",
+              "lastLine": "enterprise_host: Option<String>,"
             }
           ]
         }
@@ -315,14 +378,19 @@
     "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec-tui/tests/rpc_persistence_history_rpc025/source_shape.rs",
       "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs"
     ],
     "implFiles": [
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs"
+      "rust/rpc/src/service_declaration/workspace.rs",
+      "rust/fspec-tui/src/transport/backend/core.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs",
+      "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+      "rust/rpc/src/service_implementation/workspace_history.rs",
+      "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
+      "rust/fspec-tui/src/transport/websocket/history_models.rs",
+      "rust/rpc/src/service_declaration/supervision_credentials.rs"
     ],
-    "totalLinesCovered": 449
+    "totalLinesCovered": 462
   }
 }

@@ -21,9 +21,12 @@ codelet-providers.workspace = true
 # PROV-120: App::bootstrap restores the TS-parity first-available startup model
 # via resolve_startup_model + load_persisted_model_string.
 codelet-sessions.workspace = true
+codelet-common.workspace = true
 # RPC-373: App::bootstrap starts the attachment viewer server; the board D key
 # opens FOUNDATION.md through it.
 codelet-attachment-viewer.workspace = true
+# BUG-431: per-app cache for attachments read from the daemon.
+tempfile.workspace = true
 # UPD-002: the /update slash command calls the shared download-verify-replace
 # engine (codelet-fspec-core::update) — the SAME engine the `fspec update` CLI
 # subcommand uses (rule [0]: one engine, no duplication). fspec-tui does NOT
@@ -83,11 +86,16 @@ dirs.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
+# tests/common: MockBackend state behind non-poisoning mutexes, so its
+# locks need no expect (BUG-366).
+parking_lot = { workspace = true }
+syn = { version = "2", features = ["full"] }
+quote = "1"
 wiremock = "0.6.5"
 keyring.workspace = true
 sha2.workspace = true
 insta.workspace = true
-tempfile.workspace = true
+tracing-subscriber.workspace = true # BUG-356: capture debug logs in tests
 tokio-test.workspace = true
 # RPC-079: NotificationDialog / StatusDialog auto-dismiss timer tests
 # use `#[tokio::test(start_paused = true)]` + `tokio::time::advance` to

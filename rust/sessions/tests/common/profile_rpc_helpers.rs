@@ -11,7 +11,7 @@ use codelet_sessions::SessionManager;
 use serde_json::Value;
 
 pub fn make_handle() -> Arc<dyn SessionManagerHandle> {
-    Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>
+    SessionManager::new() as Arc<dyn SessionManagerHandle>
 }
 
 /// RAII guard for the process-global `FSPEC_USER_DIR` env var. Captures the

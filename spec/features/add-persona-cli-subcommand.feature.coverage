@@ -62,7 +62,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -73,7 +75,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "101-141",
+          "lines": "101-148",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -130,7 +132,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -141,7 +145,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "146-174",
+          "lines": "154-181",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -198,7 +202,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -209,7 +215,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "179-200",
+          "lines": "187-210",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -266,7 +272,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -277,7 +285,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "205-236",
+          "lines": "216-251",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -334,7 +342,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -345,7 +355,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "241-260",
+          "lines": "257-275",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -402,7 +412,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -413,7 +425,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "265-286",
+          "lines": "281-301",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -470,7 +482,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -481,7 +495,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_persona.rs",
-          "lines": "291-334",
+          "lines": "307-358",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_persona.rs",
@@ -538,7 +552,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "//   ✗ foundation.json not found"
             }
           ]
         }
@@ -555,6 +571,6 @@
     "implFiles": [
       "rust/fspec/src/add_persona.rs"
     ],
-    "totalLinesCovered": 655
+    "totalLinesCovered": 673
   }
 }

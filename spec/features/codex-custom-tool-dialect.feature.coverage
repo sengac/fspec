@@ -217,7 +217,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -426,7 +428,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             }
           ]
         }
@@ -649,7 +653,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -858,7 +864,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             }
           ]
         }
@@ -1081,7 +1089,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -1290,7 +1300,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             }
           ]
         }
@@ -1513,7 +1525,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -1722,7 +1736,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             }
           ]
         }
@@ -1945,7 +1961,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -2154,7 +2172,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             }
           ]
         }

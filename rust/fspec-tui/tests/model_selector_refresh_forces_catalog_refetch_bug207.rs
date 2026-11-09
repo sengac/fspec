@@ -9,14 +9,12 @@
 //! awaited BEFORE `backend.list_providers()` (ordering proven via the
 //! `call_log` sequence in `tests/common/mod.rs`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, ViewMode};
 use codelet_rpc_types::ProviderInfo;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -24,29 +22,34 @@ use common::MockBackend;
 /// Drain every pending tokio task spawned by `App::dispatch` AND fold
 /// any queued action_tx messages back into the App. Mirrors the helper
 /// in `provider_settings_dispatch_rpc054.rs`.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn pinfo(id: &str) -> ProviderInfo {
@@ -58,14 +61,14 @@ fn pinfo(id: &str) -> ProviderInfo {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn model_selector_refresh_forces_catalog_refetch_before_relisting() {
+async fn model_selector_refresh_forces_catalog_refetch_before_relisting() -> TestResult {
     // @step Given the model selector is open
     let mock = Arc::new(MockBackend::new());
     mock.seed_providers(vec![pinfo("openai")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::OpenModelSelectorView);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().active_view, ViewMode::ModelSelector);
     // The open action itself lists providers once; snapshot the log so
     // the assertions below only consider calls made by the refresh.
@@ -73,18 +76,21 @@ async fn model_selector_refresh_forces_catalog_refetch_before_relisting() {
         || mock.list_providers_calls() >= 1,
         "initial list_providers from open",
     )
-    .await;
+    .await?;
     let calls_before_refresh = mock.call_log().len();
-    assert_eq!(&mock.call_log()[calls_before_refresh - 1..], ["list_providers"]);
+    assert_eq!(
+        &mock.call_log()[calls_before_refresh - 1..],
+        ["list_providers"]
+    );
 
     // @step When the refresh action is triggered
     app.dispatch(Action::RefreshModelSelector);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || mock.refresh_models_cache_calls() >= 1,
         "refresh_models_cache awaited",
     )
-    .await;
+    .await?;
 
     // @step Then the models cache is force-refreshed before the provider list is fetched
     // (ordering proven by the call_log: refresh_models_cache("") must
@@ -101,4 +107,5 @@ async fn model_selector_refresh_forces_catalog_refetch_before_relisting() {
         Some(""),
         "the model selector refresh spans all providers → empty provider id"
     );
+    Ok(())
 }

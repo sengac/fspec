@@ -106,7 +106,9 @@
                 151,
                 152,
                 153
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -183,7 +185,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "for (status, ids) in ordered {",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,7 +207,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "// Foundation guard (parity with displayBoard's checkFoundationExists at",
+              "lastLine": "check_foundation_exists(project_root, \"fspec board\")?;"
             }
           ]
         }
@@ -300,7 +306,9 @@
                 151,
                 152,
                 153
-              ]
+              ],
+              "firstLine": "let data: WorkUnitsData = ensure_work_units_file(project_root)?;",
+              "lastLine": "}"
             }
           ]
         }

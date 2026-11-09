@@ -1,4 +1,7 @@
+@BUG-582
 @CMPCT-025
+@codelet
+@code-analysis
 Feature: Replace stringly-typed is_compaction_cancelled with structural PromptError downcast
   """
   Uses anyhow::Error::chain() to walk the entire source chain; at each link, attempts downcast_ref::<PromptError>() to match the typed variant. This preserves the public signature while replacing stringly-typed substring matching.
@@ -55,3 +58,21 @@ Feature: Replace stringly-typed is_compaction_cancelled with structural PromptEr
     Given an anyhow::Error built from PromptError::MaxDepthError
     When is_compaction_cancelled is called with that error
     Then the function returns false
+
+  Scenario: StreamingError::Prompt with PromptCancelled is detected via Error::from conversion
+    Given a StreamingError::Prompt containing Box(PromptError::PromptCancelled) is created
+    When the error is converted using the production path anyhow::Error::from(e)
+    Then extract_prompt_cancelled returns Some(chat_history)
+    And the typed error chain is preserved for downstream downcast_ref extraction
+
+  Scenario: Bare string errors are not mistaken for PromptCancelled
+    Given an anyhow::Error created via anyhow::Error::msg("PromptCancelled")
+    When is_compaction_cancelled is called on that error
+    Then the function returns false
+    And bare string errors are correctly rejected as non-typed cancellations
+
+  Scenario: Error::from path preserves downcast capability for extract_prompt_cancelled
+    Given a StreamingError::Prompt(Box(PromptError::PromptCancelled)) is created
+    When the error is converted via anyhow::Error::from(e) which matches production
+    Then the error chain preserves the original StreamingError and PromptError types
+    And extract_prompt_cancelled successfully downcasts and returns Some(chat_history)

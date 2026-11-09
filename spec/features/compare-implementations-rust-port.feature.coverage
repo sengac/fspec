@@ -72,7 +72,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "});"
             }
           ]
         }
@@ -199,7 +201,9 @@
                 190,
                 191,
                 192
-              ]
+              ],
+              "firstLine": "if matches {",
+              "lastLine": "mod tests {"
             }
           ]
         }
@@ -215,12 +219,6 @@
             {
               "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -246,9 +244,10 @@
                 94,
                 95,
                 96,
-                97,
-                98
-              ]
+                97
+              ],
+              "firstLine": "// Filter by tag and project down to `{tags}` (TS: wu => ({ tags })).",
+              "lastLine": "};"
             }
           ]
         }
@@ -264,7 +263,6 @@
             {
               "file": "rust/fspec-core/src/commands/compare_implementations.rs",
               "lines": [
-                52,
                 53,
                 54,
                 55,
@@ -276,57 +274,10 @@
                 61,
                 62,
                 63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
+                64
+              ],
+              "firstLine": "// ---- Query work units (parity with queryWorkUnits({tag})) ----",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -343,6 +294,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/compare_implementations.rs"
     ],
-    "totalLinesCovered": 387
+    "totalLinesCovered": 330
   }
 }

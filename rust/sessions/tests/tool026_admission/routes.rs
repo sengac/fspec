@@ -28,7 +28,7 @@ pub async fn admit_ordered_calls(fixture: &Fixture) -> Result<PendingCall> {
     let mut input: Value = serde_json::from_str(&args("AUTH-001"))?;
     input["fail"] = json!(true);
     let task = tokio::spawn(async move { slow.call_tool("probe", &input.to_string()).await });
-    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while calls.lock().map(|calls| calls.is_empty()).unwrap_or(false) {
             tokio::task::yield_now().await;
         }

@@ -255,9 +255,15 @@ fn shared_infrastructure_is_reused_without_duplication() {
         src.contains("ensure_work_units_file"),
         "repair_work_units.rs must reference `ensure_work_units_file`; got:\n{src}"
     );
+    // BUG-699: since WT-018 every board write goes through the one board
+    // writer, io::board::write_work_units, never a direct atomic JSON write.
     assert!(
-        src.contains("write_json_atomic"),
-        "repair_work_units.rs must reference `write_json_atomic`; got:\n{src}"
+        src.contains("crate::io::board::write_work_units(project_root, &data)"),
+        "repair_work_units.rs must write the board with `io::board::write_work_units`; got:\n{src}"
+    );
+    assert!(
+        !src.contains("write_json_atomic"),
+        "repair_work_units.rs must not write the board with `write_json_atomic`; got:\n{src}"
     );
 
     // @step Then the source is no longer a NotYetPorted stub

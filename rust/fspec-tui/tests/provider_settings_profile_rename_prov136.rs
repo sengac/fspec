@@ -11,12 +11,11 @@
 //! old key. Persistence-layer rename coverage lives in the codelet-sessions
 //! `profile_persistence_tests.rs` unit module.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::profile_form::ProfileForm;
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -28,12 +27,12 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 fn save_action(ev: ProviderSettingsEvent) -> Option<(String, String, Option<String>)> {
@@ -95,7 +94,7 @@ fn edit_view(profile_name: &str) -> ProviderSettingsView {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn up_arrow_re_enters_name_field_in_edit_mode() {
+fn up_arrow_re_enters_name_field_in_edit_mode() -> TestResult {
     // @step Given the edit profile form is open for the profile "work-vllm"
     let mut view = edit_view("work-vllm");
 
@@ -103,7 +102,7 @@ fn up_arrow_re_enters_name_field_in_edit_mode() {
     view.handle_key(key(KeyCode::Up));
 
     // @step Then the name field becomes editable
-    assert!(form_of(&view).is_editing_name);
+    assert!(form_of(&view)?.is_editing_name);
 
     // @step Given the cursor is focused on the Base URL field
     // (the Up above moved focus back onto the editable name from field 0)
@@ -112,7 +111,8 @@ fn up_arrow_re_enters_name_field_in_edit_mode() {
     view.handle_key(key(KeyCode::Char('2')));
 
     // @step Then the profile name becomes "work-vllm2"
-    assert_eq!(form_of(&view).name, "work-vllm2");
+    assert_eq!(form_of(&view)?.name, "work-vllm2");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ fn up_arrow_re_enters_name_field_in_edit_mode() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn edit_mode_save_emits_original_name_as_old_profile_name() {
+fn edit_mode_save_emits_original_name_as_old_profile_name() -> TestResult {
     // @step Given the edit profile form is open for the profile "work-vllm"
     let mut view = edit_view("work-vllm");
 
@@ -135,11 +135,12 @@ fn edit_mode_save_emits_original_name_as_old_profile_name() {
     let ev = view.handle_key(key(KeyCode::Enter));
 
     // @step Then the config has a profile named "work-vllm-2"
-    let (provider_id, new_name, old_name) = save_action(ev).expect("SaveProfile emitted");
+    let (provider_id, new_name, old_name) = save_action(ev).or_fail("SaveProfile emitted")?;
     assert_eq!(provider_id, "openai");
     assert_eq!(new_name, "work-vllm-2");
     // @step Then the config no longer has a profile named "work-vllm"
     assert_eq!(old_name.as_deref(), Some("work-vllm"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -147,7 +148,7 @@ fn edit_mode_save_emits_original_name_as_old_profile_name() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_name_cannot_be_saved() {
+fn empty_name_cannot_be_saved() -> TestResult {
     // @step Given the edit profile form is open for the profile "work-vllm"
     let mut view = edit_view("work-vllm");
 
@@ -165,4 +166,5 @@ fn empty_name_cannot_be_saved() {
         view.mode,
         ProviderSettingsMode::EditProfile { .. }
     ));
+    Ok(())
 }

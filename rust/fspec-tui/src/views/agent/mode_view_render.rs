@@ -81,8 +81,12 @@ pub(crate) fn render_two_span_title_label(area: Rect, buf: &mut Buffer, name: &s
     Paragraph::new(line).render(area, buf);
 }
 
+/// TUI-131: paint the footer hint wrapped to `area`'s width, so a hint
+/// wider than the screen is shown whole on the rows the full-screen shell
+/// sized for it (`full_screen_shell::scaffold_rects`).
 pub(crate) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &str) {
-    Paragraph::new(text.to_string()).render(area, buf);
+    let lines = super::text_wrap::wrapped_lines(text, usize::from(area.width), Style::default());
+    Paragraph::new(lines).render(area, buf);
 }
 
 /// TUI-096: Format a time delta (in seconds) as a human-readable "time ago"

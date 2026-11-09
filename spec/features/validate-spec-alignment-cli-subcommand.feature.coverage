@@ -41,7 +41,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,7 +66,9 @@
                 51,
                 52,
                 53
-              ]
+              ],
+              "firstLine": "match validate_spec_alignment::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -92,7 +96,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "} else {",
+              "lastLine": "}"
             }
           ]
         }
@@ -112,7 +118,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -159,7 +167,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -170,7 +180,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_validate_spec_alignment.rs",
-          "lines": "223-247",
+          "lines": "228-255",
           "implMappings": [
             {
               "file": "rust/fspec/src/validate_spec_alignment.rs",
@@ -216,7 +226,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "/// Strongly-typed args. Framing A: required positional `<workUnitId>` plus the",
+              "lastLine": "}"
             }
           ]
         }
@@ -233,6 +245,6 @@
     "implFiles": [
       "rust/fspec/src/validate_spec_alignment.rs"
     ],
-    "totalLinesCovered": 301
+    "totalLinesCovered": 304
   }
 }

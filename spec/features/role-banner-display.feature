@@ -1,4 +1,6 @@
 @TUI-081
+@tui
+@role
 Feature: Role banner display in AgentView
   """
   New RoleBanner component at src/tui/components/RoleBanner.tsx — reads role from sessionGetRole NAPI binding, renders conditionally below SessionHeader in AgentView.

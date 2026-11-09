@@ -1,0 +1,202 @@
+{
+  "scenarios": [
+    {
+      "name": "Text that matches two steps is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug505_delete_step_deletes_one_step_by_text.rs",
+          "lines": "28-41",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "// ---- Match the step by text OR (keyword + text).trim() ----",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keyword-qualified text deletes the one step it names",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug505_delete_step_deletes_one_step_by_text.rs",
+          "lines": "43-56",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "// ---- Match the step by text OR (keyword + text).trim() ----",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting a step deletes its data table",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug505_delete_step_deletes_one_step_by_text.rs",
+          "lines": "58-68",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "// ---- Remove the step line with its data table or doc string ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The help describes the step text argument",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug505_delete_step_deletes_one_step_by_text.rs",
+          "lines": "70-80",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/delete_step.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                46
+              ],
+              "firstLine": "name: \"step\",",
+              "lastLine": "usage: Some(\"fspec delete-step <file> <scenario> <step>\"),"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug505_delete_step_deletes_one_step_by_text.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/delete_step.rs",
+      "rust/fspec-core/src/help/configs/delete_step.rs"
+    ],
+    "totalLinesCovered": 163
+  }
+}

@@ -29,10 +29,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 #[cfg(feature = "test-support")]
-use std::sync::Arc;
-#[cfg(feature = "test-support")]
-use std::time::Duration;
-
 #[cfg(feature = "test-support")]
 use codelet_agent_loop::FspecAgentHooks;
 #[cfg(feature = "test-support")]
@@ -40,6 +36,8 @@ use codelet_rpc_types::{SessionStatus, StreamChunk};
 #[cfg(feature = "test-support")]
 use codelet_sessions::session_manager::SessionManager;
 use codelet_test_helpers::{assert_no_import_in_sources, assert_no_transitive_dependency};
+#[cfg(feature = "test-support")]
+use std::sync::Arc;
 #[cfg(feature = "test-support")]
 use uuid::Uuid;
 
@@ -67,16 +65,18 @@ async fn stub_provider_input_to_reply() {
     // codelet_common::get_data_dir(), which panics if the global data
     // dir is not initialised. Point it at a tempdir so the round-trip
     // test is hermetic.
-    let data_dir = tempfile::tempdir().expect("data dir tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
 
     // @step And build_service has been invoked, installing FspecAgentHooks on the SessionManager
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
 
     // @step And the stub LlmProvider is registered under the slug "stub"
     codelet_providers::stub_provider::register_stub_provider();
-    manager.set_default_model("stub/canned");
+    assert_eq!(manager.set_default_model("stub/canned"), Ok(()));
 
     // Subscribe to the manager-owned chunks broadcast BEFORE creating
     // the session so we don't miss any chunks.
@@ -108,56 +108,61 @@ async fn stub_provider_input_to_reply() {
 
     // @step Then within 5 seconds the chunks_tx broadcast yields a StreamChunk::Text with text "hi back"
     // @step And a StreamChunk::Done arrives after the Text chunk
+    // TEST-042: read the stream until Done, under the deadlock guard.
     let mut got_text = false;
     let mut got_done = false;
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
-    while tokio::time::Instant::now() < deadline {
-        let recv = tokio::time::timeout(Duration::from_millis(250), chunks_rx.recv()).await;
-        match recv {
-            Ok(Ok((sid, chunk))) => {
-                if sid.value != session_id_str {
-                    continue;
-                }
-                match chunk {
-                    StreamChunk::Text { text, .. } => {
-                        if text == "hi back" {
-                            got_text = true;
+    let _ = codelet_test_helpers::deadlock_guard("the Text and Done chunks", async {
+        loop {
+            match chunks_rx.recv().await {
+                Ok((sid, chunk)) => {
+                    if sid.value != session_id_str {
+                        continue;
+                    }
+                    match chunk {
+                        StreamChunk::Text { text, .. } => {
+                            if text == "hi back" {
+                                got_text = true;
+                            }
                         }
+                        StreamChunk::Done => {
+                            got_done = true;
+                            break;
+                        }
+                        _ => continue,
                     }
-                    StreamChunk::Done => {
-                        got_done = true;
-                        break;
-                    }
-                    _ => continue,
                 }
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
-            Ok(Err(_)) | Err(_) => continue,
         }
-    }
+    })
+    .await;
     assert!(
         got_text,
-        "expected StreamChunk::Text {{ text: \"hi back\" }} within 5s; got_text={got_text}",
+        "expected StreamChunk::Text {{ text: \"hi back\" }}; got_text={got_text}",
     );
     assert!(got_done, "expected StreamChunk::Done after the Text chunk");
 
     // @step And the session status returns to SessionStatus::Idle
     let mut saw_idle = false;
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(2);
-    while tokio::time::Instant::now() < deadline {
-        let recv = tokio::time::timeout(Duration::from_millis(250), status_rx.recv()).await;
-        match recv {
-            Ok(Ok((sid, status))) => {
-                if sid.value == session_id_str && status == SessionStatus::Idle {
-                    saw_idle = true;
-                    break;
+    let _ = codelet_test_helpers::deadlock_guard("the Idle status", async {
+        loop {
+            match status_rx.recv().await {
+                Ok((sid, status)) => {
+                    if sid.value == session_id_str && status == SessionStatus::Idle {
+                        saw_idle = true;
+                        break;
+                    }
                 }
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
-            Ok(Err(_)) | Err(_) => continue,
         }
-    }
+    })
+    .await;
     assert!(
         saw_idle,
-        "expected SessionStatus::Idle to broadcast within 2s of the Done chunk",
+        "expected SessionStatus::Idle to broadcast after the Done chunk",
     );
 }
 
@@ -219,12 +224,13 @@ fn build_service_installs_fspec_agent_hooks() {
         .join("common.rs");
 
     // @step When the source is inspected
-    let src = std::fs::read_to_string(&common_rs).unwrap_or_else(|e| {
-        panic!(
-            "must be able to read rust/fspec/src/common.rs at {}: {e}",
-            common_rs.display()
-        )
-    });
+    let src = codelet_test_helpers::source_composition::read_tree_or_file(&common_rs)
+        .unwrap_or_else(|e| {
+            panic!(
+                "must be able to read rust/fspec/src/common.rs at {}: {e}",
+                common_rs.display()
+            )
+        });
 
     // @step Then it imports codelet_agent_loop::FspecAgentHooks
     assert!(

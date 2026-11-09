@@ -6,12 +6,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "254-305",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -21,12 +16,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "311-331",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -36,12 +26,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "337-403",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -51,12 +36,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "409-447",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -66,12 +46,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "453-486",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -81,12 +56,7 @@
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
           "lines": "492-524",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -98,9 +68,7 @@
     "testFiles": [
       "src/tui/services/__tests__/codexModelInitialization.test.ts"
     ],
-    "implFiles": [
-      "src/tui/services/modelInitializationService.ts"
-    ],
-    "totalLinesCovered": 487
+    "implFiles": [],
+    "totalLinesCovered": 246
   }
 }

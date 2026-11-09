@@ -10,22 +10,22 @@ PREREQUISITES
   • At least one dependency relationship must exist to remove
 
 USAGE
-  fspec remove-dependency <workUnitId> [dependsOnId] [options]
+  fspec remove-dependency <workUnitId> [workUnitId] [options]
 
 ARGUMENTS
   <workUnitId> (required)
     Work unit ID to remove dependency from
-  [dependsOnId] (optional)
+  [workUnitId] (optional)
     Work unit ID to remove from dependsOn (shorthand for --depends-on)
 
 OPTIONS
-  --blocks <targetId>
+  --blocks <workUnitId>
     Remove blocks relationship (also removes reverse blockedBy from target)
-  --blocked-by <targetId>
+  --blocked-by <workUnitId>
     Remove blockedBy relationship (also removes reverse blocks from target)
-  --depends-on <targetId>
+  --depends-on <workUnitId>
     Remove dependsOn relationship (unidirectional)
-  --relates-to <targetId>
+  --relates-to <workUnitId>
     Remove relatesTo relationship (also removes reverse relatesTo from target)
 
 COMMON PATTERNS
@@ -33,7 +33,6 @@ COMMON PATTERNS
     Example: # After AUTH-001 is done, unblock dependent tasks
 fspec remove-dependency AUTH-001 --blocks API-001
 fspec remove-dependency AUTH-001 --blocks UI-001
-    undefined
 
   • Remove all dependencies for a work unit
     Example: # List current dependencies
@@ -42,11 +41,10 @@ fspec dependencies AUTH-002
 # Remove each dependency
 fspec remove-dependency AUTH-002 AUTH-001
 fspec remove-dependency AUTH-002 --relates-to UI-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Verify dependency exists: fspec dependencies <workUnitId> → 2. Remove dependency: fspec remove-dependency <workUnitId> --blocks <targetId> → 3. Verify removal: fspec dependencies <workUnitId>
+  1. Verify dependency exists: fspec dependencies <workUnitId> → 2. Remove dependency: fspec remove-dependency <workUnitId> --blocks <workUnitId> → 3. Verify removal: fspec dependencies <workUnitId>
 
 EXAMPLES
   1. Shorthand: Remove AUTH-001 from AUTH-002 dependsOn list
@@ -73,8 +71,8 @@ COMMON ERRORS
   ✗ Work unit 'AUTH-999' does not exist
     Fix: Verify the work unit ID exists with: fspec list-work-units
 
-  ✗ Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to
-    Fix: Provide either a second argument (dependsOnId) or one of the relationship flags
+  ✗ Must specify at least one relationship to remove: <workUnitId> or --blocks/--blocked-by/--depends-on/--relates-to
+    Fix: Provide either a second workUnitId or one of the relationship flags
 
   ✗ Cannot specify dependency both as argument and --depends-on option
     Fix: Use either shorthand (two arguments) OR --depends-on flag, not both

@@ -19,6 +19,10 @@
 //! - source-shape tests on stream_loop.rs (rpc082/083 precedent) pinning the
 //!   wiring order that cannot be driven without a live provider stream.
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use std::sync::Mutex;
 
 use codelet_cli::interactive::done_early_exit::{
@@ -61,36 +65,48 @@ impl StreamOutput for RecordingOutput {
     }
 }
 
-/// Build a Session without depending on a single-credential environment
-/// (mirrors auto_continue_engine_test.rs::fresh_session).
+/// An offline session for an explicitly selected provider, whatever this
+/// machine has credentialed (BUG-548).
 fn fresh_session() -> Session {
-    for name in ["claude", "openai", "gemini", "codex", "zai"] {
-        if let Ok(pm) = codelet_providers::ProviderManager::with_provider(name) {
-            return Session::from_provider_manager(pm);
-        }
-    }
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 fn stream_loop_source() -> String {
-    std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/interactive/stream_loop.rs"
-    ))
-    .expect("stream_loop.rs must be readable")
+    stream_loop_source_tree::stream_loop_source()
 }
 
 /// The `StreamUserItem(ToolResult)` arm region of stream_loop.rs — from the
 /// arm's pattern to the start of the next (`Usage`) arm.
-fn tool_result_arm_region(source: &str) -> &str {
-    let start = source
+/// BUG-306: the ToolResult arm is dispatched from stream_loop/driver.rs to
+/// stream_loop/tool_result.rs (`handle`, then `accepted` on an early exit).
+/// Inline both functions at their call sites so ordering claims read in
+/// execution order.
+fn tool_result_arm_region(_source: &str) -> String {
+    let driver = stream_loop_source_tree::stream_loop_module("driver");
+    let start = driver
         .find("StreamedUserContent::ToolResult")
-        .expect("stream_loop.rs must have a StreamUserItem(ToolResult) arm");
-    let end = source[start..]
+        .expect("driver must have a StreamUserItem(ToolResult) arm");
+    let end = driver[start..]
         .find("MultiTurnStreamItem::Usage")
         .expect("Usage arm must follow the ToolResult arm")
         + start;
-    &source[start..end]
+    let module = stream_loop_source_tree::stream_loop_module("tool_result");
+    let body = |name: &str| {
+        let at = module
+            .find(&format!("fn {name}<"))
+            .unwrap_or_else(|| panic!("tool_result::{name} must exist"));
+        let end = module[at..].find("\n}\n").expect("function end") + at;
+        module[at..end].to_owned()
+    };
+    driver[start..end]
+        .replace(
+            "super::tool_result::handle(result, &mut context, &mut state)?",
+            &body("handle"),
+        )
+        .replace(
+            "super::tool_result::accepted(&mut context, &mut state, &summary).await?;",
+            &body("accepted"),
+        )
 }
 
 // ============================================================================
@@ -383,6 +399,7 @@ fn pending_assistant_text_is_preserved_in_history_before_the_early_break() {
     // @step Given the model streamed explanation text before calling done
     let source = stream_loop_source();
     let arm = tool_result_arm_region(&source);
+    let arm = arm.as_str();
 
     // @step When the early exit fires at the ToolResult arm
     let consult = arm
@@ -392,7 +409,7 @@ fn pending_assistant_text_is_preserved_in_history_before_the_early_break() {
 
     // @step Then the early-exit block flushes pending assistant text into message history before breaking
     let flush = early_exit_block
-        .find("handle_final_response(&assistant_text, &mut session.messages)")
+        .find("handle_final_response(&state.assistant_text, &mut context.session.messages)")
         .expect("the early-exit block must flush pending assistant text (interrupt-path pattern)");
     let brk = early_exit_block
         .find("break;")
@@ -424,6 +441,7 @@ fn stream_loop_wiring_pins_early_exit_ordering_and_single_teardown_invariants() 
 
     // @step Then the ToolResult arm consults the early-exit decision only after handle_tool_result has paired the tool messages
     let arm = tool_result_arm_region(&source);
+    let arm = arm.as_str();
     let handle_pos = arm
         .find("handle_tool_result")
         .expect("the ToolResult arm must call handle_tool_result");

@@ -265,6 +265,18 @@ impl Tool for GenerateCompactionTool {
                     error = %e,
                     "[generate-compaction-tool] call EXIT with error"
                 );
+                // BUG-614: the caller's own generation installed nothing,
+                // so its turn continues on the current context. A missing
+                // handler stays a wiring error.
+                if target == self.session_id && has_generate_compaction_handler(self.session_id) {
+                    return Ok(json!({
+                        "status": "rejected_final",
+                        "installed": false,
+                        "error": e,
+                        "instruction": "Nothing was installed. Continue the task on the current context.",
+                    })
+                    .to_string());
+                }
                 Err(ToolError::Execution {
                     tool: Self::NAME,
                     message: e,

@@ -10,26 +10,63 @@
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
-                102,
-                103,
-                104,
-                105
-              ]
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/tool_admission.rs",
               "lines": [
                 9,
-                14,
-                15,
                 16,
-                17,
+                16,
+                16,
+                16,
                 23,
-                24,
-                30
-              ]
+                23,
+                26
+              ],
+              "firstLine": "pub(crate) fn register(session_id: Uuid, project: &str, manager: Weak<SessionManager>) {",
+              "lastLine": "register_session(session_id, PathBuf::from(project), handler, validator);"
             }
           ]
         }
@@ -45,24 +82,68 @@
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
-                96,
-                97,
-                102,
-                103,
-                104,
-                105
-              ]
-            },
-            {
-              "file": "rust/tools/src/tool_admission/registry.rs",
-              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
                 77,
                 78,
                 79,
                 80,
                 81,
-                84
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/tool_admission/registry.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "pub(super) fn admit(",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,18 +154,53 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tool026_admission.rs",
-          "lines": "95-126",
+          "lines": "95-127",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
-                102,
-                103,
-                104,
-                105
-              ]
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,18 +211,53 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tool026_admission.rs",
-          "lines": "128-153",
+          "lines": "135-170",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
-                102,
-                103,
-                104,
-                105
-              ]
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,18 +268,53 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tool026_admission.rs",
-          "lines": "155-175",
+          "lines": "172-192",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
-                102,
-                103,
-                104,
-                105
-              ]
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/focus_reconciliation.rs",
@@ -141,7 +327,9 @@
                 40,
                 65,
                 70
-              ]
+              ],
+              "firstLine": "id: &SessionId,",
+              "lastLine": "}"
             }
           ]
         }
@@ -152,18 +340,84 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tool026_admission.rs",
-          "lines": "177-201",
+          "lines": "194-218",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
+                98,
+                99,
+                100,
+                101,
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/tool_admission/auxiliary.rs",
@@ -176,20 +430,9 @@
                 67,
                 80,
                 81
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/compaction_builder.rs",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                77,
-                79
-              ]
+              ],
+              "firstLine": "let (trusted, authorization) = registry::trusted_context(owner)?;",
+              "lastLine": "Ok(InvocationReceipt {"
             }
           ]
         }
@@ -200,18 +443,53 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tool026_admission.rs",
-          "lines": "203-229",
+          "lines": "220-246",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_admission.rs",
               "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
-                102,
-                103,
-                104,
-                105
-              ]
+                98,
+                99
+              ],
+              "firstLine": "pub fn split_arguments(args: &str) -> Result<(WorkUnitAttribution, String), AttributionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/tool/middleware.rs",
@@ -224,7 +502,9 @@
                 57,
                 58,
                 60
-              ]
+              ],
+              "firstLine": "fn policy_id(&self) -> &'static str {",
+              "lastLine": ".into());"
             }
           ]
         }
@@ -244,9 +524,8 @@
       "rust/tools/src/tool_admission/registry.rs",
       "rust/sessions/src/focus_reconciliation.rs",
       "rust/tools/src/tool_admission/auxiliary.rs",
-      "rust/agent-loop/src/compaction_builder.rs",
       "rust/patches/rig-core/src/tool/middleware.rs"
     ],
-    "totalLinesCovered": 288
+    "totalLinesCovered": 560
   }
 }

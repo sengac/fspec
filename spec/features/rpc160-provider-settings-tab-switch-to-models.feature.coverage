@@ -36,7 +36,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "103-115",
+          "lines": "103-118",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -67,7 +67,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "118-159",
+          "lines": "121-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -98,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "162-185",
+          "lines": "171-195",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -141,7 +141,9 @@
                 181,
                 182,
                 183
-              ]
+              ],
+              "firstLine": "));",
+              "lastLine": "}"
             }
           ]
         }
@@ -152,7 +154,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "188-213",
+          "lines": "198-224",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -199,7 +201,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "216-243",
+          "lines": "227-254",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -239,7 +241,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "246-268",
+          "lines": "257-279",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -260,7 +262,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub enum ProviderSettingsEvent {",
+              "lastLine": "pub expanded: HashSet<String>,"
             }
           ]
         }
@@ -271,7 +275,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
-          "lines": "271-298",
+          "lines": "282-309",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -310,6 +314,6 @@
       "rust/fspec-tui/src/views/provider_settings/detail.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 384
+    "totalLinesCovered": 395
   }
 }

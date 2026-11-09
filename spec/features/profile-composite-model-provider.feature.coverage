@@ -1,0 +1,154 @@
+{
+  "scenarios": [
+    {
+      "name": "A profile-qualified model string parses to its provider",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug318_profile_composite_provider.rs",
+          "lines": "18-33",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "is_codex_model,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A session created from a profile-qualified default reports the provider",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug318_profile_composite_provider.rs",
+          "lines": "35-60",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {",
+              "lastLine": "is_codex_model,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug318_profile_composite_provider.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/model_parsing.rs"
+    ],
+    "totalLinesCovered": 144
+  }
+}

@@ -1,4 +1,6 @@
 @BRIDGE-008
+@tools
+@bridge
 Feature: Telegram Stream Control Channel
   """
   BridgeManager in rust/napi handles WebSocket connections and message routing. Control messages need to be handled in the input_receiver mpsc channel handler that processes incoming WebSocket messages.
@@ -44,7 +46,7 @@ Feature: Telegram Stream Control Channel
   Scenario: Handle unknown control action gracefully
     Given the bridge is connected to a session
     When the bridge receives a message with type "control" and action "unknown"
-    Then an error should be logged
+    Then a warning naming the unknown action should be logged
     And the bridge should not crash
     And the session should remain active
 

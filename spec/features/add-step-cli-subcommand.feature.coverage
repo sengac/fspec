@@ -32,7 +32,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-step` clap subcommand.",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -43,7 +45,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_step.rs",
-          "lines": "86-108",
+          "lines": "90-116",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_step.rs",
@@ -56,7 +58,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "} else {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -67,7 +71,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_step.rs",
-          "lines": "115-137",
+          "lines": "122-148",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_step.rs",
@@ -88,7 +92,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "match add_step::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -99,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_step.rs",
-          "lines": "144-164",
+          "lines": "154-175",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_step.rs",
@@ -118,7 +124,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-step` clap subcommand.",
+              "lastLine": ""
             }
           ]
         }
@@ -129,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_step.rs",
-          "lines": "171-213",
+          "lines": "181-225",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_step.rs",
@@ -142,7 +150,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "match add_step::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -159,6 +169,6 @@
     "implFiles": [
       "rust/fspec/src/add_step.rs"
     ],
-    "totalLinesCovered": 205
+    "totalLinesCovered": 216
   }
 }

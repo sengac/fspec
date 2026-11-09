@@ -86,11 +86,18 @@ impl Fixture {
     async fn request(&self, agent: CustomRigAgent) -> TestResult<String> {
         let exchange = async {
             let agent = agent.into_inner();
+            // BUG-337: like the stream driver, attribute the agent's tools
+            // before a request (custom providers reject unattributed tools).
+            codelet_tools::tool_attribution::configure_agent_tools(
+                &agent,
+                uuid::Uuid::new_v4().to_string(),
+            )
+            .await?;
             let (answer, request) = tokio::join!(agent.prompt("Verify dispatch"), self.receive());
             assert_eq!(answer?, "verified");
             request
         };
-        tokio::time::timeout(std::time::Duration::from_secs(5), exchange).await?
+        codelet_test_helpers::deadlock_guard("exchange", exchange).await?
     }
 
     async fn receive(&self) -> TestResult<String> {
@@ -126,11 +133,15 @@ impl Fixture {
     }
 
     async fn assert_no_request(&self) {
-        assert!(
-            tokio::time::timeout(std::time::Duration::from_millis(25), self.listener.accept())
-                .await
-                .is_err()
-        );
+        // TEST-042: no waiting window; 32 poll rounds and nothing connects.
+        let mut accepting = Box::pin(self.listener.accept());
+        let mut rounds = 0;
+        let none = codelet_test_helpers::pending_until("32 poll rounds", &mut accepting, || {
+            rounds += 1;
+            rounds > 32
+        })
+        .await;
+        assert!(none.is_ok(), "{none:?}");
     }
 }
 
@@ -146,7 +157,7 @@ impl Drop for Fixture {
 }
 
 const SCRIPT: &str = r#"
-fn build_request(request) { #{ messages: request.messages } }
+fn build_request(request) { #{ messages: request.messages, tools: request.tools } }
 fn build_stream_request(request) { #{} }
 fn build_headers(config) {
     #{ "x-model-id": config.model, "x-model-alias": config.model_alias }

@@ -36,6 +36,7 @@ async fn scenario_cold_reconciliation_preserves_saved_spend_and_newer_context_oc
             &mut manifest,
             &TokenUsage {
                 current_context_tokens: 333,
+                current_context_output_tokens: 0,
                 cumulative_billed_input: 5030,
                 cumulative_billed_output: 2900,
                 cache_read_tokens: 43,
@@ -73,12 +74,12 @@ async fn scenario_cold_reconciliation_preserves_saved_spend_and_newer_context_oc
     assert_eq!(inner.token_tracker.cumulative_billed_input, 5030);
     assert_eq!(inner.token_tracker.cumulative_billed_output, 2900);
     assert_eq!(inner.token_tracker.reasoning_tokens, 1100);
-    assert_eq!(background.get_tokens(), (333, 2900, Some(1100)));
+    assert_eq!(background.get_tokens(), (333, 1800, Some(1100)));
     let snapshot = background
         .committed_context_snapshot()
         .ok_or("missing reconciliation")?;
     assert_eq!(snapshot.tokens.input_tokens, 333);
-    assert_eq!(snapshot.tokens.output_tokens, 2900);
+    assert_eq!(snapshot.tokens.output_tokens, 1800);
     assert_eq!(snapshot.tokens.cumulative_billed_input, Some(5030));
     assert_eq!(snapshot.tokens.cumulative_billed_output, Some(2900));
     assert_eq!(snapshot.tokens.cache_read_input_tokens, Some(43));

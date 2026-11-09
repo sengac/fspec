@@ -1,4 +1,8 @@
+@BUG-582
 @CMPCT-019
+@BUG-306
+@codelet
+@context-management
 Feature: Incremental DAG Condensation
   """
   Only file modified: rust/cli/src/interactive_helpers.rs — add detect_existing_dag(), split instruction constants, update execute_compaction()
@@ -45,7 +49,7 @@ Feature: Incremental DAG Condensation
     And the FRESH instruction should tell the agent to call inject_summary
 
   Scenario: Second compaction uses INCREMENTAL instruction when existing DAG found
-    Given a session with conversation messages and an existing compaction-dag system-reminder
+    Given a session with conversation messages restored from a committed compaction DAG
     And the existing DAG contains dag-node blocks with max turn_end of 82
     When execute_compaction is called
     Then the injected user message should contain the INCREMENTAL compaction instruction
@@ -76,7 +80,7 @@ Feature: Incremental DAG Condensation
     When execute_compaction is called with a last_user_message of "implement the login feature"
     Then the injected message should contain the FRESH instruction
     And the injected message should contain "implement the login feature" as the resume prompt
-    Given a session with an existing DAG
+    Given a session restored from a committed compaction DAG
     When execute_compaction is called with a last_user_message of "fix the test"
     Then the injected message should contain the INCREMENTAL instruction
     And the injected message should contain "fix the test" as the resume prompt

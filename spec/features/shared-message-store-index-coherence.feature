@@ -1,3 +1,6 @@
+@BUG-582
+@done
+@BUG-519
 @phase-1
 @persistence
 @session-management
@@ -13,6 +16,14 @@ Feature: Shared message store index coherence
   committed manifests on disk, not a process-local session cache. It uses only
   nonblocking session lease probes and conservatively defers deletion while a
   writer could still be committing a message reference.
+  BUG-519: every writer publishes the index after its history, but on coarse
+  or multigrain filesystem clocks both files often share one modification
+  time. A strictly newer index is used as before. An index sharing the
+  history's modification time is reused with its completeness when its
+  completeness proof matches the current generation of both files exactly.
+  Without a matching proof it is reused only when its last record ends at the
+  history size and reads back with its own id and content hash, and it then
+  claims no completeness, so a lookup it cannot answer rescans the history.
   """
 
   Scenario: Independent stores retain every committed append after reopening
@@ -81,3 +92,26 @@ Feature: Shared message store index coherence
     When the stores append distinct messages concurrently
     Then a cold reopened store reads every committed message with its original content
     And reopening uses the saved index without rebuilding it
+
+  Scenario: Reopening reuses an index published in the same timestamp tick as its history
+    Given a store has committed messages and saved its index
+    And the saved index has the same modification time as the message history
+    When a cold store reopens the history
+    Then it reads every committed message with its original content
+    And reopening uses the saved index without rebuilding it
+
+  Scenario: Reopening keeps the completeness of a same-tick index whose proof matches both files
+    Given a store has committed messages and saved its index
+    And the saved index has the same modification time as the message history
+    And its completeness proof matches the current generation of both files
+    When a cold store reopens the history and appends a fresh message
+    Then reopening uses the saved index without rebuilding it
+    And the append publishes the index once without rescanning the history
+
+  Scenario: Reopening rebuilds a same-tick index whose last record no longer matches the history
+    Given a store has committed two messages and saved its index
+    And the message history is rewritten to the same size with the two records swapped
+    And the saved index has the same modification time as the message history
+    When a cold store reopens the history
+    Then it rebuilds the index from the history
+    And it reads every committed message with its original content

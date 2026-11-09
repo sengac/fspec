@@ -12,12 +12,10 @@
 //!   - Mux-aware redraw gate (R5);
 //!   - Refresh drop while the initial load is in flight (R4).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{Action, App, EmbeddedFspecBackend, FspecBackend, Navigator, ViewMode};
@@ -25,11 +23,12 @@ use codelet_rpc::SharedFspecService;
 use codelet_rpc_types::{ChangedFile, CheckpointCounts, CheckpointInfo, GitState, WorkspaceInfo};
 use tempfile::TempDir;
 
-use codelet_fspec_tui::views::multiplex::MuxPaneKind;
+use codelet_fspec_tui::views::multiplex::{MuxLayout, MuxPaneKind};
 use codelet_fspec_tui::views::{ChangedFilesView, CheckpointsView};
 
 mod common;
 use common::MockBackend;
+use common::TaskOutcome;
 
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -37,8 +36,8 @@ use common::MockBackend;
 
 /// Create a basic test git repository with an initial commit (mirrors
 /// `rust/git/tests/common/mod.rs::setup_test_repo`).
-fn setup_test_repo() -> TempDir {
-    let tmp_dir = tempfile::TempDir::new().expect("tempdir");
+fn setup_test_repo() -> Result<TempDir, codelet_test_helpers::TestError> {
+    let tmp_dir = tempfile::TempDir::new().or_fail("tempdir")?;
     let repo_path = tmp_dir.path();
     for args in [
         vec!["init"],
@@ -49,27 +48,42 @@ fn setup_test_repo() -> TempDir {
             .args(args)
             .current_dir(repo_path)
             .output()
-            .expect("git");
+            .or_fail("git")?;
     }
-    fs::write(repo_path.join("README.md"), "# Test Repository\n").expect("write README");
+    fs::write(repo_path.join("README.md"), "# Test Repository\n").or_fail("write README")?;
     std::process::Command::new("git")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
-        .expect("git add");
+        .or_fail("git add")?;
     std::process::Command::new("git")
         .args(["commit", "-m", "initial"])
         .current_dir(repo_path)
         .output()
-        .expect("git commit");
-    tmp_dir
+        .or_fail("git commit")?;
+    Ok(tmp_dir)
 }
 
 /// Build a `SharedFspecService` with a real (empty) watcher + the repo
 /// cwd attached, so the GitStateWatcher has a live cwd to read.
-fn service_for(repo: &Path) -> Arc<SharedFspecService> {
-    let watcher = Arc::new(WorkUnitsWatcher::new(repo).expect("watcher on temp repo"));
-    Arc::new(SharedFspecService::new(watcher).with_cwd(repo.to_path_buf()))
+fn service_for(repo: &Path) -> Result<Arc<SharedFspecService>, codelet_test_helpers::TestError> {
+    let watcher = Arc::new(WorkUnitsWatcher::new(repo).or_fail("watcher on temp repo")?);
+    Ok(Arc::new(
+        SharedFspecService::new(watcher).with_cwd(repo.to_path_buf()),
+    ))
+}
+
+/// BUG-657: bootstrap loads the checkpoint counts and the workspace info in
+/// a tracked background task; await the bootstrap's tasks, then fold what
+/// they sent.
+async fn settle_bootstrap(app: &mut App) -> TestResult {
+    while let Some(task) = app.next_pending_task() {
+        codelet_test_helpers::deadlock_guard("a bootstrap task", task)
+            .await?
+            .completed_or_cancelled()?;
+    }
+    drain_bus(app);
+    Ok(())
 }
 
 /// Dispatch every action currently on the bus (best-effort, no wait).
@@ -81,16 +95,22 @@ fn drain_bus(app: &mut App) {
 
 /// Wait (bounded) for `pred` to hold, draining the action bus on every
 /// iteration so push frames fold before the check.
-async fn wait_for<F: Fn(&App) -> bool>(app: &mut App, pred: F, timeout: Duration) {
-    let deadline = std::time::Instant::now() + timeout;
-    while std::time::Instant::now() < deadline {
-        drain_bus(app);
-        if pred(app) {
-            return;
+async fn wait_for<F: Fn(&App) -> bool>(
+    app: &mut App,
+    pred: F,
+) -> Result<(), codelet_test_helpers::TestError> {
+    // TEST-042: wait under the deadlock guard, not a deadline.
+    codelet_test_helpers::deadlock_guard("the awaited App state", async {
+        loop {
+            drain_bus(app);
+            if pred(app) {
+                return;
+            }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-    panic!("timeout: condition did not become true within {timeout:?}");
+    })
+    .await?;
+    Ok(())
 }
 
 fn changed_file(path: &str, staged: bool) -> ChangedFile {
@@ -116,24 +136,24 @@ fn checkpoint(work_unit_id: &str, name: &str) -> CheckpointInfo {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn the_chrome_bar_git_branch_indicator_updates_when_the_branch_changes_without_a_tui_restart()
-{
+async fn the_chrome_bar_git_branch_indicator_updates_when_the_branch_changes_without_a_tui_restart(
+) -> TestResult {
     // @step Given an App on the embedded transport whose AgentViewStore holds WorkspaceInfo with git_branch main from bootstrap
-    let tmp = setup_test_repo();
+    let tmp = setup_test_repo()?;
     let repo = tmp.path();
     std::process::Command::new("git")
         .args(["checkout", "-b", "main"])
         .current_dir(repo)
         .output()
-        .expect("git checkout -b main");
-    let service = service_for(repo);
+        .or_fail("git checkout -b main")?;
+    let service = service_for(repo)?;
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service,
     ));
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     let initial_branch = app
         .agent_view_store()
         .workspace()
@@ -145,24 +165,21 @@ async fn the_chrome_bar_git_branch_indicator_updates_when_the_branch_changes_wit
         .args(["checkout", "-b", "feature-x"])
         .current_dir(repo)
         .output()
-        .expect("git checkout -b feature-x");
+        .or_fail("git checkout -b feature-x")?;
 
     // @step Then the AgentViewStore workspace git_branch is feature-x and the BoardStore checkpoint counts are folded from the same GitState frame without a TUI restart
-    wait_for(
-        &mut app,
-        |a| {
-            a.agent_view_store()
-                .workspace()
-                .is_some_and(|w| w.git_branch.as_deref() == Some("feature-x"))
-        },
-        Duration::from_secs(5),
-    )
-    .await;
+    wait_for(&mut app, |a| {
+        a.agent_view_store()
+            .workspace()
+            .is_some_and(|w| w.git_branch.as_deref() == Some("feature-x"))
+    })
+    .await?;
     assert_eq!(
         app.board_store().checkpoint_counts(),
         CheckpointCounts { manual: 0, auto: 0 },
         "counts stay folded from the GitState stream (no checkpoints in repo)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -171,14 +188,14 @@ async fn the_chrome_bar_git_branch_indicator_updates_when_the_branch_changes_wit
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn the_bootstrap_git_state_subscriber_folds_frames_into_the_board_store_and_agent_view_store()
-{
+async fn the_bootstrap_git_state_subscriber_folds_frames_into_the_board_store_and_agent_view_store(
+) -> TestResult {
     // @step Given an App constructed with a backend whose git-state push channel is live, bootstrapped so the BoardStore holds CheckpointCounts { manual: 0, auto: 0 } and the AgentViewStore workspace git_branch is None
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     assert_eq!(
         app.board_store().checkpoint_counts(),
         CheckpointCounts { manual: 0, auto: 0 },
@@ -201,17 +218,13 @@ async fn the_bootstrap_git_state_subscriber_folds_frames_into_the_board_store_an
     });
 
     // @step Then app.board_store().checkpoint_counts() returns CheckpointCounts { manual: 1, auto: 0 } and app.agent_view_store().workspace().git_branch() is Some(main)
-    wait_for(
-        &mut app,
-        |a| {
-            a.board_store().checkpoint_counts() == CheckpointCounts { manual: 1, auto: 0 }
-                && a.agent_view_store()
-                    .workspace()
-                    .is_some_and(|w| w.git_branch.as_deref() == Some("main"))
-        },
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| {
+        a.board_store().checkpoint_counts() == CheckpointCounts { manual: 1, auto: 0 }
+            && a.agent_view_store()
+                .workspace()
+                .is_some_and(|w| w.git_branch.as_deref() == Some("main"))
+    })
+    .await?;
     assert_eq!(
         app.board_store().checkpoint_counts(),
         CheckpointCounts { manual: 1, auto: 0 }
@@ -222,6 +235,7 @@ async fn the_bootstrap_git_state_subscriber_folds_frames_into_the_board_store_an
             .and_then(|w| w.git_branch.clone()),
         Some("main".to_string())
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -229,13 +243,13 @@ async fn the_bootstrap_git_state_subscriber_folds_frames_into_the_board_store_an
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn entering_mux_mode_loads_un_loaded_lazy_panes_in_place() {
+async fn entering_mux_mode_loads_un_loaded_lazy_panes_in_place() -> TestResult {
     // @step Given an App whose changed-files and checkpoints views have not loaded yet
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     assert!(
         app.navigator_mut().changed_files.load.is_loading(),
         "fresh ChangedFilesView starts in its initial load"
@@ -249,33 +263,24 @@ async fn entering_mux_mode_loads_un_loaded_lazy_panes_in_place() {
     app.dispatch(Action::SessionCreated(codelet_rpc_types::SessionId::new(
         "s-1",
     )));
-    app.navigator_mut().mux.set_pane_list(
-        vec![
-            MuxPaneKind::Board,
-            MuxPaneKind::Agent,
-            MuxPaneKind::ChangedFiles,
-            MuxPaneKind::Checkpoints,
-        ],
-        None,
-    );
-    app.dispatch(Action::InputSubmitted("/mux on".to_string()));
+    if let Some(mux_layout) = MuxLayout::columns(&[
+        MuxPaneKind::Board,
+        MuxPaneKind::Agent,
+        MuxPaneKind::ChangedFiles,
+        MuxPaneKind::Checkpoints,
+    ]) {
+        app.navigator_mut().mux.set_layout(mux_layout);
+    }
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "/mux on".to_string()));
+    }
 
     // @step Then the ChangedFiles and Checkpoints panes run their initial open flows in place (reset view + spawn the list load) without flipping the whole view out of Mux
     assert_eq!(app.navigator().active_view, ViewMode::Mux);
 
     // Both panes' initial loads flush (MockBackend default: empty lists).
-    wait_for(
-        &mut app,
-        |a| !a.navigator().changed_files.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
-    wait_for(
-        &mut app,
-        |a| !a.navigator().checkpoints.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().changed_files.load.is_loading()).await?;
+    wait_for(&mut app, |a| !a.navigator().checkpoints.load.is_loading()).await?;
     assert!(
         mock.changed_files_calls() >= 1,
         "the ChangedFiles pane must have spawned the changed_files RPC (saw {})",
@@ -287,6 +292,7 @@ async fn entering_mux_mode_loads_un_loaded_lazy_panes_in_place() {
         mock.list_checkpoints_calls()
     );
     assert_eq!(app.navigator().active_view, ViewMode::Mux);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -295,7 +301,7 @@ async fn entering_mux_mode_loads_un_loaded_lazy_panes_in_place() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn refreshing_a_loaded_changed_files_view_keeps_the_selection_stable_by_path() {
+async fn refreshing_a_loaded_changed_files_view_keeps_the_selection_stable_by_path() -> TestResult {
     // @step Given a loaded changed-files view with file b.txt selected out of [a.txt, b.txt, c.txt]
     let mut view = ChangedFilesView::new();
     view.set_files(vec![
@@ -340,6 +346,7 @@ async fn refreshing_a_loaded_changed_files_view_keeps_the_selection_stable_by_pa
         Some("a.txt"),
         "a deleted selection falls back to the first row"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -348,7 +355,8 @@ async fn refreshing_a_loaded_changed_files_view_keeps_the_selection_stable_by_pa
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn refreshing_a_loaded_checkpoints_view_keeps_the_selection_stable_by_work_unit_and_name() {
+async fn refreshing_a_loaded_checkpoints_view_keeps_the_selection_stable_by_work_unit_and_name(
+) -> TestResult {
     // @step Given a loaded checkpoints view with checkpoint AUTH-001/alpha selected
     let mut view = CheckpointsView::new();
     view.set_checkpoints(vec![
@@ -380,6 +388,7 @@ async fn refreshing_a_loaded_checkpoints_view_keeps_the_selection_stable_by_work
         !view.is_loading(),
         "refresh must not re-open the loading dialog"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -388,20 +397,19 @@ async fn refreshing_a_loaded_checkpoints_view_keeps_the_selection_stable_by_work
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_redraw_gate_stays_open_while_a_rendered_mux_lazy_pane_is_loading() {
+fn the_redraw_gate_stays_open_while_a_rendered_mux_lazy_pane_is_loading() -> TestResult {
     // @step Given a Navigator in ViewMode::Mux whose rendered ChangedFiles pane has a LoadTracker stage in flight and no other view is loading
     let theme = Arc::new(codelet_fspec_tui::Theme::default());
     let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
     let mut nav = Navigator::new(theme, tx);
-    nav.mux.set_pane_list(
-        vec![
-            MuxPaneKind::Board,
-            MuxPaneKind::Agent,
-            MuxPaneKind::ChangedFiles,
-            MuxPaneKind::Checkpoints,
-        ],
-        None,
-    );
+    if let Some(mux_layout) = MuxLayout::columns(&[
+        MuxPaneKind::Board,
+        MuxPaneKind::Agent,
+        MuxPaneKind::ChangedFiles,
+        MuxPaneKind::Checkpoints,
+    ]) {
+        nav.mux.set_layout(mux_layout);
+    }
     // `enable_default` would clobber the pane list back to the 2-pane
     // preset — set the enabled flag directly instead.
     nav.mux.config_mut().enabled = true;
@@ -427,6 +435,7 @@ fn the_redraw_gate_stays_open_while_a_rendered_mux_lazy_pane_is_loading() {
         loading,
         "is_view_loading must be mux-aware: a rendered loading pane keeps the gate open"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -435,13 +444,13 @@ fn the_redraw_gate_stays_open_while_a_rendered_mux_lazy_pane_is_loading() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn a_git_state_refresh_of_a_view_still_in_its_initial_load_is_dropped() {
+async fn a_git_state_refresh_of_a_view_still_in_its_initial_load_is_dropped() -> TestResult {
     // @step Given an App whose changed-files view is still in its initial load (the list stage has not flushed)
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     // The view's initial load is in flight (MockBackend default: it has
     // already delivered the empty list → flush it so the App is at rest,
     // then re-arm the initial load by re-opening the view).
@@ -467,16 +476,12 @@ async fn a_git_state_refresh_of_a_view_still_in_its_initial_load_is_dropped() {
         "a refresh must not double-start the initial load (no extra changed_files RPC)"
     );
     // The original in-flight load flushes un-impeded.
-    wait_for(
-        &mut app,
-        |a| !a.navigator().changed_files.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().changed_files.load.is_loading()).await?;
     assert!(
         app.navigator().changed_files.load.is_loaded(),
         "the initial load completes un-impeded"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -485,13 +490,14 @@ async fn a_git_state_refresh_of_a_view_still_in_its_initial_load_is_dropped() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn git_state_frames_fold_counts_via_the_existing_checkpoint_counts_loaded_path() {
+async fn git_state_frames_fold_counts_via_the_existing_checkpoint_counts_loaded_path() -> TestResult
+{
     let mock = Arc::new(MockBackend::new());
     mock.set_checkpoint_counts(CheckpointCounts { manual: 5, auto: 2 });
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     // Bootstrap's RPC-015 poll left the store at (5, 2); re-stale it.
     app.board_store_mut()
         .set_checkpoint_counts(CheckpointCounts { manual: 0, auto: 0 });
@@ -504,25 +510,24 @@ async fn git_state_frames_fold_counts_via_the_existing_checkpoint_counts_loaded_
         changed_files: Vec::new(),
         checkpoints: Vec::new(),
     });
-    wait_for(
-        &mut app,
-        |a| a.board_store().checkpoint_counts() == CheckpointCounts { manual: 7, auto: 3 },
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| {
+        a.board_store().checkpoint_counts() == CheckpointCounts { manual: 7, auto: 3 }
+    })
+    .await?;
     assert_eq!(
         app.board_store().checkpoint_counts(),
         CheckpointCounts { manual: 7, auto: 3 }
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn unchanged_git_branch_frames_do_not_resend_workspace_info_loaded() {
+async fn unchanged_git_branch_frames_do_not_resend_workspace_info_loaded() -> TestResult {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
 
     let mut branch_frames = 0;
     mock.push_git_state_changed(GitState {
@@ -531,16 +536,12 @@ async fn unchanged_git_branch_frames_do_not_resend_workspace_info_loaded() {
         changed_files: Vec::new(),
         checkpoints: Vec::new(),
     });
-    wait_for(
-        &mut app,
-        |a| {
-            a.agent_view_store()
-                .workspace()
-                .is_some_and(|w| w.git_branch.as_deref() == Some("main"))
-        },
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| {
+        a.agent_view_store()
+            .workspace()
+            .is_some_and(|w| w.git_branch.as_deref() == Some("main"))
+    })
+    .await?;
     branch_frames += 1;
     // Same branch again: the store must already hold it (dedup — no new
     // WorkspaceInfoLoaded dispatch can clobber the cwd string).
@@ -550,13 +551,14 @@ async fn unchanged_git_branch_frames_do_not_resend_workspace_info_loaded() {
         changed_files: Vec::new(),
         checkpoints: Vec::new(),
     });
-    wait_for(
-        &mut app,
-        |a| a.board_store().checkpoint_counts() == CheckpointCounts { manual: 2, auto: 0 },
-        Duration::from_millis(500),
-    )
-    .await;
-    let info = app.agent_view_store().workspace().expect("workspace set");
+    wait_for(&mut app, |a| {
+        a.board_store().checkpoint_counts() == CheckpointCounts { manual: 2, auto: 0 }
+    })
+    .await?;
+    let info = app
+        .agent_view_store()
+        .workspace()
+        .or_fail("workspace set")?;
     assert_eq!(info.git_branch.as_deref(), Some("main"));
     assert_eq!(
         branch_frames, 1,
@@ -567,4 +569,5 @@ async fn unchanged_git_branch_frames_do_not_resend_workspace_info_loaded() {
         WorkspaceInfo::default().cwd,
         "cwd survives unchanged frames"
     );
+    Ok(())
 }

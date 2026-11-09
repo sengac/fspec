@@ -5,99 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_schedules.rs",
-          "lines": "332-398",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/list_schedules.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85
-              ]
-            }
-          ]
+          "lines": "356-419"
         }
       ]
     },
@@ -106,19 +14,21 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_schedules.rs",
-          "lines": "72-113",
+          "lines": "72-119",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
               "lines": [
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "mod generate_foundation_md;",
+              "lastLine": ""
             }
           ]
         }
@@ -129,7 +39,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_schedules.rs",
-          "lines": "257-326",
+          "lines": "266-342",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_schedules.rs",
@@ -194,7 +104,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `list-schedules` shell-facing CLI bridge (RPC-250).",
+              "lastLine": "/// it verbatim via `std::process::ExitCode::from(...)`."
             }
           ]
         }
@@ -209,10 +121,9 @@
       "rust/fspec/tests/cli_list_schedules.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/help/configs/list_schedules.rs",
       "rust/fspec/src/main.rs",
       "rust/fspec/src/list_schedules.rs"
     ],
-    "totalLinesCovered": 331
+    "totalLinesCovered": 256
   }
 }

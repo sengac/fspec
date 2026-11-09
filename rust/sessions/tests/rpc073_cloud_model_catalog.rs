@@ -175,7 +175,7 @@ fn model_entry_fields_are_mapped_from_the_models_dev_model() {
     // @step Then the entry display_name is "Claude Opus 4"
     assert_eq!(opus.display_name, "Claude Opus 4");
     // @step And the entry context_window is 200000
-    assert_eq!(opus.context_window, 200000);
+    assert_eq!(opus.context_window, Some(200000));
     // @step And the entry supports_reasoning is true
     assert!(opus.supports_reasoning);
     // @step And the entry supports_vision is true
@@ -188,7 +188,8 @@ fn list_providers_wires_cloud_model_catalog_into_the_model_selector() {
     let manifest = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let path = manifest.join("src").join("handle_impl.rs");
     // @step When the source is inspected
-    let src = std::fs::read_to_string(&path).expect("read handle_impl.rs");
+    let src = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .expect("read handle_impl.rs");
     // @step Then it references crate::cloud_models::cloud_model_entries
     assert!(
         src.contains("cloud_models::cloud_model_entries"),

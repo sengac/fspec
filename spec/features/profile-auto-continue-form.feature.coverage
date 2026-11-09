@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "73-100",
+          "lines": "71-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -65,7 +65,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "\"Preserve Thinking\",",
+              "lastLine": "/// edit mode since PROV-136)."
             }
           ]
         }
@@ -76,30 +78,73 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "104-123",
+          "lines": "103-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278
+              ],
+              "firstLine": "/// Mutable handle to the focused connection field's raw string (never the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
                 123,
                 124,
                 125,
@@ -173,27 +218,10 @@
                 193,
                 194,
                 195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
+                196
+              ],
+              "firstLine": "/// PROV-142: parse the Auto-Continue form field's raw string into the wire",
+              "lastLine": "}"
             }
           ]
         }
@@ -204,7 +232,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "127-143",
+          "lines": "130-149",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -224,7 +252,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "(Some(\"percentage\"), Some(v)) => format!(\"{v}%\"),",
+              "lastLine": "text => text.parse::<u32>().map(Some).map_err(|_| {"
             }
           ]
         }
@@ -235,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "147-164",
+          "lines": "152-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -258,7 +288,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "/// can rename too); retained to distinguish the create-mode default seed.",
+              "lastLine": "is_new: true,"
             }
           ]
         }
@@ -269,7 +301,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "168-185",
+          "lines": "174-193",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -292,7 +324,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "/// can rename too); retained to distinguish the create-mode default seed.",
+              "lastLine": "is_new: true,"
             }
           ]
         }
@@ -303,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov142_auto_continue_form.rs",
-          "lines": "189-227",
+          "lines": "196-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -336,7 +370,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "11 => &mut self.loop_repeat,",
+              "lastLine": "self.is_editing_name = true;"
             }
           ]
         }
@@ -354,6 +390,6 @@
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
       "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs"
     ],
-    "totalLinesCovered": 386
+    "totalLinesCovered": 428
   }
 }

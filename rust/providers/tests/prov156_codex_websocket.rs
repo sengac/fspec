@@ -7,8 +7,7 @@ use futures::{SinkExt, StreamExt};
 use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::providers::openai;
 use serde_json::{json, Value};
-use std::time::Duration;
-use tokio::{net::TcpListener, time::timeout};
+use tokio::net::TcpListener;
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 #[path = "fixtures/attempt_events.rs"]
@@ -17,7 +16,6 @@ mod attempt_events;
 pub mod fixture;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 type ServerResult = Result<Vec<Value>, Box<dyn std::error::Error + Send + Sync>>;
-const DEADLINE: Duration = Duration::from_secs(5);
 const DAG: &str = "<system-reminder><!-- type:compaction-dag -->committed DAG</system-reminder>";
 
 fn response(id: &str, tools: bool) -> Value {
@@ -38,7 +36,7 @@ async fn setup(
     let listener = TcpListener::bind("127.0.0.1:0").await?;
     let url = format!("http://{}", listener.local_addr()?);
     let task = tokio::spawn(async move {
-        timeout(DEADLINE, async move {
+        codelet_test_helpers::deadlock_guard("the awaited block", async move {
             let mut requests = Vec::new();
             for count in turns {
                 let (stream, _) = listener.accept().await?;
@@ -103,14 +101,17 @@ async fn complete(
 
 #[tokio::test]
 async fn enabled_sessions_reuse_sockets_with_full_current_dag_input() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given an explicitly enabled Codex session and a local Responses socket
         let (url, task) = setup(vec![2], false).await?;
         let model = model(&url, CodexWebSocketHandle::default())?;
         let mut messages = vec![rig::message::Message::user(DAG)];
+        // @step When two compatible requests extend the current DAG
         for prompt in ["inspect", "next suffix"] {
             complete(&model, prompt, &mut messages).await?;
         }
         let requests = task.await?.map_err(|error| error.to_string())?;
+        // @step Then one connection carries both complete inputs without a previous response identity
         assert_eq!(requests.len(), 2);
         for request in &requests {
             assert_eq!(request["type"], "response.create");
@@ -127,16 +128,19 @@ async fn enabled_sessions_reuse_sockets_with_full_current_dag_input() -> TestRes
 
 #[tokio::test]
 async fn changed_history_and_reset_preserve_full_current_input() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given a successful reusable Codex socket response
         let (url, task) = setup(vec![2, 1], false).await?;
         let handle = CodexWebSocketHandle::default();
         let model = model(&url, handle.clone())?;
         let mut messages = vec![rig::message::Message::user(DAG)];
         complete(&model, "initial", &mut messages).await?;
+        // @step When history changes and the session socket resets before another request
         complete(&model, "changed history", &mut messages).await?;
         handle.reset().await;
         complete(&model, "replacement", &mut messages).await?;
         let requests = task.await?.map_err(|error| error.to_string())?;
+        // @step Then the next request contains full input without a stale previous response identity
         assert_eq!(requests.len(), 3);
         for (request, prompt) in requests
             .iter()
@@ -154,7 +158,8 @@ async fn changed_history_and_reset_preserve_full_current_input() -> TestResult {
 
 #[tokio::test]
 async fn unsupported_handshakes_fail_without_transport_downgrade() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given a Codex server rejecting WebSocket upgrade as unsupported
         let server = wiremock::MockServer::start().await;
         wiremock::Mock::given(wiremock::matchers::method("GET"))
             .respond_with(wiremock::ResponseTemplate::new(426))
@@ -170,8 +175,10 @@ async fn unsupported_handshakes_fail_without_transport_downgrade() -> TestResult
             .expect(0)
             .mount(&server)
             .await;
+        // @step When an enabled session samples a response
         let observed =
             fixture::collect(model(&server.uri(), CodexWebSocketHandle::default())?).await?;
+        // @step Then the rejected upgrade remains visible and no SSE request or completion is published
         assert_eq!(observed.errors.len(), 1);
         assert!(observed.errors[0].contains("426"), "{observed:?}");
         assert!(observed.finals.is_empty());
@@ -185,39 +192,45 @@ async fn unsupported_handshakes_fail_without_transport_downgrade() -> TestResult
 
 #[tokio::test]
 async fn authentication_fails_while_accepted_disconnects_recover_on_websocket() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given a rejected credential or a socket interrupted after accepting a request
         let server = wiremock::MockServer::start().await;
         wiremock::Mock::given(wiremock::matchers::method("GET"))
             .respond_with(wiremock::ResponseTemplate::new(401))
             .expect(1)
             .mount(&server)
             .await;
+        // @step When the transport reports the failure
         let observed =
             fixture::collect(model(&server.uri(), CodexWebSocketHandle::default())?).await?;
+        // @step Then authentication remains terminal while a bounded full-input WebSocket replacement completes without SSE
         assert_eq!(observed.errors.len(), 1);
         assert!(observed.finals.is_empty());
         assert_eq!(server.received_requests().await.ok_or("requests")?.len(), 1);
         let listener = TcpListener::bind("127.0.0.1:0").await?;
         let url = format!("http://{}", listener.local_addr()?);
-        let task = tokio::spawn(timeout(DEADLINE, async move {
-            let mut requests = Vec::new();
-            for attempt in 0..2 {
-                let (stream, _) = listener.accept().await?;
-                let mut socket = accept_async(stream).await?;
-                let request = socket.next().await.ok_or("request missing")??;
-                requests.push(serde_json::from_str::<Value>(request.to_text()?)?);
-                if attempt == 0 {
-                    socket.close(None).await?;
-                } else {
-                    socket
-                        .send(Message::Text(
-                            response("replacement", false).to_string().into(),
-                        ))
-                        .await?;
+        let task = tokio::spawn(codelet_test_helpers::deadlock_guard(
+            "the awaited block",
+            async move {
+                let mut requests = Vec::new();
+                for attempt in 0..2 {
+                    let (stream, _) = listener.accept().await?;
+                    let mut socket = accept_async(stream).await?;
+                    let request = socket.next().await.ok_or("request missing")??;
+                    requests.push(serde_json::from_str::<Value>(request.to_text()?)?);
+                    if attempt == 0 {
+                        socket.close(None).await?;
+                    } else {
+                        socket
+                            .send(Message::Text(
+                                response("replacement", false).to_string().into(),
+                            ))
+                            .await?;
+                    }
                 }
-            }
-            Ok::<_, Box<dyn std::error::Error + Send + Sync>>(requests)
-        }));
+                Ok::<_, Box<dyn std::error::Error + Send + Sync>>(requests)
+            },
+        ));
         let observed = fixture::collect(model(&url, CodexWebSocketHandle::default())?).await?;
         assert!(observed.errors.is_empty(), "{observed:?}");
         assert_eq!(observed.finals.len(), 1);
@@ -234,15 +247,16 @@ async fn authentication_fails_while_accepted_disconnects_recover_on_websocket() 
 
 #[tokio::test]
 async fn cancellation_retires_the_socket_within_a_bounded_deadline() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given an accepted Codex socket streaming partial output
         let listener = TcpListener::bind("127.0.0.1:0").await?;
         let url = format!("http://{}", listener.local_addr()?);
-        let task = tokio::spawn(timeout(DEADLINE, async move {
+        let task = tokio::spawn(codelet_test_helpers::deadlock_guard("the awaited block", async move {
             let (stream, _) = listener.accept().await?;
             let mut socket = accept_async(stream).await?;
             socket.next().await.ok_or("initial request missing")??;
             socket.send(Message::Text(json!({"type":"response.output_text.delta","item_id":"msg_partial","output_index":0,"content_index":0,"delta":"partial"}).to_string().into())).await?;
-            let (fresh, _) = timeout(Duration::from_millis(500), listener.accept()).await??;
+            let (fresh, _) = codelet_test_helpers::deadlock_guard("listener.accept()", listener.accept()).await??;
             let mut fresh = accept_async(fresh).await?;
             let request = fresh.next().await.ok_or("fresh request missing")??;
             fresh.send(Message::Text(response("resp_fresh", false).to_string().into())).await?;
@@ -251,8 +265,10 @@ async fn cancellation_retires_the_socket_within_a_bounded_deadline() -> TestResu
         let model = model(&url, CodexWebSocketHandle::default())?;
         let mut stream = model.stream(CompletionRequestBuilder::new(model.clone(), "hello").build()).await?.filter(attempt_events::is_content);
         assert!(stream.next().await.transpose()?.is_some());
+        // @step When its consumer cancels without server acknowledgement
         drop(stream);
-        let next = timeout(Duration::from_millis(500), fixture::collect(model)).await??;
+        // @step Then the socket is retired promptly and the next request starts a fresh full exchange
+        let next = codelet_test_helpers::deadlock_guard("fixture::collect(model)", fixture::collect(model)).await??;
         assert!(next.errors.is_empty(), "{next:?}");
         assert_eq!(next.text, "Hello");
         let request = task.await??.map_err(|error| error.to_string())?;
@@ -264,17 +280,20 @@ async fn cancellation_retires_the_socket_within_a_bounded_deadline() -> TestResu
 
 #[tokio::test]
 async fn socket_and_sse_transcripts_preserve_observable_provider_behavior() -> TestResult {
-    timeout(DEADLINE, async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        // @step Given equivalent Codex transcripts over a socket and SSE and an ordinary Responses client
         let (url, task) = setup(vec![1], true).await?;
         let socket = model(&url, CodexWebSocketHandle::default())?;
         let server =
             fixture::Server::start(vec![fixture::event(response("resp_1", true)); 2], false)
                 .await?;
+        // @step When each consumes text reasoning usage and tool output
         let websocket = fixture::collect(socket).await?;
         let (sse, ordinary) = server.models()?;
         let http = fixture::collect(sse).await?;
         let _ = fixture::collect(ordinary).await?;
         task.await?.map_err(|error| error.to_string())?;
+        // @step Then Codex produces equivalent observable events and ordinary Responses remains on HTTP
         assert!(websocket.errors.is_empty(), "{websocket:?}");
         assert!(http.errors.is_empty(), "{http:?}");
         assert_eq!(websocket.text, http.text);

@@ -16,9 +16,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
-use crate::components::menu_bar::{
-    dropdown_rect, paint_menu_bar, render_menu_dropdown, MenuLayout,
-};
+use crate::components::menu_bar::{dropdown_rect, render_menu_dropdown, MenuLayout};
 use crate::store::AgentViewStore;
 use crate::theme::Theme;
 
@@ -35,8 +33,10 @@ pub(crate) fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
-/// Paint the mux menu bar into `area` (row 0) and cache the geometry.
-/// `None` (painting nothing) when the area is too small for the bar.
+/// Paint the mux menu bar into the top rows of `area` (MUX-013: one row,
+/// or more when the buttons wrap — [`super::menu_bar_rows::bar_height`])
+/// and cache the geometry. `None` (painting nothing) when the area is too
+/// small for the bar.
 pub fn paint_bar(
     layout: &mut MultiplexLayout,
     area: Rect,
@@ -60,9 +60,10 @@ pub fn paint_bar(
         x: area.x,
         y: area.y,
         width: area.width,
-        height: 1,
+        height: super::menu_bar_rows::bar_height(area.width),
     };
-    let menu_layout = paint_menu_bar(bar_rect, buf, &snapshot, theme)?;
+    let (menu_layout, zone_c_rects) =
+        super::menu_bar_rows::paint_rows(bar_rect, buf, &snapshot, theme)?;
     let open_panel = open.and_then(|(cat, _)| {
         let item_x = menu_layout
             .item_rects
@@ -78,6 +79,7 @@ pub fn paint_bar(
         .map(|(cell, rect)| (*cell, *rect))
         .collect();
     layout.cache_menu_geometry(menu_layout.item_rects.clone(), cells, open_panel);
+    layout.cache_bar_rows(bar_rect, zone_c_rects);
     Some(menu_layout)
 }
 
@@ -108,7 +110,7 @@ mod tests {
     fn enabled_layout(panes: Vec<MuxPaneKind>) -> MultiplexLayout {
         let mut m = MultiplexLayout::new();
         m.enable_default();
-        m.set_pane_list(panes, None);
+        m.set_layout(crate::views::multiplex::MuxLayout::columns(&panes).unwrap());
         m
     }
 

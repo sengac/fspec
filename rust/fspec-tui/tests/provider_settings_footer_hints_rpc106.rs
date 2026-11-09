@@ -8,8 +8,7 @@
 //! keybind labels — exactly mirroring the TS `getFooterHints` reference at
 //! `src/tui/utils/providerSettingsHelpers.ts:16-33`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::collections::HashSet;
 
 use codelet_fspec_tui::views::provider_settings::footer_hints::{footer_hint_for, FOOTER_COMMON};
@@ -65,6 +64,12 @@ fn anthropic_oauth() -> ProviderDisplayInfo {
     }
 }
 
+/// TUI-132: `d` deletes credentials only for a configured provider.
+fn configured(mut provider: ProviderDisplayInfo) -> ProviderDisplayInfo {
+    provider.configured = true;
+    provider
+}
+
 fn view_with(provider: ProviderDisplayInfo, expanded_ids: &[&str]) -> ProviderSettingsView {
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![provider]);
@@ -78,12 +83,12 @@ fn view_with(provider: ProviderDisplayInfo, expanded_ids: &[&str]) -> ProviderSe
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: Provider row selection yields the "Enter: expand" hint with
+// Scenario: Provider row selection yields the "Enter/→: expand" hint with
 //           FOOTER_COMMON suffix
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn provider_row_yields_enter_expand_hint() {
+fn provider_row_yields_enter_expand_hint() -> TestResult {
     // @step Given the ProviderSettingsView has a Provider nav-item selected
     let mut view = view_with(openai_with_profiles(&[]), &[]);
     view.selected_index = 0;
@@ -91,11 +96,12 @@ fn provider_row_yields_enter_expand_hint() {
     // @step When I read the footer hint
     let hint = view.footer_hint();
 
-    // @step Then the hint equals "Enter: expand · / filter · Tab: Switch to models · Esc: close"
+    // @step Then the hint equals "Enter/→: expand · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint, "Enter: expand · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter/→: expand · / filter · Tab: Switch to models · Esc: close",
         "provider-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -103,11 +109,11 @@ fn provider_row_yields_enter_expand_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn api_key_row_yields_enter_edit_d_delete_hint() {
-    // @step Given the ProviderSettingsView has an ApiKey nav-item selected
+fn api_key_row_yields_enter_edit_d_delete_hint() -> TestResult {
+    // @step Given the ProviderSettingsView has the ApiKey nav-item of a configured provider selected
     // (anthropic expanded → row 0 provider, row 1 oauth-status, row 2 oauth-login,
     //  row 3 api-key)
-    let mut view = view_with(anthropic_oauth(), &["anthropic"]);
+    let mut view = view_with(configured(anthropic_oauth()), &["anthropic"]);
     // Walk down to the ApiKey row.
     let api_key_idx = view
         .nav_items
@@ -118,7 +124,7 @@ fn api_key_row_yields_enter_edit_d_delete_hint() {
                 codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::ApiKey
             )
         })
-        .expect("anthropic-with-oauth must produce an ApiKey row");
+        .or_fail("anthropic-with-oauth must produce an ApiKey row")?;
     view.selected_index = api_key_idx;
 
     // @step When I read the footer hint
@@ -129,6 +135,7 @@ fn api_key_row_yields_enter_edit_d_delete_hint() {
         hint, "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
         "api-key-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -136,7 +143,7 @@ fn api_key_row_yields_enter_edit_d_delete_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn profile_row_yields_enter_edit_d_delete_hint() {
+fn profile_row_yields_enter_edit_d_delete_hint() -> TestResult {
     // @step Given the ProviderSettingsView has a Profile nav-item selected
     let mut view = view_with(openai_with_profiles(&["prof1"]), &["openai"]);
     let profile_idx = view
@@ -148,7 +155,7 @@ fn profile_row_yields_enter_edit_d_delete_hint() {
                 codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::Profile { .. }
             )
         })
-        .expect("openai with one profile must produce a Profile row");
+        .or_fail("openai with one profile must produce a Profile row")?;
     view.selected_index = profile_idx;
 
     // @step When I read the footer hint
@@ -159,6 +166,7 @@ fn profile_row_yields_enter_edit_d_delete_hint() {
         hint, "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
         "profile-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -166,7 +174,7 @@ fn profile_row_yields_enter_edit_d_delete_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn add_profile_row_yields_enter_create_hint() {
+fn add_profile_row_yields_enter_create_hint() -> TestResult {
     // @step Given the ProviderSettingsView has an AddProfile nav-item selected
     let mut view = view_with(openai_with_profiles(&[]), &["openai"]);
     let add_idx = view
@@ -178,7 +186,7 @@ fn add_profile_row_yields_enter_create_hint() {
                 codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::AddProfile
             )
         })
-        .expect("expanded openai must produce an AddProfile row");
+        .or_fail("expanded openai must produce an AddProfile row")?;
     view.selected_index = add_idx;
 
     // @step When I read the footer hint
@@ -189,6 +197,7 @@ fn add_profile_row_yields_enter_create_hint() {
         hint, "Enter: create · / filter · Tab: Switch to models · Esc: close",
         "add-profile-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -196,14 +205,9 @@ fn add_profile_row_yields_enter_create_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn oauth_login_row_yields_enter_start_login_hint() {
+fn oauth_login_row_yields_enter_start_login_hint() -> TestResult {
     // @step Given the ProviderSettingsView has an OAuthLogin nav-item selected
     let mut view = view_with(anthropic_oauth(), &["anthropic"]);
-    // PROV-113: the `anthropic_oauth()` fixture declares only a Browser login
-    // method, and browser rows are now gated out of the nav tree unless the
-    // transport supports the local OAuth server. Enable it so an OAuthLogin
-    // row exists to focus (the hint is identical for browser/headless rows).
-    view.set_browser_login_enabled(true);
     let login_idx =
         view.nav_items
             .iter()
@@ -213,7 +217,7 @@ fn oauth_login_row_yields_enter_start_login_hint() {
             codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::OAuthLogin { .. }
         )
             })
-            .expect("anthropic expanded must produce an OAuthLogin row");
+            .or_fail("anthropic expanded must produce an OAuthLogin row")?;
     view.selected_index = login_idx;
 
     // @step When I read the footer hint
@@ -224,6 +228,7 @@ fn oauth_login_row_yields_enter_start_login_hint() {
         hint, "Enter: start login · / filter · Tab: Switch to models · Esc: close",
         "oauth-login-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -231,7 +236,7 @@ fn oauth_login_row_yields_enter_start_login_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn oauth_status_row_yields_enter_logout_hint() {
+fn oauth_status_row_yields_enter_logout_hint() -> TestResult {
     // @step Given the ProviderSettingsView has an OAuthStatus nav-item selected
     let mut view = view_with(anthropic_oauth(), &["anthropic"]);
     let status_idx =
@@ -243,7 +248,7 @@ fn oauth_status_row_yields_enter_logout_hint() {
             codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::OAuthStatus { .. }
         )
             })
-            .expect("anthropic-with-oauth-tokens expanded must produce an OAuthStatus row");
+            .or_fail("anthropic-with-oauth-tokens expanded must produce an OAuthStatus row")?;
     view.selected_index = status_idx;
 
     // @step When I read the footer hint
@@ -254,6 +259,7 @@ fn oauth_status_row_yields_enter_logout_hint() {
         hint, "Enter: logout · / filter · Tab: Switch to models · Esc: close",
         "oauth-status-row hint mismatch"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -261,7 +267,7 @@ fn oauth_status_row_yields_enter_logout_hint() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_nav_items_yields_footer_common_only() {
+fn empty_nav_items_yields_footer_common_only() -> TestResult {
     // @step Given the ProviderSettingsView has no nav-items
     let view = ProviderSettingsView::new();
     assert!(
@@ -274,6 +280,7 @@ fn empty_nav_items_yields_footer_common_only() {
 
     // @step Then the hint equals "/ filter · Tab: Switch to models · Esc: close"
     assert_eq!(hint, EXPECTED_FOOTER_COMMON, "empty-nav fallback mismatch");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -281,7 +288,7 @@ fn empty_nav_items_yields_footer_common_only() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn separator_is_middle_dot_never_pipe() {
+fn separator_is_middle_dot_never_pipe() -> TestResult {
     // @step Given the ProviderSettingsView has a Provider nav-item selected
     let mut view = view_with(openai_with_profiles(&[]), &[]);
     view.selected_index = 0;
@@ -299,6 +306,7 @@ fn separator_is_middle_dot_never_pipe() {
         !hint.contains('|'),
         "hint must NOT contain pipe '|': {hint:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -306,9 +314,9 @@ fn separator_is_middle_dot_never_pipe() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn keybind_labels_use_lowercase_colon_style() {
-    // @step Given the ProviderSettingsView has an ApiKey nav-item selected
-    let mut view = view_with(anthropic_oauth(), &["anthropic"]);
+fn keybind_labels_use_lowercase_colon_style() -> TestResult {
+    // @step Given the ProviderSettingsView has the ApiKey nav-item of a configured provider selected
+    let mut view = view_with(configured(anthropic_oauth()), &["anthropic"]);
     let api_key_idx = view
         .nav_items
         .iter()
@@ -318,7 +326,7 @@ fn keybind_labels_use_lowercase_colon_style() {
                 codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::ApiKey
             )
         })
-        .expect("anthropic-with-oauth must produce an ApiKey row");
+        .or_fail("anthropic-with-oauth must produce an ApiKey row")?;
     view.selected_index = api_key_idx;
 
     // @step When I read the footer hint
@@ -344,6 +352,7 @@ fn keybind_labels_use_lowercase_colon_style() {
         !hint.contains("Esc Cancel"),
         "hint must NOT contain 'Esc Cancel': {hint:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -352,14 +361,13 @@ fn keybind_labels_use_lowercase_colon_style() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn footer_updates_in_real_time_when_navigating_between_kinds() {
-    // @step Given the ProviderSettingsView lists OpenAI with one profile and the
-    // user starts on the OpenAI provider row
+fn footer_updates_in_real_time_when_navigating_between_kinds() -> TestResult {
+    // @step Given the ProviderSettingsView lists OpenAI with one profile and the user starts on the OpenAI provider row
     let mut view = view_with(openai_with_profiles(&["prof1"]), &["openai"]);
     view.selected_index = 0;
     assert_eq!(
         view.footer_hint(),
-        "Enter: expand · / filter · Tab: Switch to models · Esc: close",
+        "Enter/←: collapse · d: delete · / filter · Tab: Switch to models · Esc: close",
         "precondition: provider-row hint at index 0"
     );
 
@@ -379,7 +387,7 @@ fn footer_updates_in_real_time_when_navigating_between_kinds() {
                     } if profile_name == "prof1"
                 )
         })
-        .expect("OpenAI prof1 row must be present");
+        .or_fail("OpenAI prof1 row must be present")?;
     // @step Then the footer hint equals "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
         view.footer_hint(),
@@ -398,13 +406,14 @@ fn footer_updates_in_real_time_when_navigating_between_kinds() {
                     codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::AddProfile
                 )
         })
-        .expect("OpenAI add-profile row must be present");
+        .or_fail("OpenAI add-profile row must be present")?;
     // @step Then the footer hint equals "Enter: create · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
         view.footer_hint(),
         "Enter: create · / filter · Tab: Switch to models · Esc: close",
         "after selecting the OpenAI AddProfile row"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -413,7 +422,7 @@ fn footer_updates_in_real_time_when_navigating_between_kinds() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn footer_hint_renders_into_bottom_buffer_row() {
+fn footer_hint_renders_into_bottom_buffer_row() -> TestResult {
     // @step Given the ProviderSettingsView has a Provider nav-item selected
     let mut view = view_with(openai_with_profiles(&[]), &[]);
     view.selected_index = 0;
@@ -428,8 +437,8 @@ fn footer_hint_renders_into_bottom_buffer_row() {
     let mut buf = Buffer::empty(area);
     view.render(area, &mut buf);
 
-    // @step Then the bottom buffer row reads "Enter: expand · / filter · Tab: Switch to models · Esc: close" left-aligned
-    let expected = "Enter: expand · / filter · Tab: Switch to models · Esc: close";
+    // @step Then the bottom buffer row reads "Enter/→: expand · / filter · Tab: Switch to models · Esc: close" left-aligned
+    let expected = "Enter/→: expand · / filter · Tab: Switch to models · Esc: close";
     let mut row = String::new();
     for x in 0..area.width {
         row.push_str(buf[(x, area.height - 1)].symbol());
@@ -440,6 +449,7 @@ fn footer_hint_renders_into_bottom_buffer_row() {
         row.starts_with(expected),
         "bottom row prefix mismatch.\n  expected: {expected:?}\n  actual:   {row:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -447,7 +457,7 @@ fn footer_hint_renders_into_bottom_buffer_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn footer_hint_for_none_returns_footer_common_verbatim() {
+fn footer_hint_for_none_returns_footer_common_verbatim() -> TestResult {
     // @step Given the canonical FOOTER_COMMON string "/ filter · Tab: Switch to models · Esc: close"
     assert_eq!(
         FOOTER_COMMON, EXPECTED_FOOTER_COMMON,
@@ -455,10 +465,11 @@ fn footer_hint_for_none_returns_footer_common_verbatim() {
     );
 
     // @step When I call footer_hint_for with None
-    let result = footer_hint_for(None);
+    let result = footer_hint_for(None, false);
 
     // @step Then the returned string equals FOOTER_COMMON exactly
     assert_eq!(result, FOOTER_COMMON, "footer_hint_for(None) mismatch");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -467,54 +478,65 @@ fn footer_hint_for_none_returns_footer_common_verbatim() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn footer_hint_for_pure_dispatch_provider() {
+fn footer_hint_for_pure_dispatch_provider() -> TestResult {
+    // TUI-132: the hint names the arrow key for the row's state, and
+    // d: delete only when the provider is configured.
     assert_eq!(
-        footer_hint_for(Some(RowKind::Provider { expanded: false })),
-        "Enter: expand · / filter · Tab: Switch to models · Esc: close"
+        footer_hint_for(Some(RowKind::Provider { expanded: false }), false),
+        "Enter/→: expand · / filter · Tab: Switch to models · Esc: close"
     );
-    // Expansion state must not change the hint string.
     assert_eq!(
-        footer_hint_for(Some(RowKind::Provider { expanded: true })),
-        "Enter: expand · / filter · Tab: Switch to models · Esc: close"
+        footer_hint_for(Some(RowKind::Provider { expanded: true }), true),
+        "Enter/←: collapse · d: delete · / filter · Tab: Switch to models · Esc: close"
     );
+    Ok(())
 }
 
 #[test]
-fn footer_hint_for_pure_dispatch_api_key() {
+fn footer_hint_for_pure_dispatch_api_key() -> TestResult {
     assert_eq!(
-        footer_hint_for(Some(RowKind::ApiKey)),
+        footer_hint_for(Some(RowKind::ApiKey), true),
         "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     );
+    assert_eq!(
+        footer_hint_for(Some(RowKind::ApiKey), false),
+        "Enter: edit · / filter · Tab: Switch to models · Esc: close"
+    );
+    Ok(())
 }
 
 #[test]
-fn footer_hint_for_pure_dispatch_profile() {
+fn footer_hint_for_pure_dispatch_profile() -> TestResult {
     assert_eq!(
-        footer_hint_for(Some(RowKind::Profile)),
+        footer_hint_for(Some(RowKind::Profile), false),
         "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     );
+    Ok(())
 }
 
 #[test]
-fn footer_hint_for_pure_dispatch_add_profile() {
+fn footer_hint_for_pure_dispatch_add_profile() -> TestResult {
     assert_eq!(
-        footer_hint_for(Some(RowKind::AddProfile)),
+        footer_hint_for(Some(RowKind::AddProfile), false),
         "Enter: create · / filter · Tab: Switch to models · Esc: close"
     );
+    Ok(())
 }
 
 #[test]
-fn footer_hint_for_pure_dispatch_oauth_login() {
+fn footer_hint_for_pure_dispatch_oauth_login() -> TestResult {
     assert_eq!(
-        footer_hint_for(Some(RowKind::OauthLogin)),
+        footer_hint_for(Some(RowKind::OauthLogin), false),
         "Enter: start login · / filter · Tab: Switch to models · Esc: close"
     );
+    Ok(())
 }
 
 #[test]
-fn footer_hint_for_pure_dispatch_oauth_status() {
+fn footer_hint_for_pure_dispatch_oauth_status() -> TestResult {
     assert_eq!(
-        footer_hint_for(Some(RowKind::OauthStatus)),
+        footer_hint_for(Some(RowKind::OauthStatus), false),
         "Enter: logout · / filter · Tab: Switch to models · Esc: close"
     );
+    Ok(())
 }

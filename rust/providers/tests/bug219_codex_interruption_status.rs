@@ -4,6 +4,8 @@
 mod attempt_events;
 #[path = "fixtures/prov160.rs"]
 pub mod fixture;
+#[path = "fixtures/pending_phase.rs"]
+mod pending_phase;
 
 use codelet_providers::codex::{
     history::CodexHistory,
@@ -15,10 +17,7 @@ use rig::{
     completion::{CompletionModel, CompletionRequestBuilder},
     streaming::StreamedAssistantContent,
 };
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{Arc, Mutex};
 
 fn observe(handle: &CodexRecoveryHandle) -> Arc<Mutex<Vec<String>>> {
     let messages = Arc::new(Mutex::new(Vec::new()));
@@ -45,20 +44,16 @@ async fn scenario_ordinary_setup_and_body_cancellation_remain_silent() -> TestRe
             .stream(CompletionRequestBuilder::new(model.clone(), "Hello").build())
             .await?
             .filter(attempt_events::is_content);
-        assert!(
-            tokio::time::timeout(Duration::from_millis(150), stream.next())
-                .await
-                .is_err()
-        );
-        assert_eq!(handle.status(), None);
-        assert_eq!(
-            server
+        pending_phase::pending_until(&mut stream, || {
+            Ok(server
                 .requests
                 .lock()
                 .map_err(|_| "requests poisoned")?
-                .len(),
-            1
-        );
+                .len()
+                == 1)
+        })
+        .await?;
+        assert_eq!(handle.status(), None);
 
         // @step When the caller drops the pending stream before recovery begins
         drop(stream);
@@ -104,11 +99,7 @@ async fn scenario_active_recovery_cancellation_is_reported_exactly_once() -> Tes
         if !offline {
             stream.next().await.ok_or("missing partial text")??;
         }
-        assert!(
-            tokio::time::timeout(Duration::from_millis(150), stream.next())
-                .await
-                .is_err()
-        );
+        pending_phase::pending_until(&mut stream, || Ok(handle.status().is_some())).await?;
         assert_eq!(
             handle.status(),
             Some(if offline {
@@ -129,7 +120,8 @@ async fn scenario_active_recovery_cancellation_is_reported_exactly_once() -> Tes
         } else {
             None
         };
-        tokio::time::sleep(Duration::from_secs(6)).await;
+        // TEST-042: no waiting window; the stream was dropped and recovery
+        // reported cancelled above, so the notifications are final.
         let messages = messages.lock().map_err(|_| "messages poisoned")?;
         assert_eq!(messages.len(), 2);
         assert_eq!(
@@ -187,7 +179,7 @@ async fn scenario_terminal_completion_never_becomes_cancellation() -> TestResult
                 .await?;
 
             // @step When the caller drops the stream immediately after final or tool completion
-            tokio::time::timeout(Duration::from_secs(3), async {
+            codelet_test_helpers::deadlock_guard("the awaited block", async {
                 while let Some(event) = stream.next().await {
                     match event? {
                         StreamedAssistantContent::ToolCall(_) if with_tool => {

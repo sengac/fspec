@@ -19,7 +19,7 @@ Feature: List attachments CLI subcommand
 
   Scenario: list-attachments --help is byte-for-byte identical to TS reference output
     Given the fspec Rust binary at rust/target/release/fspec has been compiled
-    And the TS reference binary `node dist/index.js list-attachments --help` produces a documented 69-line block (LIST-ATTACHMENTS header through NOTES section, including the TS-quirks: typicalWorkflow array comma-joined, relatedCommands entries already prefixed with 'fspec ', commonErrors Fix:undefined)
+    And the help config for list-attachments documents its sections from LIST-ATTACHMENTS through NOTES, with a fix for each common error and each related command prefixed by 'fspec ' once
     When I run `./rust/target/release/fspec list-attachments --help` piped to non-TTY (no color codes)
     Then the command exits 0
     Then stdout is byte-for-byte identical to the TS reference output
@@ -30,8 +30,8 @@ Feature: List attachments CLI subcommand
     Then stdout contains the section header "OPTIONS" followed by "  No options available"
     Then stdout contains the section header "TYPICAL WORKFLOW"
     Then stdout contains the section header "EXAMPLES"
-    Then stdout contains the section header "COMMON ERRORS" with the literal token "Fix: undefined" twice
-    Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec fspec "
+    Then stdout contains the section header "COMMON ERRORS" with two fixes and no "undefined"
+    Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec " once
     Then stdout contains the section header "NOTES"
     Then stdout does NOT contain the substring '--status'
     Then stdout does NOT contain the substring '--prefix'
@@ -39,10 +39,10 @@ Feature: List attachments CLI subcommand
     Then stdout does NOT contain the substring '--format'
     Then stdout does NOT contain the substring '--workspace'
 
-  Scenario: CLI exits 2 when the required positional argument is missing
+  Scenario: CLI exits 1 when the required positional argument is missing
     Given an empty directory is set as the current working directory
     When I run `./rust/target/release/fspec list-attachments` (no positional) from that directory
-    Then the command exits with code 2
+    Then the command exits with code 1
     Then stderr names the missing required argument
 
   Scenario: CLI prints the empty-attachments sentinel and exits 0 when the work unit has no attachments

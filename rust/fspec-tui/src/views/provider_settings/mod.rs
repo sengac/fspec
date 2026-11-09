@@ -38,17 +38,15 @@ mod profile_form_streaming;
 mod profile_form_submit;
 pub mod profiles_config;
 pub mod projection;
+pub mod refresh;
 pub mod row_render;
 mod row_segments;
 mod settings_config;
 mod status_text;
-mod test_result;
 
 pub(crate) use copy::mask_secret;
 pub use mode::{DetailSub, ProviderSettingsMode};
 pub use nav_item::{NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
-pub use status_text::DetailStatus;
-pub use test_result::{ProviderTestResult, ProviderTestStatus};
 
 pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
 
@@ -77,27 +75,20 @@ pub struct ProviderSettingsView {
     pub filter_mode: bool,
     pub delete_confirm: Option<ConfirmDialog>,
     pub status: String,
-    /// RPC-158: inline test-result decoration (see `test_result.rs`).
-    pub test_result: Option<ProviderTestResult>,
     pub profile_configs: HashMap<(String, String), ProfileDefinition>,
     pub provider_configs: HashMap<String, ProfileDefinition>,
     /// PROV-111: pending delete-confirm target; when set the Primary arm emits `ConfirmDeleteProfile`.
     pub(crate) pending_profile_delete: Option<(String, String)>,
-    /// PROV-112: cursor restore target for the next `ProviderCredentialsLoaded`
-    /// reload (TS `navigateToProviderRef`); set by the OAuth disconnect
-    /// dispatch so the vanishing Logout row doesn't strand the cursor.
-    pub(crate) pending_navigate_provider: Option<String>,
-    /// PROV-113: whether the browser OAuth login rows are available (the
-    /// local HTTP server only runs on the embedded transport); gates the
-    /// Browser rows out of the nav tree when `false`.
-    pub(crate) browser_login_enabled: bool,
-    /// PROV-113: monotonically-increasing generation that invalidates an
-    /// in-flight login (bumped on Esc-cancel; mismatched results dropped).
+    /// BUG-575: refresh numbering, load states and the navigation epoch.
+    pub(crate) refresh: refresh::RefreshState,
+    /// PROV-113: the login number; mismatched results are dropped. BUG-575: each
+    /// view and login start takes a new one (process-wide); Esc moves past it.
     pub(crate) oauth_generation: u64,
     /// PROV-113: last login (provider, method) so the OAuthError screen retries it.
     pub(crate) oauth_last_provider: Option<String>,
     pub(crate) oauth_last_method: Option<OAuthMethod>,
     pub(crate) oauth_tasks: Vec<tokio::task::AbortHandle>,
+    pub(crate) oauth_browser_url: Option<String>,
     visible_rows: usize,
     /// RPC-353: mouse-wheel 1×–5× velocity accelerator (shared chat-view ramp).
     wheel: crate::components::scroll_viewport::WheelVelocity,
@@ -105,6 +96,12 @@ pub struct ProviderSettingsView {
     scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
     /// TUI-101: cached scrollbar rect from last render for hit-testing.
     last_scrollbar_rect: Option<Rect>,
+}
+
+impl Default for ProviderSettingsView {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ProviderSettingsView {
@@ -121,16 +118,15 @@ impl ProviderSettingsView {
             filter_mode: false,
             delete_confirm: None,
             status: String::new(),
-            test_result: None,
             profile_configs: HashMap::new(),
             provider_configs: HashMap::new(),
             pending_profile_delete: None,
-            pending_navigate_provider: None,
-            browser_login_enabled: false,
-            oauth_generation: 0,
+            refresh: refresh::RefreshState::default(),
+            oauth_generation: refresh::fresh_oauth_generation(),
             oauth_last_provider: None,
             oauth_last_method: None,
             oauth_tasks: Vec::new(),
+            oauth_browser_url: None,
             visible_rows: 18,
             wheel: crate::components::scroll_viewport::WheelVelocity::new(),
             scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
@@ -139,8 +135,10 @@ impl ProviderSettingsView {
     }
 
     pub fn set_providers(&mut self, providers: Vec<ProviderCredentialInfo>) {
+        // A provider-space clamp, only while there is no nav tree (BUG-575:
+        // a folded tree clamps in nav space, in `restore_focus`).
         let max = providers.len().saturating_sub(1);
-        if !providers.is_empty() && self.selected_index > max {
+        if self.nav_items.is_empty() && !providers.is_empty() && self.selected_index > max {
             self.selected_index = max;
         }
         self.providers = providers;
@@ -152,13 +150,6 @@ impl ProviderSettingsView {
 
     pub fn set_status(&mut self, status: impl Into<String>) {
         self.status = status.into();
-    }
-
-    /// PROV-113: enable/disable the browser OAuth login rows; rebuilds the
-    /// nav tree so the browser rows appear/disappear immediately.
-    pub fn set_browser_login_enabled(&mut self, enabled: bool) {
-        self.browser_login_enabled = enabled;
-        self.rebuild_nav_items();
     }
 
     /// PROV-113: current login generation (bumped on Esc-cancel); results with
@@ -200,7 +191,7 @@ impl ProviderSettingsView {
             return ProviderSettingsEvent::Consumed;
         }
         match self.mode.clone() {
-            ProviderSettingsMode::List => list::handle_list_key(self, key),
+            ProviderSettingsMode::List => list::handle_list_key_tracked(self, key),
             ProviderSettingsMode::Detail { provider_id, sub } => {
                 detail::handle_detail_key(self, key, provider_id, sub)
             }
@@ -290,10 +281,5 @@ impl ProviderSettingsView {
             },
             overlay.as_ref(),
         );
-    }
-
-    pub fn visible_rows_for(area: Rect) -> usize {
-        area.height
-            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
 }

@@ -110,13 +110,9 @@ impl CheckpointsView {
         self.diff_scroll = proposed.clamp(0, max as i64) as usize;
     }
 
+    /// TUI-131: in wrapped rows (see `diff_common::max_diff_scroll`).
     fn max_diff_scroll(&self) -> usize {
-        let viewport = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
-        let len = self.diff_lines.len();
-        if viewport == 0 {
-            return len.saturating_sub(1);
-        }
-        len.saturating_sub(viewport)
+        crate::views::diff_common::max_diff_scroll(&self.diff_lines, self.last_diff_rect)
     }
 
     pub(super) fn page_step(&self) -> i32 {

@@ -37,11 +37,12 @@
 //!     clap validates before this module is reached, so we never see that
 //!     case here.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::show_epic;
+use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TS Commander.js surface for
@@ -64,7 +65,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-driven
     // invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     // The dispatcher arg keys are `epicId` and `format` (camelCase) —
@@ -97,6 +98,15 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // prefixed with `Error:`, no ANSI required for parity with the
             // cross-port error contract.
             eprintln!("Error: {err}");
+            // BUG-536: after the not-found error (exactly the core reason
+            // "Epic <id> not found"), point at list-epics like the TS CLI did.
+            if matches!(
+                &err,
+                FspecCoreError::InvalidArgs { reason, .. }
+                    if *reason == format!("Epic {} not found", args.epic_id)
+            ) {
+                eprintln!("Try: fspec list-epics");
+            }
             Ok(1)
         }
     }

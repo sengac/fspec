@@ -6,19 +6,7 @@
         {
           "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
           "lines": "61-91",
-          "implMappings": [
-            {
-              "file": "src/utils/states-array.ts",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -28,19 +16,7 @@
         {
           "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
           "lines": "93-112",
-          "implMappings": [
-            {
-              "file": "src/utils/states-array.ts",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -50,19 +26,7 @@
         {
           "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
           "lines": "114-139",
-          "implMappings": [
-            {
-              "file": "src/utils/states-array.ts",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -74,9 +38,7 @@
     "testFiles": [
       "src/utils/__tests__/states-array-duplicate-bug.test.ts"
     ],
-    "implFiles": [
-      "src/utils/states-array.ts"
-    ],
-    "totalLinesCovered": 95
+    "implFiles": [],
+    "totalLinesCovered": 77
   }
 }

@@ -19,11 +19,15 @@
                 265,
                 266,
                 267
-              ]
+              ],
+              "firstLine": "fn prepare_request(&self, request: CompletionRequest) -> Result<Vec<u8>, CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_preparation.rs",
               "lines": [
+                10,
+                11,
                 12,
                 13,
                 14,
@@ -34,15 +38,14 @@
                 19,
                 20,
                 21,
-                22,
                 23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
+                23,
+                23,
+                23,
+                23,
+                23,
+                23,
+                22,
                 31,
                 32,
                 33,
@@ -59,9 +62,10 @@
                 44,
                 45,
                 46,
-                47,
-                48
-              ]
+                47
+              ],
+              "firstLine": "impl RhaiCustomProviderModel {",
+              "lastLine": "crate::tool_contract::validate_catalog(&body, &tools).map_err(provider_error_to_rig)?;"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -81,7 +85,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "let model = self.clone();",
+              "lastLine": ".map_err(provider_error_to_rig)?;"
             }
           ]
         }
@@ -97,6 +103,8 @@
             {
               "file": "rust/providers/src/custom/rig_preparation.rs",
               "lines": [
+                10,
+                11,
                 12,
                 13,
                 14,
@@ -107,15 +115,14 @@
                 19,
                 20,
                 21,
-                22,
                 23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
+                23,
+                23,
+                23,
+                23,
+                23,
+                23,
+                22,
                 31,
                 32,
                 33,
@@ -132,16 +139,14 @@
                 44,
                 45,
                 46,
-                47,
-                48
-              ]
+                47
+              ],
+              "firstLine": "impl RhaiCustomProviderModel {",
+              "lastLine": "crate::tool_contract::validate_catalog(&body, &tools).map_err(provider_error_to_rig)?;"
             },
             {
               "file": "rust/providers/src/selected_request.rs",
               "lines": [
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -166,18 +171,23 @@
                 76,
                 77,
                 78,
-                79,
-                80,
-                81,
-                82,
+                92,
                 93,
                 94,
                 95,
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub fn new<M: CompletionModel + 'static>(",
+              "lastLine": "}"
             }
           ]
         }

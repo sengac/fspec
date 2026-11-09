@@ -85,7 +85,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -190,7 +192,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,7 +285,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -386,7 +392,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -477,7 +485,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -582,7 +592,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -673,7 +685,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -778,7 +792,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -869,7 +885,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -974,7 +992,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -1065,7 +1085,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -1170,7 +1192,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }

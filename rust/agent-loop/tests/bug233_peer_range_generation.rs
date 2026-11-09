@@ -99,9 +99,13 @@ async fn scenario_exhausted_peer_conflicts_never_promote_partial_memory() {
     assert!(error.contains(&fixture.caller.id.to_string()), "{error}");
     assert!(error.contains("operation="), "{error}");
     assert!(error.contains("after 3 attempts"), "{error}");
-    // @step And durable originals and committed memory remain unchanged with ordinary inference blocked
-    assert_eq!(outcome.before, outcome.after);
-    assert!(outcome.blocked);
+    // @step And durable originals and committed memory remain unchanged and ordinary inference is not blocked
+    // Durable originals and committed memory stay unchanged; the turn's own
+    // request usage is settled, which is not memory.
+    for field in ["messages", "compaction", "compaction_commit"] {
+        assert_eq!(outcome.before[field], outcome.after[field], "{field}");
+    }
+    assert!(!outcome.blocked);
 }
 
 proptest! {

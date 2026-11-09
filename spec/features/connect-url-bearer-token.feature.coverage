@@ -1,0 +1,96 @@
+{
+  "scenarios": [
+    {
+      "name": "A URL connection carries the --token bearer",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/daemons_cmd/tests.rs",
+          "lines": "9-20",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemons_cmd.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "/// Resolve a `--connect` value and the bearer to present. A `ws://` /",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A URL connection without --token uses FSPEC_DAEMON_TOKEN",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/daemons_cmd/tests.rs",
+          "lines": "22-34",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemons_cmd.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "/// Resolve a `--connect` value and the bearer to present. A `ws://` /",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/src/daemons_cmd/tests.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/daemons_cmd.rs"
+    ],
+    "totalLinesCovered": 69
+  }
+}

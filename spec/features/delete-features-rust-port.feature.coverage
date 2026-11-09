@@ -5,28 +5,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_features.rs",
-          "lines": "57-82",
+          "lines": "58-88",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "// ---- Perform deletions ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -37,17 +46,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_features.rs",
-          "lines": "85-116",
+          "lines": "94-120",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
                 83,
                 84,
                 85,
@@ -60,8 +63,16 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "// ---- Find files matching ALL tags (AND logic) ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -72,21 +83,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_features.rs",
-          "lines": "120-148",
+          "lines": "126-159",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// ---- Dry-run: report without deleting ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,20 +111,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_features.rs",
-          "lines": "151-170",
+          "lines": "165-199",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "// ---- Require at least one tag (TS parity, lines 29-36) ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -121,20 +137,90 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_features.rs",
-          "lines": "175-191",
+          "lines": "205-226",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_features.rs",
               "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "// ---- No matches ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes features whose tag contains special characters",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_features.rs",
+          "lines": "234-276",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
                 97,
                 98,
                 99,
                 100,
-                101,
-                102,
-                103,
-                104
-              ]
+                101
+              ],
+              "firstLine": "// ---- Find files matching ALL tags (AND logic) ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes tagged features in nested directories",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_features.rs",
+          "lines": "282-322",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/feature_glob.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "pub fn glob_feature_files(project_root: &Path) -> Result<Vec<String>, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -142,15 +228,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/delete_features.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/delete_features.rs"
+      "rust/fspec-core/src/commands/delete_features.rs",
+      "rust/fspec-core/src/io/feature_glob.rs"
     ],
-    "totalLinesCovered": 184
+    "totalLinesCovered": 333
   }
 }

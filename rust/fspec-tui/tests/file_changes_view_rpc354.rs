@@ -13,8 +13,7 @@
 //! implemented, so these assertions pass GREEN, as expected for an
 //! umbrella acceptance test.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::process::Command;
@@ -35,46 +34,46 @@ use tokio::sync::mpsc::unbounded_channel;
 /// Initialize a repo with a single committed-then-modified file (one
 /// modified entry in the working tree). Copied from
 /// `tests/changed_files_rpc355.rs` to reuse the proven seeding flow.
-fn seed_repo_one_modified() -> TempDir {
-    let tmp = TempDir::new().expect("tempdir");
+fn seed_repo_one_modified() -> Result<TempDir, codelet_test_helpers::TestError> {
+    let tmp = TempDir::new().or_fail("tempdir")?;
     let repo = tmp.path();
-    git_init(repo);
-    fs::write(repo.join("tracked.txt"), "alpha\n").expect("write tracked");
+    git_init(repo)?;
+    fs::write(repo.join("tracked.txt"), "alpha\n").or_fail("write tracked")?;
     Command::new("git")
         .args(["add", "."])
         .current_dir(repo)
         .output()
-        .expect("git add");
+        .or_fail("git add")?;
     Command::new("git")
         .args(["commit", "-m", "init"])
         .current_dir(repo)
         .output()
-        .expect("git commit");
-    fs::write(repo.join("tracked.txt"), "alpha\nbeta\n").expect("modify tracked");
-    tmp
+        .or_fail("git commit")?;
+    fs::write(repo.join("tracked.txt"), "alpha\nbeta\n").or_fail("modify tracked")?;
+    Ok(tmp)
 }
 
 /// Initialize a repo that is committed and CLEAN (no working-tree
 /// changes) — used for the empty-state scenario.
-fn seed_repo_clean() -> TempDir {
-    let tmp = TempDir::new().expect("tempdir");
+fn seed_repo_clean() -> Result<TempDir, codelet_test_helpers::TestError> {
+    let tmp = TempDir::new().or_fail("tempdir")?;
     let repo = tmp.path();
-    git_init(repo);
-    fs::write(repo.join("tracked.txt"), "alpha\n").expect("write tracked");
+    git_init(repo)?;
+    fs::write(repo.join("tracked.txt"), "alpha\n").or_fail("write tracked")?;
     Command::new("git")
         .args(["add", "."])
         .current_dir(repo)
         .output()
-        .expect("git add");
+        .or_fail("git add")?;
     Command::new("git")
         .args(["commit", "-m", "init"])
         .current_dir(repo)
         .output()
-        .expect("git commit");
-    tmp
+        .or_fail("git commit")?;
+    Ok(tmp)
 }
 
-fn git_init(repo: &Path) {
+fn git_init(repo: &Path) -> Result<(), codelet_test_helpers::TestError> {
     for args in [
         vec!["init"],
         vec!["config", "user.email", "test@example.com"],
@@ -84,21 +83,26 @@ fn git_init(repo: &Path) {
             .args(&args)
             .current_dir(repo)
             .output()
-            .expect("git setup");
+            .or_fail("git setup")?;
     }
+    Ok(())
 }
 
-fn service_for(repo_path: &Path) -> Arc<SharedFspecService> {
-    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).expect("WorkUnitsWatcher::new"));
-    Arc::new(SharedFspecService::new(watcher).with_cwd(repo_path.to_path_buf()))
+fn service_for(
+    repo_path: &Path,
+) -> Result<Arc<SharedFspecService>, codelet_test_helpers::TestError> {
+    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).or_fail("WorkUnitsWatcher::new")?);
+    Ok(Arc::new(
+        SharedFspecService::new(watcher).with_cwd(repo_path.to_path_buf()),
+    ))
 }
 
-fn backend_for(repo: &Path) -> Arc<dyn FspecBackend> {
-    let service = service_for(repo);
-    Arc::new(EmbeddedFspecBackend::new(
+fn backend_for(repo: &Path) -> Result<Arc<dyn FspecBackend>, codelet_test_helpers::TestError> {
+    let service = service_for(repo)?;
+    Ok(Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service,
-    ))
+    )))
 }
 
 /// Build a key-press event (no modifiers).
@@ -113,13 +117,16 @@ fn key(code: KeyCode) -> Event {
 
 /// Render the navigator into a `TestBackend` buffer and return the
 /// joined cell text. Mirrors the App's frame render path.
-fn render_navigator_text(nav: &mut Navigator, board: &BoardStore) -> String {
+fn render_navigator_text(
+    nav: &mut Navigator,
+    board: &BoardStore,
+) -> Result<String, codelet_test_helpers::TestError> {
     let mut agent = AgentViewStore::default();
-    let mut term = Terminal::new(TestBackend::new(120, 30)).expect("term");
+    let mut term = Terminal::new(TestBackend::new(120, 30)).or_fail("term")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), board, &mut agent);
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -128,28 +135,32 @@ fn render_navigator_text(nav: &mut Navigator, board: &BoardStore) -> String {
         }
         joined.push('\n');
     }
-    joined
+    Ok(joined)
 }
 
 /// Mirror the App loop's load flow (app/dispatch_changed_files.rs):
 /// fetch the changed files, fold them into the view, then fetch + fold
 /// the diff for the now-selected file.
-async fn drive_load(nav: &mut Navigator, backend: &Arc<dyn FspecBackend>) {
-    let files = backend.changed_files().await.expect("changed_files");
+async fn drive_load(
+    nav: &mut Navigator,
+    backend: &Arc<dyn FspecBackend>,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let files = backend.changed_files().await.or_fail("changed_files")?;
     nav.changed_files.set_files(files);
     if let Some(path) = nav.changed_files.selected_path() {
-        let diff = backend.file_diff(path.clone()).await.expect("file_diff");
+        let diff = backend.file_diff(path.clone()).await.or_fail("file_diff")?;
         nav.changed_files.set_diff(&path, diff);
     }
+    Ok(())
 }
 
 /// Scenario: Pressing F on the board opens the Changed Files view with
 /// the changed file and its diff.
 #[tokio::test]
-async fn pressing_f_opens_changed_files_view_with_file_and_diff() {
+async fn pressing_f_opens_changed_files_view_with_file_and_diff() -> TestResult {
     // @step Given a workspace whose git working tree has one modified file
-    let tmp = seed_repo_one_modified();
-    let backend = backend_for(tmp.path());
+    let tmp = seed_repo_one_modified()?;
+    let backend = backend_for(tmp.path())?;
 
     // @step And the navigator is showing the board view
     let (tx, mut rx) = unbounded_channel();
@@ -165,33 +176,34 @@ async fn pressing_f_opens_changed_files_view_with_file_and_diff() {
 
     // @step Then the active view becomes the Changed Files view
     assert_eq!(nav.active_view, ViewMode::ChangedFiles);
-    drive_load(&mut nav, &backend).await;
+    drive_load(&mut nav, &backend).await?;
 
     // @step And the file list contains the modified file
     assert_eq!(
         nav.changed_files.selected_path().as_deref(),
         Some("tracked.txt")
     );
-    let listed = render_navigator_text(&mut nav, &board_store);
+    let listed = render_navigator_text(&mut nav, &board_store)?;
     assert!(
         listed.contains("tracked.txt"),
         "rendered Changed Files view must list the modified file"
     );
 
     // @step And the diff pane shows the unified diff for the modified file
-    let rendered = render_navigator_text(&mut nav, &board_store);
+    let rendered = render_navigator_text(&mut nav, &board_store)?;
     assert!(
         rendered.contains("beta"),
         "rendered diff pane must show the added line from the unified diff"
     );
+    Ok(())
 }
 
 /// Scenario: Pressing Esc in the Changed Files view returns to the
 /// board.
 #[tokio::test]
-async fn pressing_esc_in_changed_files_view_returns_to_board() {
-    let tmp = seed_repo_one_modified();
-    let backend = backend_for(tmp.path());
+async fn pressing_esc_in_changed_files_view_returns_to_board() -> TestResult {
+    let tmp = seed_repo_one_modified()?;
+    let backend = backend_for(tmp.path())?;
     let (tx, mut rx) = unbounded_channel();
     let mut nav = Navigator::new(Arc::new(Theme::default()), tx);
     let board_store = BoardStore::default();
@@ -201,7 +213,7 @@ async fn pressing_esc_in_changed_files_view_returns_to_board() {
     while let Ok(action) = rx.try_recv() {
         nav.apply_action(&action);
     }
-    drive_load(&mut nav, &backend).await;
+    drive_load(&mut nav, &backend).await?;
 
     // @step Given the navigator is showing the Changed Files view
     assert_eq!(nav.active_view, ViewMode::ChangedFiles);
@@ -214,15 +226,16 @@ async fn pressing_esc_in_changed_files_view_returns_to_board() {
 
     // @step Then the active view becomes the board view
     assert_eq!(nav.active_view, ViewMode::Board);
+    Ok(())
 }
 
 /// Scenario: Opening the Changed Files view in a clean repo shows an
 /// empty state.
 #[tokio::test]
-async fn opening_changed_files_view_in_clean_repo_shows_empty_state() {
+async fn opening_changed_files_view_in_clean_repo_shows_empty_state() -> TestResult {
     // @step Given a workspace whose git working tree has no changes
-    let tmp = seed_repo_clean();
-    let backend = backend_for(tmp.path());
+    let tmp = seed_repo_clean()?;
+    let backend = backend_for(tmp.path())?;
 
     // @step And the navigator is showing the board view
     let (tx, mut rx) = unbounded_channel();
@@ -238,13 +251,13 @@ async fn opening_changed_files_view_in_clean_repo_shows_empty_state() {
 
     // @step Then the active view becomes the Changed Files view
     assert_eq!(nav.active_view, ViewMode::ChangedFiles);
-    let files = backend.changed_files().await.expect("changed_files");
+    let files = backend.changed_files().await.or_fail("changed_files")?;
     assert!(files.is_empty(), "clean repo must report no changed files");
     nav.changed_files.set_files(files);
 
     // @step And the view shows an empty-state message that there are no changed files
     assert!(nav.changed_files.is_empty());
-    let rendered = render_navigator_text(&mut nav, &board_store);
+    let rendered = render_navigator_text(&mut nav, &board_store)?;
     assert!(
         rendered.contains("No changed files"),
         "rendered clean-repo view must show the empty-state message"
@@ -257,4 +270,5 @@ async fn opening_changed_files_view_in_clean_repo_shows_empty_state() {
     }
     // @step Then the active view becomes the board view
     assert_eq!(nav.active_view, ViewMode::Board);
+    Ok(())
 }

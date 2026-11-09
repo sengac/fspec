@@ -1,4 +1,6 @@
 @TUI-084
+@tui
+@navigation
 Feature: Profile form uses Tab for field navigation instead of Arrow keys Up/Down
   """
   Changes profileFormModeHandler.ts to use key.downArrow/key.upArrow instead of key.tab. Updates ProviderSettingsPanel.tsx footer hint text. Updates parent feature spec provider-settings-screen.feature scenario accordingly.

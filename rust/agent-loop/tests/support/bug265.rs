@@ -1,9 +1,7 @@
 use super::automatic::Harness;
 use super::wire::{response, Reply};
 use codelet_rpc_types::{SessionStatus, StreamChunk};
-use codelet_tools::tool_pause::PauseResponse;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 use wiremock::Mock;
 
 pub type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
@@ -12,11 +10,8 @@ struct PauseRelease(Arc<codelet_sessions::background_session::BackgroundSession>
 
 impl Drop for PauseRelease {
     fn drop(&mut self) {
+        // BUG-605: interrupting answers a pending pause Interrupted.
         self.0.interrupt();
-        let _ = self
-            .0
-            .get_pause_response_tx()
-            .send(PauseResponse::Interrupted);
     }
 }
 
@@ -161,24 +156,24 @@ pub async fn assert_goal_recovery(loop_abort: bool) -> TestResult {
     .await;
     let session = fixture.session.clone();
     let reviewer = tokio::spawn(async move {
-        tokio::time::timeout(Duration::from_secs(20), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 if session.get_status() == SessionStatus::Paused {
-                    let snapshot: serde_json::Value = serde_json::from_str(
-                        &session
-                            .interaction_snapshot()
-                            .expect("interaction snapshot"),
-                    )
-                    .expect("snapshot JSON");
-                    if let Some(request_id) = snapshot["pause"]["request_id"].as_str() {
-                        let message = snapshot["pause"]["state"]["message"].clone();
+                    if let Some((route, state)) = session.pending_pause() {
+                        let message = serde_json::Value::String(state.message);
                         session
-                            .send_pause_response_checked(request_id, PauseResponse::Resumed)
+                            .answer_pause(
+                                &route.request_id,
+                                &codelet_rpc_types::RequestHolder::User,
+                                codelet_sessions::background_session::PauseReply::HumanAction(
+                                    codelet_rpc_types::HumanActionReply::Done,
+                                ),
+                            )
                             .expect("resolve this synthetic fixture's current pause");
                         return message;
                     }
                 }
-                tokio::time::sleep(Duration::from_millis(5)).await;
+                codelet_test_helpers::yield_now().await;
             }
         })
         .await

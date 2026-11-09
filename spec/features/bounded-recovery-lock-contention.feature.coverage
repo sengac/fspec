@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug259_recovery_contention.rs",
-          "lines": "17-61",
+          "lines": "16-60",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/session_lifecycle.rs",
@@ -60,7 +60,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "impl Drop for RecoveryLease {",
+              "lastLine": "}"
             }
           ]
         }
@@ -71,7 +73,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug259_recovery_contention.rs",
-          "lines": "63-95",
+          "lines": "62-99",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/session_lifecycle.rs",
@@ -94,7 +96,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "let file = options.open(directory.with_extension(\"lock\"))?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -105,7 +109,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug259_recovery_contention.rs",
-          "lines": "97-143",
+          "lines": "101-147",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/session_lifecycle.rs",
@@ -160,7 +164,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "impl Drop for RecoveryLease {",
+              "lastLine": "}"
             }
           ]
         }
@@ -171,7 +177,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug259_recovery_contention.rs",
-          "lines": "145-162",
+          "lines": "149-167",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/session_lifecycle.rs",
@@ -210,7 +216,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub fn acquire(root: &Path, session_id: Uuid) -> io::Result<Self> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -227,6 +235,6 @@
     "implFiles": [
       "rust/core/src/persistence/session_lifecycle.rs"
     ],
-    "totalLinesCovered": 295
+    "totalLinesCovered": 301
   }
 }

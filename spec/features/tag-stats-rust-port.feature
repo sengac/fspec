@@ -166,3 +166,11 @@ Feature: Port tag-stats command to Rust
     Then the function io::feature_glob::glob_feature_files exists and is reused by tag_stats
     Then commands/tag_stats.rs delegates to io::feature_glob and inline tags.json reading
     Then commands/tag_stats.rs no longer returns FspecCoreError::NotYetPorted
+
+  Scenario: A feature file with no tags is counted as a file but adds no tags
+    Given spec/features/plain.feature has no tags
+    And spec/features/tagged.feature has feature-level tags '@critical @auth @ui'
+    When I dispatch tag-stats with format='json'
+    Then the dispatcher returns success=true
+    And the result has totalFiles=2, uniqueTags=3, totalOccurrences=3
+    And the statistics only count the tags from the tagged file

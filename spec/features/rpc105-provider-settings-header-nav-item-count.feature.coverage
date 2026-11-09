@@ -5,20 +5,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "131-147",
+          "lines": "129-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "pub fn title_text(&self) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -29,20 +27,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "153-168",
+          "lines": "152-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "pub fn title_text(&self) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -53,24 +49,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "174-186",
+          "lines": "174-188",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
                 153,
                 154,
                 155,
@@ -90,8 +73,23 @@
                 169,
                 170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ],
+              "firstLine": "view.delete_confirm = Some(ConfirmDialog::new(",
+              "lastLine": "view.scroll_offset = 0;"
             }
           ]
         }
@@ -102,24 +100,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "192-205",
+          "lines": "193-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
                 153,
                 154,
                 155,
@@ -139,8 +124,23 @@
                 169,
                 170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ],
+              "firstLine": "view.delete_confirm = Some(ConfirmDialog::new(",
+              "lastLine": "view.scroll_offset = 0;"
             }
           ]
         }
@@ -151,20 +151,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "211-223",
+          "lines": "213-227",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "pub fn title_text(&self) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,20 +173,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "229-296",
+          "lines": "232-301",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "pub fn title_text(&self) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -199,19 +195,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "302-322",
+          "lines": "306-331",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164
-              ]
+                179,
+                180,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "fn handle_filter_key(view: &mut ProviderSettingsView, key: KeyEvent) -> ProviderSettingsEvent {",
+              "lastLine": "}"
             }
           ]
         }
@@ -222,23 +222,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "328-346",
+          "lines": "336-356",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ],
+              "firstLine": "body,",
+              "lastLine": "}"
             }
           ]
         }
@@ -249,20 +251,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "352-368",
+          "lines": "361-379",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "pub fn title_text(&self) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,6 +280,6 @@
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 322
+    "totalLinesCovered": 325
   }
 }

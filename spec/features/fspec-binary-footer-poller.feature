@@ -1,3 +1,4 @@
+@status-display
 @done
 @WT-002
 @bug-fix
@@ -9,16 +10,15 @@ Feature: fspec binary runs the footer poller so the session footer reflects git 
   SessionManager; chunks reach the TUI only via THAT manager's chunks_tx. The
   NAPI-free poller (codelet-sessions) must resolve its sender via a
   process-global manager-sender slot that each hook impl registers before
-  spawning; defaulting to SessionManager::instance() when unregistered preserves
-  today's NAPI behavior.
+  spawning (BUG-405: when unregistered the poller reports that it has no sender
+  and emits nothing; there is no SessionManager singleton to fall back to).
 
   Architecture:
   - The shared poller lives in codelet-sessions (footer_poller module) — NAPI-free.
   - It resolves the chunks_tx sender via a process-global manager-sender slot
   (codelet-sessions::footer_poller::register_chunk_sender), registered by
-  FspecAgentHooks in build_service (non-singleton manager) and by the NAPI
-  install path (SessionManager::instance()); when unregistered it falls back
-  to SessionManager::instance() (today's NAPI behavior).
+  FspecAgentHooks in build_service (non-singleton manager); when unregistered
+  emission_target returns an error and nothing is sent (BUG-405).
   - FspecAgentHooks::spawn_footer_poller / stop_footer_poller call the shared
   poller; NapiSessionManagerHooks keeps delegating to crate::footer_poller,
   which is now a thin shim over the shared poller.
@@ -61,9 +61,3 @@ Feature: fspec binary runs the footer poller so the session footer reflects git 
     When the session's footer CWD registry is updated to a subdirectory
     And the footer poller ticks again
     Then the emitted footer state carries the subdirectory as the CWD
-
-  Scenario: The NAPI hook path delegates to the same shared footer poller implementation
-    Given the NAPI session hooks are installed on a session manager
-    When a session is created under the NAPI hook implementation
-    Then the footer poller for that session runs the shared NAPI-free poller (codelet-sessions)
-    And the NAPI hook still delegates spawn/stop to its crate::footer_poller shim so existing shape tests stay green

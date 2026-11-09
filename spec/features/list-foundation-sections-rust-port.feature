@@ -2,6 +2,7 @@
 @rust
 @cli
 @RPC-246
+@list
 Feature: Port list-foundation-sections command to Rust
   """
   New impl file at rust/fspec-core/src/commands/list_foundation_sections.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run, even though list-foundation-sections performs NO project root I/O (the section list is a static constant). Accepting `project_root` is parity with the dispatcher contract and lets the caller pass any path without affecting output.

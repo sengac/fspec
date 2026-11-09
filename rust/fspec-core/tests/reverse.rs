@@ -527,6 +527,25 @@ fn strategy_d_with_implementation_context_returns_persona_guidance_without_a_ses
         !ws.session_file().exists(),
         "Strategy D persona path must NOT create a session"
     );
+
+    // FEAT-019 (merged here): the outside-in prompts and the
+    // generate-scenarios guidance.
+    for expected in [
+        // @step And the rendered output contains the substring "WHO uses this? (Check foundation.json personas)"
+        "WHO uses this? (Check foundation.json personas)",
+        // @step And the rendered output contains the substring "What does Shopper want to accomplish?"
+        "What does Shopper want to accomplish?",
+        // @step And the rendered output contains the substring "What user behavior does this support?"
+        "What user behavior does this support?",
+        // @step And the rendered output contains the substring "Generate scenarios: fspec generate-scenarios <work-unit>"
+        "Generate scenarios: fspec generate-scenarios <work-unit>",
+    ] {
+        assert!(
+            result.data.contains(expected),
+            "expected {expected:?}; got:\n{}",
+            result.data
+        );
+    }
 }
 
 #[test]
@@ -734,4 +753,190 @@ fn cli_and_dispatcher_converge_on_the_same_fspec_core_run_function() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+}
+
+// ---------- BUG-295 ----------
+
+#[cfg(unix)]
+#[test]
+fn a_reverse_session_is_shared_by_every_spelling_of_the_project_path() {
+    use codelet_fspec_core::types::reverse_session::{
+        create_session, delete_session, legacy_session_path, load_session, save_session,
+        session_exists, GapAnalysis,
+    };
+    // @step Given a project directory and a symlink that points to it
+    let real = Workspace::new();
+    let links = TempDir::new().expect("link dir");
+    let linked = links.path().join("project-link");
+    std::os::unix::fs::symlink(real.path(), &linked).expect("symlink");
+    let gaps: GapAnalysis =
+        serde_json::from_value(json!({"files": []})).expect("empty gap analysis");
+
+    // @step When a reverse session is saved through the symlinked path
+    save_session(&linked, &create_session("executing", gaps, None, None)).expect("save");
+
+    // @step Then the session is found through the real path
+    assert_eq!(session_path(&linked), session_path(real.path()));
+    assert!(session_exists(real.path()));
+    assert_eq!(
+        load_session(real.path()).map(|session| session.phase),
+        Some("executing".to_string())
+    );
+
+    // @step And a session saved under the legacy symlinked-path key is still found through that spelling
+    delete_session(real.path());
+    let legacy = legacy_session_path(&linked);
+    assert_ne!(legacy, session_path(&linked));
+    fs::write(
+        &legacy,
+        json!({"phase":"executing","gaps":{"files":[]},"timestamp":"2026-10-30T00:00:00Z"})
+            .to_string(),
+    )
+    .expect("legacy session");
+    assert!(session_exists(&linked));
+    assert!(load_session(&linked).is_some());
+    delete_session(&linked);
+    assert!(!legacy.exists());
+}
+
+// ---------- scenarios moved from interactive-reverse-acdd-strategy-planning-command.feature (COV-071) ----------
+
+fn write_features_with_unmapped_coverage(root: &Path, count: usize, with_coverage: bool) {
+    let dir = root.join("spec/features");
+    fs::create_dir_all(&dir).expect("mkdir features");
+    for i in 0..count {
+        let name = format!("feature-{i}");
+        fs::write(
+            dir.join(format!("{name}.feature")),
+            format!("Feature: F{i}\n\n  Scenario: S{i}\n    Given x\n"),
+        )
+        .expect("write feature");
+        if with_coverage {
+            let coverage = json!({"scenarios": [{"name": format!("S{i}"), "testMappings": []}]});
+            fs::write(
+                dir.join(format!("{name}.feature.coverage")),
+                serde_json::to_string_pretty(&coverage).unwrap(),
+            )
+            .expect("write coverage");
+        }
+    }
+}
+
+fn assert_output_contains(result: &codelet_fspec_core::DispatchResult, needle: &str) {
+    assert!(
+        result.data.contains(needle),
+        "expected {needle:?} in output; got:\n{}",
+        result.data
+    );
+}
+
+#[test]
+fn feature_files_without_tests_suggest_strategy_b() {
+    // @step Given a project root tempdir with 2 feature files in spec/features, no test files and no session file
+    let ws = Workspace::new();
+    write_features_with_unmapped_coverage(ws.path(), 2, false);
+    assert!(!ws.session_file().exists());
+
+    // @step When I dispatch reverse with no flags
+    let result = dispatch_command(req(ws.path(), json!({})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the session file on disk has phase='gap-detection'
+    assert_eq!(ws.load_session().phase, "gap-detection");
+
+    // @step And the rendered output contains the substring "2 feature files without tests"
+    assert_output_contains(&result, "2 feature files without tests");
+
+    // @step And the rendered output contains the substring "Strategy B (Test Gap Filling)"
+    assert_output_contains(&result, "Strategy B (Test Gap Filling)");
+
+    // @step And the rendered output contains the substring "Create test skeletons for existing feature files"
+    assert_output_contains(&result, "Create test skeletons for existing feature files");
+
+    // @step And the rendered output contains the substring "Use --skip-validation when linking coverage"
+    assert_output_contains(&result, "Use --skip-validation when linking coverage");
+}
+
+#[test]
+fn unmapped_coverage_suggests_strategy_c() {
+    // @step Given a project root tempdir with 5 feature files in spec/features and one test file under src/__tests__
+    let ws = Workspace::new();
+    write_test_files(ws.path(), &["a.test.ts"]);
+
+    // @step And the coverage files of those features list 5 scenarios without test mappings
+    write_features_with_unmapped_coverage(ws.path(), 5, true);
+
+    // @step When I dispatch reverse with no flags
+    let result = dispatch_command(req(ws.path(), json!({})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the session file on disk has phase='gap-detection'
+    assert_eq!(ws.load_session().phase, "gap-detection");
+
+    // @step And the rendered output contains the substring "5 scenarios without coverage mappings"
+    assert_output_contains(&result, "5 scenarios without coverage mappings");
+
+    // @step And the rendered output contains the substring "Strategy C (Coverage Mapping)"
+    assert_output_contains(&result, "Strategy C (Coverage Mapping)");
+
+    // @step And the rendered output contains the substring "Quick wins - no new files needed"
+    assert_output_contains(&result, "Quick wins - no new files needed");
+}
+
+#[test]
+fn raw_implementation_without_specs_or_tests_suggests_strategy_d() {
+    // @step Given a project root tempdir with 10 implementation files under src/, no feature files and no test files
+    let ws = Workspace::new();
+    let src = ws.path().join("src/commands");
+    fs::create_dir_all(&src).expect("mkdir src");
+    for i in 0..10 {
+        fs::write(src.join(format!("command{i}.ts")), "export {};\n").expect("write impl file");
+    }
+
+    // @step When I dispatch reverse with no flags
+    let result = dispatch_command(req(ws.path(), json!({})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the session file on disk has phase='gap-detection'
+    assert_eq!(ws.load_session().phase, "gap-detection");
+
+    // @step And the rendered output contains the substring "10 implementation files without features"
+    assert_output_contains(&result, "10 implementation files without features");
+
+    // @step And the rendered output contains the substring "Strategy D (Full Reverse ACDD)"
+    assert_output_contains(&result, "Strategy D (Full Reverse ACDD)");
+
+    // @step And the rendered output contains the substring "Highest effort - analyze code, create features, tests, and work units"
+    assert_output_contains(
+        &result,
+        "Highest effort - analyze code, create features, tests, and work units",
+    );
+}
+
+#[test]
+fn a_large_project_gets_the_narrow_scope_hint() {
+    // @step Given a project root tempdir with 150 test files under src/__tests__ and no spec/features directory
+    let ws = Workspace::new();
+    let names: Vec<String> = (0..150).map(|i| format!("t{i:03}.test.ts")).collect();
+    let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+    write_test_files(ws.path(), &refs);
+    assert!(!ws.path().join("spec/features").exists());
+
+    // @step When I dispatch reverse with no flags
+    let result = dispatch_command(req(ws.path(), json!({})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the rendered output contains the substring "150 test files without features"
+    assert_output_contains(&result, "150 test files without features");
+
+    // @step And the rendered output contains the substring "Use --strategy=A to narrow scope."
+    assert_output_contains(&result, "Use --strategy=A to narrow scope.");
 }

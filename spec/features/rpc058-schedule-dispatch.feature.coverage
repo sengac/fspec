@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "470-478",
+          "lines": "516-524",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/schedule_parser.rs",
@@ -29,7 +29,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "pub fn parse_schedule_command(input: &str) -> ScheduleSubcommand {",
+              "lastLine": "None => ScheduleSubcommand::Help,"
             }
           ]
         }
@@ -40,111 +42,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "483-491",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "530-538",
+          "implMappings": []
         }
       ]
     },
@@ -153,111 +52,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "496-526",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "544-573",
+          "implMappings": []
         }
       ]
     },
@@ -266,111 +62,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "531-559",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "579-607",
+          "implMappings": []
         }
       ]
     },
@@ -379,111 +72,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "564-575",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "613-624",
+          "implMappings": []
         }
       ]
     },
@@ -492,111 +82,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "580-591",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "630-641",
+          "implMappings": []
         }
       ]
     },
@@ -605,111 +92,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "596-607",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "647-658",
+          "implMappings": []
         }
       ]
     },
@@ -718,111 +102,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "612-620",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/schedule_parser.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "lines": "664-672",
+          "implMappings": []
         }
       ]
     },
@@ -831,7 +112,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "625-635",
+          "lines": "678-695",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/slash_parser.rs",
@@ -847,7 +128,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "///     → `BareCommand(action)` — BUG-169 registry-driven catch, so a",
+              "lastLine": "return SlashCommandParse::OpenThinkingDialog;"
             }
           ]
         }
@@ -858,7 +141,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "94-117",
+          "lines": "106-137",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
@@ -875,7 +158,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_slash_schedule_help(&mut self) {",
+              "lastLine": "/// handler. Help is a synchronous notice; the others spawn the"
             }
           ]
         }
@@ -886,7 +171,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "124-150",
+          "lines": "143-170",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
@@ -903,7 +188,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_slash_schedule_help(&mut self) {",
+              "lastLine": "/// handler. Help is a synchronous notice; the others spawn the"
             }
           ]
         }
@@ -914,12 +201,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "157-190",
+          "lines": "176-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                112,
                 113,
                 114,
                 115,
@@ -939,7 +225,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_list(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -950,12 +238,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "197-218",
+          "lines": "214-237",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                112,
                 113,
                 114,
                 115,
@@ -975,7 +262,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_list(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -986,12 +275,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "225-263",
+          "lines": "243-284",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                92,
                 93,
                 94,
                 95,
@@ -1011,7 +299,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_add(&mut self, job: ScheduledJob) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1022,12 +312,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "270-300",
+          "lines": "290-322",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                92,
                 93,
                 94,
                 95,
@@ -1047,7 +336,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_add(&mut self, job: ScheduledJob) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1058,12 +349,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "307-339",
+          "lines": "328-361",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                132,
                 133,
                 134,
                 135,
@@ -1083,7 +373,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_pause(&mut self, name: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1094,12 +386,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "346-370",
+          "lines": "367-394",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                132,
                 133,
                 134,
                 135,
@@ -1119,7 +410,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_pause(&mut self, name: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1130,12 +423,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "377-409",
+          "lines": "400-433",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                152,
                 153,
                 154,
                 155,
@@ -1155,7 +447,9 @@
                 169,
                 170,
                 171
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_resume(&mut self, name: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1166,12 +460,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "416-448",
+          "lines": "439-472",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
-                172,
                 173,
                 174,
                 175,
@@ -1190,10 +483,10 @@
                 188,
                 189,
                 190,
-                191,
-                192,
-                193
-              ]
+                191
+              ],
+              "firstLine": "pub(crate) fn handle_schedule_remove(&mut self, name: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1204,7 +497,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/schedule_dispatch_rpc058.rs",
-          "lines": "455-484",
+          "lines": "478-504",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_schedule.rs",
@@ -1253,7 +546,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_slash_schedule_help(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1272,6 +567,6 @@
       "rust/fspec-tui/src/app/slash_parser.rs",
       "rust/fspec-tui/src/app/dispatch_slash_schedule.rs"
     ],
-    "totalLinesCovered": 1404
+    "totalLinesCovered": 739
   }
 }

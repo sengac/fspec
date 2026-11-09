@@ -281,6 +281,7 @@ impl TryFrom<crate::completion::Message> for Vec<InputItem> {
                         }
                         crate::message::UserContent::ToolResult(
                             crate::completion::message::ToolResult {
+                                id: tool_id,
                                 call_id,
                                 content: tool_content,
                                 ..
@@ -327,9 +328,12 @@ impl TryFrom<crate::completion::Message> for Vec<InputItem> {
                             items.push(InputItem {
                                 role: None,
                                 input: InputContent::FunctionCallOutput(ToolResult {
-                                    call_id: call_id
-                                        .clone()
-                                        .expect("The call ID of this tool should exist!"),
+                                    // BUG-610: a request error, never a panic.
+                                    call_id: call_id.clone().ok_or_else(|| {
+                                        CompletionError::RequestError(
+                                            format!("tool result {tool_id} has no call id").into(),
+                                        )
+                                    })?,
                                     output,
                                     status: ToolStatus::Completed,
                                 }),
@@ -469,21 +473,41 @@ impl TryFrom<crate::completion::Message> for Vec<InputItem> {
                                 role: None,
                                 input: InputContent::FunctionCall(OutputFunctionCall {
                                     arguments: function.arguments,
-                                    call_id: call_id.expect("The tool call ID should exist!"),
+                                    // BUG-610: a request error, never a panic.
+                                    call_id: call_id.ok_or_else(|| {
+                                        CompletionError::RequestError(
+                                            format!("tool call {tool_id} has no call id").into(),
+                                        )
+                                    })?,
                                     id: tool_id,
                                     name: function.name,
                                     status: ToolStatus::Completed,
                                 }),
                             });
                         }
+                        // BUG-610: an OpenAI reasoning input item needs the
+                        // OpenAI-generated item id. Reasoning without one is
+                        // saved thinking text replayed from the conversation
+                        // history (persisted with no provider id); the
+                        // Responses API cannot take it as an input item, and
+                        // the Codex continuation carries the native reasoning
+                        // items, so it is not part of the request input. The
+                        // `expect` here used to panic inside the session
+                        // store lock during compaction.
                         crate::message::AssistantContent::Reasoning(
-                            crate::message::Reasoning { id, reasoning, .. },
+                            crate::message::Reasoning { id: None, .. },
+                        ) => {}
+                        crate::message::AssistantContent::Reasoning(
+                            crate::message::Reasoning {
+                                id: Some(id),
+                                reasoning,
+                                ..
+                            },
                         ) => {
                             items.push(InputItem {
                                 role: None,
                                 input: InputContent::Reasoning(OpenAIReasoning {
-                                    id: id
-                                        .expect("An OpenAI-generated ID is required when using OpenAI reasoning items"),
+                                    id,
                                     summary: reasoning.into_iter().map(|x| ReasoningSummary::new(&x)).collect(),
                                     encrypted_content: None,
                                     status: None,

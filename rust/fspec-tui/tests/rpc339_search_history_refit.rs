@@ -9,10 +9,9 @@
 //! pre-refit baseline. Validation is by buffer-walking (no insta
 //! snapshots cover SearchHistory).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::SearchHistoryView;
 use codelet_rpc_types::{HistoryMatch, SessionId};
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::Modifier;
@@ -68,7 +67,7 @@ fn find_first_col_of(
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refit_preserves_editable_query_title() {
+fn refit_preserves_editable_query_title() -> TestResult {
     // @step Given a SearchHistoryView whose query is "auth"
     let mut view = SearchHistoryView::new();
     view.set_query("auth");
@@ -93,6 +92,7 @@ fn refit_preserves_editable_query_title() {
         "expected REVERSED cursor cell at col=14 row=0 ({:?})",
         cursor_cell.symbol()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ fn refit_preserves_editable_query_title() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refit_preserves_body_match_list() {
+fn refit_preserves_body_match_list() -> TestResult {
     // @step Given a SearchHistoryView with matching history entries and a selected row
     let mut view = SearchHistoryView::new();
     view.set_query("git");
@@ -112,8 +112,8 @@ fn refit_preserves_body_match_list() {
     view.render(area, &mut buf);
 
     // @step Then the body renders the scroll-windowed match list
-    let (g_col, g_row) =
-        find_first_col_of(&buf, "git status now", 'g').expect("must find the first matched row");
+    let (g_col, g_row) = find_first_col_of(&buf, "git status now", 'g')
+        .or_fail("must find the first matched row")?;
     assert!(
         g_row >= 2,
         "match rows must paint below the title/separator chrome"
@@ -137,6 +137,7 @@ fn refit_preserves_body_match_list() {
             cell.symbol()
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -144,7 +145,7 @@ fn refit_preserves_body_match_list() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refit_preserves_empty_placeholder_and_footer() {
+fn refit_preserves_empty_placeholder_and_footer() -> TestResult {
     // @step Given a SearchHistoryView with an empty query
     let mut view = SearchHistoryView::new();
 
@@ -165,24 +166,25 @@ fn refit_preserves_empty_placeholder_and_footer() {
         footer_row.contains("Enter Select | ↑↓ Navigate | Esc Cancel"),
         "footer row actually reads: {footer_row:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // Scenario: Source-shape test accepts the refit delegate
 // ─────────────────────────────────────────────────────────────────────
 
-fn fspec_tui_src() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
 #[test]
-fn search_history_render_delegates_to_shell() {
+fn search_history_render_delegates_to_shell() -> TestResult {
     // @step Given SearchHistoryView::render delegates to render_full_screen_scaffold_with_title as its first statement
-    let search = fspec_tui_src()
+    let search = fspec_tui_src()?
         .join("views")
         .join("agent")
         .join("search_history_view.rs");
-    let body = common::read_to_string_or_panic(&search);
+    let body = common::read_to_string_or_fail(&search)?;
 
     // @step When the source-shape test in tests/rpc026_source_shape.rs runs
     // TUI-103 note: the render fn takes `&mut self` (it caches the
@@ -190,9 +192,9 @@ fn search_history_render_delegates_to_shell() {
     // the pre-TUI-103 `&self` signature and updated here.
     let render_idx = body
         .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
-        .expect("search render fn");
+        .or_fail("search render fn")?;
     let after = &body[render_idx..];
-    let brace_idx = after.find('{').expect("opening brace");
+    let brace_idx = after.find('{').or_fail("opening brace")?;
     let trimmed = after[brace_idx + 1..].trim_start();
 
     // @step Then the relaxed first-statement assertion accepts the shell delegate
@@ -207,4 +209,5 @@ fn search_history_render_delegates_to_shell() {
 
     // @step And search_history_view.rs remains under 300 lines of code
     assert!(body.lines().count() < 300);
+    Ok(())
 }

@@ -8,7 +8,7 @@
 //! logic lives exclusively in fspec_core — the bridge performs only JSON arg
 //! marshalling.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -24,11 +24,14 @@ pub struct CliArgs {
     pub test_file: Option<String>,
     pub impl_file: Option<String>,
     pub all: bool,
+    /// REFAC-020: paired exact-row selector forwarded to the shared core.
+    pub test_mapping_index: Option<u64>,
+    pub expected_scenario_hash: Option<String>,
 }
 
 /// Entry point for the `unlink-coverage` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert(
@@ -43,6 +46,15 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         payload.insert("implFile".to_string(), Value::String(imf.clone()));
     }
     payload.insert("all".to_string(), Value::Bool(args.all));
+    if let Some(index) = args.test_mapping_index {
+        payload.insert("testMappingIndex".to_string(), Value::from(index));
+    }
+    if let Some(hash) = &args.expected_scenario_hash {
+        payload.insert(
+            "expectedScenarioHash".to_string(),
+            Value::String(hash.clone()),
+        );
+    }
     let args_json = json!(payload).to_string();
 
     match unlink_coverage::run(&args_json, &project_root).await {

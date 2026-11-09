@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "55-90",
+          "lines": "55-99",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
@@ -26,7 +26,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": ".file",
+              "lastLine": ""
             }
           ]
         }
@@ -37,7 +39,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "83-125",
+          "lines": "101-137",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
@@ -49,7 +51,9 @@
                 145,
                 146,
                 147
-              ]
+              ],
+              "firstLine": "/// Top-level orchestration of the read/parse/match/categorize pipeline.",
+              "lastLine": "file_rel: &str,"
             }
           ]
         }
@@ -60,19 +64,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "127-168",
+          "lines": "139-172",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155
-              ]
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "let target = feature",
+              "lastLine": "}"
             }
           ]
         }
@@ -83,7 +104,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "149-189",
+          "lines": "174-213",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
@@ -94,7 +115,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "fn load_scenario_tags(",
+              "lastLine": ") -> ListScenarioTagsResult {"
             }
           ]
         }
@@ -105,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "191-228",
+          "lines": "215-254",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
@@ -138,7 +161,9 @@
                 168,
                 169,
                 170
-              ]
+              ],
+              "firstLine": "/// returned [`ListScenarioTagsResult`] — never escalated as a",
+              "lastLine": "};"
             }
           ]
         }
@@ -149,20 +174,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "230-258",
+          "lines": "444-475",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
@@ -210,8 +226,23 @@
                 254,
                 255,
                 256,
-                257
-              ]
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ],
+              "firstLine": "if show_categories {",
+              "lastLine": "}"
             }
           ]
         }
@@ -222,7 +253,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "260-305",
+          "lines": "256-303",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
@@ -241,7 +272,9 @@
                 162,
                 163,
                 164
-              ]
+              ],
+              "firstLine": "let abs = project_root.join(file_rel);",
+              "lastLine": "Ok(f) => f,"
             }
           ]
         }
@@ -252,20 +285,46 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "307-352",
+          "lines": "305-352",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159
-              ]
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ],
+              "firstLine": "/// Build the `categorizedTags` projection from `spec/tags.json`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -276,73 +335,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "354-394",
+          "lines": "354-397",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "showCategories degrades gracefully when spec/tags.json is invalid JSON",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "396-435",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
-              "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Excludes Scenarios nested inside Rule: blocks",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "451-479",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
-              "lines": [
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
                 276,
                 277,
                 278,
@@ -354,6 +351,58 @@
                 284,
                 285,
                 286,
+                287
+              ],
+              "firstLine": "category: map.get(t).cloned().unwrap_or_else(|| \"Unknown\".to_string()),",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "showCategories degrades gracefully when spec/tags.json is invalid JSON",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
+          "lines": "399-442",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "category: map.get(t).cloned().unwrap_or_else(|| \"Unknown\".to_string()),",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Excludes Scenarios nested inside Rule: blocks",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/list_scenario_tags.rs",
+          "lines": "477-508",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
+              "lines": [
+                284,
+                285,
+                286,
                 287,
                 288,
                 289,
@@ -362,8 +411,23 @@
                 292,
                 293,
                 294,
-                295
-              ]
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308
+              ],
+              "firstLine": "struct TagsRegistry {",
+              "lastLine": "///"
             }
           ]
         }
@@ -374,21 +438,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_scenario_tags.rs",
-          "lines": "481-509",
+          "lines": "510-541",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_scenario_tags.rs",
               "lines": [
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287
-              ]
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ],
+              "firstLine": "tags: Vec<TagEntry>,",
+              "lastLine": ""
             }
           ]
         }
@@ -405,6 +470,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/list_scenario_tags.rs"
     ],
-    "totalLinesCovered": 662
+    "totalLinesCovered": 719
   }
 }

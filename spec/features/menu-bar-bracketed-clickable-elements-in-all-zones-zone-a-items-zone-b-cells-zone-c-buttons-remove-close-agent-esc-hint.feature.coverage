@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "311-331",
+          "lines": "328-348",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
@@ -28,7 +28,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "for (i, rect) in layout.item_rects.iter().enumerate() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -39,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "333-348",
+          "lines": "351-366",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
@@ -62,7 +64,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "for (i, rect) in layout.item_rects.iter().enumerate() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,15 +77,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "350-367",
+          "lines": "369-387",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                197,
-                198,
-                199,
-                200,
                 201,
                 202,
                 203,
@@ -93,13 +93,18 @@
                 209,
                 210,
                 211,
-                212,
                 213,
                 214,
                 215,
                 216,
-                217
-              ]
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "Style::default().fg(theme.dim)",
+              "lastLine": "inverse_style()"
             }
           ]
         }
@@ -110,33 +115,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "369-431",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
-              "lines": [
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280
-              ]
-            }
-          ]
+          "lines": "390-453",
+          "implMappings": []
         }
       ]
     },
@@ -145,21 +125,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "433-470",
+          "lines": "456-500",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                178,
-                179,
-                180,
-                181,
                 182,
                 183,
                 184,
                 185,
-                186
-              ]
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "DisplayCell::View { label, active, .. } => {",
+              "lastLine": "if *active {"
             }
           ]
         }
@@ -170,7 +152,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "472-505",
+          "lines": "503-541",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
@@ -181,28 +163,58 @@
                 25,
                 26,
                 27,
-                28,
-                29,
-                30,
-                31,
-                32
-              ]
+                35,
+                36,
+                39
+              ],
+              "firstLine": "/// `New Agent` button (the `.`-key / Kanban-dropdown-row semantics,",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "The agent bar paints \"[ New Agent ]\" then \"[ Close Agent ]\" right-aligned without the [esc] hint",
+      "name": "The agent bar paints \"[ New Agent ]\" then \"[ Close ]\" right-aligned without the [esc] hint",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "507-545",
+          "lines": "545-582",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
-                48,
+                49,
+                50,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// always-dialog rule). `&'static` (the `AGENT_ZONE_A` precedent).",
+              "lastLine": "/// The wall clock in ms since the epoch — drives the Running chip's"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With no open sessions the agent bar still shows all three bracketed Zone C buttons",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "866-893",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
                 49,
                 50,
                 51,
@@ -214,66 +226,42 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61
+              ],
+              "firstLine": "/// always-dialog rule). `&'static` (the `AGENT_ZONE_A` precedent).",
+              "lastLine": "label: \"[ Close ]\","
             }
           ]
         }
       ]
     },
     {
-      "name": "With no open sessions the agent bar still shows both bracketed Zone C buttons",
+      "name": "Enter on the agent's \"[ Close ]\" still shows the same exit confirmation as Esc",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "809-833",
+          "lines": "588-635",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
-                48,
                 49,
                 50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
                 59,
-                60
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on the agent's \"[ Close Agent ]\" still shows the same exit confirmation as Esc",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "547-594",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// always-dialog rule). `&'static` (the `AGENT_ZONE_A` precedent).",
+              "lastLine": "/// The wall clock in ms since the epoch — drives the Running chip's"
             }
           ]
         }
@@ -284,7 +272,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "596-632",
+          "lines": "639-679",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
@@ -300,7 +288,9 @@
                 156,
                 157,
                 158
-              ]
+              ],
+              "firstLine": "// MENU-009 R6: a left click on a right-aligned Zone C",
+              "lastLine": "}"
             }
           ]
         }
@@ -311,7 +301,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "634-680",
+          "lines": "682-735",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
@@ -320,10 +310,6 @@
                 91,
                 92,
                 93,
-                94,
-                95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -342,8 +328,14 @@
                 113,
                 114,
                 115,
-                116
-              ]
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "for (i, rect) in layout.zone_c_rects.iter().enumerate() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -354,12 +346,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "682-730",
+          "lines": "739-784",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
               "lines": [
-                85,
                 86,
                 87,
                 88,
@@ -393,19 +384,7 @@
                 116,
                 117,
                 118,
-                119,
-                120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -451,18 +430,8 @@
                 174,
                 175,
                 176,
-                177,
-                178,
                 179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
-                188,
                 189,
                 190,
                 191,
@@ -476,8 +445,14 @@
                 199,
                 200,
                 201,
-                202
-              ]
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {",
+              "lastLine": ""
             }
           ]
         }
@@ -488,7 +463,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
-          "lines": "733-806",
+          "lines": "789-862",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/dropdown_paint.rs",
@@ -504,7 +479,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "// Label (fg; inverse when selected).",
+              "lastLine": "},"
             }
           ]
         }
@@ -520,12 +497,12 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/components/menu_bar/paint.rs",
-      "rust/fspec-tui/src/components/menu_bar/layout.rs",
       "rust/fspec-tui/src/views/board/menu_snapshot.rs",
       "rust/fspec-tui/src/views/agent/menu_render.rs",
       "rust/fspec-tui/src/views/board/menu_mouse.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs",
       "rust/fspec-tui/src/components/menu_bar/dropdown_paint.rs"
     ],
-    "totalLinesCovered": 811
+    "totalLinesCovered": 794
   }
 }

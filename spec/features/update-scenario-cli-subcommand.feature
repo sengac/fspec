@@ -19,7 +19,7 @@ Feature: update-scenario CLI subcommand (Rust shell front-door)
     Given a tempdir with spec/features/user-auth.feature containing a scenario "Login with valid credentials"
     When I run 'fspec update-scenario spec/features/user-auth.feature "Login with valid credentials" "Login with email and password"' in that tempdir
     Then the process exits with code 0
-    And stdout contains the substring '✓ Successfully renamed scenario to '"'"'Login with email and password'"'"' in user-auth.feature'
+    And stdout contains the substring '✓ Successfully renamed scenario to 'Login with email and password' in user-auth.feature'
     And the file spec/features/user-auth.feature in the tempdir contains the line '  Scenario: Login with email and password'
 
   Scenario: CLI surfaces a missing-file error with stderr Error prefix and exit 1
@@ -34,7 +34,7 @@ Feature: update-scenario CLI subcommand (Rust shell front-door)
     When I run 'fspec update-scenario spec/features/user-auth.feature "Nonexistent" "Whatever"' in that tempdir
     Then the process exits with code 1
     And stderr contains the substring 'Error:'
-    And stderr contains the substring 'Scenario '"'"'Nonexistent'"'"' not found in feature file'
+    And stderr contains the substring 'Scenario 'Nonexistent' not found in feature file'
 
   Scenario: CLI help output matches captured TypeScript fixture byte-for-byte
     Given the standalone fspec Rust binary is built
@@ -45,6 +45,6 @@ Feature: update-scenario CLI subcommand (Rust shell front-door)
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/user-auth.feature containing a scenario "Login with valid credentials"
     When I dispatch update-scenario through fspec_core::dispatch::dispatch_command with feature='spec/features/user-auth.feature' oldName='Login with valid credentials' newName='Renamed'
-    Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully renamed scenario to '"'"'Renamed'"'"' in user-auth.feature'
+    Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully renamed scenario to 'Renamed' in user-auth.feature'
     And the CLI bridge module rust/fspec/src/update_scenario.rs contains NO inline gherkin parsing or scenario-rename logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

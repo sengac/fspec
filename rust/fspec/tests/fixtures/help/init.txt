@@ -14,8 +14,6 @@ USAGE
 OPTIONS
   --agent <agent>
     Specify agent directly: claude, cursor, windsurf, cline, aider, etc. (18 agents supported)
-  --yes
-    Skip confirmation prompts
 
 EXAMPLES
   1. Interactive agent selection (menu)

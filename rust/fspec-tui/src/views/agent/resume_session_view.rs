@@ -11,11 +11,14 @@ use std::time::{Duration, Instant};
 
 use super::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 use super::mode_view_render::render_session_rows;
+use crate::components::exit_confirmation_dialog::SessionKind;
 use crate::components::scroll_viewport::{ensure_visible, wrap_index, WheelVelocity};
 use crate::mouse::scrollbar_drag::ScrollbarDrag;
 use crate::terminal::sanitize::sanitize_for_terminal;
+use crate::views::full_screen_shell as shell;
 
-const CHROME_ROWS: u16 = 3;
+/// The footer hint (TUI-131: wrapped by the shell; page math counts it).
+const FOOTER_HINT: &str = "DblClick Resume | Enter Select | ↑↓ Navigate | D Delete | Esc Cancel";
 const DOUBLE_CLICK_TIMEOUT: Duration = Duration::from_millis(300);
 
 /// Detects double-clicks: two left-button-down events on the same row
@@ -44,6 +47,14 @@ impl DoubleClickDetector {
         self.last_click_row = Some(row);
         self.last_click_time = Some(now);
         is_double
+    }
+
+    /// TEST-042 test seam: move the last click `by` into the past. False
+    /// when there was no click or the clock is younger than `by`.
+    pub(super) fn age(&mut self, by: Duration) -> bool {
+        let aged = self.last_click_time.and_then(|time| time.checked_sub(by));
+        self.last_click_time = aged.or(self.last_click_time);
+        aged.is_some()
     }
 }
 
@@ -121,6 +132,12 @@ impl ResumeSessionView {
     ///
     /// **TUI-111**: user-visible fields (name, project, worktree_path,
     /// role) are sanitized on ingress.
+    /// TEST-042 test seam: move the last click `by` into the past, instead
+    /// of sleeping between clicks.
+    pub fn age_last_click_for_test(&mut self, by: Duration) -> bool {
+        self.double_click.age(by)
+    }
+
     pub fn set_sessions(&mut self, sessions: Vec<SessionInfo>) {
         let mut sessions = sessions;
         for session in sessions.iter_mut() {
@@ -225,9 +242,14 @@ impl ResumeSessionView {
             KeyCode::Char('d') | KeyCode::Char('D') => match self.selected() {
                 Some(info) => {
                     let id = info.id.clone();
-                    let body = format!("Delete session {id}?");
+                    // TUI-124: name the kind; deleting removes the saved history.
+                    let kind = SessionKind::of_role(info.role.as_deref());
+                    let body = format!(
+                        "Delete {} {id}?\nIts saved history is deleted; it can no longer be resumed.",
+                        kind.word()
+                    );
                     self.delete_confirm = Some(ConfirmDialog::new(
-                        "Delete session?",
+                        format!("Delete {}?", kind.title_word()),
                         body,
                         "Delete",
                         None,
@@ -250,7 +272,7 @@ impl ResumeSessionView {
             "Resume Session",
             self.sessions.len(),
             "available",
-            "DblClick Resume | Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
+            FOOTER_HINT,
             |body_area, buf| {
                 render_session_rows(
                     body_area,
@@ -262,18 +284,13 @@ impl ResumeSessionView {
             },
             self.delete_confirm.as_ref(),
         );
-        // TUI-101: cache the scrollbar gutter rect from the same
-        // body-rect geometry the shell uses (title + separator on top,
-        // footer below).
-        self.last_scrollbar_rect = crate::views::full_screen_shell::mode_view_scrollbar_rect(
-            area,
-            Self::visible_rows_for(area) / 2,
-            self.sessions.len(),
-        );
+        // TUI-101: cache the scrollbar gutter rect from the shell's geometry.
+        let (rows, count) = (Self::visible_rows_for(area) / 2, self.sessions.len());
+        self.last_scrollbar_rect = shell::mode_view_scrollbar_rect(area, FOOTER_HINT, rows, count);
     }
 
-    /// Heuristic visible-row hint for `handle_key`'s `visible_rows` argument.
+    /// Body rows the shell leaves above the wrapped footer (TUI-131).
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height.saturating_sub(CHROME_ROWS) as usize
+        usize::from(shell::scaffold_rects(area, FOOTER_HINT).body.height)
     }
 }

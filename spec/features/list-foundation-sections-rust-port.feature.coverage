@@ -78,7 +78,9 @@
                 209,
                 210,
                 211
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -169,7 +171,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "const FOUNDATION_SECTIONS: &[FoundationSectionSpec] = &[",
+              "lastLine": "}"
             }
           ]
         }
@@ -180,7 +184,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "110-164",
+          "lines": "110-173",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -260,7 +264,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "const FOUNDATION_SECTIONS: &[FoundationSectionSpec] = &[",
+              "lastLine": "}"
             }
           ]
         }
@@ -271,7 +277,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "166-220",
+          "lines": "175-238",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -351,7 +357,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "const FOUNDATION_SECTIONS: &[FoundationSectionSpec] = &[",
+              "lastLine": "}"
             }
           ]
         }
@@ -362,7 +370,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "222-272",
+          "lines": "240-292",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -471,7 +479,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "struct FoundationSectionSpec {",
+              "lastLine": "}"
             }
           ]
         }
@@ -482,7 +492,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "274-300",
+          "lines": "294-322",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -507,7 +517,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -518,7 +530,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "302-365",
+          "lines": "324-408",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -646,7 +658,9 @@
                 209,
                 210,
                 211
-              ]
+              ],
+              "firstLine": "const FOUNDATION_SECTIONS: &[FoundationSectionSpec] = &[",
+              "lastLine": "}"
             }
           ]
         }
@@ -657,7 +671,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "367-421",
+          "lines": "410-482",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -687,7 +701,9 @@
                 209,
                 210,
                 211
-              ]
+              ],
+              "firstLine": "fn render_text(sections: &[FoundationSectionSpec]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -698,7 +714,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "423-450",
+          "lines": "484-518",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -728,7 +744,9 @@
                 209,
                 210,
                 211
-              ]
+              ],
+              "firstLine": "fn render_text(sections: &[FoundationSectionSpec]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -739,7 +757,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "452-492",
+          "lines": "520-566",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -769,7 +787,9 @@
                 209,
                 210,
                 211
-              ]
+              ],
+              "firstLine": "fn render_text(sections: &[FoundationSectionSpec]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -780,7 +800,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_foundation_sections.rs",
-          "lines": "494-532",
+          "lines": "568-606",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_foundation_sections.rs",
@@ -805,7 +825,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -822,6 +844,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/list_foundation_sections.rs"
     ],
-    "totalLinesCovered": 1120
+    "totalLinesCovered": 1194
   }
 }

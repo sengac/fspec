@@ -458,3 +458,199 @@ fn dispatcher_rejects_code_that_matches_no_mermaid_diagram_type() {
         "no diagram should be persisted on undetectable mermaid"
     );
 }
+
+/// BUG-535: a schema-valid generic v2.0.0 foundation, so generate-foundation-md accepts it.
+fn complete_foundation() -> Value {
+    json!({
+        "version": "2.0.0",
+        "project": {"name": "Original Name", "vision": "Original Vision", "projectType": "cli-tool"},
+        "problemSpace": {"primaryProblem": {
+            "title": "Primary Problem", "description": "Problem description", "impact": "high"}},
+        "solutionSpace": {"overview": "Solution overview", "capabilities": [
+            {"name": "Core Capability", "description": "What the system does"}]},
+        "architectureDiagrams": []
+    })
+}
+
+#[test]
+fn dispatcher_regenerates_foundation_md_after_adding_a_diagram() {
+    // Scenario: Dispatcher regenerates FOUNDATION.md after adding a diagram (BUG-535)
+
+    // @step Given spec/foundation.json is a complete foundation with vision 'Original Vision' and spec/FOUNDATION.md does not exist
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &complete_foundation());
+    let foundation_md = tmp.path().join("spec/FOUNDATION.md");
+    assert!(!foundation_md.exists());
+
+    // @step When I dispatch add-diagram with section='Architecture' title='System Context' code='graph TD\n  A-->B'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "Architecture", "title": "System Context", "code": "graph TD\n  A-->B"}),
+    ));
+    assert!(result.success, "expected success, got {result:?}");
+
+    // @step Then spec/FOUNDATION.md exists
+    let markdown = fs::read_to_string(&foundation_md).expect("FOUNDATION.md regenerated");
+
+    // @step And it shows 'Original Vision', the heading '### System Context' and the diagram as a mermaid code block
+    assert!(markdown.contains("Original Vision"), "{markdown}");
+    assert!(
+        markdown.contains("### System Context\n\n```mermaid\ngraph TD\n  A-->B\n```"),
+        "{markdown}"
+    );
+}
+
+#[test]
+fn a_rejected_add_diagram_leaves_foundation_md_unchanged() {
+    // Scenario: A rejected add-diagram leaves FOUNDATION.md unchanged (BUG-535)
+
+    // @step Given spec/foundation.json is a complete foundation and spec/FOUNDATION.md has been generated from it
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &complete_foundation());
+    let generated = dispatch_command(DispatchRequest {
+        command: "generate-foundation-md".to_string(),
+        args_json: "{}".to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(
+        generated.success,
+        "generate-foundation-md failed: {generated:?}"
+    );
+    let foundation_md = tmp.path().join("spec/FOUNDATION.md");
+    let before = fs::read(&foundation_md).expect("read FOUNDATION.md");
+
+    // @step When I dispatch add-diagram with title='Broken' and a body that matches no mermaid diagram type
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "Architecture", "title": "Broken", "code": "this is not a diagram at all"}),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure, got {result:?}");
+
+    // @step And spec/FOUNDATION.md is byte-for-byte unchanged
+    assert_eq!(
+        fs::read(&foundation_md).expect("read FOUNDATION.md"),
+        before
+    );
+}
+
+#[test]
+fn dispatcher_accepts_flowchart_sequence_and_class_diagrams() {
+    // Scenario: Dispatcher accepts flowchart, sequence and class diagrams (COV-071, from add-diagram)
+
+    // @step Given spec/foundation.json exists with architectureDiagrams=[]
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &empty_foundation());
+
+    // @step When I dispatch add-diagram with title='Valid Flow' code='flowchart TD\n  A-->B\n  B-->C', title='Valid Sequence' code='sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi' and title='Domain Model' code='classDiagram\n  Class01 <|-- Class02'
+    let diagrams = [
+        ("Valid Flow", "flowchart TD\n  A-->B\n  B-->C"),
+        (
+            "Valid Sequence",
+            "sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi",
+        ),
+        ("Domain Model", "classDiagram\n  Class01 <|-- Class02"),
+    ];
+    let results: Vec<_> = diagrams
+        .iter()
+        .map(|(title, code)| {
+            dispatch_command(req(
+                tmp.path(),
+                json!({"section": "Architecture", "title": title, "code": code}),
+            ))
+        })
+        .collect();
+
+    // @step Then each dispatch returns success=true
+    for result in &results {
+        assert!(result.success, "expected success, got {result:?}");
+    }
+
+    // @step And spec/foundation.json architectureDiagrams holds the three diagrams in that order with their mermaidCode unchanged
+    let data = read_foundation(tmp.path());
+    let stored: Vec<(&str, &str)> = data["architectureDiagrams"]
+        .as_array()
+        .expect("array")
+        .iter()
+        .map(|d| {
+            (
+                d["title"].as_str().unwrap_or(""),
+                d["mermaidCode"].as_str().unwrap_or(""),
+            )
+        })
+        .collect();
+    assert_eq!(stored, diagrams.to_vec());
+}
+
+#[test]
+fn dispatcher_keeps_every_line_of_a_multi_line_diagram() {
+    // Scenario: Dispatcher keeps every line of a multi-line diagram (COV-071, from add-diagram)
+
+    // @step Given spec/foundation.json is a complete foundation
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &complete_foundation());
+
+    // @step When I dispatch add-diagram with section='Architecture' title='Complex' code='graph TD\n  A-->B\n  B-->C\n  C-->D'
+    let code = "graph TD\n  A-->B\n  B-->C\n  C-->D";
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "Architecture", "title": "Complex", "code": code}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success, got {result:?}");
+
+    // @step And the diagram titled 'Complex' has mermaidCode='graph TD\n  A-->B\n  B-->C\n  C-->D'
+    let data = read_foundation(tmp.path());
+    let diagram = data["architectureDiagrams"]
+        .as_array()
+        .expect("array")
+        .iter()
+        .find(|d| d["title"] == "Complex")
+        .expect("diagram titled Complex");
+    assert_eq!(diagram["mermaidCode"].as_str(), Some(code));
+
+    // @step And spec/FOUNDATION.md shows the four lines with their indentation inside one mermaid code block under '### Complex'
+    let markdown =
+        fs::read_to_string(tmp.path().join("spec/FOUNDATION.md")).expect("FOUNDATION.md");
+    assert!(
+        markdown.contains("### Complex\n\n```mermaid\ngraph TD\n  A-->B\n  B-->C\n  C-->D\n```"),
+        "{markdown}"
+    );
+}
+
+#[test]
+fn dispatcher_error_names_the_parse_problem_in_the_diagram() {
+    // Scenario: Dispatcher error names the parse problem in the diagram (COV-071, from add-diagram)
+
+    // @step Given spec/foundation.json exists with architectureDiagrams=[]
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &empty_foundation());
+
+    // @step When I dispatch add-diagram with section='Architecture' title='Error Test' code='graph TD\n  A[Missing bracket'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "Architecture", "title": "Error Test", "code": "graph TD\n  A[Missing bracket"}),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure, got {result:?}");
+
+    // @step And the error message contains the substring 'Unterminated node label (missing `]`)'
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Unterminated node label (missing `]`)"),
+        "error does not name the parse problem; got: {msg}"
+    );
+
+    // @step And no entry is appended to architectureDiagrams
+    let data = read_foundation(tmp.path());
+    assert_eq!(
+        data["architectureDiagrams"]
+            .as_array()
+            .expect("array")
+            .len(),
+        0
+    );
+}

@@ -27,7 +27,6 @@ Feature: Updater does not set executable permissions on the replaced binary (uni
     I want to self-update fspec in place
     So that the installed binary remains executable after the update
 
-  @UPD-004
   @unix
   Scenario: Engine installs an executable binary on Unix
     Given the engine is configured at an older version

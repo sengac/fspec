@@ -7,24 +7,23 @@
 //! so the `FspecDialog` literal lives in `components/` (RPC-079 keeps all
 //! dialog literals out of view modules). The view owns the modal STATE;
 //! this function only turns title + body lines into the canonical
-//! yellow-accent popup.
+//! yellow-accent popup. TUI-131: each body line wraps to the dialog
+//! width, so a long path never hides the warning after it.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::text::Span;
+use ratatui::style::Style;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::dialog_theme_rows::{dialog_body_width, wrapped_rows};
 
 /// Render the restore modal: a yellow-accent centered popup with the
-/// supplied `title` and `body_lines`.
+/// supplied `title` and `body_lines`, each wrapped to the dialog width.
 pub fn render_restore_modal(area: Rect, buf: &mut Buffer, title: &str, body_lines: &[String]) {
+    let width = dialog_body_width(area);
     let rows: Vec<DialogRow> = body_lines
         .iter()
-        .map(|line| DialogRow {
-            spans: vec![Span::raw(line.clone())],
-            selectable: false,
-            selected: false,
-        })
+        .flat_map(|line| wrapped_rows(line, Style::default(), width))
         .collect();
     let dialog = FspecDialog {
         accent: Accent::Yellow,

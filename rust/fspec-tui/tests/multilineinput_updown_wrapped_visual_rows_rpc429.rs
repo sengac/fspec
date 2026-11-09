@@ -2,9 +2,8 @@
 //!
 //! Feature: spec/features/multilineinput-up-down-arrow-keys-skip-wrapped-visual-rows-and-jump-to-scrollback.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::multiline_input::{InputEventOutcome, MultiLineInput};
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers};
 
 /// Helper: build text with `n_lines` logical lines, each `line_width` chars wide.
@@ -22,7 +21,7 @@ fn make_wrapped_text(_body_width: u16, n_lines: usize, line_width: usize) -> Str
 
 /// Scenario: Down arrow returns Continued when cursor is not at visual bottom
 #[test]
-fn down_arrow_returns_continued_when_cursor_is_not_at_visual_bottom() {
+fn down_arrow_returns_continued_when_cursor_is_not_at_visual_bottom() -> TestResult {
     // @step Given the input contains a wrapped string with multiple visual rows
     // 2 lines of 40 chars at body_width=20 → each wraps to 2 visual rows = 4 total
     let body_width = 20;
@@ -62,11 +61,12 @@ fn down_arrow_returns_continued_when_cursor_is_not_at_visual_bottom() {
         vrow > 3,
         "cursor should move to a later visual row, got {vrow}"
     );
+    Ok(())
 }
 
 /// Scenario: Up arrow returns Continued when cursor is not at visual top
 #[test]
-fn up_arrow_returns_continued_when_cursor_is_not_at_visual_top() {
+fn up_arrow_returns_continued_when_cursor_is_not_at_visual_top() -> TestResult {
     // @step Given the input contains a wrapped string with multiple visual rows
     // 2 lines of 40 chars at body_width=20 → each wraps to 2 visual rows = 4 total
     let body_width = 20;
@@ -96,11 +96,12 @@ fn up_arrow_returns_continued_when_cursor_is_not_at_visual_top() {
     // Actually tui-textarea can't move further up from line 0.
     // The cursor stays at visual 2. The important thing is the outcome is Continued.
     let (_vrow, _) = input.cursor_visual(body_width);
+    Ok(())
 }
 
 /// Scenario: Up arrow at visual top returns Ignored for scrollback navigation
 #[test]
-fn up_arrow_at_visual_top_returns_ignored_for_scrollback_navigation() {
+fn up_arrow_at_visual_top_returns_ignored_for_scrollback_navigation() -> TestResult {
     // @step Given the input contains a wrapped string with multiple visual rows
     let body_width = 20;
     let text = make_wrapped_text(body_width, 2, 40);
@@ -127,11 +128,12 @@ fn up_arrow_at_visual_top_returns_ignored_for_scrollback_navigation() {
     // @step And the cursor remains on visual row 0
     let (vrow, _) = input.cursor_visual(body_width);
     assert_eq!(vrow, 0, "cursor should remain at visual row 0");
+    Ok(())
 }
 
 /// Scenario: Down arrow at visual bottom returns Ignored for scrollback navigation
 #[test]
-fn down_arrow_at_visual_bottom_returns_ignored_for_scrollback_navigation() {
+fn down_arrow_at_visual_bottom_returns_ignored_for_scrollback_navigation() -> TestResult {
     // @step Given the input contains a wrapped string with multiple visual rows
     let body_width = 20;
     let text = make_wrapped_text(body_width, 2, 40);
@@ -156,11 +158,12 @@ fn down_arrow_at_visual_bottom_returns_ignored_for_scrollback_navigation() {
     // @step And the cursor remains on visual row 4
     let (vrow, _) = input.cursor_visual(body_width);
     assert_eq!(vrow, 4, "cursor should remain at visual row 4");
+    Ok(())
 }
 
 /// Scenario: Up arrow on a single visual row returns Ignored for scrollback navigation
 #[test]
-fn up_arrow_on_a_single_visual_row_returns_ignored_for_scrollback_navigation() {
+fn up_arrow_on_a_single_visual_row_returns_ignored_for_scrollback_navigation() -> TestResult {
     // @step Given the input contains a short string that fits on one visual row
     let body_width = 40;
     let mut input = MultiLineInput::new();
@@ -183,4 +186,5 @@ fn up_arrow_on_a_single_visual_row_returns_ignored_for_scrollback_navigation() {
     // @step And the cursor remains on visual row 0
     let (vrow, _) = input.cursor_visual(body_width);
     assert_eq!(vrow, 0, "cursor should remain at visual row 0");
+    Ok(())
 }

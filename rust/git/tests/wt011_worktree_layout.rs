@@ -35,27 +35,37 @@ fn linked_git_repo() -> (TempDir, PathBuf, PathBuf) {
 
     fs::create_dir_all(&repo).expect("mkdir repo");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["init"])
         .current_dir(&repo)
         .output()
         .expect("git init");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.email", "test@example.com"])
         .current_dir(&repo)
         .output()
         .expect("git config email");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["config", "user.name", "Test User"])
         .current_dir(&repo)
         .output()
         .expect("git config name");
     fs::write(repo.join("README.md"), "# Test\n").expect("write README");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(&repo)
         .output()
         .expect("git add");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Initial commit"])
         .current_dir(&repo)
         .output()

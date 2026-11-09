@@ -1,5 +1,7 @@
 @done
 @KGRAPH-054
+@parser
+@code-analysis
 Feature: Fix AST extractor edge quality gaps — Python/Java/Go missing Imports edges, Go missing method-body Calls, Go missing TypeRef edges
   """
   Uses tree-sitter AST queries in Rust extractors — each extractor is in rust/napi/src/ast_{lang}_extractor.rs

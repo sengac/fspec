@@ -128,7 +128,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "//! `add-command-to-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -144,8 +146,6 @@
             {
               "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -159,7 +159,6 @@
                 57,
                 58,
                 59,
-                60,
                 61,
                 62,
                 63,
@@ -176,8 +175,12 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -193,14 +196,16 @@
             {
               "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
-                50,
-                51,
                 52,
                 53,
                 54,
                 55,
-                56
-              ]
+                56,
+                57,
+                58
+              ],
+              "firstLine": "let mut body = Map::new();",
+              "lastLine": "let args_json = Value::Object(body).to_string();"
             }
           ]
         }
@@ -211,18 +216,20 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_command_to_foundation.rs",
-          "lines": "170-199",
+          "lines": "179-207",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
-                71,
-                72,
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78
+              ],
+              "firstLine": "println!(\"✓ {message}\");",
+              "lastLine": "let raw = result.error.unwrap_or_default();"
             }
           ]
         }
@@ -238,9 +245,6 @@
             {
               "file": "rust/fspec/src/add_command_to_foundation.rs",
               "lines": [
-                58,
-                59,
-                60,
                 61,
                 62,
                 63,
@@ -250,8 +254,12 @@
                 67,
                 68,
                 69,
-                70
-              ]
+                70,
+                71,
+                72
+              ],
+              "firstLine": "command: \"add-command-to-foundation\".to_string(),",
+              "lastLine": ".unwrap_or_default();"
             }
           ]
         }
@@ -269,6 +277,6 @@
       "rust/fspec-core/src/help/configs/add_command_to_foundation.rs",
       "rust/fspec/src/add_command_to_foundation.rs"
     ],
-    "totalLinesCovered": 340
+    "totalLinesCovered": 337
   }
 }

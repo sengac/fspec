@@ -38,9 +38,9 @@ Feature: Conversational Review Prompt Before Done
     Given I have a story work unit "AUTH-001" in "validating" status
     When I run "fspec update-work-unit-status AUTH-001 done"
     Then the command should emit a system-reminder
-    And the system-reminder should suggest asking user "Would you like me to run fspec review AUTH-001 to check for quality issues?"
+    And the system-reminder should suggest asking user "Would you like me to run fspec review AUTH-001 for a quality review before finalizing?"
     And the system-reminder should include the exact command "fspec review AUTH-001"
-    And the system-reminder should be agent-aware formatted
+    And the system-reminder should be wrapped in <system-reminder> tags
     And the work unit status should be updated to "done"
 
   Scenario: Bug work unit transitioning to done shows review prompt
@@ -56,21 +56,4 @@ Feature: Conversational Review Prompt Before Done
     When I run "fspec update-work-unit-status TASK-001 done"
     Then the command should NOT emit a review prompt system-reminder
     And the work unit status should be updated to "done"
-    And the output should be the standard success message only
-
-  Scenario: AI workflow - user accepts review suggestion
-    Given I have a story work unit "API-001" in "validating" status
-    And the AI is moving the work unit to done
-    When the system-reminder prompts the AI to ask about review
-    And the user responds "yes, please run the review"
-    Then the AI should run "fspec review API-001"
-    And the AI should address any findings from the review
-    And the AI should mark the work unit as done after fixes
-
-  Scenario: AI workflow - user declines review suggestion
-    Given I have a story work unit "UI-001" in "validating" status
-    And the AI is moving the work unit to done
-    When the system-reminder prompts the AI to ask about review
-    And the user responds "no, just mark it done"
-    Then the AI should proceed to mark the work unit as done
-    And the AI should skip running fspec review
+    And the output should contain the success message "✓ Work unit TASK-001 status updated to done"

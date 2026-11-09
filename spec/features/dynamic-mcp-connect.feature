@@ -1,13 +1,17 @@
+@BUG-582
 @done
 @connect
 @tools
 @MCP-001
+@MCP-007
+@MCP-008
+@MCP-009
 Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
   """
   ConnectMCP tool uses rmcp crate (same as Codex) for MCP JSON-RPC 2.0 over stdio transport (TokioChildProcess) and Streamable HTTP transport (StreamableHttpClientTransport). Protocol version: 2025-11-25
   MCP lifecycle per connection: spawn/connect → initialize handshake (protocolVersion, capabilities, clientInfo/serverInfo) → notifications/initialized → tools/list → cache tools on session. MCP spec 2025-11-25 section: Lifecycle
   Tool routing: mcp__<server>__<tool>(args) → split on '__' → lookup server in session.mcp_connections → send JSON-RPC {method: 'tools/call', params: {name: '<tool>', arguments: args}} → return content array from response
-  Server-initiated messages handled via rmcp ClientHandler trait: notifications/tools/list_changed → re-fetch tools/list + inject notification; notifications/resources/updated → inject notification; sampling/createMessage → inject into session via watcher_input_tx, route LLM response back as sampling result
+  Server-initiated messages handled via rmcp ClientHandler trait: notifications/tools/list_changed → re-fetch tools/list + inject notification; notifications/resources/updated → inject notification; sampling/createMessage → inject into session via the MCP injection channel, route LLM response back as sampling result
   Ephemeral session state: session.mcp_connections: HashMap<String, McpConnection> where McpConnection holds RmcpClient, cached Vec<Tool> from tools/list, server InitializeResult, optional child PID. Tool list assembled fresh each LLM call: built_in_tools + mcp_connections.flat_map(tools)
   rmcp API: handler.serve(transport) does full initialize handshake (sends InitializeRequest with ClientInfo, receives ServerInfo, sends InitializedNotification). Returns RunningService<RoleClient, H> where peer() provides list_all_tools(), call_tool(), list_all_resources(), etc. ClientHandler trait has on_tool_list_changed, on_resource_updated, create_message, on_logging_message callbacks
   Sampling round-trip: create_message handler creates oneshot channel pair, injects SamplingRequest(params, oneshot_tx) as WatcherInput variant, agent_loop processes it as LLM input and captures response through oneshot_tx, handler awaits oneshot_rx and returns CreateMessageResult to rmcp
@@ -24,7 +28,7 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
   #   3. On success, ConnectMCP returns a structured tool result listing the server name, protocol version, and all discovered tools with their schemas — these tools then become callable as mcp__<server>__<tool> in subsequent LLM turns
   #   4. On failure, ConnectMCP returns a structured error (runtime not found, handshake timeout, auth required) so the LLM can reason about it, suggest fixes, or try alternatives
   #   5. MCP connections are ephemeral — cached on the session as a HashMap<String, McpConnection>, gathered fresh each LLM API call, no persistent registry or lifecycle manager
-  #   6. Server-initiated MCP messages (notifications, sampling requests, resource updates) are injected into the session via watcher_input_tx so the LLM sees them
+  #   6. Server-initiated MCP messages (notifications, sampling requests, resource updates) are injected into the session via the MCP injection channel so the LLM sees them
   #   7. MCP tool calls (mcp__<server>__<tool>) are routed through the cached connection — look up server in session.mcp_connections, forward via client.call_tool()
   #   8. Connection lifecycle is tied to the session — when session ends, all McpConnections are dropped and child processes killed
   #   9. Skills can describe ConnectMCP calls inline — enabling multi-server workflows where the agent connects to each MCP server as needed during skill execution
@@ -32,20 +36,21 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
   #   11. For sampling/createMessage: inject as session input, LLM responds, response returned via the rmcp ClientHandler. The MCP spec defines this as a server→client request — our ClientHandler impl handles the round-trip natively.
   #   12. ConnectMCP calls tools/list during initialization and returns the discovered tools to the LLM. Server capabilities are negotiated during the initialize handshake. No separate manifest needed — the MCP protocol handles discovery natively.
   #   13. ConnectMCP supports three actions: connect (default — establish new server connection), disconnect (tear down named connection, kill child process), and list (show all active connections with tool counts and uptime)
-  #   14. ConnectMCP enforces a configurable timeout (default 10 seconds) for the initialization handshake — if the server does not complete initialize within the timeout, the process is killed and a structured timeout error is returned to the LLM
+  #   14. ConnectMCP enforces fspec's fixed MCP handshake timeout (MCP_HANDSHAKE_TIMEOUT_SECS, MCP-008; the model cannot set it) for the initialization handshake — if the server does not complete initialize within the timeout, the process is killed and a structured timeout error is returned to the LLM
   #   15. Config file support for pre-declaring MCP servers is V2 scope — the agent would read a config and call ConnectMCP for each entry. V1 has no config file; all connections are explicit tool calls
   #   16. MCP tool names are namespaced as mcp__<server>__<tool> — the double-underscore prevents collisions between servers that expose tools with the same name, and between MCP tools and built-in tools
   #   17. ConnectMCP connect action accepts optional env (HashMap) for stdio transport and optional headers (HashMap) for HTTP transport — enabling API tokens, credentials, and auth headers
+  #   18. A connect call must name its transport (stdio, http or sse); a missing transport is a ToolError::Validation "transport is required for connect action", never a silent stdio default (MCP-009)
   #
   # EXAMPLES:
-  #   1. Agent calls ConnectMCP(name: 'github', transport: 'stdio', command: 'npx -y @modelcontextprotocol/server-github') → tool spawns child process, sends JSON-RPC initialize request, receives server capabilities, calls tools/list → returns structured result listing server name, protocol version, and discovered tools
+  #   1. Agent calls ConnectMCP(name: 'github', transport: 'stdio', command: 'npx', args: ['-y', '@modelcontextprotocol/server-github']) → tool spawns child process, sends JSON-RPC initialize request, receives server capabilities, calls tools/list → returns structured result listing server name, protocol version, and discovered tools
   #   2. LLM calls mcp__github__create_issue({owner: 'org', repo: 'project', title: 'Bug fix'}) → tool routes to cached github connection → MCP server returns content → tool returns content to LLM as tool result
-  #   3. ConnectMCP(name: 'db', command: 'python3 db-mcp-server.py') fails because python3 is not installed → tool returns structured failure with stderr output → LLM can reason about the failure
+  #   3. ConnectMCP(name: 'db', command: 'python3', args: ['db-mcp-server.py']) fails because python3 is not installed → tool returns structured failure with stderr output → LLM can reason about the failure
   #   4. Skill file describes two ConnectMCP calls → agent connects both mid-session → agent has typed tools from both servers → session ends, both child processes killed
   #   5. Connected MCP server sends notifications/tools/list_changed → ClientHandler re-fetches tools/list → injects notification into session → next LLM call includes updated tool schemas
   #   6. MCP server sends sampling/createMessage → injected into session as input → LLM response routed back as sampling result
   #   7. Agent calls ConnectMCP(action: 'list') → sees active connections → calls ConnectMCP(action: 'disconnect', name: 'github') → connection closed, tools removed
-  #   8. ConnectMCP with timeout: 5 → server doesn't respond within 5s → process killed, structured timeout error returned
+  #   8. ConnectMCP to a server that doesn't respond within MCP_HANDSHAKE_TIMEOUT_SECS → process killed, structured timeout error returned
   #
   # ========================================
   Background: User Story
@@ -53,8 +58,8 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
     And the session has a watcher_input_tx channel for message injection
 
   Scenario: Connect to MCP server via stdio transport
-    Given an MCP server command "npx -y @modelcontextprotocol/server-everything" is available
-    When the agent calls ConnectMCP with name "everything" and transport "stdio" and command "npx -y @modelcontextprotocol/server-everything"
+    Given an MCP server executable "npx" with args "-y" and "@modelcontextprotocol/server-everything" is available
+    When the agent calls ConnectMCP with name "everything" and transport "stdio" and command "npx" and args "-y" and "@modelcontextprotocol/server-everything"
     Then the tool should spawn a child process for the command
     And the tool should perform the MCP initialize handshake via rmcp
     And the tool should call tools/list to discover available tools
@@ -73,7 +78,7 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
 
   Scenario: Handle spawn failure with structured error
     Given "python3" is not installed on the system
-    When the agent calls ConnectMCP with name "db" and transport "stdio" and command "python3 db-mcp-server.py"
+    When the agent calls ConnectMCP with name "db" and transport "stdio" and command "python3" and args "db-mcp-server.py"
     Then the tool should catch the process spawn error
     And the tool should return a structured failure result to the LLM
     And the failure result should include the error message indicating the command was not found
@@ -101,7 +106,7 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
     Then the ClientHandler on_tool_list_changed callback should fire
     And the handler should re-fetch the tool list via peer().list_all_tools()
     And the handler should update the cached tools for the "github" connection
-    And the handler should inject a notification message into the session via watcher_input_tx
+    And the handler should inject a notification message into the session via the MCP injection channel
     And the next LLM API call should include the updated tool schemas
 
   Scenario: Handle server sampling/createMessage request
@@ -109,7 +114,7 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
     When the MCP server sends a sampling/createMessage request with messages and maxTokens
     Then the ClientHandler create_message callback should fire
     And the handler should create a oneshot response channel
-    And the handler should inject the sampling request into the session via watcher_input_tx with the oneshot sender
+    And the handler should inject the sampling request into the session via the MCP injection channel with the oneshot sender
     And the agent_loop should process the injection as LLM input and capture the response
     And the captured response should be sent through the oneshot channel
     And the handler should receive the response and return it as CreateMessageResult
@@ -132,9 +137,9 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
     And tools prefixed with "mcp__github__" should no longer appear in subsequent LLM calls
 
   Scenario: Handle connection timeout during initialization
-    Given an MCP server command "node slow-mcp.js" that does not complete initialization
-    When the agent calls ConnectMCP with name "slow-server" and transport "stdio" and command "node slow-mcp.js" and timeout 5
-    Then the tool should wait up to 5 seconds for the MCP handshake to complete
+    Given an MCP server executable "node" with args "slow-mcp.js" that does not complete initialization
+    When the agent calls ConnectMCP with name "slow-server" and transport "stdio" and command "node" and args "slow-mcp.js"
+    Then the tool should wait up to fspec's MCP_HANDSHAKE_TIMEOUT_SECS for the MCP handshake to complete
     And when the timeout elapses without a response the tool should kill the child process
     And the tool should return a structured timeout error to the LLM
     And the error should include the timeout duration and indicate the process was started but did not respond
@@ -177,3 +182,9 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
     Then the existing "github" connection should be disconnected first
     And the new connection should replace it in session.mcp_connections
     And the tool should return a success result noting the replacement
+
+  Scenario: ConnectMCP connect without a transport is refused
+    Given the agent calls ConnectMCP with action "connect", name "srv", a command and an args list but no transport
+    When the tool validates the call
+    Then the call should fail with a validation error "transport is required for connect action"
+    And no MCP connection named "srv" should exist in session.mcp_connections

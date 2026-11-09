@@ -19,11 +19,10 @@
 //! No `App` is used here — these are pure store-level tests. The
 //! App-layer wiring tests live in `app_dispatch_rpc024.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::store::SessionContext;
 use codelet_fspec_tui::AgentViewStore;
 use codelet_rpc_types::SessionId;
+use codelet_test_helpers::{OrFail, TestResult};
 
 fn sid(s: &str) -> SessionId {
     SessionId::new(s)
@@ -31,13 +30,13 @@ fn sid(s: &str) -> SessionId {
 
 /// Scenario: An empty AgentViewStore reports zero open sessions
 #[test]
-fn empty_store_reports_zero_sessions_and_noop_focus() {
+fn empty_store_reports_zero_sessions_and_noop_focus() -> TestResult {
     // @step Given a default AgentViewStore
     let mut store = AgentViewStore::default();
     // @step Then open_sessions is empty
     assert!(store.open_sessions().is_empty());
-    // @step And session_index() returns (0, 0)
-    assert_eq!(store.session_index(), (0, 0));
+    // @step And session_index() returns None
+    assert_eq!(store.session_index(), None);
     // @step And current_session() returns None
     assert!(store.current_session().is_none());
     // @step When focus_session_index(0) is called on the empty store
@@ -46,11 +45,12 @@ fn empty_store_reports_zero_sessions_and_noop_focus() {
     assert_eq!(store.current_session_index(), 0);
     // @step And open_sessions is still empty
     assert!(store.open_sessions().is_empty());
+    Ok(())
 }
 
 /// Scenario: append_session appends a fresh SessionContext and focuses it
 #[test]
-fn append_session_appends_and_focuses_first_session() {
+fn append_session_appends_and_focuses_first_session() -> TestResult {
     // @step Given a default AgentViewStore with no open sessions
     let mut store = AgentViewStore::default();
     // @step When append_session is called for "s-1"
@@ -61,15 +61,16 @@ fn append_session_appends_and_focuses_first_session() {
     assert_eq!(store.open_sessions()[0].id, sid("s-1"));
     // @step And current_session_index is 0
     assert_eq!(store.current_session_index(), 0);
-    // @step And session_index() returns (1, 1)
-    assert_eq!(store.session_index(), (1, 1));
+    // @step And session_index() returns Some((1, 1))
+    assert_eq!(store.session_index(), Some((1, 1)));
     // @step And current_session() returns Some("s-1")
     assert_eq!(store.current_session(), Some(&sid("s-1")));
+    Ok(())
 }
 
 /// Scenario: Successive append_session calls accumulate in creation order
 #[test]
-fn append_session_accumulates_in_creation_order() {
+fn append_session_accumulates_in_creation_order() -> TestResult {
     // @step Given a default AgentViewStore with no open sessions
     let mut store = AgentViewStore::default();
     // @step When append_session is called for "s-1"
@@ -86,15 +87,16 @@ fn append_session_accumulates_in_creation_order() {
     assert_eq!(store.open_sessions()[2].id, sid("s-3"));
     // @step And current_session_index is 2
     assert_eq!(store.current_session_index(), 2);
-    // @step And session_index() returns (3, 3)
-    assert_eq!(store.session_index(), (3, 3));
+    // @step And session_index() returns Some((3, 3))
+    assert_eq!(store.session_index(), Some((3, 3)));
     // @step And current_session() returns Some("s-3")
     assert_eq!(store.current_session(), Some(&sid("s-3")));
+    Ok(())
 }
 
 /// Scenario: focus_session_index(idx) decrements current_session_index when idx < current
 #[test]
-fn focus_session_index_decrements_focus() {
+fn focus_session_index_decrements_focus() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -106,15 +108,16 @@ fn focus_session_index_decrements_focus() {
     store.focus_session_index(1);
     // @step Then current_session_index is 1
     assert_eq!(store.current_session_index(), 1);
-    // @step And session_index() returns (2, 3)
-    assert_eq!(store.session_index(), (2, 3));
+    // @step And session_index() returns Some((2, 3))
+    assert_eq!(store.session_index(), Some((2, 3)));
     // @step And current_session() returns Some("s-2")
     assert_eq!(store.current_session(), Some(&sid("s-2")));
+    Ok(())
 }
 
 /// Scenario: focus_session_index out-of-range is a no-op (RPC-096 removed wrap-around)
 #[test]
-fn focus_session_index_out_of_range_is_noop() {
+fn focus_session_index_out_of_range_is_noop() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -128,11 +131,12 @@ fn focus_session_index_out_of_range_is_noop() {
     assert_eq!(store.current_session_index(), 0);
     // @step And current_session() still returns Some("s-1")
     assert_eq!(store.current_session(), Some(&sid("s-1")));
+    Ok(())
 }
 
 /// Scenario: focus_session_index on a single-session store is a self-loop
 #[test]
-fn focus_session_index_single_session_self_loop() {
+fn focus_session_index_single_session_self_loop() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -144,11 +148,12 @@ fn focus_session_index_single_session_self_loop() {
     assert_eq!(store.current_session_index(), 0);
     // @step And current_session() returns Some("s-1")
     assert_eq!(store.current_session(), Some(&sid("s-1")));
+    Ok(())
 }
 
 /// Scenario: set_input_draft writes into the indexed SessionContext
 #[test]
-fn set_input_draft_round_trip_via_focus() {
+fn set_input_draft_round_trip_via_focus() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -167,11 +172,12 @@ fn set_input_draft_round_trip_via_focus() {
     store.focus_session_index(1);
     // @step Then the outgoing draft was preserved on s-2
     assert_eq!(store.open_sessions()[1].input_draft, "hello world");
+    Ok(())
 }
 
 /// Scenario: SessionContext owns its own scrollback
 #[test]
-fn each_session_owns_its_own_scrollback() {
+fn each_session_owns_its_own_scrollback() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -181,14 +187,14 @@ fn each_session_owns_its_own_scrollback() {
     // RPC-091: Text deltas accumulate into one chunk — use UserInput
     // (non-accumulating) to assert per-chunk count invariants.
     {
-        let ctx = store.session_context_mut_for(&sid("s-1")).expect("s-1");
+        let ctx = store.session_context_mut_for(&sid("s-1")).or_fail("s-1")?;
         ctx.record_chunk(&StreamChunk::user_input("a".to_string()));
         ctx.record_chunk(&StreamChunk::user_input("b".to_string()));
         ctx.record_chunk(&StreamChunk::user_input("c".to_string()));
     }
     // @step And five user-input chunks are recorded on s-2's SessionContext
     {
-        let ctx = store.session_context_mut_for(&sid("s-2")).expect("s-2");
+        let ctx = store.session_context_mut_for(&sid("s-2")).or_fail("s-2")?;
         ctx.record_chunk(&StreamChunk::user_input("1".to_string()));
         ctx.record_chunk(&StreamChunk::user_input("2".to_string()));
         ctx.record_chunk(&StreamChunk::user_input("3".to_string()));
@@ -199,11 +205,12 @@ fn each_session_owns_its_own_scrollback() {
     assert_eq!(store.open_sessions()[0].scrollback.chunk_count(), 3);
     // @step And s-2 still has 5 scrollback chunks
     assert_eq!(store.open_sessions()[1].scrollback.chunk_count(), 5);
+    Ok(())
 }
 
 /// Scenario: session_context_mut_for routes chunks by id, not focus
 #[test]
-fn session_context_mut_for_routes_chunks_by_id() {
+fn session_context_mut_for_routes_chunks_by_id() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -217,17 +224,18 @@ fn session_context_mut_for_routes_chunks_by_id() {
     // @step When session_context_mut_for(SessionId("s-2")) records a "background" chunk
     let ctx = store
         .session_context_mut_for(&sid("s-2"))
-        .expect("s-2 context exists");
+        .or_fail("s-2 context exists")?;
     ctx.record_chunk(&StreamChunk::text("background".to_string()));
     // @step Then open_sessions[1].scrollback contains 1 chunk
     assert_eq!(store.open_sessions()[1].scrollback.chunk_count(), 1);
     // @step And current_session_index is still 0
     assert_eq!(store.current_session_index(), 0);
+    Ok(())
 }
 
 /// Scenario: session_context_mut_for returns None for unknown ids
 #[test]
-fn session_context_mut_for_returns_none_for_unknown_id() {
+fn session_context_mut_for_returns_none_for_unknown_id() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -237,24 +245,26 @@ fn session_context_mut_for_returns_none_for_unknown_id() {
     assert!(lookup.is_none());
     // @step And open_sessions[0].scrollback is unchanged
     assert_eq!(store.open_sessions()[0].scrollback.chunk_count(), 0);
+    Ok(())
 }
 
 /// Scenario: session_index() is derived from current_session_index + 1 and open_sessions.len()
 #[test]
-fn session_index_is_derived_from_current_index_plus_one_and_len() {
+fn session_index_is_derived_from_current_index_plus_one_and_len() -> TestResult {
     // @step Given the AgentViewStore type
     let mut store = AgentViewStore::default();
-    // @step Then session_index() returns (0, 0) for an empty store
-    assert_eq!(store.session_index(), (0, 0));
+    // @step Then session_index() returns None for an empty store
+    assert_eq!(store.session_index(), None);
     // @step When sessions are appended
     store.append_session(SessionContext::new(sid("s-1")));
     store.append_session(SessionContext::new(sid("s-2")));
-    // @step Then session_index() returns (current_session_index + 1, len)
+    // @step Then session_index() returns Some((current_session_index + 1, len))
     assert_eq!(
         store.session_index(),
-        (
+        Some((
             store.current_session_index() + 1,
             store.open_sessions().len()
-        )
+        ))
     );
+    Ok(())
 }

@@ -1,4 +1,7 @@
+@BUG-582
 @TOOL-017
+@tools
+@tool-execution
 Feature: Request User Input HITL Tool
   """
   Create rust/tools/src/request_user_input.rs following the InjectSummaryTool pattern: HitlHandler type alias (Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>), global HITL_HANDLERS: RwLock<HashMap<Uuid, HitlHandler>>, pub fn set_hitl_handler/has_hitl_handler/execute_hitl/clear_all_hitl_handlers, and RequestUserInputTool implementing rig::tool::Tool

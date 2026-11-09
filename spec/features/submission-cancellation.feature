@@ -1,0 +1,62 @@
+@phase-1
+@context-management
+@agent-core
+@persistence
+@session-management
+@high
+@integration-test
+@BUG-284
+Feature: Cancel queued submissions without admitting them
+  """
+  Independent review refinement: terminal cancellation/failure facts after admission must be durable and model visible, not only UI transcript events. Uncertain post-crash dispatch blocks continuation until explicit recovery. Receipt and recovery-spool originals/blobs need GC roots, and fork/merge must not grant execution rights. Submissions are retained as versioned durable receipts (core persistence input_receipts) before queue acknowledgment; admission appends the stored original to conversation membership under the runtime lock and installs it before dispatch. Synchronous BackgroundSession submission now returns storage and queue refusals, but ordinary-input RPC/handle callers still discard that result and no external idempotency key exists; that external acknowledgment limitation is explicit and out of this scope. The focused CLI stream_loop decomposition was approved on 2026-10-28.
+  """
+
+  # ========================================
+  # EXAMPLE MAPPING CONTEXT
+  # ========================================
+  #
+  # BUSINESS RULES:
+  #   1. Preserve every submitted input as an audit/recovery record while keeping the provider conversation, cold restore and compaction replay on the same explicitly admitted ordered history.
+  #   2. Strict checkpoint lineage rejection must remain effective for altered assistant content, tool invocation, tool outcome, missing evidence and DAG ancestry; diagnosis does not authorize a bypass or history deletion.
+  #   3. Do not claim live repair until the exact loaded executable is identified and repeated realistic compaction, restore and continuation succeed without repeated effects.
+  #   4. Admission is a durable monotone commitment under cancellation ownership: Pending becomes Cancelled or Admitted; cancellation after admission stops execution but cannot remove or requeue the admitted input. The exact original is installed in runtime before dispatch ownership is released.
+  #   5. A submission has one immutable UUID/content/origin identity retained before queue acknowledgment. Identical text with distinct UUIDs is legitimate; same-UUID retries are idempotent and conflicting identity, unknown state versions or contradictory membership refuse inference.
+  #   6. Lost acknowledgment after manifest promotion must settle the same receipt under ownership; unresolved authority blocks inference. Process recovery restores admitted originals once and never auto-executes Pending or Cancelled submissions or assumes remote completion.
+  #   7. Legacy divergent sessions remain fail-closed with actionable evidence-preserving recovery diagnostics. No text-prefix filtering, guessed disposition, silent historical migration, original deletion, checkpoint relaxation or tool replay is permitted.
+  #
+  # EXAMPLES:
+  #   1. Preserved session 4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61 has six supervisor originals persisted just after cancellation but absent from its provider checkpoint. Actual CodexHistory replay rejects; a cloned diagnostic request omitting only those six accepts.
+  #   2. Preserved session 7b41d57c-d7aa-47f3-b2c7-b689012703c4 has two such supervisor originals. Actual CodexHistory replay rejects; omitting those two only in an isolated diagnostic clone accepts; changed tool outcomes remain rejected.
+  #   3. Six supervisor submissions queued before interruption, or two arriving during interruption, are each retained once but absent from runtime and Codex selected-history replay; genuine later user input remains admitted and compaction does not fail lineage.
+  #   4. Cancellation while prompt hooks run, while the original is being retained, or while the runtime lock is held produces a recoverable canceled receipt and no actionable canceled instruction; a later fresh prompt may run once.
+  #   5. Cancellation after durable admission, provider construction failure or pre-prompt compaction failure preserves the accepted instruction exactly once across runtime and cold restore without silently retrying its effects.
+  #   6. After parallel tools complete once, two automatic compactions separated by cancellation, cold restore and fresh continuation retain exact tool receipts, valid provider generations and the same admitted conversation; no command runs again.
+  #   7. A lost durability acknowledgment or process death never loses the original or grants inference from an unresolved receipt. Reopening restores admitted inputs once, keeps canceled or pending inputs audit-only, and preserves image payloads and duplicate-text distinct submissions.
+  #   8. All four sanitized failed-history derivatives still refuse their original divergent lineage; altering assistant content, invocation, outcome, missing evidence or DAG ancestry remains rejected. Inspecting a clone never mutates failed historical evidence or makes a provider request.
+  #
+  # ========================================
+  Background: User Story
+    As a agent operator
+    I want to cancel submitted work without losing its recovery evidence or corrupting the admitted conversation
+    So that compaction and cold continuation preserve strict history and never repeat completed effects
+
+  Scenario: Six supervisor inputs canceled before admission remain audit only
+    Given a genuine Codex conversation with a completed tool effect
+    When six queued supervisor inputs are canceled before admission
+    Then all six originals remain recoverable exactly once without executing
+    And a fresh instruction completes on the unchanged runtime
+    And selected compaction accepts the same admitted history as runtime
+
+  Scenario: Two supervisor inputs submitted during interruption remain audit only
+    Given a genuine Codex conversation with a completed tool effect
+    When two supervisor inputs arrive while the session is interrupted
+    Then both originals remain recoverable exactly once without executing
+    And a fresh instruction completes on the unchanged runtime
+    And selected compaction accepts the same admitted history as runtime
+
+  Scenario: Cancellation during a prompt hook preserves audit without conversation membership
+    Given a genuine Codex conversation and a prompt held by a submission hook
+    When the prompt is canceled before the hook releases
+    Then the original remains recoverable without executing
+    And a fresh instruction completes on the unchanged runtime
+    And selected compaction accepts the same admitted history as runtime

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-061
 @rust
@@ -67,10 +68,9 @@ Feature: RPC-061 source-shape — supervisor surface file layout
     And it impls fn get_subordinates
     And it impls fn receive_incoming_message
 
-  Scenario: components/mod.rs Action enum gains the two RPC-061 variants
+  Scenario: components/mod.rs Action enum gains the RPC-061 variant
     Given the file rust/fspec-tui/src/components/mod.rs is compiled
     Then it declares Action::SupervisorsLoaded
-    And it declares Action::SendToSubordinate
 
   Scenario: SessionHeader gains a subordinate_label field
     Given the file rust/fspec-tui/src/views/agent/header.rs is compiled
@@ -83,11 +83,11 @@ Feature: RPC-061 source-shape — supervisor surface file layout
   Scenario: dispatch_supervisor_links.rs has the documented helper surface
     Given the file rust/fspec-tui/src/app/dispatch_supervisor_links.rs is compiled
     Then it declares method "handle_supervisors_loaded"
-    And it declares method "handle_send_to_subordinate"
     And it declares method "try_dispatch_supervisor_links"
     And the file stays under 300 lines
 
   Scenario: app/dispatch.rs catch-all routes through try_dispatch_supervisor_links
     Given the file rust/fspec-tui/src/app/dispatch.rs is compiled
-    Then it calls self.try_dispatch_supervisor_links
+    Then its catch-all arm calls self.dispatch_capability_fallback
     And the file stays under 300 lines
+    And dispatch_capability_fallback in rust/fspec-tui/src/app/dispatch_capability.rs calls self.try_dispatch_supervisor_links

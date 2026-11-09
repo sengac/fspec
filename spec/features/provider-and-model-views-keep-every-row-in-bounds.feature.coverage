@@ -1,0 +1,403 @@
+{
+  "scenarios": [
+    {
+      "name": "The selected row stays painted with a committed filter",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "139-164",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/body_render.rs",
+              "lines": [
+                30
+              ],
+              "firstLine": "view.fit_window(list_area.height);",
+              "lastLine": "view.fit_window(list_area.height);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "pub(super) fn fit_window(&mut self, list_height: u16) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The selected row stays painted when a status line arrives",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "166-206",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/body_render.rs",
+              "lines": [
+                30
+              ],
+              "firstLine": "view.fit_window(list_area.height);",
+              "lastLine": "view.fit_window(list_area.height);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "pub(super) fn fit_window(&mut self, list_height: u16) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A reload that shrinks the tree never slices past its end",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "208-228",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "lines": [
+                121,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "self.clamp_to_tree();",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+              "lines": [
+                48,
+                49,
+                60,
+                61
+              ],
+              "firstLine": "let start = view.scroll_offset.min(nav_items.len());",
+              "lastLine": "let global_idx = start + row_idx;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging the Provider Settings scrollbar thumb moves the window and keeps it there",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "230-265",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
+              "lines": [
+                64,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "self.scroll_to(offset);",
+              "lastLine": "self.selected_index = self"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging the /model scrollbar thumb moves the window and selects a model row inside it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "267-312",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "pub(crate) fn scroll_to(&mut self, offset: usize) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                229
+              ],
+              "firstLine": "self.scroll_to(offset);",
+              "lastLine": "self.scroll_to(offset);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A drag that leaves the gutter column goes on until the button is released",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "314-348",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
+              "lines": [
+                54,
+                55,
+                56
+              ],
+              "firstLine": "let follows_drag = self.scrollbar_drag.is_active()",
+              "lastLine": "if follows_drag || rect_contains(sb_rect, ev.column, ev.row) {"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                219,
+                220,
+                221
+              ],
+              "firstLine": "let follows_drag = self.scrollbar_drag.is_active()",
+              "lastLine": "if follows_drag || rect_contains(sb_rect, ev.column, ev.row) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long profile row keeps its missing limits whole",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "350-393",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                126,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "let raw = fit_row(&prefix, label, usize::from(area.width));",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A short terminal shows the focused profile field and the save error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "395-430",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// BUG-578 F21: on a short terminal the field lines scroll so the",
+              "lastLine": "lines.extend(status_lines);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in /model clears a committed filter before it closes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "432-469",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                40
+              ],
+              "firstLine": "KeyCode::Esc if !self.filter.is_empty() => self.handle_filter_key(key),",
+              "lastLine": "KeyCode::Esc if !self.filter.is_empty() => self.handle_filter_key(key),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A filter that matches nothing says so",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "471-492",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                80,
+                81,
+                82
+              ],
+              "firstLine": "(true, false) if !self.filter.is_empty() => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The dead Provider Settings paths are gone",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs",
+          "lines": "532-578",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/mode.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "#[derive(Debug, Clone, PartialEq, Eq)]",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "impl Default for ProviderSettingsView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "Action::SaveProviderCredentials {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// PROV-102: when the flat NavItem tree is populated, dispatch",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug578_provider_and_model_views_keep_every_row_in_bounds.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/provider_settings/body_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+      "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/mouse.rs",
+      "rust/fspec-tui/src/views/model_selector/state.rs",
+      "rust/fspec-tui/src/views/model_selector/dispatch.rs",
+      "rust/fspec-tui/src/views/provider_settings/row_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "rust/fspec-tui/src/views/model_selector/loads.rs",
+      "rust/fspec-tui/src/views/provider_settings/mode.rs",
+      "rust/fspec-tui/src/views/provider_settings/mod.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
+    ],
+    "totalLinesCovered": 513
+  }
+}

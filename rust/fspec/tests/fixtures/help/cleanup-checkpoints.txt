@@ -22,7 +22,7 @@ OPTIONS
     Number of most recent checkpoints to preserve (required). Older checkpoints beyond this count will be deleted.
 
 TYPICAL WORKFLOW
-  Create many checkpoints during experimentation,List checkpoints: fspec list-checkpoints AUTH-001,Decide how many to keep (e.g., last 5),Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5,Verify: fspec list-checkpoints AUTH-001
+  Create many checkpoints during experimentation. List checkpoints: fspec list-checkpoints AUTH-001. Decide how many to keep (e.g., last 5). Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5. Verify: fspec list-checkpoints AUTH-001
 
 EXAMPLES
   1. Keep last 5 checkpoints, delete rest
@@ -57,18 +57,18 @@ No cleanup needed - all checkpoints preserved
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   ✗ No checkpoints found for AUTH-001
-    Fix: undefined
+    Fix: Work unit has no checkpoints to cleanup. Create checkpoints first with 'fspec checkpoint'.
 
   ✗ --keep-last option is required
-    Fix: undefined
+    Fix: You must specify how many checkpoints to keep. Use: fspec cleanup-checkpoints AUTH-001 --keep-last 5
 
 RELATED COMMANDS
-  fspec fspec checkpoint - Create manual checkpoint
-  fspec fspec restore-checkpoint - Restore a checkpoint
-  fspec fspec list-checkpoints - List all checkpoints
+  fspec checkpoint - Create manual checkpoint
+  fspec restore-checkpoint - Restore a checkpoint
+  fspec list-checkpoints - List all checkpoints
 
 NOTES
   • Deletion is permanent - checkpoints cannot be recovered after cleanup

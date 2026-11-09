@@ -88,11 +88,21 @@ impl TokenState {
                 self.committed_generation = Some(snapshot.generation);
                 self.context_request = Some(snapshot.request);
                 self.estimated = snapshot.provenance != ContextProvenance::Measured;
-                if let Some(fill) = snapshot.context_fill() {
-                    self.apply_context_fill(&fill);
-                } else {
-                    self.context_fill_pct = 0;
-                    self.context_threshold_tokens = 0;
+                match snapshot.context_fill() {
+                    Ok(Some(fill)) => self.apply_context_fill(&fill),
+                    Ok(None) => {
+                        self.context_fill_pct = 0;
+                        self.context_threshold_tokens = 0;
+                    }
+                    // BUG-462: no error channel in the reducer — an
+                    // unrepresentable fill is logged and no fill is shown
+                    // (the same display as unknown limits), never a
+                    // saturated number.
+                    Err(error) => {
+                        tracing::error!(%error, "context fill not shown");
+                        self.context_fill_pct = 0;
+                        self.context_threshold_tokens = 0;
+                    }
                 }
             }
             StreamChunk::TokenUpdate { tokens } => self.apply_token_tracker(tokens),

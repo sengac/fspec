@@ -104,3 +104,8 @@ vendor/nanograph/
 
 # Temporary test repos for AST indexing
 tmp/
+
+# REFAC-020: persistent cross-process coverage sidecar transaction locks
+spec/features/**/*.feature.coverage.lock
+# BUG-477: persistent cross-process spec write lock (never renamed or deleted)
+spec/.fspec-write.lock

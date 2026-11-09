@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-061
 @rust
@@ -21,6 +22,7 @@ Feature: Supervisor / subordinate links — App + AgentView integration
   Companion features:
   - spec/features/rpc061-source-shape.feature
   - spec/features/rpc061-cross-transport-parity.feature
+  TUI-132 (2026-11-09): Action::SendToSubordinate and handle_send_to_subordinate are removed with their scenarios: nothing emitted the action.
   """
 
   Background: User Story
@@ -32,23 +34,6 @@ Feature: Supervisor / subordinate links — App + AgentView integration
     Given an App wired to a MockBackend
     When Action::SupervisorsLoaded(SessionId("s-1"), vec![SessionId("sup")]) is dispatched
     Then store.supervisors_for(&SessionId("s-1")) returns &[SessionId("sup")]
-
-  Scenario: Action::SendToSubordinate spawns backend.receive_incoming_message exactly once
-    Given an App with open session s-sup wired to a MockBackend whose receive_incoming_message returns Ok(())
-    When Action::SendToSubordinate { subordinate_id: SessionId("s-sub"), message: IncomingMessageInput { ... } } is dispatched
-    Then within 1 second backend.receive_incoming_message is called exactly once
-    And the payload matches subordinate_id=SessionId("s-sub") and the IncomingMessageInput
-
-  Scenario: Action::SendToSubordinate Err path emits EmitSessionNotice into the originating session
-    Given an App with open session s-sup wired to a MockBackend whose receive_incoming_message returns Err("Failed to queue supervisor input: channel closed")
-    When Action::SendToSubordinate is dispatched
-    Then within 1 second Action::EmitSessionNotice with the documented text is observed
-
-  Scenario: Action::SendToSubordinate Err path is a silent no-op without an open session
-    Given an App with NO open AgentView session wired to a MockBackend whose receive_incoming_message returns Err("e")
-    When Action::SendToSubordinate is dispatched
-    Then within 1 second backend.receive_incoming_message is called exactly once
-    And no Action::EmitSessionNotice is observed on the action bus
 
   Scenario: StreamChunk::SupervisorPendingInjection bumps per-session pending count to 1
     Given an App with open session s-sub wired to a MockBackend

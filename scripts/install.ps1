@@ -226,6 +226,48 @@ function Extract-Binary {
   return Join-Path $OutputDir $BinaryPath
 }
 
+# BUG-564: install fspec.exe while fspec runs. Windows cannot overwrite or
+# delete a running .exe, but it can rename one. So the new binary is copied to
+# a temporary file in the install directory, the current fspec.exe is renamed
+# aside to fspec.exe.<id>.old, and the temporary file is renamed to fspec.exe.
+# Running fspec processes keep the old file until they exit; each install
+# removes the fspec.exe.*.old files no process holds any more. On failure the
+# temporary file is removed and fspec.exe is left as it was. This function is
+# identical in build-install.ps1 and install.ps1 (a test checks it).
+function Install-FspecBinary {
+  param(
+    [string]$Source,
+    [string]$Target
+  )
+
+  $installDir = Split-Path -Parent $Target
+  $name = Split-Path -Leaf $Target
+  # Old binaries still held by a running fspec stay until a later install.
+  Get-ChildItem -LiteralPath $installDir -Filter "$name.*.old" -File -ErrorAction SilentlyContinue |
+    ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue }
+
+  $id = [guid]::NewGuid().ToString("N")
+  $temp = Join-Path $installDir ".fspec-install-$id.tmp"
+  $old = "$Target.$id.old"
+  try {
+    Copy-Item -LiteralPath $Source -Destination $temp -Force -ErrorAction Stop
+    if (Test-Path -LiteralPath $Target) {
+      Move-Item -LiteralPath $Target -Destination $old -ErrorAction Stop
+    }
+    Move-Item -LiteralPath $temp -Destination $Target -ErrorAction Stop
+  }
+  catch {
+    if (Test-Path -LiteralPath $temp) {
+      Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue
+    }
+    if (-not (Test-Path -LiteralPath $Target) -and (Test-Path -LiteralPath $old)) {
+      Move-Item -LiteralPath $old -Destination $Target -ErrorAction SilentlyContinue
+    }
+    throw
+  }
+  Write-Host "Running fspec processes keep the old version until restarted."
+}
+
 # Install binary
 function Install-Binary {
   param(
@@ -236,7 +278,7 @@ function Install-Binary {
   Write-Info "Installing to $Target..."
 
   try {
-    Copy-Item -Path $Source -Destination $Target -Force -ErrorAction Stop
+    Install-FspecBinary -Source $Source -Target $Target
     Write-Success "Binary installed to $Target"
   }
   catch {

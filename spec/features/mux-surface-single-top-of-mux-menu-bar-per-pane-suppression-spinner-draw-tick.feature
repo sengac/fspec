@@ -57,7 +57,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
   Scenario: The mux top row paints the 2-zone menu bar full width
     Given the mux grid is [Board | Agent | Agent] with 2 open sessions (one Running, one Idle)
     When the mux view renders
-    Then the top row shows the menu items (Actions Help) a separator the pane label 'Board' and the two session chips (#1 with the running glyph #2 with the idle glyph)
+    Then the top row shows the menu items (Kanban Tools Settings Help) a separator the pane label 'Board' and the two session chips (#1 with the running glyph #2 with the idle glyph)
     And the panes paint within the body below the bar row (each pane body starts one row lower than before the bar existed)
     And the mux footer still occupies the bottom row
 
@@ -70,7 +70,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
   Scenario: The bar omits the separator and chips when no sessions are open
     Given the mux grid is [Board | Files | Ckpts] with no open sessions
     When the mux view renders
-    Then the top row shows 'Actions Help' followed by the pane labels 'Board Files Ckpts' (focused pane bold)
+    Then the top row shows 'Kanban Tools Settings Help' followed by the pane labels 'Board Files Ckpts' (focused pane bold)
     And no chips and no extra separator run appear
 
   # ── R-SUPPRESS: per-pane bars are suppressed ────────────────────────
@@ -90,7 +90,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
   Scenario: The board column ring continues into the mux bar
     Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused with the cursor on the last column
     When I press Right
-    Then the highlight lands on the 'Actions' menu item in the top bar (leaving the columns)
+    Then the highlight lands on the 'Kanban' menu item in the top bar (leaving the columns)
     When I press Right
     Then the highlight lands on 'Help'
     When I press Right
@@ -100,7 +100,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
 
   Scenario: The mux bar ring wraps in both directions
     Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused with the cursor on the last column
-    When I walk the ring Right until it wraps past the last chip
+    When I walk the ring Right until it wraps past the last chip and the [ New Bot ] and [ New Agent ] buttons (MUX-013)
     Then the highlight returns to the first column (backlog) (the ring's right edge re-enters the columns — BUG-200)
     When I walk the ring Right across the 7 columns
     Then the highlight lands on 'Kanban' (the ring's left edge, the pre-existing entry rule)
@@ -110,7 +110,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
   Scenario: The agent pane's empty-input Left enters the mux bar
     Given the mux grid is [Agent | Agent] with 2 open sessions and the Agent pane is focused with an empty input
     When I press bare Left
-    Then the highlight lands on the 'Actions' menu item in the top bar
+    Then the highlight lands on the 'Kanban' menu item in the top bar
 
   Scenario: A character key while the bar is focused dismisses it and types into the focused pane input
     Given the mux grid is [Agent | Agent] with 2 open sessions the Agent pane is focused and the bar is focused (dropdown closed)
@@ -131,35 +131,35 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
 
   # ── R-KEYS/R-EXEC: the dropdown is true-modal ───────────────────────
   Scenario: Enter on a menu item opens its dropdown at row 0
-    Given the mux grid is [Board | Agent | Agent] with 2 open sessions the Board pane is focused and the 'Actions' item has the bar highlight
+    Given the mux grid is [Board | Agent | Agent] with 2 open sessions the Board pane is focused and the 'Kanban' item has the bar highlight
     When I press Enter
-    Then the dropdown opens under 'Actions' with the cursor on row 0 ('. New Agent') painting over the panes below
+    Then the dropdown opens under 'Kanban' with the cursor on row 0 ('. New Agent') painting over the panes below
 
   Scenario: Up and Down move the dropdown cursor wrapping at the ends
-    Given the mux 'Actions' dropdown is open with the cursor on row 0
+    Given the mux 'Kanban' dropdown is open with the cursor on row 0
     When I press Down
     Then the cursor moves to row 1 ('/ Search')
     When I press Down past the last row
     Then the cursor wraps to row 0
 
   Scenario: While a dropdown is open Left and Right walk the ring and re-anchor
-    Given the mux 'Actions' dropdown is open (cursor row 0) and 'Actions' has the bar highlight
+    Given the mux 'Kanban' dropdown is open (cursor row 0) and 'Kanban' has the bar highlight
     When I press Right
-    Then the highlight moves to 'Help' and the open dropdown re-anchors under 'Help' at row 0
+    Then the highlight moves to 'Tools' and the open dropdown re-anchors under 'Tools' at row 0
 
   Scenario: Enter on an open dropdown executes the highlighted row and closes the dropdown
-    Given the mux 'Actions' dropdown is open with the cursor on the 'C Checkpoints' row
+    Given the mux 'Tools' dropdown is open with the cursor on the 'C Checkpoints' row
     When I press Enter
     Then the checkpoints action is dispatched (the existing App routing runs unchanged) and the dropdown closes
 
   Scenario: Esc closes the open dropdown and keeps the item focused
-    Given the mux 'Actions' dropdown is open and 'Actions' has the bar highlight
+    Given the mux 'Kanban' dropdown is open and 'Kanban' has the bar highlight
     When I press Esc
-    Then the dropdown closes and 'Actions' stays highlighted
+    Then the dropdown closes and 'Kanban' stays highlighted
 
   Scenario: While a dropdown is open all other keys are swallowed
-    Given the mux 'Actions' dropdown is open
-    When I press 'a' (not a menu entry shortcut)
+    Given the mux 'Kanban' dropdown is open
+    When I press 'x' (not a menu entry shortcut; a row's own key runs that row, TUI-129)
     Then nothing is typed and nothing is opened (the key is swallowed — true-modal, BUG-161 parity)
 
   # ── R-CHIPS/R-ZONEB: chip + view-label activation ───────────────────
@@ -202,7 +202,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
     Then the Checkpoints pane is focused
 
   Scenario: Clicking outside the dropdown closes it while the click still lands on the pane
-    Given the mux 'Actions' dropdown is open
+    Given the mux 'Kanban' dropdown is open
     When I click the Files pane (outside the dropdown panel and off the bar items)
     Then the dropdown closes AND the Files pane is focused (the click lands on the same event)
 
@@ -214,7 +214,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
     Then the ring focus retreats one stop (like the Left key)
 
   Scenario: Wheel up and down over an open dropdown move the cursor
-    Given the mux 'Actions' dropdown is open (cursor row 0)
+    Given the mux 'Kanban' dropdown is open (cursor row 0)
     When I wheel ScrollDown over the open dropdown panel
     Then the cursor moves to row 1
     When I wheel ScrollUp over the open dropdown panel
@@ -227,9 +227,9 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
 
   # ── R-KEYS: Shift+arrow pane cycling is untouched ───────────────────
   Scenario: Shift+Left and Shift+Right cycle the focused pane without touching the bar
-    Given the mux grid is [Board | Agent | Agent] and the Board pane is focused with the 'Actions' item highlighted in the top bar
+    Given the mux grid is [Board | Agent | Agent] and the Board pane is focused with the 'Kanban' item highlighted in the top bar
     When I press Shift+Right
-    Then the Agent pane is focused (pane focus moved) and the 'Actions' bar highlight is unchanged (Shift+arrows never enter or move the bar)
+    Then the Agent pane is focused (pane focus moved) and the 'Kanban' bar highlight is unchanged (Shift+arrows never enter or move the bar)
 
   # ── R-TICK: the draw tick keeps the chips animating ─────────────────
   Scenario: The draw tick stays open while a session is Running and a bar is painted

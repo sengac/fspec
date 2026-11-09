@@ -44,7 +44,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -60,7 +62,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_epics.rs",
               "lines": [
-                101,
                 102,
                 103,
                 104,
@@ -99,9 +100,10 @@
                 137,
                 138,
                 139,
-                140,
-                141
-              ]
+                140
+              ],
+              "firstLine": "/// Aggregate completion progress for a single epic.",
+              "lastLine": "}"
             }
           ]
         }
@@ -134,7 +136,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "\"version\": \"2.0.0\",",
+              "lastLine": "{"
             }
           ]
         }
@@ -167,7 +171,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "\"version\": \"2.0.0\",",
+              "lastLine": "{"
             }
           ]
         }
@@ -194,7 +200,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "/// `file = \"foundation.json\"` — substring-asserted by RPC-305 tests.",
+              "lastLine": "/// at `src/utils/ensure-files.ts:203-234`."
             }
           ]
         }
@@ -237,7 +245,9 @@
                 258,
                 259,
                 260
-              ]
+              ],
+              "firstLine": "/// TS `initialData` literal (`version`, then `lastUpdated`).",
+              "lastLine": "_ => None,"
             }
           ]
         }
@@ -304,7 +314,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "///   <description>       — omitted when title or description is None",
+              "lastLine": "// exercise private items (`ListEpicsArgs`, `EpicWithProgress`,"
             }
           ]
         }
@@ -371,7 +383,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "///   <description>       — omitted when title or description is None",
+              "lastLine": "// exercise private items (`ListEpicsArgs`, `EpicWithProgress`,"
             }
           ]
         }
@@ -411,7 +425,9 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "if wu.status.as_str() == \"done\" {",
+              "lastLine": ""
             }
           ]
         }
@@ -451,7 +467,9 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "if wu.status.as_str() == \"done\" {",
+              "lastLine": ""
             }
           ]
         }
@@ -467,7 +485,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_epics.rs",
               "lines": [
-                63,
                 64,
                 65,
                 66,
@@ -503,8 +520,11 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100
+              ],
+              "firstLine": "match args.format.as_deref() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -525,7 +545,9 @@
                 150,
                 151,
                 152
-              ]
+              ],
+              "firstLine": "/// <id>",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -554,7 +576,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// nearest integer (Math.round semantics — 33.33 → 33, 66.67 → 67).",
+              "lastLine": "}"
             }
           ]
         }
@@ -620,7 +644,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! Epic type — Rust port of the TypeScript `Epic` interface at",
+              "lastLine": "clippy::unwrap_used,"
             }
           ]
         }
@@ -640,6 +666,6 @@
       "rust/fspec-core/src/types/work_unit.rs",
       "rust/fspec-core/src/types/epic.rs"
     ],
-    "totalLinesCovered": 914
+    "totalLinesCovered": 912
   }
 }

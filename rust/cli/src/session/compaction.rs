@@ -141,6 +141,8 @@ impl Session {
             .map_err(|error| failed(error.to_string()))?;
         self.messages =
             installation.ok_or_else(|| failed("missing admitted installation".into()))?;
+        // MODEL-015: an effort set inside summarized messages is not carried over.
+        self.effort_log.reset();
         self.compaction_working_messages = None;
         self.turns.clear();
         self.annotations.clear();
@@ -181,10 +183,11 @@ impl Session {
                 reason: error.to_string(),
             })?;
         self.messages = messages;
+        self.effort_log.reset();
         self.compaction_working_messages = None;
         self.token_tracker.input_tokens = boundary.input_tokens;
         let reconciled = reconcile_compaction(identity)?;
-        self.restore_durable_tokens(&reconciled);
+        self.restore_durable_tokens(&reconciled)?;
         self.pending_compaction_commit = None;
         self.compaction_inference_block = None;
         self.install_durable_summary(&reconciled);

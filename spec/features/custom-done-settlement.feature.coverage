@@ -261,7 +261,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -505,7 +507,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -626,7 +630,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }

@@ -1,0 +1,192 @@
+{
+  "scenarios": [
+    {
+      "name": "A spec lock held past the timeout fails the merge before anything is applied",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt014_merge_apply_spec_lock.rs",
+          "lines": "114-177",
+          "implMappings": [
+            {
+              "file": "rust/git/src/session_result.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297
+              ],
+              "firstLine": "// WT-014: hold main's spec write lock from the snapshot used for",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merged files replace main's files atomically and the lock is released",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt014_merge_apply_spec_lock.rs",
+          "lines": "179-234",
+          "implMappings": [
+            {
+              "file": "rust/git/src/session_result.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297
+              ],
+              "firstLine": "// WT-014: hold main's spec write lock from the snapshot used for",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/tree_snapshot.rs",
+              "lines": [
+                157,
+                158,
+                159
+              ],
+              "firstLine": "// WT-014: temp file, fsync, rename (the BUG-477 spec write path), so",
+              "lastLine": "codelet_common::spec_lock::replace_file_atomically(&full_path, content)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A merge that stops on a conflict releases the lock",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt014_merge_apply_spec_lock.rs",
+          "lines": "236-269",
+          "implMappings": [
+            {
+              "file": "rust/git/src/session_result.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297
+              ],
+              "firstLine": "// WT-014: hold main's spec write lock from the snapshot used for",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/wt014_merge_apply_spec_lock.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/session_result.rs",
+      "rust/git/src/tree_snapshot.rs"
+    ],
+    "totalLinesCovered": 268
+  }
+}

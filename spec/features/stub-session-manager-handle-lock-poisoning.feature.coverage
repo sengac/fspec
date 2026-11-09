@@ -1,0 +1,83 @@
+{
+  "scenarios": [
+    {
+      "name": "A poisoned stub table is read with its data",
+      "testMappings": [
+        {
+          "file": "rust/core/src/session_manager_handle/stub.rs",
+          "lines": "207-226",
+          "implMappings": [
+            {
+              "file": "rust/core/src/session_manager_handle/stub.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "/// BUG-412: lock a stub table. A poisoned lock (a test thread panicked while",
+              "lastLine": "poisoned.into_inner()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No stub table read swallows a poisoned lock",
+      "testMappings": [
+        {
+          "file": "rust/core/src/session_manager_handle/stub.rs",
+          "lines": "228-251",
+          "implMappings": [
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_1.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                8,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "macro_rules! compose_stub_handle_1 {",
+              "lastLine": "let record = SessionRecord {"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/src/session_manager_handle/stub.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/session_manager_handle/stub.rs",
+      "rust/core/src/session_manager_handle/stub/stub_handle_1.rs"
+    ],
+    "totalLinesCovered": 74
+  }
+}

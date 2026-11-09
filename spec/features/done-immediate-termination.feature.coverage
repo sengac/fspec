@@ -5,59 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "100-156",
+          "lines": "116-172",
           "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1024,
-                1025,
-                1026,
-                1027,
-                1028,
-                1029,
-                1030,
-                1031,
-                1032,
-                1033,
-                1034,
-                1035,
-                1036,
-                1037,
-                1038,
-                1039,
-                1040,
-                1041,
-                1042,
-                1043,
-                1044,
-                1045,
-                1046,
-                1047,
-                1048,
-                1049,
-                1050,
-                1051,
-                1052,
-                1053,
-                1054,
-                1055,
-                1056,
-                1057,
-                1058,
-                1059,
-                1060,
-                1061,
-                1062,
-                1063,
-                1064,
-                1065,
-                1066,
-                1067,
-                1068,
-                1069
-              ]
-            },
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
               "lines": [
@@ -142,7 +91,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// Literal stop_reason emitted when done() terminates the turn early.",
+              "lastLine": "}"
             }
           ]
         }
@@ -153,7 +104,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "163-217",
+          "lines": "179-233",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -231,7 +182,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// Pure decision for the ToolResult-arm early exit.",
+              "lastLine": "}"
             }
           ]
         }
@@ -242,7 +195,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "223-259",
+          "lines": "239-278",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -269,7 +222,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Pure decision for the ToolResult-arm early exit.",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,7 +235,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "265-294",
+          "lines": "284-313",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -307,7 +262,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Pure decision for the ToolResult-arm early exit.",
+              "lastLine": "}"
             }
           ]
         }
@@ -318,7 +275,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "300-363",
+          "lines": "319-390",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -373,26 +330,9 @@
                 118,
                 119,
                 120
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1576,
-                1577,
-                1578,
-                1579,
-                1580,
-                1581,
-                1582,
-                1583,
-                1584,
-                1585,
-                1586,
-                1587,
-                1588,
-                1589
-              ]
+              ],
+              "firstLine": "/// The shared FinishWithSummary teardown (doc: FinalResponse arm behavior).",
+              "lastLine": "}"
             }
           ]
         }
@@ -403,28 +343,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "370-402",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1041,
-                1042,
-                1043,
-                1044,
-                1045,
-                1046,
-                1047,
-                1048,
-                1049,
-                1050,
-                1051,
-                1052,
-                1053,
-                1054
-              ]
-            }
-          ]
+          "lines": "397-430",
+          "implMappings": []
         }
       ]
     },
@@ -433,60 +353,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cont005_done_immediate_termination.rs",
-          "lines": "409-493",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1024,
-                1025,
-                1026,
-                1027,
-                1028,
-                1029,
-                1030,
-                1031,
-                1032,
-                1033,
-                1034,
-                1035,
-                1036,
-                1037,
-                1038,
-                1039,
-                1040,
-                1041,
-                1042,
-                1043,
-                1044,
-                1045,
-                1046,
-                1047,
-                1048,
-                1049,
-                1050,
-                1051,
-                1052,
-                1053,
-                1054,
-                1055,
-                1056,
-                1057,
-                1058,
-                1059,
-                1060,
-                1061,
-                1062,
-                1063,
-                1064,
-                1065,
-                1066,
-                1067,
-                1068,
-                1069
-              ]
-            }
-          ]
+          "lines": "437-522",
+          "implMappings": []
         }
       ]
     }
@@ -499,9 +367,8 @@
       "rust/cli/tests/cont005_done_immediate_termination.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/cli/src/interactive/done_early_exit.rs"
     ],
-    "totalLinesCovered": 729
+    "totalLinesCovered": 622
   }
 }

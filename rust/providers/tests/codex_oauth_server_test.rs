@@ -92,7 +92,8 @@ async fn test_successful_browser_oauth_login_with_pkce() {
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step And a PKCE code verifier and S256 challenge should be generated
     assert!(pkce.verifier.len() >= 43);
@@ -226,15 +227,14 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
             open_browser: false,
             timeout_ms: 10_000,
             pkce: None,
-            state: None,
+            // @step And the expected state parameter is "expected-state-abc"
+            state: Some("expected-state-abc".to_string()),
         };
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-
-    // @step And the expected state parameter is "expected-state-abc"
-    // (The server generates its own state internally)
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When the callback receives a request with state "wrong-state-xyz"
     let callback_url =
@@ -260,9 +260,20 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
         "Error page should indicate authorization failure: {body}"
     );
 
+    // @step And the mismatched callback should not complete or cancel the current login
     assert!(
         !login_handle.is_finished(),
         "stale state must not terminate the current login"
+    );
+
+    // @step And the login function should keep waiting for the current attempt's valid callback
+    // TEST-042: no waiting window; hand the runtime to the login 32 times.
+    for _ in 0..32 {
+        tokio::task::yield_now().await;
+    }
+    assert!(
+        !login_handle.is_finished(),
+        "the login must still be waiting for the expected-state callback"
     );
     login_handle.abort();
     let _ = login_handle.await;
@@ -422,7 +433,8 @@ async fn test_token_exchange_fails_due_to_network_error() {
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // Send callback with matching state — state validation passes, exchange fails
     let callback_url =
@@ -481,7 +493,8 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When a request is made to the /cancel route
     let cancel_url = format!("http://127.0.0.1:{port}/cancel");
@@ -536,7 +549,8 @@ async fn test_server_handles_404_then_processes_cancel() {
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     let client = reqwest::Client::new();
 
@@ -682,16 +696,18 @@ async fn test_oauth_callback_receives_authorization_error() {
             open_browser: false,
             timeout_ms: 10_000,
             pkce: None,
-            state: None,
+            // BUG-697: an error callback counts only with the login's state.
+            state: Some("expected-state".to_string()),
         };
         browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When the callback receives an error from the authorization server
     let callback_url = format!(
-        "http://127.0.0.1:{port}/auth/callback?error=access_denied&error_description=User%20denied%20permission"
+        "http://127.0.0.1:{port}/auth/callback?error=access_denied&error_description=User%20denied%20permission&state=expected-state"
     );
     let client = reqwest::Client::new();
     let resp = client

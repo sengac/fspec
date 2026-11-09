@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @mutation
 @cli
 @rust
 @RPC-214
+@work-unit-management
 Feature: Port create-story command to Rust
   """
   Core impl at rust/fspec-core/src/commands/create_story.rs ports src/commands/create-story.ts. It (1)
@@ -121,3 +123,7 @@ Feature: Port create-story command to Rust
     Then the DispatchResult.data contains the line '✓ Created story AUTH-001'
     And the DispatchResult.data contains the line '  Title: User login'
     And the DispatchResult.data contains the substring '<system-reminder>'
+    And the DispatchResult.data contains the substring 'fspec set-user-story AUTH-001'
+    And the DispatchResult.data contains the substring 'fspec add-rule AUTH-001'
+    And the DispatchResult.data contains the substring 'fspec add-example AUTH-001'
+    And the DispatchResult.data contains the substring 'fspec add-question AUTH-001'

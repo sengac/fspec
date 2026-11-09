@@ -59,16 +59,19 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        // RPC-455: the selected workspace's history; a failed read is shown.
+        let calls = self.scoped_calls();
         let action_tx = self.action_tx.clone();
         let session_for_task = session.clone();
         let handle = tokio::spawn(async move {
-            if let Ok(snapshot) = backend
-                .persistence_get_history(session_for_task.clone(), 100)
-                .await
-            {
-                let _ = action_tx.send(Action::HistorySnapshotLoaded(session_for_task, snapshot));
-            }
+            let _ = action_tx.send(
+                match calls.get_history(session_for_task.clone(), 100).await {
+                    Ok(snapshot) => Action::HistorySnapshotLoaded(session_for_task, snapshot),
+                    Err(error) => Action::SessionOperationFailed(format!(
+                        "The input history could not be read: {error:#}"
+                    )),
+                },
+            );
         });
         self.pending_tasks.push(handle);
     }
@@ -169,9 +172,15 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        // RPC-455: recorded in the selected workspace; a failed write is shown.
+        let calls = self.scoped_calls();
+        let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
-            let _ = backend.persistence_add_history(session, text).await;
+            if let Err(error) = calls.add_history(session, text).await {
+                let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                    "The input could not be added to the history: {error:#}"
+                )));
+            }
         });
         self.pending_tasks.push(handle);
     }

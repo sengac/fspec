@@ -25,7 +25,7 @@ use codelet_sessions::mux_config_persistence::{
 };
 use serde_json::{json, Value};
 
-const MUX_JSON: &str = r#"{"orientation":"Horizontal","splits":[46],"panes":["Board","Agent"],"focused_pane":1,"enabled":true}"#;
+const MUX_JSON: &str = r#"{"layout":"board:23, agent:27","focused_pane":1,"enabled":true}"#;
 
 /// Seed a user-scope config file (the `~/.fspec` equivalent).
 fn seed_user(data_dir: &std::path::Path, content: &str) {
@@ -77,8 +77,8 @@ fn mux_save_does_not_mirror_project_scope_keys_into_the_user_config() {
     // @step Then the user-scope fspec-config.json contains the saved tui.mux value
     let config = read_user(user.path());
     assert_eq!(
-        config["tui"]["mux"]["orientation"],
-        json!("Horizontal"),
+        config["tui"]["mux"]["layout"],
+        json!("board:23, agent:27"),
         "tui.mux must be persisted: {config}"
     );
     // @step And the user-scope fspec-config.json still contains the providers and rlcd sections
@@ -115,14 +115,19 @@ fn thinking_level_save_does_not_mirror_project_scope_keys_into_the_user_config()
     );
     let user = tempfile::tempdir().expect("user dir");
     // @step When the default thinking level High is saved to the user scope
-    save_default_thinking_level_with_dirs(user.path(), cwd.path(), ThinkingLevel::High)
-        .expect("save thinking level");
-    // @step Then the user-scope fspec-config.json contains tui.defaultThinkingLevel equal to 3
+    save_default_thinking_level_with_dirs(
+        user.path(),
+        cwd.path(),
+        "anthropic/claude-opus-4-5",
+        ThinkingLevel::Effort("high".to_string()),
+    )
+    .expect("save thinking level");
+    // @step Then the user-scope fspec-config.json contains tui.thinkingLevels with effort:high for the model
     let config = read_user(user.path());
     assert_eq!(
-        config["tui"]["defaultThinkingLevel"].as_u64(),
-        Some(3),
-        "defaultThinkingLevel must be persisted: {config}"
+        config["tui"]["thinkingLevels"]["anthropic/claude-opus-4-5"].as_str(),
+        Some("effort:high"),
+        "the model's thinking level must be persisted: {config}"
     );
     // @step And the user-scope fspec-config.json does NOT contain the tools key
     assert!(
@@ -217,13 +222,13 @@ fn saving_without_any_user_config_file_still_succeeds() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: A malformed user config file degrades to a fresh save without
-// mirroring project keys
+// Scenario: A malformed user config file fails the save and is left
+// unchanged (BUG-461)
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: A malformed user config file degrades to a fresh save without mirroring project keys
+/// Scenario: A malformed user config file fails the save and is left unchanged
 #[test]
-fn a_malformed_user_config_degrades_to_a_fresh_save_without_mirroring_project_keys() {
+fn a_malformed_user_config_fails_the_save_and_is_left_unchanged() {
     // @step Given the user-scope fspec-config.json contains invalid JSON
     let user = tempfile::tempdir().expect("user dir");
     seed_user(user.path(), "{ not json");
@@ -233,28 +238,20 @@ fn a_malformed_user_config_degrades_to_a_fresh_save_without_mirroring_project_ke
         cwd.path(),
         r#"{"agent":"claude","tools":{"test":{"command":"mvn test"}}}"#,
     );
-    // @step When the mux config is saved to the user scope
-    save_mux_config_with_dirs(
+    // @step When the default thinking level is saved to the user scope
+    let saved = save_default_thinking_level_with_dirs(
         user.path(),
         cwd.path(),
-        &serde_json::from_str(MUX_JSON).unwrap(),
-    )
-    .expect("mux save must not fail on a malformed user file (existing best-effort contract)");
-    // @step Then the user-scope fspec-config.json contains the saved tui.mux value
-    let config = read_user(user.path());
-    assert!(
-        config["tui"]["mux"].is_object(),
-        "tui.mux must be persisted: {config}"
+        "anthropic/claude-opus-4-5",
+        ThinkingLevel::Effort("high".to_string()),
     );
-    // @step And the user-scope fspec-config.json does NOT contain the tools or agent keys
-    assert!(
-        config.get("tools").is_none(),
-        "must not mirror 'tools' from the project file: {config}"
-    );
-    assert!(
-        config.get("agent").is_none(),
-        "must not mirror 'agent' from the project file: {config}"
-    );
+    // @step Then the save fails naming fspec-config.json
+    let error = saved.expect_err("a malformed user config must fail the save");
+    assert!(error.contains("fspec-config.json"), "{error}");
+    // @step And the user-scope fspec-config.json still contains the invalid JSON
+    let content =
+        fs::read_to_string(user.path().join("fspec-config.json")).expect("read user config");
+    assert_eq!(content, "{ not json");
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -265,25 +262,26 @@ fn a_malformed_user_config_degrades_to_a_fresh_save_without_mirroring_project_ke
 /// Scenario: Project-scope tui.mux still overrides the user-scope value on load
 #[test]
 fn project_scope_tui_mux_still_overrides_the_user_scope_value_on_load() {
-    // @step Given the user-scope fspec-config.json holds tui.mux with orientation Horizontal
+    // @step Given the user-scope fspec-config.json holds tui.mux with layout "board, agent"
     let user = tempfile::tempdir().expect("user dir");
     seed_user(
         user.path(),
-        r#"{"tui":{"mux":{"orientation":"Horizontal","splits":[50],"panes":["Board","Agent"],"focused_pane":1,"enabled":true}}}"#,
+        r#"{"tui":{"mux":{"layout":"board, agent","focused_pane":1,"enabled":true}}}"#,
     );
-    // @step And the project spec/fspec-config.json holds tui.mux with orientation Vertical
+    // @step And the project spec/fspec-config.json holds tui.mux with layout "[board, agent]"
     let cwd = tempfile::tempdir().expect("project dir");
     seed_project(
         cwd.path(),
-        r#"{"tui":{"mux":{"orientation":"Vertical","splits":[40],"panes":["Board","Agent"],"focused_pane":1,"enabled":true}}}"#,
+        r#"{"tui":{"mux":{"layout":"[board, agent]","focused_pane":1,"enabled":true}}}"#,
     );
     // @step When the mux config is loaded for the project
-    let value =
-        load_mux_config_with_dirs(user.path(), cwd.path()).expect("project tui.mux must load");
-    // @step Then the loaded mux orientation is Vertical
+    let value = load_mux_config_with_dirs(user.path(), cwd.path())
+        .expect("the config loads")
+        .expect("project tui.mux must load");
+    // @step Then the loaded mux layout is "[board, agent]"
     assert_eq!(
-        value["orientation"],
-        json!("Vertical"),
+        value["layout"],
+        json!("[board, agent]"),
         "the project-scope value must still win on load: {value}"
     );
 }

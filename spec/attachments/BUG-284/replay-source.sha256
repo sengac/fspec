@@ -1,0 +1,15 @@
+0e30c2d909d145a69ff85d9b6e9337158cfcfd5cd4759885d749a12281bc2351  /tmp/compaction-investigation/replay_lineage.py
+b3a42a704067689acf4c01957af2bbd322ff82c280ff7110503d122a035d27b0  /tmp/compaction-investigation/replay_production.rs
+d6b35fe8fb4f5f4f14b884a325d7f88f37e64ac03c31f33241c3d244e51666a4  /tmp/compaction-investigation/replay-production
+33b6af9a5d7001be3f33cd297cc6958fb8a114e6514cdb53e5eacbf0fe6e4f27  /tmp/compaction-investigation/production-replay.log
+0ac113bddee31f192253d56b5ca436bb49b017c134d51cffdddd4e5606b432bb  /home/rquast/projects/fspec/rust/target/ci-test/deps/libcodelet_providers-24f47bf118f70df8.rlib
+447330ad2def07767687c1f04c21c4140456663319ee9e9bbfc55117294da4cf  /home/rquast/projects/fspec/rust/target/ci-test/deps/libserde_json-18d8e11bc1cb5ec6.rlib
+d5f1fe9e22de497355ed82c5e11e18a8ae72496603e542f7084343c42e2b30d0  /home/rquast/projects/fspec/rust/providers/src/codex/history_lineage.rs
+7acfd67957bfacbf3a6f5d9970f8ed66858b0397c6a3f7d9fe654cbd86b263c3  /home/rquast/projects/fspec/rust/providers/src/codex/history_projection.rs
+92f732d808e1603ab25f21256764b612e43bd4fa94da792402357c02ac442ad4  /home/rquast/projects/fspec/rust/providers/src/codex/history_items.rs
+6838a5b94afc66d3582b0351461ceee1e3462b48a743d048f8db5b078d2de049  /home/rquast/projects/fspec/rust/cli/src/session/selected_compaction.rs
+5b3e7546a128e6e684191eff384e8795065699be69f68dd6506b8cd1e6d0b07e  /home/rquast/projects/fspec/rust/agent-loop/src/agent_loop/prompt.rs
+2e33d7ade5e50b0d440f86d528b5480c868c0d2a0f541029a5853a657b0cffbf  /home/rquast/projects/fspec/rust/agent-loop/src/agent_loop/input.rs
+6ab320ad2ec86ae9e5453ef3dfb8982c5f2b1778f1f1a4d046fe7bfec244f496  /home/rquast/projects/fspec/rust/agent-loop/src/agent_loop.rs
+ab52d26813a30f27a74a857cbf3b320d981cdb82aec3630b9f9329b95832289a  /home/rquast/projects/fspec/rust/cli/src/session/provider.rs
+d979615966c3188ab930b24db3f7542703c5ade20cac50027bc1e4289b18e9c5  /home/rquast/projects/fspec/rust/patches/rig-core/src/providers/openai/responses_api/mod.rs

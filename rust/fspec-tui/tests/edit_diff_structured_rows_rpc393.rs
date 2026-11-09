@@ -12,8 +12,7 @@
 //! Every Gherkin step carries a matching `// @step` comment whose text
 //! mirrors the feature file exactly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
@@ -87,18 +86,18 @@ fn any_marker_leak(lines: &[Line<'static>]) -> bool {
 
 /// Build a diff `ChunkSource` directly (parity with what `chunk_processor`
 /// produces for an Edit) so we can wrap it at an arbitrary width.
-fn diff_source(old: &str, new: &str) -> ChunkSource {
+fn diff_source(old: &str, new: &str) -> Result<ChunkSource, codelet_test_helpers::TestError> {
     use codelet_fspec_tui::store::agent_view::pending_tool_diff::{
         capture_pending_diff, produce_diff_strings,
     };
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(old).unwrap(),
-        serde_json::to_string(new).unwrap()
+        serde_json::to_string(old).or_fail("expected a value")?,
+        serde_json::to_string(new).or_fail("expected a value")?
     );
-    let pending = capture_pending_diff("Edit", &input).expect("captured");
+    let pending = capture_pending_diff("Edit", &input).or_fail("captured")?;
     let (collapsed, full) = produce_diff_strings(&pending);
-    ChunkSource {
+    Ok(ChunkSource {
         text: format!("Edit(file)\n{collapsed}"),
         color: Color::White,
         kind: ChunkKind::ToolCall {
@@ -108,19 +107,19 @@ fn diff_source(old: &str, new: &str) -> ChunkSource {
         },
         is_streaming: false,
         full_text: Some(format!("Edit(file)\n{full}")),
-    }
+    })
 }
 
 #[test]
-fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() {
+fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() -> TestResult {
     // @step Given a diff tool-call whose body has a context line, a removed line, and an added line
     let mut app = app_with_session();
     let old = "ctx1\nctx2\nline2\nctx3\nctx4";
     let new = "ctx1\nctx2\nCHANGED\nctx3\nctx4";
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(old).unwrap(),
-        serde_json::to_string(new).unwrap()
+        serde_json::to_string(old).or_fail("expected a value")?,
+        serde_json::to_string(new).or_fail("expected a value")?
     );
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -131,13 +130,13 @@ fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("ctx");
+        .or_fail("ctx")?;
     let source = ctx
         .scrollback
         .visible_window(4096)
         .first()
         .and_then(|c| c.source.clone())
-        .expect("diff source present");
+        .or_fail("diff source present")?;
 
     // @step When the source is wrapped at width 50
     let width: u16 = 50;
@@ -147,13 +146,13 @@ fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() {
     let removed = lines
         .iter()
         .find(|l| line_text(l).contains("line2"))
-        .expect("removed line present");
+        .or_fail("removed line present")?;
     assert!(line_has_bg(removed, DIFF_BG_REMOVED));
     assert_eq!(line_width(removed), width as usize);
     let added = lines
         .iter()
         .find(|l| line_text(l).contains("CHANGED"))
-        .expect("added line present");
+        .or_fail("added line present")?;
     assert!(line_has_bg(added, DIFF_BG_ADDED));
     assert_eq!(line_width(added), width as usize);
 
@@ -161,7 +160,7 @@ fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() {
     let ctx_line = lines
         .iter()
         .find(|l| line_text(l).contains("ctx2"))
-        .expect("context line present");
+        .or_fail("context line present")?;
     assert!(ctx_line
         .spans
         .iter()
@@ -170,10 +169,11 @@ fn scrollback_renders_wrapped_diff_with_consistent_gutter_and_no_markers() {
 
     // @step And no rendered line contains a literal diff marker
     assert!(!any_marker_leak(&lines));
+    Ok(())
 }
 
 #[test]
-fn diff_body_survives_a_terminal_width_re_wrap_on_resize() {
+fn diff_body_survives_a_terminal_width_re_wrap_on_resize() -> TestResult {
     // @step Given a diff tool-call card wrapped at width 50
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -188,14 +188,18 @@ fn diff_body_survives_a_terminal_width_re_wrap_on_resize() {
 
     {
         let store = app.agent_view_store_mut();
-        let ctx = store.session_context_mut_for(&sid("s-1")).expect("ctx mut");
+        let ctx = store
+            .session_context_mut_for(&sid("s-1"))
+            .or_fail("ctx mut")?;
         ctx.scrollback.set_viewport_width(50);
     }
 
     // @step When the chunk is re-wrapped at width 80
     let lines = {
         let store = app.agent_view_store_mut();
-        let ctx = store.session_context_mut_for(&sid("s-1")).expect("ctx mut");
+        let ctx = store
+            .session_context_mut_for(&sid("s-1"))
+            .or_fail("ctx mut")?;
         ctx.scrollback.set_viewport_width(80);
         ctx.scrollback
             .visible_window(4096)
@@ -210,37 +214,42 @@ fn diff_body_survives_a_terminal_width_re_wrap_on_resize() {
     let removed = lines
         .iter()
         .find(|l| line_text(l).contains("line2"))
-        .expect("removed line present after resize");
+        .or_fail("removed line present after resize")?;
     assert_eq!(line_width(removed), 80);
 
     // @step And no rendered line contains a literal diff marker
     assert!(!any_marker_leak(&lines));
+    Ok(())
 }
 
-fn render_rows(modal: &TurnContentModal, w: u16, h: u16) -> Vec<Vec<Cell>> {
+fn render_rows(
+    modal: &TurnContentModal,
+    w: u16,
+    h: u16,
+) -> Result<Vec<Vec<Cell>>, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(w, h);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| modal.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    (0..buf.area.height)
+    Ok((0..buf.area.height)
         .map(|y| {
             (0..buf.area.width)
                 .map(|x| buf[(x, y)].clone())
                 .collect::<Vec<_>>()
         })
-        .collect()
+        .collect())
 }
 
 #[test]
-fn the_modal_shows_the_full_diff_styled_identically() {
+fn the_modal_shows_the_full_diff_styled_identically() -> TestResult {
     // @step Given a modal over the full uncollapsed diff body
-    let source = diff_source("line2", "CHANGED");
-    let full = source.full_text.clone().expect("full text");
+    let source = diff_source("line2", "CHANGED")?;
+    let full = source.full_text.clone().or_fail("full text")?;
     let modal = TurnContentModal::new(full, Some(source.kind));
 
     // @step When the modal renders its rows
-    let rows = render_rows(&modal, 60, 24);
+    let rows = render_rows(&modal, 60, 24)?;
 
     // @step Then the diff rows are full-width colored bars and plain rows are not
     let diff_bg_rows = rows
@@ -257,7 +266,7 @@ fn the_modal_shows_the_full_diff_styled_identically() {
     let removed_row = rows
         .iter()
         .find(|row| row.iter().any(|c| c.bg == DIFF_BG_REMOVED))
-        .expect("removed bar row");
+        .or_fail("removed bar row")?;
     let red_cells = removed_row
         .iter()
         .filter(|c| c.bg == DIFF_BG_REMOVED)
@@ -274,10 +283,11 @@ fn the_modal_shows_the_full_diff_styled_identically() {
         .collect();
     assert!(!screen.contains("[R]"));
     assert!(!screen.contains("[A]"));
+    Ok(())
 }
 
 #[test]
-fn modal_does_not_diff_style_a_non_diff_turn_that_looks_line_numbered() {
+fn modal_does_not_diff_style_a_non_diff_turn_that_looks_line_numbered() -> TestResult {
     // WARNING #4: a plain (non-diff) turn whose body contains a line that
     // LOOKS like a context diff row ("42   indented log") must NOT be
     // diff-styled by the modal. The modal gates diff styling on the turn kind.
@@ -286,7 +296,7 @@ fn modal_does_not_diff_style_a_non_diff_turn_that_looks_line_numbered() {
     let modal = TurnContentModal::new(body, Some(ChunkKind::AssistantText));
 
     // @step When the modal renders its rows
-    let rows = render_rows(&modal, 60, 24);
+    let rows = render_rows(&modal, 60, 24)?;
 
     // @step Then no row carries any diff background
     let diff_bg_rows = rows
@@ -306,10 +316,11 @@ fn modal_does_not_diff_style_a_non_diff_turn_that_looks_line_numbered() {
         .map(|row| row.iter().map(Cell::symbol).collect::<String>())
         .collect();
     assert!(screen.contains("indented log line"));
+    Ok(())
 }
 
 #[test]
-fn non_diff_tool_output_renders_plain_with_no_diff_styling() {
+fn non_diff_tool_output_renders_plain_with_no_diff_styling() -> TestResult {
     // @step Given a Bash tool result with no captured diff
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -329,7 +340,7 @@ fn non_diff_tool_output_renders_plain_with_no_diff_styling() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("ctx");
+        .or_fail("ctx")?;
     let lines = ctx
         .scrollback
         .visible_window(4096)
@@ -341,6 +352,7 @@ fn non_diff_tool_output_renders_plain_with_no_diff_styling() {
     assert!(!lines.iter().any(|l| line_has_bg(l, DIFF_BG_REMOVED)));
     assert!(!lines.iter().any(|l| line_has_bg(l, DIFF_BG_ADDED)));
     let _ = span_width(&Span::raw("x"));
+    Ok(())
 }
 
 // ── Unit-level scenarios: typed rows, codec, and the single style_row ──
@@ -363,7 +375,7 @@ fn spans_width(spans: &[Span<'static>]) -> usize {
 }
 
 #[test]
-fn build_rows_single_line_replacement_is_context_removed_added_context() {
+fn build_rows_single_line_replacement_is_context_removed_added_context() -> TestResult {
     // @step Given an old_string and new_string that differ in a single line
     let old = "line1\nline2\nline3\n";
     let new = "line1\nCHANGED\nline3\n";
@@ -393,10 +405,11 @@ fn build_rows_single_line_replacement_is_context_removed_added_context() {
         ]
     );
     // @step And each row carries its correct 1-based line number under three lines of context
+    Ok(())
 }
 
 #[test]
-fn build_rows_mid_file_change_drops_leading_and_marks_trailing_elision() {
+fn build_rows_mid_file_change_drops_leading_and_marks_trailing_elision() -> TestResult {
     // @step Given a 100-line edit with a single changed line in the middle
     let old: String = (1..=100).map(|n| format!("line{n}\n")).collect();
     let new: String = (1..=100)
@@ -427,11 +440,11 @@ fn build_rows_mid_file_change_drops_leading_and_marks_trailing_elision() {
                 DiffDisplayRow::Removed { .. } | DiffDisplayRow::Added { .. }
             )
         })
-        .expect("a change row");
+        .or_fail("a change row")?;
     let trailing_elision = rows
         .iter()
         .rposition(|r| matches!(r, DiffDisplayRow::Elision { .. }))
-        .expect("a trailing elision");
+        .or_fail("a trailing elision")?;
     assert!(trailing_elision > first_change);
     // @step And every elision is the same uniform Elision kind rather than a bespoke string
     let elisions = rows
@@ -439,10 +452,11 @@ fn build_rows_mid_file_change_drops_leading_and_marks_trailing_elision() {
         .filter(|r| matches!(r, DiffDisplayRow::Elision { .. }))
         .count();
     assert_eq!(elisions, 1, "exactly one (trailing) Elision");
+    Ok(())
 }
 
 #[test]
-fn build_rows_over_collapse_limit_yields_collapse_hint_only_when_collapsed() {
+fn build_rows_over_collapse_limit_yields_collapse_hint_only_when_collapsed() -> TestResult {
     // @step Given a diff whose display rows exceed the collapse limit of 25
     let new: String = (1..=60).map(|n| format!("added{n}\n")).collect();
     let diff = format_edit_diff("", &new);
@@ -451,18 +465,19 @@ fn build_rows_over_collapse_limit_yields_collapse_hint_only_when_collapsed() {
     // @step Then the final row is an Elision collapse hint
     match collapsed.last() {
         Some(DiffDisplayRow::Elision { text }) => {
-            assert!(text.contains("(select turn to /expand)"))
+            assert!(text.contains("(Tab to select, Enter to view full)"))
         }
-        other => panic!("expected collapse elision, got {other:?}"),
+        other => return Err(format!("expected collapse elision, got {other:?}").into()),
     }
     // @step And the full uncollapsed build contains no collapse Elision hint
     let full = build_diff_rows(&diff, diff.len().max(1), 1);
     assert!(!full.iter().any(|r| matches!(
-        r, DiffDisplayRow::Elision { text } if text.contains("(select turn to /expand)"))));
+        r, DiffDisplayRow::Elision { text } if text.contains("(Tab to select, Enter to view full)"))));
+    Ok(())
 }
 
 #[test]
-fn style_row_changed_rows_fill_a_full_width_colored_bar() {
+fn style_row_changed_rows_fill_a_full_width_colored_bar() -> TestResult {
     // @step Given a Removed row and an Added row
     let removed = DiffDisplayRow::Removed {
         line_no: 2,
@@ -489,10 +504,11 @@ fn style_row_changed_rows_fill_a_full_width_colored_bar() {
     // @step And no styled span contains a marker character
     assert!(!spans_text(&rs).contains("[R]"));
     assert!(!spans_text(&as_).contains("[A]"));
+    Ok(())
 }
 
 #[test]
-fn style_row_context_has_gray_gutter_and_no_background() {
+fn style_row_context_has_gray_gutter_and_no_background() -> TestResult {
     // @step Given a Context row
     let row = DiffDisplayRow::Context {
         line_no: 250,
@@ -508,10 +524,11 @@ fn style_row_context_has_gray_gutter_and_no_background() {
     assert!(spans.iter().all(|s| s.style.bg.is_none()));
     // @step And the content is not padded full-width
     assert!(spans_width(&spans) < width);
+    Ok(())
 }
 
 #[test]
-fn style_row_elision_uses_one_uniform_dim_indentation() {
+fn style_row_elision_uses_one_uniform_dim_indentation() -> TestResult {
     // @step Given a gap-marker Elision row and a collapse-hint Elision row
     // CRITICAL #1: drive BOTH elision kinds from build_diff_rows (production),
     // NOT hand-fed synthetic strings. A 100-line edit yields a trailing gap
@@ -533,16 +550,16 @@ fn style_row_elision_uses_one_uniform_dim_indentation() {
         .rev()
         .find(|r| matches!(r, DiffDisplayRow::Elision { .. }))
         .cloned()
-        .expect("a production gap Elision");
+        .or_fail("a production gap Elision")?;
 
     let added: String = (1..=60).map(|n| format!("added{n}\n")).collect();
     let hint_rows = build_diff_rows(&format_edit_diff("", &added), DIFF_COLLAPSED_LINES, 1);
     let hint = hint_rows
         .last()
         .cloned()
-        .expect("a production collapse-hint Elision");
+        .or_fail("a production collapse-hint Elision")?;
     assert!(
-        matches!(&hint, DiffDisplayRow::Elision { text } if text.contains("(select turn to /expand)")),
+        matches!(&hint, DiffDisplayRow::Elision { text } if text.contains("(Tab to select, Enter to view full)")),
         "last row must be the collapse hint"
     );
 
@@ -562,10 +579,11 @@ fn style_row_elision_uses_one_uniform_dim_indentation() {
         gpad, hpad,
         "elision indentation must be uniform across production gap and collapse-hint rows"
     );
+    Ok(())
 }
 
 #[test]
-fn gutter_style_is_consistent_across_row_types_with_no_flip() {
+fn gutter_style_is_consistent_across_row_types_with_no_flip() -> TestResult {
     // @step Given a Context row and a Removed row
     let ctx = DiffDisplayRow::Context {
         line_no: 5,
@@ -579,8 +597,8 @@ fn gutter_style_is_consistent_across_row_types_with_no_flip() {
     let cs = style_row(&ctx, 40);
     let rms = style_row(&rem, 40);
     // @step Then the gutter region of each row follows the same dim/gray rule with no per-row-type flip
-    let ctx_gutter = cs.first().expect("ctx gutter span");
-    let rem_gutter = rms.first().expect("rem gutter span");
+    let ctx_gutter = cs.first().or_fail("ctx gutter span")?;
+    let rem_gutter = rms.first().or_fail("rem gutter span")?;
     assert_eq!(ctx_gutter.style.fg, Some(Color::Gray));
     assert_eq!(rem_gutter.style.fg, Some(Color::Gray));
     assert!(ctx_gutter.style.bg.is_none());
@@ -588,10 +606,11 @@ fn gutter_style_is_consistent_across_row_types_with_no_flip() {
         rem_gutter.style.bg.is_none(),
         "gutter must be OUTSIDE the colored bar"
     );
+    Ok(())
 }
 
 #[test]
-fn codec_round_trips_every_variant_exactly() {
+fn codec_round_trips_every_variant_exactly() -> TestResult {
     // @step Given diff display rows of every variant including unusual content with spaces, brackets, digits, and empty text
     let rows = vec![
         DiffDisplayRow::Context {
@@ -614,7 +633,7 @@ fn codec_round_trips_every_variant_exactly() {
             text: "    ... (5 lines)".into(),
         },
         DiffDisplayRow::Elision {
-            text: "... +9 lines (select turn to /expand)".into(),
+            text: "... +9 lines (Tab to select, Enter to view full)".into(),
         },
         // CRITICAL #2: adversarial Elision whose text is shaped exactly like a
         // Context / Removed / marker row. The codec MUST recover Elision, not
@@ -643,10 +662,11 @@ fn codec_round_trips_every_variant_exactly() {
             "round-trip failed via {encoded:?}"
         );
     }
+    Ok(())
 }
 
 #[test]
-fn style_row_at_zero_width_does_not_panic() {
+fn style_row_at_zero_width_does_not_panic() -> TestResult {
     // @step Given a Removed row
     let row = DiffDisplayRow::Removed {
         line_no: 2,
@@ -657,6 +677,7 @@ fn style_row_at_zero_width_does_not_panic() {
     // @step Then no panic occurs and no padding is added beyond the content
     assert!(!spans_text(&spans).ends_with("  "));
     assert!(spans_text(&spans).contains("line2"));
+    Ok(())
 }
 
 // ── CRITICAL #3: re-wrap of a long diff line must stay continuation-safe ──
@@ -672,7 +693,7 @@ fn lines_text(lines: &[Vec<Span<'static>>]) -> String {
 }
 
 #[test]
-fn long_changed_line_wraps_without_resurrecting_a_phantom_row() {
+fn long_changed_line_wraps_without_resurrecting_a_phantom_row() -> TestResult {
     // @step Given a long Removed line whose content embeds a fragment shaped like another diff row
     // The embedded "999 [A]+ injected tail" would, under naive wrap-then-parse,
     // re-parse as a fresh Added bar on resize (the F4 phantom-row defect).
@@ -715,18 +736,19 @@ fn long_changed_line_wraps_without_resurrecting_a_phantom_row() {
         first_bar.starts_with("- "),
         "first row carries the - marker"
     );
+    Ok(())
 }
 
 #[test]
-fn diff_body_with_a_content_wrapping_line_survives_a_real_resize() {
+fn diff_body_with_a_content_wrapping_line_survives_a_real_resize() -> TestResult {
     // @step Given a diff tool-call whose changed line is far wider than the viewport
     let mut app = app_with_session();
     let long_old = format!("alpha {} omega", "wordpiece ".repeat(12));
     let long_new = format!("ALPHA {} OMEGA", "tokenpiece ".repeat(12));
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(&long_old).unwrap(),
-        serde_json::to_string(&long_new).unwrap()
+        serde_json::to_string(&long_old).or_fail("expected a value")?,
+        serde_json::to_string(&long_new).or_fail("expected a value")?
     );
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -735,14 +757,18 @@ fn diff_body_with_a_content_wrapping_line_survives_a_real_resize() {
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
     {
         let store = app.agent_view_store_mut();
-        let ctx = store.session_context_mut_for(&sid("s-1")).expect("ctx mut");
+        let ctx = store
+            .session_context_mut_for(&sid("s-1"))
+            .or_fail("ctx mut")?;
         ctx.scrollback.set_viewport_width(50);
     }
 
     // @step When the chunk is re-wrapped at a narrow width on resize
     let lines = {
         let store = app.agent_view_store_mut();
-        let ctx = store.session_context_mut_for(&sid("s-1")).expect("ctx mut");
+        let ctx = store
+            .session_context_mut_for(&sid("s-1"))
+            .or_fail("ctx mut")?;
         ctx.scrollback.set_viewport_width(20);
         ctx.scrollback
             .visible_window(4096)
@@ -756,12 +782,13 @@ fn diff_body_with_a_content_wrapping_line_survives_a_real_resize() {
     // @step And a removed bar and an added bar are both present without phantom rows
     assert!(lines.iter().any(|l| line_has_bg(l, DIFF_BG_REMOVED)));
     assert!(lines.iter().any(|l| line_has_bg(l, DIFF_BG_ADDED)));
+    Ok(())
 }
 
 // ── WARNING #6: gap and row gutters must share one width at 1000+ lines ──
 
 #[test]
-fn elision_indent_matches_row_gutter_width_at_four_digit_line_numbers() {
+fn elision_indent_matches_row_gutter_width_at_four_digit_line_numbers() -> TestResult {
     // @step Given a 1200-line edit with a single mid-file change
     let old: String = (1..=1200).map(|n| format!("line{n}\n")).collect();
     let new: String = (1..=1200)
@@ -781,11 +808,11 @@ fn elision_indent_matches_row_gutter_width_at_four_digit_line_numbers() {
         .rev()
         .find(|r| matches!(r, DiffDisplayRow::Elision { .. }))
         .cloned()
-        .expect("a trailing Elision");
+        .or_fail("a trailing Elision")?;
     // A collapse-hint elision from an over-limit addition at the SAME gutter width.
     let added: String = (1..=1200).map(|n| format!("added{n}\n")).collect();
     let hint_rows = build_diff_rows(&format_edit_diff("", &added), DIFF_COLLAPSED_LINES, 1);
-    let hint = hint_rows.last().cloned().expect("a collapse hint");
+    let hint = hint_rows.last().cloned().or_fail("a collapse hint")?;
 
     let gap_indent = spans_text(&style_row(&gap, 80))
         .chars()
@@ -823,4 +850,5 @@ fn elision_indent_matches_row_gutter_width_at_four_digit_line_numbers() {
         gap_indent >= 4,
         "four-digit line numbers must widen the shared elision indent to >= 4; got {gap_indent}"
     );
+    Ok(())
 }

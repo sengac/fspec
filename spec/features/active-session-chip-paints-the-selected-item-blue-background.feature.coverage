@@ -5,19 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "253-308",
+          "lines": "268-325",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -35,8 +27,16 @@
                 89,
                 90,
                 91,
-                92
-              ]
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "/// The per-frame agent-bar [`MenuSnapshot`]: the store's painted chips",
+              "lastLine": "chips,"
             }
           ]
         }
@@ -47,18 +47,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "201-249",
+          "lines": "215-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -74,8 +67,18 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                74,
+                74,
+                74
+              ],
+              "firstLine": "// RPC-445: only sessions of the workspace the board shows.",
+              "lastLine": "// BUG-400: an unobserved status stays unknown (None)."
             }
           ]
         }
@@ -86,7 +89,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "312-340",
+          "lines": "328-359",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
@@ -108,9 +111,6 @@
                 40,
                 41,
                 42,
-                43,
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -120,15 +120,12 @@
                 52,
                 53,
                 54,
-                55,
-                56,
+                54,
                 57,
                 58,
                 59,
                 60,
                 61,
-                62,
-                63,
                 64,
                 65,
                 66,
@@ -139,11 +136,19 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77
-              ]
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "/// One Zone B chip: the 1-based session index, its status glyph + style,",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +159,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "344-428",
+          "lines": "362-448",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
@@ -197,15 +202,12 @@
                 69,
                 70,
                 71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
-                78,
-                79
-              ]
+                78
+              ],
+              "firstLine": "pub fn build_snapshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -225,6 +227,6 @@
       "rust/fspec-tui/src/components/menu_bar/chips.rs",
       "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs"
     ],
-    "totalLinesCovered": 147
+    "totalLinesCovered": 369
   }
 }

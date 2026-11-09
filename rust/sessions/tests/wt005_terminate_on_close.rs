@@ -74,9 +74,10 @@ fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<Ses
     // the data directory at the fresh temp dir, so SessionStore re-initialises
     // against THIS test's dir (it caches `sessions_dir` at first use).
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (data_dir, home_dir, manager)
 }
 
@@ -104,18 +105,12 @@ fn persistence_manifest_path(data_dir: &Path, id: &str) -> PathBuf {
     data_dir.join("sessions").join(format!("{id}.json"))
 }
 
-/// Wait up to 5s for a filesystem predicate to hold (the persistence
-/// manifest write may lag the destroy call).
+/// Wait for a filesystem predicate to hold (the persistence manifest write
+/// may lag the destroy call). TEST-042: polled between yields, under the
+/// deadlock guard.
 async fn wait_until_fs<F: Fn() -> bool>(predicate: F, label: &str) {
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-    while std::time::Instant::now() < deadline {
-        if predicate() {
-            return;
-        }
-        tokio::task::yield_now().await;
-        std::thread::sleep(std::time::Duration::from_millis(50));
-    }
-    panic!("timed out waiting for: {label}");
+    let held = codelet_test_helpers::wait_until(label, || std::future::ready(predicate())).await;
+    assert!(held.is_ok(), "{held:?}");
 }
 
 // =============================================================================

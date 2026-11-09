@@ -98,7 +98,9 @@ impl ConfirmDialog {
             return LastLayout::new();
         };
         let labels: Vec<&str> = self.buttons.iter().map(String::as_str).collect();
-        separated_button_layout(area, &self.build_descriptor(), 2, &labels)
+        // The button row follows the body lines and the spacer row.
+        let button_row = self.body.lines().count().max(1) + 1;
+        separated_button_layout(area, &self.build_descriptor(), button_row, &labels)
     }
 
     /// TUI-112: route a left-button press (R2). A click on a button
@@ -119,12 +121,24 @@ impl ConfirmDialog {
     /// The paint descriptor for the current title/body/buttons — shared
     /// by `render` and the TUI-112 hit-test so the geometry always
     /// matches the painted pixels.
+    /// TUI-124: a body with newlines paints one row per line.
     fn build_descriptor(&self) -> FspecDialog<'_> {
-        let body_row = DialogRow {
-            spans: vec![Span::raw(self.body.clone())],
-            selectable: false,
-            selected: false,
-        };
+        let mut rows: Vec<DialogRow> = self
+            .body
+            .lines()
+            .map(|line| DialogRow {
+                spans: vec![Span::raw(line.to_string())],
+                selectable: false,
+                selected: false,
+            })
+            .collect();
+        if rows.is_empty() {
+            rows.push(DialogRow {
+                spans: vec![Span::raw(String::new())],
+                selectable: false,
+                selected: false,
+            });
+        }
         let spacer = DialogRow {
             spans: vec![Span::raw(String::new())],
             selectable: false,
@@ -133,7 +147,11 @@ impl ConfirmDialog {
         FspecDialog {
             accent: Accent::Yellow,
             title: &self.title,
-            rows: vec![body_row, spacer, self.build_button_row()],
+            rows: {
+                rows.push(spacer);
+                rows.push(self.build_button_row());
+                rows
+            },
             footer: "",
             min_width: 40,
             query_row: None,
@@ -259,38 +277,5 @@ impl ConfirmDialog {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-
-    #[test]
-    fn confirm_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let dialog = ConfirmDialog::new(
-            "Delete Session",
-            "This action cannot be undone.",
-            "Delete",
-            None,
-            "Cancel",
-        );
-        let backend = TestBackend::new(80, 24);
-        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
-        terminal
-            .draw(|frame| {
-                dialog.render(frame.area(), frame.buffer_mut());
-            })
-            .expect("draw");
-        let buf = terminal.backend().buffer().clone();
-        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
-        for y in 0..buf.area.height {
-            let mut row = String::with_capacity(buf.area.width as usize);
-            for x in 0..buf.area.width {
-                row.push_str(buf[(x, y)].symbol());
-            }
-            rows.push(row);
-        }
-        insta::assert_yaml_snapshot!("confirm_dialog__centered_popup_80x24", rows);
-    }
-}
+#[path = "confirm_dialog_tests.rs"]
+mod tests;

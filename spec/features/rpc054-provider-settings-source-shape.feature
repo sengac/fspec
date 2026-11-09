@@ -1,5 +1,7 @@
 @done
+@BUG-622
 @RPC-054
+@BUG-389
 @rust
 @tui
 @source-shape
@@ -47,7 +49,7 @@ Feature: ProviderSettingsView — source-shape invariants
     Then the file exists
     And it declares a pub struct ProviderSettingsView
     And it declares a pub enum ProviderSettingsMode with variants List and Detail
-    And it declares a pub enum DetailSub with variants Summary, EditApiKey, OAuthNotice
+    And it declares a pub enum DetailSub with the one variant EditApiKey (BUG-578 deleted Summary and OAuthNotice)
 
   @view-imports
   @rpc-026-parity
@@ -77,14 +79,14 @@ Feature: ProviderSettingsView — source-shape invariants
   Scenario: Every file under views/provider_settings/ stays under 300 lines
     Given rust/fspec-tui/src/views/provider_settings/
     When the file sizes are measured
-    Then every .rs file under that directory is < 300 lines
+    Then every .rs file under that directory, child module directories included, is < 300 lines
 
   @action-bus
   Scenario: components/mod.rs declares the new ConfirmDeleteProviderCredentials action
     Given rust/fspec-tui/src/components/mod.rs
     When the Action enum is parsed
     Then it contains a variant ConfirmDeleteProviderCredentials(String)
-    And the existing variants OpenProviderSettingsView, CloseProviderSettingsView, ProviderCredentialsLoaded, SaveProviderCredentials, TestProviderConnection, ProviderTestComplete, RefreshProviderModels, ProviderModelsRefreshed, DeleteProviderCredentials, ProviderSettingsStatus all remain
+    And the existing variants OpenProviderSettingsView, CloseProviderSettingsView, SaveProviderCredentials, ProviderSettingsStatus all remain (TUI-132 removed the raw DeleteProviderCredentials, BUG-578 the test-connection and refresh-models variants and BUG-664 the unnumbered ProviderCredentialsLoaded)
 
   @filter-mode
   @ts-parity
@@ -110,3 +112,10 @@ Feature: ProviderSettingsView — source-shape invariants
     Then the Esc handler first checks for filter_mode = true → clears filter and sets filter_mode = false
     And else if filter is non-empty → clears filter and stays in List
     And else (filter_mode false, filter empty) → emits ProviderSettingsEvent::Close
+
+  Scenario: The OAuth login's GitHub Copilot preamble renderers live in a child module
+    Given rust/fspec-tui/src/views/provider_settings/oauth_login_render.rs and its child directory oauth_login_render/
+    When the files are read
+    Then oauth_login_render/copilot_preamble.rs defines render_deployment_type_select and render_enterprise_url_entry
+    And oauth_login_render.rs declares mod copilot_preamble and re-exports both renderers
+    And oauth_login_render.rs does not define either renderer itself

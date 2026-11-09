@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "46-77",
+          "lines": "48-79",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -65,8 +65,11 @@
                 117,
                 118,
                 119,
-                120
-              ]
+                120,
+                121
+              ],
+              "firstLine": "pub fn create_worktree(",
+              "lastLine": "path: worktree_path,"
             }
           ]
         }
@@ -77,14 +80,16 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "90-113",
+          "lines": "92-115",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
               "lines": [
-                739,
-                740
-              ]
+                53,
+                54
+              ],
+              "firstLine": "{",
+              "lastLine": "let sessions = self.sessions.read().expect(\"sessions lock poisoned\");"
             }
           ]
         }
@@ -95,14 +100,16 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "126-149",
+          "lines": "128-151",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
               "lines": [
-                739,
-                740
-              ]
+                53,
+                54
+              ],
+              "firstLine": "{",
+              "lastLine": "let sessions = self.sessions.read().expect(\"sessions lock poisoned\");"
             }
           ]
         }
@@ -113,23 +120,8 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "162-181",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639
-              ]
-            }
-          ]
+          "lines": "164-183",
+          "implMappings": []
         }
       ]
     },
@@ -138,23 +130,8 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "194-211",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639
-              ]
-            }
-          ]
+          "lines": "196-213",
+          "implMappings": []
         }
       ]
     },
@@ -163,7 +140,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/isolated_session_tests.rs",
-          "lines": "225-251",
+          "lines": "227-253",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -173,7 +150,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "if worktree_path.exists() || worktree_git_dir.exists() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -189,9 +168,8 @@
     ],
     "implFiles": [
       "rust/git/src/worktree.rs",
-      "rust/sessions/src/session_manager.rs",
-      "rust/sessions/src/background_session.rs"
+      "rust/sessions/src/session_manager/manager_impl_3.rs"
     ],
-    "totalLinesCovered": 228
+    "totalLinesCovered": 211
   }
 }

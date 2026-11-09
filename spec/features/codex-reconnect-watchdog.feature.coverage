@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/prov160_reconnect_watchdog.rs",
-          "lines": "47-135",
+          "lines": "48-167",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/provider_recovery.rs",
@@ -45,21 +45,9 @@
                 38,
                 39,
                 40
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                815,
-                843,
-                864,
-                865,
-                866,
-                2093,
-                2094,
-                2095,
-                2096
-              ]
+              ],
+              "firstLine": "pub async fn wait_for_stall_deadline(session: &ProviderSession, provider: &str, timeout: Duration) {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
@@ -107,7 +95,9 @@
                 210,
                 211,
                 212
-              ]
+              ],
+              "firstLine": "pub fn is_reconnecting(&self) -> bool {",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -123,9 +113,8 @@
     ],
     "implFiles": [
       "rust/cli/src/interactive/provider_recovery.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/providers/src/codex/reconnect.rs"
     ],
-    "totalLinesCovered": 176
+    "totalLinesCovered": 198
   }
 }

@@ -5,22 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "163-209",
+          "lines": "491-586",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
               "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -151,15 +140,37 @@
                 178,
                 179,
                 180,
-                181
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "426-520",
-          "implMappings": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "/// Route a key through one of the two copilot preamble modes.",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
               "lines": [
@@ -204,8 +215,12 @@
                 66,
                 67,
                 68,
-                69
-              ]
+                69,
+                70,
+                71
+              ],
+              "firstLine": "pub(crate) fn try_dispatch_copilot_oauth(&mut self, action: &Action) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -216,7 +231,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "218-278",
+          "lines": "230-301",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
@@ -290,8 +305,36 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "fn handle_enterprise_entry_key(",
+              "lastLine": "}"
             }
           ]
         }
@@ -302,7 +345,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "286-379",
+          "lines": "309-403",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
@@ -344,7 +387,9 @@
                 156,
                 157,
                 158
-              ]
+              ],
+              "firstLine": "fn handle_enterprise_entry_key(",
+              "lastLine": "}"
             }
           ]
         }
@@ -355,7 +400,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "349-380",
+          "lines": "408-440",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/oauth_copilot.rs",
@@ -442,7 +487,9 @@
                 157,
                 158,
                 159
-              ]
+              ],
+              "firstLine": "selected_index: usize,",
+              "lastLine": ""
             }
           ]
         }
@@ -453,7 +500,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_copilot_device_prov114.rs",
-          "lines": "528-603",
+          "lines": "594-675",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
@@ -485,30 +532,35 @@
                 67,
                 68,
                 69,
-                70
-              ]
+                70,
+                71,
+                72
+              ],
+              "firstLine": "/// on failure emit `OAuthLoginFailed` (oauth-error).",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "fn cancel_oauth_tasks(&mut self) {",
+              "lastLine": "/// the waiting screen immediately; headless defers to the dispatch"
             }
           ]
         }
@@ -527,6 +579,6 @@
       "rust/fspec-tui/src/app/dispatch_provider_settings_copilot.rs",
       "rust/fspec-tui/src/views/provider_settings/oauth_login.rs"
     ],
-    "totalLinesCovered": 1085
+    "totalLinesCovered": 840
   }
 }

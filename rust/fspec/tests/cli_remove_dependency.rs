@@ -157,7 +157,7 @@ fn positional_shorthand_removes_depends_on_edge() {
         &[("AUTH-001", "dependsOn", &["AUTH-002"])],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002`
+    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002` in that tempdir
     let (code, stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001", "AUTH-002"]);
 
     // @step Then the exit code is 0
@@ -184,7 +184,7 @@ fn depends_on_flag_removes_same_edge_as_positional_shorthand() {
         &[("AUTH-001", "dependsOn", &["AUTH-002"])],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-001 --depends-on AUTH-002`
+    // @step When I run `fspec remove-dependency AUTH-001 --depends-on AUTH-002` in that tempdir
     let (code, stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001", "--depends-on", "AUTH-002"]);
 
     // @step Then the exit code is 0
@@ -211,7 +211,7 @@ fn positional_and_depends_on_with_same_value_succeed_without_conflict() {
         &[("AUTH-001", "dependsOn", &["AUTH-002"])],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002 --depends-on AUTH-002`
+    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002 --depends-on AUTH-002` in that tempdir
     let (code, stdout, stderr) = run_cmd(
         tmp.path(),
         &["AUTH-001", "AUTH-002", "--depends-on", "AUTH-002"],
@@ -241,7 +241,7 @@ fn positional_and_depends_on_with_different_values_exits_1_with_conflict_message
         &[("AUTH-001", "dependsOn", &["AUTH-002"])],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002 --depends-on AUTH-003`
+    // @step When I run `fspec remove-dependency AUTH-001 AUTH-002 --depends-on AUTH-003` in that tempdir
     let (code, _stdout, stderr) = run_cmd(
         tmp.path(),
         &["AUTH-001", "AUTH-002", "--depends-on", "AUTH-003"],
@@ -263,7 +263,7 @@ fn no_relationship_args_supplied_exits_1_with_at_least_one_guard() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")], &[]);
 
-    // @step When I run `fspec remove-dependency AUTH-001`
+    // @step When I run `fspec remove-dependency AUTH-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001"]);
 
     // @step Then the exit code is 1
@@ -289,7 +289,7 @@ fn blocks_flag_removes_a_blocks_edge_bidirectionally() {
         ],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-001 --blocks AUTH-002`
+    // @step When I run `fspec remove-dependency AUTH-001 --blocks AUTH-002` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001", "--blocks", "AUTH-002"]);
 
     // @step Then the exit code is 0
@@ -317,7 +317,7 @@ fn blocked_by_flag_removes_a_blocked_by_edge_bidirectionally() {
         ],
     );
 
-    // @step When I run `fspec remove-dependency UI-001 --blocked-by API-001`
+    // @step When I run `fspec remove-dependency UI-001 --blocked-by API-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["UI-001", "--blocked-by", "API-001"]);
 
     // @step Then the exit code is 0
@@ -345,7 +345,7 @@ fn relates_to_flag_removes_a_symmetric_relates_to_edge() {
         ],
     );
 
-    // @step When I run `fspec remove-dependency AUTH-002 --relates-to AUTH-003`
+    // @step When I run `fspec remove-dependency AUTH-002 --relates-to AUTH-003` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["AUTH-002", "--relates-to", "AUTH-003"]);
 
     // @step Then the exit code is 0
@@ -366,7 +366,7 @@ fn missing_source_work_unit_exits_1_with_canonical_error_on_stderr() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")], &[]);
 
-    // @step When I run `fspec remove-dependency NOPE-001 --depends-on AUTH-001`
+    // @step When I run `fspec remove-dependency NOPE-001 --depends-on AUTH-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["NOPE-001", "--depends-on", "AUTH-001"]);
 
     // @step Then the exit code is 1

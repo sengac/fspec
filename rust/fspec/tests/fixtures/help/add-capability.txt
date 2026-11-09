@@ -22,7 +22,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies capabilities,Add each capability: fspec add-capability "name" "description",Repeat for all capabilities,Finalize foundation: fspec discover-foundation --finalize
+  Start foundation discovery: fspec discover-foundation. AI analyzes codebase and identifies capabilities. Add each capability: fspec add-capability "name" "description". Repeat for all capabilities. Finalize foundation: fspec discover-foundation --finalize
 
 EXAMPLES
   1. Add capability during foundation discovery
@@ -39,16 +39,16 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ foundation.json not found
-    Fix: undefined
+    Fix: Run: fspec discover-foundation to create foundation.json.draft
 
   ✗ Capability already exists
-    Fix: undefined
+    Fix: Check existing capabilities in foundation.json or use a different name
 
 RELATED COMMANDS
-  fspec fspec discover-foundation - Start foundation discovery process
-  fspec fspec remove-capability - Remove capability from foundation
-  fspec fspec add-persona - Add user persona to foundation
-  fspec fspec update-foundation - Update foundation fields
+  fspec discover-foundation - Start foundation discovery process
+  fspec remove-capability - Remove capability from foundation
+  fspec add-persona - Add user persona to foundation
+  fspec update-foundation - Update foundation fields
 
 NOTES
   • Draft file (foundation.json.draft) takes precedence over foundation.json

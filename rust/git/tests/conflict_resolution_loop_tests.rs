@@ -61,11 +61,15 @@ fn setup_single_file_conflict(
     // Write base content and commit
     fs::write(repo_path.join(filename), base_content).expect("write base");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(&repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "base state"])
         .current_dir(&repo_path)
         .output()
@@ -136,11 +140,15 @@ fn setup_multi_file_conflict(
         fs::write(repo_path.join(filename), base_content).expect("write base");
     }
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(&repo_path)
         .output()
         .expect("stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "base state"])
         .current_dir(&repo_path)
         .output()

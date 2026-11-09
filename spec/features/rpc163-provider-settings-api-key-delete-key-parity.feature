@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @agent-view
 @ts-parity
@@ -8,7 +9,7 @@
 Feature: Provider settings: Delete key (in addition to Backspace) in API-key edit form
   """
   TS reference: src/tui/components/ProviderSettingsPanel.tsx uses Ink's useInput, where key.backspace and key.delete are sibling boolean flags both wired to draft.slice(0, -1). Rust impl currently only binds KeyCode::Backspace at rust/fspec-tui/src/views/provider_settings/detail.rs:139-146.
-  Summary/OAuthNotice sub-modes already route to handle_summary_key / handle_oauth_notice_key — Delete falls into the catch-all `_` arm there and preserves state (no change required, but explicit guard scenario required).
+  BUG-578 deleted the Summary and OAuthNotice sub-modes, so EditApiKey is the only Detail sub-mode.
   Implementation:
   - merge KeyCode::Delete into the existing Backspace arm via `KeyCode::Backspace | KeyCode::Delete => { draft.pop(); ... }` — single shared body guarantees no behavioural divergence (Rule 3).
   """
@@ -77,17 +78,3 @@ Feature: Provider settings: Delete key (in addition to Backspace) in API-key edi
     Then the draft becomes "ab"
     And the inline validation status remains "API key cannot be empty"
     And the view remains in Detail::EditApiKey for the same provider
-
-  Scenario: Pressing Delete in Summary sub-mode is treated as unrelated
-    Given I am in Detail::Summary for the provider "anthropic" with last_status Some(Testing)
-    When I press the Delete key
-    Then the view remains in Detail::Summary for "anthropic"
-    And the last_status remains Some(Testing)
-    And the keystroke is reported as ProviderSettingsEvent::Consumed
-    And no Action is dispatched
-
-  Scenario: Pressing Delete in OAuthNotice sub-mode does not exit the notice
-    Given I am in Detail::OAuthNotice for an OAuth-only provider
-    When I press the Delete key
-    Then the view remains in Detail::OAuthNotice
-    And the keystroke is reported as ProviderSettingsEvent::Consumed

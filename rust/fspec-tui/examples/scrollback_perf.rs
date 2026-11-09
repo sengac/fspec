@@ -23,7 +23,7 @@
 
 use std::time::Instant;
 
-use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
+use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source_rows;
 use codelet_fspec_tui::views::agent::{ChunkKind, ChunkSource, RenderedChunk, ScrollbackList};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -46,14 +46,16 @@ fn push_src(
         is_streaming: false,
         full_text: None,
     };
-    let lines = wrap_source(&source, 80);
+    let (lines, row_ends) = wrap_source_rows(&source, 80);
+    let rows = lines.len();
     list.push(RenderedChunk {
         seq: *seq,
-        lines: lines.clone(),
+        lines,
         source: Some(source),
+        row_ends,
     });
     *seq += 1;
-    lines.len()
+    rows
 }
 
 /// One realistic agent-turn: user input + thinking + assistant prose +

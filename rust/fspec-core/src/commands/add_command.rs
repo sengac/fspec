@@ -13,7 +13,7 @@
 //! guards with `existsSync` and returns
 //! `"spec/work-units.json not found. Run fspec init first."` when the file is
 //! absent — without touching disk. We mirror that with an inline
-//! `Path::exists` check + plain read, then a single [`write_json_atomic`] on
+//! `Path::exists` check + plain read, then a single [`crate::io::board::write_work_units`] on
 //! the success path only.
 //!
 //! ## On-disk item shape (eventStorm.items[])
@@ -36,7 +36,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 use crate::error::FspecCoreError;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::{WorkUnitStatus, WorkUnitsData};
 
@@ -74,13 +73,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // Option B: inline missing-source check — NO auto-create.
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
     if !path.exists() {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-command",
             reason: "spec/work-units.json not found. Run fspec init first.".to_string(),
         });
     }
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-command")?;
     let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
         command: "add-command",
         source,
@@ -195,7 +196,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         meta.last_updated = now;
     }
 
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AddCommandResult {
         success: true,

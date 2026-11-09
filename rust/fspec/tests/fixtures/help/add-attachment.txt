@@ -24,7 +24,7 @@ OPTIONS
     Optional description of the attachment (what it represents, why it's relevant)
 
 TYPICAL WORKFLOW
-  Create work unit: fspec create-story AUTH "User Authentication",Move to specifying: fspec update-work-unit-status AUTH-001 specifying,Start Example Mapping: Add rules, examples, questions,Add architecture notes: fspec add-architecture-note AUTH-001 "Uses JWT tokens",Add attachments: fspec add-attachment AUTH-001 docs/auth-flow.png,Continue discovery until all questions answered,Generate scenarios: fspec generate-scenarios AUTH-001
+  Create work unit: fspec create-story AUTH "User Authentication". Move to specifying: fspec update-work-unit-status AUTH-001 specifying. Start Example Mapping: Add rules, examples, questions. Add architecture notes: fspec add-architecture-note AUTH-001 "Uses JWT tokens". Add attachments: fspec add-attachment AUTH-001 docs/auth-flow.png. Continue discovery until all questions answered. Generate scenarios: fspec generate-scenarios AUTH-001
 
 EXAMPLES
   1. Add architecture diagram during discovery
@@ -50,21 +50,21 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   ✗ Source file 'diagram.png' does not exist
-    Fix: undefined
+    Fix: Check the file path is correct (absolute or relative to current directory)
 
   ✗ Attachment 'diagram.png' already exists
-    Fix: undefined
+    Fix: The file has already been attached to this work unit. Use 'fspec list-attachments AUTH-001' to see all attachments. Remove the old attachment first with 'fspec remove-attachment'.
 
 RELATED COMMANDS
-  fspec fspec list-attachments - List all attachments for a work unit
-  fspec fspec remove-attachment - Remove attachment
-  fspec fspec show-work-unit - View work unit details (includes attachments)
-  fspec fspec add-architecture-note - Add text-based architecture notes
-  fspec fspec add-rule - Add business rules
-  fspec fspec add-example - Add examples
+  fspec list-attachments - List all attachments for a work unit
+  fspec remove-attachment - Remove attachment
+  fspec show-work-unit - View work unit details (includes attachments)
+  fspec add-architecture-note - Add text-based architecture notes
+  fspec add-rule - Add business rules
+  fspec add-example - Add examples
 
 NOTES
   • Attachments are copied to spec/attachments/<workUnitId>/ directory

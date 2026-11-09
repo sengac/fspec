@@ -7,7 +7,7 @@
 //!
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`]
-//! * [`crate::io::locked_file::write_json_atomic`]
+//! * [`crate::io::board::write_work_units`]
 //! * [`crate::io::time::iso8601_now`]
 //!
 //! Two-front-doors: bridge marshals JSON `{workUnitId, index}` and forwards
@@ -20,7 +20,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 #[derive(Debug, Deserialize)]
@@ -97,6 +96,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-rule")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists.
@@ -211,8 +212,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = now;
 
     // Atomic write.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = RemoveRuleResult {
         success: true,

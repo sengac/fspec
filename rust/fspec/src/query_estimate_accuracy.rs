@@ -33,10 +33,10 @@
 //!     stderr prefixed with `Error:` (parity with the TS chalk-red error
 //!     path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_estimate_accuracy;
 use serde_json::json;
 
@@ -59,7 +59,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-driven
     // invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     // Only thread `format` through when the CLI flag was supplied so

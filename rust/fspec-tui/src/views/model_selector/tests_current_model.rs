@@ -10,7 +10,7 @@ fn cursor_lands_on_current_model_when_loaded() {
     // @step Given my current model is "claude-sonnet"
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
-    v.set_current_model(Some("claude-sonnet".to_string()));
+    v.set_current_model(Some(("anthropic", "claude-sonnet")));
 
     // @step When the model selector loads the "openai" and "anthropic" providers
     v.set_providers(vec![
@@ -54,7 +54,7 @@ fn cursor_falls_back_when_current_model_not_found() {
     // @step Given my current model is "does-not-exist"
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
-    v.set_current_model(Some("does-not-exist".to_string()));
+    v.set_current_model(Some(("openai", "does-not-exist")));
 
     // @step When the model selector loads the providers
     v.set_providers(vec![
@@ -87,7 +87,7 @@ fn cursor_seeds_on_dated_row_when_current_is_normalized() {
     // @step Given my persisted current model is the normalized family id "claude-sonnet-4"
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
-    v.set_current_model(Some("claude-sonnet-4".to_string()));
+    v.set_current_model(Some(("anthropic", "claude-sonnet-4")));
 
     // @step When the selector loads a provider whose only model carries a -YYYYMMDD date suffix
     v.set_providers(vec![provider("anthropic", &["claude-sonnet-4-20250514"])]);
@@ -110,7 +110,7 @@ fn seeded_cursor_below_fold_is_scrolled_into_view() {
     let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
-    v.set_current_model(Some("m25".to_string()));
+    v.set_current_model(Some(("openai", "m25")));
 
     // @step When the model selector loads the providers
     v.set_providers(vec![provider("openai", &refs)]);

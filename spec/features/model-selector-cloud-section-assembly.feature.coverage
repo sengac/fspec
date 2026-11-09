@@ -4,30 +4,31 @@
       "name": "A cloud provider with no models is dropped from the provider list",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "627-639",
+          "file": "rust/sessions/src/profile_sections/cloud_section_tests.rs",
+          "lines": "29-43",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
                 43,
-                44,
-                45,
                 46,
                 47,
-                48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "display_name: display_name.to_string(),",
+              "lastLine": "/// RPC-338 / MODEL-004)."
             }
           ]
         }
@@ -37,30 +38,31 @@
       "name": "A cloud provider with one or more models is kept unchanged",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "643-658",
+          "file": "rust/sessions/src/profile_sections/cloud_section_tests.rs",
+          "lines": "45-62",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
                 43,
-                44,
-                45,
                 46,
                 47,
-                48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "display_name: display_name.to_string(),",
+              "lastLine": "/// RPC-338 / MODEL-004)."
             }
           ]
         }
@@ -70,30 +72,31 @@
       "name": "Local profile sections are not affected by the empty-cloud filter",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "662-680",
+          "file": "rust/sessions/src/profile_sections/cloud_section_tests.rs",
+          "lines": "64-84",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
                 43,
-                44,
-                45,
                 46,
                 47,
-                48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "display_name: display_name.to_string(),",
+              "lastLine": "/// RPC-338 / MODEL-004)."
             }
           ]
         }
@@ -105,11 +108,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections/cloud_section_tests.rs"
     ],
     "implFiles": [
       "rust/sessions/src/profile_sections.rs"
     ],
-    "totalLinesCovered": 99
+    "totalLinesCovered": 102
   }
 }

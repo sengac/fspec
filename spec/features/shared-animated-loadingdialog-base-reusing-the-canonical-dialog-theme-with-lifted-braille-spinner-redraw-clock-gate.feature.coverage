@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "52-95",
+          "lines": "49-92",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/spinner.rs",
@@ -45,7 +45,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "pub const DOTS_FRAMES: [&str; 10] = [\"⠋\", \"⠙\", \"⠹\", \"⠸\", \"⠼\", \"⠴\", \"⠦\", \"⠧\", \"⠇\", \"⠏\"];",
+              "lastLine": "let text = format!(\"{glyph} {message}... {hint}\");"
             }
           ]
         }
@@ -56,7 +58,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "101-154",
+          "lines": "111-152",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/loading_dialog.rs",
@@ -118,7 +120,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "/// Construct a dialog in the list/scan stage.",
+              "lastLine": "format!(\"({idx}/…)\")"
             }
           ]
         }
@@ -129,7 +133,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "158-205",
+          "lines": "185-235",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/load_state.rs",
@@ -153,7 +157,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn new(list_label: impl Into<String>) -> Self {",
+              "lastLine": "pub fn list_signature(&self) -> &str {"
             }
           ]
         }
@@ -164,20 +170,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "206-263",
+          "lines": "239-303",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
@@ -186,8 +186,15 @@
                 117,
                 118,
                 119,
-                120
-              ]
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "pub fn id(&self) -> &str {",
+              "lastLine": "pub fn is_view_loading(&self) -> bool {"
             }
           ]
         }
@@ -198,7 +205,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "264-344",
+          "lines": "307-369",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/load_state.rs",
@@ -237,7 +244,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "/// cascade stage is current). Drives `view::is_loading()` and the",
+              "lastLine": "/// when `key` does not match the current stage — a stale result for"
             }
           ]
         }
@@ -248,7 +257,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "345-369",
+          "lines": "394-407",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/loading_dialog.rs",
@@ -260,7 +269,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "/// TUI-109 hook: feed a per-item `(idx, total)` counter. No-op for",
+              "lastLine": ""
             }
           ]
         }
@@ -271,7 +282,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "370-389",
+          "lines": "411-436",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/load_state.rs",
@@ -285,7 +296,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "let was_loading = self.is_loading();",
+              "lastLine": "pub fn is_loaded(&self) -> bool {"
             }
           ]
         }
@@ -296,7 +309,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui106_loading_dialog.rs",
-          "lines": "390-408",
+          "lines": "440-459",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/load_state.rs",
@@ -316,7 +329,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "self.stage = None;",
+              "lastLine": "}"
             }
           ]
         }
@@ -336,6 +351,6 @@
       "rust/fspec-tui/src/components/load_state.rs",
       "rust/fspec-tui/src/views/navigator.rs"
     ],
-    "totalLinesCovered": 543
+    "totalLinesCovered": 518
   }
 }

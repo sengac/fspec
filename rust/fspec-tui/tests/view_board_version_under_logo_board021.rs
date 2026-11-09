@@ -7,8 +7,7 @@
 //! version string `v{CARGO_PKG_VERSION}` in the theme's dim color, while
 //! the 3 glyph rows and the right-hand header widgets are unchanged.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{AgentViewStore, BoardStore, BoardView, Theme};
@@ -32,9 +31,13 @@ fn fresh() -> (
 
 /// Render the board against a `width`x`height` TestBackend and return the
 /// buffer plus the x position of the logo block's left edge.
-fn render(width: u16, height: u16, store: &BoardStore) -> (Buffer, u16) {
+fn render(
+    width: u16,
+    height: u16,
+    store: &BoardStore,
+) -> Result<(Buffer, u16), codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -44,12 +47,14 @@ fn render(width: u16, height: u16, store: &BoardStore) -> (Buffer, u16) {
             false,
         );
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    // Header layout: row 0 = top border, rows 1..=4 = 4-row header strip.
-    // The logo block spans x=2..14 (after the left `│` border at x=0 and
-    // the paddingX=1 cell at x=1 — see header.rs).
-    (buf, 2)
+    Ok(
+        // Header layout: row 0 = top border, rows 1..=4 = 4-row header strip.
+        // The logo block spans x=2..14 (after the left `│` border at x=0 and
+        // the paddingX=1 cell at x=1 — see header.rs).
+        (buf, 2),
+    )
 }
 
 /// Read row `y` of the buffer as a String, one char per cell.
@@ -81,11 +86,11 @@ fn expected_version_x() -> usize {
 
 /// Scenario: Board header paints the build version on the 4th logo row
 #[test]
-fn board_header_paints_the_build_version_on_the_4th_logo_row() {
+fn board_header_paints_the_build_version_on_the_4th_logo_row() -> TestResult {
     // @step Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let (buf, logo_x) = render(120, 24, &store);
+    let (buf, logo_x) = render(120, 24, &store)?;
     // @step Then the 4th row of the header strip (the row that also carries the keybinding chord) contains the substring "v" + env!("CARGO_PKG_VERSION")
     let row4 = row_string(&buf, 4);
     assert!(
@@ -94,27 +99,28 @@ fn board_header_paints_the_build_version_on_the_4th_logo_row() {
     );
     // @step And that substring is centered within the 12-cell logo block, mirroring the centered glyph rows above it
     let glyph_row1 = row_string(&buf, 1);
-    let glyph_x = find_cell(&glyph_row1, "┏").expect("row 1 must contain the ┏ glyph");
+    let glyph_x = find_cell(&glyph_row1, "┏").or_fail("row 1 must contain the ┏ glyph")?;
     assert_eq!(
         glyph_x, logo_x as usize,
         "logo left edge drifted (glyph at x={glyph_x}, helper says {logo_x})"
     );
-    let version_x = find_cell(&row4, VERSION_LINE).expect("version substring found above");
+    let version_x = find_cell(&row4, VERSION_LINE).or_fail("version substring found above")?;
     assert_eq!(
         version_x,
         expected_version_x(),
         "version must be centered in the 12-cell logo block (x={}); got x={version_x}",
         expected_version_x()
     );
+    Ok(())
 }
 
 /// Scenario: Logo glyph rows are unchanged when the version row is painted
 #[test]
-fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() {
+fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() -> TestResult {
     // @step Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let (buf, _logo_x) = render(120, 24, &store);
+    let (buf, _logo_x) = render(120, 24, &store)?;
     // @step Then the rendered buffer contains the substring "┏┓┏┓┏┓┏┓┏┓"
     let row1 = row_string(&buf, 1);
     assert!(
@@ -138,19 +144,20 @@ fn logo_glyph_rows_are_unchanged_when_the_version_row_is_painted() {
         row1.contains("Checkpoints: None"),
         "missing 'Checkpoints: None' on the checkpoint row:\n{row1}"
     );
-    // @step And the header row 3 shows the 2-zone menu bar's Zone A
-    // items (MENU-002 R1 supersedes the 'u Actions' hint; MENU-008
-    // reorganized the items into Kanban/Tools/Settings/Help)
+    // @step And the 4th header row contains the 2-zone menu bar items "Kanban" and "Help"
+    // (MENU-002 R1 supersedes the 'u Actions' hint; MENU-008 reorganized
+    // the items into Kanban/Tools/Settings/Help.)
     let row4 = row_string(&buf, 4);
     assert!(
         row4.contains("Kanban") && row4.contains("Help"),
         "missing the 2-zone bar's Zone A items (Kanban ... Help) on row 4:\n{row4}"
     );
+    Ok(())
 }
 
 /// Scenario: The version row is styled with the theme's dim color
 #[test]
-fn the_version_row_is_styled_with_the_themes_dim_color() {
+fn the_version_row_is_styled_with_the_themes_dim_color() -> TestResult {
     // @step Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     let store = BoardStore::default();
     // @step And the Theme is the default dark variant
@@ -161,11 +168,11 @@ fn the_version_row_is_styled_with_the_themes_dim_color() {
         "precondition: default theme dim color"
     );
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let (buf, _logo_x) = render(120, 24, &store);
+    let (buf, _logo_x) = render(120, 24, &store)?;
     // @step Then the buffer cells spelling the version string on the 4th logo row carry the theme's dim foreground color
     let row4 = row_string(&buf, 4);
-    let version_x =
-        find_cell(&row4, VERSION_LINE).expect("version substring must be present (see scenario 1)");
+    let version_x = find_cell(&row4, VERSION_LINE)
+        .or_fail("version substring must be present (see scenario 1)")?;
     for offset in 0..VERSION_LINE.len() {
         let cell = &buf[(version_x as u16 + offset as u16, 4)];
         assert_eq!(
@@ -180,7 +187,7 @@ fn the_version_row_is_styled_with_the_themes_dim_color() {
     for (y, glyph) in [(1u16, "┏┓"), (2, "┣ ┗"), (3, "┻ ┗")] {
         let row = row_string(&buf, y);
         let x = find_cell(&row, glyph)
-            .unwrap_or_else(|| panic!("glyph `{glyph}` missing on row {y}:\n{row}"));
+            .or_fail(&format!("glyph `{glyph}` missing on row {y}:\n{row}"))?;
         for offset in 0..glyph.chars().count() {
             let cell = &buf[(x as u16 + offset as u16, y)];
             assert_ne!(
@@ -192,20 +199,21 @@ fn the_version_row_is_styled_with_the_themes_dim_color() {
             );
         }
     }
+    Ok(())
 }
 
 /// Scenario: The version text never overflows the 12-cell logo block
 #[test]
-fn the_version_text_never_overflows_the_12_cell_logo_block() {
+fn the_version_text_never_overflows_the_12_cell_logo_block() -> TestResult {
     // @step Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let (buf, _logo_x) = render(120, 24, &store);
+    let (buf, _logo_x) = render(120, 24, &store)?;
     // @step Then the version string occupies at most 12 cells starting at the logo's left edge
     // (logo block: x=2..14, i.e. 12 cells after the left border + paddingX)
     let row4 = row_string(&buf, 4);
-    let version_x =
-        find_cell(&row4, VERSION_LINE).expect("version substring must be present (see scenario 1)");
+    let version_x = find_cell(&row4, VERSION_LINE)
+        .or_fail("version substring must be present (see scenario 1)")?;
     assert!(
         version_x + VERSION_LINE.len() <= 2 + 12,
         "version must fit inside the 12-cell logo block (x {version_x} + {} cells); right edge would be x={}",
@@ -216,9 +224,11 @@ fn the_version_text_never_overflows_the_12_cell_logo_block() {
     // (MENU-002 R1: the 'u Actions' hint became the live bar — Zone A
     // still starts right after the 12-cell logo block; MENU-008: the
     // first item is now 'Kanban'.)
-    let hint_x = find_cell(&row4, "[ Kanban ]").expect("menu bar 'Kanban' item must be present");
+    let hint_x =
+        find_cell(&row4, "[ Kanban ]").or_fail("menu bar 'Kanban' item must be present")?;
     assert_eq!(
         hint_x, 15,
         "the bar must start right after the 12-cell logo block + 1-cell bar padding (x=15); got x={hint_x}"
     );
+    Ok(())
 }

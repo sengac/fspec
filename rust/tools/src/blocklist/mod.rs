@@ -11,6 +11,7 @@
 //! - `config.rs`: BlocklistConfig and BlocklistRule types
 //! - `matcher.rs`: BlocklistMatcher for regex evaluation
 //! - `middleware.rs`: FilterMiddleware for tool execution interception
+//! - `session_rules.rs`: the rules each session turned off (BUG-601)
 //!
 //! ## Config Hierarchy
 //!
@@ -21,16 +22,22 @@
 mod config;
 mod matcher;
 mod middleware;
+mod session_rules;
 mod template;
 
+pub use crate::rlcd::security::check_file_path_semantic;
 pub use config::{BlocklistAction, BlocklistConfig, BlocklistRule};
 pub use matcher::{BlocklistMatcher, CheckResult};
 pub use middleware::{
     allow_for_session, check_bash_command, check_command_raw, check_file_path,
-    clear_session_allowances, init_blocklist, is_session_allowed, load_blocklist_config,
-    middleware_project_root, project_config_path, reload_blocklist, system_config_path, BlockedError,
+    clear_session_allowances, forget_session_allowances, init_blocklist, is_session_allowed,
+    load_blocklist_config, middleware_project_root, project_config_path, reload_blocklist,
+    system_config_path, BlockedError,
 };
-pub use crate::rlcd::security::check_file_path_semantic;
+pub use session_rules::{
+    clear_session_disabled_rules, forget_session_disabled_rules, session_blocklist_config,
+    session_disabled_rules, set_session_disabled_rules,
+};
 pub use template::{
     default_blocklist_config, install_default_system_blocklist, DEFAULT_BLOCKLIST_TEMPLATE,
 };

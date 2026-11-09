@@ -7,7 +7,6 @@ use codelet_sessions::SessionManager;
 use futures::StreamExt;
 use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::providers::openai;
-use std::sync::Arc;
 use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -24,10 +23,13 @@ async fn session_presentation_retains_diagnostics_without_routine_notices(
         r#"{"openai":{"id":"openai","name":"OpenAI","env":["OPENAI_API_KEY"],"models":{"o3":{"id":"o3","name":"o3","tool_call":true,"limit":{"context":200000,"output":100000}}}}}"#,
     )?;
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(temporary.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("openai/o3");
-    let session_id = SessionManagerHandle::create_session(manager.as_ref(), None);
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
+    manager.set_default_model("openai/o3")?;
+    let session_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
     let session = manager.get_session(&session_id.value)?;
     let mut chunks = manager.chunks_tx().subscribe();
     let extensions = codelet_providers::session::ProviderSession::for_provider("codex");

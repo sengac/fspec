@@ -1,5 +1,7 @@
 @done
 @KGRAPH-067
+@parser
+@history-search
 Feature: Full-Text and Content Search Within Graph
   """
   DRY approach: Reuse matches_fields() helper in dispatch_helpers.rs with different field lists per search_mode. Add decorator/parameter filter as post-match predicates in dispatch_ast_search. Extend dispatch_helpers.rs (field lists, matches_decorator, matches_parameter), ast_dispatch.rs (dispatch logic), and types.rs (new parameters).

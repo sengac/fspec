@@ -20,17 +20,15 @@ use codelet_cli::interactive::auto_continue::{
 use codelet_cli::interactive::goal::{
     apply_goal_command, goal_status_indicator, parse_goal_command, GoalCommand,
 };
+#[path = "support/offline_session.rs"]
+mod offline_session;
+
 use codelet_cli::session::Session;
 
-/// Build a Session without depending on a single-credential environment
-/// (mirrors auto_continue_engine_test.rs::fresh_session).
+/// An offline session for an explicitly selected provider, whatever this
+/// machine has credentialed (BUG-548).
 fn fresh_session() -> Session {
-    for name in ["claude", "openai", "gemini", "codex", "zai"] {
-        if let Ok(pm) = codelet_providers::ProviderManager::with_provider(name) {
-            return Session::from_provider_manager(pm);
-        }
-    }
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 // =============================================================================

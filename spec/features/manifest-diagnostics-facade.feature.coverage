@@ -92,7 +92,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "//! Shared, non-destructive manifest discovery for the store and RPC facade.",
+              "lastLine": "SessionManifestIssue {"
             }
           ]
         }
@@ -190,7 +192,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "//! Shared, non-destructive manifest discovery for the store and RPC facade.",
+              "lastLine": "SessionManifestIssue {"
             }
           ]
         }

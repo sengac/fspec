@@ -23,10 +23,10 @@
 //!     to stderr prefixed with `✗ Failed to export work units:` mirroring the
 //!     TS `output.error('✗ Failed to export work units:', message)` path.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::export_work_units;
 use serde_json::json;
 
@@ -44,7 +44,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `export-work-units` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by
     // fspec_core::commands::export_work_units::run. `status` is threaded

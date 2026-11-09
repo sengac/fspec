@@ -21,10 +21,10 @@
 //! bridge MUST NOT embed mermaid validation, file IO helpers, or the
 //! canonical foundation field literal — those would duplicate core logic.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_diagram;
 use serde_json::{json, Value};
 
@@ -38,7 +38,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({
         "section": args.section,

@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @MCP-002
+@tools
+@tool-discovery
 Feature: MCP tools not available in same turn as ConnectMCP call
   """
   Uses existing ToolServerHandle.add_tool() and remove_tool() APIs — store handle in McpSessionState via set_tool_server_handle()

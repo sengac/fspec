@@ -1,0 +1,102 @@
+{
+  "scenarios": [
+    {
+      "name": "A long Edit diff ends with the Enter to view full hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug534_collapsed_diff_hint.rs",
+          "lines": "105-140",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                141,
+                142,
+                143,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "let mut visible: Vec<DiffDisplayRow> = rows[..visible_lines].to_vec();",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "/// **BUG-534**: the one hint a collapsed tool card (tool output, Edit/Write",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long apply_patch diff ends with the Enter to view full hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug534_collapsed_diff_hint.rs",
+          "lines": "142-169",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/patch_diff.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "pub fn produce_patch_diff(rows: &[DiffDisplayRow]) -> (String, String) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "/// **BUG-534**: the one hint a collapsed tool card (tool output, Edit/Write",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug534_collapsed_diff_hint.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/diff_format.rs",
+      "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
+      "rust/fspec-tui/src/store/agent_view/patch_diff.rs"
+    ],
+    "totalLinesCovered": 98
+  }
+}

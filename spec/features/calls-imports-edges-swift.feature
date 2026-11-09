@@ -1,4 +1,6 @@
 @KGRAPH-051
+@parser
+@code-analysis
 Feature: Calls/Imports edges — Swift
   """
   Uses ast-grep patterns and edge_helpers. No Imports edges

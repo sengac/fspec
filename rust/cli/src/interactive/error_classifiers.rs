@@ -482,11 +482,13 @@ mod tests {
     #[test]
     fn detects_streaming_error_wrapped_prompt_cancelled() {
         // @step Given a StreamingError::Prompt containing Box(PromptError::PromptCancelled) is created
+        // @step Given a StreamingError::Prompt carrying a boxed PromptError::PromptCancelled
         let streaming_err = StreamingError::Prompt(Box::new(PromptError::PromptCancelled {
             chat_history: Box::new(Vec::<Message>::new()),
         }));
 
         // @step When the error is converted using the production path anyhow::Error::from(e)
+        // @step And the StreamingError is converted to anyhow::Error
         let err: anyhow::Error = anyhow::Error::from(streaming_err);
 
         // @step Then extract_prompt_cancelled returns Some(chat_history)
@@ -497,6 +499,8 @@ mod tests {
         );
 
         // @step And the typed error chain is preserved for downstream downcast_ref extraction
+        // @step When is_compaction_cancelled is called with that error
+        // @step Then the function returns true
         assert!(
             is_compaction_cancelled(&err),
             "chain traversal must find PromptCancelled inside StreamingError::Prompt"
@@ -509,6 +513,7 @@ mod tests {
         let err = anyhow::Error::msg("PromptCancelled");
 
         // @step When is_compaction_cancelled is called with that error
+        // @step When is_compaction_cancelled is called on that error
         // @step Then the function returns false
         // @step And bare string errors are correctly rejected as non-typed cancellations
         assert!(

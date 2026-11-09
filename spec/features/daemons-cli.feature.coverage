@@ -1,0 +1,149 @@
+{
+  "scenarios": [
+    {
+      "name": "Adding and listing saved daemons masks the token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc447_daemons_cli.rs",
+          "lines": "21-53",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemons_cmd.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "pub fn run(action: DaemonsAction) -> Result<()> {",
+              "lastLine": "let daemons = saved_daemons::list(&path)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing a saved daemon from the CLI",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc447_daemons_cli.rs",
+          "lines": "55-83",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemons_cmd.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "if daemons.is_empty() {",
+              "lastLine": "\"token: none\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Status connects to a token-protected daemon by saved name",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc447_daemons_cli.rs",
+          "lines": "85-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon.rs",
+              "lines": [
+                60,
+                61,
+                62
+              ],
+              "firstLine": "// RPC-447: FSPEC_DAEMON_TOKEN requires `Authorization: Bearer <token>`.",
+              "lastLine": "service.set_auth_token(token);"
+            },
+            {
+              "file": "rust/fspec/src/status.rs",
+              "lines": [
+                23,
+                31,
+                32,
+                33,
+                81
+              ],
+              "firstLine": "let (url, bearer, ca) = match resolve_url(connect, token) {",
+              "lastLine": "return crate::daemons_cmd::resolve_connect(&s, token);"
+            },
+            {
+              "file": "rust/fspec/src/daemons_cmd.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "pub fn saved_ca(daemon: &SavedDaemon) -> Option<DaemonCa> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/rpc447_daemons_cli.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/daemons_cmd.rs",
+      "rust/fspec/src/daemon.rs",
+      "rust/fspec/src/status.rs"
+    ],
+    "totalLinesCovered": 172
+  }
+}

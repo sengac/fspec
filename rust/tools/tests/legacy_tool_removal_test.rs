@@ -9,6 +9,10 @@ use uuid::Uuid;
 /// Scenario: Tool files contain only rig::tool::Tool implementation
 #[test]
 fn test_tool_files_contain_only_rig_tool_impl() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the codelet tools crate at "tools/src/"
     // Note: Tests run from crate directory, so src/ is relative to tools/
     let tools_src = std::path::Path::new("src");
@@ -98,6 +102,10 @@ fn test_tool_files_contain_only_rig_tool_impl() {
 /// Scenario: Tools module does not export legacy types
 #[test]
 fn test_tools_module_does_not_export_legacy_types() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the codelet tools crate at "tools/src/lib.rs"
     let lib_content = std::fs::read_to_string("src/lib.rs").expect("src/lib.rs should exist");
 
@@ -167,6 +175,10 @@ fn test_tools_module_does_not_export_legacy_types() {
 /// Scenario: Core module does not export Runner
 #[test]
 fn test_core_module_does_not_export_runner() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the codelet core crate at "core/src/lib.rs"
     // Note: Tests run from tools/, so path is relative
     let lib_content =
@@ -196,6 +208,10 @@ fn test_core_module_does_not_export_runner() {
 /// Scenario: Tools can be tested directly using rig trait
 #[tokio::test]
 async fn test_tools_can_be_tested_directly_using_rig_trait() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a ReadTool instance
     use codelet_tools::read::ReadArgs;
     use codelet_tools::ReadTool;
@@ -236,6 +252,10 @@ async fn test_tools_can_be_tested_directly_using_rig_trait() {
 /// The full test suite is run via `cargo test` in CI.
 #[test]
 fn test_all_tests_compile_after_migration() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the refactored codebase with legacy code removed
     // @step When I run "cargo test"
     // @step Then all tests should pass
@@ -249,6 +269,10 @@ fn test_all_tests_compile_after_migration() {
 /// This test documents the requirement.
 #[test]
 fn test_no_unused_code_warnings() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the refactored codebase with legacy code removed
     // @step When I run "cargo clippy -- -D warnings"
     // @step Then there should be no warnings

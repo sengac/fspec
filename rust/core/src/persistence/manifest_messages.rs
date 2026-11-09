@@ -22,12 +22,7 @@ pub fn update_message_metadata(
     id: Uuid,
     entries: HashMap<String, serde_json::Value>,
 ) -> Result<(), String> {
-    init_message_store()?;
-    let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    msg_store
-        .as_mut()
-        .ok_or("Message store not initialized")?
-        .update_metadata(id, entries)
+    message_store()?.update_metadata(id, entries)
 }
 
 #[path = "message_cleanup.rs"]
@@ -36,12 +31,7 @@ pub use message_cleanup::cleanup_orphaned_messages;
 
 /// Get a stored message by ID.
 pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
-    init_message_store()?;
-    let store = codelet_common::read_work::lock(&MESSAGE_STORE)?;
-    let message = store
-        .as_ref()
-        .ok_or("Message store not initialized")?
-        .get(id);
+    let message = message_store()?.get(id);
     codelet_common::read_work::checkpoint("message.loaded").map_err(|error| error.to_string())?;
     Ok(message)
 }
@@ -52,14 +42,20 @@ pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
 /// message followed by the post-boundary messages. Otherwise it loads
 /// every referenced message.
 pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
-    init_message_store()?;
-    let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    let store_ref = store.as_ref().ok_or("Message store not initialized")?;
+    let store_ref = message_store()?;
     let mut messages = Vec::new();
     if let Some(ref compaction) = session.compaction {
         let summary_content = format!("[Previous conversation summary]\n\n{}", compaction.summary);
-        let summary_tokens = count_tokens(&summary_content) as u32;
-        let mut meta = HashMap::new();
+        // CMPCT-088: never a wrapped count.
+        let summary_tokens =
+            codelet_common::narrow_count("summary tokens", count_tokens(&summary_content) as u64)?;
+        // BUG-332: the synthesized summary row carries a real envelope.
+        let mut meta = super::message_envelope::text_envelope_metadata(
+            "user",
+            "compaction",
+            &summary_content,
+            compaction.compacted_at,
+        );
         meta.insert("_synthetic".to_string(), serde_json::json!(true));
         meta.insert("_compactionSummary".to_string(), serde_json::json!(true));
         meta.insert(

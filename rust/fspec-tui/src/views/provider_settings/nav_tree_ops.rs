@@ -10,7 +10,7 @@
 //! supplied inputs — they only mutate `display_providers`, `expanded`
 //! and `nav_items` fields and never touch `selected_index` (Rule 3).
 
-use super::nav_item::{build_nav_items, NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
+use super::nav_item::{build_nav_items, NavItem, ProviderDisplayInfo};
 use super::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use crate::components::Action;
 use crate::views::agent::confirm_dialog::ConfirmDialogOutcome;
@@ -117,23 +117,27 @@ impl ProviderSettingsView {
     /// inputs change. Mirrors the TS `useMemo([providers, filter])`
     /// reactive dependency at useProviderSettingsState.ts:361-364.
     pub fn rebuild_nav_items(&mut self) {
-        let mut items = build_nav_items(&self.display_providers, &self.expanded, &self.filter);
-        // PROV-113: gate the browser login rows to transports that can run the
-        // providers-layer local HTTP server (embedded). When browser login is
-        // disabled the Browser rows are dropped while the Headless/device rows
-        // remain selectable (feature Rule 7).
-        if !self.browser_login_enabled {
-            items.retain(|item| {
-                !matches!(
-                    item.kind,
-                    NavItemKind::OAuthLogin {
-                        method: OAuthMethod::Browser,
-                        ..
-                    }
-                )
-            });
-        }
-        self.nav_items = items;
+        self.nav_items = build_nav_items(&self.display_providers, &self.expanded, &self.filter);
+        self.clamp_to_tree();
+    }
+
+    /// BUG-578 F18: the window holds only the rows painted for the list:
+    /// the `list_height` left under the status line, less the filter row
+    /// when it shows. Reconciled once that height is known, so the
+    /// selected row is always painted.
+    pub(super) fn fit_window(&mut self, list_height: u16) {
+        let filter_row = (self.filter_mode || !self.filter.is_empty()) && list_height > 0;
+        self.visible_rows = usize::from(list_height - u16::from(filter_row));
+        self.adjust_scroll();
+    }
+
+    /// BUG-578 F19: after a rebuild the selection and the window stay
+    /// inside the tree, so a reload that shrinks it never leaves the
+    /// window past its end.
+    fn clamp_to_tree(&mut self) {
+        let total = self.nav_len();
+        self.selected_index = self.selected_index.min(total.saturating_sub(1));
+        self.adjust_scroll();
     }
 
     /// Returns the currently-focused NavItem from `nav_items`, or
@@ -141,32 +145,6 @@ impl ProviderSettingsView {
     /// bounds.
     pub fn focused_nav_item(&self) -> Option<&NavItem> {
         self.nav_items.get(self.selected_index)
-    }
-
-    /// PROV-112: record the provider whose row the next
-    /// `ProviderCredentialsLoaded` reload should re-focus (TS
-    /// `navigateToProviderRef`). Consumed by `apply_pending_navigate`.
-    pub fn set_navigate_target(&mut self, provider_id: impl Into<String>) {
-        self.pending_navigate_provider = Some(provider_id.into());
-    }
-
-    /// PROV-112: after a nav rebuild, move the cursor onto the pending
-    /// navigate target's PROVIDER row (PROV-036 parity: a disconnect/delete
-    /// returns focus to the parent provider row instead of stranding the
-    /// cursor on a now-removed child row). No-op when no target is pending or
-    /// the provider is no longer present.
-    pub(crate) fn apply_pending_navigate(&mut self) {
-        let Some(target) = self.pending_navigate_provider.take() else {
-            return;
-        };
-        if let Some(idx) = self
-            .nav_items
-            .iter()
-            .position(|i| matches!(i.kind, NavItemKind::Provider { .. }) && i.provider_id == target)
-        {
-            self.selected_index = idx;
-            self.adjust_scroll();
-        }
     }
 
     /// PROV-103 — Length of the list the cursor actually navigates and the

@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "Thinking level, supervisors, pending input and debug writes report an unknown session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug464_remaining_session_methods_report_failures.rs",
+          "lines": "24-53",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "Ok(self.get_session(&session_id.value)?.get_base_thinking_level())",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle defaults refuse instead of answering",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug464_remaining_session_methods_report_failures.rs",
+          "lines": "55-76",
+          "implMappings": [
+            {
+              "file": "rust/core/src/session_manager_handle/handle_trait_2.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "fn set_role(&self, session_id: &SessionId, role: Option<String>) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session writes over RPC are refused without a session manager",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug464_remaining_session_methods_report_failures.rs",
+          "lines": "78-102",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/session_restore_focus.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "async fn set_pending_input(self, _ctx: Context, session_id: SessionId, text: Option<String>) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug464_remaining_session_methods_report_failures.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/core/src/session_manager_handle/handle_trait_2.rs",
+      "rust/rpc/src/service_implementation/session_restore_focus.rs"
+    ],
+    "totalLinesCovered": 100
+  }
+}

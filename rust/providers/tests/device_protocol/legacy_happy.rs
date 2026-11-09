@@ -89,7 +89,7 @@ async fn test_token_exchange_uses_correct_parameters_with_device_callback() -> T
     assert_eq!(tokens.access_token, "SYNTHETIC-access");
     assert_eq!(tokens.refresh_token, "SYNTHETIC-refresh");
     assert!(!tokens.id_token.is_empty());
-    assert_eq!(count(&server, "/oauth/token").await, 1);
+    assert_eq!(count(&server, "/oauth/token").await?, 1);
     Ok(())
 }
 

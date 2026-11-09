@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "93-141",
+          "lines": "102-157",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -99,8 +99,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// thinking with no `UserInput` after it\".",
+              "lastLine": ""
             }
           ]
         }
@@ -111,15 +117,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "143-167",
+          "lines": "163-186",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -154,8 +156,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// panes) paint text cleaned exactly once.",
+              "lastLine": ""
             }
           ]
         }
@@ -166,7 +174,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "169-196",
+          "lines": "192-215",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -260,8 +268,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// thinking with no `UserInput` after it\".",
+              "lastLine": ""
             }
           ]
         }
@@ -272,7 +286,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "198-241",
+          "lines": "222-269",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -366,8 +380,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// thinking with no `UserInput` after it\".",
+              "lastLine": ""
             }
           ]
         }
@@ -378,15 +398,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "243-267",
+          "lines": "275-298",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -421,27 +437,29 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// panes) paint text cleaned exactly once.",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "Interrupted chunk renders as interrupted-with-queued-count line",
+      "name": "Interrupted chunk renders as a flat warning line without the queued count",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "269-290",
+          "lines": "304-324",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -476,19 +494,25 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// panes) paint text cleaned exactly once.",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "All state-only and tool variants are suppressed from scrollback",
+      "name": "All state-only variants are suppressed from scrollback",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "292-396",
+          "lines": "330-417",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -582,8 +606,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// thinking with no `UserInput` after it\".",
+              "lastLine": ""
             }
           ]
         }
@@ -594,7 +624,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/chunk_rendering_parity_rpc071.rs",
-          "lines": "398-428",
+          "lines": "424-454",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -688,8 +718,14 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// thinking with no `UserInput` after it\".",
+              "lastLine": ""
             }
           ]
         }
@@ -706,6 +742,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
-    "totalLinesCovered": 896
+    "totalLinesCovered": 903
   }
 }

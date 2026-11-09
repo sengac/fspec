@@ -18,7 +18,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -83,7 +85,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_bug.rs",
-          "lines": "167-211",
+          "lines": "176-241",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_bug.rs",
@@ -143,7 +147,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "let mut obj = serde_json::Map::new();",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +160,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_bug.rs",
-          "lines": "212-233",
+          "lines": "247-269",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_bug.rs",
@@ -164,7 +170,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,7 +183,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_bug.rs",
-          "lines": "234-256",
+          "lines": "275-295",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_bug.rs",
@@ -185,7 +193,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -196,13 +206,15 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_bug.rs",
-          "lines": "257-315",
+          "lines": "301-367",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_bug.rs",
               "lines": [
                 69
-              ]
+              ],
+              "firstLine": "match create_bug::run(&args_json, &project_root).await {",
+              "lastLine": "match create_bug::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -213,7 +225,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_bug.rs",
-          "lines": "316-337",
+          "lines": "375-396",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/create_bug.rs",
@@ -345,13 +357,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
+                128
+              ],
+              "firstLine": "//! `create-bug` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -369,6 +378,6 @@
       "rust/fspec/src/create_bug.rs",
       "rust/fspec-core/src/help/configs/create_bug.rs"
     ],
-    "totalLinesCovered": 509
+    "totalLinesCovered": 532
   }
 }

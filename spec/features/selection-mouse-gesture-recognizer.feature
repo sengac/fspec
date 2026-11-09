@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @mouse-events
@@ -56,11 +57,11 @@ Feature: Mouse gesture recognizer for selection (drag + long-press)
     And the recognizer is ticked at time 500ms
     Then the recognizer emits Begin at row 5 column 3
 
-  Scenario: A quick click produces no selection gesture
+  Scenario: A quick click cancels any active selection
     Given a fresh selection recognizer
     When the left button is pressed at row 5 column 3 at time 0ms
     And the left button is released at row 5 column 3 at time 100ms with no drag in between
-    Then the recognizer emits no gesture
+    Then the recognizer emits Cancel
 
   Scenario: Releasing an active selection commits it
     Given a recognizer with an active drag selection

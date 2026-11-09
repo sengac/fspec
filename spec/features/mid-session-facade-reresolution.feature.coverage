@@ -10,11 +10,44 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
-                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
-                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
-                212, 213, 214, 215, 216
-              ]
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ],
+              "firstLine": "} else if is_codex_model || is_custom_model {",
+              "lastLine": "}"
             }
           ]
         }
@@ -30,11 +63,44 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
-                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
-                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
-                212, 213, 214, 215, 216
-              ]
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ],
+              "firstLine": "} else if is_codex_model || is_custom_model {",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,11 +116,44 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
-                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
-                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
-                212, 213, 214, 215, 216
-              ]
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ],
+              "firstLine": "} else if is_codex_model || is_custom_model {",
+              "lastLine": "}"
             }
           ]
         }
@@ -69,7 +168,20 @@
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
-              "lines": [217, 218, 219, 220, 221, 222, 223, 224, 225, 226]
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "\"apply_custom_provider_env_vars failed for custom model\"",
+              "lastLine": "// from a previously-selected custom model would otherwise leave a stale"
             }
           ]
         }
@@ -84,7 +196,20 @@
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
-              "lines": [217, 218, 219, 220, 221, 222, 223, 224, 225, 226]
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "\"apply_custom_provider_env_vars failed for custom model\"",
+              "lastLine": "// from a previously-selected custom model would otherwise leave a stale"
             }
           ]
         }
@@ -95,8 +220,12 @@
     "totalScenarios": 5,
     "coveredScenarios": 5,
     "coveragePercent": 100,
-    "testFiles": ["rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs"],
-    "implFiles": ["rust/sessions/src/model_resolution.rs"],
+    "testFiles": [
+      "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/model_resolution.rs"
+    ],
     "totalLinesCovered": 251
   }
 }

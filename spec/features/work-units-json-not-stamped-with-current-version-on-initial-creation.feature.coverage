@@ -6,25 +6,7 @@
         {
           "file": "src/utils/__tests__/ensure-files.test.ts",
           "lines": "193-215",
-          "implMappings": [
-            {
-              "file": "src/migrations/registry.ts",
-              "lines": [
-                14,
-                15,
-                16,
-                17,
-                18
-              ]
-            },
-            {
-              "file": "src/utils/ensure-files.ts",
-              "lines": [
-                8,
-                22
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -34,25 +16,7 @@
         {
           "file": "src/utils/__tests__/ensure-files.test.ts",
           "lines": "226-254",
-          "implMappings": [
-            {
-              "file": "src/migrations/registry.ts",
-              "lines": [
-                14,
-                15,
-                16,
-                17,
-                18
-              ]
-            },
-            {
-              "file": "src/utils/ensure-files.ts",
-              "lines": [
-                8,
-                22
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -62,25 +26,7 @@
         {
           "file": "src/utils/__tests__/ensure-files.test.ts",
           "lines": "263-283",
-          "implMappings": [
-            {
-              "file": "src/migrations/registry.ts",
-              "lines": [
-                14,
-                15,
-                16,
-                17,
-                18
-              ]
-            },
-            {
-              "file": "src/utils/ensure-files.ts",
-              "lines": [
-                8,
-                22
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -92,10 +38,7 @@
     "testFiles": [
       "src/utils/__tests__/ensure-files.test.ts"
     ],
-    "implFiles": [
-      "src/migrations/registry.ts",
-      "src/utils/ensure-files.ts"
-    ],
-    "totalLinesCovered": 94
+    "implFiles": [],
+    "totalLinesCovered": 73
   }
 }

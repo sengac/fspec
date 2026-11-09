@@ -1,0 +1,125 @@
+{
+  "scenarios": [
+    {
+      "name": "A command killed by a signal reports the signal",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug368_unified_exec_real_exit_status.rs",
+          "lines": "47-50",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_exit.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// From a pipe session's (or the anchor's) `std` exit status.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A PTY command reports its own exit code",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug368_unified_exec_real_exit_status.rs",
+          "lines": "68-71",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/spawning/pty.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "let recorded = Arc::clone(&pty_exit);",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unavailable exit status is reported as unavailable",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug368_unified_exec_real_exit_status.rs",
+          "lines": "84-88",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_exit.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// A result for a command that ended as `exit` (no output yet).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug368_unified_exec_real_exit_status.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/unified_exec/exec_exit.rs",
+      "rust/tools/src/unified_exec/spawning/pty.rs"
+    ],
+    "totalLinesCovered": 67
+  }
+}

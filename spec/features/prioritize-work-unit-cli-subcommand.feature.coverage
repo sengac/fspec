@@ -48,7 +48,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -102,7 +104,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -156,7 +160,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -210,7 +216,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -264,7 +272,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -318,7 +328,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -372,7 +384,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -426,7 +440,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -480,7 +496,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "\"workUnitId\".to_string(),",
+              "lastLine": ");"
             }
           ]
         }
@@ -491,7 +509,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_prioritize_work_unit.rs",
-          "lines": "316-340",
+          "lines": "317-344",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/prioritize_work_unit.rs",
@@ -635,13 +653,10 @@
                 137,
                 138,
                 139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                140
+              ],
+              "firstLine": "//! `prioritize-work-unit` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -659,6 +674,6 @@
       "rust/fspec/src/prioritize_work_unit.rs",
       "rust/fspec-core/src/help/configs/prioritize_work_unit.rs"
     ],
-    "totalLinesCovered": 751
+    "totalLinesCovered": 749
   }
 }

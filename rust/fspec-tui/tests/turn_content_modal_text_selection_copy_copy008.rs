@@ -13,8 +13,7 @@
 //! These tests target the INTENDED public surface and are EXPECTED to
 //! fail to COMPILE until COPY-008 lands — the correct red state for ACDD.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, MouseButton, MouseEventKind};
 
 mod common;
@@ -32,10 +31,10 @@ use helpers::{
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() {
+fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() -> TestResult {
     // @step Given an open turn-content modal showing a message with mouse capture enabled
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
-    let (mut app, clip) = open_modal_app(body, 80, 24);
+    let (mut app, clip) = open_modal_app(body, 80, 24)?;
     assert_eq!(modal_seq(&app), Some(0), "modal must be open on the turn");
     let r = modal_body_rect(80, 24, body);
 
@@ -58,7 +57,7 @@ fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() 
     drain_app(&mut app);
 
     // @step Then those lines' text without the scrollbar gutter is written to the clipboard
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52("MLINE0\nMLINE1\nMLINE2"),
@@ -74,6 +73,7 @@ fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() 
         modal_selection_active(&app),
         "the modal selection must persist after commit (rule [4])"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() 
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
+fn selection_tracks_the_visible_rows_after_scrolling_the_modal() -> TestResult {
     // @step Given an open turn-content modal that I have scrolled down
     // Build a long body so the modal overflows and can be scrolled; each
     // line is uniquely marked so we know which rows are visible.
@@ -90,7 +90,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
         body.push_str(&format!("ROW{i:02}\n"));
     }
     body.push_str("ROWLAST");
-    let (mut app, clip) = open_modal_app(&body, 80, 24);
+    let (mut app, clip) = open_modal_app(&body, 80, 24)?;
     // Scroll the modal down several rows (keyboard Down in SELECT mode
     // routes to TurnModalScrollDown while the modal is open).
     for _ in 0..5 {
@@ -99,7 +99,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
     }
     let off = modal_offset(&app);
     assert!(off > 0, "precondition: the modal must be scrolled down");
-    let _ = render_app(&mut app, 80, 24);
+    let _ = render_app(&mut app, 80, 24)?;
     let r = modal_body_rect(80, 24, &body);
 
     // @step When I drag to select across the currently visible body rows
@@ -123,7 +123,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
     // @step Then the highlighted and copied rows are the ones visible after scrolling
     let expected = format!("ROW{off:02}");
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52(&expected),
         "the copied row must be the first row visible after scrolling ({expected})"
     );
@@ -131,6 +131,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
         modal_selection_active(&app),
         "the modal selection must be active after the drag"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -139,7 +140,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph() {
+fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph() -> TestResult {
     // @step Given an open turn-content modal whose body line abuts the scrollbar
     // A first wide line exactly `content_width` chars wide reaches the
     // gutter edge; enough filler lines force the modal to overflow so the
@@ -152,7 +153,7 @@ fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph
     for i in 0..80 {
         body.push_str(&format!("filler {i}\n"));
     }
-    let (mut app, clip) = open_modal_app(&body, 80, 24);
+    let (mut app, clip) = open_modal_app(&body, 80, 24)?;
     // Keep the viewport at the top so the wide line (body row 0) is the
     // first visible row.
     assert_eq!(modal_offset(&app), 0, "precondition: modal at the top");
@@ -178,7 +179,7 @@ fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph
     drain_app(&mut app);
 
     // @step Then the clipboard text contains the message content but not the scrollbar glyph
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52(&wide_line),
@@ -188,6 +189,7 @@ fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph
         !bytes.windows(3).any(|w| w == [0xe2, 0x94, 0x82]),
         "the scrollbar glyph │ must NOT appear in the copied text"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -196,14 +198,14 @@ fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn wheel_scrolling_clears_an_active_modal_selection_and_scrolls_normally() {
+fn wheel_scrolling_clears_an_active_modal_selection_and_scrolls_normally() -> TestResult {
     // @step Given an open turn-content modal with an active text selection
     let mut body = String::new();
     for i in 0..80 {
         body.push_str(&format!("ROW{i:02}\n"));
     }
     body.push_str("ROWLAST");
-    let (mut app, _clip) = open_modal_app(&body, 80, 24);
+    let (mut app, _clip) = open_modal_app(&body, 80, 24)?;
     let r = modal_body_rect(80, 24, &body);
     // Open a live (uncommitted) selection via Down + Drag.
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
@@ -236,6 +238,7 @@ fn wheel_scrolling_clears_an_active_modal_selection_and_scrolls_normally() {
         after > before,
         "wheel ScrollDown must scroll the modal; before={before} after={after}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -244,10 +247,10 @@ fn wheel_scrolling_clears_an_active_modal_selection_and_scrolls_normally() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
+fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() -> TestResult {
     // @step Given an open turn-content modal with an active text selection
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
-    let (mut app, clip) = open_modal_app(body, 80, 24);
+    let (mut app, clip) = open_modal_app(body, 80, 24)?;
     let r = modal_body_rect(80, 24, body);
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
@@ -280,7 +283,7 @@ fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
 
     // @step And nothing is written to the clipboard by the Esc press
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "the Esc press must not copy anything"
     );
 
@@ -290,6 +293,7 @@ fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
 
     // @step Then the modal closes
     assert_eq!(modal_seq(&app), None, "the second Esc must close the modal");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -297,10 +301,10 @@ fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_in_the_modal_body_does_not_select_or_copy() {
+fn a_quick_click_in_the_modal_body_does_not_select_or_copy() -> TestResult {
     // @step Given an open turn-content modal showing a message with mouse capture enabled
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
-    let (mut app, clip) = open_modal_app(body, 80, 24);
+    let (mut app, clip) = open_modal_app(body, 80, 24)?;
     let r = modal_body_rect(80, 24, body);
 
     // @step When I quickly click in the modal body without dragging
@@ -324,7 +328,8 @@ fn a_quick_click_in_the_modal_body_does_not_select_or_copy() {
         "a quick click must not create a modal selection"
     );
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "a quick click must not write to the clipboard"
     );
+    Ok(())
 }

@@ -91,6 +91,34 @@ pub enum CustomProviderError {
         path: PathBuf,
     },
 
+    /// PROV-170: a declared token limit is 0.
+    #[error(
+        "provider '{provider}' declares {field} = 0 at {path}; a token limit must be positive"
+    )]
+    NonPositiveLimit {
+        /// Name of the provider.
+        provider: String,
+        /// Offending field, e.g. `models.opus-4.7.context_window`.
+        field: String,
+        /// Path of the config file.
+        path: PathBuf,
+    },
+
+    /// PROV-172: a declared token limit does not fit the RPC wire's `u32`,
+    /// so it cannot be published without inventing a different number.
+    #[error(
+        "provider '{provider}' declares {field} = {value}, which exceeds the RPC wire maximum of {max} tokens",
+        max = u32::MAX
+    )]
+    LimitExceedsWire {
+        /// Name of the provider.
+        provider: String,
+        /// Offending field, e.g. `models.opus-4.7.context_window`.
+        field: String,
+        /// The declared value.
+        value: usize,
+    },
+
     /// The Rhai engine failed to parse a `.rhai` script. Carries file
     /// path plus line/column info extracted from the underlying
     /// `ParseError` so error messages are useful to plugin authors.

@@ -23,12 +23,10 @@ OPTIONS
 COMMON PATTERNS
   • User Story Format
     Example: fspec add-background login "As a [role]\nI want to [action]\nSo that [benefit]"
-    undefined
 
   • Update Existing Background
     Example: # Running add-background again replaces the existing Background
 fspec add-background login "As a premium user\nI want to login with SSO\nSo that I can use corporate credentials"
-    undefined
 
 
 TYPICAL WORKFLOW

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "110-130",
+          "lines": "111-132",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
@@ -14,68 +14,60 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "// PROV-144: store the resolved per-profile image budget (absent => None so",
+              "lastLine": "// create path cannot drift."
             }
           ]
         },
         {
           "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "133-152",
+          "lines": "134-161",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_4.rs",
               "lines": [
-                1041,
-                1042,
-                1043,
-                1044
-              ]
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "self.sessions",
+              "lastLine": ".insert(uuid, session);"
             }
           ]
         },
         {
           "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "155-174",
+          "lines": "163-183",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
               "lines": [
-                1377,
-                1378,
-                1379,
-                1380,
-                1381,
-                1382,
-                1383,
-                1384
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// `set_default_model` updates the in-memory `default_model` RwLock that",
+              "lastLine": "// `openai:qwen`), so the stored default round-trips to a form a new"
             }
           ]
         },
         {
           "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "177-200",
+          "lines": "185-206",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_bindings.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_5.rs",
               "lines": [
-                2067,
-                2068,
-                2069,
-                2070
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "203-223",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/session_manager.rs",
-              "lines": [
-                1280
-              ]
+                184
+              ],
+              "firstLine": "session_id: codelet_rpc_types::SessionId::new(id.to_string()),",
+              "lastLine": "session_id: codelet_rpc_types::SessionId::new(id.to_string()),"
             }
           ]
         }
@@ -86,18 +78,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
-          "lines": "231-268",
+          "lines": "213-227",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -107,10 +92,23 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub enabled: Option<bool>,",
+              "lastLine": "}"
             }
           ]
+        },
+        {
+          "file": "rust/sessions/tests/prov144_max_images_wiring_shape.rs",
+          "lines": "229-250"
         }
       ]
     }
@@ -124,11 +122,11 @@
     ],
     "implFiles": [
       "rust/sessions/src/session_creation_helper.rs",
-      "rust/sessions/src/session_manager.rs",
-      "rust/sessions/src/handle_impl.rs",
-      "rust/napi/src/session_bindings.rs",
+      "rust/sessions/src/session_manager/manager_impl_4.rs",
+      "rust/sessions/src/handle_impl/handle_impl_6.rs",
+      "rust/sessions/src/session_manager/manager_impl_5.rs",
       "rust/sessions/src/model_resolution.rs"
     ],
-    "totalLinesCovered": 182
+    "totalLinesCovered": 163
   }
 }

@@ -65,7 +65,8 @@ fn assert_contract(definition: &ToolDefinition) {
 #[tokio::test]
 async fn scenario_builtin_and_completion_tools_advertise_the_same_required_attribution(
 ) -> TestResult {
-    // @step Given a normal agent toolset including file shell input and completion tools
+    codelet_test_helpers::isolated_user_directory()?; // BUG-347
+                                                      // @step Given a normal agent toolset including file shell input and completion tools
     let session = Uuid::new_v4();
     let server = ToolServer::new()
         .tool(ReadTool::new(session))
@@ -97,7 +98,8 @@ async fn scenario_builtin_and_completion_tools_advertise_the_same_required_attri
 
 #[tokio::test]
 async fn scenario_strict_remote_tool_schemas_preserve_business_work_unit_arguments() -> TestResult {
-    // @step Given a remote tool with strict arguments and its own "target_work_unit_id" property
+    codelet_test_helpers::isolated_user_directory()?; // BUG-347
+                                                      // @step Given a remote tool with strict arguments and its own "target_work_unit_id" property
     let original = json!({
         "type":"object", "additionalProperties":false,
         "$defs":{"target":{"type":"string", "enum":["BUSINESS-001"]}},
@@ -136,7 +138,8 @@ async fn scenario_strict_remote_tool_schemas_preserve_business_work_unit_argumen
 
 #[tokio::test]
 async fn scenario_a_reserved_metadata_collision_fails_explicitly() -> TestResult {
-    // @step Given a tool whose business schema already owns top-level "work_unit_id"
+    codelet_test_helpers::isolated_user_directory()?; // BUG-347
+                                                      // @step Given a tool whose business schema already owns top-level "work_unit_id"
     let original = json!({"type":"object","properties":{"work_unit_id":{"type":"string"}}});
     let handle = ToolServer::new().run();
     handle.add_tool(Remote(original.clone())).await?;
@@ -156,7 +159,8 @@ async fn scenario_a_reserved_metadata_collision_fails_explicitly() -> TestResult
 
 #[tokio::test]
 async fn scenario_newly_added_tools_and_rebuilt_agents_cannot_omit_attribution() -> TestResult {
-    // @step Given an agent with static dynamic and manually implemented tools
+    codelet_test_helpers::isolated_user_directory()?; // BUG-347
+                                                      // @step Given an agent with static dynamic and manually implemented tools
     let session = Uuid::new_v4();
     let original = json!({"type":"object","properties":{"target":{"type":"string"}}});
     let first = ToolServer::new().tool(ReadTool::new(session)).run();

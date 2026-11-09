@@ -1,0 +1,39 @@
+{
+  "scenarios": [
+    {
+      "name": "paint_spinner does not compute and discard a spinner glyph",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug359_paint_spinner_no_discarded_glyph.rs",
+          "lines": "25-50",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_transition.rs",
+              "lines": [
+                12,
+                255,
+                256,
+                257,
+                258
+              ],
+              "firstLine": "use super::spinner::{DOTS_FRAMES, DOTS_INTERVAL_MS};",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug359_paint_spinner_no_discarded_glyph.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/input_transition.rs"
+    ],
+    "totalLinesCovered": 31
+  }
+}

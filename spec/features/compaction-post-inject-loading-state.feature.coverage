@@ -1,104 +1,12 @@
 {
   "scenarios": [
     {
-      "name": "on_injected emits SessionStateChange Running before CompactionComplete",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
-          "lines": "24-155",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                5391,
-                5392,
-                5393,
-                5394,
-                5395,
-                5396,
-                5397,
-                5398,
-                5399,
-                5400,
-                5401
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Done handler keeps status Running when pending DAG has not been applied",
       "testMappings": [
         {
-          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
-          "lines": "160-228",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160
-              ]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                6023,
-                6024,
-                6025,
-                6026,
-                6027,
-                6028,
-                6029,
-                6030,
-                6031,
-                6032,
-                6033,
-                6034,
-                6035,
-                6036,
-                6037
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/compaction_post_inject_loading_test.rs",
+          "lines": "29-57",
+          "implMappings": []
         }
       ]
     },
@@ -106,55 +14,21 @@
       "name": "Agent fails to call inject_summary and cleanup prevents permanent compaction flag",
       "testMappings": [
         {
-          "file": "rust/napi/tests/compaction_post_inject_loading_test.rs",
-          "lines": "239-274",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160
-              ]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                5646,
-                5647,
-                5648,
-                5649,
-                5650,
-                5651,
-                5652,
-                5653,
-                5654
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/compaction_post_inject_loading_test.rs",
+          "lines": "106-142",
+          "implMappings": []
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 3,
-    "coveredScenarios": 3,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/compaction_post_inject_loading_test.rs"
+      "rust/agent-loop/tests/compaction_post_inject_loading_test.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/inject_summary_handler.rs",
-      "rust/napi/src/session_manager.rs"
-    ],
-    "totalLinesCovered": 317
+    "implFiles": [],
+    "totalLinesCovered": 66
   }
 }

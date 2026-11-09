@@ -18,26 +18,15 @@ const ARGS: &[CommandArgument] = &[
     },
 ];
 
-const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--ids <ids>",
-    description: "Restore multiple questions with comma-separated IDs (e.g., \"2,5,7\")",
-    default_value: None,
-}];
+const OPTS: &[CommandOption] = &[];
 
-const EXAMPLES: &[CommandExample] = &[
-    CommandExample {
-        description: Some("Restore deleted question with ID 2"),
-        command: "fspec restore-question AUTH-001 2",
-        output: Some(
-            "✓ Restored question from AUTH-001\nQuestion reappears at index [2] in show-work-unit",
-        ),
-    },
-    CommandExample {
-        description: Some("Restore multiple questions at once (bulk restore)"),
-        command: "fspec restore-question AUTH-001 --ids 2,5,7",
-        output: Some("✓ Restored 3 questions from AUTH-001"),
-    },
-];
+const EXAMPLES: &[CommandExample] = &[CommandExample {
+    description: Some("Restore deleted question with ID 2"),
+    command: "fspec restore-question AUTH-001 2",
+    output: Some(
+        "✓ Restored question from AUTH-001\nQuestion reappears at index [2] in show-work-unit",
+    ),
+}];
 
 const RELATED: &[&str] = &[
     "remove-question",
@@ -50,7 +39,6 @@ const NOTES: &[&str] = &[
     "Uses stable IDs that never shift when items are removed",
     "Restoring an already-active item is idempotent (succeeds with message)",
     "Non-existent IDs will fail with clear error message",
-    "Bulk restore validates all IDs before restoring any item",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

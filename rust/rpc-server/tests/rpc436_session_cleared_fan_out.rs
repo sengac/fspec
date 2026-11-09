@@ -25,7 +25,6 @@
 mod common;
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
@@ -34,7 +33,6 @@ use codelet_rpc::SharedFspecService;
 use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::SessionEvent;
 use common::{connect_with_retry, make_workspace};
-use tokio::time::timeout;
 
 /// Bind a daemon with the stub session manager on the CURRENT tokio
 /// runtime (the test's) and return (tempdir, addr, stats, join). The
@@ -68,7 +66,7 @@ async fn collect_events(
 ) -> Vec<SessionEvent> {
     let mut out = Vec::new();
     while out.len() < count {
-        match timeout(Duration::from_secs(3), rx.recv()).await {
+        match codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv()).await {
             Ok(Ok(ev)) => out.push(ev),
             _ => break,
         }
@@ -100,7 +98,8 @@ async fn scenario_multi_client_cleared_fan_out() {
         .client()
         .create_session(tarpc::context::current(), None)
         .await
-        .expect("client A create_session");
+        .expect("client A create_session")
+        .expect("the daemon creates the session");
 
     // @step When client A calls clear_history for that session
     ws_a.client()

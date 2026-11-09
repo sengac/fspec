@@ -1,0 +1,506 @@
+{
+  "scenarios": [
+    {
+      "name": "Deleting features deletes their coverage files",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "83-117",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "// BUG-645: the coverage sidecars of the matching features.",
+              "lastLine": "}))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A dry run lists the coverage files it would delete",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "119-140",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// BUG-645: the coverage sidecars of the matching features.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The CLI prints the deleted coverage files",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug645_delete_features_cli_lists_coverage_files.rs",
+          "lines": "53-68",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "// BUG-645: the coverage sidecars of the matching features.",
+              "lastLine": "}))"
+            },
+            {
+              "file": "rust/fspec/src/delete_features.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-645: the coverage files deleted with the features.",
+              "lastLine": "} else {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The CLI dry run prints the coverage files it would delete",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug645_delete_features_cli_lists_coverage_files.rs",
+          "lines": "70-87",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_features.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// BUG-645: the coverage sidecars of the matching features.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec/src/delete_features.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "// BUG-645: the coverage files deleted with the features.",
+              "lastLine": "} else if !files.is_empty() {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting the last scenario leaves a formatter-clean file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "142-153",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "let mut lines: Vec<&str> = content.split('\\n').collect();",
+              "lastLine": "let new_content = collapse_blank_lines(&lines).join(\"\\n\");"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "/// BUG-486: `lines` without the [`scenario_block`] of the scenario whose",
+              "lastLine": "kept"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting the last two scenarios leaves a formatter-clean file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "155-169",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "let mut lines: Vec<&str> = content.split('\\n').collect();",
+              "lastLine": "let new_content = collapse_blank_lines(&lines).join(\"\\n\");"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "/// BUG-486: `lines` without the [`scenario_block`] of the scenario whose",
+              "lastLine": "kept"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting every scenario leaves a formatter-clean file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "171-185",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "let mut lines: Vec<&str> = content.split('\\n').collect();",
+              "lastLine": "let new_content = collapse_blank_lines(&lines).join(\"\\n\");"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "/// BUG-486: `lines` without the [`scenario_block`] of the scenario whose",
+              "lastLine": "kept"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Rule after a deleted scenario is kept",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+          "lines": "187-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ],
+              "firstLine": "/// Collect scenarios in `feature` whose tags match ALL `wanted` tags, with",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ],
+              "firstLine": "/// BUG-486: the block of the scenario whose header is at 0-based `header`:",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug645_bulk_deletion_leaves_a_clean_spec_tree.rs",
+      "rust/fspec/tests/bug645_delete_features_cli_lists_coverage_files.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/delete_features.rs",
+      "rust/fspec/src/delete_features.rs",
+      "rust/fspec-core/src/commands/delete_scenarios.rs",
+      "rust/fspec-core/src/commands/delete_scenario.rs"
+    ],
+    "totalLinesCovered": 452
+  }
+}

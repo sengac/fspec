@@ -1,0 +1,287 @@
+{
+  "scenarios": [
+    {
+      "name": "A new session reads its project's AGENTS.md, not the daemon's",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug598_agents_md_from_session_directory.rs",
+          "lines": "99-120",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// Discover AGENTS.md by searching `start` and its parent directories.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/reminders.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub fn inject_context_reminders_with_isolation(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An isolated session reads its worktree's AGENTS.md after clearing history",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug598_agents_md_from_session_directory.rs",
+          "lines": "122-152",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// Discover AGENTS.md by searching `start` and its parent directories.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/reminders.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub fn inject_context_reminders_with_isolation(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A project without AGENTS.md never gets the daemon's",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug598_agents_md_from_session_directory.rs",
+          "lines": "154-180",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// Discover AGENTS.md by searching `start` and its parent directories.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/reminders.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub fn inject_context_reminders_with_isolation(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug598_agents_md_from_session_directory.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/session/context_gathering.rs",
+      "rust/cli/src/session/reminders.rs"
+    ],
+    "totalLinesCovered": 275
+  }
+}

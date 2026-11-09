@@ -276,7 +276,7 @@ fn scenario_cli_missing_file_routes_error_to_stderr_with_exit_1() {
     let ws = tempfile::tempdir().expect("tempdir");
     // Intentionally do NOT create spec/features/missing.feature.
 
-    // @step When I run `./rust/target/release/list_feature_tags_bin spec/features/missing.feature` from that directory
+    // @step When I run `./rust/target/release/fspec list-feature-tags spec/features/missing.feature` from that directory
     let output = Command::new(fspec_bin())
         .arg("list-feature-tags")
         .arg("spec/features/missing.feature")
@@ -319,7 +319,7 @@ fn scenario_cli_missing_file_with_show_categories_also_routes_error_to_stderr() 
     // @step Given a working directory containing no spec/features/missing.feature
     let ws = tempfile::tempdir().expect("tempdir");
 
-    // @step When I run `./rust/target/release/list_feature_tags_bin spec/features/missing.feature --show-categories` from that directory
+    // @step When I run `./rust/target/release/fspec list-feature-tags spec/features/missing.feature --show-categories` from that directory
     let output = Command::new(fspec_bin())
         .arg("list-feature-tags")
         .arg("spec/features/missing.feature")
@@ -370,7 +370,7 @@ fn scenario_cli_invalid_gherkin_routes_error_to_stderr_with_exit_1() {
     )
     .expect("write broken.feature");
 
-    // @step When I run `./rust/target/release/list_feature_tags_bin spec/features/broken.feature` from that directory
+    // @step When I run `./rust/target/release/fspec list-feature-tags spec/features/broken.feature` from that directory
     let output = Command::new(fspec_bin())
         .arg("list-feature-tags")
         .arg("spec/features/broken.feature")

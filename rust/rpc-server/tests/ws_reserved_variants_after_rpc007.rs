@@ -22,7 +22,6 @@ use codelet_rpc_server::{bind_and_serve, Envelope};
 use common::{connect_with_retry, make_workspace};
 use futures::SinkExt;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio_tungstenite::tungstenite::Message;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -55,11 +54,11 @@ async fn scenario_cmd_req_and_cmd_res_still_rejected_event_and_log_event_legitim
     .expect("send CmdReq");
 
     // Allow the server task to process the frame.
-    let mut waited = 0u64;
-    while stats.rejected_envelopes() < 1 && waited < 1000 {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let _ = codelet_test_helpers::wait_until("the server counts the rejected frames", || {
+        std::future::ready(stats.rejected_envelopes() >= 1)
+    })
+    .await;
 
     // @step Then the server rejects the frame and increments ServerStats.rejected_envelopes
     assert_eq!(
@@ -84,11 +83,11 @@ async fn scenario_cmd_req_and_cmd_res_still_rejected_event_and_log_event_legitim
     .await
     .expect("send CmdRes");
 
-    let mut waited = 0u64;
-    while stats.rejected_envelopes() < 2 && waited < 1000 {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let _ = codelet_test_helpers::wait_until("the server counts the rejected frames", || {
+        std::future::ready(stats.rejected_envelopes() >= 2)
+    })
+    .await;
 
     // @step Then the server rejects the frame and ServerStats.rejected_variants includes "CmdRes"
     assert_eq!(stats.rejected_envelopes(), 2);

@@ -58,7 +58,7 @@ pub async fn restricted_writer(fixture: &Fixture) -> Result<ToolServerHandle> {
         Some("AUTH-001".into()),
         Some("bound".into()),
         Some("specifying".into()),
-    );
+    )?;
     let actor = ToolServer::new().tool(WriteTool::new(session.id)).run();
     codelet_tools::tool_attribution::configure_tool_server(&actor, &fixture.first.value).await?;
     Ok(actor)
@@ -75,7 +75,7 @@ pub async fn verify_path_restriction(
         Some("AUTH-001".into()),
         Some("bound".into()),
         Some("implementing".into()),
-    );
+    )?;
     *session.worktree_path.write().map_err(|_| "worktree")? = Some(outside.path().to_path_buf());
     let input = json!({"work_unit_id":"AUTH-002","file_path":output,"content":"forbidden"});
     assert!(actor.call_tool("Write", &input.to_string()).await.is_err());

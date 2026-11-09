@@ -10,7 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
-                123,
                 124,
                 125,
                 126,
@@ -29,8 +28,30 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "/// Read `spec/schedules.json` and convert it into a",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,7 +67,22 @@
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
-                123,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
                 124,
                 125,
                 126,
@@ -65,8 +101,20 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// Deserialised projection of `spec/schedules.json`. Only the",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,7 +130,22 @@
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
-                123,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
                 124,
                 125,
                 126,
@@ -101,8 +164,20 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// Deserialised projection of `spec/schedules.json`. Only the",
+              "lastLine": "}"
             }
           ]
         }
@@ -118,7 +193,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
-                123,
                 124,
                 125,
                 126,
@@ -137,8 +211,30 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "/// Read `spec/schedules.json` and convert it into a",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,12 +245,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_schedules.rs",
-          "lines": "226-288",
+          "lines": "223-285",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
               "lines": [
-                123,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
                 124,
                 125,
                 126,
@@ -173,10 +284,26 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// Deserialised projection of `spec/schedules.json`. Only the",
+              "lastLine": "}"
             }
           ]
+        },
+        {
+          "file": "rust/fspec-core/tests/list_schedules.rs",
+          "lines": "58-89"
         }
       ]
     },
@@ -210,7 +337,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "/// ScheduleEntry fields (`status`, `lastRunAt`, ...), not the column",
+              "lastLine": "match args.format.as_deref() {"
             }
           ]
         }
@@ -299,7 +428,9 @@
                 243,
                 244,
                 245
-              ]
+              ],
+              "firstLine": "/// ```",
+              "lastLine": "out.push('\\n');"
             }
           ]
         }
@@ -388,7 +519,9 @@
                 243,
                 244,
                 245
-              ]
+              ],
+              "firstLine": "/// ```",
+              "lastLine": "out.push('\\n');"
             }
           ]
         }
@@ -399,7 +532,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_schedules.rs",
-          "lines": "415-435",
+          "lines": "415-432",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_schedules.rs",
@@ -424,7 +557,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "/// ScheduleEntry fields (`status`, `lastRunAt`, ...), not the column",
+              "lastLine": "match args.format.as_deref() {"
             }
           ]
         }
@@ -441,6 +576,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/list_schedules.rs"
     ],
-    "totalLinesCovered": 653
+    "totalLinesCovered": 795
   }
 }

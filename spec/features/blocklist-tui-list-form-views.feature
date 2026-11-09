@@ -1,4 +1,6 @@
 @BLOCK-004
+@tui
+@list
 Feature: Blocklist TUI - List/Form Views
   """
   TUI Components: Create BlocklistListView.tsx (full-screen overlay, follows WatcherTemplateList pattern) and BlocklistFormView.tsx (full-screen form, follows WatcherCreateView pattern). Both use position=absolute with full width/height, black background, header with border, scrollable content, footer with keyboard hints. Use useInputCompat with InputPriority.CRITICAL.

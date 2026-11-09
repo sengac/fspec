@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
-          "lines": "167-181",
+          "lines": "178-192",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_identity.rs",
@@ -33,11 +33,16 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn resolve_model_alias(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
+                81,
+                82,
+                83,
                 84,
                 85,
                 86,
@@ -52,11 +57,10 @@
                 95,
                 96,
                 97,
-                98,
-                99,
-                100,
-                101
-              ]
+                98
+              ],
+              "firstLine": "#[path = \"model_identity.rs\"]",
+              "lastLine": "))"
             }
           ]
         }
@@ -67,7 +71,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
-          "lines": "183-201",
+          "lines": "194-212",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_identity.rs",
@@ -95,11 +99,16 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn resolve_model_alias(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
+                81,
+                82,
+                83,
                 84,
                 85,
                 86,
@@ -114,11 +123,10 @@
                 95,
                 96,
                 97,
-                98,
-                99,
-                100,
-                101
-              ]
+                98
+              ],
+              "firstLine": "#[path = \"model_identity.rs\"]",
+              "lastLine": "))"
             }
           ]
         }
@@ -129,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
-          "lines": "203-216",
+          "lines": "214-227",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_identity.rs",
@@ -157,7 +165,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn resolve_model_alias(",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,7 +178,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
-          "lines": "218-234",
+          "lines": "229-245",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_identity.rs",
@@ -196,7 +206,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn resolve_model_alias(",
+              "lastLine": "}"
             }
           ]
         }
@@ -207,7 +219,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
-          "lines": "236-255",
+          "lines": "247-266",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_identity.rs",
@@ -235,7 +247,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn resolve_model_alias(",
+              "lastLine": "}"
             }
           ]
         }

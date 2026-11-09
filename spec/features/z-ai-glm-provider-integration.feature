@@ -1,4 +1,5 @@
 @done
+@BUG-517
 @provider-abstraction
 @providers
 @PROV-004
@@ -22,6 +23,7 @@ Feature: Z.AI GLM Provider Integration
   - credentials.ts (add ZAI_API_KEY and ZAI_PLAN_API_KEY handling)
   - AgentView.tsx (add zai provider ID mapping)
   - ModelRegistry (add GLM model definitions)
+  BUG-517: the endpoint, authentication and streaming scenarios check the real client. Under test-support ZAIProvider::new_with_model_at_test_endpoint resolves the keys exactly as new_with_model and sends to a loopback server, so the tests see the Bearer key, the model and the streamed tool calls; base_url() still reports the endpoint the key selected. Models are required (MODEL-001), so the endpoint scenarios request the model they were created with.
   """
 
   # ========================================
@@ -69,14 +71,14 @@ Feature: Z.AI GLM Provider Integration
     When a ZAIProvider instance is created
     Then it should use the base URL https://api.z.ai/api/paas/v4
     And it should authenticate using Bearer token
-    And it should default to model glm-4.7
+    And it should request the model glm-4.7 it was created with
 
   Scenario: ZAI provider uses coding plan API endpoint
     Given the ZAI_PLAN_API_KEY environment variable is set
     When a ZAIProvider instance is created
     Then it should use the base URL https://api.z.ai/api/coding/paas/v4
     And it should authenticate using Bearer token
-    And it should default to model glm-4.7
+    And it should request the model glm-4.7 it was created with
 
   Scenario: ZAI_PLAN_API_KEY takes precedence over ZAI_API_KEY
     Given both ZAI_API_KEY and ZAI_PLAN_API_KEY environment variables are set
@@ -86,7 +88,7 @@ Feature: Z.AI GLM Provider Integration
 
   Scenario: Streaming response with tool calls
     Given the ZAI_API_KEY or ZAI_PLAN_API_KEY environment variable is set
+    And a ZAIProvider is configured with tools
     When the user sends a message that requires tool use
     Then the response should stream incrementally
-    And a ZAIProvider is configured with tools
     And tool calls should be properly parsed from the stream

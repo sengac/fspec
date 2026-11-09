@@ -4,7 +4,7 @@
 @RPC-192
 Feature: Port add-step command to Rust
   """
-  Core impl at rust/fspec-core/src/commands/add_step.rs: run(args_json,&Path) args {feature, scenario, type (serde rename), text, dryRun?}. Validation + scenario lookup via crate::io::gherkin::parse_feature_lenient; uses scenario.position.line, step.position.line, step.value (==TS step.text), step.keyword. Indentation from first step line leading whitespace. Placeholder map given/when/then. Line-based replace-or-append using positions, mirroring TS exactly (table/docstring before-insert). Response {success, valid} + type/scenario for CLI msg. Two-front-doors: bridge marshals <feature> <scenario> <type> <text> + optional --dry-run into JSON only.
+  Core impl at rust/fspec-core/src/commands/add_step.rs: run(args_json,&Path) args {feature, scenario, type (serde rename), text, dryRun?}. Validation + scenario lookup via crate::io::gherkin::parse_feature_lenient; uses scenario.position.line, step.position.line, step.value (==TS step.text), step.keyword. Indentation from first step line leading whitespace. Placeholder map given/when/then. Line-based placement in Gherkin order using positions (BUG-620): a step never lands between a step and its data table or doc string. Response {success, valid} + type/scenario for CLI msg. Two-front-doors: bridge marshals <feature> <scenario> <type> <text> + optional --dry-run into JSON only.
   """
 
   # ========================================
@@ -65,9 +65,62 @@ Feature: Port add-step command to Rust
     Then the dispatcher returns success=false
     And the error equals 'Scenario not found: "Nope"'
     And the suggestion contains 'Available scenarios: Login'
+    And the file on disk is unchanged
 
   Scenario: Missing feature file surfaces the not-found error
     Given a project root tempdir with NO spec/features/missing.feature file
     When I dispatch add-step with feature='spec/features/missing.feature', scenario='Login', type='given' and text='x'
     Then the dispatcher returns success=false
     And the error contains 'Feature file not found: '
+    And the suggestion equals "Use 'fspec create-feature' to create a new feature file"
+
+  Scenario: Adds a Given step after the last Given step when the scenario has no Given placeholder
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given I am logged in\n    When I click\n    Then I see it\n'
+    When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='given' and text='another step'
+    Then the dispatcher returns success=true and valid=true
+    And the file on disk contains the line '    Given another step' after the line '    Given I am logged in' and before the line '    When I click'
+    And the file on disk still contains the line '    Given I am logged in'
+
+  Scenario: Adds When, Then and But steps at the end of their blocks
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given I am logged in\n    When I click\n    Then I see it\n'
+    When I dispatch add-step on scenario='Login' with type='when' and text='I submit', then type='then' and text='I see a message', then type='but' and text='I see no error'
+    Then each dispatch returns success=true and valid=true
+    And the file on disk reads 'Feature: Login\n  Scenario: Login\n    Given I am logged in\n    When I click\n    When I submit\n    Then I see it\n    Then I see a message\n    But I see no error\n'
+
+  Scenario: Replaces the Given, When and Then placeholders in sequence
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given [precondition]\n    When [action]\n    Then [expected outcome]\n'
+    When I dispatch add-step on scenario='Login' with type='given' and text='initial state', then type='when' and text='action occurs', then type='then' and text='expected result'
+    Then each dispatch returns success=true and valid=true
+    And the file on disk reads 'Feature: Login\n  Scenario: Login\n    Given initial state\n    When action occurs\n    Then expected result\n'
+
+  Scenario: A feature name without extension resolves under spec/features
+    Given a project root tempdir with spec/features/user-auth.feature containing 'Feature: Auth\n  Scenario: Login\n    Given x\n'
+    When I dispatch add-step with feature='user-auth', scenario='Login', type='given' and text='I am logged out'
+    Then the dispatcher returns success=true and valid=true
+    And spec/features/user-auth.feature contains the line '    Given I am logged out'
+
+  Scenario: The step type is case-insensitive
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given x\n'
+    When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='GIVEN' and text='step text'
+    Then the dispatcher returns success=true and valid=true
+    And the file on disk contains the line '    Given step text'
+
+  Scenario: A feature file that is not valid Gherkin is rejected and left unchanged
+    Given a project root tempdir with spec/features/broken.feature containing 'Scenario: Some scenario\n  Given a\n'
+    When I dispatch add-step with feature='spec/features/broken.feature', scenario='Some scenario', type='given' and text='step'
+    Then the dispatcher returns success=false
+    And the error starts with 'Feature file has invalid Gherkin syntax'
+    And the suggestion equals "Run 'fspec validate spec/features/broken.feature' to see syntax errors"
+    And the file on disk is unchanged
+
+  Scenario: A new step goes after a data table that ends the scenario
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given these users:\n      | name |\n      | bob  |\n'
+    When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='and' and text='another step'
+    Then the dispatcher returns success=true and valid=true
+    And the file on disk reads 'Feature: Login\n  Scenario: Login\n    Given these users:\n      | name |\n      | bob  |\n    And another step\n'
+
+  Scenario: A new step goes after a doc string that ends the scenario
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given this text:\n      """\n      hello\n      """\n'
+    When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='and' and text='another step'
+    Then the dispatcher returns success=true and valid=true
+    And the file on disk reads 'Feature: Login\n  Scenario: Login\n    Given this text:\n      """\n      hello\n      """\n    And another step\n'

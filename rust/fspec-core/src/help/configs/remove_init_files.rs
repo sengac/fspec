@@ -67,7 +67,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQS,
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "detect-agent → remove-files → confirmation,Common pattern: fspec remove-init-files (then fspec init --agent=newagent to switch)",
+        "detect-agent → remove-files → confirmation. Common pattern: fspec remove-init-files (then fspec init --agent=newagent to switch)",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

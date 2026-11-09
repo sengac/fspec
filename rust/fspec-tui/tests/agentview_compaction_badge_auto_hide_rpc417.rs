@@ -15,13 +15,9 @@
 //! file and reuses the fixture pattern from
 //! `agentview_session_header_compaction_percentage_rpc100.rs`.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -105,14 +101,14 @@ fn drain_actions(app: &mut App) {
 }
 
 /// Render the full App into a 100x24 `TestBackend` and return the buffer.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(100, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -132,7 +128,7 @@ fn header_text(buf: &Buffer) -> String {
 
 /// Scenario: The COMPACTED badge auto-hides after the 10-second timer fires
 #[tokio::test(start_paused = true)]
-async fn compacted_badge_auto_hides_after_10_second_timer_fires() {
+async fn compacted_badge_auto_hides_after_10_second_timer_fires() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -154,7 +150,7 @@ async fn compacted_badge_auto_hides_after_10_second_timer_fires() {
     ));
 
     // @step And the SessionHeader text contains "[80%: COMPACTED 60%]"
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     assert!(
         header_text(&buf).contains("[80%: COMPACTED 60%]"),
         "header should show '[80%: COMPACTED 60%]', got: {:?}",
@@ -170,7 +166,7 @@ async fn compacted_badge_auto_hides_after_10_second_timer_fires() {
     drain_actions(&mut app);
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[80%]"
@@ -183,11 +179,12 @@ async fn compacted_badge_auto_hides_after_10_second_timer_fires() {
         !header.contains("COMPACTED"),
         "after auto-hide the COMPACTED suffix must be gone, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: A stale auto-hide action is ignored when a newer compaction re-armed the timer
 #[test]
-fn stale_auto_hide_action_is_ignored_when_newer_compaction_rearmed() {
+fn stale_auto_hide_action_is_ignored_when_newer_compaction_rearmed() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -224,7 +221,7 @@ fn stale_auto_hide_action_is_ignored_when_newer_compaction_rearmed() {
     });
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "COMPACTED 70%"
@@ -232,11 +229,12 @@ fn stale_auto_hide_action_is_ignored_when_newer_compaction_rearmed() {
         header.contains("COMPACTED 70%"),
         "the superseded earlier-seq clear must be a no-op so the newer 'COMPACTED 70%' survives, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Auto-hiding one session's badge does not affect another session's badge
 #[test]
-fn auto_hiding_one_session_badge_does_not_affect_another() {
+fn auto_hiding_one_session_badge_does_not_affect_another() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -268,7 +266,7 @@ fn auto_hiding_one_session_badge_does_not_affect_another() {
     });
 
     // @step And the App renders the AgentView into a 100x24 TestBackend with "s-1" focused
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text does NOT contain "COMPACTED"
@@ -280,7 +278,7 @@ fn auto_hiding_one_session_badge_does_not_affect_another() {
     // @step When the App dispatches Action::SessionNext to focus "s-2" and re-renders
     app.dispatch(Action::SessionNext);
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "COMPACTED 70%"
@@ -288,11 +286,12 @@ fn auto_hiding_one_session_badge_does_not_affect_another() {
         header.contains("COMPACTED 70%"),
         "s-2's badge must be unaffected by clearing s-1, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: A /clear before 10 seconds hides the badge immediately and neutralises the pending timer
 #[test]
-fn clear_before_10s_hides_immediately_and_neutralises_pending_timer() {
+fn clear_before_10s_hides_immediately_and_neutralises_pending_timer() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -319,7 +318,7 @@ fn clear_before_10s_hides_immediately_and_neutralises_pending_timer() {
     drain_actions(&mut app);
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[0%]"
@@ -340,7 +339,7 @@ fn clear_before_10s_hides_immediately_and_neutralises_pending_timer() {
     });
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[0%]"
@@ -348,11 +347,12 @@ fn clear_before_10s_hides_immediately_and_neutralises_pending_timer() {
         header.contains("[0%]"),
         "the stale pre-clear timer must be a no-op leaving '[0%]', got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Under paused tokio time the real timer arms and emits the clear action at 10 seconds
 #[tokio::test(start_paused = true)]
-async fn paused_tokio_time_real_timer_arms_and_emits_clear_at_10s() {
+async fn paused_tokio_time_real_timer_arms_and_emits_clear_at_10s() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused under a start_paused tokio runtime
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -385,7 +385,7 @@ async fn paused_tokio_time_real_timer_arms_and_emits_clear_at_10s() {
     }
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then an Action::ClearCompactionReduction for "s-1" was emitted on the channel
@@ -398,4 +398,5 @@ async fn paused_tokio_time_real_timer_arms_and_emits_clear_at_10s() {
         !header.contains("COMPACTED"),
         "after the timer fired the COMPACTED suffix must be gone, got: {header:?}"
     );
+    Ok(())
 }

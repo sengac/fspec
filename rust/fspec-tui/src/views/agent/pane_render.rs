@@ -185,11 +185,11 @@ impl AgentView {
         }
         if pane.is_focused {
             self.last_is_compacting = matches!(session_status, Some(SessionStatus::Compacting));
+            self.last_is_running = is_loading;
         }
-        let session_index = sid
-            .as_ref()
-            .map(|s| store.session_index_for(s))
-            .unwrap_or_else(|| store.session_index());
+        // BUG-391: `None` when no session is open or the pane's session
+        // is not open — the header then paints no slot number.
+        let session_index = sid.as_ref().and_then(|s| store.session_index_for(s));
         chrome_paint::paint_header_and_role(
             &areas,
             buf,

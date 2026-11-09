@@ -62,4 +62,5 @@ pub use recovery_truncation::{
     MAX_TRUNCATION_RETRIES,
 };
 pub use recovery_unrecoverable::{strip_failed_tool_call_tail, StrippedTail};
+pub use request_failure::block_terminal_request_failure;
 pub use stream_loop::{run_agent_stream, run_agent_stream_with_images};

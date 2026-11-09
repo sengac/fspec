@@ -1,4 +1,7 @@
+@BUG-582
 @TOOL-021
+@tools
+@tool-execution
 Feature: Case-insensitive tool name matching for LLM invocations
   """
   Architecture notes:

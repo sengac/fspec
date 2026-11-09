@@ -1,0 +1,136 @@
+{
+  "scenarios": [
+    {
+      "name": "A manager without a start workspace has no default project",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug437_start_workspace_is_required.rs",
+          "lines": "11-20",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// The start workspace. BUG-437: without one this is an error — never",
+              "lastLine": ".get()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A start workspace that cannot be canonicalized is refused",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug437_start_workspace_is_required.rs",
+          "lines": "22-34",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ],
+              "firstLine": "/// Record the start workspace (RPC-445: canonical, so session projects",
+              "lastLine": "project.display()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second, different start workspace is refused",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug437_start_workspace_is_required.rs",
+          "lines": "36-51",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ],
+              "firstLine": "/// Record the start workspace (RPC-445: canonical, so session projects",
+              "lastLine": "project.display()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The effective cwd of an unknown session is an error",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug437_start_workspace_is_required.rs",
+          "lines": "58-72",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "/// BUG-437: an unknown session is an error, not the start workspace.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug437_start_workspace_is_required.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/default_project.rs",
+      "rust/sessions/src/handle_impl/handle_impl_3.rs"
+    ],
+    "totalLinesCovered": 101
+  }
+}

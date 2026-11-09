@@ -14,7 +14,9 @@
                 18,
                 21,
                 22
-              ]
+              ],
+              "firstLine": "let mut owners = OWNERS.lock().map_err(|_| \"recovery registry poisoned\")?;",
+              "lastLine": ".directory"
             },
             {
               "file": "rust/agent-loop/src/persistence_retry.rs",
@@ -32,7 +34,9 @@
                 209,
                 215,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             }
           ]
         }
@@ -52,7 +56,9 @@
                 18,
                 21,
                 22
-              ]
+              ],
+              "firstLine": "let mut owners = OWNERS.lock().map_err(|_| \"recovery registry poisoned\")?;",
+              "lastLine": ".directory"
             },
             {
               "file": "rust/agent-loop/src/persistence_retry.rs",
@@ -70,7 +76,9 @@
                 209,
                 215,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             }
           ]
         }

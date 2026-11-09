@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-183
+@cli
+@foundation-management
 Feature: Port add-foundation-bounded-context command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_foundation_bounded_context.rs. Signature

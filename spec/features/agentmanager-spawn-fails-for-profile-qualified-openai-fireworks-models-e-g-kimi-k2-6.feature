@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @codelet
 @agent-manager
@@ -58,7 +59,7 @@ Feature: AgentManager spawn fails for profile-qualified OpenAI Fireworks models 
   Scenario: select_model (cloud) does not inject a profile segment
     Given a ProviderManager is created with model registry support
     And the ANTHROPIC_API_KEY environment variable is set
-    When select_model is called with "anthropic/claude-opus-4-5"
+    When select_model is called with "anthropic/claude-sonnet-4"
     Then selected_model_string() returns a composite without a colon before the first slash
 
   @bug

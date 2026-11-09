@@ -3,74 +3,106 @@
 //!
 //! Feature: spec/features/rpc022-thinking-level-dialog.feature
 //! Feature: spec/features/rpc027-help-disconnect-thinking-dialogs.feature
+//! Feature: spec/features/thinking-dialog-offers-only-the-models-levels.feature
 //!
 //! RPC-027: renders via the shared dialog_theme renderer with the
-//! yellow accent. Adds the missing 'D Set Default' keybinding that
-//! the TS reference has (ThinkingLevelDialog.tsx lines 93–96).
+//! yellow accent, with the 'D Set Default' keybinding.
+//!
+//! MODEL-011: the rows are the levels the session's current model offers
+//! (the daemon's [`ThinkingOptions`]), in canonical order, then BUG-455's
+//! Model default; nothing sits behind a More… row. A numeric row (a token
+//! budget or a numeric effort range) opens a number field inside the
+//! dialog. A model with no reasoning control says so and offers only
+//! Model default.
 
 use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
-use codelet_rpc_types::{SessionId, ThinkingLevel};
+use codelet_rpc_types::{SessionId, ThinkingChoice, ThinkingLevel, ThinkingOptions};
 
 use super::dialog_button_hits::{row_list_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
-use super::dialog_theme_rows::label_description_default_row;
 use super::{Action, Callback, Component, EventResult, Priority};
+
+mod actions;
+mod paint;
 
 /// Canonical id used by `Compositor::remove`.
 pub const THINKING_LEVEL_DIALOG_ID: &str = "thinking-level-dialog";
 
-const LEVELS: [(ThinkingLevel, &str, &str); 4] = [
-    (ThinkingLevel::Off, "Off", "No extended thinking"),
-    (ThinkingLevel::Low, "Low", "~4K tokens, quick analysis"),
-    (ThinkingLevel::Medium, "Medium", "~10K tokens, balanced"),
-    (ThinkingLevel::High, "High", "~32K tokens, deep reasoning"),
-];
-
+const MODEL_DEFAULT_LABEL: &str = "Model default";
+const MODEL_DEFAULT_DESCRIPTION: &str = "No thinking parameter; the model decides";
 const FOOTER: &str = "↑↓ Navigate │ Enter Select │ D Set Default │ Esc Close";
+const FIELD_FOOTER: &str = "Type a number │ Enter Set │ Esc Back";
+
+/// MODEL-011: the in-dialog number field of a numeric row.
+struct NumberField {
+    /// Index of the numeric row in `choices`.
+    row: usize,
+    text: String,
+    refusal: Option<String>,
+}
 
 /// Priority::Foreground modal dialog for picking a thinking level.
 pub struct ThinkingLevelDialog {
     id: String,
     session_id: SessionId,
+    /// `provider/model`, as refusals name it.
+    model: String,
+    /// The offered levels; Model default is the row after them.
+    choices: Vec<ThinkingChoice>,
+    /// Why the model has no reasoning control, when it has none.
+    no_control: Option<String>,
+    current: ThinkingLevel,
     selected_index: usize,
-    /// TUI-094: index in `LEVELS` of the persisted default level, or
-    /// `None` when no default is set (TS-parity `defaultLevel === null`).
+    /// TUI-094: row index of the persisted default level, if any.
     default_index: Option<usize>,
+    field: Option<NumberField>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
-    /// TUI-112: last-rendered row geometry for left-click hit-testing
-    /// (R3: a click on a row selects AND commits it, one-click).
+    /// TUI-112: last-rendered row geometry for left-click hit-testing.
     last_layout: LastLayout,
 }
 
 impl ThinkingLevelDialog {
-    /// Construct a fresh dialog bound to `session_id` with
-    /// `current_level` pre-highlighted.
-    pub fn new(session_id: SessionId, current_level: ThinkingLevel) -> Self {
-        let selected_index = LEVELS
-            .iter()
-            .position(|(l, _, _)| *l == current_level)
-            .unwrap_or(0);
-        Self {
+    /// A dialog bound to `session_id` offering `options`, with the row of
+    /// `current_level` pre-selected (the first row when the model does not
+    /// offer it).
+    pub fn new(
+        session_id: SessionId,
+        current_level: ThinkingLevel,
+        options: ThinkingOptions,
+    ) -> Self {
+        let (model, choices, no_control) = match options {
+            ThinkingOptions::NoReasoningControl { model, reason } => {
+                (model, Vec::new(), Some(reason))
+            }
+            ThinkingOptions::Levels { model, choices, .. } => (model, choices, None),
+        };
+        let mut dialog = Self {
             id: THINKING_LEVEL_DIALOG_ID.to_string(),
             session_id,
-            selected_index,
+            model,
+            choices,
+            no_control,
+            current: current_level,
+            selected_index: 0,
             default_index: None,
+            field: None,
             action_tx: None,
             pending_action: None,
             last_layout: LastLayout::new(),
-        }
+        };
+        dialog.selected_index = dialog.current_index().unwrap_or(0);
+        dialog
     }
 
-    /// TUI-094: thread the persisted default level into the dialog
-    /// (mirrors the nullable TS `defaultLevel` prop). `None` leaves the
-    /// dialog with no `(default)` marker. Builder so `new` stays stable.
+    /// TUI-094: thread the persisted default level into the dialog. `None`
+    /// (or a level the model does not offer) leaves no `(default)` marker.
     pub fn with_default_level(mut self, default: Option<ThinkingLevel>) -> Self {
-        self.default_index = default.and_then(|d| LEVELS.iter().position(|(l, _, _)| *l == d));
+        self.default_index = default.and_then(|level| self.row_of(&level));
         self
     }
 
@@ -79,9 +111,31 @@ impl ThinkingLevelDialog {
         self
     }
 
-    /// Test accessor — currently highlighted level.
-    pub fn selected_level(&self) -> ThinkingLevel {
-        LEVELS[self.selected_index].0
+    fn row_count(&self) -> usize {
+        self.choices.len() + 1
+    }
+
+    /// The row holding `level`: Model default is the last row.
+    fn row_of(&self, level: &ThinkingLevel) -> Option<usize> {
+        if *level == ThinkingLevel::ModelDefault {
+            return Some(self.choices.len());
+        }
+        self.choices.iter().position(|choice| choice.holds(level))
+    }
+
+    /// The dialog's row labels, in order.
+    pub fn row_labels(&self) -> Vec<String> {
+        self.choices
+            .iter()
+            .map(ThinkingChoice::label)
+            .chain(std::iter::once(MODEL_DEFAULT_LABEL.to_string()))
+            .collect()
+    }
+
+    /// The row of the session's current level; `None` when the model does
+    /// not offer it.
+    pub fn current_index(&self) -> Option<usize> {
+        self.row_of(&self.current)
     }
 
     /// Test accessor — currently highlighted row index.
@@ -89,28 +143,43 @@ impl ThinkingLevelDialog {
         self.selected_index
     }
 
-    /// Test-only: drain any pending action stashed by `handle_event`
-    /// when no `action_tx` was attached.
+    /// TUI-095: the row carrying the `(default)` marker.
+    pub fn default_index(&self) -> Option<usize> {
+        self.default_index
+    }
+
+    /// The level the highlighted row stands for; `None` on a numeric row.
+    pub fn selected_level(&self) -> Option<ThinkingLevel> {
+        match self.choices.get(self.selected_index) {
+            Some(choice) => choice.level(),
+            None => Some(ThinkingLevel::ModelDefault),
+        }
+    }
+
+    /// The open number field's text and refusal; `None` when closed.
+    pub fn number_field(&self) -> Option<(String, Option<String>)> {
+        self.field
+            .as_ref()
+            .map(|field| (field.text.clone(), field.refusal.clone()))
+    }
+
+    /// Test-only: drain any pending action stashed by `handle_event`.
     pub fn take_pending_action(&mut self) -> Option<Action> {
         self.pending_action.take()
     }
 
-    /// TUI-112: test accessor — the last-rendered row geometry (frame
-    /// rect is `None` before the first render, R4).
+    /// TUI-112: test accessor — the last-rendered row geometry.
     pub fn last_layout(&self) -> &LastLayout {
         &self.last_layout
     }
 
     fn move_up(&mut self) {
-        self.selected_index = if self.selected_index == 0 {
-            LEVELS.len() - 1
-        } else {
-            self.selected_index - 1
-        };
+        let count = self.row_count();
+        self.selected_index = (self.selected_index + count - 1) % count;
     }
 
     fn move_down(&mut self) {
-        self.selected_index = (self.selected_index + 1) % LEVELS.len();
+        self.selected_index = (self.selected_index + 1) % self.row_count();
     }
 
     fn emit_action(&mut self, action: Action) {
@@ -118,6 +187,14 @@ impl ThinkingLevelDialog {
             let _ = tx.send(action.clone());
         }
         self.pending_action = Some(action);
+    }
+
+    fn close(&self) -> EventResult {
+        let id = self.id.clone();
+        let callback: Callback = Box::new(move |compositor| {
+            let _ = compositor.remove(&id);
+        });
+        EventResult::Consumed(Some(callback))
     }
 }
 
@@ -132,76 +209,32 @@ impl Component for ThinkingLevelDialog {
 
     fn handle_event(&mut self, event: &Event) -> EventResult {
         if let Event::Key(key) = event {
-            match key.code {
-                KeyCode::Esc => {
-                    let id = self.id.clone();
-                    let callback: Callback = Box::new(move |compositor| {
-                        let _ = compositor.remove(&id);
-                    });
-                    return EventResult::Consumed(Some(callback));
-                }
+            if self.field.is_some() {
+                return self.field_key(key.code);
+            }
+            return match key.code {
+                KeyCode::Esc => self.close(),
                 KeyCode::Up => {
                     self.move_up();
-                    return EventResult::consumed();
+                    EventResult::consumed()
                 }
                 KeyCode::Down => {
                     self.move_down();
-                    return EventResult::consumed();
+                    EventResult::consumed()
                 }
-                KeyCode::Enter => {
-                    let level = self.selected_level();
-                    let action = Action::ThinkingLevelSelected(self.session_id.clone(), level);
-                    self.emit_action(action);
-                    let id = self.id.clone();
-                    let callback: Callback = Box::new(move |compositor| {
-                        let _ = compositor.remove(&id);
-                    });
-                    return EventResult::Consumed(Some(callback));
-                }
-                // RPC-027: 'D' / 'd' sets the per-user default level
-                // without closing the dialog (parity with the TS
-                // ThinkingLevelDialog.tsx lines 93-96).
-                KeyCode::Char('d') | KeyCode::Char('D') => {
-                    let level = self.selected_level();
-                    self.default_index = Some(self.selected_index); // live marker move (TS parity)
-                    let action = Action::SetThinkingLevelDefault(self.session_id.clone(), level);
-                    self.emit_action(action);
-                    return EventResult::consumed();
-                }
-                _ => {}
-            }
+                KeyCode::Enter => self.activate(),
+                KeyCode::Char('d') | KeyCode::Char('D') => self.set_default(),
+                _ => EventResult::ignored(),
+            };
         }
-        // RPC-028: mouse-wheel advances/retreats the selection like the
-        // arrow keys. The dialog renders centered so we don't bother
-        // hit-testing — wheel events while the dialog is topmost belong
-        // to it.
+        // RPC-028: mouse-wheel moves the selection like the arrow keys;
+        // TUI-112: a left-click on a row selects AND activates it.
         if let Event::Mouse(m) = event {
+            if self.field.is_some() {
+                return EventResult::ignored();
+            }
             match m.kind {
-                // TUI-112 (R3): a left-click on a row selects AND
-                // commits it (one-click) — the same action the Enter
-                // key would emit for that row. A click off every row or
-                // outside the frame is Ignored (R4/R5) so it bubbles.
-                MouseEventKind::Down(MouseButton::Left) => {
-                    let layout = self.last_layout.clone();
-                    if !layout.contains(m.column, m.row) {
-                        return EventResult::ignored();
-                    }
-                    return match layout.hit(m.column, m.row) {
-                        Some(idx) if idx < LEVELS.len() => {
-                            self.selected_index = idx;
-                            let level = LEVELS[idx].0;
-                            let action =
-                                Action::ThinkingLevelSelected(self.session_id.clone(), level);
-                            self.emit_action(action);
-                            let id = self.id.clone();
-                            let callback: Callback = Box::new(move |compositor| {
-                                let _ = compositor.remove(&id);
-                            });
-                            EventResult::Consumed(Some(callback))
-                        }
-                        _ => EventResult::ignored(),
-                    };
-                }
+                MouseEventKind::Down(MouseButton::Left) => return self.click(m.column, m.row),
                 MouseEventKind::ScrollUp => {
                     self.move_up();
                     return EventResult::consumed();
@@ -217,64 +250,22 @@ impl Component for ThinkingLevelDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let rows = LEVELS
-            .iter()
-            .enumerate()
-            .map(|(i, (_, label, desc))| {
-                label_description_default_row(
-                    label,
-                    desc,
-                    i == self.selected_index,
-                    Some(i) == self.default_index,
-                )
-            })
-            .collect();
+        let (rows, query, clickable) = self.dialog_rows();
         let dialog = FspecDialog {
             accent: Accent::Yellow,
             title: "Thinking Level",
             rows,
-            footer: FOOTER,
+            footer: if self.field.is_some() {
+                FIELD_FOOTER
+            } else {
+                FOOTER
+            },
             min_width: 50,
-            query_row: None,
+            query_row: query.as_deref(),
         };
-        // TUI-112: cache the row geometry (4 level rows) for left-click
-        // hit-testing, derived from the SAME descriptor that is painted
-        // so the rects line up with the pixels.
-        self.last_layout = row_list_layout(area, &dialog, LEVELS.len());
+        // TUI-112: cache the row geometry for left-click hit-testing,
+        // derived from the SAME descriptor that is painted.
+        self.last_layout = row_list_layout(area, &dialog, clickable);
         render_dialog(area, buf, &dialog);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-
-    #[test]
-    fn thinking_level_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let session_id = SessionId {
-            value: "test-session".to_string(),
-        };
-        let mut dialog = ThinkingLevelDialog::new(session_id, ThinkingLevel::Off);
-        let backend = TestBackend::new(80, 24);
-        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
-        terminal
-            .draw(|frame| {
-                dialog.render(frame.area(), frame.buffer_mut());
-            })
-            .expect("draw");
-        let buf = terminal.backend().buffer().clone();
-        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
-        for y in 0..buf.area.height {
-            let mut row = String::with_capacity(buf.area.width as usize);
-            for x in 0..buf.area.width {
-                row.push_str(buf[(x, y)].symbol());
-            }
-            rows.push(row);
-        }
-        insta::assert_yaml_snapshot!("thinking_level_dialog__centered_popup_80x24", rows);
     }
 }

@@ -1,17 +1,22 @@
+@BUG-582
+@done
 @oauth
 @authentication
 @providers
-@wip
 @provider-settings
 @tui
 @ts-parity
 @rust
 @PROV-112
+@BUG-334
+@BUG-453
 Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
   """
+  BUG-634 supersedes the historical WebSocket refusal below: token reads and clearing now forward to the same providers-backed daemon RPC methods as embedded. Browser UI capability is covered separately.
   Wiring boundary (napi-direct via embedded transport, PROV-105 §8.2): new FspecBackend OAuth methods forward to rust/napi/src/{claude,codex,copilot}_oauth.rs; websocket transport gets no-op/unsupported defaults. New rpc-types flow/result types; FspecService RPC methods; Action enum variants (OAuthDisconnect{provider_id}, ProviderCredentialsLoaded refresh). New ProviderSettingsMode::DisconnectOAuth{provider_id} replaces the dead-end DetailSub::OAuthNotice for the disconnect path. New dispatch_provider_settings_oauth.rs mirrors the PROV-109 dispatch_provider_settings_profiles.rs spawn→backend→ProviderCredentialsLoaded refresh loop. list_actions.rs routes Enter/d on OauthStatus to DisconnectOAuth (not open_delete_confirm). Disconnect clear is per-provider: anthropic deletes claude_auth.json, github-copilot deletes copilot_auth.json, codex removes only the tokens field (preserves OPENAI_API_KEY); all idempotent, errors swallowed without leaking RPC names. Files <300 LoC; clippy -D warnings + fmt clean; NO git; do not touch user WIP (main.rs, session_manager.rs) — hence napi-direct rather than through-core. Offline tests use a MockBackend implementing FspecBackend OAuth methods with call counters + scripted Ok/Err (mirrors PROV-109 provider_settings_profile_dispatch tests).
   PROV-159 supersedes historical file-only writes, presentation-only cancellation and forced disk refresh assumptions above. Acceptance rows A1-A17 are distributed across codex-refreshing-client, codex-oauth-login, codex-oauth-napi-bindings, provider-settings-oauth-login and provider-settings-oauth-disconnect. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its two upstream companions. Centralize lifecycle/storage/refresh policy in codelet-providers; RPC, NAPI, legacy refresh and provider deletion delegate to it. Fence credential commits by account AND login generation; preserve independent API keys, unrelated document fields and supported CODEX_HOME sharing. Existing clients must deliberately rebind or require reauthentication, never silently retain an old account.
   The distribution above describes the original planning layout only: all PROV-159 acceptance scenarios now live in the dedicated prov159-* features grouped by primary physical test target. A1, A3 and A16 are owned by prov159-oauth-logout, prov159-provider-deletion and prov159-credential-storage respectively. This feature retains PROV-112's historical scenarios and coverage.
+  BUG-334: in List mode the Provider Settings body paints view.status as its bottom row (body_render.rs), so a logout failure set by the disconnect dispatch is actually shown; the message is a fixed sentence that never echoes the backend error, credential contents or RPC/method names.
   """
 
   # ========================================
@@ -24,7 +29,7 @@ Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
   #   3. OAuthDisconnect dispatch calls the backend clear method for the provider exactly once (anthropic→clear claude tokens, github-copilot→clear copilot credential, codex/fallback→clear codex tokens preserving OPENAI_API_KEY), then re-fetches credentials → ProviderCredentialsLoaded refresh
   #   4. After a successful disconnect the nav reloads: the provider's oauth-status (Logout) row disappears (hasOAuthTokens=false) and the cursor returns to the parent provider row
   #   5. A backend clear error is swallowed: the dispatch emits a status WITHOUT leaking the RPC/method name and the UI silently returns to list (parity with PROV-109 error-path); clears are idempotent
-  #   6. The FspecBackend OAuth methods are napi-direct on the embedded transport; the websocket transport provides no-op/unsupported defaults; browser login is unavailable off embedded (gating consumed by PROV-113/114)
+  #   6. Token methods forward on embedded and WebSocket; browser UI capability is covered separately.
   #
   # EXAMPLES:
   #   1. User with connected ChatGPT presses Enter on 'Logout from OAuth [ChatGPT]', presses 'y' → codex clear called once (OPENAI_API_KEY kept), nav reloads, Logout row gone, cursor on the Codex provider row
@@ -69,7 +74,7 @@ Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
     When the user presses "y"
     Then the backend codex clear-tokens method is called exactly once
     And the cached OPENAI_API_KEY is preserved
-    And the credentials are re-fetched producing a ProviderCredentialsLoaded refresh
+    And the credentials are re-fetched through the numbered provider settings refresh
     And the "Logout from OAuth [ChatGPT]" row is gone
     And the cursor returns to the "codex" provider row
 
@@ -135,8 +140,8 @@ Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
   @provider-settings
   @oauth
   @integration
-  Scenario: OAuth backend methods are napi-direct on embedded and no-op on websocket
+  Scenario: OAuth backend methods forward on embedded and websocket
     Given the embedded transport is in use
     Then the FspecBackend OAuth methods forward to the napi OAuth functions
     When the websocket transport is in use
-    Then the FspecBackend OAuth methods resolve to the unsupported/no-op defaults
+    Then the FspecBackend OAuth token methods read and clear daemon credentials

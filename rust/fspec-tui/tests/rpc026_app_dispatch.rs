@@ -3,12 +3,13 @@
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, SessionContext};
 use codelet_rpc_types::{HistoryMatch, SessionId, SessionInfo};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 mod common;
 use common::MockBackend;
@@ -37,9 +38,33 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
+/// Route a bare key press through the AgentView (where the mode views live).
+fn press(app: &mut App, code: KeyCode) {
+    let _ = app
+        .navigator_mut()
+        .agent
+        .handle_event(&Event::Key(KeyEvent {
+            code,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }));
+}
+
+/// Drain the action bus, folding every action through App::dispatch, and
+/// return what was emitted.
+fn drain_and_dispatch(app: &mut App) -> Vec<Action> {
+    let mut emitted = Vec::new();
+    while let Some(action) = app.try_recv_action() {
+        emitted.push(action.clone());
+        app.dispatch(action);
+    }
+    emitted
+}
+
 /// Scenario: Slash command /resume opens the full-screen resume view and spawns list_sessions
 #[tokio::test]
-async fn open_resume_view_installs_view_and_spawns_list_sessions() {
+async fn open_resume_view_installs_view_and_spawns_list_sessions() -> TestResult {
     // @step Given AgentView has no popups or mode views open
     let (mut app, mock) = fresh_app();
     // @step And the backend returns ["s1", "s2", "s3"] from list_sessions
@@ -50,8 +75,11 @@ async fn open_resume_view_installs_view_and_spawns_list_sessions() {
     ]);
 
     // @step When the user submits "/resume" via the input field
-    // (Simulated by dispatching the action the slash handler would dispatch.)
-    app.dispatch(Action::OpenResumeView);
+    // (The slash popup pick the input field produces.)
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
 
     // @step Then AgentView.slash_popup is None
     assert!(app.navigator().agent.slash_popup.is_none());
@@ -59,8 +87,8 @@ async fn open_resume_view_installs_view_and_spawns_list_sessions() {
     assert!(app.navigator().agent.resume_view.is_some());
 
     // @step And a tokio task is spawned that calls backend.list_sessions()
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await task");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
 
     // @step When the spawned task completes
     // Drain the action bus and apply the SessionListLoaded action.
@@ -69,30 +97,34 @@ async fn open_resume_view_installs_view_and_spawns_list_sessions() {
     }
     // @step Then Action::SessionListLoaded(["s1", "s2", "s3"]) is dispatched
     // @step And resume_view.sessions equals ["s1", "s2", "s3"]
-    let view = app.navigator().agent.resume_view.as_ref().expect("view");
+    let view = app.navigator().agent.resume_view.as_ref().or_fail("view")?;
     let ids: Vec<&str> = view.sessions().iter().map(|s| s.id.as_str()).collect();
     assert_eq!(ids, vec!["s1", "s2", "s3"]);
     // @step And resume_view.selected_index equals 0
     assert_eq!(view.selected_index(), 0);
+    Ok(())
 }
 
 /// Scenario: Enter on a new session appends it and attaches focus
 #[test]
-fn attach_to_session_appends_and_focuses_new_session() {
+fn attach_to_session_appends_and_focuses_new_session() -> TestResult {
     // @step Given resume_view is open with sessions ["s-2", "s-3", "s-4"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-9")));
     // @step And open_sessions contains exactly SessionContext("s-9") with current_session_index 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
 
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
     app.dispatch(Action::SessionListLoaded(vec![
         fake_session("s-2"),
         fake_session("s-3"),
         fake_session("s-4"),
     ]));
     // @step And resume_view.selected_index is 0
-    let view = app.navigator().agent.resume_view.as_ref().expect("view");
+    let view = app.navigator().agent.resume_view.as_ref().or_fail("view")?;
     assert_eq!(view.selected_index(), 0);
 
     // @step When the user presses Enter
@@ -131,9 +163,10 @@ fn attach_to_session_appends_and_focuses_new_session() {
             .map(|c| c.id.value.as_str()),
         Some("s-2")
     );
+    Ok(())
 }
 #[test]
-fn attach_to_existing_session_moves_focus_without_duplicate() {
+fn attach_to_existing_session_moves_focus_without_duplicate() -> TestResult {
     // @step Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     let (mut app, _mock) = fresh_app();
     // @step And open_sessions contains [SessionContext("s-1"), SessionContext("s-2"), SessionContext("s-3")] with current_session_index 0
@@ -149,17 +182,31 @@ fn attach_to_existing_session_moves_focus_without_duplicate() {
     }
     assert_eq!(app.agent_view_store().current_session_index(), 0);
 
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
     app.dispatch(Action::SessionListLoaded(vec![
         fake_session("s-1"),
         fake_session("s-2"),
         fake_session("s-3"),
     ]));
+    // @step And resume_view.selected_index is 1
+    press(&mut app, KeyCode::Down);
+    let view = app.navigator().agent.resume_view.as_ref().or_fail("view")?;
+    assert_eq!(view.selected_index(), 1);
 
-    // @step When the user presses Enter (on row index 1 = s-2)
-    app.dispatch(Action::AttachToSession(SessionId::new("s-2")));
+    // @step When the user presses Enter
+    press(&mut app, KeyCode::Enter);
+    let emitted = drain_and_dispatch(&mut app);
 
-    // @step Then Action::AttachToSession("s-2") is dispatched (above).
+    // @step Then Action::AttachToSession("s-2") is dispatched
+    assert!(
+        emitted
+            .iter()
+            .any(|a| matches!(a, Action::AttachToSession(id) if id.value == "s-2")),
+        "emitted: {emitted:?}"
+    );
     // @step And open_sessions length stays at 3
     assert_eq!(app.agent_view_store().open_sessions().len(), 3);
     // @step And AgentViewStore.current_session_index equals 1
@@ -173,17 +220,21 @@ fn attach_to_existing_session_moves_focus_without_duplicate() {
             .map(|c| c.id.value.as_str()),
         Some("s-2")
     );
+    Ok(())
 }
 
 /// Scenario: Esc closes the resume view without changing focus
 #[test]
-fn close_resume_view_does_not_change_focus() {
+fn close_resume_view_does_not_change_focus() -> TestResult {
     // @step Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-9")));
     // @step And AgentViewStore.current_session_index is 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
     app.dispatch(Action::SessionListLoaded(vec![
         fake_session("s-1"),
         fake_session("s-2"),
@@ -191,7 +242,8 @@ fn close_resume_view_does_not_change_focus() {
     ]));
     // @step When the user presses Esc
     app.dispatch(Action::CloseResumeView);
-    // @step Then Action::CloseResumeView is dispatched (above).
+    // @step Then Action::CloseResumeView is dispatched
+    // (Dispatched directly above.)
     // @step And AgentView.resume_view is None
     assert!(app.navigator().agent.resume_view.is_none());
     // @step And AgentViewStore.current_session_index is unchanged at 0
@@ -201,11 +253,12 @@ fn close_resume_view_does_not_change_focus() {
     // @step And the next AgentView.render_with_store paints the normal header/scrollback/input/footer layout
     // (The resume_view being None means render_with_store's early-return gate is off — the normal layout will paint.)
     assert!(app.navigator().agent.resume_view.is_none());
+    Ok(())
 }
 
 /// Scenario: Slash command /search opens the full-screen search view empty
 #[test]
-fn open_search_view_installs_empty_view_no_backend_call() {
+fn open_search_view_installs_empty_view_no_backend_call() -> TestResult {
     // @step Given AgentView has no popups or mode views open
     let (mut app, mock) = fresh_app();
     // @step When the user submits "/search" via the input field
@@ -213,7 +266,7 @@ fn open_search_view_installs_empty_view_no_backend_call() {
     // @step Then AgentView.slash_popup is None
     assert!(app.navigator().agent.slash_popup.is_none());
     // @step And AgentView.search_view is Some(default SearchHistoryView with empty query)
-    let view = app.navigator().agent.search_view.as_ref().expect("view");
+    let view = app.navigator().agent.search_view.as_ref().or_fail("view")?;
     assert_eq!(view.query(), "");
     // @step And no backend call has been made
     assert_eq!(mock.search_history_calls(), 0);
@@ -241,11 +294,12 @@ fn open_search_view_installs_empty_view_no_backend_call() {
     assert!(joined.contains("(search): "));
     // @step And the body shows the placeholder "(type to search history)"
     assert!(joined.contains("(type to search history)"));
+    Ok(())
 }
 
 /// Scenario: SearchHistory action spawns persistence_search_history
 #[tokio::test]
-async fn search_history_spawns_backend_call() {
+async fn search_history_spawns_backend_call() -> TestResult {
     // @step Given search_view is open with empty query
     let (mut app, mock) = fresh_app();
     mock.set_history_search_results(vec![HistoryMatch {
@@ -257,21 +311,47 @@ async fn search_history_spawns_backend_call() {
     // @step When the user types "g" (emits SearchHistory("g"))
     app.dispatch(Action::SearchHistory("g".to_string()));
     // @step Then backend.persistence_search_history was invoked
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
     assert_eq!(mock.search_history_calls(), 1);
     assert_eq!(mock.last_history_query(), Some("g".to_string()));
+    Ok(())
 }
 
 /// Scenario: Enter on a highlighted match inserts the text into the input
 #[test]
-fn insert_into_input_sets_value_and_closes_search_view() {
+fn insert_into_input_sets_value_and_closes_search_view() -> TestResult {
     // @step Given search_view is open with query "git" and 2 matches with "git status" highlighted
-    let (mut app, _mock) = fresh_app();
+    let (mut app, mock) = fresh_app();
     app.dispatch(Action::OpenSearchView);
-    // @step When the user presses Enter (the view emits Action::InsertIntoInput)
-    app.dispatch(Action::InsertIntoInput("git status".to_string()));
-    // @step Then Action::InsertIntoInput("git status") is dispatched (above)
+    app.navigator_mut()
+        .agent
+        .search_view
+        .as_mut()
+        .or_fail("search_view")?
+        .set_query("git");
+    let hit = |text: &str| HistoryMatch {
+        session_id: SessionId::new("s-1"),
+        text: text.to_string(),
+        timestamp_iso: "2026-05-18T00:00:00Z".to_string(),
+    };
+    app.dispatch(Action::HistorySearchResults {
+        query: "git".to_string(),
+        matches: vec![hit("git status"), hit("git log")],
+    });
+    let view = app.navigator().agent.search_view.as_ref().or_fail("view")?;
+    assert_eq!(view.match_count(), 2);
+    assert_eq!(view.selected().map(|m| m.text.as_str()), Some("git status"));
+    // @step When the user presses Enter
+    press(&mut app, KeyCode::Enter);
+    let emitted = drain_and_dispatch(&mut app);
+    // @step Then Action::InsertIntoInput("git status") is dispatched
+    assert!(
+        emitted
+            .iter()
+            .any(|a| matches!(a, Action::InsertIntoInput(t) if t == "git status")),
+        "emitted: {emitted:?}"
+    );
     // @step And AgentView.search_view is None
     assert!(app.navigator().agent.search_view.is_none());
     // @step And AgentView.input.value() equals "git status"
@@ -279,11 +359,22 @@ fn insert_into_input_sets_value_and_closes_search_view() {
     // @step And focus remains on the input
     // (AgentView's focus model keeps the input focused unless a mode view is open; search_view is None now.)
     assert!(app.navigator().agent.search_view.is_none());
+    // @step And NO Action::InputSubmitted was dispatched
+    let follow_up = drain_and_dispatch(&mut app);
+    assert!(
+        !emitted
+            .iter()
+            .chain(follow_up.iter())
+            .any(|a| matches!(a, Action::InputSubmitted(..))),
+        "emitted: {emitted:?} {follow_up:?}"
+    );
+    assert_eq!(mock.send_input_calls(), 0);
+    Ok(())
 }
 
 /// Scenario: ConfirmDeleteSession round-trips deletion and refreshes the list
 #[tokio::test]
-async fn confirm_delete_session_round_trips_and_refreshes_list() {
+async fn confirm_delete_session_round_trips_and_refreshes_list() -> TestResult {
     // @step Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     let (mut app, mock) = fresh_app();
     mock.seed_sessions(vec![
@@ -291,10 +382,13 @@ async fn confirm_delete_session_round_trips_and_refreshes_list() {
         fake_session("s-2"),
         fake_session("s-3"),
     ]);
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
     // Drain the initial list_sessions task.
-    let initial = app.next_pending_task().expect("initial list_sessions");
-    initial.await.expect("await");
+    let initial = app.next_pending_task().or_fail("initial list_sessions")?;
+    initial.await.completed_or_cancelled()?;
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
@@ -304,8 +398,8 @@ async fn confirm_delete_session_round_trips_and_refreshes_list() {
 
     // @step Then Action::ConfirmDeleteSession("s-2") is dispatched (above)
     // @step And a tokio task spawns backend.persistence_delete_session("s-2")
-    let handle = app.next_pending_task().expect("delete + list task");
-    handle.await.expect("await delete");
+    let handle = app.next_pending_task().or_fail("delete + list task")?;
+    handle.await.completed_or_cancelled()?;
     assert_eq!(mock.delete_session_calls(), 1);
     assert_eq!(mock.last_deleted_session(), Some(SessionId::new("s-2")));
 
@@ -315,7 +409,8 @@ async fn confirm_delete_session_round_trips_and_refreshes_list() {
         app.dispatch(action);
     }
     // @step And resume_view.sessions equals ["s-1", "s-3"]
-    let view = app.navigator().agent.resume_view.as_ref().expect("view");
+    let view = app.navigator().agent.resume_view.as_ref().or_fail("view")?;
     let ids: Vec<&str> = view.sessions().iter().map(|s| s.id.as_str()).collect();
     assert_eq!(ids, vec!["s-1", "s-3"]);
+    Ok(())
 }

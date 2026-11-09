@@ -82,7 +82,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// (unwrapped) error message string on failure — the caller wraps it with the
 /// `Failed to validate spec alignment:` prefix.
 fn validate(project_root: &Path, work_unit_id: &str) -> Result<String, String> {
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root).map_err(|e| e.to_string())?;
     let raw = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let data: Value = serde_json::from_str(&raw)
         .map_err(|e| crate::io::json_error::parse_json_reason(&raw, &e))?;

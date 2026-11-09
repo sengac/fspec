@@ -13,67 +13,67 @@
 //!   - File-size invariant (< 300 LoC) preserved for every modified
 //!     view file.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
-fn src_dir() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn src_dir() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
-fn read_raw(rel: &str) -> String {
-    let path = src_dir().join(rel);
-    common::read_to_string_or_panic(&path)
+fn read_raw(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
+    let path = src_dir()?.join(rel);
+    common::read_to_string_or_fail(&path)
 }
 
-fn read_stripped(rel: &str) -> String {
-    let path = src_dir().join(rel);
-    let body = common::read_to_string_or_panic(&path);
-    common::strip_rust_comments(&body)
+fn read_stripped(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
+    let path = src_dir()?.join(rel);
+    let body = common::read_to_string_or_fail(&path)?;
+    Ok(common::strip_rust_comments(&body))
 }
 
-fn count_lines(rel: &str) -> usize {
-    let path = src_dir().join(rel);
-    common::read_to_string_or_panic(&path).lines().count()
+fn count_lines(rel: &str) -> Result<usize, codelet_test_helpers::TestError> {
+    let path = src_dir()?.join(rel);
+    Ok(common::read_to_string_or_fail(&path)?.lines().count())
 }
 
 /// Scenario: FooterView module and its re-exports are removed
 #[test]
-fn footer_view_module_and_re_exports_are_removed() {
+fn footer_view_module_and_re_exports_are_removed() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-013 lands
     // @step When a developer scans the crate source tree
     // @step Then the file rust/fspec-tui/src/views/footer.rs does NOT exist
-    let footer = src_dir().join("views").join("footer.rs");
+    let footer = src_dir()?.join("views").join("footer.rs");
     assert!(
         !footer.exists(),
         "rust/fspec-tui/src/views/footer.rs must not exist after RPC-013"
     );
     // @step And rust/fspec-tui/src/views/mod.rs does NOT contain the identifier "FooterView"
-    let mod_rs = read_stripped("views/mod.rs");
+    let mod_rs = read_stripped("views/mod.rs")?;
     assert!(
         !mod_rs.contains("FooterView"),
         "views/mod.rs must not reference FooterView after RPC-013"
     );
     // @step And rust/fspec-tui/src/lib.rs does NOT contain the identifier "FooterView"
-    let lib_rs = read_stripped("lib.rs");
+    let lib_rs = read_stripped("lib.rs")?;
     assert!(
         !lib_rs.contains("FooterView"),
         "lib.rs must not reference FooterView after RPC-013"
     );
     // @step And rust/fspec-tui/src/app/state.rs does NOT contain the identifier "FooterView"
-    let state_rs = read_stripped("app/state.rs");
+    let state_rs = read_stripped("app/state.rs")?;
     assert!(
         !state_rs.contains("FooterView"),
         "app/state.rs must not reference FooterView after RPC-013"
     );
+    Ok(())
 }
 
 /// Scenario: Navigator no longer reserves a Length(1) footer row
 #[test]
-fn navigator_no_longer_reserves_a_length_1_footer_row() {
+fn navigator_no_longer_reserves_a_length_1_footer_row() -> TestResult {
     // @step Given the Navigator render path in rust/fspec-tui/src/views/navigator.rs
     // @step When a developer scans the render_with_stores method body
-    let nav = read_stripped("views/navigator.rs");
+    let nav = read_stripped("views/navigator.rs")?;
     // @step Then the method does NOT contain "Constraint::Length(1)" anywhere
     assert!(
         !nav.contains("Constraint::Length(1)"),
@@ -84,14 +84,15 @@ fn navigator_no_longer_reserves_a_length_1_footer_row() {
         !nav.contains("self.footer"),
         "navigator.rs must not reference self.footer after RPC-013"
     );
+    Ok(())
 }
 
 /// Scenario: AgentView splits its area into scrollback + input + footer rows
 #[test]
-fn agent_view_splits_into_scrollback_input_and_footer_rows() {
+fn agent_view_splits_into_scrollback_input_and_footer_rows() -> TestResult {
     // @step Given an AgentView module at rust/fspec-tui/src/views/agent.rs
     // @step When a developer scans the render_with_store method body
-    let agent = read_stripped("views/agent.rs");
+    let agent = read_stripped("views/agent.rs")?;
     // @step Then the method contains a Layout split with a Min(0) flex row and a trailing Length(1) footer row
     //
     // RPC-019 update: the input row's exact constraint moved from a
@@ -111,8 +112,7 @@ fn agent_view_splits_into_scrollback_input_and_footer_rows() {
         agent.contains("Constraint::Length(input_height)"),
         "agent.rs must size the input row from MultiLineInput::visible_rows() after RPC-019"
     );
-    // @step And the bottom 1-row chunk is painted with the placeholder footer string
-    //       "Enter=send  Ctrl+C=interrupt  ESC=back"
+    // @step And the bottom 1-row chunk is painted with the placeholder footer string "Enter=send  Ctrl+C=interrupt  ESC=back"
     //
     // Note: after RPC-018 the literal lives in
     // views/agent::PLACEHOLDER_FOOTER_HINTS and is re-exported by the
@@ -131,6 +131,7 @@ fn agent_view_splits_into_scrollback_input_and_footer_rows() {
         agent.contains("ESC=back"),
         "agent.rs (or its re-export chain) must render 'ESC=back'"
     );
+    Ok(())
 }
 
 /// Scenario: The agent pane flag-on layout pins the 6-constraint menu list
@@ -141,19 +142,19 @@ fn agent_view_splits_into_scrollback_input_and_footer_rows() {
 /// (`pane_layout_constraints` in agent.rs) stays byte-identical for
 /// the flag-off panes (mux agent panes, MENU-004).
 #[test]
-fn agent_pane_flag_on_layout_pins_the_6_constraint_menu_list() {
+fn agent_pane_flag_on_layout_pins_the_6_constraint_menu_list() -> TestResult {
     // @step Given the AgentView pane layout in rust/fspec-tui/src/views/agent/pane_render.rs
-    let pane_render = read_stripped("views/agent/pane_render.rs");
+    let pane_render = read_stripped("views/agent/pane_render.rs")?;
     // @step When a developer reads pane_layout_constraints_menu
     let Some(start) = pane_render.find("pub fn pane_layout_constraints_menu") else {
-        panic!("pane_render.rs must define pane_layout_constraints_menu")
+        return Err("pane_render.rs must define pane_layout_constraints_menu".into());
     };
     // The function's array literal — up to the closing `]` of the
     // constraint list.
     let end = pane_render[start..]
         .find("\n        ]")
         .map(|i| start + i)
-        .expect("the menu constraint list must close");
+        .or_fail("the menu constraint list must close")?;
     let body = &pane_render[start..end];
     // @step Then it returns [Length(1), Length(1), Length(role_height), Min(0), Length(1), Length(input_height)] in that order
     let mut pos = 0usize;
@@ -165,13 +166,13 @@ fn agent_pane_flag_on_layout_pins_the_6_constraint_menu_list() {
         "Constraint::Length(1),",
         "Constraint::Length(input_height),",
     ] {
-        let next = body[pos..].find(needle).unwrap_or_else(|| {
-            panic!("constraint {needle:?} missing from pane_layout_constraints_menu")
-        });
+        let next = body[pos..].find(needle).or_fail(&format!(
+            "constraint {needle:?} missing from pane_layout_constraints_menu"
+        ))?;
         pos += next + needle.len();
     }
     // @step And the flag-off pane_layout_constraints stays the pinned 5-list (rpc013)
-    let agent = read_stripped("views/agent.rs");
+    let agent = read_stripped("views/agent.rs")?;
     assert!(
         agent.contains("pub fn pane_layout_constraints(role_height: u16, input_height: u16) -> [Constraint; 5]")
             || agent.contains(
@@ -179,11 +180,12 @@ fn agent_pane_flag_on_layout_pins_the_6_constraint_menu_list() {
             ),
         "the rpc013-pinned flag-off 5-list must stay byte-identical"
     );
+    Ok(())
 }
 
 /// Scenario: File-size invariant preserved for every modified view file
 #[test]
-fn every_modified_view_file_stays_under_300_loc() {
+fn every_modified_view_file_stays_under_300_loc() -> TestResult {
     // @step Given the directory rust/fspec-tui/src/views/
     // @step When a test counts the line-count of every .rs file under that directory
     let targets = [
@@ -198,7 +200,7 @@ fn every_modified_view_file_stays_under_300_loc() {
     ];
     let mut violations = Vec::new();
     for rel in targets {
-        let lines = count_lines(rel);
+        let lines = count_lines(rel)?;
         if lines >= 300 {
             violations.push(format!("{rel}: {lines} lines >= 300 ceiling"));
         }
@@ -207,6 +209,7 @@ fn every_modified_view_file_stays_under_300_loc() {
         violations.is_empty(),
         "RPC-013 modified files MUST stay < 300 LoC. Violations: {violations:?}"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView source contains the literal UnifiedBoardLayout footer string
@@ -221,17 +224,18 @@ fn every_modified_view_file_stays_under_300_loc() {
 /// sibling `views/board/footer.rs` module so `views/board.rs` could stay
 /// under the 300 LoC ceiling. The scenario now scans both files.
 #[test]
-fn board_view_source_contains_literal_footer_string() {
+fn board_view_source_contains_literal_footer_string() -> TestResult {
     // @step Given the BoardView module at rust/fspec-tui/src/views/board.rs
     // @step When a developer scans the source after comment stripping
-    let board = read_raw("views/board.rs");
-    let footer = read_raw("views/board/footer.rs");
+    let board = read_raw("views/board.rs")?;
+    let footer = read_raw("views/board/footer.rs")?;
     let combined = format!("{board}\n{footer}");
-    // @step Then the file contains the substring "← → Columns"
+    // @step Then the file contains the substring "← →"
     assert!(
         combined.contains("← →"),
         "board.rs|footer.rs must contain the '← →' key span"
     );
+    // @step And the file contains the substring "Columns"
     assert!(
         combined.contains("Columns"),
         "board.rs|footer.rs must contain the 'Columns' label span"
@@ -255,26 +259,26 @@ fn board_view_source_contains_literal_footer_string() {
         combined.contains("Priority Down"),
         "board.rs|footer.rs must contain the 'Priority Down' label span"
     );
-    // @step And the file contains the substring "↵ Work Agent"
+    // @step And the file contains the substring "↵ Choose"
     assert!(
         combined.contains("↵"),
         "board.rs|footer.rs must contain the '↵' key span"
     );
     assert!(
-        combined.contains("Work Agent"),
-        "board.rs|footer.rs must contain the 'Work Agent' label span"
+        combined.contains("Choose"),
+        "board.rs|footer.rs must contain the 'Choose' label span"
     );
-    // @step And the file contains the substring "ESC Back"
+    // @step And the file contains the substring "ESC Exit"
     assert!(
         combined.contains("ESC"),
         "board.rs|footer.rs must contain the 'ESC' key span"
     );
     assert!(
-        combined.contains("Back"),
-        "board.rs|footer.rs must contain the 'Back' label span"
+        combined.contains("Exit"),
+        "board.rs|footer.rs must contain the 'Exit' label span"
     );
     // @step And the file does NOT contain the substring "? help"
-    let stripped = read_stripped("views/board.rs");
+    let stripped = read_stripped("views/board.rs")?;
     assert!(
         !stripped.contains("? help"),
         "board.rs (code) must not contain '? help' after RPC-013"
@@ -284,14 +288,15 @@ fn board_view_source_contains_literal_footer_string() {
         !stripped.contains("switch pane"),
         "board.rs (code) must not contain 'switch pane' after RPC-013"
     );
+    Ok(())
 }
 
 /// Internal sanity (no scenario): identical to the BoardView-source
 /// scenario above, retained to keep failure messages clear for the
 /// legacy hint check independently of the literal-string check.
 #[test]
-fn board_view_source_does_not_contain_legacy_generic_hint() {
-    let board = read_stripped("views/board.rs");
+fn board_view_source_does_not_contain_legacy_generic_hint() -> TestResult {
+    let board = read_stripped("views/board.rs")?;
     assert!(
         !board.contains("? help"),
         "board.rs must not contain '? help' after RPC-013"
@@ -300,4 +305,5 @@ fn board_view_source_does_not_contain_legacy_generic_hint() {
         !board.contains("switch pane"),
         "board.rs must not contain 'switch pane' after RPC-013"
     );
+    Ok(())
 }

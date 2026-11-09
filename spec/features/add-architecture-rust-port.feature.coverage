@@ -200,7 +200,9 @@
                 232,
                 233,
                 234
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "#[cfg(test)]"
             }
           ]
         }
@@ -211,42 +213,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "92-120",
+          "lines": "99-133",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
                 167,
                 168,
                 169,
@@ -312,10 +283,10 @@
                 229,
                 230,
                 231,
-                232,
-                233,
-                234
-              ]
+                232
+              ],
+              "firstLine": "/// Line-based insertion / replacement of a Feature-line architecture",
+              "lastLine": "}"
             }
           ]
         }
@@ -326,7 +297,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "122-152",
+          "lines": "139-169",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
@@ -338,7 +309,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "// ---- Validate architecture text ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -349,7 +322,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "154-179",
+          "lines": "175-200",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
@@ -361,7 +334,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "// ---- Validate architecture text ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -372,7 +347,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "181-206",
+          "lines": "206-227",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
@@ -387,7 +362,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "// ---- Resolve the feature file ----",
+              "lastLine": "};"
             }
           ]
         }
@@ -398,7 +375,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "208-245",
+          "lines": "233-266",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
@@ -427,7 +404,9 @@
                 143,
                 144,
                 145
-              ]
+              ],
+              "firstLine": "let response = json!({",
+              "lastLine": ") -> Result<Option<PathBuf>, FspecCoreError> {"
             }
           ]
         }
@@ -438,42 +417,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "247-283",
+          "lines": "272-310",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
               "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
                 167,
                 168,
                 169,
@@ -539,10 +487,10 @@
                 229,
                 230,
                 231,
-                232,
-                233,
-                234
-              ]
+                232
+              ],
+              "firstLine": "/// Line-based insertion / replacement of a Feature-line architecture",
+              "lastLine": "}"
             }
           ]
         }
@@ -553,7 +501,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture.rs",
-          "lines": "285-307",
+          "lines": "316-341",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture.rs",
@@ -584,7 +532,352 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "// ---- No `Feature:` line guard (TS parity) ----",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding notes keeps every scenario and its steps",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_architecture.rs",
+          "lines": "369-383",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn insert_or_replace_doc_string(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding notes keeps the Background after the new doc string",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_architecture.rs",
+          "lines": "398-415",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn insert_or_replace_doc_string(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding notes keeps the feature-level tags above the Feature line",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_architecture.rs",
+          "lines": "433-443",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn insert_or_replace_doc_string(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding notes keeps scenario-level tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_architecture.rs",
+          "lines": "458-476",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn insert_or_replace_doc_string(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doc string fences and content lines are indented two spaces",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_architecture.rs",
+          "lines": "489-503",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_architecture.rs",
+              "lines": [
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "let mut doc_string_lines: Vec<String> = vec![\"  \\\"\\\"\\\"\".to_string()];",
+              "lastLine": "doc_string_lines.push(\"  \\\"\\\"\\\"\".to_string());"
             }
           ]
         }
@@ -592,8 +885,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_architecture.rs"
@@ -601,6 +894,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_architecture.rs"
     ],
-    "totalLinesCovered": 718
+    "totalLinesCovered": 986
   }
 }

@@ -16,8 +16,8 @@ const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
 }];
 
 const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--similar <count>",
-    description: "Number of similar work units to analyze",
+    flag: "-f, --format <format>",
+    description: "Output format (text or json)",
     default_value: None,
 }];
 

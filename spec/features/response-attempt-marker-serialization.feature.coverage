@@ -5,11 +5,22 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
-          "lines": "9-26",
+          "lines": "9-29",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/streaming_attempt_marker.rs",
-              "lines": [15, 18, 21, 24, 27, 30, 33, 36]
+              "lines": [
+                15,
+                18,
+                21,
+                24,
+                27,
+                30,
+                33,
+                36
+              ],
+              "firstLine": "pub(super) fn serialize_started<Output: Serializer>(",
+              "lastLine": "Aborted::deserialize(input).map(|_| ())"
             }
           ]
         }
@@ -20,11 +31,22 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
-          "lines": "28-44",
+          "lines": "31-50",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/streaming_attempt_marker.rs",
-              "lines": [15, 18, 21, 24, 27, 30, 33, 36]
+              "lines": [
+                15,
+                18,
+                21,
+                24,
+                27,
+                30,
+                33,
+                36
+              ],
+              "firstLine": "pub(super) fn serialize_started<Output: Serializer>(",
+              "lastLine": "Aborted::deserialize(input).map(|_| ())"
             }
           ]
         }
@@ -35,11 +57,16 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
-          "lines": "46-57",
+          "lines": "52-66",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/streaming.rs",
-              "lines": [668, 681]
+              "lines": [
+                668,
+                681
+              ],
+              "firstLine": "Text(Text),",
+              "lastLine": "Final(R),"
             }
           ]
         }
@@ -57,6 +84,6 @@
       "rust/patches/rig-core/src/streaming_attempt_marker.rs",
       "rust/patches/rig-core/src/streaming.rs"
     ],
-    "totalLinesCovered": 47
+    "totalLinesCovered": 74
   }
 }

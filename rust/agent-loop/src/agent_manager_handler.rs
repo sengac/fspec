@@ -6,7 +6,9 @@
 //! Feature: spec/features/agent-manager-await-idle.feature
 //!
 //! Creates an `AgentManagerHandler` closure that accesses SessionManager
-//! directly to execute spawn/list/get_status/close/message/await_idle actions.
+//! directly to execute spawn/list/get_status/close/message/await_idle actions,
+//! and (AMGR-021) answer/approve/escalate a sub-agent's request.
+//! Feature: spec/features/a-parent-answers-approves-or-escalates-its-sub-agents-request.feature
 
 use codelet_tools::agent_manager::types::ContextReference;
 use codelet_tools::agent_manager::{
@@ -20,8 +22,20 @@ use crate::session_search_handler::resolve_message_content;
 use codelet_sessions::background_session::IncomingMessage;
 use codelet_sessions::session_manager::SessionManager;
 
+#[path = "agent_manager_requests.rs"]
+mod agent_manager_requests;
 #[path = "agent_manager_wait.rs"]
 mod agent_manager_wait;
+
+/// BUG-405: the refusal for an AgentManager action from a session with no
+/// owning session manager.
+fn no_owning_manager(calling_session_id: Uuid) -> AgentManagerResult {
+    AgentManagerResult::Error {
+        error: true,
+        code: "no_owning_manager".to_string(),
+        message: format!("session {calling_session_id} has no owning session manager"),
+    }
+}
 
 /// Create an AgentManagerHandler closure for a specific session.
 ///
@@ -32,8 +46,7 @@ mod agent_manager_wait;
 /// # Arguments
 /// * `owning_manager` - RPC-386: the daemon-owned `SessionManager` that created
 ///   the spawner session. When `Some(M)`, the handler operates on `M`; when
-///   `None`, it falls back to `SessionManager::instance()` (NAPI parity), so the
-///   legacy singleton path is preserved byte-for-byte.
+///   `None` (BUG-405) every action is refused with an error.
 /// * `project` - Project path for spawned sessions
 /// * `spawner_model_string` - Full model string in registry format (e.g. "anthropic/claude-opus-4-6")
 ///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.
@@ -48,12 +61,10 @@ pub fn create_handler(
 ) -> AgentManagerHandler {
     Arc::new(
         move |action: AgentManagerAction, calling_session_id: Uuid| {
-            // RPC-386: resolve the owning manager (Some → bound manager, None →
-            // global singleton). The reference is held for the duration of this
-            // single synchronous dispatch.
-            let session_manager: &SessionManager = match owning_manager.as_ref() {
-                Some(manager) => manager.as_ref(),
-                None => SessionManager::instance(),
+            // RPC-386: the owning manager. BUG-405: without one the action
+            // is refused — there is no global singleton to fall back to.
+            let Some(session_manager) = owning_manager.as_deref() else {
+                return no_owning_manager(calling_session_id);
             };
 
             match action {
@@ -90,6 +101,32 @@ pub fn create_handler(
                     session_id.as_deref(),
                     &role,
                 ),
+                AgentManagerAction::Answer {
+                    request_id,
+                    answers,
+                    cancelled,
+                } => agent_manager_requests::handle_answer(
+                    session_manager,
+                    calling_session_id,
+                    &request_id,
+                    answers,
+                    cancelled,
+                ),
+                AgentManagerAction::Approve { request_id, choice } => {
+                    agent_manager_requests::handle_approve(
+                        session_manager,
+                        calling_session_id,
+                        &request_id,
+                        choice,
+                    )
+                }
+                AgentManagerAction::Escalate { request_id } => {
+                    agent_manager_requests::handle_escalate(
+                        session_manager,
+                        calling_session_id,
+                        &request_id,
+                    )
+                }
                 AgentManagerAction::AwaitIdle { .. } => AgentManagerResult::invalid_parameter(
                     "await_idle must be dispatched through the async handler",
                 ),
@@ -287,10 +324,21 @@ fn find_root_parent(session_manager: &SessionManager, session_id: Uuid) -> Uuid 
 
 /// Handle the `list` action — return all sessions with relationships
 fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
-    let project_path = std::env::current_dir()
-        .map(|p| p.to_string_lossy().to_string())
-        .unwrap_or_default();
-    let sessions_info = session_manager.list_sessions(&project_path);
+    // BUG-465: an unresolvable project directory or a failed session
+    // listing is reported, not an all-projects or empty list.
+    let listed = std::env::current_dir()
+        .map_err(|error| format!("the current directory cannot be resolved: {error}"))
+        .and_then(|path| session_manager.list_sessions(&path.to_string_lossy()));
+    let sessions_info = match listed {
+        Ok(sessions) => sessions,
+        Err(message) => {
+            return AgentManagerResult::Error {
+                error: true,
+                code: "list_failed".to_string(),
+                message,
+            }
+        }
+    };
     let mut entries = Vec::with_capacity(sessions_info.len());
 
     for info in &sessions_info {
@@ -299,11 +347,10 @@ fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
             Err(_) => continue,
         };
 
-        // Get role from the session
-        let role = session_manager
-            .get_session(&info.id)
-            .ok()
-            .and_then(|s| s.get_role());
+        // Get role and (AMGR-021) pending request from the session
+        let live = session_manager.get_session(&info.id).ok();
+        let role = live.as_ref().and_then(|s| s.get_role());
+        let pending_request = live.as_ref().and_then(|s| pending_request_of(s));
 
         // Get the spawner (who spawned this session?)
         // A session's spawner is any session that has this session as its subordinate
@@ -326,6 +373,7 @@ fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
             status: info.status.clone(),
             spawner_id,
             subordinate_ids,
+            pending_request,
         });
     }
 
@@ -372,7 +420,18 @@ fn handle_get_status(session_manager: &SessionManager, session_id: &str) -> Agen
         spawner_id,
         subordinate_ids,
         pending_messages,
+        pending_request: pending_request_of(&session).map(Box::new),
     })
+}
+
+/// AMGR-021: the question or approval `session` waits on, if any.
+fn pending_request_of(
+    session: &codelet_sessions::background_session::BackgroundSession,
+) -> Option<codelet_tools::agent_manager::PendingRequestView> {
+    session
+        .pending_interactions()
+        .first()
+        .map(agent_manager_requests::view)
 }
 
 /// Handle the `close` action — terminate a subordinate session
@@ -501,6 +560,7 @@ fn handle_message(
         message: final_message,
         images: None,
         interrupt_epoch: None,
+        submission_id: None,
     };
 
     match target_session.receive_agent_message(incoming) {
@@ -563,6 +623,19 @@ fn resolve_single_context(reference: &ContextReference) -> (String, bool) {
     }
 }
 
+/// A quoted-context turn's content: at most 2000 bytes, cut on a char
+/// boundary (BUG-642), then "... [truncated]" when the content is longer.
+pub fn truncate_context_turn(content: String) -> String {
+    if content.len() > 2000 {
+        format!(
+            "{}... [truncated]",
+            &content[..content.floor_char_boundary(2000)]
+        )
+    } else {
+        content
+    }
+}
+
 /// Resolve specific turn indices from a session's history
 fn resolve_turns_context(session_id: &str, turns: &[usize]) -> (String, bool) {
     use codelet_core::persistence;
@@ -607,11 +680,7 @@ fn resolve_turns_context(session_id: &str, turns: &[usize]) -> (String, bool) {
             let msg = &messages[idx];
             let content = resolve_message_content(msg);
             // Truncate very long messages in context
-            let truncated = if content.len() > 2000 {
-                format!("{}... [truncated]", &content[..2000])
-            } else {
-                content
-            };
+            let truncated = truncate_context_turn(content);
             lines.push(format!("[{idx}] {}: {truncated}", msg.role));
             valid_turns.push(idx);
         }
@@ -688,11 +757,7 @@ fn resolve_query_context(session_id: &str, query: &str) -> (String, bool) {
     for (idx, msg) in messages.iter().enumerate() {
         let content = resolve_message_content(msg);
         if ripgrep_is_match(&matcher, &content) {
-            let truncated = if content.len() > 2000 {
-                format!("{}... [truncated]", &content[..2000])
-            } else {
-                content
-            };
+            let truncated = truncate_context_turn(content);
             lines.push(format!("[{idx}] {}: {truncated}", msg.role));
             matched_turns.push(idx);
         }
@@ -749,7 +814,7 @@ fn format_turns_label(turns: &[usize]) -> String {
 ///
 /// RPC-386: `owning_manager` injects the daemon-owned `SessionManager` that
 /// created the spawner. When `Some(M)`, `await_idle`/`profile` resolve sessions
-/// on `M`; when `None`, they fall back to `SessionManager::instance()`.
+/// on `M`; when `None` (BUG-405) they are refused with an error.
 pub fn create_async_handler(
     owning_manager: Option<Arc<SessionManager>>,
 ) -> AgentManagerAsyncHandler {
@@ -832,9 +897,18 @@ async fn handle_profile(
 /// Handle the `await_idle` action — block until sessions reach idle (AMGR-015)
 ///
 /// Subscribes to each target session's `supervisor_broadcast` channel and
-/// watches for `SessionStateChange(Idle)` events. Uses `tokio::select!` with
-/// an optional deadline for timeout, and the calling session's `interrupt_notify`
-/// for cancellation. If `timeout` is `None`, waits indefinitely.
+/// watches for `SessionStateChange(Idle)` events, racing an optional
+/// deadline and the calling session's `interrupt_notify`. If `timeout` is
+/// `None`, waits indefinitely.
+///
+/// AMGR-021: it returns at once when an awaited session, or one below it,
+/// has a request the caller holds (`needs_input`) or a human action of the
+/// caller's own sub-agent not yet reported (`waiting_on_user`); the other
+/// unfinished sessions are reported `pending`. The await is registered on
+/// the caller after subscribing and before the pending requests are read,
+/// so a request raised at any point is seen either by that read or by its
+/// `InteractionRequestChanged` event (a holder found awaiting is not sent a
+/// message). A timeout or interrupt reports a held request as `needs_input`.
 async fn handle_await_idle(
     owning_manager: Option<Arc<SessionManager>>,
     calling_session_id: Uuid,
@@ -844,208 +918,245 @@ async fn handle_await_idle(
     use std::time::Duration;
     use tokio::time::Instant;
 
-    // RPC-386: resolve the owning manager (Some → bound manager, None → global
-    // singleton). The Arc is held in `owning_manager` for the whole await.
-    let session_manager: &SessionManager = match owning_manager.as_ref() {
-        Some(manager) => manager.as_ref(),
-        None => SessionManager::instance(),
+    // RPC-386: the owning manager, held in `owning_manager` for the whole
+    // await. BUG-405: without one the action is refused.
+    let Some(session_manager) = owning_manager.clone() else {
+        return no_owning_manager(calling_session_id);
     };
+    let caller = session_manager
+        .get_session(&calling_session_id.to_string())
+        .ok();
 
-    // Phase 1: Validate all sessions exist and check which are already idle
-    let mut results: Vec<AwaitSessionResult> = Vec::new();
-    let mut pending = Vec::new();
-
+    // Phase 1: subscribe to every awaited session before anything is read.
+    let mut awaited = Vec::new();
     for id in &session_ids {
         let session = match session_manager.get_session(id) {
             Ok(s) => s,
             Err(_) => return AgentManagerResult::session_not_found(id),
         };
-
-        if let Some(receiver) = agent_manager_wait::subscribe_before_check(
+        let receiver = agent_manager_wait::subscribe_before_check(
             || session.subscribe_to_stream(),
             || session.get_status().as_str() == "idle",
-        ) {
-            pending.push((id.clone(), receiver, Arc::downgrade(&session)));
-        } else {
-            results.push(AwaitSessionResult {
-                session_id: id.clone(),
-                status: AwaitOutcome::Idle,
-            });
+        );
+        awaited.push((id.clone(), receiver, session));
+    }
+    let _registration = caller.as_ref().map(|caller| {
+        let ids: Vec<Uuid> = awaited.iter().map(|(_, _, session)| session.id).collect();
+        caller.begin_await(&ids)
+    });
+
+    // AMGR-021: a request that already concerns the caller ends the wait.
+    if let Some(caller) = &caller {
+        let mut found = Vec::new();
+        for (id, _, _) in &awaited {
+            if let Some((outcome, interaction)) =
+                agent_manager_requests::held_below(&session_manager, id, caller, true)
+            {
+                found.push(AwaitSessionResult {
+                    session_id: id.clone(),
+                    status: outcome,
+                    request: Some(agent_manager_requests::view(&interaction)),
+                });
+            }
+        }
+        if !found.is_empty() {
+            return finish_for_request(found, &awaited, &session_ids);
         }
     }
 
-    // All already idle — return immediately
-    if pending.is_empty() {
+    // Sessions already idle are done; watch the rest.
+    let mut results: Vec<AwaitSessionResult> = Vec::new();
+    let mut join_set = tokio::task::JoinSet::new();
+    for (id, receiver, session) in awaited.iter_mut() {
+        match receiver.take() {
+            None => results.push(outcome_result(id, AwaitOutcome::Idle)),
+            Some(receiver) => spawn_watch(
+                &mut join_set,
+                id.clone(),
+                receiver,
+                session,
+                &session_manager,
+                caller.clone(),
+            ),
+        }
+    }
+    if join_set.is_empty() {
         return AgentManagerResult::AwaitResult { results };
     }
 
-    // Phase 2: Wait for pending sessions with optional timeout and interrupt
+    // Phase 2: collect results, racing the optional deadline and interrupt.
+    let interrupt_notify = caller.as_ref().map(|s| s.get_interrupt_notify());
     let deadline = timeout.map(|secs| Instant::now() + Duration::from_secs(secs));
-
-    // Get the calling session's interrupt notify for cancellation
-    let interrupt_notify = session_manager
-        .get_session(&calling_session_id.to_string())
-        .ok()
-        .map(|s| s.get_interrupt_notify());
-
-    // Spawn a task per pending session that watches its broadcast channel
-    let mut join_set = tokio::task::JoinSet::new();
-    for (id, receiver, session) in pending {
-        join_set.spawn(async move {
-            let outcome = agent_manager_wait::wait(receiver, || {
-                session
-                    .upgrade()
-                    .map(|session| session.get_status().as_str() == "idle")
-            })
-            .await;
-            (id, outcome)
-        });
-    }
-
-    // Phase 3: Collect results — race join_set against optional timeout and interrupt
+    let interrupted = async {
+        match &interrupt_notify {
+            Some(notify) => notify.notified().await,
+            None => std::future::pending().await,
+        }
+    };
+    let expired = async {
+        match deadline {
+            Some(deadline) => tokio::time::sleep_until(deadline).await,
+            None => std::future::pending().await,
+        }
+    };
+    tokio::pin!(interrupted, expired);
     loop {
-        // Check timeout if set
-        if let Some(dl) = deadline {
-            let remaining = dl.saturating_duration_since(Instant::now());
-            if remaining.is_zero() {
-                // Timeout — mark all remaining as timed_out
-                join_set.abort_all();
-                while let Some(res) = join_set.join_next().await {
-                    if let Ok((id, outcome)) = res {
-                        results.push(AwaitSessionResult {
-                            session_id: id,
-                            status: outcome,
-                        });
+        tokio::select! {
+            biased;
+            _ = &mut interrupted => {
+                return finish_unresolved(join_set, results, &session_ids, AwaitOutcome::Interrupted, &session_manager, caller.as_deref()).await;
+            }
+            _ = &mut expired => {
+                return finish_unresolved(join_set, results, &session_ids, AwaitOutcome::TimedOut, &session_manager, caller.as_deref()).await;
+            }
+            next = join_set.join_next() => match next {
+                None => break,
+                Some(Ok((id, agent_manager_wait::WaitEnd::Outcome(outcome)))) => {
+                    results.push(outcome_result(&id, outcome));
+                }
+                Some(Ok((id, agent_manager_wait::WaitEnd::Request(outcome, route)))) => {
+                    match agent_manager_requests::still_pending(&session_manager, &route) {
+                        Some(request) => {
+                            join_set.abort_all();
+                            results.push(AwaitSessionResult {
+                                session_id: id,
+                                status: outcome,
+                                request: Some(request),
+                            });
+                            return finish_for_request(results, &awaited, &session_ids);
+                        }
+                        // Answered meanwhile: keep watching that session.
+                        None => {
+                            if let Some((_, _, session)) = awaited.iter().find(|(awaited_id, _, _)| *awaited_id == id) {
+                                let receiver = session.subscribe_to_stream();
+                                spawn_watch(&mut join_set, id, receiver, session, &session_manager, caller.clone());
+                            }
+                        }
                     }
                 }
-                let resolved_ids: std::collections::HashSet<&str> =
-                    results.iter().map(|r| r.session_id.as_str()).collect();
-                let missing: Vec<String> = session_ids
-                    .iter()
-                    .filter(|id| !resolved_ids.contains(id.as_str()))
-                    .cloned()
-                    .collect();
-                for id in missing {
-                    results.push(AwaitSessionResult {
-                        session_id: id,
-                        status: AwaitOutcome::TimedOut,
-                    });
-                }
-                break;
+                Some(Err(_)) => {}
             }
         }
-
-        // Build the select based on what's available
-        match (&interrupt_notify, deadline) {
-            (Some(notify), Some(dl)) => {
-                let remaining = dl.saturating_duration_since(Instant::now());
-                tokio::select! {
-                    biased;
-                    _ = notify.notified() => {
-                        finish_interrupted(&mut join_set, &mut results, &session_ids).await;
-                        break;
-                    }
-                    _ = tokio::time::sleep(remaining) => { continue; }
-                    result = join_set.join_next() => {
-                        if handle_join_result(result, &mut results, &join_set) { break; }
-                    }
-                }
-            }
-            (Some(notify), None) => {
-                tokio::select! {
-                    biased;
-                    _ = notify.notified() => {
-                        finish_interrupted(&mut join_set, &mut results, &session_ids).await;
-                        break;
-                    }
-                    result = join_set.join_next() => {
-                        if handle_join_result(result, &mut results, &join_set) { break; }
-                    }
-                }
-            }
-            (None, Some(dl)) => {
-                let remaining = dl.saturating_duration_since(Instant::now());
-                tokio::select! {
-                    biased;
-                    _ = tokio::time::sleep(remaining) => { continue; }
-                    result = join_set.join_next() => {
-                        if handle_join_result(result, &mut results, &join_set) { break; }
-                    }
-                }
-            }
-            (None, None) => {
-                // No timeout, no interrupt — just wait for all tasks
-                match join_set.join_next().await {
-                    Some(Ok((id, outcome))) => {
-                        results.push(AwaitSessionResult {
-                            session_id: id,
-                            status: outcome,
-                        });
-                        if join_set.is_empty() {
-                            break;
-                        }
-                    }
-                    Some(Err(_)) => {
-                        if join_set.is_empty() {
-                            break;
-                        }
-                    }
-                    None => break,
-                }
-            }
+        if join_set.is_empty() {
+            break;
         }
     }
 
     AgentManagerResult::AwaitResult { results }
 }
 
-/// Handle an interrupt: abort remaining tasks and mark unresolved sessions as interrupted
-async fn finish_interrupted(
-    join_set: &mut tokio::task::JoinSet<(String, AwaitOutcome)>,
-    results: &mut Vec<AwaitSessionResult>,
-    session_ids: &[String],
-) {
-    join_set.abort_all();
-    while let Some(res) = join_set.join_next().await {
-        if let Ok((id, outcome)) = res {
-            results.push(AwaitSessionResult {
-                session_id: id,
-                status: outcome,
-            });
-        }
-    }
-    let resolved_ids: std::collections::HashSet<&str> =
-        results.iter().map(|r| r.session_id.as_str()).collect();
-    let missing: Vec<String> = session_ids
-        .iter()
-        .filter(|id| !resolved_ids.contains(id.as_str()))
-        .cloned()
-        .collect();
-    for id in missing {
-        results.push(AwaitSessionResult {
-            session_id: id,
-            status: AwaitOutcome::Interrupted,
-        });
+/// One awaited session: its id, its stream (`None` once idle or watched)
+/// and the session.
+type Awaited = (
+    String,
+    Option<tokio::sync::broadcast::Receiver<codelet_rpc_types::StreamChunk>>,
+    Arc<codelet_sessions::background_session::BackgroundSession>,
+);
+
+fn outcome_result(id: &str, status: AwaitOutcome) -> AwaitSessionResult {
+    AwaitSessionResult {
+        session_id: id.to_string(),
+        status,
+        request: None,
     }
 }
 
-/// Handle a JoinSet result; returns true if the loop should break (all done)
-fn handle_join_result(
-    result: Option<Result<(String, AwaitOutcome), tokio::task::JoinError>>,
-    results: &mut Vec<AwaitSessionResult>,
-    join_set: &tokio::task::JoinSet<(String, AwaitOutcome)>,
-) -> bool {
-    match result {
-        Some(Ok((id, outcome))) => {
-            results.push(AwaitSessionResult {
-                session_id: id,
-                status: outcome,
-            });
-            join_set.is_empty()
+/// Watch one awaited session on its own task (AMGR-015 / AMGR-021).
+fn spawn_watch(
+    join_set: &mut tokio::task::JoinSet<(String, agent_manager_wait::WaitEnd)>,
+    id: String,
+    receiver: tokio::sync::broadcast::Receiver<codelet_rpc_types::StreamChunk>,
+    session: &Arc<codelet_sessions::background_session::BackgroundSession>,
+    session_manager: &Arc<SessionManager>,
+    caller: Option<Arc<codelet_sessions::background_session::BackgroundSession>>,
+) {
+    let session = Arc::downgrade(session);
+    let manager = Arc::downgrade(session_manager);
+    join_set.spawn(async move {
+        let awaited = id.clone();
+        let end = agent_manager_wait::wait(
+            receiver,
+            || {
+                session
+                    .upgrade()
+                    .map(|session| session.get_status().as_str() == "idle")
+            },
+            |route| {
+                caller.as_ref().and_then(|caller| {
+                    agent_manager_requests::concerns(route, &awaited, caller, true)
+                })
+            },
+            || {
+                let manager = manager.upgrade()?;
+                let caller = caller.as_ref()?;
+                agent_manager_requests::held_below(&manager, &awaited, caller, true)
+                    .map(|(outcome, interaction)| (outcome, interaction.route().clone()))
+            },
+        )
+        .await;
+        (id, end)
+    });
+}
+
+/// AMGR-021: a request ended the wait: every awaited session without a
+/// result is `idle` if it is idle now, else `pending`.
+fn finish_for_request(
+    mut results: Vec<AwaitSessionResult>,
+    awaited: &[Awaited],
+    session_ids: &[String],
+) -> AgentManagerResult {
+    for id in session_ids {
+        if results.iter().any(|result| result.session_id == *id) {
+            continue;
         }
-        Some(Err(_)) => join_set.is_empty(),
-        None => true,
+        let idle = awaited
+            .iter()
+            .find(|(awaited_id, _, _)| awaited_id == id)
+            .is_some_and(|(_, _, session)| session.get_status().as_str() == "idle");
+        let status = if idle {
+            AwaitOutcome::Idle
+        } else {
+            AwaitOutcome::Pending
+        };
+        results.push(outcome_result(id, status));
     }
+    AgentManagerResult::AwaitResult { results }
+}
+
+/// The deadline passed or the caller was interrupted: every unresolved
+/// session is `outcome`, except (AMGR-021) one with a request the caller
+/// still holds, which is `needs_input`.
+async fn finish_unresolved(
+    mut join_set: tokio::task::JoinSet<(String, agent_manager_wait::WaitEnd)>,
+    mut results: Vec<AwaitSessionResult>,
+    session_ids: &[String],
+    outcome: AwaitOutcome,
+    session_manager: &SessionManager,
+    caller: Option<&codelet_sessions::background_session::BackgroundSession>,
+) -> AgentManagerResult {
+    join_set.abort_all();
+    while let Some(res) = join_set.join_next().await {
+        if let Ok((id, agent_manager_wait::WaitEnd::Outcome(done))) = res {
+            results.push(outcome_result(&id, done));
+        }
+    }
+    for id in session_ids {
+        if results.iter().any(|result| result.session_id == *id) {
+            continue;
+        }
+        let held = caller.and_then(|caller| {
+            agent_manager_requests::held_below(session_manager, id, caller, false)
+        });
+        results.push(match held {
+            Some((found, interaction)) => AwaitSessionResult {
+                session_id: id.clone(),
+                status: found,
+                request: Some(agent_manager_requests::view(&interaction)),
+            },
+            None => outcome_result(id, outcome.clone()),
+        });
+    }
+    AgentManagerResult::AwaitResult { results }
 }
 
 #[cfg(test)]
@@ -1221,8 +1332,8 @@ mod tests {
 
         // @step When find_root_parent is called with the parent's ID
         // With no supervisors registered, the parent IS the root
-        let session_manager = SessionManager::instance();
-        let root = find_root_parent(session_manager, parent_id);
+        let session_manager = SessionManager::new();
+        let root = find_root_parent(&session_manager, parent_id);
 
         // @step Then it should return the parent itself
         assert_eq!(root, parent_id);
@@ -1235,10 +1346,10 @@ mod tests {
     fn test_find_root_parent_no_supervisors_returns_self() {
         // @step Given a session with no supervisors in the chain
         let session_id = Uuid::new_v4();
-        let session_manager = SessionManager::instance();
+        let session_manager = SessionManager::new();
 
         // @step When find_root_parent is called
-        let root = find_root_parent(session_manager, session_id);
+        let root = find_root_parent(&session_manager, session_id);
 
         // @step Then it should return the session itself (it's already the root)
         assert_eq!(root, session_id);

@@ -42,7 +42,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             }
           ]
         }
@@ -143,11 +145,13 @@
                 109,
                 110,
                 111,
-                112,
-                113,
-                114,
-                115
-              ]
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "&runtime_suffix[..overlap],",
+              "lastLine": "})"
             }
           ]
         }
@@ -163,7 +167,6 @@
             {
               "file": "rust/sessions/src/archival_replay.rs",
               "lines": [
-                61,
                 62,
                 63,
                 64,
@@ -229,7 +232,9 @@
                 124,
                 125,
                 126
-              ]
+              ],
+              "firstLine": "impl ArchivalReplay {",
+              "lastLine": "}"
             }
           ]
         }
@@ -392,7 +397,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "struct ArchivalReplay {",
+              "lastLine": "}"
             }
           ]
         }
@@ -433,7 +440,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "fn next(&mut self) -> Option<Self::Item> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -451,6 +460,6 @@
       "rust/sessions/src/archival_replay.rs",
       "rust/sessions/src/session_restore.rs"
     ],
-    "totalLinesCovered": 596
+    "totalLinesCovered": 595
   }
 }

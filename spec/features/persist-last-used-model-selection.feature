@@ -5,6 +5,9 @@
 @TUI-035
 Feature: Persist Last Used Model Selection
   """
+  BUG-461: a corrupt fspec-config.json is shown at startup and no startup
+  model is chosen over it (tested by user-config-read-failures-are-reported).
+
   LAYER ARCHITECTURE:
   1. UI Layer (AgentModal.tsx): Read persisted model on init, update on model switch
   2. Config Layer (src/utils/config.ts): loadConfig(), writeConfig() for ~/.fspec/fspec-config.json
@@ -105,8 +108,8 @@ Feature: Persist Last Used Model Selection
     Given ~/.fspec/fspec-config.json contains invalid JSON
     And ANTHROPIC_API_KEY is set
     When I open the AgentModal
-    Then the session should start with the first available model
-    And config read failure should be logged but not shown to user
+    Then the config read failure is shown to the user naming fspec-config.json
+    And no startup model is chosen over the unreadable config
 
   # ----------------------------------------
   # CONFIG STRUCTURE

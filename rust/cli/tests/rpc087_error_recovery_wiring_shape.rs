@@ -12,6 +12,8 @@
 //! `spec/attachments/RPC-087/ast-research-error-classification-recovery.md`
 //! for the rationale.
 
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -214,19 +216,19 @@ fn stall_classifier_uses_prefix_as_single_source_of_truth() {
 #[test]
 fn stream_loop_wires_every_classifier_predicate() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let body = read_source("rust/cli/src/interactive/stream_loop.rs");
+    let body = stream_loop_source_tree::stream_loop_source();
 
     // @step When I read the file as a string
     // (already read above)
 
-    // @step Then the body contains the substring "use super::error_classifiers::{"
-    assert!(body.contains("use super::error_classifiers::{"));
+    // @step Then the body contains the substring "error_classifiers::{"
+    assert!(body.contains("error_classifiers::{"));
 
     // @step And the body contains the substring "is_stall_timeout_error("
     assert!(body.contains("is_stall_timeout_error("));
 
-    // @step And the body contains the substring "is_prompt_too_long_error("
-    assert!(body.contains("is_prompt_too_long_error("));
+    // @step And the body contains the substring "is_context_overflow_error("
+    assert!(body.contains("is_context_overflow_error("));
 
     // @step And the body contains the substring "is_image_content_error("
     assert!(body.contains("is_image_content_error("));
@@ -234,8 +236,8 @@ fn stream_loop_wires_every_classifier_predicate() {
     // @step And the body contains the substring "is_truncated_tool_call_error("
     assert!(body.contains("is_truncated_tool_call_error("));
 
-    // @step And the body contains the substring "is_transient_network_error("
-    assert!(body.contains("is_transient_network_error("));
+    // @step And the body contains the substring "should_retry_network_error("
+    assert!(body.contains("should_retry_network_error("));
 
     // @step And the body contains the substring "classify_compaction_branch("
     assert!(body.contains("classify_compaction_branch("));
@@ -248,14 +250,14 @@ fn stream_loop_wires_every_classifier_predicate() {
 #[test]
 fn stream_loop_guards_retry_with_max_network_retries() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let body = read_source("rust/cli/src/interactive/stream_loop.rs");
+    let body = stream_loop_source_tree::stream_loop_source();
 
     // @step When I read the file as a string
     // (already read above)
 
     // @step Then the body imports both MAX_NETWORK_RETRIES and network_retry_delay from super::recovery_network
     let recovery_network_use = body
-        .find("use super::recovery_network::")
+        .find("recovery_network::{")
         .expect("recovery_network import must exist");
     let import_end = recovery_network_use
         + body[recovery_network_use..]
@@ -271,8 +273,8 @@ fn stream_loop_guards_retry_with_max_network_retries() {
     // @step And the body contains the substring "network_retry_count <= MAX_NETWORK_RETRIES"
     assert!(body.contains("network_retry_count <= MAX_NETWORK_RETRIES"));
 
-    // @step And the body contains the substring "network_retry_delay(network_retry_count)"
-    assert!(body.contains("network_retry_delay(network_retry_count)"));
+    // @step And the body contains the substring "network_retry_delay(state.network_retry_count)"
+    assert!(body.contains("network_retry_delay(state.network_retry_count)"));
 }
 
 // ====================================================================
@@ -282,28 +284,28 @@ fn stream_loop_guards_retry_with_max_network_retries() {
 #[test]
 fn stream_loop_sanitises_image_content_after_classifier_check() {
     // @step Given the source file rust/cli/src/interactive/stream_loop.rs
-    let body = read_source("rust/cli/src/interactive/stream_loop.rs");
+    let body = stream_loop_source_tree::stream_loop_source();
 
     // @step When I read the file as a string
     // (already read above)
 
-    // @step Then the body contains the substring "sanitize_image_content(&mut session.messages)"
-    assert!(body.contains("sanitize_image_content(&mut session.messages)"));
+    // @step Then the body contains the substring "sanitize_image_content(&mut context.session.messages)"
+    assert!(body.contains("sanitize_image_content(&mut context.session.messages)"));
 
     // @step And the body contains the substring "is_image_content_error(&error_str)"
     assert!(body.contains("is_image_content_error(&error_str)"));
 
-    // @step And the byte offset of "is_image_content_error(&error_str)" is less than the byte offset of "sanitize_image_content(&mut session.messages)"
+    // @step And the byte offset of "is_image_content_error(&error_str)" is less than the byte offset of "sanitize_image_content(&mut context.session.messages)"
     let classifier_offset = body
         .find("is_image_content_error(&error_str)")
         .expect("classifier call must exist");
     let sanitize_offset = body
-        .find("sanitize_image_content(&mut session.messages)")
+        .find("sanitize_image_content(&mut context.session.messages)")
         .expect("sanitize call must exist");
     assert!(
         classifier_offset < sanitize_offset,
         "is_image_content_error(&error_str) must precede \
-         sanitize_image_content(&mut session.messages) in source order \
+         sanitize_image_content(&mut context.session.messages) in source order \
          (classify first, sanitize second)"
     );
 }

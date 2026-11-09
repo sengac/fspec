@@ -24,10 +24,10 @@ use uuid::Uuid;
 // Scenario: Match function using partial pattern with meta-variables
 // ============================================================================
 
-/// Scenario: Match function using partial pattern with meta-variables
+/// Scenario: Match function using a complete-node pattern with meta-variables
 #[tokio::test]
 async fn test_match_function_using_partial_pattern_with_meta_variables() {
-    // @step Given a Rust source file containing a simple function
+    // @step Given a Rust source file containing 'fn calculate_sum(a: i32, b: i32)' with no return type
     let temp_dir = TempDir::new().unwrap();
     let source_file = temp_dir.path().join("lib.rs");
     // Use a simpler function without return type for pattern matching

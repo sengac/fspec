@@ -40,7 +40,7 @@ async fn openai_chat_preserves_physical_http_rejection_evidence() -> TestResult 
             .build();
         // @step When requests receive structured overflow, authentication, and plain text rejection bodies
         let mut response = model.stream(request).await?;
-        let events = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        let events = codelet_test_helpers::deadlock_guard("the awaited block", async {
             let mut events = Vec::new();
             while let Some(event) = response.next().await {
                 events.push(event);
@@ -93,7 +93,7 @@ async fn assert_rejection<M: CompletionModel>(
             .max_tokens(200)
             .build();
         let mut response = model.stream(request).await?;
-        let events = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        let events = codelet_test_helpers::deadlock_guard("the awaited block", async {
             let mut events = Vec::new();
             while let Some(event) = response.next().await {
                 events.push(event);

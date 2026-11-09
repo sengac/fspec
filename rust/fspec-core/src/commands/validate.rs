@@ -47,6 +47,9 @@ use crate::error::FspecCoreError;
 use crate::io::feature_glob::glob_feature_files;
 use crate::io::gherkin::{format_parse_error_cucumber, parse_feature_lenient};
 
+#[path = "validate_coverage_drift.rs"]
+pub(crate) mod coverage_drift;
+
 /// CLI arguments accepted by `validate`. Mirrors the Commander.js registration
 /// at `src/commands/validate.ts:256-265`: an optional positional `[file]` and
 /// a `-v/--verbose` boolean (default false).
@@ -63,11 +66,11 @@ struct ValidateArgs {
 
 /// A single validation error attached to a [`FileResult`].
 #[derive(Debug, Clone, Serialize)]
-struct ValidationError {
-    line: usize,
-    message: String,
+pub(crate) struct ValidationError {
+    pub(crate) line: usize,
+    pub(crate) message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    suggestion: Option<String>,
+    pub(crate) suggestion: Option<String>,
 }
 
 /// Per-file validation outcome (mirrors the TS `ValidationResult` interface).
@@ -83,6 +86,10 @@ struct FileResult {
     /// matching the TS `ValidationResult` interface.
     #[serde(skip)]
     verbose_lines: Vec<String>,
+    /// BUG-485: problems with the feature's coverage file (scenarios it is
+    /// missing or lists that the feature does not have).
+    #[serde(rename = "coverageDrift", skip_serializing_if = "Vec::is_empty")]
+    coverage_drift: Vec<String>,
 }
 
 /// Dispatcher entry point. `project_root` is supplied by both front doors.
@@ -150,21 +157,58 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         }
     }
 
+    // BUG-485: a coverage file must list exactly its feature's scenarios.
+    let drifted: Vec<&FileResult> = results
+        .iter()
+        .filter(|result| !result.coverage_drift.is_empty())
+        .collect();
+    for result in &drifted {
+        for problem in &result.coverage_drift {
+            lines.push(format!("✗ {problem}"));
+        }
+    }
+
+    // BUG-522: validating every feature also reports coverage files whose
+    // feature no longer exists.
+    let orphans = match args.file {
+        Some(_) => Vec::new(),
+        None => orphan_coverage_files(project_root)?,
+    };
+    for orphan in &orphans {
+        lines.push(format!("✗ {orphan} has no feature file"));
+    }
+
     let valid_count = results.iter().filter(|r| r.valid).count();
-    let invalid_count = results.len() - valid_count;
+    let invalid_features = results.len() - valid_count;
+    let invalid_count = invalid_features + orphans.len() + drifted.len();
 
     // Summary line only when more than one file is validated (parity with the
     // `results.length > 1` guard).
     if results.len() > 1 {
         lines.push(String::new());
-        if invalid_count == 0 {
+        if invalid_features == 0 {
             lines.push(format!("✓ All {} feature files are valid", results.len()));
         } else {
             lines.push(format!(
-                "Validated {} files: {valid_count} valid, {invalid_count} invalid",
+                "Validated {} files: {valid_count} valid, {invalid_features} invalid",
                 results.len()
             ));
         }
+    }
+    if !orphans.is_empty() {
+        lines.push(format!(
+            "✗ {} coverage file(s) have no feature file; delete them or restore their features",
+            orphans.len()
+        ));
+    }
+
+    if !drifted.is_empty() {
+        lines.push(format!(
+            "✗ {} feature(s) have a coverage file out of sync with their scenarios or holding \
+             duplicate mappings; sync each with fspec generate-coverage --feature-name <feature> \
+             (unlink a scenario the feature no longer has first) and merge duplicates",
+            drifted.len()
+        ));
     }
 
     let exit_code = if invalid_count > 0 { 1 } else { 0 };
@@ -181,6 +225,40 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         command: "validate",
         reason: format!("failed to serialize result: {e}"),
     })
+}
+
+/// BUG-522: `spec/features/*.feature.coverage` files without their feature,
+/// as project-relative paths in name order.
+pub(crate) fn orphan_coverage_files(project_root: &Path) -> Result<Vec<String>, FspecCoreError> {
+    let features = crate::io::spec_paths::features_dir_of(project_root);
+    let entries = match std::fs::read_dir(&features) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(source) => {
+            return Err(FspecCoreError::Io {
+                command: "validate",
+                source,
+            })
+        }
+    };
+    let mut orphans = Vec::new();
+    for entry in entries {
+        let name = entry
+            .map_err(|source| FspecCoreError::Io {
+                command: "validate",
+                source,
+            })?
+            .file_name()
+            .to_string_lossy()
+            .into_owned();
+        if let Some(feature) = name.strip_suffix(".coverage") {
+            if feature.ends_with(".feature") && !features.join(feature).exists() {
+                orphans.push(format!("spec/features/{name}"));
+            }
+        }
+    }
+    orphans.sort();
+    Ok(orphans)
 }
 
 /// Validate a single feature file (mirrors the TS `validateFile`).
@@ -202,6 +280,7 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
                     suggestion: None,
                 }],
                 verbose_lines,
+                coverage_drift: Vec::new(),
             };
         }
         Err(e) => {
@@ -214,6 +293,7 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
                     suggestion: None,
                 }],
                 verbose_lines,
+                coverage_drift: Vec::new(),
             };
         }
     };
@@ -224,36 +304,15 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
         verbose_lines.push(format!("Parsing {file_path}..."));
     }
 
-    // Parse with the lenient gherkin front-end. On parse error the file is
-    // invalid with a single {line, message, suggestion} error (RPC-329: the
-    // raw message text diverges from @cucumber/gherkin but the classification
-    // matches).
-    match parse_feature_lenient(&content) {
-        Err(parse_err) => {
-            // RPC-329: delegate to the shared cucumber-compatible formatter.
-            // For the no-Feature-keyword class it returns (0, cucumber-vocab
-            // message); for files WITH a Feature keyword it carries over the
-            // gherkin-0.16 Display string + its derived line number. The
-            // formatted message feeds get_suggestion so the Add-Feature-keyword
-            // suggestion fires on the reformatted text.
-            let (line, message) = format_parse_error_cucumber(&content, &parse_err);
-            let suggestion = get_suggestion(&message);
-            FileResult {
-                file: file_path.to_string(),
-                valid: false,
-                errors: vec![ValidationError {
-                    line,
-                    message,
-                    suggestion,
-                }],
-                verbose_lines,
-            }
-        }
-        Ok(feature) => {
-            // Parser succeeded: run the content-string heuristics (parity — TS
-            // only runs checkForCommonIssues on the parse-success path).
-            let additional = check_for_common_issues(&content);
-
+    match check_content(&content) {
+        (None, errors) => FileResult {
+            file: file_path.to_string(),
+            valid: false,
+            errors,
+            verbose_lines,
+            coverage_drift: Vec::new(),
+        },
+        (Some(feature), errors) => {
             // TS emits the success verbose block AFTER the additional-errors
             // check (the `if (verbose)` block at validate.ts:126-134 runs in the
             // try body regardless of whether checkForCommonIssues found issues).
@@ -265,10 +324,57 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
 
             FileResult {
                 file: file_path.to_string(),
-                valid: additional.is_empty(),
-                errors: additional,
+                valid: errors.is_empty(),
+                errors,
                 verbose_lines,
+                coverage_drift: coverage_drift::coverage_drift(project_root, file_path, &feature),
             }
+        }
+    }
+}
+
+/// The Gherkin problems of a feature file's `content`: the parsed feature
+/// (`None` when it does not parse) and its errors. AUDIT-003: `fspec audit`'s
+/// gherkin area calls this same function.
+pub(crate) fn check_content(content: &str) -> (Option<gherkin::Feature>, Vec<ValidationError>) {
+    // Parse with the lenient gherkin front-end. On parse error the file is
+    // invalid with a single {line, message, suggestion} error (RPC-329: the
+    // raw message text diverges from @cucumber/gherkin but the classification
+    // matches).
+    match parse_feature_lenient(content) {
+        Err(parse_err) => {
+            // RPC-329: delegate to the shared cucumber-compatible formatter.
+            // For the no-Feature-keyword class it returns (0, cucumber-vocab
+            // message); for files WITH a Feature keyword it carries over the
+            // gherkin-0.16 Display string + its derived line number. The
+            // formatted message feeds get_suggestion so the Add-Feature-keyword
+            // suggestion fires on the reformatted text.
+            let (line, message) = format_parse_error_cucumber(content, &parse_err);
+            let suggestion = get_suggestion(&message);
+            (
+                None,
+                vec![ValidationError {
+                    line,
+                    message,
+                    suggestion,
+                }],
+            )
+        }
+        Ok(feature) => {
+            // Parser succeeded: run the content-string heuristics (parity — TS
+            // only runs checkForCommonIssues on the parse-success path).
+            let mut additional = check_for_common_issues(content);
+            // BUG-563: Rule blocks are not supported.
+            additional.extend(crate::io::gherkin::rule_block_errors(content).into_iter().map(
+                |(line, message)| ValidationError {
+                    line,
+                    message,
+                    suggestion: Some(
+                        "Move business rules to the work unit (fspec add-rule) and reword the line".to_string(),
+                    ),
+                },
+            ));
+            (Some(feature), additional)
         }
     }
 }

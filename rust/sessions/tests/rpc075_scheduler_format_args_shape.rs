@@ -218,6 +218,8 @@ fn cargo_clippy_on_codelet_core_emits_no_uninlined_format_args_for_scheduler_fil
             "clippy",
             "-p",
             "codelet-core",
+            "--profile",
+            "ci-test",
             "--all-targets",
             "--manifest-path",
         ])

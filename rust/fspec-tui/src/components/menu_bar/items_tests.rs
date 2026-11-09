@@ -12,19 +12,19 @@ use crate::components::Action;
 fn categories_are_kanban_tools_settings_then_help_with_the_expected_entry_counts() {
     // @step Given the MenuCategories registry
     // @step When the Help category is read
-    // @step Then it has 2 entries in order: "? Help" and "Esc Exit"
+    // @step Then it has 2 entries in order: "? Help" and "Esc Close"
     assert_eq!(CATEGORIES.len(), 4);
     assert_eq!(CATEGORIES[0].label, "Kanban");
     assert_eq!(CATEGORIES[1].label, "Tools");
     assert_eq!(CATEGORIES[2].label, "Settings");
     assert_eq!(CATEGORIES[3].label, "Help");
-    assert_eq!(KANBAN.len(), 4);
+    assert_eq!(KANBAN.len(), 5);
     assert_eq!(TOOLS.len(), 2);
-    assert_eq!(SETTINGS.len(), 2);
+    assert_eq!(SETTINGS.len(), 4);
     assert_eq!(HELP.len(), 2);
-    // @step And they emit OpenBoardHelp and OpenBoardExitConfirmation
+    // @step And they emit OpenBoardHelp and MenuDismissBar (TUI-135: the Close row only closes the menu)
     assert_eq!(HELP[0].action, MenuAction::Help);
-    assert_eq!(HELP[1].action, MenuAction::Exit);
+    assert_eq!(HELP[1].action, MenuAction::CloseMenu);
     assert_eq!(HELP[0].key, "?");
     assert_eq!(HELP[1].key, "Esc");
 }
@@ -33,12 +33,12 @@ fn categories_are_kanban_tools_settings_then_help_with_the_expected_entry_counts
 fn kanban_entries_keep_the_legacy_board_workflow_shortcuts() {
     // @step Given the MenuCategories registry
     // @step When the Kanban category is read
-    // @step Then it has 4 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
+    // @step Then it has 5 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot"
     let keys: Vec<&str> = KANBAN.iter().map(|e| e.key).collect();
     assert_eq!(
         keys,
-        vec![".", "/", "D", "A"],
-        "the legacy workflow arms (., /, D, A) in Kanban order"
+        vec![".", "/", "D", "A", "b"],
+        "the legacy workflow arms (., /, D, A) then TUI-114 New Bot (b) in Kanban order"
     );
 }
 
@@ -58,12 +58,18 @@ fn tools_entries_list_the_git_tools() {
 fn settings_entries_list_the_configuration_entries() {
     // @step Given the MenuCategories registry
     // @step When the Settings category is read
-    // @step Then it has 2 entries in order: "M Mux" and "P Providers"
+    // @step Then it has 4 entries in order: "M Mux", "P Providers", "s Daemons" and "w Workspaces"
     let keys: Vec<&str> = SETTINGS.iter().map(|e| e.key).collect();
-    assert_eq!(keys, vec!["M", "P"], "Mux layout then Providers");
-    // @step And they emit OpenMuxConfigDialog and OpenProviderSettingsView
+    assert_eq!(
+        keys,
+        vec!["M", "P", "s", "w"],
+        "Mux layout, Providers, then TUI-123 Daemons and Workspaces"
+    );
+    // @step And they emit OpenMuxConfigDialog, OpenProviderSettingsView, OpenDaemonSwitcher and OpenWorkspaceDropdown
     assert_eq!(SETTINGS[0].action, MenuAction::Mux);
     assert_eq!(SETTINGS[1].action, MenuAction::Providers);
+    assert_eq!(SETTINGS[2].action, MenuAction::Daemons);
+    assert_eq!(SETTINGS[3].action, MenuAction::Workspaces);
 }
 
 #[test]
@@ -126,7 +132,7 @@ fn every_action_maps_to_an_existing_bus_variant() {
         MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
-    // BUG-204: the agent bar's 'Close Agent' button ALWAYS shows the
+    // BUG-204: the agent bar's 'Close' button ALWAYS shows the
     // exit confirmation dialog — the agent surface resolves the action
     // through its OWN dispatch arm (no board Zone C carries
     // CloseAgent), so this payload-free mapping is a board-side

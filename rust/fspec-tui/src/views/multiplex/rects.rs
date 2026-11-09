@@ -1,66 +1,75 @@
-//! MUX-001 — live pane-rect recomputation (extracted from `mod.rs` to
-//! keep it under the 300-LoC ceiling).
+//! MUX-001/MUX-010 — live pane visibility + pane-rect recomputation.
 //!
-//! Feature: spec/features/rust-mux-mode.feature
+//! Feature: spec/features/rust-mux-mode.feature +
+//! spec/features/mux-nested-column-and-row-layouts-from-a-bracket-layout-string.feature
 //!
-//! `recompute_rects` derives the body area from the last observed pane
-//! rects and re-derives the pane + divider rects from the current
-//! config (honoring the live `drag_width` override during a divider
-//! drag).
+//! The live grid draws the stored layout with some panes hidden (MUX-002
+//! agent slots beyond the open sessions, BUG-183 Esc-closed panes); a
+//! group with no shown pane disappears. When no stored pane is shown the
+//! grid is a transient single board pane (BUG-174), never stored. During
+//! a divider drag the in-flight re-weighted copy is drawn instead.
 
 use ratatui::layout::Rect;
 
-use super::layout::{calculate_pane_rects_with_override, divider_rects};
-use super::MultiplexLayout;
+use super::layout_tree::{compute, Geometry, MuxLayout, MuxNode};
+use super::{MultiplexLayout, MuxPaneKind};
 
 impl MultiplexLayout {
-    /// Recompute the cached pane rects from the current config + the
-    /// last observed body area (honoring the live `drag_width`
-    /// override). MUX-002: only RENDERS the filled panes (agent slots
-    /// beyond the open-session count are dropped); when `pane_rects`
-    /// is empty, the stored `body_area` drives the recompute so rects
-    /// exist before the first paint.
-    pub(crate) fn recompute_rects(&mut self) {
-        let body = if self.pane_rects.is_empty() {
-            self.body_area.unwrap_or_default()
+    /// Show every stored pane (fresh entry / layout change — the session
+    /// filter applies on the next `sync_window`).
+    pub(super) fn show_all_panes(&mut self) {
+        self.rendered_panes = self.config.layout.leaves();
+        self.visible = vec![true; self.rendered_panes.len()];
+        self.transient_board = false;
+    }
+
+    /// Re-derive which stored panes are shown from the open sessions and
+    /// the closed panes (MUX-002 / BUG-174 / BUG-183).
+    pub(super) fn refresh_visibility(&mut self) {
+        let available = self.sessions.len();
+        let mut agent_seen = 0usize;
+        let leaves = self.config.layout.leaves();
+        self.visible = leaves
+            .iter()
+            .map(|kind| match kind {
+                MuxPaneKind::Agent => {
+                    agent_seen += 1;
+                    agent_seen <= available
+                }
+                MuxPaneKind::ChangedFiles | MuxPaneKind::Checkpoints => {
+                    !self.closed_panes.contains(kind)
+                }
+                MuxPaneKind::Board => true,
+            })
+            .collect();
+        self.transient_board = !self.visible.iter().any(|shown| *shown);
+        self.rendered_panes = if self.transient_board {
+            vec![MuxPaneKind::Board]
         } else {
-            let first = self.pane_rects[0];
-            match self.config.orientation {
-                super::MuxOrientation::Horizontal => Rect {
-                    x: first.x,
-                    y: first.y,
-                    width: self
-                        .pane_rects
-                        .iter()
-                        .map(|r| r.x + r.width)
-                        .max()
-                        .unwrap_or(first.x + first.width)
-                        - first.x,
-                    height: first.height,
-                },
-                super::MuxOrientation::Vertical => Rect {
-                    x: first.x,
-                    y: first.y,
-                    width: first.width,
-                    height: self
-                        .pane_rects
-                        .iter()
-                        .map(|r| r.y + r.height)
-                        .max()
-                        .unwrap_or(first.y + first.height)
-                        - first.y,
-                },
-            }
+            leaves
+                .into_iter()
+                .zip(&self.visible)
+                .filter_map(|(kind, shown)| shown.then_some(kind))
+                .collect()
         };
-        let rects = calculate_pane_rects_with_override(
-            body,
-            self.config.orientation,
-            self.effective_panes(),
-            &self.config.splits,
-            self.drag_index,
-            self.drag_width,
-        );
-        self.pane_rects = rects.clone();
-        self.divider_rects = divider_rects(self.config.orientation, &rects, body);
+    }
+
+    /// The geometry of the live grid in `body`.
+    pub(super) fn live_geometry(&self, body: Rect) -> Geometry {
+        if self.transient_board {
+            let board = MuxLayout::with_first(MuxNode::pane(MuxPaneKind::Board), Vec::new());
+            return compute(body, &board, &[]);
+        }
+        let layout = self.drag_layout.as_ref().unwrap_or(&self.config.layout);
+        compute(body, layout, &self.visible)
+    }
+
+    /// Recompute the cached pane rects + dividers from the live layout
+    /// and the last observed body area (rects exist before the first
+    /// paint thanks to the seeded body).
+    pub(crate) fn recompute_rects(&mut self) {
+        let geometry = self.live_geometry(self.body_area());
+        self.pane_rects = geometry.panes;
+        self.dividers = geometry.dividers;
     }
 }

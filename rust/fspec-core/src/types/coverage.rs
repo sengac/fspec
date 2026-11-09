@@ -1,5 +1,5 @@
 //! Sidecar coverage-file types — shared across `show-coverage`,
-//! `link-coverage`, `audit-coverage`, `generate-coverage`, and
+//! `link-coverage`, `audit`, `generate-coverage`, and
 //! `unlink-coverage` command ports.
 //!
 //! Mirrors `src/utils/coverage-file.ts` (the TypeScript source of truth):
@@ -43,7 +43,7 @@ pub struct CoverageFile {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stats: Option<CoverageStats>,
     /// Any unknown top-level fields are preserved here so commands that
-    /// re-serialise the file (link-coverage / audit-coverage --fix) don't
+    /// re-serialise the file (link-coverage, unlink-coverage) don't
     /// drop caller-added metadata.
     #[serde(flatten, default)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -83,6 +83,13 @@ pub struct TestMapping {
 pub struct ImplMapping {
     pub file: String,
     pub lines: ImplLines,
+    /// COV-079: the trimmed text of the mapping's lowest line, recorded by
+    /// link-coverage so fspec audit detects code that moved under the lines.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_line: Option<String>,
+    /// COV-079: the trimmed text of the mapping's highest line.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_line: Option<String>,
     #[serde(flatten, default)]
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
@@ -181,17 +188,25 @@ pub fn calculate_stats(scenarios: &[CoverageScenario]) -> CoverageStats {
 /// marker. Returns `None` when the file does not parse (callers keep their
 /// pre-deprecation behavior on parse failure, mirroring the
 /// stale-scenario-check parity rule in `update-work-unit-status`).
-pub fn deprecated_scenario_names(feature_content: &str) -> Option<std::collections::HashSet<String>> {
+pub fn deprecated_scenario_names(
+    feature_content: &str,
+) -> Option<std::collections::HashSet<String>> {
     use crate::io::gherkin::parse_feature_lenient;
     use std::collections::HashSet;
 
     let feature = parse_feature_lenient(feature_content).ok()?;
-    let feature_deprecated = feature.tags.iter().any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"));
+    let feature_deprecated = feature
+        .tags
+        .iter()
+        .any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"));
     let names = feature
         .scenarios
         .iter()
         .filter(|s| {
-            feature_deprecated || s.tags.iter().any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"))
+            feature_deprecated
+                || s.tags
+                    .iter()
+                    .any(|t| t.trim_start_matches('@').eq_ignore_ascii_case("deprecated"))
         })
         .map(|s| s.name.clone())
         .collect::<HashSet<String>>();
@@ -222,6 +237,8 @@ mod tests {
                     impl_mappings: vec![ImplMapping {
                         file: "i1.ts".into(),
                         lines: ImplLines::String("1-5".into()),
+                        first_line: None,
+                        last_line: None,
                         extra: Default::default(),
                     }],
                     extra: Default::default(),
@@ -253,6 +270,8 @@ mod tests {
                     impl_mappings: vec![ImplMapping {
                         file: "i.ts".into(),
                         lines: ImplLines::String("1-5".into()),
+                        first_line: None,
+                        last_line: None,
                         extra: Default::default(),
                     }],
                     extra: Default::default(),
@@ -267,6 +286,8 @@ mod tests {
                     impl_mappings: vec![ImplMapping {
                         file: "i.ts".into(),
                         lines: ImplLines::String("6-10".into()),
+                        first_line: None,
+                        last_line: None,
                         extra: Default::default(),
                     }],
                     extra: Default::default(),

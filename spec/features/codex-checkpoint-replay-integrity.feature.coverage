@@ -115,7 +115,9 @@
                 254,
                 255,
                 256
-              ]
+              ],
+              "firstLine": "return Err(CheckpointError::Lineage(\"prepared generation changed\").into());",
+              "lastLine": "if self.blocked.load(Ordering::Acquire) {"
             }
           ]
         }
@@ -131,23 +133,56 @@
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
-                140,
-                141,
-                142,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
                 188,
                 189,
                 190,
                 191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                199,
-                200,
-                201
-              ]
+                255,
+                256,
+                257,
+                258
+              ],
+              "firstLine": "fn promote_checked(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
@@ -159,7 +194,9 @@
                 173,
                 174,
                 175
-              ]
+              ],
+              "firstLine": ".map_err(|error| error.to_string())",
+              "lastLine": "self.routing.begin_turn();"
             }
           ]
         }
@@ -170,7 +207,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct080_checkpoint_replay.rs",
-          "lines": "177-224",
+          "lines": "177-223",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/history_replay.rs",
@@ -214,7 +251,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -222,7 +261,9 @@
                 199,
                 200,
                 201
-              ]
+              ],
+              "firstLine": "request: &mut Value,",
+              "lastLine": ") -> Result<(), CompletionError> {"
             }
           ]
         }
@@ -277,25 +318,77 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
-                140,
-                141,
-                142,
-                188,
-                189,
-                190,
-                191,
-                192,
                 193,
                 194,
                 195,
                 196,
-                197
-              ]
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253
+              ],
+              "firstLine": "pub fn prepare(&self, request: &mut Value) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -314,6 +407,6 @@
       "rust/providers/src/codex/session.rs",
       "rust/providers/src/codex/history_replay.rs"
     ],
-    "totalLinesCovered": 423
+    "totalLinesCovered": 501
   }
 }

@@ -114,21 +114,12 @@ fn scenario_add_aggregate_help_matches_ts_fixture() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI persists the aggregate but produces no output and exits 1
-//           (TS logger.success bug parity)
-//
-// The TS `.action()` renders its success line via `logger.success(...)`, but
-// the fspec Winston `logger` has only a FILE transport and NO `success`
-// level — so `logger.success(...)` throws a TypeError that is swallowed by
-// the surrounding try/catch (which then calls `logger.error(...)`, also
-// file-only, and `process.exit(1)`). Net observable TS behaviour for EVERY
-// add-aggregate invocation: stdout EMPTY, stderr EMPTY, exit 1 — even on
-// success. The aggregate IS still persisted (mutation precedes the throw).
-// The Rust bridge matches this byte-for-byte.
+// Scenario: CLI persists the aggregate, prints the success line and exits 0
+// (BUG-532: the TS logger.success bug, empty output and exit 1, is not kept)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_persists_aggregate_but_no_output_and_exits_1() {
+fn scenario_cli_persists_aggregate_prints_success_and_exits_0() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying
     let ws = tempfile::tempdir().expect("tempdir");
     write_work_units(ws.path(), &seed_unit("AUTH-001", "specifying"));
@@ -139,23 +130,14 @@ fn scenario_cli_persists_aggregate_but_no_output_and_exits_1() {
         &["AUTH-001", "Order", "--responsibilities", "Place,Cancel"],
     );
 
-    // @step Then the exit code is 1
-    assert_eq!(
-        code, 1,
-        "expected exit 1 (TS logger.success bug parity); stderr={stderr}"
-    );
+    // @step Then the exit code is 0
+    assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
-    // @step And stdout is empty
-    assert_eq!(
-        stdout, "",
-        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
-    );
+    // @step And stdout is '✓ Added aggregate "Order" to AUTH-001 (ID: 0)' followed by a newline
+    assert_eq!(stdout, "✓ Added aggregate \"Order\" to AUTH-001 (ID: 0)\n");
 
     // @step And stderr is empty
-    assert_eq!(
-        stderr, "",
-        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
-    );
+    assert_eq!(stderr, "", "stderr must be empty; got:\n{stderr}");
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 1
     let v = read_work_units(ws.path());
@@ -175,8 +157,7 @@ fn scenario_cli_persists_aggregate_but_no_output_and_exits_1() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI rejects a done work unit with exit 1 and no console output
-//           (TS logger file-only parity)
+// Scenario: CLI rejects a done work unit with exit 1 and an error on stderr
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
@@ -193,17 +174,12 @@ fn scenario_cli_rejects_done_work_unit_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stdout is empty
-    assert_eq!(
-        stdout, "",
-        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
-    );
+    assert_eq!(stdout, "", "stdout must be empty; got:\n{stdout}");
 
-    // @step And stderr is empty
-    // The TS error path calls `logger.error(...)` which writes ONLY to the
-    // log file — nothing reaches the console.
-    assert_eq!(
-        stderr, "",
-        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
+    // @step And stderr starts with '✗ Failed to add aggregate: '
+    assert!(
+        stderr.starts_with("✗ Failed to add aggregate: "),
+        "stderr must carry the failure; got:\n{stderr}"
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
@@ -235,20 +211,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "dispatcher path must succeed; got {result:?}"
     );
 
-    // @step And running `fspec add-aggregate AUTH-001 "A2"` afterwards exits 1 with no console output (TS logger.success bug parity)
+    // @step And running `fspec add-aggregate AUTH-001 "A2"` afterwards exits 0 and prints '✓ Added aggregate "A2" to AUTH-001 (ID: 1)'
     let (code, stdout, stderr) = run_add_aggregate(ws.path(), &["AUTH-001", "A2"]);
-    assert_eq!(
-        code, 1,
-        "CLI add exits 1 (TS logger.success bug parity); stdout={stdout}, stderr={stderr}"
-    );
-    assert_eq!(
-        stdout, "",
-        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
-    );
-    assert_eq!(
-        stderr, "",
-        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
-    );
+    assert_eq!(code, 0, "stdout={stdout}, stderr={stderr}");
+    assert_eq!(stdout, "✓ Added aggregate \"A2\" to AUTH-001 (ID: 1)\n");
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
     let v = read_work_units(ws.path());

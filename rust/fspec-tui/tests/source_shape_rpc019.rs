@@ -2,61 +2,66 @@
 //!
 //! Feature: spec/features/rpc019-source-shape.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
-fn workspace_codelet_dir() -> std::path::PathBuf {
+fn workspace_codelet_dir() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
     common::workspace_root()
 }
 
-fn fspec_tui_src() -> std::path::PathBuf {
-    workspace_codelet_dir().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(workspace_codelet_dir()?.join("fspec-tui").join("src"))
 }
 
-fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+fn read_raw(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    common::read_to_string_or_fail(path)
 }
 
-fn count_lines_path(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+fn count_lines_path(path: &std::path::Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(common::read_to_string_or_fail(path)?.lines().count())
 }
 
 /// Scenario: codelet workspace declares tui-textarea as a dep
 #[test]
-fn codelet_workspace_declares_tui_textarea_as_a_dep() {
+fn codelet_workspace_declares_tui_textarea_as_a_dep() -> TestResult {
     // @step Given rust/Cargo.toml after RPC-019 lands
-    let body = read_raw(&workspace_codelet_dir().join("Cargo.toml"));
+    let body = read_raw(&workspace_codelet_dir()?.join("Cargo.toml"))?;
     // @step Then the file contains the substring "tui-textarea ="
     assert!(
         body.contains("tui-textarea ="),
         "rust/Cargo.toml must declare tui-textarea as a workspace dep"
     );
+    Ok(())
 }
 
 /// Scenario: codelet-fspec-tui declares tui-textarea as a dep
 #[test]
-fn codelet_fspec_tui_declares_tui_textarea_as_a_dep() {
+fn codelet_fspec_tui_declares_tui_textarea_as_a_dep() -> TestResult {
     // @step Given rust/fspec-tui/Cargo.toml after RPC-019 lands
-    let body = read_raw(&workspace_codelet_dir().join("fspec-tui").join("Cargo.toml"));
+    let body = read_raw(
+        &workspace_codelet_dir()?
+            .join("fspec-tui")
+            .join("Cargo.toml"),
+    )?;
     // @step Then the file contains the substring "tui-textarea"
     assert!(
         body.contains("tui-textarea"),
         "rust/fspec-tui/Cargo.toml must depend on tui-textarea"
     );
+    Ok(())
 }
 
 /// Scenario: New MultiLineInput module exists with the documented surface
 #[test]
-fn new_multi_line_input_module_exists_with_the_documented_surface() {
+fn new_multi_line_input_module_exists_with_the_documented_surface() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-019 lands
-    let path = fspec_tui_src()
+    let path = fspec_tui_src()?
         .join("views")
         .join("agent")
         .join("multiline_input.rs");
     // @step Then the file rust/fspec-tui/src/views/agent/multiline_input.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
-    let body = read_raw(&path);
+    let body = read_raw(&path)?;
     // @step And the file contains the substring "pub struct MultiLineInput"
     assert!(body.contains("pub struct MultiLineInput"));
     // @step And the file contains the substring "pub enum InputEventOutcome"
@@ -67,19 +72,20 @@ fn new_multi_line_input_module_exists_with_the_documented_surface() {
     assert!(body.contains("Continued"));
     // @step And the file contains the substring "Ignored"
     assert!(body.contains("Ignored"));
+    Ok(())
 }
 
 /// Scenario: New ScrollbackList module exists with the documented surface
 #[test]
-fn new_scrollback_list_module_exists_with_the_documented_surface() {
+fn new_scrollback_list_module_exists_with_the_documented_surface() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-019 lands
-    let path = fspec_tui_src()
+    let path = fspec_tui_src()?
         .join("views")
         .join("agent")
         .join("scrollback.rs");
     // @step Then the file rust/fspec-tui/src/views/agent/scrollback.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
-    let body = read_raw(&path);
+    let body = read_raw(&path)?;
     // @step And the file contains the substring "pub struct ScrollbackList"
     assert!(body.contains("pub struct ScrollbackList"));
     // @step And the file contains the substring "pub struct ScrollState"
@@ -88,26 +94,31 @@ fn new_scrollback_list_module_exists_with_the_documented_surface() {
     assert!(body.contains("pub fn push"));
     // @step And the file contains the substring "stick_to_bottom"
     assert!(body.contains("stick_to_bottom"));
+    Ok(())
 }
 
 /// Scenario: AgentView orchestrator now wires the new widgets
 #[test]
-fn agent_view_orchestrator_now_wires_the_new_widgets() {
+fn agent_view_orchestrator_now_wires_the_new_widgets() -> TestResult {
     // @step Given rust/fspec-tui/src/views/agent.rs after RPC-019 lands
-    let body = read_raw(&fspec_tui_src().join("views").join("agent.rs"));
+    let body = read_raw(&fspec_tui_src()?.join("views").join("agent.rs"))?;
     // @step Then the file contains the substring "MultiLineInput"
     assert!(body.contains("MultiLineInput"));
     // @step And the file contains the substring "ScrollbackList"
     assert!(body.contains("ScrollbackList"));
     // @step And the file does NOT contain the substring "tui_input::Input"
     assert!(!body.contains("tui_input::Input"));
+    Ok(())
 }
 
 /// Scenario: Action enum gains four navigation variants
 #[test]
-fn action_enum_gains_four_navigation_variants() {
+fn action_enum_gains_four_navigation_variants() -> TestResult {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-019 lands
-    let body = read_raw(&fspec_tui_src().join("components").join("mod.rs"));
+    let body = codelet_test_helpers::source_composition::read_source(
+        &fspec_tui_src()?.join("components").join("mod.rs"),
+    )
+    .or_fail("resolve Action enum source")?;
     // @step Then the file contains the substring "HistoryPrev"
     assert!(body.contains("HistoryPrev"));
     // @step And the file contains the substring "HistoryNext"
@@ -116,21 +127,22 @@ fn action_enum_gains_four_navigation_variants() {
     assert!(body.contains("SessionPrev"));
     // @step And the file contains the substring "SessionNext"
     assert!(body.contains("SessionNext"));
+    Ok(())
 }
 
 /// Scenario: Every file under views/agent/ and views/agent.rs stays under 300 lines
 #[test]
-fn every_file_under_views_agent_stays_under_300_lines() {
+fn every_file_under_views_agent_stays_under_300_lines() -> TestResult {
     // @step Given the directory rust/fspec-tui/src/views/agent/ plus the views/agent.rs orchestrator
-    let agent_dir = fspec_tui_src().join("views").join("agent");
-    let orchestrator = fspec_tui_src().join("views").join("agent.rs");
+    let agent_dir = fspec_tui_src()?.join("views").join("agent");
+    let orchestrator = fspec_tui_src()?.join("views").join("agent.rs");
     // @step When a test counts the line-count of every .rs file
     let mut offenders: Vec<(std::path::PathBuf, usize)> = Vec::new();
-    for entry in std::fs::read_dir(&agent_dir).expect("agent dir") {
-        let entry = entry.expect("entry");
+    for entry in std::fs::read_dir(&agent_dir).or_fail("agent dir")? {
+        let entry = entry.or_fail("entry")?;
         let p = entry.path();
         if p.extension().and_then(|s| s.to_str()) == Some("rs") {
-            let n = count_lines_path(&p);
+            let n = count_lines_path(&p)?;
             if n >= 300 {
                 offenders.push((p.clone(), n));
             }
@@ -139,34 +151,39 @@ fn every_file_under_views_agent_stays_under_300_lines() {
     // @step Then every file in views/agent/ has fewer than 300 lines
     assert!(offenders.is_empty(), "files >= 300 lines: {offenders:?}");
     // @step And the orchestrator file views/agent.rs has fewer than 300 lines
-    let n = count_lines_path(&orchestrator);
+    let n = count_lines_path(&orchestrator)?;
     assert!(n < 300, "views/agent.rs has {n} lines, must be < 300");
+    Ok(())
 }
 
 /// Scenario: Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite
 #[test]
-fn views_do_not_directly_import_forbidden_crates() {
+fn views_do_not_directly_import_forbidden_crates() -> TestResult {
     // @step Given the directory rust/fspec-tui/src/views/ (including views/agent/) after RPC-019 lands
-    let views_dir = fspec_tui_src().join("views");
+    let views_dir = fspec_tui_src()?.join("views");
 
-    fn walk(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
-        for e in std::fs::read_dir(dir).expect("dir") {
-            let e = e.expect("entry");
+    fn walk(
+        dir: &std::path::Path,
+        out: &mut Vec<std::path::PathBuf>,
+    ) -> Result<(), codelet_test_helpers::TestError> {
+        for e in std::fs::read_dir(dir).or_fail("dir")? {
+            let e = e.or_fail("entry")?;
             let p = e.path();
             if p.is_dir() {
-                walk(&p, out);
+                walk(&p, out)?;
             } else if p.extension().and_then(|s| s.to_str()) == Some("rs") {
                 out.push(p);
             }
         }
+        Ok(())
     }
     let mut files = Vec::new();
-    walk(&views_dir, &mut files);
+    walk(&views_dir, &mut files)?;
 
     // @step When a test scans every *.rs file
     let mut violations: Vec<String> = Vec::new();
     for path in &files {
-        let body = read_raw(path);
+        let body = read_raw(path)?;
         // @step Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
         for needle in [
             "codelet_core::",
@@ -184,4 +201,5 @@ fn views_do_not_directly_import_forbidden_crates() {
         }
     }
     assert!(violations.is_empty(), "violations: {violations:?}");
+    Ok(())
 }

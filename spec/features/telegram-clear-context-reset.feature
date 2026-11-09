@@ -1,4 +1,6 @@
 @AGENT-022
+@telegram
+@bridge
 Feature: Clear context command for session reset
   """
   After clearing session, inject_context_reminders() must be called to restore AGENTS.md and environment system reminders

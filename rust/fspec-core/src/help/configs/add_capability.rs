@@ -43,11 +43,11 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "foundation.json not found",
-        fix: "undefined",
+        fix: "Run: fspec discover-foundation to create foundation.json.draft",
     },
     CommonError {
         error: "Capability already exists",
-        fix: "undefined",
+        fix: "Check existing capabilities in foundation.json or use a different name",
     },
 ];
 
@@ -57,10 +57,10 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const RELATED: &[&str] = &[
-    "fspec discover-foundation - Start foundation discovery process",
-    "fspec remove-capability - Remove capability from foundation",
-    "fspec add-persona - Add user persona to foundation",
-    "fspec update-foundation - Update foundation fields",
+    "discover-foundation - Start foundation discovery process",
+    "remove-capability - Remove capability from foundation",
+    "add-persona - Add user persona to foundation",
+    "update-foundation - Update foundation fields",
 ];
 
 const NOTES: &[&str] = &[
@@ -87,7 +87,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: &[],
     typical_workflow: Some(
-        "Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies capabilities,Add each capability: fspec add-capability \"name\" \"description\",Repeat for all capabilities,Finalize foundation: fspec discover-foundation --finalize",
+        "Start foundation discovery: fspec discover-foundation. AI analyzes codebase and identifies capabilities. Add each capability: fspec add-capability \"name\" \"description\". Repeat for all capabilities. Finalize foundation: fspec discover-foundation --finalize",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

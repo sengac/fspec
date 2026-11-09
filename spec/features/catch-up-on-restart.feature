@@ -1,5 +1,7 @@
 @done
 @SCHED-007
+@codelet
+@state-management
 Feature: Catch-Up on Restart
   """
   Create rust/napi/src/scheduler/catch_up.rs with run_catch_up function.
@@ -19,7 +21,7 @@ Feature: Catch-Up on Restart
     And lastRunAt is updated to the current time
 
   Scenario: Catch-up fires for a never-run schedule with a past due trigger
-    Given a schedule "new-check" with cron "*/5 * * * *" and no lastRunAt
+    Given a schedule "new-check" with an every-5-minutes cron and no lastRunAt
     When the scheduler starts and runs catch-up
     Then one catch-up job fires for "new-check"
 

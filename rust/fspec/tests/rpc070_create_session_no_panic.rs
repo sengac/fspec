@@ -1,49 +1,21 @@
-//! RPC-070 regression tests: `SessionManagerHandle::create_session` (and
-//! the other sync→async bridges in `rust/sessions/src/handle_impl.rs`)
-//! MUST NOT panic when invoked from inside a multi-thread tokio runtime
-//! worker (which is what the live tarpc dispatcher does).
+//! RPC-070 regression tests: `SessionManagerHandle::create_session` and the
+//! other sync→async bridges in `rust/sessions/src/handle_impl.rs` must not
+//! panic when invoked from a multi-thread tokio worker (the live tarpc
+//! dispatcher), where a bare `Handle::current().block_on(...)` panics with
+//! `Cannot start a runtime from within a runtime`.
 //!
 //! Feature: spec/features/rpc-070-create-session-no-panic.feature
 //!
-//! The pre-existing tests in `rust/sessions/tests/handle_impl.rs`
-//! never triggered the bug because `#[tokio::test]` defaults to a
-//! single-thread runtime and the test body is the outer future on that
-//! runtime — `Handle::current().block_on(...)` re-enters it cleanly.
-//!
-//! In production the tarpc handler IS the currently-polled future on a
-//! multi-thread worker, so `Handle::current().block_on(...)` panics
-//! with `Cannot start a runtime from within a runtime`. This file
-//! reproduces that context two ways:
-//!
-//!   1. `scenario_create_session_does_not_panic_on_multi_thread_worker`
-//!      – call the trait method directly from inside a
-//!      `#[tokio::test(flavor = "multi_thread")]` body. The test body
-//!      is itself a future polled by the multi-thread runtime, so the
-//!      bridge sees the exact nested-runtime conditions as production.
-//!
-//!   2. `scenario_create_session_over_embedded_tarpc_does_not_panic`
-//!      – wire a real `SessionManager` through `SharedFspecService` +
-//!      `EmbeddedTransport` and call `create_session` through the tarpc
-//!      client. This is the closest in-process mirror of the live
-//!      WS dispatcher path that the e2e repro test
-//!      (`e2e/rpc-068-work-agent-panic-repro.test.ts`) exercises end-to-end.
-//!
-//! Three source-shape scenarios additionally pin the file to use the
-//! `tokio::task::block_in_place(|| Handle::current().block_on(...))`
-//! idiom and to remove the redundant `Handle::try_current()` runtime
-//! construction inside `test_provider_connection`.
-//!
-//! ## How this would catch the regression
-//!
-//! Before the fix, `cargo test -p codelet-fspec --test rpc070_create_session_no_panic`
-//! crashes the worker with the captured backtrace. After the fix
-//! (block_in_place wrappers) the test passes silently. The shape
-//! scenarios also fail the build if anyone reverts the wrapper.
+//! Two runtime scenarios call the bridge from a multi-thread test body and over
+//! a real `EmbeddedTransport`; source-shape scenarios pin the
+//! `tokio::task::block_in_place(|| Handle::current().block_on(...))` idiom.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+mod handle_impl_source_support;
+mod runtime_data_dir_support;
+
 use std::fs;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -52,129 +24,18 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc::FspecServiceClient;
 use codelet_rpc_embedded::{EmbeddedTransport, SharedFspecService};
 use codelet_rpc_types::SessionId;
-use codelet_sessions::SessionManager;
+use handle_impl_source_support::{extract_method_body, read_handle_impl_src, strip_comments};
 use tarpc::context;
 use tempfile::tempdir;
-
-/// Workspace root (one level above `rust/fspec/`).
-fn workspace_root() -> PathBuf {
-    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest
-        .parent()
-        .and_then(|p| p.parent())
-        .map(PathBuf::from)
-        .expect("project root walk-up")
-}
-
-fn handle_impl_path() -> PathBuf {
-    workspace_root()
-        .join("rust")
-        .join("sessions")
-        .join("src")
-        .join("handle_impl.rs")
-}
-
-fn read_handle_impl_src() -> String {
-    let p = handle_impl_path();
-    fs::read_to_string(&p).unwrap_or_else(|e| panic!("read {}: {e}", p.display()))
-}
-
-/// Strip `//`, `///`, `//!` line comments and `/* … */` block comments
-/// from a Rust source body so source-shape assertions aren't fooled by
-/// the panic-prone idiom appearing inside rustdoc that *describes* the
-/// pattern. Mirrors `rust/fspec/tests/common/mod.rs::strip_comments`
-/// — duplicated here so this test binary stays standalone (no
-/// `mod common`).
-fn strip_comments(src: &str) -> String {
-    let mut out = String::with_capacity(src.len());
-    let mut chars = src.chars().peekable();
-    while let Some(c) = chars.next() {
-        if c == '/' {
-            match chars.peek() {
-                Some('/') => {
-                    chars.next();
-                    for ch in chars.by_ref() {
-                        if ch == '\n' {
-                            out.push('\n');
-                            break;
-                        }
-                    }
-                    continue;
-                }
-                Some('*') => {
-                    chars.next();
-                    let mut prev = ' ';
-                    for ch in chars.by_ref() {
-                        if prev == '*' && ch == '/' {
-                            break;
-                        }
-                        prev = ch;
-                    }
-                    continue;
-                }
-                _ => {}
-            }
-        }
-        out.push(c);
-    }
-    out
-}
-
-/// Slice out the body of the specified `fn NAME(` or `fn NAME<...>(`
-/// definition inside the `impl ... SessionManagerHandle for
-/// SessionManager { ... }` block (or a free function). Returns the
-/// substring from `fn NAME` up to the matching closing brace at
-/// indentation level four (i.e. the function's own closing brace).
-/// Light-weight brace-counter — sufficient for the shape assertions
-/// below, which only care about substring presence.
-fn extract_method_body<'src>(src: &'src str, fn_name: &str) -> &'src str {
-    let needle = format!("fn {fn_name}");
-    let mut search = 0usize;
-    let start = loop {
-        let rel = src[search..]
-            .find(&needle)
-            .unwrap_or_else(|| panic!("`{needle}` not found in handle_impl.rs"));
-        let abs = search + rel;
-        // Make sure the next character after `fn NAME` is `(` (no
-        // generics) or `<` (generics) — i.e. not an unrelated identifier
-        // prefix like `fn loop_block_on_helper`.
-        let after = src[abs + needle.len()..].chars().next().unwrap_or(' ');
-        if after == '(' || after == '<' {
-            break abs;
-        }
-        search = abs + needle.len();
-    };
-    // Find the opening brace of the body.
-    let body_start_rel = src[start..]
-        .find('{')
-        .unwrap_or_else(|| panic!("opening brace of `fn {fn_name}` not found"));
-    let body_start = start + body_start_rel;
-    // Walk braces to find the matching close.
-    let bytes = src.as_bytes();
-    let mut depth: i32 = 0;
-    let mut i = body_start;
-    while i < bytes.len() {
-        match bytes[i] {
-            b'{' => depth += 1,
-            b'}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return &src[start..=i];
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    panic!("did not find matching `}}` for `fn {fn_name}` body");
-}
 
 // =============================================================================
 // Scenario: create_session does not panic when invoked from a multi-thread
 // tokio runtime worker
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn scenario_create_session_does_not_panic_on_multi_thread_worker() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a tokio multi-thread runtime is active
     let flavor = tokio::runtime::Handle::current().runtime_flavor();
     assert_eq!(
@@ -184,8 +45,9 @@ async fn scenario_create_session_does_not_panic_on_multi_thread_worker() {
     );
 
     // @step And a fresh SessionManager wrapped as Arc<dyn SessionManagerHandle>
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+    let handle: Arc<dyn SessionManagerHandle> = runtime_data_dir_support::seeded_manager()
+        .expect("BUG-417 seeded data dir")
+        as Arc<dyn SessionManagerHandle>;
 
     // @step When the test calls handle.create_session(None) from inside the multi-thread runtime
     //
@@ -200,20 +62,20 @@ async fn scenario_create_session_does_not_panic_on_multi_thread_worker() {
     let join = tokio::spawn(async move {
         // Run inside an async future polled on the worker — this is
         // structurally identical to the tarpc dispatch path.
-        handle_for_blocking.create_session(None)
+        handle_for_blocking.create_session_checked(None)
     });
 
     // @step Then no thread panics with "Cannot start a runtime from within a runtime"
     let sid: SessionId = tokio::time::timeout(Duration::from_secs(5), join)
         .await
         .expect("create_session did not return within 5s")
-        .expect("create_session task panicked — RPC-070 regression");
+        .expect("create_session task panicked — RPC-070 regression")
+        .expect("the handle creates the session");
 
     // @step And the call returns a SessionId value
     //
-    // The inner SessionManager::create_session may legitimately return
-    // an empty id (no provider/credentials configured in the test env);
-    // the `.unwrap_or_default()` swallows the inner error. What we care
+    // Any creation failure (including no default model, BUG-410) is an Err
+    // and fails above. What we care
     // about for RPC-070 is the NO-PANIC invariant — proven by reaching
     // this assertion line at all.
     let _ = sid; // The value itself is unconstrained; reaching here is the assertion.
@@ -224,7 +86,9 @@ async fn scenario_create_session_does_not_panic_on_multi_thread_worker() {
 // without panicking
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn scenario_create_session_over_embedded_tarpc_does_not_panic() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a tokio multi-thread runtime is active
     assert_eq!(
         tokio::runtime::Handle::current().runtime_flavor(),
@@ -242,8 +106,9 @@ async fn scenario_create_session_over_embedded_tarpc_does_not_panic() {
     let watcher = Arc::new(WorkUnitsWatcher::new(dir.path()).expect("WorkUnitsWatcher"));
 
     // @step And a SharedFspecService built with a real SessionManager via with_session_manager
-    let session_manager: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+    let session_manager: Arc<dyn SessionManagerHandle> = runtime_data_dir_support::seeded_manager()
+        .expect("BUG-417 seeded data dir")
+        as Arc<dyn SessionManagerHandle>;
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&session_manager),
@@ -268,7 +133,8 @@ async fn scenario_create_session_over_embedded_tarpc_does_not_panic() {
     )
     .await
     .expect("client.create_session timed out — likely a tarpc worker panicked")
-    .expect("client.create_session returned an RpcError — RPC-070 regression");
+    .expect("client.create_session returned an RpcError — RPC-070 regression")
+    .expect("the daemon creates the session");
 
     // @step Then the RPC returns Ok(SessionId)
     let _sid: SessionId = result;
@@ -286,6 +152,7 @@ async fn scenario_create_session_over_embedded_tarpc_does_not_panic() {
 // =============================================================================
 #[test]
 fn scenario_every_block_on_is_wrapped_in_block_in_place() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the file rust/sessions/src/handle_impl.rs
     let src = read_handle_impl_src();
 
@@ -356,6 +223,7 @@ fn scenario_every_block_on_is_wrapped_in_block_in_place() {
 // =============================================================================
 #[test]
 fn scenario_test_provider_connection_uses_block_in_place() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the file rust/sessions/src/handle_impl.rs
     let src = read_handle_impl_src();
 
@@ -386,12 +254,13 @@ fn scenario_test_provider_connection_uses_block_in_place() {
 // This scenario is satisfied transitively: if the RPC-070 fix breaks
 // any of the three named tests, `cargo test --workspace` fails
 // independently of this file. We codify the invariant here by
-// re-running the same `Arc::new(SessionManager::new()) as Arc<dyn
+// re-running the same `SessionManager::new() as Arc<dyn
 // SessionManagerHandle>` cast that the original
 // `scenario_session_manager_satisfies_trait_object` validates, then
 // listing the three pre-existing tests as the canonical assertion path.
 #[test]
 fn scenario_pre_existing_handle_impl_tests_still_pass() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the RPC-070 fix is applied
     //
     // (Established by the workspace build that produces this test
@@ -403,11 +272,30 @@ fn scenario_pre_existing_handle_impl_tests_still_pass() {
     // is expensive and the outer `cargo test --workspace` already runs
     // those tests). Instead we duplicate the cheapest of the three
     // assertions to prove the trait surface still matches.
-    let manager = SessionManager::new();
-    let handle: Arc<dyn SessionManagerHandle> = Arc::new(manager) as Arc<dyn SessionManagerHandle>;
+    // The session listing reads the process-global data directory; set it
+    // here instead of relying on another test in this binary running first.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(codelet_common::set_data_directory),
+        Ok(())
+    );
+    let manager = codelet_sessions::SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    let handle: Arc<dyn SessionManagerHandle> = manager;
 
     // @step Then scenario_session_manager_satisfies_trait_object passes
-    let sessions = handle.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
+    let sessions = handle
+        .list_sessions(
+            &std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
+        )
+        .expect("list_sessions reads the session");
     assert!(
         sessions.is_empty(),
         "trait-object cast must still yield an empty list_sessions() — proves RPC-042 invariant held",

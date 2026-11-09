@@ -19,10 +19,8 @@
 //! Uses the MockBackend's scripted lazy-view payloads (BUG-184) so a
 //! LOADED pane can be driven end-to-end at the App level.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -34,6 +32,7 @@ use codelet_rpc_types::{ChangedFile, CheckpointCounts, CheckpointInfo, GitState}
 
 mod common;
 use common::MockBackend;
+use common::TaskOutcome;
 
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -73,18 +72,47 @@ fn diff_body(n: usize) -> String {
         .join("\n")
 }
 
+/// TUI-131: widths at which the Changed Files / Checkpoints footer hint
+/// fits on one row, so the list windows these tests reason about keep
+/// their size (a narrower view wraps the footer onto a second row).
+const CF_WIDTH: u16 = 110;
+const CP_WIDTH: u16 = 150;
+
 /// Paint the ChangedFiles view into a `(w x h)` test grid.
-fn render_cf(view: &mut ChangedFilesView, w: u16, h: u16) {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("term");
+fn render_cf(
+    view: &mut ChangedFilesView,
+    w: u16,
+    h: u16,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("term")?;
     term.draw(|f| view.render(f.area(), f.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
 }
 
 /// Paint the Checkpoints view into a `(w x h)` test grid.
-fn render_cp(view: &mut CheckpointsView, w: u16, h: u16) {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("term");
+fn render_cp(
+    view: &mut CheckpointsView,
+    w: u16,
+    h: u16,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("term")?;
     term.draw(|f| view.render(f.area(), f.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
+}
+
+/// BUG-657: bootstrap loads the checkpoint counts and the workspace info in
+/// a tracked background task; await the bootstrap's tasks, then fold what
+/// they sent.
+async fn settle_bootstrap(app: &mut App) -> TestResult {
+    while let Some(task) = app.next_pending_task() {
+        codelet_test_helpers::deadlock_guard("a bootstrap task", task)
+            .await?
+            .completed_or_cancelled()?;
+    }
+    drain_bus(app);
+    Ok(())
 }
 
 fn drain_bus(app: &mut App) {
@@ -93,16 +121,22 @@ fn drain_bus(app: &mut App) {
     }
 }
 
-async fn wait_for<F: Fn(&App) -> bool>(app: &mut App, pred: F, timeout: Duration) {
-    let deadline = std::time::Instant::now() + timeout;
-    while std::time::Instant::now() < deadline {
-        drain_bus(app);
-        if pred(app) {
-            return;
+async fn wait_for<F: Fn(&App) -> bool>(
+    app: &mut App,
+    pred: F,
+) -> Result<(), codelet_test_helpers::TestError> {
+    // TEST-042: wait under the deadlock guard, not a deadline.
+    codelet_test_helpers::deadlock_guard("the awaited App state", async {
+        loop {
+            drain_bus(app);
+            if pred(app) {
+                return;
+            }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-    panic!("timeout: condition did not become true within {timeout:?}");
+    })
+    .await?;
+    Ok(())
 }
 
 fn thirty_files() -> Vec<ChangedFile> {
@@ -117,21 +151,17 @@ fn thirty_files() -> Vec<ChangedFile> {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn steady_state_frame_matching_the_displayed_files_list_is_dropped_before_any_refetch() {
+async fn steady_state_frame_matching_the_displayed_files_list_is_dropped_before_any_refetch(
+) -> TestResult {
     // @step Given a mux layout with a loaded, displayed Changed Files pane displaying 30 files with file04.txt selected and the file list scrolled past the top
     let mock = Arc::new(MockBackend::new());
     mock.set_changed_files(thirty_files());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     app.dispatch(Action::OpenChangedFilesView);
-    wait_for(
-        &mut app,
-        |a| !a.navigator().changed_files.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().changed_files.load.is_loading()).await?;
     assert_eq!(
         app.navigator().changed_files.files_len(),
         30,
@@ -181,6 +211,7 @@ async fn steady_state_frame_matching_the_displayed_files_list_is_dropped_before_
         scroll_before,
         "a dropped no-op tick must not touch the scroll offset"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -189,8 +220,8 @@ async fn steady_state_frame_matching_the_displayed_files_list_is_dropped_before_
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn steady_state_frame_matching_the_displayed_checkpoints_list_is_dropped_before_any_refetch()
-{
+async fn steady_state_frame_matching_the_displayed_checkpoints_list_is_dropped_before_any_refetch(
+) -> TestResult {
     // @step Given a mux layout with a loaded, displayed Checkpoints pane displaying 5 checkpoints with the list scrolled past the top
     let mock = Arc::new(MockBackend::new());
     mock.set_checkpoints(vec![
@@ -203,15 +234,10 @@ async fn steady_state_frame_matching_the_displayed_checkpoints_list_is_dropped_b
     mock.set_checkpoint_files("BUG-184", "checkpoint-a", vec![cf("a.txt", false)]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     app.dispatch(Action::OpenCheckpointsView);
-    wait_for(
-        &mut app,
-        |a| !a.navigator().checkpoints.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().checkpoints.load.is_loading()).await?;
     assert_eq!(
         app.navigator().checkpoints.checkpoints_len(),
         5,
@@ -260,6 +286,7 @@ async fn steady_state_frame_matching_the_displayed_checkpoints_list_is_dropped_b
         !app.navigator().checkpoints.load.is_loading(),
         "a dropped no-op tick must not re-open the loading stage"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -268,15 +295,15 @@ async fn steady_state_frame_matching_the_displayed_checkpoints_list_is_dropped_b
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refresh_keeps_the_file_list_scroll_offset_when_files_above_the_window_disappear() {
+fn refresh_keeps_the_file_list_scroll_offset_when_files_above_the_window_disappear() -> TestResult {
     // @step Given a loaded Changed Files pane displaying 30 files with "file04.txt" selected and the list scrolled past the top
     let mut view = ChangedFilesView::new();
     view.set_files(thirty_files());
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     for _ in 0..4 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     assert_eq!(view.selected_path().as_deref(), Some("file04.txt"));
     let scroll = view.file_scroll();
     assert!(scroll > 0, "the list is scrolled");
@@ -300,6 +327,7 @@ fn refresh_keeps_the_file_list_scroll_offset_when_files_above_the_window_disappe
         scroll,
         "the scroll offset is the list point the user keeps"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -308,15 +336,15 @@ fn refresh_keeps_the_file_list_scroll_offset_when_files_above_the_window_disappe
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refresh_falls_back_to_the_top_when_the_list_shrinks_beneath_the_window() {
+fn refresh_falls_back_to_the_top_when_the_list_shrinks_beneath_the_window() -> TestResult {
     // @step Given a loaded Changed Files pane displaying 30 files scrolled to the bottom with "file29.txt" selected
     let mut view = ChangedFilesView::new();
     view.set_files(thirty_files());
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     for _ in 0..40 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     assert_eq!(view.selected_path().as_deref(), Some("file29.txt"));
     assert!(view.file_scroll() > 0, "the bottom window is scrolled");
 
@@ -339,6 +367,7 @@ fn refresh_falls_back_to_the_top_when_the_list_shrinks_beneath_the_window() {
         view.selected_index() < 3,
         "selection must lie inside the window"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -347,15 +376,15 @@ fn refresh_falls_back_to_the_top_when_the_list_shrinks_beneath_the_window() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refresh_clamps_the_file_list_scroll_when_the_selected_file_is_committed() {
+fn refresh_clamps_the_file_list_scroll_when_the_selected_file_is_committed() -> TestResult {
     // @step Given a loaded Changed Files pane displaying 30 files scrolled to the bottom with "file29.txt" selected
     let mut view = ChangedFilesView::new();
     view.set_files(thirty_files());
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     for _ in 0..40 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cf(&mut view, 80, 8);
+    render_cf(&mut view, CF_WIDTH, 8)?;
     assert_eq!(view.selected_path().as_deref(), Some("file29.txt"));
 
     // @step When a change-bearing git-state refresh lands a list in which file29.txt was committed (it no longer exists)
@@ -380,6 +409,7 @@ fn refresh_clamps_the_file_list_scroll_when_the_selected_file_is_committed() {
         26,
         "the window keeps its point (clamped to the last full page)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -388,7 +418,8 @@ fn refresh_clamps_the_file_list_scroll_when_the_selected_file_is_committed() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn refresh_clamps_the_checkpoint_list_scroll_when_the_selected_checkpoint_is_committed() {
+fn refresh_clamps_the_checkpoint_list_scroll_when_the_selected_checkpoint_is_committed(
+) -> TestResult {
     // @step Given a loaded Checkpoints pane displaying 30 checkpoints scrolled to the bottom with checkpoint-29 selected
     let mut view = CheckpointsView::new();
     view.set_checkpoints(
@@ -396,11 +427,11 @@ fn refresh_clamps_the_checkpoint_list_scroll_when_the_selected_checkpoint_is_com
             .map(|i| ci("BUG-184", &format!("checkpoint-{i:02}"), i % 2 == 0))
             .collect(),
     );
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, CP_WIDTH, 30)?;
     for _ in 0..40 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, CP_WIDTH, 30)?;
     assert_eq!(
         view.selected_checkpoint_info().map(|c| c.name.clone()),
         Some("checkpoint-29".to_string())
@@ -432,6 +463,7 @@ fn refresh_clamps_the_checkpoint_list_scroll_when_the_selected_checkpoint_is_com
         view.selected_checkpoint_info().map(|c| c.name.clone()),
         Some("checkpoint-20".to_string())
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -440,7 +472,7 @@ fn refresh_clamps_the_checkpoint_list_scroll_when_the_selected_checkpoint_is_com
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn cascade_same_key_reload_keeps_the_files_and_diff_panes_scrolled() {
+async fn cascade_same_key_reload_keeps_the_files_and_diff_panes_scrolled() -> TestResult {
     // @step Given a loaded Checkpoints pane with a checkpoint selected whose files list and diff are displayed and scrolled
     let mock = Arc::new(MockBackend::new());
     mock.set_checkpoints(vec![ci("BUG-184", "checkpoint-a", true)]);
@@ -452,15 +484,10 @@ async fn cascade_same_key_reload_keeps_the_files_and_diff_panes_scrolled() {
     mock.set_checkpoint_file_diff("BUG-184", "checkpoint-a", "a.txt", Some(diff_body(30)));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    drain_bus(&mut app);
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     app.dispatch(Action::OpenCheckpointsView);
-    wait_for(
-        &mut app,
-        |a| !a.navigator().checkpoints.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().checkpoints.load.is_loading()).await?;
     assert!(
         app.navigator().checkpoints.load.is_loaded(),
         "the cascade (list → files → diff) has flushed"
@@ -487,12 +514,7 @@ async fn cascade_same_key_reload_keeps_the_files_and_diff_panes_scrolled() {
             ci("BUG-184", "checkpoint-b", false),
         ],
     }));
-    wait_for(
-        &mut app,
-        |a| !a.navigator().checkpoints.load.is_loading(),
-        Duration::from_millis(500),
-    )
-    .await;
+    wait_for(&mut app, |a| !a.navigator().checkpoints.load.is_loading()).await?;
 
     // @step Then the Files pane keeps its scroll offset and selection
     assert_eq!(
@@ -518,10 +540,11 @@ async fn cascade_same_key_reload_keeps_the_files_and_diff_panes_scrolled() {
         app.navigator().checkpoints.load.is_loaded(),
         "the refreshed cascade settles without re-opening the dialog"
     );
+    Ok(())
 }
 
 #[test]
-fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() {
+fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() -> TestResult {
     // @step Given a loaded Checkpoints pane with a checkpoint selected whose files list and diff are displayed and scrolled
     let mut view = CheckpointsView::new();
     view.set_checkpoints(vec![ci("BUG-184", "checkpoint-a", true)]);
@@ -533,14 +556,14 @@ fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() {
             .collect(),
     );
     view.set_diff("BUG-184", "checkpoint-a", "file00.txt", Some(diff_body(40)));
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     // Files pane: move the selection down 12 rows (focus: Files pane;
     // 9 visible rows, so the scroll kicks in past row 8).
     let _ = view.handle_event(&key(KeyCode::Tab)); // Checkpoints → Files
     for _ in 0..12 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     assert_eq!(view.selected_file(), 12, "the files pane selection moved");
     assert!(view.file_scroll() > 0, "the files pane is scrolled");
     let file_scroll_before = view.file_scroll();
@@ -573,14 +596,14 @@ fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() {
     for _ in 0..12 {
         let _ = view.handle_event(&key(KeyCode::Up));
     }
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     assert_eq!(view.selected_file(), 0, "back on file00.txt");
     view.set_diff("BUG-184", "checkpoint-a", "file00.txt", Some(diff_body(40)));
     let _ = view.handle_event(&key(KeyCode::Tab)); // Files → Diff
     for _ in 0..20 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     let diff_scroll_before = view.diff_scroll();
     assert!(diff_scroll_before > 0, "the diff pane is scrolled");
     // A same-key re-load of a LONGER diff keeps the offset verbatim…
@@ -598,6 +621,7 @@ fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() {
         0,
         "the Diff pane scroll clamps to the fresh diff length"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -606,7 +630,7 @@ fn cascade_same_key_reload_keeps_the_scrolled_files_and_diff_pane_points() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn cascade_key_change_resets_the_files_and_diff_panes_to_the_top() {
+fn cascade_key_change_resets_the_files_and_diff_panes_to_the_top() -> TestResult {
     // @step Given a loaded Checkpoints pane with a checkpoint's files and diff displayed and scrolled
     let mut view = CheckpointsView::new();
     view.set_checkpoints(vec![
@@ -621,7 +645,7 @@ fn cascade_key_change_resets_the_files_and_diff_panes_to_the_top() {
             .collect(),
     );
     view.set_diff("BUG-184", "checkpoint-a", "file00.txt", Some(diff_body(40)));
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     let _ = view.handle_event(&key(KeyCode::Tab)); // Checkpoints → Files
     for _ in 0..12 {
         let _ = view.handle_event(&key(KeyCode::Down));
@@ -630,7 +654,7 @@ fn cascade_key_change_resets_the_files_and_diff_panes_to_the_top() {
     for _ in 0..20 {
         let _ = view.handle_event(&key(KeyCode::Down));
     }
-    render_cp(&mut view, 120, 30);
+    render_cp(&mut view, 120, 30)?;
     assert!(view.file_scroll() > 0, "the Files pane is scrolled");
     assert!(view.diff_scroll() > 0, "the Diff pane is scrolled");
 
@@ -662,4 +686,5 @@ fn cascade_key_change_resets_the_files_and_diff_panes_to_the_top() {
         0,
         "a key change resets the Diff pane scroll"
     );
+    Ok(())
 }

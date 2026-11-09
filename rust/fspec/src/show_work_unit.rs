@@ -16,7 +16,7 @@
 //! Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
 //! The CLI surface resolves project_root from CWD (parity with the TS
 //! `process.cwd()` default at `src/commands/show-work-unit.ts:67`). The
-//! clap subcommand exposes one REQUIRED positional `<WORK_UNIT_ID>` and one
+//! clap subcommand exposes one REQUIRED positional `<workUnitId>` and one
 //! `-f, --format <format>` flag — matching the TS Commander.js registration
 //! at `src/commands/show-work-unit.ts:468-475`.
 //!
@@ -38,10 +38,10 @@
 //!     clap validates before this module is reached, so we never see that
 //!     case here.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::show_work_unit;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
@@ -66,7 +66,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-
     // driven invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     // The dispatcher arg keys are camelCase — verified by the

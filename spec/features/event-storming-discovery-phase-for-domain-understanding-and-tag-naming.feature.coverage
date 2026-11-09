@@ -1,10 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "Capture domain events and create tags from Event Storm session",
-      "testMappings": []
-    },
-    {
       "name": "AI-guided Event Storming discovery with structured capture",
       "testMappings": []
     },
@@ -14,7 +10,7 @@
     }
   ],
   "stats": {
-    "totalScenarios": 3,
+    "totalScenarios": 2,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

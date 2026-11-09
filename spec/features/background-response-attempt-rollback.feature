@@ -1,3 +1,4 @@
+@BUG-582
 @phase-1
 @agent-core
 @provider-abstraction
@@ -14,18 +15,6 @@ Feature: Output consumers retract abandoned response attempts
   whose inspected output survives the rollback.
   """
 
-  Scenario: Background persistence excludes abandoned text and reasoning
-    Given earlier completed assistant output and a tool result
-    When a later response streams text and reasoning and is aborted
-    And a replacement response completes
-    Then persistence contains earlier output and tools and only replacement output
-    And subscribers receive attempt boundaries alongside live deltas
-
-  Scenario: Aborted output does not poison loop detection
-    Given a response attempt has nearly triggered repetition detection
-    When the attempt is aborted and replacement output repeats its words
-    Then the replacement is not interrupted by abandoned detector state
-
   Scenario: The UI retracts only the latest attempt while preserving streaming
     Given earlier assistant text and reasoning and a completed tool card
     When a later response streams text and reasoning
@@ -39,11 +28,6 @@ Feature: Output consumers retract abandoned response attempts
     When another response attempt appends to those blocks and is aborted
     Then the original block contents and streaming cursors are restored
     And an abort without another start changes nothing
-
-  Scenario: Attempt boundaries survive RPC serialization and bridge conversion
-    Given response attempt start and abort chunks
-    When the chunks are serialized and deserialized and converted for a bridge
-    Then both unit boundaries retain their identity
 
   Scenario: Aborting the inspected attempt closes its turn modal
     Given earlier completed output and an open turn modal showing a live response attempt

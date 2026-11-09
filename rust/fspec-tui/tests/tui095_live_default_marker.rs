@@ -7,8 +7,7 @@
 //! user pressed D on (live, no reopen) — mirroring the TS ThinkingLevelDialog.tsx
 //! onSetDefault + AgentView defaultLevel re-render loop.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -18,15 +17,17 @@ use codelet_fspec_tui::components::thinking_level_dialog::ThinkingLevelDialog;
 use codelet_fspec_tui::components::{Action, Component, EventResult};
 use codelet_rpc_types::{SessionId, ThinkingLevel};
 
-fn render_component_80x24<C: Component>(component: &mut C) -> Buffer {
+fn render_component_80x24<C: Component>(
+    component: &mut C,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             component.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 #[allow(dead_code)]
@@ -64,13 +65,13 @@ fn find_text(buf: &Buffer, needle: &str) -> Option<(u16, u16)> {
 }
 
 /// The full text of the row (y) that contains `label`.
-fn row_containing(buf: &Buffer, label: &str) -> String {
-    let (_, y) = find_text(buf, label).unwrap_or_else(|| panic!("{label} present"));
+fn row_containing(buf: &Buffer, label: &str) -> Result<String, codelet_test_helpers::TestError> {
+    let (_, y) = find_text(buf, label).or_fail(&format!("{label} present"))?;
     let mut row = String::new();
     for x in 0..buf.area.width {
         row.push_str(buf[(x, y)].symbol());
     }
-    row
+    Ok(row)
 }
 
 fn key_event(code: KeyCode) -> Event {
@@ -83,7 +84,8 @@ fn key_event(code: KeyCode) -> Event {
 }
 
 fn dialog(current: ThinkingLevel, default: Option<ThinkingLevel>) -> ThinkingLevelDialog {
-    ThinkingLevelDialog::new(SessionId::new("tui095"), current).with_default_level(default)
+    ThinkingLevelDialog::new(SessionId::new("tui095"), current, four_levels())
+        .with_default_level(default)
 }
 
 /// Count how many rendered rows contain the substring "(default)".
@@ -103,65 +105,79 @@ fn default_marker_row_count(buf: &Buffer) -> usize {
 
 /// Scenario: Pressing D moves the (default) marker to the selected row live
 #[test]
-fn pressing_d_moves_default_marker_to_selected_row_live() {
+fn pressing_d_moves_default_marker_to_selected_row_live() -> TestResult {
     // @step Given a ThinkingLevelDialog seeded with current level Off and default level Medium
-    let mut d = dialog(ThinkingLevel::Off, Some(ThinkingLevel::Medium));
+    let mut d = dialog(
+        ThinkingLevel::Off,
+        Some(ThinkingLevel::Effort("medium".to_string())),
+    );
     // @step And I navigate the selection down to the High row
     // Off (index 0) -> High (index 3): 3 Downs
     let _ = d.handle_event(&key_event(KeyCode::Down));
     let _ = d.handle_event(&key_event(KeyCode::Down));
     let _ = d.handle_event(&key_event(KeyCode::Down));
-    assert_eq!(d.selected_level(), ThinkingLevel::High);
+    assert_eq!(
+        d.selected_level(),
+        Some(ThinkingLevel::Effort("high".to_string()))
+    );
     // @step When I send a KeyCode::Char('d') event
     let _ = d.handle_event(&key_event(KeyCode::Char('d')));
     // @step And I render it onto an 80x24 TestBackend buffer
-    let buf = render_component_80x24(&mut d);
+    let buf = render_component_80x24(&mut d)?;
     // @step Then the High row reads "(default)"
-    let high_row = row_containing(&buf, "High");
+    let high_row = row_containing(&buf, "high")?;
     assert!(
         high_row.contains("(default)"),
         "High row must read (default) after pressing D, got {high_row:?}"
     );
     // @step And the Medium row no longer reads "(default)"
-    let medium_row = row_containing(&buf, "Medium");
+    let medium_row = row_containing(&buf, "medium")?;
     assert!(
         !medium_row.contains("(default)"),
         "Medium row must no longer read (default), got {medium_row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Pressing D sets the marker when no default was previously set
 #[test]
-fn pressing_d_sets_marker_when_no_default_was_set() {
+fn pressing_d_sets_marker_when_no_default_was_set() -> TestResult {
     // @step Given a ThinkingLevelDialog seeded with current level Off and default level None
     let mut d = dialog(ThinkingLevel::Off, None);
     // @step And I navigate the selection down to the Low row
     // Off (index 0) -> Low (index 1): 1 Down
     let _ = d.handle_event(&key_event(KeyCode::Down));
-    assert_eq!(d.selected_level(), ThinkingLevel::Low);
+    assert_eq!(
+        d.selected_level(),
+        Some(ThinkingLevel::Effort("low".to_string()))
+    );
     // @step When I send a KeyCode::Char('d') event
     let _ = d.handle_event(&key_event(KeyCode::Char('d')));
     // @step And I render it onto an 80x24 TestBackend buffer
-    let buf = render_component_80x24(&mut d);
+    let buf = render_component_80x24(&mut d)?;
     // @step Then the Low row reads "(default)"
-    let low_row = row_containing(&buf, "Low");
+    let low_row = row_containing(&buf, "low")?;
     assert!(
         low_row.contains("(default)"),
         "Low row must read (default) after pressing D, got {low_row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Pressing D on the row that is already default is idempotent
 #[test]
-fn pressing_d_on_already_default_row_is_idempotent() {
+fn pressing_d_on_already_default_row_is_idempotent() -> TestResult {
     // @step Given a ThinkingLevelDialog seeded with current level High and default level High
-    let mut d = dialog(ThinkingLevel::High, Some(ThinkingLevel::High));
+    let mut d = dialog(
+        ThinkingLevel::Effort("high".to_string()),
+        Some(ThinkingLevel::Effort("high".to_string())),
+    );
     // @step When I send a KeyCode::Char('d') event
     let _ = d.handle_event(&key_event(KeyCode::Char('d')));
     // @step And I render it onto an 80x24 TestBackend buffer
-    let buf = render_component_80x24(&mut d);
+    let buf = render_component_80x24(&mut d)?;
     // @step Then the High row reads "(default)"
-    let high_row = row_containing(&buf, "High");
+    let high_row = row_containing(&buf, "high")?;
     assert!(
         high_row.contains("(default)"),
         "High row must still read (default), got {high_row:?}"
@@ -172,29 +188,37 @@ fn pressing_d_on_already_default_row_is_idempotent() {
         1,
         "exactly one row (the High row) must read (default)"
     );
+    Ok(())
 }
 
 /// Scenario: Navigating after D keeps the marker on the chosen row while only the highlight moves
 #[test]
-fn navigating_after_d_keeps_marker_on_chosen_row() {
+fn navigating_after_d_keeps_marker_on_chosen_row() -> TestResult {
     // @step Given a ThinkingLevelDialog seeded with current level Off and default level Medium
-    let mut d = dialog(ThinkingLevel::Off, Some(ThinkingLevel::Medium));
+    let mut d = dialog(
+        ThinkingLevel::Off,
+        Some(ThinkingLevel::Effort("medium".to_string())),
+    );
     // @step And I navigate the selection down to the High row
     // Off (index 0) -> High (index 3): 3 Downs
     let _ = d.handle_event(&key_event(KeyCode::Down));
     let _ = d.handle_event(&key_event(KeyCode::Down));
     let _ = d.handle_event(&key_event(KeyCode::Down));
-    assert_eq!(d.selected_level(), ThinkingLevel::High);
+    assert_eq!(
+        d.selected_level(),
+        Some(ThinkingLevel::Effort("high".to_string()))
+    );
     // @step And I send a KeyCode::Char('d') event
     let _ = d.handle_event(&key_event(KeyCode::Char('d')));
-    // @step When I send a KeyCode::Down event to move the selection to the Off row
-    // High (index 3) + 1 wraps to index 0 = Off
+    // @step When I send two KeyCode::Down events to move the selection past Model default to the Off row
+    // BUG-455: High (index 3) -> Model default (index 4) -> wraps to Off.
     let _ = d.handle_event(&key_event(KeyCode::Down));
-    assert_eq!(d.selected_level(), ThinkingLevel::Off);
+    let _ = d.handle_event(&key_event(KeyCode::Down));
+    assert_eq!(d.selected_level(), Some(ThinkingLevel::Off));
     // @step And I render it onto an 80x24 TestBackend buffer
-    let buf = render_component_80x24(&mut d);
+    let buf = render_component_80x24(&mut d)?;
     // @step Then the Off row begins with the "▸" selection marker
-    let (off_x, off_y) = find_text(&buf, "Off").expect("Off row present");
+    let (off_x, off_y) = find_text(&buf, "Off").or_fail("Off row present")?;
     // The marker sits two cells before the label start (mirrors tui094/rpc027).
     let marker_x = off_x - 2;
     assert_eq!(
@@ -203,41 +227,60 @@ fn navigating_after_d_keeps_marker_on_chosen_row() {
         "Off row must begin with the ▸ selection marker"
     );
     // @step And the High row still reads "(default)"
-    let high_row = row_containing(&buf, "High");
+    let high_row = row_containing(&buf, "high")?;
     assert!(
         high_row.contains("(default)"),
         "High row must still carry (default) after navigating away, got {high_row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Pressing D emits SetThinkingLevelDefault and keeps the dialog open
 #[test]
-fn pressing_d_emits_set_default_and_keeps_dialog_open() {
+fn pressing_d_emits_set_default_and_keeps_dialog_open() -> TestResult {
     // @step Given a ThinkingLevelDialog seeded with current level Off and default level None
     let mut d = dialog(ThinkingLevel::Off, None);
     // @step And I navigate the selection down to the Medium row
     // Off (index 0) -> Medium (index 2): 2 Downs
     let _ = d.handle_event(&key_event(KeyCode::Down));
     let _ = d.handle_event(&key_event(KeyCode::Down));
-    assert_eq!(d.selected_level(), ThinkingLevel::Medium);
+    assert_eq!(
+        d.selected_level(),
+        Some(ThinkingLevel::Effort("medium".to_string()))
+    );
     // @step When I send a KeyCode::Char('d') event
     let result = d.handle_event(&key_event(KeyCode::Char('d')));
     // @step Then the dialog emits Action::SetThinkingLevelDefault with the Medium level
     let action = d
         .take_pending_action()
-        .expect("D must emit a pending action");
+        .or_fail("D must emit a pending action")?;
     match action {
         Action::SetThinkingLevelDefault(_sid, level) => {
-            assert_eq!(level, ThinkingLevel::Medium);
+            assert_eq!(level, ThinkingLevel::Effort("medium".to_string()));
         }
-        other => panic!("expected SetThinkingLevelDefault, got {other:?}"),
+        other => return Err(format!("expected SetThinkingLevelDefault, got {other:?}").into()),
     }
     // @step And handle_event returns EventResult::Consumed without closing the dialog
     match result {
         EventResult::Consumed(None) => {}
         EventResult::Consumed(Some(_)) => {
-            panic!("D must NOT supply a remove-callback — dialog stays open")
+            return Err("D must NOT supply a remove-callback — dialog stays open".into())
         }
-        EventResult::Ignored(_) => panic!("D must be consumed"),
+        EventResult::Ignored(_) => return Err("D must be consumed".into()),
+    }
+    Ok(())
+}
+
+/// MODEL-011: a model offering Off and the efforts low, medium and high.
+fn four_levels() -> codelet_rpc_types::ThinkingOptions {
+    codelet_rpc_types::ThinkingOptions::Levels {
+        model: "test/model".to_string(),
+        choices: vec![
+            codelet_rpc_types::ThinkingChoice::Off,
+            codelet_rpc_types::ThinkingChoice::Effort("low".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("medium".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("high".to_string()),
+        ],
+        takes_off: true,
     }
 }

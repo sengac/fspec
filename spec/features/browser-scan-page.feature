@@ -1,4 +1,5 @@
-@EXT-012
+@browser
+@web-tools
 Feature: AI-Optimized DOM Element Location for WebMCP Browser Control
   """
   Scanning script runs via chrome.scripting.executeScript in ISOLATED world (shares DOM, not JS). Uses TreeWalker for O(n) traversal. Generates unique CSS selectors using id, data attributes, nth-child fallback. Results returned as JSON via InjectionResult.

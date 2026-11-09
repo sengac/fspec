@@ -14,8 +14,7 @@
 //! feature scenario; supplementary to the view-level tests in
 //! `view_agent_popups_rpc020.rs`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
@@ -42,13 +41,16 @@ fn seed_session(app: &mut App) {
 
 /// Scenario: Pressing Enter on /help pushes the HelpDialog onto the Compositor at Priority::Critical
 #[test]
-fn dispatch_help_pushes_help_dialog_at_priority_critical() {
+fn dispatch_help_pushes_help_dialog_at_priority_critical() -> TestResult {
     // @step Given an App with an AgentView whose slash popup is open with "/help" highlighted
     let (mut app, _mock) = fresh_app();
     assert!(!app.compositor().contains("help-dialog"));
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Help));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Help,
+    ));
 
     // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Help)
     // (Action is dispatched directly above; the routing under test is
@@ -61,11 +63,12 @@ fn dispatch_help_pushes_help_dialog_at_priority_critical() {
         app.compositor().topmost_priority(),
         Some(Priority::Critical)
     );
+    Ok(())
 }
 
 /// Scenario: Pressing Enter on /clear resets the AgentView scrollback and input
 #[test]
-fn dispatch_clear_resets_scrollback_and_input() {
+fn dispatch_clear_resets_scrollback_and_input() -> TestResult {
     // @step Given an AgentView whose scrollback has 5 chunks
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app);
@@ -73,9 +76,10 @@ fn dispatch_clear_resets_scrollback_and_input() {
         let ctx = app
             .agent_view_store_mut()
             .current_session_context_mut()
-            .expect("current ctx");
+            .or_fail("current ctx")?;
         for _ in 0..5 {
             ctx.scrollback.push(RenderedChunk {
+                row_ends: Vec::new(),
                 seq: 0,
                 lines: vec![Line::from("x")],
                 source: None,
@@ -87,7 +91,10 @@ fn dispatch_clear_resets_scrollback_and_input() {
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 5);
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Clear));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Clear,
+    ));
 
     // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Clear)
     // (Action is dispatched directly above; this test asserts the
@@ -97,17 +104,21 @@ fn dispatch_clear_resets_scrollback_and_input() {
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     // @step And the MultiLineInput's buffer is empty
     assert!(app.navigator().agent.input.is_empty());
+    Ok(())
 }
 
 /// Scenario: Pressing Enter on /quit emits Action::Quit
 #[test]
-fn dispatch_quit_flips_should_quit() {
+fn dispatch_quit_flips_should_quit() -> TestResult {
     // @step Given an AgentView whose slash popup is open with "/quit" highlighted
     let (mut app, _mock) = fresh_app();
     assert!(!app.should_quit());
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Quit));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Quit,
+    ));
 
     // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Quit)
     // (Action is dispatched directly above; this test asserts the
@@ -115,6 +126,7 @@ fn dispatch_quit_flips_should_quit() {
 
     // @step And dispatching that action sets App.should_quit to true
     assert!(app.should_quit());
+    Ok(())
 }
 
 /// Scenario: Pressing Enter on /isolation opens the CreateSessionDialog
@@ -126,35 +138,37 @@ fn dispatch_quit_flips_should_quit() {
 /// option highlighted. The probe needs a runtime, so this is an async
 /// test.
 #[tokio::test]
-async fn dispatch_unimplemented_command_emits_scrollback_notice() {
+async fn dispatch_unimplemented_command_emits_scrollback_notice() -> TestResult {
     use codelet_fspec_tui::CreateSessionOption;
     // @step Given an AgentView whose slash popup is open with "/isolation" highlighted
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app);
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Isolation));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Isolation,
+    ));
 
     // @step Then App::dispatch emits Action::OpenCreateSessionDialog { preselect: Some(Isolated) }
     // (SessionCreated queued a ModelInfoLoaded probe first — drain it.)
-    let mut action = None;
-    for _ in 0..100 {
-        while let Some(a) = app.try_recv_action() {
-            if matches!(a, Action::OpenCreateSessionDialog { .. }) {
-                action = Some(a);
+    // TEST-042: wait for the action itself under the deadlock guard.
+    let action = codelet_test_helpers::deadlock_guard("OpenCreateSessionDialog", async {
+        loop {
+            while let Some(a) = app.try_recv_action() {
+                if matches!(a, Action::OpenCreateSessionDialog { .. }) {
+                    return a;
+                }
             }
+            tokio::task::yield_now().await;
         }
-        if action.is_some() {
-            break;
-        }
-        tokio::time::sleep(std::time::Duration::from_millis(5)).await;
-    }
-    let action = action.expect("OpenCreateSessionDialog should be queued");
+    })
+    .await?;
     match action {
         Action::OpenCreateSessionDialog { preselect } => {
             assert_eq!(preselect, Some(CreateSessionOption::Isolated));
         }
-        other => panic!("expected OpenCreateSessionDialog, got {other:?}"),
+        other => return Err(format!("expected OpenCreateSessionDialog, got {other:?}").into()),
     }
 
     // @step And the scrollback receives NO `[notice] /isolation not yet
@@ -164,6 +178,7 @@ async fn dispatch_unimplemented_command_emits_scrollback_notice() {
         0,
         "/isolation should not emit a [notice] scrollback chunk anymore"
     );
+    Ok(())
 }
 
 /// Supplementary App-level routing test for the internal
@@ -176,7 +191,7 @@ async fn dispatch_unimplemented_command_emits_scrollback_notice() {
 /// `view_agent_popups_rpc020.rs`, which set popup matches synchronously
 /// via `set_file_search_results` rather than through Action dispatch.
 #[tokio::test]
-async fn dispatch_file_search_results_folds_into_popup() {
+async fn dispatch_file_search_results_folds_into_popup() -> TestResult {
     let (mut app, _mock) = fresh_app();
     // Open a file popup by typing "@" through the view's handle_event.
     use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -198,7 +213,8 @@ async fn dispatch_file_search_results_folds_into_popup() {
         .agent
         .file_popup
         .as_ref()
-        .expect("file popup still open");
+        .or_fail("file popup still open")?;
     assert_eq!(popup.match_count(), 2);
     assert_eq!(popup.matches()[0], "README.md");
+    Ok(())
 }

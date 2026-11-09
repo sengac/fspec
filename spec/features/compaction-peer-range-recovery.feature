@@ -1,3 +1,4 @@
+@BUG-474
 @cli
 @done
 @BUG-233
@@ -29,7 +30,7 @@ Feature: Compaction peer range recovery
     Given every generated candidate contains conflicting peer ranges
     When the production summary handoff exhausts three candidate attempts
     Then failure identifies the conflicting depth ranges target operation and attempt
-    And durable originals and committed memory remain unchanged with ordinary inference blocked
+    And durable originals and committed memory remain unchanged and ordinary inference is not blocked
 
   Scenario: Arbitrary inclusive peers preserve strict hierarchy validation
     Given arbitrary persisted inclusive range endpoints

@@ -38,7 +38,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "#[derive(Debug)]",
+              "lastLine": "None => COMPACTION_INSTRUCTION_FRESH.to_owned(),"
             }
           ]
         }
@@ -85,7 +87,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "#[derive(Debug)]",
+              "lastLine": "Some(prompt) => format!(\"{instruction}\\n\\nAfter building the DAG and calling inject_summary, resume working on:\\n{prompt}\"),"
             }
           ]
         }

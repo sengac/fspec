@@ -1,7 +1,9 @@
+@BUG-638
 @done
 @RPC-247
 @rust
 @cli
+@list
 Feature: List hooks CLI subcommand
   """
   CLI subcommand is wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_hooks::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
@@ -33,25 +35,18 @@ Feature: List hooks CLI subcommand
     Then stdout does NOT contain the substring '--event'
     Then stdout does NOT contain the substring '--workspace'
 
-  Scenario: CLI against empty directory writes zero bytes to stdout and does not auto-create files
+  Scenario: CLI against an empty directory prints that no hooks are configured and creates no files
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./rust/target/release/fspec list-hooks` from that directory
     Then the command exits 0
     Then spec/fspec-hooks.json was NOT created in the directory
-    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
+    Then stdout is exactly 'No hooks are configured' and a newline
 
-  Scenario: CLI writes zero bytes to stdout regardless of populated hooks (TS Commander.js action discards result)
+  Scenario: CLI prints the configured hooks in file order
     Given spec/fspec-hooks.json contains event 'pre-implementing' with hooks ['lint'] and event 'post-implementing' with hooks ['test', 'notify'] in that order
     When I run `./rust/target/release/fspec list-hooks`
     Then the command exits 0
-    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
-
-  Scenario: CLI exits 0 with zero stdout bytes when spec/fspec-hooks.json contains invalid JSON
-    Given spec/fspec-hooks.json exists in the working directory but contains invalid JSON syntax
-    When I run `./rust/target/release/fspec list-hooks`
-    Then the command exits 0
-    Then stderr does NOT contain the substring 'Error:'
-    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result on the swallowed-error path)
+    Then stdout lists 'pre-implementing:' with '  - lint' then 'post-implementing:' with '  - test' and '  - notify' under 'Configured Hooks:'
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has list-hooks registered as a clap subcommand alongside daemon, client, status, list-work-units, and list-prefixes

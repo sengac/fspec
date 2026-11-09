@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @tui
 @RPC-057
 @rpc
 @rust
 @source-shape
+@multi-session
 Feature: /merge-worktree RPC surface source shape
   """
   Pin the source-shape contract that downstream slices in RPC-030 depend on:
@@ -63,7 +65,7 @@ Feature: /merge-worktree RPC surface source shape
     Then it declares a trait method named "merge_session_worktree" returning Result<MergeOutcome, String>
     And it declares a trait method named "discard_session_worktree" returning Result<(), String>
     And it declares a trait method named "prune_orphaned_worktrees" returning Result<Vec<String>, String>
-    And it declares a trait method named "list_session_worktrees" returning Vec<SessionWorktreeInfo>
+    And it declares a trait method named "list_session_worktrees" returning Result<Vec<SessionWorktreeInfo>, String>
     And it declares a trait method named "inspect_session_changes" returning Result<SessionChangesSummary, String>
 
   Scenario: StubSessionManagerHandle exposes per-call counters for all five methods
@@ -79,7 +81,7 @@ Feature: /merge-worktree RPC surface source shape
     Then it declares an async fn named "merge_session_worktree" with return type Result<MergeOutcome, String>
     And it declares an async fn named "discard_session_worktree" with return type Result<(), String>
     And it declares an async fn named "prune_orphaned_worktrees" with return type Result<Vec<String>, String>
-    And it declares an async fn named "list_session_worktrees" with return type Vec<SessionWorktreeInfo>
+    And it declares an async fn named "list_session_worktrees" with return type Result<Vec<SessionWorktreeInfo>, String>
     And it declares an async fn named "inspect_session_changes" with return type Result<SessionChangesSummary, String>
 
   Scenario: FspecBackend declares the five new methods

@@ -51,8 +51,11 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((data_dir, manager))
 }
 
@@ -83,18 +86,20 @@ async fn failed_session_creation_leaves_no_orphaned_manifest() -> Result<(), Str
     // @step And the default model is set to a model NOT present in the registry
     // (passes parse_model_string but fails provider resolution in
     //  create_background_session_inner)
-    manager.set_default_model("anthropic/does-not-exist-model");
+    manager.set_default_model("anthropic/does-not-exist-model")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let outcome = handle.create_session_checked(None);
 
-    // @step Then the returned session id value is empty (creation declined)
-    assert!(
-        sid.value.is_empty(),
-        "create_session must return an empty id when provider resolution fails, got '{}'",
-        sid.value
-    );
+    // @step Then session creation fails with an error
+    // BUG-399: the failure is an Err, never an empty id.
+    if let Ok(sid) = outcome {
+        return Err(format!(
+            "create_session_checked must fail when provider resolution fails, got '{}'",
+            sid.value
+        ));
+    }
 
     // @step And no orphaned session manifest is persisted to disk
     assert_eq!(
@@ -122,17 +127,14 @@ async fn successful_session_creation_persists_manifest() -> Result<(), String> {
     let (data_dir, manager) = manager_with_seeded_cache()?;
 
     // @step And the default model is set to a model present in the registry
-    manager.set_default_model("anthropic/claude-opus-4-5");
+    manager.set_default_model("anthropic/claude-opus-4-5")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
 
-    // @step Then the returned session id value is not empty
-    assert!(
-        !sid.value.is_empty(),
-        "create_session must succeed with a valid registry model"
-    );
+    // @step Then the session is created
+    manager.get_session(&sid.value)?;
 
     // @step And exactly one session manifest is persisted to disk
     assert_eq!(
@@ -154,17 +156,20 @@ async fn malformed_model_string_leaves_no_orphaned_manifest() -> Result<(), Stri
     let (data_dir, manager) = manager_with_seeded_cache()?;
 
     // @step And the default model is a malformed string (no '/')
-    manager.set_default_model("malformed-model-no-slash");
+    manager.set_default_model("malformed-model-no-slash")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let outcome = handle.create_session_checked(None);
 
-    // @step Then the returned session id value is empty
-    assert!(
-        sid.value.is_empty(),
-        "create_session must return an empty id for a malformed model string"
-    );
+    // @step Then session creation fails with an error
+    // BUG-399: the failure is an Err, never an empty id.
+    if let Ok(sid) = outcome {
+        return Err(format!(
+            "create_session_checked must fail for a malformed model string, got '{}'",
+            sid.value
+        ));
+    }
 
     // @step And no orphaned session manifest is persisted to disk
     assert_eq!(

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-015
 @rust
@@ -7,6 +8,7 @@
 @file-structure
 @rpc
 @header
+@BUG-300
 Feature: RPC-015 source-shape regressions — header widgets + shared CheckpointCounts type
   """
   RPC-015 (slice 3 of 3) — Source-shape regressions pin the file layout and
@@ -16,7 +18,7 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
   carries `pub manual: u32` + `pub auto: u32` fields plus the napi cfg
   attribute for cross-binding parity.
   - The FspecService trait in rust/rpc/src/lib.rs gains the new
-  `async fn checkpoint_counts() -> CheckpointCounts` method.
+  `async fn checkpoint_counts() -> Result<CheckpointCounts, String>` method.
   - The NAPI surface gains an additive `pub fn count_checkpoints` export
   in rust/napi/src/git.rs that delegates to the shared
   `codelet_git::ghost_commit::count_checkpoints` helper.
@@ -58,7 +60,7 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
   Scenario: FspecService trait gains the checkpoint_counts RPC method
     Given rust/rpc/src/lib.rs after RPC-015 lands
     When a developer reads the file source raw
-    Then the file contains the substring "async fn checkpoint_counts() -> CheckpointCounts"
+    Then the file contains the substring "async fn checkpoint_counts() -> Result<CheckpointCounts, String>"
 
   Scenario: FspecBackend trait gains the checkpoint_counts method
     Given rust/fspec-tui/src/transport/mod.rs after RPC-015 lands
@@ -70,12 +72,6 @@ Feature: RPC-015 source-shape regressions — header widgets + shared Checkpoint
     Given rust/fspec-tui/src/components/mod.rs after RPC-015 lands
     When a developer reads the file source raw
     Then the file contains the substring "CheckpointCountsLoaded"
-
-  Scenario: NAPI surface exposes the additive count_checkpoints export
-    Given rust/napi/src/git.rs after RPC-015 lands
-    When a developer reads the file source raw
-    Then the file contains the substring "pub fn count_checkpoints"
-    And the file contains the substring "codelet_git::ghost_commit::count_checkpoints"
 
   Scenario: RPC-013 / RPC-014 invariants preserved
     Given rust/fspec-tui/src/views/navigator.rs after RPC-015 lands

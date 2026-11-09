@@ -69,8 +69,9 @@ fn blocking_callback(
 {
     Box::new(move |_authorize_url: String| {
         Box::pin(async move {
-            // Block indefinitely — will be cancelled by timeout
-            tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+            // Block indefinitely — will be cancelled by timeout (TEST-042:
+            // pending, not a long sleep).
+            std::future::pending::<()>().await;
             Ok("should_never_reach_this".to_string())
         })
     })

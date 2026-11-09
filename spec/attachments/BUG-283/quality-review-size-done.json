@@ -1,0 +1,72 @@
+{
+  "observedAtUtc": "2026-10-28T13:34:23.040558+00:00",
+  "canonicalFile": "spec/work-units.json",
+  "workUnitId": "BUG-283",
+  "status": "done",
+  "stateMembership": [
+    "done"
+  ],
+  "stateHistory": [
+    {
+      "state": "specifying",
+      "timestamp": "2026-10-28T12:22:17.685Z"
+    },
+    {
+      "state": "testing",
+      "timestamp": "2026-10-28T12:42:56.381Z"
+    },
+    {
+      "state": "implementing",
+      "timestamp": "2026-10-28T12:52:25.997Z"
+    },
+    {
+      "state": "validating",
+      "timestamp": "2026-10-28T13:01:08.667Z"
+    },
+    {
+      "state": "done",
+      "timestamp": "2026-10-28T13:10:20.748Z"
+    },
+    {
+      "state": "validating",
+      "timestamp": "2026-10-28T13:14:00.389Z"
+    },
+    {
+      "state": "done",
+      "timestamp": "2026-10-28T13:33:46.145Z"
+    }
+  ],
+  "originalAcddHistoryPreserved": true,
+  "normalReviewReopenAndClosure": true,
+  "coverage": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug283_auxiliary_view_return_origin.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/navigator_auxiliary.rs",
+      "rust/fspec-tui/src/views/navigator.rs"
+    ],
+    "totalLinesCovered": 667
+  },
+  "nativeFinalReview": {
+    "overallAssessment": "PASS",
+    "criticalIssues": 0,
+    "warnings": 0,
+    "verifiedTransitions": 7
+  },
+  "attachmentsAtObservation": [
+    "spec/attachments/BUG-283/navigation-return-research.md",
+    "spec/attachments/BUG-283/red.log",
+    "spec/attachments/BUG-283/implementation-findings.md",
+    "spec/attachments/BUG-283/validation-evidence.md",
+    "spec/attachments/BUG-283/raw-validation-receipts.tar.gz",
+    "spec/attachments/BUG-283/done-verification.json",
+    "spec/attachments/BUG-283/validation-hashes.sha256",
+    "spec/attachments/BUG-283/quality-review-size-evidence.md",
+    "spec/attachments/BUG-283/quality-review-size-receipts.tar.gz"
+  ],
+  "cardUpdatedAtAtObservation": "2026-10-28T13:33:46.145Z"
+}

@@ -251,8 +251,8 @@ fn build_rig_agent(
         bridge_tool_for_provider, claude_bridge_tool, claude_fspec_tool, fspec_tool_for_provider,
     };
     use codelet_tools::{
-        AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
-        DecisionTool, DeepSearchTool, GenerateCompactionTool, GlobTool, GraphSearchTool, GrepTool,
+        AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool, DecisionTool,
+        DeepSearchTool, GenerateCompactionTool, GlobTool, GraphSearchTool, GrepTool,
         InjectSummaryTool, LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool,
     };
 

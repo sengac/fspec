@@ -137,7 +137,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -148,7 +150,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/foundation_status.rs",
-          "lines": "112-177",
+          "lines": "111-187",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/foundation_status.rs",
@@ -280,7 +282,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -291,7 +295,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/foundation_status.rs",
-          "lines": "180-217",
+          "lines": "189-239",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/foundation_status.rs",
@@ -423,7 +427,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -434,7 +440,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/foundation_status.rs",
-          "lines": "220-249",
+          "lines": "241-274",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/foundation_status.rs",
@@ -566,7 +572,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -577,7 +585,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/foundation_status.rs",
-          "lines": "252-303",
+          "lines": "276-323",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/foundation_status.rs",
@@ -613,7 +621,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "if args.json {",
+              "lastLine": "}"
             }
           ]
         }
@@ -621,33 +631,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 24,
-    "coveredScenarios": 24,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-core/tests/foundation_status.rs",
-      "rust/fspec-core/tests/foundation_status_extended.rs",
-      "rust/fspec-core/tests/foundation_mutation_trailers.rs",
-      "rust/fspec-core/tests/foundation_guidance.rs",
-      "rust/tools/tests/foundation_guidance_doc_test.rs"
+      "rust/fspec-core/tests/foundation_status.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/foundation_status.rs",
-      "rust/fspec-core/src/commands/show_foundation.rs",
-      "rust/fspec-core/src/commands/add_capability.rs",
-      "rust/fspec-core/src/commands/add_persona.rs",
-      "rust/fspec-core/src/commands/remove_capability.rs",
-      "rust/fspec-core/src/commands/update_foundation.rs",
-      "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
-      "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
-      "rust/fspec-core/src/commands/remove_foundation_bounded_context.rs",
-      "rust/fspec-core/src/commands/discover_foundation.rs",
-      "rust/fspec-core/src/commands/show_foundation_event_storm.rs",
-      "rust/fspec-core/src/commands/validate_foundation_schema.rs",
-      "rust/fspec-core/src/foundation/guidance.rs",
-      "rust/tools/src/fspec_workflow_guidance.rs"
+      "rust/fspec-core/src/commands/foundation_status.rs"
     ],
-    "totalLinesCovered": 3352
+    "totalLinesCovered": 772
   },
   "fileName": "foundation-status.feature"
 }

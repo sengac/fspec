@@ -1,0 +1,508 @@
+# COV-063: features mapped to files that no longer exist (audit 2026-11-04)
+
+Proposed decision per feature (heuristic; each follow-up card confirms it before
+remapping or retiring). "scenarios" = scenarios with a missing mapped file.
+
+## COV-commands-review (114 features, 718 scenarios)
+
+- `acdd-workflow-integration.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/acdd-workflow-integration.test.ts
+- `add-diagram-json-backed.feature` (8) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/add-diagram-json-backed.test.ts
+- `add-eslint-and-prettier-for-code-quality.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/eslint-prettier-integration.test.ts
+- `add-persona-and-add-capability-don-t-work-with-foundation-json-draft.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/add-capability-draft-support.test.ts, src/commands/__tests__/add-persona-draft-support.test.ts
+- `add-system-reminder-to-generate-coverage-command.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-coverage-system-reminder.test.ts
+- `agent-switching-prompt-in-fspec-init.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-agent-switching.test.ts
+- `ai-agents-skip-docstring-step-validation-by-using-skip-step-validation-flag.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/skip-step-validation-enforcement.test.ts
+- `ai-driven-deep-code-review.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/review-ai-driven.test.ts
+- `answered-questions-display-as-true-instead-of-actual-answer-text.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/answer-question-preserves-text.test.ts
+- `architecture-notes-in-example-mapping.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/architecture-notes-example-mapping.test.ts
+- `attachment-support-for-discovery-process.feature` (9) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/attachment-support.test.ts
+- `auto-checkpoints-not-cleaned-up-when-work-unit-moves-to-done.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/auto-checkpoint-cleanup.test.ts
+- `auto-checkpoints-not-working-lazy-import-fails-in-bundled-dist.feature` (1) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/static-import-enforcement.test.ts
+- `auto-create-big-picture-event-storming-work-unit-after-foundation-finalization.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts
+- `auto-create-coverage-files.feature` (7) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/auto-create-coverage-files.test.ts
+- `auto-replace-placeholder-personas-and-capabilities-when-adding-first-item.feature` (7) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/auto-replace-placeholder-personas-and-capabilities-when-adding-first-item.test.ts
+- `checkpoint-restore-shows-confusing-merge-terminology-when-it-actually-overwrites-files.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/restore-checkpoint-terminology.test.ts
+- `clarify-backward-movement-in-workflow-documentation.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/kanban-workflow-state-management.test.ts
+- `claude-specification-guidelines-template.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-claude-template.test.ts
+- `cli-command-registration.feature` (17) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/cli-command-registration.test.ts, src/commands/__tests__/epic-and-prefix-management.test.ts
+- `complete-event-storm-interactive-workflow-with-example-mapping-integration.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-interactive-workflow.test.ts
+- `conversational-review-prompt-before-done.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/conversational-review-prompt-before-done.test.ts
+- `convert-research-tools-to-typescript-plugin-system.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/typescript-plugin-system.test.ts
+- `coverage-enforcement-gap-21-3-of-features-bypass-validation.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts
+- `coverage-validation-missing-for-implementing-validating-transition.feature` (1) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-coverage-validation.test.ts
+- `delete-features-by-tag.feature` (10) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/delete-features-by-tag.test.ts
+- `delete-scenarios-by-tag.feature` (12) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/delete-scenarios-by-tag.test.ts
+- `discover-foundation-finalize-creates-work-unit-without-adding-to-states-array.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/bug-078-dry-solid-work-unit-creation.test.ts
+- `discover-foundation-finalize-does-not-auto-create-foundation-event-storm-work-unit.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/discover-foundation-finalize-auto-create-work-unit.test.ts
+- `discover-foundation-finalize-doesn-t-show-validation-errors.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/discover-foundation-validation-feedback.test.ts
+- `discover-foundation-overwrites-draft-without-warning.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/found-021-prevent-discover-foundation-draft-overwrite.test.ts
+- `discover-foundation-regenerates-draft-when-used-to-check-next-field.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/found-019-discover-foundation-workflow-clarity.test.ts
+- `double-prompt-and-missing-success-message-in-interactive-init-mode.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-interactive-mode-prompts.test.ts
+- `duplicate-question-ids-from-generate-example-mapping-from-event-storm.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts
+- `duplicate-scenario-detection-in-generate-scenarios-command.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-duplicate-detection.test.ts
+- `enhance-fspec-review-with-architecture-alignment-and-ast-verification.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/review-architecture-alignment.test.ts
+- `enhanced-search-and-comparison-commands-for-similar-story-analysis.feature` (7) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/enhanced-search-query.test.ts
+- `event-storm-artifact-commands-events-commands-aggregates.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-artifact-commands.test.ts
+- `event-storm-artifact-commands-policies-hotspots-external-systems.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-artifact-commands.test.ts
+- `event-storm-commands-allow-duplicate-entries-without-validation.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-duplicate-detection.test.ts
+- `event-storm-commands-exit-with-code-1-on-success.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-exit-codes.test.ts
+- `example-mapping-for-bdd-discovery.feature` (14) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/example-mapping.test.ts
+- `example-mapping-integration.feature` (27) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/example-mapping-integration.test.ts
+- `fail-fast-foundation-workflow-for-weaker-llms.feature` (14) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/fail-fast-foundation-workflow-for-weaker-llms.test.ts
+- `feature-file-naming-for-bug-work-units.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-bug-naming.test.ts
+- `feature-file-prefill-detection.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/create-feature-system-reminder.test.ts, src/commands/__tests__/generate-scenarios-user-story.test.ts
+- `feature-level-tag-management.feature` (17) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/feature-level-tag-management.test.ts
+- `fix-help-formatter-option-name-rendering-and-commonerrors-property-mismatch.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-help.test.ts
+- `fix-multi-agent-support-critical-issues.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-bug-fixes.test.ts, src/utils/__tests__/templateTransformation.test.ts
+- `foundation-discovery-removal-commands-documentation.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts
+- `foundation-existence-check-in-commands.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/foundation-existence-check.test.ts, src/utils/__tests__/foundation-check.test.ts
+- `fspec-init-config-preservation.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-config-preservation.test.ts
+- `generate-example-mapping-from-event-storm.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-example-mapping-from-event-storm-exmap-014.test.ts
+- `generate-scenarios-counts-deleted-questions-as-unanswered.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-deleted-questions.test.ts
+- `generate-scenarios-include-architecture-docstring.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-docstring-inclusion.test.ts
+- `generate-scenarios-with-capability-based-naming.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-naming.test.ts
+- `generic-and-unhelpful-examples-auto-generated-from-event-storm-domain-events.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-skip-example-generation.test.ts
+- `hook-management-cli-commands.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/hook-commands.test.ts
+- `implement-draft-driven-discovery-workflow-with-ai-chaining.feature` (10) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts
+- `implement-foundation-event-storm-commands-for-aggregates-events-and-commands.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/add-foundation-event-storm-items.test.ts
+- `implement-stable-indices-with-soft-delete.feature` (16) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/stable-indices.test.ts
+- `init-008-and-bug-030-implementation-not-integrated-into-actual-codebase.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-integration.test.ts
+- `kanban-workflow-state-management.feature` (32) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/kanban-workflow-state-management.test.ts
+- `link-coverage-crashes-when-coverage-file-stats-are-missing.feature` (1) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/link-coverage-bug-repro.test.ts
+- `malformed-question-text-when-transforming-event-storm-hotspots-to-example-mapping.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/hotspot-question-transformation.test.ts
+- `missing-validation-for-test-file-step-docstring-completeness.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-step-validation.test.ts
+- `multiple-consecutive-system-reminder-blocks-in-update-work-unit-status.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/system-reminder-consolidation.test.ts
+- `multiple-system-reminder-blocks-emitted-instead-of-single-consolidated-block.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts
+- `multiple-test-files-mapped-to-single-feature-file-causes-validation-errors.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-one-to-one-enforcement.test.ts
+- `no-support-for-ultrathink-in-discovery-driven-feedback-loop.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/discover-foundation-multi-agent.test.ts
+- `parent-work-units-shouldn-t-require-scenarios.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/parent-work-unit-validation.test.ts
+- `preserve-example-mapping-context-as-comments-in-generated-feature-files.feature` (20) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-scenarios-comment-embedding.test.ts, src/commands/__tests__/preserve-comments-in-commands.test.ts
+- `prevent-retroactive-state-walking-enforce-temporal-ordering.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/temporal-ordering-enforcement.test.ts
+- `prevent-story-point-estimation-before-feature-file-completion.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-estimate-validation.test.ts
+- `project-type-detection-incorrectly-identifies-cli-tools-as-web-apps.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/draft-driven-discovery.test.ts
+- `refactor-link-coverage-command-to-reduce-file-size-and-complexity.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/link-coverage-refactor.test.ts
+- `remove-question-command-shows-object-object-instead-of-question-text.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/remove-question-display-bug.test.ts
+- `remove-work-unit-id-tags-from-generate-scenarios.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/check-validates-tags.test.ts, src/commands/__tests__/generate-scenarios-tag-placement.test.ts
+- `replace-generic-create-work-unit-with-type-specific-commands.feature` (8) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/type-specific-commands.test.ts
+- `research-tool-discovery-and-configuration-ux.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-tool-discovery-ux.test.ts
+- `research-tools-fail-when-invoked-via-fspec-tool-reads-process-argv-instead-of-commander-args.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-fspec-tool-args.test.ts
+- `reverse-acdd-strategy-d-not-detecting-implementation-files.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/reverse-strategy-d-outside-in-bdd.test.ts
+- `reword-implementing-phase-guidance-to-prevent-llms-skipping-integration-work.feature` (7) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/implementing-phase-integration-guidance.test.ts
+- `scenario-deduplication-and-refactoring-detection-during-generation.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/scenario-deduplication.test.ts
+- `scenario-level-tag-management.feature` (18) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/scenario-level-tag-management.test.ts
+- `schedule-persistence.feature` (12) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/schedule/__tests__/schedule-persistence.test.ts
+- `smart-research-integration-and-auto-attachment.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-auto-attachment.test.ts
+- `stable-indices-critical-bug-fixes.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/stable-indices-bug-fixes.test.ts
+- `stable-question-indices-for-concurrent-answers.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/stable-question-indices.test.ts
+- `strategy-d-processes-existing-feature-files-instead-of-scanning-src-for-implementation-files.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/reverse-strategy-d.test.ts
+- `template-persona-with-placeholders-remains-in-finalized-foundation-json.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/discover-foundation-placeholder-detection.test.ts
+- `test-antigravity-support.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/init-antigravity.test.ts
+- `tool-discovery-and-status-display.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-tool-discovery.test.ts
+- `tool-specific-help-system.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-help.test.ts
+- `unconfigured-research-tool-visibility-and-discovery.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/research-tool-visibility.integration.test.ts, src/utils/__tests__/system-reminder-research-tools.test.ts
+- `update-bootstrap-output-with-big-picture-event-storming-guidance.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/bootstrap-event-storm-reminder.test.ts
+- `update-documentation-and-help.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/documentation-validation.test.ts
+- `update-foundation-doesn-t-chain-to-next-field-during-discovery.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-foundation-field-chaining.test.ts
+- `val-005-per-feature-validation.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-val-005-per-feature.test.ts
+- `validate-foundation-schema-version-detection.feature` (1) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/validate-foundation-schema-version-detection.test.ts
+- `validate-mermaid-diagrams-during-foundation-regeneration.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/generate-foundation-md-diagram-validation.test.ts
+- `validate-mermaid-diagrams-in-attachments.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/add-attachment-mermaid-validation.test.ts
+- `validate-tags-failures-only-and-summary-flags.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/validate-tags-output-modes.test.ts
+- `virtual-hooks-don-t-execute-during-status-transitions.feature` (2) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/virtual-hooks-execution.test.ts
+- `webmcp-chrome-extension.feature` (40) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. extension/src/background/__tests__/browser-events.test.ts, extension/src/popup/__tests__/popup.test.ts
+- `wire-up-comprehensive-help-for-all-event-storm-commands.feature` (4) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/event-storm-help.test.ts
+- `work-item-types-for-stories-tasks-and-bugs.feature` (15) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/work-item-types.test.ts
+- `work-unit-attachments.feature` (6) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts
+- `work-unit-details-panel-shows-incorrect-work-unit-after-reordering.feature` (3) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/update-work-unit-status-done-sorting.test.ts, src/tui/__tests__/done-column-sorting.test.ts
+- `work-unit-estimation-and-metrics.feature` (13) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/work-unit-estimation-and-metrics.test.ts
+- `work-unit-ids-reused-after-deletion-violating-immutability-principle.feature` (1) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/work-unit-id-generation-prefix-counters.test.ts
+- `work-unit-management.feature` (37) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/work-unit-management.test.ts
+- `work-unit-ordering-across-all-kanban-columns.feature` (5) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts
+- `work-unit-query-and-reporting.feature` (11) — no same-named fspec-core command: confirm removed (retire) or find its Rust home; e.g. src/commands/__tests__/query-work-units-advanced.test.ts, src/commands/__tests__/work-unit-query-and-reporting.test.ts
+
+## COV-commands-remap (60 features, 573 scenarios)
+
+- `add-architecture.feature` (12) — remap to fspec-core command add_architecture; e.g. src/commands/__tests__/add-architecture.test.ts
+- `add-background.feature` (13) — remap to fspec-core command add_background; e.g. src/commands/__tests__/add-background.test.ts
+- `add-diagram-fails-with-screen-is-not-defined-error-for-valid-c4-diagrams.feature` (3) — remap to fspec-core command add_diagram; e.g. src/commands/__tests__/add-diagram.test.ts
+- `add-diagram.feature` (20) — remap to fspec-core command add_diagram; e.g. src/commands/__tests__/add-diagram.test.ts
+- `add-remove-persona-and-remove-capability-commands.feature` (3) — remap to fspec-core command remove_capability, remove_persona; e.g. src/commands/__tests__/remove-capability.test.ts, src/commands/__tests__/remove-persona.test.ts
+- `add-scenario.feature` (11) — remap to fspec-core command add_scenario; e.g. src/commands/__tests__/add-scenario.test.ts
+- `add-step.feature` (16) — remap to fspec-core command add_step; e.g. src/commands/__tests__/add-step.test.ts
+- `audit-coverage-command.feature` (3) — remap to fspec-core command audit_coverage; e.g. src/commands/__tests__/audit-coverage.test.ts
+- `automatic-json-file-initialization.feature` (17) — remap to fspec-core command add_dependency, add_example, list_work_units; e.g. src/commands/__tests__/add-dependency.test.ts, src/commands/__tests__/add-example.test.ts
+- `big-picture-event-storm-in-foundation-json.feature` (4) — remap to fspec-core command add_foundation_bounded_context; e.g. src/commands/__tests__/add-foundation-bounded-context.test.ts
+- `check.feature` (11) — remap to fspec-core command check; e.g. src/commands/__tests__/check.test.ts
+- `conversational-test-and-quality-check-tool-detection.feature` (13) — remap to fspec-core command configure_tools; e.g. src/commands/__tests__/configure-tools.test.ts, src/commands/__tests__/documentation-validation.test.ts
+- `create-feature.feature` (9) — remap to fspec-core command create_feature; e.g. src/commands/__tests__/create-feature.test.ts
+- `delete-diagram.feature` (7) — remap to fspec-core command delete_diagram; e.g. src/commands/__tests__/delete-diagram.test.ts
+- `delete-scenario.feature` (8) — remap to fspec-core command delete_scenario; e.g. src/commands/__tests__/delete-scenario.test.ts
+- `delete-step.feature` (11) — remap to fspec-core command delete_step; e.g. src/commands/__tests__/delete-step.test.ts
+- `delete-tag.feature` (11) — remap to fspec-core command delete_tag; e.g. src/commands/__tests__/delete-tag.test.ts
+- `draft-file-update-priority.feature` (3) — remap to fspec-core command update_foundation; e.g. src/commands/__tests__/update-foundation.test.ts
+- `dynamic-bootstrap-command-for-slash-command-template.feature` (4) — remap to fspec-core command bootstrap; e.g. src/commands/__tests__/bootstrap.test.ts
+- `epic-and-prefix-management.feature` (12) — remap to fspec-core command list_prefixes; e.g. src/commands/__tests__/epic-and-prefix-management.test.ts, src/commands/__tests__/list-prefixes.test.ts
+- `event-storm-workflow-enhancements-and-gap-fixes.feature` (3) — remap to fspec-core command generate_example_mapping_from_event_storm; e.g. src/commands/__tests__/generate-example-mapping-from-event-storm.test.ts
+- `fix-show-epic-command-returning-undefined.feature` (3) — remap to fspec-core command show_epic; e.g. src/commands/__tests__/show-epic.test.ts
+- `format-features.feature` (20) — remap to fspec-core command format; e.g. src/commands/__tests__/format.test.ts
+- `foundation-event-storm-remove-commands.feature` (9) — remap to fspec-core command remove_foundation_bounded_context; e.g. src/commands/__tests__/remove-foundation-bounded-context.test.ts
+- `fspec-add-step-appends-instead-of-replacing-prefill-placeholders.feature` (5) — remap to fspec-core command add_step; e.g. src/commands/__tests__/add-step.test.ts
+- `generate-coverage-files-for-existing-features.feature` (4) — remap to fspec-core command generate_coverage; e.g. src/commands/__tests__/generate-coverage.test.ts
+- `generate-foundation-md.feature` (8) — remap to fspec-core command generate_foundation_md; e.g. src/commands/__tests__/generate-foundation-md.test.ts
+- `generate-tags-md.feature` (8) — remap to fspec-core command generate_tags_md; e.g. src/commands/__tests__/generate-tags-md.test.ts
+- `get-scenarios.feature` (20) — remap to fspec-core command get_scenarios; e.g. src/commands/__tests__/get-scenarios.test.ts
+- `gherkin-validation.feature` (16) — remap to fspec-core command validate; e.g. src/commands/__tests__/validate.test.ts
+- `intelligent-checkpoint-system-for-workflow-transitions.feature` (7) — remap to fspec-core command checkpoint; e.g. src/commands/__tests__/checkpoint.test.ts
+- `interactive-reverse-acdd-strategy-planning-command.feature` (13) — remap to fspec-core command reverse; e.g. src/commands/__tests__/reverse.test.ts
+- `link-coverage-command.feature` (6) — remap to fspec-core command link_coverage; e.g. src/commands/__tests__/link-coverage.test.ts
+- `list-features.feature` (10) — remap to fspec-core command list_features; e.g. src/commands/__tests__/list-features.test.ts
+- `list-tags.feature` (11) — remap to fspec-core command list_tags; e.g. src/commands/__tests__/list-tags.test.ts
+- `register-tag-json-backed.feature` (5) — remap to fspec-core command register_tag; e.g. src/commands/__tests__/register-tag.test.ts
+- `register-tag.feature` (11) — remap to fspec-core command register_tag; e.g. src/commands/__tests__/register-tag.test.ts
+- `remove-initialization-files.feature` (4) — remap to fspec-core command remove_init_files; e.g. src/commands/__tests__/remove-init-files.test.ts
+- `report-bug-to-github-with-ai-assistance.feature` (6) — remap to fspec-core command report_bug_to_github; e.g. src/commands/__tests__/report-bug-to-github.test.ts
+- `research-framework-with-custom-script-integration.feature` (5) — remap to fspec-core command research; e.g. src/commands/__tests__/research.test.ts
+- `retag.feature` (12) — remap to fspec-core command retag; e.g. src/commands/__tests__/retag.test.ts
+- `review-command-with-done-status-integration.feature` (3) — remap to fspec-core command review; e.g. src/commands/__tests__/review.test.ts, src/commands/__tests__/update-work-unit-status-review-reminder.test.ts
+- `show-acceptance-criteria.feature` (12) — remap to fspec-core command show_acceptance_criteria; e.g. src/commands/__tests__/show-acceptance-criteria.test.ts
+- `show-coverage-crashes-with-undefined-coveragepercent.feature` (3) — remap to fspec-core command show_coverage; e.g. src/commands/__tests__/show-coverage.test.ts
+- `show-coverage-statistics.feature` (7) — remap to fspec-core command show_coverage; e.g. src/commands/__tests__/show-coverage.test.ts
+- `show-event-storm-data-as-json.feature` (4) — remap to fspec-core command show_event_storm; e.g. src/commands/__tests__/show-event-storm.test.ts
+- `show-feature.feature` (17) — remap to fspec-core command show_feature; e.g. src/commands/__tests__/show-feature.test.ts
+- `show-foundation-command-has-multiple-quality-issues.feature` (5) — remap to fspec-core command show_foundation; e.g. src/commands/__tests__/show-foundation.test.ts
+- `show-foundation.feature` (7) — remap to fspec-core command show_foundation; e.g. src/commands/__tests__/show-foundation.test.ts
+- `system-reminder-for-missing-scenarios-in-link-coverage.feature` (3) — remap to fspec-core command link_coverage; e.g. src/commands/__tests__/link-coverage.test.ts
+- `tag-stats.feature` (11) — remap to fspec-core command tag_stats; e.g. src/commands/__tests__/tag-stats.test.ts
+- `tool-detection-check-functions-not-integrated-into-workflow.feature` (8) — remap to fspec-core command configure_tools, sync_version; e.g. src/commands/__tests__/configure-tools.test.ts, src/commands/__tests__/sync-version.test.ts
+- `unlink-coverage-mappings.feature` (3) — remap to fspec-core command unlink_coverage; e.g. src/commands/__tests__/unlink-coverage.test.ts
+- `update-foundation.feature` (15) — remap to fspec-core command update_foundation; e.g. src/commands/__tests__/update-foundation.test.ts
+- `update-scenario.feature` (10) — remap to fspec-core command update_scenario; e.g. src/commands/__tests__/update-scenario.test.ts
+- `update-step.feature` (12) — remap to fspec-core command update_step; e.g. src/commands/__tests__/update-step.test.ts
+- `update-tag.feature` (9) — remap to fspec-core command update_tag; e.g. src/commands/__tests__/update-tag.test.ts
+- `validate-tags.feature` (21) — remap to fspec-core command validate_tags; e.g. src/commands/__tests__/validate-tags.test.ts
+- `work-unit-dependency-management.feature` (42) — remap to fspec-core command query_bottlenecks, query_dependency_stats, query_orphans; e.g. src/commands/__tests__/add-dependency-auto-block.test.ts, src/commands/__tests__/circular-dependency-detection.test.ts
+- `workflow-automation.feature` (4) — remap to fspec-core command workflow_automation; e.g. src/commands/__tests__/workflow-automation.test.ts
+
+## COV-tui-review (164 features, 1066 scenarios)
+
+- `add-debug-slash-command-to-fspec-tui-agent.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal.test.tsx
+- `agent-modal-model-selection.feature` (23) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal-model-selection.test.tsx
+- `anchor-view.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/AnchorView.test.tsx
+- `animated-shimmer-on-last-changed-work-unit.feature` (1) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-shimmer-last-changed.test.tsx
+- `anthropic-provider-settings-regression.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/inputHandlers/__tests__/anthropic-parity-regression.test.ts
+- `attach-to-detached-sessions-from-resume-view.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentView-resume-attach.test.tsx
+- `attachment-selection-dialog-with-keyboard-navigation.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-019-attachment-dialog.test.tsx
+- `auto-inject-toggle-in-watcher-creation-dialog.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-create-auto-inject.test.tsx
+- `blocklist-tui-list-form-views.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/blocklist-list-view.test.tsx
+- `board-view-watcher-update.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts
+- `boardview-createsessiondialog-callback-ignores-isolated-parameter.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/isolated-session-integration.test.tsx
+- `boardview-loaddata-stability.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/store/__tests__/boardview-loaddata-stability.test.ts
+- `bridge-session-chunk-filtering.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/bridge-session-chunk-filtering.test.ts
+- `changed-files-view-doesn-t-show-deleted-files-correctly.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/changed-files-deleted-status.test.tsx
+- `checkpoint-restore-progress-dialog.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/StatusDialog.test.tsx
+- `checkpoint-viewer-three-pane-layout.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/CheckpointViewer-three-pane.test.tsx, src/tui/components/__tests__/FileDiffViewer.test.tsx
+- `claude-code-style-tool-output-display.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal-tool-display.test.tsx
+- `claude-oauth-model-routing.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/claudeOAuthModelRouting.test.ts
+- `codex-model-selector-integration.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/codexModelInitialization.test.ts
+- `codex-oauth-integration-bugs.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts
+- `codex-subscription-model-filtering.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/codexSubscriptionModelFiltering.test.ts
+- `compaction-badge-sign-integrity-ink.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx
+- `compaction-indicator-rust-source-of-truth.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/handlers/__tests__/compaction-indicator-rust-source-of-truth.test.ts
+- `compaction-sessionstatechange-drops-sessionid-wrong-session-shows-compacting-indicator.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/handlers/__tests__/persistentSessionStateHandler-routed-sessionid.test.ts
+- `compaction-threshold-tui-config.feature` (13) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts
+- `confirmation-dialog.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/ConfirmationDialog.test.tsx
+- `container-focus-indication-with-headings.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/container-focus-headings.test.tsx
+- `context-fill-percentage-realtime-recompute-restore.feature` (1) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/utils/__tests__/tokenStateUtils.test.ts
+- `context-fill-percentage-realtime-recompute-ui.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/context-window-fill-percentage.test.tsx
+- `context-window-fill-percentage-indicator.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/context-window-fill-percentage.test.tsx
+- `copilot-tui-login-dispatch.feature` (1) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/utils/__tests__/copilotLoginDispatch.test.ts
+- `create-isolated-session-napi.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/isolated-session-napi.test.ts
+- `create-session-dialog-options.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/CreateSessionDialog.test.tsx
+- `createsessiondialog-shows-wrong-text-when-pressing-enter-on-work-unit.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/isolated-session-integration.test.tsx
+- `cross-pane-selection-with-correlation-ids.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/cross-pane-correlation.test.tsx
+- `custom-model-registration-and-facade-override-in-model-selector.feature` (19) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/custom-model-registration.test.ts
+- `custom-provider-vision-support.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts
+- `debug-badge-session-awareness.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/debug-badge-session-awareness.test.tsx
+- `debug-badge-session-cycle.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/debug-badge-session-cycle.test.tsx
+- `default-thinking-level-persistence.feature` (9) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx
+- `delete-checkpoint-or-all-checkpoints-from-checkpoint-viewer-with-confirmation.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/CheckpointViewer-delete.test.tsx
+- `delete-session-from-resume-view-with-confirmation-dialog.feature` (9) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx
+- `dialog.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/Dialog.test.tsx
+- `diff-view-for-write-edit-tool-output.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal-diff-view.test.tsx
+- `discuss-selected-feature.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/discuss-selected.test.tsx
+- `display-attachments-in-work-unit-details-panel.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-012-display-attachments.test.tsx
+- `duplicate-installation-success-message-in-fspec-init.feature` (1) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/agent-selector-duplicate-message.test.tsx
+- `duplicate-next-steps-message-in-fspec-init-output.feature` (1) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/agent-selector-duplicate-message.test.tsx
+- `enter-key-on-board-bypasses-create-session-dialog-no-isolated-option.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/isolated-session-integration.test.tsx
+- `esc-interrupt-during-compaction.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx
+- `expand-command-for-turn-based-tool-output-expansion.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/expand-command.test.ts
+- `file-search-popup-modal-for-symbol-input.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/file-search-popup-modal.test.tsx
+- `file-search-popup-uses-worktree-path-for-isolated-sessions.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/hooks/__tests__/useFileSearchInput-worktree.test.tsx
+- `fix-anchor-viewer-integration-with-thinking-dialog-system.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-056-anchor-viewer.test.tsx
+- `fix-three-pane-layout-with-proper-flex-properties.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/CheckpointViewer-flex-layout.test.tsx
+- `fix-tui-068-code-smells-error-handling-console-statements-facade-completion.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/sessionService.test.ts
+- `fix-tui-kanban-column-layout-to-match-table-style.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-table-layout.test.tsx
+- `fix-work-unit-details-panel-to-be-static-4-lines-high.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/UnifiedBoardLayout-work-unit-details.test.tsx
+- `full-screen-tui-layout.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/FullScreenWrapper.test.tsx
+- `github-copilot-tui-provider-integration.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/provider-settings-github-copilot.test.ts
+- `global-session-stream-manager-chunk-routing.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/global-chunk-callback-routing.test.ts
+- `global-session-stream-manager.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/globalSessionStreamManager.test.ts
+- `graceful-initialization-without-spec-directory.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx
+- `hitl-freeform-other-option-for-predefined-choices.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/hooks/__tests__/useHitlInput-other.test.ts
+- `hitl-handler-wiring.feature` (16) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/hitl-tui-integration.test.tsx, src/tui/services/__tests__/hitl-handler-wiring.test.ts
+- `input-not-restored-when-switching-between-sessions.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/session-switching-input-persistence.test.ts
+- `input-state-not-restored-when-navigating-from-boardview-to-agentview.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/agentview-input-state-persistence.test.ts
+- `integrate-attachment-server-with-tui-boardview-lifecycle.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/REFAC-004-server-integration.test.tsx
+- `interactive-anchor-point-viewer-with-conversation-navigation.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-056-anchor-viewer.test.tsx
+- `interactive-kanban-board-cli.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-interactive-kanban.test.tsx
+- `isolated-session-napi-bindings.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/session-management-napi.test.ts
+- `isolation-state-stream-sync.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/globalSessionStreamManager.test.ts
+- `kanban-tui-keyboard-navigation-page-up-down-and-home-end-key-bindings.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx
+- `loop-shorthand-natural-language-schedule-creation.feature` (11) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/loop-service.test.ts
+- `manual-compaction-command.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal.test.tsx
+- `markdown-table-rendering-in-ai-output.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/utils/__tests__/markdown-table-formatter.test.ts
+- `merge-conflict-llm-context.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts
+- `merge-conflict-markers.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/handlers/__tests__/mergeConflictMarkers.test.ts
+- `merge-worktree-command.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/merge-worktree-command.test.ts
+- `merge-worktree-ux.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx
+- `model-screen-stale-profile-sections-from-non-openai-providers-footer-text-unreachable-section-filtering.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx, src/tui/components/__tests__/modelScreenProv031.test.tsx
+- `model-selection-service.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/modelSelectionService.test.ts
+- `model-selector-screen.feature` (18) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx
+- `model-selector-state-hook.feature` (23) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/hooks/__tests__/useModelSelectorState.test.tsx
+- `mouse-scroll-wheel-and-trackpad-support-for-virtuallist.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/VirtualList-mouse-scroll.test.tsx
+- `multi-line-text-input-with-cursor-navigation-for-agentview.feature` (13) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/MultiLineInput.test.tsx
+- `multilineinput-should-show-compaction-status-instead-of-conversation-message.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx
+- `native-fspec-tool-integration-via-napi-rs.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/CODE-002-native-fspec-tool-integration.test.tsx
+- `native-text-selection-while-preserving-mouse-scroll-wheel-in-virtuallist.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx
+- `oauth-tui-broken-flows.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/oauth-tui-broken-flows.test.ts
+- `open-attachments-in-browser-from-details-panel.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-013-open-attachments.test.tsx
+- `optimize-context-compaction-performance-and-ux.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx
+- `per-model-compaction-threshold.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/per-model-compaction-threshold.test.ts
+- `persist-last-used-model-selection.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal-model-persistence.test.tsx
+- `persistent-chunk-handler.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/hooks/__tests__/persistent-chunk-handler.test.ts
+- `persistent-handler-state-refresh.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/persistent-handler-state-refresh.test.tsx
+- `profile-based-model-selection-not-restored-on-session-startup.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/modelInitializationService.test.ts
+- `profile-form-arrow-key-navigation.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/inputHandlers/__tests__/profileFormArrowKeyNavigation.test.ts
+- `provider-settings-expansion-state.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/provider-settings-expansion-state.test.tsx
+- `provider-settings-oauth-guards.feature` (28) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/provider-settings-oauth-guards.test.ts
+- `provider-settings-oauth-logout.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/provider-settings-oauth-logout.test.ts
+- `provider-settings-screen.feature` (18) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ProviderSettingsScreen.integration.test.tsx
+- `provider-type-consolidation.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/provider-type-consolidation.test.ts
+- `pure-flexbox-layout-for-checkpoint-and-changed-files-viewers.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ChangedFilesViewer.test.tsx, src/tui/components/__tests__/CheckpointViewer.test.tsx
+- `purple-watcher-input-display.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-display.test.ts
+- `real-time-tokens-per-second-display-in-agent-modal-header.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/tokens-per-second.test.tsx
+- `reasoning-token-tui-display.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/utils/__tests__/reasoning-token-tui-display.test.tsx
+- `refactor-header-and-details-to-component-based-flexbox.feature` (14) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/refactor-header-and-details.test.tsx
+- `refactor-session-work-unit-state-management.feature` (14) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/sessionService.test.ts
+- `refactor-streamchunk-to-use-proper-discriminated-union-types.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/NAPI-010-stream-chunk-discriminated-union.test.tsx
+- `refactor-watcher-terminology-to-supervisor-subordinate-with-chainofcommand-graph.feature` (16) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/watch-024-supervisor-terminology-refactoring.test.ts
+- `remove-dead-split-view.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/remove-dead-split-view.test.ts
+- `remove-file-watching-from-tui-main-screen-and-lazy-load-changed-files-view.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-lazy-file-loading.test.tsx
+- `replace-shimmer-with-fast-forward-emojis-for-active-work-unit.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-017-emoji-indicators.test.tsx
+- `restore-individual-files-or-all-files-from-checkpoint-in-checkpoint-viewer.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/CheckpointViewer-restore.test.tsx
+- `role-banner-display.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/RoleBanner.test.tsx
+- `role-dialog-remove-button.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/RoleDialog.test.tsx
+- `role-dialog.feature` (9) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/components/__tests__/RoleDialog.test.tsx
+- `rust-authoritative-context-window.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/rust-authoritative-context-window.test.ts
+- `scaffold-tui-infrastructure-with-ink-and-cage-components.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/tui-infrastructure.test.tsx
+- `schedule-tui-slash-commands.feature` (12) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/schedule-service.test.ts
+- `screen-component-integration.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/screen-component-integration.test.tsx
+- `select-mode-enter-key-opens-full-turn-modal.feature` (12) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/turn-modal.test.ts
+- `select-turns-instead-of-lines-with-select-command.feature` (9) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentView-turn-selection.test.tsx
+- `sensitive-path-prompts.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/__tests__/blocklist-napi-integration.test.ts, src/components/__tests__/ConfirmationDialog.test.tsx
+- `session-attachment-for-work-units-with-tui-resume-integration.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/session-attachment.test.ts
+- `session-footer.feature` (11) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/SessionFooter.test.tsx
+- `session-header-isolation-badge.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/SessionHeader.test.tsx
+- `session-header-realtime-status.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/SessionHeader.test.tsx
+- `session-management-panel-keyboard.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/SessionManagementPanelKeyboard.test.tsx
+- `session-management-panel.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/SessionManagementPanel.test.tsx
+- `session-work-unit-ipc.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts
+- `sessionheader-badge-threshold.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/sessionheader-badge-threshold.test.tsx
+- `sessionheader-missing-isisolated-prop-isolated-badge-never-shows.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/isolated-session-integration.test.tsx
+- `sgr-mouse-protocol-component-integration.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx
+- `sgr-mouse-protocol.feature` (7) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/utils/__tests__/mouseProtocol.test.ts
+- `slash-command-autocomplete-palette.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/slash-command-palette.test.tsx
+- `space-esc-immediate-session-detach-in-agentview.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentView-shift-esc-detach.test.tsx
+- `stretch-board-content-to-fill-available-viewport-height.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-vertical-stretch.test.tsx
+- `structured-fspectool-results-via-streamchunk-discriminated-union.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/CODE-009-structured-fspectool-results.test.tsx
+- `thinking-level-dialog.feature` (11) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/ThinkingLevelDialog.test.tsx
+- `toggle-line-selection-mode-with-select-command.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentView-select-mode.test.tsx
+- `tui-016-incomplete-checkpointpanel-using-chokidar-instead-of-ipc-zustand.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/bug-065-checkpoint-integration.test.ts
+- `tui-anthropic-oauth-login.feature` (15) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/inputHandlers/__tests__/anthropic-oauth-tui.test.ts
+- `tui-badge-and-fill-display-end-to-end-verification.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/tui-badge-fill-verification.test.tsx
+- `tui-board-column-scrolling.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/BoardView-column-scrolling.test.tsx
+- `tui-clear-should-update-react-state-as-side-effect-of-rust-state-change.feature` (4) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts
+- `tui-custom-provider-section-builder.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/customProviderSectionBuilder.test.ts
+- `tui-hangs-when-foundation-json-is-missing.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts
+- `tui-integration-for-codelet-ai-agent.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/AgentModal.test.tsx
+- `tui-oauth-login-flow.feature` (11) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx
+- `tui-pause-state-display.feature` (2) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/InputTransition-pause.test.tsx
+- `tui-session-chunk-filtering.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/tui-session-chunk-filtering.test.ts
+- `view-foundation-md-in-tui-with-attachment-viewer.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/tui-029-foundation-viewer.test.ts
+- `virtuallist-height-calculation-ignores-flexbox-container-dimensions.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/VirtualList-height-measurement.test.tsx
+- `virtuallist-scroll-only-mode-for-agentmodal.feature` (15) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx
+- `watcher-creation-dialog-ui.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-creation-dialog.test.tsx
+- `watcher-management-overlay-ui.feature` (10) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-management-overlay.test.tsx
+- `watcher-session-header-indicator.feature` (6) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/watcher-session-header-indicator.test.tsx
+- `watcher-split-view-ui.feature` (8) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-split-view.test.tsx
+- `watcher-templates.feature` (24) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/watcher-templates.test.tsx
+- `work-unit-context-service.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/services/__tests__/workUnitContextService.test.ts
+- `worker-module-not-bundled-module-not-found-for-diff-worker-js.feature` (3) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/components/__tests__/worker-path-resolution.test.tsx
+- `zustand-state-management-setup-for-fspec-data.feature` (5) — Ink TUI: find the fspec-tui equivalent and remap, or retire; e.g. src/tui/__tests__/fspecStore-data-loading.test.ts
+
+## COV-misc-review (124 features, 736 scenarios)
+
+- `add-java-php-ruby-bash-support-to-ast-research-tool.feature` (7) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/multi-language-support.test.ts
+- `add-kotlin-and-dart-language-support-to-ast-research-tool.feature` (3) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/kotlin-dart-language-support.test.ts
+- `add-kotlin-language-support-to-ast-research-tool.feature` (1) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/kotlin-language-support.test.ts
+- `add-multi-language-support-to-ast-research-tool-kotlin-dart-python-go-rust-swift-c-c-c.feature` (7) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/multi-language-support.test.ts
+- `add-winston-universal-logger-for-fspec.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/logger.test.ts
+- `advanced-interactivity-heuristics.feature` (9) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/interactivity-heuristics.test.ts
+- `agent-runtime-detection-for-context-aware-cli-output.feature` (6) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/agentRuntimeConfig.test.ts
+- `agent-specific-activation-message-not-customized-in-fspec-init-success-output.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/activationMessage.test.ts
+- `anchor-links-not-working-in-markdown-attachment-viewer.feature` (7) — src/server: find the Rust equivalent and remap, or retire; e.g. src/server/utils/__tests__/markdown-renderer.test.ts
+- `ansi-escape-codes-and-tui-content-leaking-into-fspec-tool-call-results.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/ansi-stripping-in-capture.test.ts
+- `ast-code-researcher-for-pattern-detection-and-deep-analysis.feature` (8) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/ast-research-tool.test.ts
+- `ast-research-tool-fails-with-file-is-required-error-even-when-file-flag-is-provided.feature` (2) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/ast-argument-parsing.test.ts
+- `ast-research-tool-fails-with-relative-file-paths.feature` (2) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/ast-relative-paths.test.ts
+- `ast-tool-returns-stub-instead-of-actual-parsing.feature` (1) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/ast-integration.test.ts
+- `background-session-management-with-attach-detach.feature` (11) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/background-session.test.ts
+- `block-notifications.feature` (1) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/block-notifications-napi-integration.test.ts
+- `blocklist-core-command-tool-filtering.feature` (3) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/blocklist-napi-integration.test.ts
+- `blocklist-system-integration-tests.feature` (5) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/integration/blocklist-system-integration.test.ts
+- `bounded-context-map-ui-duplicates-each-bounded-context-name-in-visualization.feature` (3) — src/generators: find the Rust equivalent and remap, or retire; e.g. src/generators/__tests__/foundation-md.test.ts
+- `browser-scan-diff-documentation.feature` (7) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/skill-documentation.test.ts
+- `browser-script-execution.feature` (6) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/browser-execute-script.test.ts
+- `browser-tab-creation.feature` (8) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/browser-create-tab.test.ts
+- `build-migration-system.feature` (10) — src/migrations: find the Rust equivalent and remap, or retire; e.g. src/migrations/__tests__/migration-system.test.ts
+- `capture-all-console-methods-and-redirect-to-winston-logger.feature` (9) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/console-capture.test.ts
+- `changed-files-view-missing-unstaged-files.feature` (4) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/status.test.ts
+- `checkpoint-creation-fails-when-deleted-files-exist.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/git-checkpoint-deleted-files.test.ts
+- `checkpoint-restore-shows-file-not-found-but-doesn-t-delete-files-added-after-checkpoint.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts
+- `codelet-napi-rs-native-module-bindings.feature` (10) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/codelet-napi.test.ts
+- `codex-init-writes-prompt-to-home-directory.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/commands/__tests__/init-codex-home-directory.test.ts, src/utils/__tests__/activationMessage.test.ts
+- `command-help-system.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/help-interceptor.test.ts
+- `commonpatterns-help-formatting.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/help-formatter-commonpatterns.test.ts
+- `complete-big-picture-event-storm-schema-integration.feature` (5) — src/validators: find the Rust equivalent and remap, or retire; e.g. src/validators/__tests__/eventStorm-schema-validation.test.ts
+- `configuration-management-with-tui-integration.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/config-resolution.test.ts
+- `confluence-research-tool-integration.feature` (10) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/confluence-research-tool.test.ts
+- `core-fspectool-implementation.feature` (3) — src/test: find the Rust equivalent and remap, or retire; e.g. src/test/core-fspectool-implementation.test.ts
+- `coverage-file-synchronization.feature` (6) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/coverage-file-synchronization.test.ts
+- `demo-scripts-incorrectly-try-to-import-non-existent-testcontroller-class.feature` (6) — ../fspec.videos: find the Rust equivalent and remap, or retire; e.g. ../fspec.videos/src/__tests__/demo-script-api-fix.test.ts
+- `design-generic-foundation-schema.feature` (10) — src/types: find the Rust equivalent and remap, or retire; e.g. src/types/__tests__/foundation-schema.test.ts
+- `documentation-clarity-improvements.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/documentation-clarity-improvements.test.ts
+- `dom-scanning.feature` (13) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/dom-scanning.test.ts
+- `duplicate-work-unit-ids-in-state-arrays-when-moving-backward-or-to-same-state.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/states-array-duplicate-bug.test.ts
+- `dynamic-thinking-level-detection-via-keywords.feature` (9) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/thinkingLevel.test.ts
+- `element-targeted-screenshot.feature` (8) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/element-screenshot.test.ts
+- `eliminate-tree-sitter-legacy-peer-deps-requirement.feature` (4) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/tree-sitter-peer-deps.test.ts
+- `enhance-foundation-md-event-storm-visualization.feature` (3) — src/generators: find the Rust equivalent and remap, or retire; e.g. src/generators/__tests__/foundation-md.test.ts
+- `enhanced-research-tool-guidance-in-system-reminders.feature` (7) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/enhanced-research-tool-reminders.test.ts
+- `enter-key-model-selection-end-to-end-in-the-model-view.feature` (1) — e2e/prov-117-model-select.test.ts: find the Rust equivalent and remap, or retire; e.g. e2e/prov-117-model-select.test.ts
+- `event-storm-data-model-for-work-units.feature` (4) — src/types: find the Rust equivalent and remap, or retire; e.g. src/types/__tests__/event-storm-data-model.test.ts
+- `fix-all-failing-tests-15-failures-across-3-test-suites.feature` (4) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/test-suite-fixes.test.ts
+- `fix-fspec-research-tool-ast-help-command-should-display-tool-specific-help-instead-of-failing.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/commands/__tests__/research-help.test.ts, src/utils/__tests__/help-formatter-research-tools.test.ts
+- `font-size-controls-for-attachment-viewer.feature` (6) — src/server: find the Rust equivalent and remap, or retire; e.g. src/server/__tests__/TUI-021-font-size-controls.test.ts
+- `foundation-missing-error-message-is-not-imperative-enough.feature` (2) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/foundation-check.test.ts
+- `fspec-help-displays-hardcoded-version-0-0-1-instead-of-package-json-version.feature` (3) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/version-display.test.ts
+- `fullscreen-mermaid-diagram-viewer-with-zoom-and-pan-controls.feature` (15) — src/server: find the Rust equivalent and remap, or retire; e.g. src/server/__tests__/VIEW-001-fullscreen-mermaid-viewer.test.ts
+- `generate-event-storm-section-in-foundation-md-with-validated-mermaid-diagram.feature` (4) — src/generators: find the Rust equivalent and remap, or retire; e.g. src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts
+- `generate-foundation-md-fails-with-mermaid-jsdom-parentrule-error-when-bounded-contexts-exist.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/mermaid-validation-parentrule-fix.test.ts
+- `git-repository-operations.feature` (7) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/gitoxide-operations.test.ts
+- `github-actions-ci-cd-for-codelet-napi-cross-platform-builds.feature` (11) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/github-actions-codelet-napi.test.ts
+- `handle-binary-files-and-large-files-in-diff-display.feature` (4) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/diff-binary-and-truncation.test.ts
+- `hook-condition-evaluation.feature` (10) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/conditions.test.ts
+- `hook-configuration-schema-and-validation.feature` (6) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/config.test.ts
+- `hook-discovery-and-event-naming.feature` (6) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/discovery.test.ts
+- `hook-execution-engine.feature` (7) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/executor.test.ts
+- `hook-system-documentation-and-examples.feature` (6) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/documentation.test.ts
+- `iframe-aware-dom-scanning.feature` (15) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/iframe-scanning.test.ts
+- `implement-automated-discovery-code-analysis.feature` (5) — src/guidance: find the Rust equivalent and remap, or retire; e.g. src/guidance/__tests__/automated-discovery-code-analysis.test.ts
+- `implement-file-locking-system-lockedfilemanager-refactoring.feature` (1) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/file-manager.test.ts
+- `improve-scenario-similarity-matching-accuracy.feature` (14) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/scenario-similarity.test.ts
+- `improve-step-workflow-clarity-to-prevent-wrong-test-file-and-missing-comments.feature` (3) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/step-workflow-clarity.test.ts
+- `integrate-hooks-into-all-commands.feature` (7) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/integration.test.ts
+- `interactive-research-command-with-multiple-backend-support.feature` (8) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/research-command.test.ts
+- `isolated-session-worktree-initialization.feature` (3) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/worktree-index-initialization.test.ts
+- `jira-research-tool-integration.feature` (10) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/jira-research-tool.test.ts
+- `jira-research-tool-outputs-object-object-in-markdown-format-for-description-field.feature` (3) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/jira-markdown-adf-parsing.test.ts
+- `jsonl-format-investigation-for-work-units-json-scalability.feature` (5) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/jsonl-investigation.test.ts
+- `local-web-server-for-attachment-viewing-with-markdown-and-mermaid-rendering.feature` (7) — src/server: find the Rust equivalent and remap, or retire; e.g. src/server/__tests__/TUI-020-attachment-server.test.ts
+- `mermaid-diagram-zoom-not-centered-on-mouse-and-trackpad-causes-jittering.feature` (5) — src/server: find the Rust equivalent and remap, or retire; e.g. src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts
+- `mermaid-validation-fails-with-dompurify-error.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/mermaid-validation-dompurify-fix.test.ts
+- `mermaid-validation-test-uses-invalid-test-data.feature` (3) — src/generators: find the Rust equivalent and remap, or retire; e.g. src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts
+- `mermaid-validation-using-parse-instead-of-render-misses-semantic-errors.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/mermaid-semantic-validation.test.ts
+- `migrate-fspec-research-ast-tool-from-tree-sitter-to-codelet-ast-grep.feature` (6) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/ast-grep-migration.test.ts
+- `migrate-hook-execution-to-use-execa-library.feature` (5) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/executor-execa-migration.test.ts
+- `model-selector-keyboard-navigation-e2e.feature` (3) — e2e/prov-104-model-nav.test.ts: find the Rust equivalent and remap, or retire; e.g. e2e/prov-104-model-nav.test.ts
+- `napi-binding-setup-for-fspectool.feature` (5) — src/test: find the Rust equivalent and remap, or retire; e.g. src/test/fspec-tool-napi-integration.test.ts
+- `napi-session-co-listener-parity.feature` (1) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/napi-session-co-listener-parity.test.ts
+- `napi-work-units-watcher-callback.feature` (1) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/napi-work-units-watcher-callback.test.ts
+- `native-rust-diff-operations.feature` (9) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/native-rust-diff-operations.test.ts
+- `page-diff.feature` (8) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/page-diff.test.ts
+- `parent-command-for-quick-return.feature` (3) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/parent-command.test.ts
+- `perplexity-research-tool-integration.feature` (10) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/perplexity-research-tool.test.ts
+- `prefill-detection-incorrectly-flags-code-syntax-as-placeholders.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/bug-079-prefill-false-positives.test.ts
+- `project-root-detection.feature` (6) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/project-root-detection.test.ts
+- `provider-configuration-and-credentials-management.feature` (19) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/provider-configuration-and-credentials-management.test.ts
+- `provider-configuration-display-and-profiles.feature` (14) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/provider-profiles.test.ts
+- `ref-resolution-click-fill.feature` (7) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/ref-resolution.test.ts
+- `ref-state-management.feature` (8) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/ref-state.test.ts
+- `refactor-ast-tool-to-use-deterministic-tree-sitter-queries-instead-of-semantic-natural-language-parsing.feature` (7) — src/research-tools: find the Rust equivalent and remap, or retire; e.g. src/research-tools/__tests__/ast-deterministic-queries.test.ts
+- `refactor-checkpoint-counts-to-be-command-triggered-instead-of-file-watching.feature` (6) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/ipc-integration.test.ts
+- `remove-isomorphic-git-dependency.feature` (4) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/remove-isomorphic-git.test.ts
+- `replace-git-cli-usage-with-isomorphic-git-library.feature` (5) — src/git: find the Rust equivalent and remap, or retire; e.g. src/git/__tests__/status.test.ts
+- `rpc-068-final-ts-regression-and-boundary-audit.feature` (6) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/rpc-068-boundary-audit.test.ts
+- `rpc-074-e2e-clear-no-notice.feature` (1) — e2e/rpc-074-slash-clear-no-notice.test.ts: find the Rust equivalent and remap, or retire; e.g. e2e/rpc-074-slash-clear-no-notice.test.ts
+- `screenshot-native-messaging-resilience.feature` (6) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/background/__tests__/browser-screenshot.test.ts
+- `search-scenarios-returns-no-results-when-it-should-find-matching-scenarios.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/search-scenarios-bug-059.test.ts
+- `shared-configuration-management-utilities-for-user-and-project-config-files.feature` (5) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/config.test.ts
+- `shift-arrow-session-switching.feature` (8) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/session-switching.test.ts
+- `sibling-watcher-navigation.feature` (5) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/sibling-watcher-navigation.test.ts
+- `spec-agent-md-files-contain-stub-instead-of-comprehensive-workflow.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/commands/__tests__/init-multi-agent.test.ts, src/utils/__tests__/templateGenerator-comprehensive.test.ts
+- `stakeholder-communication-research-script-for-unanswered-questions.feature` (7) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/stakeholder-research-tool.test.ts
+- `step-validation-hardcoded-to-javascript-comment-syntax-should-be-language-agnostic.feature` (8) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/step-validation-language-agnostic.test.ts
+- `step-validation-system-reminder-doesn-t-explain-proper-comment-placement-and-deduplication.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/step-validation-system-reminder.test.ts
+- `support-multiple-ai-agents-beyond-claude.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/commands/__tests__/init-multi-agent.test.ts, src/utils/__tests__/agentRegistry.test.ts
+- `system-reminder-anti-drift-pattern.feature` (8) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/system-reminder.test.ts
+- `system-reminder-formatting-for-ai.feature` (5) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/hooks/__tests__/formatting.test.ts
+- `system-reminder-preservation.feature` (4) — src/test: find the Rust equivalent and remap, or retire; e.g. src/test/system-reminder-preservation.test.ts
+- `typescript-function-call-integration.feature` (5) — src/test: find the Rust equivalent and remap, or retire; e.g. src/test/typescript-function-call-integration.test.ts
+- `unicode-path-normalization.feature` (12) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/normalize-path.test.ts
+- `unified-shift-arrow-navigation-across-boardview-agentview-and-splitpaneview.feature` (15) — src/__tests__: find the Rust equivalent and remap, or retire; e.g. src/__tests__/unified-view-navigation.test.ts
+- `update-agents-md-with-big-picture-event-storming-workflow-documentation.feature` (4) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/slashCommandSections/__tests__/bigPictureEventStorm.test.ts
+- `validate-json-schema.feature` (7) — src/validators: find the Rust equivalent and remap, or retire; e.g. src/validators/__tests__/json-schema.test.ts
+- `webmcp-dynamic-tool-discovery.feature` (9) — extension/src: find the Rust equivalent and remap, or retire; e.g. extension/src/content/__tests__/webmcp-discovery.test.ts
+- `wire-lockedfilemanager-errors-to-winston-logger.feature` (2) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/file-manager-logging.test.ts
+- `work-unit-scoped-hooks-for-dynamic-validation.feature` (12) — src/hooks: find the Rust equivalent and remap, or retire; e.g. src/commands/__tests__/virtual-hook-commands.test.ts, src/commands/__tests__/virtual-hooks-reminders.test.ts
+- `work-units-json-not-stamped-with-current-version-on-initial-creation.feature` (3) — src/utils: find the Rust equivalent and remap, or retire; e.g. src/utils/__tests__/ensure-files.test.ts
+
+## COV-rust-drift (9 features, 58 scenarios)
+
+- `codex-napi-session-recovery.feature` (2) — remap: Rust file moved or removed; e.g. rust/agent-loop/tests/prov160_napi_session_recovery.rs, rust/agent-loop/tests/prov160_napi_turn_routing.rs
+- `complete-anchor-based-context-compaction.feature` (16) — remap: Rust file moved or removed; e.g. rust/core/src/compaction/ctx001_tests.rs
+- `fspec-tui-agent-repl-rpc009.feature` (10) — remap: Rust file moved or removed; e.g. rust/fspec-tui/src/views/agent_repl.rs
+- `fspec-tui-root-layout-rpc009.feature` (6) — remap: Rust file moved or removed; e.g. rust/fspec-tui/src/views/root.rs
+- `fspec-tui-work-units-list-rpc009.feature` (9) — remap: Rust file moved or removed; e.g. rust/fspec-tui/src/views/work_units_list.rs
+- `handle-gemini-continuation-compaction-gracefully.feature` (3) — remap: Rust file moved or removed; e.g. rust/cli/tests/gemini_continuation_compaction_test.rs
+- `move-background-session-into-codelet-sessions.feature` (1) — remap: Rust file moved or removed; e.g. rust/sessions/tests/background_session_shape/typescript.rs
+- `replace-rule-based-anchor-detection-with-pure-llm-analysis.feature` (3) — remap: Rust file moved or removed; e.g. rust/core/src/compaction/__tests__/llm_anchor_detection.test.rs
+- `sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing.feature` (8) — remap: Rust file moved or removed; e.g. rust/fspec-tui/src/store/agent_view/sanitize.rs
+
+
+## COV-070 decisions (2026-11-04)
+
+- Retired (feature + coverage deleted): codex-napi-session-recovery (NAPI removed by
+  REFAC-027); complete-anchor-based-context-compaction and
+  replace-rule-based-anchor-detection-with-pure-llm-analysis (legacy anchor compaction
+  removed; legacy_compaction_cleanup_test asserts it); fspec-tui-agent-repl-rpc009,
+  fspec-tui-root-layout-rpc009, fspec-tui-work-units-list-rpc009 (the RPC-009 views no
+  longer exist — superseded by the board and agent views);
+  handle-gemini-continuation-compaction-gracefully (its tautological tests were deleted by
+  CMPCT-030; the behaviour is covered by
+  real-integration-coverage-for-compaction-cancel-path).
+- Scenario removed: move-background-session-into-codelet-sessions "NAPI TypeScript surface
+  is byte-stable across the move" (NAPI removed).
+- Remapped: sanitize-bash-tool-output-before-tui-rendering-to-prevent-terminal-trashing —
+  all 8 scenarios to rust/fspec-tui/src/terminal/sanitize_tests{,_streaming}.rs and
+  sanitize.rs (14 sanitize unit tests pass).

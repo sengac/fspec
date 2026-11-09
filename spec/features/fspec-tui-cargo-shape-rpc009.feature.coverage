@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "24-54",
+          "lines": "24-72",
           "implMappings": [
             {
               "file": "rust/fspec-tui/Cargo.toml",
@@ -40,7 +40,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "# Terminal & UI"
             }
           ]
         }
@@ -51,7 +53,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "56-71",
+          "lines": "74-89",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
@@ -59,7 +61,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "codelet-sessions = { path = \"sessions\" }",
+              "lastLine": "# tests. Consumed under [dev-dependencies] by every workspace crate"
             }
           ]
         }
@@ -70,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "73-91",
+          "lines": "91-111",
           "implMappings": [
             {
               "file": "rust/fspec-tui/Cargo.toml",
@@ -105,7 +109,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "# Terminal & UI"
             }
           ]
         }
@@ -116,7 +122,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "93-111",
+          "lines": "113-133",
           "implMappings": [
             {
               "file": "rust/fspec-tui/Cargo.toml",
@@ -128,7 +134,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "crossterm.workspace = true",
+              "lastLine": "# WebSocket transport (consumed by WebSocketFspecBackend::connect)"
             }
           ]
         }
@@ -139,7 +147,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "113-152",
+          "lines": "135-180",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/mod.rs",
@@ -166,7 +174,9 @@
                 20,
                 21,
                 22
-              ]
+              ],
+              "firstLine": "//! View layer.",
+              "lastLine": ""
             }
           ]
         }
@@ -177,7 +187,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc009.rs",
-          "lines": "154-184",
+          "lines": "182-217",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/mod.rs",
@@ -204,7 +214,9 @@
                 20,
                 21,
                 22
-              ]
+              ],
+              "firstLine": "//! View layer.",
+              "lastLine": ""
             }
           ]
         }
@@ -223,6 +235,6 @@
       "rust/Cargo.toml",
       "rust/fspec-tui/src/views/mod.rs"
     ],
-    "totalLinesCovered": 270
+    "totalLinesCovered": 303
   }
 }

@@ -1,4 +1,6 @@
 @BUG-130
+@codelet
+@utility
 Feature: Unicode Path Normalization — TypeScript fspec CLI
   """
   TypeScript-side normalization: src/utils/normalize-path.ts with normalizeFilePath()

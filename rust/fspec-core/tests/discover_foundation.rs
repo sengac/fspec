@@ -164,6 +164,31 @@ fn rerun_without_force_when_draft_exists_is_blocked() {
     // @step And spec/foundation.json.draft on disk is byte-equal to its pre-call contents
     let post = read_to_string(&tmp.path().join("spec/foundation.json.draft"));
     assert_eq!(pre, post, "draft must be unchanged");
+
+    // FOUND-044 (merged here): the three next steps, and no draft content.
+    for expected in [
+        // @step And the returned systemReminder contains "Choose ONE of these three next steps:"
+        "Choose ONE of these three next steps:",
+        // @step And the returned systemReminder contains "→ fspec discover-foundation --finalize"
+        "→ fspec discover-foundation --finalize",
+        // @step And the returned systemReminder contains "fspec show-foundation, which now auto-shows the draft"
+        "fspec show-foundation, which now auto-shows the draft",
+        // @step And the returned systemReminder contains "→ fspec discover-foundation --force"
+        "→ fspec discover-foundation --force",
+    ] {
+        assert!(
+            reminder.contains(expected),
+            "missing {expected:?}: {reminder}"
+        );
+    }
+    // @step And the returned systemReminder does not contain the draft content "[QUESTION: What is the project name?]"
+    assert!(
+        !result
+            .data
+            .contains("[QUESTION: What is the project name?]"),
+        "the draft content must not be returned inline: {}",
+        result.data
+    );
 }
 
 #[test]
@@ -349,6 +374,19 @@ fn finalize_blocked_when_filled_draft_violates_schema() {
         !tmp.path().join("spec/foundation.json").exists(),
         "foundation.json must not be written"
     );
+
+    // @step And the returned validationErrors contains "Missing required: solutionSpace.capabilities (at least one item required)"
+    assert!(
+        errors
+            .contains("Missing required: solutionSpace.capabilities (at least one item required)"),
+        "validationErrors: {errors}"
+    );
+
+    // @step And the returned validationErrors contains the fix command 'fspec add-capability "<name>" "<description>"'
+    assert!(
+        errors.contains("- For capabilities: fspec add-capability \"<name>\" \"<description>\""),
+        "validationErrors: {errors}"
+    );
 }
 
 #[test]
@@ -405,7 +443,7 @@ fn finalize_success_writes_foundation_deletes_draft_and_creates_found_unit() {
         "work-units.json must contain a FOUND- unit: {wu}"
     );
 
-    // @step And the envelope reports workUnitCreated=true with the FOUND-001 id (parity with the TS CLI "Created work unit" lines)
+    // @step And the envelope reports workUnitCreated=true with workUnitId "FOUND-001"
     assert_eq!(
         data["workUnitCreated"].as_bool(),
         Some(true),
@@ -417,7 +455,7 @@ fn finalize_success_writes_foundation_deletes_draft_and_creates_found_unit() {
         "workUnitId: {data}"
     );
 
-    // @step And the FOUND task matches the TS createWorkUnit shape (stateHistory present, no children array, no prefixCounters)
+    // @step And the FOUND task carries a stateHistory array, no children array, and the file has no prefixCounters key
     let wu_json: Value = serde_json::from_str(&wu).expect("parse work-units.json");
     let task = &wu_json["workUnits"]["FOUND-001"];
     assert_eq!(
@@ -496,7 +534,7 @@ fn finalize_found_autocreation_is_idempotent_when_found_unit_already_exists() {
         "expected exactly one FOUND- unit; got {found_count}"
     );
 
-    // @step And the envelope reports workUnitCreated=false reusing the existing FOUND-001 id
+    // @step And the envelope reports workUnitCreated=false reusing workUnitId "FOUND-001"
     assert_eq!(
         data["workUnitCreated"].as_bool(),
         Some(false),
@@ -506,5 +544,242 @@ fn finalize_found_autocreation_is_idempotent_when_found_unit_already_exists() {
         data["workUnitId"].as_str(),
         Some("FOUND-001"),
         "workUnitId: {data}"
+    );
+}
+
+// ---------- scenarios moved from the BUG-016, BUG-078, BUG-084, DISC-002 and FOUND-013 features (COV-072) ----------
+
+fn read_json(path: &Path) -> Value {
+    serde_json::from_str(&read_to_string(path)).expect("parse json")
+}
+
+/// The FOUND- ids on the board at `root` (none when there is no board).
+fn found_ids(root: &Path) -> Vec<String> {
+    let path = root.join("spec/work-units.json");
+    if !path.exists() {
+        return Vec::new();
+    }
+    read_json(&path)["workUnits"]
+        .as_object()
+        .map(|units| {
+            units
+                .keys()
+                .filter(|id| id.starts_with("FOUND-"))
+                .cloned()
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// A valid draft whose personas hold a real persona and the template
+/// persona with its placeholders.
+fn draft_with_template_persona() -> Value {
+    let mut draft = valid_filled_draft();
+    draft["personas"] = json!([
+        { "name": "Dev", "description": "Builds", "goals": ["Ship"] },
+        {
+            "name": "[QUESTION: Who uses this?]",
+            "description": "[QUESTION: Who uses this?]",
+            "goals": ["[QUESTION: What are their goals?]"]
+        }
+    ]);
+    draft
+}
+
+#[test]
+fn the_found_work_unit_is_a_backlog_task_with_the_foundation_event_storm_description() {
+    // @step Given a project root tempdir whose spec/foundation.json.draft is fully filled and schema-valid and no FOUND prefix is registered
+    let tmp = TempDir::new().expect("tempdir");
+    let body = serde_json::to_string_pretty(&valid_filled_draft()).unwrap();
+    write_draft_raw(tmp.path(), &body);
+    assert!(!tmp.path().join("spec/prefixes.json").exists());
+
+    // @step When I dispatch discover-foundation with finalize=true
+    let result = dispatch_command(req(tmp.path(), json!({"finalize": true})));
+
+    // @step Then the dispatcher returns valid=true
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(
+        data["valid"].as_bool(),
+        Some(true),
+        "valid must be true: {data}"
+    );
+
+    // @step And spec/work-units.json has FOUND-001 titled "Conduct Foundation Event Storm for Foundation" with type "task" and status "backlog"
+    let board = read_json(&tmp.path().join("spec/work-units.json"));
+    let unit = &board["workUnits"]["FOUND-001"];
+    assert_eq!(
+        unit["title"].as_str(),
+        Some("Conduct Foundation Event Storm for Foundation"),
+        "{unit}"
+    );
+    assert_eq!(unit["type"].as_str(), Some("task"), "{unit}");
+    assert_eq!(unit["status"].as_str(), Some("backlog"), "{unit}");
+
+    // @step And spec/work-units.json states.backlog lists FOUND-001
+    assert_eq!(board["states"]["backlog"], json!(["FOUND-001"]), "{board}");
+
+    // @step And spec/prefixes.json registers the FOUND prefix with the description "Foundation Event Storm tasks"
+    let prefixes = read_json(&tmp.path().join("spec/prefixes.json"));
+    assert_eq!(
+        prefixes["prefixes"]["FOUND"]["description"].as_str(),
+        Some("Foundation Event Storm tasks"),
+        "{prefixes}"
+    );
+
+    // @step And FOUND-001's description lists add-foundation-bounded-context, add-aggregate-to-foundation, add-domain-event-to-foundation and show-foundation-event-storm
+    let description = unit["description"].as_str().unwrap_or_default();
+    for command in [
+        "- fspec add-foundation-bounded-context <name>",
+        "- fspec add-aggregate-to-foundation <context> <aggregate>",
+        "- fspec add-domain-event-to-foundation <context> <event>",
+        "- fspec show-foundation-event-storm",
+    ] {
+        assert!(
+            description.contains(command),
+            "missing {command:?}: {description}"
+        );
+    }
+
+    // @step And FOUND-001's description explains why it matters and points to the "Foundation Event Storm" section of spec/AGENTS.md
+    assert!(
+        description.contains("\nWhy this matters:\n"),
+        "{description}"
+    );
+    assert!(
+        description.contains(
+            "See spec/AGENTS.md \"Foundation Event Storm\" section for detailed guidance."
+        ),
+        "{description}"
+    );
+}
+
+#[test]
+fn discovery_without_finalize_creates_no_work_unit() {
+    // @step Given a project root tempdir whose spec/foundation.json.draft is fully filled and schema-valid and whose spec/work-units.json has no work units
+    let tmp = TempDir::new().expect("tempdir");
+    let body = serde_json::to_string_pretty(&valid_filled_draft()).unwrap();
+    write_draft_raw(tmp.path(), &body);
+    let board = r#"{"version":"0.7.1","workUnits":{},"states":{"backlog":[],"specifying":[],"testing":[],"implementing":[],"validating":[],"done":[],"blocked":[]}}"#;
+    fs::write(tmp.path().join("spec/work-units.json"), board).expect("write board");
+
+    // @step When I dispatch discover-foundation with no flags
+    let result = dispatch_command(req(tmp.path(), json!({})));
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["valid"].as_bool(), Some(false), "{data}");
+
+    // @step Then no FOUND work unit is created
+    assert!(found_ids(tmp.path()).is_empty());
+
+    // @step And spec/work-units.json is byte-equal to its pre-call contents
+    assert_eq!(
+        read_to_string(&tmp.path().join("spec/work-units.json")),
+        board
+    );
+}
+
+#[test]
+fn a_refused_finalize_creates_no_work_unit() {
+    // @step Given a project root tempdir whose spec/foundation.json.draft still has [QUESTION:] placeholders and whose spec/work-units.json has no work units
+    let tmp = TempDir::new().expect("tempdir");
+    let body = serde_json::to_string_pretty(&placeholder_draft()).unwrap();
+    write_draft_raw(tmp.path(), &body);
+    let board = r#"{"version":"0.7.1","workUnits":{},"states":{"backlog":[],"specifying":[],"testing":[],"implementing":[],"validating":[],"done":[],"blocked":[]}}"#;
+    fs::write(tmp.path().join("spec/work-units.json"), board).expect("write board");
+
+    // @step When I dispatch discover-foundation with finalize=true
+    let result = dispatch_command(req(tmp.path(), json!({"finalize": true})));
+
+    // @step Then the dispatcher returns valid=false with the validationErrors explaining why
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["valid"].as_bool(), Some(false), "{data}");
+    let errors = data["validationErrors"].as_str().unwrap_or_default();
+    assert!(
+        errors.starts_with("Cannot finalize: draft still has unfilled placeholder fields."),
+        "validationErrors: {errors}"
+    );
+
+    // @step And no FOUND work unit is created
+    assert!(found_ids(tmp.path()).is_empty());
+
+    // @step And spec/work-units.json is byte-equal to its pre-call contents
+    assert_eq!(
+        read_to_string(&tmp.path().join("spec/work-units.json")),
+        board
+    );
+}
+
+#[test]
+fn finalize_is_refused_while_a_template_persona_remains_next_to_a_real_persona() {
+    // @step Given a project root tempdir whose spec/foundation.json.draft is filled, with capabilities, a real persona and the template persona "[QUESTION: Who uses this?]"
+    let tmp = TempDir::new().expect("tempdir");
+    let body = serde_json::to_string_pretty(&draft_with_template_persona()).unwrap();
+    write_draft_raw(tmp.path(), &body);
+
+    // @step When I dispatch discover-foundation with finalize=true
+    let result = dispatch_command(req(tmp.path(), json!({"finalize": true})));
+
+    // @step Then the dispatcher returns valid=false
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["valid"].as_bool(), Some(false), "{data}");
+
+    // @step And the returned validationErrors contains "Cannot finalize: draft still has unfilled placeholder fields"
+    let errors = data["validationErrors"].as_str().unwrap_or_default();
+    assert!(
+        errors.contains("Cannot finalize: draft still has unfilled placeholder fields"),
+        "validationErrors: {errors}"
+    );
+
+    // @step And the returned validationErrors lists only personas, as "1. personas (placeholder-entries)" with its fix command fspec add-persona
+    assert!(
+        errors.contains(
+            "  1. personas (placeholder-entries) → fspec add-persona \"<name>\" \"<description>\" --goal \"<goal>\"\n"
+        ),
+        "validationErrors: {errors}"
+    );
+    assert!(!errors.contains("  2. "), "validationErrors: {errors}");
+
+    // @step And spec/foundation.json is not created
+    assert!(!tmp.path().join("spec/foundation.json").exists());
+
+    // @step And spec/foundation.json.draft on disk is byte-equal to its pre-call contents
+    assert_eq!(
+        read_to_string(&tmp.path().join("spec/foundation.json.draft")),
+        body
+    );
+}
+
+#[test]
+fn finalize_lists_every_unfilled_field_with_its_fix_command_in_one_message() {
+    // @step Given a project root tempdir whose spec/foundation.json.draft has placeholders in project.vision, solutionSpace.overview and personas
+    let tmp = TempDir::new().expect("tempdir");
+    let mut draft = draft_with_template_persona();
+    draft["project"]["vision"] = json!("[QUESTION: What is the one-sentence vision?]");
+    draft["solutionSpace"]["overview"] = json!("[QUESTION: What can users DO?]");
+    let body = serde_json::to_string_pretty(&draft).unwrap();
+    write_draft_raw(tmp.path(), &body);
+
+    // @step When I dispatch discover-foundation with finalize=true
+    let result = dispatch_command(req(tmp.path(), json!({"finalize": true})));
+
+    // @step Then the dispatcher returns valid=false
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["valid"].as_bool(), Some(false), "{data}");
+
+    // @step And the returned validationErrors lists the three fields, numbered, each with its fix command
+    let errors = data["validationErrors"].as_str().unwrap_or_default();
+    for line in [
+        "  1. projectVision (placeholder) → fspec update-foundation projectVision \"<value>\"\n",
+        "  2. solutionOverview (placeholder) → fspec update-foundation solutionOverview \"<value>\"\n",
+        "  3. personas (placeholder-entries) → fspec add-persona \"<name>\" \"<description>\" --goal \"<goal>\"\n",
+    ] {
+        assert!(errors.contains(line), "missing {line:?} in validationErrors: {errors}");
+    }
+    assert!(!errors.contains("  4. "), "validationErrors: {errors}");
+
+    // @step And the returned validationErrors ends with "Then re-run: fspec discover-foundation --finalize"
+    assert!(
+        errors.ends_with("Then re-run: fspec discover-foundation --finalize"),
+        "validationErrors: {errors}"
     );
 }

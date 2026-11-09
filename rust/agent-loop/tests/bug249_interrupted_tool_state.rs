@@ -67,8 +67,8 @@ async fn interrupted_running_tools_retain_unknown_outcomes() -> TestResult {
         .build();
     let output = BackgroundOutput::with_provider(session.clone(), "stub".into(), None);
     // @step When a genuine user interruption stops streaming before authentic result capture
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(agent), 'w...",
         run_agent_stream(
             RigAgent::with_default_depth(agent),
             "write then stop",

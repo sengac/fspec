@@ -1,6 +1,8 @@
 @done
 @RPC-203
 @wip
+@cli
+@checkpoint-management
 Feature: Port cleanup-checkpoints command to Rust
   """
   File layout: core rust/fspec-core/src/commands/cleanup_checkpoints.rs is the single source

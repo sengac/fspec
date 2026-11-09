@@ -7,10 +7,8 @@ use futures::{SinkExt, StreamExt};
 use std::collections::VecDeque;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex, RwLock};
-use tokio::time::timeout;
 use tokio_tungstenite::{accept_async, connect_async, tungstenite::Message, WebSocketStream};
 
 /// Messages received by the test server from clients
@@ -34,6 +32,8 @@ pub struct TestWebSocketServer {
     task_handle: Option<tokio::task::JoinHandle<()>>,
     /// Whether server should accept connections (for simulating down state)
     pub accepting: Arc<RwLock<bool>>,
+    /// Connected clients (TEST-042: lets a test wait for a connection)
+    clients: Arc<Mutex<Vec<mpsc::Sender<String>>>>,
 }
 
 impl TestWebSocketServer {
@@ -113,7 +113,13 @@ impl TestWebSocketServer {
             shutdown_tx: Some(shutdown_tx),
             task_handle: Some(task_handle),
             accepting,
+            clients,
         })
+    }
+
+    /// How many clients have connected.
+    pub async fn client_count(&self) -> usize {
+        self.clients.lock().await.len()
     }
 
     /// Get the WebSocket URL for this server
@@ -127,18 +133,13 @@ impl TestWebSocketServer {
         guard.iter().cloned().collect()
     }
 
-    /// Wait for at least n messages to be received (with timeout)
-    pub async fn wait_for_messages(&self, count: usize, timeout_secs: u64) -> Vec<ReceivedMessage> {
-        let deadline = std::time::Instant::now() + Duration::from_secs(timeout_secs);
-
-        while std::time::Instant::now() < deadline {
-            let messages = self.get_received_messages().await;
-            if messages.len() >= count {
-                return messages;
-            }
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
-
+    /// Wait for at least n messages to be received (TEST-042: polled between
+    /// yields, under the deadlock guard).
+    pub async fn wait_for_messages(&self, count: usize) -> Vec<ReceivedMessage> {
+        let _ = codelet_test_helpers::wait_until("the expected messages", || async {
+            self.get_received_messages().await.len() >= count
+        })
+        .await;
         self.get_received_messages().await
     }
 
@@ -237,19 +238,6 @@ impl TestWebSocketClient {
         Ok(Self { ws_stream })
     }
 
-    /// Connect with timeout
-    pub async fn connect_with_timeout(
-        url: &str,
-        timeout_secs: u64,
-    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        let connect_future = connect_async(url);
-        match timeout(Duration::from_secs(timeout_secs), connect_future).await {
-            Ok(Ok((ws_stream, _))) => Ok(Self { ws_stream }),
-            Ok(Err(e)) => Err(Box::new(e) as Box<dyn std::error::Error + Send + Sync>),
-            Err(_) => Err("Connection timeout".into()),
-        }
-    }
-
     /// Send a message
     pub async fn send(
         &mut self,
@@ -261,18 +249,18 @@ impl TestWebSocketClient {
         Ok(())
     }
 
-    /// Receive a message with timeout
-    pub async fn recv_with_timeout(
+    /// Receive a message (TEST-042: under the deadlock guard, no timeout).
+    pub async fn recv(
         &mut self,
-        timeout_secs: u64,
     ) -> Result<Option<String>, Box<dyn std::error::Error + Send + Sync>> {
         let recv_future = self.ws_stream.next();
-        match timeout(Duration::from_secs(timeout_secs), recv_future).await {
+        match codelet_test_helpers::deadlock_guard("the next WebSocket message", recv_future).await
+        {
             Ok(Some(Ok(Message::Text(text)))) => Ok(Some(text.to_string())),
             Ok(Some(Ok(_))) => Ok(None), // Non-text message
             Ok(Some(Err(e))) => Err(Box::new(e) as Box<dyn std::error::Error + Send + Sync>),
             Ok(None) => Ok(None), // Stream ended
-            Err(_) => Err("Receive timeout".into()),
+            Err(failure) => Err(Box::new(failure) as Box<dyn std::error::Error + Send + Sync>),
         }
     }
 
@@ -309,7 +297,7 @@ mod fixture_tests {
             .expect("Send should succeed");
 
         // Wait for server to receive
-        let messages = server.wait_for_messages(1, 2).await;
+        let messages = server.wait_for_messages(1).await;
         assert_eq!(messages.len(), 1);
         assert!(messages[0].text.contains("hello"));
 
@@ -329,8 +317,11 @@ mod fixture_tests {
             .await
             .expect("Client should connect");
 
-        // Small delay to ensure connection is established
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        // TEST-042: wait until the server has the client, not a fixed delay.
+        let _ = codelet_test_helpers::wait_until("the server registers the client", || async {
+            server.client_count().await >= 1
+        })
+        .await;
 
         // Send from server to client
         server
@@ -339,10 +330,7 @@ mod fixture_tests {
             .expect("Server send should succeed");
 
         // Receive on client
-        let received = client
-            .recv_with_timeout(2)
-            .await
-            .expect("Receive should succeed");
+        let received = client.recv().await.expect("Receive should succeed");
         assert!(received.is_some());
         assert!(received.unwrap().contains("from server"));
 
@@ -360,8 +348,8 @@ mod fixture_tests {
         // Stop accepting
         server.stop_accepting().await;
 
-        // Try to connect - should fail
-        let _result = TestWebSocketClient::connect_with_timeout(&url, 1).await;
+        // Try to connect - should fail (TEST-042: one poll, no timeout)
+        let _result = futures::FutureExt::now_or_never(TestWebSocketClient::connect(&url));
         // Connection might succeed TCP-wise but WebSocket handshake will fail
         // or it will timeout - either way we expect an error or quick disconnect
 

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @feature-management
 @cli
@@ -70,3 +71,29 @@ Feature: Port add-scenario command to Rust
     When I dispatch add-scenario with feature='spec/features/login.feature', scenario='Ghost' and dryRun=true
     Then the dispatcher returns success=true
     And the file spec/features/login.feature does NOT contain the line '  Scenario: Ghost'
+
+  Scenario: Two added scenarios stay in the order they were added
+    Given a project root tempdir with spec/features/payment.feature containing 'Feature: Payment\n  Scenario: Existing\n    Given x\n'
+    When I dispatch add-scenario with feature='payment' and scenario='Credit card payment'
+    And I dispatch add-scenario with feature='payment' and scenario='PayPal payment'
+    Then the file spec/features/payment.feature has the scenarios 'Existing', 'Credit card payment' and 'PayPal payment' in that order
+    And the second dispatch returns valid=true
+
+  Scenario: Adding a scenario keeps the tags, Background and existing scenarios
+    Given a project root tempdir with spec/features/my-feature.feature that has the feature tags @auth and @critical, a Background and the scenarios 'First' and 'Second'
+    When I dispatch add-scenario with feature='my-feature' and scenario='New scenario'
+    Then the file on disk starts with the original content unchanged
+    And 'Scenario: New scenario' is the last scenario in the file
+
+  Scenario: Invalid Gherkin fails with a validate suggestion and leaves the file unchanged
+    Given a project root tempdir with spec/features/broken.feature that does not parse as Gherkin
+    When I dispatch add-scenario with feature='broken' and scenario='New scenario'
+    Then the dispatcher returns success=false
+    And the error starts with 'Feature file has invalid Gherkin syntax: '
+    And the suggestion equals "Run 'fspec validate broken' to see syntax errors"
+    And spec/features/broken.feature is unchanged byte for byte
+
+  Scenario: The added scenario uses two-space scenario and four-space step indentation
+    Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
+    When I dispatch add-scenario with feature='login' and scenario='New scenario'
+    Then the line '  Scenario: New scenario' is followed by the lines '    Given [precondition]', '    When [action]' and '    Then [expected outcome]'

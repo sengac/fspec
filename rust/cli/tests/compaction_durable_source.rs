@@ -15,6 +15,7 @@ impl codelet_cli::interactive::StreamOutput for Output {
 async fn terminal_builder_receives_the_exact_current_durable_source(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("source", directory.path(), "openai")?;

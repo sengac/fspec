@@ -22,7 +22,7 @@ impl ModelSelectorView {
         let Some(profile_name) = row.profile_name.clone() else {
             return;
         };
-        let provider_id = row.provider_key.clone();
+        let provider_id = row.provider_id.clone();
         self.custom_model_mode = CustomModelMode::Add {
             provider_id,
             profile_name,
@@ -33,6 +33,10 @@ impl ModelSelectorView {
     /// `e`: open the Edit form when the focused row is a selectable custom
     /// model inside a profile section. A consumed no-op otherwise.
     pub(crate) fn try_open_edit_form(&mut self) {
+        // BUG-576: nothing selected, nothing to edit or delete.
+        if !self.has_selection {
+            return;
+        }
         let Some(row) = self.focused_row() else {
             return;
         };
@@ -42,7 +46,7 @@ impl ModelSelectorView {
         let Some(profile_name) = row.profile_name.clone() else {
             return;
         };
-        let provider_id = row.provider_key.clone();
+        let provider_id = row.provider_id.clone();
         let original_model_id = row.model_id.clone();
         self.form = CustomModelForm::prefill_from_entry(
             &row.model_id,
@@ -61,6 +65,10 @@ impl ModelSelectorView {
     /// `d`: open the delete confirmation when the focused row is a selectable
     /// custom model inside a profile section. A consumed no-op otherwise.
     pub(crate) fn try_open_delete_confirm(&mut self) {
+        // BUG-576: nothing selected, nothing to edit or delete.
+        if !self.has_selection {
+            return;
+        }
         let Some(row) = self.focused_row() else {
             return;
         };
@@ -71,7 +79,7 @@ impl ModelSelectorView {
             return;
         };
         self.custom_model_mode = CustomModelMode::DeleteConfirm {
-            provider_id: row.provider_key.clone(),
+            provider_id: row.provider_id.clone(),
             profile_name,
             model_id: row.model_id.clone(),
             display_name: row.label.clone(),
@@ -92,12 +100,43 @@ impl ModelSelectorView {
         }
     }
 
+    /// TUI-130: a paste into the open add/edit form goes into its focused
+    /// field; anywhere else it is not used.
+    pub fn handle_paste(&mut self, text: &str) -> ModelSelectorEvent {
+        match self.custom_model_mode {
+            CustomModelMode::Add { .. } | CustomModelMode::Edit { .. } => {
+                self.form.paste(text);
+                ModelSelectorEvent::Consumed
+            }
+            _ => ModelSelectorEvent::Ignored,
+        }
+    }
+
+    /// TUI-130: copy the focused model as `provider/model-id`.
+    pub(crate) fn copy_focused_model(&self) -> ModelSelectorEvent {
+        match self
+            .rows
+            .get(self.selected_index)
+            .filter(|row| row.selectable)
+        {
+            Some(row) => ModelSelectorEvent::Emit(Box::new(Action::CopyToClipboard(format!(
+                "{}/{}",
+                row.provider_key, row.model_id
+            )))),
+            None => ModelSelectorEvent::Consumed,
+        }
+    }
+
     /// Build the definition and emit Add/Edit; an empty Model ID keeps the
     /// form open (no Action emitted).
     pub(crate) fn submit_form(&mut self) -> ModelSelectorEvent {
         let Some(definition) = self.form.build_definition() else {
             return ModelSelectorEvent::Consumed;
         };
+        // BUG-576: the reloaded list opens this section on the model.
+        if let Some((section, _)) = self.cursor_row() {
+            self.focus_after_load(section, Some(definition.id.clone()));
+        }
         let action = match &self.custom_model_mode {
             CustomModelMode::Add {
                 provider_id,
@@ -121,6 +160,7 @@ impl ModelSelectorView {
         };
         self.custom_model_mode = CustomModelMode::Browse;
         self.form = CustomModelForm::default();
+        self.write_error = None;
         ModelSelectorEvent::Emit(Box::new(action))
     }
 
@@ -152,6 +192,7 @@ impl ModelSelectorView {
                 None
             };
             self.custom_model_mode = CustomModelMode::Browse;
+            self.write_error = None;
             return match action {
                 Some(a) => ModelSelectorEvent::Emit(Box::new(a)),
                 None => ModelSelectorEvent::Consumed,

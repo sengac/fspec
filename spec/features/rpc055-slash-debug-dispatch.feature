@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-055
 @rpc
@@ -67,7 +68,7 @@ Feature: /debug debug-capture wiring
     Given an App with an open session s-1 wired to a MockBackend whose toggle_debug returns Ok("/tmp/debug/s-1/session-x.jsonl")
     When SlashCommandSelected(SlashCommandAction::Debug) is dispatched
     Then within 1 second backend.toggle_debug is called exactly once with session_id s-1
-    And the debug_dir argument equals ".fspec/debug"
+    And the debug_dir argument equals "~/.fspec"
 
   Scenario: /debug emits a success notice with the resolved file path on Ok
     Given an App with an open session s-1 wired to a MockBackend whose toggle_debug returns Ok("/tmp/debug/s-1/session-x.jsonl")

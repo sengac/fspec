@@ -1,5 +1,6 @@
+use crate::common::TaskOutcome;
+use parking_lot::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::Mutex;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -24,17 +25,11 @@ pub struct ContinueBackend {
 
 impl ContinueBackend {
     pub fn state(&self) -> (bool, u32) {
-        *self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
+        *self.state.lock()
     }
 
     pub fn writes(&self) -> Vec<(SessionId, bool, u32)> {
-        self.writes
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .clone()
+        self.writes.lock().clone()
     }
 
     pub fn new(state: (bool, u32)) -> Self {
@@ -80,13 +75,17 @@ delegate! {
         async fn list_sessions(project_path: String) -> Vec<SessionInfo>;
         async fn create_session(role: Option<String>) -> SessionId;
         async fn send_input(id: SessionId, text: String) -> ();
+        async fn submit_input(id: SessionId, text: String, mode: InputMode) -> ();
+    async fn configure_session_mcp_servers(id: SessionId, servers: Vec<codelet_rpc_types::SessionMcpServer>) -> Vec<codelet_rpc_types::SessionMcpServerTools>;
+    async fn control_exec_stdin(id: SessionId, exec_session_id: String, control: codelet_rpc_types::ExecStdinControl) -> ();
         async fn interrupt(id: SessionId) -> ();
         async fn health() -> HealthInfo;
         async fn checkpoint_counts() -> CheckpointCounts;
-        async fn move_work_unit_up(id: String) -> ();
-        async fn move_work_unit_down(id: String) -> ();
+        async fn move_work_unit_up(workspace: String, id: String) -> ();
+        async fn move_work_unit_down(workspace: String, id: String) -> ();
         async fn get_model_info(session_id: SessionId) -> ModelInfo;
         async fn get_thinking_level(session_id: SessionId) -> ThinkingLevel;
+        async fn get_thinking_options(session_id: SessionId) -> codelet_rpc_types::ThinkingOptions;
         async fn get_workspace_info() -> WorkspaceInfo;
         async fn search_files(prefix: String, limit: u32) -> Vec<String>;
         async fn persistence_add_history(session: SessionId, text: String) -> ();
@@ -129,33 +128,34 @@ delegate! {
         enabled: bool,
         budget: u32,
     ) -> Result<()> {
-        self.writes.lock().unwrap_or_else(std::sync::PoisonError::into_inner).push((session_id, enabled, budget));
+        self.writes.lock().push((session_id, enabled, budget));
         if self.hold_write.swap(false, Ordering::SeqCst) {
             self.release_write.acquire().await?.forget();
         }
         anyhow::ensure!(!self.fail_set.load(Ordering::SeqCst), "scripted setter failure");
-        *self.state.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = (enabled, budget);
+        *self.state.lock() = (enabled, budget);
         Ok(())
     }
 }
 
-pub async fn responses(app: &mut App) -> Vec<Action> {
+pub async fn responses(
+    app: &mut App,
+) -> std::result::Result<Vec<Action>, codelet_test_helpers::Failure> {
     while let Some(task) = app.next_pending_task() {
-        let result = task.await;
-        assert!(result.is_ok(), "app task failed: {result:?}");
+        task.await.completed_or_cancelled()?;
     }
     let mut actions = Vec::new();
     while let Some(action) = app.try_recv_action() {
         actions.push(action);
     }
-    actions
+    Ok(actions)
 }
 
-pub async fn settle(app: &mut App) {
+pub async fn settle(app: &mut App) -> std::result::Result<(), codelet_test_helpers::Failure> {
     loop {
-        let actions = responses(app).await;
+        let actions = responses(app).await?;
         if actions.is_empty() {
-            return;
+            return Ok(());
         }
         for action in actions {
             app.dispatch(action);

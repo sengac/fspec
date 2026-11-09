@@ -10,15 +10,17 @@
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "if let Some(record) = envelope.get(\"_transcript\") {",
+              "lastLine": "continue;"
             },
             {
               "file": "rust/sessions/src/replay_transcript.rs",
@@ -26,7 +28,9 @@
                 16,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "JournalEvent::Text { text } => StreamChunk::text(text),",
+              "lastLine": "TerminalOutcome::ProviderError => StreamChunk::error(outcome.message().into()),"
             },
             {
               "file": "rust/sessions/src/transcript_archive.rs",
@@ -40,7 +44,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "for chunk in chunks {",
+              "lastLine": "original,"
             },
             {
               "file": "rust/core/src/persistence/archive.rs",
@@ -55,7 +61,9 @@
                 89,
                 90,
                 108
-              ]
+              ],
+              "firstLine": "let journal = journal::snapshot(manifest, cursor.as_ref())?;",
+              "lastLine": "record_kind: kind,"
             },
             {
               "file": "rust/core/src/persistence/archive/types.rs",
@@ -63,7 +71,9 @@
                 12,
                 13,
                 25
-              ]
+              ],
+              "firstLine": "pub journal_end: usize,",
+              "lastLine": "Transcript,"
             },
             {
               "file": "rust/core/src/persistence/archive/journal.rs",
@@ -78,7 +88,9 @@
                 82,
                 88,
                 94
-              ]
+              ],
+              "firstLine": "let mut records = JournalStore::configured(manifest.id)",
+              "lastLine": "}"
             }
           ]
         }

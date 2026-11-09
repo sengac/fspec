@@ -6,6 +6,10 @@
 @PROV-005
 Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
   """
+  MODEL-010 (thinking-levels-reach-each-provider-through-a-wire-table.feature) replaced the
+  thinking-config scenarios: the anthropic wire sends adaptive thinking for an effort and enabled
+  thinking for a token budget, checked against the model's advertised capability, so no model-id
+  routing or budget table picks the form. is_adaptive_thinking_model now chooses only the beta headers.
   ARCHITECTURE:
   - Default-adaptive: All Claude 4.6+ models use adaptive thinking by default
   - Only old models (4.5 and earlier) are explicitly listed as budgeted exceptions
@@ -64,60 +68,6 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     I want to use Claude Opus 4.6 and Sonnet 4.6 with adaptive thinking
     So that the model automatically decides thinking depth without manual budget configuration
 
-  # ===========================================
-  # ADAPTIVE THINKING SCENARIOS (Opus 4.6, Sonnet 4.6)
-  # ===========================================
-  @adaptive-thinking
-  Scenario: Opus 4.6 uses adaptive thinking automatically
-    Given I have configured the Claude provider with model "claude-opus-4-6"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @adaptive-thinking
-  Scenario: Sonnet 4.6 uses adaptive thinking automatically
-    Given I have configured the Claude provider with model "claude-sonnet-4-6"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @adaptive-thinking
-  @budget-ignored
-  Scenario: User-provided budget_tokens is ignored for Opus 4.6
-    Given I have configured the Claude provider with model "claude-opus-4-6"
-    And I have set a thinking budget of 16000 tokens
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @adaptive-thinking
-  @budget-ignored
-  Scenario: User-provided budget_tokens is ignored for Sonnet 4.6
-    Given I have configured the Claude provider with model "claude-sonnet-4-6"
-    And I have set a thinking budget of 16000 tokens
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @budget-thinking
-  Scenario: Opus 4.5 uses budget-based thinking
-  # ===========================================
-  # BUDGETED THINKING SCENARIOS (Opus 4.5, Sonnet 4.5, etc.)
-  # ===========================================
-    Given I have configured the Claude provider with model "claude-opus-4-5"
-    And I have set a thinking budget of 16000 tokens
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "enabled"
-    And the request should contain budget_tokens of 16000
-
-  @budget-thinking
-  Scenario: Sonnet 4.5 uses budget-based thinking
-    Given I have configured the Claude provider with model "claude-sonnet-4-5"
-    And I have set a thinking budget of 16000 tokens
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "enabled"
-    And the request should contain budget_tokens of 16000
-
   @beta-headers
   @adaptive-thinking
   Scenario: Opus 4.6 uses correct beta headers
@@ -159,61 +109,3 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
     And the anthropic-beta header should include "interleaved-thinking-2025-05-14"
     And the anthropic-beta header should NOT include "context-1m-2025-08-07"
-
-  @model-detection
-  @default-adaptive
-  Scenario: Unknown future model defaults to adaptive thinking
-  # ===========================================
-  # DEFAULT-ADAPTIVE SCENARIOS (future models)
-  # ===========================================
-    Given I have configured the Claude provider with model "claude-opus-4-8"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-    And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
-
-  @model-detection
-  @default-adaptive
-  Scenario: Model variant inherits adaptive behavior from base model
-    Given I have configured the Claude provider with model "claude-opus-4-6-preview"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-    And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
-
-  @thinking-levels
-  @adaptive-thinking
-  Scenario: Thinking level 'high' defaults to adaptive for Opus 4.6
-  # ===========================================
-  # THINKING LEVEL SCENARIOS (low/med/high → adaptive, off → disabled)
-  # ===========================================
-    Given I have configured the Claude provider with model "claude-opus-4-6"
-    And I have set the thinking level to "high"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @thinking-levels
-  @adaptive-thinking
-  Scenario: Thinking level 'low' defaults to adaptive for Sonnet 4.6
-    Given I have configured the Claude provider with model "claude-sonnet-4-6"
-    And I have set the thinking level to "low"
-    When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "adaptive"
-    And the request should NOT contain a budget_tokens field
-
-  @thinking-levels
-  @adaptive-thinking
-  Scenario: Thinking disabled with 'off' for Opus 4.6
-    Given I have configured the Claude provider with model "claude-opus-4-6"
-    And I have set the thinking level to "off"
-    When I make an API request
-    Then the request should NOT contain a thinking configuration
-
-  @thinking-levels
-  @adaptive-thinking
-  Scenario: Thinking disabled with 'off' for Sonnet 4.6
-    Given I have configured the Claude provider with model "claude-sonnet-4-6"
-    And I have set the thinking level to "off"
-    When I make an API request
-    Then the request should NOT contain a thinking configuration

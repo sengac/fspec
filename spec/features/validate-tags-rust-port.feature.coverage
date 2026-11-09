@@ -396,8 +396,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -799,8 +829,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -1202,8 +1262,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -1605,8 +1695,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -2008,8 +2128,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -2411,8 +2561,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -2814,8 +2994,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -3217,8 +3427,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -3229,7 +3469,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_tags.rs",
-          "lines": "360-381",
+          "lines": "366-389",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_tags.rs",
@@ -3620,8 +3860,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -3632,7 +3902,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_tags.rs",
-          "lines": "382-401",
+          "lines": "391-409",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_tags.rs",
@@ -4023,8 +4293,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -4035,7 +4335,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_tags.rs",
-          "lines": "402-428",
+          "lines": "411-440",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_tags.rs",
@@ -4426,8 +4726,38 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
             }
           ]
         }
@@ -4438,7 +4768,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_tags.rs",
-          "lines": "429-452",
+          "lines": "442-465",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_tags.rs",
@@ -4829,8 +5159,502 @@
                 451,
                 452,
                 453,
-                454
-              ]
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "lines.push(format!(\"  {m}\"));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Report multiple violations in one file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "493-529",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283
+              ],
+              "firstLine": "fn validate_unregistered_feature_tags(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate scenario-level tags are registered",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "531-557",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332
+              ],
+              "firstLine": "fn validate_scenario_tags(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect unregistered scenario-level tag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "559-586",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332
+              ],
+              "firstLine": "fn validate_scenario_tags(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate both feature-level and scenario-level tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "588-617",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ],
+              "firstLine": "/// The tag errors of feature file `file` with `content`; a file that does",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect mix of registered and unregistered scenario tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "619-649",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332
+              ],
+              "firstLine": "fn validate_scenario_tags(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate scenario tags do not require component/feature-group tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "651-673",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396
+              ],
+              "firstLine": "fn validate_required_category_tags(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate work unit tag exists in work-units.json",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "675-697",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373
+              ],
+              "firstLine": "fn report_work_unit_tag(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Distinguish work unit tags from regular tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validate_tags.rs",
+          "lines": "699-725",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_tags.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283
+              ],
+              "firstLine": "fn validate_unregistered_feature_tags(",
+              "lastLine": "}"
             }
           ]
         }
@@ -4838,8 +5662,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 12,
+    "totalScenarios": 20,
+    "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/validate_tags.rs"
@@ -4847,6 +5671,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/validate_tags.rs"
     ],
-    "totalLinesCovered": 4974
+    "totalLinesCovered": 5860
   }
 }

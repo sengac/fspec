@@ -21,7 +21,6 @@ use codelet_sessions::background_session::BackgroundSession;
 use codelet_test_helpers::setup_temp_directory;
 use serde_json::Value;
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 use tokio::sync::{broadcast, mpsc};
 use transport::TestResult;
 
@@ -41,7 +40,7 @@ impl StreamOutput for RecordingOutput {
 }
 
 /// @step Given a background session has post-tool hooks recording tool names and inputs
-/// @step And its committed batch contains distinct function calls and a namespaced custom patch call
+/// @step And its committed batch contains distinct function calls with a namespaced alias and a namespaced custom patch call
 /// @step When I interrupt its streaming consumer during the first tool
 /// @step Then each cancellation hook receives its own tool name and normalized input exactly once
 /// @step And persisted conversation blocks contain every committed call before its outcome
@@ -49,6 +48,7 @@ impl StreamOutput for RecordingOutput {
 #[serial_test::serial]
 async fn cancellation_hooks_receive_the_matching_committed_tool_metadata() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let manifest = create_session_with_provider("hook pairs", directory.path(), "codex")?;
@@ -100,7 +100,7 @@ async fn cancellation_hooks_receive_the_matching_committed_tool_metadata() -> Te
     };
     persist_user_message(&manifest.id, "inspect")?;
     batch.run(&mut session, manifest.id, &output).await?;
-    let payloads = tokio::time::timeout(Duration::from_secs(5), async {
+    let payloads = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             let payloads: Vec<Value> = std::fs::read_dir(&hook_path)?
                 .filter_map(Result::ok)
@@ -110,7 +110,7 @@ async fn cancellation_hooks_receive_the_matching_committed_tool_metadata() -> Te
             if payloads.len() == 3 {
                 return Ok::<_, std::io::Error>(payloads);
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await??;

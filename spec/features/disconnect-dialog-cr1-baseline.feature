@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @workflow-automation
 @websocket
@@ -18,6 +19,7 @@ Feature: DisconnectDialog CR-1 baseline (action bus + critical dialog + r/q hand
   enum lives in rust/fspec-tui/src/components/mod.rs (additive variants Disconnected /
   Reconnecting(u32) / Reconnected / ManualReconnect). DisconnectDialog uses the same tui-popup
   widget as RPC-008's HelpDialog — NO new dialog framework.
+  TUI-132 (2026-11-09): the DisconnectDialog, its q/r keys and Action::ManualReconnect are removed: nothing showed the dialog since RPC-416 reports a drop inline. Action::Disconnected / Reconnecting / Reconnected remain.
   """
 
   Background: User Story
@@ -33,30 +35,8 @@ Feature: DisconnectDialog CR-1 baseline (action bus + critical dialog + r/q hand
     And the WebSocketFspecBackend's internal client slot becomes None
     And subsequent RPC calls on the backend return Err(BackendError::Disconnected) rather than panicking or hanging
 
-  Scenario: DisconnectDialog is pushed at Priority::Critical when Action::Disconnected fires
+  Scenario: Action::Disconnected pushes an inline reconnecting line, not the DisconnectDialog modal
     Given an App driving a ratatui TestBackend with a WebSocketFspecBackend whose connection has just dropped
     When the action loop processes Action::Disconnected
-    Then the Compositor's topmost layer is a DisconnectDialog Component
-    And the dialog's reported priority is Priority::Critical
-    And the rendered Buffer contains the literal strings "daemon disconnected", "q to quit", and "r to reconnect"
-
-  Scenario: DisconnectDialog swallows navigation keys while topmost
-    Given a TestBackend App with the DisconnectDialog currently topmost
-    When the user presses 'j', 'k', '?', and Tab in sequence
-    Then the WorkUnitsListView selection index does not change
-    And the HelpDialog is not pushed onto the Compositor
-    And the focused pane does not flip between WorkUnits and Repl
-    And the DisconnectDialog remains topmost
-
-  Scenario: Pressing q in DisconnectDialog exits the client cleanly
-    Given a TestBackend App with the DisconnectDialog currently topmost
-    When the user presses 'q'
-    Then the App's should_quit flag becomes true
-    And App::run returns Ok(()) and the client process exits with status 0
-    And no panic backtrace is printed on stderr
-
-  Scenario: Pressing r in DisconnectDialog triggers a manual reconnect that resets backoff
-    Given a TestBackend App with the DisconnectDialog topmost during a 5-second backoff sleep
-    When the user presses 'r'
-    Then the reconnect supervisor cancels the current sleep and attempts connect immediately
-    And on the next failure the backoff schedule restarts from 250ms (not 5s)
+    Then no DisconnectDialog modal layer is pushed onto the Compositor
+    And the focused session's scrollback gains a single inline reconnecting status line

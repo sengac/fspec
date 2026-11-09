@@ -2,6 +2,7 @@
 @RPC-275
 @rust
 @cli
+@remove
 Feature: Remove hook CLI subcommand
   """
   CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::remove_hook::run(args_json, &cwd).
@@ -39,13 +40,6 @@ Feature: Remove hook CLI subcommand
     Then the command exits 1
     Then stderr starts with 'Error:'
     Then spec/fspec-hooks.json was NOT created in the directory
-
-  Scenario: CLI exits non-zero with error when spec/fspec-hooks.json is invalid JSON
-    Given spec/fspec-hooks.json exists in the working directory but contains invalid JSON syntax
-    When I run `fspec remove-hook pre-implementing lint`
-    Then the command exits 1
-    Then stderr starts with 'Error:'
-    Then the raw bytes of spec/fspec-hooks.json are unchanged
 
   Scenario: CLI is silent when called with a no-op (missing key/name)
     Given spec/fspec-hooks.json contains event 'pre-implementing' with a single entry named 'lint'

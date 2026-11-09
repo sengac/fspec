@@ -1,5 +1,7 @@
 @done
 @KGRAPH-068
+@parser
+@history-search
 Feature: Decorator and Annotation Search
   """
   This feature was largely implemented across KGRAPH-063 (metadata storage/extraction)

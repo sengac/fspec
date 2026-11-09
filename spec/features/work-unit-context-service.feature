@@ -1,5 +1,7 @@
 @done
 @TUI-059
+@codelet
+@context-management
 Feature: Work Unit Context Service Layer
   """
   Architecture notes:

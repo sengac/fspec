@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validation
 @coverage-tracking
@@ -26,7 +27,7 @@ Feature: fspec link-coverage CLI subcommand
     Given the fspec Rust binary is built and on PATH
     When I run `fspec link-coverage --help`
     Then the exit code is 0
-    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/link-coverage.txt
+    And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/refac020/link-coverage.txt
     And stdout contains the substring "--scenario"
 
   Scenario: CLI links a test mapping and prints the success message

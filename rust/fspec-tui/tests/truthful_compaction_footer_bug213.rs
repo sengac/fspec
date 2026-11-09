@@ -2,6 +2,7 @@
 
 use codelet_fspec_tui::views::agent::footer::SessionFooter;
 use codelet_rpc_types::{CompactionProgress, WorkspaceInfo};
+use codelet_test_helpers::TestResult;
 use proptest::prelude::*;
 use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
 
@@ -54,7 +55,7 @@ proptest! {
 }
 
 #[test]
-fn scenario_truthful_activity_preserves_workspace_chrome_and_supervisor_priority() {
+fn scenario_truthful_activity_preserves_workspace_chrome_and_supervisor_priority() -> TestResult {
     // @step Given a compacting session with a workspace directory and Git branch
     let progress = CompactionProgress {
         phase: "Building DAG".into(),
@@ -83,4 +84,5 @@ fn scenario_truthful_activity_preserves_workspace_chrome_and_supervisor_priority
     activity: "[compacting: Building DAG] /tmp/work [⎇ main]"
     supervisor: "[2 pending from supervisor] /tmp/work [⎇ main]"
     "###);
+    Ok(())
 }

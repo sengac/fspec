@@ -42,7 +42,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// so the shell stderr is byte-identical to TS."
             }
           ]
         }
@@ -62,7 +64,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "if !rendered.ends_with('\\n') {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -89,7 +93,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "// dispatcher gate (\"at least one update\") fires correctly.",
+              "lastLine": ""
             }
           ]
         }
@@ -100,7 +106,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_tag.rs",
-          "lines": "179-201",
+          "lines": "179-199",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/update_tag.rs",
@@ -154,7 +160,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "//! `update-tag` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -172,6 +180,6 @@
       "rust/fspec/src/update_tag.rs",
       "rust/fspec-core/src/help/configs/update_tag.rs"
     ],
-    "totalLinesCovered": 240
+    "totalLinesCovered": 238
   }
 }

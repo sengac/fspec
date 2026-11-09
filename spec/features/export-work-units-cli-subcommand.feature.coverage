@@ -6,43 +6,7 @@
         {
           "file": "rust/fspec/tests/cli_export_work_units.rs",
           "lines": "73-101",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/export_work_units.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -52,43 +16,7 @@
         {
           "file": "rust/fspec/tests/cli_export_work_units.rs",
           "lines": "103-121",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/export_work_units.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -97,30 +25,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_export_work_units.rs",
-          "lines": "123-144",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/export_work_units.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
-            }
-          ]
+          "lines": "125-147"
         }
       ]
     }
@@ -132,10 +37,7 @@
     "testFiles": [
       "rust/fspec/tests/cli_export_work_units.rs"
     ],
-    "implFiles": [
-      "rust/fspec/src/export_work_units.rs",
-      "rust/fspec-core/src/help/configs/export_work_units.rs"
-    ],
-    "totalLinesCovered": 146
+    "implFiles": [],
+    "totalLinesCovered": 71
   }
 }

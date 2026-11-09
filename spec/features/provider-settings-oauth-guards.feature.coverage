@@ -6,73 +6,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "718-751",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
-              "lines": [
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -149,35 +83,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "895-925",
-          "implMappings": [
-            {
-              "file": "src/utils/credentials.ts",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -216,30 +122,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "184-209",
-          "implMappings": [
-            {
-              "file": "src/utils/provider-config.ts",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -273,45 +156,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "211-271",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useProviderSettingsState.ts",
-              "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -360,45 +205,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "273-311",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useProviderSettingsState.ts",
-              "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -447,45 +254,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "313-360",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useProviderSettingsState.ts",
-              "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -534,45 +303,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "362-407",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useProviderSettingsState.ts",
-              "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -621,45 +352,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "409-442",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useProviderSettingsState.ts",
-              "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -708,20 +401,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "444-458",
-          "implMappings": [
-            {
-              "file": "src/utils/provider-config.ts",
-              "lines": [
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -745,20 +425,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "460-474",
-          "implMappings": [
-            {
-              "file": "src/utils/provider-config.ts",
-              "lines": [
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -782,20 +449,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "476-498",
-          "implMappings": [
-            {
-              "file": "src/utils/provider-config.ts",
-              "lines": [
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -819,44 +473,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "500-515",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -904,44 +521,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "517-533",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -989,44 +569,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "535-554",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1074,44 +617,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "556-581",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1159,44 +665,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "583-606",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1244,34 +713,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "608-628",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1309,73 +751,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "630-661",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
-              "lines": [
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1452,73 +828,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "663-693",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
-              "lines": [
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1595,34 +905,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "695-716",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1660,34 +943,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "753-778",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1725,64 +981,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "780-798",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1850,64 +1049,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "800-817",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -1975,64 +1117,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "819-838",
-          "implMappings": [
-            {
-              "file": "src/tui/inputHandlers/listModeHandler.ts",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -2100,35 +1185,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "840-867",
-          "implMappings": [
-            {
-              "file": "src/tui/utils/providerSettingsHelpers.ts",
-              "lines": [
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -2167,20 +1224,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "869-893",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ProviderSettingsPanel.tsx",
-              "lines": [
-                762,
-                763,
-                764,
-                765,
-                766,
-                767,
-                768
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -2204,18 +1248,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "927-944",
-          "implMappings": [
-            {
-              "file": "src/tui/types/provider.ts",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -2237,162 +1270,7 @@
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
           "lines": "946-961",
-          "implMappings": [
-            {
-              "file": "src/tui/types/provider.ts",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ],
       "implementationMappings": [
@@ -2560,16 +1438,7 @@
     "testFiles": [
       "src/tui/__tests__/provider-settings-oauth-guards.test.ts"
     ],
-    "implFiles": [
-      "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
-      "src/utils/credentials.ts",
-      "src/utils/provider-config.ts",
-      "src/tui/hooks/useProviderSettingsState.ts",
-      "src/tui/inputHandlers/listModeHandler.ts",
-      "src/tui/utils/providerSettingsHelpers.ts",
-      "src/tui/components/ProviderSettingsPanel.tsx",
-      "src/tui/types/provider.ts"
-    ],
-    "totalLinesCovered": 2456
+    "implFiles": [],
+    "totalLinesCovered": 751
   }
 }

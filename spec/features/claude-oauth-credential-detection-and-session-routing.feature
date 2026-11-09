@@ -1,4 +1,7 @@
+@BUG-582
 @PROV-026
+@providers
+@authentication
 Feature: Claude OAuth Credential Detection and Session Routing
   """
   claude_auth.rs: read_claude_auth_sync() using std::fs for sync contexts (credentials.rs, manager.rs).

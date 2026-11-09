@@ -486,7 +486,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -497,7 +499,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "95-126",
+          "lines": "101-141",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -978,7 +980,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -989,7 +993,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "127-149",
+          "lines": "143-164",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -1470,7 +1474,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -1481,7 +1487,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "150-177",
+          "lines": "166-196",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -1962,7 +1968,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -1973,7 +1981,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "178-201",
+          "lines": "198-224",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -2454,7 +2462,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -2465,7 +2475,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "202-228",
+          "lines": "226-251",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -2946,7 +2956,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -2957,7 +2969,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "229-258",
+          "lines": "253-285",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -3438,7 +3450,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -3449,7 +3463,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "259-288",
+          "lines": "287-336",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -3930,7 +3944,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -3941,7 +3957,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "289-312",
+          "lines": "338-364",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -4422,7 +4438,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -4433,7 +4451,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "313-339",
+          "lines": "366-395",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -4914,7 +4932,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -4925,7 +4945,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "340-366",
+          "lines": "397-426",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -5406,7 +5426,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -5417,7 +5439,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "367-390",
+          "lines": "428-454",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -5898,7 +5920,9 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
             }
           ]
         }
@@ -5909,7 +5933,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
-          "lines": "391-412",
+          "lines": "456-482",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
@@ -6390,7 +6414,711 @@
                 474,
                 475,
                 476
-              ]
+              ],
+              "firstLine": "//! `add-tag-to-feature` — Rust port of `src/commands/add-tag-to-feature.ts` (RPC-193).",
+              "lastLine": "assert!(is_regular_tag(\"@feature-management\"));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "validateRegistry=true accepts a tag registered in spec/tags.json",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
+          "lines": "517-559",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a feature tag leaves scenario-level tags untouched",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
+          "lines": "561-590",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a feature tag preserves the rest of the file byte-for-byte",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_tag_to_feature.rs",
+          "lines": "592-616",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_tag_to_feature.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -6398,8 +7126,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 13,
-    "coveredScenarios": 13,
+    "totalScenarios": 16,
+    "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_tag_to_feature.rs"
@@ -6407,6 +7135,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_tag_to_feature.rs"
     ],
-    "totalLinesCovered": 6536
+    "totalLinesCovered": 7335
   }
 }

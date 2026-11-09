@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug273_shared_index.rs",
-          "lines": "12-33",
+          "lines": "12-35",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/messages/verified.rs",
@@ -68,7 +68,53 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "//! Optional completeness proof for a strictly scanned derived index.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
             }
           ]
         }
@@ -79,11 +125,16 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug273_shared_index.rs",
-          "lines": "37-66",
+          "lines": "39-70",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/messages/index.rs",
               "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
                 56,
                 57,
                 58,
@@ -128,10 +179,54 @@
                 97,
                 98,
                 99,
+                100
+              ],
+              "firstLine": "/// Load the binary index file, returning the index map and the recorded data file size.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
                 100,
                 101,
-                102
-              ]
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
             }
           ]
         }
@@ -142,7 +237,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug273_shared_index.rs",
-          "lines": "70-93",
+          "lines": "74-97",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/messages/recovery.rs",
@@ -172,8 +267,11 @@
                 23,
                 24,
                 25,
-                26
-              ]
+                26,
+                27
+              ],
+              "firstLine": "use super::{index, MessageStore, StoreGeneration, StoredMessage};",
+              "lastLine": "}"
             }
           ]
         }
@@ -184,7 +282,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug273_shared_index.rs",
-          "lines": "97-119",
+          "lines": "101-123",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/messages/framing/scan.rs",
@@ -252,7 +350,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "use super::FramingError;",
+              "lastLine": "}"
             }
           ]
         }
@@ -268,10 +368,11 @@
     ],
     "implFiles": [
       "rust/core/src/persistence/messages/verified.rs",
+      "rust/core/src/persistence/messages/maintenance.rs",
       "rust/core/src/persistence/messages/index.rs",
       "rust/core/src/persistence/messages/recovery.rs",
       "rust/core/src/persistence/messages/framing/scan.rs"
     ],
-    "totalLinesCovered": 293
+    "totalLinesCovered": 375
   }
 }

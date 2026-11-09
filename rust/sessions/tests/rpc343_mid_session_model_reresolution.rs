@@ -72,10 +72,21 @@ impl Drop for TestDirectory {
 /// create one real session. Returns the manager plus the new session id.
 async fn manager_with_opus_session() -> (Arc<SessionManager>, SessionId, TestDirectory) {
     let directory = TestDirectory::new();
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-opus-4-5");
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     assert!(
         !sid.value.is_empty(),
         "session creation must succeed offline (empty id means create_session errored)"
@@ -92,15 +103,19 @@ async fn switching_model_reresolves_cached_limits() {
     // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
     let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let before = handle.get_session_model(&sid);
+    let before = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(
-        before.context_window, 200000,
-        "opus baseline context_window should be 200000, got {}",
+        before.context_window,
+        Some(200000),
+        "opus baseline context_window should be 200000, got {:?}",
         before.context_window
     );
     assert_eq!(
-        before.max_output_tokens, 64000,
-        "opus baseline max_output_tokens should be 64000, got {}",
+        before.max_output_tokens,
+        Some(64000),
+        "opus baseline max_output_tokens should be 64000, got {:?}",
         before.max_output_tokens
     );
     let stale_threshold = before.compaction_threshold;
@@ -112,24 +127,28 @@ async fn switching_model_reresolves_cached_limits() {
     assert!(result.is_ok(), "set_model should return Ok, got {result:?}");
 
     // @step And get_session_model reports context_window 1048576 for the session
-    let after = handle.get_session_model(&sid);
+    let after = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(
-        after.context_window, 1048576,
-        "gemini context_window should be 1048576, got {}",
+        after.context_window,
+        Some(1048576),
+        "gemini context_window should be 1048576, got {:?}",
         after.context_window
     );
 
     // @step And get_session_model reports max_output_tokens 65536 for the session
     assert_eq!(
-        after.max_output_tokens, 65536,
-        "gemini max_output_tokens should be 65536, got {}",
+        after.max_output_tokens,
+        Some(65536),
+        "gemini max_output_tokens should be 65536, got {:?}",
         after.max_output_tokens
     );
 
     // @step And get_session_model reports a compaction_threshold recomputed for the new model rather than the stale claude-derived value
     assert_ne!(
         after.compaction_threshold, stale_threshold,
-        "compaction_threshold should be recomputed for gemini, not left at the stale claude value {stale_threshold}"
+        "compaction_threshold should be recomputed for gemini, not left at the stale claude value {stale_threshold:?}"
     );
 }
 
@@ -166,15 +185,19 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
     // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
     let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let before = handle.get_session_model(&sid);
+    let before = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(
-        before.context_window, 200000,
-        "opus baseline context_window should be 200000, got {}",
+        before.context_window,
+        Some(200000),
+        "opus baseline context_window should be 200000, got {:?}",
         before.context_window
     );
     assert_eq!(
-        before.max_output_tokens, 64000,
-        "opus baseline max_output_tokens should be 64000, got {}",
+        before.max_output_tokens,
+        Some(64000),
+        "opus baseline max_output_tokens should be 64000, got {:?}",
         before.max_output_tokens
     );
 
@@ -188,15 +211,19 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
     );
 
     // @step And get_session_model still reports context_window 200000 and max_output_tokens 64000 for the session
-    let after = handle.get_session_model(&sid);
+    let after = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(
-        after.context_window, 200000,
-        "context_window must be left intact after a failed switch, got {}",
+        after.context_window,
+        Some(200000),
+        "context_window must be left intact after a failed switch, got {:?}",
         after.context_window
     );
     assert_eq!(
-        after.max_output_tokens, 64000,
-        "max_output_tokens must be left intact after a failed switch, got {}",
+        after.max_output_tokens,
+        Some(64000),
+        "max_output_tokens must be left intact after a failed switch, got {:?}",
         after.max_output_tokens
     );
 }
@@ -207,10 +234,16 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn switching_model_on_unknown_session_reports_not_found() {
-    // @step Given a SessionManagerHandle with no session registered for the id "nonexistent-uuid"
-    let manager = Arc::new(SessionManager::new());
+    // @step Given a SessionManagerHandle with no session registered for the id "6f1d2c3b-0000-4000-8000-00000000dead"
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = SessionId::new("nonexistent-uuid");
+    let sid = SessionId::new("6f1d2c3b-0000-4000-8000-00000000dead");
 
     // @step When I switch the model for that id to provider "google" model "gemini-2.5-pro" via set_model
     let result = handle.set_model(&sid, "google", "gemini-2.5-pro");
@@ -234,7 +267,9 @@ async fn switching_model_while_busy_is_declined() {
     // @step Given a session created on "anthropic/claude-opus-4-5" whose inner session is currently locked
     let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let before = handle.get_session_model(&sid);
+    let before = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     let session = manager.get_session(&sid.value).expect("session must exist");
     // Hold the inner lock to simulate a request streaming in-flight.
     let _guard = session.inner.lock().await;
@@ -252,7 +287,9 @@ async fn switching_model_while_busy_is_declined() {
     }
     // And the prior limits are left unchanged.
     drop(_guard);
-    let after = handle.get_session_model(&sid);
+    let after = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(after.context_window, before.context_window);
     assert_eq!(after.max_output_tokens, before.max_output_tokens);
 }

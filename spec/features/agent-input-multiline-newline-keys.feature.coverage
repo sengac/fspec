@@ -36,7 +36,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "return Some(insert_newline_gated(input, gate));"
             }
           ]
         }
@@ -78,7 +80,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "return Some(insert_newline_gated(input, gate));"
             }
           ]
         }
@@ -89,7 +93,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
-          "lines": "231-270",
+          "lines": "235-275",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
@@ -120,7 +124,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "return Some(insert_newline_gated(input, gate));"
             }
           ]
         }
@@ -136,17 +142,18 @@
             {
               "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "// RPC-402 rule [3]: only KeyEventKind::Press key events are",
+              "lastLine": "}"
             }
           ]
         }
@@ -157,7 +164,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
-          "lines": "358-390",
+          "lines": "365-398",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
@@ -188,7 +195,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "return Some(insert_newline_gated(input, gate));"
             }
           ]
         }
@@ -206,6 +215,6 @@
       "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
       "rust/fspec-tui/src/views/agent/dispatch.rs"
     ],
-    "totalLinesCovered": 314
+    "totalLinesCovered": 315
   }
 }

@@ -4,10 +4,9 @@
 //!
 //! Feature: spec/features/rpc012-board-store.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use codelet_fspec_tui::{BoardStore, COLUMN_ORDER};
+use codelet_fspec_tui::BoardStore;
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
+use codelet_test_helpers::TestResult;
 
 fn wu(id: &str, status: &str) -> WorkUnitInfo {
     WorkUnitInfo {
@@ -25,7 +24,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 
 /// Scenario: BoardStore seeds work units grouped into 7 columns with focus at backlog
 #[test]
-fn boardstore_seeds_work_units_grouped_into_7_columns_with_focus_at_backlog() {
+fn boardstore_seeds_work_units_grouped_into_7_columns_with_focus_at_backlog() -> TestResult {
     // @step Given a freshly constructed BoardStore via BoardStore::default()
     let mut store = BoardStore::default();
     // @step When the developer calls store.replace_work_units with [AUTH-001 backlog, AUTH-002 implementing, AUTH-003 done]
@@ -50,11 +49,12 @@ fn boardstore_seeds_work_units_grouped_into_7_columns_with_focus_at_backlog() {
     assert_eq!(store.focused_column(), "backlog");
     // @step And store.selected_index_for("backlog") returns 0
     assert_eq!(store.selected_index_for("backlog"), 0);
+    Ok(())
 }
 
 /// Scenario: BoardStore re-grouping preserves focus and clamps selection when columns shrink
 #[test]
-fn boardstore_regrouping_preserves_focus_and_clamps_selection_when_columns_shrink() {
+fn boardstore_regrouping_preserves_focus_and_clamps_selection_when_columns_shrink() -> TestResult {
     // @step Given a BoardStore seeded with [AUTH-001 backlog, AUTH-002 implementing, AUTH-003 done]
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -84,10 +84,11 @@ fn boardstore_regrouping_preserves_focus_and_clamps_selection_when_columns_shrin
     assert_eq!(store.focused_column(), "implementing");
     // @step And store.selected_index_for("implementing") returns 0
     assert_eq!(store.selected_index_for("implementing"), 0);
+    Ok(())
 }
 
 #[test]
-fn attach_session_round_trip_and_session_migration() {
+fn attach_session_round_trip_and_session_migration() -> TestResult {
     let mut store = BoardStore::default();
     store.replace_work_units(vec![wu("AUTH-001", "backlog"), wu("AUTH-002", "backlog")]);
     let s1 = SessionId::new("s-1");
@@ -96,16 +97,5 @@ fn attach_session_round_trip_and_session_migration() {
     store.attach_session("AUTH-002", s1.clone());
     assert_eq!(store.session_for("AUTH-002"), Some(&s1));
     assert_eq!(store.session_for("AUTH-001"), None);
-}
-
-#[test]
-fn focus_next_and_prev_wrap_at_boundaries() {
-    let mut store = BoardStore::default();
-    assert_eq!(store.focused_column_index(), 0);
-    store.focus_prev_column();
-    assert_eq!(store.focused_column(), "blocked");
-    for _ in 0..COLUMN_ORDER.len() {
-        store.focus_next_column();
-    }
-    assert_eq!(store.focused_column(), "blocked");
+    Ok(())
 }

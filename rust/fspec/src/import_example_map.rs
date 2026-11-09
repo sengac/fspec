@@ -16,10 +16,10 @@
 //!     to stderr prefixed with `✗ Failed to import example map:` (parity with
 //!     the TS chalk-red error path at `src/commands/import-example-map.ts:129-134`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::import_example_map;
 use serde_json::{json, Value};
 
@@ -37,7 +37,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `import-example-map` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj = serde_json::Map::new();
     obj.insert("workUnitId".to_string(), json!(args.work_unit_id));

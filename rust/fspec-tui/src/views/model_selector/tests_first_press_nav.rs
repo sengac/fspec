@@ -200,7 +200,7 @@ fn matched_current_model_seeds_cursor_and_enter_selects() {
     // @step Given my current model is "claude-sonnet"
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
-    v.set_current_model(Some("claude-sonnet".to_string()));
+    v.set_current_model(Some(("anthropic", "claude-sonnet")));
 
     // @step When the model selector loads the providers
     v.set_providers(vec![

@@ -1,7 +1,6 @@
 use crate::WorkUnitContext;
 use serde::{Deserialize, Serialize};
 
-#[cfg_attr(feature = "napi", napi_derive::napi(object, object_from_js = false))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WorkUnitFocus {
     pub revision: u64,

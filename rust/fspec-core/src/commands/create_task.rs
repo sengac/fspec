@@ -93,6 +93,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "create-task")?;
     // 3. Validate prefix is registered.
     let prefixes_data = ensure_prefixes_file(project_root)?;
     if !prefixes_data.prefixes.contains_key(&args.prefix) {
@@ -169,7 +171,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // freshly-built task object verbatim (preserving the TS field order
     // computed above).
     let mut top: Map<String, Value> =
-        read_raw_work_units_object(project_root).unwrap_or_else(|| {
+        read_raw_work_units_object(project_root)?.unwrap_or_else(|| {
             serde_json::to_value(&data)
                 .ok()
                 .and_then(|v| match v {
@@ -244,12 +246,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Atomic write of work-units.json.
-    let wu_path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&wu_path, &Value::Object(top))?;
+    crate::io::board::write_work_units(project_root, &Value::Object(top))?;
 
     // Update epic's workUnits array if epic provided (separate file).
     if let Some(epic) = args.epic.as_deref() {
-        let mut epics_top = read_raw_epics_object(project_root).unwrap_or_default();
+        let mut epics_top = read_raw_epics_object(project_root)?.unwrap_or_default();
         if let Some(epics_obj) = epics_top.get_mut("epics").and_then(Value::as_object_mut) {
             if let Some(epic_obj) = epics_obj.get_mut(epic).and_then(Value::as_object_mut) {
                 let work_units = epic_obj
@@ -263,7 +264,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 }
             }
         }
-        let epics_path = project_root.join("spec").join("epics.json");
+        let epics_path = crate::io::spec_paths::epics(project_root)?;
         write_json_atomic(&epics_path, &Value::Object(epics_top))?;
     }
 
@@ -363,9 +364,15 @@ fn nesting_depth(
 /// Re-read `spec/work-units.json` as a raw JSON object so we can preserve
 /// the insertion order of every existing record. Returns `None` on any
 /// I/O or parse failure so the caller can fall back to the typed data.
-fn read_raw_work_units_object(project_root: &Path) -> Option<Map<String, Value>> {
-    let path = project_root.join("spec").join("work-units.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
+fn read_raw_work_units_object(
+    project_root: &Path,
+) -> Result<Option<Map<String, Value>>, FspecCoreError> {
+    let path = crate::io::spec_paths::work_units(project_root)?;
+    Ok(raw_object_at(&path))
+}
+
+fn raw_object_at(path: &Path) -> Option<Map<String, Value>> {
+    let raw = std::fs::read_to_string(path).ok()?;
     match serde_json::from_str::<Value>(&raw).ok()? {
         Value::Object(m) => Some(m),
         _ => None,
@@ -373,13 +380,11 @@ fn read_raw_work_units_object(project_root: &Path) -> Option<Map<String, Value>>
 }
 
 /// Re-read `spec/epics.json` as a raw JSON object (preserving key order).
-fn read_raw_epics_object(project_root: &Path) -> Option<Map<String, Value>> {
-    let path = project_root.join("spec").join("epics.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
-    match serde_json::from_str::<Value>(&raw).ok()? {
-        Value::Object(m) => Some(m),
-        _ => None,
-    }
+fn read_raw_epics_object(
+    project_root: &Path,
+) -> Result<Option<Map<String, Value>>, FspecCoreError> {
+    let path = crate::io::spec_paths::epics(project_root)?;
+    Ok(raw_object_at(&path))
 }
 
 #[cfg(test)]

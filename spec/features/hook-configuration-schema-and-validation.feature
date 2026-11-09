@@ -1,4 +1,5 @@
 @done
+@HOOK-018
 @configuration
 @hooks
 @HOOK-002
@@ -20,6 +21,7 @@ Feature: Hook configuration schema and validation
   #   4. Configuration must be valid JSON and conform to hooks schema
   #   5. Hook command paths must point to executable files
   #   6. Global defaults can be set in 'global' object: timeout, shell
+  #   7. A missing spec/fspec-hooks.json means no command hooks; only pre-<name>/post-<name> keys are command hooks (agent lifecycle keys keep their own engine)
   #
   # EXAMPLES:
   #   1. Valid config with single hook: {hooks: {'post-implementing': [{name: 'lint', command: 'spec/hooks/lint.sh', blocking: true}]}}
@@ -99,9 +101,9 @@ Feature: Hook configuration schema and validation
   Scenario: Reject invalid JSON configuration
     Given I have a file "spec/fspec-hooks.json" with invalid JSON content
     When I try to load the hook configuration
-    Then an error should be thrown
+    Then loading should fail
     And the error message should contain "Invalid JSON"
-    And the error message should be helpful
+    And the error message should name "spec/fspec-hooks.json"
 
   Scenario: Reject configuration with non-existent hook command
     Given I have a file "spec/fspec-hooks.json" with content:
@@ -119,7 +121,7 @@ Feature: Hook configuration schema and validation
       """
     And the file "spec/hooks/missing.sh" does not exist
     When I try to load the hook configuration
-    Then an error should be thrown
+    Then loading should fail
     And the error message should contain "Hook command not found: spec/hooks/missing.sh"
 
   Scenario: Load configuration with global defaults
@@ -144,3 +146,32 @@ Feature: Hook configuration schema and validation
     Then the global timeout should be set to 120
     And the global shell should be set to "/bin/bash"
     And the hook "lint" should use the global timeout of 120
+
+  Scenario: Missing hook configuration means no command hooks
+    Given the project has no file "spec/fspec-hooks.json"
+    When I load the hook configuration
+    Then the configuration should have no command hooks
+
+  Scenario: Agent lifecycle entries are not read as command hooks
+    Given I have a file "spec/fspec-hooks.json" with content:
+      """
+      {
+        "hooks": {
+          "pre_tool_use": [
+            {
+              "matcher": "Bash",
+              "hooks": [{ "command": "echo tool" }]
+            }
+          ],
+          "post-list-work-units": [
+            {
+              "name": "notify",
+              "command": "echo listed"
+            }
+          ]
+        }
+      }
+      """
+    When I load the hook configuration
+    Then the configuration should be valid
+    And the only command-hook event should be "post-list-work-units"

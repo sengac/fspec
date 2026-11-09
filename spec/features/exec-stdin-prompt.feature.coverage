@@ -10,14 +10,6 @@
             {
               "file": "rust/tools/src/unified_exec/types.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
                 105,
                 106,
                 107,
@@ -59,52 +51,91 @@
                 143,
                 144,
                 145,
-                146
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ],
+              "firstLine": "/// Wall clock time in seconds",
+              "lastLine": "impl std::fmt::Display for UnifiedExecResult {"
             },
             {
-              "file": "rust/tools/src/unified_exec/tool.rs",
+              "file": "rust/tools/src/unified_exec/tool/handlers.rs",
               "lines": [
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228
-              ]
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "// Spawn the process",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                1765,
-                1766,
-                1767,
-                1768,
-                1769,
-                1770,
-                1771
-              ]
+                1800,
+                1801,
+                1802,
+                1803,
+                1804,
+                1805,
+                1806
+              ],
+              "firstLine": "/// Result type for bridge operations",
+              "lastLine": "pub connections: Option<Vec<crate::bridge::BridgeConnectionInfo>>,"
             }
           ]
         }
@@ -115,20 +146,24 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/exec_stdin_prompt_p1.rs",
-          "lines": "82-118",
+          "lines": "82-123",
           "implMappings": [
             {
               "file": "rust/tools/src/unified_exec/tool.rs",
               "lines": [
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431
-              ]
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283
+              ],
+              "firstLine": "/// TOOL-022 P1: append the fixed steering line to a still-running result's",
+              "lastLine": "}"
             }
           ]
         }
@@ -139,27 +174,37 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/exec_stdin_prompt_p1.rs",
-          "lines": "124-155",
+          "lines": "135-158",
           "implMappings": [
             {
-              "file": "rust/tools/src/unified_exec/tool.rs",
+              "file": "rust/tools/src/unified_exec/tool/handlers.rs",
               "lines": [
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "// Check if process exited",
+              "lastLine": "}"
             }
           ]
         }
@@ -170,40 +215,76 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/exec_stdin_prompt_p1.rs",
-          "lines": "164-199",
+          "lines": "167-212",
           "implMappings": [
             {
-              "file": "rust/tools/src/unified_exec/tool.rs",
+              "file": "rust/tools/src/unified_exec/tool/handlers.rs",
               "lines": [
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399,
-                400
-              ]
-            },
-            {
-              "file": "rust/tools/src/unified_exec/process_store.rs",
-              "lines": [
-                192,
                 193,
                 194,
                 195,
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ],
+              "firstLine": "/// Handle the `poll` action — check for output without sending input.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/tool.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "Some(None) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/process_store_handles.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// TOOL-022: seconds since the session's last output (floored).",
+              "lastLine": "}"
             }
           ]
         }
@@ -214,35 +295,42 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/exec_stdin_prompt_p1.rs",
-          "lines": "207-231",
+          "lines": "226-234",
           "implMappings": [
             {
               "file": "rust/tools/src/unified_exec/types.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "/// TOOL-022 P1: seconds since the last output, floored to a whole number.",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "TUI renders the exec-stdin prompt in the composer slot",
+      "name": "write_exec_stdin appends a newline to the typed text",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "212-306",
+          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
+          "lines": "129-191",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent/exec_stdin_prompt.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
               "lines": [
+                59,
+                60,
+                61,
                 62,
                 63,
                 64,
@@ -290,144 +378,25 @@
                 106,
                 107,
                 108,
-                109,
-                110,
-                111
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
-              "lines": [
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154
-              ]
+                109
+              ],
+              "firstLine": "/// TOOL-022 P2: write typed text to a live exec session's stdin.",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "HITL prompt takes precedence over the exec-stdin prompt",
+      "name": "Backend round-trip surfaces the request only while a live exec session is quiet",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "314-348",
+          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
+          "lines": "45-127",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/tools/src/unified_exec/exec_stdin.rs",
               "lines": [
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter submits the typed text to the exec session stdin and clears the prompt",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "357-408",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
-              "lines": [
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -444,290 +413,26 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "write_exec_stdin appends a newline to the typed text",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
-          "lines": "182-230",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/handle_impl.rs",
-              "lines": [
-                999,
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005,
-                1006,
-                1007,
-                1008,
-                1009,
-                1010,
-                1011,
-                1012,
-                1013,
-                1014,
-                1015,
-                1016,
-                1017,
-                1018,
-                1019,
-                1020,
-                1021,
-                1022,
-                1023,
-                1024,
-                1025,
-                1026,
-                1027,
-                1028,
-                1029,
-                1030,
-                1031,
-                1032,
-                1033,
-                1034
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Esc dismisses the exec-stdin prompt without cancelling anything",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "416-458",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
-              "lines": [
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No exec-stdin prompt while no exec session is waiting",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "466-504",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
-              "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Backend round-trip surfaces the request only while a live exec session is quiet",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
-          "lines": "114-177",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/unified_exec/exec_stdin.rs",
-              "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                126
+              ],
+              "firstLine": "/// Spawn the per-exec-session detector task.",
+              "lastLine": "/// through `set_exec_stdin_request(None)` → `ExecStdinRequestCleared`."
             },
             {
-              "file": "rust/sessions/src/background_session.rs",
+              "file": "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
               "lines": [
-                1215,
-                1216,
-                1217,
-                1218,
-                1219,
-                1220,
-                1221,
-                1222,
-                1223,
-                1224,
-                1225,
-                1226,
-                1227,
-                1228,
-                1229,
-                1230,
-                1231,
-                1232,
-                1233,
-                1234,
-                1235,
-                1236,
-                1237,
-                1238,
-                1239,
-                1240,
-                1241,
-                1242,
-                1243,
-                1244,
-                1245,
-                1246,
-                1247,
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264,
-                1265,
-                1266,
-                1267,
-                1268,
-                1269,
-                1270,
-                1271,
-                1272,
-                1273,
-                1274,
-                1275,
-                1276,
-                1277,
-                1278,
-                1279,
-                1280,
-                1281,
-                1282,
-                1283,
-                1284,
-                1285,
-                1286,
-                1287,
-                1288,
-                1289,
-                1290
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                89
+              ],
+              "firstLine": "/// BUG-171 rule [5]: reset the per-exec-session re-fire cooldown by",
+              "lastLine": "cooldown_write().remove(exec_id);"
             }
           ]
         }
@@ -738,138 +443,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
-          "lines": "235-257",
+          "lines": "193-224",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
               "lines": [
-                999,
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005,
-                1006,
-                1007,
-                1008,
-                1009,
-                1010,
-                1011,
-                1012,
-                1013,
-                1014,
-                1015,
-                1016,
-                1017,
-                1018,
-                1019,
-                1020,
-                1021,
-                1022,
-                1023,
-                1024,
-                1025,
-                1026,
-                1027,
-                1028,
-                1029,
-                1030,
-                1031,
-                1032,
-                1033,
-                1034
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The exec-stdin overlay does not flip the agent session status",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
-          "lines": "262-311",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                685,
-                686,
-                687,
-                688,
-                689,
-                690,
-                691,
-                692,
-                693
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Detector respects the cooldown and an already-stored prompt",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/unified_exec/exec_stdin.rs",
-          "lines": "248-270",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/unified_exec/exec_stdin.rs",
-              "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Slot is cleared when the exec session no longer exists",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "512-559",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
                 59,
                 60,
                 61,
@@ -892,58 +470,67 @@
                 78,
                 79,
                 80,
-                81
-              ]
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "/// TOOL-022 P2: write typed text to a live exec session's stdin.",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Ghost panes do not render the exec-stdin prompt",
+      "name": "The exec-stdin overlay does not flip the agent session status",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
-          "lines": "567-610",
+          "file": "rust/sessions/tests/exec_stdin_prompt_p2.rs",
+          "lines": "226-290",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Detector respects the cooldown and an already-stored prompt",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/tests.rs",
+          "lines": "50-67",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "file": "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
               "lines": [
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207
-              ]
+                67
+              ],
+              "firstLine": "/// True when `exec_id` may fire again (cooldown elapsed or first fire).",
+              "lastLine": "/// True when `exec_id` may fire again (cooldown elapsed or first fire)."
             }
           ]
         }
@@ -954,7 +541,12 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/exec_stdin_prompt_p4.rs",
-          "lines": "29-98",
+          "lines": "113-154",
+          "implMappings": []
+        },
+        {
+          "file": "rust/tools/tests/exec_stdin_prompt_p4.rs",
+          "lines": "29-111",
           "implMappings": [
             {
               "file": "rust/tools/src/bash_session.rs",
@@ -1279,7 +871,9 @@
                 318,
                 319,
                 320
-              ]
+              ],
+              "firstLine": "//! TOOL-022 P4 (G1/G2/G3/G4) — BashTool execution via the unified_exec",
+              "lastLine": "let (stdout_bytes, stderr_bytes) = split_merged_output_bytes(&merged);"
             }
           ]
         }
@@ -1287,32 +881,26 @@
     }
   ],
   "stats": {
-    "totalScenarios": 18,
-    "coveredScenarios": 18,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/tools/tests/exec_stdin_prompt_p1.rs",
-      "rust/fspec-tui/tests/exec_stdin_prompt_p2.rs",
       "rust/sessions/tests/exec_stdin_prompt_p2.rs",
-      "rust/tools/src/unified_exec/exec_stdin.rs",
+      "rust/tools/src/unified_exec/exec_stdin/tests.rs",
       "rust/tools/tests/exec_stdin_prompt_p4.rs"
     ],
     "implFiles": [
       "rust/tools/src/unified_exec/types.rs",
-      "rust/tools/src/unified_exec/tool.rs",
+      "rust/tools/src/unified_exec/tool/handlers.rs",
       "rust/tools/src/facade/wrapper.rs",
-      "rust/tools/src/unified_exec/process_store.rs",
-      "rust/fspec-tui/src/views/agent/exec_stdin_prompt.rs",
-      "rust/fspec-tui/src/views/agent/input_area.rs",
-      "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
-      "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
-      "rust/sessions/src/handle_impl.rs",
-      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+      "rust/tools/src/unified_exec/tool.rs",
+      "rust/tools/src/unified_exec/process_store_handles.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
       "rust/tools/src/unified_exec/exec_stdin.rs",
-      "rust/sessions/src/background_session.rs",
-      "rust/agent-loop/src/agent_loop.rs",
+      "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
       "rust/tools/src/bash_session.rs"
     ],
-    "totalLinesCovered": 1762
+    "totalLinesCovered": 1186
   }
 }

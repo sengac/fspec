@@ -12,7 +12,6 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
 };
-use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -78,9 +77,9 @@ pub struct Server {
 
 impl Server {
     pub async fn wait_for_close(&self) -> TestResult {
-        tokio::time::timeout(Duration::from_secs(1), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while !self.peer_closed.load(Ordering::SeqCst) {
-                tokio::time::sleep(Duration::from_millis(5)).await;
+                codelet_test_helpers::yield_now().await;
             }
         })
         .await?;

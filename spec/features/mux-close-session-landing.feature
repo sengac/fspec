@@ -5,6 +5,7 @@
 @tui
 @mux
 @BUG-175
+@BUG-300
 Feature: Mux enabled=true in persisted config leaks into non-mux view routing — closing a session strands the user on a stale full-screen AgentView
   """
   View-routing decisions that gate on mux mode (BackToBoard landing + EnterWorkUnit flip) MUST read the LIVE view state (navigator.active_view == ViewMode::Mux), not mux.config().enabled. The persisted config flag survives across processes; the live view does not, so only the live view can answer 'are we in the grid right now'. BackToBoard: in the grid -> focus the Board pane within the grid (BUG-164 retained); any single view -> flip to the single Board view. The duplicated landing rule in App::dispatch and Navigator::apply_action MUST stay behaviorally identical (both gated on the live view).

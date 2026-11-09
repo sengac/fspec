@@ -74,10 +74,7 @@ pub fn produce_patch_diff(rows: &[DiffDisplayRow]) -> (String, String) {
     }
     let mut collapsed = rows[..DIFF_COLLAPSED_LINES].to_vec();
     collapsed.push(DiffDisplayRow::Elision {
-        text: format!(
-            "... +{} lines (select turn to /expand)",
-            rows.len() - DIFF_COLLAPSED_LINES
-        ),
+        text: super::diff_codec::hidden_lines_hint(rows.len() - DIFF_COLLAPSED_LINES),
     });
     (with_tree_connectors(&collapsed), full)
 }

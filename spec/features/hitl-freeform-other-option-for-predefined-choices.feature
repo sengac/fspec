@@ -1,4 +1,6 @@
 @TOOL-018
+@codelet
+@answer-question
 Feature: HITL Freeform 'Other' Option for Predefined Choices
   """
   Changes are entirely in the TUI layer — InputTransition rendering and useHitlInput hook. No changes to the Rust request_user_input.rs tool definition, HitlRequest/HitlResponse types, NAPI bindings, or tool schema. The 'Other...' is a virtual UI-only option.

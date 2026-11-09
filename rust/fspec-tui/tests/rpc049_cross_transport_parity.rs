@@ -8,14 +8,9 @@
 //! StubSessionManagerHandle. Mirrors the RPC-037 parity pattern (shared
 //! service + bind_and_serve + WS client).
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock,
-    clippy::too_many_lines
-)]
+#![allow(clippy::await_holding_lock, clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -28,55 +23,62 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::SessionId;
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 /// Scenario: Cross-transport parity for resume_session
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn resume_session_round_trips_identically_across_transports() {
+async fn resume_session_round_trips_identically_across_transports() -> TestResult {
     // @step Given a SharedFspecService wired to a StubSessionManagerHandle
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
 
     // @step And an EmbeddedFspecBackend over that service
     // @step And a WebSocketFspecBackend over that same service
-    let (embedded, websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await?;
     let sid = SessionId::new("stub-1");
 
     let initial_calls = stub.resume_session_calls();
@@ -96,4 +98,5 @@ async fn resume_session_round_trips_identically_across_transports() {
         2,
         "stub.resume_session_calls() should increment by 2 (once per transport)",
     );
+    Ok(())
 }

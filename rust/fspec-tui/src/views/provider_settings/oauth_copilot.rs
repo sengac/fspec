@@ -157,6 +157,31 @@ fn handle_enterprise_entry_key(
     ProviderSettingsEvent::Consumed
 }
 
+/// TUI-126: a paste into the GitHub Enterprise host field: printable ASCII is
+/// kept (the typed-key gate), line breaks and surrounding whitespace are
+/// dropped, and the validation error clears.
+pub(super) fn paste_host(view: &mut ProviderSettingsView, text: &str) -> ProviderSettingsEvent {
+    let ProviderSettingsMode::OAuthEnterpriseUrlEntry {
+        provider_id,
+        mut url_input,
+        ..
+    } = view.mode.clone()
+    else {
+        return ProviderSettingsEvent::Ignored;
+    };
+    url_input.extend(
+        text.trim()
+            .chars()
+            .filter(|ch| super::oauth_login::is_code_char(*ch)),
+    );
+    view.mode = ProviderSettingsMode::OAuthEnterpriseUrlEntry {
+        provider_id,
+        url_input,
+        validation_error: None,
+    };
+    ProviderSettingsEvent::Consumed
+}
+
 /// Enter the shared device-waiting screen (empty code/URL until the
 /// device-start result arrives) and emit the copilot device-start action,
 /// carrying `enterprise_host` (None for GitHub.com) and the current generation.
@@ -165,6 +190,8 @@ fn begin_device_polling(
     provider_id: String,
     enterprise_host: Option<String>,
 ) -> ProviderSettingsEvent {
+    // BUG-575: every login start takes a number never used before.
+    view.oauth_generation = super::refresh::fresh_oauth_generation();
     let generation = view.oauth_generation;
     view.oauth_last_provider = Some(provider_id.clone());
     view.status.clear();

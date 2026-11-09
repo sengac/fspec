@@ -8,8 +8,9 @@
 //! Composes the box-drawing topology row-by-row: top border, 4-row header
 //! strip (RPC-015 logo + checkpoints + keybindings), ├──┤ plain separator,
 //! 5-row details strip, ├┬┤ separator, column header row, ├┼┤ separator,
-//! content rows, ├┴┤ separator, RPC-013 footer string, bottom border. It
-//! also caches the geometry the keyboard + mouse handlers read back.
+//! content rows, ├┴┤ separator, RPC-013 footer rows (TUI-131: as many as
+//! the wrapped hint needs), bottom border. It also caches the geometry the
+//! keyboard + mouse handlers read back.
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -60,20 +61,24 @@ pub(super) fn render_with_store(
     if inner_width + 2 > area.width {
         return;
     }
+    // TUI-131: the footer wraps onto the rows its hint needs inside the
+    // side borders (as many as the 16 fixed rows leave); the content gets
+    // the rest, and the cached viewport/hit rects below follow the split.
+    let footer_rows = footer::height(area.width.saturating_sub(2)).min(area.height - 16);
     let split = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1), // top border
-            Constraint::Length(4), // RPC-015 header strip
-            Constraint::Length(1), // ├──┤ plain separator (RPC-015)
-            Constraint::Length(5), // details strip (RPC-014)
-            Constraint::Length(1), // ├┬┤ separator
-            Constraint::Length(1), // column header
-            Constraint::Length(1), // ├┼┤ separator
-            Constraint::Min(0),    // content
-            Constraint::Length(1), // ├┴┤ separator
-            Constraint::Length(1), // footer
-            Constraint::Length(1), // bottom border
+            Constraint::Length(1),           // top border
+            Constraint::Length(4),           // RPC-015 header strip
+            Constraint::Length(1),           // ├──┤ plain separator (RPC-015)
+            Constraint::Length(5),           // details strip (RPC-014)
+            Constraint::Length(1),           // ├┬┤ separator
+            Constraint::Length(1),           // column header
+            Constraint::Length(1),           // ├┼┤ separator
+            Constraint::Min(0),              // content
+            Constraint::Length(1),           // ├┴┤ separator
+            Constraint::Length(footer_rows), // footer (TUI-131: wrapped)
+            Constraint::Length(1),           // bottom border
         ])
         .split(area);
     let border_style = Style::default().fg(view.theme.border);
@@ -86,6 +91,7 @@ pub(super) fn render_with_store(
     );
     borders::paint_side_borders(split[1], buf, border_style);
     let rows = header::paint(borders::inner_rect(split[1]), buf, store, &view.theme);
+    view.last_workspace_row.set(Some(rows.workspace_row));
     // MENU-002: the 2-zone menu bar replaces the 'u Actions' chord in
     // the header's exposed row 3. Build the per-frame snapshot (R9:
     // chips from the painted session list), paint the bar, and cache
@@ -184,4 +190,6 @@ pub(super) fn render_with_store(
             }
         }
     }
+    // RPC-445: the workspace dropdown overlays everything beneath row 1.
+    super::workspace_dropdown::paint_dropdown(rows.workspace_row, buf, store, &view.theme);
 }

@@ -92,7 +92,7 @@ async fn scenario_a6_expired_external_jwt_cannot_gain_freshness_from_last_refres
     let (sent, released) = tokio::join!(send(&cached, &url), async {
         bounded(issuer.started.notified()).await?;
         issuer.release.add_permits(1);
-        Ok::<_, tokio::time::error::Elapsed>(())
+        Ok::<_, codelet_test_helpers::Failure>(())
     });
     released?;
     sent?;

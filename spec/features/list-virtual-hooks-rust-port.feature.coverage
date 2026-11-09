@@ -10,21 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
                 96,
                 97,
                 98,
@@ -34,53 +19,10 @@
                 102,
                 103,
                 104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                105
+              ],
+              "firstLine": "// Validate that the requested work unit exists. We mirror the exact TS",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -96,17 +38,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
                 92,
                 93,
                 94,
@@ -120,53 +51,10 @@
                 102,
                 103,
                 104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                105
+              ],
+              "firstLine": "// Load (auto-create) spec/work-units.json — parity with the TS command",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -182,32 +70,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -243,16 +105,10 @@
                 139,
                 140,
                 141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                142
+              ],
+              "firstLine": "// Extract `virtualHooks` from the work-unit's `extra` flatten map. We",
+              "lastLine": "};"
             }
           ]
         }
@@ -268,32 +124,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -329,16 +159,10 @@
                 139,
                 140,
                 141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                142
+              ],
+              "firstLine": "// Extract `virtualHooks` from the work-unit's `extra` flatten map. We",
+              "lastLine": "};"
             }
           ]
         }
@@ -354,53 +178,6 @@
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
                 128,
                 129,
                 130,
@@ -410,21 +187,10 @@
                 134,
                 135,
                 136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                137
+              ],
+              "firstLine": "// Group by event, preserving both event-introduction order and the",
+              "lastLine": "}"
             }
           ]
         }
@@ -450,7 +216,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// the `gitContext` JSON key for parity with the TS source.",
+              "lastLine": "skip_serializing_if = \"Option::is_none\","
             }
           ]
         }
@@ -474,7 +242,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "hooks_by_event,",
+              "lastLine": "reason: format!(\"failed to serialize result: {e}\"),"
             }
           ]
         }
@@ -522,7 +292,9 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "/// by both the missing-field path and the empty-array path. The populated",
+              "lastLine": "\"    • {name} {blocking_badge}{git_context_badge}\\n\","
             }
           ]
         }
@@ -570,7 +342,9 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "/// by both the missing-field path and the empty-array path. The populated",
+              "lastLine": "\"    • {name} {blocking_badge}{git_context_badge}\\n\","
             }
           ]
         }
@@ -595,7 +369,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "hooks_by_event,",
+              "lastLine": "})"
             }
           ]
         }
@@ -606,19 +382,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_virtual_hooks.rs",
-          "lines": "501-525",
+          "lines": "501-524",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_virtual_hooks.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
                 85,
                 86,
-                87
-              ]
+                87,
+                88,
+                89,
+                90
+              ],
+              "firstLine": "/// Dispatcher entry point. The dispatcher passes the canonical project root",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -635,6 +415,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/list_virtual_hooks.rs"
     ],
-    "totalLinesCovered": 859
+    "totalLinesCovered": 616
   }
 }

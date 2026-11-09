@@ -3,6 +3,7 @@
 @rust
 @session
 @high
+@loop-management
 Feature: Per-profile loop detection resolution
   """
   architecture:

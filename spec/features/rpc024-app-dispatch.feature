@@ -1,15 +1,17 @@
+@BUG-582
 @done
 @RPC-024
 @rust
 @tui
 @agent-view
 @session-switch
+@BUG-401
 Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through multi-session AgentViewStore
   """
   RPC-024 (App dispatch slice) — wire the new multi-session
   AgentViewStore primitives into App::dispatch:
   - Action::SessionCreated → calls `append_session` (was set_current_session).
-  - Action::SessionPrev / SessionNext → save outgoing draft, cycle, restore incoming draft.
+  - Action::SessionPrev / SessionNext → save outgoing draft, move to the previous/next session, restore incoming draft (RPC-096: no wrap-around; Prev at the first session exits to Board, Next at the last opens the Create Session dialog).
   - Action::ChunkReceived(id, chunk) → route scrollback into the
   SessionContext whose id matches `id` (was `navigator.agent.record_chunk`).
 
@@ -31,7 +33,7 @@ Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through mul
     Then open_sessions has length 1
     And open_sessions[0].id equals "s-1"
     And current_session_index is 0
-    And session_index() returns (1, 1)
+    And session_index() returns Some((1, 1))
     And current_session() returns Some("s-1")
 
   Scenario: Successive SessionCreated dispatches accumulate in creation order
@@ -42,7 +44,7 @@ Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through mul
     Then open_sessions has length 3
     And open_sessions ids in order are "s-1", "s-2", "s-3"
     And current_session_index is 2
-    And session_index() returns (3, 3)
+    And session_index() returns Some((3, 3))
     And current_session() returns Some("s-3")
 
   Scenario: Action::SessionPrev decrements current_session_index without wrap when not at zero
@@ -50,18 +52,18 @@ Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through mul
     And current_session_index is 2
     When App::dispatch handles Action::SessionPrev
     Then current_session_index is 1
-    And session_index() returns (2, 3)
+    And session_index() returns Some((2, 3))
     And current_session() returns Some("s-2")
 
-  Scenario: Action::SessionPrev wraps around from index 0 to len-1; SessionNext wraps back
+  Scenario: Action::SessionPrev at index 0 exits to Board; SessionNext at the last index opens the Create Session dialog
     Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     And current_session_index is 0
     When App::dispatch handles Action::SessionPrev
-    Then current_session_index is 2
-    And current_session() returns Some("s-3")
-    When App::dispatch handles Action::SessionNext
-    Then current_session_index is 0
-    And current_session() returns Some("s-1")
+    Then navigator.active_view is ViewMode::Board
+    And current_session_index stays 0
+    When App::dispatch handles Action::SessionNext at the last index
+    Then show_create_session_dialog becomes true
+    And current_session_index stays 2
 
   Scenario: SessionPrev and SessionNext are self-loops when only one session is open
     Given an AgentViewStore with open_sessions ["s-1"]

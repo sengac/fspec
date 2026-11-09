@@ -5,10 +5,10 @@
 //! Two-front-doors: marshals positional args to JSON {workUnitId, assumption}
 //! and delegates to codelet_fspec_core::commands::add_assumption::run.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_assumption;
 use serde_json::json;
 
@@ -21,7 +21,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
     let body = json!({
         "workUnitId": args.work_unit_id,
         "assumption": args.assumption,

@@ -18,16 +18,19 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
-use std::path::PathBuf;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 
 /// Read `rust/cli/src/interactive/<file>` relative to this crate's manifest.
-fn cli_interactive_src(file: &str) -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src")
-        .join("interactive")
-        .join(file);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+/// BUG-306: the split stream loop registers progress in telemetry.rs, handles
+/// ToolCall in assistant.rs and ToolResult in tool_result.rs; read them in
+/// that execution order.
+fn tool_progress_source() -> String {
+    ["telemetry", "assistant", "tool_result"]
+        .into_iter()
+        .map(stream_loop_source_tree::stream_loop_module)
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Strip Rust `//` line comments so source-shape scans don't match text that
@@ -54,7 +57,7 @@ fn strip_line_comments(src: &str) -> String {
 #[test]
 fn progress_callback_does_not_emit_empty_tool_call_id() {
     // @step Given a tool call "tc-1" has started and is the active tool call
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = tool_progress_source();
     let code = strip_line_comments(&src);
 
     // @step When tool progress is emitted through the stream-loop progress callback
@@ -74,7 +77,7 @@ fn progress_callback_does_not_emit_empty_tool_call_id() {
 #[test]
 fn progress_callback_emits_the_active_tool_call_id() {
     // @step Given a tool call "tc-1" has started and is the active tool call
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = tool_progress_source();
     let code = strip_line_comments(&src);
 
     // Locate the progress-callback registration block.
@@ -125,7 +128,7 @@ fn progress_callback_emits_the_active_tool_call_id() {
 #[test]
 fn active_tool_call_id_set_on_tool_call_and_cleared_on_tool_result() {
     // @step Given no tool call is active
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = tool_progress_source();
     let code = strip_line_comments(&src);
 
     // The active-id holder must exist.
@@ -189,7 +192,7 @@ fn active_tool_call_id_set_on_tool_call_and_cleared_on_tool_result() {
 #[test]
 fn stray_progress_with_no_active_tool_call_is_safe() {
     // @step Given no tool call is active
-    let src = cli_interactive_src("stream_loop.rs");
+    let src = tool_progress_source();
     let code = strip_line_comments(&src);
 
     // The active-id holder must exist for a stray-emit to be well-defined.

@@ -90,7 +90,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: wrap_failure(&format!("failed to parse args: {e}")),
         })?;
 
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
 
     // TS reads the file directly (no ensure helper); surface any IO error
     // through the canonical wrapper.

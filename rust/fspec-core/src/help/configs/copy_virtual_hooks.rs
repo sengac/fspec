@@ -97,29 +97,29 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Copy All Hooks to Related Stories",
         example: "fspec copy-virtual-hooks --from AUTH-001 --to AUTH-002\nfspec copy-virtual-hooks --from AUTH-001 --to AUTH-003",
-        description: "Apply same quality checks to all authentication-related work units.",
+        description: Some("Apply same quality checks to all authentication-related work units."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Copy Specific Hook to Multiple Work Units",
         example: "fspec copy-virtual-hooks --from AUTH-001 --to AUTH-002 --hook-name eslint\nfspec copy-virtual-hooks --from AUTH-001 --to AUTH-003 --hook-name eslint",
-        description: "Apply only linting check to multiple work units, skip other hooks.",
+        description: Some("Apply only linting check to multiple work units, skip other hooks."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Create Template and Copy to New Work Units",
         example: "# Set up template:\nfspec add-virtual-hook TEMPLATE-001 post-implementing \"<quality-check-commands>\" --blocking\nfspec add-virtual-hook TEMPLATE-001 pre-validating \"<quality-check-commands>\" --blocking\n\n# Copy to actual work units:\nfspec copy-virtual-hooks --from TEMPLATE-001 --to AUTH-010\nfspec copy-virtual-hooks --from TEMPLATE-001 --to BUG-020",
-        description: "Create a template work unit with standard hooks, then copy to new work units.",
+        description: Some("Create a template work unit with standard hooks, then copy to new work units."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Verify After Copy",
         example: "fspec copy-virtual-hooks --from AUTH-001 --to AUTH-002\nfspec list-virtual-hooks AUTH-002",
-        description: "Copy hooks and immediately verify they were copied correctly.",
+        description: Some("Copy hooks and immediately verify they were copied correctly."),
     }),
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "copy-virtual-hooks",
     description: "Copy virtual hooks from one work unit to another",
-    usage: Some("fspec copy-virtual-hooks --from <sourceId> --to <targetId> [--hook-name <name>]"),
+    usage: Some("fspec copy-virtual-hooks --from <workUnitId> --to <workUnitId> [--hook-name <name>]"),
     arguments: &[],
     options: OPTIONS,
     examples: EXAMPLES,

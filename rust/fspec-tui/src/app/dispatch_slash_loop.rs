@@ -209,7 +209,11 @@ fn format_loop_list(entries: &[RegisteredLoop]) -> String {
     out.push_str(&"-".repeat(55));
     for entry in entries {
         let prompt = if entry.prompt.len() > 28 {
-            format!("{}...", &entry.prompt[..25])
+            // BUG-642: cut on a char boundary.
+            format!(
+                "{}...",
+                &entry.prompt[..entry.prompt.floor_char_boundary(25)]
+            )
         } else {
             entry.prompt.clone()
         };

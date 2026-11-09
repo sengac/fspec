@@ -15,8 +15,15 @@ pub fn replace_request_context(
     usage: Option<Usage>,
 ) -> Result<SessionManifest, SettlementError> {
     Ok(update_session_manifest(session_id, |current| {
+        let (input, output) = match &usage {
+            Some(usage) => (request_input(usage)?, request_output(usage)?),
+            None => (0, 0),
+        };
         current.latest_request_usage = usage;
-        current.token_usage.current_context_tokens = usage.map_or(0, |usage| usage.total_tokens);
+        // BUG-326: the context is the request's total input; its output is
+        // kept apart so restore reads input as input.
+        current.token_usage.current_context_tokens = input;
+        current.token_usage.current_context_output_tokens = output;
         current.token_usage.cache_read_tokens = usage
             .and_then(|usage| usage.cache_read_input_tokens)
             .unwrap_or(0);
@@ -25,6 +32,23 @@ pub fn replace_request_context(
             .unwrap_or(0);
         Ok(())
     })?)
+}
+
+/// Total input of a request: input + cache read + cache creation.
+fn request_input(usage: &Usage) -> Result<u64, ManifestCommitError> {
+    usage
+        .input_tokens
+        .checked_add(usage.cache_read_input_tokens.unwrap_or(0))
+        .and_then(|value| value.checked_add(usage.cache_creation_input_tokens.unwrap_or(0)))
+        .ok_or_else(|| ManifestCommitError::Store("input usage overflow".into()))
+}
+
+/// Output of a request: output + reasoning.
+fn request_output(usage: &Usage) -> Result<u64, ManifestCommitError> {
+    usage
+        .output_tokens
+        .checked_add(usage.reasoning_tokens.unwrap_or(0))
+        .ok_or_else(|| ManifestCommitError::Store("output usage overflow".into()))
 }
 
 pub fn settle_request(
@@ -42,15 +66,8 @@ pub fn settle_request(
                 )))
             };
         }
-        let input = usage
-            .input_tokens
-            .checked_add(usage.cache_read_input_tokens.unwrap_or(0))
-            .and_then(|value| value.checked_add(usage.cache_creation_input_tokens.unwrap_or(0)))
-            .ok_or_else(|| ManifestCommitError::Store("input usage overflow".into()))?;
-        let output = usage
-            .output_tokens
-            .checked_add(usage.reasoning_tokens.unwrap_or(0))
-            .ok_or_else(|| ManifestCommitError::Store("output usage overflow".into()))?;
+        let input = request_input(usage)?;
+        let output = request_output(usage)?;
         if input.checked_add(output) != Some(usage.total_tokens) {
             return Err(ManifestCommitError::Store(
                 "inconsistent normalized request usage".into(),

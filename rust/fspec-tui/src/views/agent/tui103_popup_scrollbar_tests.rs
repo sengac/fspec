@@ -29,19 +29,17 @@ fn mouse_event(kind: MouseEventKind, col: u16, row: u16) -> crossterm::event::Mo
 // Integration: SlashCommandPopup handle_mouse routes scrollbar events
 // =====================================================================
 
-/// @step Given SlashCommandPopup has more commands than fit in the visible area
-/// @step And the scrollbar gutter rect is cached from the last render
-/// @step When I click on the scrollbar gutter column
-/// @step Then the popup updates its scroll_offset via ScrollbarDrag
+/// Scenario: SlashCommandPopup mouse handling routes a scrollbar click through ScrollbarDrag
 #[test]
 fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
     use crate::views::agent::slash_command_popup::{PopupOutcome, SlashCommandPopup};
 
+    // @step Given SlashCommandPopup has more commands than fit in the visible area
     let mut popup = SlashCommandPopup::new();
     popup.set_matches_for_test(50);
     popup.set_visible_rows_for_test(10);
 
-    // Given: render the popup to cache the scrollbar rect
+    // @step And the scrollbar gutter rect is cached from the last render
     let popup_rect = Rect {
         x: 10,
         y: 5,
@@ -59,7 +57,7 @@ fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
     // Click at a row near the bottom of the scrollbar track
     let click_row = sb_rect.y + sb_rect.height - 1;
 
-    // When: click on scrollbar track
+    // @step When I click on the scrollbar gutter column
     let down_ev = mouse_event(
         MouseEventKind::Down(MouseButton::Left),
         scrollbar_col,
@@ -78,7 +76,7 @@ fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
     );
     let up_result = popup.handle_mouse(up_ev, popup_rect);
 
-    // Then: scroll offset should have changed (not 0)
+    // @step Then the popup updates its scroll_offset via ScrollbarDrag
     assert!(
         popup.scroll_offset() > 0,
         "scroll offset should have changed from 0, got {}",
@@ -94,14 +92,12 @@ fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
 // Integration: FileSearchPopup handle_mouse routes scrollbar events
 // =====================================================================
 
-/// @step Given FileSearchPopup has more files than fit in the visible area
-/// @step And the scrollbar gutter rect is cached from the last render
-/// @step When I drag the scrollbar thumb downward
-/// @step Then the popup updates its scroll_offset via ScrollbarDrag
+/// Scenario: FileSearchPopup mouse handling routes a scrollbar drag through ScrollbarDrag
 #[test]
 fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
     use crate::views::agent::file_search_popup::{FilePopupOutcome, FileSearchPopup};
 
+    // @step Given FileSearchPopup has more files than fit in the visible area
     let mut popup = FileSearchPopup::new(0, "test");
     popup.set_matches(vec!["file.txt".to_string(); 100]);
     popup.set_visible_rows_for_test(10);
@@ -112,7 +108,7 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
         width: 40,
         height: 20,
     };
-    // Render to cache the scrollbar rect
+    // @step And the scrollbar gutter rect is cached from the last render
     let mut buf = ratatui::buffer::Buffer::empty(popup_rect);
     popup.render(popup_rect, &mut buf);
 
@@ -122,7 +118,8 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
         .expect("scrollbar rect should be cached after render");
     let scrollbar_col = sb_rect.x;
 
-    // When: press at the top of the scrollbar rect
+    // @step When I drag the scrollbar thumb downward
+    // (press at the top of the scrollbar rect, then drag to its middle)
     let down_ev = mouse_event(
         MouseEventKind::Down(MouseButton::Left),
         scrollbar_col,
@@ -146,7 +143,7 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
     );
     let drag_result = popup.handle_mouse(drag_ev, popup_rect);
 
-    // Then: scroll offset should have changed
+    // @step Then the popup updates its scroll_offset via ScrollbarDrag
     assert!(
         popup.scroll_offset() > 0,
         "scroll offset should have changed from 0, got {}",
@@ -162,17 +159,14 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
 // Integration: SearchHistoryView handle_mouse routes scrollbar events
 // =====================================================================
 
-/// @step Given SearchHistoryView has more matches than fit in the visible area
-/// @step And the scrollbar gutter rect is cached from the last render
-/// @step When I click on the scrollbar track
-/// @step Then the view updates its scroll_offset via ScrollbarDrag
+/// Scenario: SearchHistoryView mouse handling routes a scrollbar click through ScrollbarDrag
 #[test]
 fn search_history_view_handle_mouse_routes_scrollbar_events() {
     use crate::views::agent::search_history_view::SearchHistoryView;
     use crate::views::agent::search_history_view::SearchHistoryViewOutcome;
 
+    // @step Given SearchHistoryView has more matches than fit in the visible area
     let mut view = SearchHistoryView::new();
-    // Set up matches for testing
     view.set_matches(
         (0..50)
             .map(|i| codelet_rpc_types::HistoryMatch {
@@ -191,7 +185,7 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
     };
     let visible_rows = SearchHistoryView::visible_rows_for(body_rect);
 
-    // Render to cache the scrollbar rect
+    // @step And the scrollbar gutter rect is cached from the last render
     let mut buf = ratatui::buffer::Buffer::empty(body_rect);
     view.render(body_rect, &mut buf);
 
@@ -201,7 +195,8 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
         .expect("scrollbar rect should be cached after render");
     let scrollbar_col = sb_rect.x;
 
-    // When: click on scrollbar track near the bottom
+    // @step When I click on the scrollbar track
+    // (near the bottom of the track)
     let click_row = sb_rect.y + sb_rect.height - 2;
     let down_ev = mouse_event(
         MouseEventKind::Down(MouseButton::Left),
@@ -224,7 +219,7 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
     );
     let up_result = view.handle_mouse(up_ev, body_rect, visible_rows);
 
-    // Then: scroll offset should have changed
+    // @step Then the view updates its scroll_offset via ScrollbarDrag
     assert!(
         view.scroll_offset() > 0,
         "scroll offset should have changed from 0, got {}",

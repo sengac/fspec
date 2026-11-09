@@ -292,3 +292,127 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         );
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI with no flags prints only the summary line for an all-valid tree
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_no_flags_all_valid_tree_prints_only_the_summary_line() {
+    // @step Given three feature files carry only registered tags
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_tags(ws.path(), &["@comp"], &["@grp"]);
+    for name in ["one", "two", "three"] {
+        write_feature(
+            ws.path(),
+            &format!("spec/features/{name}.feature"),
+            &valid_feature(name),
+        );
+    }
+
+    // @step When I run `./rust/target/release/fspec validate-tags`
+    let (code, stdout, stderr) = run_validate_tags(ws.path(), &[]);
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
+
+    // @step Then stdout does NOT contain the substring '✓ All tags in '
+    assert!(!stdout.contains("✓ All tags in "), "got:\n{stdout}");
+
+    // @step Then stdout is exactly the line '✓ 3 files passed'
+    assert_eq!(stdout.trim_end_matches('\n'), "✓ 3 files passed");
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI with no flags prints only the violation blocks and the summary when some files fail
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_no_flags_with_failures_prints_only_violation_blocks_and_summary() {
+    // @step Given three feature files carry only registered tags and two carry the unregistered tag '@nonexistent'
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_tags(ws.path(), &["@comp"], &["@grp"]);
+    for name in ["one", "two", "three"] {
+        write_feature(
+            ws.path(),
+            &format!("spec/features/{name}.feature"),
+            &valid_feature(name),
+        );
+    }
+    for name in ["bad-one", "bad-two"] {
+        write_feature(
+            ws.path(),
+            &format!("spec/features/{name}.feature"),
+            &format!("@comp @grp @nonexistent\nFeature: {name}\n\n  Scenario: A\n    Given x\n"),
+        );
+    }
+
+    // @step When I run `./rust/target/release/fspec validate-tags`
+    let (code, stdout, stderr) = run_validate_tags(ws.path(), &[]);
+
+    // @step Then the command exits with code 1
+    assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
+
+    // @step Then stdout does NOT contain the substring '✓ All tags in '
+    assert!(!stdout.contains("✓ All tags in "), "got:\n{stdout}");
+
+    // @step Then stdout contains exactly 2 '✗ <file> has tag violations:' blocks
+    let blocks: Vec<&str> = stdout
+        .lines()
+        .filter(|line| line.starts_with("✗ ") && line.ends_with(" has tag violations:"))
+        .collect();
+    assert_eq!(
+        blocks,
+        [
+            "✗ spec/features/bad-one.feature has tag violations:",
+            "✗ spec/features/bad-two.feature has tag violations:",
+        ],
+        "got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the line '✓ 3 files passed'
+    assert!(
+        stdout.lines().any(|l| l == "✓ 3 files passed"),
+        "got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the line '✗ 2 files have tag violations'
+    assert!(
+        stdout.lines().any(|l| l == "✗ 2 files have tag violations"),
+        "got:\n{stdout}"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI --summary with --verbose prints only the two summary count lines
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_summary_with_verbose_prints_only_the_two_summary_lines() {
+    // @step Given one feature file carries only registered tags and one carries the unregistered tag '@nonexistent'
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_tags(ws.path(), &["@comp"], &["@grp"]);
+    write_feature(
+        ws.path(),
+        "spec/features/good.feature",
+        &valid_feature("Good"),
+    );
+    write_feature(
+        ws.path(),
+        "spec/features/bad.feature",
+        "@comp @grp @nonexistent\nFeature: Bad\n\n  Scenario: A\n    Given x\n",
+    );
+
+    // @step When I run `./rust/target/release/fspec validate-tags --summary --verbose`
+    let (code, stdout, stderr) = run_validate_tags(ws.path(), &["--summary", "--verbose"]);
+
+    // @step Then the command exits with code 1
+    assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
+
+    // @step Then stdout is exactly the lines '✓ 1 files passed' and '✗ 1 files have tag violations'
+    assert_eq!(
+        stdout.lines().collect::<Vec<_>>(),
+        ["✓ 1 files passed", "✗ 1 files have tag violations"],
+        "got:\n{stdout}"
+    );
+}

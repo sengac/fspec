@@ -42,7 +42,7 @@ pub enum DiffDisplayRow {
     /// An unchanged context line with its 1-based file line number.
     Context { line_no: usize, text: String },
     /// An elision row: a context gap (`"... (N lines)"`) or the collapse
-    /// hint (`"... +N lines (select turn to /expand)"`). One uniform kind;
+    /// hint (`"... +N lines (Tab to select, Enter to view full)"`). One uniform kind;
     /// `text` carries the already-indented elision string.
     Elision { text: String },
 }
@@ -161,4 +161,11 @@ fn leading_line_no(prefix: &str) -> Option<usize> {
         return None;
     }
     trimmed.parse::<usize>().ok()
+}
+
+/// **BUG-534**: the one hint a collapsed tool card (tool output, Edit/Write
+/// or apply_patch diff) ends with. Enter on the selected turn opens it in
+/// full (TUI-045 removed /expand); TUI-129: Tab selects a turn first.
+pub(super) fn hidden_lines_hint(remaining: usize) -> String {
+    format!("... +{remaining} lines (Tab to select, Enter to view full)")
 }

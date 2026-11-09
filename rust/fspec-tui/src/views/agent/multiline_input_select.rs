@@ -32,6 +32,13 @@ impl MultiLineInput {
         self.selection.is_some()
     }
 
+    /// TUI-130: the prompt-free text of a live selection (`None` when there
+    /// is none, or it selects nothing), for Ctrl+C.
+    pub fn selected_text_in(&self, area: Rect) -> Option<String> {
+        self.selection?;
+        Some(self.reconstruct_selected_text(area)).filter(|text| !text.is_empty())
+    }
+
     /// COPY-007: drop the live selection (Esc / edit / scroll).
     pub fn clear_selection(&mut self) {
         self.selection = None;
@@ -92,7 +99,17 @@ impl MultiLineInput {
     /// gesture once a stationary press has been held past the threshold.
     /// Returns `None` (a bare Begin never commits text).
     pub fn poll_selection_tick(&mut self, area: Rect) -> Option<String> {
-        let gestures = self.recognizer.tick(Instant::now());
+        self.poll_selection_tick_after(area, std::time::Duration::ZERO)
+    }
+
+    /// TEST-042: [`Self::poll_selection_tick`] as if `held` more had
+    /// passed, so a test drives the long-press threshold without waiting.
+    pub fn poll_selection_tick_after(
+        &mut self,
+        area: Rect,
+        held: std::time::Duration,
+    ) -> Option<String> {
+        let gestures = self.recognizer.tick(Instant::now() + held);
         self.apply_gestures(&gestures, area)
     }
 

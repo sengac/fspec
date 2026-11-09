@@ -77,13 +77,13 @@ impl crate::model_limits::ModelLimitsResolver for ZAIProvider {
     }
 
     /// Default context window when no registry data is available.
-    fn default_context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    fn default_context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
     }
 
     /// Default max output tokens when no registry data is available.
-    fn default_max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn default_max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
 }
 
@@ -93,36 +93,41 @@ impl ZAIProvider {
     /// Model is REQUIRED - will return error if None.
     /// Automatically detects which endpoint to use based on available env var.
     pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
-        // Check for plan API key first, then normal API key
-        let (api_key, is_plan) = if let Ok(key) = std::env::var("ZAI_PLAN_API_KEY") {
+        let (api_key, is_plan) = Self::env_credentials()?;
+        let model_name = Self::required_model(model)?;
+        Self::from_api_key_with_endpoint(&api_key, &model_name, is_plan)
+    }
+
+    /// The API key and endpoint the environment selects: ZAI_PLAN_API_KEY
+    /// (coding plan endpoint) when set and non-empty, else ZAI_API_KEY
+    /// (normal endpoint).
+    fn env_credentials() -> Result<(String, bool), ProviderError> {
+        if let Ok(key) = std::env::var("ZAI_PLAN_API_KEY") {
             if !key.is_empty() {
-                (key, true)
-            } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
-                (key, false)
-            } else {
-                return Err(ProviderError::auth(
+                return Ok((key, true));
+            }
+        }
+        std::env::var("ZAI_API_KEY")
+            .map(|key| (key, false))
+            .map_err(|_| {
+                ProviderError::auth(
                     "zai",
                     "Missing ZAI_API_KEY or ZAI_PLAN_API_KEY environment variable",
-                ));
-            }
-        } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
-            (key, false)
-        } else {
-            return Err(ProviderError::auth(
-                "zai",
-                "Missing ZAI_API_KEY or ZAI_PLAN_API_KEY environment variable",
-            ));
-        };
+                )
+            })
+    }
 
-        // Model is REQUIRED - check parameter first, then env var
-        let model_name = model
+    /// Model is REQUIRED: the parameter first, then ZAI_MODEL.
+    fn required_model(model: Option<&str>) -> Result<String, ProviderError> {
+        model
             .map(ToString::to_string)
             .or_else(|| std::env::var("ZAI_MODEL").ok())
             .ok_or_else(|| {
-                ProviderError::config("zai", "Model is required. Provide model parameter or set ZAI_MODEL environment variable.")
-            })?;
-
-        Self::from_api_key_with_endpoint(&api_key, &model_name, is_plan)
+                ProviderError::config(
+                    "zai",
+                    "Model is required. Provide model parameter or set ZAI_MODEL environment variable.",
+                )
+            })
     }
 
     /// Create a new ZAIProvider with an explicit API key and model (uses normal endpoint)
@@ -216,14 +221,13 @@ impl ZAIProvider {
     /// # Arguments
     /// * `session_id` - Session UUID for tool handler lookup (TOOL-012)
     /// * `preamble` - Optional system prompt/preamble for the agent
-    /// * `thinking_config` - Optional thinking configuration JSON (currently unused for Z.AI/GLM models)
-    ///   Note: GLM models handle reasoning internally and don't use the same thinking config format
-    ///   as Claude or Gemini. The reasoning capability is model-dependent.
+    /// * `thinking_config` - Optional thinking parameters (BUG-440: GLM `thinking.type`
+    ///   enabled / disabled), merged into the request
     pub fn create_rig_agent(
         &self,
         session_id: uuid::Uuid,
         preamble: Option<&str>,
-        _thinking_config: Option<serde_json::Value>,
+        thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::facade::{
             zai_bridge_tool, zai_fspec_tool, BashToolFacadeWrapper, FileToolFacadeWrapper,
@@ -316,6 +320,9 @@ impl ZAIProvider {
             "temperature": 1.0,
             "top_p": 0.95
         });
+        // BUG-440: GLM thinking on / off for the selected level.
+        let generation_config =
+            crate::openai::merge_thinking_params(generation_config, thinking_config);
         agent_builder = agent_builder.additional_params(generation_config);
 
         agent_builder.build()
@@ -363,12 +370,12 @@ impl LlmProvider for ZAIProvider {
         &self.model_name
     }
 
-    fn context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    fn context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
     }
 
-    fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
 
     fn supports_caching(&self) -> bool {

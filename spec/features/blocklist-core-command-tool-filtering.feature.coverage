@@ -5,19 +5,22 @@
       "testMappings": [
         {
           "file": "rust/tools/src/blocklist/mod.rs",
-          "lines": "33-65",
+          "lines": "44-86",
           "implMappings": [
             {
-              "file": "rust/tools/src/blocklist/middleware.rs",
+              "file": "rust/tools/src/blocklist/matcher.rs",
               "lines": [
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
                 87,
                 88,
                 89,
@@ -26,15 +29,14 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// Create a result for a blocked command",
+              "lastLine": "}"
             }
           ]
-        },
-        {
-          "file": "src/__tests__/blocklist-napi-integration.test.ts",
-          "lines": "31-59",
-          "implMappings": []
         }
       ]
     },
@@ -43,51 +45,38 @@
       "testMappings": [
         {
           "file": "rust/tools/src/blocklist/mod.rs",
-          "lines": "67-101",
+          "lines": "88-130",
           "implMappings": [
             {
-              "file": "rust/tools/src/facade/wrapper.rs",
+              "file": "rust/tools/src/blocklist/matcher.rs",
               "lines": [
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528
-              ]
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// Create a result for a blocked command",
+              "lastLine": "}"
             }
           ]
-        },
-        {
-          "file": "src/__tests__/blocklist-napi-integration.test.ts",
-          "lines": "61-109",
-          "implMappings": []
         }
       ]
     },
@@ -96,7 +85,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/blocklist/mod.rs",
-          "lines": "103-150",
+          "lines": "132-185",
           "implMappings": [
             {
               "file": "rust/tools/src/blocklist/config.rs",
@@ -122,14 +111,37 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "/// Merge system and project configs.",
+              "lastLine": "let content = std::fs::read_to_string(path)?;"
+            },
+            {
+              "file": "rust/tools/src/blocklist/matcher.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "/// Check a command against all blocklist rules",
+              "lastLine": "}"
             }
           ]
-        },
-        {
-          "file": "src/__tests__/blocklist-napi-integration.test.ts",
-          "lines": "111-159",
-          "implMappings": []
         }
       ]
     }
@@ -139,14 +151,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/blocklist/mod.rs",
-      "src/__tests__/blocklist-napi-integration.test.ts"
+      "rust/tools/src/blocklist/mod.rs"
     ],
     "implFiles": [
-      "rust/tools/src/blocklist/middleware.rs",
-      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/blocklist/matcher.rs",
       "rust/tools/src/blocklist/config.rs"
     ],
-    "totalLinesCovered": 313
+    "totalLinesCovered": 224
   }
 }

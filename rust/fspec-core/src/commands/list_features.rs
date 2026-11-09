@@ -147,9 +147,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 /// Top-level metadata extracted from a `.feature` file by
 /// [`parse_feature_header`].
-struct ParsedHeader {
+pub(crate) struct ParsedHeader {
     name: String,
-    tags: Vec<String>,
+    pub(crate) tags: Vec<String>,
     scenario_count: usize,
 }
 
@@ -163,7 +163,7 @@ struct ParsedHeader {
 /// keyword line (`Feature:`, `Scenario:`, `Scenario Outline:`,
 /// `Background:`, `Rule:`) is encountered, at which point the accumulated
 /// set is attached to that keyword.
-fn parse_feature_header(content: &str) -> Option<ParsedHeader> {
+pub(crate) fn parse_feature_header(content: &str) -> Option<ParsedHeader> {
     let mut pending_tags: Vec<String> = Vec::new();
     let mut feature_name: Option<String> = None;
     let mut feature_tags: Vec<String> = Vec::new();

@@ -22,25 +22,38 @@ impl StreamOutput for Output {
     }
 }
 
+/// Prompt tokens the mocked provider reports for every summary-submission request.
+const PROMPT_TOKENS: u64 = 100;
+
+/// The first request submits `content`; later requests answer with text.
 async fn provider(content: &str) -> MockServer {
     let server = MockServer::start().await;
-    let arguments = serde_json::json!({"content": content}).to_string();
-    let chunks = [
+    let arguments = serde_json::json!({"work_unit_id": "NONE", "content": content}).to_string();
+    let submission = [
         serde_json::json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"summary-call","type":"function","function":{"name":"inject_summary","arguments":arguments}}]},"finish_reason":null}]}),
-        serde_json::json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}),
+        serde_json::json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":PROMPT_TOKENS,"completion_tokens":10,"total_tokens":PROMPT_TOKENS + 10}}),
     ];
+    let answer = [
+        serde_json::json!({"id":"answer","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{"role":"assistant","content":"Continuing after the rejected summary."},"finish_reason":"stop"}],"usage":{"prompt_tokens":PROMPT_TOKENS,"completion_tokens":5,"total_tokens":PROMPT_TOKENS + 5}}),
+    ];
+    let body = |chunks: &[serde_json::Value]| {
+        format!(
+            "{}data: [DONE]\n\n",
+            chunks
+                .iter()
+                .map(|chunk| format!("data: {chunk}\n\n"))
+                .collect::<String>()
+        )
+    };
+    let (submission, answer) = (body(&submission), body(&answer));
+    let requests = std::sync::atomic::AtomicUsize::new(0);
     Mock::given(method("POST"))
-        .respond_with(
+        .respond_with(move |_: &wiremock::Request| {
+            let first = requests.fetch_add(1, std::sync::atomic::Ordering::SeqCst) == 0;
             ResponseTemplate::new(200)
                 .insert_header("content-type", "text/event-stream")
-                .set_body_string(format!(
-                    "{}data: [DONE]\n\n",
-                    chunks
-                        .iter()
-                        .map(|chunk| format!("data: {chunk}\n\n"))
-                        .collect::<String>()
-                )),
-        )
+                .set_body_string(if first { &submission } else { &answer }.clone())
+        })
         .mount(&server)
         .await;
     server
@@ -107,7 +120,7 @@ async fn scenario_production_summary_submission_commits_its_captured_durable_sou
         .compaction_commit
         .as_ref()
         .expect("durable generation");
-    assert_eq!(boundary.covered_prefix.len(), 2);
+    assert_eq!(boundary.covered_prefix().len(), 2);
     assert!(!boundary.publication_pending);
     assert_eq!(manifest.messages.len(), 2);
     assert_eq!(
@@ -149,7 +162,7 @@ async fn scenario_production_summary_submission_commits_its_captured_durable_sou
         .await
         .expect("fresh runtime from committed identity");
     codelet_core::SessionManagerHandle::restore_session_messages(
-        &cold_manager,
+        cold_manager.as_ref(),
         &codelet_rpc_types::SessionId::new(fixture.target.id.to_string()),
         replay,
     )
@@ -208,7 +221,8 @@ async fn scenario_a_queued_production_candidate_cannot_be_overwritten() {
 
 #[tokio::test]
 #[serial_test::serial]
-async fn scenario_production_candidate_rejection_preserves_memory_and_blocks_inference() {
+async fn scenario_production_candidate_rejection_preserves_memory_and_returns_the_error_for_correction(
+) {
     // @step Given a live session with immutable originals and a selected physical serializer
     let fixture = Fixture::new("http://127.0.0.1:1").await;
     let mut inner = fixture.target.inner.lock().await;
@@ -248,29 +262,16 @@ async fn scenario_production_candidate_rejection_preserves_memory_and_blocks_inf
         fixture.target.id,
     )
     .await;
-    assert!(result.is_err());
-    // @step Then ordinary inference remains blocked without a committed generation
-    assert_eq!(server.received_requests().await.expect("requests").len(), 1);
-    assert!(inner.ensure_compaction_inference_ready().is_err());
-    let rejected_messages = serde_json::to_value(&inner.messages).expect("rejected history");
-    let retry_agent = RigAgent::new(client.agent("o3").max_tokens(4096).build(), 3);
-    let retry = run_agent_stream(
-        retry_agent,
-        "ordinary inference after rejected summary",
-        &mut inner,
-        Arc::new(AtomicBool::new(false)),
-        Arc::new(AtomicBool::new(false)),
-        Arc::new(tokio::sync::Notify::new()),
-        &Output::default(),
-        fixture.target.id,
-    )
-    .await;
-    assert!(retry.is_err());
-    assert_eq!(server.received_requests().await.expect("requests").len(), 1);
-    assert_eq!(
-        serde_json::to_value(&inner.messages).expect("history after rejected retry"),
-        rejected_messages
+    result.expect("a rejected candidate continues the turn");
+    // @step Then the exact validator error returns to the model in the same turn without a committed generation
+    let requests = server.received_requests().await.expect("requests");
+    assert_eq!(requests.len(), 2);
+    let correction = String::from_utf8_lossy(&requests[1].body).into_owned();
+    assert!(
+        correction.contains("invalid DAG candidate: missing or unclosed dag-node structure"),
+        "the model's next request carries the exact validator error: {correction}"
     );
+    assert!(correction.contains("rejected"), "{correction}");
     assert!(!queue
         .apply(&mut inner, &fixture.target)
         .expect("nothing accepted"));
@@ -279,9 +280,24 @@ async fn scenario_production_candidate_rejection_preserves_memory_and_blocks_inf
     assert!(manifest.compaction_commit.is_none());
     // @step And committed messages and counters remain unchanged without completion
     assert_eq!(manifest.messages.len(), 2);
+    // The counters change only by the two real requests of the continued
+    // turn (the rejected submission and the answer), as the provider reported.
+    let mut expected_tokens = before["tokens"].clone();
+    let add = |value: &serde_json::Value, by: u64| (value.as_u64().unwrap_or(0) + by).into();
+    expected_tokens["input_tokens"] = PROMPT_TOKENS.into();
+    expected_tokens["cumulative_billed_input"] = add(
+        &before["tokens"]["cumulative_billed_input"],
+        2 * PROMPT_TOKENS,
+    );
+    expected_tokens["output_tokens"] = add(&before["tokens"]["output_tokens"], 15);
+    expected_tokens["cumulative_billed_output"] =
+        add(&before["tokens"]["cumulative_billed_output"], 15);
     assert_eq!(
         serde_json::to_value(&inner.token_tracker).expect("counters"),
-        before["tokens"]
+        expected_tokens,
+        "only the provider-measured usage of the turn's real requests may change"
     );
     assert_no_completion(&mut events);
+    // @step And ordinary inference is not blocked
+    assert!(inner.ensure_compaction_inference_ready().is_ok());
 }

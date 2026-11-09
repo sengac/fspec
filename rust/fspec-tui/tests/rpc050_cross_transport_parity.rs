@@ -8,14 +8,9 @@
 //! against the SAME deterministic StubSessionManagerHandle. Mirrors the
 //! RPC-049 parity pattern.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock,
-    clippy::too_many_lines
-)]
+#![allow(clippy::await_holding_lock, clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -28,56 +23,63 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::{SessionId, WorkUnitContext};
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 /// Scenario: set_work_unit_context and get_work_unit_context round-trip
 /// identically across both transports
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn set_and_get_work_unit_context_round_trip_identically_across_transports() {
+async fn set_and_get_work_unit_context_round_trip_identically_across_transports() -> TestResult {
     // @step Given a SharedFspecService wired to a StubSessionManagerHandle
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
 
     // @step And an EmbeddedFspecBackend over that service
     // @step And a WebSocketFspecBackend over that same service
-    let (embedded, websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await?;
     let sid = SessionId::new("stub-1");
     let ctx = WorkUnitContext {
         id: "RPC-050".to_string(),
@@ -129,13 +131,14 @@ async fn set_and_get_work_unit_context_round_trip_identically_across_transports(
 
     // @step And each transport's get_work_unit_context call returns the previously-stored WorkUnitContext
     assert_eq!(
-        em_get.unwrap(),
+        em_get.or_fail("expected a value")?,
         Some(ctx.clone()),
         "embedded get_work_unit_context must return the ctx written by the prior set_some call",
     );
     assert_eq!(
-        ws_get.unwrap(),
+        ws_get.or_fail("expected a value")?,
         Some(ctx),
         "websocket get_work_unit_context must return the ctx written by the prior set_some call",
     );
+    Ok(())
 }

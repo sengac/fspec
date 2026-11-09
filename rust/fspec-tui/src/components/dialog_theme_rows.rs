@@ -21,6 +21,26 @@ pub fn line_width(line: &str) -> u16 {
     line.width() as u16
 }
 
+/// TUI-131: the body width of a dialog drawn in `area` — the dialog is
+/// capped at the area, so its body is the area less the border and the
+/// padding on each side.
+pub(crate) fn dialog_body_width(area: Rect) -> usize {
+    usize::from(area.width.saturating_sub(4)).max(1)
+}
+
+/// TUI-131: `text` as dialog rows wrapped to `width` display columns
+/// ([`wrap_to_width`]); a line break starts a new row and is never painted.
+pub(crate) fn wrapped_rows(text: &str, style: Style, width: usize) -> Vec<DialogRow> {
+    wrap_to_width(text, width)
+        .into_iter()
+        .map(|row| DialogRow {
+            spans: vec![Span::styled(row, style)],
+            selectable: false,
+            selected: false,
+        })
+        .collect()
+}
+
 /// RPC-383: the resolved scroll geometry of the full-screen
 /// `TurnContentModal` for a given `(area, body)`. The render path and
 /// the App reducer MUST agree on these three numbers or the offset

@@ -1,4 +1,5 @@
 @done
+@BUG-573
 @connection
 @tui
 @bug-fix
@@ -9,6 +10,8 @@
 @reconnect
 @rust
 @RPC-415
+@BUG-351
+@BUG-353
 Feature: Live streaming dies permanently after first auto-reconnect
   """
   Respawn-on-Reconnected design:

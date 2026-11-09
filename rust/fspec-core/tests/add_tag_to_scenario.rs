@@ -474,3 +474,54 @@ fn feature_level_tag_and_other_scenarios_are_preserved() {
         "Logout must NOT have been touched"
     );
 }
+
+// ---------- moved in from the TypeScript-era scenario-level tag management feature (COV-072) ----------
+
+#[test]
+fn adding_scenario_tag_preserves_rest_of_file_byte_for_byte() {
+    // @step Given a project root tempdir with spec/features/login.feature holding a feature doc string, a Background, a step doc string with nested indentation, a data table and scenario 'A' tagged '@smoke'
+    let tmp = TempDir::new().expect("tempdir");
+    let path = "spec/features/login.feature";
+    let head = "@auth\n\
+Feature: Login\n\
+\x20\x20\"\"\"\n\
+\x20\x20Architecture notes:\n\
+\x20\x20\x20\x20- indented note\n\
+\x20\x20\"\"\"\n\
+\n\
+\x20\x20Background: User Story\n\
+\x20\x20\x20\x20As a user\n\
+\x20\x20\x20\x20I want to log in\n\
+\x20\x20\x20\x20So that I can work\n\
+\n\
+\x20\x20@smoke\n";
+    let tail = "\x20\x20Scenario: A\n\
+\x20\x20\x20\x20Given a step with a doc string:\n\
+\x20\x20\x20\x20\x20\x20\"\"\"\n\
+\x20\x20\x20\x20\x20\x20line one\n\
+\x20\x20\x20\x20\x20\x20\x20\x20line two\n\
+\x20\x20\x20\x20\x20\x20\"\"\"\n\
+\x20\x20\x20\x20Then a table:\n\
+\x20\x20\x20\x20\x20\x20| k | v |\n\
+\x20\x20\x20\x20\x20\x20| a | 1 |\n\
+\n\
+\x20\x20@regression @slow\n\
+\x20\x20Scenario: B\n\
+\x20\x20\x20\x20Given y\n";
+    write_feature(tmp.path(), path, &format!("{head}{tail}"));
+
+    // @step When I dispatch add-tag-to-scenario with file='spec/features/login.feature' scenario='A' tags=['@critical']
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"file": path, "scenario": "A", "tags": ["@critical"]}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step And the file on disk equals the original with only the line '  @critical' added between '  @smoke' and '  Scenario: A'
+    assert_eq!(
+        read_feature(tmp.path(), path),
+        format!("{head}  @critical\n{tail}")
+    );
+}

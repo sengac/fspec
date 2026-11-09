@@ -93,7 +93,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// as [`FspecCoreError::Io`]; a malformed file escalates as
 /// [`FspecCoreError::ParseJson`] with `file = "work-units.json"`.
 fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError> {
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
         command: "dependencies",
         source,

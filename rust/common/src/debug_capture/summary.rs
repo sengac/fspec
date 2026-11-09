@@ -2,6 +2,7 @@
 //!
 //! Handles markdown summary generation and event summarization for timeline display.
 
+use super::error::DebugCaptureError;
 use super::manager::DebugCaptureManager;
 use super::types::DebugEvent;
 use std::fs;
@@ -85,35 +86,37 @@ impl DebugCaptureManager {
     }
 
     /// Generate a markdown summary of the session
-    pub(super) fn generate_summary(&self, session_file: &str) {
+    /// BUG-467: an unreadable session file, an unparseable event line or an
+    /// unwritable summary is an error, never a placeholder.
+    pub(super) fn generate_summary(&self, session_file: &str) -> Result<(), DebugCaptureError> {
         let summary_path = session_file.replace(".jsonl", ".summary.md");
         let duration = self.get_session_duration();
         let duration_formatted = self.format_duration(duration);
 
         // Read events for timeline
-        let timeline = match fs::read_to_string(session_file) {
-            Ok(content) => {
-                let events: Vec<String> = content
-                    .trim()
-                    .lines()
-                    .take(TIMELINE_EVENT_LIMIT)
-                    .filter_map(|line| {
-                        serde_json::from_str::<DebugEvent>(line).ok().map(|event| {
-                            let time = event
-                                .timestamp
-                                .split('T')
-                                .nth(1)
-                                .and_then(|t| t.split('.').next())
-                                .unwrap_or("-");
-                            let details = self.summarize_event_data(&event);
-                            format!("| {} | {} | {} |", time, event.event_type, details)
-                        })
-                    })
-                    .collect();
-                events.join("\n")
-            }
-            Err(_) => "| - | - | Unable to read events |".to_string(),
-        };
+        let content = fs::read_to_string(session_file).map_err(|error| {
+            DebugCaptureError::Summary(format!("cannot read {session_file}: {error}"))
+        })?;
+        let mut rows = Vec::new();
+        for line in content.trim().lines().take(TIMELINE_EVENT_LIMIT) {
+            let event: DebugEvent = serde_json::from_str(line).map_err(|error| {
+                DebugCaptureError::Summary(format!(
+                    "{session_file} has an unreadable event: {error}"
+                ))
+            })?;
+            let time = event
+                .timestamp
+                .split('T')
+                .nth(1)
+                .and_then(|t| t.split('.').next())
+                .unwrap_or("-");
+            let details = self.summarize_event_data(&event);
+            rows.push(format!("| {} | {} | {} |", time, event.event_type, details));
+        }
+        let timeline = rows.join("\n");
+        let cwd = std::env::current_dir().map_err(|error| {
+            DebugCaptureError::Summary(format!("the current directory: {error}"))
+        })?;
 
         let summary = format!(
             r#"# Debug Session Summary
@@ -154,9 +157,7 @@ cat {} | head -50
             session_file,
             std::env::consts::OS,
             std::env::consts::ARCH,
-            std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+            cwd.to_string_lossy(),
             self.session_metadata
                 .provider
                 .as_deref()
@@ -178,7 +179,8 @@ cat {} | head -50
             session_file,
         );
 
-        // Silently ignore errors when writing summary (non-critical)
-        let _ = fs::write(&summary_path, summary);
+        fs::write(&summary_path, summary).map_err(|error| {
+            DebugCaptureError::Summary(format!("cannot write {summary_path}: {error}"))
+        })
     }
 }

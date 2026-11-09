@@ -5,6 +5,7 @@
 @cli
 @rpc
 @RPC-011
+@BUG-309
 Feature: Stale daemon.json autodiscovery hardening (verify_daemon_alive + stale-delete)
   """
   Clients (fspec client AND fspec status) call common::read_and_verify_daemon_json BEFORE trusting

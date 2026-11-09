@@ -69,7 +69,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -80,7 +82,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "93-150",
+          "lines": "93-148",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -144,7 +146,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -155,7 +159,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "222-269",
+          "lines": "220-266",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -219,7 +223,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -230,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "156-216",
+          "lines": "154-214",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -294,7 +300,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -305,7 +313,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "274-313",
+          "lines": "273-310",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -369,7 +377,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -380,7 +390,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "320-358",
+          "lines": "317-354",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -444,7 +454,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -455,7 +467,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "365-404",
+          "lines": "361-404",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_feature_tags.rs",
@@ -519,7 +531,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// — `String` here covers the same surface.",
+              "lastLine": "let outcome: StructuredOutcome ="
             }
           ]
         }
@@ -530,88 +544,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_feature_tags.rs",
-          "lines": "410-470",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/list_feature_tags.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
-            }
-          ]
+          "lines": "418-470",
+          "implMappings": []
         }
       ]
     }
@@ -624,9 +558,8 @@
       "rust/fspec/tests/cli_list_feature_tags.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/list_feature_tags.rs",
-      "rust/fspec-core/src/help/configs/list_feature_tags.rs"
+      "rust/fspec/src/list_feature_tags.rs"
     ],
-    "totalLinesCovered": 892
+    "totalLinesCovered": 808
   }
 }

@@ -18,8 +18,7 @@
 //! rust/tools `bash_output.rs` `STDERR_MARKER`; fspec-tui does not depend
 //! on codelet-tools, so this test pins the literal locally.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::agent_view::diff_decode::style_modal_lines;
@@ -80,25 +79,31 @@ fn tool_progress_chunk(
 }
 
 /// All wrapped `Line`s of the FIRST chunk (the tool-call card) in s-1.
-fn first_chunk_lines(app: &App) -> Vec<Line<'static>> {
+fn first_chunk_lines(app: &App) -> Result<Vec<Line<'static>>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .first()
         .map(|c| c.lines.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 /// The stable `seq` of the first chunk (tool-call card).
-fn first_chunk_seq(app: &App) -> u64 {
+fn first_chunk_seq(app: &App) -> Result<u64, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
-    ctx.scrollback.visible_window(4096).first().unwrap().seq
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
+        .visible_window(4096)
+        .first()
+        .or_fail("expected a value")?
+        .seq)
 }
 
 /// Concatenated text of a `Line`.
@@ -121,7 +126,7 @@ fn row_text(row: &[ratatui::text::Span<'static>]) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn settled_stderr_line_renders_red_with_marker_stripped() {
+fn settled_stderr_line_renders_red_with_marker_stripped() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool card whose command succeeded
     app.dispatch(Action::ChunkReceived(
@@ -135,13 +140,13 @@ fn settled_stderr_line_renders_red_with_marker_stripped() {
     ));
 
     // @step When the tool card body is rendered in the scrollback
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the line displays as "warning: unused import"
     let line = lines
         .iter()
         .find(|l| line_text(l).contains("warning: unused import"))
-        .expect("stderr body line present");
+        .or_fail("stderr body line present")?;
     assert_eq!(
         line_text(line),
         "warning: unused import",
@@ -162,6 +167,7 @@ fn settled_stderr_line_renders_red_with_marker_stripped() {
         "marker text must not reach screen; got {:?}",
         lines.iter().map(line_text).collect::<Vec<_>>()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -169,7 +175,7 @@ fn settled_stderr_line_renders_red_with_marker_stripped() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn successful_command_shows_only_stderr_lines_red() {
+fn successful_command_shows_only_stderr_lines_red() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool card whose command succeeded
     app.dispatch(Action::ChunkReceived(
@@ -187,13 +193,13 @@ fn successful_command_shows_only_stderr_lines_red() {
     ));
 
     // @step When the tool card body is rendered in the scrollback
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the line "Compiling main.rs" is styled in the normal body color
     let stdout_line = lines
         .iter()
         .find(|l| line_text(l).contains("Compiling main.rs"))
-        .expect("stdout body line present");
+        .or_fail("stdout body line present")?;
     assert!(
         stdout_line
             .spans
@@ -207,7 +213,7 @@ fn successful_command_shows_only_stderr_lines_red() {
     let stderr_line = lines
         .iter()
         .find(|l| line_text(l).contains("warning: unused var"))
-        .expect("stderr body line present");
+        .or_fail("stderr body line present")?;
     assert_eq!(line_text(stderr_line), "warning: unused var");
     assert!(
         line_is_red(stderr_line),
@@ -221,6 +227,7 @@ fn successful_command_shows_only_stderr_lines_red() {
         "marker text must not reach screen; got {:?}",
         lines.iter().map(line_text).collect::<Vec<_>>()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -228,7 +235,7 @@ fn successful_command_shows_only_stderr_lines_red() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn failed_command_renders_whole_body_red_with_no_marker() {
+fn failed_command_renders_whole_body_red_with_no_marker() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool card whose command failed
     app.dispatch(Action::ChunkReceived(
@@ -246,7 +253,7 @@ fn failed_command_renders_whole_body_red_with_no_marker() {
     ));
 
     // @step When the tool card body is rendered in the scrollback
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then every body line is styled red
     // The header line (first `● Bash(...)`) is not a body line; assert the
@@ -273,6 +280,7 @@ fn failed_command_renders_whole_body_red_with_no_marker() {
         "marker text must not reach screen; got {:?}",
         lines.iter().map(line_text).collect::<Vec<_>>()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -280,7 +288,7 @@ fn failed_command_renders_whole_body_red_with_no_marker() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn live_stderr_progress_prefixed_with_marker_and_red() {
+fn live_stderr_progress_prefixed_with_marker_and_red() -> TestResult {
     let mut app = app_with_session();
     // @step Given a streaming tool card
     app.dispatch(Action::ChunkReceived(
@@ -299,7 +307,7 @@ fn live_stderr_progress_prefixed_with_marker_and_red() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let source_text = ctx
         .scrollback
         .visible_window(4096)
@@ -317,15 +325,15 @@ fn live_stderr_progress_prefixed_with_marker_and_red() {
     );
 
     // @step And both lines are styled red when rendered
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
     let boom = lines
         .iter()
         .find(|l| line_text(l).contains("error: boom"))
-        .expect("stderr line 'error: boom' present");
+        .or_fail("stderr line 'error: boom' present")?;
     let more = lines
         .iter()
         .find(|l| line_text(l) == "more")
-        .expect("stderr line 'more' present");
+        .or_fail("stderr line 'more' present")?;
     assert!(
         line_is_red(boom),
         "'error: boom' must be red; got {:?}",
@@ -341,6 +349,7 @@ fn live_stderr_progress_prefixed_with_marker_and_red() {
         "marker text must not reach screen; got {:?}",
         lines.iter().map(line_text).collect::<Vec<_>>()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -348,7 +357,7 @@ fn live_stderr_progress_prefixed_with_marker_and_red() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn live_non_stderr_progress_folded_verbatim_normal_color() {
+fn live_non_stderr_progress_folded_verbatim_normal_color() -> TestResult {
     let mut app = app_with_session();
     // @step Given a streaming tool card
     app.dispatch(Action::ChunkReceived(
@@ -366,7 +375,7 @@ fn live_non_stderr_progress_folded_verbatim_normal_color() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let source_text = ctx
         .scrollback
         .visible_window(4096)
@@ -384,16 +393,17 @@ fn live_non_stderr_progress_folded_verbatim_normal_color() {
     );
 
     // @step And the line is styled in the normal body color when rendered
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
     let line = lines
         .iter()
         .find(|l| line_text(l).contains("Listening on :3000"))
-        .expect("progress line present");
+        .or_fail("progress line present")?;
     assert!(
         line.spans.iter().all(|s| s.style.fg != Some(Color::Red)),
         "non-stderr line must NOT be red; got {:?}",
         line.spans
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -401,7 +411,7 @@ fn live_non_stderr_progress_folded_verbatim_normal_color() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn content_modal_shows_stderr_red_with_marker_stripped() {
+fn content_modal_shows_stderr_red_with_marker_stripped() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool card with a body line "⚠stderr⚠error: cannot find value"
     app.dispatch(Action::ChunkReceived(
@@ -414,15 +424,15 @@ fn content_modal_shows_stderr_red_with_marker_stripped() {
     ));
 
     // @step When the TurnContentModal is opened for that card
-    let seq = first_chunk_seq(&app);
+    let seq = first_chunk_seq(&app)?;
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let full = ctx
         .scrollback
         .full_text_for_seq(seq)
-        .expect("full text exists");
+        .or_fail("full text exists")?;
     // Render each hard line through the modal styling entry point
     // (`turn_modal::styled_rows` calls `style_modal_lines` per hard line).
     let mut rows: Vec<Vec<ratatui::text::Span<'static>>> = Vec::new();
@@ -434,7 +444,7 @@ fn content_modal_shows_stderr_red_with_marker_stripped() {
     let row = rows
         .iter()
         .find(|r| row_text(r).contains("error: cannot find value"))
-        .expect("stderr modal row present");
+        .or_fail("stderr modal row present")?;
     assert_eq!(
         row_text(row),
         "error: cannot find value",
@@ -454,6 +464,7 @@ fn content_modal_shows_stderr_red_with_marker_stripped() {
         "marker text must not reach the modal screen; got {:?}",
         rows.iter().map(|r| row_text(r)).collect::<Vec<_>>()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -461,7 +472,7 @@ fn content_modal_shows_stderr_red_with_marker_stripped() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn diff_cards_bypass_stderr_detection() {
+fn diff_cards_bypass_stderr_detection() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool card whose body is an Edit/Write diff
     app.dispatch(Action::ChunkReceived(
@@ -478,7 +489,7 @@ fn diff_cards_bypass_stderr_detection() {
     ));
 
     // @step When the tool card body is rendered in the scrollback
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then stderr detection is not applied to the diff rows
     // (no marker exists in a diff card, and the diff styling must be intact)
@@ -492,7 +503,7 @@ fn diff_cards_bypass_stderr_detection() {
     let removed = lines
         .iter()
         .find(|l| line_text(l).contains("line2"))
-        .expect("removed diff line present");
+        .or_fail("removed diff line present")?;
     assert!(
         removed
             .spans
@@ -504,7 +515,7 @@ fn diff_cards_bypass_stderr_detection() {
     let added = lines
         .iter()
         .find(|l| line_text(l).contains("CHANGED"))
-        .expect("added diff line present");
+        .or_fail("added diff line present")?;
     assert!(
         added
             .spans
@@ -513,4 +524,5 @@ fn diff_cards_bypass_stderr_detection() {
         "added diff row must keep green-diff background; got {:?}",
         added.spans
     );
+    Ok(())
 }

@@ -12,8 +12,7 @@
 //! These run the Navigator in isolation (no App / backend), asserting
 //! the `active_view` transitions + the action emitted onto the bus.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::Action;
@@ -39,7 +38,7 @@ fn key(code: KeyCode) -> Event {
 
 /// Scenario: Open the model selector full-screen via the slash command
 #[test]
-fn open_model_selector_view_flips_active_view() {
+fn open_model_selector_view_flips_active_view() -> TestResult {
     // @step Given I am in the Agent view
     let (mut nav, _rx) = fresh();
     nav.apply_action(&Action::EnterWorkUnit("AUTH-001".to_string()));
@@ -50,13 +49,17 @@ fn open_model_selector_view_flips_active_view() {
 
     // @step Then the model selector replaces the screen as a full-screen view
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
+    Ok(())
 }
 
 /// Scenario: Close the model selector with Esc returns to Agent
 #[test]
-fn close_model_selector_view_returns_to_agent() {
+fn close_model_selector_view_returns_to_agent() -> TestResult {
     // @step Given I am in the model selector mode-view
     let (mut nav, _rx) = fresh();
+    nav.apply_action(&Action::OpenAgentView(Some(
+        codelet_rpc_types::SessionId::new("s-1"),
+    )));
     nav.apply_action(&Action::OpenModelSelectorView);
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
 
@@ -66,13 +69,17 @@ fn close_model_selector_view_returns_to_agent() {
     // @step Then the model selector closes
     // @step And I am returned to the Agent view
     assert_eq!(nav.active_view, ViewMode::Agent);
+    Ok(())
 }
 
 /// Scenario: Selecting a model with an active session commits the choice
 #[test]
-fn model_selected_returns_to_agent_view() {
+fn model_selected_returns_to_agent_view() -> TestResult {
     // @step Given the model selector is open with an active session
     let (mut nav, _rx) = fresh();
+    nav.apply_action(&Action::OpenAgentView(Some(
+        codelet_rpc_types::SessionId::new("s-1"),
+    )));
     nav.apply_action(&Action::OpenModelSelectorView);
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
 
@@ -87,11 +94,12 @@ fn model_selected_returns_to_agent_view() {
     // @step Then a model selection is emitted for the current session, provider and model
     // @step And the model selector view closes
     assert_eq!(nav.active_view, ViewMode::Agent);
+    Ok(())
 }
 
 /// Scenario: Switch from Provider Settings to the model selector with Tab
 #[test]
-fn tab_in_provider_settings_emits_open_model_selector() {
+fn tab_in_provider_settings_emits_open_model_selector() -> TestResult {
     // @step Given I am in the Provider Settings view in list mode
     let (mut nav, mut rx) = fresh();
     nav.apply_action(&Action::OpenProviderSettingsView);
@@ -104,11 +112,12 @@ fn tab_in_provider_settings_emits_open_model_selector() {
     // @step Then the Navigator flips to the model selector mode-view full-screen
     // The SwitchToModels outcome is translated to Action::OpenModelSelectorView
     // on the bus; applying it flips the view (App applies dispatched actions).
-    let action = rx.try_recv().expect("expected an action on the bus");
+    let action = rx.try_recv().or_fail("expected an action on the bus")?;
     assert!(
         matches!(action, Action::OpenModelSelectorView),
         "Tab in ProviderSettings must emit OpenModelSelectorView, got {action:?}"
     );
     nav.apply_action(&action);
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
+    Ok(())
 }

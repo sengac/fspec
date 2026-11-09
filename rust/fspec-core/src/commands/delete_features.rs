@@ -11,12 +11,17 @@
 //! Feature-level tags come from `parse_feature_lenient(feature.tags)` with
 //! the leading `@` re-prepended (gherkin-0.16 strips it). Files with invalid
 //! Gherkin or no Feature are silently skipped. With `dryRun=true` nothing is
-//! unlinked; otherwise every matching file is removed. Coverage sidecars are
-//! NOT deleted.
+//! unlinked; otherwise every matching file is removed.
+//!
+//! BUG-645: each deleted feature's `<feature>.coverage` sidecar is deleted
+//! with it, under the sidecar transaction (BUG-477), so no orphan coverage
+//! file is left for `fspec audit` to report. The result lists them in
+//! `coverageFiles` (a dry run lists the ones it would delete).
 //!
 //! ## Result envelope
 //! ALL outcomes (including the empty-tag-list rejection) are returned as the
-//! inner JSON envelope `{success, deletedCount, message?, files?, error?}`
+//! inner JSON envelope `{success, deletedCount, message?, files?,
+//! coverageFiles?, error?}`
 //! via `Ok(json)` — the dispatcher derives `success=false` from the payload
 //! itself (the test reads `data["error"]`), and the CLI bridge owns every
 //! rendering decision (dry-run / real / empty / error).
@@ -31,6 +36,7 @@ use std::path::Path;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
+use crate::commands::coverage_lineage::SidecarTransaction;
 use crate::error::FspecCoreError;
 use crate::io::feature_glob::glob_feature_files;
 use crate::io::gherkin::parse_feature_lenient;
@@ -121,6 +127,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     matching.sort_by(|a, b| tinyglobby_order(a, b));
 
     let count = matching.len();
+    // BUG-645: the coverage sidecars of the matching features.
+    let coverage_files: Vec<String> = matching
+        .iter()
+        .map(|file| format!("{file}.coverage"))
+        .filter(|coverage| project_root.join(coverage).exists())
+        .collect();
 
     // ---- Dry-run: report without deleting ----
     if args.dry_run {
@@ -129,16 +141,23 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             "deletedCount": count,
             "message": format!("Would delete {count} feature file(s)"),
             "files": matching,
+            "coverageFiles": coverage_files,
         }));
     }
 
     // ---- Perform deletions ----
+    let io = |source| FspecCoreError::Io {
+        command: "delete-features",
+        source,
+    };
     for file in &matching {
-        let abs = project_root.join(file);
-        std::fs::remove_file(&abs).map_err(|source| FspecCoreError::Io {
-            command: "delete-features",
-            source,
-        })?;
+        std::fs::remove_file(project_root.join(file)).map_err(io)?;
+    }
+    for coverage in &coverage_files {
+        let path = project_root.join(coverage);
+        // BUG-477: the sidecar is removed inside its transaction.
+        let _transaction = SidecarTransaction::acquire(&path, "delete-features")?;
+        std::fs::remove_file(&path).map_err(io)?;
     }
 
     ok(json!({
@@ -146,6 +165,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         "deletedCount": count,
         "message": format!("Deleted {count} feature file(s)"),
         "files": matching,
+        "coverageFiles": coverage_files,
     }))
 }
 

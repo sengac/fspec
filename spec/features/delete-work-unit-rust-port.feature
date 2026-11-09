@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@delete
 Feature: Port delete-work-unit command to Rust
   """
   Core impl at rust/fspec-core/src/commands/delete_work_unit.rs: ensure_work_units_file -> existence/children/dependency checks -> optional cascade dereference (blocks/blockedBy/relatesTo, NOT dependsOn) -> parent.children filter -> states filter -> remove from work_units IndexMap -> single write_json_atomic. children/blocks/blockedBy/dependsOn/relatesTo/parent read from WorkUnit.extra as JSON arrays/strings.

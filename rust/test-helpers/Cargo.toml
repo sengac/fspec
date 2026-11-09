@@ -8,11 +8,25 @@ publish = false
 description = "Shared test-only helpers for the codelet workspace (dependency-rule regression tests, source-scan utilities). Lives outside the napi/sessions arrow graph so any test crate can consume it without fear of pulling forbidden dependencies."
 
 [dependencies]
+# BUG-640: every test build that uses these helpers turns on codelet-common's
+# test-support guard: the user-directory resolver refuses to fall back to the
+# real <home>/.fspec unless FSPEC_USER_DIR is set (isolated_user_directory).
+# codelet-common is a leaf crate, so this pulls in no forbidden arrow.
+codelet-common = { workspace = true, features = ["test-support"] }
 # Used to parse the JSON output of `cargo metadata --format-version 1`
 # when walking the transitive dependency graph in
 # dependency_rules::assert_no_transitive_dependency.
 serde_json = { workspace = true }
 tempfile = { workspace = true }
+syn = { version = "2", features = ["full", "parsing", "visit"] }
+proc-macro2 = { version = "1", features = ["span-locations"] }
+
+[dev-dependencies]
+# BUG-640: render syn nodes to text in the fspec-config.json writer scan.
+quote = "1"
+# BUG-558: parse rust/patches/rig-core/Cargo.lock and the path packages'
+# manifests in bug558_rig_core_patch_lock_matches_its_manifests.
+toml = { workspace = true }
 
 [lints]
 workspace = true

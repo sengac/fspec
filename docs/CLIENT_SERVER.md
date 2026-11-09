@@ -18,7 +18,7 @@ all sharing the same live sessions.
 ┌─────────────────────────────────────────────────────────────┐
 │  Machine A (where the code lives)                           │
 │                                                             │
-│  fspec daemon ──── binds 127.0.0.1:3777 (loopback only)     │
+│  fspec daemon ──── binds 127.0.0.1:3777 (loopback default)  │
 │       │                                                      │
 │       │  tailscale serve --tcp 3777 3777  (tailnet only)    │
 │       ▼                                                      │
@@ -49,18 +49,63 @@ The single `fspec` binary runs in one of several modes (see `fspec --help`):
 | **Client** | `fspec client --connect ws://…` | Frontend-only. Attaches to a running daemon; can run on ANY machine. |
 | **Status** | `fspec status --connect ws://…` | One-shot health probe against the daemon. |
 
-The daemon binds a **loopback address only** (`127.0.0.1`, `::1`, or `localhost` —
-non-loopback binds are rejected at startup). That is deliberate: the daemon has no
-auth layer, so it must never listen on a public interface. Reaching it from another
-machine happens through a transport that provides the trust boundary — a Tailscale
-tailnet (below), an SSH tunnel, or anything else that terminates on loopback.
+By default the daemon binds a **loopback address** (`127.0.0.1`, `::1`, or
+`localhost`). Reaching it from another machine happens either through a transport
+that provides the trust boundary — a Tailscale tailnet (below), an SSH tunnel, or
+anything else that terminates on loopback — or through the daemon's own TLS
+listener (next section).
+
+### Remote daemon over TLS (RPC-456)
+
+A **non-loopback** `--bind` is accepted only when the daemon serves TLS **and**
+requires a bearer token; otherwise it refuses to start and names what is missing:
+
+```bash
+export FSPEC_DAEMON_TOKEN="$(openssl rand -hex 32)"
+fspec daemon --bind 0.0.0.0:3777 \
+  --tls-cert /etc/fspec/fullchain.pem \
+  --tls-key  /etc/fspec/privkey.pem \
+  --tls-name fspec.example.com
+```
+
+- `--tls-cert` is a PEM certificate chain and `--tls-key` its PEM private key
+  (PKCS#8, PKCS#1 or SEC1). Both flags go together. Unreadable or invalid files stop
+  the daemon with the reason.
+- `FSPEC_DAEMON_TOKEN` must be set and non-empty. Every connection must send
+  `Authorization: Bearer <token>`; a connection without it is rejected with 401.
+- Clients connect with `wss://` and the token, e.g. a saved daemon
+  (`fspec daemons add …`, `wss://host:3777` with `--token`) or
+  `fspec client --connect wss://host:3777 --token …`.
+- The client verifies the certificate against the public web PKI roots. For a
+  private-CA or self-signed certificate (RPC-458), tell the clients which CA to
+  trust beside those roots:
+  - `FSPEC_DAEMON_CA=/path/ca.pem` is trusted by every client connect (the daemon
+    switcher, `fspec client`, `fspec client mcp`, `fspec status`);
+  - `fspec daemons add lab wss://lab.lan:3777 --token … --ca lab-ca.pem` saves the
+    CA's absolute path with that daemon (`"ca"` in `~/.fspec/daemons.json`), trusted
+    whenever that saved daemon is connected to.
+  The certificate is still checked against the dialed host, and there is no
+  skip-verification mode: a certificate that does not verify fails with
+  `TLS certificate verification failed for <host>`. A CA file that is missing,
+  unreadable or holds no PEM certificate is an error naming the file and
+  `FSPEC_DAEMON_CA` (or the saved daemon) before any connection is tried; `--ca` is
+  checked the same way before it is saved and is refused for a `ws://` daemon.
+- `--tls-name` is the host the certificate is for. Local auto-discovery (the daemon
+  switcher, `fspec client` and `fspec status` without `--connect`) dials
+  `wss://<tls-name>:<port>`. A TLS daemon on an unspecified bind (`0.0.0.0`, `::`)
+  needs `--tls-name`; on a specific address it defaults to that address.
+- TLS is optional on loopback binds.
 
 ### Daemon lifecycle
 
 - Prints the bound port to **stdout** on startup (useful with `--bind 127.0.0.1:0`
   for ephemeral ports; pin a port when you want stable remote access).
 - Writes `daemon.json` to `$XDG_RUNTIME_DIR/fspec/daemon.json` (or
-  `~/.fspec/daemon.json`) with `port`, `pid`, `workspace`, `started_at`, `version`.
+  `~/.fspec/daemon.json`) with `port`, `pid`, `workspace`, `started_at`, `version`,
+  `scheme` (`ws` or `wss`) and `host` (the host a local client dials: the `--bind`
+  host, `127.0.0.1` for a plain daemon on `0.0.0.0`/`::`, or `--tls-name`). An
+  entry without `scheme`/`host` (written by an older fspec) means `ws` and
+  `127.0.0.1`.
   `fspec client` without `--connect` auto-discovers the daemon through this file —
   convenient for local use; for remote use always pass `--connect` explicitly.
 - `SIGINT`/`SIGTERM`: drains all connections and exits cleanly.
@@ -220,13 +265,12 @@ How it fits:
 
 ## Security notes
 
-- The daemon **refuses non-loopback binds** — there is no network-level auth, so
-  the transport (tailnet membership, SSH, VPN) IS the authentication. Keep it
-  that way.
+- The daemon **refuses non-loopback binds unless it serves TLS and requires a
+  bearer token** (RPC-456). On loopback binds without a token, the transport
+  (tailnet membership, SSH, VPN) IS the authentication.
 - The relay server is open by default; set `RELAY_SERVER_API_KEY` if the relay
   must be reachable beyond your own machines (see `bridge/README.md`).
 - A tailnet-only TCP forwarder is reachable only by devices on the same
   tailnet; audit membership with `tailscale whois` and keep the tailnet personal.
-- For anything beyond a personal tailnet (public hosts, shared machines),
-  auth/TLS for external binds is deliberately out of scope — run the daemon
-  under a trusted transport only.
+- For anything beyond a personal tailnet (public hosts, shared machines), use the
+  TLS listener with a long random `FSPEC_DAEMON_TOKEN`, and keep the token secret.

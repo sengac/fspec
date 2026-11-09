@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/embedded_happy_path.rs",
-          "lines": "21-41",
+          "lines": "29-60",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/src/lib.rs",
@@ -45,7 +45,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "use futures::StreamExt;",
+              "lastLine": "pub fn client(&self) -> FspecServiceClient {"
             }
           ]
         }
@@ -62,6 +64,6 @@
     "implFiles": [
       "rust/rpc-embedded/src/lib.rs"
     ],
-    "totalLinesCovered": 56
+    "totalLinesCovered": 67
   }
 }

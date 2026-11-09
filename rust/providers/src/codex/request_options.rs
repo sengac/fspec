@@ -17,13 +17,16 @@ pub fn resolve(
     configuration: Option<&Value>,
     capabilities: Option<&CodexCapabilities>,
 ) -> Result<Value, RequestOptionsError> {
-    let fallback = CodexCapabilities::conservative();
-    let capabilities = capabilities.filter(|caps| !caps.stale).unwrap_or(&fallback);
+    // BUG-441: options are validated and defaulted only against fresh
+    // capabilities Codex advertised. Without them nothing is invented and
+    // explicit options are sent unchanged for the server to accept or reject.
+    let capabilities = capabilities.filter(|caps| !caps.stale);
     let explicit = configuration
         .map(CodexRequestOptions::parse)
         .transpose()?
         .unwrap_or_default();
-    let defaults = &capabilities.defaults;
+    let no_defaults = CodexRequestOptions::default();
+    let defaults = capabilities.map_or(&no_defaults, |caps| &caps.defaults);
     let mut output = explicit.additional.clone();
     let mut reasoning = Map::new();
     let explicit_reasoning = explicit.reasoning.as_ref();
@@ -38,7 +41,11 @@ pub fn resolve(
         default_reasoning
             .and_then(|value| value.effort.as_ref())
             .map(Effort::wire),
-        capabilities.efforts.iter().map(Effort::wire).collect(),
+        capabilities.and_then(|caps| {
+            caps.efforts
+                .as_ref()
+                .map(|efforts| efforts.iter().map(Effort::wire).collect())
+        }),
     )?;
     select(
         &mut reasoning,
@@ -50,7 +57,7 @@ pub fn resolve(
         default_reasoning
             .and_then(|value| value.context.as_ref())
             .map(|value| json!(value)),
-        values(&capabilities.contexts),
+        capabilities.and_then(|caps| caps.contexts.as_deref().map(values)),
     )?;
     select(
         &mut reasoning,
@@ -62,7 +69,7 @@ pub fn resolve(
         default_reasoning
             .and_then(|value| value.summary.as_ref())
             .map(|value| json!(value)),
-        values(&capabilities.summaries),
+        capabilities.and_then(|caps| caps.summaries.as_deref().map(values)),
     )?;
     if !reasoning.is_empty() {
         output.insert("reasoning".into(), Value::Object(reasoning));
@@ -82,7 +89,7 @@ pub fn resolve(
             .as_ref()
             .and_then(|value| value.verbosity.as_ref())
             .map(|value| json!(value)),
-        values(&capabilities.verbosities),
+        capabilities.and_then(|caps| caps.verbosities.as_deref().map(values)),
     )?;
     if let Some(format) = explicit.text.as_ref().and_then(|text| text.format.as_ref()) {
         text.insert("format".into(), format.clone());
@@ -96,7 +103,7 @@ pub fn resolve(
         "service_tier",
         explicit.service_tier.as_ref().map(|value| json!(value)),
         defaults.service_tier.as_ref().map(|value| json!(value)),
-        values(&capabilities.service_tiers),
+        capabilities.and_then(|caps| caps.service_tiers.as_deref().map(values)),
     )?;
     let mut stream = Map::new();
     select(
@@ -111,11 +118,15 @@ pub fn resolve(
             .stream_options
             .as_ref()
             .map(|value| json!(value.reasoning_summary_delivery)),
-        if capabilities.sequential_cutoff {
-            vec![json!("sequential_cutoff")]
-        } else {
-            vec![]
-        },
+        capabilities.and_then(|caps| {
+            caps.sequential_cutoff.map(|cutoff| {
+                if cutoff {
+                    vec![json!("sequential_cutoff")]
+                } else {
+                    vec![]
+                }
+            })
+        }),
     )?;
     if !stream.is_empty() {
         output.insert("stream_options".into(), Value::Object(stream));
@@ -142,10 +153,14 @@ fn select(
     path: &str,
     explicit: Option<Value>,
     default: Option<Value>,
-    supported: Vec<Value>,
+    supported: Option<Vec<Value>>,
 ) -> Result<(), RequestOptionsError> {
+    // BUG-441: `supported` is None when Codex advertised no fresh
+    // capabilities, or (MODEL-014) advertised none for this control; then
+    // explicit values pass unvalidated and no default applies (defaults come
+    // only from advertised values).
     if let Some(value) = explicit {
-        if !supported.contains(&value) {
+        if let Some(supported) = supported.filter(|supported| !supported.contains(&value)) {
             return Err(RequestOptionsError::Unsupported {
                 option: path.into(),
                 value,
@@ -153,7 +168,11 @@ fn select(
             });
         }
         output.insert(key.into(), value);
-    } else if let Some(value) = default.filter(|value| supported.contains(value)) {
+    } else if let Some(value) = default.filter(|value| {
+        supported
+            .as_ref()
+            .is_some_and(|supported| supported.contains(value))
+    }) {
         output.insert(key.into(), value);
     }
     Ok(())

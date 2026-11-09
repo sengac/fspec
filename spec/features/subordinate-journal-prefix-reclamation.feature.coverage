@@ -42,7 +42,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "fn reclaim(&mut self) -> Result<(), RelayOutputError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,7 +92,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "fn reclaim(&mut self) -> Result<(), RelayOutputError> {",
+              "lastLine": "}"
             }
           ]
         }

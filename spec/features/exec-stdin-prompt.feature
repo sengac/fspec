@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tool-022
 @tools
@@ -6,6 +7,8 @@
 @rpc
 @tool-execution
 @agent-view
+@TOOL-022
+@BUG-456
 Feature: Surface exec-session stdin prompts in the TUI composer slot (HITL integration)
   """
   DETERMINISTIC REDESIGN (vtcode-aligned; a content heuristic was rejected — vtcode's exec core never inspects command output, exec_support.rs:244-258 attaches steering to any still-running command; the TUI 'input required' shimmer is driven by HITL modal state, not process output, state.rs:337-343). P1 LLM-side signal (codelet-tools unified_exec): UnifiedExecResult gains quiet_seconds: Option<u64> (skip_serializing_if Option::is_none) — None when exited, Some(seconds since last output, floored) when still running. A fixed steering line ('Command still running. If it needs input, send it via the write action. Poll with a short yield_time_ms to check for new output.') is appended to output UNCONDITIONALLY on every still-running result (vtcode next_wait_args/next_action_hint analogue). Quiet time is computed deterministically: ProcessEntry gains last_output_micros (tokio monotonic, set at spawn and by the reader task on each read and by poll drains); quiet_secs = (now - last_output_micros) floored, else yield_elapsed when the drain itself took the whole window. The field threads through ExecToolFacadeWrapper into ExecOperationResult (facade/wrapper.rs) so Codex sees it; no facade/codex.rs schema change. P2 TUI inline prompt, pipe sessions (PTY stays a stub — P3): wire ExecStdinRequest { exec_session_id, command, quiet_seconds, ts_ms } in rpc-types (NAPI + serde, no hint/content field); BackgroundSession.exec_stdin_request: RwLock<Option<ExecStdinRequest>> mirroring hitl_request (~388), NO status flip, NO response channel; SessionManagerHandle get_exec_stdin_request + write_exec_stdin(session, exec_session, text) -> text+'\n' via the unified_exec global ProcessStore stdin_tx (codelet-tools is already a codelet-sessions dependency), clean error naming the exec session id for unknown/exited sessions; exposed in codelet-rpc embedded+websocket and codelet-napi session_bindings. Detector: per-exec-session task spawned with the reaper fires when child alive + quiet >= QUIET_THRESHOLD_SECS (3s); pushes via a per-agent-session callback registry (analogous to set_tool_progress_callback, tools/src/tool_progress.rs); 30s per-exec-session cooldown, never while a request is stored. TUI: AgentViewStore slot exec_stdin_by_session (store/agent_view/exec_stdin_state.rs mirroring hitl_state.rs); FspecBackend get/write (embedded.rs, websocket.rs, MockBackend); Actions ExecStdinPromptFetched/ExecStdinSubmit/ExecStdinDismissed; render in input_area.rs::paint_input_area precedence HITL > exec-stdin > pause > composer, SHARED MultiLineInput (placeholder 'Type to send to the command…', magenta ⌨, dim '(Enter Send | Esc Dismiss)', prompt line shows command display + 'has been quiet for Ns — waiting for input?'); keys in views/agent/exec_stdin_keys.rs consulted AFTER hitl_keys, BEFORE pause keys. Invariants: errors silently logged via tracing, composer draft preserved, only focused pane renders, slot cleared on session exit/focus-loss/None re-probe. Accepted tradeoff (decision §9.1): time-based trigger also fires for quiet non-interactive commands; mitigated by dismissibility, cooldown, and the quiet_seconds display. Secrets (decision §9.3): nothing content-derived crosses any surface, so no masking code exists; typed answers go straight to stdin and never appear in scrollback/store/wire.
@@ -45,7 +48,6 @@ Feature: Surface exec-session stdin prompts in the TUI composer slot (HITL integ
   # ======================================================================
   @unit
   @happy-path
-  @TOOL-022
   Scenario: Still-running exec result carries the quiet_seconds timing fact
     Given a unified_exec session is running a command and has not exited
     When an exec result is produced for that session
@@ -86,39 +88,10 @@ Feature: Surface exec-session stdin prompts in the TUI composer slot (HITL integ
 
   @tui
   @happy-path
-  Scenario: TUI renders the exec-stdin prompt in the composer slot
-  # ======================================================================
-  # P2 — TUI inline prompt (pipe sessions, deterministic time-based trigger)
-  # ======================================================================
-    Given an agent session has a pending exec-stdin request for command "git commit" quiet for 5 seconds
-    And the agent view is focused on that agent session
-    When the agent view paints the input area
-    Then the input area shows the exec-stdin prompt line with a magenta keyboard glyph
-    And the prompt line shows the command display and how long it has been quiet
-    And the prompt line shows no command output content
-    And the input area shows the shared input with placeholder "Type to send to the command…"
-    And the input area shows the dim footer "(Enter Send | Esc Dismiss)"
-    And the exec-stdin prompt is painted in the composer slot ahead of the pause slot
-
   @tui
   @priority
-  Scenario: HITL prompt takes precedence over the exec-stdin prompt
-    Given an agent session has a pending exec-stdin request
-    And an agent session has a pending HITL request
-    When the agent view paints the input area
-    Then the input area shows the HITL prompt
-    And the input area does not show the exec-stdin prompt line
-
   @tui
   @integration
-  Scenario: Enter submits the typed text to the exec session stdin and clears the prompt
-    Given an agent session has a pending exec-stdin request for exec session "exec-abc"
-    And the user types "y" into the shared input
-    When the user presses Enter
-    Then the backend write_exec_stdin is called with text "y" for exec session "exec-abc"
-    And the exec-stdin prompt slot is cleared for the agent session
-    And the shared input is cleared after submit
-
   @integration
   @happy-path
   Scenario: write_exec_stdin appends a newline to the typed text
@@ -128,22 +101,8 @@ Feature: Surface exec-session stdin prompts in the TUI composer slot (HITL integ
 
   @tui
   @regression
-  Scenario: Esc dismisses the exec-stdin prompt without cancelling anything
-    Given an agent session has a pending exec-stdin request
-    And the shared input holds the draft "draft-text"
-    When the user presses Esc
-    Then the exec-stdin prompt slot is cleared for the agent session
-    And the agent session status remains running
-    And the shared input draft is preserved
-
   @tui
   @regression
-  Scenario: No exec-stdin prompt while no exec session is waiting
-    Given an agent session with no pending exec-stdin request
-    When the agent view probes the backend for the exec-stdin request
-    Then the backend returns no request
-    And the input area shows the plain composer
-
   @integration
   @e2e
   Scenario: Backend round-trip surfaces the request only while a live exec session is quiet
@@ -183,22 +142,8 @@ Feature: Surface exec-session stdin prompts in the TUI composer slot (HITL integ
 
   @tui
   @regression
-  Scenario: Slot is cleared when the exec session no longer exists
-    Given an agent session has a pending exec-stdin request for exec session "exec-gone"
-    And exec session "exec-gone" has exited
-    When the agent view re-probes the backend on focus
-    Then the backend returns no request
-    And the exec-stdin prompt slot is cleared for the agent session
-
   @tui
   @edge-case
-  Scenario: Ghost panes do not render the exec-stdin prompt
-    Given agent session A has a pending exec-stdin request
-    And agent session B is focused while agent session A is a ghost pane
-    When the agent view paints all panes
-    Then the focused pane input area shows no exec-stdin prompt line
-    And only the focused agent pane renders an exec-stdin prompt when it has one
-
   @integration
   @happy-path
   Scenario: Bash delegation surfaces the exec session steering for still-running commands

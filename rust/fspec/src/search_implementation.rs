@@ -10,7 +10,7 @@
 //! This bridge contains NO inline coverage reading, file scanning, or summary
 //! formatting — all of that lives exclusively in fspec_core.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -28,7 +28,7 @@ pub struct CliArgs {
 
 /// Entry point for the `search-implementation` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert("function".to_string(), Value::String(args.function.clone()));

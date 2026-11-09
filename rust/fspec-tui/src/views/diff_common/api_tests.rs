@@ -51,7 +51,9 @@ fn shared_file_row_shows_cursor_and_truncates_long_path() {
     // @step Then the row begins with a > cursor and the path is truncated with an ellipsis
     assert_eq!(row.spans[0].content.as_ref(), "> ");
     let path_span = row.spans.last().expect("row has a path span");
-    assert!(path_span.content.ends_with('…'));
+    // TUI-131: the path loses its start, so the file name stays.
+    assert!(path_span.content.starts_with('…'));
+    assert!(path_span.content.ends_with("file.rs"));
 }
 
 #[test]

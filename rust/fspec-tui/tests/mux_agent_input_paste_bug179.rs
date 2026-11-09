@@ -17,114 +17,31 @@
 //!   - Scenarios 2, 5, 6 pass both phases (guards: board-pane isolation,
 //!     compacting-gate parity, R10 no-change-outside-mux).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::sync::Arc;
-
 use codelet_fspec_tui::views::ViewMode;
-use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::{SessionId, SessionStatus};
-use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
-use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
+use codelet_fspec_tui::Action;
+use codelet_rpc_types::SessionStatus;
+use codelet_test_helpers::{OrFail, TestResult};
 
 mod common;
-use common::MockBackend;
 
-fn sid(s: &str) -> SessionId {
-    SessionId::new(s)
-}
+mod bug179_paste_support;
+use bug179_paste_support::{click_pane, enter_mux_board_agent_agent, fresh_app, render_once, sid};
 
-fn fresh_app() -> (App, Arc<MockBackend>) {
-    let mock = Arc::new(MockBackend::new());
-    let backend: Arc<dyn FspecBackend> = mock.clone();
-    let app = App::new(backend);
-    (app, mock)
-}
-
-async fn drain_pending(app: &mut App) {
-    while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
-    }
-    while let Some(action) = app.try_recv_action() {
-        app.dispatch(action);
-        while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
-        }
-    }
-}
-
-fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
-}
-
-/// Open two sessions (s-1, s-2) and enter mux with `/mux board agent
-/// agent` (the feature's shared Given).
-///
-/// Natural post-`/mux` state: mux focus sits on pane 1 (the first agent
-/// pane, window session s-1) while the store's current session is s-2
-/// (last created) — a genuine focus/store divergence. A click inside a
-/// pane converges it (the production click-to-focus path + the
-/// post-Navigator BUG-163 sync in `App::handle_event`).
-async fn enter_mux_board_agent_agent(app: &mut App) {
-    for i in 1..=2 {
-        app.dispatch(Action::SessionCreated(sid(&format!("s-{i}"))));
-    }
-    drain_pending(app).await;
-    submit(app, "/mux board agent agent");
-    drain_pending(app).await;
-    assert_eq!(app.active_view(), ViewMode::Mux, "/mux must enter the grid");
-    assert!(
-        app.navigator().mux.config().enabled,
-        "the mux config flag must be ON inside the grid"
-    );
-}
-
-/// Focus the Nth (0-based) rendered pane by clicking inside its cached
-/// rect — the production click-to-focus path (Navigator → mux_mouse).
-/// The click also runs the post-Navigator BUG-163 sync, converging the
-/// store's current session onto the clicked agent pane's window session.
-fn click_pane(app: &mut App, pane_index: usize) {
-    let rect = app
-        .navigator()
-        .mux
-        .pane_rects()
-        .get(pane_index)
-        .copied()
-        .expect("pane rect must exist");
-    let event = Event::Mouse(MouseEvent {
-        kind: MouseEventKind::Down(MouseButton::Left),
-        column: rect.x + 1,
-        row: rect.y + 1,
-        modifiers: KeyModifiers::NONE,
-    });
-    let _ = app.handle_event(&event);
-}
-
-/// Render the App once into an off-screen buffer so per-frame caches
-/// (`AgentView::last_is_compacting` — the RPC-095 gate input) refresh.
-fn render_once(app: &mut App) {
-    let area = Rect::new(0, 0, 160, 30);
-    let mut buf = Buffer::empty(area);
-    app.render(area, &mut buf);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: multi-line paste into the focused agent pane is inserted into
 //           the composer
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn multi_line_paste_into_the_focused_agent_pane_is_inserted_into_the_composer() {
+async fn multi_line_paste_into_the_focused_agent_pane_is_inserted_into_the_composer() -> TestResult
+{
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
     // @step And the first agent pane is focused
     // `/mux` homes the focus on the first agent pane (pane 1); the click
     // also converges the store's current session (s-2) onto that pane's
     // window session (s-1) via the production click-to-focus path.
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(
         app.navigator().mux.focus(),
         1,
@@ -151,20 +68,19 @@ async fn multi_line_paste_into_the_focused_agent_pane_is_inserted_into_the_compo
         (2, "line three".len()),
         "the cursor must land at the end of the pasted text"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: paste while the board pane is focused is ignored
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn paste_while_the_board_pane_is_focused_is_ignored() {
+async fn paste_while_the_board_pane_is_focused_is_ignored() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
     // @step And the board pane is focused
-    click_pane(&mut app, 0);
+    click_pane(&mut app, 0)?;
     assert_eq!(
         app.navigator().mux.focus(),
         0,
@@ -185,22 +101,21 @@ async fn paste_while_the_board_pane_is_focused_is_ignored() {
         "",
         "a paste ignored by the focused board pane must never leak into the composer"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: paste after click-to-focus lands in the newly focused
 //           session's composer
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn paste_after_click_to_focus_lands_in_the_newly_focused_sessions_composer() {
+async fn paste_after_click_to_focus_lands_in_the_newly_focused_sessions_composer() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
 
     // @step When I click inside the second agent pane
-    click_pane(&mut app, 2);
+    click_pane(&mut app, 2)?;
     assert_eq!(
         app.navigator().mux.focus(),
         2,
@@ -227,20 +142,19 @@ async fn paste_after_click_to_focus_lands_in_the_newly_focused_sessions_composer
         Some(sid("s-2")),
         "the post-paste mux focus sync must keep the store on the focused pane's window session"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: paste never mutates the ghost draft of an unfocused agent pane
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn paste_never_mutates_the_ghost_draft_of_an_unfocused_agent_pane() {
+async fn paste_never_mutates_the_ghost_draft_of_an_unfocused_agent_pane() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
     // @step And the first agent pane is focused
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(
         app.navigator().mux.focus(),
         1,
@@ -263,25 +177,24 @@ async fn paste_never_mutates_the_ghost_draft_of_an_unfocused_agent_pane() {
     assert_eq!(
         app.agent_view_store()
             .session_context_for(&sid("s-2"))
-            .expect("s-2 must be open")
+            .or_fail("s-2 must be open")?
             .input_draft,
         "ghost-draft",
         "a paste must never mutate the ghost draft of an unfocused agent pane (BUG-163 model)"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: paste while the focused session is compacting is suppressed
-// ─────────────────────────────────────────────────────────────────────────
+// Scenario: paste while the focused session is compacting lands in the composer
 
 #[tokio::test]
-async fn paste_while_the_focused_session_is_compacting_is_suppressed() {
+async fn paste_while_the_focused_session_is_compacting_lands_in_the_composer() -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
     // @step And the second agent pane is focused
-    click_pane(&mut app, 2);
+    click_pane(&mut app, 2)?;
     assert_eq!(
         app.navigator().mux.focus(),
         2,
@@ -303,20 +216,19 @@ async fn paste_while_the_focused_session_is_compacting_is_suppressed() {
     // @step When I paste a text snippet
     let _ = app.handle_paste("more text");
 
-    // @step Then the composer still holds the text "hello"
+    // @step Then the composer holds the text "hello" followed by the snippet
     assert_eq!(
         app.navigator().agent.input.value(),
-        "hello",
-        "the RPC-095 compacting block_edits gate must suppress the paste in mux (RPC-403 parity)"
+        "hellomore text",
+        "a paste while Compacting lands in the mux composer (TUI-115, RPC-403 parity)"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: single-view paste is unchanged when the mux layout is disabled
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn single_view_paste_is_unchanged_when_the_mux_layout_is_disabled() {
+async fn single_view_paste_is_unchanged_when_the_mux_layout_is_disabled() -> TestResult {
     // @step Given the agent view is active with the mux layout disabled
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -346,21 +258,21 @@ async fn single_view_paste_is_unchanged_when_the_mux_layout_is_disabled() {
         (2, "line three".len()),
         "the cursor must land at the end of the pasted text"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Scenario: a terminal file drop delivered as a bracketed paste inserts
 //           the path verbatim
-// ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn a_terminal_file_drop_delivered_as_a_bracketed_paste_inserts_the_path_verbatim() {
+async fn a_terminal_file_drop_delivered_as_a_bracketed_paste_inserts_the_path_verbatim(
+) -> TestResult {
     // @step Given mux mode is active with the pane list board, agent and agent
     // @step And two agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_board_agent_agent(&mut app).await;
+    enter_mux_board_agent_agent(&mut app).await?;
     // @step And the first agent pane is focused
-    click_pane(&mut app, 1);
+    click_pane(&mut app, 1)?;
     assert_eq!(
         app.navigator().mux.focus(),
         1,
@@ -385,4 +297,5 @@ async fn a_terminal_file_drop_delivered_as_a_bracketed_paste_inserts_the_path_ve
         "file:///tmp/screenshot.png",
         "the drop-as-paste payload must be inserted verbatim (no file:// decoding)"
     );
+    Ok(())
 }

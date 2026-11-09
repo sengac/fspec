@@ -20,7 +20,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
+    codelet_test_helpers::source_composition::read_tree_or_file(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
@@ -140,7 +140,8 @@ fn both_creation_paths_set_owning_manager_consistently() {
     let from_manifest_body = find_function_body(&sm_content, "create_session_from_manifest");
 
     // @step Then both sessions must have owning_manager set to the same SessionManager instance
-    // Both must call set_owning_manager with self.self_weak.get().cloned().unwrap_or_default()
+    // Both must call set_owning_manager with the manager's own self-reference
+    // (BUG-420: self.self_weak.clone(), never a defaulted Weak)
     assert!(
         with_id_body.contains("set_owning_manager"),
         "create_session_with_id must call set_owning_manager"
@@ -152,12 +153,12 @@ fn both_creation_paths_set_owning_manager_consistently() {
 
     // Both must use the same self_weak pattern
     assert!(
-        with_id_body.contains("self.self_weak.get().cloned().unwrap_or_default()"),
-        "create_session_with_id must use self.self_weak.get().cloned().unwrap_or_default()"
+        with_id_body.contains("set_owning_manager(self.self_weak.clone())"),
+        "create_session_with_id must stamp the manager's own self-reference"
     );
     assert!(
-        from_manifest_body.contains("self.self_weak.get().cloned().unwrap_or_default()"),
-        "create_session_from_manifest must use self.self_weak.get().cloned().unwrap_or_default()"
+        from_manifest_body.contains("set_owning_manager(self.self_weak.clone())"),
+        "create_session_from_manifest must stamp the manager's own self-reference"
     );
 
     // Both must set owning_manager before spawn_agent_loop

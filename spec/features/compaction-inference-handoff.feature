@@ -24,12 +24,12 @@ Feature: Compaction inference handoff
     Then the result explicitly reports queued rather than committed
     And the queued result does not publish an unmeasured remaining request budget
 
-  Scenario: Rejected summary submission blocks subsequent inference
+  Scenario: Rejected summary submission continues the turn
     Given a streaming provider that requests summary injection
     When the registered handler rejects the candidate
-    Then the tool loop returns a typed blocked outcome before another provider request
+    Then the tool loop continues and the next provider request carries the rejection
     And no compaction completion is emitted
-    And a later stream invocation remains blocked until explicit reconciliation
+    And a later stream invocation runs ordinary inference
 
   Scenario: Self-target generation yields before ordinary inference
     Given a streaming provider that requests self-target compaction generation
@@ -38,9 +38,9 @@ Feature: Compaction inference handoff
     And the generated candidate result reports queued application
     And a later stream invocation remains blocked until durable commit reconciliation
 
-  Scenario: Rejected self-target generation blocks ordinary inference
+  Scenario: Rejected self-target generation continues the turn
     Given a streaming provider that requests self-target compaction generation
     When the generation handler rejects its candidate
-    Then ordinary inference stops with a typed blocked outcome
+    Then the tool loop continues and the next provider request carries the failure
     And no compaction completion is emitted
-    And a later stream invocation remains blocked until explicit reconciliation
+    And a later stream invocation runs ordinary inference

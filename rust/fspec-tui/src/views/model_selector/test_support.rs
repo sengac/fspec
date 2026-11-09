@@ -25,7 +25,7 @@ pub(crate) fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -39,6 +39,8 @@ pub(crate) fn provider(key: &str, ids: &[&str]) -> ProviderInfo {
         models: ids.iter().map(|i| model(i)).collect(),
         profile_name: None,
         is_unreachable: false,
+        provider_id: key.to_string(),
+        unavailable_reason: None,
     }
 }
 
@@ -91,25 +93,24 @@ pub(crate) fn custom_model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 128_000,
+        context_window: Some(128_000),
         supports_reasoning: false,
         supports_vision: false,
         is_custom: true,
     }
 }
 
+/// BUG-325: a profile section exactly as the daemon lists it (key
+/// `"{provider}:{profile}"`, base `provider_id`), built by the daemon's own
+/// builder so the fixture cannot drift from the wire shape.
 pub(crate) fn profile_provider_with(
-    key: &str,
+    provider: &str,
     profile: &str,
     models: Vec<ModelEntry>,
 ) -> ProviderInfo {
-    ProviderInfo {
-        key: key.to_string(),
-        display_name: format!("{key}: {profile}"),
-        models,
-        profile_name: Some(profile.to_string()),
-        is_unreachable: false,
-    }
+    codelet_sessions::profile_sections::build_profile_provider_info(
+        provider, profile, models, false,
+    )
 }
 
 /// A single collapsed profile section with one custom model; cursor rests
@@ -135,7 +136,7 @@ pub(crate) fn expanded_profile_view() -> ModelSelectorView {
         "my-profile",
         vec![model("base"), custom_model("mycustom")],
     )]);
-    v.expanded = ["openai".to_string()].into_iter().collect();
+    v.expanded = ["openai:my-profile".to_string()].into_iter().collect();
     v.rebuild_rows();
     v.anchor_first_selectable();
     v.adjust_scroll();

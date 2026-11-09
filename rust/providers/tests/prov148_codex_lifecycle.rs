@@ -3,7 +3,6 @@
 pub mod fixture;
 use fixture::*;
 use serde_json::json;
-use std::time::Duration;
 
 #[tokio::test]
 async fn completion_finishes_before_the_socket_closes() -> TestResult {
@@ -14,8 +13,13 @@ async fn completion_finishes_before_the_socket_closes() -> TestResult {
     )
     .await?;
     // @step When the caller consumes the stream
-    let result =
-        tokio::time::timeout(Duration::from_millis(700), collect(server.models()?.0)).await??;
+    // TEST-042: the socket never closes, so a consumer that waited for the
+    // closure would only end at the deadlock guard.
+    let result = codelet_test_helpers::deadlock_guard(
+        "the final response before the socket closes",
+        collect(server.models()?.0),
+    )
+    .await??;
     // @step Then one final response arrives without waiting for socket closure
     assert_eq!(result.finals, [20]);
     assert!(result.errors.is_empty());
@@ -24,6 +28,7 @@ async fn completion_finishes_before_the_socket_closes() -> TestResult {
 
 #[tokio::test]
 async fn premature_eof_retracts_abandoned_text_before_replacement() -> TestResult {
+    // @step Given a Codex stream ending after a text delta followed by a successful replacement
     let server = Server::start(
         vec![
             text(),
@@ -32,8 +37,13 @@ async fn premature_eof_retracts_abandoned_text_before_replacement() -> TestResul
         false,
     )
     .await?;
-    let result =
-        tokio::time::timeout(Duration::from_secs(3), collect(server.models()?.0)).await??;
+    // @step When the caller consumes the stream within a bounded deadline
+    let result = codelet_test_helpers::deadlock_guard(
+        "collect(server.models()?.0)",
+        collect(server.models()?.0),
+    )
+    .await??;
+    // @step Then only replacement text remains and the original request is replayed once
     assert_eq!(result.text, "Replacement");
     assert!(result.errors.is_empty(), "{result:?}");
     assert_eq!(result.finals, [20]);
@@ -226,11 +236,16 @@ async fn ordinary_responses_retains_its_existing_eof_behavior() -> TestResult {
     .await?;
     let ordinary_server = Server::start(vec![text()], false).await?;
     // @step When both callers consume independently scripted streams within bounded deadlines
-    let codex =
-        tokio::time::timeout(Duration::from_secs(3), collect(codex_server.models()?.0)).await??;
-    let ordinary =
-        tokio::time::timeout(Duration::from_secs(2), collect(ordinary_server.models()?.1))
-            .await??;
+    let codex = codelet_test_helpers::deadlock_guard(
+        "collect(codex_server.models()?.0)",
+        collect(codex_server.models()?.0),
+    )
+    .await??;
+    let ordinary = codelet_test_helpers::deadlock_guard(
+        "collect(ordinary_server.models()?.1)",
+        collect(ordinary_server.models()?.1),
+    )
+    .await??;
     // @step Then Codex recovers with replacement text while ordinary Responses rejects missing terminal evidence without retrying
     assert!(codex.errors.is_empty(), "{codex:?}");
     assert_eq!(codex.text, "Replacement");

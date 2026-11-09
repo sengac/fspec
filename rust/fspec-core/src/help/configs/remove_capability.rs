@@ -29,15 +29,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "foundation.json not found",
-        fix: "undefined",
+        fix: "Run: fspec discover-foundation to create foundation.json.draft",
     },
     CommonError {
         error: "Capability \"Name\" not found",
-        fix: "undefined",
+        fix: "Check exact name (case-sensitive) in foundation.json. Available capabilities are listed in the error message.",
     },
     CommonError {
         error: "No capabilities exist in foundation",
-        fix: "undefined",
+        fix: "Cannot remove capabilities from empty foundation. Add capabilities first with fspec add-capability.",
     },
 ];
 
@@ -47,10 +47,10 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const RELATED: &[&str] = &[
-    "fspec add-capability - Add capability to foundation",
-    "fspec discover-foundation - Foundation discovery process",
-    "fspec remove-persona - Remove persona from foundation",
-    "fspec update-foundation - Update foundation fields",
+    "add-capability - Add capability to foundation",
+    "discover-foundation - Foundation discovery process",
+    "remove-persona - Remove persona from foundation",
+    "update-foundation - Update foundation fields",
 ];
 
 const NOTES: &[&str] = &[
@@ -76,7 +76,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: &[],
     typical_workflow: Some(
-        "List current capabilities: Check foundation.json or foundation.json.draft,Remove capability: fspec remove-capability \"exact name\",Verify removal: Check updated foundation file",
+        "List current capabilities: Check foundation.json or foundation.json.draft. Remove capability: fspec remove-capability \"exact name\". Verify removal: Check updated foundation file",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

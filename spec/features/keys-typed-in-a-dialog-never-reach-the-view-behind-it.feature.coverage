@@ -1,0 +1,374 @@
+{
+  "scenarios": [
+    {
+      "name": "Typing under an API Error dialog sends nothing to the session behind it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "109-150",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board keys pressed while the board help is open open nothing behind it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "152-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab and Shift+Right under the close dialog change nothing behind it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "177-202",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keys, ? and a paste under the merge dialog reach nothing behind it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "204-227",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typing while a notification shows reaches nothing behind it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "229-261",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+D quits while a dialog is open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs",
+          "lines": "263-276",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events/dialog.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "if let Some(result) = self.stop_key_at_dialog(event) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui128_dialog_keys_stay_in_the_dialog.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/events/dialog.rs",
+      "rust/fspec-tui/src/app/events.rs"
+    ],
+    "totalLinesCovered": 370
+  }
+}

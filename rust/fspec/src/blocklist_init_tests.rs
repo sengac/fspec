@@ -63,6 +63,7 @@ fn write_project_blocklist(root: &Path) {
 /// clears session allowances, and resets `BLOCKLIST_PROJECT_ROOT` via
 /// `init_blocklist(None)` so later `#[serial]` tests start clean.
 struct GlobalBlocklistGuard {
+    prior_user_dir: Option<std::ffi::OsString>,
     prior_home: Option<std::ffi::OsString>,
     _home_tmp: tempfile::TempDir,
 }
@@ -72,7 +73,19 @@ impl GlobalBlocklistGuard {
         let home_tmp = tempfile::tempdir().expect("tempdir for HOME redirect");
         let prior_home = std::env::var_os("HOME");
         std::env::set_var("HOME", home_tmp.path());
+        // BUG-656: the system blocklist lives in the user directory, which a
+        // test build resolves only from FSPEC_USER_DIR; RLCD stays off.
+        let prior_user_dir = std::env::var_os("FSPEC_USER_DIR");
+        let user_dir = home_tmp.path().join(".fspec");
+        std::fs::create_dir_all(&user_dir).expect("create the test user directory");
+        std::fs::write(
+            user_dir.join("fspec-config.json"),
+            "{\"rlcd\": {\"enabled\": false}}\n",
+        )
+        .expect("write the test user config");
+        std::env::set_var("FSPEC_USER_DIR", &user_dir);
         Self {
+            prior_user_dir,
             prior_home,
             _home_tmp: home_tmp,
         }
@@ -86,6 +99,10 @@ impl Drop for GlobalBlocklistGuard {
         match self.prior_home.take() {
             Some(home) => std::env::set_var("HOME", home),
             None => std::env::remove_var("HOME"),
+        }
+        match self.prior_user_dir.take() {
+            Some(directory) => std::env::set_var("FSPEC_USER_DIR", directory),
+            None => std::env::remove_var("FSPEC_USER_DIR"),
         }
     }
 }
@@ -193,4 +210,43 @@ fn scenario_startup_seam_covers_both_daemon_and_combined_modes() {
         combined_src.contains("common::build_service(&workspace)"),
         "combined.rs must build its service via common::build_service so it inherits blocklist init"
     );
+}
+
+/// Scenario: System blocklist rules are enforced after service startup
+#[test]
+#[serial]
+fn scenario_system_blocklist_rules_are_enforced_after_service_startup() {
+    let _guard = GlobalBlocklistGuard::new();
+
+    // @step Given a system blocklist at "~/.fspec/blocklist.json" with a block rule for pattern "sentinel-system-rpc407" and a workspace without a project blocklist
+    let system_path =
+        codelet_tools::blocklist::system_config_path().expect("FSPEC_USER_DIR is set by the guard");
+    std::fs::create_dir_all(system_path.parent().expect("~/.fspec")).expect("create ~/.fspec");
+    let config = BlocklistConfig {
+        version: "1.0.0".to_string(),
+        rules: vec![BlocklistRule {
+            id: "rpc407-system-rule".to_string(),
+            pattern: "sentinel-system-rpc407".to_string(),
+            action: BlocklistAction::Block,
+            reason: "RPC-407 system blocklist rule".to_string(),
+            guidance: None,
+        }],
+    };
+    std::fs::write(
+        &system_path,
+        serde_json::to_string_pretty(&config).expect("serialize system blocklist"),
+    )
+    .expect("write ~/.fspec/blocklist.json");
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let workspace = tmp.path();
+    assert!(!workspace.join(".fspec").join("blocklist.json").exists());
+
+    // @step When the fspec binary builds its service via build_service against that workspace
+    let _service = build_service(workspace).expect("build_service");
+
+    // @step Then running a command matching "sentinel-system-rpc407" is blocked with the system rule id
+    let err = check_bash_command("sentinel-system-rpc407 --run", uuid::Uuid::nil())
+        .expect_err("the system block rule blocks the command");
+    assert_eq!(err.rule_id, "rpc407-system-rule");
+    assert_eq!(err.reason, "RPC-407 system blocklist rule");
 }

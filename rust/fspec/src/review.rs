@@ -30,17 +30,17 @@
 //!     — strip that wrapper so the printed message matches the bare TS
 //!     `Error.message` (e.g. `Work unit '<id>' does not exist`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::review;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TS Commander.js surface for
 /// `review` (`src/commands/review.ts:569-575`): one required positional
-/// `<work-unit-id>`.
+/// `<workUnitId>`.
 #[derive(Debug, Default)]
 pub struct CliArgs {
     /// Required positional — the work-unit identifier to review.
@@ -50,7 +50,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `review` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({ "workUnitId": args.work_unit_id }).to_string();
 

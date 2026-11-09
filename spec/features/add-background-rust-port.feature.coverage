@@ -247,7 +247,9 @@
                 280,
                 281,
                 282
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -258,7 +260,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "97-127",
+          "lines": "113-143",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -270,7 +272,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "// ---- Validate background text ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,7 +285,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "129-154",
+          "lines": "149-174",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -293,7 +297,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "// ---- Validate background text ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -304,7 +310,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "156-181",
+          "lines": "180-201",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -319,7 +325,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "// ---- Resolve the feature file ----",
+              "lastLine": "};"
             }
           ]
         }
@@ -330,7 +338,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "183-220",
+          "lines": "207-243",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -359,7 +367,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "let response = json!({",
+              "lastLine": ") -> Result<Option<PathBuf>, FspecCoreError> {"
             }
           ]
         }
@@ -370,7 +380,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "222-264",
+          "lines": "249-293",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -444,7 +454,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "while i < lines.len() {",
+              "lastLine": "background_lines.push(format!(\"    {text_line}\"));"
             }
           ]
         }
@@ -455,7 +467,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "266-305",
+          "lines": "299-346",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -553,7 +565,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "/// Mirrors `src/commands/add-background.ts:88-211` exactly, including the",
+              "lastLine": "background_lines.push(format!(\"    {text_line}\"));"
             }
           ]
         }
@@ -564,7 +578,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_background.rs",
-          "lines": "307-329",
+          "lines": "352-377",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_background.rs",
@@ -595,7 +609,418 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "// ---- No `Feature:` line guard (TS parity) ----",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a Background keeps every scenario and its steps",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_background.rs",
+          "lines": "406-420",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_background.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282
+              ],
+              "firstLine": "fn insert_or_replace_background(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a Background keeps the feature-level tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_background.rs",
+          "lines": "440-454",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_background.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282
+              ],
+              "firstLine": "fn insert_or_replace_background(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a Background keeps scenario-level tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_background.rs",
+          "lines": "473-487",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_background.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282
+              ],
+              "firstLine": "fn insert_or_replace_background(content: &str, text: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Background holds the user story lines in order indented four spaces",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_background.rs",
+          "lines": "504-522",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_background.rs",
+              "lines": [
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "let mut background_lines: Vec<String> = vec![\"  Background: User Story\".to_string()];",
+              "lastLine": "}"
             }
           ]
         }
@@ -603,8 +1028,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_background.rs"
@@ -612,6 +1037,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_background.rs"
     ],
-    "totalLinesCovered": 750
+    "totalLinesCovered": 1159
   }
 }

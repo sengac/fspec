@@ -25,7 +25,7 @@ fn test_isolated_session_environment_reminder_includes_isolation_fields() {
     // (Already set above)
 
     // @step When the environment system-reminder is generated
-    let env_info = gather_environment_info_with_isolation(Some(&isolation));
+    let env_info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
     let content = env_info.to_reminder_content();
 
     // @step Then the reminder should contain "Isolation: ACTIVE"
@@ -56,7 +56,7 @@ fn test_non_isolated_session_environment_reminder_excludes_isolation_fields() {
     // (No isolation context provided - simulates non-isolated session)
 
     // @step When the environment system-reminder is generated
-    let env_info = gather_environment_info();
+    let env_info = gather_environment_info("/work".as_ref());
     let content = env_info.to_reminder_content();
 
     // @step Then the reminder should NOT contain "Isolation:"
@@ -97,7 +97,7 @@ fn test_ai_has_worktree_context_for_user_explanation() {
 
     // @step And the worktree is at ".fspec/worktrees/abc-123/"
     // @step And the environment reminder has been injected into context
-    let env_info = gather_environment_info_with_isolation(Some(&isolation));
+    let env_info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
     let content = env_info.to_reminder_content();
 
     // @step When the user asks "where are my changes?"
@@ -130,7 +130,7 @@ fn test_ai_has_isolation_context_for_merge_discard_advice() {
 
     // @step And the AI has completed making changes
     // @step And the environment reminder includes isolation state
-    let env_info = gather_environment_info_with_isolation(Some(&isolation));
+    let env_info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
     let content = env_info.to_reminder_content();
 
     // @step When the AI responds to task completion
@@ -159,7 +159,7 @@ fn test_isolation_fields_appear_in_correct_position() {
     };
 
     // @step When the environment reminder is generated
-    let env_info = gather_environment_info_with_isolation(Some(&isolation));
+    let env_info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
     let content = env_info.to_reminder_content();
     let lines: Vec<&str> = content.lines().collect();
 
@@ -212,7 +212,7 @@ fn test_base_commit_displays_short_sha() {
     };
 
     // @step When the environment reminder is generated
-    let env_info = gather_environment_info_with_isolation(Some(&isolation));
+    let env_info = gather_environment_info_with_isolation("/work".as_ref(), Some(&isolation));
     let content = env_info.to_reminder_content();
 
     // @step Then the reminder should contain short SHA (first 8 chars)

@@ -17,10 +17,10 @@
 //! mirroring TS at `src/commands/remove-question.ts:106` —
 //! `output.error('✗ Failed to remove question:', error.message)`.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::remove_question;
 use serde_json::{json, Value};
 
@@ -38,7 +38,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let index_value: Value = parse_ts_int_radix10(&args.index);
 

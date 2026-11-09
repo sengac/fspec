@@ -9,13 +9,17 @@
 //!     or invalid Gherkin (the dispatcher envelope itself still succeeds);
 //!   - warns (but still inserts) on a duplicate scenario name;
 //!   - inserts the new scenario BEFORE the first `Scenario Outline:` /
-//!     `Scenario Template:` if present, else at end of file;
+//!     `Scenario Template:` (and its tag and comment lines) if present,
+//!     else at end of file, with one blank line before it and one newline
+//!     at the end of the file (BUG-620: formatter-clean);
 //!   - honours `dryRun` (validate + report without writing).
 //!
 //! ## Two-front-doors
 //! Both the LLM-facing dispatcher AND the standalone Rust binary's clap
 //! subcommand call this single function. The CLI bridge at
 //! `rust/fspec/src/add_scenario.rs` is JSON marshalling only.
+
+mod coverage_entry;
 
 use std::path::Path;
 
@@ -135,13 +139,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         None
     };
 
-    // ---- Build new scenario template (matches TS scenarioTemplate) ----
-    let scenario_template = format!(
-        "\n  Scenario: {}\n    Given [precondition]\n    When [action]\n    Then [expected outcome]\n",
+    // ---- New scenario with its placeholder steps ----
+    let scenario_block = format!(
+        "  Scenario: {}\n    Given [precondition]\n    When [action]\n    Then [expected outcome]\n",
         args.scenario
     );
 
-    // ---- Find insertion point: before Scenario Outline/Template, or EOF ----
+    // ---- Find insertion point: before the first Scenario Outline/Template
+    // and the tag and comment lines directly above it, or at the end ----
     let lines: Vec<&str> = content.split('\n').collect();
     let mut insert_index = lines.len();
     for (i, line) in lines.iter().enumerate() {
@@ -151,11 +156,25 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             break;
         }
     }
+    // BUG-620: the outline keeps its tags.
+    while insert_index > 0 && insert_index < lines.len() {
+        let above = lines[insert_index - 1].trim();
+        if !(above.starts_with('@') || above.starts_with('#')) {
+            break;
+        }
+        insert_index -= 1;
+    }
 
-    // ---- Splice (mirror TS join/concat exactly) ----
+    // ---- Splice (BUG-620): one blank line before the new scenario and one
+    // newline at the end, so the Gherkin formatter leaves the file alone ----
     let head = lines[..insert_index].join("\n");
+    let head = head.trim_end();
     let tail = lines[insert_index..].join("\n");
-    let new_content = format!("{head}{scenario_template}\n{tail}");
+    let new_content = if tail.trim().is_empty() {
+        format!("{head}\n\n{scenario_block}")
+    } else {
+        format!("{head}\n\n{scenario_block}\n{tail}")
+    };
 
     // ---- Validate result is still parseable Gherkin ----
     let valid = parse_feature_lenient(&new_content).is_ok();
@@ -166,6 +185,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             command: "add-scenario",
             source,
         })?;
+        coverage_entry::add_coverage_entry(&feature_abs, &args.scenario)?;
     }
 
     let mut response = json!({

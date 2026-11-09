@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/sess003_focus_transport.rs",
-          "lines": "64-219",
+          "lines": "64-223",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/focus_fanout.rs",
@@ -32,35 +32,9 @@
                 29,
                 30,
                 31
-              ]
-            },
-            {
-              "file": "rust/rpc/src/lib.rs",
-              "lines": [
-                1913,
-                1914,
-                1915,
-                1916,
-                1917,
-                1918,
-                1919,
-                1920,
-                1921,
-                1922,
-                1923,
-                1924,
-                1925,
-                1926,
-                1927,
-                1928,
-                1929,
-                1930,
-                1931,
-                1932,
-                1933,
-                1934,
-                1935
-              ]
+              ],
+              "firstLine": "pub(crate) async fn run(",
+              "lastLine": "}"
             },
             {
               "file": "rust/rpc-types/src/work_unit_focus.rs",
@@ -93,24 +67,77 @@
                 26,
                 27,
                 28,
-                29,
-                30
-              ]
-            },
-            {
-              "file": "rust/rpc-embedded/src/lib.rs",
-              "lines": [
-                115,
-                116,
-                117
-              ]
+                29
+              ],
+              "firstLine": "use crate::WorkUnitContext;",
+              "lastLine": "}"
             },
             {
               "file": "rust/rpc-server/src/server.rs",
               "lines": [
-                147,
-                239
-              ]
+                222,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "let focus_rx = service.work_unit_focus_rx();",
+              "lastLine": "connection_fanouts::ConnectionFanouts::spawn(&service, &envelope_out_tx, &stats, focus_rx);"
+            },
+            {
+              "file": "rust/rpc-server/src/server/connection_fanouts.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let focus_fanout = tokio::spawn(crate::focus_fanout::run(",
+              "lastLine": "));"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_restore_focus.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "async fn get_work_unit_focus(",
+              "lastLine": "}"
             }
           ]
         }
@@ -126,11 +153,11 @@
     ],
     "implFiles": [
       "rust/rpc-server/src/focus_fanout.rs",
-      "rust/rpc/src/lib.rs",
       "rust/rpc-types/src/work_unit_focus.rs",
-      "rust/rpc-embedded/src/lib.rs",
-      "rust/rpc-server/src/server.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/server/connection_fanouts.rs",
+      "rust/rpc/src/service_implementation/session_restore_focus.rs"
     ],
-    "totalLinesCovered": 236
+    "totalLinesCovered": 257
   }
 }

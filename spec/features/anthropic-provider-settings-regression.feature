@@ -1,4 +1,6 @@
 @PROV-027
+@providers
+@provider-settings
 Feature: Anthropic provider settings regression hardening
   """
   REGRESSION tests preventing PROV-019 class bugs for Claude provider settings.

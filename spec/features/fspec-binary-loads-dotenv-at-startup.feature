@@ -4,6 +4,7 @@
 @configuration
 @providers
 @PROV-097
+@BUG-307
 Feature: fspec binary loads dotenv at startup
   """
   Architecture notes:
@@ -64,11 +65,11 @@ Feature: fspec binary loads dotenv at startup
     Then the "cohere" provider row reports configured as true
 
   @source-shape
-  Scenario: The fspec startup seam calls dotenvy in startup_env and main.rs invokes it before clap parse
+  Scenario: The fspec startup seam calls dotenvy in startup_env and the CLI entry invokes it before clap parse
     Given the file "rust/fspec/src/startup_env.rs"
     When the source is scanned for "dotenvy::from_path"
     Then it contains a call to "dotenvy::from_path"
-    And the file "rust/fspec/src/main.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
+    And the file "rust/fspec/src/cli_registration/entry.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
 
   @source-shape
   Scenario: The fspec crate declares the dotenvy dependency

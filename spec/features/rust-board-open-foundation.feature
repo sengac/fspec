@@ -13,15 +13,12 @@ Feature: Wire D key on board to open FOUNDATION.md in browser
   #
   # BUSINESS RULES:
   #   1. Pressing D or d on the board emits an OpenFoundation action and consumes the key event
-  #   2. When a viewer server port is available, OpenFoundation targets the URL http://127.0.0.1:PORT/view/spec/FOUNDATION.md and launches the default browser
-  #   3. When no viewer server port is available, OpenFoundation is a safe no-op (no URL, no browser launch, no panic)
-  #   4. The App starts the attachment viewer server during bootstrap (best-effort, non-fatal) and stores its port so the board's D key can build the URL
+  #   2. TUI-120: OpenFoundation reads spec/FOUNDATION.md of the selected workspace from the daemon (spec/features/foundation-viewer-and-fspec-runner-follow-the-selected-workspace.feature)
+  #   3. (BUG-469) The App no longer starts a viewer on the TUI's directory at bootstrap; viewers serve files read from the daemon
   #
   # EXAMPLES:
   #   1. Pressing uppercase D on the focused board emits Action::OpenFoundation and the event is consumed
   #   2. Pressing lowercase d on the focused board emits Action::OpenFoundation and the event is consumed
-  #   3. With viewer port 53999, the foundation target URL is http://127.0.0.1:53999/view/spec/FOUNDATION.md
-  #   4. With no viewer port set, the foundation target resolves to nothing and no browser is launched
   #
   # ========================================
   Background: User Story
@@ -40,13 +37,3 @@ Feature: Wire D key on board to open FOUNDATION.md in browser
     When I press the lowercase d key
     Then the open-foundation action is emitted
     And the key event is consumed
-
-  Scenario: The foundation document opens at the viewer URL when the server is running
-    Given the attachment viewer server is running on a known port
-    When the open-foundation action resolves its target
-    Then the target is the FOUNDATION.md view URL on that port
-
-  Scenario: Pressing D is a safe no-op when the viewer server is unavailable
-    Given the attachment viewer server is not running
-    When the open-foundation action resolves its target
-    Then there is no target and no browser is launched

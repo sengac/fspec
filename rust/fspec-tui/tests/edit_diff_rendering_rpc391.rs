@@ -6,8 +6,7 @@
 //! styles of the tool-call card. Each Gherkin step carries a matching
 //! `// @step` comment whose text mirrors the feature file exactly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, ChunkKind, FspecBackend};
@@ -50,16 +49,17 @@ fn tool_result(tool_call_id: &str, content: &str) -> StreamChunk {
 }
 
 /// All wrapped `Line`s of the FIRST chunk (the tool-call card) in s-1.
-fn first_chunk_lines(app: &App) -> Vec<Line<'static>> {
+fn first_chunk_lines(app: &App) -> Result<Vec<Line<'static>>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .first()
         .map(|c| c.lines.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 /// Concatenated text of a `Line`.
@@ -73,7 +73,7 @@ fn line_has_bg(line: &Line<'static>, bg: Color) -> bool {
 }
 
 #[test]
-fn edit_replacing_one_line_shows_old_on_red_and_new_on_green() {
+fn edit_replacing_one_line_shows_old_on_red_and_new_on_green() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit tool call whose old_string and new_string differ in one line is captured at tool-call time
     app.dispatch(Action::ChunkReceived(
@@ -87,13 +87,13 @@ fn edit_replacing_one_line_shows_old_on_red_and_new_on_green() {
 
     // @step When the matching ToolResult arrives and the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the removed line span has a background of rgb 139,0,0 and white text
     let removed = lines
         .iter()
         .find(|l| line_text(l).contains("line2"))
-        .expect("removed line present");
+        .or_fail("removed line present")?;
     assert!(line_has_bg(removed, DIFF_BG_REMOVED));
     assert!(removed
         .spans
@@ -104,16 +104,17 @@ fn edit_replacing_one_line_shows_old_on_red_and_new_on_green() {
     let added = lines
         .iter()
         .find(|l| line_text(l).contains("CHANGED"))
-        .expect("added line present");
+        .or_fail("added line present")?;
     assert!(line_has_bg(added, DIFF_BG_ADDED));
     assert!(added
         .spans
         .iter()
         .any(|s| s.style.bg == Some(DIFF_BG_ADDED) && s.style.fg == Some(Color::White)));
+    Ok(())
 }
 
 #[test]
-fn write_of_a_new_three_line_file_shows_three_green_lines() {
+fn write_of_a_new_three_line_file_shows_three_green_lines() -> TestResult {
     let mut app = app_with_session();
     // @step Given a Write tool call whose content has three lines is captured at tool-call time
     app.dispatch(Action::ChunkReceived(
@@ -123,7 +124,7 @@ fn write_of_a_new_three_line_file_shows_three_green_lines() {
 
     // @step When the matching ToolResult arrives and the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then three line spans each have a background of rgb 0,100,0 and white text
     let green = lines
@@ -134,10 +135,11 @@ fn write_of_a_new_three_line_file_shows_three_green_lines() {
 
     // @step And no removed-line background appears
     assert!(!lines.iter().any(|l| line_has_bg(l, DIFF_BG_REMOVED)));
+    Ok(())
 }
 
 #[test]
-fn bash_tool_result_renders_plain_white_with_no_diff_coloring() {
+fn bash_tool_result_renders_plain_white_with_no_diff_coloring() -> TestResult {
     let mut app = app_with_session();
     // @step Given a Bash tool call and its ToolResult with no captured pending diff
     app.dispatch(Action::ChunkReceived(
@@ -154,7 +156,7 @@ fn bash_tool_result_renders_plain_white_with_no_diff_coloring() {
         sid("s-1"),
         tool_result("tc-1", &body),
     ));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then no span carries a red or green diff background
     assert!(!lines.iter().any(|l| line_has_bg(l, DIFF_BG_REMOVED)));
@@ -163,19 +165,20 @@ fn bash_tool_result_renders_plain_white_with_no_diff_coloring() {
     // @step And the card is collapsed by the existing eight-line tool-output rule
     assert!(lines
         .iter()
-        .any(|l| line_text(l) == "... +12 lines (Enter to view full)"));
+        .any(|l| line_text(l) == "... +12 lines (Tab to select, Enter to view full)"));
+    Ok(())
 }
 
 #[test]
-fn edit_over_collapse_limit_shows_25_inline_while_modal_shows_full() {
+fn edit_over_collapse_limit_shows_25_inline_while_modal_shows_full() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit producing more than 25 diff display lines is captured at tool-call time
     let old: String = (1..=60).map(|i| format!("old{i}\n")).collect();
     let new: String = (1..=60).map(|i| format!("new{i}\n")).collect();
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(&old).unwrap(),
-        serde_json::to_string(&new).unwrap()
+        serde_json::to_string(&old).or_fail("expected a value")?,
+        serde_json::to_string(&new).or_fail("expected a value")?
     );
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -184,12 +187,14 @@ fn edit_over_collapse_limit_shows_25_inline_while_modal_shows_full() {
 
     // @step When the matching ToolResult arrives and the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the inline body shows 25 display lines plus a '... +N lines' indicator
     let texts: Vec<String> = lines.iter().map(line_text).collect();
     assert!(
-        texts.iter().any(|t| t.contains("(select turn to /expand)")),
+        texts
+            .iter()
+            .any(|t| t.contains("(Tab to select, Enter to view full)")),
         "inline collapse indicator missing; got {texts:?}"
     );
 
@@ -197,21 +202,27 @@ fn edit_over_collapse_limit_shows_25_inline_while_modal_shows_full() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("ctx");
-    let seq = ctx.scrollback.visible_window(4096).first().unwrap().seq;
-    let full = ctx.scrollback.full_text_for_seq(seq).expect("full text");
+        .or_fail("ctx")?;
+    let seq = ctx
+        .scrollback
+        .visible_window(4096)
+        .first()
+        .or_fail("expected a value")?
+        .seq;
+    let full = ctx.scrollback.full_text_for_seq(seq).or_fail("full text")?;
     assert!(
         full.contains("old1") && full.contains("new60"),
         "modal full diff must contain all lines"
     );
     assert!(
-        !full.contains("(select turn to /expand)"),
+        !full.contains("(Tab to select, Enter to view full)"),
         "modal full diff must NOT be collapsed"
     );
+    Ok(())
 }
 
 #[test]
-fn edit_with_uncaptured_pending_input_falls_back_to_raw_text() {
+fn edit_with_uncaptured_pending_input_falls_back_to_raw_text() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit tool call whose input is malformed JSON so no pending diff is captured
     app.dispatch(Action::ChunkReceived(
@@ -224,7 +235,7 @@ fn edit_with_uncaptured_pending_input_falls_back_to_raw_text() {
         sid("s-1"),
         tool_result("tc-1", "RAW_RESULT_BODY"),
     ));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the raw ToolResult content is shown as plain text with no diff coloring
     assert!(lines
@@ -235,18 +246,19 @@ fn edit_with_uncaptured_pending_input_falls_back_to_raw_text() {
 
     // @step And no panic occurs
     // (reaching this line proves no panic occurred)
+    Ok(())
 }
 
 #[test]
-fn context_diff_lines_render_with_gray_gutter_and_white_content() {
+fn context_diff_lines_render_with_gray_gutter_and_white_content() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit diff card containing a context line of the form '  250   foo'
     let old = "ctx1\nctx2\nold\nctx3\nctx4";
     let new = "ctx1\nctx2\nnew\nctx3\nctx4";
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(old).unwrap(),
-        serde_json::to_string(new).unwrap()
+        serde_json::to_string(old).or_fail("expected a value")?,
+        serde_json::to_string(new).or_fail("expected a value")?
     );
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -255,13 +267,13 @@ fn context_diff_lines_render_with_gray_gutter_and_white_content() {
 
     // @step When the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then the line-number gutter span is gray and the content span is white
     let ctx_line = lines
         .iter()
         .find(|l| line_text(l).contains("ctx1"))
-        .expect("context line present");
+        .or_fail("context line present")?;
     assert!(
         ctx_line
             .spans
@@ -274,10 +286,11 @@ fn context_diff_lines_render_with_gray_gutter_and_white_content() {
         .spans
         .iter()
         .any(|s| s.content.contains("ctx1") && s.style.bg.is_none()));
+    Ok(())
 }
 
 #[test]
-fn marker_characters_are_stripped_before_display() {
+fn marker_characters_are_stripped_before_display() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit diff card with removed and added lines
     app.dispatch(Action::ChunkReceived(
@@ -287,7 +300,7 @@ fn marker_characters_are_stripped_before_display() {
 
     // @step When the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
 
     // @step Then no rendered span text contains the literal '[R]' or '[A]' marker
     for l in &lines {
@@ -295,18 +308,19 @@ fn marker_characters_are_stripped_before_display() {
         assert!(!t.contains("[R]"), "literal [R] leaked: {t:?}");
         assert!(!t.contains("[A]"), "literal [A] leaked: {t:?}");
     }
+    Ok(())
 }
 
 #[test]
-fn diff_cards_bypass_the_eight_line_tool_output_collapse() {
+fn diff_cards_bypass_the_eight_line_tool_output_collapse() -> TestResult {
     let mut app = app_with_session();
     // @step Given an Edit diff card whose collapsed body has more than eight lines
     let old: String = (1..=12).map(|i| format!("old{i}\n")).collect();
     let new: String = (1..=12).map(|i| format!("new{i}\n")).collect();
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(&old).unwrap(),
-        serde_json::to_string(&new).unwrap()
+        serde_json::to_string(&old).or_fail("expected a value")?,
+        serde_json::to_string(&new).or_fail("expected a value")?
     );
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -315,12 +329,14 @@ fn diff_cards_bypass_the_eight_line_tool_output_collapse() {
 
     // @step When the diff card is wrapped into lines
     app.dispatch(Action::ChunkReceived(sid("s-1"), tool_result("tc-1", "ok")));
-    let lines = first_chunk_lines(&app);
+    let lines = first_chunk_lines(&app)?;
     let texts: Vec<String> = lines.iter().map(line_text).collect();
 
-    // @step Then no '... +N lines (Enter to view full)' indicator from the eight-line collapse appears
+    // @step Then no '... +N lines (Tab to select, Enter to view full)' indicator from the eight-line collapse appears
     assert!(
-        !texts.iter().any(|t| t.contains("(Enter to view full)")),
+        !texts
+            .iter()
+            .any(|t| t.contains("(Tab to select, Enter to view full)")),
         "8-line collapse indicator must NOT appear for diff cards; got {texts:?}"
     );
 
@@ -332,13 +348,14 @@ fn diff_cards_bypass_the_eight_line_tool_output_collapse() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("ctx");
+        .or_fail("ctx")?;
     let kind = ctx
         .scrollback
         .visible_window(4096)
         .first()
         .and_then(|c| c.source.as_ref())
         .map(|s| s.kind.clone())
-        .unwrap();
+        .or_fail("expected a value")?;
     assert!(matches!(kind, ChunkKind::ToolCall { is_diff: true, .. }));
+    Ok(())
 }

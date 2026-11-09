@@ -14,7 +14,6 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Alignment, Rect};
-use ratatui::style::Style;
 use ratatui::widgets::{Paragraph, Widget};
 
 use super::nav_item::{NavItem, NavItemKind};
@@ -40,12 +39,14 @@ pub(super) fn render_nav_items(
             width: body_area.width,
             height: 1,
         };
-        Paragraph::new("(no providers configured)")
+        Paragraph::new(view.empty_list_text())
             .alignment(Alignment::Center)
             .render(row, buf);
         return None;
     }
-    let end = (view.scroll_offset + visible_rows).min(nav_items.len());
+    // BUG-578 F19: never slice past the end of the tree.
+    let start = view.scroll_offset.min(nav_items.len());
+    let end = (start + visible_rows).min(nav_items.len());
     // RPC-352: render-only scrollbar parity with /model. When the nav list
     // overflows the viewport, reserve a 1-cell column on the right edge for
     // a proportional DIM ■/│ scrollbar so rows never paint under it.
@@ -56,8 +57,8 @@ pub(super) fn render_nav_items(
     } else {
         body_area.width
     };
-    for (row_idx, item) in nav_items[view.scroll_offset..end].iter().enumerate() {
-        let global_idx = view.scroll_offset + row_idx;
+    for (row_idx, item) in nav_items[start..end].iter().enumerate() {
+        let global_idx = start + row_idx;
         let selected = global_idx == view.selected_index;
         let y = body_area.y + row_idx as u16;
         let row_area = Rect {
@@ -73,7 +74,7 @@ pub(super) fn render_nav_items(
         // other row kind keeps the single-`Style` `render_row` contract.
         let (kind, label) = row_kind_and_label(item, view);
         let segmented = matches!(kind, RowKind::Provider { .. } | RowKind::ApiKey);
-        let end_x = if segmented {
+        if segmented {
             let display = view
                 .display_providers
                 .iter()
@@ -81,28 +82,9 @@ pub(super) fn render_nav_items(
             let segments = provider_row_segments(&item.kind, &item.provider_id, display);
             let prefix = row_prefix(kind, selected);
             let band_bg = row_band_bg(kind, selected);
-            render_segmented_row(&prefix, &segments, selected, band_bg, row_area, buf)
+            render_segmented_row(&prefix, &segments, selected, band_bg, row_area, buf);
         } else {
-            render_row(kind, &label, selected, row_area, buf)
-        };
-        // RPC-158: paint the inline test-result decoration on Provider
-        // header rows whose provider_id matches `view.test_result`. The
-        // decoration is appended after the label with a single ASCII
-        // space separator; foreground comes from the status, background
-        // matches the row's existing colour band.
-        if matches!(kind, RowKind::Provider { .. }) {
-            if let Some(test_result) = view.test_result.as_ref() {
-                if test_result.provider_id == item.provider_id {
-                    paint_test_result_decoration(
-                        kind,
-                        selected,
-                        &test_result.status,
-                        row_area,
-                        end_x,
-                        buf,
-                    );
-                }
-            }
+            render_row(kind, &label, selected, row_area, buf);
         }
     }
 
@@ -182,37 +164,6 @@ fn provider_row_segments(
     }
 
     segments
-}
-
-fn paint_test_result_decoration(
-    kind: RowKind,
-    selected: bool,
-    status: &super::ProviderTestStatus,
-    row_area: Rect,
-    end_x: u16,
-    buf: &mut Buffer,
-) {
-    // Right boundary (exclusive) of the row's painted area.
-    let right_bound = row_area.x.saturating_add(row_area.width);
-    if end_x >= right_bound {
-        return;
-    }
-    // Reserve one cell for the separator space.
-    let separator_x = end_x;
-    let decoration_x = end_x.saturating_add(1);
-    if decoration_x >= right_bound {
-        return;
-    }
-    let (text, fg) = status.decoration();
-    let bg = row_band_bg(kind, selected);
-    let style = Style::default().fg(fg).bg(bg);
-    let remaining = (right_bound - decoration_x) as usize;
-    // Paint the separator space with the band background only — no fg
-    // change needed since it's whitespace.
-    buf[(separator_x, row_area.y)].set_symbol(" ");
-    buf[(separator_x, row_area.y)].set_style(Style::default().bg(bg));
-    // Paint the decoration text on top of the existing band.
-    buf.set_stringn(decoration_x, row_area.y, &text, remaining, style);
 }
 
 fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, String) {

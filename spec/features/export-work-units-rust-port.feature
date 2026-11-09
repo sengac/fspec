@@ -1,5 +1,7 @@
 @done
 @RPC-229
+@cli
+@export
 Feature: Port export-work-units command to Rust
   """
   Core impl at rust/fspec-core/src/commands/export_work_units.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), Object.values via data.work_units.values(), for format=json serde_json::to_string_pretty(units) then std::fs::write(output, ...); else wrap 'Unsupported format: <fmt>'; returns {success:true}

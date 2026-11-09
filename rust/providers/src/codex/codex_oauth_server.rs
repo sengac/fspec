@@ -14,7 +14,7 @@ use super::codex_oauth::{
 };
 
 #[path = "oauth_callback.rs"]
-mod callback;
+pub(super) mod callback;
 use callback::{serve_until_done, CallbackResult};
 
 pub struct OAuthServerConfig {

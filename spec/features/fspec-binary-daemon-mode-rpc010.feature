@@ -29,7 +29,7 @@ Feature: fspec daemon mode — headless WS server with signal handling
   • rust/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
   """
 
-  Background: 
+  Background:
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json
 

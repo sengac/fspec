@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @configuration
 @cli
@@ -61,3 +62,9 @@ Feature: Port configure-tools command to Rust
     When I dispatch configure-tools with testCommand='npm test'
     Then spec/fspec-config.json shows tools.test.command='npm test'
     And spec/fspec-config.json still shows tools.qualityCheck.commands=['eslint .']
+
+  Scenario: A run on an existing config keeps its agent setting
+    Given a project root tempdir whose spec/fspec-config.json has agent='cursor' and no tools
+    When I dispatch configure-tools with testCommand='npm test'
+    Then spec/fspec-config.json shows tools.test.command='npm test'
+    And spec/fspec-config.json still shows agent='cursor'

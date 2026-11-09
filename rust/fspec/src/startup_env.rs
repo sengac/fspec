@@ -224,7 +224,7 @@ mod tests {
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
     }
 
-    // Scenario: The fspec startup seam calls dotenvy from_path in startup_env and main.rs invokes it before clap parse
+    // Scenario: The fspec startup seam calls dotenvy in startup_env and the CLI entry invokes it before clap parse
     #[test]
     fn scenario_the_fspec_startup_seam_calls_from_path_and_main_invokes_before_clap_parse() {
         // @step Given the file "rust/fspec/src/startup_env.rs"
@@ -252,18 +252,24 @@ mod tests {
             "startup_env.rs must contain at least one `{needle}` call (cwd-only seam); found {call_count}"
         );
 
-        // @step And the file "rust/fspec/src/main.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
-        let main_rs = crate_dir().join("src").join("main.rs");
-        let main_body = std::fs::read_to_string(&main_rs).expect("read main.rs");
+        // @step And the file "rust/fspec/src/cli_registration/entry.rs" invokes "startup_env::load_startup_env()" before the clap parse of the Cli struct
+        // REFAC-020 moved the CLI entry out of main.rs.
+        let main_rs = crate_dir()
+            .join("src")
+            .join("cli_registration")
+            .join("entry.rs");
+        let main_body = std::fs::read_to_string(&main_rs).expect("read cli_registration/entry.rs");
         let invoke_idx = main_body
             .find("startup_env::load_startup_env()")
-            .expect("main.rs must invoke startup_env::load_startup_env()");
+            .expect("entry.rs must invoke startup_env::load_startup_env()");
+        // HOOK-018: the Cli is parsed through its ArgMatches (which the
+        // command hooks read too).
         let parse_idx = main_body
-            .find("Cli::try_parse(")
-            .expect("main.rs must contain the Cli::try_parse( call");
+            .find("Cli::command().try_get_matches(")
+            .expect("entry.rs must contain the Cli::command().try_get_matches( call");
         assert!(
             invoke_idx < parse_idx,
-            "load_startup_env() must be invoked before Cli::try_parse() \
+            "load_startup_env() must be invoked before the Cli parse \
              (invoke at {invoke_idx}, parse at {parse_idx})"
         );
     }

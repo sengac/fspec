@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validation
 @coverage-tracking
@@ -41,15 +42,11 @@ Feature: Port link-coverage command to Rust
     When I dispatch link-coverage for feature "user-login" with scenario="Login" and implFile only
     Then the dispatcher returns an error whose message contains "--test-file is required when adding implementation mappings"
 
-  Scenario: test-file without test-lines surfaces a flag-combination error
-    Given a temp project root has a coverage sidecar with scenario "Login"
-    When I dispatch link-coverage for feature "user-login" with scenario="Login" and testFile only
-    Then the dispatcher returns an error whose message contains "--test-lines is required when linking test file"
-
   Scenario: A missing test file without skip-validation errors
     Given a temp project root has a coverage sidecar with scenario "Login" and no test file on disk
     When I dispatch link-coverage for feature "user-login" with scenario="Login", a non-existent testFile and testLines
     Then the dispatcher returns an error whose message contains "File not found"
+    And the error message suggests --skip-validation for forward planning
 
   Scenario: skip-validation downgrades a missing file to a warning
     Given a temp project root has a feature file and coverage sidecar with scenario "Login" tagged as a task work unit, and no test file on disk
@@ -62,12 +59,14 @@ Feature: Port link-coverage command to Rust
     When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
     Then the dispatcher returns an error whose message contains "Coverage file not found"
     And the error message suggests running fspec generate-coverage
+    And the error message carries a <system-reminder> block
 
   Scenario: A scenario absent from the sidecar errors with available scenarios listed
     Given a temp project root has a coverage sidecar that does not contain scenario "Nope"
     When I dispatch link-coverage for feature "user-login" with scenario="Nope", testFile and testLines
     Then the dispatcher returns an error whose message contains "Scenario not found"
     And the error message lists the available scenarios
+    And the error message carries no <system-reminder> block
 
   Scenario: Step validation fails when a required step comment is missing
     Given a temp project root has a story feature file whose scenario "Login" has steps, a coverage sidecar, and a test file missing one required @step comment
@@ -86,3 +85,11 @@ Feature: Port link-coverage command to Rust
     When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
     Then the dispatcher returns success=true
     And the rewritten sidecar still contains the unknown top-level field
+
+  Scenario: A scenario in the feature file but missing from the sidecar errors with a generate-coverage system-reminder
+    Given a temp project root has a feature file with scenarios "Login" and "Logout" and a coverage sidecar listing only "Login"
+    When I dispatch link-coverage for feature "user-login" with scenario="Logout", testFile and testLines
+    Then the dispatcher returns an error whose message contains "Scenario not found"
+    And the error message carries a <system-reminder> block saying "Logout" exists in the feature file but not in the coverage file
+    And the system-reminder suggests running fspec generate-coverage
+    And the sidecar is not modified

@@ -28,9 +28,9 @@ Feature: Add cwd parameter to Bash tool for worktree isolation
     So that commands execute in the correct directory automatically
 
   Scenario: Execute command in specified working directory
-    Given I have a valid directory path "/tmp/test-worktree"
-    When I call the Bash tool with cwd="/tmp/test-worktree" and command="pwd"
-    Then the output should show "/tmp/test-worktree"
+    Given I have a valid directory path "/tmp"
+    When I call the Bash tool with cwd="/tmp" and command="pwd"
+    Then the output should show "/tmp"
 
   Scenario: Execute command without cwd parameter (backward compatible)
     Given I do not specify a cwd parameter

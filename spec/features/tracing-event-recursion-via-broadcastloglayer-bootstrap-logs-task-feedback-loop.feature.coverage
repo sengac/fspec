@@ -5,42 +5,11 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
-          "lines": "30-46",
+          "lines": "33-55",
           "implMappings": [
             {
               "file": "rust/rpc/src/log_layer.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
                 125,
                 126,
                 127,
@@ -51,8 +20,44 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// LOG-004: prevent infinite recursive amplification of broadcast log",
+              "lastLine": "}"
             }
           ]
         }
@@ -63,11 +68,13 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
-          "lines": "48-72",
+          "lines": "57-83",
           "implMappings": [
             {
               "file": "rust/rpc/src/log_layer.rs",
               "lines": [
+                92,
+                93,
                 94,
                 95,
                 96,
@@ -130,8 +137,157 @@
                 153,
                 154,
                 155,
-                156
-              ]
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn build_record<S>(event: &Event<'_>, ctx: Context<'_, S>) -> LogRecord",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Below-warning events from the WebSocket transport crates are not broadcast",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
+          "lines": "109-141",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/log_layer.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// BUG-572: the broadcast is itself carried by tungstenite,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transport warnings and errors and look-alike targets are still broadcast",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/log_layer_cycle_filter.rs",
+          "lines": "143-181",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/log_layer.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn build_record<S>(event: &Event<'_>, ctx: Context<'_, S>) -> LogRecord",
+              "lastLine": "}"
             }
           ]
         }
@@ -139,8 +295,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 2,
-    "coveredScenarios": 2,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
       "rust/rpc/tests/log_layer_cycle_filter.rs"
@@ -148,6 +304,6 @@
     "implFiles": [
       "rust/rpc/src/log_layer.rs"
     ],
-    "totalLinesCovered": 147
+    "totalLinesCovered": 343
   }
 }

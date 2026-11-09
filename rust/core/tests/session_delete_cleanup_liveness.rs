@@ -27,10 +27,11 @@ impl Drop for ResetStores {
 fn scenario_cleanup_reclaims_deleted_session_messages_while_the_store_remains_alive() -> TestResult
 {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let _reset = ResetStores;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
     let message_id = messages.store("user", "deleted session evidence")?;
     let mut sessions = SessionStore::new()?;
     let mut session = sessions.create("delete then clean", directory.path())?;
@@ -69,6 +70,7 @@ fn scenario_cleanup_reclaims_deleted_session_messages_while_the_store_remains_al
 fn scenario_cleanup_reclaims_deleted_session_messages_while_the_singleton_remains_alive(
 ) -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let _reset = ResetStores;

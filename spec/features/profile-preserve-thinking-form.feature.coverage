@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "66-96",
+          "lines": "65-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
@@ -56,7 +56,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Index of the Streaming field in `PROFILE_FORM_FIELDS` (the 6th entry).",
+              "lastLine": ""
             }
           ]
         }
@@ -67,7 +69,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "100-117",
+          "lines": "102-121",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -106,7 +108,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "/// thinking blocks are STRIPPED from the chat history sent back to the LLM;",
+              "lastLine": ""
             }
           ]
         }
@@ -117,7 +121,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "121-154",
+          "lines": "124-165",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
@@ -131,7 +135,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "return;",
+              "lastLine": ""
             }
           ]
         }
@@ -142,7 +148,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "158-189",
+          "lines": "168-204",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -165,7 +171,9 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "name: String::new(),",
+              "lastLine": "max_images: String::new(),"
             }
           ]
         }
@@ -176,7 +184,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "193-206",
+          "lines": "207-222",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -203,7 +211,9 @@
                 220,
                 221,
                 222
-              ]
+              ],
+              "firstLine": "} else if self.field_index < PROFILE_FORM_FIELDS.len() - 1 {",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -214,26 +224,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov143_preserve_thinking_form.rs",
-          "lines": "225-252",
+          "lines": "241-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// PROV-143: read the optional preserve-thinking toggle; an absent key",
+              "lastLine": "let loop_detection_enabled = cfg.get(\"loopDetectionEnabled\").and_then(Value::as_bool);"
             }
           ]
         }
@@ -252,6 +264,6 @@
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
       "rust/fspec-tui/src/views/provider_settings/profiles_config.rs"
     ],
-    "totalLinesCovered": 300
+    "totalLinesCovered": 321
   }
 }

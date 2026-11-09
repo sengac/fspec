@@ -1,0 +1,140 @@
+{
+  "scenarios": [
+    {
+      "name": "A private-CA daemon is reachable through connect_with_supervisor with FSPEC_DAEMON_CA",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug667_connect_with_supervisor_trusts_the_daemon_ca.rs",
+          "lines": "42-70",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "pub async fn connect_with_supervisor(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Without FSPEC_DAEMON_CA the first connect is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug667_connect_with_supervisor_trusts_the_daemon_ca.rs",
+          "lines": "72-94",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "pub async fn connect_with_supervisor(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug667_connect_with_supervisor_trusts_the_daemon_ca.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/transport/websocket/construction.rs"
+    ],
+    "totalLinesCovered": 140
+  }
+}

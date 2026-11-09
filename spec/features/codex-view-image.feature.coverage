@@ -4,13 +4,12 @@
       "name": "Tool definition matches Codex CLI spec",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "1797-1822",
+          "file": "rust/tools/src/facade/codex/view_image_tests.rs",
+          "lines": "105-129",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                296,
                 297,
                 298,
                 299,
@@ -68,8 +67,14 @@
                 351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356,
+                357,
+                358
+              ],
+              "firstLine": "/// Codex-specific facade for viewing image files.",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,13 +84,12 @@
       "name": "CodexViewImageFacade maps view_image path to InternalFileParams::Read",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "1704-1733",
+          "file": "rust/tools/src/facade/codex/view_image_tests.rs",
+          "lines": "12-41",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                296,
                 297,
                 298,
                 299,
@@ -143,8 +147,14 @@
                 351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356,
+                357,
+                358
+              ],
+              "firstLine": "/// Codex-specific facade for viewing image files.",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,13 +164,12 @@
       "name": "CodexViewImageFacade accepts detail param for compatibility",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "1735-1759",
+          "file": "rust/tools/src/facade/codex/view_image_tests.rs",
+          "lines": "43-67",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                296,
                 297,
                 298,
                 299,
@@ -218,8 +227,14 @@
                 351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356,
+                357,
+                358
+              ],
+              "firstLine": "/// Codex-specific facade for viewing image files.",
+              "lastLine": "}"
             }
           ]
         }
@@ -229,13 +244,12 @@
       "name": "CodexViewImageFacade rejects missing path",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "1761-1779",
+          "file": "rust/tools/src/facade/codex/view_image_tests.rs",
+          "lines": "69-87",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                296,
                 297,
                 298,
                 299,
@@ -293,8 +307,14 @@
                 351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356,
+                357,
+                358
+              ],
+              "firstLine": "/// Codex-specific facade for viewing image files.",
+              "lastLine": "}"
             }
           ]
         }
@@ -304,13 +324,12 @@
       "name": "CodexViewImageFacade rejects empty path",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "1781-1795",
+          "file": "rust/tools/src/facade/codex/view_image_tests.rs",
+          "lines": "89-103",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                296,
                 297,
                 298,
                 299,
@@ -368,8 +387,14 @@
                 351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356,
+                357,
+                358
+              ],
+              "firstLine": "/// Codex-specific facade for viewing image files.",
+              "lastLine": "}"
             }
           ]
         }
@@ -381,11 +406,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex/view_image_tests.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/codex.rs"
     ],
-    "totalLinesCovered": 410
+    "totalLinesCovered": 424
   }
 }

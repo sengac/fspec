@@ -1,4 +1,4 @@
-use super::{CodexProvider, CODEX_BASE_INSTRUCTIONS, CONTEXT_WINDOW, MAX_OUTPUT_TOKENS};
+use super::{CodexProvider, CODEX_BASE_INSTRUCTIONS};
 use crate::{
     convert_assistant_content, convert_tools_to_rig, extract_prompt_data,
     extract_text_from_content, CompletionResponse, LlmProvider, ProviderError, StopReason,
@@ -59,11 +59,15 @@ impl LlmProvider for CodexProvider {
     fn model(&self) -> &str {
         &self.model_name
     }
-    fn context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    /// BUG-330: Codex limits come only from the model catalog or a user value
+    /// (resolved by `ProviderManager`); the provider object declares none, so it
+    /// reports none (PROV-167: `None`) rather than a guessed window.
+    fn context_window(&self) -> Option<usize> {
+        None
     }
-    fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    /// BUG-330: see `context_window`.
+    fn max_output_tokens(&self) -> Option<usize> {
+        None
     }
     fn supports_caching(&self) -> bool {
         false

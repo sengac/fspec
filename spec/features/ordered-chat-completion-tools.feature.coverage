@@ -33,7 +33,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "let mut tool_calls: BTreeMap<usize, ToolCall> = BTreeMap::new();",
+              "lastLine": "event_source.close();"
             }
           ]
         }
@@ -63,7 +65,9 @@
                 171,
                 172,
                 173
-              ]
+              ],
+              "firstLine": "let mut tool_calls: BTreeMap<usize, ToolCall> = BTreeMap::new();",
+              "lastLine": "usage: final_usage,"
             }
           ]
         }
@@ -94,7 +98,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "if let AssistantContent::Text { text } = part",
+              "lastLine": "}"
             }
           ]
         }

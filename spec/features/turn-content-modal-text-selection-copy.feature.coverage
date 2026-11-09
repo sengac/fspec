@@ -47,7 +47,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "self.turn_modal_scrollbar_rect = if show_scrollbar {",
+              "lastLine": "/// reconstructs + copies (rule [4])."
             }
           ]
         }
@@ -58,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
-          "lines": "88-147",
+          "lines": "83-134",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
@@ -90,7 +92,9 @@
                 156,
                 157,
                 158
-              ]
+              ],
+              "firstLine": "pub(super) fn feed_turn_modal_selection(&mut self, ev: MouseEvent) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
-          "lines": "150-208",
+          "lines": "141-191",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
@@ -175,16 +179,10 @@
                 198,
                 199,
                 200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209
-              ]
+                201
+              ],
+              "firstLine": "pub(super) fn feed_turn_modal_selection(&mut self, ev: MouseEvent) {",
+              "lastLine": "let offset = self.turn_modal_offset;"
             }
           ]
         }
@@ -229,7 +227,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "/// is neither a left button nor a vertical wheel. The modal is a",
+              "lastLine": "| MouseEventKind::Up(MouseButton::Left) => scrollbar_active,"
             }
           ]
         }
@@ -240,17 +240,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
-          "lines": "263-321",
+          "lines": "249-297",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -259,8 +253,16 @@
                 80,
                 81,
                 82,
-                83
-              ]
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "KeyCode::Esc => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -271,7 +273,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_text_selection_copy_copy008.rs",
-          "lines": "324-352",
+          "lines": "299-330",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
@@ -302,7 +304,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "// TUI-103: reset modal scrollbar state when modal closes",
+              "lastLine": "width: geom.content_width as u16,"
             }
           ]
         }
@@ -321,6 +325,6 @@
       "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
       "rust/fspec-tui/src/views/agent/dispatch_select.rs"
     ],
-    "totalLinesCovered": 520
+    "totalLinesCovered": 489
   }
 }

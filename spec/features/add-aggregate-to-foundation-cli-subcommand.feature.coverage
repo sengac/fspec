@@ -123,7 +123,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "//! `add-aggregate-to-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -161,7 +163,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "crate::common::print_next_steps(&parsed);"
             }
           ]
         }
@@ -185,7 +189,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "let mut payload = json!({",
+              "lastLine": "let args_json = payload.to_string();"
             }
           ]
         }
@@ -205,7 +211,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "Ok(0)",
+              "lastLine": "eprintln!(\"Error: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -230,7 +238,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "match add_aggregate_to_foundation::run(&args_json, &project_root).await {",
+              "lastLine": "// DISC-003 rule 4/14: print the event-storm trailer."
             }
           ]
         }
@@ -241,7 +251,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_aggregate_to_foundation.rs",
-          "lines": "268-289",
+          "lines": "281-302",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/add_aggregate_to_foundation.rs",
@@ -359,7 +369,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "//! `add-aggregate-to-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }

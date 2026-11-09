@@ -14,8 +14,6 @@ ARGUMENTS
 OPTIONS
   --status <status>
     Filter by status
-  --epic <epic>
-    Filter by epic
 
 EXAMPLES
   1. Export to JSON

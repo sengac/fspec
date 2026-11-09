@@ -16,10 +16,9 @@ use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::LogRecord;
+use codelet_test_helpers::deadlock_guard;
 use std::sync::Arc;
-use std::time::Duration;
 use tempfile::TempDir;
-use tokio::time::timeout;
 use tracing::Level;
 
 fn build_transport_with_layer() -> (TempDir, EmbeddedTransport) {
@@ -67,9 +66,9 @@ async fn scenario_tracing_emit_is_observable_on_embedded_logs_rx() {
     // (Asserted on the WS side.)
 
     // @step And the embedded caller receives a LogRecord on logs_rx() with the same message and level
-    let record: LogRecord = timeout(Duration::from_secs(2), rx.recv())
+    let record: LogRecord = deadlock_guard("the LogRecord on logs_rx", rx.recv())
         .await
-        .expect("logs_rx must yield within 2s")
+        .expect("logs_rx yields the record")
         .expect("broadcast not closed");
     assert_eq!(
         record.message, "hello",

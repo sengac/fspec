@@ -1,12 +1,9 @@
 use super::{Fixture, Result};
 use codelet_rpc_types::SessionId;
 use serde_json::json;
-use std::{
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-    time::Duration,
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
 };
 use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
@@ -49,7 +46,7 @@ pub async fn verify(fixture: &Fixture) -> Result {
         .provider_manager_mut()
         .set_model_direct("openai", "o3", Some(200_000), Some(4096), None)?;
     session.send_input("Update AUTH-002 status".into(), None)?;
-    let result = tokio::time::timeout(Duration::from_secs(10), async {
+    let result = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if fixture
                 .focus(&SessionId::from(session.id.to_string()))?
@@ -58,7 +55,7 @@ pub async fn verify(fixture: &Fixture) -> Result {
             {
                 return Ok::<(), Box<dyn std::error::Error>>(());
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await;

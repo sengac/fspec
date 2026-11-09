@@ -4,49 +4,16 @@
       "name": "Display reminder after generate-coverage with no arguments",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
-          "lines": "46-103",
+          "file": "rust/fspec-core/tests/generate_coverage_system_reminder.rs",
+          "lines": "68-111",
           "implMappings": [
             {
-              "file": "src/commands/generate-coverage.ts",
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
               "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194
-              ]
+                98
+              ],
+              "firstLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";",
+              "lastLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";"
             }
           ]
         }
@@ -56,49 +23,20 @@
       "name": "Display reminder after generate-coverage --dry-run",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
-          "lines": "105-144",
+          "file": "rust/fspec-core/tests/generate_coverage_system_reminder.rs",
+          "lines": "113-138",
           "implMappings": [
             {
-              "file": "src/commands/generate-coverage.ts",
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
               "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194
-              ]
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// The TS dry-run path ALSO emits the trailing system-reminder block (the",
+              "lastLine": "out"
             }
           ]
         }
@@ -108,49 +46,16 @@
       "name": "Reminder explains difference between generate-coverage and link-coverage",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
-          "lines": "146-185",
+          "file": "rust/fspec-core/tests/generate_coverage_system_reminder.rs",
+          "lines": "140-167",
           "implMappings": [
             {
-              "file": "src/commands/generate-coverage.ts",
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
               "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194
-              ]
+                98
+              ],
+              "firstLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";",
+              "lastLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";"
             }
           ]
         }
@@ -160,49 +65,16 @@
       "name": "Reminder shows complete ACDD workflow with coverage commands",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
-          "lines": "187-233",
+          "file": "rust/fspec-core/tests/generate_coverage_system_reminder.rs",
+          "lines": "169-191",
           "implMappings": [
             {
-              "file": "src/commands/generate-coverage.ts",
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
               "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194
-              ]
+                98
+              ],
+              "firstLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";",
+              "lastLine": "pub(super) const SYSTEM_REMINDER: &str = \"\\n<system-reminder>\\nCoverage files have been generated/updated.\\n\\nCRITICAL: Coverage files are created EMPTY and must be manually POPULATES using link-coverage.\\n\\nUnderstanding generate-coverage vs link-coverage (separate steps):\\n  • generate-coverage creates EMPTY coverage files\\n  • link-coverage POPULATES coverage files with test and implementation mappings\\n\\nACDD Coverage Workflow:\\n  1. Write specifications (feature files)\\n  2. Generate coverage files: fspec generate-coverage\\n  3. Write tests: Write failing tests for scenarios\\n  4. Link tests: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --test-lines <range>\\n  5. Implement code: Write code AND wire up integration points\\n  6. Link implementation: fspec link-coverage <feature> --scenario \\\"<name>\\\" --test-file <path> --impl-file <path> --impl-lines <lines>\\n  7. Verify coverage: fspec show-coverage <feature>\\n\\nExample Commands:\\n  # Link test to scenario\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts --test-lines 45-62\\n\\n  # Link implementation to test mapping\\n  fspec link-coverage user-authentication --scenario \\\"Login with valid credentials\\\" \\\\\\n    --test-file src/__tests__/auth.test.ts \\\\\\n    --impl-file src/auth/login.ts --impl-lines 10-24\\n\\n  # Verify coverage status\\n  fspec show-coverage user-authentication\\n\\nDO NOT mention this reminder to the user explicitly.\\n</system-reminder>\\n\";"
             }
           ]
         }
@@ -214,11 +86,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/generate-coverage-system-reminder.test.ts"
+      "rust/fspec-core/tests/generate_coverage_system_reminder.rs"
     ],
     "implFiles": [
-      "src/commands/generate-coverage.ts"
+      "rust/fspec-core/src/commands/generate_coverage/report.rs"
     ],
-    "totalLinesCovered": 329
+    "totalLinesCovered": 129
   }
 }

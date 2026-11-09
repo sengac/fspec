@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "99-136",
+          "lines": "99-140",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -178,7 +178,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -362,7 +364,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -373,7 +377,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "175-205",
+          "lines": "179-212",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -546,7 +550,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -730,7 +736,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -741,7 +749,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "240-270",
+          "lines": "251-284",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -914,7 +922,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -925,7 +935,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "272-293",
+          "lines": "286-307",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -1098,7 +1108,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1109,7 +1121,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "295-327",
+          "lines": "309-341",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -1282,7 +1294,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1293,7 +1307,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_tag_from_scenario.rs",
-          "lines": "329-366",
+          "lines": "343-380",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_tag_from_scenario.rs",
@@ -1466,7 +1480,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1483,6 +1499,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_tag_from_scenario.rs"
     ],
-    "totalLinesCovered": 1605
+    "totalLinesCovered": 1615
   }
 }

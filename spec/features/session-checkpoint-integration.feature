@@ -1,4 +1,7 @@
 @GIT-021
+@COV-057
+@git
+@checkpoint-management
 Feature: Session Checkpoint Integration
   """
   Primary implementation in rust/napi/src/session_manager.rs - add checkpoint(), restore(), list_checkpoints() methods to BackgroundSession

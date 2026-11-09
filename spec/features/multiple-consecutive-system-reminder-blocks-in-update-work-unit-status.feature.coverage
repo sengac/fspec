@@ -4,28 +4,40 @@
       "name": "Multiple reminders combined into single block",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/system-reminder-consolidation.test.ts",
-          "lines": "31-77",
+          "file": "rust/fspec-core/tests/val004_status_reminders_single_block.rs",
+          "lines": "85-120",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders.rs",
               "lines": [
-                716,
-                717,
-                718,
-                719,
-                720,
-                721,
-                722,
-                723,
-                724,
-                725,
-                726,
-                727,
-                728,
-                729,
-                730
-              ]
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// Mirrors `consolidateReminders`: strip individual wrapper tags, trim, drop",
+              "lastLine": "#[cfg(test)]"
             }
           ]
         }
@@ -35,28 +47,40 @@
       "name": "Status transition to done with multiple applicable reminders",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/system-reminder-consolidation.test.ts",
-          "lines": "80-179",
+          "file": "rust/fspec-core/tests/val004_status_reminders_single_block.rs",
+          "lines": "122-171",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/output.rs",
               "lines": [
-                716,
-                717,
-                718,
-                719,
-                720,
-                721,
-                722,
-                723,
-                724,
-                725,
-                726,
-                727,
-                728,
-                729,
-                730
-              ]
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "// Collect system reminders in TS order, then consolidate into one block.",
+              "lastLine": "let consolidated = reminders::consolidate(&reminder_parts);"
             }
           ]
         }
@@ -68,11 +92,12 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/system-reminder-consolidation.test.ts"
+      "rust/fspec-core/tests/val004_status_reminders_single_block.rs"
     ],
     "implFiles": [
-      "src/commands/update-work-unit-status.ts"
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/output.rs"
     ],
-    "totalLinesCovered": 177
+    "totalLinesCovered": 136
   }
 }

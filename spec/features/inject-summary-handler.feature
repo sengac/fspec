@@ -1,4 +1,7 @@
+@BUG-582
 @CMPCT-009
+@session
+@context-management
 Feature: inject_summary NAPI Handler and Agent Loop Registration
   """
   File: rust/napi/src/inject_summary_handler.rs — contains create_handler() returning InjectSummaryHandler closure. Captures Arc<Mutex<Session>> and context_window u64. Uses codelet_cli::session::system_reminders::partition_for_compaction and codelet_common::token_estimator::count_tokens.
@@ -38,63 +41,23 @@ Feature: inject_summary NAPI Handler and Agent Loop Registration
     I want to call inject_summary to pin a DAG summary as persistent context
     So that I can complete self-directed context compaction with zero LLM cost
 
-  @unit
-  Scenario: Partition, clear, restore, and inject DAG into session messages
-    Given a session with 200 messages including 5 system reminders and 195 conversation messages
-    When the inject_summary handler is called with DAG content
-    Then session.messages should contain exactly 6 messages
-    And the first 5 messages should be the original system reminders
-    And the last message should be a Message::User containing the DAG content
-
-  @unit
-  Scenario: DAG content is wrapped in system-reminder compaction-dag markers
-    Given a session with system reminders and conversation messages
-    When the inject_summary handler is called with DAG content "# D2: Architecture\n- JWT auth"
-    Then the injected message content should start with "<system-reminder>"
-    And the injected message content should contain "<!-- type:compaction-dag -->"
-    And the injected message content should end with "</system-reminder>"
-    And the DAG text should be preserved verbatim between the markers
-
-  @unit
-  Scenario: Returns accurate injected_tokens and remaining_budget
-    Given a session with a context window of 200000 tokens
-    And the session has system reminders and conversation messages
-    When the inject_summary handler is called with a 1250-token DAG
-    Then the result should contain injected_tokens equal to the DAG token count
-    And remaining_budget should equal context_window minus total post-injection message tokens
-
-  @unit
-  Scenario: Concurrent sessions have isolated handler execution
-    Given Session A and Session B each have an inject_summary handler registered
-    When inject_summary is called on Session A with DAG content
-    Then only Session A's messages are partitioned, cleared, and reconstructed
-    And Session B's messages remain completely unmodified
-
-  @unit
-  Scenario: Turns and token tracker are reset after injection
-    Given a session with non-empty turns and accumulated token counts
-    When the inject_summary handler is called with DAG content
-    Then session.turns should be an empty Vec
-    And session.token_tracker.input_tokens should reflect only the post-injection messages
-    And session.token_tracker.output_tokens should be reset to 0
-
   @integration
   Scenario: Handler is registered alongside SessionSearch handler in agent loop setup
     Given a BackgroundSession is being set up for an agent run
     When the agent loop registers handlers
     Then set_inject_summary_handler should be called with the session ID and a handler closure
-    And the registration should occur immediately after SessionSearch handler registration
+    And it is registered alongside the GenerateCompaction and SessionSearch handlers for the same session
 
   @integration
   Scenario: Handler is cleaned up on session teardown
     Given a BackgroundSession has completed its agent run
     When the session teardown cleanup executes
     Then set_inject_summary_handler should be called with the session ID and None
-    And the cleanup should occur alongside SessionSearch and Fspec handler cleanup
+    And the cleanup occurs alongside the compactor sub-agent and GenerateCompaction handler cleanup
 
   @unit
   Scenario: create_handler returns correct InjectSummaryHandler type
-    Given a Session wrapped in Arc<Mutex<Session>> and a context_window of 200000
-    When create_handler is called with the session and context_window
+    Given a pending-DAG slot Arc<Mutex<Option<String>>>, a context_window of 200000 and a compaction flag
+    When create_handler is called with those arguments
     Then it should return an InjectSummaryHandler (Arc<dyn Fn(Uuid, String) -> Result<InjectSummaryResult, String> + Send + Sync>)
     And the handler should be callable with a session_id and content string

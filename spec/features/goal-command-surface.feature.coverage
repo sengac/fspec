@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "40-81",
+          "lines": "38-79",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -22,7 +22,9 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": "pub fn apply_goal_command(session: &mut Session, cmd: &GoalCommand) -> GoalApplyResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -33,7 +35,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "87-135",
+          "lines": "85-133",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -74,7 +76,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "/// Render the full contract state line (goal text, verify command, effective",
+              "lastLine": "},"
             }
           ]
         }
@@ -85,17 +89,19 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "141-157",
+          "lines": "139-155",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
-                143,
-                144,
                 145,
-                146,
-                147
-              ]
+                162,
+                163,
+                164,
+                165
+              ],
+              "firstLine": "None => \"no goal set — use /goal <text> to set one\".to_string(),",
+              "lastLine": "},"
             }
           ]
         }
@@ -106,7 +112,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "163-200",
+          "lines": "161-198",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -127,7 +133,9 @@
                 179,
                 180,
                 181
-              ]
+              ],
+              "firstLine": "GoalCommand::Verify(command) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -138,18 +146,21 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "206-231",
+          "lines": "204-229",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
+                166,
                 167,
                 168,
                 169,
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "GoalCommand::Verify(command) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -160,7 +171,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "237-263",
+          "lines": "235-261",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -184,7 +195,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "GoalCommand::Clear => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -195,17 +208,21 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "269-292",
+          "lines": "267-290",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
               "lines": [
+                182,
                 183,
                 184,
                 185,
                 186,
-                187
-              ]
+                187,
+                188
+              ],
+              "firstLine": "GoalCommand::Clear => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -216,22 +233,24 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "298-334",
+          "lines": "296-332",
           "implMappings": [
             {
-              "file": "rust/cli/src/session/mod.rs",
+              "file": "rust/cli/src/session/reminders.rs",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229
-              ]
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ],
+              "firstLine": "pub fn set_goal(&mut self, text: &str, verify: Option<&str>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -242,7 +261,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "340-363",
+          "lines": "338-361",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/auto_continue.rs",
@@ -263,7 +282,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "pub fn apply_continue_command(",
+              "lastLine": "}"
             }
           ]
         }
@@ -274,7 +295,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "369-382",
+          "lines": "374-391",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/auto_continue.rs",
@@ -303,7 +324,9 @@
                 273,
                 274,
                 275
-              ]
+              ],
+              "firstLine": "match cmd {",
+              "lastLine": "},"
             }
           ]
         }
@@ -314,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_command_surface_test.rs",
-          "lines": "388-417",
+          "lines": "397-426",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -336,7 +359,9 @@
                 220,
                 221,
                 222
-              ]
+              ],
+              "firstLine": "pub fn goal_status_indicator(",
+              "lastLine": "}"
             }
           ]
         }
@@ -352,9 +377,9 @@
     ],
     "implFiles": [
       "rust/cli/src/interactive/goal.rs",
-      "rust/cli/src/session/mod.rs",
+      "rust/cli/src/session/reminders.rs",
       "rust/cli/src/interactive/auto_continue.rs"
     ],
-    "totalLinesCovered": 494
+    "totalLinesCovered": 501
   }
 }

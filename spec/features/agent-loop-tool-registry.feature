@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @RPC-083
@@ -5,6 +6,7 @@
 @agent-loop
 @rpc
 @tools
+@BUG-344
 Feature: Agent loop registers tools and executes them end-to-end
   """
   RPC-083 (child of RPC-072 family). The tool registry must reach the
@@ -15,6 +17,9 @@ Feature: Agent loop registers tools and executes them end-to-end
 
   Originally scenario "Tools are registered and executable end-to-end"
   from rpc072-work-agent-roundtrip.feature.
+  BUG-344: the OpenAI and custom-provider turns live in agent_loop/provider_openai.rs and
+  agent_loop/provider_custom.rs, and run_with_provider! has several arms; the scenarios read
+  those functions and the whole macro.
   """
 
   Background: User Story
@@ -24,7 +29,7 @@ Feature: Agent loop registers tools and executes them end-to-end
 
   Scenario: run_with_provider! macro body contains the five canonical tool-registry calls in order
     Given the source file rust/agent-loop/src/dispatch.rs
-    When I locate the run_with_provider! macro body
+    When I locate the run_with_provider! macro body with all of its arms
     Then the body contains `codelet_tools::gather_mcp_tool_wrappers($session.id)`
     And the body contains `provider.create_rig_agent($session.id, role_preamble.as_deref(), $thinking.clone())`
     And the body contains `agent.tool_server_handle.add_tool(wrapper).await` inside a non-empty wrappers guard
@@ -32,18 +37,18 @@ Feature: Agent loop registers tools and executes them end-to-end
     And the body contains `codelet_core::RigAgent::with_default_depth(agent)`
     And those five calls appear in the order: gather → create_rig_agent → add_tool loop → set_mcp_tool_server_handle → with_default_depth
 
-  Scenario: OpenAI inlined arm in agent_loop.rs mirrors the macro body with the same five canonical calls
-    Given the source file rust/agent-loop/src/agent_loop.rs
-    When I locate the "openai" => match arm body
+  Scenario: OpenAI turn mirrors the macro body with the same five canonical calls
+    Given the source file rust/agent-loop/src/agent_loop/provider_openai.rs
+    When I locate the run_openai_turn function body
     Then the arm contains `codelet_tools::gather_mcp_tool_wrappers(session.id)`
-    And the arm contains `provider.create_rig_agent(session.id, role_preamble.as_deref(), thinking_config_value.clone())`
+    And the arm contains `provider.create_rig_agent(session.id, role_preamble.as_deref(), thinking_config_value)`
     And the arm contains `agent.tool_server_handle.add_tool(wrapper).await`
     And the arm contains `codelet_tools::set_mcp_tool_server_handle(session.id, agent.tool_server_handle.clone())`
     And the arm contains `codelet_core::RigAgent::with_default_depth(agent)`
 
-  Scenario: Custom-provider fallthrough arm wraps CustomProvider::create_rig_agent with the four follow-up calls
-    Given the source file rust/agent-loop/src/agent_loop.rs
-    When I locate the `_ =>` fallthrough match arm body
+  Scenario: Custom-provider turn wraps CustomProvider::create_rig_agent with the four follow-up calls
+    Given the source file rust/agent-loop/src/agent_loop/provider_custom.rs
+    When I locate the run_custom_turn function body
     Then the arm calls `codelet_providers::custom::CustomProvider::create_rig_agent`
     And the arm contains `codelet_tools::gather_mcp_tool_wrappers(session.id)`
     And the arm contains `agent.tool_server_handle.add_tool(wrapper).await`

@@ -5,6 +5,7 @@
 
 pub mod coverage;
 pub mod epic;
+pub mod guided_session; // AUDIT-004 — session file + step counter shared by reverse and audit
 pub mod prefix;
 pub mod reverse_session;
 pub mod tags;

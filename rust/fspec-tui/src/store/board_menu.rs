@@ -60,7 +60,8 @@ impl BoardStore {
     }
 
     /// MENU-009: dispatch feeds the board bar's Zone C stop count (R8
-    /// lockstep) — `1` when the board's OWN bar is painted (the single
+    /// lockstep) — the board bar's button count (TUI-114: `New Bot` and
+    /// `New Agent`) when the board's OWN bar is painted (the single
     /// Board view), `0` in Mux (the board pane's bar is suppressed,
     /// MENU-004 R-SUPPRESS — its ring walk has no Zone C stop).
     pub fn set_menu_zone_c(&mut self, zone_c: usize) {
@@ -79,8 +80,8 @@ impl BoardStore {
     /// `focused_column`; the column's card selection is untouched.
     ///
     /// MENU-009 R3: the ring's LAST stop is the board's Zone C
-    /// `New Agent` button (the dispatched `menu_zone_c` count — `1`
-    /// when the board's OWN bar is painted, `0` in Mux where the
+    /// `New Agent` button (the dispatched `menu_zone_c` count — the board
+    /// bar's buttons when the board's OWN bar is painted, `0` in Mux where the
     /// board pane's bar is suppressed).
     ///
     /// BUG-198 R1: the walk re-anchors an open dropdown — landing on a
@@ -99,8 +100,10 @@ impl BoardStore {
             Some(MenuFocus::ZoneB(j)) => {
                 (RING_COLUMNS + items + j.min(chips.saturating_sub(1))) as i32
             }
-            // MENU-009: the board's Zone C stop (when the bar is painted).
-            Some(MenuFocus::ZoneC(_)) => (RING_COLUMNS + items + chips) as i32,
+            // MENU-009 / TUI-114: the board's Zone C stops (when painted).
+            Some(MenuFocus::ZoneC(k)) => {
+                (RING_COLUMNS + items + chips + k.min(zone_c.saturating_sub(1))) as i32
+            }
         };
         let next = (pos + delta).rem_euclid(len as i32) as usize;
         self.menu_focus = if next < RING_COLUMNS {
@@ -111,8 +114,9 @@ impl BoardStore {
         } else if next < RING_COLUMNS + items + chips {
             Some(MenuFocus::ZoneB(next - RING_COLUMNS - items))
         } else {
-            // The last stop: the Zone C `New Agent` button (MENU-009).
-            Some(MenuFocus::ZoneC(0))
+            // The Zone C buttons close the ring; `New Agent` is the last
+            // stop (MENU-009, TUI-114 adds `New Bot` before it).
+            Some(MenuFocus::ZoneC(next - RING_COLUMNS - items - chips))
         };
         // BUG-198 R1: re-anchor the open dropdown under the new focus —
         // an item landing opens (or moves) the panel at row 0; landing

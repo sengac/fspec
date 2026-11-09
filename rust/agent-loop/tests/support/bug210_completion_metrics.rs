@@ -30,8 +30,19 @@ pub struct Fixture {
 }
 
 impl Fixture {
+    /// BUG-304: the owning session's project, so compactor sub-agents are
+    /// admitted under the same trusted project as their owner.
+    #[allow(dead_code)]
+    pub fn project(&self) -> std::path::PathBuf {
+        self._directory
+            .path()
+            .canonicalize()
+            .unwrap_or_else(|_| self._directory.path().to_path_buf())
+    }
+
     pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         reset_stores_for_tests();
         let server = wiremock::MockServer::start().await;
@@ -94,7 +105,7 @@ impl Fixture {
             SelectedRequestPreparer::new(
                 model.clone(),
                 CompletionRequestBuilder::new(model.clone(), "unused")
-                    .preamble("x".repeat(padding))
+                    .preamble(" x".repeat(padding))
                     .max_tokens(4096)
                     .build(),
                 AdmissionLimits {
@@ -103,10 +114,26 @@ impl Fixture {
                 },
             )
         };
-        let baseline = prepare(1).prepare(&messages, 1)?.input_tokens();
-        let padding =
-            usize::try_from(COMPACTED.checked_sub(baseline).ok_or("fixture budget")? + 1)?;
-        let preparer = prepare(padding);
+        // BUG-304: the selected preparer's estimate is not one token per
+        // padding character, so search for the smallest padding that prepares
+        // to exactly COMPACTED input tokens (the estimate grows with padding).
+        // " x" units tokenize linearly; one long run of "x" is pathological.
+        let tokens = |padding: usize| -> Result<u64, Box<dyn std::error::Error>> {
+            Ok(prepare(padding).prepare(&messages, 1)?.input_tokens())
+        };
+        if tokens(1)? > COMPACTED {
+            return Err("fixture budget".into());
+        }
+        let (mut low, mut high) = (1usize, usize::try_from(COMPACTED)? * 2);
+        while low < high {
+            let middle = low + (high - low) / 2;
+            if tokens(middle)? < COMPACTED {
+                low = middle + 1;
+            } else {
+                high = middle;
+            }
+        }
+        let preparer = prepare(low);
         assert_eq!(preparer.prepare(&messages, 1)?.input_tokens(), COMPACTED);
         inner.install_selected_preparer(preparer);
         let (input_tx, _) = mpsc::channel(4);
@@ -133,7 +160,11 @@ impl Fixture {
             directory.path().to_path_buf(),
         )?;
         session.update_tokens(ORIGINAL as u32, 0);
-        session.set_model_limits(200_000, 4096, 160_000);
+        session.set_model_limits(codelet_sessions::model_resolution::ResolvedModelLimits {
+            context_window: Some(200_000),
+            max_output_tokens: Some(4096),
+            compaction_threshold: Some(160_000),
+        });
         register_compactor_sub_agent_handler(
             session.id,
             &*session.inner.lock().await,

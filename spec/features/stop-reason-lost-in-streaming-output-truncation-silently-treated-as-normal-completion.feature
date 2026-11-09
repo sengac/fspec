@@ -1,9 +1,11 @@
 @done
+@BUG-517
 @providers
 @codelet
 @bug-fix
 @streaming
 @PROV-039
+@streaming-loop-detection
 Feature: stop_reason lost in streaming — output truncation silently treated as normal completion
   """
   See vtcode's 6-layer truncated tool call recovery pipeline as reference: ToolCallBuilder → parse_tool_arguments with extract_balanced_json → PreparedAssistantToolCall with error recording → dispatch error responses → turn-level recovery → post-tool LLM failure recovery
@@ -11,6 +13,7 @@ Feature: stop_reason lost in streaming — output truncation silently treated as
   Affected files in our codebase: rust/patches/rig-core/src/providers/anthropic/streaming.rs:346-374 (stop_reason discarded), rust/patches/rig-core/src/agent/prompt_request/streaming.rs:185-188 (FinalResponse missing field), rust/cli/src/interactive/stream_loop.rs (zero stop_reason checks), rust/napi/src/persistence/message_envelope.rs:299,329,537,568 (hardcoded end_turn)
   Secondary bug: ProviderManager::max_output_tokens() returns compile-time constant for OpenAI (4096) instead of runtime OPENAI_MAX_OUTPUT_TOKENS env var value — compaction threshold miscalculation
   Follow vtcode's pattern: stop_reason propagates as metadata through the entire pipeline, while control flow decisions are based on structural presence of tool calls/content — not stop_reason branching
+  BUG-517: the Anthropic, truncated tool call, normal end_turn and OpenAI scenarios are tested end to end in rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs: a loopback server streams the provider's SSE response through the CLI stream loop into a background session (BackgroundOutput persists the assistant message) and the plain CLI output (CliOutput logs the truncation warning); a truncated tool call is answered with the PROV-040 recovery prompt, which names the tool and the output limit. rust/patches/rig-core/src/providers/anthropic/streaming/stop_tests.rs was removed: no feature mapped it and its step comments claimed checks it never made.
   """
 
   # ========================================
@@ -54,8 +57,8 @@ Feature: stop_reason lost in streaming — output truncation silently treated as
     Given the agent is using any provider in streaming mode
     And the model hits max_tokens while generating a tool call JSON body
     When the accumulated tool call arguments fail JSON parsing due to truncation
-    Then the error message sent back to the model contains "Tool call truncated due to output token limit"
-    And the error message does not contain only a generic JSON parse failure
+    Then the message sent back to the model says the tool call was truncated because it exceeded the output token limit
+    And the message names the truncated tool and the max_tokens limit, not only a generic JSON parse failure
     And the agent loop continues to allow the model to retry
 
   @streaming
@@ -83,4 +86,4 @@ Feature: stop_reason lost in streaming — output truncation silently treated as
     Given the OPENAI_MAX_OUTPUT_TOKENS environment variable is set to "16384"
     When ProviderManager::max_output_tokens() is called for the OpenAI provider
     Then the returned value is 16384
-    And the returned value is not the compile-time constant 4096
+    And without the environment variable the returned value is unavailable

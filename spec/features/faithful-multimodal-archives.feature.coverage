@@ -5,17 +5,19 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "15-139",
+          "lines": "15-149",
           "implMappings": [
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "(\"user\", \"image\" | \"document\") => {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/replay_media.rs",
@@ -30,7 +32,9 @@
                 95,
                 102,
                 109
-              ]
+              ],
+              "firstLine": "fn base64_source(data: &str) -> Result<(), MediaError> {",
+              "lastLine": "UserContent::Document(Document {"
             },
             {
               "file": "rust/agent-loop/src/user_persistence.rs",
@@ -40,16 +44,9 @@
                 16,
                 19,
                 25
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                393,
-                396,
-                403,
-                406
-              ]
+              ],
+              "firstLine": "pub fn persist_user_input(",
+              "lastLine": "crate::persist::persist_user_content(session_id, content).map_err(UserPersistenceError::Store)"
             }
           ]
         }
@@ -60,7 +57,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "141-174",
+          "lines": "151-184",
           "implMappings": [
             {
               "file": "rust/sessions/src/replay_media.rs",
@@ -75,17 +72,21 @@
                 95,
                 102,
                 109
-              ]
+              ],
+              "firstLine": "fn base64_source(data: &str) -> Result<(), MediaError> {",
+              "lastLine": "UserContent::Document(Document {"
             },
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "(\"user\", \"image\" | \"document\") => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -96,7 +97,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "176-196",
+          "lines": "186-206",
           "implMappings": [
             {
               "file": "rust/sessions/src/replay_media.rs",
@@ -111,17 +112,21 @@
                 95,
                 102,
                 109
-              ]
+              ],
+              "firstLine": "fn base64_source(data: &str) -> Result<(), MediaError> {",
+              "lastLine": "UserContent::Document(Document {"
             },
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "(\"user\", \"image\" | \"document\") => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -132,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "198-231",
+          "lines": "208-241",
           "implMappings": [
             {
               "file": "rust/sessions/src/replay_media.rs",
@@ -147,17 +152,21 @@
                 95,
                 102,
                 109
-              ]
+              ],
+              "firstLine": "fn base64_source(data: &str) -> Result<(), MediaError> {",
+              "lastLine": "UserContent::Document(Document {"
             },
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "(\"user\", \"image\" | \"document\") => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,7 +177,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "233-265",
+          "lines": "243-275",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/user_persistence.rs",
@@ -178,17 +187,21 @@
                 16,
                 19,
                 25
-              ]
+              ],
+              "firstLine": "pub fn persist_user_input(",
+              "lastLine": "crate::persist::persist_user_content(session_id, content).map_err(UserPersistenceError::Store)"
             },
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "(\"user\", \"text\") => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -199,7 +212,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug251_multimodal_archives.rs",
-          "lines": "267-294",
+          "lines": "277-304",
           "implMappings": [
             {
               "file": "rust/sessions/src/replay_media.rs",
@@ -214,17 +227,21 @@
                 95,
                 102,
                 109
-              ]
+              ],
+              "firstLine": "fn base64_source(data: &str) -> Result<(), MediaError> {",
+              "lastLine": "UserContent::Document(Document {"
             },
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "(\"user\", \"image\" | \"document\") => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -241,9 +258,8 @@
     "implFiles": [
       "rust/sessions/src/replay_content.rs",
       "rust/sessions/src/replay_media.rs",
-      "rust/agent-loop/src/user_persistence.rs",
-      "rust/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/user_persistence.rs"
     ],
-    "totalLinesCovered": 369
+    "totalLinesCovered": 375
   }
 }

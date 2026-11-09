@@ -57,5 +57,5 @@ Feature: Board '.' key starts new agent
   Scenario: The board header hint row displays '. New Agent'
     Given a BoardStore with any selection state
     When the App renders BoardView against a 120x24 TestBackend
-    Then the header row 3 shows the 2-zone menu bar Zone A items (Actions Help)
+    Then the header row 3 shows the 2-zone menu bar Zone A items (Kanban Tools Settings Help)
     And the rendered buffer does not contain the substring "/ New Agent"

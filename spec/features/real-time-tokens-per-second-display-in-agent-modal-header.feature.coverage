@@ -6,20 +6,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "83-114",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -29,30 +16,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "186-211",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                707,
-                708,
-                709,
-                710,
-                711,
-                712,
-                713,
-                714,
-                715,
-                716,
-                717,
-                718,
-                719,
-                720,
-                721,
-                722,
-                723
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -62,20 +26,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "117-139",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -85,19 +36,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "142-183",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
-                195
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -107,27 +46,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "176-217",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -137,27 +56,7 @@
         {
           "file": "src/tui/__tests__/tokens-per-second.test.tsx",
           "lines": "219-253",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -169,9 +68,7 @@
     "testFiles": [
       "src/tui/__tests__/tokens-per-second.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/AgentModal.tsx"
-    ],
-    "totalLinesCovered": 265
+    "implFiles": [],
+    "totalLinesCovered": 200
   }
 }

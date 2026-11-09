@@ -20,7 +20,9 @@
                 230,
                 231,
                 232
-              ]
+              ],
+              "firstLine": "/// `SessionManager::create_session_with_id()`) consume",
+              "lastLine": "/// `\"{provider}/{model}\"`. This preserves the profile selection across"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_select_model_stale_cache_test.rs",
-          "lines": "89-128",
+          "lines": "85-129",
           "implMappings": [
             {
               "file": "rust/providers/src/manager.rs",
@@ -46,7 +48,9 @@
                 230,
                 231,
                 232
-              ]
+              ],
+              "firstLine": "/// `SessionManager::create_session_with_id()`) consume",
+              "lastLine": "/// `\"{provider}/{model}\"`. This preserves the profile selection across"
             }
           ]
         }
@@ -63,6 +67,6 @@
     "implFiles": [
       "rust/providers/src/manager.rs"
     ],
-    "totalLinesCovered": 115
+    "totalLinesCovered": 120
   }
 }

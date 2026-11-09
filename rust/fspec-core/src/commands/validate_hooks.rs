@@ -12,8 +12,10 @@
 //! front doors (dispatcher + clap subcommand) agree byte-for-byte.
 //!
 //! ## Outcomes (parity with the TS programmatic API + help-fixture rendering)
-//!   - config missing / unreadable / malformed JSON / `hooks` not an object →
+//!   - config missing →
 //!     `{valid:false, exitCode:1, message:"Failed to load hook configuration"}`
+//!   - config broken (BUG-611) → `{valid:false, exitCode:1, message:<the
+//!     not-changed error naming the problem>}`; the file is never changed
 //!   - `hooks` object configures zero hooks →
 //!     `{valid:true, exitCode:0, message:"No hooks configured (nothing to validate)"}`
 //!   - one or more `command` scripts missing on disk →
@@ -30,26 +32,28 @@ use std::path::Path;
 
 use serde_json::{json, Value};
 
+use crate::command_hooks::config_file::load_for_read;
 use crate::error::FspecCoreError;
 
 /// Dispatcher entry point. `args_json` carries no flags for this command.
 pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let config_path = project_root.join("spec").join("fspec-hooks.json");
-
-    // ---- Load + parse config (any failure → generic load-failure) ----
-    let config: Value = match std::fs::read_to_string(&config_path) {
-        Ok(raw) => match serde_json::from_str::<Value>(&raw) {
-            Ok(v) => v,
-            Err(_) => return load_failure(),
-        },
-        Err(_) => return load_failure(),
+    // ---- Load config: missing → load failure, broken → its message ----
+    let config = match load_for_read(project_root, "validate-hooks") {
+        Ok(Some(config)) => config,
+        Ok(None) => return load_failure(),
+        Err(error) => {
+            return ok(json!({
+                "valid": false,
+                "exitCode": 1,
+                "message": error.to_string(),
+            }))
+        }
     };
-
-    // ---- `hooks` must be an object (TS `Object.entries(config.hooks)`) ----
-    let hooks = match config.get("hooks").and_then(Value::as_object) {
-        Some(map) => map,
-        None => return load_failure(),
-    };
+    let empty = serde_json::Map::new();
+    let hooks = config
+        .get("hooks")
+        .and_then(Value::as_object)
+        .unwrap_or(&empty);
 
     // ---- Walk every event → hook, checking each command script exists ----
     let mut errors: Vec<String> = Vec::new();
@@ -97,7 +101,7 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     }))
 }
 
-/// The generic load-failure envelope (missing / unreadable / malformed config).
+/// The load-failure envelope for a missing config.
 fn load_failure() -> Result<String, FspecCoreError> {
     ok(json!({
         "valid": false,

@@ -84,7 +84,25 @@ pub fn builtin_compaction_threshold(_model_id: Option<&str>) -> Option<Compactio
 /// Resolve an explicit override or the universal 80% default.
 ///
 /// Every result is clamped to usable context after output reservation.
+///
+/// PROV-165: no threshold exists unless both limits are available.
 pub fn resolve_compaction_threshold(
+    context_window: Option<u64>,
+    max_output: Option<u64>,
+    model_id: Option<&str>,
+    user_config: Option<&CompactionThresholdConfig>,
+) -> Option<u64> {
+    Some(compaction_threshold_for(
+        context_window?,
+        max_output?,
+        model_id,
+        user_config,
+    ))
+}
+
+/// PROV-165: the threshold for limits known to be available (see
+/// [`crate::model_limits::required_limits`]).
+pub fn compaction_threshold_for(
     context_window: u64,
     max_output: u64,
     model_id: Option<&str>,

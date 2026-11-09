@@ -31,6 +31,8 @@ fn test_worktree_has_all_tracked_files_in_git_index() {
 
     // Count files in main repo
     let main_ls_files = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["ls-files"])
         .current_dir(repo_path)
         .output()
@@ -55,6 +57,8 @@ fn test_worktree_has_all_tracked_files_in_git_index() {
 
     // @step And "git ls-files" in the worktree should return all tracked files
     let worktree_ls_files = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["ls-files"])
         .current_dir(&info.info.path)
         .output()
@@ -103,6 +107,8 @@ fn test_worktree_has_clean_git_status_after_creation() {
 
     // @step Then "git status" in the worktree should show clean state
     let git_status = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["status", "--porcelain"])
         .current_dir(&info.info.path)
         .output()

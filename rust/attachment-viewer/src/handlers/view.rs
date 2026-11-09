@@ -1,6 +1,6 @@
 //! `GET /view/{*path}` handler — port of attachment-server.ts `/view/*`.
 //!
-//! Percent-decodes the captured wildcard, runs the traversal guard BEFORE
+//! Uses the wildcard as percent-decoded once by axum, runs the traversal guard BEFORE
 //! touching the filesystem (so missing-and-traversing → 403), then serves
 //! markdown rendered to HTML or other files raw with an extension→content-type
 //! map. Missing file → 404, any other error → 500. Never panics; no `unwrap()`
@@ -96,12 +96,14 @@ fn read_error_response(err: std::io::Error) -> Response {
 }
 
 /// `GET /view/{*path}` — see module docs.
-pub async fn view(State(state): State<ViewerState>, AxumPath(raw): AxumPath<String>) -> Response {
-    let decoded = match urlencoding::decode(&raw) {
-        Ok(d) => d.into_owned(),
-        Err(_) => raw,
-    };
-
+///
+/// BOARD-024: the `Path` extractor already percent-decodes the wildcard
+/// exactly once; decoding again would turn a stored literal `%20` into a
+/// space and serve a different file than the exact attachment path.
+pub async fn view(
+    State(state): State<ViewerState>,
+    AxumPath(decoded): AxumPath<String>,
+) -> Response {
     let resolved = match validate_path(state.cwd(), &decoded) {
         Some(path) => path,
         None => return text_response(StatusCode::FORBIDDEN, "Forbidden: Invalid file path"),

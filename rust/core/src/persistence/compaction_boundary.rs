@@ -54,13 +54,25 @@ pub struct CommittedGeneration {
     pub version: u32,
     pub identity: CompactionIdentity,
     pub source: CompactionSource,
-    pub covered_prefix: Vec<Uuid>,
+    /// CMPCT-086: manifests written before the covered prefix was stored
+    /// once still carry a `covered_prefix` copy; it is accepted on load
+    /// (and must equal `source.prefix`) but never written again.
+    #[serde(default, rename = "covered_prefix", skip_serializing)]
+    pub(crate) legacy_covered_prefix: Option<Vec<Uuid>>,
     pub verified_suffix: Vec<Uuid>,
     pub checkpoint: CompactionCheckpoint,
     pub input_tokens: u64,
     pub output_reservation: u64,
     pub token_provenance: CompactionTokenProvenance,
     pub publication_pending: bool,
+}
+
+impl CommittedGeneration {
+    /// CMPCT-086: the messages this generation covers — always the
+    /// captured source prefix, stored once.
+    pub fn covered_prefix(&self) -> &[Uuid] {
+        &self.source.prefix
+    }
 }
 
 pub fn capture_compaction_source(
@@ -134,7 +146,7 @@ pub fn validate_committed_boundary(manifest: &SessionManifest) -> Result<(), Str
         .iter()
         .map(|message| message.message_id)
         .collect();
-    let mut verified = commit.covered_prefix.clone();
+    let mut verified = commit.covered_prefix().to_vec();
     verified.extend(&commit.verified_suffix);
     if commit.version != 1
         || commit.identity.session_id != manifest.id
@@ -148,9 +160,12 @@ pub fn validate_committed_boundary(manifest: &SessionManifest) -> Result<(), Str
         || commit.source.model.is_empty()
         || commit.source.provider != manifest.provider
         || commit.output_reservation == 0
-        || commit.covered_prefix != commit.source.prefix
+        || commit
+            .legacy_covered_prefix
+            .as_ref()
+            .is_some_and(|legacy| legacy != &commit.source.prefix)
         || !lineage.starts_with(&verified)
-        || state.compacted_before_index != commit.covered_prefix.len()
+        || state.compacted_before_index != commit.covered_prefix().len()
         || commit.checkpoint.generation != commit.identity.generation
         || commit.checkpoint.model != commit.source.model
         || commit.checkpoint.provider != manifest.provider
@@ -160,8 +175,8 @@ pub fn validate_committed_boundary(manifest: &SessionManifest) -> Result<(), Str
     crate::compaction::validate_dag_candidate(
         &state.summary,
         &crate::compaction::DagValidationContext {
-            persisted_turn_count: commit.covered_prefix.len(),
-            required_coverage_end: commit.covered_prefix.len().checked_sub(1),
+            persisted_turn_count: commit.covered_prefix().len(),
+            required_coverage_end: commit.covered_prefix().len().checked_sub(1),
             ..Default::default()
         },
     )

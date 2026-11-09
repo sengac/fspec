@@ -1,0 +1,217 @@
+{
+  "scenarios": [
+    {
+      "name": "The Help dropdown's Esc row reads Esc Close",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "138-174",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274
+              ],
+              "firstLine": "/// TUI-135: the Help dropdown's Esc row: in an open dropdown Esc closes",
+              "lastLine": "];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the Close row closes the menu and opens nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "176-204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                64,
+                65,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "/// TUI-135: `Esc` Close — the Help dropdown row that closes the menu.",
+              "lastLine": "MenuAction::CloseMenu => Action::MenuDismissBar,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the Close row closes the menu and opens nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "206-235",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                64,
+                65,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "/// TUI-135: `Esc` Close — the Help dropdown row that closes the menu.",
+              "lastLine": "MenuAction::CloseMenu => Action::MenuDismissBar,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the mux bar's Close row closes the mux menu",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "237-273",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                64,
+                65,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "/// TUI-135: `Esc` Close — the Help dropdown row that closes the menu.",
+              "lastLine": "MenuAction::CloseMenu => Action::MenuDismissBar,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the board with nothing open still opens the exit confirmation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "275-293",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "if key.code == KeyCode::Esc",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The u dialog keeps its Esc Exit row",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs",
+          "lines": "295-325",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263
+              ],
+              "firstLine": "/// TUI-135: the 'u' Menu bar dialog's row in the [`CLOSE_MENU`] slot. Exit",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "/// TUI-135: the dialog's rows: every registry row in display order, with",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui135_help_dropdown_esc_row_closes_the_menu.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/items.rs",
+      "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/components/menu_bar_help.rs"
+    ],
+    "totalLinesCovered": 267
+  }
+}

@@ -10,14 +10,17 @@
             {
               "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// RPC-337: Tab→SwitchToModels flips into the full-screen",
+              "lastLine": "}"
             }
           ]
         }
@@ -34,6 +37,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/navigator_events.rs"
     ],
-    "totalLinesCovered": 30
+    "totalLinesCovered": 31
   }
 }

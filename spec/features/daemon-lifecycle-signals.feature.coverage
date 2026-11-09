@@ -5,26 +5,28 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "33-118",
+          "lines": "32-114",
           "implMappings": [
             {
               "file": "rust/fspec/src/daemon.rs",
               "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "Ok(new_watcher) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -35,31 +37,33 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "120-166",
+          "lines": "120-163",
           "implMappings": [
             {
               "file": "rust/fspec/src/daemon.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+                94,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "tracing::warn!(error = %e, \"failed to write daemon.json (continuing)\");",
+              "lastLine": "match codelet_core::work_units::WorkUnitsWatcher::new(&workspace) {"
             }
           ]
         }
@@ -70,26 +74,28 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "168-197",
+          "lines": "169-192",
           "implMappings": [
             {
               "file": "rust/fspec/src/daemon.rs",
               "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "Ok(new_watcher) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,14 +106,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "199-291",
+          "lines": "202-302",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
               "lines": [
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -124,8 +127,13 @@
                 52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "pub struct ConnectedClientGuard {",
+              "lastLine": "}"
             }
           ]
         }
@@ -136,60 +144,67 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "293-367",
+          "lines": "308-382",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
                 188,
                 189,
                 190,
                 191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227
-              ]
+                192
+              ],
+              "firstLine": "/// Resolve the workspace root: explicit `--workspace` or current dir.",
+              "lastLine": "None => std::env::current_dir().context(\"std::env::current_dir\"),"
+            },
+            {
+              "file": "rust/fspec/src/common/tracing_setup.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// `tarpc::client` and `tarpc::server` emit 6–8 `INFO` span events",
+              "lastLine": ".with_ansi(false);"
             }
           ]
         }
@@ -200,35 +215,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/daemon_lifecycle_rpc011.rs",
-          "lines": "380-440",
+          "lines": "388-456",
           "implMappings": [
             {
               "file": "rust/fspec/src/daemon.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
                 84,
                 85,
                 86,
@@ -240,13 +231,43 @@
                 92,
                 93,
                 94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "let started_at = SystemTime::now();",
+              "lastLine": "}"
             }
           ]
         }
@@ -263,8 +284,9 @@
     "implFiles": [
       "rust/fspec/src/daemon.rs",
       "rust/rpc-server/src/server.rs",
-      "rust/fspec/src/common.rs"
+      "rust/fspec/src/common.rs",
+      "rust/fspec/src/common/tracing_setup.rs"
     ],
-    "totalLinesCovered": 548
+    "totalLinesCovered": 554
   }
 }

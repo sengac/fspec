@@ -12,6 +12,8 @@
 //! tool_call/tool_result pair into `chat_history` before yielding
 //! `PromptCancelled`. See the attached AST research for the cancel-site map.
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, OnceLock};
@@ -34,6 +36,8 @@ static TEST_DATA_DIR: OnceLock<tempfile::TempDir> = OnceLock::new();
 fn ensure_test_data_dir() {
     TEST_DATA_DIR.get_or_init(|| {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         codelet_common::set_data_directory(temp_dir.path().to_path_buf())
             .expect("Failed to set data directory");
         temp_dir
@@ -41,7 +45,7 @@ fn ensure_test_data_dir() {
 }
 
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 fn make_tool_call(

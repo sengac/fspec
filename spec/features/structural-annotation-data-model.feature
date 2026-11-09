@@ -1,4 +1,7 @@
+@BUG-582
 @CMPCT-007
+@codelet
+@model-selection
 Feature: Structural Annotation Data Model
   """
   Both enums live in rust/core/src/compaction/model.rs alongside existing TokenTracker, ConversationTurn, ToolCall, ToolResult
@@ -57,20 +60,6 @@ Feature: Structural Annotation Data Model
     Given FileOp variants Created, Modified, and Deleted
     When I serialize each variant to JSON and deserialize back
     Then each deserialized variant should be identical to its original
-
-  @deprecation
-  Scenario: Deprecated PreservationContext still compiles
-    Given existing code that uses PreservationContext
-    When the code is compiled
-    Then it should compile successfully with deprecation warnings
-    And the deprecation note should reference StructuralAnnotation
-
-  @deprecation
-  Scenario: Deprecated BuildStatus still compiles
-    Given existing code that uses BuildStatus
-    When the code is compiled
-    Then it should compile successfully with deprecation warnings
-    And the deprecation note should reference StructuralAnnotation
 
   @backwards-compatibility
   Scenario: TokenTracker remains unchanged

@@ -6,6 +6,7 @@
 @napi
 @navigation
 @BUG-124
+@COV-057
 Feature: Shift+Arrow navigation skips sessions when supervisor has multiple subordinates
   """
   Fix lives in rust/napi/src/navigation.rs build_navigation_list() — replace hierarchy-aware traversal with sessions.keys().copied().collect()
@@ -78,7 +79,7 @@ Feature: Shift+Arrow navigation skips sessions when supervisor has multiple subo
   Scenario: Two subordinates do not loop on the first subordinate (regression)
     Given the session manager contains the supervisor inserted first
     And the supervisor has spawned subordinates "s1" and "s2" in that order
-    And I am on the board
+    And I am viewing the supervisor
     When I press Shift+Right twice
     Then I am viewing "s1" after the first press
     And I am viewing "s2" after the second press

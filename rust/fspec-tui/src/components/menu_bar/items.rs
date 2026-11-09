@@ -14,8 +14,8 @@
 //! fixed order (R2):
 //!   - "Kanban":   . New Agent, / Search, D FOUNDATION.md, A Attachments
 //!   - "Tools":    F Changed Files, C Checkpoints
-//!   - "Settings": M Mux, P Providers
-//!   - "Help":     ? Help, Esc Exit
+//!   - "Settings": M Mux, P Providers, s Daemons, w Workspaces (TUI-123)
+//!   - "Help":     ? Help, Esc Close (TUI-135; the 'u' dialog: Esc Exit)
 //!
 //! Each entry carries the key hint, label, one-line description, and the
 //! `MenuAction` it resolves to. `MenuAction::to_action` maps onto the
@@ -57,13 +57,15 @@ pub enum MenuAction {
     Mux,
     /// `P` Open the provider settings view (RPC-054). MENU-008.
     Providers,
-    /// `?` Show the board keybinding help.
+    /// `?` Show the board keybindings (TUI-129: the row says so).
     Help,
-    /// `Esc` Confirm exiting fspec.
+    /// `Esc` Confirm exiting fspec (the 'u' dialog's [`EXIT`] row).
     Exit,
-    /// MENU-009 Zone C: the agent bar's `Close Agent` button —
+    /// TUI-135: `Esc` Close — the Help dropdown row that closes the menu.
+    CloseMenu,
+    /// MENU-009 Zone C: the agent bar's `Close` button —
     /// BUG-204 (superseding BUG-199 R2): the button ALWAYS mounts the
-    /// 'Exit Session?' ExitConfirmationDialog (RPC-098 L7) when a
+    /// 'Close Agent?' ExitConfirmationDialog (RPC-098 L7) when a
     /// session is open (no interrupt / no draft-clear branch — those
     /// belong to the physical Esc key only). The mapping below is a
     /// payload-free board-side fallback: the agent surface resolves
@@ -71,6 +73,15 @@ pub enum MenuAction {
     /// and no board Zone C carries `CloseAgent`, so this arm is
     /// unreachable in production.
     CloseAgent,
+    /// TUI-114: `b` New Bot — mount the create dialog for an orchestrator
+    /// bot (a session that delegates to sub-agents through AgentManager).
+    NewBot,
+    /// TUI-123: `s` Daemons — open the board's daemon switcher (switch,
+    /// add, edit, remove; product owner, 2026-11-05).
+    Daemons,
+    /// TUI-123: `w` Workspaces — open the board's workspace dropdown
+    /// (switch, add, remove; product owner, 2026-11-05).
+    Workspaces,
 }
 
 impl MenuAction {
@@ -85,6 +96,8 @@ impl MenuAction {
             // the shared RPC-060 helper (the agent-bar button's
             // `dispatch_menu_zone_c` arm — exact parity, no payload).
             MenuAction::NewAgent => Action::OpenCreateSessionDialog { preselect: None },
+            // TUI-114: New Bot mirrors New Agent with the bot dialog.
+            MenuAction::NewBot => Action::OpenNewBotDialog,
             MenuAction::Search => Action::OpenWorkUnitSearch,
             MenuAction::Attachments => Action::OpenAttachmentPicker,
             MenuAction::Checkpoints => Action::OpenCheckpointsView,
@@ -92,10 +105,15 @@ impl MenuAction {
             MenuAction::Foundation => Action::OpenFoundation,
             MenuAction::Mux => Action::OpenMuxConfigDialog,
             MenuAction::Providers => Action::OpenProviderSettingsView,
+            MenuAction::Daemons => Action::OpenDaemonSwitcher,
+            MenuAction::Workspaces => Action::OpenWorkspaceDropdown,
             MenuAction::Help => Action::OpenBoardHelp,
             MenuAction::Exit => Action::OpenBoardExitConfirmation,
+            // TUI-135: the executed row already closed the menu; the
+            // dismiss is idempotent (board store and mux layout alike).
+            MenuAction::CloseMenu => Action::MenuDismissBar,
             // BUG-204 (superseding BUG-199 R2): the agent bar's
-            // 'Close Agent' button ALWAYS mounts the 'Exit Session?'
+            // 'Close' button ALWAYS mounts the 'Close Agent?'
             // dialog — the agent surface resolves `CloseAgent` through
             // its OWN dispatch arm (`dispatch_menu_zone_c`), so this
             // mapping is a payload-free board-side fallback (no board
@@ -172,6 +190,13 @@ pub const KANBAN: &[MenuEntry] = &[
         description: "Open the attachment picker for the selected unit",
         action: MenuAction::Attachments,
     },
+    // TUI-114: appended so the existing Kanban rows keep their order.
+    MenuEntry {
+        key: "b",
+        label: "New Bot",
+        description: "Start an orchestrator bot that runs sub-agents",
+        action: MenuAction::NewBot,
+    },
 ];
 
 /// MENU-008 R3: the 2 git-tool entries.
@@ -190,7 +215,8 @@ pub const TOOLS: &[MenuEntry] = &[
     },
 ];
 
-/// MENU-008 R4: the 2 configuration entries.
+/// MENU-008 R4: the configuration entries; TUI-123 appends Daemons and
+/// Workspaces (the header dropdowns' bare keys).
 pub const SETTINGS: &[MenuEntry] = &[
     MenuEntry {
         key: "M",
@@ -204,22 +230,47 @@ pub const SETTINGS: &[MenuEntry] = &[
         description: "Open the provider settings view",
         action: MenuAction::Providers,
     },
+    MenuEntry {
+        key: "s",
+        label: "Daemons",
+        description: "Switch, add, edit or remove daemons",
+        action: MenuAction::Daemons,
+    },
+    MenuEntry {
+        key: "w",
+        label: "Workspaces",
+        description: "Switch, add or remove workspaces",
+        action: MenuAction::Workspaces,
+    },
 ];
 
-/// The 2 Help entries (unchanged — MENU-008 R5).
+/// TUI-135: the Help dropdown's Esc row: in an open dropdown Esc closes
+/// the menu (product owner, 2026-11-08), and so does executing the row.
+pub const CLOSE_MENU: MenuEntry = MenuEntry {
+    key: "Esc",
+    label: "Close",
+    description: "Close this menu",
+    action: MenuAction::CloseMenu,
+};
+
+/// TUI-135: the 'u' Menu bar dialog's row in the [`CLOSE_MENU`] slot. Exit
+/// is reached by Esc on the board with nothing open, or from this row.
+pub const EXIT: MenuEntry = MenuEntry {
+    key: "Esc",
+    label: "Exit",
+    description: "Confirm exiting fspec",
+    action: MenuAction::Exit,
+};
+
+/// The 2 Help dropdown entries (TUI-135: `Esc Close`, was `Esc Exit`).
 pub const HELP: &[MenuEntry] = &[
     MenuEntry {
         key: "?",
         label: "Help",
-        description: "Show the full menu bar help",
+        description: "Show the board keybindings",
         action: MenuAction::Help,
     },
-    MenuEntry {
-        key: "Esc",
-        label: "Exit",
-        description: "Confirm exiting fspec",
-        action: MenuAction::Exit,
-    },
+    CLOSE_MENU,
 ];
 
 /// MENU-008 R1: the Zone A category list in fixed order — `Kanban`,

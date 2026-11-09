@@ -8,8 +8,8 @@
 //! /model/thinking/role through dispatch_model_thinking_dialogs helpers instead of
 //! forwarding them to `backend.send_input`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
@@ -18,6 +18,7 @@ use codelet_fspec_tui::{
     THINKING_LEVEL_DIALOG_ID,
 };
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId, ThinkingLevel};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 mod common;
 use common::MockBackend;
@@ -31,27 +32,30 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 
 /// Drain pending tasks AND any follow-up actions emitted onto the
 /// action bus.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Helper: dispatch the input-submission action — the same path the
 /// MultiLineInput would take when the user presses Enter.
 fn submit_input(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 /// Scenario Outline: parse_slash_command recognises the four wired commands
 #[test]
-fn parse_slash_command_recognises_the_four_wired_commands() {
+fn parse_slash_command_recognises_the_four_wired_commands() -> TestResult {
     // @step Given the function parse_slash_command from app/dispatch_model_thinking_dialogs.rs
     // @step When it is called with text=<input>
     // @step Then it returns <expected_variant>
@@ -87,17 +91,18 @@ fn parse_slash_command_recognises_the_four_wired_commands() {
         parse_slash_command("/unknown anything"),
         SlashCommandParse::NotASlashCommand
     );
+    Ok(())
 }
 
-/// Scenario: Submitting "/model" opens the full-screen ModelSelector
-/// mode-view and spawns list_providers (RPC-337: replaces the retired
-/// RPC-022 Compositor modal)
+/// Scenario: Submitting "/model" opens the full-screen ModelSelector and spawns list_providers
+/// (RPC-337: the full-screen mode-view replaces the retired RPC-022
+/// Compositor modal)
 #[tokio::test]
-async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
+async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") and no dialogs pushed
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(!app.compositor().contains("model-selector-dialog"));
     // @step And the backend's list_providers returns [ProviderInfo{ key: "openai", ... }]
     mock.seed_providers(vec![ProviderInfo {
@@ -106,20 +111,22 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
         models: vec![ModelEntry {
             id: "gpt-5.1-codex".to_string(),
             display_name: "gpt-5.1-codex".to_string(),
-            context_window: 200_000,
+            context_window: Some(200_000),
             supports_reasoning: true,
             supports_vision: false,
             is_custom: false,
         }],
         profile_name: None,
         is_unreachable: false,
+        provider_id: "openai".to_string(),
+        unavailable_reason: None,
     }]);
     let prior_send = mock.send_input_calls();
     let prior_lp = mock.list_providers_calls();
     // @step When the input is submitted with text "/model"
     submit_input(&mut app, "/model");
     // @step Then the text is NOT forwarded to backend.send_input
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         mock.send_input_calls(),
         prior_send,
@@ -133,15 +140,19 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
         mock.list_providers_calls() > prior_lp,
         "list_providers must be called"
     );
-    // @step And the model selector view contains 1 provider after the task resolves
+    // @step When the spawned task completes
+    // (drain_pending above awaited the list_providers task and folded its action.)
+    // @step Then Action::ListProvidersLoaded([ProviderInfo{ key: "openai", ... }]) is dispatched
+    // (Observable as the provider row the view paints below.)
+    // @step And the model selector view contains 1 provider
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
     let backend = TestBackend::new(100, 30);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut painted = String::new();
     for y in 0..buf.area.height {
@@ -154,31 +165,32 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
         painted.contains("OpenAI"),
         "model selector must show 1 provider after list_providers resolves; got:\n{painted}"
     );
+    Ok(())
 }
 
 /// Scenario: Submitting "/thinking" opens the ThinkingLevelDialog seeded with the cached level
 #[tokio::test]
-async fn submitting_slash_thinking_opens_dialog_seeded_with_cached_level() {
+async fn submitting_slash_thinking_opens_dialog_seeded_with_cached_level() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") and no dialogs pushed
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
-    // @step And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Medium)
+    drain_pending(&mut app).await?;
+    // @step And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Effort("medium"))
     app.dispatch(Action::ThinkingLevelLoaded(
         SessionId::new("s-1"),
-        ThinkingLevel::Medium,
+        ThinkingLevel::Effort("medium".to_string()),
     ));
     assert_eq!(
         app.agent_view_store()
             .thinking_level_for(&SessionId::new("s-1"))
-            .copied(),
-        Some(ThinkingLevel::Medium)
+            .cloned(),
+        Some(ThinkingLevel::Effort("medium".to_string()))
     );
     let prior_send = mock.send_input_calls();
     // @step When the input is submitted with text "/thinking"
     submit_input(&mut app, "/thinking");
     // @step Then the text is NOT forwarded to backend.send_input
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.send_input_calls(), prior_send);
     // @step And a ThinkingLevelDialog is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(THINKING_LEVEL_DIALOG_ID));
@@ -186,16 +198,16 @@ async fn submitting_slash_thinking_opens_dialog_seeded_with_cached_level() {
         app.compositor().topmost_priority(),
         Some(Priority::Foreground)
     );
-    // @step And the dialog's initial selected_level is ThinkingLevel::Medium
+    // @step And the dialog's initial selected_level is ThinkingLevel::Effort("medium")
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.compositor_mut()
             .render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut painted = String::new();
     for y in 0..buf.area.height {
@@ -206,21 +218,22 @@ async fn submitting_slash_thinking_opens_dialog_seeded_with_cached_level() {
     }
     let medium_row = painted
         .lines()
-        .find(|l| l.contains("Medium"))
-        .expect("Medium row not found in rendered dialog");
+        .find(|l| l.contains("medium"))
+        .or_fail("Medium row not found in rendered dialog")?;
     assert!(
         medium_row.contains('▸'),
         "Medium must be highlighted (▸), got {medium_row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Submitting "/role You are a reviewer" sets the role and shows the RoleBanner
 #[tokio::test]
-async fn submitting_slash_role_text_sets_role_and_shows_banner() {
+async fn submitting_slash_role_text_sets_role_and_shows_banner() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") and no dialogs pushed
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step And AgentViewStore.role_for(SessionId("s-1")) is None
     assert!(app
         .agent_view_store()
@@ -231,7 +244,7 @@ async fn submitting_slash_role_text_sets_role_and_shows_banner() {
     // @step When the input is submitted with text "/role You are a reviewer"
     submit_input(&mut app, "/role You are a reviewer");
     // @step Then the text is NOT forwarded to backend.send_input
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.send_input_calls(), prior_send);
     // @step And Action::SetSessionRole(SessionId("s-1"), Some("You are a reviewer")) is dispatched
     // @step And AgentViewStore.role_for(SessionId("s-1")) becomes Some("You are a reviewer")
@@ -241,24 +254,27 @@ async fn submitting_slash_role_text_sets_role_and_shows_banner() {
     );
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), Some("You are a reviewer".to_string()))
     assert_eq!(mock.set_session_role_calls(), prior_role + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, Some("You are a reviewer".to_string()));
+    Ok(())
 }
 
 /// Scenario: Submitting "/role clear" clears the role and hides the RoleBanner
 #[tokio::test]
-async fn submitting_slash_role_clear_clears_role() {
+async fn submitting_slash_role_clear_clears_role() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A")
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     app.agent_view_store_mut()
         .set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_role = mock.set_session_role_calls();
     // @step When the input is submitted with text "/role clear"
     submit_input(&mut app, "/role clear");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then Action::SetSessionRole(SessionId("s-1"), None) is dispatched
     // @step And AgentViewStore.role_for(SessionId("s-1")) becomes None
     assert!(app
@@ -267,20 +283,24 @@ async fn submitting_slash_role_clear_clears_role() {
         .is_none());
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
     assert_eq!(mock.set_session_role_calls(), prior_role + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, None);
+    Ok(())
 }
 
-/// Scenario: Submitting bare "/role" opens the RoleDialog (RPC-063 supersedes the old "treated as a clear" semantics)
+/// Scenario: Submitting bare "/role" opens the RoleDialog seeded with the existing role
+/// (RPC-063 supersedes the old "treated as a clear" semantics)
 #[tokio::test]
-async fn submitting_bare_slash_role_opens_the_role_dialog() {
+async fn submitting_bare_slash_role_opens_the_role_dialog() -> TestResult {
     use codelet_fspec_tui::ROLE_DIALOG_ID;
     // @step Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A")
-    let (mut app, _mock) = fresh_app();
-    _mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
+    let (mut app, mock) = fresh_app();
+    mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
@@ -289,12 +309,11 @@ async fn submitting_bare_slash_role_opens_the_role_dialog() {
     );
     // @step When the input is submitted with text "/role"
     submit_input(&mut app, "/role");
-    drain_pending(&mut app).await;
-    // @step Then RPC-063 routes through SlashCommandParse::OpenRoleDialog
-    //        and a RoleDialog is pushed onto the Compositor seeded with
-    //        the existing role
-    // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
+    drain_pending(&mut app).await?;
+    // @step Then a RoleDialog is pushed onto the Compositor seeded with the existing role
+    // (RPC-063 routes through SlashCommandParse::OpenRoleDialog.)
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
+    // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
     assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
@@ -302,23 +321,40 @@ async fn submitting_bare_slash_role_opens_the_role_dialog() {
         Some("Reviewer A".to_string()),
         "bare /role must NOT clear the role any more (RPC-063)"
     );
+    // Seeding, verified the way the RPC-063 tests do: Enter on the
+    // untouched dialog saves its draft verbatim.
+    let prior_role = mock.set_session_role_calls();
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Enter,
+        KeyModifiers::NONE,
+    )));
+    drain_pending(&mut app).await?;
+    assert_eq!(mock.set_session_role_calls(), prior_role + 1);
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
+    assert_eq!(
+        last,
+        (SessionId::new("s-1"), Some("Reviewer A".to_string()))
+    );
+    Ok(())
 }
 
 /// Scenario: Submitting plain text falls through to backend.send_input unchanged
 #[tokio::test]
-async fn submitting_plain_text_falls_through_to_backend_send_input() {
+async fn submitting_plain_text_falls_through_to_backend_send_input() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") and no dialogs pushed
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_send = mock.send_input_calls();
     let prior_role = mock.set_session_role_calls();
     // @step When the input is submitted with text "hello world"
     submit_input(&mut app, "hello world");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then a tokio task is spawned that calls backend.send_input(SessionId("s-1"), "hello world")
     assert_eq!(mock.send_input_calls(), prior_send + 1);
-    let last = mock.last_send_input().expect("last send_input");
+    let last = mock.last_send_input().or_fail("last send_input")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "hello world");
     // @step And no dialog is pushed onto the Compositor
@@ -326,19 +362,20 @@ async fn submitting_plain_text_falls_through_to_backend_send_input() {
     assert!(!app.compositor().contains(THINKING_LEVEL_DIALOG_ID));
     // @step And no Action::SetSessionRole is dispatched
     assert_eq!(mock.set_session_role_calls(), prior_role);
+    Ok(())
 }
 
 /// Scenario: Slash commands are NOT appended to the per-session history
 #[tokio::test]
-async fn slash_commands_are_not_appended_to_per_session_history() {
+async fn slash_commands_are_not_appended_to_per_session_history() -> TestResult {
     // @step Given an App with one open session SessionId("s-1")
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_history = mock.persistence_add_history_calls();
     // @step When the input is submitted with text "/model"
     submit_input(&mut app, "/model");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then no tokio task is spawned that calls backend.persistence_add_history
     assert_eq!(
         mock.persistence_add_history_calls(),
@@ -347,7 +384,7 @@ async fn slash_commands_are_not_appended_to_per_session_history() {
     );
     // @step When the input is submitted with text "hello"
     submit_input(&mut app, "hello");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then exactly one tokio task is spawned that calls backend.persistence_add_history(SessionId("s-1"), "hello")
     assert_eq!(
         mock.persistence_add_history_calls(),
@@ -356,26 +393,30 @@ async fn slash_commands_are_not_appended_to_per_session_history() {
     );
     let last = mock
         .last_persistence_add_history()
-        .expect("last persistence_add_history");
+        .or_fail("last persistence_add_history")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "hello");
+    Ok(())
 }
 
-/// Scenario: Slash popup selection of /model also opens the full-screen
-/// ModelSelector mode-view (RPC-337: replaces the retired modal)
+/// Scenario: Slash popup selection of /model also opens the full-screen ModelSelector
+/// (RPC-337: the mode-view replaces the retired modal)
 #[tokio::test]
-async fn slash_popup_selection_of_model_opens_the_dialog() {
+async fn slash_popup_selection_of_model_opens_the_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") and the slash popup open with selected command Model
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_lp = mock.list_providers_calls();
     // @step When the user presses Enter inside the popup
     // (The popup emits SlashCommandSelected(Model) on Enter.)
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Model));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Model,
+    ));
     // @step Then Action::SlashCommandSelected(SlashCommandAction::Model) is dispatched
     // (Already dispatched above.)
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
     assert_eq!(app.active_view(), ViewMode::ModelSelector);
     assert!(!app.compositor().contains("model-selector-dialog"));
@@ -384,17 +425,19 @@ async fn slash_popup_selection_of_model_opens_the_dialog() {
         mock.list_providers_calls() > prior_lp,
         "list_providers must be called"
     );
+    Ok(())
 }
 
-/// Scenario: Slash popup selection of /role opens the RoleDialog (RPC-063 supersedes the old "treated as a clear" semantics)
+/// Scenario: Slash popup selection of /role opens the RoleDialog and does not surface a [notice]
+/// (RPC-063 supersedes the old "treated as a clear" semantics)
 #[tokio::test]
-async fn slash_popup_selection_of_role_opens_the_role_dialog() {
+async fn slash_popup_selection_of_role_opens_the_role_dialog() -> TestResult {
     use codelet_fspec_tui::ROLE_DIALOG_ID;
     // @step Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A") and the slash popup open with selected command Role
     let (mut app, mock) = fresh_app();
     mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
@@ -404,11 +447,14 @@ async fn slash_popup_selection_of_role_opens_the_role_dialog() {
     let prior_role = mock.set_session_role_calls();
     let prior_chunks = app.navigator().agent.chunk_count(app.agent_view_store());
     // @step When the user presses Enter inside the popup
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Role,
+    ));
     // @step Then Action::SlashCommandSelected(SlashCommandAction::Role) is dispatched
-    drain_pending(&mut app).await;
-    // @step And RPC-063 routes through handle_open_role_dialog and pushes
-    //        the RoleDialog onto the Compositor
+    drain_pending(&mut app).await?;
+    // @step And a RoleDialog is pushed onto the Compositor
+    // (RPC-063 routes through handle_open_role_dialog.)
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
     // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
     assert_eq!(
@@ -430,4 +476,5 @@ async fn slash_popup_selection_of_role_opens_the_role_dialog() {
         chunk_delta, 0,
         "popup-picker `/role` must NOT append a `[notice] /role` scrollback line — rule [5]"
     );
+    Ok(())
 }

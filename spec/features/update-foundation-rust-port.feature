@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @cli
 @foundation-management
@@ -49,6 +50,7 @@ Feature: Port update-foundation command to Rust
     And the returned message is 'Updated "projectName" section in FOUNDATION.md'
     And spec/foundation.json on disk shows project.name='Acme Tool'
     And spec/FOUNDATION.md exists on disk
+    And the result has no systemReminder
 
   Scenario: Updating problemImpact with an invalid enum value fails fast and leaves the file unchanged
     Given a project root tempdir with an existing spec/foundation.json and no foundation.json.draft
@@ -56,6 +58,7 @@ Feature: Port update-foundation command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring 'Invalid value for problemImpact: "urgent". Valid values: high, medium, low.'
     And spec/foundation.json on disk is byte-equal to its pre-call contents
+    And the error message contains the substring 'Fix: fspec update-foundation problemImpact "<valid-value>"'
 
   Scenario: Updating projectType with a value longer than 30 characters fails fast
     Given a project root tempdir with an existing spec/foundation.json and no foundation.json.draft
@@ -63,6 +66,8 @@ Feature: Port update-foundation command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring 'Invalid projectType: too long (must be 1-30 characters, got 44).'
     And spec/foundation.json on disk is byte-equal to its pre-call contents
+    And the error message contains the substring 'Fix: fspec update-foundation projectType "<short-descriptor>"'
+    And spec/FOUNDATION.md does not exist on disk
 
   Scenario: When a draft exists the draft is the write target and no FOUNDATION.md regeneration occurs
     Given a project root tempdir with an existing spec/foundation.json.draft
@@ -91,3 +96,25 @@ Feature: Port update-foundation command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring 'Section content cannot be empty'
     And spec/foundation.json on disk is byte-equal to its pre-call contents
+
+  Scenario: With no foundation file update-foundation creates spec/foundation.json and regenerates FOUNDATION.md
+    Given a project root tempdir with a spec/ directory but no spec/foundation.json and no spec/foundation.json.draft
+    When I dispatch update-foundation with section='projectName' and content='New Project'
+    Then the dispatcher returns success=true
+    And spec/foundation.json on disk is a version 2.0.0 foundation with project.name='New Project'
+    And spec/FOUNDATION.md exists on disk
+    And spec/foundation.json.draft does not exist on disk
+
+  Scenario: A freeform projectType on a draft is accepted and chains to the next unfilled field
+    Given a project root tempdir with a spec/foundation.json.draft whose projectType and problem title are unfilled placeholders
+    When I dispatch update-foundation with section='projectType' and content='saas-platform'
+    Then the dispatcher returns success=true
+    And spec/foundation.json.draft on disk shows project.projectType='saas-platform'
+    And the returned systemReminder contains 'Field 4/8: problemSpace.primaryProblem.title'
+
+  Scenario: An empty projectType is rejected with the length error and the draft is left unchanged
+    Given a project root tempdir with an existing spec/foundation.json.draft
+    When I dispatch update-foundation with section='projectType' and content=''
+    Then the dispatcher returns success=false
+    And the error message contains the substring 'Invalid projectType: "" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType "<short-descriptor>"'
+    And spec/foundation.json.draft on disk is byte-equal to its pre-call contents

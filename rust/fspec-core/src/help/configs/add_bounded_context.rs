@@ -75,7 +75,7 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit not found",
-        fix: "Ensure work unit exists: fspec show-work-unit <id>",
+        fix: "Ensure work unit exists: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "Cannot add Event Storm items to work unit in done state",

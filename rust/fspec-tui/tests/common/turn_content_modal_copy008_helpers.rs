@@ -9,8 +9,10 @@
 
 #![allow(dead_code)]
 
+use codelet_test_helpers::OrFail;
+use parking_lot::Mutex;
 use std::io::Write;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
@@ -25,6 +27,8 @@ use ratatui::style::Color;
 use ratatui::text::Line;
 use ratatui::Terminal;
 
+/// The bytes written to the test clipboard.
+pub type Clipboard = Arc<Mutex<Vec<u8>>>;
 use crate::common::MockBackend;
 
 /// An `Arc<Mutex<Vec<u8>>>`-backed writer so a test can inspect the
@@ -33,10 +37,7 @@ pub struct SharedWriter(pub Arc<Mutex<Vec<u8>>>);
 
 impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0
-            .lock()
-            .expect("clipboard buffer mutex")
-            .extend_from_slice(buf);
+        self.0.lock().extend_from_slice(buf);
         Ok(buf.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
@@ -67,12 +68,18 @@ pub fn mouse(kind: MouseEventKind, col: u16, row: u16) -> Event {
 
 /// Push one turn carrying a real `ChunkSource` so the modal has a full
 /// body to render. `lines` mirror the source text split on hard breaks.
-pub fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
+pub fn push_text_turn(
+    app: &mut App,
+    id: &SessionId,
+    seq: u64,
+    text: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     ctx.scrollback.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: text.lines().map(|l| Line::from(l.to_string())).collect(),
         source: Some(ChunkSource {
@@ -83,6 +90,7 @@ pub fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
             full_text: None,
         }),
     });
+    Ok(())
 }
 
 /// Drain the App's action bus, dispatching each queued Action back into
@@ -95,12 +103,16 @@ pub fn drain_app(app: &mut App) {
 
 /// Render the App into a `w`x`h` TestBackend so `last_render_area` is
 /// cached and the modal overlay is painted.
-pub fn render_app(app: &mut App, w: u16, h: u16) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+pub fn render_app(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    (0..buf.area.height)
+    Ok((0..buf.area.height)
         .map(|y| {
             let mut row = String::new();
             for x in 0..buf.area.width {
@@ -108,7 +120,7 @@ pub fn render_app(app: &mut App, w: u16, h: u16) -> Vec<String> {
             }
             row
         })
-        .collect()
+        .collect())
 }
 
 pub fn joined(rows: &[String]) -> String {
@@ -157,8 +169,8 @@ pub fn osc52(text: &str) -> Vec<u8> {
 }
 
 /// Snapshot of the injected clipboard buffer as raw bytes.
-pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
-    buf.lock().expect("clipboard buffer mutex").clone()
+pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Result<Vec<u8>, codelet_test_helpers::TestError> {
+    Ok(buf.lock().clone())
 }
 
 /// Build an App in `ViewMode::Agent` seeded with one `ChunkSource` turn
@@ -166,13 +178,17 @@ pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
 /// modal OPEN on that turn. Returns the App and the shared clipboard
 /// buffer. `w`x`h` is the render size used to open the modal (so the
 /// modal geometry matches subsequent `modal_body_rect(w, h, body)`).
-pub fn open_modal_app(body: &str, w: u16, h: u16) -> (App, Arc<Mutex<Vec<u8>>>) {
+pub fn open_modal_app(
+    body: &str,
+    w: u16,
+    h: u16,
+) -> Result<(App, Clipboard), codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, body);
+    push_text_turn(&mut app, &sid("s-1"), 0, body)?;
     let buf = Arc::new(Mutex::new(Vec::<u8>::new()));
     app.set_clipboard_writer_for_test(Box::new(SharedWriter(buf.clone())));
     // Enter SELECT mode (auto-selects the last turn) then open the modal.
@@ -181,8 +197,8 @@ pub fn open_modal_app(body: &str, w: u16, h: u16) -> (App, Arc<Mutex<Vec<u8>>>) 
     let _ = app.handle_event(&key(KeyCode::Enter));
     drain_app(&mut app);
     // Render once so `last_render_area` is cached at this size.
-    let _ = render_app(&mut app, w, h);
-    (app, buf)
+    let _ = render_app(&mut app, w, h)?;
+    Ok((app, buf))
 }
 
 /// True while the open modal holds a live text selection (COPY-008 —

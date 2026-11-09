@@ -46,7 +46,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "if matches!(",
+              "lastLine": "});"
             }
           ]
         }

@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @bug
 @bug-fix
 @tui
 @persistence
 @BUG-167
+@mux
 Feature: Mux config persistence wiring — shared fspec-config.json dirs resolve in every App
   """
   Bug: /mux save, the MuxConfigDialog 's' commit, and the mux-exit auto-save all
@@ -84,17 +86,17 @@ Feature: Mux config persistence wiring — shared fspec-config.json dirs resolve
     And the process-global data directory is rooted at a throwaway directory
     When mux mode is active and I submit the slash command "/mux save"
     Then the fspec-config.json under the data directory contains the tui.mux key
-    And the tui.mux value holds the live mux config (orientation, splits, pane list, focused pane, enabled)
+    And the tui.mux value holds the live mux config (layout string, focused pane, enabled)
 
   # R3 (dialog 's' path): the config dialog save commits + persists without
   # any set-persist-dirs call
-  Scenario: committing the mux config dialog with 's' persists tui.mux to the shared config
+  Scenario: committing the mux config dialog with Save persists tui.mux to the shared config
     Given an App constructed with a backend and no explicit persist-dirs setup
     And the process-global data directory is rooted at a throwaway directory
-    And the MuxConfigDialog is open with the Orientation row set to Vertical
-    When I press 's' to apply and save
-    Then the MuxConfigDialog is closed and the live mux layout is vertical
-    And the fspec-config.json under the data directory contains a tui.mux key with orientation "Vertical"
+    And the MuxConfigDialog is open with the layout field set to "[board, agent]"
+    When I activate the Save button to apply and save
+    Then the MuxConfigDialog is closed and the live mux layout is "[board, agent]"
+    And the fspec-config.json under the data directory contains a tui.mux key with layout "[board, agent]"
     And pre-existing sibling keys in the shared config are preserved
 
   # R3 (mux-exit auto-save): exiting mux mode persists the post-exit config
@@ -104,20 +106,20 @@ Feature: Mux config persistence wiring — shared fspec-config.json dirs resolve
     And mux mode is active
     When I submit the slash command "/mux off"
     Then the fspec-config.json under the data directory contains a tui.mux key
-    And the saved tui.mux value has enabled=false and the live panes and splits
+    And the saved tui.mux value has enabled=false and the live layout string
 
   # R2: the project-scope override still wins on load
   Scenario: a project-scope tui.mux overrides the user-scope value on load
-    Given a user-scope fspec-config.json with tui.mux holding a horizontal 50/50 Board|Agent preset
-    And a project spec/fspec-config.json with tui.mux holding a vertical 40/60 Board|Agent preset
+    Given a user-scope fspec-config.json with tui.mux holding the layout "board, agent"
+    And a project spec/fspec-config.json with tui.mux holding the layout "[board:2, agent:3]"
     When a fresh TUI bootstrap loads the persisted mux config
-    Then the live mux config is vertical with a 40/60 split (the project value wins)
+    Then the live mux layout is "[board:2, agent:3]" (the project value wins)
 
   # R4: a missing data directory is non-fatal — load degrades to the default
   # preset, save surfaces a logged error instead of a panic
   Scenario: an unresolvable data directory never panics load or save
     Given the process-global data directory cannot be resolved and no fallback home is available
     When a fresh TUI bootstrap loads the persisted mux config
-    Then the live mux config is the default preset (horizontal Board|Agent 50/50)
+    Then the live mux config is the default layout "board, agent"
     And submitting "/mux save" surfaces a one-line error notice in the agent scrollback
     And the TUI remains usable (no panic)

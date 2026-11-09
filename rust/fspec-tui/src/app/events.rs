@@ -1,16 +1,14 @@
-//! `App::handle_event` + `App::handle_paste` + `App::render` + `App::run`
+//! `App::route_event` + `App::route_paste` (wrapped by `handle_event` / `handle_paste`, BUG-549) + `App::render`
 //! (RPC-008 rule [11], RPC-009 architecture note [9], RPC-012 navigator
 //! routing).
 //!
 //! The crossterm event flow is:
-//!   DisconnectDialog (Critical) → app-shortcuts (`?` / ESC on BoardView /
-//!     Ctrl+D) → Compositor → Navigator → store mutation via
-//!     [`super::dispatch`].
+//!   Compositor → Navigator → app-shortcuts (`?` / ESC on BoardView /
+//!     Ctrl+D) → store mutation via [`super::dispatch`].
 //!
 //! RPC-102: replaced the legacy `q` quit binding with a BoardView ESC
 //! handler that pushes [`BoardExitConfirmationDialog`] for TS parity
-//! (`src/tui/components/BoardView.tsx:285-305`). The DisconnectDialog
-//! still honours `q`/`r` per RPC-011 CR-1 (handled at Stage 1).
+//! (`src/tui/components/BoardView.tsx:285-305`).
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::buffer::Buffer;
@@ -19,12 +17,13 @@ use ratatui::layout::Rect;
 use crate::components::board_exit_confirmation_dialog::{
     BoardExitConfirmationDialog, BOARD_EXIT_CONFIRMATION_DIALOG_ID,
 };
-use crate::components::disconnect_dialog::DISCONNECT_DIALOG_ID;
 use crate::components::help_dialog::HelpDialog;
-use crate::components::{Action, EventResult, Priority};
+use crate::components::EventResult;
 use crate::views::ViewMode;
 
 use super::state::App;
+
+mod dialog; // TUI-128: a dialog on top owns every key and paste
 
 /// BOARD-023 R6: the HelpDialog's stable compositor id — shared between
 /// the stage-4 `?` shortcut's push helper and its idempotency guard
@@ -33,11 +32,10 @@ const HELP_DIALOG_ID: &str = "help-dialog";
 
 impl App {
     /// Process a single crossterm event. Dispatch order:
-    ///   1. DisconnectDialog (critical, unchanged — RPC-011 CR-1).
-    ///   2. Compositor (popups, modals — RPC-009/RPC-020).
-    ///   3. Navigator (BoardView or AgentView with its MultiLineInput).
-    ///   4. App-level fallback shortcuts (`?`, `q`, `Ctrl+D`) — only
-    ///      fire when 2 and 3 returned `Ignored`.
+    ///   1. Compositor (popups, modals — RPC-009/RPC-020).
+    ///   2. Navigator (BoardView or AgentView with its MultiLineInput).
+    ///   3. App-level fallback shortcuts (`?`, `q`, `Ctrl+D`) — only
+    ///      fire when 1 and 2 returned `Ignored`.
     ///
     /// RPC-073: pre-fix the App-level shortcuts ran at Stage 2 (before
     /// Compositor and Navigator). That trapped `?` and `q` keystrokes
@@ -47,7 +45,7 @@ impl App {
     /// `InputManager` priority chain (text input MEDIUM > view shortcuts
     /// LOW), where focused inputs always win against view-level
     /// shortcuts.
-    pub fn handle_event(&mut self, event: &Event) -> EventResult {
+    pub(crate) fn route_event(&mut self, event: &Event) -> EventResult {
         // TUI-110: central Press-only key filter. On Windows (cmd /
         // Windows Terminal) crossterm reports BOTH KeyEventKind::Press and
         // KeyEventKind::Release for every key (ratatui#347, crossterm#772);
@@ -64,16 +62,6 @@ impl App {
             }
         }
 
-        let topmost_is_critical =
-            matches!(self.compositor.topmost_priority(), Some(Priority::Critical));
-        let topmost_is_disconnect =
-            self.compositor.topmost_id().as_deref() == Some(DISCONNECT_DIALOG_ID);
-
-        // Stage 1 (unchanged): DisconnectDialog (RPC-011 CR-1)
-        if topmost_is_disconnect {
-            return self.handle_disconnect_dialog_event(event);
-        }
-
         // Stage 2: Compositor (popups, modals, dialogs) gets first
         // crack at the event. HelpDialog (already open), file/slash
         // popups, etc. handle Esc / arrow / Enter here.
@@ -86,6 +74,10 @@ impl App {
         if composer_result.is_consumed() {
             self.should_render = true;
             return composer_result;
+        }
+        if let Some(result) = self.stop_key_at_dialog(event) {
+            // TUI-128: a key no dialog used stops at the dialog on top.
+            return result;
         }
 
         // Stage 3: Navigator (current view: BoardView or AgentView
@@ -105,9 +97,7 @@ impl App {
         {
             self.mux_sync_window();
             if let Event::Key(key) = event {
-                if key.modifiers.contains(KeyModifiers::SHIFT)
-                    && matches!(key.code, KeyCode::Left | KeyCode::Right)
-                {
+                if self.is_mux_shift_key(key) {
                     let result = self.handle_mux_shift_key(*key);
                     self.should_render = true;
                     return result;
@@ -130,44 +120,19 @@ impl App {
         }
 
         // Stage 4: App-level fallback shortcuts — only fire when
-        // neither the Compositor nor the Navigator consumed the key.
-        // Suppressed under a critical-priority modal (other than
-        // DisconnectDialog, handled at Stage 1) so the modal stays in
-        // focus.
-        if !topmost_is_critical {
-            if let Event::Key(key) = event {
-                // TUI-110: Press-only guard (was `!= Release`, which also
-                // admitted Repeat). Matches the central run-loop filter.
-                if key.kind == KeyEventKind::Press {
-                    if let Some(result) = self.handle_app_shortcut(key) {
-                        return result;
-                    }
+        // neither the Compositor nor the Navigator consumed the key (a
+        // dialog on top already returned, TUI-128).
+        if let Event::Key(key) = event {
+            // TUI-110: Press-only guard (was `!= Release`, which also
+            // admitted Repeat). Matches the central run-loop filter.
+            if key.kind == KeyEventKind::Press {
+                if let Some(result) = self.handle_app_shortcut(key) {
+                    return result;
                 }
             }
         }
 
         nav_result
-    }
-
-    fn handle_disconnect_dialog_event(&mut self, event: &Event) -> EventResult {
-        // RPC-011 CR-1 rule [2]: DisconnectDialog is topmost and honours
-        // ONLY `q` (quit) and `r` (manual reconnect).
-        if let Event::Key(key) = event {
-            // TUI-110: Press-only guard (was `!= Release`, which also
-            // admitted Repeat). Matches the central run-loop filter.
-            if key.kind == KeyEventKind::Press {
-                if key.code == KeyCode::Char('q') && key.modifiers == KeyModifiers::NONE {
-                    self.should_quit = true;
-                    let _ = self.compositor.remove(DISCONNECT_DIALOG_ID);
-                    return EventResult::consumed();
-                }
-                if key.code == KeyCode::Char('r') && key.modifiers == KeyModifiers::NONE {
-                    let _ = self.action_tx.send(Action::ManualReconnect);
-                    return EventResult::consumed();
-                }
-            }
-        }
-        EventResult::consumed()
     }
 
     fn handle_app_shortcut(&mut self, key: &KeyEvent) -> Option<EventResult> {
@@ -216,7 +181,7 @@ impl App {
     /// `Event::Paste` (Stage 2); when no layer consumes it the paste
     /// falls back through the Navigator → AgentView → MultiLineInput
     /// (Stage 3), whose gated paste branch inserts the text verbatim.
-    pub fn handle_paste(&mut self, text: &str) -> EventResult {
+    pub(crate) fn route_paste(&mut self, text: &str) -> EventResult {
         let result = self.compositor.handle_paste(text);
         if let EventResult::Consumed(Some(callback)) = result {
             callback(&mut self.compositor);
@@ -226,6 +191,9 @@ impl App {
         if result.is_consumed() {
             self.should_render = true;
             return result;
+        }
+        if self.topmost_is_dialog() {
+            return EventResult::consumed(); // TUI-128: it stops at the dialog
         }
         let event = Event::Paste(text.to_string());
         let nav_result = self.navigator.handle_event(&event, &self.board_store);
@@ -251,6 +219,7 @@ impl App {
         self.navigator
             .render_with_stores(area, buf, &self.board_store, &mut self.agent_view_store);
         self.compositor.render(area, buf);
+        self.copy_notice.render(area, buf); // TUI-126
         self.should_render = false;
     }
 

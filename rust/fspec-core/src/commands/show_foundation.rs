@@ -70,7 +70,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let format = args.format.as_deref().unwrap_or("text");
 
-    let draft_path = project_root.join("spec").join("foundation.json.draft");
+    let draft_path = crate::io::spec_paths::foundation_draft(project_root)?;
     let draft_exists = draft_path.exists();
 
     // DISC-003 rule 6: draft auto-preference. When a draft exists the draft

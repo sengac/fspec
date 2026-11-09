@@ -24,8 +24,7 @@
 //! `AgentView.turn_modal_seq`) and are EXPECTED to fail to COMPILE until
 //! RPC-382 lands — the correct red state for ACDD.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use crossterm::event::KeyCode;
 
 mod common;
@@ -42,9 +41,9 @@ use helpers::{
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_the_selected_turn_opens_the_turn_content_modal() {
+fn enter_on_the_selected_turn_opens_the_turn_content_modal() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the second of three turns selected
-    let mut app = agent_app_with_text_turns();
+    let mut app = agent_app_with_text_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -68,11 +67,12 @@ fn enter_on_the_selected_turn_opens_the_turn_content_modal() {
     );
 
     // @step And the modal shows the full text of the second turn
-    let rows = render_rows(&mut app, 80, 20);
+    let rows = render_rows(&mut app, 80, 20)?;
     assert!(
         joined(&rows).contains("SECONDBODY"),
         "modal must render the selected turn's body; got: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -80,16 +80,16 @@ fn enter_on_the_selected_turn_opens_the_turn_content_modal() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_modal_shows_the_full_content_of_a_collapsed_turn() {
+fn the_modal_shows_the_full_content_of_a_collapsed_turn() -> TestResult {
     // @step Given an AgentView in turn-selection mode with a collapsed turn selected
-    let mut app = agent_app_with_collapsed_last_turn();
+    let mut app = agent_app_with_collapsed_last_turn()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab()); // auto-selects the tall last turn
     drain_app(&mut app);
     assert_eq!(selected_seq(&app, &id), Some(2));
     // The turn is collapsed in the scrollback: its top (TOPMARKER) is
     // scrolled off a too-small viewport before the modal opens.
-    let plain = render_rows(&mut app, 80, 12);
+    let plain = render_rows(&mut app, 80, 12)?;
     assert!(
         !joined(&plain).contains("TOPMARKER"),
         "precondition: the tall turn's top must be collapsed/off-screen; got: {plain:?}"
@@ -103,7 +103,7 @@ fn the_modal_shows_the_full_content_of_a_collapsed_turn() {
     assert_eq!(modal_seq(&app), Some(2), "Enter must open the modal");
 
     // @step And the modal shows the complete content of the turn
-    let rows = render_rows(&mut app, 80, 12);
+    let rows = render_rows(&mut app, 80, 12)?;
     assert!(
         joined(&rows).contains("TOPMARKER"),
         "modal must show the full body including the collapsed top; got: {rows:?}"
@@ -111,9 +111,10 @@ fn the_modal_shows_the_full_content_of_a_collapsed_turn() {
 
     // @step And the modal does not show the collapsed placeholder
     assert!(
-        !joined(&rows).contains("select turn to"),
-        "modal must not render the collapsed '/expand' placeholder hint; got: {rows:?}"
+        !joined(&rows).contains("(Tab to select, Enter to view full)"),
+        "modal must not render the collapsed placeholder hint; got: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -121,9 +122,9 @@ fn the_modal_shows_the_full_content_of_a_collapsed_turn() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn esc_closes_the_modal_but_stays_in_turn_selection_mode() {
+fn esc_closes_the_modal_but_stays_in_turn_selection_mode() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the turn content modal open
-    let mut app = agent_app_with_text_turns();
+    let mut app = agent_app_with_text_turns()?;
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
     let _ = app.handle_event(&key(KeyCode::Enter));
@@ -145,12 +146,13 @@ fn esc_closes_the_modal_but_stays_in_turn_selection_mode() {
     );
 
     // @step And the session header still shows the [SELECT] badge
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
     assert!(
         rows[0].contains("[SELECT]"),
         "header must still show [SELECT]; got: {:?}",
         rows[0]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -158,9 +160,9 @@ fn esc_closes_the_modal_but_stays_in_turn_selection_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_second_esc_after_closing_the_modal_exits_turn_selection_mode() {
+fn a_second_esc_after_closing_the_modal_exits_turn_selection_mode() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the turn content modal closed
-    let mut app = agent_app_with_text_turns();
+    let mut app = agent_app_with_text_turns()?;
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
     assert!(app.navigator().agent.turn_select_mode);
@@ -177,12 +179,13 @@ fn a_second_esc_after_closing_the_modal_exits_turn_selection_mode() {
     );
 
     // @step And the session header does not show the [SELECT] badge
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
     assert!(
         !rows[0].contains("[SELECT]"),
         "header must NOT show [SELECT] after exiting; got: {:?}",
         rows[0]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -191,9 +194,9 @@ fn a_second_esc_after_closing_the_modal_exits_turn_selection_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tab_while_the_modal_is_open_closes_the_modal_and_exits_select_mode() {
+fn tab_while_the_modal_is_open_closes_the_modal_and_exits_select_mode() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the turn content modal open
-    let mut app = agent_app_with_text_turns();
+    let mut app = agent_app_with_text_turns()?;
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
     let _ = app.handle_event(&key(KeyCode::Enter));
@@ -213,6 +216,7 @@ fn tab_while_the_modal_is_open_closes_the_modal_and_exits_select_mode() {
         !app.navigator().agent.turn_select_mode,
         "Tab must also exit select mode"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -220,9 +224,9 @@ fn tab_while_the_modal_is_open_closes_the_modal_and_exits_select_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scrollback_keys_are_gated_while_the_modal_is_open() {
+fn scrollback_keys_are_gated_while_the_modal_is_open() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the second of three turns selected
-    let mut app = agent_app_with_text_turns();
+    let mut app = agent_app_with_text_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -249,4 +253,5 @@ fn scrollback_keys_are_gated_while_the_modal_is_open() {
         Some(1),
         "Up must be gated while the modal is open — selection must not move"
     );
+    Ok(())
 }

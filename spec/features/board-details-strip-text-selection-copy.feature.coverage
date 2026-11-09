@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
-          "lines": "62-107",
+          "lines": "56-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
-                119,
                 120,
                 121,
                 122,
@@ -88,43 +87,6 @@
                 194,
                 195,
                 196,
-                197
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dragging across the wrapped description rows copies them as shown",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
-          "lines": "116-197",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/details_select.rs",
-              "lines": [
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
                 197,
                 198,
                 199,
@@ -136,10 +98,57 @@
                 205,
                 206,
                 207,
-                208
-              ]
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ],
+              "firstLine": "fn commit_details_selection(&self, rect: Rect, selected: Option<&WorkUnitInfo>) {",
+              "lastLine": "text.chars().skip(start).take(end - start).collect()"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging across the wrapped description rows copies them as shown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "116-197",
+          "implMappings": []
         }
       ]
     },
@@ -148,41 +157,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
-          "lines": "205-262",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/details_select.rs",
-              "lines": [
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203
-              ]
-            }
-          ]
+          "lines": "198-253"
         }
       ]
     },
@@ -196,21 +171,23 @@
             {
               "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158
-              ]
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ],
+              "firstLine": "let Some(anchored) = anchored else {",
+              "lastLine": "let Some(sel) = *self.details_selection.borrow() else {"
             }
           ]
         }
@@ -221,17 +198,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
-          "lines": "337-378",
+          "lines": "324-368",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
-                166
-              ]
+                152,
+                153,
+                154,
+                155,
+                156
+              ],
+              "firstLine": "if matches!(event, Event::Mouse(_)) {",
+              "lastLine": "let Event::Key(key) = event else {"
             }
           ]
         }
@@ -242,7 +221,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
-          "lines": "366-388",
+          "lines": "374-403",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
@@ -267,7 +246,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "if let Some(result) = menu_mouse::handle_menu_mouse(view, event, store) {",
+              "lastLine": "if let Some(rect) = view.last_details_area.get() {"
             }
           ]
         }
@@ -286,6 +267,6 @@
       "rust/fspec-tui/src/views/board.rs",
       "rust/fspec-tui/src/views/board/mouse.rs"
     ],
-    "totalLinesCovered": 488
+    "totalLinesCovered": 489
   }
 }

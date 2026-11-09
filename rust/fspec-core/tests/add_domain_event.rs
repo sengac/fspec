@@ -140,6 +140,22 @@ fn add_first_domain_event_to_a_work_unit_with_no_event_storm() {
     let es = &v["workUnits"]["RPC-179"]["eventStorm"];
     assert_eq!(es["level"].as_str(), Some("process_modeling"));
     assert_eq!(es["nextItemId"].as_u64(), Some(1));
+
+    // @step And the item's createdAt is the ISO-8601 time the work unit's updatedAt was bumped to
+    let created = item["createdAt"].as_str().expect("createdAt string");
+    assert!(
+        created.len() == 24 && created.ends_with('Z'),
+        "createdAt must be an ISO-8601 UTC timestamp; got: {created}"
+    );
+    assert_ne!(
+        created, "2026-06-01T00:00:00.000Z",
+        "createdAt must NOT be the seed value"
+    );
+    assert_eq!(
+        v["workUnits"]["RPC-179"]["updatedAt"].as_str(),
+        Some(created),
+        "the event's createdAt and the bumped updatedAt come from the same write"
+    );
 }
 
 #[test]

@@ -1,4 +1,6 @@
 @EXT-011
+@browser
+@web-tools
 Feature: Add browser_create_tab tool to fspec Browser Agent Chrome Extension
   """
   Uses chrome.tabs.create() API. Chromium C++ implementation: TabsCreateFunction in chrome/browser/extensions/api/tabs/tabs_api.h. API schema: chrome/common/extensions/api/tabs.json. Helper: ExtensionTabUtil::OpenTab in chrome/browser/extensions/extension_tab_util.h.

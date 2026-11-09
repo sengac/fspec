@@ -31,6 +31,6 @@ EXAMPLES
 RELATED COMMANDS
   fspec list-work-units
   fspec export-work-units
-  fspec search-scenarios
+  fspec context
   fspec compare-implementations
 

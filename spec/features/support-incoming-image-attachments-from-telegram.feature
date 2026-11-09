@@ -1,5 +1,7 @@
+@BUG-582
 @done
 @BRIDGE-007
+@BUG-504
 @telegram
 @bridge
 Feature: Support Incoming Image Attachments from Telegram
@@ -13,6 +15,9 @@ Feature: Support Incoming Image Attachments from Telegram
   Assumptions:
   - Media groups (multiple photos in one message) are out of scope - only single photos handled
   - The rust/Claude session will handle the images array format - no changes needed on that side
+  BUG-504: a photo with no open session is dropped with a console.warn (forwardPhotoToSession). The multimodal
+  scenario states what the bridge checks (the session input envelope); the Rust session turns bridge images into
+  UserContent::Image under the cli bridge-image features.
   """
 
   # ========================================
@@ -35,7 +40,7 @@ Feature: Support Incoming Image Attachments from Telegram
   #   2. User sends photo with caption - WebSocket message includes message text AND images array
   #   3. User sends photo without caption - WebSocket message has empty message string and images array
   #   4. User sends photo.jpg file - image sent with media_type='image/jpeg' based on extension
-  #   5. WebSocket message format: {type:'input', session_id:'xxx', message:'caption', images:[{data:'base64...', media_type:'image/jpeg'}]}
+  #   5. WebSocket envelope format (since e88ce3d91): {service:'session', type:'input', session_id:'xxx', data:{message:'caption', images:[{data:'base64...', media_type:'image/jpeg'}]}}; images is omitted when there are none
   #   6. Photo download times out after 30s - bridge logs error and forwards caption only
   #
   # ========================================
@@ -73,15 +78,15 @@ Feature: Support Incoming Image Attachments from Telegram
     Given I have a connected Telegram bridge session
     And Telegram provides a photo message with caption "What error is this?"
     When the bridge processes the photo message
-    Then the WebSocket message should have message "What error is this?"
-    And the WebSocket message should include the image in the images array
+    Then the WebSocket envelope should have message "What error is this?"
+    And the WebSocket envelope should include the image in data.images
 
   Scenario: Handle photo without caption
     Given I have a connected Telegram bridge session
     And Telegram provides a photo message without a caption
     When the bridge processes the photo message
-    Then the WebSocket message should have message ""
-    And the WebSocket message should include the image in the images array
+    Then the WebSocket envelope should have message ""
+    And the WebSocket envelope should include the image in data.images
 
   Scenario: Use msg.caption not msg.text for photo messages
     Given I have a connected Telegram bridge session
@@ -90,7 +95,7 @@ Feature: Support Incoming Image Attachments from Telegram
       | caption | This is the caption    |
       | text    | This should be ignored |
     When the bridge processes the photo message
-    Then the WebSocket message should have message "This is the caption"
+    Then the WebSocket envelope should have message "This is the caption"
     And the message should NOT contain "This should be ignored"
 
   Scenario: Verify WebSocket message structure
@@ -99,23 +104,24 @@ Feature: Support Incoming Image Attachments from Telegram
     And the photo downloads successfully as base64 "SGVsbG8gV29ybGQ="
     And the photo file_path is "photos/test.jpg"
     When the bridge processes the photo message
-    Then the WebSocket message should have this structure:
-      | field                | value            |
-      | type                 | input            |
-      | session_id           | test-session-123 |
-      | message              | Hello            |
-      | images[0].data       | SGVsbG8gV29ybGQ= |
-      | images[0].media_type | image/jpeg       |
+    Then the WebSocket envelope should have this structure:
+      | field                     | value            |
+      | service                   | session          |
+      | type                      | input            |
+      | session_id                | test-session-123 |
+      | data.message              | Hello            |
+      | data.images[0].data       | SGVsbG8gV29ybGQ= |
+      | data.images[0].media_type | image/jpeg       |
 
   # ====================
   # MEDIA TYPE SCENARIOS
   # ====================
   Scenario: Pass images to LLM as multimodal input
     Given I have a connected Telegram bridge session
-    When the bridge processes the photo message and injects it into the session
-    Then the session should pass the image to the LLM as a UserContent::Image
     And Telegram provides a photo message with caption "Describe this image"
-    And the LLM should receive both the text message and the image
+    When the bridge processes the photo message and injects it into the session
+    Then the session input envelope carries the image with its base64 data and media type
+    And the envelope carries the caption as the session input text
 
   Scenario Outline: Detect correct media type from file extension
     Given I have a connected Telegram bridge session
@@ -158,8 +164,8 @@ Feature: Support Incoming Image Attachments from Telegram
     And the photo download will fail with error "Network timeout"
     When the bridge processes the photo message
     Then the bridge should log an error about the download failure
-    And the WebSocket message should have message "Check this out"
-    And the WebSocket message should have an empty images array
+    And the WebSocket envelope should have message "Check this out"
+    And the WebSocket envelope should have no images
 
   Scenario: Drop message completely when photo download fails and no caption
     Given I have a connected Telegram bridge session
@@ -175,18 +181,18 @@ Feature: Support Incoming Image Attachments from Telegram
   Scenario: Ignore non-photo media types
     Given I have a connected Telegram bridge session
     When a user sends a document through Telegram
-    Then the bridge should handle it as a text message
+    Then the bridge should handle it as a text envelope
     And no images array should be included
 
   Scenario: Ignore sticker messages
     Given I have a connected Telegram bridge session
     When a user sends a sticker through Telegram
-    Then the bridge should handle it as a text message
+    Then the bridge should handle it as a text envelope
     And no images array should be included
 
   Scenario: Handle photo with empty caption
     Given I have a connected Telegram bridge session
     And Telegram provides a photo message with caption ""
     When the bridge processes the photo message
-    Then the WebSocket message should have message ""
-    And the WebSocket message should include the image in the images array
+    Then the WebSocket envelope should have message ""
+    And the WebSocket envelope should include the image in data.images

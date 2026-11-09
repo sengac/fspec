@@ -13,7 +13,7 @@ use codelet_rpc_types::{ModelInfo, ThinkingLevel};
 /// then conditional badges with per-segment colours.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn build_left_line(
-    index: (usize, usize),
+    index: Option<(usize, usize)>,
     model: Option<&ModelInfo>,
     thinking: ThinkingLevel,
     work_unit_id: Option<&str>,
@@ -25,10 +25,10 @@ pub(super) fn build_left_line(
 ) -> Line<'static> {
     let mut spans: Vec<Span<'static>> = Vec::new();
 
-    let session_prefix = if index.0 >= 1 {
-        format!("#{}", index.0)
-    } else {
-        String::new()
+    // BUG-391: no slot number when the session is not open.
+    let session_prefix = match index {
+        Some((slot, _)) => format!("#{slot}"),
+        None => String::new(),
     };
     let work_unit_text = match (work_unit_id, work_unit_status) {
         (Some(id), Some(status)) => format!(" ({id}: {status})"),
@@ -90,7 +90,7 @@ pub(super) fn build_left_line(
             Style::default().fg(Color::Cyan),
         ));
     }
-    if let Some(label) = thinking_label(thinking) {
+    if let Some(label) = thinking_label(&thinking) {
         spans.push(Span::styled(
             format!(" [T:{label}]"),
             Style::default().fg(Color::Yellow),
@@ -181,12 +181,14 @@ pub(super) fn build_right_line(
     Line::from(spans)
 }
 
-fn thinking_label(level: ThinkingLevel) -> Option<&'static str> {
+/// MODEL-011: the chosen level as chosen (the effort name, the numeric
+/// effort, the budget in tokens, on); nothing for Off.
+fn thinking_label(level: &ThinkingLevel) -> Option<String> {
     match level {
         ThinkingLevel::Off => None,
-        ThinkingLevel::Low => Some("Low"),
-        ThinkingLevel::Medium => Some("Med"),
-        ThinkingLevel::High => Some("High"),
+        // BUG-455: no level chosen — the model's own default thinking.
+        ThinkingLevel::ModelDefault => Some("Default".to_string()),
+        other => Some(other.to_string()),
     }
 }
 
@@ -224,15 +226,12 @@ pub(crate) fn format_context_window(n: u32) -> String {
 /// via [`format_context_window`]. Returns `None` when neither value is set so
 /// the badge is hidden (graceful degradation), matching the prior
 /// `context_window > 0` guard.
-pub fn size_badge_label(compaction_threshold: u32, context_window: u32) -> Option<String> {
-    let value = if compaction_threshold > 0 {
-        compaction_threshold
-    } else {
-        context_window
-    };
-    if value > 0 {
-        Some(format_context_window(value))
-    } else {
-        None
-    }
+/// PROV-166: no badge when both limits are unavailable.
+pub fn size_badge_label(
+    compaction_threshold: Option<u32>,
+    context_window: Option<u32>,
+) -> Option<String> {
+    compaction_threshold
+        .or(context_window)
+        .map(format_context_window)
 }

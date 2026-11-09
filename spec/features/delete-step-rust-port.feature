@@ -54,9 +54,44 @@ Feature: Port delete-step command to Rust
     When I dispatch delete-step with feature='spec/features/login.feature', scenario='Login' and step='When nonexistent'
     Then the dispatcher returns success=false
     And the dispatcher error equals "Step 'When nonexistent' not found in scenario 'Login'"
+    And the file on disk is unchanged
 
   Scenario: Dispatcher reports a missing scenario
     Given a project root tempdir with spec/features/login.feature whose scenario 'Login' has steps Given/When/Then
     When I dispatch delete-step with feature='spec/features/login.feature', scenario='Ghost' and step='When I enter valid credentials'
     Then the dispatcher returns success=false
     And the dispatcher error equals "Scenario 'Ghost' not found in feature file"
+    And the file on disk is unchanged
+
+  Scenario: Dispatcher deletes a Given, a When and a Then step and keeps the rest byte for byte
+    Given a project root tempdir with spec/features/test.feature reading 'Feature: Test\n\n  Scenario: Test scenario\n    Given I am logged in\n    And I am on the home page\n    When I click submit\n    Then I should see success\n    Then I should see the summary\n'
+    When I dispatch delete-step with feature='test', scenario='Test scenario' and step='Given I am logged in'
+    And I dispatch delete-step with feature='test', scenario='Test scenario' and step='When I click submit'
+    And I dispatch delete-step with feature='test', scenario='Test scenario' and step='Then I should see success'
+    Then each dispatch returns success=true with the message "Successfully deleted step from scenario 'Test scenario' in test.feature"
+    And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n    And I am on the home page\n    Then I should see the summary\n'
+
+  Scenario: Dispatcher deletes the only step and keeps the scenario header
+    Given a project root tempdir with spec/features/test.feature reading 'Feature: Test\n\n  Scenario: Test scenario\n    Given test\n'
+    When I dispatch delete-step with feature='test', scenario='Test scenario' and step='Given test'
+    Then the dispatcher returns success=true
+    And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n'
+
+  Scenario: Dispatcher deletes the step only from the named scenario
+    Given a project root tempdir with spec/features/test.feature whose scenarios 'First' and 'Second' both have the step 'Given I am logged in'
+    When I dispatch delete-step with feature='test', scenario='First' and step='Given I am logged in'
+    Then the dispatcher returns success=true
+    And the file on disk reads 'Feature: Test\n\n  Scenario: First\n    Then I see first\n\n  Scenario: Second\n    Given I am logged in\n    Then I see second\n'
+
+  Scenario: Dispatcher deletes a step whose text has an apostrophe and an at sign
+    Given a project root tempdir with spec/features/test.feature whose scenario 'Test scenario' has the steps 'Given I can't access @admin features' and 'Then I see a notice'
+    When I dispatch delete-step with feature='test', scenario='Test scenario' and step="Given I can't access @admin features"
+    Then the dispatcher returns success=true
+    And the file on disk reads 'Feature: Test\n\n  Scenario: Test scenario\n    Then I see a notice\n'
+
+  Scenario: Dispatcher rejects a feature file that is not valid Gherkin and leaves it unchanged
+    Given a project root tempdir with spec/features/broken.feature reading 'Scenario: Some scenario\n  Given test\n'
+    When I dispatch delete-step with feature='broken', scenario='Some scenario' and step='Given test'
+    Then the dispatcher returns success=false
+    And the dispatcher error contains 'Invalid Gherkin syntax: '
+    And the file on disk is unchanged

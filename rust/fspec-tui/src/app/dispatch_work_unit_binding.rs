@@ -3,7 +3,7 @@
 //!
 //! Feature files:
 //!   - spec/features/work-unit-attach-binding.feature
-//!   - spec/features/slash-command-detach-and-work-unit-binding.feature
+//!   - spec/features/session-work-unit-focus-projection.feature
 //!
 //! Factored out of `app/dispatch.rs` and `app/dispatch_slash_commands.rs` so
 //! both orchestrator files stay under the 300-LoC ceiling pinned by
@@ -24,21 +24,9 @@ use crate::components::Action;
 use super::state::App;
 
 impl App {
-    /// RPC-050: BoardView Enter path — bind the supplied work unit id to
-    /// the focused AgentView session. When there is no current session
-    /// the helper is a silent no-op. Otherwise spawns
-    /// `backend.set_work_unit_context(session, Some(ctx))` and routes
-    /// `Action::WorkUnitAttached(session, ctx)` on Ok or
-    /// `Action::EmitSessionNotice(session, "[error] /attach failed: …")`
-    /// on Err.
-    pub(crate) fn handle_attach_work_unit_to_session(&mut self, work_unit_id: String) {
-        let Some(session_id) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-        self.navigator.active_view = crate::views::ViewMode::Agent;
-        self.attach_work_unit_to_session(session_id, work_unit_id);
-    }
-
+    /// RPC-050 / BUG-230: bind `work_unit_id` to `session_id` through
+    /// `backend.set_work_unit_context`, then read the session's work-unit
+    /// focus back (`Action::WorkUnitFocusChanged`).
     pub(crate) fn attach_work_unit_to_session(
         &mut self,
         session_id: SessionId,
@@ -84,23 +72,6 @@ impl App {
             }
         });
         self.pending_tasks.push(handle);
-    }
-
-    /// RPC-050: fold a successful `set_work_unit_context(Some)` outcome
-    /// into the per-session AgentViewStore map.
-    pub(crate) fn handle_work_unit_attached(
-        &mut self,
-        session_id: SessionId,
-        ctx: WorkUnitContext,
-    ) {
-        if self
-            .agent_view_store
-            .work_unit_focus_revision_for(&session_id)
-            .is_none()
-        {
-            self.agent_view_store.set_work_unit_context(session_id, ctx);
-            self.rebuild_focus_occupancy();
-        }
     }
 
     /// Best-effort lookup of a work unit by id across the BoardStore's

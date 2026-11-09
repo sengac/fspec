@@ -24,6 +24,8 @@ codelet-providers = { workspace = true }
 codelet-cli = { workspace = true }
 codelet-git = { workspace = true }
 codelet-core = { workspace = true }
+# WT-018: the session's card changes and their discard moves.
+codelet-fspec-core.workspace = true
 # codelet-rpc-types is depended on WITHOUT the `napi` feature so that the
 # transitive napi crate is excluded from the codelet-sessions graph. The
 # forbidden arrow `sessions → napi` is enforced by
@@ -41,6 +43,8 @@ async-trait = { workspace = true }
 # === Serialization ===
 serde = { workspace = true }
 serde_json = { workspace = true }
+# PROV-175: field paths in profile parse errors.
+serde_path_to_error = "0.1"
 
 # === Error handling ===
 thiserror = { workspace = true }
@@ -66,7 +70,6 @@ codelet-rpc-server.workspace = true
 tarpc.workspace = true
 tokio-tungstenite.workspace = true
 proptest.workspace = true
-codelet-fspec-core.workspace = true
 codelet-rpc.workspace = true
 codelet-agent-loop = { workspace = true, features = ["test-support"] }
 codelet-providers = { workspace = true, features = ["test-support"] }

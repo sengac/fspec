@@ -16,7 +16,7 @@ Feature: Port create-feature command to Rust
   #   1. Filename is toKebabCase(name) + '.feature' under spec/features/ (lowercase, non-alphanumeric runs → single hyphen, no leading/trailing hyphen)
   #   2. If the target feature file already exists the command MUST fail with 'File already exists: spec/features/<file>\nSuggestion: Use a different name or delete the existing file' and write nothing
   #   3. The spec/features/ directory MUST be created recursively if absent before writing
-  #   4. File content MUST be the exact generateFeatureTemplate(name) output: '@critical @component @feature-group' tag line, 'Feature: <name>', an architecture-notes docstring with 3 TODO lines, a Background User Story with [role]/[action]/[benefit], and one placeholder Scenario, ending with a trailing newline
+  #   4. File content MUST be the exact generateFeatureTemplate(name) output: '@critical', '@component' and '@feature-group' tag lines (one per line, BUG-479), 'Feature: <name>', an architecture-notes docstring with 3 TODO lines, a Background User Story with [role]/[action]/[benefit], and one placeholder Scenario, ending with a trailing newline
   #   5. A sidecar '<file>.feature.coverage' MUST be created with one CoverageScenario per scenario name in the template (name '[Scenario name]'), empty testMappings, and a stats block (totalScenarios=1, coveredScenarios=0, coveragePercent=0)
   #   6. Coverage-file creation MUST degrade gracefully: a failure there sets coverageFile.status='error' with a 'Warning: Failed to create coverage file: <msg>' message but MUST NOT fail feature creation
   #   7. Prefill detection MUST run on the written content and report hasPrefill=true with a systemReminder (the template carries [role]/[action]/[benefit]/[precondition]/[expected outcome]/[scenario name]/TODO placeholders)
@@ -44,10 +44,11 @@ Feature: Port create-feature command to Rust
   Scenario: Generated content matches the canonical template verbatim
     Given a project root tempdir with an empty spec directory
     When I dispatch create-feature with name='User Authentication'
-    Then the written file begins with the line '@critical @component @feature-group'
+    Then the written file begins with the lines '@critical', '@component' and '@feature-group', one tag per line
     And the written file contains the line 'Feature: User Authentication'
     And the written file contains the placeholder steps '[precondition]', '[action]', and '[expected outcome]'
     And the written file ends with a trailing newline
+    And the written file contains the line '  Architecture notes:' and the Background lines 'As a [role]', 'I want to [action]' and 'So that [benefit]'
 
   Scenario: Coverage sidecar carries one empty scenario mapping with zeroed stats
     Given a project root tempdir with an empty spec directory
@@ -77,3 +78,32 @@ Feature: Port create-feature command to Rust
     When I dispatch create-feature with name='User Authentication'
     Then the dispatcher fails with an error containing 'File already exists: spec/features/user-authentication.feature'
     And the file spec/features/user-authentication.feature still contains 'KEEP ME'
+    And the dispatcher error contains 'Suggestion: Use a different name or delete the existing file'
+
+  Scenario: Feature names become kebab-case file names
+    Given a project root tempdir with an empty spec directory
+    When I dispatch create-feature with name='Real Time Event Monitoring', then name='API/REST Endpoints', then name='Login'
+    Then spec/features/real-time-event-monitoring.feature contains the line 'Feature: Real Time Event Monitoring'
+    And spec/features/api-rest-endpoints.feature contains the line 'Feature: API/REST Endpoints'
+    And spec/features/login.feature contains the line 'Feature: Login'
+
+  Scenario: Creates the spec/features directory when it is missing
+    Given a project root tempdir with no spec directory
+    When I dispatch create-feature with name='New Feature'
+    Then the dispatcher returns a filePath ending with 'spec/features/new-feature.feature'
+    And the directory spec/features exists on disk
+    And the file spec/features/new-feature.feature exists on disk
+
+  Scenario: A created feature file passes validate
+    Given a project root tempdir with an empty spec directory
+    When I dispatch create-feature with name='Shopping Cart'
+    And I dispatch validate with file='spec/features/shopping-cart.feature'
+    Then validate returns exitCode=0 and invalidCount=0
+
+  Scenario: A coverage sidecar failure does not fail feature creation
+    Given a project root tempdir whose spec/features directory holds a directory named 'test.feature.coverage'
+    When I dispatch create-feature with name='Test'
+    Then the dispatcher returns success=true
+    And the file spec/features/test.feature exists on disk
+    And the result's coverageFile reports created=false and status 'error'
+    And the result's coverageFile message starts with 'Warning: Failed to create coverage file'

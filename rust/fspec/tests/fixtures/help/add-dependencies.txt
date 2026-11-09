@@ -17,13 +17,13 @@ ARGUMENTS
     Work unit ID to add dependencies to (e.g., AUTH-001)
 
 OPTIONS
-  --blocks <ids...>
+  --blocks <workUnitId>
     Space-separated list of work unit IDs that this work unit blocks
-  --blocked-by <ids...>
+  --blocked-by <workUnitId>
     Space-separated list of work unit IDs that block this work unit
-  --depends-on <ids...>
+  --depends-on <workUnitId>
     Space-separated list of work unit IDs this work unit depends on
-  --relates-to <ids...>
+  --relates-to <workUnitId>
     Space-separated list of related work unit IDs (non-blocking association)
 
 COMMON PATTERNS
@@ -33,21 +33,18 @@ fspec add-dependencies API-001 --depends-on DB-001 AUTH-001
 
 # UI depends on API
 fspec add-dependencies UI-001 --depends-on API-001
-    undefined
 
   • Marking Blockers
     Example: # Critical bug blocks multiple features
 fspec add-dependencies BUG-001 --blocks FEAT-001 FEAT-002 FEAT-003
-    undefined
 
   • Related Work (Non-Blocking)
     Example: # Documentation relates to multiple features
 fspec add-dependencies DOC-001 --relates-to AUTH-001 API-001 UI-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Create work units → 2. Identify dependencies → 3. fspec add-dependencies <id> --depends-on <deps> → 4. Verify: fspec dependencies <id>
+  1. Create work units → 2. Identify dependencies → 3. fspec add-dependencies <workUnitId> --depends-on <workUnitId> → 4. Verify: fspec dependencies <workUnitId>
 
 EXAMPLES
   1. Add multiple dependencies and relations

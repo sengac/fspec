@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
-          "lines": "71-83",
+          "lines": "66-76",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/tool_facade.rs",
@@ -14,7 +14,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "loader,",
+              "lastLine": ""
             }
           ]
         }
@@ -25,7 +27,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
-          "lines": "88-108",
+          "lines": "81-102",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/tool_facade.rs",
@@ -34,7 +36,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "/// underlying [`RhaiToolDef`] at construction time.",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
-          "lines": "113-122",
+          "lines": "107-117",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/tool_facade.rs",
@@ -54,7 +58,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "/// JSON schema for the tool parameters.",
+              "lastLine": "}"
             }
           ]
         }
@@ -65,7 +71,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
-          "lines": "127-147",
+          "lines": "122-148",
           "implMappings": [
             {
               "file": "spec/work-units.json",
@@ -116,120 +122,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/rhai_tool_facade_spec_alignment_tests.rs",
-          "lines": "202-223",
-          "implMappings": [
-            {
-              "file": "spec/features/custom-provider-rhai-scriptable-tool-facades.feature",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
-            }
-          ]
+          "lines": "237-265"
         }
       ]
     }
@@ -243,9 +136,8 @@
     ],
     "implFiles": [
       "rust/providers/src/custom/tool_facade.rs",
-      "spec/work-units.json",
-      "spec/features/custom-provider-rhai-scriptable-tool-facades.feature"
+      "spec/work-units.json"
     ],
-    "totalLinesCovered": 250
+    "totalLinesCovered": 157
   }
 }

@@ -1,0 +1,164 @@
+{
+  "scenarios": [
+    {
+      "name": "Workspace info over RPC comes from the named workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc454_git_state_follows_the_selected_workspace.rs",
+          "lines": "52-73",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "async fn get_workspace_info_in_workspace(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An opened workspace's git state is published",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc454_git_state_follows_the_selected_workspace.rs",
+          "lines": "75-108",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/workspaces.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "/// RPC-454: forward `git_state` snapshots onto `updates_tx` tagged with",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Choosing a workspace loads its directory, branch and git state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc454_git_state_follows_the_selected_workspace.rs",
+          "lines": "110-150",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspace_git.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "/// Load the selected workspace's directory, branch and git state for the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc454_git_state_follows_the_selected_workspace.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_implementation/session_mcp.rs",
+      "rust/rpc/src/workspaces.rs",
+      "rust/fspec-tui/src/app/dispatch_workspace_git.rs"
+    ],
+    "totalLinesCovered": 189
+  }
+}

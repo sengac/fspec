@@ -24,7 +24,8 @@
 //!   entry row executes THAT row on the same event (BUG-196 R2, GUI
 //!   parity with Enter); a hit on the panel's border/ellipsis rows is
 //!   swallowed (the panel owns its rect — no fall-through to the
-//!   pane beneath).
+//!   pane or the wrapped button row beneath, MUX-013).
+//! - **Left click on a Zone C button** (MUX-013) — activates it.
 //! - **Left click OUTSIDE an open dropdown** (off the bar) — close the
 //!   dropdown AND clear the bar's ring focus (BUG-196 R3: the
 //!   `MenuDismissBar` 'close + de-select' gesture) AND let the click
@@ -70,11 +71,20 @@ fn claim(action: Action) -> MuxBarMouseDecision {
     MuxBarMouseDecision::Claimed(Box::new(action))
 }
 
-/// The bar row's y (row 0 of the mux area — derived from the pane
-/// rects the same frame's render cached; `None` before the first
-/// render or on the 3-row degradation).
-fn bar_row(layout: &MultiplexLayout) -> Option<u16> {
-    layout.pane_rects().first().map(|r| r.y.saturating_sub(1))
+/// MUX-013: the open dropdown's entry row (or its frame) under a click
+/// — the panel overlays the wrapped button row, so it is hit first.
+fn panel_click(layout: &MultiplexLayout, column: u16, row: u16) -> Option<MuxBarMouseDecision> {
+    let (category, cursor) = layout.open_menu()?;
+    let panel = layout.menu_open_panel()?;
+    if !rect_contains(panel, column, row) {
+        return None;
+    }
+    Some(
+        match crate::components::menu_bar::dropdown_row_at(panel, category, cursor, column, row) {
+            Some(row) => claim(Action::MenuExecuteItem { category, row }),
+            None => MuxBarMouseDecision::Swallowed,
+        },
+    )
 }
 
 /// Classify a mouse event against the cached mux bar geometry.
@@ -89,11 +99,14 @@ pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> Mux
     if !layout.menu_bar_painted() {
         return MuxBarMouseDecision::Pass;
     }
-    let Some(bar_y) = bar_row(layout) else {
+    // MUX-013: the bar's rows (one, or more when the buttons wrap).
+    let Some(bar) = layout.menu_bar_rect() else {
         return MuxBarMouseDecision::Pass;
     };
-
-    let in_bar_row = row == bar_y;
+    let over_panel = layout
+        .menu_open_panel()
+        .is_some_and(|panel| rect_contains(panel, column, row));
+    let in_bar_row = rect_contains(bar, column, row) && !over_panel;
 
     // ── wheel ────────────────────────────────────────────────────────────
     if matches!(
@@ -149,7 +162,16 @@ pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> Mux
         return MuxBarMouseDecision::Pass;
     }
 
+    if let Some(decision) = panel_click(layout, column, row) {
+        return decision;
+    }
     if in_bar_row {
+        // MUX-013: a click on a New Bot / New Agent / Close button.
+        if let Some(buttons) = layout.menu_zone_c_rects() {
+            if let Some(index) = buttons.iter().position(|r| rect_contains(*r, column, row)) {
+                return claim(Action::MenuZoneCActivate(index));
+            }
+        }
         if let Some(items) = layout.menu_item_rects() {
             for (idx, rect) in items.iter().enumerate() {
                 if rect_contains(*rect, column, row) {
@@ -196,25 +218,6 @@ pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> Mux
         return MuxBarMouseDecision::Swallowed;
     }
 
-    // Off the bar row: a left click INSIDE the open dropdown's panel —
-    // a hit on an entry row executes THAT row on the same event (BUG-
-    // 196 R2, GUI parity with Enter — the shared `dropdown_row_at`
-    // hit-test reuses the painter's scroll-window math); a hit on the
-    // panel's border/ellipsis rows is swallowed (the panel owns its
-    // rect — the click must NOT fall through to the pane beneath).
-    if let Some((category, cursor)) = layout.open_menu() {
-        if let Some(panel) = layout.menu_open_panel() {
-            if rect_contains(panel, column, row) {
-                if let Some(row) = crate::components::menu_bar::dropdown_row_at(
-                    panel, category, cursor, column, row,
-                ) {
-                    return claim(Action::MenuExecuteItem { category, row });
-                }
-                return MuxBarMouseDecision::Swallowed;
-            }
-        }
-    }
-
     // Off the bar row: a left click OUTSIDE the open dropdown closes it
     // AND clears the bar's ring focus (BUG-196 R3: the `MenuDismissBar`
     // 'close + de-select' gesture) — the click still lands on the pane
@@ -232,93 +235,4 @@ pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> Mux
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use crate::views::multiplex::MuxPaneKind;
-
-    fn enabled_layout(panes: Vec<MuxPaneKind>) -> MultiplexLayout {
-        let mut m = MultiplexLayout::new();
-        m.enable_default();
-        m.set_pane_list(panes, None);
-        m
-    }
-
-    #[test]
-    fn inert_until_the_bar_paints() {
-        // @step Given a mux layout that never painted the bar
-        let mut m = enabled_layout(vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
-        // The pane rects exist but NO paint ever ran — the painted
-        // flag is off, so every arm stays inert regardless of geometry.
-        m.pane_rects.push(ratatui::layout::Rect::new(0, 1, 120, 20));
-        m.menu_item_rects = None;
-        // @step When a mouse event is classified
-        let event = Event::Mouse(MouseEvent {
-            kind: MouseEventKind::ScrollRight,
-            column: 5,
-            row: 0,
-            modifiers: crossterm::event::KeyModifiers::NONE,
-        });
-        // @step Then the arms stay inert (no paint → no geometry → Pass)
-        assert!(matches!(
-            classify_bar_mouse(&m, &event),
-            MuxBarMouseDecision::Pass
-        ));
-    }
-
-    #[test]
-    fn wheel_over_the_bar_with_no_focus_is_ignored() {
-        // @step Given a painted bar with item + cell geometry but no focus
-        let mut m = enabled_layout(vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
-        m.pane_rects.push(ratatui::layout::Rect::new(0, 1, 120, 20));
-        m.menu_bar_painted = true;
-        m.menu_item_rects = Some(vec![
-            ratatui::layout::Rect::new(1, 0, 7, 1),
-            ratatui::layout::Rect::new(9, 0, 4, 1),
-        ]);
-        m.menu_cells = Some(Vec::new());
-        m.menu_open_panel = None;
-        m.menu_focus = None;
-        let event = Event::Mouse(MouseEvent {
-            kind: MouseEventKind::ScrollRight,
-            column: 5,
-            row: 0,
-            modifiers: crossterm::event::KeyModifiers::NONE,
-        });
-        // @step When wheel right is sent over the bar row
-        // @step Then the event is ignored (no focus, no open dropdown)
-        assert!(matches!(
-            classify_bar_mouse(&m, &event),
-            MuxBarMouseDecision::Ignore
-        ));
-    }
-
-    #[test]
-    fn click_outside_an_open_dropdown_closes_and_lands() {
-        // @step Given a painted bar with an open dropdown panel
-        let mut m = enabled_layout(vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
-        m.pane_rects.push(ratatui::layout::Rect::new(0, 1, 120, 20));
-        m.menu_bar_painted = true;
-        m.menu_item_rects = Some(vec![
-            ratatui::layout::Rect::new(1, 0, 7, 1),
-            ratatui::layout::Rect::new(9, 0, 4, 1),
-        ]);
-        m.menu_cells = Some(Vec::new());
-        m.menu_open_panel = Some(ratatui::layout::Rect::new(1, 1, 30, 9));
-        m.menu_focus = Some(crate::components::menu_bar::MenuFocus::Item(0));
-        m.open_menu = Some((0, 0));
-        let event = Event::Mouse(MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 60,
-            row: 10, // inside a pane, outside the panel
-            modifiers: crossterm::event::KeyModifiers::NONE,
-        });
-        // @step When a left click lands on a pane outside the panel
-        // @step Then the dropdown closes AND the click still lands
-        assert!(matches!(
-            classify_bar_mouse(&m, &event),
-            MuxBarMouseDecision::CloseOutsideThenLand
-        ));
-    }
-}
+mod tests;

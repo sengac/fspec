@@ -59,7 +59,7 @@ Feature: Live-update (default) marker when D pressed in Rust /thinking dialog
     Given a ThinkingLevelDialog seeded with current level Off and default level Medium
     And I navigate the selection down to the High row
     And I send a KeyCode::Char('d') event
-    When I send a KeyCode::Down event to move the selection to the Off row
+    When I send two KeyCode::Down events to move the selection past Model default to the Off row
     And I render it onto an 80x24 TestBackend buffer
     Then the Off row begins with the "▸" selection marker
     And the High row still reads "(default)"

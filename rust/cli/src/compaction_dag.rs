@@ -9,33 +9,11 @@
 use codelet_core::compaction::parse_dag_nodes;
 use rig::message::{Message, UserContent};
 
-pub const DAG_NODE_SYNTAX: &str = "\
-Return a complete candidate, not prose, a patch, or an unfinished fragment.
-Each <dag-node> requires exactly depth, turns and label attributes with double-quoted values,
-a supported depth (D0, D1 or D2), numeric persisted turn coordinates and a nonempty label and body.
-Close every <dag-node> with </dag-node>. Do not nest DAG structures inside node bodies.
-Example: <dag-node depth=\"D1\" turns=\"0-1\" label=\"Work\">Evidence-based summary</dag-node>.
-Use actual authoritative coordinates and evidence, never copy example bounds blindly.";
-
-pub const DAG_RANGE_RULES: &str = "\
-Persisted turn ranges are inclusive. Same-depth peers must be disjoint:
-0-10 and 10-20 overlap; 0-10 and 11-20 are disjoint.
-Cross-depth overlap is valid, including parent/child nesting.
-Recheck same-depth conflicts after promotion, including preserved D2 nodes.
-Regenerate a complete evidence-backed candidate when peers conflict; do not silently drop nodes,
-clamp bounds, invent coverage or rewrite preserved durable payloads. Their union must cover the captured prefix.";
-
-const FILE_METADATA_INSTRUCTION: &str = "\
-File metadata syntax is strict. Each nonempty line inside <dag-files> must be
-exactly a unique '- path (Operation)' entry, with Operation exactly Created, Modified, or Deleted:
-<dag-files>
-- path/to/file.rs (Created)
-- path/to/other.rs (Modified)
-</dag-files>
-No prose, backticks, or explanations belong inside <dag-files>. Put explanations in dag-node bodies.
-Do not write '(Created; explanation)' or a bullet saying no files changed.
-If no files changed and no existing file identities must be preserved, use <dag-files></dag-files>.
-Keep existing file identities unless an authoritative later operation updates them.";
+// BUG-614: the syntax lives with the inject_summary tool, whose description
+// shows it to every model that may submit a summary.
+pub use codelet_tools::inject_summary::{
+    DAG_NODE_SYNTAX, DAG_RANGE_RULES, FILE_METADATA_INSTRUCTION,
+};
 
 // ============================================================================
 // Instruction Constants

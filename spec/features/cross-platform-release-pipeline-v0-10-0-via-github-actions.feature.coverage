@@ -1,19 +1,48 @@
 {
   "scenarios": [
     {
-      "name": "Workspace version is bumped to 0.10.1",
+      "name": "Every workspace crate reports the workspace version",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "73-99",
+          "file": "rust/fspec/tests/upd001_release_pipeline/version.rs",
+          "lines": "35-76",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
               "lines": [
-                48,
-                49,
-                50
-              ]
+                2,
+                9,
+                13,
+                14,
+                15,
+                16,
+                17,
+                22,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                37,
+                41,
+                42,
+                43,
+                49
+              ],
+              "firstLine": "members = [",
+              "lastLine": "edition = \"2021\""
+            },
+            {
+              "file": "rust/fspec/Cargo.toml",
+              "lines": [
+                3
+              ],
+              "firstLine": "version.workspace = true",
+              "lastLine": "version.workspace = true"
             }
           ]
         }
@@ -23,187 +52,77 @@
       "name": "Release workflow builds all five targets",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "106-180",
+          "file": "rust/fspec/tests/upd001_release_pipeline/targets.rs",
+          "lines": "12-72",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
+                24,
+                25,
+                26,
+                27,
                 42,
-                43,
-                44,
                 45,
                 46,
                 47,
                 48,
-                49,
                 50,
                 51,
                 52,
                 53,
-                54,
                 55,
                 56,
                 57,
                 58,
-                59,
                 60,
                 61,
                 62,
                 63,
-                64,
                 65,
                 66,
                 67,
                 68,
-                69,
                 70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
                 78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164
-              ]
+                144
+              ],
+              "firstLine": "on:",
+              "lastLine": "cargo build --profile release-slim --target ${{ matrix.build_target }} -p codelet-fspec"
             }
           ]
         }
       ]
     },
     {
-      "name": "Linux binary runs on old glibc distros",
+      "name": "x86_64 Linux release asset is a static musl build with no glibc dependency",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "327-366",
+          "file": "rust/fspec/tests/upd001_release_pipeline/targets.rs",
+          "lines": "79-119",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
+                55,
+                56,
+                57,
+                58,
+                59,
+                102,
+                103,
+                104,
+                105,
+                106,
                 133,
-                134,
-                135,
                 136,
-                137
-              ]
+                139
+              ],
+              "firstLine": "- target: x86_64-unknown-linux-gnu",
+              "lastLine": "RUSTFLAGS: ${{ matrix.tool == 'musl' && '-C target-feature=+crt-static' || '' }}"
             }
           ]
         }
@@ -214,21 +133,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "373-402",
+          "lines": "234-264",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -247,39 +156,19 @@
                 165,
                 166,
                 167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
                 195,
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "- name: Package",
+              "lastLine": "done"
             }
           ]
         }
@@ -290,37 +179,25 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "187-212",
+          "lines": "114-140",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
                 150,
                 151,
-                152,
                 153,
                 154,
-                155,
                 156,
-                157,
                 158,
-                159,
-                160,
                 161,
-                162,
-                163,
-                164
-              ]
+                212,
+                213,
+                217,
+                218
+              ],
+              "firstLine": "- name: Package",
+              "lastLine": "release/fspec-*"
             }
           ]
         }
@@ -331,76 +208,55 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "219-249",
+          "lines": "146-180",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199
-              ]
+                179
+              ],
+              "firstLine": "release:",
+              "lastLine": "needs: build"
             }
           ]
         }
       ]
     },
     {
-      "name": "Release binary reports the new version",
+      "name": "Binary built by the release jobs reports the workspace version",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "301-320",
+          "file": "rust/fspec/tests/upd001_release_pipeline/version.rs",
+          "lines": "82-109",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": ".github/workflows/release.yml",
               "lines": [
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227
-              ]
+                142,
+                144
+              ],
+              "firstLine": "cargo xwin build --profile release-slim --target ${{ matrix.build_target }} -p codelet-fspec",
+              "lastLine": "cargo build --profile release-slim --target ${{ matrix.build_target }} -p codelet-fspec"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/cli.rs",
+              "lines": [
+                3,
+                4,
+                5
+              ],
+              "firstLine": "#[command(",
+              "lastLine": "version,"
+            },
+            {
+              "file": "rust/Cargo.toml",
+              "lines": [
+                48,
+                49
+              ],
+              "firstLine": "version = \"0.11.0\"",
+              "lastLine": "edition = \"2021\""
             }
           ]
         }
@@ -411,180 +267,45 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd001_release_pipeline.rs",
-          "lines": "256-298",
+          "lines": "186-228",
           "implMappings": [
             {
               "file": ".github/workflows/release.yml",
               "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
                 50,
                 51,
                 52,
                 53,
                 54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
                 144,
-                145,
-                146,
-                147
-              ]
+                154,
+                155,
+                156,
+                158
+              ],
+              "firstLine": "- target: aarch64-pc-windows-msvc",
+              "lastLine": "zip -j fspec-${{ matrix.target }}.zip fspec.exe"
             }
           ]
         }
       ]
-    },
-    {
-      "name": "Workspace version is bumped to 0.10.1",
-      "testMappings": []
-    },
-    {
-      "name": "Release workflow builds all five targets",
-      "testMappings": []
-    },
-    {
-      "name": "Linux binary runs on old glibc distros",
-      "testMappings": []
-    },
-    {
-      "name": "Windows archive is a valid zip",
-      "testMappings": []
-    },
-    {
-      "name": "Release is published with self-updater-compatible assets",
-      "testMappings": []
-    },
-    {
-      "name": "Release job is blocked when any build fails",
-      "testMappings": []
-    },
-    {
-      "name": "Release binary reports the new version",
-      "testMappings": []
-    },
-    {
-      "name": "Windows ARM64 user runs the prebuilt binary",
-      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 16,
+    "totalScenarios": 8,
     "coveredScenarios": 8,
-    "coveragePercent": 50,
+    "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec/tests/upd001_release_pipeline/version.rs",
+      "rust/fspec/tests/upd001_release_pipeline/targets.rs",
       "rust/fspec/tests/upd001_release_pipeline.rs"
     ],
     "implFiles": [
       "rust/Cargo.toml",
+      "rust/fspec/Cargo.toml",
       ".github/workflows/release.yml",
-      "rust/fspec/src/main.rs"
+      "rust/fspec/src/cli_registration/cli.rs"
     ],
-    "totalLinesCovered": 704
+    "totalLinesCovered": 433
   }
 }

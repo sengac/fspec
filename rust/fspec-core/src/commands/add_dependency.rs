@@ -16,7 +16,7 @@
 //!   it auto-transitions to `blocked` (states arrays kept in sync).
 //! * **blockedBy** (bidirectional): mirror of blocks; if source.status !=
 //!   blocked/done it auto-transitions to `blocked` with
-//!   `blockedReason = "Blocked by <targetId>"`.
+//!   `blockedReason = "Blocked by <workUnitId>"`.
 //! * **dependsOn** (unidirectional): only source.dependsOn is mutated.
 //! * **relatesTo** (symmetric): both sides gain each other's id with an
 //!   idempotent `!contains` guard on the reverse edge.
@@ -27,7 +27,7 @@
 //!
 //! ## Persistence
 //!
-//! Single `ensure_work_units_file` load + single `write_json_atomic` write
+//! Single `ensure_work_units_file` load + single `write_work_units` write
 //! at the end. On the first validation error we abort BEFORE writing — no
 //! partial state ever lands on disk. This matches the Rust port of
 //! `add-dependencies` (RPC-176) and improves on the TS per-call write
@@ -41,7 +41,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::{WorkUnit, WorkUnitStates, WorkUnitStatus, WorkUnitsData};
 
@@ -75,6 +74,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-dependency")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     if !data.work_units.contains_key(&args.work_unit_id) {
@@ -101,8 +102,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         src.updated_at = iso8601_now();
     }
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&AddDependencyResult { success: true }).map_err(|e| {
         FspecCoreError::InvalidArgs {

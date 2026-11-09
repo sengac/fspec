@@ -16,7 +16,9 @@
                 8,
                 9,
                 10
-              ]
+              ],
+              "firstLine": "//! and `codelet-fspec-tui`.",
+              "lastLine": "mod compaction_publication;"
             }
           ]
         }
@@ -28,18 +30,7 @@
         {
           "file": "rust/cli/tests/remove_output_mutators_test.rs",
           "lines": "70-108",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive.rs",
-              "lines": [
-                6,
-                7,
-                8,
-                9,
-                10
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -59,7 +50,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "let bytes = tokio::fs::read(path).await.map_err(|e| ToolError::File {",
+              "lastLine": "if let Some(kind) = detect_bash_binary_output(&bytes) {"
             }
           ]
         }
@@ -83,7 +76,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "{",
+              "lastLine": "// Validate absolute path (sync - no I/O)"
             }
           ]
         }
@@ -94,21 +89,19 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/remove_output_mutators_test.rs",
-          "lines": "175-218",
+          "lines": "183-226",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "# === AST-based Code Search ===",
+              "lastLine": "# === Utilities ==="
             }
           ]
         }
@@ -130,7 +123,9 @@
                 8,
                 9,
                 10
-              ]
+              ],
+              "firstLine": "//! and `codelet-fspec-tui`.",
+              "lastLine": "mod compaction_publication;"
             }
           ]
         }
@@ -146,11 +141,10 @@
     ],
     "implFiles": [
       "rust/cli/src/lib.rs",
-      "rust/cli/src/interactive.rs",
       "rust/tools/src/edit.rs",
       "rust/tools/src/write.rs",
       "rust/Cargo.toml"
     ],
-    "totalLinesCovered": 273
+    "totalLinesCovered": 264
   }
 }

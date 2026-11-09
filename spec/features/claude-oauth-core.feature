@@ -1,9 +1,13 @@
+@BUG-582
 @PROV-020
+@providers
+@authentication
 Feature: Claude OAuth core flow for Anthropic subscriptions
   """
   New file: rust/providers/src/claude_oauth.rs — Anthropic OAuth core module, mirrors codex_oauth.rs structure. Constants, PKCE, authorize URL, code exchange, token refresh, header building, tool name prefixing, URL rewriting. All pure functions + async HTTP calls. Re-uses existing sha2/base64/rand crates.
   Key structural difference from Codex OAuth: Anthropic token endpoint uses JSON body (Content-Type: application/json) not form-encoded. Also no id_token in response — just access_token, refresh_token, expires_in. No JWT account_id extraction needed.
   PKCE code can be shared between codex_oauth.rs and claude_oauth.rs — the generate_pkce() and generate_state() functions are identical. Consider extracting to a shared oauth_common module, or just re-implement (they're small).
+  PROV-168 supersedes the historical fixed 2.1.3 user-agent: OAuth identity is resolved from installed Claude Code or an explicit deployment release, with no bundled fallback. All header builders propagate unavailable or invalid identity errors.
   """
 
   # ========================================
@@ -126,7 +130,7 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
     Then the Authorization header should be "Bearer test_access_token"
     And the anthropic-beta header should contain "oauth-2025-04-20"
     And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
-    And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
+    And the user-agent header should identify the authoritative Claude Code release
     And the x-api-key header should be removed
 
   @core

@@ -146,3 +146,17 @@ Feature: Port add-attachment command to Rust
     Then the command should fail with an "already exists" error
     And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
     And the work unit's registered attachments must be unchanged on disk
+
+  Scenario: A .mmd attachment with valid Mermaid is validated and attached
+    Given a work unit AUTH-001 and a source file flowchart.mmd containing the valid Mermaid 'graph TD' flowchart
+    When I dispatch add-attachment with workUnitId='AUTH-001' filePath='flowchart.mmd'
+    Then the dispatcher returns success
+    And the rendered output contains the substring '✓ Attachment added successfully'
+    And spec/attachments/AUTH-001/flowchart.mmd exists on disk with the same bytes as the source
+
+  Scenario: A .md attachment whose mermaid code block is valid is attached
+    Given a work unit AUTH-001 and a source file architecture.md containing one mermaid code block with valid syntax
+    When I dispatch add-attachment with workUnitId='AUTH-001' filePath='architecture.md'
+    Then the dispatcher returns success
+    And spec/attachments/AUTH-001/architecture.md exists on disk with the same bytes as the source
+    And spec/work-units.json on disk shows AUTH-001.attachments=['spec/attachments/AUTH-001/architecture.md']

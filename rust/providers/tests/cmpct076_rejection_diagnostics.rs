@@ -111,8 +111,8 @@ async fn scenario_a_broken_rejection_body_preserves_typed_unknown_evidence() -> 
     // @step Given a context rejection body followed by a transport read failure
     let server = fixture::StalledRejection::broken().await?;
     // @step When the real model consumes the broken rejection
-    let error = tokio::time::timeout(
-        Duration::from_secs(2),
+    let error = codelet_test_helpers::deadlock_guard(
+        "model_error(&server.url, Duration::from_secs(1))",
         model_error(&server.url, Duration::from_secs(1)),
     )
     .await??;
@@ -278,8 +278,8 @@ async fn scenario_a_stalled_rejection_body_terminates_within_its_diagnostic_dead
     // @step Given an HTTP rejection whose body never finishes
     let server = fixture::StalledRejection::start().await?;
     // @step When the real model consumes the rejected stream
-    let error = tokio::time::timeout(
-        Duration::from_secs(2),
+    let error = codelet_test_helpers::deadlock_guard(
+        "model_error(&server.url, Duration::from_millis(100))",
         model_error(&server.url, Duration::from_millis(100)),
     )
     .await??;

@@ -5,13 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "59-89",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "58-96",
+          "implMappings": []
         }
       ]
     },
@@ -20,13 +15,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "91-111",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "98-124",
+          "implMappings": []
         }
       ]
     },
@@ -35,13 +25,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "113-140",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "126-159",
+          "implMappings": []
         }
       ]
     },
@@ -50,13 +35,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "142-177",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "161-196",
+          "implMappings": []
         }
       ]
     },
@@ -65,13 +45,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "179-199",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "198-224",
+          "implMappings": []
         }
       ]
     },
@@ -80,13 +55,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "201-237",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "226-270",
+          "implMappings": []
         }
       ]
     },
@@ -95,13 +65,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_event_storm.rs",
-          "lines": "241-264",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_event_storm.rs",
-              "lines": "1-59"
-            }
-          ]
+          "lines": "274-297",
+          "implMappings": []
         }
       ]
     }
@@ -114,6 +79,6 @@
       "rust/fspec/tests/cli_show_event_storm.rs"
     ],
     "implFiles": [],
-    "totalLinesCovered": 198
+    "totalLinesCovered": 232
   }
 }

@@ -100,11 +100,11 @@ impl AstGrepTool {
         }
     }
 
-    /// Search a single file for pattern matches (async, non-blocking file read)
+    /// Search a single file for matches of the compiled `pattern` (async, non-blocking file read)
     /// Returns (matches, was_skipped) - was_skipped is true if file couldn't be read or pattern failed
     async fn search_file(
         path: &Path,
-        pattern: &str,
+        pattern: &Pattern,
         lang: LanguageChoice,
     ) -> (Vec<MatchResult>, bool) {
         // Read file content (async, non-blocking)
@@ -116,7 +116,6 @@ impl AstGrepTool {
         // Wrap AST operations in catch_unwind to prevent panics from crashing the runtime
         // ast-grep can panic on certain malformed patterns or edge cases
         let path_str = path.to_string_lossy().to_string();
-        let pattern_owned = pattern.to_string();
 
         let search_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let mut results = Vec::new();
@@ -126,7 +125,7 @@ impl AstGrepTool {
                 LanguageChoice::Standard(sl) => {
                     let ast_grep = sl.ast_grep(&source);
                     let root = ast_grep.root();
-                    let matches = root.find_all(pattern_owned.as_str());
+                    let matches = root.find_all(pattern);
                     for node_match in matches {
                         let start_pos = node_match.start_pos();
                         let line = start_pos.line() + 1;
@@ -143,7 +142,7 @@ impl AstGrepTool {
                 LanguageChoice::Dart(dl) => {
                     let ast_grep = dl.ast_grep(&source);
                     let root = ast_grep.root();
-                    let matches = root.find_all(pattern_owned.as_str());
+                    let matches = root.find_all(pattern);
                     for node_match in matches {
                         let start_pos = node_match.start_pos();
                         let line = start_pos.line() + 1;
@@ -203,13 +202,16 @@ impl AstGrepTool {
         };
 
         // Validate pattern syntax BEFORE searching files
-        // This catches errors like MultipleNode early and provides a better error message
-        let pattern_valid = match lang {
+        // This catches errors like MultipleNode early and provides a better error message.
+        // BUG-478: the compiled Pattern is kept and matched against every file. A &str
+        // matcher makes ast-grep re-parse the pattern at every AST node it visits.
+        let compiled = match lang {
             LanguageChoice::Standard(sl) => Pattern::try_new(pattern, sl),
             LanguageChoice::Dart(dl) => Pattern::try_new(pattern, dl),
         };
-        if let Err(e) = pattern_valid {
-            return Ok(ToolOutput::error(format!(
+        let compiled = match compiled {
+            Ok(compiled) => compiled,
+            Err(e) => return Ok(ToolOutput::error(format!(
                 "Error: Invalid AST pattern '{pattern}' for {language_str}.\n\n\
                 Pattern error: {e}\n\n\
                 Pattern syntax guide:\n\
@@ -218,8 +220,8 @@ impl AstGrepTool {
                 - Pattern must be valid {language_str} syntax that parses to a SINGLE AST node\n\
                 - Multi-node patterns like 'expr1 expr2' or 'call() {{ block }}' are not supported\n\n\
                 Try the ast-grep playground: https://ast-grep.github.io/playground.html"
-            )));
-        }
+            ))),
+        };
 
         // Get search paths
         let search_paths: Vec<String> = if let Some(paths) = args.get("paths") {
@@ -319,7 +321,7 @@ impl AstGrepTool {
         let mut all_matches: Vec<MatchResult> = Vec::new();
         let mut skipped_count: usize = 0;
         for file_path in &files_to_search {
-            let (matches, was_skipped) = Self::search_file(file_path, pattern, lang).await;
+            let (matches, was_skipped) = Self::search_file(file_path, &compiled, lang).await;
             all_matches.extend(matches);
             if was_skipped {
                 skipped_count += 1;

@@ -8,49 +8,55 @@
           "lines": "38-71",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
-              "lines": [
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264
-              ]
-            },
-            {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "StreamChunk::FooterStateUpdate {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "async fn read_work_units_bounded(",
+              "lastLine": "};"
             }
           ]
         }
@@ -66,25 +72,28 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "StreamChunk::FooterStateUpdate {",
+              "lastLine": "}"
             }
           ]
         }
@@ -99,9 +108,9 @@
       "rust/fspec-tui/tests/wt002_footer_detached_indicator.rs"
     ],
     "implFiles": [
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/rpc/src/service_implementation/interaction_sessions.rs"
     ],
-    "totalLinesCovered": 115
+    "totalLinesCovered": 118
   }
 }

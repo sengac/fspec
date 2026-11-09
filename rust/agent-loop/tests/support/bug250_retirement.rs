@@ -10,6 +10,7 @@ pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 pub fn fixture() -> Result<(tempfile::TempDir, Uuid), Box<dyn std::error::Error>> {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let session = create_session("recovery retirement", directory.path())?;

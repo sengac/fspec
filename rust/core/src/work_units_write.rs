@@ -18,20 +18,17 @@
 //!     that return `Ok(())` without rewriting the file.
 //!   - Unknown ids return `Err`.
 //!
-//! Persistence uses [`codelet_common::file_lock::with_file_lock`] for
-//! the inter-process lock (proper-lockfile-compatible mkdir lock at
-//! `spec/work-units.json.lock`) plus an atomic temp-file + rename for
-//! crash safety. Concurrent TS `fspec prioritize-work-unit` commands
-//! cooperate transparently through the same lock protocol.
+//! Persistence (BUG-477) holds [`codelet_common::spec_lock::SpecLock`] on
+//! `spec/` — the lock every fspec command takes — across the whole
+//! read-modify-write, and replaces the file through
+//! [`codelet_common::spec_lock::replace_file_atomically`].
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::{anyhow, Context as _, Result};
 use chrono::Utc;
-use codelet_common::file_lock::with_file_lock;
 use serde_json::Value;
-use uuid::Uuid;
 
 /// Direction of a single-step reorder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -41,24 +38,20 @@ pub enum Direction {
 }
 
 /// Move the work unit with `id` one position in `direction` within its
-/// current `states[<column>]` array in `<cwd>/spec/work-units.json`.
+/// current `states[<column>]` array in `<project root>/spec/work-units.json`
+/// (the root resolved from `cwd`, BUG-497).
 ///
 /// See module docs for the full semantics.
 pub fn move_work_unit(cwd: &Path, id: &str, direction: Direction) -> Result<()> {
-    let work_units_path = cwd.join("spec").join("work-units.json");
-    let lock_dir = cwd.join("spec").join("work-units.json.lock");
+    // BUG-497: the project root resolved from `cwd`, as every fspec command.
+    let roots = codelet_common::spec_paths::ProjectRoots::resolve(cwd)?;
+    let (spec_dir, work_units_path) = (roots.state_spec_dir(), roots.work_units());
 
-    // Ensure the parent directory exists before attempting to acquire
-    // the lock (mkdir requires the parent to exist on POSIX).
-    if let Some(parent) = lock_dir.parent() {
-        fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
-    }
-
-    let id = id.to_string();
-    with_file_lock(&lock_dir, || -> Result<(), String> {
-        move_work_unit_locked(&work_units_path, &id, direction).map_err(|e| format!("{e:#}"))
-    })
-    .map_err(|e| anyhow!("{e}"))
+    // BUG-477: the reorder is a read-modify-write of the board, so it holds
+    // the same spec lock as every fspec command.
+    let _spec_lock = codelet_common::spec_lock::SpecLock::acquire(&spec_dir)
+        .with_context(|| format!("lock {}", spec_dir.display()))?;
+    move_work_unit_locked(&work_units_path, id, direction)
 }
 
 /// Inner reorder that runs while the inter-process lock is held.
@@ -128,20 +121,10 @@ fn move_work_unit_locked(work_units_path: &Path, id: &str, direction: Direction)
         );
     }
 
-    // Atomic write: serialise to a sibling temp file, then rename.
+    // Atomic replace: unique temp file in spec/, fsync, rename, dir fsync.
     let pretty = serde_json::to_string_pretty(&root).context("re-serialise work-units.json")?;
-    let temp_path: PathBuf =
-        work_units_path.with_file_name(format!("work-units.json.tmp.{}", Uuid::new_v4()));
-    fs::write(&temp_path, &pretty)
-        .with_context(|| format!("write temp file {}", temp_path.display()))?;
-    fs::rename(&temp_path, work_units_path).with_context(|| {
-        let _ = fs::remove_file(&temp_path);
-        format!(
-            "atomic rename {} -> {}",
-            temp_path.display(),
-            work_units_path.display()
-        )
-    })?;
+    codelet_common::spec_lock::replace_file_atomically(work_units_path, pretty.as_bytes())
+        .with_context(|| format!("atomically replace {}", work_units_path.display()))?;
 
     Ok(())
 }

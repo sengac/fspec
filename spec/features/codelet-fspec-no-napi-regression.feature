@@ -18,7 +18,6 @@ Feature: codelet-fspec no codelet-napi dependency regression guard
     I want a regression test that asserts codelet-fspec does not transitively depend on codelet-napi (neither in cargo metadata nor in source imports)
     So that the forbidden fspec → napi dependency arrow can never silently reappear
 
-  @rule:fspec_no_napi_test
   @test
   @architecture
   Scenario: codelet-fspec has no transitive codelet-napi dependency and no codelet_napi imports

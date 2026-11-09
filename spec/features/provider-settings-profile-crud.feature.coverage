@@ -5,34 +5,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "125-169",
+          "lines": "135-181",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "// PROV-111: Enter on a Profile row opens the EditProfile form",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,22 +45,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "176-200",
+          "lines": "187-213",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "// old read-only Detail/Summary placeholder (the blank-screen bug).",
+              "lastLine": "view.mode = ProviderSettingsMode::EditProfile {"
             }
           ]
         }
@@ -69,28 +73,102 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "208-256",
+          "lines": "220-278",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223
+              ],
+              "firstLine": "// PROV-111: `d` on a Profile row opens a per-profile delete-confirm.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "/// Route a key through the open `delete_confirm` dialog. Extracted from",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing d on the Add Profile row has no delete action",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "lines": "284-301",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                199,
+                200,
+                201
+              ],
+              "firstLine": "NavItemKind::Settings | NavItemKind::AddProfile | NavItemKind::OAuthLogin { .. } => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The full-config loader returns parsed ProfileDefinitions keyed by name",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "lines": "308-334",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "lines": [
                 129,
                 130,
                 131,
@@ -112,43 +190,8 @@
                 147,
                 148,
                 149,
-                150
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Pressing d on the Add Profile row has no delete action",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "263-278",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The full-config loader returns parsed ProfileDefinitions keyed by name",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "286-310",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
-              "lines": [
+                150,
+                151,
                 152,
                 153,
                 154,
@@ -208,6 +251,29 @@
                 208,
                 209,
                 210,
+                211
+              ],
+              "firstLine": ".unwrap_or((None, None));",
+              "lastLine": "Err(e) => {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The full-config loader merges with project overriding user by name",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
+          "lines": "341-368",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
                 211,
                 212,
                 213,
@@ -231,34 +297,32 @@
                 231,
                 232,
                 233,
-                234
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The full-config loader merges with project overriding user by name",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "318-343",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
-              "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234
-              ]
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "fn merge_profile_configs_from_file(path: &Path, out: &mut BTreeMap<String, ProfileDefinition>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -269,23 +333,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "351-372",
+          "lines": "375-398",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
+                61,
+                62,
                 63,
                 64,
                 65,
                 66,
                 67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73
-              ]
+                68
+              ],
+              "firstLine": "pub fn set_profile_configs(&mut self, configs: HashMap<(String, String), ProfileDefinition>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -296,7 +359,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "380-417",
+          "lines": "405-446",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -318,7 +381,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "use crate::views::provider_settings::nav_item::NavItemKind;",
+              "lastLine": "Some((name, _)) => name.to_string(),"
             }
           ]
         }
@@ -334,9 +399,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
-      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+      "rust/fspec-tui/src/views/provider_settings/profiles_config.rs"
     ],
-    "totalLinesCovered": 442
+    "totalLinesCovered": 510
   }
 }

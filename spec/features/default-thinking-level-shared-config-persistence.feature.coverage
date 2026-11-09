@@ -1,15 +1,17 @@
 {
   "scenarios": [
     {
-      "name": "Saving High writes the nested tui.defaultThinkingLevel key",
+      "name": "Saving High writes the model's entry under tui.thinkingLevels",
       "testMappings": [
         {
           "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "34-44",
+          "lines": "35-55",
           "implMappings": [
             {
               "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
+                53,
+                54,
                 55,
                 56,
                 57,
@@ -18,9 +20,14 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
                 66,
                 67,
                 68,
@@ -36,16 +43,11 @@
                 78,
                 79,
                 80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89
-              ]
+                80,
+                80
+              ],
+              "firstLine": "\"\\\"{text}\\\" is not a level (expected off, on, effort:<name>, numeric:<number> or budget:<tokens>)\"",
+              "lastLine": "/// BUG-193: this reads the RAW user file (never the project-over-user merged"
             }
           ]
         }
@@ -56,11 +58,13 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "47-58",
+          "lines": "57-78",
           "implMappings": [
             {
               "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
+                89,
+                90,
                 91,
                 92,
                 93,
@@ -75,167 +79,8 @@
                 102,
                 103,
                 104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Saving preserves pre-existing sibling keys",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "61-84",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Project scope overrides the user value on load",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "87-111",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "An out-of-range value loads as Off",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "114-128",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A missing config file loads as Off",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "131-141",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The global wrappers round-trip via the shared config",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
-          "lines": "144-156",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
+                105,
+                106,
                 107,
                 108,
                 109,
@@ -257,12 +102,242 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                128
+              ],
+              "firstLine": ") -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving preserves pre-existing sibling keys",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "lines": "80-110",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                62,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                80,
+                80
+              ],
+              "firstLine": "\"\\\"{text}\\\" is not a level (expected off, on, effort:<name>, numeric:<number> or budget:<tokens>)\"",
+              "lastLine": "/// BUG-193: this reads the RAW user file (never the project-over-user merged"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project scope overrides the user value on load",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "lines": "112-136",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": ") -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing config file has no saved level",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "lines": "138-148",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": ") -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The global wrappers round-trip via the shared config",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tui092_shared_config_thinking_level.rs",
+          "lines": "150-166",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "pub fn save_default_thinking_level_with_dirs(",
+              "lastLine": "}"
             }
           ]
         }
@@ -270,8 +345,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/sessions/tests/tui092_shared_config_thinking_level.rs"
@@ -279,6 +354,6 @@
     "implFiles": [
       "rust/sessions/src/default_thinking_level_persistence.rs"
     ],
-    "totalLinesCovered": 267
+    "totalLinesCovered": 362
   }
 }

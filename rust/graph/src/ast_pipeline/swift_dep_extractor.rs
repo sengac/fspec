@@ -9,17 +9,23 @@ use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// Extract Swift dependencies from Package.swift.
-pub fn extract_swift_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_swift_dependencies(project_root: &Path) -> helpers::Extracted {
     let pkg_path = project_root.join("Package.swift");
     if !pkg_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_package_swift(project_root, &pkg_path))
+}
 
-    let content = std::fs::read_to_string(&pkg_path)
-        .map_err(|e| format!("Failed to read Package.swift: {e}"))?;
+/// The entities of one Package.swift, or why it could not be read.
+fn extract_package_swift(
+    project_root: &Path,
+    pkg_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, pkg_path)?;
 
     let rel_path = "Package.swift";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     let line_count = content.lines().count() as i32;

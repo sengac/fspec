@@ -1,202 +1,168 @@
-//! TUI-002 / TUI-092 — persist the user-selected default thinking level across
-//! process restarts and re-apply it to every new/resumed session.
+//! TUI-002 / TUI-092 / MODEL-012 — persist the thinking level the user saves
+//! with D, per model, across process restarts.
 //!
-//! Feature: spec/features/default-thinking-level-shared-config-persistence.feature
+//! Feature: spec/features/thinking-level-remembered-per-model.feature
 //!
-//! Mirrors the TS reference `src/tui/config/defaultThinkingLevelConfig.ts`: the
-//! chosen default thinking level (set via the `/thinking` dialog →
-//! `set_thinking_level_default`) is stored in the **shared CONFIG-008
-//! `fspec-config.json`** under the nested key `tui.defaultThinkingLevel`
-//! (int `0..=3`), NOT a dedicated file. This restores interop with the TS
-//! `fspec` CLI (sibling keys such as `tui.lastUsedModel` live in the same file)
-//! and honours the project-scope override via CONFIG-008's deep merge.
+//! The saved levels live in the **shared CONFIG-008 `fspec-config.json`**
+//! under `tui.thinkingLevels`, an object from the model as fspec names it in
+//! thinking errors (`provider/model`, or `provider:profile/model` for a
+//! profile model) to the level as one string: `off`, `on`,
+//! `effort:<name>`, `numeric:<number>` or `budget:<tokens>`. One string per
+//! model means the project-over-user deep merge replaces a model's level
+//! whole and never mixes two levels (product owner, 2026-11-04, decision 6).
 //!
-//! Save is a read-modify-write to USER scope that preserves sibling keys; load
-//! relies on `load_config_with_dirs` so a project `<cwd>/spec/fspec-config.json`
-//! overrides the user value.
-//!
-//! Invariants:
-//!   * Only `0..=3` is meaningful (`0=Off, 1=Low, 2=Medium, 3=High`).
-//!   * A missing / malformed config, or an out-of-range value, loads as
-//!     [`ThinkingLevel::Off`] (graceful degradation — load is infallible).
-//!   * Persistence is best-effort: the `_with_dirs` core surfaces an `Err` that
-//!     the caller logs and swallows (non-fatal).
+//! Save is a read-modify-write of the RAW user file that preserves sibling
+//! keys (BUG-193, BUG-461). Load reads the project-over-user merged config.
+//! Nothing is ever loaded as Off: a missing file or entry is "no saved
+//! level", and an unreadable config, a `tui.thinkingLevels` that is not an
+//! object or an entry that is not a level is an error the caller reports.
+//! The old `tui.defaultThinkingLevel` int is neither read nor written, and
+//! it is never mapped onto a level (product owner, 2026-11-05).
 
 use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{
-    load_config_with_dirs, load_user_config_file, write_config_with_dirs, ConfigScope,
-};
+use codelet_common::fspec_config::{load_config_with_dirs, update_config_with_dirs, ConfigScope};
 use codelet_rpc_types::ThinkingLevel;
 
-/// Nested config keys holding the persisted default level: `tui.defaultThinkingLevel`.
+/// Nested config keys holding the saved levels: `tui.thinkingLevels`.
 const TUI_KEY: &str = "tui";
-const DEFAULT_THINKING_LEVEL_KEY: &str = "defaultThinkingLevel";
+const THINKING_LEVELS_KEY: &str = "thinkingLevels";
 
-/// Map a validated `0..=3` integer to a [`ThinkingLevel`]; anything else → `Off`.
-fn level_from_u8(level: u8) -> ThinkingLevel {
+/// The stored form of `level`; the model default has none (saving it
+/// removes the model's entry).
+fn encode(level: &ThinkingLevel) -> Option<String> {
     match level {
-        1 => ThinkingLevel::Low,
-        2 => ThinkingLevel::Medium,
-        3 => ThinkingLevel::High,
-        _ => ThinkingLevel::Off,
+        ThinkingLevel::ModelDefault => None,
+        ThinkingLevel::Off => Some("off".to_string()),
+        ThinkingLevel::On => Some("on".to_string()),
+        ThinkingLevel::Effort(name) => Some(format!("effort:{name}")),
+        ThinkingLevel::Numeric(number) => Some(format!("numeric:{number}")),
+        ThinkingLevel::Budget(tokens) => Some(format!("budget:{tokens}")),
     }
 }
 
-/// Persist `level` under `tui.defaultThinkingLevel` in the USER-scope shared
-/// config, preserving any existing sibling keys (read-modify-write).
+/// The level a stored entry holds, or why it is not a level.
+fn decode(entry: &Value) -> Result<ThinkingLevel, String> {
+    let text = entry
+        .as_str()
+        .ok_or_else(|| format!("{entry} is not a level string"))?;
+    let not_a_level = || {
+        format!(
+            "\"{text}\" is not a level (expected off, on, effort:<name>, numeric:<number> or budget:<tokens>)"
+        )
+    };
+    match text {
+        "off" => return Ok(ThinkingLevel::Off),
+        "on" => return Ok(ThinkingLevel::On),
+        _ => {}
+    }
+    let (kind, value) = text.split_once(':').ok_or_else(not_a_level)?;
+    match kind {
+        "effort" if !value.is_empty() => Ok(ThinkingLevel::Effort(value.to_string())),
+        "numeric" => serde_json::from_str::<serde_json::Number>(value)
+            .map(ThinkingLevel::Numeric)
+            .map_err(|_| not_a_level()),
+        "budget" => value
+            .parse::<u64>()
+            .map(ThinkingLevel::Budget)
+            .map_err(|_| not_a_level()),
+        _ => Err(not_a_level()),
+    }
+}
+
+/// Save `level` as `model`'s thinking level in the USER-scope shared config,
+/// preserving every other key; the model default removes `model`'s entry.
 ///
-/// Path-injectable core used by both the global convenience wrapper and tests.
-/// `data_dir` selects the user `fspec-config.json`; `_cwd` is retained for
-/// call-site stability but is only needed for the project-scope WRITE path
-/// (this save always targets USER and reads the RAW user file — see BUG-193:
-/// a user-scope write must never carry project-scope keys into the user file).
+/// Path-injectable core used by the global wrapper and tests. `data_dir`
+/// selects the user `fspec-config.json`; `cwd` is only passed to the write.
+/// BUG-193: this reads the RAW user file (never the project-over-user merged
+/// view) so a user-scope write never carries project-scope keys. BUG-461: an
+/// unreadable, invalid or non-object user file fails the save and is left
+/// unchanged.
 pub fn save_default_thinking_level_with_dirs(
     data_dir: &Path,
-    _cwd: &Path,
+    cwd: &Path,
+    model: &str,
     level: ThinkingLevel,
 ) -> Result<(), String> {
-    // BUG-193: read the RAW user file (never the deep-merged
-    // project-over-user view) so the write-back can only ever carry
-    // user-scope keys — project-scope keys such as `tools` or `agent`
-    // must not be mirrored into `~/.fspec/fspec-config.json`. An
-    // unreadable / invalid user file degrades to an empty object rather
-    // than aborting the save.
-    let mut config = load_user_config_file(data_dir).unwrap_or_else(|_| Value::Object(Map::new()));
-
-    // Ensure the root is an object (a non-object persisted value is replaced).
-    if !config.is_object() {
-        config = Value::Object(Map::new());
-    }
-
-    // Ensure `config["tui"]` is an object, then set the nested key.
-    let root = config
-        .as_object_mut()
-        .ok_or_else(|| "config root is not a JSON object".to_string())?;
-    let tui = root
-        .entry(TUI_KEY)
-        .or_insert_with(|| Value::Object(Map::new()));
-    if !tui.is_object() {
-        *tui = Value::Object(Map::new());
-    }
-    let tui_map = tui
-        .as_object_mut()
-        .ok_or_else(|| "config tui section is not a JSON object".to_string())?;
-    tui_map.insert(
-        DEFAULT_THINKING_LEVEL_KEY.to_string(),
-        Value::from(level as u8),
-    );
-
-    match write_config_with_dirs(ConfigScope::User, &config, data_dir, _cwd) {
-        Ok(()) => {
-            // TUI-002: mirror the model path's `set_default_model` success
-            // logging (structured fields) so the default-thinking save path is
-            // observable in the combined log alongside `lastUsedModel` writes.
-            tracing::info!(
-                level = level as u8,
-                data_dir = %data_dir.display(),
-                _cwd = %_cwd.display(),
-                "save_default_thinking_level: persisted tui.defaultThinkingLevel"
-            );
-            Ok(())
+    // BUG-640: one locked read-modify-write of the user file (BUG-193: never
+    // the merged view, so no project key is carried into it).
+    update_config_with_dirs(ConfigScope::User, data_dir, cwd, |config| {
+        let root = config
+            .as_object_mut()
+            .ok_or_else(|| "config root is not a JSON object".to_string())?;
+        let tui = root
+            .entry(TUI_KEY)
+            .or_insert_with(|| Value::Object(Map::new()))
+            .as_object_mut()
+            .ok_or_else(|| "config tui section is not a JSON object".to_string())?;
+        let levels = tui
+            .entry(THINKING_LEVELS_KEY)
+            .or_insert_with(|| Value::Object(Map::new()))
+            .as_object_mut()
+            .ok_or_else(|| "config tui.thinkingLevels is not a JSON object".to_string())?;
+        match encode(&level) {
+            // BUG-455: saving the model default removes the model's saved level.
+            None => {
+                levels.remove(model);
+            }
+            Some(stored) => {
+                levels.insert(model.to_string(), Value::String(stored));
+            }
         }
-        Err(e) => {
-            // Surface the swallowed write error here (best-effort core) so a
-            // failed save is no longer silent even if a caller drops the Err.
-            tracing::warn!(
-                error = %e,
-                level = level as u8,
-                data_dir = %data_dir.display(),
-                _cwd = %_cwd.display(),
-                "save_default_thinking_level: failed to persist (non-fatal)"
-            );
-            Err(e)
-        }
-    }
-}
-
-/// Load the persisted default thinking level from the shared config.
-///
-/// Reads `tui.defaultThinkingLevel` from the deep-merged (project-over-user)
-/// config; a missing / malformed config, or an out-of-range value, yields
-/// [`ThinkingLevel::Off`] (graceful degradation). Path-injectable core.
-#[must_use]
-pub fn load_default_thinking_level_with_dirs(data_dir: &Path, cwd: &Path) -> ThinkingLevel {
-    let Ok(config) = load_config_with_dirs(data_dir, cwd) else {
-        tracing::debug!(
-            data_dir = %data_dir.display(),
-            cwd = %cwd.display(),
-            "load_default_thinking_level: config unreadable, defaulting to Off"
-        );
-        return ThinkingLevel::Off;
-    };
-    let level = config[TUI_KEY][DEFAULT_THINKING_LEVEL_KEY]
-        .as_u64()
-        .filter(|n| *n <= 3)
-        .map_or(ThinkingLevel::Off, |n| level_from_u8(n as u8));
-    tracing::debug!(
-        level = level as u8,
+        Ok::<_, String>(())
+    })
+    .map_err(|error| {
+        tracing::warn!(%error, %model, level = %level, "save_default_thinking_level: failed to persist");
+        error
+    })?;
+    tracing::info!(
+        %model,
+        level = %level,
         data_dir = %data_dir.display(),
-        cwd = %cwd.display(),
-        "load_default_thinking_level: loaded tui.defaultThinkingLevel"
+        "save_default_thinking_level: persisted tui.thinkingLevels"
     );
-    level
+    Ok(())
 }
 
-/// Convenience: persist using the globally configured data directory
-/// ([`codelet_common::get_data_dir`]) and current working directory. Surfaces
-/// the data-dir / write error so the caller can log it; treated as non-fatal.
-pub fn save_default_thinking_level(level: ThinkingLevel) -> Result<(), String> {
+/// The thinking level saved for `model`: `Ok(None)` when none is saved (no
+/// config file, no `tui.thinkingLevels`, or no entry for `model`), and an
+/// error naming what could not be read otherwise. Reads the project-over-user
+/// merged config. Path-injectable core.
+pub fn load_default_thinking_level_with_dirs(
+    data_dir: &Path,
+    cwd: &Path,
+    model: &str,
+) -> Result<Option<ThinkingLevel>, String> {
+    let config = load_config_with_dirs(data_dir, cwd)?;
+    let levels = match config
+        .get(TUI_KEY)
+        .and_then(|tui| tui.get(THINKING_LEVELS_KEY))
+    {
+        None => return Ok(None),
+        Some(levels) => levels
+            .as_object()
+            .ok_or_else(|| "tui.thinkingLevels is not a JSON object".to_string())?,
+    };
+    levels.get(model).map(decode).transpose()
+}
+
+/// Save using the globally configured data directory
+/// ([`codelet_common::get_data_dir`]) and the current working directory.
+pub fn save_default_thinking_level(model: &str, level: ThinkingLevel) -> Result<(), String> {
     let data_dir = codelet_common::get_data_dir()?;
     let cwd =
         std::env::current_dir().map_err(|e| format!("Failed to resolve current directory: {e}"))?;
-    save_default_thinking_level_with_dirs(&data_dir, &cwd, level)
+    save_default_thinking_level_with_dirs(&data_dir, &cwd, model, level)
 }
 
-/// Convenience: load using the globally configured data directory + current
-/// working directory. Returns [`ThinkingLevel::Off`] when either cannot be
-/// resolved or nothing is persisted, so a session constructed before startup
-/// wiring degrades gracefully.
-#[must_use]
-pub fn load_default_thinking_level() -> ThinkingLevel {
-    let Ok(data_dir) = codelet_common::get_data_dir() else {
-        return ThinkingLevel::Off;
-    };
-    let Ok(cwd) = std::env::current_dir() else {
-        return ThinkingLevel::Off;
-    };
-    load_default_thinking_level_with_dirs(&data_dir, &cwd)
-}
-
-/// Load the persisted default thinking level, preserving the TS-parity
-/// "no key" vs "explicit value" distinction (TUI-093).
-///
-/// Mirrors the TS `loadDefaultThinkingLevel(): JsThinkingLevel | null`:
-/// returns `None` when the key is absent / the config is unreadable / the value
-/// is out of range, and `Some(level)` (including `Some(Off)` for an explicit
-/// `0`) when a valid `0..=3` is present. The guarded apply path depends on this
-/// distinction so it never clobbers a session when no default was ever chosen.
-/// Path-injectable core.
-#[must_use]
-pub fn load_default_thinking_level_opt_with_dirs(
-    data_dir: &Path,
-    cwd: &Path,
-) -> Option<ThinkingLevel> {
-    let config = load_config_with_dirs(data_dir, cwd).ok()?;
-    config[TUI_KEY][DEFAULT_THINKING_LEVEL_KEY]
-        .as_u64()
-        .filter(|n| *n <= 3)
-        .map(|n| level_from_u8(n as u8))
-}
-
-/// Convenience: Option-returning load using the globally configured data
-/// directory + current working directory. Returns `None` when either cannot be
-/// resolved or nothing valid is persisted (TUI-093 TS-parity `null`).
-#[must_use]
-pub fn load_default_thinking_level_opt() -> Option<ThinkingLevel> {
-    let data_dir = codelet_common::get_data_dir().ok()?;
-    let cwd = std::env::current_dir().ok()?;
-    load_default_thinking_level_opt_with_dirs(&data_dir, &cwd)
+/// Load using the globally configured data directory and the current working
+/// directory; an unresolvable directory is an error, never "no level".
+pub fn load_default_thinking_level(model: &str) -> Result<Option<ThinkingLevel>, String> {
+    let data_dir = codelet_common::get_data_dir()?;
+    let cwd =
+        std::env::current_dir().map_err(|e| format!("Failed to resolve current directory: {e}"))?;
+    load_default_thinking_level_with_dirs(&data_dir, &cwd, model)
 }

@@ -46,6 +46,18 @@ For complete project context:
   - `manual_strip`, `manual_try_fold`, `manual_unwrap_or`
 - ❌ **NEVER** leave redundant clones, needless borrows, or unnecessary lazy evaluations
 
+#### NO FALLBACKS — Fallbacks Are Evil (Zero Tolerance):
+
+**NO FALLBACKS UNLESS OTHERWISE EXPLICITLY SAID.** A fallback hides a failure and turns it into wrong behaviour that nobody notices.
+
+- ❌ **NEVER** substitute a default when an operation fails or a value is missing: no `unwrap_or(0)`, `unwrap_or_default()`, `unwrap_or(-1)`, `Uuid::nil()`, `"."`, empty `Vec`, `Idle`, etc. standing in for an error or an unknown
+- ❌ **NEVER** fall back to a global or singleton (e.g. a `SessionManager::instance()`-style fallback) when the real dependency was not passed or registered
+- ❌ **NEVER** turn an error into `None`, `false`, `Ok(())` or "allow everything" (fail-open); `.ok()`, `if let Ok(..)` and `Err(_) =>` that drop the error are fallbacks too
+- ❌ **NEVER** relabel an error with a fixed generic message that loses the real cause
+- ❌ **NEVER** add `#[serde(default)]` to wire/input fields so a malformed payload silently becomes valid
+- ✅ **ALWAYS** propagate the real error (`?`, `Result`), or reject the input; where there is no error channel, log it with `tracing::error!` **and** take an explicit, documented refusal path
+- ✅ A fallback is allowed **only** when the user or the specification explicitly asks for that specific fallback — say so in a comment naming where it was asked for
+
 #### Error Handling (Required):
 
 ```rust
@@ -249,6 +261,7 @@ Run quality checks before committing:
 ```bash
 cargo check -p codelet-fspec       # Check compilation
 cargo clippy -p codelet-fspec      # Check clippy lints
+cargo clippy --workspace --tests -- -D warnings   # Lint every crate's test targets too
 cargo test -p codelet-fspec        # Run tests
 ```
 

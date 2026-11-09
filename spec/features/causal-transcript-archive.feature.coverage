@@ -20,7 +20,9 @@
                 82,
                 88,
                 94
-              ]
+              ],
+              "firstLine": "let mut records = JournalStore::configured(manifest.id)",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/persistence/archive.rs",
@@ -35,7 +37,9 @@
                 89,
                 90,
                 108
-              ]
+              ],
+              "firstLine": "let journal = journal::snapshot(manifest, cursor.as_ref())?;",
+              "lastLine": "record_kind: kind,"
             },
             {
               "file": "rust/core/src/persistence/archive/types.rs",
@@ -43,7 +47,9 @@
                 12,
                 13,
                 25
-              ]
+              ],
+              "firstLine": "pub journal_end: usize,",
+              "lastLine": "Transcript,"
             }
           ]
         }
@@ -69,7 +75,9 @@
                 82,
                 88,
                 94
-              ]
+              ],
+              "firstLine": "let mut records = JournalStore::configured(manifest.id)",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/persistence/archive.rs",
@@ -84,7 +92,9 @@
                 89,
                 90,
                 108
-              ]
+              ],
+              "firstLine": "let journal = journal::snapshot(manifest, cursor.as_ref())?;",
+              "lastLine": "record_kind: kind,"
             },
             {
               "file": "rust/core/src/persistence/archive/types.rs",
@@ -92,7 +102,9 @@
                 12,
                 13,
                 25
-              ]
+              ],
+              "firstLine": "pub journal_end: usize,",
+              "lastLine": "Transcript,"
             }
           ]
         }

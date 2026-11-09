@@ -4,8 +4,7 @@
 //! `store::agent_view::diff_format`. Each Gherkin step is annotated with a
 //! matching `@step` comment whose text mirrors the feature file exactly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::io::Write as _;
 
 use codelet_fspec_tui::store::agent_view::diff_format::{
@@ -19,7 +18,8 @@ fn count_marker(s: &str, marker: &str) -> usize {
 }
 
 #[test]
-fn single_line_replacement_produces_one_removed_and_one_added_marker_within_context() {
+fn single_line_replacement_produces_one_removed_and_one_added_marker_within_context() -> TestResult
+{
     // @step Given an old_string and new_string that differ in a single line
     let old = "line1\nline2\nline3\n";
     let new = "line1\nCHANGED\nline3\n";
@@ -35,10 +35,11 @@ fn single_line_replacement_produces_one_removed_and_one_added_marker_within_cont
     // @step And the surrounding context lines appear within three lines of the change
     assert!(out.contains("line1"));
     assert!(out.contains("line3"));
+    Ok(())
 }
 
 #[test]
-fn pure_addition_produces_only_added_markers_and_no_removed_markers() {
+fn pure_addition_produces_only_added_markers_and_no_removed_markers() -> TestResult {
     // @step Given an empty old_string and a new_string with several lines
     let old = "";
     let new = "alpha\nbeta\ngamma\n";
@@ -52,10 +53,11 @@ fn pure_addition_produces_only_added_markers_and_no_removed_markers() {
 
     // @step And no [R]- line appears in the output
     assert_eq!(count_marker(&out, "[R]-"), 0);
+    Ok(())
 }
 
 #[test]
-fn write_of_a_three_line_file_produces_three_added_markers() {
+fn write_of_a_three_line_file_produces_three_added_markers() -> TestResult {
     // @step Given a Write content of exactly three lines
     let content = "one\ntwo\nthree";
 
@@ -68,10 +70,11 @@ fn write_of_a_three_line_file_produces_three_added_markers() {
 
     // @step And no [R]- line appears in the output
     assert_eq!(count_marker(&out, "[R]-"), 0);
+    Ok(())
 }
 
 #[test]
-fn a_mid_file_change_in_a_large_edit_shows_leading_and_trailing_gap_markers() {
+fn a_mid_file_change_in_a_large_edit_shows_leading_and_trailing_gap_markers() -> TestResult {
     // @step Given a 100-line edit with a single changed line in the middle
     let old: String = (1..=100).map(|n| format!("line{n}\n")).collect::<String>();
     let new: String = (1..=100)
@@ -92,25 +95,26 @@ fn a_mid_file_change_in_a_large_edit_shows_leading_and_trailing_gap_markers() {
     // The leading region (lines 1..46) is dropped: the first shown row is the
     // 3-line context window before the change, NOT line 1. (Parity with TS: the
     // display begins at the first shown index, collapsing everything before it.)
-    let first_row = out.lines().next().expect("at least one row");
+    let first_row = out.lines().next().or_fail("at least one row")?;
     assert!(first_row.contains("line47"));
     assert!(!out.contains("line1\n") && !out.contains(" line1 "));
     let first_change = out
         .lines()
         .position(|l| l.contains("[R]-") || l.contains("[A]+"))
-        .expect("change present");
+        .or_fail("change present")?;
 
     // @step And a trailing '... (N lines)' gap marker follows the change context
     let rows: Vec<&str> = out.lines().collect();
     let last_gap = rows
         .iter()
         .rposition(|l| l.contains("... ("))
-        .expect("trailing gap marker present");
+        .or_fail("trailing gap marker present")?;
     assert!(last_gap > first_change);
+    Ok(())
 }
 
 #[test]
-fn a_diff_exceeding_the_collapse_limit_ends_with_an_expand_indicator() {
+fn a_diff_exceeding_the_collapse_limit_ends_with_an_expand_indicator() -> TestResult {
     // @step Given a diff whose display lines exceed the collapse limit of 25
     let old = "";
     let new: String = (1..=60).map(|n| format!("added{n}\n")).collect::<String>();
@@ -124,13 +128,14 @@ fn a_diff_exceeding_the_collapse_limit_ends_with_an_expand_indicator() {
     // indicator line = 26 rendered rows.
     assert_eq!(out.lines().count(), DIFF_COLLAPSED_LINES + 1);
 
-    // @step And the last line is '... +N lines (select turn to /expand)'
-    let last = out.lines().last().expect("at least one line");
-    assert!(last.contains("(select turn to /expand)"));
+    // @step And the last line is '... +N lines (Tab to select, Enter to view full)'
+    let last = out.lines().last().or_fail("at least one line")?;
+    assert!(last.contains("(Tab to select, Enter to view full)"));
+    Ok(())
 }
 
 #[test]
-fn calculate_start_line_on_a_missing_file_returns_1() {
+fn calculate_start_line_on_a_missing_file_returns_1() -> TestResult {
     // @step Given a file path that does not exist
     let missing = "/nonexistent/path/to/file/that/does/not/exist.txt";
 
@@ -142,29 +147,36 @@ fn calculate_start_line_on_a_missing_file_returns_1() {
 
     // @step And no panic occurs
     // (reaching this line proves no panic occurred)
+    Ok(())
 }
 
 #[test]
-fn calculate_start_line_finds_new_string_at_line_250_and_returns_250() {
+fn calculate_start_line_finds_new_string_at_line_250_and_returns_250() -> TestResult {
     // @step Given a file whose 250th line contains the new_string
-    let mut file = tempfile::NamedTempFile::new().unwrap();
+    let mut file = tempfile::NamedTempFile::new().or_fail("expected a value")?;
     let mut content = String::new();
     for n in 1..=249 {
         content.push_str(&format!("filler line {n}\n"));
     }
     content.push_str("UNIQUE_NEW_STRING_MARKER\n");
-    file.write_all(content.as_bytes()).unwrap();
-    let path = file.path().to_str().unwrap().to_string();
+    file.write_all(content.as_bytes())
+        .or_fail("expected a value")?;
+    let path = file
+        .path()
+        .to_str()
+        .or_fail("expected a value")?
+        .to_string();
 
     // @step When I calculate the start line for the edit
     let start = calculate_start_line(Some(&path), Some("old"), Some("UNIQUE_NEW_STRING_MARKER"));
 
     // @step Then the start line is 250
     assert_eq!(start, 250);
+    Ok(())
 }
 
 #[test]
-fn context_lines_are_encoded_with_a_line_number_and_three_spaces_and_no_marker() {
+fn context_lines_are_encoded_with_a_line_number_and_three_spaces_and_no_marker() -> TestResult {
     // @step Given a diff with an unchanged context line
     let old = "ctx1\nctx2\nold\nctx3\nctx4\n";
     let new = "ctx1\nctx2\nnew\nctx3\nctx4\n";
@@ -180,13 +192,14 @@ fn context_lines_are_encoded_with_a_line_number_and_three_spaces_and_no_marker()
     let ctx_line = out
         .lines()
         .find(|l| l.contains("ctx1"))
-        .expect("context line present");
+        .or_fail("context line present")?;
     assert!(!ctx_line.contains("[R]"));
     assert!(!ctx_line.contains("[A]"));
+    Ok(())
 }
 
 #[test]
-fn line_numbers_are_offset_by_start_line_and_left_padded_to_at_least_width_three() {
+fn line_numbers_are_offset_by_start_line_and_left_padded_to_at_least_width_three() -> TestResult {
     // @step Given an edit positioned with a startLine of 250
     let old = "before\nold\nafter\n";
     let new = "before\nnew\nafter\n";
@@ -204,10 +217,12 @@ fn line_numbers_are_offset_by_start_line_and_left_padded_to_at_least_width_three
     // wide; verify a small-number case pads to width 3.
     let small = format_diff_for_display(&format_edit_diff(old, new), DIFF_COLLAPSED_LINES, 1);
     assert!(small.lines().any(|l| l.contains("  1")));
+    Ok(())
 }
 
 #[test]
-fn tree_connectors_prefix_the_first_line_and_indent_the_rest_while_empty_content_yields_empty() {
+fn tree_connectors_prefix_the_first_line_and_indent_the_rest_while_empty_content_yields_empty(
+) -> TestResult {
     // @step Given a multi-line content string
     let content = "first\nsecond\nthird";
 
@@ -223,10 +238,11 @@ fn tree_connectors_prefix_the_first_line_and_indent_the_rest_while_empty_content
     // @step And empty or whitespace-only content yields an empty string
     assert_eq!(format_with_tree_connectors(""), "");
     assert_eq!(format_with_tree_connectors("   \n  "), "");
+    Ok(())
 }
 
 #[test]
-fn a_representative_edit_produces_a_byte_for_byte_golden_display_string() {
+fn a_representative_edit_produces_a_byte_for_byte_golden_display_string() -> TestResult {
     // @step Given a representative edit with a known old_string and new_string and startLine
     let old = "line1\nline2\nline3\n";
     let new = "line1\nCHANGED\nline3\n";
@@ -262,10 +278,11 @@ fn a_representative_edit_produces_a_byte_for_byte_golden_display_string() {
             },
         ]
     );
+    Ok(())
 }
 
 #[test]
-fn trailing_newline_and_no_trailing_newline_content_produce_parity_diff_lines() {
+fn trailing_newline_and_no_trailing_newline_content_produce_parity_diff_lines() -> TestResult {
     // @step Given an old_string and new_string that differ in one line, in both a trailing-newline and a no-trailing-newline variant
     // The encoder splits on '\n' and filters empty fragments, so a trailing
     // newline contributes no extra line. Both variants must therefore produce
@@ -287,4 +304,5 @@ fn trailing_newline_and_no_trailing_newline_content_produce_parity_diff_lines() 
 
     // @step And the display output is identical byte-for-byte
     assert_eq!(out_with_nl, out_no_nl);
+    Ok(())
 }

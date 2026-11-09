@@ -58,6 +58,7 @@ const RELATED: &[&str] = &["add-hook", "list-hooks", "validate-hooks"];
 const NOTES: &[&str] = &[
     "Removes hook from spec/fspec-hooks.json",
     "Does NOT delete the hook script file",
+    "A broken spec/fspec-hooks.json (invalid JSON, or a top-level value, hooks or event value of the wrong shape) is moved to spec/fspec-hooks.json.broken-<timestamp> with a notice before a new configuration is written; an existing backup is never overwritten",
     "Empty event array is retained (key is NOT deleted)",
     "Use fspec list-hooks to see available hooks",
     "Case-sensitive: event and name must match exactly",

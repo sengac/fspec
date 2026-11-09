@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
-          "lines": "32-77",
+          "lines": "30-81",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -155,8 +155,14 @@
                 143,
                 144,
                 145,
-                146
-              ]
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "//! `SessionContext` — per-session state container introduced by RPC-024.",
+              "lastLine": "self.response_attempt = None;"
             }
           ]
         }
@@ -167,7 +173,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
-          "lines": "81-95",
+          "lines": "84-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -241,8 +247,13 @@
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "use std::collections::HashMap;",
+              "lastLine": "in_flight_thinking: None,"
             }
           ]
         }
@@ -253,12 +264,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
-          "lines": "99-118",
+          "lines": "103-125",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -409,8 +419,13 @@
                 215,
                 216,
                 217,
-                218
-              ]
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "show_create_session_dialog: bool,",
+              "lastLine": "self.open_sessions.iter().any(|c| {"
             }
           ]
         }
@@ -421,20 +436,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
-          "lines": "121-143",
+          "lines": "128-151",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
-                227,
-                228,
-                229,
                 230,
                 231,
                 232,
                 233,
-                234
-              ]
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "/// sweep (Hiding/Showing) is mid-flight — the run-loop redraw-gate",
+              "lastLine": ""
             }
           ]
         }
@@ -445,13 +462,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc024.rs",
-          "lines": "146-162",
+          "lines": "154-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -476,8 +491,12 @@
                 93,
                 94,
                 95,
-                96
-              ]
+                96,
+                97,
+                98
+              ],
+              "firstLine": "pub mod search_history_view_render;",
+              "lastLine": "pub use role_banner::RoleBanner;"
             }
           ]
         }
@@ -496,6 +515,6 @@
       "rust/fspec-tui/src/store/agent_view.rs",
       "rust/fspec-tui/src/views/agent.rs"
     ],
-    "totalLinesCovered": 655
+    "totalLinesCovered": 546
   }
 }

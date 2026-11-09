@@ -12,10 +12,14 @@ mod config;
 mod handlers;
 pub mod markdown;
 mod state;
+mod workspace_attachment;
 
 pub use config::ViewerConfig;
 pub use handlers::validate_path;
 pub use state::ViewerState;
+pub use workspace_attachment::{
+    read_workspace_attachment, workspace_relative, MAX_ATTACHMENT_BYTES,
+};
 
 use std::path::PathBuf;
 

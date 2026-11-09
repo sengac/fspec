@@ -5,24 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "80-111",
+          "lines": "82-119",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -61,8 +48,36 @@
                 155,
                 156,
                 157,
-                158
-              ]
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "// [4] Detect draft. The draft takes precedence over the final foundation.",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,13 +88,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "113-141",
+          "lines": "121-158",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                264,
-                265,
                 266,
                 267,
                 268,
@@ -93,8 +106,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "| \"painPoints\"",
+              "lastLine": "let mut cur = root;"
             }
           ]
         }
@@ -105,31 +122,43 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "143-169",
+          "lines": "160-198",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262
-              ]
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319
+              ],
+              "firstLine": "// [2a] projectType has its own length-based rule (freeform 1-30 chars)",
+              "lastLine": "}"
             }
           ]
         }
@@ -140,26 +169,40 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "171-196",
+          "lines": "202-222",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
                 137,
                 138,
                 139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ],
+              "firstLine": "// [4] Detect draft. The draft takes precedence over the final foundation.",
+              "lastLine": "format!(\"Updated \\\"{section}\\\" in foundation.json.draft\")"
             }
           ]
         }
@@ -170,13 +213,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "198-224",
+          "lines": "229-250",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                126,
-                127,
                 128,
                 129,
                 130,
@@ -184,8 +225,12 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137
+              ],
+              "firstLine": "let mut foundation: Value = if is_draft {",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -196,19 +241,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "226-252",
+          "lines": "257-278",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "// [1] Section name must be non-empty (trimmed). Rejected before any I/O.",
+              "lastLine": "}"
             }
           ]
         }
@@ -219,19 +266,127 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_foundation.rs",
-          "lines": "254-280",
+          "lines": "285-306",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_foundation.rs",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "// [3] Generic empty-content guard for all other sections.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With no foundation file update-foundation creates spec/foundation.json and regenerates FOUNDATION.md",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_foundation.rs",
+          "lines": "313-337",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/ensure.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub fn ensure_foundation_file(cwd: &Path) -> Result<serde_json::Value, FspecCoreError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                138
+              ],
+              "firstLine": "ensure_foundation_file(project_root)?",
+              "lastLine": "ensure_foundation_file(project_root)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A freeform projectType on a draft is accepted and chains to the next unfilled field",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_foundation.rs",
+          "lines": "347-377",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "// `discoverFoundation({scanOnly})` to surface the NEXT unfilled placeholder",
+              "lastLine": "command: \"update-foundation\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty projectType is rejected with the length error and the draft is left unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_foundation.rs",
+          "lines": "379-407",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319
+              ],
+              "firstLine": "fn validate_project_type_length(content: &str) -> Option<String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -239,15 +394,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/update_foundation.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/update_foundation.rs"
+      "rust/fspec-core/src/commands/update_foundation.rs",
+      "rust/fspec-core/src/io/ensure.rs"
     ],
-    "totalLinesCovered": 320
+    "totalLinesCovered": 492
   }
 }

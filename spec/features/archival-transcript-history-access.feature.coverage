@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug245_history_access.rs",
-          "lines": "95-122",
+          "lines": "109-128",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_archive.rs",
@@ -33,7 +33,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "let initial = backend",
+              "lastLine": "loop {"
             }
           ]
         }
@@ -44,7 +46,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug245_history_access.rs",
-          "lines": "16-91",
+          "lines": "17-92",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_archive.rs",
@@ -192,7 +194,9 @@
                 153,
                 154,
                 155
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_archive_command(&mut self, session: &SessionId, text: &str) -> bool {",
+              "lastLine": "61_440,"
             }
           ]
         }
@@ -209,6 +213,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_archive.rs"
     ],
-    "totalLinesCovered": 270
+    "totalLinesCovered": 262
   }
 }

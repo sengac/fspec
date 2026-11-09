@@ -6,57 +6,26 @@
 //! matching the scenario step text.  Tests exercise the real filesystem
 //! (via a per-test `tempfile::TempDir` + `FSPEC_HOME` env override).
 //!
-//! Tests that mutate `FSPEC_HOME` serialise through `env_lock()` to
-//! prevent cross-test env races inside the single-process test binary.
+//! Tests that change `FSPEC_HOME` run under the one shared guard of the lib
+//! tests (`#[serial]`) and redirect it through
+//! `crate::test_fixtures::env::FspecHome` (BUG-550).
 
 use std::path::PathBuf;
-use std::sync::{Mutex, MutexGuard, OnceLock};
 
 use rhai::Dynamic;
 
 use crate::oauth::building_blocks::{fspec_home, register_all_modules_for_provider};
 use crate::oauth::engine::{build_default_engine, build_provider_engine};
-
-/// RAII guard serialising all tests that mutate `FSPEC_HOME`.
-fn env_lock() -> MutexGuard<'static, ()> {
-    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-    LOCK.get_or_init(|| Mutex::new(()))
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-}
-
-/// Set `FSPEC_HOME` to a fresh temp directory, return it plus a drop-guard
-/// that restores the previous value.
-fn with_temp_fspec_home() -> (tempfile::TempDir, FspecHomeGuard) {
-    let dir = tempfile::TempDir::new().expect("temp dir");
-    let guard = FspecHomeGuard {
-        original: std::env::var("FSPEC_HOME").ok(),
-    };
-    std::env::set_var("FSPEC_HOME", dir.path());
-    (dir, guard)
-}
-
-struct FspecHomeGuard {
-    original: Option<String>,
-}
-
-impl Drop for FspecHomeGuard {
-    fn drop(&mut self) {
-        match &self.original {
-            Some(v) => std::env::set_var("FSPEC_HOME", v),
-            None => std::env::remove_var("FSPEC_HOME"),
-        }
-    }
-}
+use crate::test_fixtures::env::FspecHome;
 
 // =====================================================================
 // Scenario: cred::write persists a map as JSON with 0600 permissions
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_write_persists_map_with_secure_permissions() {
-    let _lock = env_lock();
     // @step Given FSPEC_HOME is set to a temporary directory
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step And a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -91,10 +60,10 @@ fn cred_write_persists_map_with_secure_permissions() {
 // Scenario: cred::read returns the written map
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_read_returns_written_map() {
-    let _lock = env_lock();
     // @step Given FSPEC_HOME is set to a temporary directory
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step And a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -124,10 +93,10 @@ fn cred_read_returns_written_map() {
 // Scenario: cred::read returns unit when the credential file is absent
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_read_returns_unit_when_missing() {
-    let _lock = env_lock();
     // @step Given FSPEC_HOME is set to a temporary directory
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step And a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -149,9 +118,9 @@ fn cred_read_returns_unit_when_missing() {
 // provider
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_read_rejects_foreign_provider_name() {
-    let _lock = env_lock();
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step Given a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -177,9 +146,9 @@ fn cred_read_rejects_foreign_provider_name() {
 // Scenario: cred::write rejects a path-traversal name
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_write_rejects_path_traversal_name() {
-    let _lock = env_lock();
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step Given a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -209,10 +178,10 @@ fn cred_write_rejects_path_traversal_name() {
 // touching the filesystem
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_path_returns_absolute_path_without_side_effects() {
-    let _lock = env_lock();
     // @step Given FSPEC_HOME is set to a temporary directory
-    let (dir, _env) = with_temp_fspec_home();
+    let home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step And a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -228,7 +197,7 @@ fn cred_path_returns_absolute_path_without_side_effects() {
         path.ends_with(expected_suffix),
         "{path} should end with {expected_suffix}"
     );
-    let fspec_home_str = dir.path().to_string_lossy().into_owned();
+    let fspec_home_str = home.path().to_string_lossy().into_owned();
     assert!(
         path.starts_with(&*fspec_home_str),
         "{path} should start with FSPEC_HOME {fspec_home_str}"
@@ -246,10 +215,10 @@ fn cred_path_returns_absolute_path_without_side_effects() {
 // absent
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn cred_delete_is_idempotent_when_missing() {
-    let _lock = env_lock();
     // @step Given FSPEC_HOME is set to a temporary directory
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step And a provider engine bound to provider name "acme"
     let engine = build_provider_engine("acme");
@@ -290,9 +259,9 @@ fn default_engine_does_not_expose_cred_namespace() {
 // block modules
 // =====================================================================
 #[test]
+#[serial_test::serial]
 fn provider_engine_registers_cred_and_other_modules() {
-    let _lock = env_lock();
-    let (_dir, _env) = with_temp_fspec_home();
+    let _home = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
     // @step Given an engine built via build_provider_engine("acme")
     let engine = build_provider_engine("acme");

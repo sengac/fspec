@@ -21,6 +21,10 @@ OPTIONS
     Implementation file path to remove. Removes implementation mapping from test.
   --all
     Remove all mappings for the scenario (reset to uncovered)
+  --test-mapping-index <index>
+    Zero-based test mapping index to unlink; requires --test-file and --expected-scenario-hash and cannot be combined with --all
+  --expected-scenario-hash <hash>
+    Expected canonical scenario SHA-256 from show-coverage --mapping-json; required with --test-mapping-index
 
 COMMON PATTERNS
   • Reset Scenario Coverage
@@ -29,7 +33,6 @@ fspec unlink-coverage user-auth --scenario "Login" --all
 
 # Re-link with correct paths
 fspec link-coverage user-auth --scenario "Login" --test-file <correct-path> --test-lines <range>
-    undefined
 
   • Remove Implementation Only
     Example: # Implementation was refactored, need to re-link
@@ -37,15 +40,13 @@ fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/aut
 
 # Link new implementation
 fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/new-login.ts --impl-lines 5-15
-    undefined
 
   • Clean Up After Deletion
     Example: # Test file was deleted
 fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/old-auth.test.ts
 
-# Or use audit-coverage --fix
-fspec audit-coverage user-auth --fix
-    undefined
+# Then confirm no broken mappings remain
+fspec audit --feature user-auth
 
 
 TYPICAL WORKFLOW
@@ -77,12 +78,12 @@ COMMON ERRORS
 RELATED COMMANDS
   fspec link-coverage
   fspec show-coverage
-  fspec audit-coverage
+  fspec audit
 
 NOTES
   • Use --all to completely reset scenario coverage (makes it uncovered)
   • Unlinking test file also removes all its implementation mappings
   • Unlinking only implementation keeps test mapping intact
-  • Consider using audit-coverage --fix instead for batch cleanup
+  • Run fspec audit afterwards to confirm no broken mappings remain
   • Does not modify feature files or test/implementation files, only .coverage files
 

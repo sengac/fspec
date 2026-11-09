@@ -303,7 +303,9 @@
                 291,
                 292,
                 293
-              ]
+              ],
+              "firstLine": "//! `CopilotProvider` — top-level composition layer for GitHub Copilot",
+              "lastLine": "rig_response_to_completion(response)"
             }
           ]
         }
@@ -369,7 +371,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_fresh_copilot_token(",
+              "lastLine": "enterprise_url: None,"
             }
           ]
         }
@@ -380,7 +384,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/file_size_compliance_tests.rs",
-          "lines": "72-93",
+          "lines": "74-96",
           "implMappings": [
             {
               "file": "rust/providers/tests/copilot_http_middleware_routing_test.rs",
@@ -398,7 +402,9 @@
                 20,
                 21,
                 22
-              ]
+              ],
+              "firstLine": "use codelet_providers::copilot::oauth_types::CopilotDeploymentType;",
+              "lastLine": "use serde_json::json;"
             }
           ]
         }
@@ -417,6 +423,6 @@
       "rust/providers/src/copilot/token_refresh.rs",
       "rust/providers/tests/copilot_http_middleware_routing_test.rs"
     ],
-    "totalLinesCovered": 424
+    "totalLinesCovered": 425
   }
 }

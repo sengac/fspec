@@ -1,0 +1,176 @@
+{
+  "scenarios": [
+    {
+      "name": "The stream loop records the running tool call for the session",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug291_pause_tool_call_identity.rs",
+          "lines": "23-58",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/assistant.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "if let Ok(mut active) = context.active_tool_call_id.lock() {",
+              "lastLine": "state.tool_execution_in_progress = true;"
+            },
+            {
+              "file": "rust/tools/src/tool_pause.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "/// BUG-291: the tool call each session is currently executing, recorded by",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A pause raised during a tool call carries that call's id",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug291_pause_tool_call_identity.rs",
+          "lines": "60-75",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_pause.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "impl PauseState {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop/handlers.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "firstLine": "let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {",
+              "lastLine": "session_for_pause.set_status(SessionStatus::Paused);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The RPC pause state keeps details and the tool call id apart",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug291_pause_tool_call_identity.rs",
+          "lines": "77-93",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/conversions.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "///   `tool_call_id`); `tool_call_id` names the gated tool call.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "/// Snapshot of the AgentView pause dialog state — the question to",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug291_pause_tool_call_identity.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop/assistant.rs",
+      "rust/tools/src/tool_pause.rs",
+      "rust/agent-loop/src/agent_loop/handlers.rs",
+      "rust/sessions/src/conversions.rs",
+      "rust/rpc-types/src/session_state.rs"
+    ],
+    "totalLinesCovered": 150
+  }
+}

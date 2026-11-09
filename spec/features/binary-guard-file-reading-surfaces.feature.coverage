@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "78-120",
+          "lines": "78-124",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -30,7 +30,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -41,7 +43,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "122-164",
+          "lines": "126-172",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -66,7 +68,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -77,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "166-208",
+          "lines": "174-220",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -102,7 +106,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -113,7 +119,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "210-244",
+          "lines": "222-260",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -138,7 +144,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -149,7 +157,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "246-278",
+          "lines": "262-298",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -174,7 +182,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -185,7 +195,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "280-311",
+          "lines": "300-335",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -210,7 +220,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "let resolved_file = require_file_exists(path, &file_path_str)",
+              "lastLine": "return Err(ToolError::Validation {"
             }
           ]
         }
@@ -221,13 +233,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "313-359",
+          "lines": "337-387",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -267,8 +277,12 @@
                 186,
                 187,
                 188,
-                189
-              ]
+                189,
+                190,
+                191
+              ],
+              "firstLine": "PatchOp::Update { path, hunks } => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -279,13 +293,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "361-402",
+          "lines": "389-434",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -325,8 +337,12 @@
                 186,
                 187,
                 188,
-                189
-              ]
+                189,
+                190,
+                191
+              ],
+              "firstLine": "PatchOp::Update { path, hunks } => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -337,13 +353,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "404-439",
+          "lines": "436-475",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
               "lines": [
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -383,8 +397,12 @@
                 186,
                 187,
                 188,
-                189
-              ]
+                189,
+                190,
+                191
+              ],
+              "firstLine": "PatchOp::Update { path, hunks } => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -395,7 +413,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "441-480",
+          "lines": "477-520",
           "implMappings": [
             {
               "file": "rust/tools/src/bash_binary_guard.rs",
@@ -467,7 +485,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "const NUL_SCAN_LIMIT: usize = 8192;",
+              "lastLine": "}"
             }
           ]
         }
@@ -478,7 +498,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/binary_guard_file_reading_surfaces_test.rs",
-          "lines": "482-525",
+          "lines": "522-569",
           "implMappings": [
             {
               "file": "rust/tools/src/glob.rs",
@@ -589,7 +609,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {",
+              "lastLine": "Ok(final_output)"
             }
           ]
         }
@@ -609,6 +631,6 @@
       "rust/tools/src/bash_binary_guard.rs",
       "rust/tools/src/glob.rs"
     ],
-    "totalLinesCovered": 857
+    "totalLinesCovered": 901
   }
 }

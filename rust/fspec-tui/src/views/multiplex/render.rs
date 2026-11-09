@@ -15,9 +15,8 @@ use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
 use crate::views::{AgentView, BoardView, ChangedFilesView, CheckpointsView};
 
-use super::layout::{calculate_pane_rects_with_override, divider_rects};
 use super::menu_render;
-use super::{MultiplexLayout, MuxOrientation};
+use super::MultiplexLayout;
 
 /// MUX-005: dark purple background of the mux footer bar (white fg text).
 /// Mirrors the named-bg pattern in views/agent/footer.rs (FOOTER_BG).
@@ -61,17 +60,18 @@ pub fn render_with_stores(
     // session, duplicating the focused session into the other panes.
     let window_sessions = layout.window_session_ids();
 
-    // MENU-004 R-LAYOUT: reserve the TOP row for the 2-zone menu bar
-    // (body = area.y+1 .. area.height-2). The 3-row degradation: too
-    // short for bar + body + footer → the legacy layout (panes span the
-    // old body height, NO bar — graceful, no regression).
-    let bar_painted_this_frame = area.height >= 4;
+    // MENU-004 R-LAYOUT: reserve the TOP rows for the 2-zone menu bar
+    // (MUX-013: two rows when its buttons wrap). The 3-row degradation:
+    // too short for bar + body + footer → the legacy layout (panes span
+    // the old body height, NO bar — graceful, no regression).
+    let bar_rows = super::menu_bar_rows::bar_height(area.width);
+    let bar_painted_this_frame = area.height >= 3 + bar_rows;
     let body = if bar_painted_this_frame {
         Rect {
             x: area.x,
-            y: area.y + 1,
+            y: area.y + bar_rows,
             width: area.width,
-            height: area.height - 2,
+            height: area.height - bar_rows - 1,
         }
     } else {
         Rect {
@@ -83,18 +83,12 @@ pub fn render_with_stores(
     };
     layout.body_area = Some(body);
 
-    let rects = calculate_pane_rects_with_override(
-        body,
-        layout.config.orientation,
-        layout.effective_panes(),
-        &layout.config.splits,
-        layout.drag_index,
-        layout.drag_width,
-    );
-    layout.pane_rects = rects.clone();
-
-    // BUG-166: divider rects — one per inter-pane gap.
-    layout.divider_rects = divider_rects(layout.config.orientation, &rects, body);
+    // MUX-010: the live nested geometry (hidden panes take no space; a
+    // divider drag draws its in-flight weights).
+    let geometry = layout.live_geometry(body);
+    let rects = geometry.panes.clone();
+    layout.pane_rects = geometry.panes;
+    layout.dividers = geometry.dividers;
 
     let focus = layout.focus();
     for (i, rect) in rects.iter().enumerate() {
@@ -207,14 +201,17 @@ fn paint_focus_flash(layout: &MultiplexLayout, rects: &[Rect], buf: &mut Buffer)
     }
 }
 
-/// BUG-166: paint every inter-pane divider. The divider currently being
-/// dragged is highlighted (cyan); the rest stay dimmed.
+/// BUG-166/MUX-010: paint every divider (`│` between columns, `─` between
+/// rows). The divider currently being dragged is highlighted (cyan); the
+/// rest stay dimmed.
 fn paint_dividers(layout: &MultiplexLayout, buf: &mut Buffer) {
-    let glyph = match layout.config.orientation {
-        MuxOrientation::Horizontal => "│",
-        MuxOrientation::Vertical => "─",
-    };
-    for (i, divider) in layout.divider_rects.iter().enumerate() {
+    for (i, divider) in layout.dividers.iter().enumerate() {
+        let glyph = if divider.between_columns {
+            "│"
+        } else {
+            "─"
+        };
+        let divider = divider.rect;
         let style = if layout.is_dragging && layout.drag_index == Some(i) {
             Style::default().fg(Color::Cyan)
         } else {
@@ -248,7 +245,7 @@ fn paint_footer(layout: &MultiplexLayout, area: Rect, buf: &mut Buffer) {
             .join("|")
     );
     label.push_str(&format!("  ●pane {}", layout.focus()));
-    label.push_str("  /mux config · Shift+←/→ focus · drag divider");
+    label.push_str("  /mux config · Shift+arrows focus · drag divider");
     // MUX-005: white text on a dark purple bar spanning the FULL row
     // width (label cells + the tail cells past the label).
     let style = Style::default().fg(Color::White).bg(MUX_FOOTER_BG);

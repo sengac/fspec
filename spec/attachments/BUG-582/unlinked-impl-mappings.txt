@@ -1,0 +1,36 @@
+# Implementation mappings removed by BUG-582 (2026-11-09): the scenario test never runs this code. Follow-up: TEST-043.
+# feature<TAB>scenario<TAB>test file<TAB>removed impl file:lines
+agent-manager-messaging	Supervisor sends task to subordinate	rust/tools/src/agent_manager/messaging_tests.rs	rust/agent-loop/src/agent_manager_handler.rs:331,333-335,337-338,340-346,350,353-355,360,365-367,369-373,375-377
+agent-manager-messaging	Subordinate reports results to supervisor	rust/tools/src/agent_manager/messaging_tests.rs	rust/agent-loop/src/agent_manager_handler.rs:331,333-335,337-338,340-346,350,353-355,360,365-367,369-373,375-377
+agent-manager-messaging	Peer-to-peer messaging between subordinates	rust/tools/src/agent_manager/messaging_validation_tests.rs	rust/agent-loop/src/agent_manager_handler.rs:331,333-335,337-338,340-346,350,353-355,360,365-367,369-373,375-377
+agent-manager-messaging	Self-messaging to an idle session is allowed	rust/tools/src/agent_manager/messaging_dispatch_tests.rs	rust/agent-loop/src/agent_manager_handler.rs:331,333-335,337-338,340-346,350,353-355,360,365-367,369-373,375-377
+agentview-scrollback-scrollbar-click-and-drag-integration	Click on scrollbar track above thumb jumps to that position	rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs	rust/fspec-tui/src/views/agent/mouse_dispatch.rs:110-165
+agentview-scrollback-scrollbar-click-and-drag-integration	Click on scrollbar track below thumb jumps down	rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs	rust/fspec-tui/src/views/agent/mouse_dispatch.rs:110-165
+agentview-scrollback-scrollbar-click-and-drag-integration	Drag on scrollbar thumb continuously scrolls content	rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs	rust/fspec-tui/src/views/agent/mouse_dispatch.rs:110-165
+agentview-scrollback-scrollbar-click-and-drag-integration	Quick click on thumb scrolls one viewport height	rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs	rust/fspec-tui/src/views/agent/mouse_dispatch.rs:110-165
+agentview-scrollback-scrollbar-click-and-drag-integration	No scrollbar interaction when content fits in viewport	rust/fspec-tui/src/views/agent/mouse_dispatch_tests.rs	rust/fspec-tui/src/views/agent/mouse_dispatch.rs:110-165
+checkpoints-view-c-shows-staged-animated-loading-dialog-via-shared-base-instead-of-fake-no-checkpoints-empty-state	A stale files result for a de-selected checkpoint does not clear the current stage	rust/fspec-tui/src/views/checkpoints/loading_tests.rs	rust/fspec-tui/src/app/dispatch_checkpoints.rs:115-144
+clean-compaction-sub-agent-triggered-on-api-context-overflow-errors	Partial dag-node blocks from a failed sub-agent are never installed	rust/cli/tests/cmpct044_compactor_pin_test.rs	rust/cli/src/compactor_sub_agent.rs:275-287
+codex-grep-files-include-limit	SearchToolFacadeWrapper passes include as glob to GrepTool	rust/tools/src/facade/codex/grep_files_include_limit_tests.rs	rust/tools/src/facade/wrapper.rs:110-112,1150-1185,1189-1211
+codex-grep-files-include-limit	SearchToolFacadeWrapper applies limit to cap grep results	rust/tools/src/facade/codex/grep_files_include_limit_tests.rs	rust/tools/src/facade/wrapper.rs:110-112,1150-1185,1189-1211
+codex-subagent-recovery-ownership	Subagent collectors preserve Codex terminal failures and ordinary recovery	rust/agent-loop/tests/prov160_subagent_recovery_ownership.rs	rust/agent-loop/src/compaction_builder.rs:83-109,196-207
+coherent-request-context-fill	TUI reduction keeps cumulative spend separate from current request fill	rust/fspec-tui/tests/cmpct067_coherent_fill.rs	rust/rpc-types/src/request_context.rs:25-27,51-58
+compaction-synthesis-admission	Synthesis respects provider requirements for historical tool evidence	rust/agent-loop/tests/bug211_synthesis_admission.rs	rust/agent-loop/src/compaction_builder.rs:119-166,187-218
+continue-command-surface	Bare /continue toggles auto-continue with the default budget	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/cli/src/interactive/auto_continue.rs:106-221
+continue-command-surface	/continue with a numeric budget arms or updates the budget	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/cli/src/interactive/auto_continue.rs:106-221
+continue-command-surface	/continue on and /continue off set the state explicitly	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/cli/src/interactive/auto_continue.rs:106-221
+continue-command-surface	/continue 0 is rejected with a hint	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/cli/src/interactive/auto_continue.rs:106-221
+continue-command-surface	An invalid /continue argument leaves state unchanged	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/cli/src/interactive/auto_continue.rs:106-221
+continue-command-surface	The status bar shows an auto-continue indicator while armed	rust/fspec-tui/tests/cont002_continue_command_test.rs	rust/fspec-tui/src/views/agent/chrome_paint.rs:98-117
+custom-provider-streaming-sse-bridge	Terminate stream on DONE marker without invoking parse_stream_chunk	rust/providers/tests/custom_streaming_sse_bridge_tests.rs	rust/providers/src/custom/stream_http.rs:54-71
+dynamic-mcp-connect	Receive server tool list changed notification	rust/tools/src/mcp/tests_02.rs	rust/tools/src/mcp/client_handler.rs:41-88
+dynamic-mcp-connect	Disconnect an active MCP connection	rust/tools/src/mcp/tests_02.rs	rust/tools/src/mcp/stdio_and_routing.rs:244-272
+file-operation-facades	GeminiProvider registers file operation facades with rig agent builder	rust/tools/tests/tool003_file_operation_facades.rs	rust/providers/src/gemini.rs:103-161
+popup-and-full-screen-view-scrollbar-click-and-drag-integration	Drag scrollbar thumb in FileSearchPopup continuously scrolls content	rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs	rust/fspec-tui/src/views/agent/file_search_popup.rs:155-216
+provider-profile-streaming-persistence	Loading a profile without a streaming key defaults to enabled	rust/sessions/tests/prov139_streaming_persistence.rs	rust/fspec-tui/src/views/provider_settings/profiles_config.rs:133-144
+relay-bridge-endpoint	Reconnect to relay after connection drops	bridge/__tests__/relay-endpoint.test.ts	bridge/relay-endpoint.ts:300-325
+streaming-loop-detection	Abort truncates the degenerate tail and appends a marker note	rust/agent-loop/tests/rig014_streaming_loop_detection.rs	rust/agent-loop/src/background_output.rs:166-191
+structured-dag-node-format	Compaction instruction specifies structured dag-node format	rust/core/src/compaction/__tests__/dag_node_parsing.test.rs	rust/cli/src/interactive_helpers.rs:245-284
+telegram-slash-commands-for-agent-control	Slash commands are not forwarded to the agent	bridge/__tests__/telegram-slash-commands.test.ts	bridge/telegram-endpoint.ts:659-692
+tool-wrapper-session-association	create_rig_agent accepts session_id as first parameter	rust/tools/tests/tool_wrapper_session_association_test.rs	rust/providers/src/claude.rs:301-353
+unicode-display-width-for-text-measurement-in-ratatui-tui	Animation frame counting uses character count not display width	rust/fspec-tui/tests/unicode_display_width_rpc431.rs	rust/fspec-tui/src/views/agent/input_transition.rs:60-130

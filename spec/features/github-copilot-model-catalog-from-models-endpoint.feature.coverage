@@ -6,68 +6,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "67-138",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -77,68 +16,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "140-201",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -148,68 +26,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "203-258",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -219,20 +36,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "260-348",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -242,21 +46,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "350-425",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -266,61 +56,7 @@
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
           "lines": "427-552",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -329,17 +65,8 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_models_catalog_test.rs",
-          "lines": "554-638",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/models.rs",
-              "lines": [
-                304,
-                305,
-                306
-              ]
-            }
-          ]
+          "lines": "554-632",
+          "implMappings": []
         }
       ]
     }
@@ -351,9 +78,7 @@
     "testFiles": [
       "rust/providers/tests/copilot_models_catalog_test.rs"
     ],
-    "implFiles": [
-      "rust/providers/src/copilot/models.rs"
-    ],
-    "totalLinesCovered": 797
+    "implFiles": [],
+    "totalLinesCovered": 560
   }
 }

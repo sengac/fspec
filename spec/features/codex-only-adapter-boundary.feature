@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @providers
 @integration
 @provider-abstraction
 @PROV-147
+@BUG-342
 Feature: Codex-only adapter boundary
   """
   Codex owns a composed CompletionModel under rust/providers/src/codex/.
@@ -23,7 +25,7 @@ Feature: Codex-only adapter boundary
   Scenario: Existing streamed responses remain unchanged
     Given a local response containing text reasoning function calls and usage
     When the response is streamed through the Codex boundary
-    Then its request and events match the existing Responses behavior
+    Then it yields the existing Responses content after its response-attempt marker and settles tool calls before the final response
     And ordinary OpenAI Responses requests remain unchanged
 
   Scenario: Existing direct completions remain unchanged

@@ -183,6 +183,18 @@ fn cli_finalize_success_prints_generated_foundation_lines() {
         stdout.contains("✓ Foundation discovered and validated successfully"),
         "stdout={stdout}"
     );
+
+    // @step And stdout contains "✓ Created work unit FOUND-001: Foundation Event Storm"
+    assert!(
+        stdout.contains("✓ Created work unit FOUND-001: Foundation Event Storm\n"),
+        "stdout={stdout}"
+    );
+
+    // @step And stdout contains "Run: fspec show-work-unit FOUND-001"
+    assert!(
+        stdout.contains("  Run: fspec show-work-unit FOUND-001\n"),
+        "stdout={stdout}"
+    );
 }
 
 #[test]

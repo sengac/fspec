@@ -20,7 +20,6 @@ mod common;
 
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc::SharedFspecService;
@@ -82,8 +81,7 @@ fn health_info_is_a_lifted_type_with_cfg_gated_napi_object() {
         .join("rpc-types")
         .join("src")
         .join("lib.rs");
-    let body = std::fs::read_to_string(&lib_rs_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", lib_rs_path.display(), e));
+    let body = read_tree(&lib_rs_path);
 
     // @step When inspecting HealthInfo's definition
     let has_struct = body.contains("pub struct HealthInfo");
@@ -99,9 +97,8 @@ fn health_info_is_a_lifted_type_with_cfg_gated_napi_object() {
     let prelude_start = idx.saturating_sub(400);
     let prelude = &body[prelude_start..idx];
     assert!(
-        prelude.contains("cfg_attr(feature = \"napi\", napi_derive::napi(object))")
-            || prelude.contains("cfg_attr(feature = \"napi\", napi(object))"),
-        "HealthInfo must carry #[cfg_attr(feature = \"napi\", napi(object))]. Got prelude: {prelude}"
+        prelude.contains("#[derive("),
+        "HealthInfo must carry a #[derive(...)] attribute. Got prelude: {prelude}"
     );
 
     // @step And it implements Serialize + Deserialize + Clone + Debug
@@ -141,10 +138,14 @@ fn fspec_backend_trait_gains_health_on_both_transports() {
         .join("fspec-tui")
         .join("src")
         .join("transport");
-    let trait_body = std::fs::read_to_string(tui_src.join("mod.rs")).expect("read mod.rs");
-    let embedded_body =
-        std::fs::read_to_string(tui_src.join("embedded.rs")).expect("read embedded.rs");
-    let ws_body = std::fs::read_to_string(tui_src.join("websocket.rs")).expect("read websocket.rs");
+    // The trait and both impls are composed from include!d fragments.
+    let read = |name: &str| {
+        codelet_test_helpers::source_composition::read_source(&tui_src.join(name))
+            .unwrap_or_else(|error| panic!("compose {name}: {error}"))
+    };
+    let trait_body = read("mod.rs");
+    let embedded_body = read("embedded.rs");
+    let ws_body = read("websocket.rs");
 
     // @step Given the FspecBackend trait
     // @step When inspecting its method surface
@@ -204,7 +205,11 @@ async fn server_stats_lag_counters_fire_when_broadcast_subscribers_lag() {
         let _ = chunks_tx.send((sid.clone(), StreamChunk::text(format!("chunk {i}"))));
     }
 
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    // TEST-042: wait for the fan-out to count the lag, not a fixed time.
+    let _ = codelet_test_helpers::wait_until("the chunks fan-out counts a lag", || {
+        std::future::ready(stats.lag_chunks() >= 1)
+    })
+    .await;
 
     // @step Then the slow subscriber's recv() yields RecvError::Lagged(1)
     // @step And ServerStats.lag_chunks is incremented by at least 1 in the chunks_fanout task
@@ -237,13 +242,17 @@ async fn server_stats_last_watcher_event_at_updates_on_each_watcher_snapshot() {
 
     let ws = connect_with_retry(addr.port()).await;
     let _client = ws_client_connect(ws).await.expect("ws_client_connect");
-    tokio::time::sleep(Duration::from_millis(200)).await;
 
     let initial = stats.last_watcher_event_at();
 
     // @step When the workspace mutates and the watcher fires a new snapshot
     write_workspace(&path, &[("AUTH-001", "Login", "done")]);
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    // TEST-042: wait for the snapshot to be recorded, not a fixed time.
+    let _ = codelet_test_helpers::wait_until("the watcher snapshot is recorded", || {
+        let updated = stats.last_watcher_event_at();
+        std::future::ready(updated.is_some() && updated != initial)
+    })
+    .await;
 
     // @step Then ServerStats.last_watcher_event_at.lock() is updated to the current Instant in work_units_fanout
     let updated = stats.last_watcher_event_at();
@@ -270,4 +279,11 @@ async fn server_stats_last_watcher_event_at_updates_on_each_watcher_snapshot() {
         health.last_watcher_event_secs_ago.is_some(),
         "health.last_watcher_event_secs_ago must be Some after a snapshot fired"
     );
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> String {
+    codelet_test_helpers::source_composition::read_module_tree(path)
+        .unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
 }

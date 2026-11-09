@@ -1,3 +1,4 @@
+@BUG-582
 @provider-abstraction
 @facade-pattern
 @tools
@@ -42,27 +43,28 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
     And the text should start with "You are Claude Code"
     And the text should contain the original preamble
 
-  Scenario: Claude API key facade passes preamble through unchanged
+  Scenario: Claude API key facade passes preamble through with fspec guidance
     Given a ClaudeApiKeySystemPromptFacade
     And a preamble "You are a helpful assistant"
     When I call format_for_api with the preamble
     Then the result should be a JSON array with cache_control
     And the text should NOT start with "You are Claude Code"
-    And the text should equal the original preamble exactly
+    And the text should contain the original preamble (with fspec guidance prepended)
 
   Scenario: Gemini facade formats preamble as plain string
     Given a GeminiSystemPromptFacade
     And a preamble "You are a helpful assistant"
     When I call format_for_api with the preamble
     Then the result should be a plain string
-    And the result should equal "You are a helpful assistant"
+    And the result should contain the preamble (with fspec guidance prepended)
+    And the result should contain web tool guidance
 
   Scenario: OpenAI facade formats preamble as plain string
     Given an OpenAISystemPromptFacade
     And a preamble "You are a helpful assistant"
     When I call format_for_api with the preamble
     Then the result should be a plain string
-    And the result should equal "You are a helpful assistant"
+    And the result should contain the preamble (with fspec guidance prepended)
 
   Scenario: Claude facade formats system prompts with cache_control
     Given any Claude system prompt facade

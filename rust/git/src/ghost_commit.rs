@@ -221,7 +221,10 @@ pub fn create_ghost_commit(
 ///
 /// WT-008: `pub(crate)` so `merge_commit` reuses the same snapshot →
 /// tree builder for the merge commit (one tree-builder, no drift).
-pub(crate) fn build_tree_from_snapshot(repo: &gix::Repository, snap: &TreeSnapshot) -> Result<gix::ObjectId> {
+pub(crate) fn build_tree_from_snapshot(
+    repo: &gix::Repository,
+    snap: &TreeSnapshot,
+) -> Result<gix::ObjectId> {
     use std::collections::BTreeMap;
 
     // Handle empty tree case - all files deleted

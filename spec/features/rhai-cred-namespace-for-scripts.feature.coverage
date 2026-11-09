@@ -5,37 +5,36 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "57-91",
+          "lines": "27-60",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
                 107,
-                108
-              ]
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "// cred::write(name, map) -> ()",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,11 +45,13 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "96-124",
+          "lines": "65-93",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
+                66,
+                67,
                 68,
                 69,
                 70,
@@ -66,8 +67,11 @@
                 80,
                 81,
                 82,
-                83
-              ]
+                83,
+                84
+              ],
+              "firstLine": "// cred::read(name) -> Map | ()",
+              "lastLine": "}"
             }
           ]
         }
@@ -78,11 +82,13 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "129-149",
+          "lines": "98-118",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
+                66,
+                67,
                 68,
                 69,
                 70,
@@ -98,8 +104,11 @@
                 80,
                 81,
                 82,
-                83
-              ]
+                83,
+                84
+              ],
+              "firstLine": "// cred::read(name) -> Map | ()",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,28 +119,29 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "155-178",
+          "lines": "124-147",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// Enforce that the requested credential name matches the active",
+              "lastLine": "}"
             }
           ]
         }
@@ -142,28 +152,29 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "183-212",
+          "lines": "152-182",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// Enforce that the requested credential name matches the active",
+              "lastLine": "}"
             }
           ]
         }
@@ -174,7 +185,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "218-246",
+          "lines": "180-211",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
@@ -193,7 +204,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "// cred::path(name) -> absolute path string",
+              "lastLine": "// cred::read(name) -> Map | ()"
             }
           ]
         }
@@ -204,28 +217,30 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "252-271",
+          "lines": "217-237",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/cred_module.rs",
               "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
-              ]
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "// cred::delete(name) -> ()",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,7 +251,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "276-288",
+          "lines": "242-255",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/engine.rs",
@@ -257,7 +272,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "// (for-loop support), `ArithmeticPackage` (int/float operators),",
+              "lastLine": ""
             }
           ]
         }
@@ -268,18 +285,20 @@
       "testMappings": [
         {
           "file": "rust/providers/src/oauth/cred_module_tests.rs",
-          "lines": "293-319",
+          "lines": "263-288",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/building_blocks.rs",
               "lines": [
-                45,
                 46,
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51
+              ],
+              "firstLine": "/// preventing one provider's script from reading another provider's",
+              "lastLine": "modules"
             }
           ]
         }
@@ -298,6 +317,6 @@
       "rust/providers/src/oauth/engine.rs",
       "rust/providers/src/oauth/building_blocks.rs"
     ],
-    "totalLinesCovered": 369
+    "totalLinesCovered": 374
   }
 }

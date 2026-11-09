@@ -31,8 +31,10 @@ use crate::views::agent::{
     session_transition::SessionTransition, ChunkKind, ChunkSource, ScrollbackList,
 };
 
+#[path = "busy_inputs.rs"]
+pub mod busy_inputs;
 #[path = "provider_waiting.rs"]
-mod provider_waiting;
+mod provider_waiting; // TUI-115
 
 fn next_transcript_nonce() -> u64 {
     static NEXT_TRANSCRIPT_NONCE: std::sync::atomic::AtomicU64 =
@@ -74,6 +76,11 @@ pub struct SessionContext {
     /// keyed by `ToolCallInfo.id`, consumed on the matching ToolResult to
     /// build the colored diff. Mirrors TS `pendingToolDiffsRef`.
     pub pending_tool_diffs: HashMap<String, PendingToolDiff>,
+    /// **TUI-115**: inputs steered into or queued behind a busy turn.
+    pub busy_inputs: busy_inputs::BusyInputs,
+    /// **TUI-125**: the tab was opened without focus (the daemon announced
+    /// the session); the TUI's own creation answer for it focuses it once.
+    pub(crate) opened_unfocused: bool,
 }
 
 impl SessionContext {
@@ -92,6 +99,8 @@ impl SessionContext {
             pending_tool_diffs: HashMap::new(),
             input_transition: SessionTransition::default(),
             provider_waiting: None,
+            busy_inputs: busy_inputs::BusyInputs::default(),
+            opened_unfocused: false,
         }
     }
 

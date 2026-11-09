@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov132_data_dir_guard_shape.rs",
-          "lines": "163-208",
+          "lines": "182-231",
           "implMappings": [
             {
               "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
               "lines": [
+                31,
                 32,
                 33,
                 34,
@@ -21,11 +22,10 @@
                 40,
                 41,
                 42,
-                43,
-                44,
-                45,
-                46
-              ]
+                43
+              ],
+              "firstLine": "/// drive this test's own already-constructed manager, never the global pointer,",
+              "lastLine": "let mut out = Vec::new();"
             }
           ]
         }
@@ -36,7 +36,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov132_data_dir_guard_shape.rs",
-          "lines": "215-259",
+          "lines": "238-286",
           "implMappings": [
             {
               "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
@@ -58,7 +58,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "/// PROV-132: Serializes the tests that swap the process-global data directory",
+              "lastLine": ""
             }
           ]
         }
@@ -69,11 +71,12 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov132_data_dir_guard_shape.rs",
-          "lines": "273-311",
+          "lines": "300-334",
           "implMappings": [
             {
               "file": "rust/sessions/tests/rpc081_restore_session_messages.rs",
               "lines": [
+                31,
                 32,
                 33,
                 34,
@@ -85,11 +88,10 @@
                 40,
                 41,
                 42,
-                43,
-                44,
-                45,
-                46
-              ]
+                43
+              ],
+              "firstLine": "/// drive this test's own already-constructed manager, never the global pointer,",
+              "lastLine": "let mut out = Vec::new();"
             },
             {
               "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
@@ -111,7 +113,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "/// PROV-132: Serializes the tests that swap the process-global data directory",
+              "lastLine": ""
             }
           ]
         }

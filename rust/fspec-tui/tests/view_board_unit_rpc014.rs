@@ -5,8 +5,7 @@
 //! Drives `BoardView::render_with_store` against a `TestBackend` and
 //! asserts the new box-drawing topology + work-unit details strip.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
@@ -37,9 +36,13 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
     }
 }
 
-fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
+fn render(
+    width: u16,
+    height: u16,
+    store: &BoardStore,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -49,8 +52,8 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
             false,
         );
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn join_buffer(buf: &Buffer) -> String {
@@ -113,22 +116,23 @@ fn find_substring_in_content(buf: &Buffer, text: &str) -> Option<(u16, u16)> {
 
 /// Scenario: No work unit selected paints the centered placeholder
 #[test]
-fn no_work_unit_selected_paints_centered_placeholder() {
+fn no_work_unit_selected_paints_centered_placeholder() -> TestResult {
     // @step Given an empty BoardStore (no work units, no selection)
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "No work unit selected"
     assert!(
         joined.contains("No work unit selected"),
         "missing 'No work unit selected' placeholder:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Selected work unit paints title and metadata rows of the details strip
 #[test]
-fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() {
+fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 (story, backlog, title "User Login", description "Sign in with email/password", estimate 5, epic "authentication", no attachments)
     let unit = WorkUnitInfo {
         id: "AUTH-001".to_string(),
@@ -147,7 +151,7 @@ fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "AUTH-001: User Login"
     assert!(
@@ -169,11 +173,12 @@ fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() {
         joined.contains("Status: backlog"),
         "missing 'Status: backlog':\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Attachments row renders comma-joined basenames with the "A" key hint
 #[test]
-fn attachments_row_renders_comma_joined_basenames_with_a_key_hint() {
+fn attachments_row_renders_comma_joined_basenames_with_a_key_hint() -> TestResult {
     // @step Given a BoardStore containing DOC-014 with attachments ["spec/attachments/RPC-014/notes.md", "spec/attachments/RPC-014/ref.md"]
     let unit = WorkUnitInfo {
         id: "DOC-014".to_string(),
@@ -195,23 +200,24 @@ fn attachments_row_renders_comma_joined_basenames_with_a_key_hint() {
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring 'Attachments (use the "A" key to view): notes.md, ref.md'
     assert!(
         joined.contains("Attachments (use the \"A\" key to view): notes.md, ref.md"),
         "missing attachments row:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Box-drawing borders and inner junctions are painted
 #[test]
-fn box_drawing_borders_and_inner_junctions_are_painted() {
+fn box_drawing_borders_and_inner_junctions_are_painted() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 in backlog
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     // @step Then row 0 of the rendered buffer starts with "┌" and ends with "┐"
     let row0 = row_string(&buf, 0);
     assert!(
@@ -250,22 +256,23 @@ fn box_drawing_borders_and_inner_junctions_are_painted() {
         r.contains('├') && r.contains('┴') && r.contains('┤')
     });
     assert!(has_bottom, "expected one inner row with ├ ┴ ┤ junctions");
+    Ok(())
 }
 
 /// Scenario: Focused column header is cyan+bold and other columns are dim
 #[test]
-fn focused_column_header_is_cyan_bold_and_other_columns_are_dim() {
+fn focused_column_header_is_cyan_bold_and_other_columns_are_dim() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 in backlog with the BACKLOG column focused
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
     store.set_focused_column("backlog");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the column header row contains the substring "BACKLOG"
     assert!(joined.contains("BACKLOG"), "missing BACKLOG header");
     // @step And the cell holding "BACKLOG" is styled with foreground Cyan and the bold modifier
-    let (x, y) = find_substring(&buf, "BACKLOG").expect("BACKLOG must appear");
+    let (x, y) = find_substring(&buf, "BACKLOG").or_fail("BACKLOG must appear")?;
     let cell = &buf[(x, y)];
     assert_eq!(cell.fg, Color::Cyan, "BACKLOG cell fg must be Cyan");
     assert!(
@@ -275,18 +282,19 @@ fn focused_column_header_is_cyan_bold_and_other_columns_are_dim() {
     // @step And the column header row contains the substring "SPECIFYING"
     assert!(joined.contains("SPECIFYING"), "missing SPECIFYING header");
     // @step And the cell holding "SPECIFYING" is styled with the theme.dim foreground (DarkGray)
-    let (sx, sy) = find_substring(&buf, "SPECIFYING").expect("SPECIFYING must appear");
+    let (sx, sy) = find_substring(&buf, "SPECIFYING").or_fail("SPECIFYING must appear")?;
     let scell = &buf[(sx, sy)];
     assert_eq!(
         scell.fg,
         Color::DarkGray,
         "SPECIFYING cell fg must be DarkGray (theme.dim)"
     );
+    Ok(())
 }
 
 /// Scenario: Bug cells render red and the focused selected cell flips to bg=green fg=black bold
 #[test]
-fn bug_cells_render_red_and_focused_selected_cell_flips_to_bg_green_fg_black_bold() {
+fn bug_cells_render_red_and_focused_selected_cell_flips_to_bg_green_fg_black_bold() -> TestResult {
     // @step Given a BoardStore containing BUG-001 (bug) and BUG-002 (bug) in the backlog column
     let mut store = BoardStore::default();
     store.replace_work_units(vec![
@@ -297,10 +305,10 @@ fn bug_cells_render_red_and_focused_selected_cell_flips_to_bg_green_fg_black_bol
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     // @step Then the cell containing "BUG-001" is styled with background Green, foreground Black and the bold modifier
-    let (x1, y1) =
-        find_substring_in_content(&buf, "BUG-001").expect("BUG-001 must appear in content rows");
+    let (x1, y1) = find_substring_in_content(&buf, "BUG-001")
+        .or_fail("BUG-001 must appear in content rows")?;
     let c1 = &buf[(x1, y1)];
     assert_eq!(
         c1.bg,
@@ -317,19 +325,20 @@ fn bug_cells_render_red_and_focused_selected_cell_flips_to_bg_green_fg_black_bol
         "BUG-001 selected cell must be bold"
     );
     // @step And the cell containing "BUG-002" is styled with foreground Red
-    let (x2, y2) =
-        find_substring_in_content(&buf, "BUG-002").expect("BUG-002 must appear in content rows");
+    let (x2, y2) = find_substring_in_content(&buf, "BUG-002")
+        .or_fail("BUG-002 must appear in content rows")?;
     let c2 = &buf[(x2, y2)];
     assert_eq!(
         c2.fg,
         Color::Red,
         "BUG-002 unselected bug cell fg must be Red"
     );
+    Ok(())
 }
 
 /// Scenario: Task cells render blue with the [estimate] suffix
 #[test]
-fn task_cells_render_blue_with_estimate_suffix() {
+fn task_cells_render_blue_with_estimate_suffix() -> TestResult {
     // @step Given a BoardStore containing TASK-001 (task, estimate 3) in the implementing column
     let mut store = BoardStore::default();
     let mut t = make_unit("TASK-001", "implementing", "task");
@@ -338,7 +347,7 @@ fn task_cells_render_blue_with_estimate_suffix() {
     // @step And the focused column is "backlog" (so TASK-001 is NOT the selected cell)
     store.set_focused_column("backlog");
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "TASK-001 [3]"
     assert!(
@@ -346,24 +355,25 @@ fn task_cells_render_blue_with_estimate_suffix() {
         "missing 'TASK-001 [3]':\n{joined}"
     );
     // @step And the cell containing "TASK-001 [3]" is styled with foreground Blue
-    let (x, y) =
-        find_substring_in_content(&buf, "TASK-001").expect("TASK-001 must appear in content rows");
+    let (x, y) = find_substring_in_content(&buf, "TASK-001")
+        .or_fail("TASK-001 must appear in content rows")?;
     let c = &buf[(x, y)];
     assert_eq!(
         c.fg,
         Color::Blue,
         "TASK-001 unselected task cell fg must be Blue"
     );
+    Ok(())
 }
 
 /// Scenario: Footer string and footer separator are still painted at the bottom
 #[test]
-fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() {
+fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 in backlog
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     // @step Then the last in-bounds inner row contains the substring "← → Cycle Columns"
     // (MENU-002 R11: the footer now describes the full ring — columns →
     // menu items → chips.)
@@ -372,10 +382,10 @@ fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() {
         footer_row.contains("← → Cycle Columns"),
         "expected footer on row 22, got: `{footer_row}`"
     );
-    // @step And the same row contains the substring "↵ Work Agent"
+    // @step And the same row contains the substring "↵ Choose"
     assert!(
-        footer_row.contains("↵ Work Agent"),
-        "expected '↵ Work Agent' on footer row, got: `{footer_row}`"
+        footer_row.contains("↵ Choose"),
+        "expected '↵ Choose' on footer row, got: `{footer_row}`"
     );
     // @step And the row immediately above the footer contains the glyph "┴"
     let sep_row = row_string(&buf, 21);
@@ -385,4 +395,5 @@ fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() {
     );
     // Sanity: the ⏩ / 🟢 indicators must NOT appear in this slice (RPC-016).
     let (_, _) = find_glyph(&buf, "⏩").unwrap_or((0, 0));
+    Ok(())
 }

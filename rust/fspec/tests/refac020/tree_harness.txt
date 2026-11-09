@@ -1,0 +1,56 @@
+fn argument_tree(argument: &clap::Arg) -> serde_json::Value {
+    serde_json::json!({
+        "id": argument.get_id().as_str(),
+        "short": argument.get_short(),
+        "long": argument.get_long(),
+        "aliases": argument.get_all_aliases(),
+        "visibleAliases": argument.get_visible_aliases(),
+        "shortAliases": argument.get_all_short_aliases(),
+        "visibleShortAliases": argument.get_visible_short_aliases(),
+        "action": format!("{:?}", argument.get_action()),
+        "arity": format!("{:?}", argument.get_num_args()),
+        "required": argument.is_required_set(),
+        "global": argument.is_global_set(),
+        "positional": argument.get_index(),
+        "defaults": argument.get_default_values().iter().map(|value| value.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+        "valueNames": argument.get_value_names().map(|values| values.iter().map(ToString::to_string).collect::<Vec<_>>()),
+        "delimiter": argument.get_value_delimiter(),
+        "terminator": argument.get_value_terminator().map(ToString::to_string),
+        "possibleValues": argument.get_possible_values().iter().map(|value| value.get_name()).collect::<Vec<_>>(),
+        "environment": argument.get_env().map(|value| value.to_string_lossy().into_owned()),
+        "help": argument.get_help().map(ToString::to_string),
+        "longHelp": argument.get_long_help().map(ToString::to_string),
+        "heading": argument.get_help_heading(),
+        "hidden": argument.is_hide_set(),
+        "exclusive": argument.is_exclusive_set(),
+        "requireEquals": argument.is_require_equals_set(),
+        "trailing": argument.is_trailing_var_arg_set(),
+        "last": argument.is_last_set(),
+        "allowHyphen": argument.is_allow_hyphen_values_set(),
+        "allowNegative": argument.is_allow_negative_numbers_set(),
+        "ignoreCase": argument.is_ignore_case_set()
+    })
+}
+
+fn command_tree(command: &clap::Command) -> serde_json::Value {
+    serde_json::json!({
+        "name": command.get_name(),
+        "aliases": command.get_all_aliases().collect::<Vec<_>>(),
+        "visibleAliases": command.get_visible_aliases().collect::<Vec<_>>(),
+        "version": command.get_version(),
+        "about": command.get_about().map(ToString::to_string),
+        "longAbout": command.get_long_about().map(ToString::to_string),
+        "subcommandRequired": command.is_subcommand_required_set(),
+        "externalSubcommands": command.is_allow_external_subcommands_set(),
+        "arguments": command.get_arguments().map(argument_tree).collect::<Vec<_>>(),
+        "subcommands": command.get_subcommands().map(command_tree).collect::<Vec<_>>()
+    })
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut command = Cli::command();
+    command.build();
+    use std::io::Write;
+    std::io::stdout().write_all(serde_json::to_string(&command_tree(&command))?.as_bytes())?;
+    Ok(())
+}

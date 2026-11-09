@@ -23,6 +23,11 @@ impl ModelSelectorView {
         if self.filter_mode {
             return self.handle_filter_key(key);
         }
+        // TUI-130: c and Ctrl+C copy the focused model.
+        let copy_mods = key.modifiers.is_empty() || key.modifiers == KeyModifiers::CONTROL;
+        if key.code == KeyCode::Char('c') && copy_mods {
+            return self.copy_focused_model();
+        }
         if key
             .modifiers
             .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
@@ -30,6 +35,9 @@ impl ModelSelectorView {
             return ModelSelectorEvent::Ignored;
         }
         match key.code {
+            // BUG-578 F23: a committed filter is cleared first (as the
+            // filter prompt's own Esc does); Esc on an unfiltered list closes.
+            KeyCode::Esc if !self.filter.is_empty() => self.handle_filter_key(key),
             KeyCode::Esc => ModelSelectorEvent::Close,
             KeyCode::Char('/') => {
                 self.filter_mode = true;
@@ -206,7 +214,11 @@ impl ModelSelectorView {
             let visible = self.visible_rows;
             if total > visible {
                 if let Some(sb_rect) = self.last_scrollbar_rect {
-                    if rect_contains(sb_rect, ev.column, ev.row) {
+                    // BUG-578 F20: a drag that started on the thumb goes on
+                    // off the gutter column until the button is released.
+                    let follows_drag = self.scrollbar_drag.is_active()
+                        && !matches!(ev.kind, MouseEventKind::Down(_));
+                    if follows_drag || rect_contains(sb_rect, ev.column, ev.row) {
                         let geom = ScrollbarGeometry {
                             area_height: visible,
                             total_items: total,
@@ -214,8 +226,7 @@ impl ModelSelectorView {
                             current_offset: self.scroll_offset,
                         };
                         if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
-                            self.scroll_offset = offset;
-                            self.adjust_scroll();
+                            self.scroll_to(offset);
                         }
                         return ModelSelectorEvent::Consumed;
                     }

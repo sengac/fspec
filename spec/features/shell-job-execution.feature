@@ -3,6 +3,8 @@
 @scheduling
 @napi
 @rust
+@scheduler
+@tool-execution
 Feature: Shell Job Execution
   """
   Create rust/napi/src/scheduler/shell_job.rs with trigger_shell_job function using tokio::process::Command

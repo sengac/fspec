@@ -60,7 +60,11 @@ impl ChangedFilesView {
             if let Some(sb_rect) = self.last_diff_sb_rect {
                 if rect_contains(sb_rect, ev.column, ev.row) {
                     let visible = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
-                    let total = self.diff_lines.len();
+                    // TUI-131: the diff scrolls in wrapped rows.
+                    let total = crate::views::diff_common::diff_row_count(
+                        &self.diff_lines,
+                        self.last_diff_rect,
+                    );
                     if total > visible {
                         let geom = ScrollbarGeometry {
                             area_height: visible,

@@ -1,5 +1,8 @@
+@BUG-582
 @EXT-016
 @recovery
+@codelet
+@attachment
 Feature: Image Content Recovery — session survives API 400 errors caused by oversized image content in conversation history
   """
   Recovery mechanism lives in stream_loop.rs error handler.

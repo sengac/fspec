@@ -4,6 +4,7 @@
 @rpc
 @rust
 @parity
+@multi-session
 Feature: /merge-worktree cross-transport parity
   """
   Both EmbeddedFspecBackend (in-process embedded transport) and

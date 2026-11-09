@@ -25,11 +25,12 @@ const MAX_CONTEXT_CHARS: usize = 8000;
 /// relevant data. Called from DeepSearch to inject context into sub-agent
 /// system prompts. Also available for session-start and subordinate injection.
 pub async fn build_learnings_context(query: &str) -> Option<String> {
-    if !super::registry::is_graph_initialized(super::registry::LEARNINGS_GRAPH) {
+    // KGRAPH-073: availability is the on-disk state, not what this process opened.
+    if !super::registry::learnings_graph_available() {
         return None;
     }
 
-    let db = match super::registry::get_graph(super::registry::LEARNINGS_GRAPH).await {
+    let db = match super::registry::read_learnings_graph().await {
         Ok(db) => db,
         Err(e) => {
             warn!("Failed to get learnings graph for context injection: {e}");
@@ -164,9 +165,11 @@ fn format_context(decisions: &[Value], warnings: &[Value], learnings: &[Value]) 
         }
     }
 
-    // Hard truncation safety net
+    // Hard cap (BUG-626): keep the longest prefix of at most MAX_CONTEXT_CHARS
+    // bytes that ends on a character boundary, so a multi-byte character at
+    // the cut is dropped whole instead of panicking.
     if output.len() > MAX_CONTEXT_CHARS {
-        output.truncate(MAX_CONTEXT_CHARS);
+        output.truncate(output.floor_char_boundary(MAX_CONTEXT_CHARS));
         output.push_str("\n\n[Truncated — context volume limit reached]\n");
     }
 

@@ -199,7 +199,10 @@ async fn a_stalled_admission_prevents_cooperative_executor_progress() -> TestRes
     let mut published = session.subscribe_to_stream();
     let releaser = std::thread::spawn(move || -> Result<bool, std::io::Error> {
         release_receiver.recv().map_err(std::io::Error::other)?;
-        std::thread::sleep(Duration::from_millis(200));
+        // TEST-042: no sleep. The single executor thread is held by the
+        // emitting task from the release signal until the writer is
+        // released here, so the sibling cannot have run and nothing can
+        // have been published, whenever this check runs.
         let premature_publication = subscriber.try_recv().is_ok();
         let starved = !progressed.load(Ordering::SeqCst);
         lease.unlock()?;

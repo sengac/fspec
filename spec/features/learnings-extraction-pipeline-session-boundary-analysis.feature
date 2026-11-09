@@ -1,4 +1,6 @@
 @KGRAPH-021
+@parser
+@code-analysis
 Feature: Learnings Extraction Pipeline — Session Boundary Analysis
   """
   Extraction pipeline in rust/napi/src/graph/learnings_extraction.rs.

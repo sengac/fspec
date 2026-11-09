@@ -46,7 +46,7 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit not found
-    Fix: Ensure work unit exists: fspec show-work-unit <id>
+    Fix: Ensure work unit exists: fspec show-work-unit <workUnitId>
 
 RELATED COMMANDS
   fspec add-domain-event

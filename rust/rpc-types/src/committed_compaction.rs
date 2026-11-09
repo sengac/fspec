@@ -1,7 +1,6 @@
 use crate::{ContextFillInfo, TokenTracker};
 use serde::{Deserialize, Serialize};
 
-#[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommittedContextSnapshot {

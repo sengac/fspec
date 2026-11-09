@@ -16,10 +16,9 @@
 //! are swallowed as no-ops. The expand/collapse assertions therefore FAIL until
 //! the fix lands. No production code is touched by this file.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::nav_item::{NavItemKind, ProviderDisplayInfo};
 use codelet_fspec_tui::views::ProviderSettingsView;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 // ────────────────────────────────────────────────────────────────────────
@@ -48,21 +47,27 @@ fn openai_with_profile() -> ProviderDisplayInfo {
 }
 
 /// The nav-tree index of the openai PROVIDER header row.
-fn openai_header_index(view: &ProviderSettingsView) -> usize {
-    view.nav_items
+fn openai_header_index(
+    view: &ProviderSettingsView,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|item| {
             item.provider_id == "openai" && matches!(item.kind, NavItemKind::Provider { .. })
         })
-        .expect("openai provider header row should exist in nav_items")
+        .or_fail("openai provider header row should exist in nav_items")?)
 }
 
 /// The nav-tree index of the first NON-provider (child) row.
-fn first_child_index(view: &ProviderSettingsView) -> usize {
-    view.nav_items
+fn first_child_index(
+    view: &ProviderSettingsView,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|item| !matches!(item.kind, NavItemKind::Provider { .. }))
-        .expect("an expanded openai provider should have at least one child row")
+        .or_fail("an expanded openai provider should have at least one child row")?)
 }
 
 fn press(view: &mut ProviderSettingsView, code: KeyCode) {
@@ -73,7 +78,7 @@ fn press(view: &mut ProviderSettingsView, code: KeyCode) {
 // Scenario: Right arrow expands a collapsed provider header
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn right_arrow_expands_collapsed_provider_header() {
+fn right_arrow_expands_collapsed_provider_header() -> TestResult {
     // @step Given the provider list is showing with the OpenAI provider collapsed
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![openai_with_profile()]);
@@ -83,7 +88,7 @@ fn right_arrow_expands_collapsed_provider_header() {
     );
 
     // @step Given the cursor is focused on the OpenAI provider header row
-    let header = openai_header_index(&view);
+    let header = openai_header_index(&view)?;
     view.selected_index = header;
 
     // @step When I press the Right arrow key
@@ -100,13 +105,14 @@ fn right_arrow_expands_collapsed_provider_header() {
         view.selected_index, header,
         "cursor should remain on the openai header row"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Right arrow on an already-expanded provider header does nothing
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn right_arrow_on_expanded_header_does_nothing() {
+fn right_arrow_on_expanded_header_does_nothing() -> TestResult {
     // @step Given the provider list is showing with the OpenAI provider expanded
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![openai_with_profile()]);
@@ -117,7 +123,7 @@ fn right_arrow_on_expanded_header_does_nothing() {
     );
 
     // @step Given the cursor is focused on the OpenAI provider header row
-    let header = openai_header_index(&view);
+    let header = openai_header_index(&view)?;
     view.selected_index = header;
 
     // @step When I press the Right arrow key
@@ -134,13 +140,14 @@ fn right_arrow_on_expanded_header_does_nothing() {
         view.selected_index, header,
         "cursor should remain on the openai header row"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Left arrow collapses an expanded provider header
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn left_arrow_collapses_expanded_provider_header() {
+fn left_arrow_collapses_expanded_provider_header() -> TestResult {
     // @step Given the provider list is showing with the OpenAI provider expanded
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![openai_with_profile()]);
@@ -151,7 +158,7 @@ fn left_arrow_collapses_expanded_provider_header() {
     );
 
     // @step Given the cursor is focused on the OpenAI provider header row
-    let header = openai_header_index(&view);
+    let header = openai_header_index(&view)?;
     view.selected_index = header;
 
     // @step When I press the Left arrow key
@@ -168,13 +175,14 @@ fn left_arrow_collapses_expanded_provider_header() {
         view.selected_index, header,
         "cursor should remain on the openai header row"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Left arrow on an already-collapsed provider header does nothing
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn left_arrow_on_collapsed_header_does_nothing() {
+fn left_arrow_on_collapsed_header_does_nothing() -> TestResult {
     // @step Given the provider list is showing with the OpenAI provider collapsed
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![openai_with_profile()]);
@@ -184,7 +192,7 @@ fn left_arrow_on_collapsed_header_does_nothing() {
     );
 
     // @step Given the cursor is focused on the OpenAI provider header row
-    let header = openai_header_index(&view);
+    let header = openai_header_index(&view)?;
     view.selected_index = header;
 
     // @step When I press the Left arrow key
@@ -201,13 +209,14 @@ fn left_arrow_on_collapsed_header_does_nothing() {
         view.selected_index, header,
         "cursor should remain on the openai header row"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Left arrow on a child row does nothing
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn left_arrow_on_child_row_does_nothing() {
+fn left_arrow_on_child_row_does_nothing() -> TestResult {
     // @step Given the provider list is showing with the OpenAI provider expanded
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![openai_with_profile()]);
@@ -218,7 +227,7 @@ fn left_arrow_on_child_row_does_nothing() {
     );
 
     // @step Given the cursor is focused on a child row under the OpenAI provider
-    let child = first_child_index(&view);
+    let child = first_child_index(&view)?;
     view.selected_index = child;
 
     // @step When I press the Left arrow key
@@ -235,4 +244,5 @@ fn left_arrow_on_child_row_does_nothing() {
         view.selected_index, child,
         "cursor should remain on the same child row"
     );
+    Ok(())
 }

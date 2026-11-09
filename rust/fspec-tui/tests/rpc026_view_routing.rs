@@ -2,8 +2,7 @@
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
@@ -54,7 +53,7 @@ fn fake_session(id: &str) -> SessionInfo {
 
 /// Scenario: Ctrl+R opens the search view from the normal AgentView
 #[test]
-fn ctrl_r_emits_open_search_view() {
+fn ctrl_r_emits_open_search_view() -> TestResult {
     // @step Given AgentView has no popups or mode views open
     let (tx, mut rx) = unbounded_channel::<Action>();
     let mut view = AgentView::new(tx);
@@ -62,7 +61,7 @@ fn ctrl_r_emits_open_search_view() {
     let result = view.handle_event(&key(KeyCode::Char('r'), KeyModifiers::CONTROL));
     assert!(matches!(result, EventResult::Consumed(_)));
     // @step Then Action::OpenSearchView is dispatched
-    let act = rx.try_recv().expect("action");
+    let act = rx.try_recv().or_fail("action")?;
     assert!(matches!(act, Action::OpenSearchView));
     // @step And AgentView.search_view is Some(default SearchHistoryView)
     // (Widget-level: simulate the App folding OpenSearchView by installing the view.)
@@ -74,14 +73,18 @@ fn ctrl_r_emits_open_search_view() {
     // (Verified by absence of a second OpenSearchView action on the bus.)
     assert!(rx.try_recv().is_err());
     // @step And search_view stays open with unchanged query and matches
-    let sv = view.search_view.as_ref().expect("search_view stays open");
+    let sv = view
+        .search_view
+        .as_ref()
+        .or_fail("search_view stays open")?;
     assert_eq!(sv.query(), "");
     assert_eq!(sv.match_count(), 0);
+    Ok(())
 }
 
 /// Scenario: Ctrl+R while a popup is open is NOT intercepted by the chord
 #[test]
-fn ctrl_r_while_slash_popup_open_does_not_open_search_view() {
+fn ctrl_r_while_slash_popup_open_does_not_open_search_view() -> TestResult {
     // @step Given AgentView has a slash popup open
     let (tx, mut rx) = unbounded_channel::<Action>();
     let mut view = AgentView::new(tx);
@@ -94,14 +97,18 @@ fn ctrl_r_while_slash_popup_open_does_not_open_search_view() {
     let _ = view.handle_event(&key(KeyCode::Char('r'), KeyModifiers::CONTROL));
     // @step Then Action::OpenSearchView is NOT dispatched
     assert!(rx.try_recv().is_err());
+    Ok(())
 }
 
 /// Scenario: AgentView early-returns when resume_view is Some
 #[test]
-fn render_early_returns_when_resume_view_active() {
+fn render_early_returns_when_resume_view_active() -> TestResult {
     // @step Given resume_view is open with 3 SessionInfo values
     let (mut app, _mock) = fresh_app();
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
     app.dispatch(Action::SessionListLoaded(vec![
         fake_session("s-1"),
         fake_session("s-2"),
@@ -135,11 +142,12 @@ fn render_early_returns_when_resume_view_active() {
     assert!(!joined.contains("Agent —"));
     // @step And the footer row contains "Enter Select | ↑↓ Navigate | D Delete | Esc Cancel"
     assert!(joined.contains("Enter Select | ↑↓ Navigate | D Delete | Esc Cancel"));
+    Ok(())
 }
 
 /// Scenario: AgentView normal layout paints when resume_view is None
 #[test]
-fn render_paints_normal_layout_when_no_mode_view_active() {
+fn render_paints_normal_layout_when_no_mode_view_active() -> TestResult {
     // @step Given AgentView has no popups or mode views open
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
@@ -163,11 +171,12 @@ fn render_paints_normal_layout_when_no_mode_view_active() {
     // RPC-029: scrollback no longer paints an " Agent — <sid> " title;
     // the visible "normal layout" anchor is the input placeholder hint.
     assert!(joined.contains("Type a message..."));
+    Ok(())
 }
 
 /// Scenario fragment: resume_view consumes keys before normal handlers
 #[test]
-fn resume_view_consumes_keys_before_normal_handlers() {
+fn resume_view_consumes_keys_before_normal_handlers() -> TestResult {
     // @step Given AgentView.resume_view is Some
     let (tx, mut rx) = unbounded_channel::<Action>();
     let mut view = AgentView::new(tx);
@@ -177,16 +186,17 @@ fn resume_view_consumes_keys_before_normal_handlers() {
     // @step When the user presses Esc
     let _ = view.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
     // @step Then Action::CloseResumeView is dispatched (and resume_view is dropped)
-    let act = rx.try_recv().expect("action");
+    let act = rx.try_recv().or_fail("action")?;
     assert!(matches!(act, Action::CloseResumeView));
     assert!(view.resume_view.is_none());
     // @step And no Action::BackToBoard was dispatched
     assert!(rx.try_recv().is_err());
+    Ok(())
 }
 
 /// Scenario fragment: search_view consumes typing before sending to input
 #[test]
-fn search_view_consumes_typing_and_emits_filter_changed() {
+fn search_view_consumes_typing_and_emits_filter_changed() -> TestResult {
     // @step Given AgentView.search_view is Some
     let (tx, mut rx) = unbounded_channel::<Action>();
     let mut view = AgentView::new(tx);
@@ -194,11 +204,12 @@ fn search_view_consumes_typing_and_emits_filter_changed() {
     // @step When the user types "g"
     let _ = view.handle_event(&key(KeyCode::Char('g'), KeyModifiers::NONE));
     // @step Then Action::SearchHistory("g") is dispatched
-    let act = rx.try_recv().expect("action");
+    let act = rx.try_recv().or_fail("action")?;
     match act {
         Action::SearchHistory(q) => assert_eq!(q, "g"),
-        other => panic!("expected SearchHistory, got {other:?}"),
+        other => return Err(format!("expected SearchHistory, got {other:?}").into()),
     }
     // @step And the AgentView's input is unchanged
     assert!(view.input.is_empty());
+    Ok(())
 }

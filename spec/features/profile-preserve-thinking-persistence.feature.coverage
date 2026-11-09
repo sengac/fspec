@@ -5,19 +5,21 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov143_preserve_thinking_persistence.rs",
-          "lines": "40-54",
+          "lines": "43-59",
           "implMappings": [
             {
               "file": "rust/sessions/src/conversions.rs",
               "lines": [
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "base_url: wire.base_url.clone(),",
+              "lastLine": "// PROV-142: carry the per-profile auto-continue default through."
             }
           ]
         }
@@ -33,6 +35,7 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
+                192,
                 193,
                 194,
                 195,
@@ -42,9 +45,10 @@
                 199,
                 200,
                 201,
-                202,
-                203
-              ]
+                202
+              ],
+              "firstLine": "(!def.base_url.is_empty()).then(|| Value::String(def.base_url.clone())),",
+              "lastLine": "def.context_window.map(Value::from),"
             }
           ]
         }
@@ -62,6 +66,6 @@
       "rust/sessions/src/conversions.rs",
       "rust/sessions/src/profile_persistence.rs"
     ],
-    "totalLinesCovered": 84
+    "totalLinesCovered": 86
   }
 }

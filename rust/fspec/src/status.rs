@@ -17,18 +17,20 @@ use url::Url;
 
 use crate::common;
 
-pub async fn run(connect: Option<String>) -> Result<()> {
+pub async fn run(connect: Option<String>, token: Option<String>) -> Result<()> {
     // Pre-resolve the URL (so we can distinguish "no daemon.json" from
     // "stale daemon.json" in stderr text per the feature scenarios).
-    let url = match resolve_url(connect) {
-        Ok(u) => u,
+    let (url, bearer, ca) = match resolve_url(connect, token) {
+        Ok(resolved) => resolved,
         Err(e) => {
             eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let backend = match WebSocketFspecBackend::connect(url.clone()).await {
+    // RPC-458: a saved daemon's CA is trusted beside the roots and
+    // FSPEC_DAEMON_CA.
+    let backend = match WebSocketFspecBackend::connect_trusting(url.clone(), bearer, ca).await {
         Ok(b) => b,
         Err(e) => {
             eprintln!("fspec daemon: not running (connect failed: {e:#})");
@@ -45,12 +47,38 @@ pub async fn run(connect: Option<String>) -> Result<()> {
     };
 
     print_health(&health);
+    print_local_daemons();
     Ok(())
 }
 
-fn resolve_url(explicit: Option<String>) -> Result<Url> {
+/// RPC-446: every live local daemon advertised in its discovery file
+/// (stale entries are pruned by the listing).
+fn print_local_daemons() {
+    let daemons = match common::daemons_dir().and_then(|dir| common::list_live_daemons(&dir)) {
+        Ok(daemons) => daemons,
+        Err(e) => {
+            tracing::warn!(error = %e, "failed to list local daemons");
+            return;
+        }
+    };
+    println!("local daemons: {}", daemons.len());
+    for daemon in &daemons {
+        println!(
+            "  pid={} port={} workspace={}",
+            daemon.pid,
+            daemon.port,
+            daemon.workspace.as_deref().unwrap_or("?")
+        );
+    }
+}
+
+fn resolve_url(
+    explicit: Option<String>,
+    token: Option<String>,
+) -> Result<crate::daemons_cmd::ConnectTarget> {
     if let Some(s) = explicit {
-        return Url::parse(&s).with_context(|| format!("--connect URL parse: {s}"));
+        // RPC-447: a URL, or the name of a saved daemon (with its token).
+        return crate::daemons_cmd::resolve_connect(&s, token);
     }
     let djson = common::daemon_json_path()?;
     if !djson.exists() {
@@ -67,7 +95,15 @@ fn resolve_url(explicit: Option<String>) -> Result<Url> {
             return Err(anyhow::anyhow!("fspec daemon: not running ({e})"));
         }
     };
-    Url::parse(&format!("ws://127.0.0.1:{}", handshake.port)).context("synthesize ws url")
+    // BUG-595: the scheme and host the daemon's entry names.
+    let url = Url::parse(&handshake.url()).context("synthesize the daemon url")?;
+    // BUG-429: an autodiscovered local daemon takes --token, else
+    // FSPEC_DAEMON_TOKEN.
+    let bearer = match token {
+        Some(token) => Some(token),
+        None => crate::daemon_directory::local_daemon_token()?,
+    };
+    Ok((url, bearer, None))
 }
 
 fn print_health(h: &HealthInfo) {

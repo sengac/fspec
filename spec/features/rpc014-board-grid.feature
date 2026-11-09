@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-014
 @rust
@@ -85,6 +86,6 @@ Feature: RPC-014 BoardView rich box-drawing grid + work-unit details strip
   Scenario: Footer string and footer separator are still painted at the bottom
     Given a BoardStore containing AUTH-001 in backlog
     When the App renders BoardView against a 120x24 TestBackend
-    Then the last in-bounds inner row contains the substring "← → Columns"
-    And the same row contains the substring "↵ Work Agent"
+    Then the last in-bounds inner row contains the substring "← → Cycle Columns"
+    And the same row contains the substring "↵ Choose"
     And the row immediately above the footer contains the glyph "┴"

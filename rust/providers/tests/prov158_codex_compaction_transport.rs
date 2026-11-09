@@ -1,3 +1,5 @@
+//! Feature: spec/features/codex-sole-dag-memory-policy.feature
+
 use codelet_providers::codex::history::CodexHistory;
 use serde_json::{json, Value};
 
@@ -7,6 +9,7 @@ pub mod fixture;
 fn terminal(status: &str, output: Vec<Value>) -> String {
     fixture::event(json!({"type":format!("response.{status}"),"response":{
         "id":"resp_compact","status":status,"end_turn":true,"output":output,
+        "usage":{"input_tokens":12,"output_tokens":8,"total_tokens":20},
         "error": if status == "failed" { json!({"code":"failed","message":"rejected"}) } else { Value::Null },
         "incomplete_details": if status == "incomplete" { json!({"reason":"interrupted"}) } else { Value::Null }
     }}))
@@ -14,6 +17,7 @@ fn terminal(status: &str, output: Vec<Value>) -> String {
 
 #[tokio::test]
 async fn unsolicited_native_compaction_never_replaces_the_checkpoint() -> fixture::TestResult {
+    // @step Given a committed Codex checkpoint and responses containing native compaction items
     for status in ["completed", "failed", "incomplete"] {
         let opaque = json!({"type":"compaction","id":"cmp_transport","encrypted_content":"opaque-transport+/=秘密"});
         let server = fixture::Server::start(
@@ -29,7 +33,9 @@ async fn unsolicited_native_compaction_never_replaces_the_checkpoint() -> fixtur
         let initial = fixture::collect(model.clone()).await?;
         assert!(initial.errors.is_empty());
         let prior = history.snapshot()?;
+        // @step When streaming events and direct responses are consumed
         let rejected = fixture::collect(model).await?;
+        // @step Then typed unsupported errors preserve the checkpoint without tools or completion
         assert_eq!(rejected.errors.len(), 1);
         assert!(rejected.errors[0].contains("native memory unsupported"));
         assert!(rejected.finals.is_empty());

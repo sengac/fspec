@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @providers
 @model-selection
@@ -35,7 +36,7 @@ Feature: Restore TS-parity first-available model initialization removed by PROV-
   #   3. Launch with a persisted model whose provider no longer has credentials (or model gone): startup falls back to first-available reachable model
   #   4. Two local profiles unreachable (zero models) but a reachable cloud provider exists: unreachable profiles are skipped, cloud model is selected as first-available
   #   5. Order check: a reachable local profile with models AND a reachable cloud provider both exist; first-available picks the profile model because profiles precede cloud
-  #   6. Genuinely zero reachable model-bearing sections (all profiles down, no cloud creds): no default committed, create_session declines with empty SessionId (PROV-101 edge case preserved)
+  #   6. Genuinely zero reachable model-bearing sections (all profiles down, no cloud creds): no default committed, create_session fails naming the missing default model (PROV-101 edge case preserved)
   #   7. Anthropic is NOT credentialed and is NOT the only reachable provider: startup never substitutes anthropic/claude as a hardcoded default
   #
   # QUESTIONS (ANSWERED):
@@ -112,7 +113,7 @@ Feature: Restore TS-parity first-available model initialization removed by PROV-
     And no reachable model-bearing section exists
     When startup model initialization runs
     Then no default model is committed
-    And the bootstrap create_session declines with an empty SessionId
+    And the bootstrap create_session fails because no default model is set
 
   # EXAMPLE 7 (also Rule 5 — preserve PROV-101: no hardcoded anthropic substitution)
   Scenario: Anthropic is never substituted as a hardcoded default when not credentialed
@@ -129,4 +130,4 @@ Feature: Restore TS-parity first-available model initialization removed by PROV-
     And multiple providers are credentialed in an ambiguous state with no reachable model-bearing section
     When startup model initialization runs
     Then no default model is committed by provider-priority preference
-    And the bootstrap create_session declines with an empty SessionId
+    And the bootstrap create_session fails because no default model is set

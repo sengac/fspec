@@ -1,0 +1,583 @@
+{
+  "scenarios": [
+    {
+      "name": "The Codex section lists the models Codex /models returns",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "184-214",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// The Codex section when Codex has credentials, leading the cloud group",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/models_catalog.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "struct ModelEntry {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// PROV-176: the \"Codex (ChatGPT)\" section lists the models",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The OpenAI provider keeps its sections",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "216-252",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "/// The Codex section when Codex has credentials, leading the cloud group",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// PROV-176: cloud OpenAI models are offered only under the",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex /models is fetched every time the provider list is built",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "254-288",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "/// The Codex section when Codex has credentials, leading the cloud group",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// PROV-176: the \"Codex (ChatGPT)\" section lists the models",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreachable /models leaves the Codex section empty with the reason",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "290-310",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "/// BUG-577: the reason shown when `/models` answers with no models to list.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "pub fn retain_populated_cloud_sections(sections: Vec<ProviderInfo>) -> Vec<ProviderInfo> {",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/rpc-types/src/dialogs.rs",
+              "lines": [
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "/// PROV-176: why a section that should list models lists none (the Codex",
+              "lastLine": "pub unavailable_reason: Option<String>,"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "if let Some(reason) = &row.unavailable_reason {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                92
+              ],
+              "firstLine": "unavailable_reason: provider.unavailable_reason.clone(),",
+              "lastLine": "unavailable_reason: provider.unavailable_reason.clone(),"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/model_selector_dialog_rows.rs",
+              "lines": [
+                42,
+                43,
+                44
+              ],
+              "firstLine": "/// PROV-176: why a cloud section lists no models (the Codex section when",
+              "lastLine": "pub(crate) unavailable_reason: Option<String>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex signed in with an API key only lists no Codex models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "312-331",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "/// BUG-577: the reason shown when `/models` answers with no models to list.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "pub fn retain_populated_cloud_sections(sections: Vec<ProviderInfo>) -> Vec<ProviderInfo> {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A listed model models.dev does not know is refused at selection",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs",
+          "lines": "333-363",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "fn model_entry(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                282,
+                283
+              ],
+              "firstLine": "// PROV-176: a listed Codex model models.dev has no limits for is refused.",
+              "lastLine": "crate::codex_section::refuse_codex_model_without_limits(model, &limits)?;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov176_codex_section_lists_codex_models.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/codex_section.rs",
+      "rust/providers/src/codex/models_catalog.rs",
+      "rust/sessions/src/handle_impl/handle_impl_5.rs",
+      "rust/sessions/src/profile_sections.rs",
+      "rust/rpc-types/src/dialogs.rs",
+      "rust/fspec-tui/src/views/model_selector/header.rs",
+      "rust/fspec-tui/src/views/model_selector/rows.rs",
+      "rust/fspec-tui/src/components/model_selector_dialog_rows.rs",
+      "rust/sessions/src/model_resolution.rs"
+    ],
+    "totalLinesCovered": 549
+  }
+}

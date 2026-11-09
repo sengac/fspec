@@ -56,7 +56,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub fn install_committed_generation(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/checkpoint_restore.rs",
@@ -188,7 +190,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             }
           ]
         }
@@ -250,7 +254,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub fn install_committed_generation(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/checkpoint_restore.rs",
@@ -382,7 +388,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             }
           ]
         }
@@ -444,7 +452,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub fn install_committed_generation(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/checkpoint_restore.rs",
@@ -576,7 +586,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             }
           ]
         }

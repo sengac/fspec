@@ -1,6 +1,6 @@
 //! Critical-priority Help dialog (RPC-008 rule [15]).
 //!
-//! Feature: spec/features/fspec-tui-help-dialog.feature
+//! Feature: spec/features/fspec-tui-help-dialog-body-rpc009.feature
 //! Feature: spec/features/rpc027-help-disconnect-thinking-dialogs.feature
 //! Feature: spec/features/scrollable-space-filling-help-dialog-with-scrollbar.feature
 //!
@@ -250,11 +250,46 @@ mod tests {
         out
     }
 
+    // Scenarios of spec/features/fspec-tui-help-dialog-body-rpc009.feature and
+    // the other help-dialog features share these unit tests, so a test can
+    // carry the @step lines of more than one feature.
+
     #[test]
     fn help_dialog_is_critical_priority_with_canonical_id() {
+        // @step Given an isolated HelpDialog component with id "help-dialog"
+        // @step Given an isolated HelpDialog component
         let dialog = HelpDialog::new();
-        assert_eq!(dialog.priority(), Priority::Critical);
         assert_eq!(dialog.id(), "help-dialog");
+        // @step When I inspect its priority()
+        // @step Then it returns Priority::Critical
+        // @step Then its priority() returns Priority::Critical
+        assert_eq!(dialog.priority(), Priority::Critical);
+    }
+
+    #[test]
+    fn help_dialog_renders_via_dialog_theme_without_tui_popup_or_centered_rect() {
+        // @step When I inspect its source
+        let source = include_str!("help_dialog.rs");
+        let production = source
+            .split("#[cfg(test)]")
+            .next()
+            .expect("help_dialog.rs has production code before its tests");
+        // @step Then it renders via dialog_theme::render_dialog_at and does not contain "tui_popup::Popup"
+        // @step And its render(...) implementation uses dialog_theme::render_dialog_at (no tui_popup::Popup)
+        assert!(
+            production.contains("render_dialog_at("),
+            "HelpDialog must render through dialog_theme::render_dialog_at (RPC-027)"
+        );
+        assert!(
+            !production.contains("tui_popup"),
+            "HelpDialog must not use tui_popup (RPC-027 replaced the popup adapter)"
+        );
+        // @step And it does NOT use a hand-rolled `centered_rect` helper as the production code path
+        // @step And it does NOT define a hand-rolled `centered_rect` helper as the production code path
+        assert!(
+            !production.contains("fn centered_rect"),
+            "HelpDialog must not define a hand-rolled centered_rect helper"
+        );
     }
 
     #[test]
@@ -264,18 +299,33 @@ mod tests {
         // visible (the dialog scrolls — RPC-396), so we assert the
         // top-of-list board hints AND the absence of the old
         // misleading "q       Quit" line.
+        // @step Given an isolated HelpDialog component
+        // @step When I render it onto an 80x24 TestBackend buffer
+        // @step When the dialog is rendered onto an 80x24 TestBackend
         let buf = render_help_dialog_80x24();
         let text = buffer_text(&buf);
+        // @step Then the buffer contains "Navigate", "New Agent" and "Reorder"
         for needle in &["Navigate", "New Agent", "Reorder"] {
             assert!(
                 text.contains(needle),
                 "buffer must contain {needle}: {text}"
             );
         }
+        // @step And the buffer does not contain "q       Quit"
         assert!(
             !text.contains("q       Quit"),
             "board help must NOT contain the old \"q       Quit\" line: {text}"
         );
+        // @step Then the rendered buffer contains the substring "j"
+        // @step And the rendered buffer contains the substring "k"
+        // @step And the rendered buffer contains the substring "Enter"
+        // @step And the rendered buffer contains the substring "ESC"
+        for needle in &["↓/j", "↑/k", "Enter", "ESC to close"] {
+            assert!(
+                text.contains(needle),
+                "buffer must contain {needle}: {text}"
+            );
+        }
         // Full accurate content (incl. the Ctrl+D quit line) is asserted
         // against a 200x60 backend in tests/help_dialog_content_rpc397.rs
         // where the whole list fits without scrolling.
@@ -283,7 +333,12 @@ mod tests {
 
     #[test]
     fn help_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
+        // @step Given an isolated HelpDialog component
+        // @step Given an isolated HelpDialog component rendered onto an 80x24 TestBackend
+        // @step When I render it onto an 80x24 TestBackend buffer
         let buf = render_help_dialog_80x24();
+        // @step And I serialise the buffer cell grid via `insta::assert_yaml_snapshot!`
+        // @step When the buffer cell grid is serialised via `insta::assert_yaml_snapshot!`
         let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
         for y in 0..buf.area.height {
             let mut row = String::with_capacity(buf.area.width as usize);
@@ -292,6 +347,8 @@ mod tests {
             }
             rows.push(row);
         }
+        // @step Then the serialised output matches the snapshot file "help_dialog__centered_popup_80x24.snap"
+        // @step Then the serialised output matches the regenerated snapshot file "help_dialog__centered_popup_80x24.snap"
         insta::assert_yaml_snapshot!("help_dialog__centered_popup_80x24", rows);
     }
 }

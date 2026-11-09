@@ -1,12 +1,13 @@
 ---
 source: fspec-tui/tests/menu005_menu_bar_help.rs
+assertion_line: 675
 expression: buffer_to_rows(&buf80)
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- "│   v0.10.9    [ Kanban ] [ Tools ] [ Settings ] [ Help ]       [ New Agent ]  │"
+- "│   v0.11.0    [ Kanban ] [ Tools ] [ Settings ] [ Help ]       [ New Agent ]  │"
 - ├──────────────────────────────────────────────────────────────────────────────┤
 - "│AUTH-001: AUTH-001                                                            │"
 - │                                                                              │
@@ -22,7 +23,7 @@ expression: buffer_to_rows(&buf80)
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
-- │           │           │          │          │          │          │          │
 - ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
-- "│← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Pri│"
+- "│  ← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ]  │"
+- │                     Priority Down ◆ ↵ Choose ◆ ESC Exit                      │
 - └──────────────────────────────────────────────────────────────────────────────┘

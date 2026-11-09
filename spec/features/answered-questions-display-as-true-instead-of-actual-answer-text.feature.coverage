@@ -4,21 +4,33 @@
       "name": "Store answer text in question.answer field",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
-          "lines": "34-102",
+          "file": "rust/fspec-core/tests/bug090_answer_text_in_generated_comments.rs",
+          "lines": "108-129",
           "implMappings": [
             {
-              "file": "src/types/index.ts",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                24
-              ]
-            },
-            {
-              "file": "src/commands/answer-question.ts",
-              "lines": [
-                72,
-                73
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "// Mark the question selected and (optionally) record the answer.",
+              "lastLine": "}"
             }
           ]
         }
@@ -28,14 +40,33 @@
       "name": "Display answer text in feature file comments",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
-          "lines": "106-190",
+          "file": "rust/fspec-core/tests/bug090_answer_text_in_generated_comments.rs",
+          "lines": "131-150",
           "implMappings": [
             {
-              "file": "src/commands/generate-scenarios.ts",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
-                172
-              ]
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455
+              ],
+              "firstLine": "// Answered questions (selected only).",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,27 +76,58 @@
       "name": "Preserve multiline answer text",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
-          "lines": "194-282",
+          "file": "rust/fspec-core/tests/bug090_answer_text_in_generated_comments.rs",
+          "lines": "154-180",
           "implMappings": [
             {
-              "file": "src/types/index.ts",
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                24
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "// Mark the question selected and (optionally) record the answer.",
+              "lastLine": "}"
             },
             {
-              "file": "src/commands/answer-question.ts",
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
-                72,
-                73
-              ]
-            },
-            {
-              "file": "src/commands/generate-scenarios.ts",
-              "lines": [
-                172
-              ]
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455
+              ],
+              "firstLine": "// Answered questions (selected only).",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,13 +139,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/answer-question-preserves-text.test.ts"
+      "rust/fspec-core/tests/bug090_answer_text_in_generated_comments.rs"
     ],
     "implFiles": [
-      "src/types/index.ts",
-      "src/commands/answer-question.ts",
-      "src/commands/generate-scenarios.ts"
+      "rust/fspec-core/src/commands/answer_question.rs",
+      "rust/fspec-core/src/commands/generate_scenarios.rs"
     ],
-    "totalLinesCovered": 251
+    "totalLinesCovered": 141
   }
 }

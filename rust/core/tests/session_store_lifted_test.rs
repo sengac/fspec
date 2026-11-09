@@ -34,6 +34,7 @@ use tempfile::TempDir;
 /// Configure a unique temp data dir for the test and return the guard.
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     // Force the lifted singletons to forget any prior state so each

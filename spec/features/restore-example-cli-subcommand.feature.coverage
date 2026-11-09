@@ -70,21 +70,10 @@
                 58,
                 59,
                 60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
+                61
+              ],
+              "firstLine": "//! `restore-example` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -130,7 +119,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "/// parsed integer as a JSON number when the input matches `[-+]?\\d+...`,"
             }
           ]
         }
@@ -141,7 +132,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_example.rs",
-          "lines": "154-177",
+          "lines": "151-174",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_example.rs",
@@ -164,7 +155,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "match restore_example::run(&args_json, &project_root).await {",
+              "lastLine": "/// Mirror TS `parseInt(value, 10)` for the `index` positional. Returns the"
             }
           ]
         }
@@ -175,7 +168,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_example.rs",
-          "lines": "179-203",
+          "lines": "176-200",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_example.rs",
@@ -198,7 +191,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "match restore_example::run(&args_json, &project_root).await {",
+              "lastLine": "/// Mirror TS `parseInt(value, 10)` for the `index` positional. Returns the"
             }
           ]
         }
@@ -209,7 +204,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_example.rs",
-          "lines": "205-229",
+          "lines": "202-226",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_example.rs",
@@ -231,7 +226,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "Some('-') => (-1i64, &trimmed[1..]),",
+              "lastLine": "mod tests {"
             }
           ]
         }
@@ -242,7 +239,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_example.rs",
-          "lines": "231-257",
+          "lines": "228-254",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_example.rs",
@@ -255,7 +252,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_example.rs",
-          "lines": "259-309",
+          "lines": "256-306",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_example.rs",
@@ -301,7 +300,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "/// parsed integer as a JSON number when the input matches `[-+]?\\d+...`,"
             }
           ]
         }
@@ -319,6 +320,6 @@
       "rust/fspec-core/src/help/configs/restore_example.rs",
       "rust/fspec/src/restore_example.rs"
     ],
-    "totalLinesCovered": 407
+    "totalLinesCovered": 394
   }
 }

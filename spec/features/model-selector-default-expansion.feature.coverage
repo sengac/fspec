@@ -4,24 +4,12 @@
       "name": "No current model set leaves every provider collapsed",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "929-950",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_collapse.rs",
+          "lines": "8-27",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -40,8 +28,22 @@
                 121,
                 122,
                 123,
-                124
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// BUG-325: the last failed custom-model write, shown above the list",
+              "lastLine": ""
             }
           ]
         }
@@ -51,24 +53,12 @@
       "name": "Only the current model's provider section is auto-expanded",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "952-975",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_collapse.rs",
+          "lines": "30-51",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -87,8 +77,22 @@
                 121,
                 122,
                 123,
-                124
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// BUG-325: the last failed custom-model write, shown above the list",
+              "lastLine": ""
             }
           ]
         }
@@ -98,24 +102,12 @@
       "name": "A current model in the first provider expands only that section",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "976-995",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_collapse.rs",
+          "lines": "54-71",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -134,8 +126,22 @@
                 121,
                 122,
                 123,
-                124
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// BUG-325: the last failed custom-model write, shown above the list",
+              "lastLine": ""
             }
           ]
         }
@@ -145,16 +151,12 @@
       "name": "Filtering reveals matches inside collapsed providers",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "996-1022",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_collapse.rs",
+          "lines": "74-98",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
-                46,
-                47,
-                48,
-                49,
                 50,
                 51,
                 52,
@@ -197,32 +199,7 @@
                 89,
                 90,
                 91,
-                92,
                 93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Reloading providers re-applies the collapse default",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "1023-1048",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
                 94,
                 95,
                 96,
@@ -235,26 +212,10 @@
                 103,
                 104,
                 105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
+                106
+              ],
+              "firstLine": "/// Capability badges are appended in TS order `[C] [R] [V] [cw]`",
+              "lastLine": "selectable: true,"
             }
           ]
         }
@@ -262,16 +223,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/tests_collapse.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/mod.rs",
       "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
-    "totalLinesCovered": 299
+    "totalLinesCovered": 234
   }
 }

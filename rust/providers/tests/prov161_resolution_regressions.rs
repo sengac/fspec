@@ -104,8 +104,8 @@ fn scripted_selection_preserves_native_identity() -> TestResult {
 #[serial]
 fn scripted_selection_retains_script_supplied_limits() -> TestResult {
     let (_directory, _environment, manager) = scripted_manager()?;
-    assert_eq!(manager.context_window(), 320_000);
-    assert_eq!(manager.max_output_tokens(), 24_000);
+    assert_eq!(manager.context_window(), Some(320_000));
+    assert_eq!(manager.max_output_tokens(), Some(24_000));
     assert_eq!(
         manager.compaction_threshold_override(),
         Some(("percentage", 65))

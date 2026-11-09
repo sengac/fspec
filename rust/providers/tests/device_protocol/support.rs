@@ -104,12 +104,14 @@ pub async fn official_exchange(server: &MockServer) {
         .await;
 }
 
-pub async fn count(server: &MockServer, endpoint: &str) -> usize {
-    server
+/// How many requests `server` received at `endpoint`; an error when the
+/// server does not record requests.
+pub async fn count(server: &MockServer, endpoint: &str) -> Result<usize, String> {
+    Ok(server
         .received_requests()
         .await
-        .unwrap_or_default()
+        .ok_or("the mock server does not record requests")?
         .iter()
         .filter(|request| request.url.path() == endpoint)
-        .count()
+        .count())
 }

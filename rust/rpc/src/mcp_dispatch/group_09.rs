@@ -6,8 +6,8 @@ pub(super) mod persistence_delete_session {
     pub struct Args {
         session: SessionId,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -17,7 +17,6 @@ pub(super) mod persistence_delete_session {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .persistence_delete_session(tarpc::context::current(), args.session)
             .await
@@ -31,8 +30,8 @@ pub(super) mod list_providers {
     #[derive(serde::Deserialize, schemars::JsonSchema)]
     #[serde(deny_unknown_fields)]
     pub struct Args {}
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -40,13 +39,13 @@ pub(super) mod list_providers {
         Ok(())
     }
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
-        let args: Args =
+        let _args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .list_providers(tarpc::context::current())
             .await
-            .map_err(|e| InvokeError::Transport(e.to_string()))?;
+            .map_err(|e| InvokeError::Transport(e.to_string()))?
+            .map_err(InvokeError::Daemon)?;
         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
@@ -59,8 +58,8 @@ pub(super) mod set_session_model {
         provider_id: String,
         model_id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -70,7 +69,6 @@ pub(super) mod set_session_model {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .set_session_model(
                 tarpc::context::current(),

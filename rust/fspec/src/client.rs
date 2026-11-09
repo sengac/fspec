@@ -19,7 +19,7 @@ use url::Url;
 
 use crate::common::{self, ShutdownReason};
 
-pub async fn run(connect: Option<String>) -> Result<()> {
+pub async fn run(connect: Option<String>, token: Option<String>) -> Result<()> {
     common::install_panic_hook();
     common::init_tracing_client()?;
 
@@ -41,7 +41,10 @@ pub async fn run(connect: Option<String>) -> Result<()> {
     let shutdown: Pin<Box<dyn std::future::Future<Output = Result<ShutdownReason>> + Send>> =
         Box::pin(common::build_shutdown_future());
 
-    let url = resolve_connect_url(connect)?;
+    let saved_name = connect
+        .clone()
+        .filter(|value| !value.starts_with("ws://") && !value.starts_with("wss://"));
+    let (url, bearer, ca) = resolve_connect_url(connect, token)?;
     tracing::info!(url = %url, "fspec client connecting");
 
     // RPC-011 rule [21] / [22]: construct the backend via plain
@@ -53,12 +56,15 @@ pub async fn run(connect: Option<String>) -> Result<()> {
     // `Action::Disconnected / Reconnecting(n) / Reconnected` onto the
     // SAME action bus the App is draining — without this wiring the
     // disconnect dialog would never appear in the released binary.
-    let backend = WebSocketFspecBackend::connect(url.clone())
+    // RPC-458: a saved daemon's CA is trusted on connect and reconnect.
+    let backend = WebSocketFspecBackend::connect_trusting(url.clone(), bearer, ca)
         .await
         .context("WebSocketFspecBackend::connect")?;
     let supervisor_handle = backend.supervisor_handle();
     let mut app = App::new(Arc::new(backend));
-    supervisor_handle.start(url, app.action_tx_clone());
+    supervisor_handle.start(url.clone(), app.action_tx_clone());
+    // RPC-448: the board's daemon switcher lists local + saved daemons.
+    crate::daemon_directory::install_daemon_switcher(&mut app, &url, saved_name.as_deref())?;
     app.bootstrap().await?;
     drive_run(app, shutdown).await
 }
@@ -147,9 +153,13 @@ async fn stdin_quit_signal() {
     }
 }
 
-fn resolve_connect_url(explicit: Option<String>) -> Result<Url> {
+fn resolve_connect_url(
+    explicit: Option<String>,
+    token: Option<String>,
+) -> Result<crate::daemons_cmd::ConnectTarget> {
     if let Some(s) = explicit {
-        return Url::parse(&s).with_context(|| format!("--connect URL parse: {s}"));
+        // RPC-447: a URL, or the name of a saved daemon (with its token).
+        return crate::daemons_cmd::resolve_connect(&s, token);
     }
     let djson = common::daemon_json_path()?;
     // RPC-011 rule [20]: verify the pid is alive (and delete stale files)
@@ -160,21 +170,29 @@ fn resolve_connect_url(explicit: Option<String>) -> Result<Url> {
         // the client at an explicit WS URL.
         "(use `--connect <ws-url>` to bypass daemon.json autodiscovery)"
     })?;
-    Url::parse(&format!("ws://127.0.0.1:{}", handshake.port)).context("synthesize ws url")
+    // BUG-595: the scheme and host the daemon's entry names.
+    let url = Url::parse(&handshake.url()).context("synthesize the daemon url")?;
+    // BUG-429: an autodiscovered local daemon takes --token, else
+    // FSPEC_DAEMON_TOKEN.
+    let bearer = match token {
+        Some(token) => Some(token),
+        None => crate::daemon_directory::local_daemon_token()?,
+    };
+    Ok((url, bearer, None))
 }
 
 /// Service-facing presentation of the same frontend RPC backend.
-pub async fn run_mcp(connect: Option<String>) -> Result<()> {
+pub async fn run_mcp(connect: Option<String>, token: Option<String>) -> Result<()> {
     use crate::client_mcp_service::{validate_daemon_url, McpFrontend, ReadOperation};
     use codelet_fspec_tui::FspecBackend;
     use rmcp::ServiceExt;
 
     common::init_tracing_client()?;
-    let url = resolve_connect_url(connect)?;
+    let (url, bearer, ca) = resolve_connect_url(connect, token)?;
     validate_daemon_url(&url).map_err(anyhow::Error::msg)?;
     let (backend, bounded_rpc, full_rpc) = tokio::time::timeout(
         std::time::Duration::from_secs(10),
-        WebSocketFspecBackend::connect_mcp_full(url),
+        WebSocketFspecBackend::connect_mcp_full_trusting(url, bearer, ca),
     )
     .await
     .context("daemon connection timed out")??;

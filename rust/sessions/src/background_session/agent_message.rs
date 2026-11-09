@@ -58,6 +58,24 @@ impl BackgroundSession {
                 reason: error.to_string(),
             }
         })?;
+        let origin = codelet_core::persistence::input_receipts::InputOrigin::Supervisor {
+            role: input.role_name.clone(),
+            source_session: input.source_session_id.clone(),
+        };
+        let submission = self
+            .retain_submission(
+                origin,
+                input.interrupt_epoch,
+                &super::format_incoming_message(&input),
+                input.images.as_deref().unwrap_or_default(),
+            )
+            .map_err(|reason| AgentMessageError::DeliveryFailed {
+                session_id: self.id,
+                reason,
+            })?;
+        input.submission_id = Some(submission);
+        // BUG-648: the claim, its push and its journal entry are one change.
+        let _order = self.status_order();
         self.status
             .compare_exchange(
                 SessionStatus::Idle as u8,
@@ -65,9 +83,12 @@ impl BackgroundSession {
                 Ordering::AcqRel,
                 Ordering::Acquire,
             )
-            .map_err(|status| AgentMessageError::Busy {
-                session_id: self.id,
-                status: SessionStatus::from(status),
+            .map_err(|status| {
+                self.refuse_submission(submission, "target session became busy");
+                AgentMessageError::Busy {
+                    session_id: self.id,
+                    status: SessionStatus::from(status),
+                }
             })?;
 
         self.incoming_message_pending

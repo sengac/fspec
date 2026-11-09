@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
-          "lines": "99-156",
+          "lines": "142-194",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/script_provider_aliases.rs",
@@ -35,7 +35,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "/// PROV-087: invoke `auth_start(config)` if defined, otherwise fall",
+              "lastLine": "("
             }
           ]
         }
@@ -46,7 +48,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
-          "lines": "161-200",
+          "lines": "199-238",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/script_provider_aliases.rs",
@@ -58,7 +60,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "impl ScriptedOAuthProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -69,66 +73,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
-          "lines": "205-248",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/oauth/script_provider_aliases.rs",
-              "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
-            }
-          ]
+          "lines": "243-290"
         }
       ]
     },
@@ -137,7 +82,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
-          "lines": "253-266",
+          "lines": "295-308",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/custom_oauth.rs",
@@ -176,7 +121,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "/// provider name. The wrapped string is the provider name.",
+              "lastLine": ".parent()"
             }
           ]
         }
@@ -187,7 +134,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_napi_bridges_tests.rs",
-          "lines": "271-289",
+          "lines": "313-329",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/custom_oauth.rs",
@@ -209,7 +156,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "/// Delegates the write + parent-dir creation to",
+              "lastLine": "let path = custom_oauth_store_path(provider_name);"
             }
           ]
         }
@@ -227,6 +176,6 @@
       "rust/providers/src/oauth/script_provider_aliases.rs",
       "rust/providers/src/oauth/custom_oauth.rs"
     ],
-    "totalLinesCovered": 310
+    "totalLinesCovered": 255
   }
 }

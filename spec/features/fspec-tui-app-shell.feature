@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @parity
 @websocket
@@ -42,9 +43,9 @@ Feature: App shell + run loop (RPC-008)
     And the App ran the callback against the compositor after dispatch completed
     And the compositor now contains only the HelloComponent
 
-  Scenario: 'q' at App level sets should_quit and the run loop exits
+  Scenario: Ctrl+D at App level sets should_quit and the run loop exits
     Given an App with a MockBackend and the run loop driven by a TestBackend terminal
-    When the App receives a synthetic Key('q') event
+    When the App receives a synthetic Key(Ctrl+D) event
     Then the App's should_quit flag is true
     And the next iteration of the tokio::select! breaks the loop
     And `App::run().await` returns Ok(())

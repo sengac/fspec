@@ -10,7 +10,7 @@ use super::super::{
 };
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
-    name: "work-unit-id",
+    name: "workUnitId",
     description: "Work unit ID to show dependencies for",
     required: true,
 }];
@@ -25,22 +25,22 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Quick Dependency Check",
         example: "# Before starting work, check what blocks this work unit\nfspec dependencies UI-001\n\n# Output shows:\n#   Blocked by: AUTH-001, API-001\n#\n# Decision: Wait for AUTH-001 and API-001 to complete",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Understanding Impact",
         example: "# Check what will be unblocked after completing this work\nfspec dependencies AUTH-001\n\n# Output shows:\n#   Blocks: AUTH-002, AUTH-003, UI-001\n#\n# Completing AUTH-001 will unblock 3 work units",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Dependency Tree Visualization",
         example: "# View full dependency tree\nfspec dependencies AUTH-001 --graph\n\n# Shows cascading dependencies",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Integration with add-dependency",
         example: "# Add dependency\nfspec add-dependency UI-001 AUTH-001\n\n# Verify it was added\nfspec dependencies UI-001\n# Output: Depends on: AUTH-001",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -86,36 +86,17 @@ const RELATED: &[&str] = &[
 ];
 
 const NOTES: &[&str] = &[
-    "Simplified Command (BUG-019):",
-    "  - This command was simplified from multi-action to single-purpose",
-    "  - Old: fspec dependencies <action> <work-unit-id>",
-    "  - New: fspec dependencies <work-unit-id>",
-    "  - Other actions now use dedicated commands (add-dependency, remove-dependency, etc.)",
-    "",
-    "Relationship types displayed:",
-    "  blocks: Work units blocked by this work unit",
-    "  blockedBy: Work units blocking this work unit",
-    "  dependsOn: Soft dependencies (ordering hints)",
-    "  relatesTo: Related work units (no blocking)",
-    "",
-    "Error handling:",
-    "  - Non-existent work units show AI-friendly system-reminder",
-    "  - System-reminder includes troubleshooting steps",
-    "  - Wrapped for visibility in Claude Code",
-    "",
-    "For comprehensive dependency management:",
-    "  - add-dependency: Create relationships",
-    "  - remove-dependency: Delete relationships",
-    "  - clear-dependencies: Remove all relationships",
-    "  - export-dependencies: Visualize full graph",
-    "  - query-bottlenecks: Find critical path issues",
+    "Single purpose since BUG-019: fspec dependencies <workUnitId> shows one work unit's relationships; add-dependency, remove-dependency and clear-dependencies change them",
+    "Relationship types: blocks (work units this one blocks), blockedBy (work units blocking this one), dependsOn (soft ordering hints), relatesTo (related, no blocking)",
+    "A work unit that does not exist is reported in a system-reminder with troubleshooting steps",
+    "export-dependencies shows the whole graph; query-bottlenecks finds critical-path issues",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "dependencies",
     description:
         "Show all dependency relationships for a work unit (blocks, blockedBy, dependsOn, relatesTo)",
-    usage: Some("fspec dependencies <work-unit-id> [options]"),
+    usage: Some("fspec dependencies <workUnitId> [options]"),
     arguments: ARGUMENTS,
     options: OPTIONS,
     examples: EXAMPLES,
@@ -127,7 +108,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: &["spec/work-units.json exists with work units"],
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <id> → 4. Plan implementation order based on dependencies",
+        "1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <workUnitId> → 4. Plan implementation order based on dependencies",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

@@ -7,14 +7,9 @@
 //! StubSessionManagerHandle. Mirrors the RPC-054 / RPC-055 cross-transport
 //! parity patterns.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock,
-    clippy::too_many_lines
-)]
+#![allow(clippy::await_holding_lock, clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -27,24 +22,28 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::BlocklistRuleInfo;
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     // Seed the stub with three rules so both transports observe the same
     // payload.
@@ -76,23 +75,26 @@ fn build_service() -> (
     ]);
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -100,10 +102,10 @@ async fn dual_backends(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn blocklist_list_round_trips_identically_across_transports() {
+async fn blocklist_list_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with three rules behind both an EmbeddedFspecBackend and a WebSocketFspecBackend
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     let initial = stub.blocklist_list_calls();
 
@@ -111,13 +113,13 @@ async fn blocklist_list_round_trips_identically_across_transports() {
     let em = embedded
         .blocklist_list()
         .await
-        .expect("embedded blocklist_list");
+        .or_fail("embedded blocklist_list")?;
 
     // @step And blocklist_list is called via the WebSocket transport
     let ws = websocket
         .blocklist_list()
         .await
-        .expect("websocket blocklist_list");
+        .or_fail("websocket blocklist_list")?;
 
     // @step Then the stub's blocklist_list_calls counter equals 2
     let final_calls = stub.blocklist_list_calls();
@@ -148,4 +150,5 @@ async fn blocklist_list_round_trips_identically_across_transports() {
         assert_eq!(e.action, w.action, "action mismatch across transports");
         assert_eq!(e.source, w.source, "source mismatch across transports");
     }
+    Ok(())
 }

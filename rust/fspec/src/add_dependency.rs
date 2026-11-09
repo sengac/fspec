@@ -24,10 +24,10 @@
 //! core. The bridge MUST NOT embed `detect_cycle`, `ensure_work_units_file`,
 //! `write_json_atomic`, or any canonical error substring.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_dependency;
 use serde_json::{json, Map, Value};
 
@@ -49,7 +49,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-dependency` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Shorthand resolution: positional `dependsOnId` is a sugar for
     // `--depends-on`. Mirrors TS add-dependency.ts:285.
@@ -71,7 +71,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         && args.relates_to.is_none()
     {
         eprintln!(
-            "✗ Failed to add dependency: Must specify at least one relationship: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to"
+            "✗ Failed to add dependency: Must specify at least one relationship: <workUnitId> or --blocks/--blocked-by/--depends-on/--relates-to"
         );
         return Ok(1);
     }

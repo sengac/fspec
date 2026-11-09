@@ -1,4 +1,6 @@
 @BUG-133
+@session
+@session-management
 Feature: [DEBUG] badge in SessionHeader is not session-aware like [ISOLATED]
   """
   Reference pattern (isIsolated): Rust emits StreamChunk::IsolationStateChange (rust/napi/src/types.rs:543, :718) -> globalSessionStreamManager.ts:292-309 listener dispatches setIsolationState -> sessionStore.ts:37 (state), :184 (setter), :254 (useIsIsolated selector) -> AgentView reads via useIsIsolated() (AgentView.tsx:909). This is the exact Rust-authoritative, event-driven, per-session pattern [DEBUG] must follow.

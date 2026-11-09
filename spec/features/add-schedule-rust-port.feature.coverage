@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "61-101",
+          "lines": "60-104",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -59,9 +59,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -194,8 +191,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -206,7 +207,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "104-133",
+          "lines": "106-136",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -260,9 +261,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -395,8 +393,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -407,7 +409,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "136-171",
+          "lines": "138-174",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -461,9 +463,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -596,8 +595,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -608,7 +611,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "174-205",
+          "lines": "176-208",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -662,9 +665,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -797,8 +797,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -809,7 +813,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "208-239",
+          "lines": "210-242",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -863,9 +867,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -998,8 +999,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -1010,7 +1015,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "242-273",
+          "lines": "244-284",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -1064,9 +1069,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -1199,8 +1201,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -1211,7 +1217,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "276-307",
+          "lines": "286-318",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -1265,9 +1271,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -1400,8 +1403,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -1412,7 +1419,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "310-340",
+          "lines": "320-351",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -1466,9 +1473,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -1601,8 +1605,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -1613,7 +1621,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "343-373",
+          "lines": "353-384",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -1667,9 +1675,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -1802,8 +1807,12 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
             }
           ]
         }
@@ -1814,7 +1823,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_schedule.rs",
-          "lines": "376-432",
+          "lines": "386-444",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_schedule.rs",
@@ -1868,9 +1877,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -2003,8 +2009,120 @@
                 276,
                 277,
                 278,
-                279
-              ]
+                279,
+                280,
+                281
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let trimmed = expression.trim();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cron expression with an out-of-range hour is rejected without writing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_schedule.rs",
+          "lines": "446-495",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_schedule.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -2012,8 +2130,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 10,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_schedule.rs"
@@ -2021,6 +2139,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_schedule.rs"
     ],
-    "totalLinesCovered": 2204
+    "totalLinesCovered": 2356
   }
 }

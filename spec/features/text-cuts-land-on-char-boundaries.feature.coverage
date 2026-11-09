@@ -1,0 +1,377 @@
+{
+  "scenarios": [
+    {
+      "name": "A tool-result preview cuts before a multi-byte character",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug642_text_cuts_on_char_boundaries.rs",
+          "lines": "9-18",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473
+              ],
+              "firstLine": "/// The CLI's preview of a tool result: at most 500 bytes, cut on a char",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recovery reasoning cuts before a multi-byte character",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug642_text_cuts_on_char_boundaries.rs",
+          "lines": "20-30",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "let truncated = if reasoning.len() > 2000 {",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quoted context turn cuts before a multi-byte character",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug642_quoted_turn_cut.rs",
+          "lines": "8-17",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                626,
+                627,
+                628,
+                629,
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                682,
+                683,
+                759,
+                760
+              ],
+              "firstLine": "/// A quoted-context turn's content: at most 2000 bytes, cut on a char",
+              "lastLine": "let truncated = truncate_context_turn(content);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The /loop list prompt column cuts before a multi-byte character",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug642_loop_list_prompt_cut.rs",
+          "lines": "47-85",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ],
+              "firstLine": "let prompt = if entry.prompt.len() > 28 {",
+              "lastLine": "out.push('\\n');"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A non-ASCII API key is masked on char boundaries",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug642_mask_api_key_char_boundaries.rs",
+          "lines": "7-20",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/credentials.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "pub fn mask_api_key(api_key: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "File-type sniffing ignores a character cut at the window's end",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug642_sniffing_window_char_boundary.rs",
+          "lines": "18-35",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/file_type.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "/// BUG-642: the first `limit` bytes of `data` as text. A character cut at",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new fixed-length text cut fails the workspace guard",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug642_fixed_length_text_cuts.rs",
+          "lines": "68-129",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/fixed_length_cuts.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "//! BUG-642: the exact source check for range slices with a fixed bound.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug642_text_cuts_on_char_boundaries.rs",
+      "rust/agent-loop/tests/bug642_quoted_turn_cut.rs",
+      "rust/fspec-tui/tests/bug642_loop_list_prompt_cut.rs",
+      "rust/providers/tests/bug642_mask_api_key_char_boundaries.rs",
+      "rust/tools/tests/bug642_sniffing_window_char_boundary.rs",
+      "rust/test-helpers/tests/bug642_fixed_length_text_cuts.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/output.rs",
+      "rust/cli/src/interactive/recovery_thinking.rs",
+      "rust/agent-loop/src/agent_manager_handler.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
+      "rust/providers/src/credentials.rs",
+      "rust/tools/src/file_type.rs",
+      "rust/test-helpers/src/fixed_length_cuts.rs"
+    ],
+    "totalLinesCovered": 388
+  }
+}

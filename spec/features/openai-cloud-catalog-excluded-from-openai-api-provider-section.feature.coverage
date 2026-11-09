@@ -5,35 +5,46 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov146_openai_cloud_excluded.rs",
-          "lines": "147-208",
+          "lines": "141-205",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
               "lines": [
-                1244,
-                1245,
-                1246,
-                1247,
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264,
-                1265,
-                1266
-              ]
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "// PROV-176: the \"Codex (ChatGPT)\" section lists the models",
+              "lastLine": "// profile with custom models is never marked unreachable)."
             }
           ]
         }
@@ -44,46 +55,57 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov146_openai_cloud_excluded.rs",
-          "lines": "216-270",
+          "lines": "211-266",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
               "lines": [
-                1244,
-                1245,
-                1246,
-                1247,
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264,
-                1265,
-                1266
-              ]
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "// PROV-176: the \"Codex (ChatGPT)\" section lists the models",
+              "lastLine": "// profile with custom models is never marked unreachable)."
             }
           ]
         }
       ]
     },
     {
-      "name": "cloud_model_entries still serves the openai catalog to the Codex re-parenting path",
+      "name": "cloud_model_entries still serves the openai catalog",
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov146_openai_cloud_excluded.rs",
-          "lines": "340-365",
+          "lines": "351-377",
           "implMappings": [
             {
               "file": "rust/sessions/src/cloud_models.rs",
@@ -157,28 +179,146 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "pub fn cloud_model_entries(",
+              "lastLine": "/// override at `cloudSectionBuilder.ts:117-119`) is intentionally out of scope"
             }
           ]
         }
       ]
     },
     {
-      "name": "Codex (ChatGPT) continues to list the full cloud OpenAI catalog when OPENAI_API_KEY is also set",
-      "testMappings": []
+      "name": "Codex (ChatGPT) lists what Codex /models returns when OPENAI_API_KEY is also set",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov146_openai_cloud_excluded.rs",
+          "lines": "272-346",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// The Codex section when Codex has credentials, leading the cloud group",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// PROV-176: cloud OpenAI models are offered only under the",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 3,
-    "coveragePercent": 75,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/sessions/tests/prov146_openai_cloud_excluded.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/handle_impl.rs",
-      "rust/sessions/src/cloud_models.rs"
+      "rust/sessions/src/handle_impl/handle_impl_5.rs",
+      "rust/sessions/src/cloud_models.rs",
+      "rust/sessions/src/codex_section.rs"
     ],
-    "totalLinesCovered": 342
+    "totalLinesCovered": 450
   }
 }

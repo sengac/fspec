@@ -70,7 +70,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `discover-event-storm` shell-facing CLI bridge (RPC-225).",
+              "lastLine": "}"
             }
           ]
         }
@@ -146,7 +148,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `discover-event-storm` shell-facing CLI bridge (RPC-225).",
+              "lastLine": "}"
             }
           ]
         }
@@ -157,7 +161,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_discover_event_storm.rs",
-          "lines": "141-166",
+          "lines": "151-176",
           "implMappings": [
             {
               "file": "rust/fspec/src/discover_event_storm.rs",
@@ -222,7 +226,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `discover-event-storm` shell-facing CLI bridge (RPC-225).",
+              "lastLine": "}"
             }
           ]
         }
@@ -233,7 +239,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_discover_event_storm.rs",
-          "lines": "167-184",
+          "lines": "182-199",
           "implMappings": [
             {
               "file": "rust/fspec/src/discover_event_storm.rs",
@@ -298,7 +304,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `discover-event-storm` shell-facing CLI bridge (RPC-225).",
+              "lastLine": "}"
             }
           ]
         }

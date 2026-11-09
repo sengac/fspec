@@ -44,7 +44,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let kebab = to_kebab_case(&args.name);
     let file_name = format!("{kebab}.feature");
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     let file_abs = features_dir.join(&file_name);
     let rel_path = format!("spec/features/{file_name}");
 
@@ -131,10 +131,13 @@ fn generate_feature_template(feature_name: &str) -> String {
     // 2-/4-space indentation the TS template emits. Build the template
     // from explicit lines joined with `\n` so the indentation survives
     // byte-for-byte.
+    // BUG-479: the formatter's canonical layout — one tag per line and the
+    // description directly under the Feature line.
     let lines = [
-        "@critical @component @feature-group",
+        "@critical",
+        "@component",
+        "@feature-group",
         &format!("Feature: {feature_name}"),
-        "",
         "  \"\"\"",
         "  Architecture notes:",
         "  - TODO: Add key architectural decisions",
@@ -214,22 +217,15 @@ fn create_coverage_file(
         })
         .collect();
 
-    let total = scenarios.len() as u64;
-    let coverage = json!({
-        "scenarios": scenarios,
-        "stats": {
-            "totalScenarios": total,
-            "coveredScenarios": 0,
-            "coveragePercent": 0,
-            "testFiles": [],
-            "implFiles": [],
-            "totalLinesCovered": 0,
-        },
-    });
+    let mut coverage = json!({ "scenarios": scenarios });
+    // BUG-608: the one stats definition.
+    crate::commands::link_coverage::stats::update_stats(&mut coverage);
 
     let body = serde_json::to_string_pretty(&coverage)
         .map_err(|e| format!("failed to serialise coverage: {e}"))?;
-    std::fs::write(&coverage_path, body).map_err(|e| e.to_string())?;
+    // BUG-477: replaced atomically under the spec lock.
+    crate::io::locked_file::write_bytes_atomic(&coverage_path, body.as_bytes())
+        .map_err(|e| e.to_string())?;
 
     let file_name = coverage_path
         .file_name()
@@ -504,7 +500,7 @@ mod tests {
     #[test]
     fn template_starts_with_tag_line() {
         let t = generate_feature_template("User Authentication");
-        assert!(t.starts_with("@critical @component @feature-group"));
+        assert!(t.starts_with("@critical\n@component\n@feature-group\n"));
         assert!(t.contains("Feature: User Authentication"));
         assert!(t.ends_with('\n'));
     }

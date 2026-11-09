@@ -100,15 +100,20 @@ impl App {
                 let Some(menu_action) = mux.menu_execute_item(*category, *row) else {
                     return;
                 };
-                // R-EXEC (BUG-203): the registry mapping is payload-free —
-                // `NewAgent` ALWAYS mounts the CreateSessionDialog (the
-                // shared RPC-060 helper, BUG-199 / BUG-203 parity); the
-                // MENU-002/003 R8 current-session substitution is removed.
-                self.dispatch(menu_action.to_action());
+                // R-EXEC (BUG-203): the registry mapping is payload-free;
+                // MUX-013: New Agent / New Bot place the new session by
+                // the MUX-002 rule, like the bar buttons.
+                self.run_mux_bar_action(menu_action);
             }
-            // MENU-009 Q1: the mux bar paints NO Zone C — the token is
-            // unreachable on this surface (defensive no-op).
-            Action::MenuZoneCActivate(_) => {}
+            // MUX-013: a New Bot / New Agent / Close button (Enter or a
+            // click), resolved against the buttons the bar shows now.
+            Action::MenuZoneCActivate(index) => {
+                let Some(button) = mux.zone_c().get(*index).copied() else {
+                    return;
+                };
+                mux.menu_dismiss();
+                self.run_mux_bar_action(button.action);
+            }
             _ => {}
         }
     }
@@ -167,22 +172,17 @@ impl App {
         if mux.menu_ring_active() {
             let focus = mux.menu_focus();
             let open = mux.open_menu();
-            let last_cell = mux
-                .view_label_count()
-                .saturating_add(mux.menu_chips())
-                .saturating_sub(1);
-            // Seam 2 (the bar's right edge): the last Zone B cell (last
-            // chip / last view label) — Right wraps back to the FIRST
+            let last_stop = mux_last_ring_stop(mux);
+            // Seam 2 (the bar's right edge): the last ring stop (MUX-013:
+            // the last button, else the last chip / view label) — Right
+            // wraps back to the FIRST
             // column (backlog), the columns' left edge (col0 ⇄
             // lastZoneB). This is the "go right off the end of the menu
             // bar → back to the board" crossing. BUG-201: only while the
             // Board pane is focused — off the board pane the closed
             // loop's `advance` wrap (last cell → Item(0)) owns this step
             // instead and the board columns stay untouched.
-            if board_pane
-                && delta > 0
-                && matches!(focus, Some(MenuFocus::ZoneB(c)) if c == last_cell)
-            {
+            if board_pane && delta > 0 && focus == Some(last_stop) {
                 self.board_store.set_focused_column(COLUMN_ORDER[0]);
                 mux.menu_dismiss();
                 return;
@@ -241,11 +241,23 @@ impl App {
             mux.menu_move_to_ring_position(MenuFocus::Item(0));
         } else if delta < 0 && self.board_store.menu_focus().is_some() {
             self.board_store.menu_clear_focus();
-            let last_cell = mux
-                .view_label_count()
-                .saturating_add(mux.menu_chips())
-                .saturating_sub(1);
-            mux.menu_move_to_ring_position(MenuFocus::ZoneB(last_cell));
+            mux.menu_move_to_ring_position(mux_last_ring_stop(mux));
         }
+    }
+}
+
+/// The mux bar ring's last stop: the last Zone C button (MUX-013), else
+/// the last Zone B cell (chip / view label).
+fn mux_last_ring_stop(
+    mux: &crate::views::multiplex::MultiplexLayout,
+) -> crate::components::menu_bar::MenuFocus {
+    use crate::components::menu_bar::MenuFocus;
+    match mux.zone_c().len() {
+        0 => MenuFocus::ZoneB(
+            mux.view_label_count()
+                .saturating_add(mux.menu_chips())
+                .saturating_sub(1),
+        ),
+        buttons => MenuFocus::ZoneC(buttons - 1),
     }
 }

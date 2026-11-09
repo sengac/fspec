@@ -23,7 +23,8 @@ pub async fn run_catch_up(
     state: &SchedulerState,
     hooks: Hooks,
 ) -> Result<(), anyhow::Error> {
-    let schedules_path = Path::new(project_path).join("spec/schedules.json");
+    let schedules_path =
+        codelet_common::spec_paths::ProjectRoots::resolve(Path::new(project_path))?.schedules();
 
     // Read schedules — missing file is not an error
     let content = match tokio::fs::read_to_string(&schedules_path).await {
@@ -138,15 +139,11 @@ pub fn needs_catch_up(schedule: &ScheduleEntry, now: chrono::DateTime<Utc>) -> b
 
 /// Update lastRunAt to now for a schedule (prevents double-fire on first tick).
 async fn update_last_run_now(schedules_path: &Path, name: &str) -> Result<(), anyhow::Error> {
-    let content = tokio::fs::read_to_string(schedules_path).await?;
-    let mut schedules: SchedulesFile = serde_json::from_str(&content)?;
-
-    if let Some(entry) = schedules.schedules.get_mut(name) {
-        entry.last_run_at = Some(Utc::now().to_rfc3339());
-        entry.last_run_status = Some("catch-up".to_string());
-    }
-
-    let json = serde_json::to_string_pretty(&schedules)?;
-    tokio::fs::write(schedules_path, json).await?;
-    Ok(())
+    // BUG-477: locked read-modify-write plus atomic replace.
+    let path = schedules_path.to_path_buf();
+    let schedule = name.to_string();
+    tokio::task::spawn_blocking(move || {
+        super::trigger::record_last_run(&path, &schedule, "catch-up")
+    })
+    .await?
 }

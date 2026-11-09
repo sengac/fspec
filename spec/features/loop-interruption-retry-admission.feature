@@ -1,3 +1,4 @@
+@BUG-615
 @done
 @session-management
 @phase-1
@@ -18,6 +19,7 @@ Feature: Loop interruption retry admission
     Given a deterministic provider repeatedly producing a genuine sustained loop
     When the production agent loop exhausts its configured recovery allowance
     Then every interruption is detector initiated and the corrective retries stop at the limit
+    And the next input after the limit starts a turn with no corrective note and no note is left pending
 
   Scenario: User stop invalidates staged loop recovery and stale epochs
     Given a genuine detector abort with a staged corrective retry

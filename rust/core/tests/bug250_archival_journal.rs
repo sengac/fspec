@@ -58,6 +58,7 @@ fn export(session_id: Uuid) -> Result<Vec<(ArchiveFragment, Value)>, Box<dyn std
 fn canonical_archival_export_preserves_causal_journal_identities() -> TestResult {
     // @step Given two original requests with journal outcomes and backward timestamps
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let mut manifest = create_session("causal archive", directory.path())?;
@@ -164,6 +165,7 @@ fn canonical_archival_export_preserves_causal_journal_identities() -> TestResult
 fn canonical_archival_snapshots_pin_the_journal_prefix() -> TestResult {
     // @step Given an unpromoted journal prefix spanning bounded UTF-8 archive pages
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let mut manifest = create_session("pinned journal", directory.path())?;
@@ -190,7 +192,7 @@ fn canonical_archival_snapshots_pin_the_journal_prefix() -> TestResult {
         },
     );
     store.append(&terminal)?;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
     let metadata = std::collections::HashMap::from([(
         "message".into(),
         json!({"role":"assistant","content":[{"type":"text","text":text}]}),

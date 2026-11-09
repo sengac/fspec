@@ -5,23 +5,32 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs",
-          "lines": "125-177",
+          "lines": "127-179",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_5.rs",
               "lines": [
-                1183,
-                1184,
-                1185,
-                1186,
-                1187,
-                1188,
-                1189,
-                1190,
-                1191,
-                1192,
-                1193
-              ]
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "let parsed_model = ParsedModelInfo {",
+              "lastLine": "name,"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
+              "lines": [
+                112
+              ],
+              "firstLine": "project,",
+              "lastLine": "project,"
             }
           ]
         }
@@ -32,16 +41,21 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs",
-          "lines": "179-222",
+          "lines": "181-218",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
               "lines": [
-                740,
-                741,
-                742,
-                743
-              ]
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "// RPC-041: Emit IsolationStateChange directly on the manager-owned",
+              "lastLine": "));"
             }
           ]
         }
@@ -56,8 +70,9 @@
       "rust/sessions/tests/wt001_isolation_state_change_base_commit.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager/manager_impl_5.rs",
+      "rust/sessions/src/session_manager/manager_impl_3.rs"
     ],
-    "totalLinesCovered": 112
+    "totalLinesCovered": 109
   }
 }

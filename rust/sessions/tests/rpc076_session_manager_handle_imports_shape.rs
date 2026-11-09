@@ -45,7 +45,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
+    codelet_test_helpers::source_composition::read_tree_or_file(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
@@ -242,6 +242,8 @@ fn cargo_clippy_on_codelet_core_emits_no_unused_imports_against_session_manager_
     let output = Command::new(env!("CARGO"))
         .args([
             "clippy",
+            "--profile",
+            "ci-test",
             "-p",
             "codelet-core",
             "--all-targets",
@@ -350,6 +352,8 @@ fn codelet_core_workspace_lints_pass_with_session_manager_handle_clean() {
     let output = Command::new(env!("CARGO"))
         .args([
             "clippy",
+            "--profile",
+            "ci-test",
             "-p",
             "codelet-core",
             "--all-targets",

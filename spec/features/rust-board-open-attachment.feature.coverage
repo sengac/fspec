@@ -10,53 +10,49 @@
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                191,
-                192,
+                182,
+                183,
+                188,
+                189,
+                190,
                 193,
                 194,
                 195,
                 196,
                 197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                199
+              ],
+              "firstLine": "if key.code == KeyCode::Right && key.modifiers.contains(KeyModifiers::SHIFT) {",
+              "lastLine": "return EventResult::ignored();"
             }
           ]
         }
       ]
     },
     {
-      "name": "Pressing A on a card with no attachments is a silent no-op",
+      "name": "Pressing A on a card with no attachments leaves it to the App to say so",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
-          "lines": "79-94",
+          "lines": "82-121",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                191,
-                192,
+                182,
+                183,
+                188,
+                189,
+                190,
                 193,
                 194,
                 195,
                 196,
                 197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                199
+              ],
+              "firstLine": "if key.code == KeyCode::Right && key.modifiers.contains(KeyModifiers::SHIFT) {",
+              "lastLine": "return EventResult::ignored();"
             }
           ]
         }
@@ -67,27 +63,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
-          "lines": "96-118",
+          "lines": "123-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                191,
-                192,
+                182,
+                183,
+                188,
+                189,
+                190,
                 193,
                 194,
                 195,
                 196,
                 197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                199
+              ],
+              "firstLine": "if key.code == KeyCode::Right && key.modifiers.contains(KeyModifiers::SHIFT) {",
+              "lastLine": "return EventResult::ignored();"
             }
           ]
         }
@@ -98,14 +92,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
-          "lines": "120-137",
+          "lines": "150-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/attachment_picker_dialog.rs",
               "lines": [
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -118,64 +109,39 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "/// Construct a fresh picker over the supplied full attachment paths,",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Selecting an attachment opens it at the encoded viewer URL",
+      "name": "Selecting an attachment opens it from the selected workspace on the daemon",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
-          "lines": "139-158",
+          "lines": "209-252",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Selecting an attachment is a safe no-op when the viewer server is unavailable",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
-          "lines": "160-178",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
-              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
                 95,
                 96,
                 97,
@@ -188,14 +154,49 @@
                 104,
                 105,
                 106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
+                107
+              ],
+              "firstLine": "/// Handle `Action::OpenAttachment(path)`: BUG-469 — read the attachment",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selecting an attachment before the workspace list loads shows why nothing opened",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_open_attachment_rpc374.rs",
+          "lines": "254-271",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "/// Handle `Action::OpenAttachment(path)`: BUG-469 — read the attachment",
+              "lastLine": "}"
             }
           ]
         }
@@ -214,6 +215,6 @@
       "rust/fspec-tui/src/components/attachment_picker_dialog.rs",
       "rust/fspec-tui/src/app/dispatch_viewer.rs"
     ],
-    "totalLinesCovered": 224
+    "totalLinesCovered": 264
   }
 }

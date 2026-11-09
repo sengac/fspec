@@ -22,6 +22,10 @@ use uuid::Uuid;
 /// Scenario: Read file returns contents with 1-based line numbers
 #[tokio::test]
 async fn test_read_file_returns_contents_with_line_numbers() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/src/index.ts" with content:
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("index.ts");
@@ -53,6 +57,10 @@ async fn test_read_file_returns_contents_with_line_numbers() {
 /// Scenario: Read file with offset and limit returns specified line range
 #[tokio::test]
 async fn test_read_file_with_offset_and_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/large.ts" with 200 lines
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("large.ts");
@@ -87,6 +95,10 @@ async fn test_read_file_with_offset_and_limit() {
 /// Scenario: Read file exceeding line limit is truncated with warning
 #[tokio::test]
 async fn test_read_file_truncated_with_warning() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/huge.ts" with 3000 lines
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("huge.ts");
@@ -119,6 +131,10 @@ async fn test_read_file_truncated_with_warning() {
 /// Scenario: Read file with relative path returns error
 #[tokio::test]
 async fn test_read_file_relative_path_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step When I execute the Read tool with file_path "src/main.rs"
     let tool = ReadTool::new(Uuid::nil());
     let result = tool
@@ -141,6 +157,10 @@ async fn test_read_file_relative_path_error() {
 /// Scenario: Read file truncates long lines with ellipsis
 #[tokio::test]
 async fn test_read_file_truncates_long_lines() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/wide.ts" with a line exceeding 2000 characters
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("wide.ts");
@@ -169,6 +189,10 @@ async fn test_read_file_truncates_long_lines() {
 /// Scenario: Read non-existent file returns error
 #[tokio::test]
 async fn test_read_nonexistent_file_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step When I execute the Read tool with file_path "/home/user/nonexistent.ts"
     let tool = ReadTool::new(Uuid::nil());
     let result = tool
@@ -195,6 +219,10 @@ async fn test_read_nonexistent_file_error() {
 /// Scenario: Write tool creates new file successfully
 #[tokio::test]
 async fn test_write_tool_creates_new_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the file "/home/user/new.ts" does not exist
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("new.ts");
@@ -222,6 +250,10 @@ async fn test_write_tool_creates_new_file() {
 /// Scenario: Write tool overwrites existing file
 #[tokio::test]
 async fn test_write_tool_overwrites_existing_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/old.ts" with content "old content"
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("old.ts");
@@ -251,6 +283,10 @@ async fn test_write_tool_overwrites_existing_file() {
 /// Scenario: Write tool creates parent directories if missing
 #[tokio::test]
 async fn test_write_tool_creates_parent_directories() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given the directory "/home/user/nested/deep/" does not exist
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("nested").join("deep").join("file.ts");
@@ -276,6 +312,10 @@ async fn test_write_tool_creates_parent_directories() {
 /// Scenario: Write tool with relative path returns error
 #[tokio::test]
 async fn test_write_tool_relative_path_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step When I execute the Write tool with file_path "relative/path.ts" and content "content"
     let tool = WriteTool::new(Uuid::nil());
     let result = tool
@@ -300,6 +340,10 @@ async fn test_write_tool_relative_path_error() {
 /// Scenario: Edit tool replaces first occurrence only
 #[tokio::test]
 async fn test_edit_tool_replaces_first_occurrence() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/main.rs" with content:
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("main.rs");
@@ -330,6 +374,10 @@ async fn test_edit_tool_replaces_first_occurrence() {
 /// Scenario: Edit tool returns error when old_string not found
 #[tokio::test]
 async fn test_edit_tool_old_string_not_found() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file exists at absolute path "/home/user/test.rs" with content "hello world"
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("test.rs");
@@ -360,6 +408,10 @@ async fn test_edit_tool_old_string_not_found() {
 /// Scenario: Edit tool with relative path returns error
 #[tokio::test]
 async fn test_edit_tool_relative_path_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step When I execute the Edit tool with file_path "relative.ts" old_string "a" and new_string "b"
     let tool = EditTool::new(Uuid::nil());
     let result = tool
@@ -381,6 +433,10 @@ async fn test_edit_tool_relative_path_error() {
 /// Scenario: Edit non-existent file returns error
 #[tokio::test]
 async fn test_edit_nonexistent_file_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step When I execute the Edit tool with file_path "/home/user/missing.ts" old_string "a" and new_string "b"
     let tool = EditTool::new(Uuid::nil());
     let result = tool
@@ -405,6 +461,10 @@ async fn test_edit_nonexistent_file_error() {
 
 #[test]
 fn test_truncate_output_under_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let lines = vec!["line 1".to_string(), "line 2".to_string()];
     let result = truncate_output(&lines, 1000);
     assert!(!result.char_truncated);
@@ -414,6 +474,10 @@ fn test_truncate_output_under_limit() {
 
 #[test]
 fn test_truncate_output_over_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let lines: Vec<String> = (1..=100).map(|i| format!("line {i}")).collect();
     let result = truncate_output(&lines, 100);
     assert!(result.char_truncated);
@@ -423,6 +487,10 @@ fn test_truncate_output_over_limit() {
 
 #[test]
 fn test_format_truncation_warning() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let warning = format_truncation_warning(50, "lines", true, 30000);
     assert!(warning.contains("50"));
     assert!(warning.contains("lines"));
@@ -431,6 +499,10 @@ fn test_format_truncation_warning() {
 
 #[test]
 fn test_output_limits_constants() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     assert_eq!(OutputLimits::MAX_OUTPUT_CHARS, 30000);
     assert_eq!(OutputLimits::MAX_LINE_LENGTH, 2000);
     assert_eq!(OutputLimits::MAX_LINES, 2000);
@@ -443,6 +515,10 @@ fn test_output_limits_constants() {
 /// Scenario: ReadTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_read_tool_has_correct_definition() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = ReadTool::new(Uuid::nil());
     assert_eq!(ReadTool::NAME, "Read");
 
@@ -454,6 +530,10 @@ async fn test_read_tool_has_correct_definition() {
 /// Scenario: WriteTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_write_tool_has_correct_definition() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = WriteTool::new(Uuid::nil());
     assert_eq!(WriteTool::NAME, "Write");
 
@@ -465,6 +545,10 @@ async fn test_write_tool_has_correct_definition() {
 /// Scenario: EditTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_edit_tool_has_correct_definition() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = EditTool::new(Uuid::nil());
     assert_eq!(EditTool::NAME, "Edit");
 

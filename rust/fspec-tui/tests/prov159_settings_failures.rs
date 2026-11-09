@@ -3,6 +3,7 @@
 
 mod common;
 
+use crate::common::TaskOutcome;
 use codelet_fspec_tui::{components::Action, App};
 use std::sync::Arc;
 
@@ -18,7 +19,9 @@ async fn scenario_a16_failed_logout_reports_safe_failure_in_settings() -> anyhow
         provider_id: "codex".into(),
     });
     while let Some(task) = app.next_pending_task() {
-        tokio::time::timeout(std::time::Duration::from_secs(2), task).await??;
+        codelet_test_helpers::deadlock_guard("the pending task", task)
+            .await?
+            .completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);

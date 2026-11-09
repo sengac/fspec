@@ -1,6 +1,8 @@
 @session-management
 @tui
 @TUI-065
+@COV-057
+@BUG-321
 Feature: TUI /clear command only clears React state, not actual session context
   """
   The bug was a simple typo: code used 'currentSessionRef.current' but the variable is 'currentSessionIdRef'. Fixed by using 'currentSessionId' directly which is already in scope.

@@ -116,10 +116,10 @@ fn scenario_clap_exposes_review_subcommand_and_prints_bare_help() {
         "help must mention review; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'work-unit-id'
+    // @step Then stdout contains the substring 'workUnitId'
     assert!(
-        stdout.contains("<work-unit-id>"),
-        "help must name the work-unit-id positional; got:\n{stdout}"
+        stdout.contains("<workUnitId>"),
+        "help must name the workUnitId positional; got:\n{stdout}"
     );
 }
 

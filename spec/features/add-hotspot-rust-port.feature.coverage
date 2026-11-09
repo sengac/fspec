@@ -5,13 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_hotspot.rs",
-          "lines": "89-119",
+          "lines": "111-141",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -145,8 +143,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -157,13 +162,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_hotspot.rs",
-          "lines": "121-162",
+          "lines": "143-184",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -297,8 +300,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -314,8 +324,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -449,8 +457,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -466,8 +481,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -601,8 +614,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -613,13 +633,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_hotspot.rs",
-          "lines": "215-240",
+          "lines": "237-262",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -753,8 +771,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -770,8 +795,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_hotspot.rs",
               "lines": [
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -905,8 +928,15 @@
                 202,
                 203,
                 204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "}"
             }
           ]
         }
@@ -923,6 +953,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_hotspot.rs"
     ],
-    "totalLinesCovered": 986
+    "totalLinesCovered": 1004
   }
 }

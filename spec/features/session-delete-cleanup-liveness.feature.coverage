@@ -18,7 +18,9 @@
                 11,
                 12,
                 13
-              ]
+              ],
+              "firstLine": "fn release_lease(&mut self, session_id: Uuid) {",
+              "lastLine": "if self.last_session.get(&session.project) == Some(&session_id) {"
             }
           ]
         }
@@ -42,7 +44,9 @@
                 11,
                 12,
                 13
-              ]
+              ],
+              "firstLine": "fn release_lease(&mut self, session_id: Uuid) {",
+              "lastLine": "if self.last_session.get(&session.project) == Some(&session_id) {"
             }
           ]
         }

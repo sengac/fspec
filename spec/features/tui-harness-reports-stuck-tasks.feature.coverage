@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "name": "A panicking spawned task fails the drain",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug383_tui_harness_reports_stuck_tasks.rs",
+          "lines": "9-21",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/harness/driving.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "/// Await every queued task, reporting the first that panicked; a task",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A spawned task that never finishes fails the drain",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug383_tui_harness_reports_stuck_tasks.rs",
+          "lines": "23-43",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/harness/driving.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "/// Await every spawned tokio task on `pending_tasks` AND fold any",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug383_tui_harness_reports_stuck_tasks.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/tests/common/harness/driving.rs"
+    ],
+    "totalLinesCovered": 62
+  }
+}

@@ -118,10 +118,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // [4] Detect draft. The draft takes precedence over the final foundation.
-    let draft_path = project_root.join("spec").join("foundation.json.draft");
-    let final_path = project_root.join("spec").join("foundation.json");
+    let draft_path = crate::io::spec_paths::foundation_draft(project_root)?;
+    let final_path = crate::io::spec_paths::foundation(project_root)?;
     let is_draft = draft_path.exists();
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "update-foundation")?;
     // [5] Load the target document.
     let mut foundation: Value = if is_draft {
         let raw = std::fs::read_to_string(&draft_path).map_err(|source| FspecCoreError::Io {

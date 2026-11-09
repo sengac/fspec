@@ -9,33 +9,32 @@
 //! /isolation slash-command dispatch rewiring. Mirrors the
 //! source_shape_rpc059 pattern.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
-fn count_lines(path: &PathBuf) -> usize {
-    fs::read_to_string(path)
-        .expect("read source")
+fn count_lines(path: &PathBuf) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(fs::read_to_string(path)
+        .or_fail("read source")?
         .lines()
-        .count()
+        .count())
 }
 
 /// Scenario: CreateSessionDialog component file exists with the documented surface
 #[test]
-fn create_session_dialog_component_exists() {
+fn create_session_dialog_component_exists() -> TestResult {
     // @step Given the file rust/fspec-tui/src/components/create_session_dialog.rs exists
-    let path = workspace_root().join("rust/fspec-tui/src/components/create_session_dialog.rs");
-    let source = fs::read_to_string(&path).expect("read create_session_dialog.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/components/create_session_dialog.rs");
+    let source = fs::read_to_string(&path).or_fail("read create_session_dialog.rs")?;
 
     // @step Then it declares a public struct named "CreateSessionDialog"
     assert!(
@@ -73,18 +72,20 @@ fn create_session_dialog_component_exists() {
 
     // @step And the file stays under 300 lines
     assert!(
-        count_lines(&path) < 300,
+        count_lines(&path)? < 300,
         "create_session_dialog.rs has {} lines (>= 300)",
-        count_lines(&path)
+        count_lines(&path)?
     );
+    Ok(())
 }
 
 /// Scenario: Action enum gains the three RPC-060 variants
 #[test]
-fn action_enum_gains_rpc060_variants() {
+fn action_enum_gains_rpc060_variants() -> TestResult {
     // @step Given the file rust/fspec-tui/src/components/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/components/mod.rs");
-    let source = fs::read_to_string(&path).expect("read components/mod.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/components/mod.rs");
+    let source = codelet_test_helpers::source_composition::read_source(&path)
+        .or_fail("read components/mod.rs")?;
 
     // @step Then it declares Action::OpenCreateSessionDialog
     assert!(
@@ -101,14 +102,15 @@ fn action_enum_gains_rpc060_variants() {
         source.contains("CreateSessionCancelled"),
         "Action enum should declare CreateSessionCancelled"
     );
+    Ok(())
 }
 
 /// Scenario: /isolation slash command dispatches Action::OpenCreateSessionDialog
 #[test]
-fn dispatch_slash_commands_routes_isolation_to_open_create_session_dialog() {
+fn dispatch_slash_commands_routes_isolation_to_open_create_session_dialog() -> TestResult {
     // @step Given the file rust/fspec-tui/src/app/dispatch_slash_commands.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/app/dispatch_slash_commands.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_slash_commands.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/app/dispatch_slash_commands.rs");
+    let source = fs::read_to_string(&path).or_fail("read app/dispatch_slash_commands.rs")?;
 
     // @step Then it matches SlashCommandAction::Isolation
     assert!(
@@ -124,14 +126,15 @@ fn dispatch_slash_commands_routes_isolation_to_open_create_session_dialog() {
         source.contains("CreateSessionOption::Isolated"),
         "dispatch_slash_commands.rs should preselect CreateSessionOption::Isolated"
     );
+    Ok(())
 }
 
 /// Scenario: codelet-fspec-tui lib re-exports the new dialog surface
 #[test]
-fn lib_re_exports_create_session_dialog() {
+fn lib_re_exports_create_session_dialog() -> TestResult {
     // @step Given the file rust/fspec-tui/src/lib.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read lib.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/lib.rs");
+    let source = fs::read_to_string(&path).or_fail("read lib.rs")?;
 
     // @step Then it re-exports CreateSessionDialog and CreateSessionOption
     assert!(
@@ -146,4 +149,5 @@ fn lib_re_exports_create_session_dialog() {
         source.contains("CREATE_SESSION_DIALOG_ID"),
         "lib.rs should re-export CREATE_SESSION_DIALOG_ID"
     );
+    Ok(())
 }

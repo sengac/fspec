@@ -1,5 +1,5 @@
 //! PROV-109 — App-level dispatch tests for the profile write surface
-//! (SaveProfile / DeleteProfile / ConfirmDeleteProfile).
+//! (SaveProfile / ConfirmDeleteProfile).
 //!
 //! Feature: spec/features/provider-config-profile-dispatch.feature
 //!
@@ -9,14 +9,12 @@
 //! RPC-054 pattern in `provider_settings_dispatch_rpc054.rs`. Fully offline:
 //! the MockBackend never touches the network or the filesystem.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo, SessionId};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -58,29 +56,34 @@ fn profile_def(base_url: &str) -> ProfileDefinition {
 
 /// Drain every pending tokio task spawned by `App::dispatch` AND fold any
 /// queued action_tx messages back into the App.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -93,7 +96,7 @@ fn fresh_app(mock: Arc<MockBackend>) -> App {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn save_profile_writes_and_refreshes() {
+async fn save_profile_writes_and_refreshes() -> TestResult {
     // @step Given the provider settings view is open with a MockBackend
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![pinfo("openai", false)]);
@@ -106,18 +109,18 @@ async fn save_profile_writes_and_refreshes() {
         old_profile_name: None,
         definition: profile_def("http://localhost:8888"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || mock.save_profile_calls() >= 1,
         "save_profile called at least once",
     )
-    .await;
+    .await?;
 
     // @step Then backend.save_profile is awaited exactly once
     assert_eq!(mock.save_profile_calls(), 1);
 
     // @step And the captured save carries provider "openai" and profile "work-vllm"
-    let last = mock.last_save_profile().expect("captured save");
+    let last = mock.last_save_profile().or_fail("captured save")?;
     assert_eq!(last.0, "openai");
     assert_eq!(last.1, "work-vllm");
 
@@ -133,6 +136,7 @@ async fn save_profile_writes_and_refreshes() {
 
     // @step And a follow-up backend.list_provider_credentials refresh is dispatched
     assert!(mock.list_provider_credentials_calls() >= 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -141,7 +145,7 @@ async fn save_profile_writes_and_refreshes() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn edit_profile_dispatches_save_with_new_settings() {
+async fn edit_profile_dispatches_save_with_new_settings() -> TestResult {
     // @step Given the provider settings view is open with a MockBackend
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![pinfo("openai", true)]);
@@ -154,22 +158,23 @@ async fn edit_profile_dispatches_save_with_new_settings() {
         old_profile_name: None,
         definition: profile_def("http://localhost:9999"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || mock.save_profile_calls() >= 1,
         "save_profile called at least once",
     )
-    .await;
+    .await?;
 
     // @step Then backend.save_profile is awaited exactly once
     assert_eq!(mock.save_profile_calls(), 1);
 
     // @step And the captured save definition carries baseUrl "http://localhost:9999"
-    let last = mock.last_save_profile().expect("captured save");
+    let last = mock.last_save_profile().or_fail("captured save")?;
     assert_eq!(last.2.base_url, "http://localhost:9999");
 
     // @step And a follow-up backend.list_provider_credentials refresh is dispatched
     assert!(mock.list_provider_credentials_calls() >= 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -177,7 +182,7 @@ async fn edit_profile_dispatches_save_with_new_settings() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn confirm_delete_profile_removes_and_refreshes() {
+async fn confirm_delete_profile_removes_and_refreshes() -> TestResult {
     // @step Given the provider settings view is open with a MockBackend
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![pinfo("openai", true)]);
@@ -188,18 +193,18 @@ async fn confirm_delete_profile_removes_and_refreshes() {
         provider_id: "openai".to_string(),
         profile_name: "work-vllm".to_string(),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || mock.delete_profile_calls() >= 1,
         "delete_profile called at least once",
     )
-    .await;
+    .await?;
 
     // @step Then backend.delete_profile is awaited exactly once
     assert_eq!(mock.delete_profile_calls(), 1);
 
     // @step And the captured delete carries provider "openai" and profile "work-vllm"
-    let last = mock.last_delete_profile().expect("captured delete");
+    let last = mock.last_delete_profile().or_fail("captured delete")?;
     assert_eq!(last.0, "openai");
     assert_eq!(last.1, "work-vllm");
 
@@ -215,6 +220,7 @@ async fn confirm_delete_profile_removes_and_refreshes() {
 
     // @step And a follow-up backend.list_provider_credentials refresh is dispatched
     assert!(mock.list_provider_credentials_calls() >= 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -222,14 +228,14 @@ async fn confirm_delete_profile_removes_and_refreshes() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn failed_save_profile_surfaces_inline_error() {
+async fn failed_save_profile_surfaces_inline_error() -> TestResult {
     // @step Given the provider settings view is open with a MockBackend that fails save_profile with "write failed"
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![pinfo("openai", false)]);
     mock.set_save_profile_error("write failed".to_string());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When the user dispatches SaveProfile for openai profile "work-vllm"
     app.dispatch(Action::SaveProfile {
@@ -238,12 +244,12 @@ async fn failed_save_profile_surfaces_inline_error() {
         old_profile_name: None,
         definition: profile_def("http://localhost:8888"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || app.navigator().provider_settings.status.contains('✗'),
         "status reflects the failure",
     )
-    .await;
+    .await?;
 
     // @step Then the inline status surfaces the failure with a "✗" marker
     let status = &app.navigator().provider_settings.status;
@@ -277,43 +283,5 @@ async fn failed_save_profile_surfaces_inline_error() {
             "scrollback should not leak RPC method names, got {text:?}"
         );
     }
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: ConfirmDeleteProfile and DeleteProfile route through the same
-// handler
-// ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn confirm_and_raw_delete_route_through_same_handler() {
-    // @step Given the provider settings view is open with a MockBackend
-    let mock = Arc::new(MockBackend::new());
-    mock.seed_provider_credentials(vec![pinfo("openai", true)]);
-    let mut app = fresh_app(mock.clone());
-
-    // @step When the user dispatches DeleteProfile for openai profile "a"
-    app.dispatch(Action::DeleteProfile {
-        provider_id: "openai".to_string(),
-        profile_name: "a".to_string(),
-    });
-    drain_pending(&mut app).await;
-
-    // @step And the user dispatches ConfirmDeleteProfile for openai profile "b"
-    app.dispatch(Action::ConfirmDeleteProfile {
-        provider_id: "openai".to_string(),
-        profile_name: "b".to_string(),
-    });
-    drain_pending(&mut app).await;
-    wait_until(
-        || mock.delete_profile_calls() >= 2,
-        "delete_profile called twice",
-    )
-    .await;
-
-    // @step Then backend.delete_profile is awaited exactly twice
-    assert_eq!(mock.delete_profile_calls(), 2);
-
-    // @step And both deletes target provider "openai"
-    let last = mock.last_delete_profile().expect("captured delete");
-    assert_eq!(last.0, "openai");
+    Ok(())
 }

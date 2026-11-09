@@ -34,13 +34,13 @@ Feature: Provider settings: TS-parity footer hints with context-sensitive per-ro
     I want to see the footer hint line update based on the currently selected nav-item kind (provider, api-key, profile, oauth-login, oauth-status, add-profile) using the same per-row-type strings and bullet separators as the TS Ink reference
     So that I always know the right keybinds for whatever row I'm on (Enter: edit · d: delete for an api-key, Enter: expand for a provider, etc.) without having to memorise a generic combined hint
 
-  Scenario: Provider row selection yields the "Enter: expand" hint with FOOTER_COMMON suffix
+  Scenario: Provider row selection yields the "Enter/→: expand" hint with FOOTER_COMMON suffix
     Given the ProviderSettingsView has a Provider nav-item selected
     When I read the footer hint
-    Then the hint equals "Enter: expand · / filter · Tab: Switch to models · Esc: close"
+    Then the hint equals "Enter/→: expand · / filter · Tab: Switch to models · Esc: close"
 
   Scenario: ApiKey row selection yields the "Enter: edit · d: delete" hint with FOOTER_COMMON suffix
-    Given the ProviderSettingsView has an ApiKey nav-item selected
+    Given the ProviderSettingsView has the ApiKey nav-item of a configured provider selected
     When I read the footer hint
     Then the hint equals "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
 
@@ -76,7 +76,7 @@ Feature: Provider settings: TS-parity footer hints with context-sensitive per-ro
     And the hint does not contain the character "|"
 
   Scenario: Keybind labels use lowercase colon style, never uppercase pipe style
-    Given the ProviderSettingsView has an ApiKey nav-item selected
+    Given the ProviderSettingsView has the ApiKey nav-item of a configured provider selected
     When I read the footer hint
     Then the hint contains "Enter:"
     And the hint contains "d: delete"
@@ -93,7 +93,7 @@ Feature: Provider settings: TS-parity footer hints with context-sensitive per-ro
   Scenario: Footer hint is rendered into a single bottom row via render_footer_hint
     Given the ProviderSettingsView has a Provider nav-item selected
     When I render the view into a 80x10 buffer
-    Then the bottom buffer row reads "Enter: expand · / filter · Tab: Switch to models · Esc: close" left-aligned
+    Then the bottom buffer row reads "Enter/→: expand · / filter · Tab: Switch to models · Esc: close" left-aligned
 
   Scenario: footer_hint_for(None) returns FOOTER_COMMON verbatim
     Given the canonical FOOTER_COMMON string "/ filter · Tab: Switch to models · Esc: close"

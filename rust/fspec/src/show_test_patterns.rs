@@ -10,7 +10,7 @@
 //! This bridge intentionally contains NO inline filtering, coverage
 //! reading, or summary formatting — those live exclusively in fspec_core.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -27,7 +27,7 @@ pub struct CliArgs {
 
 /// Entry point for the `show-test-patterns` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert("tag".to_string(), Value::String(args.tag.clone()));

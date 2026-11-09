@@ -2,9 +2,8 @@
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::{ConfirmDialog, ConfirmDialogOutcome};
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -21,7 +20,7 @@ fn dialog() -> ConfirmDialog {
 
 /// Scenario fragment: D opens the ConfirmDialog with primary_label "Delete"
 #[test]
-fn new_dialog_focuses_primary_with_documented_labels() {
+fn new_dialog_focuses_primary_with_documented_labels() -> TestResult {
     // @step Given resume_view.delete_confirm is Some(ConfirmDialog) with Primary focused
     let d = dialog();
     // @step And resume_view.delete_confirm is Some(ConfirmDialog) with primary_label "Delete"
@@ -29,21 +28,23 @@ fn new_dialog_focuses_primary_with_documented_labels() {
     assert_eq!(d.cancel_label(), "Cancel");
     assert_eq!(d.focused(), 0);
     assert_eq!(d.buttons().len(), 2);
+    Ok(())
 }
 
 /// Scenario fragment: Enter on Primary returns Primary outcome
 #[test]
-fn enter_on_primary_returns_primary_outcome() {
+fn enter_on_primary_returns_primary_outcome() -> TestResult {
     // @step When the user presses Enter while the ConfirmDialog has Primary focused
     let mut d = dialog();
     let outcome = d.handle_key(KeyCode::Enter, KeyModifiers::NONE);
     // @step Then Action::ConfirmDeleteSession("s-2") is dispatched
     assert_eq!(outcome, ConfirmDialogOutcome::Primary);
+    Ok(())
 }
 
 /// Scenario fragment: Esc dismisses with Cancel
 #[test]
-fn esc_returns_cancel_outcome() {
+fn esc_returns_cancel_outcome() -> TestResult {
     // @step When the user presses Esc on the dialog
     let mut d = dialog();
     let outcome = d.handle_key(KeyCode::Esc, KeyModifiers::NONE);
@@ -52,11 +53,12 @@ fn esc_returns_cancel_outcome() {
     // (Widget-level: the dialog has no handle to the parent's sessions vec; Cancel outcome means the parent will NOT mutate sessions.)
     // @step And no backend call has been made
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
+    Ok(())
 }
 
 /// Scenario fragment: Right cycles to Cancel, Enter activates Cancel
 #[test]
-fn right_arrow_cycles_focus_and_enter_activates_cancel() {
+fn right_arrow_cycles_focus_and_enter_activates_cancel() -> TestResult {
     // @step When the user cycles to Cancel and presses Enter
     let mut d = dialog();
     let _ = d.handle_key(KeyCode::Right, KeyModifiers::NONE);
@@ -64,11 +66,12 @@ fn right_arrow_cycles_focus_and_enter_activates_cancel() {
     let outcome = d.handle_key(KeyCode::Enter, KeyModifiers::NONE);
     // @step Then resume_view.delete_confirm is None
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
+    Ok(())
 }
 
 /// Scenario fragment: Left arrow wraps focus backwards
 #[test]
-fn left_arrow_wraps_to_last_button() {
+fn left_arrow_wraps_to_last_button() -> TestResult {
     // @step Given dialog focused on Primary
     let mut d = dialog();
     // @step When the user presses Left
@@ -76,11 +79,12 @@ fn left_arrow_wraps_to_last_button() {
     // @step Then focus wraps to the Cancel button
     assert_eq!(outcome, ConfirmDialogOutcome::Continued);
     assert_eq!(d.focused(), 1);
+    Ok(())
 }
 
 /// Scenario fragment: render paints title + body + button row
 #[test]
-fn render_paints_title_body_and_buttons() {
+fn render_paints_title_body_and_buttons() -> TestResult {
     // @step Given a fresh confirm dialog
     let d = dialog();
     let mut buf = Buffer::empty(Rect::new(0, 0, 80, 24));
@@ -101,4 +105,5 @@ fn render_paints_title_body_and_buttons() {
     // @step And the button row shows Delete and Cancel
     assert!(joined.contains("Delete"));
     assert!(joined.contains("Cancel"));
+    Ok(())
 }

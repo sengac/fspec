@@ -152,7 +152,7 @@ pub async fn mcp(fixture: &Fixture) -> Result {
     let _cleanup = McpCleanup(session);
     let (_injections, _connections) = init_mcp_session(session);
     let connect: McpConnectArgs = serde_json::from_value(json!({"action":"connect",
-        "name":"delegation","transport":"http","url":endpoint.uri(),"timeout":2}))?;
+        "name":"delegation","transport":"http","url":endpoint.uri()}))?;
     let connected = ConnectMcpTool::new(session).call(connect).await?;
     assert!(connected.contains("Connected:"), "{connected}");
     let actor = ToolServer::new().run();
@@ -165,8 +165,8 @@ pub async fn mcp(fixture: &Fixture) -> Result {
         .await
         .is_err());
     assert!(calls.lock().map_err(|_| "MCP calls")?.is_empty());
-    let output = tokio::time::timeout(
-        std::time::Duration::from_secs(5),
+    let output = codelet_test_helpers::deadlock_guard(
+        "actor.call_tool('mcp__delegation__strict', &attributed()....",
         actor.call_tool("mcp__delegation__strict", &attributed().to_string()),
     )
     .await??;
@@ -196,6 +196,10 @@ pub async fn mapped(fixture: &Fixture) -> Result {
         Arc::new(ScriptLoader::with_default_engine()),
     )?;
     let session = Uuid::parse_str(&fixture.first.value)?;
+    // BUG-404: the file executor's isolation lookup must find this
+    // fixture's session, so its manager is the registered one (an earlier
+    // test's manager may still hold the process-global slot).
+    codelet_sessions::session_tool_callbacks::register_manager(fixture.manager.clone());
     let actor = ToolServer::new()
         .tool(RhaiToolWrapper::new(adapter, session))
         .tool(FileToolFacadeWrapper::new(

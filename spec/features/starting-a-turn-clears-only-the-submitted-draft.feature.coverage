@@ -1,0 +1,246 @@
+{
+  "scenarios": [
+    {
+      "name": "A draft saved while a slow send was in flight survives the turn start",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs",
+          "lines": "75-95",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "/// BUG-554: a submission ends only the draft it was typed from. Clear",
+              "lastLine": "self.clear_pending_input_if(&input);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Starting a turn clears the draft that was submitted",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs",
+          "lines": "97-111",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "/// BUG-554: a submission ends only the draft it was typed from. Clear",
+              "lastLine": "self.clear_pending_input_if(&input);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Steering a running turn keeps a newer draft and clears the submitted one",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs",
+          "lines": "117-137",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// BUG-554: a submission ends only the draft it was typed from. Clear",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "(true, InputMode::Queue) => {",
+              "lastLine": "(true, InputMode::Interrupt) => {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queueing behind a running turn keeps a newer draft and clears the submitted one",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs",
+          "lines": "139-160",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// BUG-554: a submission ends only the draft it was typed from. Clear",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "(false, InputMode::Queue) => {",
+              "lastLine": "Ok(())"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A queued input starting after the running turn keeps the current draft",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs",
+          "lines": "166-187",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "/// BUG-554: a submission ends only the draft it was typed from. Clear",
+              "lastLine": "self.clear_pending_input_if(&input);"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Start the next parked input as a new turn. `Ok(false)` when nothing",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug554_turn_start_clears_only_submitted_draft.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/messaging.rs",
+      "rust/sessions/src/background_session/input_modes.rs"
+    ],
+    "totalLinesCovered": 219
+  }
+}

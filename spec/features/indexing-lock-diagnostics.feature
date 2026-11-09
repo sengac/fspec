@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-528
 @phase-1
 @persistence
 @session-management
@@ -5,6 +7,9 @@
 Feature: Isolated indexing and lock diagnostics
   """
   Synthetic fixtures call real MessageStore code. Original pre-fix sources and red logs are retained in the task validation evidence; post-fix checks now assert compatible layouts and verified completeness. Historical codec functions stay verbatim. No live data or daemon access.
+  BUG-494: the synthetic fixture puts every store in the state a loaded or fast machine produces at random -
+  index and history sharing one modification time, with the completeness proof re-proved for that generation
+  (BUG-519) - so the publication counts these diagnostics assert no longer depend on timing.
   """
 
   Scenario: Valid saved indexes avoid repeated publication

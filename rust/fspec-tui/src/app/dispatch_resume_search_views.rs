@@ -96,14 +96,18 @@ impl App {
         if let Some(handle) = self.search_history_debounce_handle.take() {
             handle.abort();
         }
-        let backend = self.backend.clone();
+        // RPC-455: the selected workspace's history; a failed search is shown.
+        let calls = self.scoped_calls();
         let action_tx = self.action_tx.clone();
         let q = query;
         let handle = tokio::spawn(async move {
             tokio::time::sleep(Duration::from_millis(SEARCH_DEBOUNCE_MS)).await;
-            if let Ok(matches) = backend.persistence_search_history(q.clone()).await {
-                let _ = action_tx.send(Action::HistorySearchResults { query: q, matches });
-            }
+            let _ = action_tx.send(match calls.search_history(q.clone()).await {
+                Ok(matches) => Action::HistorySearchResults { query: q, matches },
+                Err(error) => Action::SessionOperationFailed(format!(
+                    "The input history could not be searched: {error:#}"
+                )),
+            });
         });
         // RPC-064: park the abort token for the next keystroke's
         // cancellation AND push the `JoinHandle` itself onto
@@ -140,17 +144,6 @@ impl App {
         self.navigator.agent.search_view = None;
     }
 
-    /// Open the delete-confirm dialog inside resume_view. Does NOT
-    /// dispatch anything to the backend yet — the dialog's Primary
-    /// outcome dispatches `Action::ConfirmDeleteSession`.
-    pub(crate) fn handle_request_delete_session(&mut self, _id: SessionId) {
-        // The resume_view already opened its internal delete_confirm
-        // dialog as a side-effect of producing the
-        // ResumeSessionViewOutcome::RequestDelete. This handler exists
-        // so the App can react further (e.g. logging) — currently a
-        // deliberate no-op.
-    }
-
     /// Spawn `backend.persistence_delete_session(id)`; on success spawn
     /// a follow-up `backend.list_sessions(project_path)` so the resume_view
     /// repaints without the deleted session. The resume_view's
@@ -171,17 +164,30 @@ impl App {
         // MUX-002: closing a session shrinks the open-session list —
         // re-clamp the mux agent window (agent slots stay in the grid).
         self.mux_sync_window();
-        let project_path = std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default();
+        // BUG-466: a failed delete, an unresolvable current directory or a
+        // failed re-listing is shown instead of dropped.
+        // RPC-455: re-listed for the selected workspace.
+        let project_path = self.session_list_project();
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
-            if backend.persistence_delete_session(id).await.is_ok() {
-                if let Ok(sessions) = backend.list_sessions(project_path).await {
-                    let _ = action_tx.send(Action::SessionListLoaded(sessions));
-                }
+            let outcome = async {
+                backend
+                    .persistence_delete_session(id)
+                    .await
+                    .map_err(|error| format!("The session could not be deleted: {error:#}"))?;
+                let project_path = project_path
+                    .map_err(|error| format!("The sessions could not be listed: {error}"))?;
+                backend
+                    .list_sessions(project_path)
+                    .await
+                    .map_err(|error| format!("The sessions could not be listed: {error:#}"))
             }
+            .await;
+            let _ = action_tx.send(match outcome {
+                Ok(sessions) => Action::SessionListLoaded(sessions),
+                Err(message) => Action::SessionOperationFailed(message),
+            });
         });
         self.pending_tasks.push(handle);
     }

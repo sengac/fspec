@@ -21,14 +21,18 @@
                 91,
                 100,
                 111
-              ]
+              ],
+              "firstLine": "pub(super) fn snapshot(",
+              "lastLine": ".is_some_and(|record| boundaries.get(&record.identity.request_id) == Some(&boundary))"
             },
             {
               "file": "rust/core/src/persistence/transcript/projection.rs",
               "lines": [
                 33,
                 50
-              ]
+              ],
+              "firstLine": "pub(crate) fn from_records(",
+              "lastLine": "for record in records {"
             }
           ]
         }
@@ -55,14 +59,18 @@
                 91,
                 100,
                 111
-              ]
+              ],
+              "firstLine": "pub(super) fn snapshot(",
+              "lastLine": ".is_some_and(|record| boundaries.get(&record.identity.request_id) == Some(&boundary))"
             },
             {
               "file": "rust/core/src/persistence/transcript/projection.rs",
               "lines": [
                 33,
                 50
-              ]
+              ],
+              "firstLine": "pub(crate) fn from_records(",
+              "lastLine": "for record in records {"
             }
           ]
         }
@@ -89,14 +97,18 @@
                 91,
                 100,
                 111
-              ]
+              ],
+              "firstLine": "pub(super) fn snapshot(",
+              "lastLine": ".is_some_and(|record| boundaries.get(&record.identity.request_id) == Some(&boundary))"
             },
             {
               "file": "rust/core/src/persistence/transcript/projection.rs",
               "lines": [
                 33,
                 50
-              ]
+              ],
+              "firstLine": "pub(crate) fn from_records(",
+              "lastLine": "for record in records {"
             }
           ]
         }

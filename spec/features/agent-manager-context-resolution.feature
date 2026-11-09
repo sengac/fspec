@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @AMGR-011
+@tools
+@agent-manager
 Feature: Message context resolution
   """
   Add optional context field to AgentManagerAction::Message variant: context: Option<Vec<ContextReference>>.

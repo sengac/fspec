@@ -63,7 +63,7 @@ Feature: Core Scheduler Engine
 
   Scenario: Schedule does not trigger when already run since last cron time
     Given a schedule with cron expression "0 * * * *"
-    And the schedule's last_run_at is 30 seconds ago
+    And the schedule's last_run_at is after the most recent cron trigger
     When the scheduler evaluates the schedule
     Then the schedule should not trigger
 

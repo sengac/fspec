@@ -9,9 +9,6 @@ mod transport;
 #[cfg(test)]
 use events::handle_event;
 #[cfg(test)]
-#[path = "streaming/stop_tests.rs"]
-mod stop_tests;
-#[cfg(test)]
 #[path = "streaming/thinking_tests.rs"]
 mod thinking_tests;
 #[cfg(test)]

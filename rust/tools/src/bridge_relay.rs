@@ -76,7 +76,9 @@ impl InjectedInput {
 pub type InputInjector = Arc<dyn Fn(InjectedInput) + Send + Sync>;
 
 /// Callback for handling control actions (interrupt, clear, pause_response)
-pub type ControlHandler = Arc<dyn Fn(&str, Option<&str>) + Send + Sync>;
+/// Arguments: the action, its response and (AMGR-020) the id of the
+/// request a `pause_response` answers.
+pub type ControlHandler = Arc<dyn Fn(&str, Option<&str>, Option<&str>) + Send + Sync>;
 
 /// Callback to emit FspecCommandRequest into the session
 pub type CommandEmitter = Arc<dyn Fn(String, String, String, String) + Send + Sync>;
@@ -469,6 +471,7 @@ pub async fn handle_multiplexed_inbound(
             session_id,
             action,
             response,
+            request_id,
         } => {
             // SESS-018: Same per-session dispatch as SessionInput. Only fall
             // back to the parameter `control_handler` when no per-session
@@ -480,10 +483,10 @@ pub async fn handle_multiplexed_inbound(
 
             if let Some(handler) = per_session_handler {
                 tracing::info!("Handling control action (per-session): {}", action);
-                handler(&action, response.as_deref());
+                handler(&action, response.as_deref(), request_id.as_deref());
             } else if let Some(handler) = control_handler {
                 tracing::info!("Handling control action: {}", action);
-                handler(&action, response.as_deref());
+                handler(&action, response.as_deref(), request_id.as_deref());
             } else {
                 tracing::warn!("Received control '{}' but no handler configured", action);
             }
@@ -1541,16 +1544,18 @@ mod tests {
         let new_hits = Arc::new(AtomicUsize::new(0));
 
         let supervisor_hits_clone = supervisor_hits.clone();
-        let supervisor_handler: ControlHandler =
-            Arc::new(move |_action: &str, _response: Option<&str>| {
+        let supervisor_handler: ControlHandler = Arc::new(
+            move |_action: &str, _response: Option<&str>, _request_id: Option<&str>| {
                 supervisor_hits_clone.fetch_add(1, Ordering::SeqCst);
-            });
+            },
+        );
 
         let new_hits_clone = new_hits.clone();
-        let new_handler: ControlHandler =
-            Arc::new(move |_action: &str, _response: Option<&str>| {
+        let new_handler: ControlHandler = Arc::new(
+            move |_action: &str, _response: Option<&str>, _request_id: Option<&str>| {
                 new_hits_clone.fetch_add(1, Ordering::SeqCst);
-            });
+            },
+        );
 
         // Register context for new session with its own control handler
         let (_dummy_tx, _dummy_rx) = tokio::sync::broadcast::channel::<serde_json::Value>(1);
@@ -1783,7 +1788,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_sess018_terminal_create_spawns_reader_emitting_data_envelopes() {
-        use std::time::Duration;
         use tokio::sync::mpsc;
 
         // Given a registered OutboundControlTx that the reader task will drain
@@ -1816,19 +1820,17 @@ mod tests {
 
         // Then the reader task must push at least one terminal:data envelope
         // Most shells emit a prompt (e.g. "$ ") on startup — that's our signal.
+        // TEST-042: wait for the data envelope under the deadlock guard.
         let mut saw_data = false;
-        for _ in 0..20 {
-            match tokio::time::timeout(Duration::from_millis(250), outbound_rx.recv()).await {
-                Ok(Some(env)) => {
-                    if env.service == Service::Terminal && env.msg_type == "data" {
-                        saw_data = true;
-                        break;
-                    }
+        let _ = codelet_test_helpers::deadlock_guard("a terminal:data envelope", async {
+            while let Some(env) = outbound_rx.recv().await {
+                if env.service == Service::Terminal && env.msg_type == "data" {
+                    saw_data = true;
+                    break;
                 }
-                Ok(None) => break,
-                Err(_) => continue,
             }
-        }
+        })
+        .await;
         assert!(
             saw_data,
             "expected at least one terminal:data envelope from the spawned PTY reader"

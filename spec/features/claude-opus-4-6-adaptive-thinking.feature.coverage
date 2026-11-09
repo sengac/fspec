@@ -1,207 +1,72 @@
 {
   "scenarios": [
     {
-      "name": "Opus 4.6 uses adaptive thinking automatically",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "29-55",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Sonnet 4.6 uses adaptive thinking automatically",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "58-84",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "User-provided budget_tokens is ignored for Opus 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "87-118",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259
-              ]
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "User-provided budget_tokens is ignored for Sonnet 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "121-150",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259
-              ]
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Opus 4.5 uses budget-based thinking",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "153-184",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227,229-272"
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Sonnet 4.5 uses budget-based thinking",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "187-217",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227,229-272"
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Opus 4.6 uses correct beta headers",
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "220-254",
+          "lines": "32-60",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
-              "lines": "49-102"
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub const MAX_OUTPUT_TOKENS: usize = 8192;",
+              "lastLine": ""
             }
           ]
         }
@@ -212,11 +77,68 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "257-291",
+          "lines": "66-93",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
-              "lines": "49-102"
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub const MAX_OUTPUT_TOKENS: usize = 8192;",
+              "lastLine": ""
             }
           ]
         }
@@ -227,102 +149,68 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "294-328",
+          "lines": "99-124",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
-              "lines": "49-102"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Thinking level 'high' defaults to adaptive for Opus 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "450-479",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Thinking level 'low' defaults to adaptive for Sonnet 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "482-511",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Thinking disabled with 'off' for Opus 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "514-534",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Thinking disabled with 'off' for Sonnet 4.6",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "537-557",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "rust/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub const MAX_OUTPUT_TOKENS: usize = 8192;",
+              "lastLine": ""
             }
           ]
         }
@@ -331,28 +219,18 @@
     {
       "name": "Sonnet 4.5 uses correct beta headers",
       "testMappings": []
-    },
-    {
-      "name": "Unknown future model defaults to adaptive thinking",
-      "testMappings": []
-    },
-    {
-      "name": "Model variant inherits adaptive behavior from base model",
-      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 16,
-    "coveredScenarios": 13,
-    "coveragePercent": 81,
+    "totalScenarios": 4,
+    "coveredScenarios": 3,
+    "coveragePercent": 75,
     "testFiles": [
       "rust/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs"
     ],
     "implFiles": [
-      "rust/tools/src/facade/thinking_config.rs",
-      "rust/napi/src/thinking_config.rs",
       "rust/providers/src/claude.rs"
     ],
-    "totalLinesCovered": 703
+    "totalLinesCovered": 245
   }
 }

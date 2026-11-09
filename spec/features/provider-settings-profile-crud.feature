@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @crud
 @rust
@@ -73,7 +74,6 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
     I want to press Enter/d on profile and Add-Profile nav rows to open prefilled edit, create and delete-confirm flows
     So that I can manage my real profiles through an editable form and the row repaints after each write instead of hitting a dead read-only screen
 
-  @PROV-111
   Scenario: Enter on a profile row opens the edit form prefilled from the stored config
     Given the Provider Settings nav tree has an expanded "openai" provider with a stored profile "fireworks"
     And the per-profile config map carries "fireworks" with baseUrl "https://api.fireworks.ai/inference/v1" and an apiKey
@@ -84,7 +84,6 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
     And the form api key is prefilled from the stored config
     And the form name editing flag is false so "fireworks" is not editable
 
-  @PROV-111
   Scenario: Enter on the Add Profile row opens a create form with defaults
     Given the Provider Settings nav tree has an expanded "openai" provider with a trailing Add Profile row
     And the cursor is on the Add Profile row
@@ -94,7 +93,6 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
     And the form api key is empty
     And the form name editing flag is true
 
-  @PROV-111
   Scenario: Pressing d on a profile row opens a per-profile delete confirm that targets only that profile
     Given the Provider Settings nav tree has an expanded "openai" provider with profiles "fireworks" and "home"
     And the cursor is on the "home" profile row
@@ -103,7 +101,6 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
     When I accept the delete confirmation
     Then a ConfirmDeleteProfile action is emitted for provider "openai" and profile "home"
 
-  @PROV-111
   Scenario: Pressing d on the Add Profile row has no delete action
     Given the Provider Settings nav tree has an expanded "openai" provider with a trailing Add Profile row
     And the cursor is on the Add Profile row
@@ -111,28 +108,24 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
     Then no delete confirmation dialog is open
     And the key is consumed without emitting an action
 
-  @PROV-111
   Scenario: The full-config loader returns parsed ProfileDefinitions keyed by name
     Given a user config fspec-config.json with an openai profile "fireworks" carrying a baseUrl, an apiKey and a contextWindow
     And an empty project config directory
     When load_openai_profile_configs_from is called with the user and project directories
     Then the result maps "fireworks" to a ProfileDefinition whose base URL, api key and context window match the stored values
 
-  @PROV-111
   Scenario: The full-config loader merges with project overriding user by name
     Given a user config fspec-config.json with an openai profile "fireworks" whose baseUrl is "https://user.example/v1"
     And a project config fspec-config.json with an openai profile "fireworks" whose baseUrl is "https://project.example/v1"
     When load_openai_profile_configs_from is called with the user and project directories
     Then the result maps "fireworks" to a ProfileDefinition whose base URL is "https://project.example/v1"
 
-  @PROV-111
   Scenario: Folding loaded credentials stores the per-profile config map for prefill
     Given a Provider Settings view
     When a provider-qualified config map containing "openai" profile "fireworks" is stored on the view
     Then profile_config_for("openai", "fireworks") returns the stored ProfileDefinition
     And profile_config_for("openai", "missing") returns nothing
 
-  @PROV-111
   Scenario: The profile row display string is split back to the bare name for lookup
     Given a Provider Settings nav tree whose "openai" profile row label is "fireworks → https://api.fireworks.ai/inference/v1"
     And the per-profile config map carries "fireworks" with an apiKey

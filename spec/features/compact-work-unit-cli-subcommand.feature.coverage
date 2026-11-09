@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "Clap exposes compact-work-unit with a positional arg and --force flag in --help",
+      "name": "Clap exposes compact-work-unit with a positional arg in --help",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_compact_work_unit.rs",
@@ -40,7 +40,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// The TS CLI registers ONLY `<workUnitId>` — there is no `--force` option on",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -79,7 +81,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -118,7 +122,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -157,7 +163,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -196,7 +204,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -207,7 +217,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_compact_work_unit.rs",
-          "lines": "265-289",
+          "lines": "273-300",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/compact_work_unit.rs",
@@ -269,20 +279,10 @@
                 55,
                 56,
                 57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
+                58
+              ],
+              "firstLine": "//! `compact-work-unit` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -300,6 +300,6 @@
       "rust/fspec/src/compact_work_unit.rs",
       "rust/fspec-core/src/help/configs/compact_work_unit.rs"
     ],
-    "totalLinesCovered": 392
+    "totalLinesCovered": 383
   }
 }

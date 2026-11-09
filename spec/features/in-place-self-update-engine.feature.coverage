@@ -41,7 +41,9 @@
                 168,
                 169,
                 170
-              ]
+              ],
+              "firstLine": ".map(|a| a.name.clone());",
+              "lastLine": ".ok_or_else(|| UpdateError::NoAssetForTarget(self.effective_target()))?;"
             }
           ]
         }
@@ -98,7 +100,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "pub async fn perform_update(&self) -> Result<UpdateOutcome, UpdateError> {",
+              "lastLine": "/// `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`,"
             }
           ]
         }
@@ -114,6 +118,10 @@
             {
               "file": "rust/fspec-core/src/update/github.rs",
               "lines": [
+                34,
+                35,
+                36,
+                37,
                 38,
                 39,
                 40,
@@ -136,8 +144,13 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Fetch the latest release from `{base_url}/repos/{owner}/{repo}/releases/latest`.",
+              "lastLine": ".map_err(|e| UpdateError::Network(e.to_string()))?;"
             }
           ]
         }
@@ -153,6 +166,10 @@
             {
               "file": "rust/fspec-core/src/update/verify.rs",
               "lines": [
+                14,
+                15,
+                16,
+                17,
                 18,
                 19,
                 20,
@@ -169,14 +186,10 @@
                 31,
                 32,
                 33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
+                34
+              ],
+              "firstLine": "/// Verify the bytes in `downloaded` against the published digest for",
+              "lastLine": "}"
             }
           ]
         }
@@ -195,6 +208,6 @@
       "rust/fspec-core/src/update/github.rs",
       "rust/fspec-core/src/update/verify.rs"
     ],
-    "totalLinesCovered": 241
+    "totalLinesCovered": 246
   }
 }

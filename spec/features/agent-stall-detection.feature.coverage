@@ -5,103 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "80-120",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651
-              ]
-            }
-          ]
+          "lines": "110-153",
+          "implMappings": []
         }
       ]
     },
@@ -110,103 +15,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "127-160",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651
-              ]
-            }
-          ]
+          "lines": "159-190"
         }
       ]
     },
@@ -215,103 +24,8 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "167-203",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651
-              ]
-            }
-          ]
+          "lines": "196-235",
+          "implMappings": []
         }
       ]
     },
@@ -320,18 +34,12 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "267-311",
+          "lines": "294-328",
           "implMappings": [
             {
-              "file": "rust/napi/src/deep_search_handler.rs",
+              "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
-                212,
-                213,
-                214,
-                215,
-                216,
                 217,
-                218,
                 219,
                 220,
                 221,
@@ -341,14 +49,15 @@
                 225,
                 226,
                 227,
-                228,
                 229,
-                230,
-                231,
                 232,
                 233,
-                234
-              ]
+                234,
+                235,
+                239
+              ],
+              "firstLine": "let mut system_prompt = build_system_prompt(&scope_vec, can_recurse);",
+              "lastLine": "// 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled, + GraphSearch if available)"
             }
           ]
         }
@@ -359,7 +68,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "462-496",
+          "lines": "491-516",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -377,7 +86,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "|| (lower.contains(\"sse error\") && lower.contains(\"http client error\"))",
+              "lastLine": "///"
             }
           ]
         }
@@ -388,41 +99,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "230-273",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                5014,
-                5015,
-                5016,
-                5017,
-                5018,
-                5019,
-                5020,
-                5021,
-                5022,
-                5023,
-                5024,
-                5025,
-                5026,
-                5027,
-                5028,
-                5029,
-                5030,
-                5031,
-                5032,
-                5033,
-                5034,
-                5035,
-                5036,
-                5037,
-                5038,
-                5039,
-                5040
-              ]
-            }
-          ]
+          "lines": "343-382"
         }
       ]
     },
@@ -431,103 +108,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "210-228",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651
-              ]
-            }
-          ]
+          "lines": "241-288"
         }
       ]
     },
@@ -536,26 +117,8 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/recovery_stall.rs",
-          "lines": "406-460",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1112,
-                1113,
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123
-              ]
-            }
-          ]
+          "lines": "432-445",
+          "implMappings": []
         }
       ]
     }
@@ -568,11 +131,9 @@
       "rust/cli/src/interactive/recovery_stall.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs",
-      "rust/napi/src/deep_search_handler.rs",
-      "rust/cli/src/interactive/error_classifiers.rs",
-      "rust/napi/src/session_manager.rs"
+      "rust/agent-loop/src/deep_search_handler.rs",
+      "rust/cli/src/interactive/error_classifiers.rs"
     ],
-    "totalLinesCovered": 741
+    "totalLinesCovered": 308
   }
 }

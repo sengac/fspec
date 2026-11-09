@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "29-45",
+          "lines": "34-46",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -43,7 +43,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "heading: 4,",
+              "lastLine": "}"
             }
           ]
         }
@@ -54,7 +56,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "47-66",
+          "lines": "50-68",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -92,7 +94,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "heading: 4,",
+              "lastLine": "}"
             }
           ]
         }
@@ -103,43 +107,39 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "68-85",
+          "lines": "72-86",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "* Find code block boundary (```...```).",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,43 +150,39 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "87-101",
+          "lines": "90-103",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "* Find code block boundary (```...```).",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,49 +193,15 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "103-118",
+          "lines": "107-120",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
-                93
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Heading starts new message",
-      "testMappings": [
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "120-136",
-          "implMappings": [
-            {
-              "file": "bridge/telegram-content-chunker.ts",
-              "lines": [
+                93,
+                94,
                 95,
                 96,
                 97,
@@ -263,23 +225,24 @@
                 115,
                 116,
                 117
-              ]
+              ],
+              "firstLine": "* Find paragraph boundary (double newline).",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "List items stay together in single message",
+      "name": "Heading starts new message",
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "138-153",
+          "lines": "124-137",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                119,
                 120,
                 121,
                 122,
@@ -303,20 +266,70 @@
                 140,
                 141,
                 142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155
-              ]
+                143
+              ],
+              "firstLine": "* Find heading boundary (# ## ###).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List items stay together in single message",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
+          "lines": "141-154",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-content-chunker.ts",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "* Find list boundary (consecutive - or * or numbered lines).",
+              "lastLine": "}"
             }
           ]
         }
@@ -327,58 +340,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "155-175",
+          "lines": "158-174",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
                 217,
                 218,
                 219,
@@ -387,28 +353,38 @@
                 222,
                 223,
                 224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354
+              ],
+              "firstLine": "* Check if position is inside a code block.",
+              "lastLine": "}"
             }
           ]
         }
@@ -419,38 +395,43 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "237-249",
+          "lines": "325-335",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380
-              ]
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498
+              ],
+              "firstLine": "* Format tool call with name and arguments.",
+              "lastLine": "}"
             }
           ]
         }
@@ -461,7 +442,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "251-264",
+          "lines": "339-354",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -493,7 +474,9 @@
                 351,
                 352,
                 353
-              ]
+              ],
+              "firstLine": "* Uses priority: code_block=table > heading > paragraph > sentence > max_size",
+              "lastLine": "return safeMaxPosition;"
             }
           ]
         }
@@ -504,7 +487,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "266-280",
+          "lines": "358-370",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -536,7 +519,9 @@
                 351,
                 352,
                 353
-              ]
+              ],
+              "firstLine": "* Uses priority: code_block=table > heading > paragraph > sentence > max_size",
+              "lastLine": "return safeMaxPosition;"
             }
           ]
         }
@@ -547,11 +532,87 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "282-295",
+          "lines": "374-386",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498
+              ],
+              "firstLine": "* Format tool call with name and arguments.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Message respects 4096 character limit",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
+          "lines": "396-405",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-content-chunker.ts",
+              "lines": [
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
                 355,
                 356,
                 357,
@@ -577,100 +638,65 @@
                 377,
                 378,
                 379,
-                380
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Message respects 4096 character limit",
-      "testMappings": [
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "303-313",
-          "implMappings": [
-            {
-              "file": "bridge/telegram-content-chunker.ts",
-              "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435
+              ],
+              "firstLine": "* Find the best split point before maxPosition.",
+              "lastLine": "}"
             }
           ]
         }
@@ -681,88 +707,124 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "315-330",
+          "lines": "409-422",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435
+              ],
+              "firstLine": "* Find the best split point before maxPosition.",
+              "lastLine": "}"
             }
           ]
         }
@@ -773,7 +835,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "332-345",
+          "lines": "426-436",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -809,7 +871,9 @@
                 413,
                 414,
                 415
-              ]
+              ],
+              "firstLine": "// Try boundaries in priority order",
+              "lastLine": "});"
             }
           ]
         }
@@ -820,7 +884,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "347-360",
+          "lines": "440-451",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -856,7 +920,9 @@
                 413,
                 414,
                 415
-              ]
+              ],
+              "firstLine": "// Try boundaries in priority order",
+              "lastLine": "});"
             }
           ]
         }
@@ -867,7 +933,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "362-375",
+          "lines": "455-466",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -903,7 +969,9 @@
                 413,
                 414,
                 415
-              ]
+              ],
+              "firstLine": "// Try boundaries in priority order",
+              "lastLine": "});"
             }
           ]
         }
@@ -914,88 +982,78 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "377-393",
+          "lines": "470-484",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
               "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539
+              ],
+              "firstLine": "* Find the best split point before maxPosition.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1006,7 +1064,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "395-413",
+          "lines": "488-502",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1042,7 +1100,9 @@
                 413,
                 414,
                 415
-              ]
+              ],
+              "firstLine": "// Try boundaries in priority order",
+              "lastLine": "});"
             }
           ]
         }
@@ -1053,7 +1113,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "175-196",
+          "lines": "178-197",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1154,7 +1214,9 @@
                 306,
                 307,
                 308
-              ]
+              ],
+              "firstLine": "return listEndPos > 0 ? listEndPos : maxPosition;",
+              "lastLine": "if (inTable && text.length <= maxPosition) {"
             }
           ]
         }
@@ -1165,7 +1227,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "198-222",
+          "lines": "201-228",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1266,7 +1328,9 @@
                 306,
                 307,
                 308
-              ]
+              ],
+              "firstLine": "return listEndPos > 0 ? listEndPos : maxPosition;",
+              "lastLine": "if (inTable && text.length <= maxPosition) {"
             }
           ]
         }
@@ -1277,7 +1341,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "224-243",
+          "lines": "232-250",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1378,7 +1442,9 @@
                 306,
                 307,
                 308
-              ]
+              ],
+              "firstLine": "return listEndPos > 0 ? listEndPos : maxPosition;",
+              "lastLine": "if (inTable && text.length <= maxPosition) {"
             }
           ]
         }
@@ -1389,7 +1455,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "251-277",
+          "lines": "266-286",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1430,7 +1496,9 @@
                 567,
                 568,
                 569
-              ]
+              ],
+              "firstLine": "if (backtickCount % 2 === 1) {",
+              "lastLine": "this.thinkingBuffer.push(thinking);"
             }
           ]
         }
@@ -1441,7 +1509,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "279-309",
+          "lines": "296-321",
           "implMappings": [
             {
               "file": "bridge/telegram-content-chunker.ts",
@@ -1482,7 +1550,9 @@
                 567,
                 568,
                 569
-              ]
+              ],
+              "firstLine": "if (backtickCount % 2 === 1) {",
+              "lastLine": "this.thinkingBuffer.push(thinking);"
             }
           ]
         }
@@ -1499,6 +1569,6 @@
     "implFiles": [
       "bridge/telegram-content-chunker.ts"
     ],
-    "totalLinesCovered": 1530
+    "totalLinesCovered": 1502
   }
 }

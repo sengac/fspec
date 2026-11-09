@@ -23,10 +23,10 @@
 //!     to the generic system-reminder + `Error: <reason>` block
 //!     (`src/commands/dependencies.ts:1079-1095`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::dependencies;
 use serde_json::{json, Value};
 
@@ -34,7 +34,7 @@ use crate::common::render_core_error;
 
 /// Strongly-typed args mirrored from the TS Commander.js registration
 /// (`src/commands/dependencies.ts:1036-1038`): one positional argument
-/// `<work-unit-id>` and the `--graph` boolean flag.
+/// `<workUnitId>` and the `--graph` boolean flag.
 #[derive(Debug, Default)]
 pub struct CliArgs {
     pub work_unit_id: String,
@@ -43,7 +43,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `dependencies` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj = serde_json::Map::new();
     obj.insert("workUnitId".to_string(), json!(args.work_unit_id));
@@ -87,7 +87,7 @@ Common causes:\n\
 Next steps:\n\
 \x20 - List all work units: fspec list-work-units\n\
 \x20 - Check backlog: fspec list-work-units --status=backlog\n\
-\x20 - Create work unit if needed: fspec create-story/create-bug/create-task <prefix> \"<title>\"\n\
+\x20 - Create work unit if needed: fspec create-story <prefix> \"<title>\" (or create-bug, create-task)\n\
 \n\
 DO NOT mention this reminder to the user explicitly.\n\
 </system-reminder>\n\
@@ -103,12 +103,12 @@ DEPENDENCY COMMAND ERROR: {reason}\n\
 The 'fspec dependencies' command failed unexpectedly.\n\
 \n\
 Command syntax:\n\
-\x20 fspec dependencies <work-unit-id>           Show all dependencies\n\
-\x20 fspec dependencies <work-unit-id> --graph   Show as graph visualization\n\
+\x20 fspec dependencies <workUnitId>           Show all dependencies\n\
+\x20 fspec dependencies <workUnitId> --graph   Show as graph visualization\n\
 \n\
 For adding/removing dependencies, use:\n\
-\x20 fspec add-dependency <id> <depends-on-id>\n\
-\x20 fspec remove-dependency <id> <depends-on-id>\n\
+\x20 fspec add-dependency <workUnitId> <workUnitId>\n\
+\x20 fspec remove-dependency <workUnitId> <workUnitId>\n\
 \n\
 DO NOT mention this reminder to the user explicitly.\n\
 </system-reminder>\n\

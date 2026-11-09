@@ -26,7 +26,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "pub(crate) fn unknown_command_with_recovery(command: &str) -> FspecCoreError {",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,7 +60,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "pub(crate) fn unknown_command_with_recovery(command: &str) -> FspecCoreError {",
+              "lastLine": "}"
             }
           ]
         }
@@ -74,13 +78,15 @@
             {
               "file": "rust/fspec-core/src/canonical.rs",
               "lines": [
-                908,
-                909,
-                910,
-                911,
-                912,
-                913
-              ]
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ],
+              "firstLine": ".iter()",
+              "lastLine": ""
             }
           ]
         }
@@ -91,11 +97,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
-          "lines": "112-131",
+          "lines": "108-122",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/canonical.rs",
               "lines": [
+                848,
+                849,
                 850,
                 851,
                 852,
@@ -122,10 +130,10 @@
                 873,
                 874,
                 875,
-                876,
-                877,
-                878
-              ]
+                876
+              ],
+              "firstLine": "///",
+              "lastLine": "match best {"
             }
           ]
         }
@@ -136,21 +144,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
-          "lines": "134-144",
+          "lines": "124-135",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/canonical.rs",
               "lines": [
+                848,
+                849,
                 850,
                 851,
                 852,
                 853,
                 854,
                 855,
-                856,
-                857,
-                858
-              ]
+                856
+              ],
+              "firstLine": "///",
+              "lastLine": "return None;"
             }
           ]
         }
@@ -161,7 +171,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
-          "lines": "147-181",
+          "lines": "137-172",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/dispatch.rs",
@@ -186,7 +196,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "fn from_error(err: FspecCoreError) -> Self {",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,7 +209,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
-          "lines": "184-212",
+          "lines": "174-203",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/dispatch.rs",
@@ -222,7 +234,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "fn from_error(err: FspecCoreError) -> Self {",
+              "lastLine": "}"
             }
           ]
         }
@@ -234,16 +248,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-core/tests/tool023_arg_error_recovery.rs",
-      "rust/tools/tests/tool023_universal_arg_errors.rs"
+      "rust/fspec-core/tests/tool023_arg_error_recovery.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/dispatch.rs",
-      "rust/fspec-core/src/canonical.rs",
-      "rust/patches/rig-core/src/tool/mod.rs",
-      "rust/tools/src/facade/wrapper.rs",
-      "rust/common/src/tool_usage.rs"
+      "rust/fspec-core/src/canonical.rs"
     ],
-    "totalLinesCovered": 589
+    "totalLinesCovered": 289
   }
 }

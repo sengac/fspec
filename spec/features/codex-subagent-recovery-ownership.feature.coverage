@@ -5,16 +5,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov160_subagent_recovery_ownership.rs",
-          "lines": "41-131",
+          "lines": "41-135",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
-                234,
-                235,
-                236,
-                237,
-                238,
                 239,
                 240,
                 241,
@@ -37,11 +32,11 @@
                 258,
                 259,
                 260,
-                272,
-                273,
-                274,
-                275,
-                276,
+                261,
+                262,
+                263,
+                264,
+                265,
                 277,
                 278,
                 279,
@@ -53,12 +48,11 @@
                 285,
                 286,
                 287,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
+                288,
+                289,
+                290,
+                291,
+                292,
                 379,
                 380,
                 381,
@@ -113,8 +107,15 @@
                 430,
                 431,
                 432,
-                433
-              ]
+                433,
+                434,
+                435,
+                436,
+                437,
+                438
+              ],
+              "firstLine": "// 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled, + GraphSearch if available)",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/interactive/provider_recovery.rs",
@@ -132,51 +133,9 @@
                 38,
                 39,
                 40
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/compaction_builder.rs",
-              "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
+              ],
+              "firstLine": "pub fn should_retry_network_error(provider: &str, error: &(dyn Error + 'static)) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -192,9 +151,8 @@
     ],
     "implFiles": [
       "rust/agent-loop/src/deep_search_handler.rs",
-      "rust/cli/src/interactive/provider_recovery.rs",
-      "rust/agent-loop/src/compaction_builder.rs"
+      "rust/cli/src/interactive/provider_recovery.rs"
     ],
-    "totalLinesCovered": 247
+    "totalLinesCovered": 211
   }
 }

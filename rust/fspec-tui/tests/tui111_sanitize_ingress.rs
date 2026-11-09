@@ -8,8 +8,6 @@
 //! by the existing parity suite (chunkprocessor-parity,
 //! chunk_rendering_parity, scrollback_pty) + the TUI-100/104 view tests.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::store::sanitize_work_unit;
 use codelet_fspec_tui::store::AgentViewStore;
 use codelet_fspec_tui::views::agent::{ResumeSessionView, SearchHistoryView};
@@ -22,6 +20,7 @@ use codelet_rpc_types::{
     HitlRequest, NotificationSeverity, PauseKind, PauseState, ProviderInfo, SessionId, SessionInfo,
     StreamChunk, WorkUnitInfo,
 };
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -99,8 +98,8 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 /// @step And the old store/agent_view/sanitize.rs module no longer exists
 /// @step And no view, store, or component module defines its own ANSI or control-character stripping
 #[test]
-fn canonical_sanitizer_lives_in_crate_level_terminal_module() {
-    let src = common::workspace_root().join("fspec-tui").join("src");
+fn canonical_sanitizer_lives_in_crate_level_terminal_module() -> TestResult {
+    let src = common::workspace_root()?.join("fspec-tui").join("src");
     assert!(
         src.join("terminal").join("sanitize.rs").is_file(),
         "terminal/sanitize.rs must exist at the crate level"
@@ -112,11 +111,12 @@ fn canonical_sanitizer_lives_in_crate_level_terminal_module() {
             .exists(),
         "old store/agent_view/sanitize.rs must be gone"
     );
-    let lib = std::fs::read_to_string(src.join("lib.rs")).expect("lib.rs");
+    let lib = std::fs::read_to_string(src.join("lib.rs")).or_fail("lib.rs")?;
     assert!(
         lib.contains("pub use terminal::sanitize::sanitize_for_terminal;"),
         "crate root must re-export sanitize_for_terminal"
     );
+    Ok(())
 }
 
 // ── Scenario: The sanitizer is idempotent and control-char-free on arbitrary input ──
@@ -126,7 +126,7 @@ fn canonical_sanitizer_lives_in_crate_level_terminal_module() {
 /// @step Then the result contains no ESC byte and no forbidden control character
 /// @step And passing the result through the sanitizer a second time changes nothing
 #[test]
-fn sanitizer_is_idempotent_and_control_char_free() {
+fn sanitizer_is_idempotent_and_control_char_free() -> TestResult {
     let inputs = [
         "\x1b[31mred\x1b[0m",
         "\x1b",
@@ -142,6 +142,7 @@ fn sanitizer_is_idempotent_and_control_char_free() {
         let twice = sanitize_for_terminal(&once);
         assert_eq!(once, twice, "not idempotent for {input:?}");
     }
+    Ok(())
 }
 
 // ── Scenario: Assistant text with control characters displays clean in the scrollback ──
@@ -150,7 +151,7 @@ fn sanitizer_is_idempotent_and_control_char_free() {
 /// @step When the chunk is recorded into the session scrollback
 /// @step Then the stored chunk text has the ANSI sequences removed, the tab replaced with two spaces, the carriage return and bell character removed, and newlines preserved
 #[test]
-fn assistant_text_with_control_chars_is_stored_clean() {
+fn assistant_text_with_control_chars_is_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     ctx.record_chunk(&StreamChunk::text(HOSTILE.to_string()));
@@ -160,6 +161,7 @@ fn assistant_text_with_control_chars_is_stored_clean() {
         stored.contains(EXPECTED_CLEAN),
         "clean text lost: {stored:?}"
     );
+    Ok(())
 }
 
 // ── Scenario: Thinking chunks with ANSI cursor movement display as readable plain text ──
@@ -168,7 +170,7 @@ fn assistant_text_with_control_chars_is_stored_clean() {
 /// @step When the chunk is recorded into the session scrollback
 /// @step Then the stored thinking chunk text is plain readable text with every escape sequence removed
 #[test]
-fn thinking_chunks_with_ansi_cursor_movement_are_stored_clean() {
+fn thinking_chunks_with_ansi_cursor_movement_are_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     let neofetch = "\x1b[1mOS:\x1b[0m Ubuntu\n\x1b[2J\x1b[H\x1b[34mKernel:\x1b[0m 6.8.0";
@@ -177,6 +179,7 @@ fn thinking_chunks_with_ansi_cursor_movement_are_stored_clean() {
     assert_clean(&stored);
     assert!(stored.contains("OS: Ubuntu"), "got {stored:?}");
     assert!(stored.contains("Kernel: 6.8.0"), "got {stored:?}");
+    Ok(())
 }
 
 // ── Scenario: Tool call argument strings with escape sequences display clean in the tool-card header ──
@@ -185,7 +188,7 @@ fn thinking_chunks_with_ansi_cursor_movement_are_stored_clean() {
 /// @step When the tool-call card is pushed to the scrollback
 /// @step Then the card header line (tool name + argument display) contains no escape sequences or control characters
 #[test]
-fn tool_call_header_with_escape_sequence_args_is_stored_clean() {
+fn tool_call_header_with_escape_sequence_args_is_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     let input = r#"{"file_path":"/tmp/\u001b[31mfile\u001b[0m.txt"}"#;
@@ -197,6 +200,7 @@ fn tool_call_header_with_escape_sequence_args_is_stored_clean() {
     let stored = scrollback_text(&ctx);
     assert_clean(&stored);
     assert!(stored.contains("Read("), "header lost: {stored:?}");
+    Ok(())
 }
 
 // ── Scenario: Edit/Write tool diff shows clean lines while elision hints still render ──
@@ -206,15 +210,15 @@ fn tool_call_header_with_escape_sequence_args_is_stored_clean() {
 /// @step Then every diff content line in the inline card and the full-text modal variant is clean
 /// @step And the diff elision hint rows (such as "... (N lines)") render exactly as before the refactor
 #[test]
-fn edit_write_diff_source_lines_are_sanitized_before_encode() {
+fn edit_write_diff_source_lines_are_sanitized_before_encode() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     let old = format!("line1{HOSTILE}\nline2\told");
     let new = format!("line1{HOSTILE}\nline2\tnew");
     let input = format!(
         r#"{{"old_string":{}, "new_string":{} }}"#,
-        serde_json::to_string(&old).expect("json"),
-        serde_json::to_string(&new).expect("json")
+        serde_json::to_string(&old).or_fail("json")?,
+        serde_json::to_string(&new).or_fail("json")?
     );
     ctx.record_chunk(&StreamChunk::tool_call(codelet_rpc_types::ToolCallInfo {
         id: "tc-diff".to_string(),
@@ -248,18 +252,19 @@ fn edit_write_diff_source_lines_are_sanitized_before_encode() {
         "Edit",
         &format!(
             r#"{{"old_string":{}, "new_string":{}}}"#,
-            serde_json::to_string(&old_big).expect("json"),
-            serde_json::to_string(&new_big).expect("json")
+            serde_json::to_string(&old_big).or_fail("json")?,
+            serde_json::to_string(&new_big).or_fail("json")?
         ),
     )
-    .expect("pending diff captured");
+    .or_fail("pending diff captured")?;
     let (collapsed, full) =
         codelet_fspec_tui::store::agent_view::pending_tool_diff::produce_diff_strings(&pending);
     assert!(
-        collapsed.contains("(select turn to /expand)"),
+        collapsed.contains("(Tab to select, Enter to view full)"),
         "elision hint must still render: {collapsed:?}"
     );
-    assert!(!full.contains("(select turn to /expand)"));
+    assert!(!full.contains("(Tab to select, Enter to view full)"));
+    Ok(())
 }
 
 // ── Scenario: Provider error text displays clean in the scrollback error line ──
@@ -268,13 +273,14 @@ fn edit_write_diff_source_lines_are_sanitized_before_encode() {
 /// @step When the error is recorded into the scrollback
 /// @step Then the stored "API Error: ..." chunk text is free of escape sequences and control characters
 #[test]
-fn provider_error_text_is_stored_clean() {
+fn provider_error_text_is_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     ctx.record_chunk(&StreamChunk::error(HOSTILE.to_string()));
     let stored = scrollback_text(&ctx);
     assert_clean(&stored);
     assert!(stored.contains("API Error: boom"), "got {stored:?}");
+    Ok(())
 }
 
 // ── Scenario: User input, notifications and supervisor messages display clean in the scrollback ──
@@ -283,7 +289,7 @@ fn provider_error_text_is_stored_clean() {
 /// @step When the chunks are recorded into the session scrollback
 /// @step Then all three stored chunk texts are free of escape sequences and control characters
 #[test]
-fn user_input_notification_and_incoming_are_stored_clean() {
+fn user_input_notification_and_incoming_are_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     ctx.record_chunk(&StreamChunk::UserInput {
@@ -301,6 +307,7 @@ fn user_input_notification_and_incoming_are_stored_clean() {
     assert_clean(&stored);
     assert!(stored.contains(EXPECTED_CLEAN), "got {stored:?}");
     assert!(stored.contains("[W] reviewer>"), "got {stored:?}");
+    Ok(())
 }
 
 // ── Scenario: A session notice with escape sequences lands clean in the scrollback ──
@@ -309,13 +316,14 @@ fn user_input_notification_and_incoming_are_stored_clean() {
 /// @step When the notice is applied to the originating session
 /// @step Then the stored scrollback line is free of escape sequences and control characters
 #[test]
-fn session_notice_lands_clean_in_scrollback() {
+fn session_notice_lands_clean_in_scrollback() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut ctx = SessionContext::with_work_unit(sid, None);
     ctx.push_line(HOSTILE);
     let stored = scrollback_text(&ctx);
     assert_clean(&stored);
     assert!(stored.contains(EXPECTED_CLEAN), "got {stored:?}");
+    Ok(())
 }
 
 // ── Scenario: Work unit titles with ANSI codes display plain in the board ──
@@ -325,17 +333,18 @@ fn session_notice_lands_clean_in_scrollback() {
 /// @step Then the board card label, the details-strip title row and the work-unit search dialog rows all show the plain text with no escape glyphs
 /// @step And the terminal display is not corrupted by the escape sequences
 #[test]
-fn board_store_sanitizes_work_units_on_ingress() {
+fn board_store_sanitizes_work_units_on_ingress() -> TestResult {
     let mut store = codelet_fspec_tui::BoardStore::default();
     let unit = wu("AUTH-001", "done");
     store.replace_work_units(vec![unit]);
-    let unit = store.work_units().first().expect("unit stored");
+    let unit = store.work_units().first().or_fail("unit stored")?;
     assert_clean(&unit.title);
-    assert_clean(unit.description.as_deref().expect("desc"));
-    assert_clean(unit.epic.as_deref().expect("epic"));
+    assert_clean(unit.description.as_deref().or_fail("desc")?);
+    assert_clean(unit.epic.as_deref().or_fail("epic")?);
     assert_clean(&unit.attachments[0]);
     let title = unit.title.clone();
     assert!(title.contains(EXPECTED_CLEAN), "got {title:?}");
+    Ok(())
 }
 
 // ── Scenario: Work unit descriptions and attachment paths display clean in the details strip ──
@@ -345,17 +354,18 @@ fn board_store_sanitizes_work_units_on_ingress() {
 /// @step Then the description rows and the attachments row show clean text
 /// @step And the selection-copy reader of the strip rows returns the same clean text
 #[test]
-fn sanitize_work_unit_covers_all_free_text_fields() {
+fn sanitize_work_unit_covers_all_free_text_fields() -> TestResult {
     let mut unit = wu("AUTH-002", "blocked");
     sanitize_work_unit(&mut unit);
     assert_clean(&unit.id);
     assert_clean(&unit.title);
-    assert_clean(unit.description.as_deref().expect("desc"));
-    assert_clean(unit.epic.as_deref().expect("epic"));
+    assert_clean(unit.description.as_deref().or_fail("desc")?);
+    assert_clean(unit.epic.as_deref().or_fail("epic")?);
     for att in &unit.attachments {
         assert_clean(att);
     }
     assert_eq!(unit.status, "blocked", "closed vocabulary untouched");
+    Ok(())
 }
 
 // ── Scenario: HITL prompt questions and options display clean ──
@@ -364,11 +374,12 @@ fn sanitize_work_unit_covers_all_free_text_fields() {
 /// @step When the request is stored for the session
 /// @step Then the stored prompt state holds clean text for every header, question, option label and option description
 #[test]
-fn hitl_prompt_fields_are_stored_clean() {
+fn hitl_prompt_fields_are_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut store = AgentViewStore::default();
     store.set_hitl_prompt(
         sid.clone(),
+        hitl_route(&sid),
         HitlRequest {
             questions: vec![HitlQuestion {
                 id: "q-1".to_string(),
@@ -381,12 +392,13 @@ fn hitl_prompt_fields_are_stored_clean() {
             }],
         },
     );
-    let state = store.hitl_prompt_for(&sid).expect("slot set");
+    let state = store.hitl_prompt_for(&sid).or_fail("slot set")?;
     let q = &state.request.questions[0];
     assert_clean(&q.header);
     assert_clean(&q.question);
     assert_clean(&q.options[0].label);
     assert_clean(&q.options[0].description);
+    Ok(())
 }
 
 // ── Scenario: Pause prompts, exec-stdin commands and role text display clean ──
@@ -395,20 +407,22 @@ fn hitl_prompt_fields_are_stored_clean() {
 /// @step When each is stored via its store setter
 /// @step Then the pause prompt, the exec-stdin prompt text and the role banner text are stored clean
 #[test]
-fn pause_exec_stdin_and_role_are_stored_clean() {
+fn pause_exec_stdin_and_role_are_stored_clean() -> TestResult {
     let sid = SessionId::new("s-1");
     let mut store = AgentViewStore::default();
     store.set_pause_state(
         sid.clone(),
+        pause_route(&sid),
         PauseState {
             kind: PauseKind::Confirm,
             prompt: HOSTILE.to_string(),
-            tool_call_id: Some(HOSTILE.to_string()),
+            details: Some(HOSTILE.to_string()),
+            tool_call_id: None,
         },
     );
-    let pause = store.pause_state_for(&sid).expect("pause set");
+    let pause = store.pause_state_for(&sid).or_fail("pause set")?;
     assert_clean(&pause.prompt);
-    assert_clean(pause.tool_call_id.as_deref().expect("tool_call_id"));
+    assert_clean(pause.details.as_deref().or_fail("details")?);
 
     store.set_exec_stdin(
         sid.clone(),
@@ -419,13 +433,14 @@ fn pause_exec_stdin_and_role_are_stored_clean() {
             ts_ms: 0,
         },
     );
-    let exec = store.exec_stdin_for(&sid).expect("exec set");
+    let exec = store.exec_stdin_for(&sid).or_fail("exec set")?;
     assert_clean(&exec.command);
     assert_eq!(exec.exec_session_id, "exec-1");
 
     store.set_role(sid.clone(), Some(HOSTILE.to_string()));
-    let role = store.role_for(&sid).expect("role set");
+    let role = store.role_for(&sid).or_fail("role set")?;
     assert_clean(role);
+    Ok(())
 }
 
 // ── Scenario: Changed files with ANSI in paths and diff content display clean ──
@@ -435,14 +450,14 @@ fn pause_exec_stdin_and_role_are_stored_clean() {
 /// @step Then the file-list rows and the diff-pane rows display clean text
 /// @step And the terminal display is not corrupted by the escape sequences
 #[test]
-fn changed_files_setters_store_and_render_clean_text() {
+fn changed_files_setters_store_and_render_clean_text() -> TestResult {
     let mut view = ChangedFilesView::new();
     view.set_files(vec![ChangedFile {
         path: HOSTILE.to_string(),
         change_type: "M".to_string(),
         staged: false,
     }]);
-    let path = view.selected_path().expect("path");
+    let path = view.selected_path().or_fail("path")?;
     assert_clean(&path);
 
     view.set_diff("boom  end", Some(HOSTILE.to_string()));
@@ -451,6 +466,7 @@ fn changed_files_setters_store_and_render_clean_text() {
     });
     assert_clean(&out);
     assert!(out.contains(EXPECTED_CLEAN), "diff rows lost: {out:?}");
+    Ok(())
 }
 
 // ── Scenario: Checkpoint names and diffs with control characters display clean ──
@@ -460,7 +476,7 @@ fn changed_files_setters_store_and_render_clean_text() {
 /// @step Then the checkpoint label row, the file rows and the diff rows display clean text
 /// @step And each tab renders as two spaces
 #[test]
-fn checkpoint_setters_store_and_render_clean_text() {
+fn checkpoint_setters_store_and_render_clean_text() -> TestResult {
     let mut view = CheckpointsView::new();
     view.set_checkpoints(vec![CheckpointInfo {
         work_unit_id: "AUTH-001".to_string(),
@@ -468,7 +484,7 @@ fn checkpoint_setters_store_and_render_clean_text() {
         timestamp: "2026-09-13T00:00:00Z".to_string(),
         is_automatic: false,
     }]);
-    let cp = view.selected_checkpoint_info().expect("checkpoint");
+    let cp = view.selected_checkpoint_info().or_fail("checkpoint")?;
     assert_clean(&cp.name);
     let name = cp.name.clone();
     assert!(name.contains(EXPECTED_CLEAN), "got {name:?}");
@@ -493,6 +509,7 @@ fn checkpoint_setters_store_and_render_clean_text() {
     });
     assert_clean(&out);
     assert!(out.contains(EXPECTED_CLEAN), "rows lost: {out:?}");
+    Ok(())
 }
 
 // ── Scenario: Resume session rows with hostile project names display clean ──
@@ -501,7 +518,7 @@ fn checkpoint_setters_store_and_render_clean_text() {
 /// @step When the Resume Session view loads the sessions
 /// @step Then every rendered session row shows clean text
 #[test]
-fn resume_session_rows_are_stored_clean() {
+fn resume_session_rows_are_stored_clean() -> TestResult {
     let mut view = ResumeSessionView::new();
     view.set_sessions(vec![SessionInfo {
         id: "s-1".to_string(),
@@ -517,11 +534,12 @@ fn resume_session_rows_are_stored_clean() {
         updated_at_ms: None,
         work_unit_focus: Default::default(),
     }]);
-    let s = view.selected().expect("session");
+    let s = view.selected().or_fail("session")?;
     assert_clean(&s.name);
     assert_clean(&s.project);
-    assert_clean(s.worktree_path.as_deref().expect("wt"));
-    assert_clean(s.role.as_deref().expect("role"));
+    assert_clean(s.worktree_path.as_deref().or_fail("wt")?);
+    assert_clean(s.role.as_deref().or_fail("role")?);
+    Ok(())
 }
 
 // ── Scenario: Blocklist rules with escape sequences display clean ──
@@ -530,7 +548,7 @@ fn resume_session_rows_are_stored_clean() {
 /// @step When the Blocklist view loads the rules
 /// @step Then the list-pane rows and the details-pane fields display clean text
 #[test]
-fn blocklist_rules_are_stored_clean() {
+fn blocklist_rules_are_stored_clean() -> TestResult {
     let mut view = BlocklistView::new();
     view.set_rules(vec![BlocklistRuleInfo {
         id: "rule-1".to_string(),
@@ -540,12 +558,13 @@ fn blocklist_rules_are_stored_clean() {
         guidance: Some(HOSTILE.to_string()),
         source: "project".to_string(),
     }]);
-    let rule = view.focused_rule().expect("rule");
+    let rule = view.focused_rule().or_fail("rule")?;
     assert_clean(&rule.pattern);
     assert_clean(&rule.reason);
-    assert_clean(rule.guidance.as_deref().expect("guidance"));
+    assert_clean(rule.guidance.as_deref().or_fail("guidance")?);
     assert_clean(&rule.source);
     assert_eq!(rule.action, "block", "closed vocabulary untouched");
+    Ok(())
 }
 
 // ── Scenario: Model selector rows with hostile display names display clean ──
@@ -554,7 +573,7 @@ fn blocklist_rules_are_stored_clean() {
 /// @step When the Model Selector view loads the providers
 /// @step Then the provider and model rows display clean text
 #[test]
-fn model_selector_rows_render_clean() {
+fn model_selector_rows_render_clean() -> TestResult {
     let mut view = codelet_fspec_tui::views::model_selector::ModelSelectorView::new();
     view.set_providers(vec![ProviderInfo {
         key: "openai".to_string(),
@@ -566,12 +585,15 @@ fn model_selector_rows_render_clean() {
         }],
         profile_name: None,
         is_unreachable: false,
+        provider_id: "openai".to_string(),
+        unavailable_reason: None,
     }]);
     let out = render_to_text(|buf| {
         view.render(Rect::new(0, 0, 120, 30), buf);
     });
     assert_clean(&out);
     assert!(out.contains(EXPECTED_CLEAN), "rows lost: {out:?}");
+    Ok(())
 }
 
 // ── Scenario: Search history rows with hostile text display clean ──
@@ -580,19 +602,20 @@ fn model_selector_rows_render_clean() {
 /// @step When the Search History view loads the matches
 /// @step Then every rendered row shows clean text
 #[test]
-fn search_history_rows_are_stored_clean() {
+fn search_history_rows_are_stored_clean() -> TestResult {
     let mut view = SearchHistoryView::new();
     view.set_matches(vec![codelet_rpc_types::HistoryMatch {
         session_id: SessionId::new("s-1"),
         text: HOSTILE.to_string(),
         timestamp_iso: "2026-09-13T00:00:00Z".to_string(),
     }]);
-    let m = view.selected().expect("match");
+    let m = view.selected().or_fail("match")?;
     assert_clean(&m.text);
     let out = render_to_text(|buf| {
         view.render(Rect::new(0, 0, 120, 30), buf);
     });
     assert_clean(&out);
+    Ok(())
 }
 
 // ── Scenario: Error dialogs display clean provider error text ──
@@ -601,11 +624,12 @@ fn search_history_rows_are_stored_clean() {
 /// @step When the error dialog is created from that string
 /// @step Then the dialog renders the message without escape sequences or control characters
 #[test]
-fn error_dialog_message_is_sanitized_on_construction() {
+fn error_dialog_message_is_sanitized_on_construction() -> TestResult {
     let dialog = codelet_fspec_tui::components::error_dialog::ErrorDialog::new(HOSTILE);
     let msg = dialog.message();
     assert_clean(msg);
     assert_eq!(msg, EXPECTED_CLEAN);
+    Ok(())
 }
 
 // ── Scenario: Loading dialog labels with hostile file paths display clean ──
@@ -614,7 +638,7 @@ fn error_dialog_message_is_sanitized_on_construction() {
 /// @step When the loading dialog renders its spinner line
 /// @step Then the label displays clean text
 #[test]
-fn loading_dialog_and_tracker_labels_are_sanitized() {
+fn loading_dialog_and_tracker_labels_are_sanitized() -> TestResult {
     let dialog = codelet_fspec_tui::components::loading_dialog::LoadingDialog::new(
         "Loading files",
         format!("Loading diff for {HOSTILE}file.txt…"),
@@ -626,8 +650,9 @@ fn loading_dialog_and_tracker_labels_are_sanitized() {
     let mut tracker =
         codelet_fspec_tui::components::load_state::LoadTracker::new("Loading {HOSTILE}…");
     tracker.begin_stage("diff", "Reading {HOSTILE}…");
-    let active = tracker.active_label().expect("label");
+    let active = tracker.active_label().or_fail("label")?;
     assert_clean(&active);
+    Ok(())
 }
 
 // ── Scenario: Hostile assistant text stays clean through the turn modal and clipboard copy ──
@@ -638,7 +663,7 @@ fn loading_dialog_and_tracker_labels_are_sanitized() {
 /// @step And the copied text carries no escape bytes or forbidden control characters
 /// @step And the LLM-facing tool output path still receives the raw unsanitized text
 #[test]
-fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
+fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() -> TestResult {
     use codelet_fspec_tui::mouse::selection::RowSpan;
     use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
     use codelet_fspec_tui::views::agent::{
@@ -656,7 +681,7 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
         .chunks()
         .first()
         .and_then(|c| c.source.clone())
-        .expect("assistant chunk stored with source");
+        .or_fail("assistant chunk stored with source")?;
 
     // @step When I open the turn-content modal for that turn and select-copy the same text in the scrollback
     let modal = TurnContentModal::new(source.text.clone(), Some(ChunkKind::AssistantText));
@@ -674,6 +699,7 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
         100,
     );
     list.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq: 0,
         lines,
         source: Some(source),
@@ -705,6 +731,7 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
         raw_payload.contains('\x1b'),
         "LLM-facing payload must stay raw: {raw_payload:?}"
     );
+    Ok(())
 }
 
 // ── Scenario: Plain text passes through every sink byte-for-byte unchanged ──
@@ -713,7 +740,7 @@ fn hostile_assistant_text_stays_clean_through_turn_modal_and_copy() {
 /// @step When it is ingested through every sanitized boundary (chunk recorder, board store, prompt setters, view setters, dialog constructors)
 /// @step Then every stored/displayed copy of the text is byte-for-byte identical to the input
 #[test]
-fn plain_text_passes_through_every_sink_unchanged() {
+fn plain_text_passes_through_every_sink_unchanged() -> TestResult {
     let plain = "plain text\nsecond line";
 
     // Chunk recorder
@@ -754,6 +781,8 @@ fn plain_text_passes_through_every_sink_unchanged() {
     // Error dialog
     let dialog = codelet_fspec_tui::components::error_dialog::ErrorDialog::new(plain);
     assert_eq!(dialog.message(), plain);
+    Ok(())
 }
 
 mod common;
+use common::{hitl_route, pause_route};

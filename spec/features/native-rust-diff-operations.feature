@@ -1,4 +1,6 @@
 @GIT-040
+@git
+@diff-viewer
 Feature: Replace diff-worker.ts with native Rust NAPI diff operations
   """
   Rust side: Add get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to codelet-git/src/diff.rs. Use gix to resolve the ref, read blob content from both commits (checkpoint tree and HEAD tree), then use similar::TextDiff to generate unified diff.

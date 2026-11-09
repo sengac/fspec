@@ -37,6 +37,9 @@ pub struct Replay {
     pub messages: Vec<Message>,
     pub chunks: Vec<StreamChunk>,
     pub identity: Option<Value>,
+    /// MODEL-015: the stored id of each replayed user message, by its index
+    /// in `messages`.
+    pub user_ids: std::collections::HashMap<uuid::Uuid, usize>,
 }
 
 impl Replay {
@@ -46,6 +49,7 @@ impl Replay {
             messages: Vec::new(),
             chunks: Vec::new(),
             identity: None,
+            user_ids: std::collections::HashMap::new(),
         };
         let mut identities = Vec::new();
         for encoded in envelopes {
@@ -74,7 +78,11 @@ impl Replay {
                 continue;
             }
             if let Some(message) = envelope.get("message") {
+                let before = replay.messages.len();
                 replay.convert(message)?;
+                if replay.messages.len() > before {
+                    replay.record_user_id(&envelope);
+                }
             } else if envelope.get("_sessionReplay").is_none() {
                 return Err(RestoreError::Content("missing message".into()));
             }
@@ -88,6 +96,23 @@ impl Replay {
             return Err(RestoreError::Conflict("mixed replay snapshots".into()));
         }
         Ok(replay)
+    }
+
+    /// MODEL-015: an effort message is recorded against the stored id of the
+    /// user message it precedes.
+    fn record_user_id(&mut self, envelope: &Value) {
+        let Some(id) = envelope
+            .get("uuid")
+            .and_then(Value::as_str)
+            .and_then(|id| uuid::Uuid::parse_str(id).ok())
+        else {
+            return;
+        };
+        if let Some(index) = self.messages.len().checked_sub(1) {
+            if matches!(self.messages[index], Message::User { .. }) {
+                self.user_ids.insert(id, index);
+            }
+        }
     }
 
     fn convert(&mut self, message: &Value) -> Result<(), RestoreError> {

@@ -29,7 +29,7 @@ impl AgentView {
     /// background-session clear is complete without touching focus.
     pub fn reset_local_scrollback(&mut self, store: &mut AgentViewStore) {
         if let Some(ctx) = store.current_session_context_mut() {
-            ctx.reset_scrollback();
+            ctx.reset_for_clear();
         }
         self.input.reset();
         self.slash_popup = None;

@@ -197,7 +197,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -299,104 +301,9 @@
                 232,
                 233,
                 234
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-core/tests/checkpoint.rs",
-          "lines": "119-171",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/checkpoint.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234
-              ]
+              ],
+              "firstLine": "/// Append the checkpoint metadata entry to",
+              "lastLine": "}"
             }
           ]
         }
@@ -426,7 +333,9 @@
                 125,
                 126,
                 127
-              ]
+              ],
+              "firstLine": "// Clean working tree → nothing captured → failure, NO index write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -451,7 +360,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "let checkpoint_name = match args.checkpoint_name.as_deref() {",
+              "lastLine": "};"
             }
           ]
         }
@@ -476,7 +387,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "let work_unit_id = match args.work_unit_id.as_deref() {",
+              "lastLine": "};"
             }
           ]
         }
@@ -499,7 +412,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "reason: format!(\"failed to serialize result: {e}\"),",
+              "lastLine": "#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -516,6 +431,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/checkpoint.rs"
     ],
-    "totalLinesCovered": 671
+    "totalLinesCovered": 532
   }
 }

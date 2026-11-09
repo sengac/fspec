@@ -69,6 +69,7 @@ fn runtime() -> Result<Session, Box<dyn std::error::Error>> {
 #[serial_test::serial]
 fn composite_persisted_selection_survives_commit_and_restore() -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     // @step Given a persisted provider and model selection matching the selected serializer
@@ -100,6 +101,7 @@ fn composite_persisted_selection_survives_commit_and_restore() -> TestResult {
 
 fn rejects_identity(provider: &str, change_model: bool) -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest =
@@ -161,6 +163,7 @@ fn changed_selected_model_invalidates_the_installed_preparer() -> TestResult {
 #[serial_test::serial]
 fn selected_provider_restore_requirements_are_checked_before_mutation() -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     // @step Given ordinary persisted non-Codex history and a selected Codex runtime
@@ -211,6 +214,7 @@ fn selected_provider_restore_requirements_are_checked_before_mutation() -> TestR
 
 fn alias_survives_commit_and_restore(alias: &str, provider: ProviderType) -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let selection = format!("{alias}/{MODEL}");

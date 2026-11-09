@@ -5,16 +5,57 @@
  * Support Incoming Image Attachments from Telegram
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock the helper functions that will be implemented
-// These imports will fail until implementation exists - that's expected (red phase)
+// The Telegram bot and WebSocket server are mocked so the real bot 'message'
+// handler registered by startEndpoint() can be driven without network access.
+const { mockBotOn, mockBotGetFileLink, MockTelegramBot, MockWebSocketServer } =
+  vi.hoisted(() => {
+    const mockBotOn = vi.fn();
+    const mockBotGetFileLink = vi.fn();
+
+    class MockTelegramBot {
+      on = mockBotOn;
+      getFileLink = mockBotGetFileLink;
+      sendMessage = vi.fn().mockResolvedValue({});
+      stopPolling = vi.fn().mockResolvedValue(undefined);
+    }
+
+    class MockWebSocketServer {
+      on = vi.fn();
+      close = vi.fn();
+    }
+
+    return {
+      mockBotOn,
+      mockBotGetFileLink,
+      MockTelegramBot,
+      MockWebSocketServer,
+    };
+  });
+
+vi.mock('ws', () => ({
+  WebSocketServer: MockWebSocketServer,
+  WebSocket: { OPEN: 1 },
+}));
+
+vi.mock('node-telegram-bot-api', () => ({
+  default: MockTelegramBot,
+}));
+
+vi.mock('dotenv', () => ({
+  config: vi.fn(),
+}));
+
 import {
   getMediaTypeFromPath,
   downloadPhotoAsBase64,
   handleTelegramMessage,
+  forwardPhotoToSession,
   resetState,
   getState,
+  startEndpoint,
+  stopEndpoint,
 } from '../telegram-endpoint';
 
 // Mock fetch for photo downloads
@@ -25,8 +66,49 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
+    mockBotGetFileLink.mockReset();
     resetState();
   });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (getState().isRunning) {
+      await stopEndpoint();
+    }
+    delete process.env.TELEGRAM_BOT_TOKEN;
+    resetState();
+  });
+
+  /**
+   * Start the endpoint (mocked bot and WebSocket server), attach a connected
+   * codelet session, and return the bot's real 'message' handler.
+   */
+  function startEndpointWithSession() {
+    process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+    delete process.env.TELEGRAM_ALLOWED_USER_IDS;
+    startEndpoint();
+
+    const sessionWs = { readyState: 1, send: vi.fn() };
+    const state = getState();
+    state.currentSession.ws = sessionWs as never;
+    state.currentSession.sessionId = 'test-session-123';
+
+    const registration = mockBotOn.mock.calls.find(
+      ([event]) => event === 'message'
+    );
+    expect(registration).toBeDefined();
+    const onMessage = registration?.[1] as (msg: unknown) => Promise<void>;
+    return { sessionWs, onMessage };
+  }
+
+  function photoMessage(caption?: string) {
+    return {
+      chat: { id: 12345 },
+      from: { id: 111 },
+      photo: [{ file_id: 'photo_id', width: 800, height: 600 }],
+      ...(caption === undefined ? {} : { caption }),
+    };
+  }
 
   // ====================
   // MEDIA TYPE SCENARIOS
@@ -208,25 +290,34 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
   });
 
   describe('Scenario: Use msg.caption not msg.text for photo messages', () => {
-    it('should use caption field, ignoring text field', () => {
+    it('should use caption field, ignoring text field', async () => {
       // @step Given I have a connected Telegram bridge session
-      resetState();
-      const state = getState();
-      state.currentSession.sessionId = 'test-session-123';
+      const { sessionWs, onMessage } = startEndpointWithSession();
+      mockBotGetFileLink.mockResolvedValue(
+        'https://api.telegram.org/file/photos/test.jpg'
+      );
+      mockFetch.mockResolvedValue({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(new Uint8Array([1, 2, 3]).buffer),
+      });
 
-      // @step And Telegram provides a photo message where caption and text differ
-      // In real Telegram API, msg.text is undefined for photos - only msg.caption exists
-      const caption = 'This is the caption';
-      const images = [{ data: 'base64data', media_type: 'image/jpeg' }];
+      // @step And Telegram provides a photo message where:
+      //   caption "This is the caption", text "This should be ignored"
+      const msg = {
+        ...photoMessage('This is the caption'),
+        text: 'This should be ignored',
+      };
 
       // @step When the bridge processes the photo message
-      const result = handleTelegramMessage('12345', caption, images);
+      await onMessage(msg);
 
       // @step Then the WebSocket envelope should have message "This is the caption"
-      expect(result.data.message).toBe('This is the caption');
+      expect(sessionWs.send).toHaveBeenCalledTimes(1);
+      const envelope = JSON.parse(String(sessionWs.send.mock.calls[0][0]));
+      expect(envelope.data.message).toBe('This is the caption');
 
       // @step And the message should NOT contain "This should be ignored"
-      expect(result.data.message).not.toContain('This should be ignored');
+      expect(envelope.data.message).not.toContain('This should be ignored');
     });
   });
 
@@ -246,7 +337,7 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket envelope should have this structure
+      // @step Then the WebSocket envelope should have this structure:
       //   { service: "session", type: "input", session_id,
       //     data: { message, images: [{ data, media_type }] } }
       expect(result.service).toBe('session');
@@ -263,23 +354,36 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
   // ====================
 
   describe('Scenario: Forward caption when photo download fails', () => {
-    it('should log error and forward caption with empty images array', async () => {
+    it('should log error and forward the caption without images', async () => {
       // @step Given I have a connected Telegram bridge session
-      const mockBot = {
-        getFileLink: vi.fn().mockRejectedValue(new Error('Network timeout')),
-      };
+      const { sessionWs, onMessage } = startEndpointWithSession();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       // @step And Telegram provides a photo message with caption "Check this out"
+      const msg = photoMessage('Check this out');
+
       // @step And the photo download will fail with error "Network timeout"
+      mockBotGetFileLink.mockRejectedValue(new Error('Network timeout'));
 
       // @step When the bridge processes the photo message
-      const result = await downloadPhotoAsBase64(mockBot as never, 'file_id');
+      await onMessage(msg);
 
       // @step Then the bridge should log an error about the download failure
-      // (logging is internal, we verify null return)
+      expect(errorSpy).toHaveBeenCalledWith(
+        '[telegram-endpoint] Photo download failed:',
+        expect.objectContaining({ message: 'Network timeout' })
+      );
 
-      // @step And the WebSocket message should have an empty images array
-      expect(result).toBeNull();
+      // @step And the WebSocket envelope should have message "Check this out"
+      expect(sessionWs.send).toHaveBeenCalledTimes(1);
+      const envelope = JSON.parse(String(sessionWs.send.mock.calls[0][0]));
+      expect(envelope.service).toBe('session');
+      expect(envelope.type).toBe('input');
+      expect(envelope.session_id).toBe('test-session-123');
+      expect(envelope.data.message).toBe('Check this out');
+
+      // @step And the WebSocket envelope should have no images
+      expect(envelope.data.images).toBeUndefined();
     });
   });
 
@@ -309,20 +413,27 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
   describe('Scenario: Drop message completely when photo download fails and no caption', () => {
     it('should not send any message when download fails and no caption exists', async () => {
       // @step Given I have a connected Telegram bridge session
-      const mockBot = {
-        getFileLink: vi.fn().mockRejectedValue(new Error('Network error')),
-      };
+      const { sessionWs, onMessage } = startEndpointWithSession();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // @step And Telegram provides a photo message without a caption
+      const msg = photoMessage();
+
       // @step And the photo download will fail
+      mockBotGetFileLink.mockRejectedValue(new Error('Network error'));
 
       // @step When the bridge processes the photo message
-      const result = await downloadPhotoAsBase64(mockBot as never, 'file_id');
+      await onMessage(msg);
 
       // @step Then the bridge should log an error about the download failure
+      expect(errorSpy).toHaveBeenCalledWith(
+        '[telegram-endpoint] Photo download failed:',
+        expect.objectContaining({ message: 'Network error' })
+      );
+
       // @step And no WebSocket message should be sent
-      // When download fails (null) and no caption, nothing should be forwarded
-      expect(result).toBeNull();
+      expect(sessionWs.send).not.toHaveBeenCalled();
     });
   });
 
@@ -369,20 +480,33 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
   });
 
   describe('Scenario: Drop photo when no active session', () => {
-    it('should not forward photo when no WebSocket session exists', () => {
+    it('should warn and not forward a photo when the session socket is not open', () => {
       // @step Given the Telegram bridge has no active WebSocket session
       resetState();
       const state = getState();
-      state.currentSession.ws = null;
-      state.currentSession.sessionId = null;
+      const send = vi.fn();
+      // A socket that is not OPEN (closed) - the session is not active.
+      state.currentSession.ws = {
+        readyState: 3,
+        send,
+      } as unknown as typeof state.currentSession.ws;
+      state.currentSession.sessionId = 'test-session-123';
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // @step When a user sends a photo through Telegram
-      // The bot.on('message') handler should check for active session
+      // BUG-504: the bot handler hands the downloaded photo to forwardPhotoToSession.
+      const forwarded = forwardPhotoToSession('12345', 'A caption', [
+        { data: 'SGVsbG8gV29ybGQ=', media_type: 'image/jpeg' },
+      ]);
 
       // @step Then the bridge should log a warning about no active session
+      expect(warn).toHaveBeenCalledWith(
+        '[telegram-endpoint] No active session to forward photo to'
+      );
+
       // @step And the photo should not be forwarded
-      // This is tested in integration - here we verify state check logic
-      expect(state.currentSession.ws).toBeNull();
+      expect(forwarded).toBe(false);
+      expect(send).not.toHaveBeenCalled();
     });
   });
 
@@ -449,17 +573,15 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // The session_manager receives this and passes it to run_agent_stream_with_images
       // which creates a multimodal Message::User with both text and image content
 
-      // @step Then the session should pass the image to the LLM as a UserContent::Image
-      // Verified by checking the envelope structure includes images inside data
+      // @step Then the session input envelope carries the image with its base64 data and media type
       expect(result.data.images).toBeDefined();
       expect(result.data.images?.length).toBe(1);
       expect(result.data.images?.[0].data).toBe('SGVsbG8gV29ybGQ=');
       expect(result.data.images?.[0].media_type).toBe('image/jpeg');
 
-      // @step And the LLM should receive both the text message and the image
-      // The text is in data.message, images are in data.images
-      // Both are passed to the LLM via run_agent_stream_with_images -> run_agent_stream_internal
-      // which constructs a Message::User with OneOrMany::many([text, image1, image2, ...])
+      // @step And the envelope carries the caption as the session input text
+      // (The Rust session turns data.images into UserContent::Image; that side
+      // is covered by the cli bridge-image tests under their own feature.)
       expect(result.data.message).toBe('Describe this image');
       expect(result.service).toBe('session');
       expect(result.type).toBe('input');

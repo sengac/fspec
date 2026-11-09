@@ -88,11 +88,38 @@ pub fn resolve_startup_model(
         }
     }
 
+    // BUG-577 (product owner, 2026-11-07): a failed or empty Codex /models
+    // fetch never changes the saved model. A persisted cloud model whose
+    // section is listed with no models and a reason (it cannot list them
+    // right now) is kept, not replaced by first-available.
+    if let Some(persisted) =
+        persisted.filter(|persisted| section_cannot_list_now(sections, persisted))
+    {
+        return Some(ResolvedStartupModel {
+            model_string: persisted.to_string(),
+        });
+    }
+
     // First-available: the first eligible section's first model.
     let section = eligible.first()?;
     let model = section.models.first()?;
     Some(ResolvedStartupModel {
         model_string: build_model_string(section, &model.id),
+    })
+}
+
+/// BUG-577: whether `persisted` names a cloud model whose section is listed
+/// with no models because it cannot list them right now (PROV-176's
+/// `unavailable_reason`: Codex /models failed, timed out or listed none).
+fn section_cannot_list_now(sections: &[ProviderInfo], persisted: &str) -> bool {
+    let Some((provider_id, None, _)) = parse_persisted(persisted) else {
+        return false;
+    };
+    sections.iter().any(|section| {
+        section.profile_name.is_none()
+            && section.key == provider_id
+            && section.models.is_empty()
+            && section.unavailable_reason.is_some()
     })
 }
 

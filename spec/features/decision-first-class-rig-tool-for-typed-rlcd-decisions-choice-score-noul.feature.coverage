@@ -51,23 +51,23 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "fn render(resp: &RlcdResponse) -> String {",
+              "lastLine": "/// Structured fail-open error for an unreachable engine (never a hard block)."
             }
           ]
         }
@@ -78,7 +78,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "128-161",
+          "lines": "144-166",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/decision.rs",
@@ -124,23 +124,23 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "fn render(resp: &RlcdResponse) -> String {",
+              "lastLine": "/// Structured fail-open error for an unreachable engine (never a hard block)."
             }
           ]
         }
@@ -151,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "163-186",
+          "lines": "180-192",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/decision.rs",
@@ -197,23 +197,23 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "fn render(resp: &RlcdResponse) -> String {",
+              "lastLine": "/// Structured fail-open error for an unreachable engine (never a hard block)."
             }
           ]
         }
@@ -224,7 +224,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "195-243",
+          "lines": "213-244",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/decision.rs",
@@ -270,23 +270,23 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "fn render(resp: &RlcdResponse) -> String {",
+              "lastLine": "/// Structured fail-open error for an unreachable engine (never a hard block)."
             },
             {
               "file": "rust/tools/src/rlcd/client.rs",
@@ -331,7 +331,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "impl RlcdClient for HttpRlcdClient {",
+              "lastLine": ""
             }
           ]
         }
@@ -342,124 +344,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "251-276",
+          "lines": "270-285",
           "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/decision_validate.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            },
             {
               "file": "rust/tools/src/rlcd/decision.rs",
               "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
                 218,
                 219,
                 220,
@@ -480,8 +369,18 @@
                 235,
                 236,
                 237,
-                238
-              ]
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {",
+              "lastLine": "};"
             }
           ]
         }
@@ -492,114 +391,8 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "278-304",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/decision_validate.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            }
-          ]
+          "lines": "298-313",
+          "implMappings": []
         }
       ]
     },
@@ -608,114 +401,8 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "306-336",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/decision_validate.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            }
-          ]
+          "lines": "327-346",
+          "implMappings": []
         }
       ]
     },
@@ -724,114 +411,8 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "338-364",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/decision_validate.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            }
-          ]
+          "lines": "360-375",
+          "implMappings": []
         }
       ]
     },
@@ -840,114 +421,8 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "366-389",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/decision_validate.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            }
-          ]
+          "lines": "388-403",
+          "implMappings": []
         }
       ]
     },
@@ -956,11 +431,12 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "397-419",
+          "lines": "420-432",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/client.rs",
               "lines": [
+                163,
                 166,
                 167,
                 168,
@@ -978,31 +454,14 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
+                183
+              ],
+              "firstLine": "if status.is_success() {",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/rlcd/decision.rs",
               "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
                 278,
                 279,
                 280,
@@ -1021,8 +480,25 @@
                 293,
                 294,
                 295,
-                296
-              ]
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311
+              ],
+              "firstLine": "// 4. classify",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -1033,35 +509,22 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "421-441",
+          "lines": "445-455",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/client.rs",
               "lines": [
-                179,
-                180,
-                181,
-                182
-              ]
+                175,
+                176,
+                177,
+                178
+              ],
+              "firstLine": "if status.as_u16() == 429 {",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/rlcd/decision.rs",
               "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
                 278,
                 279,
                 280,
@@ -1080,8 +543,25 @@
                 293,
                 294,
                 295,
-                296
-              ]
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311
+              ],
+              "firstLine": "// 4. classify",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -1092,35 +572,22 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "443-462",
+          "lines": "468-477",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/client.rs",
               "lines": [
-                183,
-                184,
-                185,
-                186
-              ]
+                179,
+                180,
+                181,
+                182
+              ],
+              "firstLine": "Err(RlcdError::Server {",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/rlcd/decision.rs",
               "lines": [
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
                 278,
                 279,
                 280,
@@ -1139,8 +606,25 @@
                 293,
                 294,
                 295,
-                296
-              ]
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311
+              ],
+              "firstLine": "// 4. classify",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -1151,7 +635,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "464-489",
+          "lines": "490-506",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/client.rs",
@@ -1176,7 +660,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "let response = client",
+              "lastLine": ".get(\"retry-after\")"
             }
           ]
         }
@@ -1187,25 +673,13 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "498-536",
+          "lines": "528-566",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/decision.rs",
               "lines": [
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
                 248,
                 249,
-                250,
-                251,
-                252,
-                253,
                 254,
                 255,
                 256,
@@ -1214,8 +688,21 @@
                 259,
                 260,
                 261,
-                262
-              ]
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                273,
+                274,
+                275,
+                276
+              ],
+              "firstLine": "// 3. ensure the engine is ready (bounded; fail-open on failure)",
+              "lastLine": "let model = args.model.clone().unwrap_or(model);"
             }
           ]
         }
@@ -1226,7 +713,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "544-577",
+          "lines": "581-606",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/client.rs",
@@ -1271,7 +758,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "impl RlcdClient for HttpRlcdClient {",
+              "lastLine": ""
             }
           ]
         }
@@ -1282,19 +771,50 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd002_decision_tool.rs",
-          "lines": "598-644",
+          "lines": "636-674",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/custom_provider.rs",
               "lines": [
-                306
-              ]
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339
+              ],
+              "firstLine": "let simple = simple",
+              "lastLine": ".tool(bridge_tool);"
             },
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                554
-              ]
+                557
+              ],
+              "firstLine": "session_id,",
+              "lastLine": "session_id,"
             }
           ]
         }
@@ -1311,10 +831,9 @@
     "implFiles": [
       "rust/tools/src/rlcd/decision.rs",
       "rust/tools/src/rlcd/client.rs",
-      "rust/tools/src/rlcd/decision_validate.rs",
       "rust/providers/src/custom/custom_provider.rs",
       "rust/providers/src/claude.rs"
     ],
-    "totalLinesCovered": 1504
+    "totalLinesCovered": 874
   }
 }

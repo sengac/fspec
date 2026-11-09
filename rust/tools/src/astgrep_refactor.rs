@@ -1100,6 +1100,12 @@ impl rig::tool::Tool for AstGrepRefactorTool {
             None
         };
 
+        // BLOCK-006 / BUG-449: the session's stage permissions for every
+        // file the refactor writes.
+        for path in std::iter::once(&resolved_source).chain(resolved_target.as_ref()) {
+            crate::stage_gate::check_session_write(self.session_id, "AstGrepRefactor", path)?;
+        }
+
         // Delegate to existing execute method by converting args to Value
         let mut value_map = serde_json::Map::new();
         value_map.insert(

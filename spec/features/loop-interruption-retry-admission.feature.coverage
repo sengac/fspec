@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug220_loop_retry.rs",
-          "lines": "28-68",
+          "lines": "25-93",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/interruption.rs",
@@ -55,52 +55,9 @@
                 43,
                 44,
                 45
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                1581,
-                1582,
-                1583,
-                1584,
-                1585,
-                1586,
-                1587,
-                1588,
-                1589,
-                1590,
-                1591,
-                1592,
-                1593,
-                1594,
-                1595,
-                1596,
-                1597,
-                1598,
-                1599,
-                1600
-              ]
+              ],
+              "firstLine": "use super::BackgroundSession;",
+              "lastLine": "*self"
             },
             {
               "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
@@ -109,7 +66,45 @@
                 12,
                 13,
                 14
-              ]
+              ],
+              "firstLine": "pub(crate) enum RetryInput {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub(super) fn schedule_loop_retry(",
+              "lastLine": "/// the steers it never reached, or the next queued input, as a new turn. An"
             }
           ]
         }
@@ -120,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug220_loop_retry.rs",
-          "lines": "72-113",
+          "lines": "95-138",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/interruption.rs",
@@ -170,52 +165,9 @@
                 43,
                 44,
                 45
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                1581,
-                1582,
-                1583,
-                1584,
-                1585,
-                1586,
-                1587,
-                1588,
-                1589,
-                1590,
-                1591,
-                1592,
-                1593,
-                1594,
-                1595,
-                1596,
-                1597,
-                1598,
-                1599,
-                1600
-              ]
+              ],
+              "firstLine": "use super::BackgroundSession;",
+              "lastLine": "*self"
             },
             {
               "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
@@ -224,7 +176,9 @@
                 12,
                 13,
                 14
-              ]
+              ],
+              "firstLine": "pub(crate) enum RetryInput {",
+              "lastLine": "}"
             }
           ]
         }
@@ -240,9 +194,9 @@
     ],
     "implFiles": [
       "rust/sessions/src/background_session/interruption.rs",
-      "rust/agent-loop/src/agent_loop.rs",
-      "rust/agent-loop/src/terminal_overflow_recovery.rs"
+      "rust/agent-loop/src/terminal_overflow_recovery.rs",
+      "rust/agent-loop/src/agent_loop/finalization.rs"
     ],
-    "totalLinesCovered": 261
+    "totalLinesCovered": 240
   }
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/no_napi_dependency.rs",
-          "lines": "74-185",
+          "lines": "23-31",
           "implMappings": [
             {
               "file": "rust/sessions/Cargo.toml",
@@ -29,9 +29,15 @@
                 28,
                 29,
                 30
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "# rust/sessions/tests/skeleton_invariants.rs (RPC-038)."
             }
           ]
+        },
+        {
+          "file": "rust/sessions/tests/no_napi_dependency.rs",
+          "lines": "33-39"
         }
       ]
     }
@@ -46,6 +52,6 @@
     "implFiles": [
       "rust/sessions/Cargo.toml"
     ],
-    "totalLinesCovered": 131
+    "totalLinesCovered": 35
   }
 }

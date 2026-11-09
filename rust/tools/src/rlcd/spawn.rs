@@ -16,13 +16,13 @@ use std::net::SocketAddrV4;
 
 use tracing::{debug, info, warn};
 
-use crate::rlcd::config::{RlcdConfig, user_dir};
+use crate::rlcd::config::RlcdConfig;
 use crate::rlcd::error::RlcdError;
+use crate::rlcd::health::health_check;
 use crate::rlcd::pidfile::{
     is_local_url, is_pid_alive, pidfile_path, read_pidfile, remove_stale_pidfile, resolve_binary,
     url_port,
 };
-use crate::rlcd::health::health_check;
 
 /// Health-probe timeout used while scanning occupied ports.
 const PORT_PROBE_TIMEOUT: std::time::Duration = std::time::Duration::from_millis(300);
@@ -140,15 +140,25 @@ pub async fn ensure_local_server(cfg: &RlcdConfig) -> EnsureOutcome {
             pid: 0,
         };
     }
-    let pidfile = pidfile_path();
+    // BUG-451: an unresolvable user directory fails the spawn flow.
+    let pidfile = match pidfile_path() {
+        Ok(pidfile) => pidfile,
+        Err(error) => return EnsureOutcome::Failed(error),
+    };
 
     // (3) live pid: wait within the budget, never double-spawn.
     if let Some(pid) = read_pidfile(&pidfile) {
         if is_pid_alive(pid) {
-            info!(pid, "rlcd: live pid in pidfile — waiting for model load (bounded)");
+            info!(
+                pid,
+                "rlcd: live pid in pidfile — waiting for model load (bounded)"
+            );
             let deadline = std::time::Instant::now() + LIVE_PID_WAIT;
             while std::time::Instant::now() < deadline {
-                if health_check(&cfg.url, std::time::Duration::from_secs(2)).await.is_ok() {
+                if health_check(&cfg.url, std::time::Duration::from_secs(2))
+                    .await
+                    .is_ok()
+                {
                     return EnsureOutcome::WaitingExisting;
                 }
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
@@ -216,16 +226,22 @@ async fn spawn_server(
     }
     // serve log: <user_dir>/logs/rlcd-serve.log (append, for BOTH stdout
     // and stderr — rule 6: two independent open handles).
-    let serve_log = user_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from(".fspec"))
-        .join("logs")
-        .join("rlcd-serve.log");
+    let serve_log = match codelet_common::user_dir::fspec_user_dir() {
+        Ok(dir) => dir.join("logs").join("rlcd-serve.log"),
+        Err(error) => return EnsureOutcome::Failed(error),
+    };
     if let Some(parent) = serve_log.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
 
     let mut cmd = std::process::Command::new(binary);
-    cmd.args(["serve", "--host", &cfg.spawn.bind_address, "--port", &port.to_string()]);
+    cmd.args([
+        "serve",
+        "--host",
+        &cfg.spawn.bind_address,
+        "--port",
+        &port.to_string(),
+    ]);
     cmd.stdin(std::process::Stdio::null());
     match std::fs::OpenOptions::new()
         .create(true)
@@ -271,13 +287,19 @@ async fn spawn_server(
     };
     let pid = child.id();
     let _ = std::fs::write(pidfile, pid.to_string());
-    info!(pid, port, "rlcd: spawned local server (detached, own process group)");
+    info!(
+        pid,
+        port, "rlcd: spawned local server (detached, own process group)"
+    );
 
     // Poll /health for the model load / first-time checkpoint download.
     let deadline = std::time::Instant::now() + SPAWN_LOAD_BUDGET;
     let probe_url = format!("http://127.0.0.1:{port}");
     while std::time::Instant::now() < deadline {
-        if health_check(&probe_url, std::time::Duration::from_secs(2)).await.is_ok() {
+        if health_check(&probe_url, std::time::Duration::from_secs(2))
+            .await
+            .is_ok()
+        {
             return EnsureOutcome::Spawned { port, pid };
         }
         // The process died in the meantime → clean the pidfile.
@@ -293,6 +315,9 @@ async fn spawn_server(
     }
     // Model not ready within 60s: keep the process (it may still be
     // loading); the status poller keeps probing in the background.
-    debug!(port, "rlcd: model load exceeded 60s; continuing in background");
+    debug!(
+        port,
+        "rlcd: model load exceeded 60s; continuing in background"
+    );
     EnsureOutcome::Spawned { port, pid }
 }

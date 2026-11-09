@@ -6,13 +6,15 @@ pub mod fixture;
 use fixture::{frames, rig_stream, Server, TestResult};
 use futures::StreamExt;
 use rig::streaming::StreamedAssistantContent;
-use std::time::Duration;
 
 async fn successful(events: &[&str], pending: bool) -> TestResult {
     let mut server = Server::start(frames(events), 200, false, pending).await?;
     let mut stream = rig_stream(&server.url).await?;
-    let items: Vec<_> =
-        tokio::time::timeout(Duration::from_secs(3), stream.by_ref().collect()).await?;
+    let items: Vec<_> = codelet_test_helpers::deadlock_guard(
+        "stream.by_ref().collect()",
+        stream.by_ref().collect(),
+    )
+    .await?;
     assert!(items.iter().all(Result::is_ok), "{items:?}");
     let response = stream.response.ok_or("missing final response")?;
     assert_eq!((response.input_tokens, response.output_tokens), (12, 3));
@@ -100,11 +102,12 @@ async fn stop_alone_does_not_invent_transport_success() -> TestResult {
         Some(Ok(StreamedAssistantContent::Text(_)))
     ));
     // @step When the consumer waits for settlement and then cancels
-    assert!(
-        tokio::time::timeout(Duration::from_millis(100), stream.next())
-            .await
-            .is_err()
-    );
+    // TEST-042: no waiting window. Both frames were sent together, so
+    // the stop is already readable; the stream must stay pending on it.
+    for _ in 0..8 {
+        assert!(futures::FutureExt::now_or_never(stream.next()).is_none());
+        tokio::task::yield_now().await;
+    }
     // @step Then no successful final appears and cancellation closes the connection
     assert!(stream.response.is_none());
     drop(stream);

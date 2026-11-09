@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-279
+@cli
+@remove
 Feature: Port remove-rule command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),

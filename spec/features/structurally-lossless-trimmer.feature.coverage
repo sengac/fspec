@@ -10,9 +10,6 @@
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -41,13 +38,17 @@
                 115,
                 116,
                 117,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
+                118,
+                119,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "}"
             }
           ]
         }
@@ -63,9 +64,6 @@
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                61,
-                62,
-                63,
                 64,
                 65,
                 66,
@@ -88,9 +86,9 @@
                 83,
                 84,
                 85,
-                152,
-                153,
-                154,
+                86,
+                87,
+                88,
                 155,
                 156,
                 157,
@@ -105,7 +103,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "/// Register tool uses and trim large Write/Edit inputs in assistant messages.",
+              "lastLine": "}"
             }
           ]
         }
@@ -116,14 +116,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "270-308",
+          "lines": "259-289",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                61,
-                62,
-                63,
                 64,
                 65,
                 66,
@@ -146,16 +143,9 @@
                 83,
                 84,
                 85,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
+                86,
+                87,
+                88,
                 170,
                 171,
                 172,
@@ -163,8 +153,20 @@
                 174,
                 175,
                 176,
-                177
-              ]
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "/// Register tool uses and trim large Write/Edit inputs in assistant messages.",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,14 +177,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "315-369",
+          "lines": "295-346",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -211,13 +210,8 @@
                 115,
                 116,
                 117,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
+                118,
+                119,
                 196,
                 197,
                 198,
@@ -239,8 +233,15 @@
                 214,
                 215,
                 216,
-                217
-              ]
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "}"
             }
           ]
         }
@@ -251,14 +252,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "376-403",
+          "lines": "352-380",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -287,17 +285,20 @@
                 115,
                 116,
                 117,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
+                118,
+                119,
                 196,
                 197,
-                198
-              ]
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "}"
             }
           ]
         }
@@ -308,7 +309,7 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "410-461",
+          "lines": "386-437",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer_base64.rs",
@@ -378,7 +379,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub fn is_base64_image(content: &str) -> bool {",
+              "lastLine": ".iter()"
             }
           ]
         }
@@ -389,14 +392,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "468-502",
+          "lines": "443-477",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -425,19 +425,23 @@
                 115,
                 116,
                 117,
-                219,
-                220,
-                221,
-                222,
-                223,
+                118,
+                119,
                 224,
                 225,
                 226,
                 227,
                 228,
                 229,
-                230
-              ]
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "}"
             }
           ]
         }
@@ -448,14 +452,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "509-526",
+          "lines": "483-501",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -464,8 +465,11 @@
                 95,
                 96,
                 97,
-                98
-              ]
+                98,
+                99
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "};"
             }
           ]
         }
@@ -476,14 +480,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "533-551",
+          "lines": "507-526",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                61,
-                62,
-                63,
                 64,
                 65,
                 66,
@@ -494,7 +495,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "/// Register tool uses and trim large Write/Edit inputs in assistant messages.",
+              "lastLine": "}"
             }
           ]
         }
@@ -505,11 +508,12 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "558-572",
+          "lines": "532-547",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
+                46,
                 47,
                 48,
                 49,
@@ -520,8 +524,15 @@
                 54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "/// Trim a message's content based on role and metadata.",
+              "lastLine": "}"
             }
           ]
         }
@@ -532,11 +543,12 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "579-608",
+          "lines": "553-583",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
+                46,
                 47,
                 48,
                 49,
@@ -547,8 +559,15 @@
                 54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "/// Trim a message's content based on role and metadata.",
+              "lastLine": "}"
             }
           ]
         }
@@ -559,14 +578,11 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/trimmer.test.rs",
-          "lines": "615-642",
+          "lines": "589-617",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/trimmer.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -595,13 +611,17 @@
                 115,
                 116,
                 117,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
+                118,
+                119,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "/// Detect tool results in user messages and trim accordingly.",
+              "lastLine": "}"
             }
           ]
         }
@@ -619,6 +639,6 @@
       "rust/core/src/compaction/trimmer.rs",
       "rust/core/src/compaction/trimmer_base64.rs"
     ],
-    "totalLinesCovered": 814
+    "totalLinesCovered": 805
   }
 }

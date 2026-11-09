@@ -37,6 +37,7 @@ impl StreamOutput for RecordingOutput {
 #[serial_test::serial]
 async fn interrupting_restored_completed_dialect_calls_does_not_require_a_registry() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     for checkpoint_outcomes in [false, true] {

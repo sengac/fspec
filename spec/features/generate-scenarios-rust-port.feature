@@ -119,3 +119,49 @@ Feature: Port generate-scenarios command to Rust
     When I dispatch generate-scenarios with workUnitId="WU-1" and also run the CLI subcommand fspec generate-scenarios WU-1 against an equivalent project root
     Then both paths produce output containing "Created context-only feature file"
     Then the CLI bridge module rust/fspec/src/generate_scenarios.rs contains no analysis, gap-detection, or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: Background is built from the user story of the work unit
+    Given a project root tempdir whose work unit WU-1 has rules, an active example, and a user story with role "registered user", action "log in securely" and benefit "access my account"
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=true
+    And the created feature file Background reads "As a registered user", "I want to log in securely" and "So that access my account"
+    And the created feature file contains none of the placeholder tokens "[role]", "[action]" and "[benefit]"
+
+  Scenario: Generated file places the architecture docstring between the Feature line and the example mapping comments
+    Given a project root tempdir whose work unit WU-1 has rules, an active example, a user story and no architecture notes
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=true
+    And the created feature file lists the "@WU-1" tag line, the "Feature:" line, the docstring, the "# EXAMPLE MAPPING CONTEXT" comments and the "Background: User Story" line in that order
+    And the docstring contains "Architecture notes:" and the three TODO placeholder lines
+    And the docstring lines are identical to the docstring create-feature writes
+
+  Scenario: Duplicate reminder names the files to investigate, the next steps and the override flag
+    Given a project root tempdir whose work unit WU-1 has an example that matches a scenario in spec/features/existing.feature above threshold
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=false
+    And the error message lists spec/features/existing.feature under "Feature files to investigate:"
+    And the error message contains the substring "Next steps:"
+    And the error message contains the substring "Run: fspec generate-scenarios WU-1 --ignore-possible-duplicates"
+    And no feature file is created for WU-1
+
+  Scenario: Dispatch writes the file without duplicate warnings when no existing scenario matches
+    Given a project root tempdir whose work unit WU-1 is ready and spec/features/existing.feature holds one unrelated scenario
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=true
+    And a feature file is created under spec/features for WU-1 containing zero Scenario blocks
+    And the rendered output contains neither "DUPLICATE SCENARIOS DETECTED" nor "Detected potential refactor"
+
+  Scenario: Dispatch fails when the work unit has no title and no feature name
+    Given a project root tempdir whose work unit WU-1 is ready but has an empty title
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=false
+    And the error message contains the substring "Cannot determine feature file name"
+    And the error message contains the substring "Use --feature flag with a capability-based name"
+    And no feature file is written under spec/features
+
+  Scenario: The work unit ID is written as a feature-level tag only
+    Given a project root tempdir whose work unit WU-1 has rules, an active example, and a user story
+    When I dispatch generate-scenarios with workUnitId="WU-1"
+    Then the dispatcher returns success=true
+    And the first line of the created feature file is "@WU-1"
+    And no other line of the created feature file carries the tag "@WU-1"

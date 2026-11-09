@@ -5,14 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
-          "lines": "266-360",
+          "lines": "31-92",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
               "lines": [
-                81,
-                82,
-                83,
                 84,
                 85,
                 86,
@@ -23,47 +20,60 @@
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// open flow's `CheckpointsLoaded` resets the view instead), then",
+              "lastLine": ");"
             }
           ]
         }
       ]
     },
     {
-      "name": "Capped enumeration shows (200/250) - truncation does not hide progress",
+      "name": "A late progress event after CheckpointsLoaded is stale-dropped",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
-          "lines": "432-455",
+          "lines": "149-184",
           "implMappings": [
             {
-              "file": "rust/rpc/src/checkpoints.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
               "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// open flow's `CheckpointsLoaded` resets the view instead), then",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A transport that does not forward progress degrades to spinner plus stage label",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
+          "lines": "191-213",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
+              "lines": [
                 78,
                 79,
                 80,
@@ -77,88 +87,27 @@
                 88,
                 89,
                 90,
-                91,
-                92
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A late progress event after CheckpointsLoaded is stale-dropped",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
-          "lines": "492-539",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
-              "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A transport that does not forward progress degrades to spinner plus stage label",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
-          "lines": "540-572",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
-              "lines": [
-                963,
-                964,
-                965,
-                966,
-                967,
-                968,
-                969,
-                970
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The non-streaming CLI path is byte-identical",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
-          "lines": "573-605",
-          "implMappings": [
-            {
-              "file": "rust/git/src/ghost_commit.rs",
-              "lines": [
-                637,
-                638,
-                639,
-                640,
-                641
-              ]
+                91
+              ],
+              "firstLine": "/// TUI-109: subscribe to per-item checkpoint-enumeration progress",
+              "lastLine": "}"
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui109_checkpoints_progress.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
+      "rust/fspec-tui/src/transport/backend/subscriptions.rs"
+    ],
+    "totalLinesCovered": 163
+  }
 }

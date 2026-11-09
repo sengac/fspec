@@ -3,6 +3,7 @@ pub mod progress_support;
 #[path = "bug214_escape/support.rs"]
 pub mod support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use progress_support::TestResult;
 use support::EscapeFixture;
@@ -22,7 +23,7 @@ async fn scenario_escape_cancels_pending_pre_prompt_compaction_through_the_embed
         .app
         .handle_event(&Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE)));
     fixture.drain_keypress().await?;
-    // @step Then the focused session receives the interrupt and its pending compaction stops promptly
+    // @step Then the focused session receives the interrupt and its pending compaction stops with an explicit cancellation
     fixture.assert_stopped().await?;
     // @step And no successful compaction or continuation inference occurs
     fixture.assert_no_success_or_continuation();
@@ -48,7 +49,7 @@ async fn scenario_escape_cancels_pending_pre_prompt_compaction_through_the_webso
         .app
         .handle_event(&Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE)));
     fixture.drain_keypress().await?;
-    // @step Then the focused session receives the interrupt and its pending compaction stops promptly
+    // @step Then the focused session receives the interrupt and its pending compaction stops with an explicit cancellation
     fixture.assert_stopped().await?;
     // @step And no successful compaction or continuation inference occurs
     fixture.assert_no_success_or_continuation();

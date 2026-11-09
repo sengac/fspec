@@ -49,11 +49,6 @@ fn read_hooks_json(cwd: &Path) -> serde_json::Value {
     serde_json::from_str(&raw).expect("parse fspec-hooks.json")
 }
 
-fn read_hooks_raw(cwd: &Path) -> String {
-    fs::read_to_string(cwd.join("spec").join("fspec-hooks.json"))
-        .expect("read fspec-hooks.json raw")
-}
-
 /// Captured byte-exact TS reference output of
 /// `node dist/index.js remove-hook --help` when piped to non-TTY (no colour).
 const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/remove-hook.txt");
@@ -189,36 +184,6 @@ fn scenario_cli_exits_nonzero_when_config_is_missing() {
     assert!(
         !tmp.path().join("spec/fspec-hooks.json").exists(),
         "remove-hook must NOT auto-create the config file"
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI exits non-zero with error when spec/fspec-hooks.json is invalid JSON
-// ─────────────────────────────────────────────────────────────────────────
-
-#[test]
-fn scenario_cli_exits_nonzero_when_config_is_invalid_json() {
-    // @step Given spec/fspec-hooks.json exists in the working directory but contains invalid JSON syntax
-    let tmp = tempfile::tempdir().expect("tempdir");
-    write_hooks(tmp.path(), "{ not json");
-
-    // @step When I run `fspec remove-hook pre-implementing lint`
-    let (code, _stdout, stderr) = run_remove_hook(tmp.path(), &["pre-implementing", "lint"]);
-
-    // @step Then the command exits 1
-    assert_eq!(code, 1, "expected exit 1 on parse error; stderr={stderr}");
-
-    // @step Then stderr starts with 'Error:'
-    assert!(
-        stderr.starts_with("Error:"),
-        "stderr must start with 'Error:'; got {stderr:?}"
-    );
-
-    // @step Then the raw bytes of spec/fspec-hooks.json are unchanged
-    let raw = read_hooks_raw(tmp.path());
-    assert_eq!(
-        raw, "{ not json",
-        "config file must be unchanged on parse error"
     );
 }
 

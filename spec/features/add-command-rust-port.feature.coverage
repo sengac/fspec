@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "79-134",
+          "lines": "106-173",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -93,8 +93,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -231,8 +229,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -243,7 +245,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "137-182",
+          "lines": "175-226",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -331,8 +333,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -469,8 +469,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -481,7 +485,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "185-206",
+          "lines": "228-249",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -569,8 +573,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -707,8 +709,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -719,7 +725,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "208-234",
+          "lines": "251-280",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -807,8 +813,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -945,8 +949,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -957,7 +965,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "236-262",
+          "lines": "282-308",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -1045,8 +1053,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -1183,8 +1189,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -1195,7 +1205,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command.rs",
-          "lines": "264-284",
+          "lines": "310-331",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command.rs",
@@ -1283,8 +1293,6 @@
                 81,
                 82,
                 83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -1421,8 +1429,12 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224
+              ],
+              "firstLine": "//! `add-command` — Rust port of `src/commands/add-command.ts` (RPC-174).",
+              "lastLine": "let a: AddCommandArgs = serde_json::from_str("
             }
           ]
         }
@@ -1439,6 +1451,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_command.rs"
     ],
-    "totalLinesCovered": 1531
+    "totalLinesCovered": 1553
   }
 }

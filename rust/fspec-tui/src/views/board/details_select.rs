@@ -11,8 +11,9 @@
 //!     gestures (`feed_details_selection`);
 //!   * on Commit, reconstruct the exact border-free on-screen rows of the
 //!     details strip (`truncate_to` / `wrap_to_two_lines`, fixed 5 rows)
-//!     and copy them via the OSC 52 writer (COPY-001), retaining the
-//!     highlight;
+//!     and copy them through `Action::CopyToClipboard` (TUI-130: the App's
+//!     one copy path), retaining the highlight; a whole title or
+//!     description row (long press) copies the whole field (TUI-130);
 //!   * clear an active selection when the selected work unit changes or
 //!     on Esc (`clear_details_selection`); and
 //!   * paint the REVERSED highlight overlay (COPY-005) over the selected
@@ -89,12 +90,14 @@ impl BoardView {
         for gesture in gestures {
             match gesture {
                 SelectionGesture::Begin(cell) => {
+                    self.details_long_press.set(false);
                     // COPY-010: anchor precisely at the pressed cell so a
                     // drag copies from the press column, not line start.
                     *self.details_selection.borrow_mut() = Some(Selection::collapsed(*cell));
                     *self.selection_unit_id.borrow_mut() = selected.map(|u| u.id.clone());
                 }
                 SelectionGesture::BeginLine(cell) => {
+                    self.details_long_press.set(true);
                     // COPY-010: long-press selects the WHOLE line.
                     *self.details_selection.borrow_mut() =
                         Some(Selection::whole_line(cell.row, cw));
@@ -119,12 +122,33 @@ impl BoardView {
             return;
         };
         let spans = sel.spans(rect.width);
-        let text = reconstruct_strip_text(&spans, rect.width, selected);
+        let long_press = self.details_long_press.get();
+        let text = long_press
+            .then(|| whole_field(&spans, rect.width, selected))
+            .flatten()
+            .unwrap_or_else(|| reconstruct_strip_text(&spans, rect.width, selected));
         if !text.is_empty() {
-            if let Err(e) = self.clipboard.borrow_mut().copy(&text) {
-                tracing::warn!("OSC 52 clipboard copy failed: {e}");
-            }
+            // TUI-130: through the App's one copy path, so it is confirmed.
+            self.emit(crate::components::Action::CopyToClipboard(text));
         }
+    }
+
+    /// TUI-130: poll the strip recognizer as if `held` more had passed, so a
+    /// press held past the long-press threshold selects the whole row (the
+    /// App's tick calls this with no extra time).
+    pub(crate) fn poll_selection_tick_after(
+        &self,
+        held: std::time::Duration,
+        store: &crate::store::BoardStore,
+    ) {
+        let Some(rect) = self.last_details_area.get() else {
+            return;
+        };
+        let gestures = self
+            .recognizer
+            .borrow_mut()
+            .tick(std::time::Instant::now() + held);
+        self.apply_details_gestures(&gestures, rect, store.selected_work_unit());
     }
 
     /// COPY-009: clear any active strip selection and reset the recognizer
@@ -186,6 +210,28 @@ fn reconstruct_strip_text(
         })
         .collect();
     lines.join("\n")
+}
+
+/// TUI-130: a long press (one whole strip row selected) copies the
+/// row's whole field, not the cut row: the title row gives `ID: title` and a
+/// description row the whole description.
+fn whole_field(spans: &[RowSpan], width: u16, selected: Option<&WorkUnitInfo>) -> Option<String> {
+    let [span] = spans else {
+        return None;
+    };
+    let unit = selected?;
+    let row = visible_strip_rows(selected, width)
+        .get(span.row as usize)?
+        .chars()
+        .count();
+    if span.start_col != 0 || (span.end_col as usize) < row {
+        return None;
+    }
+    match span.row {
+        0 => Some(format!("{}: {}", unit.id, unit.title)),
+        1 | 2 => unit.description.clone(),
+        _ => None,
+    }
 }
 
 /// Char-slice `text[start_col..min(end_col, char_len)]` on unicode scalar

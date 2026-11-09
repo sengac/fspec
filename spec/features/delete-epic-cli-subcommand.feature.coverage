@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "90-135",
+          "lines": "93-133",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_epic.rs",
@@ -47,7 +47,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "/// registration at `src/commands/delete-epic.ts:92-108`.",
+              "lastLine": "// TS: `output.error('✗ Failed to delete epic:', error.message)`"
             }
           ]
         }
@@ -58,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "137-159",
+          "lines": "139-162",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_epic.rs",
@@ -100,7 +102,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "/// registration at `src/commands/delete-epic.ts:92-108`.",
+              "lastLine": "// TS: `output.error('✗ Failed to delete epic:', error.message)`"
             }
           ]
         }
@@ -111,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "161-182",
+          "lines": "168-187",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_epic.rs",
@@ -153,7 +157,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "/// registration at `src/commands/delete-epic.ts:92-108`.",
+              "lastLine": "// TS: `output.error('✗ Failed to delete epic:', error.message)`"
             }
           ]
         }
@@ -164,7 +170,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "184-213",
+          "lines": "193-218",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_epic.rs",
@@ -178,7 +184,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "Ok(rendered) => {",
+              "lastLine": "// TS: `output.error('✗ Failed to delete epic:', error.message)`"
             }
           ]
         }
@@ -189,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "215-263",
+          "lines": "224-283",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_epic.rs",
@@ -231,7 +239,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "/// registration at `src/commands/delete-epic.ts:92-108`.",
+              "lastLine": "// TS: `output.error('✗ Failed to delete epic:', error.message)`"
             }
           ]
         }
@@ -242,65 +252,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_epic.rs",
-          "lines": "265-294",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/delete_epic.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51
-              ]
-            }
-          ]
+          "lines": "291-315"
         }
       ]
     }
@@ -313,9 +265,8 @@
       "rust/fspec/tests/cli_delete_epic.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/delete_epic.rs",
-      "rust/fspec-core/src/help/configs/delete_epic.rs"
+      "rust/fspec/src/delete_epic.rs"
     ],
-    "totalLinesCovered": 408
+    "totalLinesCovered": 353
   }
 }

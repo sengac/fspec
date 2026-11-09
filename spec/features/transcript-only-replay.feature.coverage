@@ -10,15 +10,17 @@
             {
               "file": "rust/sessions/src/replay_content.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "if let Some(record) = envelope.get(\"_transcript\") {",
+              "lastLine": "continue;"
             },
             {
               "file": "rust/sessions/src/replay_transcript.rs",
@@ -53,7 +55,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub(crate) fn decode(value: &Value) -> Result<Vec<StreamChunk>, RestoreError> {",
+              "lastLine": "}"
             }
           ]
         }

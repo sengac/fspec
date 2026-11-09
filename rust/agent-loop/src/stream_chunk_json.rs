@@ -94,6 +94,12 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
             "type": "providerWaiting",
             "message": message,
         }),
+        // AMGR-020: bridge clients learn each request's id from this event.
+        StreamChunk::InteractionRequestChanged { route, status } => json!({
+            "type": "interactionRequestChanged",
+            "route": route,
+            "status": status,
+        }),
         StreamChunk::UserNotification { message, severity } => json!({
             "type": "userNotification",
             "message": message,

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @PROV-100
 @tui
@@ -20,8 +21,10 @@ Feature: OpenAI custom profiles loaded from fspec-config.json
   merges providers.openai.profiles key-by-key (project overrides user), and returns
   display strings sorted by profile name. Each display string is
   "{name} → {baseUrl}" (just "{name}" when baseUrl is missing/empty). Missing
-  files, empty content, or malformed JSON yield an empty list (silent fallback,
-  no panic) mirroring TS loadConfig.
+  files yield an empty list. BUG-461: an unreadable, malformed or non-object
+  config is an error naming the file (load_openai_profiles_from returns
+  Result); the malformed-JSON scenario is replaced by
+  user-config-read-failures-are-reported.feature.
 
   A thin wrapper load_openai_profiles() resolves HOME (read-only) + current_dir
   and delegates; dispatch_provider_settings.rs::handle_provider_credentials_loaded
@@ -59,12 +62,6 @@ Feature: OpenAI custom profiles loaded from fspec-config.json
 
   Scenario: Missing config files yield no profiles
     Given a user config directory with no fspec-config.json
-    And an empty project config directory
-    When load_openai_profiles_from is called with the user and project directories
-    Then the result is an empty list
-
-  Scenario: Malformed JSON yields no profiles without panicking
-    Given a user config fspec-config.json whose contents are malformed JSON
     And an empty project config directory
     When load_openai_profiles_from is called with the user and project directories
     Then the result is an empty list

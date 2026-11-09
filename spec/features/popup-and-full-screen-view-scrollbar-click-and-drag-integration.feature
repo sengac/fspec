@@ -1,9 +1,13 @@
+@BUG-582
 @tui
 @done
 @TUI-103
+@BUG-508
+@navigation
 Feature: Popup and full-screen view scrollbar click-and-drag integration
   """
   Each popup view (SlashCommandPopup, FileSearchPopup) adds scrollbar_drag: ScrollbarDrag and last_scrollbar_rect: Option<Rect> fields. SearchHistoryView adds the same. TurnContentModal scrollbar handling is wired through mouse_dispatch.rs handle_turn_modal_mouse. All follow the same pattern as ResumeSessionView (TUI-101) and AgentView scrollback (TUI-102).
+  The popup mouse-routing integration tests live in rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs (BUG-508); the pure ScrollbarDrag scenarios map to rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs.
   """
 
   # ========================================
@@ -64,3 +68,21 @@ Feature: Popup and full-screen view scrollbar click-and-drag integration
     When the popup match list is replaced with new content
     Then the drag state is reset to idle
     And subsequent mouse drag events are ignored
+
+  Scenario: SlashCommandPopup mouse handling routes a scrollbar click through ScrollbarDrag
+    Given SlashCommandPopup has more commands than fit in the visible area
+    And the scrollbar gutter rect is cached from the last render
+    When I click on the scrollbar gutter column
+    Then the popup updates its scroll_offset via ScrollbarDrag
+
+  Scenario: FileSearchPopup mouse handling routes a scrollbar drag through ScrollbarDrag
+    Given FileSearchPopup has more files than fit in the visible area
+    And the scrollbar gutter rect is cached from the last render
+    When I drag the scrollbar thumb downward
+    Then the popup updates its scroll_offset via ScrollbarDrag
+
+  Scenario: SearchHistoryView mouse handling routes a scrollbar click through ScrollbarDrag
+    Given SearchHistoryView has more matches than fit in the visible area
+    And the scrollbar gutter rect is cached from the last render
+    When I click on the scrollbar track
+    Then the view updates its scroll_offset via ScrollbarDrag

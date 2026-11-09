@@ -4,101 +4,9 @@
       "name": "Debug capture for one session does not leak into another session's log file",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "307-367",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7570,
-                7571,
-                7572,
-                7573,
-                7574,
-                7575,
-                7576,
-                7577,
-                7578,
-                7579,
-                7580,
-                7581,
-                7582,
-                7583,
-                7584,
-                7585,
-                7586,
-                7587,
-                7588,
-                7589,
-                7590,
-                7591,
-                7592,
-                7593,
-                7594,
-                7595,
-                7596,
-                7597,
-                7598,
-                7599,
-                7600,
-                7601,
-                7602,
-                7603,
-                7604,
-                7605,
-                7606,
-                7607,
-                7608,
-                7609,
-                7610,
-                7611,
-                7612,
-                7613,
-                7614,
-                7615,
-                7616,
-                7617,
-                7618,
-                7619,
-                7620,
-                7621,
-                7622,
-                7623,
-                7624,
-                7625,
-                7626,
-                7627,
-                7628,
-                7629,
-                7630,
-                7631,
-                7632,
-                7633,
-                7634,
-                7635,
-                7636,
-                7637,
-                7638,
-                7639,
-                7640,
-                7641,
-                7642,
-                7643,
-                7644,
-                7645,
-                7646,
-                7647,
-                7648,
-                7649,
-                7650,
-                7651,
-                7652,
-                7653,
-                7654,
-                7655
-              ]
-            }
-          ]
+          "file": "rust/common/src/debug_capture/tests/part_1.rs",
+          "lines": "141-212",
+          "implMappings": []
         }
       ]
     },
@@ -106,30 +14,9 @@
       "name": "Each session writes to its own session-specific debug file path",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "268-305",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7586,
-                7587,
-                7588,
-                7589,
-                7590,
-                7591,
-                7592,
-                7593,
-                7594,
-                7595,
-                7596,
-                7597,
-                7598,
-                7599,
-                7600
-              ]
-            }
-          ]
+          "file": "rust/common/src/debug_capture/tests/part_1.rs",
+          "lines": "101-139",
+          "implMappings": []
         }
       ]
     },
@@ -137,101 +24,9 @@
       "name": "Toggling debug off in one session does not affect another session's capture",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "369-417",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7570,
-                7571,
-                7572,
-                7573,
-                7574,
-                7575,
-                7576,
-                7577,
-                7578,
-                7579,
-                7580,
-                7581,
-                7582,
-                7583,
-                7584,
-                7585,
-                7586,
-                7587,
-                7588,
-                7589,
-                7590,
-                7591,
-                7592,
-                7593,
-                7594,
-                7595,
-                7596,
-                7597,
-                7598,
-                7599,
-                7600,
-                7601,
-                7602,
-                7603,
-                7604,
-                7605,
-                7606,
-                7607,
-                7608,
-                7609,
-                7610,
-                7611,
-                7612,
-                7613,
-                7614,
-                7615,
-                7616,
-                7617,
-                7618,
-                7619,
-                7620,
-                7621,
-                7622,
-                7623,
-                7624,
-                7625,
-                7626,
-                7627,
-                7628,
-                7629,
-                7630,
-                7631,
-                7632,
-                7633,
-                7634,
-                7635,
-                7636,
-                7637,
-                7638,
-                7639,
-                7640,
-                7641,
-                7642,
-                7643,
-                7644,
-                7645,
-                7646,
-                7647,
-                7648,
-                7649,
-                7650,
-                7651,
-                7652,
-                7653,
-                7654,
-                7655
-              ]
-            }
-          ]
+          "file": "rust/common/src/debug_capture/tests/part_2.rs",
+          "lines": "3-55",
+          "implMappings": []
         }
       ]
     },
@@ -239,23 +34,9 @@
       "name": "Toggling debug emits a DebugStateChange stream event scoped to that session",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "530-579",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/types.rs",
-              "lines": [
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394
-              ]
-            }
-          ]
+          "file": "rust/common/src/debug_capture/tests/part_2.rs",
+          "lines": "160-226",
+          "implMappings": []
         }
       ]
     },
@@ -263,8 +44,8 @@
       "name": "latest.jsonl symlink points to the most recently activated session's debug file",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "419-488",
+          "file": "rust/common/src/debug_capture/tests/part_2.rs",
+          "lines": "57-126",
           "implMappings": [
             {
               "file": "rust/common/src/debug_capture/session_lifecycle.rs",
@@ -288,7 +69,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "impl DebugCaptureManager {",
+              "lastLine": "}"
             }
           ]
         }
@@ -298,35 +81,9 @@
       "name": "DebugCaptureManager is owned by BackgroundSession not a global singleton",
       "testMappings": [
         {
-          "file": "rust/common/src/debug_capture/mod.rs",
-          "lines": "212-265",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                528,
-                529,
-                530,
-                531,
-                532,
-                533,
-                704,
-                705,
-                706,
-                707,
-                708,
-                709,
-                710,
-                711,
-                712,
-                713,
-                714,
-                715,
-                716,
-                717
-              ]
-            }
-          ]
+          "file": "rust/common/src/debug_capture/tests/part_1.rs",
+          "lines": "39-99",
+          "implMappings": []
         }
       ]
     }
@@ -336,13 +93,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/common/src/debug_capture/mod.rs"
+      "rust/common/src/debug_capture/tests/part_1.rs",
+      "rust/common/src/debug_capture/tests/part_2.rs"
     ],
     "implFiles": [
-      "rust/napi/src/session_manager.rs",
-      "rust/napi/src/types.rs",
       "rust/common/src/debug_capture/session_lifecycle.rs"
     ],
-    "totalLinesCovered": 556
+    "totalLinesCovered": 381
   }
 }

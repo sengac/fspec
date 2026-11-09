@@ -37,6 +37,9 @@ pub mod fspec;
 pub mod fspec_handler;
 pub mod fspec_workflow_guidance;
 pub mod inject_summary;
+#[cfg(unix)]
+pub mod process_signal;
+pub mod stage_gate;
 pub mod stage_permissions;
 
 pub mod footer_cwd;
@@ -84,6 +87,14 @@ mod bridge_integration_tests;
 // Multiplexed wiring tests (ARCH-004)
 #[cfg(test)]
 mod bridge_multiplexed_wiring_tests;
+
+// Command handling pipeline tests (BRIDGE-017)
+#[cfg(test)]
+mod bridge_command_pipeline_tests;
+
+// Bridge command message type tests (BRIDGE-016)
+#[cfg(test)]
+mod bridge_message_types_tests;
 
 // Subordinate session relay tests (SESS-015)
 #[cfg(test)]

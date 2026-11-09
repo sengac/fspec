@@ -44,13 +44,14 @@ async fn reset_during_credential_refresh_prevents_the_authorized_retry(
             .err()
             .map(|error| error.to_string())
     });
-    tokio::time::timeout(std::time::Duration::from_secs(4), issuer.started.notified()).await?;
+    codelet_test_helpers::deadlock_guard("issuer.started.notified()", issuer.started.notified())
+        .await?;
     assert_eq!(attempts.load(Ordering::SeqCst), 1);
     // @step When its generation is reset before credential refresh is released
     history.reset()?;
     let reset = history.snapshot()?;
     issuer.release.add_permits(1);
-    let error = tokio::time::timeout(std::time::Duration::from_secs(4), task).await??;
+    let error = codelet_test_helpers::deadlock_guard("task", task).await??;
     // @step Then the stream fails without another physical inference request
     assert_eq!(attempts.load(Ordering::SeqCst), 1);
     assert_eq!(issuer.requests()?.len(), 1);

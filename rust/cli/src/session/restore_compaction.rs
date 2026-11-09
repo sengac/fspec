@@ -75,7 +75,7 @@ impl Session {
             .as_ref()
             .filter(|boundary| boundary.publication_pending)
             .map(|boundary| boundary.identity.clone());
-        self.restore_durable_tokens(manifest);
+        self.restore_durable_tokens(manifest)?;
         self.install_durable_summary(manifest);
         if self.pending_compaction_commit.is_none() {
             self.compaction_inference_block = None;
@@ -83,15 +83,23 @@ impl Session {
         Ok(())
     }
 
-    pub(super) fn restore_durable_tokens(&mut self, manifest: &SessionManifest) {
+    pub(super) fn restore_durable_tokens(
+        &mut self,
+        manifest: &SessionManifest,
+    ) -> Result<(), CompactionCommitError> {
         let saved = &manifest.token_usage;
+        // BUG-326: the tracker's output excludes reasoning, as it does live.
+        let output = saved.reply_output_tokens().ok_or_else(|| {
+            CompactionCommitError::Rejected("reasoning exceeds billed output".into())
+        })?;
         self.token_tracker.input_accounting = codelet_core::compaction::InputAccounting::Restored;
         self.token_tracker.input_tokens = saved.current_context_tokens;
-        self.token_tracker.output_tokens = saved.cumulative_billed_output;
+        self.token_tracker.output_tokens = output;
         self.token_tracker.cumulative_billed_input = saved.cumulative_billed_input;
         self.token_tracker.cumulative_billed_output = saved.cumulative_billed_output;
         self.token_tracker.cache_read_input_tokens = Some(saved.cache_read_tokens);
         self.token_tracker.cache_creation_input_tokens = Some(saved.cache_creation_tokens);
         self.token_tracker.reasoning_tokens = saved.reasoning_tokens;
+        Ok(())
     }
 }

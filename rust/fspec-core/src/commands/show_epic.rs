@@ -129,7 +129,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // declaration order (id, title, description, ...extra). Re-read the
     // raw file and pluck the requested object as a Value. If anything
     // goes wrong we fall back to serializing the typed Epic.
-    let epic_value = read_raw_epic(project_root, &args.epic_id)
+    let epic_value = read_raw_epic(project_root, &args.epic_id)?
         .unwrap_or_else(|| serde_json::to_value(&epic).unwrap_or(Value::Null));
 
     // Work-units read-failures are silently swallowed (TS bare `catch {}`
@@ -186,9 +186,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// This second read is the simplest way to preserve source field-order
 /// without restructuring [`read_epics_or_empty`] (which deserializes into
 /// a typed [`Epic`] struct that loses the original key sequence).
-fn read_raw_epic(project_root: &Path, epic_id: &str) -> Option<Value> {
-    let path = project_root.join("spec").join("epics.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
+fn read_raw_epic(project_root: &Path, epic_id: &str) -> Result<Option<Value>, FspecCoreError> {
+    let path = crate::io::spec_paths::epics(project_root)?;
+    Ok(read_raw_epic_at(&path, epic_id))
+}
+
+fn read_raw_epic_at(path: &Path, epic_id: &str) -> Option<Value> {
+    let raw = std::fs::read_to_string(path).ok()?;
     let v: Value = serde_json::from_str(&raw).ok()?;
     v.get("epics")?.get(epic_id).cloned()
 }

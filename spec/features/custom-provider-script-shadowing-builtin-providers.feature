@@ -1,5 +1,7 @@
 @done
 @PROV-085
+@providers
+@provider-settings
 Feature: Remove BUILTIN_PROVIDER_NAMES guard so Rhai scripts may shadow built-in providers
   """
   Custom configs shadowing built-ins must leave the NameConflict variant in the enum (public API stability) but the default path never produces it

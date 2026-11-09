@@ -25,10 +25,10 @@
 //!     (parity with the TS `output.error('✗ Failed to compact work unit:',
 //!     error.message)` path at `src/commands/compact-work-unit.ts:196-201`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::compact_work_unit;
 use serde_json::json;
 
@@ -52,7 +52,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `compact-work-unit` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let body = json!({
         "workUnitId": args.work_unit_id,

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_review.rs",
-          "lines": "92-118",
+          "lines": "92-124",
           "implMappings": [
             {
               "file": "rust/fspec/src/review.rs",
@@ -89,7 +89,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "//! `review` shell-facing CLI bridge (RPC-295).",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,7 +102,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_review.rs",
-          "lines": "120-143",
+          "lines": "126-155",
           "implMappings": [
             {
               "file": "rust/fspec/src/review.rs",
@@ -122,7 +124,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "let args_json = json!({ \"workUnitId\": args.work_unit_id }).to_string();",
+              "lastLine": "eprintln!(\"Error: {reason}\");"
             }
           ]
         }
@@ -133,20 +137,25 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_review.rs",
-          "lines": "145-162",
+          "lines": "157-174",
           "implMappings": [
             {
               "file": "rust/fspec/src/review.rs",
               "lines": [
+                68,
+                69,
+                70,
+                71,
                 72,
                 73,
                 74,
                 75,
                 76,
                 77,
-                78,
-                79
-              ]
+                78
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -176,7 +185,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "println!(\"{rendered}\");"
             }
           ]
         }
@@ -193,6 +204,6 @@
     "implFiles": [
       "rust/fspec/src/review.rs"
     ],
-    "totalLinesCovered": 235
+    "totalLinesCovered": 250
   }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @ui-enhancement
 @menu-bar
@@ -29,12 +30,12 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
   #
   # EXAMPLES:
   #   1. The bar row reads (after 1-cell pad): 'Kanban Tools Settings Help │ #1 ●' — 4 Zone A items each separated by a 1-cell gap, then the dim separator and chips
-  #   2. Focusing item 0 highlights 'Kanban'; pressing Enter opens its dropdown with 4 rows: '. New Agent', '/ Search', 'D FOUNDATION.md', 'A Attachments'
+  #   2. Focusing item 0 highlights 'Kanban'; pressing Enter opens its dropdown with 5 rows: '. New Agent', '/ Search', 'D FOUNDATION.md', 'A Attachments', 'b New Bot' (TUI-114 appended 'b New Bot')
   #   3. Opening the 'Tools' dropdown shows 2 rows: 'F Changed Files' and 'C Checkpoints'; executing row 0 emits OpenChangedFilesView (the dual-pane view opens, same as the bare 'F' key)
   #   4. Opening the 'Settings' dropdown shows 2 rows: 'M Mux' (OpenMuxConfigDialog) and 'P Providers' (OpenProviderSettingsView); executing the 'P Providers' row opens the ProviderSettings view from the board
   #   5. Walking the ring right from the 'Help' item lands on the first Zone B cell (chip), exactly as before — the ring now covers Kanban → Tools → Settings → Help
   #   6. Pressing 'P' on the board (or in the focused Board pane of mux mode) opens the ProviderSettings view, just like the existing 'M' key opens the Mux config dialog
-  #   7. The 'u' menu-bar help dialog now lists 10 rows across the four categories: the 4 Kanban rows, then the 2 Tools rows, then the 2 Settings rows, then the 2 Help rows
+  #   7. The 'u' menu-bar help dialog now lists 11 rows across the four categories (TUI-114 added 'b New Bot'): the 5 Kanban rows, then the 2 Tools rows, then the 2 Settings rows, then the 2 Help rows
   #
   # ========================================
   Background: User Story
@@ -53,7 +54,7 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
   Scenario: The Kanban category lists the work-unit workflow entries in order
     Given the MenuCategories registry
     When the Kanban category is read
-    Then it has 4 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
+    Then it has 5 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot"
     And each entry's action matches the bare board key (OpenAgentView, OpenWorkUnitSearch, OpenFoundation, OpenAttachmentPicker)
 
   @menu-registry
@@ -67,15 +68,15 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
   Scenario: The Settings category lists the configuration entries in order
     Given the MenuCategories registry
     When the Settings category is read
-    Then it has 2 entries in order: "M Mux" and "P Providers"
-    And they emit OpenMuxConfigDialog and OpenProviderSettingsView
+    Then it has 4 entries in order: "M Mux", "P Providers", "s Daemons" and "w Workspaces"
+    And they emit OpenMuxConfigDialog, OpenProviderSettingsView, OpenDaemonSwitcher and OpenWorkspaceDropdown
 
   @menu-registry
-  Scenario: The Help category is unchanged
+  Scenario: The Help category lists Help and Close
     Given the MenuCategories registry
     When the Help category is read
-    Then it has 2 entries in order: "? Help" and "Esc Exit"
-    And they emit OpenBoardHelp and OpenBoardExitConfirmation
+    Then it has 2 entries in order: "? Help" and "Esc Close"
+    And they emit OpenBoardHelp and MenuDismissBar (TUI-135: the Close row only closes the menu)
 
   @menu-registry
   Scenario: Every registry entry has a key hint, label, description and a valid action
@@ -88,14 +89,14 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
   Scenario: The bar row paints the four Zone A items
     Given a MenuSnapshot with 1 open session (Idle)
     When the bar is rendered into a 120-column row
-    Then Zone A reads "Kanban Tools Settings Help"
+    Then Zone A reads "[ Kanban ] [ Tools ] [ Settings ] [ Help ]"
     And the row still carries the dim separator and the session chips
 
   @menu-dropdown
-  Scenario: Focusing the Kanban item opens a 4-row dropdown
+  Scenario: Focusing the Kanban item opens a 5-row dropdown
     Given the board's menu bar with focus on the 0th menu item
     When Enter is pressed
-    Then the Kanban dropdown is open with 4 rows: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
+    Then the Kanban dropdown is open with 5 rows: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot"
     And the Tools and Settings items are not highlighted
 
   @menu-dropdown
@@ -127,10 +128,10 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
     And Ctrl+P falls through to App-level handling
 
   @menu-help
-  Scenario: The u help dialog lists all ten registry rows in registry order
+  Scenario: The u help dialog lists all thirteen registry rows in registry order
     Given the "u" menu-bar help dialog is open
     When its body rows are rendered
-    Then it shows 10 rows across the four categories: the 4 Kanban rows, then the 2 Tools rows, then the 2 Settings rows, then the 2 Help rows
+    Then it shows 13 rows across the four categories: the 5 Kanban rows, then the 2 Tools rows, then the 4 Settings rows, then the 2 Help rows
     And the first row reads ". New Agent" and the last row reads "Esc Exit"
 
   @menu-geometry

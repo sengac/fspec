@@ -285,16 +285,18 @@ impl rig::tool::Tool for ReadTool {
 
         // Validate and resolve path (handles worktree isolation for isolated sessions)
         // BLOCK-006: emit a block notification when isolation rejects the path.
-        let resolved_path =
-            validate_and_resolve_path_with_block_notification(self.session_id, &args.file_path,
-                &format!("reading {}", args.file_path), "read")?;
+        let resolved_path = validate_and_resolve_path_with_block_notification(
+            self.session_id,
+            &args.file_path,
+            &format!("reading {}", args.file_path),
+            "read",
+        )?;
         let file_path_str = resolved_path.to_string_lossy().to_string();
 
         // Check file path against blocklist before any I/O (regex + RLCD-004
         // semantic stage when the engine is reachable)
         if let Err(blocked) =
-            check_file_path_semantic(&file_path_str, self.session_id, "Read", "read")
-                .await
+            check_file_path_semantic(&file_path_str, self.session_id, "Read", "read").await
         {
             return Err(ToolError::Blocked {
                 tool: "read",

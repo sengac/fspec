@@ -5,15 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug202_mux_bar_view_label_palette.rs",
-          "lines": "198-257",
+          "lines": "212-271",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                178,
-                179,
-                180,
-                181,
                 182,
                 183,
                 184,
@@ -22,8 +18,14 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "DisplayCell::View { label, active, .. } => {",
+              "lastLine": "cx = paint_text(buf, cx, y, label, style);"
             }
           ]
         }
@@ -34,15 +36,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug202_mux_bar_view_label_palette.rs",
-          "lines": "259-313",
+          "lines": "274-329",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                178,
-                179,
-                180,
-                181,
                 182,
                 183,
                 184,
@@ -51,8 +49,14 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "DisplayCell::View { label, active, .. } => {",
+              "lastLine": "cx = paint_text(buf, cx, y, label, style);"
             }
           ]
         }
@@ -63,15 +67,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug202_mux_bar_view_label_palette.rs",
-          "lines": "315-405",
+          "lines": "332-422",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -128,7 +128,6 @@
                 209,
                 210,
                 211,
-                212,
                 213,
                 214,
                 215,
@@ -141,8 +140,14 @@
                 222,
                 223,
                 224,
-                225
-              ]
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "fn paint_cell(",
+              "lastLine": "}"
             }
           ]
         }

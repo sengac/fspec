@@ -2,8 +2,8 @@
 source: fspec-tui/tests/app_with_mock_backend_repl.rs
 expression: rows
 ---
-- " #1 (AUTH-002): Agent                                        tokens: 0↓ 0↑ [0%] "
-- " [ Board View ]  │ [ #1 ● ]                      [ New Agent ]  [ Close Agent ] "
+- " #1 (AUTH-002: implementing): Agent                          tokens: 0↓ 0↑ [0%] "
+- " [ Board View ]  │ [ #1 AUTH-002 ? ]      [ New Bot ]  [ New Agent ]  [ Close ] "
 - "You: hi                                                                         "
 - "                                                                                "
 - "                                                                                "

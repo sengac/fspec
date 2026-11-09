@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "54-85",
+          "lines": "50-93",
           "implMappings": [
             {
               "file": "rust/tools/src/unicode_path.rs",
@@ -42,7 +42,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "return Some(path.to_path_buf());",
+              "lastLine": "}"
             }
           ]
         }
@@ -53,7 +55,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "88-116",
+          "lines": "92-124",
           "implMappings": [
             {
               "file": "rust/tools/src/unicode_path.rs",
@@ -110,7 +112,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "// Most paths are pure ASCII, so this avoids allocation.",
+              "lastLine": "}"
             }
           ]
         }
@@ -121,24 +125,26 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "122-148",
+          "lines": "135-180",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                720,
-                721,
-                722,
-                723,
                 724,
-                725,
-                726,
-                727,
-                728,
-                729,
-                730,
-                731
-              ]
+                724,
+                724,
+                732,
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740
+              ],
+              "firstLine": "/// BUG-449: the registered work-unit stage callback, if any.",
+              "lastLine": "/// * `session_id` - The session UUID to get isolation context for"
             }
           ]
         }
@@ -149,7 +155,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "154-184",
+          "lines": "186-216",
           "implMappings": [
             {
               "file": "rust/tools/src/validation.rs",
@@ -185,7 +191,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "/// directory-scan fallback via `resolve_unicode_path`. This handles the case",
+              "lastLine": "pub async fn read_file_contents(path: &Path) -> Result<String, ToolOutput> {"
             }
           ]
         }
@@ -196,13 +204,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "192-225",
+          "lines": "222-260",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                301,
-                302,
                 303,
                 304,
                 305,
@@ -212,8 +218,12 @@
                 309,
                 310,
                 311,
-                312
-              ]
+                312,
+                313,
+                314
+              ],
+              "firstLine": "message: blocked.to_string(),",
+              "lastLine": "let resolved_file = require_file_exists(path, &file_path_str)"
             }
           ]
         }
@@ -224,13 +234,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "228-283",
+          "lines": "262-323",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                301,
-                302,
                 303,
                 304,
                 305,
@@ -240,8 +248,12 @@
                 309,
                 310,
                 311,
-                312
-              ]
+                312,
+                313,
+                314
+              ],
+              "firstLine": "message: blocked.to_string(),",
+              "lastLine": "let resolved_file = require_file_exists(path, &file_path_str)"
             }
           ]
         }
@@ -252,7 +264,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "289-325",
+          "lines": "329-368",
           "implMappings": [
             {
               "file": "rust/tools/src/edit.rs",
@@ -270,7 +282,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "message: blocked.to_string(),",
+              "lastLine": ".await"
             }
           ]
         }
@@ -281,24 +295,26 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "331-368",
+          "lines": "374-417",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                720,
-                721,
-                722,
-                723,
                 724,
-                725,
-                726,
-                727,
-                728,
-                729,
-                730,
-                731
-              ]
+                724,
+                724,
+                732,
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740
+              ],
+              "firstLine": "/// BUG-449: the registered work-unit stage callback, if any.",
+              "lastLine": "/// * `session_id` - The session UUID to get isolation context for"
             }
           ]
         }
@@ -309,7 +325,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/unicode_path_test.rs",
-          "lines": "374-407",
+          "lines": "423-465",
           "implMappings": [
             {
               "file": "rust/tools/src/ls.rs",
@@ -338,7 +354,9 @@
                 187,
                 188,
                 189
-              ]
+              ],
+              "firstLine": "// Check if path exists (async) — BUG-130: Unicode whitespace fallback",
+              "lastLine": ""
             }
           ]
         }
@@ -360,6 +378,6 @@
       "rust/tools/src/edit.rs",
       "rust/tools/src/ls.rs"
     ],
-    "totalLinesCovered": 518
+    "totalLinesCovered": 582
   }
 }

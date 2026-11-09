@@ -65,6 +65,20 @@ pub fn detect_by_extension(path: &Path) -> Option<FileType> {
     }
 }
 
+/// BUG-642: the first `limit` bytes of `data` as text. A character cut at
+/// the end of the window is dropped; an invalid byte inside it means the
+/// data is not text (None).
+fn utf8_window(data: &[u8], limit: usize) -> Option<&str> {
+    let window = &data[..data.len().min(limit)];
+    match std::str::from_utf8(window) {
+        Ok(text) => Some(text),
+        Err(error) if error.error_len().is_none() => {
+            std::str::from_utf8(&window[..error.valid_up_to()]).ok()
+        }
+        Err(_) => None,
+    }
+}
+
 /// Detect file type by magic bytes (file signature)
 pub fn detect_by_magic_bytes(data: &[u8]) -> Option<FileType> {
     if data.len() < 4 {
@@ -95,7 +109,7 @@ pub fn detect_by_magic_bytes(data: &[u8]) -> Option<FileType> {
     }
 
     // SVG: Check for XML declaration or <svg tag
-    if let Ok(text) = std::str::from_utf8(&data[..data.len().min(256)]) {
+    if let Some(text) = utf8_window(data, 256) {
         let text = text.trim_start();
         if text.starts_with("<?xml") || text.starts_with("<svg") {
             return Some(FileType::Image(ImageMediaType::Svg));
@@ -109,7 +123,7 @@ pub fn detect_by_magic_bytes(data: &[u8]) -> Option<FileType> {
 
     // IPYNB: JSON starting with { and containing "cells" key - PROV-002
     // Note: IPYNB files are JSON, so we check for the opening brace and the characteristic key
-    if let Ok(text) = std::str::from_utf8(&data[..data.len().min(1024)]) {
+    if let Some(text) = utf8_window(data, 1024) {
         let text = text.trim_start();
         if text.starts_with('{') && text.contains("\"cells\"") {
             return Some(FileType::Exempt(ExemptFileType::Ipynb));

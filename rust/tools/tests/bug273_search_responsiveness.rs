@@ -5,7 +5,6 @@ use codelet_tools::session_search::types::{
 use codelet_tools::session_search::{set_session_search_handler, SessionSearchTool};
 use rig::tool::Tool;
 use std::sync::{mpsc, Arc};
-use std::time::Duration;
 use uuid::Uuid;
 
 #[tokio::test(flavor = "current_thread")]
@@ -36,15 +35,22 @@ async fn search_does_not_block_async_workers() -> Result<(), Box<dyn std::error:
     let (heartbeat_tx, heartbeat_rx) = mpsc::channel();
     let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
     let controller = std::thread::spawn(move || {
-        started_rx
-            .recv_timeout(Duration::from_secs(5))
-            .map_err(|error| error.to_string())?;
+        codelet_test_helpers::deadlock_guard_blocking("the search starts", move || {
+            started_rx.recv()
+        })
+        .map_err(|failure| failure.to_string())?
+        .map_err(|error| error.to_string())?;
         ready_tx
             .send(())
             .map_err(|_| "async heartbeat listener disappeared".to_owned())?;
-        let responsive = heartbeat_rx
-            .recv_timeout(Duration::from_millis(500))
-            .is_ok();
+        // TEST-042: the heartbeat arrives while the search is blocked, or
+        // (if the search blocked the only async worker) only the deadlock
+        // guard ends the wait.
+        let responsive =
+            codelet_test_helpers::deadlock_guard_blocking("the heartbeat", move || {
+                heartbeat_rx.recv()
+            })
+            .is_ok_and(|received| received.is_ok());
         release_tx.send(()).map_err(|error| error.to_string())?;
         Ok::<_, String>(responsive)
     });

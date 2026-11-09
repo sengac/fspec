@@ -66,8 +66,6 @@
                 106,
                 107,
                 108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -127,8 +125,12 @@
                 167,
                 168,
                 169,
-                170
-              ]
+                170,
+                171,
+                172
+              ],
+              "firstLine": "/// `NaN` for non-numeric input. The dispatcher accepts either a JSON",
+              "lastLine": "for (i, item) in arr.iter().enumerate() {"
             }
           ]
         }
@@ -139,16 +141,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "138-172",
+          "lines": "135-167",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
-                139,
-                140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144
+              ],
+              "firstLine": "// Locate-by-id, examples array check.",
+              "lastLine": "data.work_units"
             }
           ]
         }
@@ -159,133 +163,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "174-205",
+          "lines": "169-199",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_example.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing work unit surfaces the canonical error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "207-229",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/remove_example.rs",
-              "lines": [
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing examples array reports 'has no examples'",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "231-260",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/remove_example.rs",
-              "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Empty examples array reports 'has no examples'",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "262-284",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/remove_example.rs",
-              "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Unknown example id reports 'Example with ID <n> not found'",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/remove_example.rs",
-          "lines": "286-318",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/remove_example.rs",
-              "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -299,8 +181,155 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "// Status gate.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit surfaces the canonical error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/remove_example.rs",
+          "lines": "201-223",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "/// TS-`parseInt(_, 10)` result: either a finite integer or NaN.",
+              "lastLine": "impl TsIndex {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing examples array reports 'has no examples'",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/remove_example.rs",
+          "lines": "225-252",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "Value::Null => Ok(TsIndex::Nan),",
+              "lastLine": "command: \"remove-example\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty examples array reports 'has no examples'",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/remove_example.rs",
+          "lines": "254-276",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "Value::Null => Ok(TsIndex::Nan),",
+              "lastLine": "command: \"remove-example\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown example id reports 'Example with ID <n> not found'",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/remove_example.rs",
+          "lines": "278-309",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "// Find by stable id. When `index` is NaN (TS `parseInt` of non-numeric",
+              "lastLine": "}"
             }
           ]
         }
@@ -317,6 +346,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_example.rs"
     ],
-    "totalLinesCovered": 425
+    "totalLinesCovered": 434
   }
 }

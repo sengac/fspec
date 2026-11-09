@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @model-selection
 @providers
@@ -65,13 +66,13 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
     Then the inner session provider manager reports a gemini model id as its selected model
 
   Scenario: Switching to an unknown model fails and leaves the prior limits intact
-    Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 8192
+    Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
     When I switch the session model to provider "anthropic" model "does-not-exist-model" via set_model
     Then set_model returns Err
     And get_session_model still reports context_window 200000 and max_output_tokens 64000 for the session
 
   Scenario: Switching the model on an unknown session reports session not found
-    Given a SessionManagerHandle with no session registered for the id "nonexistent-uuid"
+    Given a SessionManagerHandle with no session registered for the id "6f1d2c3b-0000-4000-8000-00000000dead"
     When I switch the model for that id to provider "google" model "gemini-2.5-pro" via set_model
     Then set_model returns Err containing "Session not found"
 

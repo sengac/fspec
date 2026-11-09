@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/browser_recovery_tests.rs",
-          "lines": "45-73",
+          "lines": "45-85",
           "implMappings": [
             {
               "file": "rust/tools/src/browser_cache.rs",
@@ -40,7 +40,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "pub(crate) fn get(",
+              "lastLine": "pub(crate) fn run<ResultValue>("
             }
           ]
         }
@@ -51,13 +53,11 @@
       "testMappings": [
         {
           "file": "rust/tools/src/browser_recovery_tests.rs",
-          "lines": "78-108",
+          "lines": "90-132",
           "implMappings": [
             {
               "file": "rust/tools/src/web_search.rs",
               "lines": [
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -72,8 +72,12 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93
+              ],
+              "firstLine": "/// Create a new browser instance with specified headless mode",
+              "lastLine": "}"
             }
           ]
         }
@@ -91,6 +95,6 @@
       "rust/tools/src/browser_cache.rs",
       "rust/tools/src/web_search.rs"
     ],
-    "totalLinesCovered": 107
+    "totalLinesCovered": 131
   }
 }

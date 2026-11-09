@@ -1,7 +1,9 @@
+@BUG-638
 @done
 @RPC-184
 @rust
 @cli
+@lifecycle-hooks
 Feature: Add hook CLI subcommand
   """
   CLI subcommand wired into rust/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::add_hook::run(args_json, &cwd).
@@ -26,11 +28,11 @@ Feature: Add hook CLI subcommand
     Then stdout contains the substring '--blocking'
     Then stdout contains the substring '--timeout <seconds>'
 
-  Scenario: CLI writes zero bytes to stdout on success and exits 0
+  Scenario: CLI prints the added hook on success and exits 0
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `fspec add-hook pre-implementing lint --command spec/hooks/lint.sh`
     Then the command exits 0
-    Then stdout is exactly zero bytes
+    Then stdout is exactly '✓ Hook added: pre-implementing/lint' and a newline
     Then spec/fspec-hooks.json was created in the directory
     Then the new file contains exactly one entry under 'pre-implementing' with name='lint' and command='spec/hooks/lint.sh'
 
@@ -40,11 +42,11 @@ Feature: Add hook CLI subcommand
     Then the command exits 0
     Then the on-disk entry under 'post-implementing' has name='test', blocking=true, and timeout=300
 
-  Scenario: CLI is silent when invoked against a populated config
+  Scenario: CLI prints the added hook when invoked against a populated config
     Given spec/fspec-hooks.json contains event 'pre-implementing' with a single entry named 'lint'
     When I run `fspec add-hook pre-implementing test --command spec/hooks/test.sh`
     Then the command exits 0
-    Then stdout is exactly zero bytes
+    Then stdout is exactly '✓ Hook added: pre-implementing/test' and a newline
     Then the on-disk 'pre-implementing' array has exactly two entries
 
   Scenario: CLI delegates to the same fspec_core function as the dispatcher

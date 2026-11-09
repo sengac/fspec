@@ -1,3 +1,4 @@
+@BUG-582
 @feature-management
 @file-ops
 @done
@@ -81,3 +82,34 @@ Feature: Port add-architecture command to Rust
     When I dispatch add-architecture with feature='spec/features/bad.feature' and text='Uses bcrypt'
     Then the dispatcher returns success=false
     And the error message contains 'No Feature line found in file'
+
+  Scenario: Adding notes keeps every scenario and its steps
+    Given a project root tempdir with spec/features/checkout.feature holding the scenarios 'Pay by card', 'Pay by invoice' and 'Cancel order' with their steps
+    When I dispatch add-architecture with feature='checkout' and text='Payment processing architecture'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the doc string added after the Feature line
+
+  Scenario: Adding notes keeps the Background after the new doc string
+    Given a project root tempdir with spec/features/auth.feature that has a Background section
+    When I dispatch add-architecture with feature='auth' and text='OAuth 2.0 implementation'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the doc string added after the Feature line
+    And the closing doc-string fence comes before the 'Background:' line
+
+  Scenario: Adding notes keeps the feature-level tags above the Feature line
+    Given a project root tempdir with spec/features/search.feature tagged @api and @critical
+    When I dispatch add-architecture with feature='search' and text='ElasticSearch integration'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the doc string added after the Feature line
+
+  Scenario: Adding notes keeps scenario-level tags
+    Given a project root tempdir with spec/features/notifications.feature whose scenario is tagged @email and @sms
+    When I dispatch add-architecture with feature='notifications' and text='Notification service architecture'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the doc string added after the Feature line
+
+  Scenario: Doc string fences and content lines are indented two spaces
+    Given a project root tempdir with spec/features/reporting.feature containing only 'Feature: Reporting\n  Scenario: A\n    Given x\n'
+    When I dispatch add-architecture with feature='reporting' and text='Line 1\nLine 2\nLine 3'
+    Then the dispatcher returns success=true
+    And the lines after 'Feature: Reporting' are '  """', '  Line 1', '  Line 2', '  Line 3' and '  """'

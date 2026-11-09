@@ -102,6 +102,7 @@ pub struct Fixture {
 impl Fixture {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().into())?;
         reset_stores_for_tests();
         let mut manifest = create_session_with_provider(
@@ -196,8 +197,8 @@ impl Fixture {
             .build();
         let prompt = format!("cycle {cycle}");
         codelet_agent_loop::persist::persist_user_message(&self.background.id, &prompt)?;
-        tokio::time::timeout(
-            std::time::Duration::from_secs(15),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), &p...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 &prompt,

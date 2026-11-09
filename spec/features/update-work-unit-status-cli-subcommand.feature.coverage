@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "93-110",
+          "lines": "157-174",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -88,7 +88,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -99,7 +101,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "112-129",
+          "lines": "176-193",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -182,7 +184,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -193,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "131-149",
+          "lines": "195-213",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -276,7 +280,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -287,7 +293,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "151-185",
+          "lines": "215-249",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -370,7 +376,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -381,7 +389,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "187-204",
+          "lines": "251-268",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -464,7 +472,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -475,7 +485,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "206-244",
+          "lines": "270-312",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_work_unit_status.rs",
@@ -558,7 +568,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "//! `update-work-unit-status` shell-facing CLI bridge (RPC-319).",
+              "lastLine": ");"
             }
           ]
         }
@@ -569,24 +581,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "246-280",
+          "lines": "314-353",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/virtual_hooks_exec.rs",
+              "file": "rust/fspec-core/src/command_hooks/virtual_hooks.rs",
               "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -636,8 +635,58 @@
                 93,
                 94,
                 95,
-                96
-              ]
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ],
+              "firstLine": "pub fn run_status_hooks(",
+              "lastLine": "}"
             }
           ]
         }
@@ -648,7 +697,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_work_unit_status.rs",
-          "lines": "284-303",
+          "lines": "429-448",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/update_work_unit_status.rs",
@@ -702,8 +751,11 @@
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51
+              ],
+              "firstLine": "//! `update-work-unit-status` help configuration — Rust port of",
+              "lastLine": "];"
             }
           ]
         }
@@ -719,9 +771,9 @@
     ],
     "implFiles": [
       "rust/fspec/src/update_work_unit_status.rs",
-      "rust/fspec-core/src/virtual_hooks_exec.rs",
+      "rust/fspec-core/src/command_hooks/virtual_hooks.rs",
       "rust/fspec-core/src/help/configs/update_work_unit_status.rs"
     ],
-    "totalLinesCovered": 783
+    "totalLinesCovered": 828
   }
 }

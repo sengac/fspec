@@ -1,5 +1,7 @@
 @done
 @NET-001
+@codelet
+@infrastructure
 Feature: SSE Disconnection Retry — transient network error recovery in stream loop
   """
   Retry at stream_loop level (not SSE level), matching existing PROV-040 truncation and PROV-041 thinking exhaustion recovery patterns

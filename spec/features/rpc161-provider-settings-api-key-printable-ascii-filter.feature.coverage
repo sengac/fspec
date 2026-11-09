@@ -5,14 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "77-103",
+          "lines": "86-119",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -27,8 +24,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -39,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "109-128",
+          "lines": "125-145",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -59,7 +61,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "134-153",
+          "lines": "151-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -90,7 +94,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,14 +107,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "159-180",
+          "lines": "177-203",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -123,8 +126,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -135,14 +143,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "186-205",
+          "lines": "209-229",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -157,8 +162,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -169,14 +179,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "211-230",
+          "lines": "235-255",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -191,8 +198,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,14 +215,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "236-255",
+          "lines": "261-281",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -225,8 +234,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -237,14 +251,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "261-280",
+          "lines": "287-307",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -259,8 +270,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -271,14 +287,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "286-305",
+          "lines": "313-333",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -293,8 +306,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -305,14 +323,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "312-358",
+          "lines": "340-400",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -327,8 +342,13 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -339,7 +359,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_charset_rpc161.rs",
-          "lines": "374-412",
+          "lines": "415-463",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -359,7 +379,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -376,6 +398,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
-    "totalLinesCovered": 464
+    "totalLinesCovered": 507
   }
 }

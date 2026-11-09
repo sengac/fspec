@@ -8,7 +8,7 @@
 //! Reuses shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load
 //!   `spec/work-units.json` (parity with TS `ensureWorkUnitsFile`).
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write at
+//! * [`crate::io::board::write_work_units`] — single atomic write at
 //!   the end (the TS implementation uses `fileManager.transaction`).
 //! * [`crate::io::time::iso8601_now`] — millisecond-precision ISO-8601
 //!   timestamps (parity with TS `new Date().toISOString()`).
@@ -39,7 +39,7 @@
 //! `src/commands/set-user-story.ts:54-57`:
 //!
 //! ```text
-//! ✓ User story set for <work-unit-id>
+//! ✓ User story set for <workUnitId>
 //!   As a <role>
 //!   I want to <action>
 //!   So that <benefit>
@@ -62,12 +62,11 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `set-user-story`. Mirrors the TS
 /// `SetUserStoryOptions` interface at `src/commands/set-user-story.ts:9-14`
-/// plus the positional `<work-unit-id>` from the Commander.js registration
+/// plus the positional `<workUnitId>` from the Commander.js registration
 /// at `src/commands/set-user-story.ts:65-80`.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -86,6 +85,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "set-user-story")?;
     // Load (auto-create on first run). On a brand-new workspace this writes
     // the canonical empty initial structure to disk before we return the
     // missing-source error below, matching TS `ensureWorkUnitsFile`.
@@ -126,8 +127,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     // Build the four-line success block emitted by the TS CLI wrapper at
     // `src/commands/set-user-story.ts:54-57`. Returned in

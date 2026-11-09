@@ -1,6 +1,8 @@
 @pause-integration
 @codelet
 @PAUSE-001
+@COV-057
+@BUG-432
 Feature: Session Pause State Isolation
   """
   Session integration: Add SessionStatus::Paused variant to session_manager.rs.

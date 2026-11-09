@@ -1,4 +1,6 @@
 @CMPCT-018
+@agent-core
+@history-search
 Feature: SessionSearch Scoped Turn Range Queries
   """
   Uses existing SessionSearch types, handler, and persistence infrastructure — extends, doesn't replace

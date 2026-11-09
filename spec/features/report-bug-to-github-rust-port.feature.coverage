@@ -244,7 +244,9 @@
                 305,
                 306,
                 307
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "md"
             }
           ]
         }
@@ -255,7 +257,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "125-142",
+          "lines": "128-152",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -312,7 +314,9 @@
                 305,
                 306,
                 307
-              ]
+              ],
+              "firstLine": "fn format_bug_report_markdown(",
+              "lastLine": "md"
             }
           ]
         }
@@ -323,7 +327,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "144-164",
+          "lines": "154-177",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -359,7 +363,9 @@
                 339,
                 340,
                 341
-              ]
+              ],
+              "firstLine": "/// (`src/commands/report-bug-to-github.ts:248-258`).",
+              "lastLine": "out"
             }
           ]
         }
@@ -370,7 +376,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "166-183",
+          "lines": "179-196",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -388,7 +394,9 @@
                 339,
                 340,
                 341
-              ]
+              ],
+              "firstLine": "/// hex).",
+              "lastLine": "out"
             }
           ]
         }
@@ -399,7 +407,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "185-209",
+          "lines": "198-228",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -517,7 +525,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "fn gather_context(project_root: &Path) -> Result<BugReportContext, FspecCoreError> {",
+              "lastLine": "None"
             }
           ]
         }
@@ -528,7 +538,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "239-258",
+          "lines": "271-293",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -594,7 +604,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -605,7 +617,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/report_bug_to_github.rs",
-          "lines": "211-237",
+          "lines": "230-269",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
@@ -662,7 +674,64 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "fn gather_context(project_root: &Path) -> Result<BugReportContext, FspecCoreError> {",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Git context reports the current branch and uncommitted changes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/report_bug_to_github.rs",
+          "lines": "316-351",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/report_bug_to_github.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                284,
+                285,
+                286,
+                302,
+                303,
+                304,
+                305
+              ],
+              "firstLine": "fn gather_git_context(project_root: &Path) -> (Option<String>, bool) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -670,8 +739,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/report_bug_to_github.rs"
@@ -679,6 +748,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/report_bug_to_github.rs"
     ],
-    "totalLinesCovered": 715
+    "totalLinesCovered": 820
   }
 }

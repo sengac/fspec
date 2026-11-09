@@ -63,6 +63,7 @@ fn install_model<Model: CompletionModel + 'static>(session: &mut Session, model:
 
 fn survives_commit_and_restore(provider: ProviderType, profile: Option<&str>) -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut session = runtime(provider.clone(), profile)?;
@@ -116,6 +117,7 @@ fn ordinary_codex_selection_survives_commit_and_restore() -> TestResult {
 #[serial_test::serial]
 fn different_persisted_profile_cannot_authorize_selected_compaction() -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut session = runtime(ProviderType::OpenAI, Some("Strada"))?;
@@ -142,6 +144,7 @@ fn different_persisted_profile_cannot_authorize_selected_compaction() -> TestRes
 #[serial_test::serial]
 fn changed_selected_profile_invalidates_the_installed_preparer() -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut session = runtime(ProviderType::OpenAI, Some("Strada"))?;

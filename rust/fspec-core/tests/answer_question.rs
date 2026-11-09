@@ -7,8 +7,10 @@
 
 use std::fs;
 use std::path::Path;
+use std::sync::Barrier;
+use std::thread;
 
-use codelet_fspec_core::{dispatch_command, DispatchRequest};
+use codelet_fspec_core::{dispatch_command, DispatchRequest, DispatchResult};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -185,7 +187,7 @@ fn add_to_rule_with_preexisting_next_rule_id_increments_sequentially() {
 }
 
 #[test]
-fn add_to_assumption_appends_raw_string_to_assumptions_array() {
+fn add_to_assumption_appends_an_assumption_item_to_assumptions_array() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with questions=[{id:0,text:'Q?',deleted:false,createdAt:'x'}]
     let tmp = TempDir::new().expect("tempdir");
     let mut pre = seed_unit("AUTH-001", "specifying");
@@ -206,12 +208,13 @@ fn add_to_assumption_appends_raw_string_to_assumptions_array() {
     assert_eq!(data["addedTo"].as_str(), Some("assumptions"));
 
     let v = read_work_units(tmp.path());
-    // @step And spec/work-units.json on disk shows AUTH-001.assumptions=['Server is HTTPS only']
+    // @step And spec/work-units.json on disk shows AUTH-001.assumptions with one item, id 0 and text 'Server is HTTPS only'
     let assumes = v["workUnits"]["AUTH-001"]["assumptions"]
         .as_array()
         .expect("assumptions array");
     assert_eq!(assumes.len(), 1);
-    assert_eq!(assumes[0].as_str(), Some("Server is HTTPS only"));
+    assert_eq!(assumes[0]["id"].as_u64(), Some(0));
+    assert_eq!(assumes[0]["text"].as_str(), Some("Server is HTTPS only"));
     // @step And spec/work-units.json on disk shows AUTH-001 has no rules added
     assert!(v["workUnits"]["AUTH-001"]["rules"]
         .as_array()
@@ -468,4 +471,156 @@ fn auto_creates_work_units_then_reports_canonical_missing_source_error() {
     assert_eq!(v["version"].as_str(), Some("0.7.1"));
     assert!(v["workUnits"].as_object().unwrap().is_empty());
     assert!(v["states"]["backlog"].as_array().unwrap().is_empty());
+}
+
+// ---------- moved in from the TypeScript-era stable question indices feature (COV-072) ----------
+
+fn answer(project_root: &Path, index: u64, text: &str, add_to: &str) -> DispatchResult {
+    dispatch_command(req(
+        project_root,
+        json!({"workUnitId": "AUTH-001", "index": index, "answer": text, "addTo": add_to}),
+    ))
+}
+
+#[test]
+fn concurrent_answers_to_different_questions_are_all_recorded() {
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with unanswered questions 0 'Q0?', 1 'Q1?' and 2 'Q2?' and nextRuleId=0
+    let tmp = TempDir::new().expect("tempdir");
+    let mut pre = seed_unit("AUTH-001", "specifying");
+    pre["workUnits"]["AUTH-001"]["questions"] = json!([q(0, "Q0?"), q(1, "Q1?"), q(2, "Q2?")]);
+    pre["workUnits"]["AUTH-001"]["nextRuleId"] = json!(0);
+    write_work_units(tmp.path(), &pretty(&pre));
+
+    // @step When 3 threads dispatch answer-question at once with workUnitId='AUTH-001', index=0, 1 and 2, answer='Answer 0', 'Answer 1' and 'Answer 2', addTo='rule'
+    // The barrier releases all three dispatches together; the spec lock
+    // (BUG-477) serialises them in whatever order the threads reach it.
+    let barrier = Barrier::new(3);
+    let results: Vec<DispatchResult> = thread::scope(|scope| {
+        let handles: Vec<_> = (0..3u64)
+            .map(|i| {
+                let barrier = &barrier;
+                let root = tmp.path();
+                scope.spawn(move || {
+                    barrier.wait();
+                    answer(root, i, &format!("Answer {i}"), "rule")
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .map(|h| h.join().expect("answer thread"))
+            .collect()
+    });
+
+    // @step Then every dispatch returns success=true
+    for r in &results {
+        assert!(r.success, "expected success=true, got {r:?}");
+    }
+
+    let v = read_work_units(tmp.path());
+    let wu = &v["workUnits"]["AUTH-001"];
+    // @step And spec/work-units.json on disk shows questions 0, 1 and 2 selected=true with answer 'Answer 0', 'Answer 1' and 'Answer 2'
+    for i in 0..3usize {
+        assert_eq!(wu["questions"][i]["selected"].as_bool(), Some(true), "q{i}");
+        assert_eq!(
+            wu["questions"][i]["answer"].as_str(),
+            Some(format!("Answer {i}").as_str()),
+            "q{i}"
+        );
+    }
+
+    // @step And spec/work-units.json on disk shows 3 rules with ids 0, 1 and 2 whose texts are 'Answer 0', 'Answer 1' and 'Answer 2' in any order
+    let rules = wu["rules"].as_array().expect("rules array");
+    let mut ids: Vec<u64> = rules.iter().filter_map(|r| r["id"].as_u64()).collect();
+    ids.sort_unstable();
+    assert_eq!(ids, vec![0, 1, 2], "rules: {rules:?}");
+    let mut texts: Vec<&str> = rules.iter().filter_map(|r| r["text"].as_str()).collect();
+    texts.sort_unstable();
+    assert_eq!(texts, vec!["Answer 0", "Answer 1", "Answer 2"]);
+
+    // @step And spec/work-units.json on disk shows AUTH-001.nextRuleId=3
+    assert_eq!(wu["nextRuleId"].as_u64(), Some(3));
+}
+
+#[test]
+fn answering_the_same_question_twice_keeps_last_answer_and_adds_both_rules() {
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with questions=[{id:0,text:'Q?',deleted:false,createdAt:'x'}] and nextRuleId=0
+    let tmp = TempDir::new().expect("tempdir");
+    let mut pre = seed_unit("AUTH-001", "specifying");
+    pre["workUnits"]["AUTH-001"]["questions"] = json!([q(0, "Q?")]);
+    pre["workUnits"]["AUTH-001"]["nextRuleId"] = json!(0);
+    write_work_units(tmp.path(), &pretty(&pre));
+
+    // @step When I dispatch answer-question with workUnitId='AUTH-001' index=0 answer='Answer A' addTo='rule'
+    let first = answer(tmp.path(), 0, "Answer A", "rule");
+
+    // @step And I dispatch answer-question with workUnitId='AUTH-001' index=0 answer='Answer B' addTo='rule'
+    let second = answer(tmp.path(), 0, "Answer B", "rule");
+
+    // @step Then both dispatches return success=true
+    assert!(first.success, "first: {first:?}");
+    assert!(second.success, "second: {second:?}");
+
+    let v = read_work_units(tmp.path());
+    let wu = &v["workUnits"]["AUTH-001"];
+    // @step And spec/work-units.json on disk shows AUTH-001.questions[0].selected=true
+    assert_eq!(wu["questions"][0]["selected"].as_bool(), Some(true));
+
+    // @step And spec/work-units.json on disk shows AUTH-001.questions[0].answer='Answer B'
+    assert_eq!(wu["questions"][0]["answer"].as_str(), Some("Answer B"));
+
+    // @step And spec/work-units.json on disk shows AUTH-001.rules as 'Answer A' with id 0 then 'Answer B' with id 1
+    let rules: Vec<(u64, &str)> = wu["rules"]
+        .as_array()
+        .expect("rules array")
+        .iter()
+        .filter_map(|r| Some((r["id"].as_u64()?, r["text"].as_str()?)))
+        .collect();
+    assert_eq!(rules, vec![(0, "Answer A"), (1, "Answer B")]);
+}
+
+#[test]
+fn testing_gate_lists_only_questions_not_yet_answered() {
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying that passes review, with unanswered questions 0 'Q0?', 1 'Q1?' and 2 'Q2?'
+    let tmp = TempDir::new().expect("tempdir");
+    let mut pre = seed_unit("AUTH-001", "specifying");
+    let wu = &mut pre["workUnits"]["AUTH-001"];
+    wu["questions"] = json!([q(0, "Q0?"), q(1, "Q1?"), q(2, "Q2?")]);
+    // Rules, examples, architecture notes and an AST research attachment
+    // satisfy review validation, so the questions gate is the one that fires.
+    wu["rules"] = json!([{"id": 0, "text": "rule", "deleted": false}]);
+    wu["examples"] = json!([{"id": 0, "text": "example", "deleted": false}]);
+    wu["architectureNotes"] = json!([{"id": 0, "text": "note", "deleted": false}]);
+    wu["attachments"] = json!(["spec/attachments/AUTH-001/ast-research-login.json"]);
+    write_work_units(tmp.path(), &pretty(&pre));
+
+    // @step And spec/features/login.feature is tagged @AUTH-001 and has one scenario
+    let features = tmp.path().join("spec").join("features");
+    fs::create_dir_all(&features).expect("mkdir features");
+    fs::write(
+        features.join("login.feature"),
+        "@AUTH-001\nFeature: Login\n\n  Scenario: Login with valid credentials\n    Given I am on the login page\n    When I enter valid credentials\n    Then I see the dashboard\n",
+    )
+    .expect("write feature");
+
+    // @step When I dispatch answer-question with workUnitId='AUTH-001' index=1 answer='Yes' addTo='none'
+    let answered = answer(tmp.path(), 1, "Yes", "none");
+    assert!(answered.success, "answer-question: {answered:?}");
+
+    // @step And I dispatch update-work-unit-status with workUnitId='AUTH-001' status='testing' skipTemporalValidation=true
+    let status = dispatch_command(DispatchRequest {
+        command: "update-work-unit-status".to_string(),
+        args_json:
+            json!({"workUnitId": "AUTH-001", "status": "testing", "skipTemporalValidation": true})
+                .to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+
+    // @step Then the update-work-unit-status dispatch returns success=false
+    assert!(!status.success, "expected failure; got {status:?}");
+
+    // @step And its error lists the lines '  - [0] Q0?' and '  - [2] Q2?' and no line for question 1
+    let err = status.error.as_deref().unwrap_or_default();
+    let listed: Vec<&str> = err.lines().filter(|l| l.starts_with("  - [")).collect();
+    assert_eq!(listed, vec!["  - [0] Q0?", "  - [2] Q2?"], "error: {err}");
 }

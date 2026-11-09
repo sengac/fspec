@@ -11,9 +11,6 @@ const EXAMPLE_1_OUTPUT: &str =
 const EXAMPLE_2_OUTPUT: &str =
     "spec/features/login.feature [@critical @authentication]\n\nFound 1 feature";
 
-const EXAMPLE_3_OUTPUT: &str =
-    "spec/features/login.feature [@critical @critical @authentication]\n\nFound 1 feature";
-
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
         command: "fspec list-features",
@@ -25,26 +22,14 @@ const EXAMPLES: &[CommandExample] = &[
         description: Some("List phase 1 features"),
         output: Some(EXAMPLE_2_OUTPUT),
     },
-    CommandExample {
-        command: "fspec list-features --tag=@critical --tag=@critical",
-        description: Some("List features with multiple tags"),
-        output: Some(EXAMPLE_3_OUTPUT),
-    },
 ];
 
-const OPTIONS: &[CommandOption] = &[
-    CommandOption {
-        flag: "--tag <tag>",
-        description:
-            "Filter by tag (can be used multiple times, e.g., --tag=@critical --tag=@critical)",
-        default_value: None,
-    },
-    CommandOption {
-        flag: "--format <format>",
-        description: "Output format: table (default), json, or simple",
-        default_value: None,
-    },
-];
+const OPTIONS: &[CommandOption] = &[CommandOption {
+    flag: "--tag <tag>",
+    description:
+        "Filter by tag (can be used multiple times, e.g., --tag=@critical --tag=@critical)",
+    default_value: None,
+}];
 
 const RELATED: &[&str] = &["show-feature", "create-feature", "list-tags", "validate"];
 

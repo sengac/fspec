@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @schema-design
 @session-management
@@ -49,7 +50,7 @@ Feature: Widen codelet-rpc-types with every wire-portable shape AgentView needs
     When the engineer searches for the struct declarations SessionTokens, TokenRestoreState, SessionModel, and WorkUnitContext
     Then SessionTokens is declared with exactly two fields, input_tokens: i64 and output_tokens: i64
     And TokenRestoreState is declared with exactly six i64 fields named current_context, cumulative_billed_output, cache_read, cache_creation, cumulative_billed_input, and cumulative_billed_output_second
-    And SessionModel is declared with exactly five fields: provider_id: String, model_id: String, context_window: i64, max_output_tokens: i64, compaction_threshold: i64
+    And SessionModel is declared with exactly five fields: provider_id: String, model_id: String, context_window: Option<i64>, max_output_tokens: Option<i64>, compaction_threshold: Option<i64>
     And WorkUnitContext is declared with exactly three String fields named id, title, and status
     And each of these four structs derives Debug, Clone, Serialize, Deserialize, and is gated for napi via #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 
@@ -65,7 +66,7 @@ Feature: Widen codelet-rpc-types with every wire-portable shape AgentView needs
     Given the engineer opens rust/rpc-types/src/lib.rs after RPC-036 is implemented
     When the engineer searches for the pause and HITL declarations
     Then a PauseKind enum exists with exactly the variants Confirm and Triple, derives Serialize/Deserialize/PartialEq, and is gated for napi via #[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
-    And a PauseState struct exists with exactly kind: PauseKind, prompt: String, tool_call_id: Option<String>
+    And a PauseState struct exists with exactly kind: PauseKind, prompt: String, details: Option<String>, tool_call_id: Option<String>
     And a PauseResponse enum exists with exactly the variants Resume, ConfirmAccept, ConfirmDeny, TripleApprove, TripleApproveSession, TripleDeny
     And an ApprovalChoice enum exists with exactly the variants Approve, ApproveSession, Deny
     And a HitlOption struct exists with exactly label: String and description: String

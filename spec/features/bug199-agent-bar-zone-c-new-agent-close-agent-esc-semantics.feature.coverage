@@ -5,19 +5,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
-          "lines": "206-247",
+          "lines": "207-249",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
               "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
                 47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
+                48
+              ],
+              "firstLine": "// `Close` ALWAYS mounts the 'Close Agent?' dialog,",
+              "lastLine": "// BUG-199 R1: the agent bar's 'New Agent' ALWAYS starts"
             }
           ]
         }
@@ -28,7 +30,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
-          "lines": "249-284",
+          "lines": "252-288",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -41,18 +43,20 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "if let Some(rects) = self.menu_state.zone_c_rects() {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "'Close Agent' on an idle session shows the same exit confirmation as Esc",
+      "name": "'Close' on an idle session shows the same exit confirmation as Esc",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
-          "lines": "378-424",
+          "lines": "291-337",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -65,33 +69,37 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "if let Some(rects) = self.menu_state.zone_c_rects() {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "The agent bar paints 'New Agent' then 'Close Agent [esc]' right-aligned",
+      "name": "The agent bar paints '[ New Agent ]' then '[ Close ]' right-aligned",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
-          "lines": "426-452",
+          "lines": "342-371",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
-                44,
                 45,
                 46,
                 47,
                 48,
                 49,
                 50,
-                51,
-                52,
-                53
-              ]
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "/// `[ Close ]` (a space between the word and each bracket) — so",
+              "lastLine": "},"
             }
           ]
         }
@@ -102,16 +110,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
-          "lines": "454-487",
+          "lines": "374-417",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
                 25,
                 26,
-                27,
-                28
-              ]
+                27
+              ],
+              "firstLine": "/// MENU-011 R3: the label is stored BRACKETED — `[ New Agent ]` (a",
+              "lastLine": "/// cached hit-test rects and the painter all agree (R4)."
             }
           ]
         }
@@ -128,10 +137,9 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
       "rust/fspec-tui/src/views/agent/menu_mouse.rs",
-      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
       "rust/fspec-tui/src/views/agent/menu_render.rs",
       "rust/fspec-tui/src/views/board/menu_snapshot.rs"
     ],
-    "totalLinesCovered": 364
+    "totalLinesCovered": 237
   }
 }

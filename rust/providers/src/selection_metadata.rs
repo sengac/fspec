@@ -10,6 +10,9 @@ pub(crate) struct SelectionMetadata {
     pub model_alias: String,
     pub model_options: Option<Value>,
     pub facade: Option<String>,
+    /// MODEL-017: a custom provider model's raw `thinkingLevels`, read as
+    /// the config holds it so a bad declaration fails only that model.
+    pub thinking_levels: Option<Value>,
 }
 
 pub(crate) fn catalog_provider_id(provider: &str) -> &str {
@@ -44,6 +47,7 @@ pub(crate) fn selection_metadata(
         model_alias: model_id.into(),
         model_options: None,
         facade: facade_override.map(String::from),
+        thinking_levels: None,
     };
     if let ProviderType::Custom(name) = provider {
         if let Some(config) = raw_custom_config(name) {
@@ -66,6 +70,7 @@ pub(crate) fn selection_metadata(
                     .and_then(Value::as_str)
                     .unwrap_or(model_id)
                     .to_string();
+                metadata.thinking_levels = model.get("thinkingLevels").cloned();
                 metadata.model_options = Some(json!({
                     "contextWindow":model.get("context_window"),
                     "maxOutputTokens":model.get("max_output_tokens")

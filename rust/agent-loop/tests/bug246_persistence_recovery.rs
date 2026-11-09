@@ -73,6 +73,10 @@ async fn an_invocation_failure_cannot_orphan_its_authentic_result() -> TestResul
 #[tokio::test]
 #[serial_test::serial]
 async fn retrying_a_captured_result_never_repeats_its_side_effect() -> TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given an archived invocation for a sentinel writing tool
     let (directory, session, _) = fixture()?;
     std::fs::remove_dir(directory.path().join("messages/messages.jsonl"))?;

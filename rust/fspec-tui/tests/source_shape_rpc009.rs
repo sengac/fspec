@@ -17,20 +17,19 @@
 //!     encapsulated transport crates (`codelet_napi`, `codelet_core`,
 //!     `tarpc`, `tokio_tungstenite`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 mod common;
 
 #[test]
-fn cargo_toml_dependencies_now_lists_tui_input_alongside_the_existing_entries() {
+fn cargo_toml_dependencies_now_lists_tui_input_alongside_the_existing_entries() -> TestResult {
     // @step Given rust/fspec-tui/Cargo.toml exists
-    let raw = common::read_to_string_or_panic(
-        &common::workspace_root()
+    let raw = common::read_to_string_or_fail(
+        &common::workspace_root()?
             .join("fspec-tui")
             .join("Cargo.toml"),
-    );
+    )?;
     // @step When the test parses the manifest's `[dependencies]` table
-    let deps = section_body(&raw, "[dependencies]");
+    let deps = section_body(&raw, "[dependencies]")?;
     // @step Then the table contains `tui-input` (consumed via `tui-input.workspace = true`)
     assert!(
         deps.contains("tui-input"),
@@ -69,14 +68,15 @@ fn cargo_toml_dependencies_now_lists_tui_input_alongside_the_existing_entries() 
             "[dependencies] must list {required}"
         );
     }
+    Ok(())
 }
 
 #[test]
-fn workspace_cargo_toml_declares_tui_input_0_10() {
+fn workspace_cargo_toml_declares_tui_input_0_10() -> TestResult {
     // @step Given rust/Cargo.toml exists
-    let raw = common::read_to_string_or_panic(&common::workspace_root().join("Cargo.toml"));
+    let raw = common::read_to_string_or_fail(&common::workspace_root()?.join("Cargo.toml"))?;
     // @step When the test parses the manifest's `[workspace.dependencies]` table
-    let body = section_body(&raw, "[workspace.dependencies]");
+    let body = section_body(&raw, "[workspace.dependencies]")?;
     // @step Then the table contains an entry `tui-input = "0.10"` in the `# === Terminal & UI ===` block
     assert!(
         body.contains("tui-input"),
@@ -86,18 +86,19 @@ fn workspace_cargo_toml_declares_tui_input_0_10() {
         body.contains("tui-input = \"0.10\""),
         "[workspace.dependencies] tui-input must be pinned to \"0.10\""
     );
+    Ok(())
 }
 
 #[test]
-fn production_dependencies_still_excludes_codelet_napi_and_codelet_core() {
+fn production_dependencies_still_excludes_codelet_napi_and_codelet_core() -> TestResult {
     // @step Given rust/fspec-tui/Cargo.toml exists
-    let raw = common::read_to_string_or_panic(
-        &common::workspace_root()
+    let raw = common::read_to_string_or_fail(
+        &common::workspace_root()?
             .join("fspec-tui")
             .join("Cargo.toml"),
-    );
+    )?;
     // @step When the test parses the manifest's `[dependencies]` table
-    let deps = section_body(&raw, "[dependencies]");
+    let deps = section_body(&raw, "[dependencies]")?;
     // @step Then the table does NOT contain `codelet-napi`
     assert!(
         !contains_dep_key(deps, "codelet-napi"),
@@ -108,18 +109,19 @@ fn production_dependencies_still_excludes_codelet_napi_and_codelet_core() {
         !contains_dep_key(deps, "codelet-core"),
         "[dependencies] MUST NOT list codelet-core"
     );
+    Ok(())
 }
 
 #[test]
-fn dev_dependencies_still_excludes_codelet_napi() {
+fn dev_dependencies_still_excludes_codelet_napi() -> TestResult {
     // @step Given rust/fspec-tui/Cargo.toml exists
-    let raw = common::read_to_string_or_panic(
-        &common::workspace_root()
+    let raw = common::read_to_string_or_fail(
+        &common::workspace_root()?
             .join("fspec-tui")
             .join("Cargo.toml"),
-    );
+    )?;
     // @step When the test parses the manifest's `[dev-dependencies]` table
-    let dev = section_body(&raw, "[dev-dependencies]");
+    let dev = section_body(&raw, "[dev-dependencies]")?;
     // @step Then the table does NOT contain `codelet-napi`
     assert!(
         !contains_dep_key(dev, "codelet-napi"),
@@ -130,10 +132,11 @@ fn dev_dependencies_still_excludes_codelet_napi() {
         contains_dep_key(dev, "codelet-core"),
         "[dev-dependencies] should list codelet-core (RPC-008 Q-DEV-CORE-1)"
     );
+    Ok(())
 }
 
 #[test]
-fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
+fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() -> TestResult {
     // @step Given the source files rust/fspec-tui/src/views/work_units_list.rs, agent_repl.rs, root.rs, footer.rs, and mod.rs exist
     // RPC-012 supersession: work_units_list.rs, agent_repl.rs and root.rs
     // were removed in favour of board.rs, agent.rs and navigator.rs
@@ -141,7 +144,7 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
     // RPC-013 supersession: footer.rs was removed when the 1-row footer
     // moved into each view (rule [1] of rpc013-source-shape.feature).
     // The invariant is preserved across the new set of files.
-    let views_dir = common::workspace_root()
+    let views_dir = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("views");
@@ -160,7 +163,7 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
     ];
     let mut violations: Vec<String> = Vec::new();
     for path in &rs_files {
-        let body = common::read_to_string_or_panic(path);
+        let body = common::read_to_string_or_fail(path)?;
         let code = common::strip_rust_comments(&body);
         for needle in forbidden {
             if code.contains(needle) {
@@ -177,12 +180,13 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
         violations.is_empty(),
         "src/views/*.rs MUST preserve Q9 host-supplied runtime invariant. Violations: {violations:?}"
     );
+    Ok(())
 }
 
 #[test]
-fn new_src_views_files_do_not_directly_import_the_encapsulated_transport_crates() {
+fn new_src_views_files_do_not_directly_import_the_encapsulated_transport_crates() -> TestResult {
     // @step Given the source files rust/fspec-tui/src/views/*.rs exist
-    let views_dir = common::workspace_root()
+    let views_dir = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("views");
@@ -191,7 +195,7 @@ fn new_src_views_files_do_not_directly_import_the_encapsulated_transport_crates(
     // @step When the test scans each file's `use` declarations
     let mut violations: Vec<String> = Vec::new();
     for path in &rs_files {
-        let body = common::read_to_string_or_panic(path);
+        let body = common::read_to_string_or_fail(path)?;
         let code = common::strip_rust_comments(&body);
         for needle in [
             "codelet_napi::",
@@ -214,20 +218,26 @@ fn new_src_views_files_do_not_directly_import_the_encapsulated_transport_crates(
         "src/views/*.rs MUST NOT directly import encapsulated transport crates. \
          Backend interactions must go through Arc<dyn FspecBackend>. Violations: {violations:?}"
     );
+    Ok(())
 }
 
 /// Sub-section extractor: returns the substring of `raw` from after
 /// `header` up to (but not including) the next `[section]` header.
-fn section_body<'a>(raw: &'a str, header: &str) -> &'a str {
+fn section_body<'a>(
+    raw: &'a str,
+    header: &str,
+) -> Result<&'a str, codelet_test_helpers::TestError> {
     let Some(start) = raw.find(header) else {
-        panic!("expected section header `{header}` in Cargo.toml. Got:\n{raw}");
+        return Err(
+            format!("expected section header `{header}` in Cargo.toml. Got:\n{raw}").into(),
+        );
     };
     let after_header = &raw[start + header.len()..];
-    if let Some(next) = after_header.find("\n[") {
+    Ok(if let Some(next) = after_header.find("\n[") {
         &after_header[..next]
     } else {
         after_header
-    }
+    })
 }
 
 /// Returns true iff `section` contains a key line matching `name`,

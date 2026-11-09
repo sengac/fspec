@@ -35,7 +35,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "fn token_usage(&self) -> Option<rig::completion::Usage> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_model.rs",
@@ -53,12 +55,13 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "fn from_snapshot(stop: StopReason, snapshot: &StreamUsage) -> Self {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
               "lines": [
-                94,
                 95,
                 96,
                 97,
@@ -72,8 +75,11 @@
                 105,
                 106,
                 107,
-                108
-              ]
+                108,
+                109
+              ],
+              "firstLine": "Ok(StreamChunk::UsageDelta(delta)) => {",
+              "lastLine": "yield Ok(RawStreamingChoice::FinalResponse(RhaiCustomCompletion::from_snapshot(final_stop, &aggregate)));"
             },
             {
               "file": "rust/providers/src/custom/rig_completion.rs",
@@ -90,7 +96,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "let (internal, usage_snapshot) = provider",
+              "lastLine": "})"
             }
           ]
         }

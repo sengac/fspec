@@ -16,12 +16,12 @@
 //!   selection highlight (bg Cyan / fg Black) stays the only cyan in the
 //!   bar row.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    components::menu_bar::DisplayCell, App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind,
+    components::menu_bar::DisplayCell, App, FspecBackend, MuxConfig, MuxLayout, MuxPaneKind,
     ViewMode,
 };
 use codelet_rpc_types::{SessionId, SessionStatus, WorkUnitInfo};
@@ -44,25 +44,26 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Render the full App into a 240x24 buffer (the `menu004_mux_surface.rs`
 /// geometry: bar on row 0, panes below, footer on the last row).
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(240, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(240, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -76,11 +77,11 @@ fn row_text(buf: &Buffer, y: u16) -> String {
 /// Enter mux with the given pane list (the `menu004_mux_surface.rs`
 /// `enable_mux` shape — no lazy panes here, so no load wiring needed).
 fn enable_mux(app: &mut App, panes: Vec<MuxPaneKind>) {
-    let n = panes.len();
+    let Some(layout) = MuxLayout::columns(&panes) else {
+        return;
+    };
     let config = MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50; n.saturating_sub(1)],
-        panes,
+        layout,
         focused_pane: 0,
         enabled: true,
     };
@@ -94,13 +95,14 @@ fn focus_pane(app: &mut App, idx: usize) {
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
         )));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn set_status(app: &mut App, sid: &str, status: SessionStatus) {
@@ -110,13 +112,14 @@ fn set_status(app: &mut App, sid: &str, status: SessionStatus) {
     ));
 }
 
-async fn seed_units(app: &mut App) {
+async fn seed_units(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::WorkUnitsLoaded(vec![
         make_unit("AUTH-001", "backlog"),
         make_unit("AUTH-002", "testing"),
         make_unit("AUTH-003", "blocked"),
     ]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
@@ -151,44 +154,54 @@ fn fg_cyan(buf: &Buffer, x: u16, y: u16) -> bool {
 
 /// The `DisplayCell::View` hit rect whose label is `needle`, from the
 /// cached bar geometry (display order — the non-agent panes first).
-fn view_label_rect(buf: &Buffer, app: &App, needle: &str) -> (u16, u16, u16) {
+fn view_label_rect(
+    buf: &Buffer,
+    app: &App,
+    needle: &str,
+) -> Result<(u16, u16, u16), codelet_test_helpers::TestError> {
     let row = row_text(buf, BAR_ROW);
-    let byte_idx = row
-        .find(needle)
-        .unwrap_or_else(|| panic!("the {needle:?} view label must paint on the bar row: {row}"));
+    let byte_idx = row.find(needle).or_fail(&format!(
+        "the {needle:?} view label must paint on the bar row: {row}"
+    ))?;
     let x = row[..byte_idx].chars().count() as u16;
     let cells = app
         .navigator()
         .mux
         .menu_cells()
-        .expect("a painted bar caches its Zone B cells");
+        .or_fail("a painted bar caches its Zone B cells")?;
     for (cell, rect) in cells {
         if matches!(cell, DisplayCell::View { label, .. } if *label == needle) {
-            return (rect.x, rect.y, rect.width);
+            return Ok((rect.x, rect.y, rect.width));
         }
     }
-    // Fallback (degenerate geometry): the painted label's own span.
-    (x, 0, needle.len() as u16)
+    Ok(
+        // Fallback (degenerate geometry): the painted label's own span.
+        (x, 0, needle.len() as u16),
+    )
 }
 
 /// The chip's painted cell span (display order: the view labels first,
 /// then the chips in global session order).
-fn chip_cell_span(_buf: &Buffer, app: &App, chip_index: usize) -> (u16, u16) {
+fn chip_cell_span(
+    _buf: &Buffer,
+    app: &App,
+    chip_index: usize,
+) -> Result<(u16, u16), codelet_test_helpers::TestError> {
     let cells = app
         .navigator()
         .mux
         .menu_cells()
-        .expect("a painted bar caches its Zone B cells");
+        .or_fail("a painted bar caches its Zone B cells")?;
     let labels = app.navigator().mux.view_label_count();
     let cell_no = labels + chip_index;
-    let (cell, rect) = cells.get(cell_no).unwrap_or_else(|| {
-        panic!("chip cell {chip_index} must be cached (labels {labels}, cell index {cell_no})")
-    });
+    let (cell, rect) = cells.get(cell_no).or_fail(&format!(
+        "chip cell {chip_index} must be cached (labels {labels}, cell index {cell_no})"
+    ))?;
     assert!(
         matches!(cell, DisplayCell::Chip { .. }),
         "cell {cell_no} must be a chip: {cell:?}"
     );
-    (rect.x, rect.width)
+    Ok((rect.x, rect.width))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -197,10 +210,10 @@ fn chip_cell_span(_buf: &Buffer, app: &App, chip_index: usize) -> (u16, u16) {
 
 /// Scenario: The focused pane's view label paints bold white instead of cyan
 #[tokio::test]
-async fn scenario_the_focused_panes_view_label_paints_bold_white_instead_of_cyan() {
+async fn scenario_the_focused_panes_view_label_paints_bold_white_instead_of_cyan() -> TestResult {
     // @step Given the mux grid is [Board | Files | Ckpts] with no open sessions and the Board pane is focused
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -212,11 +225,11 @@ async fn scenario_the_focused_panes_view_label_paints_bold_white_instead_of_cyan
     // `enable_mux` seeds `focused_pane: 0` — the Board pane.
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let row = row_text(&buf, BAR_ROW);
 
     // @step Then the '[ Board ]' label paints bold with the primary foreground (theme.fg — white)
-    let (x, _, width) = view_label_rect(&buf, &app, "Board");
+    let (x, _, width) = view_label_rect(&buf, &app, "Board")?;
     for cx in x..x + width {
         let cell = &buf[(cx, BAR_ROW)];
         assert!(
@@ -236,7 +249,7 @@ async fn scenario_the_focused_panes_view_label_paints_bold_white_instead_of_cyan
 
     // @step And the '[ Files ]' and '[ Ckpts ]' labels paint the dimmed foreground (theme.dim)
     for label in ["Files", "Ckpts"] {
-        let (x, _, width) = view_label_rect(&buf, &app, label);
+        let (x, _, width) = view_label_rect(&buf, &app, label)?;
         for cx in x..x + width {
             let cell = &buf[(cx, BAR_ROW)];
             assert_eq!(
@@ -254,24 +267,26 @@ async fn scenario_the_focused_panes_view_label_paints_bold_white_instead_of_cyan
             "bar-row cell {x} unexpectedly carries a cyan foreground: {row}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: The active view label and the selected-chip highlight stay distinguishable
 #[tokio::test]
-async fn scenario_the_active_view_label_and_the_selected_chip_highlight_stay_distinguishable() {
+async fn scenario_the_active_view_label_and_the_selected_chip_highlight_stay_distinguishable(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent] with 1 open session and the Agent pane is focused showing session #1
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
     focus_pane(&mut app, 1); // the Agent pane — it shows session s-1
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let row = row_text(&buf, BAR_ROW);
 
     // @step Then chip '[ #1 ● ]' carries the selected-item highlight (cyan background, black text)
-    let (chip_x, chip_w) = chip_cell_span(&buf, &app, 0);
+    let (chip_x, chip_w) = chip_cell_span(&buf, &app, 0)?;
     for cx in chip_x..chip_x + chip_w {
         assert_eq!(
             buf[(cx, BAR_ROW)].bg,
@@ -286,7 +301,7 @@ async fn scenario_the_active_view_label_and_the_selected_chip_highlight_stay_dis
     }
 
     // @step And the inactive '[ Board ]' view label stays dimmed (theme.dim) on the bar background
-    let (x, _, width) = view_label_rect(&buf, &app, "Board");
+    let (x, _, width) = view_label_rect(&buf, &app, "Board")?;
     for cx in x..x + width {
         assert_eq!(
             buf[(cx, BAR_ROW)].fg,
@@ -310,17 +325,19 @@ async fn scenario_the_active_view_label_and_the_selected_chip_highlight_stay_dis
             "bar-row cell {x} unexpectedly carries a cyan foreground outside the selected chip: {row}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Everything else on the bar keeps its existing styling
 #[tokio::test]
-async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
+async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 1 Running and 1 Idle session and the Board pane is focused
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
+    seed_sessions(&mut app, 2).await?;
     set_status(&mut app, "s-1", SessionStatus::Running);
-    drain_pending(&mut app).await;
-    seed_units(&mut app).await;
+    set_status(&mut app, "s-2", SessionStatus::Idle);
+    drain_pending(&mut app).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
@@ -328,20 +345,24 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
     // `enable_mux` seeds `focused_pane: 0` — the Board pane.
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let row = row_text(&buf, BAR_ROW);
 
-    // @step Then the Zone A items and the '[ New Agent ]'-free row paint exactly as before (white items, dim separator)
-    // The mux bar paints no Zone C (MENU-009 Q1) — no New Agent / Close
-    // Agent buttons on this row.
+    // @step Then the Zone A items paint exactly as before (white items, dim separator) and the row ends with the plain [ New Bot ] and [ New Agent ] buttons (MUX-013)
+    // MUX-013: the board pane is focused, so no [ Close ].
     assert!(
-        !row.contains("New Agent") && !row.contains("Close Agent"),
-        "the mux bar paints no Zone C buttons: {row}"
+        row.trim_end().ends_with("[ New Bot ]  [ New Agent ]") && !row.contains("Close"),
+        "the mux bar ends with the board-pane buttons: {row}"
+    );
+    let button_x = row[..row.find("[ New Bot ]").unwrap_or(0)].chars().count() as u16;
+    assert!(
+        !fg_cyan(&buf, button_x + 2, BAR_ROW),
+        "the unfocused buttons keep the plain bar palette: {row}"
     );
     // The Zone A items paint the primary foreground (white) at full width.
     let kanban_x = row
         .find("Kanban")
-        .expect("the Kanban item must paint: {row}");
+        .or_fail("the Kanban item must paint: {row}")?;
     let kx = row[..kanban_x].chars().count() as u16;
     assert_eq!(
         buf[(kx, BAR_ROW)].fg,
@@ -349,7 +370,9 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
         "the Kanban item must keep its primary (white) foreground: {row}"
     );
     // The dim `│` separator between the zones.
-    let sep_x = row.find('│').expect("the zone separator must paint: {row}");
+    let sep_x = row
+        .find('│')
+        .or_fail("the zone separator must paint: {row}")?;
     let sx = row[..sep_x].chars().count() as u16;
     assert_eq!(
         buf[(sx, BAR_ROW)].fg,
@@ -361,7 +384,7 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
     // The chip's glyph is the ONLY cell of the chip span painted in its
     // status color (brackets/prefix/bracket-gap use the cell fg) — scan
     // the span for it instead of hardcoding the bracketed offset.
-    let (running_x, running_w) = chip_cell_span(&buf, &app, 0);
+    let (running_x, running_w) = chip_cell_span(&buf, &app, 0)?;
     let running_magenta = (running_x..running_x + running_w)
         .filter(|cx| buf[(*cx, BAR_ROW)].fg == Color::Magenta)
         .count();
@@ -369,7 +392,7 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
         running_magenta, 1,
         "exactly one Running chip cell must be magenta (the braille glyph): {row}"
     );
-    let (idle_x, idle_w) = chip_cell_span(&buf, &app, 1);
+    let (idle_x, idle_w) = chip_cell_span(&buf, &app, 1)?;
     let idle_green: Vec<u16> = (idle_x..idle_x + idle_w)
         .filter(|cx| buf[(*cx, BAR_ROW)].fg == Color::Green)
         .collect();
@@ -386,7 +409,7 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
     );
 
     // @step And the focused pane's '[ Board ]' label is bold white — the only view-label change
-    let (x, _, width) = view_label_rect(&buf, &app, "Board");
+    let (x, _, width) = view_label_rect(&buf, &app, "Board")?;
     for cx in x..x + width {
         let cell = &buf[(cx, BAR_ROW)];
         assert!(
@@ -399,4 +422,5 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
             "the focused pane's view label cell {cx} must paint the primary foreground: {row}"
         );
     }
+    Ok(())
 }

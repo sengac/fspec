@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "Every frozen method keeps its variant index",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc449_wire_variant_order.rs",
+          "lines": "53-76",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ],
+              "firstLine": "// RPC-449: tarpc numbers requests by declaration order and clients encode",
+              "lastLine": "async fn get_default_model() -> Option<String>;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The workspace methods are appended after the original methods",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc449_wire_variant_order.rs",
+          "lines": "78-104",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ],
+              "firstLine": "// RPC-449: tarpc numbers requests by declaration order and clients encode",
+              "lastLine": "async fn get_default_model() -> Option<String>;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The fixture header states the formula that gives each method's index",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc449_wire_variant_order.rs",
+          "lines": "116-159",
+          "implMappings": [
+            {
+              "file": "rust/rpc/tests/fixtures/wire_order_frozen.txt",
+              "lines": [
+                1,
+                2,
+                3
+              ],
+              "firstLine": "# FspecService methods in tarpc variant-index order (index = line number - 4).",
+              "lastLine": "# END of the trait and add them here; never insert, reorder or remove."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc/tests/rpc449_wire_variant_order.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_declaration/supervision_credentials.rs",
+      "rust/rpc/tests/fixtures/wire_order_frozen.txt"
+    ],
+    "totalLinesCovered": 140
+  }
+}

@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-317
+@work-unit-management
 Feature: Port update-work-unit command to Rust
   """
   Core impl at rust/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.

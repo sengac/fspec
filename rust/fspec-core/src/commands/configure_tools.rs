@@ -32,7 +32,6 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
-use crate::io::locked_file::write_json_atomic;
 
 /// CLI arguments accepted by `configure-tools`. Mirrors the TS
 /// `ConfigureToolsOptions` flag set.
@@ -65,7 +64,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let spec_dir = project_root.join("spec");
+    let spec_dir = crate::io::spec_paths::state_spec_dir(project_root)?;
     let config_path = spec_dir.join("fspec-config.json");
 
     // Ensure the spec directory exists (mirrors the TS mkdirSync guard, which
@@ -88,53 +87,46 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
-    // [3] Load existing config or seed the default `{ "agent": "claude" }`.
-    let mut config: Value = if config_path.exists() {
-        let raw = std::fs::read_to_string(&config_path).map_err(|source| FspecCoreError::Io {
-            command: "configure-tools",
-            source,
-        })?;
-        serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
-            file: "fspec-config.json".to_string(),
-            reason: crate::io::json_error::parse_json_reason(&raw, &e),
-        })?
-    } else {
-        json!({ "agent": "claude" })
-    };
+    // BUG-640: one read-modify-write under the spec lock, replaced
+    // atomically; an unreadable or non-object file is never written over.
+    codelet_common::fspec_config::update_config_file(&config_path, |config| {
+        let root = config
+            .as_object_mut()
+            .ok_or_else(|| FspecCoreError::ParseJson {
+                file: "fspec-config.json".to_string(),
+                reason: "top-level value must be a JSON object".to_string(),
+            })?;
+        // [3] A new config is seeded with the default `{ "agent": "claude" }`.
+        if root.is_empty() {
+            root.insert("agent".to_string(), json!("claude"));
+        }
 
-    let root = config
-        .as_object_mut()
-        .ok_or_else(|| FspecCoreError::ParseJson {
-            file: "fspec-config.json".to_string(),
-            reason: "top-level value must be a JSON object".to_string(),
-        })?;
+        // Seed `tools` if absent.
+        let tools_entry = root
+            .entry("tools".to_string())
+            .or_insert_with(|| Value::Object(serde_json::Map::new()));
+        if !tools_entry.is_object() {
+            *tools_entry = Value::Object(serde_json::Map::new());
+        }
+        let tools = tools_entry
+            .as_object_mut()
+            .ok_or_else(|| FspecCoreError::ParseJson {
+                file: "fspec-config.json".to_string(),
+                reason: "tools must be an object".to_string(),
+            })?;
 
-    // Seed `tools` if absent.
-    let tools_entry = root
-        .entry("tools".to_string())
-        .or_insert_with(|| Value::Object(serde_json::Map::new()));
-    if !tools_entry.is_object() {
-        *tools_entry = Value::Object(serde_json::Map::new());
-    }
-    let tools = tools_entry
-        .as_object_mut()
-        .ok_or_else(|| FspecCoreError::ParseJson {
-            file: "fspec-config.json".to_string(),
-            reason: "tools must be an object".to_string(),
-        })?;
+        if let Some(test_command) = args.test_command.as_deref() {
+            tools.insert("test".to_string(), json!({ "command": test_command }));
+        }
 
-    if let Some(test_command) = args.test_command.as_deref() {
-        tools.insert("test".to_string(), json!({ "command": test_command }));
-    }
-
-    if let Some(quality_commands) = args.quality_commands.as_ref() {
-        tools.insert(
-            "qualityCheck".to_string(),
-            json!({ "commands": quality_commands }),
-        );
-    }
-
-    write_json_atomic(&config_path, &config)?;
+        if let Some(quality_commands) = args.quality_commands.as_ref() {
+            tools.insert(
+                "qualityCheck".to_string(),
+                json!({ "commands": quality_commands }),
+            );
+        }
+        Ok::<_, FspecCoreError>(())
+    })?;
 
     // D3 deferred: no installAgentFiles template regeneration here.
 

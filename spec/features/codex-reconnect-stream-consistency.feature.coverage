@@ -19,7 +19,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "http_request.extensions_mut().insert(crate::codex::recovery::AttemptAuthority {",
+              "lastLine": "let tokens = usage.token_usage().ok_or_else(|| invalid(\"invalid physical usage\"))?;"
             }
           ]
         }
@@ -40,7 +42,9 @@
                 137,
                 138,
                 154
-              ]
+              ],
+              "firstLine": "http_request.extensions_mut().insert(crate::codex::recovery::AttemptAuthority {",
+              "lastLine": "state.merge_terminal(&mut terminal.output);"
             }
           ]
         }
@@ -70,7 +74,9 @@
                 203,
                 204,
                 205
-              ]
+              ],
+              "firstLine": "http_request.extensions_mut().insert(crate::codex::recovery::AttemptAuthority {",
+              "lastLine": "}"
             }
           ]
         }

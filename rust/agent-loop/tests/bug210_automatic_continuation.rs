@@ -10,6 +10,10 @@ use support::Harness;
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn scenario_overflow_recovery_resumes_work_without_another_user_message() {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given an agent with completed work encounters a context overflow
     let mut fixture = Harness::new(false, false, false).await;
     fixture.completed_tool.store(true, Ordering::SeqCst);
@@ -171,7 +175,7 @@ async fn scenario_cancelling_compaction_does_not_restart_the_agent() {
     // @step Given automatic compaction is waiting for its summary
     let mut fixture = Harness::new(false, false, true).await;
     fixture.send();
-    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while fixture.builders.load(Ordering::SeqCst) == 0 {
             tokio::task::yield_now().await;
         }
@@ -220,7 +224,6 @@ async fn scenario_a_new_user_task_receives_a_fresh_recovery_budget() {
     assert!(first.iter().any(|chunk| matches!(chunk, StreamChunk::Error { error, .. } if error.contains("recovery budget"))));
     let builders = fixture.builders.load(Ordering::SeqCst);
     fixture.close_injections();
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     // @step When the user submits a new task
     fixture.send();
     let second = fixture.until_done().await;

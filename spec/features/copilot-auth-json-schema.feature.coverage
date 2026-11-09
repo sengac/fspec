@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/auth.rs",
-          "lines": "373-427",
+          "lines": "345-399",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/auth.rs",
@@ -136,7 +136,9 @@
                 175,
                 176,
                 177
-              ]
+              ],
+              "firstLine": "/// `/copilot_internal/v2/token` exchange. `None` means the exchange",
+              "lastLine": "Ok(Some(value))"
             }
           ]
         }

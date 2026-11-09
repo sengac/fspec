@@ -476,8 +476,8 @@ pub fn agent_supports_meta_cognition(project_root: &Path) -> bool {
         }
     }
 
-    let config_path = project_root.join("spec").join("fspec-config.json");
-    if let Ok(raw) = std::fs::read_to_string(&config_path) {
+    let config_path = crate::io::spec_paths::config(project_root).map_err(std::io::Error::other);
+    if let Ok(raw) = config_path.and_then(std::fs::read_to_string) {
         if let Ok(cfg) = serde_json::from_str::<Value>(&raw) {
             if let Some(agent_id) = cfg.get("agent").and_then(Value::as_str) {
                 if is_known_agent(agent_id) {

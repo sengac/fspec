@@ -9,7 +9,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
 use super::multiline_input::MultiLineInput;
-use super::spinner::{current_frame_glyph, DOTS_FRAMES, DOTS_INTERVAL_MS};
+use super::spinner::{DOTS_FRAMES, DOTS_INTERVAL_MS};
 use super::INPUT_PLACEHOLDER_HINT;
 
 /// Per-frame duration of Ink's render loop (ms).
@@ -52,10 +52,24 @@ pub fn paint_input_or_spinner_with_waiting(
     state: &InputTransitionState,
     waiting: Option<&str>,
 ) {
+    match state {
+        InputTransitionState::Idle => render_idle_input(area, buf, input),
+        other => paint_activity_row(area, buf, other, waiting),
+    }
+}
+
+/// TUI-115: the activity row alone — spinner (or the provider-waiting
+/// message while Loading) or the finish-sweep slice; nothing while Idle.
+pub fn paint_activity_row(
+    area: Rect,
+    buf: &mut Buffer,
+    state: &InputTransitionState,
+    waiting: Option<&str>,
+) {
     if let (InputTransitionState::Loading { elapsed_ms }, Some(message)) = (state, waiting) {
         paint_spinner(area, buf, *elapsed_ms, message, "(Esc to stop)");
     } else {
-        paint_input_or_spinner(area, buf, input, state);
+        render_input_transition(area, buf, state);
     }
 }
 
@@ -241,7 +255,6 @@ pub fn paint_input_or_spinner(
 fn paint_spinner(area: Rect, buf: &mut Buffer, elapsed_ms: u64, message: &str, hint: &str) {
     let idx = (elapsed_ms / DOTS_INTERVAL_MS) as usize % DOTS_FRAMES.len();
     super::spinner::paint_spinner_line(area, buf, idx, message, hint);
-    let _ = current_frame_glyph(elapsed_ms);
 }
 
 fn paint_sliced_text(

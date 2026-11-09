@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-114
+@tools
+@provider-abstraction
 Feature: Codex facade maps shell and exec_command to unified exec tool
   """
   Follow the existing CodexShellCommandFacade pattern in codex.rs — ExecToolFacade struct with definition() returning ToolDefinition with JSON schema, and map_params() using param_extract helpers
@@ -77,7 +80,7 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And the required array contains only "command"
     And command property type is "array" with items type "string"
 
-  @exec_command
+  @exec-command
   Scenario: CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run
   # ==============================
   # exec_command facade
@@ -90,7 +93,7 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And the facade tool name is "exec_command"
     And the facade provider is "codex"
 
-  @exec_command
+  @exec-command
   Scenario: CodexExecCommandFacade defaults to tty false when not specified
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with only cmd "ls"
@@ -98,7 +101,7 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And yield_time_ms is None
     And max_output_tokens is None
 
-  @exec_command
+  @exec-command
   Scenario: CodexExecCommandFacade maps all optional params
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with cmd "python3" workdir "/app" tty true yield_time_ms 10000 and max_output_tokens 4096
@@ -108,21 +111,21 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And yield_time_ms is 10000
     And max_output_tokens is 4096
 
-  @exec_command
+  @exec-command
   @validation
   Scenario: CodexExecCommandFacade validates required cmd parameter
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with missing cmd field
     Then the facade returns a validation error for tool "exec_command" mentioning "cmd"
 
-  @exec_command
+  @exec-command
   Scenario: CodexExecCommandFacade silently ignores Codex-native approval params
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with cmd "ls" and login true and shell "/bin/bash"
     Then the facade maps to InternalExecParams::Run with command "ls"
     And tty is false
 
-  @exec_command
+  @exec-command
   @schema
   Scenario: CodexExecCommandFacade schema has additionalProperties false
     Given a CodexExecCommandFacade instance

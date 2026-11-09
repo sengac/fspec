@@ -19,7 +19,7 @@
 //! the TS Commander.js action handler at `src/commands/remove-dependency.ts:147-182`):
 //!
 //! 1. **Shorthand reconciliation**: the second positional argument
-//!    `[dependsOnId]` is folded into `--depends-on`. If both are supplied
+//!    `[workUnitId]` is folded into `--depends-on`. If both are supplied
 //!    with DIFFERENT values, exit 1 with the canonical conflict message.
 //!    If both are supplied with the same value, succeed without error.
 //! 2. **At-least-one guard**: after shorthand reconciliation, if NO
@@ -36,10 +36,10 @@
 //!     written to stderr prefixed with `✗ Failed to remove dependency:`
 //!     (parity with TS chalk-red error path at lines 192-198).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::remove_dependency;
 use serde_json::{json, Value};
 
@@ -50,7 +50,7 @@ use crate::common::render_core_error;
 #[derive(Debug, Default)]
 pub struct CliArgs {
     pub work_unit_id: String,
-    /// Optional second positional argument `[dependsOnId]` — shorthand
+    /// Optional second positional argument `[workUnitId]` — shorthand
     /// for `--depends-on`. Reconciled against `depends_on` before
     /// marshalling.
     pub depends_on_positional: Option<String>,
@@ -87,13 +87,13 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         && args.relates_to.is_none()
     {
         eprintln!(
-            "✗ Failed to remove dependency: Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to"
+            "✗ Failed to remove dependency: Must specify at least one relationship to remove: <workUnitId> or --blocks/--blocked-by/--depends-on/--relates-to"
         );
         return Ok(1);
     }
 
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CLI args into the canonical JSON shape consumed by
     // fspec_core::commands::remove_dependency::run.

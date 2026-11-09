@@ -1,5 +1,7 @@
 @done
 @RPC-287
+@cli
+@foundation-management
 Feature: Port restore-architecture-note command to Rust
   """
   Reuses shared infrastructure ensure_work_units_file (load/auto-create), write_json_atomic (atomic write), iso8601_now (timestamp). Architecture notes live in WorkUnit.extra under 'architectureNotes' as Value::Array of objects keyed by 'id'.

@@ -25,10 +25,10 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &["register-tag", "list-tags", "check"];
+const RELATED: &[&str] = &["register-tag", "list-tags", "audit"];
 
 const NOTES: &[&str] = &[
-    "Part of fspec check command",
+    "fspec audit runs the same tag checks in its tags area",
     "Exit code 0 = all valid, non-zero = unregistered tags found or placement violations",
     "Work unit ID tags (e.g., AUTH-001, COV-005) must be at feature level only",
     "Use coverage files for linking scenarios to implementation (two-tier linking system)",

@@ -18,6 +18,9 @@ chrono-tz = { workspace = true }
 croner = { workspace = true }
 jsonschema = { workspace = true }
 fs2 = "0.4"
+# BUG-477: the cross-process spec write lock and atomic replace shared with
+# codelet-core and codelet-agent-loop (codelet_common::spec_lock).
+codelet-common.workspace = true
 gherkin.workspace = true
 regex.workspace = true
 # RPC-178/RPC-233/RPC-170: Rust-native Mermaid parser (parity target
@@ -25,6 +28,10 @@ regex.workspace = true
 # pure-regex pre-check with real syntax validation.
 merman-core = "0.8.0-alpha.1"
 codelet-git = { path = "../git" }
+# BUG-666: the audit's line diff between a file at a commit and now.
+similar = "2"
+# WT-018: session_cards returns the wire types the daemon sends the TUI.
+codelet-rpc-types.workspace = true
 # RPC-334: shared serde_json parse-error diagnostics (vendored, trimmed
 # format_serde_error). Renders a caret-pointed snippet under the offending
 # token for corrupted fspec state files.
@@ -46,6 +53,7 @@ tracing.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 serial_test.workspace = true
+codelet-test-helpers.workspace = true
 # UPD-002: tests/upd002_update_engine.rs serves a mock GitHub API on
 # 127.0.0.1:0 (axum is a workspace dependency).
 axum.workspace = true

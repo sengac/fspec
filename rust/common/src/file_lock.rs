@@ -155,17 +155,27 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let lock = dir.path().join("counter.lock");
         let counter = Arc::new(AtomicUsize::new(0));
+        let inside = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let start = Arc::new(std::sync::Barrier::new(5));
 
         let mut handles = Vec::new();
         for _ in 0..5 {
             let l = lock.clone();
             let c = Arc::clone(&counter);
+            let inside = Arc::clone(&inside);
+            let start = Arc::clone(&start);
             handles.push(std::thread::spawn(move || {
+                start.wait();
                 with_file_lock(&l, || {
-                    // Within the lock, increment via read-modify-write.
+                    // TEST-042: no sleep; nobody else is ever inside the lock.
+                    assert!(
+                        !inside.swap(true, Ordering::SeqCst),
+                        "two callers inside the lock"
+                    );
                     let v = c.load(Ordering::SeqCst);
-                    std::thread::sleep(Duration::from_millis(10));
+                    std::thread::yield_now();
                     c.store(v + 1, Ordering::SeqCst);
+                    inside.store(false, Ordering::SeqCst);
                     Ok::<(), String>(())
                 })
             }));

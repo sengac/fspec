@@ -233,12 +233,12 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI rejects the documented-only --fix flag at runtime
+// Scenario: CLI rejects the --fix flag at runtime
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn scenario_cli_rejects_documented_only_fix_flag() {
-    // @step Given the --fix option appears in `validate-work-units --help` output (for byte-parity with the TS rich help)
+    // @step Given the --fix option does not appear in `validate-work-units --help` output (the CLI has no --fix, CLI-016)
     let help = Command::new(fspec_bin())
         .arg("validate-work-units")
         .arg("--help")
@@ -247,8 +247,8 @@ fn scenario_cli_rejects_documented_only_fix_flag() {
         .expect("spawn validate-work-units --help");
     let help_stdout = String::from_utf8_lossy(&help.stdout).into_owned();
     assert!(
-        help_stdout.contains("--fix"),
-        "--fix must remain documented in --help output; got:\n{help_stdout}"
+        !help_stdout.contains("--fix"),
+        "--fix must not be documented in --help output; got:\n{help_stdout}"
     );
 
     // @step When I run `./rust/target/release/fspec validate-work-units --fix` against a clean store

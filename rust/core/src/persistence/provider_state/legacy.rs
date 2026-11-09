@@ -12,7 +12,16 @@ pub(crate) fn is_checkpoint(stored: &StoredMessage) -> bool {
         && stored.metadata.keys().all(|key| {
             matches!(
                 key.as_str(),
-                "provider" | "message" | "codexContinuation" | "_codexReset"
+                "provider"
+                    | "message"
+                    | "codexContinuation"
+                    | "_codexReset"
+                    // BUG-332: rows written through the append helpers carry
+                    // the stored message envelope fields.
+                    | "parentUuid"
+                    | "timestamp"
+                    | "type"
+                    | "requestId"
             )
         })
         && stored.metadata.get("message").is_some_and(|message| {

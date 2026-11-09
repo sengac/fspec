@@ -86,7 +86,7 @@ pub async fn cold_with_phase(
     reset_session_store_for_tests();
     reset_message_store_for_tests();
     let mut child = command.spawn()?;
-    let status = tokio::time::timeout(std::time::Duration::from_secs(40), child.wait()).await??;
+    let status = codelet_test_helpers::deadlock_guard("child.wait()", child.wait()).await??;
     reset_session_store_for_tests();
     assert!(status.success(), "fresh process failed for {row}: {status}");
     Ok(serde_json::from_slice(&std::fs::read(report)?)?)
@@ -101,7 +101,7 @@ pub async fn child() -> TestResult<bool> {
     fixture::environment(&root)?;
     let id = SessionId::new(std::env::var("CMPCT083_COLD_SESSION")?);
     let row = std::env::var("CMPCT083_ROW")?;
-    let manager = SessionManager::new_arc();
+    let manager = SessionManager::new();
     manager.resume_session(&id)?;
     let background = manager.get_session(&id.value)?;
     if std::env::var_os("CMPCT083_RECONCILE").is_some() {

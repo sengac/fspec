@@ -1,0 +1,555 @@
+{
+  "scenarios": [
+    {
+      "name": "A /clear picked while a chip click is waiting clears no other session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs",
+          "lines": "179-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// BUG-560: carries the session whose composer the command was",
+              "lastLine": "),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                16,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "use super::slash_commands::SlashCommandAction;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "PopupOutcome::Selected(action) => {",
+              "lastLine": "return Some(EventResult::consumed());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                213,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230
+              ],
+              "firstLine": "self.push_command_not_run_notice(session, command);",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "Action::SlashCommandSelected(session, slash_action) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /compact picked while a new session is taking focus compacts no session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs",
+          "lines": "207-227",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// BUG-560: carries the session whose composer the command was",
+              "lastLine": "),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                16,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "use super::slash_commands::SlashCommandAction;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "PopupOutcome::Selected(action) => {",
+              "lastLine": "return Some(EventResult::consumed());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                213,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230
+              ],
+              "firstLine": "self.push_command_not_run_notice(session, command);",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "Action::SlashCommandSelected(session, slash_action) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /clear picked with nothing waiting clears the focused session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs",
+          "lines": "233-250",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// BUG-560: carries the session whose composer the command was",
+              "lastLine": "),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                16,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "use super::slash_commands::SlashCommandAction;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "PopupOutcome::Selected(action) => {",
+              "lastLine": "return Some(EventResult::consumed());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "Action::SlashCommandSelected(session, slash_action) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /help picked while no session is open opens the help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs",
+          "lines": "252-266",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// BUG-560: carries the session whose composer the command was",
+              "lastLine": "),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                16,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "use super::slash_commands::SlashCommandAction;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "PopupOutcome::Selected(action) => {",
+              "lastLine": "return Some(EventResult::consumed());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "Action::SlashCommandSelected(session, slash_action) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /clear picked while no session is open is not run on a session that takes focus first",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs",
+          "lines": "272-293",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                16,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "use super::slash_commands::SlashCommandAction;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// BUG-560: carries the session whose composer the command was",
+              "lastLine": "),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "PopupOutcome::Selected(action) => {",
+              "lastLine": "return Some(EventResult::consumed());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "Action::SlashCommandSelected(session, slash_action) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug560_slash_pick_runs_in_picked_in_session.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/action_agent_navigation.rs",
+      "rust/fspec-tui/src/views/agent/composer_session.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_popups.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+      "rust/fspec-tui/src/app/dispatch.rs"
+    ],
+    "totalLinesCovered": 393
+  }
+}

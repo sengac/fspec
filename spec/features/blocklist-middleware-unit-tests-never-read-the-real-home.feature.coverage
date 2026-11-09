@@ -1,0 +1,125 @@
+{
+  "scenarios": [
+    {
+      "name": "The middleware unit tests load only the isolated empty system blocklist",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug656_blocklist_middleware_tests_isolate_home.rs",
+          "lines": "48-82",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                451,
+                452,
+                453,
+                454,
+                475,
+                501,
+                536,
+                551,
+                570,
+                597,
+                622,
+                644,
+                668,
+                728,
+                811,
+                871,
+                930
+              ],
+              "firstLine": "// BUG-656: every test first calls codelet_test_helpers::isolated_home(),",
+              "lastLine": "codelet_test_helpers::isolated_home().expect(\"isolate the home\");"
+            },
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                76,
+                81,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "pub fn isolated_user_directory() -> Result<&'static std::path::Path, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A middleware unit test that does not isolate its home fails the guard",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug656_blocklist_middleware_tests_isolate_home.rs",
+          "lines": "84-95",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                451,
+                452,
+                453,
+                454,
+                475,
+                501,
+                536,
+                551,
+                570,
+                597,
+                622,
+                644,
+                668,
+                728,
+                811,
+                871,
+                930
+              ],
+              "firstLine": "// BUG-656: every test first calls codelet_test_helpers::isolated_home(),",
+              "lastLine": "codelet_test_helpers::isolated_home().expect(\"isolate the home\");"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug656_blocklist_middleware_tests_isolate_home.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/blocklist/middleware.rs",
+      "rust/test-helpers/src/lib.rs"
+    ],
+    "totalLinesCovered": 112
+  }
+}

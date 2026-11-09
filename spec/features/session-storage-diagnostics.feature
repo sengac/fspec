@@ -2,13 +2,14 @@
 @cli
 @feature-management
 @BUG-271
+@BUG-380
 @persistence
 @session-management
 @phase-1
 @critical
 Feature: Session storage diagnostics
   """
-  Non-draining manifest issue snapshots cross RPC independently of sessions. Checked creation preserves application errors while retaining the legacy missing-model decline. Diagnostics use wrapped scrollable global dialogs and never write or repair history.
+  Non-draining manifest issue snapshots cross RPC independently of sessions. Checked creation preserves application errors and reports a missing default model as its own error (BUG-410). Diagnostics use wrapped scrollable global dialogs and never write or repair history.
   """
 
   Background: User Story

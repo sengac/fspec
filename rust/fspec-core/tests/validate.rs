@@ -228,3 +228,247 @@ fn flags_excessive_consecutive_blank_lines_via_the_content_heuristic() {
     // @step Then the dispatcher result reports an exit code of 1
     assert_eq!(data["exitCode"].as_i64(), Some(1), "got data: {data}");
 }
+
+// ───────── scenarios moved from gherkin-validation.feature (COV-071) ─────────
+
+const LOGIN_REL: &str = "spec/features/login.feature";
+
+/// Write `body` to spec/features/login.feature, validate that single file and
+/// return the parsed `{output, exitCode}` envelope.
+fn validate_login(tmp: &TempDir, body: &str, verbose: bool) -> Value {
+    write_file(tmp.path(), LOGIN_REL, body);
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"file": LOGIN_REL, "verbose": verbose}),
+    ));
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
+    data_json(&result)
+}
+
+fn assert_exit_code(data: &Value, code: i64) {
+    assert_eq!(data["exitCode"].as_i64(), Some(code), "got data: {data}");
+}
+
+fn assert_only_valid_line(data: &Value) {
+    let output = data["output"].as_str().expect("output string");
+    assert_eq!(
+        output, "✓ spec/features/login.feature is valid",
+        "got:\n{output}"
+    );
+}
+
+/// The tag names the shared lenient parser attaches, normalised to `@tag`.
+fn tag_names(tags: &[String]) -> Vec<String> {
+    tags.iter()
+        .map(|t| {
+            if t.starts_with('@') {
+                t.clone()
+            } else {
+                format!("@{t}")
+            }
+        })
+        .collect()
+}
+
+fn parsed(body: &str) -> gherkin::Feature {
+    codelet_fspec_core::io::gherkin::parse_feature_lenient(body).expect("fixture parses")
+}
+
+#[test]
+fn a_feature_file_with_doc_strings_is_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with a scenario step carrying a properly closed doc string
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: Login\n\n  Scenario: Doc\n    Given a request body:\n      \"\"\"\n      {\"user\": \"a\"}\n      \"\"\"\n    Then it is accepted\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+}
+
+#[test]
+fn a_feature_file_with_data_tables_is_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with a scenario step carrying a properly formatted data table
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: Login\n\n  Scenario: Table\n    Given these users:\n      | name | role  |\n      | ann  | admin |\n      | bob  | user  |\n    Then both can log in\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+}
+
+#[test]
+fn a_feature_file_with_feature_level_tags_is_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with the tags @authentication and @critical at feature level
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "@authentication\n@critical\nFeature: User Login\n  Scenario: Successful login\n    Given I am on the login page\n    When I enter valid credentials\n    Then I should be logged in\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+
+    // @step And the parsed feature carries the tags @authentication and @critical
+    assert_eq!(
+        tag_names(&parsed(body).tags),
+        vec!["@authentication", "@critical"]
+    );
+}
+
+#[test]
+fn a_feature_file_with_scenario_level_tags_is_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with the tags @smoke and @regression on one scenario and @edge-case on another
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: User Login\n\n  @smoke\n  @regression\n  Scenario: Successful login\n    Given I am on the login page\n    When I enter valid credentials\n    Then I should be logged in\n\n  @edge-case\n  Scenario: Login with expired session\n    Given I have an expired session\n    When I attempt to login\n    Then I should be prompted to re-authenticate\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+
+    // @step And the parsed feature attaches @smoke and @regression to the first scenario and @edge-case to the second
+    let feature = parsed(body);
+    assert!(feature.tags.is_empty(), "no feature-level tags expected");
+    assert_eq!(feature.scenarios.len(), 2);
+    assert_eq!(
+        tag_names(&feature.scenarios[0].tags),
+        vec!["@smoke", "@regression"]
+    );
+    assert_eq!(tag_names(&feature.scenarios[1].tags), vec!["@edge-case"]);
+}
+
+#[test]
+fn a_feature_file_with_feature_and_scenario_level_tags_is_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with the tag @authentication at feature level and the tags @smoke, @regression and @edge-case at scenario level
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "@authentication\nFeature: User Login\n\n  @smoke\n  Scenario: Successful login\n    Given I am on the login page\n    When I enter valid credentials\n    Then I should be logged in\n\n  @regression\n  @edge-case\n  Scenario: Login with expired session\n    Given I have an expired session\n    When I attempt to login\n    Then I should be prompted to re-authenticate\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+
+    // @step And the parsed feature attaches @authentication to the feature and each scenario's tags to that scenario
+    let feature = parsed(body);
+    assert_eq!(tag_names(&feature.tags), vec!["@authentication"]);
+    assert_eq!(tag_names(&feature.scenarios[0].tags), vec!["@smoke"]);
+    assert_eq!(
+        tag_names(&feature.scenarios[1].tags),
+        vec!["@regression", "@edge-case"]
+    );
+}
+
+#[test]
+fn indented_scenario_tags_are_valid() {
+    // @step Given spec/features/login.feature is a valid feature file with the scenario tags @email and @sms indented 2 spaces above their scenario
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: Notifications\n\n  @email\n  @sms\n  Scenario: Send notification\n    Given I have a message\n    When I send notification\n    Then user receives it\n";
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    let data = validate_login(&tmp, body, false);
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    assert_only_valid_line(&data);
+
+    // @step And the parsed feature attaches @email and @sms to the scenario
+    assert_eq!(
+        tag_names(&parsed(body).scenarios[0].tags),
+        vec!["@email", "@sms"]
+    );
+}
+
+#[test]
+fn a_missing_file_is_reported_as_not_found_with_exit_code_1() {
+    // @step Given no file exists at spec/features/nonexistent.feature
+    let tmp = TempDir::new().expect("tempdir");
+    fs::create_dir_all(tmp.path().join("spec/features")).expect("mkdir");
+    assert!(!tmp
+        .path()
+        .join("spec/features/nonexistent.feature")
+        .exists());
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/nonexistent.feature'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"file": "spec/features/nonexistent.feature"}),
+    ));
+    let data = data_json(&result);
+    let output = data["output"].as_str().expect("output string");
+
+    // @step Then the dispatcher result reports an exit code of 1
+    assert_exit_code(&data, 1);
+
+    // @step And the rendered output contains "✗ spec/features/nonexistent.feature has syntax errors:"
+    assert!(
+        output.contains("✗ spec/features/nonexistent.feature has syntax errors:"),
+        "got:\n{output}"
+    );
+
+    // @step And the rendered output contains "Line 0: File not found: spec/features/nonexistent.feature"
+    assert!(
+        output.contains("Line 0: File not found: spec/features/nonexistent.feature"),
+        "got:\n{output}"
+    );
+}
+
+#[test]
+fn verbose_validation_prints_the_parse_details_before_the_result() {
+    // @step Given spec/features/login.feature is a syntactically valid feature file
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature' and verbose=true
+    let data = validate_login(&tmp, VALID_LOGIN, true);
+    let output = data["output"].as_str().expect("output string");
+
+    // @step Then the dispatcher result reports an exit code of 0
+    assert_exit_code(&data, 0);
+
+    // @step And the rendered output contains "Parsing spec/features/login.feature..."
+    assert!(
+        output.contains("Parsing spec/features/login.feature..."),
+        "got:\n{output}"
+    );
+
+    // @step And the rendered output contains "  AST generated successfully"
+    assert!(
+        output.contains("  AST generated successfully"),
+        "got:\n{output}"
+    );
+
+    // @step And the rendered output contains the feature name line "  Feature: Login"
+    assert!(output.contains("  Feature: Login\n"), "got:\n{output}");
+
+    // @step And the rendered output contains the scenario count line "  Scenarios: 1"
+    assert!(output.contains("  Scenarios: 1\n"), "got:\n{output}");
+    assert!(
+        output.ends_with("✓ spec/features/login.feature is valid"),
+        "got:\n{output}"
+    );
+}

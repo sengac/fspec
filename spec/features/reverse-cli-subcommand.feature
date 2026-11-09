@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-294
+@BUG-295
 Feature: Port reverse command to Rust
   """
   File layout: core impl rust/fspec-core/src/commands/reverse.rs (rewrite stub); new type module rust/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config rust/fspec-core/src/help/configs/reverse.rs; CLI bridge rust/fspec/src/reverse.rs; integration tests rust/fspec/tests/cli_reverse.rs + core tests rust/fspec-core/tests/reverse.rs; help fixture rust/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).

@@ -4,27 +4,154 @@
       "name": "NAPI listProviders returns per-model limits for custom providers",
       "testMappings": [
         {
-          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
-          "lines": "176-229",
+          "file": "rust/providers/tests/bug_139_per_model_limits/scenarios.rs",
+          "lines": "8-60",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
                 43,
+                44,
+                45,
+                46,
+                50,
+                51,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                194,
+                195,
+                196,
+                197,
+                198,
+                200,
+                201,
+                222
+              ],
+              "firstLine": "pub struct ProviderModelInfo {",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A ProviderConfig model that declares no limits has them unavailable",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/scenarios.rs",
+          "lines": "65-101",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/config.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// Per-model definition in a [`ProviderConfig::models`] map.",
+              "lastLine": "pub max_output_tokens: Option<usize>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON omits context_window - list_providers_info reports it unavailable",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/scenarios.rs",
+          "lines": "106-140",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/management.rs",
+              "lines": [
+                194,
+                195,
+                196,
+                197,
+                198,
+                200,
+                201,
+                222
+              ],
+              "firstLine": "let available = credentials.has_custom(&cfg.name);",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session provider listing sends no context window for a custom model that declares none",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov170_custom_provider_undeclared_limits.rs",
+          "lines": "53-101",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "let mut models: Vec<codelet_rpc_types::ModelEntry> = p",
+              "lastLine": "})"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_8.rs",
+              "lines": [
                 44,
                 45,
                 46,
                 47,
                 48,
+                49,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "return Ok(p",
+              "lastLine": ".collect());"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RhaiCustomProvider reports undeclared limits as unavailable",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/unavailable_limits.rs",
+          "lines": "63-76",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/provider.rs",
+              "lines": [
                 49,
                 50,
                 51,
@@ -40,42 +167,6 @@
                 61,
                 62,
                 63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -105,139 +196,151 @@
                 126,
                 127,
                 128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "/// Context window of the selected model: the PROV-095 script override",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A model without max_output_tokens uses the declared defaults.max_output_tokens",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/unavailable_limits.rs",
+          "lines": "78-88",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/provider.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "let model_id = model_def.id.clone();",
+              "lastLine": "let script_compaction_threshold = overrides.compaction_threshold;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A declared zero limit is rejected when the config is loaded",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/unavailable_limits.rs",
+          "lines": "110-133",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/config.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "// PROV-170: a declared limit of 0 is not a limit — reject it here,",
+              "lastLine": "}"
             },
             {
-              "file": "rust/napi/src/session_manager.rs",
+              "file": "rust/providers/src/custom/error.rs",
               "lines": [
-                8510,
-                8511,
-                8512,
-                8513,
-                8514,
-                8515,
-                8516,
-                8517,
-                8518,
-                8519,
-                8520,
-                8521,
-                8522,
-                8523,
-                8524,
-                8525,
-                8526,
-                8527,
-                8528,
-                8529,
-                8530,
-                8531,
-                8532,
-                8533,
-                8534,
-                8535,
-                8536,
-                8537,
-                8538,
-                8539,
-                8540,
-                8541,
-                8542,
-                8543,
-                8544,
-                8545,
-                8546,
-                8547,
-                8548,
-                8549,
-                8550,
-                8551,
-                8552,
-                8553,
-                8554,
-                8555,
-                8556,
-                8557,
-                8558,
-                8559,
-                8560,
-                8561,
-                8562,
-                8563,
-                8564,
-                8565,
-                8566,
-                8567,
-                8568,
-                8569,
-                8570
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "default_context_window() default value changes to 200000",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
-          "lines": "233-272",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/config.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "JSON omits context_window - new default 200k flows through",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
-          "lines": "274-313",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/config.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "\"provider '{provider}' declares {field} = 0 at {path}; a token limit must be positive\"",
+              "lastLine": ""
             }
           ]
         }
@@ -247,19 +350,12 @@
       "name": "Rhai script get_model_limits still wins over JSON (PROV-095 no-regression)",
       "testMappings": [
         {
-          "file": "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs",
-          "lines": "316-402",
+          "file": "rust/providers/tests/bug_139_per_model_limits/scenarios.rs",
+          "lines": "158-226",
           "implMappings": [
             {
-              "file": "rust/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/provider.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -288,20 +384,100 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                128
+              ],
+              "firstLine": "let model_id = model_def.id.clone();",
+              "lastLine": "let script_compaction_threshold = overrides.compaction_threshold;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A declared limit larger than the wire maximum fails the provider listing",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug_139_per_model_limits/wire_limits.rs",
+          "lines": "10-50",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/management.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ],
+              "firstLine": "let models = cfg",
+              "lastLine": ".map_err(CustomErrorExt::to_provider_error)?;"
+            },
+            {
+              "file": "rust/providers/src/custom/management/wire_limit.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "/// PROV-172: convert a declared limit to the wire's `u32`, failing (never",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/custom/error.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// PROV-172: a declared token limit does not fit the RPC wire's `u32`,",
+              "lastLine": "},"
             }
           ]
         }
@@ -309,17 +485,24 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/bug_139_custom_provider_per_model_limits_test.rs"
+      "rust/providers/tests/bug_139_per_model_limits/scenarios.rs",
+      "rust/sessions/tests/prov170_custom_provider_undeclared_limits.rs",
+      "rust/providers/tests/bug_139_per_model_limits/unavailable_limits.rs",
+      "rust/providers/tests/bug_139_per_model_limits/wire_limits.rs"
     ],
     "implFiles": [
       "rust/providers/src/custom/management.rs",
-      "rust/napi/src/session_manager.rs",
-      "rust/providers/src/custom/config.rs"
+      "rust/providers/src/custom/config.rs",
+      "rust/sessions/src/handle_impl/handle_impl_5.rs",
+      "rust/sessions/src/handle_impl/handle_impl_8.rs",
+      "rust/providers/src/custom/provider.rs",
+      "rust/providers/src/custom/error.rs",
+      "rust/providers/src/custom/management/wire_limit.rs"
     ],
-    "totalLinesCovered": 734
+    "totalLinesCovered": 626
   }
 }

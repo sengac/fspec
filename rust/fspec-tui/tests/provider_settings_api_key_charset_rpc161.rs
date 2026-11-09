@@ -18,13 +18,14 @@
 //! `KeyCode::Char(c) => { draft.push(c); … }` arm in detail.rs and PASS
 //! once the `if is_printable_ascii(c)` guard is added.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
+use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
+use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_fspec_tui::views::{
     DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 /// Build a synthetic Press event with no modifiers — mirrors the harness in
@@ -50,18 +51,28 @@ fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCreden
     }
 }
 
-/// Build a ProviderSettingsView seeded with one api_key provider already
-/// transitioned into Detail::EditApiKey mode with an empty draft.
-fn view_in_edit_api_key_mode() -> ProviderSettingsView {
+/// BUG-578: open Detail::EditApiKey for an api_key `provider` the way the UI
+/// does: Enter on the expanded provider's API-key row.
+fn view_in_edit_api_key_mode() -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
+    let infos = vec![pinfo("anthropic", "api_key", true, 1)];
     let mut v = ProviderSettingsView::new();
-    v.set_providers(vec![pinfo("anthropic", "api_key", true, 1)]);
-    v.handle_key(key(KeyCode::Enter)); // List → Detail::Summary
-    v.handle_key(key(KeyCode::Enter)); // Detail::Summary → Detail::EditApiKey
-    v
+    v.set_provider_display_infos(project_display_infos(&infos, &[]));
+    v.set_providers(infos);
+    v.toggle_expansion("anthropic");
+    v.selected_index = v
+        .nav_items
+        .iter()
+        .position(|n| matches!(n.kind, NavItemKind::ApiKey))
+        .or_fail("the expanded provider has an API-key row")?;
+    v.handle_key(key(KeyCode::Enter));
+    Ok(v)
 }
 
 /// Helper: assert the view is in Detail::EditApiKey mode and return the draft.
-fn assert_draft_eq(view: &ProviderSettingsView, expected: &str) {
+fn assert_draft_eq(
+    view: &ProviderSettingsView,
+    expected: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     match &view.mode {
         ProviderSettingsMode::Detail {
             sub: DetailSub::EditApiKey { draft },
@@ -72,8 +83,9 @@ fn assert_draft_eq(view: &ProviderSettingsView, expected: &str) {
                 "expected draft {expected:?}, got {draft:?}"
             );
         }
-        other => panic!("expected Detail::EditApiKey, got {other:?}"),
+        other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -81,11 +93,11 @@ fn assert_draft_eq(view: &ProviderSettingsView, expected: &str) {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() {
+fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() -> TestResult {
     // @step Given I have opened /provider, selected an api_key provider, and entered the EditApiKey form
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     // @step And the draft is empty
-    assert_draft_eq(&view, "");
+    assert_draft_eq(&view, "")?;
 
     // @step When I type the characters "s", "k", "-", and "t" one at a time
     let mut last_event: Option<ProviderSettingsEvent> = None;
@@ -94,11 +106,13 @@ fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() {
     }
 
     // @step Then the draft becomes "sk-t" (4 characters)
-    assert_draft_eq(&view, "sk-t");
+    assert_draft_eq(&view, "sk-t")?;
     // @step And each keystroke emits ProviderSettingsEvent::Consumed
-    match last_event.expect("at least one keystroke") {
+    match last_event.or_fail("at least one keystroke")? {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed on each printable char, got {other:?}"),
+        other => {
+            return Err(format!("expected Consumed on each printable char, got {other:?}").into())
+        }
     }
     // @step And no inline validation status is shown
     assert!(
@@ -110,6 +124,7 @@ fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() {
     // (We hold only the LAST event above; for each accepted printable char the arm
     // re-enters EditApiKey and returns Consumed without emitting — the strongly-
     // typed match above already guarantees no Emit(_) escaped on the final char.)
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -117,24 +132,25 @@ fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn space_ascii_32_is_accepted_as_the_lower_boundary() {
+fn space_ascii_32_is_accepted_as_the_lower_boundary() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press the space key (ASCII code 32)
     let out = view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the draft becomes "abc " (4 characters, with a trailing space)
-    assert_draft_eq(&view, "abc ");
+    assert_draft_eq(&view, "abc ")?;
     // @step And the keystroke emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -142,24 +158,25 @@ fn space_ascii_32_is_accepted_as_the_lower_boundary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tilde_ascii_126_is_accepted_as_the_upper_boundary() {
+fn tilde_ascii_126_is_accepted_as_the_upper_boundary() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press the "~" key (ASCII code 126)
     let out = view.handle_key(key(KeyCode::Char('~')));
 
     // @step Then the draft becomes "abc~" (4 characters)
-    assert_draft_eq(&view, "abc~");
+    assert_draft_eq(&view, "abc~")?;
     // @step And the keystroke emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -167,23 +184,23 @@ fn tilde_ascii_126_is_accepted_as_the_upper_boundary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tab_ascii_9_is_silently_dropped_as_a_control_character() {
+fn tab_ascii_9_is_silently_dropped_as_a_control_character() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('\t') (ASCII code 9)
     let out = view.handle_key(key(KeyCode::Char('\t')));
 
     // @step Then the draft remains "abc" (unchanged)
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
     // @step And no inline validation status is shown
     assert!(
@@ -191,6 +208,7 @@ fn tab_ascii_9_is_silently_dropped_as_a_control_character() {
         "expected empty status, got {:?}",
         view.status
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -198,24 +216,25 @@ fn tab_ascii_9_is_silently_dropped_as_a_control_character() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn unit_separator_ascii_31_is_silently_dropped() {
+fn unit_separator_ascii_31_is_silently_dropped() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('\u{001F}') (ASCII code 31)
     let out = view.handle_key(key(KeyCode::Char('\u{001F}')));
 
     // @step Then the draft remains "abc"
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -223,24 +242,25 @@ fn unit_separator_ascii_31_is_silently_dropped() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn del_ascii_127_is_silently_dropped_as_out_of_range() {
+fn del_ascii_127_is_silently_dropped_as_out_of_range() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('\u{007F}') (ASCII code 127, DEL)
     let out = view.handle_key(key(KeyCode::Char('\u{007F}')));
 
     // @step Then the draft remains "abc"
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -248,24 +268,25 @@ fn del_ascii_127_is_silently_dropped_as_out_of_range() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn non_ascii_latin1_e_acute_is_silently_dropped() {
+fn non_ascii_latin1_e_acute_is_silently_dropped() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('é') (U+00E9, code 233)
     let out = view.handle_key(key(KeyCode::Char('é')));
 
     // @step Then the draft remains "abc"
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -273,24 +294,25 @@ fn non_ascii_latin1_e_acute_is_silently_dropped() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn non_ascii_bmp_check_mark_is_silently_dropped() {
+fn non_ascii_bmp_check_mark_is_silently_dropped() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('✓') (U+2713)
     let out = view.handle_key(key(KeyCode::Char('✓')));
 
     // @step Then the draft remains "abc"
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -298,24 +320,25 @@ fn non_ascii_bmp_check_mark_is_silently_dropped() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn non_bmp_emoji_key_is_silently_dropped() {
+fn non_bmp_emoji_key_is_silently_dropped() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
 
     // @step When I press a key delivering KeyCode::Char('🔑') (U+1F511)
     let out = view.handle_key(key(KeyCode::Char('🔑')));
 
     // @step Then the draft remains "abc"
-    assert_draft_eq(&view, "abc");
+    assert_draft_eq(&view, "abc")?;
     // @step And the keystroke still emits ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -324,10 +347,10 @@ fn non_bmp_emoji_key_is_silently_dropped() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it() {
+fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft ""
-    let mut view = view_in_edit_api_key_mode();
-    assert_draft_eq(&view, "");
+    let mut view = view_in_edit_api_key_mode()?;
+    assert_draft_eq(&view, "")?;
     // @step And the inline status reads "API key cannot be empty"
     // (RPC-162 made empty-Enter a silent cancel; the legacy validation
     // string is now seeded directly to exercise the Char-arm's clearing
@@ -346,7 +369,7 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
     let out_drop = view.handle_key(key(KeyCode::Char('é')));
 
     // @step Then the draft remains ""
-    assert_draft_eq(&view, "");
+    assert_draft_eq(&view, "")?;
     // @step And the inline status still reads "API key cannot be empty"
     assert!(
         view.status.contains("API key cannot be empty"),
@@ -355,14 +378,14 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
     );
     match out_drop {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed on dropped char, got {other:?}"),
+        other => return Err(format!("expected Consumed on dropped char, got {other:?}").into()),
     }
 
     // @step When I then press the "s" key (printable, accepted)
     let out_accept = view.handle_key(key(KeyCode::Char('s')));
 
     // @step Then the draft becomes "s"
-    assert_draft_eq(&view, "s");
+    assert_draft_eq(&view, "s")?;
     // @step And the inline status is cleared (empty)
     assert!(
         view.status.is_empty(),
@@ -371,7 +394,7 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
     );
     match out_accept {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed on accepted char, got {other:?}"),
+        other => return Err(format!("expected Consumed on accepted char, got {other:?}").into()),
     }
     // Belt-and-braces: no Action fired.
     assert!(
@@ -382,6 +405,7 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
         ),
         "char-keystrokes must NOT emit SaveProviderCredentials"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -398,7 +422,8 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to_end() {
+fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to_end() -> TestResult
+{
     // @step Given the helper function is_printable_ascii(c: char) -> bool exists in views/provider_settings/detail.rs
     // (Verified at compile time by the inline detail.rs unit test; here we
     // exercise the function via its only call site — handle_edit_key.)
@@ -406,7 +431,7 @@ fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to
     // @step When the helper is called with each of the chars ' ' (32), 'A' (65), '~' (126)
     // @step Then it returns true for every one
     for c in [' ', 'A', '~'] {
-        let mut view = view_in_edit_api_key_mode();
+        let mut view = view_in_edit_api_key_mode()?;
         view.handle_key(key(KeyCode::Char(c)));
         match &view.mode {
             ProviderSettingsMode::Detail {
@@ -420,14 +445,14 @@ fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to
                     c as u32
                 );
             }
-            other => panic!("expected Detail::EditApiKey, got {other:?}"),
+            other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
         }
     }
 
     // @step When the helper is called with each of the chars '\t' (9), '\u{001F}' (31), '\u{007F}' (127), 'é' (233), '🔑' (128017)
     // @step Then it returns false for every one
     for c in ['\t', '\u{001F}', '\u{007F}', 'é', '🔑'] {
-        let mut view = view_in_edit_api_key_mode();
+        let mut view = view_in_edit_api_key_mode()?;
         view.handle_key(key(KeyCode::Char(c)));
         match &view.mode {
             ProviderSettingsMode::Detail {
@@ -440,7 +465,8 @@ fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to
                     c as u32
                 );
             }
-            other => panic!("expected Detail::EditApiKey, got {other:?}"),
+            other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
         }
     }
+    Ok(())
 }

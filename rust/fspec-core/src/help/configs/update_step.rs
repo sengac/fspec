@@ -4,16 +4,9 @@
 //! Byte-for-byte parity with `node dist/index.js update-step --help`,
 //! verified against `rust/fspec/tests/fixtures/help/update-step.txt`.
 //!
-//! ## The `undefined` lines
-//! The TypeScript `commonPatterns` entries are objects with only `pattern`
-//! and `example` fields — they have NO `description`. The TS formatter
-//! (`src/utils/help-formatter.ts`) unconditionally emits
-//! `    ${p.description}` for structured patterns, so JavaScript renders the
-//! missing field as the literal string `undefined`. The Rust
-//! `CommonPattern.description` field is non-optional `&'static str`, so we
-//! reproduce the quirk verbatim by setting `description: "undefined"`. This
-//! is INTENTIONAL parity — the captured fixture contains these `undefined`
-//! lines at lines 37, 44, 51.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -58,19 +51,19 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         pattern: "Refine step wording",
         example:
             "# Original step is unclear\nfspec update-step user-auth \"Login\" \"I log in\" --text \"I submit valid credentials\"\n\n# Verify change\nfspec show-feature user-auth",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Change step type",
         example:
             "# Convert Given to When for better flow\nfspec update-step checkout \"Purchase\" \"Given I complete checkout\" --keyword When\n\n# Result: \"When I complete checkout\"",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Batch update multiple steps",
         example:
             "# Update multiple steps in a scenario\nfspec update-step login \"Valid login\" \"I enter email\" --text \"I enter my email address\"\nfspec update-step login \"Valid login\" \"I click login\" --text \"I submit the login form\"\nfspec validate",
-        description: "undefined",
+        description: None,
     }),
 ];
 

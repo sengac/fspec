@@ -1,4 +1,4 @@
-//! MUX-001/MUX-002 — mux types + live layout state.
+//! MUX-001/MUX-002/MUX-010 — mux types + live layout state.
 //!
 //! Feature: spec/features/rust-mux-mode.feature
 
@@ -7,6 +7,8 @@ use ratatui::layout::Rect;
 use codelet_rpc_types::SessionId;
 
 use crate::components::menu_bar::MenuFocus;
+
+use super::layout_tree::{Divider, MuxLayout};
 
 /// Which top-level view a mux pane hosts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
@@ -18,36 +20,21 @@ pub enum MuxPaneKind {
     Checkpoints,
 }
 
-/// Mux grid orientation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-pub enum MuxOrientation {
-    /// Left | right | …
-    #[default]
-    Horizontal,
-    /// top / bottom / …
-    Vertical,
-}
-
 /// Where keyboard focus sits inside the mux grid: the index of the
-/// focused pane. (The divider is mouse-drag-resizable only — it has
-/// no keyboard focus state; Tab pane/divider cycling was removed
-/// 2026-08-26 because Tab is reserved for the agent view's turn-select
-/// mode.)
+/// focused pane in reading order of the live layout (MUX-010). (The
+/// dividers are mouse-drag-resizable only — they have no keyboard focus
+/// state; Tab pane/divider cycling was removed 2026-08-26 because Tab is
+/// reserved for the agent view's turn-select mode.)
 pub type MuxFocus = usize;
 
 /// Mux grid configuration (persisted to the shared `fspec-config.json`
-/// under `tui.mux`).
+/// under `tui.mux` as `{"layout": "<canonical string>", "focused_pane":
+/// N, "enabled": bool}` — MUX-010).
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MuxConfig {
-    pub orientation: MuxOrientation,
-    /// BUG-166 percentage scale: ONE percent per inter-pane gap — n panes
-    /// → n-1 entries, `splits[i]` = pane i's share of the available axis
-    /// (after divider subtraction) in percent; the LAST pane always takes
-    /// the integer remainder so the scale sums to 100. An empty/short vec
-    /// (legacy configs) means the missing entries fall back to the equal
-    /// share `available/n`.
-    pub splits: Vec<u16>,
-    pub panes: Vec<MuxPaneKind>,
+    /// MUX-010: the nested column/row layout (top level = columns).
+    pub layout: MuxLayout,
     pub focused_pane: usize,
     pub enabled: bool,
 }
@@ -57,20 +44,19 @@ pub struct MultiplexLayout {
     pub config: MuxConfig,
     /// Cached absolute pane rects from the last render (mouse hit-testing).
     pub pane_rects: Vec<Rect>,
-    /// BUG-166: cached divider rects — one per inter-pane gap (n-1).
-    pub divider_rects: Vec<Rect>,
+    /// MUX-010: cached dividers of the last geometry (one per pair of
+    /// visible neighbours in every group).
+    pub(super) dividers: Vec<Divider>,
     /// Live divider drag state (mouse).
     pub is_dragging: bool,
-    /// BUG-166: which divider (gap index 0..n-2) is being dragged.
+    /// MUX-010: which divider (index into `dividers`) is being dragged.
     pub drag_index: Option<usize>,
-    /// Live drag override: the dragged pane's width in cells while a
-    /// divider drag is in flight (bypasses the clamp so the drag
-    /// tracks the cursor live; the clamp re-applies on release).
-    pub drag_width: Option<u16>,
-    /// BUG-166: last observed (dragged-pane width, available-axis span)
-    /// during the drag — used to commit the percent ON RELEASE (the
-    /// live drag only sets `drag_width`, so the left panes stay put).
-    pub drag_axis: Option<(u16, u16)>,
+    /// MUX-010: the dragged divider as it was at mouse-down (its group
+    /// path, neighbours and pair span stay fixed for the whole drag).
+    pub(super) drag_divider: Option<Divider>,
+    /// MUX-010: the in-flight layout with the dragged pair re-weighted
+    /// (rendered while dragging; stored into the config on release).
+    pub(super) drag_layout: Option<MuxLayout>,
     /// Focus: a pane or the divider.
     pub(super) focus: MuxFocus,
     /// MUX-002: agent window offset into the ordered open-session list.
@@ -78,9 +64,14 @@ pub struct MultiplexLayout {
     /// MUX-002: open-session ids the window is positioned over (synced via
     /// `sync_window` on every render / session change).
     pub(super) sessions: Vec<SessionId>,
-    /// MUX-002: rendered pane list (agent slots beyond the open-session
-    /// count are dropped — no blank panes).
+    /// MUX-002: rendered pane list in reading order (agent slots beyond
+    /// the open-session count are dropped — no blank panes).
     pub(super) rendered_panes: Vec<MuxPaneKind>,
+    /// MUX-010: which stored leaf (reading order) is shown live.
+    pub(super) visible: Vec<bool>,
+    /// BUG-174/MUX-010: no stored pane is shown — the live grid is a
+    /// transient single board pane (never stored).
+    pub(super) transient_board: bool,
     /// BUG-183: pane kinds the user has closed from the LIVE grid via
     /// Esc (transient — cleared on `/mux off` / `/mux on` / pane-list
     /// changes). `recompute_effective_panes` filters these out so the
@@ -128,6 +119,10 @@ pub struct MultiplexLayout {
     /// MENU-004: true when the last render painted the bar (the guard
     /// for the 3-row degradation — the mouse arms stay inert).
     pub(super) menu_bar_painted: bool,
+    /// MUX-013: the painted bar rows (1, or more when the buttons wrap)
+    /// and the Zone C button rects (`zone_c()` order) of the last frame.
+    pub(super) menu_bar_rect: Option<Rect>,
+    pub(super) menu_zone_c_rects: Option<Vec<Rect>>,
     /// MENU-004 R8: the PAINTED chip count fed by `App::dispatch`
     /// (the board `set_menu_ring_size` mirror) — the key-time ring
     /// math stays in lockstep with the bar's paint.
@@ -141,14 +136,16 @@ impl MultiplexLayout {
             focus: config.focused_pane,
             config,
             pane_rects: Vec::new(),
-            divider_rects: Vec::new(),
+            dividers: Vec::new(),
             is_dragging: false,
             drag_index: None,
-            drag_width: None,
-            drag_axis: None,
+            drag_divider: None,
+            drag_layout: None,
             window_start: 0,
             sessions: Vec::new(),
             rendered_panes: Vec::new(),
+            visible: Vec::new(),
+            transient_board: false,
             closed_panes: Vec::new(),
             pending_new_agent: false,
             // MUX-002: seed a 120x23 body (24 rows minus the footer row)
@@ -166,6 +163,8 @@ impl MultiplexLayout {
             menu_cells: None,
             menu_open_panel: None,
             menu_bar_painted: false,
+            menu_bar_rect: None,
+            menu_zone_c_rects: None,
             menu_chips: 0,
         }
     }
@@ -188,9 +187,14 @@ impl MultiplexLayout {
         &self.pane_rects
     }
 
-    /// BUG-166: the cached divider rects — one per inter-pane gap.
-    pub fn divider_rects(&self) -> &[Rect] {
-        &self.divider_rects
+    /// MUX-010: the cached dividers of the live geometry.
+    pub fn dividers(&self) -> &[Divider] {
+        &self.dividers
+    }
+
+    /// MUX-010: the last observed mux body area (the fit check basis).
+    pub fn body_area(&self) -> Rect {
+        self.body_area.unwrap_or_default()
     }
 
     pub fn is_dragging(&self) -> bool {

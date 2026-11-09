@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @testing
 @RPC-055
@@ -42,4 +43,3 @@ Feature: /debug RPC surface source shape
   Scenario: /debug slash command wiring lives in dispatch_slash_debug.rs
     Given the file rust/fspec-tui/src/app/dispatch_slash_debug.rs exists
     Then it declares a method named "handle_slash_debug"
-    And it declares a method named "try_dispatch_slash_debug"

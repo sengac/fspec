@@ -1,22 +1,38 @@
-{"IsolationStateChange":{"baseCommit":null,"isIsolated":false,"worktreePath":null}}
+{"IsolationStateChange":{"isIsolated":false,"worktreePath":null,"baseCommit":null}}
+{"FooterStateUpdate":{"cwd":"<workspace>","displayPath":"<workspace>","isGitRepo":false,"branch":null}}
 {"UserInput":{"text":"hello"}}
 {"SessionStateChange":{"state":"Running"}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":0,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
-{"Text":{"correlationId":"<corr>","observedCorrelationIds":null,"text":"hi back"}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"ContinueStateUpdate":{"continueState":{"enabled":false,"budget":10,"nudgesUsed":0,"goalActive":false,"effectiveBudget":10,"goalCleared":false,"doneRejections":0}}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":0,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"ContextSnapshot":{"snapshot":{"model":"canned","generation":0,"request":1,"physical_request":null,"input_tokens":null,"output_tokens":null,"capacity":200000,"threshold":160000,"provenance":"unknown"}}}
+"ResponseAttemptStarted"
+{"Text":{"text":"hi back","correlationId":"<corr>","observedCorrelationIds":null}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"ContextFillUpdate":{"contextFill":{"fill_percentage":0,"effective_tokens":0.0,"threshold":160000.0,"context_window":200000.0}}}
+{"ContextSnapshot":{"snapshot":{"model":"canned","generation":0,"request":2,"physical_request":"<uuid>","input_tokens":0,"output_tokens":0,"capacity":200000,"threshold":160000,"provenance":"measured"}}}
 {"SessionStateChange":{"state":"Idle"}}
 "Done"
 {"SessionStateChange":{"state":"Cleared"}}
 {"UserInput":{"text":"trigger-tool"}}
 {"SessionStateChange":{"state":"Running"}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":0,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
-{"Text":{"correlationId":"<corr>","observedCorrelationIds":null,"text":"hi back"}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
-{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"ContinueStateUpdate":{"continueState":{"enabled":false,"budget":10,"nudgesUsed":0,"goalActive":false,"effectiveBudget":10,"goalCleared":false,"doneRejections":0}}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":0,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"ContextSnapshot":{"snapshot":{"model":"canned","generation":0,"request":3,"physical_request":null,"input_tokens":null,"output_tokens":null,"capacity":200000,"threshold":160000,"provenance":"unknown"}}}
+"ResponseAttemptStarted"
+{"Text":{"text":"hi back","correlationId":"<corr>","observedCorrelationIds":null}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"TokenUpdate":{"tokens":{"input_tokens":0,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":null,"cumulative_billed_output":null,"reasoning_tokens":null}}}
+{"ContextFillUpdate":{"contextFill":{"fill_percentage":0,"effective_tokens":0.0,"threshold":160000.0,"context_window":200000.0}}}
+{"ContextSnapshot":{"snapshot":{"model":"canned","generation":0,"request":4,"physical_request":"<uuid>","input_tokens":0,"output_tokens":0,"capacity":200000,"threshold":160000,"provenance":"measured"}}}
+{"SessionStateChange":{"state":"Idle"}}
+"Done"
+{"SessionStateChange":{"state":"Compacting"}}
+{"SessionStateChange":{"state":"Compacting"}}
+{"CompactionProgressUpdate":{"progress":{"phase":"Compaction builder working","current":0,"total":0}}}
+{"CommittedCompaction":{"snapshot":{"generation":1,"tokens":{"input_tokens":"<tokens>","output_tokens":0,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"tokens_per_second":null,"cumulative_billed_input":0,"cumulative_billed_output":0,"reasoning_tokens":0},"contextFill":{"fill_percentage":2,"effective_tokens":3537.0,"threshold":160000.0,"context_window":200000.0},"originalTokens":0,"coveredTurns":4,"retainedTurns":0,"estimated":true,"reconciled":true}}}
+{"ContextSnapshot":{"snapshot":{"model":"canned","generation":1,"request":0,"physical_request":null,"input_tokens":"<tokens>","output_tokens":0,"capacity":200000,"threshold":160000,"provenance":"estimated"}}}
+{"CompactionProgressUpdate":{"progress":null}}
+{"CompactionComplete":{"compactionResult":{"original_tokens":0,"compacted_tokens":"<tokens>","compression_ratio":0.0,"turns_summarized":4,"turns_kept":0}}}
 {"SessionStateChange":{"state":"Idle"}}
 "Done"

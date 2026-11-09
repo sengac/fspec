@@ -19,7 +19,7 @@
 //! 5. Replace `virtualHooks` with an empty array (`[]`), NOT remove the
 //!    field. TS line 55: `workUnit.virtualHooks = []`.
 //! 6. Bump the SOURCE unit's `updatedAt` via [`iso8601_now`].
-//! 7. Atomic single-write persistence via [`write_json_atomic`] —
+//! 7. Atomic single-write persistence via [`crate::io::board::write_work_units`] —
 //!    `fileManager.transaction` parity.
 //!
 //! ## Result shape
@@ -35,7 +35,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `clear-virtual-hooks`. Mirrors the TS
@@ -75,6 +74,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "clear-virtual-hooks")?;
     // Load (auto-create) spec/work-units.json — parity with the TS command
     // which calls `ensureWorkUnitsFile(cwd)` unconditionally.
     let mut data = ensure_work_units_file(project_root)?;
@@ -111,7 +112,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Best-effort script cleanup. Mirrors the TS try/catch around
     // `cleanupVirtualHookScript`; any error (ENOENT or otherwise) is
     // silently swallowed.
-    let virtual_dir = project_root.join("spec/hooks/.virtual");
+    let virtual_dir = crate::io::spec_paths::virtual_hooks_dir(project_root)?;
     for hook_name in &hook_names {
         let script_path = virtual_dir.join(format!("{}-{hook_name}.sh", args.work_unit_id));
         let _ = std::fs::remove_file(&script_path);
@@ -125,8 +126,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write at end.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&ClearVirtualHooksResult {
         success: true,

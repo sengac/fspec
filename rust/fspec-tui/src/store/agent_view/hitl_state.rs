@@ -39,6 +39,8 @@ pub enum HitlAdvance {
 /// `useHitlInput` machine state.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HitlPromptState {
+    /// AMGR-020: the request route; the answer names its request id.
+    pub route: codelet_rpc_types::RequestRoute,
     /// The full wire request (RPC-410: 1–3 ordered questions).
     pub request: HitlRequest,
     /// Index of the question currently prompted (0-based).
@@ -56,8 +58,9 @@ pub struct HitlPromptState {
 }
 
 impl HitlPromptState {
-    pub fn new(request: HitlRequest) -> Self {
+    pub fn new(route: codelet_rpc_types::RequestRoute, request: HitlRequest) -> Self {
         Self {
+            route,
             request,
             question_index: 0,
             selected_option: 0,
@@ -160,10 +163,15 @@ impl AgentViewStore {
     /// **TUI-111**: the request's display text (headers, questions,
     /// option labels + descriptions) is sanitized on ingress — the
     /// inline HITL prompt rows always paint clean text.
-    pub fn set_hitl_prompt(&mut self, session: SessionId, request: HitlRequest) {
+    pub fn set_hitl_prompt(
+        &mut self,
+        session: SessionId,
+        route: codelet_rpc_types::RequestRoute,
+        request: HitlRequest,
+    ) {
         self.hitl_prompt_by_session.insert(
             session,
-            HitlPromptState::new(sanitize_hitl_request(request)),
+            HitlPromptState::new(route, sanitize_hitl_request(request)),
         );
     }
 

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "128-182",
+          "lines": "130-184",
           "implMappings": [
             {
               "file": "rust/git/src/tree_utils.rs",
@@ -151,8 +151,24 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "pub fn collect_worktree_files(worktree_path: &Path) -> Result<TreeSnapshot> {",
+              "lastLine": ""
             }
           ]
         }
@@ -163,14 +179,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "183-230",
+          "lines": "185-232",
           "implMappings": [
             {
               "file": "rust/git/src/session_result.rs",
               "lines": [
-                113,
-                114,
-                115,
                 116,
                 117,
                 118,
@@ -300,8 +313,25 @@
                 242,
                 243,
                 244,
-                245
-              ]
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ],
+              "firstLine": "/// The post-apply worktree snapshot (the exact state that was copied",
+              "lastLine": "// Remove session worktree"
             }
           ]
         }
@@ -312,7 +342,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "231-272",
+          "lines": "233-274",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -362,7 +392,9 @@
                 478,
                 479,
                 480
-              ]
+              ],
+              "firstLine": "pub fn inspect_session(",
+              "lastLine": "///    - Copies modified/added files to main"
             }
           ]
         }
@@ -373,7 +405,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "273-310",
+          "lines": "275-312",
           "implMappings": [
             {
               "file": "rust/git/src/checkout.rs",
@@ -436,7 +468,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub fn checkout_to_worktree(",
+              "lastLine": "}"
             }
           ]
         }
@@ -447,7 +481,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "311-357",
+          "lines": "313-359",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -510,8 +544,14 @@
                 180,
                 181,
                 182,
-                183
-              ]
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "pub fn apply_snapshot_to_main(",
+              "lastLine": "}"
             }
           ]
         }
@@ -522,7 +562,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "358-407",
+          "lines": "360-409",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -585,8 +625,14 @@
                 180,
                 181,
                 182,
-                183
-              ]
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "pub fn apply_snapshot_to_main(",
+              "lastLine": "}"
             }
           ]
         }
@@ -597,7 +643,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "408-437",
+          "lines": "410-439",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -660,8 +706,14 @@
                 180,
                 181,
                 182,
-                183
-              ]
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "pub fn apply_snapshot_to_main(",
+              "lastLine": "}"
             }
           ]
         }
@@ -672,7 +724,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "438-485",
+          "lines": "440-487",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -771,7 +823,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "pub fn compute_session_diff(",
+              "lastLine": "/// symlinks, and removes deleted blobs/symlinks. Gitlinks and"
             }
           ]
         }
@@ -782,7 +836,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "486-516",
+          "lines": "488-518",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -845,8 +899,14 @@
                 180,
                 181,
                 182,
-                183
-              ]
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "pub fn apply_snapshot_to_main(",
+              "lastLine": "}"
             }
           ]
         }
@@ -857,14 +917,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "517-554",
+          "lines": "519-556",
           "implMappings": [
             {
               "file": "rust/git/src/tree_utils.rs",
               "lines": [
-                80,
-                81,
-                82,
                 83,
                 84,
                 85,
@@ -882,8 +939,11 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101
+              ],
+              "firstLine": "let file_type = meta.file_type();",
+              "lastLine": "}"
             }
           ]
         }
@@ -894,14 +954,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "555-596",
+          "lines": "557-598",
           "implMappings": [
             {
               "file": "rust/git/src/ghost_commit.rs",
               "lines": [
-                490,
-                491,
-                492,
                 493,
                 494,
                 495,
@@ -1029,8 +1086,13 @@
                 617,
                 618,
                 619,
-                620
-              ]
+                620,
+                621,
+                622,
+                623
+              ],
+              "firstLine": "/// 2. Read tree from ghost commit",
+              "lastLine": "Ok(RestoreResult {"
             }
           ]
         }
@@ -1041,7 +1103,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/wt006_git_blind_mechanism.rs",
-          "lines": "597-653",
+          "lines": "599-666",
           "implMappings": [
             {
               "file": "rust/git/src/session_diff.rs",
@@ -1266,8 +1328,14 @@
                 247,
                 248,
                 249,
-                250
-              ]
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "pub fn compute_session_diff(",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -1289,6 +1357,6 @@
       "rust/git/src/session_diff.rs",
       "rust/git/src/ghost_commit.rs"
     ],
-    "totalLinesCovered": 1607
+    "totalLinesCovered": 1662
   }
 }

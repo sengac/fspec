@@ -16,6 +16,10 @@ use uuid::Uuid;
 
 #[tokio::test]
 async fn test_add_file_creates_file_on_disk() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("new_file.rs");
     let path_str = file_path.to_string_lossy();
@@ -55,6 +59,10 @@ async fn test_add_file_creates_file_on_disk() {
 
 #[tokio::test]
 async fn test_add_file_creates_parent_directories() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("nested").join("deep").join("file.rs");
     let path_str = file_path.to_string_lossy();
@@ -79,6 +87,10 @@ async fn test_add_file_creates_parent_directories() {
 
 #[tokio::test]
 async fn test_update_file_replaces_matching_lines() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("existing.rs");
     let path_str = file_path.to_string_lossy();
@@ -136,6 +148,10 @@ async fn test_update_file_replaces_matching_lines() {
 
 #[tokio::test]
 async fn test_delete_file_removes_from_disk() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("to_delete.rs");
     let path_str = file_path.to_string_lossy();
@@ -176,6 +192,10 @@ async fn test_delete_file_removes_from_disk() {
 
 #[tokio::test]
 async fn test_multi_file_patch_mixed_operations() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let new_file = temp_dir.path().join("new.rs");
     let update_file = temp_dir.path().join("update_me.rs");
@@ -245,6 +265,10 @@ async fn test_multi_file_patch_mixed_operations() {
 
 #[tokio::test]
 async fn test_malformed_patch_returns_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = ApplyPatchTool::new(Uuid::nil());
 
     // @step Given a Codex session with the apply_patch tool registered
@@ -264,6 +288,10 @@ async fn test_malformed_patch_returns_error() {
 
 #[tokio::test]
 async fn test_empty_patch_returns_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = ApplyPatchTool::new(Uuid::nil());
 
     let patch = "*** Begin Patch\n*** End Patch".to_string();
@@ -283,6 +311,10 @@ async fn test_empty_patch_returns_error() {
 
 #[tokio::test]
 async fn test_update_context_mismatch_returns_error_and_preserves_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("mismatch.rs");
     let path_str = file_path.to_string_lossy();
@@ -331,6 +363,10 @@ async fn test_update_context_mismatch_returns_error_and_preserves_file() {
 
 #[tokio::test]
 async fn test_apply_patch_tool_definition() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a CodexProvider configured with a valid model
     let tool = ApplyPatchTool::new(Uuid::nil());
 
@@ -359,6 +395,10 @@ async fn test_apply_patch_tool_definition() {
 
 #[tokio::test]
 async fn test_update_nonexistent_file_returns_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = ApplyPatchTool::new(Uuid::nil());
 
     let patch = "*** Begin Patch\n\
@@ -379,6 +419,10 @@ async fn test_update_nonexistent_file_returns_error() {
 
 #[tokio::test]
 async fn test_delete_nonexistent_file_returns_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let tool = ApplyPatchTool::new(Uuid::nil());
 
     let patch = "*** Begin Patch\n\

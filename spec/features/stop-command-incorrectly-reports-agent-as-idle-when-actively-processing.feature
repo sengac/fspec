@@ -1,4 +1,7 @@
+@BUG-582
 @BRIDGE-011
+@codelet
+@reporting
 Feature: /stop command incorrectly reports agent as idle when actively processing
   """
   agentState in telegram-endpoint.ts must transition to 'thinking' when forwarding message to agent via WebSocket. Fix location: setupTelegramBot() message handler around line 693.

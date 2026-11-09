@@ -9,7 +9,7 @@ use support::{Fixture, TestResult};
 fn assert_limits(manager: &ProviderManager, expected: (usize, usize)) {
     assert_eq!(
         (manager.context_window(), manager.max_output_tokens()),
-        expected
+        (Some(expected.0), Some(expected.1))
     );
 }
 
@@ -126,7 +126,7 @@ async fn scenario_logical_providers_retain_settings_ownership_across_facades() -
     // @step Then catalog aliases supply metadata without borrowing another logical provider settings
     assert_eq!(codex.auto_continue, Some(2));
     assert_eq!(codex.max_images, Some(1));
-    assert_eq!(codex_limits, (1_000_000, 64_000));
+    assert_eq!(codex_limits, (Some(1_000_000), Some(64_000)));
     assert_eq!(manager.runtime_options().auto_continue, Some(3));
     assert_eq!(manager.runtime_options().max_images, Some(0));
     assert_eq!(manager.runtime_options().streaming, None);
@@ -265,7 +265,7 @@ async fn scenario_token_overrides_resolve_independently_and_clear_to_automatic()
     manager.set_model_direct("openai", "unknown", None, None, None)?;
     assert_eq!(
         (manager.context_window(), manager.max_output_tokens()),
-        (128_000, 4_096)
+        (Some(128_000), Some(4_096))
     );
     Ok(())
 }
@@ -280,8 +280,8 @@ async fn scenario_anthropic_catalog_limits_are_not_capped_by_historical_defaults
     // @step When the model is selected without explicit overrides
     manager.select_model("anthropic/catalog-key")?;
     // @step Then the resolved limits retain catalog values rather than blanket 200000 and 8192 ceilings
-    assert_eq!(manager.context_window(), 1_000_000);
-    assert_eq!(manager.max_output_tokens(), 64_000);
+    assert_eq!(manager.context_window(), Some(1_000_000));
+    assert_eq!(manager.max_output_tokens(), Some(64_000));
     assert_eq!(manager.raw_model_context_window(), Some(1_000_000));
     assert_eq!(manager.raw_model_max_output_tokens(), Some(64_000));
     manager.set_model_direct_with_profile(

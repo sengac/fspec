@@ -36,7 +36,7 @@ pub async fn start(effect: &Path, denied: bool) -> TestResult<MockServer> {
             ResponseTemplate::new(200).set_body_json(json!({"model":"synthetic-security-fixture","answers":{"security":{"type":"noul","noul":risk}},"usage":{"input_tokens":1,"output_tokens":1}}))
         }).mount(&server).await;
     save_rlcd_url_at(&directory.join("fspec-config.json"), &server.uri())?;
-    let config = load_rlcd_config();
+    let config = load_rlcd_config()?;
     assert_eq!(config.url, server.uri());
     assert!(config.enabled);
     assert_eq!(config.security, RlcdSecurityConfig::default());

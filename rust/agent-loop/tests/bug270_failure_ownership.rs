@@ -5,7 +5,7 @@ use codelet_agent_loop::persist::retry_pending_persistence;
 use codelet_agent_loop::persistence_retry::{PersistenceSpool, RecoveryRecord};
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use codelet_core::persistence::messages::durability::observe;
-use codelet_core::persistence::transcript::{JournalEvent, JournalRecord, JournalStore};
+use codelet_core::persistence::transcript::{JournalRecord, JournalStore};
 use codelet_rpc_types::StreamChunk;
 
 #[path = "support/streaming_speed.rs"]
@@ -63,6 +63,8 @@ async fn directory_and_root_barrier_failures_retain_the_provisional_journal_iden
 #[tokio::test]
 #[serial_test::serial]
 async fn combined_journal_and_recovery_staging_failure_retains_caller_ownership() -> TestResult {
+    use codelet_core::persistence::transcript::JournalEvent;
+
     // @step Given a stream whose journal record barrier and recovery staging both fail
     let (directory, session, output) = fixture::background()?;
     let spool = PersistenceSpool::open(session.id)?;

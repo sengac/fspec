@@ -10,20 +10,24 @@ use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// Extract PHP dependencies from composer.json.
-pub fn extract_composer_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_composer_dependencies(project_root: &Path) -> helpers::Extracted {
     let composer_path = project_root.join("composer.json");
     if !composer_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_composer_json(project_root, &composer_path))
+}
 
-    let content = std::fs::read_to_string(&composer_path)
-        .map_err(|e| format!("Failed to read composer.json: {e}"))?;
-
-    let pkg: Value =
-        serde_json::from_str(&content).map_err(|e| format!("Invalid composer.json: {e}"))?;
+/// The entities of one composer.json, or why it could not be read or parsed.
+fn extract_composer_json(
+    project_root: &Path,
+    composer_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, composer_path)?;
+    let pkg: Value = helpers::parse_json_manifest(project_root, composer_path, &content)?;
 
     let rel_path = "composer.json";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     let line_count = content.lines().count() as i32;

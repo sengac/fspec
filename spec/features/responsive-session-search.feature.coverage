@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/bug273_search_responsiveness.rs",
-          "lines": "12-65",
+          "lines": "10-78",
           "implMappings": [
             {
               "file": "rust/tools/src/session_search/mod.rs",
@@ -34,7 +34,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "message: reason,",
+              "lastLine": "})"
             }
           ]
         }
@@ -51,6 +53,6 @@
     "implFiles": [
       "rust/tools/src/session_search/mod.rs"
     ],
-    "totalLinesCovered": 78
+    "totalLinesCovered": 93
   }
 }

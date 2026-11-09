@@ -5,11 +5,26 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct081_explicit_transport.rs",
-          "lines": "54-114",
+          "lines": "53-113",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
                 161,
                 162,
                 163,
@@ -25,8 +40,18 @@
                 173,
                 174,
                 175,
-                176
-              ]
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ],
+              "firstLine": "fn send_streaming<T>(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/websocket.rs",
@@ -64,12 +89,13 @@
                 177,
                 178,
                 179
-              ]
+              ],
+              "firstLine": "if socket.is_none() {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -81,8 +107,11 @@
                 185,
                 186,
                 187,
-                188
-              ]
+                188,
+                189
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "};"
             }
           ]
         }
@@ -93,7 +122,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct081_explicit_transport.rs",
-          "lines": "117-174",
+          "lines": "116-173",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
@@ -184,7 +213,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "let identity = (url.clone(), request.headers().clone());",
+              "lastLine": "yield Bytes::from(format!(\"data: {text}\\n\\n\"));"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -226,7 +257,9 @@
                 162,
                 163,
                 164
-              ]
+              ],
+              "firstLine": "pub fn with_history(mut self, history: super::history::CodexHistory) -> Self {",
+              "lastLine": ""
             }
           ]
         }
@@ -237,7 +270,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct081_explicit_transport.rs",
-          "lines": "177-198",
+          "lines": "176-197",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/memory_policy.rs",
@@ -261,7 +294,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_request(request: &Value) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -274,7 +309,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "pub fn with_history(mut self, history: super::history::CodexHistory) -> Self {",
+              "lastLine": "capabilities: Option<CodexCapabilities>,"
             }
           ]
         }
@@ -285,7 +322,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct081_explicit_transport.rs",
-          "lines": "201-236",
+          "lines": "200-235",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
@@ -343,11 +380,28 @@
                 231,
                 232,
                 233
-              ]
+              ],
+              "firstLine": "let mut socket = socket.ok_or_else(|| failure(\"Codex socket connection missing\"))?;",
+              "lastLine": "Some(Ok(Message::Close(_))) | None => Err(NetworkFailure::Interrupted.into_http_error())?,"
             },
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
                 161,
                 162,
                 163,
@@ -363,13 +417,22 @@
                 173,
                 174,
                 175,
-                176
-              ]
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ],
+              "firstLine": "fn send_streaming<T>(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -405,8 +468,11 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -502,7 +568,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "let generation = generation?;",
+              "lastLine": "yield Choice::FinalResponse(Final {"
             }
           ]
         }
@@ -524,6 +592,6 @@
       "rust/providers/src/codex/memory_policy.rs",
       "rust/providers/src/codex/streaming.rs"
     ],
-    "totalLinesCovered": 586
+    "totalLinesCovered": 632
   }
 }

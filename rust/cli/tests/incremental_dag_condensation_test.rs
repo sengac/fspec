@@ -1,4 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[path = "support/offline_session.rs"]
+mod offline_session;
 // Feature: spec/features/incremental-dag-condensation.feature
 //
 // This test file validates the acceptance criteria defined in the feature file.
@@ -19,7 +21,7 @@ use std::sync::Arc;
 
 fn create_test_session() -> codelet_cli::session::Session {
     let provider_manager =
-        codelet_providers::ProviderManager::new().expect("Need at least one API key for tests");
+        offline_session::provider_manager().expect("Need at least one API key for tests");
 
     let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
     // Add environment system reminder (always present)
@@ -46,13 +48,76 @@ fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: us
     }
 }
 
-fn add_compaction_dag(session: &mut codelet_cli::session::Session, dag_content: &str) {
-    let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{dag_content}\n</system-reminder>"
-    );
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&wrapped)),
-    });
+/// BUG-306: incremental compaction is driven by the committed durable summary,
+/// so seed one through the real commit, publish and restore path.
+fn commit_dag(
+    session: &mut codelet_cli::session::Session,
+    dag_content: &str,
+    covered_turns: usize,
+) -> tempfile::TempDir {
+    use codelet_core::compaction::{validate_dag_candidate, DagValidationContext};
+    use codelet_core::persistence::compaction_boundary::{
+        capture_compaction_source, CompactionCheckpoint, CompactionTokenProvenance,
+    };
+    use codelet_core::persistence::compaction_commit::{
+        commit_compaction, publish_compaction, CompactionCandidate,
+    };
+    let directory = codelet_test_helpers::setup_temp_directory().expect("data directory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(directory.path().to_path_buf()).expect("redirect data");
+    codelet_core::persistence::reset_stores_for_tests();
+    session
+        .provider_manager_mut()
+        .set_model_direct(
+            "anthropic",
+            "claude-sonnet-4-6",
+            Some(200_000),
+            Some(4096),
+            None,
+        )
+        .expect("explicit selected model");
+    let model = session.current_model_id().expect("selected model");
+    let mut manifest = codelet_core::persistence::create_session_with_provider(
+        "incremental-dag",
+        directory.path(),
+        "claude",
+    )
+    .expect("persisted session");
+    for turn in 0..covered_turns {
+        codelet_core::persistence::append_message(&mut manifest, "user", &format!("turn {turn}"))
+            .expect("persisted original");
+    }
+    let source = capture_compaction_source(&manifest, &model, "dag-v1").expect("source");
+    let dag = validate_dag_candidate(
+        &format!("{dag_content}\n<dag-files>\n</dag-files>"),
+        &DagValidationContext {
+            persisted_turn_count: covered_turns,
+            required_coverage_end: covered_turns.checked_sub(1),
+            ..Default::default()
+        },
+    )
+    .expect("valid committed DAG");
+    let candidate = CompactionCandidate {
+        operation_id: uuid::Uuid::new_v4(),
+        checkpoint: CompactionCheckpoint {
+            provider: manifest.provider.clone(),
+            model: model.clone(),
+            generation: source.generation + 1,
+            payload: serde_json::json!({"lineage":"explicit-full-DAG"}),
+        },
+        source,
+        dag,
+        input_tokens: 23,
+        output_reservation: 8,
+        token_provenance: CompactionTokenProvenance::Estimated,
+    };
+    let promoted = commit_compaction(candidate, &model, |_, _| Ok(())).expect("commit");
+    publish_compaction(&promoted, |_| Ok(())).expect("publish");
+    let manifest = codelet_core::persistence::load_session(manifest.id).expect("committed");
+    session
+        .restore_compaction_boundary(&manifest)
+        .expect("restore committed DAG");
+    directory
 }
 
 // ========================================
@@ -74,7 +139,7 @@ async fn test_first_compaction_uses_fresh_instruction() {
 
     // Get the last user message (the injected instruction)
     let last_user = session
-        .messages
+        .inference_messages()
         .iter()
         .rev()
         .find(|m| matches!(m, Message::User { .. }))
@@ -115,9 +180,10 @@ async fn test_first_compaction_uses_fresh_instruction() {
 // Scenario: Second compaction uses INCREMENTAL instruction when existing DAG found
 // ========================================
 
+#[serial_test::serial]
 #[tokio::test]
 async fn test_second_compaction_uses_incremental_instruction() {
-    // @step Given a session with conversation messages and an existing compaction-dag system-reminder
+    // @step Given a session with conversation messages restored from a committed compaction DAG
     let mut session = create_test_session();
     let dag = r#"<dag-node depth="D2" turns="0-40" label="Architecture Decisions">
 - JWT + Redis for auth
@@ -132,7 +198,7 @@ async fn test_second_compaction_uses_incremental_instruction() {
 </dag-node>"#;
 
     // @step And the existing DAG contains dag-node blocks with max turn_end of 82
-    add_compaction_dag(&mut session, dag);
+    let _data = commit_dag(&mut session, dag, 83);
     add_conversation_turns(&mut session, 20);
     session.token_tracker.input_tokens = 50_000;
     let compaction_flag = Arc::new(AtomicBool::new(false));
@@ -143,7 +209,7 @@ async fn test_second_compaction_uses_incremental_instruction() {
         .expect("execute_compaction should succeed");
 
     let last_user = session
-        .messages
+        .inference_messages()
         .iter()
         .rev()
         .find(|m| matches!(m, Message::User { .. }))
@@ -306,7 +372,7 @@ async fn test_execute_compaction_appends_resume_prompt_fresh() {
     .expect("should succeed");
 
     let last_user = session
-        .messages
+        .inference_messages()
         .iter()
         .rev()
         .find(|m| matches!(m, Message::User { .. }))
@@ -326,14 +392,15 @@ async fn test_execute_compaction_appends_resume_prompt_fresh() {
     assert!(text.contains("implement the login feature"));
 }
 
+#[serial_test::serial]
 #[tokio::test]
 async fn test_execute_compaction_appends_resume_prompt_incremental() {
-    // @step Given a session with an existing DAG
+    // @step Given a session restored from a committed compaction DAG
     let mut session = create_test_session();
     let dag = r#"<dag-node depth="D2" turns="0-30" label="Arch">
 - Decisions
 </dag-node>"#;
-    add_compaction_dag(&mut session, dag);
+    let _data = commit_dag(&mut session, dag, 31);
     add_conversation_turns(&mut session, 10);
     session.token_tracker.input_tokens = 50_000;
     let compaction_flag = Arc::new(AtomicBool::new(false));
@@ -344,7 +411,7 @@ async fn test_execute_compaction_appends_resume_prompt_incremental() {
         .expect("should succeed");
 
     let last_user = session
-        .messages
+        .inference_messages()
         .iter()
         .rev()
         .find(|m| matches!(m, Message::User { .. }))

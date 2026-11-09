@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
-          "lines": "82-95",
+          "lines": "66-78",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -28,7 +28,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "/// PROV-144: the Max Images numeric text field (raw typed string, parsed",
+              "lastLine": "/// PROV-145: the Loop Retries numeric text field (max auto-continue"
             }
           ]
         }
@@ -39,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
-          "lines": "96-112",
+          "lines": "81-96",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
@@ -99,7 +101,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "//! PROV-139 — Streaming boolean-field helpers extracted from `profile_form.rs`",
+              "lastLine": "KeyCode::Backspace | KeyCode::Delete => form.backspace(),"
             }
           ]
         }
@@ -110,7 +114,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
-          "lines": "113-139",
+          "lines": "99-124",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
@@ -170,7 +174,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "//! PROV-139 — Streaming boolean-field helpers extracted from `profile_form.rs`",
+              "lastLine": "KeyCode::Backspace | KeyCode::Delete => form.backspace(),"
             }
           ]
         }
@@ -181,7 +187,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
-          "lines": "140-160",
+          "lines": "127-146",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -202,7 +208,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "/// Empty ⇒ absent ⇒ the RIG-014 default of 10; `\"0\"` ⇒ never retry.",
+              "lastLine": "Self {"
             }
           ]
         }
@@ -213,11 +221,75 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov139_streaming_form.rs",
-          "lines": "161-173",
+          "lines": "149-163",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278
+              ],
+              "firstLine": "/// Build a [`ProfileDefinition`] from the current values.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
                 170,
                 171,
                 172,
@@ -233,8 +305,21 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "/// Build a [`ProfileDefinition`] from the current form values.",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,8 +335,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
-      "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs"
     ],
-    "totalLinesCovered": 252
+    "totalLinesCovered": 318
   }
 }

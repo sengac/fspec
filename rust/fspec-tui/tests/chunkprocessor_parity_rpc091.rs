@@ -13,8 +13,7 @@
 //! fail (red phase) against the pre-RPC-091 stub in
 //! rust/fspec-tui/src/store/agent_view/session_context.rs.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -73,17 +72,21 @@ fn session_in_flight(app: &App, id: &SessionId) -> Option<usize> {
         .and_then(|c| c.in_flight_assistant)
 }
 
-fn nth_chunk_source_text(app: &App, id: &SessionId, n: usize) -> String {
+fn nth_chunk_source_text(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<String, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.text.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -92,7 +95,7 @@ fn nth_chunk_source_text(app: &App, id: &SessionId, n: usize) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
+fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -112,7 +115,7 @@ fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
     // @step And that chunk's source.text equals "Hello world" without any bullet glyph
-    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(stored, "Hello world");
     assert!(
         !stored.starts_with('\u{25CF}'),
@@ -125,17 +128,18 @@ fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
     let kind = chunks[0]
         .source
         .as_ref()
         .map(|s| s.kind.clone())
-        .expect("ChunkSource present");
+        .or_fail("ChunkSource present")?;
     assert!(
         matches!(kind, codelet_fspec_tui::ChunkKind::AssistantText),
         "expected AssistantText kind, got {kind:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -144,7 +148,7 @@ fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
+fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -154,7 +158,7 @@ fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
         StreamChunk::text("first line\nsecond line".to_string()),
     ));
 
-    // @step Then the wrapped lines produced for that chunk are exactly the table
+    // @step Then the wrapped lines produced for that chunk are exactly:
     // RPC-401: one trailing blank separator row follows the two content lines.
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(
@@ -167,9 +171,10 @@ fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
     );
 
     // @step And the stored chunk.source.text is exactly "first line\nsecond line" (no bullet baked in)
-    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(stored, "first line\nsecond line");
     assert!(!stored.contains('\u{25CF}'));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -177,7 +182,7 @@ fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn done_flushes_in_flight_and_emits_no_new_chunk() {
+fn done_flushes_in_flight_and_emits_no_new_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the chunks subscriber has forwarded StreamChunk::Text { text: "hello" } for s-1
@@ -198,7 +203,7 @@ fn done_flushes_in_flight_and_emits_no_new_chunk() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
     let is_streaming = chunks[0]
         .source
@@ -206,6 +211,7 @@ fn done_flushes_in_flight_and_emits_no_new_chunk() {
         .map(|s| s.is_streaming)
         .unwrap_or(true);
     assert!(!is_streaming, "Done must clear is_streaming");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -213,11 +219,10 @@ fn done_flushes_in_flight_and_emits_no_new_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn done_runs_format_markdown_tables_over_accumulated_text() {
+fn done_runs_format_markdown_tables_over_accumulated_text() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded StreamChunk::Text deltas concatenating to
-    //       "| col1 | col2 |\n|---|---|\n| a | bb |" for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Text deltas concatenating to "| col1 | col2 |\n|---|---|\n| a | bb |" for s-1
     let pieces = ["| col1 | col2 |\n", "|---|---|\n", "| a | bb |"];
     for p in pieces {
         app.dispatch(Action::ChunkReceived(
@@ -229,12 +234,11 @@ fn done_runs_format_markdown_tables_over_accumulated_text() {
     // @step When the chunks subscriber forwards StreamChunk::Done for s-1
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
-    // @step Then the final in-flight chunk's source.text equals a pipe-aligned table
-    //       where every row uses equal column widths
+    // @step Then the final in-flight chunk's source.text equals a Unicode box-drawing table whose border rows share one display width
     // RPC-370 superseded the pipe-padding renderer with a Unicode box-drawing
     // grid; the Done finalisation now emits bordered rows. We assert the grid
     // structure and equal border-row display widths.
-    let final_text = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let final_text = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     let lines: Vec<&str> = final_text.lines().collect();
     assert_eq!(
         lines.len(),
@@ -263,13 +267,14 @@ fn done_runs_format_markdown_tables_over_accumulated_text() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let is_streaming = ctx.scrollback.visible_window(1024)[0]
         .source
         .as_ref()
         .map(|s| s.is_streaming)
         .unwrap_or(true);
     assert!(!is_streaming);
+    Ok(())
 }
 
 fn tool_call_chunk(id: &str, name: &str, input: &str) -> StreamChunk {
@@ -308,7 +313,7 @@ fn tool_progress_chunk(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
+fn tool_call_flushes_in_flight_and_pushes_tool_call_card() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the chunks subscriber has forwarded StreamChunk::Text { text: "Let me check the board" } for s-1
@@ -317,13 +322,13 @@ fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
         StreamChunk::text("Let me check the board".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards ToolCall { tc-1, Fspec, {"command":"board"} } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolCall { tool_call: { id: "tc-1", name: "Fspec", input: "{\"command\":\"board\"}" } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_call_chunk("tc-1", "Fspec", "{\"command\":\"board\"}"),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     // RPC-401: each chunk carries a trailing blank separator row, so the
     // combined visible lines are content + gutter, per chunk.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
@@ -339,15 +344,20 @@ fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    let kind = chunks[1].source.as_ref().map(|s| s.kind.clone()).unwrap();
+    let kind = chunks[1]
+        .source
+        .as_ref()
+        .map(|s| s.kind.clone())
+        .or_fail("expected a value")?;
     match kind {
         codelet_fspec_tui::ChunkKind::ToolCall { tool_call_id, .. } => {
             assert_eq!(tool_call_id, "tc-1");
         }
-        other => panic!("expected ToolCall kind, got {other:?}"),
+        other => return Err(format!("expected ToolCall kind, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -356,11 +366,10 @@ fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_call_drops_empty_in_flight_placeholder() {
+fn tool_call_drops_empty_in_flight_placeholder() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the SessionContext in_flight_assistant slot points at an existing
-    //       empty AssistantText chunk
+    // @step And the SessionContext in_flight_assistant slot points at an existing empty AssistantText chunk
     // (Achieved by forwarding an empty Text delta — the post-RPC-091 record_chunk
     // pushes a fresh empty placeholder for that case, matching the TS branch when
     // chunk.text === '' is wrapped through processStreamingChunk's else-push arm.)
@@ -371,7 +380,7 @@ fn tool_call_drops_empty_in_flight_placeholder() {
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     assert_eq!(session_in_flight(&app, &sid("s-1")), Some(0));
 
-    // @step When the chunks subscriber forwards ToolCall { tc-2, Bash, {"command":"ls"} } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolCall { tool_call: { id: "tc-2", name: "Bash", input: "{\"command\":\"ls\"}" } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_call_chunk("tc-2", "Bash", "{\"command\":\"ls\"}"),
@@ -383,13 +392,18 @@ fn tool_call_drops_empty_in_flight_placeholder() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    let kind = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
+    let kind = chunks[0]
+        .source
+        .as_ref()
+        .map(|s| s.kind.clone())
+        .or_fail("expected a value")?;
     assert!(matches!(
         kind,
         codelet_fspec_tui::ChunkKind::ToolCall { .. }
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -398,7 +412,7 @@ fn tool_call_drops_empty_in_flight_placeholder() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
+fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the scrollback contains a ToolCall chunk with tool_call_id "tc-1" and header "● Fspec(board)"
@@ -408,7 +422,7 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     ));
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
-    // @step When the chunks subscriber forwards ToolResult { tc-1, "AUTH-001  AUTH-002  AUTH-003", is_error: false } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolResult { tool_result: { tool_call_id: "tc-1", content: "AUTH-001  AUTH-002  AUTH-003", is_error: false } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_result_chunk("tc-1", "AUTH-001  AUTH-002  AUTH-003", false),
@@ -417,7 +431,7 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     // @step Then the matching ToolCall chunk's source.text equals "● Fspec(board)\nAUTH-001  AUTH-002  AUTH-003"
     // (stored text — bullet baked here because ToolCall header carries it via
     // the rendered "● " prefix logic; relaxed: assert header line + body present.)
-    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert!(stored0.contains("Fspec(board)"));
     assert!(stored0.contains("AUTH-001  AUTH-002  AUTH-003"));
 
@@ -425,25 +439,38 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    let kind0 = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
+    let kind0 = chunks[0]
+        .source
+        .as_ref()
+        .map(|s| s.kind.clone())
+        .or_fail("expected a value")?;
     match kind0 {
         codelet_fspec_tui::ChunkKind::ToolCall { is_error, .. } => assert!(!is_error),
-        other => panic!("expected ToolCall kind, got {other:?}"),
+        other => return Err(format!("expected ToolCall kind, got {other:?}").into()),
     }
 
     // @step And the s-1 scrollback ends with a fresh empty AssistantText chunk with is_streaming true
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    let kind1 = chunks[1].source.as_ref().map(|s| s.kind.clone()).unwrap();
+    let kind1 = chunks[1]
+        .source
+        .as_ref()
+        .map(|s| s.kind.clone())
+        .or_fail("expected a value")?;
     assert!(matches!(kind1, codelet_fspec_tui::ChunkKind::AssistantText));
-    let is_streaming1 = chunks[1].source.as_ref().map(|s| s.is_streaming).unwrap();
+    let is_streaming1 = chunks[1]
+        .source
+        .as_ref()
+        .map(|s| s.is_streaming)
+        .or_fail("expected a value")?;
     assert!(is_streaming1, "fresh placeholder must be is_streaming");
-    let stored1 = nth_chunk_source_text(&app, &sid("s-1"), 1);
+    let stored1 = nth_chunk_source_text(&app, &sid("s-1"), 1)?;
     assert!(stored1.is_empty(), "fresh placeholder must be empty");
 
     // @step And the SessionContext in_flight_assistant slot is Some(<index of that fresh placeholder>)
     assert_eq!(session_in_flight(&app, &sid("s-1")), Some(1));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -451,7 +478,7 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_result_with_is_error_true_colours_body_red() {
+fn tool_result_with_is_error_true_colours_body_red() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the scrollback contains a ToolCall chunk with tool_call_id "tc-3" and header "● Bash(false)"
@@ -460,7 +487,7 @@ fn tool_result_with_is_error_true_colours_body_red() {
         tool_call_chunk("tc-3", "Bash", "{\"command\":\"false\"}"),
     ));
 
-    // @step When the chunks subscriber forwards ToolResult { tc-3, "exit code 1", is_error: true } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolResult { tool_result: { tool_call_id: "tc-3", content: "exit code 1", is_error: true } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_result_chunk("tc-3", "exit code 1", true),
@@ -470,25 +497,30 @@ fn tool_result_with_is_error_true_colours_body_red() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    let kind0 = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
+    let kind0 = chunks[0]
+        .source
+        .as_ref()
+        .map(|s| s.kind.clone())
+        .or_fail("expected a value")?;
     match kind0 {
         codelet_fspec_tui::ChunkKind::ToolCall { is_error, .. } => assert!(is_error),
-        other => panic!("expected ToolCall kind, got {other:?}"),
+        other => return Err(format!("expected ToolCall kind, got {other:?}").into()),
     }
     // @step And the rendered lines for that chunk carry foreground colour RED on the result body
     let body_line = chunks[0]
         .lines
         .iter()
         .find(|l| l.spans.iter().any(|s| s.content.contains("exit code 1")))
-        .expect("result body line present");
+        .or_fail("result body line present")?;
     let fg = body_line
         .spans
         .iter()
         .find(|s| s.content.contains("exit code 1"))
         .and_then(|s| s.style.fg);
     assert_eq!(fg, Some(Color::Red));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -496,11 +528,10 @@ fn tool_result_with_is_error_true_colours_body_red() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn continuation_text_after_tool_result_starts_new_assistant_bubble() {
+fn continuation_text_after_tool_result_starts_new_assistant_bubble() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the scrollback ends with a fresh empty AssistantText placeholder
-    //       created by a prior ToolResult
+    // @step And the scrollback ends with a fresh empty AssistantText placeholder created by a prior ToolResult
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_call_chunk("tc-1", "Fspec", "{\"command\":\"board\"}"),
@@ -512,12 +543,12 @@ fn continuation_text_after_tool_result_starts_new_assistant_bubble() {
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     assert_eq!(session_in_flight(&app, &sid("s-1")), Some(1));
 
-    // @step When the chunks subscriber forwards Text { "Here are the " } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Text { text: "Here are the " } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::text("Here are the ".to_string()),
     ));
-    // @step And the chunks subscriber forwards Text { "work units" } for s-1
+    // @step And the chunks subscriber forwards StreamChunk::Text { text: "work units" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::text("work units".to_string()),
@@ -525,10 +556,11 @@ fn continuation_text_after_tool_result_starts_new_assistant_bubble() {
 
     // @step Then the trailing AssistantText chunk's source.text equals "Here are the work units"
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    let trailing = nth_chunk_source_text(&app, &sid("s-1"), 1);
+    let trailing = nth_chunk_source_text(&app, &sid("s-1"), 1)?;
     assert_eq!(trailing, "Here are the work units");
     // @step And the SessionContext in_flight_assistant slot points at that trailing chunk
     assert_eq!(session_in_flight(&app, &sid("s-1")), Some(1));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -537,7 +569,7 @@ fn continuation_text_after_tool_result_starts_new_assistant_bubble() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_progress_folded_under_matching_tool_call_card() {
+fn tool_progress_folded_under_matching_tool_call_card() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the scrollback contains a ToolCall chunk with tool_call_id "tc-4" and header "● Bash(npm test)"
@@ -547,14 +579,14 @@ fn tool_progress_folded_under_matching_tool_call_card() {
     ));
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
-    // @step When the chunks subscriber forwards ToolProgress { tc-4, "PASS src/foo.test.ts\n", stream: stderr } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolProgress { tool_call_id: "tc-4", chunk: "PASS src/foo.test.ts\n", stream: stderr } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_progress_chunk("tc-4", "Bash", "PASS src/foo.test.ts\n", true),
     ));
 
     // @step Then the matching ToolCall chunk's source.text ends with "\nPASS src/foo.test.ts" within a streaming window
-    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert!(
         stored0.contains("PASS src/foo.test.ts"),
         "tool-call chunk must absorb progress; got {stored0:?}"
@@ -562,6 +594,7 @@ fn tool_progress_folded_under_matching_tool_call_card() {
 
     // @step And no new top-level RenderedChunk has been appended to the scrollback
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -570,7 +603,7 @@ fn tool_progress_folded_under_matching_tool_call_card() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn error_drops_empty_in_flight_before_pushing_api_error_line() {
+fn error_drops_empty_in_flight_before_pushing_api_error_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the SessionContext in_flight_assistant slot points at an existing empty AssistantText chunk
@@ -590,45 +623,48 @@ fn error_drops_empty_in_flight_before_pushing_api_error_line() {
     // @step Then the empty AssistantText chunk has been removed from scrollback
     // @step And the s-1 scrollback ends with a chunk whose source.text equals "API Error: rate limit exceeded"
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
-    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(stored0, "API Error: rate limit exceeded");
     // @step And the SessionContext in_flight_assistant slot is None
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: extractToolArgsDisplay collapses Bash command to a one-line summary
+// Scenario: extractToolArgsDisplay shows the Bash command followed by its remaining params
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn extract_tool_args_display_collapses_bash_to_command() {
-    // @step Given a ToolCall with name "Bash" and input JSON {"command":"ls -la","timeout":5000}
+fn extract_tool_args_display_collapses_bash_to_command() -> TestResult {
+    // @step Given a ToolCall with name "Bash" and input JSON "{\"command\":\"ls -la\",\"timeout\":5000}"
     // @step When the renderer formats the tool-call header
     let header = codelet_fspec_tui::extract_tool_args_display(
         "Bash",
         "{\"command\":\"ls -la\",\"timeout\":5000}",
     );
-    // @step Then the header text equals "ls -la, { timeout: 5000 }"
+    // @step Then the args display equals "ls -la, { timeout: 5000 }"
     // RPC-388: command-first branch now appends remaining params.
     assert_eq!(header, "ls -la, { timeout: 5000 }");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: extractToolArgsDisplay collapses Fspec command to the command subcommand
+// Scenario: extractToolArgsDisplay shows the Fspec command followed by its remaining params
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn extract_tool_args_display_collapses_fspec_to_command() {
-    // @step Given a ToolCall with name "Fspec" and input JSON {"command":"show-work-unit","args":"..."}
+fn extract_tool_args_display_collapses_fspec_to_command() -> TestResult {
+    // @step Given a ToolCall with name "Fspec" and input JSON "{\"command\":\"show-work-unit\",\"args\":\"{\\\"_\\\":[\\\"AUTH-001\\\"]}\"}"
     // @step When the renderer formats the tool-call header
     let header = codelet_fspec_tui::extract_tool_args_display(
         "Fspec",
         "{\"command\":\"show-work-unit\",\"args\":\"{\\\"_\\\":[\\\"AUTH-001\\\"]}\"}",
     );
-    // @step Then the header text equals "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }"
+    // @step Then the args display equals "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }"
     // RPC-388: command-first branch now appends remaining params (the
     // single-quoted string `args`).
     assert_eq!(header, "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -637,11 +673,11 @@ fn extract_tool_args_display_collapses_fspec_to_command() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn full_round_trip_renders_four_chunks_in_order() {
+fn full_round_trip_renders_four_chunks_in_order() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
-    // @step When the chunks subscriber forwards the chunks in order for s-1
+    // @step When the chunks subscriber forwards the following chunks in order for s-1:
     let chunks = vec![
         StreamChunk::user_input("what cards are open?".to_string()),
         StreamChunk::text("Let me ".to_string()),
@@ -656,7 +692,7 @@ fn full_round_trip_renders_four_chunks_in_order() {
         app.dispatch(Action::ChunkReceived(sid("s-1"), c));
     }
 
-    // @step Then the s-1 scrollback contains exactly four rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly four rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 4);
     let visible = session_lines(&app, &sid("s-1"));
     // RPC-401: each of the four chunks contributes its content line(s) plus
@@ -683,7 +719,7 @@ fn full_round_trip_renders_four_chunks_in_order() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     for (i, c) in ctx.scrollback.visible_window(1024).iter().enumerate() {
         let stored = c
             .source
@@ -695,4 +731,5 @@ fn full_round_trip_renders_four_chunks_in_order() {
             "chunk {i} must not bake the bullet; got {stored:?}"
         );
     }
+    Ok(())
 }

@@ -32,7 +32,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,7 +72,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -155,7 +159,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "//! `auto-advance` shell-facing CLI bridge (RPC-198).",
+              "lastLine": "}"
             }
           ]
         }
@@ -240,7 +246,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "//! `auto-advance` shell-facing CLI bridge (RPC-198).",
+              "lastLine": "}"
             }
           ]
         }

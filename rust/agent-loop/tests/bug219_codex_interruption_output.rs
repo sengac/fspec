@@ -16,7 +16,6 @@ use rig::{
     completion::{CompletionModel, CompletionRequestBuilder},
     streaming::StreamedAssistantContent,
 };
-use std::time::Duration;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
@@ -32,10 +31,13 @@ async fn scenario_ordinary_interrupted_streaming_stays_silent_in_session_output(
         r#"{"openai":{"id":"openai","name":"OpenAI","env":["OPENAI_API_KEY"],"models":{"o3":{"id":"o3","name":"o3","tool_call":true,"limit":{"context":200000,"output":100000}}}}}"#,
     )?;
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(temporary.path().to_owned())?;
     let manager = SessionManager::new();
-    manager.set_default_model("openai/o3");
-    let id = SessionManagerHandle::create_session(&manager, None);
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
+    manager.set_default_model("openai/o3")?;
+    let id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
     let session = manager.get_session(&id.value)?;
     let extensions = ProviderSession::for_provider("codex");
     session.prepare_provider_status(&extensions, "codex");
@@ -51,7 +53,7 @@ async fn scenario_ordinary_interrupted_streaming_stays_silent_in_session_output(
     let mut stream = model
         .stream(CompletionRequestBuilder::new(model.clone(), "ordinary work").build())
         .await?;
-    tokio::time::timeout(Duration::from_secs(2), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while let Some(event) = stream.next().await {
             if matches!(event?, StreamedAssistantContent::Text(_)) {
                 return Ok::<_, Box<dyn std::error::Error>>(());

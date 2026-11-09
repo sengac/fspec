@@ -77,5 +77,5 @@ Feature: Render colored Edit/Write diffs in the Rust agent view
   Scenario: Diff cards bypass the eight-line tool-output collapse
     Given an Edit diff card whose collapsed body has more than eight lines
     When the diff card is wrapped into lines
-    Then no '... +N lines (Enter to view full)' indicator from the eight-line collapse appears
+    Then no '... +N lines (Tab to select, Enter to view full)' indicator from the eight-line collapse appears
     And all of the diff body lines are rendered

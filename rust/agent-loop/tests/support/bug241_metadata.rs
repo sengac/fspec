@@ -36,9 +36,11 @@ pub async fn verify_retry_waiting(fixture: &mut Fixture) -> TestResult {
         .0
         .with_metadata_handle(fixture.codex()?.metadata.clone())
         .with_recovery_handle(fixture.codex()?.recovery.clone());
-    let observed =
-        tokio::time::timeout(std::time::Duration::from_secs(5), transport::collect(model))
-            .await??;
+    let observed = codelet_test_helpers::deadlock_guard(
+        "transport::collect(model)",
+        transport::collect(model),
+    )
+    .await??;
     assert!(observed.errors.is_empty());
     assert_eq!(observed.text, "Hello");
     assert_eq!(observed.usage.len(), 1);
@@ -72,9 +74,10 @@ impl Fixture {
     pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
         codelet_core::persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         codelet_providers::stub_provider::register_stub_provider();
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
         let session_id = manager
             .create_session("stub/canned", &directory.path().to_string_lossy())
             .await?;

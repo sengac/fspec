@@ -4,12 +4,14 @@
       "name": "begin_compaction_recovery preserves a trailing User(ToolResult) at the tail of session.messages",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "215-281",
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/begin_compaction_recovery_preserves.rs",
+          "lines": "4-66",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                291,
+                292,
                 293,
                 294,
                 295,
@@ -33,10 +35,10 @@
                 313,
                 314,
                 315,
-                316,
-                317,
-                318
-              ]
+                316
+              ],
+              "firstLine": "// just streamed back and whose usage update tripped the CompactionHook),",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,12 +48,14 @@
       "name": "PromptCancelled firing right after a tool result lets compaction resume without a failure notification",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "329-400",
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/begin_compaction_recovery_preserves.rs",
+          "lines": "110-180",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                356,
+                357,
                 358,
                 359,
                 360,
@@ -70,25 +74,27 @@
                 373,
                 374,
                 375,
-                376,
-                377,
-                378
-              ]
+                376
+              ],
+              "firstLine": "// its tool_result during this turn's cancel. This MUST run AFTER the",
+              "lastLine": "output.emit_compaction_progress(\"Context limit reached\", 0, 0);"
             }
           ]
         }
       ]
     },
     {
-      "name": "A trailing plain User text prompt is still popped (control \u2014 no behavior change)",
+      "name": "A trailing plain User text prompt is still popped (control — no behavior change)",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "284-327",
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/begin_compaction_recovery_preserves.rs",
+          "lines": "68-108",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                302,
+                303,
                 304,
                 305,
                 306,
@@ -101,10 +107,10 @@
                 313,
                 314,
                 315,
-                316,
-                317,
-                318
-              ]
+                316
+              ],
+              "firstLine": "if !content",
+              "lastLine": "}"
             }
           ]
         }
@@ -114,55 +120,9 @@
       "name": "Orphan safety net closes orphans after all mutations on every entry path",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "404-456",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/recovery_compaction.rs",
-              "lines": [
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351
-              ]
-            }
-          ]
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/begin_compaction_recovery_preserves.rs",
+          "lines": "182-231",
+          "implMappings": []
         }
       ]
     },
@@ -170,46 +130,39 @@
       "name": "Manual /compact recovers a persisted orphan instead of failing",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "545-625",
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/all_in_loop_entry.rs",
+          "lines": "116-153",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461
-              ]
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "// RPC-418 / BUG-516: manual /compact queues the compactor sub-agent",
+              "lastLine": "self.get_session(&session_id.value)?.start_manual_compaction()"
             },
             {
-              "file": "rust/napi/src/session_bindings.rs",
+              "file": "rust/sessions/src/background_session/compaction_handoff.rs",
               "lines": [
-                3161,
-                3162,
-                3163,
-                3164,
-                3165,
-                3166,
-                3167,
-                3168,
-                3169,
-                3170,
-                3171,
-                3172,
-                3173
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "// compactor captures the conversation.",
+              "lastLine": "})"
             }
           ]
         }
@@ -219,8 +172,8 @@
       "name": "execute_compaction still refuses when an orphan survives with no recovery performed",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs",
-          "lines": "627-672",
+          "file": "rust/cli/tests/cmpct050_orphan_tool_call_recovery/all_in_loop_entry.rs",
+          "lines": "183-221",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -244,7 +197,9 @@
                 616,
                 617,
                 618
-              ]
+              ],
+              "firstLine": ") -> Result<()> {",
+              "lastLine": ") -> anyhow::Result<String> {"
             }
           ]
         }
@@ -256,15 +211,15 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/tests/cmpct050_orphan_tool_call_recovery.rs"
+      "rust/cli/tests/cmpct050_orphan_tool_call_recovery/begin_compaction_recovery_preserves.rs",
+      "rust/cli/tests/cmpct050_orphan_tool_call_recovery/all_in_loop_entry.rs"
     ],
     "implFiles": [
       "rust/cli/src/interactive/recovery_compaction.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
-      "rust/cli/src/interactive_helpers.rs",
-      "rust/napi/src/session_bindings.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_2.rs",
+      "rust/sessions/src/background_session/compaction_handoff.rs",
+      "rust/cli/src/interactive_helpers.rs"
     ],
-    "totalLinesCovered": 493
+    "totalLinesCovered": 400
   }
 }

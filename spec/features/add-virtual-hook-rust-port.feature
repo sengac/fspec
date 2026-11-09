@@ -2,6 +2,7 @@
 @cli
 @rust
 @RPC-195
+@lifecycle-hooks
 Feature: Port add-virtual-hook command to Rust
   """
   Two-front-doors invariant (RPC-003 §7/§11): both the LLM-facing dispatcher and the clap shell subcommand invoke fspec_core::commands::add_virtual_hook::run with a JSON args string and &Path project_root.

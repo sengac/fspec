@@ -5,22 +5,48 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "231-255",
+          "lines": "178-202",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
-              "lines": [
-                34,
-                35
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/store/board_focus.rs",
               "lines": [
                 7,
                 8,
                 9
-              ]
+              ],
+              "firstLine": "self.session_attachments.clear();",
+              "lastLine": "self.session_attachments.entry(card).or_insert(session);"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(crate) fn handle_work_unit_focus_changed(",
+              "lastLine": "}"
             }
           ]
         }
@@ -31,14 +57,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "257-293",
+          "lines": "205-241",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 49,
                 50
-              ]
+              ],
+              "firstLine": "let work_unit_id = bound.map(|context| context.id.as_str());",
+              "lastLine": "let work_unit_status = bound.map(|context| context.status.as_str());"
             },
             {
               "file": "rust/fspec-tui/src/store/agent_view/focus_state.rs",
@@ -46,7 +74,9 @@
                 30,
                 31,
                 32
-              ]
+              ],
+              "firstLine": "match focus.context {",
+              "lastLine": "None => self.clear_work_unit_context(&session),"
             }
           ]
         }
@@ -57,7 +87,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "24-47",
+          "lines": "13-31",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/focus_state.rs",
@@ -67,19 +97,9 @@
                 24,
                 25,
                 26
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+              ],
+              "firstLine": "if self",
+              "lastLine": "return false;"
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
@@ -87,10 +107,10 @@
                 20,
                 21,
                 22,
-                23,
-                24,
-                25
-              ]
+                23
+              ],
+              "firstLine": "self.navigator.mux.focus_agent_pane_for_session(&session);",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,7 +121,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "49-73",
+          "lines": "33-57",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/bootstrap_focus.rs",
@@ -110,40 +130,80 @@
                 25,
                 29,
                 31
-              ]
+              ],
+              "firstLine": "let mut receiver = backend.work_unit_focus_rx();",
+              "lastLine": "Err(broadcast::error::RecvError::Lagged(_)) => refresh(&backend, &sender).await,"
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
               "lines": [
-                77,
                 97
-              ]
+              ],
+              "firstLine": "let _ = action_tx.send(Action::SessionObserved(info));",
+              "lastLine": "let _ = action_tx.send(Action::SessionObserved(info));"
             },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/conversation.rs",
               "lines": [
-                585,
-                598,
-                607
-              ]
+                70,
+                86,
+                104
+              ],
+              "firstLine": ".get_transcript_page(",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/focus_state.rs",
               "lines": [
-                1020,
-                1036,
-                1053
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/transport/focus_events.rs",
-              "lines": [
-                17,
-                18,
+                21,
+                22,
+                23,
+                24,
                 25,
                 26,
-                30
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "pub fn apply_work_unit_focus(&mut self, session: SessionId, focus: WorkUnitFocus) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(crate) fn handle_work_unit_focus_changed(",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +214,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "75-106",
+          "lines": "59-90",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_focus.rs",
@@ -162,43 +222,19 @@
                 7,
                 8,
                 9
-              ]
+              ],
+              "firstLine": "self.session_attachments.clear();",
+              "lastLine": "self.session_attachments.entry(card).or_insert(session);"
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
               "lines": [
-                51,
-                55,
-                59
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Explicit assignment into an existing session uses the authoritative focus path",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "108-152",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
-              "lines": [
-                55,
-                58,
-                61
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/session_creation.rs",
-              "lines": [
-                38,
-                39,
-                40,
-                41
-              ]
+                46,
+                47,
+                48
+              ],
+              "firstLine": "self.initialize_session(session.clone(), focus);",
+              "lastLine": "self.rebuild_focus_occupancy();"
             }
           ]
         }
@@ -209,21 +245,47 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
-          "lines": "154-201",
+          "lines": "100-147",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
-              "lines": [
-                34,
-                35
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
                 49,
                 50
-              ]
+              ],
+              "firstLine": "let work_unit_id = bound.map(|context| context.id.as_str());",
+              "lastLine": "let work_unit_status = bound.map(|context| context.status.as_str());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(crate) fn handle_work_unit_focus_changed(",
+              "lastLine": "}"
             }
           ]
         }
@@ -231,25 +293,21 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/bug230_focus_projection.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/dispatch_focus.rs",
       "rust/fspec-tui/src/store/board_focus.rs",
+      "rust/fspec-tui/src/app/dispatch_focus.rs",
       "rust/fspec-tui/src/views/agent/chrome_paint.rs",
       "rust/fspec-tui/src/store/agent_view/focus_state.rs",
-      "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
       "rust/fspec-tui/src/app/bootstrap_focus.rs",
       "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
-      "rust/fspec-tui/src/transport/focus_events.rs",
-      "rust/fspec-tui/src/app/session_creation.rs"
+      "rust/fspec-tui/src/transport/websocket/conversation.rs"
     ],
-    "totalLinesCovered": 298
+    "totalLinesCovered": 306
   }
 }

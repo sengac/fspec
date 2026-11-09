@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-182
+@cli
+@foundation-management
 Feature: Port add-external-system command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_external_system.rs. Reuses the same event-storm

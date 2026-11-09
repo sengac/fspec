@@ -154,7 +154,7 @@ pub async fn cycle(fixture: &Fixture, row: &str, cycle: usize, suffix: bool) -> 
     );
     assert_eq!(
         snapshot.covered_turns,
-        Some(boundary.covered_prefix.len() as u32)
+        Some(boundary.covered_prefix().len() as u32)
     );
     assert_eq!(
         snapshot.retained_turns,

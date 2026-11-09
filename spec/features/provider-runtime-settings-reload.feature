@@ -3,6 +3,7 @@
 @provider-settings
 @configuration
 @phase-1
+@BUG-308
 Feature: Reload saved provider settings at turn boundaries
   """
   Reload runtime options on the existing provider manager while holding the inner-session lock before dispatch. Do not reselect the model or recreate provider session state. Publish refreshed token limits and tool image budgets together with inherited runtime defaults. Invalid settings fail the dispatch without partially applying options.

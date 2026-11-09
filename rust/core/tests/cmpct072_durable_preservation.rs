@@ -20,6 +20,7 @@ fn scenario_cached_originals_cannot_conceal_missing_durable_evidence(
 
     // @step Given immutable originals remain cached after their durable storage disappears
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("warm evidence", directory.path(), "openai")?;
@@ -140,6 +141,7 @@ fn scenario_reject_inaccessible_or_invalid_authoritative_source(
     use codelet_core::persistence::compaction_boundary::capture_compaction_source;
     use codelet_core::persistence::*;
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("invalid source", directory.path(), "openai")?;
@@ -206,6 +208,7 @@ fn scenario_unavailable_originals_reject_source_capture_and_promotion(
     use codelet_core::persistence::*;
     // @step Given a persisted source whose immutable originals become unavailable
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =

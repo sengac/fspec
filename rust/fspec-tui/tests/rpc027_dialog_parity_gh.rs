@@ -3,8 +3,7 @@
 //! Feature: spec/features/rpc027-slash-file-popups.feature
 //! Covers Sections G (SlashCommandPopup) and H (FileSearchPopup).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::{Color, Modifier};
@@ -13,20 +12,22 @@ use ratatui::Terminal;
 use codelet_fspec_tui::views::agent::file_search_popup::FileSearchPopup;
 use codelet_fspec_tui::views::agent::slash_command_popup::SlashCommandPopup;
 
-fn render_slash_80x24(p: &mut SlashCommandPopup) -> Buffer {
+fn render_slash_80x24(
+    p: &mut SlashCommandPopup,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|f| p.render(f.area(), f.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
-fn render_file_80x24(p: &mut FileSearchPopup) -> Buffer {
+fn render_file_80x24(p: &mut FileSearchPopup) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|f| p.render(f.area(), f.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn find_text(buf: &Buffer, needle: &str) -> Option<(u16, u16)> {
@@ -78,26 +79,27 @@ fn buffer_text(buf: &Buffer) -> String {
 
 /// Scenario: SlashCommandPopup renders with the cyan accent and "Slash Commands" inner title
 #[test]
-fn slash_command_popup_renders_with_cyan_accent_and_inner_title() {
+fn slash_command_popup_renders_with_cyan_accent_and_inner_title() -> TestResult {
     // @step Given a SlashCommandPopup with at least one matching command
     let mut popup = SlashCommandPopup::new();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&mut popup);
+    let buf = render_slash_80x24(&mut popup)?;
     // @step Then the border cells use foreground color Color::Cyan
     assert_eq!(find_border_color(&buf), Color::Cyan);
     // @step And the body's first non-padding row contains the text "Slash Commands"
-    let (x, y) = find_text(&buf, "Slash Commands").expect("title present");
+    let (x, y) = find_text(&buf, "Slash Commands").or_fail("title present")?;
     // @step And the title cells have foreground color Color::Cyan with BOLD modifier
     for i in 0..("Slash Commands".chars().count() as u16) {
         let cell = &buf[(x + i, y)];
         assert_eq!(cell.fg, Color::Cyan);
         assert!(cell.modifier.contains(Modifier::BOLD));
     }
+    Ok(())
 }
 
 /// Scenario: SlashCommandPopup uses the two-character marker on every match row
 #[test]
-fn slash_command_popup_uses_two_character_marker_on_every_match_row() {
+fn slash_command_popup_uses_two_character_marker_on_every_match_row() -> TestResult {
     // @step Given a SlashCommandPopup with three matching commands and selected_index = 1
     let mut popup = SlashCommandPopup::new();
     // Walk down once to make index 1 selected
@@ -105,7 +107,7 @@ fn slash_command_popup_uses_two_character_marker_on_every_match_row() {
     let _ = popup.handle_key(KeyCode::Down, KeyModifiers::NONE);
     assert_eq!(popup.selected_index(), 1);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&mut popup);
+    let buf = render_slash_80x24(&mut popup)?;
 
     // Locate "/" prefix of each row — first three /commands appear in top area
     let cmds: Vec<&codelet_fspec_tui::views::agent::slash_commands::SlashCommand> =
@@ -113,9 +115,9 @@ fn slash_command_popup_uses_two_character_marker_on_every_match_row() {
     assert!(cmds.len() >= 3, "need ≥ 3 commands for this test");
     let labels: Vec<String> = cmds.iter().map(|c| format!("/{}", c.name())).collect();
 
-    let (l0_x, l0_y) = find_text(&buf, &labels[0]).expect("row 0 present");
-    let (l1_x, l1_y) = find_text(&buf, &labels[1]).expect("row 1 present");
-    let (l2_x, l2_y) = find_text(&buf, &labels[2]).expect("row 2 present");
+    let (l0_x, l0_y) = find_text(&buf, &labels[0]).or_fail("row 0 present")?;
+    let (l1_x, l1_y) = find_text(&buf, &labels[1]).or_fail("row 1 present")?;
+    let (l2_x, l2_y) = find_text(&buf, &labels[2]).or_fail("row 2 present")?;
 
     // @step Then the row at index 0 begins with the two-character marker "  "
     assert_eq!(buf[(l0_x - 2, l0_y)].symbol(), " ");
@@ -126,22 +128,23 @@ fn slash_command_popup_uses_two_character_marker_on_every_match_row() {
     // @step And the row at index 2 begins with the two-character marker "  "
     assert_eq!(buf[(l2_x - 2, l2_y)].symbol(), " ");
     assert_eq!(buf[(l2_x - 1, l2_y)].symbol(), " ");
+    Ok(())
 }
 
 /// Scenario: SlashCommandPopup highlights the selected match with the inverse cyan/black style
 #[test]
-fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() {
+fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() -> TestResult {
     // @step Given a SlashCommandPopup with three matching commands and selected_index = 1
     let mut popup = SlashCommandPopup::new();
     use crossterm::event::{KeyCode, KeyModifiers};
     let _ = popup.handle_key(KeyCode::Down, KeyModifiers::NONE);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&mut popup);
+    let buf = render_slash_80x24(&mut popup)?;
     // Locate the second command's name on the body
     let cmds: Vec<&codelet_fspec_tui::views::agent::slash_commands::SlashCommand> =
         popup.matches().iter().take(3).copied().collect();
     let label1 = format!("/{}", cmds[1].name());
-    let (l1_x, l1_y) = find_text(&buf, &label1).expect("row 1 present");
+    let (l1_x, l1_y) = find_text(&buf, &label1).or_fail("row 1 present")?;
     // @step Then the row at index 1 has background Color::Cyan and foreground Color::Black with BOLD modifier
     let cell = &buf[(l1_x, l1_y)];
     assert_eq!(cell.bg, Color::Cyan);
@@ -149,27 +152,29 @@ fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() {
     assert!(cell.modifier.contains(Modifier::BOLD));
     // @step And no other row carries the inverse highlight
     let label0 = format!("/{}", cmds[0].name());
-    let (l0_x, l0_y) = find_text(&buf, &label0).expect("row 0 present");
+    let (l0_x, l0_y) = find_text(&buf, &label0).or_fail("row 0 present")?;
     assert_ne!(
         buf[(l0_x, l0_y)].bg,
         Color::Cyan,
         "row 0 must not be highlighted"
     );
+    Ok(())
 }
 
 /// Scenario: SlashCommandPopup footer documents Tab/Enter Select
 #[test]
-fn slash_command_popup_footer_documents_tab_enter_select() {
+fn slash_command_popup_footer_documents_tab_enter_select() -> TestResult {
     // @step Given a SlashCommandPopup with matches
     let mut popup = SlashCommandPopup::new();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&mut popup);
+    let buf = render_slash_80x24(&mut popup)?;
     let text = buffer_text(&buf);
     // @step Then the footer contains "↑↓ Navigate │ Tab/Enter Select │ Esc Close"
     assert!(text.contains("↑↓ Navigate │ Tab/Enter Select │ Esc Close"));
     // @step And the footer carries Modifier::DIM
-    let (fx, fy) = find_text(&buf, "↑↓ Navigate").expect("footer present");
+    let (fx, fy) = find_text(&buf, "↑↓ Navigate").or_fail("footer present")?;
     assert!(buf[(fx, fy)].modifier.contains(Modifier::DIM));
+    Ok(())
 }
 
 // ============================================================
@@ -178,27 +183,28 @@ fn slash_command_popup_footer_documents_tab_enter_select() {
 
 /// Scenario: FileSearchPopup renders with the cyan accent and "File Search" inner title
 #[test]
-fn file_search_popup_renders_with_cyan_accent_and_inner_title() {
+fn file_search_popup_renders_with_cyan_accent_and_inner_title() -> TestResult {
     // @step Given a FileSearchPopup with at least one match
     let mut popup = FileSearchPopup::new(0, "rea");
     popup.set_matches(vec!["README.md".to_string()]);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&mut popup);
+    let buf = render_file_80x24(&mut popup)?;
     // @step Then the border cells use foreground color Color::Cyan
     assert_eq!(find_border_color(&buf), Color::Cyan);
     // @step And the body's first non-padding row contains the text "File Search"
-    let (x, y) = find_text(&buf, "File Search").expect("title present");
+    let (x, y) = find_text(&buf, "File Search").or_fail("title present")?;
     // @step And the title cells have foreground color Color::Cyan with BOLD modifier
     for i in 0..("File Search".chars().count() as u16) {
         let cell = &buf[(x + i, y)];
         assert_eq!(cell.fg, Color::Cyan);
         assert!(cell.modifier.contains(Modifier::BOLD));
     }
+    Ok(())
 }
 
 /// Scenario: FileSearchPopup uses the two-character marker on every match row
 #[test]
-fn file_search_popup_uses_two_character_marker_on_every_match_row() {
+fn file_search_popup_uses_two_character_marker_on_every_match_row() -> TestResult {
     // @step Given a FileSearchPopup with three matches and selected_index = 0
     let mut popup = FileSearchPopup::new(0, "");
     popup.set_matches(vec![
@@ -207,47 +213,49 @@ fn file_search_popup_uses_two_character_marker_on_every_match_row() {
         "c.md".to_string(),
     ]);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&mut popup);
+    let buf = render_file_80x24(&mut popup)?;
     // @step Then the row at index 0 begins with the two-character marker "▸ "
-    let (a_x, a_y) = find_text(&buf, "a.md").expect("a.md present");
+    let (a_x, a_y) = find_text(&buf, "a.md").or_fail("a.md present")?;
     assert_eq!(buf[(a_x - 2, a_y)].symbol(), "▸");
     assert_eq!(buf[(a_x - 1, a_y)].symbol(), " ");
     // @step And rows 1 and 2 begin with the two-character marker "  "
-    let (b_x, b_y) = find_text(&buf, "b.md").expect("b.md present");
+    let (b_x, b_y) = find_text(&buf, "b.md").or_fail("b.md present")?;
     assert_eq!(buf[(b_x - 2, b_y)].symbol(), " ");
     assert_eq!(buf[(b_x - 1, b_y)].symbol(), " ");
-    let (c_x, c_y) = find_text(&buf, "c.md").expect("c.md present");
+    let (c_x, c_y) = find_text(&buf, "c.md").or_fail("c.md present")?;
     assert_eq!(buf[(c_x - 2, c_y)].symbol(), " ");
     assert_eq!(buf[(c_x - 1, c_y)].symbol(), " ");
+    Ok(())
 }
 
 /// Scenario: FileSearchPopup empty-state literals render in plain text
 #[test]
-fn file_search_popup_empty_state_literal_renders_in_plain_text() {
+fn file_search_popup_empty_state_literal_renders_in_plain_text() -> TestResult {
     // @step Given a FileSearchPopup with no matches and an empty filter
     let mut popup = FileSearchPopup::new(0, "");
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&mut popup);
+    let buf = render_file_80x24(&mut popup)?;
     let text = buffer_text(&buf);
     // @step Then the body contains the literal "(type to search files)"
     assert!(text.contains("(type to search files)"));
     // @step And the literal carries no inverse highlight
-    let (lx, ly) = find_text(&buf, "(type to search files)").expect("literal present");
+    let (lx, ly) = find_text(&buf, "(type to search files)").or_fail("literal present")?;
     assert_ne!(
         buf[(lx, ly)].bg,
         Color::Cyan,
         "empty-state must not be highlighted"
     );
     assert_ne!(buf[(lx, ly)].fg, Color::Black);
+    Ok(())
 }
 
 /// Scenario: FileSearchPopup no-match state renders with the filter quoted
 #[test]
-fn file_search_popup_no_match_state_renders_with_filter_quoted() {
+fn file_search_popup_no_match_state_renders_with_filter_quoted() -> TestResult {
     // @step Given a FileSearchPopup with filter "zzz" and zero matches
     let mut popup = FileSearchPopup::new(0, "zzz");
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&mut popup);
+    let buf = render_file_80x24(&mut popup)?;
     let text = buffer_text(&buf);
     // @step Then the body contains the literal "(no files match \"zzz\")"
     assert!(
@@ -255,7 +263,8 @@ fn file_search_popup_no_match_state_renders_with_filter_quoted() {
         "expected no-match literal in: {text}"
     );
     // @step And the literal carries no inverse highlight
-    let (lx, ly) = find_text(&buf, "(no files match").expect("literal present");
+    let (lx, ly) = find_text(&buf, "(no files match").or_fail("literal present")?;
     assert_ne!(buf[(lx, ly)].bg, Color::Cyan);
     assert_ne!(buf[(lx, ly)].fg, Color::Black);
+    Ok(())
 }

@@ -7,19 +7,12 @@ use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOp
 
 const ARGS: &[CommandArgument] = &[];
 
-const OPTS: &[CommandOption] = &[
-    CommandOption {
-        flag: "--agent <agent>",
-        description:
-            "Specify agent directly: claude, cursor, windsurf, cline, aider, etc. (18 agents supported)",
-        default_value: None,
-    },
-    CommandOption {
-        flag: "--yes",
-        description: "Skip confirmation prompts",
-        default_value: None,
-    },
-];
+const OPTS: &[CommandOption] = &[CommandOption {
+    flag: "--agent <agent>",
+    description:
+        "Specify agent directly: claude, cursor, windsurf, cline, aider, etc. (18 agents supported)",
+    default_value: None,
+}];
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {

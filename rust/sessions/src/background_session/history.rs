@@ -12,8 +12,12 @@ impl BackgroundSession {
         inner.turns.clear();
         inner.token_tracker = codelet_core::compaction::TokenTracker::default();
         inner.token_tracker.invalidate_input();
+        // BUG-321: reset the live counters clients read (get_tokens) too.
+        self.cached_input_tokens.store(0, Ordering::Release);
+        self.cached_output_tokens.store(0, Ordering::Release);
+        self.cached_reasoning_tokens.store(0, Ordering::Release);
         let isolation = self.build_isolation_context();
-        inner.inject_context_reminders_with_isolation(isolation.as_ref());
+        inner.inject_context_reminders_with_isolation(&self.effective_cwd(), isolation.as_ref());
         drop(inner);
         self.reset_interrupt();
         self.handle_output(StreamChunk::session_state_change(SessionState::Cleared));

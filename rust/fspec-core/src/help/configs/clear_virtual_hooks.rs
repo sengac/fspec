@@ -44,7 +44,7 @@ const RELATED: &[&str] = &[
 const NOTES: &[&str] = &[
     "Clears ALL virtual hooks - operation cannot be undone",
     "Automatically cleans up all script files in spec/hooks/.virtual/",
-    "Sets virtualHooks array to empty [] (not undefined)",
+    "Sets virtualHooks to an empty array; the field is kept, not removed",
     "Operation is safe even if work unit has no hooks (clears 0 hooks)",
     "AI prompts for this decision when work unit transitions to \"done\" status",
     "Consider using remove-virtual-hook to selectively remove specific hooks",
@@ -56,17 +56,17 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Cleanup After Story Completion",
         example: "fspec update-work-unit-status AUTH-001 done\n# AI asks: \"Keep or remove hooks?\"\n# User chooses: \"remove\"\nfspec clear-virtual-hooks AUTH-001",
-        description: "Standard workflow when completing a work unit and removing temporary quality checks.",
+        description: Some("Standard workflow when completing a work unit and removing temporary quality checks."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Reset Work Unit Configuration",
         example: "fspec clear-virtual-hooks AUTH-001\n# Start fresh with new hooks:\nfspec add-virtual-hook AUTH-001 post-implementing \"<quality-check-commands>\" --blocking",
-        description: "Clear all existing hooks to start with a clean slate and add new configuration.",
+        description: Some("Clear all existing hooks to start with a clean slate and add new configuration."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Bulk Cleanup After Release",
         example: "fspec list-work-units --status=done\n# For each done work unit:\nfspec clear-virtual-hooks AUTH-001\nfspec clear-virtual-hooks AUTH-002",
-        description: "Clean up virtual hooks from multiple completed work units after a release.",
+        description: Some("Clean up virtual hooks from multiple completed work units after a release."),
     }),
 ];
 

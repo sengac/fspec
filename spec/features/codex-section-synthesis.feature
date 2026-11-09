@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @ts-parity
 @model-selection
@@ -36,24 +37,10 @@ Feature: Synthesize Codex (ChatGPT) section by re-parenting OpenAI cloud models 
   Scenario: Codex OAuth alone yields a populated Codex (ChatGPT) section
     Given I am signed in with a Codex (ChatGPT) OAuth credential
     And no OPENAI_API_KEY is set in the environment
-    And the models.dev catalog offers OpenAI models
+    And Codex /models returns the model "gpt-6-luna"
     When I open the model selector
     Then a "Codex (ChatGPT)" section is shown with at least one selectable model
     And no standalone "OpenAI API" section is shown
-
-  Scenario: All OpenAI models from models.dev appear in Codex (ChatGPT)
-    Given I am signed in with a Codex (ChatGPT) OAuth credential
-    And the models.dev catalog offers the OpenAI models "gpt-5.4", "gpt-5-mini" and "gpt-4o"
-    When I open the model selector
-    Then the "Codex (ChatGPT)" section lists "gpt-5.4"
-    And the "Codex (ChatGPT)" section lists "gpt-5-mini"
-    And the "Codex (ChatGPT)" section lists "gpt-4o"
-
-  Scenario: Codex (ChatGPT) models are ordered newest-first by release date
-    Given I am signed in with a Codex (ChatGPT) OAuth credential
-    And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5.2-codex"
-    When I open the model selector
-    Then the "Codex (ChatGPT)" section lists "gpt-5.4" before "gpt-5.2-codex"
 
   Scenario: Without Codex credentials the standalone OpenAI API section is suppressed
     Given I have no Codex credentials

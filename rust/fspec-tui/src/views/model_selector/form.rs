@@ -78,7 +78,7 @@ impl CustomModelForm {
     pub fn prefill_from_entry(
         id: &str,
         display_name: &str,
-        context_window: u32,
+        context_window: Option<u32>,
         reasoning: bool,
         has_vision: bool,
     ) -> Self {
@@ -95,11 +95,10 @@ impl CustomModelForm {
                 display_name.to_string()
             },
             facade: None,
-            context_window: if context_window > 0 {
-                context_window.to_string()
-            } else {
-                String::new()
-            },
+            // PROV-169: an unavailable window leaves the field empty.
+            context_window: context_window
+                .map(|window| window.to_string())
+                .unwrap_or_default(),
             max_output_tokens: String::new(),
             compaction_trigger: String::new(),
             reasoning: Some(reasoning),
@@ -149,6 +148,14 @@ impl CustomModelForm {
             _ => {}
         }
         FormOutcome::Editing
+    }
+
+    /// TUI-130: a paste goes into the focused text field, without its
+    /// surrounding whitespace and line breaks, printable ASCII only (as typed).
+    pub fn paste(&mut self, text: &str) {
+        if let Some(s) = self.focused_text_mut() {
+            s.extend(text.trim().chars().filter(|c| (' '..='~').contains(c)));
+        }
     }
 
     /// Left/Right on the focused field: cycle select options (wrapping) or

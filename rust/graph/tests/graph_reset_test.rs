@@ -18,6 +18,7 @@
 
 use std::path::PathBuf;
 
+use codelet_graph::ast_index::dispatch_ast_index;
 use codelet_graph::database::GraphDatabase;
 use codelet_graph::registry;
 
@@ -51,110 +52,95 @@ fn temp_db_path(suffix: &str) -> PathBuf {
     dir
 }
 
+/// KGRAPH-073: a temp project root holding one Python function `greet`.
+fn temp_project() -> (tempfile::TempDir, PathBuf) {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let root = dir.path().join("project");
+    std::fs::create_dir_all(root.join("src")).expect("src dir");
+    std::fs::write(root.join("src/main.py"), "def greet():\n    return 1\n").expect("source");
+    let root = root.canonicalize().expect("canonical root");
+    (dir, root)
+}
+
+fn index_ok(output: &str) -> serde_json::Value {
+    let value: serde_json::Value = serde_json::from_str(output).expect("index output is JSON");
+    assert!(value.get("error").is_none(), "index failed: {output}");
+    value
+}
+
 // ============================================================================
 // Scenario: Reset flag deletes on-disk database and re-indexes with fresh schema
 // ============================================================================
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_reset_deletes_on_disk_database() {
-    let db_path = temp_db_path("delete-on-disk");
+    let (_dir, root) = temp_project();
+    let db_path = registry::code_graph_path(&root);
 
-    // @step Given an existing AST graph database at "<cwd>/.fspec/graph/ast-code.nano/"
+    // @step Given an existing AST graph database at "<root>/.fspec/graph/ast-code.nano/"
     let _db = GraphDatabase::init(&db_path, TEST_SCHEMA)
         .await
         .expect("init should succeed");
-    assert!(db_path.exists(), "DB directory should exist after init");
     assert!(
         db_path.join("schema.ir.json").exists(),
         "schema.ir.json should exist"
     );
 
     // @step And the compiled schema has a new enum value not present in the on-disk schema
-    // (TEST_SCHEMA_V2 has 'extension' enum value that TEST_SCHEMA doesn't)
+    assert!(!registry::code_graph_available(&root));
 
     // @step When I run ast_index with reset set to true
-    // Reset = delete the directory, then re-init with new schema
-    registry::delete_graph_data("test-delete-on-disk", &db_path)
-        .expect("delete_graph_data should succeed");
+    let output = dispatch_ast_index(&root, true, false).await;
 
     // @step Then the on-disk ".nano" directory is deleted before re-indexing
-    assert!(
-        !db_path.exists(),
-        "DB directory should be deleted after reset"
-    );
+    let on_disk = std::fs::read_to_string(db_path.join("schema.pg")).expect("schema.pg");
+    assert_eq!(on_disk, registry::AST_CODE_SCHEMA);
 
     // @step And a fresh database is initialized with the compiled schema
-    let db2 = GraphDatabase::init(&db_path, TEST_SCHEMA_V2)
-        .await
-        .expect("re-init with new schema should succeed");
+    assert!(registry::code_graph_available(&root));
 
     // @step And the index completes successfully with entity counts
-    assert!(
-        db2.has_node_type("Type"),
-        "New schema should have Type node"
-    );
-
-    // Cleanup
-    let _ = std::fs::remove_dir_all(&db_path);
+    let result = index_ok(&output);
+    assert!(result["entities_loaded"].as_u64() > Some(0), "{output}");
 }
 
 // ============================================================================
 // Scenario: Reset flag clears in-memory graph singleton so fresh schema takes effect
 // ============================================================================
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_reset_clears_in_memory_registry() {
-    let db_path = temp_db_path("clear-memory");
+    let (_dir, root) = temp_project();
 
     // @step Given an AST graph is cached in the in-memory registry
-    let db = GraphDatabase::init(&db_path, TEST_SCHEMA)
-        .await
-        .expect("init should succeed");
-    // Manually insert into registry to simulate cached state
-    registry::insert_graph_for_test("test-reset-memory", db);
-    assert!(
-        registry::is_graph_initialized("test-reset-memory"),
-        "Graph should be in registry"
-    );
+    index_ok(&dispatch_ast_index(&root, false, false).await);
+    drop(registry::read_code_graph(&root).await.expect("graph opens"));
 
     // @step And the on-disk database has been manually deleted
-    let _ = std::fs::remove_dir_all(&db_path);
+    std::fs::remove_dir_all(registry::code_graph_path(&root)).expect("delete graph");
 
     // @step When I run ast_index with reset set to true
-    registry::reset_graph("test-reset-memory");
+    let output = dispatch_ast_index(&root, true, false).await;
 
-    // @step Then the graph is removed from the in-memory Mutex<HashMap> registry
-    assert!(
-        !registry::is_graph_initialized("test-reset-memory"),
-        "Graph should be removed from registry after reset"
-    );
+    // @step Then the graph held in memory for that root is dropped
+    index_ok(&output);
 
-    // @step And the next get_graph call re-initializes with the compiled schema
-    // Re-init with a new schema to verify fresh initialization works
-    let db2 = GraphDatabase::init(&db_path, TEST_SCHEMA_V2)
-        .await
-        .expect("re-init after reset should succeed");
-    registry::insert_graph_for_test("test-reset-memory", db2.clone());
-    assert!(
-        registry::is_graph_initialized("test-reset-memory"),
-        "Graph should be back in registry after re-init"
-    );
+    // @step And the next access opens the graph with the compiled schema
+    assert!(registry::code_graph_available(&root));
+    let graph = registry::read_code_graph(&root).await.expect("graph opens");
 
     // @step And subsequent ast_search queries return results without process restart
-    // Verify the re-initialized DB has the new schema and is queryable
-    assert!(
-        db2.has_node_type("Type"),
-        "Re-initialized graph should have Type node from new schema"
-    );
-    let stats = db2
-        .stats()
-        .expect("stats should work on re-initialized graph");
-    assert!(
-        stats.is_object(),
-        "Stats query should succeed on re-initialized graph"
-    );
-
-    // Cleanup
-    registry::reset_graph("test-reset-memory");
-    let _ = std::fs::remove_dir_all(&db_path);
+    let search = codelet_graph::ast_dispatch::dispatch_ast_search(
+        &graph,
+        "greet",
+        Some("Function"),
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    .await;
+    let search: serde_json::Value = serde_json::from_str(&search).expect("search JSON");
+    assert_eq!(search["count"], 1, "{search}");
 }
 
 // ============================================================================
@@ -193,43 +179,22 @@ async fn test_schema_mismatch_returns_actionable_error() {
     let _ = std::fs::remove_dir_all(&db_path);
 }
 
-/// Full AST schema for query-level testing.
-const FULL_AST_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
-
 /// AST query source for executing named queries.
 const AST_QUERY_SOURCE: &str = include_str!("../schemas/ast-queries.gq");
 
 // ============================================================================
 // Scenario: Queries work immediately after reset and re-index
 // ============================================================================
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_queries_work_after_reset_and_reindex() {
-    let db_path = temp_db_path("queries-after-reset");
-
     // @step Given an AST graph database has been reset and re-indexed
-    // First create with old schema
-    let _db = GraphDatabase::init(&db_path, TEST_SCHEMA)
+    let (_dir, root) = temp_project();
+    let _old = GraphDatabase::init(&registry::code_graph_path(&root), TEST_SCHEMA)
         .await
         .expect("init should succeed");
-
-    // Reset (delete + clear registry)
-    registry::delete_graph_data("test-queries", &db_path).expect("delete should succeed");
-    registry::reset_graph("test-queries");
-
-    // Re-init with the full AST schema (simulates real re-index)
-    let db = GraphDatabase::init(&db_path, FULL_AST_SCHEMA)
-        .await
-        .expect("re-init with full schema should succeed");
-
-    // Load test entities to simulate an indexed codebase
-    let test_data = r#"{"type":"File","data":{"slug":"test-file-main-ts","path":"src/main.ts","language":"typescript","lineCount":50,"isTest":false}}
-{"type":"Function","data":{"slug":"test-file-main-ts::greet","name":"greet","qualifiedName":"test-file-main-ts::greet","isAsync":false,"isPublic":true,"paramCount":1,"lineStart":1,"lineEnd":10}}
-{"type":"Type","data":{"slug":"test-file-main-ts::Config","name":"Config","typeKind":"interface","isPublic":true}}
-{"edge":"Contains","from":"test-file-main-ts","to":"test-file-main-ts::greet","data":{}}
-{"edge":"ContainsType","from":"test-file-main-ts","to":"test-file-main-ts::Config","data":{}}"#;
-    db.load_jsonl(test_data)
-        .await
-        .expect("loading test entities should succeed");
+    drop(_old);
+    index_ok(&dispatch_ast_index(&root, true, false).await);
+    let db = registry::read_code_graph(&root).await.expect("graph opens");
 
     // @step When I run ast_search with query "function"
     let search_result = db
@@ -247,11 +212,11 @@ async fn test_queries_work_after_reset_and_reindex() {
         functions
             .iter()
             .any(|f| f.get("name").and_then(|v| v.as_str()) == Some("greet")),
-        "Should find the 'greet' function we loaded"
+        "Should find the indexed 'greet' function"
     );
 
     // @step When I run ast_neighbors with a valid node_id from the new index
-    let params = serde_json::json!({ "slug": "test-file-main-ts" });
+    let params = serde_json::json!({ "slug": "src/main.py" });
     let neighbors_result = db
         .query_with_source(AST_QUERY_SOURCE, "file_functions", Some(&params))
         .await
@@ -275,9 +240,6 @@ async fn test_queries_work_after_reset_and_reindex() {
         "orphan_files query should execute without schema errors: {:?}",
         dead_code_result.err()
     );
-
-    // Cleanup
-    let _ = std::fs::remove_dir_all(&db_path);
 }
 
 // ============================================================================
@@ -334,38 +296,17 @@ fn test_ast_index_backwards_compatible_without_reset() {
 }
 
 // ============================================================================
-// Additional: Schema match passes validation (no error)
+// Additional: a reset of a root without data reports that nothing was deleted
 // ============================================================================
-#[tokio::test]
-async fn test_schema_match_passes_validation() {
-    let db_path = temp_db_path("schema-match");
-
-    // Create DB with TEST_SCHEMA
-    let _db = GraphDatabase::init(&db_path, TEST_SCHEMA)
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_reset_returns_false_when_no_data() {
+    let (_dir, root) = temp_project();
+    let mut lease = registry::write_code_graph(&root)
         .await
-        .expect("init should succeed");
-
-    // Re-open with SAME schema — should succeed
-    let result = GraphDatabase::open_or_init_with_schema_check(&db_path, TEST_SCHEMA).await;
-    assert!(
-        result.is_ok(),
-        "Same schema should open successfully: {:?}",
-        result.err()
+        .expect("write lease");
+    assert_eq!(
+        lease.reset(),
+        Ok(false),
+        "Should return false when no data exists"
     );
-
-    // Cleanup
-    let _ = std::fs::remove_dir_all(&db_path);
-}
-
-// ============================================================================
-// Additional: delete_graph_data returns false when no data exists
-// ============================================================================
-#[test]
-fn test_delete_graph_data_returns_false_when_no_data() {
-    let db_path = temp_db_path("no-data");
-    // Make sure it doesn't exist
-    let _ = std::fs::remove_dir_all(&db_path);
-
-    let result = registry::delete_graph_data("test-no-data", &db_path);
-    assert_eq!(result, Ok(false), "Should return false when no data exists");
 }

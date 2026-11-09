@@ -49,16 +49,12 @@ impl ProcessGroupKiller {
     }
 
     /// Explicitly kill the process group
-    #[allow(unsafe_code)]
     pub fn kill(&self) {
         if let Some(pgid) = self.pgid {
-            // Send SIGKILL to the entire process group (negative PID)
-            // This kills the shell AND all processes it spawned
-            // Safety: kill() is safe to call with any PID/PGID
-            // If the process group no longer exists, this returns an error which we ignore
-            unsafe {
-                libc::kill(-(pgid as i32), libc::SIGKILL);
-            }
+            // SIGKILL the entire process group: the shell AND everything it
+            // spawned. BUG-365: safe signalling; an already-gone group is
+            // nothing to do, any other failure is logged.
+            crate::process_signal::kill_logged(crate::process_signal::kill_process_group(pgid));
         }
     }
 }

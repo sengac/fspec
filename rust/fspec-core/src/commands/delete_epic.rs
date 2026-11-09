@@ -57,7 +57,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let epics_path = project_root.join("spec").join("epics.json");
+    let epics_path = crate::io::spec_paths::epics(project_root)?;
 
     // Read+modify+write spec/epics.json. TS uses `fileManager.transaction`
     // which auto-initializes a missing file with `{ epics: {} }` BEFORE
@@ -65,6 +65,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // empty store, ensure the file exists on disk (matching the TS
     // side-effect that the file is created even when the lookup fails),
     // and then perform the lookup.
+    // BUG-477: hold the spec lock from the first read to the last write
+    // (epics.json, then the prefixes.json and work-units.json dereferences).
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "delete-epic")?;
     let mut epics_top = read_json_object(&epics_path).unwrap_or_else(|| {
         let mut m = Map::new();
         m.insert("epics".to_string(), Value::Object(Map::new()));
@@ -120,13 +123,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Side-effect: dereference matching prefixes. Wrapped in best-effort
     // try/catch parity — read errors (ENOENT or parse-error) are
     // silently swallowed.
-    let prefixes_path = project_root.join("spec").join("prefixes.json");
-    let _ = mutate_dereference(&prefixes_path, "prefixes", "epicId", &args.epic_id);
+    let prefixes_path = crate::io::spec_paths::prefixes(project_root)?;
+    let _ = mutate_dereference(&prefixes_path, "prefixes", "epicId", &args.epic_id, |top| {
+        write_json_atomic(&prefixes_path, top)
+    });
 
     // Side-effect: dereference matching work units. Same bare-catch
     // parity as above.
-    let work_units_path = project_root.join("spec").join("work-units.json");
-    let _ = mutate_dereference(&work_units_path, "workUnits", "epic", &args.epic_id);
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
+    let _ = mutate_dereference(
+        &work_units_path,
+        "workUnits",
+        "epic",
+        &args.epic_id,
+        |top| crate::io::board::write_work_units(project_root, top),
+    );
 
     Ok(format!("✓ Epic {} deleted successfully\n", args.epic_id))
 }
@@ -146,7 +157,8 @@ fn read_json_object(path: &Path) -> Option<Map<String, Value>> {
 /// Best-effort side-effect: open the JSON file at `path`, walk every
 /// child of the top-level `outer_key` object, and `delete` the
 /// `field_key` whenever its value equals `match_value`. Writes back
-/// atomically only when at least one mutation occurred.
+/// through `write` only when at least one mutation occurred (WT-018: the
+/// board through its one writer).
 ///
 /// Returns `Ok(())` on success, an error if the write fails. The caller
 /// is expected to ignore the result so any failure is silently swallowed
@@ -157,6 +169,7 @@ fn mutate_dereference(
     outer_key: &str,
     field_key: &str,
     match_value: &str,
+    write: impl FnOnce(&Value) -> Result<(), FspecCoreError>,
 ) -> Result<(), FspecCoreError> {
     let mut top = match read_json_object(path) {
         Some(t) => t,
@@ -181,7 +194,7 @@ fn mutate_dereference(
     }
 
     if mutated {
-        write_json_atomic(path, &Value::Object(top)).map_err(|e| FspecCoreError::Io {
+        write(&Value::Object(top)).map_err(|e| FspecCoreError::Io {
             command: "delete-epic",
             source: std::io::Error::other(format!("write {}: {e}", path.display())),
         })?;
@@ -243,7 +256,9 @@ mod tests {
     fn mutate_dereference_silently_skips_missing_file() {
         let tmp = TempDir::new().unwrap();
         let path = tmp.path().join("missing.json");
-        let res = mutate_dereference(&path, "prefixes", "epicId", "auth");
+        let res = mutate_dereference(&path, "prefixes", "epicId", "auth", |top| {
+            write_json_atomic(&path, top)
+        });
         assert!(res.is_ok());
         assert!(!path.exists(), "must not create the file");
     }
@@ -262,7 +277,10 @@ mod tests {
 }"#,
         )
         .unwrap();
-        mutate_dereference(&path, "prefixes", "epicId", "auth").unwrap();
+        mutate_dereference(&path, "prefixes", "epicId", "auth", |top| {
+            write_json_atomic(&path, top)
+        })
+        .unwrap();
         let raw = std::fs::read_to_string(&path).unwrap();
         let v: Value = serde_json::from_str(&raw).unwrap();
         assert!(v["prefixes"]["AUTH"].get("epicId").is_none());

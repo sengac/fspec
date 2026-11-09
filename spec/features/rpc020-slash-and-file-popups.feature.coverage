@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "60-78",
+          "lines": "98-120",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -271,9 +271,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -284,7 +285,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "82-95",
+          "lines": "122-138",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -550,9 +551,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -563,33 +565,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "97-122",
+          "lines": "140-166",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "/// scrollback + input; `Quit` flips `should_quit`. Every other",
+              "lastLine": "// view state lands in this dispatch tick."
             }
           ]
         }
@@ -600,33 +604,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "124-168",
+          "lines": "166-219",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "/// scrollback + input; `Quit` flips `should_quit`. Every other",
+              "lastLine": "// view state lands in this dispatch tick."
             }
           ]
         }
@@ -637,33 +643,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "172-199",
+          "lines": "222-256",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                20,
-                21,
                 22,
                 23,
                 24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "use super::state::App;",
+              "lastLine": "self.should_quit = true;"
             }
           ]
         }
@@ -674,33 +682,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "202-236",
+          "lines": "253-317",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                20,
-                21,
                 22,
                 23,
                 24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "use super::state::App;",
+              "lastLine": "self.should_quit = true;"
             }
           ]
         }
@@ -711,7 +721,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "239-266",
+          "lines": "328-358",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -977,9 +987,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -990,7 +1001,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "270-291",
+          "lines": "358-381",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -1256,9 +1267,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1269,7 +1281,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "295-320",
+          "lines": "386-414",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
@@ -1507,16 +1519,10 @@
                 231,
                 232,
                 233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242
-              ]
+                234
+              ],
+              "firstLine": "//! RPC-020 — File search popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1527,7 +1533,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "324-341",
+          "lines": "414-430",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
@@ -1765,16 +1771,10 @@
                 231,
                 232,
                 233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242
-              ]
+                234
+              ],
+              "firstLine": "//! RPC-020 — File search popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1785,7 +1785,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "345-359",
+          "lines": "433-449",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
@@ -2023,16 +2023,10 @@
                 231,
                 232,
                 233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242
-              ]
+                234
+              ],
+              "firstLine": "//! RPC-020 — File search popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -2043,7 +2037,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "363-377",
+          "lines": "452-468",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
@@ -2067,8 +2061,6 @@
                 17,
                 18,
                 19,
-                20,
-                21,
                 22,
                 23,
                 24,
@@ -2103,12 +2095,9 @@
                 53,
                 54,
                 55,
-                56,
                 57,
                 58,
                 59,
-                60,
-                61,
                 62,
                 63,
                 64,
@@ -2188,7 +2177,6 @@
                 138,
                 139,
                 140,
-                141,
                 142,
                 143,
                 144,
@@ -2197,7 +2185,6 @@
                 147,
                 148,
                 149,
-                150,
                 151,
                 152,
                 153,
@@ -2264,8 +2251,13 @@
                 214,
                 215,
                 216,
-                217
-              ]
+                217,
+                218,
+                219,
+                220
+              ],
+              "firstLine": "//! AgentView — always-on container. RPC-029 layout: Header / RoleBanner /",
+              "lastLine": ""
             }
           ]
         }
@@ -2276,7 +2268,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "381-396",
+          "lines": "471-488",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
@@ -2514,16 +2506,10 @@
                 231,
                 232,
                 233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242
-              ]
+                234
+              ],
+              "firstLine": "//! RPC-020 — File search popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -2534,7 +2520,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "400-422",
+          "lines": "491-517",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -2800,9 +2786,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -2813,7 +2800,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_agent_popups_rpc020.rs",
-          "lines": "426-449",
+          "lines": "520-545",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -3079,9 +3066,10 @@
                 259,
                 260,
                 261,
-                262,
-                263
-              ]
+                262
+              ],
+              "firstLine": "//! RPC-020 + RPC-027 — Slash command popup widget.",
+              "lastLine": "}"
             }
           ]
         }
@@ -3101,6 +3089,6 @@
       "rust/fspec-tui/src/views/agent/file_search_popup.rs",
       "rust/fspec-tui/src/views/agent.rs"
     ],
-    "totalLinesCovered": 3201
+    "totalLinesCovered": 3232
   }
 }

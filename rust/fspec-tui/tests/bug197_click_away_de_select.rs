@@ -60,13 +60,12 @@
 //!   `compositor()` dialog ids;
 //! - emitted actions: the agent harness's `action_tx` receiver.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind,
-    ViewMode,
+    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxLayout, MuxPaneKind, ViewMode,
 };
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use crossterm::event::{
@@ -92,16 +91,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -118,11 +118,11 @@ fn click(col: u16, row: u16) -> Event {
 }
 
 /// Render the full App into a `w`×`h` buffer.
-fn render_app(app: &mut App, w: u16, h: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_app(app: &mut App, w: u16, h: u16) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -134,32 +134,34 @@ fn row_text(buf: &Buffer, y: u16) -> String {
 }
 
 /// The 2-zone menu bar's row (3 rows below the `Checkpoints:` row).
-fn bar_row(buf: &Buffer) -> u16 {
+fn bar_row(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
     let status_y = (0..buf.area.height)
         .find(|&y| row_text(buf, y).contains("Checkpoints:"))
-        .expect("the checkpoint status row must render");
-    status_y + 3
+        .or_fail("the checkpoint status row must render")?;
+    Ok(status_y + 3)
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
         )));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Seed a small board (AUTH-001 backlog, AUTH-002 testing, AUTH-003
 /// blocked) so columns have selectable cards.
-async fn seed_units(app: &mut App) {
+async fn seed_units(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::WorkUnitsLoaded(vec![
         make_unit("AUTH-001", "backlog"),
         make_unit("AUTH-002", "testing"),
         make_unit("AUTH-003", "blocked"),
     ]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
@@ -205,11 +207,11 @@ fn focus_chip(app: &mut App, j: usize) {
 /// pane 0) — mirrors `bug196_menu_dropdown_row_click.rs::enable_mux`
 /// including the BUG-182 R7 initial loads for the rendered lazy panes.
 fn enable_mux(app: &mut App, panes: Vec<MuxPaneKind>) {
-    let n = panes.len();
+    let Some(layout) = MuxLayout::columns(&panes) else {
+        return;
+    };
     let config = MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50; n.saturating_sub(1)],
-        panes: panes.clone(),
+        layout,
         focused_pane: 0,
         enabled: true,
     };
@@ -253,20 +255,28 @@ fn agent_harness() -> (
     (view, store, rx)
 }
 
-fn agent_seed_sessions(store: &AgentStoreHandle, n: usize) {
-    let mut guard = store.lock().unwrap();
+fn agent_seed_sessions(
+    store: &AgentStoreHandle,
+    n: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let mut guard = store.lock().or_fail("expected a value")?;
     for i in 1..=n {
         guard.append_session(codelet_fspec_tui::store::SessionContext::new(
             SessionId::new(format!("s-{i}")),
         ));
     }
+    Ok(())
 }
 
-fn agent_render(view: &mut codelet_fspec_tui::AgentView, store: &AgentStoreHandle) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(100, 24)).unwrap();
-    term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), &mut store.lock().unwrap()))
-        .unwrap();
-    term.backend().buffer().clone()
+fn agent_render(
+    view: &mut codelet_fspec_tui::AgentView,
+    store: &AgentStoreHandle,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(100, 24)).or_fail("expected a value")?;
+    let mut guard = store.lock().or_fail("expected a value")?;
+    term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), &mut guard))
+        .or_fail("expected a value")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Arrange (agent): the ring lands on the first bar item ('Board View')
@@ -281,13 +291,13 @@ fn agent_focus_first_item(view: &mut codelet_fspec_tui::AgentView) {
 
 /// Scenario: Board: clicking away from a focused menu item de-selects it
 #[tokio::test]
-async fn scenario_board_clicking_away_from_a_focused_menu_item_de_selects_it() {
+async fn scenario_board_clicking_away_from_a_focused_menu_item_de_selects_it() -> TestResult {
     // @step Given the board is focused on a kanban column and the Kanban bar item is focused with its dropdown closed
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     app.board_store_mut().set_focused_column("backlog");
     focus_first_board_item(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -296,13 +306,13 @@ async fn scenario_board_clicking_away_from_a_focused_menu_item_de_selects_it() {
     assert_eq!(app.board_store().open_menu(), None);
     // The bar must have painted (the mouse arms hit-test against the
     // cached geometry from this frame).
-    let _buf = render_app(&mut app, 120, 24);
+    let _buf = render_app(&mut app, 120, 24)?;
 
     // @step When I left click a work-unit card in another column
     // BLOCKED is the last column — its content rect starts at x103,
     // y14 (menu002 parity: card click at (103, 14)).
     app.handle_event(&click(103, 14));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the clicked card becomes selected in its column
     assert_eq!(
@@ -323,28 +333,29 @@ async fn scenario_board_clicking_away_from_a_focused_menu_item_de_selects_it() {
          with the dropdown CLOSED (today only the open-dropdown path \
          de-selects)"
     );
+    Ok(())
 }
 
 /// Scenario: Board: clicking away from a ring-focused chip de-selects it
 #[tokio::test]
-async fn scenario_board_clicking_away_from_a_ring_focused_chip_de_selects_it() {
+async fn scenario_board_clicking_away_from_a_ring_focused_chip_de_selects_it() -> TestResult {
     // @step Given the board has 2 open sessions and the ring selector is on chip #2 (chip highlight visible)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     focus_chip(&mut app, 1);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::ZoneB(1)),
         "the ring must be on chip #2 (a 1-based chip #2 = ring index 1)"
     );
-    let buf = render_app(&mut app, 120, 24);
-    let bar = bar_row(&buf);
+    let buf = render_app(&mut app, 120, 24)?;
+    let bar = bar_row(&buf)?;
 
     // @step When I left click a card in the BACKLOG column
     app.handle_event(&click(103, 14));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the clicked card becomes selected in the BACKLOG column
     assert_eq!(
@@ -361,41 +372,43 @@ async fn scenario_board_clicking_away_from_a_ring_focused_chip_de_selects_it() {
          ring sits on a CHIP (the stale ZoneB focus is what left chips \
          highlighted — the user's bug report)"
     );
-    let buf = render_app(&mut app, 120, 24);
+    let buf = render_app(&mut app, 120, 24)?;
     assert_eq!(
         row_text(&buf, bar),
-        row_text(&buf, bar_row(&buf)),
+        row_text(&buf, bar_row(&buf)?),
         "re-render sanity: the bar row is stable"
     );
+    Ok(())
 }
 
 /// Scenario: Board: key bindings are live again after clicking away from the bar
 #[tokio::test]
-async fn scenario_board_key_bindings_are_live_again_after_clicking_away_from_the_bar() {
+async fn scenario_board_key_bindings_are_live_again_after_clicking_away_from_the_bar() -> TestResult
+{
     // @step Given the board has no open sessions and the Kanban bar item is focused
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     app.board_store_mut().set_focused_column("backlog");
     focus_first_board_item(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::Item(0)),
         "the Kanban item must be ring-focused with no sessions open"
     );
-    let _buf = render_app(&mut app, 120, 24);
+    let _buf = render_app(&mut app, 120, 24)?;
 
     // @step When I left click a work-unit card in a column and then press the '.' key
     // Click away (the bar must de-select so the '.' arm is no longer
     // swallowed by the ring), then press '.' (the new-agent binding).
     app.handle_event(&click(103, 14));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.board_store().menu_focus().is_none(),
         "the click away must clear the ring focus before '.' is handled"
     );
     app.handle_event(&key(KeyCode::Char('.'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the create-session dialog opens (the '.' binding ran and was not swallowed by the bar)
     // No sessions are open, so the '.' arm's OpenAgentView(None) falls
@@ -405,23 +418,24 @@ async fn scenario_board_key_bindings_are_live_again_after_clicking_away_from_the
         "the '.' binding must be live again after clicking away with the \
          dropdown CLOSED (it is swallowed while the bar ring is focused)"
     );
+    Ok(())
 }
 
 /// Scenario: Board: returning to the board after a chip activation shows no pre-highlighted chip
 #[tokio::test]
 async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_pre_highlighted_chip(
-) {
+) -> TestResult {
     // @step Given the board has 2 open sessions and the ring selector is on chip #1
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
+    seed_sessions(&mut app, 2).await?;
     focus_chip(&mut app, 0);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::ZoneB(0)),
         "the ring must be on chip #1 (a 1-based chip #1 = ring index 0)"
     );
-    let buf = render_app(&mut app, 120, 24);
+    let buf = render_app(&mut app, 120, 24)?;
     // The first chip's cell: Zone B starts after the bracketed items +
     // separator (MENU-011: `[ #1 ● ]` x61 — the `menu002_board_surface`
     // CHIP1_X geometry).
@@ -432,8 +446,8 @@ async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_
     // session s-1), then BackToBoard (the return-to-board action the
     // exit flow / 'Board View' item emit — with a live session a bare
     // Esc opens the exit confirmation instead, RPC-098).
-    app.handle_event(&click(chip1_x, bar_row(&buf)));
-    drain_pending(&mut app).await;
+    app.handle_event(&click(chip1_x, bar_row(&buf)?));
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.active_view(),
         ViewMode::Agent,
@@ -445,7 +459,7 @@ async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_
         "the flipped view must host chip #1's session"
     );
     app.dispatch(codelet_fspec_tui::Action::BackToBoard);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the board bar does not pre-highlight any chip with the ring selector (no chip is ring-focused)
     assert_eq!(
@@ -469,15 +483,16 @@ async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_
         app.board_store().menu_focus().is_none(),
         "only the ring selector may paint a chip on the board (MENU-010)"
     );
+    Ok(())
 }
 
 /// Scenario: Agent view: clicking empty bar space clears the bar highlight
 #[tokio::test]
-async fn scenario_agent_view_clicking_empty_bar_space_clears_the_bar_highlight() {
+async fn scenario_agent_view_clicking_empty_bar_space_clears_the_bar_highlight() -> TestResult {
     // @step Given the agent view shows a session and the ring selector is on a bar item or chip (highlight visible)
     let (mut view, store, _rx) = agent_harness();
-    agent_seed_sessions(&store, 1);
-    let buf = agent_render(&mut view, &store);
+    agent_seed_sessions(&store, 1)?;
+    let buf = agent_render(&mut view, &store)?;
     let bar_y = 1u16; // menu003 geometry: the bar row is header + 1.
     let _ = row_text(&buf, bar_y);
     agent_focus_first_item(&mut view);
@@ -486,7 +501,7 @@ async fn scenario_agent_view_clicking_empty_bar_space_clears_the_bar_highlight()
         Some(MenuFocus::Item(0)),
         "the ring must be on the 'Board View' item (highlight visible)"
     );
-    agent_render(&mut view, &store);
+    agent_render(&mut view, &store)?;
 
     // @step When I left click empty bar-row space (no item, no chip, no dropdown open)
     // x30 sits in the empty bar space past the first chip (the chip
@@ -500,19 +515,21 @@ async fn scenario_agent_view_clicking_empty_bar_space_clears_the_bar_highlight()
          ring focus — the composer regains the keys (today the agent \
          arm returns Ignored and the focus lingers)"
     );
+    Ok(())
 }
 
 /// Scenario: Agent view: flipping back to the board leaves no ring-focused chip
 #[tokio::test]
-async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_chip() {
+async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_chip() -> TestResult
+{
     // @step Given the agent view shows a session, the ring selector is on a chip, and its session is the current session
     let (mut view, store, _rx) = agent_harness();
-    agent_seed_sessions(&store, 2);
+    agent_seed_sessions(&store, 2)?;
     // The agent's ring math reads its chip count from the last focused
     // render — paint a frame first so the 2 seeded chips enter the ring
     // (Item(0) → Right lands on ZoneB(0) = chip #1 = the CURRENT
     // session, s-1, the first appended session is current).
-    agent_render(&mut view, &store);
+    agent_render(&mut view, &store)?;
     agent_focus_first_item(&mut view);
     view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert_eq!(
@@ -520,7 +537,7 @@ async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_c
         Some(MenuFocus::ZoneB(0)),
         "the ring must be on chip #1 (the current session's chip)"
     );
-    agent_render(&mut view, &store);
+    agent_render(&mut view, &store)?;
 
     // @step When I activate the 'Board View' item (Enter or click) to flip to the board
     // Walk back to the item and press Enter (the in-view activation
@@ -541,7 +558,7 @@ async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_c
     // focus must NOT survive the round trip — a lingering ZoneB focus
     // would paint a stale chip highlight on the board bar.
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
+    seed_sessions(&mut app, 2).await?;
     app.board_store_mut().menu_move(11);
     assert_eq!(
         app.board_store().menu_focus(),
@@ -551,10 +568,10 @@ async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_c
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(Some(
         SessionId::new("s-1"),
     )));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Agent);
     app.dispatch(codelet_fspec_tui::Action::BackToBoard);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert!(
         app.board_store().menu_focus().is_none(),
@@ -566,26 +583,27 @@ async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_c
     // With the ring cleared, the board's snapshot builder marks no
     // chip (MENU-010 R2), so NO chip may paint (the painter's
     // `focused_cell` ORs ring-on-chip with `MenuChip.active`).
-    let _buf = render_app(&mut app, 120, 24);
+    let _buf = render_app(&mut app, 120, 24)?;
     assert!(
         app.board_store().menu_focus().is_none(),
         "no ring focus may pre-highlight any chip on return"
     );
+    Ok(())
 }
 
 /// Scenario: Mux: clicking a pane clears the bar highlight
 #[tokio::test]
-async fn scenario_mux_clicking_a_pane_clears_the_bar_highlight() {
+async fn scenario_mux_clicking_a_pane_clears_the_bar_highlight() -> TestResult {
     // @step Given the mux surface shows a board pane and a Files pane, and a bar item is focused with its dropdown closed
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
     );
     focus_mux_bar_first_item(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -594,7 +612,7 @@ async fn scenario_mux_clicking_a_pane_clears_the_bar_highlight() {
     assert_eq!(app.navigator().mux.open_menu(), None);
     // The bar must have painted (the mouse arms hit-test against the
     // cached geometry from this frame).
-    let _buf = render_app(&mut app, 240, 24);
+    let _buf = render_app(&mut app, 240, 24)?;
     // The Files pane is pane index 1 (pane 0 x0..118, pane 1 x120..237):
     // click well inside the Files pane (menu004 parity: (150, 10)).
     let files_click_x = 150u16;
@@ -602,7 +620,7 @@ async fn scenario_mux_clicking_a_pane_clears_the_bar_highlight() {
 
     // @step When I left click the Files pane
     app.handle_event(&click(files_click_x, files_click_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Files pane gains focus and the bar highlight clears
     assert_eq!(
@@ -616,15 +634,16 @@ async fn scenario_mux_clicking_a_pane_clears_the_bar_highlight() {
          bar's ring focus even with the dropdown CLOSED (today only the \
          open-dropdown CloseOutsideThenLand path de-selects)"
     );
+    Ok(())
 }
 
 /// Scenario: Mux: clicking empty bar space clears the chip highlight
 #[tokio::test]
-async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() {
+async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() -> TestResult {
     // @step Given the mux surface has a focused pane, and the ring selector is on a chip (chip highlight visible)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
@@ -634,7 +653,7 @@ async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() {
     // snapshot — the dispatch's MenuMove arm builds it fresh, but the
     // entry (Right off the last column) only happens on the board
     // surface, which needs the rendered panes to exist.
-    let _buf = render_app(&mut app, 240, 24);
+    let _buf = render_app(&mut app, 240, 24)?;
     // Ring entry: Right off the last column lands on the first mux bar
     // item (Kanban). Zone B in the mux bar = the non-agent view labels
     // (Board, Files) then the global chips, so from Item(0) walk right
@@ -649,18 +668,18 @@ async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() {
     // keys here would re-fire the board-column entry rule on a stale
     // focus (two entry Rights collapse onto Item(0)).
     focus_mux_bar_first_item(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     for _ in 0..6 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::ZoneB(2)),
         "the ring must sit on the first chip (the chip-highlight path)"
     );
-    let _buf = render_app(&mut app, 240, 24);
+    let _buf = render_app(&mut app, 240, 24)?;
     let focus_before = app.navigator().mux.focus();
     // Empty bar-row space: past the right edge of every item/cell rect
     // (the bar content ends well before x239).
@@ -668,7 +687,7 @@ async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() {
 
     // @step When I left click empty bar-row space (no item, no chip, no cell hit)
     app.handle_event(&click(empty_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the chip highlight clears
     assert!(
@@ -684,4 +703,5 @@ async fn scenario_mux_clicking_empty_bar_space_clears_the_chip_highlight() {
         focus_before,
         "a bar-row click that hits no cell must NOT change the pane focus"
     );
+    Ok(())
 }

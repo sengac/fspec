@@ -147,7 +147,7 @@ fn scenario_cli_against_no_spec_dir_exits_2_with_directory_not_found() {
         "list-features must exit 2 when spec/features/ is missing; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the exact line 'Directory not found: spec/features/'
+    // @step Then stderr contains the substring 'Directory not found: spec/features/'
     assert!(
         stderr
             .lines()

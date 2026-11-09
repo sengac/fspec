@@ -57,7 +57,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -83,7 +85,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "fn render_status(project_root: &Path) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,7 +128,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "fn handle_complete(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -165,7 +171,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "fn handle_complete(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -206,7 +214,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "fn handle_complete(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -261,7 +271,9 @@
                 320,
                 321,
                 322
-              ]
+              ],
+              "firstLine": "fn handle_continue(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -316,7 +328,9 @@
                 320,
                 321,
                 322
-              ]
+              ],
+              "firstLine": "fn handle_continue(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -371,7 +385,9 @@
                 320,
                 321,
                 322
-              ]
+              ],
+              "firstLine": "fn handle_continue(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -414,7 +430,9 @@
                 350,
                 351,
                 352
-              ]
+              ],
+              "firstLine": "fn handle_strategy(project_root: &Path, strategy: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -457,7 +475,9 @@
                 350,
                 351,
                 352
-              ]
+              ],
+              "firstLine": "fn handle_strategy(project_root: &Path, strategy: &str) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -468,7 +488,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "481-531",
+          "lines": "481-549",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -544,8 +564,13 @@
                 533,
                 534,
                 535,
-                536
-              ]
+                536,
+                537,
+                538,
+                539
+              ],
+              "firstLine": "fn handle_strategy_d(",
+              "lastLine": "}"
             }
           ]
         }
@@ -556,7 +581,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "533-567",
+          "lines": "555-576",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -591,7 +616,9 @@
                 390,
                 391,
                 392
-              ]
+              ],
+              "firstLine": "fn handle_existing_session(project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -602,7 +629,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "569-589",
+          "lines": "591-601",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -671,7 +698,9 @@
                 458,
                 459,
                 460
-              ]
+              ],
+              "firstLine": "fn handle_initial_analysis(project_root: &Path, dry_run: bool) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -682,7 +711,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "591-632",
+          "lines": "613-646",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -751,7 +780,9 @@
                 458,
                 459,
                 460
-              ]
+              ],
+              "firstLine": "fn handle_initial_analysis(project_root: &Path, dry_run: bool) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -762,7 +793,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "634-669",
+          "lines": "656-682",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -831,7 +862,9 @@
                 458,
                 459,
                 460
-              ]
+              ],
+              "firstLine": "fn handle_initial_analysis(project_root: &Path, dry_run: bool) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -842,7 +875,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/reverse.rs",
-          "lines": "671-699",
+          "lines": "693-715",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/reverse.rs",
@@ -894,7 +927,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -965,7 +1000,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -991,7 +1028,322 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "fn render_status(project_root: &Path) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A reverse session is shared by every spelling of the project path",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/reverse.rs",
+          "lines": "767-786",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/types/reverse_session.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn session_path(project_root: &Path) -> PathBuf {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect feature files without tests and suggest Strategy B",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/reverse.rs",
+          "lines": "835-858",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/reverse.rs",
+              "lines": [
+                784,
+                785,
+                786,
+                787,
+                788,
+                789,
+                790,
+                791,
+                792,
+                793,
+                794,
+                795,
+                796,
+                797,
+                798,
+                799,
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834
+              ],
+              "firstLine": "/// Detect gaps from a project analysis (parity with `detectGaps`,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect unmapped coverage and suggest Strategy C",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/reverse.rs",
+          "lines": "864-886",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/reverse.rs",
+              "lines": [
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713
+              ],
+              "firstLine": "/// For each feature file, read its `.coverage` sidecar and count scenarios with",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect raw implementation with no specs or tests and suggest Strategy D",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/reverse.rs",
+          "lines": "892-915",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/reverse.rs",
+              "lines": [
+                760,
+                761,
+                762,
+                763,
+                764,
+                765,
+                766,
+                767,
+                768,
+                769,
+                770,
+                771
+              ],
+              "firstLine": "/// Implementation files lacking a corresponding feature file",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle large projects with a narrow-scope hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/reverse.rs",
+          "lines": "924-940",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/reverse.rs",
+              "lines": [
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460
+              ],
+              "firstLine": "/// Initial analysis (no flag, no session). Analyzes the project, detects gaps,",
+              "lastLine": "}"
             }
           ]
         }
@@ -999,16 +1351,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 18,
-    "coveredScenarios": 18,
+    "totalScenarios": 23,
+    "coveredScenarios": 23,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/reverse.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/commands/reverse.rs",
-      "rust/fspec/src/reverse.rs"
+      "rust/fspec/src/reverse.rs",
+      "rust/fspec-core/src/types/reverse_session.rs"
     ],
-    "totalLinesCovered": 1304
+    "totalLinesCovered": 1610
   }
 }

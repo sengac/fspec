@@ -30,16 +30,6 @@ const OPTS: &[CommandOption] = &[
         description: "Add answer to: rule, assumption, or none (default: none)",
         default_value: None,
     },
-    CommandOption {
-        flag: "--add-to-rules",
-        description: "Also add answer as a rule (deprecated: use --add-to rule)",
-        default_value: None,
-    },
-    CommandOption {
-        flag: "--add-to-assumptions",
-        description: "Also add answer as an assumption (deprecated: use --add-to assumption)",
-        default_value: None,
-    },
 ];
 
 const EXAMPLES: &[CommandExample] = &[
@@ -53,7 +43,7 @@ const EXAMPLES: &[CommandExample] = &[
     },
     CommandExample {
         command:
-            "fspec answer-question AUTH-001 0 --answer \"Email required\" --add-to-rules",
+            "fspec answer-question AUTH-001 0 --answer \"Email required\" --add-to rule",
         description: Some("Answer and add as rule"),
         output: Some("✓ Answered question and added to rules"),
     },

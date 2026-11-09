@@ -30,8 +30,13 @@ fn test_notification_callback(_session_id: String, _action: String, _reason: Str
 }
 
 /// Get stage callback that always returns "testing" for test purposes
-fn test_get_stage_testing(_session_id: String) -> Option<String> {
-    Some("testing".to_string())
+fn test_get_stage_testing(
+    _session_id: String,
+) -> Result<Option<codelet_tools::stage_gate::SessionStage>, String> {
+    Ok(Some(codelet_tools::stage_gate::SessionStage {
+        stage: "testing".to_string(),
+        project_root: std::env::temp_dir(),
+    }))
 }
 
 mod callback_registration {
@@ -41,6 +46,8 @@ mod callback_registration {
     /// Scenario: Callback registration works correctly
     #[test]
     fn test_notification_callback_can_be_registered() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given the notification callback infrastructure
         // @step When we register a callback
         set_block_notification_callback(test_notification_callback);
@@ -52,6 +59,8 @@ mod callback_registration {
 
     #[test]
     fn test_stage_callback_can_be_registered() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given the stage callback infrastructure
         // @step When we register a callback
         set_get_work_unit_stage_callback(test_get_stage_testing);
@@ -68,6 +77,8 @@ mod blocklist_integration {
     #[test]
     #[serial]
     fn test_blocklist_check_returns_blocked_result() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given a blocklist rule exists blocking "git checkout" with reason "Use git switch instead"
         let tmp = TempDir::new().expect("failed to create temp dir");
         let fspec_dir = tmp.path().join(".fspec");
@@ -123,6 +134,8 @@ mod blocklist_integration {
     #[test]
     #[serial]
     fn test_blocklist_check_allows_unmatched_commands() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given a blocklist with specific rules
         let tmp = TempDir::new().expect("failed to create temp dir");
         let fspec_dir = tmp.path().join(".fspec");
@@ -167,12 +180,14 @@ mod stage_permissions_integration {
     #[test]
     #[serial]
     fn test_stage_permissions_block_impl_files_in_testing_stage() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given the current work unit is in "testing" stage
         let stage = "testing";
 
         // @step And "testing" stage only allows writing to "spec" and "test" categories
         let tmp = TempDir::new().expect("failed to create temp dir");
-        init_stage_permissions(Some(tmp.path())); // Uses default ACDD config
+        init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load"); // Uses default ACDD config
 
         // @step When the AI tries to write to "src/auth.ts"
         let result = check_write_permission("src/auth.ts", Some(stage));
@@ -204,11 +219,13 @@ mod stage_permissions_integration {
     #[test]
     #[serial]
     fn test_stage_permissions_allow_test_files_in_testing_stage() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given the current work unit is in "testing" stage
         let stage = "testing";
 
         let tmp = TempDir::new().expect("failed to create temp dir");
-        init_stage_permissions(Some(tmp.path()));
+        init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
         // @step When the AI tries to write to a test file
         let result = check_write_permission("src/__tests__/auth.test.ts", Some(stage));
@@ -223,11 +240,13 @@ mod stage_permissions_integration {
     #[test]
     #[serial]
     fn test_stage_permissions_allow_spec_files_in_testing_stage() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given the current work unit is in "testing" stage
         let stage = "testing";
 
         let tmp = TempDir::new().expect("failed to create temp dir");
-        init_stage_permissions(Some(tmp.path()));
+        init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
         // @step When the AI tries to write to a spec file
         let result = check_write_permission("spec/features/auth.feature", Some(stage));
@@ -242,9 +261,11 @@ mod stage_permissions_integration {
     #[test]
     #[serial]
     fn test_no_block_when_no_work_unit_active() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given no work unit is set for the session
         let tmp = TempDir::new().expect("failed to create temp dir");
-        init_stage_permissions(Some(tmp.path()));
+        init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
         let stage: Option<&str> = None;
 
@@ -267,6 +288,8 @@ mod notification_format {
     #[test]
     #[serial]
     fn test_blocked_error_contains_reason_for_notification() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given a blocklist rule with detailed reason
         let tmp = TempDir::new().expect("failed to create temp dir");
         let fspec_dir = tmp.path().join(".fspec");
@@ -315,9 +338,11 @@ mod notification_format {
     #[test]
     #[serial]
     fn test_stage_permission_error_format() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // @step Given stage permissions configured
         let tmp = TempDir::new().expect("failed to create temp dir");
-        init_stage_permissions(Some(tmp.path()));
+        init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
         // @step When the AI tries to write in wrong stage
         let result = check_write_permission("src/impl.ts", Some("testing"));

@@ -64,16 +64,6 @@ Feature: Loop store lift into codelet-core::loops
     Then no file under rust/core/src/loops/ contains the text "use napi"
     And no file under rust/core/src/loops/ contains the text "napi_derive"
 
-  Scenario: rust/napi/src/scheduler/mod.rs re-exports the loops surface
-    Given the file rust/napi/src/scheduler/mod.rs is compiled
-    Then it contains a re-export of codelet_core::loops::LoopStore
-    And it contains a re-export of codelet_core::loops::LoopEntry
-    And it contains a re-export of codelet_core::loops::IdleCheckFn
-
-  Scenario: rust/napi/src/scheduler/loop_store.rs is deleted
-    Given the directory rust/napi/src/scheduler/ exists
-    Then it does not contain a file named "loop_store.rs"
-
   Scenario: codelet-core lib.rs exports the loops module
     Given the file rust/core/src/lib.rs is compiled
     Then it declares a public module named "loops"

@@ -28,6 +28,8 @@ pub fn response(reasoning: &str, text: &str, stop: Option<&str>) -> ResponseTemp
     sse(chunk)
 }
 
+// Used by the CONT-012 test binary; the BUG-221 binary shares this module.
+#[allow(dead_code)]
 pub fn tool_response() -> ResponseTemplate {
     sse(json!({
         "id":"tool-progress", "object":"chat.completion.chunk", "created":1,
@@ -35,7 +37,7 @@ pub fn tool_response() -> ResponseTemplate {
         "choices":[{"index":0,"delta":{"role":"assistant",
             "reasoning_content":REASONING,
             "tool_calls":[{"index":0,"id":"inspect-1","type":"function",
-                "function":{"name":"inspect","arguments":"{}"}}]},
+                "function":{"name":"inspect","arguments":"{\"work_unit_id\":\"NONE\"}"}}]},
             "finish_reason":"tool_calls"}],
         "usage":{"prompt_tokens":100,"completion_tokens":4096,"total_tokens":4196}
     }))
@@ -86,6 +88,7 @@ impl Fixture {
         cancel_on_thinking: bool,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         codelet_core::persistence::reset_stores_for_tests();
         let manifest = codelet_core::persistence::create_session_with_provider(
@@ -125,6 +128,10 @@ impl Fixture {
     }
 
     pub async fn run(&mut self) -> TestResult {
+        let _admission = codelet_tools::tool_admission::register_auxiliary(
+            self.session_id,
+            self._directory.path().to_owned(),
+        )?;
         let client: rig::providers::openai::CompletionsClient =
             rig::providers::openai::CompletionsClient::builder()
                 .api_key("offline")
@@ -146,8 +153,8 @@ impl Fixture {
             builder = builder.additional_params(settings.clone());
         }
         let agent = builder.build();
-        tokio::time::timeout(
-            std::time::Duration::from_secs(5),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::new(agent, 4), 'finish the ta...",
             run_agent_stream(
                 RigAgent::new(agent, 4),
                 "finish the task",
@@ -170,6 +177,7 @@ impl Fixture {
             .ok_or_else(|| "request log missing".into())
     }
 
+    #[allow(dead_code)] // unused by the BUG-303 test binary
     pub fn statuses(&self) -> Vec<String> {
         self.output
             .events
@@ -183,6 +191,7 @@ impl Fixture {
             .collect()
     }
 
+    #[allow(dead_code)] // unused by the BUG-303 test binary
     pub fn retries(&self) -> usize {
         self.statuses()
             .iter()

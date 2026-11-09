@@ -26,10 +26,10 @@
 //!     work unit:', err.message)` path at
 //!     `src/commands/prioritize-work-unit.ts:165-168`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::prioritize_work_unit;
 use codelet_fspec_core::js_compat::parse_js_int;
 use serde_json::{json, Map, Value};
@@ -49,7 +49,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `prioritize-work-unit` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut body = Map::new();
     body.insert(

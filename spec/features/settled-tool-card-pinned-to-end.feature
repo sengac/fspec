@@ -15,16 +15,16 @@ Feature: Settled tool card must stay pinned to end of output, not jump to start
   # BUSINESS RULES:
   #   1. A settled tool-call card whose body exceeds COLLAPSED_LINES (8) shows the LAST 8 body lines (end-pinned), not the first 8
   #   2. A settled tool-call card whose body is 8 or fewer lines shows the full body with no indicator (unchanged)
-  #   3. The settled overflow indicator reflects the number of lines hidden ABOVE the visible window and still reads '... +N lines (Enter to view full)' with N = total - 8
+  #   3. The settled overflow indicator reflects the number of lines hidden ABOVE the visible window and still reads '... +N lines (Tab to select, Enter to view full)' with N = total - 8
   #   4. The streaming tail window (last STREAMING_WINDOW_SIZE = 10 lines, no indicator) is unchanged
-  #   5. The full untruncated body remains in ChunkSource.text so the TurnContentModal (Enter to view full) still shows every line
+  #   5. The full untruncated body remains in ChunkSource.text so the TurnContentModal (Tab to select, Enter to view full) still shows every line
   #   6. Diff cards (is_diff: true) bypass this collapse entirely and are unaffected
   #
   # EXAMPLES:
   #   1. A settled tool card with a 5-line body renders all 5 lines and no '... +N lines' indicator
-  #   2. A settled tool card with a 20-line body renders the LAST 8 body lines (line-13..line-20) with a '... +12 lines (Enter to view full)' indicator, and line-12 is hidden
+  #   2. A settled tool card with a 20-line body renders the LAST 8 body lines (line-13..line-20) with a '... +12 lines (Tab to select, Enter to view full)' indicator, and line-12 is hidden
   #   3. A streaming tool card with a 25-line body renders only the last 10 body lines (line-16..line-25) and no indicator (unchanged)
-  #   4. A tool card that finishes streaming with a 25-line body stays end-pinned: it shows the LAST 8 body lines (line-18..line-25) plus '... +17 lines (Enter to view full)', so the last lines from streaming remain visible and it does NOT jump to line-1
+  #   4. A tool card that finishes streaming with a 25-line body stays end-pinned: it shows the LAST 8 body lines (line-18..line-25) plus '... +17 lines (Tab to select, Enter to view full)', so the last lines from streaming remain visible and it does NOT jump to line-1
   #   5. Selecting a collapsed 20-line tool card and pressing Enter opens the TurnContentModal showing all 20 lines (unchanged)
   #
   # ========================================
@@ -44,7 +44,7 @@ Feature: Settled tool card must stay pinned to end of output, not jump to start
     When the tool-call card is rendered into scrollback lines
     Then the rendered lines show the last 8 body lines
     And the earlier body lines are hidden
-    And the rendered lines include "... +12 lines (Enter to view full)"
+    And the rendered lines include "... +12 lines (Tab to select, Enter to view full)"
 
   Scenario: Streaming tool card shows only the last 10 lines
     Given a streaming tool-call card whose body has 25 lines
@@ -58,7 +58,7 @@ Feature: Settled tool card must stay pinned to end of output, not jump to start
     And the tool-call card is rendered into scrollback lines
     Then the rendered lines show the last 8 body lines
     And the first body line is hidden
-    And the rendered lines include "... +17 lines (Enter to view full)"
+    And the rendered lines include "... +17 lines (Tab to select, Enter to view full)"
 
   Scenario: The full body is preserved for the content modal
     Given a settled tool-call card whose body has 20 lines

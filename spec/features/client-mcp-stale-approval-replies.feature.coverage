@@ -1,0 +1,66 @@
+{
+  "scenarios": [
+    {
+      "name": "Reject stale approval responses atomically",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/client_mcp_approval_regressions.rs",
+          "lines": "10-52",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                158,
+                159,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "// AMGR-020: every reply names the request id and is the user's.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/client_mcp_approval_regressions.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_3.rs"
+    ],
+    "totalLinesCovered": 75
+  }
+}

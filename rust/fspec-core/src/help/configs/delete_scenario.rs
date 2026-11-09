@@ -21,11 +21,9 @@ const ARGUMENTS: &[CommandArgument] = &[
     },
 ];
 
-const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--force",
-    description: "Skip confirmation",
-    default_value: None,
-}];
+/// BUG-495: delete-scenario never asks for confirmation, so the TS help's
+/// `--force` ("Skip confirmation") is not offered; the parser rejects it.
+const OPTIONS: &[CommandOption] = &[];
 
 const EXAMPLE_OUTPUT: &str =
     "✓ Deleted scenario \"Deprecated scenario\" from login.feature\n  Updated coverage file";
@@ -47,7 +45,7 @@ const NOTES: &[&str] = &[
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "delete-scenario",
     description: "Delete a scenario from a feature file",
-    usage: Some("fspec delete-scenario <file> <scenario> [options]"),
+    usage: Some("fspec delete-scenario <file> <scenario>"),
     arguments: ARGUMENTS,
     options: OPTIONS,
     examples: EXAMPLES,

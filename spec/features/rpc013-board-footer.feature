@@ -30,8 +30,8 @@ Feature: RPC-013 BoardView footer — literal port of TS UnifiedBoardLayout foot
     And the rendered buffer contains the substring "↑↓ Work Units"
     And the rendered buffer contains the substring "[ Priority Up"
     And the rendered buffer contains the substring "] Priority Down"
-    And the rendered buffer contains the substring "↵ Work Agent"
-    And the rendered buffer contains the substring "ESC Back"
+    And the rendered buffer contains the substring "↵ Choose"
+    And the rendered buffer contains the substring "ESC Exit"
 
   Scenario: BoardView footer omits the legacy `? help q quit Tab switch pane` hint
     Given an App with bootstrap complete and Navigator.active_view = ViewMode::Board

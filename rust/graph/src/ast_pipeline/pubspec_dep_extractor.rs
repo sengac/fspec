@@ -16,17 +16,23 @@ use crate::graph_entities::GraphEntity;
 /// Creates Dependency nodes for each package in `dependencies:` and
 /// `dev_dependencies:` sections, plus DependsOn edges from the
 /// pubspec.yaml File node.
-pub fn extract_pubspec_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_pubspec_dependencies(project_root: &Path) -> helpers::Extracted {
     let pubspec_path = project_root.join("pubspec.yaml");
     if !pubspec_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_pubspec_yaml(project_root, &pubspec_path))
+}
 
-    let content = std::fs::read_to_string(&pubspec_path)
-        .map_err(|e| format!("Failed to read pubspec.yaml: {e}"))?;
+/// The entities of one pubspec.yaml, or why it could not be read.
+fn extract_pubspec_yaml(
+    project_root: &Path,
+    pubspec_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, pubspec_path)?;
 
     let rel_path = "pubspec.yaml";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     let line_count = content.lines().count() as i32;

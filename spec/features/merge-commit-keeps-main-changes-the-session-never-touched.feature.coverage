@@ -1,0 +1,238 @@
+{
+  "scenarios": [
+    {
+      "name": "Main's commits to files the session never touched survive the merge",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt013_merge_commit_keeps_main_changes.rs",
+          "lines": "115-160",
+          "implMappings": [
+            {
+              "file": "rust/git/src/merge_commit.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "let head_tree = get_tree_files(&repo, &parent.id.to_string())?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A file main deleted after the session started stays deleted",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt013_merge_commit_keeps_main_changes.rs",
+          "lines": "162-193",
+          "implMappings": [
+            {
+              "file": "rust/git/src/merge_commit.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "let head_tree = get_tree_files(&repo, &parent.id.to_string())?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clearing the executable bit in the session lands in the merge commit",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/wt013_merge_commit_keeps_main_changes.rs",
+          "lines": "195-224",
+          "implMappings": [
+            {
+              "file": "rust/git/src/merge_commit.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "/// WT-013: main's HEAD tree with only the session's delta applied.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/tree_utils.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "// WT-006: the on-disk executable bit is authoritative —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/session_diff.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "// The worktree's executable bit is authoritative for a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/wt013_merge_commit_keeps_main_changes.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/merge_commit.rs",
+      "rust/git/src/tree_utils.rs",
+      "rust/git/src/session_diff.rs"
+    ],
+    "totalLinesCovered": 260
+  }
+}

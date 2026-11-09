@@ -1,0 +1,164 @@
+{
+  "scenarios": [
+    {
+      "name": "A cold-resumed session reports the live input tokens",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug326_resumed_input_tokens.rs",
+          "lines": "25-104",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/request_settlement.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ],
+              "firstLine": "pub fn replace_request_context(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/persistence/manifest.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "/// BUG-326: output + reasoning tokens of the request that measured",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                181
+              ],
+              "firstLine": "current.token_usage.current_context_output_tokens = 0;",
+              "lastLine": "current.token_usage.current_context_output_tokens = 0;"
+            },
+            {
+              "file": "rust/sessions/src/committed_publication.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "// BUG-326: the restored fill is the saved inclusive occupancy, computed",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resumed output tokens count reply output without reasoning, as live",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug326_resumed_input_tokens.rs",
+          "lines": "106-136",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                68
+              ],
+              "firstLine": "/// BUG-326: the session's reply output without reasoning, which is what",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/committed_publication.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "let convert =",
+              "lastLine": "output_tokens: convert("
+            },
+            {
+              "file": "rust/sessions/src/session_restore.rs",
+              "lines": [
+                190
+              ],
+              "firstLine": "tracker.output_tokens = u64::from(tokens.output_tokens);",
+              "lastLine": "tracker.output_tokens = u64::from(tokens.output_tokens);"
+            },
+            {
+              "file": "rust/cli/src/session/restore_compaction.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "// BUG-326: the tracker's output excludes reasoning, as it does live.",
+              "lastLine": "self.token_tracker.cumulative_billed_input = saved.cumulative_billed_input;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug326_resumed_input_tokens.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/request_settlement.rs",
+      "rust/core/src/persistence/manifest.rs",
+      "rust/core/src/persistence/compaction_commit.rs",
+      "rust/sessions/src/committed_publication.rs",
+      "rust/sessions/src/session_restore.rs",
+      "rust/cli/src/session/restore_compaction.rs"
+    ],
+    "totalLinesCovered": 176
+  }
+}

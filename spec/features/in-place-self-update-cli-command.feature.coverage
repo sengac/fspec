@@ -32,7 +32,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "/// Exit codes: 0 = current, 1 = update available, 2 = network/API failure.",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,7 +45,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd002_update_cli.rs",
-          "lines": "179-224",
+          "lines": "187-231",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_cmd.rs",
@@ -76,7 +78,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// Exit codes: 0 = up-to-date or updated, 1 = update failed.",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,7 +91,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/upd002_update_cli.rs",
-          "lines": "226-245",
+          "lines": "237-258",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_cmd.rs",
@@ -101,7 +105,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "pub async fn run(check_only: bool) -> Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -118,6 +124,6 @@
     "implFiles": [
       "rust/fspec/src/update_cmd.rs"
     ],
-    "totalLinesCovered": 160
+    "totalLinesCovered": 161
   }
 }

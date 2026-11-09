@@ -4,21 +4,28 @@
       "name": "CodexGrepFilesFacade maps include param to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "582-607",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "7-33",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288
-              ]
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -28,8 +35,8 @@
       "name": "CodexGrepFilesFacade maps limit param to InternalSearchParams::Grep",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "608-632",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "35-58",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
@@ -47,7 +54,9 @@
                 423,
                 424,
                 425
-              ]
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -57,8 +66,8 @@
       "name": "CodexGrepFilesFacade maps both include and limit params",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "633-658",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "60-84",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
@@ -76,7 +85,9 @@
                 423,
                 424,
                 425
-              ]
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -86,21 +97,28 @@
       "name": "CodexGrepFilesFacade remains backward compatible without include or limit",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "659-680",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "86-108",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288
-              ]
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,8 +128,8 @@
       "name": "InternalSearchParams::Grep includes optional include and limit fields",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "685-715",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "110-139",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/traits.rs",
@@ -135,7 +153,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "/// Optional working directory override from the facade.",
+              "lastLine": "fn tool_name(&self) -> &'static str;"
             }
           ]
         }
@@ -145,77 +165,9 @@
       "name": "SearchToolFacadeWrapper passes include as glob to GrepTool",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "880-910",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/wrapper.rs",
-              "lines": [
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130,
-                1131,
-                1132,
-                1133,
-                1134,
-                1135,
-                1136,
-                1137,
-                1138,
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150,
-                1151,
-                1152,
-                1153,
-                1154,
-                1155,
-                1156,
-                1157,
-                1158,
-                1159,
-                1160,
-                1161,
-                1162,
-                1163,
-                1164,
-                1165,
-                1166,
-                1167,
-                1168,
-                1169,
-                1170,
-                1171,
-                1172,
-                1173,
-                1174,
-                1175,
-                1176
-              ]
-            }
-          ]
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "170-206",
+          "implMappings": []
         }
       ]
     },
@@ -223,77 +175,9 @@
       "name": "SearchToolFacadeWrapper applies limit to cap grep results",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "912-945",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/wrapper.rs",
-              "lines": [
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130,
-                1131,
-                1132,
-                1133,
-                1134,
-                1135,
-                1136,
-                1137,
-                1138,
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150,
-                1151,
-                1152,
-                1153,
-                1154,
-                1155,
-                1156,
-                1157,
-                1158,
-                1159,
-                1160,
-                1161,
-                1162,
-                1163,
-                1164,
-                1165,
-                1166,
-                1167,
-                1168,
-                1169,
-                1170,
-                1171,
-                1172,
-                1173,
-                1174,
-                1175,
-                1176
-              ]
-            }
-          ]
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "208-243",
+          "implMappings": []
         }
       ]
     },
@@ -301,12 +185,18 @@
       "name": "GrepArgs struct supports optional glob field",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "856-878",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "146-168",
           "implMappings": [
             {
               "file": "rust/tools/src/grep.rs",
               "lines": [
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
                 380,
                 381,
                 382,
@@ -319,13 +209,10 @@
                 389,
                 390,
                 391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397
-              ]
+                392
+              ],
+              "firstLine": "/// Arguments for Grep tool (rig::tool::Tool)",
+              "lastLine": "}"
             }
           ]
         }
@@ -335,18 +222,28 @@
       "name": "ZAI grep facade constructs InternalSearchParams::Grep with None defaults",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "945-970",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "245-272",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/zai.rs",
               "lines": [
-                332,
-                333,
-                334,
-                335,
-                336
-              ]
+                281,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324
+              ],
+              "firstLine": "impl SearchToolFacade for ZAIGrepFilesFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -356,12 +253,13 @@
       "name": "Gemini grep facade constructs InternalSearchParams::Grep with None defaults",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "972-1000",
+          "file": "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs",
+          "lines": "274-299",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/search.rs",
               "lines": [
+                16,
                 46,
                 47,
                 48,
@@ -378,8 +276,16 @@
                 59,
                 60,
                 61,
-                62
-              ]
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "impl SearchToolFacade for GeminiSearchFileContentFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -391,16 +297,15 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex/grep_files_include_limit_tests.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/codex.rs",
       "rust/tools/src/facade/traits.rs",
-      "rust/tools/src/facade/wrapper.rs",
       "rust/tools/src/grep.rs",
       "rust/tools/src/facade/zai.rs",
       "rust/tools/src/facade/search.rs"
     ],
-    "totalLinesCovered": 498
+    "totalLinesCovered": 406
   }
 }

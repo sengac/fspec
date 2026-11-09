@@ -88,6 +88,14 @@ pub struct UnifiedExecResult {
     /// Present when process exited
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exit_code: Option<i32>,
+    /// BUG-368: the signal that terminated the process, when it ended
+    /// without an exit code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signal: Option<String>,
+    /// BUG-368: `true` when the process ended but its status could not be
+    /// recovered (never a sentinel exit code).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exit_status_unavailable: Option<bool>,
     /// Present when process is still running
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_id: Option<String>,

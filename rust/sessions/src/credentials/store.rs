@@ -180,9 +180,9 @@ pub fn get_stored_api_key(provider_id: &str) -> Result<Option<String>, String> {
     let mut store = get_store()?;
     if store.is_none() {
         drop(store);
-        if let Err(_e) = init_credential_store() {
-            return Ok(None);
-        }
+        // BUG-411: a store that cannot be initialised is an error, not
+        // "no stored key".
+        init_credential_store()?;
         store = get_store()?;
     }
     if let Some(ref mut s) = *store {

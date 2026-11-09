@@ -4,62 +4,9 @@
       "name": "Supervisor sends task to subordinate",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "818-873",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347
-              ]
-            }
-          ]
+          "file": "rust/tools/src/agent_manager/messaging_tests.rs",
+          "lines": "23-89",
+          "implMappings": []
         }
       ]
     },
@@ -67,62 +14,9 @@
       "name": "Subordinate reports results to supervisor",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "879-937",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347
-              ]
-            }
-          ]
+          "file": "rust/tools/src/agent_manager/messaging_tests.rs",
+          "lines": "91-156",
+          "implMappings": []
         }
       ]
     },
@@ -130,16 +24,18 @@
       "name": "Message to nonexistent session returns error",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "941-974",
+          "file": "rust/tools/src/agent_manager/messaging_tests.rs",
+          "lines": "158-198",
           "implMappings": [
             {
-              "file": "rust/napi/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                314,
-                315,
-                316
-              ]
+                373,
+                374,
+                375
+              ],
+              "firstLine": "status: info.status.clone(),",
+              "lastLine": "subordinate_ids,"
             }
           ]
         }
@@ -149,20 +45,21 @@
       "name": "Channel full returns delivery failed error",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "978-1023",
+          "file": "rust/tools/src/agent_manager/messaging_tests.rs",
+          "lines": "200-252",
           "implMappings": [
             {
-              "file": "rust/napi/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345
-              ]
+                399,
+                400,
+                401,
+                402,
+                403,
+                405
+              ],
+              "firstLine": "// Get spawner (supervisors of this session)",
+              "lastLine": "// Get subordinates"
             }
           ]
         }
@@ -172,62 +69,9 @@
       "name": "Peer-to-peer messaging between subordinates",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1027-1094",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347
-              ]
-            }
-          ]
+          "file": "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+          "lines": "18-95",
+          "implMappings": []
         }
       ]
     },
@@ -235,8 +79,8 @@
       "name": "Missing session_id returns invalid parameter error",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1098-1112",
+          "file": "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+          "lines": "97-113",
           "implMappings": [
             {
               "file": "rust/tools/src/agent_manager/types.rs",
@@ -246,7 +90,9 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "Multiple(Vec<String>),",
+              "lastLine": "/// Convert to a Vec of session ID strings regardless of variant"
             }
           ]
         }
@@ -256,8 +102,8 @@
       "name": "Missing message text returns invalid parameter error",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1116-1130",
+          "file": "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+          "lines": "115-131",
           "implMappings": [
             {
               "file": "rust/tools/src/agent_manager/types.rs",
@@ -267,7 +113,9 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "Multiple(Vec<String>),",
+              "lastLine": "/// Convert to a Vec of session ID strings regardless of variant"
             }
           ]
         }
@@ -277,31 +125,9 @@
       "name": "Delivered message includes sender identity",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1136-1184",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333
-              ]
-            }
-          ]
+          "file": "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+          "lines": "133-188",
+          "implMappings": []
         }
       ]
     },
@@ -309,21 +135,19 @@
       "name": "Sender without role delivers empty role name",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1188-1234",
+          "file": "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+          "lines": "190-241",
           "implMappings": [
             {
-              "file": "rust/napi/src/agent_manager_handler.rs",
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325
-              ]
+                380,
+                383,
+                384,
+                385
+              ],
+              "firstLine": "AgentManagerResult::Listed { sessions: entries }",
+              "lastLine": "let session = match session_manager.get_session(session_id) {"
             }
           ]
         }
@@ -333,62 +157,9 @@
       "name": "Self-messaging to an idle session is allowed",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1239-1286",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347
-              ]
-            }
-          ]
+          "file": "rust/tools/src/agent_manager/messaging_dispatch_tests.rs",
+          "lines": "18-72",
+          "implMappings": []
         }
       ]
     },
@@ -396,8 +167,8 @@
       "name": "Message action is dispatched through AgentManagerAction enum",
       "testMappings": [
         {
-          "file": "rust/tools/src/agent_manager/tests.rs",
-          "lines": "1290-1302",
+          "file": "rust/tools/src/agent_manager/messaging_dispatch_tests.rs",
+          "lines": "74-95",
           "implMappings": [
             {
               "file": "rust/tools/src/agent_manager/types.rs",
@@ -429,7 +200,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "//! - `set_role`: Set or replace the system prompt overlay on a session",
+              "lastLine": "}"
             }
           ]
         }
@@ -441,12 +214,14 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/agent_manager/tests.rs"
+      "rust/tools/src/agent_manager/messaging_tests.rs",
+      "rust/tools/src/agent_manager/messaging_validation_tests.rs",
+      "rust/tools/src/agent_manager/messaging_dispatch_tests.rs"
     ],
     "implFiles": [
-      "rust/napi/src/agent_manager_handler.rs",
+      "rust/agent-loop/src/agent_manager_handler.rs",
       "rust/tools/src/agent_manager/types.rs"
     ],
-    "totalLinesCovered": 709
+    "totalLinesCovered": 574
   }
 }

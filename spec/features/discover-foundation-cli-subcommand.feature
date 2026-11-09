@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @foundation-management
@@ -65,6 +66,8 @@ Feature: Port discover-foundation command to Rust
     Then the command exits with code 0
     And stdout contains "✓ Generated spec/foundation.json"
     And stdout contains "✓ Foundation discovered and validated successfully"
+    And stdout contains "✓ Created work unit FOUND-001: Foundation Event Storm"
+    And stdout contains "Run: fspec show-work-unit FOUND-001"
 
   Scenario: CLI finalize failure on incomplete draft exits 1 with validation errors
     Given a project root tempdir whose spec/foundation.json.draft still has [QUESTION:] placeholders

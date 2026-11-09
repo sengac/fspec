@@ -1,0 +1,101 @@
+{
+  "scenarios": [
+    {
+      "name": "A request timestamp before the epoch is an error",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/clock_and_emit_tests.rs",
+          "lines": "9-22",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "firstLine": "/// Unix epoch milliseconds of `at` for a request's `ts_ms`. BUG-387: a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The re-fire cooldown runs on the monotonic clock",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/clock_and_emit_tests.rs",
+          "lines": "24-35",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// True when a fire at `fired` is at least the cooldown old at `now`.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emitting to a session without a callback is an error",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/clock_and_emit_tests.rs",
+          "lines": "37-52",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_stdin.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "/// Emit an exec-stdin event for a specific agent session.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/src/unified_exec/exec_stdin/clock_and_emit_tests.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
+      "rust/tools/src/unified_exec/exec_stdin.rs"
+    ],
+    "totalLinesCovered": 72
+  }
+}

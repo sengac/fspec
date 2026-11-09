@@ -1,5 +1,7 @@
 @done
 @BLOCK-007
+@tools
+@list
 Feature: Integrate Blocklist Prompt Action with Tool Pause System
   """
   Add PauseKind::Triple variant to rust/tools/src/tool_pause.rs alongside Continue and Confirm

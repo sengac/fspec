@@ -1,3 +1,8 @@
+//! Feature: spec/features/compaction-blob-evidence-availability.feature
+//!
+//! Every compaction boundary rejects damaged blob-backed evidence without
+//! changing a byte; valid evidence of every kind replays exactly (BUG-528).
+
 use codelet_core::persistence::compaction_boundary::capture_compaction_source;
 use codelet_core::persistence::compaction_commit::{
     commit_compaction, publish_compaction, reconcile_compaction, CompactionCommitError,
@@ -10,6 +15,9 @@ use std::path::{Path, PathBuf};
 
 #[path = "support/compaction_boundary.rs"]
 mod support;
+// BUG-494: the same-tick store state (BUG-519) on every run.
+#[path = "fixtures/same_tick.rs"]
+mod same_tick;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -134,6 +142,7 @@ fn damage_evidence(
 fn reject_damaged_evidence(boundary: Boundary) -> TestResult {
     for damage in 0..16 {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         reset_stores_for_tests();
         let mut session =
@@ -164,6 +173,7 @@ fn reject_damaged_evidence(boundary: Boundary) -> TestResult {
             }
         }
         damage_evidence(directory.path(), &session, envelope, damage)?;
+        same_tick::share_index_tick(directory.path())?;
         let before = snapshot(directory.path())?;
         reset_stores_for_tests();
         let result = match boundary {
@@ -207,49 +217,89 @@ fn reject_damaged_evidence(boundary: Boundary) -> TestResult {
 #[test]
 #[serial_test::serial]
 fn source_capture_rejects_unavailable_blob_evidence() -> TestResult {
+    // reject_damaged_evidence applies each damage case, runs the boundary
+    // and compares a byte snapshot of the data directory.
+    // @step Given a session whose blob-backed evidence is damaged in each of the sixteen ways in \
+    //     turn
+    // @step When compaction source capture reads the session after a store reset
+    // @step Then capture is rejected for every damage case
+    // @step And no file in the data directory changes
     reject_damaged_evidence(Boundary::Capture)
 }
 
 #[test]
 #[serial_test::serial]
 fn promotion_rejects_unavailable_blob_evidence() -> TestResult {
+    // reject_damaged_evidence applies each damage case, runs the boundary
+    // and compares a byte snapshot of the data directory.
+    // @step Given a captured compaction candidate whose blob-backed evidence is then damaged in \
+    //     each of the sixteen ways in turn
+    // @step When the candidate is promoted after a store reset
+    // @step Then promotion is rejected for every damage case
+    // @step And no file in the data directory changes
     reject_damaged_evidence(Boundary::Promote)
 }
 
 #[test]
 #[serial_test::serial]
 fn reconciliation_rejects_unavailable_blob_evidence() -> TestResult {
+    // reject_damaged_evidence applies each damage case, runs the boundary
+    // and compares a byte snapshot of the data directory.
+    // @step Given a committed compaction whose blob-backed evidence is then damaged in each of \
+    //     the sixteen ways in turn
+    // @step When the commit is reconciled after a store reset
+    // @step Then reconciliation is rejected for every damage case
+    // @step And no file in the data directory changes
     reject_damaged_evidence(Boundary::Reconcile)
 }
 
 #[test]
 #[serial_test::serial]
 fn publication_rejects_unavailable_blob_evidence() -> TestResult {
+    // reject_damaged_evidence applies each damage case, runs the boundary
+    // and compares a byte snapshot of the data directory.
+    // @step Given a committed compaction whose blob-backed evidence is then damaged in each of \
+    //     the sixteen ways in turn
+    // @step When the committed compaction is published after a store reset
+    // @step Then publication is rejected before the publisher runs for every damage case
+    // @step And no file in the data directory changes
     reject_damaged_evidence(Boundary::Publish)
 }
 
 #[test]
 #[serial_test::serial]
 fn cold_replay_rejects_unavailable_covered_blob_evidence() -> TestResult {
+    // reject_damaged_evidence applies each damage case, runs the boundary
+    // and compares a byte snapshot of the data directory.
+    // @step Given a committed and reconciled compaction whose covered blob-backed evidence is \
+    //     then damaged in each of the sixteen ways in turn
+    // @step When the session's envelopes are replayed after a store reset
+    // @step Then replay is rejected for every damage case
+    // @step And no file in the data directory changes
     reject_damaged_evidence(Boundary::Replay)
 }
 
 #[test]
 #[serial_test::serial]
 fn valid_blob_evidence_preserves_original_bytes_and_identities() -> TestResult {
+    // @step Given a session with blob-backed evidence of every kind and a literal blob-like text message
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut session = create_session_with_provider("valid blobs", directory.path(), "openai")?;
     append_blob_evidence(&mut session, 0)?;
     let before_capture = snapshot(directory.path())?;
+    // @step When the compaction is captured, committed, published and replayed cold
     let candidate = support::candidate(&session)?;
+    // @step Then capture leaves the data directory unchanged
     assert_eq!(snapshot(directory.path())?, before_capture);
     let mut envelopes = Vec::new();
     for kind in 0..5 {
         envelopes.push(append_blob_evidence(&mut session, kind)?);
     }
     append_message(&mut session, "user", "literal blob:sha256:not-evidence")?;
+    same_tick::share_index_tick(directory.path())?;
     let originals = snapshot(&directory.path().join("messages"))?;
     let blobs = snapshot(&directory.path().join("blobs"))?;
     let committed = commit_compaction(candidate, "model-a", |_, _| Ok(()))?;
@@ -278,6 +328,7 @@ fn valid_blob_evidence_preserves_original_bytes_and_identities() -> TestResult {
         json!("aW1hZ2U="),
         json!("ZG9jdW1lbnQ="),
     ];
+    // @step And replay restores each original payload and blob reference
     for (index, mut expected) in envelopes.into_iter().enumerate() {
         let suffix: Value = serde_json::from_str(&replay[index + 1])?;
         *expected["message"]["content"][0]
@@ -286,6 +337,7 @@ fn valid_blob_evidence_preserves_original_bytes_and_identities() -> TestResult {
         assert_eq!(suffix["message"], expected["message"]);
         assert_eq!(suffix["_blobRefs"], expected["_blobRefs"]);
     }
+    // @step And replay leaves the messages, the blobs and the data directory unchanged
     assert_eq!(snapshot(directory.path())?, before_replay);
     assert_eq!(snapshot(&directory.path().join("messages"))?, originals);
     assert_eq!(snapshot(&directory.path().join("blobs"))?, blobs);

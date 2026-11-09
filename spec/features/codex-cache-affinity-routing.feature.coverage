@@ -165,7 +165,9 @@
                 153,
                 154,
                 155
-              ]
+              ],
+              "firstLine": "use bytes::Bytes;",
+              "lastLine": ") -> rig::http_client::Result<Option<RoutingRequest>> {"
             }
           ]
         }
@@ -309,7 +311,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "use bytes::Bytes;",
+              "lastLine": "};"
             }
           ]
         }
@@ -453,7 +457,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "use bytes::Bytes;",
+              "lastLine": "};"
             }
           ]
         }
@@ -597,7 +603,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "use bytes::Bytes;",
+              "lastLine": "};"
             }
           ]
         }

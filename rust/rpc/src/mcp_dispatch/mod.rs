@@ -15,12 +15,19 @@ pub enum InvokeError {
     #[error("Unknown RPC method")]
     Unknown,
 }
+/// BUG-413: a method whose schema could not be built.
+#[derive(Debug, thiserror::Error)]
+#[error("schema for RPC method {method} failed to serialize: {source}")]
+pub struct CatalogError {
+    pub method: &'static str,
+    #[source]
+    pub source: serde_json::Error,
+}
 pub struct Method {
     pub name: &'static str,
     pub schema: Value,
     pub read_only: bool,
     pub destructive: bool,
-    pub request_bound: bool,
 }
 mod catalog;
 mod dispatch;
@@ -65,8 +72,19 @@ mod group_37;
 mod group_38;
 mod group_39;
 mod group_40;
+mod group_41;
+mod group_42;
+mod group_43;
+mod group_44;
+mod group_45;
+mod group_46;
+mod group_47;
+mod group_48;
+mod group_49;
+mod group_50;
+mod group_51;
 mod validate;
-pub use catalog::methods;
+pub use catalog::{method_schema, methods};
 pub use dispatch::invoke;
 pub use validate::validate;
 pub const INTERFACE: &str = env!("FSPEC_RPC_SCHEMA");

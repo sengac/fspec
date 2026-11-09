@@ -42,6 +42,7 @@ impl StreamOutput for RecordingOutput {
 #[serial_test::serial]
 async fn interrupted_batches_publish_missing_committed_calls_before_their_outcomes() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     for completed in [0, 1] {

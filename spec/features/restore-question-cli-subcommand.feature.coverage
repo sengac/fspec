@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "70-104",
+          "lines": "69-112",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
@@ -15,7 +15,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "use crate::common::render_core_error;",
+              "lastLine": "pub work_unit_id: String,"
             }
           ]
         }
@@ -26,13 +28,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "110-134",
+          "lines": "118-141",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
               "lines": [
-                35,
-                36,
                 37,
                 38,
                 39,
@@ -64,8 +64,12 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,7 +80,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "136-166",
+          "lines": "147-176",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
@@ -100,7 +104,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "let args_json = body.to_string();",
+              "lastLine": "}"
             }
           ]
         }
@@ -111,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "168-192",
+          "lines": "182-205",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
@@ -120,7 +126,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "Ok(0)",
+              "lastLine": "eprintln!(\"✗ Failed to restore question: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -131,7 +139,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "194-215",
+          "lines": "211-234",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
@@ -140,7 +148,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "Ok(0)",
+              "lastLine": "eprintln!(\"✗ Failed to restore question: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -151,13 +161,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "217-280",
+          "lines": "240-304",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_question.rs",
               "lines": [
-                35,
-                36,
                 37,
                 38,
                 39,
@@ -165,8 +173,12 @@
                 41,
                 42,
                 43,
-                44
-              ]
+                44,
+                45,
+                46
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "match restore_question::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -177,7 +189,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_question.rs",
-          "lines": "282-308",
+          "lines": "312-338",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/restore_question.rs",
@@ -241,20 +253,10 @@
                 57,
                 58,
                 59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+                60
+              ],
+              "firstLine": "//! `restore-question` help configuration — Rust port of the TS Commander.js",
+              "lastLine": "};"
             }
           ]
         }
@@ -272,6 +274,6 @@
       "rust/fspec/src/restore_question.rs",
       "rust/fspec-core/src/help/configs/restore_question.rs"
     ],
-    "totalLinesCovered": 377
+    "totalLinesCovered": 374
   }
 }

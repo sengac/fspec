@@ -5,45 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "26-43",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "lines": "31-49"
         }
       ]
     },
@@ -52,45 +14,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "49-69",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "lines": "55-86"
         }
       ]
     },
@@ -99,7 +23,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "75-93",
+          "lines": "92-121",
           "implMappings": [
             {
               "file": "rust/tools/src/deep_search/mod.rs",
@@ -110,7 +34,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "mod model_inheritance_tests;",
+              "lastLine": "use std::sync::Arc;"
             }
           ]
         }
@@ -121,45 +47,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "100-124",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "lines": "127-151"
         }
       ]
     },
@@ -168,45 +56,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "130-155",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "lines": "157-182"
         }
       ]
     },
@@ -215,59 +65,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "161-190",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "lines": "188-216"
         }
       ]
     },
@@ -276,23 +74,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "196-234",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
+          "lines": "222-259"
         }
       ]
     },
@@ -301,22 +83,22 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "240-258",
+          "lines": "265-283",
           "implMappings": [
             {
               "file": "rust/tools/src/deep_search/mod.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// Default maximum depth for the sub-agent's tool call rounds.",
+              "lastLine": "pub const DEFAULT_MAX_RECURSION_DEPTH: usize = 2;"
             }
           ]
         }
@@ -327,7 +109,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "264-301",
+          "lines": "289-339",
           "implMappings": [
             {
               "file": "rust/tools/src/deep_search/mod.rs",
@@ -390,7 +172,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "None",
+              "lastLine": "once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));"
             }
           ]
         }
@@ -401,7 +185,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "307-334",
+          "lines": "345-377",
           "implMappings": [
             {
               "file": "rust/tools/src/deep_search/mod.rs",
@@ -464,7 +248,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "None",
+              "lastLine": "once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));"
             }
           ]
         }
@@ -475,83 +261,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "340-384",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378
-              ]
-            }
-          ]
+          "lines": "383-428"
         }
       ]
     },
@@ -560,10 +270,10 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "390-433",
+          "lines": "434-478",
           "implMappings": [
             {
-              "file": "rust/napi/src/deep_search_handler.rs",
+              "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
                 88,
                 89,
@@ -571,77 +281,41 @@
                 91,
                 92,
                 93,
-                94,
                 95,
                 96,
                 97,
                 98,
                 99,
                 100,
-                101,
                 102,
                 103,
-                104,
-                105,
                 106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
-                115,
                 116,
                 117,
                 118,
-                119,
                 120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
-                135,
-                136,
-                137,
                 138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
                 151,
                 152,
                 153,
-                154,
                 155,
-                156,
                 157,
-                158,
                 159,
                 160,
-                161,
                 162,
                 163,
-                164,
                 165,
                 166,
                 167,
@@ -651,8 +325,11 @@
                 171,
                 172,
                 173,
-                174
-              ]
+                175,
+                176
+              ],
+              "firstLine": ") -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> {",
+              "lastLine": "Arc::new(move |query, scope, max_depth, max_recursion_depth| {"
             }
           ]
         }
@@ -663,10 +340,10 @@
       "testMappings": [
         {
           "file": "rust/tools/src/deep_search/recursive_tests.rs",
-          "lines": "439-480",
+          "lines": "484-526",
           "implMappings": [
             {
-              "file": "rust/napi/src/deep_search_handler.rs",
+              "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
                 88,
                 89,
@@ -674,77 +351,41 @@
                 91,
                 92,
                 93,
-                94,
                 95,
                 96,
                 97,
                 98,
                 99,
                 100,
-                101,
                 102,
                 103,
-                104,
-                105,
                 106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
-                115,
                 116,
                 117,
                 118,
-                119,
                 120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
-                135,
-                136,
-                137,
                 138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
                 151,
                 152,
                 153,
-                154,
                 155,
-                156,
                 157,
-                158,
                 159,
                 160,
-                161,
                 162,
                 163,
-                164,
                 165,
                 166,
                 167,
@@ -754,8 +395,11 @@
                 171,
                 172,
                 173,
-                174
-              ]
+                175,
+                176
+              ],
+              "firstLine": ") -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> {",
+              "lastLine": "Arc::new(move |query, scope, max_depth, max_recursion_depth| {"
             }
           ]
         }
@@ -770,9 +414,9 @@
       "rust/tools/src/deep_search/recursive_tests.rs"
     ],
     "implFiles": [
-      "rust/napi/src/deep_search_handler.rs",
-      "rust/tools/src/deep_search/mod.rs"
+      "rust/tools/src/deep_search/mod.rs",
+      "rust/agent-loop/src/deep_search_handler.rs"
     ],
-    "totalLinesCovered": 1330
+    "totalLinesCovered": 670
   }
 }

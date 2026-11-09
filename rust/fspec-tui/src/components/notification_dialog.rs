@@ -5,8 +5,8 @@
 //! Direct Rust port of `src/components/NotificationDialog.tsx`. Renders
 //! a centred bordered modal with a bold severity-coloured title, the
 //! caller-supplied message, and a footer that EITHER shows a live
-//! `"Closing in Ns... (ESC to dismiss)"` countdown (when
-//! `auto_dismiss_ms > 0`) OR a static `"Press ESC to dismiss"` (when
+//! `"Closing in Ns... (c copy · ESC to dismiss)"` countdown (when
+//! `auto_dismiss_ms > 0`) OR a static `"c copy · Press ESC to dismiss"` (when
 //! `auto_dismiss_ms == 0`).
 //!
 //! Severity → accent mapping (matches the TS reference):
@@ -20,6 +20,8 @@
 //!
 //! Every render delegates to [`dialog_theme::render_dialog`] so the
 //! visual contract stays byte-equal to the rest of the dialog stack.
+//! TUI-131: the message wraps; a message taller than the screen fills it
+//! and scrolls ([`MessageBody`]), the footer always shown.
 
 use std::time::Duration;
 
@@ -27,12 +29,12 @@ use crossterm::event::{Event, KeyCode};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::task::JoinHandle;
 use tokio::time::Instant;
 
-use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::dialog_theme::Accent;
+use super::message_dialog_body::{MessageBody, MessageLook};
 use super::{Action, Callback, Component, EventResult, Priority};
 use crate::terminal::sanitize::sanitize_for_terminal;
 
@@ -93,6 +95,8 @@ pub struct NotificationDialog {
     /// Cached footer text. Rebuilt on every render so the countdown
     /// reflects the live elapsed time.
     footer_buf: String,
+    /// TUI-131: the scroll position of the wrapped message.
+    body: MessageBody,
 }
 
 impl NotificationDialog {
@@ -112,6 +116,7 @@ impl NotificationDialog {
             action_tx: None,
             dismissal_task: None,
             footer_buf: String::new(),
+            body: MessageBody::default(),
         }
     }
 
@@ -199,25 +204,17 @@ impl NotificationDialog {
         }
     }
 
-    fn body_row(&self) -> DialogRow {
-        DialogRow {
-            spans: vec![Span::raw(self.message.clone())],
-            selectable: false,
-            selected: false,
-        }
-    }
-
-    fn build_footer(&mut self) -> &str {
+    fn build_footer(&mut self) {
         if self.auto_dismiss_ms == 0 {
             self.footer_buf.clear();
-            self.footer_buf.push_str("Press ESC to dismiss");
+            self.footer_buf.push_str("c copy · Press ESC to dismiss");
         } else {
             let remaining = self.remaining_seconds();
             self.footer_buf.clear();
-            self.footer_buf
-                .push_str(&format!("Closing in {remaining}s... (ESC to dismiss)"));
+            self.footer_buf.push_str(&format!(
+                "Closing in {remaining}s... (c copy · ESC to dismiss)"
+            ));
         }
-        &self.footer_buf
     }
 }
 
@@ -236,6 +233,11 @@ impl Component for NotificationDialog {
         &self.id
     }
 
+    /// TUI-130: c and Ctrl+C copy the whole message.
+    fn copy_text(&self) -> Option<String> {
+        Some(self.message.clone())
+    }
+
     fn handle_event(&mut self, event: &Event) -> EventResult {
         if let Event::Key(key) = event {
             if key.code == KeyCode::Esc {
@@ -250,7 +252,7 @@ impl Component for NotificationDialog {
         // RPC-403 review: Critical modal — consume (swallow) pastes so
         // they can never leak into the agent input hidden behind this
         // dialog. No text field here, so nothing is inserted.
-        if matches!(event, Event::Paste(_)) {
+        if matches!(event, Event::Paste(_)) || self.body.handle_scroll(event) {
             return EventResult::consumed();
         }
         EventResult::ignored()
@@ -262,7 +264,7 @@ impl Component for NotificationDialog {
             .add_modifier(Modifier::BOLD)
             .bg(Color::Black);
         let _ = title_style; // styling applied by dialog_theme via accent
-        let rows = vec![self.body_row()];
+
         // The `dialog_theme::render_dialog` paints the title using
         // `accent.color()`. To honour the severity-specific
         // title_color (Success → Green) which differs from the
@@ -298,15 +300,15 @@ impl Component for NotificationDialog {
         // To implement the divergent Success styling we render the
         // dialog with `Accent::Cyan` (border) but paint the title
         // cell-by-cell AFTER the render_dialog call.
-        let dialog = FspecDialog {
+        self.build_footer();
+        let look = MessageLook {
             accent: self.severity.accent(),
             title: self.severity.title_text(),
-            rows,
-            footer: self.build_footer(),
+            style: Style::default(),
+            footer: &self.footer_buf,
             min_width: 40,
-            query_row: None,
         };
-        render_dialog(area, buf, &dialog);
+        self.body.render(area, buf, &self.message, &look);
 
         // Repaint the title row with the severity-specific
         // title_color (only different from accent.color() for the

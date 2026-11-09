@@ -1,8 +1,9 @@
 //! Feature: spec/features/agentview-shift-right-create-session-dialog.feature
 use super::*;
+use codelet_test_helpers::TestResult;
 
 #[test]
-fn shift_right_with_work_unit_binding_renders_generic_strings() {
+fn shift_right_with_work_unit_binding_renders_generic_strings() -> TestResult {
     // @step Given an App in AgentView with one open session bound to WorkUnitContext with id "RPC-097"
     let mut app = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -17,15 +18,15 @@ fn shift_right_with_work_unit_binding_renders_generic_strings() {
     app.navigator_mut().active_view = ViewMode::Agent;
     // @step When the user presses Shift+Right
     app.dispatch(Action::SessionNext);
-    let painted = buffer_to_string(&render_app_buffer(&mut app));
+    let painted = buffer_to_string(&render_app_buffer(&mut app)?);
     // @step Then the rendered dialog title is "Start New Agent?"
     assert!(
         painted.contains("Start New Agent?"),
         "missing generic title: {painted}"
     );
-    // @step And the rendered description is "Begin a fresh AI conversation, not linked to any task."
+    // @step And the rendered description is "Starts a new agent, not linked to any work unit."
     assert!(
-        painted.contains("Begin a fresh AI conversation, not linked to any task."),
+        painted.contains("Starts a new agent, not linked to any work unit."),
         "missing generic description: {painted}"
     );
     assert_eq!(
@@ -34,4 +35,5 @@ fn shift_right_with_work_unit_binding_renders_generic_strings() {
             .map(|context| context.id.as_str()),
         Some("RPC-097")
     );
+    Ok(())
 }

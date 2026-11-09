@@ -144,6 +144,27 @@ pub fn lock<T>(mutex: &Mutex<T>) -> Result<MutexGuard<'_, T>, String> {
     }
 }
 
+/// [`lock`], with a poisoned mutex reported as "the {what} lock is
+/// poisoned" (BUG-610; the BUG-369 lock_state wording) instead of the
+/// standard library's anonymous "poisoned lock" text.
+pub fn lock_named<'mutex, T>(
+    mutex: &'mutex Mutex<T>,
+    what: &str,
+) -> Result<MutexGuard<'mutex, T>, String> {
+    let poisoned = || format!("the {what} lock is poisoned");
+    if !active() {
+        return mutex.lock().map_err(|_| poisoned());
+    }
+    loop {
+        checkpoint("read.mutex").map_err(|error| error.to_string())?;
+        match mutex.try_lock() {
+            Ok(guard) => return Ok(guard),
+            Err(MutexTryLockError::Poisoned(_)) => return Err(poisoned()),
+            Err(MutexTryLockError::WouldBlock) => std::thread::sleep(Duration::from_millis(5)),
+        }
+    }
+}
+
 pub fn lock_file(file: &File) -> io::Result<()> {
     if !active() {
         return file.lock();

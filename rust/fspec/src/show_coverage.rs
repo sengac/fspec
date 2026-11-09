@@ -7,10 +7,10 @@
 //! `codelet_fspec_core::commands::show_coverage::run` so both invocation
 //! paths (LLM dispatcher and clap CLI) share a single implementation.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::show_coverage;
 use serde_json::{json, Map, Value};
 
@@ -20,11 +20,13 @@ pub struct CliArgs {
     pub feature_name: Option<String>,
     pub format: Option<String>,
     pub output: Option<String>,
+    /// REFAC-020: explicit ordered mapping readback (`mappingJson`).
+    pub mapping_json: bool,
 }
 
 /// Entry point for the `show-coverage` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     if let Some(name) = args.feature_name.as_deref() {
@@ -35,6 +37,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     }
     if let Some(out) = args.output.as_deref() {
         payload.insert("output".to_string(), Value::String(out.to_string()));
+    }
+
+    if args.mapping_json {
+        payload.insert("mappingJson".to_string(), Value::Bool(true));
     }
 
     let args_str = json!(payload).to_string();

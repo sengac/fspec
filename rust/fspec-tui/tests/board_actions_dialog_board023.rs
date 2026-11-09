@@ -18,8 +18,8 @@
 //! `fresh_app` + `drain_pending` + full-App render into a TestBackend.
 //! The dialog's stable compositor id is `"board-actions-dialog"`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{App, FspecBackend, ViewMode};
@@ -36,18 +36,23 @@ use common::MockBackend;
 /// The stable compositor id for the actions dialog.
 const BOARD_ACTIONS_DIALOG_ID: &str = "board-actions-dialog";
 
-/// The 10 dialog body rows in registry order (MENU-005 R1 supersedes
+/// The 11 dialog body rows in registry order (MENU-005 R1 supersedes
 /// the BOARD-023 8-row body; MENU-008 reorganizes the registry into
-/// Kanban 4 + Tools 2 + Settings 2 + Help 2).
-const DIALOG_ROWS: [&str; 10] = [
+/// Kanban + Tools 2 + Settings 2 + Help 2; TUI-114 adds Kanban's
+/// `b New Bot`, BUG-436; TUI-123 adds Settings' `s Daemons` and
+/// `w Workspaces`).
+const DIALOG_ROWS: [&str; 13] = [
     ". New Agent",
     "/ Search",
     "D FOUNDATION.md",
     "A Attachments",
+    "b New Bot",
     "F Changed Files",
     "C Checkpoints",
     "M Mux",
     "P Providers",
+    "s Daemons",
+    "w Workspaces",
     "? Help",
     "Esc Exit",
 ];
@@ -63,16 +68,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -80,17 +86,27 @@ fn key(code: KeyCode, mods: KeyModifiers) -> Event {
 }
 
 /// Arrange: open the actions dialog with the 'u' trigger key.
-async fn open_actions_dialog(app: &mut App) {
+async fn open_actions_dialog(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.handle_event(&key(KeyCode::Char('u'), KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
-/// Arrange: open the dialog and move the cursor `downs` rows down.
-async fn open_actions_dialog_at(app: &mut App, downs: usize) {
-    open_actions_dialog(app).await;
+/// Arrange: open the dialog and move the cursor down to the row `label`
+/// (BUG-436: by label, so a registry row added later cannot retarget it).
+async fn open_actions_dialog_at(
+    app: &mut App,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let downs = DIALOG_ROWS
+        .iter()
+        .position(|row| *row == label)
+        .or_fail(&format!("{label} is not a dialog row"))?;
+    open_actions_dialog(app).await?;
     for _ in 0..downs {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
@@ -108,20 +124,24 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
 }
 
 /// Render the full App (navigator + compositor) into a 120x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Render the full App into a `width x height` buffer (the full-list
 /// help test needs the whole list to fit without scrolling).
-fn render_app_at(app: &mut App, width: u16, height: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+fn render_app_at(
+    app: &mut App,
+    width: u16,
+    height: u16,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn buf_text(buf: &Buffer) -> String {
@@ -163,33 +183,39 @@ fn buffer_has_fg(buf: &Buffer, fg: Color) -> bool {
 /// footer (a whole-buffer search could match background rows — the
 /// dialog title is the last such row; no body row contains "Menu bar"
 /// as a label).
-fn dialog_title_footer(buf: &Buffer) -> (u16, u16) {
-    let footer = find_row(buf, "↑↓ Navigate").expect("dialog footer row");
+fn dialog_title_footer(buf: &Buffer) -> Result<(u16, u16), codelet_test_helpers::TestError> {
+    let footer = find_row(buf, "↑↓ Navigate").or_fail("dialog footer row")?;
     let title = (0..footer)
         .rev()
         .find(|&y| row_text(buf, y).contains("Menu bar"))
-        .expect("dialog title row");
+        .or_fail("dialog title row")?;
     assert!(
         title < footer,
         "title row {title} must precede footer row {footer}"
     );
-    (title, footer)
+    Ok((title, footer))
 }
 
 /// First buffer row in the dialog's own body rows (`title+2..footer-1`)
 /// that contains `needle` (panics when absent).
-fn find_dialog_row(buf: &Buffer, needle: &str, title: u16, footer: u16) -> u16 {
-    ((title + 2)..(footer - 1))
+fn find_dialog_row(
+    buf: &Buffer,
+    needle: &str,
+    title: u16,
+    footer: u16,
+) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(((title + 2)..(footer - 1))
         .find(|&y| row_text(buf, y).contains(needle))
-        .unwrap_or_else(|| panic!("row '{needle}' not found inside the dialog body"))
+        .or_fail(&format!("row '{needle}' not found inside the dialog body"))?)
 }
 
 /// Seed a session so `/mux on` produces the Board | Agent grid.
-async fn seed_session(app: &mut App, id: &str) {
+async fn seed_session(app: &mut App, id: &str) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::SessionCreated(
         codelet_rpc_types::SessionId::new(id),
     ));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -197,7 +223,7 @@ async fn seed_session(app: &mut App, id: &str) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
+async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() -> TestResult {
     // @step Given I am in the single Board view with mux disabled
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -205,7 +231,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
 
     // @step When I press the 'u' key
     let _ = app.handle_event(&key(KeyCode::Char('u'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is open overlaying the board with a Yellow accent border and the title 'Menu bar'
     assert!(
@@ -213,8 +239,8 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
         "the menu-bar help dialog must be open on the compositor; layers={:?}",
         app.compositor().layer_ids()
     );
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
     assert!(
         row_text(&buf, title).contains("Menu bar"),
         "the dialog must show its 'Menu bar' title; got: `{}`",
@@ -225,10 +251,10 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
         "the dialog border must paint in the Yellow accent colour"
     );
 
-    // @step And the dialog body lists 10 rows in registry order: . New Agent, / Search, D FOUNDATION.md, A Attachments, F Changed Files, C Checkpoints, M Mux, P Providers, ? Help, Esc Exit — each with a one-line description
+    // @step And the dialog body lists 13 rows in registry order: . New Agent, / Search, D FOUNDATION.md, A Attachments, b New Bot, F Changed Files, C Checkpoints, M Mux, P Providers, s Daemons, w Workspaces, ? Help, Esc Exit — each with a one-line description
     let mut prev = 0u16;
     for label in &DIALOG_ROWS {
-        let pos = find_dialog_row(&buf, label, title, footer);
+        let pos = find_dialog_row(&buf, label, title, footer)?;
         assert!(
             pos > prev,
             "row order must be top-to-bottom: '{label}' at {pos} not after {prev}"
@@ -248,7 +274,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
         "mux layout",
         "attachment picker",
         "provider settings view",
-        "menu bar help",
+        "board keybindings",
         "Confirm exiting fspec",
     ] {
         assert!(
@@ -258,16 +284,19 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
     }
 
     // @step And the first row ('. New Agent') is highlighted and the board view is still visible underneath
-    let y0 = find_dialog_row(&buf, ". New Agent", title, footer);
+    let y0 = find_dialog_row(&buf, ". New Agent", title, footer)?;
     assert!(
         row_has_bg(&buf, y0, Color::Yellow),
         "the first row ('. New Agent') must carry the inverse (Yellow bg) highlight"
     );
+    // TUI-123: the 13-row dialog reaches the header row at 24 lines, so
+    // the board's column headers beside it show the board underneath.
     assert!(
-        buf_text(&buf).contains("Checkpoints: None"),
-        "the board header must still be visible underneath the dialog"
+        buf_text(&buf).contains("BLOCKED"),
+        "the board must still be visible underneath the dialog"
     );
     assert_eq!(app.active_view(), ViewMode::Board);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -275,7 +304,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger() {
+async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger() -> TestResult {
     // @step Given I am in the single Board view with mux disabled
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -283,7 +312,7 @@ async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger(
 
     // @step When I press the 'U' key (uppercase)
     let _ = app.handle_event(&key(KeyCode::Char('U'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is open overlaying the board with the title 'Menu bar'
     assert!(
@@ -291,8 +320,8 @@ async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger(
         "'U' (uppercase) must open the menu-bar help dialog; layers={:?}",
         app.compositor().layer_ids()
     );
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
     assert!(
         row_text(&buf, title).contains("Menu bar"),
         "the dialog title row must read 'Menu bar'; got: `{}`",
@@ -301,11 +330,12 @@ async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger(
     assert!(footer > title, "the footer must sit below the title");
 
     // @step And the first row ('. New Agent') is highlighted
-    let y0 = find_dialog_row(&buf, ". New Agent", title, footer);
+    let y0 = find_dialog_row(&buf, ". New Agent", title, footer)?;
     assert!(
         row_has_bg(&buf, y0, Color::Yellow),
         "the first row ('. New Agent') must carry the inverse (Yellow bg) highlight"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -313,14 +343,14 @@ async fn scenario_uppercase_u_opens_the_actions_dialog_case_insensitive_trigger(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_ctrl_u_does_not_open_the_actions_dialog() {
+async fn scenario_ctrl_u_does_not_open_the_actions_dialog() -> TestResult {
     // @step Given I am in the single Board view with mux disabled
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
 
     // @step When I press Ctrl+U (Ctrl-chorded uppercase U)
     let _ = app.handle_event(&key(KeyCode::Char('U'), KeyModifiers::CONTROL));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is not open
     assert!(
@@ -335,6 +365,7 @@ async fn scenario_ctrl_u_does_not_open_the_actions_dialog() {
         ViewMode::Board,
         "the view must remain Board after Ctrl+U (no dialog, no crash)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -342,21 +373,22 @@ async fn scenario_ctrl_u_does_not_open_the_actions_dialog() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descriptions() {
+async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descriptions() -> TestResult
+{
     // @step Given I am in the single Board view
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
 
     // @step When I open the actions dialog with 'u'
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
 
-    // @step Then the dialog shows 10 rows in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "F Changed Files", "C Checkpoints", "M Mux", "P Providers", "? Help", "Esc Exit"
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
+    // @step Then the dialog shows 13 rows in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot", "F Changed Files", "C Checkpoints", "M Mux", "P Providers", "s Daemons", "w Workspaces", "? Help", "Esc Exit"
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
     let mut prev = 0u16;
     for label in &DIALOG_ROWS {
-        let pos = find_dialog_row(&buf, label, title, footer);
+        let pos = find_dialog_row(&buf, label, title, footer)?;
         assert!(pos > prev, "row order broken at '{label}'");
         prev = pos;
     }
@@ -374,10 +406,12 @@ async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descrip
         ("C Checkpoints", "- Open the checkpoints view"),
         ("M Mux", "- Open the mux layout config"),
         ("P Providers", "- Open the provider settings view"),
-        ("? Help", "- Show the full menu bar help"),
+        ("s Daemons", "- Switch, add, edit or remove daemons"),
+        ("w Workspaces", "- Switch, add or remove workspaces"),
+        ("? Help", "- Show the board keybindings"),
         ("Esc Exit", "- Confirm exiting fspec"),
     ] {
-        let y = find_dialog_row(&buf, pair.0, title, footer);
+        let y = find_dialog_row(&buf, pair.0, title, footer)?;
         let row = row_text(&buf, y);
         assert!(
             row.contains(pair.1),
@@ -392,6 +426,7 @@ async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descrip
         text.contains("↑↓ Navigate │ Enter Execute │ Esc Close"),
         "the dialog footer must advertise the bindings; got:\n{text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -399,30 +434,30 @@ async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descrip
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_the_actions_dialog_has_no_trigger_row() {
+async fn scenario_the_actions_dialog_has_no_trigger_row() -> TestResult {
     // @step Given I am in the single Board view
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
 
     // @step When I open the actions dialog with 'u'
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
 
-    // @step Then the dialog shows exactly 10 rows
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
-    // Spacious layout: title, gap, 10 body rows, gap, footer — so the
-    // footer sits exactly 13 rows below the title (12 rows between).
-    // (MENU-005 R1: the registry body is 10 rows — Kanban 4 + Tools 2
-    // + Settings 2 + Help 2, MENU-008.)
+    // @step Then the dialog shows exactly 13 rows
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
+    // Spacious layout: title, gap, 13 body rows, gap, footer — so the
+    // footer sits exactly 16 rows below the title (15 rows between).
+    // (The registry body is 13 rows — Kanban 5 + Tools 2 + Settings 4
+    // + Help 2, MENU-008 / TUI-114 / TUI-123.)
     assert_eq!(
         footer - title,
-        13,
-        "the dialog body must contain exactly 10 rows (title+gap+10+gap+footer); got {} rows between",
+        16,
+        "the dialog body must contain exactly 13 rows (title+gap+13+gap+footer); got {} rows between",
         footer - title - 2
     );
     for label in &DIALOG_ROWS {
-        find_dialog_row(&buf, label, title, footer);
+        find_dialog_row(&buf, label, title, footer)?;
     }
 
     // @step And no row in the dialog body advertises the 'u' trigger key
@@ -434,6 +469,7 @@ async fn scenario_the_actions_dialog_has_no_trigger_row() {
         !body.contains("u Actions") && !body.contains(", Keys"),
         "no body row may advertise the trigger key; body:\n{body}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -441,14 +477,14 @@ async fn scenario_the_actions_dialog_has_no_trigger_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_down_moves_the_selection_to_the_next_row() {
+async fn scenario_down_moves_the_selection_to_the_next_row() -> TestResult {
     // @step Given the actions dialog is open with ". New Agent" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
-    let buf = render_app(&mut app);
-    let (title, _footer) = dialog_title_footer(&buf);
-    let y0 = find_dialog_row(&buf, ". New Agent", title, _footer);
+    let buf = render_app(&mut app)?;
+    let (title, _footer) = dialog_title_footer(&buf)?;
+    let y0 = find_dialog_row(&buf, ". New Agent", title, _footer)?;
     assert!(
         row_has_bg(&buf, y0, Color::Yellow),
         "'. New Agent' starts highlighted"
@@ -458,8 +494,8 @@ async fn scenario_down_moves_the_selection_to_the_next_row() {
     let _ = app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
 
     // @step Then "/ Search" is highlighted
-    let buf = render_app(&mut app);
-    let y1 = find_dialog_row(&buf, "/ Search", title, _footer);
+    let buf = render_app(&mut app)?;
+    let y1 = find_dialog_row(&buf, "/ Search", title, _footer)?;
     assert!(
         row_has_bg(&buf, y1, Color::Yellow),
         "'/ Search' must be highlighted after Down"
@@ -468,6 +504,7 @@ async fn scenario_down_moves_the_selection_to_the_next_row() {
         !row_has_bg(&buf, y0, Color::Yellow),
         "'. New Agent' must no longer be highlighted"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -475,13 +512,13 @@ async fn scenario_down_moves_the_selection_to_the_next_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_up_moves_the_selection_to_the_previous_row() {
+async fn scenario_up_moves_the_selection_to_the_previous_row() -> TestResult {
     // @step Given the actions dialog is open with "/ Search" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 1).await;
-    let buf = render_app(&mut app);
-    let (title, _footer) = dialog_title_footer(&buf);
-    let y1 = find_dialog_row(&buf, "/ Search", title, _footer);
+    open_actions_dialog_at(&mut app, "/ Search").await?;
+    let buf = render_app(&mut app)?;
+    let (title, _footer) = dialog_title_footer(&buf)?;
+    let y1 = find_dialog_row(&buf, "/ Search", title, _footer)?;
     assert!(
         row_has_bg(&buf, y1, Color::Yellow),
         "'/ Search' starts highlighted"
@@ -491,8 +528,8 @@ async fn scenario_up_moves_the_selection_to_the_previous_row() {
     let _ = app.handle_event(&key(KeyCode::Up, KeyModifiers::NONE));
 
     // @step Then ". New Agent" is highlighted
-    let buf = render_app(&mut app);
-    let y0 = find_dialog_row(&buf, ". New Agent", title, _footer);
+    let buf = render_app(&mut app)?;
+    let y0 = find_dialog_row(&buf, ". New Agent", title, _footer)?;
     assert!(
         row_has_bg(&buf, y0, Color::Yellow),
         "'. New Agent' must be highlighted after Up"
@@ -501,6 +538,7 @@ async fn scenario_up_moves_the_selection_to_the_previous_row() {
         !row_has_bg(&buf, y1, Color::Yellow),
         "'/ Search' must no longer be highlighted"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -508,25 +546,26 @@ async fn scenario_up_moves_the_selection_to_the_previous_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_up_from_the_first_row_wraps_to_the_last_row() {
+async fn scenario_up_from_the_first_row_wraps_to_the_last_row() -> TestResult {
     // @step Given the actions dialog is open with ". New Agent" (the first row) highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
 
     // @step When I press the Up arrow
     let _ = app.handle_event(&key(KeyCode::Up, KeyModifiers::NONE));
 
     // @step Then "Esc Exit" (the last row) is highlighted
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
     assert!(
         row_has_bg(
             &buf,
-            find_dialog_row(&buf, "Esc Exit", title, footer),
+            find_dialog_row(&buf, "Esc Exit", title, footer)?,
             Color::Yellow
         ),
         "Up from the first row must wrap to the last row ('Esc Exit')"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -534,25 +573,26 @@ async fn scenario_up_from_the_first_row_wraps_to_the_last_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_down_from_the_last_row_wraps_to_the_first_row() {
+async fn scenario_down_from_the_last_row_wraps_to_the_first_row() -> TestResult {
     // @step Given the actions dialog is open with "Esc Exit" (the last row) highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 9).await;
+    open_actions_dialog_at(&mut app, "Esc Exit").await?;
 
     // @step When I press the Down arrow
     let _ = app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
 
     // @step Then ". New Agent" (the first row) is highlighted
-    let buf = render_app(&mut app);
-    let (title, footer) = dialog_title_footer(&buf);
+    let buf = render_app(&mut app)?;
+    let (title, footer) = dialog_title_footer(&buf)?;
     assert!(
         row_has_bg(
             &buf,
-            find_dialog_row(&buf, ". New Agent", title, footer),
+            find_dialog_row(&buf, ". New Agent", title, footer)?,
             Color::Yellow
         ),
         "Down from the last row must wrap to the first row ('. New Agent')"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -560,14 +600,14 @@ async fn scenario_down_from_the_last_row_wraps_to_the_first_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_enter_executes_the_highlighted_action_and_closes_the_dialog() {
+async fn scenario_enter_executes_the_highlighted_action_and_closes_the_dialog() -> TestResult {
     // @step Given the actions dialog is open with "F Changed Files" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 4).await;
+    open_actions_dialog_at(&mut app, "F Changed Files").await?;
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is closed
     assert!(
@@ -581,6 +621,7 @@ async fn scenario_enter_executes_the_highlighted_action_and_closes_the_dialog() 
         ViewMode::ChangedFiles,
         "Enter on the 'F Changed Files' row must open the Changed Files view"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -588,14 +629,14 @@ async fn scenario_enter_executes_the_highlighted_action_and_closes_the_dialog() 
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_enter_on_the_mux_row_opens_the_mux_config_dialog() {
+async fn scenario_enter_on_the_mux_row_opens_the_mux_config_dialog() -> TestResult {
     // @step Given the actions dialog is open with "M Mux" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 6).await;
+    open_actions_dialog_at(&mut app, "M Mux").await?;
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is closed
     assert!(!app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
@@ -611,6 +652,7 @@ async fn scenario_enter_on_the_mux_row_opens_the_mux_config_dialog() {
         ViewMode::Board,
         "the view must stay Board"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -618,14 +660,14 @@ async fn scenario_enter_on_the_mux_row_opens_the_mux_config_dialog() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_enter_on_the_help_row_opens_the_board_help_dialog() {
+async fn scenario_enter_on_the_help_row_opens_the_board_help_dialog() -> TestResult {
     // @step Given the actions dialog is open with "? Help" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 8).await;
+    open_actions_dialog_at(&mut app, "? Help").await?;
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is closed
     assert!(!app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
@@ -636,6 +678,7 @@ async fn scenario_enter_on_the_help_row_opens_the_board_help_dialog() {
         "Enter on the '? Help' row must open the board HelpDialog; layers={:?}",
         app.compositor().layer_ids()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -643,14 +686,14 @@ async fn scenario_enter_on_the_help_row_opens_the_board_help_dialog() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_enter_on_the_exit_row_opens_the_exit_confirmation() {
+async fn scenario_enter_on_the_exit_row_opens_the_exit_confirmation() -> TestResult {
     // @step Given the actions dialog is open with "Esc Exit" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog_at(&mut app, 9).await;
+    open_actions_dialog_at(&mut app, "Esc Exit").await?;
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is closed
     assert!(!app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
@@ -668,13 +711,14 @@ async fn scenario_enter_on_the_exit_row_opens_the_exit_confirmation() {
 
     // @step And pressing Esc inside the confirmation cancels it and I stay on the board
     let _ = app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         !app.compositor().contains("board-exit-confirmation-dialog"),
         "Esc inside the confirmation must cancel it"
     );
     assert_eq!(app.active_view(), ViewMode::Board);
     assert!(!app.should_quit());
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -682,15 +726,15 @@ async fn scenario_enter_on_the_exit_row_opens_the_exit_confirmation() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_esc_closes_the_dialog_without_executing_the_highlighted_row() {
+async fn scenario_esc_closes_the_dialog_without_executing_the_highlighted_row() -> TestResult {
     // @step Given the actions dialog is open with ". New Agent" highlighted
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
 
     // @step When I press Esc
     let _ = app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is closed
     assert!(!app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
@@ -710,6 +754,7 @@ async fn scenario_esc_closes_the_dialog_without_executing_the_highlighted_row() 
 
     // @step And I am still on the board
     assert!(!app.should_quit());
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -717,10 +762,10 @@ async fn scenario_esc_closes_the_dialog_without_executing_the_highlighted_row() 
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_keys_behind_the_dialog_never_leak_to_the_board() {
+async fn scenario_keys_behind_the_dialog_never_leak_to_the_board() -> TestResult {
     // @step Given the actions dialog is open
-    let (mut app, _mock) = fresh_app();
-    open_actions_dialog(&mut app).await;
+    let (mut app, mock) = fresh_app();
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
 
     // @step And a work unit below the current selection is available in the focused column
@@ -731,10 +776,10 @@ async fn scenario_keys_behind_the_dialog_never_leak_to_the_board() {
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 0);
 
-    // @step When I press 'j' then 'f'
+    // @step When I press 'j' then ']' (keys no row of the dialog shows; a row's own key runs that row, TUI-129)
     let _ = app.handle_event(&key(KeyCode::Char('j'), KeyModifiers::NONE));
-    let _ = app.handle_event(&key(KeyCode::Char('f'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    let _ = app.handle_event(&key(KeyCode::Char(']'), KeyModifiers::NONE));
+    drain_pending(&mut app).await?;
 
     // @step Then the board selection has NOT moved
     assert_eq!(
@@ -743,15 +788,20 @@ async fn scenario_keys_behind_the_dialog_never_leak_to_the_board() {
         "'j' must not leak through the modal to the board selection"
     );
 
-    // @step And the Changed Files view has NOT opened
+    // @step And no card was moved and no notice opened
     assert_eq!(
-        app.active_view(),
-        ViewMode::Board,
-        "'f' must not leak through the modal to the board"
+        mock.move_work_unit_down_calls(),
+        0,
+        "']' must not move a card"
+    );
+    assert!(
+        !app.compositor().contains("session-storage-dialog"),
+        "']' must not leak through the modal to the board"
     );
 
     // @step And the actions dialog is still open
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -759,15 +809,15 @@ async fn scenario_keys_behind_the_dialog_never_leak_to_the_board() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_pressing_u_again_while_open_is_a_no_op() {
+async fn scenario_pressing_u_again_while_open_is_a_no_op() -> TestResult {
     // @step Given the actions dialog is open
     let (mut app, _mock) = fresh_app();
-    open_actions_dialog(&mut app).await;
+    open_actions_dialog(&mut app).await?;
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
 
     // @step When I press 'u' again
     let _ = app.handle_event(&key(KeyCode::Char('u'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog remains open exactly once (no stacked second layer)
     let count = app
@@ -783,6 +833,7 @@ async fn scenario_pressing_u_again_while_open_is_a_no_op() {
         app.compositor().layer_ids()
     );
     assert!(app.compositor().contains(BOARD_ACTIONS_DIALOG_ID));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -794,23 +845,23 @@ async fn scenario_pressing_u_again_while_open_is_a_no_op() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_the_board_header_chord_row_is_replaced_by_a_short_actions_hint() {
+async fn scenario_the_board_header_chord_row_is_replaced_by_a_short_actions_hint() -> TestResult {
     // @step Given I am in the single Board view
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
 
     // @step When I look at the board header's keybinding hint row
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     // The checkpoint-status row (header row 0) sits 3 rows above the
     // menu-bar row (header row 3).
     let status_y =
-        find_row(&buf, "Checkpoints:").expect("the checkpoint status row must still render");
+        find_row(&buf, "Checkpoints:").or_fail("the checkpoint status row must still render")?;
     let hint_y = status_y + 3;
     let hint = row_text(&buf, hint_y);
 
-    // @step Then the row reads "Kanban Tools Settings Help" — the 2-zone
-    // menu bar's Zone A items (MENU-002 supersedes the 'u Actions' hint;
-    // MENU-008 reorganized the items into four categories)
+    // @step Then the row reads "Kanban Tools Settings Help" — the 2-zone menu bar's Zone A items
+    // (MENU-002 supersedes the 'u Actions' hint; MENU-008 reorganized the
+    // items into four categories)
     assert!(
         hint.contains("Kanban") && hint.contains("Help"),
         "the header bar row must paint the Zone A items; got: `{hint}`"
@@ -829,6 +880,7 @@ async fn scenario_the_board_header_chord_row_is_replaced_by_a_short_actions_hint
 
     // @step And the checkpoint status row above it is unchanged
     assert!(row_text(&buf, status_y).contains("Checkpoints: None"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -836,14 +888,18 @@ async fn scenario_the_board_header_chord_row_is_replaced_by_a_short_actions_hint
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_u_opens_the_actions_dialog_from_the_focused_board_pane_in_mux_mode() {
+async fn scenario_u_opens_the_actions_dialog_from_the_focused_board_pane_in_mux_mode() -> TestResult
+{
     // @step Given I am in mux mode with the Board | Agent grid and the Board pane focused
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app, "s-1").await;
-    app.dispatch(codelet_fspec_tui::Action::InputSubmitted(
-        "/mux on".to_string(),
-    ));
-    drain_pending(&mut app).await;
+    seed_session(&mut app, "s-1").await?;
+    if let Some(session) = app.current_session() {
+        app.dispatch(codelet_fspec_tui::Action::InputSubmitted(
+            session,
+            "/mux on".to_string(),
+        ));
+    }
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux, "mux mode must be active");
     assert_eq!(
         app.navigator().mux.focus(),
@@ -853,7 +909,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_focused_board_pane_in_mux_
 
     // @step When I press the 'u' key
     let _ = app.handle_event(&key(KeyCode::Char('u'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the actions dialog is open overlaying the whole grid
     assert!(
@@ -863,6 +919,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_focused_board_pane_in_mux_
 
     // @step And the view remains Mux while the dialog is open
     assert_eq!(app.active_view(), ViewMode::Mux);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -870,20 +927,20 @@ async fn scenario_u_opens_the_actions_dialog_from_the_focused_board_pane_in_mux_
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_the_board_help_dialog_advertises_the_u_keybinding() {
+async fn scenario_the_board_help_dialog_advertises_the_u_keybinding() -> TestResult {
     // @step Given I am in the single Board view
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
 
     // @step When I open the board help dialog with '?'
     let _ = app.handle_event(&key(KeyCode::Char('?'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(app.compositor().contains("help-dialog"));
 
     // @step Then the help lists a row advertising 'u' opens the menu bar help (key column 'u', label 'Menu bar help')
     // 200x60 fits the full board help list without scrolling (the
     // rpc397 full-content size).
-    let buf = render_app_at(&mut app, 200, 60);
+    let buf = render_app_at(&mut app, 200, 60)?;
     let text = buf_text(&buf);
     // The key column is 14 wide (see "m             Mux layout").
     assert!(
@@ -894,4 +951,5 @@ async fn scenario_the_board_help_dialog_advertises_the_u_keybinding() {
         !text.contains("Keybindings dialog"),
         "the old comma-era help row must be gone; got:\n{text}"
     );
+    Ok(())
 }

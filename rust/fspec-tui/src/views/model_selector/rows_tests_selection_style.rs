@@ -19,13 +19,13 @@ use ratatui::style::Modifier;
 /// tests can assert the band colours and the absence of REVERSED.
 fn render_cells(
     rows: &[ModelSelectorRow],
-    selected: usize,
-    current: Option<&str>,
+    sel: usize,
+    current: Option<(&str, &str)>,
 ) -> Vec<(u16, u16, String, Color, Color, Modifier)> {
     let mut term =
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
     term.draw(|f| {
-        let _ = render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, current);
+        paint(f, rows, sel, current);
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -203,7 +203,7 @@ fn selected_model_row_flips_tokens_black() {
     let sel = rows.iter().position(|r| r.selectable).expect("model row");
 
     // @step When that model row is rendered while selected
-    let cells = render_cells(&rows, sel, Some("gpt-4o"));
+    let cells = render_cells(&rows, sel, Some(("openai", "gpt-4o")));
     let y = row_of(&cells, "(current)");
     let glyphs: Vec<_> = cells.iter().filter(|c| c.1 == y && c.2 != " ").collect();
 

@@ -62,7 +62,7 @@ fn e_on_custom_model_opens_edit_prefilled() {
     let named_custom = ModelEntry {
         id: "mycustom".to_string(),
         display_name: "My Custom".to_string(),
-        context_window: 128_000,
+        context_window: Some(128_000),
         supports_reasoning: false,
         supports_vision: false,
         is_custom: true,
@@ -74,7 +74,7 @@ fn e_on_custom_model_opens_edit_prefilled() {
         "my-profile",
         vec![model("base"), named_custom],
     )]);
-    v.expanded = ["openai".to_string()].into_iter().collect();
+    v.expanded = ["openai:my-profile".to_string()].into_iter().collect();
     v.rebuild_rows();
     v.anchor_first_selectable();
     v.adjust_scroll();

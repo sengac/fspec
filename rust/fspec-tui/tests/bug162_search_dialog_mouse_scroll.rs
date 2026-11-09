@@ -18,10 +18,9 @@
 //! accessors do not exist yet, so this file is RED until the BUG-162
 //! implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{Component, WorkUnitSearchDialog};
 use codelet_rpc_types::WorkUnitInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -51,11 +50,13 @@ fn dialog_with(count: usize) -> WorkUnitSearchDialog {
 
 /// Render the dialog into an 80x24 TestBackend (caches the dialog rect and
 /// the visible-rows window) and return the buffer.
-fn render_80x24(dialog: &mut WorkUnitSearchDialog) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_80x24(
+    dialog: &mut WorkUnitSearchDialog,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| dialog.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn wheel(kind: MouseEventKind, column: u16, row: u16) -> Event {
@@ -68,20 +69,22 @@ fn wheel(kind: MouseEventKind, column: u16, row: u16) -> Event {
 }
 
 /// A point inside the dialog's last-rendered rect (center of the rect).
-fn inside_point(dialog: &WorkUnitSearchDialog) -> (u16, u16) {
+fn inside_point(
+    dialog: &WorkUnitSearchDialog,
+) -> Result<(u16, u16), codelet_test_helpers::TestError> {
     let rect = dialog
         .last_dialog_rect()
-        .expect("last_dialog_rect must be cached after render");
-    (rect.x + rect.width / 2, rect.y + rect.height / 2)
+        .or_fail("last_dialog_rect must be cached after render")?;
+    Ok((rect.x + rect.width / 2, rect.y + rect.height / 2))
 }
 
 /// Scenario: Scrolling the mouse wheel down inside the dialog moves the selection down
 #[test]
-fn scrolling_the_mouse_wheel_down_inside_the_dialog_moves_the_selection_down() {
+fn scrolling_the_mouse_wheel_down_inside_the_dialog_moves_the_selection_down() -> TestResult {
     // @step Given the work-unit search dialog is open with more matches than visible rows
     let mut dialog = dialog_with(20);
-    render_80x24(&mut dialog);
-    let (x, y) = inside_point(&dialog);
+    render_80x24(&mut dialog)?;
+    let (x, y) = inside_point(&dialog)?;
     let visible = dialog.visible_rows();
     assert!(
         dialog.matches().len() > visible,
@@ -110,14 +113,15 @@ fn scrolling_the_mouse_wheel_down_inside_the_dialog_moves_the_selection_down() {
         0,
         "row 1 is still inside the window starting at offset 0"
     );
+    Ok(())
 }
 
 /// Scenario: Scrolling the mouse wheel up inside the dialog moves the selection up
 #[test]
-fn scrolling_the_mouse_wheel_up_inside_the_dialog_moves_the_selection_up() {
+fn scrolling_the_mouse_wheel_up_inside_the_dialog_moves_the_selection_up() -> TestResult {
     // @step Given the work-unit search dialog is open with the selection past the first visible row
     let mut dialog = dialog_with(20);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     // Move the selection down twice with the keyboard so the scroll
     // offset is non-zero, then wheel back up.
     use crossterm::event::{KeyCode, KeyEvent};
@@ -128,7 +132,7 @@ fn scrolling_the_mouse_wheel_up_inside_the_dialog_moves_the_selection_up() {
         )));
     }
     assert_eq!(dialog.selected_index(), 2);
-    let (x, y) = inside_point(&dialog);
+    let (x, y) = inside_point(&dialog)?;
 
     // @step When I scroll the mouse wheel up inside the dialog
     let result = dialog.handle_event(&wheel(MouseEventKind::ScrollUp, x, y));
@@ -145,15 +149,16 @@ fn scrolling_the_mouse_wheel_up_inside_the_dialog_moves_the_selection_up() {
         1,
         "a single fresh notch is a 1x step: selection 2 → 1"
     );
+    Ok(())
 }
 
 /// Scenario: Rapid wheel notches ramp the wheel velocity
 #[test]
-fn rapid_wheel_notches_ramp_the_wheel_velocity() {
+fn rapid_wheel_notches_ramp_the_wheel_velocity() -> TestResult {
     // @step Given the work-unit search dialog is open with a long match list
     let mut dialog = dialog_with(20);
-    render_80x24(&mut dialog);
-    let (x, y) = inside_point(&dialog);
+    render_80x24(&mut dialog)?;
+    let (x, y) = inside_point(&dialog)?;
 
     // @step When I scroll the mouse wheel down five times in rapid succession
     for _ in 0..5 {
@@ -170,17 +175,18 @@ fn rapid_wheel_notches_ramp_the_wheel_velocity() {
         15,
         "five rapid notches ramp to 5x: total move 1+2+3+4+5 = 15"
     );
+    Ok(())
 }
 
 /// Scenario: A wheel event outside the dialog rect is ignored so it bubbles to the board
 #[test]
-fn a_wheel_event_outside_the_dialog_rect_is_ignored_so_it_bubbles_to_the_board() {
+fn a_wheel_event_outside_the_dialog_rect_is_ignored_so_it_bubbles_to_the_board() -> TestResult {
     // @step Given the work-unit search dialog is open with a match list
     let mut dialog = dialog_with(20);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let rect = dialog
         .last_dialog_rect()
-        .expect("last_dialog_rect must be cached after render");
+        .or_fail("last_dialog_rect must be cached after render")?;
     // One row above the dialog's top border — outside the rect.
     let outside_row = rect.y.saturating_sub(1);
 
@@ -200,19 +206,20 @@ fn a_wheel_event_outside_the_dialog_rect_is_ignored_so_it_bubbles_to_the_board()
     // @step And the selection and scroll offset are unchanged
     assert_eq!(dialog.selected_index(), 0, "selection must stay frozen");
     assert_eq!(dialog.scroll_offset(), 0, "scroll offset must stay frozen");
+    Ok(())
 }
 
 /// Scenario: Repeated wheel-down reaches the last match and keeps it on screen
 #[test]
-fn repeated_wheel_down_reaches_the_last_match_and_keeps_it_on_screen() {
+fn repeated_wheel_down_reaches_the_last_match_and_keeps_it_on_screen() -> TestResult {
     // @step Given the work-unit search dialog is open with more matches than visible rows
     // 21 matches: with the WheelVelocity ramp (1,2,3,4,5,5,...) the
     // cumulative move after 6 notches is 1+2+3+4+5+5 = 20, which lands
     // exactly on the last index (20) of a 21-item list — wrap_index
     // never overshoots past it.
     let mut dialog = dialog_with(21);
-    render_80x24(&mut dialog);
-    let (x, y) = inside_point(&dialog);
+    render_80x24(&mut dialog)?;
+    let (x, y) = inside_point(&dialog)?;
     let visible = dialog.visible_rows();
     let last = dialog.matches().len() - 1;
 
@@ -239,14 +246,16 @@ fn repeated_wheel_down_reaches_the_last_match_and_keeps_it_on_screen() {
         offset <= last && last < offset + visible,
         "ensure_visible must keep the last match on screen (offset {offset}, visible {visible})"
     );
+    Ok(())
 }
 
 /// Scenario: A proportional scrollbar gutter is painted when matches overflow the visible rows
 #[test]
-fn a_proportional_scrollbar_gutter_is_painted_when_matches_overflow_the_visible_rows() {
+fn a_proportional_scrollbar_gutter_is_painted_when_matches_overflow_the_visible_rows() -> TestResult
+{
     // @step Given the work-unit search dialog is open with more matches than visible rows
     let mut dialog = dialog_with(20);
-    let buf = render_80x24(&mut dialog);
+    let buf = render_80x24(&mut dialog)?;
     let visible = dialog.visible_rows();
     assert!(
         dialog.matches().len() > visible,
@@ -256,13 +265,13 @@ fn a_proportional_scrollbar_gutter_is_painted_when_matches_overflow_the_visible_
     // @step When the dialog is rendered
     let gutter = dialog
         .last_scrollbar_rect()
-        .expect("the scrollbar gutter rect must be cached when matches overflow");
+        .or_fail("the scrollbar gutter rect must be cached when matches overflow")?;
 
     // @step Then a scrollbar gutter rect is cached for hit-testing
     assert_eq!(gutter.width, 1, "the gutter is a single column");
     let rect = dialog
         .last_dialog_rect()
-        .expect("last_dialog_rect must be cached after render");
+        .or_fail("last_dialog_rect must be cached after render")?;
     assert!(
         gutter.x >= rect.x && gutter.x < rect.x + rect.width,
         "the gutter must sit inside the dialog rect"
@@ -281,4 +290,5 @@ fn a_proportional_scrollbar_gutter_is_painted_when_matches_overflow_the_visible_
         painted, gutter.height as usize,
         "every gutter row must be painted with the scrollbar glyphs"
     );
+    Ok(())
 }

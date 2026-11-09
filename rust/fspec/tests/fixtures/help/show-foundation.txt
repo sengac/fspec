@@ -10,6 +10,8 @@ ARGUMENTS
     Specific section to show (optional)
 
 OPTIONS
+  --section <section>
+    Specific section to show (same as the positional [section])
   --list-sections
     List section names only (without content)
   --line-numbers

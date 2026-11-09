@@ -204,7 +204,8 @@ async fn run_round<O: StreamOutput>(
             .lock()
             .map_err(|_| CompactionFailure::Registry)?;
         let original_tokens = session.token_tracker.input_tokens;
-        let publication = crate::compaction_publication::CompactionPublication::new(session);
+        let publication = crate::compaction_publication::CompactionPublication::new(session)
+            .map_err(|error| CompactionFailure::Commit(error.to_string()))?;
         let committed = session
             .commit_selected_compaction_guarded(
                 source,
@@ -240,15 +241,19 @@ async fn run_round<O: StreamOutput>(
             .ok_or(CompactionFailure::Blocked)?
             .committed(operation_id)?;
         check()?;
+        // CMPCT-088: a count that does not fit is an error, never clamped.
+        let narrow = |what: &str, value: u64| {
+            codelet_common::narrow_count(what, value).map_err(CompactionFailure::Candidate)
+        };
         output.emit_committed_compaction_complete(codelet_rpc_types::CompactionResult {
-            original_tokens: u32::try_from(original_tokens).unwrap_or(u32::MAX),
-            compacted_tokens: u32::try_from(boundary.input_tokens).unwrap_or(u32::MAX),
+            original_tokens: narrow("original tokens", original_tokens)?,
+            compacted_tokens: narrow("compacted tokens", boundary.input_tokens)?,
             compression_ratio: crate::interactive_helpers::compression_ratio(
                 original_tokens,
                 boundary.input_tokens,
             ) * 100.0,
-            turns_summarized: u32::try_from(boundary.covered_prefix.len()).unwrap_or(u32::MAX),
-            turns_kept: u32::try_from(boundary.verified_suffix.len()).unwrap_or(u32::MAX),
+            turns_summarized: narrow("summarized turns", boundary.covered_prefix().len() as u64)?,
+            turns_kept: narrow("kept turns", boundary.verified_suffix.len() as u64)?,
         });
         Ok(())
     });
@@ -264,7 +269,7 @@ async fn run_round<O: StreamOutput>(
     result
 }
 
-pub async fn retry_failed_compactor_for_user_input<O: StreamOutput>(
+pub async fn retry_failed_compactor_for_next_input<O: StreamOutput>(
     session: &mut Session,
     session_id: Uuid,
     compaction_in_progress: &Arc<AtomicBool>,

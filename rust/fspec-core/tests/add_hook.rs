@@ -252,42 +252,6 @@ fn scenario_writes_blocking_true_and_timeout_when_supplied() {
 }
 
 #[test]
-fn scenario_swallows_invalid_json_and_overwrites_with_the_new_config() {
-    // Scenario: Swallows invalid JSON and overwrites with the new config
-
-    // @step Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    let tmp = TempDir::new().expect("tempdir");
-    write_hooks(tmp.path(), "{ not json");
-
-    // @step When I dispatch add-hook with event='pre-implementing', name='lint', command='lint.sh', blocking=false
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({
-            "event": "pre-implementing",
-            "name": "lint",
-            "command": "lint.sh",
-            "blocking": false,
-        }),
-    ));
-
-    // @step Then the dispatcher returns success=true
-    assert!(
-        result.success,
-        "TS bare catch swallows parse errors; expected success=true, got {result:?}"
-    );
-
-    // @step Then the on-disk JSON parses successfully
-    let v = read_hooks_json(tmp.path());
-
-    // @step Then the on-disk 'hooks' object contains exactly the event 'pre-implementing' with one entry named 'lint'
-    let hooks = v["hooks"].as_object().expect("hooks object");
-    assert_eq!(hooks.len(), 1);
-    let arr = hooks["pre-implementing"].as_array().expect("array");
-    assert_eq!(arr.len(), 1);
-    assert_eq!(arr[0]["name"].as_str(), Some("lint"));
-}
-
-#[test]
 fn scenario_preserves_unknown_top_level_global_section() {
     // Scenario: Preserves unknown top-level global section
 
@@ -375,25 +339,25 @@ fn scenario_allows_duplicate_hook_names_within_the_same_event() {
 fn scenario_preserves_event_key_insertion_order_across_writes() {
     // Scenario: Preserves event-key insertion order across writes
 
-    // @step Given spec/fspec-hooks.json contains three events declared in order ZED, AAA, MID each with one entry
+    // @step Given spec/fspec-hooks.json contains three events declared in order pre-validating, post-backlog, pre-implementing each with one entry
     let tmp = TempDir::new().expect("tempdir");
     // Hand-write to lock object key order.
     write_hooks(
         tmp.path(),
         r#"{
   "hooks": {
-    "ZED": [ { "name": "z", "command": "z.sh", "blocking": false } ],
-    "AAA": [ { "name": "a", "command": "a.sh", "blocking": false } ],
-    "MID": [ { "name": "m", "command": "m.sh", "blocking": false } ]
+    "pre-validating": [ { "name": "z", "command": "z.sh", "blocking": false } ],
+    "post-backlog": [ { "name": "a", "command": "a.sh", "blocking": false } ],
+    "pre-implementing": [ { "name": "m", "command": "m.sh", "blocking": false } ]
   }
 }"#,
     );
 
-    // @step When I dispatch add-hook with event='MID', name='extra', command='extra.sh', blocking=false
+    // @step When I dispatch add-hook with event='pre-implementing', name='extra', command='extra.sh', blocking=false
     let result = dispatch_command(req(
         tmp.path(),
         json!({
-            "event": "MID",
+            "event": "pre-implementing",
             "name": "extra",
             "command": "extra.sh",
             "blocking": false,
@@ -403,13 +367,13 @@ fn scenario_preserves_event_key_insertion_order_across_writes() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
 
-    // @step Then the on-disk events appear in the order ZED, AAA, MID
+    // @step Then the on-disk events appear in the order pre-validating, post-backlog, pre-implementing
     let raw = read_hooks_raw(tmp.path());
-    let z = raw.find("\"ZED\"").expect("ZED present");
-    let a = raw.find("\"AAA\"").expect("AAA present");
-    let m = raw.find("\"MID\"").expect("MID present");
+    let z = raw.find("\"pre-validating\"").expect("present");
+    let a = raw.find("\"post-backlog\"").expect("present");
+    let m = raw.find("\"pre-implementing\"").expect("present");
     assert!(
         z < a && a < m,
-        "expected ZED < AAA < MID; got z={z} a={a} m={m}\n{raw}"
+        "expected pre-validating < post-backlog < pre-implementing; got z={z} a={a} m={m}\n{raw}"
     );
 }

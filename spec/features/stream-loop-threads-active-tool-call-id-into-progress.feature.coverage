@@ -5,83 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
-          "lines": "54-115",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
-                476,
-                477,
-                478,
-                479,
-                480,
-                481,
-                482,
-                483,
-                484,
-                485,
-                486,
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
-          "lines": "54-115",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
-                476,
-                477,
-                478,
-                479,
-                480,
-                481,
-                482,
-                483,
-                484,
-                485,
-                486,
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493
-              ]
-            }
-          ]
+          "lines": "57-232",
+          "implMappings": []
         }
       ]
     },
@@ -90,177 +15,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
-          "lines": "125-178",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                913,
-                914,
-                915,
-                916,
-                917,
-                918,
-                919,
-                920,
-                921,
-                922,
-                923,
-                924,
-                925,
-                926,
-                927,
-                928,
-                929,
-                930,
-                931,
-                932,
-                933,
-                934,
-                935,
-                936,
-                937,
-                938,
-                939,
-                940,
-                941,
-                942,
-                943,
-                944,
-                945,
-                946,
-                947,
-                948,
-                949,
-                950,
-                951,
-                952,
-                953,
-                954,
-                955,
-                956,
-                957,
-                958,
-                959,
-                960,
-                961,
-                962,
-                963,
-                964,
-                965,
-                966,
-                967,
-                968,
-                969,
-                970,
-                971,
-                972,
-                973,
-                974,
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982,
-                983,
-                984,
-                985,
-                986,
-                987,
-                988
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
-          "lines": "125-178",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                913,
-                914,
-                915,
-                916,
-                917,
-                918,
-                919,
-                920,
-                921,
-                922,
-                923,
-                924,
-                925,
-                926,
-                927,
-                928,
-                929,
-                930,
-                931,
-                932,
-                933,
-                934,
-                935,
-                936,
-                937,
-                938,
-                939,
-                940,
-                941,
-                942,
-                943,
-                944,
-                945,
-                946,
-                947,
-                948,
-                949,
-                950,
-                951,
-                952,
-                953,
-                954,
-                955,
-                956,
-                957,
-                958,
-                959,
-                960,
-                961,
-                962,
-                963,
-                964,
-                965,
-                966,
-                967,
-                968,
-                969,
-                970,
-                971,
-                972,
-                973,
-                974,
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982,
-                983,
-                984,
-                985,
-                986,
-                987,
-                988
-              ]
-            }
-          ]
+          "lines": "128-181",
+          "implMappings": []
         }
       ]
     },
@@ -269,29 +25,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/tool_progress_tool_call_id_bug149.rs",
-          "lines": "190-229",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                479,
-                480,
-                481,
-                482,
-                483,
-                484,
-                485,
-                486,
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493
-              ]
-            }
-          ]
+          "lines": "192-232",
+          "implMappings": []
         }
       ]
     }
@@ -303,9 +38,7 @@
     "testFiles": [
       "rust/cli/tests/tool_progress_tool_call_id_bug149.rs"
     ],
-    "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs"
-    ],
-    "totalLinesCovered": 497
+    "implFiles": [],
+    "totalLinesCovered": 271
   }
 }

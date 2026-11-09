@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "A context cut inside a multi-byte character keeps only whole characters",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug626_learnings_context_multi_byte.rs",
+          "lines": "54-72",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/learnings_context.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "// Hard cap (BUG-626): keep the longest prefix of at most MAX_CONTEXT_CHARS",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A context cut on a character boundary keeps exactly 8000 bytes",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug626_learnings_context_multi_byte.rs",
+          "lines": "74-92",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/learnings_context.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "// Hard cap (BUG-626): keep the longest prefix of at most MAX_CONTEXT_CHARS",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A context under the cap is returned whole",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug626_learnings_context_multi_byte.rs",
+          "lines": "94-107",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/learnings_context.rs",
+              "lines": [
+                171,
+                176
+              ],
+              "firstLine": "if output.len() > MAX_CONTEXT_CHARS {",
+              "lastLine": "output"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/graph/tests/bug626_learnings_context_multi_byte.rs"
+    ],
+    "implFiles": [
+      "rust/graph/src/learnings_context.rs"
+    ],
+    "totalLinesCovered": 68
+  }
+}

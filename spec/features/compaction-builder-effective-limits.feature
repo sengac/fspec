@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @BUG-215
 @phase-1
 @agent-core
 @context-management
 @compaction
+@BUG-304
 Feature: Compaction builder uses effective provider limits
   """
   Testing: Exercise real handlers, persisted originals and local HTTP fixtures through exploration-budget exhaustion and final serialized-request admission. Retain BUG-214 cancellation and BUG-211 fail-closed synthesis coverage.

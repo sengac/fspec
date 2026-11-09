@@ -9,7 +9,6 @@ use serde_json::json;
 use std::collections::HashSet;
 use std::process::{Command, Stdio};
 use std::sync::{atomic::AtomicBool, Arc};
-use std::time::{Duration, Instant};
 
 #[path = "support/bug246.rs"]
 mod support;
@@ -32,13 +31,23 @@ fn killed(mode: &str) -> Result<Killed, Box<dyn std::error::Error>> {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
-    let deadline = Instant::now() + Duration::from_secs(15);
-    while !ready.exists() && Instant::now() < deadline {
-        if let Some(status) = child.try_wait()? {
-            return Err(format!("isolated agent exited before acknowledgement: {status}").into());
-        }
-        std::thread::sleep(Duration::from_millis(10));
-    }
+    // TEST-042: wait on the acknowledgement file, between yields, under the
+    // deadlock guard.
+    let acknowledgement = ready.clone();
+    let mut child = codelet_test_helpers::deadlock_guard_blocking(
+        "the isolated agent's acknowledgement",
+        move || -> Result<std::process::Child, String> {
+            while !acknowledgement.exists() {
+                if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
+                    return Err(format!(
+                        "isolated agent exited before acknowledgement: {status}"
+                    ));
+                }
+                std::thread::yield_now();
+            }
+            Ok(child)
+        },
+    )??;
     child.kill()?;
     child.wait()?;
     let acknowledged: serde_json::Value = serde_json::from_slice(&std::fs::read(ready)?)?;

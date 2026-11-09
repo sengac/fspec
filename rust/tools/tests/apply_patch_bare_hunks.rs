@@ -6,6 +6,11 @@ use rig::tool::Tool;
 
 #[tokio::test]
 async fn update_a_file_using_bare_hunk_separators() -> Result<(), Box<dyn std::error::Error>> {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    codelet_test_helpers::isolated_user_directory()?; // BUG-347
     let directory = setup_temp_directory()?;
     let path = directory.path().join("bare-hunks.txt");
     std::fs::write(&path, "header\nold first\nunchanged\nold second\nfooter\n")?;

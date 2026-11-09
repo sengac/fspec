@@ -1,44 +1,48 @@
 {
   "scenarios": [
     {
-      "name": "list_providers returns empty Vec when no session manager is attached (embedded)",
+      "name": "list_providers is refused when no session manager is attached (embedded)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "82-96",
+          "lines": "90-106",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
               "lines": [
-                178,
-                179,
-                180,
-                181
-              ]
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "async fn checkpoint_diff_files(",
+              "lastLine": "name: String,"
             }
           ]
         }
       ]
     },
     {
-      "name": "list_providers crosses tarpc cleanly when no session manager is attached",
+      "name": "list_providers crosses tarpc cleanly with the refusal when no session manager is attached",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "98-117",
+          "lines": "108-129",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
               "lines": [
-                398,
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405
-              ]
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// RPC-037: subscribe to the WebSocket-pushed",
+              "lastLine": "match self.client.try_read() {"
             }
           ]
         }
@@ -49,243 +53,338 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "119-148",
+          "lines": "131-167",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
               "lines": [
-                708,
-                709,
-                710,
-                711,
-                712,
-                713,
-                714,
-                715,
-                716,
-                717,
-                718
-              ]
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                252,
+                253,
+                271
+              ],
+              "firstLine": "async fn reply_interaction_checked(",
+              "lastLine": "/// RPC-444: create a session whose project is the named workspace,"
+            },
+            {
+              "file": "rust/rpc/src/shared_state.rs",
+              "lines": [
+                1
+              ],
+              "firstLine": "/// RPC-011 broadcast capacity for the StreamChunk channel — sized to",
+              "lastLine": "/// RPC-011 broadcast capacity for the StreamChunk channel — sized to"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/models_profiles.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "firstLine": "async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/history_models.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/providers.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "firstLine": "async fn list_providers(self, _ctx: Context) -> Result<Vec<ProviderInfo>, String> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "set_session_model returns Ok when no session manager is attached (embedded)",
+      "name": "set_session_model is refused when no session manager is attached (embedded)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "150-170",
+          "lines": "169-194",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/models_profiles.rs",
               "lines": [
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194
-              ]
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ],
+              "firstLine": "async fn set_session_model(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/providers.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "async fn set_session_model(",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "set_session_model crosses tarpc cleanly when no session manager is attached",
+      "name": "set_session_model crosses tarpc cleanly with the refusal when no session manager is attached",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "172-197",
+          "lines": "196-226",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
               "lines": [
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413,
-                414,
-                415,
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422
-              ]
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "Some(client) => client.status_changes_rx(),",
+              "lastLine": "/// dropping its sender closes the per-subscriber broadcast —"
             }
           ]
         }
       ]
     },
     {
-      "name": "set_thinking_level returns Ok when no session manager is attached (embedded)",
+      "name": "set_thinking_level is refused when no session manager is attached (embedded)",
+      "testMappings": []
+    },
+    {
+      "name": "set_thinking_level crosses tarpc cleanly with the refusal",
+      "testMappings": []
+    },
+    {
+      "name": "get_session_role is refused when no session manager is attached (embedded)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "199-215",
+          "lines": "285-301",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_control.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "async fn get_session_role(self, _ctx: Context, session_id: SessionId) -> Result<Option<String>, String> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "set_thinking_level crosses tarpc cleanly with safe default",
+      "name": "get_session_role crosses tarpc cleanly with the refusal when no session manager is attached",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "217-238",
+          "lines": "303-324",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/profiles_control.rs",
               "lines": [
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435,
-                436,
-                437,
-                438
-              ]
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_control.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "async fn get_session_role(self, _ctx: Context, session_id: SessionId) -> Result<Option<String>, String> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "get_session_role returns None when no session manager is attached (embedded)",
+      "name": "set_session_role is refused when no session manager is attached (embedded)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "240-257",
+          "lines": "326-357",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                207,
-                208,
-                209,
-                210,
-                211,
-                212
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "async fn set_session_role(&self, session_id: SessionId, role: Option<String>) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_control.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "async fn set_session_role(",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "get_session_role crosses tarpc cleanly with safe default",
+      "name": "set_session_role crosses tarpc cleanly with the refusal",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "259-281",
+          "lines": "359-385",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
               "lines": [
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447,
-                448,
-                449
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "set_session_role returns Ok when no session manager is attached (embedded)",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "283-305",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
-              "lines": [
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "set_session_role crosses tarpc cleanly with safe default",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "307-328",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
-              "lines": [
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464
-              ]
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "/// degradation (R2/R5).",
+              "lastLine": "}"
             }
           ]
         }
@@ -296,69 +395,66 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
-          "lines": "330-373",
+          "lines": "387-432",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/handle_trait_1.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180
-              ]
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                78,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "/// host's tracing::Layer can push records onto the same broadcast",
+              "lastLine": "&self,"
             }
           ]
         }
@@ -367,17 +463,24 @@
   ],
   "stats": {
     "totalScenarios": 12,
-    "coveredScenarios": 12,
-    "coveragePercent": 100,
+    "coveredScenarios": 10,
+    "coveragePercent": 83,
     "testFiles": [
       "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/core/src/session_manager_handle.rs"
+      "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+      "rust/fspec-tui/src/transport/websocket/subscriptions.rs",
+      "rust/rpc/src/service_declaration/supervision_credentials.rs",
+      "rust/rpc/src/shared_state.rs",
+      "rust/fspec-tui/src/transport/embedded/models_profiles.rs",
+      "rust/fspec-tui/src/transport/websocket/history_models.rs",
+      "rust/rpc/src/service_implementation/providers.rs",
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+      "rust/rpc/src/service_implementation/session_control.rs",
+      "rust/fspec-tui/src/transport/websocket/profiles_control.rs",
+      "rust/core/src/session_manager_handle/handle_trait_1.rs"
     ],
-    "totalLinesCovered": 453
+    "totalLinesCovered": 493
   }
 }

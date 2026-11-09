@@ -1,4 +1,4 @@
-use codelet_cli::compaction_operation::build_validated_dag;
+use codelet_cli::compaction_operation::{build_validated_dag, BuildRequest};
 use codelet_core::compaction::DagValidationContext;
 use std::collections::VecDeque;
 
@@ -23,25 +23,29 @@ async fn malformed_builder_output_is_rejected_and_returned_for_correction(
     );
     let mut outputs = VecDeque::from([invalid.clone(), valid()]);
     let mut prompts = Vec::new();
-    let result = build_validated_dag("original task", &context(), |prompt| {
+    let result = build_validated_dag(&context(), |prompt| {
         prompts.push(prompt);
         std::future::ready(outputs.pop_front().ok_or_else(|| "unexpected build".into()))
     })
     .await?;
     assert_eq!(result, valid());
     assert_eq!(prompts.len(), 2);
-    assert_eq!(prompts[0], "original task");
-    assert!(prompts[1].starts_with("original task"));
-    assert!(prompts[1].contains("invalid dag-files line"));
-    assert!(prompts[1].contains(&invalid));
-    assert!(prompts[1].contains("complete corrected DAG"));
+    assert_eq!(prompts[0], BuildRequest::First);
+    // BUG-614 (Q7): the correction continues the generating conversation,
+    // which already holds the rejected candidate; it carries the exact error.
+    let BuildRequest::Correction(correction) = &prompts[1] else {
+        return Err("second build must be a correction".into());
+    };
+    assert!(correction.contains("invalid dag-files line"));
+    assert!(!correction.contains(&invalid));
+    assert!(correction.contains("complete corrected DAG"));
     Ok(())
 }
 
 #[tokio::test]
 async fn correction_attempts_are_bounded_and_never_salvage_invalid_memory() {
     let mut attempts = 0;
-    let result = build_validated_dag("original task", &context(), |_| {
+    let result = build_validated_dag(&context(), |_| {
         attempts += 1;
         std::future::ready(Ok("<dag-node>malformed".into()))
     })
@@ -55,7 +59,7 @@ async fn invalid_authoritative_source_and_provider_errors_do_not_trigger_correct
     let mut source = context();
     source.existing_dag = Some("<dag-node>malformed".into());
     let mut attempts = 0;
-    let result = build_validated_dag("original task", &source, |_| {
+    let result = build_validated_dag(&source, |_| {
         attempts += 1;
         std::future::ready(Ok(valid()))
     })
@@ -63,7 +67,7 @@ async fn invalid_authoritative_source_and_provider_errors_do_not_trigger_correct
     assert_eq!(attempts, 1);
     assert!(result.is_err());
     attempts = 0;
-    let result = build_validated_dag("original task", &context(), |_| {
+    let result = build_validated_dag(&context(), |_| {
         attempts += 1;
         std::future::ready(Err("provider unavailable".into()))
     })

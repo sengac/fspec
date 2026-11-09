@@ -25,7 +25,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "/// TOOL-023: dedicated explanation for the string-vs-object `args` gotcha.",
+              "lastLine": "}"
             }
           ]
         }
@@ -49,7 +51,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "/// TOOL-023: dedicated explanation for a non-string `project_root`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -65,7 +69,7 @@
             {
               "file": "rust/tools/src/facade/fspec_facade.rs",
               "lines": [
-                186,
+                145,
                 187,
                 188,
                 189,
@@ -102,10 +106,10 @@
                 220,
                 221,
                 222,
-                223,
-                224,
-                225
-              ]
+                223
+              ],
+              "firstLine": "impl FspecToolFacade for GeminiFspecFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,53 +121,7 @@
         {
           "file": "rust/tools/tests/tool023_fspec_facade_args.rs",
           "lines": "125-154",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/fspec_facade.rs",
-              "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -187,7 +145,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "/// example invocation and a pointer at the help command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,7 +163,7 @@
             {
               "file": "rust/tools/src/facade/fspec_facade.rs",
               "lines": [
-                105,
+                82,
                 106,
                 107,
                 108,
@@ -234,8 +194,11 @@
                 133,
                 134,
                 135,
-                136
-              ]
+                136,
+                137
+              ],
+              "firstLine": "impl FspecToolFacade for ClaudeFspecFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -252,6 +215,6 @@
     "implFiles": [
       "rust/tools/src/facade/fspec_facade.rs"
     ],
-    "totalLinesCovered": 329
+    "totalLinesCovered": 288
   }
 }

@@ -1,4 +1,7 @@
+@BUG-526
 @BRIDGE-009
+@telegram
+@bridge
 Feature: User ID Whitelist for Telegram Bridge
   """
   Access control is implemented in setupTelegramBot() message handler. User IDs are stored in a Set<number> for O(1) lookup. Configuration is loaded at startup from TELEGRAM_ALLOWED_USER_IDS environment variable. The msg.from.id field (sender's unique Telegram ID) is used for validation, not msg.chat.id (which differs in groups).

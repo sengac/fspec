@@ -1,5 +1,7 @@
 @wip
 @KGRAPH-027
+@parser
+@code-analysis
 Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + Orphan Query
   """
   TS call extraction: Use ast-grep pattern `$CALLEE($$$ARGS)` on function bodies, filter to bare identifiers only (no dots/method calls), cross-reference with known function names from same file + imported names

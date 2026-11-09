@@ -6,8 +6,8 @@ pub(super) mod refresh_models_cache {
     pub struct Args {
         provider_id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -17,7 +17,6 @@ pub(super) mod refresh_models_cache {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .refresh_models_cache(tarpc::context::current(), args.provider_id)
             .await
@@ -33,8 +32,8 @@ pub(super) mod oauth_clear_tokens {
     pub struct Args {
         provider_id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -44,7 +43,6 @@ pub(super) mod oauth_clear_tokens {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .oauth_clear_tokens(tarpc::context::current(), args.provider_id)
             .await
@@ -60,8 +58,8 @@ pub(super) mod oauth_get_tokens {
     pub struct Args {
         provider_id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -71,7 +69,6 @@ pub(super) mod oauth_get_tokens {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .oauth_get_tokens(tarpc::context::current(), args.provider_id)
             .await

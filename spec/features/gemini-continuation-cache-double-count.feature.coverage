@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
-          "lines": "77-98",
+          "lines": "72-93",
           "implMappings": [
             {
               "file": "rust/core/src/compaction_hook.rs",
@@ -31,7 +31,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "/// Create TokenState from a cache-INCLUSIVE context total (CMPCT-042)",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,11 +44,13 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
-          "lines": "104-128",
+          "lines": "99-123",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
+                124,
+                125,
                 126,
                 127,
                 128,
@@ -57,10 +61,10 @@
                 133,
                 134,
                 135,
-                136,
-                137,
-                138
-              ]
+                136
+              ],
+              "firstLine": "input_queue,",
+              "lastLine": "session.messages.push(rig::message::Message::User {"
             }
           ]
         }
@@ -71,7 +75,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
-          "lines": "135-157",
+          "lines": "130-152",
           "implMappings": [
             {
               "file": "rust/core/src/compaction_hook.rs",
@@ -97,7 +101,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "/// Create TokenState from a cache-INCLUSIVE context total (CMPCT-042)",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,11 +114,13 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
-          "lines": "164-189",
+          "lines": "159-185",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation.rs",
               "lines": [
+                124,
+                125,
                 126,
                 127,
                 128,
@@ -123,10 +131,10 @@
                 133,
                 134,
                 135,
-                136,
-                137,
-                138
-              ]
+                136
+              ],
+              "firstLine": "input_queue,",
+              "lastLine": "session.messages.push(rig::message::Message::User {"
             }
           ]
         }
@@ -137,21 +145,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
-          "lines": "196-234",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation.rs",
-              "lines": [
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322
-              ]
-            }
-          ]
+          "lines": "192-233"
         }
       ]
     }
@@ -167,6 +161,6 @@
       "rust/core/src/compaction_hook.rs",
       "rust/cli/src/interactive/gemini_continuation.rs"
     ],
-    "totalLinesCovered": 210
+    "totalLinesCovered": 207
   }
 }

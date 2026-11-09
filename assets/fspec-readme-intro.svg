@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="840" height="1040" viewBox="0 0 840 1040" role="img" aria-labelledby="logo-title logo-desc">
+<title id="logo-title">fspec — Low Roof Vents / README Intro</title>
+<desc id="logo-desc">Subtle static red and white halos frame the factory; only its pixel smoke and whole black cursor move. A red factory with a low flat roof and two short rectangular vents, a white blueprint, and square pixel smoke rising from both vents in staggered quarter-second steps. The whole black underscore cursor blinks fully on for half a second and off for half a second. Original fspec lettering preserved as vector paths. A four-second introduction: every animation finishes by four seconds, leaving the cursor visibly black and the smoke hidden. Reduced-motion users receive an immediate still logo with a steady black cursor and no moving smoke.</desc>
+<defs>
+  <clipPath id="blueprint-boundary" clipPathUnits="userSpaceOnUse"><rect x="-12" y="-12" width="198.666667" height="380"/></clipPath>
+  <mask id="terminal-clearance" x="-12" y="-12" width="584" height="380" maskUnits="userSpaceOnUse" mask-type="luminance">
+    <rect x="-12" y="-12" width="584" height="380" fill="white"/>
+    <path d="M 112,164 L 238,226 L 238,244 L 112,306 L 112,268 L 196,235 L 112,202 Z" fill="black" stroke="black" stroke-width="16" stroke-linejoin="miter"/>
+  </mask>
+  <g id="blueprint-art" mask="url(#terminal-clearance)">
+    <g fill="none" stroke="#FFFFFF" stroke-linecap="square" stroke-linejoin="miter" clip-path="url(#blueprint-boundary)">
+      <path d="M 93.333333,56 L 93.333333,340.5 M 0,112 L 186.666667,112 M 0,226 L 186.666667,226" stroke-width="4"/>
+      <path d="M 186.666667,340.5 L 24,340.5 Q 0,340.5 0,316.5 L 0,112 L 186.666667,0 L 186.666667,112" stroke-width="7"/>
+    </g>
+  </g>
+  <g id="solid-art" fill="#FF3030">
+    <path d="M 186.666667,112 L 256.333333,112 L 256.333333,68 L 344.333333,68 L 344.333333,112 L 402.333333,112 L 402.333333,68 L 490.333333,68 L 490.333333,112 L 560,112 L 560,320 Q 560,344 536,344 L 186.666667,344 Z" mask="url(#terminal-clearance)"/>
+    <path d="M 112,164 L 238,226 L 238,244 L 112,306 L 112,268 L 196,235 L 112,202 Z"/>
+  </g>
+  <g id="factory-art"><use href="#blueprint-art" xlink:href="#blueprint-art"/><use href="#solid-art" xlink:href="#solid-art"/></g>
+  <g id="wordmark-art" transform="translate(100 578) scale(19.525218680924) translate(-73.799067 -84.325619)">
+    <path id="original-wordmark-path" fill="#F2FFF8" d="m 79.391164,84.325619 v 3.825446 h -0.881947 v -2.877354 h -2.516306 v 5.243624 h 1.314653 v 0.948097 h -1.314653 v 5.243624 h 1.314653 v 0.948092 h -3.508497 v -0.948092 h 1.311897 V 84.325619 Z M 89.585923,97.657148 V 100.5345 H 88.703976 V 84.325619 h 4.2802 v 13.331529 z m 2.516306,-0.948092 V 85.273711 h -2.516306 v 11.435345 z m 3.398252,0.948092 V 84.325619 h 4.280202 v 3.825446 h -0.881947 v -2.877354 h -2.516307 v 5.243624 h 1.314652 v 0.948097 h -1.314652 v 5.243624 h 2.516307 v -2.880112 h 0.881947 v 3.828204 z M 86.18767,90.517335 v 7.139813 h -4.2802 v -3.828204 h 0.881947 v 2.880112 h 2.516306 V 91.465432 H 81.90747 v -7.139813 h 4.2802 v 3.825446 h -0.881947 v -2.877354 h -2.516306 v 5.243624 z m 19.50757,6.191721 v -2.880112 h 0.88195 v 3.828204 h -4.2802 V 84.325619 h 4.2802 v 3.825446 h -0.88195 v -2.877354 h -2.5163 v 11.435345 z"/>
+  </g>
+  <g id="pixel-smoke-puff" fill="#E8E8E8" shape-rendering="crispEdges">
+    <rect x="-12" y="-24" width="12" height="12"/>
+    <rect x="0" y="-24" width="12" height="12"/>
+    <rect x="0" y="-12" width="12" height="12"/>
+    <rect x="12" y="-12" width="12" height="12"/>
+  </g>
+  <filter id="soft-glow" x="-45%" y="-45%" width="190%" height="190%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="12"/></filter>
+  <filter id="fine-glow" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="4"/></filter>
+  <radialGradient id="ambient"><stop stop-color="#FF3030" stop-opacity=".16"/><stop offset="1" stop-color="#080C12" stop-opacity="0"/></radialGradient>
+  <linearGradient id="scan-shine"><stop stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".45" stop-color="#FFFFFF" stop-opacity=".15"/><stop offset=".6" stop-color="#FFFFFF" stop-opacity=".9"/><stop offset="1" stop-color="#FF3030" stop-opacity="0"/></linearGradient>
+  <mask id="logo-shape" maskUnits="userSpaceOnUse" x="0" y="0" width="840" height="1040">
+    <g transform="translate(120 148)">
+      <g mask="url(#terminal-clearance)">
+        <path d="M 186.666667,112 L 256.333333,112 L 256.333333,68 L 344.333333,68 L 344.333333,112 L 402.333333,112 L 402.333333,68 L 490.333333,68 L 490.333333,112 L 560,112 L 560,320 Q 560,344 536,344 L 186.666667,344 Z" fill="white"/>
+        <g stroke="white" fill="none" stroke-linecap="square" stroke-linejoin="miter" clip-path="url(#blueprint-boundary)"><path d="M 93.333333,56 L 93.333333,340.5 M 0,112 L 186.666667,112 M 0,226 L 186.666667,226" stroke-width="4"/><path d="M 186.666667,340.5 L 24,340.5 Q 0,340.5 0,316.5 L 0,112 L 186.666667,0 L 186.666667,112" stroke-width="7"/></g>
+      </g>
+      <path d="M 112,164 L 238,226 L 238,244 L 112,306 L 112,268 L 196,235 L 112,202 Z" fill="white"/>
+    </g>
+    <g transform="translate(100 578) scale(19.525218680924) translate(-73.799067 -84.325619)"><path d="m 79.391164,84.325619 v 3.825446 h -0.881947 v -2.877354 h -2.516306 v 5.243624 h 1.314653 v 0.948097 h -1.314653 v 5.243624 h 1.314653 v 0.948092 h -3.508497 v -0.948092 h 1.311897 V 84.325619 Z M 89.585923,97.657148 V 100.5345 H 88.703976 V 84.325619 h 4.2802 v 13.331529 z m 2.516306,-0.948092 V 85.273711 h -2.516306 v 11.435345 z m 3.398252,0.948092 V 84.325619 h 4.280202 v 3.825446 h -0.881947 v -2.877354 h -2.516307 v 5.243624 h 1.314652 v 0.948097 h -1.314652 v 5.243624 h 2.516307 v -2.880112 h 0.881947 v 3.828204 z M 86.18767,90.517335 v 7.139813 h -4.2802 v -3.828204 h 0.881947 v 2.880112 h 2.516306 V 91.465432 H 81.90747 v -7.139813 h 4.2802 v 3.825446 h -0.881947 v -2.877354 h -2.516306 v 5.243624 z m 19.50757,6.191721 v -2.880112 h 0.88195 v 3.828204 h -4.2802 V 84.325619 h 4.2802 v 3.825446 h -0.88195 v -2.877354 h -2.5163 v 11.435345 z" fill="white"/></g>
+  </mask>
+  
+</defs>
+<style><![CDATA[svg{isolation:isolate}
+.cursor-blink{animation:cursor-blink 1s step-end;animation-delay:0s;animation-iteration-count:4;animation-fill-mode:forwards}
+@keyframes cursor-blink{0%{opacity:1.000000}50%{opacity:0.000000}100%{opacity:1.000000}}
+.smoke-v1-p1{animation:smoke-v1-p1 4s step-end;animation-delay:0s;animation-iteration-count:1;animation-fill-mode:both}
+@keyframes smoke-v1-p1{0%{transform:translate(0.000000px,0.000000px);opacity:0.000000}6.25%{transform:translate(0.000000px,0.000000px);opacity:0.900000}18.75%{transform:translate(0.000000px,-12.000000px);opacity:0.900000}25%{transform:translate(-12.000000px,-24.000000px);opacity:0.850000}31.25%{transform:translate(-12.000000px,-36.000000px);opacity:0.800000}37.5%{transform:translate(0.000000px,-48.000000px);opacity:0.750000}50%{transform:translate(0.000000px,-60.000000px);opacity:0.700000}56.25%{transform:translate(12.000000px,-72.000000px);opacity:0.650000}62.5%{transform:translate(12.000000px,-84.000000px);opacity:0.550000}75%{transform:translate(0.000000px,-96.000000px);opacity:0.400000}81.25%{transform:translate(0.000000px,-108.000000px);opacity:0.250000}87.5%{transform:translate(-12.000000px,-120.000000px);opacity:0.100000}93.75%{transform:translate(-12.000000px,-120.000000px);opacity:0.000000}100%{transform:translate(0.000000px,0.000000px);opacity:0.000000}}
+.smoke-v1-p2{animation:smoke-v1-p2 4s step-end;animation-delay:-2s;animation-iteration-count:1;animation-fill-mode:both}
+@keyframes smoke-v1-p2{0%{transform:translate(0.000000px,0.000000px);opacity:0.000000}6.25%{transform:translate(0.000000px,0.000000px);opacity:0.900000}18.75%{transform:translate(0.000000px,-12.000000px);opacity:0.900000}25%{transform:translate(-12.000000px,-24.000000px);opacity:0.850000}31.25%{transform:translate(-12.000000px,-36.000000px);opacity:0.800000}37.5%{transform:translate(0.000000px,-48.000000px);opacity:0.750000}50%{transform:translate(0.000000px,-60.000000px);opacity:0.700000}56.25%{transform:translate(12.000000px,-72.000000px);opacity:0.650000}62.5%{transform:translate(12.000000px,-84.000000px);opacity:0.550000}75%{transform:translate(0.000000px,-96.000000px);opacity:0.400000}81.25%{transform:translate(0.000000px,-108.000000px);opacity:0.250000}87.5%{transform:translate(-12.000000px,-120.000000px);opacity:0.100000}93.75%{transform:translate(-12.000000px,-120.000000px);opacity:0.000000}100%{transform:translate(0.000000px,0.000000px);opacity:0.000000}}
+.smoke-v2-p1{animation:smoke-v2-p1 4s step-end;animation-delay:-1s;animation-iteration-count:1;animation-fill-mode:both}
+@keyframes smoke-v2-p1{0%{transform:translate(0.000000px,0.000000px);opacity:0.000000}6.25%{transform:translate(0.000000px,0.000000px);opacity:0.900000}18.75%{transform:translate(0.000000px,-12.000000px);opacity:0.900000}25%{transform:translate(12.000000px,-24.000000px);opacity:0.850000}31.25%{transform:translate(12.000000px,-36.000000px);opacity:0.800000}37.5%{transform:translate(0.000000px,-48.000000px);opacity:0.750000}50%{transform:translate(0.000000px,-60.000000px);opacity:0.700000}56.25%{transform:translate(-12.000000px,-72.000000px);opacity:0.650000}62.5%{transform:translate(-12.000000px,-84.000000px);opacity:0.550000}75%{transform:translate(0.000000px,-96.000000px);opacity:0.400000}81.25%{transform:translate(0.000000px,-108.000000px);opacity:0.250000}87.5%{transform:translate(12.000000px,-120.000000px);opacity:0.100000}93.75%{transform:translate(12.000000px,-120.000000px);opacity:0.000000}100%{transform:translate(0.000000px,0.000000px);opacity:0.000000}}
+.smoke-v2-p2{animation:smoke-v2-p2 4s step-end;animation-delay:-3s;animation-iteration-count:1;animation-fill-mode:both}
+@keyframes smoke-v2-p2{0%{transform:translate(0.000000px,0.000000px);opacity:0.000000}6.25%{transform:translate(0.000000px,0.000000px);opacity:0.900000}18.75%{transform:translate(0.000000px,-12.000000px);opacity:0.900000}25%{transform:translate(12.000000px,-24.000000px);opacity:0.850000}31.25%{transform:translate(12.000000px,-36.000000px);opacity:0.800000}37.5%{transform:translate(0.000000px,-48.000000px);opacity:0.750000}50%{transform:translate(0.000000px,-60.000000px);opacity:0.700000}56.25%{transform:translate(-12.000000px,-72.000000px);opacity:0.650000}62.5%{transform:translate(-12.000000px,-84.000000px);opacity:0.550000}75%{transform:translate(0.000000px,-96.000000px);opacity:0.400000}81.25%{transform:translate(0.000000px,-108.000000px);opacity:0.250000}87.5%{transform:translate(12.000000px,-120.000000px);opacity:0.100000}93.75%{transform:translate(12.000000px,-120.000000px);opacity:0.000000}100%{transform:translate(0.000000px,0.000000px);opacity:0.000000}}
+@media(prefers-reduced-motion:reduce){.motion{display:none!important}.build-base,.cursor-blink,.cursor-ready{animation:none!important;opacity:1!important}*{animation:none!important}}]]></style>
+<rect width="840" height="1040" fill="#080C12"/>
+<ellipse cx="420" cy="350" rx="390" ry="400" fill="url(#ambient)"/>
+<g transform="translate(120 148)">
+  <g id="static-red-halo" opacity=".16" filter="url(#soft-glow)"><use href="#solid-art" xlink:href="#solid-art"/></g>
+  <g id="static-white-halo" opacity=".12" filter="url(#soft-glow)"><use href="#blueprint-art" xlink:href="#blueprint-art"/></g>
+  <use href="#factory-art" xlink:href="#factory-art"/>
+</g>
+<use href="#wordmark-art" xlink:href="#wordmark-art"/>
+<g id="vent-smoke" class="motion" transform="translate(120 148)"><g id="vent-1-smoke" transform="translate(300.333333 60)"><g class="motion smoke-v1-p1" opacity="0"><use href="#pixel-smoke-puff" xlink:href="#pixel-smoke-puff"/></g><g class="motion smoke-v1-p2" opacity="0"><use href="#pixel-smoke-puff" xlink:href="#pixel-smoke-puff"/></g></g><g id="vent-2-smoke" transform="translate(446.333333 60)"><g class="motion smoke-v2-p1" opacity="0"><use href="#pixel-smoke-puff" xlink:href="#pixel-smoke-puff"/></g><g class="motion smoke-v2-p2" opacity="0"><use href="#pixel-smoke-puff" xlink:href="#pixel-smoke-puff"/></g></g></g>
+<g id="terminal-cursor-layer" transform="translate(120 148)"><rect id="terminal-cursor" x="274" y="271" width="174" height="35" rx="4" fill="#000000" class="cursor-blink" opacity="1"/></g>
+</svg>

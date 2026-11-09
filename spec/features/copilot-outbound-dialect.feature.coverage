@@ -108,7 +108,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "fn routed(",
+              "lastLine": "Ok(streaming::adapt(model.stream(request).await?, attempt))"
             }
           ]
         }
@@ -222,7 +224,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "fn routed(",
+              "lastLine": "Ok(streaming::adapt(model.stream(request).await?, attempt))"
             }
           ]
         }
@@ -305,7 +309,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "mut source: StreamingCompletionResponse<Response>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -419,7 +425,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "fn routed(",
+              "lastLine": "Ok(streaming::adapt(model.stream(request).await?, attempt))"
             }
           ]
         }
@@ -435,7 +443,6 @@
             {
               "file": "rust/providers/src/copilot/classifier.rs",
               "lines": [
-                45,
                 46,
                 47,
                 48,
@@ -462,35 +469,10 @@
                 69,
                 70,
                 71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+                72
+              ],
+              "firstLine": "fn detect_vision_content(body: &Value) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -502,17 +484,13 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/tests/bug268_copilot_outbound_dialect.rs",
-      "rust/providers/src/copilot/capture.rs",
-      "rust/providers/tests/bug268_copilot_nonstream_terminal.rs"
+      "rust/cli/tests/bug268_copilot_outbound_dialect.rs"
     ],
     "implFiles": [
       "rust/providers/src/copilot/completion_model.rs",
       "rust/providers/src/copilot/completion_stream.rs",
-      "rust/providers/src/copilot/classifier.rs",
-      "rust/providers/src/copilot/capture.rs",
-      "rust/providers/src/copilot/completion_terminal.rs"
+      "rust/providers/src/copilot/classifier.rs"
     ],
-    "totalLinesCovered": 747
+    "totalLinesCovered": 501
   }
 }

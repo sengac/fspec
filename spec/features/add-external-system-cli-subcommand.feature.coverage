@@ -5,15 +5,17 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_external_system.rs",
-          "lines": "82-106",
+          "lines": "90-117",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
-                51,
-                52,
-                53
-              ]
+                53,
+                54,
+                55
+              ],
+              "firstLine": "/// Integration category supplied via `--type` (REST_API, MESSAGE_QUEUE,",
+              "lastLine": "pub system_type: Option<String>,"
             }
           ]
         }
@@ -24,13 +26,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_external_system.rs",
-          "lines": "112-147",
+          "lines": "123-156",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
-                79,
-                80,
                 81,
                 82,
                 83,
@@ -38,8 +38,11 @@
                 85,
                 86,
                 87,
-                88
-              ]
+                88,
+                90
+              ],
+              "firstLine": "codelet_fspec_core::js_compat::parse_js_int(&ts),",
+              "lastLine": "command: \"add-external-system\".to_string(),"
             }
           ]
         }
@@ -50,13 +53,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_external_system.rs",
-          "lines": "149-175",
+          "lines": "162-191",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
-                59,
-                60,
                 61,
                 62,
                 63,
@@ -67,8 +68,12 @@
                 68,
                 69,
                 70,
-                71
-              ]
+                71,
+                72,
+                73
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-external-system` clap",
+              "lastLine": ");"
             }
           ]
         }
@@ -79,18 +84,20 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_external_system.rs",
-          "lines": "177-209",
+          "lines": "197-225",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
-                89,
-                90,
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96
+              ],
+              "firstLine": "args_json,",
+              "lastLine": "let id = serde_json::from_str::<Value>(&result.data)"
             }
           ]
         }
@@ -101,17 +108,19 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_external_system.rs",
-          "lines": "211-230",
+          "lines": "231-285",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_external_system.rs",
               "lines": [
-                73,
-                74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "if let Some(t) = args.system_type {",
+              "lastLine": "body.insert("
             }
           ]
         }
@@ -128,6 +137,6 @@
     "implFiles": [
       "rust/fspec/src/add_external_system.rs"
     ],
-    "totalLinesCovered": 178
+    "totalLinesCovered": 212
   }
 }

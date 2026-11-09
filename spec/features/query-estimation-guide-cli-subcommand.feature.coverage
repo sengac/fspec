@@ -5,67 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "336-358",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "79-101",
+          "implMappings": []
         }
       ]
     },
@@ -74,67 +15,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "360-377",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "103-123",
+          "implMappings": []
         }
       ]
     },
@@ -143,67 +25,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "379-393",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "125-142",
+          "implMappings": []
         }
       ]
     },
@@ -212,67 +35,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "395-411",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "144-160",
+          "implMappings": []
         }
       ]
     },
@@ -281,67 +45,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "413-432",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "162-184",
+          "implMappings": []
         }
       ]
     },
@@ -350,67 +55,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "434-449",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "186-210",
+          "implMappings": []
         }
       ]
     },
@@ -419,67 +65,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "451-497",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "212-266",
+          "implMappings": []
         }
       ]
     },
@@ -488,67 +75,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "499-523",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimation_guide.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "lines": "270-294",
+          "implMappings": []
         }
       ]
     }
@@ -560,9 +88,7 @@
     "testFiles": [
       "rust/fspec/tests/cli_query_estimation_guide.rs"
     ],
-    "implFiles": [
-      "rust/fspec/src/query_estimation_guide.rs"
-    ],
-    "totalLinesCovered": 786
+    "implFiles": [],
+    "totalLinesCovered": 207
   }
 }

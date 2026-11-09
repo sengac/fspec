@@ -1,22 +1,11 @@
-//! `research` help configuration — Rust port of `src/commands/research-help.ts`.
+//! `research` help configuration.
 //!
-//! ⚠️ PARITY QUIRKS (faithful to the TS output): the TS `research-help.ts`
-//! config object uses field names (`name`, `title`/`description`/`example`,
-//! `cause`/`solution`, `typicalWorkflow: string[]`) that DO NOT match the
-//! fields `formatCommandHelp` reads (`flag`, `pattern`, `fix`, a single
-//! `typicalWorkflow` string). The TS formatter therefore renders literal
-//! `undefined` for every option flag, every common-pattern title, and every
-//! common-error fix, and comma-joins the workflow array. The captured fixture
-//! bakes in those quirks, so this Rust CONFIG reproduces them verbatim:
-//!   * every `CommandOption.flag` is the literal "undefined"
-//!   * every structured `CommonPattern.pattern` is the literal "undefined"
-//!   * every `CommonError.fix` is the literal "undefined"
-//!   * `typical_workflow` is the single comma-joined string
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
-//! CLI-015: the bundled `ast` tool is no longer a research tool — AST code
-//! search moved to the native AstGrep tool (harness mode) and the
-//! `fspec astgrep` subcommand (CLI mode). This help page documents the four
-//! remaining bundled tools (perplexity, jira, confluence, stakeholder).
+//! CLI-015: AST code search is the `fspec astgrep` subcommand, not a research
+//! tool.
 
 use super::super::{
     CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -25,36 +14,30 @@ use super::super::{
 
 const OPTIONS: &[CommandOption] = &[
     CommandOption {
-        flag: "undefined",
-        description:
-            "Research tool to execute (perplexity, jira, confluence, stakeholder). Omit to list available tools.",
+        flag: "--tool <name>",
+        description: "Research tool to select (perplexity, jira, confluence, stakeholder). Omit to list the tools. Running a tool is not ported yet.",
         default_value: None,
     },
     CommandOption {
-        flag: "undefined",
-        description:
-            "Work unit context (forwarded to tool). Enables attaching results as attachments.",
-        default_value: None,
-    },
-    CommandOption {
-        flag: "undefined",
-        description:
-            "Additional arguments passed directly to the research tool. See tool --help for details.",
+        flag: "--work-unit <workUnitId>",
+        description: "Work unit context for the tool",
         default_value: None,
     },
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[CommonPatternEntry::Structured(CommonPattern {
-    pattern: "undefined",
-    example: r#"fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001"#,
-    description: "Send questions to Teams/Slack and attach responses",
+    pattern: "Check which research tools are configured",
+    example: "fspec research",
+    description: Some(
+        "Lists each bundled tool with ✓ (configured) or ✗ and the environment variable it needs",
+    ),
 })];
 
-const TYPICAL_WORKFLOW: &str = r#"During Example Mapping, identify a question that needs research,Add question: fspec add-question AUTH-001 "@human: Support OAuth?",Research the question: fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001,When prompted, attach results to work unit (y),Review attached research in spec/attachments/AUTH-001/,Answer question based on research: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule,Generate scenarios: fspec generate-scenarios AUTH-001"#;
+const TYPICAL_WORKFLOW: &str = r#"During Example Mapping, identify a question that needs research. Add question: fspec add-question AUTH-001 "@human: Support OAuth?". Ask the stakeholder or check the tools listed by fspec research. Answer question: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule. Generate scenarios: fspec generate-scenarios AUTH-001"#;
 
-const EX1_OUTPUT: &str = "Available Research Tools:\n\n  perplexity\n    Usage: fspec research --tool=perplexity <args>\n\n  stakeholder\n    Usage: fspec research --tool=stakeholder <args>";
+const EX1_OUTPUT: &str = "Available Research Tools:\n\n  ✗ perplexity\n    Perplexity AI research tool for web search and AI-powered answers\n    Usage: fspec research --tool=perplexity <args>\n    Config: export PERPLEXITY_API_KEY=\"...\"";
 
-const EX2_OUTPUT: &str = "# Stakeholder Question for AUTH-001\n\n**Platform:** teams\n**Question:** Should we support OAuth2?\n\n**Work Unit Context:**\n- ID: AUTH-001\n- Title: User Login\n- Epic: user-management\n\n**Rules:**\n1. Password must be 8+ chars\n\nMessage sent successfully.\n\nAttach research results to work unit? (y/n):";
+const EX2_OUTPUT: &str = "Research tool execution is not yet ported to the Rust binary (tool 'stakeholder'); use the listing mode (omit --tool) for now";
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
@@ -63,15 +46,15 @@ const EXAMPLES: &[CommandExample] = &[
         output: Some(EX1_OUTPUT),
     },
     CommandExample {
-        command: r#"fspec research --tool=stakeholder --platform=teams --question="Should we support OAuth2?" --work-unit=AUTH-001"#,
-        description: Some("Send question to stakeholders via Teams"),
+        command: "fspec research --tool=stakeholder --work-unit=AUTH-001",
+        description: Some("Select a tool (execution is not ported yet)"),
         output: Some(EX2_OUTPUT),
     },
 ];
 
 const COMMON_ERRORS: &[CommonError] = &[CommonError {
     error: "Error: Research tool not found: xyz",
-    fix: "undefined",
+    fix: "Run fspec research to list the available tools",
 }];
 
 const RELATED: &[&str] = &[
@@ -82,25 +65,23 @@ const RELATED: &[&str] = &[
 ];
 
 const NOTES: &[&str] = &[
-    "Research tools are auto-discovered from spec/research-scripts/ directory",
-    "Any executable file in that directory becomes a research tool",
-    "Tools can be written in any language (shell, Node.js, Python, etc.)",
-    "Use <tool> --help to see tool-specific options",
-    "Results can be attached to work units during discovery",
-    "Attachments are saved to spec/attachments/<work-unit-id>/",
+    "Bundled tools: perplexity, jira, confluence, stakeholder",
+    "Each tool shows the environment variable that configures it",
+    "Running a research tool is not ported to the Rust CLI yet",
+    "Attachments are saved to spec/attachments/<workUnitId>/",
     "For AST code search and refactoring, use the `fspec astgrep` command",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "research",
-    description: "Execute research tools to answer questions during Example Mapping",
-    usage: Some("fspec research [--tool=<name>] [tool-specific-args...]"),
+    description: "List the research tools available during Example Mapping",
+    usage: Some("fspec research [--tool=<name>] [--work-unit=<workUnitId>]"),
     arguments: &[],
     options: OPTIONS,
     examples: EXAMPLES,
     related_commands: RELATED,
     when_to_use: Some(
-        "Use during specifying phase when you have questions that require external research (stakeholder input, API queries, web answers, etc.). Research tools help answer red card questions during Example Mapping. For AST code search, use the `fspec astgrep` command instead."
+        "Use during the specifying phase to see which research tools are configured. For AST code search, use the `fspec astgrep` command instead."
     ),
     when_not_to_use: None,
     prerequisites: &[],

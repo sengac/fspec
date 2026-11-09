@@ -89,7 +89,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -179,7 +181,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -274,7 +278,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -364,7 +370,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -459,7 +467,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -549,7 +559,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -644,7 +656,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -734,7 +748,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -767,7 +783,9 @@
                 281,
                 282,
                 283
-              ]
+              ],
+              "firstLine": "pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -795,7 +813,9 @@
                 281,
                 282,
                 283
-              ]
+              ],
+              "firstLine": "pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -828,7 +848,9 @@
                 281,
                 282,
                 283
-              ]
+              ],
+              "firstLine": "pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -856,7 +878,9 @@
                 281,
                 282,
                 283
-              ]
+              ],
+              "firstLine": "pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -951,7 +975,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -1041,7 +1067,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1136,7 +1164,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -1226,7 +1256,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1321,7 +1353,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1337,10 +1371,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
-                216,
-                217,
-                218,
-                219,
                 220,
                 221,
                 222,
@@ -1365,8 +1395,14 @@
                 241,
                 242,
                 243,
-                244
-              ]
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "fn render_text(epic: &Epic, result: &ShowEpicResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1382,10 +1418,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
-                216,
-                217,
-                218,
-                219,
                 220,
                 221,
                 222,
@@ -1410,8 +1442,14 @@
                 241,
                 242,
                 243,
-                244
-              ]
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "fn render_text(epic: &Epic, result: &ShowEpicResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1427,10 +1465,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_epic.rs",
               "lines": [
-                216,
-                217,
-                218,
-                219,
                 220,
                 221,
                 222,
@@ -1455,8 +1489,14 @@
                 241,
                 242,
                 243,
-                244
-              ]
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "fn render_text(epic: &Epic, result: &ShowEpicResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1551,7 +1591,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1646,7 +1688,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1741,7 +1785,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1825,7 +1871,9 @@
                 306,
                 307,
                 308
-              ]
+              ],
+              "firstLine": "pub fn read_prefixes_or_empty(cwd: &Path) -> Result<PrefixesData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }

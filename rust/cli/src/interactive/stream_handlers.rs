@@ -8,7 +8,6 @@
 use super::message_helpers::{add_assistant_text_message, add_assistant_tool_calls_message};
 use super::output::{StreamEvent, StreamOutput, ToolCallEvent, ToolResultEvent};
 use anyhow::Result;
-use codelet_common::debug_capture::get_debug_capture_manager;
 use tracing::debug;
 
 /// Detect if a tool result indicates an error (public for annotation detection).
@@ -77,21 +76,17 @@ pub(super) fn handle_text_chunk<O: StreamOutput>(
     output: &O,
 ) -> Result<()> {
     // CLI-022: Capture api.response.chunk event (shared)
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.capture(
-                    "api.response.chunk",
-                    serde_json::json!({
-                        "chunkLength": text.len(),
-                    }),
-                    request_id.map(|id| codelet_common::debug_capture::CaptureOptions {
-                        request_id: Some(id.to_string()),
-                    }),
-                );
-            }
-        }
-    }
+    codelet_common::debug_capture::with_enabled_capture(|manager| {
+        manager.capture(
+            "api.response.chunk",
+            serde_json::json!({
+                "chunkLength": text.len(),
+            }),
+            request_id.map(|id| codelet_common::debug_capture::CaptureOptions {
+                request_id: Some(id.to_string()),
+            }),
+        );
+    });
 
     // CRITICAL: Accumulate for message history (CLI-008) - shared
     assistant_text.push_str(text);
@@ -123,21 +118,17 @@ pub(super) fn handle_tool_call<O: StreamOutput>(
     let args = &tool_call.function.arguments;
 
     // CLI-022: Capture tool.call event (shared)
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.capture(
-                    "tool.call",
-                    serde_json::json!({
-                        "toolName": tool_name,
-                        "toolId": tool_call.id,
-                        "arguments": args,
-                    }),
-                    None,
-                );
-            }
-        }
-    }
+    codelet_common::debug_capture::with_enabled_capture(|manager| {
+        manager.capture(
+            "tool.call",
+            serde_json::json!({
+                "toolName": tool_name,
+                "toolId": tool_call.id,
+                "arguments": args,
+            }),
+            None,
+        );
+    });
 
     // Store tool name for debug logging - shared
     *last_tool_name = Some(tool_name.clone());
@@ -207,29 +198,25 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
     let is_error = detect_tool_error(&result_parts.join("\n"));
 
     // CLI-022: Capture tool.result event (shared)
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                let event_type = if is_error {
-                    "tool.error"
-                } else {
-                    "tool.result"
-                };
-                // Include error message in tool.error events for debugging
-                let mut data = serde_json::json!({
-                    "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
-                    "toolId": tool_result.id,
-                    "success": !is_error,
-                });
-                if is_error {
-                    // Truncate error message to avoid bloating the debug log
-                    let error_preview: String = result_text.chars().take(500).collect();
-                    data["error"] = serde_json::json!(error_preview);
-                }
-                manager.capture(event_type, data, None);
-            }
+    codelet_common::debug_capture::with_enabled_capture(|manager| {
+        let event_type = if is_error {
+            "tool.error"
+        } else {
+            "tool.result"
+        };
+        // Include error message in tool.error events for debugging
+        let mut data = serde_json::json!({
+            "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
+            "toolId": tool_result.id,
+            "success": !is_error,
+        });
+        if is_error {
+            // Truncate error message to avoid bloating the debug log
+            let error_preview: String = result_text.chars().take(500).collect();
+            data["error"] = serde_json::json!(error_preview);
         }
-    }
+        manager.capture(event_type, data, None);
+    });
 
     // Emit via output (polymorphic)
     output.emit(StreamEvent::ToolResult(ToolResultEvent {

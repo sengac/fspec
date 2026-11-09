@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "106-160",
+          "lines": "102-150",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -84,7 +84,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,7 +97,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "161-201",
+          "lines": "156-193",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -174,7 +176,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -185,7 +189,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "202-234",
+          "lines": "199-222",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -264,7 +268,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -275,7 +281,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "235-267",
+          "lines": "228-251",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -354,7 +360,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -365,7 +373,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "268-295",
+          "lines": "257-278",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -444,7 +452,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -455,7 +465,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "296-337",
+          "lines": "284-319",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -534,7 +544,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -545,7 +557,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "338-399",
+          "lines": "325-378",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_virtual_hook.rs",
@@ -624,7 +636,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` shell-facing CLI bridge (RPC-283).",
+              "lastLine": "}"
             }
           ]
         }
@@ -635,7 +649,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_virtual_hook.rs",
-          "lines": "400-426",
+          "lines": "386-416",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_virtual_hook.rs",
@@ -752,7 +766,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "//! `remove-virtual-hook` help configuration — Rust port of",
+              "lastLine": "\"fspec list-virtual-hooks → Identify hook to remove → fspec remove-virtual-hook → Verify removal\","
             }
           ]
         }
@@ -770,6 +786,6 @@
       "rust/fspec/src/remove_virtual_hook.rs",
       "rust/fspec-core/src/help/configs/remove_virtual_hook.rs"
     ],
-    "totalLinesCovered": 951
+    "totalLinesCovered": 908
   }
 }

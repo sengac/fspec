@@ -10,6 +10,8 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                165,
+                166,
                 167,
                 168,
                 169,
@@ -49,10 +51,10 @@
                 203,
                 204,
                 205,
-                206,
-                207,
-                208
-              ]
+                206
+              ],
+              "firstLine": "/// fallible for forward-compatibility).",
+              "lastLine": "Ok(appended)"
             }
           ]
         }
@@ -68,6 +70,8 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                165,
+                166,
                 167,
                 168,
                 169,
@@ -107,10 +111,10 @@
                 203,
                 204,
                 205,
-                206,
-                207,
-                208
-              ]
+                206
+              ],
+              "firstLine": "/// fallible for forward-compatibility).",
+              "lastLine": "Ok(appended)"
             }
           ]
         }
@@ -126,6 +130,8 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                254,
+                255,
                 256,
                 257,
                 258,
@@ -214,10 +220,10 @@
                 341,
                 342,
                 343,
-                344,
-                345,
-                346
-              ]
+                344
+              ],
+              "firstLine": "/// (see its doc comment).",
+              "lastLine": "setting compaction_needed=true anyway\""
             }
           ]
         }
@@ -233,6 +239,8 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                254,
+                255,
                 256,
                 257,
                 258,
@@ -321,10 +329,10 @@
                 341,
                 342,
                 343,
-                344,
-                345,
-                346
-              ]
+                344
+              ],
+              "firstLine": "/// (see its doc comment).",
+              "lastLine": "setting compaction_needed=true anyway\""
             }
           ]
         }
@@ -340,15 +348,17 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                110,
+                111,
                 112,
                 113,
                 114,
                 115,
                 116,
-                117,
-                118,
-                119
-              ]
+                117
+              ],
+              "firstLine": "/// Callers never synthesize the prompt string directly; they obtain it from",
+              "lastLine": "\"Please continue from where you left off before the context limit was reached.\""
             }
           ]
         }
@@ -364,15 +374,17 @@
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
               "lines": [
+                110,
+                111,
                 112,
                 113,
                 114,
                 115,
                 116,
-                117,
-                118,
-                119
-              ]
+                117
+              ],
+              "firstLine": "/// Callers never synthesize the prompt string directly; they obtain it from",
+              "lastLine": "\"Please continue from where you left off before the context limit was reached.\""
             }
           ]
         }

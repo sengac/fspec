@@ -82,15 +82,15 @@ Feature: Port list-work-units command to Rust
     When I dispatch list-work-units with status='backlog' and prefix='AUTH' and format=json
     Then the workUnits array contains only AUTH-001
 
-  Scenario: Text format prints No work units found for empty result
+  Scenario: Table format prints No work units found for empty result
     Given spec/work-units.json contains no work units
-    When I dispatch list-work-units with format='text'
+    When I dispatch list-work-units with format='table'
     Then the DispatchResult.data contains the string 'No work units found'
 
-  Scenario: Text format prints work units header and entries when populated
+  Scenario: Table format prints a header row and one row per work unit when populated
     Given spec/work-units.json contains AUTH-001 (backlog, title 'Login feature', epic 'ux')
-    When I dispatch list-work-units with format='text'
-    Then the DispatchResult.data contains 'Work Units (1)' and 'AUTH-001 [backlog]' and 'Login feature' and 'Epic: ux'
+    When I dispatch list-work-units with format='table'
+    Then the DispatchResult.data is the header 'ID TYPE STATUS EPIC TITLE', the row 'AUTH-001 story backlog ux Login feature' and the line '1 work unit'
 
   Scenario: Returns structured error when work-units.json is malformed
     Given spec/work-units.json exists but contains invalid JSON syntax

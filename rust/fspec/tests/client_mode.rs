@@ -77,7 +77,7 @@ async fn scenario_plain_fspec_client_reads_home_fspec_daemon_json_for_autodiscov
 
     // @step And the developer has spawned `fspec daemon` as a subprocess
     let (ws, _path) = make_workspace(&[("AUTO-1", "autodiscover", "backlog")]);
-    let mut daemon_child = Command::new(fspec_bin())
+    let mut daemon_child = common::IsolatedCommand::new(fspec_bin())
         .arg("daemon")
         .arg("--workspace")
         .arg(ws.path())
@@ -173,7 +173,7 @@ async fn scenario_fspec_client_prefers_xdg_runtime_dir_fspec_daemon_json_when_se
 
     // @step And the developer has spawned `fspec daemon` which wrote daemon.json under `<XDG>/fspec/daemon.json`
     let (ws, _path) = make_workspace(&[("XDG-1", "xdg-pref", "backlog")]);
-    let mut daemon_child = Command::new(fspec_bin())
+    let mut daemon_child = common::IsolatedCommand::new(fspec_bin())
         .arg("daemon")
         .arg("--workspace")
         .arg(ws.path())
@@ -236,7 +236,8 @@ async fn scenario_fspec_client_prefers_xdg_runtime_dir_fspec_daemon_json_when_se
 async fn scenario_client_bootstrap_observability_daemon_side_counter_increments_by_1() {
     // @step Given the developer has spawned `fspec daemon` and the test holds an external WS observer
     let (ws, _path) = make_workspace(&[("OBS-1", "observability", "backlog")]);
-    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
     let observer_url = Url::parse(&format!("ws://127.0.0.1:{port}")).unwrap();
     let observer = WebSocketFspecBackend::connect(observer_url)
         .await
@@ -298,7 +299,8 @@ async fn scenario_client_bootstrap_observability_daemon_side_counter_increments_
 async fn scenario_client_connect_opens_the_ws_connection_and_runs_the_app() {
     // @step Given the developer has spawned `fspec daemon --workspace <temp-workspace>` as a subprocess
     let (ws, _path) = make_workspace(&[("CC-1", "explicit-connect", "backlog")]);
-    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step And the test has captured the daemon's listening port `<P>` from STDOUT
     // (Done by spawn_fspec_daemon above.)
@@ -336,7 +338,8 @@ async fn scenario_client_mode_emits_nothing_on_stdout_or_stderr_under_normal_ope
     let home = tempfile::tempdir().expect("home tempdir");
     let client_log = home.path().join(".fspec").join("client.log");
     let (ws, _path) = make_workspace(&[("EMIT-1", "emit-nothing", "backlog")]);
-    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step When the developer spawns `fspec client --connect ws://127.0.0.1:<P>` and captures both streams
     let mut child = Command::new(fspec_bin())
@@ -467,7 +470,8 @@ fn scenario_client_mode_does_not_call_ratatui_init_directly_app_owns_terminal_gu
 async fn scenario_ws_disconnect_mid_session_surfaces_a_critical_priority_disconnect_dialog() {
     // @step Given the developer has spawned `fspec daemon` and captured port `<P>`
     let (ws, _path) = make_workspace(&[("DC-1", "disconnect", "backlog")]);
-    let (daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step And the developer has spawned `fspec client --connect ws://127.0.0.1:<P>`
     let client_child = Command::new(fspec_bin())
@@ -514,7 +518,8 @@ async fn scenario_ws_disconnect_mid_session_surfaces_a_critical_priority_disconn
 async fn scenario_pressing_q_in_the_disconnect_dialog_quits_the_app() {
     // @step Given a client is showing the disconnect dialog after a daemon kill
     let (ws, _path) = make_workspace(&[("DCQ-1", "press-q", "backlog")]);
-    let (daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
     let mut client_child = Command::new(fspec_bin())
         .arg("client")
         .arg("--connect")
@@ -567,7 +572,8 @@ async fn scenario_pressing_q_in_the_disconnect_dialog_quits_the_app() {
 async fn scenario_reconnect_attempt_does_not_loop_single_try_only_in_this_card() {
     // @step Given a client is showing the disconnect dialog after a daemon kill
     let (ws, _path) = make_workspace(&[("LOOP-1", "no-loop", "backlog")]);
-    let (daemon_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (daemon_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
     let mut client_child = Command::new(fspec_bin())
         .arg("client")
         .arg("--connect")
@@ -640,7 +646,9 @@ async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
     let bind = format!("127.0.0.1:{port}");
 
     // Spawn the first daemon on that port.
-    let mut daemon1 = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut daemon1 = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg(&bind)
@@ -674,7 +682,9 @@ async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
     let _ = daemon1.kill();
     let _ = daemon1.wait();
     tokio::time::sleep(Duration::from_secs(1)).await;
-    let mut daemon2 = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut daemon2 = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg(&bind)

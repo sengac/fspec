@@ -57,6 +57,10 @@ pub struct DebugCaptureManager {
     /// `model: "unknown"`. If no metadata ever arrives, `stop_capture` emits a
     /// fallback `session.start` before the `session.end` event.
     pub(super) session_start_emitted: bool,
+    /// BUG-467: events that could not be written this session, and the last
+    /// write error. `capture` cannot log (the tracing layer calls it while
+    /// holding this manager's lock), so `stop_capture` reports them.
+    pub(super) lost_events: Option<(u64, String)>,
 }
 
 impl DebugCaptureManager {
@@ -81,6 +85,7 @@ impl DebugCaptureManager {
             debug_dir,
             data_dir,
             session_start_emitted: false,
+            lost_events: None,
         })
     }
 
@@ -170,6 +175,7 @@ impl DebugCaptureManager {
         self.warning_count = 0;
         self.enabled = true;
         self.session_start_emitted = false;
+        self.lost_events = None;
 
         // Update latest symlink
         self.update_latest_symlink();
@@ -194,7 +200,7 @@ impl DebugCaptureManager {
     /// Stop the current debug capture session
     pub fn stop_capture(&mut self) -> Result<String, DebugCaptureError> {
         if !self.enabled {
-            return Ok(String::new());
+            return Err(DebugCaptureError::NotCapturing);
         }
 
         // Fallback: if metadata was never supplied, emit a `session.start` now using
@@ -218,8 +224,8 @@ impl DebugCaptureManager {
             .to_string_lossy()
             .to_string();
 
-        // Generate summary
-        self.generate_summary(&session_file);
+        // Generate summary (BUG-467: its failure is returned).
+        let summary = self.generate_summary(&session_file);
 
         // Reset state
         self.session_id = None;
@@ -228,6 +234,20 @@ impl DebugCaptureManager {
         self.start_datetime = None;
         self.session_start_emitted = false;
 
+        // Lost events come first: the session is incomplete whether or not
+        // its summary could also be written.
+        if let Some((count, last_error)) = self.lost_events.take() {
+            let last_error = match summary {
+                Ok(()) => last_error,
+                Err(summary_error) => format!("{last_error}; {summary_error}"),
+            };
+            return Err(DebugCaptureError::EventsLost {
+                count,
+                last_error,
+                session_file,
+            });
+        }
+        summary?;
         Ok(session_file)
     }
 

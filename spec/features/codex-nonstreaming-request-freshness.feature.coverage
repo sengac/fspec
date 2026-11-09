@@ -63,7 +63,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "if self.streaming_completions {",
+              "lastLine": "&self,"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -151,7 +153,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "state.generation = generation;",
+              "lastLine": ".iter()"
             }
           ]
         }

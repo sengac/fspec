@@ -1,5 +1,7 @@
 @done
 @KGRAPH-058
+@parser
+@code-analysis
 Feature: Dart AST extractor produces excessive false positives in dead code detection for Flutter projects
   """
   Primary fix locations: ast_dispatch.rs (dead code filters), ast_dart_extractor.rs (Dart-specific edge extraction), edge_helpers.rs (qualified call resolution). Most P0 fixes are in the dispatch filter layer, not the extractor itself.

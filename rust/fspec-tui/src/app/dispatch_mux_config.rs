@@ -29,7 +29,9 @@ impl App {
             return;
         }
         let draft = self.navigator.mux.config().clone();
-        let dialog = MuxConfigDialog::new(draft).with_action_tx(self.action_tx.clone());
+        // MUX-010: the dialog checks layouts against the live mux body.
+        let fit_area = self.navigator.mux.body_area();
+        let dialog = MuxConfigDialog::new(draft, fit_area).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 }

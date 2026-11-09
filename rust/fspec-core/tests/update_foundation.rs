@@ -110,6 +110,12 @@ fn updating_project_name_on_final_sets_nested_field_and_regenerates_md() {
         tmp.path().join("spec/FOUNDATION.md").exists(),
         "FOUNDATION.md must be regenerated on the final path"
     );
+
+    // @step And the result has no systemReminder
+    assert!(
+        data.get("systemReminder").is_none(),
+        "the final path never chains to a discovery field: {data}"
+    );
 }
 
 #[test]
@@ -143,6 +149,12 @@ fn updating_problem_impact_with_invalid_enum_fails_fast_and_leaves_file_unchange
         pre, post,
         "foundation.json must NOT change on validation failure"
     );
+
+    // @step And the error message contains the substring 'Fix: fspec update-foundation problemImpact "<valid-value>"'
+    assert!(
+        err.contains("Fix: fspec update-foundation problemImpact \"<valid-value>\""),
+        "expected the Fix hint; got: {err}"
+    );
 }
 
 #[test]
@@ -171,6 +183,18 @@ fn updating_project_type_too_long_fails_fast() {
     // @step And spec/foundation.json on disk is byte-equal to its pre-call contents
     let post = fs::read(tmp.path().join("spec/foundation.json")).unwrap();
     assert_eq!(pre, post);
+
+    // @step And the error message contains the substring 'Fix: fspec update-foundation projectType "<short-descriptor>"'
+    assert!(
+        err.contains("Fix: fspec update-foundation projectType \"<short-descriptor>\""),
+        "expected the Fix hint; got: {err}"
+    );
+
+    // @step And spec/FOUNDATION.md does not exist on disk
+    assert!(
+        !tmp.path().join("spec/FOUNDATION.md").exists(),
+        "a rejected update must not regenerate FOUNDATION.md"
+    );
 }
 
 #[test]
@@ -282,4 +306,102 @@ fn empty_content_for_normal_section_is_rejected_with_generic_error() {
     // @step And spec/foundation.json on disk is byte-equal to its pre-call contents
     let post = fs::read(tmp.path().join("spec/foundation.json")).unwrap();
     assert_eq!(pre, post);
+}
+
+#[test]
+fn with_no_foundation_file_update_creates_foundation_json_and_regenerates_md() {
+    // @step Given a project root tempdir with a spec/ directory but no spec/foundation.json and no spec/foundation.json.draft
+    let tmp = TempDir::new().expect("tempdir");
+    fs::create_dir_all(tmp.path().join("spec")).expect("mkdir spec");
+
+    // @step When I dispatch update-foundation with section='projectName' and content='New Project'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "projectName", "content": "New Project"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And spec/foundation.json on disk is a version 2.0.0 foundation with project.name='New Project'
+    let v = read_json(&tmp.path().join("spec/foundation.json"));
+    assert_eq!(v["version"].as_str(), Some("2.0.0"));
+    assert_eq!(v["project"]["name"].as_str(), Some("New Project"));
+
+    // @step And spec/FOUNDATION.md exists on disk
+    assert!(
+        tmp.path().join("spec/FOUNDATION.md").exists(),
+        "FOUNDATION.md must be generated for the newly created foundation"
+    );
+
+    // @step And spec/foundation.json.draft does not exist on disk
+    assert!(
+        !tmp.path().join("spec/foundation.json.draft").exists(),
+        "update-foundation must not create a draft"
+    );
+}
+
+// FOUND-044 (merged here): a freeform projectType on a draft, and the empty
+// projectType length error.
+
+#[test]
+fn a_freeform_project_type_on_a_draft_is_accepted_and_chains_to_the_next_field() {
+    // @step Given a project root tempdir with a spec/foundation.json.draft whose projectType and problem title are unfilled placeholders
+    let tmp = TempDir::new().expect("tempdir");
+    let mut draft = valid_foundation();
+    draft["project"]["projectType"] = json!("[QUESTION: What type of project is this?]");
+    draft["problemSpace"]["primaryProblem"]["title"] =
+        json!("[QUESTION: What problem does this solve?]");
+    write_draft(tmp.path(), &draft);
+
+    // @step When I dispatch update-foundation with section='projectType' and content='saas-platform'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "projectType", "content": "saas-platform"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And spec/foundation.json.draft on disk shows project.projectType='saas-platform'
+    let v = read_json(&tmp.path().join("spec/foundation.json.draft"));
+    assert_eq!(v["project"]["projectType"].as_str(), Some("saas-platform"));
+
+    // @step And the returned systemReminder contains 'Field 4/8: problemSpace.primaryProblem.title'
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    let reminder = data["systemReminder"].as_str().unwrap_or_default();
+    assert!(
+        reminder.contains("Field 4/8: problemSpace.primaryProblem.title"),
+        "expected the next-field reminder; got: {data}"
+    );
+}
+
+#[test]
+fn an_empty_project_type_is_rejected_with_the_length_error_and_the_draft_is_unchanged() {
+    // @step Given a project root tempdir with an existing spec/foundation.json.draft
+    let tmp = TempDir::new().expect("tempdir");
+    write_draft(tmp.path(), &valid_foundation());
+    let pre = fs::read(tmp.path().join("spec/foundation.json.draft")).unwrap();
+
+    // @step When I dispatch update-foundation with section='projectType' and content=''
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"section": "projectType", "content": ""}),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message contains the substring 'Invalid projectType: "" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType "<short-descriptor>"'
+    let err = result.error.unwrap_or_default();
+    assert!(
+        err.contains(
+            "Invalid projectType: \"\" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType \"<short-descriptor>\""
+        ),
+        "expected the empty-projectType length error; got: {err}"
+    );
+
+    // @step And spec/foundation.json.draft on disk is byte-equal to its pre-call contents
+    let post = fs::read(tmp.path().join("spec/foundation.json.draft")).unwrap();
+    assert_eq!(pre, post, "the draft must NOT change on validation failure");
 }

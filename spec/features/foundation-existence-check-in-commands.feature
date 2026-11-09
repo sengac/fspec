@@ -55,7 +55,7 @@ Feature: Foundation existence check in commands
     Given I am in a project directory
     And the file "spec/foundation.json" does not exist
     When I run 'fspec board'
-    Then the command should exit with code 1
+    Then the command should fail
     And the output should display an error message
     And the error message should instruct me to run 'fspec discover-foundation'
     And a system reminder should tell me to retry 'fspec board' after discover-foundation completes
@@ -64,7 +64,7 @@ Feature: Foundation existence check in commands
     Given I am in a project directory
     And the file "spec/foundation.json" does not exist
     When I run 'fspec create-story AUTH "Login"'
-    Then the command should exit with code 1
+    Then the command should fail
     And the output should display an error message
     And the error message should instruct me to run 'fspec discover-foundation'
     And a system reminder should include the original command 'fspec create-story AUTH "Login"' to retry

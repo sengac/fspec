@@ -1,0 +1,119 @@
+{
+  "scenarios": [
+    {
+      "name": "Off is expressed or refused per Gemini model",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug442_gemini_thinking_for_every_gemini_id.rs",
+          "lines": "28-45",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/thinking_wire/forms.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub(super) fn off(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No thinking config means no thinking is forced",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug442_gemini_thinking_for_every_gemini_id.rs",
+          "lines": "47-57",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/gemini.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "/// TOOL-010: the Gemini generation config — temperature 1.0 (strongly",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug442_gemini_thinking_for_every_gemini_id.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/thinking_wire/forms.rs",
+      "rust/providers/src/gemini.rs"
+    ],
+    "totalLinesCovered": 95
+  }
+}

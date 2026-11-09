@@ -6,79 +6,7 @@
         {
           "file": "rust/core/tests/blob_store_lifted_test.rs",
           "lines": "54-141",
-          "implMappings": [
-            {
-              "file": "rust/core/src/persistence/blob_processing.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -87,7 +15,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/blob_store_lifted_test.rs",
-          "lines": "147-188",
+          "lines": "143-191",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/blob.rs",
@@ -119,7 +47,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub fn store(&self, content: &[u8]) -> Result<String, String> {",
+              "lastLine": "super::messages::durability::sync_parent(&self.blobs_dir)"
             }
           ]
         }
@@ -135,18 +65,20 @@
             {
               "file": "rust/core/src/persistence/mod.rs",
               "lines": [
+                15,
+                15,
+                15,
+                15,
+                17,
+                18,
+                19,
+                20,
+                21,
                 22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32
-              ]
+                23
+              ],
+              "firstLine": "//! RPC-035 completed the lift; the persistence tests live in",
+              "lastLine": "};"
             }
           ]
         }
@@ -226,7 +158,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": ".map_err(|error| format!(\"Failed to synchronize blob directories: {error}\"))?;",
+              "lastLine": "/// Get the file path for a blob."
             }
           ]
         }
@@ -262,7 +196,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "pub const BLOB_REF_PREFIX: &str = \"blob:sha256:\";",
+              "lastLine": "}"
             }
           ]
         }
@@ -278,14 +214,17 @@
             {
               "file": "rust/core/src/persistence/blob.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186
-              ]
+                30,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "const BLOB_THRESHOLD: usize = 10 * 1024;",
+              "lastLine": "}"
             }
           ]
         }
@@ -300,10 +239,10 @@
       "rust/core/tests/blob_store_lifted_test.rs"
     ],
     "implFiles": [
-      "rust/core/src/persistence/blob_processing.rs",
       "rust/core/src/persistence/blob.rs",
-      "rust/core/src/persistence/mod.rs"
+      "rust/core/src/persistence/mod.rs",
+      "rust/core/src/persistence/blob_processing.rs"
     ],
-    "totalLinesCovered": 446
+    "totalLinesCovered": 388
   }
 }

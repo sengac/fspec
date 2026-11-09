@@ -4,21 +4,15 @@
 //! Byte-for-byte parity with `node dist/index.js update-work-unit-status
 //! --help` piped to non-TTY.
 //!
-//! ## Parity quirk: `undefined` option flags
-//!
-//! The TS help config (`update-work-unit-status-help.ts`) declares each option
-//! with a `name` field (`--reason <text>`, `--blocked-reason <text>`,
-//! `--skip-temporal-validation`) but the shared `formatCommandHelp` formatter
-//! reads `opt.flag` — a field the config never sets. The result is that the TS
-//! `--help` literally prints `undefined` for each option flag line. To match
-//! the captured fixture byte-for-byte we set `flag: "undefined"` for all three
-//! options. (The description lines are still rendered from `opt.description`.)
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
-        name: "id",
+        name: "workUnitId",
         description: "Work unit ID (e.g., AUTH-001)",
         required: true,
     },
@@ -30,21 +24,19 @@ const ARGS: &[CommandArgument] = &[
     },
 ];
 
-// See module docs: the TS config uses `name` (not `flag`), so the formatter's
-// `opt.flag` read yields the literal string `undefined`. We reproduce that.
 const OPTS: &[CommandOption] = &[
     CommandOption {
-        flag: "undefined",
+        flag: "--reason <reason>",
         description: "Reason for status change (optional, added to state history)",
         default_value: None,
     },
     CommandOption {
-        flag: "undefined",
+        flag: "--blocked-reason <reason>",
         description: "Reason for blocked status (required when status is \"blocked\")",
         default_value: None,
     },
     CommandOption {
-        flag: "undefined",
+        flag: "--skip-temporal-validation",
         description:
             "Skip temporal ordering validation (for reverse ACDD or importing existing work)",
         default_value: None,
@@ -103,7 +95,7 @@ const NOTES: &[&str] = &[
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "update-work-unit-status",
     description: "Move a work unit through the ACDD workflow by updating its status",
-    usage: Some("fspec update-work-unit-status <id> <status>"),
+    usage: Some("fspec update-work-unit-status <workUnitId> <status>"),
     arguments: ARGS,
     options: OPTS,
     examples: EXAMPLES,

@@ -450,7 +450,9 @@
                 916,
                 917,
                 918
-              ]
+              ],
+              "firstLine": "async fn send(self) -> StreamingResult<M::StreamingResponse> {",
+              "lastLine": "content: OneOrMany::one(UserContent::tool_result_with_call_id("
             }
           ]
         }

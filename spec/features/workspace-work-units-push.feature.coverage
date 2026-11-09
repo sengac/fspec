@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "An opened workspace's changes reach the service stream tagged with its path",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc445_workspace_work_units_push.rs",
+          "lines": "63-83",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/workspaces.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                211,
+                212,
+                213,
+                214,
+                215,
+                217,
+                218,
+                219,
+                220,
+                293,
+                294,
+                295,
+                296,
+                297,
+                304
+              ],
+              "firstLine": "fn spawn_forwarder(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An opened workspace's changes are pushed to WebSocket clients",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc445_workspace_work_units_push.rs",
+          "lines": "85-118",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/workspace_fanout.rs",
+              "lines": [
+                12,
+                12,
+                16,
+                17,
+                19,
+                20,
+                21,
+                22,
+                23,
+                23,
+                23,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "/// RPC-445 / RPC-454: forward a workspace-keyed push (work units or git",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-server/src/server/connection_fanouts.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                136
+              ],
+              "firstLine": "// RPC-445: pushes for workspaces opened besides the start workspace.",
+              "lastLine": "));"
+            },
+            {
+              "file": "rust/rpc-server/src/pump.rs",
+              "lines": [
+                171,
+                172,
+                173
+              ],
+              "firstLine": "Envelope::WorkspaceWorkUnitsUpdate(payload) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-server/src/pump/inbound.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                214,
+                215,
+                216
+              ],
+              "firstLine": "/// RPC-445: an `Envelope::WorkspaceWorkUnitsUpdate` arrived. Server",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-server/src/client.rs",
+              "lines": [
+                180,
+                180,
+                180,
+                180,
+                180,
+                236,
+                236
+              ],
+              "firstLine": "/// RPC-433: subscribe to the connect-time open-session snapshot",
+              "lastLine": "let (workspace_push_senders, workspace_pushes) ="
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/rpc445_workspace_work_units_push.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/workspaces.rs",
+      "rust/rpc-server/src/workspace_fanout.rs",
+      "rust/rpc-server/src/server/connection_fanouts.rs",
+      "rust/rpc-server/src/pump.rs",
+      "rust/rpc-server/src/pump/inbound.rs",
+      "rust/rpc-server/src/client.rs"
+    ],
+    "totalLinesCovered": 157
+  }
+}

@@ -1,3 +1,4 @@
+@BUG-582
 @context-management
 @error-handling
 @compaction
@@ -73,7 +74,7 @@ Feature: Fix cumulative_billed_output never incrementing — all update_from_usa
     And no panic occurs from integer underflow
 
   Scenario: Delta computation is centralized in a single helper
-    Given the fspec codelet-cli Rust crate
+    Given the codelet-cli Rust crate
     When I search the interactive module for `saturating_sub` applied to `.output_tokens` fields
     Then the only production-code match is inside the single TokenTracker helper method
     And all delta-based usage call sites delegate to that helper

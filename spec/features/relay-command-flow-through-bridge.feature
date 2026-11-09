@@ -1,4 +1,7 @@
+@BUG-582
 @BRIDGE-018
+@telegram
+@bridge
 Feature: Relay endpoint command flow through bridge WebSocket
   """
   Pure refactoring of relay-endpoint.ts command handler (lines 224-245): replace executeCommand() call with WebSocket send of translated InboundMessage. Delete relay-command-executor.ts. Add command fields to FspecInboundMessage in relay-types.ts. Remove unused CommandResult/CommandResponseMessage types. Update tests to verify: (1) command translated to InboundMessage and sent to codelet WS, (2) commandResponse from codelet forwarded to relay, (3) command for unknown session dropped. Tests for timeout/error are now Rust-side (BRIDGE-017).

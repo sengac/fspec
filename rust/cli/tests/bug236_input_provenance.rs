@@ -148,6 +148,7 @@ fn restored_accounting_is_not_relabeled_as_provider_reported() -> TestResult {
     use codelet_core::persistence::*;
     // @step Given durable sessions with zero or nonzero saved input accounting
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("restored", directory.path(), "openai")?;

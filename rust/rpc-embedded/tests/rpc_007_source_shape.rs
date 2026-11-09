@@ -21,14 +21,7 @@ use source_helpers::{
 fn scenario_rpc_007_source_shape_invariants() {
     // @step Given the workspace contains rust/rpc, rust/rpc-types, rust/rpc-server, rust/rpc-embedded, rust/napi, and rust/core
     let root = workspace_root();
-    for crate_name in [
-        "rpc",
-        "rpc-types",
-        "rpc-server",
-        "rpc-embedded",
-        "napi",
-        "core",
-    ] {
+    for crate_name in ["rpc", "rpc-types", "rpc-server", "rpc-embedded", "core"] {
         assert!(
             root.join(crate_name).join("Cargo.toml").exists(),
             "expected rust/{crate_name}/Cargo.toml to exist",
@@ -74,14 +67,7 @@ fn scenario_rpc_007_source_shape_invariants() {
     for ty in lifted_types {
         definition_sites.insert(ty, Vec::new());
     }
-    for crate_name in [
-        "rpc-types",
-        "rpc",
-        "rpc-server",
-        "rpc-embedded",
-        "napi",
-        "core",
-    ] {
+    for crate_name in ["rpc-types", "rpc", "rpc-server", "rpc-embedded", "core"] {
         let src = root.join(crate_name).join("src");
         if !src.exists() {
             continue;
@@ -147,19 +133,16 @@ fn scenario_rpc_007_source_shape_invariants() {
     }
 
     // @step And rust/napi re-exports each type via the existing #[cfg_attr(feature = "napi", napi(...))] pattern
-    let napi_lib = read_to_string_or_panic(&root.join("napi").join("src").join("lib.rs"));
-    let napi_types = read_to_string_or_panic(&root.join("napi").join("src").join("types.rs"));
-    let napi_session_manager =
-        read_to_string_or_panic(&root.join("napi").join("src").join("session_manager.rs"));
+    let rpc_code: String = collect_rs_files(&root.join("rpc").join("src"))
+        .iter()
+        .map(|path| strip_rust_comments(&read_to_string_or_panic(path)))
+        .collect();
     for ty in lifted_types {
-        let appears_via_use = napi_lib.contains(&format!("codelet_rpc_types::{ty}"))
-            || napi_types.contains(&format!("codelet_rpc_types::{ty}"))
-            || napi_session_manager.contains(&format!("codelet_rpc_types::{ty}"))
-            || napi_lib.contains("pub use codelet_rpc_types::{")
-            || napi_types.contains("pub use codelet_rpc_types::{");
+        let appears_via_use = rpc_code.contains(&format!("codelet_rpc_types::{ty}"))
+            || (rpc_code.contains("use codelet_rpc_types::{") && rpc_code.contains(ty));
         assert!(
             appears_via_use,
-            "rust/napi must re-export {ty} from codelet_rpc_types (look for `pub use codelet_rpc_types::{ty}` or grouped re-export)",
+            "rust/rpc must consume {ty} from codelet_rpc_types (look for `codelet_rpc_types::{ty}` or a grouped import)",
         );
     }
 }

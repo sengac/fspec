@@ -31,8 +31,12 @@ use super::multiline_input::MultiLineInput;
 
 /// Freeform placeholder (TS InputTransition.tsx:418).
 pub const HITL_PLACEHOLDER: &str = "Type your answer...";
-/// Yellow empty-submit hint (TS InputTransition.tsx:411-413).
+/// Yellow empty-submit hint (TS InputTransition.tsx:411-413) after "Other"
+/// was chosen, where Esc goes back to the options.
 pub const EMPTY_HINT: &str = "  ⚠ Please type a response or press Esc to go back";
+/// TUI-129: the empty-submit hint of a question without options, where
+/// Esc cancels the question.
+pub const EMPTY_HINT_NO_OPTIONS: &str = "  ⚠ Please type a response or press Esc to cancel";
 /// Dim options-mode footer (TS InputTransition.tsx:459-461).
 const OPTIONS_FOOTER: &str = " (↑/↓ Navigate | Enter Select | Esc Cancel)";
 
@@ -209,7 +213,14 @@ pub fn render_hitl_prompt(
                 area,
                 buf,
                 next,
-                Line::from(Span::styled(EMPTY_HINT, Style::default().fg(Color::Yellow))),
+                Line::from(Span::styled(
+                    if state.other_active {
+                        EMPTY_HINT
+                    } else {
+                        EMPTY_HINT_NO_OPTIONS
+                    },
+                    Style::default().fg(Color::Yellow),
+                )),
             );
             next += 1;
         }

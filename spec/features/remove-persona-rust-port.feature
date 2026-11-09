@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-277
+@foundation-management
 Feature: Port remove-persona command to Rust
   """
   File layout: rewrite stub rust/fspec-core/src/commands/remove_persona.rs; add CLI bridge rust/fspec/src/remove_persona.rs; help config rust/fspec-core/src/help/configs/remove_persona.rs; dispatcher test rust/fspec-core/tests/remove_persona.rs; CLI test rust/fspec/tests/cli_remove_persona.rs; help fixture rust/fspec/tests/fixtures/help/remove-persona.txt

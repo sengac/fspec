@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "38-54",
+          "lines": "42-68",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -47,7 +47,6 @@
                 35,
                 36,
                 37,
-                38,
                 39,
                 40,
                 41,
@@ -60,7 +59,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! BoardView — rich box-drawing Kanban grid + work-unit details strip.",
+              "lastLine": "pub mod render;"
             }
           ]
         }
@@ -71,7 +72,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "56-79",
+          "lines": "71-121",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -113,7 +114,6 @@
                 35,
                 36,
                 37,
-                38,
                 39,
                 40,
                 41,
@@ -126,7 +126,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! BoardView — rich box-drawing Kanban grid + work-unit details strip.",
+              "lastLine": "pub mod render;"
             }
           ]
         }
@@ -137,7 +139,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "81-91",
+          "lines": "124-135",
           "implMappings": [
             {
               "file": "rust/rpc-types/src/lib.rs",
@@ -151,14 +153,23 @@
                 43,
                 44,
                 45,
-                46,
-                47,
                 48,
-                49,
-                50,
-                51,
-                52
-              ]
+                49
+              ],
+              "firstLine": "mod committed_compaction;",
+              "lastLine": "pub use input_mode::InputMode;"
+            },
+            {
+              "file": "rust/rpc-types/src/work_units.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "firstLine": "/// Work unit information shared across all transports and the NAPI surface.",
+              "lastLine": "/// breaking changes."
             }
           ]
         }
@@ -169,7 +180,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "93-119",
+          "lines": "138-165",
           "implMappings": [
             {
               "file": "rust/core/src/work_units.rs",
@@ -218,7 +229,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "struct WorkUnitRecord {",
+              "lastLine": "}"
             }
           ]
         }
@@ -229,30 +242,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "121-139",
+          "lines": "168-196",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "pub fn priority(&self) -> Priority {",
+              "lastLine": "/// open for any RENDERED mux pane of kind ChangedFiles / Checkpoints"
             }
           ]
         }
@@ -263,7 +275,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "141-161",
+          "lines": "199-259",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -296,11 +308,6 @@
                 95,
                 96,
                 97,
-                98,
-                99,
-                100,
-                101,
-                102,
                 103,
                 104,
                 105,
@@ -316,10 +323,10 @@
                 115,
                 116,
                 117,
-                118,
-                119,
-                120
-              ]
+                118
+              ],
+              "firstLine": "last_viewport_height: Cell<u16>,",
+              "lastLine": "recognizer: RefCell::new(SelectionRecognizer::new()),"
             }
           ]
         }
@@ -330,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc014.rs",
-          "lines": "163-194",
+          "lines": "262-296",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -350,7 +357,6 @@
                 35,
                 36,
                 37,
-                38,
                 39,
                 40,
                 41,
@@ -358,7 +364,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "use codelet_rpc_types::SessionId;",
+              "lastLine": "pub mod logo;"
             }
           ]
         }
@@ -375,9 +383,10 @@
     "implFiles": [
       "rust/fspec-tui/src/views/board.rs",
       "rust/rpc-types/src/lib.rs",
+      "rust/rpc-types/src/work_units.rs",
       "rust/core/src/work_units.rs",
       "rust/fspec-tui/src/views/navigator.rs"
     ],
-    "totalLinesCovered": 403
+    "totalLinesCovered": 482
   }
 }

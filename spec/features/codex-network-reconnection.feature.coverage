@@ -108,12 +108,13 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "let completion_mode = validate_completion.clone();",
+              "lastLine": "yield Choice::FinalResponse(Final {"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -149,8 +150,11 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -188,7 +192,9 @@
                 243,
                 244,
                 245
-              ]
+              ],
+              "firstLine": ".tools = tools.clone();",
+              "lastLine": "model: request[\"model\"].as_str().map(str::to_owned),"
             }
           ]
         }
@@ -204,7 +210,6 @@
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -240,8 +245,11 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -337,7 +345,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "let generation = generation?;",
+              "lastLine": "yield Choice::FinalResponse(Final {"
             }
           ]
         }
@@ -368,12 +378,13 @@
                 190,
                 191,
                 192
-              ]
+              ],
+              "firstLine": "let stream = async_stream::try_stream! {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -409,8 +420,11 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -483,7 +497,9 @@
                 169,
                 170,
                 171
-              ]
+              ],
+              "firstLine": "let generation = generation?;",
+              "lastLine": "};"
             }
           ]
         }
@@ -499,7 +515,6 @@
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -511,8 +526,11 @@
                 185,
                 186,
                 187,
-                188
-              ]
+                188,
+                189
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "};"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -556,7 +574,9 @@
                 168,
                 169,
                 170
-              ]
+              ],
+              "firstLine": "if status == http::StatusCode::UNAUTHORIZED && !refreshed {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -594,8 +614,12 @@
                 155,
                 156,
                 157,
-                158
-              ]
+                158,
+                159,
+                160
+              ],
+              "firstLine": "let terminal = loop {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/network_error.rs",
@@ -641,7 +665,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "fn connection(error: &std::io::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -652,7 +678,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov160_codex_reconnection.rs",
-          "lines": "181-253",
+          "lines": "181-266",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -707,7 +733,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "pub(super) fn validate_attempt<T>(request: &http::Request<T>) -> Result<(), Error> {",
+              "lastLine": "validate_attempt(&prepared)?;"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -727,19 +755,23 @@
                 116,
                 117,
                 172
-              ]
+              ],
+              "firstLine": "let generation = generation?;",
+              "lastLine": "drop(source);"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
-                116,
-                117,
-                118,
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "pub(super) fn ensure_generation(&self, generation: u64) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -760,6 +792,6 @@
       "rust/providers/src/codex/recovery.rs",
       "rust/providers/src/codex/network_error.rs"
     ],
-    "totalLinesCovered": 814
+    "totalLinesCovered": 829
   }
 }

@@ -107,7 +107,8 @@ pub fn cloud_model_entries(
         .map(|m| ModelEntry {
             id: m.id.clone(),
             display_name: m.name.clone(),
-            context_window: m.limit.context,
+            // PROV-169: models.dev reports an unknown context as 0.
+            context_window: m.limit.context_window(),
             supports_reasoning: m.reasoning,
             supports_vision: m.has_capability(Capability::Vision),
             is_custom: false,
@@ -155,88 +156,9 @@ pub fn provider_has_credentials(canonical_id: &str) -> bool {
     }
 }
 
-/// PROV-129: The synthetic Codex (ChatGPT) provider slug + label. The `codex`
-/// canonical provider already exists as a static, models.dev-absent header
-/// (`catalog.rs`); synthesis fills that header in place rather than inserting a
-/// new one.
-const CODEX_PROVIDER_ID: &str = "codex";
-const CODEX_PROVIDER_LABEL: &str = "Codex (ChatGPT)";
-const OPENAI_PROVIDER_ID: &str = "openai";
-
-/// PROV-129: build the Codex-supported model list by sourcing the OpenAI cloud
-/// catalog (as if credentialed).
-///
-/// The OpenAI catalog is loaded with `has_credentials = true` unconditionally:
-/// the caller ([`synthesize_codex_section`]) has already confirmed Codex
-/// credentials, and TS forces `openai.hasCredentials = hasCodexCredentials`
-/// (`cloudSectionBuilder.ts:117-119`) so the models flow purely from the Codex
-/// gate — independent of `OPENAI_API_KEY`. That is what fixes discrepancy #6
-/// (Codex OAuth login previously yielded zero selectable models).
-///
-/// No allowlist filtering is applied — the full OpenAI models.dev catalog is
-/// exposed under the Codex section, ordered newest-first by release date.
-pub fn codex_reparented_models(registry: &ModelRegistry) -> Vec<ModelEntry> {
-    cloud_model_entries(registry, OPENAI_PROVIDER_ID, true)
-}
-
-/// PROV-129: synthesize the "Codex (ChatGPT)" section by re-parenting the
-/// OpenAI cloud models when Codex credentials are present. Ports TS
-/// `cloudSectionBuilder.ts` `extractCodexSection` (:191-237) + the cloud-group
-/// assembly (:150-155).
-///
-/// Behaviour (TS parity):
-/// * With NO Codex credentials, `sections` is returned unchanged — the standalone
-///   OpenAI section keeps its existing (API-key-gated) behaviour and the empty
-///   `codex` header is left for the PROV-127 drop-empty filter to remove.
-/// * With Codex credentials but no OpenAI models to re-parent, `sections`
-///   is likewise returned unchanged (nothing to synthesize; the empty `codex`
-///   header is dropped downstream and a legitimate standalone OpenAI section is
-///   preserved).
-/// * With Codex credentials AND >=1 OpenAI cloud model, the standalone
-///   `openai` section and the static empty `codex` header are removed and a
-///   freshly-built Codex section (full OpenAI models.dev catalog) is PREPENDED
-///   so it LEADS the cloud group — mirroring TS `[codexSection, ...remaining]`
-///   (PROV-130 ordering parity). The OpenAI models are moved, not duplicated.
-///
-/// The Codex gate reuses the PROV-128 unified credential predicate
-/// [`provider_has_credentials`] (`"codex"`), which honours Codex OAuth and the
-/// Codex API key alike — the single source of truth shared with the header
-/// availability flag.
-pub fn synthesize_codex_section(
-    mut sections: Vec<codelet_rpc_types::ProviderInfo>,
-    registry: &ModelRegistry,
-) -> Vec<codelet_rpc_types::ProviderInfo> {
-    if !provider_has_credentials(CODEX_PROVIDER_ID) {
-        return sections;
-    }
-
-    let codex_models = codex_reparented_models(registry);
-    if codex_models.is_empty() {
-        return sections;
-    }
-
-    // Re-parent (TS `extractCodexSection`): drop the standalone OpenAI cloud
-    // section (its models now live under Codex) AND the static, models.dev-absent
-    // `codex` header, so the freshly-built Codex section can LEAD the cloud group
-    // (PROV-130) without duplicating the header. A local-server OpenAI *profile*
-    // section (`profile_name` Some(..)) is never a cloud section and is preserved.
-    sections.retain(|s| {
-        !(s.profile_name.is_none() && (s.key == OPENAI_PROVIDER_ID || s.key == CODEX_PROVIDER_ID))
-    });
-
-    // PROV-130: the synthesized Codex section LEADS the cloud group — TS
-    // `cloudSectionBuilder.ts:150-155` pushes `codexSection` first, then the
-    // remaining credentialed providers (relative order preserved).
-    let codex = crate::profile_sections::cloud_provider_info(
-        CODEX_PROVIDER_ID,
-        CODEX_PROVIDER_LABEL,
-        codex_models,
-    );
-    let mut result = Vec::with_capacity(sections.len() + 1);
-    result.push(codex);
-    result.extend(sections);
-    result
-}
+/// PROV-176: the Codex (ChatGPT) section lists the models Codex `/models`
+/// returns; see [`crate::codex_section`].
+pub use crate::codex_section::synthesize_codex_section;
 
 /// Resolve the SessionHeader `ModelInfo` (wire type) for a session's
 /// provider/model pair (TUI-001).
@@ -255,8 +177,8 @@ pub fn resolve_model_info(
     registry: Option<&ModelRegistry>,
     provider_id: &str,
     model_id: &str,
-    context_window: u32,
-    compaction_threshold: u32,
+    context_window: Option<u32>,
+    compaction_threshold: Option<u32>,
 ) -> codelet_rpc_types::ModelInfo {
     let dev_id = canonical_to_models_dev(provider_id);
     let hit = registry.and_then(|r| r.get_model(dev_id, model_id).ok());

@@ -1,4 +1,6 @@
 @PROV-051
+@providers
+@provider-abstraction
 Feature: Fireworks.ai Session Affinity for Prompt Cache Optimization
   """
   Session affinity header set via rig ClientBuilder::http_headers() at client construction time in OpenAIProvider::from_api_key_with_options()

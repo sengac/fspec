@@ -1,0 +1,164 @@
+{
+  "scenarios": [
+    {
+      "name": "Adding a workspace from the dropdown lists and shows it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui122_add_and_remove_workspaces_from_the_board_dropdown.rs",
+          "lines": "88-114",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspace_admin.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// List the added workspace and show it on the board.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A refused path reopens the dialog with the reason",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui122_add_and_remove_workspaces_from_the_board_dropdown.rs",
+          "lines": "116-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspace_admin.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "fn spawn_add_workspace(&mut self, path: String) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing the highlighted workspace from the dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui122_add_and_remove_workspaces_from_the_board_dropdown.rs",
+          "lines": "138-167",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspace_admin.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "/// Drop the removed workspace; a removed selection returns the board to",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The start workspace and a workspace with open sessions are not removed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui122_add_and_remove_workspaces_from_the_board_dropdown.rs",
+          "lines": "169-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspace_admin.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "/// Remove the highlighted workspace — never the start workspace or one",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui122_add_and_remove_workspaces_from_the_board_dropdown.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_workspace_admin.rs"
+    ],
+    "totalLinesCovered": 191
+  }
+}

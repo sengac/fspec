@@ -22,7 +22,9 @@
                 208,
                 212,
                 219
-              ]
+              ],
+              "firstLine": "JournalEvent, JournalIdentity, JournalRecord, RequestAnchor, TerminalOutcome,",
+              "lastLine": "self.result_ids"
             },
             {
               "file": "rust/core/src/persistence/archive/journal.rs",
@@ -38,7 +40,9 @@
                 91,
                 100,
                 111
-              ]
+              ],
+              "firstLine": "pub(super) fn snapshot(",
+              "lastLine": ".is_some_and(|record| boundaries.get(&record.identity.request_id) == Some(&boundary))"
             }
           ]
         }

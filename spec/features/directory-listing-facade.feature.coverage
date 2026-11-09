@@ -4,8 +4,8 @@
       "name": "Map Gemini list_directory parameters with path to internal LsArgs format",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "668-693",
+          "file": "rust/tools/tests/tool006_directory_listing_facade.rs",
+          "lines": "20-47",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/ls.rs",
@@ -56,7 +56,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "//! Directory listing facade for different LLM providers.",
+              "lastLine": "Ok(InternalLsParams::List {"
             }
           ]
         }
@@ -66,18 +68,25 @@
       "name": "Map Gemini list_directory with empty parameters to current directory",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "694-714",
+          "file": "rust/tools/tests/tool006_directory_listing_facade.rs",
+          "lines": "49-73",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/ls.rs",
               "lines": [
-                41,
-                42,
                 43,
                 44,
-                45
-              ]
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,8 +96,8 @@
       "name": "GeminiListDirectoryFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "715-738",
+          "file": "rust/tools/tests/tool006_directory_listing_facade.rs",
+          "lines": "75-99",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/ls.rs",
@@ -107,7 +116,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "fn definition(&self) -> ToolDefinition {",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,12 +128,15 @@
       "name": "LsToolFacadeWrapper integrates with rig Tool trait",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "739-763",
+          "file": "rust/tools/tests/tool006_directory_listing_facade.rs",
+          "lines": "101-120",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
+                468,
+                474,
+                475,
                 492,
                 493,
                 494,
@@ -136,7 +150,6 @@
                 502,
                 503,
                 504,
-                505,
                 506,
                 507,
                 508,
@@ -146,18 +159,18 @@
                 512,
                 513,
                 514,
-                515,
-                516,
                 517,
                 518,
                 519,
                 520,
                 521,
-                522,
-                523,
-                524,
-                525,
-                526,
+                521,
+                521,
+                521,
+                521,
+                521,
+                521,
+                521,
                 527,
                 528,
                 529,
@@ -178,7 +191,6 @@
                 544,
                 545,
                 546,
-                547,
                 548,
                 549,
                 550,
@@ -192,7 +204,6 @@
                 558,
                 559,
                 560,
-                561,
                 562,
                 563,
                 564,
@@ -201,18 +212,13 @@
                 567,
                 568,
                 569,
-                570,
-                571,
-                572,
                 573,
                 574,
                 575,
-                576,
-                577,
-                578,
-                579,
-                580
-              ]
+                576
+              ],
+              "firstLine": "let resolved_path =",
+              "lastLine": ""
             }
           ]
         }
@@ -224,7 +230,7 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool006_directory_listing_facade.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/ls.rs",

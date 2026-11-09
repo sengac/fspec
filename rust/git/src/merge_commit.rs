@@ -19,13 +19,13 @@
 //!   user's own staged/unstaged unrelated work is left untouched.
 
 use crate::error::Result;
-use crate::git_commit_signature;
 use crate::ghost_commit::build_tree_from_snapshot;
+use crate::git_commit_signature;
+use crate::open_repo;
 use crate::session_result::SessionResult;
 use crate::tree_snapshot::TreeSnapshot;
 use crate::tree_utils::get_tree_files;
 use crate::GitError;
-use crate::open_repo;
 use gix::bstr::BStr;
 use std::path::{Path, PathBuf};
 
@@ -52,40 +52,15 @@ pub fn commit_merged_session(
         .head_commit()
         .map_err(|e| GitError::Head(format!("No HEAD commit: {e}")))?;
 
-    // Start from the HEAD tree (WT-006 snapshot) and apply the
-    // session's tracked delta. The applied snapshot carries every
-    // tracked path (unchanged ones at base content), so overwriting
-    // with it leaves unchanged entries byte-identical.
-    let base = get_tree_files(&repo, &parent.id.to_string())?;
-    let mut final_tree = base;
-    for (path, content) in &applied.blobs {
-        final_tree.blobs.insert(path.clone(), content.clone());
-    }
-    for (path, target) in &applied.symlinks {
-        final_tree.symlinks.insert(path.clone(), target.clone());
-    }
-    for (path, oid) in &applied.gitlinks {
-        final_tree.gitlinks.insert(path.clone(), *oid);
-    }
-    final_tree
-        .executables
-        .extend(applied.executables.iter().cloned());
-    // Deleted paths: gone from every kind.
-    for path in &diff.files_deleted {
-        final_tree.blobs.remove(path);
-        final_tree.symlinks.remove(path);
-        final_tree.gitlinks.remove(path);
-        final_tree.executables.remove(path);
-    }
-
+    let head_tree = get_tree_files(&repo, &parent.id.to_string())?;
+    let final_tree = overlay_session_delta(head_tree, applied, diff);
     let tree_id = build_tree_from_snapshot(&repo, &final_tree)?;
 
     // Identity: repo-local git config, fixed fspec fallback.
     let (name, email) = resolve_identity(repo_path);
     let message = format!("fspec: merge session {session_id}");
 
-    let commit_id =
-        git_commit_signature(&repo, tree_id, &parent.id, &name, &email, &message)?;
+    let commit_id = git_commit_signature(&repo, tree_id, &parent.id, &name, &email, &message)?;
 
     // Keep `git status` honest: sync the index for the delta paths
     // only (added/modified → new entries, deleted → removed).
@@ -96,6 +71,46 @@ pub fn commit_merged_session(
     sync_index_delta(&repo, &workdir, applied, diff)?;
 
     Ok(commit_id)
+}
+
+/// WT-013: main's HEAD tree with only the session's delta applied.
+///
+/// `applied` holds every tracked path of the worktree, the untouched
+/// ones at the session's BASE content, so overlaying all of it would
+/// revert every file main committed after the base. Only the paths the
+/// session added, modified or deleted are taken from it; each one is
+/// first removed from every entry kind and then re-added with its full
+/// applied entry (blob content and executable bit, or symlink target),
+/// so kind and mode changes round-trip. Gitlinks keep HEAD's entry: a
+/// session can never change a submodule OID from a worktree (WT-006).
+fn overlay_session_delta(
+    head_tree: TreeSnapshot,
+    applied: &TreeSnapshot,
+    diff: &SessionResult,
+) -> TreeSnapshot {
+    let mut tree = head_tree;
+    let touched = diff
+        .files_added
+        .iter()
+        .chain(diff.files_changed.iter())
+        .chain(diff.files_deleted.iter());
+    for path in touched {
+        if tree.gitlinks.contains_key(path) || applied.gitlinks.contains_key(path) {
+            continue;
+        }
+        tree.blobs.remove(path);
+        tree.symlinks.remove(path);
+        tree.executables.remove(path);
+        if let Some(content) = applied.blobs.get(path) {
+            tree.blobs.insert(path.clone(), content.clone());
+            if applied.is_executable(path) {
+                tree.executables.insert(path.clone());
+            }
+        } else if let Some(target) = applied.symlinks.get(path) {
+            tree.symlinks.insert(path.clone(), target.clone());
+        }
+    }
+    tree
 }
 
 /// Read `user.name` / `user.email` from the repo-local git config,
@@ -138,7 +153,8 @@ fn resolve_identity(repo_path: &Path) -> (String, String) {
     (
         name.filter(|s| !s.is_empty())
             .unwrap_or_else(|| FALLBACK_NAME.into()),
-        email.filter(|s| !s.is_empty())
+        email
+            .filter(|s| !s.is_empty())
             .unwrap_or_else(|| FALLBACK_EMAIL.into()),
     )
 }
@@ -182,10 +198,12 @@ fn sync_index_delta(
 
     let index_path = workdir.join(".git").join("index");
     let mut index = if index_path.exists() {
-        gix::index::File::at(&index_path, repo.object_hash(), false, Default::default())
-            .map_err(|e| GitError::CorruptedIndex {
+        crate::index_guard::ensure_index_not_truncated(&index_path, repo.object_hash())?;
+        gix::index::File::at(&index_path, repo.object_hash(), false, Default::default()).map_err(
+            |e| GitError::CorruptedIndex {
                 message: format!("Failed to read index: {e}"),
-            })?
+            },
+        )?
     } else {
         gix::index::File::from_state(
             gix::index::State::new(repo.object_hash()),
@@ -194,11 +212,7 @@ fn sync_index_delta(
     };
 
     // Added / modified: (re)stage the post-copy content.
-    for path in diff
-        .files_added
-        .iter()
-        .chain(diff.files_changed.iter())
-    {
+    for path in diff.files_added.iter().chain(diff.files_changed.iter()) {
         let bstr_path = BStr::new(path.as_bytes());
         // Remove a stale entry first so the entry count stays exact.
         if let Ok(pos) = index.entry_index_by_path(bstr_path) {
@@ -214,13 +228,7 @@ fn sync_index_delta(
             } else {
                 Mode::FILE
             };
-            push_index_entry(
-                &mut index,
-                workdir,
-                path,
-                blob_id.into(),
-                mode,
-            )?;
+            push_index_entry(&mut index, workdir, path, blob_id.into(), mode)?;
         } else if let Some(target) = applied.symlinks.get(path) {
             let blob_id = repo
                 .write_blob(target.as_bytes())
@@ -261,16 +269,10 @@ fn push_index_entry(
 
     let full_path = workdir.join(path);
     let bstr_path = BStr::new(path.as_bytes());
-    let metadata = Metadata::from_path_no_follow(&full_path).map_err(|e| {
-        GitError::Other(format!(
-            "Failed to stat {path} for index update: {e}"
-        ))
-    })?;
-    let stat = gix::index::entry::Stat::from_fs(&metadata).map_err(|e| {
-        GitError::Other(format!(
-            "Failed to build index stat for {path}: {e}"
-        ))
-    })?;
+    let metadata = Metadata::from_path_no_follow(&full_path)
+        .map_err(|e| GitError::Other(format!("Failed to stat {path} for index update: {e}")))?;
+    let stat = gix::index::entry::Stat::from_fs(&metadata)
+        .map_err(|e| GitError::Other(format!("Failed to build index stat for {path}: {e}")))?;
     index.dangerously_push_entry(
         stat,
         blob_id,

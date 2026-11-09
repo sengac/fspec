@@ -218,14 +218,16 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "// BUG-200 R-EDGES: the `MenuMove` arm borrows `self.board_store`",
+              "lastLine": "//"
             }
           ]
         }
       ]
     },
     {
-      "name": "Right from the last chip lands on the first column",
+      "name": "Right from the last button lands on the first column",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug200_mux_board_ring_edges.rs",
@@ -442,14 +444,16 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "// BUG-200 R-EDGES: the `MenuMove` arm borrows `self.board_store`",
+              "lastLine": "//"
             }
           ]
         }
       ]
     },
     {
-      "name": "Left from the first column wraps to the last chip",
+      "name": "Left from the first column wraps to the last button",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug200_mux_board_ring_edges.rs",
@@ -666,7 +670,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "// BUG-200 R-EDGES: the `MenuMove` arm borrows `self.board_store`",
+              "lastLine": "//"
             }
           ]
         }
@@ -677,68 +683,65 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug200_mux_board_ring_edges.rs",
-          "lines": "308-328",
+          "lines": "330-340",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
               "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
                 239,
-                240
-              ]
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "// ── 3. no bar focus — entry from the focused pane's edge rule ────────",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Left from the first column with no open sessions lands on the last view-label cell",
+      "name": "Left from the first column with no open sessions lands on the last button",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug200_mux_board_ring_edges.rs",
-          "lines": "330-347",
+          "lines": "353-366",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
                 146,
-                147
-              ]
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "/// BUG-200 R-WRAP: clear the bar's ring focus WITHOUT touching the",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
@@ -951,7 +954,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "// BUG-200 R-EDGES: the `MenuMove` arm borrows `self.board_store`",
+              "lastLine": "//"
             }
           ]
         }
@@ -970,6 +975,6 @@
       "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
       "rust/fspec-tui/src/store/board_menu.rs"
     ],
-    "totalLinesCovered": 1078
+    "totalLinesCovered": 1057
   }
 }

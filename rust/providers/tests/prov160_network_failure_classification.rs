@@ -84,9 +84,23 @@ async fn scenario_network_down_setup_errors_enter_cancellable_offline_waiting_on
         let mut stream = Box::pin(recovery.clone().track(pending));
 
         // @step Then it waits for network reception until cancellation instead of terminating
-        let observed = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+        // TEST-042: no waiting window; the setup must stay pending until
+        // recovery reports it is waiting for the network.
+        let mut next = stream.next();
+        let observed = codelet_test_helpers::pending_until(
+            "recovery waits for the network",
+            &mut next,
+            || {
+                matches!(
+                    recovery.status(),
+                    Some(reconnect::RecoveryStatus::WaitingForNetwork { .. })
+                )
+            },
+        )
+        .await;
+        drop(next);
         assert!(
-            observed.is_err(),
+            observed.is_ok(),
             "network-down setup terminated: {observed:?}"
         );
         assert_eq!(
@@ -115,7 +129,7 @@ async fn scenario_abrupt_websocket_connection_loss_retains_same_transport_recove
         .await?;
 
     // @step When a replacement WebSocket request completes successfully
-    let finals = tokio::time::timeout(Duration::from_secs(2), async {
+    let finals = codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut finals = 0;
         while let Some(event) = stream.next().await {
             if matches!(event?, rig::streaming::StreamedAssistantContent::Final(_)) {
@@ -159,7 +173,7 @@ async fn scenario_permanent_accepted_websocket_failures_never_send_replacement_r
             .filter(attempt_events::is_content);
 
         // @step When Codex reads the invalid response
-        let observed = tokio::time::timeout(Duration::from_secs(1), stream.next()).await;
+        let observed = codelet_test_helpers::deadlock_guard("stream.next()", stream.next()).await;
 
         // @step Then the original failure ends the turn without reconnecting or sending a replacement
         assert!(
@@ -176,7 +190,7 @@ async fn scenario_permanent_accepted_websocket_failures_never_send_replacement_r
             .lock()
             .map_err(|_| "status unavailable")?
             .is_empty());
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        // TEST-042: the stream has ended, so nothing can reconnect now.
         assert_eq!(server.requests.load(Ordering::SeqCst), 1);
 
         // @step And no completion or checkpoint is published
@@ -194,8 +208,8 @@ async fn the_production_resolver_handles_only_the_local_fixture_destination() ->
         .mount(&server)
         .await;
     let port = server.address().port();
-    let addresses = tokio::time::timeout(
-        Duration::from_secs(2),
+    let addresses = codelet_test_helpers::deadlock_guard(
+        "network_error::resolve('localhost', port)",
         network_error::resolve("localhost", port),
     )
     .await??;

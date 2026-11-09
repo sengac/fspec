@@ -8,10 +8,10 @@
 //! TS-parity silent-text contract: when `--format` is not `"json"`,
 //! fspec_core returns the empty string and the bridge prints nothing.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_estimation_guide;
 use serde_json::{json, Value};
 
@@ -25,7 +25,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj = serde_json::Map::new();
     obj.insert(

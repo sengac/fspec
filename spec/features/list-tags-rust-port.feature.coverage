@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "72-117",
+          "lines": "70-113",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/ensure.rs",
@@ -16,7 +16,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn ensure_tags_file(cwd: &Path) -> Result<TagsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -27,17 +29,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "115-142",
+          "lines": "115-141",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
-                69,
-                70,
-                71,
-                72,
-                73
-              ]
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "// Project tagsData.categories → CategoryEntry[], sorting tags",
+              "lastLine": "let projected: Vec<CategoryEntry> = tags_data.categories.iter().map(project_category).collect();"
             }
           ]
         }
@@ -48,11 +52,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "143-185",
+          "lines": "143-184",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
                 154,
                 155,
                 156,
@@ -70,15 +86,10 @@
                 168,
                 169,
                 170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178
-              ]
+                171
+              ],
+              "firstLine": "/// Project a single `TagCategory` into its `CategoryEntry`",
+              "lastLine": "}"
             }
           ]
         }
@@ -89,7 +100,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "186-244",
+          "lines": "186-247",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
@@ -126,7 +137,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "struct TagEntry {",
+              "lastLine": "/// would sort differently — file an issue if you encounter one."
             }
           ]
         }
@@ -137,11 +150,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "245-275",
+          "lines": "249-278",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
               "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
                 79,
                 80,
                 81,
@@ -157,15 +179,10 @@
                 91,
                 92,
                 93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                94
+              ],
+              "firstLine": "// Optional --category filter: exact-match against category.name.",
+              "lastLine": "};"
             }
           ]
         }
@@ -176,7 +193,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "276-302",
+          "lines": "280-302",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
@@ -194,7 +211,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": ".join(\", \");",
+              "lastLine": "Some(\"json\") => {"
             }
           ]
         }
@@ -205,7 +224,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "303-322",
+          "lines": "304-322",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/ensure.rs",
@@ -216,7 +235,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn ensure_tags_file(cwd: &Path) -> Result<TagsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -227,7 +248,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "323-384",
+          "lines": "324-384",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
@@ -255,7 +276,9 @@
                 214,
                 215,
                 216
-              ]
+              ],
+              "firstLine": "if cat.tags.is_empty() {",
+              "lastLine": "clippy::panic,"
             }
           ]
         }
@@ -266,7 +289,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "385-429",
+          "lines": "386-428",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
@@ -294,7 +317,9 @@
                 214,
                 215,
                 216
-              ]
+              ],
+              "firstLine": "if cat.tags.is_empty() {",
+              "lastLine": "clippy::panic,"
             }
           ]
         }
@@ -305,7 +330,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_tags.rs",
-          "lines": "430-489",
+          "lines": "430-488",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_tags.rs",
@@ -331,7 +356,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "#[derive(Serialize)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -598,7 +625,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! `tags.json` shape — Rust port of the TypeScript `Tags` interface",
+              "lastLine": "assert!(c.required);"
             }
           ]
         }
@@ -617,6 +646,6 @@
       "rust/fspec-core/src/commands/list_tags.rs",
       "rust/fspec-core/src/types/tags.rs"
     ],
-    "totalLinesCovered": 888
+    "totalLinesCovered": 884
   }
 }

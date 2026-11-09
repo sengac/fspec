@@ -9,15 +9,11 @@
 //! `PruneLeakedWorktrees` action routing into
 //! `prune_orphaned_worktrees` and the outcome notices.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::views::agent::session_worktrees_dialog::{
     SessionWorktreesDialog, SessionWorktreesDialogOutcome, SESSION_WORKTREES_DIALOG_ID,
@@ -28,7 +24,6 @@ use codelet_rpc_types::{SessionId, SessionWorktreeInfo};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -47,29 +42,34 @@ fn row(session_id: &str, dirty: bool) -> SessionWorktreeInfo {
     }
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(2), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -97,12 +97,14 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
         .join("\n")
 }
 
-fn render_dialog(dialog: &mut SessionWorktreesDialog) -> String {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_dialog(
+    dialog: &mut SessionWorktreesDialog,
+) -> Result<String, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         dialog.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -111,7 +113,7 @@ fn render_dialog(dialog: &mut SessionWorktreesDialog) -> String {
         }
         joined.push('\n');
     }
-    joined
+    Ok(joined)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -119,36 +121,39 @@ fn render_dialog(dialog: &mut SessionWorktreesDialog) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_worktrees_lists_session_worktrees() {
+async fn slash_worktrees_lists_session_worktrees() -> TestResult {
     // @step Given a repository with two session worktrees for closed sessions
     let mock = Arc::new(MockBackend::new());
     mock.seed_session_worktrees(vec![row("w-1", true), row("w-2", false)]);
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And a TUI app running with a session
     let initial_list = mock.list_session_worktrees_calls();
 
     // @step When I run "/worktrees"
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Worktrees));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Worktrees,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then the session worktrees dialog is shown
     wait_until(
         || mock.list_session_worktrees_calls() - initial_list == 1,
         "list_session_worktrees called once",
     )
-    .await;
+    .await?;
     wait_until(
         || app.compositor().contains(SESSION_WORKTREES_DIALOG_ID),
         "session-worktrees-dialog on compositor",
     )
-    .await;
+    .await?;
 
     // @step And the dialog lists one row per worktree with the session id and worktree path
     let mut dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
-    let text = render_dialog(&mut dialog);
+    let text = render_dialog(&mut dialog)?;
     assert!(text.contains("w-1"), "row 1 session id missing:\n{text}");
     assert!(
         text.contains("/tmp/repo/.fspec/worktrees/w-1"),
@@ -162,6 +167,7 @@ async fn slash_worktrees_lists_session_worktrees() {
         marker_count, 1,
         "exactly one [dirty] marker expected, got {marker_count}:\n{text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -170,32 +176,36 @@ async fn slash_worktrees_lists_session_worktrees() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_worktrees_with_no_worktrees_shows_an_empty_state_row() {
+async fn slash_worktrees_with_no_worktrees_shows_an_empty_state_row() -> TestResult {
     // @step Given a repository with no session worktrees
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And a TUI app running with a session
     // @step When I run "/worktrees"
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Worktrees));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Worktrees,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then the session worktrees dialog is shown
     wait_until(
         || app.compositor().contains(SESSION_WORKTREES_DIALOG_ID),
         "session-worktrees-dialog on compositor",
     )
-    .await;
+    .await?;
 
     // @step And the dialog shows an empty-state row instead of worktree rows
     let mut dialog = SessionWorktreesDialog::new(Vec::new());
-    let text = render_dialog(&mut dialog);
+    let text = render_dialog(&mut dialog)?;
     assert!(
         text.contains("(no session worktrees)"),
         "empty-state row missing:\n{text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -203,7 +213,7 @@ async fn slash_worktrees_with_no_worktrees_shows_an_empty_state_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn session_worktrees_dialog_enter_on_prune_emits_prune_leaked_worktrees() {
+fn session_worktrees_dialog_enter_on_prune_emits_prune_leaked_worktrees() -> TestResult {
     // @step Given a SessionWorktreesDialog with Prune focused
     let mut dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
     assert_eq!(dialog.focused_button(), 0);
@@ -216,10 +226,11 @@ fn session_worktrees_dialog_enter_on_prune_emits_prune_leaked_worktrees() {
         matches!(outcome, SessionWorktreesDialogOutcome::Prune),
         "expected Prune outcome, got {outcome:?}"
     );
+    Ok(())
 }
 
 #[test]
-fn session_worktrees_dialog_esc_emits_cancel_regardless_of_focus() {
+fn session_worktrees_dialog_esc_emits_cancel_regardless_of_focus() -> TestResult {
     // @step Given a SessionWorktreesDialog
     let mut dialog = SessionWorktreesDialog::new(vec![row("w-1", true)]);
     dialog.handle_key(KeyCode::Tab, KeyModifiers::NONE); // move focus off Prune
@@ -232,6 +243,7 @@ fn session_worktrees_dialog_esc_emits_cancel_regardless_of_focus() {
         matches!(outcome, SessionWorktreesDialogOutcome::Cancel),
         "expected Cancel outcome, got {outcome:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -239,27 +251,27 @@ fn session_worktrees_dialog_esc_emits_cancel_regardless_of_focus() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pruning_from_the_worktrees_dialog_removes_leaked_worktrees() {
+async fn pruning_from_the_worktrees_dialog_removes_leaked_worktrees() -> TestResult {
     // @step Given a repository with one leaked session worktree for a terminated session
     let mock = Arc::new(MockBackend::new());
     mock.seed_pruned_sessions(vec!["w-1".to_string()]);
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And a TUI app running with the session worktrees dialog open
     let initial_prune = mock.prune_orphaned_worktrees_calls();
 
     // @step When I press Prune in the dialog
     app.dispatch(Action::PruneLeakedWorktrees);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the worktree directory is removed from the repository
     wait_until(
         || mock.prune_orphaned_worktrees_calls() - initial_prune == 1,
         "prune_orphaned_worktrees called once",
     )
-    .await;
+    .await?;
 
     // @step And I see the notice "[worktrees] pruned 1 leaked worktree(s)"
     wait_until(
@@ -269,7 +281,8 @@ async fn pruning_from_the_worktrees_dialog_removes_leaked_worktrees() {
         },
         "pruned-1 notice in scrollback",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -277,18 +290,18 @@ async fn pruning_from_the_worktrees_dialog_removes_leaked_worktrees() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pruning_when_nothing_is_leaked_reports_no_leaked_worktrees() {
+async fn pruning_when_nothing_is_leaked_reports_no_leaked_worktrees() -> TestResult {
     // @step Given a repository with no leaked session worktrees
     let mock = Arc::new(MockBackend::new());
     // default seed: empty pruned list
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And a TUI app running with the session worktrees dialog open
     // @step When I press Prune in the dialog
     app.dispatch(Action::PruneLeakedWorktrees);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then I see the notice "[worktrees] no leaked worktrees to prune"
     wait_until(
@@ -298,7 +311,8 @@ async fn pruning_when_nothing_is_leaked_reports_no_leaked_worktrees() {
         },
         "no-leaked notice in scrollback",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -306,24 +320,25 @@ async fn pruning_when_nothing_is_leaked_reports_no_leaked_worktrees() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn prune_failures_surface_an_error_notice() {
+async fn prune_failures_surface_an_error_notice() -> TestResult {
     // @step Given a TUI app running with the session worktrees dialog open
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And the backend prune call fails with "boom"
     mock.set_prune_orphaned_worktrees_error("boom".to_string());
 
     // @step When I press Prune in the dialog
     app.dispatch(Action::PruneLeakedWorktrees);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then I see the notice "[error] /worktrees prune: boom"
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[error] /worktrees prune: boom"),
         "error notice in scrollback",
     )
-    .await;
+    .await?;
+    Ok(())
 }

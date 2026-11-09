@@ -10,6 +10,7 @@
 
 use codelet_rpc_types::SessionId;
 
+use crate::components::notification_dialog::NotificationDialog;
 use crate::components::Action;
 
 use super::state::App;
@@ -58,5 +59,17 @@ impl App {
 
         // Step 6: back to the board.
         let _ = self.action_tx.send(Action::BackToBoard);
+    }
+
+    /// TUI-130: after the teardown, a Notification dialog on the board
+    /// names the merge commit; it stays until dismissed, and c copies it.
+    pub(crate) fn show_merge_success(&mut self, session_id: &SessionId, commit: Option<&str>) {
+        let message = match commit {
+            Some(commit) => format!("Merged session {session_id}: commit {commit}"),
+            None => format!("Merged session {session_id}"),
+        };
+        self.compositor.push(Box::new(
+            NotificationDialog::success(message).with_auto_dismiss_ms(0),
+        ));
     }
 }

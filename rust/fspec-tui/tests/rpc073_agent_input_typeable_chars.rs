@@ -9,23 +9,18 @@
 //! inserted into the input buffer. Same for `q` — it quit the app.
 //!
 //! After the fix, dispatch order is:
-//!   1. DisconnectDialog (critical, unchanged — RPC-011 CR-1)
-//!   2. Compositor.handle_event
-//!   3. Navigator.handle_event
-//!   4. handle_app_shortcut — only if 2 and 3 returned Ignored
+//!   1. Compositor.handle_event
+//!   2. Navigator.handle_event
+//!   3. handle_app_shortcut — only if 1 and 2 returned Ignored
 //!
 //! This makes the AgentView's MultiLineInput first to receive `?`/`q`
 //! and matches the TS Ink frontend's InputManager priority chain (text
 //! input at MEDIUM > view shortcuts at LOW).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
-use codelet_fspec_tui::{
-    components::disconnect_dialog::DisconnectDialog, synth_key, Action, App, FspecBackend,
-    Priority, ViewMode,
-};
+use codelet_fspec_tui::{synth_key, Action, App, FspecBackend, Priority, ViewMode};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
 mod common;
@@ -39,11 +34,11 @@ fn agent_view_app() -> App {
 }
 
 /// Build a fresh App on the BoardView (no view switch).
-fn board_view_app() -> App {
+fn board_view_app() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
-    let (app, _term) = test_app(backend);
-    app
+    let (app, _term) = test_app(backend)?;
+    Ok(app)
 }
 
 // =============================================================================
@@ -51,7 +46,7 @@ fn board_view_app() -> App {
 // buffer and does not open the HelpDialog
 // =============================================================================
 #[test]
-fn question_mark_in_agent_view_input_appends_to_buffer_no_help_dialog() {
+fn question_mark_in_agent_view_input_appends_to_buffer_no_help_dialog() -> TestResult {
     // @step Given an App is constructed with active_view = Agent and a focused MultiLineInput with empty buffer
     let mut app = agent_view_app();
     assert_eq!(app.active_view(), ViewMode::Agent);
@@ -73,6 +68,7 @@ fn question_mark_in_agent_view_input_appends_to_buffer_no_help_dialog() {
         !app.compositor().contains("help-dialog"),
         "RPC-073 bug 2: HelpDialog opened while typing in AgentView input",
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -80,7 +76,7 @@ fn question_mark_in_agent_view_input_appends_to_buffer_no_help_dialog() {
 // buffer and does not quit the app
 // =============================================================================
 #[test]
-fn q_in_agent_view_input_appends_to_buffer_no_quit() {
+fn q_in_agent_view_input_appends_to_buffer_no_quit() -> TestResult {
     // @step Given an App is constructed with active_view = Agent and a focused MultiLineInput with empty buffer
     let mut app = agent_view_app();
     assert_eq!(app.active_view(), ViewMode::Agent);
@@ -102,6 +98,7 @@ fn q_in_agent_view_input_appends_to_buffer_no_quit() {
         !app.should_quit(),
         "RPC-073 bug 2: app quit while typing `q` into AgentView input",
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -109,9 +106,9 @@ fn q_in_agent_view_input_appends_to_buffer_no_quit() {
 // HelpDialog
 // =============================================================================
 #[test]
-fn question_mark_in_board_view_still_opens_help_dialog() {
+fn question_mark_in_board_view_still_opens_help_dialog() -> TestResult {
     // @step Given an App is constructed with active_view = Board
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.compositor().len(), 0);
 
@@ -128,6 +125,7 @@ fn question_mark_in_board_view_still_opens_help_dialog() {
         app.compositor().topmost_priority(),
         Some(Priority::Critical)
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -140,9 +138,9 @@ fn question_mark_in_board_view_still_opens_help_dialog() {
 // `tests/boardview_esc_exit_confirmation_rpc102.rs`.
 // =============================================================================
 #[test]
-fn q_in_board_view_is_ignored_after_rpc102() {
+fn q_in_board_view_is_ignored_after_rpc102() -> TestResult {
     // @step Given an App is constructed with active_view = Board and no critical dialog topmost
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert!(!app.should_quit());
     assert!(!matches!(
@@ -164,6 +162,7 @@ fn q_in_board_view_is_ignored_after_rpc102() {
         0,
         "RPC-102: BoardView `q` must not push any compositor layer",
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -171,7 +170,7 @@ fn q_in_board_view_is_ignored_after_rpc102() {
 // quits the app
 // =============================================================================
 #[test]
-fn ctrl_d_in_agent_view_input_still_quits() {
+fn ctrl_d_in_agent_view_input_still_quits() -> TestResult {
     // @step Given an App is constructed with active_view = Agent and a focused MultiLineInput
     let mut app = agent_view_app();
     assert_eq!(app.active_view(), ViewMode::Agent);
@@ -191,47 +190,7 @@ fn ctrl_d_in_agent_view_input_still_quits() {
         app.should_quit(),
         "Ctrl+D in AgentView input must still quit the app (fallback shortcut)",
     );
-}
-
-// =============================================================================
-// Scenario: When the critical DisconnectDialog is topmost, q is intercepted
-// by the DisconnectDialog handler and the Compositor never sees the event
-// =============================================================================
-#[test]
-fn q_with_disconnect_dialog_topmost_is_intercepted_by_dialog() {
-    // @step Given an App has a DisconnectDialog pushed onto the Compositor and it is the topmost critical-priority layer
-    let mut app = agent_view_app();
-    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
-    assert_eq!(
-        app.compositor().topmost_priority(),
-        Some(Priority::Critical),
-        "DisconnectDialog must be topmost critical layer",
-    );
-    let pre_input = app.navigator().agent.input.value();
-
-    // @step When the app handles a KeyCode::Char('q') event
-    let _ = app.handle_event(&synth_key(KeyCode::Char('q')));
-
-    // @step Then App::should_quit becomes true and the DisconnectDialog is removed from the Compositor
-    //
-    // RPC-011 CR-1: DisconnectDialog handles `q` itself and clears
-    // itself from the Compositor via the disconnect-cleanup path.
-    assert!(
-        app.should_quit(),
-        "DisconnectDialog must handle `q` itself even after RPC-073 dispatch-order inversion",
-    );
-    assert!(
-        !app.compositor().contains("disconnect-dialog"),
-        "DisconnectDialog removes itself when `q` is pressed",
-    );
-    // And the AgentView input must NOT have received `q` — the
-    // DisconnectDialog ran the disconnect-event handler at Stage 1
-    // (before any other dispatch).
-    assert_eq!(
-        app.navigator().agent.input.value(),
-        pre_input,
-        "AgentView input must NOT receive `q` when DisconnectDialog is topmost",
-    );
+    Ok(())
 }
 
 // Silence unused-import warnings for symbols only used by some scenarios.

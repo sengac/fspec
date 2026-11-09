@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @BRIDGE-019
+@telegram
+@bridge
 Feature: Relay Server — Local WebSocket hub for routing messages between relay-endpoint and mobile app
   """
   Standalone TypeScript file at bridge/relay-server.ts using 'ws' npm package (already a dependency). Single file, under 300 lines. Uses dotenv for config. NPM scripts: bridge:server (foreground), bridge:server:bg (background), bridge:server:stop. Server maintains a Map<channelId, Set<WebSocket>> for channel routing. Each WebSocket also stores its channelId and authenticated state. The full local stack: (1) npm run bridge:server on port 8765, (2) npm run bridge:relay connects relay-endpoint to ws://localhost:8765, (3) mobile app connects to http://localhost:8765. relay-endpoint.ts RELAY_URL must point at the relay server, NOT at itself.

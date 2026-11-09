@@ -166,7 +166,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// preserved (files sorted by name, then scenario/test/impl declaration order).
 /// Tolerates a missing directory and silently skips unparseable sidecars.
 fn read_impl_refs(project_root: &Path) -> Vec<ImplRef> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     let Ok(entries) = std::fs::read_dir(&features_dir) else {
         return Vec::new();
     };

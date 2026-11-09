@@ -1,4 +1,6 @@
 @BUG-127
+@tools
+@multi-session
 Feature: PAUSE_HANDLER global singleton causes pause interactions to route to wrong session
   """
   Uses the same Lazy<RwLock<HashMap<Uuid, T>>> pattern as BUG-126 TOOL_PROGRESS_CALLBACKS and existing FSPEC_HANDLERS

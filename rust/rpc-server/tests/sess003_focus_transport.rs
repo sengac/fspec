@@ -7,16 +7,16 @@ use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionEvent, SessionId, WorkUnitFocus};
 use codelet_sessions::SessionManager;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use tarpc::context;
-use tokio::{sync::broadcast, time::timeout};
+use tokio::sync::broadcast;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 async fn next_focus(
     receiver: &mut broadcast::Receiver<SessionEvent>,
 ) -> TestResult<(SessionId, WorkUnitFocus)> {
-    timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if let SessionEvent::FocusChanged { session_id, focus } = receiver.recv().await? {
                 return Ok((session_id, focus));
@@ -78,7 +78,7 @@ async fn scenario_embedded_and_websocket_clients_receive_focus_events_and_reconn
             }
         }))?,
     )?;
-    let manager = SessionManager::new_arc();
+    let manager = SessionManager::new();
     let manifest = persistence::create_session_with_provider(
         "focus transport",
         root.path(),
@@ -103,7 +103,8 @@ async fn scenario_embedded_and_websocket_clients_receive_focus_events_and_reconn
     let mut events_b = client_b.session_events_rx();
     for client in [&client_a, &client_b] {
         let mut snapshots = client.session_snapshot_rx();
-        let snapshot = timeout(Duration::from_secs(5), snapshots.recv()).await??;
+        let snapshot =
+            codelet_test_helpers::deadlock_guard("snapshots.recv()", snapshots.recv()).await??;
         assert!(snapshot.iter().any(|info| info.id == session_id.value));
     }
     let initial = embedded_client
@@ -145,7 +146,9 @@ async fn scenario_embedded_and_websocket_clients_receive_focus_events_and_reconn
         .enumerate()
     {
         assert_eq!(expected.revision, position as u64 + 1);
-        let embedded_event = timeout(Duration::from_secs(5), embedded_events.recv()).await??;
+        let embedded_event =
+            codelet_test_helpers::deadlock_guard("embedded_events.recv()", embedded_events.recv())
+                .await??;
         assert_eq!(embedded_event, (session_id.clone(), expected.clone()));
         assert_eq!(
             next_focus(&mut events_a).await?,
@@ -172,7 +175,8 @@ async fn scenario_embedded_and_websocket_clients_receive_focus_events_and_reconn
     let (socket, _) = tokio_tungstenite::connect_async(format!("ws://{address}")).await?;
     let reconnected = ws_client_connect(socket).await?;
     let mut snapshots = reconnected.session_snapshot_rx();
-    let snapshot = timeout(Duration::from_secs(5), snapshots.recv()).await??;
+    let snapshot =
+        codelet_test_helpers::deadlock_guard("snapshots.recv()", snapshots.recv()).await??;
     let info = snapshot
         .iter()
         .find(|info| info.id == session_id.value)
@@ -197,7 +201,7 @@ async fn scenario_embedded_and_websocket_clients_receive_focus_events_and_reconn
             context::current(),
             root.path().to_string_lossy().into_owned(),
         )
-        .await?;
+        .await??;
     assert_eq!(
         embedded_snapshot
             .iter()

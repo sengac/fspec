@@ -1,6 +1,11 @@
+@BUG-582
 @done
 @lifecycle-hooks
 @agent-core
+@HOOK-014
+@HOOK-015
+@HOOK-017
+@HOOK-016
 Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core Events
   """
   Config format is the existing fspec-hooks.json JSON schema: { global?: { timeout, shell }, hooks: Record<string, HookGroup[] | HookDefinition[]> } — agent events use HookGroup[] with optional matcher, while CLI events continue to use HookDefinition[]
@@ -69,21 +74,18 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     So that I can run custom scripts at key agent lifecycle points (session start/end, prompt submission, before/after tool execution, notifications) to enforce policies, inject context, and integrate with external systems
 
   # --- Config Loading & Merging ---
-  @HOOK-014
   Scenario: Load agent lifecycle hooks from project-level fspec-hooks.json
     Given a project-level spec/fspec-hooks.json with a "session_start" hook entry
     When the lifecycle hook engine initializes for a new session
     Then the engine should load and compile the session_start hook
     And the hook should be available for execution at session start
 
-  @HOOK-014
   Scenario: Load agent lifecycle hooks from user-level fspec-hooks.json
     Given a user-level ~/.fspec/fspec-hooks.json with a "session_start" hook entry
     And no project-level spec/fspec-hooks.json exists
     When the lifecycle hook engine initializes for a new session
     Then the engine should load and compile the session_start hook from the user-level config
 
-  @HOOK-014
   Scenario: Concatenate user-level and project-level hooks for the same event
     Given a user-level ~/.fspec/fspec-hooks.json with a "session_start" hook named "company-policy"
     And a project-level spec/fspec-hooks.json with a "session_start" hook named "project-setup"
@@ -91,14 +93,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then both hooks should be compiled for the session_start event
     And the user-level "company-policy" hook should execute before the project-level "project-setup" hook
 
-  @HOOK-014
   Scenario: Coexistence of agent lifecycle events and fspec CLI events in same config
     Given a spec/fspec-hooks.json containing both "session_start" and "pre-update-work-unit-status" hooks
     When the lifecycle hook engine initializes for a new session
     Then the engine should load only the "session_start" agent lifecycle event
     And the engine should ignore the "pre-update-work-unit-status" fspec CLI event
 
-  @HOOK-014
   Scenario: No agent lifecycle events configured returns None engine
     Given a spec/fspec-hooks.json with only fspec CLI command hooks and no agent lifecycle events
     And no user-level ~/.fspec/fspec-hooks.json exists
@@ -106,21 +106,18 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the engine should return None
     And zero overhead should be added to the agent loop
 
-  @HOOK-014
   Scenario: Invalid regex matcher prevents engine creation
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group with matcher "[invalid regex"
     When the lifecycle hook engine attempts to initialize
     Then the engine should return an error indicating the invalid regex pattern
     And no hooks should be compiled
 
-  @HOOK-014
   Scenario: Respect global timeout setting from config
     Given a spec/fspec-hooks.json with global timeout set to 30 seconds
     And a "session_start" hook with no per-hook timeout override
     When the session_start hook executes
     Then the hook should use the 30 second global timeout
 
-  @HOOK-014
   Scenario: Config is compiled once at session creation not hot-reloaded
     Given a spec/fspec-hooks.json with a "session_start" hook
     And the lifecycle hook engine has been initialized for a session
@@ -128,7 +125,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the running session should not see the new user_prompt_submit hook
     And only a new session should pick up the config change
 
-  @HOOK-014
   Scenario: pre_tool_use hook group with regex matcher filters by tool name
   # --- Hook Group Format (pre_tool_use / post_tool_use) ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group with matcher "Bash"
@@ -138,7 +134,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent invokes the "Read" tool
     Then the pre_tool_use hook should not execute
 
-  @HOOK-014
   Scenario: pre_tool_use hook group with empty matcher matches all tools
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group with no matcher
     And a hook command that exits with code 0
@@ -147,13 +142,11 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent invokes the "Write" tool
     Then the pre_tool_use hook should also execute
 
-  @HOOK-014
   Scenario: Matcher regex is anchored with full-match semantics
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group with matcher "Bash"
     When the agent invokes a tool named "BashExtended"
     Then the pre_tool_use hook should not execute because "BashExtended" does not match "^(?:Bash)$"
 
-  @HOOK-014
   Scenario: session_start hooks use HookDefinition format
   # --- HookDefinition Format (session/prompt/notification events) ---
     Given a spec/fspec-hooks.json with a "session_start" entry using HookDefinition format
@@ -169,13 +162,11 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the lifecycle hook engine initializes for a new session
     Then the "setup-env" hook should be compiled with a 30 second timeout
 
-  @HOOK-014
   Scenario: user_prompt_submit hooks use HookDefinition format
     Given a spec/fspec-hooks.json with a "user_prompt_submit" entry using HookDefinition format
     When a user submits a prompt
     Then the user_prompt_submit hooks should execute sequentially with JSON payload on stdin
 
-  @HOOK-015
   Scenario: Hook command receives JSON payload on stdin
   # --- Command Execution ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that echoes stdin to a file
@@ -186,7 +177,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
       | tool_name       | Bash       |
     And the tool_input field should contain "ls -la"
 
-  @HOOK-015
   Scenario: Hook command receives environment variables
     Given a spec/fspec-hooks.json with a "session_start" hook that writes env vars to a file
     When the session_start hook executes
@@ -195,7 +185,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     And the hook process should have FSPEC_HOOK_EVENT set to "SessionStart"
     And the hook process should have FSPEC_TRANSCRIPT_PATH set to the transcript file path
 
-  @HOOK-015
   Scenario: SessionStart payload includes session source
     Given a spec/fspec-hooks.json with a "session_start" hook
     When a new session starts fresh
@@ -203,19 +192,16 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When a session is resumed
     Then the hook payload should include source "resume"
 
-  @HOOK-015
   Scenario: PostToolUse payload includes tool response
     Given a spec/fspec-hooks.json with a "post_tool_use" hook group matching all tools
     When the agent invokes the "Read" tool and it returns file contents
     Then the post_tool_use hook should receive a payload containing tool_name, tool_input, and tool_response
 
-  @HOOK-015
   Scenario: SessionEnd payload includes termination reason
     Given a spec/fspec-hooks.json with a "session_end" hook
     When the session ends because the user cancelled it
     Then the hook payload should include reason "cancelled"
 
-  @HOOK-015
   Scenario: Hook command killed on timeout
   # --- Timeout Handling ---
     Given a spec/fspec-hooks.json with a "session_start" hook with timeout 1 second
@@ -224,7 +210,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the hook process should be killed after 1 second
     And the outcome should be a warning
 
-  @HOOK-015
   Scenario: pre_tool_use timeout is treated as Deny for safety
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook with timeout 1 second
     And the hook command sleeps for 10 seconds
@@ -232,7 +217,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the hook process should be killed after 1 second
     And the tool call should be denied
 
-  @HOOK-015
   Scenario: post_tool_use timeout is treated as Warning
     Given a spec/fspec-hooks.json with a "post_tool_use" hook with timeout 1 second
     And the hook command sleeps for 10 seconds
@@ -240,7 +224,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the hook process should be killed after 1 second
     And a warning should be emitted but execution should continue
 
-  @HOOK-015
   Scenario: Exit code 0 means success
   # --- Exit Code Interpretation ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 0
@@ -248,28 +231,24 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the hook outcome should be Continue (no opinion)
     And the tool call should proceed with normal policy
 
-  @HOOK-015
   Scenario: Exit code 2 with stderr means deny
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 2 and stderr "Destructive command blocked"
     When the agent tries to execute "rm -rf /"
     Then the tool call should be denied
     And the deny reason should contain "Destructive command blocked"
 
-  @HOOK-015
   Scenario: Exit code 2 without stderr means warning
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 2 and empty stderr
     When the agent invokes a tool
     Then the hook outcome should be a warning
     And the tool call should continue
 
-  @HOOK-015
   Scenario: Non-zero exit code other than 2 is a non-blocking warning
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 1
     When the agent invokes a tool
     Then a warning should be emitted about the hook failure
     And the tool call should continue
 
-  @HOOK-015
   Scenario: pre_tool_use hook returns JSON with permissionDecision allow
   # --- JSON Response Interpretation (Claude Code Compatible) ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that outputs JSON:
@@ -279,7 +258,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent invokes a tool
     Then the tool should execute immediately without any permission prompt
 
-  @HOOK-015
   Scenario: pre_tool_use hook returns JSON with permissionDecision deny
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that outputs JSON:
       """
@@ -289,7 +267,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool call should be denied
     And the deny reason should contain "Policy violation"
 
-  @HOOK-015
   Scenario: pre_tool_use hook returns JSON with permissionDecision ask
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that outputs JSON:
       """
@@ -298,7 +275,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent invokes a tool
     Then the user should be prompted for interactive permission
 
-  @HOOK-015
   Scenario: pre_tool_use hook returns JSON with continue false
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook that outputs JSON:
       """
@@ -308,7 +284,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool call should be denied
     And the deny reason should contain "Blocked by policy"
 
-  @HOOK-015
   Scenario: Hook injects additional context as system message
     Given a spec/fspec-hooks.json with a "session_start" hook that outputs JSON:
       """
@@ -317,13 +292,11 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the session starts
     Then "Always follow company coding standards" should be injected as a system message into the conversation
 
-  @HOOK-015
   Scenario: session_start hook injects context via plain text stdout
     Given a spec/fspec-hooks.json with a "session_start" hook that outputs plain text "Remember: use TypeScript only"
     When the session starts
     Then "Remember: use TypeScript only" should be injected as additional context
 
-  @HOOK-015
   Scenario: post_tool_use hook injects additional context
     Given a spec/fspec-hooks.json with a "post_tool_use" hook matching "Write|Edit" that outputs JSON:
       """
@@ -332,7 +305,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     When the agent completes a Write tool call
     Then "Lint warning: unused import on line 5" should be injected as a system message
 
-  @HOOK-017
   Scenario: pre_tool_use short-circuits on Allow decision
   # --- pre_tool_use Short-Circuit ---
     Given a spec/fspec-hooks.json with two "pre_tool_use" hook groups:
@@ -343,7 +315,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then only the first hook group should execute
     And the tool should be allowed (second group's Deny is never reached)
 
-  @HOOK-017
   Scenario: pre_tool_use short-circuits on Deny decision
     Given a spec/fspec-hooks.json with two "pre_tool_use" hook groups:
       | group  | matcher | decision |
@@ -353,7 +324,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then only the first hook group should execute
     And the tool call should be denied (second group's Allow is never reached)
 
-  @HOOK-017
   Scenario: pre_tool_use Continue does not short-circuit
     Given a spec/fspec-hooks.json with two "pre_tool_use" hook groups:
       | group  | matcher | decision |
@@ -363,7 +333,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then both hook groups should execute
     And the tool call should be denied by the second group
 
-  @HOOK-017
   Scenario: pre_tool_use all groups return Continue falls through
     Given a spec/fspec-hooks.json with two "pre_tool_use" hook groups:
       | group  | matcher | decision |
@@ -373,7 +342,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then both hook groups should execute
     And the final decision should be Continue (fall through to normal permission checks)
 
-  @HOOK-016
   Scenario: user_prompt_submit hook blocks forbidden prompt
   # --- user_prompt_submit Blocking ---
     Given a spec/fspec-hooks.json with a "user_prompt_submit" hook that exits code 2 with stderr "Policy violation: prompt contains forbidden content"
@@ -382,7 +350,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     And the agent should never see the prompt
     And the agent loop should return to waiting for input
 
-  @HOOK-016
   Scenario: user_prompt_submit hook blocks via JSON continue false
     Given a spec/fspec-hooks.json with a "user_prompt_submit" hook that outputs JSON:
       """
@@ -392,7 +359,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the prompt should be rejected
     And the block reason should contain "Prompt violates content policy"
 
-  @HOOK-016
   Scenario: user_prompt_submit hook allows and injects context
     Given a spec/fspec-hooks.json with a "user_prompt_submit" hook that outputs JSON:
       """
@@ -402,7 +368,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the prompt should be allowed through to the agent
     And "User is an admin" should be injected as additional context
 
-  @HOOK-016
   Scenario: session_end hook receives termination reason and executes
   # --- session_end ---
     Given a spec/fspec-hooks.json with a "session_end" hook named "notify-slack"
@@ -410,7 +375,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the "notify-slack" hook should execute
     And the hook payload should include session_id, cwd, reason "completed", and transcript_path
 
-  @HOOK-016
   Scenario: notification hook fires via global engine
   # --- notification ---
     Given a spec/fspec-hooks.json with a "notification" hook
@@ -418,7 +382,6 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the notification hook should execute
     And the hook payload should include notification_type, title, and message
 
-  @HOOK-016
   Scenario: Multiple commands in a hook group execute sequentially
   # --- Sequential Execution Within Hook Groups ---
     Given a spec/fspec-hooks.json with a "pre_tool_use" hook group containing two commands
@@ -426,98 +389,84 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the first command should complete before the second command starts
     And both command results should contribute to the hook group outcome
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for BashTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the BashTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the command should never have executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for ReadTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the ReadTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been read
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for WriteTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the WriteTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been written
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for EditTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the EditTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been modified
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for LsTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the LsTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the directory should never have been listed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for GlobTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the GlobTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the glob should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for GrepTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the GrepTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the search should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for AstGrepTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the AstGrepTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the AST search should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for AstGrepRefactorTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the AstGrepRefactorTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the refactor should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for FspecTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the FspecTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the fspec command should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for BridgeTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the BridgeTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the bridge action should never have been executed
 
-  @HOOK-017
   Scenario: pre_tool_use hook fires for ApplyPatchTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the ApplyPatchTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the patch should never have been applied
 
-  @HOOK-017
   Scenario: pre_tool_use Allow handler lets native tool proceed
     Given a registered pre_tool_use Allow hook handler for the session
     When the BashTool.call() method is invoked with a safe command
     Then the command should execute successfully
     Then the output should contain the command result
 
-  @HOOK-017
   Scenario: No registered handler lets native tool proceed without overhead
     Given no pre_tool_use hook handler is registered for the session
     When the BashTool.call() method is invoked

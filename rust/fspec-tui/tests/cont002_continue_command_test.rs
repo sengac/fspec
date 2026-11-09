@@ -1,4 +1,3 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/continue-command-surface.feature
 //!
 //! CONT-002: TUI side of the `/continue` command surface — grammar parser
@@ -11,6 +10,7 @@ use codelet_fspec_tui::app::continue_parser::{
 };
 use codelet_fspec_tui::app::slash_parser::{parse_slash_command, SlashCommandParse};
 use codelet_fspec_tui::views::agent::slash_commands::SLASH_COMMANDS;
+use codelet_test_helpers::TestResult;
 
 // =============================================================================
 // Scenario: Bare /continue toggles auto-continue with the default budget
@@ -19,7 +19,7 @@ use codelet_fspec_tui::views::agent::slash_commands::SLASH_COMMANDS;
 // =============================================================================
 
 #[test]
-fn tui_parser_bare_continue_toggles_auto_continue_with_the_default_budget() {
+fn tui_parser_bare_continue_toggles_auto_continue_with_the_default_budget() -> TestResult {
     // @step Given auto-continue is off
     // (parser-level: state is applied by the dispatcher via the backend setter)
 
@@ -39,6 +39,7 @@ fn tui_parser_bare_continue_toggles_auto_continue_with_the_default_budget() {
         ContinueSubcommand::Toggle,
         "trailing whitespace still parses as Toggle"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -46,7 +47,7 @@ fn tui_parser_bare_continue_toggles_auto_continue_with_the_default_budget() {
 // =============================================================================
 
 #[test]
-fn tui_parser_continue_with_a_numeric_budget_arms_or_updates_the_budget() {
+fn tui_parser_continue_with_a_numeric_budget_arms_or_updates_the_budget() -> TestResult {
     // @step Given auto-continue is off
     // (parser-level)
 
@@ -61,6 +62,7 @@ fn tui_parser_continue_with_a_numeric_budget_arms_or_updates_the_budget() {
         parse_continue_command("/continue 25"),
         ContinueSubcommand::SetBudget(25)
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -68,7 +70,7 @@ fn tui_parser_continue_with_a_numeric_budget_arms_or_updates_the_budget() {
 // =============================================================================
 
 #[test]
-fn tui_parser_continue_on_and_continue_off_set_the_state_explicitly() {
+fn tui_parser_continue_on_and_continue_off_set_the_state_explicitly() -> TestResult {
     // @step Given any auto-continue state
     // (parser-level)
 
@@ -88,6 +90,7 @@ fn tui_parser_continue_on_and_continue_off_set_the_state_explicitly() {
         parse_continue_command("/continue off"),
         ContinueSubcommand::Off
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -95,7 +98,7 @@ fn tui_parser_continue_on_and_continue_off_set_the_state_explicitly() {
 // =============================================================================
 
 #[test]
-fn tui_parser_continue_zero_is_rejected_with_a_hint() {
+fn tui_parser_continue_zero_is_rejected_with_a_hint() -> TestResult {
     // @step Given auto-continue is on with budget 10
     // (parser-level)
 
@@ -111,6 +114,7 @@ fn tui_parser_continue_zero_is_rejected_with_a_hint() {
 
     // @step And the auto-continue state is unchanged
     // (RejectZero never reaches the backend setter — dispatcher contract)
+    Ok(())
 }
 
 // =============================================================================
@@ -118,7 +122,7 @@ fn tui_parser_continue_zero_is_rejected_with_a_hint() {
 // =============================================================================
 
 #[test]
-fn tui_parser_an_invalid_continue_argument_leaves_state_unchanged() {
+fn tui_parser_an_invalid_continue_argument_leaves_state_unchanged() -> TestResult {
     // @step Given auto-continue is off
     // (parser-level)
 
@@ -134,6 +138,7 @@ fn tui_parser_an_invalid_continue_argument_leaves_state_unchanged() {
 
     // @step And the auto-continue state is unchanged
     // (Invalid never reaches the backend setter — dispatcher contract)
+    Ok(())
 }
 
 // =============================================================================
@@ -141,7 +146,7 @@ fn tui_parser_an_invalid_continue_argument_leaves_state_unchanged() {
 // =============================================================================
 
 #[test]
-fn the_tui_exposes_continue_via_the_palette_and_typed_input() {
+fn the_tui_exposes_continue_via_the_palette_and_typed_input() -> TestResult {
     // @step Given the TUI slash command registry
     let registry = SLASH_COMMANDS;
 
@@ -161,6 +166,7 @@ fn the_tui_exposes_continue_via_the_palette_and_typed_input() {
         SlashCommandParse::NotASlashCommand,
         "/continue 50 must be routed as a slash command, not forwarded to send_input"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -168,7 +174,7 @@ fn the_tui_exposes_continue_via_the_palette_and_typed_input() {
 // =============================================================================
 
 #[test]
-fn the_status_bar_shows_an_auto_continue_indicator_while_armed() {
+fn the_status_bar_shows_an_auto_continue_indicator_while_armed() -> TestResult {
     // @step Given auto-continue is armed with budget 10 and 3 nudges used
     let (enabled, used, budget) = (true, 3u32, 10u32);
 
@@ -188,6 +194,7 @@ fn the_status_bar_shows_an_auto_continue_indicator_while_armed() {
         None,
         "no indicator while off"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -206,7 +213,7 @@ use codelet_cli::interactive::auto_continue::{
 // =============================================================================
 
 #[test]
-fn bare_continue_toggles_auto_continue_with_the_default_budget() {
+fn bare_continue_toggles_auto_continue_with_the_default_budget() -> TestResult {
     // @step Given auto-continue is off
     let (enabled, budget) = (false, DEFAULT_CONTINUE_BUDGET);
 
@@ -243,6 +250,7 @@ fn bare_continue_toggles_auto_continue_with_the_default_budget() {
         "state message must print off; got: {:?}",
         off.message
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -250,7 +258,7 @@ fn bare_continue_toggles_auto_continue_with_the_default_budget() {
 // =============================================================================
 
 #[test]
-fn continue_with_a_numeric_budget_arms_or_updates_the_budget() {
+fn continue_with_a_numeric_budget_arms_or_updates_the_budget() -> TestResult {
     // @step Given auto-continue is off
     let (enabled, budget) = (false, DEFAULT_CONTINUE_BUDGET);
 
@@ -278,6 +286,7 @@ fn continue_with_a_numeric_budget_arms_or_updates_the_budget() {
     assert!(updated.enabled, "budget update while on must stay on");
     assert_eq!(updated.budget, 25, "budget must update to 25");
     assert!(updated.changed);
+    Ok(())
 }
 
 // =============================================================================
@@ -285,7 +294,7 @@ fn continue_with_a_numeric_budget_arms_or_updates_the_budget() {
 // =============================================================================
 
 #[test]
-fn continue_on_and_continue_off_set_the_state_explicitly() {
+fn continue_on_and_continue_off_set_the_state_explicitly() -> TestResult {
     // @step Given any auto-continue state
     for (enabled, budget) in [(false, 10u32), (true, 50u32)] {
         // @step When the user enters "/continue on"
@@ -309,6 +318,7 @@ fn continue_on_and_continue_off_set_the_state_explicitly() {
         let off = apply_continue_command(on.enabled, on.budget, false, &cmd_off);
         assert!(!off.enabled, "explicit off must disable");
     }
+    Ok(())
 }
 
 // =============================================================================
@@ -316,7 +326,7 @@ fn continue_on_and_continue_off_set_the_state_explicitly() {
 // =============================================================================
 
 #[test]
-fn continue_zero_is_rejected_with_a_hint() {
+fn continue_zero_is_rejected_with_a_hint() -> TestResult {
     // @step Given auto-continue is on with budget 10
     let (enabled, budget) = (true, 10u32);
 
@@ -340,6 +350,7 @@ fn continue_zero_is_rejected_with_a_hint() {
     assert!(!result.changed);
     assert!(result.enabled, "state must remain on");
     assert_eq!(result.budget, 10, "budget must remain 10");
+    Ok(())
 }
 
 // =============================================================================
@@ -347,7 +358,7 @@ fn continue_zero_is_rejected_with_a_hint() {
 // =============================================================================
 
 #[test]
-fn an_invalid_continue_argument_leaves_state_unchanged() {
+fn an_invalid_continue_argument_leaves_state_unchanged() -> TestResult {
     // @step Given auto-continue is off
     let (enabled, budget) = (false, DEFAULT_CONTINUE_BUDGET);
 
@@ -370,4 +381,5 @@ fn an_invalid_continue_argument_leaves_state_unchanged() {
     assert!(!result.changed);
     assert!(!result.enabled);
     assert_eq!(result.budget, DEFAULT_CONTINUE_BUDGET);
+    Ok(())
 }

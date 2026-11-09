@@ -87,8 +87,7 @@ async fn terminate_stream_on_done_marker_without_invoking_parse_stream_chunk() {
     // @step When the SSE stream emits data "[DONE]"
     let (_tmp, results) = process_events(script, &["[DONE]"]).await;
 
-    // @step Then the bridge completes without yielding further chunks
-    //        and parse_stream_chunk is not invoked for that event
+    // @step Then the bridge completes without yielding further chunks and parse_stream_chunk is not invoked for that event
     assert!(
         results.is_empty(),
         "expected no chunks on [DONE]; got {results:?}"
@@ -416,8 +415,7 @@ fn parse_stream_chunk(config, data) {{
 // =========================================================================
 #[tokio::test]
 async fn build_stream_request_produces_streaming_body() {
-    // @step Given a Rhai script whose build_stream_request clones build_request
-    //        and sets "stream": true
+    // @step Given a Rhai script whose build_stream_request clones build_request and sets "stream": true
     let script = r#"
 fn build_request(request) { #{ messages: request.messages } }
 fn build_headers(config) { #{} }
@@ -527,8 +525,7 @@ fn parse_stream_chunk(config, data) {{
         }
     }
 
-    // @step Then the collected chunks are TextDelta, TextDelta, TextDelta, StopReason
-    //        in that exact order
+    // @step Then the collected chunks are TextDelta, TextDelta, TextDelta, StopReason in that exact order
     assert_eq!(
         collected.len(),
         4,

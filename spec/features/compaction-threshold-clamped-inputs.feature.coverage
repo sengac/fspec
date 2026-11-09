@@ -4,39 +4,9 @@
       "name": "Claude Opus 4.6 compaction threshold uses effective catalog limits",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "566-589",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "9-25",
+          "implMappings": []
         }
       ]
     },
@@ -44,36 +14,9 @@
       "name": "Context fill percentage is accurate with clamped threshold",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "594-620",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "27-40",
+          "implMappings": []
         }
       ]
     },
@@ -81,8 +24,8 @@
       "name": "Compaction fires before API limit with clamped threshold",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "625-648",
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "42-73",
           "implMappings": [
             {
               "file": "rust/core/src/compaction_hook.rs",
@@ -164,7 +107,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "cancel_sig: &CancelSignal,",
+              "lastLine": "last_known_total,"
             }
           ]
         }
@@ -174,42 +119,9 @@
       "name": "Gemini 2.5 Pro compaction threshold uses 80 percent of context window",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "653-665",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "75-84",
+          "implMappings": []
         }
       ]
     },
@@ -217,12 +129,32 @@
       "name": "GPT-4o compaction threshold uses 80 percent of context window",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "670-682",
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "86-94",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent propagation uses effective context window",
+      "testMappings": [
+        {
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "134-151",
           "implMappings": [
             {
-              "file": "rust/cli/src/compaction_threshold.rs",
+              "file": "rust/providers/src/manager/impl_3.rs",
               "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
                 159,
                 160,
                 161,
@@ -238,61 +170,10 @@
                 171,
                 172,
                 173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Sub-agent propagation uses effective context window",
-      "testMappings": [
-        {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "746-767",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/manager.rs",
-              "lines": [
-                840,
-                841,
-                842,
-                843,
-                844,
-                845,
-                846,
-                847,
-                848,
-                849,
-                850,
-                851,
-                852,
-                853,
-                854,
-                855,
-                856,
-                857,
-                858,
-                859,
-                860,
-                861,
-                862,
-                863,
-                864,
-                865
-              ]
+                174
+              ],
+              "firstLine": "\"Current provider is not Claude\",",
+              "lastLine": ".map_err(|_| ProviderError::auth(\"openai\", \"OPENAI_API_KEY not set\"))?;"
             }
           ]
         }
@@ -302,8 +183,8 @@
       "name": "Summarization budget uses clamped context window",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "687-697",
+          "file": "rust/cli/src/compaction_threshold/catalog_tests.rs",
+          "lines": "96-104",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_threshold.rs",
@@ -315,7 +196,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "Self::Percentage(pct) => (context_window as f64 * (*pct as f64 / 100.0)) as u64,",
+              "lastLine": "if type_str == \"percentage\" {"
             }
           ]
         }
@@ -327,14 +210,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/src/compaction_threshold.rs"
+      "rust/cli/src/compaction_threshold/catalog_tests.rs"
     ],
     "implFiles": [
-      "rust/cli/src/compaction_threshold.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/core/src/compaction_hook.rs",
-      "rust/providers/src/manager.rs"
+      "rust/providers/src/manager/impl_3.rs",
+      "rust/cli/src/compaction_threshold.rs"
     ],
-    "totalLinesCovered": 343
+    "totalLinesCovered": 219
   }
 }

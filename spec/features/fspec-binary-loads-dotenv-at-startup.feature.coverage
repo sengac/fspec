@@ -23,7 +23,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// never aborts.",
+              "lastLine": ""
             }
           ]
         }
@@ -52,7 +54,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// never aborts.",
+              "lastLine": ""
             }
           ]
         }
@@ -81,7 +85,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// never aborts.",
+              "lastLine": ""
             }
           ]
         }
@@ -110,18 +116,20 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// never aborts.",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "The fspec startup seam calls dotenvy in startup_env and main.rs invokes it before clap parse",
+      "name": "The fspec startup seam calls dotenvy in startup_env and the CLI entry invokes it before clap parse",
       "testMappings": [
         {
           "file": "rust/fspec/src/startup_env.rs",
-          "lines": "228-270",
+          "lines": "228-275",
           "implMappings": [
             {
               "file": "rust/fspec/src/startup_env.rs",
@@ -129,19 +137,17 @@
                 26,
                 27,
                 28
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/src/startup_env.rs",
-          "lines": "228-270",
-          "implMappings": [
+              ],
+              "firstLine": "pub fn load_startup_env() {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/cli_registration/entry.rs",
               "lines": [
-                2346
-              ]
+                8
+              ],
+              "firstLine": "startup_env::load_startup_env();",
+              "lastLine": "startup_env::load_startup_env();"
             }
           ]
         }
@@ -152,7 +158,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/src/startup_env.rs",
-          "lines": "272-297",
+          "lines": "274-299",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -161,7 +167,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "url.workspace = true",
+              "lastLine": "# (mirrors rust/cli/Cargo.toml) so Provider Settings detects env-only"
             }
           ]
         }
@@ -177,9 +185,9 @@
     ],
     "implFiles": [
       "rust/fspec/src/startup_env.rs",
-      "rust/fspec/src/main.rs",
+      "rust/fspec/src/cli_registration/entry.rs",
       "rust/fspec/Cargo.toml"
     ],
-    "totalLinesCovered": 279
+    "totalLinesCovered": 241
   }
 }

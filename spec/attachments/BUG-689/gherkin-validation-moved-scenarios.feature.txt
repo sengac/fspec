@@ -1,0 +1,23 @@
+  Scenario: Detect invalid step keyword
+    Given I have a file "spec/features/broken.feature" with content:
+      """
+      Feature: User Login
+
+        Scenario: Login successfully
+          Given I am on the login page
+          While I enter valid credentials
+          Then I should be logged in
+      """
+    When I run `fspec validate spec/features/broken.feature`
+    Then the command should exit with code 1
+    And the output should contain "Syntax error"
+    And the output should contain "line 5"
+    And the output should contain "Invalid step keyword 'While'"
+    And the output should suggest "Use: Given, When, Then, And, or But"
+
+  Scenario: Detect unclosed doc string
+    Given I have a file "spec/features/broken.feature" with unclosed doc string
+    When I run `fspec validate spec/features/broken.feature`
+    Then the command should exit with code 1
+    And the output should contain "Unclosed doc string"
+    And the output should suggest 'Add closing """'

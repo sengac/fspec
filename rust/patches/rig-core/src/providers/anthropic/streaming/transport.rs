@@ -39,6 +39,8 @@ where
         } else {
             tracing::Span::current()
         };
+        // MODEL-015: a request with effort messages carries the per-message effort beta.
+        let effort_beta = super::super::effort::requested(&completion_request.additional_params);
         let body = self.streaming_request_bytes(completion_request)?;
         if enabled!(Level::TRACE) {
             tracing::trace!(
@@ -47,9 +49,7 @@ where
                 String::from_utf8_lossy(&body)
             );
         }
-        let req = self
-            .client
-            .post("/v1/messages")?
+        let req = super::super::effort::with_beta(self.client.post("/v1/messages")?, effort_beta)?
             .body(body)
             .map_err(http_client::Error::Protocol)?;
         let stream = GenericEventSource::new(self.client.clone(), req);

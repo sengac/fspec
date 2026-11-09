@@ -1,8 +1,20 @@
+@BUG-582
+@done
 @providers
 @PROV-006
+@PROV-171
+@BUG-309
+@PROV-164
+@model-selection
 Feature: OpenAI-Compatible Local Model Support (vLLM, Ollama)
   """
   Modify OpenAIProvider to use openai::CompletionsClient::builder().base_url() when OPENAI_BASE_URL is set. Follow ZAIProvider pattern. Model list fetching requires GET request to {base_url}/models endpoint.
+
+  PROV-171: OPENAI_CONTEXT_WINDOW / OPENAI_MAX_OUTPUT_TOKENS are explicit limit overrides. Unset means not
+  overridden: the limit comes from the user, profile or catalog, or is unavailable (no built-in 128000/4096
+  guess). A set value that is not a positive integer is ProviderError::InvalidLimitOverride naming the
+  variable and the value, raised when the OpenAI provider is selected (session creation, model switch) or
+  constructed.
   """
 
   # ========================================
@@ -14,7 +26,7 @@ Feature: OpenAI-Compatible Local Model Support (vLLM, Ollama)
   #   2. Model list must be fetched from local endpoint (GET /v1/models) NOT from models.dev
   #   3. Tool calling (function calling) must work with local models that support it
   #   4. OPENAI_API_KEY can be any non-empty value for local servers without auth (e.g., 'local')
-  #   5. Context window and max output tokens must be configurable via OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS env vars
+  #   5. Context window and max output tokens must be configurable via OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS env vars; an invalid value is an error, an unset one is no override (PROV-171)
   #   6. Streaming must work the same as with remote OpenAI API
   #   7. New explicit NAPI function models_list_local_openai(base_url) for TUI integration
   #   8. Return simplified structure: just model IDs as strings (local servers don't expose capability info)
@@ -137,7 +149,57 @@ Feature: OpenAI-Compatible Local Model Support (vLLM, Ollama)
   Scenario: Use default OpenAI endpoint when no custom base URL is set
     Given OPENAI_BASE_URL is not set
     And I have a valid OPENAI_API_KEY
-    And I set OPENAI_MODEL to "gpt-4-turbo"
+    And I set OPENAI_MODEL to "gpt-4o"
     When I create an OpenAI provider
     Then the provider should connect to the standard OpenAI API
     And the behavior should be unchanged from current implementation
+
+  Scenario: A profile's Max Output Tokens sets the request output limit
+    Given an OpenAI-compatible session whose profile sets Max Output Tokens to 32768
+    When the OpenAI provider is built for the session
+    Then the provider should report max output tokens of 32768
+    And the session's output reservation is 32768
+
+  Scenario: Without a profile output limit the OpenAI provider is not built
+    Given an OpenAI-compatible session whose profile has no Max Output Tokens and no OPENAI_MAX_OUTPUT_TOKENS override
+    When the OpenAI provider is built for the session
+    Then building the provider fails because max output tokens are unavailable for the model
+    And the session's output reservation is unavailable
+
+  @configuration
+  Scenario: An OpenAI provider without limit overrides reports no limits
+    Given OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS are not set
+    When I create an OpenAI provider
+    Then the provider should report no context window
+    And the provider should report no max output tokens
+
+  @configuration
+  @error-handling
+  Scenario: A non-numeric OPENAI_MAX_OUTPUT_TOKENS fails OpenAI provider construction
+    Given I set OPENAI_MAX_OUTPUT_TOKENS to "not_a_number"
+    When I create an OpenAI provider
+    Then provider creation should fail with an error naming OPENAI_MAX_OUTPUT_TOKENS and "not_a_number"
+
+  @configuration
+  @error-handling
+  Scenario: A zero or empty OPENAI_CONTEXT_WINDOW fails OpenAI provider construction
+    Given I set OPENAI_CONTEXT_WINDOW to "0"
+    When I create an OpenAI provider
+    Then provider creation should fail with an error naming OPENAI_CONTEXT_WINDOW and "0"
+    And with OPENAI_CONTEXT_WINDOW set to "" provider creation fails naming OPENAI_CONTEXT_WINDOW
+
+  @configuration
+  @error-handling
+  Scenario: An invalid limit override fails selecting an OpenAI model
+    Given OPENAI_CONTEXT_WINDOW is set to "32k"
+    When an OpenAI model is selected on the provider manager
+    Then the selection should fail with an error naming OPENAI_CONTEXT_WINDOW and "32k"
+
+  @configuration
+  @error-handling
+  @integration
+  Scenario: Switching a session to a profile model fails while OPENAI_MAX_OUTPUT_TOKENS is invalid
+    Given a saved OpenAI-compatible profile "qwen"
+    And OPENAI_MAX_OUTPUT_TOKENS is set to "lots"
+    When the session model is set to "openai:qwen/qwen"
+    Then the model selection should fail with an error naming OPENAI_MAX_OUTPUT_TOKENS and "lots"

@@ -19,7 +19,7 @@ Feature: update-step CLI subcommand (Rust shell front-door)
     Given a tempdir with spec/features/user-auth.feature with scenario "Valid login" containing step "Given I am on the login page"
     When I run 'fspec update-step spec/features/user-auth.feature "Valid login" "Given I am on the login page" --text "I navigate to the login page"' in that tempdir
     Then the process exits with code 0
-    And stdout contains the substring '✓ Successfully updated step in scenario '"'"'Valid login'"'"' in user-auth.feature'
+    And stdout contains the substring '✓ Successfully updated step in scenario 'Valid login' in user-auth.feature'
     And the file spec/features/user-auth.feature in the tempdir contains the line '    Given I navigate to the login page'
 
   Scenario: CLI changes a step keyword and prints the success line
@@ -51,6 +51,6 @@ Feature: update-step CLI subcommand (Rust shell front-door)
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given a project root tempdir with spec/features/user-auth.feature with scenario "Valid login" containing step "Given I am on the login page"
     When I dispatch update-step through fspec_core::dispatch::dispatch_command with feature='spec/features/user-auth.feature' scenario='Valid login' currentStep='Given I am on the login page' text='I navigate to the login page'
-    Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully updated step in scenario '"'"'Valid login'"'"' in user-auth.feature'
+    Then the dispatcher's DispatchResult.data parses to a structure whose message contains 'Successfully updated step in scenario 'Valid login' in user-auth.feature'
     And the CLI bridge module rust/fspec/src/update_step.rs contains NO inline gherkin parsing or step-update logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution

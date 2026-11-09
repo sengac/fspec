@@ -23,7 +23,7 @@ Feature: /isolation only opens the create-session dialog and /merge-worktree nev
   #   4. The /isolation slash-command description must be updated to reflect the toggle behavior: 'Toggle worktree isolation (detach or create isolated session)'
   #
   # EXAMPLES:
-  #   1. User in a non-isolated session runs /isolation → the CreateSessionDialog opens preselecting 'Yes - Isolated' (today's RPC-060 behavior is preserved)
+  #   1. User in a non-isolated session runs /isolation → the CreateSessionDialog opens preselecting 'Start in Worktree' (today's RPC-060 behavior is preserved)
   #   2. User in an isolated session (store shows is_isolated=true with a worktree path) runs /isolation → backend.detach_session_worktree is called, the session keeps running with effective cwd = project root, the IsolationStateChange(false, None) chunk lands in the store, and the worktree dir is marked prunable
   #   3. User in a non-isolated session whose worktree listing still shows a live worktree for the session runs /isolation → the TUI emits the notice 'session still isolated — use /merge-worktree' and makes no backend detach call
   #   4. User in an isolated session runs /merge-worktree and the merge succeeds with a commit SHA → the scrollback shows the [merge] success notice, the session tab closes, the session is destroyed on the backend, and the user lands back on the board view
@@ -39,7 +39,7 @@ Feature: /isolation only opens the create-session dialog and /merge-worktree nev
     Given an App with open session s-1 whose isolation state is non-isolated
     And the session worktree listing has no row for session s-1
     When SlashCommandSelected(SlashCommandAction::Isolation) is dispatched
-    Then a CreateSessionDialog is pushed onto the compositor with preselect "Yes - Isolated"
+    Then a CreateSessionDialog is pushed onto the compositor with preselect "Start in Worktree"
     And no backend worktree method is called
 
   @happy-path

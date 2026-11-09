@@ -3,6 +3,7 @@
 @provider-settings
 @configuration
 @phase-1
+@BUG-337
 Feature: Provider runtime scripted dispatch
   """
   Custom-provider selection retains the upstream API model ID exposed by ProviderManager. The custom agent factory resolves an exact configured alias first, otherwise accepts only a unique upstream model ID. Rhai receives the original alias as config.model_alias and the upstream ID as config.model. Unknown or ambiguous upstream IDs fail without choosing an arbitrary alias. Exercise the real factory and local HTTP requests, including named runtime profiles, without changing manager identity semantics.

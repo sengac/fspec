@@ -184,12 +184,17 @@ fn commands_dir() -> PathBuf {
         .join("commands")
 }
 
-fn agent_loop_path() -> PathBuf {
-    workspace_root()
-        .join("rust")
-        .join("agent-loop")
-        .join("src")
-        .join("agent_loop.rs")
+fn agent_loop_src() -> PathBuf {
+    workspace_root().join("rust").join("agent-loop").join("src")
+}
+
+/// The fspec handler closure lives in `fspec_handler.rs`; the agent loop
+/// registers it from `agent_loop/handlers.rs` with the callback-presence flag.
+fn agent_loop_handler_paths() -> [PathBuf; 2] {
+    [
+        agent_loop_src().join("fspec_handler.rs"),
+        agent_loop_src().join("agent_loop").join("handlers.rs"),
+    ]
 }
 
 fn agent_loop_cargo_path() -> PathBuf {
@@ -227,18 +232,38 @@ fn canonical_commands_count_matches_attachment() {
         "attachment should contain exactly 162 commands, found {}",
         commands.len()
     );
+    // Commands added after the TypeScript port, each by its own card.
+    const ADDED_AFTER_PORT: &[&str] = &[
+        "update-feature-text", // BUG-507
+        "audit",               // AUDIT-003
+        "context",             // CLI-019
+        "remove-assumption",   // BUG-633
+        "restore-assumption",  // BUG-633
+    ];
     assert_eq!(
         CANONICAL_COMMANDS.len(),
-        162,
-        "CANONICAL_COMMANDS should contain exactly 162 entries, found {}",
+        162 + ADDED_AFTER_PORT.len() - REMOVED_AFTER_PORT.len(),
+        "CANONICAL_COMMANDS should contain the 162 ported commands plus {ADDED_AFTER_PORT:?} minus {REMOVED_AFTER_PORT:?}, found {}",
         CANONICAL_COMMANDS.len()
     );
+    for name in ADDED_AFTER_PORT {
+        assert!(lookup(name).is_some(), "added command '{name}' is missing");
+    }
+    for name in REMOVED_AFTER_PORT {
+        assert!(
+            lookup(name).is_none(),
+            "removed command '{name}' is still registered"
+        );
+    }
 
     for entry in commands {
         let name = entry
             .get("name")
             .and_then(Value::as_str)
             .expect("each command entry should have a 'name' field");
+        if REMOVED_AFTER_PORT.contains(&name) {
+            continue;
+        }
         assert!(
             lookup(name).is_some(),
             "canonical command '{name}' from attachment is missing from CANONICAL_COMMANDS"
@@ -350,6 +375,15 @@ fn every_canonical_command_has_a_module_or_is_stubbed() {
     );
 }
 
+/// Ported commands removed since, each by its own card.
+const REMOVED_AFTER_PORT: &[&str] = &[
+    "audit-coverage",           // AUDIT-003
+    "check",                    // AUDIT-003
+    "show-acceptance-criteria", // CLI-019
+    "get-scenarios",            // CLI-019
+    "search-scenarios",         // CLI-019
+];
+
 #[test]
 fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
     // Scenario: Every TypeScript command name has a child work unit under RPC-003
@@ -404,6 +438,9 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
         let status = unit.get("status").and_then(Value::as_str).unwrap_or("");
         let estimate = unit.get("estimate");
 
+        if REMOVED_AFTER_PORT.contains(&command.as_str()) {
+            continue;
+        }
         // @step And every child work unit's title matches the pattern "Port <command> command to Rust"
         let expected_title = format!("Port {command} command to Rust");
         if title != expected_title {
@@ -466,26 +503,34 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
 fn agent_loop_fallback_wires_codelet_fspec_core_dispatch_command() {
     // Scenario: agent_loop falls back to the Rust dispatcher when the NAPI chunk callback is absent
 
-    // @step Given the agent_loop.rs source after this work unit is applied
-    let src = fs::read_to_string(agent_loop_path()).expect("agent_loop.rs readable");
+    // @step Given the agent loop fspec handler sources after this work unit is applied
+    let [handler_path, registration_path] = agent_loop_handler_paths();
+    let handler = fs::read_to_string(handler_path).expect("fspec_handler.rs readable");
+    let registration =
+        fs::read_to_string(registration_path).expect("agent_loop/handlers.rs readable");
+    let src = format!("{handler}\n{registration}");
 
     // @step When I inspect the fspec_handler closure passed to set_fspec_handler_for_session
     // (we look at the source verbatim — full agent_loop e2e is out of scope here)
+    assert!(registration.contains("set_fspec_handler_for_session"));
+    assert!(registration.contains("fspec_handler::create_handler"));
 
-    // @step Then the closure delegates to codelet_fspec_core::dispatch_command on the !is_global_chunk_callback_registered() branch
+    // @step Then the closure delegates to codelet_fspec_core::dispatch_command when is_global_chunk_callback_registered() is false
     assert!(
-        src.contains("codelet_fspec_core::dispatch_command"),
-        "agent_loop.rs must call codelet_fspec_core::dispatch_command after TOOL-019"
+        handler.contains("codelet_fspec_core::dispatch_command"),
+        "fspec_handler.rs must call codelet_fspec_core::dispatch_command after TOOL-019"
     );
     assert!(
-        src.contains("!is_global_chunk_callback_registered()"),
-        "agent_loop.rs must keep the !is_global_chunk_callback_registered() branch as the standalone-binary fallback"
+        registration.contains("is_global_chunk_callback_registered()")
+            && handler.contains("if use_callback")
+            && handler.contains("} else {"),
+        "the dispatcher must remain the fallback when the global chunk callback is absent"
     );
 
     // @step And the closure does NOT return the legacy string "Global chunk callback not registered"
     assert!(
         !src.contains("Global chunk callback not registered"),
-        "agent_loop.rs must no longer emit the legacy 'Global chunk callback not registered' error string after TOOL-019"
+        "agent loop fspec handler must no longer emit the legacy 'Global chunk callback not registered' error string after TOOL-019"
     );
 
     // @step And the codelet-agent-loop crate's Cargo.toml declares codelet-fspec-core as a workspace dependency

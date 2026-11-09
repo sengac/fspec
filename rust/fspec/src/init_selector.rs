@@ -305,8 +305,8 @@ mod tests {
         assert_eq!(ctrl_c, SelectorOutcome::Cancelled);
     }
 
-    #[test]
-    fn selecting_an_agent_installs_its_files() {
+    #[tokio::test]
+    async fn selecting_an_agent_installs_its_files() {
         // @step Given an empty project root directory and the interactive selector positioned on the 'gemini' row
         let tmp = tempfile::TempDir::new().unwrap();
         let mut state = AgentSelectorState::new(available_agents(), &[]);
@@ -325,9 +325,8 @@ mod tests {
         };
         assert_eq!(selected, "gemini");
         let args = serde_json::json!({ "agent": [selected] }).to_string();
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        let rendered = runtime
-            .block_on(codelet_fspec_core::commands::init::run(&args, tmp.path()))
+        let rendered = codelet_fspec_core::commands::init::run(&args, tmp.path())
+            .await
             .expect("init run succeeds");
         assert!(rendered.contains("\"success\":true"));
 

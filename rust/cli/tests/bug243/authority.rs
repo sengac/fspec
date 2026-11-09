@@ -10,7 +10,8 @@ fn select_authoritative_provider_state_independently_from_original_metadata() ->
     let (mut manifest, _) = dialogue(directory.path())?;
     let alias = CodexHistory::default();
     publish(&alias, "original-checkpoint-alias")?;
-    let mut original = json!({"uuid":Uuid::new_v4(),"provider":"codex",
+    let mut original = json!({"uuid":Uuid::new_v4(),"parentUuid":null,
+        "timestamp":"2026-01-01T00:00:00Z","type":"assistant","requestId":null,"provider":"codex",
         "message":{"role":"assistant","content":[{"type":"text","text":"authentic dialogue"}]},
         "codexContinuation":serde_json::to_value(alias.snapshot()?)?});
     append_message_with_metadata(

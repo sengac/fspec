@@ -17,8 +17,8 @@
 //! `project_root: &Path`. The CLI surface resolves project_root from
 //! CWD (parity with the TypeScript `process.cwd()` default at
 //! `src/commands/query-metrics.ts:39`). The clap subcommand carries
-//! `--work-unit-id`, `--type` and `--format` — matching the TS
-//! Commander.js registration at `src/commands/query-metrics.ts:182-198`.
+//! `--work-unit`, `--type` and `--format` (CLI-020 renamed the TS
+//! `--work-unit-id` of `src/commands/query-metrics.ts:182-198`).
 //!
 //! No filter / aggregation / rendering logic is duplicated here — that
 //! would split the dispatcher and CLI answer shapes.
@@ -32,10 +32,10 @@
 //!     the TS `output.error('✗ Query failed:', error.message)` path
 //!     at `src/commands/query-metrics.ts:250`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_metrics;
 use serde_json::Value;
 
@@ -43,7 +43,7 @@ use serde_json::Value;
 /// set for `query-metrics` (`src/commands/query-metrics.ts:182-198`).
 #[derive(Debug, Default)]
 pub struct CliArgs {
-    /// `--work-unit-id <id>` — query metrics for a single unit when set.
+    /// `--work-unit <workUnitId>` — query metrics for a single unit when set.
     pub work_unit_id: Option<String>,
     /// `--type <type>` — filter aggregate metrics to `story`, `task` or
     /// `bug`.
@@ -57,7 +57,7 @@ pub struct CliArgs {
 /// subcommand. Returns the process exit code so `main` can propagate
 /// it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve cwd")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Build the args JSON payload using a serde_json::Map so the keys
     // appear in a stable order and only-when-set fields are omitted

@@ -1,3 +1,4 @@
+@BUG-472
 @phase-1
 @provider-abstraction
 @providers
@@ -17,6 +18,7 @@ Feature: Codex reconnect stream consistency
     When its replacement completes on the selected transport
     Then abandoned output is retracted and the successful answer appears once
     And the next turn replays the successful answer without lineage failure
+    And the replacement's usage is reported before the answer its completed event carries
 
   Scenario: Streaming remains live before the attempt terminates
     Given an accepted WebSocket response whose terminal event is withheld

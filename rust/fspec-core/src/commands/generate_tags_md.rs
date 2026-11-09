@@ -65,10 +65,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// optional `--output` value (relative paths are resolved against
 /// `project_root`).
 fn generate(project_root: &Path, output_path: Option<&str>) -> Result<String, FspecCoreError> {
-    let tags_json_path = project_root.join("spec").join("tags.json");
+    let tags_json_path = crate::io::spec_paths::tags(project_root)?;
     let tags_md_path = match output_path {
         Some(p) => project_root.join(p),
-        None => project_root.join("spec").join("TAGS.md"),
+        None => crate::io::spec_paths::tags_md(project_root)?,
     };
 
     // Check if tags.json exists (TS `existsSync`).
@@ -120,10 +120,8 @@ fn generate(project_root: &Path, output_path: Option<&str>) -> Result<String, Fs
             source,
         })?;
     }
-    std::fs::write(&tags_md_path, markdown.as_bytes()).map_err(|source| FspecCoreError::Io {
-        command: "generate-tags-md",
-        source,
-    })?;
+    // BUG-498: under the spec lock, replaced atomically.
+    crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;
 
     let output_relative = output_path.unwrap_or("spec/TAGS.md");
     Ok(format!("Generated {output_relative} from spec/tags.json"))

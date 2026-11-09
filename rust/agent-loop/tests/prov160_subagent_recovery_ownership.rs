@@ -108,24 +108,28 @@ async fn scenario_subagent_collectors_preserve_codex_terminal_failures_and_ordin
     let stream = futures::stream::iter(vec![Err::<MultiTurnStreamItem<Response>, _>(
         anyhow::anyhow!("connection reset by peer"),
     )]);
-    let result = tokio::time::timeout(
-        Duration::from_millis(50),
-        deep_search_handler::collect_final_response_from_stream(stream, "zai"),
-    )
-    .await;
+    // Paused clock (TEST-042: advance it, never time out on it): 50 ms on,
+    // the generic backoff is still running.
+    let collecting = tokio::spawn(deep_search_handler::collect_final_response_from_stream(
+        stream, "zai",
+    ));
+    tokio::time::advance(Duration::from_millis(50)).await;
+    tokio::task::yield_now().await;
     assert!(
-        result.is_err(),
+        !collecting.is_finished(),
         "hard deadline must interrupt generic backoff"
     );
+    collecting.abort();
 
     let stream = futures::stream::pending::<Result<MultiTurnStreamItem<Response>, anyhow::Error>>();
-    let result = tokio::time::timeout(
-        Duration::from_millis(50),
-        deep_search_handler::collect_final_response_from_stream(stream, "codex"),
-    )
-    .await;
+    let collecting = tokio::spawn(deep_search_handler::collect_final_response_from_stream(
+        stream, "codex",
+    ));
+    tokio::time::advance(Duration::from_millis(50)).await;
+    tokio::task::yield_now().await;
     assert!(
-        result.is_err(),
+        !collecting.is_finished(),
         "hard deadline must interrupt Codex polling"
     );
+    collecting.abort();
 }

@@ -14,6 +14,16 @@ pub const DAG: &str =
     "<dag-node depth=\"D1\" turns=\"0-3\" label=\"Evidence\">Complete source</dag-node>";
 pub const OUTPUT: u64 = 4096;
 
+/// BUG-305: `padding` bytes that tokenize to about `padding` tokens. Long
+/// runs of one character collapse into a few BPE tokens, so the runway would
+/// never see the occupancy these fixtures are sized for.
+pub fn evidence(position: usize, padding: usize) -> String {
+    format!(
+        "evidence-{position}-start {} evidence-{position}-end",
+        "x!".repeat(padding / 2)
+    )
+}
+
 pub struct Harness {
     pub fixture: metrics::Fixture,
     pub limits: AdmissionLimits,
@@ -33,10 +43,7 @@ impl Harness {
         manifest.messages.clear();
         save_session(&manifest)?;
         for position in 0..4 {
-            let content = format!(
-                "evidence-{position}-start {} evidence-{position}-end",
-                "x".repeat(padding)
-            );
+            let content = evidence(position, padding);
             append_message_with_metadata(
                 &mut manifest,
                 "user",
@@ -95,7 +102,7 @@ impl Harness {
         register_compactor_sub_agent_handler(
             self.fixture.session.id,
             &inner,
-            std::env::temp_dir(),
+            self.fixture.project(),
             self.fixture.session.compaction_in_progress.clone(),
         );
         Ok(())
@@ -140,6 +147,7 @@ impl Harness {
                     json!({"role":"assistant", "content":null, "tool_calls":[{
                         "id":format!("original-{previous}"), "type":"function", "function":{
                             "name":"SessionSearch", "arguments":json!({
+                                "work_unit_id":"NONE",
                                 "action_type":"originals", "session_id":session.id,
                                 "start_turn":position, "end_turn":position, "limit":1,
                                 "max_bytes":61440
@@ -165,15 +173,22 @@ impl Harness {
                 register_generate_compaction_handler(
                     self.fixture.session.id,
                     &inner,
-                    std::env::temp_dir(),
+                    self.fixture.project(),
                     self.fixture.session.clone(),
                     None,
                 )
             };
-            GenerateCompactionTool::new(self.fixture.session.id)
+            let output = GenerateCompactionTool::new(self.fixture.session.id)
                 .call(GenerateCompactionArgs { session_id: None })
                 .await
                 .map_err(|error| error.to_string())?;
+            // BUG-614: a failed self-target generation is a non-fatal
+            // rejected_final result carrying the exact error.
+            let result: serde_json::Value =
+                serde_json::from_str(&output).map_err(|error| error.to_string())?;
+            if result["status"] == "rejected_final" {
+                return Err(result["error"].as_str().unwrap_or_default().to_owned());
+            }
             let mut inner = self.fixture.session.inner.lock().await;
             queue.apply(&mut inner, &self.fixture.session)?;
             Ok(())

@@ -44,7 +44,7 @@ impl Fixture {
         )?;
         let fixture = Self {
             directory,
-            manager: Arc::new(SessionManager::new()),
+            manager: SessionManager::new(),
             environment,
             data_directory,
         };
@@ -101,7 +101,9 @@ impl Drop for Fixture {
     fn drop(&mut self) {
         reset_stores_for_tests();
         if let Some(directory) = &self.data_directory {
-            let _ = codelet_common::set_data_directory(directory.clone());
+            if let Err(error) = codelet_common::set_data_directory(directory.clone()) {
+                eprintln!("cannot restore the data directory: {error}");
+            }
         }
         for (key, value) in &self.environment {
             match value {

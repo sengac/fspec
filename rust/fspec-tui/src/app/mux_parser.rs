@@ -1,50 +1,40 @@
-//! MUX-001 — `/mux` slash-command grammar parser.
+//! MUX-001/MUX-010 — `/mux` slash-command grammar parser.
 //!
-//! Feature: spec/features/rust-mux-mode.feature
+//! Feature: spec/features/rust-mux-mode.feature +
+//! spec/features/mux-nested-column-and-row-layouts-from-a-bracket-layout-string.feature
 //!
-//! Grammar (space-separated):
+//! Grammar:
 //!
 //! ```text
-//! mux := "mux" ( "on" | "off"
-//!              | orientation
-//!              | pane-count
-//!              | pane-list (split-percent)?
-//!              | "save" | "default" | "help" )
-//! orientation  := "h" | "v" | "horizontal" | "vertical"
-//! pane-count   := integer 2..=4
-//! pane-list    := pane-kind { pane-kind }        # 2..=4 items
-//! pane-kind    := "board" | "agent" | "files" | "checkpoints"
-//! split-percent := integer 10..=90               # exactly one
+//! mux := "mux" [ "on" | "off" | "save" | "default" | "help" | layout ]
+//! layout := see views::multiplex::layout_tree::parse
+//!           e.g. agent, [board, board], board, files
 //! ```
 //!
-//! Parse errors (R7) surface as a one-line message and leave the
+//! Bare `/mux` opens the MuxConfigDialog. The removed MUX-001 forms
+//! (`h|v|horizontal|vertical`, a pane count, a space-separated pane list
+//! with an optional split percent) fail with [`MuxError::RemovedSyntax`],
+//! whose text shows the layout syntax. Errors are one line and leave the
 //! current mux config untouched.
 
 use thiserror::Error;
 
-use crate::views::multiplex::{MuxOrientation, MuxPaneKind};
+use crate::views::multiplex::{MuxLayout, MuxLayoutError};
+
+/// The layout example every syntax hint shows.
+pub const MUX_LAYOUT_EXAMPLE: &str = "/mux agent, [board, board], board, files";
 
 /// A parsed `/mux` subcommand.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MuxSubcommand {
-    /// `/mux` (bare) — open the MuxConfigDialog (MUX-004: the on/off
-    /// toggle moved into the dialog's Enabled row; the MUX-001 Toggle
-    /// behaviour is superseded).
+    /// `/mux` (bare) — open the MuxConfigDialog (MUX-004).
     Config,
     /// `/mux on` — enable with saved/default config.
     On,
     /// `/mux off` — disable, return to the pre-mux view.
     Off,
-    /// `/mux h|v|horizontal|vertical`.
-    Orientation(MuxOrientation),
-    /// `/mux 2..=4` — set the pane count with default kinds.
-    PaneCount(usize),
-    /// `/mux <kinds...> [pct]` — explicit pane list + optional first
-    /// split percent.
-    PaneList {
-        panes: Vec<MuxPaneKind>,
-        split_percent: Option<u16>,
-    },
+    /// MUX-010: `/mux <layout>` — apply the layout and enable mux.
+    Layout(MuxLayout),
     /// `/mux save` — persist the current config to the shared
     /// `fspec-config.json` under `tui.mux`.
     Save,
@@ -54,21 +44,28 @@ pub enum MuxSubcommand {
     Help,
 }
 
-/// `/mux` parse error (R7: one-line, config untouched).
+/// `/mux` parse error (one line, config untouched).
 #[derive(Debug, Clone, Error, PartialEq, Eq)]
 pub enum MuxError {
-    #[error("/mux: unknown pane kind: {0}")]
-    UnknownPaneKind(String),
-    #[error("/mux: split percent must be 10..=90, got {0}")]
-    SplitPercentOutOfRange(u16),
-    #[error("/mux: pane count must be 2..=4, got {0}")]
-    PaneCountOutOfRange(usize),
-    #[error("/mux: at least 2 panes required, got {0}")]
-    TooFewPanes(usize),
-    #[error("/mux: at most 4 panes supported, got {0}")]
-    TooManyPanes(usize),
+    #[error("/mux: {0}")]
+    Layout(#[from] MuxLayoutError),
+    #[error(
+        "/mux: '{0}' is the removed mux syntax; write a layout string, e.g. {MUX_LAYOUT_EXAMPLE}"
+    )]
+    RemovedSyntax(String),
     #[error("/mux: unrecognized subcommand: {0}")]
     UnknownSubcommand(String),
+}
+
+/// True for the removed MUX-001 argument forms: an orientation word, a
+/// bare integer, or two or more space-separated words with none of the
+/// layout punctuation.
+fn is_removed_syntax(args: &str) -> bool {
+    let words: Vec<&str> = args.split_whitespace().collect();
+    let orientation = matches!(words.as_slice(), ["h" | "v" | "horizontal" | "vertical"]);
+    let count = words.len() == 1 && words[0].chars().all(|c| c.is_ascii_digit());
+    let spaced = words.len() > 1 && !args.contains([',', '[', ']', ':']);
+    orientation || count || spaced
 }
 
 /// Parse a submitted `/mux …` line. Bare `/mux` (no args) resolves to
@@ -78,77 +75,19 @@ pub fn parse_mux_command(line: &str) -> Result<MuxSubcommand, MuxError> {
     let Some(rest) = trimmed.strip_prefix("/mux") else {
         return Err(MuxError::UnknownSubcommand(trimmed.to_string()));
     };
-    let args: Vec<&str> = rest.split_whitespace().collect();
-    if args.is_empty() {
-        return Ok(MuxSubcommand::Config);
+    if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
+        return Err(MuxError::UnknownSubcommand(trimmed.to_string()));
     }
-
-    match args[0] {
+    let args = rest.trim();
+    match args {
+        "" => Ok(MuxSubcommand::Config),
         "on" => Ok(MuxSubcommand::On),
         "off" => Ok(MuxSubcommand::Off),
-        "h" | "horizontal" => Ok(MuxSubcommand::Orientation(MuxOrientation::Horizontal)),
-        "v" | "vertical" => Ok(MuxSubcommand::Orientation(MuxOrientation::Vertical)),
         "save" => Ok(MuxSubcommand::Save),
         "default" => Ok(MuxSubcommand::Default),
         "help" => Ok(MuxSubcommand::Help),
-        first => {
-            // Pane count: a bare integer 2..=4.
-            if let Ok(n) = first.parse::<usize>() {
-                if (2..=4).contains(&n) {
-                    return Ok(MuxSubcommand::PaneCount(n));
-                }
-                return Err(MuxError::PaneCountOutOfRange(n));
-            }
-            // Pane list: 2..=4 kinds, optional trailing split percent.
-            parse_pane_list(&args)
-        }
-    }
-}
-
-fn parse_pane_list(args: &[&str]) -> Result<MuxSubcommand, MuxError> {
-    // Count the non-numeric tokens (pane kinds) FIRST so an over-long
-    // list errors as TooManyPanes even when a trailing token is not a
-    // valid kind.
-    let kind_count = args.iter().filter(|a| a.parse::<u16>().is_err()).count();
-    if kind_count > 4 {
-        return Err(MuxError::TooManyPanes(kind_count));
-    }
-    if kind_count < 2 {
-        return Err(MuxError::TooFewPanes(kind_count));
-    }
-    let mut panes: Vec<MuxPaneKind> = Vec::new();
-    let mut split_percent: Option<u16> = None;
-    for (i, arg) in args.iter().enumerate() {
-        if let Ok(pct) = arg.parse::<u16>() {
-            // A numeric token is the split percent — only allowed as
-            // the FINAL token, and only once.
-            if i != args.len() - 1 || split_percent.is_some() {
-                return Err(MuxError::SplitPercentOutOfRange(pct));
-            }
-            if !(10..=90).contains(&pct) {
-                return Err(MuxError::SplitPercentOutOfRange(pct));
-            }
-            split_percent = Some(pct);
-            continue;
-        }
-        match parse_pane_kind(arg) {
-            Some(kind) => panes.push(kind),
-            None => return Err(MuxError::UnknownPaneKind(arg.to_string())),
-        }
-    }
-    Ok(MuxSubcommand::PaneList {
-        panes,
-        split_percent,
-    })
-}
-
-fn parse_pane_kind(arg: &str) -> Option<MuxPaneKind> {
-    match arg {
-        "board" => Some(MuxPaneKind::Board),
-        "agent" => Some(MuxPaneKind::Agent),
-        "files" => Some(MuxPaneKind::ChangedFiles),
-        "checkpoints" => Some(MuxPaneKind::Checkpoints),
-        _ => None,
+        _ if is_removed_syntax(args) => Err(MuxError::RemovedSyntax(args.to_string())),
+        _ => Ok(MuxSubcommand::Layout(MuxLayout::parse(args)?)),
     }
 }
 
@@ -160,8 +99,6 @@ mod tests {
 
     #[test]
     fn bare_and_lifecycle_subcommands() {
-        // MUX-004: bare /mux resolves to Config (opens the MuxConfigDialog),
-        // no longer Toggle.
         assert_eq!(parse_mux_command("/mux"), Ok(MuxSubcommand::Config));
         assert_eq!(parse_mux_command("/mux on"), Ok(MuxSubcommand::On));
         assert_eq!(parse_mux_command("/mux off"), Ok(MuxSubcommand::Off));
@@ -174,34 +111,52 @@ mod tests {
     }
 
     #[test]
-    fn orientation_and_count() {
-        assert_eq!(
-            parse_mux_command("/mux v"),
-            Ok(MuxSubcommand::Orientation(MuxOrientation::Vertical))
-        );
-        assert_eq!(parse_mux_command("/mux 3"), Ok(MuxSubcommand::PaneCount(3)));
+    fn a_layout_string_parses() {
+        let Ok(MuxSubcommand::Layout(layout)) =
+            parse_mux_command("/mux agent, [board, board], board, files")
+        else {
+            panic!("a layout");
+        };
+        assert_eq!(layout.to_string(), "agent, [board, board], board, files");
+        // A single pane is a layout, not the removed syntax.
         assert!(matches!(
-            parse_mux_command("/mux 5"),
-            Err(MuxError::PaneCountOutOfRange(5))
+            parse_mux_command("/mux board"),
+            Ok(MuxSubcommand::Layout(_))
         ));
     }
 
     #[test]
-    fn pane_list_with_split() {
+    fn the_removed_syntax_names_the_new_one() {
+        for args in [
+            "v",
+            "horizontal",
+            "3",
+            "board agent 40",
+            "files checkpoints",
+        ] {
+            assert_eq!(
+                parse_mux_command(&format!("/mux {args}"))
+                    .unwrap_err()
+                    .to_string(),
+                format!(
+                    "/mux: '{args}' is the removed mux syntax; write a layout string, \
+                     e.g. /mux agent, [board, board], board, files"
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn layout_errors_carry_the_column() {
         assert_eq!(
-            parse_mux_command("/mux board agent 40"),
-            Ok(MuxSubcommand::PaneList {
-                panes: vec![MuxPaneKind::Board, MuxPaneKind::Agent],
-                split_percent: Some(40),
-            })
+            parse_mux_command("/mux board, zzz")
+                .unwrap_err()
+                .to_string(),
+            "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints"
         );
-        assert!(matches!(
-            parse_mux_command("/mux board zzz"),
-            Err(MuxError::UnknownPaneKind(ref k)) if k == "zzz"
-        ));
-        assert!(matches!(
-            parse_mux_command("/mux board agent 5"),
-            Err(MuxError::SplitPercentOutOfRange(5))
-        ));
+        assert_eq!(
+            parse_mux_command("/muxx").unwrap_err(),
+            MuxError::UnknownSubcommand("/muxx".to_string())
+        );
     }
 }

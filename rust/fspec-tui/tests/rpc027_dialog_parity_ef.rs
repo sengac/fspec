@@ -3,8 +3,7 @@
 //! Feature: spec/features/rpc027-model-confirm-dialogs.feature
 //! Covers Sections E (ModelSelectorDialog) and F (ConfirmDialog).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -14,12 +13,12 @@ use ratatui::Terminal;
 
 use codelet_fspec_tui::views::agent::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 
-fn render_confirm_80x24(c: &ConfirmDialog) -> Buffer {
+fn render_confirm_80x24(c: &ConfirmDialog) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|f| c.render(f.area(), f.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn find_text(buf: &Buffer, needle: &str) -> Option<(u16, u16)> {
@@ -81,15 +80,15 @@ fn make_confirm() -> ConfirmDialog {
 
 /// Scenario: ConfirmDialog renders with the yellow accent and caller-supplied title
 #[test]
-fn confirm_dialog_renders_with_yellow_accent_and_caller_supplied_title() {
+fn confirm_dialog_renders_with_yellow_accent_and_caller_supplied_title() -> TestResult {
     // @step Given a ConfirmDialog with title "Delete Session" and body "Delete this session?"
     let dialog = make_confirm();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_confirm_80x24(&dialog);
+    let buf = render_confirm_80x24(&dialog)?;
     // @step Then the border cells use foreground color Color::Yellow
     assert_eq!(find_border_color(&buf), Color::Yellow);
     // @step And the body's first non-padding row contains the text "Delete Session"
-    let (x, y) = find_text(&buf, "Delete Session").expect("title present");
+    let (x, y) = find_text(&buf, "Delete Session").or_fail("title present")?;
     // @step And the title cells have foreground color Color::Yellow with BOLD modifier
     for i in 0..("Delete Session".chars().count() as u16) {
         let cell = &buf[(x + i, y)];
@@ -98,20 +97,21 @@ fn confirm_dialog_renders_with_yellow_accent_and_caller_supplied_title() {
     }
     // @step And the source no longer uses Block::default().borders(Borders::ALL)
     let src = std::fs::read_to_string("src/views/agent/confirm_dialog.rs")
-        .expect("confirm_dialog.rs exists");
+        .or_fail("confirm_dialog.rs exists")?;
     assert!(
         !src.contains("Block::default()") || !src.contains("Borders::ALL"),
         "ConfirmDialog must no longer use raw Block::default().borders(Borders::ALL)"
     );
+    Ok(())
 }
 
 /// Scenario: ConfirmDialog button row uses inverse highlight on the focused button
 #[test]
-fn confirm_dialog_button_row_uses_inverse_highlight_on_focused_button() {
+fn confirm_dialog_button_row_uses_inverse_highlight_on_focused_button() -> TestResult {
     // @step Given a ConfirmDialog with primary "Delete", secondary "Archive", cancel "Cancel" and focused index 0
     let dialog = make_confirm();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_confirm_80x24(&dialog);
+    let buf = render_confirm_80x24(&dialog)?;
 
     // Helper: scan a specific row for `needle` and return the starting
     // column index of the first match (in cells, not bytes).
@@ -144,9 +144,9 @@ fn confirm_dialog_button_row_uses_inverse_highlight_on_focused_button() {
             break;
         }
     }
-    let by = button_row_y.expect("button row with 'Archive' label");
+    let by = button_row_y.or_fail("button row with 'Archive' label")?;
 
-    let dx = find_on_row(&buf, "Delete", by).expect("Delete on button row");
+    let dx = find_on_row(&buf, "Delete", by).or_fail("Delete on button row")?;
     let cell = &buf[(dx, by)];
     // @step Then the " Delete " span has background Color::Yellow and foreground Color::Black with BOLD modifier
     assert_eq!(cell.bg, Color::Yellow);
@@ -154,21 +154,22 @@ fn confirm_dialog_button_row_uses_inverse_highlight_on_focused_button() {
     assert!(cell.modifier.contains(Modifier::BOLD));
 
     // @step And the " Archive " and " Cancel " spans have default Style
-    let arch_x = find_on_row(&buf, "Archive", by).expect("Archive on button row");
+    let arch_x = find_on_row(&buf, "Archive", by).or_fail("Archive on button row")?;
     let arch = &buf[(arch_x, by)];
     assert_ne!(arch.bg, Color::Yellow, "Archive must not be highlighted");
-    let can_x = find_on_row(&buf, "Cancel", by).expect("Cancel on button row");
+    let can_x = find_on_row(&buf, "Cancel", by).or_fail("Cancel on button row")?;
     let can = &buf[(can_x, by)];
     assert_ne!(can.bg, Color::Yellow, "Cancel must not be highlighted");
 
     // @step And the spans are separated by " │ "
     let text = buffer_text(&buf);
     assert!(text.contains(" │ "), "buttons must be separated by ' │ '");
+    Ok(())
 }
 
 /// Scenario: ConfirmDialog Left and Right cycle button focus
 #[test]
-fn confirm_dialog_left_and_right_cycle_button_focus() {
+fn confirm_dialog_left_and_right_cycle_button_focus() -> TestResult {
     // @step Given a ConfirmDialog with three buttons and focused index 0
     let mut dialog = make_confirm();
     assert_eq!(dialog.focused(), 0);
@@ -188,11 +189,12 @@ fn confirm_dialog_left_and_right_cycle_button_focus() {
     let _ = dialog.handle_key(KeyCode::Left, KeyModifiers::NONE);
     // @step Then focused is 2
     assert_eq!(dialog.focused(), 2);
+    Ok(())
 }
 
 /// Scenario: ConfirmDialog Esc returns Cancel from any focused index
 #[test]
-fn confirm_dialog_esc_returns_cancel_from_any_focused_index() {
+fn confirm_dialog_esc_returns_cancel_from_any_focused_index() -> TestResult {
     // @step Given a ConfirmDialog with three buttons and focused index 1
     let mut dialog = make_confirm();
     let _ = dialog.handle_key(KeyCode::Right, KeyModifiers::NONE);
@@ -201,6 +203,7 @@ fn confirm_dialog_esc_returns_cancel_from_any_focused_index() {
     let outcome = dialog.handle_key(KeyCode::Esc, KeyModifiers::NONE);
     // @step Then the outcome is ConfirmDialogOutcome::Cancel
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
+    Ok(())
 }
 
 // Silence unused warnings — area constructor is referenced via Rect below

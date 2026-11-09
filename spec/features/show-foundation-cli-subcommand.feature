@@ -2,6 +2,7 @@
 @querying
 @cli
 @RPC-305
+@BUG-537
 Feature: show-foundation clap subcommand on the standalone fspec Rust binary
   """
   CLI surface for the `show-foundation` subcommand on the standalone fspec Rust binary.
@@ -10,7 +11,7 @@ Feature: show-foundation clap subcommand on the standalone fspec Rust binary
   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::show_foundation::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
-  The clap subcommand exposes one optional positional `[section]` argument and the following flags: `--section <section>` (alias for the positional), `--format <text|json>` (default 'text'), `--output <file>`, `--draft`, `--list-sections`, `--line-numbers`. The latter two are advertised but no-op (parity with the TS source which advertises them but does not implement them in showFoundationCommand).
+  The clap subcommand exposes one optional positional `[section]` argument and the following flags: `--section <section>` (BUG-537: the same section as the positional; giving both is a parse error), `--format <text|json>` (default 'text'), `--output <file>`, `--draft`, `--list-sections`, `--line-numbers`. The latter two are advertised but no-op (parity with the TS source which advertises them but does not implement them in showFoundationCommand).
   Text format prints the formatted content to stdout. JSON format prints 2-space pretty-printed JSON. When --output <file> is provided, the formatted content is written to that file and stdout prints '✓ Output written to <file>'.
   Exit-code contract: 0 on success, 1 on any error (field-not-found, missing draft, parse error) with stderr prefixed 'Error:'.
   --help is byte-for-byte identical to the captured TS fixture at rust/fspec/tests/fixtures/help/show-foundation.txt.
@@ -27,8 +28,8 @@ Feature: show-foundation clap subcommand on the standalone fspec Rust binary
     Then the command exits 0
     Then stdout contains the substring 'show-foundation'
     Then stdout advertises the optional positional <section> argument
-    Then stdout advertises the '--format' flag
-    Then stdout advertises the '--output' flag
+    Then stdout does NOT advertise the '--format' flag
+    Then stdout does NOT advertise the '--output' flag
     Then stdout advertises the '--draft' flag
     Then stdout advertises the '--list-sections' flag
     Then stdout advertises the '--line-numbers' flag
@@ -104,3 +105,25 @@ Feature: show-foundation clap subcommand on the standalone fspec Rust binary
     Then the command exits 0
     Then stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/show-foundation.txt
     Then stdout starts with a blank line followed by 'SHOW-FOUNDATION'
+
+  Scenario: CLI --section flag shows the same section as the positional
+    Given spec/foundation.json contains project.name='fspec'
+    When I run `fspec show-foundation --section projectName` from that directory
+    Then the command exits 0
+    And stdout equals exactly 'fspec' (with a trailing newline), the same as `fspec show-foundation projectName`
+
+  Scenario: CLI --section with an unknown field exits 1
+    Given spec/foundation.json contains project.name='fspec'
+    When I run `fspec show-foundation --section nonexistent` from that directory
+    Then the command exits with code 1
+    And stderr contains the substring "Field 'nonexistent' not found"
+
+  Scenario: CLI rejects a positional section together with --section
+    Given spec/foundation.json contains project.name='fspec'
+    When I run `fspec show-foundation projectName --section projectVision` from that directory
+    Then the command exits non-zero without printing a section
+    And stderr names the --section argument
+
+  Scenario: show-foundation --help lists the --section option
+    When I run `fspec show-foundation --help`
+    Then the OPTIONS block lists '--section <section>' described as the same section as the positional [section]

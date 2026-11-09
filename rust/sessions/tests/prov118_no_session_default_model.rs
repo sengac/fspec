@@ -45,8 +45,11 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((data_dir, manager))
 }
 
@@ -65,22 +68,22 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
         manager
             .list_sessions(
                 &std::env::current_dir()
-                    .map(|p| p.to_string_lossy().to_string())
-                    .unwrap_or_default()
-            )
+                    .map_err(|e| format!("the test process has no working directory: {e}"))?
+                    .to_string_lossy()
+            )?
             .is_empty(),
         "precondition: no session exists"
     );
     assert!(
-        handle.create_session(None).value.is_empty(),
-        "precondition: create_session declines (empty id) before a default model is set"
+        handle.create_session_checked(None).is_err(),
+        "precondition: create_session fails before a default model is set"
     );
 
     // @step When a no-session model selection sets the default model to "anthropic/claude-opus-4-5"
-    handle.set_default_model("anthropic/claude-opus-4-5");
+    handle.set_default_model("anthropic/claude-opus-4-5")?;
 
     // @step And create_session is called
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
 
     // @step Then create_session returns a non-empty session id
     assert!(
@@ -89,7 +92,7 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
     );
 
     // @step And the created session uses the model "anthropic/claude-opus-4-5"
-    let resolved = handle.get_session_model(&sid);
+    let resolved = handle.get_session_model(&sid)?;
     assert_eq!(
         resolved.provider_id, "anthropic",
         "provider must be the selected anthropic"
@@ -114,12 +117,12 @@ async fn set_default_model_ignores_empty_string() -> Result<(), String> {
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When set_default_model is called with an empty string
-    handle.set_default_model("");
+    // BUG-411: an empty model is refused rather than silently ignored.
+    assert!(handle.set_default_model("").is_err());
 
     // @step Then create_session still declines (no hardcoded anthropic fallback)
-    let sid = handle.create_session(None);
     assert!(
-        sid.value.is_empty(),
+        handle.create_session_checked(None).is_err(),
         "an empty default-model string must be ignored — PROV-101 policy preserved"
     );
     Ok(())

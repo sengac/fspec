@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_independent_relays.rs",
-          "lines": "35-60",
+          "lines": "34-59",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -53,7 +53,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "for sender in codelet_tools::get_subordinate_chunk_senders(root_parent_id) {",
+              "lastLine": "sender"
             },
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -71,7 +73,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(crate) fn fork(&self) -> Result<Self, RelayOutputError> {",
+              "lastLine": "})"
             }
           ]
         }
@@ -82,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_independent_relays.rs",
-          "lines": "62-92",
+          "lines": "61-91",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -112,7 +116,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "Ok(tokio::spawn(async move {",
+              "lastLine": "sender"
             },
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -130,7 +136,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(crate) fn fork(&self) -> Result<Self, RelayOutputError> {",
+              "lastLine": "})"
             }
           ]
         }
@@ -141,7 +149,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_independent_relays.rs",
-          "lines": "94-124",
+          "lines": "93-123",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -188,7 +196,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "for sender in codelet_tools::get_subordinate_chunk_senders(root_parent_id) {",
+              "lastLine": "sender"
             },
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -206,7 +216,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(crate) fn fork(&self) -> Result<Self, RelayOutputError> {",
+              "lastLine": "})"
             }
           ]
         }

@@ -57,7 +57,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// the finalized `spec/foundation.json` (same schema, same error format).",
+              "lastLine": "// Parse JSON. A malformed document is surfaced via the generic"
             }
           ]
         }
@@ -120,7 +122,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// the finalized `spec/foundation.json` (same schema, same error format).",
+              "lastLine": "// Parse JSON. A malformed document is surfaced via the generic"
             }
           ]
         }
@@ -170,7 +174,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "Ok(()) => Ok(serde_json::to_string(&json!({",
+              "lastLine": ".strip_prefix(\"must NOT have fewer than \")"
             }
           ]
         }
@@ -208,7 +214,9 @@
                 156,
                 157,
                 158
-              ]
+              ],
+              "firstLine": ".and_then(|rest| rest.strip_suffix(\" items\"))",
+              "lastLine": "/// `instancePath`). Ajv renders the keyword that failed as `#/<keyword>`; the"
             }
           ]
         }
@@ -219,7 +227,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_foundation_schema.rs",
-          "lines": "167-187",
+          "lines": "179-202",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_foundation_schema.rs",
@@ -271,7 +279,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// the finalized `spec/foundation.json` (same schema, same error format).",
+              "lastLine": "// Parse JSON. A malformed document is surfaced via the generic"
             }
           ]
         }
@@ -288,6 +298,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/validate_foundation_schema.rs"
     ],
-    "totalLinesCovered": 327
+    "totalLinesCovered": 330
   }
 }

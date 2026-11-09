@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @BUG-169
 @bug-169
@@ -129,7 +130,7 @@ Feature: Slash-command submit interception is registry-driven (Tab/Esc then Ente
     When it is called with each of the legacy family inputs
     Then it returns the same variant as before the fix:
       | input          | expected variant            |
-      | /thinking high | SetThinkingLevel(High)      |
+      | /thinking high | ThinkingCommand("high")     |
       | /role clear    | ClearRole                   |
       | /goal          | GoalSubcommand(Show)        |
       | /update check  | UpdateSubcommand(CheckOnly) |

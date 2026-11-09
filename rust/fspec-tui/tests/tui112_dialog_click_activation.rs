@@ -14,14 +14,12 @@
 //! do not implement left-click commit routing yet — those tests are
 //! RED until the TUI-112 R2/R3 implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::board_exit_confirmation_dialog::{
     BoardExitChoice, BoardExitConfirmationDialog,
 };
 use codelet_fspec_tui::components::dialog_button_hits::LastLayout;
 use codelet_fspec_tui::components::exit_confirmation_dialog::{ExitChoice, ExitConfirmationDialog};
-use codelet_fspec_tui::components::mux_config_dialog::MuxConfigDialog;
+use codelet_fspec_tui::components::mux_config_dialog::{MuxConfigDialog, MuxDialogFocus};
 use codelet_fspec_tui::views::agent::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 use codelet_fspec_tui::views::agent::merge_confirm_dialog::{
     MergeConfirmDialog, MergeConfirmDialogOutcome,
@@ -36,13 +34,14 @@ use codelet_fspec_tui::{
 use codelet_rpc_types::{
     SessionChangesSummary, SessionId, SessionWorktreeInfo, ThinkingLevel, WorkUnitInfo,
 };
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::Terminal;
 
-use codelet_fspec_tui::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind};
+use codelet_fspec_tui::views::multiplex::{MuxConfig, MuxLayout};
 
 // ─────────────────────────────────────────────────────────────────────
 // Shared helpers
@@ -51,19 +50,24 @@ use codelet_fspec_tui::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind
 /// Render `dialog` into an 80x24 TestBackend (80x24 frame) and return the
 /// buffer. All hit-testing in these tests derives from the LAST rendered
 /// frame (R4).
-fn render_80x24<D: codelet_fspec_tui::Component>(dialog: &mut D) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_80x24<D: codelet_fspec_tui::Component>(
+    dialog: &mut D,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| dialog.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Render a `&ConfirmDialog` (NOT a `Component` — embedded behind `&` in
 /// the view scaffolds) into an 80x24 TestBackend.
-fn render_80x24_ref(dialog: &codelet_fspec_tui::views::agent::confirm_dialog::ConfirmDialog) {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_80x24_ref(
+    dialog: &codelet_fspec_tui::views::agent::confirm_dialog::ConfirmDialog,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| dialog.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
 }
 
 fn down_at(col: u16, row: u16) -> Event {
@@ -105,16 +109,16 @@ fn gap_col(layout: &LastLayout, left: usize, right: usize) -> u16 {
 // R1 — CreateSessionDialog (Start New Agent?)
 // ─────────────────────────────────────────────────────────────────────
 
-/// Scenario: Start New Agent — clicking Yes - Isolated commits it
+/// Scenario: Start New Agent — clicking Start in Worktree commits it
 #[test]
-fn start_new_agent_clicking_yes_isolated_commits_it() {
-    // @step Given the "Start New Agent?" dialog is open with "Yes" highlighted
+fn start_new_agent_clicking_yes_isolated_commits_it() -> TestResult {
+    // @step Given the "Start New Agent?" dialog is open with "Start" highlighted
     let mut dialog = CreateSessionDialog::new(None, None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
-    // @step When the user left-clicks the "Yes - Isolated" button
+    // @step When the user left-clicks the "Start in Worktree" button
     let ev = down_at(col_of(layout, 1), layout.controls[1].y);
     let result = dialog.handle_event(&ev);
 
@@ -133,18 +137,19 @@ fn start_new_agent_clicking_yes_isolated_commits_it() {
             action,
             Some(Action::CreateSessionSubmitted { isolated: true })
         ),
-        "clicking 'Yes - Isolated' must emit the isolated creation action"
+        "clicking 'Start in Worktree' must emit the isolated creation action"
     );
     // @step And the dialog is removed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 /// Scenario: Start New Agent — clicking Cancel dismisses without creating
 #[test]
-fn start_new_agent_clicking_cancel_dismisses_without_creating() {
+fn start_new_agent_clicking_cancel_dismisses_without_creating() -> TestResult {
     // @step Given the "Start New Agent?" dialog is open
     let mut dialog = CreateSessionDialog::new(None, None);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -161,15 +166,16 @@ fn start_new_agent_clicking_cancel_dismisses_without_creating() {
     );
     // @step And the dialog is removed
     assert!(result.is_consumed(), "the dismiss click must be consumed");
+    Ok(())
 }
 
 /// Scenario: Start New Agent — keyboard behavior is unchanged
 #[test]
-fn start_new_agent_keyboard_behavior_is_unchanged() {
-    // @step Given the "Start New Agent?" dialog is open with "Yes" highlighted
+fn start_new_agent_keyboard_behavior_is_unchanged() -> TestResult {
+    // @step Given the "Start New Agent?" dialog is open with "Start" highlighted
     let mut dialog = CreateSessionDialog::new(None, None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
 
     // @step When the user presses Right then Enter
     let r1 = dialog.handle_event(&key(KeyCode::Right));
@@ -186,10 +192,11 @@ fn start_new_agent_keyboard_behavior_is_unchanged() {
     );
     // @step And the dialog is removed
     assert!(r2.is_consumed(), "the Enter commit must be consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// R1 — ExitConfirmationDialog (Exit Session?)
+// R1 — ExitConfirmationDialog (Close Agent?)
 // ─────────────────────────────────────────────────────────────────────
 
 fn exit_choice_of(action: Option<Action>) -> Option<ExitChoice> {
@@ -199,16 +206,16 @@ fn exit_choice_of(action: Option<Action>) -> Option<ExitChoice> {
     }
 }
 
-/// Scenario: Exit Session — clicking Close Session commits it
+/// Scenario: Close Agent — clicking Close commits it
 #[test]
-fn exit_session_clicking_close_session_commits_it() {
-    // @step Given the "Exit Session?" dialog is open with "Close Session" highlighted
-    let mut dialog = ExitConfirmationDialog::new(false);
+fn exit_session_clicking_close_session_commits_it() -> TestResult {
+    // @step Given the "Close Agent?" dialog is open with "Close" highlighted
+    let mut dialog = ExitConfirmationDialog::new(agent_close_facts(false));
     assert_eq!(dialog.selected_choice(), ExitChoice::CloseSession);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
-    // @step When the user left-clicks the "Close Session" button
+    // @step When the user left-clicks the "Close" button
     let ev = down_at(col_of(layout, 0), layout.controls[0].y);
     let result = dialog.handle_event(&ev);
 
@@ -216,19 +223,20 @@ fn exit_session_clicking_close_session_commits_it() {
     assert_eq!(
         exit_choice_of(dialog.take_pending_action()),
         Some(ExitChoice::CloseSession),
-        "clicking 'Close Session' must commit the CloseSession choice"
+        "clicking 'Close' must commit the CloseSession choice"
     );
     // @step And the dialog is removed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
-/// Scenario: Exit Session — clicking Cancel dismisses it
+/// Scenario: Close Agent — clicking Cancel dismisses it
 #[test]
-fn exit_session_clicking_cancel_dismisses_it() {
-    // @step Given the "Exit Session?" dialog is open with "Close Session" highlighted
-    let mut dialog = ExitConfirmationDialog::new(false);
+fn exit_session_clicking_cancel_dismisses_it() -> TestResult {
+    // @step Given the "Close Agent?" dialog is open with "Close" highlighted
+    let mut dialog = ExitConfirmationDialog::new(agent_close_facts(false));
     assert_eq!(dialog.selected_choice(), ExitChoice::CloseSession);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -243,6 +251,7 @@ fn exit_session_clicking_cancel_dismisses_it() {
     );
     // @step And the dialog is removed
     assert!(result.is_consumed(), "a dismissing click is consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -251,11 +260,11 @@ fn exit_session_clicking_cancel_dismisses_it() {
 
 /// Scenario: Exit fspec — clicking Exit commits quit
 #[test]
-fn exit_fspec_clicking_exit_commits_quit() {
+fn exit_fspec_clicking_exit_commits_quit() -> TestResult {
     // @step Given the "Exit fspec?" dialog is open with "Exit" highlighted
     let mut dialog = BoardExitConfirmationDialog::new();
     assert_eq!(dialog.selected_choice(), BoardExitChoice::Exit);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Exit" button
@@ -269,15 +278,16 @@ fn exit_fspec_clicking_exit_commits_quit() {
     );
     // @step And the dialog is removed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 /// Scenario: Exit fspec — clicking Cancel stays on the board
 #[test]
-fn exit_fspec_clicking_cancel_stays_on_the_board() {
+fn exit_fspec_clicking_cancel_stays_on_the_board() -> TestResult {
     // @step Given the "Exit fspec?" dialog is open with "Exit" highlighted
     let mut dialog = BoardExitConfirmationDialog::new();
     assert_eq!(dialog.selected_choice(), BoardExitChoice::Exit);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -297,6 +307,7 @@ fn exit_fspec_clicking_cancel_stays_on_the_board() {
     // @step And the user remains on the board
     // (no Action::Quit → App::dispatch keeps the BoardView; asserted by
     // the absence of the quit action above)
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -315,11 +326,11 @@ fn merge_summary() -> SessionChangesSummary {
 
 /// Scenario: Merge confirm — clicking Discard returns Discard
 #[test]
-fn merge_confirm_clicking_discard_returns_discard() {
+fn merge_confirm_clicking_discard_returns_discard() -> TestResult {
     // @step Given the merge-confirm dialog is open with "Merge" focused
     let mut dialog = MergeConfirmDialog::new(SessionId::new("s-1"), merge_summary());
     assert_eq!(dialog.focused_button(), 0);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Discard" button
@@ -339,15 +350,16 @@ fn merge_confirm_clicking_discard_returns_discard() {
         result.is_consumed(),
         "the dismissing click must be consumed"
     );
+    Ok(())
 }
 
 /// Scenario: Merge confirm — clicking Cancel returns Cancel
 #[test]
-fn merge_confirm_clicking_cancel_returns_cancel() {
+fn merge_confirm_clicking_cancel_returns_cancel() -> TestResult {
     // @step Given the merge-confirm dialog is open with "Merge" focused
     let mut dialog = MergeConfirmDialog::new(SessionId::new("s-1"), merge_summary());
     assert_eq!(dialog.focused_button(), 0);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -366,6 +378,7 @@ fn merge_confirm_clicking_cancel_returns_cancel() {
         result.is_consumed(),
         "the dismissing click must be consumed"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -384,11 +397,11 @@ fn worktree_rows() -> Vec<SessionWorktreeInfo> {
 
 /// Scenario: Session worktrees — clicking Prune returns Prune
 #[test]
-fn session_worktrees_clicking_prune_returns_prune() {
+fn session_worktrees_clicking_prune_returns_prune() -> TestResult {
     // @step Given the session-worktrees dialog is open with "Prune" focused
     let mut dialog = SessionWorktreesDialog::new(worktree_rows());
     assert_eq!(dialog.focused_button(), 0);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Prune" button
@@ -407,15 +420,16 @@ fn session_worktrees_clicking_prune_returns_prune() {
         result.is_consumed(),
         "the dismissing click must be consumed"
     );
+    Ok(())
 }
 
 /// Scenario: Session worktrees — clicking Cancel returns Cancel
 #[test]
-fn session_worktrees_clicking_cancel_returns_cancel() {
+fn session_worktrees_clicking_cancel_returns_cancel() -> TestResult {
     // @step Given the session-worktrees dialog is open with "Prune" focused
     let mut dialog = SessionWorktreesDialog::new(worktree_rows());
     assert_eq!(dialog.focused_button(), 0);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -434,6 +448,7 @@ fn session_worktrees_clicking_cancel_returns_cancel() {
         result.is_consumed(),
         "the dismissing click must be consumed"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -442,7 +457,7 @@ fn session_worktrees_clicking_cancel_returns_cancel() {
 
 /// Scenario: Confirm dialog — clicking the primary button returns Primary
 #[test]
-fn confirm_dialog_clicking_the_primary_button_returns_primary() {
+fn confirm_dialog_clicking_the_primary_button_returns_primary() -> TestResult {
     // @step Given a two-button confirm dialog (Delete / Cancel) is open with "Delete" focused
     let dialog = ConfirmDialog::new(
         "Delete Session?",
@@ -452,7 +467,7 @@ fn confirm_dialog_clicking_the_primary_button_returns_primary() {
         "Cancel",
     );
     assert_eq!(dialog.focused(), 0);
-    render_80x24_ref(&dialog);
+    render_80x24_ref(&dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Cancel" button
@@ -464,6 +479,7 @@ fn confirm_dialog_clicking_the_primary_button_returns_primary() {
         ConfirmDialogOutcome::Cancel,
         "clicking 'Cancel' on the two-button dialog must return Cancel"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -472,11 +488,12 @@ fn confirm_dialog_clicking_the_primary_button_returns_primary() {
 
 /// Scenario: Thinking Level — clicking High commits High
 #[test]
-fn thinking_level_clicking_high_commits_high() {
+fn thinking_level_clicking_high_commits_high() -> TestResult {
     // @step Given the Thinking Level dialog is open with "Off" highlighted
-    let mut dialog = ThinkingLevelDialog::new(SessionId::new("s-1"), ThinkingLevel::Off);
-    assert_eq!(dialog.selected_level(), ThinkingLevel::Off);
-    render_80x24(&mut dialog);
+    let mut dialog =
+        ThinkingLevelDialog::new(SessionId::new("s-1"), ThinkingLevel::Off, four_levels());
+    assert_eq!(dialog.selected_level(), Some(ThinkingLevel::Off));
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
     let high_row = layout.controls[3]; // Off, Low, Medium, High
 
@@ -488,27 +505,31 @@ fn thinking_level_clicking_high_commits_high() {
     assert!(
         matches!(
             dialog.take_pending_action(),
-            Some(Action::ThinkingLevelSelected(_, ThinkingLevel::High))
+            Some(Action::ThinkingLevelSelected(_, level)) if level == ThinkingLevel::Effort("high".to_string())
         ),
         "clicking the 'High' row must commit High"
     );
     // @step And the dialog is closed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // R3 — MuxConfigDialog
 // ─────────────────────────────────────────────────────────────────────
 
-fn two_pane_config() -> MuxConfig {
-    MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50],
-        panes: vec![MuxPaneKind::Board, MuxPaneKind::Agent],
+fn two_pane_config() -> Result<MuxConfig, codelet_test_helpers::TestError> {
+    Ok(MuxConfig {
+        layout: MuxLayout::parse("board, agent").or_fail("layout")?,
         focused_pane: 1,
         enabled: false,
-    }
+    })
 }
+
+/// MUX-010 content rows: 0 field, 1-2 error, 3-10 preview, 11 Enabled,
+/// 12 Apply, 13 Save.
+const FIELD_ROW: usize = 0;
+const APPLY_ROW: usize = 12;
 
 fn click_row(dialog: &mut MuxConfigDialog, row: usize) {
     let layout = dialog.last_layout();
@@ -517,58 +538,70 @@ fn click_row(dialog: &mut MuxConfigDialog, row: usize) {
     assert!(result.is_consumed(), "a row click must be consumed");
 }
 
-/// Scenario: Mux Layout — clicking Pane 2 applies with the cursor on Pane 2
-#[test]
-fn mux_layout_clicking_pane_2_applies_with_the_cursor_on_pane_2() {
-    // @step Given the Mux Layout dialog is open with the cursor on "Enabled"
-    let mut dialog = MuxConfigDialog::new(two_pane_config());
-    assert_eq!(dialog.cursor(), 0);
-    render_80x24(&mut dialog);
-
-    // @step When the user left-clicks the "Pane 2" row
-    click_row(&mut dialog, 3); // rows: Enabled, Orientation, Pane 1, Pane 2
-
-    // @step Then the mux config is applied
-    assert!(
-        matches!(
-            dialog.take_pending_action(),
-            Some(Action::MuxConfigApplied(_))
-        ),
-        "clicking a row must apply the draft config"
-    );
-    // @step And the cursor is on the "Pane 2" row
-    assert_eq!(
-        dialog.cursor(),
-        3,
-        "the cursor must land on the clicked row"
-    );
+/// A dialog seeded with `board, agent`, the focus moved to Enabled.
+fn mux_dialog_on_enabled() -> Result<MuxConfigDialog, codelet_test_helpers::TestError> {
+    let mut dialog = MuxConfigDialog::new(two_pane_config()?, Rect::new(0, 1, 120, 22));
+    assert_eq!(dialog.focus(), MuxDialogFocus::Field);
+    let _ = dialog.handle_event(&key(KeyCode::Tab));
+    assert_eq!(dialog.focus(), MuxDialogFocus::Enabled);
+    render_80x24(&mut dialog)?;
+    Ok(dialog)
 }
 
-/// Scenario: Mux Layout — clicking Orientation applies with the cursor on Orientation
+/// Scenario: Mux Layout — clicking Apply applies with the cursor on Apply
 #[test]
-fn mux_layout_clicking_orientation_applies_with_the_cursor_on_orientation() {
+fn mux_layout_clicking_apply_applies_with_the_cursor_on_apply() -> TestResult {
     // @step Given the Mux Layout dialog is open with the cursor on "Enabled"
-    let mut dialog = MuxConfigDialog::new(two_pane_config());
-    assert_eq!(dialog.cursor(), 0);
-    render_80x24(&mut dialog);
+    let mut dialog = mux_dialog_on_enabled()?;
 
-    // @step When the user left-clicks the "Orientation" row
-    click_row(&mut dialog, 1);
+    // @step When the user left-clicks the "Apply" button
+    click_row(&mut dialog, APPLY_ROW);
 
     // @step Then the mux config is applied
     assert!(
         matches!(
             dialog.take_pending_action(),
-            Some(Action::MuxConfigApplied(_))
+            Some(Action::MuxConfigApplied(ref draft)) if draft.layout.to_string() == "board, agent"
         ),
-        "clicking a row must apply the draft config"
+        "clicking Apply must apply the draft config"
     );
-    // @step And the cursor is on the "Orientation" row
+    // @step And the cursor is on the "Apply" button
     assert_eq!(
-        dialog.cursor(),
-        1,
-        "the cursor must land on the clicked row"
+        dialog.focus(),
+        MuxDialogFocus::Apply,
+        "the cursor must land on the clicked button"
     );
+    Ok(())
+}
+
+/// Scenario: Mux Layout — clicking the layout field focuses it without applying
+#[test]
+fn mux_layout_clicking_the_layout_field_focuses_it_without_applying() -> TestResult {
+    // @step Given the Mux Layout dialog is open with the cursor on "Enabled"
+    let mut dialog = mux_dialog_on_enabled()?;
+
+    // @step When the user left-clicks the "Layout" field
+    click_row(&mut dialog, FIELD_ROW);
+
+    // @step Then the mux config is not applied and the dialog stays open
+    assert!(
+        dialog.take_pending_action().is_none(),
+        "clicking the field must not apply the draft"
+    );
+    let probe = render_80x24(&mut dialog)?;
+    let text: String = probe
+        .content
+        .iter()
+        .map(ratatui::buffer::Cell::symbol)
+        .collect();
+    assert!(text.contains("Mux Layout"), "the dialog stays open: {text}");
+    // @step And the cursor is on the "Layout" field
+    assert_eq!(
+        dialog.focus(),
+        MuxDialogFocus::Field,
+        "the cursor must land on the clicked field"
+    );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -577,11 +610,11 @@ fn mux_layout_clicking_orientation_applies_with_the_cursor_on_orientation() {
 
 /// Scenario: Role dialog — clicking the draft row saves the role
 #[test]
-fn role_dialog_clicking_the_draft_row_saves_the_role() {
+fn role_dialog_clicking_the_draft_row_saves_the_role() -> TestResult {
     // @step Given the Role dialog is open with a non-empty draft
     let mut dialog = RoleDialog::new(SessionId::new("s-1"), Some("code reviewer".to_string()));
     assert_eq!(dialog.draft(), "code reviewer");
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
     let row = &layout.controls[0];
 
@@ -599,6 +632,7 @@ fn role_dialog_clicking_the_draft_row_saves_the_role() {
     );
     // @step And the dialog is closed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -607,7 +641,7 @@ fn role_dialog_clicking_the_draft_row_saves_the_role() {
 
 /// Scenario: Attachment picker — clicking notes.pdf opens it
 #[test]
-fn attachment_picker_clicking_notes_pdf_opens_it() {
+fn attachment_picker_clicking_notes_pdf_opens_it() -> TestResult {
     // @step Given the attachment picker is open with "design.md" and "notes.pdf" listed
     let mut dialog = AttachmentPickerDialog::new(vec![
         "spec/attachments/TUI-112/design.md".to_string(),
@@ -617,7 +651,7 @@ fn attachment_picker_clicking_notes_pdf_opens_it() {
         dialog.row_labels(),
         vec!["design.md".to_string(), "notes.pdf".to_string()]
     );
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
     let notes_row = &layout.controls[1];
 
@@ -636,6 +670,7 @@ fn attachment_picker_clicking_notes_pdf_opens_it() {
     );
     // @step And the dialog is closed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -658,16 +693,16 @@ fn work_unit(id: &str, title: &str) -> WorkUnitInfo {
 
 /// Scenario: Work unit search — clicking a result row commits it
 #[test]
-fn work_unit_search_clicking_a_result_row_commits_it() {
+fn work_unit_search_clicking_a_result_row_commits_it() -> TestResult {
     // @step Given the work-unit search dialog is open showing a "MENU-009" result row
     let mut dialog = WorkUnitSearchDialog::new(vec![
         work_unit("MENU-008", "Another button"),
         work_unit("MENU-009", "Menu bar Zone C"),
     ]);
     assert!(dialog.matches().contains(&"MENU-009".to_string()));
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let row = dialog.last_row_rects().get(1).copied();
-    let row = row.expect("two matches fit the visible rows after render");
+    let row = row.or_fail("two matches fit the visible rows after render")?;
 
     // @step When the user left-clicks the "MENU-009" row
     let ev = down_at(row.x + row.width / 2, row.y);
@@ -683,6 +718,7 @@ fn work_unit_search_clicking_a_result_row_commits_it() {
     );
     // @step And the dialog is closed
     assert!(result.is_consumed(), "a committing click is consumed");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -691,14 +727,14 @@ fn work_unit_search_clicking_a_result_row_commits_it() {
 
 /// Scenario: A click outside the dialog rect is ignored
 #[test]
-fn a_click_outside_the_dialog_rect_is_ignored() {
+fn a_click_outside_the_dialog_rect_is_ignored() -> TestResult {
     // @step Given the "Start New Agent?" dialog is open
     let mut dialog = CreateSessionDialog::new(None, None);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
     let frame = layout
         .dialog_rect
-        .expect("the dialog frame rect must be cached after render");
+        .or_fail("the dialog frame rect must be cached after render")?;
 
     // @step When the user left-clicks a cell outside the dialog's rendered rect
     // The top border row is the first row of the frame; one row ABOVE it
@@ -717,14 +753,15 @@ fn a_click_outside_the_dialog_rect_is_ignored() {
         !result.is_consumed(),
         "a click outside the frame must be Ignored so it bubbles"
     );
+    Ok(())
 }
 
 /// Scenario: A click in the gap between two buttons does nothing
 #[test]
-fn a_click_in_the_gap_between_two_buttons_does_nothing() {
+fn a_click_in_the_gap_between_two_buttons_does_nothing() -> TestResult {
     // @step Given the "Start New Agent?" dialog is open
     let mut dialog = CreateSessionDialog::new(None, None);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks a cell in the gap between two buttons
@@ -748,18 +785,19 @@ fn a_click_in_the_gap_between_two_buttons_does_nothing() {
         CreateSessionOption::Yes,
         "a gap click must not move the highlight"
     );
+    Ok(())
 }
 
 /// Scenario: A click on the title, description or footer does nothing
 #[test]
-fn a_click_on_the_title_description_or_footer_does_nothing() {
+fn a_click_on_the_title_description_or_footer_does_nothing() -> TestResult {
     // @step Given the "Start New Agent?" dialog is open
     let mut dialog = CreateSessionDialog::new(None, None);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
     let frame = layout
         .dialog_rect
-        .expect("the dialog frame rect must be cached after render");
+        .or_fail("the dialog frame rect must be cached after render")?;
     let buttons_y = layout.controls[0].y;
 
     // @step When the user left-clicks a cell on the title row, a description cell, or a footer cell
@@ -793,17 +831,18 @@ fn a_click_on_the_title_description_or_footer_does_nothing() {
         CreateSessionOption::Yes,
         "non-control clicks must not move the highlight"
     );
+    Ok(())
 }
 
 /// Scenario: Wheel navigation behavior is unchanged
 #[test]
-fn wheel_navigation_behavior_is_unchanged() {
-    // @step Given the "Start New Agent?" dialog is open with "Yes" highlighted
+fn wheel_navigation_behavior_is_unchanged() -> TestResult {
+    // @step Given the "Start New Agent?" dialog is open with "Start" highlighted
     let mut dialog = CreateSessionDialog::new(None, None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
-    render_80x24(&mut dialog);
+    render_80x24(&mut dialog)?;
     let layout = dialog.last_layout();
-    let inside = down_inside(layout);
+    let inside = down_inside(layout)?;
 
     // @step When the user scrolls right then scrolls left
     let scroll_right = Event::Mouse(MouseEvent {
@@ -826,26 +865,27 @@ fn wheel_navigation_behavior_is_unchanged() {
     });
     assert!(dialog.handle_event(&scroll_left).is_consumed());
 
-    // @step Then "Yes" is highlighted again
+    // @step Then "Start" is highlighted again
     assert_eq!(dialog.selected_option(), CreateSessionOption::Yes);
     // @step And no action is emitted
     assert!(
         dialog.take_pending_action().is_none(),
         "wheel events must never commit"
     );
+    Ok(())
 }
 
 /// A point inside the dialog frame (for wheel events).
-fn down_inside(layout: &LastLayout) -> MouseEvent {
+fn down_inside(layout: &LastLayout) -> Result<MouseEvent, codelet_test_helpers::TestError> {
     let frame = layout
         .dialog_rect
-        .expect("the dialog frame rect must be cached after render");
-    MouseEvent {
+        .or_fail("the dialog frame rect must be cached after render")?;
+    Ok(MouseEvent {
         kind: MouseEventKind::Down(MouseButton::Left),
         column: frame.x + frame.width / 2,
         row: layout.controls[0].y,
         modifiers: KeyModifiers::NONE,
-    }
+    })
 }
 
 // Silence the unused-import lint for types used only in the RED R2/R3
@@ -858,4 +898,29 @@ fn _type_anchor(
     _outcome: ConfirmDialogOutcome,
     _outcome2: SessionWorktreesDialogOutcome,
 ) {
+}
+
+/// MODEL-011: a model offering Off and the efforts low, medium and high.
+fn four_levels() -> codelet_rpc_types::ThinkingOptions {
+    codelet_rpc_types::ThinkingOptions::Levels {
+        model: "test/model".to_string(),
+        choices: vec![
+            codelet_rpc_types::ThinkingChoice::Off,
+            codelet_rpc_types::ThinkingChoice::Effort("low".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("medium".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("high".to_string()),
+        ],
+        takes_off: true,
+    }
+}
+
+/// TUI-124: the close facts of an agent "s-1" with no sub-agents, working
+/// when `busy`.
+fn agent_close_facts(
+    busy: bool,
+) -> codelet_fspec_tui::components::exit_confirmation_dialog::CloseFacts {
+    use codelet_fspec_tui::components::exit_confirmation_dialog::{CloseFacts, SessionKind};
+    let mut facts = CloseFacts::new(codelet_rpc_types::SessionId::new("s-1"), SessionKind::Agent);
+    facts.busy = busy;
+    facts
 }

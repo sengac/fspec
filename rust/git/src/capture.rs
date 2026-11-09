@@ -14,9 +14,10 @@
 //! watcher capture goes through here.
 
 use crate::change_type::{
-    get_staged_files_with_change_type_with_repo, get_unstaged_files_with_change_type_with_repo,
+    get_staged_files_with_change_type_with, get_unstaged_files_with_change_type_with_repo,
 };
 use crate::error::Result;
+use crate::head_tree::ObjectSource;
 use crate::status::untracked_files_with_repo;
 use std::path::Path;
 
@@ -49,10 +50,19 @@ pub fn capture_changed_files(dir: impl AsRef<Path>) -> Result<Vec<ChangedFileEnt
     // The single cold open for the whole capture — the shared handle is
     // passed into every collector below so the ODB cache stays warm.
     let repo = crate::open_repo(dir.as_ref())?;
+    capture_changed_files_with(&repo, &repo)
+}
 
+/// BUG-657: the capture against an open repository, reading every HEAD
+/// tree through `source` (the counting seam; production passes the
+/// repository itself).
+pub fn capture_changed_files_with(
+    repo: &gix::Repository,
+    source: &dyn ObjectSource,
+) -> Result<Vec<ChangedFileEntry>> {
     // Staged first (in-HEAD verdict reused from the single pass — BUG-189 R2).
     let mut out: Vec<ChangedFileEntry> = Vec::new();
-    for entry in get_staged_files_with_change_type_with_repo(&repo)? {
+    for entry in get_staged_files_with_change_type_with(repo, source)? {
         out.push(ChangedFileEntry {
             path: entry.path,
             change_type: entry.change_type.as_letter().to_string(),
@@ -61,7 +71,7 @@ pub fn capture_changed_files(dir: impl AsRef<Path>) -> Result<Vec<ChangedFileEnt
     }
 
     // Then unstaged modifications / deletions (stat-first — BUG-189 R3).
-    for entry in get_unstaged_files_with_change_type_with_repo(&repo)? {
+    for entry in get_unstaged_files_with_change_type_with_repo(repo)? {
         out.push(ChangedFileEntry {
             path: entry.path,
             change_type: entry.change_type.as_letter().to_string(),
@@ -70,7 +80,7 @@ pub fn capture_changed_files(dir: impl AsRef<Path>) -> Result<Vec<ChangedFileEnt
     }
 
     // Finally untracked files — always Added, never staged.
-    for path in untracked_files_with_repo(&repo)? {
+    for path in untracked_files_with_repo(repo)? {
         out.push(ChangedFileEntry {
             path,
             change_type: "A".to_string(),

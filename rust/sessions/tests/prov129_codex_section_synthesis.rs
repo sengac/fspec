@@ -61,6 +61,7 @@ fn seed_models_cache() -> tempfile::TempDir {
     let cache_dir = data_dir.path().join("cache");
     fs::create_dir_all(&cache_dir).expect("create cache dir");
     fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models cache");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     data_dir
 }
@@ -75,8 +76,10 @@ fn seed_codex_oauth() -> tempfile::TempDir {
             "access_token": "access-tok",
             "refresh_token": "refresh-tok",
             "account_id": "acct-123"
-        }
-    }"#;
+        },
+        "last_refresh": "LAST_REFRESH"
+    }"#
+    .replace("LAST_REFRESH", &chrono::Utc::now().to_rfc3339());
     fs::write(dir.path().join("auth.json"), auth).expect("write codex auth.json");
     std::env::set_var("CODEX_HOME", dir.path());
     dir
@@ -117,6 +120,23 @@ fn section_model_ids(
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
 async fn codex_oauth_yields_populated_codex_section_and_no_openai_section() {
+    // The Codex /models backend (started before the guard is held).
+    let backend = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/models"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "models": [{
+                    "slug": "gpt-6-luna",
+                    "display_name": "GPT-6-Luna",
+                    "visibility": "list",
+                    "default_reasoning_level": "medium",
+                    "supported_reasoning_levels": [{"effort": "medium"}]
+                }]
+            })),
+        )
+        .mount(&backend)
+        .await;
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -130,13 +150,16 @@ async fn codex_oauth_yields_populated_codex_section_and_no_openai_section() {
     // @step And no OPENAI_API_KEY is set in the environment
     clear_api_keys();
 
-    // @step And the models.dev catalog offers OpenAI models including allowlisted ones
+    // @step And Codex /models returns the model "gpt-6-luna"
+    // (PROV-176: the Codex section lists what Codex /models returns)
+    let _redirect =
+        codelet_providers::codex::models_catalog::test_support::redirect(&backend.uri());
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When I open the model selector
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then a "Codex (ChatGPT)" section is shown with at least one selectable model
     let codex_models = section_model_ids(&providers, "codex").unwrap_or_else(|| {
@@ -166,91 +189,6 @@ async fn codex_oauth_yields_populated_codex_section_and_no_openai_section() {
 }
 
 // =============================================================================
-// Scenario: All OpenAI models from models.dev appear in Codex (ChatGPT)
-// =============================================================================
-#[tokio::test(flavor = "multi_thread")]
-async fn codex_section_lists_all_openai_models_from_models_dev() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
-
-    // @step Given I am signed in with a Codex (ChatGPT) OAuth credential
-    let _codex = seed_codex_oauth();
-    let fspec_empty = tempfile::tempdir().expect("empty fspec home");
-    std::env::set_var("FSPEC_HOME", fspec_empty.path());
-    clear_api_keys();
-
-    // @step And the models.dev catalog offers the OpenAI models "gpt-5.4", "gpt-5-mini" and "gpt-4o"
-    let _data_dir = seed_models_cache();
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
-
-    // @step When I open the model selector
-    let providers = handle.list_providers();
-    let codex_models = section_model_ids(&providers, "codex").expect("codex section present");
-
-    // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4"
-    assert!(
-        codex_models.iter().any(|id| id == "gpt-5.4"),
-        "PROV-129: 'gpt-5.4' must appear in the Codex section; got {codex_models:?}",
-    );
-
-    // @step And the "Codex (ChatGPT)" section lists "gpt-5-mini"
-    // (no allowlist filtering — the full OpenAI models.dev catalog is shown)
-    assert!(
-        codex_models.iter().any(|id| id == "gpt-5-mini"),
-        "PROV-129: the full OpenAI catalog must appear (no allowlist filter); got {codex_models:?}",
-    );
-
-    // @step And the "Codex (ChatGPT)" section lists "gpt-4o"
-    assert!(
-        codex_models.iter().any(|id| id == "gpt-4o"),
-        "PROV-129: 'gpt-4o' must appear in the Codex section (no allowlist filter); got {codex_models:?}",
-    );
-}
-
-// =============================================================================
-// Scenario: Codex (ChatGPT) models are ordered newest-first by release date
-// =============================================================================
-#[tokio::test(flavor = "multi_thread")]
-async fn codex_section_orders_models_newest_first() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
-
-    // @step Given I am signed in with a Codex (ChatGPT) OAuth credential
-    let _codex = seed_codex_oauth();
-    let fspec_empty = tempfile::tempdir().expect("empty fspec home");
-    std::env::set_var("FSPEC_HOME", fspec_empty.path());
-    clear_api_keys();
-
-    // @step And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5.2-codex"
-    // (gpt-5.4 release_date 2026-05-01, gpt-5.2-codex release_date 2026-03-01)
-    let _data_dir = seed_models_cache();
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
-
-    // @step When I open the model selector
-    let providers = handle.list_providers();
-    let codex_models = section_model_ids(&providers, "codex").expect("codex section present");
-
-    // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4" before "gpt-5.2-codex"
-    // (newest-first by release date: 2026-05-01 > 2026-03-01)
-    let pos_54 = codex_models
-        .iter()
-        .position(|id| id == "gpt-5.4")
-        .expect("gpt-5.4 present");
-    let pos_52 = codex_models
-        .iter()
-        .position(|id| id == "gpt-5.2-codex")
-        .expect("gpt-5.2-codex present");
-    assert!(
-        pos_54 < pos_52,
-        "PROV-129: newest-first ordering must put gpt-5.4 (2026-05-01) before gpt-5.2-codex (2026-03-01); got {codex_models:?}",
-    );
-}
-
-// =============================================================================
 // Scenario: Without Codex credentials the standalone OpenAI API section is
 // suppressed (PROV-146)
 // =============================================================================
@@ -273,10 +211,10 @@ async fn without_codex_credentials_openai_section_is_suppressed() {
     // @step And the models.dev catalog offers OpenAI models
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When I open the model selector
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then no standalone "OpenAI API" cloud section is shown
     // (PROV-146: the openai cloud section is never populated from the

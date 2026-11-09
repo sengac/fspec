@@ -1,5 +1,7 @@
 @done
 @RPC-316
+@cli
+@tag-management
 Feature: update-tag-cli-subcommand
   """
   Files: rust/fspec/src/update_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_update_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/update-tag.txt (captured help fixture from `node dist/index.js update-tag --help`).

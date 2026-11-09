@@ -5,9 +5,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "133-154",
+          "lines": "142-167",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "let Some(session_id) = self.agent_view_store.current_session().cloned() else {",
+              "lastLine": "self.pending_tasks.push(handle);"
+            }
           ]
         }
       ]
@@ -17,9 +40,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "213-234",
+          "lines": "230-255",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "let Some(session_id) = self.agent_view_store.current_session().cloned() else {",
+              "lastLine": "self.pending_tasks.push(handle);"
+            }
           ]
         }
       ]
@@ -29,9 +75,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "240-267",
+          "lines": "261-297",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "let Some(session_id) = self.agent_view_store.current_session().cloned() else {",
+              "lastLine": "self.pending_tasks.push(handle);"
+            }
           ]
         }
       ]
@@ -41,9 +110,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "274-331",
+          "lines": "304-365",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "let Some(session_id) = self.agent_view_store.current_session().cloned() else {",
+              "lastLine": "self.pending_tasks.push(handle);"
+            }
           ]
         }
       ]
@@ -53,9 +145,57 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "346-381",
+          "lines": "380-416",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 109, 110, 111, 112, 113, 114]}
+            {
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "impl<'a> Widget for SessionFooter<'a> {",
+              "lastLine": "}"
+            }
           ]
         }
       ]
@@ -65,9 +205,51 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "387-417",
+          "lines": "422-453",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82]}
+            {
+              "file": "rust/fspec-tui/src/views/agent/footer.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "impl<'a> Widget for SessionFooter<'a> {",
+              "lastLine": "}"
+            }
           ]
         }
       ]
@@ -77,10 +259,49 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "424-474",
+          "lines": "460-511",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "lines": [144, 145, 146, 147, 148, 149, 150, 151, 152]},
-            {"file": "rust/fspec-tui/src/app/dispatch_compaction_complete.rs", "lines": [51, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "StreamChunk::CompactionComplete { compaction_result } => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_compaction_complete.rs",
+              "lines": [
+                62,
+                76,
+                77,
+                78,
+                80,
+                81,
+                82,
+                83,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "self.agent_view_store.clear_compaction_progress(session_id);",
+              "lastLine": "}"
+            }
           ]
         }
       ]
@@ -90,18 +311,50 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "162-206",
+          "lines": "175-223",
           "implMappings": [
-            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "let Some(session_id) = self.agent_view_store.current_session().cloned() else {",
+              "lastLine": "self.pending_tasks.push(handle);"
+            }
           ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 8, "coveredScenarios": 8, "coveragePercent": 100,
-    "testFiles": ["rust/fspec-tui/tests/slash_compact_rpc047.rs"],
-    "implFiles": ["rust/fspec-tui/src/app/dispatch_slash_commands.rs", "rust/fspec-tui/src/views/agent/footer.rs", "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "rust/fspec-tui/src/app/dispatch_compaction_complete.rs"],
-    "totalLinesCovered": 488
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/slash_compact_rpc047.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "rust/fspec-tui/src/views/agent/footer.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/app/dispatch_compaction_complete.rs"
+    ],
+    "totalLinesCovered": 511
   }
 }

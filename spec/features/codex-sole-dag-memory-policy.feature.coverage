@@ -48,7 +48,9 @@
                 140,
                 141,
                 142
-              ]
+              ],
+              "firstLine": "pub fn with_completed_reasoning(mut self, enabled: bool) -> Self {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/memory_policy.rs",
@@ -89,7 +91,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "use rig::completion::CompletionError;",
+              "lastLine": "if request.get(\"context_management\").is_some() {"
             }
           ]
         }
@@ -129,11 +133,24 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn event(&mut self, kind: &str, event: &Value) -> Result<Option<String>, CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
                 194,
                 195,
                 196,
@@ -141,8 +158,45 @@
                 198,
                 199,
                 200,
-                201
-              ]
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "async fn completion(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/stream_events.rs",
@@ -159,43 +213,35 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": ".map_err(|error| invalid(error.to_string()))?;",
+              "lastLine": "event[\"output_index\"].as_u64(),"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                129,
-                130,
-                131,
                 132,
                 133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159
-              ]
+                134
+              ],
+              "firstLine": "// Native memory is refused before any lifecycle parsing,",
+              "lastLine": "super::memory_policy::validate_response(&data[\"response\"])?;"
+            }
+          ]
+        },
+        {
+          "file": "rust/providers/tests/prov158_codex_compaction_transport.rs",
+          "lines": "18-52",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                132,
+                133,
+                134
+              ],
+              "firstLine": "// Native memory is refused before any lifecycle parsing,",
+              "lastLine": "super::memory_policy::validate_response(&data[\"response\"])?;"
             }
           ]
         }
@@ -253,7 +299,9 @@
                 174,
                 175,
                 176
-              ]
+              ],
+              "firstLine": "pub(super) fn block(&self) {",
+              "lastLine": "return Err(CheckpointError::Lineage(\"generation must advance\"));"
             }
           ]
         }
@@ -305,7 +353,41 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "#[derive(Clone, Copy, Default)]",
+              "lastLine": "fn require(&self, family: &str, enabled: bool) -> Result<(), CompletionError> {"
+            }
+          ]
+        },
+        {
+          "file": "rust/providers/tests/prov158_codex_native_options.rs",
+          "lines": "18-81",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/native.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "Ok(notices)",
+              "lastLine": "fn require(&self, family: &str, enabled: bool) -> Result<(), CompletionError> {"
             }
           ]
         }
@@ -321,22 +403,36 @@
             {
               "file": "rust/providers/src/codex/memory_policy.rs",
               "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub(crate) fn validate_item(item: &Value) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
                 87,
                 88
-              ]
+              ],
+              "firstLine": "policy: StreamPolicy,",
+              "lastLine": "metadata: crate::codex::metadata::CodexMetadataHandle,"
             }
           ]
         }
@@ -352,29 +448,46 @@
             {
               "file": "rust/providers/src/codex/memory_policy.rs",
               "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub(crate) fn validate_item(item: &Value) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
-                194,
-                195
-              ]
+                224,
+                225
+              ],
+              "firstLine": "let raw: Value = serde_json::from_str(&text)?;",
+              "lastLine": "memory_policy::validate_response(&raw)?;"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                87,
-                88
-              ]
+                132,
+                133,
+                134
+              ],
+              "firstLine": "// Native memory is refused before any lifecycle parsing,",
+              "lastLine": "super::memory_policy::validate_response(&data[\"response\"])?;"
             }
           ]
         }
@@ -393,7 +506,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "pub fn set_capabilities(",
+              "lastLine": "capabilities: Option<CodexCapabilities>,"
             }
           ]
         }
@@ -404,23 +519,46 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct077_direct_checkpoint.rs",
-          "lines": "13-98",
+          "lines": "13-95",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204
-              ]
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "let generation = self.history.generation()?;",
+              "lastLine": "Ok(response)"
             }
           ]
         }
@@ -431,7 +569,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct077_direct_checkpoint.rs",
-          "lines": "13-98",
+          "lines": "13-95",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -456,7 +594,9 @@
                 176,
                 177,
                 178
-              ]
+              ],
+              "firstLine": "*captured",
+              "lastLine": "},"
             }
           ]
         }
@@ -464,11 +604,13 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
+    "totalScenarios": 9,
     "coveredScenarios": 9,
-    "coveragePercent": 129,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+      "rust/providers/tests/prov158_codex_compaction_transport.rs",
+      "rust/providers/tests/prov158_codex_native_options.rs",
       "rust/providers/tests/cmpct077_policy_boundaries.rs",
       "rust/providers/tests/cmpct077_direct_checkpoint.rs"
     ],
@@ -480,6 +622,6 @@
       "rust/providers/src/codex/streaming.rs",
       "rust/providers/src/codex/history.rs"
     ],
-    "totalLinesCovered": 879
+    "totalLinesCovered": 1054
   }
 }

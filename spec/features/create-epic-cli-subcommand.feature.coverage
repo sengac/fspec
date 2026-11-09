@@ -47,7 +47,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub epic_id: String,",
+              "lastLine": "// The inner `<reason>` itself carries the outer-catch wrap"
             }
           ]
         }
@@ -58,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_epic.rs",
-          "lines": "102-135",
+          "lines": "108-140",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_epic.rs",
@@ -100,7 +102,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub epic_id: String,",
+              "lastLine": "// The inner `<reason>` itself carries the outer-catch wrap"
             }
           ]
         }
@@ -153,7 +157,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub epic_id: String,",
+              "lastLine": "// The inner `<reason>` itself carries the outer-catch wrap"
             }
           ]
         }
@@ -169,7 +175,6 @@
             {
               "file": "rust/fspec/src/create_epic.rs",
               "lines": [
-                60,
                 61,
                 62,
                 63,
@@ -184,8 +189,18 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "let args_json = serde_json::Value::Object(obj).to_string();",
+              "lastLine": "}"
             }
           ]
         }
@@ -201,7 +216,6 @@
             {
               "file": "rust/fspec/src/create_epic.rs",
               "lines": [
-                60,
                 61,
                 62,
                 63,
@@ -216,8 +230,18 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "let args_json = serde_json::Value::Object(obj).to_string();",
+              "lastLine": "}"
             }
           ]
         }
@@ -270,7 +294,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub epic_id: String,",
+              "lastLine": "// The inner `<reason>` itself carries the outer-catch wrap"
             }
           ]
         }
@@ -281,7 +307,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_epic.rs",
-          "lines": "309-340",
+          "lines": "333-357",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/create_epic.rs",
@@ -359,7 +385,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "//! `create-epic` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -377,6 +405,6 @@
       "rust/fspec/src/create_epic.rs",
       "rust/fspec-core/src/help/configs/create_epic.rs"
     ],
-    "totalLinesCovered": 540
+    "totalLinesCovered": 546
   }
 }

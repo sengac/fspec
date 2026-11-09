@@ -11,8 +11,8 @@
 //! ThinkingLevelDialog and without forwarding the text to
 //! `backend.send_input`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
@@ -28,44 +28,46 @@ use common::MockBackend;
 // branch table is asserted in isolation BEFORE the dispatch wiring runs.
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario Outline: parse_slash_command recognises /thinking <level> inline arg
+/// Scenario Outline: parse_slash_command hands a /thinking argument to the dispatcher
 #[test]
-fn parse_slash_command_recognises_thinking_level_inline_args() {
+fn parse_slash_command_hands_a_thinking_argument_to_the_dispatcher() -> TestResult {
     // @step Given the function parse_slash_command from app/slash_parser.rs
     // @step When it is called with text "<input>"
-    // @step Then it returns SlashCommandParse::SetThinkingLevel(<level>)
+    // @step Then it returns SlashCommandParse::ThinkingCommand("<arg>")
     let cases = [
-        ("/thinking off", ThinkingLevel::Off),
-        ("/thinking low", ThinkingLevel::Low),
-        ("/thinking med", ThinkingLevel::Medium),
-        ("/thinking medium", ThinkingLevel::Medium),
-        ("/thinking high", ThinkingLevel::High),
-        ("/thinking HIGH", ThinkingLevel::High),
+        ("/thinking off", "off"),
+        ("/thinking low", "low"),
+        ("/thinking med", "med"),
+        ("/thinking xhigh", "xhigh"),
+        ("/thinking HIGH", "high"),
+        ("/thinking gibberish", "gibberish"),
     ];
-    for (input, expected) in cases {
+    for (input, arg) in cases {
         assert_eq!(
             parse_slash_command(input),
-            SlashCommandParse::SetThinkingLevel(expected),
-            "parse_slash_command({input:?}) must return SetThinkingLevel({expected:?})"
+            SlashCommandParse::ThinkingCommand(arg.to_string()),
+            "parse_slash_command({input:?}) must hand {arg:?} to the dispatcher"
         );
     }
+    Ok(())
 }
 
-/// Scenario: parse_slash_command returns InvalidThinkingLevel for an unknown arg
+/// Scenario: parse_slash_command clears the level for /thinking default
 #[test]
-fn parse_slash_command_returns_invalid_thinking_level_for_unknown_arg() {
+fn parse_slash_command_clears_the_level_for_thinking_default() -> TestResult {
     // @step Given the function parse_slash_command from app/slash_parser.rs
-    // @step When it is called with text "/thinking gibberish"
-    // @step Then it returns SlashCommandParse::InvalidThinkingLevel("gibberish")
+    // @step When it is called with text "/thinking default"
+    // @step Then it returns SlashCommandParse::SetThinkingLevel(ThinkingLevel::ModelDefault)
     assert_eq!(
-        parse_slash_command("/thinking gibberish"),
-        SlashCommandParse::InvalidThinkingLevel("gibberish".to_string())
+        parse_slash_command("/thinking default"),
+        SlashCommandParse::SetThinkingLevel(ThinkingLevel::ModelDefault)
     );
+    Ok(())
 }
 
 /// Scenario: Bare /thinking continues to open the ThinkingLevelDialog
 #[test]
-fn parse_slash_command_bare_thinking_opens_dialog() {
+fn parse_slash_command_bare_thinking_opens_dialog() -> TestResult {
     // @step Given the function parse_slash_command from app/slash_parser.rs
     // @step When it is called with text "/thinking"
     // @step Then it returns SlashCommandParse::OpenThinkingDialog
@@ -73,6 +75,7 @@ fn parse_slash_command_bare_thinking_opens_dialog() {
         parse_slash_command("/thinking"),
         SlashCommandParse::OpenThinkingDialog
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -88,25 +91,28 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit_input(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 /// Flatten every visible chunk's text in `id`'s scrollback into a single
 /// String. Mirrors the `session_scrollback_text` helper in
-/// `slash_clear_rpc046.rs` so the `[error] unknown thinking level: …`
+/// `slash_clear_rpc046.rs` so the `/thinking` refusal notice
 /// assertion can scan the scrollback regardless of focus.
 fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     let chunks = app
@@ -130,11 +136,11 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
 
 /// Scenario: Submitting "/thinking high" sets the level via the backend and does NOT open the dialog
 #[tokio::test]
-async fn submitting_slash_thinking_high_sets_level_and_does_not_open_dialog() {
+async fn submitting_slash_thinking_high_sets_level_and_does_not_open_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") wired to a MockBackend
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Off)
     app.dispatch(Action::ThinkingLevelLoaded(
         SessionId::new("s-1"),
@@ -143,17 +149,19 @@ async fn submitting_slash_thinking_high_sets_level_and_does_not_open_dialog() {
     assert_eq!(
         app.agent_view_store()
             .thinking_level_for(&SessionId::new("s-1"))
-            .copied(),
+            .cloned(),
         Some(ThinkingLevel::Off)
     );
-    // @step And the MockBackend's get_thinking_level returns ThinkingLevel::High
-    mock.set_thinking_level(ThinkingLevel::High);
+    // @step And the MockBackend offers the levels Off, low, medium and high
+    // (the MockBackend's default options)
+    // @step And the MockBackend's get_thinking_level returns the effort high
+    mock.set_thinking_level(ThinkingLevel::Effort("high".to_string()));
     let prior_send = mock.send_input_calls();
     let prior_set_thinking = mock.set_thinking_level_calls();
     // @step When the input is submitted with text "/thinking high"
     submit_input(&mut app, "/thinking high");
-    drain_pending(&mut app).await;
-    // @step Then within 1 second backend.set_thinking_level is called exactly once with (SessionId("s-1"), ThinkingLevel::High)
+    drain_pending(&mut app).await?;
+    // @step Then within 1 second backend.set_thinking_level is called exactly once with (SessionId("s-1"), the effort high)
     assert_eq!(
         mock.set_thinking_level_calls(),
         prior_set_thinking + 1,
@@ -161,9 +169,9 @@ async fn submitting_slash_thinking_high_sets_level_and_does_not_open_dialog() {
     );
     let last = mock
         .last_set_thinking_level()
-        .expect("last set_thinking_level");
+        .or_fail("last set_thinking_level")?;
     assert_eq!(last.0, SessionId::new("s-1"));
-    assert_eq!(last.1, ThinkingLevel::High);
+    assert_eq!(last.1, ThinkingLevel::Effort("high".to_string()));
     // @step And no ThinkingLevelDialog is pushed onto the Compositor
     assert!(
         !app.compositor().contains(THINKING_LEVEL_DIALOG_ID),
@@ -175,34 +183,38 @@ async fn submitting_slash_thinking_high_sets_level_and_does_not_open_dialog() {
         prior_send,
         "/thinking high must NOT forward to backend.send_input"
     );
-    // @step And after the spawned task completes AgentViewStore.thinking_level_for(SessionId("s-1")) is Some(ThinkingLevel::High)
+    // @step And after the spawned task completes AgentViewStore.thinking_level_for(SessionId("s-1")) is the effort high
     assert_eq!(
         app.agent_view_store()
             .thinking_level_for(&SessionId::new("s-1"))
-            .copied(),
-        Some(ThinkingLevel::High),
+            .cloned(),
+        Some(ThinkingLevel::Effort("high".to_string())),
         "thinking_level_for(s-1) must fold to High after the refresh"
     );
+    Ok(())
 }
 
 /// Scenario: Submitting "/thinking gibberish" emits an error notice and does NOT call the backend
 #[tokio::test]
-async fn submitting_slash_thinking_gibberish_emits_error_notice_and_skips_backend() {
+async fn submitting_slash_thinking_gibberish_emits_error_notice_and_skips_backend() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") wired to a MockBackend
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_send = mock.send_input_calls();
     let prior_set_thinking = mock.set_thinking_level_calls();
+    // @step And the MockBackend offers the levels Off, low, medium and high for the model test/model
+    // (the MockBackend's default options)
     // @step When the input is submitted with text "/thinking gibberish"
     submit_input(&mut app, "/thinking gibberish");
-    drain_pending(&mut app).await;
-    // @step Then SessionId("s-1") scrollback contains a chunk whose text equals "[error] unknown thinking level: gibberish"
-    let text = session_scrollback_text(&app, &SessionId::new("s-1"));
+    drain_pending(&mut app).await?;
+    // @step Then SessionId("s-1") scrollback contains a chunk whose text equals "[error] test/model does not take gibberish; it takes Off, low, medium, high"
+    // Scrollback lines wrap at spaces; joined with spaces they give the notice back.
+    let text = session_scrollback_text(&app, &SessionId::new("s-1")).replace('\n', " ");
+    let notice = "[error] test/model does not take gibberish; it takes Off, low, medium, high";
     assert!(
-        text.lines()
-            .any(|l| l == "[error] unknown thinking level: gibberish"),
-        "expected `[error] unknown thinking level: gibberish` in s-1 scrollback, got {text:?}"
+        text.contains(notice),
+        "expected `{notice}` in s-1 scrollback, got {text:?}"
     );
     // @step And backend.set_thinking_level is NOT called
     assert_eq!(
@@ -221,22 +233,23 @@ async fn submitting_slash_thinking_gibberish_emits_error_notice_and_skips_backen
         prior_send,
         "/thinking gibberish must NOT forward to backend.send_input"
     );
+    Ok(())
 }
 
 /// Scenario: Submitting bare "/thinking" still opens the ThinkingLevelDialog (RPC-022 parity)
 #[tokio::test]
-async fn submitting_bare_slash_thinking_still_opens_the_dialog() {
+async fn submitting_bare_slash_thinking_still_opens_the_dialog() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") wired to a MockBackend
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step And no dialogs are pushed onto the Compositor
     assert!(!app.compositor().contains(THINKING_LEVEL_DIALOG_ID));
     let prior_send = mock.send_input_calls();
     let prior_set_thinking = mock.set_thinking_level_calls();
     // @step When the input is submitted with text "/thinking"
     submit_input(&mut app, "/thinking");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then a ThinkingLevelDialog with id "thinking-level-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(
         app.compositor().contains(THINKING_LEVEL_DIALOG_ID),
@@ -258,4 +271,5 @@ async fn submitting_bare_slash_thinking_still_opens_the_dialog() {
         prior_set_thinking,
         "bare /thinking must NOT call backend.set_thinking_level"
     );
+    Ok(())
 }

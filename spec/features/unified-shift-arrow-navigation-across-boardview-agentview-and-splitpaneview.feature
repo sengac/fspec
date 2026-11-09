@@ -70,7 +70,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
   # ===========================================
   # BoardView Navigation Scenarios
   # ===========================================
-  @BoardView
+  @board-view
   Scenario: Shift+Right from BoardView with no sessions shows create session dialog
     Given I am viewing the BoardView
     And no sessions exist
@@ -78,7 +78,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     Then I should see a create session dialog
     And the dialog should ask "Start New Agent?"
 
-  @BoardView
+  @board-view
   Scenario: Shift+Right from BoardView with sessions navigates to first session
     Given I am viewing the BoardView
     And the following sessions exist in creation order:
@@ -90,13 +90,13 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     Then I should be viewing "Session A" in AgentView
     And I should see Session A's conversation
 
-  @BoardView
+  @board-view
   Scenario: Shift+Left from BoardView does nothing
     Given I am viewing the BoardView
     When I press Shift+Left
     Then I should remain on the BoardView
 
-  @AgentView
+  @agent-view
   Scenario: Shift+Left from first session returns to BoardView
   # ===========================================
   # Session Navigation Scenarios
@@ -106,7 +106,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Left
     Then I should be viewing the BoardView
 
-  @AgentView
+  @agent-view
   Scenario: Shift+Right from session with watchers navigates to first watcher
     Given I am viewing "Session A" in AgentView
     And "Session A" has the following watchers:
@@ -118,7 +118,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     And the left pane should show Session A's conversation
     And the right pane should show W1's conversation
 
-  @AgentView
+  @agent-view
   Scenario: Shift+Right from session without watchers navigates to next session
     Given I am viewing "Session A" in AgentView
     And "Session A" has no watchers
@@ -129,7 +129,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should be viewing "Session B" in AgentView
 
-  @AgentView
+  @agent-view
   Scenario: Shift+Right from last session without watchers shows create session dialog
     Given I am viewing "Session C" in AgentView
     And "Session C" is the last session
@@ -137,7 +137,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should see a create session dialog
 
-  @SplitSessionView
+  @split-session-view
   Scenario: Shift+Left from first watcher returns to parent session
   # ===========================================
   # Watcher Navigation Scenarios
@@ -148,7 +148,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     Then I should be viewing "Session A" in AgentView
     And the split view should close
 
-  @SplitSessionView
+  @split-session-view
   Scenario: Shift+Right from watcher navigates to next sibling watcher
     Given I am viewing watcher "W1" in SplitSessionView
     And "Session A" has the following watchers:
@@ -158,7 +158,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should be viewing watcher "W2" in SplitSessionView
 
-  @SplitSessionView
+  @split-session-view
   Scenario: Shift+Left from watcher navigates to previous sibling watcher
     Given I am viewing watcher "W2" in SplitSessionView
     And "Session A" has the following watchers:
@@ -168,7 +168,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Left
     Then I should be viewing watcher "W1" in SplitSessionView
 
-  @SplitSessionView
+  @split-session-view
   Scenario: Shift+Right from last watcher navigates to next session
     Given I am viewing watcher "W2" in SplitSessionView
     And "W2" is the last watcher of "Session A"
@@ -179,7 +179,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should be viewing "Session B" in AgentView
 
-  @SplitSessionView
+  @split-session-view
   Scenario: Shift+Right from last watcher of last session shows create session dialog
     Given I am viewing watcher "W2" in SplitSessionView
     And "W2" is the last watcher of "Session C"
@@ -187,7 +187,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     When I press Shift+Right
     Then I should see a create session dialog
 
-  @CreateSessionDialog
+  @create-session-dialog
   Scenario: Confirming create session dialog creates new unattached session
   # ===========================================
   # Create Session Dialog Scenarios
@@ -198,7 +198,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     And the new session should not be attached to any work unit
     And I should be viewing the new session in AgentView
 
-  @CreateSessionDialog
+  @create-session-dialog
   Scenario: Canceling create session dialog stays at current position
     Given I am viewing "Session C" in AgentView
     And I see a create session dialog
@@ -206,7 +206,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     Then the dialog should close
     And I should remain viewing "Session C" in AgentView
 
-  @BackwardCompatibility
+  @backward-compatibility
   Scenario: /parent command still works alongside Shift+Left navigation
   # ===========================================
   # Backward Compatibility Scenario

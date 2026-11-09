@@ -494,3 +494,41 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "commands/show_feature.rs must no longer be a NotYetPorted stub; got:\n{show_src}"
     );
 }
+
+// ───────── scenario moved from show-feature.feature (COV-071) ─────────
+
+#[test]
+fn json_output_path_writes_the_json_render_to_disk() {
+    // Scenario: JSON output path writes the JSON render to disk
+
+    // @step Given a temp project root contains spec/features/reporting.feature with valid gherkin and no work-unit tags
+    let tmp = TempDir::new().expect("tempdir");
+    write_file(
+        tmp.path(),
+        "spec/features/reporting.feature",
+        "Feature: Reporting\n\n  Scenario: Monthly report\n    Given data\n    Then a report\n",
+    );
+
+    // @step When I dispatch show-feature with feature='reporting', format='json', and output='report.json'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "reporting", "format": "json", "output": "report.json"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step And the file <project_root>/report.json exists with the same bytes as the data field
+    let written = fs::read_to_string(tmp.path().join("report.json")).expect("report.json written");
+    assert_eq!(written, result.data);
+
+    // @step And report.json parses as JSON with a 'feature' object and a 'workUnits' array
+    let parsed: Value = serde_json::from_str(&written)
+        .unwrap_or_else(|e| panic!("report.json not JSON: {e}\n{written}"));
+    assert_eq!(
+        parsed["feature"]["name"].as_str(),
+        Some("Reporting"),
+        "{written}"
+    );
+    assert!(parsed["workUnits"].is_array(), "{written}");
+}

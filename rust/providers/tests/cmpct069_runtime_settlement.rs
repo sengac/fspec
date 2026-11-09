@@ -63,7 +63,9 @@ async fn ordinary_provider_finish_hooks_settle_measured_cache_usage() -> TestRes
     assert_eq!(restored.token_usage.cumulative_billed_input, 1050);
     assert_eq!(restored.token_usage.cumulative_billed_output, 100);
     // @step And current occupancy agrees with the measured physical request
-    assert_eq!(restored.token_usage.current_context_tokens, 1150);
+    // BUG-326: input is the request's total input; occupancy adds its output.
+    assert_eq!(restored.token_usage.current_context_tokens, 1050);
+    assert_eq!(restored.token_usage.context_occupancy(), Some(1150));
     Ok(())
 }
 
@@ -104,7 +106,7 @@ async fn runtime_finish_hooks_settle_every_physical_request() -> TestResult {
     assert_eq!(restored.token_usage.cumulative_billed_input, 120);
     assert_eq!(restored.token_usage.cumulative_billed_output, 40);
     assert_eq!(restored.request_settlements.len(), 2);
-    assert_eq!(restored.token_usage.current_context_tokens, 80);
+    assert_eq!(restored.token_usage.context_occupancy(), Some(80));
     // @step And cache and reasoning evidence survives a cold store reload
     assert!(
         restored

@@ -56,14 +56,13 @@ pub struct BoardStore {
     /// R-SUPPRESS: the mux board pane paints no bar).
     pub(super) menu_zone_c: usize,
     pub(super) selected_index_per_column: HashMap<String, usize>,
-    /// RPC-016: per-column scroll offset — the index of the first
-    /// work unit in the column-content viewport. `0` for every
-    /// column until move_selection / scroll_focused_column / End
-    /// advances it.
+    /// RPC-016: per-column scroll offset — the first work unit in the column
+    /// viewport (`0` until move_selection / scroll_focused_column / End advance it).
     pub(super) scroll_offsets: HashMap<String, usize>,
-    /// RPC-434: the inverse lookup `session_attachments_for` lives in
-    /// `board_viewport.rs` (300-LoC ceiling; `pub(super)` grants access).
+    /// RPC-434: inverse lookup `session_attachments_for` is in `board_viewport.rs`.
     pub(super) session_attachments: HashMap<String, SessionId>,
+    pub(super) workspaces: super::board_workspaces::WorkspaceSelector, // RPC-445
+    pub(super) daemons: super::board_daemons::DaemonSwitcher,          // RPC-448
     last_changed_id: Option<String>,
     /// RPC-015: aggregate manual + auto checkpoint counts populated by
     /// `App::bootstrap` via `Action::CheckpointCountsLoaded`; the
@@ -162,20 +161,6 @@ impl BoardStore {
     /// Index (0..7) of the currently focused column.
     pub fn focused_column_index(&self) -> usize {
         self.focused_column
-    }
-
-    /// Move focus to the next column (wraps at the end).
-    pub fn focus_next_column(&mut self) {
-        self.focused_column = (self.focused_column + 1) % COLUMN_ORDER.len();
-    }
-
-    /// Move focus to the previous column (wraps at index 0).
-    pub fn focus_prev_column(&mut self) {
-        self.focused_column = if self.focused_column == 0 {
-            COLUMN_ORDER.len() - 1
-        } else {
-            self.focused_column - 1
-        };
     }
 
     /// Set focus to the named column. No-op when `column` is not in

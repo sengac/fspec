@@ -1,8 +1,11 @@
+@BUG-582
+@BUG-559
 @done
 @session
 @compaction-resume
 @phase-1
 @CMPCT-060
+@BUG-312
 Feature: Typed durable summary identity
   Persisted envelope identity distinguishes durable summaries from replaceable reminders.
 
@@ -26,7 +29,7 @@ Feature: Typed durable summary identity
   Scenario: Reminder text cannot discard a mixed tool result envelope
     Given a persisted user envelope with quoted reminder text and a tool result
     When its history is restored
-    Then its text remains in model history and its tool result remains in UI replay
+    Then its text and its tool result both remain in model history
 
   Scenario: Only explicitly replaceable runtime reminders are omitted
     Given a version one replaceable runtime reminder envelope

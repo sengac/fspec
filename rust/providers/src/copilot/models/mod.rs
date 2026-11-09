@@ -38,6 +38,6 @@ pub use builder::{
 };
 pub use fetch::{fetch_models, COPILOT_FETCH_TIMEOUT, COPILOT_MODELS_PATH};
 pub use schema::{
-    CopilotModelCapabilities, CopilotModelEntry, CopilotModelLimits, CopilotModelSupports,
-    CopilotModelsResponse,
+    CopilotModelCapabilities, CopilotModelEntry, CopilotModelLimits, CopilotModelPolicy,
+    CopilotModelSupports, CopilotModelsResponse,
 };

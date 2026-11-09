@@ -1,56 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "Header renders with component-based flexbox layout",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "38-71",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "CheckpointStatus displays count when checkpoints exist",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "73-91",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "CheckpointStatus displays none when no checkpoints exist",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "93-104",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "KeybindingShortcuts renders with borderTop only",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "106-130",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "WorkUnitDetailsContainer renders with component-based layout",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "132-164",
-          "implMappings": []
-        }
-      ]
-    },
-    {
       "name": "WorkUnitTitle displays and truncates without ellipsis",
       "testMappings": [
         {
@@ -99,56 +49,16 @@
           "implMappings": []
         }
       ]
-    },
-    {
-      "name": "No work unit selected displays centered message",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "284-306",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "calculateViewportHeight uses component heights not magic numbers",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "308-331",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "Terminal resize recalculates column viewport dynamically",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "333-350",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "Junction separators create continuous border structure",
-      "testMappings": [
-        {
-          "file": "src/tui/components/__tests__/refactor-header-and-details.test.tsx",
-          "lines": "352-379",
-          "implMappings": []
-        }
-      ]
     }
   ],
   "stats": {
-    "totalScenarios": 14,
-    "coveredScenarios": 14,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "src/tui/components/__tests__/refactor-header-and-details.test.tsx"
     ],
     "implFiles": [],
-    "totalLinesCovered": 329
+    "totalLinesCovered": 113
   }
 }

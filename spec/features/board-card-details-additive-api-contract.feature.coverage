@@ -1,0 +1,181 @@
+{
+  "scenarios": [
+    {
+      "name": "Canonical detail API appends exactly one method without changing frozen prefixes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024_additive_api_contract.rs",
+          "lines": "13-80",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+              "lines": [
+                272,
+                273,
+                274
+              ],
+              "firstLine": "/// opening that workspace on the daemon first.",
+              "lastLine": "workspace: String,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/catalog.rs",
+              "lines": [
+                3
+              ],
+              "firstLine": "/// The MCP method catalog; a schema that fails to serialize is an error",
+              "lastLine": "/// The MCP method catalog; a schema that fails to serialize is an error"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/dispatch.rs",
+              "lines": [
+                146
+              ],
+              "firstLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::call(client, args).await,",
+              "lastLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::call(client, args).await,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/validate.rs",
+              "lines": [
+                126
+              ],
+              "firstLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::validate(args),",
+              "lastLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::validate(args),"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "lines": [
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// BOARD-024: canonical work-unit details could not be read.",
+              "lastLine": "WorkUnitDetails(String),"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                148
+              ],
+              "firstLine": "/// BOARD-024: complete canonical work-unit record as the JSON string",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/tests/snapshots/refac019_contracts__refac019_backend.snap",
+              "lines": [
+                59
+              ],
+              "firstLine": "get_session_model bf2b6ff4877bc1ca26dbe0165fb1e28fba04f8317d951a988a6d897ba0a51908",
+              "lastLine": "get_session_model bf2b6ff4877bc1ca26dbe0165fb1e28fba04f8317d951a988a6d897ba0a51908"
+            },
+            {
+              "file": "rust/fspec-tui/tests/snapshots/refac019_contracts__refac019_rpc_implementation.snap",
+              "lines": [
+                59
+              ],
+              "firstLine": "get_session_model 674ac77c74d8331fb95695b5ec42c063547e5285b643654e98528eefd7b1b9dc",
+              "lastLine": "get_session_model 674ac77c74d8331fb95695b5ec42c063547e5285b643654e98528eefd7b1b9dc"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Canonical detail MCP registration matches the service with strict read-only arguments",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024_additive_api_contract.rs",
+          "lines": "82-142",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+              "lines": [
+                272,
+                273,
+                274
+              ],
+              "firstLine": "/// opening that workspace on the daemon first.",
+              "lastLine": "workspace: String,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/catalog.rs",
+              "lines": [
+                3
+              ],
+              "firstLine": "/// The MCP method catalog; a schema that fails to serialize is an error",
+              "lastLine": "/// The MCP method catalog; a schema that fails to serialize is an error"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/dispatch.rs",
+              "lines": [
+                146
+              ],
+              "firstLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::call(client, args).await,",
+              "lastLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::call(client, args).await,"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/validate.rs",
+              "lines": [
+                126
+              ],
+              "firstLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::validate(args),",
+              "lastLine": "\"session_manifest_issues\" => group_40::session_manifest_issues::validate(args),"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "lines": [
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// BOARD-024: canonical work-unit details could not be read.",
+              "lastLine": "WorkUnitDetails(String),"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/backend/subscriptions.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                148
+              ],
+              "firstLine": "/// BOARD-024: complete canonical work-unit record as the JSON string",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board024_additive_api_contract.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_declaration/supervision_credentials.rs",
+      "rust/rpc/src/mcp_dispatch/catalog.rs",
+      "rust/rpc/src/mcp_dispatch/dispatch.rs",
+      "rust/rpc/src/mcp_dispatch/validate.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/backend/subscriptions.rs",
+      "rust/fspec-tui/tests/snapshots/refac019_contracts__refac019_backend.snap",
+      "rust/fspec-tui/tests/snapshots/refac019_contracts__refac019_rpc_implementation.snap"
+    ],
+    "totalLinesCovered": 167
+  }
+}

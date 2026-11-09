@@ -11,8 +11,7 @@
 //! changes. Mouse events were previously dropped at the navigator; paging
 //! keys were absent on /provider.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::BoardStore;
@@ -67,7 +66,7 @@ fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -86,7 +85,7 @@ fn provider_nav() -> Navigator {
 }
 
 /// Navigator with /model active and a 30-model tree (expanded), height seeded.
-fn model_nav() -> Navigator {
+fn model_nav() -> Result<Navigator, codelet_test_helpers::TestError> {
     let mut nav = fresh();
     let ids: Vec<String> = (0..30).map(|i| format!("m{i}")).collect();
     let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
@@ -96,6 +95,8 @@ fn model_nav() -> Navigator {
         models: refs.iter().map(|i| model(i)).collect(),
         profile_name: None,
         is_unreachable: false,
+        provider_id: "openai".to_string(),
+        unavailable_reason: None,
     };
     nav.model_selector.set_providers(vec![provider]);
     // Expand the provider so its 30 model rows are selectable, then render
@@ -103,15 +104,15 @@ fn model_nav() -> Navigator {
     nav.model_selector
         .handle_key(KeyEvent::new(KeyCode::Right, KeyModifiers::NONE));
     let mut term =
-        ratatui::Terminal::new(ratatui::backend::TestBackend::new(60, 14)).expect("term");
+        ratatui::Terminal::new(ratatui::backend::TestBackend::new(60, 14)).or_fail("term")?;
     term.draw(|f| nav.model_selector.render(f.area(), f.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     // Anchor a live selection (set_providers leaves has_selection=false when
     // there is no current model — a Down key activates it).
     nav.model_selector
         .handle_key(KeyEvent::new(KeyCode::Down, KeyModifiers::NONE));
     nav.active_view = ViewMode::ModelSelector;
-    nav
+    Ok(nav)
 }
 
 fn board() -> BoardStore {
@@ -123,7 +124,7 @@ fn board() -> BoardStore {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn mouse_wheel_scrolls_the_provider_list() {
+fn mouse_wheel_scrolls_the_provider_list() -> TestResult {
     // @step Given the /provider view is active with a list longer than the viewport
     let mut nav = provider_nav();
     let b = board();
@@ -139,6 +140,7 @@ fn mouse_wheel_scrolls_the_provider_list() {
         "selection moved down: before={before} after={}",
         nav.provider_settings.selected_index
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -146,9 +148,9 @@ fn mouse_wheel_scrolls_the_provider_list() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn mouse_wheel_scrolls_the_model_list() {
+fn mouse_wheel_scrolls_the_model_list() -> TestResult {
     // @step Given the /model view is active with a list longer than the viewport
-    let mut nav = model_nav();
+    let mut nav = model_nav()?;
     let b = board();
     let before = nav.model_selector.selected_index();
 
@@ -162,6 +164,7 @@ fn mouse_wheel_scrolls_the_model_list() {
         "selection moved down: before={before} after={}",
         nav.model_selector.selected_index()
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -169,7 +172,7 @@ fn mouse_wheel_scrolls_the_model_list() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn rapid_wheel_events_ramp_the_scroll_velocity() {
+fn rapid_wheel_events_ramp_the_scroll_velocity() -> TestResult {
     // @step Given the /provider view is active with a list longer than the viewport
     let mut nav = provider_nav();
     let b = board();
@@ -188,6 +191,7 @@ fn rapid_wheel_events_ramp_the_scroll_velocity() {
         moved > steps,
         "velocity ramp must move more than one row per event: moved={moved} over {steps} events"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -195,7 +199,7 @@ fn rapid_wheel_events_ramp_the_scroll_velocity() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn page_down_and_page_up_page_the_provider_list() {
+fn page_down_and_page_up_page_the_provider_list() -> TestResult {
     // @step Given the /provider view is active with a list longer than the viewport
     let mut nav = provider_nav();
     let b = board();
@@ -216,6 +220,7 @@ fn page_down_and_page_up_page_the_provider_list() {
         after_up < after_down,
         "PageUp moves back up: after_down={after_down} after_up={after_up}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -223,7 +228,7 @@ fn page_down_and_page_up_page_the_provider_list() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn home_and_end_jump_to_the_ends_of_the_provider_list() {
+fn home_and_end_jump_to_the_ends_of_the_provider_list() -> TestResult {
     // @step Given the /provider view is active with a list longer than the viewport
     let mut nav = provider_nav();
     let b = board();
@@ -238,6 +243,7 @@ fn home_and_end_jump_to_the_ends_of_the_provider_list() {
     // @step Then End selects the last item and Home selects the first item
     assert_eq!(after_end, last, "End selects last item");
     assert_eq!(after_home, 0, "Home selects first item");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -245,7 +251,7 @@ fn home_and_end_jump_to_the_ends_of_the_provider_list() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn paging_keys_are_inert_in_provider_filter_mode() {
+fn paging_keys_are_inert_in_provider_filter_mode() -> TestResult {
     // @step Given the /provider view is active and filter mode is on
     let mut nav = provider_nav();
     let b = board();
@@ -261,4 +267,5 @@ fn paging_keys_are_inert_in_provider_filter_mode() {
         nav.provider_settings.selected_index, before,
         "paging keys are inert while filtering"
     );
+    Ok(())
 }

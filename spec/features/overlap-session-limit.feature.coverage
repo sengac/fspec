@@ -4,32 +4,9 @@
       "name": "Skip policy prevents trigger when previous run is active",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "64-86",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+          "lines": "7-36",
+          "implMappings": []
         }
       ]
     },
@@ -37,26 +14,9 @@
       "name": "Queue policy enqueues trigger when previous run is active",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "91-122",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+          "lines": "40-72",
+          "implMappings": []
         }
       ]
     },
@@ -64,32 +24,9 @@
       "name": "Default overlap policy is skip when not specified",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "127-147",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+          "lines": "76-100",
+          "implMappings": []
         }
       ]
     },
@@ -97,30 +34,9 @@
       "name": "Queued job fires when previous run completes",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "152-195",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+          "lines": "104-150",
+          "implMappings": []
         }
       ]
     },
@@ -128,26 +44,9 @@
       "name": "Agent job deferred when session limit reached",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "200-224",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/session_limit.rs",
+          "lines": "7-31",
+          "implMappings": []
         }
       ]
     },
@@ -155,23 +54,9 @@
       "name": "Shell job executes regardless of session limit",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "229-249",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/engine.rs",
-              "lines": [
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/session_limit.rs",
+          "lines": "35-57",
+          "implMappings": []
         }
       ]
     },
@@ -179,18 +64,9 @@
       "name": "Deferred job fires when a session slot opens",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "254-283",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                130,
-                131,
-                132
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/session_limit.rs",
+          "lines": "61-90",
+          "implMappings": []
         }
       ]
     },
@@ -198,29 +74,9 @@
       "name": "Completion detection removes finished sessions from active_runs",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "288-312",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/session_limit.rs",
+          "lines": "94-117",
+          "implMappings": []
         }
       ]
     },
@@ -228,34 +84,9 @@
       "name": "Only one deferred job spawns per tick",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "317-360",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/engine.rs",
-              "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/session_limit.rs",
+          "lines": "121-172",
+          "implMappings": []
         }
       ]
     },
@@ -263,26 +94,9 @@
       "name": "Queue replaces duplicate entries for same schedule",
       "testMappings": [
         {
-          "file": "rust/napi/tests/overlap_session_limit_test.rs",
-          "lines": "365-393",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/state.rs",
-              "lines": [
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82
-              ]
-            }
-          ]
+          "file": "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+          "lines": "154-180",
+          "implMappings": []
         }
       ]
     }
@@ -292,12 +106,10 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/overlap_session_limit_test.rs"
+      "rust/core/tests/overlap_session_limit_test/overlap_policy.rs",
+      "rust/core/tests/overlap_session_limit_test/session_limit.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/scheduler/state.rs",
-      "rust/napi/src/scheduler/engine.rs"
-    ],
-    "totalLinesCovered": 420
+    "implFiles": [],
+    "totalLinesCovered": 316
   }
 }

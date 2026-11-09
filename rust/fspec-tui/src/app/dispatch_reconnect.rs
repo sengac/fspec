@@ -14,6 +14,7 @@ use ratatui::style::Color;
 use std::time::Duration;
 
 use super::state::App;
+use super::work_units_refetch::{refetch_work_units, send_or_log};
 
 /// RPC-416: canonical inline reconnect-notice strings.
 const RECONNECTING: &str = "\u{27F3} Reconnecting\u{2026}";
@@ -91,7 +92,7 @@ impl App {
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
             tokio::time::sleep(DISMISS_DELAY).await;
-            let _ = action_tx.send(Action::ClearReconnectNotice { session_id, seq });
+            send_or_log(&action_tx, Action::ClearReconnectNotice { session_id, seq });
         });
         self.reconnect_dismiss_handle = Some(handle);
     }
@@ -142,14 +143,15 @@ impl App {
         }
         self.spawn_subscriber_tasks();
         self.spawn_session_manifest_issues(true);
+        // RPC-445: re-list workspaces; a non-start selection re-reads its board.
+        self.spawn_load_workspaces();
         // RPC-011 rule [5] (kept by TUI-113 R5): re-fetch the work-unit
         // snapshot on the fresh client so the board re-seeds.
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let rebootstrap_handle = tokio::spawn(async move {
-            if let Ok(units) = backend.list_work_units().await {
-                let _ = action_tx.send(Action::WorkUnitsLoaded(units));
-            }
+            // BUG-361: a failed refetch is shown, never dropped.
+            refetch_work_units(backend.as_ref(), &action_tx, "after reconnect").await;
         });
         self.pending_tasks.push(rebootstrap_handle);
         // RPC-434: replay the fresh connect-time open-session snapshot

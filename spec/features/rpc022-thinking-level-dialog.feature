@@ -47,36 +47,37 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     When the dialog is rendered onto an 80x24 TestBackend
     Then the rendered buffer contains the substring "Thinking Level"
     And the rendered buffer contains the substring "Off"
-    And the rendered buffer contains the substring "Low"
-    And the rendered buffer contains the substring "Medium"
-    And the rendered buffer contains the substring "High"
-    And the production source uses Popup::new(...) wrapping a SizedWidgetRef adapter
+    And the rendered buffer contains the substring "low"
+    And the rendered buffer contains the substring "medium"
+    And the rendered buffer contains the substring "high"
+    And the production source uses the shared dialog_theme renderer
     And the production source does NOT define a hand-rolled centered_rect helper
 
   @ui-rendering
   @initial-selection
   Scenario: Dialog opens with the currently-active level pre-selected
-    Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Medium
+    Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Effort("medium")
     When the dialog is rendered
     Then the Medium row is rendered with the selection marker "▸"
     And the Off / Low / High rows are rendered without the selection marker
 
   @navigation
   @keyboard-navigation
-  Scenario Outline: Arrow keys navigate the 4 levels with wrap-around
+  Scenario Outline: Arrow keys navigate the 5 levels with wrap-around
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Off
     When the user presses <key> <count> times
     Then the highlighted row has label <expected>
 
     Examples:
-      | key  | count | expected |
-      | Down | 1     | Low      |
-      | Down | 2     | Medium   |
-      | Down | 3     | High     |
-      | Down | 4     | Off      |
-      | Up   | 1     | High     |
-      | Up   | 2     | Medium   |
-      | Up   | 4     | Off      |
+      | key  | count | expected      |
+      | Down | 1     | Low           |
+      | Down | 2     | Medium        |
+      | Down | 3     | High          |
+      | Down | 4     | Model default |
+      | Down | 5     | Off           |
+      | Up   | 1     | Model default |
+      | Up   | 2     | High          |
+      | Up   | 5     | Off           |
 
   @navigation
   @selection
@@ -86,13 +87,13 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     When the user navigates Down 3 times so High is highlighted
     And the user presses Enter
     Then handle_event returns EventResult::Consumed with a callback
-    And the callback emits Action::ThinkingLevelSelected(SessionId::new("s-1"), ThinkingLevel::High)
+    And the callback emits Action::ThinkingLevelSelected(SessionId::new("s-1"), ThinkingLevel::Effort("high"))
     And the callback removes the dialog from the Compositor via its id
 
   @navigation
   @dismiss
   Scenario: Esc dismisses the ThinkingLevelDialog without side effects
-    Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::High
+    Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Effort("high")
     When the user presses Esc
     Then handle_event returns EventResult::Consumed with a callback
     And the callback removes the dialog from the Compositor via its id

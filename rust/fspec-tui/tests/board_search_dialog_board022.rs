@@ -17,8 +17,7 @@
 //! `BoardStore::select_work_unit` surface, so this file is RED (fails to
 //! compile) until the BOARD-022 implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
@@ -71,9 +70,9 @@ fn store_with(units: Vec<WorkUnitInfo>) -> BoardStore {
 }
 
 /// Render the BoardView into a 120x24 TestBackend and return the joined text.
-fn render_board(store: &BoardStore) -> String {
+fn render_board(store: &BoardStore) -> Result<String, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -83,9 +82,9 @@ fn render_board(store: &BoardStore) -> String {
             false,
         );
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    join_buffer(&buf)
+    Ok(join_buffer(&buf))
 }
 
 fn join_buffer(buf: &Buffer) -> String {
@@ -101,7 +100,7 @@ fn join_buffer(buf: &Buffer) -> String {
 
 /// Scenario: Pressing '/' on the board opens the work-unit search dialog
 #[test]
-fn pressing_slash_on_the_board_opens_the_work_unit_search_dialog() {
+fn pressing_slash_on_the_board_opens_the_work_unit_search_dialog() -> TestResult {
     // @step Given a board with work units "AUTH-001" in backlog and "RPC-100" in implementing
     let store = store_with(vec![
         wu("AUTH-001", "backlog", "User login", None),
@@ -113,7 +112,7 @@ fn pressing_slash_on_the_board_opens_the_work_unit_search_dialog() {
     let result = view.handle_event(&char_key('/'), &store);
 
     // @step Then the work-unit search dialog is open
-    let action = rx.try_recv().expect("Action::OpenWorkUnitSearch on bus");
+    let action = rx.try_recv().or_fail("Action::OpenWorkUnitSearch on bus")?;
     assert!(
         matches!(action, Action::OpenWorkUnitSearch),
         "expected OpenWorkUnitSearch, got {action:?}"
@@ -129,11 +128,12 @@ fn pressing_slash_on_the_board_opens_the_work_unit_search_dialog() {
 
     // @step And the key event is consumed
     assert!(matches!(result, EventResult::Consumed(None)));
+    Ok(())
 }
 
 /// Scenario: Searching by id filters the result list live
 #[test]
-fn searching_by_id_filters_the_result_list_live() {
+fn searching_by_id_filters_the_result_list_live() -> TestResult {
     // @step Given a board with work units "AUTH-001" in backlog, "RPC-100" in implementing and "TUI-110" in done
     let units = vec![
         wu("AUTH-001", "backlog", "User login", None),
@@ -154,11 +154,12 @@ fn searching_by_id_filters_the_result_list_live() {
 
     // @step Then the dialog lists exactly one match "AUTH-001"
     assert_eq!(dialog.matches(), vec!["AUTH-001".to_string()]);
+    Ok(())
 }
 
 /// Scenario: Selecting a match focuses its card on the board and closes the dialog
 #[test]
-fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() {
+fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() -> TestResult {
     // @step Given a board with work units "AUTH-001" in backlog, "RPC-100" in implementing and "TUI-110" in done
     let units = vec![
         wu("AUTH-001", "backlog", "User login", None),
@@ -203,7 +204,7 @@ fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() {
     // Enter carries the remove callback; running it against the compositor
     // (the way App::handle_event does) must drop the dialog layer.
     let EventResult::Consumed(Some(callback)) = result else {
-        panic!("Enter must carry the remove callback");
+        return Err("Enter must carry the remove callback".into());
     };
     let mut compositor = codelet_fspec_tui::Compositor::new();
     compositor.push(Box::new(WorkUnitSearchDialog::new(vec![wu(
@@ -218,11 +219,12 @@ fn selecting_a_match_focuses_its_card_on_the_board_and_closes_the_dialog() {
         !compositor.contains(WORK_UNIT_SEARCH_DIALOG_ID),
         "remove callback must drop the dialog layer"
     );
+    Ok(())
 }
 
 /// Scenario: Pressing Tab toggles the search mode and re-filters with the same query
 #[test]
-fn pressing_tab_toggles_the_search_mode_and_refilters_with_the_same_query() {
+fn pressing_tab_toggles_the_search_mode_and_refilters_with_the_same_query() -> TestResult {
     // @step Given a board with a work unit "BOARD-022" in backlog whose title contains "search"
     let units = vec![wu(
         "BOARD-022",
@@ -252,11 +254,12 @@ fn pressing_tab_toggles_the_search_mode_and_refilters_with_the_same_query() {
 
     // @step And the dialog lists work unit "BOARD-022" as a match
     assert_eq!(dialog.matches(), vec!["BOARD-022".to_string()]);
+    Ok(())
 }
 
 /// Scenario: Pressing Tab cycles through all three modes and returns to Id
 #[test]
-fn pressing_tab_cycles_through_all_three_modes_and_returns_to_id() {
+fn pressing_tab_cycles_through_all_three_modes_and_returns_to_id() -> TestResult {
     // @step Given the work-unit search dialog is open in Id mode
     let mut dialog = WorkUnitSearchDialog::new(Vec::new());
     assert_eq!(dialog.mode_label(), "id");
@@ -273,11 +276,12 @@ fn pressing_tab_cycles_through_all_three_modes_and_returns_to_id() {
 
     // @step Then the dialog shows the Id search mode
     assert_eq!(dialog.mode_label(), "id");
+    Ok(())
 }
 
 /// Scenario: Description mode never matches a unit without a description
 #[test]
-fn description_mode_never_matches_a_unit_without_a_description() {
+fn description_mode_never_matches_a_unit_without_a_description() -> TestResult {
     // @step Given a board with a work unit "NO-DESC-1" in backlog that has no description
     let units = vec![wu("NO-DESC-1", "backlog", "No description unit", None)];
     let store = store_with(units);
@@ -299,11 +303,12 @@ fn description_mode_never_matches_a_unit_without_a_description() {
 
     // @step Then the dialog lists no matches
     assert_eq!(dialog.matches(), Vec::<String>::new());
+    Ok(())
 }
 
 /// Scenario: A unit with a matching description appears in Description mode
 #[test]
-fn a_unit_with_a_matching_description_appears_in_description_mode() {
+fn a_unit_with_a_matching_description_appears_in_description_mode() -> TestResult {
     // @step Given a board with a work unit "DOC-001" in backlog whose description contains "viewer"
     let units = vec![wu(
         "DOC-001",
@@ -329,11 +334,12 @@ fn a_unit_with_a_matching_description_appears_in_description_mode() {
 
     // @step Then the dialog lists exactly one match "DOC-001"
     assert_eq!(dialog.matches(), vec!["DOC-001".to_string()]);
+    Ok(())
 }
 
 /// Scenario: Pressing Esc closes the dialog without changing the board selection
 #[test]
-fn pressing_esc_closes_the_dialog_without_changing_the_board_selection() {
+fn pressing_esc_closes_the_dialog_without_changing_the_board_selection() -> TestResult {
     // @step Given a board with work unit "AUTH-001" in backlog selected
     let store = store_with(vec![wu("AUTH-001", "backlog", "User login", None)]);
     let mut store = store;
@@ -359,11 +365,12 @@ fn pressing_esc_closes_the_dialog_without_changing_the_board_selection() {
         store.selected_work_unit().map(|u| u.id.as_str()),
         Some("AUTH-001")
     );
+    Ok(())
 }
 
 /// Scenario: Pressing '/' while the dialog is open does not re-open it
 #[test]
-fn pressing_slash_while_the_dialog_is_open_does_not_reopen_it() {
+fn pressing_slash_while_the_dialog_is_open_does_not_reopen_it() -> TestResult {
     // @step Given the work-unit search dialog is open
     let mut app = App::new(Arc::new(MockBackend::new()));
     app.board_store_mut()
@@ -390,11 +397,12 @@ fn pressing_slash_while_the_dialog_is_open_does_not_reopen_it() {
         .filter(|id| id.as_str() == WORK_UNIT_SEARCH_DIALOG_ID)
         .count();
     assert_eq!(count, 1, "dialog must not be stacked twice");
+    Ok(())
 }
 
 /// Scenario: A query with no matches shows the empty-state row and Enter is a no-op
 #[test]
-fn a_query_with_no_matches_shows_the_empty_state_row_and_enter_is_a_no_op() {
+fn a_query_with_no_matches_shows_the_empty_state_row_and_enter_is_a_no_op() -> TestResult {
     // @step Given a board with a single work unit "AUTH-001" in backlog
     let store = store_with(vec![wu("AUTH-001", "backlog", "User login", None)]);
 
@@ -409,7 +417,7 @@ fn a_query_with_no_matches_shows_the_empty_state_row_and_enter_is_a_no_op() {
     }
 
     // @step Then the dialog shows the empty state for the query "zzz-no-such-unit"
-    let rendered = render_dialog(&mut dialog);
+    let rendered = render_dialog(&mut dialog)?;
     assert!(
         rendered.contains("zzz-no-such-unit"),
         "empty-state row must quote the query:\n{rendered}"
@@ -423,11 +431,12 @@ fn a_query_with_no_matches_shows_the_empty_state_row_and_enter_is_a_no_op() {
         !matches!(result, EventResult::Consumed(Some(_))),
         "Enter with zero matches must not close the dialog"
     );
+    Ok(())
 }
 
 /// Scenario: Opening the dialog on an empty board shows the board-is-empty state
 #[test]
-fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() {
+fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() -> TestResult {
     // @step Given a board with no work units
     let store = BoardStore::default();
 
@@ -437,7 +446,7 @@ fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() {
     let mut dialog = WorkUnitSearchDialog::new(store.work_units().to_vec());
 
     // @step Then the dialog shows the board is empty
-    let rendered = render_dialog(&mut dialog);
+    let rendered = render_dialog(&mut dialog)?;
     assert!(
         rendered.contains("board is empty"),
         "empty-board state must be shown:\n{rendered}"
@@ -451,68 +460,77 @@ fn opening_the_dialog_on_an_empty_board_shows_the_board_is_empty_state() {
         !matches!(result, EventResult::Consumed(Some(_))),
         "Enter with an empty board must not close the dialog"
     );
+    Ok(())
 }
 
-/// Scenario: The board header shows the search affordance
+/// Scenario: The board header shows the 2-zone menu bar instead of the search chord
 /// (BOARD-023 R10 supersession: the six-action chord — including the
 /// '/ Search' segment — was collapsed into the short 'u Actions' hint;
 /// MENU-002 R1 supersedes that hint with the live 2-zone menu bar —
 /// the 'Search' entry now lives in the Actions dropdown)
 #[test]
-fn the_board_header_chord_shows_the_slash_search_shortcut() {
+fn the_board_header_chord_shows_the_slash_search_shortcut() -> TestResult {
     // @step Given a board with any selection state
     let store = BoardStore::default();
 
     // @step When the board is rendered
-    let rendered = render_board(&store);
+    let rendered = render_board(&store)?;
 
-    // @step Then the header shows the 2-zone menu bar (MENU-002
-    // supersedes the 'u Actions' hint; MENU-008: the items are now
-    // Kanban/Tools/Settings/Help)
-    assert!(
-        rendered.contains("Kanban") && rendered.contains("Help"),
-        "header must contain the 2-zone bar's Zone A items: {rendered}"
-    );
+    // @step Then the header shows the 2-zone menu bar Zone A items (Kanban Tools Settings Help)
+    // (MENU-002 supersedes the 'u Actions' hint; MENU-008: the items are
+    // now Kanban/Tools/Settings/Help)
+    for item in ["Kanban", "Tools", "Settings", "Help"] {
+        assert!(
+            rendered.contains(item),
+            "header must contain the 2-zone bar's Zone A item {item:?}: {rendered}"
+        );
+    }
+    Ok(())
 }
 
 /// Scenario: The board help dialog lists the '/' search shortcut
 #[test]
-fn the_board_help_dialog_lists_the_slash_search_shortcut() {
+fn the_board_help_dialog_lists_the_slash_search_shortcut() -> TestResult {
     use codelet_fspec_tui::components::help_dialog::HelpDialog;
 
     // @step Given the board help dialog is open
     let mut dialog = HelpDialog::for_board();
 
     // @step When the help content is inspected
-    let buf = render_200x60(&mut dialog);
+    let buf = render_200x60(&mut dialog)?;
     let text = join_buffer(&buf);
 
-    // @step Then it lists the '/' key with the description "Search work units"
+    // @step Then it lists the '/' key with its menu label "Search" (TUI-129)
     assert!(
-        text.contains("Search work units"),
+        text.contains("/             Search"),
         "board help must list the '/' search shortcut:\n{text}"
     );
+    Ok(())
 }
 
 /// Render any Component into a 200x60 TestBackend and return the buffer.
-fn render_200x60<C: Component>(component: &mut C) -> Buffer {
+fn render_200x60<C: Component>(
+    component: &mut C,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(200, 60);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             component.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 /// Render the dialog into a 80x24 TestBackend and return the joined text.
-fn render_dialog(dialog: &mut WorkUnitSearchDialog) -> String {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_dialog(
+    dialog: &mut WorkUnitSearchDialog,
+) -> Result<String, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         dialog.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    join_buffer(&buf)
+    Ok(join_buffer(&buf))
 }

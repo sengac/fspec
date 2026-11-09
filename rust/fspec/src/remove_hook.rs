@@ -28,10 +28,10 @@
 //! The bridge MUST NOT embed `write_json_atomic` or `read_to_string` or
 //! any HookFile shape.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::remove_hook;
 use serde_json::json;
 
@@ -47,7 +47,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `remove-hook` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by the core.
     let body = json!({
@@ -57,8 +57,11 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     let args_json = body.to_string();
 
     match remove_hook::run(&args_json, &project_root).await {
-        Ok(_data_json) => {
-            // TS Commander action prints nothing on success — silent exit 0.
+        Ok(notice) => {
+            // BUG-611: the notice that a broken config was backed up.
+            if !notice.is_empty() {
+                println!("{notice}");
+            }
             Ok(0)
         }
         Err(err) => {

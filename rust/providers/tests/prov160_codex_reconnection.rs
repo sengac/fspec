@@ -63,8 +63,8 @@ async fn scenario_accepted_sse_interruptions_discard_uncommitted_tool_calls() ->
         Ok(())
     }))?;
     // @step When the accepted SSE stream disconnects and its replacement completes
-    let observed = tokio::time::timeout(
-        Duration::from_secs(4),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "collect(model(&server.url, history.clone())?)",
         collect(model(&server.url, history.clone())?),
     )
     .await??;
@@ -88,8 +88,8 @@ async fn scenario_five_stream_retries_exhaust_without_checkpoint_publication() -
     let server = Server::start(vec![text(); 6], false).await?;
     let history = CodexHistory::default();
     // @step When Codex consumes its five stream retries
-    let observed = tokio::time::timeout(
-        Duration::from_secs(15),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "collect(model(&server.url, history.clone())?)",
         collect(model(&server.url, history.clone())?),
     )
     .await??;
@@ -120,8 +120,8 @@ async fn scenario_idle_deadlines_consume_the_stream_budget_rather_than_waiting_o
     // @step Given a Codex server that repeatedly sends partial text and stalls
     let server = Server::start(vec![text(); 6], true).await?;
     // @step When raw network idle deadlines expire despite UI polling
-    let observed = tokio::time::timeout(
-        Duration::from_secs(15),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "collect(model(&server.url, CodexHistory::default())?)",
         collect(model(&server.url, CodexHistory::default())?),
     )
     .await??;
@@ -152,8 +152,8 @@ async fn scenario_permanent_failures_never_enter_network_recovery() -> TestResul
             .mount(&server)
             .await;
         // @step When the provider reports those failures
-        let observed = tokio::time::timeout(
-            Duration::from_secs(2),
+        let observed = codelet_test_helpers::deadlock_guard(
+            "collect(model(&server.uri(), CodexHistory::default())?)",
             collect(model(&server.uri(), CodexHistory::default())?),
         )
         .await??;
@@ -194,15 +194,24 @@ async fn scenario_recovery_revalidates_generation_and_credential_authority() -> 
         .filter(attempt_events::is_content);
     stream.next().await.ok_or("missing partial text")??;
     // @step When its committed generation or credential authority changes during the wait
-    let progress = tokio::time::timeout(Duration::from_millis(50), stream.next()).await;
+    // TEST-042: no waiting window; 32 poll rounds and the interrupted
+    // request is still waiting for recovery.
+    let mut next = stream.next();
+    let mut rounds = 0;
+    let progress = codelet_test_helpers::pending_until("32 poll rounds", &mut next, || {
+        rounds += 1;
+        rounds > 32
+    })
+    .await;
+    drop(next);
     assert!(
-        progress.is_err(),
-        "interruption should wait for recovery, not terminate"
+        progress.is_ok(),
+        "interruption should wait for recovery, not terminate: {progress:?}"
     );
     history.reset()?;
     let previous = history.snapshot()?;
     // @step Then the stale attempt sends nothing and returns a terminal authority failure
-    let error = tokio::time::timeout(Duration::from_secs(2), stream.next())
+    let error = codelet_test_helpers::deadlock_guard("stream.next()", stream.next())
         .await?
         .ok_or("missing failure")?
         .err()
@@ -239,13 +248,17 @@ async fn scenario_recovery_revalidates_generation_and_credential_authority() -> 
     use rig::http_client::HttpClientExt;
     let pending = client.send_streaming(request);
     tokio::pin!(pending);
-    assert!(
-        tokio::time::timeout(Duration::from_millis(100), &mut pending)
-            .await
-            .is_err()
-    );
+    // TEST-042: no waiting window; 32 poll rounds and the send still waits
+    // out the retry-after.
+    let mut rounds = 0;
+    let waiting = codelet_test_helpers::pending_until("32 poll rounds", &mut pending, || {
+        rounds += 1;
+        rounds > 32
+    })
+    .await;
+    assert!(waiting.is_ok(), "{waiting:?}");
     isolated.seed("B")?;
-    let error = tokio::time::timeout(Duration::from_secs(2), &mut pending)
+    let error = codelet_test_helpers::deadlock_guard("&mut pending", &mut pending)
         .await?
         .err()
         .ok_or("changed account succeeded")?;

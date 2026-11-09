@@ -11,17 +11,8 @@ node File
     path: String @unique
     language: String?
     lineCount: I32?
-    lastModified: DateTime?
+    contentHash: String?
     isTest: Bool?
-}
-
-node Module
-  @description("A module, package, crate, or namespace.")
-{
-    slug: String @key
-    name: String
-    moduleType: enum(namespace, package, crate, module)
-    isPublic: Bool?
 }
 
 node Function
@@ -32,6 +23,7 @@ node Function
     qualifiedName: String?
     isAsync: Bool?
     isPublic: Bool?
+    isTest: Bool?
     paramCount: I32?
     lineStart: I32?
     lineEnd: I32?
@@ -49,6 +41,7 @@ node Type
 {
     slug: String @key
     name: String
+    qualifiedName: String?
     typeKind: enum(struct_kind, class, interface, enum_kind, trait_kind, type_alias, extension)
     isGeneric: Bool?
     isPublic: Bool?
@@ -113,11 +106,14 @@ edge Calls: Function -> Function {
 edge Implements: Type -> Type {
 }
 
+edge HasMethod: Type -> Function {
+}
+
 edge Extends: Type -> Type {
 }
 
 edge TypeRef: Function -> Type {
-    refKind: enum(param, return_type, field)?
+    refKind: enum(param, return_type, field, constructor)?
 }
 
 edge DependsOn: File -> Dependency {

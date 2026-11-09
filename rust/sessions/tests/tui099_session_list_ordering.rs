@@ -7,58 +7,14 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::path::PathBuf;
-use std::sync::Arc;
+mod tui099_session_list_ordering_support;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
-use codelet_rpc_types::SessionInfo;
 use codelet_sessions::SessionManager;
-use tokio::sync::Mutex;
-
-/// PROV-132: Serialize tests that swap the process-global data directory.
-static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
-
-/// Helper: create a temp data directory and return its path.
-fn make_temp_data_dir() -> PathBuf {
-    tempfile::tempdir().expect("tempdir").keep()
-}
-
-/// Helper: set the data directory and return a guard that cleans it up.
-fn set_temp_data_dir(path: PathBuf) -> PathBuf {
-    codelet_common::set_data_directory(path.clone()).expect("set_data_directory");
-    // Reset the persistence singletons so they re-initialize against the new data dir.
-    codelet_core::persistence::reset_stores_for_tests();
-    path
-}
-
-/// Helper: construct a SessionInfo with a specific updated_at_ms.
-fn make_session(id: &str, ts: Option<i64>) -> SessionInfo {
-    SessionInfo {
-        id: id.to_string(),
-        name: format!("Session {id}"),
-        status: "idle".to_string(),
-        project: ".".to_string(),
-        message_count: 0,
-        provider_id: Some("anthropic".to_string()),
-        model_id: Some("claude-sonnet-4".to_string()),
-        is_isolated: false,
-        worktree_path: None,
-        role: None,
-        updated_at_ms: ts,
-        work_unit_focus: Default::default(),
-    }
-}
-
-/// Helper: apply the expected sorting algorithm to a Vec<SessionInfo>.
-/// This mirrors the sorting logic that list_sessions() should implement.
-fn sort_sessions(sessions: &mut [SessionInfo]) {
-    sessions.sort_by(|a, b| match (a.updated_at_ms, b.updated_at_ms) {
-        (Some(ts_a), Some(ts_b)) => ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id)),
-        (Some(_), None) => std::cmp::Ordering::Less,
-        (None, Some(_)) => std::cmp::Ordering::Greater,
-        (None, None) => a.id.cmp(&b.id),
-    });
-}
+use tui099_session_list_ordering_support::{
+    create_checked, make_session, make_temp_data_dir, set_temp_data_dir, sort_sessions,
+    DATA_DIR_GUARD,
+};
 
 // ============================================================================
 // Scenario: Sessions ordered by most recently updated first
@@ -70,53 +26,67 @@ async fn sessions_ordered_by_most_recently_updated_first() {
 
     // @step Given I have multiple sessions with different update timestamps
     let _data_dir = set_temp_data_dir(make_temp_data_dir());
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-sonnet-4"),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = &*manager;
 
     // Create sessions
-    let sid_a = handle.create_session(None);
+    let sid_a = create_checked(handle);
     let _info_a = manager
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .iter()
         .find(|s| s.id == sid_a.value)
         .cloned()
         .expect("session A should exist");
 
-    let sid_b = handle.create_session(None);
+    let sid_b = create_checked(handle);
     let _info_b = manager
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .iter()
         .find(|s| s.id == sid_b.value)
         .cloned()
         .expect("session B should exist");
 
-    let sid_c = handle.create_session(None);
+    let sid_c = create_checked(handle);
     let _info_c = manager
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .iter()
         .find(|s| s.id == sid_c.value)
         .cloned()
         .expect("session C should exist");
 
     // @step When I open the /resume view
-    let sessions = manager.list_sessions(
-        &std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default(),
-    );
+    let sessions = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
+        )
+        .expect("list_sessions reads the session");
 
     // @step Then the sessions are displayed in descending order by updated_at_ms
     assert!(
@@ -199,16 +169,27 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
 
     // Verify the actual list_sessions() output is sorted
     let _data_dir = set_temp_data_dir(make_temp_data_dir());
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
-    let handle: &dyn SessionManagerHandle = &*manager;
-    let _sid1 = handle.create_session(None);
-    let _sid2 = handle.create_session(None);
-    let sessions = manager.list_sessions(
-        &std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default(),
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
     );
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-sonnet-4"),
+        Ok(())
+    );
+    let handle: &dyn SessionManagerHandle = &*manager;
+    let _sid1 = create_checked(handle);
+    let _sid2 = create_checked(handle);
+    let sessions = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
+        )
+        .expect("list_sessions reads the session");
 
     // Verify the overall list is sorted
     for i in 1..sessions.len() {
@@ -291,15 +272,26 @@ async fn sessions_without_timestamp_appear_at_end() {
 
     // Also verify the actual list_sessions() output is sorted
     let _data_dir = set_temp_data_dir(make_temp_data_dir());
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-sonnet-4");
-    let handle: &dyn SessionManagerHandle = &*manager;
-    let _sid = handle.create_session(None);
-    let sessions = manager.list_sessions(
-        &std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default(),
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
     );
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-sonnet-4"),
+        Ok(())
+    );
+    let handle: &dyn SessionManagerHandle = &*manager;
+    let _sid = create_checked(handle);
+    let sessions = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
+        )
+        .expect("list_sessions reads the session");
 
     // Verify all sessions from list_sessions() are properly sorted
     for i in 1..sessions.len() {

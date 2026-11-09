@@ -7,6 +7,8 @@ pub struct PromptInput {
     pub thinking_config: Option<String>,
     pub compaction_epoch: Option<u64>,
     pub interrupt_epoch: u64,
+    /// BUG-284: durable receipt identity retained before queue acknowledgment.
+    pub submission: Option<uuid::Uuid>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -50,6 +52,8 @@ pub struct IncomingMessage {
     pub message: String,
     pub images: Option<Vec<BridgeImageData>>,
     pub interrupt_epoch: Option<u64>,
+    /// BUG-284: durable receipt identity retained before queue acknowledgment.
+    pub submission_id: Option<uuid::Uuid>,
 }
 
 #[derive(Debug, Clone)]
@@ -73,6 +77,7 @@ impl IncomingMessage {
             message,
             images: None,
             interrupt_epoch: None,
+            submission_id: None,
         })
     }
 
@@ -91,6 +96,7 @@ impl IncomingMessage {
             message,
             images,
             interrupt_epoch: None,
+            submission_id: None,
         })
     }
 }

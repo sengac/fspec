@@ -10,8 +10,6 @@
             {
               "file": "rust/providers/src/codex/websocket.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -157,13 +155,43 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "struct Lease(CodexWebSocketHandle, u64);",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
               "lines": [
-                21,
                 22,
                 23,
                 24,
@@ -171,8 +199,11 @@
                 26,
                 27,
                 28,
-                29
-              ]
+                29,
+                30
+              ],
+              "firstLine": "pub(super) fn validate_attempt<T>(request: &http::Request<T>) -> Result<(), Error> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,6 +221,6 @@
       "rust/providers/src/codex/websocket.rs",
       "rust/providers/src/codex/recovery.rs"
     ],
-    "totalLinesCovered": 206
+    "totalLinesCovered": 233
   }
 }

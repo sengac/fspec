@@ -4,8 +4,8 @@
       "name": "Click on scrollbar track in SlashCommandPopup jumps to that position",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "233-254",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "27-57",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -72,7 +72,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "self.selected_index = wrap_index(self.selected_index, delta, self.matches.len());",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,77 +84,9 @@
       "name": "Drag scrollbar thumb in FileSearchPopup continuously scrolls content",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "258-282",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/file_search_popup.rs",
-              "lines": [
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "63-100",
+          "implMappings": []
         }
       ]
     },
@@ -160,13 +94,12 @@
       "name": "Quick click on scrollbar thumb in SearchHistoryView scrolls one viewport height",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "286-307",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "106-135",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
-                132,
                 133,
                 134,
                 135,
@@ -227,8 +160,14 @@
                 190,
                 191,
                 192,
-                193
-              ]
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "} else if self.selected_index >= self.matches.len() {",
+              "lastLine": "KeyCode::Enter => match self.selected() {"
             }
           ]
         }
@@ -238,8 +177,8 @@
       "name": "Click on scrollbar track in TurnContentModal jumps to that position",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "311-332",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "141-170",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
@@ -306,7 +245,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "/// left press/drag/release into the modal's own selection recognizer",
+              "lastLine": "// Click outside scrollbar: fall through to text selection"
             }
           ]
         }
@@ -316,8 +257,8 @@
       "name": "Scrollbar interaction is ignored when content fits in viewport",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "336-356",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "176-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -335,7 +276,9 @@
                 193,
                 194,
                 195
-              ]
+              ],
+              "firstLine": "return PopupOutcome::Ignored;",
+              "lastLine": "KeyCode::PageUp => {"
             }
           ]
         }
@@ -345,8 +288,8 @@
       "name": "Scrollbar drag state resets when popup content changes",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
-          "lines": "360-380",
+          "file": "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
+          "lines": "211-248",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
@@ -363,7 +306,270 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "/// Body shows the `↓` glyph on its bottom row when there are rows",
+              "lastLine": "self.matches.push(&SLASH_COMMANDS[i % SLASH_COMMANDS.len()]);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SlashCommandPopup mouse handling routes a scrollbar click through ScrollbarDrag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "lines": "32-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/slash_command_popup_mouse.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "pub fn handle_mouse(&mut self, ev: MouseEvent, popup_rect: Rect) -> PopupOutcome {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FileSearchPopup mouse handling routes a scrollbar drag through ScrollbarDrag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "lines": "95-156",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/file_search_popup_mouse.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "pub fn handle_mouse(&mut self, ev: MouseEvent, popup_rect: Rect) -> FilePopupOutcome {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchHistoryView mouse handling routes a scrollbar click through ScrollbarDrag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs",
+          "lines": "162-232",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/search_history_view_mouse.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ],
+              "firstLine": "pub fn handle_mouse(",
+              "lastLine": "}"
             }
           ]
         }
@@ -371,18 +577,21 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec-tui/src/mouse/scrollbar_drag_tui103_tests.rs",
       "rust/fspec-tui/src/views/agent/tui103_popup_scrollbar_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/slash_command_popup.rs",
-      "rust/fspec-tui/src/views/agent/file_search_popup.rs",
       "rust/fspec-tui/src/views/agent/search_history_view.rs",
-      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs"
+      "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
+      "rust/fspec-tui/src/views/agent/slash_command_popup_mouse.rs",
+      "rust/fspec-tui/src/views/agent/file_search_popup_mouse.rs",
+      "rust/fspec-tui/src/views/agent/search_history_view_mouse.rs"
     ],
-    "totalLinesCovered": 406
+    "totalLinesCovered": 809
   }
 }

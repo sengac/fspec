@@ -3,6 +3,8 @@
 #[path = "bug210_progress/support.rs"]
 pub mod support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
 use codelet_cli::interactive::output::StreamOutput;
 use codelet_rpc_types::SessionStatus;
 use serial_test::serial;
@@ -32,7 +34,7 @@ async fn scenario_automatic_compaction_shows_live_progress_on_the_original_sessi
     fixture.flush().await?;
     let updated_footer = fixture.footer(0);
     recovery.abort();
-    let _ = recovery.await;
+    recovery.await.completed_or_cancelled()?;
     // @step Then that session visibly shows the current compaction activity phase without counts or a determinate bar
     assert!(
         initial_footer.contains("[compacting: Summarising]") && !initial_footer.contains('▱'),
@@ -68,7 +70,7 @@ async fn scenario_background_compaction_progress_stays_attached_to_its_original_
     fixture.sessions[1].update_compaction_progress("Building DAG".into(), 3, 7);
     fixture.flush().await?;
     recovery.abort();
-    let _ = recovery.await;
+    recovery.await.completed_or_cancelled()?;
     // @step Then the viewed session does not show the other session's compaction progress
     assert!(!fixture.footer(0).contains("[compacting:"));
     assert_eq!(
@@ -108,7 +110,7 @@ async fn scenario_compaction_progress_disappears_when_its_operation_ends() -> su
             _ => {
                 let recovery = fixture.start_recovery(0).await?;
                 recovery.abort();
-                let _ = recovery.await;
+                recovery.await.completed_or_cancelled()?;
             }
         }
         fixture.flush().await?;

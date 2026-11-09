@@ -11,6 +11,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn lost_acknowledgement_cannot_roll_back_a_promoted_revision() -> TestResult {
     // @step Given a new revision was durably promoted without its acknowledgement reaching the caller
     if let Ok(path) = std::env::var("CMPCT064_LOST_ACK_STORE") {
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(path.into())?;
         reset_stores_for_tests();
         let mut store = SessionStore::new()?;
@@ -20,6 +21,7 @@ fn lost_acknowledgement_cannot_roll_back_a_promoted_revision() -> TestResult {
         std::process::exit(74);
     }
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let session = create_session("old", directory.path())?;

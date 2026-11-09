@@ -4,33 +4,16 @@
       "name": "rust/fspec is registered as a workspace member",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "235-276",
+          "file": "rust/fspec/tests/cargo_shape/codelet_fspec_is_registered.rs",
+          "lines": "4-59",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
               "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20
-              ]
+                2
+              ],
+              "firstLine": "members = [",
+              "lastLine": "members = ["
             }
           ]
         }
@@ -40,8 +23,8 @@
       "name": "rust/fspec/Cargo.toml declares a single bin named fspec",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "278-311",
+          "file": "rust/fspec/tests/cargo_shape/codelet_fspec_is_registered.rs",
+          "lines": "61-91",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -87,7 +70,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -97,8 +82,8 @@
       "name": "cargo build -p fspec --release produces rust/target/release/fspec",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "693-727",
+          "file": "rust/fspec/tests/cargo_shape/cargo_build_p_fspec.rs",
+          "lines": "4-44",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -144,7 +129,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -154,8 +141,8 @@
       "name": "fspec --version prints the workspace version",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "25-50",
+          "file": "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+          "lines": "4-30",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -192,12 +179,7 @@
                 30,
                 31,
                 32,
-                33,
-                34,
                 35,
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -209,12 +191,6 @@
                 47,
                 48,
                 49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -250,8 +226,20 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "//! `fspec` binary entry point (RPC-010).",
+              "lastLine": "mod show_epic;"
             }
           ]
         }
@@ -261,8 +249,8 @@
       "name": "fspec --help shows three subcommands",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "52-90",
+          "file": "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+          "lines": "32-71",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -299,12 +287,7 @@
                 30,
                 31,
                 32,
-                33,
-                34,
                 35,
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -316,12 +299,6 @@
                 47,
                 48,
                 49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -357,8 +334,20 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "//! `fspec` binary entry point (RPC-010).",
+              "lastLine": "mod show_epic;"
             }
           ]
         }
@@ -368,17 +357,25 @@
       "name": "rust/fspec/src/ contains exactly the locked file layout",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "313-360",
+          "file": "rust/fspec/tests/cargo_shape/fspec_src_contains_exactly.rs",
+          "lines": "4-144",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                39,
+                46
+              ],
+              "firstLine": "mod daemon_json;",
+              "lastLine": "pub use daemon_json::*;"
+            },
+            {
+              "file": "rust/fspec/src/common/daemon_json.rs",
               "lines": [
                 1,
                 2,
                 3,
                 4,
-                5,
                 6,
                 7,
                 8,
@@ -386,86 +383,10 @@
                 10,
                 11,
                 12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91
-              ]
+                13
+              ],
+              "firstLine": "//! daemon.json autodiscovery (RPC-010/RPC-011): atomic write, idempotent",
+              "lastLine": "/// RPC-011 rule [21] / scenario \"daemon.json schema upgrade\": the"
             }
           ]
         }
@@ -475,8 +396,8 @@
       "name": "rust/fspec/Cargo.toml [dependencies] does NOT list codelet-napi",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "362-385",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "4-26",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -522,7 +443,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -532,8 +455,8 @@
       "name": "rust/fspec/Cargo.toml [dev-dependencies] does NOT list codelet-napi",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "387-409",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "28-50",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -579,7 +502,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -589,8 +514,8 @@
       "name": "rust/fspec/Cargo.toml declares the expected production dependencies",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "411-457",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "52-101",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -636,7 +561,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -646,104 +573,17 @@
       "name": "No source file under rust/fspec/src/ constructs its own tokio runtime",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "459-494",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "103-138",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/init_selector.rs",
               "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91
-              ]
+                308,
+                309
+              ],
+              "firstLine": "#[tokio::test]",
+              "lastLine": "async fn selecting_an_agent_installs_its_files() {"
             }
           ]
         }
@@ -753,31 +593,24 @@
       "name": "The RPC-005 source-shape invariant is widened to scan rust/fspec/src/",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "496-513",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "140-159",
           "implMappings": [
             {
-              "file": "rust/fspec/tests/cargo_shape.rs",
+              "file": "rust/fspec/tests/cargo_shape/fspec_src_contains_exactly.rs",
               "lines": [
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513
-              ]
+                14,
+                15,
+                16,
+                20,
+                122,
+                123,
+                124,
+                125,
+                128
+              ],
+              "firstLine": "p.is_file(),",
+              "lastLine": "] {"
             }
           ]
         }
@@ -787,8 +620,8 @@
       "name": "The existing codelet-rpc-server dev-helper binary stays in place",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "515-540",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "161-189",
           "implMappings": [
             {
               "file": "rust/rpc-server/Cargo.toml",
@@ -813,7 +646,9 @@
                 18,
                 19,
                 20
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "[[bin]]"
             }
           ]
         }
@@ -823,8 +658,8 @@
       "name": "Existing codelet-rpc-server test harness still works (port-line contract preserved)",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "729-762",
+          "file": "rust/fspec/tests/cargo_shape/cargo_build_p_fspec.rs",
+          "lines": "46-87",
           "implMappings": [
             {
               "file": "rust/rpc-server/tests/common/mod.rs",
@@ -847,9 +682,10 @@
                 16,
                 17,
                 18,
-                19,
-                20
-              ]
+                19
+              ],
+              "firstLine": "//! Shared helpers for the rpc-server integration tests.",
+              "lastLine": "/// tests that race against a server task that has just been spawned and"
             }
           ]
         }
@@ -859,8 +695,8 @@
       "name": "A new spawn_fspec_daemon helper proves the port-line contract is verbatim",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "542-691",
+          "file": "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs",
+          "lines": "191-238",
           "implMappings": [
             {
               "file": "rust/fspec/tests/common/mod.rs",
@@ -914,8 +750,14 @@
                 47,
                 48,
                 49,
-                50
-              ]
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "//! Shared helpers for the codelet-fspec integration tests.",
+              "lastLine": "/// supplied work units. Returns the TempDir (RAII cleanup) and the path"
             }
           ]
         }
@@ -925,8 +767,8 @@
       "name": "--workspace defaults to CWD when omitted",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "92-133",
+          "file": "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+          "lines": "73-112",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -963,12 +805,7 @@
                 30,
                 31,
                 32,
-                33,
-                34,
                 35,
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -980,12 +817,6 @@
                 47,
                 48,
                 49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -1021,8 +852,20 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "//! `fspec` binary entry point (RPC-010).",
+              "lastLine": "mod show_epic;"
             }
           ]
         }
@@ -1032,8 +875,8 @@
       "name": "--workspace <path> overrides CWD for the WorkUnitsWatcher root",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "135-182",
+          "file": "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+          "lines": "114-162",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -1070,12 +913,7 @@
                 30,
                 31,
                 32,
-                33,
-                34,
                 35,
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -1087,12 +925,6 @@
                 47,
                 48,
                 49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -1128,8 +960,20 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "//! `fspec` binary entry point (RPC-010).",
+              "lastLine": "mod show_epic;"
             }
           ]
         }
@@ -1139,8 +983,8 @@
       "name": "Both `fspec` (combined) and `fspec daemon` honour the same --workspace resolution",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "184-233",
+          "file": "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+          "lines": "164-214",
           "implMappings": [
             {
               "file": "rust/fspec/src/main.rs",
@@ -1177,12 +1021,7 @@
                 30,
                 31,
                 32,
-                33,
-                34,
                 35,
-                36,
-                37,
-                38,
                 39,
                 40,
                 41,
@@ -1194,12 +1033,6 @@
                 47,
                 48,
                 49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -1235,8 +1068,20 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "//! `fspec` binary entry point (RPC-010).",
+              "lastLine": "mod show_epic;"
             }
           ]
         }
@@ -1246,8 +1091,8 @@
       "name": "Existing cargo test suites for RPC-005..009 remain green",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cargo_shape.rs",
-          "lines": "886-918",
+          "file": "rust/fspec/tests/cargo_shape/cargo_build_p_fspec.rs",
+          "lines": "89-122",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -1293,7 +1138,9 @@
                 39,
                 40,
                 41
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-025: the fspec binary MUST call codelet_common::set_data_directory"
             }
           ]
         }
@@ -1305,18 +1152,24 @@
     "coveredScenarios": 18,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec/tests/cargo_shape.rs"
+      "rust/fspec/tests/cargo_shape/codelet_fspec_is_registered.rs",
+      "rust/fspec/tests/cargo_shape/cargo_build_p_fspec.rs",
+      "rust/fspec/tests/cargo_shape/fspec_version_prints_the.rs",
+      "rust/fspec/tests/cargo_shape/fspec_src_contains_exactly.rs",
+      "rust/fspec/tests/cargo_shape/cargo_toml_dependencies_does.rs"
     ],
     "implFiles": [
       "rust/Cargo.toml",
       "rust/fspec/Cargo.toml",
       "rust/fspec/src/main.rs",
-      "rust/fspec/tests/cargo_shape.rs",
+      "rust/fspec/src/common.rs",
+      "rust/fspec/src/common/daemon_json.rs",
+      "rust/fspec/src/init_selector.rs",
+      "rust/fspec/tests/cargo_shape/fspec_src_contains_exactly.rs",
       "rust/rpc-server/Cargo.toml",
       "rust/rpc-server/tests/common/mod.rs",
-      "rust/fspec/tests/common/mod.rs",
-      "package.json"
+      "rust/fspec/tests/common/mod.rs"
     ],
-    "totalLinesCovered": 1934
+    "totalLinesCovered": 1596
   }
 }

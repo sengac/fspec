@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @RPC-025
 @rust
 @rpc
 @persistence
 @parity
+@infrastructure
 Feature: RPC-025 FspecService persistence_*_history RPCs over both EmbeddedFspecBackend and WebSocketFspecBackend
   """
   RPC-025 (RPC methods slice) — Add three new RPC methods to FspecService

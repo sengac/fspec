@@ -8,48 +8,50 @@
           "lines": "16-34",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/work_units.rs",
               "lines": [
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                1597,
-                1598,
-                1599,
-                1600,
-                1601
-              ]
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "firstLine": "/// attachments. The NAPI surface preserves the existing TS shape",
+              "lastLine": "/// Rust BoardView. Additive — the TS Ink BoardView continues to"
+            },
+            {
+              "file": "rust/rpc-types/src/stream_chunk.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "Interrupted {",
+              "lastLine": "},"
             },
             {
               "file": "rust/agent-loop/src/stream_chunk_json.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
-                105
-              ]
-            },
-            {
-              "file": "rust/napi/src/types.rs",
-              "lines": [
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "\"type\": \"userNotification\",",
+              "lastLine": "} => json!({"
             }
           ]
         }
@@ -60,51 +62,53 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/bug220_interruption_wire.rs",
-          "lines": "37-71",
+          "lines": "37-73",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/work_units.rs",
               "lines": [
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                1597,
-                1598,
-                1599,
-                1600,
-                1601
-              ]
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "firstLine": "/// attachments. The NAPI surface preserves the existing TS shape",
+              "lastLine": "/// Rust BoardView. Additive — the TS Ink BoardView continues to"
+            },
+            {
+              "file": "rust/rpc-types/src/stream_chunk.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "Interrupted {",
+              "lastLine": "},"
             },
             {
               "file": "rust/agent-loop/src/stream_chunk_json.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
-                105
-              ]
-            },
-            {
-              "file": "rust/napi/src/types.rs",
-              "lines": [
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "\"type\": \"userNotification\",",
+              "lastLine": "} => json!({"
             }
           ]
         }
@@ -119,10 +123,10 @@
       "rust/rpc-server/tests/bug220_interruption_wire.rs"
     ],
     "implFiles": [
-      "rust/rpc-types/src/lib.rs",
-      "rust/agent-loop/src/stream_chunk_json.rs",
-      "rust/napi/src/types.rs"
+      "rust/rpc-types/src/work_units.rs",
+      "rust/rpc-types/src/stream_chunk.rs",
+      "rust/agent-loop/src/stream_chunk_json.rs"
     ],
-    "totalLinesCovered": 112
+    "totalLinesCovered": 106
   }
 }

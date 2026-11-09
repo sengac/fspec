@@ -17,8 +17,7 @@
 //!     (not the orphaned "AgentView.scrollback" field that RPC-024
 //!     deletes).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -40,7 +39,7 @@ fn sid(s: &str) -> SessionId {
 
 /// Scenario: Action::SessionCreated appends a fresh SessionContext and focuses it
 #[test]
-fn session_created_appends_and_focuses() {
+fn session_created_appends_and_focuses() -> TestResult {
     // @step Given a default AgentViewStore with no open sessions
     let (mut app, _mock) = fresh_app();
     assert!(app.agent_view_store().open_sessions().is_empty());
@@ -52,15 +51,16 @@ fn session_created_appends_and_focuses() {
     assert_eq!(app.agent_view_store().open_sessions()[0].id, sid("s-1"));
     // @step And current_session_index is 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
-    // @step And session_index() returns (1, 1)
-    assert_eq!(app.agent_view_store().session_index(), (1, 1));
+    // @step And session_index() returns Some((1, 1))
+    assert_eq!(app.agent_view_store().session_index(), Some((1, 1)));
     // @step And current_session() returns Some("s-1")
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
+    Ok(())
 }
 
 /// Scenario: Successive SessionCreated dispatches accumulate in creation order
 #[test]
-fn three_session_created_dispatches_accumulate() {
+fn three_session_created_dispatches_accumulate() -> TestResult {
     // @step Given a default AgentViewStore with no open sessions
     let (mut app, _mock) = fresh_app();
     // @step When App::dispatch handles Action::SessionCreated for "s-1"
@@ -77,15 +77,16 @@ fn three_session_created_dispatches_accumulate() {
     assert_eq!(app.agent_view_store().open_sessions()[2].id, sid("s-3"));
     // @step And current_session_index is 2
     assert_eq!(app.agent_view_store().current_session_index(), 2);
-    // @step And session_index() returns (3, 3)
-    assert_eq!(app.agent_view_store().session_index(), (3, 3));
+    // @step And session_index() returns Some((3, 3))
+    assert_eq!(app.agent_view_store().session_index(), Some((3, 3)));
     // @step And current_session() returns Some("s-3")
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-3")));
+    Ok(())
 }
 
 /// Scenario: Action::SessionPrev decrements current_session_index without wrap when not at zero
 #[test]
-fn session_prev_decrements_without_wrap() {
+fn session_prev_decrements_without_wrap() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -97,15 +98,16 @@ fn session_prev_decrements_without_wrap() {
     app.dispatch(Action::SessionPrev);
     // @step Then current_session_index is 1
     assert_eq!(app.agent_view_store().current_session_index(), 1);
-    // @step And session_index() returns (2, 3)
-    assert_eq!(app.agent_view_store().session_index(), (2, 3));
+    // @step And session_index() returns Some((2, 3))
+    assert_eq!(app.agent_view_store().session_index(), Some((2, 3)));
     // @step And current_session() returns Some("s-2")
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-2")));
+    Ok(())
 }
 
-/// Scenario: RPC-096 — Action::SessionPrev at first index exits to Board; SessionNext at last index opens Create Session dialog
+/// Scenario: Action::SessionPrev at index 0 exits to Board; SessionNext at the last index opens the Create Session dialog (RPC-096: no wrap)
 #[test]
-fn session_prev_zero_exits_to_board_and_next_at_last_opens_create_dialog() {
+fn session_prev_zero_exits_to_board_and_next_at_last_opens_create_dialog() -> TestResult {
     use codelet_fspec_tui::views::ViewMode;
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let (mut app, _mock) = fresh_app();
@@ -117,9 +119,9 @@ fn session_prev_zero_exits_to_board_and_next_at_last_opens_create_dialog() {
     app.dispatch(Action::SessionPrev); // 1 -> 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
     app.navigator_mut().active_view = ViewMode::Agent;
-    // @step When App::dispatch handles Action::SessionPrev (off the left end)
+    // @step When App::dispatch handles Action::SessionPrev
     app.dispatch(Action::SessionPrev);
-    // @step Then navigator.active_view is ViewMode::Board (RPC-096 — no wrap)
+    // @step Then navigator.active_view is ViewMode::Board
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step And current_session_index stays 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
@@ -128,17 +130,18 @@ fn session_prev_zero_exits_to_board_and_next_at_last_opens_create_dialog() {
     app.dispatch(Action::SessionNext); // 0 -> 1
     app.dispatch(Action::SessionNext); // 1 -> 2
     assert_eq!(app.agent_view_store().current_session_index(), 2);
-    // @step When App::dispatch handles Action::SessionNext (off the right end)
+    // @step When App::dispatch handles Action::SessionNext at the last index
     app.dispatch(Action::SessionNext);
-    // @step Then show_create_session_dialog becomes true (RPC-096 — no wrap)
+    // @step Then show_create_session_dialog becomes true
     assert!(app.agent_view_store().show_create_session_dialog());
     // @step And current_session_index stays 2
     assert_eq!(app.agent_view_store().current_session_index(), 2);
+    Ok(())
 }
 
 /// Scenario: SessionPrev and SessionNext are self-loops when only one session is open
 #[test]
-fn session_cycle_is_self_loop_for_single_session() {
+fn session_cycle_is_self_loop_for_single_session() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -154,11 +157,12 @@ fn session_cycle_is_self_loop_for_single_session() {
     assert_eq!(app.agent_view_store().current_session_index(), 0);
     // @step And current_session() returns Some("s-1")
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
+    Ok(())
 }
 
 /// Scenario: Switching sessions saves the outgoing draft and restores the incoming draft
 #[test]
-fn switching_sessions_round_trips_input_draft() {
+fn switching_sessions_round_trips_input_draft() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -183,11 +187,12 @@ fn switching_sessions_round_trips_input_draft() {
     app.dispatch(Action::SessionNext);
     // @step Then the MultiLineInput buffer is "hello world"
     assert_eq!(app.navigator().agent.input.value(), "hello world");
+    Ok(())
 }
 
 /// Scenario: Each session retains its own scrollback across cycling
 #[test]
-fn each_session_keeps_its_own_scrollback_across_cycling() {
+fn each_session_keeps_its_own_scrollback_across_cycling() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -231,11 +236,12 @@ fn each_session_keeps_its_own_scrollback_across_cycling() {
             .chunk_count(),
         5
     );
+    Ok(())
 }
 
 /// Scenario: A StreamChunk for a non-current session lands in that session's scrollback
 #[test]
-fn background_chunk_routes_to_its_own_session_context() {
+fn background_chunk_routes_to_its_own_session_context() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -264,17 +270,18 @@ fn background_chunk_routes_to_its_own_session_context() {
     );
     // @step And current_session_index is still 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
-    // @step And the AgentView render still paints "s-1"'s scrollback (0 chunks)
+    // @step And the AgentView render still paints "s-1"'s scrollback
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     // @step When App::dispatch handles Action::SessionNext
     app.dispatch(Action::SessionNext);
     // @step Then the AgentView render now includes the "background" chunk
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 1);
+    Ok(())
 }
 
 /// Scenario: Action::ChunkReceived for an unknown session id is dropped silently
 #[test]
-fn unknown_session_chunk_is_dropped_silently() {
+fn unknown_session_chunk_is_dropped_silently() -> TestResult {
     // @step Given an AgentViewStore with open_sessions ["s-1"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -283,7 +290,7 @@ fn unknown_session_chunk_is_dropped_silently() {
         sid("s-ghost"),
         StreamChunk::text("orphan".to_string()),
     ));
-    // @step Then App::dispatch does not panic (we got here)
+    // @step Then App::dispatch does not panic
     // @step And open_sessions[0].scrollback is unchanged
     assert_eq!(
         app.agent_view_store().open_sessions()[0]
@@ -293,4 +300,5 @@ fn unknown_session_chunk_is_dropped_silently() {
     );
     // @step And no other SessionContext exists for "s-ghost"
     assert_eq!(app.agent_view_store().open_sessions().len(), 1);
+    Ok(())
 }

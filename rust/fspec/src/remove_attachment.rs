@@ -26,10 +26,10 @@
 //!     `src/commands/remove-attachment.ts:112`).
 //!   - 2 (clap's own usage error) when a required positional is omitted.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::remove_attachment;
 use serde_json::json;
 
@@ -43,7 +43,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut body = serde_json::Map::new();
     body.insert(

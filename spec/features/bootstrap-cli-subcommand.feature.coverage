@@ -30,7 +30,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(_args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -66,7 +68,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(_args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -85,7 +89,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "/// JSON shape handed to fspec_core always serialises to `{}`.",
+              "lastLine": "pub struct CliArgs {}"
             }
           ]
         }
@@ -121,7 +127,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(_args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }

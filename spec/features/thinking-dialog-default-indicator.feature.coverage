@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
-          "lines": "78-93",
+          "lines": "81-98",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
@@ -13,26 +13,6 @@
                 21,
                 22,
                 23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
                 44,
                 45,
                 46,
@@ -49,8 +29,30 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "line.width() as u16",
+              "lastLine": "full_inner.saturating_sub(1).max(1)"
             }
           ]
         }
@@ -61,21 +63,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
-          "lines": "95-108",
+          "lines": "100-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
-                78
-              ]
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "options: ThinkingOptions,",
+              "lastLine": "let mut dialog = Self {"
             }
           ]
         }
@@ -86,17 +90,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
-          "lines": "110-133",
+          "lines": "116-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
                 186,
                 187,
                 188,
@@ -110,8 +108,16 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "if let Some(tx) = self.action_tx.as_ref() {",
+              "lastLine": ""
             }
           ]
         }
@@ -122,17 +128,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
-          "lines": "135-149",
+          "lines": "149-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
                 186,
                 187,
                 188,
@@ -146,8 +146,16 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "if let Some(tx) = self.action_tx.as_ref() {",
+              "lastLine": ""
             }
           ]
         }
@@ -158,28 +166,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui094_default_indicator_parity.rs",
-          "lines": "151-165",
+          "lines": "173-193",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
               "lines": [
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56
-              ]
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "/// Single source of truth shared by [`turn_modal_geometry`] (and hence",
+              "lastLine": "let full_inner = rect.width.saturating_sub(4).max(1) as usize;"
             }
           ]
         }
@@ -197,6 +207,6 @@
       "rust/fspec-tui/src/components/dialog_theme_rows.rs",
       "rust/fspec-tui/src/components/thinking_level_dialog.rs"
     ],
-    "totalLinesCovered": 189
+    "totalLinesCovered": 214
   }
 }

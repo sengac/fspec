@@ -4,36 +4,9 @@
       "name": "Extract Calls edges from Swift function calls",
       "testMappings": [
         {
-          "file": "rust/napi/tests/swift_edge_extraction_test.rs",
-          "lines": "10-42",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_pipeline/ast_swift_extractor.rs",
-              "lines": [
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/swift_edge_extraction_test.rs",
+          "lines": "39-45",
+          "implMappings": []
         }
       ]
     }
@@ -43,11 +16,9 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/swift_edge_extraction_test.rs"
+      "rust/graph/tests/swift_edge_extraction_test.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/graph/ast_pipeline/ast_swift_extractor.rs"
-    ],
-    "totalLinesCovered": 54
+    "implFiles": [],
+    "totalLinesCovered": 7
   }
 }

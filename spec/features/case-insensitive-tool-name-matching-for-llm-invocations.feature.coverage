@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/src/tool/mod.rs",
-          "lines": "686-702",
+          "lines": "721-737",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/mod.rs",
@@ -14,7 +14,9 @@
                 437,
                 438,
                 439
-              ]
+              ],
+              "firstLine": "ToolNotFoundError(String),",
+              "lastLine": "#[error(\"JSON error: {0}\")]"
             }
           ]
         }
@@ -25,7 +27,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/src/tool/mod.rs",
-          "lines": "718-731",
+          "lines": "753-768",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/mod.rs",
@@ -41,7 +43,9 @@
                 483,
                 484,
                 485
-              ]
+              ],
+              "firstLine": "pub fn add_tool(&mut self, tool: impl ToolDyn + 'static) {",
+              "lastLine": ""
             }
           ]
         }
@@ -52,15 +56,17 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/src/tool/mod.rs",
-          "lines": "745-757",
+          "lines": "782-794",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/mod.rs",
               "lines": [
-                452,
-                453,
-                454
-              ]
+                486,
+                487,
+                488
+              ],
+              "firstLine": "pub fn delete_tool(&mut self, tool_name: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -71,15 +77,17 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/src/tool/mod.rs",
-          "lines": "704-716",
+          "lines": "739-751",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/mod.rs",
               "lines": [
-                461,
-                462,
-                463
-              ]
+                495,
+                496,
+                497
+              ],
+              "firstLine": "pub(crate) fn get(&self, toolname: &str) -> Option<&ToolType> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/src/tool/mod.rs",
-          "lines": "733-743",
+          "lines": "770-780",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/mod.rs",
@@ -106,7 +114,9 @@
                 483,
                 484,
                 485
-              ]
+              ],
+              "firstLine": "pub fn add_tool(&mut self, tool: impl ToolDyn + 'static) {",
+              "lastLine": ""
             }
           ]
         }
@@ -123,6 +133,6 @@
     "implFiles": [
       "rust/patches/rig-core/src/tool/mod.rs"
     ],
-    "totalLinesCovered": 100
+    "totalLinesCovered": 102
   }
 }

@@ -10,8 +10,7 @@ ARGUMENTS
     Work unit ID
 
 OPTIONS
-  --force
-    Skip confirmation prompt and compact during non-done status (use with caution)
+  No options available
 
 EXAMPLES
   1. Compact work unit with confirmation prompt (safe, requires user input)
@@ -20,12 +19,6 @@ EXAMPLES
 Continue? (y/N) y
 ✓ Compacted AUTH-001
 Removed 3 deleted items, renumbered remaining 7 items to IDs [0-6]
-
-  2. Force compact without confirmation (use during non-done status)
-  $ fspec compact-work-unit AUTH-001 --force
-  ⚠ Warning: Compacting during "specifying" status permanently removes deleted items
-✓ Compacted AUTH-001
-Removed 3 deleted items
 
 RELATED COMMANDS
   fspec show-deleted
@@ -39,5 +32,4 @@ NOTES
   • Resets nextId counters to match remaining item count
   • Preserves chronological order (sorted by createdAt timestamp)
   • Auto-compact triggers when moving work unit to "done" status
-  • Requires --force flag when compacting during non-done status
 

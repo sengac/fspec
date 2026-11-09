@@ -23,10 +23,10 @@
 //!     `output.error('Error:', ...)` path at
 //!     `src/commands/delete-tag.ts:177` / `194`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::delete_tag;
 use serde_json::json;
 
@@ -47,7 +47,7 @@ pub struct CliArgs {
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default (`src/commands/delete-tag.ts:30`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal positional + flag args into the JSON shape that
     // fspec_core::commands::delete_tag::run validates with serde.

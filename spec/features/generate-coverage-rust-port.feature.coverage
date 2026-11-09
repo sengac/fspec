@@ -8,14 +8,12 @@
           "lines": "86-139",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
               "lines": [
-                173,
-                174,
-                175,
-                176,
-                177
-              ]
+                53
+              ],
+              "firstLine": "Ok(Status::Created)",
+              "lastLine": "Ok(Status::Created)"
             }
           ]
         }
@@ -29,16 +27,17 @@
           "lines": "141-192",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
               "lines": [
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164
-              ]
+                30,
+                31,
+                33,
+                34,
+                36,
+                38
+              ],
+              "firstLine": "update_coverage(coverage_path, &coverage, &scenario_names, apply)?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,94 +49,7 @@
         {
           "file": "rust/fspec-core/tests/generate_coverage.rs",
           "lines": "194-270",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
-              "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -149,14 +61,19 @@
           "lines": "272-308",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
               "lines": [
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                26,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "match serde_json::from_str::<Value>(&existing) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -167,11 +84,144 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_coverage.rs",
-          "lines": "310-351",
+          "lines": "319-358",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "let mut create_list: Vec<String> = Vec::new();",
+              "lastLine": "process_feature(&feature_path, &coverage_path, true)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing features directory surfaces an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
+          "lines": "353-376",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "lines": [
+                102,
+                106,
+                107
+              ],
+              "firstLine": "let features_dir = crate::io::spec_paths::features_dir_of(project_root);",
+              "lastLine": ".map_err(|e| invalid(format!(\"Failed to read features directory: {e}\")))?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dry-run reports the updates a real run would make",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
+          "lines": "397-431",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "let mut created = 0usize;",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
                 100,
                 101,
                 102,
@@ -192,27 +242,416 @@
                 117,
                 118,
                 119,
-                120
-              ]
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "/// still carries test mappings is kept and reported as blocked rather than",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "if !updates.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Missing features directory surfaces an error",
+      "name": "Update preserves unknown top-level sidecar fields",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_coverage.rs",
-          "lines": "353-376",
+          "lines": "433-460",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_coverage.rs",
               "lines": [
-                74,
-                75,
-                76
-              ]
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "let mut created = 0usize;",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "/// still carries test mappings is kept and reported as blocked rather than",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Update keeps a stale scenario that still has test mappings",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
+          "lines": "462-496",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "let mut created = 0usize;",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "/// still carries test mappings is kept and reported as blocked rather than",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/report.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "fn render_blocked(blocked: &[(String, Vec<String>)]) -> String {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Created sidecar scenario names keep the exact case of the feature file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_coverage.rs",
+          "lines": "503-542",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let feature = parse_feature_lenient(&feature_content)",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,15 +659,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/generate_coverage.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/generate_coverage.rs"
+      "rust/fspec-core/src/commands/generate_coverage/global.rs",
+      "rust/fspec-core/src/commands/generate_coverage.rs",
+      "rust/fspec-core/src/commands/generate_coverage/report.rs"
     ],
-    "totalLinesCovered": 408
+    "totalLinesCovered": 872
   }
 }

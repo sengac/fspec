@@ -19,7 +19,7 @@
 //! The core carries the 0/1 distinction in the JSON payload's `exitCode`
 //! field; any `Err(FspecCoreError)` (no-files / unexpected) maps to exit 2.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -50,7 +50,7 @@ struct Outcome {
 /// Entry point invoked from `main.rs` for the `validate` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj: Map<String, Value> = Map::new();
     if let Some(file) = args.file.as_deref() {

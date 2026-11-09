@@ -1,4 +1,7 @@
+@BUG-582
 @PROV-027
+@providers
+@authentication
 Feature: Anthropic OAuth parity with opencode behavior
   """
   PARITY tests comparing our behavior against opencode's anthropic-auth plugin.
@@ -64,7 +67,7 @@ Feature: Anthropic OAuth parity with opencode behavior
     And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     And the anthropic-beta header should contain "max-tokens-3-5-sonnet-2024-07-15"
     And the anthropic-beta header should have no duplicate entries
-    And the user-agent should be "claude-cli/2.1.3 (external, cli)"
+    And the user-agent should identify the authoritative Claude Code release
     And x-api-key should not be present
 
   @parity

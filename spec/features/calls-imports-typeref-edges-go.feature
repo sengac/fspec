@@ -1,4 +1,6 @@
 @KGRAPH-044
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — Go
   """
   Uses edge_helpers for call extraction. Go imports are string paths; local imports

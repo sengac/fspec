@@ -9,6 +9,8 @@
 @session-management
 @persistence
 @RPC-053
+@BUG-394
+@BUG-395
 Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   """
   RPC-053 originally introduced a PauseDialog modal + HitlDialog modal. RPC-406
@@ -41,7 +43,7 @@ Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   #   1. When the chunk dispatcher receives StreamChunk::SessionStateChange { state: Paused }, the App spawns backend.get_pause_state(session) AND backend.get_hitl_request(session) in parallel and dispatches Action::PauseStateFetched (per-session pause slot) when get_pause_state returns Some, Action::HitlPromptFetched (per-session HITL slot) when get_hitl_request returns Some, or nothing when both return None
   #   2. Action::HitlPromptFetched{session_id, request} stores the request into the AgentViewStore per-session HITL slot — no modal layer is ever mounted
   #   3. Esc on the inline HITL prompt (outside Other mode) sends HitlResponse{cancelled:true, answers:[]} via backend.send_hitl_response and clears the slot — the backend can never be stranded Paused by a dismissal
-  #   4. Errors from backend.get_pause_state, backend.get_hitl_request, backend.pause_confirm, backend.pause_triple, backend.pause_resume, and backend.send_hitl_response are silently logged via tracing — no scrollback notice and no panic
+  #   4. Errors from backend.pause_confirm, backend.pause_triple, backend.pause_resume, and backend.send_hitl_response are reported (BUG-395): logged at error level, shown as a red scrollback notice, and the prompt is read back — see paused-prompt-write-failures.feature. BUG-394: get_pause_state / get_hitl_request read failures are reported — see paused-probe-read-failures.feature
   #   5. The inline pause prompt and the inline HITL prompt are mutually exclusive — when SessionStateChange{Paused} arrives and BOTH backend.get_pause_state and backend.get_hitl_request return Some, the HITL slot wins and no pause slot is set (the HITL handler in the agent loop sets hitl_request AND set_status(Paused); pause_state is only set by the tool-pause path)
   #   6. When SessionStateChange{Running} or SessionStateChange{Idle} arrives, the per-session pause slot AND HITL slot are cleared
   #
@@ -49,7 +51,7 @@ Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   #   1. Agent loop's request_user_input handler sets hitl_request and emits SessionStateChange{Paused}; the dispatcher polls and stores the HITL slot with 2 options 'Yes' and 'No'; no compositor layer is mounted
   #   2. The inline HITL prompt is showing; user presses Esc → backend.send_hitl_response(session, HitlResponse{cancelled:true, answers:[]}) is called exactly once and the slot clears
   #   3. SessionStateChange{Paused} arrives but BOTH backend.get_pause_state and backend.get_hitl_request return None (race/stale chunk) → no slot is set and no further backend call is made
-  #   4. Backend.get_hitl_request returns Err('decode failed') after SessionStateChange{Paused} arrives → no HITL slot is set; the App must not panic and no scrollback notice fires
+  #   4. Backend.get_hitl_request returns Err('decode failed') after SessionStateChange{Paused} arrives → no HITL slot is set and (BUG-394) the failure is reported in the scrollback
   #
   # ========================================
   Background: User Story
@@ -114,36 +116,13 @@ Feature: Pause / HITL UI (chunk-driven trigger + inline HITL slot end-to-end)
   # ─────────────────────────────────────────────────────────────────────
   # Error tolerance
   # ─────────────────────────────────────────────────────────────────────
-  Scenario: Backend.get_hitl_request error during the chunk-driven probe sets no slot
-    Given an App with a MockBackend
-    And session s-1 is the current session
-    And the MockBackend's get_pause_state is scripted to return None for s-1
-    And the MockBackend's get_hitl_request is scripted to return Err("decode failed") for s-1
-    When Action::ChunkReceived(s-1, SessionStateChange{ state: Paused }) is dispatched
-    And all pending tasks have drained
-    Then the App must not panic
-    And the AgentViewStore HITL slot for s-1 is empty
-    And the AgentViewStore pause slot for s-1 is empty
-    And the session s-1 scrollback contains no chunks mentioning "get_hitl_request"
-
-  Scenario: Backend.send_hitl_response error on Esc-cancel still clears the slot and emits no scrollback notice
-    Given an App with a MockBackend
-    And session s-1 is the current session
-    And the MockBackend's send_hitl_response is scripted to return Err("decode failed")
-    And session s-1 has an active HITL slot
-    When the user presses Esc on the inline HITL prompt
-    And all pending tasks have drained
-    Then the App must not panic
-    And the AgentViewStore HITL slot for s-1 is empty
-    And the session s-1 scrollback contains no chunks mentioning "send_hitl_response"
-
   # ─────────────────────────────────────────────────────────────────────
   # Source shape
   # ─────────────────────────────────────────────────────────────────────
   Scenario: rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers
     Given the file rust/fspec-tui/src/app/dispatch_pause_hitl.rs exists
     When the file is compiled as part of codelet-fspec-tui
-    Then it must declare impl App methods named handle_pause_chunk, handle_pause_confirmed, handle_pause_triple, handle_pause_resumed, handle_hitl_submitted, and handle_pause_cleared
+    Then it must declare impl App methods named handle_pause_chunk, handle_pause_confirmed, handle_pause_triple, handle_pause_human_action, handle_hitl_submitted, and handle_pause_cleared
     And rust/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pause_hitl and pub mod dispatch_hitl_prompt
     And rust/fspec-tui/src/components/mod.rs must declare no pub mod hitl_dialog and no pub mod pause_dialog
     And rust/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines

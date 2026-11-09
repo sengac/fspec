@@ -8,6 +8,7 @@ Feature: Repoint default thinking-level persistence to shared fspec-config.json
   Storage is delegated to the CONFIG-008 shared fspec_config module (load_config_with_dirs / write_config_with_dirs / ConfigScope) under nested key tui.defaultThinkingLevel; no dedicated file or DefaultThinkingLevelFile struct remains.
   Path-injectable *_with_dirs cores (data_dir + cwd) carry the logic; thin global wrappers resolve get_data_dir()/current_dir() and keep their existing signatures so session_manager.rs and handle_impl.rs callers stay edit-free.
   Save writes USER scope via read-modify-write preserving siblings; load relies on CONFIG-008 deep-merge so project scope overrides user. Save returns Result<_,String>; load is infallible (Off on any error).
+  MODEL-012 supersedes the single int: the saved level is per model under tui.thinkingLevels (provider/model -> off, on, effort:<name>, numeric:<number> or budget:<tokens>); load(model) returns Result<Option<level>> and never loads as Off; tui.defaultThinkingLevel is no longer read or written.
   """
 
   # ========================================
@@ -40,41 +41,36 @@ Feature: Repoint default thinking-level persistence to shared fspec-config.json
     I want to have my default thinking level persisted in the shared fspec-config.json under tui.defaultThinkingLevel
     So that it interoperates with the TypeScript fspec build and respects project-scope overrides
 
-  Scenario: Saving High writes the nested tui.defaultThinkingLevel key
+  Scenario: Saving High writes the model's entry under tui.thinkingLevels
     Given a data directory with no persisted shared config
-    When the default thinking level High is saved to the user scope
-    Then the file fspec-config.json under the data directory contains tui.defaultThinkingLevel equal to 3
+    When the thinking level High is saved for anthropic/claude-opus-4-5 to the user scope
+    Then the file fspec-config.json under the data directory contains tui.thinkingLevels with effort:high for anthropic/claude-opus-4-5
 
   Scenario: Saved level round-trips through the shared config
     Given a data directory with no persisted shared config
-    When the default thinking level Medium is saved to the user scope
-    And the default thinking level is loaded from the shared config
-    Then the loaded default thinking level is Medium
+    When the thinking level Medium is saved for anthropic/claude-opus-4-5 to the user scope
+    And the saved thinking level for anthropic/claude-opus-4-5 is loaded from the shared config
+    Then the loaded thinking level is Medium
 
   Scenario: Saving preserves pre-existing sibling keys
     Given a user shared config that already contains tui.lastUsedModel set to "anthropic/claude-opus-4-5"
-    When the default thinking level High is saved to the user scope
+    When the thinking level High is saved for anthropic/claude-opus-4-5 to the user scope
     Then the shared config still contains tui.lastUsedModel equal to "anthropic/claude-opus-4-5"
-    And the shared config contains tui.defaultThinkingLevel equal to 3
+    And the shared config contains tui.thinkingLevels with effort:high for anthropic/claude-opus-4-5
 
   Scenario: Project scope overrides the user value on load
-    Given a user shared config with tui.defaultThinkingLevel set to 1
-    And a project shared config with tui.defaultThinkingLevel set to 3
-    When the default thinking level is loaded from the shared config
-    Then the loaded default thinking level is High
+    Given a user shared config with tui.thinkingLevels holding effort:low for anthropic/claude-opus-4-5
+    And a project shared config with tui.thinkingLevels holding effort:high for anthropic/claude-opus-4-5
+    When the saved thinking level for anthropic/claude-opus-4-5 is loaded from the shared config
+    Then the loaded thinking level is High
 
-  Scenario: An out-of-range value loads as Off
-    Given a user shared config with tui.defaultThinkingLevel set to 7
-    When the default thinking level is loaded from the shared config
-    Then the loaded default thinking level is Off
-
-  Scenario: A missing config file loads as Off
+  Scenario: A missing config file has no saved level
     Given a data directory with no persisted shared config
-    When the default thinking level is loaded from the shared config
-    Then the loaded default thinking level is Off
+    When the saved thinking level for anthropic/claude-opus-4-5 is loaded from the shared config
+    Then there is no saved thinking level, not Off
 
   Scenario: The global wrappers round-trip via the shared config
     Given the global data directory is rooted at a throwaway directory
-    When the default thinking level High is saved via the global wrapper
-    And the default thinking level is loaded via the global wrapper
-    Then the loaded default thinking level is High
+    When the thinking level High is saved for anthropic/claude-opus-4-5 via the global wrapper
+    And the saved thinking level for anthropic/claude-opus-4-5 is loaded via the global wrapper
+    Then the loaded thinking level is High

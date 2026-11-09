@@ -79,11 +79,10 @@ async fn reset_during_transient_rejection_prevents_a_stale_physical_retry() -> T
             (errors, finals)
         });
         // @step When its generation is reset before the retry is released
-        tokio::time::timeout(std::time::Duration::from_secs(3), rejected.notified()).await?;
+        codelet_test_helpers::deadlock_guard("rejected.notified()", rejected.notified()).await?;
         history.reset()?;
         let reset = history.snapshot()?;
-        let (errors, finals) =
-            tokio::time::timeout(std::time::Duration::from_secs(4), task).await??;
+        let (errors, finals) = codelet_test_helpers::deadlock_guard("task", task).await??;
         // @step Then the stream fails without sending another physical request
         assert_eq!(
             attempts.load(Ordering::SeqCst),

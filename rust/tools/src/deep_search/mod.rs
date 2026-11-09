@@ -33,6 +33,15 @@ mod tests;
 )]
 mod recursive_tests;
 
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
+mod model_inheritance_tests;
+
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;

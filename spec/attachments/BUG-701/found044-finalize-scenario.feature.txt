@@ -1,0 +1,13 @@
+  Scenario: Finalize fails with actionable length error when draft contains an overlong projectType
+    Given a foundation draft exists at spec/foundation.json.draft
+    And the draft contains all required fields filled with no placeholders
+    And the draft contains `"projectType": "a-ridiculously-long-string-way-beyond-thirty-characters"` written by manual edit
+    When I run `fspec discover-foundation --finalize`
+    Then the command should exit with a non-zero code
+    And the error output should contain `Invalid value at project.projectType`
+    And the error output should contain `maxLength exceeded`
+    And the error output should contain `must be 1-30 characters, got 55`
+    And the error output should contain the text `Fix: fspec update-foundation projectType "<short-descriptor>"`
+    And the error output should NOT contain `Missing required: project.projectType`
+    And the draft file should NOT be deleted
+    And no spec/foundation.json should be written

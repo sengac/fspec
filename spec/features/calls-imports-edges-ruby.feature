@@ -1,4 +1,6 @@
 @KGRAPH-049
+@parser
+@code-analysis
 Feature: Calls/Imports edges — Ruby
   """
   Uses edge_helpers shared functions. No TypeRef (Ruby is dynamically typed).

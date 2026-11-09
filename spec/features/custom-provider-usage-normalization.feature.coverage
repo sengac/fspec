@@ -35,7 +35,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "fn token_usage(&self) -> Option<rig::completion::Usage> {",
+              "lastLine": "}"
             }
           ]
         }

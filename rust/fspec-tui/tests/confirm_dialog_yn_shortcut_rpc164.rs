@@ -11,12 +11,11 @@
 //! These tests validate acceptance criteria defined in the feature file;
 //! scenarios map 1:1 via @step comments.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::agent::{ConfirmDialog, ConfirmDialogOutcome};
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 // ────────────────────────────────────────────────────────────────────────
@@ -81,7 +80,7 @@ fn provider_settings_with_open_delete_dialog(provider_id: &str) -> ProviderSetti
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_y_on_two_button_dialog_emits_primary() {
+fn pressing_y_on_two_button_dialog_emits_primary() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
     assert_eq!(dialog.buttons().len(), 2);
@@ -97,6 +96,7 @@ fn pressing_y_on_two_button_dialog_emits_primary() {
     assert_eq!(outcome, ConfirmDialogOutcome::Primary);
     // @step And the focused button index remains 0
     assert_eq!(dialog.focused(), 0);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ fn pressing_y_on_two_button_dialog_emits_primary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_capital_y_on_two_button_dialog_emits_primary() {
+fn pressing_capital_y_on_two_button_dialog_emits_primary() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
     // @step And the focused button index is 0
@@ -117,6 +117,7 @@ fn pressing_capital_y_on_two_button_dialog_emits_primary() {
     assert_eq!(outcome, ConfirmDialogOutcome::Primary);
     // @step And the focused button index remains 0
     assert_eq!(dialog.focused(), 0);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -124,7 +125,7 @@ fn pressing_capital_y_on_two_button_dialog_emits_primary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_n_on_two_button_dialog_emits_cancel() {
+fn pressing_n_on_two_button_dialog_emits_cancel() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
     // @step And the focused button index is 0
@@ -137,6 +138,7 @@ fn pressing_n_on_two_button_dialog_emits_cancel() {
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
     // @step And the focused button index remains 0
     assert_eq!(dialog.focused(), 0);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -144,7 +146,7 @@ fn pressing_n_on_two_button_dialog_emits_cancel() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_capital_n_on_two_button_dialog_emits_cancel() {
+fn pressing_capital_n_on_two_button_dialog_emits_cancel() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
     // @step And the focused button index is 0
@@ -157,6 +159,7 @@ fn pressing_capital_n_on_two_button_dialog_emits_cancel() {
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
     // @step And the focused button index remains 0
     assert_eq!(dialog.focused(), 0);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -164,7 +167,7 @@ fn pressing_capital_n_on_two_button_dialog_emits_cancel() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_n_on_three_button_dialog_emits_cancel_not_secondary() {
+fn pressing_n_on_three_button_dialog_emits_cancel_not_secondary() -> TestResult {
     // @step Given a 3-button ConfirmDialog is open with buttons "Save", "Discard", "Cancel"
     let mut dialog = three_button_dialog();
     assert_eq!(dialog.buttons().len(), 3);
@@ -181,6 +184,7 @@ fn pressing_n_on_three_button_dialog_emits_cancel_not_secondary() {
     assert_eq!(outcome, ConfirmDialogOutcome::Cancel);
     // @step And the outcome is NOT ConfirmDialogOutcome::Secondary
     assert_ne!(outcome, ConfirmDialogOutcome::Secondary);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -188,7 +192,7 @@ fn pressing_n_on_three_button_dialog_emits_cancel_not_secondary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_y_on_three_button_dialog_emits_primary() {
+fn pressing_y_on_three_button_dialog_emits_primary() -> TestResult {
     // @step Given a 3-button ConfirmDialog is open with buttons "Save", "Discard", "Cancel"
     let mut dialog = three_button_dialog();
     // @step And the focused button index is 0
@@ -199,6 +203,7 @@ fn pressing_y_on_three_button_dialog_emits_primary() {
 
     // @step Then handle_key returns ConfirmDialogOutcome::Primary
     assert_eq!(outcome, ConfirmDialogOutcome::Primary);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -206,7 +211,7 @@ fn pressing_y_on_three_button_dialog_emits_primary() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_y_ignores_currently_focused_button() {
+fn pressing_y_ignores_currently_focused_button() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
     // @step And the focused button index has been moved to 1 by pressing Tab
@@ -224,6 +229,7 @@ fn pressing_y_ignores_currently_focused_button() {
     assert_eq!(outcome, ConfirmDialogOutcome::Primary);
     // @step And the focused button index remains 1
     assert_eq!(dialog.focused(), 1);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -231,7 +237,7 @@ fn pressing_y_ignores_currently_focused_button() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_ctrl_n_returns_ignored() {
+fn pressing_ctrl_n_returns_ignored() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
 
@@ -240,6 +246,7 @@ fn pressing_ctrl_n_returns_ignored() {
 
     // @step Then handle_key returns ConfirmDialogOutcome::Ignored
     assert_eq!(outcome, ConfirmDialogOutcome::Ignored);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -247,7 +254,7 @@ fn pressing_ctrl_n_returns_ignored() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_alt_y_returns_ignored() {
+fn pressing_alt_y_returns_ignored() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
 
@@ -256,6 +263,7 @@ fn pressing_alt_y_returns_ignored() {
 
     // @step Then handle_key returns ConfirmDialogOutcome::Ignored
     assert_eq!(outcome, ConfirmDialogOutcome::Ignored);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -263,7 +271,7 @@ fn pressing_alt_y_returns_ignored() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_unrelated_printable_char_returns_ignored() {
+fn pressing_unrelated_printable_char_returns_ignored() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
 
@@ -272,6 +280,7 @@ fn pressing_unrelated_printable_char_returns_ignored() {
 
     // @step Then handle_key returns ConfirmDialogOutcome::Ignored
     assert_eq!(outcome, ConfirmDialogOutcome::Ignored);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -280,7 +289,7 @@ fn pressing_unrelated_printable_char_returns_ignored() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn provider_settings_y_emits_confirm_delete_provider_credentials() {
+fn provider_settings_y_emits_confirm_delete_provider_credentials() -> TestResult {
     // @step Given the ProviderSettingsView has a delete-credentials ConfirmDialog open for provider "anthropic"
     let mut view = provider_settings_with_open_delete_dialog("anthropic");
 
@@ -291,15 +300,23 @@ fn provider_settings_y_emits_confirm_delete_provider_credentials() {
     match out {
         ProviderSettingsEvent::Emit(action) => {
             let Action::ConfirmDeleteProviderCredentials(id) = *action else {
-                panic!("expected Emit(ConfirmDeleteProviderCredentials), got {action:?}");
+                return Err(format!(
+                    "expected Emit(ConfirmDeleteProviderCredentials), got {action:?}"
+                )
+                .into());
             };
             assert_eq!(id, "anthropic");
         }
-        other => panic!("expected Emit(ConfirmDeleteProviderCredentials), got {other:?}"),
+        other => {
+            return Err(
+                format!("expected Emit(ConfirmDeleteProviderCredentials), got {other:?}").into(),
+            )
+        }
     }
     // @step And the delete_confirm dialog is cleared from view state
     assert!(view.delete_confirm.is_none());
     assert!(matches!(view.mode, ProviderSettingsMode::List));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -308,7 +325,7 @@ fn provider_settings_y_emits_confirm_delete_provider_credentials() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn provider_settings_n_dismisses_dialog_silently() {
+fn provider_settings_n_dismisses_dialog_silently() -> TestResult {
     // @step Given the ProviderSettingsView has a delete-credentials ConfirmDialog open for provider "anthropic"
     let mut view = provider_settings_with_open_delete_dialog("anthropic");
 
@@ -325,6 +342,7 @@ fn provider_settings_n_dismisses_dialog_silently() {
     // @step And the delete_confirm dialog is cleared from view state
     assert!(view.delete_confirm.is_none());
     assert!(matches!(view.mode, ProviderSettingsMode::List));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -332,7 +350,7 @@ fn provider_settings_n_dismisses_dialog_silently() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pre_existing_keybinds_remain_unchanged() {
+fn pre_existing_keybinds_remain_unchanged() -> TestResult {
     // @step Given a 2-button ConfirmDialog is open with buttons "Delete" and "Cancel"
     let mut dialog = two_button_dialog();
 
@@ -369,4 +387,5 @@ fn pre_existing_keybinds_remain_unchanged() {
     assert_eq!(dialog.focused(), 0);
     let enter_primary = dialog.handle_key(KeyCode::Enter, KeyModifiers::NONE);
     assert_eq!(enter_primary, ConfirmDialogOutcome::Primary);
+    Ok(())
 }

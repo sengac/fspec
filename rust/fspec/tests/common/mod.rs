@@ -15,10 +15,14 @@
 use std::fs;
 use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Stdio};
 use std::time::{Duration, Instant};
 
 use tempfile::TempDir;
+
+// BUG-627: daemon spawns are isolated from the user's real HOME and runtime dir.
+mod test_home;
+pub use test_home::*;
 
 /// Path to the built `fspec` binary supplied by cargo at compile time.
 pub fn fspec_bin() -> &'static str {
@@ -78,8 +82,8 @@ impl Drop for ChildGuard {
     }
 }
 
-/// Spawn `fspec --workspace <ws> daemon` and read the bare-integer port
-/// line off STDOUT. Mirrors the
+/// Spawn `fspec --workspace <ws> daemon` with `home`'s HOME and
+/// XDG_RUNTIME_DIR (BUG-627) and read the bare-integer port line off STDOUT. Mirrors the
 /// `rust/rpc-server/tests/common/mod.rs::spawn_rpc_server_with_workspace`
 /// pattern verbatim (rule [14] / scenario "A new spawn_fspec_daemon
 /// helper proves the port-line contract is verbatim").
@@ -91,8 +95,9 @@ impl Drop for ChildGuard {
 /// so this helper invokes `fspec --workspace <ws> daemon`, never
 /// `fspec daemon --workspace <ws>` (which clap rejects with
 /// "unexpected argument '--workspace' found").
-pub fn spawn_fspec_daemon(workspace: &Path) -> (ChildGuard, u16) {
-    let mut child = Command::new(fspec_bin())
+pub fn spawn_fspec_daemon(workspace: &Path, home: &TestHome) -> (ChildGuard, u16) {
+    // BUG-627: the daemon's HOME and XDG_RUNTIME_DIR are `home`'s.
+    let mut child = IsolatedCommand::fspec(home)
         .arg("--workspace")
         .arg(workspace)
         .arg("daemon")
@@ -116,8 +121,9 @@ pub fn spawn_fspec_daemon(workspace: &Path) -> (ChildGuard, u16) {
 /// Spawn `fspec --workspace <ws>` (combined mode) and read the
 /// `PORT=<n>` banner off STDERR (per rule [4] combined emits the port
 /// on stderr, not stdout, because stdout is the alt-screen TUI canvas).
-pub fn spawn_fspec_combined(workspace: &Path) -> (ChildGuard, u16) {
-    let mut child = Command::new(fspec_bin())
+pub fn spawn_fspec_combined(workspace: &Path, home: &TestHome) -> (ChildGuard, u16) {
+    // BUG-627: the in-process daemon's HOME and XDG_RUNTIME_DIR are `home`'s.
+    let mut child = IsolatedCommand::fspec(home)
         .arg("--workspace")
         .arg(workspace)
         .stdout(Stdio::piped())

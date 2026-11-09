@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_subagent_surface_test.rs",
-          "lines": "32-127",
+          "lines": "30-139",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/custom_provider.rs",
@@ -20,7 +20,9 @@
                 284,
                 285,
                 286
-              ]
+              ],
+              "firstLine": "if sub_agent {",
+              "lastLine": "return simple.build();"
             }
           ]
         }
@@ -37,6 +39,6 @@
     "implFiles": [
       "rust/providers/src/custom/custom_provider.rs"
     ],
-    "totalLinesCovered": 106
+    "totalLinesCovered": 120
   }
 }

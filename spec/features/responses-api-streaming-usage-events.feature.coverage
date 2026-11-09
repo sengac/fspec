@@ -5,31 +5,50 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "24-49",
+          "lines": "24-50",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [85, 86, 87, 88]
+              "lines": [
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "#[serde(rename = \"response.in_progress\")]",
+              "lastLine": "ResponseCompleted,"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
-              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "impl GetTokenUsage for ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         },
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "171-249",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [419, 420, 421, 422, 423, 424, 425, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474]
-            },
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
-              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
-            }
-          ]
+          "lines": "173-251"
+        },
+        {
+          "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "56-137"
         }
       ]
     },
@@ -39,12 +58,7 @@
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
           "lines": "55-136",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [419, 420, 421, 422, 423, 424, 425, 458, 459, 460, 461]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -57,11 +71,36 @@
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [85, 86, 87, 88]
+              "lines": [
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "#[serde(rename = \"response.in_progress\")]",
+              "lastLine": "ResponseCompleted,"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
-              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "impl GetTokenUsage for ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,6 +118,6 @@
       "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs"
     ],
-    "totalLinesCovered": 299
+    "totalLinesCovered": 332
   }
 }

@@ -10,10 +10,6 @@
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                91,
-                92,
-                93,
-                94,
                 95,
                 96,
                 97,
@@ -24,9 +20,10 @@
                 102,
                 103,
                 104,
-                105,
-                106
-              ]
+                105
+              ],
+              "firstLine": "MouseEventKind::Up(MouseButton::Left) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -37,21 +34,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
-          "lines": "93-137",
+          "lines": "96-151",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154
-              ]
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "committed",
+              "lastLine": "let selection = match self.selection {"
             }
           ]
         }
@@ -62,7 +61,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
-          "lines": "138-199",
+          "lines": "156-216",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
@@ -78,7 +77,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "Some(Rect {",
+              "lastLine": ""
             }
           ]
         }
@@ -89,13 +90,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
-          "lines": "200-251",
+          "lines": "224-274",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -126,8 +125,34 @@
                 147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "fn commit_details_selection(&self, rect: Rect, selected: Option<&WorkUnitInfo>) {",
+              "lastLine": "self.clear_details_selection();"
             }
           ]
         }
@@ -138,7 +163,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
-          "lines": "252-299",
+          "lines": "277-331",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
@@ -156,7 +181,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "MouseEventKind::Down(MouseButton::Left) => {",
+              "lastLine": "]"
             }
           ]
         }
@@ -167,15 +194,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
-          "lines": "300-328",
+          "lines": "337-365",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                91,
-                92,
-                93,
-                94,
                 95,
                 96,
                 97,
@@ -186,9 +209,10 @@
                 102,
                 103,
                 104,
-                105,
-                106
-              ]
+                105
+              ],
+              "firstLine": "MouseEventKind::Up(MouseButton::Left) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -208,6 +232,6 @@
       "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
       "rust/fspec-tui/src/views/board/details_select.rs"
     ],
-    "totalLinesCovered": 388
+    "totalLinesCovered": 416
   }
 }

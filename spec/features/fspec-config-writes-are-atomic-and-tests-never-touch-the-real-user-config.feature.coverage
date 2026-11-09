@@ -1,0 +1,433 @@
+{
+  "scenarios": [
+    {
+      "name": "A test-support build that has not isolated its user directory cannot resolve the real one",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug640_test_builds_never_resolve_the_real_user_dir.rs",
+          "lines": "17-50",
+          "implMappings": [
+            {
+              "file": "rust/common/src/user_dir.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "pub fn fspec_user_dir() -> Result<PathBuf, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Setting a default model in a session test writes only the isolated user config",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug640_session_tests_write_only_the_isolated_user_config.rs",
+          "lines": "35-62",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "pub fn isolated_user_directory() -> Result<&'static std::path::Path, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub fn save_persisted_model_string_to(user_dir: &Path, model: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent writers to the user config keep every change",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug640_session_tests_write_only_the_isolated_user_config.rs",
+          "lines": "64-113",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "pub fn update_config_file<T, E>(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections/custom_models.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "pub(super) fn save_custom_model_at(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent processes writing the project config keep both changes",
+      "testMappings": [
+        {
+          "file": "rust/common/tests/bug640_concurrent_project_config_writers.rs",
+          "lines": "22-81",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "pub fn update_config_file<T, E>(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every fspec-config.json writer goes through the shared atomic locked helper",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug640_fspec_config_writers_use_the_shared_helper.rs",
+          "lines": "142-194",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "pub fn update_config_file<T, E>(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A test build's system blocklist is the isolated user directory's",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug656_system_blocklist_resolves_the_user_dir.rs",
+          "lines": "11-39",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// The system blocklist config path, `<user dir>/blocklist.json` (BUG-656:",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/stage_permissions/mod.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "/// The system stage permissions config path,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/test-helpers/tests/bug640_test_builds_never_resolve_the_real_user_dir.rs",
+      "rust/sessions/tests/bug640_session_tests_write_only_the_isolated_user_config.rs",
+      "rust/common/tests/bug640_concurrent_project_config_writers.rs",
+      "rust/test-helpers/tests/bug640_fspec_config_writers_use_the_shared_helper.rs",
+      "rust/tools/tests/bug656_system_blocklist_resolves_the_user_dir.rs"
+    ],
+    "implFiles": [
+      "rust/common/src/user_dir.rs",
+      "rust/test-helpers/src/lib.rs",
+      "rust/sessions/src/last_used_model_persistence.rs",
+      "rust/common/src/fspec_config.rs",
+      "rust/sessions/src/profile_sections/custom_models.rs",
+      "rust/tools/src/blocklist/middleware.rs",
+      "rust/tools/src/stage_permissions/mod.rs"
+    ],
+    "totalLinesCovered": 532
+  }
+}

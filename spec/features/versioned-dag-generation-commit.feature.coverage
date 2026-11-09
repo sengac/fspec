@@ -28,7 +28,6 @@
                 159,
                 160,
                 161,
-                162,
                 163,
                 164,
                 165,
@@ -53,7 +52,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "let generation = candidate.source.generation + 1;",
+              "lastLine": "}"
             }
           ]
         }
@@ -89,7 +90,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "let generation = current",
+              "lastLine": "}"
             }
           ]
         }
@@ -125,7 +128,9 @@
                 115,
                 116,
                 117
-              ]
+              ],
+              "firstLine": "if candidate.source.generation != generation",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,7 +146,6 @@
             {
               "file": "rust/core/src/persistence/compaction_commit.rs",
               "lines": [
-                221,
                 222,
                 223,
                 224,
@@ -180,8 +184,11 @@
                 257,
                 258,
                 259,
-                260
-              ]
+                260,
+                261
+              ],
+              "firstLine": "pub fn publish_compaction(",
+              "lastLine": "}"
             }
           ]
         }
@@ -198,6 +205,6 @@
     "implFiles": [
       "rust/core/src/persistence/compaction_commit.rs"
     ],
-    "totalLinesCovered": 269
+    "totalLinesCovered": 268
   }
 }

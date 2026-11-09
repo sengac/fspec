@@ -68,7 +68,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": ""
             }
           ]
         }

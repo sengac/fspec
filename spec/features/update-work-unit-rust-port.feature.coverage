@@ -17,8 +17,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -251,8 +249,12 @@
                 327,
                 328,
                 329,
-                330
-              ]
+                330,
+                331,
+                332
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -268,14 +270,16 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                101,
-                102,
                 103,
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109
+              ],
+              "firstLine": "// ── Existence check (TS: update-work-unit.ts:33-35) ────────────────",
+              "lastLine": "}"
             }
           ]
         }
@@ -291,8 +295,6 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -310,8 +312,12 @@
                 125,
                 126,
                 127,
-                128
-              ]
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// ── Type immutability (TS: update-work-unit.ts:38-45) ──────────────",
+              "lastLine": "}"
             }
           ]
         }
@@ -327,8 +333,6 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -349,8 +353,12 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154
+              ],
+              "firstLine": "// ── Parent validation (TS: update-work-unit.ts:47-63) ──────────────",
+              "lastLine": "}"
             }
           ]
         }
@@ -366,16 +374,18 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                130,
-                131,
                 132,
                 133,
                 134,
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140
+              ],
+              "firstLine": "// ── Parent validation (TS: update-work-unit.ts:47-63) ──────────────",
+              "lastLine": "reason: format!(\"Parent work unit '{parent}' does not exist\"),"
             }
           ]
         }
@@ -391,8 +401,6 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -404,8 +412,12 @@
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168,
+                169
+              ],
+              "firstLine": "// ── Epic validation (TS: update-work-unit.ts:65-72) ────────────────",
+              "lastLine": "}"
             }
           ]
         }
@@ -421,8 +433,6 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                279,
-                280,
                 281,
                 282,
                 283,
@@ -472,8 +482,12 @@
                 327,
                 328,
                 329,
-                330
-              ]
+                330,
+                331,
+                332
+              ],
+              "firstLine": "// Epic move (TS: update-work-unit.ts:84-108). Writes the SEPARATE",
+              "lastLine": ""
             }
           ]
         }
@@ -489,8 +503,6 @@
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
               "lines": [
-                220,
-                221,
                 222,
                 223,
                 224,
@@ -536,8 +548,12 @@
                 264,
                 265,
                 266,
-                267
-              ]
+                267,
+                268,
+                269
+              ],
+              "firstLine": "// has NO `oldParent !== parent` guard: when the work unit is",
+              "lastLine": "}"
             }
           ]
         }
@@ -548,7 +564,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_work_unit.rs",
-          "lines": "376-396",
+          "lines": "382-408",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_work_unit.rs",
@@ -560,12 +576,54 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher auto-creates spec/work-units.json before reporting a missing work unit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
+          "lines": "416-437",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
+              "lines": [
+                101
+              ],
+              "firstLine": "let work_units_data = ensure_work_units_file(project_root)?;",
+              "lastLine": "let work_units_data = ensure_work_units_file(project_root)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher updates a work unit description",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit.rs",
+          "lines": "451-471",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit.rs",
+              "lines": [
+                209,
+                210,
+                211
+              ],
+              "firstLine": "if let Some(desc) = args.description.as_deref() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -573,8 +631,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/update_work_unit.rs"
@@ -582,6 +640,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/update_work_unit.rs"
     ],
-    "totalLinesCovered": 699
+    "totalLinesCovered": 752
   }
 }

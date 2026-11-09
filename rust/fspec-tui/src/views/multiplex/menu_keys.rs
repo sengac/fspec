@@ -14,9 +14,9 @@
 //! 1. **Open dropdown (true-modal)** — Up/Down move the cursor,
 //!    Left/Right walk the ring + re-anchor, Enter executes + closes,
 //!    Esc closes; every other key (including characters) is swallowed.
-//! 2. **Bar focus (item or Zone B cell, closed)** — Enter opens the
-//!    item's dropdown / activates the cell (chip → session, view label →
-//!    pane); Up/Down drop back into the focused pane input (the draft is
+//! 2. **Bar focus (item, Zone B cell or Zone C button, closed)** — Enter
+//!    opens the item's dropdown / activates the cell (chip → session, view
+//!    label → pane) / activates the button (MUX-013); Up/Down drop back into the focused pane input (the draft is
 //!    preserved); Left/Right walk the ring; a bare character key dismisses
 //!    the bar AND is typed into the focused pane input on the same event
 //!    (the Navigator forwards it after clearing).
@@ -126,7 +126,9 @@ pub(crate) fn classify_bar_key(
     // Shift+arrows are NEVER claimed (pane focus cycling — the App
     // intercepts them before the Navigator; R-KEYS: "never enter or move
     // the bar").
-    if key.modifiers.contains(KeyModifiers::SHIFT) {
+    // TUI-129: a Shift+letter typed into an open dropdown is a row key.
+    let row_key = matches!(key.code, KeyCode::Char(_)) && layout.open_menu().is_some();
+    if key.modifiers.contains(KeyModifiers::SHIFT) && !row_key {
         return MuxBarKeyOutcome::Forward;
     }
 
@@ -154,9 +156,15 @@ pub(crate) fn classify_bar_key(
             KeyCode::Right if plain(KeyCode::Right, key) => {
                 return emit(Action::MenuMove(1));
             }
-            // R-KEYS: every other key (including characters) is swallowed.
-            _ => return MuxBarKeyOutcome::Swallow,
+            _ => {}
         }
+        // TUI-129: a key shown in one of the open dropdown's rows runs
+        // that row.
+        if let Some(row) = crate::components::menu_bar::item_keys::row_for_key(category, key) {
+            return emit(Action::MenuExecuteItem { category, row });
+        }
+        // R-KEYS: every other key (including characters) is swallowed.
+        return MuxBarKeyOutcome::Swallow;
     }
 
     // ── 2. a bar item or Zone B cell has the focus (dropdown closed) ─────
@@ -205,11 +213,24 @@ pub(crate) fn classify_bar_key(
                 }
                 return MuxBarKeyOutcome::Swallow;
             }
-            // MENU-009 Q1: the mux bar paints NO Zone C (empty `zone_c`
-            // slice) — a `MenuFocus::ZoneC` is unreachable here, but the
-            // match must stay exhaustive. Swallow it defensively (a
-            // stale focus should not leak into the pane input).
-            crate::components::menu_bar::MenuFocus::ZoneC(_) => {
+            // MUX-013: a New Bot / New Agent / Close button (MENU-009
+            // parity with the agent bar): Enter activates it.
+            crate::components::menu_bar::MenuFocus::ZoneC(button) => {
+                if plain(KeyCode::Up, key) || plain(KeyCode::Down, key) {
+                    return emit(Action::MenuFocusToColumns);
+                }
+                if plain(KeyCode::Enter, key) {
+                    return emit(Action::MenuZoneCActivate(button));
+                }
+                if plain(KeyCode::Left, key) {
+                    return emit(Action::MenuMove(-1));
+                }
+                if plain(KeyCode::Right, key) {
+                    return emit(Action::MenuMove(1));
+                }
+                if bare_char(key) {
+                    return MuxBarKeyOutcome::DismissAndForward;
+                }
                 return MuxBarKeyOutcome::Swallow;
             }
         }

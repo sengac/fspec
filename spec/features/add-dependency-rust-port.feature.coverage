@@ -5,7 +5,466 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "76-106",
+          "lines": "104-142",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn apply_depends_on(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blocks creates bidirectional edge and auto-transitions target to blocked",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "144-190",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "fn apply_blocks(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blocks targeting a done work unit does not transition its status",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "192-217",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "if let Some(cur_status) = data.work_units.get(target_id).map(|w| w.status) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blockedBy creates bidirectional edge and auto-transitions source with blockedReason",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "219-268",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ],
+              "firstLine": "fn apply_blocked_by(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dependsOn flag creates unidirectional edge only",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "270-304",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn apply_depends_on(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "relatesTo creates symmetric edges",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "306-346",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "fn apply_relates_to(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "relatesTo reverse edge is idempotent when already present",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "348-383",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "let reverse_has = data",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing source work unit surfaces canonical error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "385-412",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "if !data.work_units.contains_key(&args.work_unit_id) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing target work unit surfaces canonical error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "414-441",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ],
+              "firstLine": "fn validate_target_exists(data: &WorkUnitsData, target_id: &str) -> Result<(), FspecCoreError> {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Self-dependency is rejected for every flag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "443-470",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ],
+              "firstLine": "fn self_dep_error() -> FspecCoreError {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate edge is rejected",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "472-504",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264
+              ],
+              "firstLine": "fn duplicate_error() -> FspecCoreError {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Circular blocks chain is rejected before disk write",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "506-539",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364
+              ],
+              "firstLine": "fn detect_cycle(data: &WorkUnitsData, from_id: &str, to_id: &str) -> Option<String> {",
+              "lastLine": "dfs(&data.work_units, from_id, to_id, &mut visited, &mut path)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "541-569",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_dependency.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two dependsOn targets added one after another are both kept in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_dependency.rs",
+          "lines": "573-598",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_dependency.rs",
@@ -29,18 +488,20 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn apply_depends_on(",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "blocks creates bidirectional edge and auto-transitions target to blocked",
+      "name": "blocks, dependsOn and relatesTo edges coexist on one work unit",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "108-145",
+          "lines": "608-641",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_dependency.rs",
@@ -75,44 +536,8 @@
                 146,
                 147,
                 148,
-                149
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "blocks targeting a done work unit does not transition its status",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "147-172",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                143,
-                144,
-                145,
-                146,
-                147
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "blockedBy creates bidirectional edge and auto-transitions source with blockedReason",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "174-214",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
+                149,
+                150,
                 151,
                 152,
                 153,
@@ -148,23 +573,8 @@
                 183,
                 184,
                 185,
-                186
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "dependsOn flag creates unidirectional edge only",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "216-243",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
+                186,
+                187,
                 188,
                 189,
                 190,
@@ -183,23 +593,8 @@
                 203,
                 204,
                 205,
-                206
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "relatesTo creates symmetric edges",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "245-275",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
+                206,
+                207,
                 208,
                 209,
                 210,
@@ -226,208 +621,9 @@
                 231,
                 232,
                 233
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "relatesTo reverse edge is idempotent when already present",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "277-304",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing source work unit surfaces canonical error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "306-333",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing target work unit surfaces canonical error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "335-362",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Self-dependency is rejected for every flag",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "364-391",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Duplicate edge is rejected",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "393-421",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Circular blocks chain is rejected before disk write",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "423-452",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Auto-creates spec/work-units.json when missing then reports the canonical missing-source error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_dependency.rs",
-          "lines": "454-482",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_dependency.rs",
-              "lines": [
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85
-              ]
+              ],
+              "firstLine": "fn apply_blocks(",
+              "lastLine": "}"
             }
           ]
         }
@@ -435,8 +631,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 13,
-    "coveredScenarios": 13,
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_dependency.rs"
@@ -444,6 +640,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_dependency.rs"
     ],
-    "totalLinesCovered": 620
+    "totalLinesCovered": 873
   }
 }

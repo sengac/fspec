@@ -22,10 +22,13 @@ fn call(signature: Option<&str>) -> Vec<Message> {
     ]
 }
 
+// Scenario: Gemini transport decoration does not change durable replay identity
 #[test]
-fn gemini_transport_placeholder_does_not_rewrite_replay_identity() -> Result {
+fn gemini_transport_decoration_does_not_change_durable_replay_identity() -> Result {
+    // @step Given committed tool history without a provider thought signature
     let original = call(None);
     let installation = ReplayInstallation::new(1, &[], &original)?;
+    // @step When Gemini adds its recognized transport-only placeholder before sending
     let mut runtime = original.clone();
     codelet_core::gemini_history_hook::ensure_thought_signatures(
         &mut runtime,
@@ -35,26 +38,17 @@ fn gemini_transport_placeholder_does_not_rewrite_replay_identity() -> Result {
         runtime, original,
         "fixture must exercise actual transport decoration"
     );
+    // @step Then repeated replay retains the same durable history identity
     assert_eq!(installation.locate(&runtime, &original)?, (0, 2));
-    Ok(())
-}
-
-#[test]
-fn changed_genuine_provider_signature_remains_a_conflict() -> Result {
-    let original = call(Some("real-signed-a"));
-    let installation = ReplayInstallation::new(1, &[], &original)?;
-    assert!(installation
-        .locate(&call(Some("real-signed-b")), &original)
+    assert_eq!(installation.locate(&runtime, &original)?, (0, 2));
+    // @step And genuine signature or tool argument changes remain explicit conflicts
+    let signed = call(Some("real-signed-a"));
+    let signed_installation = ReplayInstallation::new(1, &[], &signed)?;
+    assert!(signed_installation
+        .locate(&call(Some("real-signed-b")), &signed)
         .is_err());
-    Ok(())
-}
-
-#[test]
-fn tool_input_changes_are_not_transport_decoration() -> Result {
-    let original = call(None);
-    let installation = ReplayInstallation::new(1, &[], &original)?;
-    let mut runtime = original.clone();
-    let Message::Assistant { content, .. } = &mut runtime[1] else {
+    let mut changed_arguments = original.clone();
+    let Message::Assistant { content, .. } = &mut changed_arguments[1] else {
         return Err("assistant fixture".into());
     };
     let AssistantContent::ToolCall(call) = content.iter_mut().next().ok_or("tool fixture")? else {
@@ -62,6 +56,6 @@ fn tool_input_changes_are_not_transport_decoration() -> Result {
     };
     call.function.arguments =
         json!({"path":"src/lib.rs","signature":"skip_thought_signature_validator"});
-    assert!(installation.locate(&runtime, &original).is_err());
+    assert!(installation.locate(&changed_arguments, &original).is_err());
     Ok(())
 }

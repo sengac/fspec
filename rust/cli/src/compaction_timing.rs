@@ -16,6 +16,13 @@ pub fn synthesis_deadline() -> Instant {
 tokio::task_local! {
     static BUDGET: Budget;
     static ATTEMPT_DEADLINE: Instant;
+    static ATTEMPT_NUMBER: u32;
+}
+
+/// CMPCT-087: the 1-based candidate attempt the current build runs in, so a
+/// correction can re-synthesize instead of repeating exploration.
+pub fn attempt_number() -> Option<u32> {
+    ATTEMPT_NUMBER.try_with(|attempt| *attempt).ok()
 }
 
 pub fn operation_id() -> Option<Uuid> {
@@ -73,7 +80,9 @@ pub async fn attempt<Output>(
         remaining_ms = deadline.saturating_duration_since(now).as_millis(),
         attempt_target_ms = until.saturating_duration_since(now).as_millis(),
         "Compaction candidate attempt started");
-    ATTEMPT_DEADLINE.scope(until, work).await
+    ATTEMPT_NUMBER
+        .scope(attempt, ATTEMPT_DEADLINE.scope(until, work))
+        .await
 }
 
 pub struct Phase {

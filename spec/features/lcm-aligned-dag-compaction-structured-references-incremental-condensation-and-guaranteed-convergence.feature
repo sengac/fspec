@@ -1,5 +1,7 @@
 @done
 @CMPCT-016
+@codelet
+@context-management
 Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Condensation, and Guaranteed Convergence
   """
   Reuse resolve_turns_context() and resolve_query_context() from rust/napi/src/agent_manager/agent_manager_handler.rs — these already resolve turn ranges/queries against persisted messages using the same persistence layer as SessionSearch. Extract into shared utility.

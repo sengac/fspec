@@ -6,7 +6,6 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::Duration;
 
 use codelet_agent_loop::{background_output::LoopDetectionWiring, FspecAgentHooks};
 use codelet_rpc_types::{SessionStatus, StreamChunk};
@@ -27,6 +26,7 @@ async fn scenario_genuine_sustained_loops_still_cancel_persist_recover_and_stop_
     // @step Given a stub provider streaming a normal prefix followed by sustained complete word repetition
     let directory = codelet_test_helpers::setup_temp_directory()?;
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_providers::stub_provider::register_stub_provider();
     let prefix: Vec<_> = (0..20).map(|index| format!("prefix{index} ")).collect();
@@ -36,9 +36,9 @@ async fn scenario_genuine_sustained_loops_still_cancel_persist_recover_and_stop_
     let poll = Arc::new(AtomicUsize::new(0));
     codelet_providers::stub_model::set_looping_stream_hook(words, poll.clone());
     let _hook = StreamHook;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
-    manager.set_default_model("stub/canned");
+    manager.set_default_model("stub/canned")?;
     let id = uuid::Uuid::new_v4().to_string();
     manager
         .create_session_with_id(
@@ -60,7 +60,7 @@ async fn scenario_genuine_sustained_loops_still_cancel_persist_recover_and_stop_
     let mut completions = 0;
     let mut attempt_lengths = Vec::new();
     let mut text_deltas = 0;
-    tokio::time::timeout(Duration::from_secs(60), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while completions < attempts {
             let (received_id, chunk) = receiver.recv().await?;
             if received_id.value == id {
@@ -76,7 +76,7 @@ async fn scenario_genuine_sustained_loops_still_cancel_persist_recover_and_stop_
             }
         }
         while session.get_status() != SessionStatus::Idle || session.has_pending_loop_abort_note() {
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
         Ok::<(), Box<dyn std::error::Error>>(())
     })
@@ -119,7 +119,7 @@ async fn scenario_genuine_sustained_loops_still_cancel_persist_recover_and_stop_
     let history = codelet_providers::stub_model::last_request_history().join("\n");
     assert!(history.contains("previous response was cut off"));
     assert!(history.contains("fresh approach"));
-    tokio::time::sleep(Duration::from_millis(200)).await;
+    codelet_test_helpers::yield_now().await;
     assert_eq!(poll.load(Ordering::Acquire), total_polled);
     assert!(!session.has_pending_loop_abort_note());
     Ok(())

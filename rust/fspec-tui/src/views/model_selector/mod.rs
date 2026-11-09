@@ -19,6 +19,7 @@ mod dispatch;
 pub(crate) mod form;
 mod form_render;
 mod header;
+mod loads;
 mod model_id;
 mod navigation;
 mod render;
@@ -76,9 +77,20 @@ pub struct ModelSelectorView {
     scroll_offset: usize,
     filter: String,
     filter_mode: bool,
-    current_model_id: Option<String>,
+    /// BUG-576: the session's `(section, model)`; matched on both.
+    current_model: Option<(String, String)>,
     is_refreshing: bool,
     loaded: bool,
+    /// BUG-576: the next list applied is the first of this visit (collapse
+    /// default); later lists keep the expanded sections and the cursor.
+    opening: bool,
+    /// BUG-576: the number of the newest provider list requested.
+    newest_list: u64,
+    /// BUG-576: why the newest list failed.
+    load_error: Option<String>,
+    /// BUG-576: the section (and model) a custom-model write opens and
+    /// focuses once its list is applied.
+    focus_after_load: Option<(String, Option<String>)>,
     visible_rows: usize,
     /// RPC-353: mouse-wheel velocity accelerator (1×–5× ramp) shared with
     /// the chat view, so fast scrolling moves multiple model rows per event.
@@ -91,6 +103,9 @@ pub struct ModelSelectorView {
     scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
     /// TUI-101: cached scrollbar rect from last render for hit-testing.
     last_scrollbar_rect: Option<Rect>,
+    /// BUG-325: the last failed custom-model write, shown above the list
+    /// until the next write or until the selector is reopened.
+    write_error: Option<String>,
 }
 
 impl Default for ModelSelectorView {
@@ -130,6 +145,10 @@ mod tests_crud_add;
 #[cfg(test)]
 #[path = "tests_crud_delete.rs"]
 mod tests_crud_delete;
+
+#[cfg(test)]
+#[path = "tests_no_auto_select.rs"]
+mod tests_no_auto_select;
 
 #[cfg(test)]
 #[path = "tests_loading_empty.rs"]

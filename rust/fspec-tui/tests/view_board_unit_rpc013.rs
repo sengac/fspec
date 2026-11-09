@@ -2,8 +2,7 @@
 //!
 //! Feature: spec/features/rpc013-board-footer.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
@@ -32,11 +31,15 @@ fn fresh() -> (BoardView, tokio::sync::mpsc::UnboundedReceiver<Action>) {
     (view, rx)
 }
 
-fn render_board(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> String {
+fn render_board(
+    width: u16,
+    height: u16,
+    units: Vec<WorkUnitInfo>,
+) -> Result<String, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(units);
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -46,7 +49,7 @@ fn render_board(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> String {
             false,
         );
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -55,14 +58,18 @@ fn render_board(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> String {
         }
         joined.push('\n');
     }
-    joined
+    Ok(joined)
 }
 
-fn render_board_rows(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> Vec<String> {
+fn render_board_rows(
+    width: u16,
+    height: u16,
+    units: Vec<WorkUnitInfo>,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(units);
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -72,7 +79,7 @@ fn render_board_rows(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> Vec<S
             false,
         );
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
     for y in 0..buf.area.height {
@@ -82,17 +89,17 @@ fn render_board_rows(width: u16, height: u16, units: Vec<WorkUnitInfo>) -> Vec<S
         }
         rows.push(row);
     }
-    rows
+    Ok(rows)
 }
 
 /// Scenario: BoardView renders the literal TS UnifiedBoardLayout footer string
 #[test]
-fn board_view_renders_literal_unified_board_layout_footer_string() {
+fn board_view_renders_literal_unified_board_layout_footer_string() -> TestResult {
     // @step Given an App with bootstrap complete and Navigator.active_view = ViewMode::Board
     // @step And BoardStore seeded with [AUTH-001 backlog]
     let units = vec![wu("AUTH-001", "backlog")];
     // @step When the App renders against a 120x24 TestBackend
-    let joined = render_board(120, 24, units);
+    let joined = render_board(120, 24, units)?;
     // @step Then the rendered buffer contains the substring "← → Cycle Columns"
     // (MENU-002 R11: the footer now describes the full ring — columns →
     // menu items → chips. The '← → Columns' token became '← → Cycle
@@ -116,25 +123,26 @@ fn board_view_renders_literal_unified_board_layout_footer_string() {
         joined.contains("] Priority Down"),
         "missing '] Priority Down' in:\n{joined}"
     );
-    // @step And the rendered buffer contains the substring "↵ Work Agent"
+    // @step And the rendered buffer contains the substring "↵ Choose"
     assert!(
-        joined.contains("↵ Work Agent"),
-        "missing '↵ Work Agent' in:\n{joined}"
+        joined.contains("↵ Choose"),
+        "missing '↵ Choose' in:\n{joined}"
     );
-    // @step And the rendered buffer contains the substring "ESC Back"
+    // @step And the rendered buffer contains the substring "ESC Exit"
     assert!(
-        joined.contains("ESC Back"),
-        "missing 'ESC Back' in:\n{joined}"
+        joined.contains("ESC Exit"),
+        "missing 'ESC Exit' in:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView footer omits the legacy `? help q quit Tab switch pane` hint
 #[test]
-fn board_view_footer_omits_legacy_generic_hint() {
+fn board_view_footer_omits_legacy_generic_hint() -> TestResult {
     // @step Given an App with bootstrap complete and Navigator.active_view = ViewMode::Board
     let units = vec![wu("AUTH-001", "backlog")];
     // @step When the App renders against a 120x24 TestBackend
-    let joined = render_board(120, 24, units);
+    let joined = render_board(120, 24, units)?;
     // @step Then the rendered buffer does NOT contain the substring "? help"
     assert!(
         !joined.contains("? help"),
@@ -150,15 +158,16 @@ fn board_view_footer_omits_legacy_generic_hint() {
         !joined.contains("Tab "),
         "legacy 'Tab ' still present in:\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: BoardView paints headers above the footer in its own area
 #[test]
-fn board_view_paints_headers_above_footer_row_in_its_own_area() {
+fn board_view_paints_headers_above_footer_row_in_its_own_area() -> TestResult {
     // @step Given a BoardView rendered against a 120x24 TestBackend with [AUTH-001 backlog]
     let units = vec![wu("AUTH-001", "backlog")];
     // @step When a developer scans the rendered buffer row by row
-    let rows = render_board_rows(120, 24, units);
+    let rows = render_board_rows(120, 24, units)?;
     assert_eq!(rows.len(), 24);
     // @step Then row 22 (the last in-bounds row of the box) contains the footer string substring "← → Cycle Columns"
     // (MENU-002 R11: the footer now describes the full ring.)
@@ -180,4 +189,5 @@ fn board_view_paints_headers_above_footer_row_in_its_own_area() {
     // @step And the work-unit id "AUTH-001" appears on a row strictly above the footer row
     let auth_row = rows[..22].iter().position(|r| r.contains("AUTH-001"));
     assert!(auth_row.is_some(), "expected AUTH-001 above row 22");
+    Ok(())
 }

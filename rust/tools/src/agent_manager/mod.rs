@@ -12,7 +12,10 @@
 //! - `close`: Terminate a subordinate session (spawner-only)
 //! - `message`: Send a plain text message to any session by ID, with optional context references
 //! - `set_role`: Set or replace the system prompt overlay on a session
-//! - `await_idle`: Block until one or more sessions become idle (AMGR-015)
+//! - `await_idle`: Block until one or more sessions become idle (AMGR-015),
+//!   or one of them needs the caller's answer (AMGR-021)
+//! - `answer` / `approve` / `escalate`: reply to, or pass up, a sub-agent's
+//!   question or approval the caller holds (AMGR-021)
 //!
 //! The tool uses the handler pattern (like SessionSearchTool) to delegate to the
 //! session management layer in codelet-napi. The tool definition and schema live here,
@@ -23,14 +26,38 @@
 pub mod handler;
 pub mod types;
 
+// AgentManager tests: one file per feature (COV-075); shared fixtures in
+// test_support.rs. Each file allows unwrap/expect/panic/needless_collect.
 #[cfg(test)]
-#[allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::needless_collect
-)]
-mod tests;
+mod await_idle_cancel_tests;
+#[cfg(test)]
+mod await_idle_tests;
+#[cfg(test)]
+mod await_idle_types_tests;
+#[cfg(test)]
+mod context_mixed_tests;
+#[cfg(test)]
+mod context_search_tests;
+#[cfg(test)]
+mod context_serde_tests;
+#[cfg(test)]
+mod context_turns_tests;
+#[cfg(test)]
+mod core_close_tests;
+#[cfg(test)]
+mod core_tests;
+#[cfg(test)]
+mod core_types_tests;
+#[cfg(test)]
+mod messaging_dispatch_tests;
+#[cfg(test)]
+mod messaging_tests;
+#[cfg(test)]
+mod messaging_validation_tests;
+#[cfg(test)]
+mod set_role_tests;
+#[cfg(test)]
+mod test_support;
 
 use rig::tool::Tool;
 use serde_json::json;
@@ -45,8 +72,9 @@ pub use handler::{
     set_agent_manager_handler, AgentManagerAsyncHandler, AgentManagerHandler,
 };
 pub use types::{
-    AgentManagerAction, AgentManagerArgs as Args, AgentManagerResult, AwaitOutcome,
-    AwaitSessionResult, SessionEntry, SessionIdParam, SessionStatus,
+    AgentManagerAction, AgentManagerArgs as Args, AgentManagerResult, ApprovalView, ApproveChoice,
+    AwaitOutcome, AwaitSessionResult, PendingRequestView, RequestAnswer, SessionEntry,
+    SessionIdParam, SessionStatus,
 };
 
 /// AgentManager Tool — Rig Tool implementation
@@ -86,14 +114,17 @@ impl Tool for AgentManagerTool {
                 "'close' (terminate a subordinate session — spawner only), ",
                 "'message' (send a message to idle recipients by ID, with optional context references), ",
                 "'set_role' (set or replace the system prompt overlay on a session), ",
-                "'await_idle' (block until one or more sessions become idle — use instead of polling get_status with sleep), ",
+                "'await_idle' (block until one or more sessions become idle — use instead of polling get_status with sleep; it returns at once with status needs_input when a sub-agent, or one below it, asks you a question or needs your approval, naming the request, and with waiting_on_user, once, when a sub-agent waits on the user), ",
+                "'answer' (answer a question you hold: request_id plus answers [{id, selected, other}] or cancelled true), ",
+                "'approve' (decide an approval you hold: request_id plus choice approve, approve_session or deny), ",
+                "'escalate' (pass a request you hold up to your own parent, or to the user at the root), ",
                 "'profile' (run a time-bounded runtime profiling window — BLOCKS for duration_secs seconds, default 10). ",
                 "Spawned sessions inherit the spawner's model and start idle. ",
                 "Root work_unit_id attributes the calling session, never the spawned or targeted session, for every action including spawn, message, get_status and profile. ",
                 "For example, orchestrating AUTH-001 while delegating AUTH-002: use work_unit_id='AUTH-001' on your management calls and delegate AUTH-002 in role or message text. ",
                 "This does not assign worker activity focus; workers must attribute their own calls to AUTH-002. ",
                 "Use exact NONE to clear only your own activity, not to retain it or change permissions. ",
-                "Messages to busy recipients return session_busy and are NOT queued. ",
+                "Messages to busy recipients return session_busy and are NOT queued; a sub-agent paused on a request waits for answer, approve or escalate, never a message. ",
                 "Use 'await_idle', then send a fresh message once the recipient is idle. ",
                 "If the recipient is waiting for you, finish your task and return results instead of waiting on it. ",
                 "Use 'spawn' to create workers, send them tasks via 'message', ",
@@ -108,7 +139,7 @@ impl Tool for AgentManagerTool {
                 "properties": {
                     "action": {
                         "type": "string",
-                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role", "await_idle", "profile"],
+                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role", "await_idle", "answer", "approve", "escalate", "profile"],
                         "description": "The action to perform"
                     },
                     "role": {
@@ -156,6 +187,32 @@ impl Tool for AgentManagerTool {
                             },
                             "required": ["session_id"]
                         }
+                    },
+                    "request_id": {
+                        "type": ["string", "null"],
+                        "description": "For 'answer', 'approve' and 'escalate': the id of the request, from await_idle's needs_input result or the message that told you about it."
+                    },
+                    "answers": {
+                        "type": ["array", "null"],
+                        "description": "For 'answer': one entry per question: {id: the question id, selected: [option labels], other: free text}.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": { "type": "string" },
+                                "selected": { "type": "array", "items": { "type": "string" } },
+                                "other": { "type": ["string", "null"] }
+                            },
+                            "required": ["id"]
+                        }
+                    },
+                    "cancelled": {
+                        "type": ["boolean", "null"],
+                        "description": "For 'answer': true to cancel the question instead of answering it."
+                    },
+                    "choice": {
+                        "type": ["string", "null"],
+                        "enum": ["approve", "approve_session", "deny", null],
+                        "description": "For 'approve': approve (this once), approve_session (for the asking sub-agent's session) or deny."
                     },
                     "timeout": {
                         "type": ["integer", "null"],

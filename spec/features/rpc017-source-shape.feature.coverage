@@ -4,8 +4,8 @@
       "name": "codelet_common::file_lock is lifted out of schedule_handler.rs",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "31-82",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
+          "lines": "1-54",
           "implMappings": [
             {
               "file": "rust/common/src/file_lock.rs",
@@ -140,7 +140,37 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "//! Cross-process file lock helper compatible with the TypeScript",
+              "lastLine": "use super::*;"
+            },
+            {
+              "file": "rust/agent-loop/src/schedule_handler.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "fn with_schedules_lock<F>(project: &str, f: F) -> ScheduleResult",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,8 +180,8 @@
       "name": "codelet_core::work_units_write module exists and stays under 300 LoC",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "83-136",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
+          "lines": "56-114",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
@@ -283,10 +313,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130
-              ]
+                128
+              ],
+              "firstLine": "//! Pure-Rust write helper for `spec/work-units.json` (RPC-017).",
+              "lastLine": ""
             }
           ]
         }
@@ -297,21 +327,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "137-162",
+          "lines": "50-74",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/workspace.rs",
               "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ],
+              "firstLine": "async fn list_live_sessions() -> Result<Vec<SessionId>, String>;",
+              "lastLine": "/// exposed by both transports. BUG-328: a session the daemon does not"
             }
           ]
         }
@@ -322,11 +354,47 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "163-192",
+          "lines": "76-104",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/core.rs",
               "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "/// `FspecService::list_sessions`. RPC-427: added `project_path` parameter",
+              "lastLine": "/// sessions, which is exactly the \"nothing restorable → board\" case."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both transports implement the new FspecBackend methods",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+          "lines": "106-138",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
                 99,
                 100,
                 101,
@@ -339,41 +407,36 @@
                 108,
                 109,
                 110,
-                111,
-                112
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Both transports implement the new FspecBackend methods",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "193-226",
-          "implMappings": [
+                111
+              ],
+              "firstLine": "async fn move_work_unit_up(&self, workspace: String, id: String) -> Result<()> {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/workspace_checkpoints.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
                 117,
                 118,
-                119
-              ]
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "async fn move_work_unit_up(&self, workspace: String, id: String) -> Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -384,88 +447,90 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "227-253",
+          "lines": "140-168",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// Which way a card moves within its column.",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216
-              ]
+                144,
+                145
+              ],
+              "firstLine": "Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),",
+              "lastLine": "Action::ReorderDown => self.handle_reorder(super::dispatch_reorder::Reorder::Down),"
             }
           ]
         }
       ]
     },
     {
-      "name": "NAPI exports for move_work_unit_up / _down delegate to the shared helper",
+      "name": "Views do not directly import codelet_core / tarpc",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "254-282",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/work_units_watcher.rs",
-              "lines": [
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Views do not directly import codelet_core / napi / tarpc",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "331-368",
+          "lines": "171-202",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
@@ -498,9 +563,10 @@
                 26,
                 27,
                 28,
-                29,
-                30
-              ]
+                29
+              ],
+              "firstLine": "//! BoardView — rich box-drawing Kanban grid + work-unit details strip.",
+              "lastLine": "use crate::components::{Action, EventResult};"
             }
           ]
         }
@@ -508,23 +574,25 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
       "rust/fspec-tui/tests/source_shape_rpc017.rs"
     ],
     "implFiles": [
       "rust/common/src/file_lock.rs",
+      "rust/agent-loop/src/schedule_handler.rs",
       "rust/core/src/work_units_write.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc/src/service_declaration/workspace.rs",
+      "rust/fspec-tui/src/transport/backend/core.rs",
+      "rust/fspec-tui/src/transport/embedded/workspace_history.rs",
+      "rust/fspec-tui/src/transport/websocket/workspace_checkpoints.rs",
+      "rust/fspec-tui/src/app/dispatch_reorder.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
-      "rust/napi/src/work_units_watcher.rs",
-      "src/commands/prioritize-work-unit.ts",
       "rust/fspec-tui/src/views/board.rs"
     ],
-    "totalLinesCovered": 766
+    "totalLinesCovered": 686
   }
 }

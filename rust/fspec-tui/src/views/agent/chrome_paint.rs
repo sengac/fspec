@@ -36,11 +36,11 @@ pub fn paint_header_and_role(
     sid: Option<&codelet_rpc_types::SessionId>,
     is_loading: bool,
     is_select_mode: bool,
-    session_index: (usize, usize),
+    session_index: Option<(usize, usize)>,
 ) {
     let model = sid.and_then(|s| store.model_info_for(s));
     let thinking = sid
-        .and_then(|s| store.thinking_level_for(s).copied())
+        .and_then(|s| store.thinking_level_for(s).cloned())
         .unwrap_or(codelet_rpc_types::ThinkingLevel::Off);
     let tokens = sid
         .and_then(|s| store.token_state_for(s).copied())

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_foundation.rs",
-          "lines": "90-115",
+          "lines": "95-119",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/update_foundation.rs",
@@ -187,7 +187,9 @@
                 175,
                 176,
                 177
-              ]
+              ],
+              "firstLine": "//! `update-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -198,7 +200,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_foundation.rs",
-          "lines": "117-148",
+          "lines": "125-152",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_foundation.rs",
@@ -224,7 +226,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "})",
+              "lastLine": "// `discoverFoundation({scanOnly})` and prints the resulting"
             }
           ]
         }
@@ -235,7 +239,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_foundation.rs",
-          "lines": "150-175",
+          "lines": "158-179",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_foundation.rs",
@@ -262,7 +266,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "})",
+              "lastLine": "// field-by-field `<system-reminder>` after the draft line"
             }
           ]
         }
@@ -273,7 +279,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_foundation.rs",
-          "lines": "177-206",
+          "lines": "231-259",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_foundation.rs",
@@ -286,7 +292,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "// (src/commands/update-foundation.ts:300-310). The core now",
+              "lastLine": "// DISC-003 rule 4/14: print the progress trailer (draft path)."
             }
           ]
         }
@@ -297,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_update_foundation.rs",
-          "lines": "208-254",
+          "lines": "265-317",
           "implMappings": [
             {
               "file": "rust/fspec/src/update_foundation.rs",
@@ -343,7 +351,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub content: String,",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -361,6 +371,6 @@
       "rust/fspec-core/src/help/configs/update_foundation.rs",
       "rust/fspec/src/update_foundation.rs"
     ],
-    "totalLinesCovered": 430
+    "totalLinesCovered": 426
   }
 }

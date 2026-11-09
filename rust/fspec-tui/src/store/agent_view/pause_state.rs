@@ -17,7 +17,7 @@
 //! go stale (mirrors TS `triplePauseSelection` state +
 //! `AgentView.tsx:1326-1331` reset semantics).
 
-use codelet_rpc_types::{PauseState, SessionId};
+use codelet_rpc_types::{PauseState, RequestRoute, SessionId};
 
 use super::AgentViewStore;
 use crate::terminal::sanitize::sanitize_for_terminal;
@@ -42,7 +42,13 @@ impl AgentViewStore {
     /// **TUI-111**: the prompt (and tool_call_id display) is sanitized
     /// on ingress so the inline pause prompt rows always paint clean
     /// text.
-    pub fn set_pause_state(&mut self, session: SessionId, state: PauseState) {
+    /// AMGR-020: the request route of the session's pending pause; every
+    /// reply names its request id.
+    pub fn pause_route_for(&self, session: &SessionId) -> Option<&RequestRoute> {
+        self.pause_route_by_session.get(session)
+    }
+
+    pub fn set_pause_state(&mut self, session: SessionId, route: RequestRoute, state: PauseState) {
         let kind_changed = self
             .pause_state_by_session
             .get(&session)
@@ -53,12 +59,13 @@ impl AgentViewStore {
         }
         let clean = PauseState {
             prompt: sanitize_for_terminal(&state.prompt),
-            tool_call_id: state
-                .tool_call_id
+            details: state
+                .details
                 .as_ref()
-                .map(|id| sanitize_for_terminal(id)),
+                .map(|details| sanitize_for_terminal(details)),
             ..state
         };
+        self.pause_route_by_session.insert(session.clone(), route);
         self.pause_state_by_session.insert(session, clean);
     }
 
@@ -67,6 +74,7 @@ impl AgentViewStore {
     /// when a `Running`/`Idle` chunk clears the pause server-side.
     pub fn clear_pause_state(&mut self, session: &SessionId) {
         self.pause_state_by_session.remove(session);
+        self.pause_route_by_session.remove(session);
         self.triple_pause_selection_by_session.remove(session);
     }
 

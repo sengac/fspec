@@ -49,26 +49,75 @@
                 327,
                 328,
                 329
-              ]
+              ],
+              "firstLine": "\"But\",",
+              "lastLine": "/// The first entry is appended directly after `\"Parser errors:\\n\"` (parity with"
             },
             {
               "file": "rust/fspec-core/src/commands/validate.rs",
               "lines": [
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490
+              ],
+              "firstLine": "/// The Gherkin problems of a feature file's `content`: the parsed feature",
+              "lastLine": "}"
             }
           ]
         }
@@ -123,7 +172,9 @@
                 327,
                 328,
                 329
-              ]
+              ],
+              "firstLine": "\"But\",",
+              "lastLine": "/// The first entry is appended directly after `\"Parser errors:\\n\"` (parity with"
             }
           ]
         }
@@ -178,7 +229,9 @@
                 327,
                 328,
                 329
-              ]
+              ],
+              "firstLine": "\"But\",",
+              "lastLine": "/// The first entry is appended directly after `\"Parser errors:\\n\"` (parity with"
             }
           ]
         }
@@ -196,6 +249,6 @@
       "rust/fspec-core/src/io/gherkin.rs",
       "rust/fspec-core/src/commands/validate.rs"
     ],
-    "totalLinesCovered": 279
+    "totalLinesCovered": 324
   }
 }

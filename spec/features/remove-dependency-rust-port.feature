@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-271
+@cli
+@remove
 Feature: Port remove-dependency command to Rust
   """
   Core impl file: rust/fspec-core/src/commands/remove_dependency.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Reuses existing infrastructure: io::ensure::ensure_work_units_file, io::locked_file::write_json_atomic, types::work_unit::{WorkUnitsData, WorkUnit} with #[serde(flatten)] extra map (blocks/blockedBy/dependsOn/relatesTo arrays live in `extra`).

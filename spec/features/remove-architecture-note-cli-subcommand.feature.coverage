@@ -38,7 +38,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "/// registration at `src/commands/remove-architecture-note.ts:88-107`.",
+              "lastLine": "println!();"
             }
           ]
         }
@@ -54,7 +56,6 @@
             {
               "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
-                40,
                 41,
                 42,
                 43,
@@ -71,8 +72,19 @@
                 54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `remove-architecture-note`",
+              "lastLine": "}"
             }
           ]
         }
@@ -88,7 +100,6 @@
             {
               "file": "rust/fspec/src/remove_architecture_note.rs",
               "lines": [
-                40,
                 41,
                 42,
                 43,
@@ -105,8 +116,19 @@
                 54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `remove-architecture-note`",
+              "lastLine": "}"
             }
           ]
         }
@@ -130,7 +152,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "obj.insert(\"workUnitId\".to_string(), json!(args.work_unit_id));",
+              "lastLine": "if !rendered.ends_with('\\n') {"
             }
           ]
         }
@@ -141,7 +165,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
-          "lines": "237-282",
+          "lines": "232-277",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_architecture_note.rs",
@@ -153,7 +177,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "/// `\"NaN\"` string otherwise) so TS `parseInt('abc', 10) → NaN`",
+              "lastLine": "/// clap subcommand."
             }
           ]
         }
@@ -164,7 +190,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_architecture_note.rs",
-          "lines": "284-313",
+          "lines": "284-312",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_architecture_note.rs",
@@ -248,7 +274,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "//! `remove-architecture-note` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -266,6 +294,6 @@
       "rust/fspec/src/remove_architecture_note.rs",
       "rust/fspec-core/src/help/configs/remove_architecture_note.rs"
     ],
-    "totalLinesCovered": 393
+    "totalLinesCovered": 408
   }
 }

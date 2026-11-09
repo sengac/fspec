@@ -26,6 +26,7 @@ fn persist(session_id: &str) -> Result<SessionManifest, String> {
         &mut manifest,
         &TokenUsage {
             current_context_tokens: 101,
+            current_context_output_tokens: 0,
             cumulative_billed_input: 503,
             cumulative_billed_output: 29,
             cache_read_tokens: 43,
@@ -57,7 +58,7 @@ async fn saved_context_spend_cache_and_reasoning_become_live_state() -> TestResu
     assert_eq!(tracker.cache_read_input_tokens, Some(43));
     assert_eq!(tracker.cache_creation_input_tokens, Some(17));
     assert_eq!(tracker.reasoning_tokens, 11);
-    assert_eq!(session.get_tokens(), (101, 29, Some(11)));
+    assert_eq!(session.get_tokens(), (101, 18, Some(11)));
     let (_, StreamChunk::TokenUpdate { tokens }) = chunks.try_recv()? else {
         return Err("expected observable restored token update".into());
     };

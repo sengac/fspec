@@ -1,5 +1,7 @@
 @done
 @RPC-193
+@cli
+@feature-management
 Feature: Port add-tag-to-feature command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_tag_to_feature.rs reuses crate::io::gherkin::parse_feature_lenient for parsing and a TS-parity line-based insertion (NOT AST round-trip).
@@ -113,3 +115,23 @@ Feature: Port add-tag-to-feature command to Rust
     When I dispatch add-tag-to-feature with file='spec/features/login.feature' and tags=['@cli','@feature-management']
     Then the dispatcher returns success=true
     And the dispatcher response does NOT include a systemReminder mentioning missing required tags
+
+  Scenario: validateRegistry=true accepts a tag registered in spec/tags.json
+    Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
+    And spec/tags.json registers '@custom-tag' under Technical Tags
+    When I dispatch add-tag-to-feature with file='spec/features/login.feature', tags=['@custom-tag'], validateRegistry=true
+    Then the dispatcher returns success=true
+    And the file on disk equals '@custom-tag\nFeature: Login\n  Scenario: A\n    Given x\n'
+
+  Scenario: Adding a feature tag leaves scenario-level tags untouched
+    Given a project root tempdir with spec/features/login.feature tagged '@auth' whose scenario 'A' is tagged '@smoke' and scenario 'B' is tagged '@regression @slow'
+    When I dispatch add-tag-to-feature with file='spec/features/login.feature' and tags=['@critical']
+    Then the dispatcher returns success=true
+    And the scenario tag lines '  @smoke' and '  @regression @slow' are still directly above their scenarios
+    And the file on disk equals the original with only the line '@critical' added above '@auth'
+
+  Scenario: Adding a feature tag preserves the rest of the file byte-for-byte
+    Given a project root tempdir with spec/features/login.feature holding a feature doc string, a Background, a step doc string with nested indentation and a data table
+    When I dispatch add-tag-to-feature with file='spec/features/login.feature' and tags=['@critical']
+    Then the dispatcher returns success=true
+    And the file on disk equals the line '@critical' followed by the original contents byte-for-byte

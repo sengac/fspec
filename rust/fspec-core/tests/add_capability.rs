@@ -332,3 +332,51 @@ fn dispatcher_result_reports_written_file_name_and_description() {
         Some("foundation.json")
     );
 }
+
+#[test]
+fn dispatcher_prunes_placeholder_capabilities_in_the_draft() {
+    // Scenario: Placeholder capabilities in foundation.json.draft are pruned before the new entry is added
+
+    // @step Given spec/foundation.json.draft exists with solutionSpace.capabilities=[{name:'[DETECTED: cli-tool]'}]
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation_named(
+        tmp.path(),
+        "foundation.json.draft",
+        &foundation_with_caps(json!([
+            {"name": "[DETECTED: cli-tool]", "description": "d"}
+        ])),
+    );
+    // @step And spec/foundation.json exists with solutionSpace.capabilities=[{name:'Reporting'}]
+    write_foundation(
+        tmp.path(),
+        &foundation_with_caps(json!([{"name": "Reporting", "description": "r"}])),
+    );
+    let final_before = fs::read_to_string(tmp.path().join("spec").join("foundation.json"))
+        .expect("read foundation.json");
+
+    // @step When I dispatch add-capability with name='Command Execution' description='Runs CLI commands'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"name": "Command Execution", "description": "Runs CLI commands"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step And the result fileName is 'foundation.json.draft' and removedCount is 1
+    let data = result_data(&result);
+    assert_eq!(data["fileName"].as_str(), Some("foundation.json.draft"));
+    assert_eq!(data["removedCount"].as_u64(), Some(1));
+
+    // @step And spec/foundation.json.draft solutionSpace.capabilities holds only 'Command Execution'
+    let draft = read_foundation_named(tmp.path(), "foundation.json.draft");
+    assert_eq!(caps(&draft).len(), 1);
+    assert_eq!(caps(&draft)[0]["name"].as_str(), Some("Command Execution"));
+
+    // @step And spec/foundation.json is left unchanged
+    assert_eq!(
+        fs::read_to_string(tmp.path().join("spec").join("foundation.json"))
+            .expect("read foundation.json"),
+        final_before
+    );
+}

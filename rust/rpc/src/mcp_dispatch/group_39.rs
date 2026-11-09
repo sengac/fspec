@@ -9,8 +9,8 @@ pub(super) mod get_transcript_page {
         snapshot_end: Option<u64>,
         max_bytes: u32,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -20,7 +20,6 @@ pub(super) mod get_transcript_page {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .get_transcript_page(
                 tarpc::context::current(),
@@ -43,8 +42,8 @@ pub(super) mod read_work_units_bounded {
         detail: bool,
         arguments: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -54,7 +53,6 @@ pub(super) mod read_work_units_bounded {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .read_work_units_bounded(tarpc::context::current(), args.detail, args.arguments)
             .await
@@ -70,8 +68,8 @@ pub(super) mod get_interaction_snapshot {
     pub struct Args {
         session_id: SessionId,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -81,7 +79,6 @@ pub(super) mod get_interaction_snapshot {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .get_interaction_snapshot(tarpc::context::current(), args.session_id)
             .await

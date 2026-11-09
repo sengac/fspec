@@ -5,6 +5,7 @@
 @agent-core
 @phase-1
 @bug
+@BUG-312
 Feature: Measured reasoning survives compacted session restoration
   """
   Real physical request settlement owns cumulative reasoning and billing.

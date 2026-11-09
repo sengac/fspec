@@ -27,6 +27,7 @@ fn changed_settings() -> ProfileDefinition {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn scenario_next_turn_reloads_settings_without_replacing_conversation() -> TestResult {
+    // @step Given a selected model with conversation history and inherited provider settings
     let fixture = Fixture::new()?;
     let identifier = SessionId::new(fixture.create().await?);
     let background = fixture.manager.get_session(&identifier.value)?;
@@ -39,16 +40,27 @@ async fn scenario_next_turn_reloads_settings_without_replacing_conversation() ->
         .ok_or("missing provider extension")? as *const CodexSession;
     let model = inner.provider_manager().selected_model_string();
     let history = serde_json::to_value(&inner.messages)?;
+    // @step When saved provider settings change before the next turn
     let handle: &dyn SessionManagerHandle = fixture.manager.as_ref();
     handle.save_provider_settings("openai", &changed_settings())?;
-    assert_eq!(inner.provider_manager().context_window(), 180_000);
+    assert_eq!(inner.provider_manager().context_window(), Some(180_000));
 
     background.refresh_runtime_settings_for_turn(&mut inner)?;
 
-    assert_eq!(inner.provider_manager().context_window(), 800_000);
-    assert_eq!(inner.provider_manager().max_output_tokens(), 32_000);
+    // @step Then the next turn uses updated settings and cached model limits without changing history or provider identity
+
+    assert_eq!(inner.provider_manager().context_window(), Some(800_000));
+    assert_eq!(inner.provider_manager().max_output_tokens(), Some(32_000));
     assert_eq!(inner.provider_manager().selected_model_string(), model);
-    assert_eq!(serde_json::to_value(&inner.messages)?, history);
+    // BUG-308: history is kept as a prefix; the reload may only append system
+    // reminders (the revision-gated work-unit focus reminder).
+    let messages = serde_json::to_value(&inner.messages)?;
+    let messages = messages.as_array().ok_or("messages array")?;
+    let history = history.as_array().ok_or("history array")?;
+    assert_eq!(&messages[..history.len()], history.as_slice());
+    assert!(messages[history.len()..]
+        .iter()
+        .all(|message| message.to_string().contains("<system-reminder>")));
     assert!(std::ptr::eq(
         inner
             .provider_session
@@ -68,10 +80,10 @@ async fn scenario_next_turn_reloads_settings_without_replacing_conversation() ->
     );
     assert_eq!(loops.enabled, Some(true));
     assert_eq!(loops.window, Some(250));
-    let cached = handle.get_session_model(&identifier);
-    assert_eq!(cached.context_window, 800_000);
-    assert_eq!(cached.max_output_tokens, 32_000);
-    assert_eq!(cached.compaction_threshold, 600_000);
+    let cached = handle.get_session_model(&identifier)?;
+    assert_eq!(cached.context_window, Some(800_000));
+    assert_eq!(cached.max_output_tokens, Some(32_000));
+    assert_eq!(cached.compaction_threshold, Some(600_000));
     Ok(())
 }
 
@@ -87,7 +99,7 @@ async fn scenario_existing_codex_session_reloads_saved_context_window() -> TestR
     let background = fixture.manager.get_session(&identifier.value)?;
     let mut inner = background.inner.lock().await;
     let handle: &dyn SessionManagerHandle = fixture.manager.as_ref();
-    assert_eq!(inner.provider_manager().context_window(), 400_000);
+    assert_eq!(inner.provider_manager().context_window(), Some(400_000));
     handle.save_provider_settings("codex", &changed_settings())?;
 
     background.refresh_runtime_settings_for_turn(&mut inner)?;
@@ -96,11 +108,11 @@ async fn scenario_existing_codex_session_reloads_saved_context_window() -> TestR
         inner.provider_manager().selected_model_string().as_deref(),
         Some("codex/gpt-6.1-sol")
     );
-    assert_eq!(inner.provider_manager().context_window(), 800_000);
-    assert_eq!(inner.provider_manager().max_output_tokens(), 32_000);
-    let cached = handle.get_session_model(&identifier);
-    assert_eq!(cached.context_window, 800_000);
-    assert_eq!(cached.compaction_threshold, 600_000);
+    assert_eq!(inner.provider_manager().context_window(), Some(800_000));
+    assert_eq!(inner.provider_manager().max_output_tokens(), Some(32_000));
+    let cached = handle.get_session_model(&identifier)?;
+    assert_eq!(cached.context_window, Some(800_000));
+    assert_eq!(cached.compaction_threshold, Some(600_000));
     Ok(())
 }
 
@@ -123,8 +135,8 @@ async fn scenario_reloading_preserves_explicit_session_overrides() -> TestResult
 
     background.refresh_runtime_settings_for_turn(&mut inner)?;
 
-    assert_eq!(inner.provider_manager().context_window(), 150_000);
-    assert_eq!(inner.provider_manager().max_output_tokens(), 10_000);
+    assert_eq!(inner.provider_manager().context_window(), Some(150_000));
+    assert_eq!(inner.provider_manager().max_output_tokens(), Some(10_000));
     assert_eq!(
         inner.provider_manager().compaction_threshold_override(),
         Some(("tokens", 100_000))
@@ -132,10 +144,10 @@ async fn scenario_reloading_preserves_explicit_session_overrides() -> TestResult
     assert_eq!(background.get_continue_state(), (false, 23));
     assert_eq!((inner.continue_enabled, inner.continue_budget), (false, 23));
     assert!(inner.preserve_thinking_enabled);
-    let cached = handle.get_session_model(&identifier);
-    assert_eq!(cached.context_window, 150_000);
-    assert_eq!(cached.max_output_tokens, 10_000);
-    assert_eq!(cached.compaction_threshold, 100_000);
+    let cached = handle.get_session_model(&identifier)?;
+    assert_eq!(cached.context_window, Some(150_000));
+    assert_eq!(cached.max_output_tokens, Some(10_000));
+    assert_eq!(cached.compaction_threshold, Some(100_000));
     Ok(())
 }
 
@@ -148,7 +160,7 @@ async fn scenario_invalid_settings_leave_current_session_unchanged() -> TestResu
     let mut inner = background.inner.lock().await;
     let options = inner.provider_manager().runtime_options().clone();
     let handle: &dyn SessionManagerHandle = fixture.manager.as_ref();
-    let cached = handle.get_session_model(&identifier);
+    let cached = handle.get_session_model(&identifier)?;
     std::fs::write(
         fixture.directory.path().join("fspec-config.json"),
         br#"{"providers":{"openai":{"settings":{"contextWindow":0,"autoContinue":11}}}}"#,
@@ -163,11 +175,11 @@ async fn scenario_invalid_settings_leave_current_session_unchanged() -> TestResu
     assert_eq!(inner.provider_manager().runtime_options(), &options);
     assert_eq!(background.get_continue_state(), (true, 7));
     assert_eq!(
-        handle.get_session_model(&identifier).context_window,
+        handle.get_session_model(&identifier)?.context_window,
         cached.context_window
     );
     assert_eq!(
-        handle.get_session_model(&identifier).compaction_threshold,
+        handle.get_session_model(&identifier)?.compaction_threshold,
         cached.compaction_threshold
     );
     Ok(())

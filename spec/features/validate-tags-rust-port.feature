@@ -115,3 +115,61 @@ Feature: Port validate-tags command to Rust
     When I dispatch the validate-tags command against that project root
     Then the result marks that file valid
     Then the result reports invalidCount=0
+
+  Scenario: Report multiple violations in one file
+    Given spec/tags.json registers only the component tag @comp and the feature-group tag @grp
+    And spec/features/multi.feature carries the feature-level tags '@comp @grp @unknown1 @unknown2'
+    When I dispatch the validate-tags command with file set to 'spec/features/multi.feature'
+    Then the result reports validCount=0 and invalidCount=1
+    And the file errors include the message 'Unregistered tag: @unknown1 in spec/features/multi.feature'
+    And the file errors include the message 'Unregistered tag: @unknown2 in spec/features/multi.feature'
+
+  Scenario: Validate scenario-level tags are registered
+    Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke and @regression as technical tags
+    And spec/features/login.feature carries '@cli @authentication' at feature level and '@smoke @regression' on its scenario
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=1 and invalidCount=0
+    And the file has no errors
+
+  Scenario: Detect unregistered scenario-level tag
+    Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    And spec/features/login.feature carries '@cli @authentication' at feature level and '@smoke @unregistered-scenario-tag' on its scenario
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=0 and invalidCount=1
+    And the file errors are exactly 'Unregistered tag: @unregistered-scenario-tag in spec/features/login.feature'
+
+  Scenario: Validate both feature-level and scenario-level tags
+    Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke, @regression and @edge-case as technical tags
+    And spec/features/login.feature carries '@cli @authentication' at feature level, '@smoke' on its first scenario and '@regression @edge-case' on its second
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=1 and invalidCount=0
+    And the file has no errors
+
+  Scenario: Detect mix of registered and unregistered scenario tags
+    Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    And spec/features/login.feature carries '@cli @authentication' at feature level, '@smoke' on its first scenario and '@unregistered-tag1 @unregistered-tag2' on its second
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=0 and invalidCount=1
+    And the file errors are exactly the unregistered-tag messages for @unregistered-tag1 and @unregistered-tag2
+
+  Scenario: Validate scenario tags do not require component/feature-group tags
+    Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    And spec/features/login.feature carries '@cli @authentication' at feature level and only '@smoke' on its scenario
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=1 and invalidCount=0
+    And no error reports a missing required component or feature-group tag
+
+  Scenario: Validate work unit tag exists in work-units.json
+    Given spec/work-units.json contains the work unit AUTH-001
+    And spec/features/auth.feature carries the feature-level tags '@AUTH-001 @comp @grp'
+    When I dispatch the validate-tags command with file set to 'spec/features/auth.feature'
+    Then the result reports validCount=1 and invalidCount=0
+    And the file has no errors
+
+  Scenario: Distinguish work unit tags from regular tags
+    Given spec/work-units.json contains the work unit AUTH-001
+    And spec/tags.json registers @cli as a component tag and @authentication as a feature-group tag but not @AUTH-001
+    And spec/features/login.feature carries the feature-level tags '@AUTH-001 @cli @authentication'
+    When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    Then the result reports validCount=1 and invalidCount=0
+    And the file has no errors

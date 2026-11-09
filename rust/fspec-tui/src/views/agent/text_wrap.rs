@@ -17,7 +17,32 @@
 //! and their column padding intact instead of word-collapsing them;
 //! only over-width paragraphs are word-wrapped.
 
+use ratatui::style::Style;
+use ratatui::text::{Line, Span};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+
+/// TUI-130: how a wrapped row ends in copied text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RowEnd {
+    /// The row ends a line of the text (a `\n`, or the end of the text).
+    Break,
+    /// The wrap split the line here. `space` is true when the wrap removed
+    /// the space between two words at this point, false when it cut inside
+    /// a token (a long URL) or kept the space on the row.
+    Wrap { space: bool },
+}
+
+impl RowEnd {
+    /// What joins this row to the next one in copied text: a line break,
+    /// the removed space, or nothing.
+    pub fn joiner(self) -> &'static str {
+        match self {
+            RowEnd::Break => "\n",
+            RowEnd::Wrap { space: true } => " ",
+            RowEnd::Wrap { space: false } => "",
+        }
+    }
+}
 
 /// Wrap `text` so every returned `String` has at most `width` chars.
 ///
@@ -27,11 +52,28 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 ///   terminating on degenerate viewports.
 /// - Trailing whitespace at the end of an emitted row is trimmed.
 pub fn wrap_to_width(text: &str, width: usize) -> Vec<String> {
+    wrap_rows(text, width)
+        .into_iter()
+        .map(|(row, _)| row)
+        .collect()
+}
+
+/// TUI-130: [`wrap_to_width`] with how each row ends, so a copy can join
+/// the rows the wrap split without inserting line breaks.
+pub fn wrap_rows(text: &str, width: usize) -> Vec<(String, RowEnd)> {
+    wrap_rows_hanging(text, width, width)
+}
+
+/// TUI-130: [`wrap_rows`] with a narrower first row (`first_width`), for a
+/// row that starts after a prefix such as `● ` so it is never cut off.
+pub fn wrap_rows_hanging(text: &str, first_width: usize, width: usize) -> Vec<(String, RowEnd)> {
     let width = width.max(1);
-    let mut out: Vec<String> = Vec::new();
+    let first_width = first_width.clamp(1, width);
+    let mut out: Vec<(String, RowEnd)> = Vec::new();
     for paragraph in text.split('\n') {
+        let limit = if out.is_empty() { first_width } else { width };
         if paragraph.is_empty() {
-            out.push(String::new());
+            out.push((String::new(), RowEnd::Break));
             continue;
         }
         // Parity with `textWrap.ts` (lines 104-109): a paragraph whose
@@ -39,50 +81,80 @@ pub fn wrap_to_width(text: &str, width: usize) -> Vec<String> {
         // internal whitespace. This keeps rendered table grid rows (column
         // padding) intact instead of word-collapsing them. Only over-width
         // paragraphs are wrapped.
-        if paragraph.width() <= width {
-            out.push(paragraph.to_string());
+        if paragraph.width() <= limit {
+            out.push((paragraph.to_string(), RowEnd::Break));
             continue;
         }
-        wrap_paragraph(paragraph, width, &mut out);
+        let mut rows = Vec::new();
+        let first = if out.is_empty() { first_width } else { width };
+        wrap_paragraph(paragraph, first, width, &mut rows);
+        out.extend(row_ends(paragraph, rows));
     }
     out
 }
 
+/// How each row of one wrapped paragraph ends: the rows hold the
+/// paragraph's words joined by single spaces (long words sliced), so walking
+/// them over that text tells where the wrap removed a space.
+fn row_ends(paragraph: &str, rows: Vec<String>) -> Vec<(String, RowEnd)> {
+    let words = paragraph.split_whitespace().collect::<Vec<_>>().join(" ");
+    let mut rest = words.as_str();
+    let last = rows.len().saturating_sub(1);
+    rows.into_iter()
+        .enumerate()
+        .map(|(i, row)| {
+            rest = rest.strip_prefix(row.as_str()).unwrap_or(rest);
+            if i == last {
+                return (row, RowEnd::Break);
+            }
+            let space = match rest.strip_prefix(' ') {
+                Some(after) => {
+                    rest = after;
+                    true
+                }
+                None => false,
+            };
+            (row, RowEnd::Wrap { space })
+        })
+        .collect()
+}
+
 /// Wrap a single newline-free paragraph by word-splitting, breaking
-/// any token wider than `width` into successive `width`-char slices.
+/// any token wider than the row into successive row-wide slices. The
+/// paragraph's first row is `first_width` wide, every later row `width`.
 ///
 /// Preserves the separating space between the last fitting word and a
 /// following long token so callers can reconstruct the original body
 /// by concatenating every emitted row (byte-equal round-trip).
-fn wrap_paragraph(paragraph: &str, width: usize, out: &mut Vec<String>) {
+fn wrap_paragraph(paragraph: &str, first_width: usize, width: usize, out: &mut Vec<String>) {
+    let limit = |out: &Vec<String>| if out.is_empty() { first_width } else { width };
     let mut current = String::new();
     let mut current_len: usize = 0;
 
     for word in paragraph.split_whitespace() {
         let word_len = word.width();
-        if word_len > width {
+        if word_len > width || (current.is_empty() && word_len > limit(out)) {
             // Preserve the inter-word space at the end of the
             // current line when room allows — this keeps the
             // concatenation of all emitted rows byte-equal to the
             // original paragraph for inputs of the form
             // "<prefix> <long-token>".
             if !current.is_empty() {
-                if current_len < width {
+                if current_len < limit(out) {
                     current.push(' ');
                 }
                 out.push(std::mem::take(&mut current));
                 current_len = 0;
             }
-            // Slice the long word into `width`-display-width rows.
+            // Slice the long word into row-wide display-width rows.
             let mut buf = String::new();
             let mut buf_width: usize = 0;
             for ch in word.chars() {
                 let ch_width = ch.width().unwrap_or(1);
                 buf.push(ch);
                 buf_width += ch_width;
-                if buf_width >= width {
-                    out.push(buf.clone());
-                    buf.clear();
+                if buf_width >= limit(out) {
+                    out.push(std::mem::take(&mut buf));
                     buf_width = 0;
                 }
             }
@@ -96,7 +168,7 @@ fn wrap_paragraph(paragraph: &str, width: usize, out: &mut Vec<String>) {
         // Will the next word (plus a separating space, if needed) fit?
         let needs_space = !current.is_empty();
         let projected = current_len + if needs_space { 1 } else { 0 } + word_len;
-        if projected <= width {
+        if projected <= limit(out) {
             if needs_space {
                 current.push(' ');
                 current_len += 1;
@@ -112,6 +184,17 @@ fn wrap_paragraph(paragraph: &str, width: usize, out: &mut Vec<String>) {
     if !current.is_empty() {
         out.push(current);
     }
+}
+
+/// TUI-126: `text` wrapped to `width` columns ([`wrap_to_width`]) as styled
+/// lines, so a renderer shows every character at any width instead of
+/// cutting the text off at the right edge. Shared by every view and dialog
+/// that shows long text (TUI-131).
+pub fn wrapped_lines(text: &str, width: usize, style: Style) -> Vec<Line<'static>> {
+    wrap_to_width(text, width)
+        .into_iter()
+        .map(|row| Line::from(Span::styled(row, style)))
+        .collect()
 }
 
 #[cfg(test)]

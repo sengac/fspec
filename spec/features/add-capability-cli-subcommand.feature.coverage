@@ -87,7 +87,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -180,7 +182,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -273,7 +277,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -366,7 +372,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -377,7 +385,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_capability.rs",
-          "lines": "229-252",
+          "lines": "229-259",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_capability.rs",
@@ -459,7 +467,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -470,7 +480,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_capability.rs",
-          "lines": "254-307",
+          "lines": "265-318",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_capability.rs",
@@ -552,7 +562,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -563,7 +575,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_capability.rs",
-          "lines": "309-330",
+          "lines": "326-350",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_capability.rs",
@@ -645,7 +657,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "//! `add-capability` shell-facing CLI bridge (RPC-173).",
+              "lastLine": "}"
             }
           ]
         }
@@ -662,6 +676,6 @@
     "implFiles": [
       "rust/fspec/src/add_capability.rs"
     ],
-    "totalLinesCovered": 786
+    "totalLinesCovered": 796
   }
 }

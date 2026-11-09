@@ -67,7 +67,12 @@ fn write_work_units(project_root: &Path, id: &str, status: &str, extra_fields: &
 /// Write spec/features/<name>.feature + <name>.feature.coverage. `feature_body`
 /// is the scenario body of the feature file (tagged @DEP-001); `scenarios_json`
 /// is the raw coverage scenarios array body (without brackets).
-fn write_feature_with_coverage(project_root: &Path, name: &str, feature_body: &str, scenarios_json: &str) {
+fn write_feature_with_coverage(
+    project_root: &Path,
+    name: &str,
+    feature_body: &str,
+    scenarios_json: &str,
+) {
     let dir = project_root.join("spec").join("features");
     fs::create_dir_all(&dir).expect("mkdir features");
     let content = format!("@DEP-001\nFeature: {name}\n\n{feature_body}\n");
@@ -90,10 +95,7 @@ fn failure_text(result: &codelet_fspec_core::DispatchResult) -> String {
     format!(
         "{} {} {}",
         result.error.as_deref().unwrap_or(""),
-        result
-            .system_reminder
-            .as_deref()
-            .unwrap_or(""),
+        result.system_reminder.as_deref().unwrap_or(""),
         result.data.as_str()
     )
 }
@@ -104,14 +106,19 @@ fn done_gate_exempts_scenario_level_deprecated_scenario_without_test_mapping() {
 
     // @step Given a work unit with status "validating" linked to a feature file
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), "DEP-001", "validating", r#""linkedFeatures": ["dep-feature"]"#);
+    write_work_units(
+        tmp.path(),
+        "DEP-001",
+        "validating",
+        r#""linkedFeatures": ["dep-feature"]"#,
+    );
 
     // @step And the feature has one live scenario with test mapping and one scenario tagged @deprecated with no test mapping
     write_feature_with_coverage(
         tmp.path(),
         "dep-feature",
         "  Scenario: Live behavior\n    Given a live precondition\n    When the live action happens\n    Then the live outcome is observed\n\n  @deprecated\n  Scenario: Stale behavior\n    Given a stale precondition\n    When the stale action happens\n    Then the stale outcome is observed",
-        r#"{ "name": "Live behavior", "testMappings": [{ "file": "t.rs", "lines": "1-2", "implMappings": [{ "file": "i.rs", "lines": "3-4" }] }] },
+        r#"{ "name": "Live behavior", "testMappings": [{ "file": "t.rs", "lines": "1-3", "implMappings": [{ "file": "i.rs", "lines": "1", "firstLine": "fn live() {}", "lastLine": "fn live() {}" }] }] },
            { "name": "Stale behavior", "testMappings": [] }"#,
     );
     fs::write(tmp.path().join("t.rs"), "// @step Given a live precondition\n// @step When the live action happens\n// @step Then the live outcome is observed\n").expect("write test");
@@ -146,7 +153,12 @@ fn done_gate_still_blocks_on_an_uncovered_live_scenario() {
 
     // @step Given a work unit with status "validating" linked to a feature file
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), "DEP-001", "validating", r#""linkedFeatures": ["dep-feature"]"#);
+    write_work_units(
+        tmp.path(),
+        "DEP-001",
+        "validating",
+        r#""linkedFeatures": ["dep-feature"]"#,
+    );
 
     // @step And the feature has one untagged scenario with no test mapping
     write_feature_with_coverage(
@@ -163,7 +175,10 @@ fn done_gate_still_blocks_on_an_uncovered_live_scenario() {
     ));
 
     // @step Then the transition fails
-    assert!(!result.success, "uncovered live scenario must block done; got {result:?}");
+    assert!(
+        !result.success,
+        "uncovered live scenario must block done; got {result:?}"
+    );
 
     // @step And the error lists the untagged scenario as uncovered
     let text = failure_text(&result);
@@ -179,14 +194,19 @@ fn validating_gate_exempts_deprecated_scenario_without_implementation_mapping() 
 
     // @step Given a work unit with status "implementing" linked to a feature file
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), "DEP-001", "implementing", r#""linkedFeatures": ["dep-feature"]"#);
+    write_work_units(
+        tmp.path(),
+        "DEP-001",
+        "implementing",
+        r#""linkedFeatures": ["dep-feature"]"#,
+    );
 
     // @step And the feature has one scenario tagged @deprecated whose test mapping has no impl mapping
     write_feature_with_coverage(
         tmp.path(),
         "dep-feature",
         "  @deprecated\n  Scenario: Stale behavior\n    Given a stale precondition\n    When the stale action happens\n    Then the stale outcome is observed",
-        r#"{ "name": "Stale behavior", "testMappings": [{ "file": "t.rs", "lines": "1-2", "implMappings": [] }] }"#,
+        r#"{ "name": "Stale behavior", "testMappings": [{ "file": "t.rs", "lines": "1-3", "implMappings": [] }] }"#,
     );
     fs::write(tmp.path().join("t.rs"), "// @step Given a stale precondition\n// @step When the stale action happens\n// @step Then the stale outcome is observed\n").expect("write test");
 
@@ -212,7 +232,12 @@ fn feature_level_deprecated_deprecates_every_scenario_in_the_feature() {
 
     // @step Given a work unit with status "validating" linked to a feature file tagged @deprecated on the Feature header
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), "DEP-001", "validating", r#""linkedFeatures": ["dep-feature"]"#);
+    write_work_units(
+        tmp.path(),
+        "DEP-001",
+        "validating",
+        r#""linkedFeatures": ["dep-feature"]"#,
+    );
 
     // @step And the feature has three scenarios, none with test mappings
     let dir = tmp.path().join("spec").join("features");
@@ -242,5 +267,8 @@ fn feature_level_deprecated_deprecates_every_scenario_in_the_feature() {
 
     // @step And no scenario in the feature is reported as uncovered
     let text = failure_text(&result);
-    assert!(!text.contains("uncovered"), "no scenario may be reported uncovered; got: {text}");
+    assert!(
+        !text.contains("uncovered"),
+        "no scenario may be reported uncovered; got: {text}"
+    );
 }

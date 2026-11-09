@@ -10,7 +10,7 @@ use super::super::{
     CommonPatternEntry,
 };
 
-const EX1_OUTPUT: &str = "Found 3 orphaned work unit(s):\n\n1. MISC-001 - Update documentation (backlog)\n   ⚠ No epic or dependency relationships\n   Suggested actions:\n     • Assign epic\n     • Add relationship\n     • Delete\n\n2. REFAC-003 - Refactor auth module (implementing)\n   ⚠ No epic or dependency relationships\n   Suggested actions:\n     • Assign epic\n     • Add relationship\n     • Delete\n\nTo fix orphaned work units:\n  fspec update-work-unit <id> --epic=<epic-name>\n  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)\n  fspec delete-work-unit <id>";
+const EX1_OUTPUT: &str = "Found 3 orphaned work unit(s):\n\n1. MISC-001 - Update documentation (backlog)\n   ⚠ No epic or dependency relationships\n   Suggested actions:\n     • Assign epic\n     • Add relationship\n     • Delete\n\n2. REFAC-003 - Refactor auth module (implementing)\n   ⚠ No epic or dependency relationships\n   Suggested actions:\n     • Assign epic\n     • Add relationship\n     • Delete\n\nTo fix orphaned work units:\n  fspec update-work-unit <workUnitId> --epic=<epic-name>\n  fspec add-dependency <workUnitId> --depends-on=<workUnitId>  (or --blocks, --relates-to)\n  fspec delete-work-unit <workUnitId>";
 
 const EX2_OUTPUT: &str = "Found 1 orphaned work unit(s):\n\n1. MISC-001 - Update documentation (backlog)\n   ⚠ No epic or dependency relationships\n   Suggested actions:\n     • Assign epic\n     • Add relationship\n     • Delete";
 
@@ -56,17 +56,17 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Maintenance Workflow",
         example: "# Weekly cleanup: find orphans\nfspec query-orphans\n\n# Assign epics to valid work\nfspec update-work-unit MISC-001 --epic=documentation\nfspec update-work-unit REFAC-003 --epic=authentication\n\n# Add relationships for cross-cutting work\nfspec add-dependency MISC-001 --relates-to AUTH-001\n\n# Delete invalid work units\nfspec delete-work-unit INVALID-001\n\n# Verify cleanup\nfspec query-orphans",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Bulk Work Unit Validation",
         example: "# After creating multiple work units\nfspec create-story AUTH \"Setup auth\"\nfspec create-story AUTH \"Login flow\"\nfspec create-story AUTH \"Logout flow\"\n\n# Check for orphans\nfspec query-orphans\n\n# Assign epic to all\nfspec update-work-unit AUTH-001 --epic=authentication\nfspec update-work-unit AUTH-002 --epic=authentication\nfspec update-work-unit AUTH-003 --epic=authentication",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "JSON Export for Reporting",
         example: "# Export orphans for dashboard\nfspec query-orphans --output json > orphans.json\n\n# Count orphans by status\njq '[.orphans[].status] | group_by(.) | map({status: .[0], count: length})' orphans.json",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -120,7 +120,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: &["spec/work-units.json exists with work units"],
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Run orphan detection: fspec query-orphans → 2. Review orphaned work units → 3. Assign epic OR add relationship: fspec update-work-unit <id> --epic=<epic> OR fspec add-dependency <id> --relates-to=<other-id> → 4. Delete if invalid: fspec delete-work-unit <id> → 5. Verify: fspec query-orphans",
+        "1. Run orphan detection: fspec query-orphans → 2. Review orphaned work units → 3. Assign epic OR add relationship: fspec update-work-unit <workUnitId> --epic=<epic> OR fspec add-dependency <workUnitId> --relates-to=<workUnitId> → 4. Delete if invalid: fspec delete-work-unit <workUnitId> → 5. Verify: fspec query-orphans",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

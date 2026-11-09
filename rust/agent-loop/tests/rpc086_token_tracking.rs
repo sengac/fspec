@@ -27,7 +27,6 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
 use std::path::PathBuf;
 
 // ===========================================================================
@@ -42,7 +41,8 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 fn read_workspace_source(rel: &str) -> String {
@@ -52,7 +52,8 @@ fn read_workspace_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract a balanced-brace block beginning at `start_marker` inside
@@ -140,7 +141,7 @@ fn background_output_tokens_arm_updates_session_and_emits_token_update() {
          `if let Some(r) = info.reasoning_tokens` guard; arm was:\n{arm}"
     );
 
-    // @step And the arm body constructs a `TokenTracker { ... }` literal populating all 8 fields
+    // @step And the arm body constructs a `TokenTracker { ... }` literal populating `input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`, `tokens_per_second`, `cumulative_billed_input`, `cumulative_billed_output`, and `reasoning_tokens`
     assert!(
         arm.contains("TokenTracker {"),
         "Tokens arm must construct a `TokenTracker {{ ... }}` literal; arm was:\n{arm}"
@@ -232,14 +233,16 @@ async fn background_session_round_trips_update_tokens_and_get_tokens() {
     use uuid::Uuid;
 
     // Hermetic data dir + stub provider, mirroring rpc082_role_injection.
-    let data_dir = tempfile::tempdir().expect("data dir tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    let data_dir =
+        codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    codelet_common::set_data_directory(data_dir.clone()).expect("set the data directory");
 
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
 
     codelet_providers::stub_provider::register_stub_provider();
-    manager.set_default_model("stub/canned");
+    assert_eq!(manager.set_default_model("stub/canned"), Ok(()));
 
     let tmp = tempfile::tempdir().expect("tempdir");
     let project = tmp
@@ -314,7 +317,9 @@ async fn background_session_round_trips_update_tokens_and_get_tokens() {
 #[test]
 fn stream_chunk_declares_token_and_context_fill_variants_and_constructors() {
     // @step Given the source of `rust/rpc-types/src/lib.rs`
-    let src = read_workspace_source("rust/rpc-types/src/lib.rs");
+    let src = read_tree(
+        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../rpc-types/src/lib.rs"),
+    );
 
     // @step When I inspect the `StreamChunk` enum
     assert!(
@@ -448,4 +453,11 @@ fn token_info_and_context_fill_info_declare_expected_fields_and_stream_event_var
         stream_event_block.contains("ContextFill(ContextFillInfo)"),
         "StreamEvent must declare `ContextFill(ContextFillInfo)`; enum was:\n{stream_event_block}"
     );
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> String {
+    codelet_test_helpers::source_composition::read_module_tree(path)
+        .unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
 }

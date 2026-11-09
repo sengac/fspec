@@ -49,16 +49,6 @@ fn read_source(file: &str) -> String {
     fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
-fn read_workspace_source(rel: &str) -> String {
-    // CARGO_MANIFEST_DIR = rust/agent-loop; walk up two parents to repo root.
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .map(|p| p.join(rel))
-        .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
-}
-
 /// Extract the body of the `run_with_provider!` macro_rules! macro from
 /// `dispatch.rs`. Returns the substring spanning the outer `{ ... }`.
 fn extract_run_with_provider_macro_body(src: &str) -> &str {
@@ -66,9 +56,14 @@ fn extract_run_with_provider_macro_body(src: &str) -> &str {
         .find("macro_rules! run_with_provider")
         .expect("dispatch.rs must define `macro_rules! run_with_provider`");
     let tail = &src[macro_start..];
-    let arrow = tail
-        .find("=> {")
-        .expect("run_with_provider! must have a single `=> {` arm");
+    // The macro has several arms (provider lookup, then streaming); the
+    // streaming arm is the one whose body calls the stream entry point.
+    let stream_call = tail
+        .find("run_agent_stream_with_images(")
+        .expect("run_with_provider! must have a streaming arm");
+    let arrow = tail[..stream_call]
+        .rfind("=> {")
+        .expect("the streaming call must sit inside a `=> {` arm");
     let body_start = macro_start + arrow + "=> ".len();
     let bytes = src.as_bytes();
     let mut depth: i32 = 0;
@@ -96,10 +91,12 @@ fn extract_run_with_provider_macro_body(src: &str) -> &str {
 /// Extract the inlined `"openai" => { ... }` match arm body from
 /// `agent_loop.rs`.
 fn extract_openai_match_arm(src: &str) -> &str {
+    // The openai arm's body now lives in agent_loop/provider_openai.rs as
+    // `run_openai_turn`, which the "openai" match arm delegates to.
     let arm_start = src
-        .find("\"openai\" => {")
-        .expect("agent_loop.rs must have an inlined `\"openai\" => {` arm");
-    let body_start = arm_start + "\"openai\" => ".len();
+        .find("fn run_openai_turn(")
+        .expect("agent_loop must define run_openai_turn for the openai arm");
+    let body_start = arm_start;
     let bytes = src.as_bytes();
     let mut depth: i32 = 0;
     let mut i = body_start;
@@ -126,14 +123,12 @@ fn extract_openai_match_arm(src: &str) -> &str {
 /// Extract the custom-provider `_ => { ... }` fallthrough arm body
 /// surrounding `CustomProvider::create_rig_agent`.
 fn extract_custom_provider_fallthrough_arm(src: &str) -> &str {
-    let create_call = src
-        .find("CustomProvider::create_rig_agent")
-        .expect("agent_loop.rs must call CustomProvider::create_rig_agent");
-    let prefix = &src[..create_call];
-    let arm_marker = prefix
-        .rfind("_ => {")
-        .expect("CustomProvider::create_rig_agent must live inside a `_ => {` arm");
-    let body_start = arm_marker + "_ => ".len();
+    // The custom-provider fallthrough now lives in agent_loop/provider_custom.rs
+    // as `run_custom_turn`, which the `_ =>` arm delegates to.
+    let arm_marker = src
+        .find("fn run_custom_turn(")
+        .expect("agent_loop must define run_custom_turn for the custom fallthrough");
+    let body_start = arm_marker;
     let bytes = src.as_bytes();
     let mut depth: i32 = 0;
     let mut i = body_start;
@@ -291,7 +286,7 @@ fn run_with_provider_macro_streams_via_run_agent_stream_with_images() {
 #[test]
 fn openai_inlined_arm_calls_run_agent_stream_with_images() {
     // @step Given the source file rust/agent-loop/src/agent_loop.rs
-    let src = read_source("agent_loop.rs");
+    let src = read_tree(&agent_loop_src("agent_loop.rs"));
 
     // @step When I locate the "openai" match arm body
     let arm = extract_openai_match_arm(&src);
@@ -344,14 +339,15 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
     // sub-agent handler registration and terminal-overflow recovery
     // wiring added ~70 lines to the earlier part of agent_loop.rs,
     // pushing the call to ~line 1120. The invariant is unchanged.
-    let abs_offset = src
-        .find("codelet_cli::interactive::run_agent_stream_with_images")
-        .expect("agent_loop.rs must contain at least one run_agent_stream_with_images call");
-    let line = line_number_of(&src, abs_offset);
+    //
+    // REFAC-021 follow-up: the OpenAI arm body moved to
+    // agent_loop/provider_openai.rs (`run_openai_turn`), so absolute line
+    // windows no longer mean anything; assert the structural invariant
+    // instead — the call lives inside the OpenAI turn body.
+    let openai_body = extract_openai_match_arm(&src);
     assert!(
-        (950..=1180).contains(&line),
-        "first run_agent_stream_with_images call (OpenAI inlined arm) must \
-         live between lines 950 and 1180; got line {line}"
+        openai_body.contains("codelet_cli::interactive::run_agent_stream_with_images"),
+        "the OpenAI turn body must contain the run_agent_stream_with_images call"
     );
 }
 
@@ -363,7 +359,7 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
 #[test]
 fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
     // @step Given the source file rust/agent-loop/src/agent_loop.rs
-    let src = read_source("agent_loop.rs");
+    let src = read_tree(&agent_loop_src("agent_loop.rs"));
 
     // @step When I locate the `_ =>` fallthrough match arm body
     let arm = extract_custom_provider_fallthrough_arm(&src);
@@ -441,7 +437,7 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
 #[test]
 fn agent_loop_body_does_not_use_complete_with_tools() {
     // @step Given the source file rust/agent-loop/src/agent_loop.rs
-    let src = read_source("agent_loop.rs");
+    let src = read_tree(&agent_loop_src("agent_loop.rs"));
 
     // @step When I scan non-comment, non-test lines of the file
     // We process line-by-line and:
@@ -510,7 +506,9 @@ fn agent_loop_body_does_not_use_complete_with_tools() {
 #[test]
 fn stream_chunk_enum_has_at_least_nineteen_variants() {
     // @step Given the source file rust/rpc-types/src/lib.rs
-    let src = read_workspace_source("rust/rpc-types/src/lib.rs");
+    let src = read_tree(
+        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../rpc-types/src/lib.rs"),
+    );
 
     // @step When I locate the `pub enum StreamChunk` declaration
     let enum_start = src
@@ -729,4 +727,11 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
     // at the top of this function proves the re-export. If a future
     // refactor moves the function under a private submodule, this `use`
     // line will fail to resolve at compile time.
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> String {
+    codelet_test_helpers::source_composition::read_module_tree(path)
+        .unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
 }

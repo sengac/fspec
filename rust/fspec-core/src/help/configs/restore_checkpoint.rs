@@ -5,9 +5,9 @@
 //! piped to non-TTY (fixture:
 //! `rust/fspec/tests/fixtures/help/restore-checkpoint.txt`).
 //!
-//! Inherits the same three TS quirks documented on `list_checkpoints::CONFIG`
-//! (comma-joined typical_workflow, doubled `fspec ` related-command prefix,
-//! `Fix: undefined`).
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
@@ -45,15 +45,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        fix: "undefined",
+        fix: "Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'",
     },
     CommonError {
         error: "Checkpoint 'baseline' not found for AUTH-001",
-        fix: "undefined",
+        fix: "List checkpoints with 'fspec list-checkpoints AUTH-001' or create checkpoint with 'fspec checkpoint AUTH-001 baseline'",
     },
     CommonError {
         error: "Merge conflicts detected",
-        fix: "undefined",
+        fix: "This is expected when changes conflict. AI: Use Read and Edit tools to resolve conflicts. Run tests after resolving.",
     },
 ];
 
@@ -74,9 +74,9 @@ const PREREQUISITES: &[&str] = &[
 
 // TS quirk #2: doubled `fspec ` prefix.
 const RELATED: &[&str] = &[
-    "fspec checkpoint - Create manual checkpoint",
-    "fspec list-checkpoints - List all checkpoints",
-    "fspec cleanup-checkpoints - Delete old checkpoints",
+    "checkpoint - Create manual checkpoint",
+    "list-checkpoints - List all checkpoints",
+    "cleanup-checkpoints - Delete old checkpoints",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
@@ -95,7 +95,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     common_patterns: &[],
     // TS quirk #1: comma-joined Array.toString()
     typical_workflow: Some(
-        "Create baseline: fspec checkpoint AUTH-001 baseline,Try approach A: Make experimental changes,Doesn't work: fspec restore-checkpoint AUTH-001 baseline,Try approach B: Make different changes,Works: Keep approach B, checkpoint now exists for future experiments",
+        "Create baseline: fspec checkpoint AUTH-001 baseline. Try approach A: Make experimental changes. Doesn't work: fspec restore-checkpoint AUTH-001 baseline. Try approach B: Make different changes. Works: Keep approach B, checkpoint now exists for future experiments",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

@@ -2,6 +2,7 @@
 @providers
 @done
 @LIMITS-004
+@BUG-309
 Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
   """
   ProviderManager must resolve context_window() and max_output_tokens() through
@@ -39,19 +40,19 @@ Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
     When context_window() is called
     Then the result should be 128000
 
-  Scenario: Codex with no registry data returns provider default
+  Scenario: Codex with no registry data reports an unavailable context window
     Given a ProviderManager configured for the Codex provider
     And no registry context window is set
     And no user context window override is set
     When context_window() is called
-    Then the result should be 272000
+    Then the result is unavailable
 
   Scenario: Claude user override is retained without a blanket ceiling
     Given a ProviderManager configured for the Claude provider
     And the user overrides context window to 500000 via NAPI
-    And the Claude resolver declares max_context_window as 200000
+    And the Claude resolver declares max_context_window as None
     When context_window() is called
-    Then the result should be 200000
+    Then the result should be 500000
 
   Scenario: User override takes priority over registry value
     Given a ProviderManager configured for the OpenAI provider
@@ -64,13 +65,13 @@ Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
     Given a ProviderManager configured for the Claude provider
     And select_model stores a registry context window of 1000000
     When raw_model_context_window() is called for sub-agent propagation
-    Then the result should be 200000
+    Then the result should be 1000000
     And it should equal the value from context_window()
 
-  Scenario: OpenAI env var fallback when no registry data
-    Given a ProviderManager configured for the OpenAI provider
+  Scenario: OpenAI env var override when no registry data
+    Given the OPENAI_CONTEXT_WINDOW environment variable is set to 256000
+    And a ProviderManager configured for the OpenAI provider
     And no registry context window is set
     And no user context window override is set
-    And the OPENAI_CONTEXT_WINDOW environment variable is set to 256000
     When context_window() is called
     Then the result should be 256000

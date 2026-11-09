@@ -60,12 +60,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let (foundation_path, file_name) = if args.draft {
         (
-            project_root.join("spec").join("foundation.json.draft"),
+            crate::io::spec_paths::foundation_draft(project_root)?,
             "foundation.json.draft",
         )
     } else {
         (
-            project_root.join("spec").join("foundation.json"),
+            crate::io::spec_paths::foundation(project_root)?,
             "foundation.json",
         )
     };

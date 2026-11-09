@@ -6,7 +6,6 @@ use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
 use codelet_test_helpers::setup_temp_directory;
 use std::sync::{Arc, OnceLock};
-use std::time::Duration;
 use uuid::Uuid;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -24,11 +23,12 @@ fn fixture() -> Result<(tempfile::TempDir, Arc<SessionManager>), Box<dyn std::er
         cache.join("models.json"),
         include_str!("fixtures/rpc422_models.json"),
     )?;
-    let _ = codelet_common::set_data_directory(data.path().to_path_buf());
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(data.path().to_path_buf())?;
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
     let project = setup_temp_directory()?;
     write_cards(project.path(), "testing", true)?;
-    Ok((project, SessionManager::new_arc()))
+    Ok((project, SessionManager::new()))
 }
 
 fn write_cards(project: &std::path::Path, status: &str, include_second: bool) -> TestResult {
@@ -70,7 +70,7 @@ async fn scenario_session_focus_transitions_are_ordered_isolated_and_project_val
         Some("FOCUS-001".into()),
         Some("bound".into()),
         Some("testing".into()),
-    );
+    )?;
     manager.set_session_focus(&first, None, "setup")?;
     *session
         .worktree_path
@@ -148,7 +148,7 @@ async fn scenario_busy_session_reminders_reconcile_the_latest_focus_without_dead
     drop(guard);
 
     // @step And the next environment reminder reflects the latest cleared focus only
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             let inner = session.inner.lock().await;
             let text = serde_json::to_string(&inner.messages)?;
@@ -181,7 +181,7 @@ async fn scenario_focus_restore_preserves_history_and_reconciles_missing_or_comp
         Some("FOCUS-001".into()),
         Some("Current title".into()),
         Some("testing".into()),
-    );
+    )?;
     manager.set_session_focus(&cleared, None, "tool")?;
     let completed_project = setup_temp_directory()?;
     write_cards(completed_project.path(), "testing", true)?;
@@ -212,7 +212,7 @@ async fn scenario_focus_restore_preserves_history_and_reconciles_missing_or_comp
     assert!(writer.join().map_err(|_| "message writer failed")?.is_ok());
 
     // @step When the real session manager restores their manifests
-    let restored = SessionManager::new_arc();
+    let restored = SessionManager::new();
     for id in [&active, &cleared, &legacy, &completed, &deleted] {
         let manifest = load_session(Uuid::parse_str(&id.value)?)?;
         restored

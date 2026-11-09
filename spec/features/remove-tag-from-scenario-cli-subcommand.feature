@@ -1,5 +1,7 @@
 @done
 @RPC-282
+@cli
+@scenario-generation
 Feature: fspec remove-tag-from-scenario CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_tag_from_scenario.rs — clap-derived struct mirroring the

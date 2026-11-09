@@ -48,7 +48,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -102,7 +104,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -156,7 +160,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -210,7 +216,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -264,7 +272,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -318,7 +328,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }
@@ -372,7 +384,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "let msg = envelope"
             }
           ]
         }

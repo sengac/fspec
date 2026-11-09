@@ -9,13 +9,12 @@
 //! `visible_providers().len()` — top-level providers only) and PASS once the
 //! fix bounds them by `nav_items.len()` when nav_items is populated.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::{
     DetailSub, NavItemKind, OAuthMethod, ProviderDisplayInfo, ProviderSettingsMode,
     ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -85,11 +84,15 @@ fn pinfo(id: &str, ctype: &str) -> ProviderCredentialInfo {
 }
 
 /// Index of the openai provider header row in nav_items.
-fn provider_row_index(view: &ProviderSettingsView, id: &str) -> usize {
-    view.nav_items
+fn provider_row_index(
+    view: &ProviderSettingsView,
+    id: &str,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|n| n.provider_id == id && matches!(n.kind, NavItemKind::Provider { .. }))
-        .expect("provider row must exist in nav_items")
+        .or_fail("provider row must exist in nav_items")?)
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -97,7 +100,7 @@ fn provider_row_index(view: &ProviderSettingsView, id: &str) -> usize {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn down_from_expanded_provider_lands_on_first_child_row() {
+fn down_from_expanded_provider_lands_on_first_child_row() -> TestResult {
     // @step Given a provider settings view with an expanded openai provider that has profiles
     let mut view = ProviderSettingsView::new();
     view.set_visible_rows(18);
@@ -111,7 +114,7 @@ fn down_from_expanded_provider_lands_on_first_child_row() {
     );
 
     // @step And the cursor is on the openai provider row
-    let provider_idx = provider_row_index(&view, "openai");
+    let provider_idx = provider_row_index(&view, "openai")?;
     view.selected_index = provider_idx;
 
     // @step When the user presses Down
@@ -127,12 +130,13 @@ fn down_from_expanded_provider_lands_on_first_child_row() {
     // @step And the focused nav item belongs to the openai provider child block
     let focused = view
         .focused_nav_item()
-        .expect("focused nav item must exist after navigating onto a child row");
+        .or_fail("focused nav item must exist after navigating onto a child row")?;
     assert_eq!(focused.provider_id, "openai");
     assert!(
         !matches!(focused.kind, NavItemKind::Provider { .. }),
         "the landed row must be a child row, not the provider header"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -141,7 +145,7 @@ fn down_from_expanded_provider_lands_on_first_child_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn repeated_down_reaches_child_rows_beyond_viewport_and_scrolls() {
+fn repeated_down_reaches_child_rows_beyond_viewport_and_scrolls() -> TestResult {
     // @step Given a provider settings view with an expanded provider in a nav tree taller than the viewport
     let mut view = ProviderSettingsView::new();
     // Many profiles so the expanded tree is taller than the viewport.
@@ -188,6 +192,7 @@ fn repeated_down_reaches_child_rows_beyond_viewport_and_scrolls() {
         view.scroll_offset,
         view.scroll_offset + viewport
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -195,7 +200,7 @@ fn repeated_down_reaches_child_rows_beyond_viewport_and_scrolls() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_api_key_child_row_opens_edit_api_key_detail() {
+fn enter_on_api_key_child_row_opens_edit_api_key_detail() -> TestResult {
     // @step Given a provider settings view with an expanded provider exposing an api-key child row
     let mut view = ProviderSettingsView::new();
     view.set_visible_rows(18);
@@ -207,7 +212,7 @@ fn enter_on_api_key_child_row_opens_edit_api_key_detail() {
         .nav_items
         .iter()
         .position(|n| matches!(n.kind, NavItemKind::ApiKey))
-        .expect("expanded anthropic must yield an ApiKey child row");
+        .or_fail("expanded anthropic must yield an ApiKey child row")?;
     view.selected_index = api_key_idx;
 
     // @step When the user presses Enter
@@ -222,8 +227,9 @@ fn enter_on_api_key_child_row_opens_edit_api_key_detail() {
                 "Enter on an api-key child row must open EditApiKey, got {sub:?}"
             );
         }
-        other => panic!("expected Detail mode after Enter, got {other:?}"),
+        other => return Err(format!("expected Detail mode after Enter, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -231,7 +237,7 @@ fn enter_on_api_key_child_row_opens_edit_api_key_detail() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn navigation_is_clamped_with_no_wrap_at_tree_boundaries() {
+fn navigation_is_clamped_with_no_wrap_at_tree_boundaries() -> TestResult {
     // @step Given a provider settings view with an expanded provider producing several nav rows
     let mut view = ProviderSettingsView::new();
     view.set_visible_rows(18);
@@ -263,6 +269,7 @@ fn navigation_is_clamped_with_no_wrap_at_tree_boundaries() {
         view.selected_index, 0,
         "Up at the first row must be a clamped no-op (no wrap)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -271,7 +278,7 @@ fn navigation_is_clamped_with_no_wrap_at_tree_boundaries() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_nav_tree_falls_back_to_provider_count_bounds_without_silent_selection() {
+fn empty_nav_tree_falls_back_to_provider_count_bounds_without_silent_selection() -> TestResult {
     // @step Given a provider settings view populated only via the legacy provider list with two providers
     let mut view = ProviderSettingsView::new();
     view.set_visible_rows(18);
@@ -306,4 +313,5 @@ fn empty_nav_tree_falls_back_to_provider_count_bounds_without_silent_selection()
         view.selected_index, 1,
         "Down past the last legacy provider must clamp (no overflow, no silent snap)"
     );
+    Ok(())
 }

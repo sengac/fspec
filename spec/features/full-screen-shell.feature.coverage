@@ -5,42 +5,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
-          "lines": "95-125",
+          "lines": "234-259",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "visible_rows: usize,",
+              "lastLine": "pub(crate) fn render_full_screen_scaffold<F>("
             }
           ]
         }
@@ -51,42 +50,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
-          "lines": "126-157",
+          "lines": "265-291",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "visible_rows: usize,",
+              "lastLine": "pub(crate) fn render_full_screen_scaffold<F>("
             }
           ]
         }
@@ -97,42 +95,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
-          "lines": "158-181",
+          "lines": "297-315",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "visible_rows: usize,",
+              "lastLine": "pub(crate) fn render_full_screen_scaffold<F>("
             }
           ]
         }
@@ -143,18 +140,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
-          "lines": "182-208",
+          "lines": "321-342",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
@@ -173,12 +163,35 @@
                 55,
                 56,
                 57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "pub(crate) fn scaffold_rects(area: Rect, footer_hint: &str) -> ScaffoldRects {",
+              "lastLine": "pub(crate) fn render_full_screen_scaffold<F>("
             }
           ]
         }
@@ -189,18 +202,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
-          "lines": "209-232",
+          "lines": "348-370",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/full_screen_shell.rs",
               "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
@@ -219,12 +225,35 @@
                 55,
                 56,
                 57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "pub(crate) fn scaffold_rects(area: Rect, footer_hint: &str) -> ScaffoldRects {",
+              "lastLine": "pub(crate) fn render_full_screen_scaffold<F>("
             }
           ]
         }
@@ -241,6 +270,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/full_screen_shell.rs"
     ],
-    "totalLinesCovered": 288
+    "totalLinesCovered": 286
   }
 }

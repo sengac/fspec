@@ -199,15 +199,18 @@ impl AgentView {
             return String::new();
         }
         let offset = self.turn_modal_offset;
-        let rows: Vec<String> = spans
-            .iter()
-            .map(|span| {
-                let idx = offset + span.row as usize;
-                let flat = self.turn_modal_rows.get(idx).cloned().unwrap_or_default();
-                slice_chars(&flat, span.start_col, span.end_col)
-            })
-            .collect();
-        rows.join("\n")
+        let mut text = String::new();
+        for (i, span) in spans.iter().enumerate() {
+            let Some((flat, end)) = self.turn_modal_rows.get(offset + span.row as usize) else {
+                continue;
+            };
+            text.push_str(&slice_chars(flat, span.start_col, span.end_col));
+            if i + 1 < spans.len() {
+                // TUI-130: join the rows the wrap split without a break.
+                text.push_str(end.joiner());
+            }
+        }
+        text
     }
 }
 

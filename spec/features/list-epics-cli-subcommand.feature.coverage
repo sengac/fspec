@@ -100,7 +100,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "//! `list-epics` shell-facing CLI bridge (RPC-243).",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +156,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -208,7 +212,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -224,15 +230,15 @@
             {
               "file": "rust/fspec/src/list_epics.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
                 86,
                 87,
-                88,
-                89
-              ]
+                88
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -260,7 +266,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "match list_epics::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -326,7 +334,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! `list-epics` shell-facing CLI bridge (RPC-243).",
+              "lastLine": ""
             }
           ]
         }
@@ -380,7 +390,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -392,48 +404,7 @@
         {
           "file": "rust/fspec/tests/cli_list_epics.rs",
           "lines": "451-478",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/list_epics.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -446,9 +417,8 @@
       "rust/fspec/tests/cli_list_epics.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/list_epics.rs",
-      "rust/fspec-core/src/help/configs/list_epics.rs"
+      "rust/fspec/src/list_epics.rs"
     ],
-    "totalLinesCovered": 683
+    "totalLinesCovered": 646
   }
 }

@@ -139,11 +139,15 @@ pub fn apply_snapshot_to_main(
                 && base.is_executable(path) != worktree.is_executable(path));
 
         if is_changed {
-            // Preserve the executable bit: the worktree's bit wins when
-            // present in either snapshot (an unchanged 100755 file from
-            // the base tree must stay 100755 in main).
-            let executable = worktree.is_executable(path) || base.is_executable(path);
-            write_file_with_mode(main_workdir, path, worktree_content, executable)?;
+            // The worktree's executable bit is authoritative for a
+            // changed file, so a session's chmod -x lands in main too
+            // (WT-013); unchanged files are never rewritten.
+            write_file_with_mode(
+                main_workdir,
+                path,
+                worktree_content,
+                worktree.is_executable(path),
+            )?;
         }
     }
 

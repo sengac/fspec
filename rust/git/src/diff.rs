@@ -23,9 +23,15 @@ pub fn get_file_diff(dir: impl AsRef<Path>, filepath: &str) -> Result<Option<Str
 
     let full_path = workdir.join(filepath);
 
-    // Read working directory content
+    // BUG-540: a file HEAD still has but the working tree lost was deleted
+    // (staged or not): its diff is its full removal. A path HEAD lacks too
+    // stays FileNotFound.
     if !full_path.exists() {
-        return Err(GitError::FileNotFound(filepath.to_string()));
+        let head_content = get_head_file_content(&repo, filepath)?;
+        if is_binary_content(head_content.as_bytes()) {
+            return Ok(Some("[Binary file - no diff available]".to_string()));
+        }
+        return Ok(Some(generate_unified_diff(filepath, &head_content, "")));
     }
 
     let working_content = std::fs::read(&full_path)?;

@@ -4,17 +4,70 @@
       "name": "Interrupt agent during slow tool execution",
       "testMappings": [
         {
-          "file": "rust/napi/tests/napi_interrupt_test.rs",
-          "lines": "21-62",
+          "file": "rust/agent-loop/tests/cov057_esc_interrupt.rs",
+          "lines": "191-247",
           "implMappings": [
             {
-              "file": "rust/napi/src/session.rs",
+              "file": "rust/cli/src/interactive/stream_loop/poll.rs",
               "lines": [
-                34,
-                35,
+                9,
+                20,
+                21,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                49
+              ],
+              "firstLine": "pub(super) async fn next<Model, Output>(",
+              "lastLine": "Ok(chunk)"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/interrupted.rs",
+              "lines": [
+                10,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
                 36,
-                37
-              ]
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "pub(super) async fn settle<Output: StreamOutput>(",
+              "lastLine": ")"
+            },
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                43,
+                70,
+                73,
+                74,
+                75,
+                107,
+                108,
+                110,
+                111,
+                112,
+                126,
+                127,
+                128,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "pub(super) async fn record_tool_cancellations<O: StreamOutput>(",
+              "lastLine": "));"
             }
           ]
         }
@@ -24,17 +77,57 @@
       "name": "Interrupt agent during text streaming",
       "testMappings": [
         {
-          "file": "rust/napi/tests/napi_interrupt_test.rs",
-          "lines": "72-111",
+          "file": "rust/agent-loop/tests/cov057_esc_interrupt.rs",
+          "lines": "137-164",
           "implMappings": [
             {
-              "file": "rust/napi/src/session.rs",
+              "file": "rust/cli/src/interactive/stream_loop/poll.rs",
               "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
                 34,
                 35,
                 36,
-                37
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(super) async fn next<Model, Output>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -44,56 +137,57 @@
       "name": "Interrupt agent waiting for API response",
       "testMappings": [
         {
-          "file": "rust/napi/tests/napi_interrupt_test.rs",
-          "lines": "120-155",
+          "file": "rust/agent-loop/tests/cov057_esc_interrupt.rs",
+          "lines": "166-189",
           "implMappings": [
             {
-              "file": "rust/napi/src/session.rs",
+              "file": "rust/cli/src/interactive/stream_loop/poll.rs",
               "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
                 34,
                 35,
                 36,
-                37
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CLI mode interrupt behavior unchanged",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/napi_interrupt_test.rs",
-          "lines": "187-238",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(super) async fn next<Model, Output>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,16 +195,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/napi_interrupt_test.rs"
+      "rust/agent-loop/tests/cov057_esc_interrupt.rs"
     ],
     "implFiles": [
-      "rust/napi/src/session.rs",
-      "rust/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/stream_loop/poll.rs",
+      "rust/cli/src/interactive/stream_loop/interrupted.rs",
+      "rust/cli/src/interactive/interruption.rs"
     ],
-    "totalLinesCovered": 205
+    "totalLinesCovered": 234
   }
 }

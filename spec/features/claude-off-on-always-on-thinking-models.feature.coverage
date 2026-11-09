@@ -1,0 +1,145 @@
+{
+  "scenarios": [
+    {
+      "name": "Off is expressed in the form each always-on model accepts",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug439_claude_off_on_always_on_thinking_models.rs",
+          "lines": "10-29",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/claude_thinking_off.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// BUG-439: how Off is expressed for a Claude model. Claude 4.x thinks only",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Off is refused on a model that cannot turn thinking off",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug439_claude_off_on_always_on_thinking_models.rs",
+          "lines": "31-39",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/claude_thinking_off.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// BUG-439: how Off is expressed for a Claude model. Claude 4.x thinks only",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Off still sends nothing on a model whose thinking is off by default",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug439_claude_off_on_always_on_thinking_models.rs",
+          "lines": "41-49",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/claude_thinking_off.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// BUG-439: how Off is expressed for a Claude model. Claude 4.x thinks only",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug439_claude_off_on_always_on_thinking_models.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/facade/claude_thinking_off.rs"
+    ],
+    "totalLinesCovered": 113
+  }
+}

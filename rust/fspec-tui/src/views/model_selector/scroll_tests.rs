@@ -28,7 +28,7 @@ fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -42,6 +42,8 @@ fn provider(key: &str, ids: &[&str]) -> ProviderInfo {
         models: ids.iter().map(|i| model(i)).collect(),
         profile_name: None,
         is_unreachable: false,
+        provider_id: key.to_string(),
+        unavailable_reason: None,
     }
 }
 

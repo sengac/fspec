@@ -6,12 +6,6 @@
 //! - Strip any existing Authorization header and inject Bearer {access_token}
 //! - Pass through unchanged in API key mode
 //!
-//! Key difference from Codex RefreshingCodexClient:
-//! - NO URL rewriting (rig's AnthropicExt::build_uri handles ?beta=true)
-//! - NO extra headers (no ChatGPT-Account-Id or originator)
-//! - Only handles Authorization: Bearer header and token refresh
-//! - Static headers (anthropic-beta, user-agent, x-app) set at rig client build time
-//!
 //! PROV-023: Anthropic token refresh client and resilient request auth
 
 use std::sync::Arc;
@@ -21,6 +15,7 @@ use tracing::debug;
 
 use crate::claude_auth::{write_claude_auth, ClaudeAuthJson};
 use crate::claude_oauth::{calculate_expiry, refresh_access_token_at, ClaudeTokenResponse};
+use crate::claude_protocol::annotate_version_error;
 
 /// Expiry buffer in seconds - refresh token this many seconds before actual expiry
 /// to prevent edge cases where token expires between check and actual API call
@@ -235,7 +230,7 @@ impl rig::http_client::HttpClientExt for RefreshingClaudeClient {
                 }
                 ClaudeTokenMode::ApiKey => req,
             };
-            inner.send(req).await
+            inner.send(req).await.map_err(annotate_version_error)
         }
     }
 
@@ -261,7 +256,10 @@ impl rig::http_client::HttpClientExt for RefreshingClaudeClient {
                 }
                 ClaudeTokenMode::ApiKey => req,
             };
-            inner.send_multipart(req).await
+            inner
+                .send_multipart(req)
+                .await
+                .map_err(annotate_version_error)
         }
     }
 
@@ -289,7 +287,10 @@ impl rig::http_client::HttpClientExt for RefreshingClaudeClient {
                 }
                 ClaudeTokenMode::ApiKey => req,
             };
-            inner.send_streaming(req).await
+            inner
+                .send_streaming(req)
+                .await
+                .map_err(annotate_version_error)
         }
     }
 }

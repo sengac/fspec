@@ -1,6 +1,7 @@
 @session-header
 @tui-component
 @GIT-029
+@multi-session
 Feature: Session Header Isolation Badge
   """
   SessionHeader displays [ISOLATED] badge when session is isolated.

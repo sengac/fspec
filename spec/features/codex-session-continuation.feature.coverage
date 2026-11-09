@@ -5,22 +5,32 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
-          "lines": "42-91",
+          "lines": "42-95",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "fn restore(&self, envelopes: &[String]) -> Result<(), ExtensionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
+                169,
+                170,
+                171,
                 172,
                 173,
                 174,
@@ -29,8 +39,11 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181
+              ],
+              "firstLine": "let next_generation = checkpoint.as_ref().map_or_else(",
+              "lastLine": ".map_err(|_| CheckpointError::Inaccessible(\"writer\"))?;"
             },
             {
               "file": "rust/sessions/src/session_restore.rs",
@@ -50,7 +63,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "identity",
+              "lastLine": ".as_ref()"
             },
             {
               "file": "rust/cli/src/session/provider.rs",
@@ -76,7 +91,9 @@
                 97,
                 98,
                 99
-              ]
+              ],
+              "firstLine": ".restore_for_provider(self.provider_manager.current_provider_name(), envelopes)",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,18 +104,29 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
-          "lines": "93-120",
+          "lines": "97-126",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "fn restore_for_provider(",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/session_restore.rs",
@@ -118,7 +146,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "identity",
+              "lastLine": ".as_ref()"
             }
           ]
         }
@@ -129,7 +159,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
-          "lines": "122-148",
+          "lines": "128-156",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -148,7 +178,9 @@
                 285,
                 286,
                 287
-              ]
+              ],
+              "firstLine": "/// 4. Clear turns",
+              "lastLine": "let (system_reminders, compactable) = partition_for_compaction(&session.messages);"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -177,24 +209,9 @@
                 168,
                 169,
                 170
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1764,
-                1765,
-                1766,
-                1767,
-                1768,
-                1769,
-                1770,
-                1771,
-                1772,
-                1773,
-                1774,
-                1775
-              ]
+              ],
+              "firstLine": "self.promote_checked(checkpoint, None, None)",
+              "lastLine": "|| reset_generation.unwrap_or(state.generation),"
             }
           ]
         }
@@ -213,9 +230,8 @@
       "rust/providers/src/codex/history.rs",
       "rust/sessions/src/session_restore.rs",
       "rust/cli/src/session/provider.rs",
-      "rust/cli/src/interactive_helpers.rs",
-      "rust/sessions/src/background_session.rs"
+      "rust/cli/src/interactive_helpers.rs"
     ],
-    "totalLinesCovered": 227
+    "totalLinesCovered": 241
   }
 }

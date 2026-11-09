@@ -1,9 +1,13 @@
+@BUG-582
 @done
 @napi
 @persistence
 @session
 @session-management
 @NAPI-008
+@COV-057
+@BUG-322
+@BUG-324
 Feature: Complete Session State Persistence and Restoration
   """
   Architecture:
@@ -505,9 +509,9 @@ Feature: Complete Session State Persistence and Restoration
     And the compaction threshold is 200000 tokens
     When the session is saved and restored
     And 5 more turns are added reaching 210000 tokens
-    Then compaction is triggered
+    Then compaction is triggered by the next prompt
     And compaction summarizes the oldest turns
-    And recent turns are preserved verbatim
+    And the turn after the compaction boundary is preserved verbatim
 
   @equivalence
   @critical

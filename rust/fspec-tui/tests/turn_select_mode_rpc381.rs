@@ -26,8 +26,7 @@
 //! and are EXPECTED to fail (compile error / assertion) until RPC-381
 //! lands — the correct red state for ACDD.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
@@ -58,7 +57,10 @@ fn tab() -> Event {
 /// A standalone AgentView wired to a fresh Action channel.
 fn fresh_view() -> (AgentView, UnboundedReceiver<Action>) {
     let (tx, rx) = unbounded_channel();
-    (AgentView::new(tx), rx)
+    // BUG-552: the composer belongs to a session, as App::sync_composer_draft sets it.
+    let mut view = AgentView::new(tx);
+    view.set_composer_session(Some(codelet_rpc_types::SessionId::new("s-1")));
+    (view, rx)
 }
 
 fn drain_view(rx: &mut UnboundedReceiver<Action>) -> Vec<Action> {
@@ -71,28 +73,34 @@ fn drain_view(rx: &mut UnboundedReceiver<Action>) -> Vec<Action> {
 
 /// An App in ViewMode::Agent with one open session seeded with three
 /// single-line turns.
-fn agent_app_with_three_turns() -> App {
+fn agent_app_with_three_turns() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    seed_turns(&mut app, &sid("s-1"), 3);
-    app
+    seed_turns(&mut app, &sid("s-1"), 3)?;
+    Ok(app)
 }
 
-fn seed_turns(app: &mut App, id: &SessionId, count: usize) {
+fn seed_turns(
+    app: &mut App,
+    id: &SessionId,
+    count: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     for i in 0..count {
         ctx.scrollback.push(RenderedChunk {
+            row_ends: Vec::new(),
             seq: i as u64,
             lines: vec![Line::from(format!("turn-{i}"))],
             source: None,
         });
     }
+    Ok(())
 }
 
 /// Drain the App's action bus, dispatching each queued Action back into
@@ -116,12 +124,16 @@ fn selected_seq(app: &App, id: &SessionId) -> Option<u64> {
 }
 
 /// Render the App and return the rows of glyphs.
-fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_rows(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut rows = Vec::with_capacity(buf.area.height as usize);
     for y in 0..buf.area.height {
@@ -131,7 +143,7 @@ fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
         }
         rows.push(row);
     }
-    rows
+    Ok(rows)
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -140,9 +152,9 @@ fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tab_enters_turn_selection_mode_and_selects_last_turn() {
+fn tab_enters_turn_selection_mode_and_selects_last_turn() -> TestResult {
     // @step Given an AgentView with a conversation of three turns
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let id = sid("s-1");
 
     // @step And no popup or mode view is active
@@ -170,12 +182,13 @@ fn tab_enters_turn_selection_mode_and_selects_last_turn() {
     assert_eq!(selected_seq(&app, &id), Some(2));
 
     // @step And the session header shows the [SELECT] badge
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
     assert!(
         rows[0].contains("[SELECT]"),
         "header row must show [SELECT]; got: {:?}",
         rows[0]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -183,9 +196,9 @@ fn tab_enters_turn_selection_mode_and_selects_last_turn() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_tab_again_exits_turn_selection_mode() {
+fn pressing_tab_again_exits_turn_selection_mode() -> TestResult {
     // @step Given an AgentView in turn-selection mode
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
     assert!(app.navigator().agent.turn_select_mode);
@@ -201,12 +214,13 @@ fn pressing_tab_again_exits_turn_selection_mode() {
     );
 
     // @step And the session header does not show the [SELECT] badge
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
     assert!(
         !rows[0].contains("[SELECT]"),
         "header row must NOT show [SELECT] after exiting; got: {:?}",
         rows[0]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -214,9 +228,9 @@ fn pressing_tab_again_exits_turn_selection_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn up_arrow_selects_the_previous_turn() {
+fn up_arrow_selects_the_previous_turn() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the last of three turns selected
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -235,11 +249,11 @@ fn up_arrow_selects_the_previous_turn() {
 
     // @step And a gray down-arrow bar is rendered above the selected turn
     // @step And a gray up-arrow bar is rendered below the selected turn
-    let rows = render_rows(&mut app, 120, 24);
+    let rows = render_rows(&mut app, 120, 24)?;
     let sel_y = rows
         .iter()
         .position(|r| r.contains("turn-1"))
-        .expect("selected turn row present");
+        .or_fail("selected turn row present")?;
     assert!(sel_y >= 1, "need a row above the selected turn");
     assert!(
         rows[sel_y - 1].contains('\u{25BC}'),
@@ -251,6 +265,7 @@ fn up_arrow_selects_the_previous_turn() {
         "expected ▲ bar below selected turn; got: {:?}",
         rows[sel_y + 1]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -258,9 +273,9 @@ fn up_arrow_selects_the_previous_turn() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn up_arrow_on_first_turn_clamps_the_selection() {
+fn up_arrow_on_first_turn_clamps_the_selection() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the first of three turns selected
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -281,6 +296,7 @@ fn up_arrow_on_first_turn_clamps_the_selection() {
         Some(0),
         "Up on the first turn must clamp the selection at index 0"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -288,9 +304,9 @@ fn up_arrow_on_first_turn_clamps_the_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn down_arrow_on_last_turn_clamps_the_selection() {
+fn down_arrow_on_last_turn_clamps_the_selection() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the last of three turns selected
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -306,6 +322,7 @@ fn down_arrow_on_last_turn_clamps_the_selection() {
         Some(2),
         "Down on the last turn must clamp the selection at the last index"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -313,7 +330,7 @@ fn down_arrow_on_last_turn_clamps_the_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_does_not_submit_input_while_in_turn_selection_mode() {
+fn enter_does_not_submit_input_while_in_turn_selection_mode() -> TestResult {
     // @step Given an AgentView in turn-selection mode
     let (mut view, mut rx) = fresh_view();
     view.handle_event(&tab());
@@ -334,12 +351,13 @@ fn enter_does_not_submit_input_while_in_turn_selection_mode() {
     assert!(
         !actions
             .iter()
-            .any(|a| matches!(a, Action::InputSubmitted(_))),
+            .any(|a| matches!(a, Action::InputSubmitted(..))),
         "Enter must NOT submit input in select mode; got {actions:?}"
     );
 
     // @step And the input still contains the text "hello"
     assert_eq!(view.input.value(), "hello");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -348,7 +366,7 @@ fn enter_does_not_submit_input_while_in_turn_selection_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn esc_exits_turn_selection_mode_without_triggering_exit_cascade() {
+fn esc_exits_turn_selection_mode_without_triggering_exit_cascade() -> TestResult {
     // @step Given an AgentView in turn-selection mode
     let (mut view, mut rx) = fresh_view();
     view.handle_event(&tab());
@@ -377,6 +395,7 @@ fn esc_exits_turn_selection_mode_without_triggering_exit_cascade() {
         !actions.iter().any(|a| matches!(a, Action::AgentEscPressed)),
         "Esc in select mode must NOT emit AgentEscPressed; got {actions:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -385,9 +404,9 @@ fn esc_exits_turn_selection_mode_without_triggering_exit_cascade() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn selection_stays_pinned_when_new_content_streams_in() {
+fn selection_stays_pinned_when_new_content_streams_in() -> TestResult {
     // @step Given an AgentView in turn-selection mode with the second of three turns selected
-    let mut app = agent_app_with_three_turns();
+    let mut app = agent_app_with_three_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab());
     drain_app(&mut app);
@@ -401,8 +420,9 @@ fn selection_stays_pinned_when_new_content_streams_in() {
         let ctx = app
             .agent_view_store_mut()
             .session_context_mut_for(&id)
-            .expect("ctx");
+            .or_fail("ctx")?;
         ctx.scrollback.push(RenderedChunk {
+            row_ends: Vec::new(),
             seq: 3,
             lines: vec![Line::from("turn-3")],
             source: None,
@@ -416,6 +436,7 @@ fn selection_stays_pinned_when_new_content_streams_in() {
         "selection must stay pinned to the same seq when new content streams in"
     );
     assert_eq!(selected_index(&app, &id), Some(1));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -423,7 +444,7 @@ fn selection_stays_pinned_when_new_content_streams_in() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tab_is_consumed_by_an_open_slash_command_popup() {
+fn tab_is_consumed_by_an_open_slash_command_popup() -> TestResult {
     // @step Given an AgentView with the slash-command popup open
     let (mut view, mut rx) = fresh_view();
     for ch in "/c".chars() {
@@ -458,6 +479,7 @@ fn tab_is_consumed_by_an_open_slash_command_popup() {
             .any(|a| matches!(a, Action::ToggleTurnSelectMode)),
         "no ToggleTurnSelectMode must be emitted while a popup consumes Tab; got {actions:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -466,7 +488,7 @@ fn tab_is_consumed_by_an_open_slash_command_popup() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tab_emits_toggle_action_and_arrows_emit_turn_nav_in_select_mode() {
+fn tab_emits_toggle_action_and_arrows_emit_turn_nav_in_select_mode() -> TestResult {
     let (mut view, mut rx) = fresh_view();
 
     // Tab emits ToggleTurnSelectMode.
@@ -495,6 +517,7 @@ fn tab_emits_toggle_action_and_arrows_emit_turn_nav_in_select_mode() {
             .any(|a| matches!(a, Action::TurnNavDown)),
         "Down in select mode must emit Action::TurnNavDown; got {down_actions:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -504,7 +527,7 @@ fn tab_emits_toggle_action_and_arrows_emit_turn_nav_in_select_mode() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn esc_outside_select_mode_still_emits_agent_esc_pressed() {
+fn esc_outside_select_mode_still_emits_agent_esc_pressed() -> TestResult {
     let (mut view, mut rx) = fresh_view();
     // Not in select mode, no popup / mode-view open.
     assert!(!view.turn_select_mode);
@@ -518,4 +541,5 @@ fn esc_outside_select_mode_still_emits_agent_esc_pressed() {
     // Touch SearchHistoryView so the import is exercised even if the
     // select-mode arm changes the default Esc routing.
     let _ = SearchHistoryView::new();
+    Ok(())
 }

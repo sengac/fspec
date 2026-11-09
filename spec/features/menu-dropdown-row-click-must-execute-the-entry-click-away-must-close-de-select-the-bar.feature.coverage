@@ -5,87 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "288-336",
+          "lines": "306-344",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
               "lines": [
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
-              "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/store/board_menu.rs",
-              "lines": [
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "288-339",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
-              "lines": [
-                92,
                 93,
                 94,
                 95,
@@ -120,8 +44,52 @@
                 124,
                 125,
                 126,
-                127
-              ]
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// BUG-196 R1: hit-test for a left click on the dropdown panel. Returns",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "// BUG-196 R1/R2: a left click INSIDE the open dropdown's panel — a",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "/// R4: toggle/advance the `category` item's dropdown. Closed → open it",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -132,11 +100,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "340-380",
+          "lines": "360-397",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
               "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
                 101,
                 102,
                 103,
@@ -166,134 +142,9 @@
                 127,
                 128,
                 129
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "340-383",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Clicking the Help dropdown Exit row opens the exit confirmation",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "384-412",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
-              "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "384-415",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+              ],
+              "firstLine": "/// BUG-196 R1: hit-test for a left click on the dropdown panel. Returns",
+              "lastLine": "}"
             }
           ]
         }
@@ -304,74 +155,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "416-447",
+          "lines": "406-424",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
               "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "// BUG-196 R1/R2: a left click INSIDE the open dropdown's panel — a",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
               "lines": [
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "416-450",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
-              "lines": [
-                92,
                 93,
                 94,
                 95,
@@ -406,8 +219,12 @@
                 124,
                 125,
                 126,
-                127
-              ]
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// BUG-196 R1: hit-test for a left click on the dropdown panel. Returns",
+              "lastLine": "}"
             }
           ]
         }
@@ -418,57 +235,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "451-495",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
-              "lines": [
-                170,
-                171
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/store/board_menu.rs",
-              "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "451-498",
+          "lines": "442-479",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
@@ -501,7 +268,36 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "};",
+              "lastLine": ".item_rects"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "// to the Agent view on it. BUG-553: through the real",
+              "lastLine": "self.open_agent_view_on(session.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "/// BUG-196 R3: the click-away gesture — close the open dropdown AND",
+              "lastLine": "}"
             }
           ]
         }
@@ -512,36 +308,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "499-525",
+          "lines": "491-508",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "499-528",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/board_menu.rs",
-              "lines": [
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "/// BUG-196 R3: the click-away gesture — close the open dropdown AND",
+              "lastLine": "}"
             }
           ]
         }
@@ -552,34 +335,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "529-578",
+          "lines": "522-561",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
-              "lines": [
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
               "lines": [
-                139,
                 140,
                 141,
                 142,
@@ -592,38 +352,29 @@
                 149,
                 150,
                 151,
-                152
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "529-581",
-          "implMappings": [
+                152,
+                153
+              ],
+              "firstLine": "// the bar's paint; see `menu_snapshot`).",
+              "lastLine": ".iter()"
+            },
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206
-              ]
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ],
+              "firstLine": "// BUG-197 R2: while the bar is engaged (a ring focus or an open",
+              "lastLine": ""
             }
           ]
         }
@@ -634,48 +385,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "582-635",
+          "lines": "577-623",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
               "lines": [
-                108,
-                109
-              ]
+                109,
+                110
+              ],
+              "firstLine": "// MENU-003: the Agent view executes against its LOCAL",
+              "lastLine": "// state (the dropdown closed in-view; the entry is"
             },
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "582-638",
-          "implMappings": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "// A left click outside the open dropdown closes it AND",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "// Off the bar row: a left click OUTSIDE the open dropdown closes it",
+              "lastLine": "}"
             }
           ]
         }
@@ -686,59 +444,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "639-682",
+          "lines": "635-666",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "639-685",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
-              "lines": [
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206
-              ]
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ],
+              "firstLine": "// BUG-197 R2: while the bar is engaged (a ring focus or an open",
+              "lastLine": ""
             }
           ]
         }
@@ -749,36 +473,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "686-713",
+          "lines": "683-692",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
-          "lines": "686-713",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/board_menu.rs",
-              "lines": [
-                120,
-                121,
-                122,
-                123,
                 124,
                 125,
                 126,
-                127
-              ]
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "// the mux bar walks, `MultiplexLayout::menu_reanchor_or_close`,",
+              "lastLine": "self.menu_open = None;"
             }
           ]
         }
@@ -786,8 +496,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 10,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs"
@@ -798,8 +508,8 @@
       "rust/fspec-tui/src/store/board_menu.rs",
       "rust/fspec-tui/src/app/dispatch_menu.rs",
       "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
-      "rust/fspec-tui/src/views/navigator_mux_events.rs"
+      "rust/fspec-tui/src/views/navigator_mux_routing.rs"
     ],
-    "totalLinesCovered": 1304
+    "totalLinesCovered": 557
   }
 }

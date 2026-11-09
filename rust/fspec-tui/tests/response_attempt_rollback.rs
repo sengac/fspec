@@ -5,8 +5,7 @@ use codelet_fspec_tui::views::agent::{SelectionMode, TurnDir};
 use codelet_rpc_types::{
     NotificationSeverity, SessionId, StreamChunk, ToolCallInfo, ToolResultInfo,
 };
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+use codelet_test_helpers::TestResult;
 
 fn boundary(name: &str) -> Result<StreamChunk, serde_json::Error> {
     serde_json::from_value(serde_json::json!(name))
@@ -98,7 +97,7 @@ fn ui_retracts_only_the_latest_attempt_while_preserving_streaming() -> TestResul
 /// @step Then the abandoned text and reasoning disappear
 /// @step And the queued prompt earlier output and replacement output remain visible
 #[test]
-fn queued_input_preserves_rollback_of_the_active_response_attempt() {
+fn queued_input_preserves_rollback_of_the_active_response_attempt() -> TestResult {
     let mut ctx = SessionContext::new(SessionId::new("queued-input-rollback"));
     ctx.record_chunk(&StreamChunk::text("earlier output".into()));
     ctx.record_chunk(&StreamChunk::Done);
@@ -132,6 +131,7 @@ fn queued_input_preserves_rollback_of_the_active_response_attempt() {
     }
     assert!(ctx.in_flight_assistant.is_none());
     assert!(ctx.in_flight_thinking.is_none());
+    Ok(())
 }
 
 /// @step Given turn selection is focused on an abandoned response attempt
@@ -140,7 +140,7 @@ fn queued_input_preserves_rollback_of_the_active_response_attempt() {
 /// @step Then either arrow key selects an available turn without toggling selection mode
 /// @step And further arrow navigation moves between available turns
 #[test]
-fn turn_navigation_recovers_after_the_selected_attempt_is_retracted() {
+fn turn_navigation_recovers_after_the_selected_attempt_is_retracted() -> TestResult {
     for direction in [TurnDir::Up, TurnDir::Down] {
         for has_survivors in [false, true] {
             let mut ctx = SessionContext::new(SessionId::new("rollback-navigation"));
@@ -181,6 +181,7 @@ fn turn_navigation_recovers_after_the_selected_attempt_is_retracted() {
             assert_eq!(ctx.scrollback.selected_seq(), recovered);
         }
     }
+    Ok(())
 }
 
 /// @step Given assistant text and reasoning already occupy streaming blocks

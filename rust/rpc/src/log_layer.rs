@@ -28,7 +28,8 @@ use codelet_common::logging::privacy::{event_fields, DiagnosticFields, PrivacyFi
 use codelet_rpc_types::LogRecord;
 use std::sync::{Arc, Mutex, OnceLock};
 use tokio::sync::broadcast;
-use tracing::{Event, Subscriber};
+use tracing::{Event, Level, Subscriber};
+use tracing_log::NormalizeEvent;
 use tracing_subscriber::layer::{Context, SubscriberExt};
 use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -105,7 +106,10 @@ where
         }
     }
     message.push_str(&event_fields(event, PrivacyFields::default()).render());
-    let metadata = event.metadata();
+    // BUG-572: a record bridged from the `log` crate is labelled with its
+    // own target and level, not tracing-log's static "log" callsite.
+    let normalized = event.normalized_metadata();
+    let metadata = normalized.as_ref().unwrap_or_else(|| event.metadata());
     let timestamp_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis() as i64)
@@ -137,8 +141,35 @@ where
 /// `rig::*`, etc.) are still captured AND the bootstrap re-emission is
 /// still written to the file appender — it is ONLY excluded from the
 /// broadcast channel that would feed the cycle.
+///
+/// BUG-572: the broadcast is itself carried by tungstenite,
+/// tokio_tungstenite and tarpc, which log every frame they move. Forwarding
+/// one [`LogRecord`] to a WebSocket client logged more frames, which were
+/// broadcast and forwarded again — a flood that lagged every subscriber and
+/// dropped the records they were waiting for. Their TRACE, DEBUG and INFO
+/// events are therefore not broadcast; WARN and ERROR still are. Records
+/// bridged from the `log` crate are judged by their own target
+/// (tracing-log's normalized metadata), not the bridge's "log" callsite.
 fn should_skip(event: &Event<'_>) -> bool {
-    event.metadata().target() == "codelet_fspec_tui::app::bootstrap"
+    let normalized = event.normalized_metadata();
+    let metadata = normalized.as_ref().unwrap_or_else(|| event.metadata());
+    let target = metadata.target();
+    if target == "codelet_fspec_tui::app::bootstrap" {
+        return true;
+    }
+    *metadata.level() > Level::WARN && is_transport_target(target)
+}
+
+/// BUG-572: the crates the log broadcast is carried by.
+const TRANSPORT_CRATES: &[&str] = &["tungstenite", "tokio_tungstenite", "tarpc"];
+
+/// Whether `target` is one of [`TRANSPORT_CRATES`] or a module inside it.
+fn is_transport_target(target: &str) -> bool {
+    TRANSPORT_CRATES.iter().any(|krate| {
+        target
+            .strip_prefix(krate)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with("::"))
+    })
 }
 
 impl<S> Layer<S> for BroadcastLogLayer
@@ -159,9 +190,9 @@ where
     }
 
     fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
-        // LOG-004: skip events whose target is the TUI bootstrap
-        // subscriber that re-emits broadcast records — broadcasting
-        // them would cycle back through the same subscriber.
+        // LOG-004 / BUG-572: skip the TUI bootstrap's re-emissions and the
+        // transport crates' below-WARN events — broadcasting either would
+        // feed the broadcast back into itself.
         if should_skip(event) {
             return;
         }
@@ -192,7 +223,7 @@ where
     }
 
     fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
-        // LOG-004: same skip predicate as the global BroadcastLogLayer.
+        // LOG-004 / BUG-572: same skip predicate as the global BroadcastLogLayer.
         if should_skip(event) {
             return;
         }

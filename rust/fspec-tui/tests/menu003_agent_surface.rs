@@ -36,12 +36,11 @@
 //! The flag-OFF pane (mux shape) keeps the pinned 5-row layout:
 //! header y0, input row = last row (y23), footer directly above.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::menu_bar::MenuFocus;
 use codelet_fspec_tui::store::SessionContext;
 use codelet_fspec_tui::{Action, AgentView, AgentViewStore};
 use codelet_rpc_types::{SessionId, SessionStatus};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -98,11 +97,12 @@ fn harness() -> (
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default) into `store`.
-fn seed_sessions(store: &StoreHandle, n: usize) {
-    let mut guard = store.lock().unwrap();
+fn seed_sessions(store: &StoreHandle, n: usize) -> Result<(), codelet_test_helpers::TestError> {
+    let mut guard = store.lock().or_fail("expected a value")?;
     for i in 1..=n {
         guard.append_session(SessionContext::new(SessionId::new(format!("s-{i}"))));
     }
+    Ok(())
 }
 
 fn sid(id: &str) -> SessionId {
@@ -111,28 +111,34 @@ fn sid(id: &str) -> SessionId {
 
 /// Render one frame on a 100x24 TestBackend (single-view pane, menu row
 /// ON via `PaneSession::current_session()`).
-fn render_agent(view: &mut AgentView, store: &StoreHandle) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(100, 24)).unwrap();
-    term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), &mut store.lock().unwrap()))
-        .unwrap();
-    term.backend().buffer().clone()
+fn render_agent(
+    view: &mut AgentView,
+    store: &StoreHandle,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(100, 24)).or_fail("expected a value")?;
+    let mut guard = store.lock().or_fail("store lock")?;
+    term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), &mut guard))
+        .or_fail("expected a value")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Render one frame for a MUX-style pane: the flag-off shape (pinned
 /// 5-row layout, no menu row).
-fn render_mux_pane(view: &mut AgentView, store: &StoreHandle) -> Buffer {
+fn render_mux_pane(
+    view: &mut AgentView,
+    store: &StoreHandle,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     use codelet_fspec_tui::views::agent::pane_render::PaneSession;
     let pane = PaneSession {
         session: None,
         is_focused: true,
         menu_row: false,
     };
-    let mut term = Terminal::new(TestBackend::new(100, 24)).unwrap();
-    term.draw(|f| {
-        view.render_session_pane(f.area(), f.buffer_mut(), &mut store.lock().unwrap(), pane)
-    })
-    .unwrap();
-    term.backend().buffer().clone()
+    let mut term = Terminal::new(TestBackend::new(100, 24)).or_fail("expected a value")?;
+    let mut guard = store.lock().or_fail("store lock")?;
+    term.draw(|f| view.render_session_pane(f.area(), f.buffer_mut(), &mut guard, pane))
+        .or_fail("expected a value")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -169,21 +175,23 @@ fn find_x(buf: &Buffer, y: u16, needle: &str) -> Option<u16> {
 
 /// The 'Board View' item's x on the bar row (MENU-007: the agent bar's
 /// single Zone A item).
-fn board_view_x(buf: &Buffer) -> u16 {
-    find_x(buf, menu_row(buf), "Board View")
-        .expect("the 'Board View' item must paint on the bar row")
+fn board_view_x(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(find_x(buf, menu_row(buf), "Board View")
+        .or_fail("the 'Board View' item must paint on the bar row")?)
 }
 
 /// The x of the first occurrence of `needle` on the bar row (MENU-009
-/// Zone C buttons: "New Agent" / "Close Agent").
-fn zone_c_button_x(buf: &Buffer, needle: &str) -> u16 {
-    find_x(buf, menu_row(buf), needle)
-        .unwrap_or_else(|| panic!("the Zone C button '{needle}' must paint on the bar row"))
+/// Zone C buttons: "New Agent" / "Close").
+fn zone_c_button_x(buf: &Buffer, needle: &str) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(find_x(buf, menu_row(buf), needle).or_fail(&format!(
+        "the Zone C button '{needle}' must paint on the bar row"
+    ))?)
 }
 
 /// The x of chip `n` (1-based) on the bar row.
-fn chip_x(buf: &Buffer, n: usize) -> u16 {
-    find_x(buf, menu_row(buf), &format!("#{n}")).expect("chip #{n} must paint on the bar row")
+fn chip_x(buf: &Buffer, n: usize) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(find_x(buf, menu_row(buf), &format!("#{n}"))
+        .or_fail("chip #{n} must paint on the bar row")?)
 }
 
 /// True when the cell carries the inverse-video highlight (bg Cyan).
@@ -213,17 +221,17 @@ fn focus_chip(view: &mut AgentView, n: usize) {
 
 /// Scenario: The agent pane row under the header paints the 2-zone menu bar
 #[test]
-fn scenario_the_agent_pane_row_under_the_header_paints_the_2_zone_menu_bar() {
+fn scenario_the_agent_pane_row_under_the_header_paints_the_2_zone_menu_bar() -> TestResult {
     // @step Given the agent pane has 2 open sessions (one running, one idle) and an empty input
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 2);
+    seed_sessions(&store, 2)?;
     store
         .lock()
-        .unwrap()
+        .or_fail("expected a value")?
         .set_session_status(sid("s-1"), SessionStatus::Running);
 
     // @step When the agent pane renders
-    let buf = render_agent(&mut view, &store);
+    let buf = render_agent(&mut view, &store)?;
     let y = menu_row(&buf);
 
     // @step Then the row directly below the SessionHeader shows the 'Board View' item a separator and the two session chips and no other chrome row shifts
@@ -256,17 +264,18 @@ fn scenario_the_agent_pane_row_under_the_header_paints_the_2_zone_menu_bar() {
         "the input row must still render on the last row after the row shift: {:?}",
         row_text(&buf, last)
     );
+    Ok(())
 }
 
 /// Scenario: The agent pane row is gated by the menu row flag
 #[test]
-fn scenario_the_agent_pane_row_is_gated_by_the_menu_row_flag() {
+fn scenario_the_agent_pane_row_is_gated_by_the_menu_row_flag() -> TestResult {
     // @step Given a mux agent pane with the menu row flag off
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
 
     // @step When the pane renders
-    let buf = render_mux_pane(&mut view, &store);
+    let buf = render_mux_pane(&mut view, &store)?;
 
     // @step Then the pane layout is the pinned 5-row shape (header role scrollback footer input) and no menu bar row appears
     let last = buf.area.height - 1;
@@ -293,14 +302,15 @@ fn scenario_the_agent_pane_row_is_gated_by_the_menu_row_flag() {
         "the footer row must sit directly above the input row: {:?}",
         row_text(&buf, last - 1)
     );
+    Ok(())
 }
 
 /// Scenario: Bare Left on an empty input enters the bar at the first item
 #[test]
-fn scenario_bare_left_on_an_empty_input_enters_the_bar_at_the_first_item() {
+fn scenario_bare_left_on_an_empty_input_enters_the_bar_at_the_first_item() -> TestResult {
     // @step Given the agent pane has an empty input
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
 
     // @step When I press bare Left once
     view.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
@@ -317,19 +327,20 @@ fn scenario_bare_left_on_an_empty_input_enters_the_bar_at_the_first_item() {
         view.open_menu().is_none(),
         "the agent bar must never open a dropdown (MENU-007)"
     );
-    let buf = render_agent(&mut view, &store);
+    let buf = render_agent(&mut view, &store)?;
     assert!(
-        is_inverse(&buf, board_view_x(&buf), menu_row(&buf)),
+        is_inverse(&buf, board_view_x(&buf)?, menu_row(&buf)),
         "the 'Board View' item must paint inverse-video"
     );
+    Ok(())
 }
 
 /// Scenario: Bare Left with a non-empty draft stays the text cursor
 #[test]
-fn scenario_bare_left_with_a_non_empty_draft_stays_the_text_cursor() {
+fn scenario_bare_left_with_a_non_empty_draft_stays_the_text_cursor() -> TestResult {
     // @step Given the input draft is the text "hello"
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
     view.input.set_value("hello");
 
     // @step When I press bare Left once
@@ -342,14 +353,15 @@ fn scenario_bare_left_with_a_non_empty_draft_stays_the_text_cursor() {
     );
     assert_eq!(view.input.value(), "hello", "the draft must be untouched");
     let _ = result; // the input consumes the cursor move
+    Ok(())
 }
 
 /// Scenario: Bare Right never enters the bar
 #[test]
-fn scenario_bare_right_never_enters_the_bar() {
+fn scenario_bare_right_never_enters_the_bar() -> TestResult {
     // @step Given the agent pane has an empty input
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
 
     // @step When I press bare Right once
     view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
@@ -360,30 +372,31 @@ fn scenario_bare_right_never_enters_the_bar() {
         "bare Right must never enter the bar"
     );
     assert!(view.input.is_empty(), "the draft must stay empty");
+    Ok(())
 }
 
 /// Scenario: The ring walks items then chips then the Zone C buttons then wraps to the first item
 #[test]
-fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() {
+fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() -> TestResult {
     // @step Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 2);
-    render_agent(&mut view, &store); // the bar's paint caches the chip count + Zone C rects
+    seed_sessions(&store, 2)?;
+    render_agent(&mut view, &store)?; // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut view);
 
-    // @step When I press Right five times
-    for _ in 0..5 {
+    // @step When I press Right six times
+    for _ in 0..6 {
         view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
 
-    // @step Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
+    // @step Then the focus lands on chip #1 then chip #2 then 'New Bot' then 'New Agent' then 'Close' and finally back on 'Board View'
     // The walk is observed step-by-step: re-run the sequence and check
     // every landing (MENU-007: one item, so Right #1 already leaves the
     // item — MENU-009 R3: the two Zone C buttons are the ring's last
     // stops).
     let (mut v2, s2, _rx2) = harness();
-    seed_sessions(&s2, 2);
-    render_agent(&mut v2, &s2); // the bar's paint caches the chip count + Zone C rects
+    seed_sessions(&s2, 2)?;
+    render_agent(&mut v2, &s2)?; // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut v2);
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
@@ -398,63 +411,70 @@ fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() {
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
         v2.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(0)),
-        "3rd Right must land on the 'New Agent' Zone C button (MENU-009)"
+        "3rd Right must land on the 'New Bot' Zone C button (TUI-114)"
     );
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
         v2.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(1)),
-        "4th Right must land on the 'Close Agent' Zone C button (MENU-009)"
+        "4th Right must land on the 'New Agent' Zone C button (MENU-009)"
+    );
+    v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    assert!(
+        v2.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(2)),
+        "5th Right must land on the 'Close' Zone C button (MENU-009)"
     );
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
         v2.menu_focus().as_ref() == Some(&MenuFocus::Item(0)),
-        "5th Right must wrap back to 'Board View'"
+        "6th Right must wrap back to 'Board View'"
     );
     // And the primary walk ended at 'Board View' too:
     assert!(
         view.menu_focus().as_ref() == Some(&MenuFocus::Item(0)),
         "the focus must wrap back to the 'Board View' item"
     );
+    Ok(())
 }
 
 /// Scenario: The ring wraps left from the first item to the last Zone C button
 #[test]
-fn scenario_the_ring_wraps_left_from_the_first_item_to_the_last_chip() {
+fn scenario_the_ring_wraps_left_from_the_first_item_to_the_last_chip() -> TestResult {
     // @step Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 3);
-    render_agent(&mut view, &store); // the bar's paint caches the chip count + Zone C rects
+    seed_sessions(&store, 3)?;
+    render_agent(&mut view, &store)?; // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut view);
 
     // @step When I press Left once
     view.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
 
-    // @step Then the 'Close Agent' button paints inverse-video (MENU-009:
-    // the left wrap lands on the LAST Zone C button, not the last chip)
+    // @step Then the 'Close' button paints inverse-video (the last Zone C button is the ring's last stop — MENU-009)
+    // (the left wrap lands on the LAST Zone C button, not the last chip)
     assert!(
-        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(1)),
-        "Left from Item(0) must wrap to the last Zone C button ('Close Agent')"
+        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(2)),
+        "Left from Item(0) must wrap to the last Zone C button ('Close')"
     );
-    let buf = render_agent(&mut view, &store);
+    let buf = render_agent(&mut view, &store)?;
     assert!(
-        is_inverse(&buf, zone_c_button_x(&buf, "Close Agent"), menu_row(&buf)),
-        "'Close Agent' must paint inverse-video"
+        is_inverse(&buf, zone_c_button_x(&buf, "Close")?, menu_row(&buf)),
+        "'Close' must paint inverse-video"
     );
-    // And Left once more lands on the 'New Agent' button:
+    // @step And pressing Left once more focuses the 'New Agent' button
     view.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
     assert!(
-        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(0)),
-        "Left from 'Close Agent' must land on the 'New Agent' button"
+        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(1)),
+        "Left from 'Close' must land on the 'New Agent' button"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on a chip jumps to that session in the agent view
 #[test]
-fn scenario_enter_on_a_chip_jumps_to_that_session_in_the_agent_view() {
+fn scenario_enter_on_a_chip_jumps_to_that_session_in_the_agent_view() -> TestResult {
     // @step Given the agent pane has 3 open sessions and the menu bar is focused on chip #2
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 3);
-    render_agent(&mut view, &store); // the bar's paint caches the chip count
+    seed_sessions(&store, 3)?;
+    render_agent(&mut view, &store)?; // the bar's paint caches the chip count
     focus_chip(&mut view, 2);
 
     // @step When I press Enter once
@@ -462,23 +482,30 @@ fn scenario_enter_on_a_chip_jumps_to_that_session_in_the_agent_view() {
 
     // @step Then the agent pane shows session #2 and the bar highlight clears
     assert_eq!(
-        store.lock().unwrap().current_session_index(),
+        store
+            .lock()
+            .or_fail("expected a value")?
+            .current_session_index(),
         1,
         "Enter on chip #2 must focus open_sessions[1] (s-2)"
     );
-    assert_eq!(store.lock().unwrap().current_session(), Some(&sid("s-2")));
+    assert_eq!(
+        store.lock().or_fail("expected a value")?.current_session(),
+        Some(&sid("s-2"))
+    );
     assert!(
         view.menu_focus().is_none(),
         "the bar highlight must clear after chip activation"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on the 'Board View' item returns to the Board view
 #[test]
-fn scenario_enter_on_the_board_view_item_returns_to_the_board_view() {
+fn scenario_enter_on_the_board_view_item_returns_to_the_board_view() -> TestResult {
     // @step Given the agent pane is focused on the 'Board View' menu item
     let (mut view, store, mut rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
     focus_first_item(&mut view);
 
     // @step When I press Enter once
@@ -494,14 +521,15 @@ fn scenario_enter_on_the_board_view_item_returns_to_the_board_view() {
         view.menu_focus().is_none(),
         "the bar highlight must clear after activating 'Board View'"
     );
+    Ok(())
 }
 
 /// Scenario: A character key dismisses the bar and is typed into the input
 #[test]
-fn scenario_a_character_key_dismisses_the_bar_and_is_typed_into_the_input() {
+fn scenario_a_character_key_dismisses_the_bar_and_is_typed_into_the_input() -> TestResult {
     // @step Given the menu bar is focused (no dropdown) and the input is empty
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
     focus_first_item(&mut view);
 
     // @step When I press the bare x key
@@ -517,14 +545,15 @@ fn scenario_a_character_key_dismisses_the_bar_and_is_typed_into_the_input() {
         "x",
         "the character must be typed into the input"
     );
+    Ok(())
 }
 
 /// Scenario: Up and Down from a closed bar drop focus back into the input
 #[test]
-fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_input() {
+fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_input() -> TestResult {
     // @step Given the agent pane has a draft of "hi" and the menu bar is focused on chip #1
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
     focus_chip(&mut view, 1); // Item(0) -> chip #1 (MENU-007: one item)
     view.input.set_value("hi");
 
@@ -537,14 +566,15 @@ fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_input() {
         "Up on a closed bar must drop focus back into the input"
     );
     assert_eq!(view.input.value(), "hi", "the draft must be unchanged");
+    Ok(())
 }
 
 /// Scenario: Esc with the bar unfocused is unchanged
 #[test]
-fn scenario_esc_with_the_bar_unfocused_is_unchanged() {
+fn scenario_esc_with_the_bar_unfocused_is_unchanged() -> TestResult {
     // @step Given the menu bar is not focused and the agent pane input is focused
     let (mut view, store, mut rx) = harness();
-    seed_sessions(&store, 1);
+    seed_sessions(&store, 1)?;
     assert!(view.menu_focus().is_none());
 
     // @step When I press Esc once
@@ -557,16 +587,17 @@ fn scenario_esc_with_the_bar_unfocused_is_unchanged() {
             .is_ok_and(|a| matches!(a, Action::AgentEscPressed)),
         "Esc with the bar unfocused must emit AgentEscPressed (the app-level cascade)"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking 'Board View' returns to the Board view
 #[test]
-fn scenario_clicking_board_view_returns_to_the_board_view() {
+fn scenario_clicking_board_view_returns_to_the_board_view() -> TestResult {
     // @step Given the agent pane has 2 open sessions
     let (mut view, store, mut rx) = harness();
-    seed_sessions(&store, 2);
-    let buf = render_agent(&mut view, &store); // refresh the cached bar geometry
-    let x = board_view_x(&buf);
+    seed_sessions(&store, 2)?;
+    let buf = render_agent(&mut view, &store)?; // refresh the cached bar geometry
+    let x = board_view_x(&buf)?;
 
     // @step When I click the 'Board View' item in the bar
     view.handle_event(&click(x, menu_row(&buf)));
@@ -581,38 +612,46 @@ fn scenario_clicking_board_view_returns_to_the_board_view() {
         view.open_menu().is_none(),
         "clicking 'Board View' must not open a dropdown (MENU-007)"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a chip activates that session
 #[test]
-fn scenario_clicking_a_chip_activates_that_session() {
+fn scenario_clicking_a_chip_activates_that_session() -> TestResult {
     // @step Given the agent pane has 2 open sessions
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 2);
-    let buf = render_agent(&mut view, &store);
-    let (x, y) = (chip_x(&buf, 1), menu_row(&buf));
+    seed_sessions(&store, 2)?;
+    let buf = render_agent(&mut view, &store)?;
+    let (x, y) = (chip_x(&buf, 1)?, menu_row(&buf));
 
     // @step When I click chip #1 in the bar
     view.handle_event(&click(x, y));
 
     // @step Then the agent pane shows session #1
     assert_eq!(
-        store.lock().unwrap().current_session_index(),
+        store
+            .lock()
+            .or_fail("expected a value")?
+            .current_session_index(),
         0,
         "clicking chip #1 must focus session #1"
     );
-    assert_eq!(store.lock().unwrap().current_session(), Some(&sid("s-1")));
+    assert_eq!(
+        store.lock().or_fail("expected a value")?.current_session(),
+        Some(&sid("s-1"))
+    );
+    Ok(())
 }
 
 /// Scenario: Wheel left and right over the bar walk the ring
 #[test]
-fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() {
+fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() -> TestResult {
     // @step Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 2);
+    seed_sessions(&store, 2)?;
     focus_first_item(&mut view);
-    render_agent(&mut view, &store); // cache the bar geometry
-    let buf = render_agent(&mut view, &store);
+    render_agent(&mut view, &store)?; // cache the bar geometry
+    let buf = render_agent(&mut view, &store)?;
     let y = menu_row(&buf);
 
     // @step When I scroll the wheel right once over the bar row
@@ -638,15 +677,17 @@ fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() {
             )),
         "a second wheel right must land on chip #2"
     );
+    Ok(())
 }
 
 /// Scenario: Wheel left and right over the bar with no dropdown and no bar focus are ignored
 #[test]
-fn scenario_wheel_left_and_right_over_the_bar_with_no_dropdown_and_no_bar_focus_are_ignored() {
+fn scenario_wheel_left_and_right_over_the_bar_with_no_dropdown_and_no_bar_focus_are_ignored(
+) -> TestResult {
     // @step Given the agent pane has an empty input and the menu bar is not focused
     let (mut view, store, _rx) = harness();
-    seed_sessions(&store, 1);
-    let buf = render_agent(&mut view, &store);
+    seed_sessions(&store, 1)?;
+    let buf = render_agent(&mut view, &store)?;
     assert!(view.menu_focus().is_none());
 
     // @step When I scroll the wheel right once over the bar row
@@ -657,16 +698,17 @@ fn scenario_wheel_left_and_right_over_the_bar_with_no_dropdown_and_no_bar_focus_
         view.menu_focus().is_none(),
         "wheel over the bar must be ignored while the bar is unfocused"
     );
+    Ok(())
 }
 
 /// Scenario: The bar omits the separator and chips when no sessions are open
 #[test]
-fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() {
+fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() -> TestResult {
     // @step Given the agent pane has no open sessions
     let (mut view, store, _rx) = harness();
 
     // @step When the agent pane renders
-    let buf = render_agent(&mut view, &store);
+    let buf = render_agent(&mut view, &store)?;
     let row = row_text(&buf, menu_row(&buf));
 
     // @step Then the bar row shows only the 'Board View' item with no separator and no chips
@@ -682,14 +724,16 @@ fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() {
         !row.contains("#1"),
         "no chips may paint without sessions: {row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: With no chips the ring wraps from the item to itself
-/// (MENU-009: through the two Zone C buttons)
+/// (TUI-114, MENU-009: through the three Zone C buttons)
 #[test]
-fn scenario_with_no_chips_the_ring_wraps_from_the_item_to_itself() {
+fn scenario_with_no_chips_the_ring_wraps_from_the_item_to_itself() -> TestResult {
     // @step Given the agent pane has no open sessions and the menu bar is focused on the 'Board View' item
-    let (mut view, _store, _rx) = harness();
+    let (mut view, store, _rx) = harness();
+    render_agent(&mut view, &store)?; // the bar's paint caches the Zone C rects
     focus_first_item(&mut view);
     assert!(
         view.menu_focus()
@@ -698,19 +742,28 @@ fn scenario_with_no_chips_the_ring_wraps_from_the_item_to_itself() {
         "the 'Board View' item must be focused first"
     );
 
-    // @step When I press Right three times
-    // (MENU-009: with no chips the ring is 1 item + 2 Zone C buttons —
-    // 'New Agent' → 'Close Agent' → wrap back to 'Board View'.)
-    for _ in 0..3 {
+    // @step When I press Right four times
+    // (with no chips the ring is 1 item + 3 Zone C buttons — each landing
+    // is checked as the walk goes.)
+    let expected = [
+        (MenuFocus::ZoneC(0), "'New Bot'"),
+        (MenuFocus::ZoneC(1), "'New Agent'"),
+        (MenuFocus::ZoneC(2), "'Close'"),
+        (MenuFocus::Item(0), "'Board View'"),
+    ];
+    let mut landings = Vec::new();
+    for _ in 0..expected.len() {
         view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+        landings.push(view.menu_focus());
     }
 
-    // @step Then the 'Board View' item is focused again (the walk passed through both Zone C buttons)
-    assert!(
-        view.menu_focus()
-            .as_ref()
-            .is_some_and(|f| matches!(f, MenuFocus::Item(0))),
-        "with no chips the ring must wrap from the item through the \
-         Zone C buttons back to itself (MENU-009)"
-    );
+    // @step Then the walk passes through 'New Bot' then 'New Agent' then 'Close' and the 'Board View' item is focused again (TUI-114, MENU-009: the Zone C buttons are the only ring stops besides the item)
+    for (i, ((want, label), got)) in expected.iter().zip(&landings).enumerate() {
+        assert!(
+            got.as_ref() == Some(want),
+            "Right #{} must land on {label}, got {got:?}",
+            i + 1
+        );
+    }
+    Ok(())
 }

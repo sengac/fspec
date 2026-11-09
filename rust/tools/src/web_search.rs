@@ -14,6 +14,7 @@ use crate::chrome_browser::{ChromeBrowser, ChromeError};
 use crate::limits::OutputLimits;
 use crate::page_fetcher::PageFetcher;
 use crate::search_engine::SearchEngine;
+use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
 use crate::truncation::{format_truncation_warning, process_output_lines, truncate_output};
 use crate::ToolError;
 use codelet_common::web_search::WebSearchAction;
@@ -425,11 +426,7 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::OpenPage {
-                url,
-                headless,
-                pause,
-            } => {
+            WebSearchAction::OpenPage { url, .. } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
                     return Err(ToolError::Validation {
@@ -437,9 +434,10 @@ impl Tool for WebSearchTool {
                         message: "URL is required".to_string(),
                     });
                 }
-                let effective_headless = if *pause { false } else { *headless };
+                let effective_headless = args.action.browser_headless() == Some(true);
+                let pause_request = page_pause_request(&args.action);
 
-                match fetch_page_content(url, effective_headless, *pause, self.session_id) {
+                match fetch_page_content(url, effective_headless, pause_request, self.session_id) {
                     Ok((content, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -452,12 +450,7 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::FindInPage {
-                url,
-                pattern,
-                headless,
-                pause,
-            } => {
+            WebSearchAction::FindInPage { url, pattern, .. } => {
                 let url = url.as_deref().unwrap_or("");
                 let pattern = pattern.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -472,13 +465,14 @@ impl Tool for WebSearchTool {
                         message: "Pattern is required for find_in_page".to_string(),
                     });
                 }
-                let effective_headless = if *pause { false } else { *headless };
+                let effective_headless = args.action.browser_headless() == Some(true);
+                let pause_request = page_pause_request(&args.action);
 
                 match find_pattern_in_page(
                     url,
                     pattern,
                     effective_headless,
-                    *pause,
+                    pause_request,
                     self.session_id,
                 ) {
                     Ok((found, was_interrupted)) => {
@@ -500,8 +494,7 @@ impl Tool for WebSearchTool {
                 url,
                 output_path,
                 full_page,
-                headless,
-                pause,
+                ..
             } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -511,14 +504,15 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let full_page = full_page.unwrap_or(false);
-                let effective_headless = if *pause { false } else { *headless };
+                let effective_headless = args.action.browser_headless() == Some(true);
+                let pause_request = page_pause_request(&args.action);
 
                 match capture_page_screenshot(
                     url,
                     output_path.clone(),
                     full_page,
                     effective_headless,
-                    *pause,
+                    pause_request,
                     self.session_id,
                 ) {
                     Ok((file_path, was_interrupted)) => {
@@ -592,11 +586,48 @@ fn perform_web_search(query: &str) -> Result<String, ChromeError> {
     })
 }
 
+/// PAUSE-001 / BUG-556: the pause a page action asks for after its page has
+/// loaded, or `None` when it is not paused (or not a page action). A
+/// Continue pause named "WebSearch" whose message names the page.
+pub fn page_pause_request(action: &WebSearchAction) -> Option<PauseRequest> {
+    let message = match action {
+        WebSearchAction::OpenPage {
+            url, pause: true, ..
+        } => format!("Page loaded: {}", url.as_deref().unwrap_or("")),
+        WebSearchAction::FindInPage {
+            url, pause: true, ..
+        } => format!(
+            "Pattern search complete on: {}",
+            url.as_deref().unwrap_or("")
+        ),
+        WebSearchAction::CaptureScreenshot {
+            url, pause: true, ..
+        } => format!(
+            "Page loaded at {}. Interact with the page, then press Enter to capture screenshot.",
+            url.as_deref().unwrap_or("")
+        ),
+        _ => return None,
+    };
+    Some(PauseRequest {
+        kind: PauseKind::Continue,
+        tool_name: "WebSearch".to_string(),
+        message,
+        details: None,
+    })
+}
+
+/// PAUSE-001 / BUG-556: ask the session's pause handler for `pause` (no
+/// pause: go on at once); true when the user interrupted instead of
+/// resuming.
+pub fn wait_for_user(session_id: Uuid, pause: Option<PauseRequest>) -> bool {
+    pause.is_some_and(|request| pause_for_user(session_id, request) == PauseResponse::Interrupted)
+}
+
 /// Fetch content from a web page, with optional pause for user interaction
 fn fetch_page_content(
     url: &str,
     headless: bool,
-    pause: bool,
+    pause: Option<PauseRequest>,
     session_id: Uuid,
 ) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
@@ -617,21 +648,7 @@ fn fetch_page_content(
             }
         };
 
-        let was_interrupted = if pause {
-            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(
-                session_id,
-                PauseRequest {
-                    kind: PauseKind::Continue,
-                    tool_name: "WebSearch".to_string(),
-                    message: format!("Page loaded: {url}"),
-                    details: None,
-                },
-            );
-            response == PauseResponse::Interrupted
-        } else {
-            false
-        };
+        let was_interrupted = wait_for_user(session_id, pause.clone());
 
         browser.cleanup_tab(&tab);
 
@@ -685,7 +702,7 @@ fn capture_page_screenshot(
     output_path: Option<String>,
     full_page: bool,
     headless: bool,
-    pause: bool,
+    pause: Option<PauseRequest>,
     session_id: Uuid,
 ) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
@@ -697,18 +714,7 @@ fn capture_page_screenshot(
             return Err(e);
         }
 
-        let was_interrupted = if pause {
-            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(session_id, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "WebSearch".to_string(),
-                message: format!("Page loaded at {url}. Interact with the page, then press Enter to capture screenshot."),
-                details: None,
-            });
-            response == PauseResponse::Interrupted
-        } else {
-            false
-        };
+        let was_interrupted = wait_for_user(session_id, pause.clone());
 
         if was_interrupted {
             browser.cleanup_tab(&tab);
@@ -733,7 +739,7 @@ fn find_pattern_in_page(
     url: &str,
     pattern: &str,
     headless: bool,
-    pause: bool,
+    pause: Option<PauseRequest>,
     session_id: Uuid,
 ) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
@@ -785,21 +791,7 @@ fn find_pattern_in_page(
             final_output
         };
 
-        let was_interrupted = if pause {
-            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(
-                session_id,
-                PauseRequest {
-                    kind: PauseKind::Continue,
-                    tool_name: "WebSearch".to_string(),
-                    message: format!("Pattern search complete on: {url}"),
-                    details: None,
-                },
-            );
-            response == PauseResponse::Interrupted
-        } else {
-            false
-        };
+        let was_interrupted = wait_for_user(session_id, pause.clone());
 
         browser.cleanup_tab(&tab);
         Ok((result_output, was_interrupted))

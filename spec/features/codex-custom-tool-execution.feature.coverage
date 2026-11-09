@@ -134,7 +134,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "use super::answers::Answers;",
+              "lastLine": "id: string(event, \"item_id\")?,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -343,7 +345,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -555,7 +559,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             }
           ]
         }
@@ -566,7 +572,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov157_codex_dialect_transport.rs",
-          "lines": "102-130",
+          "lines": "109-137",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/stream_events.rs",
@@ -695,7 +701,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "use super::answers::Answers;",
+              "lastLine": "id: string(event, \"item_id\")?,"
             },
             {
               "file": "rust/providers/src/codex/custom_tools.rs",
@@ -904,7 +912,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "use serde::{Deserialize, Serialize};",
+              "lastLine": "} else if item[\"type\"] == \"function_call_output\""
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -1116,7 +1126,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "#[path = \"checkpoint_error.rs\"]",
+              "lastLine": "None => incoming,"
             }
           ]
         }

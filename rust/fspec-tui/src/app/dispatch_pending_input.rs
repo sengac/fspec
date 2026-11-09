@@ -1,43 +1,35 @@
-//! App::dispatch routing for RPC-052 — pending-input draft persistence.
+//! App::dispatch routing for RPC-052 — pending-input draft persistence,
+//! reworked by BUG-549 (the composer-draft lifecycle in
+//! `app/composer_draft.rs`).
 //!
 //! Feature: spec/features/pending-input-draft-persistence.feature
+//! Feature: spec/features/composer-draft-belongs-to-one-session.feature
 //!
-//! Hosts three impl App helpers invoked from `app/dispatch.rs`:
+//! Hosts the impl App helpers invoked from `app/dispatch_model_thinking_dialogs.rs`:
 //!
-//!   - `handle_pending_input_changed(text)`: mirrors the live buffer
-//!     into `SessionContext.input_draft` synchronously AND debounces
-//!     a `backend.set_pending_input(session, Some(text))` call by
-//!     300ms (a second edit within the window aborts the previous
-//!     in-flight task — last-write-wins). Silent no-op when no
-//!     current session is open.
+//!   - `handle_pending_input_changed(text)`: the AgentView reports that the
+//!     composer text changed. The composer is the truth for the session it
+//!     is bound to, so the handler records the composer's CURRENT text
+//!     through [`App::sync_composer_draft`] (in-memory mirror + per-session
+//!     debounced daemon save) rather than the reported text, which can be
+//!     stale once a later event moved focus. No-op without a session.
 //!
-//!   - `handle_seed_pending_input(session_id, text)`: always folds
-//!     the text into the matching `SessionContext.input_draft` so the
-//!     RPC-024 cycle restores the same draft; ONLY mutates the live
-//!     `MultiLineInput` when the activated session is still the
-//!     focused session at the moment the hydration completes.
+//!   - `handle_seed_pending_input(session_id, text)`: code seeds a session's
+//!     draft (the RPC-057 merge-conflict context). A draft change like
+//!     typing: the in-memory draft, the live composer when it holds that
+//!     session's draft, and a daemon save.
 //!
-//!   - `spawn_hydrate_pending_input(session_id)`: fire-and-forget
-//!     tokio task that awaits `backend.get_pending_input(session_id)`
-//!     and on `Ok(Some(text))` dispatches `Action::SeedPendingInput`
-//!     onto the App's action bus. Errors are swallowed via `tracing`.
+//!   - `spawn_hydrate_pending_input(session_id)`: on attach / a new tab,
+//!     read the daemon draft under the session's ordering lock — only when
+//!     every scheduled write has settled — and report it as
+//!     `Action::PendingInputHydrated` with the generation it was read at.
 //!
-//! Wiring entry points:
-//!   - `Action::PendingInputChanged(text)` → `handle_pending_input_changed`
-//!     (routed from `app/dispatch.rs`).
-//!   - `Action::SeedPendingInput { session_id, text }` → `handle_seed_pending_input`
-//!     (routed from `app/dispatch.rs`).
-//!   - `Action::SessionCreated(id)` arm in `app/dispatch.rs` and
-//!     `handle_attach_to_session` in `app/dispatch_resume_search_views.rs` BOTH
-//!     call `spawn_hydrate_pending_input(id)` after the session is
-//!     registered in the AgentViewStore.
-//!   - `handle_input_submitted` in `app/dispatch_slash_commands.rs` spawns a
-//!     `backend.set_pending_input(session, None)` clear after the
-//!     send_input + persistence path so the durable draft is purged
-//!     on submit.
+//!   - `handle_pending_input_hydrated(..)`: applies the daemon draft only
+//!     when no draft change was scheduled since the read (BUG-549 rule 4:
+//!     text typed after focusing is never overwritten).
 
+use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_rpc_types::SessionId;
 
@@ -47,120 +39,80 @@ use crate::transport::FspecBackend;
 use super::state::App;
 
 impl App {
-    /// RPC-052: route an `Action::PendingInputChanged(text)` through the
-    /// debounce + per-session draft mirror.
-    pub(crate) fn handle_pending_input_changed(&mut self, text: String) {
-        let Some(session_id) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-
-        // Synchronous mirror into SessionContext.input_draft so the
-        // RPC-024 Shift+Left/Right cycle has the fresh draft to swap.
-        if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session_id) {
-            ctx.input_draft.clone_from(&text);
-        }
-
-        // Honour the synchronous unit-test path so tests that don't
-        // drive a Tokio runtime can still observe the mirror update.
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-
-        // Last-write-wins: cancel any pending debounced save.
-        if let Some(handle) = self.pending_input_save_handle.take() {
-            handle.abort();
-        }
-
-        let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let id = session_id;
-        let buf = text;
-        let handle = tokio::spawn(async move {
-            tokio::time::sleep(Duration::from_millis(300)).await;
-            if let Err(err) = backend.set_pending_input(id.clone(), Some(buf)).await {
-                tracing::debug!(
-                    target: "rpc052",
-                    session = &id.value,
-                    error = %err,
-                    "set_pending_input failed (silently dropped)",
-                );
-            }
-        });
-        self.pending_input_save_handle = Some(handle);
+    /// RPC-052 / BUG-549: the composer text changed — record the
+    /// composer's current text as the bound session's draft.
+    pub(crate) fn handle_pending_input_changed(&mut self, _reported: String) {
+        self.sync_composer_draft();
     }
 
-    /// RPC-052: route an `Action::SeedPendingInput { session_id, text }`
-    /// through the focused-session check + SessionContext fold.
+    /// RPC-052 / BUG-549: seed `text` as `session_id`'s draft (a draft
+    /// change like typing). Dropped when the session's tab is not open.
     pub(crate) fn handle_seed_pending_input(&mut self, session_id: SessionId, text: String) {
-        // ALWAYS fold the text into the matching SessionContext.input_draft.
-        if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session_id) {
-            ctx.input_draft.clone_from(&text);
+        let Some(context) = self.agent_view_store.session_context_mut_for(&session_id) else {
+            return;
+        };
+        context.input_draft.clone_from(&text);
+        if self.composer_drafts.bound() == Some(&session_id) {
+            self.navigator.agent.input.set_value(&text);
+            self.should_render = true;
         }
-        // ONLY seed the live MultiLineInput when the activated session is
-        // still the focused session at the moment the result arrives.
-        let focused = self.agent_view_store.current_session().cloned();
-        if focused.as_ref() == Some(&session_id) {
+        self.schedule_draft_save(&session_id, text);
+    }
+
+    /// BUG-549: apply a hydrated daemon draft read at `generation`, unless a
+    /// draft change was scheduled for the session since.
+    pub(crate) fn handle_pending_input_hydrated(
+        &mut self,
+        session_id: SessionId,
+        text: String,
+        generation: u64,
+    ) {
+        let slot = self.composer_drafts.slot(&session_id);
+        if slot.latest.load(Ordering::SeqCst) != generation {
+            return;
+        }
+        let Some(context) = self.agent_view_store.session_context_mut_for(&session_id) else {
+            return;
+        };
+        context.input_draft.clone_from(&text);
+        if self.composer_drafts.bound() == Some(&session_id)
+            && self.navigator.agent.input.value() != text
+        {
             self.navigator.agent.input.set_value(&text);
             self.should_render = true;
         }
     }
 
-    /// RPC-052: clear the durable per-session pending-input draft
-    /// after an `Action::InputSubmitted` lands. Fire-and-forget —
-    /// errors are silently logged via tracing. Called from
-    /// `handle_input_submitted` in `app/dispatch_slash_commands.rs` so the
-    /// caller stays under the 300-LoC ceiling.
-    pub(crate) fn spawn_clear_pending_input(&mut self, session_id: SessionId) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let handle = tokio::spawn(async move {
-            if let Err(err) = backend.set_pending_input(session_id.clone(), None).await {
-                tracing::debug!(
-                    target: "rpc052",
-                    session = &session_id.value,
-                    error = %err,
-                    "set_pending_input(None) on submit failed (silently dropped)",
-                );
-            }
-        });
-        // Mirror the RPC-025 `handle_input_submitted_persistence`
-        // contract: park the JoinHandle on `pending_tasks` so the
-        // `App::next_pending_task` test seam (RPC-012) keeps working —
-        // `drain_pending` harnesses await every spawn, and a handle
-        // that is never parked escapes the drain and races the
-        // assertions (BUG-169 flaky pair).
-        self.pending_tasks.push(handle);
-    }
-
-    /// RPC-052: spawn a fire-and-forget task that hydrates the
-    /// per-session draft via `backend.get_pending_input(session_id)`
-    /// and dispatches `Action::SeedPendingInput` on Ok(Some).
+    /// RPC-052 / BUG-549: read `session_id`'s daemon draft for the attach
+    /// hydration. Skipped when a write is still pending (or failed): the
+    /// local copy is then the newer one. Errors are logged via tracing.
     pub(crate) fn spawn_hydrate_pending_input(&mut self, session_id: SessionId) {
-        // Honour the synchronous unit-test path so tests that don't
-        // drive a Tokio runtime can still observe state without
-        // panicking.
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
+        let slot = self.composer_drafts.slot(&session_id);
+        let generation = slot.latest.load(Ordering::SeqCst);
         let backend: Arc<dyn FspecBackend> = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let id = session_id;
         let handle = tokio::spawn(async move {
-            match backend.get_pending_input(id.clone()).await {
-                Ok(Some(text)) => {
-                    let _ = action_tx.send(Action::SeedPendingInput {
-                        session_id: id,
-                        text,
+            let _order = slot.order.lock().await;
+            if slot.latest.load(Ordering::SeqCst) != generation
+                || slot.settled.load(Ordering::SeqCst) != generation
+            {
+                return;
+            }
+            match backend.get_pending_input(session_id.clone()).await {
+                Ok(text) => {
+                    let _ = action_tx.send(Action::PendingInputHydrated {
+                        session_id,
+                        text: text.unwrap_or_default(),
+                        generation,
                     });
-                }
-                Ok(None) => {
-                    // No durable draft — nothing to seed.
                 }
                 Err(err) => {
                     tracing::debug!(
                         target: "rpc052",
-                        session = &id.value,
+                        session = &session_id.value,
                         error = %err,
                         "get_pending_input failed (silently dropped)",
                     );

@@ -1,7 +1,10 @@
+@BUG-582
 @error-handling
 @cli
 @done
 @CMPCT-027
+@BUG-306
+@streaming-loop-detection
 Feature: Complete error cascade in run_retry_stream
   """
   The primary stream loop handles ALL compaction-recovery restarts in-loop via begin_compaction_recovery + execute_compaction_and_capture_events + stream reassignment + continue. Post-compaction errors therefore pass through the same error cascade (prompt-too-long, truncation, image, network, stall, PromptCancelled). A compaction_retry_count bounds cascaded compactions at MAX_COMPACTION_RETRIES = 3.
@@ -41,11 +44,11 @@ Feature: Complete error cascade in run_retry_stream
     When build_compaction_budget_exhausted_message is invoked with the attempt count
     Then the returned message contains the numeric attempt count and the word compaction
 
-  Scenario: execute_compaction_and_capture_events runs compaction and resets token tracker
+  Scenario: execute_compaction_and_capture_events prepares the compaction view and keeps the committed token basis
     Given a session with a populated conversation and a previously triggered compaction token state
     When execute_compaction_and_capture_events is invoked with the original user prompt
-    Then execute_compaction has cleared the prior turns and injected the compaction instruction
-    Then the session token tracker has been reset via reset_after_compaction
+    Then the compaction view holds the compaction instruction instead of the prior turns
+    Then the session token tracker keeps the committed basis until the summary is durably applied
 
   Scenario: execute_compaction_and_capture_events emits compaction continuing event on success
     Given a session that will successfully run compaction

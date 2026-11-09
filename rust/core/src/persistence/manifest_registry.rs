@@ -1,19 +1,25 @@
 lazy_static::lazy_static! {
-    pub(super) static ref MESSAGE_STORE: Mutex<Option<MessageStore>> = Mutex::new(None);
+    pub(super) static ref MESSAGE_STORE: Mutex<Option<std::sync::Arc<MessageStore>>> = Mutex::new(None);
     pub(super) static ref SESSION_STORE: Mutex<Option<SessionStore>> = Mutex::new(None);
 }
 
-pub(super) fn init_message_store() -> Result<(), String> {
-    let mut store = codelet_common::read_work::lock(&MESSAGE_STORE)?;
-    if store.is_none() {
-        *store = Some(MessageStore::new()?);
+/// BUG-625: a shared handle to the message store. The daemon-wide lock is
+/// held only to read or install the handle, never while the store is
+/// created or used, so a panic in message store work never poisons it.
+pub(super) fn message_store() -> Result<std::sync::Arc<MessageStore>, String> {
+    let installed = || codelet_common::read_work::lock_named(&MESSAGE_STORE, "message store");
+    if let Some(store) = installed()?.as_ref() {
+        return Ok(std::sync::Arc::clone(store));
     }
-    Ok(())
+    let created = std::sync::Arc::new(MessageStore::new()?);
+    Ok(std::sync::Arc::clone(
+        installed()?.get_or_insert(created),
+    ))
 }
 
 pub(super) fn init_session_store() -> Result<(), String> {
     super::manifest_updates::ensure_session_access()?;
-    let mut store = codelet_common::read_work::lock(&SESSION_STORE)?;
+    let mut store = lock_store()?;
     if store.is_none() {
         *store = Some(SessionStore::new()?);
     }
@@ -75,14 +81,67 @@ pub fn is_session_store_initialized_for_tests() -> bool {
     SESSION_STORE.lock().map(|s| s.is_some()).unwrap_or(false)
 }
 
+/// BUG-610: the shared store lock is poisoned (only in-memory work runs
+/// under it, so this means a bug in that work, never a session's update).
+pub(super) const SESSION_STORE_POISONED: &str = "the session store lock is poisoned";
+
+/// BUG-610: lock the shared store for in-memory work only: the cache, the
+/// last-session pointers and the writer lease map.
+pub(super) fn lock_store() -> Result<std::sync::MutexGuard<'static, Option<SessionStore>>, String> {
+    codelet_common::read_work::lock_named(&SESSION_STORE, "session store")
+}
+
+/// BUG-610: take `session_id`'s writer under the store lock and release
+/// the lock before the writer runs any closure, I/O or commit.
+pub(super) fn session_writer(
+    session_id: Uuid,
+) -> Result<super::manifest_commit::SessionWriter, super::manifest_commit::ManifestCommitError> {
+    use super::manifest_commit::ManifestCommitError;
+    SESSION_STORE
+        .lock()
+        .map_err(|_| ManifestCommitError::Store(SESSION_STORE_POISONED.into()))?
+        .as_mut()
+        .ok_or_else(|| ManifestCommitError::Store("not initialized".into()))?
+        .writer(session_id)
+}
+
+/// BUG-610: cache a promoted manifest. The manifest on disk is already
+/// authoritative, so a poisoned store only leaves the cache behind; that
+/// is logged as an error, never skipped silently.
+pub(super) fn record_committed(committed: &SessionManifest) {
+    match SESSION_STORE.lock() {
+        Ok(mut store) => {
+            if let Some(store) = store.as_mut() {
+                store.record(committed);
+            }
+        }
+        Err(_) => tracing::error!(
+            session_id = %committed.id,
+            revision = committed.revision,
+            "{SESSION_STORE_POISONED}: the committed manifest is not cached"
+        ),
+    }
+}
+
+/// Promote a whole manifest snapshot through its session's writer.
+fn commit_snapshot(snapshot: &SessionManifest) -> Result<SessionManifest, String> {
+    session_writer(snapshot.id)
+        .and_then(|writer| writer.commit(snapshot, &mut record_committed))
+        .map_err(|error| error.to_string())
+}
+
+fn sessions_dir() -> Result<PathBuf, String> {
+    Ok(lock_store()?
+        .as_ref()
+        .ok_or("Session store not initialized")?
+        .sessions_dir
+        .clone())
+}
+
 /// Create a new session.
 pub fn create_session(name: &str, project: &Path) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .create(name, project)
+    commit_snapshot(&SessionManifest::new(name, project.to_path_buf()))
 }
 
 /// Create a new session with provider.
@@ -92,38 +151,27 @@ pub fn create_session_with_provider(
     provider: &str,
 ) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .create_with_provider(name, project, provider)
+    let session = SessionManifest::with_provider(name, project.to_path_buf(), provider);
+    info!(session_id = %session.id, provider = %provider, name = %name, "create_session_with_provider: created new session manifest");
+    commit_snapshot(&session)
 }
 
 /// Save a session manifest to disk (for externally-created manifests).
 pub fn save_session(session: &SessionManifest) -> Result<(), String> {
     init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)
+    commit_snapshot(session).map(|_| ())
 }
 
 /// Load a session by ID.
 pub fn load_session(id: Uuid) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let store = codelet_common::read_work::lock(&SESSION_STORE)?;
-    store
-        .as_ref()
-        .ok_or("Session store not initialized")?
-        .load(id)
+    load_manifest(&sessions_dir()?, id)
 }
 
 /// Resume the last session for a project.
 pub fn resume_last_session(project: &Path) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
+    lock_store()?
         .as_ref()
         .ok_or("Session store not initialized")?
         .resume_last(project)
@@ -136,9 +184,5 @@ pub fn fork_session(
     name: &str,
 ) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .fork(session, at_index, name)
+    commit_snapshot(&fork_manifest(session, at_index, name)?)
 }

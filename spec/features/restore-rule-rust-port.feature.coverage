@@ -17,8 +17,6 @@
                 103,
                 104,
                 105,
-                106,
-                107,
                 108,
                 109,
                 110,
@@ -151,8 +149,12 @@
                 237,
                 238,
                 239,
-                240
-              ]
+                240,
+                241,
+                242
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "// touching the in-memory tree, mirroring the TS atomic-failure"
             }
           ]
         }
@@ -168,15 +170,17 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                207,
-                208,
                 209,
                 210,
                 211,
                 212,
                 213,
-                214
-              ]
+                214,
+                215,
+                216
+              ],
+              "firstLine": "return Ok(format!(",
+              "lastLine": "// Restore: clear deleted, REMOVE deletedAt key, bump updatedAt, write."
             }
           ]
         }
@@ -192,16 +196,18 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                106,
-                107,
                 108,
                 109,
                 110,
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -217,8 +223,6 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -232,8 +236,12 @@
                 128,
                 129,
                 130,
-                131
-              ]
+                131,
+                132,
+                133
+              ],
+              "firstLine": "// Status gate.",
+              "lastLine": ""
             }
           ]
         }
@@ -249,7 +257,6 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                133,
                 134,
                 135,
                 136,
@@ -262,8 +269,16 @@
                 143,
                 144,
                 145,
-                146
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// Rules-array-present gate.",
+              "lastLine": "}"
             }
           ]
         }
@@ -279,16 +294,18 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                196,
-                197,
                 198,
                 199,
                 200,
                 201,
                 202,
                 203,
-                204
-              ]
+                204,
+                205,
+                206
+              ],
+              "firstLine": "Some(v) => v,",
+              "lastLine": ""
             }
           ]
         }
@@ -304,8 +321,6 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                242,
-                243,
                 244,
                 245,
                 246,
@@ -405,8 +420,12 @@
                 340,
                 341,
                 342,
-                343
-              ]
+                343,
+                344,
+                345
+              ],
+              "firstLine": "// (\"Bulk restore validates all IDs before restoring any item\").",
+              "lastLine": "let (sign, rest) = match trimmed.chars().next() {"
             }
           ]
         }
@@ -422,8 +441,6 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                320,
-                321,
                 322,
                 323,
                 324,
@@ -432,8 +449,12 @@
                 327,
                 328,
                 329,
-                330
-              ]
+                330,
+                331,
+                332
+              ],
+              "firstLine": "restored_texts.push(text);",
+              "lastLine": "write_json_atomic(&path, data)?;"
             }
           ]
         }
@@ -449,6 +470,19 @@
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
                 261,
                 262,
                 263,
@@ -490,11 +524,10 @@
                 299,
                 300,
                 301,
-                302,
-                303,
-                304,
-                305
-              ]
+                302
+              ],
+              "firstLine": "// Collect (position, already_active, text) for each requested id.",
+              "lastLine": "};"
             }
           ]
         }
@@ -505,13 +538,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_rule.rs",
-          "lines": "388-420",
+          "lines": "385-417",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                309,
-                310,
                 311,
                 312,
                 313,
@@ -544,8 +575,12 @@
                 340,
                 341,
                 342,
-                343
-              ]
+                343,
+                344,
+                345
+              ],
+              "firstLine": ".and_then(|wu| wu.extra.get_mut(\"rules\"))",
+              "lastLine": "let (sign, rest) = match trimmed.chars().next() {"
             }
           ]
         }
@@ -556,21 +591,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_rule.rs",
-          "lines": "422-453",
+          "lines": "419-450",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_rule.rs",
               "lines": [
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
-                156
-              ]
+                156,
+                157
+              ],
+              "firstLine": "// BULK BRANCH — `ids` wins over `index` when both are present.",
+              "lastLine": "}"
             }
           ]
         }
@@ -587,6 +619,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/restore_rule.rs"
     ],
-    "totalLinesCovered": 747
+    "totalLinesCovered": 757
   }
 }

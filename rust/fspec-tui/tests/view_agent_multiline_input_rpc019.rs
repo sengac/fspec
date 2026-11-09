@@ -11,10 +11,9 @@
 //! fail to compile until `MultiLineInput`, `InputEventOutcome` and the
 //! four new Action variants land. That is intentional (red phase).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::multiline_input::{InputEventOutcome, MultiLineInput};
 use codelet_fspec_tui::{Action, AgentView, AgentViewStore, EventResult};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
@@ -22,7 +21,10 @@ use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 
 fn fresh_view() -> (AgentView, UnboundedReceiver<Action>) {
     let (tx, rx) = unbounded_channel();
-    (AgentView::new(tx), rx)
+    // BUG-552: the composer belongs to a session, as App::sync_composer_draft sets it.
+    let mut view = AgentView::new(tx);
+    view.set_composer_session(Some(codelet_rpc_types::SessionId::new("s-1")));
+    (view, rx)
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -51,10 +53,16 @@ fn next_non_pending_input_changed(rx: &mut UnboundedReceiver<Action>) -> Option<
 
 /// RPC-052: assert no non-`PendingInputChanged` Action remains on the
 /// bus. Drains any keystroke `PendingInputChanged` events first.
-fn assert_no_non_pending_action(rx: &mut UnboundedReceiver<Action>) {
+fn assert_no_non_pending_action(
+    rx: &mut UnboundedReceiver<Action>,
+) -> Result<(), codelet_test_helpers::TestError> {
     if let Some(other) = next_non_pending_input_changed(rx) {
-        panic!("unexpected Action on bus after draining PendingInputChanged: {other:?}");
+        return Err(format!(
+            "unexpected Action on bus after draining PendingInputChanged: {other:?}"
+        )
+        .into());
     }
+    Ok(())
 }
 
 fn render_rows(
@@ -62,12 +70,12 @@ fn render_rows(
     height: u16,
     store: &mut AgentViewStore,
     view: &mut AgentView,
-) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(frame.area(), frame.buffer_mut(), store);
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut rows = Vec::with_capacity(buf.area.height as usize);
     for y in 0..buf.area.height {
@@ -77,12 +85,12 @@ fn render_rows(
         }
         rows.push(row);
     }
-    rows
+    Ok(rows)
 }
 
 /// Scenario: Plain Enter on the multi-line input submits and resets the buffer
 #[test]
-fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() {
+fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() -> TestResult {
     // @step Given an AgentView with an empty MultiLineInput
     let (mut view, mut rx) = fresh_view();
     assert!(view.input.is_empty());
@@ -92,10 +100,14 @@ fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
     // @step Then AgentView emits Action::InputSubmitted("hello world")
-    let action = next_non_pending_input_changed(&mut rx).expect("Action::InputSubmitted on bus");
+    let action =
+        next_non_pending_input_changed(&mut rx).or_fail("Action::InputSubmitted on bus")?;
     match action {
-        Action::InputSubmitted(s) => assert_eq!(s, "hello world"),
-        other => panic!("expected InputSubmitted, got {other:?}"),
+        Action::InputSubmitted(session, s) => {
+            assert_eq!(session, codelet_rpc_types::SessionId::new("s-1"));
+            assert_eq!(s, "hello world");
+        }
+        other => return Err(format!("expected InputSubmitted, got {other:?}").into()),
     }
 
     // @step And the MultiLineInput's buffer is empty after submit
@@ -103,11 +115,12 @@ fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() {
 
     // @step And the MultiLineInput's visible-row count is 1
     assert_eq!(view.input.visible_rows(), 1);
+    Ok(())
 }
 
 /// Scenario: Shift+Enter inserts a literal newline instead of submitting
 #[test]
-fn shift_enter_inserts_a_literal_newline_instead_of_submitting() {
+fn shift_enter_inserts_a_literal_newline_instead_of_submitting() -> TestResult {
     // @step Given an AgentView with an empty MultiLineInput
     let (mut view, mut rx) = fresh_view();
 
@@ -117,18 +130,19 @@ fn shift_enter_inserts_a_literal_newline_instead_of_submitting() {
     type_chars(&mut view, "world");
 
     // @step Then no Action::InputSubmitted is emitted yet
-    assert_no_non_pending_action(&mut rx);
+    assert_no_non_pending_action(&mut rx)?;
 
     // @step And the MultiLineInput's buffer is exactly "hello\nworld"
     assert_eq!(view.input.value(), "hello\nworld");
 
     // @step And the MultiLineInput's visible-row count is 2
     assert_eq!(view.input.visible_rows(), 2);
+    Ok(())
 }
 
 /// Scenario: Plain Enter submits a multi-line buffer with embedded newlines
 #[test]
-fn plain_enter_submits_a_multi_line_buffer_with_embedded_newlines() {
+fn plain_enter_submits_a_multi_line_buffer_with_embedded_newlines() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "hello\nworld"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("hello\nworld");
@@ -138,19 +152,23 @@ fn plain_enter_submits_a_multi_line_buffer_with_embedded_newlines() {
     let _ = view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
     // @step Then AgentView emits Action::InputSubmitted("hello\nworld")
-    let action = rx.try_recv().expect("Action::InputSubmitted on bus");
+    let action = rx.try_recv().or_fail("Action::InputSubmitted on bus")?;
     match action {
-        Action::InputSubmitted(s) => assert_eq!(s, "hello\nworld"),
-        other => panic!("expected InputSubmitted, got {other:?}"),
+        Action::InputSubmitted(session, s) => {
+            assert_eq!(session, codelet_rpc_types::SessionId::new("s-1"));
+            assert_eq!(s, "hello\nworld");
+        }
+        other => return Err(format!("expected InputSubmitted, got {other:?}").into()),
     }
 
     // @step And the MultiLineInput's buffer is empty after submit
     assert!(view.input.is_empty());
+    Ok(())
 }
 
 /// Scenario: Pasted text with embedded newlines preserves them in the buffer
 #[test]
-fn pasted_text_with_embedded_newlines_preserves_them_in_the_buffer() {
+fn pasted_text_with_embedded_newlines_preserves_them_in_the_buffer() -> TestResult {
     // @step Given an AgentView with an empty MultiLineInput
     let (mut view, _rx) = fresh_view();
 
@@ -162,11 +180,12 @@ fn pasted_text_with_embedded_newlines_preserves_them_in_the_buffer() {
 
     // @step And the MultiLineInput's visible-row count is 3
     assert_eq!(view.input.visible_rows(), 3);
+    Ok(())
 }
 
 /// Scenario: MultiLineInput auto-grows up to its max visible rows cap of 6
 #[test]
-fn multi_line_input_auto_grows_up_to_its_max_visible_rows_cap_of_6() {
+fn multi_line_input_auto_grows_up_to_its_max_visible_rows_cap_of_6() -> TestResult {
     // @step Given an AgentView with MultiLineInput max_visible_rows = 6
     let (mut view, _rx) = fresh_view();
     view.input = MultiLineInput::with_max_visible_rows(6);
@@ -181,17 +200,18 @@ fn multi_line_input_auto_grows_up_to_its_max_visible_rows_cap_of_6() {
 
     // @step And the MultiLineInput's logical line count is 9
     assert_eq!(view.input.line_count(), 9);
+    Ok(())
 }
 
 /// Scenario: Empty MultiLineInput paints the dim placeholder hint with a green > prefix
 #[test]
-fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() {
+fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() -> TestResult {
     // @step Given an AgentView whose MultiLineInput is empty
     let (mut view, _rx) = fresh_view();
     let mut store = AgentViewStore::default();
 
     // @step When the App renders AgentView against a 100x12 TestBackend
-    let rows = render_rows(100, 12, &mut store, &mut view);
+    let rows = render_rows(100, 12, &mut store, &mut view)?;
     let input_row: String = rows
         .iter()
         .find(|r| r.contains("Type a message..."))
@@ -218,18 +238,19 @@ fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() 
         input_row.contains("'Tab' turns"),
         "input row missing turn hint: {input_row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Non-empty MultiLineInput hides the placeholder hint
 #[test]
-fn non_empty_multi_line_input_hides_the_placeholder_hint() {
+fn non_empty_multi_line_input_hides_the_placeholder_hint() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, _rx) = fresh_view();
     view.input.set_value("draft");
     let mut store = AgentViewStore::default();
 
     // @step When the App renders AgentView against a 100x12 TestBackend
-    let rows = render_rows(100, 12, &mut store, &mut view);
+    let rows = render_rows(100, 12, &mut store, &mut view)?;
     let joined = rows.join("\n");
 
     // @step Then the rendered buffer's input area contains the substring "draft"
@@ -242,11 +263,12 @@ fn non_empty_multi_line_input_hides_the_placeholder_hint() {
         !joined.contains("Type a message..."),
         "placeholder should be hidden when input is non-empty"
     );
+    Ok(())
 }
 
 /// Scenario: Shift+Up emits Action::HistoryPrev without modifying the buffer
 #[test]
-fn shift_up_emits_action_history_prev_without_modifying_the_buffer() {
+fn shift_up_emits_action_history_prev_without_modifying_the_buffer() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("draft");
@@ -255,7 +277,7 @@ fn shift_up_emits_action_history_prev_without_modifying_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Up, KeyModifiers::SHIFT));
 
     // @step Then AgentView emits Action::HistoryPrev
-    let action = rx.try_recv().expect("Action::HistoryPrev on bus");
+    let action = rx.try_recv().or_fail("Action::HistoryPrev on bus")?;
     assert!(
         matches!(action, Action::HistoryPrev),
         "expected HistoryPrev, got {action:?}"
@@ -263,11 +285,12 @@ fn shift_up_emits_action_history_prev_without_modifying_the_buffer() {
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
+    Ok(())
 }
 
 /// Scenario: Shift+Down emits Action::HistoryNext without modifying the buffer
 #[test]
-fn shift_down_emits_action_history_next_without_modifying_the_buffer() {
+fn shift_down_emits_action_history_next_without_modifying_the_buffer() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("draft");
@@ -276,7 +299,7 @@ fn shift_down_emits_action_history_next_without_modifying_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Down, KeyModifiers::SHIFT));
 
     // @step Then AgentView emits Action::HistoryNext
-    let action = rx.try_recv().expect("Action::HistoryNext on bus");
+    let action = rx.try_recv().or_fail("Action::HistoryNext on bus")?;
     assert!(
         matches!(action, Action::HistoryNext),
         "expected HistoryNext, got {action:?}"
@@ -284,11 +307,12 @@ fn shift_down_emits_action_history_next_without_modifying_the_buffer() {
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
+    Ok(())
 }
 
 /// Scenario: Shift+Left emits Action::SessionPrev without modifying the buffer
 #[test]
-fn shift_left_emits_action_session_prev_without_modifying_the_buffer() {
+fn shift_left_emits_action_session_prev_without_modifying_the_buffer() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("draft");
@@ -297,7 +321,7 @@ fn shift_left_emits_action_session_prev_without_modifying_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Left, KeyModifiers::SHIFT));
 
     // @step Then AgentView emits Action::SessionPrev
-    let action = rx.try_recv().expect("Action::SessionPrev on bus");
+    let action = rx.try_recv().or_fail("Action::SessionPrev on bus")?;
     assert!(
         matches!(action, Action::SessionPrev),
         "expected SessionPrev, got {action:?}"
@@ -305,11 +329,12 @@ fn shift_left_emits_action_session_prev_without_modifying_the_buffer() {
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
+    Ok(())
 }
 
 /// Scenario: Shift+Right emits Action::SessionNext without modifying the buffer
 #[test]
-fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
+fn shift_right_emits_action_session_next_without_modifying_the_buffer() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("draft");
@@ -318,7 +343,7 @@ fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Right, KeyModifiers::SHIFT));
 
     // @step Then AgentView emits Action::SessionNext
-    let action = rx.try_recv().expect("Action::SessionNext on bus");
+    let action = rx.try_recv().or_fail("Action::SessionNext on bus")?;
     assert!(
         matches!(action, Action::SessionNext),
         "expected SessionNext, got {action:?}"
@@ -326,6 +351,7 @@ fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
+    Ok(())
 }
 
 /// Scenario: ESC inside AgentView emits Action::AgentEscPressed
@@ -338,7 +364,7 @@ fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
 /// assert that the cascade action is emitted; the routing decision
 /// belongs to `tests/keyboard_cascade_rpc051.rs`.
 #[test]
-fn esc_inside_agent_view_emits_action_back_to_board() {
+fn esc_inside_agent_view_emits_action_back_to_board() -> TestResult {
     // @step Given an AgentView whose MultiLineInput contains "draft\nstill drafting"
     let (mut view, mut rx) = fresh_view();
     view.input.set_value("draft\nstill drafting");
@@ -351,7 +377,7 @@ fn esc_inside_agent_view_emits_action_back_to_board() {
     );
 
     // @step Then AgentView emits Action::AgentEscPressed (RPC-051 cascade entry point)
-    let action = rx.try_recv().expect("Action::AgentEscPressed on bus");
+    let action = rx.try_recv().or_fail("Action::AgentEscPressed on bus")?;
     assert!(
         matches!(action, Action::AgentEscPressed),
         "expected AgentEscPressed, got {action:?}"
@@ -359,12 +385,13 @@ fn esc_inside_agent_view_emits_action_back_to_board() {
 
     // @step And the MultiLineInput's buffer is still exactly "draft\nstill drafting"
     assert_eq!(view.input.value(), "draft\nstill drafting");
+    Ok(())
 }
 
 /// MultiLineInput::handle_key directly should surface Submitted /
 /// Continued / Ignored without going through AgentView's wrapper.
 #[test]
-fn input_event_outcome_distinguishes_submitted_continued_ignored() {
+fn input_event_outcome_distinguishes_submitted_continued_ignored() -> TestResult {
     let mut input = MultiLineInput::new();
     // Continued — typing a printable char
     let outcome = input.handle_key(KeyCode::Char('a'), KeyModifiers::NONE);
@@ -382,7 +409,7 @@ fn input_event_outcome_distinguishes_submitted_continued_ignored() {
     let outcome = input.handle_key(KeyCode::Enter, KeyModifiers::NONE);
     match outcome {
         InputEventOutcome::Submitted(s) => assert_eq!(s, "a\n"),
-        other => panic!("plain Enter should Submit; got {other:?}"),
+        other => return Err(format!("plain Enter should Submit; got {other:?}").into()),
     }
     // Ignored — Shift+Up (caller forwards as HistoryPrev)
     let outcome = input.handle_key(KeyCode::Up, KeyModifiers::SHIFT);
@@ -390,4 +417,5 @@ fn input_event_outcome_distinguishes_submitted_continued_ignored() {
         matches!(outcome, InputEventOutcome::Ignored),
         "Shift+Up => Ignored; got {outcome:?}"
     );
+    Ok(())
 }

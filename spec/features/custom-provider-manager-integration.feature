@@ -1,3 +1,4 @@
+@BUG-582
 @PROV-070
 @done
 @agent-loop
@@ -62,7 +63,7 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     And the environment variable MY_LLM_API_KEY is set to a non-empty value
     When I call list_providers()
     Then the result includes an entry with name='my-llm', isCustom=true, available=true
-    And the result also includes built-in providers like claude and openai
+    And the result also includes built-in providers like anthropic and openai
 
   Scenario: Show custom provider returns full definition
     Given a custom provider 'my-llm' is discovered with facade=openai, baseUrl=http://localhost:8888/v1, 2 models, apiKeyEnvVar=MY_LLM_API_KEY

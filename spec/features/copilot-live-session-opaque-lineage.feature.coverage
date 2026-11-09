@@ -148,7 +148,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -302,7 +304,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -456,7 +460,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -610,7 +616,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -622,15 +630,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/agent-loop/tests/bug268_live_session_opaque.rs",
-      "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-      "rust/providers/tests/bug268_copilot_origin_boundary.rs"
+      "rust/agent-loop/tests/bug268_live_session_opaque.rs"
     ],
     "implFiles": [
-      "rust/providers/src/copilot/session.rs",
-      "rust/providers/src/session.rs",
-      "rust/providers/src/copilot/http_auth.rs"
+      "rust/providers/src/copilot/session.rs"
     ],
-    "totalLinesCovered": 1716
+    "totalLinesCovered": 791
   }
 }

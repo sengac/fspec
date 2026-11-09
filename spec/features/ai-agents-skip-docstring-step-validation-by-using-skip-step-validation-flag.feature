@@ -42,7 +42,7 @@ Feature: AI agents skip docstring step validation by using --skip-step-validatio
     Then the command should fail with exit code 1
     And the error message should contain "skip-step-validation flag is ONLY allowed for task work units"
     And the error message should contain "Story and bug work units require MANDATORY step validation"
-    And the error message should warn "Attempting to skip will require going back to fix docstrings when detected"
+    And the error message should warn "Attempting to skip step validation will be detected and require going back to fix docstrings"
     And the error message should NOT suggest using --skip-step-validation flag
 
   Scenario: Attempt to skip step validation for bug work unit fails with strict error
@@ -60,7 +60,7 @@ Feature: AI agents skip docstring step validation by using --skip-step-validatio
     And I have a test file "src/__tests__/setup.test.ts" with test code but missing step comments
     When I run "fspec link-coverage infrastructure-setup --scenario 'Setup infrastructure' --test-file src/__tests__/setup.test.ts --test-lines 5-15 --skip-step-validation"
     Then the command should succeed with exit code 0
-    And the output should confirm "Coverage linked successfully"
+    And the output should confirm "✓ Linked test mapping: src/__tests__/setup.test.ts:5-15"
     And the output should contain a warning "⚠️  Step validation skipped (task work unit)"
 
   Scenario: Story work unit with missing step comments receives strict system-reminder without skip option

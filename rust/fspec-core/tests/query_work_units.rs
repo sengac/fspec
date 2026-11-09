@@ -520,8 +520,8 @@ fn two_front_doors_same_function_serves_cli_and_dispatcher() {
         "CLI bridge must call query_work_units::run"
     );
     assert!(
-        cli_src.contains("current_dir"),
-        "CLI bridge must resolve project_root via std::env::current_dir"
+        cli_src.contains("spec_project_root()"),
+        "CLI bridge must resolve project_root from std::env::current_dir via spec_project_root"
     );
 
     // @step Then no filter or rendering logic is duplicated in the CLI bridge
@@ -529,4 +529,174 @@ fn two_front_doors_same_function_serves_cli_and_dispatcher() {
         !src.contains("FspecCoreError::NotYetPorted"),
         "query_work_units.rs must no longer be a NotYetPorted stub"
     );
+}
+
+// ---------- scenarios merged from TypeScript-era features (COV-072) ----------
+
+/// One work unit entry for a seed; `extra` fields (type, epic, tags) are
+/// merged in.
+fn unit(id: &str, status: &str, extra: Value) -> Value {
+    let mut wu = json!({
+        "id": id, "title": id, "status": status,
+        "createdAt": "2026-06-01T00:00:00.000Z",
+        "updatedAt": "2026-06-01T00:00:00.000Z"
+    });
+    if let (Some(obj), Some(more)) = (wu.as_object_mut(), extra.as_object()) {
+        for (k, v) in more {
+            obj.insert(k.clone(), v.clone());
+        }
+    }
+    wu
+}
+
+/// A work-units.json seed with every unit listed in its status column.
+fn seed_units(project_root: &Path, units: &[Value]) {
+    let mut work_units = serde_json::Map::new();
+    let mut states = serde_json::Map::new();
+    for st in [
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
+        states.insert(st.to_string(), json!([]));
+    }
+    for wu in units {
+        let id = wu["id"].as_str().expect("id").to_string();
+        let status = wu["status"].as_str().expect("status").to_string();
+        states[&status]
+            .as_array_mut()
+            .expect("state array")
+            .push(Value::String(id.clone()));
+        work_units.insert(id, wu.clone());
+    }
+    seed_work_units(
+        project_root,
+        json!({ "version": "0.7.1", "workUnits": work_units, "states": states }),
+    );
+}
+
+fn query_ids(project_root: &Path, args: Value) -> Vec<String> {
+    let result = dispatch_command(req(project_root, args));
+    assert!(result.success, "{result:?}");
+    ids_in(&parse_data(&result.data))
+}
+
+#[test]
+fn type_status_and_tag_filters_apply_and_semantics() {
+    // @step Given spec/work-units.json contains CLI-001 (story, done, tags '@cli'), CLI-002 (task, done, tags '@cli'), CLI-003 (story, implementing, tags '@cli') and CLI-004 (story, done, tags '@api')
+    let tmp = TempDir::new().expect("tempdir");
+    seed_units(
+        tmp.path(),
+        &[
+            unit(
+                "CLI-001",
+                "done",
+                json!({ "type": "story", "tags": ["@cli"] }),
+            ),
+            unit(
+                "CLI-002",
+                "done",
+                json!({ "type": "task", "tags": ["@cli"] }),
+            ),
+            unit(
+                "CLI-003",
+                "implementing",
+                json!({ "type": "story", "tags": ["@cli"] }),
+            ),
+            unit(
+                "CLI-004",
+                "done",
+                json!({ "type": "story", "tags": ["@api"] }),
+            ),
+        ],
+    );
+
+    // @step When I dispatch query-work-units with type='story' and status='done' and tag='@cli' and format='json'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "type": "story", "status": "done", "tag": "@cli", "format": "json" }),
+    ));
+    assert!(result.success, "{result:?}");
+    let data = parse_data(&result.data);
+
+    // @step Then the workUnits array contains only CLI-001
+    assert_eq!(ids_in(&data), vec!["CLI-001"]);
+
+    // @step And the data array contains only the entry {workUnitId:'CLI-001'}
+    let data_arr = data["data"].as_array().expect("data array");
+    assert_eq!(data_arr.len(), 1, "got {data}");
+    assert_eq!(data_arr[0]["workUnitId"].as_str(), Some("CLI-001"));
+}
+
+#[test]
+fn type_filter_keeps_only_work_units_of_that_type() {
+    // @step Given spec/work-units.json contains WU-001 (task), WU-002 (story), WU-003 (bug), WU-004 (task) and WU-005 (no type field)
+    let tmp = TempDir::new().expect("tempdir");
+    seed_units(
+        tmp.path(),
+        &[
+            unit("WU-001", "backlog", json!({ "type": "task" })),
+            unit("WU-002", "backlog", json!({ "type": "story" })),
+            unit("WU-003", "backlog", json!({ "type": "bug" })),
+            unit("WU-004", "backlog", json!({ "type": "task" })),
+            unit("WU-005", "backlog", json!({})),
+        ],
+    );
+
+    // @step When I dispatch query-work-units with type='task' and format='json'
+    let tasks = query_ids(tmp.path(), json!({ "type": "task", "format": "json" }));
+
+    // @step Then the workUnits array contains only WU-001 and WU-004
+    assert_eq!(tasks, vec!["WU-001", "WU-004"]);
+
+    // @step And dispatching with type='story' returns only WU-002 and WU-005, since a missing type counts as story
+    let stories = query_ids(tmp.path(), json!({ "type": "story", "format": "json" }));
+    assert_eq!(stories, vec!["WU-002", "WU-005"]);
+}
+
+/// AUTH-001 (implementing, epic-auth), AUTH-002 (backlog, epic-auth),
+/// DASH-001 (implementing, epic-dash), DASH-002 (implementing, no epic).
+fn seed_epics(project_root: &Path) {
+    seed_units(
+        project_root,
+        &[
+            unit("AUTH-001", "implementing", json!({ "epic": "epic-auth" })),
+            unit("AUTH-002", "backlog", json!({ "epic": "epic-auth" })),
+            unit("DASH-001", "implementing", json!({ "epic": "epic-dash" })),
+            unit("DASH-002", "implementing", json!({})),
+        ],
+    );
+}
+
+#[test]
+fn epic_filter_returns_only_work_units_in_that_epic() {
+    // @step Given spec/work-units.json contains AUTH-001 (implementing, epic 'epic-auth'), AUTH-002 (backlog, epic 'epic-auth'), DASH-001 (implementing, epic 'epic-dash') and DASH-002 (implementing, no epic)
+    let tmp = TempDir::new().expect("tempdir");
+    seed_epics(tmp.path());
+
+    // @step When I dispatch query-work-units with epic='epic-auth' and format='json'
+    let ids = query_ids(tmp.path(), json!({ "epic": "epic-auth", "format": "json" }));
+
+    // @step Then the workUnits array contains only AUTH-001 and AUTH-002
+    assert_eq!(ids, vec!["AUTH-001", "AUTH-002"]);
+}
+
+#[test]
+fn combined_status_and_epic_filters_apply_and_semantics() {
+    // @step Given spec/work-units.json contains AUTH-001 (implementing, epic 'epic-auth'), AUTH-002 (backlog, epic 'epic-auth'), DASH-001 (implementing, epic 'epic-dash') and DASH-002 (implementing, no epic)
+    let tmp = TempDir::new().expect("tempdir");
+    seed_epics(tmp.path());
+
+    // @step When I dispatch query-work-units with status='implementing' and epic='epic-auth' and format='json'
+    let ids = query_ids(
+        tmp.path(),
+        json!({ "status": "implementing", "epic": "epic-auth", "format": "json" }),
+    );
+
+    // @step Then the workUnits array contains only AUTH-001
+    assert_eq!(ids, vec!["AUTH-001"]);
 }

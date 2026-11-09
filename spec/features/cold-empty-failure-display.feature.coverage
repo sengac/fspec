@@ -63,7 +63,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub(crate) fn decode(value: &Value) -> Result<Vec<StreamChunk>, RestoreError> {",
+              "lastLine": "}"
             }
           ]
         }

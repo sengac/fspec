@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "A local daemon is reached with the FSPEC_DAEMON_TOKEN bearer",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/daemon_directory/tests.rs",
+          "lines": "43-56",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon_directory.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "/// BUG-428: the bearer for a local daemon — `FSPEC_DAEMON_TOKEN` when set;",
+              "lastLine": "Ok(token) => Ok(Some(token)),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A protected local daemon refuses a switcher without a token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/daemon_directory/tests.rs",
+          "lines": "58-73",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon_directory.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "/// BUG-428: the bearer for a local daemon — `FSPEC_DAEMON_TOKEN` when set;",
+              "lastLine": "Ok(token) => Ok(Some(token)),"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/src/daemon_directory/tests.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/daemon_directory.rs"
+    ],
+    "totalLinesCovered": 40
+  }
+}

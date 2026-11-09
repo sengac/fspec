@@ -61,6 +61,8 @@ async fn scenario_synthesis_respects_provider_requirements_for_historical_tool_e
         "Build the summary",
         "claude",
         2,
+        codelet_cli::compaction_operation::BuildRequest::First,
+        &std::sync::Mutex::new(None),
         codelet_providers::request_admission::AdmissionLimits {
             context_capacity: Some(200_000),
             output_reservation: Some(4096),

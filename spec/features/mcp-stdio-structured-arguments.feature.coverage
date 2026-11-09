@@ -1,0 +1,494 @@
+{
+  "scenarios": [
+    {
+      "name": "A daemon client's structured stdio arguments reach the server literally",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "53-80",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "/// Spawn a local process that speaks MCP over stdio.",
+              "lastLine": "},"
+            },
+            {
+              "file": "rust/sessions/src/session_mcp.rs",
+              "lines": [
+                19,
+                20,
+                21
+              ],
+              "firstLine": "SessionMcpTransport::Stdio { command, args, env } => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "/// Make the session's MCP set exactly `servers`, or leave it as it was.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/stdio_and_routing.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "command: &stdio_command::McpStdioCommand,",
+              "lastLine": "Ok(t) => t,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An executable whose path contains a space is spawned literally",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "82-110",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/stdio_and_routing.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "command: &stdio_command::McpStdioCommand,",
+              "lastLine": "Ok(t) => t,"
+            },
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "/// Make the session's MCP set exactly `servers`, or leave it as it was.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ConnectMCP with args passes the command and every argument literally",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "122-142",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/types.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "pub struct McpConnectArgs {",
+              "lastLine": "pub name: Option<String>,"
+            },
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// MCP-008: fspec's handshake timeout, never the model's.",
+              "lastLine": "match transport {"
+            },
+            {
+              "file": "rust/tools/src/mcp/stdio_command.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "impl McpStdioCommand {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing stdio executable fails without revealing the command or its arguments",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "203-240",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ],
+              "firstLine": "tracing::info!(server = %name, \"MCP-008: unlisted host MCP server disconnected\");",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/tools/src/mcp/host_establish.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25
+              ],
+              "firstLine": "/// Handshake one server under fspec's MCP timeout, without caching it; the",
+              "lastLine": "server: &HostMcpServer,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug output of a stdio transport hides the command and its arguments",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "242-254",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "impl std::fmt::Debug for SessionMcpTransport {",
+              "lastLine": ".finish(),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ConnectMCP stdio without args is rejected naming args",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "160-179",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/stdio_command.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "pub fn from_connect_args(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// MCP-008: fspec's handshake timeout, never the model's.",
+              "lastLine": "match transport {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ConnectMCP stdio with an empty command is rejected naming command",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs",
+          "lines": "181-201",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/stdio_command.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "pub fn from_connect_args(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// MCP-008: fspec's handshake timeout, never the model's.",
+              "lastLine": "match transport {"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/mcp005_stdio_structured_arguments.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/session_mcp.rs",
+      "rust/sessions/src/session_mcp.rs",
+      "rust/tools/src/mcp/host_config.rs",
+      "rust/tools/src/mcp/stdio_and_routing.rs",
+      "rust/tools/src/mcp/types.rs",
+      "rust/tools/src/mcp/connect_tool.rs",
+      "rust/tools/src/mcp/stdio_command.rs",
+      "rust/tools/src/mcp/host_establish.rs"
+    ],
+    "totalLinesCovered": 452
+  }
+}

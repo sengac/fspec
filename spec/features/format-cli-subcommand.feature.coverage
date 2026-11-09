@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "62-80",
+          "lines": "62-88",
           "implMappings": [
             {
               "file": "rust/fspec/src/format.rs",
@@ -26,7 +26,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "Ok(payload) => {",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -37,7 +39,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "86-103",
+          "lines": "94-115",
           "implMappings": [
             {
               "file": "rust/fspec/src/format.rs",
@@ -61,7 +63,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "if let Some(file) = args.file.as_deref() {",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -72,14 +76,16 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "109-125",
+          "lines": "121-137",
           "implMappings": [
             {
               "file": "rust/fspec/src/format.rs",
               "lines": [
                 56,
                 57
-              ]
+              ],
+              "firstLine": "println!(\"No feature files found to format\");",
+              "lastLine": "} else if let Some(file) = args.file.as_deref() {"
             }
           ]
         }
@@ -90,7 +96,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "131-147",
+          "lines": "143-159",
           "implMappings": [
             {
               "file": "rust/fspec/src/format.rs",
@@ -99,7 +105,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "eprintln!(\"Error: {err}\");",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,7 +118,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "153-178",
+          "lines": "165-193",
           "implMappings": [
             {
               "file": "rust/fspec/src/format.rs",
@@ -119,7 +127,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "Ok(payload) => {",
+              "lastLine": "let count = value"
             }
           ]
         }
@@ -130,7 +140,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_format.rs",
-          "lines": "184-205",
+          "lines": "199-220",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/format.rs",
@@ -193,7 +203,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "//! `format` help configuration — Rust port of `src/commands/format-help.ts`.",
+              "lastLine": "};"
             }
           ]
         }
@@ -211,6 +223,6 @@
       "rust/fspec/src/format.rs",
       "rust/fspec-core/src/help/configs/format.rs"
     ],
-    "totalLinesCovered": 222
+    "totalLinesCovered": 237
   }
 }

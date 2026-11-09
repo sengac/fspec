@@ -5,16 +5,18 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug242_checkpoint_settlement.rs",
-          "lines": "53-121",
+          "lines": "54-123",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                195,
-                197,
-                202,
-                205
-              ]
+                280,
+                282,
+                287,
+                290
+              ],
+              "firstLine": "let _phase = codelet_cli::compaction_timing::Phase::new(\"settlement\");",
+              "lastLine": "request.chat_history ="
             },
             {
               "file": "rust/agent-loop/src/compaction_settlement.rs",
@@ -22,7 +24,9 @@
                 14,
                 29,
                 36
-              ]
+              ],
+              "firstLine": "let handoff = model.settle_tool_results(history)?;",
+              "lastLine": "Ok(handoff)"
             },
             {
               "file": "rust/agent-loop/src/compaction_runway.rs",
@@ -31,7 +35,9 @@
                 61,
                 194,
                 214
-              ]
+              ],
+              "firstLine": "fn pending_assistant(&self, assistant: &Message) {",
+              "lastLine": "async fn on_tool_call_message(&self, assistant: &Message) {"
             },
             {
               "file": "rust/providers/src/codex/settlement.rs",
@@ -40,28 +46,36 @@
                 64,
                 84,
                 123
-              ]
+              ],
+              "firstLine": "pub(super) fn settle(",
+              "lastLine": "if changed {"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
                 165,
                 169
-              ]
+              ],
+              "firstLine": "fn settle_tool_results(",
+              "lastLine": "settlement::settle(self, history)"
             },
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
               "lines": [
                 439,
                 440
-              ]
+              ],
+              "firstLine": "_generation: u64,",
+              "lastLine": ") -> Result<Vec<u8>, CompletionError> {"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 678,
                 1027
-              ]
+              ],
+              "firstLine": ".expect(\"tool call supplies nonempty assistant content\"),",
+              "lastLine": ""
             }
           ]
         }
@@ -72,16 +86,18 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug242_checkpoint_settlement.rs",
-          "lines": "123-182",
+          "lines": "125-184",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                195,
-                197,
-                202,
-                205
-              ]
+                280,
+                282,
+                287,
+                290
+              ],
+              "firstLine": "let _phase = codelet_cli::compaction_timing::Phase::new(\"settlement\");",
+              "lastLine": "request.chat_history ="
             },
             {
               "file": "rust/agent-loop/src/compaction_settlement.rs",
@@ -89,7 +105,9 @@
                 14,
                 29,
                 36
-              ]
+              ],
+              "firstLine": "let handoff = model.settle_tool_results(history)?;",
+              "lastLine": "Ok(handoff)"
             },
             {
               "file": "rust/agent-loop/src/compaction_runway.rs",
@@ -98,7 +116,9 @@
                 61,
                 194,
                 214
-              ]
+              ],
+              "firstLine": "fn pending_assistant(&self, assistant: &Message) {",
+              "lastLine": "async fn on_tool_call_message(&self, assistant: &Message) {"
             },
             {
               "file": "rust/providers/src/codex/settlement.rs",
@@ -107,28 +127,36 @@
                 64,
                 84,
                 123
-              ]
+              ],
+              "firstLine": "pub(super) fn settle(",
+              "lastLine": "if changed {"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
                 165,
                 169
-              ]
+              ],
+              "firstLine": "fn settle_tool_results(",
+              "lastLine": "settlement::settle(self, history)"
             },
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
               "lines": [
                 439,
                 440
-              ]
+              ],
+              "firstLine": "_generation: u64,",
+              "lastLine": ") -> Result<Vec<u8>, CompletionError> {"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 678,
                 1027
-              ]
+              ],
+              "firstLine": ".expect(\"tool call supplies nonempty assistant content\"),",
+              "lastLine": ""
             }
           ]
         }
@@ -139,16 +167,18 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug242_checkpoint_settlement.rs",
-          "lines": "16-51",
+          "lines": "15-52",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                195,
-                197,
-                202,
-                205
-              ]
+                280,
+                282,
+                287,
+                290
+              ],
+              "firstLine": "let _phase = codelet_cli::compaction_timing::Phase::new(\"settlement\");",
+              "lastLine": "request.chat_history ="
             },
             {
               "file": "rust/agent-loop/src/compaction_settlement.rs",
@@ -156,7 +186,9 @@
                 14,
                 29,
                 36
-              ]
+              ],
+              "firstLine": "let handoff = model.settle_tool_results(history)?;",
+              "lastLine": "Ok(handoff)"
             },
             {
               "file": "rust/agent-loop/src/compaction_runway.rs",
@@ -165,7 +197,9 @@
                 61,
                 194,
                 214
-              ]
+              ],
+              "firstLine": "fn pending_assistant(&self, assistant: &Message) {",
+              "lastLine": "async fn on_tool_call_message(&self, assistant: &Message) {"
             },
             {
               "file": "rust/providers/src/codex/settlement.rs",
@@ -174,28 +208,36 @@
                 64,
                 84,
                 123
-              ]
+              ],
+              "firstLine": "pub(super) fn settle(",
+              "lastLine": "if changed {"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
                 165,
                 169
-              ]
+              ],
+              "firstLine": "fn settle_tool_results(",
+              "lastLine": "settlement::settle(self, history)"
             },
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
               "lines": [
                 439,
                 440
-              ]
+              ],
+              "firstLine": "_generation: u64,",
+              "lastLine": ") -> Result<Vec<u8>, CompletionError> {"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 678,
                 1027
-              ]
+              ],
+              "firstLine": ".expect(\"tool call supplies nonempty assistant content\"),",
+              "lastLine": ""
             }
           ]
         }
@@ -206,16 +248,18 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug242_checkpoint_settlement.rs",
-          "lines": "184-261",
+          "lines": "186-268",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                195,
-                197,
-                202,
-                205
-              ]
+                280,
+                282,
+                287,
+                290
+              ],
+              "firstLine": "let _phase = codelet_cli::compaction_timing::Phase::new(\"settlement\");",
+              "lastLine": "request.chat_history ="
             },
             {
               "file": "rust/agent-loop/src/compaction_settlement.rs",
@@ -223,7 +267,9 @@
                 14,
                 29,
                 36
-              ]
+              ],
+              "firstLine": "let handoff = model.settle_tool_results(history)?;",
+              "lastLine": "Ok(handoff)"
             },
             {
               "file": "rust/agent-loop/src/compaction_runway.rs",
@@ -232,7 +278,9 @@
                 61,
                 194,
                 214
-              ]
+              ],
+              "firstLine": "fn pending_assistant(&self, assistant: &Message) {",
+              "lastLine": "async fn on_tool_call_message(&self, assistant: &Message) {"
             },
             {
               "file": "rust/providers/src/codex/settlement.rs",
@@ -241,28 +289,36 @@
                 64,
                 84,
                 123
-              ]
+              ],
+              "firstLine": "pub(super) fn settle(",
+              "lastLine": "if changed {"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
                 165,
                 169
-              ]
+              ],
+              "firstLine": "fn settle_tool_results(",
+              "lastLine": "settlement::settle(self, history)"
             },
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
               "lines": [
                 439,
                 440
-              ]
+              ],
+              "firstLine": "_generation: u64,",
+              "lastLine": ") -> Result<Vec<u8>, CompletionError> {"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
                 678,
                 1027
-              ]
+              ],
+              "firstLine": ".expect(\"tool call supplies nonempty assistant content\"),",
+              "lastLine": ""
             }
           ]
         }
@@ -285,6 +341,6 @@
       "rust/patches/rig-core/src/completion/request.rs",
       "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
-    "totalLinesCovered": 327
+    "totalLinesCovered": 335
   }
 }

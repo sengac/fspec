@@ -12,6 +12,10 @@ use uuid::Uuid;
 /// Scenario: Read PNG image and display visually
 #[tokio::test]
 async fn test_read_png_image_and_display_visually() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PNG image file exists at screenshot.png
     let temp_dir = TempDir::new().unwrap();
     let png_path = temp_dir.path().join("screenshot.png");
@@ -54,6 +58,10 @@ async fn test_read_png_image_and_display_visually() {
 /// Scenario: Read text file with line numbers
 #[tokio::test]
 async fn test_read_text_file_with_line_numbers() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a JSON config file exists at config.json
     let temp_dir = TempDir::new().unwrap();
     let json_path = temp_dir.path().join("config.json");
@@ -89,6 +97,10 @@ async fn test_read_text_file_with_line_numbers() {
 /// For this scenario, we test a file that genuinely cannot be read.
 #[tokio::test]
 async fn test_handle_corrupted_image_gracefully() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a corrupted image file exists at broken.png
     let temp_dir = TempDir::new().unwrap();
     let broken_path = temp_dir.path().join("nonexistent_subdir/broken.png");
@@ -119,6 +131,10 @@ async fn test_handle_corrupted_image_gracefully() {
 /// Scenario: Detect image type by content when extension missing
 #[tokio::test]
 async fn test_detect_image_type_by_content_when_extension_missing() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PNG image file exists at image-without-extension with no file extension
     let temp_dir = TempDir::new().unwrap();
     let no_ext_path = temp_dir.path().join("image-without-extension");
@@ -166,6 +182,10 @@ async fn test_detect_image_type_by_content_when_extension_missing() {
 /// Bug: https://github.com/sengac/fspec - "range start index out of range for slice"
 #[tokio::test]
 async fn test_read_offset_exceeds_file_length() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a text file with 10 lines
     let temp_dir = TempDir::new().unwrap();
     let text_path = temp_dir.path().join("short-file.txt");

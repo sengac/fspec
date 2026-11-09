@@ -1,0 +1,204 @@
+{
+  "scenarios": [
+    {
+      "name": "A new session's reminder names its project, not the daemon's directory",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug581_environment_working_directory.rs",
+          "lines": "104-128",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/reminders.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "/// BUG-581: `working_dir` is the session's working directory (its",
+              "lastLine": "let env_info = gather_environment_info_with_isolation(working_dir, isolation);"
+            },
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "// BUG-581: the reminder names the session's working directory.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                164,
+                178,
+                179,
+                180,
+                181,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub fn gather_environment_info(working_dir: &Path) -> EnvironmentInfo {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An isolated session's reminder names its worktree after clearing history",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug581_environment_working_directory.rs",
+          "lines": "130-165",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/reminders.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "/// BUG-581: `working_dir` is the session's working directory (its",
+              "lastLine": "let env_info = gather_environment_info_with_isolation(working_dir, isolation);"
+            },
+            {
+              "file": "rust/sessions/src/background_session/history.rs",
+              "lines": [
+                19,
+                20
+              ],
+              "firstLine": "let isolation = self.build_isolation_context();",
+              "lastLine": "inner.inject_context_reminders_with_isolation(&self.effective_cwd(), isolation.as_ref());"
+            },
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                164,
+                178,
+                179,
+                180,
+                181,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub fn gather_environment_info(working_dir: &Path) -> EnvironmentInfo {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A focus change keeps the isolated session's working directory and isolation lines",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug581_environment_working_directory.rs",
+          "lines": "167-211",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/focus.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "firstLine": "/// BUG-581: the environment the focus reminder rewrites, gathered now",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/context_gathering.rs",
+              "lines": [
+                164,
+                178,
+                179,
+                180,
+                181,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub fn gather_environment_info(working_dir: &Path) -> EnvironmentInfo {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug581_environment_working_directory.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/session/reminders.rs",
+      "rust/sessions/src/session_creation_helper.rs",
+      "rust/cli/src/session/context_gathering.rs",
+      "rust/sessions/src/background_session/history.rs",
+      "rust/sessions/src/background_session/focus.rs"
+    ],
+    "totalLinesCovered": 201
+  }
+}

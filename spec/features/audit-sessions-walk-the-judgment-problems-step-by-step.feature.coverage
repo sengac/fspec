@@ -1,0 +1,901 @@
+{
+  "scenarios": [
+    {
+      "name": "A problem that needs judgment names the audit session as its command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "161-191",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/coverage.rs",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "let found = problem(drift.code, drift.fact)",
+              "lastLine": ".guided();"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "pub(crate) fn guided(mut self) -> Self {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Starting a session over a twice-found block creates one step naming both candidates",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "193-216",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ],
+              "firstLine": "fn render_current(&self) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec/src/audit.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_07.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "/// AUDIT-004: start an audit session over the scope.",
+              "lastLine": "},"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/route_06.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "// AUDIT-003, COV-077, AUDIT-004: the one deterministic drift",
+              "lastLine": "),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continuing while the problem persists stays on the step",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "218-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "fn is(&self, problem: &Problem) -> bool {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continuing after the repair advances and completing deletes the session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "238-266",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429
+              ],
+              "firstLine": "pub(super) fn run(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/types/guided_session.rs",
+              "lines": [
+                80,
+                81,
+                82
+              ],
+              "firstLine": "pub fn every_step_done(current: u64, total: u64) -> bool {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Completing before every step is done is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "268-293",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                244,
+                245,
+                246
+              ],
+              "firstLine": "fn every_step_done(&self) -> bool {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resetting deletes the session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "295-317",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429
+              ],
+              "firstLine": "pub(super) fn run(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/types/guided_session.rs",
+              "lines": [
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub fn delete(path: &Path) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scope without guided problems creates no session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "319-336",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504
+              ],
+              "firstLine": "fn start_steps(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The meaning area adds one review step per scenario with its mappings and the test command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "370-410",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466
+              ],
+              "firstLine": "fn detection_areas(scope: &Scope) -> Result<Vec<Area>, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continuing a review step records the attestation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "412-444",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683
+              ],
+              "firstLine": "fn render_status(session: &AuditSession) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The spec area adds one stale-text review step per feature",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "446-470",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629,
+                630,
+                631,
+                632,
+                633,
+                634
+              ],
+              "firstLine": "fn stale_text_step(feature: &AuditedFeature) -> Step {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions of different scopes are separate",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "472-493",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "fn key(&self) -> Vec<String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/types/guided_session.rs",
+              "lines": [
+                43,
+                44,
+                45
+              ],
+              "firstLine": "pub fn session_path(command: &str, project_root: &Path, scope: &[String]) -> PathBuf {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The meaning area without start is an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "495-512",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                352,
+                353,
+                354,
+                355,
+                356
+              ],
+              "firstLine": "if args.area.iter().any(|area| area == session::MEANING) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The validating reminder offers the meaning session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "514-535",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs",
+              "lines": [
+                88
+              ],
+              "firstLine": "5. Check each scenario's test needs its implementation: fspec audit --start --area meaning --work-unit __ID__",
+              "lastLine": "5. Check each scenario's test needs its implementation: fspec audit --start --area meaning --work-unit __ID__"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fspec reverse keeps its session file on the shared session module",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs",
+          "lines": "537-559",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/types/reverse_session.rs",
+              "lines": [
+                110,
+                111,
+                112
+              ],
+              "firstLine": "pub fn session_path(project_root: &Path) -> PathBuf {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/types/guided_session.rs",
+              "lines": [
+                43,
+                44,
+                45
+              ],
+              "firstLine": "pub fn session_path(command: &str, project_root: &Path, scope: &[String]) -> PathBuf {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/audit004_audit_sessions_walk_judgment_problems.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/audit/coverage.rs",
+      "rust/fspec-core/src/commands/audit.rs",
+      "rust/fspec-core/src/commands/audit/session.rs",
+      "rust/fspec/src/audit.rs",
+      "rust/fspec/src/cli_registration/mode_07.rs",
+      "rust/fspec/src/cli_registration/route_06.rs",
+      "rust/fspec-core/src/types/guided_session.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs",
+      "rust/fspec-core/src/types/reverse_session.rs"
+    ],
+    "totalLinesCovered": 923
+  }
+}

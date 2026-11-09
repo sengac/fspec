@@ -4,14 +4,13 @@
       "name": "Map Gemini search_file_content parameters to internal GrepArgs format",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "517-542",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "21-49",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/search.rs",
               "lines": [
-                44,
-                45,
+                16,
                 46,
                 47,
                 48,
@@ -23,8 +22,20 @@
                 54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "impl SearchToolFacade for GeminiSearchFileContentFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -34,13 +45,13 @@
       "name": "GeminiSearchFileContentFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "544-563",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "51-70",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/search.rs",
               "lines": [
-                24,
+                16,
                 25,
                 26,
                 27,
@@ -59,38 +70,47 @@
                 40,
                 41,
                 42,
-                43
-              ]
+                43,
+                44
+              ],
+              "firstLine": "impl SearchToolFacade for GeminiSearchFileContentFacade {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Map Gemini find_files parameters to internal GlobArgs format",
+      "name": "Map Gemini glob parameters to internal GlobArgs format",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "565-591",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "72-100",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/search.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
+                76,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "impl SearchToolFacade for GeminiGlobFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,8 +120,8 @@
       "name": "GeminiGlobFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "593-612",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "102-121",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/search.rs",
@@ -126,7 +146,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "/// to the internal GlobTool parameters.",
+              "lastLine": "\"pattern\": {"
             }
           ]
         }
@@ -136,37 +158,61 @@
       "name": "SearchToolFacadeWrapper integrates with rig Tool trait for search_file_content",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "614-634",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "123-143",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                430,
-                431,
-                432,
-                433
-              ]
+                1444,
+                1445,
+                1446,
+                1447,
+                1448,
+                1449,
+                1450,
+                1451,
+                1452,
+                1453,
+                1454,
+                1455,
+                1456,
+                1457
+              ],
+              "firstLine": "/// Override to return the facade's tool name (e.g., \"search_file_content\" or \"find_files\")",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "SearchToolFacadeWrapper integrates with rig Tool trait for find_files",
+      "name": "SearchToolFacadeWrapper integrates with rig Tool trait for glob",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "636-656",
+          "file": "rust/tools/tests/tool005_search_facades.rs",
+          "lines": "145-165",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                430,
-                431,
-                432,
-                433
-              ]
+                1444,
+                1445,
+                1446,
+                1447,
+                1448,
+                1449,
+                1450,
+                1451,
+                1452,
+                1453,
+                1454,
+                1455,
+                1456,
+                1457
+              ],
+              "firstLine": "/// Override to return the facade's tool name (e.g., \"search_file_content\" or \"find_files\")",
+              "lastLine": "}"
             }
           ]
         }
@@ -178,12 +224,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool005_search_facades.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/search.rs",
       "rust/tools/src/facade/wrapper.rs"
     ],
-    "totalLinesCovered": 211
+    "totalLinesCovered": 250
   }
 }

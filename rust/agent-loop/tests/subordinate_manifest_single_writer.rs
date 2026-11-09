@@ -11,12 +11,13 @@ use uuid::Uuid;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-const MODEL: &str = "codex/gpt-5";
+const MODEL: &str = "codex/o3";
 
 async fn setup(
 ) -> Result<(tempfile::TempDir, Arc<SessionManager>, Uuid), Box<dyn std::error::Error>> {
     let directory = setup_temp_directory()?;
     reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     let cache = directory.path().join("cache");
     std::fs::create_dir_all(&cache)?;
@@ -24,7 +25,7 @@ async fn setup(
         cache.join("models.json"),
         include_str!("fixtures/prov101_models.json"),
     )?;
-    let manager = SessionManager::new_arc();
+    let manager = SessionManager::new();
     let parent = Uuid::new_v4();
     manager
         .create_session_with_id(

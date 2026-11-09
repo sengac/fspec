@@ -3,10 +3,9 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js workflow-automation --help`.
 //!
-//! NOTE: each [`CommonPattern`] carries `description: "undefined"` on purpose.
-//! The TS config sets only `pattern` + `example` (no `description`), so the TS
-//! `formatCommandHelp` renders the literal string `undefined` on the
-//! description line. The captured fixture echoes that, so we reproduce it.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -20,7 +19,7 @@ const ARGS: &[CommandArgument] = &[
         required: true,
     },
     CommandArgument {
-        name: "work-unit-id",
+        name: "workUnitId",
         description: "Work unit ID (required for all actions)",
         required: true,
     },
@@ -48,17 +47,17 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "TDD Cycle Tracking",
         example: "# Start testing phase\nfspec update-work-unit-status AUTH-001 testing\n\n# Red: write failing test\n<test-command>  # Tests fail\nfspec workflow-automation record-iteration AUTH-001\n\n# Green: implement code\n<test-command>  # Tests pass\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Now in implementing state, ready for next feature",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "ACDD State Automation",
         example: "# Specifying → Testing (after specs complete)\nfspec workflow-automation auto-advance AUTH-001 --event specs-complete --from-state specifying\n\n# Testing → Implementing (after tests pass)\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Validating → Done (after validation passes)\nfspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Spec Alignment Validation",
-        example: "# After creating feature files, validate alignment\nfspec workflow-automation validate-alignment AUTH-001\n\n# If not aligned, add @AUTH-001 tag to scenarios\nfspec add-scenario user-authentication \"Login flow\" --tags @AUTH-001\n\n# Re-validate\nfspec workflow-automation validate-alignment AUTH-001",
-        description: "undefined",
+        example: "# After creating feature files, validate alignment\nfspec workflow-automation validate-alignment AUTH-001\n\n# If not aligned, add @AUTH-001 tag to scenarios\nfspec add-tag-to-scenario user-authentication \"Login flow\" @AUTH-001\n\n# Re-validate\nfspec workflow-automation validate-alignment AUTH-001",
+        description: None,
     }),
 ];
 
@@ -96,7 +95,7 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
     CommonError {
         error: "Error: Invalid transition: tests-pass from implementing",
-        fix: "tests-pass event only valid from \"testing\" state. Check current state with: fspec show-work-unit <id>",
+        fix: "tests-pass event only valid from \"testing\" state. Check current state with: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "Error: Work unit is in state \"implementing\", expected \"testing\"",
@@ -143,7 +142,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "workflow-automation",
     description: "Workflow automation utilities for work units (record iterations, auto-advance state, validate spec alignment)",
     usage: Some(
-        "fspec workflow-automation <action> [work-unit-id] [options]\n\nActions:\n  record-iteration     - Increment iteration counter for work unit\n  auto-advance         - Auto-advance state after event (tests-pass, validation-pass, specs-complete)\n  validate-alignment   - Check if work unit has corresponding Gherkin scenarios",
+        "fspec workflow-automation <action> [workUnitId] [options]\n\nActions:\n  record-iteration     - Increment iteration counter for work unit\n  auto-advance         - Auto-advance state after event (tests-pass, validation-pass, specs-complete)\n  validate-alignment   - Check if work unit has corresponding Gherkin scenarios",
     ),
     arguments: ARGS,
     options: OPTIONS,
@@ -156,7 +155,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Start work: fspec update-work-unit-status <id> testing → 2. Write tests (red) → 3. Record iteration: fspec workflow-automation record-iteration <id> → 4. Implement (green) → 5. Tests pass → 6. Auto-advance: fspec workflow-automation auto-advance <id> --event tests-pass --from-state testing → 7. Validate alignment: fspec workflow-automation validate-alignment <id>",
+        "1. Start work: fspec update-work-unit-status <workUnitId> testing → 2. Write tests (red) → 3. Record iteration: fspec workflow-automation record-iteration <workUnitId> → 4. Implement (green) → 5. Tests pass → 6. Auto-advance: fspec workflow-automation auto-advance <workUnitId> --event tests-pass --from-state testing → 7. Validate alignment: fspec workflow-automation validate-alignment <workUnitId>",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

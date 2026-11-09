@@ -5,21 +5,21 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug219_codex_interruption_output.rs",
-          "lines": "21-76",
+          "lines": "20-77",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156
+              ],
+              "firstLine": "impl Drop for RecoveryGuard {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -47,7 +47,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "use std::sync::Arc;",
+              "lastLine": "}"
             }
           ]
         }

@@ -23,7 +23,9 @@
                 260,
                 261,
                 262
-              ]
+              ],
+              "firstLine": "// WT-010: the lower layer detects the checkpoint-vs-workdir",
+              "lastLine": "Err(_) => not_found_result(checkpoint_name, work_unit_id),"
             }
           ]
         }

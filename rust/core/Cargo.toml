@@ -83,6 +83,8 @@ croner = { workspace = true }
 chrono-tz = { workspace = true }
 
 [dev-dependencies]
+# TEST-042: paused-clock tests advance tokio time instead of sleeping.
+tokio = { workspace = true, features = ["test-util"] }
 tokio-test.workspace = true
 serial_test.workspace = true
 proptest.workspace = true
@@ -94,6 +96,9 @@ codelet-test-helpers.workspace = true
 codelet-agent-loop.workspace = true
 codelet-common.workspace = true
 uuid.workspace = true
+# BUG-477: tests/bug477_core_writers_share_spec_lock.rs holds the spec lock
+# from a child process with the raw fs2 protocol.
+fs2 = "0.4"
 
 [lints]
 workspace = true

@@ -26,9 +26,6 @@
                 65,
                 66,
                 67,
-                68,
-                69,
-                70,
                 71,
                 72,
                 73,
@@ -98,8 +95,21 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "/// root alongside the raw JSON args; we never call `std::env::current_dir()`.",
+              "lastLine": "match v {"
             }
           ]
         }
@@ -115,23 +125,31 @@
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
                 126,
-                127,
-                128,
-                129,
-                130
-              ]
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "// Side-effect: dereference matching prefixes. Wrapped in best-effort",
+              "lastLine": "}"
             }
           ]
         }
@@ -147,28 +165,30 @@
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
                 131,
                 132,
                 133,
-                134,
-                135
-              ]
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "// Side-effect: dereference matching work units. Same bare-catch",
+              "lastLine": "}"
             }
           ]
         }
@@ -184,16 +204,15 @@
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "if !epics_obj.contains_key(&args.epic_id) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -204,23 +223,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "221-240",
+          "lines": "226-246",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
                 164,
                 165,
                 166,
@@ -242,8 +249,23 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "/// is expected to ignore the result so any failure is silently swallowed",
+              "lastLine": "command: \"delete-epic\","
             }
           ]
         }
@@ -254,23 +276,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "242-256",
+          "lines": "248-264",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
                 164,
                 165,
                 166,
@@ -292,8 +302,23 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "/// is expected to ignore the result so any failure is silently swallowed",
+              "lastLine": "command: \"delete-epic\","
             }
           ]
         }
@@ -304,20 +329,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "258-281",
+          "lines": "266-289",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                143,
-                144,
                 145,
                 146,
                 147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "/// Read a JSON file at `path` and return its root object. Returns `None`",
+              "lastLine": "};"
             }
           ]
         }
@@ -333,15 +367,24 @@
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                143,
-                144,
                 145,
                 146,
                 147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "/// Read a JSON file at `path` and return its root object. Returns `None`",
+              "lastLine": "};"
             }
           ]
         }
@@ -352,26 +395,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "308-389",
+          "lines": "316-399",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180
-              ]
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ],
+              "firstLine": "Some(o) => o,",
+              "lastLine": "}"
             }
           ]
         }
@@ -382,16 +427,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "391-412",
+          "lines": "401-422",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
               "lines": [
-                137,
-                138,
-                139,
-                140
-              ]
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "fn read_json_object(path: &Path) -> Option<Map<String, Value>> {",
+              "lastLine": "match v {"
             }
           ]
         }
@@ -402,7 +449,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_epic.rs",
-          "lines": "414-433",
+          "lines": "424-443",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_epic.rs",
@@ -414,7 +461,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "let args: DeleteEpicArgs =",
+              "lastLine": "let epics_path = crate::io::spec_paths::epics(project_root)?;"
             }
           ]
         }
@@ -431,6 +480,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/delete_epic.rs"
     ],
-    "totalLinesCovered": 588
+    "totalLinesCovered": 620
   }
 }

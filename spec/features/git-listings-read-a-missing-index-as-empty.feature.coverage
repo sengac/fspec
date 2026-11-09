@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "Listings in a fresh git init with no index",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug637_listings_without_an_index.rs",
+          "lines": "36-54",
+          "implMappings": [
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                72,
+                73,
+                164,
+                165
+              ],
+              "firstLine": "// BUG-637: the staged pass reads a missing index file as an empty index.",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            },
+            {
+              "file": "rust/git/src/change_type.rs",
+              "lines": [
+                148,
+                149
+              ],
+              "firstLine": "// BUG-637: a working tree with no index file reads as an empty index.",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StagedFiles opens in a fresh git init with no index",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug637_listings_without_an_index.rs",
+          "lines": "56-66",
+          "implMappings": [
+            {
+              "file": "rust/git/src/index_blob.rs",
+              "lines": [
+                21,
+                22
+              ],
+              "firstLine": "// BUG-637: a working tree with no index file reads as an empty index.",
+              "lastLine": "let index = crate::index_guard::index_or_empty(&repo)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreadable index is still an error",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug637_listings_without_an_index.rs",
+          "lines": "68-80",
+          "implMappings": [
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                72,
+                73
+              ],
+              "firstLine": "// BUG-637: the staged pass reads a missing index file as an empty index.",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/bug637_listings_without_an_index.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/status.rs",
+      "rust/git/src/change_type.rs",
+      "rust/git/src/index_blob.rs"
+    ],
+    "totalLinesCovered": 53
+  }
+}

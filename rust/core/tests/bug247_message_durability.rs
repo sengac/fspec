@@ -14,10 +14,11 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn scenario_message_barriers_precede_manifest_promotion() -> TestResult {
     // @step Given a temporary store and a committed empty session
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let mut sessions = SessionStore::new()?;
     let session = sessions.create("durable reference", directory.path())?;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
 
     // @step When a message and its manifest reference are committed
     let (result, events) = observe(None, || {
@@ -66,9 +67,10 @@ fn scenario_message_barriers_precede_manifest_promotion() -> TestResult {
 fn scenario_blob_barriers_precede_message_acknowledgement() -> TestResult {
     // @step Given a temporary blob store and message store
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let blobs = codelet_core::persistence::BlobStore::new()?;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
 
     // @step When blob content and a message referencing it are stored
     let (result, events) = observe(None, || -> Result<_, String> {
@@ -116,10 +118,11 @@ fn scenario_failed_acknowledgement_boundaries_preserve_recoverable_content() -> 
         "manifest.directory",
     ] {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         let mut sessions = SessionStore::new()?;
         let session = sessions.create("fault reference", directory.path())?;
-        let mut messages = MessageStore::new()?;
+        let messages = MessageStore::new()?;
 
         // @step When each message index and manifest boundary fails in turn
         let (result, _) = observe(Some(boundary), || {
@@ -189,8 +192,9 @@ fn scenario_cleanup_replacement_preserves_referenced_content_across_failures() -
         "index.directory",
     ] {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
-        let mut messages = MessageStore::new()?;
+        let messages = MessageStore::new()?;
         messages.store("user", &"orphan".repeat(40))?;
         let retained = messages.store("assistant", "retained Ω")?;
 
@@ -222,8 +226,9 @@ fn scenario_cleanup_replacement_preserves_referenced_content_across_failures() -
         );
     }
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
     messages.store("user", "orphan")?;
     let retained = messages.store("assistant", "retained")?;
     let (result, events) = observe(None, || {
@@ -252,13 +257,14 @@ fn scenario_cleanup_replacement_preserves_referenced_content_across_failures() -
 fn scenario_concurrent_durable_appends_survive_a_missing_derived_index() -> TestResult {
     // @step Given independent writers sharing a temporary store
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let barrier = Arc::new(Barrier::new(2));
     let writers: Vec<_> = (0..2)
         .map(|writer| {
             let barrier = barrier.clone();
             std::thread::spawn(move || -> Result<_, String> {
-                let mut messages = MessageStore::new()?;
+                let messages = MessageStore::new()?;
                 barrier.wait();
                 (0..8)
                     .map(|number| {

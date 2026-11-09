@@ -17,13 +17,21 @@
                 154,
                 179,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/persistence_retry_commit.rs",
               "lines": [
-                10
-              ]
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "firstLine": "pub(super) fn commit(",
+              "lastLine": ") -> Result<(), String> {"
             }
           ]
         }
@@ -46,13 +54,21 @@
                 154,
                 179,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/persistence_retry_commit.rs",
               "lines": [
-                10
-              ]
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "firstLine": "pub(super) fn commit(",
+              "lastLine": ") -> Result<(), String> {"
             }
           ]
         }
@@ -63,7 +79,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug246_persistence_recovery.rs",
-          "lines": "73-126",
+          "lines": "73-130",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persistence_retry.rs",
@@ -75,13 +91,21 @@
                 154,
                 179,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/persistence_retry_commit.rs",
               "lines": [
-                10
-              ]
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "firstLine": "pub(super) fn commit(",
+              "lastLine": ") -> Result<(), String> {"
             }
           ]
         }
@@ -99,6 +123,6 @@
       "rust/agent-loop/src/persistence_retry.rs",
       "rust/agent-loop/src/persistence_retry_commit.rs"
     ],
-    "totalLinesCovered": 137
+    "totalLinesCovered": 153
   }
 }

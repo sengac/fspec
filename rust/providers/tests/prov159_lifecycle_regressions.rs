@@ -36,7 +36,8 @@ async fn external_auth_transition() -> TestResult {
                 .open(home.join(".fspec-auth.lock"))?;
             guard.lock()?;
             std::fs::write(home.join("lock-ready"), "ready")?;
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            // TEST-042: hold the lock until the parent closes stdin.
+            std::io::Read::read_to_end(&mut std::io::stdin(), &mut Vec::new())?;
         }
         _ => return Err("unknown transition".into()),
     }
@@ -89,7 +90,7 @@ async fn scenario_a10_equivalent_home_paths_share_cancellation() -> TestResult {
     let alias = fixture.directory.path().join("alias");
     std::fs::create_dir(&alias)?;
     std::env::set_var("CODEX_HOME", alias.join(".."));
-    cancel_login();
+    cancel_login()?;
     assert!(
         attempt.commit(&tokens("stale")).await.is_err(),
         "path alias bypassed cancellation"
@@ -187,15 +188,16 @@ async fn scenario_a10_deadline_while_awaiting_persistence_cannot_commit() -> Tes
     let mut locker = std::process::Command::new(std::env::current_exe()?)
         .args(["--exact", "external_auth_transition", "--nocapture"])
         .env("PROV159_AUTH_TRANSITION", "lock")
+        .stdin(std::process::Stdio::piped())
         .spawn()?;
-    bounded(async {
-        while !fixture.directory.path().join("lock-ready").exists() {
-            tokio::time::sleep(std::time::Duration::from_millis(1)).await;
-        }
+    let lock_ready = fixture.directory.path().join("lock-ready");
+    codelet_test_helpers::wait_until("the locker holds the storage lock", || {
+        std::future::ready(lock_ready.exists())
     })
     .await?;
     issuer.release.add_permits(1);
     let result = bounded(pending).await??;
+    drop(locker.stdin.take());
     assert!(locker.wait()?.success());
     assert!(
         result.is_err(),
@@ -219,17 +221,18 @@ async fn scenario_a10_cancellation_while_awaiting_persistence_cannot_commit() ->
     let mut locker = std::process::Command::new(std::env::current_exe()?)
         .args(["--exact", "external_auth_transition", "--nocapture"])
         .env("PROV159_AUTH_TRANSITION", "lock")
+        .stdin(std::process::Stdio::piped())
         .spawn()?;
-    network::bounded(async {
-        while !fixture.directory.path().join("lock-ready").exists() {
-            tokio::time::sleep(std::time::Duration::from_millis(1)).await;
-        }
+    let lock_ready = fixture.directory.path().join("lock-ready");
+    codelet_test_helpers::wait_until("the locker holds the storage lock", || {
+        std::future::ready(lock_ready.exists())
     })
     .await?;
     let pending = tokio::spawn(async move { attempt.commit(&tokens("stale")).await });
     tokio::task::yield_now().await;
-    cancel_login();
-    let cancelled = tokio::time::timeout(std::time::Duration::from_millis(100), pending).await;
+    cancel_login()?;
+    let cancelled = codelet_test_helpers::deadlock_guard("the cancelled commit", pending).await;
+    drop(locker.stdin.take());
     assert!(locker.wait()?.success());
     assert!(
         cancelled??.is_err(),

@@ -95,7 +95,8 @@ pub async fn consume(
             output_reservation: Some(1000),
         });
     let observed =
-        tokio::time::timeout(std::time::Duration::from_secs(5), baseline::collect(model)).await??;
+        codelet_test_helpers::deadlock_guard("baseline::collect(model)", baseline::collect(model))
+            .await??;
     assert!(observed.errors.is_empty(), "{observed:?}");
     assert_eq!(observed.text, "Hello");
     assert_eq!(observed.usage, vec![20]);

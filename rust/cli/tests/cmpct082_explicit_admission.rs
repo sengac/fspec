@@ -12,7 +12,7 @@ fn missing_model_limits_cannot_become_usable_defaults() -> Result<(), Box<dyn st
     let context = resolve_context_window(None, None, &provider);
     let output = resolve_max_output_tokens(None, None, &provider);
     // @step Then context and output capacity remain unavailable
-    assert_eq!((context, output), (0, 0));
+    assert_eq!((context, output), (None, None));
     Ok(())
 }
 

@@ -139,6 +139,7 @@ fn test_handler_sets_session_pause_state() {
                 tool_name: request.tool_name,
                 message: request.message,
                 details: request.details,
+                tool_call_id: None,
             };
             session_clone.set_pause_state(Some(state));
             session_clone.set_status(STATUS_PAUSED);
@@ -189,6 +190,7 @@ fn test_handler_blocks_until_response() {
                 tool_name: request.tool_name,
                 message: request.message,
                 details: request.details,
+                tool_call_id: None,
             };
             session_for_handler.set_pause_state(Some(state));
             session_for_handler.set_status(STATUS_PAUSED);
@@ -201,8 +203,13 @@ fn test_handler_blocks_until_response() {
         });
 
         // Spawn thread to send response after delay
+        // TEST-042: the signaler waits until the handler is paused, not a
+        // fixed time.
         let signaler = std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            let paused = session_for_signaler.clone();
+            let _ = codelet_test_helpers::wait_until_blocking("the handler pauses", move || {
+                paused.get_status() == STATUS_PAUSED
+            });
             session_for_signaler.send_pause_response(PauseResponse::Resumed);
         });
 

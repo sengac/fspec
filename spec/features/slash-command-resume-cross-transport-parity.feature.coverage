@@ -8,28 +8,46 @@
           "lines": "73-99",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313
-              ]
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "async fn resume_session(&self, session_id: SessionId) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/conversation.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "async fn resume_session(&self, session_id: SessionId) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_restore_focus.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "async fn resume_session(self, _ctx: Context, session_id: SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -44,8 +62,10 @@
       "rust/fspec-tui/tests/rpc049_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/core/src/session_manager_handle.rs"
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+      "rust/fspec-tui/src/transport/websocket/conversation.rs",
+      "rust/rpc/src/service_implementation/session_restore_focus.rs"
     ],
-    "totalLinesCovered": 46
+    "totalLinesCovered": 48
   }
 }

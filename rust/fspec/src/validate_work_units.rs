@@ -23,7 +23,7 @@
 //! No validation logic lives here — the bridge never inspects work-unit
 //! shape, only the envelope's `valid`/`errors`.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -41,7 +41,7 @@ pub struct CliArgs {}
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
     let _ = args;
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({}).to_string();
 

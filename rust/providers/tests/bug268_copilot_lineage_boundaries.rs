@@ -13,7 +13,6 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::Duration;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -43,12 +42,16 @@ async fn cancelled_or_failed_requests_invalidate_prior_owned_lineage() -> TestRe
             .await;
             assert!(outcome.is_err());
         } else {
-            assert!(
-                tokio::time::timeout(Duration::from_millis(100), stream.next())
-                    .await
-                    .is_err()
-            );
-            support::wait_requests(&server, 2).await?;
+            // TEST-042: no waiting window; the stream stays pending until the
+            // server has the slow request.
+            let waited = codelet_test_helpers::deadlock_guard("the slow request", async {
+                tokio::select! {
+                    _ = stream.next() => Err("the slow stream ended before its request arrived".into()),
+                    arrived = support::wait_requests(&server, 2) => arrived,
+                }
+            })
+            .await?;
+            waited?;
         }
         drop(stream);
         // @step Then reconstructing the same session cannot replay the former opaque

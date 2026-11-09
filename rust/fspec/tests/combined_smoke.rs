@@ -14,7 +14,6 @@
 
 mod common;
 
-use std::fs;
 use std::io::Read;
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
@@ -63,7 +62,9 @@ async fn scenario_combined_boots_the_tui_and_starts_the_ws_server_in_one_process
     // (Supplied via --workspace; equivalent under rule [16].)
 
     // @step When the developer spawns `fspec` as a subprocess with stdin/stdout/stderr piped
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--workspace")
         .arg(ws.path())
         .stdin(Stdio::piped())
@@ -105,7 +106,9 @@ async fn scenario_combined_emits_the_port_equals_n_banner_on_stderr_not_stdout()
     let (ws, _path) = make_workspace(&[("CMB-2", "stderr-port", "backlog")]);
 
     // @step When the developer spawns `fspec` as a subprocess
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--workspace")
         .arg(ws.path())
         .stdout(Stdio::piped())
@@ -149,7 +152,9 @@ async fn scenario_combined_emits_the_port_equals_n_banner_on_stderr_not_stdout()
 async fn scenario_combined_does_not_corrupt_the_alt_screen_tui_canvas() {
     // @step When the developer spawns `fspec` and pipes its STDOUT to a buffer
     let (ws, _path) = make_workspace(&[("CMB-3", "no-corrupt", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--workspace")
         .arg(ws.path())
         .stdout(Stdio::piped())
@@ -191,7 +196,9 @@ async fn scenario_combined_does_not_corrupt_the_alt_screen_tui_canvas() {
 async fn scenario_external_ws_client_can_attach_to_combined_and_call_list_work_units() {
     // @step Given the developer has spawned `fspec --workspace <temp-workspace>` as a subprocess
     let (ws, _path) = make_workspace(&[("EXT-1", "external-client", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--workspace")
         .arg(ws.path())
         .stdout(Stdio::piped())
@@ -237,7 +244,7 @@ async fn scenario_combined_shutdown_aborts_ws_join_handle_before_removing_daemon
     let home = tempfile::tempdir().expect("home");
     let djson = home.path().join(".fspec").join("daemon.json");
     let (ws, _path) = make_workspace(&[("ABT-1", "abort-order", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    let mut child = common::IsolatedCommand::new(fspec_bin())
         .arg("--workspace")
         .arg(ws.path())
         .env("HOME", home.path())
@@ -419,7 +426,8 @@ fn scenario_combined_and_daemon_share_the_same_bind_and_serve_function() {
         .join("src")
         .join("server.rs");
     let bind_body =
-        std::fs::read_to_string(&bind_and_serve_path).expect("read rpc-server/server.rs");
+        codelet_test_helpers::source_composition::read_tree_or_file(&bind_and_serve_path)
+            .expect("read rpc-server/server.rs");
     assert!(
         bind_body.contains("pub async fn bind_and_serve("),
         "rust/rpc-server/src/server.rs must still expose pub async fn bind_and_serve(...)"
@@ -435,7 +443,7 @@ async fn scenario_combined_writes_daemon_json_on_bootstrap_and_removes_it_on_cle
 
     // @step When the developer spawns `fspec` as a subprocess
     let (ws, _path) = make_workspace(&[("DJ-1", "daemon-json", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    let mut child = common::IsolatedCommand::new(fspec_bin())
         .arg("--workspace")
         .arg(ws.path())
         .env("HOME", home.path())
@@ -466,7 +474,7 @@ async fn scenario_combined_writes_daemon_json_on_bootstrap_and_removes_it_on_cle
     );
 
     // @step And that file is valid JSON with at minimum keys `port`, `pid`, `workspace`, `version`
-    let content = fs::read_to_string(&daemon_json).expect("read daemon.json");
+    let content = std::fs::read_to_string(&daemon_json).expect("read daemon.json");
     let json: serde_json::Value =
         serde_json::from_str(&content).expect("daemon.json must be valid JSON");
     let obj = json.as_object().expect("daemon.json must be a JSON object");

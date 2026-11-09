@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-274
+@cli
+@foundation-management
 Feature: fspec remove-foundation-bounded-context CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_foundation_bounded_context.rs — clap-derived struct mirroring

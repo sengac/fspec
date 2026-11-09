@@ -53,6 +53,49 @@ Our tests follow four guiding principles:
 > **All tests run against compiled Rust, not source files.** `cargo test` compiles
 > and runs in one step.
 
+### codelet-fspec tests
+
+Run the `codelet-fspec` crate's tests with its `test-support` feature, which compiles the deterministic
+stub provider into the `fspec` binary so the cross-frontend golden (`tests/cross_frontend_parity.rs`)
+runs with the rest of the crate (BUG-543). Without the feature the golden scenarios compile out and
+are silently skipped.
+
+| Command | Purpose |
+|---------|---------|
+| `cargo test --profile ci-test -p codelet-fspec --features test-support` | The crate's standard test run, golden included |
+| `FSPEC_RPC_066_REGENERATE=1 cargo test --profile ci-test -p codelet-fspec --features test-support --test cross_frontend_parity scenario_scripted_run_matches_golden` | Re-record the golden after a legitimate chunk-shape change |
+
+### Patched rig-core tests
+
+`rust/patches/rig-core` (the rig-core patch every crate builds against through
+`[patch.crates-io]`) is a standalone package: it keeps the upstream version so
+the patch applies, so it is not a workspace member and has its own
+`Cargo.lock`. That lock is generated from the workspace lock's versions, so
+its tests run without a network fetch or a rewritten lock:
+
+| Command | What It Does |
+|---------|-------------|
+| `cargo test --manifest-path rust/patches/rig-core/Cargo.toml --locked --offline` | Run the patch's lib and integration tests (from the repo root) |
+
+When the workspace version changes (a release bump: `codelet-common`, a path
+dependency of the patch, inherits it) or `codelet-common` gains or drops a
+dependency, refresh the lock offline from the workspace versions:
+`cp rust/Cargo.lock rust/patches/rig-core/Cargo.lock && cargo metadata --offline --format-version 1 --manifest-path rust/patches/rig-core/Cargo.toml > /dev/null`.
+`cargo test -p codelet-test-helpers --test bug558_rig_core_patch_lock_matches_its_manifests`
+checks the lock against the manifests without cargo resolution or the network
+(BUG-558) and prints this command when the lock is stale.
+
+### TypeScript bridge tests
+
+The TypeScript bridge (`bridge/`) has its own vitest suite in `bridge/__tests__`.
+Its dev dependency, lock file and config live in `bridge/`, so it runs the same
+way after a clean install:
+
+| Command | What It Does |
+|---------|-------------|
+| `cd bridge && npm ci && npm test` | Install the locked tree and run every bridge test file (`vitest run`) |
+| `cd bridge && npx vitest run __tests__/<name>.test.ts` | Run one bridge test file |
+
 ---
 
 ## ⚠️ Workspace Testing Rules — Read Before Running

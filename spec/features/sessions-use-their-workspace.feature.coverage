@@ -1,0 +1,143 @@
+{
+  "scenarios": [
+    {
+      "name": "Sessions created without a workspace use the start workspace",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc444_sessions_use_their_workspace.rs",
+          "lines": "18-36",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                12,
+                12,
+                12,
+                33,
+                34,
+                35,
+                35,
+                38,
+                39
+              ],
+              "firstLine": "/// Record the start workspace (RPC-445: canonical, so session projects",
+              "lastLine": ".get()"
+            },
+            {
+              "file": "rust/sessions/src/handle_creation.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "pub(crate) fn create_session_checked(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creating a session in a named workspace",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc444_sessions_use_their_workspace.rs",
+          "lines": "38-59",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": ".ok_or_else(|| \"no start workspace is configured for this session manager\".to_string())",
+              "lastLine": "project.to_string_lossy().into_owned(),"
+            },
+            {
+              "file": "rust/sessions/src/handle_creation.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn create_session_in_project(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Without a default project there is no project to fall back to",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc444_sessions_use_their_workspace.rs",
+          "lines": "61-76",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                35,
+                38,
+                39
+              ],
+              "firstLine": "/// The start workspace. BUG-437: without one this is an error — never",
+              "lastLine": ".get()"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/rpc444_sessions_use_their_workspace.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/default_project.rs",
+      "rust/sessions/src/handle_creation.rs"
+    ],
+    "totalLinesCovered": 115
+  }
+}

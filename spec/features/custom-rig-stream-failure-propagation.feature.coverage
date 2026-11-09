@@ -5,27 +5,43 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug227/downstream.rs",
-          "lines": "9-52",
+          "lines": "8-54",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "let event = match event_result {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
               "lines": [
-                104,
                 105,
                 106,
                 107,
-                108
-              ]
+                108,
+                109
+              ],
+              "firstLine": "Ok(StreamChunk::StopReason(reason)) => final_stop = reason,",
+              "lastLine": "yield Ok(RawStreamingChoice::FinalResponse(RhaiCustomCompletion::from_snapshot(final_stop, &aggregate)));"
             }
           ]
         }
@@ -36,7 +52,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug227/downstream.rs",
-          "lines": "55-91",
+          "lines": "57-93",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_http.rs",
@@ -51,7 +67,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "if event.data.trim() == \"[DONE]\" {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -66,7 +84,9 @@
                 106,
                 107,
                 108
-              ]
+              ],
+              "firstLine": "aggregate.cache_creation_input_tokens = delta.cache_creation_input_tokens.or(aggregate.cache_creation_input_tokens);",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,26 +97,57 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug227/downstream.rs",
-          "lines": "94-126",
+          "lines": "96-128",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
                 106,
                 107,
                 108,
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114
+              ],
+              "firstLine": "if !(200..300).contains(&status) {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
               "lines": [
-                104,
-                105
-              ]
+                105,
+                106
+              ],
+              "firstLine": "Ok(StreamChunk::StopReason(reason)) => final_stop = reason,",
+              "lastLine": "Err(error) => { yield Err(provider_error_to_rig(error)); return; }"
             }
           ]
         }
@@ -107,7 +158,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug227/downstream.rs",
-          "lines": "129-143",
+          "lines": "131-145",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_http.rs",
@@ -118,7 +169,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let mut events = Box::pin(body_stream.eventsource());",
+              "lastLine": "while let Some(event_result) = events.next().await {"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -128,7 +181,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "let rig_stream: StreamingResult<RhaiCustomCompletion> = Box::pin(async_stream::stream! {",
+              "lastLine": "let mut pending_calls = Vec::new();"
             }
           ]
         }
@@ -146,6 +201,6 @@
       "rust/providers/src/custom/stream_http.rs",
       "rust/providers/src/custom/rig_streaming.rs"
     ],
-    "totalLinesCovered": 179
+    "totalLinesCovered": 221
   }
 }

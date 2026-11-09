@@ -1,7 +1,5 @@
 //! Feature: spec/features/saved-threshold-override-propagation.feature
 
-use std::sync::atomic::Ordering;
-
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::SessionManager;
 use codelet_test_helpers::setup_temp_directory;
@@ -11,7 +9,7 @@ use serial_test::serial;
 struct Environment {
     _directory: tempfile::TempDir,
     previous_user_dir: Option<std::ffi::OsString>,
-    manager: SessionManager,
+    manager: std::sync::Arc<SessionManager>,
 }
 
 impl Environment {
@@ -77,19 +75,10 @@ async fn scenario_session_creation_carries_saved_token_threshold_to_cached_limit
     let inner = session.inner.lock().await;
     let active = inner.provider_manager().compaction_threshold_override();
     // @step Then its cached threshold matches the active policy without changing capacity
-    assert_eq!(
-        session.cached_compaction_threshold.load(Ordering::Acquire),
-        40000
-    );
+    assert_eq!(session.model_limits().compaction_threshold, Some(40000));
     assert_eq!(active, Some(("tokens", 40000)));
-    assert_eq!(
-        session.cached_context_window.load(Ordering::Acquire),
-        200000
-    );
-    assert_eq!(
-        session.cached_max_output_tokens.load(Ordering::Acquire),
-        8192
-    );
+    assert_eq!(session.model_limits().context_window, Some(200000));
+    assert_eq!(session.model_limits().max_output_tokens, Some(8192));
     Ok(())
 }
 
@@ -123,7 +112,7 @@ async fn scenario_model_switching_refreshes_saved_percentage_threshold(
         .create_session("openai:tokens/threshold-model", ".")
         .await?;
     // @step When it switches to a profile with a saved percentage threshold
-    let handle: &dyn SessionManagerHandle = &environment.manager;
+    let handle: &dyn SessionManagerHandle = environment.manager.as_ref();
     handle.set_model(
         &codelet_rpc_types::SessionId { value: id.clone() },
         "openai:percent",
@@ -132,18 +121,12 @@ async fn scenario_model_switching_refreshes_saved_percentage_threshold(
     let session = environment.manager.get_session(&id)?;
     let inner = session.inner.lock().await;
     // @step Then cached limits and active policy use the new threshold not the old one
-    assert_eq!(
-        session.cached_compaction_threshold.load(Ordering::Acquire),
-        70000
-    );
+    assert_eq!(session.model_limits().compaction_threshold, Some(70000));
     assert_eq!(
         inner.provider_manager().compaction_threshold_override(),
         Some(("percentage", 35))
     );
-    assert_eq!(
-        session.cached_context_window.load(Ordering::Acquire),
-        200000
-    );
+    assert_eq!(session.model_limits().context_window, Some(200000));
     Ok(())
 }
 

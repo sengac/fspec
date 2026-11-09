@@ -6,26 +6,7 @@
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
           "lines": "104-135",
-          "implMappings": [
-            {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -35,26 +16,7 @@
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
           "lines": "136-157",
-          "implMappings": [
-            {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -64,26 +26,7 @@
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
           "lines": "158-176",
-          "implMappings": [
-            {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -93,26 +36,7 @@
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
           "lines": "177-195",
-          "implMappings": [
-            {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -122,26 +46,7 @@
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
           "lines": "196-229",
-          "implMappings": [
-            {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -153,9 +58,7 @@
     "testFiles": [
       "src/tui/services/__tests__/customProviderSectionBuilder.test.ts"
     ],
-    "implFiles": [
-      "src/tui/services/customProviderSectionBuilder.ts"
-    ],
-    "totalLinesCovered": 317
+    "implFiles": [],
+    "totalLinesCovered": 126
   }
 }

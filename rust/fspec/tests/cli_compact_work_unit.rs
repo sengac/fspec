@@ -114,10 +114,10 @@ fn scenario_clap_exposes_compact_work_unit_with_arg_and_force_flag() {
         "help must mention workUnitId; got:\n{stdout}"
     );
 
-    // @step And stdout advertises the `--force` flag
+    // @step And stdout does NOT advertise a `--force` flag (the CLI has none, CLI-016)
     assert!(
-        stdout.contains("--force"),
-        "help must advertise --force; got:\n{stdout}"
+        !stdout.contains("--force"),
+        "help must not advertise --force; got:\n{stdout}"
     );
 
     // @step And stdout does NOT advertise a `--workspace` global flag

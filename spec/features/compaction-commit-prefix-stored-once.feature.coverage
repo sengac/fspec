@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "A committed generation serialises its prefix once",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct086_prefix_stored_once.rs",
+          "lines": "61-81",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "/// CMPCT-086: manifests written before the covered prefix was stored",
+              "lastLine": "pub(crate) legacy_covered_prefix: Option<Vec<Uuid>>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A legacy manifest with a matching covered prefix still loads and validates",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct086_prefix_stored_once.rs",
+          "lines": "83-107",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "impl CommittedGeneration {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A legacy manifest whose covered prefix differs is still rejected",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct086_prefix_stored_once.rs",
+          "lines": "109-133",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "|| commit",
+              "lastLine": ".is_some_and(|legacy| legacy != &commit.source.prefix)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct086_prefix_stored_once.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/compaction_boundary.rs"
+    ],
+    "totalLinesCovered": 87
+  }
+}

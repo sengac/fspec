@@ -1,0 +1,238 @@
+{
+  "scenarios": [
+    {
+      "name": "Shift+Right on a work unit attached to an open session focuses that session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug553_board_opens_requested_session.rs",
+          "lines": "141-174",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on a work unit attached to a session with no open tab attaches it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug553_board_opens_requested_session.rs",
+          "lines": "176-208",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on an unattached work unit resumes the first open session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug553_board_opens_requested_session.rs",
+          "lines": "214-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Activating a session chip on the board focuses that session through the focus path",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug553_board_opens_requested_session.rs",
+          "lines": "242-266",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "/// BUG-553: open the agent view on exactly `session`, focused through",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "self.switch_to_session_index(open_idx);",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug553_board_opens_requested_session.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+      "rust/fspec-tui/src/app/dispatch_menu.rs"
+    ],
+    "totalLinesCovered": 257
+  }
+}

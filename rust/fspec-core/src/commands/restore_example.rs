@@ -34,7 +34,7 @@
 //! 7. Restore: set `deleted = false`, REMOVE the `deletedAt` key (TS uses
 //!    `delete example.deletedAt`, not assignment — we mirror by `remove`).
 //! 8. Bump `workUnit.updatedAt = iso8601_now()`.
-//! 9. Atomic write via [`write_json_atomic`].
+//! 9. Atomic write via [`crate::io::board::write_work_units`].
 //! 10. Render `✓ Restored example: "<text>"\n`.
 
 use std::path::Path;
@@ -44,7 +44,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 #[derive(Debug, Deserialize)]
@@ -108,6 +107,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "restore-example")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Work-unit-exists gate.
@@ -226,8 +227,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         wu.updated_at = now_ts;
     }
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     Ok(format!("✓ Restored example: \"{text}\"\n"))
 }

@@ -38,8 +38,8 @@ use crate::types::work_unit::{EpicsData, PrefixesData, WorkUnitsData};
 /// contains the substring `"Failed to parse work-units.json"` for parity
 /// with the TS error message.
 pub fn ensure_work_units_file(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {
-    let spec = find_or_create_spec_directory(cwd)?;
-    let path = spec.join("work-units.json");
+    find_or_create_spec_directory(cwd)?;
+    let path = crate::io::spec_paths::work_units(cwd)?;
     let default = WorkUnitsData::initial(iso8601_now());
     read_or_init_json(&path, &default, "work-units.json")
 }
@@ -48,8 +48,8 @@ pub fn ensure_work_units_file(cwd: &Path) -> Result<WorkUnitsData, FspecCoreErro
 ///
 /// Mirrors `ensurePrefixesFile` in `src/utils/ensure-files.ts:64-73`.
 pub fn ensure_prefixes_file(cwd: &Path) -> Result<PrefixesData, FspecCoreError> {
-    let spec = find_or_create_spec_directory(cwd)?;
-    let path = spec.join("prefixes.json");
+    find_or_create_spec_directory(cwd)?;
+    let path = crate::io::spec_paths::prefixes(cwd)?;
     let default = PrefixesData::initial();
     read_or_init_json(&path, &default, "prefixes.json")
 }
@@ -65,8 +65,8 @@ pub fn ensure_prefixes_file(cwd: &Path) -> Result<PrefixesData, FspecCoreError> 
 /// Used by `list-tags` (RPC-251) and intended for reuse by `register-tag`,
 /// `tag-stats`, `validate-tags`, and other future tag-aware commands.
 pub fn ensure_tags_file(cwd: &Path) -> Result<TagsData, FspecCoreError> {
-    let spec = find_or_create_spec_directory(cwd)?;
-    let path = spec.join("tags.json");
+    find_or_create_spec_directory(cwd)?;
+    let path = crate::io::spec_paths::tags(cwd)?;
     let default = TagsData::initial();
     read_or_init_json(&path, &default, "tags.json")
 }
@@ -84,8 +84,8 @@ pub fn ensure_tags_file(cwd: &Path) -> Result<TagsData, FspecCoreError> {
 /// Malformed JSON escalates via [`FspecCoreError::ParseJson`] with
 /// `file = "foundation.json"` — substring-asserted by RPC-305 tests.
 pub fn ensure_foundation_file(cwd: &Path) -> Result<serde_json::Value, FspecCoreError> {
-    let spec = find_or_create_spec_directory(cwd)?;
-    let path = spec.join("foundation.json");
+    find_or_create_spec_directory(cwd)?;
+    let path = crate::io::spec_paths::foundation(cwd)?;
     let default = foundation_initial();
     read_or_init_json(&path, &default, "foundation.json")
 }
@@ -138,8 +138,8 @@ fn foundation_initial() -> serde_json::Value {
 /// `epic.workUnits`. Malformed JSON escalates via [`FspecCoreError::ParseJson`]
 /// with `file = "epics.json"`.
 pub fn ensure_epics_file(cwd: &Path) -> Result<EpicsData, FspecCoreError> {
-    let spec = find_or_create_spec_directory(cwd)?;
-    let path = spec.join("epics.json");
+    find_or_create_spec_directory(cwd)?;
+    let path = crate::io::spec_paths::epics(cwd)?;
     let default = EpicsData::initial();
     read_or_init_json(&path, &default, "epics.json")
 }
@@ -155,7 +155,7 @@ pub fn ensure_epics_file(cwd: &Path) -> Result<EpicsData, FspecCoreError> {
 /// `userMessage + "\n" + systemReminder` block (byte-for-byte parity with the
 /// TypeScript implementation), parameterised by `original_command`.
 pub fn check_foundation_exists(cwd: &Path, original_command: &str) -> Result<(), FspecCoreError> {
-    let path = cwd.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(cwd)?;
     if path.exists() {
         return Ok(());
     }
@@ -239,7 +239,7 @@ fn build_foundation_missing_error(original_command: &str) -> String {
 /// Use [`ensure_prefixes_file`] when you want the load-or-init behaviour
 /// (e.g. `list-work-units` calls it purely for parity / side-effects).
 pub fn read_prefixes_or_empty(cwd: &Path) -> Result<PrefixesData, FspecCoreError> {
-    let path = cwd.join("spec").join("prefixes.json");
+    let path = crate::io::spec_paths::prefixes(cwd)?;
     if !path.exists() {
         return Ok(PrefixesData::initial());
     }
@@ -265,7 +265,7 @@ pub fn read_prefixes_or_empty(cwd: &Path) -> Result<PrefixesData, FspecCoreError
 /// AND want parse errors to escalate (e.g. `list-work-units` per RPC-253
 /// rule [4]).
 pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreError> {
-    let path = cwd.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(cwd)?;
     if !path.exists() {
         return Ok(WorkUnitsData::initial(iso8601_now()));
     }
@@ -295,7 +295,7 @@ pub fn read_work_units_or_empty(cwd: &Path) -> Result<WorkUnitsData, FspecCoreEr
 /// `ensure_epics_file` — list-epics deliberately does NOT auto-create
 /// the file, matching the TS read-only path.
 pub fn read_epics_or_empty(cwd: &Path) -> Result<EpicsData, FspecCoreError> {
-    let path = cwd.join("spec").join("epics.json");
+    let path = crate::io::spec_paths::epics(cwd)?;
     if !path.exists() {
         return Ok(EpicsData::initial());
     }
@@ -359,28 +359,6 @@ mod tests {
     )]
     use super::*;
     use tempfile::TempDir;
-
-    #[test]
-    fn ensure_work_units_creates_canonical_initial_when_missing() {
-        let tmp = TempDir::new().unwrap();
-        let data = ensure_work_units_file(tmp.path()).unwrap();
-        assert_eq!(data.version.as_deref(), Some("0.7.1"));
-        assert!(data.work_units.is_empty());
-        assert!(tmp.path().join("spec/work-units.json").exists());
-    }
-
-    #[test]
-    fn ensure_work_units_returns_parse_json_for_malformed_file() {
-        let tmp = TempDir::new().unwrap();
-        std::fs::create_dir(tmp.path().join("spec")).unwrap();
-        std::fs::write(tmp.path().join("spec/work-units.json"), "{ not json").unwrap();
-        let err = ensure_work_units_file(tmp.path()).unwrap_err();
-        let msg = err.to_string();
-        assert!(
-            msg.contains("Failed to parse work-units.json"),
-            "unexpected error message: {msg}"
-        );
-    }
 
     #[test]
     fn ensure_prefixes_creates_empty_file_when_missing() {
@@ -449,3 +427,6 @@ mod tests {
         assert!(data.work_units.is_empty());
     }
 }
+
+#[cfg(test)]
+mod init_tests;

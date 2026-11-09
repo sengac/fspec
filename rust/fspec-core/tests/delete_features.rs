@@ -224,3 +224,99 @@ fn scenario_dispatcher_reports_no_matches_for_an_unused_tag() {
     let msg = data["message"].as_str().unwrap_or("");
     assert_eq!(msg, "No feature files found matching tags", "got: {msg}");
 }
+
+// ---------- scenarios moved from delete-features-by-tag (COV-072) ----------
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes features whose tag contains special characters
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_features_whose_tag_contains_special_characters() {
+    // @step Given a project root tempdir with three features tagged @bug-#123 and one feature tagged @bug-123
+    let tmp = TempDir::new().expect("tempdir");
+    for name in ["a", "b", "c"] {
+        write_feature(
+            tmp.path(),
+            &format!("spec/features/{name}.feature"),
+            &tagged("@bug-#123", name),
+        );
+    }
+    write_feature(
+        tmp.path(),
+        "spec/features/d.feature",
+        &tagged("@bug-123", "d"),
+    );
+
+    // @step When I dispatch delete-features with tags=['@bug-#123']
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@bug-#123"]})));
+
+    // @step Then the dispatcher returns success=true and deletedCount=3
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["deletedCount"].as_u64(), Some(3), "got data: {data}");
+
+    // @step And the dispatcher message equals 'Deleted 3 feature file(s)'
+    assert_eq!(
+        data["message"].as_str(),
+        Some("Deleted 3 feature file(s)"),
+        "got data: {data}"
+    );
+
+    // @step And the three @bug-#123 feature files no longer exist on disk
+    for name in ["a", "b", "c"] {
+        assert!(!exists(
+            tmp.path(),
+            &format!("spec/features/{name}.feature")
+        ));
+    }
+
+    // @step And the feature tagged @bug-123 still exists
+    assert!(exists(tmp.path(), "spec/features/d.feature"));
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes tagged features in nested directories
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_tagged_features_in_nested_directories() {
+    // @step Given a project root tempdir with features tagged @old at spec/features/top.feature, spec/features/area/mid.feature and spec/features/area/deep/low.feature, and an untagged spec/features/area/keep.feature
+    let tmp = TempDir::new().expect("tempdir");
+    let old = [
+        "spec/features/top.feature",
+        "spec/features/area/mid.feature",
+        "spec/features/area/deep/low.feature",
+    ];
+    for rel in old {
+        write_feature(tmp.path(), rel, &tagged("@old", rel));
+    }
+    write_feature(
+        tmp.path(),
+        "spec/features/area/keep.feature",
+        &tagged("@keep", "Keep"),
+    );
+
+    // @step When I dispatch delete-features with tags=['@old']
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@old"]})));
+
+    // @step Then the dispatcher returns success=true and deletedCount=3
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["deletedCount"].as_u64(), Some(3), "got data: {data}");
+
+    // @step And the dispatcher result lists spec/features/top.feature, spec/features/area/mid.feature and spec/features/area/deep/low.feature
+    assert_eq!(
+        data["files"],
+        json!(old),
+        "files are listed files-before-subdirectories; got data: {data}"
+    );
+
+    // @step And the three @old feature files no longer exist on disk
+    for rel in old {
+        assert!(!exists(tmp.path(), rel), "{rel} must be deleted");
+    }
+
+    // @step And spec/features/area/keep.feature still exists
+    assert!(exists(tmp.path(), "spec/features/area/keep.feature"));
+}

@@ -92,7 +92,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_up(&mut self) {",
+              "lastLine": "&self.rows,"
             }
           ]
         }
@@ -148,7 +150,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_up(&mut self) {",
+              "lastLine": "&self.rows,"
             }
           ]
         }

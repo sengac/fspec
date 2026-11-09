@@ -1,4 +1,6 @@
 @KGRAPH-071
+@parser
+@code-analysis
 Feature: GraphSearch ast_index has no way to force-rebuild database after schema changes — stale on-disk and in-memory graph causes repeated failures
   """
   The schema is embedded via include_str!() at compile time — the binary always has the correct schema, but the on-disk DB preserves the schema from when it was first created
@@ -35,7 +37,7 @@ Feature: GraphSearch ast_index has no way to force-rebuild database after schema
 
   @reset
   Scenario: Reset flag deletes on-disk database and re-indexes with fresh schema
-    Given an existing AST graph database at "<cwd>/.fspec/graph/ast-code.nano/"
+    Given an existing AST graph database at "<root>/.fspec/graph/ast-code.nano/"
     And the compiled schema has a new enum value not present in the on-disk schema
     When I run ast_index with reset set to true
     Then the on-disk ".nano" directory is deleted before re-indexing
@@ -47,8 +49,8 @@ Feature: GraphSearch ast_index has no way to force-rebuild database after schema
     Given an AST graph is cached in the in-memory registry
     And the on-disk database has been manually deleted
     When I run ast_index with reset set to true
-    Then the graph is removed from the in-memory Mutex<HashMap> registry
-    And the next get_graph call re-initializes with the compiled schema
+    Then the graph held in memory for that root is dropped
+    And the next access opens the graph with the compiled schema
     And subsequent ast_search queries return results without process restart
 
   @schema-mismatch

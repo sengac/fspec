@@ -4,14 +4,9 @@
       "name": "User message is persisted by Rust when prompt is received",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "42-72",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "3526-3558,3779-3784"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/message_persistence.rs",
+          "lines": "8-42",
+          "implMappings": []
         }
       ]
     },
@@ -19,14 +14,9 @@
       "name": "Assistant message with tool_use is persisted before tool execution",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "78-121",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "3560-3610,4084-4110,4111-4116"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/message_persistence.rs",
+          "lines": "47-92",
+          "implMappings": []
         }
       ]
     },
@@ -34,14 +24,9 @@
       "name": "Tool result is persisted by Rust when tool execution completes",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "127-184",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "3612-3660,4117-4125"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/message_persistence.rs",
+          "lines": "97-162",
+          "implMappings": []
         }
       ]
     },
@@ -49,14 +34,9 @@
       "name": "Final assistant response is persisted after tool result",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "189-245",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "4189-4192"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/message_persistence.rs",
+          "lines": "167-229",
+          "implMappings": []
         }
       ]
     },
@@ -64,14 +44,9 @@
       "name": "Multiple tool uses in single assistant response are all persisted",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "304-358",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "4096-4110,4111-4125"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/resume_and_tool_calls.rs",
+          "lines": "83-149",
+          "implMappings": []
         }
       ]
     },
@@ -79,14 +54,9 @@
       "name": "Sequential tool calls across multiple turns are persisted",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "364-429",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "4049-4072,4111-4125"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/resume_and_tool_calls.rs",
+          "lines": "154-242",
+          "implMappings": []
         }
       ]
     },
@@ -94,14 +64,9 @@
       "name": "API error mid-stream persists accumulated content",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "678-732",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "4179-4182"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/error_handling.rs",
+          "lines": "10-64",
+          "implMappings": []
         }
       ]
     },
@@ -109,14 +74,9 @@
       "name": "User interrupt preserves accumulated assistant content via NAPI",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "740-793",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "4184-4187"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/error_handling.rs",
+          "lines": "71-118",
+          "implMappings": []
         }
       ]
     },
@@ -124,14 +84,9 @@
       "name": "Resumed session contains all messages including final responses",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "251-298",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/resume_and_tool_calls.rs",
+          "lines": "8-78",
+          "implMappings": []
         }
       ]
     },
@@ -139,14 +94,9 @@
       "name": "Manual compaction persists compaction state to session manifest",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "477-511",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "3685-3700,5337-5367"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/token_and_compaction.rs",
+          "lines": "54-85",
+          "implMappings": []
         }
       ]
     },
@@ -154,14 +104,9 @@
       "name": "Resumed session restores compaction summary as first message",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "517-553",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/token_and_compaction.rs",
+          "lines": "90-137",
+          "implMappings": []
         }
       ]
     },
@@ -169,14 +114,9 @@
       "name": "Token state is persisted by Rust on Done chunk via NAPI",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "435-474",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "3662-3683,4193-4197"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/token_and_compaction.rs",
+          "lines": "8-49",
+          "implMappings": []
         }
       ]
     },
@@ -184,14 +124,9 @@
       "name": "Resumed session has accurate token counts",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "559-604",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/token_and_compaction.rs",
+          "lines": "142-204",
+          "implMappings": []
         }
       ]
     },
@@ -199,14 +134,9 @@
       "name": "Invalid session operations fail gracefully",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "614-630",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/manifest_integrity.rs",
+          "lines": "12-33",
+          "implMappings": []
         }
       ]
     },
@@ -214,14 +144,9 @@
       "name": "Session manifest integrity after operations",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "565-605",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/manifest_integrity.rs",
+          "lines": "104-145",
+          "implMappings": []
         }
       ]
     },
@@ -229,14 +154,9 @@
       "name": "Large session maintains message order",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "610-672",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/persistence/storage.rs",
-              "lines": "1-100"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/ordering_and_boundaries.rs",
+          "lines": "69-102",
+          "implMappings": []
         }
       ]
     },
@@ -244,14 +164,9 @@
       "name": "Persistence failure propagates error to user via NAPI",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_persistence_test.rs",
-          "lines": "801-837",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": "5361-5366"
-            }
-          ]
+          "file": "rust/core/tests/session_persistence_test/error_handling.rs",
+          "lines": "125-163",
+          "implMappings": []
         }
       ]
     }
@@ -261,12 +176,14 @@
     "coveredScenarios": 17,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/session_persistence_test.rs"
+      "rust/core/tests/session_persistence_test/message_persistence.rs",
+      "rust/core/tests/session_persistence_test/resume_and_tool_calls.rs",
+      "rust/core/tests/session_persistence_test/error_handling.rs",
+      "rust/core/tests/session_persistence_test/token_and_compaction.rs",
+      "rust/core/tests/session_persistence_test/manifest_integrity.rs",
+      "rust/core/tests/session_persistence_test/ordering_and_boundaries.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/session_manager.rs",
-      "rust/napi/src/persistence/storage.rs"
-    ],
-    "totalLinesCovered": 700
+    "implFiles": [],
+    "totalLinesCovered": 862
   }
 }

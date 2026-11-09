@@ -1,5 +1,7 @@
+@BUG-582
 @done
 @BUG-209
+@BUG-364
 @tui
 @tool-execution
 Feature: Prevent stale exec-stdin probes from restoring completed command prompts
@@ -14,6 +16,8 @@ Feature: Prevent stale exec-stdin probes from restoring completed command prompt
   # BUSINESS RULES:
   #   1. An exec-stdin probe result must not change the overlay after a newer request, clear, dismissal, or probe for the same agent session; other sessions must remain independent.
   #   2. Both focus-return probes and the Paused parallel-read probe must validate freshness when their results are applied. Fresh Some and None results still work, HITL retains precedence, and model-turn Done must not dismiss a genuinely live command.
+  #   3. BUG-364: A failed exec-stdin probe from either path must reach the app as a probe failure, never be dropped at debug level.
+  #   4. BUG-364: A current probe failure marks an open input prompt as possibly stale until the next command update for that session; a superseded failure changes nothing on screen.
   #
   # EXAMPLES:
   #   1. A focus or Paused probe reads a pending request, then the command exits and its clear event is applied. Delivering the old probe result afterward must leave the overlay absent. Conversely, an old empty result must not hide a newer pushed request.
@@ -21,6 +25,9 @@ Feature: Prevent stale exec-stdin probes from restoring completed command prompt
   #   3. A local dismissal or successful stdin submission prevents an outstanding snapshot from restoring the prompt.
   #   4. The latest probe wins for one session, while updates to another session do not invalidate it.
   #   5. Fresh present and empty snapshots still update the overlay, HITL wins, and turn Done preserves a live prompt.
+  #   6. BUG-364: A git commit prompt is open and a probe fails; the notice row reports the failure while the prompt stays answerable.
+  #   7. BUG-364: No prompt is open and a probe fails; the failure is delivered and no prompt appears.
+  #   8. BUG-364: A failed probe is in flight when a newer command request arrives; the newer prompt shows without a failure report.
   #
   # ========================================
   Background: User Story
@@ -72,3 +79,21 @@ Feature: Prevent stale exec-stdin probes from restoring completed command prompt
     Given an input prompt is visible for a command still running
     When the model turn finishes
     Then the command input prompt remains available
+
+  Scenario: A failed probe marks an open input prompt as possibly stale
+    Given an input prompt is visible for a session
+    When a probe from either path fails for that session
+    Then the notice row reports that the prompt may be stale because the probe failed
+    And the input prompt remains available
+    And the next command update for that session removes the failure report
+
+  Scenario: A failed probe with no open input prompt is delivered without showing a prompt
+    Given no input prompt is visible for a session
+    When a probe from either path fails for that session
+    Then the probe failure is delivered to the app
+    And no input prompt appears
+
+  Scenario: A superseded failed probe does not mark a newer input prompt
+    Given a failed probe result is awaiting delivery from either probe path
+    When a new command input request arrives before the failure is delivered
+    Then the new input prompt is visible without a failure report

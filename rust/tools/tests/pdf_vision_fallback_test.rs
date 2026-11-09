@@ -22,6 +22,14 @@ use uuid::Uuid;
 #[tokio::test]
 #[serial]
 async fn scenario_non_vision_session_model_defaults_pdf_reads_to_text_mode() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "doc.pdf" with 3 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("doc.pdf");
@@ -82,6 +90,14 @@ async fn scenario_non_vision_session_model_defaults_pdf_reads_to_text_mode() {
 #[tokio::test]
 #[serial]
 async fn scenario_explicit_pdf_mode_wins_even_when_the_session_model_lacks_vision() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "doc.pdf" with 3 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("doc.pdf");
@@ -135,6 +151,14 @@ async fn scenario_explicit_pdf_mode_wins_even_when_the_session_model_lacks_visio
 #[tokio::test]
 #[serial]
 async fn scenario_unregistered_session_keeps_the_historical_visual_default() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "doc.pdf" with 3 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("doc.pdf");
@@ -182,6 +206,10 @@ async fn scenario_unregistered_session_keeps_the_historical_visual_default() {
 #[test]
 #[serial]
 fn registry_get_set_has_clear() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a fresh registry with no entry for the session
     let session = Uuid::new_v4();
     assert!(!session_has_capabilities(session));

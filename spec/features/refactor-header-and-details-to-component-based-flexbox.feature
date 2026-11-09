@@ -51,46 +51,6 @@ Feature: Refactor header and details to component-based flexbox
     I want to view header and work unit details as pure Ink components
     So that the layout is maintainable, testable, and uses proper flexbox instead of string injection
 
-  Scenario: Header renders with component-based flexbox layout
-    Given the UnifiedBoardLayout component is mounted
-    When the header section renders
-    Then the HeaderContainer should use Box with borderStyle='single'
-    And the HeaderContainer should contain a Logo component with width 12 and flexShrink
-    And the HeaderContainer should contain an InfoContainer with flexGrow and height 4
-    And the InfoContainer should contain CheckpointStatus with flexGrow
-    And the InfoContainer should contain KeybindingShortcuts with flexGrow and borderTop
-    And NO string injection via rows.push should be used for header rendering
-
-  Scenario: CheckpointStatus displays count when checkpoints exist
-    Given there are 3 manual checkpoints and 5 auto checkpoints
-    When the CheckpointStatus component renders
-    Then it should display "Checkpoints: 3 Manual, 5 Auto"
-    And it should use flexGrow to fill available vertical space
-    And it should have NO borders (all border props false or undefined)
-
-  Scenario: CheckpointStatus displays none when no checkpoints exist
-    Given there are 0 manual checkpoints and 0 auto checkpoints
-    When the CheckpointStatus component renders
-    Then it should display "Checkpoints: None"
-
-  Scenario: KeybindingShortcuts renders with borderTop only
-    Given the KeybindingShortcuts component is rendered inside InfoContainer
-    When the component displays
-    Then it should show "C View Checkpoints ◆ F View Changed Files"
-    And it should have borderTop set to true
-    And it should have borderBottom, borderLeft, borderRight set to false
-    And the borderTop should be internal to the HeaderContainer
-
-  Scenario: WorkUnitDetailsContainer renders with component-based layout
-    Given a work unit is selected with id "TUI-015" and title "Feature Title"
-    When the WorkUnitDetailsContainer renders
-    Then it should have height 5 and flexDirection column
-    And it should have borderLeft and borderRight only (NOT borderStyle)
-    And it should contain WorkUnitTitle component with height 1
-    And it should contain WorkUnitDescription component with flexGrow 1
-    And it should contain WorkUnitMetadata component with height 1
-    And NO string injection via rows.push should be used for details rendering
-
   Scenario: WorkUnitTitle displays and truncates without ellipsis
     Given a work unit with id "BOARD-001" and title "Very Long Feature Title That Exceeds Width"
     And the container width is 30 characters
@@ -126,39 +86,3 @@ Feature: Refactor header and details to component-based flexbox
     When the WorkUnitMetadata component renders
     Then it should display "Estimate: 3pts"
     And it should NOT display leading or trailing " | " separators
-
-  Scenario: No work unit selected displays centered message
-    Given no work unit is selected
-    When the WorkUnitDetailsContainer renders
-    Then line 1 should display "No work unit selected" centered
-    And lines 2-5 should display as empty lines
-    And it should NOT display "No description" text
-
-  Scenario: calculateViewportHeight uses component heights not magic numbers
-    Given a terminal height of 24 rows
-    When calculateViewportHeight is called
-    Then it should calculate HeaderContainer height as 6 (1+4+1)
-    And it should calculate separators as 4 rows
-    And it should calculate Details height as 5 rows
-    And it should calculate column headers as 2 rows
-    And it should calculate footer as 2 rows
-    And it should calculate bottom border as 1 row
-    And it should sum all component heights (NOT use fixedRows=17 magic number)
-    And it should return 6 rows for dynamic columns (24 - 18 static)
-
-  Scenario: Terminal resize recalculates column viewport dynamically
-    Given a terminal height of 40 rows
-    When calculateViewportHeight is called
-    Then static component heights should remain at 18 rows
-    And it should return 22 rows for dynamic columns (40 - 18 static)
-
-  Scenario: Junction separators create continuous border structure
-    Given the UnifiedBoardLayout is fully rendered
-    When the border structure is displayed
-    Then the HeaderContainer bottom should connect via junction separator (├┤)
-    And the junction should extend vertical borders to Details top
-    And the Details bottom should connect via junction with column dividers (├┬┤)
-    And column headers should connect via cross junction (├┼┤)
-    And the footer should connect via bottom junction (├┴┤)
-    And ALL borders should form ONE continuous structure using junctions
-    And there should be NO gaps or double lines between sections

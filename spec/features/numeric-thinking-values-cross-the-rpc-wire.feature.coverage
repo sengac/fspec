@@ -1,0 +1,507 @@
+{
+  "scenarios": [
+    {
+      "name": "A decimal thinking level crosses the wire as a tagged Decimal",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "34-48",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// A numeric thinking value as the binary wire carries it.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/chrome.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// MODEL-016: a numeric effort, sent as a JSON number; it crosses the",
+              "lastLine": "/// A token budget."
+            },
+            {
+              "file": "rust/rpc-types/src/thinking.rs",
+              "lines": [
+                203
+              ],
+              "firstLine": "pub(crate) mod wire_number;",
+              "lastLine": "pub(crate) mod wire_number;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A whole thinking level crosses the wire as a tagged Whole",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "50-82",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// A numeric thinking value as the binary wire carries it.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/chrome.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// MODEL-016: a numeric effort, sent as a JSON number; it crosses the",
+              "lastLine": "/// A token budget."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A numeric effort range crosses the wire with tagged bounds",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "84-110",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// A numeric thinking value as the binary wire carries it.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/thinking.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// A numeric effort within `min..=max` (MODEL-016); each bound crosses",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every thinking level, choice and options variant round-trips through bincode",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "112-197",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// A numeric thinking value as the binary wire carries it.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/chrome.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// MODEL-016: a numeric effort, sent as a JSON number; it crosses the",
+              "lastLine": "/// A token budget."
+            },
+            {
+              "file": "rust/rpc-types/src/thinking.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// A numeric effort within `min..=max` (MODEL-016); each bound crosses",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A whole number that does not fit the wire is an encode error",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "199-218",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "pub(crate) fn serialize<S: Serializer>(number: &Number, serializer: S) -> Result<S::Ok, S::Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A decimal that is not finite is refused when decoding",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "220-242",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "pub(crate) fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Number, D::Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The JSON forms keep the plain number",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+          "lines": "244-282",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "pub(crate) fn serialize<S: Serializer>(number: &Number, serializer: S) -> Result<S::Ok, S::Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TUI reads and sets a numeric effort over a daemon connection",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug594_numeric_thinking_over_a_daemon.rs",
+          "lines": "90-137",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/thinking/wire_number.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// A numeric thinking value as the binary wire carries it.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/chrome.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// MODEL-016: a numeric effort, sent as a JSON number; it crosses the",
+              "lastLine": "/// A token budget."
+            },
+            {
+              "file": "rust/rpc-types/src/thinking.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// A numeric effort within `min..=max` (MODEL-016); each bound crosses",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/bug594_numeric_thinking_values_on_the_wire.rs",
+      "rust/fspec-tui/tests/bug594_numeric_thinking_over_a_daemon.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/thinking/wire_number.rs",
+      "rust/rpc-types/src/chrome.rs",
+      "rust/rpc-types/src/thinking.rs"
+    ],
+    "totalLinesCovered": 579
+  }
+}

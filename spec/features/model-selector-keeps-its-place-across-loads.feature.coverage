@@ -1,0 +1,1035 @@
+{
+  "scenarios": [
+    {
+      "name": "A refresh keeps the sections I opened and my cursor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/reloads.rs",
+          "lines": "31-50",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "pub fn set_providers(&mut self, providers: Vec<ProviderInfo>) {",
+              "lastLine": "pub fn has_active_selection(&self) -> bool {"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "pub(super) fn cursor_row(&self) -> Option<(String, String)> {",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "///",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An added custom model's section opens on it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/reloads.rs",
+          "lines": "52-72",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/crud.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "// BUG-576: the reloaded list opens this section on the model.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "/// After a custom-model write, the next list opens `section` and puts",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "pub fn set_providers(&mut self, providers: Vec<ProviderInfo>) {",
+              "lastLine": "pub fn has_active_selection(&self) -> bool {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reopening the selector starts from a clean list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/opening.rs",
+          "lines": "14-44",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "impl ModelSelectorView {",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "/// RPC-337: open the full-screen ModelSelector mode-view. BUG-576: the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An older list that answers last is dropped",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/reloads.rs",
+          "lines": "74-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// Number a new provider list request; only the newest number is applied.",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "Action::ListProvidersLoaded(number, providers) => {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The refresh mark stays until the newest refresh answers",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/reloads.rs",
+          "lines": "111-145",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// Number a new provider list request; only the newest number is applied.",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "///",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed list says the models could not be loaded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/opening.rs",
+          "lines": "46-71",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "/// The newest list requested failed: stop loading and refreshing, and",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// BUG-576: a failed provider list is shown the same way.",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "Action::ListProvidersFailed(number, error) => {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With nothing selected the cursor stays inside the list and no row is drawn selected",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/opening.rs",
+          "lines": "73-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                180
+              ],
+              "firstLine": "self.has_selection.then_some(self.selected_index),",
+              "lastLine": "self.has_selection.then_some(self.selected_index),"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "/// Keep the cursor on a row of the list.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/crud.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "pub(crate) fn try_open_edit_form(&mut self) {",
+              "lastLine": "let Some(row) = self.focused_row() else {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The current model is matched by provider and model",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/current.rs",
+          "lines": "13-36",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "/// Index of the first selectable row of the current `(section, model)`.",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "let model = sessions",
+              "lastLine": ".and_then(|info| Some((info.provider_id?, info.model_id?)));"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "/// The section holding the current `(section, model)`.",
+              "lastLine": ".any(|m| model_id::model_ids_match(&m.id, model))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A current model that becomes known after the list opens its section",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/current.rs",
+          "lines": "38-72",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/state.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "/// BUG-576: the session's current `(section, model)`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/loads.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ],
+              "firstLine": "/// Open the current model's section and put the cursor on it; `false`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub(crate) fn handle_model_selection_loaded(",
+              "lastLine": "/// BUG-576: whether a model was selected for `session` after the"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An answer to an older missing-limit prompt does not select its model again",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/selections.rs",
+          "lines": "47-104",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ],
+              "firstLine": "sync.revision = sync.revision.wrapping_add(1);",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_missing_profile_limit.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "session,",
+              "lastLine": "MissingLimitRetry::SessionCreation {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two selections with no session create one session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/selections.rs",
+          "lines": "106-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_no_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub(crate) type NoSessionSelection = Arc<tokio::sync::Mutex<Option<SessionId>>>;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/session_creation_tasks.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "pub(crate) async fn run_session_creation(",
+              "lastLine": "pub(crate) async fn create_session_reporting("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The footer shows the filter keys while I type a filter",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/footer.rs",
+          "lines": "18-41",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// BUG-576 / AK-9: the footer while a filter is being typed, where Enter",
+              "lastLine": "pub(crate) const FILTER_FOOTER: &str = \"Type to filter | Enter Apply | Esc Clear\";"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "// BUG-576 / AK-9: the footer names the keys of the current mode.",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The browse footer lists every browse key",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug576_model_selector/footer.rs",
+          "lines": "43-66",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                25,
+                26,
+                27
+              ],
+              "firstLine": "/// Footer hint for the browse mode-view (RPC-337 rule [12]; BUG-576 / AK-9:",
+              "lastLine": "pub(crate) const FOOTER: &str = \"Enter Select | ←→ Expand/Collapse | / Filter | c Copy | r Refresh | Tab Providers | a/e/d Custom model | Esc Close\";"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug576_model_selector/reloads.rs",
+      "rust/fspec-tui/tests/bug576_model_selector/opening.rs",
+      "rust/fspec-tui/tests/bug576_model_selector/current.rs",
+      "rust/fspec-tui/tests/bug576_model_selector/selections.rs",
+      "rust/fspec-tui/tests/bug576_model_selector/footer.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/model_selector/state.rs",
+      "rust/fspec-tui/src/views/model_selector/loads.rs",
+      "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+      "rust/fspec-tui/src/views/model_selector/crud.rs",
+      "rust/fspec-tui/src/views/model_selector/render.rs",
+      "rust/fspec-tui/src/views/model_selector/rows.rs",
+      "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+      "rust/fspec-tui/src/app/dispatch_missing_profile_limit.rs",
+      "rust/fspec-tui/src/app/dispatch_model_no_session.rs",
+      "rust/fspec-tui/src/app/session_creation_tasks.rs"
+    ],
+    "totalLinesCovered": 1051
+  }
+}

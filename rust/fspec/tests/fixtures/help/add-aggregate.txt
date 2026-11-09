@@ -49,7 +49,7 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit not found
-    Fix: Ensure work unit exists: fspec show-work-unit <id>
+    Fix: Ensure work unit exists: fspec show-work-unit <workUnitId>
 
   ✗ Cannot add Event Storm items to work unit in done state
     Fix: Work unit must be in specifying, testing, implementing, or validating state

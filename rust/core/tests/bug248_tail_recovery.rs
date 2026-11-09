@@ -23,7 +23,7 @@ fn scenario_torn_tails_remain_recoverable_after_append_and_full_rebuild() -> Tes
     append(directory.path(), torn.as_bytes())?;
 
     // @step When the store reopens and appends a complete Unicode record
-    let mut store = MessageStore::new()?;
+    let store = MessageStore::new()?;
     let new_id = store.store("assistant", "later 🦀 日本語")?;
 
     // @step Then a full index rebuild preserves exact valid IDs and content
@@ -59,7 +59,7 @@ proptest! {
         for boundary in 0..=bytes.len() {
             let (directory, _, prefix) = fixture().map_err(|error| TestCaseError::fail(error.to_string()))?;
             append(directory.path(), &bytes[..boundary]).map_err(|error| TestCaseError::fail(error.to_string()))?;
-            let mut store = MessageStore::new().map_err(TestCaseError::fail)?;
+            let store = MessageStore::new().map_err(TestCaseError::fail)?;
             let new_id = store.store("user", "after truncation 🦀").map_err(TestCaseError::fail)?;
 
             // @step Then recovery and full rebuild retain the valid prefix and exact appended content
@@ -85,7 +85,7 @@ fn scenario_interrupted_quarantine_recovery_is_retryable() -> TestResult {
         "tail.sync",
         "tail.directory",
     ] {
-        let (directory, mut store, prefix) = fixture()?;
+        let (directory, store, prefix) = fixture()?;
         let torn = b"{\"id\":\"incomplete";
         append(directory.path(), torn)?;
 
@@ -141,7 +141,7 @@ fn scenario_valid_unterminated_records_are_retained_and_delimited() -> TestResul
 fn scenario_referenced_corruption_refuses_destructive_recovery() -> TestResult {
     // @step Given a manifest referencing a record truncated inside its UUID or Unicode content
     for corruption in ["uuid", "unicode", "hash"] {
-        let (directory, mut store, prefix) = fixture()?;
+        let (directory, store, prefix) = fixture()?;
         let prefix_bytes = std::fs::read(directory.path().join("messages/messages.jsonl"))?;
         let referenced = store.store("assistant", "referenced 🦀 original")?;
         let mut sessions = SessionStore::new()?;

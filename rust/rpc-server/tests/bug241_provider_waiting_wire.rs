@@ -8,7 +8,7 @@ use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use serde_json::json;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn waiting_set_and_clear_reach_embedded_and_websocket_clients(
@@ -37,9 +37,9 @@ async fn waiting_set_and_clear_reach_embedded_and_websocket_clients(
             serde_json::from_value(expected.clone())?,
         ))?;
         let (local_id, local_chunk) =
-            tokio::time::timeout(Duration::from_secs(3), local.recv()).await??;
+            codelet_test_helpers::deadlock_guard("local.recv()", local.recv()).await??;
         let (remote_id, remote_chunk) =
-            tokio::time::timeout(Duration::from_secs(3), remote.recv()).await??;
+            codelet_test_helpers::deadlock_guard("remote.recv()", remote.recv()).await??;
         assert_eq!(local_id, remote_id);
         assert_eq!(serde_json::to_value(local_chunk)?, expected);
         assert_eq!(serde_json::to_value(remote_chunk)?, expected);

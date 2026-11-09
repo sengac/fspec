@@ -4,7 +4,6 @@
 @persistence
 @session-management
 Feature: Bounded Recovery Lock Contention
-
   """
   RecoveryLease is shared by persistence spooling and committed session deletion.
   Keep existing lock ordering and inode identity. Explicitly unlock before closing;

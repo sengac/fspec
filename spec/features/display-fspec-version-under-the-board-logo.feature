@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @tui
@@ -44,7 +45,7 @@ Feature: Display fspec version under the board logo
     And the rendered buffer contains the substring "┣ ┗┓┃┃┣ ┃"
     And the rendered buffer contains the substring "┻ ┗┛┣┛┗┛┗┛"
     And the rendered buffer contains the substring "Checkpoints: None"
-    And the rendered buffer contains the substring "C Checkpoints"
+    And the 4th header row contains the 2-zone menu bar items "Kanban" and "Help"
 
   Scenario: The version row is styled with the theme's dim color
     Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
@@ -57,4 +58,4 @@ Feature: Display fspec version under the board logo
     Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     When the App renders BoardView against a 120x24 TestBackend
     Then the version string occupies at most 12 cells starting at the logo's left edge
-    And the keybinding chord on the 4th header row begins at the same x position as before (right after the 12-cell logo block)
+    And the 2-zone menu bar on the 4th header row begins at the same x position as before (right after the 12-cell logo block)

@@ -16,19 +16,19 @@
 //! `tests/source_shape_cargo.rs` so each file stays under the project's
 //! 300-LoC ceiling.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
 #[test]
-fn fspec_backend_trait_surface_exposes_5_rpc_methods_and_3_broadcast_subscriptions() {
+fn fspec_backend_trait_surface_exposes_5_rpc_methods_and_3_broadcast_subscriptions() -> TestResult {
     // @step Given rust/fspec-tui/src/transport/mod.rs exists
-    let path = common::workspace_root()
+    let path = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("transport")
         .join("mod.rs");
-    let raw = common::read_to_string_or_panic(&path);
+    let raw = codelet_test_helpers::source_composition::read_source(&path)
+        .or_fail("resolve FspecBackend source")?;
     let src = common::strip_rust_comments(&raw);
 
     // @step When I inspect the public trait declaration
@@ -89,10 +89,11 @@ fn fspec_backend_trait_surface_exposes_5_rpc_methods_and_3_broadcast_subscriptio
         src.contains("fn logs_rx(&self) -> broadcast::Receiver<LogRecord>"),
         "FspecBackend must declare logs_rx returning broadcast::Receiver<LogRecord>"
     );
+    Ok(())
 }
 
 #[test]
-fn transport_agnostic_consumer_compiles_against_either_backend_implementation() {
+fn transport_agnostic_consumer_compiles_against_either_backend_implementation() -> TestResult {
     use std::sync::Arc;
 
     use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
@@ -127,21 +128,25 @@ fn transport_agnostic_consumer_compiles_against_either_backend_implementation() 
     // @step And the only difference between the two arms is the constructor expression
     // (Reaching this line proves the compiler accepted both arms; the
     // arms differ ONLY in `Arc::new(...)` constructor expression.)
+    Ok(())
 }
 
 /// Scenario: Priority enum has the exact #[repr(u32)] discriminants
 /// from RPC-002 doc 09
 #[test]
-fn priority_enum_has_the_exact_repr_u32_discriminants_from_rpc_002_doc_09() {
+fn priority_enum_has_the_exact_repr_u32_discriminants_from_rpc_002_doc_09() -> TestResult {
     use codelet_fspec_tui::Priority;
 
     // @step Given the Priority enum is defined in rust/fspec-tui/src/components/mod.rs
-    let path = common::workspace_root()
+    let path = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("components")
         .join("mod.rs");
-    let src = common::strip_rust_comments(&common::read_to_string_or_panic(&path));
+    let src = common::strip_rust_comments(
+        &codelet_test_helpers::source_composition::read_source(&path)
+            .or_fail("resolve Priority enum source")?,
+    );
     assert!(
         src.contains("#[repr(u32)]"),
         "Priority enum must be #[repr(u32)] (RPC-002 doc 09 §A.1)"
@@ -162,24 +167,28 @@ fn priority_enum_has_the_exact_repr_u32_discriminants_from_rpc_002_doc_09() {
 
     // @step And Priority::Critical as u32 equals 1000
     assert_eq!(Priority::Critical as u32, 1000);
+    Ok(())
 }
 
 /// Scenario: Component trait surface exposes priority is_active id
 /// handle_event update and render with documented defaults
 #[test]
-fn component_trait_surface_exposes_documented_methods_and_defaults() {
+fn component_trait_surface_exposes_documented_methods_and_defaults() -> TestResult {
     use codelet_fspec_tui::{Action, Component, EventResult, Priority};
     use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
     use ratatui::buffer::Buffer;
     use ratatui::layout::Rect;
 
     // @step Given rust/fspec-tui/src/components/mod.rs declares the Component trait
-    let path = common::workspace_root()
+    let path = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("components")
         .join("mod.rs");
-    let src = common::strip_rust_comments(&common::read_to_string_or_panic(&path));
+    let src = common::strip_rust_comments(
+        &codelet_test_helpers::source_composition::read_source(&path)
+            .or_fail("resolve Component trait source")?,
+    );
 
     // @step When I inspect the trait declaration
     // @step Then the trait is bounded Send (no Sync)
@@ -225,4 +234,5 @@ fn component_trait_surface_exposes_documented_methods_and_defaults() {
     let area = Rect::new(0, 0, 1, 1);
     let mut buf = Buffer::empty(area);
     stub.render(area, &mut buf);
+    Ok(())
 }

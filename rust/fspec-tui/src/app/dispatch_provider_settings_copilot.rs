@@ -65,6 +65,8 @@ impl App {
             };
             let _ = action_tx.send(action);
         });
+        // BUG-575: Esc and closing the view abort this task like every login task.
+        self.navigator.provider_settings.track_oauth_task(&handle);
         self.pending_tasks.push(handle);
     }
 }

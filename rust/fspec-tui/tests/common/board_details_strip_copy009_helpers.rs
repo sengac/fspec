@@ -11,8 +11,10 @@
 
 #![allow(dead_code)]
 
+use codelet_test_helpers::OrFail;
+use parking_lot::Mutex;
 use std::io::Write;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
@@ -23,6 +25,28 @@ use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::Terminal;
+
+/// A board view, its store, its action receiver and the test clipboard.
+pub type BoardFixture = (BoardView, BoardStore, BoardRx, Arc<Mutex<Vec<u8>>>);
+
+/// TUI-130: the board's action receiver. The board copies through the App's
+/// one copy path (`Action::CopyToClipboard`), so receiving a copy here
+/// writes its OSC 52 bytes to the test clipboard the way the App does.
+pub struct BoardRx {
+    rx: UnboundedReceiver<Action>,
+    clipboard: Arc<Mutex<Vec<u8>>>,
+}
+
+impl BoardRx {
+    /// The next queued action, as `UnboundedReceiver::try_recv`.
+    pub fn try_recv(&mut self) -> Result<Action, tokio::sync::mpsc::error::TryRecvError> {
+        let action = self.rx.try_recv()?;
+        if let Action::CopyToClipboard(text) = &action {
+            self.clipboard.lock().extend_from_slice(&osc52(text));
+        }
+        Ok(action)
+    }
+}
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 
 /// An `Arc<Mutex<Vec<u8>>>`-backed writer so a test can inspect the exact
@@ -31,10 +55,7 @@ pub struct SharedWriter(pub Arc<Mutex<Vec<u8>>>);
 
 impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0
-            .lock()
-            .expect("clipboard buffer mutex")
-            .extend_from_slice(buf);
+        self.0.lock().extend_from_slice(buf);
         Ok(buf.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
@@ -72,28 +93,31 @@ pub fn board_with_clipboard(
     units: Vec<WorkUnitInfo>,
     w: u16,
     h: u16,
-) -> (
-    BoardView,
-    BoardStore,
-    UnboundedReceiver<Action>,
-    Arc<Mutex<Vec<u8>>>,
-) {
+) -> Result<BoardFixture, codelet_test_helpers::TestError> {
     let mut store = BoardStore::default();
     store.replace_work_units(units);
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     let (view, rx) = fresh();
     let buf = Arc::new(Mutex::new(Vec::<u8>::new()));
-    view.set_clipboard_writer_for_test(Box::new(SharedWriter(buf.clone())));
-    render(&view, &store, w, h);
-    (view, store, rx, buf)
+    render(&view, &store, w, h)?;
+    let rx = BoardRx {
+        rx,
+        clipboard: buf.clone(),
+    };
+    Ok((view, store, rx, buf))
 }
 
 /// Render the BoardView onto a `w`x`h` TestBackend so its render-observed
 /// geometry (including `last_details_area`) is cached, returning the
 /// painted buffer.
-pub fn render(view: &BoardView, store: &BoardStore, w: u16, h: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+pub fn render(
+    view: &BoardView,
+    store: &BoardStore,
+    w: u16,
+    h: u16,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -103,8 +127,8 @@ pub fn render(view: &BoardView, store: &BoardStore, w: u16, h: u16) -> Buffer {
             false,
         );
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Synthesize an `Event::Mouse` at `(col,row)`.
@@ -150,8 +174,8 @@ pub fn osc52(text: &str) -> Vec<u8> {
 }
 
 /// Snapshot of the injected clipboard buffer as raw bytes.
-pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
-    buf.lock().expect("clipboard buffer mutex").clone()
+pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Result<Vec<u8>, codelet_test_helpers::TestError> {
+    Ok(buf.lock().clone())
 }
 
 /// True while the BoardView holds a live details-strip text selection

@@ -45,8 +45,17 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// `deleted === true`, and projects only `{ id, text, deletedAt }`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,7 +85,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "// Load-or-init parity with TS (`src/commands/show-deleted.ts:32`).",
+              "lastLine": "reason: format!(\"Work unit '{work_unit_id}' does not exist\"),"
             }
           ]
         }
@@ -127,8 +138,17 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// `deleted === true`, and projects only `{ id, text, deletedAt }`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -144,6 +164,13 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
                 125,
                 126,
                 127,
@@ -168,8 +195,23 @@
                 146,
                 147,
                 148,
-                149
-              ]
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "fn collect_deleted_items(extra: &serde_json::Map<String, Value>) -> Vec<DeletedItem> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,7 +235,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "/// emitted JSON drops the field entirely instead of writing `null`.",
+              "lastLine": "deleted_at: Option<String>,"
             }
           ]
         }
@@ -209,11 +253,13 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167
-              ]
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "///   (empty trailing line)",
+              "lastLine": "fn render_text(work_unit_id: &str, items: &[DeletedItem]) -> String {"
             }
           ]
         }
@@ -229,13 +275,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
                 171,
                 172,
                 173,
@@ -249,8 +288,17 @@
                 181,
                 182,
                 183,
-                184
-              ]
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "///   (empty trailing line)",
+              "lastLine": ")),"
             }
           ]
         }
@@ -266,12 +314,14 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                176,
-                177,
-                178,
-                179,
-                180
-              ]
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "work_unit_id,",
+              "lastLine": "match &item.deleted_at {"
             }
           ]
         }
@@ -287,7 +337,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                78,
                 79,
                 80,
                 81,
@@ -302,8 +351,11 @@
                 90,
                 91,
                 92,
-                93
-              ]
+                93,
+                94
+              ],
+              "firstLine": "match args.format.as_deref() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -330,7 +382,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -346,7 +400,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                78,
                 79,
                 80,
                 81,
@@ -358,8 +411,11 @@
                 87,
                 88,
                 89,
-                90
-              ]
+                90,
+                91
+              ],
+              "firstLine": "match args.format.as_deref() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -370,7 +426,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/show_deleted.rs",
-          "lines": "478-499",
+          "lines": "486-507",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -380,7 +436,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "// Load-or-init parity with TS (`src/commands/show-deleted.ts:32`).",
+              "lastLine": "let data = ensure_work_units_file(project_root)?;"
             }
           ]
         }
@@ -397,6 +455,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/show_deleted.rs"
     ],
-    "totalLinesCovered": 603
+    "totalLinesCovered": 637
   }
 }

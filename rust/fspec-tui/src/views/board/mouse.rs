@@ -49,6 +49,10 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
     // `Some(result)` = the menu arm claimed the event; `None` = fall
     // through to the strip/content logic (an outside dropdown click
     // already emitted its MenuDismissBar inside this call — BUG-196 R3).
+    // RPC-445: the workspace row + open workspace dropdown go first.
+    if let Some(result) = super::workspace_dropdown::handle_mouse(view, event, store) {
+        return result;
+    }
     if let Some(result) = menu_mouse::handle_menu_mouse(view, event, store) {
         return result;
     }

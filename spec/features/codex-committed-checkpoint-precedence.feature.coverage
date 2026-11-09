@@ -137,31 +137,38 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
                 27,
                 28,
                 29,
                 30,
-                31
-              ]
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "fn restore(&self, envelopes: &[String]) -> Result<(), ExtensionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
+                79,
+                80,
                 81,
                 82,
                 83,
                 84,
+                85,
                 86,
                 87,
                 88,
@@ -189,10 +196,14 @@
                 110,
                 111,
                 112,
-                140,
-                141,
-                142
-              ]
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "pub fn snapshot(&self) -> Result<Option<CodexCheckpoint>, CheckpointError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -335,48 +346,84 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
                 27,
                 28,
                 29,
                 30,
-                31
-              ]
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "fn restore(&self, envelopes: &[String]) -> Result<(), ExtensionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
               "lines": [
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
+                75,
+                76,
+                77,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274
+              ],
+              "firstLine": "pub(super) fn block(&self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -519,23 +566,27 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "pub(super) fn select(",
+              "lastLine": "return Err(CheckpointError::Lineage(\"protocol\"));"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
                 27,
                 28,
                 29,
                 30,
-                31
-              ]
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "fn restore(&self, envelopes: &[String]) -> Result<(), ExtensionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history_lineage.rs",
@@ -606,7 +657,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "Ok(Some(index))",
+              "lastLine": "item.value[\"type\"].as_str(),"
             }
           ]
         }
@@ -626,6 +679,6 @@
       "rust/providers/src/codex/history.rs",
       "rust/providers/src/codex/history_lineage.rs"
     ],
-    "totalLinesCovered": 700
+    "totalLinesCovered": 735
   }
 }

@@ -21,7 +21,7 @@
 //!     is written to stdout (parity with TS `output.error`/`output.log`).
 //!   - 1 on any hard [`codelet_fspec_core::FspecCoreError`].
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -40,7 +40,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-scenario` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let scenario_name = args.scenario.clone();
     let body = json!({

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @tui
@@ -6,6 +7,8 @@
 @parity
 @reconnect
 @RPC-434
+@BUG-351
+@BUG-355
 Feature: TUI consumes session lifecycle events on both transports (embedded + WS): created/removed fan-in + snapshot replay
   """
   FspecBackend: session_removed_rx() defaults to a closed receiver (RPC-037/PROV-109 convention); async session_snapshot() defaults to empty Vec. EmbeddedFspecBackend delegates session_removed_rx to the handle and session_snapshot to SharedFspecService::live_sessions_snapshot (in-memory only). WebSocketFspecBackend: session_created_rx (replacing the never-firing stub) + session_removed_rx are both fed by a per-subscriber splitter task over FspecWsClient::session_events_rx (RPC-433); session_snapshot reads the fresh client's snapshot frame via the client slot (read guard; disconnected => empty). Action::SessionRemoved handled by idempotent App::handle_session_removed (new dispatch_session_lifecycle.rs, <=300 lines): remove_session_if_open, mux_sync_window, board detach, clear current WU, focus fallback. bootstrap: 6th subscriber (session_removed) + replay_session_snapshot() helper (bootstrap AND reconnect) that folds each snapshot SessionInfo into Action::SessionCreated before spawn_session_restore.

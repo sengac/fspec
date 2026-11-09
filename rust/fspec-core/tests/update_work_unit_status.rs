@@ -614,10 +614,17 @@ fn transitioning_to_done_compacts_and_cleans_auto_checkpoints() {
         "AUTH-001",
         "Scenario: Login with valid credentials\n    Given I am on the login page\n    When I enter valid credentials\n    Then I should see the dashboard",
     );
+    // AUDIT-005: the done gate audits the feature, so its mappings are exact.
     write_coverage(
         &feature_path,
-        r#"{ "name": "Login with valid credentials", "testMappings": [{ "file": "t.rs", "lines": "1-2", "implMappings": [{ "file": "i.rs", "lines": "3-4" }] }] }"#,
+        r#"{ "name": "Login with valid credentials", "testMappings": [{ "file": "t.rs", "lines": "1-3", "implMappings": [{ "file": "i.rs", "lines": "1-2", "firstLine": "fn log_in() {", "lastLine": "}" }] }] }"#,
     );
+    std::fs::write(
+        tmp.path().join("t.rs"),
+        "// @step Given I am on the login page\n// @step When I enter valid credentials\n// @step Then I should see the dashboard\n",
+    )
+    .expect("write test file");
+    std::fs::write(tmp.path().join("i.rs"), "fn log_in() {\n}\n").expect("write impl file");
 
     // @step And the work unit has both automatic and manual checkpoints
     create_manual_checkpoint_ref(tmp.path(), "AUTH-001", "AUTH-001-auto-validating");
@@ -972,6 +979,7 @@ fn specifying_to_testing_blocked_when_questions_unanswered() {
 
     // @step Given a work unit "AUTH-001" exists with status "specifying"
     let tmp = TempDir::new().expect("tempdir");
+    // @step And the work unit satisfies review validation
     // Satisfies review validation (rules + examples + architecture notes +
     // AST research attachment) so the questions gate is the one that fires.
     write_work_units(
@@ -1010,6 +1018,20 @@ fn specifying_to_testing_blocked_when_questions_unanswered() {
     assert!(
         msg.contains("Unanswered questions prevent state transition"),
         "missing unanswered-questions text; got: {msg}"
+    );
+
+    // @step And the error message lists the unanswered question as "[0] @human: What happens after 3 failed attempts?"
+    assert!(
+        msg.contains("\n  - [0] @human: What happens after 3 failed attempts?\n"),
+        "missing listed question; got: {msg}"
+    );
+
+    // @step And the error message tells to answer it with "fspec answer-question AUTH-001 <index>"
+    assert!(
+        msg.contains(
+            "Answer questions with 'fspec answer-question AUTH-001 <index>' before moving to testing."
+        ),
+        "missing answer-question suggestion; got: {msg}"
     );
 }
 
@@ -1121,6 +1143,7 @@ fn soft_dependencies_produce_a_warning_but_not_a_block() {
 
     // @step Given a work unit "AUTH-001" exists with status "specifying"
     let tmp = TempDir::new().expect("tempdir");
+    // @step And the work unit satisfies review validation
     // AUTH-001 satisfies review validation and carries a soft dependency on
     // AUTH-002 which is not done — the transition must succeed with a warning.
     write_work_units(
@@ -1319,4 +1342,731 @@ fn ipc_notification_is_a_no_op_in_the_rust_port() {
     // observable proof. We assert the transition completed cleanly on disk.
     let data = read_work_units(tmp.path());
     assert_eq!(status_of(&data, "AUTH-001"), "specifying");
+}
+
+#[test]
+fn a_blocked_work_unit_is_unblocked_by_hand_once_its_blocker_is_done() {
+    // Scenario: A blocked work unit is unblocked by hand once its blocker is done and keeps its blockedBy edge
+
+    // @step Given a work unit "UI-001" exists with status "blocked"
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step And work unit "API-001" is blocking "UI-001" with status "done"
+    write_work_units(
+        tmp.path(),
+        &doc_with_second_unit(
+            "UI-001",
+            "blocked",
+            r#""blockedBy": ["API-001"], "blockedReason": "Blocked by API-001""#,
+            "API-001",
+            "done",
+        ),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "UI-001" with status "specifying"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "UI-001", "status": "specifying"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "specifying"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "UI-001"), "specifying");
+
+    // @step And the blockedBy list of "UI-001" still contains "API-001"
+    assert_eq!(data["workUnits"]["UI-001"]["blockedBy"], json!(["API-001"]));
+}
+
+// ---------- scenarios moved from TypeScript-era features (COV-072) ----------
+//
+// From clarify-backward-movement-in-workflow-documentation,
+// kanban-workflow-state-management, example-mapping-integration,
+// parent-work-units-shouldn-t-require-scenarios,
+// prevent-retroactive-state-walking-enforce-temporal-ordering,
+// virtual-hooks-don-t-execute-during-status-transitions and
+// auto-checkpoints-not-working-lazy-import-fails-in-bundled-dist.
+
+const LOGIN_SCENARIO: &str = "Scenario: Login with valid credentials\n    Given I am on the login page\n    When I enter valid credentials\n    Then I should see the dashboard";
+
+/// Dispatch one move of `id` to `status` (temporal validation skipped).
+fn move_to(root: &Path, id: &str, status: &str) -> codelet_fspec_core::DispatchResult {
+    dispatch_command(req(
+        root,
+        json!({"workUnitId": id, "status": status, "skipTemporalValidation": true}),
+    ))
+}
+
+/// The work unit's stateHistory states, in order.
+fn history_states(data: &Value, id: &str) -> Vec<String> {
+    data["workUnits"][id]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default()
+        .iter()
+        .map(|h| h["state"].as_str().unwrap_or("").to_string())
+        .collect()
+}
+
+/// The names of the state arrays that list `id`.
+fn columns_holding(data: &Value, id: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    if let Some(states) = data["states"].as_object() {
+        for (name, ids) in states {
+            if ids
+                .as_array()
+                .is_some_and(|a| a.iter().any(|v| v.as_str() == Some(id)))
+            {
+                out.push(name.clone());
+            }
+        }
+    }
+    out
+}
+
+/// Assert that a backward move of a story from `from` to `to` succeeds and
+/// lands in the `to` column.
+fn assert_backward_move(from: &str, to: &str) -> Value {
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", from, ""));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": to}),
+    ));
+    assert!(
+        result.success,
+        "{from} -> {to} must succeed; got {result:?}"
+    );
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), to);
+    assert_eq!(columns_holding(&data, "AUTH-001"), vec![to.to_string()]);
+    data
+}
+
+#[test]
+fn backlog_to_testing_is_rejected_because_specifying_comes_first() {
+    // Scenario: Backlog to testing is rejected because specifying comes first
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "backlog", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "testing"}),
+    ));
+
+    // @step Then the command fails
+    assert!(!result.success, "expected failure; got {result:?}");
+
+    // @step And the error message is "Invalid state transition from 'backlog' to 'testing'. Must move to 'specifying' state first. ACDD requires specification before testing."
+    assert_eq!(
+        result.error.as_deref(),
+        Some("Invalid state transition from 'backlog' to 'testing'. Must move to 'specifying' state first. ACDD requires specification before testing.")
+    );
+
+    // @step And the work unit status remains "backlog"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "backlog");
+}
+
+#[test]
+fn a_testing_work_unit_can_move_back_to_specifying() {
+    // Scenario: A testing work unit can move back to specifying
+
+    // @step Given a work unit "AUTH-001" exists with status "testing"
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    // @step Then the command succeeds
+    // @step And the work unit status becomes "specifying" and only the states.specifying array lists it
+    assert_backward_move("testing", "specifying");
+}
+
+#[test]
+fn an_implementing_work_unit_can_move_back_to_testing() {
+    // Scenario: An implementing work unit can move back to testing
+
+    // @step Given a work unit "AUTH-001" exists with status "implementing"
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    // @step Then the command succeeds
+    // @step And the work unit status becomes "testing" and only the states.testing array lists it
+    assert_backward_move("implementing", "testing");
+}
+
+#[test]
+fn an_implementing_work_unit_can_move_back_to_specifying() {
+    // Scenario: An implementing work unit can move back to specifying
+
+    // @step Given a work unit "AUTH-001" exists with status "implementing"
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    // @step Then the command succeeds
+    // @step And the work unit status becomes "specifying" and only the states.specifying array lists it
+    assert_backward_move("implementing", "specifying");
+}
+
+#[test]
+fn a_validating_work_unit_can_move_back_to_implementing_with_a_reason() {
+    // Scenario: A validating work unit can move back to implementing with a reason
+
+    // @step Given a work unit "AUTH-001" exists with status "validating"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "validating", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and reason "Test failures"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "implementing", "reason": "Test failures"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "implementing" and only the states.implementing array lists it
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "implementing");
+    assert_eq!(columns_holding(&data, "AUTH-001"), vec!["implementing"]);
+
+    // @step And the state-history entry for "implementing" carries the reason "Test failures"
+    let history = data["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let entry = history
+        .iter()
+        .rfind(|h| h["state"].as_str() == Some("implementing"))
+        .expect("state-history entry for 'implementing'");
+    assert_eq!(entry["reason"].as_str(), Some("Test failures"));
+}
+
+/// Write the @AUTH-001 feature with one scenario and an exact coverage
+/// mapping (test file with its @step comments, implementation range), so the
+/// audit gates on the way to implementing, validating and done pass.
+fn write_covered_login_feature(root: &Path) {
+    let feature_path = write_feature(root, "user-login", "AUTH-001", LOGIN_SCENARIO);
+    write_coverage(
+        &feature_path,
+        r#"{ "name": "Login with valid credentials", "testMappings": [{ "file": "t.rs", "lines": "1-3", "implMappings": [{ "file": "i.rs", "lines": "1-2", "firstLine": "fn log_in() {", "lastLine": "}" }] }] }"#,
+    );
+    fs::write(
+        root.join("t.rs"),
+        "// @step Given I am on the login page\n// @step When I enter valid credentials\n// @step Then I should see the dashboard\n",
+    )
+    .expect("write test file");
+    fs::write(root.join("i.rs"), "fn log_in() {\n}\n").expect("write impl file");
+}
+
+#[test]
+fn a_story_moves_through_the_whole_acdd_workflow_from_backlog_to_done() {
+    // Scenario: A story moves through the whole ACDD workflow from backlog to done
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog" and a backlog state-history entry
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc(
+            "AUTH-001",
+            "backlog",
+            &format!(
+                r#""stateHistory": [{{ "state": "backlog", "timestamp": "2026-06-01T00:00:00.000Z" }}], "linkedFeatures": ["user-login"], {REVIEW_OK}"#
+            ),
+        ),
+    );
+
+    // @step And the work unit satisfies review validation
+    // (REVIEW_OK above)
+
+    // @step And its feature "user-login" has a scenario mapped to a test and an implementation
+    write_covered_login_feature(tmp.path());
+
+    // @step When the dispatcher moves "AUTH-001" to "specifying", "testing", "implementing", "validating" and "done" in turn, each with skipTemporalValidation true
+    for status in [
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+    ] {
+        let result = move_to(tmp.path(), "AUTH-001", status);
+        // @step Then every move succeeds
+        assert!(
+            result.success,
+            "move to {status} must succeed; got {result:?}"
+        );
+    }
+
+    // @step And the work unit status becomes "done" and only the states.done array lists it
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "done");
+    assert_eq!(columns_holding(&data, "AUTH-001"), vec!["done"]);
+
+    // @step And the state history lists "backlog", "specifying", "testing", "implementing", "validating" and "done" in that order
+    assert_eq!(
+        history_states(&data, "AUTH-001"),
+        vec![
+            "backlog",
+            "specifying",
+            "testing",
+            "implementing",
+            "validating",
+            "done"
+        ]
+    );
+
+    // @step And the work unit's updatedAt is no longer its creation time
+    let updated = data["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .unwrap_or("");
+    assert!(
+        !updated.is_empty() && updated != "2026-06-01T00:00:00.000Z",
+        "updatedAt must change; got {updated:?}"
+    );
+}
+
+#[test]
+fn blocking_and_unblocking_sets_and_clears_the_blocked_reason() {
+    // Scenario: Blocking and unblocking a work unit sets and clears its blockedReason
+
+    // @step Given a work unit "AUTH-001" exists with status "implementing"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "implementing", ""));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "blocked" and blockedReason "Waiting for API endpoint"
+    let blocked = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "blocked", "blockedReason": "Waiting for API endpoint"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(blocked.success, "expected success=true; got {blocked:?}");
+
+    // @step And the work unit has blockedReason "Waiting for API endpoint" and only the states.blocked array lists it
+    let data = read_work_units(tmp.path());
+    assert_eq!(
+        data["workUnits"]["AUTH-001"]["blockedReason"].as_str(),
+        Some("Waiting for API endpoint")
+    );
+    assert_eq!(columns_holding(&data, "AUTH-001"), vec!["blocked"]);
+
+    // @step And the state-history entry for "blocked" carries the reason "Waiting for API endpoint"
+    let history = data["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let entry = history
+        .iter()
+        .find(|h| h["state"].as_str() == Some("blocked"))
+        .expect("state-history entry for 'blocked'");
+    assert_eq!(entry["reason"].as_str(), Some("Waiting for API endpoint"));
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    let unblocked = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "specifying"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(
+        unblocked.success,
+        "expected success=true; got {unblocked:?}"
+    );
+
+    // @step And the work unit has no blockedReason and only the states.specifying array lists it
+    let data = read_work_units(tmp.path());
+    assert!(
+        data["workUnits"]["AUTH-001"].get("blockedReason").is_none(),
+        "blockedReason must be cleared; got {data}"
+    );
+    assert_eq!(status_of(&data, "AUTH-001"), "specifying");
+    assert_eq!(columns_holding(&data, "AUTH-001"), vec!["specifying"]);
+}
+
+#[test]
+fn the_state_history_records_every_transition_in_order() {
+    // Scenario: The state history records every transition in order
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog" and a backlog state-history entry
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc(
+            "AUTH-001",
+            "backlog",
+            &format!(
+                r#""stateHistory": [{{ "state": "backlog", "timestamp": "2026-06-01T00:00:00.000Z" }}], {REVIEW_OK}"#
+            ),
+        ),
+    );
+
+    // @step And the work unit satisfies review validation
+    // (REVIEW_OK above)
+
+    // @step And a scenario is tagged with "@AUTH-001"
+    write_feature(tmp.path(), "user-login", "AUTH-001", LOGIN_SCENARIO);
+
+    // @step When the dispatcher moves "AUTH-001" to "specifying", to "blocked" with blockedReason "Question", to "specifying" and to "testing" with skipTemporalValidation true
+    let moves = [
+        json!({"workUnitId": "AUTH-001", "status": "specifying"}),
+        json!({"workUnitId": "AUTH-001", "status": "blocked", "blockedReason": "Question"}),
+        json!({"workUnitId": "AUTH-001", "status": "specifying"}),
+        json!({"workUnitId": "AUTH-001", "status": "testing", "skipTemporalValidation": true}),
+    ];
+    for args in moves {
+        let result = dispatch_command(req(tmp.path(), args.clone()));
+        // @step Then every move succeeds
+        assert!(result.success, "move {args} must succeed; got {result:?}");
+    }
+
+    // @step And the state history has 5 entries: "backlog", "specifying", "blocked", "specifying" and "testing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(
+        history_states(&data, "AUTH-001"),
+        vec!["backlog", "specifying", "blocked", "specifying", "testing"]
+    );
+
+    // @step And only the "blocked" entry carries a reason, "Question"
+    let history = data["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let reasons: Vec<Option<&str>> = history.iter().map(|h| h["reason"].as_str()).collect();
+    assert_eq!(reasons, vec![None, None, Some("Question"), None, None]);
+
+    // @step And every entry carries an ISO-8601 timestamp
+    for h in &history {
+        let ts = h["timestamp"].as_str().unwrap_or("");
+        assert!(
+            ts.contains('T') && ts.ends_with('Z'),
+            "state-history timestamp must be ISO-8601; got {h}"
+        );
+    }
+}
+
+#[test]
+fn moving_to_testing_without_an_estimate_succeeds_with_a_warning() {
+    // Scenario: Moving to testing without an estimate succeeds with a warning
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &doc("AUTH-001", "specifying", REVIEW_OK));
+
+    // @step And the work unit satisfies review validation
+    // (REVIEW_OK above)
+
+    // @step And the work unit has no estimate
+    // (no estimate field on the fixture)
+
+    // @step And a scenario is tagged with "@AUTH-001"
+    write_feature(tmp.path(), "user-login", "AUTH-001", LOGIN_SCENARIO);
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    let result = move_to(tmp.path(), "AUTH-001", "testing");
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the output includes the warning "⚠ No estimate assigned. Consider adding estimate with --estimate=<points>"
+    assert!(
+        result.data.contains(
+            "⚠ No estimate assigned. Consider adding estimate with --estimate=<points>\n"
+        ),
+        "missing estimate warning; got data={:?}",
+        result.data
+    );
+
+    // @step And the work unit status becomes "testing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "testing");
+}
+
+#[test]
+fn moving_a_bug_to_testing_without_examples_succeeds_with_a_warning() {
+    // Scenario: Moving a bug to testing without examples succeeds with a warning
+
+    // @step Given a bug work unit "BUG-001" exists with status "specifying" and no examples
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc_typed(
+            "BUG-001",
+            "specifying",
+            "bug",
+            r#""linkedFeatures": ["login-failure"]"#,
+        ),
+    );
+
+    // @step And a feature file is tagged with "@BUG-001" and listed in linkedFeatures
+    write_feature(
+        tmp.path(),
+        "login-failure",
+        "BUG-001",
+        "Scenario: Login fails on mobile\n    Given I am on iOS Safari\n    When I enter my credentials\n    Then I see a blank screen",
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing" and skipTemporalValidation true
+    let result = move_to(tmp.path(), "BUG-001", "testing");
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the output includes the warning "⚠ No examples captured in Example Mapping. Consider adding examples with 'fspec add-example' before testing."
+    assert!(
+        result.data.contains(
+            "⚠ No examples captured in Example Mapping. Consider adding examples with 'fspec add-example' before testing.\n"
+        ),
+        "missing no-examples warning; got data={:?}",
+        result.data
+    );
+
+    // @step And the work unit status becomes "testing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "BUG-001"), "testing");
+}
+
+#[test]
+fn a_parent_work_unit_moves_through_the_workflow_without_scenarios() {
+    // Scenario: A parent work unit moves through the workflow to done without scenarios
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying" and satisfies review validation
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step And work unit "AUTH-002" has parent "AUTH-001" and status "done"
+    write_work_units(
+        tmp.path(),
+        &doc_with_second_unit(
+            "AUTH-001",
+            "specifying",
+            &format!(r#""children": ["AUTH-002"], {REVIEW_OK}"#),
+            "AUTH-002",
+            "done",
+        ),
+    );
+
+    // @step And no feature file is tagged with "@AUTH-001"
+    // (the project has no spec/features directory)
+
+    // @step When the dispatcher moves "AUTH-001" to "testing", "implementing", "validating" and "done" in turn, each with skipTemporalValidation true
+    for status in ["testing", "implementing", "validating", "done"] {
+        let result = move_to(tmp.path(), "AUTH-001", status);
+        // @step Then every move succeeds
+        assert!(
+            result.success,
+            "move to {status} must succeed; got {result:?}"
+        );
+    }
+
+    // @step And the work unit status becomes "done"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "done");
+}
+
+#[test]
+fn a_feature_file_written_after_entering_specifying_passes_the_temporal_gate() {
+    // Scenario: A feature file written after entering specifying passes the temporal gate
+
+    // @step Given a work unit "AUTH-001" exists with status "specifying" that entered specifying at "2000-01-01T00:00:00.000Z"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &doc(
+            "AUTH-001",
+            "specifying",
+            &format!(
+                r#""stateHistory": [{{ "state": "specifying", "timestamp": "2000-01-01T00:00:00.000Z" }}], {REVIEW_OK}"#
+            ),
+        ),
+    );
+
+    // @step And the work unit satisfies review validation
+    // (REVIEW_OK above)
+
+    // @step And its linked feature file was last modified after the work unit entered "specifying"
+    write_feature(tmp.path(), "user-login", "AUTH-001", LOGIN_SCENARIO);
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "testing"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the work unit status becomes "testing"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "testing");
+}
+
+#[test]
+fn a_passing_blocking_pre_hook_lets_the_transition_proceed() {
+    // Scenario: A passing blocking pre-hook lets the transition proceed
+
+    // @step Given a work unit "AUTH-001" exists with status "implementing"
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step And a blocking virtual hook "echo hook-passed" is bound to the "pre-validating" event
+    write_work_units(
+        tmp.path(),
+        &doc(
+            "AUTH-001",
+            "implementing",
+            r#""virtualHooks": [{ "name": "must-pass", "event": "pre-validating", "command": "echo hook-passed", "blocking": true }]"#,
+        ),
+    );
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "validating"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "validating"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the output includes the hook's stdout "hook-passed"
+    assert!(
+        result.data.contains("hook-passed"),
+        "missing hook stdout; got data={:?}",
+        result.data
+    );
+
+    // @step And the work unit status becomes "validating"
+    let data = read_work_units(tmp.path());
+    assert_eq!(status_of(&data, "AUTH-001"), "validating");
+}
+
+/// Ref names under refs/fspec-checkpoints/<id>/.
+fn checkpoint_refs(dir: &Path, work_unit_id: &str) -> Vec<String> {
+    let out = Command::new("git")
+        .args([
+            "for-each-ref",
+            "--format=%(refname)",
+            &format!("refs/fspec-checkpoints/{work_unit_id}/"),
+        ])
+        .current_dir(dir)
+        .output()
+        .expect("git for-each-ref");
+    String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+/// Commit every file of the repo (the spec lock file is git-ignored, as in
+/// the fspec repository), leaving a clean working directory.
+fn commit_all(dir: &Path) {
+    fs::write(dir.join(".gitignore"), "spec/.fspec-write.lock\n").expect("write .gitignore");
+    for args in [vec!["add", "-A"], vec!["commit", "--quiet", "-m", "board"]] {
+        let status = Command::new("git")
+            .args(&args)
+            .current_dir(dir)
+            .status()
+            .expect("git add/commit");
+        assert!(status.success(), "git {args:?} failed");
+    }
+}
+
+#[test]
+fn an_automatic_checkpoint_is_named_after_the_state_left_and_holds_the_changes() {
+    // Scenario: An automatic checkpoint is named after the state left and holds the uncommitted changes
+
+    // @step Given a work unit "AUTH-001" exists with status "testing" in a git repository
+    let tmp = TempDir::new().expect("tempdir");
+    init_git_repo(tmp.path());
+    write_work_units(tmp.path(), &doc("AUTH-001", "testing", ""));
+    commit_all(tmp.path());
+
+    // @step And the tracked file README.md has the uncommitted content "# changed"
+    fs::write(tmp.path().join("README.md"), "# changed\n").expect("modify README");
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and skipTemporalValidation true
+    let result = move_to(tmp.path(), "AUTH-001", "implementing");
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the checkpoint ref "refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing" exists
+    assert_eq!(
+        checkpoint_refs(tmp.path(), "AUTH-001"),
+        vec!["refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing"]
+    );
+
+    // @step And README.md in that checkpoint reads "# changed"
+    let shown = Command::new("git")
+        .args([
+            "show",
+            "refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing:README.md",
+        ])
+        .current_dir(tmp.path())
+        .output()
+        .expect("git show");
+    assert_eq!(String::from_utf8_lossy(&shown.stdout), "# changed\n");
+
+    // @step And list-checkpoints for "AUTH-001" lists the checkpoint "AUTH-001-auto-testing"
+    let listed = dispatch_command(DispatchRequest {
+        command: "list-checkpoints".to_string(),
+        args_json: json!({"workUnitId": "AUTH-001", "format": "json"}).to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(listed.success, "list-checkpoints failed: {listed:?}");
+    assert!(
+        listed.data.contains("\"AUTH-001-auto-testing\""),
+        "checkpoint missing from list-checkpoints; got {}",
+        listed.data
+    );
+}
+
+#[test]
+fn leaving_backlog_does_not_create_an_automatic_checkpoint() {
+    // Scenario: Leaving backlog does not create an automatic checkpoint
+
+    // @step Given a work unit "AUTH-001" exists with status "backlog" in a git repository
+    let tmp = TempDir::new().expect("tempdir");
+    init_git_repo(tmp.path());
+    write_work_units(tmp.path(), &doc("AUTH-001", "backlog", ""));
+
+    // @step And the git working directory has uncommitted changes
+    fs::write(tmp.path().join("dirty.txt"), "uncommitted\n").expect("write dirty file");
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "status": "specifying"}),
+    ));
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And no checkpoint ref exists for "AUTH-001"
+    assert_eq!(
+        checkpoint_refs(tmp.path(), "AUTH-001"),
+        Vec::<String>::new()
+    );
+}
+
+#[test]
+fn a_clean_working_directory_does_not_create_an_automatic_checkpoint() {
+    // Scenario: A clean working directory does not create an automatic checkpoint
+
+    // @step Given a work unit "AUTH-001" exists with status "testing" in a git repository
+    let tmp = TempDir::new().expect("tempdir");
+    init_git_repo(tmp.path());
+    write_work_units(tmp.path(), &doc("AUTH-001", "testing", ""));
+
+    // @step And the git working directory has no uncommitted changes
+    commit_all(tmp.path());
+
+    // @step When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and skipTemporalValidation true
+    let result = move_to(tmp.path(), "AUTH-001", "implementing");
+
+    // @step Then the command succeeds
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And no checkpoint ref exists for "AUTH-001"
+    assert_eq!(
+        checkpoint_refs(tmp.path(), "AUTH-001"),
+        Vec::<String>::new()
+    );
 }

@@ -5,7 +5,6 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::Duration;
 
 use codelet_agent_loop::generate_compaction_handler::register_compactor_sub_agent_handler;
 use codelet_agent_loop::BackgroundOutput;
@@ -81,6 +80,10 @@ impl Drop for Cleanup {
 #[serial_test::serial]
 async fn scenario_original_session_cancellation_terminates_only_its_compaction_builder_subprocesses(
 ) -> session_support::TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given automatic compaction has a builder running a long-lived subprocess under an ephemeral identity
     let (directory, manager, session_id, _) = session_support::manager().await?;
     let session = manager.get_session(&session_id.value)?;
@@ -93,7 +96,7 @@ async fn scenario_original_session_cancellation_terminates_only_its_compaction_b
     let pid_file = directory.path().join("builder.pid");
     let quoted_path = pid_file.to_string_lossy().replace('\'', "'\\''");
     let command = format!(": {marker}; printf '%s' \"$$\" > '{quoted_path}'; exec sleep 60");
-    let arguments = serde_json::to_string(&json!({"command":command}))?;
+    let arguments = serde_json::to_string(&json!({"work_unit_id":"NONE", "command":command}))?;
     let requests = Arc::new(AtomicUsize::new(0));
     let received = requests.clone();
     Mock::given(method("POST"))
@@ -158,7 +161,7 @@ async fn scenario_original_session_cancellation_terminates_only_its_compaction_b
         )
         .await
     });
-    let builder_process = tokio::time::timeout(Duration::from_secs(5), async {
+    let builder_process = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if let Some(process) = global_store()
                 .list_sessions()
@@ -176,7 +179,7 @@ async fn scenario_original_session_cancellation_terminates_only_its_compaction_b
     let builder_pid = std::fs::read_to_string(pid_file)?;
     assert!(process_alive(&builder_pid).await?);
     assert!(matches!(
-        global_store().try_wait(&builder_process).await,
+        global_store().try_wait(&builder_process).await?,
         Some(None)
     ));
     // @step And an unrelated owner has a running subprocess
@@ -189,16 +192,16 @@ async fn scenario_original_session_cancellation_terminates_only_its_compaction_b
     cleanup.track(&unrelated_process).await?;
     // @step When the original session is interrupted while its builder is pending
     session.interrupt();
-    let outcome = tokio::time::timeout(Duration::from_secs(3), operation).await;
-    let terminated = tokio::time::timeout(Duration::from_secs(2), async {
+    let outcome = codelet_test_helpers::deadlock_guard("operation", operation).await;
+    let terminated = codelet_test_helpers::deadlock_guard("the awaited block", async {
         while process_alive(&builder_pid).await.unwrap_or(true) {
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
     .is_ok();
     let unrelated_running = matches!(
-        global_store().try_wait(&unrelated_process).await,
+        global_store().try_wait(&unrelated_process).await?,
         Some(None)
     );
     global_store().close_session(&builder_process).await?;

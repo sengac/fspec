@@ -2,13 +2,15 @@
 @RIG-012
 @wip
 @typescript-layer
+@tui
+@context-management
 Feature: Reasoning token TUI display and persistence
   """
   Data flow: NAPI TokenTracker.reasoningTokens → TypeScript SessionHeader display
   Also: Context fill calculation, token persistence, and session restore
   """
 
-  Background: 
+  Background:
     Given a developer using extended thinking models
     And the model returns reasoning tokens in its Usage response
 

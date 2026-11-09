@@ -5,11 +5,48 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "106-128",
+          "lines": "102-127",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 214, 215, 216, 217, 218, 219, 220, 221, 222]
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": ".lock()",
+              "lastLine": "break;"
             }
           ]
         }
@@ -20,11 +57,35 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "130-155",
+          "lines": "129-157",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [87, 88, 89, 90, 91, 92, 93, 94, 95, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192]
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ],
+              "firstLine": "pub async fn reset(&self) {",
+              "lastLine": ".map_err(super::network_error::socket_stream)?;"
             }
           ]
         }
@@ -35,11 +96,19 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "157-186",
+          "lines": "159-191",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [172, 173, 174, 175, 176]
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "Ok(Err(tokio_tungstenite::tungstenite::Error::Http(response))) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,15 +119,58 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "188-235",
+          "lines": "193-246",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [172, 173, 174, 175, 176, 232, 233, 234]
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                232,
+                233,
+                234
+              ],
+              "firstLine": "Ok(Err(tokio_tungstenite::tungstenite::Error::Http(response))) => {",
+              "lastLine": "Some(Ok(_)) => Err(failure(\"Codex socket returned an unsupported message\"))?,"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
-              "lines": [176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211]
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "tokio::time::sleep(delay).await;"
             }
           ]
         }
@@ -69,11 +181,28 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "237-265",
+          "lines": "248-279",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 195, 196, 197, 198]
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "if let Ok(mut state) = self.0 .0.lock() {",
+              "lastLine": "loop {"
             }
           ]
         }
@@ -84,11 +213,31 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov156_codex_websocket.rs",
-          "lines": "267-298",
+          "lines": "281-315",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/websocket.rs",
-              "lines": [209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225]
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ],
+              "firstLine": "Some(Ok(Message::Text(text))) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -106,6 +255,6 @@
       "rust/providers/src/codex/websocket.rs",
       "rust/providers/src/codex/reconnect.rs"
     ],
-    "totalLinesCovered": 317
+    "totalLinesCovered": 337
   }
 }

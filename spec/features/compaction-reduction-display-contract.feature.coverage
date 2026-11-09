@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "163-208",
+          "lines": "159-206",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -24,38 +24,9 @@
                 147,
                 148,
                 149
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "163-208",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302
-              ]
+              ],
+              "firstLine": "StreamChunk::FspecCommandRequest { fspec_request } => {",
+              "lastLine": "// `dispatch_compaction_complete.rs` so this file stays"
             }
           ]
         }
@@ -85,14 +56,10 @@
                 147,
                 148,
                 149
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "210-246",
-          "implMappings": [
+              ],
+              "firstLine": "StreamChunk::FspecCommandRequest { fspec_request } => {",
+              "lastLine": "// `dispatch_compaction_complete.rs` so this file stays"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
@@ -103,7 +70,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "let context_label =",
+              "lastLine": "format!(\"{}%\", tokens.context_fill_pct)"
             }
           ]
         }
@@ -117,54 +86,25 @@
           "lines": "248-290",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "file": "rust/fspec-tui/src/transport/backend/session_history.rs",
               "lines": [
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "248-290",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
-              "lines": [
-                463,
-                464,
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
-                476
-              ]
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "let _ = (session_id, goal);",
+              "lastLine": "}"
             }
           ]
         }
@@ -178,31 +118,28 @@
           "lines": "292-343",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_1.rs",
               "lines": [
-                1669,
-                1670,
-                1671,
-                1672,
-                1673,
-                1674,
-                1675,
-                1676,
-                1677,
-                1678,
-                1679,
-                1680,
-                1681,
-                1682,
-                1683,
-                1684,
-                1685,
-                1686,
-                1687,
-                1688,
-                1689,
-                1690
-              ]
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ],
+              "firstLine": "fn compact_session(&self, session_id: &SessionId) -> Result<CompactionResult, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -213,7 +150,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "345-388",
+          "lines": "356-399",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -232,14 +169,10 @@
                 147,
                 148,
                 149
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "345-388",
-          "implMappings": [
+              ],
+              "firstLine": "StreamChunk::FspecCommandRequest { fspec_request } => {",
+              "lastLine": "// `dispatch_compaction_complete.rs` so this file stays"
+            },
             {
               "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
@@ -257,7 +190,9 @@
                 183,
                 184,
                 185
-              ]
+              ],
+              "firstLine": "/// Calculate compression ratio from pre/post compaction token counts.",
+              "lastLine": "/// Used by stream_loop (pre-prompt and post-loop compaction) and both"
             }
           ]
         }
@@ -273,12 +208,11 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
       "rust/fspec-tui/src/views/agent/header_build.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/core/src/session_manager_handle.rs",
+      "rust/fspec-tui/src/transport/backend/session_history.rs",
+      "rust/core/src/session_manager_handle/stub/stub_handle_1.rs",
       "rust/cli/src/interactive_helpers.rs"
     ],
-    "totalLinesCovered": 531
+    "totalLinesCovered": 318
   }
 }

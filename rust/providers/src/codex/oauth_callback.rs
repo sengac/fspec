@@ -16,7 +16,7 @@ use tokio::task::JoinSet;
 use crate::codex::codex_oauth::{html_error, HTML_CANCELLED, HTML_SUCCESS};
 use crate::oauth_http_utils::{html_response, parse_urlencoded_params};
 
-pub(super) enum CallbackResult {
+pub(in crate::codex) enum CallbackResult {
     Success { code: String },
     Cancelled,
     AuthError { error: String, description: String },
@@ -24,11 +24,11 @@ pub(super) enum CallbackResult {
 
 type CallbackState = Arc<Mutex<Option<oneshot::Sender<CallbackResult>>>>;
 
-pub(super) async fn serve_until_done(
+pub(in crate::codex) async fn serve_until_done(
     listener: TcpListener,
     state: CallbackState,
     expected_state: String,
-) -> Result<()> {
+) -> std::io::Result<()> {
     let done = Arc::new(Notify::new());
     let mut connections = JoinSet::new();
     loop {
@@ -66,34 +66,20 @@ async fn handle_request(
     let (result, status, html) = match request.uri().path() {
         "/auth/callback" => {
             let params = parse_urlencoded_params(request.uri().query().unwrap_or_default());
-            if let Some(error) = params.get("error") {
-                let description = params.get("error_description").unwrap_or(error).clone();
-                (
-                    Some(CallbackResult::AuthError {
-                        error: error.clone(),
-                        description: description.clone(),
-                    }),
+            // BUG-697: the state is checked before anything else, so a
+            // forged callback (error or code) can never end the pending login.
+            match params.get("state") {
+                Some(received) if *received == expected => callback_outcome(&params),
+                Some(_) => (
+                    None,
                     StatusCode::BAD_REQUEST,
-                    html_error(&description),
-                )
-            } else {
-                match (params.get("code"), params.get("state")) {
-                    (Some(code), Some(received)) if *received == expected => (
-                        Some(CallbackResult::Success { code: code.clone() }),
-                        StatusCode::OK,
-                        HTML_SUCCESS.to_owned(),
-                    ),
-                    (Some(_), Some(_)) => (
-                        None,
-                        StatusCode::BAD_REQUEST,
-                        html_error("CSRF validation failed. State mismatch detected."),
-                    ),
-                    _ => (
-                        None,
-                        StatusCode::BAD_REQUEST,
-                        html_error("Missing code or state parameter in callback"),
-                    ),
-                }
+                    html_error("CSRF validation failed. State mismatch detected."),
+                ),
+                None => (
+                    None,
+                    StatusCode::BAD_REQUEST,
+                    html_error("CSRF validation failed. Missing state parameter in callback."),
+                ),
             }
         }
         "/cancel" => (
@@ -109,4 +95,34 @@ async fn handle_request(
         }
     }
     Ok(html_response(status, &html))
+}
+
+/// The outcome of a callback whose state already matched the pending login.
+fn callback_outcome(
+    params: &std::collections::HashMap<String, String>,
+) -> (Option<CallbackResult>, StatusCode, String) {
+    if let Some(error) = params.get("error") {
+        let description = params.get("error_description").unwrap_or(error).clone();
+        let html = html_error(&description);
+        return (
+            Some(CallbackResult::AuthError {
+                error: error.clone(),
+                description,
+            }),
+            StatusCode::BAD_REQUEST,
+            html,
+        );
+    }
+    match params.get("code") {
+        Some(code) => (
+            Some(CallbackResult::Success { code: code.clone() }),
+            StatusCode::OK,
+            HTML_SUCCESS.to_owned(),
+        ),
+        None => (
+            None,
+            StatusCode::BAD_REQUEST,
+            html_error("Missing code parameter in callback"),
+        ),
+    }
 }

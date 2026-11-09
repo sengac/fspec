@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @BUG-203
 @bug-203
@@ -37,7 +38,7 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
   reopen #2) → dialog only when zero sessions are open.
 
   Contract:
-  - Confirming Yes / Yes - Isolated from a BOARD surface flips to the Agent
+  - Confirming Yes / Start in Worktree from a BOARD surface flips to the Agent
   view on the fresh session (the existing handle_create_session_submitted
   board→agent flip) and does NOT bind the session to the selected work
   unit (the store's work-unit slots are untouched; no extra AttachSession
@@ -47,7 +48,7 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
   untouched (the RPC-097 reopen #1 overlay contract).
   - The dialog title follows the shared helper's documented contract
   (RPC-060 / RPC-097 R6): context-aware from the store's current session's
-  WorkUnitContext ('Work on <id>?' when the current session is bound to a
+  WorkUnitContext ('Start Agent for <id>?' when the current session is bound to a
   unit, else 'Start New Agent?').
   """
 
@@ -67,7 +68,7 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
   #      unchanged — it still cycles/resumes sessions: attached-session
   #      fast path, then the first open session (RPC-097 reopen #2), then
   #      the create dialog only when zero sessions are open.
-  #   3. R3: When the 'New Agent' prompt is confirmed (Yes / Yes - Isolated)
+  #   3. R3: When the 'New Agent' prompt is confirmed (Yes / Start in Worktree)
   #      from a BOARD surface, the fresh session is created and the view
   #      flips to the Agent view on it — the session is NOT bound to the
   #      board's selected work unit (current_work_unit_id is untouched and
@@ -75,10 +76,10 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
   #      board and leaves every open session untouched.
   #   4. R4: The dialog follows the shared helper's documented title
   #      contract (RPC-060 / RPC-097 R6): context-aware from the store's
-  #      CURRENT session's WorkUnitContext — 'Work on <id>?' + 'Start an AI
-  #      session for this task' when the current session is bound to a unit,
-  #      else 'Start New Agent?' + 'Begin a fresh AI conversation, not
-  #      linked to any task.'
+  #      CURRENT session's WorkUnitContext — 'Start Agent for <id>?' + 'Starts
+  #      a new agent linked to work unit <id>.' when bound to a unit,
+  #      else 'Start New Agent?' + 'Starts a new agent, not linked to any
+  #      work unit.'
   #
   # EXAMPLES:
   #   1. Board with one open session "s-1" attached to AUTH-001; user selects
@@ -141,7 +142,7 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
     Given the board has one open session "s-1" attached to no work unit
     And the selected work unit "AUTH-002" has no attached session
     When the user presses the '.' key
-    And the user presses Enter on the "Yes" option
+    And the user presses Enter on the "Start" option
     Then a fresh session is created (the backend create_session fires exactly once)
     And the active view is the Agent view on the fresh session
     And the fresh session is NOT bound to work unit "AUTH-002" (no attachment recorded; the store's current work unit is untouched)

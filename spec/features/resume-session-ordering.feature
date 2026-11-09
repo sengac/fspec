@@ -1,4 +1,8 @@
+@done
 @TUI-099
+@BUG-409
+@session
+@session-list
 Feature: Sessions in /resume view are not ordered by most recent to oldest
   """
   Architecture:

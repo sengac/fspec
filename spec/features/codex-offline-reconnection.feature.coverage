@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov160_codex_offline.rs",
-          "lines": "20-114",
+          "lines": "20-123",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                163,
                 164,
                 165,
                 166,
@@ -59,8 +58,12 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213,
+                214
+              ],
+              "firstLine": "impl RecoveryPolicy {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/network_error.rs",
@@ -115,7 +118,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub(super) struct NetworkResolver;",
+              "lastLine": "Error::Instance(\"Codex network setup failed\".into())"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -207,7 +212,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "let completion_mode = validate_completion.clone();",
+              "lastLine": "yield Choice::FinalResponse(Final {"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -226,7 +233,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "self.prepare_with_tools(request, &super::custom_tools::CustomToolRegistry::default())",
+              "lastLine": "None => incoming,"
             }
           ]
         }
@@ -237,7 +246,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov160_codex_offline.rs",
-          "lines": "117-196",
+          "lines": "126-205",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
@@ -332,7 +341,9 @@
                 210,
                 211,
                 212
-              ]
+              ],
+              "firstLine": "pub(super) fn track<T: Clone + Send + 'static>(",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -363,7 +374,9 @@
                 190,
                 191,
                 192
-              ]
+              ],
+              "firstLine": "let response = tokio::time::timeout(",
+              "lastLine": "}"
             }
           ]
         }
@@ -384,6 +397,6 @@
       "rust/providers/src/codex/history.rs",
       "rust/providers/src/codex/recovery.rs"
     ],
-    "totalLinesCovered": 492
+    "totalLinesCovered": 502
   }
 }

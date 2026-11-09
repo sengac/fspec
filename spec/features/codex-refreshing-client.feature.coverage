@@ -2,147 +2,551 @@
   "scenarios": [
     {
       "name": "Request with valid token passes through with correct headers",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "18-27",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/client_http.rs", "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]},
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "29-50",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "let mut req = match &mode {",
+              "lastLine": "recovery::authorize(&mode, req.headers()).await?;"
+            },
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "pub async fn is_token_expired(&self) -> bool {",
+              "lastLine": ") -> http::Request<T> {"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Expired token is automatically refreshed before request",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "29-46",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/auth_refresh.rs", "lines": [159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "52-76",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "ensure_inner(state).await",
+              "lastLine": "auth_storage::transaction_async(&binding.home, || {"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Token refresh failure propagates error without sending request",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "48-65",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/auth_refresh.rs", "lines": [188, 189, 190]},
-          {"file": "rust/providers/src/codex/client_http.rs", "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "78-113",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                192
+              ],
+              "firstLine": "let response = super::recovery_auth::refresh(&state.issuer_url, &previous).await?;",
+              "lastLine": "let response = super::recovery_auth::refresh(&state.issuer_url, &previous).await?;"
+            },
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "let mut req = match &mode {",
+              "lastLine": "recovery::authorize(&mode, req.headers()).await?;"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "URL rewrite for /v1/responses path",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "67-77",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/codex_oauth.rs", "lines": [161, 162, 163, 164, 165, 166, 167, 168, 169, 170]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "115-128",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "pub fn rewrite_codex_url(url: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "URL rewrite for /chat/completions path",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "79-89",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/codex_oauth.rs", "lines": [161, 162, 163, 164, 165, 166, 167, 168, 169, 170]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "130-144",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "pub fn rewrite_codex_url(url: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Non-API URLs pass through without rewrite",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "91-100",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/codex_oauth.rs", "lines": [161, 162, 163, 164, 165, 166, 167, 168, 169, 170]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "146-162",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "pub fn rewrite_codex_url(url: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Streaming request with expired token refreshes before streaming",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "102-116",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/client_http.rs", "lines": [120, 121, 122, 123, 124, 125, 126]},
-          {"file": "rust/providers/src/codex/recovery.rs", "lines": [69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "164-184",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "fn send_streaming<T>(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": ".to_std()",
+              "lastLine": "let mut retries = 0;"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Existing Authorization header is replaced with Bearer token",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "118-130",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [154, 155, 156, 157]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "186-212",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179
+              ],
+              "firstLine": "parts.headers.remove(http::header::AUTHORIZATION);",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "CodexProvider uses RefreshingCodexClient for OAuth mode",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "132-151",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/constructors.rs", "lines": [125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "214-240",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/constructors.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "/// * `model` - Model name (e.g., \"gpt-5.1-codex\")",
+              "lastLine": "issuer_url.to_string(),"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Token refresh within expiry buffer triggers proactive refresh",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "153-164",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130]},
-          {"file": "rust/providers/src/codex/auth_refresh.rs", "lines": [165, 166, 167, 168, 169]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "242-258",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "let state = token_state",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "async fn ensure_inner(state: &mut TokenState) -> Result<(), Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "API key mode passes requests through unchanged",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "166-191",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/client_http.rs", "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]},
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [111, 112, 113]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "260-291",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "let mut req = match &mode {",
+              "lastLine": "recovery::authorize(&mode, req.headers()).await?;"
+            },
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                136,
+                137,
+                138,
+                152
+              ],
+              "firstLine": "impl Default for RefreshingCodexClient {",
+              "lastLine": "TokenMode::ApiKey => false,"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Default expiry when expires_in is not provided",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "193-206",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [7, 8, 10, 11, 12, 13, 14, 69, 75]},
-          {"file": "rust/providers/src/codex/auth_refresh.rs", "lines": [193]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "293-317",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                7,
+                8,
+                10,
+                11,
+                12,
+                13,
+                14,
+                69,
+                75
+              ],
+              "firstLine": "pub const EXPIRY_BUFFER_SECS: u64 = 30;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                204
+              ],
+              "firstLine": "state.expires_at = token_expiry(response.expires_in.unwrap_or(DEFAULT_EXPIRY_SECS));",
+              "lastLine": "state.expires_at = token_expiry(response.expires_in.unwrap_or(DEFAULT_EXPIRY_SECS));"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Explicit zero lifetime triggers immediate refresh via Some(0)",
-      "testMappings": [{
-        "file": "rust/providers/tests/codex_refreshing_client_test.rs",
-        "lines": "208-218",
-        "implMappings": [
-          {"file": "rust/providers/src/codex/refreshing_client.rs", "lines": [69, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130]},
-          {"file": "rust/providers/src/codex/auth_refresh.rs", "lines": [165, 166, 167, 168, 169]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_refreshing_client_test.rs",
+          "lines": "319-334",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/refreshing_client.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                96,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ],
+              "firstLine": "pub(super) fn token_expiry(seconds: u64) -> Instant {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "async fn ensure_inner(state: &mut TokenState) -> Result<(), Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 13,
     "coveredScenarios": 13,
     "coveragePercent": 100,
-    "testFiles": ["rust/providers/tests/codex_refreshing_client_test.rs"],
+    "testFiles": [
+      "rust/providers/tests/codex_refreshing_client_test.rs"
+    ],
     "implFiles": [
       "rust/providers/src/codex/client_http.rs",
       "rust/providers/src/codex/refreshing_client.rs",
@@ -151,6 +555,6 @@
       "rust/providers/src/codex/recovery.rs",
       "rust/providers/src/codex/constructors.rs"
     ],
-    "totalLinesCovered": 405
+    "totalLinesCovered": 550
   }
 }

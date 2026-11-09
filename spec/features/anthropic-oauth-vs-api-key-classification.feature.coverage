@@ -23,7 +23,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "fn oauth_label(provider_id: &str) -> String {",
+              "lastLine": "fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> ProviderDisplayInfo {"
             }
           ]
         }
@@ -52,7 +54,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "fn oauth_label(provider_id: &str) -> String {",
+              "lastLine": "fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> ProviderDisplayInfo {"
             }
           ]
         }
@@ -81,7 +85,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "fn oauth_label(provider_id: &str) -> String {",
+              "lastLine": "fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> ProviderDisplayInfo {"
             }
           ]
         }

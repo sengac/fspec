@@ -15,7 +15,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -59,7 +61,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
-          "lines": "143-173",
+          "lines": "152-181",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_architecture_note.rs",
@@ -88,7 +92,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "match restore_architecture_note::run(&args_json, &project_root).await {",
+              "lastLine": "}"
             }
           ]
         }
@@ -99,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
-          "lines": "175-199",
+          "lines": "187-210",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_architecture_note.rs",
@@ -108,7 +114,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -119,7 +127,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
-          "lines": "201-222",
+          "lines": "216-239",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_architecture_note.rs",
@@ -128,7 +136,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -139,7 +149,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
-          "lines": "224-287",
+          "lines": "245-309",
           "implMappings": [
             {
               "file": "rust/fspec/src/restore_architecture_note.rs",
@@ -154,7 +164,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "match restore_architecture_note::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -165,89 +177,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_restore_architecture_note.rs",
-          "lines": "289-315",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/restore_architecture_note.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "lines": "317-343"
         }
       ]
     }
@@ -260,9 +190,8 @@
       "rust/fspec/tests/cli_restore_architecture_note.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/restore_architecture_note.rs",
-      "rust/fspec-core/src/help/configs/restore_architecture_note.rs"
+      "rust/fspec/src/restore_architecture_note.rs"
     ],
-    "totalLinesCovered": 373
+    "totalLinesCovered": 299
   }
 }

@@ -1,0 +1,35 @@
+{
+  "scenarios": [
+    {
+      "name": "The documented quality checks lint every workspace test target",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug565_workspace_clippy_tests_quality_check.rs",
+          "lines": "36-61",
+          "implMappings": [
+            {
+              "file": "AGENTS.md",
+              "lines": [
+                264
+              ],
+              "firstLine": "cargo clippy --workspace --tests -- -D warnings   # Lint every crate's test targets too",
+              "lastLine": "cargo clippy --workspace --tests -- -D warnings   # Lint every crate's test targets too"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug565_workspace_clippy_tests_quality_check.rs"
+    ],
+    "implFiles": [
+      "AGENTS.md"
+    ],
+    "totalLinesCovered": 27
+  }
+}

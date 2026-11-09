@@ -32,6 +32,10 @@ from the TUI.
 | Galadriel | `GALADRIEL_API_KEY` | API Key |
 | Azure OpenAI | `AZURE_OPENAI_API_KEY` | API Key |
 
+Anthropic subscription OAuth uses the installed Claude Code release for protocol
+compatibility; see [Anthropic OAuth protocol](ANTHROPIC_OAUTH.md) for version
+sources, deployment overrides, thinking effort, and failure diagnostics.
+
 **OpenAI-compatible APIs** — Ollama, vLLM, LM Studio, and any server implementing
 the OpenAI API format work via the OpenAI provider. The `OpenAI` provider is for
 **local OpenAI-protocol-compatible servers only** (vLLM, Ollama, sglang, RunPod,
@@ -111,9 +115,22 @@ OAuth-capable providers are `anthropic`, `codex` and `github-copilot`:
 | Codex (ChatGPT) | Browser · device code (shows a user code + verification URL) |
 | GitHub Copilot | Device code only, preceded by a deployment-type prompt (GitHub.com vs. GitHub Enterprise + host entry) |
 
-Browser login rows only appear on transports that can run the local OAuth HTTP
-server. On failure the error screen offers `Enter` to retry the last method or
-`Esc` to go back; `Esc` cancels an in-flight login (late results are discarded).
+Anthropic and Codex browser login are available both embedded and connected to a
+daemon. The browser opens on the **client machine**, never on the daemon host.
+Anthropic browser login opens a local HTML form hosted by the client: follow its
+authorization link, then paste the returned code into that browser form. The TUI
+shows the local form URL so you can copy or reopen it. Codex completes automatically
+through a local callback on the client's port **1455**. The daemon exchanges the
+authorization code and stores credentials; it does not need a browser or a
+forwarded callback port. Anthropic headless login remains a separate option for
+pasting a code into the TUI, and Codex device-code login is also available.
+
+Authorization URLs wrap to fit the screen. With the URL actions focused, press
+`c` or `Ctrl+C` to copy the complete URL, or `o` to open it locally. Copying and
+opening do not enter text into the headless code field; use `Tab`, `Down`, or paste
+to focus that field. On failure the error screen offers `Enter` to retry the last
+method or `Esc` to go back; `Esc` cancels an in-flight login and discards late
+results.
 
 ### API Key Editor
 

@@ -35,7 +35,6 @@
 #![allow(clippy::await_holding_lock)]
 
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 use codelet_agent_loop::agent_manager_handler::{create_async_handler, create_handler};
 use codelet_sessions::SessionManager;
@@ -86,14 +85,15 @@ fn owning_manager() -> Result<(tempfile::TempDir, Arc<SessionManager>), String> 
     // the SESSION_STORE singleton still points to the old data dir and
     // save_session() fails with "No such file or directory".
     reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     // ASSUMED API: the fix wraps the manager in Arc via a constructor that
     // stamps a `Weak<Self>` self-reference so created sessions can carry an
-    // owning-manager back-reference. `Arc::new(SessionManager::new())` is the
-    // current shape and is used here; if the fix adds `SessionManager::new_arc()`
+    // owning-manager back-reference. `SessionManager::new()` is the
+    // current shape and is used here; if the fix adds `SessionManager::new()`
     // swap this single line.
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("anthropic/claude-opus-4-5");
+    let manager = SessionManager::new();
+    manager.set_default_model("anthropic/claude-opus-4-5")?;
     Ok((data_dir, manager))
 }
 
@@ -144,10 +144,9 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     let tmp = tempfile::tempdir().map_err(|e| e.to_string())?;
     let project = tmp.path().to_str().expect("utf8 tempdir").to_string();
     let (_data_dir, manager) = owning_manager()?;
-    assert!(
-        !std::ptr::eq(manager.as_ref(), SessionManager::instance()),
-        "precondition: M must be a distinct manager from the global singleton"
-    );
+    // BUG-405: there is no global singleton; a second, unrelated manager
+    // stands in for "any other manager".
+    let unrelated = SessionManager::new();
 
     // @step And a spawner session created by M with an AgentManager handler bound to M
     let spawner_id = spawner_with_handler_bound_to(&manager, &project).await?;
@@ -163,9 +162,10 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     let in_m = manager
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -173,18 +173,19 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
         "subordinate {subordinate_id} must appear in the owning manager M.list_sessions()"
     );
 
-    // @step And the subordinate does not appear in SessionManager::instance().list_sessions()
-    let in_singleton = SessionManager::instance()
+    // @step And the subordinate does not appear in a second, unrelated SessionManager's list_sessions()
+    let in_unrelated = unrelated
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
-        !in_singleton,
-        "subordinate {subordinate_id} must NOT leak into the global singleton"
+        !in_unrelated,
+        "subordinate {subordinate_id} must NOT leak into another manager"
     );
 
     clear_all_agent_manager_handlers();
@@ -222,7 +223,7 @@ async fn spawn_fires_owning_manager_session_created_broadcast() -> Result<(), St
     };
 
     // @step Then the subscriber receives the subordinate's SessionInfo
-    let received = tokio::time::timeout(Duration::from_millis(500), created_rx.recv())
+    let received = codelet_test_helpers::deadlock_guard("created_rx.recv()", created_rx.recv())
         .await
         .map_err(|_| "timed out waiting for session-created broadcast on M".to_string())?
         .map_err(|e| format!("broadcast recv error: {e}"))?;
@@ -268,7 +269,7 @@ async fn subordinate_spawned_into_real_hooks_manager_runs_agent_loop() -> Result
     let (_data_dir, manager) = owning_manager()?;
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
     codelet_providers::stub_provider::register_stub_provider();
-    manager.set_default_model("stub/canned");
+    manager.set_default_model("stub/canned")?;
 
     // @step And a spawner session created by M with an AgentManager handler bound to M
     let spawner_id = Uuid::new_v4();
@@ -316,20 +317,23 @@ async fn subordinate_spawned_into_real_hooks_manager_runs_agent_loop() -> Result
     }
 
     // @step Then the subordinate processes the message and emits output chunks
+    // TEST-042: read the subordinate's stream under the deadlock guard.
     let mut got_text = false;
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
-    while tokio::time::Instant::now() < deadline {
-        match tokio::time::timeout(Duration::from_millis(250), sub_chunks.recv()).await {
-            Ok(Ok(StreamChunk::Text { text, .. })) => {
-                if text == "hi back" {
-                    got_text = true;
-                    break;
+    let _ = codelet_test_helpers::deadlock_guard("the subordinate's Text chunk", async {
+        loop {
+            match sub_chunks.recv().await {
+                Ok(StreamChunk::Text { text, .. }) => {
+                    if text == "hi back" {
+                        got_text = true;
+                        break;
+                    }
                 }
+                Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
-            Ok(Ok(_)) => continue,
-            Ok(Err(_)) | Err(_) => continue,
         }
-    }
+    })
+    .await;
     assert!(
         got_text,
         "subordinate's agent loop must run (FspecAgentHooks on M) and emit a Text chunk; \
@@ -419,9 +423,10 @@ async fn spawner_can_list_get_status_and_close_on_owning_manager() -> Result<(),
     let still_in_m = manager
         .list_sessions(
             &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
         )
+        .expect("list_sessions reads the session")
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -434,52 +439,25 @@ async fn spawner_can_list_get_status_and_close_on_owning_manager() -> Result<(),
 }
 
 // =============================================================================
-// Scenario: NAPI path falls back to the global singleton when no owning
-//           manager is set
+// Scenario: A spawner with no owning manager is refused
 // =============================================================================
 //
-// Simulates the NAPI path: the AgentManager handler is constructed with NO
-// owning-manager back-reference (`None`). In that case the handler MUST resolve
-// and create the subordinate on `SessionManager::instance()` — byte-for-byte
-// the legacy behaviour, so existing NAPI/AMGR suites stay green.
+// BUG-405: there is no SessionManager singleton; a handler bound with no
+// owning manager refuses every action.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn napi_path_falls_back_to_singleton_when_no_owning_manager() -> Result<(), String> {
+async fn a_spawner_with_no_owning_manager_is_refused() -> Result<(), String> {
     let _guard = GLOBAL_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     clear_all_agent_manager_handlers();
-
-    // Seed an offline data dir so the singleton's create_session* validates
-    // against the registry offline. The singleton needs a default model set
-    // (it is a process-global instance shared across tests).
     let tmp = tempfile::tempdir().map_err(|e| e.to_string())?;
     let project = tmp.path().to_str().expect("utf8 tempdir").to_string();
-    set_dummy_credentials();
-    let data_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
-    let cache_dir = data_dir.path().join("cache");
-    std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
-    std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
-    // RPC-423: reset stores BEFORE setting data directory
-    reset_stores_for_tests();
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    SessionManager::instance().set_default_model("anthropic/claude-opus-4-5");
 
     // @step Given a spawner session with no owning-manager back-reference set
-    // The spawner lives in the singleton (the NAPI invariant) and the handler
-    // is bound with `None` for the owning manager.
     let spawner_id = Uuid::new_v4();
-    SessionManager::instance()
-        .create_session_with_id(
-            &spawner_id.to_string(),
-            "anthropic/claude-opus-4-5",
-            &project,
-            "napi-spawner",
-        )
-        .await?;
-    // ASSUMED API: `None` selects the singleton-fallback path.
     let handler = create_handler(
         None,
-        project.clone(),
+        project,
         Some("anthropic/claude-opus-4-5".to_string()),
         None,
         None,
@@ -488,28 +466,15 @@ async fn napi_path_falls_back_to_singleton_when_no_owning_manager() -> Result<()
 
     // @step When the spawner invokes the AgentManager spawn action
     let spawned = execute_agent_manager(spawner_id, AgentManagerAction::Spawn { role: None });
-    let subordinate_id = match spawned {
-        AgentManagerResult::Spawned { session_id } => session_id,
-        other => panic!("expected Spawned, got: {other:?}"),
-    };
 
-    // @step Then the subordinate is created on SessionManager::instance()
-    let in_singleton = SessionManager::instance()
-        .list_sessions(
-            &std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
-        )
-        .into_iter()
-        .any(|s| s.id == subordinate_id);
-    assert!(
-        in_singleton,
-        "with no owning manager, the subordinate must be created on the singleton (NAPI parity)"
-    );
-
-    // Cleanup: remove the sessions we created on the shared singleton.
-    let _ = SessionManager::instance().destroy_session(&subordinate_id);
-    let _ = SessionManager::instance().destroy_session(&spawner_id.to_string());
+    // @step Then the spawn fails naming the missing owning manager and no subordinate is created
+    match spawned {
+        AgentManagerResult::Error { code, message, .. } => {
+            assert_eq!(code, "no_owning_manager");
+            assert!(message.contains(&spawner_id.to_string()), "{message}");
+        }
+        other => panic!("BUG-405: expected a refusal, got: {other:?}"),
+    }
     clear_all_agent_manager_handlers();
     Ok(())
 }
@@ -619,7 +584,7 @@ async fn set_role_and_message_resolve_subordinate_on_owning_manager() -> Result<
     let (_data_dir, manager) = owning_manager()?;
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
     codelet_providers::stub_provider::register_stub_provider();
-    manager.set_default_model("stub/canned");
+    manager.set_default_model("stub/canned")?;
 
     // @step And a spawner session created by M with an AgentManager handler bound to M
     let spawner_id = Uuid::new_v4();
@@ -694,10 +659,8 @@ async fn set_role_and_message_resolve_subordinate_on_owning_manager() -> Result<
         "set_role must mutate the subordinate that lives in M, not the singleton"
     );
     assert!(
-        SessionManager::instance()
-            .get_session(&subordinate_id)
-            .is_err(),
-        "the subordinate must NOT exist in the global singleton — resolution is on M"
+        SessionManager::new().get_session(&subordinate_id).is_err(),
+        "the subordinate must NOT exist in another manager — resolution is on M"
     );
 
     // @step And the message is delivered to the subordinate in M
@@ -716,20 +679,23 @@ async fn set_role_and_message_resolve_subordinate_on_owning_manager() -> Result<
     }
     // Prove the in-M subordinate actually processed the delivered message: its
     // agent loop (FspecAgentHooks on M) emits a Text chunk on its own stream.
+    // TEST-042: read the subordinate's stream under the deadlock guard.
     let mut got_text = false;
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
-    while tokio::time::Instant::now() < deadline {
-        match tokio::time::timeout(Duration::from_millis(250), sub_chunks.recv()).await {
-            Ok(Ok(StreamChunk::Text { text, .. })) => {
-                if text == "hi back" {
-                    got_text = true;
-                    break;
+    let _ = codelet_test_helpers::deadlock_guard("the subordinate's Text chunk", async {
+        loop {
+            match sub_chunks.recv().await {
+                Ok(StreamChunk::Text { text, .. }) => {
+                    if text == "hi back" {
+                        got_text = true;
+                        break;
+                    }
                 }
+                Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
-            Ok(Ok(_)) => continue,
-            Ok(Err(_)) | Err(_) => continue,
         }
-    }
+    })
+    .await;
     assert!(
         got_text,
         "the message delivered to the in-M subordinate must be processed by its agent loop; \

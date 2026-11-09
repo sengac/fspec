@@ -5,25 +5,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "126-151",
+          "lines": "98-130",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "draft.pop();",
+              "lastLine": "// Clear validation message on any further typing — but"
             }
           ]
         }
@@ -34,25 +36,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "157-184",
+          "lines": "132-166",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "draft.pop();",
+              "lastLine": "// Clear validation message on any further typing — but"
             }
           ]
         }
@@ -63,25 +67,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "190-203",
+          "lines": "168-186",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "draft.pop();",
+              "lastLine": "// Clear validation message on any further typing — but"
             }
           ]
         }
@@ -92,25 +98,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "209-244",
+          "lines": "188-235",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "draft.pop();",
+              "lastLine": "// Clear validation message on any further typing — but"
             }
           ]
         }
@@ -121,77 +129,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "250-281",
+          "lines": "237-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Pressing Delete in Summary sub-mode is treated as unrelated",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "287-322",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Pressing Delete in OAuthNotice sub-mode does not exit the notice",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs",
-          "lines": "328-364",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "draft.pop();",
+              "lastLine": "// Clear validation message on any further typing — but"
             }
           ]
         }
@@ -199,8 +157,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/provider_settings_api_key_delete_key_rpc163.rs"
@@ -208,6 +166,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
-    "totalLinesCovered": 294
+    "totalLinesCovered": 232
   }
 }

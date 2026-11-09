@@ -1,5 +1,7 @@
 @done
 @RPC-282
+@cli
+@scenario-generation
 Feature: Port remove-tag-from-scenario command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_tag_from_scenario.rs. Reads the target

@@ -228,3 +228,219 @@ fn a_from_tag_present_in_no_feature_file_reports_the_not_found_error() {
         pre
     );
 }
+
+// ---------- scenarios moved from retag.feature (COV-071) ----------
+
+fn retag_ok(project_root: &Path, from: &str, to: &str) -> Value {
+    let result = dispatch_command(req(project_root, json!({"from": from, "to": to})));
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
+    data
+}
+
+fn assert_valid_gherkin(project_root: &Path, rel: &str) {
+    let parsed = codelet_fspec_core::io::gherkin::parse_feature_lenient(&read(project_root, rel));
+    assert!(parsed.is_ok(), "{rel} must re-parse as Gherkin: {parsed:?}");
+}
+
+#[test]
+fn renaming_a_feature_level_tag_rewrites_only_the_tag_and_keeps_the_file_structure() {
+    // @step Given a project root tempdir with a feature file tagged @legacy-api at feature level
+    let tmp = TempDir::new().expect("tempdir");
+    let before = "@legacy-api\n@cli\nFeature: A\n  \"\"\"\n  Notes\n  \"\"\"\n\n  Scenario: One\n    Given x\n    Then y\n";
+    write_feature(tmp.path(), "spec/features/a.feature", before);
+
+    // @step When I dispatch retag with from='@legacy-api' and to='@legacy'
+    // @step Then the dispatcher returns success=true
+    let data = retag_ok(tmp.path(), "@legacy-api", "@legacy");
+    assert_eq!(
+        data["occurrenceCount"].as_u64(),
+        Some(1),
+        "got data: {data}"
+    );
+
+    // @step And the feature-level tag should change from @legacy-api to @legacy
+    let after = read(tmp.path(), "spec/features/a.feature");
+    assert!(
+        after.starts_with("@legacy\n@cli\nFeature: A\n"),
+        "got: {after}"
+    );
+    assert!(!after.contains("@legacy-api"), "got: {after}");
+
+    // @step And the file structure should be preserved
+    assert_eq!(after, before.replacen("@legacy-api", "@legacy", 1));
+}
+
+#[test]
+fn renaming_a_scenario_level_tag_leaves_feature_level_tags_unchanged() {
+    // @step Given a project root tempdir with a feature file whose scenarios are tagged with @wip under a feature-level @api tag
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        "@api\nFeature: A\n\n  @wip\n  Scenario: One\n    Given x\n\n  @wip\n  Scenario: Two\n    Given y\n",
+    );
+
+    // @step When I dispatch retag with from='@wip' and to='@in-progress'
+    // @step Then the dispatcher returns success=true
+    let data = retag_ok(tmp.path(), "@wip", "@in-progress");
+    assert_eq!(
+        data["occurrenceCount"].as_u64(),
+        Some(2),
+        "got data: {data}"
+    );
+
+    // @step And all scenario-level @wip tags should change to @in-progress
+    let after = read(tmp.path(), "spec/features/a.feature");
+    assert_eq!(
+        after.matches("  @in-progress\n  Scenario:").count(),
+        2,
+        "got: {after}"
+    );
+    assert!(!after.contains("@wip"), "got: {after}");
+
+    // @step And feature-level tags should remain unchanged
+    assert!(after.starts_with("@api\nFeature: A\n"), "got: {after}");
+}
+
+#[test]
+fn renaming_a_tag_used_at_both_levels_rewrites_both_and_counts_each_occurrence() {
+    // @step Given a project root tempdir with a feature file tagged @temp at feature level
+    // @step And a scenario in that file tagged @temp at scenario level
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        "@temp\nFeature: A\n\n  @temp\n  Scenario: One\n    Given x\n",
+    );
+
+    // @step When I dispatch retag with from='@temp' and to='@temporary'
+    // @step Then the dispatcher returns success=true
+    let data = retag_ok(tmp.path(), "@temp", "@temporary");
+
+    // @step And all @temp tags should change to @temporary at both levels
+    assert_eq!(
+        read(tmp.path(), "spec/features/a.feature"),
+        "@temporary\nFeature: A\n\n  @temporary\n  Scenario: One\n    Given x\n"
+    );
+
+    // @step And the result reports occurrenceCount=2
+    assert_eq!(
+        data["occurrenceCount"].as_u64(),
+        Some(2),
+        "got data: {data}"
+    );
+}
+
+#[test]
+fn renaming_a_tag_with_special_characters_keeps_the_file_valid_gherkin() {
+    // @step Given a project root tempdir with a feature file tagged @bug-#123
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@bug-#123", "A"),
+    );
+
+    // @step When I dispatch retag with from='@bug-#123' and to='@issue-123'
+    // @step Then the dispatcher returns success=true
+    retag_ok(tmp.path(), "@bug-#123", "@issue-123");
+
+    // @step And all @bug-#123 tags should change to @issue-123
+    let after = read(tmp.path(), "spec/features/a.feature");
+    assert_eq!(after, tagged("@issue-123", "A"));
+
+    // @step And the file should remain valid Gherkin
+    assert_valid_gherkin(tmp.path(), "spec/features/a.feature");
+}
+
+#[test]
+fn renaming_one_tag_keeps_the_other_tags_on_the_line_in_order() {
+    // @step Given a project root tempdir with a feature tagged @release-one @critical @api
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@release-one @critical @api", "A"),
+    );
+
+    // @step When I dispatch retag with from='@release-one' and to='@v1'
+    // @step Then the dispatcher returns success=true
+    retag_ok(tmp.path(), "@release-one", "@v1");
+
+    // @step And the feature should have tags @v1 @critical @api
+    let after = read(tmp.path(), "spec/features/a.feature");
+    let tag_line = after.lines().next().unwrap_or_default();
+    assert_eq!(tag_line, "@v1 @critical @api", "got: {after}");
+
+    // @step And tag order should be preserved
+    // @step And other tags should remain unchanged
+    assert_eq!(after, tagged("@v1 @critical @api", "A"));
+}
+
+#[test]
+fn renaming_across_twenty_files_validates_every_modified_file() {
+    // @step Given a project root tempdir with 20 feature files using @legacy-api
+    let tmp = TempDir::new().expect("tempdir");
+    let rels: Vec<String> = (0..20)
+        .map(|i| format!("spec/features/f{i:02}.feature"))
+        .collect();
+    for (i, rel) in rels.iter().enumerate() {
+        write_feature(tmp.path(), rel, &tagged("@legacy-api", &format!("F{i}")));
+    }
+
+    // @step When I dispatch retag with from='@legacy-api' and to='@legacy'
+    // @step Then the dispatcher returns success=true
+    let data = retag_ok(tmp.path(), "@legacy-api", "@legacy");
+    assert_eq!(data["fileCount"].as_u64(), Some(20), "got data: {data}");
+
+    // @step And all 20 files should have valid Gherkin syntax
+    for rel in &rels {
+        assert!(
+            read(tmp.path(), rel).starts_with("@legacy\n"),
+            "{rel} not renamed"
+        );
+        assert_valid_gherkin(tmp.path(), rel);
+    }
+
+    // @step And the result message contains "All modified files validated successfully"
+    let message = data["message"].as_str().unwrap_or_default();
+    assert!(
+        message.contains("All modified files validated successfully"),
+        "got: {message}"
+    );
+}
+
+#[test]
+fn renaming_four_occurrences_in_one_file_reports_four_occurrences() {
+    // @step Given a project root tempdir with a feature file tagged @temp at feature level
+    // @step And 3 scenarios in that file tagged @temp at scenario level
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        "@temp\nFeature: A\n\n  @temp\n  Scenario: One\n    Given x\n\n  @temp\n  Scenario: Two\n    Given y\n\n  @temp\n  Scenario: Three\n    Given z\n",
+    );
+
+    // @step When I dispatch retag with from='@temp' and to='@temporary'
+    // @step Then the dispatcher returns success=true
+    let data = retag_ok(tmp.path(), "@temp", "@temporary");
+
+    // @step And all 4 occurrences should be renamed
+    let after = read(tmp.path(), "spec/features/a.feature");
+    assert_eq!(after.matches("@temporary").count(), 4, "got: {after}");
+    assert!(!after.contains("@temp\n"), "got: {after}");
+    assert_eq!(
+        data["occurrenceCount"].as_u64(),
+        Some(4),
+        "got data: {data}"
+    );
+
+    // @step And the result message contains "4 occurrence(s)"
+    let message = data["message"].as_str().unwrap_or_default();
+    assert!(message.contains("4 occurrence(s)"), "got: {message}");
+}

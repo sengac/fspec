@@ -9,11 +9,14 @@
 //!   - returns soft-failure envelopes (`success:false`) for invalid type,
 //!     missing file, invalid Gherkin, or unknown scenario (with an
 //!     available-scenarios suggestion);
-//!   - if a matching placeholder step (`[precondition]`/`[action]`/
-//!     `[expected outcome]`) exists in the target scenario, REPLACES it
-//!     in place; otherwise APPENDS the new step after the last existing
-//!     step (before any trailing data-table / doc-string), inheriting the
-//!     indentation of the first existing step;
+//!   - places the step in Gherkin order (BUG-620): a given/when/then step
+//!     replaces its keyword's placeholder (`[precondition]`/`[action]`/
+//!     `[expected outcome]`), else follows the last step of its block (an
+//!     And/But step belongs to the block before it), else precedes the
+//!     first step of a later block, else goes last; an and/but step follows
+//!     the last real step, and fails exactly when there is none. A step is
+//!     never put between a step and its data table or doc string. The new
+//!     step takes the indentation of the first existing step;
 //!   - honours `dryRun`.
 //!
 //! ## Two-front-doors
@@ -178,39 +181,28 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         }
     }
 
-    // ---- Placeholder replacement search ----
-    // Map step type → placeholder text (given/when/then only).
-    let placeholder_text = match normalized.as_str() {
-        "given" => Some("[precondition]"),
-        "when" => Some("[action]"),
-        "then" => Some("[expected outcome]"),
-        _ => None,
-    };
-
-    let mut placeholder_line_index: Option<usize> = None;
-    if let Some(ph) = placeholder_text {
-        for step in &target.steps {
-            if step.value == ph {
-                placeholder_line_index = Some(step.position.line.saturating_sub(1));
-                break;
-            }
-        }
-    }
-
+    // ---- Placement (BUG-620): Gherkin order ----
     let new_step = format!("{step_indentation}{step_keyword} {}", args.text);
-
-    let new_content = if let Some(ph_idx) = placeholder_line_index {
-        // Replace the placeholder line in place.
-        if ph_idx < lines.len() {
-            lines[ph_idx] = new_step;
+    let new_content = match placement(&lines, target, &normalized, scenario_line_index) {
+        Placement::Replace(index) => {
+            lines[index] = new_step;
+            lines.join("\n")
         }
-        lines.join("\n")
-    } else {
-        // Append after the last existing step (before a trailing data table /
-        // doc string), else right after the scenario line.
-        let insert_index = compute_append_index(&lines, target, scenario_line_index);
-        lines.insert(insert_index, new_step);
-        lines.join("\n")
+        Placement::Insert(index) => {
+            lines.insert(index, new_step);
+            lines.join("\n")
+        }
+        Placement::NoRealStep => {
+            let article = if step_keyword == "And" { "an" } else { "a" };
+            return soft_fail(json!({
+                "success": false,
+                "valid": false,
+                "error": format!(
+                    "Cannot add {article} {step_keyword} step to scenario \"{}\": it has no real step to continue. Add a given, when or then step first.",
+                    args.scenario
+                ),
+            }));
+        }
     };
 
     // ---- Validate rewritten content ----
@@ -234,45 +226,114 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Compute the line index (0-based) at which a NEW step should be inserted
-/// when there is no matching placeholder. Mirrors TS
-/// `src/commands/add-step.ts:174-214`.
-fn compute_append_index(
+/// The placeholder step texts create-feature and add-scenario write, in
+/// Given, When, Then order.
+const PLACEHOLDERS: [&str; 3] = ["[precondition]", "[action]", "[expected outcome]"];
+
+/// Where a new step goes (0-based line indexes).
+enum Placement {
+    /// Replace this placeholder step line.
+    Replace(usize),
+    /// Insert the step at this line index.
+    Insert(usize),
+    /// An And/But step with no real step to continue.
+    NoRealStep,
+}
+
+/// BUG-620: the Gherkin-order place of a new `step_type` step. The gherkin
+/// crate gives every And/But step the type of the block before it.
+fn placement(
     lines: &[String],
     target: &gherkin::Scenario,
+    step_type: &str,
     scenario_line_index: usize,
-) -> usize {
-    if let Some(last_step) = target.steps.last() {
-        let last_step_line_index = last_step.position.line.saturating_sub(1);
-        // Default: right after the last step keyword line.
-        let mut insert_index = last_step.position.line;
-        // If the next line is a data table (`|`) or doc string (`"""`),
-        // insert BEFORE it (i.e. right after the step keyword line).
-        if last_step_line_index + 1 < lines.len() {
-            let next = lines[last_step_line_index + 1].trim();
-            if next.starts_with('|') || next.starts_with("\"\"\"") {
-                insert_index = last_step_line_index + 1;
-            }
-        }
-        insert_index
-    } else {
-        // No existing steps — scan forward from the scenario line.
-        let mut insert_index = scenario_line_index + 1;
-        let mut i = scenario_line_index + 1;
-        while i < lines.len() {
-            let trimmed = lines[i].trim();
-            if trimmed.starts_with("Scenario:")
-                || trimmed.starts_with("Scenario Outline:")
-                || trimmed.is_empty()
+) -> Placement {
+    let steps = &target.steps;
+    let line_of = |step: &gherkin::Step| step.position.line.saturating_sub(1);
+    let block = match step_type {
+        "given" => gherkin::StepType::Given,
+        "when" => gherkin::StepType::When,
+        "then" => gherkin::StepType::Then,
+        // and / but: continue the last real step.
+        _ => {
+            return match steps
+                .iter()
+                .rev()
+                .find(|s| !PLACEHOLDERS.contains(&s.value.as_str()))
             {
-                insert_index = i;
-                break;
-            }
-            insert_index = i + 1;
-            i += 1;
+                Some(step) => Placement::Insert(after_step(lines, line_of(step))),
+                None => Placement::NoRealStep,
+            };
         }
-        insert_index
+    };
+    let placeholder = PLACEHOLDERS[block_rank(block)];
+    if let Some(step) = steps
+        .iter()
+        .find(|s| s.ty == block && s.value == placeholder)
+    {
+        return Placement::Replace(line_of(step));
     }
+    if let Some(step) = steps.iter().rev().find(|s| s.ty == block) {
+        return Placement::Insert(after_step(lines, line_of(step)));
+    }
+    if let Some(step) = steps.iter().find(|s| block_rank(s.ty) > block_rank(block)) {
+        return Placement::Insert(line_of(step));
+    }
+    match steps.last() {
+        Some(step) => Placement::Insert(after_step(lines, line_of(step))),
+        None => Placement::Insert(first_line_after_scenario(lines, scenario_line_index)),
+    }
+}
+
+fn block_rank(block: gherkin::StepType) -> usize {
+    match block {
+        gherkin::StepType::Given => 0,
+        gherkin::StepType::When => 1,
+        gherkin::StepType::Then => 2,
+    }
+}
+
+/// The line index right after the step at `step_line` and its argument
+/// (a data table or a doc string).
+fn after_step(lines: &[String], step_line: usize) -> usize {
+    let mut index = step_line + 1;
+    if let Some(line) = lines.get(index) {
+        let trimmed = line.trim_start();
+        if let Some(delimiter) = ["\"\"\"", "```"]
+            .into_iter()
+            .find(|d| trimmed.starts_with(*d))
+        {
+            index += 1;
+            while index < lines.len() && !lines[index].trim_start().starts_with(delimiter) {
+                index += 1;
+            }
+            return (index + 1).min(lines.len());
+        }
+    }
+    while index < lines.len() && lines[index].trim_start().starts_with('|') {
+        index += 1;
+    }
+    index
+}
+
+/// For a scenario with no steps: the first blank or next-scenario line
+/// after the scenario line (its description lines stay above the step).
+fn first_line_after_scenario(lines: &[String], scenario_line_index: usize) -> usize {
+    let mut insert_index = scenario_line_index + 1;
+    let mut i = scenario_line_index + 1;
+    while i < lines.len() {
+        let trimmed = lines[i].trim();
+        if trimmed.starts_with("Scenario:")
+            || trimmed.starts_with("Scenario Outline:")
+            || trimmed.is_empty()
+        {
+            insert_index = i;
+            break;
+        }
+        insert_index = i + 1;
+        i += 1;
+    }
+    insert_index
 }
 
 fn capitalize(s: &str) -> String {

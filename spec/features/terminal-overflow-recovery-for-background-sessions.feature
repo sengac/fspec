@@ -3,6 +3,7 @@
 @context-management
 @compaction
 @CMPCT-044
+@BUG-310
 Feature: Terminal overflow recovery for background sessions
   """
   CMPCT-044 (terminal slice): when a background agent-loop turn dies with

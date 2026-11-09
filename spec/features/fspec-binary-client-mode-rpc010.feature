@@ -35,7 +35,7 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
   • rust/fspec-tui/src/app.rs::App + bootstrap (existing — RPC-009)
   """
 
-  Background: 
+  Background:
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json
 

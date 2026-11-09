@@ -19,8 +19,8 @@
 //!   - otherwise → `✓ <message>` (the message begins 'Deleted N scenario(s)
 //!     from M file(s)…'), exit 0.
 
+use crate::common::spec_project_root;
 use std::collections::BTreeMap;
-use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -46,7 +46,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         return Ok(1);
     }
 
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({
         "tags": args.tags,

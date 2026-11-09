@@ -35,6 +35,7 @@ pub mod chips;
 pub mod dropdown;
 pub mod dropdown_paint;
 pub mod dropdown_text;
+pub mod item_keys;
 pub mod items;
 pub mod layout;
 pub mod paint;
@@ -60,7 +61,7 @@ pub enum MenuFocus {
     /// (a view label in mux mode, or a chip everywhere).
     ZoneB(usize),
     /// A Zone C action button — index into [`MenuSnapshot::zone_c`]
-    /// (MENU-009: the right-aligned New Agent / Close Agent buttons).
+    /// (MENU-009: the right-aligned New Agent / Close buttons).
     ZoneC(usize),
 }
 
@@ -107,7 +108,7 @@ pub struct MenuSnapshot {
     pub chips: Vec<MenuChip>,
     /// MENU-009: the Zone C action buttons, right-aligned (R1). The
     /// surface picks its `&'static` slice — board: `[New Agent]`,
-    /// agent: `[New Agent, Close Agent]`, mux: `&[]` (empty ⇒ the
+    /// agent: `[New Agent, Close]`, mux: `&[]` (empty ⇒ the
     /// ring / layout / paint arms are all byte-identical to
     /// pre-MENU-009).
     pub zone_c: &'static [ZoneCButton],
@@ -201,101 +202,4 @@ impl MenuSnapshot {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-
-    fn chip(i: usize) -> MenuChip {
-        MenuChip {
-            index: (i + 1, 3),
-            glyph: "●".to_string(),
-            glyph_style: Default::default(),
-            wu_id: None,
-            active: false,
-        }
-    }
-
-    /// 2 items + 3 chips, all in Zone B (non-mux shape).
-    fn snap3() -> MenuSnapshot {
-        let chips = vec![chip(0), chip(1), chip(2)];
-        MenuSnapshot {
-            zone_b: vec![ZoneBCell::Chip(0), ZoneBCell::Chip(1), ZoneBCell::Chip(2)],
-            chips,
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn ring_walks_items_then_zone_b_then_wraps_forward() {
-        // @step Given a MenuSnapshot with MenuFocus on the 0th menu item
-        let s = snap3();
-        assert_eq!(
-            s.advance(None, 1),
-            MenuFocus::Item(0),
-            "no focus + right starts at the first item"
-        );
-        assert_eq!(s.advance(Some(MenuFocus::Item(0)), 1), MenuFocus::Item(1));
-        assert_eq!(
-            s.advance(Some(MenuFocus::Item(3)), 1),
-            MenuFocus::ZoneB(0),
-            "running out of items lands on the first Zone B cell"
-        );
-        assert_eq!(s.advance(Some(MenuFocus::ZoneB(2)), 1), MenuFocus::Item(0));
-    }
-
-    #[test]
-    fn ring_walks_backwards_with_wrap() {
-        // @step Given a MenuSnapshot with 2 open sessions and MenuFocus on chip 1
-        let s = snap3();
-        assert_eq!(s.advance(Some(MenuFocus::Item(0)), -1), MenuFocus::ZoneB(2));
-        assert_eq!(s.advance(Some(MenuFocus::ZoneB(0)), -1), MenuFocus::Item(3));
-    }
-
-    #[test]
-    fn ring_follows_the_display_order_in_mux_mode() {
-        // Mux: Zone B = Board view, chip 1, chip 0, chip 2 (pane order).
-        let chips = vec![chip(0), chip(1), chip(2)];
-        let s = MenuSnapshot {
-            zone_b: vec![
-                ZoneBCell::View {
-                    label: "Board",
-                    active: true,
-                },
-                ZoneBCell::Chip(1),
-                ZoneBCell::Chip(0),
-                ZoneBCell::Chip(2),
-            ],
-            chips,
-            ..Default::default()
-        };
-        assert_eq!(s.advance(Some(MenuFocus::Item(3)), 1), MenuFocus::ZoneB(0));
-        assert_eq!(s.advance(Some(MenuFocus::ZoneB(0)), 1), MenuFocus::ZoneB(1));
-        assert_eq!(s.advance(Some(MenuFocus::ZoneB(3)), 1), MenuFocus::Item(0));
-    }
-
-    #[test]
-    fn empty_zone_b_ring_wraps_items_onto_themselves() {
-        let s = MenuSnapshot::default();
-        assert_eq!(s.advance(None, 1), MenuFocus::Item(0));
-        assert_eq!(s.advance(Some(MenuFocus::Item(0)), 1), MenuFocus::Item(1));
-        assert_eq!(s.advance(Some(MenuFocus::Item(3)), 1), MenuFocus::Item(0));
-    }
-
-    #[test]
-    fn dropdown_cursor_clamps_into_the_category_range() {
-        let s = MenuSnapshot::default();
-        assert_eq!(s.dropdown_cursor(0, 3), 3, "Kanban has 4 rows");
-        assert_eq!(s.dropdown_cursor(0, 4), 0, "wraps past the end");
-        assert_eq!(s.dropdown_cursor(3, 1), 1, "Help has 2 rows");
-        assert_eq!(s.dropdown_cursor(3, 2), 0, "Help wraps");
-    }
-
-    #[test]
-    fn chip_for_cell_resolves_only_chip_cells() {
-        let s = snap3();
-        assert_eq!(s.chip_for_cell(0), Some(0));
-        assert_eq!(s.chip_for_cell(2), Some(2));
-        assert_eq!(s.chip_for_cell(9), None, "out of range");
-    }
-}
+mod tests;

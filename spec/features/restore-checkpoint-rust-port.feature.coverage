@@ -34,7 +34,9 @@
                 202,
                 203,
                 204
-              ]
+              ],
+              "firstLine": "// Normal restore. force is escalated when the user explicitly chose the",
+              "lastLine": "render_json(&payload)"
             }
           ]
         }
@@ -45,7 +47,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_checkpoint.rs",
-          "lines": "121-170",
+          "lines": "121-184",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
@@ -69,7 +71,9 @@
                 177,
                 178,
                 179
-              ]
+              ],
+              "firstLine": "// Dirty + no choice + no force → show risk options and require a choice.",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,7 +84,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_checkpoint.rs",
-          "lines": "172-218",
+          "lines": "186-234",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
@@ -134,7 +138,9 @@
                 262,
                 263,
                 264
-              ]
+              ],
+              "firstLine": "fn restore_util(",
+              "lastLine": "}"
             }
           ]
         }
@@ -145,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_checkpoint.rs",
-          "lines": "220-246",
+          "lines": "236-262",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
@@ -165,7 +171,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "/// The not-found sentinel result (byte-identical `systemReminder` to the TS",
+              "lastLine": "/// Build the `CHECKPOINT RESTORATION CONFLICT DETECTED` system-reminder"
             }
           ]
         }
@@ -191,7 +199,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "// An empty checkpointName is rejected here (dispatcher contract is strict).",
+              "lastLine": "};"
             }
           ]
         }
@@ -202,7 +212,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/restore_checkpoint.rs",
-          "lines": "270-291",
+          "lines": "286-307",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
@@ -218,7 +228,9 @@
                 189,
                 190,
                 191
-              ]
+              ],
+              "firstLine": "// Normal restore. force is escalated when the user explicitly chose the",
+              "lastLine": ");"
             }
           ]
         }
@@ -240,7 +252,38 @@
                 409,
                 410,
                 411
-              ]
+              ],
+              "firstLine": "fn render_json(payload: &RestoreResultPayload) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restoring the same checkpoint twice brings its content back each time and keeps the checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/restore_checkpoint.rs",
+          "lines": "359-415",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "// Normal restore. force is escalated when the user explicitly chose the",
+              "lastLine": ");"
             }
           ]
         }
@@ -248,8 +291,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/restore_checkpoint.rs"
@@ -257,6 +300,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/restore_checkpoint.rs"
     ],
-    "totalLinesCovered": 381
+    "totalLinesCovered": 465
   }
 }

@@ -12,19 +12,22 @@
 //!   * `work_units_fanout` stamps `ServerStats.last_watcher_event_at`
 //!     each time it observes a fresh snapshot.
 
+mod connection_fanouts;
+mod fanouts;
+mod session_fanouts;
+
 use crate::envelope::Envelope;
 use crate::pump::{run_envelope_pump, ServerInbound};
 use crate::transport::ChannelTransport;
 use crate::ServerStats;
 use codelet_rpc::{FspecService, FspecServiceImpl, SharedFspecService};
-use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk};
 use futures::StreamExt;
 use std::net::SocketAddr;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Instant;
 use tarpc::server::{BaseChannel, Channel};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::TcpListener;
 
 /// RPC-011: RAII guard pairing each WebSocket connection with the
 /// `ServerStats.connected_clients` counter.
@@ -80,6 +83,25 @@ pub async fn bind_and_serve(
     bind_addr: &str,
     service: Arc<SharedFspecService>,
 ) -> anyhow::Result<(SocketAddr, ServerStats, tokio::task::JoinHandle<()>)> {
+    serve(bind_addr, service, None).await
+}
+
+/// RPC-456: [`bind_and_serve`] over TLS — every accepted connection
+/// completes the TLS handshake with `acceptor` before the WebSocket
+/// handshake (and its RPC-447 bearer check).
+pub async fn bind_and_serve_tls(
+    bind_addr: &str,
+    service: Arc<SharedFspecService>,
+    acceptor: tokio_rustls::TlsAcceptor,
+) -> anyhow::Result<(SocketAddr, ServerStats, tokio::task::JoinHandle<()>)> {
+    serve(bind_addr, service, Some(acceptor)).await
+}
+
+async fn serve(
+    bind_addr: &str,
+    service: Arc<SharedFspecService>,
+    tls: Option<tokio_rustls::TlsAcceptor>,
+) -> anyhow::Result<(SocketAddr, ServerStats, tokio::task::JoinHandle<()>)> {
     let listener = TcpListener::bind(bind_addr).await?;
     let local = listener.local_addr()?;
     let stats = ServerStats::new(Arc::clone(&service));
@@ -99,17 +121,25 @@ pub async fn bind_and_serve(
             };
             let svc = Arc::clone(&service);
             let stats_for_conn = stats_for_loop.clone();
+            let tls = tls.clone();
             // RPC-011 tracing rule: instrument the spawned task with a
             // span carrying client_id so events emitted from inside
-            // handle_connection inherit the field — works across tokio
-            // worker threads with thread-local subscribers because the
-            // span context is captured at spawn time and reattached on
-            // each poll via the Instrumented future.
+            // handle_connection inherit the field.
             use tracing::Instrument;
             let span = tracing::info_span!("ws_connection", client_id = %peer);
             tokio::spawn(
                 async move {
-                    if let Err(e) = handle_connection(stream, peer, svc, stats_for_conn).await {
+                    let outcome = match tls {
+                        None => handle_connection(stream, peer, svc, stats_for_conn).await,
+                        // RPC-456: a failed TLS handshake ends this connection.
+                        Some(acceptor) => match acceptor.accept(stream).await {
+                            Ok(stream) => {
+                                handle_connection(stream, peer, svc, stats_for_conn).await
+                            }
+                            Err(error) => Err(anyhow::anyhow!("TLS handshake failed: {error}")),
+                        },
+                    };
+                    if let Err(e) = outcome {
                         tracing::warn!(peer = %peer, error = %e, "ws connection ended with error");
                     }
                 }
@@ -122,12 +152,15 @@ pub async fn bind_and_serve(
 }
 
 #[tracing::instrument(skip_all, fields(client_id = %peer))]
-async fn handle_connection(
-    stream: TcpStream,
+async fn handle_connection<S>(
+    stream: S,
     peer: SocketAddr,
     service: Arc<SharedFspecService>,
     stats: ServerStats,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<()>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
+{
     // Emit an explicit event so the client_id field surfaces in both
     // span-context and event-payload tracing captures.
     tracing::info!(client_id = %peer, "ws connection accepted");
@@ -141,6 +174,20 @@ async fn handle_connection(
         stream,
         |request: &tokio_tungstenite::tungstenite::handshake::server::Request,
          mut response: tokio_tungstenite::tungstenite::handshake::server::Response| {
+            // RPC-447: a token-armed daemon only serves the matching bearer.
+            let authorization = request
+                .headers()
+                .get("authorization")
+                .and_then(|value| value.to_str().ok());
+            if !service.authorizes(authorization) {
+                let mut rejection =
+                    tokio_tungstenite::tungstenite::handshake::server::ErrorResponse::new(Some(
+                        "missing or invalid bearer token".to_string(),
+                    ));
+                *rejection.status_mut() =
+                    tokio_tungstenite::tungstenite::http::StatusCode::UNAUTHORIZED;
+                return Err(rejection);
+            }
             bounded_reads = request.uri().path() == "/fspec-read-v2";
             if bounded_reads {
                 response.headers_mut().insert(
@@ -193,101 +240,12 @@ async fn handle_connection(
     );
     let _ = envelope_out_tx.send(Envelope::SessionSnapshot(live_sessions));
 
-    let watcher_rx = service.watcher_rx();
-    let envelope_out_tx_for_watcher = envelope_out_tx.clone();
-    let lag_work_units = Arc::clone(&stats.lag_work_units);
-    let last_watcher_event_at = Arc::clone(&stats.last_watcher_event_at);
-    let watcher_fanout = tokio::spawn(work_units_fanout(
-        watcher_rx,
-        envelope_out_tx_for_watcher,
-        lag_work_units,
-        last_watcher_event_at,
-    ));
-
-    let chunks_rx = service.chunks_rx();
-    let envelope_out_tx_for_chunks = envelope_out_tx.clone();
-    let lag_chunks = Arc::clone(&stats.lag_chunks);
-    let chunks_fanout = tokio::spawn(stream_chunks_fanout(
-        chunks_rx,
-        envelope_out_tx_for_chunks,
-        lag_chunks,
-    ));
-
-    let logs_rx = service.logs_rx();
-    let envelope_out_tx_for_logs = envelope_out_tx.clone();
-    let lag_logs = Arc::clone(&stats.lag_logs);
-    let logs_fanout = tokio::spawn(log_events_fanout(
-        logs_rx,
-        envelope_out_tx_for_logs,
-        lag_logs,
-    ));
-
-    // RPC-037: per-connection fanout for push-driven session status
-    // updates. Drains `SharedFspecService::status_changes_rx` (which
-    // delegates to the attached `SessionManagerHandle`) and forwards
-    // each `(SessionId, SessionStatus)` tuple as an
-    // `Envelope::StatusUpdate` frame onto the per-connection
-    // envelope-out channel — mirroring the chunks/logs fanout pattern.
-    let status_rx = service.status_changes_rx();
-    let envelope_out_tx_for_status = envelope_out_tx.clone();
-    let lag_status = Arc::clone(&stats.lag_status);
-    let status_fanout = tokio::spawn(status_changes_fanout(
-        status_rx,
-        envelope_out_tx_for_status,
-        lag_status,
-    ));
-
-    // RPC-433: per-connection fanout for session lifecycle events
-    // (rule R4). Two tasks mirror `status_changes_fanout`: one drains
-    // `SharedFspecService::session_created_rx` and wraps each
-    // `SessionInfo` in `Envelope::SessionEvent(Created)`, the other
-    // drains `session_removed_rx` and wraps each id in
-    // `Envelope::SessionEvent(Removed)`. Both fan out to EVERY
-    // connected client — including the one that issued the RPC (no
-    // per-client filtering, RPC-007 chunk fan-out precedent). They
-    // share a single lag counter (`lag_session_events`), like
-    // `lag_status` for the status fanout.
-    let session_created_rx = service.session_created_rx();
-    let envelope_out_tx_for_session_created = envelope_out_tx.clone();
-    let lag_session_events = Arc::clone(&stats.lag_session_events);
-    let session_created_fanout = tokio::spawn(session_created_fanout(
-        session_created_rx,
-        envelope_out_tx_for_session_created,
-        lag_session_events,
-    ));
-
-    let session_removed_rx = service.session_removed_rx();
-    let envelope_out_tx_for_session_removed = envelope_out_tx.clone();
-    let session_removed_fanout = tokio::spawn(session_removed_fanout(
-        session_removed_rx,
-        envelope_out_tx_for_session_removed,
-        Arc::clone(&stats.lag_session_events),
-    ));
-
-    let focus_fanout = tokio::spawn(crate::focus_fanout::run(
-        focus_rx,
-        envelope_out_tx.clone(),
-        Arc::clone(&service),
-        Arc::clone(&stats.lag_session_events),
-    ));
-
-    // RPC-436: per-connection fanout for the session-cleared lifecycle
-    // event (rule R2 of session-events-cleared-fan-out.feature). Mirrors
-    // `session_created_fanout` / `session_removed_fanout`: drains
-    // `SharedFspecService::session_cleared_rx` and wraps each id in
-    // `Envelope::SessionEvent(SessionEvent::Cleared(_))`, fanning out to
-    // EVERY connected client (no per-client filtering) and sharing the
-    // `lag_session_events` counter with the created/removed fanouts.
-    let session_cleared_rx = service.session_cleared_rx();
-    let envelope_out_tx_for_session_cleared = envelope_out_tx.clone();
-    let session_cleared_fanout = tokio::spawn(session_cleared_fanout(
-        session_cleared_rx,
-        envelope_out_tx_for_session_cleared,
-        Arc::clone(&stats.lag_session_events),
-    ));
+    let fanouts =
+        connection_fanouts::ConnectionFanouts::spawn(&service, &envelope_out_tx, &stats, focus_rx);
 
     let transport = ChannelTransport::new(rpc_bytes_rx, server_out_tx);
-    let service_impl = FspecServiceImpl::new(Arc::clone(&service));
+    // MCP-003: this connection passed the RPC-447 handshake check above.
+    let service_impl = FspecServiceImpl::for_authenticated_connection(Arc::clone(&service));
     let server = BaseChannel::with_defaults(transport);
     let serve_fut = server
         .execute(service_impl.serve())
@@ -314,238 +272,6 @@ async fn handle_connection(
         result = pump_fut => result,
     };
 
-    watcher_fanout.abort();
-    chunks_fanout.abort();
-    logs_fanout.abort();
-    status_fanout.abort();
-    session_created_fanout.abort();
-    session_removed_fanout.abort();
-    session_cleared_fanout.abort();
-    focus_fanout.abort();
-    let _ = watcher_fanout.await;
-    let _ = chunks_fanout.await;
-    let _ = logs_fanout.await;
-    let _ = status_fanout.await;
-    let _ = session_created_fanout.await;
-    let _ = session_removed_fanout.await;
-    let _ = session_cleared_fanout.await;
-    let _ = focus_fanout.await;
+    fanouts.shutdown().await;
     result
-}
-
-/// Drain the watcher's broadcast receiver and forward each snapshot as
-/// `Envelope::WorkUnitsUpdate` onto the per-connection envelope-out
-/// channel. Stamps `ServerStats.last_watcher_event_at` on each Ok
-/// snapshot and increments `lag_work_units` on RecvError::Lagged.
-async fn work_units_fanout(
-    mut watcher_rx: tokio::sync::broadcast::Receiver<Vec<codelet_rpc_types::WorkUnitInfo>>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_work_units: Arc<std::sync::atomic::AtomicU64>,
-    last_watcher_event_at: Arc<std::sync::Mutex<Option<Instant>>>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match watcher_rx.recv().await {
-            Ok(snapshot) => {
-                if let Ok(mut guard) = last_watcher_event_at.lock() {
-                    *guard = Some(Instant::now());
-                }
-                if envelope_out_tx
-                    .send(Envelope::WorkUnitsUpdate(snapshot))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_work_units.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws work-units fan-out lagged; resyncing");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-007 + RPC-011: drain chunks and forward as `Envelope::Event`.
-async fn stream_chunks_fanout(
-    mut chunks_rx: tokio::sync::broadcast::Receiver<(SessionId, StreamChunk)>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_chunks: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match chunks_rx.recv().await {
-            Ok((session_id, chunk)) => {
-                if envelope_out_tx
-                    .send(Envelope::Event { session_id, chunk })
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_chunks.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws chunks fan-out lagged; some chunks dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-007 + RPC-011: drain logs and forward as `Envelope::LogEvent`.
-async fn log_events_fanout(
-    mut logs_rx: tokio::sync::broadcast::Receiver<LogRecord>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_logs: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match logs_rx.recv().await {
-            Ok(record) => {
-                if envelope_out_tx.send(Envelope::LogEvent(record)).is_err() {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_logs.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws logs fan-out lagged; some log records dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-037: drain push-driven status updates and forward as
-/// `Envelope::StatusUpdate`. Mirrors `stream_chunks_fanout` /
-/// `log_events_fanout` — see [`crate::pump::ClientInbound::on_status_update`]
-/// for the client-side decoder.
-async fn status_changes_fanout(
-    mut status_rx: tokio::sync::broadcast::Receiver<(SessionId, SessionStatus)>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_status: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match status_rx.recv().await {
-            Ok((session_id, status)) => {
-                if envelope_out_tx
-                    .send(Envelope::StatusUpdate { session_id, status })
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_status.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws status fan-out lagged; some status updates dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-433: drain session-created events and forward as
-/// `Envelope::SessionEvent(Created(info))` to every connected client
-/// (rule R4). Mirrors `status_changes_fanout`; a lagged subscriber
-/// recovers via RecvError::Lagged — the client's tab append is
-/// idempotent and a missed add is re-asserted by the next
-/// connect-time `SessionSnapshot` on reconnect.
-async fn session_created_fanout(
-    mut created_rx: tokio::sync::broadcast::Receiver<codelet_rpc_types::SessionInfo>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match created_rx.recv().await {
-            Ok(info) => {
-                if envelope_out_tx
-                    .send(Envelope::SessionEvent(
-                        codelet_rpc_types::SessionEvent::Created(info),
-                    ))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-created fan-out lagged; some events dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-433: drain session-removed events and forward as
-/// `Envelope::SessionEvent(Removed(id))` to every connected client
-/// (rule R4). Mirrors `session_created_fanout`; a missed removal is
-/// healed by the next connect-time `SessionSnapshot` on reconnect
-/// (known limitation: add-only replay, no stale-tab pruning).
-async fn session_removed_fanout(
-    mut removed_rx: tokio::sync::broadcast::Receiver<SessionId>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match removed_rx.recv().await {
-            Ok(session_id) => {
-                if envelope_out_tx
-                    .send(Envelope::SessionEvent(
-                        codelet_rpc_types::SessionEvent::Removed(session_id),
-                    ))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-removed fan-out lagged; some events dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
-}
-
-/// RPC-436: drain session-cleared events and forward as
-/// `Envelope::SessionEvent(Cleared(id))` to every connected client
-/// (rule R2 of session-events-cleared-fan-out.feature). Mirrors
-/// `session_removed_fanout`; a missed clear is healed by the client's
-/// reactive reset already riding the `SessionStateChange { Cleared }`
-/// chunks stream (the wire event is the cross-client lifecycle signal,
-/// not the local UI-reset source of truth).
-async fn session_cleared_fanout(
-    mut cleared_rx: tokio::sync::broadcast::Receiver<SessionId>,
-    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
-    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
-) {
-    use tokio::sync::broadcast::error::RecvError;
-    loop {
-        match cleared_rx.recv().await {
-            Ok(session_id) => {
-                if envelope_out_tx
-                    .send(Envelope::SessionEvent(
-                        codelet_rpc_types::SessionEvent::Cleared(session_id),
-                    ))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-            Err(RecvError::Lagged(skipped)) => {
-                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
-                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-cleared fan-out lagged; some events dropped");
-                continue;
-            }
-            Err(RecvError::Closed) => break,
-        }
-    }
 }

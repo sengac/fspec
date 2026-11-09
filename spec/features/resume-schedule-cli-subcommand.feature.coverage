@@ -31,7 +31,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -68,7 +70,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,29 +84,7 @@
         {
           "file": "rust/fspec/tests/cli_resume_schedule.rs",
           "lines": "152-203",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/resume_schedule.rs",
-              "lines": [
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -111,7 +93,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_resume_schedule.rs",
-          "lines": "205-264",
+          "lines": "208-277",
           "implMappings": [
             {
               "file": "rust/fspec/src/resume_schedule.rs",
@@ -137,7 +119,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -152,9 +136,8 @@
       "rust/fspec/tests/cli_resume_schedule.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/resume_schedule.rs",
-      "rust/fspec-core/src/help/configs/resume_schedule.rs"
+      "rust/fspec/src/resume_schedule.rs"
     ],
-    "totalLinesCovered": 258
+    "totalLinesCovered": 252
   }
 }

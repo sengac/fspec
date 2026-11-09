@@ -265,7 +265,8 @@ fn test_parity_api_url_rewritten_to_append_beta_query_parameter() {
 // ClaudeProvider::from_oauth_tokens(). Both paths produce equivalent headers.
 
 #[test]
-fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
+fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth(
+) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given I am authenticated with Claude via OAuth
     let access_token = "test_parity_access_token";
 
@@ -273,7 +274,7 @@ fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
     let existing_beta = Some("max-tokens-3-5-sonnet-2024-07-15");
 
     // @step When the request is prepared for the Claude API
-    let headers = build_oauth_headers(access_token, existing_beta);
+    let headers = build_oauth_headers(access_token, existing_beta)?;
 
     // @step Then the Authorization header should be "Bearer {access_token}"
     assert_eq!(
@@ -311,11 +312,11 @@ fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
         "Beta headers should have no duplicates: {beta}"
     );
 
-    // @step And the user-agent should be "claude-cli/2.1.3 (external, cli)"
+    // @step And the user-agent should identify the authoritative Claude Code release
     assert_eq!(
-        headers.get("user-agent").unwrap(),
-        "claude-cli/2.1.3 (external, cli)",
-        "User-Agent must match CLAUDE_USER_AGENT constant"
+        headers.get("user-agent"),
+        Some(&codelet_providers::claude_protocol::user_agent()?),
+        "User-Agent must match the authoritative release"
     );
 
     // @step And x-api-key should not be present
@@ -325,7 +326,7 @@ fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
     );
 
     // Deduplication test: pass already-present required betas as existing
-    let with_dup = build_oauth_headers(access_token, Some("oauth-2025-04-20,custom-beta"));
+    let with_dup = build_oauth_headers(access_token, Some("oauth-2025-04-20,custom-beta"))?;
     let dup_beta = with_dup.get("anthropic-beta").unwrap();
     let dup_parts: Vec<&str> = dup_beta.split(',').collect();
     let dup_unique: std::collections::HashSet<&str> = dup_parts.iter().copied().collect();
@@ -334,6 +335,7 @@ fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
         dup_unique.len(),
         "Duplicate required betas should be deduplicated: {dup_beta}"
     );
+    Ok(())
 }
 
 // =========================================================================

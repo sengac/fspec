@@ -33,16 +33,19 @@ async fn network_idle_deadline_ignores_ui_ticks() -> TestResult {
     let server = Server::start(vec![text(); 6], true).await?;
     let collect = collect(model(&server)?);
     tokio::pin!(collect);
-    let mut ticks = tokio::time::interval(Duration::from_millis(5));
-    let deadline = tokio::time::sleep(Duration::from_secs(15));
-    tokio::pin!(deadline);
-    let observed = loop {
-        tokio::select! {
-            result = &mut collect => break result?,
-            _ = ticks.tick() => {},
-            _ = &mut deadline => return Err("UI ticks prevented deadline".into()),
+    // TEST-042: the UI ticks are wakeups between polls (yields), not a
+    // wall-clock interval; only the deadlock guard ends a collection that
+    // the ticks kept alive.
+    let observed = codelet_test_helpers::deadlock_guard("the network idle deadlines", async {
+        loop {
+            tokio::select! {
+                result = &mut collect => break result,
+                () = codelet_test_helpers::yield_now() => {},
+            }
         }
-    };
+    })
+    .await
+    .map_err(|_| "UI ticks prevented deadline")??;
     assert_eq!(observed.text, "");
     assert_eq!(
         server
@@ -70,14 +73,19 @@ async fn tool_execution_and_other_providers_retain_their_policies() -> TestResul
     .await?;
     let observed = collect(model(&server)?).await?;
     assert_eq!(observed.tools, 1);
-    tokio::time::sleep(Duration::from_millis(150)).await;
+    // TEST-042: the collection has finished; nothing can time it out later.
     assert!(observed.errors.is_empty());
     let server = Server::start(vec![text()], true).await?;
     let native = server.models()?.1;
-    assert!(
-        tokio::time::timeout(Duration::from_millis(150), collect(native))
-            .await
-            .is_err()
-    );
+    // TEST-042: no waiting window; 32 poll rounds and the generic provider
+    // is still waiting on its open stream.
+    let mut collecting = Box::pin(collect(native));
+    let mut rounds = 0;
+    let waiting = codelet_test_helpers::pending_until("32 poll rounds", &mut collecting, || {
+        rounds += 1;
+        rounds > 32
+    })
+    .await;
+    assert!(waiting.is_ok(), "{waiting:?}");
     Ok(())
 }

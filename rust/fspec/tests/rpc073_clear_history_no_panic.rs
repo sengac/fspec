@@ -2,31 +2,19 @@
 //!
 //! Feature: spec/features/rpc-073-slash-clear-no-panic.feature
 //!
-//! These tests prove that `SessionManagerHandle::clear_history` does NOT
-//! panic when invoked from inside a multi-thread tokio runtime worker
-//! (which is exactly what the live tarpc dispatcher does in the fspec
-//! Rust binary).
-//!
-//! Before the RPC-073 fix, `BackgroundSession::clear_history` reached
-//! `self.inner.blocking_lock()` from the async tarpc context and panicked
-//! with `Cannot block the current thread from within a runtime`
-//! (see rust/sessions/src/background_session.rs:1156:36).
-//!
-//! After the fix, `handle_impl.rs::clear_history` wraps the
-//! `session.clear_history()` call in `tokio::task::block_in_place(...)`
-//! — matching the pattern already used by create_session,
-//! create_isolated_session, test_provider_connection, and the three
-//! `loop_*` methods.
-//!
-//! The third source-shape scenario broadens the RPC-070 enforcement to
-//! flag any `.blocking_lock(` / `.blocking_read(` / `.blocking_write(`
-//! call in a sync trait method body that is NOT wrapped in
-//! `tokio::task::block_in_place` — catching future sibling regressions.
+//! `SessionManagerHandle::clear_history` must not panic when invoked from a
+//! multi-thread tokio worker (the live tarpc dispatcher): before the fix
+//! `BackgroundSession::clear_history` hit `blocking_lock()` there. The fix wraps
+//! the call in `tokio::task::block_in_place`, and a source-shape scenario flags
+//! any unwrapped `.blocking_lock(` / `.blocking_read(` / `.blocking_write(` in
+//! a sync trait method body.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+mod handle_impl_source_support;
+mod runtime_data_dir_support;
+
 use std::fs;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -35,116 +23,18 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc::FspecServiceClient;
 use codelet_rpc_embedded::{EmbeddedTransport, SharedFspecService};
 use codelet_rpc_types::SessionId;
-use codelet_sessions::SessionManager;
+use handle_impl_source_support::{extract_method_body, read_handle_impl_src, strip_comments};
 use tarpc::context;
 use tempfile::tempdir;
-
-/// Workspace root (one level above `rust/fspec/`).
-fn workspace_root() -> PathBuf {
-    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest
-        .parent()
-        .and_then(|p| p.parent())
-        .map(PathBuf::from)
-        .expect("project root walk-up")
-}
-
-fn handle_impl_path() -> PathBuf {
-    workspace_root()
-        .join("rust")
-        .join("sessions")
-        .join("src")
-        .join("handle_impl.rs")
-}
-
-fn read_handle_impl_src() -> String {
-    let p = handle_impl_path();
-    fs::read_to_string(&p).unwrap_or_else(|e| panic!("read {}: {e}", p.display()))
-}
-
-/// Strip `//`, `///`, `//!` line comments and `/* … */` block comments
-/// from a Rust source body so source-shape assertions aren't fooled by
-/// doc-comments that *describe* a forbidden idiom.
-fn strip_comments(src: &str) -> String {
-    let mut out = String::with_capacity(src.len());
-    let mut chars = src.chars().peekable();
-    while let Some(c) = chars.next() {
-        if c == '/' {
-            match chars.peek() {
-                Some('/') => {
-                    chars.next();
-                    for ch in chars.by_ref() {
-                        if ch == '\n' {
-                            out.push('\n');
-                            break;
-                        }
-                    }
-                    continue;
-                }
-                Some('*') => {
-                    chars.next();
-                    let mut prev = ' ';
-                    for ch in chars.by_ref() {
-                        if prev == '*' && ch == '/' {
-                            break;
-                        }
-                        prev = ch;
-                    }
-                    continue;
-                }
-                _ => {}
-            }
-        }
-        out.push(c);
-    }
-    out
-}
-
-/// Slice out the body of the specified `fn NAME(` definition. Returns
-/// the substring from `fn NAME` up to the matching closing brace.
-fn extract_method_body<'src>(src: &'src str, fn_name: &str) -> &'src str {
-    let needle = format!("fn {fn_name}");
-    let mut search = 0usize;
-    let start = loop {
-        let rel = src[search..]
-            .find(&needle)
-            .unwrap_or_else(|| panic!("`{needle}` not found in handle_impl.rs"));
-        let abs = search + rel;
-        let after = src[abs + needle.len()..].chars().next().unwrap_or(' ');
-        if after == '(' || after == '<' {
-            break abs;
-        }
-        search = abs + needle.len();
-    };
-    let body_start_rel = src[start..]
-        .find('{')
-        .unwrap_or_else(|| panic!("opening brace of `fn {fn_name}` not found"));
-    let body_start = start + body_start_rel;
-    let bytes = src.as_bytes();
-    let mut depth: i32 = 0;
-    let mut i = body_start;
-    while i < bytes.len() {
-        match bytes[i] {
-            b'{' => depth += 1,
-            b'}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return &src[start..=i];
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    panic!("did not find matching `}}` for `fn {fn_name}` body");
-}
 
 // =============================================================================
 // Scenario: Calling clear_history over embedded tarpc on a multi-thread
 // runtime returns Ok and does not panic
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn scenario_clear_history_over_embedded_tarpc_does_not_panic() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a SharedFspecService built with a real SessionManager is bound to an EmbeddedTransport on a tokio multi-thread runtime
     assert_eq!(
         tokio::runtime::Handle::current().runtime_flavor(),
@@ -158,8 +48,9 @@ async fn scenario_clear_history_over_embedded_tarpc_does_not_panic() {
     )
     .expect("write work-units.json");
     let watcher = Arc::new(WorkUnitsWatcher::new(dir.path()).expect("WorkUnitsWatcher"));
-    let session_manager: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+    let session_manager: Arc<dyn SessionManagerHandle> = runtime_data_dir_support::seeded_manager()
+        .expect("BUG-417 seeded data dir")
+        as Arc<dyn SessionManagerHandle>;
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&session_manager),
@@ -181,7 +72,8 @@ async fn scenario_clear_history_over_embedded_tarpc_does_not_panic() {
     )
     .await
     .expect("create_session timed out")
-    .expect("create_session RpcError");
+    .expect("create_session RpcError")
+    .expect("the daemon creates the session");
 
     // @step When the client calls client.clear_history(context::current(), session_id).await
     let result = tokio::time::timeout(
@@ -208,7 +100,9 @@ async fn scenario_clear_history_over_embedded_tarpc_does_not_panic() {
 // async task on a multi-thread runtime does not panic
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn scenario_clear_history_direct_from_multi_thread_worker_does_not_panic() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a SessionManager wrapped as Arc<dyn SessionManagerHandle> is created on a multi-thread tokio runtime
     let flavor = tokio::runtime::Handle::current().runtime_flavor();
     assert_eq!(
@@ -216,23 +110,22 @@ async fn scenario_clear_history_direct_from_multi_thread_worker_does_not_panic()
         tokio::runtime::RuntimeFlavor::MultiThread,
         "test must run on a multi-thread runtime to reproduce the panic context",
     );
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+    let handle: Arc<dyn SessionManagerHandle> = runtime_data_dir_support::seeded_manager()
+        .expect("BUG-417 seeded data dir")
+        as Arc<dyn SessionManagerHandle>;
 
     // @step Given the manager has a session created via handle.create_session(None)
     //
-    // Even if create_session returns an empty SessionId (no provider
-    // credentials configured in the test env), clear_history's "session
-    // not found" path also goes through get_session which still
-    // exercises the inner mutex in a way that historically panicked
-    // when called from inside a multi-thread runtime worker. The
-    // important property: handle.clear_history must not panic.
+    // BUG-417: the seeded data directory and default model make the
+    // creation deterministic. The important property: handle.clear_history
+    // must not panic when called from inside a multi-thread runtime worker.
     let handle_for_task = Arc::clone(&handle);
-    let session_id_join = tokio::spawn(async move { handle_for_task.create_session(None) });
+    let session_id_join = tokio::spawn(async move { handle_for_task.create_session_checked(None) });
     let session_id: SessionId = tokio::time::timeout(Duration::from_secs(5), session_id_join)
         .await
         .expect("create_session did not return within 5s")
-        .expect("create_session task panicked — pre-RPC-070 regression");
+        .expect("create_session task panicked — pre-RPC-070 regression")
+        .expect("the handle creates the session");
 
     // @step When the test spawns an async task that calls handle.clear_history(&session_id) from inside the multi-thread runtime worker
     let handle_for_clear = Arc::clone(&handle);
@@ -257,6 +150,7 @@ async fn scenario_clear_history_direct_from_multi_thread_worker_does_not_panic()
 // =============================================================================
 #[test]
 fn scenario_every_blocking_lock_is_wrapped_in_block_in_place() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the file rust/sessions/src/handle_impl.rs
     let src = read_handle_impl_src();
 
@@ -346,7 +240,9 @@ fn scenario_every_blocking_lock_is_wrapped_in_block_in_place() {
 // SessionState::Cleared chunk is broadcast
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn scenario_clear_history_clears_output_buffer_and_broadcasts_cleared_chunk() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a session created via embedded tarpc has accumulated at least one StreamChunk in its output_buffer
     let dir = tempdir().expect("tempdir");
     fs::create_dir_all(dir.path().join("spec")).expect("mkdir spec");
@@ -356,8 +252,9 @@ async fn scenario_clear_history_clears_output_buffer_and_broadcasts_cleared_chun
     )
     .expect("write work-units.json");
     let watcher = Arc::new(WorkUnitsWatcher::new(dir.path()).expect("WorkUnitsWatcher"));
-    let session_manager: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+    let session_manager: Arc<dyn SessionManagerHandle> = runtime_data_dir_support::seeded_manager()
+        .expect("BUG-417 seeded data dir")
+        as Arc<dyn SessionManagerHandle>;
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&session_manager),
@@ -371,7 +268,8 @@ async fn scenario_clear_history_clears_output_buffer_and_broadcasts_cleared_chun
     )
     .await
     .expect("create_session timed out")
-    .expect("create_session RpcError");
+    .expect("create_session RpcError")
+    .expect("the daemon creates the session");
 
     // @step Given a subscriber is listening on backend.chunks_rx for that session_id
     //

@@ -8,16 +8,17 @@
           "lines": "58-82",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
               "lines": [
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684
-              ]
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "let active = self",
+              "lastLine": "match crate::navigation::get_next_target(&nav_list, *active) {"
             }
           ]
         }
@@ -31,16 +32,17 @@
           "lines": "85-120",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
               "lines": [
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684
-              ]
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "let active = self",
+              "lastLine": "match crate::navigation::get_next_target(&nav_list, *active) {"
             }
           ]
         }
@@ -51,19 +53,20 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs",
-          "lines": "123-180",
+          "lines": "123-181",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
               "lines": [
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684
-              ]
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "let active = self",
+              "lastLine": "match crate::navigation::get_next_target(&nav_list, *active) {"
             }
           ]
         }
@@ -78,8 +81,8 @@
       "rust/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager/manager_impl_2.rs"
     ],
-    "totalLinesCovered": 140
+    "totalLinesCovered": 138
   }
 }

@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "A zero catalog limit is unavailable",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov173_models_dev_limits.rs",
+          "lines": "10-21",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/types.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "pub output: u32,",
+              "lastLine": "Some(self.output).filter(|value| *value > 0)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model limits have no guessed default",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov173_models_dev_limits.rs",
+          "lines": "23-39",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/types.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "pub output: u32,",
+              "lastLine": "Some(self.output).filter(|value| *value > 0)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov173_models_dev_limits.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/models/types.rs"
+    ],
+    "totalLinesCovered": 59
+  }
+}

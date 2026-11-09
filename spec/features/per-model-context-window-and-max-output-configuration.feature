@@ -1,11 +1,13 @@
+@BUG-582
 @done
 @MODEL-005
+@providers
+@context-management
 Feature: Per-Model Context Window and Max Output Configuration
   """
   Rust changes in rust/providers/src/manager.rs: (1) Add model_context_window: Option<usize> and model_max_output_tokens: Option<usize> to ProviderManager struct. (2) context_window() returns self.model_context_window.unwrap_or_else(|| self.provider_constant_context_window()). (3) max_output_tokens() does the same. (4) select_model() extracts ModelInfo.limit.context/output and stores them. (5) set_model_direct() gains optional context_window/max_output params. (6) for_testing() gains optional context_window/max_output params. (7) All constructors (new, with_provider, with_provider_and_model, with_model_support) initialize both fields to None.
-  NAPI changes in rust/napi/src/session_manager.rs: (1) session_set_model gains optional context_window: Option<u32> and max_output_tokens: Option<u32> params. For registry-based models, the Rust select_model() already reads from ModelInfo — but the NAPI params serve as overrides (e.g. TypeScript custom model config could override models.dev data). (2) session_set_model_profile gains the same params and passes them to set_model_direct(). These are required for profile models since they have no registry data.
-  TypeScript changes in src/tui/services/modelSelectionService.ts: Pass selection.contextWindow and selection.maxOutput as additional arguments to sessionSetModel() and sessionSetModelProfile(). The NAPI bindings (rust/napi/index.d.ts) will need updated type signatures.
-  No compaction engine changes needed — calculate_usable_context() in rust/cli/src/compaction_threshold.rs and CompactionHook in rust/core/src/compaction_hook.rs both already read from ProviderManager::context_window() and max_output_tokens(). The fix is entirely at the data source level.
+  NAPI and TypeScript changes (session_set_model / session_set_model_profile params, modelSelectionService.ts) were part of the original plan; the NAPI crate and the TypeScript client have since been removed. set_model_direct() and with_provider_and_model() keep the optional context_window/max_output_tokens params, stored as user overrides that the provider's ModelLimitsResolver clamps (LIMITS-004); the scenarios that name sessionSetModelProfile / session_set_model drive set_model_direct() and select_model() plus override_model_limits() directly (rust/providers/src/manager/tests_3.rs, tests_4.rs).
+  No compaction engine changes needed — compaction_threshold_for() in rust/cli/src/compaction_threshold.rs reads ProviderManager::context_window() and max_output_tokens(); its default is 80% of context_window bounded by calculate_usable_context() (PROV-165: no threshold unless both limits are available). The fix is entirely at the data source level.
   Private helper method needed: provider_constant_context_window() extracts the existing match arm logic from context_window() into a separate method. Similarly provider_constant_max_output_tokens() for max_output_tokens(). This keeps the fallback chain clean and testable.
   """
 
@@ -25,7 +27,7 @@ Feature: Per-Model Context Window and Max Output Configuration
   #   9. When model_context_window is None (no per-model data), context_window() must fall back to the existing provider-constant behavior including env var reads — full backward compatibility
   #   10. The compaction engine requires no changes — it already reads from ProviderManager::context_window() and max_output_tokens(), so it automatically uses per-model values once ProviderManager propagates them
   #   11. The for_testing() constructor must also accept optional context_window and max_output_tokens for test setup
-  #   12. Provider-level compile-time constants (claude::CONTEXT_WINDOW, openai::CONTEXT_WINDOW, etc.) must remain as fallback defaults and must not be removed
+  #   12. Provider-level compile-time constants (claude::CONTEXT_WINDOW, etc.; PROV-171 removed openai::CONTEXT_WINDOW) must remain as fallback defaults and must not be removed
   #   13. Yes, NAPI params should override models.dev data. Priority: NAPI override (from TypeScript) > models.dev data (from select_model registry lookup) > env var > provider constant. For select_model path: first store from ModelInfo.limit, then overwrite with NAPI params if Some. This keeps MODEL-004 custom model overrides possible.
   #   14. with_provider_and_model() is used by: (1) deep_search_handler sub-agents, (2) session creation for profile/codex models, (3) graph operations. None of these pass context_window. The fix is to add optional context_window and max_output_tokens params to with_provider_and_model() as well, so callers that have this info can pass it. For deep_search sub-agents, the parent session's ProviderManager already has the correct values — we can extract them before spawning and pass them through.
   #
@@ -64,7 +66,7 @@ Feature: Per-Model Context Window and Max Output Configuration
   @provider-manager
   Scenario: Cloud model gets per-model context window from models.dev registry
     Given the model registry contains "openai/o3" with context=200000 and max_output=100000
-    And the OpenAI provider-level constant is 128000
+    And the OpenAI provider declares no provider-level context window
     When I call select_model("openai/o3")
     Then model_context_window should be 200000
     And model_max_output_tokens should be 100000
@@ -137,10 +139,10 @@ Feature: Per-Model Context Window and Max Output Configuration
   @rust
   @provider-manager
   Scenario: Environment variable override still works when no per-model data
-    Given a fresh ProviderManager with OpenAI as the current provider
-    And no model has been selected
-    And OPENAI_CONTEXT_WINDOW is set to "32000"
+    Given OPENAI_CONTEXT_WINDOW is set to "32000"
     And OPENAI_MAX_OUTPUT_TOKENS is set to "8192"
+    When a ProviderManager is created with OpenAI as the current provider
+    And no model has been selected
     Then model_context_window should be None
     And context_window() should return 32000
     And max_output_tokens() should return 8192
@@ -154,7 +156,7 @@ Feature: Per-Model Context Window and Max Output Configuration
     Given a ProviderManager with model_context_window=200000 and model_max_output_tokens=100000
     When the compaction threshold is calculated
     Then calculate_usable_context(200000, 100000) should return 168000
-    And compaction triggers when effective tokens exceed 168000
+    And the default compaction threshold is 160000
 
   @rust
   @compaction
@@ -162,26 +164,7 @@ Feature: Per-Model Context Window and Max Output Configuration
     Given a ProviderManager with model_context_window=32000 and model_max_output_tokens=4096
     When the compaction threshold is calculated
     Then calculate_usable_context(32000, 4096) should return 27904
-    And compaction triggers when effective tokens exceed 27904
-
-  @typescript
-  @integration
-  Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModel
-  # ---------------------------------------------------------------------------
-  # TypeScript integration: modelSelectionService passes values to NAPI
-  # ---------------------------------------------------------------------------
-    Given a ModelSelection with providerId="openai" and modelId="o3" and contextWindow=200000 and maxOutput=100000
-    And an active session exists
-    When selectModel is called
-    Then sessionSetModel is called with context_window=200000 and max_output_tokens=100000
-
-  @typescript
-  @integration
-  Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModelProfile
-    Given a ModelSelection with profileConfig and contextWindow=32000 and maxOutput=4096
-    And an active session exists
-    When selectModel is called
-    Then sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
+    And the default compaction threshold is 25600
 
   @rust
   @provider-manager
@@ -217,8 +200,6 @@ Feature: Per-Model Context Window and Max Output Configuration
   # Provider constants remain as fallback defaults
   # ---------------------------------------------------------------------------
     Then claude::CONTEXT_WINDOW should be 200000
-    And openai::CONTEXT_WINDOW should be 128000
     And gemini::CONTEXT_WINDOW should be 1000000
-    And codex::CONTEXT_WINDOW should be 272000
     And zai::CONTEXT_WINDOW should be 128000
     And copilot::CONTEXT_WINDOW should be 200000

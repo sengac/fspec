@@ -1,4 +1,6 @@
 @BUG-130
+@tools
+@utility
 Feature: Unicode Path Normalization — Rust Codelet Tools
   """
   macOS uses U+202F (NARROW NO-BREAK SPACE) before am/pm in screenshot filenames.

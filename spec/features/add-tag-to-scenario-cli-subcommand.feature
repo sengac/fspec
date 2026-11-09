@@ -1,5 +1,7 @@
 @done
 @RPC-194
+@cli
+@scenario-generation
 Feature: fspec add-tag-to-scenario CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_tag_to_scenario.rs — clap-derived struct mirroring the TS

@@ -4,6 +4,7 @@
 @bug-183
 @mux
 @tui
+@BUG-300
 Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close that pane (transient, like agent session close)
   """
   In mux mode the focused Changed Files or Checkpoints pane could never be
@@ -33,10 +34,10 @@ Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close t
   single-view Esc-close are unchanged (R4).
 
   SUPERSESSION NOTE (BUG-205): the agent exit confirmation dialog
-  referenced on line 115 ('(Detach / Close Session / Cancel)') is now
-  the two-button [Close Session, Cancel] dialog — Detach was removed
+  referenced on line 115 ('(Detach / Close / Cancel)') is now
+  the two-button [Close, Cancel] dialog — Detach was removed
   by BUG-205 (see
-  spec/features/exit-session-dialog-two-button-options.feature). This
+  spec/features/agentview-esc-exit-confirmation-dialog.feature). This
   historical feature is retained as-is.
   """
 
@@ -48,11 +49,11 @@ Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close t
   #   1. R1: Esc on the focused Changed Files or Checkpoints mux pane closes THAT PANE from the live rendered grid only: the pane kind is removed (last occurrence) from the live rendered pane list, the saved tui.mux config (persisted layout preference) is UNTOUCHED — transient, same rule as the agent slot dropping on session close, so /mux off then /mux on still restores the full layout. The mux stays in ViewMode::Mux, focus stays on a surviving pane (clamped to the new list), and the remaining panes rescale over the freed space via the existing rect recompute.
   #   2. R2: Esc stays IGNORED on a Files/Checkpoints mux pane while the view is mid-initial-load (the TUI-107 rule the views already enforce in single-view mode — a reflex Esc must not close a pane that has no data yet); the view returns Ignored and the key falls through to the App-level shortcuts exactly as today. In-view dialogs (restore/delete confirm) keep their precedence: their Esc cancels the dialog, it does NOT close the pane.
   #   3. R3: When the pane removal leaves no more panes (degenerate — e.g. an all-agent grid plus one lazy pane with zero open sessions: the agent slots are dropped, only the lazy pane renders, Esc closes it and nothing is left), the grid exits ViewMode::Mux back to the single Board view (pre_mux_view fallback = Board, the same rule /mux off uses). The normal close keeps the grid: with at least one surviving pane the mux stays active, and with only the Board pane remaining the grid shows the full-width Board pane in Mux (user decision — do NOT auto-exit in that case).
-  #   4. R4: single-view and the other mux panes are unchanged — Esc in the single ChangedFiles/Checkpoints view still closes to the Board (existing CloseChangedFilesView/CloseCheckpointsView flip), Esc on the focused Board mux pane still pushes the BoardExitConfirmationDialog (BUG-165), and Esc on a focused Agent pane still opens the agent exit-confirmation cascade (Detach/Close Session/Cancel). The new pane-close path fires ONLY in ViewMode::Mux with the Files or Checkpoints pane focused.
+  #   4. R4: single-view and the other mux panes are unchanged — Esc in the single ChangedFiles/Checkpoints view still closes to the Board (existing CloseChangedFilesView/CloseCheckpointsView flip), Esc on the focused Board mux pane still pushes the BoardExitConfirmationDialog (BUG-165), and Esc on a focused Agent pane still opens the agent exit-confirmation cascade (Close/Cancel). The new pane-close path fires ONLY in ViewMode::Mux with the Files or Checkpoints pane focused.
   #
   # EXAMPLES:
   #   1. Mux grid Board|Agent|Files|Checkpoints with the Files pane focused: press Esc → the Files pane is gone, the grid is Board|Agent|Checkpoints, the saved tui.mux still lists all four panes, focus clamps to a surviving pane, the Checkpoints pane now absorbs the Files pane's share, and the mux footer shows 'MUX 3 panes [Board|Agent|Checkpoints]'.
-  #   2. Mux grid Board|Checkpoints with one agent session open (so the grid actually renders Board|Agent|Checkpoints) — the user closes the agent session (Close Session) and then focuses the Checkpoints pane and presses Esc → the grid is Board|Agent and the Checkpoints pane is gone; later /mux off then /mux on brings the Checkpoints pane back from the saved layout.
+  #   2. Mux grid Board|Checkpoints with one agent session open (so the grid actually renders Board|Agent|Checkpoints) — the user closes the agent session (Close) and then focuses the Checkpoints pane and presses Esc → the grid is Board|Agent and the Checkpoints pane is gone; later /mux off then /mux on brings the Checkpoints pane back from the saved layout.
   #
   # ========================================
   Background: User Story
@@ -68,7 +69,7 @@ Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close t
     And the Files pane is focused and its list has loaded
     When I press the Esc key
     Then the grid shows Board, Agent and Checkpoints (the Files pane is gone)
-    And the surviving panes rescale to absorb the Files pane's share of the width
+    And the surviving panes of its group absorb the Files pane's share
     And the saved mux layout still lists the Files pane so a later /mux off then /mux on restores it
     And the TUI is still in mux mode with a surviving pane focused
 
@@ -119,7 +120,7 @@ Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close t
     Given mux mode is active with Board and Agent panes and one agent session is open
     And the Agent pane is focused
     When I press the Esc key
-    Then the agent exit confirmation dialog (Detach / Close Session / Cancel) is shown
+    Then the agent exit confirmation dialog (Close / Cancel) is shown
     And the Agent pane is still in the grid
 
   @bug-183

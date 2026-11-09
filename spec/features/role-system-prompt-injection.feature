@@ -1,4 +1,6 @@
 @BUG-120
+@tools
+@role
 Feature: Role injection into LLM system prompt
   """
   Fix is in run_with_provider! macro: read session.get_role() and pass it as the preamble parameter

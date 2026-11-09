@@ -18,6 +18,10 @@ use uuid::Uuid;
 #[tokio::test]
 #[serial]
 async fn test_read_pdf_default_visual_mode_renders_pages_as_images() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "architecture-diagram.pdf" containing diagrams
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("architecture-diagram.pdf");
@@ -90,6 +94,10 @@ async fn test_read_pdf_default_visual_mode_renders_pages_as_images() {
 #[tokio::test]
 #[serial]
 async fn test_read_pdf_text_mode_extracts_searchable_text() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "api-spec.pdf" with multiple pages of text content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("api-spec.pdf");
@@ -139,6 +147,10 @@ async fn test_read_pdf_text_mode_extracts_searchable_text() {
 #[tokio::test]
 #[serial]
 async fn test_read_pdf_images_mode_extracts_embedded_images() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "product-catalog.pdf" with embedded product photos
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("product-catalog.pdf");
@@ -175,6 +187,10 @@ async fn test_read_pdf_images_mode_extracts_embedded_images() {
 #[tokio::test]
 #[serial]
 async fn test_reject_password_protected_pdf_with_clear_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a password-protected PDF file "encrypted.pdf"
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("encrypted.pdf");
@@ -193,16 +209,18 @@ async fn test_reject_password_protected_pdf_with_clear_error() {
         .await;
 
     // @step Then encryption should be detected via /Encrypt marker in raw bytes
+    // @step And an error should be returned before parsing attempts
     assert!(result.is_err(), "Should fail for encrypted PDF");
-    let err = result.unwrap_err();
-    let err_msg = err.to_string();
+    let err_msg = result.unwrap_err().to_string();
 
-    // @step And the error message should mention password protection
-    assert!(
-        err_msg.contains("password")
-            || err_msg.contains("protected")
-            || err_msg.contains("encrypted"),
-        "Error should mention password protection: {err_msg}"
+    // @step And the error message should be "Cannot read password-protected PDF: encrypted.pdf"
+    // (the tool names the file by the path it was given)
+    assert_eq!(
+        err_msg,
+        format!(
+            "Cannot read password-protected PDF: {}",
+            file_path.to_string_lossy()
+        )
     );
 }
 
@@ -210,6 +228,10 @@ async fn test_reject_password_protected_pdf_with_clear_error() {
 #[tokio::test]
 #[serial]
 async fn test_visual_mode_includes_page_count() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "report.pdf" with 3 pages of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("report.pdf");
@@ -269,6 +291,10 @@ async fn test_visual_mode_includes_page_count() {
 #[tokio::test]
 #[serial]
 async fn test_text_mode_handles_scanned_pdfs_gracefully() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a scanned PDF file "scanned-document.pdf" with no extractable text
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("scanned-document.pdf");
@@ -304,6 +330,10 @@ async fn test_text_mode_handles_scanned_pdfs_gracefully() {
 #[tokio::test]
 #[serial]
 async fn test_pdf_modes_exempt_from_token_limits() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "10");
 
     // @step Given a large PDF file that would exceed the text token limit
@@ -351,6 +381,10 @@ async fn test_pdf_modes_exempt_from_token_limits() {
 #[tokio::test]
 #[serial]
 async fn test_invalid_pdf_mode_falls_back_to_visual() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "document.pdf" with mixed content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("document.pdf");

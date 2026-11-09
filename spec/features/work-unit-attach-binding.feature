@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @rust
@@ -19,6 +20,7 @@ Feature: Work-unit attach binding (BoardView attach + SessionHeader chip)
 
   Companion to spec/features/slash-command-detach-and-work-unit-binding.feature
   which holds the /detach teardown side of the same binding.
+  TUI-132 (2026-11-09): Action::AttachWorkUnitToSession and Action::WorkUnitAttached are removed: nothing emitted them. A card reaches a session through a session created for it (WorkUnitSessionCreated) and the BUG-230 work-unit focus (WorkUnitFocusChanged); the SessionHeader chip scenario remains.
   """
 
   # ========================================
@@ -36,20 +38,6 @@ Feature: Work-unit attach binding (BoardView attach + SessionHeader chip)
     As a fspec user navigating the BoardView
     I want explicit assignment to attach a work unit to my active AgentView session
     So that the SessionHeader chip and the backend's per-session work-unit binding both reflect the link
-
-  Scenario: AttachWorkUnitToSession with a current session calls the backend and folds the context into AgentViewStore
-    Given an App wired to a MockBackend with open session s-1 as the current session
-    And the BoardStore contains work unit AUTH-001 in the "implementing" column
-    When Action::AttachWorkUnitToSession("AUTH-001") is dispatched
-    Then within 1 second backend.set_work_unit_context is called exactly once with (s-1, Some(WorkUnitContext{id:"AUTH-001", title:"AUTH-001", status:"implementing"}))
-    And within 1 second AgentViewStore.work_unit_context_for(s-1) returns Some(ctx) with id "AUTH-001" and status "implementing"
-    And the Navigator's active_view equals ViewMode::Agent
-
-  Scenario: AttachWorkUnitToSession with NO current session is a silent no-op
-    Given an App wired to a MockBackend with NO open session
-    And the BoardStore contains work unit AUTH-001
-    When Action::AttachWorkUnitToSession("AUTH-001") is dispatched
-    Then backend.set_work_unit_context is NEVER called
 
   Scenario: SessionHeader renders the work-unit chip from per-session context
     Given an App with open session s-1 bound to work unit AUTH-001 with status "implementing"

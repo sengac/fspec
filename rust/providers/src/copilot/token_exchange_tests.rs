@@ -51,8 +51,7 @@ async fn exchange_sends_correct_headers_and_parses_response() {
     // @step When CopilotProvider issues a chat completion request
     // @step Then a GET request is sent to "https://api.github.com/copilot_internal/v2/token"
     // @step And the request uses header "Authorization: token <gho_*>"
-    // @step And the request includes headers "Editor-Version",
-    //       "Editor-Plugin-Version", "User-Agent" and "Accept: application/json"
+    // @step And the request includes headers "Editor-Version", "Editor-Plugin-Version", "User-Agent" and "Accept: application/json"
     Mock::given(method("GET"))
         .and(path("/copilot_internal/v2/token"))
         .and(header("Authorization", "token gho_abc123"))

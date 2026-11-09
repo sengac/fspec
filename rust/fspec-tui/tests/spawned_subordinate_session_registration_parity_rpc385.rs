@@ -29,8 +29,7 @@
 //! `spawn_subscriber_tasks` (which raises `subscriber_task_count` to 6).
 //! These tests are therefore expected to FAIL until Approach A lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, SessionContext};
@@ -66,16 +65,20 @@ fn tabs_for(app: &App, id: &SessionId) -> usize {
 /// emitted before the post-lag probe in the lag-recovery scenario — does not
 /// starve the predicate before the deadline.
 async fn wait_for_action<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Option<Action> {
-    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(2000);
-    while std::time::Instant::now() < deadline {
-        while let Some(action) = app.try_recv_action() {
-            if pred(&action) {
-                return Some(action);
+    // TEST-042: wait for the action itself under the deadlock guard (None
+    // only when the guard expires), never for a fixed window.
+    codelet_test_helpers::deadlock_guard("the awaited action", async {
+        loop {
+            while let Some(action) = app.try_recv_action() {
+                if pred(&action) {
+                    return action;
+                }
             }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(std::time::Duration::from_millis(5)).await;
-    }
-    None
+    })
+    .await
+    .ok()
 }
 
 // =============================================================================
@@ -92,12 +95,12 @@ async fn wait_for_action<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Opti
 //   broadcast → subscriber task → Action::SessionCreated → append_session
 // is genuinely connected, not just the store append in isolation.
 #[tokio::test]
-async fn a_spawned_subordinate_appears_as_a_new_tab_in_the_tui() {
+async fn a_spawned_subordinate_appears_as_a_new_tab_in_the_tui() -> TestResult {
     // @step Given a running TUI with no sessions open
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     assert!(
         app.agent_view_store().open_sessions().is_empty(),
         "precondition: the TUI starts with no open sessions"
@@ -112,10 +115,10 @@ async fn a_spawned_subordinate_appears_as_a_new_tab_in_the_tui() {
     // Drive the action through the subscriber task → action bus → dispatch.
     let action = wait_for_action(
         &mut app,
-        |a| matches!(a, Action::SessionCreated(s) if s.value == "subordinate-1"),
+        |a| matches!(a, Action::SessionObserved(info) if info.id == "subordinate-1"),
     )
     .await
-    .expect("the session-created broadcast must reach the action bus as SessionCreated");
+    .or_fail("the session-created broadcast must reach the action bus as SessionObserved")?;
     app.dispatch(action);
 
     // @step Then the TUI appends a new agent tab for the subordinate session id
@@ -130,13 +133,14 @@ async fn a_spawned_subordinate_appears_as_a_new_tab_in_the_tui() {
         subordinate,
         "the new tab must carry the subordinate's session id"
     );
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: A duplicate session-created event does not create a second tab
 // =============================================================================
 #[test]
-fn a_duplicate_session_created_event_does_not_create_a_second_tab() {
+fn a_duplicate_session_created_event_does_not_create_a_second_tab() -> TestResult {
     // @step Given a TUI that already has a tab for a session id
     let (mut app, _mock) = fresh_app();
     let id = sid("dup-1");
@@ -157,13 +161,14 @@ fn a_duplicate_session_created_event_does_not_create_a_second_tab() {
         1,
         "no duplicate tab may be appended for an already-open id"
     );
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: TUI-initiated session creation produces exactly one tab
 // =============================================================================
 #[test]
-fn tui_initiated_session_creation_produces_exactly_one_tab() {
+fn tui_initiated_session_creation_produces_exactly_one_tab() -> TestResult {
     // @step Given a user opens the create-session dialog and confirms a new session
     // The dialog's confirm path emits Action::SessionCreated(id) (see
     // dispatch_create_session_dialog.rs); model that first delivery here.
@@ -187,26 +192,24 @@ fn tui_initiated_session_creation_produces_exactly_one_tab() {
         "the broadcast for a TUI-initiated id must not double-append a tab"
     );
     assert_eq!(app.agent_view_store().open_sessions().len(), 1);
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: The subscriber recovers from a lagged broadcast receiver
 // =============================================================================
 #[tokio::test]
-async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() {
+async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() -> TestResult {
     // @step Given the session-created subscriber whose receiver has lagged
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
-    // The bootstrap spawns nine subscriber tasks: work_units / chunks /
-    // logs / status_changes (RPC-045), session_created (RPC-385),
-    // checkpoints_progress (TUI-109), git_state (BUG-182),
-    // session_removed (RPC-434 — bumped 7 -> 8) and session_cleared
-    // (RPC-437 — bumped 8 -> 9).
+    app.bootstrap().await.or_fail("bootstrap")?;
+    // The bootstrap spawns the full subscriber set, session_created
+    // (RPC-385) among them (BUG-351: one shared total).
     assert_eq!(
         app.subscriber_task_count(),
-        9,
+        common::BOOTSTRAP_SUBSCRIBER_TASKS,
         "bootstrap must spawn the new session-created subscriber task"
     );
     // Overflow the session-created broadcast to force RecvError::Lagged.
@@ -215,25 +218,27 @@ async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() {
     }
 
     // @step When the subscriber observes the lagged receiver error
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no delay: the lag is observed on the subscriber's next
+    // recv, and the event pushed below is still delivered after it.
 
     // @step Then it continues processing subsequent session-created events instead of terminating
     let fresh = sid("post-lag-session");
     mock.push_session_created(fresh.clone());
     let action = wait_for_action(
         &mut app,
-        |a| matches!(a, Action::SessionCreated(s) if s.value == "post-lag-session"),
+        |a| matches!(a, Action::SessionObserved(info) if info.id == "post-lag-session"),
     )
     .await
-    .expect("a post-lag SessionCreated must still reach the action bus");
-    assert!(matches!(action, Action::SessionCreated(_)));
+    .or_fail("a post-lag SessionObserved must still reach the action bus")?;
+    assert!(matches!(action, Action::SessionObserved(_)));
+    Ok(())
 }
 
 // =============================================================================
 // Store-level unit: append_session is idempotent (rule [2]/[3] guard-rail).
 // =============================================================================
 #[test]
-fn append_session_is_idempotent_at_the_store_level() {
+fn append_session_is_idempotent_at_the_store_level() -> TestResult {
     let mut store = codelet_fspec_tui::AgentViewStore::default();
     store.append_session(SessionContext::new(sid("only-1")));
     store.append_session(SessionContext::new(sid("only-1")));
@@ -242,4 +247,5 @@ fn append_session_is_idempotent_at_the_store_level() {
         1,
         "appending the same SessionId twice must yield exactly one tab"
     );
+    Ok(())
 }

@@ -61,13 +61,17 @@ impl ContextProjection {
                 ContextProvenance::Unknown
             },
         };
-        if let Some(fill) = snapshot.context_fill() {
-            output.emit_context_fill(&ContextFillInfo {
+        // BUG-462: no error channel here — an unrepresentable fill is
+        // logged and no fill is published (the documented refusal path).
+        match snapshot.context_fill() {
+            Ok(Some(fill)) => output.emit_context_fill(&ContextFillInfo {
                 fill_percentage: fill.fill_percentage,
                 effective_tokens: fill.effective_tokens as u64,
                 threshold: self.threshold,
                 context_window: self.capacity,
-            });
+            }),
+            Ok(None) => {}
+            Err(error) => tracing::error!(%error, "context fill not published"),
         }
         output.emit(StreamEvent::ContextSnapshot(snapshot));
     }

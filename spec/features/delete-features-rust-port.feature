@@ -70,3 +70,19 @@ Feature: Port delete-features command to Rust
     When I dispatch delete-features with tags=['@notpresent']
     Then the dispatcher returns success=true and deletedCount=0
     And the dispatcher message equals 'No feature files found matching tags'
+
+  Scenario: Dispatcher deletes features whose tag contains special characters
+    Given a project root tempdir with three features tagged @bug-#123 and one feature tagged @bug-123
+    When I dispatch delete-features with tags=['@bug-#123']
+    Then the dispatcher returns success=true and deletedCount=3
+    And the dispatcher message equals 'Deleted 3 feature file(s)'
+    And the three @bug-#123 feature files no longer exist on disk
+    And the feature tagged @bug-123 still exists
+
+  Scenario: Dispatcher deletes tagged features in nested directories
+    Given a project root tempdir with features tagged @old at spec/features/top.feature, spec/features/area/mid.feature and spec/features/area/deep/low.feature, and an untagged spec/features/area/keep.feature
+    When I dispatch delete-features with tags=['@old']
+    Then the dispatcher returns success=true and deletedCount=3
+    And the dispatcher result lists spec/features/top.feature, spec/features/area/mid.feature and spec/features/area/deep/low.feature
+    And the three @old feature files no longer exist on disk
+    And spec/features/area/keep.feature still exists

@@ -50,6 +50,7 @@ impl ProviderSessionExtension for IndependentExtension {
 fn independent_provider_extensions_receive_session_lifecycle_events(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     let mut session = Session::from_provider_manager(ProviderManager::for_testing(
@@ -82,15 +83,24 @@ fn independent_provider_extensions_receive_session_lifecycle_events(
         .map_err(|error| error.to_string())?
         .clone()
         .ok_or("writer missing")?;
-    writer(
+    // BUG-314: durable provider state is limited to Codex native checkpoints,
+    // so an independent extension's writer is refused without persisting.
+    let refused = writer(
         [("independentContinuation".into(), Value::Null)]
             .into_iter()
             .collect(),
-    )?;
-    let envelopes = codelet_core::persistence::get_session_message_envelopes(session_id)?;
-    let saved: Value = serde_json::from_str(&envelopes[0])?;
-    assert_eq!(saved["provider"], "independent");
-    assert_eq!(saved.get("independentContinuation"), Some(&Value::Null));
+    );
+    assert!(
+        refused
+            .as_ref()
+            .is_err_and(|error| error.to_string().contains("provider identity")),
+        "{refused:?}"
+    );
+    assert!(
+        codelet_core::persistence::get_session_message_envelopes(session_id)?
+            .iter()
+            .all(|envelope| !envelope.contains("independentContinuation"))
+    );
     let other = Session::from_provider_manager(ProviderManager::for_testing(
         ProviderType::OpenAI,
         Some(1000),

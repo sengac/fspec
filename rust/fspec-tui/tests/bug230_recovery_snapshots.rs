@@ -1,12 +1,11 @@
-use std::{sync::Arc, time::Duration};
+use codelet_test_helpers::TestResult;
+use std::sync::Arc;
 
 use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
 use codelet_rpc_server::Envelope;
 use codelet_rpc_types::{SessionInfo, WorkUnitContext, WorkUnitFocus};
 use futures::SinkExt;
 use tokio::{net::TcpListener, sync::Notify};
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn snapshot(context: Option<WorkUnitContext>, revision: u64) -> SessionInfo {
     SessionInfo {
@@ -39,6 +38,10 @@ async fn scenario_live_recovery_snapshots_deliver_explicit_cleared_activity() ->
     let server_ready = ready.clone();
     let advance = Arc::new(Notify::new());
     let server_advance = advance.clone();
+    // TEST-042: the server keeps the socket open until the test has read
+    // both updates, instead of for a fixed two seconds.
+    let done = Arc::new(Notify::new());
+    let server_done = done.clone();
     let server = tokio::spawn(async move {
         let (socket, _) = listener.accept().await?;
         let mut websocket = tokio_tungstenite::accept_async(socket).await?;
@@ -65,7 +68,7 @@ async fn scenario_live_recovery_snapshots_deliver_explicit_cleared_activity() ->
                 server_advance.notified().await;
             }
         }
-        tokio::time::sleep(Duration::from_secs(2)).await;
+        server_done.notified().await;
         Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
     });
     let backend =
@@ -76,7 +79,9 @@ async fn scenario_live_recovery_snapshots_deliver_explicit_cleared_activity() ->
     ready.notify_one();
 
     // @step Then the subscriber receives both focus states with their authoritative revisions
-    let (session, active) = tokio::time::timeout(Duration::from_secs(1), updates.recv()).await??;
+    let (session, active) =
+        codelet_test_helpers::deadlock_guard("the active snapshot update", updates.recv())
+            .await??;
     assert_eq!(session.value, "snapshot-session");
     assert_eq!(active.revision, 4);
     assert_eq!(
@@ -84,12 +89,15 @@ async fn scenario_live_recovery_snapshots_deliver_explicit_cleared_activity() ->
         Some("AUTH-001".into())
     );
     advance.notify_one();
-    let (session, cleared) = tokio::time::timeout(Duration::from_secs(1), updates.recv()).await??;
+    let (session, cleared) =
+        codelet_test_helpers::deadlock_guard("the cleared snapshot update", updates.recv())
+            .await??;
     assert_eq!(session.value, "snapshot-session");
     assert_eq!(cleared.revision, 5);
     assert!(cleared.context.is_none());
 
     // @step And it does not need to reconnect or wait for another card change
+    done.notify_one();
     server.abort();
     Ok(())
 }

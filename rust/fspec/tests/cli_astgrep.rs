@@ -81,10 +81,8 @@ fn scenario_astgrep_requires_pattern_and_lang() {
     );
 
     // @step And when I run `fspec astgrep --pattern "fn $NAME($$$ARGS) { $$$BODY }"` without a `--lang` argument
-    let (code2, _stdout2, stderr2) = run_astgrep(
-        tmp.path(),
-        &["--pattern", "fn $NAME($$$ARGS) { $$$BODY }"],
-    );
+    let (code2, _stdout2, stderr2) =
+        run_astgrep(tmp.path(), &["--pattern", "fn $NAME($$$ARGS) { $$$BODY }"]);
 
     // @step Then the command exits with code 1
     assert_eq!(code2, 1, "missing --lang must exit 1; stderr={stderr2}");

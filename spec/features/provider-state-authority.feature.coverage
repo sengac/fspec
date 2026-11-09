@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug243/authority.rs",
-          "lines": "5-48",
+          "lines": "5-49",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/provider_state/replay.rs",
@@ -71,7 +71,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "pub(crate) fn metadata(manifest: &SessionManifest) -> Result<Vec<Value>, ProviderStateError> {",
+              "lastLine": "pub(crate) fn strip_native_metadata(envelope: &mut Value) {"
             }
           ]
         }
@@ -88,6 +90,6 @@
     "implFiles": [
       "rust/core/src/persistence/provider_state/replay.rs"
     ],
-    "totalLinesCovered": 105
+    "totalLinesCovered": 106
   }
 }

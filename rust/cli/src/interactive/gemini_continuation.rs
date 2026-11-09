@@ -7,7 +7,6 @@ use super::output::StreamOutput;
 use super::stream_handlers::handle_final_response;
 use crate::session::Session;
 use anyhow::Result;
-use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{
     ensure_thought_signatures, ApiTokenUsage, CompactionHook, ContinuationStrategy,
     GeminiTurnCompletionFacade, RigAgent, StreamingTokenDisplay, TokenState, TurnCompletionFacade,
@@ -143,20 +142,16 @@ fn append_continuation_prompt(session: &mut Session, prompt: &str) {
 }
 
 fn capture_continuation_event(model_id: &str, prompt: &str, reason: &str) {
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.capture(
-                    "gemini.continuation",
-                    serde_json::json!({
-                        "reason": reason,
-                        "strategy": "FullLoop",
-                        "model": model_id,
-                        "prompt": prompt,
-                    }),
-                    None,
-                );
-            }
-        }
-    }
+    codelet_common::debug_capture::with_enabled_capture(|manager| {
+        manager.capture(
+            "gemini.continuation",
+            serde_json::json!({
+                "reason": reason,
+                "strategy": "FullLoop",
+                "model": model_id,
+                "prompt": prompt,
+            }),
+            None,
+        );
+    });
 }

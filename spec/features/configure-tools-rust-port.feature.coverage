@@ -10,6 +10,123 @@
             {
               "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "// Seed `tools` if absent.",
+              "lastLine": "write_json_atomic(&config_path, &config)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Setting both test command and quality commands persists both arrays",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/configure_tools.rs",
+          "lines": "75-100",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "if let Some(test_command) = args.test_command.as_deref() {",
+              "lastLine": "write_json_atomic(&config_path, &config)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The reconfigure flag short-circuits without writing the config",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/configure_tools.rs",
+          "lines": "102-127",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ],
+              "firstLine": "if args.reconfigure {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second run preserves previously stored quality commands via read-modify-write",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/configure_tools.rs",
+          "lines": "129-157",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
                 107,
                 108,
                 109,
@@ -41,57 +158,45 @@
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140
+              ],
+              "firstLine": "let mut config: Value = if config_path.exists() {",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "Setting both test command and quality commands persists both arrays",
+      "name": "A run on an existing config keeps its agent setting",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/configure_tools.rs",
-          "lines": "75-100",
+          "lines": "159-175",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/configure_tools.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The reconfigure flag short-circuits without writing the config",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/configure_tools.rs",
-          "lines": "102-127",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/configure_tools.rs",
-              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
                 79,
                 80,
                 81,
@@ -103,23 +208,8 @@
                 87,
                 88,
                 89,
-                90
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A second run preserves previously stored quality commands via read-modify-write",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/configure_tools.rs",
-          "lines": "129-157",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/configure_tools.rs",
-              "lines": [
+                90,
+                91,
                 92,
                 93,
                 94,
@@ -166,8 +256,12 @@
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -175,8 +269,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/configure_tools.rs"
@@ -184,6 +278,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/configure_tools.rs"
     ],
-    "totalLinesCovered": 210
+    "totalLinesCovered": 295
   }
 }

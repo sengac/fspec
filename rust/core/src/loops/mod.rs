@@ -227,6 +227,14 @@ impl LoopStore {
         let inner = Arc::clone(&self.inner);
         let loop_id_for_handle = loop_id.clone();
 
+        // The expiry as a point on tokio's clock, so the loop measures it
+        // with the same clock it sleeps on (TEST-042: a paused test clock
+        // then drives both). An expiry already past fires on the first wake.
+        let expiry = tokio::time::Instant::now()
+            + (expires_at - Utc::now())
+                .to_std()
+                .unwrap_or(std::time::Duration::ZERO);
+
         let handle = tokio::spawn(async move {
             let interval = std::time::Duration::from_secs(interval_secs as u64);
 
@@ -234,7 +242,7 @@ impl LoopStore {
                 tokio::time::sleep(interval).await;
 
                 // Check expiry after waking
-                if Utc::now() >= expires_at {
+                if tokio::time::Instant::now() >= expiry {
                     info!("Loop {} expired, self-terminating", loop_id);
                     inner.entries.write().await.remove(&loop_id);
                     inner.handles.write().await.remove(&loop_id);

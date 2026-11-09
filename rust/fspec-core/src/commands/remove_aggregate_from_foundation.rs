@@ -85,7 +85,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // (`src/commands/remove-aggregate-from-foundation.ts:34-45`). When the
     // file is missing it is created with exactly that slim shape (which has
     // no `eventStorm`), so the no-Event-Storm error path below fires.
-    let path = project_root.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock =
+        crate::io::spec_lock::lock_spec_dir(project_root, "remove-aggregate-from-foundation")?;
     let mut data: Value = read_or_init_json(&path, &foundation_read_default(), "foundation.json")?;
 
     // [2] No (truthy) eventStorm section. The TS guard is

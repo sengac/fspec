@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: fspec add-capability CLI subcommand (Rust port)
   """
   Clap derive subcommand `add-capability` mirrors the TS Commander.js
@@ -70,6 +71,7 @@ Feature: fspec add-capability CLI subcommand (Rust port)
     Then the command exits with code 1
     And stderr contains the substring 'foundation.json not found'
     And no spec/foundation.json file is created
+    And stderr contains the line '  Run: fspec discover-foundation to create foundation.json'
 
   Scenario: CLI delegates to the same fspec_core function used by the dispatcher
     Given spec/foundation.json exists with solutionSpace.capabilities=[]

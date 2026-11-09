@@ -1,4 +1,5 @@
 @done
+@HOOK-018
 @workflow-automation
 @hooks
 @HOOK-004
@@ -15,19 +16,17 @@ Feature: Hook discovery and event naming
   #
   # BUSINESS RULES:
   #   1. Event names follow pre-/post- convention: pre-<command-name>, post-<command-name>
-  #   2. Special lifecycle hooks: pre-start (before any command), pre-exit (before returning output)
-  #   3. Hook discovery searches config.hooks for matching event name
-  #   4. If no hooks match event name, return empty array (no error)
-  #   5. Event names are case-sensitive (pre-implementing != pre-Implementing)
-  #   6. Command name extraction: 'fspec update-work-unit-status' -> 'update-work-unit-status'
+  #   2. Hook discovery searches config.hooks for matching event name
+  #   3. If no hooks match event name, return empty array (no error)
+  #   4. Event names are case-sensitive (pre-implementing != pre-Implementing)
+  #   5. Command name extraction: 'fspec update-work-unit-status' -> 'update-work-unit-status'
   #
   # EXAMPLES:
   #   1. Discover hooks for 'post-implementing' event - returns array of matching hooks
-  #   2. Discover hooks for 'pre-start' special lifecycle event - returns global pre-start hooks
-  #   3. Discover hooks for non-existent event 'pre-xyz' - returns empty array (no error)
-  #   4. Event name for command 'update-work-unit-status' generates 'pre-update-work-unit-status' and 'post-update-work-unit-status'
-  #   5. Case-sensitive matching: 'post-implementing' finds hooks, 'post-Implementing' does not
-  #   6. Multiple hooks for same event - returns all matching hooks in config order
+  #   2. Discover hooks for non-existent event 'pre-xyz' - returns empty array (no error)
+  #   3. Event name for command 'update-work-unit-status' generates 'pre-update-work-unit-status' and 'post-update-work-unit-status'
+  #   4. Case-sensitive matching: 'post-implementing' finds hooks, 'post-Implementing' does not
+  #   5. Multiple hooks for same event - returns all matching hooks in config order
   #
   # ========================================
   Background: User Story
@@ -41,17 +40,11 @@ Feature: Hook discovery and event naming
     Then I should receive an array of matching hooks
     And the hooks should be returned in config order
 
-  Scenario: Discover special lifecycle hooks
-    Given I have a hook configuration with "pre-start" lifecycle hooks
-    When I discover hooks for event "pre-start"
-    Then I should receive the pre-start hooks
-    And these hooks should execute before any command logic
-
   Scenario: Discover hooks for non-existent event
     Given I have a hook configuration
     When I discover hooks for event "pre-xyz"
     Then I should receive an empty array
-    And no error should be thrown
+    And no error should be returned
 
   Scenario: Generate event names from command name
     Given the command name is "update-work-unit-status"

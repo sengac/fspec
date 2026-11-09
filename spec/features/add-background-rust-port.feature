@@ -82,3 +82,27 @@ Feature: Port add-background command to Rust
     When I dispatch add-background with feature='spec/features/bad.feature' and text='As a user'
     Then the dispatcher returns success=false
     And the error message contains 'No Feature line found in file'
+
+  Scenario: Adding a Background keeps every scenario and its steps
+    Given a project root tempdir with spec/features/payment.feature holding the scenarios 'Pay by card', 'Pay by invoice' and 'Refund' with their steps
+    When I dispatch add-background with feature='payment' and text='As a customer\nI want to pay securely\nSo that my data is protected'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the Background block added after the Feature line
+
+  Scenario: Adding a Background keeps the feature-level tags
+    Given a project root tempdir with spec/features/auth.feature tagged @security and @critical
+    When I dispatch add-background with feature='auth' and text='As a user\nI want authentication\nSo that my data is secure'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the Background block added after the Feature line
+
+  Scenario: Adding a Background keeps scenario-level tags
+    Given a project root tempdir with spec/features/orders.feature whose scenario is tagged @smoke and @regression
+    When I dispatch add-background with feature='orders' and text='As a customer\nI want to manage orders\nSo that I track purchases'
+    Then the dispatcher returns success=true
+    And the file on disk equals the original file with only the Background block added after the Feature line
+
+  Scenario: The Background holds the user story lines in order indented four spaces
+    Given a project root tempdir with spec/features/search.feature containing only 'Feature: Search\n  Scenario: A\n    Given x\n'
+    When I dispatch add-background with feature='search' and text='As a customer\nI want to search products\nSo that I can find what I need'
+    Then the dispatcher returns success=true
+    And the line '  Background: User Story' is followed by the lines '    As a customer', '    I want to search products' and '    So that I can find what I need'

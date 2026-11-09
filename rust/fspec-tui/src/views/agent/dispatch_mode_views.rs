@@ -2,9 +2,10 @@
 //! the orchestrator file stays under the 300-LoC source-shape budget.
 //!
 //! Houses `handle_resume_view_key` + `handle_search_view_key` which
-//! together routed ~50 lines of match-arm boilerplate.
+//! together routed ~50 lines of match-arm boilerplate, and (TUI-129)
+//! `scrollback_jump_key`.
 
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::components::{Action, EventResult};
 
@@ -13,6 +14,22 @@ use super::search_history_view::SearchHistoryViewOutcome;
 use super::AgentView;
 
 impl AgentView {
+    /// RPC-094 / TUI-129: Home and End on an empty input jump the
+    /// scrollback to the top and the bottom; with text in the input they
+    /// are left to the composer, which moves the cursor.
+    pub(super) fn scrollback_jump_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
+        if !key.modifiers.is_empty() || !self.input.is_empty() {
+            return None;
+        }
+        let action = match key.code {
+            KeyCode::Home => Action::ScrollbackHome,
+            KeyCode::End => Action::ScrollbackEnd,
+            _ => return None,
+        };
+        self.emit(action);
+        Some(EventResult::consumed())
+    }
+
     pub(super) fn handle_resume_view_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
         let visible_rows = self.mode_view_visible_rows();
         let view = self.resume_view.as_mut()?;
@@ -27,10 +44,8 @@ impl AgentView {
                 self.emit(Action::CloseResumeView);
                 Some(EventResult::consumed())
             }
-            ResumeSessionViewOutcome::RequestDelete(session_id) => {
-                self.emit(Action::RequestDeleteSession(session_id));
-                Some(EventResult::consumed())
-            }
+            // The view opened its own delete confirm.
+            ResumeSessionViewOutcome::RequestDelete(_) => Some(EventResult::consumed()),
             ResumeSessionViewOutcome::ConfirmedDelete(session_id) => {
                 self.emit(Action::ConfirmDeleteSession(session_id));
                 Some(EventResult::consumed())

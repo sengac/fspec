@@ -9,7 +9,7 @@
 //! the nested key `tui.mux` (a JSON object), NOT a dedicated file.
 //! This honours the project-scope override via CONFIG-008's deep merge
 //! and interoperates with the TS `fspec` CLI sibling keys
-//! (`tui.lastUsedModel`, `tui.defaultThinkingLevel`).
+//! (`tui.lastUsedModel`, `tui.thinkingLevels`).
 //!
 //! The core is `serde_json::Value`-based because the typed `MuxConfig`
 //! lives in `codelet-fspec-tui` (which depends on `codelet-sessions`,
@@ -21,8 +21,10 @@
 //! `<cwd>/spec/fspec-config.json` overrides the user value.
 //!
 //! Invariants:
-//!   * A missing / malformed config loads as `None` (the caller falls
-//!     back to the default preset — load is infallible).
+//!   * A missing `tui.mux` key loads as `Ok(None)` (the caller uses the
+//!     default preset). BUG-708: a config that cannot be read or parsed is
+//!     an `Err` naming the file, which the TUI shows before using the
+//!     default for that session.
 //!   * Persistence is best-effort: the `_with_dirs` core surfaces an
 //!     `Err` that the caller logs and swallows (non-fatal).
 
@@ -30,9 +32,7 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{
-    load_config_with_dirs, load_user_config_file, write_config_with_dirs, ConfigScope,
-};
+use codelet_common::fspec_config::{load_config_with_dirs, update_config_with_dirs, ConfigScope};
 
 /// Nested config keys holding the persisted mux config: `tui.mux`.
 const TUI_KEY: &str = "tui";
@@ -55,31 +55,27 @@ pub fn save_mux_config_with_dirs(
     // BUG-193: read the RAW user file (never the deep-merged
     // project-over-user view) so the write-back can only ever carry
     // user-scope keys — project-scope keys such as `tools` or `agent`
-    // must not be mirrored into `~/.fspec/fspec-config.json`. An
-    // unreadable / invalid user file degrades to an empty object rather
-    // than aborting the save. (`cwd` stays in the signature for load-side
-    // call-site stability; the save itself no longer needs it.)
-    let mut root = load_user_config_file(data_dir).unwrap_or_else(|_| Value::Object(Map::new()));
-
-    if !root.is_object() {
-        root = Value::Object(Map::new());
-    }
-
-    let root_map = root
-        .as_object_mut()
-        .ok_or_else(|| "config root is not a JSON object".to_string())?;
-    let tui = root_map
-        .entry(TUI_KEY)
-        .or_insert_with(|| Value::Object(Map::new()));
-    if !tui.is_object() {
-        *tui = Value::Object(Map::new());
-    }
-    let tui_map = tui
-        .as_object_mut()
-        .ok_or_else(|| "config tui section is not a JSON object".to_string())?;
-    tui_map.insert(MUX_KEY.to_string(), config.clone());
-
-    match write_config_with_dirs(ConfigScope::User, &root, data_dir, _cwd) {
+    // must not be mirrored into `~/.fspec/fspec-config.json`. BUG-461: an
+    // unreadable, invalid or non-object user file fails the save and is
+    // left unchanged. (`cwd` stays in the signature for load-side call-site
+    // stability; the save itself no longer needs it.)
+    let saved = update_config_with_dirs(ConfigScope::User, data_dir, _cwd, |root| {
+        let root_map = root
+            .as_object_mut()
+            .ok_or_else(|| "config root is not a JSON object".to_string())?;
+        let tui = root_map
+            .entry(TUI_KEY)
+            .or_insert_with(|| Value::Object(Map::new()));
+        if !tui.is_object() {
+            *tui = Value::Object(Map::new());
+        }
+        let tui_map = tui
+            .as_object_mut()
+            .ok_or_else(|| "config tui section is not a JSON object".to_string())?;
+        tui_map.insert(MUX_KEY.to_string(), config.clone());
+        Ok::<_, String>(())
+    });
+    match saved {
         Ok(()) => {
             tracing::info!(
                 data_dir = %data_dir.display(),
@@ -103,35 +99,23 @@ pub fn save_mux_config_with_dirs(
 /// Load the persisted mux config from the shared config.
 ///
 /// Reads `tui.mux` from the deep-merged (project-over-user) config; a
-/// missing / malformed config, or a non-object value, yields `None`
-/// (graceful degradation). Path-injectable core.
-#[must_use]
-pub fn load_mux_config_with_dirs(data_dir: &Path, cwd: &Path) -> Option<Value> {
-    let Ok(config) = load_config_with_dirs(data_dir, cwd) else {
-        tracing::debug!(
-            data_dir = %data_dir.display(),
-            cwd = %cwd.display(),
-            "load_mux_config: config unreadable, using default preset"
-        );
-        return None;
-    };
+/// missing key yields `Ok(None)`. MUX-011: any other value, an object or
+/// not, is returned as it is so the TUI reports what is wrong with it
+/// instead of silently using the default. BUG-708: a config file that
+/// cannot be read or parsed is the loader's error, which names the file.
+/// Path-injectable core.
+pub fn load_mux_config_with_dirs(data_dir: &Path, cwd: &Path) -> Result<Option<Value>, String> {
+    let config = load_config_with_dirs(data_dir, cwd)?;
     let value = &config[TUI_KEY][MUX_KEY];
     if value.is_null() {
-        return None;
-    }
-    if !value.is_object() {
-        tracing::debug!(
-            value = %value,
-            "load_mux_config: tui.mux is not an object, using default preset"
-        );
-        return None;
+        return Ok(None);
     }
     tracing::debug!(
         data_dir = %data_dir.display(),
         cwd = %cwd.display(),
         "load_mux_config: loaded tui.mux"
     );
-    Some(value.clone())
+    Ok(Some(value.clone()))
 }
 
 /// Convenience: persist using the globally configured data directory
@@ -146,16 +130,12 @@ pub fn save_mux_config(config: &Value) -> Result<(), String> {
 }
 
 /// Convenience: load using the globally configured data directory +
-/// current working directory. Returns `None` when either cannot be
-/// resolved or nothing is persisted, so a TUI constructed before
-/// startup wiring degrades gracefully.
-#[must_use]
-pub fn load_mux_config() -> Option<Value> {
-    let Ok(data_dir) = codelet_common::get_data_dir() else {
-        return None;
-    };
-    let Ok(cwd) = std::env::current_dir() else {
-        return None;
-    };
+/// current working directory. `Ok(None)` when nothing is persisted;
+/// BUG-708: a data directory or current directory that cannot be
+/// resolved, or a config that cannot be read, is an `Err`.
+pub fn load_mux_config() -> Result<Option<Value>, String> {
+    let data_dir = codelet_common::get_data_dir()?;
+    let cwd =
+        std::env::current_dir().map_err(|e| format!("Failed to resolve current directory: {e}"))?;
     load_mux_config_with_dirs(&data_dir, &cwd)
 }

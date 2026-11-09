@@ -4,10 +4,16 @@
 //! per RPC-092. NAPI-free: no `napi`, `napi-derive`, or `codelet-napi`
 //! dependency edges (enforced by `tests/no_napi_dependency.rs`).
 //!
-//! - **AST Code Graph** (`"ast-code"`) — Code structure, dependencies, and
-//!   relationships stored at `<project>/.fspec/graph/ast-code.nano/`
-//! - **Learnings Graph** (`"learnings"`) — Accumulated knowledge, decisions,
-//!   and conventions stored at `~/.fspec/graph/learnings.nano/`
+//! - **AST Code Graph** — Code structure, dependencies, and relationships of
+//!   one canonical root, stored at `<root>/.fspec/graph/ast-code.nano/`
+//!   (KGRAPH-073: one graph per root, never the process working directory)
+//! - **Learnings Graph** — Accumulated knowledge, decisions, and conventions
+//!   stored at `<data dir>/graph/learnings.nano/`
+
+// KGRAPH-072: the layouts of nanograph 1.3.0's Lance 6 / DataFusion 53
+// futures are deeper than the default limit; they are monomorphized here,
+// behind database::erased, so no dependent needs a higher limit.
+#![recursion_limit = "256"]
 
 pub mod ast_call_chain;
 pub mod ast_complexity;
@@ -25,6 +31,7 @@ pub mod learnings_context;
 pub mod learnings_dispatch;
 pub mod learnings_extraction;
 pub mod llm_response_parser;
+pub mod query_index;
 pub mod registry;
 
 /// Close all graph databases cleanly.
@@ -59,7 +66,14 @@ pub async fn extract_learnings_from_dag(dag_text: &str, llm_response: Option<&st
         return;
     }
 
-    let db = match registry::get_graph(registry::LEARNINGS_GRAPH).await {
+    let mut lease = match registry::write_learnings_graph().await {
+        Ok(lease) => lease,
+        Err(e) => {
+            tracing::warn!("[KGRAPH] Failed to open Learnings graph for extraction: {e}");
+            return;
+        }
+    };
+    let db = match lease.database().await {
         Ok(db) => db,
         Err(e) => {
             tracing::warn!("[KGRAPH] Failed to open Learnings graph for extraction: {e}");

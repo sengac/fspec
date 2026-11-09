@@ -8,11 +8,10 @@
 // Each Gherkin step maps to a `// @step` comment immediately above the code
 // that exercises it.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::{ProfileForm, PROFILE_FORM_FIELDS};
 use codelet_fspec_tui::views::{ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -24,12 +23,12 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 /// Build a view sitting in CreateProfile mode with the given form.
@@ -43,22 +42,22 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
 }
 
 /// The Auto-Continue field's index into [`PROFILE_FORM_FIELDS`] (the 7th, last).
-fn auto_continue_field_index() -> usize {
-    PROFILE_FORM_FIELDS
+fn auto_continue_field_index() -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(PROFILE_FORM_FIELDS
         .iter()
         .position(|label| *label == "Auto-Continue")
-        .expect("PROFILE_FORM_FIELDS must contain an \"Auto-Continue\" entry")
+        .or_fail("PROFILE_FORM_FIELDS must contain an \"Auto-Continue\" entry")?)
 }
 
 /// A create form past the name step, focused on the Auto-Continue field.
-fn form_focused_on_auto_continue() -> ProfileForm {
+fn form_focused_on_auto_continue() -> Result<ProfileForm, codelet_test_helpers::TestError> {
     let mut form = ProfileForm::new_create();
     form.is_editing_name = false;
     form.name = "local".to_string();
     form.base_url = "http://localhost:8888".to_string();
     form.api_key = "sk-test".to_string();
-    form.field_index = auto_continue_field_index();
-    form
+    form.field_index = auto_continue_field_index()?;
+    Ok(form)
 }
 
 /// Type a string into the focused field one char at a time.
@@ -70,7 +69,7 @@ fn type_chars(view: &mut ProviderSettingsView, text: &str) {
 
 /// Scenario: New create-profile form seeds Auto-Continue to empty
 #[test]
-fn new_create_profile_form_seeds_auto_continue_to_empty() {
+fn new_create_profile_form_seeds_auto_continue_to_empty() -> TestResult {
     // @step Given the user opens the create-profile form
     // @step When the form is initialized
     let form = ProfileForm::new_create();
@@ -79,8 +78,8 @@ fn new_create_profile_form_seeds_auto_continue_to_empty() {
     let streaming_idx = PROFILE_FORM_FIELDS
         .iter()
         .position(|label| *label == "Streaming")
-        .expect("PROFILE_FORM_FIELDS must contain a \"Streaming\" entry");
-    let auto_idx = auto_continue_field_index();
+        .or_fail("PROFILE_FORM_FIELDS must contain a \"Streaming\" entry")?;
+    let auto_idx = auto_continue_field_index()?;
     assert_eq!(
         auto_idx,
         streaming_idx + 1,
@@ -97,25 +96,26 @@ fn new_create_profile_form_seeds_auto_continue_to_empty() {
         rendered.is_empty(),
         "the empty Auto-Continue field renders its (dim) placeholder, not a value"
     );
+    Ok(())
 }
 
 /// Scenario: Typing a budget in the Auto-Continue field and saving persists it
 #[test]
-fn typing_a_budget_in_the_auto_continue_field_and_saving_persists_it() {
+fn typing_a_budget_in_the_auto_continue_field_and_saving_persists_it() -> TestResult {
     // @step Given the user is on the create-profile form with the Auto-Continue field focused
-    let mut view = create_view(form_focused_on_auto_continue());
+    let mut view = create_view(form_focused_on_auto_continue()?);
 
     // @step When the user types 300 and saves the profile
     type_chars(&mut view, "300");
     assert_eq!(
-        form_of(&view).auto_continue,
+        form_of(&view)?.auto_continue,
         "300",
         "typed chars must land in the Auto-Continue field"
     );
-    let def = form_of(&view)
+    let def = form_of(&view)?
         .build_definition()
-        .expect("valid form must build without a rejection hint")
-        .expect("valid form must build a definition");
+        .or_fail("valid form must build without a rejection hint")?
+        .or_fail("valid form must build a definition")?;
 
     // @step Then the profile is saved with autoContinue set to 300
     assert_eq!(
@@ -123,20 +123,21 @@ fn typing_a_budget_in_the_auto_continue_field_and_saving_persists_it() {
         Some(300),
         "the built definition must carry auto_continue = Some(300)"
     );
+    Ok(())
 }
 
 /// Scenario: Typing 0 in the Auto-Continue field and saving persists explicit off
 #[test]
-fn typing_zero_in_the_auto_continue_field_and_saving_persists_explicit_off() {
+fn typing_zero_in_the_auto_continue_field_and_saving_persists_explicit_off() -> TestResult {
     // @step Given the user is on the create-profile form with the Auto-Continue field focused
-    let mut view = create_view(form_focused_on_auto_continue());
+    let mut view = create_view(form_focused_on_auto_continue()?);
 
     // @step When the user types 0 and saves the profile
     type_chars(&mut view, "0");
-    let def = form_of(&view)
+    let def = form_of(&view)?
         .build_definition()
-        .expect("valid form must build without a rejection hint")
-        .expect("valid form must build a definition");
+        .or_fail("valid form must build without a rejection hint")?
+        .or_fail("valid form must build a definition")?;
 
     // @step Then the profile is saved with autoContinue set to 0
     assert_eq!(
@@ -144,11 +145,12 @@ fn typing_zero_in_the_auto_continue_field_and_saving_persists_explicit_off() {
         Some(0),
         "the explicit-off sentinel 0 must be preserved (not coerced to None)"
     );
+    Ok(())
 }
 
 /// Scenario: Editing a profile seeds Auto-Continue from the stored value
 #[test]
-fn editing_a_profile_seeds_auto_continue_from_the_stored_value() {
+fn editing_a_profile_seeds_auto_continue_from_the_stored_value() -> TestResult {
     // @step Given a stored profile whose autoContinue value is 500
     let def = ProfileDefinition {
         base_url: "http://h".to_string(),
@@ -165,11 +167,12 @@ fn editing_a_profile_seeds_auto_continue_from_the_stored_value() {
         form.auto_continue, "500",
         "edit form must prefill Auto-Continue from the stored value"
     );
+    Ok(())
 }
 
 /// Scenario: Editing a profile without an autoContinue key seeds Auto-Continue to empty
 #[test]
-fn editing_a_profile_without_auto_continue_key_seeds_field_to_empty() {
+fn editing_a_profile_without_auto_continue_key_seeds_field_to_empty() -> TestResult {
     // @step Given a stored profile with no autoContinue key
     let def = ProfileDefinition {
         base_url: "http://h".to_string(),
@@ -186,18 +189,19 @@ fn editing_a_profile_without_auto_continue_key_seeds_field_to_empty() {
         form.auto_continue.is_empty(),
         "a profile with no autoContinue key must seed the field empty"
     );
+    Ok(())
 }
 
 /// Scenario: Non-numeric input in the Auto-Continue field rejects the save
 #[test]
-fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
+fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() -> TestResult {
     // @step Given the user is on the profile form with the Auto-Continue field focused
-    let mut view = create_view(form_focused_on_auto_continue());
+    let mut view = create_view(form_focused_on_auto_continue()?);
 
     // @step When the user types abc and saves the profile
     type_chars(&mut view, "abc");
     assert_eq!(
-        form_of(&view).auto_continue,
+        form_of(&view)?.auto_continue,
         "abc",
         "the raw (invalid) text must be visible before the save attempt"
     );
@@ -213,7 +217,7 @@ fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
                 codelet_fspec_tui::components::Action::SaveProfile { .. }
             ) =>
         {
-            panic!("an invalid Auto-Continue value must NOT emit a SaveProfile action")
+            return Err("an invalid Auto-Continue value must NOT emit a SaveProfile action".into())
         }
         _ => true,
     };
@@ -233,8 +237,9 @@ fn non_numeric_input_in_the_auto_continue_field_rejects_the_save() {
     // (No backend round-trip is dispatched: the form stays open in the same
     // mode with the invalid text still present.)
     assert_eq!(
-        form_of(&view).auto_continue,
+        form_of(&view)?.auto_continue,
         "abc",
         "the form must stay open with the invalid value so the user can fix it"
     );
+    Ok(())
 }

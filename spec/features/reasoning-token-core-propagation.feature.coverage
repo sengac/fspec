@@ -51,7 +51,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "pub struct TokenDisplayUpdate {",
+              "lastLine": "pub fn total_context(&self) -> u64 {"
             }
           ]
         }
@@ -67,36 +69,46 @@
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322
+              ],
+              "firstLine": "/// Update from FinalResponse (OpenAI-compatible providers).",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +166,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "pub struct TokenTracker {",
+              "lastLine": "pub fn effective_tokens(&self) -> u64 {"
             }
           ]
         }
@@ -172,6 +186,6 @@
       "rust/core/src/streaming_display/streaming_token_display.rs",
       "rust/core/src/compaction/model.rs"
     ],
-    "totalLinesCovered": 231
+    "totalLinesCovered": 239
   }
 }

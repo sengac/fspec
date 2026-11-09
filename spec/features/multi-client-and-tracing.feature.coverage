@@ -5,36 +5,14 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
-          "lines": "36-131",
+          "lines": "34-134",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
               "lines": [
-                79,
-                80,
-                81,
                 82,
                 83,
                 84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -53,8 +31,32 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                125,
+                126,
+                127,
+                127,
+                127,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "pub async fn bind_and_serve(",
+              "lastLine": "}"
             }
           ]
         }
@@ -65,7 +67,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
-          "lines": "133-168",
+          "lines": "136-171",
           "implMappings": [
             {
               "file": "rust/rpc/src/lib.rs",
@@ -120,7 +122,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! codelet-rpc: the fspec tarpc service trait + the single shared service",
+              "lastLine": ""
             }
           ]
         }
@@ -130,45 +134,47 @@
       "name": "Tracing spans carry client_id on per-connection handler tasks",
       "testMappings": [
         {
-          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
-          "lines": "182-322",
+          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011/tracing.rs",
+          "lines": "5-166",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
               "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
                 125,
                 126,
+                127,
+                127,
+                127,
                 127,
                 128,
                 129,
                 130,
                 131,
                 132,
-                133
-              ]
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                155,
+                157,
+                158,
+                159,
+                160,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "// RPC-011 tracing rule: instrument the spawned task with a",
+              "lastLine": "tracing::info!(client_id = %peer, \"ws connection accepted\");"
             }
           ]
         }
@@ -180,12 +186,13 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs"
+      "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+      "rust/rpc-server/tests/multi_client_and_tracing_rpc011/tracing.rs"
     ],
     "implFiles": [
       "rust/rpc-server/src/server.rs",
       "rust/rpc/src/lib.rs"
     ],
-    "totalLinesCovered": 399
+    "totalLinesCovered": 425
   }
 }

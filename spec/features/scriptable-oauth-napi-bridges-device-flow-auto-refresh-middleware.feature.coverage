@@ -17,7 +17,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "/// Invoke the script's `auth_start` (or legacy",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,7 +72,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "pub async fn poll(&self, device_data: Map) -> Result<Map> {",
+              "lastLine": "write_stored_tokens(provider_name, &tokens)"
             }
           ]
         }
@@ -81,7 +85,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/scriptable_oauth_device_flow_tests.rs",
-          "lines": "194-215",
+          "lines": "204-223",
           "implMappings": [
             {
               "file": "rust/providers/src/oauth/custom_oauth_device.rs",
@@ -98,7 +102,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "/// `provider_name`. Any other status (including missing) is a no-op.",
+              "lastLine": "write_stored_tokens(provider_name, &tokens)"
             }
           ]
         }
@@ -139,7 +145,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn new(provider: &'a ScriptedOAuthProvider, provider_name: &str) -> Self {",
+              "lastLine": "let needs = auth_needs_refresh_or_legacy(self.provider, tokens.clone()).await?;"
             }
           ]
         }
@@ -163,7 +171,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "/// must agree for `/login <name>` and runtime refresh to route through",
+              "lastLine": "pub struct ScriptedRefreshingClient<'a> {"
             }
           ]
         }
@@ -181,6 +191,6 @@
       "rust/providers/src/oauth/custom_oauth_device.rs",
       "rust/providers/src/oauth/scripted_refreshing_client.rs"
     ],
-    "totalLinesCovered": 236
+    "totalLinesCovered": 234
   }
 }

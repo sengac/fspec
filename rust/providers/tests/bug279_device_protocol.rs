@@ -73,7 +73,7 @@ async fn scenario_pending_http_statuses_do_not_require_json_bodies() -> TestResu
     // @step Then both original identifiers accompany each JSON poll and callback exchange persists valid tokens
     assert_eq!(result.account_id, "SYNTHETIC-account");
     assert_eq!(attempts.load(std::sync::atomic::Ordering::SeqCst), 3);
-    assert_eq!(count(&server, "/oauth/token").await, 1);
+    assert_eq!(count(&server, "/oauth/token").await?, 1);
     assert!(
         std::fs::read_to_string(fixture.directory.path().join("auth.json"))?
             .contains("SYNTHETIC-refresh")
@@ -130,7 +130,7 @@ async fn scenario_malformed_and_terminal_responses_cannot_authorize_exchange() -
         // @step When native device authorization processes those responses
         let result = device_auth_login(config(&server, 1000)).await;
         // @step Then it fails explicitly without exchange persistence or secret disclosure
-        let exchanges = count(&server, "/oauth/token").await;
+        let exchanges = count(&server, "/oauth/token").await?;
         assert_eq!(exchanges, 0, "{defect} reached token exchange");
         assert_eq!(
             std::fs::read(&auth)?,
@@ -142,7 +142,7 @@ async fn scenario_malformed_and_terminal_responses_cannot_authorize_exchange() -
             .ok_or("terminal response authorized login")?
             .to_string();
         assert!(!error.contains(SECRET));
-        assert_eq!(count(&server, "/oauth/token").await, 0, "{defect}");
+        assert_eq!(count(&server, "/oauth/token").await?, 0, "{defect}");
         assert_eq!(std::fs::read(&auth)?, original, "{defect}");
     }
     Ok(())
@@ -166,16 +166,19 @@ async fn scenario_timeout_and_cancellation_preserve_credential_ownership() -> Te
         // @step When the operation times out or is cancelled during authorization
         let pending = tokio::spawn(device_auth_login(config(
             &server,
-            if cancel { 2000 } else { 60 },
+            // Long enough that polling has begun before the deadline even on a
+            // loaded machine; the cancel case is cancelled long before its own.
+            if cancel { 5000 } else { 1000 },
         )));
-        tokio::time::timeout(std::time::Duration::from_secs(1), async {
-            while count(&server, "/api/accounts/deviceauth/token").await == 0 {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
+            while count(&server, "/api/accounts/deviceauth/token").await? == 0 {
                 tokio::task::yield_now().await;
             }
+            Ok::<(), String>(())
         })
-        .await?;
+        .await??;
         if cancel {
-            cancel_login();
+            cancel_login()?;
         }
         let error = pending
             .await?
@@ -189,7 +192,7 @@ async fn scenario_timeout_and_cancellation_preserve_credential_ownership() -> Te
             "{error}"
         );
         // @step Then no late completion replaces credentials and a fresh attempt can proceed
-        assert_eq!(count(&server, "/oauth/token").await, 0);
+        assert_eq!(count(&server, "/oauth/token").await?, 0);
         assert_eq!(std::fs::read(&auth)?, original);
         server.reset().await;
         compatible_start(&server).await;
@@ -237,7 +240,7 @@ async fn scenario_failed_exchange_or_missing_account_identity_cannot_replace_cre
             .to_string();
         // @step Then the native login fails and existing credential bytes remain unchanged
         assert!(!error.contains(SECRET));
-        assert_eq!(count(&server, "/oauth/token").await, 1);
+        assert_eq!(count(&server, "/oauth/token").await?, 1);
         assert_eq!(std::fs::read(&auth)?, original);
     }
     Ok(())

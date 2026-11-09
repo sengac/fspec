@@ -1,0 +1,126 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing D opens the selected workspace's foundation from the daemon",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui120_foundation_viewer_and_fspec_runner_follow_the_selected_workspace.rs",
+          "lines": "83-107",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "/// Handle `Action::OpenFoundation`: TUI-120 — read spec/FOUNDATION.md",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing D before the workspace list loads shows why nothing opened",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui120_foundation_viewer_and_fspec_runner_follow_the_selected_workspace.rs",
+          "lines": "109-126",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "/// Handle `Action::OpenFoundation`: TUI-120 — read spec/FOUNDATION.md",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent fspec runner reads the selected workspace's work units",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui120_foundation_viewer_and_fspec_runner_follow_the_selected_workspace.rs",
+          "lines": "128-156",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_fspec_runner.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "/// TUI-120: the work units of the board's selected workspace (the start",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui120_foundation_viewer_and_fspec_runner_follow_the_selected_workspace.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_viewer.rs",
+      "rust/fspec-tui/src/app/dispatch_fspec_runner.rs"
+    ],
+    "totalLinesCovered": 127
+  }
+}

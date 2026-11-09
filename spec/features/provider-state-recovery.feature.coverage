@@ -85,7 +85,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::{get_session_messages, load_session};",
+              "lastLine": "for (key, value) in metadata {"
             }
           ]
         }
@@ -125,7 +127,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "pub(super) fn load(manifest: &SessionManifest) -> Result<Option<State>, ProviderStateError> {",
+              "lastLine": "let path = directory(manifest.id)?;"
             }
           ]
         }
@@ -177,7 +181,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "let directory = directory(state.session_id)?;",
+              "lastLine": "}"
             }
           ]
         }

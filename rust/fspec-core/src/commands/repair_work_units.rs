@@ -11,7 +11,7 @@
 //!
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load.
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write.
+//! * [`crate::io::board::write_work_units`] — single atomic write.
 //!
 //! ## `--dry-run` parity bug (intentional)
 //!
@@ -44,7 +44,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus};
 
 /// CLI arguments accepted by `repair-work-units`. Mirrors the TS
@@ -137,6 +136,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "repair-work-units")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     let mut repairs: Vec<String> = Vec::new();
@@ -259,8 +260,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ── Single atomic write (always — TS dryRun is a no-op flag) ────────
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let repaired = repairs.len();
     let result = RepairWorkUnitsResult {

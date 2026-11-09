@@ -16,6 +16,8 @@ use std::process::Command;
 /// Helper to get HEAD commit SHA
 fn get_head_sha(repo_path: &Path) -> String {
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", "HEAD"])
         .current_dir(repo_path)
         .output()
@@ -54,11 +56,15 @@ fn test_get_session_diff_with_changes() {
     fs::write(src_dir.join("deprecated.rs"), "// deprecated\n")
         .expect("Failed to write deprecated.rs");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Add deprecated file"])
         .current_dir(repo_path)
         .output()
@@ -151,11 +157,15 @@ fn test_apply_session_changes_copies_modified_files() {
     let src_dir = repo_path.join("src");
     fs::write(src_dir.join("lib.rs"), "// original content\n").expect("Failed to write lib.rs");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Add lib.rs"])
         .current_dir(repo_path)
         .output()
@@ -255,11 +265,15 @@ fn test_apply_session_changes_removes_deleted_files() {
     fs::write(src_dir.join("old-module.rs"), "// old module\n")
         .expect("Failed to write old-module.rs");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Add old-module"])
         .current_dir(repo_path)
         .output()
@@ -311,11 +325,15 @@ fn test_apply_session_changes_conflict_detection() {
     let src_dir = repo_path.join("src");
     fs::write(src_dir.join("conflict.rs"), "// original\n").expect("Failed to write conflict.rs");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Add conflict.rs"])
         .current_dir(repo_path)
         .output()

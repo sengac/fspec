@@ -1,0 +1,388 @@
+{
+  "scenarios": [
+    {
+      "name": "A legacy mapping whose file is unchanged since its linking commit gets its text recorded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "154-173",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "if let Ok((first_line, last_line)) = record_text(file, content, &lines) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339
+              ],
+              "firstLine": "fn linking_commit(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A legacy mapping whose file changed above it is reported, not recorded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "175-206",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "if let Ok((first_line, last_line)) = record_text(file, content, &lines) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                528,
+                529,
+                530,
+                531
+              ],
+              "firstLine": "fn head(text: &str, last: i64) -> Vec<&str> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lines added only after the mapping do not stop the recording",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "208-226",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "if let Ok((first_line, last_line)) = record_text(file, content, &lines) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                528,
+                529,
+                530,
+                531
+              ],
+              "firstLine": "fn head(text: &str, last: i64) -> Vec<&str> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A later commit of the coverage file for another scenario keeps the linking commit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "228-260",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "pub(crate) fn impl_lines(lines: &ImplLines) -> Option<Vec<i64>> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393
+              ],
+              "firstLine": "fn coverage(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An uncommitted legacy mapping is reported, not recorded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "262-283",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "if let Ok((first_line, last_line)) = record_text(file, content, &lines) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339
+              ],
+              "firstLine": "fn linking_commit(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Outside a git working tree a legacy mapping is never recorded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs",
+          "lines": "285-306",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "if let Ok((first_line, last_line)) = record_text(file, content, &lines) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/history.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "pub(crate) fn verify(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug591_audit_fix_records_text_only_where_lines_did_not_move.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/audit/impl_ranges.rs",
+      "rust/fspec-core/src/commands/audit/history.rs"
+    ],
+    "totalLinesCovered": 369
+  }
+}

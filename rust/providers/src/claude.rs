@@ -15,7 +15,7 @@
 //! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{
-    claude_oauth::CLAUDE_USER_AGENT, claude_refreshing_client::RefreshingClaudeClient,
+    claude_protocol::user_agent, claude_refreshing_client::RefreshingClaudeClient,
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
     ProviderAdapter, ProviderError, StopReason,
@@ -67,6 +67,9 @@ pub mod beta_headers {
     pub const CLAUDE_CODE: &str = "claude-code-20250219";
     /// OAuth feature for OAuth mode
     pub const OAUTH: &str = "oauth-2025-04-20";
+    /// MODEL-015: per-message effort. Added per request, only to a request
+    /// that carries effort messages (API key and OAuth alike).
+    pub const PER_MESSAGE_EFFORT: &str = crate::claude_effort::PER_MESSAGE_EFFORT_BETA;
 }
 
 /// Build model-aware beta headers for Claude API requests.
@@ -193,13 +196,13 @@ impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {
     }
 
     /// Default context window when no registry data is available.
-    fn default_context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    fn default_context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
     }
 
     /// Default max output tokens when no registry data is available.
-    fn default_max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn default_max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
 }
 
@@ -296,10 +299,11 @@ impl ClaudeProvider {
                 })?,
             );
 
-            // User-Agent must match Claude Code exactly (DRY: uses shared constant)
             headers.insert(
                 reqwest::header::USER_AGENT,
-                HeaderValue::from_static(CLAUDE_USER_AGENT),
+                HeaderValue::from_str(&user_agent()?).map_err(|error| {
+                    ProviderError::config("claude", format!("Invalid client identity: {error}"))
+                })?,
             );
 
             // x-app header identifies the application type
@@ -396,7 +400,9 @@ impl ClaudeProvider {
         );
         headers.insert(
             reqwest::header::USER_AGENT,
-            HeaderValue::from_static(CLAUDE_USER_AGENT),
+            HeaderValue::from_str(&user_agent()?).map_err(|error| {
+                ProviderError::config("claude", format!("Invalid client identity: {error}"))
+            })?,
         );
         headers.insert(
             HeaderName::from_static("x-app"),
@@ -697,16 +703,16 @@ impl LlmProvider for ClaudeProvider {
         &self.model_name
     }
 
-    fn context_window(&self) -> usize {
+    fn context_window(&self) -> Option<usize> {
         // CONFIG-007: 1M context opt-in not yet implemented
         // Until then, use 200k for all models (the default for non-Tier-4 users)
         // NOTE: We still send context-1m beta header for Tier 4 users who benefit
         // from it, but compaction uses 200k threshold until opt-in is implemented.
-        CONTEXT_WINDOW
+        Some(CONTEXT_WINDOW)
     }
 
-    fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
 
     fn supports_caching(&self) -> bool {

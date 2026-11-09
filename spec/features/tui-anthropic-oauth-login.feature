@@ -1,4 +1,6 @@
 @PROV-025
+@tui
+@authentication
 Feature: TUI provider settings UX for Anthropic subscription connect and disconnect
   """
   PROVIDER_REGISTRY in provider-config.ts: change Anthropic entry authType from 'api-key' to 'oauth'. The isOAuthProvider() function then returns true for both 'codex' and 'anthropic'. All existing OAuth flow plumbing (nav items, expanded options, 'e'/'d' key handlers) will activate for Anthropic.

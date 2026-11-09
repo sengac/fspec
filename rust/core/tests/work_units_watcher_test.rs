@@ -16,9 +16,7 @@ use codelet_core::work_units::{read_snapshot, WorkUnitsWatcher};
 use codelet_rpc_types::WorkUnitInfo;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 use tempfile::TempDir;
-use tokio::time::timeout;
 
 fn workspace_with(units: &[(&str, &str, &str)]) -> (TempDir, PathBuf) {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -77,7 +75,7 @@ async fn scenario_publishes_a_new_snapshot_on_file_mutation() {
             ("AUTH-003", "Two factor auth", "specifying"),
         ],
     );
-    let received: Vec<WorkUnitInfo> = timeout(Duration::from_secs(1), rx.recv())
+    let received: Vec<WorkUnitInfo> = codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv())
         .await
         .expect("watcher must publish within 1s")
         .expect("broadcast not closed");
@@ -112,14 +110,16 @@ async fn scenario_multiple_subscribers_each_observe_every_broadcast() {
             ("AUTH-002", "Reset password", "implementing"),
         ],
     );
-    let payload_a: Vec<WorkUnitInfo> = timeout(Duration::from_secs(1), rx_a.recv())
-        .await
-        .expect("subscriber A must observe broadcast")
-        .expect("broadcast not closed for A");
-    let payload_b: Vec<WorkUnitInfo> = timeout(Duration::from_secs(1), rx_b.recv())
-        .await
-        .expect("subscriber B must observe broadcast")
-        .expect("broadcast not closed for B");
+    let payload_a: Vec<WorkUnitInfo> =
+        codelet_test_helpers::deadlock_guard("rx_a.recv()", rx_a.recv())
+            .await
+            .expect("subscriber A must observe broadcast")
+            .expect("broadcast not closed for A");
+    let payload_b: Vec<WorkUnitInfo> =
+        codelet_test_helpers::deadlock_guard("rx_b.recv()", rx_b.recv())
+            .await
+            .expect("subscriber B must observe broadcast")
+            .expect("broadcast not closed for B");
 
     // @step Then both receivers yield equal Vec<WorkUnitInfo> values reflecting the post-mutation state
     let mut ids_a: Vec<String> = payload_a.iter().map(|wu| wu.id.clone()).collect();

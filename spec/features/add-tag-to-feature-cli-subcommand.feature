@@ -1,5 +1,7 @@
 @done
 @RPC-193
+@cli
+@feature-management
 Feature: add-tag-to-feature CLI subcommand (Rust shell front-door)
   """
   Files: rust/fspec/src/add_tag_to_feature.rs (NEW CLI bridge); rust/fspec/tests/cli_add_tag_to_feature.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/add-tag-to-feature.txt (captured help fixture from `node dist/index.js add-tag-to-feature --help`).

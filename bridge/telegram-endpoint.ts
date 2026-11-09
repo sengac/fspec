@@ -701,6 +701,31 @@ function sendControlMessage(
 }
 
 /**
+ * Forward a photo (and its caption) to the connected codelet session.
+ *
+ * BUG-504: with no open session socket the photo is dropped and a warning is
+ * logged (a lost user photo is a warning, like the no-caption download
+ * failure). Returns whether the photo was forwarded.
+ */
+export function forwardPhotoToSession(
+  chatId: string,
+  text: string,
+  images: Array<{ data: string; media_type: string }>
+): boolean {
+  const ws = state.currentSession.ws;
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    console.warn('[telegram-endpoint] No active session to forward photo to');
+    return false;
+  }
+  const inputMessage = handleTelegramMessage(chatId, text, images);
+  console.log(
+    `[telegram-endpoint] Sending photo input to codelet - session_id: "${inputMessage.session_id}", caption: "${text.slice(0, 50)}...", images: ${images.length}`
+  );
+  ws.send(JSON.stringify(inputMessage));
+  return true;
+}
+
+/**
  * Handle an inbound message from Telegram.
  * Updates active chat ID and returns the session:input envelope that should
  * be forwarded to the codelet over the WebSocket.
@@ -946,21 +971,7 @@ function setupTelegramBot(token: string): TelegramBotInstance {
       // Update active chat ID
       state.chatId = chatId;
 
-      // If we have a connected session, forward the message
-      if (
-        state.currentSession.ws &&
-        state.currentSession.ws.readyState === WebSocket.OPEN
-      ) {
-        const inputMessage = handleTelegramMessage(chatId, text, images);
-        console.log(
-          `[telegram-endpoint] Sending photo input to codelet - session_id: "${inputMessage.session_id}", caption: "${text.slice(0, 50)}...", images: ${images.length}`
-        );
-        state.currentSession.ws.send(JSON.stringify(inputMessage));
-      } else {
-        console.log(
-          '[telegram-endpoint] No active session to forward photo to'
-        );
-      }
+      forwardPhotoToSession(chatId, text, images);
       return;
     }
 

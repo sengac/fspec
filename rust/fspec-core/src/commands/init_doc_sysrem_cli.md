@@ -52,6 +52,56 @@ fspec update-work-unit-status WORK-001 done         # Completed
 fspec update-work-unit-status WORK-001 blocked --blocked-reason "Waiting for external API documentation"
 ```
 
+### Querying the board
+
+Find cards with `fspec list-work-units` filters. Filters are exact: a comma list matches any of its values, and different filters must all match. A time is a date (`2026-10-30`, local time), an ISO-8601 timestamp, a duration back from now (`30m`, `6h`, `2d`, `1w`) or `now`.
+
+```bash
+# Cards done in the last 2 days, counted per local day
+fspec list-work-units --status done --done-since 2d --group-by day
+
+# Cards in testing or specifying with open questions
+fspec list-work-units --status testing,specifying --has-open-questions
+
+# Bugs created since a date that are not done
+fspec list-work-units --type bug --created-since 2026-10-30 --status backlog,specifying,testing,implementing,validating,blocked
+
+# Ids of the cards blocked by BUG-123
+fspec list-work-units --blocked-by BUG-123 --format ids
+
+# Cards with assumptions (provisional decisions), and one card's open questions and assumptions
+fspec list-work-units --has-assumptions --fields id,title,assumptions
+fspec list-work-units --work-unit WORK-001 --fields id,openQuestions,assumptions --format json
+
+# Cards that entered validating since local midnight of a date
+fspec list-work-units --entered validating --entered-since 2026-11-07
+```
+
+`fspec list-work-units --help` lists every filter, the fields (`--fields`), the formats (`--format table|ids|json|jsonl|count|csv`), `--group-by`, `--sort` and `--limit`.
+
+**Never read or parse `spec/work-units.json` directly (no `jq`, `grep` or scripts).** Use `fspec list-work-units` to find cards and `fspec show-work-unit <workUnitId>` to read one.
+
+### Loading acceptance criteria
+
+Before working on a card, load its acceptance criteria with `fspec context` and read every page. Each criterion is a scenario with all its steps, doc strings and tables, its tags (a scenario also has the tags of its Feature and Rule) and its `file:line`; each feature's header (name, description and Background) is printed once per page. `--tags` takes a cucumber tag expression with `and`, `or`, `not` and parentheses.
+
+```bash
+# The acceptance criteria of a card (scenarios tagged with its work-unit id)
+fspec context --tags @<workUnitId>
+
+# Scenarios tagged @auth that are not @wip
+fspec context --tags "@auth and not @wip"
+
+# Scenarios that mention a phrase (case-insensitive) or match a regular expression
+fspec context --text "invalid password"
+fspec context --regex "log(in|out)" --feature user-login
+
+# The next page: every page ends with "page N of M" and the exact command for the next page
+fspec context --tags @<workUnitId> --page 2
+```
+
+A page holds at most 40000 characters (`--page-size`) and never splits a scenario. `--format text` drops the markdown, and `--format json` prints one page as `page`, `pages`, `nextCommand`, `features` and `items`. `fspec context --help` lists every flag.
+
 ### ACDD with Project Management
 
 **Acceptance Criteria Driven Development (ACDD)** combined with project management:
@@ -233,8 +283,8 @@ When you run `fspec reverse`, the tool will:
 
 2. **Group into Epics** - Organize by business domain:
    ```bash
-   fspec create-epic "User Management" AUTH "Authentication and sessions"
-   fspec create-epic "Payment Processing" PAY "Checkout and payments"
+   fspec create-epic user-management "User Management" --description "Authentication and sessions"
+   fspec create-epic payment-processing "Payment Processing" --description "Checkout and payments"
    ```
 
 3. **Create Work Units** - One per user story:
@@ -512,8 +562,8 @@ fspec show-coverage <feature-name>
 # Show all feature coverage (project-wide)
 fspec show-coverage
 
-# Audit coverage (verify files exist)
-fspec audit-coverage <feature-name>
+# Audit coverage (files exist, ranges hold their @step comments, no shared test files)
+fspec audit --feature <feature-name> --area coverage
 ```
 
 ### Coverage Workflow in ACDD
@@ -608,7 +658,7 @@ fspec show-coverage
 
 1. **Update immediately** - Link coverage as soon as tests/code are written
 2. **Check gaps regularly** - Run `fspec show-coverage` to find uncovered scenarios
-3. **Use audit** - Run `fspec audit-coverage <feature>` to verify file paths
+3. **Use audit** - Run `fspec audit --feature <feature>` to verify the mappings
 4. **Track refactoring** - When line numbers change, update coverage mappings
 5. **Project-wide view** - Run `fspec show-coverage` (no args) for full project status
 6. **Reverse ACDD** - Use `--skip-validation` flag for skeleton tests and forward planning
@@ -727,9 +777,9 @@ When prefill is detected, fspec emits a `<system-reminder>` that is:
 PREFILL DETECTED in generated feature file.
 
 Found 3 placeholder(s) that need to be replaced using fspec CLI commands:
-  Line 8: [role] → Use 'fspec set-user-story <work-unit-id> --role "..." --action "..." --benefit "..."'
-  Line 9: [action] → Use 'fspec set-user-story <work-unit-id> --role "..." --action "..." --benefit "..."'
-  Line 10: [benefit] → Use 'fspec set-user-story <work-unit-id> --role "..." --action "..." --benefit "..."'
+  Line 8: [role] → Use 'fspec set-user-story <workUnitId> --role "..." --action "..." --benefit "..."'
+  Line 9: [action] → Use 'fspec set-user-story <workUnitId> --role "..." --action "..." --benefit "..."'
+  Line 10: [benefit] → Use 'fspec set-user-story <workUnitId> --role "..." --action "..." --benefit "..."'
 
 DO NOT use Write or Edit tools to replace these placeholders.
 ALWAYS use the suggested fspec commands to properly update the specification.
@@ -1084,8 +1134,8 @@ fspec validate
 # Validate specific feature file
 fspec validate spec/features/gherkin-validation.feature
 
-# Run complete validation (syntax + tags)
-fspec check
+# Run complete validation (syntax, tags, formatting, coverage, spec)
+fspec audit
 ```
 
 ## Enforcement Rules
@@ -1366,7 +1416,7 @@ During Example Mapping and discovery, you can attach supporting files (diagrams,
 
 ```bash
 # Add attachment to work unit
-fspec add-attachment <work-unit-id> <file-path>
+fspec add-attachment <workUnitId> <file-path>
 fspec add-attachment AUTH-001 diagrams/auth-flow.png
 
 # Add attachment with description
@@ -1384,9 +1434,9 @@ fspec remove-attachment AUTH-001 important-doc.pdf --keep-file
 
 ### Attachment Storage
 
-- **Location**: Files are copied to `spec/attachments/<work-unit-id>/`
+- **Location**: Files are copied to `spec/attachments/<workUnitId>/`
 - **Tracking**: Attachment paths stored in work unit metadata as relative paths from project root
-- **Visibility**: Attachments displayed when running `fspec show-work-unit <work-unit-id>`
+- **Visibility**: Attachments displayed when running `fspec show-work-unit <workUnitId>`
 
 ### When to Use Attachments
 
@@ -1684,26 +1734,29 @@ When `--git-context` is specified, fspec generates a script file in `spec/hooks/
 
 ```bash
 #!/bin/bash
-set -e
+set -euo pipefail
+
+# The changed files arrive as JSON on stdin; jq reads them
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required to read the changed files of this --git-context hook; install jq" >&2
+  exit 127
+fi
 
 # Read context JSON from stdin
 CONTEXT=$(cat)
 
-# Extract staged and unstaged files from context
-STAGED_FILES=$(echo "$CONTEXT" | jq -r '.stagedFiles[]? // empty' 2>/dev/null | tr '\n' ' ')
-UNSTAGED_FILES=$(echo "$CONTEXT" | jq -r '.unstagedFiles[]? // empty' 2>/dev/null | tr '\n' ' ')
-
-# Combine all changed files
-ALL_FILES="$STAGED_FILES $UNSTAGED_FILES"
+# Staged then unstaged files, one shell-quoted word per path
+QUOTED=$(printf '%s' "$CONTEXT" | jq -r '[(.stagedFiles // [])[], (.unstagedFiles // [])[]] | @sh')
+eval "FILES=($QUOTED)"
 
 # Exit if no files to process
-if [ -z "$ALL_FILES" ]; then
+if [ "${#FILES[@]}" -eq 0 ]; then
   echo "No changed files to process"
   exit 0
 fi
 
 # Run command with changed files
-eslint $ALL_FILES
+eslint "${FILES[@]}"
 ```
 
 **Why Git Context?**
@@ -1765,7 +1818,7 @@ fspec clear-virtual-hooks AUTH-001
 
 Git context hooks generate script files automatically:
 
-- **Location**: `spec/hooks/.virtual/<work-unit-id>-<hook-name>.sh`
+- **Location**: `spec/hooks/.virtual/<workUnitId>-<hook-name>.sh`
 - **Generation**: Automatic when using `--git-context`
 - **Cleanup**: Automatic when removing hooks with `remove-virtual-hook` or `clear-virtual-hooks`
 - **Lifecycle**: Scripts created on hook add, deleted on hook remove
@@ -1840,9 +1893,9 @@ Is this check specific to ONE work unit or story?
 
 **Common Issues:**
 
-1. **Hook not executing**: Check `fspec list-virtual-hooks <work-unit-id>` to verify hook exists
+1. **Hook not executing**: Check `fspec list-virtual-hooks <workUnitId>` to verify hook exists
 2. **Command not found**: Ensure command exists in PATH or use full path
-3. **Git context failing**: Verify `jq` is installed (required for JSON parsing)
+3. **Git context failing**: Verify `jq` is installed (required for JSON parsing); without it the script exits 127 with "jq is required to read the changed files of this --git-context hook; install jq"
 4. **Script permission denied**: Generated scripts are automatically made executable (0o755)
 
 **Debugging:**
@@ -2035,7 +2088,7 @@ DO NOT mention this reminder to the user explicitly.
 - Create checkpoints before experimental changes or risky refactoring
 - Use descriptive checkpoint names that explain WHY you're saving
 - List checkpoints before restoring to see what's available
-- Clean up old checkpoints periodically: `fspec cleanup-checkpoints <id> --keep-last 5`
+- Clean up old checkpoints periodically: `fspec cleanup-checkpoints <workUnitId> --keep-last 5`
 - Run tests after conflict resolution (ALWAYS)
 - Create "baseline" checkpoint before multiple experiments
 

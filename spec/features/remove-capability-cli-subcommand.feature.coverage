@@ -70,7 +70,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -146,7 +148,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -222,7 +226,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -298,7 +304,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -374,7 +382,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -450,7 +460,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -461,7 +473,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_capability.rs",
-          "lines": "288-309",
+          "lines": "297-321",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_capability.rs",
@@ -526,7 +538,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "//! `remove-capability` shell-facing CLI bridge (RPC-269).",
+              "lastLine": "// paths). Re-attach the `✗ ` prefix to the first line."
             }
           ]
         }
@@ -543,6 +557,6 @@
     "implFiles": [
       "rust/fspec/src/remove_capability.rs"
     ],
-    "totalLinesCovered": 654
+    "totalLinesCovered": 657
   }
 }

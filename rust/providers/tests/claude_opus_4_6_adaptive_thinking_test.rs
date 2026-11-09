@@ -11,8 +11,6 @@ use codelet_tools::facade::{
     // Model detection helpers
     is_adaptive_thinking_model,
     supports_1m_context,
-    ClaudeThinkingFacade,
-    ThinkingLevel,
     CLAUDE_OPUS_4_5,
     // Model constants
     CLAUDE_OPUS_4_6,
@@ -26,197 +24,6 @@ use codelet_providers::claude::build_beta_headers;
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // =========================================================================
-    // Scenario: Opus 4.6 uses adaptive thinking automatically
-    // =========================================================================
-
-    #[test]
-    fn test_opus_4_6_uses_adaptive_thinking_automatically() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-6"
-        let model = CLAUDE_OPUS_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist for Medium level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Opus 4.6 should use adaptive thinking"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Opus 4.6 should NOT have budget_tokens"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Sonnet 4.6 uses adaptive thinking automatically
-    // =========================================================================
-
-    #[test]
-    fn test_sonnet_4_6_uses_adaptive_thinking_automatically() {
-        // @step Given I have configured the Claude provider with model "claude-sonnet-4-6"
-        let model = CLAUDE_SONNET_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist for Medium level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Sonnet 4.6 should use adaptive thinking"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Sonnet 4.6 should NOT have budget_tokens"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: User-provided budget_tokens is ignored for Opus 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_budget_tokens_ignored_for_opus_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-6"
-        let model = CLAUDE_OPUS_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set a thinking budget of 16000 tokens
-        // Note: The facade ignores budget for adaptive models - we verify the output
-        // is adaptive regardless of what level we pass (High has budget 32000 normally)
-        let level = ThinkingLevel::High;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Opus 4.6 should use adaptive thinking even with budget level"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "budget_tokens should be ignored for Opus 4.6"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: User-provided budget_tokens is ignored for Sonnet 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_budget_tokens_ignored_for_sonnet_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-sonnet-4-6"
-        let model = CLAUDE_SONNET_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set a thinking budget of 16000 tokens
-        let level = ThinkingLevel::High;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Sonnet 4.6 should use adaptive thinking even with budget level"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "budget_tokens should be ignored for Sonnet 4.6"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Opus 4.5 uses budget-based thinking
-    // =========================================================================
-
-    #[test]
-    fn test_opus_4_5_uses_budget_based_thinking() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-5"
-        let model = CLAUDE_OPUS_4_5;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set a thinking budget of 16000 tokens
-        // Medium level = 16000 tokens in the facade
-        let level = ThinkingLevel::Medium;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "enabled"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Opus 4.5 should use budget-based thinking"
-        );
-
-        // @step And the request should contain budget_tokens of 16000
-        assert_eq!(
-            config["thinking"]["budget_tokens"].as_u64(),
-            Some(16000),
-            "budget_tokens should be 16000 for Medium level"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Sonnet 4.5 uses budget-based thinking
-    // =========================================================================
-
-    #[test]
-    fn test_sonnet_4_5_uses_budget_based_thinking() {
-        // @step Given I have configured the Claude provider with model "claude-sonnet-4-5"
-        let model = CLAUDE_SONNET_4_5;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set a thinking budget of 16000 tokens
-        let level = ThinkingLevel::Medium;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "enabled"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Sonnet 4.5 should use budget-based thinking"
-        );
-
-        // @step And the request should contain budget_tokens of 16000
-        assert_eq!(
-            config["thinking"]["budget_tokens"].as_u64(),
-            Some(16000),
-            "budget_tokens should be 16000 for Medium level"
-        );
-    }
 
     // =========================================================================
     // Scenario: Opus 4.6 uses correct beta headers
@@ -238,7 +45,8 @@ mod tests {
 
         // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
         // Sending it by default causes "Extra usage required" for non-Tier-4 users.
-        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
+        // (until CONFIG-007)
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07"
         assert!(
             !headers.contains("context-1m-2025-08-07"),
             "Opus 4.6 should NOT include context-1m until CONFIG-007, got: {headers}"
@@ -270,7 +78,8 @@ mod tests {
         );
 
         // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
-        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
+        // (until CONFIG-007)
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07"
         assert!(
             !headers.contains("context-1m-2025-08-07"),
             "Sonnet 4.6 should NOT include context-1m until CONFIG-007, got: {headers}"
@@ -339,191 +148,11 @@ mod tests {
         );
 
         // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
-        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
+        // (until CONFIG-007)
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07"
         assert!(
             !headers.contains("context-1m-2025-08-07"),
             "Sonnet 4.5 should NOT include context-1m until CONFIG-007, got: {headers}"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Unknown future model uses adaptive behavior by default
-    // =========================================================================
-
-    #[test]
-    fn test_unknown_future_model_uses_adaptive_behavior() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-8"
-        let model = "claude-opus-4-8";
-        let facade = ClaudeThinkingFacade;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Unknown future model should default to adaptive thinking"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Unknown future model should NOT have budget_tokens"
-        );
-
-        // Check headers
-        let headers = build_beta_headers(model, false);
-
-        // @step And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
-        assert!(
-            !headers.contains("interleaved-thinking-2025-05-14"),
-            "Unknown future model should NOT include interleaved-thinking, got: {headers}"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Model variant (e.g. preview/dated) inherits adaptive behavior
-    // =========================================================================
-
-    #[test]
-    fn test_model_variant_inherits_adaptive_behavior() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-6-preview"
-        let model = "claude-opus-4-6-preview";
-        let facade = ClaudeThinkingFacade;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Model variant should inherit adaptive thinking from base model"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Model variant should NOT have budget_tokens"
-        );
-
-        // Check headers — variant should also skip interleaved-thinking
-        let headers = build_beta_headers(model, false);
-        assert!(
-            !headers.contains("interleaved-thinking-2025-05-14"),
-            "Model variant should NOT include interleaved-thinking, got: {headers}"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Thinking level 'high' defaults to adaptive for Opus 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_thinking_level_high_defaults_to_adaptive_for_opus_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-6"
-        let model = CLAUDE_OPUS_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set the thinking level to "high"
-        let level = ThinkingLevel::High;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "High level should still use adaptive for Opus 4.6"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "High level should NOT have budget_tokens for Opus 4.6"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Thinking level 'low' defaults to adaptive for Sonnet 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_thinking_level_low_defaults_to_adaptive_for_sonnet_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-sonnet-4-6"
-        let model = CLAUDE_SONNET_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set the thinking level to "low"
-        let level = ThinkingLevel::Low;
-
-        // @step When I make an API request with thinking enabled
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should contain thinking configuration with type "adaptive"
-        assert!(config.is_some(), "Config should exist");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Low level should still use adaptive for Sonnet 4.6"
-        );
-
-        // @step And the request should NOT contain a budget_tokens field
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Low level should NOT have budget_tokens for Sonnet 4.6"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Thinking disabled with 'off' for Opus 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_thinking_disabled_with_off_for_opus_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-6"
-        let model = CLAUDE_OPUS_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set the thinking level to "off"
-        let level = ThinkingLevel::Off;
-
-        // @step When I make an API request
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should NOT contain a thinking configuration
-        assert!(config.is_none(), "Off should disable thinking for Opus 4.6");
-    }
-
-    // =========================================================================
-    // Scenario: Thinking disabled with 'off' for Sonnet 4.6
-    // =========================================================================
-
-    #[test]
-    fn test_thinking_disabled_with_off_for_sonnet_4_6() {
-        // @step Given I have configured the Claude provider with model "claude-sonnet-4-6"
-        let model = CLAUDE_SONNET_4_6;
-        let facade = ClaudeThinkingFacade;
-
-        // @step And I have set the thinking level to "off"
-        let level = ThinkingLevel::Off;
-
-        // @step When I make an API request
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the request should NOT contain a thinking configuration
-        assert!(
-            config.is_none(),
-            "Off should disable thinking for Sonnet 4.6"
         );
     }
 

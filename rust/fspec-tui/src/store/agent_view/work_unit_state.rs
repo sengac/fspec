@@ -3,7 +3,7 @@
 //!
 //! Feature files:
 //!   - spec/features/work-unit-attach-binding.feature
-//!   - spec/features/slash-command-detach-and-work-unit-binding.feature
+//!   - spec/features/bug-180-sessionheader-work-unit-status-sync.feature
 //!
 //! This sub-module hosts the AgentViewStore accessors for the new
 //! per-session `work_unit_context_by_session: HashMap<SessionId,
@@ -13,7 +13,7 @@
 //!
 //! BUG-205: the `/detach` slash command (and the `WorkUnitDetached`
 //! action that cleared this slot) was removed; the slot is now
-//! cleared only when a session is destroyed (Close Session / merge
+//! cleared only when a session is destroyed (Close / merge
 //! teardown drop the store entry wholesale).
 //!
 //! Also hosts `reset_token_state(&SessionId)` — invoked by the

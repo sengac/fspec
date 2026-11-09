@@ -14,8 +14,7 @@
 //! ApiKey routes directly to the existing `DetailSub::EditApiKey { draft }`
 //! state for backward compatibility.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::collections::HashSet;
 
 use codelet_fspec_tui::views::provider_settings::nav_item::{
@@ -122,7 +121,7 @@ fn expanded_set(ids: &[&str]) -> HashSet<String> {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn fresh_view_with_collapsed_providers_yields_one_nav_item_per_provider() {
+fn fresh_view_with_collapsed_providers_yields_one_nav_item_per_provider() -> TestResult {
     // @step Given a fresh ProviderSettingsView with no expanded providers
     let expanded = empty_expanded();
     // @step And the providers list contains 17 entries in canonical registry order
@@ -149,6 +148,7 @@ fn fresh_view_with_collapsed_providers_yields_one_nav_item_per_provider() {
     for (idx, item) in items.iter().enumerate() {
         assert_eq!(item.provider_id, format!("p{idx}"));
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -157,7 +157,8 @@ fn fresh_view_with_collapsed_providers_yields_one_nav_item_per_provider() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_children() {
+fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_children() -> TestResult
+{
     // @step Given a ProviderSettingsView containing the anthropic provider
     let providers = vec![anthropic(false)];
     // @step And the anthropic provider has no OAuth tokens (hasOAuthTokens = false)
@@ -182,14 +183,14 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
         NavItemKind::OAuthLogin { method, .. } => {
             assert_eq!(*method, OAuthMethod::Browser, "first child must be Browser");
         }
-        other => panic!("expected OAuthLogin, got {other:?}"),
+        other => return Err(format!("expected OAuthLogin, got {other:?}").into()),
     }
     // @step And the next row is NavItemKind::OAuthLogin { method: Headless }
     match &items[2].kind {
         NavItemKind::OAuthLogin { method, .. } => {
             assert_eq!(*method, OAuthMethod::Headless);
         }
-        other => panic!("expected OAuthLogin, got {other:?}"),
+        other => return Err(format!("expected OAuthLogin, got {other:?}").into()),
     }
     // @step And the next row is NavItemKind::ApiKey
     assert!(matches!(items[3].kind, NavItemKind::ApiKey));
@@ -202,6 +203,7 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
             "no oauth-status row when has_oauth_tokens=false"
         );
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -210,7 +212,7 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
+fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() -> TestResult {
     // @step Given a ProviderSettingsView containing the openai provider
     // @step And openai has 2 profiles named "prof1" and "prof2"
     let providers = vec![openai_with_profiles(&["prof1", "prof2"])];
@@ -233,11 +235,11 @@ fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
     assert!(matches!(items[1].kind, NavItemKind::Settings));
     match &items[2].kind {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "prof1"),
-        other => panic!("expected Profile, got {other:?}"),
+        other => return Err(format!("expected Profile, got {other:?}").into()),
     }
     match &items[3].kind {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "prof2"),
-        other => panic!("expected Profile, got {other:?}"),
+        other => return Err(format!("expected Profile, got {other:?}").into()),
     }
     // @step And the next row is NavItemKind::AddProfile
     assert!(matches!(items[4].kind, NavItemKind::AddProfile));
@@ -258,6 +260,7 @@ fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
             "openai is not an OAuth provider"
         );
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -266,7 +269,7 @@ fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
+fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() -> TestResult {
     // @step Given a ProviderSettingsView containing the anthropic provider
     // @step And the anthropic provider has OAuth tokens (hasOAuthTokens = true)
     let providers = vec![anthropic(true)];
@@ -293,16 +296,17 @@ fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
     // @step And the next two rows are NavItemKind::OAuthLogin { method: Browser } then NavItemKind::OAuthLogin { method: Headless }
     match &items[2].kind {
         NavItemKind::OAuthLogin { method, .. } => assert_eq!(*method, OAuthMethod::Browser),
-        other => panic!("expected OAuthLogin(Browser), got {other:?}"),
+        other => return Err(format!("expected OAuthLogin(Browser), got {other:?}").into()),
     }
     match &items[3].kind {
         NavItemKind::OAuthLogin { method, .. } => assert_eq!(*method, OAuthMethod::Headless),
-        other => panic!("expected OAuthLogin(Headless), got {other:?}"),
+        other => return Err(format!("expected OAuthLogin(Headless), got {other:?}").into()),
     }
     // @step And the next row is NavItemKind::ApiKey
     assert!(matches!(items[4].kind, NavItemKind::ApiKey));
     assert!(matches!(items[5].kind, NavItemKind::Settings));
     assert!(matches!(items[6].kind, NavItemKind::AddProfile));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -311,7 +315,7 @@ fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn filter_is_parent_anchored() {
+fn filter_is_parent_anchored() -> TestResult {
     // @step Given a ProviderSettingsView with anthropic and openai both expanded
     let providers = vec![anthropic(false), openai_with_profiles(&["prof1", "prof2"])];
     // @step And openai has 2 profiles
@@ -349,6 +353,7 @@ fn filter_is_parent_anchored() {
             "no openai children should leak through the parent-anchored filter"
         );
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -356,7 +361,7 @@ fn filter_is_parent_anchored() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expansion_state_survives_set_provider_display_infos() {
+fn expansion_state_survives_set_provider_display_infos() -> TestResult {
     // @step Given a ProviderSettingsView with the anthropic provider expanded
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![anthropic(false)]);
@@ -382,7 +387,7 @@ fn expansion_state_survives_set_provider_display_infos() {
         .nav_items
         .iter()
         .find(|n| n.provider_id == "anthropic" && matches!(n.kind, NavItemKind::Provider { .. }))
-        .expect("anthropic NavItem must be present after reload");
+        .or_fail("anthropic NavItem must be present after reload")?;
     assert!(matches!(
         anthropic_nav.kind,
         NavItemKind::Provider { expanded: true }
@@ -392,15 +397,16 @@ fn expansion_state_survives_set_provider_display_infos() {
         .nav_items
         .iter()
         .position(|n| n.provider_id == "anthropic")
-        .expect("anthropic must be in nav_items");
+        .or_fail("anthropic must be in nav_items")?;
     let next = view
         .nav_items
         .get(anthropic_idx + 1)
-        .expect("expected at least one child row after anthropic");
+        .or_fail("expected at least one child row after anthropic")?;
     assert_eq!(
         next.provider_id, "anthropic",
         "the row immediately after anthropic must be one of its child rows"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -409,7 +415,7 @@ fn expansion_state_survives_set_provider_display_infos() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
+fn enter_on_provider_toggles_expansion_without_mutating_selected_index() -> TestResult {
     // @step Given a ProviderSettingsView with selected_index pointing at the anthropic provider row
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![api_key_provider("gemini", "Gemini"), anthropic(false)]);
@@ -438,11 +444,11 @@ fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
         .position(|n| {
             n.provider_id == "anthropic" && matches!(n.kind, NavItemKind::Provider { .. })
         })
-        .unwrap();
+        .or_fail("expected a value")?;
     let next = view
         .nav_items
         .get(anth_idx + 1)
-        .expect("must have a child row");
+        .or_fail("must have a child row")?;
     assert_eq!(next.provider_id, "anthropic");
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
 
@@ -457,6 +463,7 @@ fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
     // @step And selected_index still points at the anthropic provider row
     assert_eq!(view.selected_index, initial_selected_2);
     assert!(matches!(out2, ProviderSettingsEvent::Consumed));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -465,7 +472,7 @@ fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_api_key_transitions_to_edit_api_key_state() {
+fn enter_on_api_key_transitions_to_edit_api_key_state() -> TestResult {
     // @step Given a ProviderSettingsView with anthropic expanded
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![anthropic(false)]);
@@ -475,7 +482,7 @@ fn enter_on_api_key_transitions_to_edit_api_key_state() {
         .nav_items
         .iter()
         .position(|n| matches!(n.kind, NavItemKind::ApiKey))
-        .expect("anthropic expanded must yield an ApiKey row");
+        .or_fail("anthropic expanded must yield an ApiKey row")?;
     view.selected_index = api_key_idx;
 
     // @step When the user presses Enter
@@ -485,18 +492,19 @@ fn enter_on_api_key_transitions_to_edit_api_key_state() {
     match &view.mode {
         ProviderSettingsMode::Detail { provider_id, sub } => {
             assert_eq!(provider_id, "anthropic");
-            match sub {
-                DetailSub::EditApiKey { draft } => assert!(
-                    draft.is_empty(),
-                    "draft must start empty when first entering EditApiKey"
-                ),
-                other => panic!("expected DetailSub::EditApiKey, got {other:?}"),
-            }
+            let DetailSub::EditApiKey { draft } = sub;
+            assert!(
+                draft.is_empty(),
+                "draft must start empty when first entering EditApiKey"
+            );
         }
-        other => panic!("expected ProviderSettingsMode::Detail, got {other:?}"),
+        other => {
+            return Err(format!("expected ProviderSettingsMode::Detail, got {other:?}").into())
+        }
     }
     // @step And the keystroke is reported as ProviderSettingsEvent::Consumed
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
     // @step And the view does not first land on a Summary sub-view — Enter routes directly to the edit form
     // (the assertion above verifies sub == EditApiKey, not Summary)
+    Ok(())
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "135-198",
+          "lines": "143-197",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -29,14 +29,10 @@
                 133,
                 134,
                 135
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "135-198",
-          "implMappings": [
+              ],
+              "firstLine": "let role_height = role_banner_height(store, sid.as_ref());",
+              "lastLine": "let areas = if pane.menu_row {"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/session_transition.rs",
               "lines": [
@@ -71,7 +67,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "/// Per-session thinking-indicator transition slot (BUG-194).",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,7 +80,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "199-244",
+          "lines": "205-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -106,7 +104,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "let role_height = role_banner_height(store, sid.as_ref());",
+              "lastLine": "let areas = if pane.menu_row {"
             }
           ]
         }
@@ -117,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "245-327",
+          "lines": "253-328",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -141,14 +141,10 @@
                 133,
                 134,
                 135
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "245-327",
-          "implMappings": [
+              ],
+              "firstLine": "let role_height = role_banner_height(store, sid.as_ref());",
+              "lastLine": "let areas = if pane.menu_row {"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/animation.rs",
               "lines": [
@@ -226,14 +222,10 @@
                 91,
                 92,
                 93
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "245-327",
-          "implMappings": [
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/session_transition.rs",
               "lines": [
@@ -268,7 +260,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "/// Per-session thinking-indicator transition slot (BUG-194).",
+              "lastLine": "}"
             }
           ]
         }
@@ -279,7 +273,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "328-372",
+          "lines": "336-371",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/animation.rs",
@@ -358,18 +352,13 @@
                 91,
                 92,
                 93
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "328-372",
-          "implMappings": [
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -470,8 +459,27 @@
                 180,
                 181,
                 182,
-                183
-              ]
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "return pause_prompt::prompt_height(state, pause_body_width(area_width));",
+              "lastLine": ");"
             }
           ]
         }
@@ -482,27 +490,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "373-418",
+          "lines": "379-418",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
                 207,
                 208,
                 209,
@@ -534,8 +537,28 @@
                 235,
                 236,
                 237,
-                238
-              ]
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "// BUG-377: the focused session's OWN transition state (BUG-194);",
+              "lastLine": "if !matches!(state, InputTransitionState::Idle) {"
             }
           ]
         }
@@ -546,7 +569,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "419-489",
+          "lines": "426-494",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/session_transition.rs",
@@ -582,14 +605,10 @@
                 52,
                 53,
                 54
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "419-489",
-          "implMappings": [
+              ],
+              "firstLine": "/// Per-session thinking-indicator transition slot (BUG-194).",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/animation.rs",
               "lines": [
@@ -667,7 +686,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
             }
           ]
         }
@@ -678,16 +699,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "490-545",
+          "lines": "502-550",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view.rs",
               "lines": [
-                208,
-                209,
-                210,
-                211,
-                212,
                 213,
                 214,
                 215,
@@ -701,15 +717,14 @@
                 223,
                 224,
                 225,
-                226
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "490-545",
-          "implMappings": [
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "pub fn current_session(&self) -> Option<&SessionId> {",
+              "lastLine": "/// BUG-194: true iff ANY open session's thinking-indicator finish"
+            },
             {
               "file": "rust/fspec-tui/src/app/state/state_accessors.rs",
               "lines": [
@@ -722,7 +737,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "/// RPC-093: true iff an AgentView input row is mid-finish-animation",
+              "lastLine": "}"
             }
           ]
         }
@@ -733,7 +750,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug194_mux_thinking_indicator_per_session.rs",
-          "lines": "546-588",
+          "lines": "558-601",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -757,7 +774,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "let role_height = role_banner_height(store, sid.as_ref());",
+              "lastLine": "let areas = if pane.menu_row {"
             }
           ]
         }
@@ -779,6 +798,6 @@
       "rust/fspec-tui/src/store/agent_view.rs",
       "rust/fspec-tui/src/app/state/state_accessors.rs"
     ],
-    "totalLinesCovered": 1425
+    "totalLinesCovered": 1006
   }
 }

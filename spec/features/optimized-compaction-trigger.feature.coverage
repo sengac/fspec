@@ -4,23 +4,9 @@
       "name": "Calculate usable context for Claude Sonnet",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "240-257",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "42-54",
+          "implMappings": []
         }
       ]
     },
@@ -28,23 +14,9 @@
       "name": "Calculate usable context for GPT-4",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "262-278",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "56-68",
+          "implMappings": []
         }
       ]
     },
@@ -52,47 +24,19 @@
       "name": "SESSION_OUTPUT_MAX caps high-output models",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "284-300",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "70-82",
+          "implMappings": []
         }
       ]
     },
     {
-      "name": "Unknown model with zero max_output uses SESSION_OUTPUT_MAX fallback",
+      "name": "Unknown model with zero max_output leaves no usable context",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "306-323",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "84-99",
+          "implMappings": []
         }
       ]
     },
@@ -100,22 +44,9 @@
       "name": "Token count includes all three token types",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "329-345",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "101-116",
+          "implMappings": []
         }
       ]
     },
@@ -123,264 +54,51 @@
       "name": "Token count does not discount cache tokens",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "351-368",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "118-133",
+          "implMappings": []
         }
       ]
     },
     {
-      "name": "No compaction when under usable context threshold",
+      "name": "No compaction when under the compaction threshold",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "374-394",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "135-151",
+          "implMappings": []
         }
       ]
     },
     {
-      "name": "Trigger compaction when over usable context threshold",
+      "name": "Trigger compaction when over the compaction threshold",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "400-420",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "153-169",
+          "implMappings": []
         }
       ]
     },
     {
-      "name": "Compaction triggers later than legacy 90% threshold",
+      "name": "No compaction when token count exactly equals the compaction threshold",
       "testMappings": [
         {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "426-452",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No compaction when token count exactly equals usable context",
-      "testMappings": [
-        {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "458-485",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No compaction when context_window is zero",
-      "testMappings": [
-        {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "491-513",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No compaction when disable flag is set",
-      "testMappings": [
-        {
-          "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "519-550",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/compaction_threshold.rs",
-              "lines": [
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219
-              ]
-            }
-          ]
+          "file": "rust/cli/src/compaction_threshold/capacity_tests.rs",
+          "lines": "171-190",
+          "implMappings": []
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 12,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/src/compaction_threshold.rs"
+      "rust/cli/src/compaction_threshold/capacity_tests.rs"
     ],
-    "implFiles": [
-      "rust/cli/src/compaction_threshold.rs"
-    ],
-    "totalLinesCovered": 435
+    "implFiles": [],
+    "totalLinesCovered": 141
   }
 }

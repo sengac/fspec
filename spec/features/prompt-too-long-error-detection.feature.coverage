@@ -8,8 +8,33 @@
           "lines": "75-90",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -23,8 +48,33 @@
           "lines": "94-108",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,12 +86,7 @@
         {
           "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "228-263",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187, 1188]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -51,12 +96,7 @@
         {
           "file": "rust/cli/tests/prompt_too_long_recovery_test.rs",
           "lines": "267-311",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187, 1188]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -68,8 +108,33 @@
           "lines": "112-125",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -83,8 +148,33 @@
           "lines": "129-142",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -98,8 +188,33 @@
           "lines": "146-159",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -113,8 +228,33 @@
           "lines": "163-176",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -128,8 +268,33 @@
           "lines": "180-195",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -143,8 +308,33 @@
           "lines": "199-216",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,8 +348,33 @@
           "lines": "315-357",
           "implMappings": [
             {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// Check if an error indicates the prompt/context is too long",
+              "lastLine": "}"
             }
           ]
         }
@@ -174,8 +389,8 @@
       "rust/cli/tests/prompt_too_long_recovery_test.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/error_classifiers.rs"
     ],
-    "totalLinesCovered": 407
+    "totalLinesCovered": 443
   }
 }

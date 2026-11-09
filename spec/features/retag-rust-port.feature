@@ -1,5 +1,7 @@
 @wip
 @RPC-293
+@cli
+@tag-management
 Feature: Port retag command to Rust
   """
   Core impl rust/fspec-core/src/commands/retag.rs ports src/commands/retag.ts FAITHFULLY: validates from/to + tag-format regex, globs spec/features via io::feature_glob::glob_feature_files, counts/replaces whole-word occurrences with regex (^|\s)from(?=\s|$), re-parses replaced content via io::gherkin::parse_feature_lenient before writing, supports dryRun. Signature pub async fn run(args_json,&Path). Returns envelope {success, fileCount, occurrenceCount, message?, files?, error?} like delete_features.rs.
@@ -70,3 +72,55 @@ Feature: Port retag command to Rust
     Then the dispatcher returns success=false
     And the error message is 'Tag @missing not found in any feature files'
     And the feature file on disk is byte-equal to its pre-call contents
+
+  Scenario: Rename feature-level tag
+    Given a project root tempdir with a feature file tagged @legacy-api at feature level
+    When I dispatch retag with from='@legacy-api' and to='@legacy'
+    Then the dispatcher returns success=true
+    And the feature-level tag should change from @legacy-api to @legacy
+    And the file structure should be preserved
+
+  Scenario: Rename scenario-level tag
+    Given a project root tempdir with a feature file whose scenarios are tagged with @wip under a feature-level @api tag
+    When I dispatch retag with from='@wip' and to='@in-progress'
+    Then the dispatcher returns success=true
+    And all scenario-level @wip tags should change to @in-progress
+    And feature-level tags should remain unchanged
+
+  Scenario: Rename tag used at both feature and scenario levels
+    Given a project root tempdir with a feature file tagged @temp at feature level
+    And a scenario in that file tagged @temp at scenario level
+    When I dispatch retag with from='@temp' and to='@temporary'
+    Then the dispatcher returns success=true
+    And all @temp tags should change to @temporary at both levels
+    And the result reports occurrenceCount=2
+
+  Scenario: Rename tag with special characters
+    Given a project root tempdir with a feature file tagged @bug-#123
+    When I dispatch retag with from='@bug-#123' and to='@issue-123'
+    Then the dispatcher returns success=true
+    And all @bug-#123 tags should change to @issue-123
+    And the file should remain valid Gherkin
+
+  Scenario: Rename tag preserves other tags
+    Given a project root tempdir with a feature tagged @release-one @critical @api
+    When I dispatch retag with from='@release-one' and to='@v1'
+    Then the dispatcher returns success=true
+    And the feature should have tags @v1 @critical @api
+    And tag order should be preserved
+    And other tags should remain unchanged
+
+  Scenario: Rename tag validates Gherkin after changes
+    Given a project root tempdir with 20 feature files using @legacy-api
+    When I dispatch retag with from='@legacy-api' and to='@legacy'
+    Then the dispatcher returns success=true
+    And all 20 files should have valid Gherkin syntax
+    And the result message contains "All modified files validated successfully"
+
+  Scenario: Rename tag with multiple occurrences in single file
+    Given a project root tempdir with a feature file tagged @temp at feature level
+    And 3 scenarios in that file tagged @temp at scenario level
+    When I dispatch retag with from='@temp' and to='@temporary'
+    Then the dispatcher returns success=true
+    And all 4 occurrences should be renamed
+    And the result message contains "4 occurrence(s)"

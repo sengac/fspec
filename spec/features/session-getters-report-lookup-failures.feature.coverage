@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "name": "Every session getter reports an unknown session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug445_session_getters_report_lookup_failures.rs",
+          "lines": "70-89",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_7.rs",
+              "lines": [
+                27,
+                28,
+                29
+              ],
+              "firstLine": "fn get_role(&self, session_id: &SessionId) -> Result<Option<String>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A live session with nothing pending reads as nothing pending",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug445_session_getters_report_lookup_failures.rs",
+          "lines": "91-110",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "fn get_hitl_request(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session getters over RPC are refused without a session manager",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug445_session_getters_report_lookup_failures.rs",
+          "lines": "112-138",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/session_control.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "async fn get_session_role(self, _ctx: Context, session_id: SessionId) -> Result<Option<String>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule and blocklist listings without a start workspace are errors",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug445_session_getters_report_lookup_failures.rs",
+          "lines": "140-158",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_9.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "fn schedule_list(&self) -> Result<Vec<ScheduledJob>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug445_session_getters_report_lookup_failures.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_7.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/rpc/src/service_implementation/session_control.rs",
+      "rust/sessions/src/handle_impl/handle_impl_9.rs"
+    ],
+    "totalLinesCovered": 119
+  }
+}

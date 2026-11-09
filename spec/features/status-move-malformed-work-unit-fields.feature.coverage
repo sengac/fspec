@@ -1,0 +1,163 @@
+{
+  "scenarios": [
+    {
+      "name": "A work unit without a type fails the move",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug385_status_move_malformed_fields.rs",
+          "lines": "62-74",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// BUG-385: a missing type is malformed, never a story.",
+              "lastLine": ")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A malformed blockedBy fails the move",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug385_status_move_malformed_fields.rs",
+          "lines": "76-88",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "/// String items of an array-valued `extra` field; a non-string item is an",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A malformed state history fails the move instead of being replaced",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug385_status_move_malformed_fields.rs",
+          "lines": "90-102",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "/// Record the new status on the work unit: status, `updatedAt`,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug385_status_move_malformed_fields.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs"
+    ],
+    "totalLinesCovered": 130
+  }
+}

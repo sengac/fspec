@@ -212,13 +212,12 @@ fn dispatcher_rejects_cross_column_relative_placement() {
     // @step Then the process exits with code 1
     assert!(!result.success, "expected success=false; got {result:?}");
 
-    // @step And stderr contains "Data integrity error"
-    // (cross-column rejection: AUTH-001 is not in states.specifying — the
-    // TS source emits the cross-column message before reaching the
-    // data-integrity branch; both name the divergent statuses.)
+    // @step And stderr contains "Cannot prioritize across columns. FEAT-017 (specifying) and AUTH-001 (testing) are in different columns."
     let msg = result.error.as_deref().unwrap_or("");
     assert!(
-        msg.contains("Cannot prioritize across columns") || msg.contains("Data integrity error"),
+        msg.contains(
+            "Cannot prioritize across columns. FEAT-017 (specifying) and AUTH-001 (testing) are in different columns."
+        ),
         "error must reject cross-column placement; got: {msg}"
     );
 }
@@ -284,6 +283,14 @@ fn dispatcher_rejects_done_work_unit() {
         msg.contains("Cannot prioritize work units in done column"),
         "got: {msg}"
     );
+
+    // @step And stderr contains "Only backlog, specifying, testing, implementing, validating, blocked can be prioritized."
+    assert!(
+        msg.contains(
+            "Only backlog, specifying, testing, implementing, validating, blocked can be prioritized."
+        ),
+        "got: {msg}"
+    );
 }
 
 #[test]
@@ -333,9 +340,15 @@ fn shared_infrastructure_is_reused_without_duplication() {
         src.contains("ensure_work_units_file"),
         "prioritize_work_unit.rs must reference `ensure_work_units_file`; got:\n{src}"
     );
+    // BUG-699: since WT-018 every board write goes through the one board
+    // writer, io::board::write_work_units, never a direct atomic JSON write.
     assert!(
-        src.contains("write_json_atomic"),
-        "prioritize_work_unit.rs must reference `write_json_atomic`; got:\n{src}"
+        src.contains("crate::io::board::write_work_units(project_root, &data)"),
+        "prioritize_work_unit.rs must write the board with `io::board::write_work_units`; got:\n{src}"
+    );
+    assert!(
+        !src.contains("write_json_atomic"),
+        "prioritize_work_unit.rs must not write the board with `write_json_atomic`; got:\n{src}"
     );
 
     // @step Then the source does NOT perform any file IO directly on spec/work-units.json
@@ -347,4 +360,176 @@ fn shared_infrastructure_is_reused_without_duplication() {
         !src.contains("std::fs::write"),
         "prioritize_work_unit.rs must NOT call std::fs::write directly"
     );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenarios moved from work-unit-ordering-across-all-kanban-columns and
+// kanban-workflow-state-management (COV-072)
+// ─────────────────────────────────────────────────────────────────────────
+
+fn read_status(project_root: &Path, id: &str) -> String {
+    let on_disk: Value =
+        serde_json::from_str(&read_work_units_raw(project_root)).expect("parse on-disk");
+    on_disk["workUnits"][id]["status"]
+        .as_str()
+        .expect("status string")
+        .to_string()
+}
+
+#[test]
+fn dispatcher_position_top_reorders_within_the_specifying_column() {
+    // Scenario: Position top reorders a work unit within the specifying column
+
+    // @step Given spec/work-units.json specifying order is FEAT-018, FEAT-019, FEAT-017
+    let tmp = TempDir::new().expect("tempdir");
+    let body = format!(
+        r#"{{ "workUnits": {{ {}, {}, {} }}, "states": {{ "backlog": [], "specifying": ["FEAT-018","FEAT-019","FEAT-017"], "testing": [], "implementing": [], "validating": [], "done": [], "blocked": [] }} }}"#,
+        wu("FEAT-017", "specifying"),
+        wu("FEAT-018", "specifying"),
+        wu("FEAT-019", "specifying")
+    );
+    write_work_units(tmp.path(), &body);
+
+    // @step When I run `fspec prioritize-work-unit FEAT-017 --position top`
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "FEAT-017", "position": "top" }),
+    ));
+
+    // @step Then the process exits with code 0
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the specifying order becomes FEAT-017, FEAT-018, FEAT-019
+    assert_eq!(
+        read_states(tmp.path(), "specifying"),
+        vec!["FEAT-017", "FEAT-018", "FEAT-019"]
+    );
+
+    // @step And FEAT-017 still has status specifying
+    assert_eq!(read_status(tmp.path(), "FEAT-017"), "specifying");
+}
+
+#[test]
+fn dispatcher_position_top_reorders_within_the_implementing_column() {
+    // Scenario: Position top reorders a work unit within the implementing column
+
+    // @step Given spec/work-units.json implementing order is AUTH-002, AUTH-003, AUTH-001
+    let tmp = TempDir::new().expect("tempdir");
+    let body = format!(
+        r#"{{ "workUnits": {{ {}, {}, {} }}, "states": {{ "backlog": [], "specifying": [], "testing": [], "implementing": ["AUTH-002","AUTH-003","AUTH-001"], "validating": [], "done": [], "blocked": [] }} }}"#,
+        wu("AUTH-001", "implementing"),
+        wu("AUTH-002", "implementing"),
+        wu("AUTH-003", "implementing")
+    );
+    write_work_units(tmp.path(), &body);
+
+    // @step When I run `fspec prioritize-work-unit AUTH-001 --position top`
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "position": "top" }),
+    ));
+
+    // @step Then the process exits with code 0
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the implementing order becomes AUTH-001, AUTH-002, AUTH-003
+    assert_eq!(
+        read_states(tmp.path(), "implementing"),
+        vec!["AUTH-001", "AUTH-002", "AUTH-003"]
+    );
+
+    // @step And AUTH-001 still has status implementing
+    assert_eq!(read_status(tmp.path(), "AUTH-001"), "implementing");
+}
+
+#[test]
+fn dispatcher_single_work_unit_in_its_column_is_a_no_op() {
+    // Scenario: Prioritizing the only work unit in a column succeeds as a no-op
+
+    // @step Given AUTH-001 is the only work unit in states.implementing
+    let tmp = TempDir::new().expect("tempdir");
+    let body = format!(
+        r#"{{ "workUnits": {{ {}, {} }}, "states": {{ "backlog": ["AUTH-002"], "specifying": [], "testing": [], "implementing": ["AUTH-001"], "validating": [], "done": [], "blocked": [] }} }}"#,
+        wu("AUTH-001", "implementing"),
+        wu("AUTH-002", "backlog")
+    );
+    write_work_units(tmp.path(), &body);
+
+    // @step When I run `fspec prioritize-work-unit AUTH-001 --position top`
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "position": "top" }),
+    ));
+
+    // @step Then the process exits with code 0
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the implementing order is still AUTH-001 alone
+    assert_eq!(read_states(tmp.path(), "implementing"), vec!["AUTH-001"]);
+
+    // @step And the backlog order is still AUTH-002 alone
+    assert_eq!(read_states(tmp.path(), "backlog"), vec!["AUTH-002"]);
+}
+
+#[test]
+fn dispatcher_position_bottom_moves_to_the_end() {
+    // Scenario: Position bottom moves a work unit to the end of its column
+
+    // @step Given spec/work-units.json backlog order is AUTH-001, AUTH-002, AUTH-003
+    let tmp = TempDir::new().expect("tempdir");
+    let body = format!(
+        r#"{{ "workUnits": {{ {}, {}, {} }}, "states": {{ "backlog": ["AUTH-001","AUTH-002","AUTH-003"], "specifying": [], "testing": [], "implementing": [], "validating": [], "done": [], "blocked": [] }} }}"#,
+        wu("AUTH-001", "backlog"),
+        wu("AUTH-002", "backlog"),
+        wu("AUTH-003", "backlog")
+    );
+    write_work_units(tmp.path(), &body);
+
+    // @step When I run `fspec prioritize-work-unit AUTH-001 --position bottom`
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "position": "bottom" }),
+    ));
+
+    // @step Then the process exits with code 0
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And the backlog order becomes AUTH-002, AUTH-003, AUTH-001
+    assert_eq!(
+        read_states(tmp.path(), "backlog"),
+        vec!["AUTH-002", "AUTH-003", "AUTH-001"]
+    );
+}
+
+#[test]
+fn dispatcher_rejects_placement_before_a_non_existent_work_unit() {
+    // Scenario: Reject placement before a non-existent work unit
+
+    // @step Given spec/work-units.json backlog contains AUTH-001 and does not contain AUTH-999
+    let tmp = TempDir::new().expect("tempdir");
+    let body = format!(
+        r#"{{ "workUnits": {{ {} }}, "states": {{ "backlog": ["AUTH-001"], "specifying": [], "testing": [], "implementing": [], "validating": [], "done": [], "blocked": [] }} }}"#,
+        wu("AUTH-001", "backlog")
+    );
+    write_work_units(tmp.path(), &body);
+    let before = read_work_units_raw(tmp.path());
+
+    // @step When I run `fspec prioritize-work-unit AUTH-001 --before AUTH-999`
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "AUTH-001", "before": "AUTH-999" }),
+    ));
+
+    // @step Then the process exits with code 1
+    assert!(!result.success, "expected success=false; got {result:?}");
+
+    // @step And stderr contains "Work unit 'AUTH-999' does not exist"
+    let msg = result.error.as_deref().unwrap_or("");
+    assert!(
+        msg.contains("Work unit 'AUTH-999' does not exist"),
+        "got: {msg}"
+    );
+
+    // @step And spec/work-units.json is byte-identical to its pre-call content
+    assert_eq!(before, read_work_units_raw(tmp.path()));
 }

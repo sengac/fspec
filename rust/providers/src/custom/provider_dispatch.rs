@@ -140,6 +140,41 @@ impl RhaiCustomProvider {
     /// [`Self::invoke_build_request`] and
     /// `"build_stream_request"` from
     /// [`crate::custom::provider_stream`].
+    /// PROV-094: the `request` map passed to `build_request` /
+    /// `build_stream_request` — messages, tools and thinking_config plus
+    /// the selected `model` id and the config's `system_prefix` (`()` when
+    /// the config declares none).
+    pub(crate) fn request_argument(
+        &self,
+        messages: &[Message],
+        tools: &[ToolDefinition],
+        thinking_config: Option<&serde_json::Value>,
+    ) -> Result<rhai::Dynamic, ProviderError> {
+        let request =
+            request_to_rhai(messages, tools, thinking_config).map_err(ProviderError::from)?;
+        let mut map = request.try_cast::<rhai::Map>().ok_or_else(|| {
+            ProviderError::api(
+                self.config_name(),
+                "request bridge produced a non-map request",
+            )
+        })?;
+        map.insert(
+            "model".into(),
+            rhai::Dynamic::from(crate::LlmProvider::model(self).to_owned()),
+        );
+        let prefix = match self
+            .provider_config()
+            .system_prompt
+            .as_ref()
+            .and_then(|prompt| prompt.prefix.clone())
+        {
+            Some(prefix) => rhai::Dynamic::from(prefix),
+            None => rhai::Dynamic::UNIT,
+        };
+        map.insert("system_prefix".into(), prefix);
+        Ok(rhai::Dynamic::from_map(map))
+    }
+
     pub(crate) async fn invoke_request_builder(
         &self,
         fn_name: &'static str,
@@ -147,8 +182,7 @@ impl RhaiCustomProvider {
         tools: &[ToolDefinition],
         thinking_config: Option<serde_json::Value>,
     ) -> Result<serde_json::Value, ProviderError> {
-        let request = request_to_rhai(messages, tools, thinking_config.as_ref())
-            .map_err(ProviderError::from)?;
+        let request = self.request_argument(messages, tools, thinking_config.as_ref())?;
         let result = self.call_fn1(fn_name, request).await?;
         let body = dynamic_to_json_value(&result);
         crate::tool_contract::validate_catalog(&body, tools)?;

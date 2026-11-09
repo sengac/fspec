@@ -5,58 +5,45 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "147-187",
+          "lines": "159-199",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                174,
-                175,
-                176,
-                177,
-                178
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "147-187",
-          "implMappings": [
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "// RPC-445: `w` + the open workspace dropdown (modal) come first.",
+              "lastLine": "if let Some(result) = menu_keys::handle_menu_keys(self, key, store) {"
+            },
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "147-187",
-          "implMappings": [
+                145,
+                146,
+                147,
+                148,
+                150
+              ],
+              "firstLine": "/// single-view mode) this is always false (R7).",
+              "lastLine": "/// Route a keyboard or mouse event to the active sub-view. RPC-023"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_changed_files.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "147-187",
-          "implMappings": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "/// diff load for the first (now-selected) file.",
+              "lastLine": "// cascade continues onto the diff stage iff a file is selected."
+            },
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
@@ -98,7 +85,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "pub load: LoadTracker,",
+              "lastLine": "/// repaints the view; the glyph advances at 80 ms cadence)."
             }
           ]
         }
@@ -109,12 +98,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "190-217",
+          "lines": "203-230",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator_events.rs",
               "lines": [
-                144,
                 145,
                 146,
                 147,
@@ -131,22 +119,25 @@
                 158,
                 159,
                 160,
-                161
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "190-217",
-          "implMappings": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "let _ = tx.send(Action::OpenProviderSettingsView);",
+              "lastLine": "BlocklistEvent::Consumed => EventResult::consumed(),"
+            },
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                143,
-                144,
-                145
-              ]
+                150
+              ],
+              "firstLine": "/// Route a keyboard or mouse event to the active sub-view. RPC-023",
+              "lastLine": "/// Route a keyboard or mouse event to the active sub-view. RPC-023"
             }
           ]
         }
@@ -162,28 +153,28 @@
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
-                77
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/file_changes_view_rpc354.rs",
-          "lines": "220-260",
-          "implMappings": [
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "// paint-over pattern as the Checkpoints view).",
+              "lastLine": "render_empty(body, buf);"
+            },
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                151,
                 152,
                 153,
-                154
-              ]
+                154,
+                155
+              ],
+              "firstLine": "self.loading.label = label;",
+              "lastLine": "/// Replace the file list from `Action::ChangedFilesLoaded`. Resets"
             }
           ]
         }
@@ -205,6 +196,6 @@
       "rust/fspec-tui/src/views/navigator_events.rs",
       "rust/fspec-tui/src/views/changed_files/render.rs"
     ],
-    "totalLinesCovered": 388
+    "totalLinesCovered": 201
   }
 }

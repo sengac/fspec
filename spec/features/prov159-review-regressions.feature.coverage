@@ -49,16 +49,13 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "pub(crate) fn document(home: &Path) -> Result<Value> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/auth_storage.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -107,8 +104,22 @@
                 179,
                 180,
                 181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "pub(crate) fn update(home: &Path, auth: &CodexAuthJson, generation: bool) -> Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,9 +135,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -158,8 +166,12 @@
                 151,
                 152,
                 153,
-                154
-              ]
+                154,
+                155,
+                156
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,15 +209,13 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "fn bind_identity(",
+              "lastLine": "handle: self.clone(),"
             },
             {
               "file": "rust/providers/src/codex/websocket.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
                 97,
                 98,
                 99,
@@ -221,8 +231,44 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "pub(super) async fn send(",
+              "lastLine": "};"
             }
           ]
         }
@@ -243,6 +289,6 @@
       "rust/providers/src/codex/routing.rs",
       "rust/providers/src/codex/websocket.rs"
     ],
-    "totalLinesCovered": 297
+    "totalLinesCovered": 333
   }
 }

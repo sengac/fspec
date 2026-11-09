@@ -7,18 +7,104 @@
           "file": "rust/agent-loop/tests/bug214_terminal_admission.rs",
           "lines": "19-88",
           "implMappings": [
-            {"file": "rust/agent-loop/src/terminal_overflow_recovery.rs", "lines": [66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 109, 110, 111, 112, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141]},
-            {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208]},
-            {"file": "rust/cli/src/session/selected_compaction.rs", "lines": [90, 91, 92, 93, 94, 95]}
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                109,
+                110,
+                111,
+                112,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "impl Drop for RecoveryOwnership<'_> {",
+              "lastLine": "});"
+            },
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "builder.await",
+              "lastLine": ".map_err(|error| CompactionFailure::Commit(error.to_string()))?;"
+            },
+            {
+              "file": "rust/cli/src/session/selected_compaction.rs",
+              "lines": [
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "|messages, generation| {",
+              "lastLine": "},"
+            }
           ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 1, "coveredScenarios": 1, "coveragePercent": 100,
-    "testFiles": ["rust/agent-loop/tests/bug214_terminal_admission.rs"],
-    "implFiles": ["rust/agent-loop/src/terminal_overflow_recovery.rs", "rust/cli/src/compactor_sub_agent.rs", "rust/cli/src/session/selected_compaction.rs"],
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug214_terminal_admission.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/terminal_overflow_recovery.rs",
+      "rust/cli/src/compactor_sub_agent.rs",
+      "rust/cli/src/session/selected_compaction.rs"
+    ],
     "totalLinesCovered": 130
   }
 }

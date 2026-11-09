@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-166
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port add-aggregate-to-foundation command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_aggregate_to_foundation.rs uses

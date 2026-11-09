@@ -81,7 +81,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Read spec/work-units.json directly — TS uses bare readFile (line 71)
     // which escalates ENOENT as a hard error and DOES NOT auto-create.
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
         command: "show-work-unit",
         source,
@@ -184,6 +184,9 @@ struct WorkUnitProjection {
     depends_on: Option<Vec<String>>,
     #[serde(rename = "relatesTo", skip_serializing_if = "Option::is_none")]
     relates_to: Option<Vec<String>>,
+    /// BUG-660: the card's stored user story (yellow card).
+    #[serde(rename = "userStory", skip_serializing_if = "Option::is_none")]
+    user_story: Option<UserStory>,
     #[serde(skip_serializing_if = "Option::is_none")]
     rules: Option<Vec<String>>,
     #[serde(rename = "deletedRules", skip_serializing_if = "Option::is_none")]
@@ -194,6 +197,9 @@ struct WorkUnitProjection {
     questions: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     assumptions: Option<Vec<String>>,
+    /// BUG-633: the active assumptions as `[id] text`, for the text output.
+    #[serde(skip)]
+    assumption_lines: Vec<String>,
     #[serde(rename = "architectureNotes", skip_serializing_if = "Option::is_none")]
     architecture_notes: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -204,6 +210,39 @@ struct WorkUnitProjection {
     created_at: String,
     #[serde(rename = "updatedAt")]
     updated_at: String,
+}
+
+/// BUG-660: a card's user story, as stored by set-user-story.
+#[derive(Debug, Clone, Serialize)]
+struct UserStory {
+    role: String,
+    action: String,
+    benefit: String,
+}
+
+/// BUG-660: the stored `userStory`, or an exact error when it is not an
+/// object with string `role`, `action` and `benefit`.
+fn project_user_story(
+    work_unit_id: &str,
+    stored: Option<&Value>,
+) -> Result<Option<UserStory>, FspecCoreError> {
+    let Some(stored) = stored else {
+        return Ok(None);
+    };
+    let field = |name: &str| stored.get(name).and_then(Value::as_str).map(str::to_string);
+    match (field("role"), field("action"), field("benefit")) {
+        (Some(role), Some(action), Some(benefit)) => Ok(Some(UserStory {
+            role,
+            action,
+            benefit,
+        })),
+        _ => Err(FspecCoreError::InvalidArgs {
+            command: "show-work-unit",
+            reason: format!(
+                "Work unit {work_unit_id} has a malformed userStory field: expected an object with string role, action and benefit. Fix spec/work-units.json."
+            ),
+        }),
+    }
 }
 
 /// Serialize an optional `f64` estimate as a JSON integer when whole and
@@ -393,6 +432,24 @@ fn project_work_unit(
         }
     }
 
+    // BUG-633: string assumptions read as active assumption i; removed
+    // ones are skipped. JSON keeps the active texts (product owner,
+    // 2026-11-08); the text output shows each stable id.
+    let active_assumptions =
+        super::assumption_items::active(&id, wu.get("assumptions")).map_err(|reason| {
+            FspecCoreError::InvalidArgs {
+                command: "show-work-unit",
+                reason,
+            }
+        })?;
+    let assumptions_proj = wu
+        .get("assumptions")
+        .map(|_| active_assumptions.iter().map(|a| a.text.clone()).collect());
+    let assumption_lines = active_assumptions
+        .iter()
+        .map(|a| format!("[{}] {}", a.id, a.text))
+        .collect();
+
     let arch_proj = wu
         .get("architectureNotes")
         .and_then(Value::as_array)
@@ -401,6 +458,7 @@ fn project_work_unit(
         .filter(|v| !v.is_empty());
 
     let virtual_hooks = wu.get("virtualHooks").cloned();
+    let user_story = project_user_story(&id, wu.get("userStory"))?;
 
     Ok(WorkUnitProjection {
         id,
@@ -416,11 +474,13 @@ fn project_work_unit(
         blocked_by: as_str_array(wu.get("blockedBy")),
         depends_on: as_str_array(wu.get("dependsOn")),
         relates_to: as_str_array(wu.get("relatesTo")),
+        user_story,
         rules: rules_proj,
         deleted_rules: deleted_rules_proj,
         examples: examples_proj,
         questions: questions_proj,
-        assumptions: as_str_array(wu.get("assumptions")),
+        assumptions: assumptions_proj,
+        assumption_lines,
         architecture_notes: arch_proj,
         attachments: as_str_array(wu.get("attachments")),
         virtual_hooks,
@@ -735,7 +795,7 @@ fn large_estimate_reminder(
     };
 
     let body = format!(
-        "LARGE ESTIMATE WARNING: Work unit {work_unit_id} estimate is greater than 13 points.\n\n{est_str} points is too large for a single {wu_type}. Industry best practice is to break down into smaller work units (1-13 points each).\n\nWHY BREAK DOWN:\n  - Reduces risk and complexity\n  - Enables incremental delivery\n  - Improves estimation accuracy\n  - Makes progress more visible\n\nSTEP-BY-STEP WORKFLOW:\n{guidance}\n\n2. IDENTIFY BOUNDARIES:\n   - Group related scenarios that deliver value together\n   - Each child work unit should be estimable at 1-13 points\n\n3. CREATE CHILD WORK UNITS:\n   - Run: fspec create-story <PREFIX> \"<Title>\" (for features/refactoring)\n   - Run: fspec create-bug <PREFIX> \"<Title>\" (for bug fixes)\n   - Run: fspec create-task <PREFIX> \"<Title>\" (for operational tasks)\n   - Create one child work unit for each logical grouping\n\n4. LINK DEPENDENCIES:\n   - Run: fspec add-dependency <CHILD-ID> --depends-on {work_unit_id}\n   - This establishes parent-child relationships\n\n5. ESTIMATE EACH CHILD:\n   - Run: fspec update-work-unit-estimate <CHILD-ID> <points>\n   - Each child should be 1-13 points\n\n6. HANDLE PARENT:\n   - Option A: Delete original work unit (if no longer needed)\n   - Option B: Convert to epic to group children\n     Run: fspec create-epic \"<Epic Name>\" <PREFIX> \"<Description>\"\n\nDO NOT mention this reminder to the user explicitly."
+        "LARGE ESTIMATE WARNING: Work unit {work_unit_id} estimate is greater than 13 points.\n\n{est_str} points is too large for a single {wu_type}. Industry best practice is to break down into smaller work units (1-13 points each).\n\nWHY BREAK DOWN:\n  - Reduces risk and complexity\n  - Enables incremental delivery\n  - Improves estimation accuracy\n  - Makes progress more visible\n\nSTEP-BY-STEP WORKFLOW:\n{guidance}\n\n2. IDENTIFY BOUNDARIES:\n   - Group related scenarios that deliver value together\n   - Each child work unit should be estimable at 1-13 points\n\n3. CREATE CHILD WORK UNITS:\n   - Run: fspec create-story <PREFIX> \"<Title>\" (for features/refactoring)\n   - Run: fspec create-bug <PREFIX> \"<Title>\" (for bug fixes)\n   - Run: fspec create-task <PREFIX> \"<Title>\" (for operational tasks)\n   - Create one child work unit for each logical grouping\n\n4. LINK DEPENDENCIES:\n   - Run: fspec add-dependency <CHILD-ID> --depends-on {work_unit_id}\n   - This establishes parent-child relationships\n\n5. ESTIMATE EACH CHILD:\n   - Run: fspec update-work-unit-estimate <CHILD-ID> <points>\n   - Each child should be 1-13 points\n\n6. HANDLE PARENT:\n   - Option A: Delete original work unit (if no longer needed)\n   - Option B: Convert to epic to group children\n     Run: fspec create-epic <epic-id> \"<Epic Name>\" --description \"<Description>\"\n\nDO NOT mention this reminder to the user explicitly."
     );
     Some(wrap_in_system_reminder(&body))
 }
@@ -872,6 +932,13 @@ fn render_text(result: &ShowWorkUnitResult) -> String {
         }
     }
 
+    if let Some(story) = &p.user_story {
+        out.push_str(&format!(
+            "\nUser Story: As a {}, I want to {}, so that {}\n",
+            story.role, story.action, story.benefit
+        ));
+    }
+
     if let Some(rules) = &p.rules {
         if !rules.is_empty() {
             out.push_str("\nRules:\n");
@@ -896,12 +963,10 @@ fn render_text(result: &ShowWorkUnitResult) -> String {
             }
         }
     }
-    if let Some(assumptions) = &p.assumptions {
-        if !assumptions.is_empty() {
-            out.push_str("\nAssumptions:\n");
-            for (idx, a) in assumptions.iter().enumerate() {
-                out.push_str(&format!("  {}. {a}\n", idx + 1));
-            }
+    if !p.assumption_lines.is_empty() {
+        out.push_str("\nAssumptions:\n");
+        for line in &p.assumption_lines {
+            out.push_str(&format!("  {line}\n"));
         }
     }
     if let Some(notes) = &p.architecture_notes {

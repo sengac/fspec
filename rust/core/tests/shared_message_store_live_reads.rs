@@ -14,9 +14,10 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[serial]
 fn scenario_live_readers_observe_another_stores_committed_append() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let reader = MessageStore::new()?;
-    let mut writer = MessageStore::new()?;
+    let writer = MessageStore::new()?;
 
     let message_id = writer.store("assistant", "peer committed: 日本語")?;
     let message = reader.get(message_id).ok_or("peer append is missing")?;
@@ -32,8 +33,9 @@ fn scenario_live_readers_observe_another_stores_committed_append() -> TestResult
 #[serial]
 fn scenario_live_readers_invalidate_cached_metadata_after_a_peer_update() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
-    let mut writer = MessageStore::new()?;
+    let writer = MessageStore::new()?;
     let message_id = writer.store_with_metadata(
         "assistant",
         "shared message",
@@ -66,8 +68,9 @@ fn scenario_live_readers_invalidate_cached_metadata_after_a_peer_update() -> Tes
 #[serial]
 fn scenario_live_readers_use_current_offsets_after_another_store_compacts_history() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
-    let mut writer = MessageStore::new()?;
+    let writer = MessageStore::new()?;
     let orphan_id = writer.store("user", &"discarded".repeat(256))?;
     let cached_id = writer.store("assistant", "cached retained")?;
     let uncached_id = writer.store("user", "uncached retained")?;

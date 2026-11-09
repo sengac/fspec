@@ -48,6 +48,7 @@ fn cleanup_handler() {
 
 #[tokio::test]
 async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
@@ -106,6 +107,7 @@ async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
 
 #[tokio::test]
 async fn test_fspec_tool_wrapper_with_gemini_facade() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
@@ -155,6 +157,7 @@ async fn test_fspec_tool_wrapper_with_gemini_facade() {
 
 #[tokio::test]
 async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
@@ -212,6 +215,7 @@ async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_does_not_emit_fspec_intercept_string() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
@@ -247,6 +251,7 @@ async fn test_fspec_wrapper_does_not_emit_fspec_intercept_string() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_handles_empty_args() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Test edge case: empty args should still work
@@ -283,6 +288,7 @@ async fn test_fspec_wrapper_handles_empty_args() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_handles_special_characters_in_args() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = TEST_MUTEX.lock().await;
 
     // Test edge case: special characters in args should be preserved

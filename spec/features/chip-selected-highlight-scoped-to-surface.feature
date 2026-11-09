@@ -5,6 +5,7 @@
 @mux
 @menu-chips
 @MENU-010
+@tui
 Feature: Chip selected-highlight scoped to surface
   """
   The per-chip `active` flag (MenuChip in components/menu_bar/chips.rs) is the single source of the selected-item highlight on the shared 2-zone bar painter (components/menu_bar/paint.rs `focused_cell` — ring focus OR `MenuChip.active`). MENU-010 moves the decision into the SURFACE's snapshot builder: the shared `chip_inputs` builder (views/board/menu_snapshot.rs) no longer marks any chip active. The agent view builder (views/agent/menu_render.rs `agent_bar_snapshot`) marks the store's current session's chip via `mark_active_chip`; the mux builder (views/multiplex/menu_snapshot.rs `build_snapshot`) marks only when an Agent pane is focused — `MultiplexLayout::focused_session_id()` (None for a Board/Files/Ckpts-focused pane); the board builder never marks. `mark_active_chip` is a no-op when the session is not in the painted (non-Cleared) chip list. The ring-selector path (MenuFocus::ZoneB) is untouched — surface-independent per R3. Supersedes the MENU-006 board and mux scenarios (the store's current session no longer drives the highlight on those surfaces — see active-session-chip-paints-the-selected-item-blue-background.feature, updated).

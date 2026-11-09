@@ -1,5 +1,7 @@
 @done
 @LIMITS-006
+@tui
+@ui-refinement
 Feature: TUI Badge and Fill% Display — End-to-End Verification
   """
   Tests verify that SessionHeader badge displays compactionThreshold (not raw contextWindow). AgentView.tsx reads rustModel.contextWindow and rustModel.compactionThreshold from Rust state. SessionHeader.tsx uses compactionThreshold ?? contextWindow for badge. formatContextWindow from sessionHeaderUtils.ts formats token count to human-readable string (e.g. 192k, 800k, 102k).

@@ -1,0 +1,274 @@
+{
+  "scenarios": [
+    {
+      "name": "Thinking-only length final after earlier tool progress is recovered in an armed session",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont012_thinking_only_final_response_scope.rs",
+          "lines": "26-68",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/assistant.rs",
+              "lines": [
+                19,
+                20,
+                66
+              ],
+              "firstLine": "state.response_reasoning_start = state.accumulated_reasoning.len();",
+              "lastLine": "state.response_tool_calls += 1;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                51,
+                77,
+                78
+              ],
+              "firstLine": "state.thinking_only_unrecovered = false;",
+              "lastLine": "Some(final_reasoning.as_str())"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/state.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                125,
+                126
+              ],
+              "firstLine": "/// within `accumulated_reasoning`.",
+              "lastLine": "thinking_only_unrecovered: false,"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_response.rs",
+              "lines": [
+                59
+              ],
+              "firstLine": "state.response_tool_calls += tool_calls;",
+              "lastLine": "state.response_tool_calls += tool_calls;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Thinking-only length final after earlier tool progress is recovered with auto-continue disabled",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont012_thinking_only_final_response_scope.rs",
+          "lines": "70-93",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/assistant.rs",
+              "lines": [
+                19,
+                20,
+                66
+              ],
+              "firstLine": "state.response_reasoning_start = state.accumulated_reasoning.len();",
+              "lastLine": "state.response_tool_calls += 1;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                51,
+                77,
+                78
+              ],
+              "firstLine": "state.thinking_only_unrecovered = false;",
+              "lastLine": "Some(final_reasoning.as_str())"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/state.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                125,
+                126
+              ],
+              "firstLine": "/// within `accumulated_reasoning`.",
+              "lastLine": "thinking_only_unrecovered: false,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Armed session nudges after thinking exhaustion recovery is exhausted",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont012_thinking_only_final_response_scope.rs",
+          "lines": "95-124",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+              "lines": [
+                31,
+                170
+              ],
+              "firstLine": "state.thinking_only_unrecovered = false;",
+              "lastLine": "state.thinking_only_unrecovered = thinking_only;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_completion.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                61,
+                72
+              ],
+              "firstLine": "// CONT-012: an unrecovered thinking-only length final produced no answer,",
+              "lastLine": "settle_stop_reason,"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/state.rs",
+              "lines": [
+                76,
+                77,
+                127
+              ],
+              "firstLine": "pub thinking_only_unrecovered: bool,",
+              "lastLine": "auto_continue_nudge_pending_refund: false,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unarmed session finishes after thinking exhaustion recovery is exhausted",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont012_thinking_only_final_response_scope.rs",
+          "lines": "126-151",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+              "lines": [
+                170
+              ],
+              "firstLine": "state.thinking_only_unrecovered = thinking_only;",
+              "lastLine": "state.thinking_only_unrecovered = thinking_only;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_completion.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                72
+              ],
+              "firstLine": "let settle_stop_reason = if state.thinking_only_unrecovered {",
+              "lastLine": "settle_stop_reason,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Goal mode escalates a stalled thinking-only turn instead of finishing silently",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont012_thinking_only_final_response_scope.rs",
+          "lines": "153-181",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+              "lines": [
+                31,
+                170
+              ],
+              "firstLine": "state.thinking_only_unrecovered = false;",
+              "lastLine": "state.thinking_only_unrecovered = thinking_only;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/final_completion.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                61,
+                72
+              ],
+              "firstLine": "// CONT-012: an unrecovered thinking-only length final produced no answer,",
+              "lastLine": "settle_stop_reason,"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/state.rs",
+              "lines": [
+                76,
+                77,
+                127
+              ],
+              "firstLine": "pub thinking_only_unrecovered: bool,",
+              "lastLine": "auto_continue_nudge_pending_refund: false,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cont012_thinking_only_final_response_scope.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop/assistant.rs",
+      "rust/cli/src/interactive/stream_loop/final_thinking.rs",
+      "rust/cli/src/interactive/stream_loop/state.rs",
+      "rust/cli/src/interactive/stream_loop/final_response.rs",
+      "rust/cli/src/interactive/stream_loop/final_completion.rs"
+    ],
+    "totalLinesCovered": 246
+  }
+}

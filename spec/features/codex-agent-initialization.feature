@@ -1,7 +1,6 @@
 @init
 @agent-compatibility
 @initialization
-@AGENT-014
 Feature: Test Codex agent compatibility
   """
   Exercise codelet-fspec-core dispatcher init with an isolated HOME; production init is shared with the CLI and already implements AGENT-018.

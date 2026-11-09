@@ -21,11 +21,11 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let error = match backend
-                .restore_checkpoint_file(work_unit_id.clone(), name.clone(), path.clone())
+            let error = match calls
+                .restore_file(work_unit_id.clone(), name.clone(), path.clone())
                 .await
             {
                 Ok(()) => None,
@@ -47,13 +47,10 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let error = match backend
-                .restore_checkpoint_all(work_unit_id.clone(), name.clone())
-                .await
-            {
+            let error = match calls.restore_all(work_unit_id.clone(), name.clone()).await {
                 Ok(()) => None,
                 Err(e) => Some(e.to_string()),
             };
@@ -91,12 +88,16 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            if let Ok(counts) = backend.checkpoint_counts().await {
-                let _ = action_tx.send(Action::CheckpointCountsLoaded(counts));
-            }
+            // RPC-453: the selected workspace; a failure is shown.
+            let _ = action_tx.send(match calls.counts().await {
+                Ok(counts) => Action::CheckpointCountsLoaded(counts),
+                Err(e) => Action::SessionOperationFailed(format!(
+                    "Checkpoint counts could not be refreshed: {e:#}"
+                )),
+            });
         });
         self.pending_tasks.push(handle);
     }

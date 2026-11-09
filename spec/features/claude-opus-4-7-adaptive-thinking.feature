@@ -1,6 +1,13 @@
+@BUG-582
 @PROV-079
+@providers
+@thinking-detection
 Feature: Add Claude Opus 4.7 adaptive thinking support
   """
+  MODEL-010 (thinking-levels-reach-each-provider-through-a-wire-table.feature) replaced the
+  thinking-config scenarios: the anthropic wire sends adaptive thinking for an effort and enabled
+  thinking for a token budget, checked against the model's advertised capability, so no model-id
+  routing or budget table picks the form. is_adaptive_thinking_model now chooses only the beta headers.
   Default-adaptive design: Claude 4.6+ models automatically use adaptive thinking.
   No per-model constant or allowlist entry needed — new models are adaptive by default.
   Only old models (4.5 and earlier) are listed as budgeted exceptions.
@@ -38,56 +45,8 @@ Feature: Add Claude Opus 4.7 adaptive thinking support
     Then the result should be true
 
   @unit
-  Scenario: Opus 4.7 returns adaptive thinking config for High level
-    Given the model identifier "claude-opus-4-7"
-    And the thinking level is High
-    When I request thinking configuration
-    Then the config should contain thinking type "adaptive"
-    And the config should NOT contain "budget_tokens"
-
-  @unit
-  Scenario: Opus 4.7 returns adaptive thinking config for Low level
-    Given the model identifier "claude-opus-4-7"
-    And the thinking level is Low
-    When I request thinking configuration
-    Then the config should contain thinking type "adaptive"
-    And the config should NOT contain "budget_tokens"
-
-  @unit
-  Scenario: Opus 4.7 returns empty config when thinking is Off
-    Given the model identifier "claude-opus-4-7"
-    And the thinking level is Off
-    When I request thinking configuration
-    Then the config should be empty
-
-  @unit
   Scenario: Opus 4.7 beta headers exclude interleaved-thinking
     Given the model identifier "claude-opus-4-7"
     When I build beta headers for the model
     Then the headers should NOT include "interleaved-thinking-2025-05-14"
     And the headers should include "prompt-caching-2024-07-31"
-
-  @unit
-  Scenario: Opus 4.6 adaptive behaviour unchanged after adding 4.7
-    Given the model identifier "claude-opus-4-6"
-    And the thinking level is High
-    When I request thinking configuration
-    Then the config should contain thinking type "adaptive"
-    And the config should NOT contain "budget_tokens"
-
-  @unit
-  Scenario: Sonnet 4.6 adaptive behaviour unchanged after adding 4.7
-    Given the model identifier "claude-sonnet-4-6"
-    And the thinking level is Medium
-    When I request thinking configuration
-    Then the config should contain thinking type "adaptive"
-    And the config should NOT contain "budget_tokens"
-
-  @unit
-  Scenario: NAPI getThinkingConfig returns adaptive for Opus 4.7
-    Given the NAPI function getThinkingConfig
-    And the provider is "claude-opus-4-7"
-    And the thinking level is High
-    When I call getThinkingConfig
-    Then the JSON result should contain thinking type "adaptive"
-    And the JSON result should NOT contain "budget_tokens"

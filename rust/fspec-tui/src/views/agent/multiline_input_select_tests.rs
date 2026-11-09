@@ -126,8 +126,8 @@ fn long_pressing_a_composer_line_selects_and_copies_it() {
         mouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0),
         area,
     );
-    std::thread::sleep(std::time::Duration::from_millis(450));
-    let begin = input.poll_selection_tick(area);
+    // TEST-042: tick as if 450ms had passed since the press, no sleep.
+    let begin = input.poll_selection_tick_after(area, std::time::Duration::from_millis(450));
     assert!(begin.is_none(), "a bare Begin never commits text");
     let text = input
         .handle_mouse(

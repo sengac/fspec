@@ -38,6 +38,7 @@ use uuid::Uuid;
 /// BLOB_STORE), and return the guard.
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     // After RPC-034 this widened helper also resets the lifted BLOB_STORE

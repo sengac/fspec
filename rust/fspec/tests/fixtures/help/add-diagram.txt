@@ -26,12 +26,10 @@ COMMON PATTERNS
   • Add Architecture Diagrams
     Example: fspec add-diagram "Architecture" "System Overview" "graph TB\n  User-->API\n  API-->Database"
 fspec add-diagram "Architecture" "Component Structure" "graph LR\n  CLI-->Core\n  Core-->Utils"
-    undefined
 
   • Update Existing Diagram
     Example: # Adding a diagram with the same title replaces the existing one
 fspec add-diagram "Architecture" "System Overview" "graph TB\n  User-->Gateway\n  Gateway-->Services"
-    undefined
 
 
 TYPICAL WORKFLOW

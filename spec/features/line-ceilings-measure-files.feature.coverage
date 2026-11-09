@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "A ceiling on module-tree text is detected",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug393_line_ceilings_measure_files.rs",
+          "lines": "21-29",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/source_composition/ceilings.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "/// Every function in `source` that enforces a line ceiling",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No workspace line ceiling measures a module tree",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug393_line_ceilings_measure_files.rs",
+          "lines": "31-66",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/source_composition/ceilings.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "/// Every function in `source` that enforces a line ceiling",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/test-helpers/tests/bug393_line_ceilings_measure_files.rs"
+    ],
+    "implFiles": [
+      "rust/test-helpers/src/source_composition/ceilings.rs"
+    ],
+    "totalLinesCovered": 113
+  }
+}

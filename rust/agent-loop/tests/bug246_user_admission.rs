@@ -21,7 +21,7 @@ async fn user_persistence_failure_prevents_inference_and_retains_the_input() -> 
     ));
     session.send_input("recover this original".into(), None)?;
     // @step Then a scoped persistence error is visible and no provider request starts
-    let message = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+    let message = codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             let event = events.recv().await?;
             if let StreamChunk::Error { error } = event {
@@ -41,10 +41,17 @@ async fn user_persistence_failure_prevents_inference_and_retains_the_input() -> 
     std::fs::remove_dir(directory.path().join("messages/messages.jsonl"))?;
     retry_pending_persistence(&session.id)?;
     retry_pending_persistence(&session.id)?;
-    let records = read(session.id)?;
-    assert_eq!(records.len(), 1);
+    assert!(
+        read(session.id)?.is_empty(),
+        "a refused input joined the conversation"
+    );
+    let receipts = codelet_core::persistence::input_receipts::list(session.id)?;
+    assert_eq!(receipts.len(), 1);
+    assert_eq!(receipts[0].text(), "recover this original");
+    let archived = codelet_core::persistence::get_message(receipts[0].id)?
+        .ok_or("recovered original was not archived")?;
     assert_eq!(
-        records[0]["message"]["content"][0]["text"],
+        archived.metadata["message"]["content"][0]["text"],
         "recover this original"
     );
     Ok(())

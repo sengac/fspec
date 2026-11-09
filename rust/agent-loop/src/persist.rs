@@ -22,16 +22,7 @@ pub fn persist_user_content(
     content: Vec<UserContent>,
 ) -> Result<(), String> {
     retry_pending_persistence(session_id)?;
-    let summary = content
-        .iter()
-        .map(|block| match block {
-            UserContent::Text { text } => text.clone(),
-            UserContent::Image { .. } => "[Image]".into(),
-            UserContent::Document { .. } => "[Document]".into(),
-            UserContent::ToolResult { content, .. } => content.clone(),
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
+    let summary = user_summary(&content);
     let envelope = envelope(
         "user",
         "user",
@@ -41,6 +32,27 @@ pub fn persist_user_content(
         }),
     );
     submit_envelope(session_id, envelope, summary, None)
+}
+
+/// BUG-284: durably retain a submission original under its receipt identity
+/// without conversation membership; admission later appends it by reference.
+pub fn persist_input_original(
+    session_id: &uuid::Uuid,
+    id: uuid::Uuid,
+    content: Vec<UserContent>,
+) -> Result<(), String> {
+    retry_pending_persistence(session_id)?;
+    let summary = user_summary(&content);
+    let mut envelope = envelope(
+        "user",
+        "user",
+        MessagePayload::User(UserMessage {
+            role: "user".into(),
+            content,
+        }),
+    );
+    envelope.uuid = id;
+    submit_record(session_id, envelope, summary, None, true)
 }
 
 pub fn persist_assistant_message_internal(
@@ -174,11 +186,34 @@ fn envelope(role: &str, provider: &str, message: MessagePayload) -> MessageEnvel
     }
 }
 
+fn user_summary(content: &[UserContent]) -> String {
+    content
+        .iter()
+        .map(|block| match block {
+            UserContent::Text { text } => text.clone(),
+            UserContent::Image { .. } => "[Image]".into(),
+            UserContent::Document { .. } => "[Document]".into(),
+            UserContent::ToolResult { content, .. } => content.clone(),
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn submit_envelope(
     session_id: &uuid::Uuid,
     envelope: MessageEnvelope,
     content: String,
     reason: Option<codelet_rpc_types::InterruptionReason>,
+) -> Result<(), String> {
+    submit_record(session_id, envelope, content, reason, false)
+}
+
+fn submit_record(
+    session_id: &uuid::Uuid,
+    envelope: MessageEnvelope,
+    content: String,
+    reason: Option<codelet_rpc_types::InterruptionReason>,
+    audit_only: bool,
 ) -> Result<(), String> {
     load_session(*session_id)
         .map_err(|_| "persistence admission failed; original remains with caller")?;
@@ -192,6 +227,9 @@ fn submit_envelope(
             "interruptionReason".into(),
             serde_json::to_value(reason).map_err(|_| "interruption encoding failed")?,
         );
+    }
+    if audit_only {
+        metadata.insert(crate::persistence_retry::AUDIT_ONLY.into(), true.into());
     }
     submit(
         *session_id,

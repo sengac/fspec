@@ -59,7 +59,7 @@ async fn scenario_custom_runtime_profiles_retain_provider_model_capabilities() -
     let inner = background.inner.lock().await;
     assert!(model_resolution::resolve_model_vision(
         inner.provider_manager()
-    ));
+    )?);
     assert!(codelet_tools::model_capabilities::session_has_capabilities(
         background.id
     ));
@@ -76,7 +76,7 @@ async fn scenario_custom_runtime_profiles_retain_provider_model_capabilities() -
     let inner = text_session.inner.lock().await;
     assert!(!model_resolution::resolve_model_vision(
         inner.provider_manager()
-    ));
+    )?);
     assert!(!codelet_tools::model_capabilities::session_supports_vision(
         text_session.id
     ));

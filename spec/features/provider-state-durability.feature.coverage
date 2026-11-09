@@ -46,7 +46,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "let directory = directory(state.session_id)?;",
+              "lastLine": "}"
             }
           ]
         }

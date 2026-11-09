@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @napi
@@ -11,6 +12,7 @@
 @test-infrastructure
 @rpc
 @RPC-067
+@BUG-487
 Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
   """
   The new rust/test-helpers/ crate is added to the workspace `members` list AND exposed as `codelet-test-helpers = { path = "test-helpers" }` in [workspace.dependencies] — so consuming crates declare it via `codelet-test-helpers.workspace = true` in [dev-dependencies]
@@ -18,6 +20,8 @@ Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
   Helpers do not hardcode `codelet-napi` — they take it as `forbidden: &str` so the same scaffolding can later forbid other arrows (e.g. `core → napi`-third-party, `rpc-types → tokio`). The first wave passes `"codelet-napi"` and `"codelet_napi"` explicitly.
   Refined helper API: `assert_no_transitive_dependency(from_crate: &str, forbidden_pkg: &str)` and `assert_no_import_in_sources(crate_dir_name: &str, forbidden_module: &str)`. The crate_dir_name is the directory name under rust/ (e.g. "fspec", "fspec-tui", "sessions", "core", "rpc-types").
   rust/test-helpers/Cargo.toml depends on serde_json (workspace) ONLY — no other deps. It is a library crate with [lib] (default) plus the workspace lints inherited. The `[lints] workspace = true` block applies.
+  BUG-487: test-helpers stays free of tokio. TaskOutcome (a finished tokio task as a test outcome), added there by
+  BUG-366, lives in rust/fspec-tui/tests/common/task_outcome.rs, the only code that uses it.
   """
 
   # ========================================

@@ -10,7 +10,7 @@ USAGE
 
 ARGUMENTS
   [file] (optional)
-    Specific feature file to validate (e.g., spec/features/login.feature). If omitted, validates all .feature files in spec/features/
+    Specific feature file to validate (e.g., spec/features/login.feature). If omitted, validates all .feature files in spec/features/ and reports .feature.coverage files whose feature does not exist
 
 OPTIONS
   -v, --verbose
@@ -47,12 +47,12 @@ COMMON ERRORS
 RELATED COMMANDS
   fspec format
   fspec create-feature
-  fspec check
+  fspec audit
   fspec validate-tags
 
 NOTES
   • Uses official @cucumber/gherkin parser for validation
   • Exit code 0 = all valid, non-zero = errors found
   • Run before committing feature files
-  • Part of fspec check command
+  • fspec audit runs the same checks in its gherkin area
 

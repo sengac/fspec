@@ -51,6 +51,7 @@ impl StreamOutput for Output {
 async fn multisegment_backend_fill_uses_latest_physical_usage() -> fixture::TestResult {
     // @step Given a current request snapshot and cumulative output from earlier segments
     let temporary = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(temporary.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     let manifest = codelet_core::persistence::create_session("context", temporary.path())?;
@@ -120,8 +121,8 @@ async fn multisegment_backend_fill_uses_latest_physical_usage() -> fixture::Test
     };
     let mut session = background.inner.lock().await;
     // @step When live and final backend and TUI token updates arrive
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "the agent stream",
         run_agent_stream(
             agent,
             "hello",

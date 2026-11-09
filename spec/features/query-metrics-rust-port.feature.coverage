@@ -72,7 +72,9 @@
                 267,
                 268,
                 269
-              ]
+              ],
+              "firstLine": "fn compute_aggregate(data: &WorkUnitsData, type_filter: Option<&str>) -> AggregateResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -123,7 +125,9 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &WorkUnitsData, id: &str) -> Result<MetricsOutput, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -174,7 +178,9 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &WorkUnitsData, id: &str) -> Result<MetricsOutput, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -225,7 +231,9 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &WorkUnitsData, id: &str) -> Result<MetricsOutput, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -303,7 +311,9 @@
                 267,
                 268,
                 269
-              ]
+              ],
+              "firstLine": "fn compute_aggregate(data: &WorkUnitsData, type_filter: Option<&str>) -> AggregateResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -381,7 +391,9 @@
                 267,
                 268,
                 269
-              ]
+              ],
+              "firstLine": "fn compute_aggregate(data: &WorkUnitsData, type_filter: Option<&str>) -> AggregateResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -392,7 +404,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_metrics.rs",
-          "lines": "366-392",
+          "lines": "382-404",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_metrics.rs",
@@ -408,7 +420,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -419,7 +433,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_metrics.rs",
-          "lines": "394-455",
+          "lines": "410-468",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_metrics.rs",
@@ -473,7 +487,9 @@
                 437,
                 438,
                 439
-              ]
+              ],
+              "firstLine": "fn render_text(output: &MetricsOutput) -> String {",
+              "lastLine": "#[cfg(test)]"
             }
           ]
         }
@@ -490,6 +506,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/query_metrics.rs"
     ],
-    "totalLinesCovered": 747
+    "totalLinesCovered": 740
   }
 }

@@ -4,7 +4,7 @@
 //!
 //! Introduced for RPC-307 `show-test-patterns`, but designed to be
 //! reused by any future coverage-aware command (e.g. `show-coverage`,
-//! `audit-coverage`).
+//! `audit`).
 //!
 //! ### Schema tolerance
 //!
@@ -39,7 +39,7 @@ pub struct CoverageTestRef {
 pub fn read_all_coverage_files(
     project_root: &Path,
 ) -> Result<Vec<CoverageTestRef>, FspecCoreError> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     if !features_dir.exists() {
         return Ok(Vec::new());
     }

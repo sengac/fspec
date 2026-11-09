@@ -171,18 +171,16 @@ fn scenario_sorts_tags_within_each_category_alphabetically() {
         .as_array()
         .expect("phase tags array");
 
-    // @step Then the Phase Tags entry's tags array contains exactly two entries
+    // @step And the Phase Tags entry's tags array contains exactly two entries
     assert_eq!(phase_tags.len(), 2, "got {phase_tags:?}");
 
-    // @step Then the first tag entry has tag='@aaa' and description='A desc'
+    // @step And the first tag entry has tag='@aaa' and description='A desc'
     assert_eq!(phase_tags[0]["tag"].as_str(), Some("@aaa"));
     assert_eq!(phase_tags[0]["description"].as_str(), Some("A desc"));
 
-    // @step Then the second tag entry has tag='@zed' and description='Z desc'
+    // @step And the second tag entry has tag='@zed' and description='Z desc'
     assert_eq!(phase_tags[1]["tag"].as_str(), Some("@zed"));
     assert_eq!(phase_tags[1]["description"].as_str(), Some("Z desc"));
-    // @step And the first tag entry has tag='@aaa' and description='A desc'
-    // @step And the second tag entry has tag='@zed' and description='Z desc'
 }
 
 #[test]
@@ -360,7 +358,7 @@ fn scenario_text_format_renders_header_and_per_tag_lines() {
         result.data
     );
 
-    // @step Then the DispatchResult.data contains the exact line '  @critical - Critical features'
+    // @step And the DispatchResult.data contains the exact line '  @critical - Critical features'
     assert!(
         result
             .data
@@ -370,22 +368,19 @@ fn scenario_text_format_renders_header_and_per_tag_lines() {
         result.data
     );
 
-    // @step Then the DispatchResult.data contains the substring 'Component Tags (0 tags)'
+    // @step And the DispatchResult.data contains the substring 'Component Tags (0 tags)'
     assert!(
         result.data.contains("Component Tags (0 tags)"),
         "missing 'Component Tags (0 tags)'; got:\n{}",
         result.data
     );
 
-    // @step Then the DispatchResult.data contains the exact line '  No tags registered'
+    // @step And the DispatchResult.data contains the exact line '  No tags registered'
     assert!(
         result.data.lines().any(|l| l == "  No tags registered"),
         "missing '  No tags registered'; got:\n{}",
         result.data
     );
-    // @step And the DispatchResult.data contains the exact line ' @critical - Critical features'
-    // @step And the DispatchResult.data contains the substring 'Component Tags (0 tags)'
-    // @step And the DispatchResult.data contains the exact line ' No tags registered'
 }
 
 #[test]
@@ -419,7 +414,7 @@ fn scenario_text_format_emits_trailing_blank_line() {
         result.data
     );
 
-    // @step Then the last non-empty line of the DispatchResult.data is '  @critical - Critical features'
+    // @step And the last non-empty line of the DispatchResult.data is '  @critical - Critical features'
     let last_non_empty = result
         .data
         .lines()
@@ -430,7 +425,6 @@ fn scenario_text_format_emits_trailing_blank_line() {
         "unexpected last non-empty line; full output:\n{}",
         result.data
     );
-    // @step And the last non-empty line of the DispatchResult.data is ' @critical - Critical features'
 }
 
 #[test]
@@ -462,17 +456,17 @@ fn scenario_json_format_emits_two_space_indent() {
     let cats = data["categories"].as_array().expect("categories array");
     assert_eq!(cats.len(), 1);
 
-    // @step Then the first categories entry has name='Phase Tags' and a tags array of length 1
+    // @step And the first categories entry has name='Phase Tags' and a tags array of length 1
     let cat = &cats[0];
     assert_eq!(cat["name"].as_str(), Some("Phase Tags"));
     let tags = cat["tags"].as_array().expect("tags array");
     assert_eq!(tags.len(), 1);
 
-    // @step Then the first tag entry has tag='@critical' and description='Critical features'
+    // @step And the first tag entry has tag='@critical' and description='Critical features'
     assert_eq!(tags[0]["tag"].as_str(), Some("@critical"));
     assert_eq!(tags[0]["description"].as_str(), Some("Critical features"));
 
-    // @step Then the DispatchResult.data uses 2-space indentation
+    // @step And the DispatchResult.data uses 2-space indentation
     assert!(
         result
             .data
@@ -532,6 +526,3 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
         "commands/list_tags.rs must no longer be a NotYetPorted stub"
     );
 }
-// @step And the first categories entry has name='Phase Tags' and a tags array of length 1
-// @step And the first tag entry has tag='@critical' and description='Critical features'
-// @step And the DispatchResult.data uses 2-space indentation

@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-176
+@cli
+@dependency-management
 Feature: Port add-dependencies command to Rust
   """
   Core impl file: rust/fspec-core/src/commands/add_dependencies.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with list_work_units::run).

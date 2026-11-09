@@ -38,11 +38,27 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "formatter",
+              "lastLine": "provider,"
             },
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
                 43,
                 44,
                 45,
@@ -64,9 +80,23 @@
                 61,
                 62,
                 63,
-                124,
+                64,
+                65,
+                66,
+                67,
                 125,
                 126,
+                127,
+                128,
+                129,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
                 161,
                 162,
                 163,
@@ -74,8 +104,13 @@
                 165,
                 166,
                 167,
-                168
-              ]
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -119,11 +154,21 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "formatter",
+              "lastLine": "provider,"
             },
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
                 15,
                 16,
                 17,
@@ -136,6 +181,21 @@
                 24,
                 25,
                 26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                40,
+                41,
+                42,
                 43,
                 44,
                 45,
@@ -168,8 +228,19 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "pub fn preflight_compaction_restore(",
+              "lastLine": "}"
             }
           ]
         }
@@ -213,7 +284,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "formatter",
+              "lastLine": "provider,"
             },
             {
               "file": "rust/cli/src/session/compaction.rs",
@@ -238,8 +311,6 @@
                 134,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -273,8 +344,12 @@
                 176,
                 177,
                 178,
-                179
-              ]
+                179,
+                180,
+                181
+              ],
+              "firstLine": "let admitted = CompactionAdmission {",
+              "lastLine": ".map_err(|error| CompactionCommitError::Publication {"
             }
           ]
         }
@@ -318,11 +393,27 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "formatter",
+              "lastLine": "provider,"
             },
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
                 43,
                 44,
                 45,
@@ -343,8 +434,14 @@
                 60,
                 61,
                 62,
-                63
-              ]
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": ".map_err(|error| CompactionCommitError::Rejected(error.to_string()))?;"
             }
           ]
         }
@@ -363,6 +460,6 @@
       "rust/cli/src/session/compaction.rs",
       "rust/cli/src/session/restore_compaction.rs"
     ],
-    "totalLinesCovered": 414
+    "totalLinesCovered": 495
   }
 }

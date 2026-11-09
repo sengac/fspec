@@ -15,6 +15,7 @@ use support::candidate;
 #[serial_test::serial]
 fn scenario_appended_work_survives_a_captured_prefix_commit() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     // @step Given a candidate captured before additional tool work is persisted
@@ -34,7 +35,7 @@ fn scenario_appended_work_survives_a_captured_prefix_commit() -> TestResult {
         .as_ref()
         .ok_or("missing generation")?;
     assert_eq!(boundary.identity.generation, 1);
-    assert_eq!(boundary.covered_prefix.len(), 1);
+    assert_eq!(boundary.covered_prefix().len(), 1);
     assert_eq!(boundary.verified_suffix.len(), 1);
     // @step And the verified uncovered suffix and immutable originals survive
     reset_stores_for_tests();
@@ -52,6 +53,7 @@ fn scenario_appended_work_survives_a_captured_prefix_commit() -> TestResult {
 fn scenario_obsolete_publication_cannot_announce_a_replaced_generation() -> TestResult {
     // @step Given an acknowledged generation and a newer promoted generation
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =
@@ -101,6 +103,7 @@ fn scenario_obsolete_publication_cannot_announce_a_replaced_generation() -> Test
 #[serial_test::serial]
 fn scenario_an_older_candidate_cannot_replace_a_newer_generation() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("two producers", directory.path(), "openai")?;
@@ -138,6 +141,7 @@ fn scenario_an_older_candidate_cannot_replace_a_newer_generation() -> TestResult
 #[serial_test::serial]
 fn scenario_changed_prefix_or_model_identity_rejects_a_candidate() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     // @step Given a candidate with captured durable source and model identity

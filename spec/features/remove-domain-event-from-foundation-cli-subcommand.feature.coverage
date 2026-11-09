@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_domain_event_from_foundation.rs",
-          "lines": "105-123",
+          "lines": "105-129",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_domain_event_from_foundation.rs",
               "lines": [
-                96,
                 97,
                 98,
                 99,
@@ -27,8 +26,11 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -44,8 +46,6 @@
             {
               "file": "rust/fspec/src/remove_domain_event_from_foundation.rs",
               "lines": [
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -55,7 +55,6 @@
                 52,
                 53,
                 54,
-                55,
                 56,
                 57,
                 58,
@@ -72,8 +71,12 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -89,8 +92,6 @@
             {
               "file": "rust/fspec/src/remove_domain_event_from_foundation.rs",
               "lines": [
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -100,7 +101,6 @@
                 52,
                 53,
                 54,
-                55,
                 56,
                 57,
                 58,
@@ -117,8 +117,12 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -134,8 +138,6 @@
             {
               "file": "rust/fspec/src/remove_domain_event_from_foundation.rs",
               "lines": [
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -145,7 +147,6 @@
                 52,
                 53,
                 54,
-                55,
                 56,
                 57,
                 58,
@@ -162,8 +163,12 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -181,6 +186,6 @@
       "rust/fspec-core/src/help/configs/remove_domain_event_from_foundation.rs",
       "rust/fspec/src/remove_domain_event_from_foundation.rs"
     ],
-    "totalLinesCovered": 265
+    "totalLinesCovered": 268
   }
 }

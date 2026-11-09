@@ -272,14 +272,15 @@ describe('Feature: Intelligent Content-Aware Chunking for Telegram Display', () 
         chunker.addThinking(thinking);
         const result = chunker.flush();
 
-        // @step Then the first message starts with escaped '\<think\>'
+        // @step Then the first message starts with '<think>'
+        // (MarkdownV2 escapes the tags as \<think\>; Telegram renders <think>)
         expect(result.messages.length).toBeGreaterThan(0);
         expect(result.messages[0]).toMatch(/^\\<think\\>/);
 
         // @step And the actual thinking content flows naturally
         expect(result.messages.join('')).toContain(thinking);
 
-        // @step And the final message ends with escaped '\</think\>'
+        // @step And the final message ends with '</think>'
         const lastMessage = result.messages[result.messages.length - 1];
         expect(lastMessage).toMatch(/\\<\/think\\>$/);
       });
@@ -306,7 +307,8 @@ describe('Feature: Intelligent Content-Aware Chunking for Telegram Display', () 
         thinkingChunks.forEach(t => chunker.addThinking(t));
         const result = chunker.flush();
 
-        // @step Then the content flows between single escaped '\<think\>' and '\</think\>' tags
+        // @step Then the content flows between single '<think>' and '</think>' tags
+        // (MarkdownV2-escaped as \<think\> and \</think\>)
         const fullOutput = result.messages.join('');
         expect((fullOutput.match(/\\<think\\>/g) || []).length).toBe(1);
         expect((fullOutput.match(/\\<\/think\\>/g) || []).length).toBe(1);

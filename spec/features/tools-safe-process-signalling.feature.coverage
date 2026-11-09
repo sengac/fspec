@@ -1,0 +1,99 @@
+{
+  "scenarios": [
+    {
+      "name": "Killing a running process group terminates it",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug365_safe_process_signalling.rs",
+          "lines": "12-28",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/process_signal.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "/// SIGKILL a whole process group (the leader's pid is the group id).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Signalling a process that already exited reports it was gone",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug365_safe_process_signalling.rs",
+          "lines": "30-41",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/process_signal.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "fn outcome(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The tools sources contain no unsafe code suppressions",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug365_safe_process_signalling.rs",
+          "lines": "43-65",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bash_process.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "/// Explicitly kill the process group",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug365_safe_process_signalling.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/process_signal.rs",
+      "rust/tools/src/bash_process.rs"
+    ],
+    "totalLinesCovered": 80
+  }
+}

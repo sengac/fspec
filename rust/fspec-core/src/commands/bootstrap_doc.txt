@@ -2,7 +2,7 @@
 
 IMMEDIATELY - run this command (fspec is already installed locally, so just run it):
 
-fspec --sync-version 0.9.3
+fspec --sync-version __FSPEC_VERSION__
 
 IF the output from this command is an error, asking you to run the "fspec configure-tools" command, RUN THAT FIRST BY FOLLOWING THE INSTRUCTIONS YOU WERE GIVEN.
 
@@ -256,7 +256,7 @@ fspec show-foundation-event-storm
 | **Scope** | entire domain | single feature |
 | **Storage** | `foundation.json` eventStorm field | `work-units.json` per work unit |
 | **Bounded Contexts** | Strategic boundaries | Tactical scope |
-| **Commands** | `add-foundation-bounded-context`, `remove-foundation-bounded-context` | `add-bounded-context <work-unit-id>` |
+| **Commands** | `add-foundation-bounded-context`, `remove-foundation-bounded-context` | `add-bounded-context <workUnitId>` |
 | **When** | Once after foundation discovery | Many times, per story |
 | **Output** | tag ontology, architecture maps | scenarios, feature files |
 | **Purpose** | Establish domain boundaries | Understand feature business flow |
@@ -318,19 +318,18 @@ Stop when:
 
 ### Integration with Tag Ontology (EXMAP-004)
 
-Once Big Picture Event Storm is complete, use it for tag discovery:
+Once Big Picture Event Storm is complete, use its bounded contexts for tag discovery: register one component tag per bounded context, then regenerate TAGS.md:
 
 ```bash
-# Generate component tags from bounded contexts
-fspec derive-tags-from-foundation
+# Register a component tag for each bounded context
+fspec register-tag @work-management "Component Tags" "Work Management bounded context"
+fspec register-tag @specification "Component Tags" "Specification bounded context"
 
-# Output:
-# ✓ Created 15 component tags
-# ✓ Created 12 feature group tags
-# ✓ Created 47 hierarchical relationships
+# Regenerate spec/TAGS.md from spec/tags.json
+fspec generate-tags-md
 ```
 
-This populates `spec/tags.json` with domain-driven tags automatically generated from your bounded contexts.
+This keeps `spec/tags.json` aligned with your bounded contexts, so feature files can be tagged by domain.
 
 ### Example: fspec Project Foundation Event Storm
 
@@ -437,7 +436,7 @@ Event Storm is a **free-form collaborative session** (NOT field-by-field like di
 
 ```bash
 # Run Event Storm discovery for a work unit
-fspec discover-event-storm <work-unit-id>
+fspec discover-event-storm <workUnitId>
 ```
 
 This emits guidance (you're reading it now!) and you use these commands freely:
@@ -499,7 +498,7 @@ Stop when:
 
 Check your work:
 ```bash
-fspec show-event-storm <work-unit-id>
+fspec show-event-storm <workUnitId>
 ```
 
 ### Transform Event Storm → Example Mapping
@@ -507,7 +506,7 @@ fspec show-event-storm <work-unit-id>
 Once Event Storm is complete, transform artifacts to Example Mapping:
 
 ```bash
-fspec generate-example-mapping-from-event-storm <work-unit-id>
+fspec generate-example-mapping-from-event-storm <workUnitId>
 ```
 
 This automatically converts:
@@ -524,11 +523,11 @@ Event Storm Session
   ↓
 Capture: Events → Commands → Policies → Hotspots
   ↓
-fspec generate-example-mapping-from-event-storm <work-unit-id>
+fspec generate-example-mapping-from-event-storm <workUnitId>
   ↓
 Example Mapping (add more rules/examples)
   ↓
-fspec generate-scenarios <work-unit-id>
+fspec generate-scenarios <workUnitId>
   ↓
 Gherkin Feature File
 ```
@@ -537,19 +536,19 @@ Gherkin Feature File
 
 ```bash
 # Discovery
-fspec discover-event-storm <work-unit-id>
+fspec discover-event-storm <workUnitId>
 
 # Capture artifacts (use freely in any order)
-fspec add-domain-event <work-unit-id> <text>
-fspec add-command <work-unit-id> <text>
-fspec add-policy <work-unit-id> <text> --when <event> --then <command>
-fspec add-hotspot <work-unit-id> <text> --concern <description>
+fspec add-domain-event <workUnitId> <text>
+fspec add-command <workUnitId> <text>
+fspec add-policy <workUnitId> <text> --when <event> --then <command>
+fspec add-hotspot <workUnitId> <text> --concern <description>
 
 # View artifacts
-fspec show-event-storm <work-unit-id>
+fspec show-event-storm <workUnitId>
 
 # Transform to Example Mapping
-fspec generate-example-mapping-from-event-storm <work-unit-id>
+fspec generate-example-mapping-from-event-storm <workUnitId>
 ```
 
 **For more details**: Run `fspec add-domain-event --help`, `fspec add-policy --help`, etc.
@@ -751,27 +750,27 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 ```bash
 # Rules (blue cards)
-fspec add-rule <work-unit-id> "Rule text"
-fspec remove-rule <work-unit-id> <index>
+fspec add-rule <workUnitId> "Rule text"
+fspec remove-rule <workUnitId> <index>
 
 # Examples (green cards)
-fspec add-example <work-unit-id> "Example text"
-fspec remove-example <work-unit-id> <index>
+fspec add-example <workUnitId> "Example text"
+fspec remove-example <workUnitId> <index>
 
 # Questions (red cards)
-fspec add-question <work-unit-id> "@human: Question text?"
-fspec answer-question <work-unit-id> <index> --answer "Answer text" --add-to rule|assumption|none
-fspec remove-question <work-unit-id> <index>
+fspec add-question <workUnitId> "@human: Question text?"
+fspec answer-question <workUnitId> <index> --answer "Answer text" --add-to rule|assumption|none
+fspec remove-question <workUnitId> <index>
 
 # Attachments (supporting files)
-fspec add-attachment <work-unit-id> <file-path>
-fspec add-attachment <work-unit-id> <file-path> --description "Description"
-fspec list-attachments <work-unit-id>
-fspec remove-attachment <work-unit-id> <file-name>
-fspec remove-attachment <work-unit-id> <file-name> --keep-file
+fspec add-attachment <workUnitId> <file-path>
+fspec add-attachment <workUnitId> <file-path> --description "Description"
+fspec list-attachments <workUnitId>
+fspec remove-attachment <workUnitId> <file-name>
+fspec remove-attachment <workUnitId> <file-name> --keep-file
 
 # View the example map
-fspec show-work-unit <work-unit-id>
+fspec show-work-unit <workUnitId>
 ```
 
 ### Why Example Mapping Matters
@@ -878,7 +877,7 @@ Use the Fibonacci sequence for estimation to reflect increasing uncertainty at l
 
 ```bash
 # Estimate based on your analysis
-fspec update-work-unit-estimate <work-unit-id> <points>
+fspec update-work-unit-estimate <workUnitId> <points>
 
 # Example:
 fspec update-work-unit-estimate EXAMPLE-006 3
@@ -961,6 +960,56 @@ fspec board                           # See current Kanban state
 fspec list-work-units --status=backlog # View backlog
 fspec show-work-unit EXAMPLE-006           # See work unit details
 ```
+
+### Querying the board
+
+Find cards with `fspec list-work-units` filters. Filters are exact: a comma list matches any of its values, and different filters must all match. A time is a date (`2026-10-30`, local time), an ISO-8601 timestamp, a duration back from now (`30m`, `6h`, `2d`, `1w`) or `now`.
+
+```bash
+# Cards done in the last 2 days, counted per local day
+fspec list-work-units --status done --done-since 2d --group-by day
+
+# Cards in testing or specifying with open questions
+fspec list-work-units --status testing,specifying --has-open-questions
+
+# Bugs created since a date that are not done
+fspec list-work-units --type bug --created-since 2026-10-30 --status backlog,specifying,testing,implementing,validating,blocked
+
+# Ids of the cards blocked by BUG-123
+fspec list-work-units --blocked-by BUG-123 --format ids
+
+# Cards with assumptions (provisional decisions), and one card's open questions and assumptions
+fspec list-work-units --has-assumptions --fields id,title,assumptions
+fspec list-work-units --work-unit WORK-001 --fields id,openQuestions,assumptions --format json
+
+# Cards that entered validating since local midnight of a date
+fspec list-work-units --entered validating --entered-since 2026-11-07
+```
+
+`fspec list-work-units --help` lists every filter, the fields (`--fields`), the formats (`--format table|ids|json|jsonl|count|csv`), `--group-by`, `--sort` and `--limit`.
+
+**Never read or parse `spec/work-units.json` directly (no `jq`, `grep` or scripts).** Use `fspec list-work-units` to find cards and `fspec show-work-unit <workUnitId>` to read one.
+
+### Loading acceptance criteria
+
+Before working on a card, load its acceptance criteria with `fspec context` and read every page. Each criterion is a scenario with all its steps, doc strings and tables, its tags (a scenario also has the tags of its Feature and Rule) and its `file:line`; each feature's header (name, description and Background) is printed once per page. `--tags` takes a cucumber tag expression with `and`, `or`, `not` and parentheses.
+
+```bash
+# The acceptance criteria of a card (scenarios tagged with its work-unit id)
+fspec context --tags @<workUnitId>
+
+# Scenarios tagged @auth that are not @wip
+fspec context --tags "@auth and not @wip"
+
+# Scenarios that mention a phrase (case-insensitive) or match a regular expression
+fspec context --text "invalid password"
+fspec context --regex "log(in|out)" --feature user-login
+
+# The next page: every page ends with "page N of M" and the exact command for the next page
+fspec context --tags @<workUnitId> --page 2
+```
+
+A page holds at most 40000 characters (`--page-size`) and never splits a scenario. `--format text` drops the markdown, and `--format json` prints one page as `page`, `pages`, `nextCommand`, `features` and `items`. `fspec context --help` lists every flag.
 
 ### Move Work Through the Kanban
 
@@ -1092,19 +1141,13 @@ fspec restore-rule AUTH-001 2
 fspec restore-example AUTH-001 5
 fspec restore-question AUTH-001 3
 fspec restore-architecture-note AUTH-001 1
-
-# Bulk restore with --ids flag
-fspec restore-rule AUTH-001 --ids 2,5,7
-fspec restore-example AUTH-001 --ids 1,3
+fspec restore-assumption AUTH-001 0
 ```
 
 **Compaction:**
 ```bash
 # Permanently remove soft-deleted items (destructive!)
 fspec compact-work-unit AUTH-001
-
-# Force compact during non-done status (use with caution)
-fspec compact-work-unit AUTH-001 --force
 ```
 
 **Auto-Compact Behavior:**
@@ -1370,7 +1413,7 @@ fspec update-work-unit-status EXAMPLE-006 testing    # Move to testing
 #   });
 # });
 #
-# WITHOUT these @step comments matching EXACT Gherkin text, fspec link-coverage will BLOCK!
+# WITHOUT these @step comments matching EXACT Gherkin text, `fspec link-coverage` will BLOCK!
 
 <test-command>                                   # Tests MUST FAIL (red phase)
                                                  # If tests pass, you wrote code already!
@@ -1639,7 +1682,7 @@ Understanding what's ✨ AUTOMATIC vs 🔧 MANUAL prevents confusion:
   - Remove deleted scenarios
   - Rename scenarios (preserving test mappings)
   - Recalculate stats
-- **Validation**: `update-work-unit-status <id> validating` blocks workflow if coverage is stale
+- **Validation**: `update-work-unit-status <workUnitId> validating` blocks workflow if coverage is stale
 
 **🔧 MANUAL (AI must run commands):**
 - **Linking tests**: `fspec link-coverage <feature> --scenario "..." --test-file ... --test-lines ...`
@@ -1667,8 +1710,8 @@ fspec show-coverage <feature-name> --format=json
 # Show all feature coverage (project-wide)
 fspec show-coverage
 
-# Audit coverage (verify files exist)
-fspec audit-coverage <feature-name>
+# Audit coverage (files exist, ranges hold their @step comments, no shared test files)
+fspec audit --feature <feature-name> --area coverage
 ```
 
 ### Coverage Workflow Integration
@@ -1713,7 +1756,7 @@ fspec show-coverage user-authentication
 ✅ **IMMEDIATELY after**:
 1. Writing test file (link test to scenario)
 2. Implementing code (link implementation to test mapping)
-3. Refactoring (update line numbers if they change)
+3. Refactoring (update line numbers if they change: `fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <new-range> --replace` moves a test mapping and keeps its implementation mappings; re-linking an implementation file replaces its lines)
 4. Adding new scenarios (coverage file auto-created, but needs linking)
 
 ❌ **DON'T**:
@@ -1724,6 +1767,8 @@ fspec show-coverage user-authentication
 ### @step Comment Matching Rules
 
 **CRITICAL**: @step comments match ONLY the step line text (NOT data tables or docstrings).
+
+**Exact match only:** a step is covered only by an `@step` comment that repeats its keyword and text exactly (runs of spaces count as one). Plain comments such as `// Given a user` (without `@step`) do not count, and there is no similarity matching: other words, stale wording or a different letter case do not match. link-coverage, `fspec audit` and `update-work-unit-status` all apply this rule. The `@step` marker must be the first word after a comment marker (`//`, `#`, `--`, `*`, `/*`) at the start of the line; text inside string literals does not count.
 
 **What gets matched:**
 - ```gherkin
@@ -1742,6 +1787,14 @@ const items = [
   { name: 'Apple', quantity: 5 },
   { name: 'Orange', quantity: 3 }
 ];
+```
+
+The step text is the whole rest of the comment line after `@step` (a `*/` inside it, as in a glob, is kept; only a `*/` that ends a one-line block comment is dropped).
+
+**Long steps:** end the `@step` line with a backslash to continue it on the next comment line. The comment marker (`//`, `#`, `--`, or a block comment's leading `*`) and surrounding spaces are dropped and the parts are joined with one space; a continued line may end with a backslash again. A comment line after a `@step` line without the backslash is NOT part of the step.
+```rust
+// @step Given the session list \
+//     shows every saved session with its title and age
 ```
 
 The table content ignored - you only need to match the step line text. No need for complex edge case documentation - the implementation is simpler than it appears.
@@ -1785,7 +1838,7 @@ Coverage files (`*.feature.coverage`) are JSON files automatically created when 
 Coverage files are automatically synchronized when scenarios are modified:
 
 - **Delete scenario** (`fspec delete-scenario`): Automatically removes scenario from coverage file and recalculates stats
-- **Bulk delete** (`fspec delete-scenarios-by-tag`): Removes all deleted scenarios from coverage files
+- **Bulk delete** (`fspec delete-scenarios --tag=<tag>`): Removes all deleted scenarios from coverage files
 - **Rename scenario** (`fspec update-scenario`): Preserves all test mappings and implementation mappings during rename
 - **Generate coverage** (`fspec generate-coverage`): Removes stale scenarios (in coverage but not in feature file)
 
@@ -1799,7 +1852,7 @@ Coverage files are automatically synchronized when scenarios are modified:
 1. **Update immediately** - Link coverage as soon as tests/code are written
 2. **Use update-scenario for renames** - Preserves test mappings (don't delete + recreate)
 3. **Check coverage gaps** - Run `fspec show-coverage` regularly to find uncovered scenarios
-4. **Use audit** - Run `fspec audit-coverage <feature>` to verify file paths are correct
+4. **Use audit** - Run `fspec audit --feature <feature>` to verify the mappings are exact
 5. **Track changes** - When refactoring changes line numbers, update coverage mappings
 6. **Project-wide view** - Run `fspec show-coverage` (no arguments) to see all features at once
 7. **Sync stale coverage** - Run `fspec generate-coverage` if validation detects stale scenarios
@@ -1848,9 +1901,9 @@ Every test file MUST start with this header comment:
 describe('Feature: [Feature Name]', () => {
   describe('Scenario: [Scenario Name]', () => {
     it('should [expected behavior]', async () => {
-      // Given: [precondition]
-      // When: [action]
-      // Then: [expected outcome]
+      // @step Given [precondition]
+      // @step When [action]
+      // @step Then [expected outcome]
     });
   });
 });
@@ -1874,16 +1927,9 @@ The `fspec bootstrap` command outputs complete fspec documentation by internally
 
 Below is the complete workflow documentation:
 
-**The following sections contain complete fspec command documentation**. This is the output from running:
-- `fspec --help` (main help showing all command groups)
-- `fspec help specs` (Gherkin specification commands)
-- `fspec help work` (work unit management commands)
-- `fspec help discovery` (Example Mapping commands)
-- `fspec help metrics` (progress tracking commands)
-- `fspec help setup` (configuration commands)
-- `fspec help hooks` (lifecycle hook commands)
+**The following sections contain complete fspec command documentation**, grouped by area: Gherkin specifications, work unit management, discovery (Example Mapping), metrics, setup and lifecycle hooks.
 
-**This is your complete command reference for all fspec features**. You can run these commands individually at any time to refresh specific sections.
+**This is your complete command reference for all fspec features**. Run `fspec --help` at any time to list every command, and `fspec <command> --help` for the full help of one command.
 
 ---
 
@@ -1921,42 +1967,40 @@ FEATURES
       fspec show-feature user-authentication
       fspec show-feature login --format=json
 
-  fspec delete-features-by-tag      Delete features by tag
+  fspec delete-features            Delete features by tag
     Options:
       --tag=<tag>                      Tag to match (required)
       --dry-run                        Preview without deleting
     Examples:
-      fspec delete-features-by-tag --tag=@deprecated --dry-run
+      fspec delete-features --tag=@deprecated --dry-run
 
 SCENARIOS
-  fspec add-scenario <feature> <title> Add scenario to feature
+  fspec add-scenario <feature> <title>  Add scenario to feature
     Examples:
       fspec add-scenario login "Login with valid credentials"
 
-  fspec update-scenario <feature> <old> <new> Update scenario name
+  fspec update-scenario <feature> <old> <new>  Update scenario name
     Examples:
       fspec update-scenario login "Old Name" "New Name"
 
-  fspec delete-scenario <feature> <title> Delete scenario
+  fspec delete-scenario <feature> <title>  Delete scenario
     Examples:
       fspec delete-scenario login "Deprecated scenario"
 
-  fspec get-scenarios               Query scenarios by tag
+  fspec context                    Load acceptance criteria in pages
     Options:
-      --tag=<tag>                      Filter by tag (AND logic)
-      --format=<format>                Output: text or json
+      --tags=<expression>              Cucumber tag expression (and, or, not, parentheses)
+      --text=<text>                    Name or step text contains (case-insensitive)
+      --regex=<pattern>                Name or step text matches
+      --feature=<name>                 One feature file
+      --format=<format>                Output: markdown (default), text or json
+      --page=<number>                  Page to print (default 1)
+      --page-size=<chars>              Characters per page (default 40000)
     Examples:
-      fspec get-scenarios --tag=@critical --tag=@critical
+      fspec context --tags=@critical --format=markdown
+      fspec context --tags="@critical and not @wip" --page=2
 
-  fspec show-acceptance-criteria    Show acceptance criteria
-    Options:
-      --tag=<tag>                      Filter by tag
-      --format=<format>                Output: text, markdown, json
-      --output=<file>                  Write to file
-    Examples:
-      fspec show-acceptance-criteria --tag=@critical --format=markdown
-
-  fspec delete-scenarios-by-tag     Delete scenarios by tag
+  fspec delete-scenarios           Delete scenarios by tag
     Options:
       --tag=<tag>                      Tag to match
       --dry-run                        Preview without deleting
@@ -1977,12 +2021,19 @@ STEPS
     Examples:
       fspec delete-step login "Valid login" "I am on the login page"
 
+  fspec update-feature-text <feature> --find <text> --replace <text>
+    Replace one exact piece of non-step text: the title, description,
+    # comments, Rule blocks or a data table / Examples cell (steps and
+    scenario names: use update-step / update-scenario)
+    Examples:
+      fspec update-feature-text login --find "old service" --replace "auth service"
+
 CONTENT
-  fspec add-background <feature> <text> Add/update background story
+  fspec add-background <feature> <text>  Add/update background story
     Examples:
       fspec add-background login "As a user\nI want to log in"
 
-  fspec add-architecture <feature> <text> Add architecture notes
+  fspec add-architecture <feature> <text>  Add architecture notes
     Examples:
       fspec add-architecture login "Uses JWT tokens"
 
@@ -1999,18 +2050,22 @@ VALIDATION & FORMATTING
       fspec format
       fspec format spec/features/login.feature
 
-  fspec check                      Run all validation checks
+  fspec audit                      Report every exact drift problem with its fix command
     Options:
-      --verbose                        Show detailed output
+      --area <name>                    gherkin, tags, format, coverage or spec (repeatable)
+      --feature <name>                 Audit only this feature (repeatable)
+      --work-unit <workUnitId>         Audit only the work unit's features
+      --json                           Print {problems, exitCode} as JSON
     Examples:
-      fspec check --verbose
+      fspec audit
+      fspec audit --work-unit AUTH-001
 
   fspec validate-tags              Validate tag usage
     Examples:
       fspec validate-tags
 
 COVERAGE TRACKING (Scenario-to-Test-to-Implementation)
-  fspec link-coverage <feature> --scenario <name> Link tests/implementation
+  fspec link-coverage <feature> --scenario <name>  Link tests/implementation
     Options:
       --test-file <path>               Test file path (e.g., src/__tests__/auth.test.ts)
       --test-lines <range>             Test line range (e.g., "45-62")
@@ -2029,11 +2084,9 @@ COVERAGE TRACKING (Scenario-to-Test-to-Implementation)
       fspec show-coverage user-authentication
       fspec show-coverage              # Project-wide
 
-  fspec audit-coverage <feature>     Verify file paths exist
-    Options:
-      --fix                            Remove broken mappings
+  fspec audit --area coverage        Verify coverage mappings are exact
     Examples:
-      fspec audit-coverage user-authentication --fix
+      fspec audit --feature user-authentication --area coverage
 
   fspec unlink-coverage <feature>    Remove coverage mappings
     Options:
@@ -2112,38 +2165,38 @@ WORK UNITS
       fspec list-work-units
       fspec list-work-units -s specifying
 
-  fspec show-work-unit <id>
+  fspec show-work-unit <workUnitId>
     Examples:
       fspec show-work-unit AUTH-001
 
-  fspec update-work-unit <id>
+  fspec update-work-unit <workUnitId>
     Options:
       --title <title>                  Update title
       --description <desc>             Update description
       --epic <epic>                    Update epic
-      --parent <parent-id>             Set parent work unit
+      --parent <workUnitId>            Set parent work unit
     Examples:
       fspec update-work-unit AUTH-001 --title "New Title"
 
-  fspec update-work-unit-status <id> <status>
+  fspec update-work-unit-status <workUnitId> <status>
     Examples:
       fspec update-work-unit-status AUTH-001 specifying
       fspec update-work-unit-status AUTH-001 implementing
 
-  fspec update-work-unit-estimate <id> <estimate>
+  fspec update-work-unit-estimate <workUnitId> <estimate>
     Examples:
       fspec update-work-unit-estimate AUTH-001 5
 
-  fspec prioritize-work-unit <id>
+  fspec prioritize-work-unit <workUnitId>
     Options:
       --position <position>            Position: top, bottom, or number
-      --before <id>                    Place before this work unit
-      --after <id>                     Place after this work unit
+      --before <workUnitId>            Place before this work unit
+      --after <workUnitId>             Place after this work unit
     Examples:
       fspec prioritize-work-unit AUTH-003 --position=top
       fspec prioritize-work-unit AUTH-001 --before=AUTH-002
 
-  fspec delete-work-unit <id>
+  fspec delete-work-unit <workUnitId>
     Examples:
       fspec delete-work-unit AUTH-001
 
@@ -2157,12 +2210,12 @@ WORK UNITS
     Examples:
       fspec validate-work-units
 
-  fspec export-work-units
+  fspec export-work-units <format> <output>
+    Description: Export work units (format: json)
     Options:
-      --format <format>                Output: json or csv
-      --output <file>                  Output file path
+      --status <status>                Only work units in this status
     Examples:
-      fspec export-work-units --format=json --output=work.json
+      fspec export-work-units json work.json
 
   fspec query-work-units
     Options:
@@ -2176,14 +2229,14 @@ WORK UNITS
       fspec query-work-units --tag=@cli --format=table
 
 ANALYSIS & COMPARISON
-  fspec search-scenarios --query=<pattern>
-    Description: Search scenarios across all feature files
+  fspec context --text=<text>
+    Description: Find scenarios across all feature files
     Options:
-      --regex                          Use regex pattern matching
-      --json                           Output in JSON format
+      --regex=<pattern>                Match a regular expression instead
+      --format=json                    Output in JSON format
     Examples:
-      fspec search-scenarios --query="validation"
-      fspec search-scenarios --query="user.*login" --regex
+      fspec context --text="validation"
+      fspec context --regex="user.*login"
 
   fspec search-implementation --function=<name>
     Description: Search for function usage across work units
@@ -2213,47 +2266,45 @@ ANALYSIS & COMPARISON
       fspec show-test-patterns --tag=@cli --include-coverage
 
 DEPENDENCIES
-  fspec add-dependency <id> [depends-on-id]
+  fspec add-dependency <workUnitId> [workUnitId]
     Description: Add dependency relationship (shorthand or options)
     Options:
-      --blocks <id>                    Work unit that this blocks
-      --blocked-by <id>                Work unit that blocks this
-      --depends-on <id>                Work unit this depends on
-      --relates-to <id>                Related work unit
+      --blocks <workUnitId>            Work unit that this blocks
+      --blocked-by <workUnitId>        Work unit that blocks this
+      --depends-on <workUnitId>        Work unit this depends on
+      --relates-to <workUnitId>        Related work unit
     Examples:
       fspec add-dependency AUTH-002 AUTH-001              # Shorthand: AUTH-002 depends on AUTH-001
       fspec add-dependency AUTH-002 --blocks=API-001      # AUTH-002 blocks API-001
       fspec add-dependency UI-001 --blocked-by=API-001    # UI-001 is blocked by API-001
 
-  fspec add-dependencies <id> <dep1> <dep2>...
+  fspec add-dependencies <workUnitId> --depends-on <workUnitId>...
     Examples:
-      fspec add-dependencies DASH-001 AUTH-001 AUTH-002
+      fspec add-dependencies DASH-001 --depends-on AUTH-001 AUTH-002
 
-  fspec remove-dependency <id> [depends-on-id]
+  fspec remove-dependency <workUnitId> [workUnitId]
     Options:
-      --blocks <id>                    Remove blocks relationship
-      --blocked-by <id>                Remove blockedBy relationship
-      --depends-on <id>                Remove dependsOn relationship
-      --relates-to <id>                Remove relatesTo relationship
+      --blocks <workUnitId>            Remove blocks relationship
+      --blocked-by <workUnitId>        Remove blockedBy relationship
+      --depends-on <workUnitId>        Remove dependsOn relationship
+      --relates-to <workUnitId>        Remove relatesTo relationship
     Examples:
       fspec remove-dependency AUTH-002 AUTH-001           # Remove dependsOn
       fspec remove-dependency AUTH-002 --blocks=API-001   # Remove blocks
 
-  fspec clear-dependencies <id>
+  fspec clear-dependencies <workUnitId>
     Examples:
       fspec clear-dependencies AUTH-002
 
-  fspec dependencies <id>
+  fspec dependencies <workUnitId>
     Description: Show dependencies for a work unit
     Examples:
       fspec dependencies AUTH-002
 
-  fspec export-dependencies
-    Options:
-      --format <format>                Output: json or mermaid
-      --output <file>                  Output file path
+  fspec export-dependencies <format> <output>
+    Description: Export the dependency graph (format: json or mermaid)
     Examples:
-      fspec export-dependencies --format=mermaid
+      fspec export-dependencies mermaid dependencies.md
 
   fspec query-dependency-stats
     Options:
@@ -2280,29 +2331,29 @@ WORKFLOW AUTOMATION
       fspec board --format=json
       fspec board --limit=50
 
-  fspec workflow-automation <id>
+  fspec workflow-automation <workUnitId>
     Description: Check if work unit can auto-advance
     Examples:
       fspec workflow-automation AUTH-001
 
 CHECKPOINTS (Experimentation & Recovery)
-  fspec checkpoint <id> <name>
+  fspec checkpoint <workUnitId> <name>
     Description: Create manual checkpoint for experimentation
     Examples:
       fspec checkpoint AUTH-001 baseline
       fspec checkpoint AUTH-001 before-refactor
 
-  fspec restore-checkpoint <id> <name>
+  fspec restore-checkpoint <workUnitId> <name>
     Description: Restore previously created checkpoint
     Examples:
       fspec restore-checkpoint AUTH-001 baseline
 
-  fspec list-checkpoints <id>
+  fspec list-checkpoints <workUnitId>
     Description: List all checkpoints (🤖 auto, 📌 manual)
     Examples:
       fspec list-checkpoints AUTH-001
 
-  fspec cleanup-checkpoints <id> --keep-last <N>
+  fspec cleanup-checkpoints <workUnitId> --keep-last <N>
     Description: Delete old checkpoints, keep N most recent
     Examples:
       fspec cleanup-checkpoints AUTH-001 --keep-last 5
@@ -2350,50 +2401,40 @@ STABLE INDICES & SOFT-DELETE
   When removed, items are marked deleted (soft-delete) instead of being erased.
   Stable indices are shown in display output (e.g., [0], [1], [2]).
 
-  fspec show-deleted <work-unit-id>
+  fspec show-deleted <workUnitId>
     Description: Display all soft-deleted items with IDs and timestamps
     Examples:
       fspec show-deleted AUTH-001
 
-  fspec restore-rule <work-unit-id> <index>
+  fspec restore-rule <workUnitId> <index>
     Description: Restore soft-deleted rule by stable ID
-    Options:
-      --ids <ids>                      Restore multiple rules (comma-separated)
     Examples:
       fspec restore-rule AUTH-001 2
-      fspec restore-rule AUTH-001 --ids 2,5,7
 
-  fspec restore-example <work-unit-id> <index>
+  fspec restore-example <workUnitId> <index>
     Description: Restore soft-deleted example by stable ID
-    Options:
-      --ids <ids>                      Restore multiple examples (comma-separated)
     Examples:
       fspec restore-example AUTH-001 2
-      fspec restore-example AUTH-001 --ids 2,5,7
 
-  fspec restore-question <work-unit-id> <index>
+  fspec restore-question <workUnitId> <index>
     Description: Restore soft-deleted question by stable ID
-    Options:
-      --ids <ids>                      Restore multiple questions (comma-separated)
     Examples:
       fspec restore-question AUTH-001 2
-      fspec restore-question AUTH-001 --ids 2,5,7
 
-  fspec restore-architecture-note <work-unit-id> <index>
+  fspec restore-architecture-note <workUnitId> <index>
     Description: Restore soft-deleted architecture note by stable ID
-    Options:
-      --ids <ids>                      Restore multiple notes (comma-separated)
     Examples:
       fspec restore-architecture-note AUTH-001 2
-      fspec restore-architecture-note AUTH-001 --ids 2,5,7
 
-  fspec compact-work-unit <work-unit-id>
+  fspec restore-assumption <workUnitId> <index>
+    Description: Restore removed assumption by stable ID
+    Examples:
+      fspec restore-assumption AUTH-001 2
+
+  fspec compact-work-unit <workUnitId>
     Description: Permanently remove soft-deleted items (destructive!)
-    Options:
-      --force                          Skip confirmation, compact during non-done status
     Examples:
       fspec compact-work-unit AUTH-001
-      fspec compact-work-unit AUTH-001 --force
     Note: Auto-compact triggers when moving to "done" status
 
 
@@ -2414,65 +2455,70 @@ Use this when you need to:
   • Query example mapping coverage statistics
 
 EXAMPLES
-  fspec add-example <work-unit-id> <example>
+  fspec add-example <workUnitId> <example>
     Description: Add example to work unit during specification
     Examples:
       fspec add-example AUTH-001 "User logs in with valid email"
 
-  fspec remove-example <work-unit-id> <index>
+  fspec remove-example <workUnitId> <index>
     Description: Remove example by index (0-based)
     Examples:
       fspec remove-example AUTH-001 0
 
 QUESTIONS
-  fspec add-question <work-unit-id> <question>
+  fspec add-question <workUnitId> <question>
     Description: Add question to work unit during specification
     Examples:
       fspec add-question AUTH-001 "Should we support OAuth?"
 
-  fspec answer-question <work-unit-id> <index>
+  fspec answer-question <workUnitId> <index>
     Options:
       --answer <answer>                Answer text
       --add-to <type>                  Add to: rule, assumption, or none (default: none)
     Examples:
       fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule
 
-  fspec remove-question <work-unit-id> <index>
+  fspec remove-question <workUnitId> <index>
     Description: Remove question by index (0-based)
     Examples:
       fspec remove-question AUTH-001 0
 
 RULES
-  fspec add-rule <work-unit-id> <rule>
+  fspec add-rule <workUnitId> <rule>
     Description: Add business rule to work unit during specification
     Examples:
       fspec add-rule AUTH-001 "Password must be 8+ characters"
 
-  fspec remove-rule <work-unit-id> <index>
+  fspec remove-rule <workUnitId> <index>
     Description: Remove rule by index (0-based)
     Examples:
       fspec remove-rule AUTH-001 0
 
 ASSUMPTIONS
-  fspec add-assumption <work-unit-id> <assumption>
+  fspec add-assumption <workUnitId> <assumption>
     Description: Add assumption to work unit during specification
     Examples:
       fspec add-assumption AUTH-001 "Email verification is handled externally"
 
+  fspec remove-assumption <workUnitId> <index>
+    Description: Remove assumption by stable ID (soft delete; restore-assumption undoes it)
+    Examples:
+      fspec remove-assumption AUTH-001 0
+
 ARCHITECTURE NOTES
-  fspec add-architecture-note <work-unit-id> <note>
+  fspec add-architecture-note <workUnitId> <note>
     Description: Capture architecture decisions, NFRs, dependencies
     Examples:
       fspec add-architecture-note AUTH-001 "Uses @cucumber/gherkin parser"
       fspec add-architecture-note AUTH-001 "Performance: Must complete within 2 seconds"
 
-  fspec remove-architecture-note <work-unit-id> <index>
+  fspec remove-architecture-note <workUnitId> <index>
     Description: Remove architecture note by index (0-based)
     Examples:
       fspec remove-architecture-note AUTH-001 0
 
 ATTACHMENTS
-  fspec add-attachment <work-unit-id> <file-path>
+  fspec add-attachment <workUnitId> <file-path>
     Description: Add attachment to work unit (diagrams, mockups, docs, etc.)
     Options:
       -d, --description <text>         Attachment description
@@ -2480,12 +2526,12 @@ ATTACHMENTS
       fspec add-attachment AUTH-001 diagrams/auth-flow.png
       fspec add-attachment UI-002 mockups/dashboard.png --description "Dashboard v2"
 
-  fspec list-attachments <work-unit-id>
+  fspec list-attachments <workUnitId>
     Description: List all attachments for a work unit
     Examples:
       fspec list-attachments AUTH-001
 
-  fspec remove-attachment <work-unit-id> <file-name>
+  fspec remove-attachment <workUnitId> <file-name>
     Description: Remove attachment from work unit
     Options:
       --keep-file                      Keep file on disk
@@ -2494,18 +2540,18 @@ ATTACHMENTS
       fspec remove-attachment AUTH-001 diagram.png --keep-file
 
 IMPORT/EXPORT
-  fspec import-example-map <work-unit-id> <file>
+  fspec import-example-map <workUnitId> <file>
     Description: Import examples, rules, questions from JSON
     Examples:
       fspec import-example-map AUTH-001 examples.json
 
-  fspec export-example-map <work-unit-id> <file>
+  fspec export-example-map <workUnitId> <file>
     Description: Export examples, rules, questions to JSON
     Examples:
       fspec export-example-map AUTH-001 examples.json
 
 GENERATION
-  fspec generate-scenarios <work-unit-id>
+  fspec generate-scenarios <workUnitId>
     Description: Generate Gherkin scenarios from example mapping data
     Examples:
       fspec generate-scenarios AUTH-001
@@ -2517,49 +2563,49 @@ STATISTICS
       fspec query-example-mapping-stats
 
 EVENT STORM
-  fspec discover-event-storm <work-unit-id>
+  fspec discover-event-storm <workUnitId>
     Description: Start Event Storm discovery session for domain modeling
     Examples:
       fspec discover-event-storm AUTH-001
 
-  fspec add-domain-event <work-unit-id> <text>
+  fspec add-domain-event <workUnitId> <text>
     Description: Add domain event to Event Storm section
     Examples:
       fspec add-domain-event AUTH-001 "UserRegistered"
 
-  fspec add-command <work-unit-id> <text>
+  fspec add-command <workUnitId> <text>
     Description: Add command to Event Storm section
     Examples:
       fspec add-command AUTH-001 "RegisterUser"
 
-  fspec add-policy <work-unit-id> <text>
+  fspec add-policy <workUnitId> <text>
     Description: Add policy (WHEN/THEN) to Event Storm section
     Examples:
       fspec add-policy AUTH-001 "Send welcome email" --when "UserRegistered" --then "SendWelcomeEmail"
 
-  fspec add-hotspot <work-unit-id> <text>
+  fspec add-hotspot <workUnitId> <text>
     Description: Add hotspot (uncertainty/risk) to Event Storm section
     Examples:
       fspec add-hotspot AUTH-001 "Password Reset Flow" --concern "Unclear timeout logic"
 
-  fspec add-aggregate <work-unit-id> <text>
+  fspec add-aggregate <workUnitId> <text>
     Description: Add aggregate (domain entity) to Event Storm section
     Examples:
       fspec add-aggregate CHECKOUT-001 "Order"
       fspec add-aggregate CHECKOUT-001 "ShoppingCart" --responsibilities "Add items, Calculate total"
 
-  fspec add-bounded-context <work-unit-id> <text>
+  fspec add-bounded-context <workUnitId> <text>
     Description: Add bounded context (strategic boundary) to Event Storm section
     Examples:
       fspec add-bounded-context CHECKOUT-001 "Order Management"
 
-  fspec add-external-system <work-unit-id> <text>
+  fspec add-external-system <workUnitId> <text>
     Description: Add external system/integration to Event Storm section
     Examples:
       fspec add-external-system CHECKOUT-001 "Payment Gateway"
       fspec add-external-system AUTH-001 "Stripe API" --type REST_API
 
-  fspec show-event-storm <work-unit-id>
+  fspec show-event-storm <workUnitId>
     Description: Display Event Storm artifacts as JSON
     Examples:
       fspec show-event-storm AUTH-001
@@ -2614,7 +2660,7 @@ EVENT STORM
     Examples:
       fspec remove-command-from-foundation "Work Management" "DeprecatedAction"
 
-  fspec generate-example-mapping-from-event-storm <work-unit-id>
+  fspec generate-example-mapping-from-event-storm <workUnitId>
     Description: Convert Event Storm artifacts to Example Mapping
     Examples:
       fspec generate-example-mapping-from-event-storm AUTH-001
@@ -2625,26 +2671,18 @@ RESEARCH TOOLS (Answering Questions During Discovery)
     Examples:
       fspec research
 
-  fspec research --tool=<name> [args...]
-    Description: Execute research tool with arguments
+  fspec research --tool=<name> [--work-unit=<workUnitId>]
+    Description: Select a research tool (running research tools is not ported to the Rust CLI yet; the command lists them)
     Options:
       --tool <name>                    Research tool to use
-      --work-unit <id>                 Work unit context (forwarded to tool)
-      [tool-specific args]             Additional args passed to tool
+      --work-unit <workUnitId>         Work unit context
     Examples:
-      fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001
-
-  Available Research Tools:
-    stakeholder - Send questions to stakeholders via chat platforms
-      --platform <platform>    Platform: teams, slack, discord (comma-separated)
-      --question <question>    Question to send
-      --work-unit <id>         Work unit for context
+      fspec research --tool=stakeholder --work-unit=AUTH-001
 
   Integration with Example Mapping:
     1. Add question: fspec add-question AUTH-001 "@human: Support OAuth?"
-    2. Research: fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001
-    3. Attach results: When prompted, choose to attach results to work unit
-    4. Answer question: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule
+    2. Research: ask the stakeholder, or check the tools listed by fspec research
+    3. Answer question: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule
 
   Notes:
     - Research tools auto-discovered from spec/research-scripts/
@@ -2668,7 +2706,7 @@ Use this when you need to:
   • Query dependency statistics and bottlenecks
 
 RECORDING METRICS
-  fspec record-iteration <id>
+  fspec record-iteration <workUnitId>
     Description: Increment iteration count
     Examples:
       fspec record-iteration AUTH-001
@@ -2686,7 +2724,7 @@ QUERYING METRICS
     Examples:
       fspec query-estimate-accuracy
 
-  fspec query-estimation-guide <id>
+  fspec query-estimation-guide <workUnitId>
     Description: Get estimation guidance
     Examples:
       fspec query-estimation-guide AUTH-001
@@ -2804,9 +2842,9 @@ EPICS & PREFIXES
     Examples:
       fspec create-prefix AUTH "Authentication features"
 
-  fspec update-prefix <prefix> <description>
+  fspec update-prefix <prefix> --description <description>
     Examples:
-      fspec update-prefix AUTH "Updated description"
+      fspec update-prefix AUTH --description "Updated description"
 
   fspec list-prefixes
     Examples:
@@ -2925,22 +2963,22 @@ HOOK MANAGEMENT
       fspec remove-hook post-implementing test
 
 VIRTUAL HOOKS (Work Unit-Scoped)
-  fspec add-virtual-hook <id> <event> <command>
+  fspec add-virtual-hook <workUnitId> <event> <command>
     Options:
       --blocking                       Make hook blocking
       --git-context                    Run on changed files only
     Examples:
       fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking
 
-  fspec list-virtual-hooks <id>
+  fspec list-virtual-hooks <workUnitId>
     Examples:
       fspec list-virtual-hooks AUTH-001
 
-  fspec remove-virtual-hook <id> <name>
+  fspec remove-virtual-hook <workUnitId> <name>
     Examples:
       fspec remove-virtual-hook AUTH-001 lint
 
-  fspec clear-virtual-hooks <id>
+  fspec clear-virtual-hooks <workUnitId>
     Examples:
       fspec clear-virtual-hooks AUTH-001
 

@@ -36,21 +36,25 @@ impl Session {
         }
     }
 
-    pub fn inject_context_reminders(&mut self) {
-        self.inject_context_reminders_with_isolation(None);
+    /// BUG-581: `working_dir` is the session's working directory (its
+    /// worktree when isolated, else its project), named in the
+    /// environment reminder.
+    pub fn inject_context_reminders(&mut self, working_dir: &std::path::Path) {
+        self.inject_context_reminders_with_isolation(working_dir, None);
     }
 
     pub fn inject_context_reminders_with_isolation(
         &mut self,
+        working_dir: &std::path::Path,
         isolation: Option<&context_gathering::IsolationContext>,
     ) {
         use context_gathering::{discover_agents_md, gather_environment_info_with_isolation};
 
-        if let Some(content) = discover_agents_md(None) {
+        if let Some(content) = discover_agents_md(working_dir) {
             self.add_system_reminder(SystemReminderType::SystemPrompt, &content);
         }
 
-        let env_info = gather_environment_info_with_isolation(isolation);
+        let env_info = gather_environment_info_with_isolation(working_dir, isolation);
         self.add_system_reminder(
             SystemReminderType::Environment,
             &env_info.to_reminder_content(),

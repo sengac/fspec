@@ -1,0 +1,156 @@
+{
+  "scenarios": [
+    {
+      "name": "A feature file that is not valid UTF-8 fails the prefill gate and names the file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug378_prefill_gate_feature_read_errors.rs",
+          "lines": "71-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "/// BUG-360/BUG-378: why the feature scan could not read `spec/features`.",
+              "lastLine": ".map_err(|err| msg(format!(\"Cannot check {id} for prefill placeholders: {err}\")))?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreadable spec features directory fails the prefill gate and names it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug378_prefill_gate_feature_read_errors.rs",
+          "lines": "91-105",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "/// BUG-360/BUG-378: why the feature scan could not read `spec/features`.",
+              "lastLine": ".map_err(|err| msg(format!(\"Cannot check {id} for prefill placeholders: {err}\")))?;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug378_prefill_gate_feature_read_errors.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs"
+    ],
+    "totalLinesCovered": 138
+  }
+}

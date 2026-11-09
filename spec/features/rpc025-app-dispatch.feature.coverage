@@ -4,8 +4,8 @@
       "name": "First Shift+↑ caches the live draft, loads a fresh snapshot, and replaces input with history[0]",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "184-225",
+          "file": "rust/fspec-tui/tests/rpc025_history/recall.rs",
+          "lines": "7-55",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
@@ -37,23 +37,25 @@
                 60,
                 61,
                 62,
-                63,
                 64,
                 65,
                 66,
                 67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
+                67,
+                67,
+                67,
+                67,
+                67,
                 75,
                 76,
                 77,
-                78
-              ]
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "pub(crate) fn handle_history_prev(&mut self) {",
+              "lastLine": "let next_idx = match self.agent_view_store.cached_history_snapshot(session) {"
             }
           ]
         }
@@ -63,12 +65,13 @@
       "name": "Subsequent Shift+↑ walks backwards through the cached snapshot and clamps at len-1",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "227-280",
+          "file": "rust/fspec-tui/tests/rpc025_history/recall.rs",
+          "lines": "58-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
+                79,
                 80,
                 81,
                 82,
@@ -82,10 +85,10 @@
                 90,
                 91,
                 92,
-                93,
-                94,
-                95
-              ]
+                93
+              ],
+              "firstLine": "/// Walk one step back into the cached snapshot, clamped at the tail.",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,15 +98,12 @@
       "name": "Shift+↓ walks forwards and exits recall on the final step restoring the cached_draft",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "282-335",
+          "file": "rust/fspec-tui/tests/rpc025_history/recall.rs",
+          "lines": "130-203",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -142,8 +142,13 @@
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "pub(crate) fn handle_history_next(&mut self) {",
+              "lastLine": "/// replace MultiLineInput with `snapshot[0]`."
             }
           ]
         }
@@ -153,15 +158,12 @@
       "name": "Shift+↓ from live-draft mode is a no-op",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "337-355",
+          "file": "rust/fspec-tui/tests/rpc025_history/recall.rs",
+          "lines": "206-228",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
-                108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -169,8 +171,13 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "Some(k) => self.step_history_next(&session, k),",
+              "lastLine": "let state = self.agent_view_store.history_state_for_mut(session);"
             }
           ]
         }
@@ -180,15 +187,12 @@
       "name": "Shift+↑ when history is empty is a no-op",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "357-381",
+          "file": "rust/fspec-tui/tests/rpc025_history/recall.rs",
+          "lines": "231-259",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -202,8 +206,13 @@
                 153,
                 154,
                 155,
-                156
-              ]
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "&mut self,",
+              "lastLine": "// live input."
             }
           ]
         }
@@ -213,8 +222,8 @@
       "name": "Each open session keeps an independent recall position across Shift+←/→ cycling",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "383-435",
+          "file": "rust/fspec-tui/tests/rpc025_history/submission.rs",
+          "lines": "7-77",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
@@ -246,23 +255,25 @@
                 60,
                 61,
                 62,
-                63,
                 64,
                 65,
                 66,
                 67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
+                67,
+                67,
+                67,
+                67,
+                67,
                 75,
                 76,
                 77,
-                78
-              ]
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "pub(crate) fn handle_history_prev(&mut self) {",
+              "lastLine": "let next_idx = match self.agent_view_store.cached_history_snapshot(session) {"
             }
           ]
         }
@@ -272,15 +283,12 @@
       "name": "Submitting an input fires persistence_add_history via tokio::spawn and resets the session's history state",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "437-491",
+          "file": "rust/fspec-tui/tests/rpc025_history/submission.rs",
+          "lines": "80-163",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
-                158,
-                159,
-                160,
                 161,
                 162,
                 163,
@@ -296,10 +304,15 @@
                 173,
                 174,
                 175,
-                176,
-                177,
-                178
-              ]
+                178,
+                179,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "self.navigator.agent.input.set_value(&first);",
+              "lastLine": "}"
             }
           ]
         }
@@ -309,40 +322,42 @@
       "name": "persistence_add_history is fire-and-forget — a slow disk write never blocks input submission",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs",
-          "lines": "493-521",
+          "file": "rust/fspec-tui/tests/rpc025_history/submission.rs",
+          "lines": "166-202",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "//    the originating session even after a focus switch.",
+              "lastLine": "SlashCommandAction::Debug => {"
             }
           ]
         }
@@ -354,12 +369,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/app_dispatch_history_rpc025.rs"
+      "rust/fspec-tui/tests/rpc025_history/recall.rs",
+      "rust/fspec-tui/tests/rpc025_history/submission.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_history_recall.rs",
       "rust/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
-    "totalLinesCovered": 551
+    "totalLinesCovered": 656
   }
 }

@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct071_whole_request_fit.rs",
-          "lines": "201-221",
+          "lines": "200-220",
           "implMappings": [
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -53,7 +52,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "let mut installation = None;",
+              "lastLine": "})"
             }
           ]
         }
@@ -64,12 +65,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct071_whole_request_fit.rs",
-          "lines": "225-242",
+          "lines": "224-241",
           "implMappings": [
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -112,7 +112,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "let mut installation = None;",
+              "lastLine": "})"
             }
           ]
         }
@@ -123,7 +125,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct071_whole_request_fit.rs",
-          "lines": "246-262",
+          "lines": "245-261",
           "implMappings": [
             {
               "file": "rust/providers/src/selected_request.rs",
@@ -142,7 +144,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "pub fn prepare(",
+              "lastLine": "}"
             }
           ]
         }
@@ -153,12 +157,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct071_whole_request_fit.rs",
-          "lines": "266-292",
+          "lines": "265-291",
           "implMappings": [
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -220,13 +223,15 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
-                149
-              ]
+                149,
+                150,
+                151
+              ],
+              "firstLine": "let mut installation = None;",
+              "lastLine": "}"
             }
           ]
         }
@@ -244,6 +249,6 @@
       "rust/cli/src/session/compaction.rs",
       "rust/providers/src/selected_request.rs"
     ],
-    "totalLinesCovered": 251
+    "totalLinesCovered": 248
   }
 }

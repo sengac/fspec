@@ -299,7 +299,9 @@ async fn test_session_end_payload_includes_reason() {
 // ===== Timeout Handling =====
 
 /// @HOOK-015 Scenario: Hook command killed on timeout
-#[tokio::test]
+// TEST-042: the hook timeout runs on tokio's paused clock: the clock
+// jumps to the 1 s timeout while the child sleeps, so the kill is exact.
+#[tokio::test(start_paused = true)]
 async fn test_hook_killed_on_timeout() {
     let tmp = TempDir::new().unwrap_or_else(|e| panic!("tempdir: {e}"));
     let ctx = make_context(tmp.path());
@@ -309,14 +311,15 @@ async fn test_hook_killed_on_timeout() {
     let hooks = make_session_start_hooks("sleep 10", 1);
 
     // @step When the session_start hook executes
-    let start = std::time::Instant::now();
+    let start = tokio::time::Instant::now();
     let outcome = run_session_start(&hooks, &ctx, "startup").await;
     let elapsed = start.elapsed();
 
     // @step Then the hook process should be killed after 1 second
-    assert!(
-        elapsed.as_secs() < 5,
-        "should have timed out quickly, took {elapsed:?}"
+    assert_eq!(
+        elapsed.as_secs(),
+        1,
+        "should be killed at its 1 s timeout, took {elapsed:?}"
     );
 
     // @step And the outcome should be a warning
@@ -330,7 +333,9 @@ async fn test_hook_killed_on_timeout() {
 }
 
 /// @HOOK-015 Scenario: pre_tool_use timeout is treated as Deny for safety
-#[tokio::test]
+// TEST-042: the hook timeout runs on tokio's paused clock: the clock
+// jumps to the 1 s timeout while the child sleeps, so the kill is exact.
+#[tokio::test(start_paused = true)]
 async fn test_pre_tool_use_timeout_is_deny() {
     let tmp = TempDir::new().unwrap_or_else(|e| panic!("tempdir: {e}"));
     let ctx = make_context(tmp.path());
@@ -340,14 +345,15 @@ async fn test_pre_tool_use_timeout_is_deny() {
     let hooks = make_pre_tool_hooks("sleep 10", 1);
 
     // @step When the agent invokes the "Bash" tool
-    let start = std::time::Instant::now();
+    let start = tokio::time::Instant::now();
     let outcome = run_pre_tool(&hooks, &ctx, "Bash", &json!({})).await;
     let elapsed = start.elapsed();
 
     // @step Then the hook process should be killed after 1 second
-    assert!(
-        elapsed.as_secs() < 5,
-        "should have timed out quickly, took {elapsed:?}"
+    assert_eq!(
+        elapsed.as_secs(),
+        1,
+        "should be killed at its 1 s timeout, took {elapsed:?}"
     );
 
     // @step And the tool call should be denied
@@ -359,7 +365,9 @@ async fn test_pre_tool_use_timeout_is_deny() {
 }
 
 /// @HOOK-015 Scenario: post_tool_use timeout is treated as Warning
-#[tokio::test]
+// TEST-042: the hook timeout runs on tokio's paused clock: the clock
+// jumps to the 1 s timeout while the child sleeps, so the kill is exact.
+#[tokio::test(start_paused = true)]
 async fn test_post_tool_use_timeout_is_warning() {
     let tmp = TempDir::new().unwrap_or_else(|e| panic!("tempdir: {e}"));
     let ctx = make_context(tmp.path());
@@ -369,14 +377,15 @@ async fn test_post_tool_use_timeout_is_warning() {
     let hooks = make_post_tool_hooks("sleep 10", 1);
 
     // @step When the agent completes a tool call
-    let start = std::time::Instant::now();
+    let start = tokio::time::Instant::now();
     let outcome = run_post_tool(&hooks, &ctx, "Bash", &json!({}), "output").await;
     let elapsed = start.elapsed();
 
     // @step Then the hook process should be killed after 1 second
-    assert!(
-        elapsed.as_secs() < 5,
-        "should have timed out quickly, took {elapsed:?}"
+    assert_eq!(
+        elapsed.as_secs(),
+        1,
+        "should be killed at its 1 s timeout, took {elapsed:?}"
     );
 
     // @step And a warning should be emitted but execution should continue

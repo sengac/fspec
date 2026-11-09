@@ -1,4 +1,6 @@
+@BUG-582
 @done
+@BUG-476
 @agent-core
 @session-management
 @persistence

@@ -5,6 +5,7 @@
 @diff-viewer
 @tui
 @RPC-356
+@BUG-540
 Feature: Dual-pane ChangedFilesView with F-key board wiring and Navigator integration
   """
   ChangedFilesView lives in views/changed_files/ split into mod.rs (state + event handling), render.rs (panes), row.rs (file-row formatting), diff_render.rs (colored diff lines), each under 300 lines.
@@ -147,3 +148,32 @@ Feature: Dual-pane ChangedFilesView with F-key board wiring and Navigator integr
     When the view is rendered
     Then no scrollbar is painted in the file list pane
     And the file list content occupies the full pane width
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Deleted files (BUG-540, moved from BUG-069's diff-panel scenario)
+  # ─────────────────────────────────────────────────────────────────────
+  Scenario: The diff of a file deleted from the working tree is its full removal
+    Given a repository where "config.json" was committed with the lines "a" and "b"
+    And "config.json" was deleted from the working tree
+    When the diff of "config.json" is read
+    Then the diff removes the lines "a" and "b"
+    And the diff adds no line
+
+  Scenario: The diff of a deleted and staged file is its full removal
+    Given a repository where "config.json" was committed with the lines "a" and "b"
+    And "config.json" was deleted and the deletion staged
+    When the diff of "config.json" is read
+    Then the diff removes the lines "a" and "b"
+    And the diff adds no line
+
+  Scenario: The diff of a path in neither HEAD nor the working tree fails
+    Given a repository where "never-existed.txt" was never committed
+    When the diff of "never-existed.txt" is read
+    Then reading the diff fails with file not found
+
+  Scenario: Selecting a deleted file shows File was deleted above its removal diff
+    Given the Changed Files view lists "config.json" with status D and it is selected
+    When the removal diff of "config.json" arrives
+    Then the diff pane's first line is "File was deleted"
+    And the diff pane shows the removed lines "a" and "b"
+    And the diff pane does not show "No changes to display"

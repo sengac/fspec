@@ -8,7 +8,7 @@ Feature: Enhanced line-by-line diff with background colors
   I want to see line-by-line diffs with clear background colors
   So that I can easily identify what was replaced, added, or removed
 
-  Background: 
+  Background:
     Given the diff viewer is displaying file changes
     And the diff pane is focused
 

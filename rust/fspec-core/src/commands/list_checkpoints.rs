@@ -1,9 +1,9 @@
 //! `list-checkpoints` — Rust port of `src/commands/list-checkpoints.ts` (RPC-242).
 //!
 //! Lists every checkpoint stored under
-//! `refs/fspec-checkpoints/<work_unit_id>/<name>` for a given work unit,
+//! `refs/fspec-checkpoints/<workUnitId>/<name>` for a given work unit,
 //! correlating each ref with the optional metadata index at
-//! `.git/fspec-checkpoints-index/<work_unit_id>.json` to recover the
+//! `.git/fspec-checkpoints-index/<workUnitId>.json` to recover the
 //! original creation timestamp. Classifies each checkpoint as automatic
 //! (name contains [`codelet_git::ghost_commit::AUTO_CHECKPOINT_PATTERN`])
 //! or manual, sorts newest-first by timestamp, and emits either pretty-
@@ -119,7 +119,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 }
 
-/// Read `.git/fspec-checkpoints-index/<work_unit_id>.json`. Returns the
+/// Read `.git/fspec-checkpoints-index/<workUnitId>.json`. Returns the
 /// parsed `Value` on success, or `None` for both ENOENT and malformed
 /// JSON (parity with the TS bare-`catch` swallow).
 fn read_index(project_root: &Path, work_unit_id: &str) -> Option<Value> {

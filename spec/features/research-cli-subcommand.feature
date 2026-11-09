@@ -43,6 +43,8 @@ Feature: Research CLI subcommand
     When I run `fspec research` in that directory
     Then the command exits with code 0
     And stdout contains "Usage: fspec research --tool=stakeholder <args>"
+    And each of perplexity, jira, confluence and stakeholder is listed with a ✓ or ✗ status indicator
+    And stdout contains "Perplexity AI research tool for web search and AI-powered answers"
 
   Scenario: CLI fails with a not-found error for an unknown tool
     Given an empty project root tempdir

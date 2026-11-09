@@ -1,5 +1,7 @@
 @done
 @PROV-017
+@tui
+@authentication
 Feature: TUI OAuth Login Flow for Provider Settings
   """
   New oauth input handler file: src/tui/inputHandlers/oauthModeHandler.ts — handles keyboard input for oauth-method-select (arrow selection, Enter to pick), oauth-browser-waiting (Esc to cancel), oauth-device-waiting (Esc to cancel), oauth-error (Enter to retry, Esc to go back), oauth-success (Enter/Esc to go back to list)

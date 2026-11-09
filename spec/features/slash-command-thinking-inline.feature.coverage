@@ -1,88 +1,21 @@
 {
   "scenarios": [
     {
-      "name": "parse_slash_command recognises /thinking <level> inline arg",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "31-52",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/slash_parser.rs",
-              "lines": [
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "parse_slash_command returns InvalidThinkingLevel for an unknown arg",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "54-64",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/slash_parser.rs",
-              "lines": [
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Bare /thinking continues to open the ThinkingLevelDialog",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "66-75",
+          "lines": "68-79",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/slash_parser.rs",
               "lines": [
-                63,
-                64
-              ]
+                109,
+                110,
+                111
+              ],
+              "firstLine": "if trimmed == \"/thinking\" {",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,57 +23,15 @@
     },
     {
       "name": "Submitting \"/thinking high\" sets the level via the backend and does NOT open the dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "129-184",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223
-              ]
-            }
-          ]
-        }
-      ]
+      "testMappings": []
     },
     {
       "name": "Submitting \"/thinking gibberish\" emits an error notice and does NOT call the backend",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "186-222",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236
-              ]
-            }
-          ]
+          "lines": "193-233",
+          "implMappings": []
         }
       ]
     },
@@ -149,11 +40,41 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
-          "lines": "224-259",
+          "lines": "235-271",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_thinking_levels.rs",
               "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
                 55,
                 56,
                 57,
@@ -170,8 +91,95 @@
                 68,
                 69,
                 70,
-                71
-              ]
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "/// RPC-022 / MODEL-011: fetch the levels the focused session's model",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_slash_command hands a /thinking argument to the dispatcher",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
+          "lines": "31-53",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/slash_parser.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "if let Some(rest) = trimmed.strip_prefix(\"/thinking \") {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_slash_command clears the level for /thinking default",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/slash_thinking_rpc048.rs",
+          "lines": "55-66",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/slash_parser.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "if let Some(rest) = trimmed.strip_prefix(\"/thinking \") {",
+              "lastLine": "}"
             }
           ]
         }
@@ -180,16 +188,15 @@
   ],
   "stats": {
     "totalScenarios": 6,
-    "coveredScenarios": 6,
-    "coveragePercent": 100,
+    "coveredScenarios": 5,
+    "coveragePercent": 83,
     "testFiles": [
       "rust/fspec-tui/tests/slash_thinking_rpc048.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/slash_parser.rs",
-      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs"
+      "rust/fspec-tui/src/app/dispatch_thinking_levels.rs"
     ],
-    "totalLinesCovered": 253
+    "totalLinesCovered": 224
   }
 }

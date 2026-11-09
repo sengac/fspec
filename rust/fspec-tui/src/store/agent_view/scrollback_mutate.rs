@@ -16,7 +16,7 @@
 //! in `chunk_processor`, `chunk_tool_result`, `reconnect_notice` and
 //! `record_chunk` are untouched.
 
-use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
+use super::chunk_wrap::{wrap_source_rows, DEFAULT_WRAP_WIDTH};
 use super::session_context::SessionContext;
 use crate::views::agent::{ChunkSource, RenderedChunk, TrimResult, MAX_SCROLLBACK_VISUAL_ROWS};
 
@@ -116,11 +116,12 @@ pub(crate) fn rewrap_and_trim_at(ctx: &mut SessionContext, idx: usize) {
 pub(crate) fn push_source(ctx: &mut SessionContext, source: ChunkSource) {
     let seq = ctx.scrollback_next_seq;
     ctx.scrollback_next_seq = ctx.scrollback_next_seq.saturating_add(1);
-    let lines = wrap_source(&source, DEFAULT_WRAP_WIDTH);
+    let (lines, row_ends) = wrap_source_rows(&source, DEFAULT_WRAP_WIDTH);
     ctx.scrollback.push(RenderedChunk {
         seq,
         lines,
         source: Some(source),
+        row_ends,
     });
     trim_to_cap(ctx, None);
 }
@@ -139,13 +140,14 @@ pub(crate) fn push_source(ctx: &mut SessionContext, source: ChunkSource) {
 pub(crate) fn insert_source_at(ctx: &mut SessionContext, idx: usize, source: ChunkSource) -> u64 {
     let seq = ctx.scrollback_next_seq;
     ctx.scrollback_next_seq = ctx.scrollback_next_seq.saturating_add(1);
-    let lines = wrap_source(&source, DEFAULT_WRAP_WIDTH);
+    let (lines, row_ends) = wrap_source_rows(&source, DEFAULT_WRAP_WIDTH);
     ctx.scrollback.insert(
         idx,
         RenderedChunk {
             seq,
             lines,
             source: Some(source),
+            row_ends,
         },
     );
     trim_to_cap(ctx, Some(idx));

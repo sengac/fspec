@@ -36,21 +36,17 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_tools::facade::{FspecToolFacade, InternalFspecParams, ToolDefinition};
+use codelet_tools::blocklist::{allow_for_session, clear_session_allowances, is_session_allowed};
 use codelet_tools::facade::wrapper::{FacadeArgs, FspecToolFacadeWrapper};
+use codelet_tools::facade::{FspecToolFacade, InternalFspecParams, ToolDefinition};
+use codelet_tools::fspec_handler::{
+    set_fspec_handler_for_session, FspecHandler, FspecRequest, FspecResult,
+};
 use codelet_tools::rlcd::{
     build_gate_state, clear_session_gate_allowances, is_session_gate_allowed, load_rlcd_config,
     map_gate_answer, GateOutcome, RlcdGateConfig,
 };
-use codelet_tools::blocklist::{
-    allow_for_session, clear_session_allowances, is_session_allowed,
-};
-use codelet_tools::fspec_handler::{
-    set_fspec_handler_for_session, FspecHandler, FspecRequest, FspecResult,
-};
-use codelet_tools::{
-    set_pause_handler, PauseKind, PauseRequest, PauseResponse,
-};
+use codelet_tools::{set_pause_handler, PauseKind, PauseRequest, PauseResponse};
 use rig::tool::Tool;
 use rlcd_mock::MockRlcd;
 use serde_json::json;
@@ -87,7 +83,10 @@ impl FspecToolFacade for TestFspecFacade {
         }
     }
 
-    fn map_params(&self, _input: serde_json::Value) -> Result<InternalFspecParams, codelet_tools::ToolError> {
+    fn map_params(
+        &self,
+        _input: serde_json::Value,
+    ) -> Result<InternalFspecParams, codelet_tools::ToolError> {
         Ok(InternalFspecParams {
             command: self.command.clone(),
             args: self.args_json.clone(),
@@ -180,11 +179,12 @@ fn assert_gate_pause(requests: &std::sync::Mutex<Vec<PauseRequest>>, command: &s
     assert!(!guard.is_empty(), "at least one gate pause expected");
     let req = guard.last().expect("pause list non-empty");
     assert_eq!(req.kind, PauseKind::Triple, "gate pause must be Triple");
-    assert_eq!(req.tool_name, "fspec", "gate pause must name the fspec tool");
+    assert_eq!(
+        req.tool_name, "fspec",
+        "gate pause must name the fspec tool"
+    );
     assert!(
-        req.details
-            .as_deref()
-            .is_some_and(|d| d.contains(command)),
+        req.details.as_deref().is_some_and(|d| d.contains(command)),
         "gate pause details must carry the gated command {command:?}: {:?}",
         req.details
     );
@@ -237,7 +237,10 @@ async fn scenario_proceed_executes_normally() {
         .expect("proceed must execute, not error");
 
     // @step Then the command executes through the normal fspec handler path
-    assert!(out.contains("HANDLER-OK"), "handler result must pass through: {out}");
+    assert!(
+        out.contains("HANDLER-OK"),
+        "handler result must pass through: {out}"
+    );
     {
         let guard = requests.lock().expect("handler lock poisoned");
         assert_eq!(guard.len(), 1, "handler must be called exactly once");
@@ -246,10 +249,16 @@ async fn scenario_proceed_executes_normally() {
     }
 
     // @step And the agent receives the unchanged success result
-    assert!(out.starts_with("HANDLER-OK"), "success result must be unchanged: {out}");
+    assert!(
+        out.starts_with("HANDLER-OK"),
+        "success result must be unchanged: {out}"
+    );
 
     // @step And no pause prompt was shown to the user
-    assert!(!codelet_tools::has_pause_handler(session), "sanity: no handler registered");
+    assert!(
+        !codelet_tools::has_pause_handler(session),
+        "sanity: no handler registered"
+    );
     assert_eq!(mock.classifier_hits(), 1, "exactly one gate question");
     // The model must be echoed from /health (never hardcoded)
     let req = captured_gate_request(&mock);
@@ -328,7 +337,11 @@ async fn scenario_ask_user_deny_rejects() {
     let pause_calls = Arc::new(AtomicUsize::new(0));
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::Denied)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::Denied,
+        )),
     );
 
     // @step When the agent issues the command
@@ -377,7 +390,11 @@ async fn scenario_ask_user_allow_once_executes_and_prompts_again() {
     let pause_calls = Arc::new(AtomicUsize::new(0));
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::AllowOnce)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::AllowOnce,
+        )),
     );
     let out = wrapper
         .call(FacadeArgs(json!({})))
@@ -386,16 +403,17 @@ async fn scenario_ask_user_allow_once_executes_and_prompts_again() {
 
     // @step Then the command executes through the normal fspec handler path
     assert!(out.contains("HANDLER-OK"));
-    assert_eq!(
-        requests.lock().expect("handler lock poisoned").len(),
-        1
-    );
+    assert_eq!(requests.lock().expect("handler lock poisoned").len(), 1);
     assert_eq!(pause_calls.load(Ordering::SeqCst), 1);
 
     // @step When the agent issues the same gated command again
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::Denied)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::Denied,
+        )),
     );
     let second = wrapper.call(FacadeArgs(json!({}))).await;
 
@@ -438,7 +456,11 @@ async fn scenario_ask_user_allow_session_suppresses_later_prompts() {
     let pause_calls = Arc::new(AtomicUsize::new(0));
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::AllowSession)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::AllowSession,
+        )),
     );
 
     // @step When the agent issues the gated command "update-work-unit-status" and the user chooses Allow Session
@@ -448,7 +470,7 @@ async fn scenario_ask_user_allow_session_suppresses_later_prompts() {
         .expect("AllowSession must execute");
     assert!(out.contains("HANDLER-OK"));
     assert!(
-        is_session_allowed("rlcd-gate:update-work-unit-status"),
+        is_session_allowed(session, "rlcd-gate:update-work-unit-status"),
         "AllowSession must record the gate allowance"
     );
 
@@ -527,11 +549,8 @@ async fn scenario_ungated_command_passes_through() {
     let mock = MockRlcd::ready(GATE_MODEL).start().await;
     let (_tmp, _url) = config_dir_with_rlcd_url(&mock.base_url(), None);
     let requests = Arc::new(std::sync::Mutex::new(Vec::new()));
-    let (wrapper, _session) = wrapper_with_handler(
-        "list-work-units",
-        r#"{"status":"backlog"}"#,
-        &requests,
-    );
+    let (wrapper, _session) =
+        wrapper_with_handler("list-work-units", r#"{"status":"backlog"}"#, &requests);
 
     // @step When the agent issues the command "list-work-units"
     let out = wrapper
@@ -565,7 +584,7 @@ async fn scenario_config_added_command_is_gated() {
     let (_tmp, _url) = config_dir_with_rlcd_url(&mock.base_url(), Some(gate));
 
     // The config must round-trip through load_rlcd_config()
-    let cfg = load_rlcd_config();
+    let cfg = load_rlcd_config().expect("the rlcd config loads");
     assert!(
         cfg.gate.commands.iter().any(|c| c == "delete-work-unit"),
         "the configured gate list must be honored by load_rlcd_config()"
@@ -628,11 +647,7 @@ async fn scenario_state_includes_title_and_epic() {
     // @step When the agent issues the gated command "update-work-unit-status" for work unit "AUTH-001"
     let args = status_args("AUTH-001", "validating");
     let requests = Arc::new(std::sync::Mutex::new(Vec::new()));
-    let (_wrapper, _session) = wrapper_with_handler(
-        "update-work-unit-status",
-        &args,
-        &requests,
-    );
+    let (_wrapper, _session) = wrapper_with_handler("update-work-unit-status", &args, &requests);
     // point the test facade at the temp project (fresh wrapper with the same handler)
     let session = Uuid::new_v4();
     codelet_tools::set_fspec_handler_for_session(session, Some(handler_stub(&requests)));
@@ -779,7 +794,11 @@ async fn scenario_thin_margin_proceed_asks_user() {
     let pause_calls = Arc::new(AtomicUsize::new(0));
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::Denied)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::Denied,
+        )),
     );
 
     // @step When the agent issues the gated command "update-work-unit-status"
@@ -845,7 +864,11 @@ async fn scenario_configured_threshold_changes_decision() {
     let pause_calls = Arc::new(AtomicUsize::new(0));
     set_pause_handler(
         session,
-        Some(pause_stub(&pause_requests, &pause_calls, PauseResponse::Denied)),
+        Some(pause_stub(
+            &pause_requests,
+            &pause_calls,
+            PauseResponse::Denied,
+        )),
     );
 
     // @step And a reachable RLCD engine answering the gate question with P(ask_user)=0.80, P(hold)=0.70, P(proceed)=0.50
@@ -886,7 +909,10 @@ fn unit_map_gate_answer_priorities() {
     // argmax proceed with a comfortable margin
     assert!(
         matches!(
-            map_gate_answer(&json!({"proceed": 0.9, "hold": 0.05, "ask_user": 0.05}), &cfg),
+            map_gate_answer(
+                &json!({"proceed": 0.9, "hold": 0.05, "ask_user": 0.05}),
+                &cfg
+            ),
             GateOutcome::Proceed
         ),
         "comfortable proceed margin must yield Proceed"
@@ -894,7 +920,10 @@ fn unit_map_gate_answer_priorities() {
     // thin margin (0.12 <= 0.15) is conservative: AskUser
     assert!(
         matches!(
-            map_gate_answer(&json!({"proceed": 0.5, "hold": 0.12, "ask_user": 0.38}), &cfg),
+            map_gate_answer(
+                &json!({"proceed": 0.5, "hold": 0.12, "ask_user": 0.38}),
+                &cfg
+            ),
             GateOutcome::AskUser { .. }
         ),
         "thin proceed margin must degrade to AskUser"
@@ -902,17 +931,17 @@ fn unit_map_gate_answer_priorities() {
     // argmax ask_user
     assert!(
         matches!(
-            map_gate_answer(&json!({"proceed": 0.25, "hold": 0.2, "ask_user": 0.55}), &cfg),
+            map_gate_answer(
+                &json!({"proceed": 0.25, "hold": 0.2, "ask_user": 0.55}),
+                &cfg
+            ),
             GateOutcome::AskUser { .. }
         ),
         "argmax ask_user must yield AskUser"
     );
     // missing probabilities are treated as 0.0 => never auto-proceed
     assert!(
-        !matches!(
-            map_gate_answer(&json!({}), &cfg),
-            GateOutcome::Proceed
-        ),
+        !matches!(map_gate_answer(&json!({}), &cfg), GateOutcome::Proceed),
         "an empty answer must never auto-proceed"
     );
 }
@@ -930,7 +959,10 @@ fn unit_build_gate_state_missing_context() {
         state.contains("update-work-unit-status"),
         "raw state must name the command: {state}"
     );
-    assert!(state.contains("X-1"), "raw state must carry the args: {state}");
+    assert!(
+        state.contains("X-1"),
+        "raw state must carry the args: {state}"
+    );
     // never panics/fails on a missing spec/work-units.json
     let _ = Path::new(&state);
 }
@@ -940,11 +972,12 @@ fn unit_build_gate_state_missing_context() {
 #[test]
 #[serial]
 fn unit_session_gate_allowance_helpers() {
+    let session = Uuid::new_v4();
     clear_session_gate_allowances();
-    assert!(!is_session_gate_allowed("delete-work-unit"));
+    assert!(!is_session_gate_allowed(session, "delete-work-unit"));
     clear_session_allowances();
-    allow_for_session("rlcd-gate:delete-work-unit");
-    assert!(is_session_gate_allowed("delete-work-unit"));
+    allow_for_session(session, "rlcd-gate:delete-work-unit");
+    assert!(is_session_gate_allowed(session, "delete-work-unit"));
     clear_session_gate_allowances();
-    assert!(!is_session_gate_allowed("delete-work-unit"));
+    assert!(!is_session_gate_allowed(session, "delete-work-unit"));
 }

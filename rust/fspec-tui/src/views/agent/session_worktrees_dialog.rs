@@ -17,6 +17,11 @@
 //! → R2 button commit) lives in
 //! `super::session_worktrees_dialog_dispatch` so this file stays under
 //! the 300-LoC ceiling.
+//!
+//! TUI-131: each worktree's full path wraps on the rows under its session
+//! row (`rows`); when the list is taller than the screen it scrolls
+//! (Up/Down, PgUp/PgDn, Home/End, the wheel move the chosen worktree and
+//! the window follows it) while the buttons and the footer stay visible.
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
@@ -31,7 +36,15 @@ use crate::components::dialog_button_hits::{separated_button_layout, LastLayout}
 use crate::components::dialog_theme::{
     render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
 };
+use crate::components::dialog_theme_rows::dialog_body_width;
 use crate::components::Action;
+
+mod rows;
+
+/// Rows the dialog takes besides its worktree list: border (2), padding
+/// (2), title (1) and its gap (1), the spacer and button rows (2), the
+/// gap before the footer (1) and the footer (1).
+const CHROME_ROWS: u16 = 10;
 
 /// Outcome of routing a single key event through the SessionWorktreesDialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,6 +67,12 @@ pub const SESSION_WORKTREES_DIALOG_ID: &str = "session-worktrees-dialog";
 pub struct SessionWorktreesDialog {
     rows: Vec<SessionWorktreeInfo>,
     focused: usize,
+    /// TUI-130: the worktree row Up/Down choose (c copies its path).
+    chosen: usize,
+    /// TUI-131: the first list row painted, and the worktrees a page
+    /// (PgUp/PgDn) moves by, both from the last render.
+    offset: usize,
+    page: usize,
     action_tx: Option<UnboundedSender<Action>>,
     /// TUI-112: the most recent emitted action, stashed for tests
     /// (drained via `take_pending_action`) when no `action_tx` is set.
@@ -70,6 +89,9 @@ impl SessionWorktreesDialog {
         Self {
             rows,
             focused: 0,
+            chosen: 0,
+            offset: 0,
+            page: 1,
             action_tx: None,
             pending_action: None,
             last_layout: LastLayout::new(),
@@ -101,6 +123,11 @@ impl SessionWorktreesDialog {
 
     /// Test-only: drain the most recent emitted action stashed by
     /// `handle_event` when no `action_tx` was attached.
+    /// TUI-130: the full path of the chosen worktree row.
+    pub fn chosen_path(&self) -> Option<String> {
+        self.rows.get(self.chosen).map(|w| w.worktree_path.clone())
+    }
+
     pub fn take_pending_action(&mut self) -> Option<Action> {
         self.pending_action.take()
     }
@@ -165,9 +192,23 @@ impl SessionWorktreesDialog {
                 }
                 SessionWorktreesDialogOutcome::Continued
             }
+            // TUI-130: Up/Down choose the worktree row c copies.
+            KeyCode::Up => self.choose(self.chosen.saturating_sub(1)),
+            KeyCode::Down => self.choose(self.chosen + 1),
+            // TUI-131: the list scrolls with the chosen worktree.
+            KeyCode::PageUp => self.choose(self.chosen.saturating_sub(self.page)),
+            KeyCode::PageDown => self.choose(self.chosen + self.page),
+            KeyCode::Home => self.choose(0),
+            KeyCode::End => self.choose(self.rows.len()),
             KeyCode::Enter => self.outcome_for_index(self.focused),
             _ => SessionWorktreesDialogOutcome::Ignored,
         }
+    }
+
+    /// TUI-131: choose worktree `index` (clamped to the list).
+    pub(crate) fn choose(&mut self, index: usize) -> SessionWorktreesDialogOutcome {
+        self.chosen = index.min(self.rows.len().saturating_sub(1));
+        SessionWorktreesDialogOutcome::Continued
     }
 
     /// TUI-112: emit an action on the App's channel (when attached) and
@@ -177,35 +218,6 @@ impl SessionWorktreesDialog {
             let _ = tx.send(action.clone());
         }
         self.pending_action = Some(action.clone());
-    }
-
-    fn build_worktree_rows(&self) -> Vec<DialogRow> {
-        if self.rows.is_empty() {
-            return vec![DialogRow {
-                spans: vec![Span::raw("(no session worktrees)".to_string())],
-                selectable: false,
-                selected: false,
-            }];
-        }
-        self.rows
-            .iter()
-            .map(|w| {
-                let marker = if w.dirty { "[dirty]" } else { "       " };
-                DialogRow {
-                    spans: vec![
-                        Span::raw(format!("{marker} ")),
-                        Span::raw(w.session_id.value.clone()),
-                        Span::raw("  ".to_string()),
-                        Span::styled(
-                            w.worktree_path.clone(),
-                            Style::default().add_modifier(Modifier::DIM),
-                        ),
-                    ],
-                    selectable: false,
-                    selected: false,
-                }
-            })
-            .collect()
     }
 
     fn build_button_row(&self) -> DialogRow {
@@ -240,14 +252,21 @@ impl SessionWorktreesDialog {
             selectable: false,
             selected: false,
         };
-        let mut rows = self.build_worktree_rows();
+        // TUI-131: the list gets the rows the area leaves and scrolls
+        // when it is taller (the window follows the chosen worktree).
+        let visible = usize::from(area.height.saturating_sub(CHROME_ROWS)).max(1);
+        let entries = rows::worktree_entries(&self.rows, self.chosen, dialog_body_width(area));
+        let tallest = entries.iter().map(Vec::len).max().unwrap_or(1).max(1);
+        self.page = (visible / tallest).max(1);
+        let (mut rows, offset) = rows::list_window(entries, self.chosen, self.offset, visible);
+        self.offset = offset;
         rows.push(spacer);
         rows.push(self.build_button_row());
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "Session Worktrees",
             rows,
-            footer: "Tab / ←→: focus  Enter: confirm  Esc: cancel",
+            footer: "↑↓: worktree  c: copy path  Tab / ←→: focus  Enter: confirm  Esc: cancel",
             min_width: 50,
             query_row: None,
         };

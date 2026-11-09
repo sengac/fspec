@@ -2,10 +2,9 @@
 //!
 //! Feature: spec/features/resume-view-rich-session-display.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::mode_view_render::{format_time_ago, render_session_rows};
 use codelet_rpc_types::SessionInfo;
+use codelet_test_helpers::TestResult;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -49,7 +48,7 @@ fn rows_of(buf: &Buffer) -> Vec<String> {
 // ============================================================================
 
 #[test]
-fn time_ago_formatting_handles_various_intervals() {
+fn time_ago_formatting_handles_various_intervals() -> TestResult {
     // @step Given a session updated 30 seconds ago
     let just_now = format_time_ago(30);
     // @step When the time ago string is computed
@@ -85,6 +84,7 @@ fn time_ago_formatting_handles_various_intervals() {
     // @step When the time ago string is computed
     // @step Then it displays "3mo ago"
     assert_eq!(months, "3mo ago");
+    Ok(())
 }
 
 // ============================================================================
@@ -92,7 +92,7 @@ fn time_ago_formatting_handles_various_intervals() {
 // ============================================================================
 
 #[test]
-fn selected_session_renders_name_and_detail_lines_with_rich_information() {
+fn selected_session_renders_name_and_detail_lines_with_rich_information() -> TestResult {
     // @step Given the resume view has a session with name "Project Alpha", 12 messages, provider "openai/gpt-4", and updated 2 hours ago
     // Use a fixed timestamp: 2 hours in milliseconds from epoch
     let two_hours_ms = 2 * 60 * 60 * 1000;
@@ -121,6 +121,7 @@ fn selected_session_renders_name_and_detail_lines_with_rich_information() {
     // line contains the provider and message count.
     // For the time-ago assertion, we test format_time_ago directly above.
     assert!(rows[1].contains("ago") || rows[1].contains("unknown"));
+    Ok(())
 }
 
 // ============================================================================
@@ -128,7 +129,7 @@ fn selected_session_renders_name_and_detail_lines_with_rich_information() {
 // ============================================================================
 
 #[test]
-fn unselected_session_renders_without_selection_marker() {
+fn unselected_session_renders_without_selection_marker() -> TestResult {
     // @step Given the resume view has a session with name "Project Beta", 5 messages, provider "anthropic/claude-3", and updated 1 day ago
     let one_day_ms = 24 * 60 * 60 * 1000;
     let sessions = vec![
@@ -164,6 +165,7 @@ fn unselected_session_renders_without_selection_marker() {
     assert!(rows[3].contains("anthropic/claude-3"));
     // Time-ago depends on current system time; check it has a time suffix
     assert!(rows[3].contains("ago") || rows[3].contains("unknown"));
+    Ok(())
 }
 
 // ============================================================================
@@ -171,7 +173,7 @@ fn unselected_session_renders_without_selection_marker() {
 // ============================================================================
 
 #[test]
-fn session_without_provider_displays_unknown() {
+fn session_without_provider_displays_unknown() -> TestResult {
     // @step Given the resume view has a session with name "Test Session", 3 messages, no provider, and updated 30 minutes ago
     let sessions = vec![make_session(
         "s-0",
@@ -191,6 +193,7 @@ fn session_without_provider_displays_unknown() {
     assert!(rows[1].contains("3 messages"));
     assert!(rows[1].contains("unknown"));
     assert!(rows[1].contains("ago") || rows[1].contains("unknown"));
+    Ok(())
 }
 
 // ============================================================================
@@ -198,7 +201,7 @@ fn session_without_provider_displays_unknown() {
 // ============================================================================
 
 #[test]
-fn session_without_timestamp_displays_unknown() {
+fn session_without_timestamp_displays_unknown() -> TestResult {
     // @step Given the resume view has a session with name "Old Session", 1 message, provider "openai/gpt-4", and no timestamp
     let sessions = vec![make_session(
         "s-0",
@@ -218,6 +221,7 @@ fn session_without_timestamp_displays_unknown() {
     assert!(rows[1].contains("1 messages"));
     assert!(rows[1].contains("openai/gpt-4"));
     assert!(rows[1].contains("unknown"));
+    Ok(())
 }
 
 // ============================================================================
@@ -225,7 +229,7 @@ fn session_without_timestamp_displays_unknown() {
 // ============================================================================
 
 #[test]
-fn empty_session_list_renders_placeholder() {
+fn empty_session_list_renders_placeholder() -> TestResult {
     // @step Given the resume view is open
     let sessions: Vec<SessionInfo> = Vec::new();
     // @step When the session list is empty
@@ -236,6 +240,7 @@ fn empty_session_list_renders_placeholder() {
     let joined = rows.join("\n");
     // @step Then the body shows the centered placeholder "(no sessions to resume)"
     assert!(joined.contains("(no sessions to resume)"));
+    Ok(())
 }
 
 // ============================================================================
@@ -243,7 +248,7 @@ fn empty_session_list_renders_placeholder() {
 // ============================================================================
 
 #[test]
-fn scroll_offset_accounts_for_two_visual_rows_per_session() {
+fn scroll_offset_accounts_for_two_visual_rows_per_session() -> TestResult {
     // @step Given the resume view has 10 sessions
     let sessions: Vec<SessionInfo> = (0..10)
         .map(|i| {
@@ -284,4 +289,5 @@ fn scroll_offset_accounts_for_two_visual_rows_per_session() {
     assert!(joined.contains("Session 4"));
     assert!(joined.contains("Session 5"));
     assert!(joined.contains("Session 6"));
+    Ok(())
 }

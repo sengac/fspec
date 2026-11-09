@@ -1,3 +1,4 @@
+@BUG-582
 @code-analysis
 @ast-analysis
 @refactoring
@@ -48,9 +49,9 @@ Feature: Enhanced AST Refactor Tool with Transforms and Batch Mode
     I want to understand patterns clearly, rename symbols with case transforms, replace multiple matches at once, and preview changes before applying
     So that I can perform complex refactoring operations confidently without misunderstanding the tool or making unintended changes
 
-  Scenario: Match function using partial pattern with meta-variables
-    Given a Rust source file containing 'fn calculate_sum(a: i32, b: i32) -> i32 { a + b }'
-    When I use pattern 'fn $NAME($$$ARGS)' to match the function
+  Scenario: Match function using a complete-node pattern with meta-variables
+    Given a Rust source file containing 'fn calculate_sum(a: i32, b: i32)' with no return type
+    When I use pattern 'fn $NAME($$$ARGS) { $$$BODY }' to match the function
     Then the pattern matches and captures $NAME as 'calculate_sum' and $$$ARGS as 'a: i32, b: i32'
 
   Scenario: Match call expressions without full statement as pattern

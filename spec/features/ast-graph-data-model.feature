@@ -1,4 +1,6 @@
 @KGRAPH-016
+@parser
+@code-analysis
 Feature: AST Graph Data Model & Nanograph Schema
   """
   Uses nanograph PG schema format for the AST graph schema definition

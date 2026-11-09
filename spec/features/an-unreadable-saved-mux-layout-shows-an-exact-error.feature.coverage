@@ -1,0 +1,460 @@
+{
+  "scenarios": [
+    {
+      "name": "An unparseable saved layout shows the key, the column and the problem",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "78-104",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Load the persisted config from the shared `fspec-config.json`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/state/state_views.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "pub fn load_mux_config(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unknown pane in the saved layout names its column",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "106-126",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Load the persisted config from the shared `fspec-config.json`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/state/state_views.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "pub fn load_mux_config(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A saved tui.mux that is not an object shows an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "128-154",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Load the persisted config from the shared `fspec-config.json`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "/// Load the persisted mux config from the shared config.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/state/state_views.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "pub fn load_mux_config(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A saved tui.mux with an unknown field shows an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "156-176",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Load the persisted config from the shared `fspec-config.json`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/state/state_views.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "pub fn load_mux_config(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No saved tui.mux uses the default layout without an error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "178-200",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "/// Load the persisted mux config from the shared config.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Load the persisted config from the shared `fspec-config.json`",
+              "lastLine": "self.config = parse_saved(value)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreadable fspec-config.json shows its error and the default layout",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs",
+          "lines": "201-233",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/mux_state.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "pub fn load(&mut self) -> Result<(), String> {",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "pub fn load_mux_config_with_dirs(data_dir: &Path, cwd: &Path) -> Result<Option<Value>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/mux011_an_unreadable_saved_mux_layout_shows_an_exact_error.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/mux_state.rs",
+      "rust/fspec-tui/src/app/state/state_views.rs",
+      "rust/sessions/src/mux_config_persistence.rs"
+    ],
+    "totalLinesCovered": 437
+  }
+}

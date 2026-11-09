@@ -37,7 +37,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "&mut state.last_tool_name,",
+              "lastLine": "record_tool_cancellations("
             }
           ]
         }

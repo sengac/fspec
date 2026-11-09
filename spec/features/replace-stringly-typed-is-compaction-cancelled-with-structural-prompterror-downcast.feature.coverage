@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/error_classifiers.rs",
-          "lines": "288-315",
+          "lines": "434-461",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -49,7 +49,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.",
+              "lastLine": "/// Returns `None` when no `PromptCancelled` variant is present (including the"
             }
           ]
         }
@@ -60,7 +62,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/error_classifiers.rs",
-          "lines": "317-334",
+          "lines": "463-480",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -104,7 +106,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.",
+              "lastLine": "/// Returns `None` when no `PromptCancelled` variant is present (including the"
             }
           ]
         }
@@ -115,7 +119,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/error_classifiers.rs",
-          "lines": "336-352",
+          "lines": "482-508",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -159,7 +163,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.",
+              "lastLine": "/// Returns `None` when no `PromptCancelled` variant is present (including the"
             }
           ]
         }
@@ -170,7 +176,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/error_classifiers.rs",
-          "lines": "354-365",
+          "lines": "510-523",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -214,7 +220,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.",
+              "lastLine": "/// Returns `None` when no `PromptCancelled` variant is present (including the"
             }
           ]
         }
@@ -225,7 +233,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/interactive/error_classifiers.rs",
-          "lines": "367-387",
+          "lines": "525-545",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/error_classifiers.rs",
@@ -269,7 +277,236 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.",
+              "lastLine": "/// Returns `None` when no `PromptCancelled` variant is present (including the"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StreamingError::Prompt with PromptCancelled is detected via Error::from conversion",
+      "testMappings": [
+        {
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
+          "lines": "482-508",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "/// CMPCT-002: Check if an error indicates compaction was cancelled by the hook.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare string errors are not mistaken for PromptCancelled",
+      "testMappings": [
+        {
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
+          "lines": "510-523",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "/// CMPCT-002: Check if an error indicates compaction was cancelled by the hook.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error::from path preserves downcast capability for extract_prompt_cancelled",
+      "testMappings": [
+        {
+          "file": "rust/cli/src/interactive/error_classifiers.rs",
+          "lines": "547-584",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "/// CMPCT-025: Extract the `chat_history` payload from a",
+              "lastLine": "}"
             }
           ]
         }
@@ -277,8 +514,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/cli/src/interactive/error_classifiers.rs"
@@ -286,6 +523,6 @@
     "implFiles": [
       "rust/cli/src/interactive/error_classifiers.rs"
     ],
-    "totalLinesCovered": 291
+    "totalLinesCovered": 555
   }
 }

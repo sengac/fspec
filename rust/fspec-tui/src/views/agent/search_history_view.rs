@@ -26,11 +26,15 @@ use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::{ensure_visible, wrap_index, WheelVelocity};
 use crate::mouse::scrollbar_drag::ScrollbarDrag;
-use crate::views::full_screen_shell::render_full_screen_scaffold_with_title;
+use crate::views::full_screen_shell::{
+    mode_view_scrollbar_rect, render_full_screen_scaffold_with_title, scaffold_rects,
+};
 
 use super::search_history_view_render::{render_body, render_title};
 
-const CHROME_ROWS: u16 = 3;
+/// The view's footer hint (TUI-131: the shell wraps it, so the page size
+/// is computed below the rows it takes).
+const FOOTER_HINT: &str = "Enter Select | ↑↓ Navigate | Esc Cancel";
 
 /// Outcome of routing a single key event through the search view.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -241,15 +245,16 @@ impl SearchHistoryView {
             area,
             buf,
             |title_area, buf| render_title(self, title_area, buf),
-            "Enter Select | ↑↓ Navigate | Esc Cancel",
+            FOOTER_HINT,
             |body_area, buf| render_body(self, body_area, buf),
             None,
         );
         // TUI-103: cache the scrollbar rect pre-computed from the same
         // body-rect geometry the shell splits into (title + separator on
         // top, footer below).
-        self.last_scrollbar_rect = crate::views::full_screen_shell::mode_view_scrollbar_rect(
+        self.last_scrollbar_rect = mode_view_scrollbar_rect(
             area,
+            FOOTER_HINT,
             Self::visible_rows_for(area),
             self.matches.len(),
         );
@@ -257,7 +262,9 @@ impl SearchHistoryView {
 
     /// Heuristic visible-row hint used by AgentView when computing
     /// `handle_key`'s `visible_rows` argument.
+    /// TUI-131: the body rows the shell leaves under the title and above
+    /// the wrapped footer.
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height.saturating_sub(CHROME_ROWS) as usize
+        usize::from(scaffold_rects(area, FOOTER_HINT).body.height)
     }
 }

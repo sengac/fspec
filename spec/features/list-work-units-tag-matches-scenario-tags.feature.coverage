@@ -1,0 +1,136 @@
+{
+  "scenarios": [
+    {
+      "name": "A tag on one scenario of a card's feature file selects the card",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs",
+          "lines": "37-45",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "let scenarios = feature",
+              "lastLine": "tags.extend(scenarios.flat_map(|s| s.tags.iter().map(|t| format!(\"@{t}\"))));"
+            },
+            {
+              "file": "rust/fspec-core/src/help/configs/list_work_units.rs",
+              "lines": [
+                91
+              ],
+              "firstLine": "opt(\"--tag <@tag>\", \"Cards with a feature file whose Feature line holds the card's @ID and whose Feature line or any scenario carries <@tag>\"),",
+              "lastLine": "opt(\"--tag <@tag>\", \"Cards with a feature file whose Feature line holds the card's @ID and whose Feature line or any scenario carries <@tag>\"),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A tag that is only text in the feature file does not select the card",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs",
+          "lines": "52-60",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "let feature = crate::io::gherkin::parse_feature_lenient(&content)",
+              "lastLine": "tags.extend(scenarios.flat_map(|s| s.tags.iter().map(|t| format!(\"@{t}\"))));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tags match exactly",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs",
+          "lines": "67-75",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                176
+              ],
+              "firstLine": "tags.extend(scenarios.flat_map(|s| s.tags.iter().map(|t| format!(\"@{t}\"))));",
+              "lastLine": "tags.extend(scenarios.flat_map(|s| s.tags.iter().map(|t| format!(\"@{t}\"))));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A tag on a Scenario Outline inside a Rule selects the card",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs",
+          "lines": "82-90",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "let scenarios = feature",
+              "lastLine": ".chain(feature.rules.iter().flat_map(|rule| rule.scenarios.iter()));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature file that does not parse is an error naming it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs",
+          "lines": "97-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                169,
+                170
+              ],
+              "firstLine": "let feature = crate::io::gherkin::parse_feature_lenient(&content)",
+              "lastLine": ".map_err(|e| format!(\"Failed to parse {rel} for --tag: {e}\"))?;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/cli018_tag_matches_scenario_tags.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/list_work_units/filter.rs",
+      "rust/fspec-core/src/help/configs/list_work_units.rs"
+    ],
+    "totalLinesCovered": 71
+  }
+}

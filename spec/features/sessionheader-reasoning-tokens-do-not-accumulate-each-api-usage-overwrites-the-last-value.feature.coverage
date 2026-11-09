@@ -5,14 +5,11 @@
       "testMappings": [
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
-          "lines": "46-93",
+          "lines": "61-109",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
-                243,
-                244,
-                245,
                 246,
                 247,
                 248,
@@ -36,7 +33,9 @@
                 266,
                 267,
                 268
-              ]
+              ],
+              "firstLine": "// Update reasoning tokens from Usage (TOKEN-003: current-segment",
+              "lastLine": "self.reasoning_current = 0;"
             }
           ]
         }
@@ -47,7 +46,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
-          "lines": "99-131",
+          "lines": "115-148",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -58,7 +57,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub fn with_prev_reasoning(mut self, prev: u64) -> Self {",
+              "lastLine": "/// Record a text chunk during streaming."
             }
           ]
         }
@@ -70,56 +71,7 @@
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
           "lines": "344-390",
-          "implMappings": [
-            {
-              "file": "rust/core/src/persistence/manifest.rs",
-              "lines": [
-                1108,
-                1109,
-                1110,
-                1111,
-                1112,
-                1113,
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130,
-                1131,
-                1132,
-                1133,
-                1134,
-                1135,
-                1136,
-                1137,
-                1138,
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -128,7 +80,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
-          "lines": "137-167",
+          "lines": "154-184",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -139,7 +91,9 @@
                 319,
                 320,
                 321
-              ]
+              ],
+              "firstLine": "cache_read_tokens: self.cache_read_tokens,",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,19 +104,18 @@
       "testMappings": [
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
-          "lines": "173-208",
+          "lines": "190-225",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
               "lines": [
-                243,
-                244,
-                245,
                 246,
                 247,
                 248,
                 249
-              ]
+              ],
+              "firstLine": "// Update reasoning tokens from Usage (TOKEN-003: current-segment",
+              "lastLine": "self.reasoning_current = self.reasoning_current.max(reported);"
             }
           ]
         }
@@ -173,25 +126,24 @@
       "testMappings": [
         {
           "file": "rust/core/tests/token_003_reasoning_accumulation_test.rs",
-          "lines": "214-246",
+          "lines": "231-262",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
               "lines": [
+                93,
+                94,
+                95,
                 96,
                 97,
                 98,
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
+                102
+              ],
+              "firstLine": "/// Calculate effective tokens accounting for 90% cache discount",
+              "lastLine": "}"
             }
           ]
         }
@@ -207,9 +159,8 @@
     ],
     "implFiles": [
       "rust/core/src/streaming_display/streaming_token_display.rs",
-      "rust/core/src/persistence/manifest.rs",
       "rust/core/src/compaction/model.rs"
     ],
-    "totalLinesCovered": 329
+    "totalLinesCovered": 278
   }
 }

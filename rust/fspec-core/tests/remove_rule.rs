@@ -169,7 +169,7 @@ fn already_deleted_rule_is_idempotent_and_does_not_write_to_disk() {
 
 #[test]
 fn stable_id_semantics_removes_by_id_not_position() {
-    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and rules=[{id:0,...,deleted:true,...},{id:1,text:'r1',deleted:false,createdAt:'x'}]
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and rules=[{id:0,text:'r0',deleted:true,createdAt:'x',deletedAt:'x'},{id:1,text:'r1',deleted:false,createdAt:'x'}]
     let tmp = TempDir::new().expect("tempdir");
     let rules = json!([
         {"id": 0, "text": "r0", "deleted": true, "createdAt": "x", "deletedAt": "x"},

@@ -48,7 +48,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add hotspot: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -102,7 +104,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add hotspot: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -156,7 +160,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add hotspot: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -210,7 +216,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add hotspot: {}\", render_core_error(&err));"
             }
           ]
         }

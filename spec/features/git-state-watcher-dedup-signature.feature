@@ -1,3 +1,5 @@
+@BUG-582
+@COV-075
 @done
 @git
 @watcher

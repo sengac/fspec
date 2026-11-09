@@ -1,5 +1,7 @@
 @done
 @RPC-169
+@cli
+@assumption-management
 Feature: Port add-assumption command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_assumption.rs. Reuses io::ensure::ensure_work_units_file,
@@ -18,7 +20,7 @@ Feature: Port add-assumption command to Rust
     When I dispatch add-assumption with workUnitId='AUTH-001' and assumption='Users have valid email addresses'
     Then the dispatcher returns success=true
     And the returned data contains assumptionCount=1
-    And spec/work-units.json on disk shows AUTH-001.assumptions[0]='Users have valid email addresses'
+    And spec/work-units.json on disk shows AUTH-001.assumptions[0] with id 0 and text 'Users have valid email addresses'
     And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
 
   Scenario: Second add preserves insertion order
@@ -26,7 +28,7 @@ Feature: Port add-assumption command to Rust
     When I dispatch add-assumption with workUnitId='AUTH-001' and assumption='A2'
     Then the dispatcher returns success=true
     And the returned data contains assumptionCount=2
-    And spec/work-units.json on disk shows AUTH-001.assumptions=['A1', 'A2']
+    And spec/work-units.json on disk shows AUTH-001.assumptions with ids 0 and 1 and texts 'A1' and 'A2'
 
   Scenario: Missing work unit surfaces the canonical error
     Given a project root tempdir with spec/work-units.json containing only AUTH-001 status=specifying

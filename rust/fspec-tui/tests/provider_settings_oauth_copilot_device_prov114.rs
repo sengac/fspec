@@ -15,10 +15,9 @@
 //!
 //! No real OAuth network and no real `~/.fspec` mutation.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
@@ -30,7 +29,6 @@ use codelet_fspec_tui::{App, FspecBackend};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -85,7 +83,7 @@ fn copilot_provider() -> ProviderDisplayInfo {
 
 /// Build a view with the github-copilot provider expanded and the cursor on
 /// its device-flow login row.
-fn view_on_copilot_login_row() -> ProviderSettingsView {
+fn view_on_copilot_login_row() -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![copilot_provider()]);
     view.toggle_expansion("github-copilot");
@@ -93,30 +91,33 @@ fn view_on_copilot_login_row() -> ProviderSettingsView {
         .nav_items
         .iter()
         .position(|i| matches!(&i.kind, NavItemKind::OAuthLogin { .. }))
-        .expect("copilot login row present in fixture");
+        .or_fail("copilot login row present in fixture")?;
     view.selected_index = idx;
-    view
+    Ok(view)
 }
 
 /// A view already sitting in the deployment-type-select preamble.
-fn view_in_deployment_select() -> ProviderSettingsView {
-    let mut view = view_on_copilot_login_row();
+fn view_in_deployment_select() -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
+    let mut view = view_on_copilot_login_row()?;
     view.mode = ProviderSettingsMode::OAuthDeploymentTypeSelect {
         provider_id: "github-copilot".to_string(),
         selected_index: 0,
     };
-    view
+    Ok(view)
 }
 
 /// A view sitting in enterprise-url-entry with the given input + error.
-fn view_in_enterprise_entry(url_input: &str, error: Option<&str>) -> ProviderSettingsView {
-    let mut view = view_on_copilot_login_row();
+fn view_in_enterprise_entry(
+    url_input: &str,
+    error: Option<&str>,
+) -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
+    let mut view = view_on_copilot_login_row()?;
     view.mode = ProviderSettingsMode::OAuthEnterpriseUrlEntry {
         provider_id: "github-copilot".to_string(),
         url_input: url_input.to_string(),
         validation_error: error.map(str::to_string),
     };
-    view
+    Ok(view)
 }
 
 /// Concatenate the visible symbols of row `y` into a String.
@@ -161,10 +162,10 @@ fn render_screen(view: &mut ProviderSettingsView) -> Buffer {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() {
+fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() -> TestResult {
     // @step Given the "github-copilot" provider is expanded
     // @step And the cursor is on the "Login with GitHub Copilot (device flow)" row
-    let mut view = view_on_copilot_login_row();
+    let mut view = view_on_copilot_login_row()?;
 
     // @step When the user presses Enter
     view.handle_key(key(KeyCode::Enter));
@@ -179,7 +180,7 @@ fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() {
             // @step And "GitHub.com" is selected at index 0
             assert_eq!(*selected_index, 0, "GitHub.com must be selected at index 0");
         }
-        other => panic!("expected OAuthDeploymentTypeSelect, got {other:?}"),
+        other => return Err(format!("expected OAuthDeploymentTypeSelect, got {other:?}").into()),
     }
 
     // @step And the screen shows "GitHub Copilot Login — Select deployment type"
@@ -201,15 +202,22 @@ fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() {
                 enterprise_host, ..
             } = *action
             else {
-                panic!("expected Emit(OAuthCopilotDeviceStart), got {action:?}");
+                return Err(
+                    format!("expected Emit(OAuthCopilotDeviceStart), got {action:?}").into(),
+                );
             };
             assert_eq!(
                 enterprise_host, None,
                 "GitHub.com must start device flow with no enterprise host"
             );
         }
-        other => panic!("expected Emit(OAuthCopilotDeviceStart {{ None }}), got {other:?}"),
+        other => {
+            return Err(
+                format!("expected Emit(OAuthCopilotDeviceStart {{ None }}), got {other:?}").into(),
+            )
+        }
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -220,9 +228,9 @@ fn copilot_login_enters_deployment_select_and_github_dot_com_starts_device() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
+fn copilot_enterprise_prompts_normalizes_host_and_starts_device() -> TestResult {
     // @step Given the "github-copilot" provider is in oauth-deployment-type-select
-    let mut view = view_in_deployment_select();
+    let mut view = view_in_deployment_select()?;
 
     // @step When the user presses Down
     view.handle_key(key(KeyCode::Down));
@@ -232,7 +240,7 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
         ProviderSettingsMode::OAuthDeploymentTypeSelect { selected_index, .. } => {
             assert_eq!(*selected_index, 1, "GitHub Enterprise must be index 1");
         }
-        other => panic!("expected OAuthDeploymentTypeSelect, got {other:?}"),
+        other => return Err(format!("expected OAuthDeploymentTypeSelect, got {other:?}").into()),
     }
 
     // @step When the user presses Enter
@@ -243,7 +251,7 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
         ProviderSettingsMode::OAuthEnterpriseUrlEntry { provider_id, .. } => {
             assert_eq!(provider_id, "github-copilot");
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
 
     // @step When the user types "https://company.ghe.com/"
@@ -260,7 +268,9 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
                 enterprise_host, ..
             } = *action
             else {
-                panic!("expected Emit(OAuthCopilotDeviceStart), got {action:?}");
+                return Err(
+                    format!("expected Emit(OAuthCopilotDeviceStart), got {action:?}").into(),
+                );
             };
             assert_eq!(
                 enterprise_host,
@@ -268,7 +278,11 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
                 "the scheme + trailing slash must be stripped to the bare host"
             );
         }
-        other => panic!("expected Emit(OAuthCopilotDeviceStart {{ host }}), got {other:?}"),
+        other => {
+            return Err(
+                format!("expected Emit(OAuthCopilotDeviceStart {{ host }}), got {other:?}").into(),
+            )
+        }
     }
 
     // @step And the mode becomes oauth-device-waiting for provider "github-copilot"
@@ -283,6 +297,7 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
         "submitting the enterprise host must enter device-waiting, got {:?}",
         view.mode
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -292,9 +307,9 @@ fn copilot_enterprise_prompts_normalizes_host_and_starts_device() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
+fn empty_enterprise_url_shows_validation_error_then_clears_on_type() -> TestResult {
     // @step Given the "github-copilot" provider is in oauth-enterprise-url-entry with an empty URL input
-    let mut view = view_in_enterprise_entry("", None);
+    let mut view = view_in_enterprise_entry("", None)?;
 
     // @step When the user presses Enter
     let event = view.handle_key(key(KeyCode::Enter));
@@ -310,7 +325,7 @@ fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
                 "an empty submit must set the validation error"
             );
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
     let buf = render_screen(&mut view);
     assert!(screen_contains(&buf, "URL or domain is required"));
@@ -344,7 +359,7 @@ fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
                 "typing must clear the validation error"
             );
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
 
     // Rule [3]: only printable ASCII (32..=126) appends to urlInput; control /
@@ -358,7 +373,7 @@ fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
                 "a non-ASCII char (é) must NOT append to url_input"
             );
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
 
     // A control char (Tab, U+0009) is likewise dropped.
@@ -370,7 +385,7 @@ fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
                 "a control char (tab) must NOT append to url_input"
             );
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
 
     // A printable ASCII char DOES append.
@@ -382,17 +397,18 @@ fn empty_enterprise_url_shows_validation_error_then_clears_on_type() {
                 "a printable ASCII char must append to url_input"
             );
         }
-        other => panic!("expected OAuthEnterpriseUrlEntry, got {other:?}"),
+        other => return Err(format!("expected OAuthEnterpriseUrlEntry, got {other:?}").into()),
     }
+    Ok(())
 }
 // Esc on deployment-type-select AND on enterprise-url-entry both return to the
 // list with no backend call).
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn esc_cancels_both_copilot_preamble_modes_to_list() {
+fn esc_cancels_both_copilot_preamble_modes_to_list() -> TestResult {
     // @step Given the "github-copilot" provider is in oauth-deployment-type-select
-    let mut view = view_in_deployment_select();
+    let mut view = view_in_deployment_select()?;
 
     // @step When the user presses Esc
     let event = view.handle_key(key(KeyCode::Esc));
@@ -407,7 +423,7 @@ fn esc_cancels_both_copilot_preamble_modes_to_list() {
     );
 
     // @step Given the "github-copilot" provider is in oauth-enterprise-url-entry
-    let mut view = view_in_enterprise_entry("partial", None);
+    let mut view = view_in_enterprise_entry("partial", None)?;
 
     // @step When the user presses Esc
     let event = view.handle_key(key(KeyCode::Esc));
@@ -420,33 +436,39 @@ fn esc_cancels_both_copilot_preamble_modes_to_list() {
         matches!(event, ProviderSettingsEvent::Consumed),
         "Esc on enterprise-url-entry emits no action, got {event:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════ SECTION 2: DISPATCH ════════════════════════
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -467,7 +489,7 @@ fn provider_settings_mode(app: &App) -> ProviderSettingsMode {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn github_dot_com_device_start_waits_then_connects() {
+async fn github_dot_com_device_start_waits_then_connects() -> TestResult {
     // @step Given the "github-copilot" provider is expanded
     // @step And the cursor is on the "Login with GitHub Copilot (device flow)" row
     let mock = Arc::new(MockBackend::new());
@@ -492,14 +514,14 @@ async fn github_dot_com_device_start_waits_then_connects() {
         enterprise_host: None,
         generation: gen,
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the backend copilot device-start is called with no enterprise host
     wait_until(
         || mock.oauth_copilot_device_start_calls() >= 1,
         "copilot device-start called",
     )
-    .await;
+    .await?;
     assert_eq!(mock.oauth_copilot_device_start_calls(), 1);
     assert_eq!(
         mock.oauth_copilot_device_start_hosts(),
@@ -528,7 +550,7 @@ async fn github_dot_com_device_start_waits_then_connects() {
             assert_eq!(user_code, "WXYZ-9876");
             assert_eq!(verification_url, "https://github.com/login/device");
         }
-        other => panic!("expected OAuthDeviceWaiting, got {other:?}"),
+        other => return Err(format!("expected OAuthDeviceWaiting, got {other:?}").into()),
     }
     let view = &mut app.navigator_mut().provider_settings;
     let buf = render_screen(view);
@@ -536,7 +558,7 @@ async fn github_dot_com_device_start_waits_then_connects() {
     assert!(screen_contains(&buf, "https://github.com/login/device"));
 
     // @step When the backend device-poll resolves with a credential
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             matches!(
@@ -546,20 +568,21 @@ async fn github_dot_com_device_start_waits_then_connects() {
         },
         "device poll resolves to success",
     )
-    .await;
+    .await?;
 
     // @step Then the mode becomes oauth-success for provider "github-copilot"
     match provider_settings_mode(&app) {
         ProviderSettingsMode::OAuthSuccess { provider_id } => {
             assert_eq!(provider_id, "github-copilot");
         }
-        other => panic!("expected OAuthSuccess, got {other:?}"),
+        other => return Err(format!("expected OAuthSuccess, got {other:?}").into()),
     }
 
     // @step And the screen shows "✓ Connected to GitHub Copilot"
     let view = &mut app.navigator_mut().provider_settings;
     let buf = render_screen(view);
     assert!(screen_contains(&buf, "✓ Connected to GitHub Copilot"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -569,7 +592,7 @@ async fn github_dot_com_device_start_waits_then_connects() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
+async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() -> TestResult {
     // @step Given the "github-copilot" provider is in oauth-deployment-type-select
     let mock = Arc::new(MockBackend::new());
     mock.set_oauth_copilot_device_start_error("the device request was refused".to_string());
@@ -582,7 +605,7 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
         enterprise_host: None,
         generation: gen,
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             matches!(
@@ -592,7 +615,7 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
         },
         "copilot device-start fails to oauth-error",
     )
-    .await;
+    .await?;
     assert!(mock.oauth_copilot_device_start_calls() >= 1);
 
     // @step Then the mode becomes oauth-error for provider "github-copilot"
@@ -610,7 +633,7 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
                 "error must not leak the RPC/method name, got {error:?}"
             );
         }
-        other => panic!("expected OAuthError, got {other:?}"),
+        other => return Err(format!("expected OAuthError, got {other:?}").into()),
     }
 
     // @step And the screen shows "OAuth Login error"
@@ -627,7 +650,11 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
     match event {
         ProviderSettingsEvent::Emit(ref a)
             if matches!(a.as_ref(), Action::OAuthCopilotDeviceStart { .. }) => {}
-        other => panic!("expected retry Emit(OAuthCopilotDeviceStart), got {other:?}"),
+        other => {
+            return Err(
+                format!("expected retry Emit(OAuthCopilotDeviceStart), got {other:?}").into(),
+            )
+        }
     }
 
     // @step When the user presses Esc
@@ -644,4 +671,5 @@ async fn failed_copilot_device_start_shows_error_then_retries_then_cancels() {
         provider_settings_mode(&app),
         ProviderSettingsMode::List
     ));
+    Ok(())
 }

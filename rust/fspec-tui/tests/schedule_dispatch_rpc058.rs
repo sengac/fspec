@@ -8,22 +8,17 @@
 //! `Action::EmitSessionNotice` notice formatter. Mirrors the
 //! `merge_worktree_rpc057.rs` test layout.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::app::schedule_parser::{parse_schedule_command, ScheduleSubcommand};
 use codelet_fspec_tui::app::slash_parser::{parse_slash_command, SlashCommandParse};
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{ScheduledJob, SessionId};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -49,29 +44,34 @@ fn job(name: &str, status: &str, job_type: &str) -> ScheduledJob {
     }
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -104,7 +104,7 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_popup_pick_with_no_session_is_silent_noop() {
+async fn schedule_popup_pick_with_no_session_is_silent_noop() -> TestResult {
     // @step Given an App with NO open AgentView session
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
@@ -113,8 +113,11 @@ async fn schedule_popup_pick_with_no_session_is_silent_noop() {
     let initial_list = mock.schedule_list_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::Schedule) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Schedule));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Schedule,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then no backend method is called
     assert_eq!(mock.schedule_add_calls(), initial_add);
@@ -130,6 +133,7 @@ async fn schedule_popup_pick_with_no_session_is_silent_noop() {
         "expected zero open sessions; got {} — a notice may have spawned a context",
         app.agent_view_store().open_sessions().len()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -137,28 +141,32 @@ async fn schedule_popup_pick_with_no_session_is_silent_noop() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_popup_pick_with_session_emits_help_notice() {
+async fn schedule_popup_pick_with_session_emits_help_notice() -> TestResult {
     // @step Given an App with open session s-1
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_list = mock.schedule_list_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::Schedule) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Schedule));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Schedule,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then Action::EmitSessionNotice for s-1 with text starting with "[schedule] Usage: /schedule" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] Usage: /schedule"),
         "schedule help notice",
     )
-    .await;
+    .await?;
 
     // @step And no backend method is called
     assert_eq!(mock.schedule_list_calls(), initial_list);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -166,7 +174,7 @@ async fn schedule_popup_pick_with_session_emits_help_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_list_two_rows_emits_multiline_notice() {
+async fn schedule_list_two_rows_emits_multiline_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_list returns two ScheduledJob rows
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_list_result(Ok(vec![
@@ -175,27 +183,28 @@ async fn schedule_list_two_rows_emits_multiline_notice() {
     ]));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.schedule_list_calls();
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::List) is dispatched
     app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::List));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.schedule_list is called exactly once
     wait_until(
         || mock.schedule_list_calls() - initial == 1,
         "schedule_list called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text containing "[schedule] 2 schedule(s)" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] 2 schedule(s)"),
         "schedule list notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -203,17 +212,17 @@ async fn schedule_list_two_rows_emits_multiline_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_list_empty_emits_no_schedules_notice() {
+async fn schedule_list_empty_emits_no_schedules_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_list returns an empty Vec
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_list_result(Ok(vec![]));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::List) is dispatched
     app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::List));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] No schedules configured." is observed on the action bus
     wait_until(
@@ -223,7 +232,8 @@ async fn schedule_list_empty_emits_no_schedules_notice() {
         },
         "no-schedules notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -231,13 +241,13 @@ async fn schedule_list_empty_emits_no_schedules_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_add_success_emits_added_notice() {
+async fn schedule_add_success_emits_added_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_add returns Ok(ScheduledJob { name: "daily", cron: "0 9 * * *", timezone: "UTC", job_type: "agent", status: "active", role: Some("reviewer"), prompt: Some("daily standup"), command: None, overlap_policy: Some("skip"), created_at: None, last_run_at: None, last_run_status: None })
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_add_result(Ok(job("daily", "active", "agent")));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.schedule_add_calls();
 
@@ -252,14 +262,14 @@ async fn schedule_add_success_emits_added_notice() {
         command: None,
         overlap_policy: Some("skip".to_string()),
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.schedule_add is called exactly once with the matching arguments
     wait_until(
         || mock.schedule_add_calls() - initial == 1,
         "schedule_add called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] added \"daily\" (agent, 0 9 * * *, UTC)" is observed on the action bus
     wait_until(
@@ -269,7 +279,8 @@ async fn schedule_add_success_emits_added_notice() {
         },
         "added notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -277,13 +288,13 @@ async fn schedule_add_success_emits_added_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_add_error_emits_error_notice() {
+async fn schedule_add_error_emits_error_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_add returns Err("Timezone is required")
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_add_result(Err("Timezone is required".to_string()));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Add { name: "daily", cron: "0 9 * * *", timezone: "", job_type: "agent", role: Some("r"), prompt: Some("p"), command: None, overlap_policy: None }) is dispatched
     app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Add {
@@ -296,7 +307,7 @@ async fn schedule_add_error_emits_error_notice() {
         command: None,
         overlap_policy: None,
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /schedule add: Timezone is required" is observed on the action bus
     wait_until(
@@ -306,7 +317,8 @@ async fn schedule_add_error_emits_error_notice() {
         },
         "add error notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -314,13 +326,13 @@ async fn schedule_add_error_emits_error_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_pause_success_emits_paused_notice() {
+async fn schedule_pause_success_emits_paused_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_pause returns Ok(ScheduledJob with status "paused")
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_pause_result(Ok(job("daily", "paused", "agent")));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.schedule_pause_calls();
 
@@ -330,21 +342,22 @@ async fn schedule_pause_success_emits_paused_notice() {
             name: "daily".to_string(),
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.schedule_pause is called exactly once with name "daily"
     wait_until(
         || mock.schedule_pause_calls() - initial == 1,
         "schedule_pause called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] paused \"daily\"" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] paused \"daily\""),
         "paused notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -352,13 +365,13 @@ async fn schedule_pause_success_emits_paused_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_pause_unknown_emits_error_notice() {
+async fn schedule_pause_unknown_emits_error_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_pause returns Err("Schedule not found: unknown-job")
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_pause_result(Err("Schedule not found: unknown-job".to_string()));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Pause { name: "unknown-job" }) is dispatched
     app.dispatch(Action::ScheduleSubcommandParsed(
@@ -366,7 +379,7 @@ async fn schedule_pause_unknown_emits_error_notice() {
             name: "unknown-job".to_string(),
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /schedule pause: Schedule not found: unknown-job" is observed on the action bus
     wait_until(
@@ -376,7 +389,8 @@ async fn schedule_pause_unknown_emits_error_notice() {
         },
         "pause error notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -384,13 +398,13 @@ async fn schedule_pause_unknown_emits_error_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_resume_success_emits_resumed_notice() {
+async fn schedule_resume_success_emits_resumed_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_resume returns Ok(ScheduledJob with status "active")
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_resume_result(Ok(job("daily", "active", "agent")));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.schedule_resume_calls();
 
@@ -400,21 +414,22 @@ async fn schedule_resume_success_emits_resumed_notice() {
             name: "daily".to_string(),
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.schedule_resume is called exactly once with name "daily"
     wait_until(
         || mock.schedule_resume_calls() - initial == 1,
         "schedule_resume called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] resumed \"daily\"" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] resumed \"daily\""),
         "resumed notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -422,13 +437,13 @@ async fn schedule_resume_success_emits_resumed_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn schedule_remove_success_emits_removed_notice() {
+async fn schedule_remove_success_emits_removed_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose schedule_remove returns Ok(())
     let mock = Arc::new(MockBackend::new());
     mock.seed_schedule_remove_result(Ok(()));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.schedule_remove_calls();
 
@@ -438,21 +453,22 @@ async fn schedule_remove_success_emits_removed_notice() {
             name: "daily".to_string(),
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.schedule_remove is called exactly once with name "daily"
     wait_until(
         || mock.schedule_remove_calls() - initial == 1,
         "schedule_remove called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] removed \"daily\"" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] removed \"daily\""),
         "removed notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -460,19 +476,19 @@ async fn schedule_remove_success_emits_removed_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn bare_schedule_submit_emits_help_notice() {
+async fn bare_schedule_submit_emits_help_notice() -> TestResult {
     // @step Given an App with open session s-1
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_list = mock.schedule_list_calls();
     let initial_add = mock.schedule_add_calls();
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Help) is dispatched
     app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Help));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then no backend method is called
     assert_eq!(mock.schedule_list_calls(), initial_list);
@@ -483,7 +499,8 @@ async fn bare_schedule_submit_emits_help_notice() {
         || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] Usage: /schedule"),
         "help notice from bare schedule submit",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -497,12 +514,13 @@ async fn bare_schedule_submit_emits_help_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_bare_resolves_to_help() {
+fn parse_schedule_command_bare_resolves_to_help() -> TestResult {
     // @step When parse_schedule_command("/schedule") is invoked
     let result = parse_schedule_command("/schedule");
 
     // @step Then it returns ScheduleSubcommand::Help
     assert!(matches!(result, ScheduleSubcommand::Help));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -510,12 +528,13 @@ fn parse_schedule_command_bare_resolves_to_help() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_list_resolves_to_list() {
+fn parse_schedule_command_list_resolves_to_list() -> TestResult {
     // @step When parse_schedule_command("/schedule list") is invoked
     let result = parse_schedule_command("/schedule list");
 
     // @step Then it returns ScheduleSubcommand::List
     assert!(matches!(result, ScheduleSubcommand::List));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -523,7 +542,7 @@ fn parse_schedule_command_list_resolves_to_list() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_full_add_agent_command() {
+fn parse_schedule_command_full_add_agent_command() -> TestResult {
     // @step When parse_schedule_command is invoked on "/schedule add daily --cron \"0 9 * * *\" --tz UTC --role reviewer --prompt \"daily standup\""
     let input = r#"/schedule add daily --cron "0 9 * * *" --tz UTC --role reviewer --prompt "daily standup""#;
     let result = parse_schedule_command(input);
@@ -548,8 +567,9 @@ fn parse_schedule_command_full_add_agent_command() {
             assert_eq!(prompt.as_deref(), Some("daily standup"));
             assert!(command.is_none());
         }
-        other => panic!("expected ScheduleSubcommand::Add, got {other:?}"),
+        other => return Err(format!("expected ScheduleSubcommand::Add, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -557,7 +577,7 @@ fn parse_schedule_command_full_add_agent_command() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_shell_inferred_from_command_flag() {
+fn parse_schedule_command_shell_inferred_from_command_flag() -> TestResult {
     // @step When parse_schedule_command is invoked on "/schedule add backup --cron \"0 2 * * *\" --tz UTC --command \"tar -czf /tmp/backup.tar.gz ~/work\""
     let input = r#"/schedule add backup --cron "0 2 * * *" --tz UTC --command "tar -czf /tmp/backup.tar.gz ~/work""#;
     let result = parse_schedule_command(input);
@@ -581,8 +601,9 @@ fn parse_schedule_command_shell_inferred_from_command_flag() {
             assert!(role.is_none());
             assert!(prompt.is_none());
         }
-        other => panic!("expected ScheduleSubcommand::Add, got {other:?}"),
+        other => return Err(format!("expected ScheduleSubcommand::Add, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -590,15 +611,16 @@ fn parse_schedule_command_shell_inferred_from_command_flag() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_pause_resolves_with_name() {
+fn parse_schedule_command_pause_resolves_with_name() -> TestResult {
     // @step When parse_schedule_command("/schedule pause daily") is invoked
     let result = parse_schedule_command("/schedule pause daily");
 
     // @step Then it returns ScheduleSubcommand::Pause with name "daily"
     match result {
         ScheduleSubcommand::Pause { name } => assert_eq!(name, "daily"),
-        other => panic!("expected ScheduleSubcommand::Pause, got {other:?}"),
+        other => return Err(format!("expected ScheduleSubcommand::Pause, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -606,15 +628,16 @@ fn parse_schedule_command_pause_resolves_with_name() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_resume_resolves_with_name() {
+fn parse_schedule_command_resume_resolves_with_name() -> TestResult {
     // @step When parse_schedule_command("/schedule resume daily") is invoked
     let result = parse_schedule_command("/schedule resume daily");
 
     // @step Then it returns ScheduleSubcommand::Resume with name "daily"
     match result {
         ScheduleSubcommand::Resume { name } => assert_eq!(name, "daily"),
-        other => panic!("expected ScheduleSubcommand::Resume, got {other:?}"),
+        other => return Err(format!("expected ScheduleSubcommand::Resume, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -622,15 +645,16 @@ fn parse_schedule_command_resume_resolves_with_name() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_remove_resolves_with_name() {
+fn parse_schedule_command_remove_resolves_with_name() -> TestResult {
     // @step When parse_schedule_command("/schedule remove daily") is invoked
     let result = parse_schedule_command("/schedule remove daily");
 
     // @step Then it returns ScheduleSubcommand::Remove with name "daily"
     match result {
         ScheduleSubcommand::Remove { name } => assert_eq!(name, "daily"),
-        other => panic!("expected ScheduleSubcommand::Remove, got {other:?}"),
+        other => return Err(format!("expected ScheduleSubcommand::Remove, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -638,12 +662,13 @@ fn parse_schedule_command_remove_resolves_with_name() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_schedule_command_unknown_falls_back_to_help() {
+fn parse_schedule_command_unknown_falls_back_to_help() -> TestResult {
     // @step When parse_schedule_command("/schedule frobnicate") is invoked
     let result = parse_schedule_command("/schedule frobnicate");
 
     // @step Then it returns ScheduleSubcommand::Help
     assert!(matches!(result, ScheduleSubcommand::Help));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -651,7 +676,7 @@ fn parse_schedule_command_unknown_falls_back_to_help() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_slash_command_routes_schedule_to_subcommand_variant() {
+fn parse_slash_command_routes_schedule_to_subcommand_variant() -> TestResult {
     // @step When parse_slash_command("/schedule list") is invoked
     let result = parse_slash_command("/schedule list");
 
@@ -660,6 +685,11 @@ fn parse_slash_command_routes_schedule_to_subcommand_variant() {
         SlashCommandParse::ScheduleSubcommand(sub) => {
             assert!(matches!(sub, ScheduleSubcommand::List));
         }
-        other => panic!("expected SlashCommandParse::ScheduleSubcommand, got {other:?}"),
+        other => {
+            return Err(
+                format!("expected SlashCommandParse::ScheduleSubcommand, got {other:?}").into(),
+            )
+        }
     }
+    Ok(())
 }

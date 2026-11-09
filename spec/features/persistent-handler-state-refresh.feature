@@ -1,5 +1,7 @@
 @done
 @BUG-101
+@persistence
+@state-management
 Feature: Persistent chunk handler refreshes React state on session state changes
   """
   Fix is in persistentChunkHandler in AgentView.tsx — add refreshRustState call for all
@@ -23,7 +25,6 @@ Feature: Persistent chunk handler refreshes React state on session state changes
   Background: User Story
     Given a user interacting with the AI agent in the TUI
 
-  @BUG-101
   Scenario: SessionStateChange(Idle) via persistent handler transitions isLoading to false
     Given the streaming handler has been cleaned up after a Done chunk
     And the Rust session status transitions to Idle after apply_pending_dag
@@ -31,7 +32,6 @@ Feature: Persistent chunk handler refreshes React state on session state changes
     Then refreshRustState should be called for the current session
     And isLoading should transition to false
 
-  @BUG-101
   Scenario: SessionStateChange(Running) via persistent handler keeps isLoading true
     Given the streaming handler has been cleaned up
     And the Rust session status is Running during a compact flow
@@ -39,7 +39,6 @@ Feature: Persistent chunk handler refreshes React state on session state changes
     Then refreshRustState should be called for the current session
     And isLoading should remain true
 
-  @BUG-101
   Scenario: endCompaction guard preserved for non-CompactionComplete state changes
     Given a compaction is in progress with isCompacting true
     When the persistentChunkHandler receives a SessionStateChange with state Idle

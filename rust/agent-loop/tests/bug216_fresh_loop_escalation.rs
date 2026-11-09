@@ -13,6 +13,7 @@ async fn background(
 {
     let directory = codelet_test_helpers::setup_temp_directory()?;
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_providers::stub_provider::register_stub_provider();
     let manager = SessionManager::new();

@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-128
+@tools
+@bridge
 Feature: BRIDGE_HANDLER global singleton causes bridge tool actions to route to wrong session
   """
   Primary: bridge_handler.rs. set_bridge_handler callers: session_manager.rs:5144 (set), session_manager.rs:5446 (clear). execute_bridge_command caller: facade/wrapper.rs:1668. has_bridge_handler_for_session caller: facade/wrapper.rs:1650. No change needed in wrapper — it already passes session_id in BridgeRequest.

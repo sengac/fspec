@@ -24,8 +24,7 @@
 //!   S3. Mouse wheel scrolls the content and is clamped at the top
 //!   S4. No scrollbar and inert paging when all content fits
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -45,15 +44,19 @@ fn forty_lines() -> Vec<String> {
 }
 
 /// Render `dialog` into a fresh `w x h` TestBackend and return the buffer.
-fn render_into(dialog: &mut HelpDialog, w: u16, h: u16) -> Buffer {
+fn render_into(
+    dialog: &mut HelpDialog,
+    w: u16,
+    h: u16,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(w, h);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             dialog.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 /// Flatten a buffer into a single newline-joined string of glyphs.
@@ -100,10 +103,10 @@ fn has_scrollbar_glyph(text: &str) -> bool {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn s1_pagedown_advances_a_page_when_content_overflows() {
+fn s1_pagedown_advances_a_page_when_content_overflows() -> TestResult {
     // @step Given a HelpDialog whose content has 40 lines rendered against an 80x24 TestBackend
     let mut dialog = HelpDialog::with_lines_for_test(forty_lines());
-    let page1 = render_into(&mut dialog, 80, 24);
+    let page1 = render_into(&mut dialog, 80, 24)?;
     let page1_text = join_buffer(&page1);
 
     // @step And the rendered dialog shows the first page with a scrollbar in a reserved gutter
@@ -124,7 +127,7 @@ fn s1_pagedown_advances_a_page_when_content_overflows() {
 
     // @step When the user presses PageDown
     let _ = dialog.handle_event(&key(KeyCode::PageDown));
-    let page2 = render_into(&mut dialog, 80, 24);
+    let page2 = render_into(&mut dialog, 80, 24)?;
     let page2_text = join_buffer(&page2);
 
     // @step Then the scroll offset advances by one visible page
@@ -144,6 +147,7 @@ fn s1_pagedown_advances_a_page_when_content_overflows() {
         !page1_text.contains(&deeper_line),
         "the deeper line {deeper_line} must NOT have been visible on page 1:\n{page1_text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -151,10 +155,10 @@ fn s1_pagedown_advances_a_page_when_content_overflows() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn s2_end_jumps_to_bottom_and_thumb_sits_at_bottom() {
+fn s2_end_jumps_to_bottom_and_thumb_sits_at_bottom() -> TestResult {
     // @step Given a HelpDialog whose content has 40 lines rendered against an 80x24 TestBackend
     let mut dialog = HelpDialog::with_lines_for_test(forty_lines());
-    let _ = render_into(&mut dialog, 80, 24);
+    let _ = render_into(&mut dialog, 80, 24)?;
     let visible = dialog.visible_rows();
     assert!(
         visible > 0 && visible < 40,
@@ -163,7 +167,7 @@ fn s2_end_jumps_to_bottom_and_thumb_sits_at_bottom() {
 
     // @step When the user presses End
     let _ = dialog.handle_event(&key(KeyCode::End));
-    let bottom = render_into(&mut dialog, 80, 24);
+    let bottom = render_into(&mut dialog, 80, 24)?;
     let bottom_text = join_buffer(&bottom);
 
     // @step Then the last content line is visible
@@ -183,6 +187,7 @@ fn s2_end_jumps_to_bottom_and_thumb_sits_at_bottom() {
         has_scrollbar_glyph(&bottom_text),
         "the scrollbar thumb must be drawn while content overflows:\n{bottom_text}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -190,15 +195,15 @@ fn s2_end_jumps_to_bottom_and_thumb_sits_at_bottom() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn s3_mouse_wheel_scrolls_and_clamps_at_top() {
+fn s3_mouse_wheel_scrolls_and_clamps_at_top() -> TestResult {
     // @step Given a HelpDialog whose content has 40 lines rendered against an 80x24 TestBackend
     let mut dialog = HelpDialog::with_lines_for_test(forty_lines());
-    let _ = render_into(&mut dialog, 80, 24);
+    let _ = render_into(&mut dialog, 80, 24)?;
     assert_eq!(dialog.scroll_offset(), 0, "starts at the top");
 
     // @step When the user scrolls the mouse wheel down
     let _ = dialog.handle_event(&wheel(MouseEventKind::ScrollDown));
-    let _ = render_into(&mut dialog, 80, 24);
+    let _ = render_into(&mut dialog, 80, 24)?;
 
     // @step Then the content scrolls down
     assert!(
@@ -210,7 +215,7 @@ fn s3_mouse_wheel_scrolls_and_clamps_at_top() {
     // @step When the user scrolls the mouse wheel up past the top
     for _ in 0..10 {
         let _ = dialog.handle_event(&wheel(MouseEventKind::ScrollUp));
-        let _ = render_into(&mut dialog, 80, 24);
+        let _ = render_into(&mut dialog, 80, 24)?;
     }
 
     // @step Then the scroll offset stays at zero
@@ -219,6 +224,7 @@ fn s3_mouse_wheel_scrolls_and_clamps_at_top() {
         0,
         "wheel up past the top must clamp scroll_offset to zero (no underflow)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -226,10 +232,10 @@ fn s3_mouse_wheel_scrolls_and_clamps_at_top() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn s4_no_scrollbar_and_inert_paging_when_all_content_fits() {
+fn s4_no_scrollbar_and_inert_paging_when_all_content_fits() -> TestResult {
     // @step Given a HelpDialog whose content fits within a 200x60 TestBackend
     let mut dialog = HelpDialog::new();
-    let fitted = render_into(&mut dialog, 200, 60);
+    let fitted = render_into(&mut dialog, 200, 60)?;
     let fitted_text = join_buffer(&fitted);
 
     // @step When the rendered dialog is drawn
@@ -243,10 +249,11 @@ fn s4_no_scrollbar_and_inert_paging_when_all_content_fits() {
 
     // @step And pressing PageDown leaves the scroll offset at zero
     let _ = dialog.handle_event(&key(KeyCode::PageDown));
-    let _ = render_into(&mut dialog, 200, 60);
+    let _ = render_into(&mut dialog, 200, 60)?;
     assert_eq!(
         dialog.scroll_offset(),
         0,
         "PageDown must be inert (scroll_offset stays 0) when all content fits"
     );
+    Ok(())
 }

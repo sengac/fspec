@@ -31,7 +31,7 @@ use crate::error::FspecCoreError;
 /// ENOENT branch). The `Display` impl produces the canonical
 /// `"Directory not found: spec/features/"` substring.
 pub fn glob_feature_files(project_root: &Path) -> Result<Vec<String>, FspecCoreError> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     if !features_dir.exists() {
         return Err(FspecCoreError::DirectoryNotFound {
             path: "spec/features/".to_string(),

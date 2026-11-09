@@ -7,7 +7,7 @@ use super::super::{CommandArgument, CommandExample, CommandHelpConfig};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
-        name: "work-unit-id",
+        name: "workUnitId",
         description: "Work unit ID",
         required: true,
     },
@@ -24,12 +24,18 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
     output: Some("✓ Assumption added successfully"),
 }];
 
-const RELATED: &[&str] = &["add-rule", "add-question", "show-work-unit"];
+const RELATED: &[&str] = &[
+    "add-rule",
+    "add-question",
+    "show-work-unit",
+    "remove-assumption",
+    "restore-assumption",
+];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "add-assumption",
     description: "Add an assumption to a work unit during specification",
-    usage: Some("fspec add-assumption <work-unit-id> <assumption>"),
+    usage: Some("fspec add-assumption <workUnitId> <assumption>"),
     arguments: ARGS,
     options: &[],
     examples: EXAMPLES,

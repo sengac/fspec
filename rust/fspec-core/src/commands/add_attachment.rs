@@ -41,7 +41,7 @@
 //!    never fire on the register-only path (step 7 returns before it).
 //! 9. Push the relativePath onto attachments.
 //! 10. Bump `updatedAt`, set `meta.lastUpdated` if `meta` exists.
-//! 11. Single `write_json_atomic` write at the end.
+//! 11. Single `write_work_units` write at the end.
 //!
 //! ## Mermaid validation (TS parity)
 //!
@@ -75,7 +75,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -101,6 +100,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-attachment")?;
     // Auto-create + load work-units.json.
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -181,10 +182,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Create per-WU attachments directory.
-    let attachments_dir = project_root
-        .join("spec")
-        .join("attachments")
-        .join(&args.work_unit_id);
+    let attachments_dir =
+        crate::io::spec_paths::attachments_dir(project_root)?.join(&args.work_unit_id);
     std::fs::create_dir_all(&attachments_dir).map_err(|e| FspecCoreError::InvalidArgs {
         command: "add-attachment",
         reason: format!(
@@ -228,7 +227,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         // check; fall back to the absolute parent when canonicalisation fails
         // (e.g. tests with symlink-quirky tempdirs). Never runs on the
         // register-only (self-copy) path above.
-        let attachments_root = project_root.join("spec").join("attachments");
+        let attachments_root = crate::io::spec_paths::attachments_dir(project_root)?;
         let src_parent_canon = source_abs
             .parent()
             .and_then(|p| std::fs::canonicalize(p).ok());
@@ -287,8 +286,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     // Render the canonical multi-line output.
     let mut out = String::new();

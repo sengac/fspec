@@ -24,8 +24,17 @@ pub async fn browser_login(provider_id: &str) -> Result<(), String> {
     }
 }
 
-pub fn headless_start(provider_id: &str) -> Result<OAuthHeadlessStart, String> {
+pub async fn headless_start(provider_id: &str) -> Result<OAuthHeadlessStart, String> {
     match provider_id {
+        "codex" => {
+            let start = codelet_providers::codex::codex_browser_completion::start_browser_login()
+                .await
+                .map_err(|error| error.to_string())?;
+            Ok(OAuthHeadlessStart {
+                authorize_url: start.authorize_url,
+                pkce_verifier: start.pkce_verifier,
+            })
+        }
         "anthropic" => {
             let pkce = generate_pkce();
             Ok(OAuthHeadlessStart {
@@ -43,6 +52,12 @@ pub async fn headless_complete(
     pkce_verifier: &str,
 ) -> Result<(), String> {
     match provider_id {
+        "codex" => codelet_providers::codex::codex_browser_completion::complete_browser_login(
+            code_with_state,
+            pkce_verifier,
+        )
+        .await
+        .map_err(|error| error.to_string()),
         "anthropic" => {
             let (code, maybe_state) = parse_authorization_code(code_with_state);
             let state = maybe_state

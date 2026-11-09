@@ -1,4 +1,6 @@
 @TUI-101
+@tui
+@navigation
 Feature: Scrollbar click-and-drag navigation core module
   """
   Architecture notes:

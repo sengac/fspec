@@ -3,9 +3,10 @@
 @rust
 @cli
 @mutation
+@context-management
 Feature: fspec compact-work-unit CLI subcommand (Rust port)
   """
-  Clap derive subcommand `compact-work-unit` exposes the same surface as the TS Commander.js registration at src/commands/compact-work-unit.ts:155-203 — a required positional `<workUnitId>` plus an optional `--force` flag. The bridge module at rust/fspec/src/compact_work_unit.rs marshals workUnitId and force into a JSON object and delegates to codelet_fspec_core::commands::compact_work_unit::run.
+  Clap derive subcommand `compact-work-unit` exposes the same surface as the TS Commander.js registration at src/commands/compact-work-unit.ts:155-203 — a required positional `<workUnitId>` (the TS `--force` flag was never ported; CLI-016 removed it from the help). The bridge module at rust/fspec/src/compact_work_unit.rs marshals workUnitId into a JSON object and delegates to codelet_fspec_core::commands::compact_work_unit::run.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with '✗ Failed to compact work unit:' (parity with the chalk-red TS error path at src/commands/compact-work-unit.ts:196-201). Success prints either 'No deleted items to remove' OR '✓ Compacted work unit <id>' followed by '  Removed items:' and per-category lines.
   The `fspec compact-work-unit --help` output is byte-for-byte identical to `node dist/index.js compact-work-unit --help` (TS reference) — captured as rust/fspec/tests/fixtures/help/compact-work-unit.txt.
   """
@@ -15,13 +16,13 @@ Feature: fspec compact-work-unit CLI subcommand (Rust port)
     I want a `compact-work-unit` subcommand whose CLI shape mirrors the TypeScript reference
     So that scripts and muscle-memory keep working when the binary swap from Node.js to Rust lands
 
-  Scenario: Clap exposes compact-work-unit with a positional arg and --force flag in --help
+  Scenario: Clap exposes compact-work-unit with a positional arg in --help
     Given the fspec Rust binary at rust/target/release/fspec has been compiled
     When I run `./rust/target/release/fspec compact-work-unit --help`
     Then the command exits 0
     And stdout describes the compact-work-unit subcommand
     And stdout mentions the `<workUnitId>` argument
-    And stdout advertises the `--force` flag
+    And stdout does NOT advertise a `--force` flag (the CLI has none, CLI-016)
     And stdout does NOT advertise a `--workspace` global flag
 
   Scenario: CLI compacts a done work unit and prints the removed-items summary

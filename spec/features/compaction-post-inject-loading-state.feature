@@ -1,5 +1,7 @@
 @done
 @CMPCT-015
+@agent-core
+@context-management
 Feature: After inject_summary ends compaction, isLoading not set while agent loop continues running
   """
   Uses Rust-side approach: on_injected callback emits SessionStateChange(Running) before CompactionComplete
@@ -29,13 +31,6 @@ Feature: After inject_summary ends compaction, isLoading not set while agent loo
     So that I can stop the agent if needed and know it's still working
 
   @napi
-  Scenario: on_injected emits SessionStateChange Running before CompactionComplete
-    Given the agent loop is processing a compaction instruction
-    And the Rust session status is Running from CompactionContinuing
-    When the inject_summary handler fires the on_injected callback
-    Then a SessionStateChange with state Running must be emitted before CompactionComplete
-    And the Rust session status must remain Running after CompactionComplete is sent
-
   @napi
   Scenario: Done handler keeps status Running when pending DAG has not been applied
     Given the inject_summary handler has stored DAG content in pending_dag_content

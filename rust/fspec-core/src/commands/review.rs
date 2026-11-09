@@ -160,8 +160,8 @@ pub(crate) fn get_agent_config(project_root: &Path) -> ResolvedAgent {
     }
 
     // Priority 2: spec/fspec-config.json.
-    let config_path = project_root.join("spec").join("fspec-config.json");
-    if let Ok(content) = std::fs::read_to_string(&config_path) {
+    let config_path = crate::io::spec_paths::config(project_root).map_err(std::io::Error::other);
+    if let Ok(content) = config_path.and_then(std::fs::read_to_string) {
         if let Ok(cfg) = serde_json::from_str::<Value>(&content) {
             if let Some(agent_id) = cfg.get("agent").and_then(Value::as_str) {
                 if let Some(a) = get_agent_by_id(agent_id) {
@@ -251,7 +251,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let agent = get_agent_config(project_root);
 
     // Read work units (bare read — ENOENT escalates as TS readFile does).
-    let work_units_file = project_root.join("spec").join("work-units.json");
+    let work_units_file = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&work_units_file).map_err(|source| FspecCoreError::Io {
         command: "review",
         source,

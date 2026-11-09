@@ -120,6 +120,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "create-epic")?;
     // Read existing epics. TS uses a bare try/catch at lines 42-48 that
     // swallows ANY read error (ENOENT or JSON parse failure) and
     // initializes to `{ epics: {} }`. `read_epics_or_empty` returns
@@ -162,7 +164,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // and preserve every existing epic's exact field order. On any
     // failure we fall back to the typed `epics_data`.
     let mut top_level: Map<String, Value> =
-        read_raw_epics_object(project_root).unwrap_or_else(|| {
+        read_raw_epics_object(project_root)?.unwrap_or_else(|| {
             // Build from typed EpicsData.
             let mut m = Map::new();
             let mut epics_obj = Map::new();
@@ -189,7 +191,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Atomic write. Wrap any I/O error in the canonical "Failed to
     // create epic: ..." prefix so the dispatcher exposes the same text
     // the TS outer-catch produces.
-    let path = project_root.join("spec").join("epics.json");
+    let path = crate::io::spec_paths::epics(project_root)?;
     write_json_atomic(&path, &Value::Object(top_level)).map_err(|e| {
         FspecCoreError::InvalidArgs {
             command: "create-epic",
@@ -216,9 +218,15 @@ fn render_success(args: &CreateEpicArgs) -> String {
 /// insertion order of every existing epic record (including unknown
 /// fields). Returns `None` on any I/O or parse failure so the caller can
 /// fall back to the typed `EpicsData`.
-fn read_raw_epics_object(project_root: &Path) -> Option<Map<String, Value>> {
-    let path = project_root.join("spec").join("epics.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
+fn read_raw_epics_object(
+    project_root: &Path,
+) -> Result<Option<Map<String, Value>>, FspecCoreError> {
+    let path = crate::io::spec_paths::epics(project_root)?;
+    Ok(raw_object_at(&path))
+}
+
+fn raw_object_at(path: &Path) -> Option<Map<String, Value>> {
+    let raw = std::fs::read_to_string(path).ok()?;
     let v: Value = serde_json::from_str(&raw).ok()?;
     match v {
         Value::Object(m) => Some(m),

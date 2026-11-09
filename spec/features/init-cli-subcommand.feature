@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @rust
 @initialization
 @cli
 @RPC-239
+@interactive-cli
 Feature: init CLI subcommand on the standalone fspec Rust binary
   """
   CLI surface for the `init` subcommand on the standalone fspec Rust binary.

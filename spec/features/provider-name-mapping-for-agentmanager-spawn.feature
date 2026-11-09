@@ -1,6 +1,7 @@
 @done
 @agent-manager
 @AMGR-013
+@agent-core
 Feature: Provider name mapping for AgentManager spawn
   """
   Bug fix: agent_manager_handler.rs handle_spawn previously reconstructed the model
@@ -10,7 +11,7 @@ Feature: Provider name mapping for AgentManager spawn
   which already has the correct registry format (e.g. 'anthropic/claude-opus-4-6').
   """
 
-  Background: 
+  Background:
     Given an active session using a specific provider and model
 
   Scenario: Spawn subordinate with Anthropic provider passes correct model string

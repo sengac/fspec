@@ -4,62 +4,8 @@
       "name": "CodexListDirFacade maps offset and limit to InternalLsParams",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "799-848",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CodexListDirFacade backward compatible without optional params",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "851-874",
+          "file": "rust/tools/src/facade/codex/list_dir_pagination_tests.rs",
+          "lines": "12-40",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
@@ -77,7 +23,40 @@
                 288,
                 289,
                 290
-              ]
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexListDirFacade backward compatible without optional params",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/list_dir_pagination_tests.rs",
+          "lines": "42-64",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,20 +66,13 @@
       "name": "CodexListDirFacade schema includes offset limit and depth properties",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "877-901",
+          "file": "rust/tools/src/facade/codex/list_dir_pagination_tests.rs",
+          "lines": "66-86",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
+                239,
                 248,
                 249,
                 250,
@@ -129,9 +101,10 @@
                 273,
                 274,
                 275,
-                276,
-                277
-              ]
+                276
+              ],
+              "firstLine": "impl LsToolFacade for CodexListDirFacade {",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,14 +114,43 @@
       "name": "CodexListDirFacade maps depth to InternalLsParams",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "904-935",
+          "file": "rust/tools/src/facade/codex/list_dir_pagination_tests.rs",
+          "lines": "88-116",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                240,
-                241,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Other facades provide None for offset limit and depth",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/list_dir_pagination_tests.rs",
+          "lines": "118-142",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/traits.rs",
+              "lines": [
                 242,
                 243,
                 244,
@@ -166,59 +168,10 @@
                 256,
                 257,
                 258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Other facades provide None for offset limit and depth",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "938-958",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/traits.rs",
-              "lines": [
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
+                259
+              ],
+              "firstLine": "/// Internal parameters for directory listing operations.",
+              "lastLine": "}"
             }
           ]
         }
@@ -230,12 +183,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex/list_dir_pagination_tests.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/codex.rs",
       "rust/tools/src/facade/traits.rs"
     ],
-    "totalLinesCovered": 296
+    "totalLinesCovered": 214
   }
 }

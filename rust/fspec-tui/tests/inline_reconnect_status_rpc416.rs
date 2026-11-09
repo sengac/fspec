@@ -27,8 +27,7 @@
 //! clean BEHAVIOUR-red (compiles now, fails on assertions) rather than a
 //! compile-red.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -93,7 +92,7 @@ fn modal_present(app: &App) -> bool {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn disconnect_shows_an_inline_reconnecting_line_in_the_focused_session() {
+async fn disconnect_shows_an_inline_reconnecting_line_in_the_focused_session() -> TestResult {
     // @step Given a focused session with an open transcript
     let (mut app, _mock) = app_with_session("s-1");
 
@@ -118,6 +117,7 @@ async fn disconnect_shows_an_inline_reconnecting_line_in_the_focused_session() {
         !modal_present(&app),
         "the DisconnectDialog modal must not be pushed for an inline disconnect"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -126,7 +126,8 @@ async fn disconnect_shows_an_inline_reconnecting_line_in_the_focused_session() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn the_disconnectdialog_modal_never_appears_for_a_disconnect_or_reconnect_flow() {
+async fn the_disconnectdialog_modal_never_appears_for_a_disconnect_or_reconnect_flow() -> TestResult
+{
     // @step Given a focused session with an open transcript
     let (mut app, _mock) = app_with_session("s-1");
 
@@ -146,6 +147,7 @@ async fn the_disconnectdialog_modal_never_appears_for_a_disconnect_or_reconnect_
         !ever_present,
         "the disconnect-dialog layer must never appear during the inline reconnect flow"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -153,7 +155,7 @@ async fn the_disconnectdialog_modal_never_appears_for_a_disconnect_or_reconnect_
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn each_reconnect_attempt_updates_the_same_inline_line_in_place() {
+async fn each_reconnect_attempt_updates_the_same_inline_line_in_place() -> TestResult {
     // @step Given a focused session showing an inline reconnecting line after a disconnect
     let (mut app, _mock) = app_with_session("s-1");
     app.dispatch(Action::Disconnected);
@@ -185,6 +187,7 @@ async fn each_reconnect_attempt_updates_the_same_inline_line_in_place() {
         1,
         "no additional reconnect lines may be pushed per attempt"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -193,7 +196,8 @@ async fn each_reconnect_attempt_updates_the_same_inline_line_in_place() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn successful_reconnect_replaces_the_inline_line_in_place_with_a_success_message() {
+async fn successful_reconnect_replaces_the_inline_line_in_place_with_a_success_message(
+) -> TestResult {
     // @step Given a focused session showing an inline reconnecting line after a disconnect
     let (mut app, _mock) = app_with_session("s-1");
     app.dispatch(Action::Disconnected);
@@ -225,14 +229,17 @@ async fn successful_reconnect_replaces_the_inline_line_in_place_with_a_success_m
         1,
         "replace must be in place — no extra reconnect line"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: The success line auto-dismisses from scrollback after the short delay
 // ─────────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn the_success_line_auto_dismisses_from_scrollback_after_the_short_delay() {
+// TEST-042: the auto-dismiss timer runs on tokio's paused clock, so the
+// delays below are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn the_success_line_auto_dismisses_from_scrollback_after_the_short_delay() -> TestResult {
     // @step Given a focused session showing an inline reconnected success line after a recovery
     let (mut app, _mock) = app_with_session("s-1");
     app.dispatch(Action::Disconnected);
@@ -260,6 +267,7 @@ async fn the_success_line_auto_dismisses_from_scrollback_after_the_short_delay()
         0,
         "no reconnect line may remain after auto-dismiss"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -267,8 +275,11 @@ async fn the_success_line_auto_dismisses_from_scrollback_after_the_short_delay()
 //           reverts to reconnecting
 // ─────────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn a_re_drop_during_the_success_window_cancels_the_dismiss_and_reverts_to_reconnecting() {
+// TEST-042: the auto-dismiss timer runs on tokio's paused clock, so the
+// delays below are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn a_re_drop_during_the_success_window_cancels_the_dismiss_and_reverts_to_reconnecting(
+) -> TestResult {
     // @step Given a focused session showing an inline reconnected success line after a recovery
     let (mut app, _mock) = app_with_session("s-1");
     app.dispatch(Action::Disconnected);
@@ -303,6 +314,7 @@ async fn a_re_drop_during_the_success_window_cancels_the_dismiss_and_reverts_to_
         still.iter().any(|l| l.contains("Reconnecting")),
         "the reconnecting line must survive — the superseded dismiss timer must be cancelled, got: {still:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -310,8 +322,11 @@ async fn a_re_drop_during_the_success_window_cancels_the_dismiss_and_reverts_to_
 //           focus changes
 // ─────────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn replace_and_remove_target_the_originating_session_even_after_focus_changes() {
+// TEST-042: the auto-dismiss timer runs on tokio's paused clock, so the
+// delays below are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn replace_and_remove_target_the_originating_session_even_after_focus_changes() -> TestResult
+{
     // @step Given a focused session A showing an inline reconnecting line after a disconnect
     let mock = Arc::new(MockBackend::new());
     // Script create_session to return B's id so the reconnect re-bootstrap's
@@ -353,6 +368,7 @@ async fn replace_and_remove_target_the_originating_session_even_after_focus_chan
         0,
         "the currently-focused session B must not receive a reconnect line"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -360,8 +376,10 @@ async fn replace_and_remove_target_the_originating_session_even_after_focus_chan
 //           silent no-op
 // ─────────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn closing_the_originating_session_before_the_timer_fires_is_a_silent_no_op() {
+// TEST-042: the auto-dismiss timer runs on tokio's paused clock, so the
+// delays below are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn closing_the_originating_session_before_the_timer_fires_is_a_silent_no_op() -> TestResult {
     // @step Given a focused session A showing an inline reconnected success line after a recovery
     let (mut app, _mock) = app_with_session("A");
     app.dispatch(Action::Disconnected);
@@ -392,14 +410,17 @@ async fn closing_the_originating_session_before_the_timer_fires_is_a_silent_no_o
         0,
         "no stale reconnect line may remain for a closed session"
     );
+    Ok(())
 }
 
 // TUI-113 regression guard (no dedicated scenario): the reconnect
 // re-attach (RPC-049 path) must only ever focus an ALREADY-OPEN tab —
 // the restore resolution's focused-session override must not re-open a
 // session the user has closed.
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn reconnect_re_attach_never_reopens_a_closed_session() {
+// TEST-042: the auto-dismiss timer runs on tokio's paused clock, so the
+// delays below are virtual and exact, whatever the load.
+#[tokio::test(flavor = "current_thread", start_paused = true)]
+async fn reconnect_re_attach_never_reopens_a_closed_session() -> TestResult {
     // @step Given a focused session A with the WebSocket dropped then recovered
     let (mut app, _mock) = app_with_session("A");
     app.dispatch(Action::Disconnected);
@@ -436,6 +457,7 @@ async fn reconnect_re_attach_never_reopens_a_closed_session() {
             .is_none(),
         "TUI-113: the re-attach must not re-open a closed session"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -445,7 +467,7 @@ async fn reconnect_re_attach_never_reopens_a_closed_session() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn a_re_drop_after_the_originating_session_closed_shows_a_fresh_reconnecting_line_in_the_focused_session(
-) {
+) -> TestResult {
     // @step Given a focused session A showing an inline reconnected success line after a recovery
     let mock = Arc::new(MockBackend::new());
     // Keep the reconnect re-bootstrap's create_session(None) idempotent (A is
@@ -503,4 +525,5 @@ async fn a_re_drop_after_the_originating_session_closed_shows_a_fresh_reconnecti
         0,
         "no stale reconnect line may remain for the closed session A"
     );
+    Ok(())
 }

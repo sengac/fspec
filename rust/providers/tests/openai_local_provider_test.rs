@@ -189,7 +189,7 @@ mod configure_custom_context_window {
         let provider = OpenAIProvider::new().expect("Should create provider");
 
         // @step Then the provider should report context window of 32000 tokens
-        assert_eq!(provider.context_window(), 32000);
+        assert_eq!(provider.context_window(), Some(32000));
 
         // @step And compaction should respect the configured context window
         // (Compaction uses context_window() from LlmProvider trait)
@@ -221,7 +221,7 @@ mod configure_custom_max_output_tokens {
         let provider = OpenAIProvider::new().expect("Should create provider");
 
         // @step Then the provider should report max output tokens of 8192
-        assert_eq!(provider.max_output_tokens(), 8192);
+        assert_eq!(provider.max_output_tokens(), Some(8192));
 
         // @step And generation requests should respect the configured limit
         // (The provider uses max_output_tokens in create_rig_agent)
@@ -292,7 +292,7 @@ mod local_model_listing_handles_unreachable_server {
         // @step And the error message should include "localhost:9999"
         let error_msg = result.unwrap_err().to_string();
         assert!(
-            error_msg.contains("localhost:9999") || error_msg.contains("9999"),
+            error_msg.contains("http://localhost:9999"),
             "Error should mention the URL: {}",
             error_msg
         );

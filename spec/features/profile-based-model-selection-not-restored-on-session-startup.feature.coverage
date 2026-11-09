@@ -6,16 +6,7 @@
         {
           "file": "src/tui/services/__tests__/modelInitializationService.test.ts",
           "lines": "460-500",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                318, 319, 320, 321, 322, 323, 324, 325, 326, 327,
-                328, 329, 330, 331, 332, 333, 334, 335, 336, 337,
-                338, 339, 340, 341, 342, 343, 344, 345
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -25,16 +16,7 @@
         {
           "file": "src/tui/services/__tests__/modelInitializationService.test.ts",
           "lines": "503-548",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                318, 319, 320, 321, 322, 323, 324, 325, 326, 327,
-                328, 329, 330, 331, 332, 333, 334, 335, 336, 337,
-                338, 339, 340, 341, 342, 343, 344, 345
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -46,9 +28,7 @@
     "testFiles": [
       "src/tui/services/__tests__/modelInitializationService.test.ts"
     ],
-    "implFiles": [
-      "src/tui/services/modelInitializationService.ts"
-    ],
-    "totalLinesCovered": 128
+    "implFiles": [],
+    "totalLinesCovered": 87
   }
 }

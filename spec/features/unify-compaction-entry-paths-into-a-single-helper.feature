@@ -3,6 +3,7 @@
 @resilience
 @cli
 @CMPCT-023
+@context-management
 Feature: Unify compaction entry paths into a single helper
   """
   A single helper `begin_compaction_recovery` in `recovery_compaction.rs` centralizes the cross-cutting invariants (partial-text save, tracker flush, conditional user-pop, flag set with warn, progress-callback clear, event emit) so all compaction entry points become uniform. The existing `flush_partial_state_before_compaction` from CMPCT-024 becomes the internal save+flush step. Paths B and C call it with `pop_user_prompt=true`; Path D (Gemini continuation) calls it with `pop_user_prompt=false`. Path A (pre-prompt) remains structurally separate because it runs before streaming begins. The pre-existing compaction_started/progress double-emission in `compaction_retry.rs` is removed because the helper now emits them at the break site. The existing CMPCT-024/025/026 fixes (structural PromptCancelled detection, defense-in-depth flag, disagreement warn) are preserved — `classify_compaction_branch` still gates whether the helper is called.

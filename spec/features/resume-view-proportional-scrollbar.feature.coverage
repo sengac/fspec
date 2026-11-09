@@ -5,13 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui097_proportional_scrollbar.rs",
-          "lines": "39-68",
+          "lines": "49-75",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                155,
-                156,
                 157,
                 158,
                 159,
@@ -20,8 +18,14 @@
                 162,
                 163,
                 164,
-                165
-              ]
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "if visible_rows == 0 {",
+              "lastLine": "area.width"
             }
           ]
         }
@@ -32,13 +36,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui097_proportional_scrollbar.rs",
-          "lines": "73-99",
+          "lines": "81-105",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                155,
-                156,
                 157,
                 158,
                 159,
@@ -47,8 +49,14 @@
                 162,
                 163,
                 164,
-                165
-              ]
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "if visible_rows == 0 {",
+              "lastLine": "area.width"
             }
           ]
         }
@@ -64,10 +72,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                225,
-                226,
-                227,
-                228,
                 229,
                 230,
                 231,
@@ -77,8 +81,14 @@
                 235,
                 236,
                 237,
-                238
-              ]
+                238,
+                239,
+                240,
+                241,
+                242
+              ],
+              "firstLine": "let y2 = y1 + 1;",
+              "lastLine": "Rect {"
             }
           ]
         }
@@ -94,10 +104,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                225,
-                226,
-                227,
-                228,
                 229,
                 230,
                 231,
@@ -107,8 +113,14 @@
                 235,
                 236,
                 237,
-                238
-              ]
+                238,
+                239,
+                240,
+                241,
+                242
+              ],
+              "firstLine": "let y2 = y1 + 1;",
+              "lastLine": "Rect {"
             }
           ]
         }
@@ -125,6 +137,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/agent/mode_view_render.rs"
     ],
-    "totalLinesCovered": 163
+    "totalLinesCovered": 162
   }
 }

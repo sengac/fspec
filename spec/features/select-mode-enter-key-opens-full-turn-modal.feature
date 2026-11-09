@@ -11,7 +11,7 @@ Feature: Select mode enter key opens full turn modal
   4. Modify existing Esc handler (line 4028-4039) to check showTurnModal and isTurnSelectMode BEFORE existing checks for isLoading and inputValue
   5. Remove /expand command handler block (lines 1249-1281) and expandedMessageIndices state (line 605) and its usage in conversationLines useMemo
   6. Create modalLines useMemo that wraps (fullContent || content) for modalMessageIndex using similar logic to wrapMessageToLines but without role prefix or separator
-  7. Update formatCollapsedOutput (line 352-364) to change hint from '(select turn to /expand)' to '(Enter to view full)'
+  7. Update formatCollapsedOutput (line 352-364) to change hint from '(select turn to /expand)' to '(Tab to select, Enter to view full)'
   8. Update main VirtualList isFocused prop to include '&& !showTurnModal' to prevent keyboard capture when modal is open (line 5022)
   9. Modal keyboard handling: Use main useInput with priority check (showTurnModal checked first in Esc handler)
   """
@@ -30,7 +30,7 @@ Feature: Select mode enter key opens full turn modal
   #   7. VirtualList onSelect callback is used to open the modal when Enter is pressed in select mode (no custom Enter key handler needed)
   #   8. Modal state consists of showTurnModal boolean and modalMessageIndex number to track which conversation message is displayed
   #   9. Main VirtualList isFocused must include '&& !showTurnModal' to prevent input capture when modal is open
-  #   10. The collapse hint text changes from '(select turn to /expand)' to '(Enter to view full)' in formatCollapsedOutput function
+  #   10. The collapse hint text changes from '(select turn to /expand)' to '(Tab to select, Enter to view full)' in formatCollapsedOutput function
   #   11. Modal VirtualList uses selectionMode='scroll' with scrollToEnd=false to start at top and allow free scrolling
   #   12. Esc key priority order: 1) close modal, 2) disable select mode, 3) interrupt loading, 4) clear input, 5) exit view
   #   13. Diff coloring logic ([R]/[A] markers, context lines) is shared between main view and modal via extracted renderConversationLine function
@@ -46,7 +46,7 @@ Feature: Select mode enter key opens full turn modal
   #   7. Modal shows title indicating message role: 'User Message', 'Assistant Response', or 'Tool Output'
   #   8. Modal footer shows navigation hints: '↑↓ Scroll | Esc Close'
   #   9. User selects a short assistant text response (no truncation), presses Enter - modal shows the same content since fullContent is undefined, content field is used
-  #   10. Collapsed tool output in main view shows '... +42 lines (Enter to view full)' instead of old /expand hint
+  #   10. Collapsed tool output in main view shows '... +42 lines (Tab to select, Enter to view full)' instead of old /expand hint
   #
   # ========================================
   Background: User Story
@@ -140,7 +140,7 @@ Feature: Select mode enter key opens full turn modal
   Scenario: Collapsed output shows updated hint text
     Given I am in AgentView with a conversation containing a tool output with more than 4 lines
     When the tool output is displayed in collapsed form
-    Then the collapse indicator shows "... +N lines (Enter to view full)"
+    Then the collapse indicator shows "... +N lines (Tab to select, Enter to view full)"
     And the old "/expand" hint text is not present
 
   @integration

@@ -124,8 +124,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -153,8 +151,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -202,12 +204,13 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -240,8 +243,22 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "pub fn restore_compaction_boundary(",
+              "lastLine": "}"
             }
           ]
         }
@@ -371,8 +388,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -400,8 +415,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -449,46 +468,9 @@
                 65,
                 66,
                 67
-              ]
-            },
-            {
-              "file": "rust/cli/src/session/restore_compaction.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             }
           ]
         }
@@ -618,8 +600,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -647,8 +627,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -696,12 +680,13 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -734,8 +719,22 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "pub fn restore_compaction_boundary(",
+              "lastLine": "}"
             }
           ]
         }
@@ -865,8 +864,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -894,8 +891,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -943,12 +944,13 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -981,8 +983,22 @@
                 69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "pub fn restore_compaction_boundary(",
+              "lastLine": "}"
             }
           ]
         }
@@ -1112,8 +1128,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -1141,8 +1155,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -1190,46 +1208,9 @@
                 65,
                 66,
                 67
-              ]
-            },
-            {
-              "file": "rust/cli/src/session/restore_compaction.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1359,8 +1340,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -1388,8 +1367,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             },
             {
               "file": "rust/cli/src/session/selected_compaction.rs",
@@ -1437,46 +1420,9 @@
                 65,
                 66,
                 67
-              ]
-            },
-            {
-              "file": "rust/cli/src/session/restore_compaction.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+              ],
+              "firstLine": "impl Session {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1523,7 +1469,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "pub fn preflight_compaction_restore(",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -1558,6 +1506,6 @@
       "rust/cli/src/session/selected_compaction.rs",
       "rust/cli/src/session/restore_compaction.rs"
     ],
-    "totalLinesCovered": 1480
+    "totalLinesCovered": 1411
   }
 }

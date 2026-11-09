@@ -10,9 +10,9 @@
 //! - R1: one capture = one shared `gix::Repository` handle
 //!   (`capture_changed_files`), with byte-identical results to the three
 //!   separate public collectors;
-//! - R2: exactly ONE `lookup_entry_by_path` call site in the whole
-//!   staged-detection + change-type path (source-shape) plus behavior
-//!   parity for A/M/D letters;
+//! - R2: no `lookup_entry_by_path` in the staged-detection +
+//!   change-type path (source-shape; BUG-657 walks the HEAD tree once)
+//!   plus behavior parity for A/M/D letters;
 //! - R3: stat-first unstaged check — unchanged files are NOT read or
 //!   hashed, genuinely modified files are still detected, and a
 //!   stat-restored file is treated as unchanged (git parity).
@@ -32,6 +32,8 @@ use codelet_git::status::{
 
 fn git(repo: &Path, args: &[&str]) {
     let out = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(args)
         .current_dir(repo)
         .output()
@@ -60,6 +62,8 @@ fn git_update_index_info(repo: &Path, oid: &str, rel_path: &str) {
 /// The blob OID recorded in the committed HEAD tree for `rel_path`.
 fn head_oid(repo: &Path, rel_path: &str) -> String {
     let out = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", &format!("HEAD:{rel_path}")])
         .current_dir(repo)
         .output()
@@ -154,10 +158,10 @@ fn staged_with_change_type_issues_exactly_one_tree_lookup_per_staged_path() {
     // @step When get_staged_files_with_change_type is called against that repo
     let staged = get_staged_files_with_change_type(repo).expect("staged with change type");
 
-    // @step Then exactly one tree lookup is issued per staged path (the in-HEAD verdict is reused, not re-derived) and the returned paths + A/M/D letters match the previous double-pass result
-    // Source-shape pin: exactly ONE `lookup_entry_by_path` call site in the
-    // whole staged-detection + change-type path — the verdict is computed in
-    // the staged pass and reused, never re-derived with a second lookup.
+    // @step Then no tree lookup is issued per staged path (the in-HEAD verdict comes from the one HEAD tree walk, BUG-657, and is reused, not re-derived) and the returned paths + A/M/D letters match the previous double-pass result
+    // Source-shape pin: NO `lookup_entry_by_path` call in the staged-detection
+    // + change-type path — the in-HEAD verdict comes from the single HEAD
+    // tree walk (BUG-657, src/head_tree.rs) and is reused, never re-derived.
     let status_src = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/status.rs"))
         .expect("read status.rs");
     let change_type_src =
@@ -166,8 +170,8 @@ fn staged_with_change_type_issues_exactly_one_tree_lookup_per_staged_path() {
     let status_lookups = status_src.matches("lookup_entry_by_path").count();
     let change_type_lookups = change_type_src.matches("lookup_entry_by_path").count();
     assert_eq!(
-        status_lookups, 1,
-        "R2: status.rs must keep exactly one lookup_entry_by_path call site (found {status_lookups})"
+        status_lookups, 0,
+        "R2/BUG-657: status.rs must issue ZERO lookup_entry_by_path (the HEAD tree is walked once; found {status_lookups})"
     );
     assert_eq!(
         change_type_lookups, 0,

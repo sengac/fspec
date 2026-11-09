@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-294
+@BUG-295
 Feature: Port reverse command to Rust
   """
   File layout: core impl rust/fspec-core/src/commands/reverse.rs (rewrite stub); new type module rust/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config rust/fspec-core/src/help/configs/reverse.rs; CLI bridge rust/fspec/src/reverse.rs; integration tests rust/fspec/tests/cli_reverse.rs + core tests rust/fspec-core/tests/reverse.rs; help fixture rust/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).
@@ -141,6 +142,10 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "REVERSE ACDD - PERSONA-DRIVEN DISCOVERY"
     Then the rendered output contains the substring "Shopper"
     Then no session file was created on disk
+    And the rendered output contains the substring "WHO uses this? (Check foundation.json personas)"
+    And the rendered output contains the substring "What does Shopper want to accomplish?"
+    And the rendered output contains the substring "What user behavior does this support?"
+    And the rendered output contains the substring "Generate scenarios: fspec generate-scenarios <work-unit>"
 
   Scenario: Existing session detected blocks a new analysis
     Given a project root tempdir with a parseable executing session having strategy=A strategyName='Spec Gap Filling' currentStep=2 totalSteps=3
@@ -184,3 +189,45 @@ Feature: Port reverse command to Rust
     When I dispatch reverse with reset=true and also run the CLI subcommand fspec reverse --reset against the same project root
     Then both paths produce output containing "Session reset"
     Then the CLI bridge module rust/fspec/src/reverse.rs contains no analysis, gap-detection, or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: A reverse session is shared by every spelling of the project path
+    Given a project directory and a symlink that points to it
+    When a reverse session is saved through the symlinked path
+    Then the session is found through the real path
+    And a session saved under the legacy symlinked-path key is still found through that spelling
+
+  Scenario: Detect feature files without tests and suggest Strategy B
+    Given a project root tempdir with 2 feature files in spec/features, no test files and no session file
+    When I dispatch reverse with no flags
+    Then the dispatcher returns success=true
+    And the session file on disk has phase='gap-detection'
+    And the rendered output contains the substring "2 feature files without tests"
+    And the rendered output contains the substring "Strategy B (Test Gap Filling)"
+    And the rendered output contains the substring "Create test skeletons for existing feature files"
+    And the rendered output contains the substring "Use --skip-validation when linking coverage"
+
+  Scenario: Detect unmapped coverage and suggest Strategy C
+    Given a project root tempdir with 5 feature files in spec/features and one test file under src/__tests__
+    And the coverage files of those features list 5 scenarios without test mappings
+    When I dispatch reverse with no flags
+    Then the dispatcher returns success=true
+    And the session file on disk has phase='gap-detection'
+    And the rendered output contains the substring "5 scenarios without coverage mappings"
+    And the rendered output contains the substring "Strategy C (Coverage Mapping)"
+    And the rendered output contains the substring "Quick wins - no new files needed"
+
+  Scenario: Detect raw implementation with no specs or tests and suggest Strategy D
+    Given a project root tempdir with 10 implementation files under src/, no feature files and no test files
+    When I dispatch reverse with no flags
+    Then the dispatcher returns success=true
+    And the session file on disk has phase='gap-detection'
+    And the rendered output contains the substring "10 implementation files without features"
+    And the rendered output contains the substring "Strategy D (Full Reverse ACDD)"
+    And the rendered output contains the substring "Highest effort - analyze code, create features, tests, and work units"
+
+  Scenario: Handle large projects with a narrow-scope hint
+    Given a project root tempdir with 150 test files under src/__tests__ and no spec/features directory
+    When I dispatch reverse with no flags
+    Then the dispatcher returns success=true
+    And the rendered output contains the substring "150 test files without features"
+    And the rendered output contains the substring "Use --strategy=A to narrow scope."

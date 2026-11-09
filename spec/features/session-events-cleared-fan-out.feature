@@ -5,6 +5,7 @@
 @websocket
 @clear
 @rpc-436
+@session-management
 Feature: Session cleared event fan-out (SessionEvent::Cleared) over the RPC-433 wire stream
   """
   Wire-side half of RPC-436: completes the RPC-433 session lifecycle event

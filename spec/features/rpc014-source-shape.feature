@@ -72,8 +72,8 @@ Feature: RPC-014 source-shape regressions — board grid + details strip modules
     And the file contains the substring "Columns"
     # MENU-002 R11: the footer now reads "← → Cycle Columns → menu items → chips" —
     # the raw spans "← →" and "Columns" are what the test pins.
-    And the file contains the substring "↵ Work Agent"
-    And the file contains the substring "ESC Back"
+    And the file contains the substring "↵ Choose"
+    And the file contains the substring "ESC Exit"
 
   Scenario: Views still avoid encapsulated transport crates and host runtime construction
     Given the directory rust/fspec-tui/src/views/ (including the new board/ subdir)

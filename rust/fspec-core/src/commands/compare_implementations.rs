@@ -55,7 +55,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // an error so the dispatcher / CLI both report a failure. TS wraps any
     // failure with the literal prefix `Failed to query work units:` (RPC-207
     // parity fix — the earlier port used the generic InvalidArgs prefix).
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&work_units_path).map_err(|e| {
         FspecCoreError::Message(format!(
             "Failed to query work units: {}",
@@ -116,7 +116,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// TS schema: `scenarios[].testMappings[].file` (test files) and
 /// `scenarios[].testMappings[].implMappings[].file` (impl files).
 fn collect_coverage(project_root: &Path) -> Result<(Vec<String>, Vec<String>), FspecCoreError> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     if !features_dir.exists() {
         return Ok((Vec::new(), Vec::new()));
     }

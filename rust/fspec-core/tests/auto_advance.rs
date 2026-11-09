@@ -153,11 +153,11 @@ fn scenario_advances_validating_unit_to_done_and_records_completion() {
         Some("done")
     );
 
-    // @step And the persisted AUTH-001 has a non-empty completedAt timestamp
-    let completed = stored["workUnits"]["AUTH-001"]["completedAt"].as_str();
+    // @step And the persisted AUTH-001 has a non-empty doneAt timestamp
+    let completed = stored["workUnits"]["AUTH-001"]["doneAt"].as_str();
     assert!(
         completed.is_some() && !completed.unwrap().is_empty(),
-        "completedAt must be set; got {completed:?}"
+        "doneAt must be set; got {completed:?}"
     );
 }
 
@@ -240,4 +240,161 @@ fn scenario_rejects_missing_work_unit() {
         err.contains("Work unit MISSING-001 not found"),
         "unexpected error: {err}"
     );
+}
+
+// ---------- BUG-661: every auto-advance move is recorded in stateHistory ----------
+
+fn dispatch_in(
+    project_root: &Path,
+    command: &str,
+    args: Value,
+) -> codelet_fspec_core::DispatchResult {
+    dispatch_command(DispatchRequest {
+        command: command.to_string(),
+        args_json: args.to_string(),
+        project_root: project_root.to_path_buf(),
+    })
+}
+
+fn instant(text: &str) -> chrono::DateTime<chrono::FixedOffset> {
+    chrono::DateTime::parse_from_rfc3339(text)
+        .unwrap_or_else(|e| panic!("not an RFC 3339 time: {text}: {e}"))
+}
+
+#[test]
+fn scenario_appends_a_state_history_entry_with_reason_auto_advance() {
+    // Scenario: auto-advance appends a stateHistory entry with reason auto-advance
+    let tmp = TempDir::new().expect("tempdir");
+    // @step Given a project root whose spec/work-units.json contains AUTH-001 with status 'testing' and one stateHistory entry for testing
+    let mut seed = unit_in_status("testing");
+    let first = json!({"state": "testing", "timestamp": "2026-06-01T00:00:00.000Z"});
+    seed["workUnits"]["AUTH-001"]["stateHistory"] = json!([first]);
+    seed_work_units(tmp.path(), seed);
+
+    // @step When I dispatch auto-advance with workUnitId 'AUTH-001', from 'testing', and event 'tests-pass'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "from": "testing", "event": "tests-pass"}),
+    ));
+    assert!(result.success, "auto-advance failed: {result:?}");
+
+    // @step Then the persisted AUTH-001 has 2 stateHistory entries and the first is unchanged
+    let stored = read_stored(tmp.path());
+    let card = &stored["workUnits"]["AUTH-001"];
+    let history = card["stateHistory"].as_array().expect("stateHistory array");
+    assert_eq!(history.len(), 2, "history: {history:?}");
+    assert_eq!(history[0], first);
+
+    // @step And the last stateHistory entry has state 'implementing', reason 'auto-advance' and the timestamp of AUTH-001's updatedAt
+    assert_eq!(
+        history[1],
+        json!({"state": "implementing", "timestamp": card["updatedAt"], "reason": "auto-advance"})
+    );
+}
+
+#[test]
+fn scenario_a_card_auto_advanced_to_done_is_found_by_done_since() {
+    // Scenario: A card auto-advanced to done is found by list-work-units --done-since
+    let tmp = TempDir::new().expect("tempdir");
+    // @step Given a project root whose spec/work-units.json contains AUTH-001 with status 'validating'
+    seed_work_units(tmp.path(), unit_in_status("validating"));
+
+    // @step When I dispatch auto-advance with workUnitId 'AUTH-001', from 'validating', and event 'validation-pass'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "from": "validating", "event": "validation-pass"}),
+    ));
+    assert!(result.success, "auto-advance failed: {result:?}");
+
+    // @step Then the last stateHistory entry of AUTH-001 has state 'done', reason 'auto-advance' and the timestamp of its doneAt
+    let stored = read_stored(tmp.path());
+    let card = &stored["workUnits"]["AUTH-001"];
+    let done_at = card["doneAt"].as_str().expect("stored doneAt");
+    let history = card["stateHistory"].as_array().expect("stateHistory array");
+    assert_eq!(
+        history.last(),
+        Some(&json!({"state": "done", "timestamp": done_at, "reason": "auto-advance"}))
+    );
+
+    // @step And list-work-units with doneSince '2000-01-01', fields 'doneAt' and format 'json' lists AUTH-001 with that doneAt
+    let listed = dispatch_in(
+        tmp.path(),
+        "list-work-units",
+        json!({"doneSince": "2000-01-01", "fields": "id,doneAt", "format": "json"}),
+    );
+    assert!(listed.success, "list-work-units failed: {listed:?}");
+    let listed = parse_data(&listed.data);
+    let rows = listed["workUnits"].as_array().expect("workUnits rows");
+    assert_eq!(rows.len(), 1, "rows: {rows:?}");
+    assert_eq!(rows[0]["id"], "AUTH-001");
+    let derived = rows[0]["doneAt"].as_str().expect("derived doneAt");
+    // list-work-units prints local times to the second.
+    assert_eq!(instant(derived).timestamp(), instant(done_at).timestamp());
+}
+
+#[test]
+fn scenario_isolated_session_records_the_session_id_on_its_entry() {
+    // Scenario: auto-advance in an isolated session records the session id on its stateHistory entry
+    let tmp = TempDir::new().expect("tempdir");
+    // @step Given a main checkout holding AUTH-001 with status 'testing' and a worktree whose .fspec/state-root pointer names session 's1'
+    let main = tmp
+        .path()
+        .canonicalize()
+        .expect("canonical tempdir")
+        .join("main");
+    seed_work_units(&main, unit_in_status("testing"));
+    let worktree = main.join(".fspec").join("worktrees").join("s1");
+    seed_work_units(&worktree, unit_in_status("testing"));
+    fs::create_dir_all(worktree.join(".fspec")).expect("mkdir worktree .fspec");
+    fs::write(
+        worktree.join(".fspec").join("state-root"),
+        json!({"stateRoot": main, "sessionId": "s1"}).to_string(),
+    )
+    .expect("write state-root pointer");
+
+    // @step When I dispatch auto-advance in the worktree with workUnitId 'AUTH-001', from 'testing', and event 'tests-pass'
+    let result = dispatch_command(req(
+        &worktree,
+        json!({"workUnitId": "AUTH-001", "from": "testing", "event": "tests-pass"}),
+    ));
+    assert!(result.success, "auto-advance failed: {result:?}");
+
+    // @step Then the main board's last stateHistory entry of AUTH-001 has state 'implementing' and sessionId 's1'
+    let stored = read_stored(&main);
+    let last = stored["workUnits"]["AUTH-001"]["stateHistory"]
+        .as_array()
+        .and_then(|h| h.last())
+        .cloned()
+        .expect("a stateHistory entry");
+    assert_eq!(last["state"], "implementing", "entry: {last}");
+    assert_eq!(last["sessionId"], "s1", "entry: {last}");
+}
+
+#[test]
+fn scenario_fails_with_an_exact_error_when_state_history_is_not_an_array() {
+    // Scenario: auto-advance fails with an exact error when stateHistory is not an array
+    let tmp = TempDir::new().expect("tempdir");
+    // @step Given a project root whose spec/work-units.json contains AUTH-001 with status 'testing' and stateHistory 'legacy'
+    let mut seed = unit_in_status("testing");
+    seed["workUnits"]["AUTH-001"]["stateHistory"] = json!("legacy");
+    seed_work_units(tmp.path(), seed);
+    let board = tmp.path().join("spec").join("work-units.json");
+    let before = fs::read(&board).expect("read board");
+
+    // @step When I dispatch auto-advance with workUnitId 'AUTH-001', from 'testing', and event 'tests-pass'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "from": "testing", "event": "tests-pass"}),
+    ));
+
+    // @step Then the error message contains 'Failed to auto-advance: Work unit AUTH-001 has a malformed stateHistory field: expected an array. Fix spec/work-units.json.'
+    assert!(!result.success, "expected failure: {result:?}");
+    let error = result.error.unwrap_or_default();
+    assert!(
+        error.contains("Failed to auto-advance: Work unit AUTH-001 has a malformed stateHistory field: expected an array. Fix spec/work-units.json."),
+        "unexpected error: {error}"
+    );
+
+    // @step And spec/work-units.json is byte-for-byte unchanged
+    assert_eq!(fs::read(&board).expect("read board"), before);
 }

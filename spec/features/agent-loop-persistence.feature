@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @RPC-080
@@ -5,7 +6,7 @@
 @agent-loop
 @rpc
 @persistence
-@refac007
+@BUG-323
 Feature: Agent loop persists user, assistant, tool_result, and token state per turn
   """
   RPC-080 (child of RPC-072 family). REFAC-007 parity: every turn must
@@ -78,25 +79,25 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
     Then persist_user_message returns Err(String) referencing the load failure
     And no thread panics
 
-  Scenario: Source-shape — agent_loop body invokes persist_user_message before dispatching to the provider
-    Given the source of rust/agent-loop/src/agent_loop.rs
-    When the file is scanned
-    Then it imports persist_user_message from crate::persist
-    And the function body contains a call to persist_user_message(&session.id, input)
-    And that call is followed by the provider dispatch (no provider dispatch precedes it within the same turn block)
+  Scenario: Source-shape — the turn loop durably persists the input before dispatching to the provider
+    Given the sources of rust/agent-loop/src/agent_loop.rs and its agent_loop/prompt.rs and agent_loop/admission.rs submodules
+    When the files are scanned
+    Then admission::store_original durably persists the input through crate::persist::persist_input_original
+    And prompt::admit_prompt calls admission::store_original before session.set_status(SessionStatus::Running) and refuses the turn when it fails
+    And the turn loop gates on prompt::admit_prompt before admission::admit_turn dispatches to providers::run_selected_provider
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::ToolResult arm persists assistant before tool_result
     Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
     Then the StreamEvent::ToolResult arm calls self.persist_assistant_message()
-    And the same arm subsequently calls persist_tool_result_internal(...)
+    And the same arm subsequently calls persist_tool_result_identified(...)
     And the assistant-flush call precedes the tool-result persist call textually within that arm
 
-  Scenario: Source-shape — BackgroundOutput's StreamEvent::Done arm persists assistant then token state
+  Scenario: Source-shape — the Done arm persists the assistant and token state is settled per provider request
     Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
-    Then the StreamEvent::Done arm calls self.persist_assistant_message_with_stop_reason(stop_reason)
-    And the same arm subsequently calls persist_token_state(&self.session.id, input_tokens, output_tokens)
+    Then the StreamEvent::Done arm calls self.persist_assistant_message_with_stop_reason(stop_reason) before it emits StreamChunk::done()
+    And the token state is persisted per provider request: the stream driver binds the agent with .with_settlement_session(session_id), RigAgent wraps the hook in RequestSettlementHook, and the hook calls settle_request(session_id, identity, usage)
 
   Scenario: Source-shape — BackgroundOutput's StreamEvent::Error arm flushes accumulated assistant content
     Given the source of rust/agent-loop/src/background_output.rs
@@ -106,7 +107,8 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
   Scenario: Source-shape — BackgroundOutput's StreamEvent::Interrupted arm flushes accumulated assistant content
     Given the source of rust/agent-loop/src/background_output.rs
     When the file is scanned
-    Then the StreamEvent::Interrupted arm calls self.persist_assistant_message()
+    Then the StreamEvent::Interrupted arm calls self.persist_assistant_outcome(None, reason) with the session's interruption reason before it emits the interrupted chunk
+    And persist_assistant_outcome flushes the accumulated assistant content through crate::persist::persist_assistant_message_identified
 
   Scenario: Boundary — persistence calls in codelet-agent-loop import from crate::persist (not codelet_napi)
     Given the codelet-agent-loop crate

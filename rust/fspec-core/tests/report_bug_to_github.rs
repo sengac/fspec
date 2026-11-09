@@ -219,6 +219,12 @@ fn work_unit_context_included_when_non_done_work_unit_exists() {
         md.contains("**Feature File**: spec/features/user-login.feature"),
         "md={md}"
     );
+
+    // @step And the report markdown contains "**Work Unit**: AUTH-001 - Login"
+    assert!(md.contains("**Work Unit**: AUTH-001 - Login"), "md={md}");
+
+    // @step And the report markdown contains "**Status**: implementing"
+    assert!(md.contains("**Status**: implementing"), "md={md}");
 }
 
 #[test]
@@ -283,5 +289,63 @@ fn both_front_doors_converge_on_same_function() {
     assert!(
         url.starts_with("https://github.com/sengac/fspec/issues/new?title="),
         "url={url}"
+    );
+}
+
+/// Run `git <args>` in `dir`, failing the test on a non-zero exit. Commits
+/// carry an inline identity so no global git config is needed.
+fn git(dir: &Path, args: &[&str]) {
+    let status = std::process::Command::new("git")
+        .args([
+            "-c",
+            "user.name=Test User",
+            "-c",
+            "user.email=test@example.com",
+        ])
+        .args(["-c", "commit.gpgsign=false"])
+        .args(args)
+        .current_dir(dir)
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
+        .status()
+        .expect("run git");
+    assert!(status.success(), "git {args:?} failed: {status}");
+}
+
+#[test]
+fn git_context_reports_current_branch_and_uncommitted_changes() {
+    // @step Given a project root tempdir that is a git repository on branch "bug-branch" with one commit and an uncommitted change to a tracked file
+    let tmp = TempDir::new().expect("tempdir");
+    git(tmp.path(), &["init", "--quiet"]);
+    git(tmp.path(), &["checkout", "--quiet", "-b", "bug-branch"]);
+    fs::write(tmp.path().join("app.txt"), "v1\n").expect("write app.txt");
+    git(tmp.path(), &["add", "app.txt"]);
+    git(tmp.path(), &["commit", "--quiet", "-m", "initial"]);
+    fs::write(tmp.path().join("app.txt"), "v2\n").expect("modify app.txt");
+
+    // @step When I dispatch report-bug-to-github with bug-description "crash on save"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
+
+    // @step Then the dispatcher returns success
+    assert!(result.success, "expected success; got {result:?}");
+    let md = markdown_of(&envelope(&result.data));
+
+    // @step And the report markdown contains "- Git branch: bug-branch"
+    assert!(md.contains("- Git branch: bug-branch"), "md={md}");
+
+    // @step And the report markdown contains "**Note**: There are uncommitted changes in the working directory."
+    assert!(
+        md.contains("**Note**: There are uncommitted changes in the working directory."),
+        "md={md}"
+    );
+
+    // @step And the report markdown contains "If relevant, please provide git diff output."
+    assert!(
+        md.contains("If relevant, please provide git diff output."),
+        "md={md}"
     );
 }

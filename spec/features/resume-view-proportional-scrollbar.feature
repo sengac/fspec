@@ -2,6 +2,7 @@
 @tui
 @resume
 @scrollbar
+@session-resume
 Feature: Resume view proportional scrollbar
   """
   Architecture notes:

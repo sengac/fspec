@@ -1,5 +1,7 @@
 @done
 @AMGR-010
+@tools
+@agent-manager
 Feature: Agent messaging — plain, bidirectional, any-to-any
   """
   Add Message variant to AgentManagerAction enum in types.rs: Message { session_id: String, message: String }. Add MessageDelivered variant to AgentManagerResult.

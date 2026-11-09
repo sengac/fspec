@@ -2,13 +2,14 @@
 
 use codelet_fspec_tui::{store::TokenState, views::agent::header::SessionHeader};
 use codelet_rpc_types::{ContextProvenance, RequestContextSnapshot, StreamChunk, ThinkingLevel};
+use codelet_test_helpers::TestResult;
 use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
 
 fn render(tokens: TokenState) -> String {
     let area = Rect::new(0, 0, 160, 1);
     let mut buffer = Buffer::empty(area);
     SessionHeader {
-        session_index: (1, 1),
+        session_index: Some((1, 1)),
         model: None,
         thinking: ThinkingLevel::Off,
         tokens,
@@ -32,7 +33,7 @@ fn render(tokens: TokenState) -> String {
 }
 
 #[test]
-fn scenario_header_distinguishes_estimated_and_unknown_context_from_measured_usage() {
+fn scenario_header_distinguishes_estimated_and_unknown_context_from_measured_usage() -> TestResult {
     // @step Given estimated committed context followed by an unavailable request measurement
     let mut tokens = TokenState::default();
     let mut snapshot = RequestContextSnapshot {
@@ -67,4 +68,5 @@ fn scenario_header_distinguishes_estimated_and_unknown_context_from_measured_usa
         render(tokens)
     );
     assert!(!render(tokens).contains("[0%]"));
+    Ok(())
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_domain_event.rs",
-          "lines": "99-124",
+          "lines": "105-129",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_domain_event.rs",
@@ -46,7 +46,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add domain event: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -98,7 +100,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add domain event: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -109,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_domain_event.rs",
-          "lines": "156-188",
+          "lines": "165-196",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_domain_event.rs",
@@ -150,7 +154,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add domain event: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -202,7 +208,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "eprintln!(\"✗ Failed to add domain event: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -219,6 +227,6 @@
     "implFiles": [
       "rust/fspec/src/add_domain_event.rs"
     ],
-    "totalLinesCovered": 285
+    "totalLinesCovered": 283
   }
 }

@@ -1,4 +1,6 @@
+@BUG-582
 @done
+@HOOK-018
 @workflow-automation
 @hooks
 @HOOK-003
@@ -22,12 +24,13 @@ Feature: Hook execution engine
   #   6. Blocking hooks halt command execution on failure (non-zero exit)
   #   7. Hooks execute sequentially in the order defined in config
   #   8. Hook processes inherit parent environment variables
+  #   9. A command with whitespace is a shell command run from the project root; only a whitespace-free command can be a script path
   #
   # EXAMPLES:
   #   1. Execute single non-blocking hook that succeeds (exit 0) - output shown, command continues
   #   2. Execute single non-blocking hook that fails (exit 1) - warning shown, command continues
   #   3. Execute blocking hook that fails - command halted, error returned to user/AI
-  #   4. Hook times out after 60s - process killed, timeout error shown
+  #   4. Hook exceeds its timeout - process killed, timeout error shown
   #   5. Hook receives context via stdin: {"workUnitId":"AUTH-001","event":"post-implementing","timestamp":"2025-01-15T10:30:00Z"}
   #   6. Multiple hooks execute sequentially - first runs to completion, then second starts
   #   7. Hook stdout/stderr captured and displayed: 'Running tests...' visible to user
@@ -65,10 +68,10 @@ Feature: Hook execution engine
     And the fspec command should exit with non-zero code
 
   Scenario: Hook times out after configured duration
-    Given I have a hook configuration with a hook "slow-test" with timeout 2 seconds
-    And the hook script "spec/hooks/slow-test.sh" runs for 10 seconds
+    Given I have a hook configuration with a hook "slow-test" with timeout 1 seconds
+    And the hook script "spec/hooks/slow-test.sh" never exits
     When I execute the hook for event "post-testing"
-    Then the hook process should be killed after 2 seconds
+    Then the hook process should be killed
     And a timeout error should be displayed
     And the hook should be marked as failed
 
@@ -98,3 +101,10 @@ Feature: Hook execution engine
     Then the stdout message "Running tests..." should be captured
     And the stderr message "Warning: deprecated API" should be captured
     And both stdout and stderr should be displayed to the user
+
+  Scenario: Script path with arguments runs through the shell
+    Given I have a hook configuration with a hook "record" for "post-testing" whose command is "spec/hooks/record.sh enter"
+    And the script "spec/hooks/record.sh" writes its first argument to a file
+    When I execute the hook for event "post-testing"
+    Then the hook should complete successfully
+    And the file should contain "enter"

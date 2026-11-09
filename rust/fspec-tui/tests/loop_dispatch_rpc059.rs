@@ -8,22 +8,17 @@
 //! `Action::EmitSessionNotice` notice formatter. Mirrors the
 //! `schedule_dispatch_rpc058.rs` test layout.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::app::loop_parser::{parse_loop_command, LoopSubcommand};
 use codelet_fspec_tui::app::slash_parser::{parse_slash_command, SlashCommandParse};
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{RegisteredLoop, SessionId};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -44,29 +39,34 @@ fn reg(id: &str, session: &str, interval: u32, prompt: &str) -> RegisteredLoop {
     }
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -99,23 +99,25 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_loop_command_resolves_bare_loop_to_help() {
+fn parse_loop_command_resolves_bare_loop_to_help() -> TestResult {
     // @step When parse_loop_command("/loop") is invoked
     let out = parse_loop_command("/loop");
     // @step Then it returns LoopSubcommand::Help
     assert_eq!(out, LoopSubcommand::Help);
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_loop_list() {
+fn parse_loop_command_resolves_loop_list() -> TestResult {
     // @step When parse_loop_command("/loop list") is invoked
     let out = parse_loop_command("/loop list");
     // @step Then it returns LoopSubcommand::List
     assert_eq!(out, LoopSubcommand::List);
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_loop_cancel_id() {
+fn parse_loop_command_resolves_loop_cancel_id() -> TestResult {
     // @step When parse_loop_command("/loop cancel a1b2c3d4") is invoked
     let out = parse_loop_command("/loop cancel a1b2c3d4");
     // @step Then it returns LoopSubcommand::Cancel with id "a1b2c3d4"
@@ -125,10 +127,11 @@ fn parse_loop_command_resolves_loop_cancel_id() {
             id: "a1b2c3d4".to_string()
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_leading_interval_seconds() {
+fn parse_loop_command_resolves_leading_interval_seconds() -> TestResult {
     // @step When parse_loop_command("/loop 30s check the build") is invoked
     let out = parse_loop_command("/loop 30s check the build");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 30 and prompt "check the build"
@@ -139,10 +142,11 @@ fn parse_loop_command_resolves_leading_interval_seconds() {
             prompt: "check the build".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_leading_interval_minutes() {
+fn parse_loop_command_resolves_leading_interval_minutes() -> TestResult {
     // @step When parse_loop_command("/loop 5m check deployment status") is invoked
     let out = parse_loop_command("/loop 5m check deployment status");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 300 and prompt "check deployment status"
@@ -153,10 +157,11 @@ fn parse_loop_command_resolves_leading_interval_minutes() {
             prompt: "check deployment status".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_leading_interval_hours() {
+fn parse_loop_command_resolves_leading_interval_hours() -> TestResult {
     // @step When parse_loop_command("/loop 2h check build") is invoked
     let out = parse_loop_command("/loop 2h check build");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 7200 and prompt "check build"
@@ -167,10 +172,11 @@ fn parse_loop_command_resolves_leading_interval_hours() {
             prompt: "check build".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_leading_interval_days() {
+fn parse_loop_command_resolves_leading_interval_days() -> TestResult {
     // @step When parse_loop_command("/loop 1d nightly summary") is invoked
     let out = parse_loop_command("/loop 1d nightly summary");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 86400 and prompt "nightly summary"
@@ -181,10 +187,11 @@ fn parse_loop_command_resolves_leading_interval_days() {
             prompt: "nightly summary".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_resolves_trailing_every_clause() {
+fn parse_loop_command_resolves_trailing_every_clause() -> TestResult {
     // @step When parse_loop_command("/loop check status every 2 hours") is invoked
     let out = parse_loop_command("/loop check status every 2 hours");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 7200 and prompt "check status"
@@ -195,10 +202,11 @@ fn parse_loop_command_resolves_trailing_every_clause() {
             prompt: "check status".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_defaults_to_10_minutes_when_no_interval_specified() {
+fn parse_loop_command_defaults_to_10_minutes_when_no_interval_specified() -> TestResult {
     // @step When parse_loop_command("/loop check the build") is invoked
     let out = parse_loop_command("/loop check the build");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 600 and prompt "check the build"
@@ -209,10 +217,11 @@ fn parse_loop_command_defaults_to_10_minutes_when_no_interval_specified() {
             prompt: "check the build".to_string(),
         }
     );
+    Ok(())
 }
 
 #[test]
-fn parse_loop_command_treats_minimum_interval_as_1_second() {
+fn parse_loop_command_treats_minimum_interval_as_1_second() -> TestResult {
     // @step When parse_loop_command("/loop 0s prompt") is invoked
     let out = parse_loop_command("/loop 0s prompt");
     // @step Then it returns LoopSubcommand::Add with interval_seconds 1 and prompt "prompt"
@@ -223,6 +232,7 @@ fn parse_loop_command_treats_minimum_interval_as_1_second() {
             prompt: "prompt".to_string(),
         }
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -230,19 +240,21 @@ fn parse_loop_command_treats_minimum_interval_as_1_second() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_slash_command_routes_loop_submit_line_input() {
+fn parse_slash_command_routes_loop_submit_line_input() -> TestResult {
     // @step When parse_slash_command("/loop list") is invoked
     let out = parse_slash_command("/loop list");
     // @step Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::List)
     assert_eq!(out, SlashCommandParse::LoopSubcommand(LoopSubcommand::List));
+    Ok(())
 }
 
 #[test]
-fn parse_slash_command_routes_bare_loop_to_help() {
+fn parse_slash_command_routes_bare_loop_to_help() -> TestResult {
     // @step When parse_slash_command("/loop") is invoked
     let out = parse_slash_command("/loop");
     // @step Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::Help)
     assert_eq!(out, SlashCommandParse::LoopSubcommand(LoopSubcommand::Help));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -250,7 +262,7 @@ fn parse_slash_command_routes_bare_loop_to_help() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_popup_pick_with_no_session_is_silent_noop() {
+async fn loop_popup_pick_with_no_session_is_silent_noop() -> TestResult {
     // @step Given an App with NO open AgentView session
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
@@ -260,8 +272,11 @@ async fn loop_popup_pick_with_no_session_is_silent_noop() {
     let initial_cancel = mock.loop_cancel_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::Loop) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Loop));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Loop,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then no backend method is called
     assert_eq!(mock.loop_add_calls(), initial_add);
@@ -273,6 +288,7 @@ async fn loop_popup_pick_with_no_session_is_silent_noop() {
         app.agent_view_store().open_sessions().is_empty(),
         "expected zero open sessions",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -280,28 +296,32 @@ async fn loop_popup_pick_with_no_session_is_silent_noop() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_popup_pick_with_session_emits_help_notice() {
+async fn loop_popup_pick_with_session_emits_help_notice() -> TestResult {
     // @step Given an App with open session s-1
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_list = mock.loop_list_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::Loop) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Loop));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Loop,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then Action::EmitSessionNotice for s-1 with text starting with "[loop] Usage:" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[loop] Usage:"),
         "loop help notice",
     )
-    .await;
+    .await?;
 
     // @step And no backend method is called
     assert_eq!(mock.loop_list_calls(), initial_list);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -309,7 +329,7 @@ async fn loop_popup_pick_with_session_emits_help_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_list_two_rows_emits_multiline_notice() {
+async fn loop_list_two_rows_emits_multiline_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_list returns two RegisteredLoop rows
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_list_result(Ok(vec![
@@ -318,27 +338,28 @@ async fn loop_list_two_rows_emits_multiline_notice() {
     ]));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.loop_list_calls();
 
     // @step When Action::LoopSubcommandParsed(LoopSubcommand::List) is dispatched
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::List));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.loop_list is called exactly once with session_id s-1
     wait_until(
         || mock.loop_list_calls() - initial == 1,
         "loop_list called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text containing "Active loops:" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("Active loops:"),
         "loop list notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -346,24 +367,25 @@ async fn loop_list_two_rows_emits_multiline_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_list_empty_emits_no_loops_notice() {
+async fn loop_list_empty_emits_no_loops_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_list returns an empty Vec
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_list_result(Ok(vec![]));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::LoopSubcommandParsed(LoopSubcommand::List) is dispatched
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::List));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[loop] No active loops." is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[loop] No active loops."),
         "no-loops notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -371,13 +393,13 @@ async fn loop_list_empty_emits_no_loops_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_add_success_emits_scheduled_notice() {
+async fn loop_add_success_emits_scheduled_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_add returns Ok(RegisteredLoop { id: "ab12cd34", session_id: SessionId::new("s-1"), prompt: "check the build", interval_seconds: 30, created_at: "2026-05-24T00:00:00Z", expires_at: "2026-05-27T00:00:00Z", last_run_at: None })
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_add_result(Ok(reg("ab12cd34", "s-1", 30, "check the build")));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.loop_add_calls();
 
@@ -386,14 +408,14 @@ async fn loop_add_success_emits_scheduled_notice() {
         interval_seconds: 30,
         prompt: "check the build".to_string(),
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.loop_add is called exactly once with session_id s-1 and interval_seconds 30 and prompt "check the build"
     wait_until(
         || mock.loop_add_calls() - initial == 1,
         "loop_add called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[loop] scheduled every 30 seconds [job: ab12cd34]" is observed on the action bus
     wait_until(
@@ -403,7 +425,8 @@ async fn loop_add_success_emits_scheduled_notice() {
         },
         "loop add notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -411,20 +434,20 @@ async fn loop_add_success_emits_scheduled_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_add_error_emits_error_notice() {
+async fn loop_add_error_emits_error_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_add returns Err("Session not found: s-1")
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_add_result(Err("Session not found: s-1".to_string()));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::LoopSubcommandParsed(LoopSubcommand::Add { interval_seconds: 30, prompt: "p" }) is dispatched
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::Add {
         interval_seconds: 30,
         prompt: "p".to_string(),
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /loop add: Session not found: s-1" is observed on the action bus
     wait_until(
@@ -434,7 +457,8 @@ async fn loop_add_error_emits_error_notice() {
         },
         "add error notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -442,13 +466,13 @@ async fn loop_add_error_emits_error_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_cancel_success_emits_cancelled_notice() {
+async fn loop_cancel_success_emits_cancelled_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_cancel returns Ok(true)
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_cancel_result(Ok(true));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.loop_cancel_calls();
 
@@ -456,21 +480,22 @@ async fn loop_cancel_success_emits_cancelled_notice() {
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::Cancel {
         id: "a1b2c3d4".to_string(),
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.loop_cancel is called exactly once with id "a1b2c3d4"
     wait_until(
         || mock.loop_cancel_calls() - initial == 1,
         "loop_cancel called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[loop] cancelled a1b2c3d4" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[loop] cancelled a1b2c3d4"),
         "loop cancel notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -478,19 +503,19 @@ async fn loop_cancel_success_emits_cancelled_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loop_cancel_unknown_emits_not_found_notice() {
+async fn loop_cancel_unknown_emits_not_found_notice() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose loop_cancel returns Ok(false)
     let mock = Arc::new(MockBackend::new());
     mock.seed_loop_cancel_result(Ok(false));
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::LoopSubcommandParsed(LoopSubcommand::Cancel { id: "does-not-exist" }) is dispatched
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::Cancel {
         id: "does-not-exist".to_string(),
     }));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /loop cancel: Loop \"does-not-exist\" not found" is observed on the action bus
     wait_until(
@@ -500,7 +525,8 @@ async fn loop_cancel_unknown_emits_not_found_notice() {
         },
         "loop cancel missing notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -508,12 +534,12 @@ async fn loop_cancel_unknown_emits_not_found_notice() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn bare_loop_submit_emits_help_notice() {
+async fn bare_loop_submit_emits_help_notice() -> TestResult {
     // @step Given an App with open session s-1
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_add = mock.loop_add_calls();
     let initial_list = mock.loop_list_calls();
@@ -521,7 +547,7 @@ async fn bare_loop_submit_emits_help_notice() {
 
     // @step When Action::LoopSubcommandParsed(LoopSubcommand::Help) is dispatched
     app.dispatch(Action::LoopSubcommandParsed(LoopSubcommand::Help));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then no backend method is called
     assert_eq!(mock.loop_add_calls(), initial_add);
@@ -533,5 +559,6 @@ async fn bare_loop_submit_emits_help_notice() {
         || session_scrollback_text(&app, &sid("s-1")).contains("[loop] Usage:"),
         "loop help notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }

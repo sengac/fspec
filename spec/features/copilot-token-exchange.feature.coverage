@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/token_exchange_tests.rs",
-          "lines": "43-100",
+          "lines": "41-91",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/token_exchange.rs",
@@ -94,7 +94,9 @@
                 200,
                 201,
                 202
-              ]
+              ],
+              "firstLine": "/// - `Authorization: token <gho_*>` (note: **`token`**, not `Bearer`)",
+              "lastLine": ")"
             }
           ]
         }
@@ -111,6 +113,6 @@
     "implFiles": [
       "rust/providers/src/copilot/token_exchange.rs"
     ],
-    "totalLinesCovered": 142
+    "totalLinesCovered": 135
   }
 }

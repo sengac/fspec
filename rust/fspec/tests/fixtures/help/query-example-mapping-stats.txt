@@ -9,8 +9,8 @@ USAGE
   fspec query-example-mapping-stats [options]
 
 OPTIONS
-  --status <status>
-    Filter by status
+  -f, --format <format>
+    Output format (text or json)
 
 EXAMPLES
   1. Show EM stats

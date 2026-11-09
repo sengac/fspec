@@ -42,14 +42,20 @@ fn provider_with_tokens(
         model,
     )
     .expect("provider should initialize with real OAuth tokens")
+    // The limits ProviderManager::get_codex passes from the models.dev
+    // catalog for gpt-6-astra.
+    .with_request_admission(codelet_providers::request_admission::AdmissionLimits {
+        context_capacity: Some(1_050_000),
+        output_reservation: Some(128_000),
+    })
 }
 
-/// Scenario: the Codex backend REQUIRES streaming — the non-streaming path is
-/// rejected with 400 "Stream must be set to true". This documents why the TUI
-/// must use the streaming path (and why a silently-empty stream ends a
-/// conversation with no error surfaced).
+/// The Codex backend only answers streaming requests, so a direct
+/// completion through the subscription streams and buffers the answer
+/// (codex-tool-free-completions.feature, "Subscription direct completions
+/// buffer streaming responses").
 #[tokio::test]
-async fn live_gpt6_astra_non_streaming_is_rejected() {
+async fn live_gpt6_astra_direct_completion_buffers_the_streamed_answer() {
     let (access, refresh, account_id) = match real_oauth_creds() {
         Some(c) => c,
         None => {
@@ -58,8 +64,7 @@ async fn live_gpt6_astra_non_streaming_is_rejected() {
         }
     };
 
-    let model = std::env::var("CODEX_TEST_MODEL")
-        .unwrap_or_else(|_| "gpt-6-astra".to_string());
+    let model = std::env::var("CODEX_TEST_MODEL").unwrap_or_else(|_| "gpt-6-astra".to_string());
 
     let provider = provider_with_tokens(&access, &refresh, &account_id, &model);
 
@@ -72,11 +77,10 @@ async fn live_gpt6_astra_non_streaming_is_rejected() {
         Err(e) => eprintln!("ERROR: {e:?}"),
     }
 
-    let err = result.expect_err("Codex backend rejects non-streaming requests");
-    let msg = format!("{err:?}");
+    let text = result.expect("a direct completion buffers the streamed answer");
     assert!(
-        msg.contains("Stream must be set to true") || msg.contains("stream"),
-        "expected a stream-required 400, got: {msg}"
+        text.to_lowercase().contains("pong"),
+        "expected the buffered answer to contain pong, got: {text:?}"
     );
 }
 
@@ -104,8 +108,8 @@ async fn live_gpt6_astra_streaming_completion() {
         }
     };
 
-    let model_name = std::env::var("CODEX_TEST_MODEL")
-        .unwrap_or_else(|_| "gpt-6-astra".to_string());
+    let model_name =
+        std::env::var("CODEX_TEST_MODEL").unwrap_or_else(|_| "gpt-6-astra".to_string());
 
     let provider = provider_with_tokens(&access, &refresh, &account_id, &model_name);
 
@@ -183,8 +187,8 @@ async fn live_gpt6_astra_streaming_with_tools() {
         }
     };
 
-    let model_name = std::env::var("CODEX_TEST_MODEL")
-        .unwrap_or_else(|_| "gpt-6-astra".to_string());
+    let model_name =
+        std::env::var("CODEX_TEST_MODEL").unwrap_or_else(|_| "gpt-6-astra".to_string());
 
     let provider = provider_with_tokens(&access, &refresh, &account_id, &model_name);
 
@@ -282,14 +286,20 @@ async fn live_gpt6_astra_full_agent_path() {
         }
     };
 
-    let model_name = std::env::var("CODEX_TEST_MODEL")
-        .unwrap_or_else(|_| "gpt-6-astra".to_string());
+    let model_name =
+        std::env::var("CODEX_TEST_MODEL").unwrap_or_else(|_| "gpt-6-astra".to_string());
 
     let provider = provider_with_tokens(&access, &refresh, &account_id, &model_name);
 
     // @step And the full production agent with all Codex-native tools registered (including AstGrepRefactor)
     // Full production agent: all Codex-native tool facades registered.
-    let agent = provider.create_rig_agent(uuid::Uuid::new_v4(), None, None);
+    let session_id = uuid::Uuid::new_v4();
+    let agent = provider.create_rig_agent(session_id, None, None);
+    // As the agent loop does: tools carry the work_unit_id attribution the
+    // provider's tool contract requires.
+    codelet_tools::tool_attribution::configure_agent_tools(&agent, session_id.to_string())
+        .await
+        .expect("the agent's tool server takes the attribution middleware");
 
     use futures::StreamExt;
     use rig::agent::MultiTurnStreamItem;
@@ -329,7 +339,11 @@ async fn live_gpt6_astra_full_agent_path() {
             }
             Ok(MultiTurnStreamItem::FinalResponse(fr)) => {
                 final_text_len = Some(fr.response().len());
-                println!("FINAL RESPONSE len={}: {:?}", fr.response().len(), fr.response());
+                println!(
+                    "FINAL RESPONSE len={}: {:?}",
+                    fr.response().len(),
+                    fr.response()
+                );
             }
             Ok(other) => println!("other multi-turn item: {other:?}"),
             Err(e) => {

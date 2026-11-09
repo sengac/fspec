@@ -69,11 +69,10 @@ pub fn build_snapshot(
         open_menu,
         zone_b,
         chips,
-        // MENU-009 Q1: NO Zone C on the mux top bar (the user's
-        // "board view and agent view" directive) — the empty slice
-        // keeps the ring walk / layout / paint byte-identical to
-        // pre-MENU-009 (scenario 13, the regression guard).
-        zone_c: &[],
+        // MUX-013: the agent view's New Bot / New Agent / Close buttons
+        // (Close only while the focused pane shows a session); the ring
+        // walk reaches them after Zone B.
+        zone_c: layout.zone_c(),
         clock_ms,
     }
 }
@@ -89,7 +88,13 @@ mod tests {
         // @step Given a MultiplexLayout with [Board | Files] panes and the Board focused
         let mut layout = MultiplexLayout::new();
         layout.enable_default();
-        layout.set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles], None);
+        layout.set_layout(
+            crate::views::multiplex::MuxLayout::columns(&[
+                MuxPaneKind::Board,
+                MuxPaneKind::ChangedFiles,
+            ])
+            .unwrap(),
+        );
         layout.set_focus(0);
         let store = AgentViewStore::default();
         // @step When build_snapshot is called with one open session

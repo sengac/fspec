@@ -71,9 +71,9 @@ fn agent_loop_body_does_not_rebuild_single_element_user_history_vec() {
 
 #[test]
 fn agent_loop_body_threads_mut_inner_session_into_rig_streaming_engine() {
+    let strip = codelet_test_helpers::dependency_rules::strip_rust_comments;
     // @step Given the source of rust/agent-loop/src/agent_loop.rs is read into memory with Rust comments stripped
-    let raw = read_agent_loop_src("agent_loop.rs");
-    let src = codelet_test_helpers::dependency_rules::strip_rust_comments(&raw);
+    let src = strip(&read_agent_loop_src("agent_loop.rs"));
 
     // @step When the body is scanned for occurrences of "&mut inner_session"
     let mut_inner_count = src.matches("&mut inner_session").count();
@@ -81,53 +81,51 @@ fn agent_loop_body_threads_mut_inner_session_into_rig_streaming_engine() {
         mut_inner_count >= 2,
         "expected at least 2 occurrences of `&mut inner_session` in agent_loop.rs, got {mut_inner_count}"
     );
+    let selected = src
+        .find("providers::run_selected_provider(")
+        .expect("agent_loop.rs dispatches through providers::run_selected_provider");
+    assert!(
+        src[selected..(selected + 120).min(src.len())].contains("&mut inner_session"),
+        "the agent loop passes `&mut inner_session` as the chat-history slot of run_selected_provider"
+    );
 
     // @step Then at least one occurrence appears as the fourth positional argument to "codelet_cli::interactive::run_agent_stream_with_images"
-    // We pin this by locating each call site of run_agent_stream_with_images
-    // and asserting `&mut inner_session` appears within the call's
-    // argument block (the openai-inlined arm at ~:897 and the custom-
-    // provider arm at ~:996 both call it directly).
-    let mut found_direct_call_with_mut_inner = false;
-    let mut search_from = 0usize;
-    while let Some(pos) =
-        src[search_from..].find("codelet_cli::interactive::run_agent_stream_with_images")
-    {
-        let absolute = search_from + pos;
-        // Inspect the next 600 characters — enough to cover the full
-        // argument block (8 args, each on its own line in the canonical
-        // formatting).
-        let window_end = (absolute + 600).min(src.len());
-        let window = &src[absolute..window_end];
-        if window.contains("&mut inner_session") {
-            found_direct_call_with_mut_inner = true;
-            break;
-        }
-        search_from = absolute + 1;
-    }
+    // The direct calls live in the provider modules, which receive the
+    // loop's `&mut Session` as `inner_session`.
+    let direct_calls_thread_history = [
+        "agent_loop/provider_openai.rs",
+        "agent_loop/provider_custom.rs",
+    ]
+    .iter()
+    .all(|file| {
+        let module = strip(&read_agent_loop_src(file));
+        module
+            .match_indices("codelet_cli::interactive::run_agent_stream_with_images(")
+            .any(|(at, _)| {
+                module[at..(at + 400).min(module.len())]
+                    .lines()
+                    .nth(4)
+                    .is_some_and(|argument| argument.trim() == "inner_session,")
+            })
+    });
     assert!(
-        found_direct_call_with_mut_inner,
-        "at least one direct call to codelet_cli::interactive::run_agent_stream_with_images \
-         must pass `&mut inner_session` as the chat-history slot (this is what makes \
-         conversation history round-trip across turns)"
+        direct_calls_thread_history,
+        "each provider module's direct run_agent_stream_with_images call must pass \
+         `inner_session` as its fourth argument, the chat-history slot that makes \
+         conversation history round-trip across turns"
     );
 
     // @step And at least one occurrence appears as the first argument to a "run_with_provider!" macro invocation
-    let mut found_macro_call_with_mut_inner = false;
-    let mut search_from = 0usize;
-    while let Some(pos) = src[search_from..].find("run_with_provider!(") {
-        let absolute = search_from + pos;
-        let window_end = (absolute + 200).min(src.len());
-        let window = &src[absolute..window_end];
-        if window.contains("&mut inner_session") {
-            found_macro_call_with_mut_inner = true;
-            break;
-        }
-        search_from = absolute + 1;
-    }
+    let providers = strip(&read_agent_loop_src("agent_loop/providers.rs"));
     assert!(
-        found_macro_call_with_mut_inner,
-        "at least one `run_with_provider!(...)` invocation in agent_loop.rs must pass \
-         `&mut inner_session` as the first argument — the macro forwards that slot into \
+        providers
+            .match_indices("run_with_provider!(")
+            .any(|(at, _)| providers[at..(at + 120).min(providers.len())]
+                .lines()
+                .nth(1)
+                .is_some_and(|argument| argument.trim() == "inner_session,")),
+        "a `run_with_provider!(...)` invocation in agent_loop/providers.rs must pass \
+         `inner_session` as its first argument; the macro forwards it into \
          run_agent_stream_with_images so chat history threads through to the LLM"
     );
 }

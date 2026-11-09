@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "63-100",
+          "lines": "61-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
@@ -19,7 +19,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// `~/.fspec` derived from `HOME`, then a bare `.fspec` fallback.",
+              "lastLine": "\".fspec\".to_string()"
             }
           ]
         }
@@ -30,7 +32,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "108-137",
+          "lines": "107-137",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
@@ -44,7 +46,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// `~/.fspec` derived from `HOME`, then a bare `.fspec` fallback.",
+              "lastLine": "\".fspec\".to_string()"
             }
           ]
         }
@@ -55,7 +59,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "144-167",
+          "lines": "149-175",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
@@ -75,7 +79,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "/// `toggleDebug(debugDir)` path); TUI-127: a notification says whether",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -86,7 +92,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "174-191",
+          "lines": "181-203",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
@@ -106,7 +112,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "/// `toggleDebug(debugDir)` path); TUI-127: a notification says whether",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -117,27 +125,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "197-230",
+          "lines": "199-232",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_debug_state(&mut self, session: SessionId) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -148,23 +158,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "235-268",
+          "lines": "247-282",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171
-              ]
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "if self.pre_session_debug_enabled {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,23 +186,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "275-296",
+          "lines": "288-316",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171
-              ]
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "if self.pre_session_debug_enabled {",
+              "lastLine": "}"
             }
           ]
         }
@@ -202,7 +214,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/debug_parity_rpc430.rs",
-          "lines": "306-341",
+          "lines": "322-363",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
@@ -216,7 +228,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "/// `~/.fspec` derived from `HOME`, then a bare `.fspec` fallback.",
+              "lastLine": "\".fspec\".to_string()"
             }
           ]
         }
@@ -235,6 +249,6 @@
       "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
       "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
-    "totalLinesCovered": 360
+    "totalLinesCovered": 353
   }
 }

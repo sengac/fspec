@@ -76,7 +76,8 @@ fn try_claim_revalidation_slot() -> bool {
     loop {
         let last = LAST_REVALIDATE_ATTEMPT.load(Ordering::Acquire);
         let last = Duration::from_secs(last);
-        if last != Duration::ZERO && now.saturating_sub(last.as_secs()) < REVALIDATE_COOLDOWN.as_secs()
+        if last != Duration::ZERO
+            && now.saturating_sub(last.as_secs()) < REVALIDATE_COOLDOWN.as_secs()
         {
             return false;
         }
@@ -160,9 +161,9 @@ impl Fetcher {
         }
 
         // Write cache
-        fs::write(&self.cache_path, &data).await.map_err(|e| {
-            ProviderError::api("models.dev", format!("Failed to write cache: {e}"))
-        })?;
+        fs::write(&self.cache_path, &data)
+            .await
+            .map_err(|e| ProviderError::api("models.dev", format!("Failed to write cache: {e}")))?;
 
         info!("Models cache updated: {}", self.cache_path.display());
         Ok(parsed)
@@ -237,7 +238,10 @@ impl ModelCache {
         match self.read_cache().await {
             Ok(data) => {
                 if self.is_fresh().await {
-                    debug!("Loaded models from fresh cache: {}", self.cache_path().display());
+                    debug!(
+                        "Loaded models from fresh cache: {}",
+                        self.cache_path().display()
+                    );
                     return Ok(data);
                 }
                 // Stale-while-revalidate: serve the snapshot now, refresh soon.
@@ -276,7 +280,10 @@ impl ModelCache {
         }
         match self.fetcher.fetch_and_cache(REVALIDATE_TIMEOUT).await {
             Ok(_) => {
-                info!("models catalog revalidated: {}", self.cache_path().display());
+                info!(
+                    "models catalog revalidated: {}",
+                    self.cache_path().display()
+                );
                 true
             }
             Err(e) => {
@@ -436,7 +443,10 @@ mod tests {
         let cache = cache.with_api_url("http://127.0.0.1:1/api.json");
         // @step When the model catalog is read
         // @step Then the stale snapshot is served immediately
-        let models = cache.get().await.expect("stale snapshot served immediately");
+        let models = cache
+            .get()
+            .await
+            .expect("stale snapshot served immediately");
         assert!(models.providers.contains_key("anthropic"));
         // @step And a revalidation of the catalog is attempted
         // The slot is claimed synchronously inside get() before the detached
@@ -488,7 +498,10 @@ mod tests {
             .with_api_url("http://127.0.0.1:1/api.json");
         // @step When the model catalog is revalidated twice in a row
         // @step Then only the first revalidation reaches the network
-        assert!(cache.revalidate_if_stale().await, "first attempt claims the slot");
+        assert!(
+            cache.revalidate_if_stale().await,
+            "first attempt claims the slot"
+        );
         assert!(
             !cache.revalidate_if_stale().await,
             "second attempt within the cooldown is suppressed"
@@ -521,7 +534,10 @@ mod tests {
             revalidation_slot_claimed(),
             "the unreachable endpoint is still attempted (and only logged)"
         );
-        let models = cache.get().await.expect("still served after the failed revalidation");
+        let models = cache
+            .get()
+            .await
+            .expect("still served after the failed revalidation");
         assert!(models.providers.contains_key("anthropic"));
     }
 }

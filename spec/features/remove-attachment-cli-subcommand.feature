@@ -2,6 +2,7 @@
 @rust
 @cli
 @RPC-268
+@remove
 Feature: fspec remove-attachment CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_attachment.rs — clap-derived struct mirroring TS Commander.js
@@ -35,7 +36,7 @@ Feature: fspec remove-attachment CLI subcommand
     And stdout contains the section header 'USAGE' followed by '  fspec remove-attachment <workUnitId> <fileName> [options]'
     And stdout contains the section header 'ARGUMENTS'
     And stdout contains the section header 'OPTIONS'
-    And stdout contains the substring 'Fix: undefined'
+    And stdout contains the substring 'Fix: Create the work unit first or check the work unit ID'
 
   Scenario: CLI successfully removes an attachment and prints the canonical success block
     Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and attachments=['spec/attachments/AUTH-001/diagram.png']
@@ -62,16 +63,16 @@ Feature: fspec remove-attachment CLI subcommand
     Then the exit code is 0
     And stdout contains the substring '⚠ Attachment removed from work unit (file was already missing)'
 
-  Scenario: CLI exits 2 when the workUnitId positional argument is missing
+  Scenario: CLI exits 1 when the workUnitId positional argument is missing
     Given an empty directory is set as the current working directory
     When I run `fspec remove-attachment` (no positionals) from that directory
-    Then the exit code is 2
+    Then the exit code is 1
     And stderr names the missing required argument
 
-  Scenario: CLI exits 2 when the fileName positional argument is missing
+  Scenario: CLI exits 1 when the fileName positional argument is missing
     Given an empty directory is set as the current working directory
     When I run `fspec remove-attachment AUTH-001` (missing second positional) from that directory
-    Then the exit code is 2
+    Then the exit code is 1
     And stderr names the missing required argument
 
   Scenario: CLI exits 1 with stderr prefix when the work unit does not exist

@@ -93,7 +93,8 @@ async fn scenario_cancelling_publication_of_a_deferred_summary_keeps_the_session
             let request = request_count.fetch_add(1, Ordering::SeqCst);
             let (delta, finish_reason) = if request == 0 {
                 let arguments = serde_json::json!({
-                    "content": "<dag-node depth=\"D1\" turns=\"0-2\" label=\"Original work\">The original question and completed evidence remain available.</dag-node>\n<dag-files>\n</dag-files>"
+                    "work_unit_id": "NONE",
+                    "content": "<dag-node depth=\"D1\" turns=\"0-1\" label=\"Original work\">The original question and completed evidence remain available.</dag-node>\n<dag-files>\n</dag-files>"
                 });
                 (
                     serde_json::json!({"role":"assistant","tool_calls":[{
@@ -124,7 +125,10 @@ async fn scenario_cancelling_publication_of_a_deferred_summary_keeps_the_session
     fixture.send();
     let chunks = fixture.until_done().await;
     interrupt.disarm();
-    assert!(interrupt.fired.load(Ordering::Acquire));
+    assert!(
+        interrupt.fired.load(Ordering::Acquire),
+        "publication never emitted CommittedCompaction; chunks: {chunks:?}"
+    );
     assert!(fixture.session.is_interrupted.load(Ordering::Acquire));
     let inner = fixture.session.inner.lock().await;
     // @step Then the promoted generation remains authoritative and reconciled

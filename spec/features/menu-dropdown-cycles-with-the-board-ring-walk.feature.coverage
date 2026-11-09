@@ -4,14 +4,12 @@
       "name": "While a dropdown is open Left and Right walk the ring and re-anchor",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
-          "lines": "956-999",
+          "file": "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs",
+          "lines": "203-248",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -30,8 +28,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -50,10 +46,11 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "/// Board view), `0` in Mux (the board pane's bar is suppressed,",
+              "lastLine": "let next = (pos + delta).rem_euclid(len as i32) as usize;"
             }
           ]
         }
@@ -63,14 +60,12 @@
       "name": "While a dropdown is open Left walks the ring back onto the previous item",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
-          "lines": "1001-1038",
+          "file": "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs",
+          "lines": "250-289",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -89,8 +84,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -109,10 +102,11 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "/// Board view), `0` in Mux (the board pane's bar is suppressed,",
+              "lastLine": "let next = (pos + delta).rem_euclid(len as i32) as usize;"
             }
           ]
         }
@@ -122,14 +116,12 @@
       "name": "While a dropdown is open Left from the first item walks into the columns and closes it",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
-          "lines": "1040-1078",
+          "file": "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs",
+          "lines": "291-330",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -148,8 +140,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -168,10 +158,11 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "/// Board view), `0` in Mux (the board pane's bar is suppressed,",
+              "lastLine": "let next = (pos + delta).rem_euclid(len as i32) as usize;"
             }
           ]
         }
@@ -181,14 +172,12 @@
       "name": "While a dropdown is open Right from the last item walks onto a chip and closes it",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
-          "lines": "1080-1109",
+          "file": "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs",
+          "lines": "332-362",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -207,8 +196,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -227,10 +214,11 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "/// Board view), `0` in Mux (the board pane's bar is suppressed,",
+              "lastLine": "let next = (pos + delta).rem_euclid(len as i32) as usize;"
             }
           ]
         }
@@ -240,14 +228,12 @@
       "name": "Wheel left and right over the bar with an open dropdown re-anchors the panel",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/menu002_board_surface.rs",
-          "lines": "1111-1137",
+          "file": "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs",
+          "lines": "364-391",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -266,8 +252,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -286,10 +270,11 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "/// Board view), `0` in Mux (the board pane's bar is suppressed,",
+              "lastLine": "let next = (pos + delta).rem_euclid(len as i32) as usize;"
             }
           ]
         }
@@ -301,11 +286,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/menu002_board_surface.rs"
+      "rust/fspec-tui/tests/bug198_menu_dropdown_ring_walk.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/store/board_menu.rs"
     ],
-    "totalLinesCovered": 393
+    "totalLinesCovered": 375
   }
 }

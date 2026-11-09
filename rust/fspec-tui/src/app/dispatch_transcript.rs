@@ -241,6 +241,10 @@ impl App {
                 context.remove_notice_by_seq(notice);
             }
         }
+        // BUG-648: every journaled chunk's state is applied from its page.
+        if let Some(chunk) = chunk.as_ref() {
+            self.apply_journaled_state(session, chunk);
+        }
         if matches!(
             chunk,
             Some(codelet_rpc_types::StreamChunk::ResponseAttemptAborted)

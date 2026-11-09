@@ -6,62 +6,7 @@
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "60-108",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimate_accuracy.rs",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -71,53 +16,7 @@
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "110-152",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimate_accuracy.rs",
-              "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -126,54 +25,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
-          "lines": "154-210",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimate_accuracy.rs",
-              "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
+          "lines": "153-217"
         }
       ]
     },
@@ -182,54 +34,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
-          "lines": "212-248",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimate_accuracy.rs",
-              "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
+          "lines": "223-258"
         }
       ]
     },
@@ -238,7 +43,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
-          "lines": "250-286",
+          "lines": "264-296",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_estimate_accuracy.rs",
@@ -264,7 +69,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "Ok(rendered) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -275,7 +82,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
-          "lines": "288-320",
+          "lines": "302-331",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_estimate_accuracy.rs",
@@ -290,9 +97,15 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "pub async fn run(args: CliArgs) -> Result<u8> {"
             }
           ]
+        },
+        {
+          "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "59-103"
         }
       ]
     },
@@ -302,53 +115,7 @@
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
           "lines": "322-387",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_estimate_accuracy.rs",
-              "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -357,7 +124,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_estimate_accuracy.rs",
-          "lines": "389-415",
+          "lines": "406-433",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/query_estimate_accuracy.rs",
@@ -414,14 +181,10 @@
                 50,
                 51,
                 52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+                53
+              ],
+              "firstLine": "//! `query-estimate-accuracy` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -439,6 +202,6 @@
       "rust/fspec/src/query_estimate_accuracy.rs",
       "rust/fspec-core/src/help/configs/query_estimate_accuracy.rs"
     ],
-    "totalLinesCovered": 997
+    "totalLinesCovered": 479
   }
 }

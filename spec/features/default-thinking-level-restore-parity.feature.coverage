@@ -1,15 +1,32 @@
 {
   "scenarios": [
     {
-      "name": "Persisted default is restored to the active session at startup",
+      "name": "Pressing D persists the default and immediately repaints the badge",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
-          "lines": "106-133",
+          "lines": "56-97",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/bootstrap.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
                 87,
                 88,
                 89,
@@ -23,214 +40,12 @@
                 97,
                 98,
                 99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Pressing D persists the default and immediately repaints the badge",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
-          "lines": "62-104",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Resuming an older session applies the persisted default once",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
-          "lines": "135-170",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
-              "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A manual thinking selection is not clobbered when the session regains focus",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
-          "lines": "172-220",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
-              "lines": [
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No persisted default yields Off and does not error at startup",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs",
-          "lines": "222-244",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
-              "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
+                161,
+                162,
+                163
+              ],
+              "firstLine": "/// RPC-027 rule [8]: persist the PER-USER DEFAULT thinking level through the",
+              "lastLine": "}"
             }
           ]
         }
@@ -238,18 +53,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/tui093_default_thinking_restore_parity.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/bootstrap.rs",
-      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
-      "rust/fspec-tui/src/app/dispatch_session_chrome.rs",
-      "rust/sessions/src/default_thinking_level_persistence.rs"
+      "rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs"
     ],
-    "totalLinesCovered": 335
+    "totalLinesCovered": 75
   }
 }

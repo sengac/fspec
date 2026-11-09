@@ -6,16 +6,15 @@
 //! dispatching on action (add, list, pause, resume, remove).
 //! Registered per-session in session_manager.rs agent_loop.
 //!
-//! File locking: delegates to `codelet_common::file_lock::with_file_lock`
-//! (RPC-017 lift) which is compatible with the TypeScript
-//! `proper-lockfile` protocol (inter-process) plus atomic write-replace
-//! (temp file + rename) for crash safety.
+//! File locking (BUG-477): every action holds `codelet_common::spec_lock`'s
+//! spec lock — the cross-process lock every fspec command takes — and
+//! writes replace schedules.json atomically (unique temp file, fsync,
+//! rename, directory fsync).
 
 use std::sync::Arc;
 
 use serde_json::{json, Value};
 
-use codelet_common::file_lock::with_file_lock;
 use codelet_tools::schedule::types::{ScheduleRequest, ScheduleResult};
 use codelet_tools::ScheduleHandler;
 
@@ -49,36 +48,31 @@ pub fn create_handler(project: String) -> ScheduleHandler {
 // File I/O helpers — locking delegates to codelet_common::file_lock (RPC-017)
 // =============================================================================
 
-fn schedules_path(project: &str) -> std::path::PathBuf {
-    std::path::Path::new(project).join("spec/schedules.json")
+fn schedules_path(project: &str) -> Result<std::path::PathBuf, String> {
+    let roots = codelet_common::spec_paths::ProjectRoots::resolve(std::path::Path::new(project))
+        .map_err(|e| e.to_string())?;
+    Ok(roots.schedules())
 }
 
-fn lock_dir_path(project: &str) -> std::path::PathBuf {
-    std::path::Path::new(project).join("spec/schedules.json.lock")
-}
-
-/// Execute a closure while holding the schedules.json file lock.
-///
-/// Thin wrapper over `codelet_common::file_lock::with_file_lock` that
-/// adapts the lock-error string into a `ScheduleResult::error` and
-/// pipes the closure's `ScheduleResult` through unchanged.
+/// Execute a closure while holding the spec lock (BUG-477), the one
+/// cross-process lock shared by every writer of spec/ JSON, adapting a lock
+/// failure into a `ScheduleResult::error`.
 fn with_schedules_lock<F>(project: &str, f: F) -> ScheduleResult
 where
     F: FnOnce() -> ScheduleResult,
 {
-    let lock_dir = lock_dir_path(project);
-    // The closure returns ScheduleResult directly; wrap it as Ok so the
-    // generic with_file_lock<F, T> signature is satisfied. Errors from
-    // the closure are propagated as Ok(error_result) and the inner
-    // ScheduleResult.success flag carries the boolean state.
-    match with_file_lock(&lock_dir, || -> Result<ScheduleResult, String> { Ok(f()) }) {
-        Ok(result) => result,
-        Err(e) => ScheduleResult::error(&e),
+    let spec_dir = codelet_common::spec_paths::spec_dir_of(std::path::Path::new(project));
+    if let Err(e) = std::fs::create_dir_all(&spec_dir) {
+        return ScheduleResult::error(&format!("Failed to create schedules dir: {e}"));
+    }
+    match codelet_common::spec_lock::SpecLock::acquire(&spec_dir) {
+        Ok(_spec_lock) => f(),
+        Err(e) => ScheduleResult::error(&format!("Failed to lock {}: {e}", spec_dir.display())),
     }
 }
 
 fn read_schedules_file(project: &str) -> Result<Value, String> {
-    let path = schedules_path(project);
+    let path = schedules_path(project)?;
     let content = std::fs::read_to_string(&path)
         .map_err(|e| format!("Failed to read schedules.json: {e}"))?;
     serde_json::from_str(&content).map_err(|e| format!("Failed to parse schedules.json: {e}"))
@@ -88,21 +82,12 @@ fn read_schedules_file(project: &str) -> Result<Value, String> {
 ///
 /// This prevents partial writes from corrupting the file on crash.
 fn write_schedules_file(project: &str, data: &Value) -> Result<(), String> {
-    let path = schedules_path(project);
+    let path = schedules_path(project)?;
     let content = serde_json::to_string_pretty(data)
         .map_err(|e| format!("Failed to serialize schedules: {e}"))?;
 
-    // Write to temp file first
-    let temp_path = path.with_extension(format!("json.tmp.{}", uuid::Uuid::new_v4()));
-    std::fs::write(&temp_path, &content)
-        .map_err(|e| format!("Failed to write temp schedules file: {e}"))?;
-
-    // Atomic rename
-    std::fs::rename(&temp_path, &path).map_err(|e| {
-        // Clean up temp file on rename failure
-        let _ = std::fs::remove_file(&temp_path);
-        format!("Failed to atomically replace schedules.json: {e}")
-    })
+    codelet_common::spec_lock::replace_file_atomically(&path, content.as_bytes())
+        .map_err(|e| format!("Failed to atomically replace schedules.json: {e}"))
 }
 
 // =============================================================================

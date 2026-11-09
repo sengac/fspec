@@ -5,30 +5,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
-          "lines": "75-103",
+          "lines": "80-109",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// PROV-134: directional expand/collapse for Left/Right arrows in list mode.",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -39,30 +40,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
-          "lines": "108-137",
+          "lines": "114-144",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// PROV-134: directional expand/collapse for Left/Right arrows in list mode.",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -73,14 +75,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
-          "lines": "142-171",
+          "lines": "149-179",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                150,
-                151
-              ]
+                163,
+                164
+              ],
+              "firstLine": "KeyCode::Left => super::list_actions::arrow_expand_collapse(view, false),",
+              "lastLine": "_ => ProviderSettingsEvent::Consumed,"
             }
           ]
         }
@@ -91,30 +95,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
-          "lines": "176-204",
+          "lines": "184-213",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// PROV-134: directional expand/collapse for Left/Right arrows in list mode.",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -125,30 +130,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
-          "lines": "209-238",
+          "lines": "218-248",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// PROV-134: directional expand/collapse for Left/Right arrows in list mode.",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -166,6 +172,6 @@
       "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 222
+    "totalLinesCovered": 223
   }
 }

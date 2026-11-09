@@ -1,6 +1,8 @@
 @done
 @RPC-288
 @wip
+@cli
+@checkpoint-management
 Feature: Port restore-checkpoint command to Rust
   """
   File layout: core rust/fspec-core/src/commands/restore_checkpoint.rs is the single source
@@ -73,3 +75,13 @@ Feature: Port restore-checkpoint command to Rust
     When fspec_core::commands::restore_checkpoint::run executes
     Then the rendered output is pretty-printed JSON
     And it has the keys "success", "conflictsDetected", "conflictedFiles", "systemReminder", "requiresTestValidation" in that order
+
+  Scenario: Restoring the same checkpoint twice brings its content back each time and keeps the checkpoint
+    Given a git repository with a checkpoint "baseline" for "GIT-002" that captured marker.txt as "baseline"
+    And marker.txt is changed to "approach A"
+    When the dispatcher runs restore-checkpoint with workUnitId "GIT-002", checkpointName "baseline" and force true
+    Then the result reports success true and marker.txt reads "baseline"
+    And marker.txt is changed to "approach B"
+    And the dispatcher runs restore-checkpoint with workUnitId "GIT-002", checkpointName "baseline" and force true again
+    And the result reports success true and marker.txt reads "baseline" again
+    And the ref "refs/fspec-checkpoints/GIT-002/baseline" still exists

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "80-99",
+          "lines": "96-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -13,7 +13,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -24,7 +26,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "101-120",
+          "lines": "123-134",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -32,7 +34,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -43,7 +47,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "122-148",
+          "lines": "150-162",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -51,7 +55,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -62,7 +68,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "150-178",
+          "lines": "184-202",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -70,7 +76,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -81,7 +89,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "180-204",
+          "lines": "220-236",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -89,7 +97,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -100,7 +110,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "206-228",
+          "lines": "252-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -108,7 +118,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -119,7 +131,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "230-258",
+          "lines": "282-302",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -127,7 +139,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -138,7 +152,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
-          "lines": "260-283",
+          "lines": "318-327",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
@@ -146,7 +160,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -165,7 +181,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -184,7 +202,9 @@
                 25,
                 53,
                 86
-              ]
+              ],
+              "firstLine": "pub(crate) fn spawn_hydrate_continue_state(&mut self, session: SessionId) {",
+              "lastLine": "pub(crate) fn spawn_continue_write("
             }
           ]
         }
@@ -202,6 +222,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_continue_sync.rs"
     ],
-    "totalLinesCovered": 276
+    "totalLinesCovered": 198
   }
 }

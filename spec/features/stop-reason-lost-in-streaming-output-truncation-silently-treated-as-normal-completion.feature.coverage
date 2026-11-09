@@ -4,58 +4,38 @@
       "name": "Anthropic streaming propagates max_tokens stop_reason through FinalResponse",
       "testMappings": [
         {
-          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
-          "lines": "22-44",
+          "file": "rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs",
+          "lines": "266-283",
           "implMappings": [
             {
-              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming/transport.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                296,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                399,
-                428,
-                429,
-                430,
-                431,
-                432
-              ]
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183
+              ],
+              "firstLine": "let Some(usage) = final_usage else {",
+              "lastLine": "}));"
+            },
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546
+              ],
+              "firstLine": "StreamEvent::Done(ref stop_reason) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -65,61 +45,12 @@
       "name": "Truncated tool calls produce informative error identifying truncation as the cause",
       "testMappings": [
         {
-          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
-          "lines": "50-82",
+          "file": "rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs",
+          "lines": "285-332",
           "implMappings": [
             {
-              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming/transport.rs",
               "lines": [
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Normal end_turn completion has no truncation warning and correct persistence",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
-          "lines": "88-104",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-              "lines": [
-                183,
                 184,
                 185,
                 186,
@@ -136,44 +67,59 @@
                 197,
                 198,
                 199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241
-              ]
+                200
+              ],
+              "firstLine": "// PROV-039: After loop exit, if stop_reason is max_tokens and there's a pending",
+              "lastLine": "return;"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/recovery.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "if is_truncated_tool_call_error(&error_str) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal end_turn completion has no truncation warning and correct persistence",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs",
+          "lines": "334-350",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546
+              ],
+              "firstLine": "StreamEvent::Done(ref stop_reason) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                300,
+                301,
+                302,
+                303,
+                304
+              ],
+              "firstLine": "/// PROV-039: Persist the accumulated assistant message with optional stop_reason",
+              "lastLine": ""
             }
           ]
         }
@@ -183,53 +129,34 @@
       "name": "OpenAI streaming propagates max_tokens stop_reason instead of hardcoding end_turn",
       "testMappings": [
         {
-          "file": "rust/providers/tests/stop_reason_propagation_test.rs",
-          "lines": "110-130",
+          "file": "rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs",
+          "lines": "352-379",
           "implMappings": [
             {
-              "file": "rust/napi/src/session_manager.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
               "lines": [
-                3932,
-                3933,
-                3934,
-                3935,
-                3936,
-                3937,
-                3938,
-                3939,
-                3940,
-                3941,
-                3942,
-                3943,
-                3944,
-                3945,
-                3946,
-                3947,
-                3948,
-                3949,
-                3950,
-                3951,
-                3952,
-                3953,
-                3954,
-                3955,
-                3956,
-                3957,
-                3958,
-                3959,
-                3960,
-                3961,
-                3962,
-                3963,
-                3964,
-                3965,
-                3966,
-                3967,
-                3968,
-                3969,
-                3970,
-                3971
-              ]
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "if let Some(finish_reason) = &choice.finish_reason {",
+              "lastLine": "FinishReason::Other(reason) => reason.clone(),"
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                300,
+                301,
+                302,
+                303,
+                304
+              ],
+              "firstLine": "/// PROV-039: Persist the accumulated assistant message with optional stop_reason",
+              "lastLine": ""
             }
           ]
         }
@@ -240,27 +167,45 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/stop_reason_propagation_test.rs",
-          "lines": "136-164",
+          "lines": "25-49",
           "implMappings": [
             {
-              "file": "rust/providers/src/manager.rs",
+              "file": "rust/providers/src/manager/impl_2.rs",
               "lines": [
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551,
-                552,
-                553,
-                554,
-                555,
-                556,
-                557,
-                558,
-                559
-              ]
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "self.runtime_options = runtime_options;",
+              "lastLine": "/// NOTE: This skips credentials validation because profile credentials are passed via"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_4.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "// PROV-171: OpenAI trusts the registry; its only defaults are the",
+              "lastLine": "ProviderType::Gemini => Box::new(ConstantResolver {"
             }
           ]
         }
@@ -272,14 +217,18 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/agent-loop/tests/bug517_stop_reason_end_to_end.rs",
       "rust/providers/tests/stop_reason_propagation_test.rs"
     ],
     "implFiles": [
-      "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
-      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-      "rust/napi/src/session_manager.rs",
-      "rust/providers/src/manager.rs"
+      "rust/patches/rig-core/src/providers/anthropic/streaming/transport.rs",
+      "rust/cli/src/interactive/output.rs",
+      "rust/cli/src/interactive/stream_loop/recovery.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+      "rust/providers/src/manager/impl_2.rs",
+      "rust/providers/src/manager/impl_4.rs"
     ],
-    "totalLinesCovered": 309
+    "totalLinesCovered": 222
   }
 }

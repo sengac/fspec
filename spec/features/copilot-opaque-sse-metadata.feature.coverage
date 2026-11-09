@@ -42,7 +42,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub(crate) fn stream(&self, response: StreamingResponse) -> StreamingResponse {",
+              "lastLine": "}"
             }
           ]
         }

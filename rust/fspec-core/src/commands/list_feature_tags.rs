@@ -191,7 +191,21 @@ fn load_feature_tags(
     }
 
     if show_categories {
-        if let Some(cats) = try_categorize(project_root, &feature_tags) {
+        // WT-015: a broken state-root pointer is an error, never a
+        // silent degradation.
+        let categorized = match try_categorize(project_root, &feature_tags) {
+            Ok(categorized) => categorized,
+            Err(error) => {
+                return ListFeatureTagsResult {
+                    success: false,
+                    tags: Vec::new(),
+                    message: None,
+                    error: Some(error.to_string()),
+                    categorized_tags: None,
+                }
+            }
+        };
+        if let Some(cats) = categorized {
             return ListFeatureTagsResult {
                 success: true,
                 tags: feature_tags,
@@ -276,9 +290,16 @@ fn parse_feature_tags(content: &str) -> Option<Vec<String>> {
 /// `src/commands/list-feature-tags.ts:103-109`).
 ///
 /// Unknown tags map to category `"Unknown"` (TS line 95).
-fn try_categorize(project_root: &Path, tags: &[String]) -> Option<Vec<CategorizedTag>> {
-    let path = project_root.join("spec").join("tags.json");
-    let raw = std::fs::read_to_string(&path).ok()?;
+fn try_categorize(
+    project_root: &Path,
+    tags: &[String],
+) -> Result<Option<Vec<CategorizedTag>>, FspecCoreError> {
+    let path = crate::io::spec_paths::tags(project_root)?;
+    Ok(categorize_from(&path, tags))
+}
+
+fn categorize_from(path: &Path, tags: &[String]) -> Option<Vec<CategorizedTag>> {
+    let raw = std::fs::read_to_string(path).ok()?;
     let parsed: TagsData = serde_json::from_str(&raw).ok()?;
 
     // Build tag → category map by walking every category's tag list.

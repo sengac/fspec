@@ -14,20 +14,24 @@ use crate::graph_entities::GraphEntity;
 ///
 /// Creates Dependency nodes for each dependency and devDependency,
 /// plus DependsOn edges from the package.json File node.
-pub fn extract_npm_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_npm_dependencies(project_root: &Path) -> helpers::Extracted {
     let pkg_path = project_root.join("package.json");
     if !pkg_path.exists() {
-        return Ok(vec![]);
+        return helpers::Extracted::default();
     }
+    helpers::Extracted::of(extract_package_json(project_root, &pkg_path))
+}
 
-    let content = std::fs::read_to_string(&pkg_path)
-        .map_err(|e| format!("Failed to read package.json: {e}"))?;
-
-    let pkg: Value =
-        serde_json::from_str(&content).map_err(|e| format!("Invalid package.json: {e}"))?;
+/// The entities of one package.json, or why it could not be read or parsed.
+fn extract_package_json(
+    project_root: &Path,
+    pkg_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, pkg_path)?;
+    let pkg: Value = helpers::parse_json_manifest(project_root, pkg_path, &content)?;
 
     let rel_path = "package.json";
-    let file_slug = helpers::slugify_path(rel_path);
+    let file_slug = helpers::file_slug(rel_path);
     let mut entities = Vec::new();
 
     // Create File node for package.json

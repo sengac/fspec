@@ -65,8 +65,37 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,7 +106,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "78-99",
+          "lines": "84-101",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -137,8 +166,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,7 +191,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "102-120",
+          "lines": "108-122",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -209,8 +251,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -221,7 +276,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "123-143",
+          "lines": "129-145",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -281,8 +336,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -293,7 +361,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "146-167",
+          "lines": "152-169",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -353,8 +421,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -365,7 +446,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "170-190",
+          "lines": "176-191",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -425,8 +506,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -497,8 +591,37 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -509,7 +632,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/src/startup_model_resolution_tests.rs",
-          "lines": "217-232",
+          "lines": "223-234",
           "implMappings": [
             {
               "file": "rust/sessions/src/startup_model_resolution.rs",
@@ -569,8 +692,21 @@
                 104,
                 105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "pub fn resolve_startup_model(",
+              "lastLine": "}"
             }
           ]
         }
@@ -587,6 +723,6 @@
     "implFiles": [
       "rust/sessions/src/startup_model_resolution.rs"
     ],
-    "totalLinesCovered": 611
+    "totalLinesCovered": 706
   }
 }

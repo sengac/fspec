@@ -26,7 +26,9 @@
                 195,
                 196,
                 197
-              ]
+              ],
+              "firstLine": "impl CodexHistory {",
+              "lastLine": "pub(super) fn prepare_with_tools("
             },
             {
               "file": "rust/providers/src/codex/history_generation.rs",
@@ -44,7 +46,9 @@
                 25,
                 26,
                 27
-              ]
+              ],
+              "firstLine": "pub fn transition_generation(&self, generation: u64) -> Result<(), CheckpointError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history_lineage.rs",
@@ -115,7 +119,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "Ok(Some(index))",
+              "lastLine": "item.value[\"type\"].as_str(),"
             },
             {
               "file": "rust/providers/src/codex/history_replay.rs",
@@ -152,7 +158,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }
@@ -184,7 +192,9 @@
                 195,
                 196,
                 197
-              ]
+              ],
+              "firstLine": "impl CodexHistory {",
+              "lastLine": "pub(super) fn prepare_with_tools("
             },
             {
               "file": "rust/providers/src/codex/history_generation.rs",
@@ -202,7 +212,9 @@
                 25,
                 26,
                 27
-              ]
+              ],
+              "firstLine": "pub fn transition_generation(&self, generation: u64) -> Result<(), CheckpointError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/history_lineage.rs",
@@ -273,7 +285,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "Ok(Some(index))",
+              "lastLine": "item.value[\"type\"].as_str(),"
             },
             {
               "file": "rust/providers/src/codex/history_replay.rs",
@@ -310,7 +324,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }

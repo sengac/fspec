@@ -75,3 +75,10 @@ codelet-providers = { workspace = true, features = ["test-support"] }
 # compactor sub-agent spawner against an OpenAI-compatible wiremock LLM
 # endpoint (OPENAI_BASE_URL) — no network egress.
 wiremock = "0.6.5"
+
+# bug284 holds admissions through the test-support-only
+# `input_admission::hold_next_admission` seam.
+[[test]]
+name = "bug284_durable_input_admission"
+path = "tests/bug284_durable_input_admission.rs"
+required-features = ["test-support"]

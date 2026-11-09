@@ -5,20 +5,60 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "170-204",
+          "lines": "169-206",
           "implMappings": [
             {
-              "file": "rust/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management/provider_files.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
                 189,
                 190,
                 191,
@@ -38,35 +78,10 @@
                 205,
                 206,
                 207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
+                208
+              ],
+              "firstLine": "/// Create a new `.fspec/providers/<name>.json` under `project_root`",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,21 +92,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "209-242",
+          "lines": "211-246",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -132,8 +137,20 @@
                 107,
                 108,
                 109,
-                110
-              ]
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// Human-readable display name.",
+              "lastLine": "/// Built-ins always appear (claude, openai, gemini, zai, codex,"
             }
           ]
         }
@@ -144,32 +161,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "247-270",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/management.rs",
-              "lines": [
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Validate custom provider reports schema violations",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "275-307",
+          "lines": "251-274",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
@@ -182,8 +174,25 @@
                 127,
                 128,
                 129,
-                130,
-                131,
+                130
+              ],
+              "firstLine": "/// [`ProviderCredentials::detect`]. Custom entries come from",
+              "lastLine": "// byte-for-byte on order + display names. Pre-RPC-107 this loop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate custom provider reports schema violations",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
+          "lines": "279-311",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/management.rs",
+              "lines": [
                 132,
                 133,
                 134,
@@ -212,8 +221,20 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "// surface uses `anthropic`.",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -224,11 +245,66 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "312-350",
+          "lines": "316-354",
           "implMappings": [
             {
-              "file": "rust/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management/provider_files.rs",
               "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
                 162,
                 163,
                 164,
@@ -254,23 +330,10 @@
                 184,
                 185,
                 186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
+                187
+              ],
+              "firstLine": "/// Probe the custom provider's `base_url` by issuing a `GET /v1/models`",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,42 +344,44 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "355-409",
+          "lines": "359-413",
           "implMappings": [
             {
-              "file": "rust/providers/src/manager.rs",
+              "file": "rust/providers/src/manager/impl_1.rs",
               "lines": [
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413
-              ]
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "manager.set_model_direct(",
+              "lastLine": "//   `apply_profile_env_vars` and intentionally skip credential"
             }
           ]
         }
@@ -327,41 +392,67 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "414-479",
+          "lines": "418-480",
           "implMappings": [
             {
-              "file": "rust/providers/src/custom/management.rs",
+              "file": "rust/providers/src/custom/management/facade_env.rs",
               "lines": [
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282
-              ]
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "/// PROV-067: Set the env vars a facade provider expects so its existing",
+              "lastLine": "}"
             }
           ]
         }
@@ -372,13 +463,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "483-507",
+          "lines": "485-509",
           "implMappings": [
             {
               "file": "rust/providers/src/credentials.rs",
               "lines": [
-                86,
-                87,
                 88,
                 89,
                 90,
@@ -446,8 +535,12 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157
+              ],
+              "firstLine": "pub gemini_available: bool,",
+              "lastLine": "/// Check if Z.AI credentials are available"
             }
           ]
         }
@@ -458,7 +551,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "513-553",
+          "lines": "514-551",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/discovery.rs",
@@ -540,7 +633,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "pub fn discover_provider_configs() -> Result<Vec<ProviderConfig>, CustomProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -551,7 +646,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "527-594",
+          "lines": "556-628",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/custom_provider.rs",
@@ -726,7 +821,9 @@
                 168,
                 169,
                 170
-              ]
+              ],
+              "firstLine": "//! PROV-067 + PROV-092: Generic `CustomProvider` agent construction for",
+              "lastLine": ")?);"
             }
           ]
         }
@@ -737,7 +834,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "599-630",
+          "lines": "633-663",
           "implMappings": [
             {
               "file": "rust/providers/src/manager.rs",
@@ -809,7 +906,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "GitHubCopilot,",
+              "lastLine": "ProviderType::ZAI => \"zai\","
             }
           ]
         }
@@ -820,56 +919,58 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_provider_manager_integration_test.rs",
-          "lines": "666-695",
+          "lines": "668-699",
           "implMappings": [
             {
-              "file": "rust/providers/src/manager.rs",
+              "file": "rust/providers/src/manager/impl_2.rs",
               "lines": [
-                485,
-                486,
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493,
-                494,
-                495,
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528
-              ]
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                80,
+                80,
+                80,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "// Validate we have credentials for this provider",
+              "lastLine": "self.user_max_output_tokens = None;"
             }
           ]
         }
@@ -884,12 +985,16 @@
       "rust/providers/tests/custom_provider_manager_integration_test.rs"
     ],
     "implFiles": [
+      "rust/providers/src/custom/management/provider_files.rs",
       "rust/providers/src/custom/management.rs",
-      "rust/providers/src/manager.rs",
+      "rust/providers/src/manager/impl_1.rs",
+      "rust/providers/src/custom/management/facade_env.rs",
       "rust/providers/src/credentials.rs",
       "rust/providers/src/custom/discovery.rs",
-      "rust/providers/src/custom/custom_provider.rs"
+      "rust/providers/src/custom/custom_provider.rs",
+      "rust/providers/src/manager.rs",
+      "rust/providers/src/manager/impl_2.rs"
     ],
-    "totalLinesCovered": 1165
+    "totalLinesCovered": 1247
   }
 }

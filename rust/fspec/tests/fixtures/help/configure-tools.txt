@@ -70,7 +70,7 @@ COMMON ERRORS
 RELATED COMMANDS
   fspec bootstrap
   fspec validate
-  fspec check
+  fspec audit
   fspec board
 
 NOTES

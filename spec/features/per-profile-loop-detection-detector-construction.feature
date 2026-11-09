@@ -1,9 +1,14 @@
+@BUG-582
 @done
 @PROV-145
+@BUG-418
+@streaming-loop-detection
 @rust
 @agent-loop
 @session
 @high
+@BUG-416
+@BUG-419
 Feature: Per-profile loop detection detector construction
   """
   architecture:
@@ -43,7 +48,7 @@ Feature: Per-profile loop detection detector construction
     And the stream is never cancelled by the loop detector and no corrective note is staged
 
   Scenario: A wiring built from absent values keeps the detector enabled
-    Given a per-turn loop-detection wiring built from all absent values
+    Given a per-turn loop-detection wiring converted from a resolution with all values absent
     When the session's streaming loop detector path feeds a 10-word normal prefix followed by "alpha beta gamma" repeated 10 times
     Then the loop detector fires and a corrective note is staged on the session (today's behavior preserved)
 
@@ -73,3 +78,9 @@ Feature: Per-profile loop detection detector construction
     When the turn's loop-detection wiring is resolved
     Then the loop-abort retry cap comes from that resolution (the hard-coded const RIG014_MAX_LOOP_ABORT_RETRIES is gone)
     And the retry counter still resets on genuine user input (per-user-turn semantics preserved)
+
+  Scenario: The agent loop converts the profile resolution without literal fallbacks
+    Given a profile resolution that stores only loopDetectionWindow 30
+    When it is converted into the per-turn loop-detection wiring
+    Then the wiring keeps window 30 and takes the named RIG-014 defaults for the absent values
+    And the agent loop builds its wiring with LoopDetectionWiring::from and carries no literal fallback values

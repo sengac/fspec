@@ -15,7 +15,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "cancelled_at_submission = message.interrupt_epoch.is_none();",
+              "lastLine": "})"
             }
           ]
         }
@@ -31,12 +33,10 @@
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+                37
+              ],
+              "firstLine": "let mut mcp_channel_open = true;",
+              "lastLine": "let mut mcp_channel_open = true;"
             }
           ]
         }
@@ -52,29 +52,7 @@
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
+                164,
                 215,
                 216,
                 217,
@@ -102,8 +80,52 @@
                 239,
                 240,
                 241,
-                242
-              ]
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301
+              ],
+              "firstLine": "session.handle_output(StreamChunk::error(error));",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -119,29 +141,7 @@
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
+                164,
                 217,
                 218,
                 219,
@@ -167,8 +167,52 @@
                 239,
                 240,
                 241,
-                242
-              ]
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301
+              ],
+              "firstLine": "session.handle_output(StreamChunk::error(error));",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -179,7 +223,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc089_mcp_injection_drain.rs",
-          "lines": "183-211",
+          "lines": "183-206",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
@@ -238,41 +282,17 @@
                 125,
                 126,
                 127,
-                128,
                 129,
                 130,
                 131,
                 132,
                 133,
                 134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
                 151,
                 152,
                 153,
                 154,
                 155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
                 163,
                 164,
                 165,
@@ -349,12 +369,32 @@
                 236,
                 237,
                 238,
-                239,
                 240,
                 241,
                 242,
-                243
-              ]
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263
+              ],
+              "firstLine": "cancelled_at_submission = message.interrupt_epoch.is_none();",
+              "lastLine": "match admission::admit_turn(&session, &mut inner_session, &pending).await {"
             }
           ]
         }
@@ -371,6 +411,6 @@
     "implFiles": [
       "rust/agent-loop/src/agent_loop.rs"
     ],
-    "totalLinesCovered": 400
+    "totalLinesCovered": 425
   }
 }

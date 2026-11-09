@@ -32,9 +32,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,7 +47,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/session_intent/board.rs",
-          "lines": "36-73",
+          "lines": "36-78",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
@@ -72,9 +74,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -85,7 +89,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/session_intent/board.rs",
-          "lines": "75-117",
+          "lines": "80-122",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
@@ -112,9 +116,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -131,6 +137,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs"
     ],
-    "totalLinesCovered": 184
+    "totalLinesCovered": 189
   }
 }

@@ -5,57 +5,132 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "83-102",
+          "lines": "123-141",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398
-              ]
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112,
+                1113,
+                1114,
+                1115
+              ],
+              "firstLine": "function setupWebSocketServer(port: number, host: string): WebSocketServer {",
+              "lastLine": "}"
             }
           ]
         }
@@ -66,19 +141,20 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "105-119",
+          "lines": "145-155",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360
-              ]
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068
+              ],
+              "firstLine": "export function startEndpoint(): EndpointState {",
+              "lastLine": "}"
             }
           ]
         }
@@ -89,7 +165,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "126-150",
+          "lines": "163-191",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -102,7 +178,9 @@
                 369,
                 370,
                 371
-              ]
+              ],
+              "firstLine": "const matches = text.match(/```/g);",
+              "lastLine": ""
             }
           ]
         }
@@ -113,28 +191,22 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "153-194",
+          "lines": "195-243",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257
-              ]
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                738,
+                739
+              ],
+              "firstLine": "if (!state.chatId) {",
+              "lastLine": "state.chatId = chatId;"
             }
           ]
         }
@@ -145,7 +217,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "201-221",
+          "lines": "251-290",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -156,7 +228,9 @@
                 278,
                 279,
                 280
-              ]
+              ],
+              "firstLine": "const response = await globalThis.fetch(fileLink);",
+              "lastLine": "const base64 = Buffer.from(buffer).toString('base64');"
             }
           ]
         }
@@ -167,7 +241,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "224-242",
+          "lines": "294-336",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -180,7 +254,9 @@
                 305,
                 306,
                 307
-              ]
+              ],
+              "firstLine": "return parts",
+              "lastLine": "return part.replace(specialChars, '\\\\$1');"
             }
           ]
         }
@@ -191,68 +267,191 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "249-271",
+          "lines": "634-662",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182
-              ]
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674
+              ],
+              "firstLine": "export function escapeMarkdownV2(text: string): string {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Relay thinking chunk with emoji prefix",
+      "name": "Relay thinking chunk wrapped in think tags",
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "274-300",
+          "lines": "666-711",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                157,
-                158
-              ]
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629,
+                630,
+                631,
+                632,
+                633,
+                634
+              ],
+              "firstLine": "async function flushBuffer(): Promise<void> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -263,7 +462,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "303-332",
+          "lines": "715-747",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -274,7 +473,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "* object that gets serialized onto the WebSocket to the codelet.",
+              "lastLine": "wss: WebSocketServer | null;"
             }
           ]
         }
@@ -285,19 +486,103 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "335-374",
+          "lines": "751-799",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658
+              ],
+              "firstLine": "case 'tool_call':",
+              "lastLine": "}"
             }
           ]
         }
@@ -308,14 +593,16 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "377-403",
+          "lines": "803-832",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
                 178,
                 179
-              ]
+              ],
+              "firstLine": "instanceId: string | null;",
+              "lastLine": "toolNameMap: Map<string, string>;"
             }
           ]
         }
@@ -326,14 +613,16 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "406-428",
+          "lines": "836-860",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
                 175,
                 176
-              ]
+              ],
+              "firstLine": "* endpoint does not need to echo it back on outbound envelopes because",
+              "lastLine": "* the codelet routes session:input / session:control by `session_id`."
             }
           ]
         }
@@ -344,7 +633,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "435-465",
+          "lines": "868-893",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -379,7 +668,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "export type EnvelopeService =",
+              "lastLine": "images?: Array<{ data: string; media_type: string }>;"
             }
           ]
         }
@@ -390,7 +681,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "468-497",
+          "lines": "897-922",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -411,7 +702,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "* Mirrors `codelet::tools::bridge_multiplexed::Envelope`.",
+              "lastLine": "type: 'input';"
             }
           ]
         }
@@ -422,36 +715,40 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "500-524",
+          "lines": "926-949",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109
-              ]
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403
+              ],
+              "firstLine": "export function escapeMarkdownV2(text: string): string {",
+              "lastLine": "return escapeMarkdownV2(chunk.text || '');"
             }
           ]
         }
@@ -462,7 +759,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "531-559",
+          "lines": "957-983",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -478,7 +775,9 @@
                 238,
                 239,
                 240
-              ]
+              ],
+              "firstLine": "lastSendTime: 0,",
+              "lastLine": "// ============================================================================"
             }
           ]
         }
@@ -489,7 +788,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "562-585",
+          "lines": "987-1013",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -499,7 +798,9 @@
                 234,
                 235,
                 236
-              ]
+              ],
+              "firstLine": "thinkingHandler: new ThinkingBlockHandler(),",
+              "lastLine": "isPaused: false,"
             }
           ]
         }
@@ -510,28 +811,78 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "588-617",
+          "lines": "1017-1055",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345
-              ]
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "async function flushBuffer(): Promise<void> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -542,19 +893,56 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-endpoint.test.ts",
-          "lines": "590-620",
+          "lines": "1063-1111",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218
-              ]
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497
+              ],
+              "firstLine": "async function flushBuffer(): Promise<void> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -571,6 +959,6 @@
     "implFiles": [
       "bridge/telegram-endpoint.ts"
     ],
-    "totalLinesCovered": 768
+    "totalLinesCovered": 1227
   }
 }

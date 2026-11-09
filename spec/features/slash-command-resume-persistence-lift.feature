@@ -32,8 +32,3 @@ Feature: /resume persistence lift — get_session_message_envelopes
     When codelet_core::persistence::get_session_message_envelopes(uuid) is called
     Then the result is Ok(Vec<String>) with two JSON envelopes
     And each envelope parses via serde_json::from_str into a serde_json::Value with a 'message' field
-
-  Scenario: codelet-napi binding is reduced to a thin delegate
-    Given the rust/napi/src/persistence/napi_bindings.rs file after RPC-049
-    Then the codelet-napi binding persistence_get_session_message_envelopes still exists as a thin delegate
-    And the binding's body calls codelet_core::persistence::get_session_message_envelopes(uuid)

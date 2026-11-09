@@ -113,8 +113,8 @@ async fn explicit_terminal_marker_settles_without_waiting_for_eof() -> TestResul
         + "data: [DONE]\n\n";
     let server = gated::GatedSse::start(vec![body, " ".into()]).await?;
     // @step When the response is consumed with a bounded deadline
-    let observed = tokio::time::timeout(
-        std::time::Duration::from_secs(2),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "consume(&server.url, true)",
         consume(&server.url, true),
     )
     .await;

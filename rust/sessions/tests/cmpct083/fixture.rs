@@ -150,7 +150,7 @@ impl Fixture {
         } else {
             std::env::remove_var("ZAI_PLAN_API_KEY");
         }
-        let manager = SessionManager::new_arc();
+        let manager = SessionManager::new();
         let mut manifest =
             create_session_with_provider("runtime gate", directory.path(), model(row))?;
         super::originals::append(&mut manifest)?;

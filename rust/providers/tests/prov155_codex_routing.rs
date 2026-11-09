@@ -1,5 +1,6 @@
 //! Feature: spec/features/codex-cache-affinity-routing.feature
 
+use codelet_providers::codex::history::CodexHistory;
 use codelet_providers::codex::{
     refreshing_client::RefreshingCodexClient, routing::CodexRoutingHandle, CodexResponsesModel,
 };
@@ -40,7 +41,12 @@ async fn setup() -> Result<
         .build()?;
     Ok((
         server,
-        CodexResponsesModel::new(client.clone(), "model"),
+        CodexResponsesModel::new(client.clone(), "model").with_request_admission(
+            codelet_providers::request_admission::AdmissionLimits {
+                context_capacity: Some(100_000),
+                output_reservation: Some(1_000),
+            },
+        ),
         ResponsesCompletionModel::new(client, "model"),
     ))
 }
@@ -84,10 +90,10 @@ async fn requests_retain_opaque_affinity_only_within_their_session() -> TestResu
         .clone()
         .with_routing_handle(CodexRoutingHandle::default());
     let child = model.with_routing_handle(CodexRoutingHandle::default());
-    run(parent.clone()).await?;
-    run(parent).await?;
-    run(child.clone()).await?;
-    run(child).await?;
+    run(parent.clone().with_history(CodexHistory::default())).await?;
+    run(parent.clone().with_history(CodexHistory::default())).await?;
+    run(child.clone().with_history(CodexHistory::default())).await?;
+    run(child.clone().with_history(CodexHistory::default())).await?;
     let requests = server.received_requests().await.ok_or("requests")?;
     assert_eq!(key(&requests[0])?, key(&requests[1])?);
     assert_eq!(key(&requests[2])?, key(&requests[3])?);
@@ -104,10 +110,10 @@ async fn turn_state_survives_follow_ups_but_not_a_new_user_turn() -> TestResult 
     let (server, model, _) = setup().await?;
     let handle = CodexRoutingHandle::default();
     let model = model.with_routing_handle(handle.clone());
-    run(model.clone()).await?;
-    run(model.clone()).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
     handle.begin_turn();
-    run(model).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
     let requests = server.received_requests().await.ok_or("requests")?;
     assert!(!requests[0].headers.contains_key("x-codex-turn-state"));
     assert_eq!(
@@ -128,13 +134,13 @@ async fn reset_and_account_changes_invalidate_routing() -> TestResult {
     let (server, model, _) = setup().await?;
     let handle = CodexRoutingHandle::default();
     let model = model.with_routing_handle(handle.clone());
-    run(model.clone()).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
     handle.reset();
-    run(model.clone()).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
     let previous = handle.bind_account("private-account-a");
     handle.bind_account("private-account-b");
     previous.observe_turn_state("stale-state");
-    run(model).await?;
+    run(model.clone().with_history(CodexHistory::default())).await?;
     let requests = server.received_requests().await.ok_or("requests")?;
     assert_ne!(key(&requests[0])?, key(&requests[1])?);
     assert_ne!(key(&requests[1])?, key(&requests[2])?);

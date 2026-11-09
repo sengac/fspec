@@ -54,7 +54,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let foundation_path = project_root.join("spec").join("foundation.json");
+    let foundation_path = crate::io::spec_paths::foundation(project_root)?;
     if !foundation_path.exists() {
         return Err(FspecCoreError::InvalidArgs {
             command: "show-foundation-event-storm",

@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "Listing workspaces puts the start workspace first",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc443_workspace_aware_rpc.rs",
+          "lines": "33-64",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                143,
+                144
+              ],
+              "firstLine": "async fn get_interaction_snapshot(",
+              "lastLine": "ctx: Context,"
+            },
+            {
+              "file": "rust/rpc/src/workspaces.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "Self::Start(service) => service.watcher_snapshot(),",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reading a named workspace's work units",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc443_workspace_aware_rpc.rs",
+          "lines": "66-96",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                143,
+                144
+              ],
+              "firstLine": "async fn get_interaction_snapshot(",
+              "lastLine": "ctx: Context,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Naming a path that is not a directory is rejected",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/rpc443_workspace_aware_rpc.rs",
+          "lines": "98-120",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                143,
+                144
+              ],
+              "firstLine": "async fn get_interaction_snapshot(",
+              "lastLine": "ctx: Context,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc/tests/rpc443_workspace_aware_rpc.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_implementation/interaction_sessions.rs",
+      "rust/rpc/src/workspaces.rs"
+    ],
+    "totalLinesCovered": 128
+  }
+}

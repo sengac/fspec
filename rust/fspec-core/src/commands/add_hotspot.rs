@@ -40,7 +40,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::WorkUnitsData;
 
@@ -77,7 +76,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
 
     // Option B — INLINE existsSync check, NO auto-create. Mirrors TS
     // `src/commands/event-storm-utils.ts:36-41`.
@@ -88,6 +87,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-hotspot")?;
     // Read + parse (escalate malformed JSON, parity with TS readJSON throw).
     let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
         command: "add-hotspot",
@@ -195,7 +196,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = now;
 
     // Single atomic write.
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AddHotspotResult {
         success: true,

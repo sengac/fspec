@@ -88,7 +88,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "pub fn retrieve_originals(request: OriginalsRequest) -> Result<OriginalPage, OriginalsError> {",
+              "lastLine": "break;"
             }
           ]
         }
@@ -182,7 +184,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "pub fn retrieve_originals(request: OriginalsRequest) -> Result<OriginalPage, OriginalsError> {",
+              "lastLine": "break;"
             }
           ]
         }
@@ -198,21 +202,13 @@
             {
               "file": "rust/core/src/persistence/originals.rs",
               "lines": [
-                50,
-                51,
                 52,
                 53,
                 54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63
-              ]
+                55
+              ],
+              "firstLine": "let message_id = session.messages[turn_index].message_id;",
+              "lastLine": ".ok_or(OriginalsError::MissingMessage { message_id })?;"
             }
           ]
         }
@@ -228,7 +224,6 @@
             {
               "file": "rust/core/src/persistence/original_blobs.rs",
               "lines": [
-                5,
                 6,
                 7,
                 8,
@@ -278,8 +273,62 @@
                 52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "fn invalid(message: impl Into<String>) -> OriginalsError {",
+              "lastLine": "}"
             }
           ]
         }
@@ -295,8 +344,6 @@
             {
               "file": "rust/core/src/persistence/originals.rs",
               "lines": [
-                50,
-                51,
                 52,
                 53,
                 54,
@@ -308,8 +355,18 @@
                 60,
                 61,
                 62,
-                63
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "let message_id = session.messages[turn_index].message_id;",
+              "lastLine": "};"
             }
           ]
         }
@@ -403,7 +460,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "pub fn retrieve_originals(request: OriginalsRequest) -> Result<OriginalPage, OriginalsError> {",
+              "lastLine": "break;"
             }
           ]
         }
@@ -533,40 +592,9 @@
                 194,
                 195,
                 196
-              ]
-            },
-            {
-              "file": "rust/cli/src/compaction_dag.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                109,
-                110,
-                111,
-                112,
-                113,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379
-              ]
+              ],
+              "firstLine": "\"Four actions: 'recent' (list recent sessions), \",",
+              "lastLine": "tokio::task::spawn_blocking(move || {"
             }
           ]
         }
@@ -587,7 +615,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "pub(super) fn restore_original_blobs(envelope: &mut Value) -> Result<(), OriginalsError> {",
+              "lastLine": "let references = references"
             }
           ]
         }
@@ -603,7 +633,6 @@
             {
               "file": "rust/core/src/persistence/original_blobs.rs",
               "lines": [
-                5,
                 6,
                 7,
                 8,
@@ -704,8 +733,11 @@
                 103,
                 104,
                 105,
-                106
-              ]
+                106,
+                107
+              ],
+              "firstLine": "fn invalid(message: impl Into<String>) -> OriginalsError {",
+              "lastLine": "}"
             }
           ]
         }
@@ -723,9 +755,8 @@
     "implFiles": [
       "rust/core/src/persistence/originals.rs",
       "rust/core/src/persistence/original_blobs.rs",
-      "rust/tools/src/session_search/mod.rs",
-      "rust/cli/src/compaction_dag.rs"
+      "rust/tools/src/session_search/mod.rs"
     ],
-    "totalLinesCovered": 908
+    "totalLinesCovered": 927
   }
 }

@@ -19,7 +19,6 @@ use codelet_rpc_server::{bind_and_serve, Envelope};
 use common::{connect_with_retry, make_workspace};
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
-use std::time::Duration;
 use tokio_tungstenite::tungstenite::Message;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -70,11 +69,11 @@ async fn scenario_reserved_variants_still_rejected_after_work_units_update_imple
     }
 
     // Allow the server task to process all four frames.
-    let mut waited = 0u64;
-    while stats.rejected_envelopes() < reserved.len() as u64 && waited < 1000 {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let _ = codelet_test_helpers::wait_until("the server counts the rejected frames", || {
+        std::future::ready(stats.rejected_envelopes() >= reserved.len() as u64)
+    })
+    .await;
 
     // @step Then the server records the unsupported variant by name in its rejection log, does not invoke any FspecService method as a result of that frame, and the rejected-variants list reported by ServerStats does not contain WorkUnitsUpdate
     assert_eq!(

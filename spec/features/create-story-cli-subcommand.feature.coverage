@@ -10,6 +10,11 @@
             {
               "file": "rust/fspec-core/src/help/configs/create_story.rs",
               "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
                 115,
                 116,
                 117,
@@ -23,13 +28,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
+                128
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -40,7 +42,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "122-158",
+          "lines": "129-168",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -53,7 +55,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,7 +68,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "159-192",
+          "lines": "174-202",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -104,7 +108,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -115,7 +121,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "193-225",
+          "lines": "208-240",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -155,53 +161,9 @@
                 81,
                 82,
                 83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "193-225",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/create_story.rs",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -212,7 +174,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "226-249",
+          "lines": "246-267",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -222,7 +184,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "Some((stdout_part, reminder)) => {",
+              "lastLine": "if !reminder.ends_with('\\n') {"
             }
           ]
         }
@@ -233,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "250-269",
+          "lines": "273-290",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -243,7 +207,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "Some((stdout_part, reminder)) => {",
+              "lastLine": "if !reminder.ends_with('\\n') {"
             }
           ]
         }
@@ -254,7 +220,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_story.rs",
-          "lines": "270-318",
+          "lines": "296-357",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_story.rs",
@@ -294,7 +260,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -312,6 +280,6 @@
       "rust/fspec-core/src/help/configs/create_story.rs",
       "rust/fspec/src/create_story.rs"
     ],
-    "totalLinesCovered": 437
+    "totalLinesCovered": 376
   }
 }

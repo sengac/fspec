@@ -1,5 +1,7 @@
 @done
 @CTX-008
+@tui
+@context-management
 Feature: TUI Configuration Fields and NAPI Bridge for Compaction Threshold
   """
   NAPI bridge: session_set_model and session_set_model_profile accept optional compaction_threshold_type (String) and compaction_threshold_value (u32) params. When provided, set_compaction_threshold_override is called before resolve_compaction_threshold.

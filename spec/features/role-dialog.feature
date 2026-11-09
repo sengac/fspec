@@ -1,6 +1,7 @@
 @done
 @tui-component
 @AMGR-012
+@role
 Feature: Role dialog — /role TUI command for session role management
   """
   RoleDialog component at src/components/RoleDialog.tsx — wraps base Dialog, uses useMultiLineInput hook for text editing, implements Tab-based focus cycling (textarea → OK → Cancel → textarea)

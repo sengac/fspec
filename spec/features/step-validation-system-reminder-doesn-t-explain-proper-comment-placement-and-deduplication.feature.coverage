@@ -6,29 +6,7 @@
         {
           "file": "src/utils/__tests__/step-validation-system-reminder.test.ts",
           "lines": "10-44",
-          "implMappings": [
-            {
-              "file": "src/utils/step-validation.ts",
-              "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -38,29 +16,7 @@
         {
           "file": "src/utils/__tests__/step-validation-system-reminder.test.ts",
           "lines": "46-78",
-          "implMappings": [
-            {
-              "file": "src/utils/step-validation.ts",
-              "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -70,29 +26,7 @@
         {
           "file": "src/utils/__tests__/step-validation-system-reminder.test.ts",
           "lines": "80-110",
-          "implMappings": [
-            {
-              "file": "src/utils/step-validation.ts",
-              "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -104,9 +38,7 @@
     "testFiles": [
       "src/utils/__tests__/step-validation-system-reminder.test.ts"
     ],
-    "implFiles": [
-      "src/utils/step-validation.ts"
-    ],
-    "totalLinesCovered": 147
+    "implFiles": [],
+    "totalLinesCovered": 99
   }
 }

@@ -7,6 +7,8 @@
 //! focus. `App::dispatch` runs this arm and then calls
 //! `navigator.apply_action`, so the two halves compose per action.
 
+use crate::components::menu_bar::items::MenuAction;
+use crate::components::notification_dialog::{NotificationDialog, NOTIFICATION_DIALOG_ID};
 use crate::components::Action;
 use crate::EventResult;
 
@@ -33,18 +35,18 @@ impl App {
                 self.handle_enter_work_unit(id);
             }
             // MUX-004: the MuxConfigDialog committed its draft. Apply the
-            // draft layout (orientation/panes; the scale re-derives for
-            // the new pane count per BUG-166) and flip the enabled state
+            // draft layout string (MUX-010) and flip the enabled state
             // per R7. The 'AndSaved' variant persists FIRST (persistence
             // reads `navigator.mux.config()`).
             Action::MuxConfigApplied(draft) => self.apply_mux_config_draft(draft.clone()),
             Action::MuxConfigAppliedAndSaved(draft) => {
                 self.apply_mux_config_draft(draft.clone());
-                match self.save_mux_config() {
-                    Ok(()) => {}
-                    Err(err) => {
-                        self.push_mux_error(&format!("/mux: could not save config: {err}"));
-                    }
+                // BUG-647: the dialog is used from the board, where no
+                // scrollback shows: a failed save is an app-level error.
+                if let Err(err) = self.save_mux_config() {
+                    let _ = self.action_tx.send(Action::SessionOperationFailed(format!(
+                        "/mux: could not save config: {err}"
+                    )));
                 }
             }
             // MUX-009: the Board 'm'/'M' keybinding (single Board view or
@@ -56,27 +58,62 @@ impl App {
         }
     }
 
+    /// MUX-013: run a mux bar action. New Agent / New Bot open their
+    /// dialogs with the MUX-002 placement armed (the new session fills the
+    /// next agent slot, or the last one through a window step, and takes
+    /// the focus; Cancel disarms it); Close opens TUI-124's close dialog
+    /// for the focused pane's session; anything else runs as on the board.
+    pub(crate) fn run_mux_bar_action(&mut self, action: MenuAction) {
+        match action {
+            MenuAction::NewAgent => {
+                self.navigator.mux.request_new_agent();
+                self.handle_open_create_session_dialog(None);
+            }
+            MenuAction::NewBot => {
+                self.navigator.mux.request_new_agent();
+                self.handle_open_new_bot_dialog();
+            }
+            MenuAction::CloseAgent => {
+                // The store follows the focused pane first: the dialog
+                // opens only for the current session.
+                self.sync_mux_focus_to_session();
+                if let Some(session) = self.navigator.mux.focused_session_id() {
+                    self.request_close(session);
+                }
+            }
+            other => self.dispatch(other.to_action()),
+        }
+    }
+
     /// Push a one-line mux error into the focused session's scrollback
-    /// (R7). No session → silent no-op.
+    /// (R7). BUG-647: with no session it is an app-level error, never
+    /// dropped (/mux commands run only in the current session, BUG-552).
     pub(crate) fn push_mux_error(&mut self, message: &str) {
-        let Some(session) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-        self.navigator
-            .agent
-            .push_line(&mut self.agent_view_store, message.to_string());
-        let _ = session;
+        match self.agent_view_store.current_session_context_mut() {
+            Some(context) => context.push_line(message),
+            None => {
+                let _ = self
+                    .action_tx
+                    .send(Action::SessionOperationFailed(message.to_string()));
+            }
+        }
     }
 
     /// Push a one-line mux notice into the focused session's scrollback.
+    /// BUG-647: with no session it is an info notification that stays
+    /// until dismissed, never dropped.
     pub(crate) fn push_mux_notice(&mut self, message: &str) {
-        let Some(session) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-        self.navigator
-            .agent
-            .push_line(&mut self.agent_view_store, message.to_string());
-        let _ = session;
+        match self.agent_view_store.current_session_context_mut() {
+            Some(context) => context.push_line(message),
+            None => {
+                let _ = self.compositor.remove(NOTIFICATION_DIALOG_ID);
+                self.compositor.push(Box::new(
+                    NotificationDialog::info(message)
+                        .with_auto_dismiss_ms(0)
+                        .with_action_tx(self.action_tx.clone()),
+                ));
+            }
+        }
     }
 
     /// MUX-002: re-sync the mux agent window to the current open-session
@@ -97,8 +134,31 @@ impl App {
         self.navigator.mux.sync_window(&ids);
     }
 
-    /// MUX-002: Shift+Left / Shift+Right in mux mode — drive the agent
-    /// window and prompt for a new agent at the right edge. Runs at the
+    /// MUX-002/MUX-010: true for the Shift+arrows the mux claims: always
+    /// Shift+Left/Right; Shift+Up/Down only when a pane lies above /
+    /// below the focused one and no exec stdin box is focused — otherwise
+    /// they stay the pane's keys (agent prompt / stdin history recall).
+    pub(crate) fn is_mux_shift_key(&self, key: &crossterm::event::KeyEvent) -> bool {
+        use crossterm::event::{KeyCode, KeyModifiers};
+        if !key.modifiers.contains(KeyModifiers::SHIFT) {
+            return false;
+        }
+        match key.code {
+            KeyCode::Left | KeyCode::Right => true,
+            KeyCode::Up | KeyCode::Down => {
+                !self.navigator.agent.stdin_box_focused()
+                    && self
+                        .navigator
+                        .mux
+                        .has_vertical_neighbour(key.code == KeyCode::Down)
+            }
+            _ => false,
+        }
+    }
+
+    /// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move
+    /// focus in layout order and prompt for a new agent on a last agent
+    /// pane, Up/Down move it spatially. Runs at the
     /// App level (before the Navigator) so the CreateSessionDialog opens
     /// synchronously on the same event; the Navigator's mux Shift+
     /// arrow arms are unreachable while mux is enabled.
@@ -116,6 +176,12 @@ impl App {
                 self.sync_mux_focus_to_session();
                 EventResult::consumed()
             }
+            crossterm::event::KeyCode::Up | crossterm::event::KeyCode::Down => {
+                let down = key.code == crossterm::event::KeyCode::Down;
+                self.navigator.mux.shift_vertical(down);
+                self.sync_mux_focus_to_session();
+                EventResult::consumed()
+            }
             _ => EventResult::ignored(),
         }
     }
@@ -124,7 +190,7 @@ impl App {
     /// mux's focused agent pane. The single live `MultiLineInput` always
     /// holds the FOCUSED session's draft (RPC-052 mirror / RPC-024
     /// round-trip), so when mux focus lands on a different agent pane
-    /// (click-to-focus, Shift+Left/Right window rotation) the store's
+    /// (click-to-focus, Shift+Left/Right, a chip's window rotation) the store's
     /// `current_session_index` must follow: the outgoing draft is
     /// snapshotted into the old session's `input_draft`, the incoming
     /// session's persisted draft is restored into the live composer,
@@ -132,7 +198,7 @@ impl App {
     ///
     /// Called from `App::handle_event` AFTER Navigator routing while
     /// mux is enabled, so every focus-change path (mouse click, shift
-    /// rotation) converges here. No-op when the focused pane is not an
+    /// move) converges here. No-op when the focused pane is not an
     /// agent pane (the live composer keeps its session) or already
     /// matches the store's current session.
     pub(crate) fn sync_mux_focus_to_session(&mut self) {

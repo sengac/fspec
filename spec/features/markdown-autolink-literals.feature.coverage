@@ -98,7 +98,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "fn split_text<'a>(text: &str, out: &mut Vec<Event<'a>>) {",
+              "lastLine": "/// Apply GFM trailing-punctuation trimming to a URL run `[start, end)`."
             }
           ]
         }
@@ -172,7 +174,9 @@
                 239,
                 240,
                 241
-              ]
+              ],
+              "firstLine": "fn match_email(text: &str, i: usize) -> Option<(usize, usize)> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -211,7 +215,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "pub fn autolink_events(events: Vec<Event<'_>>) -> Vec<Event<'_>> {",
+              "lastLine": "/// Candidate start positions are char boundaries from [`str::char_indices`], so the"
             }
           ]
         }
@@ -270,7 +276,9 @@
                 181,
                 182,
                 183
-              ]
+              ],
+              "firstLine": "fn trim_url_end(text: &str, start: usize, mut end: usize) -> usize {",
+              "lastLine": "/// To keep scanning simple we instead detect an email whose `@` is at `i`."
             }
           ]
         }
@@ -309,7 +317,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "pub fn autolink_events(events: Vec<Event<'_>>) -> Vec<Event<'_>> {",
+              "lastLine": "/// Candidate start positions are char boundaries from [`str::char_indices`], so the"
             }
           ]
         }
@@ -351,7 +361,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "fn match_scheme(text: &str, i: usize) -> Option<usize> {",
+              "lastLine": "/// Apply GFM trailing-punctuation trimming to a URL run `[start, end)`."
             }
           ]
         }
@@ -375,7 +387,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "fn flush_passthrough(buffer: &mut Vec<Event>, out: &mut String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,7 +493,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "fn split_text<'a>(text: &str, out: &mut Vec<Event<'a>>) {",
+              "lastLine": "/// Apply GFM trailing-punctuation trimming to a URL run `[start, end)`."
             }
           ]
         }

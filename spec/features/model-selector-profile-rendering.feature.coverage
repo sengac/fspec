@@ -4,15 +4,12 @@
       "name": "A reachable profile section renders the folder icon and qualified label",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
-          "lines": "531-570",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs",
+          "lines": "14-65",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
-                22,
-                23,
-                24,
                 25,
                 26,
                 27,
@@ -44,8 +41,19 @@
                 53,
                 54,
                 55,
-                56
-              ]
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// Paint a non-selectable provider header row (no badges). RPC-351:",
+              "lastLine": "if row.is_profile {"
             }
           ]
         }
@@ -55,15 +63,12 @@
       "name": "An unreachable profile header renders a red marker and is never hidden",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
-          "lines": "573-615",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs",
+          "lines": "68-118",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
-                22,
-                23,
-                24,
                 25,
                 26,
                 27,
@@ -95,8 +100,19 @@
                 53,
                 54,
                 55,
-                56
-              ]
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// Paint a non-selectable provider header row (no badges). RPC-351:",
+              "lastLine": "if row.is_profile {"
             }
           ]
         }
@@ -106,26 +122,9 @@
       "name": "A selected profile header renders its markers in the selected style",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
-          "lines": "618-643",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
-              "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs",
+          "lines": "121-149",
+          "implMappings": []
         }
       ]
     },
@@ -133,19 +132,21 @@
       "name": "A cloud provider header renders without profile or unreachable markers",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
-          "lines": "646-670",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs",
+          "lines": "152-184",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/header.rs",
               "lines": [
-                33,
-                34,
-                35,
                 36,
                 37,
-                38
-              ]
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "let style = base_style(is_selected);",
+              "lastLine": "let marker = if is_selected { SEL } else { NOSEL };"
             }
           ]
         }
@@ -155,17 +156,17 @@
       "name": "The body legend includes the profile segment",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
-          "lines": "673-696",
+          "file": "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs",
+          "lines": "187-216",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/rows.rs",
               "lines": [
-                24,
-                25,
-                26,
-                27
-              ]
+                23,
+                24
+              ],
+              "firstLine": "\"[R] Reasoning | [V] Vision | [C] Custom | 📁 Profile (local server)\";",
+              "lastLine": ""
             }
           ]
         }
@@ -177,12 +178,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/model_selector/rows.rs"
+      "rust/fspec-tui/src/views/model_selector/rows_tests_profile.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/header.rs",
       "rust/fspec-tui/src/views/model_selector/rows.rs"
     ],
-    "totalLinesCovered": 249
+    "totalLinesCovered": 285
   }
 }

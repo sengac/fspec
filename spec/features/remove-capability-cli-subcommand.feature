@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: fspec remove-capability CLI subcommand (Rust port)
   """
   Clap derive subcommand `remove-capability` mirrors the TS Commander.js

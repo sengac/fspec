@@ -37,7 +37,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
+    codelet_test_helpers::source_composition::read_tree_or_file(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
@@ -110,7 +110,7 @@ fn source(rel: &str) -> String {
 
 #[test]
 fn scenario_shared_create_helper_sets_the_max_images_budget() {
-    // @step Given the shared create, isolated create, mid-session set_model, and both NAPI model-switch set-sites exist
+    // @step Given the shared create helper (plain + isolated create) and mid-session set_model set-sites exist
     let src = source("sessions/src/session_creation_helper.rs");
 
     // @step When the max-images budget is resolved through the shared resolver
@@ -183,32 +183,6 @@ fn scenario_mid_session_set_model_updates_the_max_images_budget() {
 }
 
 #[test]
-fn scenario_napi_model_switches_update_the_max_images_budget() {
-    // The file rust/napi/src/session_bindings.rs exists
-    let src = source("napi/src/session_bindings.rs");
-
-    // The two NAPI model-switch bindings are inspected
-    let set_count = src.matches("set_session_model_max_images(").count();
-
-    // Asserts: both session_set_model and session_set_model_profile register the budget
-    assert_eq!(
-        set_count, 2,
-        "expected exactly two `set_session_model_max_images(` calls in \
-         session_bindings.rs (session_set_model + session_set_model_profile), \
-         found {set_count}"
-    );
-
-    // Asserts: both source the budget from the shared resolver
-    let resolver_count = src.matches("resolve_profile_max_images(").count();
-    assert_eq!(
-        resolver_count, 2,
-        "expected exactly two `resolve_profile_max_images(` call sites in \
-         session_bindings.rs (one per NAPI model-switch binding), \
-         found {resolver_count}"
-    );
-}
-
-#[test]
 fn scenario_destroy_session_clears_the_max_images_budget() {
     // The file rust/sessions/src/session_manager.rs exists
     let src = source("sessions/src/session_manager.rs");
@@ -254,8 +228,9 @@ fn scenario_the_resolver_is_defined_exactly_once() {
 
 #[test]
 fn scenario_max_images_is_not_bridged_into_openai_env_vars() {
-    // The file rust/sessions/src/model_resolution.rs exists
-    let src = source("sessions/src/model_resolution.rs");
+    // apply_profile_env_vars is re-exported by model_resolution.rs from
+    // its home, rust/sessions/src/profile_environment.rs
+    let src = source("sessions/src/profile_environment.rs");
 
     // The apply_profile_env_vars body is inspected
     let body = extract_fn_body(&src, "pub fn apply_profile_env_vars");

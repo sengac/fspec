@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "60-112",
+          "lines": "60-121",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/add_hook.rs",
@@ -142,24 +142,27 @@
                 130,
                 131,
                 132,
-                133
-              ]
+                133,
+                134,
+                135
+              ],
+              "firstLine": "//! `add-hook` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
       ]
     },
     {
-      "name": "CLI writes zero bytes to stdout on success and exits 0",
+      "name": "CLI prints the added hook on success and exits 0",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "118-148",
+          "lines": "127-162",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_hook.rs",
               "lines": [
-                51,
                 52,
                 53,
                 54,
@@ -184,8 +187,27 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
+              "lines": [
+                121,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ],
+              "firstLine": "let added = format!(\"✓ Hook added: {}/{}\", args.event, args.name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -196,12 +218,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "154-182",
+          "lines": "168-196",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_hook.rs",
               "lines": [
-                51,
                 52,
                 53,
                 54,
@@ -226,24 +247,27 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "CLI is silent when invoked against a populated config",
+      "name": "CLI prints the added hook when invoked against a populated config",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "188-219",
+          "lines": "202-238",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_hook.rs",
               "lines": [
-                51,
                 52,
                 53,
                 54,
@@ -268,8 +292,12 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,12 +308,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "225-274",
+          "lines": "244-300",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_hook.rs",
               "lines": [
-                51,
                 52,
                 53,
                 54,
@@ -310,45 +337,12 @@
                 73,
                 74,
                 75,
-                76
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_add_hook.rs",
-          "lines": "225-281",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_hook.rs",
-              "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76
-              ]
+                76,
+                77,
+                78
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -359,8 +353,14 @@
     "totalScenarios": 5,
     "coveredScenarios": 5,
     "coveragePercent": 100,
-    "testFiles": 1,
-    "implFiles": 2,
-    "totalLinesCovered": 796
+    "testFiles": [
+      "rust/fspec/tests/cli_add_hook.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/help/configs/add_hook.rs",
+      "rust/fspec/src/add_hook.rs",
+      "rust/fspec-core/src/commands/add_hook.rs"
+    ],
+    "totalLinesCovered": 472
   }
 }

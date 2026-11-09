@@ -26,8 +26,8 @@
 //!       `│` separator, chips `#1` `#2` `#3` — x positions located by scan)
 //!   y2+ role/scrollback/footer/input
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{App, FspecBackend, ViewMode};
@@ -55,16 +55,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -81,11 +82,11 @@ fn click(col: u16, row: u16) -> Event {
 }
 
 /// Render the full App (navigator + compositor) into a 120x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -107,17 +108,17 @@ fn find_x(buf: &Buffer, y: u16, needle: &str) -> Option<u16> {
 }
 
 /// The x of chip `n` (1-based) on the agent bar row.
-fn chip_x(buf: &Buffer, n: usize) -> u16 {
-    find_x(buf, AGENT_BAR_ROW, &format!("#{n}")).unwrap_or_else(|| {
-        panic!(
+fn chip_x(buf: &Buffer, n: usize) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok(
+        find_x(buf, AGENT_BAR_ROW, &format!("#{n}")).or_fail(&format!(
             "chip #{n} must paint on the agent bar row:\n{}",
             row_text(buf, AGENT_BAR_ROW)
-        )
-    })
+        ))?,
+    )
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default) and focus s-1.
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
@@ -125,16 +126,21 @@ async fn seed_sessions(app: &mut App, n: usize) {
     }
     // `append_session` focuses the LAST appended session — reset to s-1.
     app.agent_view_store_mut().focus_session_index(0);
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Flip the App into the Agent view on the given open session (the
 /// RPC-097 jump-into-existing-session path).
-async fn enter_agent_view(app: &mut App, session: &str) {
+async fn enter_agent_view(
+    app: &mut App,
+    session: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(Some(
         SessionId::new(session.to_string()),
     )));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange (board): the 2-zone bar's ring is focused on chip `n`
@@ -176,19 +182,19 @@ fn focus_agent_chip(app: &mut App, n: usize) {
 
 /// Scenario: Clicking a chip in the Agent view switches to that session
 #[tokio::test]
-async fn scenario_clicking_a_chip_in_the_agent_view_switches_to_that_session() {
+async fn scenario_clicking_a_chip_in_the_agent_view_switches_to_that_session() -> TestResult {
     // @step Given the App is in the Agent view with 3 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
 
     // @step And session s-1 is the focused session
-    enter_agent_view(&mut app, "s-1").await;
+    enter_agent_view(&mut app, "s-1").await?;
     assert_eq!(
         app.agent_view_store().current_session_index(),
         0,
         "s-1 must be the focused open-session slot"
     );
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     assert_eq!(
         app.active_view(),
         ViewMode::Agent,
@@ -196,9 +202,9 @@ async fn scenario_clicking_a_chip_in_the_agent_view_switches_to_that_session() {
     );
 
     // @step When I click chip #2 in the menu bar
-    let x = chip_x(&buf, 2);
+    let x = chip_x(&buf, 2)?;
     app.handle_event(&click(x, AGENT_BAR_ROW));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the agent pane shows session s-2
     assert_eq!(
@@ -215,20 +221,21 @@ async fn scenario_clicking_a_chip_in_the_agent_view_switches_to_that_session() {
         app.navigator().agent.menu_focus().is_none(),
         "the bar highlight must clear after chip activation"
     );
+    Ok(())
 }
 
 /// Scenario: A chip click in the Agent view keeps the draft round-trip
 #[tokio::test]
-async fn scenario_a_chip_click_in_the_agent_view_keeps_the_draft_round_trip() {
+async fn scenario_a_chip_click_in_the_agent_view_keeps_the_draft_round_trip() -> TestResult {
     // @step Given the App is in the Agent view with 3 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
 
     // @step And session s-1 is focused with a live input draft of "hi"
-    enter_agent_view(&mut app, "s-1").await;
+    enter_agent_view(&mut app, "s-1").await?;
     app.handle_event(&key(KeyCode::Char('h'), KeyModifiers::NONE));
     app.handle_event(&key(KeyCode::Char('i'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().agent.input.value(),
         "hi",
@@ -236,10 +243,10 @@ async fn scenario_a_chip_click_in_the_agent_view_keeps_the_draft_round_trip() {
     );
 
     // @step When I click chip #3 in the menu bar
-    let buf = render_app(&mut app);
-    let x = chip_x(&buf, 3);
+    let buf = render_app(&mut app)?;
+    let x = chip_x(&buf, 3)?;
     app.handle_event(&click(x, AGENT_BAR_ROW));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the agent pane shows session s-3
     assert_eq!(
@@ -258,20 +265,21 @@ async fn scenario_a_chip_click_in_the_agent_view_keeps_the_draft_round_trip() {
         draft, "hi",
         "the outgoing session's draft must be snapshotted into its input_draft (RPC-024 round-trip)"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on a chip in the Agent view switches to that session
 #[tokio::test]
-async fn scenario_enter_on_a_chip_in_the_agent_view_switches_to_that_session() {
+async fn scenario_enter_on_a_chip_in_the_agent_view_switches_to_that_session() -> TestResult {
     // @step Given the App is in the Agent view with 3 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
 
     // @step And session s-1 is the focused session
-    enter_agent_view(&mut app, "s-1").await;
+    enter_agent_view(&mut app, "s-1").await?;
 
     // @step And the menu bar ring is focused on chip #2
-    render_app(&mut app); // cache the agent bar's geometry (chip count)
+    render_app(&mut app)?; // cache the agent bar's geometry (chip count)
     focus_agent_chip(&mut app, 2);
     use codelet_fspec_tui::components::menu_bar::MenuFocus;
     assert_eq!(
@@ -282,7 +290,7 @@ async fn scenario_enter_on_a_chip_in_the_agent_view_switches_to_that_session() {
 
     // @step When I press Enter once
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the agent pane shows session s-2
     assert_eq!(
@@ -294,14 +302,15 @@ async fn scenario_enter_on_a_chip_in_the_agent_view_switches_to_that_session() {
         app.navigator().agent.menu_focus().is_none(),
         "the bar highlight must clear after chip activation"
     );
+    Ok(())
 }
 
 /// Scenario: The board chip activation still flips to the Agent view
 #[tokio::test]
-async fn scenario_the_board_chip_activation_still_flips_to_the_agent_view() {
+async fn scenario_the_board_chip_activation_still_flips_to_the_agent_view() -> TestResult {
     // @step Given the App is in the Board view with 3 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
+    seed_sessions(&mut app, 3).await?;
     assert_eq!(
         app.active_view(),
         ViewMode::Board,
@@ -319,7 +328,7 @@ async fn scenario_the_board_chip_activation_still_flips_to_the_agent_view() {
 
     // @step When I press Enter once
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the active view is the Agent view showing session s-2
     assert_eq!(
@@ -332,4 +341,5 @@ async fn scenario_the_board_chip_activation_still_flips_to_the_agent_view() {
         Some(SessionId::new("s-2".to_string())),
         "the flipped view must host s-2"
     );
+    Ok(())
 }

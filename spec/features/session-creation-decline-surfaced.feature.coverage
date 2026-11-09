@@ -1,94 +1,67 @@
 {
   "scenarios": [
     {
-      "name": "A declined session creation maps to an explicit decline action",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
-          "lines": "48-62",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/session_creation.rs",
-              "lines": [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A successful session creation maps to a session-created action",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
-          "lines": "66-80",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/session_creation.rs",
-              "lines": [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "The TUI surfaces a declined session creation as an explicit error",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
-          "lines": "85-106",
+          "lines": "43-71",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "file": "rust/fspec-tui/src/app/session_creation_tasks.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137
-              ]
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "Ok(session) => {",
+              "lastLine": "super::session_storage::publish_manifest_issues(backend.as_ref(), &sender, false)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A created session becomes the active session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "lines": "76-93",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/session_creation_tasks.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": ".create_isolated_session_in_workspace(workspace, role)",
+              "lastLine": "};"
             }
           ]
         }
@@ -96,16 +69,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 3,
-    "coveredScenarios": 3,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/prov101_session_creation_decline.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/session_creation.rs",
-      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs"
+      "rust/fspec-tui/src/app/session_creation_tasks.rs"
     ],
-    "totalLinesCovered": 98
+    "totalLinesCovered": 78
   }
 }

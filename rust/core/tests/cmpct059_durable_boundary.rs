@@ -15,6 +15,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[serial_test::serial]
 fn scenario_cold_resume_restores_the_exact_committed_dag_and_suffix() -> TestResult {
     if let Ok(data) = std::env::var("CMPCT059_COLD_STORE") {
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(data.into())?;
         reset_stores_for_tests();
         let session_id = std::env::var("CMPCT059_COLD_SESSION")?.parse()?;
@@ -53,6 +54,7 @@ fn scenario_cold_resume_restores_the_exact_committed_dag_and_suffix() -> TestRes
         return Ok(());
     }
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     // @step Given an admitted DAG and structured work persisted after its source snapshot
@@ -126,6 +128,7 @@ fn scenario_cold_resume_restores_the_exact_committed_dag_and_suffix() -> TestRes
 #[serial_test::serial]
 fn scenario_incompatible_durable_coverage_blocks_cold_replay() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("bad lineage", directory.path(), "openai")?;
@@ -152,6 +155,7 @@ fn scenario_incompatible_durable_coverage_blocks_cold_replay() -> TestResult {
 #[serial_test::serial]
 fn scenario_failure_before_promotion_preserves_the_old_generation() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     // @step Given an existing committed generation and a candidate whose promotion cannot complete
@@ -203,6 +207,7 @@ fn scenario_failure_before_promotion_preserves_the_old_generation() -> TestResul
 #[serial_test::serial]
 fn scenario_failed_publication_retains_the_promoted_identity_until_reconciliation() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =

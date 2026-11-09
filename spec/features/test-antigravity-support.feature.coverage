@@ -4,27 +4,27 @@
       "name": "Initialize fspec with Antigravity agent",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/init-antigravity.test.ts",
-          "lines": "26-47",
+          "file": "rust/fspec-core/tests/init_antigravity.rs",
+          "lines": "30-56",
           "implMappings": [
             {
-              "file": "src/utils/agentRegistry.ts",
+              "file": "rust/fspec-core/src/commands/init/registry.rs",
               "lines": [
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286
-              ]
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "id: \"antigravity\",",
+              "lastLine": "];"
             }
           ]
         }
@@ -32,30 +32,37 @@
       "implMappings": []
     },
     {
-      "name": "Verify fspec status in Antigravity environment",
+      "name": "The project config records the Antigravity agent",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/init-antigravity.test.ts",
-          "lines": "49-66",
+          "file": "rust/fspec-core/tests/init_antigravity.rs",
+          "lines": "58-71",
           "implMappings": [
             {
-              "file": "src/utils/agentRegistry.ts",
+              "file": "rust/fspec-core/src/commands/init/files.rs",
               "lines": [
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286
-              ]
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// broken file is an error and is left as it was (BUG-640).",
+              "lastLine": "}"
             }
           ]
         }
@@ -68,11 +75,12 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/init-antigravity.test.ts"
+      "rust/fspec-core/tests/init_antigravity.rs"
     ],
     "implFiles": [
-      "src/utils/agentRegistry.ts"
+      "rust/fspec-core/src/commands/init/registry.rs",
+      "rust/fspec-core/src/commands/init/files.rs"
     ],
-    "totalLinesCovered": 68
+    "totalLinesCovered": 72
   }
 }

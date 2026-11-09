@@ -1,5 +1,7 @@
+@BUG-623
 @done
 @RPC-019
+@BUG-390
 @rust
 @tui
 @ui
@@ -22,7 +24,7 @@ Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
   - Shift+arrow chords are translated into navigation Actions
   (HistoryPrev, HistoryNext, SessionPrev, SessionNext) — RPC-019
   ONLY emits them; RPC-021 will route them through App::dispatch.
-  - ESC always emits Action::BackToBoard (preserved from RPC-012).
+  - ESC emits Action::AgentEscPressed (RPC-051); the App's Esc cascade routes it to Action::BackToBoard.
   - When the buffer is empty, the input row paints
   "> Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history,
   'Shift+←/→' sessions, 'Tab' turns" in dim grey + green prompt
@@ -107,8 +109,8 @@ Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
     Then AgentView emits Action::SessionNext
     And the MultiLineInput's buffer is still exactly "draft"
 
-  Scenario: ESC inside AgentView emits Action::BackToBoard
+  Scenario: ESC inside AgentView emits Action::AgentEscPressed
     Given an AgentView whose MultiLineInput contains "draft\nstill drafting"
     When the user presses ESC
-    Then AgentView emits Action::BackToBoard
+    Then AgentView emits Action::AgentEscPressed (RPC-051 cascade entry point)
     And the MultiLineInput's buffer is still exactly "draft\nstill drafting"

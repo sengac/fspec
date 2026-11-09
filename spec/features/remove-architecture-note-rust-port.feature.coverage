@@ -70,8 +70,6 @@
                 104,
                 105,
                 106,
-                107,
-                108,
                 109,
                 110,
                 111,
@@ -103,8 +101,12 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142
+              ],
+              "firstLine": "/// integer id and surfaces the canonical",
+              "lastLine": "Some(id) => notes_array.iter().position(|n| {"
             }
           ]
         }
@@ -120,8 +122,6 @@
             {
               "file": "rust/fspec-core/src/commands/remove_architecture_note.rs",
               "lines": [
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -129,8 +129,12 @@
                 114,
                 115,
                 116,
-                117
-              ]
+                117,
+                118,
+                119
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": "});"
             }
           ]
         }
@@ -159,7 +163,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "impl TsIndex {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,21 +181,23 @@
             {
               "file": "rust/fspec-core/src/commands/remove_architecture_note.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "// Validate architectureNotes exists AND is non-empty (TS L38-42).",
+              "lastLine": "};"
             }
           ]
         }
@@ -205,25 +213,33 @@
             {
               "file": "rust/fspec-core/src/commands/remove_architecture_note.rs",
               "lines": [
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "// Locate the note by stable ID (TS L45-50). When index is NaN",
+              "lastLine": "};"
             }
           ]
         }
@@ -239,8 +255,6 @@
             {
               "file": "rust/fspec-core/src/commands/remove_architecture_note.rs",
               "lines": [
-                143,
-                144,
                 145,
                 146,
                 147,
@@ -248,8 +262,12 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154
+              ],
+              "firstLine": ".map(|nid| nid == id)",
+              "lastLine": "command: \"remove-architecture-note\","
             }
           ]
         }
@@ -272,7 +290,9 @@
                 51,
                 52,
                 53
-              ]
+              ],
+              "firstLine": "/// integer id and surfaces the canonical",
+              "lastLine": "/// TS-`parseInt(_, 10)` result: either a finite integer or NaN."
             }
           ]
         }
@@ -289,6 +309,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_architecture_note.rs"
     ],
-    "totalLinesCovered": 400
+    "totalLinesCovered": 406
   }
 }

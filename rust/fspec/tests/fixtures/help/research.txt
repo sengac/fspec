@@ -1,63 +1,45 @@
 
 RESEARCH
-Execute research tools to answer questions during Example Mapping
+List the research tools available during Example Mapping
 
 WHEN TO USE
-  Use during specifying phase when you have questions that require external research (stakeholder input, API queries, web answers, etc.). Research tools help answer red card questions during Example Mapping. For AST code search, use the `fspec astgrep` command instead.
+  Use during the specifying phase to see which research tools are configured. For AST code search, use the `fspec astgrep` command instead.
 
 USAGE
-  fspec research [--tool=<name>] [tool-specific-args...]
+  fspec research [--tool=<name>] [--work-unit=<workUnitId>]
 
 OPTIONS
-  undefined
-    Research tool to execute (perplexity, jira, confluence, stakeholder). Omit to list available tools.
-  undefined
-    Work unit context (forwarded to tool). Enables attaching results as attachments.
-  undefined
-    Additional arguments passed directly to the research tool. See tool --help for details.
+  --tool <name>
+    Research tool to select (perplexity, jira, confluence, stakeholder). Omit to list the tools. Running a tool is not ported yet.
+  --work-unit <workUnitId>
+    Work unit context for the tool
 
 COMMON PATTERNS
-  • undefined
-    Example: fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001
-    Send questions to Teams/Slack and attach responses
+  • Check which research tools are configured
+    Example: fspec research
+    Lists each bundled tool with ✓ (configured) or ✗ and the environment variable it needs
 
 
 TYPICAL WORKFLOW
-  During Example Mapping, identify a question that needs research,Add question: fspec add-question AUTH-001 "@human: Support OAuth?",Research the question: fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001,When prompted, attach results to work unit (y),Review attached research in spec/attachments/AUTH-001/,Answer question based on research: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule,Generate scenarios: fspec generate-scenarios AUTH-001
+  During Example Mapping, identify a question that needs research. Add question: fspec add-question AUTH-001 "@human: Support OAuth?". Ask the stakeholder or check the tools listed by fspec research. Answer question: fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule. Generate scenarios: fspec generate-scenarios AUTH-001
 
 EXAMPLES
   1. List all available research tools
   $ fspec research
   Available Research Tools:
 
-  perplexity
+  ✗ perplexity
+    Perplexity AI research tool for web search and AI-powered answers
     Usage: fspec research --tool=perplexity <args>
+    Config: export PERPLEXITY_API_KEY="..."
 
-  stakeholder
-    Usage: fspec research --tool=stakeholder <args>
-
-  2. Send question to stakeholders via Teams
-  $ fspec research --tool=stakeholder --platform=teams --question="Should we support OAuth2?" --work-unit=AUTH-001
-  # Stakeholder Question for AUTH-001
-
-**Platform:** teams
-**Question:** Should we support OAuth2?
-
-**Work Unit Context:**
-- ID: AUTH-001
-- Title: User Login
-- Epic: user-management
-
-**Rules:**
-1. Password must be 8+ chars
-
-Message sent successfully.
-
-Attach research results to work unit? (y/n):
+  2. Select a tool (execution is not ported yet)
+  $ fspec research --tool=stakeholder --work-unit=AUTH-001
+  Research tool execution is not yet ported to the Rust binary (tool 'stakeholder'); use the listing mode (omit --tool) for now
 
 COMMON ERRORS
   ✗ Error: Research tool not found: xyz
-    Fix: undefined
+    Fix: Run fspec research to list the available tools
 
 RELATED COMMANDS
   fspec add-question
@@ -66,11 +48,9 @@ RELATED COMMANDS
   fspec generate-scenarios
 
 NOTES
-  • Research tools are auto-discovered from spec/research-scripts/ directory
-  • Any executable file in that directory becomes a research tool
-  • Tools can be written in any language (shell, Node.js, Python, etc.)
-  • Use <tool> --help to see tool-specific options
-  • Results can be attached to work units during discovery
-  • Attachments are saved to spec/attachments/<work-unit-id>/
+  • Bundled tools: perplexity, jira, confluence, stakeholder
+  • Each tool shows the environment variable that configures it
+  • Running a research tool is not ported to the Rust CLI yet
+  • Attachments are saved to spec/attachments/<workUnitId>/
   • For AST code search and refactoring, use the `fspec astgrep` command
 

@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @rlcd-004
 @RLCD-004
 @rlcd
 @tools
+@BUG-456
 Feature: RLCD semantic security layer over the regex blocklist
   """
   The RLCD engine (current backend: laya-rs) acts as a semantic security

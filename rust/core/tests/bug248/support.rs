@@ -8,9 +8,10 @@ pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 pub fn fixture() -> Result<(tempfile::TempDir, MessageStore, Uuid), Box<dyn std::error::Error>> {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let _sessions = SessionStore::new()?;
-    let mut store = MessageStore::new()?;
+    let store = MessageStore::new()?;
     let prefix = store.store("user", "valid prefix 日本語")?;
     Ok((directory, store, prefix))
 }

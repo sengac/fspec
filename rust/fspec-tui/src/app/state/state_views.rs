@@ -113,8 +113,16 @@ impl App {
     /// EnterWorkUnit gate on `active_view == ViewMode::Mux`, and the
     /// R6 auto-save reads the mirror). `/mux on` re-enables the grid
     /// with the saved layout.
+    ///
+    /// MUX-011: a saved `tui.mux` that cannot be read is reported as an
+    /// app-level error (the key, the column and the problem); the default
+    /// layout is used for this session (product owner, 2026-11-08).
     pub fn load_mux_config(&mut self) {
-        self.mux_state.load();
+        if let Err(message) = self.mux_state.load() {
+            let _ = self
+                .action_tx
+                .send(crate::components::Action::SessionOperationFailed(message));
+        }
         self.mux_state.config_mut().enabled = false;
         self.navigator.mux.config = self.mux_state.config().clone();
     }

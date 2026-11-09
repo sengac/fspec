@@ -9,18 +9,18 @@
 //! routing in `dispatch_slash_loop.rs`. Mirrors the source_shape_rpc058
 //! pattern.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::fs;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+use codelet_test_helpers::source_composition::read_source;
+
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
 fn normalise(source: &str) -> String {
@@ -33,10 +33,10 @@ fn normalise(source: &str) -> String {
 
 /// Scenario: RegisteredLoop wire type is exported from codelet-rpc-types
 #[test]
-fn rpc_types_exports_registered_loop_wire_type() {
+fn rpc_types_exports_registered_loop_wire_type() -> TestResult {
     // @step Given the file rust/rpc-types/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc-types/src/lib.rs");
+    let path = workspace_root()?.join("rust/rpc-types/src/lib.rs");
+    let source = read_tree(&path)?;
     let normalised = normalise(&source);
 
     // @step Then it declares a public struct named "RegisteredLoop"
@@ -61,14 +61,15 @@ fn rpc_types_exports_registered_loop_wire_type() {
             "RegisteredLoop should declare field {field:?}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: SessionManagerHandle declares the three new loop methods
 #[test]
-fn session_manager_handle_declares_loop_methods() {
+fn session_manager_handle_declares_loop_methods() -> TestResult {
     // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = read_tree(&path)?;
     let normalised = normalise(&source);
 
     // @step Then it declares a trait method named "loop_add" returning Result<RegisteredLoop, String>
@@ -91,23 +92,24 @@ fn session_manager_handle_declares_loop_methods() {
         "loop_cancel should return Result<bool, String>"
     );
 
-    // @step And it declares a trait method named "loop_list" returning Vec<RegisteredLoop>
+    // @step And it declares a trait method named "loop_list" returning Result<Vec<RegisteredLoop>, String>
     assert!(
         source.contains("fn loop_list("),
         "session_manager_handle.rs should declare fn loop_list"
     );
     assert!(
-        normalised.contains("-> Vec<RegisteredLoop>"),
-        "loop_list should return Vec<RegisteredLoop>"
+        normalised.contains("-> Result<Vec<RegisteredLoop>, String>"),
+        "loop_list should return Result<Vec<RegisteredLoop>, String>"
     );
+    Ok(())
 }
 
 /// Scenario: StubSessionManagerHandle exposes per-call counters for all three loop methods
 #[test]
-fn stub_exposes_per_call_counters_for_loop() {
+fn stub_exposes_per_call_counters_for_loop() -> TestResult {
     // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = read_tree(&path)?;
     let normalised = normalise(&source);
 
     // @step Then StubSessionManagerHandle declares a method named "loop_add_calls" returning u64
@@ -125,19 +127,20 @@ fn stub_exposes_per_call_counters_for_loop() {
             "StubSessionManagerHandle should declare {counter}(&self) -> u64"
         );
     }
+    Ok(())
 }
 
 /// Scenario: FspecService declares the three new RPC methods
 #[test]
-fn fspec_service_declares_loop_methods() {
+fn fspec_service_declares_loop_methods() -> TestResult {
     // @step Given the file rust/rpc/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
+    let path = workspace_root()?.join("rust/rpc/src/lib.rs");
+    let source = read_source(&path).or_fail("read rpc/src/lib.rs")?;
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "loop_add" with return type Result<RegisteredLoop, String>
     // @step And it declares an async fn named "loop_cancel" with return type Result<bool, String>
-    // @step And it declares an async fn named "loop_list" with return type Vec<RegisteredLoop>
+    // @step And it declares an async fn named "loop_list" with return type Result<Vec<RegisteredLoop>, String>
     for method in ["loop_add", "loop_cancel", "loop_list"] {
         let needle = format!("async fn {method}(");
         assert!(
@@ -155,17 +158,18 @@ fn fspec_service_declares_loop_methods() {
         "loop_cancel should return Result<bool, String>"
     );
     assert!(
-        normalised.contains("-> Vec<RegisteredLoop>"),
-        "loop_list should return Vec<RegisteredLoop>"
+        normalised.contains("-> Result<Vec<RegisteredLoop>, String>"),
+        "loop_list should return Result<Vec<RegisteredLoop>, String>"
     );
+    Ok(())
 }
 
 /// Scenario: FspecBackend declares the three new methods
 #[test]
-fn fspec_backend_declares_loop_methods() {
+fn fspec_backend_declares_loop_methods() -> TestResult {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/transport/mod.rs");
+    let source = read_source(&path).or_fail("read transport/mod.rs")?;
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "loop_add" on the FspecBackend trait returning Result<RegisteredLoop>
@@ -190,18 +194,18 @@ fn fspec_backend_declares_loop_methods() {
         normalised.contains("-> Result<Vec<RegisteredLoop>>"),
         "FspecBackend::loop_list should return Result<Vec<RegisteredLoop>>"
     );
+    Ok(())
 }
 
 /// Scenario: Both transports implement the three new methods
 #[test]
-fn both_transports_implement_loop_methods() {
+fn both_transports_implement_loop_methods() -> TestResult {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/embedded.rs"))
+        .or_fail("read transport/embedded.rs")?;
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
-            .expect("read transport/websocket.rs");
+        read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/websocket.rs"))
+            .or_fail("read transport/websocket.rs")?;
 
     // @step Then each file contains an impl of "loop_add" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "loop_cancel" that calls the corresponding tarpc client method
@@ -226,14 +230,16 @@ fn both_transports_implement_loop_methods() {
             "websocket.rs should forward to the tarpc client's {method}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: loop_parser module exists with the documented entry points
 #[test]
-fn loop_parser_module_exists() {
+fn loop_parser_module_exists() -> TestResult {
     // @step Given the file rust/fspec-tui/src/app/loop_parser.rs exists
-    let path = workspace_root().join("rust/fspec-tui/src/app/loop_parser.rs");
-    let source = fs::read_to_string(&path).expect("read app/loop_parser.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/app/loop_parser.rs");
+    let source = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .or_fail("read app/loop_parser.rs")?;
 
     // @step Then it declares a public enum named "LoopSubcommand"
     assert!(
@@ -256,4 +262,35 @@ fn loop_parser_module_exists() {
         source.contains("pub fn parse_loop_command("),
         "loop_parser.rs should declare pub fn parse_loop_command"
     );
+    Ok(())
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// Scenario: /loop slash command wiring lives in dispatch_slash_loop.rs
+#[test]
+fn loop_slash_command_wiring_lives_in_dispatch_slash_loop() -> TestResult {
+    // @step Given the file rust/fspec-tui/src/app/dispatch_slash_loop.rs exists
+    let source =
+        read_tree(&workspace_root()?.join("rust/fspec-tui/src/app/dispatch_slash_loop.rs"))?;
+    // @step Then it declares a method named "handle_slash_loop_help"
+    assert!(source.contains("fn handle_slash_loop_help("));
+    // @step And it declares a method named "handle_loop_subcommand"
+    assert!(source.contains("fn handle_loop_subcommand("));
+    // @step And it declares a method named "handle_loop_add"
+    assert!(source.contains("fn handle_loop_add("));
+    // @step And it declares a method named "handle_loop_list"
+    assert!(source.contains("fn handle_loop_list("));
+    // @step And it declares a method named "handle_loop_cancel"
+    assert!(source.contains("fn handle_loop_cancel("));
+    // @step And it declares a method named "try_dispatch_slash_loop"
+    assert!(source.contains("fn try_dispatch_slash_loop("));
+    Ok(())
+}
+
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
 }

@@ -1,16 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Match function using partial pattern with meta-variables",
+      "name": "Match function using a complete-node pattern with meta-variables",
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "27-66",
+          "lines": "28-67",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                128,
                 250,
                 251,
                 252,
@@ -47,8 +46,67 @@
                 283,
                 284,
                 285,
-                286
-              ]
+                286,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ],
+              "firstLine": "let pattern_valid = match lang {",
+              "lastLine": "}));"
             }
           ]
         }
@@ -59,12 +117,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "70-105",
+          "lines": "74-103",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                128,
                 250,
                 251,
                 252,
@@ -101,8 +158,67 @@
                 283,
                 284,
                 285,
-                286
-              ]
+                286,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ],
+              "firstLine": "let pattern_valid = match lang {",
+              "lastLine": "}));"
             }
           ]
         }
@@ -113,7 +229,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "107-158",
+          "lines": "110-154",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -130,7 +246,9 @@
                 895,
                 896,
                 897
-              ]
+              ],
+              "firstLine": "Transform::Convert(t) => {",
+              "lastLine": "))"
             }
           ]
         }
@@ -141,48 +259,43 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "160-205",
+          "lines": "161-201",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                775,
-                776,
-                777,
-                778,
-                779,
-                780,
-                781,
-                782,
-                783,
-                784,
-                785,
-                786,
-                787,
-                788,
-                789,
-                790,
-                791,
-                792,
-                793,
-                794,
-                795,
-                796,
-                797,
-                798,
-                799,
-                800,
-                801,
-                802,
-                803,
-                804,
-                805,
-                806,
-                807,
-                808,
-                809,
-                810
-              ]
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874
+              ],
+              "firstLine": "Transform::Substring(t) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,28 +306,25 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "208-254",
+          "lines": "208-248",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                775,
-                776,
-                777,
-                778,
-                779,
-                811,
-                812,
-                813,
-                814,
-                815,
-                816,
-                817,
-                818,
-                819,
-                820,
-                821
-              ]
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885
+              ],
+              "firstLine": "Transform::Replace(t) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -225,7 +335,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "256-314",
+          "lines": "255-306",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -337,7 +447,9 @@
                 575,
                 576,
                 577
-              ]
+              ],
+              "firstLine": "} else if let Some(repl) = replacement {",
+              "lastLine": "}"
             }
           ]
         }
@@ -348,7 +460,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "317-361",
+          "lines": "313-351",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -396,7 +508,9 @@
                 455,
                 456,
                 457
-              ]
+              ],
+              "firstLine": "Some(f) if !f.is_empty() => f,",
+              "lastLine": "// Return success result"
             }
           ]
         }
@@ -407,7 +521,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "363-416",
+          "lines": "358-406",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -481,7 +595,9 @@
                 857,
                 858,
                 859
-              ]
+              ],
+              "firstLine": "Transform::Replace(t) => &t.source,",
+              "lastLine": "(len + start).max(0) as usize"
             }
           ]
         }
@@ -492,7 +608,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "419-465",
+          "lines": "413-453",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -561,7 +677,9 @@
                 723,
                 724,
                 725
-              ]
+              ],
+              "firstLine": "rec_stack.remove(node);",
+              "lastLine": "fn split_into_words(text: &str, separators: Option<&[Separator]>) -> Vec<String> {"
             }
           ]
         }
@@ -572,7 +690,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "467-517",
+          "lines": "460-503",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -588,7 +706,9 @@
                 883,
                 884,
                 885
-              ]
+              ],
+              "firstLine": "Transform::Replace(t) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -599,19 +719,21 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "519-570",
+          "lines": "510-555",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ],
+              "firstLine": "// Validate extract mode restrictions",
+              "lastLine": "}"
             }
           ]
         }
@@ -622,20 +744,22 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "572-620",
+          "lines": "562-604",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
               "lines": [
-                186,
-                187,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198
-              ]
+                205,
+                206,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "// Validate extract mode restrictions",
+              "lastLine": "}"
             }
           ]
         }
@@ -646,7 +770,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/astgrep_refactor_transforms_test.rs",
-          "lines": "622-673",
+          "lines": "611-662",
           "implMappings": [
             {
               "file": "rust/tools/src/astgrep_refactor.rs",
@@ -703,7 +827,9 @@
                 670,
                 671,
                 672
-              ]
+              ],
+              "firstLine": "fn detect_cyclic_dependencies(",
+              "lastLine": "}"
             }
           ]
         }
@@ -720,6 +846,6 @@
     "implFiles": [
       "rust/tools/src/astgrep_refactor.rs"
     ],
-    "totalLinesCovered": 1131
+    "totalLinesCovered": 1164
   }
 }

@@ -30,7 +30,7 @@ Formatted 2 files
 RELATED COMMANDS
   fspec validate
   fspec create-feature
-  fspec check
+  fspec audit
 
 NOTES
   • Uses custom AST-based formatter (NOT prettier-plugin-gherkin)

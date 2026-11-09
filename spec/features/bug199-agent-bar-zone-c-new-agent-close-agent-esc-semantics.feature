@@ -5,18 +5,18 @@
 @menu-bar
 @tui-component
 @agent-view
-Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new agent; Close Agent is the Esc exit gesture)
+Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new agent; Close is the Esc exit gesture)
   """
   Regression from MENU-009 (menubar-zone-c-right-aligned-new-agent-close-agent-buttons):
   the agent bar's right-aligned Zone C buttons do not do what their labels
   say. 'New Agent' re-enters the CURRENT session (the MENU-009 R8
   current-session target substitution) instead of starting a new agent the
   way the board bar's 'New Agent' button and the '.' key do (the
-  CreateSessionDialog). 'Close Agent' destroys the session immediately
+  CreateSessionDialog). 'Close' destroys the session immediately
   (AgentExitChoice{CloseSession} — detach, destroy_session, BackToBoard)
   instead of showing what pressing Esc in the Agent view shows (the
   RPC-098 exit cascade: interrupt when running, clear when the input has
-  a draft, otherwise the 'Exit Session?' Detach / Close Session / Cancel
+  a draft, otherwise the 'Close Agent?' Close / Cancel (Detach removed by BUG-205)
   confirmation dialog). And the bar gives no hint that Esc is the same
   exit gesture.
 
@@ -25,18 +25,18 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   user stays on the Agent view until confirmation (RPC-097 reopen #1
   contract). The MENU-009 R8 current-session substitution is removed
   for the agent surface; the board surface is unchanged.
-  2. R2 — 'Close Agent' runs the AgentEscPressed cascade — the EXACT
+  2. R2 — 'Close' runs the AgentEscPressed cascade — the EXACT
   behavior of pressing Esc in the Agent view. No session is destroyed
   without a dialog commit.
-  3. R3 — the agent bar's second button label is 'Close Agent [esc]'
+  3. R3 — the agent bar's second button label is 'Close [esc]'
   (5-cell hint), so the user knows how to escape the session without
   clicking the button. The board keeps its single 'New Agent' button.
 
   SUPERSESSION NOTE (BUG-204): R2 was superseded by BUG-204 — 'Close
-  Agent' ALWAYS mounts the 'Exit Session?' dialog (no interrupt /
+  Agent' ALWAYS mounts the 'Close Agent?' dialog (no interrupt /
   no draft-clear branch); only the physical Esc key keeps the full
   cascade. The two R2 scenarios that encoded the state-dependent
-  behavior ('Close Agent' on a running session interrupts the run /
+  behavior ('Close' on a running session interrupts the run /
   clears the draft) were removed; the idle-session scenario remains
   valid (BUG-204 keeps the dialog for every state).
   """
@@ -51,11 +51,11 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   #      on the dialog id, context-aware title from the current session's
   #      WorkUnitContext) and the user stays on the Agent view until the
   #      dialog is confirmed. The existing session is never disturbed.
-  #   2. R2 (SUPERSEDED by BUG-204): The agent bar's Zone C 'Close Agent'
-  #      button ALWAYS mounts the 'Exit Session?' dialog (the running /
+  #   2. R2 (SUPERSEDED by BUG-204): The agent bar's Zone C 'Close'
+  #      button ALWAYS mounts the 'Close Agent?' dialog (the running /
   #      draft variants now show the dialog too, not interrupt/clear).
   #      The physical Esc key still runs the full cascade.
-  #   3. R3: The agent bar's second Zone C button label is 'Close Agent
+  #   3. R3: The agent bar's second Zone C button label is 'Close
   #      [esc]'; the first button keeps its exact 'New Agent' label. The
   #      board surface keeps its single 'New Agent' button unchanged.
   #      Geometry: Zone C still paints right-aligned and drops before Zone
@@ -68,16 +68,16 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   #      Session dialog mounts over the Agent view; the current session is
   #      unchanged until the dialog is confirmed.
   #   2. (SUPERSEDED by BUG-204) Agent view on a RUNNING session: click
-  #      'Close Agent' → the 'Exit Session?' dialog appears (busy variant);
+  #      'Close' → the 'Close Agent?' dialog appears (busy variant);
   #      the run is NOT interrupted.
   #   3. (SUPERSEDED by BUG-204) Agent view on an idle session with a
-  #      typed draft: click 'Close Agent' → the 'Exit Session?' dialog
+  #      typed draft: click 'Close' → the 'Close Agent?' dialog
   #      appears; the draft is NOT cleared.
   #   4. Agent view on an idle session with an empty input: click 'Close
-  #      Agent [esc]' → the 'Exit Session?' three-button dialog (Detach /
-  #      Close Session / Cancel) appears — the session is destroyed only if
-  #      'Close Session' is committed.
-  #   5. The agent bar at 120 cols: the row ends ' New Agent  Close Agent
+  #      Agent [esc]' → the 'Close Agent?' two-button dialog
+  #      (Close / Cancel) appears — the session is destroyed only if
+  #      'Close' is committed.
+  #   5. The agent bar at 120 cols: the row ends ' New Agent  Close
   #      [esc]' (right-aligned, 2-cell gap); the board bar is unchanged
   #      (a single right-aligned 'New Agent').
   #   6. A 40-col board row (1 chip bound to a long WU id): the board's
@@ -88,7 +88,7 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   # ========================================
   Background: User Story
     As a TUI user in the Agent view
-    I want to start a new agent from the bar's 'New Agent' button and exit the session from the bar's 'Close Agent' button
+    I want to start a new agent from the bar's 'New Agent' button and exit the session from the bar's 'Close' button
     So that the agent-bar Zone C buttons behave exactly like their board/Esc counterparts instead of re-opening the current session or destroying it without confirmation
 
   # ========================================
@@ -122,20 +122,20 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   @keyboard-navigation
   @mouse-events
   @regression
-  Scenario: 'Close Agent' on an idle session shows the same exit confirmation as Esc
+  Scenario: 'Close' on an idle session shows the same exit confirmation as Esc
     Given the agent view shows 1 open idle session with an empty input
     And the agent bar is painted
-    When I left-click the 'Close Agent [esc]' button
-    Then the 'Exit Session?' confirmation dialog (Detach / Close Session / Cancel) is shown
+    When I left-click the 'Close' button
+    Then the 'Close Agent?' confirmation dialog (Close / Cancel) is shown
     And the session is not destroyed until an option is committed
     And the agent bar's ring focus clears
 
   @menu-bar-paint
   @regression
-  Scenario: The agent bar paints 'New Agent' then 'Close Agent [esc]' right-aligned
+  Scenario: The agent bar paints '[ New Agent ]' then '[ Close ]' right-aligned
     Given an agent menu bar snapshot with 0 open sessions and no ring focus
     When the agent bar is painted into a 120-column row
-    Then the row ends with 'New Agent' followed by 'Close Agent [esc]' right-aligned
+    Then the row ends with '[ New Agent ]' followed by '[ Close ]' right-aligned
     And the left-anchored 'Board View' item is unchanged
 
   @menu-bar-paint
@@ -143,5 +143,5 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   Scenario: The board bar still paints a single 'New Agent' button
     Given a board menu bar snapshot with 1 open session and no ring focus
     When the bar is painted into a 120-column row
-    Then the row ends with the right-aligned 'New Agent' Zone C button
-    And the row contains no 'Close Agent' button
+    Then the row ends with the right-aligned '[ New Agent ]' Zone C button
+    And the row contains no 'Close' button

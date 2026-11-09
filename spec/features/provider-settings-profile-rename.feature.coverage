@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
-          "lines": "82-101",
+          "lines": "97-116",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -22,7 +22,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "loop_window: String::new(),",
+              "lastLine": "Self {"
             }
           ]
         }
@@ -33,7 +35,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
-          "lines": "134-150",
+          "lines": "149-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -76,7 +78,9 @@
                 241,
                 242,
                 243
-              ]
+              ],
+              "firstLine": "pub(super) fn move_up(&mut self) {",
+              "lastLine": "/// PROV-142: Auto-Continue renders its raw text; PROV-143: Preserve"
             }
           ]
         }
@@ -93,6 +97,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
-    "totalLinesCovered": 87
+    "totalLinesCovered": 90
   }
 }

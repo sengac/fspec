@@ -1,5 +1,7 @@
 @done
 @RPC-182
+@cli
+@foundation-management
 Feature: fspec add-external-system CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_external_system.rs — clap-derived struct mirroring TS Commander.js

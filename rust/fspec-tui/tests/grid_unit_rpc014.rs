@@ -9,15 +9,14 @@
 //!
 //! Pure functions — no `Buffer` / `TestBackend` involved.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::board::grid::{
     build_border_row, calculate_column_widths, column_width_at, SeparatorType,
 };
+use codelet_test_helpers::TestResult;
 
 /// Scenario: 120-wide terminal divides into seven equal 16-wide columns
 #[test]
-fn one_hundred_twenty_wide_terminal_divides_into_seven_equal_sixteen_wide_columns() {
+fn one_hundred_twenty_wide_terminal_divides_into_seven_equal_sixteen_wide_columns() -> TestResult {
     // @step Given terminal_width = 120
     let width: u16 = 120;
     // @step When the test calls calculate_column_widths(120)
@@ -41,11 +40,12 @@ fn one_hundred_twenty_wide_terminal_divides_into_seven_equal_sixteen_wide_column
         118,
         "col widths + 6 separators must equal inner width 118"
     );
+    Ok(())
 }
 
 /// Scenario: 125-wide terminal spreads a 5-wide remainder across the leading columns
 #[test]
-fn one_hundred_twenty_five_wide_terminal_spreads_remainder_across_leading_columns() {
+fn one_hundred_twenty_five_wide_terminal_spreads_remainder_across_leading_columns() -> TestResult {
     // @step Given terminal_width = 125
     let width: u16 = 125;
     // @step When the test calls calculate_column_widths(125)
@@ -77,11 +77,12 @@ fn one_hundred_twenty_five_wide_terminal_spreads_remainder_across_leading_column
         123,
         "col widths + 6 separators must equal inner width 123"
     );
+    Ok(())
 }
 
 /// Scenario: Narrow terminals clamp to the 8-column minimum and report zero remainder
 #[test]
-fn narrow_terminals_clamp_to_eight_minimum_and_report_zero_remainder() {
+fn narrow_terminals_clamp_to_eight_minimum_and_report_zero_remainder() -> TestResult {
     // @step Given terminal_width = 60
     let width: u16 = 60;
     // @step When the test calls calculate_column_widths(60)
@@ -97,11 +98,12 @@ fn narrow_terminals_clamp_to_eight_minimum_and_report_zero_remainder() {
         widths.remainder, 0,
         "remainder must be 0 when base_width was clamped"
     );
+    Ok(())
 }
 
 /// Scenario: build_border_row produces the four canonical separator strings for a 120-wide layout
 #[test]
-fn build_border_row_produces_four_canonical_separator_strings_for_120_wide_layout() {
+fn build_border_row_produces_four_canonical_separator_strings_for_120_wide_layout() -> TestResult {
     // @step Given the widths produced by calculate_column_widths(120)
     let widths = calculate_column_widths(120);
 
@@ -143,4 +145,5 @@ fn build_border_row_produces_four_canonical_separator_strings_for_120_wide_layou
         6,
         "bottom must contain exactly 6 ┴"
     );
+    Ok(())
 }

@@ -15,13 +15,12 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::WorkUnitInfo;
+use codelet_test_helpers::deadlock_guard;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
 use tempfile::TempDir;
-use tokio::time::timeout;
 
 fn workspace_with(units: &[(&str, &str, &str)]) -> (TempDir, PathBuf) {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -101,9 +100,9 @@ async fn scenario_embedded_transport_exposes_the_watchers_broadcast_subscription
             ("AUTH-002", "Reset password", "implementing"),
         ],
     );
-    let payload: Vec<WorkUnitInfo> = timeout(Duration::from_secs(1), rx.recv())
+    let payload: Vec<WorkUnitInfo> = deadlock_guard("the work-units broadcast", rx.recv())
         .await
-        .expect("embedded receiver must observe broadcast within 1s")
+        .expect("embedded receiver observes the broadcast")
         .expect("broadcast not closed");
 
     // @step Then the receiver yields the post-mutation Vec<WorkUnitInfo> and the transport source contains no bincode encode call on the embedded push path

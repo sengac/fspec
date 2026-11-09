@@ -11,7 +11,7 @@
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load
 //!   `spec/work-units.json` (parity with TS `ensureWorkUnitsFile`).
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write at
+//! * [`crate::io::board::write_work_units`] — single atomic write at
 //!   the end (the TS implementation uses `fileManager.transaction`).
 //!
 //! ## Position polymorphism (str | num)
@@ -44,7 +44,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus};
 
 /// CLI arguments accepted by `prioritize-work-unit`. Mirrors the TS
@@ -94,6 +93,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "prioritize-work-unit")?;
     // Load (auto-create on first run), matching TS `ensureWorkUnitsFile`.
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -243,8 +244,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     *column_for(&mut data.states, current_status) = column;
 
     // ── Single atomic write ─────────────────────────────────────────────
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = PrioritizeWorkUnitResult { success: true };
     serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {

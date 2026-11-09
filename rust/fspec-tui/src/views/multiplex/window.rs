@@ -8,12 +8,10 @@
 //! - Agent slot `i` renders the session at `window_start + i`; unfilled agent
 //!   slots are filtered out of the rendered pane list (`effective_panes`)
 //!   and the remaining panes absorb the space.
-//! - Shift+Right at the rightmost pane (any kind) prompts to create a new
-//!   agent UNLESS the focused pane is the rightmost AGENT pane and the
-//!   window can advance (then it rotates forward).
-//! - Shift+Left on the rightmost agent pane rotates backward when
-//!   `window_start > 0`; otherwise it falls through to normal focus
-//!   movement. Shift+Left at the first pane STOPS (no wrap-around).
+//! - MUX-012: Shift+Left/Right never rotate the window (`focus_moves.rs`);
+//!   it moves when a chip selects a session outside it
+//!   (`focus_agent_pane_for_session`) and when a new agent fills the last
+//!   slot (`note_session_created`).
 
 use codelet_rpc_types::SessionId;
 
@@ -23,7 +21,8 @@ impl MultiplexLayout {
     /// Number of agent slots in the configured pane list.
     pub fn agent_slot_count(&self) -> usize {
         self.config
-            .panes
+            .layout
+            .leaves()
             .iter()
             .filter(|k| **k == MuxPaneKind::Agent)
             .count()
@@ -141,62 +140,6 @@ impl MultiplexLayout {
         Some(pane)
     }
 
-    /// Focus the previous pane (Shift+Left fall-through). STOPS at the
-    /// first pane — no wrap-around (MUX-002 rule 5). MUX-006: a focus
-    /// move re-arms the flash; stopping at the first pane is a
-    /// no-op (no re-flash).
-    pub fn focus_prev(&mut self) {
-        self.bump_focus(self.focus.saturating_sub(1));
-    }
-
-    /// Focus the next pane (Shift+Right fall-through). STOPS at the last
-    /// rendered pane — no wrap-around. MUX-006: a focus move re-arms the
-    /// flash; stopping at the last pane is a no-op (no re-flash).
-    pub fn focus_next(&mut self) {
-        let n = self.rendered_panes.len().max(1);
-        if self.focus + 1 < n {
-            self.bump_focus(self.focus + 1);
-        }
-    }
-
-    /// Shift+Right (MUX-002 rule 5/6/10):
-    ///
-    /// - focused pane is the rightmost AGENT pane (no agent slot follows,
-    ///   non-agent panes may): rotate the window forward when it can
-    ///   advance; otherwise prompt for a new agent.
-    /// - focused pane is the rightmost pane of ANY kind: prompt for a new
-    ///   agent (regardless of kind).
-    /// - otherwise: move focus one pane to the right (no wrap).
-    ///
-    /// Returns `true` when a new-agent prompt was requested.
-    pub fn shift_right(&mut self) -> bool {
-        if self.is_focused_pane_last_agent() {
-            if self.window_can_advance() {
-                self.window_start += 1;
-                return false;
-            }
-            self.pending_new_agent = true;
-            return true;
-        }
-        if self.is_rightmost_pane() {
-            self.pending_new_agent = true;
-            return true;
-        }
-        self.focus_next();
-        false
-    }
-
-    /// Shift+Left. On the rightmost AGENT pane it rotates the window
-    /// backward when `window_start > 0`; otherwise it falls through to
-    /// normal focus movement (stops at the first pane).
-    pub fn shift_left(&mut self) {
-        if self.is_focused_pane_last_agent() && self.window_start > 0 {
-            self.window_start -= 1;
-            return;
-        }
-        self.focus_prev();
-    }
-
     /// True iff a new-agent prompt was requested by the last `shift_right`
     /// (consumed by [`Self::note_session_created`]).
     pub fn pending_new_agent(&self) -> bool {
@@ -224,11 +167,6 @@ impl MultiplexLayout {
         }
     }
 
-    /// True iff the agent window can advance one step.
-    pub fn window_can_advance(&self) -> bool {
-        self.window_start + self.agent_slot_count() < self.sessions.len()
-    }
-
     /// The index in `panes` of the Nth agent slot (`0-based`; the last
     /// agent slot when `n` exceeds the count). MUX-002: the new-agent
     /// prompt's window rotation lands the new session in the LAST agent
@@ -243,60 +181,15 @@ impl MultiplexLayout {
             .unwrap_or(0)
     }
 
-    /// True iff the focus is on the last rendered pane.
-    pub fn is_rightmost_pane(&self) -> bool {
-        self.focus + 1 == self.rendered_panes.len()
-    }
-
-    /// True iff the focused pane is an agent pane AND no agent pane
-    /// follows it in the rendered list (the "rightmost agent pane" —
-    /// non-agent panes may sit to its right).
-    pub fn is_focused_pane_last_agent(&self) -> bool {
-        let Some(kind) = self.rendered_panes.get(self.focus) else {
-            return false;
-        };
-        if *kind != MuxPaneKind::Agent {
-            return false;
-        }
-        !self.rendered_panes[self.focus + 1..].contains(&MuxPaneKind::Agent)
-    }
-
     fn recompute_effective_panes(&mut self) {
-        let available = self.sessions.len();
-        let mut agent_seen = 0usize;
-        // BUG-183: user-closed panes (Esc on a lazy pane) are filtered
-        // out of the LIVE rendered list — the saved `config.panes` is
-        // untouched, so `/mux off` → `/mux on` restores them (the
-        // transient rule; `closed_panes` clears on every (re)layout).
-        self.rendered_panes = self
-            .config
-            .panes
-            .iter()
-            .filter(|k| {
-                if **k == MuxPaneKind::Agent {
-                    let keep = agent_seen < available;
-                    agent_seen += 1;
-                    keep
-                } else if matches!(**k, MuxPaneKind::ChangedFiles | MuxPaneKind::Checkpoints) {
-                    !self.closed_panes.contains(k)
-                } else {
-                    true
-                }
-            })
-            .copied()
-            .collect();
-        // BUG-174: floor the rendered list at one pane. When the
-        // derivation is EMPTY (an all-agent layout with zero open
-        // sessions), render a single full-width TRANSIENT Board pane
-        // instead: the grid never collapses to "footer only" and every
-        // key path stays alive (Esc → BUG-165 exit dialog, Shift+Right
-        // → new-agent prompt, Enter → session from the board). The
-        // floor is LIVE-ONLY — `config.panes` is untouched, so the
-        // saved all-agent layout restores verbatim once a session
-        // fills an agent slot.
-        if self.rendered_panes.is_empty() {
-            self.rendered_panes = vec![MuxPaneKind::Board];
-        }
+        // BUG-183: user-closed panes (Esc on a lazy pane) are hidden from
+        // the LIVE grid — the stored layout is untouched, so `/mux off` →
+        // `/mux on` restores them (`closed_panes` clears on every
+        // (re)layout). BUG-174: an all-agent layout with zero open
+        // sessions draws a single TRANSIENT Board pane so every key path
+        // stays alive; it is live-only and never stored. MUX-010: the
+        // derivation lives in `rects.rs` (`refresh_visibility`).
+        self.refresh_visibility();
         let n = self.rendered_panes.len().max(1);
         // MUX-006: a window clamp that moves the focus re-arms the flash.
         self.bump_focus(self.focus.min(n - 1));

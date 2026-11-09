@@ -1,103 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "TokenUpdate after cached threshold recomputes the badge locally without a new ContextFillUpdate",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "90-117",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "TokenUpdate without prior ContextFillUpdate leaves the badge unchanged",
       "testMappings": [
         {
@@ -139,46 +42,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Authoritative ContextFillUpdate overrides any locally-recomputed value",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "213-234",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
+                91,
+                91,
+                91,
+                91,
                 106,
                 107,
                 108,
@@ -189,115 +56,10 @@
                 113,
                 114,
                 115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Local recompute preserves overshoot above 100% (RPC-100 invariant)",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "239-254",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ContextFillUpdate with non-positive threshold does not wipe a previously-cached good threshold",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "258-285",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Local recompute uses the backend physical-occupancy formula including output and reasoning tokens",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "124-141",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
+                116
+              ],
+              "firstLine": "|| self",
+              "lastLine": "}"
             }
           ]
         }
@@ -308,103 +70,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "148-166",
+          "lines": "90-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Local recompute truncates like the backend instead of rounding",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "170-187",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing optional token fields are treated as zero",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "191-208",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/token_state.rs",
-              "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "StreamChunk::TokenUpdate { tokens } => self.apply_token_tracker(tokens),",
+              "lastLine": "}"
             }
           ]
         }
@@ -412,8 +99,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs"
@@ -421,6 +108,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/token_state.rs"
     ],
-    "totalLinesCovered": 446
+    "totalLinesCovered": 93
   }
 }

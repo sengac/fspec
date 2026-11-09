@@ -1,0 +1,88 @@
+
+UNLINK-COVERAGE
+Remove test or implementation links from scenario coverage mappings
+
+WHEN TO USE
+  Use this command when tests or implementation are deleted, refactored, or when coverage mappings are incorrect and need to be reset. Useful before re-linking with correct file paths.
+
+USAGE
+  fspec unlink-coverage <feature-name> [options]
+
+ARGUMENTS
+  <feature-name> (required)
+    Feature file name (without path or extension), e.g., "user-authentication"
+
+OPTIONS
+  --scenario <name>
+    Scenario name to unlink (required)
+  --test-file <path>
+    Test file path to remove. If specified with --impl-file, removes only impl mapping.
+  --impl-file <path>
+    Implementation file path to remove. Removes implementation mapping from test.
+  --all
+    Remove all mappings for the scenario (reset to uncovered)
+
+COMMON PATTERNS
+  • Reset Scenario Coverage
+    Example: # Remove all mappings to start fresh
+fspec unlink-coverage user-auth --scenario "Login" --all
+
+# Re-link with correct paths
+fspec link-coverage user-auth --scenario "Login" --test-file <correct-path> --test-lines <range>
+    undefined
+
+  • Remove Implementation Only
+    Example: # Implementation was refactored, need to re-link
+fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/old-login.ts
+
+# Link new implementation
+fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/new-login.ts --impl-lines 5-15
+    undefined
+
+  • Clean Up After Deletion
+    Example: # Test file was deleted
+fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/old-auth.test.ts
+
+# Or use audit-coverage --fix
+fspec audit-coverage user-auth --fix
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Identify incorrect mapping with fspec show-coverage → 2. fspec unlink-coverage → 3. Re-link with correct paths using fspec link-coverage
+
+EXAMPLES
+  1. Remove all coverage mappings for a scenario
+  $ fspec unlink-coverage user-authentication --scenario "Login with valid credentials" --all
+  ✓ Removed all coverage mappings for scenario "Login with valid credentials"
+
+  2. Remove entire test mapping (including implementation links)
+  $ fspec unlink-coverage user-authentication --scenario "Login with valid credentials" --test-file src/__tests__/auth.test.ts
+  ✓ Removed test mapping src/__tests__/auth.test.ts from scenario "Login with valid credentials"
+
+  3. Remove only implementation mapping, keep test mapping
+  $ fspec unlink-coverage user-authentication --scenario "Login with valid credentials" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts
+  ✓ Removed implementation src/auth/login.ts from test mapping src/__tests__/auth.test.ts
+
+COMMON ERRORS
+  ✗ Error: Scenario "Login with valid credentials" not found in feature
+    Fix: Check scenario name matches exactly. Run: fspec show-feature user-authentication
+
+  ✗ Error: Test file src/__tests__/auth.test.ts not found in scenario mappings
+    Fix: This test is not linked to the scenario. Run: fspec show-coverage user-authentication
+
+  ✗ Error: Must specify --scenario with --test-file or --impl-file
+    Fix: Add --scenario flag to specify which scenario to unlink from.
+
+RELATED COMMANDS
+  fspec link-coverage
+  fspec show-coverage
+  fspec audit-coverage
+
+NOTES
+  • Use --all to completely reset scenario coverage (makes it uncovered)
+  • Unlinking test file also removes all its implementation mappings
+  • Unlinking only implementation keeps test mapping intact
+  • Consider using audit-coverage --fix instead for batch cleanup
+  • Does not modify feature files or test/implementation files, only .coverage files
+

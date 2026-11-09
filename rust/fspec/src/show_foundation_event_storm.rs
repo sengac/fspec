@@ -6,7 +6,7 @@
 //! `fspec_core::commands::show_foundation_event_storm::run`, then print
 //! the `data` array verbatim as 2-space-indented JSON to stdout.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -22,7 +22,7 @@ pub struct CliArgs {
 
 /// Entry point for the `show-foundation-event-storm` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     if let Some(t) = args.r#type.as_deref() {

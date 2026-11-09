@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/ws_log_event.rs",
-          "lines": "88-161",
+          "lines": "93-165",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/envelope.rs",
@@ -59,7 +59,70 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// RPC-005 implemented only `Rpc`; RPC-006 promoted `WorkUnitsUpdate`",
+              "lastLine": "/// `Removed(SessionId)` (draining `session_removed_rx`). Sent to"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forwarding log records over the WebSocket does not feed the log broadcast",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/ws_log_event.rs",
+          "lines": "193-235",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/log_layer.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "/// BUG-572: the broadcast is itself carried by tungstenite,",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,15 +130,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 1,
-    "coveredScenarios": 1,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
       "rust/rpc-server/tests/ws_log_event.rs"
     ],
     "implFiles": [
-      "rust/rpc-server/src/envelope.rs"
+      "rust/rpc-server/src/envelope.rs",
+      "rust/rpc/src/log_layer.rs"
     ],
-    "totalLinesCovered": 123
+    "totalLinesCovered": 208
   }
 }

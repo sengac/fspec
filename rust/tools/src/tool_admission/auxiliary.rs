@@ -87,6 +87,7 @@ fn register(
             })
         }),
         validator,
+        owner.is_none(),
     );
     Ok(AuxiliaryScope(id))
 }

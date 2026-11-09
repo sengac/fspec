@@ -1,0 +1,153 @@
+{
+  "scenarios": [
+    {
+      "name": "The patch lock records each path package at its manifest's version",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug558_rig_core_patch_lock_matches_its_manifests.rs",
+          "lines": "209-219",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/Cargo.lock",
+              "lines": [
+                361,
+                362,
+                2393,
+                2394
+              ],
+              "firstLine": "name = \"codelet-common\"",
+              "lastLine": "version = \"0.28.0\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The patch lock lists exactly the dependencies each path package declares",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug558_rig_core_patch_lock_matches_its_manifests.rs",
+          "lines": "221-238",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/Cargo.lock",
+              "lines": [
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                2393,
+                2394,
+                2395,
+                2396,
+                2397,
+                2398,
+                2399,
+                2400,
+                2401,
+                2402,
+                2403,
+                2404,
+                2405,
+                2406,
+                2407,
+                2408,
+                2409,
+                2410,
+                2411,
+                2412,
+                2413,
+                2414,
+                2415,
+                2416,
+                2417,
+                2418,
+                2419,
+                2420,
+                2421,
+                2422,
+                2423,
+                2424,
+                2425,
+                2426,
+                2427,
+                2428,
+                2429,
+                2430,
+                2431,
+                2432,
+                2433,
+                2434,
+                2435,
+                2436,
+                2437,
+                2438,
+                2439,
+                2440,
+                2441,
+                2442
+              ],
+              "firstLine": "name = \"codelet-common\"",
+              "lastLine": "]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stale patch lock is reported with the refresh command",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug558_rig_core_patch_lock_matches_its_manifests.rs",
+          "lines": "240-309",
+          "implMappings": [
+            {
+              "file": "docs/TESTING.md",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "When the workspace version changes (a release bump: `codelet-common`, a path",
+              "lastLine": "(BUG-558) and prints this command when the lock is stale."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/test-helpers/tests/bug558_rig_core_patch_lock_matches_its_manifests.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/Cargo.lock",
+      "docs/TESTING.md"
+    ],
+    "totalLinesCovered": 181
+  }
+}

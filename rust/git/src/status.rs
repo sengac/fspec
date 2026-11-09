@@ -1,19 +1,22 @@
 //! Git status operations using gitoxide
 
 use crate::error::{GitError, Result};
+use crate::head_tree::HeadEntries;
 use crate::{discover_repo, open_repo};
 use gix::bstr::BStr;
+use std::collections::HashSet;
 use std::path::Path;
 
 // RPC-355: change-type derivation helpers live in a sibling module but are
 // re-exported here so callers use the single `codelet_git::status::*` path.
 // BUG-189: the single-pass combined capture lives in `crate::capture` and is
 // re-exported here too — `codelet_git::status::*` remains the one door.
-pub use crate::capture::{capture_changed_files, ChangedFileEntry};
+pub use crate::capture::{capture_changed_files, capture_changed_files_with, ChangedFileEntry};
 pub use crate::change_type::{
     get_staged_files_with_change_type, get_unstaged_files_with_change_type, ChangeType,
     ChangedFileStatus,
 };
+pub use crate::head_tree::ObjectSource;
 
 /// One index entry that differs from HEAD (a staged path), together with
 /// the per-path verdicts derived in the SAME pass (BUG-189 R2): whether the
@@ -44,82 +47,68 @@ pub fn get_staged_files(dir: impl AsRef<Path>) -> Result<Vec<String>> {
 }
 
 /// BUG-189 R1/R2: single-pass staged detection against an ALREADY OPEN
-/// repository handle. The index is scanned once and each index entry is
-/// compared against the HEAD tree in that same pass — exactly ONE tree
-/// lookup per indexed path — and the in-HEAD verdict is carried out
-/// alongside the staged list, so `get_staged_files_with_change_type`
-/// never re-issues a second lookup per staged path.
+/// repository handle, reading HEAD's trees from the repository itself.
+pub(crate) fn staged_files_with_repo(repo: &gix::Repository) -> Result<Vec<StagedFileVerdict>> {
+    staged_files_with(repo, repo)
+}
+
+/// The staged pass, reading every HEAD tree through `source`.
+///
+/// BUG-657: the HEAD tree is walked ONCE (each tree object read exactly
+/// once) into a path map, and every index entry is checked against that
+/// map; no index path is resolved from the root tree. The in-HEAD verdict
+/// is carried out alongside the staged list, so change-type derivation
+/// never looks a path up again (BUG-189 R2).
 ///
 /// Staged DELETIONS (a HEAD path removed from the index, e.g. `rm file &&
-/// git add file`) have no index entry to look up, so they cannot be
-/// discovered by the index-side pass. They are detected by enumerating
-/// the HEAD tree ONCE (recursively, on the shared warm handle — the ODB
-/// cache keeps the tree objects hot) and taking the complement of the
-/// index paths: a HEAD path with no index entry is a staged deletion.
-pub(crate) fn staged_files_with_repo(repo: &gix::Repository) -> Result<Vec<StagedFileVerdict>> {
-    let index = repo.index().map_err(|e| GitError::Status(e.to_string()))?;
-
-    // Get HEAD tree for comparison - use mutable tree for peel_to_entry_by_path
-    let mut head_tree = match repo.head_commit() {
-        Ok(commit) => Some(commit.tree().map_err(|e| GitError::Head(e.to_string()))?),
-        Err(_) => None, // No commits yet
+/// git add file`) have no index entry; they are the HEAD entries absent
+/// from the index, listed after the index-side entries in HEAD-tree order.
+/// Gitlinks (submodule entries) are compared but never listed as
+/// deletions (mirrors `collect_worktree_files`).
+pub(crate) fn staged_files_with(
+    repo: &gix::Repository,
+    source: &dyn ObjectSource,
+) -> Result<Vec<StagedFileVerdict>> {
+    // BUG-637: the staged pass reads a missing index file as an empty index.
+    let index = crate::index_guard::index_or_empty(repo)?;
+    let head = match head_tree_id(repo)? {
+        Some(root) => Some(HeadEntries::read(source, &root)?),
+        None => None, // Unborn branch: every indexed file is staged.
     };
 
     let mut staged = Vec::new();
     // All paths present in the index — needed to detect staged deletions
-    // (HEAD paths ABSENT from the index) after the single lookup pass.
-    let mut index_paths: std::collections::HashSet<String> = std::collections::HashSet::new();
+    // (HEAD paths ABSENT from the index).
+    let mut index_paths: HashSet<String> = HashSet::new();
     for entry in index.entries() {
-        let path = entry.path(&index);
-        let path_str = path_to_string(path);
-        index_paths.insert(path_str.clone());
-
-        // Check if file differs from HEAD — the ONLY tree comparison issued
-        // for this path. The in-HEAD verdict is computed here and reused
-        // by change-type derivation (BUG-189 R2: no second pass).
-        // The path lookup traverses nested directories properly, e.g.
-        // "spec/features/test.feature" walks spec -> features.
-        let (is_staged, in_head, deleted_from_index) = match &mut head_tree {
-            Some(tree) => match tree.lookup_entry_by_path(&path_str) {
-                Ok(Some(tree_entry)) => (
-                    entry.id != tree_entry.id(),
-                    true,
-                    // A null index OID on a path that exists in HEAD means
-                    // the file was staged as deleted (removed from the
-                    // index) — carried out as a verdict so the change-type
-                    // letter can be derived without another pass.
-                    entry.id.as_slice().iter().all(|&b| b == 0),
-                ),
-                Ok(None) => (true, false, false), // New file (not in HEAD)
-                Err(_) => (true, false, false),   // Error looking up, assume new file
-            },
-            None => (true, false, false), // No HEAD commit, all indexed files are staged
+        let path = path_to_string(entry.path(&index));
+        index_paths.insert(path.clone());
+        let head_entry = head.as_ref().and_then(|head| head.get(&path));
+        let verdict = match head_entry {
+            Some(head_entry) if entry.id != head_entry.id => Some(StagedFileVerdict {
+                in_head: true,
+                // A null index OID on a path that exists in HEAD means
+                // the file was staged as deleted (removed from the index).
+                deleted_from_index: entry.id.is_null(),
+                path,
+            }),
+            Some(_) => None, // Same object as HEAD: not staged.
+            None => Some(StagedFileVerdict {
+                in_head: false,
+                deleted_from_index: false,
+                path,
+            }),
         };
-
-        if is_staged {
-            staged.push(StagedFileVerdict {
-                path: path_str,
-                in_head,
-                deleted_from_index,
-            });
-        }
+        staged.extend(verdict);
     }
 
-    // Staged deletions: a path that exists in the HEAD tree but is ABSENT
-    // from the index cannot be discovered by index-side lookups — it has no
-    // index entry to look up. Enumerate the HEAD tree once (the shared
-    // handle keeps every tree object warm in the ODB cache, so this is a
-    // single linear pass, not re-decoded pack reads) and take the
-    // complement of the index paths.
-    if let Some(head_tree) = &head_tree {
-        let mut head_paths: Vec<String> = Vec::new();
-        collect_head_blob_paths(repo, head_tree, "", &mut head_paths)?;
-        for path in head_paths {
-            if !index_paths.contains(&path) {
+    if let Some(head) = &head {
+        for head_entry in head.iter() {
+            if !head_entry.gitlink && !index_paths.contains(&head_entry.path) {
                 staged.push(StagedFileVerdict {
+                    path: head_entry.path.clone(),
                     in_head: true,
                     deleted_from_index: true,
-                    path,
                 });
             }
         }
@@ -128,40 +117,19 @@ pub(crate) fn staged_files_with_repo(repo: &gix::Repository) -> Result<Vec<Stage
     Ok(staged)
 }
 
-/// Collect every blob / symlink path under `tree` (recursing into
-/// subtrees) into `out` as repo-relative paths. Gitlinks (submodule
-/// entries) are skipped — they are atomic and out of scope for
-/// file-level change detection (mirrors `collect_worktree_files`).
-fn collect_head_blob_paths(
-    repo: &gix::Repository,
-    tree: &gix::Tree,
-    prefix: &str,
-    out: &mut Vec<String>,
-) -> Result<()> {
-    for entry in tree.iter() {
-        let entry = entry.map_err(|e| GitError::Head(e.to_string()))?;
-        let path = if prefix.is_empty() {
-            entry.filename().to_string()
-        } else {
-            format!("{prefix}/{}", entry.filename())
-        };
-        match entry.mode().kind() {
-            gix::object::tree::EntryKind::Tree => {
-                let subtree = repo
-                    .find_object(entry.id())
-                    .map_err(|e| GitError::Head(e.to_string()))?
-                    .into_tree();
-                collect_head_blob_paths(repo, &subtree, &path, out)?;
-            }
-            gix::object::tree::EntryKind::Blob
-            | gix::object::tree::EntryKind::BlobExecutable
-            | gix::object::tree::EntryKind::Link => {
-                out.push(path);
-            }
-            gix::object::tree::EntryKind::Commit => {} // Gitlink: skipped
-        }
+/// The tree of the HEAD commit; `None` when the branch is unborn.
+fn head_tree_id(repo: &gix::Repository) -> Result<Option<gix::ObjectId>> {
+    let head = repo.head().map_err(|e| GitError::Head(e.to_string()))?;
+    if head.is_unborn() {
+        return Ok(None);
     }
-    Ok(())
+    let commit = repo
+        .head_commit()
+        .map_err(|e| GitError::Head(e.to_string()))?;
+    let tree = commit
+        .tree_id()
+        .map_err(|e| GitError::Head(e.to_string()))?;
+    Ok(Some(tree.detach()))
 }
 
 /// Get list of unstaged files (modified files not yet staged)
@@ -193,7 +161,8 @@ pub(crate) fn unstaged_files_with_repo(repo: &gix::Repository) -> Result<Vec<Str
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
-    let index = repo.index().map_err(|e| GitError::Status(e.to_string()))?;
+    // BUG-637: the unstaged pass reads a missing index file as an empty index.
+    let index = crate::index_guard::index_or_empty(repo)?;
 
     for entry in index.entries() {
         let path = entry.path(&index);
@@ -255,9 +224,13 @@ pub fn get_untracked_files(dir: impl AsRef<Path>) -> Result<Vec<String>> {
 }
 
 /// BUG-189 R1: untracked-file walk against an ALREADY OPEN repository
-/// handle (the shared handle keeps the index loaded and the ODB cache
-/// warm; the walk itself is unchanged — see BUG-189 assumption 1 for why
-/// gating it on worktree fs-events is out of scope for this unit).
+/// handle (the shared handle keeps the index loaded and the ODB cache warm).
+///
+/// BUG-592: a working tree with no index file reads as an empty index, so
+/// every file the ignore rules do not exclude is untracked. The walk never
+/// enters a directory the ignore rules exclude: as in git, nothing under an
+/// excluded directory can be re-included, so pruning it changes no result,
+/// only the cost. A path the walk cannot read is an error naming it.
 pub(crate) fn untracked_files_with_repo(repo: &gix::Repository) -> Result<Vec<String>> {
     let mut untracked = Vec::new();
 
@@ -265,7 +238,7 @@ pub(crate) fn untracked_files_with_repo(repo: &gix::Repository) -> Result<Vec<St
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
-    let index = repo.index().map_err(|e| GitError::Status(e.to_string()))?;
+    let index = crate::index_guard::index_or_empty(repo)?;
 
     // Get the excludes stack for proper gitignore checking
     let mut excludes = repo
@@ -276,40 +249,77 @@ pub(crate) fn untracked_files_with_repo(repo: &gix::Repository) -> Result<Vec<St
         )
         .map_err(|e| GitError::Other(format!("Failed to load excludes: {}", e)))?;
 
-    // Walk the working directory
-    for entry in walkdir::WalkDir::new(workdir)
-        .into_iter()
-        .filter_entry(|e| !is_git_dir(e))
-        .filter_map(|e| e.ok())
-    {
-        if entry.file_type().is_file() {
-            let rel_path = entry
-                .path()
-                .strip_prefix(workdir)
-                .map_err(|e| GitError::Other(e.to_string()))?;
-
-            // Convert to forward slashes for git path format
-            let rel_path_str = rel_path.to_string_lossy().replace('\\', "/");
-
-            // Check if file is in index using gix's path conversion
-            let bstr_path = gix::path::into_bstr(rel_path);
-            let is_in_index = index.entry_index_by_path(&bstr_path).is_ok();
-
-            if !is_in_index {
-                // Check if file is ignored using proper gitignore support
-                let is_ignored = excludes
-                    .at_path(rel_path, Some(gix::index::entry::Mode::FILE))
-                    .map(|platform| platform.is_excluded())
-                    .unwrap_or(false);
-
-                if !is_ignored {
-                    untracked.push(rel_path_str);
-                }
+    let mut walk = walkdir::WalkDir::new(workdir).into_iter();
+    while let Some(entry) = walk.next() {
+        let entry = match entry {
+            Ok(entry) => entry,
+            // A path removed between being listed and being read is no
+            // longer in the working tree, so it has nothing to list.
+            Err(e)
+                if e.io_error().map(std::io::Error::kind) == Some(std::io::ErrorKind::NotFound) =>
+            {
+                continue
             }
+            Err(e) => {
+                return Err(GitError::Status(format!(
+                    "cannot walk the working tree: {e}"
+                )))
+            }
+        };
+        if entry.depth() == 0 {
+            continue;
+        }
+        let rel_path = entry
+            .path()
+            .strip_prefix(workdir)
+            .map_err(|e| GitError::Other(e.to_string()))?;
+
+        if is_git_dir(&entry) {
+            if entry.file_type().is_dir() {
+                walk.skip_current_dir();
+            }
+            continue;
+        }
+        if entry.file_type().is_dir() {
+            if is_excluded(&mut excludes, rel_path, gix::index::entry::Mode::DIR)? {
+                walk.skip_current_dir();
+            }
+            continue;
+        }
+        if !entry.file_type().is_file() {
+            continue;
+        }
+
+        // Check if file is in index using gix's path conversion
+        let bstr_path = gix::path::into_bstr(rel_path);
+        if index.entry_index_by_path(&bstr_path).is_ok() {
+            continue;
+        }
+        if !is_excluded(&mut excludes, rel_path, gix::index::entry::Mode::FILE)? {
+            // Convert to forward slashes for git path format
+            untracked.push(rel_path.to_string_lossy().replace('\\', "/"));
         }
     }
 
     Ok(untracked)
+}
+
+/// Whether the repository's ignore rules exclude `rel_path` (checked as a
+/// file or a directory per `mode`).
+fn is_excluded(
+    excludes: &mut gix::AttributeStack<'_>,
+    rel_path: &Path,
+    mode: gix::index::entry::Mode,
+) -> Result<bool> {
+    excludes
+        .at_path(rel_path, Some(mode))
+        .map(|platform| platform.is_excluded())
+        .map_err(|e| {
+            GitError::Status(format!(
+                "cannot read the ignore rules for '{}': {e}",
+                rel_path.display()
+            ))
+        })
 }
 
 /// Get current branch name

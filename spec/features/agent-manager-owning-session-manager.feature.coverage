@@ -5,32 +5,29 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "127-175",
+          "lines": "135-192",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
                 52,
                 53,
                 54,
                 55,
                 56,
                 57,
-                58
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                68,
+                69
+              ],
+              "firstLine": "///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.",
+              "lastLine": ""
             }
           ]
         }
@@ -41,15 +38,8 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "180-219",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/session_manager.rs",
-              "lines": [
-                709
-              ]
-            }
-          ]
+          "lines": "197-236",
+          "implMappings": []
         }
       ]
     },
@@ -58,14 +48,16 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "237-324",
+          "lines": "237-328",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
               "lines": [
-                693,
-                694
-              ]
+                10,
+                11
+              ],
+              "firstLine": ".active_session_id",
+              "lastLine": ".read()"
             }
           ]
         }
@@ -76,58 +68,96 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "330-413",
+          "lines": "333-416",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
                 52,
                 53,
                 54,
                 55,
                 56,
                 57,
-                58
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                68,
+                69
+              ],
+              "firstLine": "///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "NAPI path falls back to the global singleton when no owning manager is set",
+      "name": "A spawner with no owning manager is refused",
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "424-488",
+          "lines": "446-479",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// BUG-405: the refusal for an AgentManager action from a session with no",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_role and message resolve the subordinate on the owning manager",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "530-679",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "AgentManagerAction::Close { session_id } => {",
+              "lastLine": "calling_session_id,"
             }
           ]
         }
@@ -138,84 +168,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "501-561",
+          "lines": "492-552",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_manager_handler.rs",
               "lines": [
-                839,
-                840,
-                841,
-                842,
-                843,
-                844,
-                845,
-                846,
-                847,
-                848,
-                849,
-                850,
-                851,
-                852,
-                853,
-                854,
-                855,
-                856,
-                857,
-                858,
-                859,
-                860,
-                861,
-                862,
-                863,
-                864,
-                865,
-                866,
-                867,
-                868,
-                869,
-                870,
-                871,
-                872,
-                873,
-                874,
-                875,
-                876,
-                877,
-                878,
-                879,
-                880,
-                881,
-                882,
-                883,
-                884,
-                885,
-                886,
-                887,
-                888,
-                889,
-                890,
-                891,
-                892,
-                893,
-                894,
-                895,
-                896,
-                897,
-                898,
-                899,
-                900,
-                901,
-                902,
-                903,
-                904,
-                905,
-                906,
-                907,
-                908,
-                909,
-                910,
-                911,
                 912,
                 913,
                 914,
@@ -244,41 +201,74 @@
                 937,
                 938,
                 939,
-                940
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "set_role and message resolve the subordinate on the owning manager",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/rpc386_owning_session_manager.rs",
-          "lines": "566-717",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/agent_manager_handler.rs",
-              "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89
-              ]
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988,
+                989,
+                990,
+                991,
+                992,
+                993,
+                994,
+                995,
+                996,
+                997,
+                998,
+                999,
+                1000,
+                1001,
+                1002,
+                1003,
+                1004
+              ],
+              "firstLine": "async fn handle_await_idle(",
+              "lastLine": "tokio::select! {"
             }
           ]
         }
@@ -294,8 +284,8 @@
     ],
     "implFiles": [
       "rust/agent-loop/src/agent_manager_handler.rs",
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/session_manager/manager_impl_3.rs"
     ],
-    "totalLinesCovered": 711
+    "totalLinesCovered": 675
   }
 }

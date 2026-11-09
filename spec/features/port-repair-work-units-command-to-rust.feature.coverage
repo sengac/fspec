@@ -10,6 +10,7 @@
             {
               "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
+                116,
                 117,
                 118,
                 119,
@@ -32,8 +33,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -173,7 +172,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "/// Read a string array field from a work unit's `extra` map. Returns an",
+              "lastLine": "#![allow("
             }
           ]
         }
@@ -189,6 +190,7 @@
             {
               "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
+                116,
                 117,
                 118,
                 119,
@@ -211,8 +213,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -352,7 +352,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "/// Read a string array field from a work unit's `extra` map. Returns an",
+              "lastLine": "#![allow("
             }
           ]
         }
@@ -368,6 +370,7 @@
             {
               "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
+                116,
                 117,
                 118,
                 119,
@@ -390,8 +393,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -531,7 +532,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "/// Read a string array field from a work unit's `extra` map. Returns an",
+              "lastLine": "#![allow("
             }
           ]
         }
@@ -547,6 +550,7 @@
             {
               "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
+                116,
                 117,
                 118,
                 119,
@@ -569,8 +573,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -710,7 +712,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "/// Read a string array field from a work unit's `extra` map. Returns an",
+              "lastLine": "#![allow("
             }
           ]
         }
@@ -721,11 +725,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/repair_work_units.rs",
-          "lines": "236-262",
+          "lines": "246-269",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/repair_work_units.rs",
               "lines": [
+                116,
                 117,
                 118,
                 119,
@@ -748,8 +753,6 @@
                 136,
                 137,
                 138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -889,7 +892,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "/// Read a string array field from a work unit's `extra` map. Returns an",
+              "lastLine": "#![allow("
             }
           ]
         }
@@ -906,6 +911,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/repair_work_units.rs"
     ],
-    "totalLinesCovered": 1010
+    "totalLinesCovered": 1002
   }
 }

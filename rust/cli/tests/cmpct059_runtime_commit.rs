@@ -44,6 +44,7 @@ fn runtime() -> Result<(Session, SelectedRequestPreparer), Box<dyn std::error::E
 #[serial_test::serial]
 fn runtime_installation_reconciles_only_the_durable_promoted_generation() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("runtime", directory.path(), "openai")?;
@@ -93,6 +94,7 @@ fn runtime_installation_reconciles_only_the_durable_promoted_generation() -> Tes
 fn runtime_rejects_a_candidate_that_drops_authoritative_file_identity() -> TestResult {
     // @step Given a captured durable source with an authoritative file modification
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest =
@@ -137,6 +139,7 @@ fn runtime_rejects_a_candidate_that_drops_authoritative_file_identity() -> TestR
 fn runtime_assembles_missing_file_identity_and_retains_mandatory_reminders() -> TestResult {
     // @step Given a captured durable source with an authoritative file modification and mandatory reminder
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest =
@@ -183,6 +186,7 @@ fn runtime_assembles_missing_file_identity_and_retains_mandatory_reminders() -> 
 fn runtime_publication_failure_cannot_authorize_ordinary_inference() -> TestResult {
     // @step Given a captured durable source and a real selected request serializer
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("runtime failure", directory.path(), "openai")?;

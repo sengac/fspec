@@ -4,8 +4,8 @@
       "name": "Helper clamps a context-growth ratio to zero",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "57-77",
+          "file": "rust/cli/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "20-40",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -17,7 +17,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -27,8 +29,8 @@
       "name": "Helper reports a normal reduction unchanged",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "83-97",
+          "file": "rust/cli/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "46-60",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -40,7 +42,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,8 +54,8 @@
       "name": "Helper returns zero when the original token count is zero",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "103-117",
+          "file": "rust/cli/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "66-80",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -63,7 +67,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,8 +79,8 @@
       "name": "Helper returns zero when compacted tokens equal original tokens",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "123-137",
+          "file": "rust/cli/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "86-100",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -86,7 +92,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -96,61 +104,73 @@
       "name": "compact_session RPC result never ships a negative ratio when context grows",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "150-191",
+          "file": "rust/sessions/tests/rpc418_compact_session/compression_ratio_clamping.rs",
+          "lines": "4-51",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "NAPI session_compact result never ships a negative ratio when context grows",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/cmpct039_ratio_clamp_test.rs",
-          "lines": "204-242",
-          "implMappings": [
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "// RPC-418 / BUG-516: manual /compact queues the compactor sub-agent",
+              "lastLine": "self.get_session(&session_id.value)?.start_manual_compaction()"
+            },
             {
-              "file": "rust/napi/src/session_bindings.rs",
+              "file": "rust/sessions/src/background_session/compaction_handoff.rs",
               "lines": [
-                3131,
-                3132,
-                3133,
-                3134,
-                3135,
-                3136,
-                3137,
-                3138,
-                3139,
-                3140,
-                3141,
-                3142,
-                3143,
-                3144,
-                3145,
-                3146
-              ]
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "pub fn start_manual_compaction(&self) -> Result<CompactionResult, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,17 +178,18 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/cmpct039_ratio_clamp_test.rs"
+      "rust/cli/tests/cmpct039_ratio_clamp_test.rs",
+      "rust/sessions/tests/rpc418_compact_session/compression_ratio_clamping.rs"
     ],
     "implFiles": [
       "rust/cli/src/interactive_helpers.rs",
-      "rust/sessions/src/handle_impl.rs",
-      "rust/napi/src/session_bindings.rs"
+      "rust/sessions/src/handle_impl/handle_impl_2.rs",
+      "rust/sessions/src/background_session/compaction_handoff.rs"
     ],
-    "totalLinesCovered": 207
+    "totalLinesCovered": 193
   }
 }

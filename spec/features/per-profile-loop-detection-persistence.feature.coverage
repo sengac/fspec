@@ -10,6 +10,7 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
+                235,
                 236,
                 237,
                 238,
@@ -43,9 +44,10 @@
                 266,
                 267,
                 268,
-                269,
-                270
-              ]
+                269
+              ],
+              "firstLine": "// PROV-145: write the loop-detection toggle when set (including the",
+              "lastLine": "}"
             }
           ]
         }
@@ -61,6 +63,7 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
+                235,
                 236,
                 237,
                 238,
@@ -71,9 +74,10 @@
                 243,
                 244,
                 245,
-                246,
-                247
-              ]
+                246
+              ],
+              "firstLine": "// PROV-145: write the loop-detection toggle when set (including the",
+              "lastLine": "// RIG-014 default of 160."
             }
           ]
         }
@@ -89,6 +93,7 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
+                162,
                 163,
                 164,
                 165,
@@ -98,18 +103,7 @@
                 169,
                 170,
                 171,
-                172
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/sessions/tests/prov145_loop_detection_persistence.rs",
-          "lines": "151-203",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/profile_persistence.rs",
-              "lines": [
+                184,
                 185,
                 186,
                 187,
@@ -120,9 +114,10 @@
                 192,
                 193,
                 194,
-                195,
-                196
-              ]
+                195
+              ],
+              "firstLine": "fn ensure_object<'a>(",
+              "lastLine": "profile,"
             }
           ]
         }
@@ -134,80 +129,7 @@
         {
           "file": "rust/sessions/tests/prov145_loop_detection_persistence.rs",
           "lines": "205-243",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/profile_persistence.rs",
-              "lines": [
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413,
-                414,
-                415,
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -219,37 +141,39 @@
           "lines": "244-286",
           "implMappings": [
             {
-              "file": "rust/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections/config.rs",
               "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157
-              ]
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "/// PROV-144: per-profile Max Images limit for the Read tool's image",
+              "lastLine": "#[serde("
             }
           ]
         }
@@ -263,14 +187,16 @@
           "lines": "288-326",
           "implMappings": [
             {
-              "file": "rust/sessions/src/profile_sections.rs",
+              "file": "rust/sessions/src/profile_sections/config.rs",
               "lines": [
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub max_images: Option<u32>,",
+              "lastLine": "/// sessions."
             }
           ]
         }
@@ -286,8 +212,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/profile_persistence.rs",
-      "rust/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections/config.rs"
     ],
-    "totalLinesCovered": 470
+    "totalLinesCovered": 350
   }
 }

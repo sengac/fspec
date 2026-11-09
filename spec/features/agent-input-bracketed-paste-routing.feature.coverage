@@ -5,106 +5,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "72-101",
+          "lines": "46-76",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CRLF line endings are normalized to LF on paste",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "107-136",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/text_normalize.rs",
-              "lines": [
-                18,
-                19,
-                20
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
-              "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Paste is inserted at the cursor preserving existing text",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "142-154",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
-              "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Paste while a modal is open is delivered to the modal intact",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "160-203",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/compositor.rs",
-              "lines": [
+                184,
+                185,
+                186,
+                187,
                 188,
                 189,
                 190,
@@ -116,19 +25,115 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "pub(crate) fn route_paste(&mut self, text: &str) -> EventResult {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Paste while the session is compacting is suppressed",
+      "name": "CRLF line endings are normalized to LF on paste",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "209-234",
+          "lines": "81-111",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/text_normalize.rs",
+              "lines": [
+                18,
+                19,
+                20
+              ],
+              "firstLine": "pub(crate) fn normalize_line_endings(text: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "pub(super) fn handle_paste(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paste is inserted at the cursor preserving existing text",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "116-129",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Paste while a modal is open is delivered to the modal intact",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "134-178",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/compositor.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "/// RPC-403: forward the REAL `Event::Paste(String)` through the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paste while the session is compacting lands in the composer",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "183-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
@@ -144,20 +149,25 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(super) fn handle_paste(",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
               "lines": [
+                240,
+                241,
+                242,
                 243,
                 244,
                 245,
                 246,
                 247,
-                248,
-                249,
-                250
-              ]
+                248
+              ],
+              "firstLine": "// TUI-115: the composer stays editable while Compacting (Enter",
+              "lastLine": "self.sync_popups();"
             }
           ]
         }
@@ -168,7 +178,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
-          "lines": "241-273",
+          "lines": "211-244",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
@@ -177,7 +187,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "let mut ta = TextArea::new(lines);",
+              "lastLine": "ta.move_cursor(tui_textarea::CursorMove::End);"
             }
           ]
         }
@@ -195,10 +207,10 @@
       "rust/fspec-tui/src/app/events.rs",
       "rust/fspec-tui/src/text_normalize.rs",
       "rust/fspec-tui/src/views/agent/multiline_input_paste.rs",
-      "rust/fspec-tui/src/views/agent/multiline_input.rs",
       "rust/fspec-tui/src/compositor.rs",
-      "rust/fspec-tui/src/views/agent/dispatch.rs"
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input.rs"
     ],
-    "totalLinesCovered": 253
+    "totalLinesCovered": 259
   }
 }

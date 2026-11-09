@@ -4,12 +4,17 @@
       "name": "build_service constructs a real SessionManager and passes it via with_session_manager",
       "testMappings": [
         {
-          "file": "rust/fspec/src/common.rs",
-          "lines": "565-668",
+          "file": "rust/fspec/src/common/tests/part_1.rs",
+          "lines": "3-108",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
                 80,
                 81,
                 82,
@@ -29,13 +34,10 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                99
+              ],
+              "firstLine": "// persistence-touching code path can observe it (including any",
+              "lastLine": "// RPC-044: construct a real SessionManager and pass it as a"
             }
           ]
         }
@@ -45,8 +47,8 @@
       "name": "rust/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi",
       "testMappings": [
         {
-          "file": "rust/fspec/src/common.rs",
-          "lines": "660-680",
+          "file": "rust/fspec/src/common/tests/part_1.rs",
+          "lines": "110-134",
           "implMappings": [
             {
               "file": "rust/fspec/Cargo.toml",
@@ -56,7 +58,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "codelet-core.workspace = true",
+              "lastLine": "# this, HistoryStore::new() returns Err and Shift+↑/↓ silently does"
             }
           ]
         }
@@ -66,12 +70,17 @@
       "name": "build_service returns a SharedFspecService whose session-manager handle has been attached",
       "testMappings": [
         {
-          "file": "rust/fspec/src/common.rs",
-          "lines": "565-668",
+          "file": "rust/fspec/src/common/tests/part_1.rs",
+          "lines": "3-108",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
                 80,
                 81,
                 82,
@@ -91,13 +100,10 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                99
+              ],
+              "firstLine": "// persistence-touching code path can observe it (including any",
+              "lastLine": "// RPC-044: construct a real SessionManager and pass it as a"
             }
           ]
         }
@@ -109,12 +115,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec/src/common.rs"
+      "rust/fspec/src/common/tests/part_1.rs"
     ],
     "implFiles": [
       "rust/fspec/src/common.rs",
       "rust/fspec/Cargo.toml"
     ],
-    "totalLinesCovered": 284
+    "totalLinesCovered": 292
   }
 }

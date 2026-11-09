@@ -1,82 +1,108 @@
 {
   "scenarios": [
     {
-      "name": "Fix field name mismatch in compact-work-unit",
-      "testMappings": []
-    },
-    {
       "name": "Prevent ID collision after compaction",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/stable-indices-bug-fixes.test.ts",
-          "lines": "133-210",
+          "file": "rust/fspec-core/tests/idx002_compaction_counters_and_done_order.rs",
+          "lines": "103-168",
           "implMappings": [
             {
-              "file": "src/commands/compact-work-unit.ts",
+              "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
               "lines": [
-                136
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "// Reset the four nextId counters to the new array lengths (mirrors",
+              "lastLine": ".insert(\"nextNoteId\".to_string(), Value::from(next_note_id));"
             }
           ]
         }
       ]
     },
     {
-      "name": "Fix state sorting loss during auto-compact",
-      "testMappings": []
-    },
-    {
-      "name": "Preserve state sorting through auto-compact",
+      "name": "Preserve the done order through auto-compact",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/stable-indices-bug-fixes.test.ts",
-          "lines": "213-295",
+          "file": "rust/fspec-core/tests/idx002_compaction_counters_and_done_order.rs",
+          "lines": "170-217",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
               "lines": [
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465,
-                466,
-                467,
-                468
-              ]
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ],
+              "firstLine": "pub(super) fn move_state(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ],
+              "firstLine": "// Move the id between state arrays.",
+              "lastLine": ""
             }
           ]
         }
       ]
-    },
-    {
-      "name": "Update help documentation for field name consistency",
-      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 5,
+    "totalScenarios": 2,
     "coveredScenarios": 2,
-    "coveragePercent": 40,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/stable-indices-bug-fixes.test.ts"
+      "rust/fspec-core/tests/idx002_compaction_counters_and_done_order.rs"
     ],
     "implFiles": [
-      "src/commands/compact-work-unit.ts",
-      "src/commands/update-work-unit-status.ts"
+      "rust/fspec-core/src/commands/compact_work_unit.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status.rs"
     ],
-    "totalLinesCovered": 182
+    "totalLinesCovered": 161
   }
 }

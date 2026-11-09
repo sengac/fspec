@@ -34,7 +34,8 @@ fn restores_from_fspec_config_tui_last_used_model() {
     //  feeds the resolver its persisted string.)
 
     // @step When startup model initialization runs
-    let persisted = load_persisted_model_string_from(dir.path());
+    let persisted =
+        load_persisted_model_string_from(dir.path()).expect("the persisted model loads");
 
     // @step Then the persisted model string is read from fspec-config.json tui.lastUsedModel
     assert_eq!(persisted.as_deref(), Some("anthropic/claude-opus-4"));
@@ -58,7 +59,8 @@ fn reads_legacy_default_model_json_when_config_has_none() {
     .unwrap();
 
     // @step When startup model initialization runs
-    let persisted = load_persisted_model_string_from(dir.path());
+    let persisted =
+        load_persisted_model_string_from(dir.path()).expect("the persisted model loads");
 
     // @step Then the persisted model is read once from the legacy default-model.json
     assert_eq!(persisted.as_deref(), Some("openai/gpt-4o"));

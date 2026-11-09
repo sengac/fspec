@@ -11,8 +11,7 @@
 //! guards — a new drag replaces the old selection, and a quick click with
 //! no prior selection stays inert — already pass.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use crossterm::event::{MouseButton, MouseEventKind};
 
 mod common;
@@ -37,13 +36,13 @@ use codelet_fspec_tui::Action;
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_clears_an_active_scrollback_selection() {
+fn a_quick_click_clears_an_active_scrollback_selection() -> TestResult {
     // @step Given a scrollback with an active highlighted text selection and mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "Hello world");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "Hello world")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
                        // Drag the whole row (col 0 → far edge) then release to commit + keep
                        // the highlight, establishing an active selection.
@@ -53,10 +52,10 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 79, rect_y));
     drain(&mut app);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert!(selection_active(&app), "precondition: selection is active");
     assert!(highlight_spans(&app) > 0, "precondition: highlight painted");
-    let clip_before = clip_bytes(&clip);
+    let clip_before = clip_bytes(&clip)?;
     assert!(
         !clip_before.is_empty(),
         "precondition: original copy happened"
@@ -74,7 +73,7 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
         !selection_active(&app),
         "a quick click must clear the active selection (rule [1])"
     );
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert_eq!(
         highlight_spans(&app),
         0,
@@ -83,10 +82,11 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
 
     // @step And nothing new is written to the clipboard by the click
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         clip_before,
         "the click must not write anything new to the clipboard"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -94,7 +94,7 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_clears_an_active_input_composer_selection() {
+fn a_quick_click_clears_an_active_input_composer_selection() -> TestResult {
     use codelet_fspec_tui::views::agent::multiline_input::MultiLineInput;
     use crossterm::event::{KeyModifiers, MouseEvent};
     use ratatui::layout::Rect;
@@ -147,6 +147,7 @@ fn a_quick_click_clears_an_active_input_composer_selection() {
         !input.text_selection_active(),
         "a quick click must clear the composer selection (rule [1])"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -154,14 +155,14 @@ fn a_quick_click_clears_an_active_input_composer_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_clears_an_active_turn_content_modal_selection() {
+fn a_quick_click_clears_an_active_turn_content_modal_selection() -> TestResult {
     use modal::{
         clip_bytes as mclip, drain_app, modal_body_rect, modal_selection_active, open_modal_app,
     };
 
     // @step Given an open turn-content modal with an active text selection
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
-    let (mut app, clip) = open_modal_app(body, 80, 24);
+    let (mut app, clip) = open_modal_app(body, 80, 24)?;
     let r = modal_body_rect(80, 24, body);
     let _ = app.handle_event(&modal::mouse(
         MouseEventKind::Down(MouseButton::Left),
@@ -185,7 +186,7 @@ fn a_quick_click_clears_an_active_turn_content_modal_selection() {
         modal_selection_active(&app),
         "precondition: modal selection is active"
     );
-    let clip_before = mclip(&clip);
+    let clip_before = mclip(&clip)?;
 
     // @step When I quickly click in the modal body without dragging
     let _ = app.handle_event(&modal::mouse(
@@ -209,10 +210,11 @@ fn a_quick_click_clears_an_active_turn_content_modal_selection() {
 
     // @step And nothing new is written to the clipboard by the click
     assert_eq!(
-        mclip(&clip),
+        mclip(&clip)?,
         clip_before,
         "the click must not write anything new to the clipboard"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -220,16 +222,16 @@ fn a_quick_click_clears_an_active_turn_content_modal_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_clears_an_active_board_details_strip_selection() {
+fn a_quick_click_clears_an_active_board_details_strip_selection() -> TestResult {
     use board::{board_with_clipboard, details_rect, strip_selection_active, wu};
 
-    fn bdrain(rx: &mut tokio::sync::mpsc::UnboundedReceiver<Action>) {
+    fn bdrain(rx: &mut board::BoardRx) {
         while rx.try_recv().is_ok() {}
     }
 
     // @step Given a board details strip with an active text selection
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
-    let (view, store, mut rx, _clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, _clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     let _ = view.handle_event(
         &board::mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
@@ -268,6 +270,7 @@ fn a_quick_click_clears_an_active_board_details_strip_selection() {
         !strip_selection_active(&view),
         "a quick click must clear the strip selection (rule [1])"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -275,14 +278,14 @@ fn a_quick_click_clears_an_active_board_details_strip_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn starting_a_new_drag_replaces_the_old_selection() {
+fn starting_a_new_drag_replaces_the_old_selection() -> TestResult {
     // @step Given a scrollback with an active highlighted text selection and mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "Hello world");
-    let _ = seed_line(&mut app, "Second line");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "Hello world")?;
+    let _ = seed_line(&mut app, "Second line")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
                        // Establish an active selection on the first row ("Hello world").
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 0, rect_y));
@@ -292,7 +295,7 @@ fn starting_a_new_drag_replaces_the_old_selection() {
     let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 79, rect_y));
     drain(&mut app);
     assert!(selection_active(&app), "precondition: selection is active");
-    let clip_before = clip_bytes(&clip);
+    let clip_before = clip_bytes(&clip)?;
 
     // @step When I press and drag to select different text and release
     // A fresh Down → Drag → Up over the SECOND row ("Second line").
@@ -322,12 +325,13 @@ fn starting_a_new_drag_replaces_the_old_selection() {
     );
 
     // @step And the newly selected text is written to the clipboard
-    let appended = clip_bytes(&clip)[clip_before.len()..].to_vec();
+    let appended = clip_bytes(&clip)?[clip_before.len()..].to_vec();
     assert_eq!(
         appended,
         osc52("Second line"),
         "the new drag must copy the newly selected text"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -335,13 +339,13 @@ fn starting_a_new_drag_replaces_the_old_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_with_no_active_selection_stays_inert() {
+fn a_quick_click_with_no_active_selection_stays_inert() -> TestResult {
     // @step Given a scrollback with no active text selection and mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "Hello world");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "Hello world")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
     assert!(!selection_active(&app), "precondition: no selection active");
 
@@ -359,7 +363,8 @@ fn a_quick_click_with_no_active_selection_stays_inert() {
 
     // @step And nothing is written to the clipboard
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "a quick click must not write to the clipboard"
     );
+    Ok(())
 }

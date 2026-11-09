@@ -10,7 +10,6 @@ use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::streaming::StreamingCompletionResponse;
 use std::pin::Pin;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 
@@ -151,7 +150,7 @@ impl Server {
     }
 
     pub async fn wait(&mut self) -> TestResult {
-        tokio::time::timeout(Duration::from_secs(5), &mut self.task).await???;
+        codelet_test_helpers::deadlock_guard("&mut self.task", &mut self.task).await???;
         Ok(())
     }
 }

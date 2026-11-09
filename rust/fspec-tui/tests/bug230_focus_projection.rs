@@ -1,3 +1,4 @@
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, FspecBackend};
@@ -9,23 +10,11 @@ fn session(value: &str) -> SessionId {
     SessionId::new(value)
 }
 
-async fn settle(app: &mut codelet_fspec_tui::App) {
-    loop {
-        while let Some(task) = app.next_pending_task() {
-            assert!(task.await.is_ok());
-        }
-        let Some(action) = app.try_recv_action() else {
-            break;
-        };
-        app.dispatch(action);
-    }
-}
-
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_an_older_update_cannot_resurrect_cleared_focus() {
+async fn scenario_an_older_update_cannot_resurrect_cleared_focus() -> TestResult {
     // @step Given a session whose card focus was explicitly cleared
-    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()));
+    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()))?;
     app.dispatch(Action::SessionCreated(session("first")));
     focus(&mut app, "first", 4, Some("AUTH-001"));
     focus(&mut app, "first", 5, None);
@@ -34,8 +23,6 @@ async fn scenario_an_older_update_cannot_resurrect_cleared_focus() {
     focus(&mut app, "first", 4, Some("AUTH-001"));
     focus(&mut app, "first", 5, None);
     focus(&mut app, "first", 5, Some("AUTH-002"));
-    app.dispatch(Action::WorkUnitAttached(session("first"), card("AUTH-001")));
-    app.dispatch(Action::AttachSession("AUTH-001".into(), session("first")));
 
     // @step Then the session remains open without an active card
     assert_eq!(app.agent_view_store().open_sessions().len(), 1);
@@ -44,13 +31,14 @@ async fn scenario_an_older_update_cannot_resurrect_cleared_focus() {
     // @step And its board badge remains absent
     assert!(app.board_store().session_for("AUTH-001").is_none());
     assert!(app.board_store().session_for("AUTH-002").is_none());
+    Ok(())
 }
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_a_reconnect_snapshot_restores_focus_without_local_attachment() {
+async fn scenario_a_reconnect_snapshot_restores_focus_without_local_attachment() -> TestResult {
     // @step Given a newly connected client observing two existing sessions
-    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()));
+    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()))?;
     app.dispatch(Action::SessionCreated(session("first")));
     app.dispatch(Action::SessionCreated(session("second")));
 
@@ -70,13 +58,15 @@ async fn scenario_a_reconnect_snapshot_restores_focus_without_local_attachment()
     focus(&mut app, "first", 3, Some("AUTH-001"));
     assert_eq!(chip_ids(&app), vec![Some("AUTH-002".to_string()), None]);
     assert!(app.board_store().session_for("AUTH-001").is_none());
+    Ok(())
 }
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_several_sessions_can_share_a_card_without_losing_their_individual_focus() {
+async fn scenario_several_sessions_can_share_a_card_without_losing_their_individual_focus(
+) -> TestResult {
     // @step Given two open sessions focused on card "AUTH-001"
-    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()));
+    let (mut app, _) = common::test_app(Arc::new(common::MockBackend::new()))?;
     for id in ["first", "second"] {
         app.dispatch(Action::SessionCreated(session(id)));
         focus(&mut app, id, 1, Some("AUTH-001"));
@@ -103,59 +93,14 @@ async fn scenario_several_sessions_can_share_a_card_without_losing_their_individ
     );
     app.dispatch(Action::SessionRemoved(session("second")));
     assert!(app.board_store().session_for("AUTH-001").is_none());
+    Ok(())
 }
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_explicit_assignment_into_an_existing_session_uses_the_authoritative_focus_path() {
-    // @step Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
-    let mock = Arc::new(common::MockBackend::new());
-    let (mut app, _) = common::test_app(mock.clone());
-    app.dispatch(Action::SessionCreated(session("first")));
-    focus(&mut app, "first", 0, Some("AUTH-001"));
-    app.dispatch(Action::WorkUnitsLoaded(vec![
-        codelet_rpc_types::WorkUnitInfo {
-            id: "AUTH-002".into(),
-            title: "Next".into(),
-            status: "implementing".into(),
-            work_type: "story".into(),
-            description: None,
-            estimate: None,
-            epic: None,
-            attachments: Vec::new(),
-            last_state_change_at: None,
-        },
-    ]));
-
-    // @step When the user explicitly assigns card "AUTH-002" to that session
-    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
-    settle(&mut app).await;
-
-    // @step Then the backend and all card displays identify "AUTH-002"
-    assert_eq!(
-        mock.last_set_work_unit_context()
-            .and_then(|(_, context)| context)
-            .map(|context| context.id),
-        Some("AUTH-002".into())
-    );
-    assert_eq!(chip_ids(&app), vec![Some("AUTH-002".into())]);
-    assert!(app.board_store().session_for("AUTH-001").is_none());
-    assert_eq!(
-        app.board_store().session_for("AUTH-002"),
-        Some(&session("first"))
-    );
-
-    // @step And a delayed acknowledgement for the previous card cannot replace the newer focus
-    app.dispatch(Action::WorkUnitAttached(session("first"), card("AUTH-001")));
-    focus(&mut app, "first", 0, Some("AUTH-001"));
-    assert_eq!(chip_ids(&app), vec![Some("AUTH-002".into())]);
-}
-
-/// Feature: spec/features/session-work-unit-focus-projection.feature
-#[tokio::test]
-async fn scenario_focused_card_changes_are_visible_on_board_agent_and_mux_surfaces() {
+async fn scenario_focused_card_changes_are_visible_on_board_agent_and_mux_surfaces() -> TestResult {
     // @step Given an open session with authoritative focus on card "AUTH-001"
-    let (mut app, mut terminal) = common::test_app(Arc::new(common::MockBackend::new()));
+    let (mut app, mut terminal) = common::test_app(Arc::new(common::MockBackend::new()))?;
     app.dispatch(Action::SessionCreated(session("first")));
     focus(&mut app, "first", 1, Some("AUTH-001"));
 
@@ -179,7 +124,7 @@ async fn scenario_focused_card_changes_are_visible_on_board_agent_and_mux_surfac
             );
         }
         app.navigator_mut().active_view = surface;
-        let buffer = common::render_one_frame(&mut terminal, &mut app);
+        let buffer = common::render_one_frame(&mut terminal, &mut app)?;
         let rendered: String = buffer
             .content
             .iter()
@@ -198,6 +143,7 @@ async fn scenario_focused_card_changes_are_visible_on_board_agent_and_mux_surfac
             "stale chip on {surface:?}: {rendered}"
         );
     }
+    Ok(())
 }
 
 fn focus(app: &mut codelet_fspec_tui::App, id: &str, revision: u64, value: Option<&str>) {
@@ -211,6 +157,14 @@ fn focus(app: &mut codelet_fspec_tui::App, id: &str, revision: u64, value: Optio
     ));
 }
 
+fn card(value: &str) -> WorkUnitContext {
+    WorkUnitContext {
+        id: value.to_string(),
+        title: value.to_string(),
+        status: "implementing".to_string(),
+    }
+}
+
 fn chip_ids(app: &codelet_fspec_tui::App) -> Vec<Option<String>> {
     let store = app.agent_view_store();
     let active = codelet_fspec_tui::views::board::menu_snapshot::active_menu_session_ids(store);
@@ -220,20 +174,12 @@ fn chip_ids(app: &codelet_fspec_tui::App) -> Vec<Option<String>> {
         .collect()
 }
 
-fn card(value: &str) -> WorkUnitContext {
-    WorkUnitContext {
-        id: value.to_string(),
-        title: value.to_string(),
-        status: "implementing".to_string(),
-    }
-}
-
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_switching_focus_updates_the_menu_and_board_badge_together() {
+async fn scenario_switching_focus_updates_the_menu_and_board_badge_together() -> TestResult {
     // @step Given an open session working on card "AUTH-001"
     let backend: Arc<dyn FspecBackend> = Arc::new(common::MockBackend::new());
-    let (mut app, _terminal) = common::test_app(backend);
+    let (mut app, _terminal) = common::test_app(backend)?;
     app.dispatch(Action::SessionCreated(session("first")));
     focus(&mut app, "first", 1, Some("AUTH-001"));
 
@@ -252,16 +198,17 @@ async fn scenario_switching_focus_updates_the_menu_and_board_badge_together() {
         app.board_store().session_for("AUTH-002"),
         Some(&session("first"))
     );
+    Ok(())
 }
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_a_cleared_session_does_not_inherit_another_sessions_card() {
+async fn scenario_a_cleared_session_does_not_inherit_another_sessions_card() -> TestResult {
     // @step Given a session working on "AUTH-001" and another session with no activity focus
     let backend: Arc<dyn FspecBackend> = Arc::new(common::MockBackend::new());
-    let (mut app, mut terminal) = common::test_app(backend);
+    let (mut app, mut terminal) = common::test_app(backend)?;
     app.dispatch(Action::SessionCreated(session("first")));
-    app.dispatch(Action::WorkUnitAttached(session("first"), card("AUTH-001")));
+    focus(&mut app, "first", 1, Some("AUTH-001"));
     app.dispatch(Action::SessionCreated(session("second")));
     focus(&mut app, "second", 0, None);
 
@@ -271,7 +218,7 @@ async fn scenario_a_cleared_session_does_not_inherit_another_sessions_card() {
         Some("implementing".to_string()),
     );
     app.dispatch(Action::OpenAgentView(Some(session("second"))));
-    let buffer = common::render_one_frame(&mut terminal, &mut app);
+    let buffer = common::render_one_frame(&mut terminal, &mut app)?;
     let header: String = (0..buffer.area.width)
         .map(|column| buffer[(column, 0)].symbol())
         .collect();
@@ -290,4 +237,5 @@ async fn scenario_a_cleared_session_does_not_inherit_another_sessions_card() {
             .map(|context| context.id.as_str()),
         Some("AUTH-001")
     );
+    Ok(())
 }

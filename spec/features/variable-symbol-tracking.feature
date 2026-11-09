@@ -1,5 +1,7 @@
 @done
 @KGRAPH-066
+@parser
+@code-analysis
 Feature: Variable and Symbol Tracking
   """
   Extend ast-code.pg schema with Variable node type and ContainsVariable edge type.

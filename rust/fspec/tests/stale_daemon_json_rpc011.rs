@@ -110,10 +110,12 @@ async fn read_and_verify_daemon_json_accepts_a_live_pid() {
     let workspace = work_units.parent().unwrap().parent().unwrap();
     let xdg = tempfile::tempdir().expect("xdg tempdir");
 
-    let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
+    let mut child = common::IsolatedCommand::new(env!("CARGO_BIN_EXE_fspec"))
         .arg("daemon")
-        .arg("--workspace")
-        .arg(workspace)
+        // BUG-309: the daemon serves its working directory (no --workspace flag).
+        .current_dir(workspace)
+        // BUG-627: HOME in the same temp dir as the runtime dir.
+        .env("HOME", xdg.path())
         .env("XDG_RUNTIME_DIR", xdg.path())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

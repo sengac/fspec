@@ -14,8 +14,9 @@
 //!     `Ok(json)` so the dispatcher surfaces them as data);
 //!   - step matching by text alone, by `keyword+text`, or by
 //!     `keyword.trim()+" "+text` (TS src/commands/update-step.ts:104-112);
-//!   - `--text` keyword-prefix stripping: a `--text "When I submit"` keeps
-//!     only the `I submit` portion (keyword comes from `--keyword`/existing);
+//!   - BUG-506: a keyword at the start of `--text` (`--text "When I submit"`)
+//!     becomes the step keyword unless `--keyword` is given; a `--keyword`
+//!     that contradicts it is refused;
 //!   - error texts: `Feature file not found: <path>`,
 //!     `Scenario '<s>' not found in feature file`,
 //!     `Step '<step>' not found in scenario '<s>'`.
@@ -141,15 +142,25 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     // ---- Determine new keyword & text (TS:147-161) ----
-    let new_keyword = keyword.unwrap_or(&current_keyword).to_string();
-    let new_text: String = if let Some(t) = text {
-        // If --text carries a keyword prefix, use only the text part.
-        match strip_keyword_prefix(t) {
-            Some(stripped) => stripped,
-            None => t.to_string(),
+    // BUG-506: a keyword at the start of --text becomes the step keyword
+    // (the help documents this override); a contradicting --keyword is
+    // refused rather than one silently winning.
+    let text_keyword = text.and_then(text_keyword_prefix);
+    if let (Some(option), Some((in_text, _))) = (keyword, &text_keyword) {
+        if !option.eq_ignore_ascii_case(in_text) {
+            return err_envelope(format!(
+                "--keyword {option} contradicts the keyword {in_text} at the start of --text; give one keyword"
+            ));
         }
-    } else {
-        current_text
+    }
+    let new_keyword = keyword
+        .or(text_keyword.as_ref().map(|(in_text, _)| *in_text))
+        .unwrap_or(&current_keyword)
+        .to_string();
+    let new_text: String = match (text, &text_keyword) {
+        (Some(_), Some((_, rest))) => rest.clone(),
+        (Some(t), None) => t.to_string(),
+        (None, _) => current_text,
     };
 
     lines[line_index] = format!("{indentation}{new_keyword} {new_text}");
@@ -269,14 +280,14 @@ fn parse_step_line(line: &str) -> Option<(String, String, String)> {
 }
 
 /// If `text` begins with a step keyword followed by whitespace, return the
-/// text after the keyword. Mirrors the TS regex
+/// keyword and the text after it. Mirrors the TS regex
 /// `^(?:Given|When|Then|And|But)\s+(.+)$`.
-fn strip_keyword_prefix(text: &str) -> Option<String> {
+fn text_keyword_prefix(text: &str) -> Option<(&'static str, String)> {
     for kw in ["Given", "When", "Then", "And", "But"] {
         if let Some(rest) = text.strip_prefix(kw) {
             let after = rest.trim_start();
             if after.len() < rest.len() && !after.is_empty() {
-                return Some(after.to_string());
+                return Some((kw, after.to_string()));
             }
         }
     }
@@ -325,11 +336,11 @@ mod tests {
     }
 
     #[test]
-    fn keyword_prefix_strip() {
+    fn keyword_prefix_split() {
         assert_eq!(
-            strip_keyword_prefix("When I submit"),
-            Some("I submit".to_string())
+            text_keyword_prefix("When I submit"),
+            Some(("When", "I submit".to_string()))
         );
-        assert_eq!(strip_keyword_prefix("I submit"), None);
+        assert_eq!(text_keyword_prefix("I submit"), None);
     }
 }

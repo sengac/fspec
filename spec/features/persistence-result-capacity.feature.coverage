@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug246_result_capacity.rs",
-          "lines": "20-96",
+          "lines": "20-100",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persistence_retry.rs",
@@ -23,13 +23,17 @@
                 209,
                 215,
                 228
-              ]
+              ],
+              "firstLine": "directory: PathBuf,",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/background_recovery.rs",
               "lines": [
                 6
-              ]
+              ],
+              "firstLine": "pub(crate) fn finish_outer_failure(&self, error: String) {",
+              "lastLine": "pub(crate) fn finish_outer_failure(&self, error: String) {"
             }
           ]
         }
@@ -47,6 +51,6 @@
       "rust/agent-loop/src/persistence_retry.rs",
       "rust/agent-loop/src/background_recovery.rs"
     ],
-    "totalLinesCovered": 91
+    "totalLinesCovered": 95
   }
 }

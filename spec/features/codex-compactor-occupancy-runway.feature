@@ -3,6 +3,7 @@
 @agent-core
 @context-management
 @compaction
+@BUG-305
 Feature: Codex compactor occupancy runway
   """
   Physical Codex continuations retain independent complete-request admission.

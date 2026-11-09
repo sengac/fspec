@@ -5,33 +5,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug187_git_state_capture_off_async_pool.rs",
-          "lines": "78-127",
+          "lines": "77-118",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/shared_construction.rs",
               "lines": [
-                828,
-                829,
-                830,
-                831,
-                832,
-                833,
-                834,
-                835,
-                836,
-                837,
-                838,
-                839,
-                840,
-                841,
-                842,
-                843,
-                844,
-                845,
-                846,
-                847,
-                848
-              ]
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "pub fn with_cwd(mut self, cwd: PathBuf) -> Self {",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,8 +49,8 @@
       "rust/fspec-tui/tests/bug187_git_state_capture_off_async_pool.rs"
     ],
     "implFiles": [
-      "rust/rpc/src/lib.rs"
+      "rust/rpc/src/shared_construction.rs"
     ],
-    "totalLinesCovered": 71
+    "totalLinesCovered": 64
   }
 }

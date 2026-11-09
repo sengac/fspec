@@ -38,7 +38,7 @@ async fn scenario_failed_bridge_clear_reports_the_durable_reset_failure() {
     session
         .send_input("preserve this".into(), None)
         .expect("queue turn");
-    tokio::time::timeout(Duration::from_secs(5), entered.notified())
+    codelet_test_helpers::deadlock_guard("entered.notified()", entered.notified())
         .await
         .expect("provider request reached registered bridge boundary");
     let control = codelet_tools::get_bridge_session_context(session.id)
@@ -64,7 +64,7 @@ async fn scenario_failed_bridge_clear_reports_the_durable_reset_failure() {
     codelet_core::persistence::reset_stores_for_tests();
     let mut events = session.subscribe_to_stream();
     // @step When the bridge requests conversation clearing
-    tokio::task::block_in_place(|| control("clear", None));
+    tokio::task::block_in_place(|| control("clear", None, None));
     // @step Then an explicit clear failure is emitted without a cleared or completion event
     let mut failures = Vec::new();
     while let Ok(event) = events.try_recv() {

@@ -16,8 +16,7 @@
 //!   - does NOT handle Home for the scrollback,
 //!   - does NOT paint a scrollbar gutter.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::RenderedChunk;
@@ -45,18 +44,24 @@ fn fresh_app() -> App {
 }
 
 /// Push `count` single-line chunks into the active session's scrollback.
-fn seed_chunks(app: &mut App, id: &SessionId, count: usize) {
+fn seed_chunks(
+    app: &mut App,
+    id: &SessionId,
+    count: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     for i in 0..count {
         ctx.scrollback.push(RenderedChunk {
+            row_ends: Vec::new(),
             seq: i as u64,
             lines: vec![Line::from(format!("row-{i}"))],
             source: None,
         });
     }
+    Ok(())
 }
 
 fn scroll_offset(app: &App, id: &SessionId) -> usize {
@@ -73,13 +78,14 @@ fn stick_to_bottom(app: &App, id: &SessionId) -> bool {
         .unwrap_or(false)
 }
 
-fn render_app(app: &mut App, w: u16, h: u16) {
-    let mut terminal = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_app(app: &mut App, w: u16, h: u16) -> Result<(), codelet_test_helpers::TestError> {
+    let mut terminal = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     terminal
         .draw(|frame| {
             app.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
 }
 
 fn mouse(kind: MouseEventKind, col: u16, row: u16) -> Event {
@@ -107,13 +113,13 @@ fn drain(app: &mut App) {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_mouse_wheel_up_over_scrollback_scrolls_history_up() {
+fn rpc094_mouse_wheel_up_over_scrollback_scrolls_history_up() -> TestResult {
     // @step Given an AgentView with a chat session whose scrollback has 200 visual rows of content
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
+    seed_chunks(&mut app, &id, 200)?;
     // Render so layout caches the scrollback rect.
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
 
     // @step And the viewport shows the latest 30 rows with stick-to-bottom engaged
     assert!(
@@ -140,6 +146,7 @@ fn rpc094_mouse_wheel_up_over_scrollback_scrolls_history_up() {
         !stick_to_bottom(&app, &id),
         "ScrollUp must drop stick-to-bottom"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -147,12 +154,12 @@ fn rpc094_mouse_wheel_up_over_scrollback_scrolls_history_up() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_fast_wheel_flick_accelerates_one_to_five_within_150ms() {
+fn rpc094_fast_wheel_flick_accelerates_one_to_five_within_150ms() -> TestResult {
     // @step Given an AgentView whose scrollback has 200 visual rows
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
     let start = scroll_offset(&app, &id);
 
     // @step And the wheel velocity has just been reset to 1
@@ -172,6 +179,7 @@ fn rpc094_fast_wheel_flick_accelerates_one_to_five_within_150ms() {
         15,
         "cumulative ramp should be 1+2+3+4+5=15 lines; start={start} end={end}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -179,15 +187,14 @@ fn rpc094_fast_wheel_flick_accelerates_one_to_five_within_150ms() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_wheel_velocity_resets_to_one_after_150ms_gap() {
-    use std::thread::sleep;
+fn rpc094_wheel_velocity_resets_to_one_after_150ms_gap() -> TestResult {
     use std::time::Duration;
 
     // @step Given an AgentView whose wheel velocity has just reached 5
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
     for _ in 0..5 {
         let _ = app.handle_event(&mouse(MouseEventKind::ScrollUp, 10, 5));
         drain(&mut app);
@@ -195,7 +202,8 @@ fn rpc094_wheel_velocity_resets_to_one_after_150ms_gap() {
     let before_gap = scroll_offset(&app, &id);
 
     // @step When the user waits more than 150ms then emits one more ScrollUp event
-    sleep(Duration::from_millis(200));
+    // TEST-042: the last wheel step is moved 200ms into the past instead.
+    assert!(app.age_scrollback_wheel_for_test(Duration::from_millis(200)));
     let _ = app.handle_event(&mouse(MouseEventKind::ScrollUp, 10, 5));
     drain(&mut app);
 
@@ -206,6 +214,7 @@ fn rpc094_wheel_velocity_resets_to_one_after_150ms_gap() {
         1,
         "after a >=150ms gap, velocity must reset to 1; before={before_gap} after={after_gap}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -213,12 +222,12 @@ fn rpc094_wheel_velocity_resets_to_one_after_150ms_gap() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_scroll_down_to_tail_re_engages_stick() {
+fn rpc094_scroll_down_to_tail_re_engages_stick() -> TestResult {
     // @step Given an AgentView whose scrollback has been scrolled up so stick-to-bottom is disengaged
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
     // Scroll up enough to drop stick.
     for _ in 0..10 {
         let _ = app.handle_event(&mouse(MouseEventKind::ScrollUp, 10, 5));
@@ -244,7 +253,7 @@ fn rpc094_scroll_down_to_tail_re_engages_stick() {
         .session_context_for(&id)
         .map(|c| c.scrollback.chunk_count())
         .unwrap_or(0);
-    seed_chunks(&mut app, &id, 1);
+    seed_chunks(&mut app, &id, 1)?;
     let count_after = app
         .agent_view_store()
         .session_context_for(&id)
@@ -255,6 +264,7 @@ fn rpc094_scroll_down_to_tail_re_engages_stick() {
         stick_to_bottom(&app, &id),
         "post-push must still be stick-to-bottom"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -263,13 +273,13 @@ fn rpc094_scroll_down_to_tail_re_engages_stick() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_up_arrow_with_empty_input_scrolls_scrollback_one_line() {
+fn rpc094_up_arrow_with_empty_input_scrolls_scrollback_one_line() -> TestResult {
     // @step Given an AgentView whose MultiLineInput is empty and focused
     let mut app = fresh_app();
     let id = sid("s-1");
     // @step And the scrollback has more rows than the viewport
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
     let before = scroll_offset(&app, &id);
 
     // @step When the user presses the Up arrow key
@@ -303,6 +313,7 @@ fn rpc094_up_arrow_with_empty_input_scrolls_scrollback_one_line() {
         after_down, before,
         "Down arrow must reverse the Up step; before={before} after_down={after_down}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -310,14 +321,13 @@ fn rpc094_up_arrow_with_empty_input_scrolls_scrollback_one_line() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_up_arrow_mid_buffer_stays_inside_input() {
-    // @step Given an AgentView whose MultiLineInput buffer is "line-a\nline-b\nline-c"
-    //       with the cursor at the start of "line-b"
+fn rpc094_up_arrow_mid_buffer_stays_inside_input() -> TestResult {
+    // @step Given an AgentView whose MultiLineInput buffer is "line-a\nline-b\nline-c" with the cursor at the start of "line-b"
     let mut app = fresh_app();
     let id = sid("s-1");
     // @step And the scrollback has more rows than the viewport
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
 
     // Build the multi-line buffer via paste so we don't depend on Enter handling.
     let _ = app.handle_event(&Event::Paste("line-a\nline-b\nline-c".to_string()));
@@ -346,6 +356,7 @@ fn rpc094_up_arrow_mid_buffer_stays_inside_input() {
         offset_before, offset_after,
         "Up arrow mid-buffer must NOT touch scrollback; before={offset_before} after={offset_after}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -353,17 +364,17 @@ fn rpc094_up_arrow_mid_buffer_stays_inside_input() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_mouse_wheel_inside_popup_does_not_scroll_scrollback() {
+fn rpc094_mouse_wheel_inside_popup_does_not_scroll_scrollback() -> TestResult {
     // @step Given an AgentView with the /help SlashCommandPopup open
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
+    seed_chunks(&mut app, &id, 200)?;
     // Open the slash popup by typing "/" — `sync_popups` opens the popup.
     let _ = app.handle_event(&Event::Key(KeyEvent::new(
         KeyCode::Char('/'),
         KeyModifiers::NONE,
     )));
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let before = scroll_offset(&app, &id);
 
     // @step And the popup occupies a sub-rect of the screen
@@ -381,6 +392,7 @@ fn rpc094_mouse_wheel_inside_popup_does_not_scroll_scrollback() {
         before, after,
         "wheel inside popup must NOT touch scrollback"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -389,12 +401,12 @@ fn rpc094_mouse_wheel_inside_popup_does_not_scroll_scrollback() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_mouse_wheel_over_input_area_does_not_scroll_scrollback() {
+fn rpc094_mouse_wheel_over_input_area_does_not_scroll_scrollback() -> TestResult {
     // @step Given an AgentView whose scrollback has 200 visual rows
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
     let before = scroll_offset(&app, &id);
     let stick_before = stick_to_bottom(&app, &id);
 
@@ -415,6 +427,7 @@ fn rpc094_mouse_wheel_over_input_area_does_not_scroll_scrollback() {
         stick_to_bottom(&app, &id),
         "wheel over input must NOT toggle stick mode"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -422,12 +435,12 @@ fn rpc094_mouse_wheel_over_input_area_does_not_scroll_scrollback() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_scrollbar_gutter_renders_when_content_exceeds_viewport() {
+fn rpc094_scrollbar_gutter_renders_when_content_exceeds_viewport() -> TestResult {
     // @step Given an AgentView whose viewport height is 10 rows
     let mut app = fresh_app();
     let id = sid("s-1");
     // @step When the scrollback contains 25 visual rows of content
-    seed_chunks(&mut app, &id, 25);
+    seed_chunks(&mut app, &id, 25)?;
 
     // Drive a render so the scrollback's render_count_visited paints
     // whatever scrollbar gutter the implementation defines.
@@ -466,6 +479,7 @@ fn rpc094_scrollbar_gutter_renders_when_content_exceeds_viewport() {
     // @step And the thumb position reflects the current offset divided by the total visual rows
     // (Structural assertion above proves the widget renders; thumb position
     // is delegated to ratatui's Scrollbar widget.)
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -473,12 +487,12 @@ fn rpc094_scrollbar_gutter_renders_when_content_exceeds_viewport() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_scrollbar_gutter_is_hidden_when_content_fits_viewport() {
+fn rpc094_scrollbar_gutter_is_hidden_when_content_fits_viewport() -> TestResult {
     // @step Given an AgentView whose viewport height is 10 rows
     let mut app = fresh_app();
     let id = sid("s-1");
     // @step When the scrollback contains 5 visual rows of content
-    seed_chunks(&mut app, &id, 5);
+    seed_chunks(&mut app, &id, 5)?;
 
     use ratatui::buffer::Buffer;
     use ratatui::layout::Rect;
@@ -500,6 +514,7 @@ fn rpc094_scrollbar_gutter_is_hidden_when_content_fits_viewport() {
             "RPC-094: scrollbar must NOT paint when content fits (found {s:?} at row {y})"
         );
     }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -507,12 +522,12 @@ fn rpc094_scrollbar_gutter_is_hidden_when_content_fits_viewport() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_home_jumps_scrollback_to_first_message() {
+fn rpc094_home_jumps_scrollback_to_first_message() -> TestResult {
     // @step Given an AgentView whose MultiLineInput is empty and the scrollback has 200 visual rows
     let mut app = fresh_app();
     let id = sid("s-1");
-    seed_chunks(&mut app, &id, 200);
-    render_app(&mut app, 80, 40);
+    seed_chunks(&mut app, &id, 200)?;
+    render_app(&mut app, 80, 40)?;
 
     // @step When the user presses Home and the input does not consume it
     // (MultiLineInput is empty — Home is a no-op for the textarea.)
@@ -533,6 +548,7 @@ fn rpc094_home_jumps_scrollback_to_first_message() {
         !stick_to_bottom(&app, &id),
         "Home must drop stick-to-bottom"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -540,10 +556,10 @@ fn rpc094_home_jumps_scrollback_to_first_message() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc094_source_shape_every_touched_module_under_300_lines() {
+fn rpc094_source_shape_every_touched_module_under_300_lines() -> TestResult {
     // @step Given the RPC-094 patch has landed
     // @step When source-shape inspection enumerates the touched .rs files
-    let workspace = common::workspace_root();
+    let workspace = common::workspace_root()?;
     let fspec_tui_src = workspace.join("fspec-tui").join("src");
     let agent_dir = fspec_tui_src.join("views").join("agent");
     let orchestrator = fspec_tui_src.join("views").join("agent.rs");
@@ -558,8 +574,8 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
 
     // @step Then every file under rust/fspec-tui/src/views/agent/ has at most 300 lines
     let mut offenders = Vec::new();
-    for entry in std::fs::read_dir(&agent_dir).expect("agent dir") {
-        let entry = entry.expect("entry");
+    for entry in std::fs::read_dir(&agent_dir).or_fail("agent dir")? {
+        let entry = entry.or_fail("entry")?;
         let p = entry.path();
         if p.is_file() && p.extension().and_then(|s| s.to_str()) == Some("rs") {
             let n = line_count(&p);
@@ -697,4 +713,5 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
         n_components <= 1469,
         "components/mod.rs has {n_components} lines — measured ceiling 1469 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant + MENU-009 MenuZoneCActivate variant + TUI-112 2 dialog hit-test module lines + TUI-113 reattach/restore action variants + RPC-434 SessionRemoved action variant + RPC-437 SessionCleared action variant)"
     );
+    Ok(())
 }

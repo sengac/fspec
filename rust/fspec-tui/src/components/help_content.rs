@@ -4,7 +4,8 @@
 //!
 //! Two content builders feed [`super::help_dialog::HelpDialog`]:
 //!   * [`board_help_lines`] — accurate board keybindings ONLY (no slash
-//!     commands). Sourced from `views/board.rs` + `app/events.rs`.
+//!     commands). Its shortcut rows come from the menu registry
+//!     (TUI-129), the rest from `views/board.rs` + `app/events.rs`.
 //!   * [`agent_help_lines`] — accurate agent keybindings PLUS the full
 //!     slash-command list, formatted directly from the single source of
 //!     truth `views::agent::slash_commands::SLASH_COMMANDS` so the
@@ -13,41 +14,46 @@
 //! Neither variant shows the old misleading `q       Quit` line; the
 //! quit binding reads `Ctrl+D   Quit`.
 
+use crate::components::menu_bar::items::CATEGORIES;
 use crate::views::agent::slash_commands::SLASH_COMMANDS;
 
 /// Board keybindings, each `KEY(s)    Explanation`. NO slash commands.
 ///
-/// Source: `spec/attachments/RPC-397/ast-research-help-content.md`
-/// (`views/board.rs` handle_event + `app/events.rs` app shortcuts).
+/// TUI-129: the shortcut rows are the menu registry's one-character rows
+/// (`CATEGORIES`, the table the board key handler reads), with the same
+/// key and label as the menu, so the help can never drift from the keys.
 pub(crate) fn board_help_lines() -> Vec<String> {
-    [
+    let mut lines: Vec<String> = [
         "Board keybindings:",
         "",
         "↑/k, ↓/j      Navigate work units",
         "←/h, →/l      Cycle columns → menu items → chips",
-        "Enter         Work / open focused unit",
+        "Enter         Choose agent or full details",
         "Enter (item)  Opens its dropdown menu",
         "Enter (chip)  Opens that session",
         "Shift+Right   Open agent view",
-        ".             New Agent",
         "[ / ]         Reorder (up / down)",
         "PageUp/PageDn Scroll column",
         "Home / End    First / Last",
-        "f             Changed Files",
-        "c             Checkpoints",
-        "d             FOUNDATION.md",
-        "a             Attachments",
-        "/             Search work units",
-        "m             Mux layout",
-        "p             Provider settings",
-        "u             Menu bar help",
-        "?             Show this help",
-        "ESC           Exit (confirm)",
-        "Ctrl+D        Quit",
     ]
     .iter()
     .map(|l| (*l).to_string())
-    .collect()
+    .collect();
+    for entry in CATEGORIES.iter().flat_map(|category| category.entries) {
+        if entry.key.chars().count() == 1 {
+            lines.push(format!("{:<14}{}", entry.key, entry.label));
+        }
+    }
+    lines.extend(
+        [
+            "u             Menu bar help",
+            "ESC           Exit (confirm)",
+            "Ctrl+D        Quit",
+        ]
+        .iter()
+        .map(|l| (*l).to_string()),
+    );
+    lines
 }
 
 /// Agent keybindings PLUS the full slash-command list.
@@ -62,19 +68,18 @@ pub(crate) fn agent_help_lines() -> Vec<String> {
         "Enter         Send message",
         "Ctrl+J        Newline (universal)",
         "Shift+Enter   Newline (best-effort)",
-        "Alt+Enter     Newline (legacy terminals)",
+        "Alt+Enter     Newline (queues the draft while busy)",
         "Ctrl+C        Interrupt turn",
         "PageUp/PageDn Scroll history",
-        "Home          Top",
-        "End           Bottom",
-        "Shift+↑/↓     Input history",
-        "Shift+←/→     Cycle sessions",
+        "Home / End    Top / Bottom (empty input)",
+        "Shift+↑/↓     Input history (mux: pane above/below)",
+        "Shift+←/→     Cycle sessions (mux: previous/next pane)",
         "← empty input Enter the menu bar",
         "Tab           Select turn",
         "Ctrl+R        Search history",
         "/             Slash commands",
         "@             File search",
-        "ESC           Back",
+        "ESC           Stop the run, clear the draft, or close the agent",
         "Ctrl+D        Quit",
         "",
         "Slash commands:",

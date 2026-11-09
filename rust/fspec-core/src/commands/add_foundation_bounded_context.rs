@@ -81,7 +81,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // slim default to `fileManager.readJSON`, so a missing file is created
     // with that minimal shape (NOT the richer ensure_foundation_file
     // literal).
-    let path = project_root.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock =
+        crate::io::spec_lock::lock_spec_dir(project_root, "add-foundation-bounded-context")?;
     let mut data: Value = read_or_init_json(&path, &foundation_read_default(), "foundation.json")?;
 
     let root_obj = data

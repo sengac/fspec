@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-265
+@cli
+@tag-management
 Feature: Port register-tag command to Rust
   """
   Files: rust/fspec-core/src/commands/register_tag.rs (replace stub); rust/fspec-core/src/help/configs/register_tag.rs (NEW help config); rust/fspec/src/register_tag.rs (NEW CLI bridge); rust/fspec-core/tests/register_tag.rs (NEW dispatcher tests); rust/fspec/tests/cli_register_tag.rs (NEW CLI shell tests); rust/fspec/tests/fixtures/help/register-tag.txt (NEW captured fixture)

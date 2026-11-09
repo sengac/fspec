@@ -38,7 +38,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "// `\"Invalid args for fspec command delete-tag: \"` envelope"
             }
           ]
         }
@@ -49,7 +51,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_tag.rs",
-          "lines": "136-168",
+          "lines": "142-174",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_tag.rs",
@@ -82,7 +84,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "// `\"Invalid args for fspec command delete-tag: \"` envelope"
             }
           ]
         }
@@ -93,7 +97,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_tag.rs",
-          "lines": "174-210",
+          "lines": "180-219",
           "implMappings": [
             {
               "file": "rust/fspec/src/delete_tag.rs",
@@ -126,7 +130,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "// `\"Invalid args for fspec command delete-tag: \"` envelope"
             }
           ]
         }
@@ -137,76 +143,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_tag.rs",
-          "lines": "218-240",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/delete_tag.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62
-              ]
-            }
-          ]
+          "lines": "227-249"
         }
       ]
     }
@@ -219,9 +156,8 @@
       "rust/fspec/tests/cli_delete_tag.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/delete_tag.rs",
-      "rust/fspec-core/src/help/configs/delete_tag.rs"
+      "rust/fspec/src/delete_tag.rs"
     ],
-    "totalLinesCovered": 290
+    "totalLinesCovered": 231
   }
 }

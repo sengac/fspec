@@ -1,11 +1,8 @@
 use super::{Fixture, Result};
 use codelet_tools::execution_context::WorkUnitAttribution;
-use std::{
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    time::Duration,
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
 };
 
 pub fn bind_before_deletion(
@@ -17,7 +14,7 @@ pub fn bind_before_deletion(
         Some("AUTH-002".into()),
         Some("bound".into()),
         Some("specifying".into()),
-    );
+    )?;
     Ok(())
 }
 
@@ -41,7 +38,13 @@ pub async fn verify_callback_lock(fixture: &Fixture) -> Result {
         std::thread::spawn(move || {
             let _ = sender.send(session.get_work_unit_context());
         });
-        if receiver.recv_timeout(Duration::from_secs(1)).is_err() {
+        // TEST-042: the read either completes or deadlocks on the held lock;
+        // only the deadlock guard ends the second case.
+        let read = codelet_test_helpers::deadlock_guard_blocking(
+            "another thread reading the work-unit context",
+            move || receiver.recv(),
+        );
+        if !matches!(read, Ok(Ok(_))) {
             observed.store(true, Ordering::SeqCst);
         }
         Vec::new()

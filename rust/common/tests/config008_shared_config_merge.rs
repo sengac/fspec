@@ -11,7 +11,7 @@
 use std::fs;
 use std::path::Path;
 
-use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
+use codelet_common::fspec_config::{load_config_with_dirs, update_config_with_dirs, ConfigScope};
 use serde_json::{json, Value};
 
 /// Write `content` to `<data_dir>/fspec-config.json` (user scope).
@@ -147,8 +147,11 @@ fn writing_user_scope_creates_the_data_directory_and_file() {
     let data_dir = data_parent.path().join("nested").join("data");
     assert!(!data_dir.exists());
     // @step When the config {"x":1} is written to the user scope
-    write_config_with_dirs(ConfigScope::User, &json!({"x":1}), &data_dir, cwd.path())
-        .expect("write user");
+    update_config_with_dirs(ConfigScope::User, &data_dir, cwd.path(), |root| {
+        *root = json!({"x":1});
+        Ok::<_, String>(())
+    })
+    .expect("write user");
     // @step Then the file <data_dir>/fspec-config.json exists with content {"x":1}
     let written = data_dir.join("fspec-config.json");
     assert!(written.exists(), "user config file should exist");
@@ -167,8 +170,11 @@ fn writing_project_scope_creates_the_spec_directory_and_file() {
     fs::create_dir_all(&cwd).expect("cwd");
     assert!(!cwd.join("spec").exists());
     // @step When the config {"y":2} is written to the project scope
-    write_config_with_dirs(ConfigScope::Project, &json!({"y":2}), data.path(), &cwd)
-        .expect("write project");
+    update_config_with_dirs(ConfigScope::Project, data.path(), &cwd, |root| {
+        *root = json!({"y":2});
+        Ok::<_, String>(())
+    })
+    .expect("write project");
     // @step Then the file <cwd>/spec/fspec-config.json exists with content {"y":2}
     let written = cwd.join("spec").join("fspec-config.json");
     assert!(written.exists(), "project config file should exist");
@@ -185,12 +191,10 @@ fn round_trip_write_then_load_merges_with_the_other_scope() {
     // @step Given a user config file containing {"u":1}
     seed_user(data.path(), r#"{"u":1}"#);
     // @step When the config {"x":1} is written to the project scope
-    write_config_with_dirs(
-        ConfigScope::Project,
-        &json!({"x":1}),
-        data.path(),
-        cwd.path(),
-    )
+    update_config_with_dirs(ConfigScope::Project, data.path(), cwd.path(), |root| {
+        *root = json!({"x":1});
+        Ok::<_, String>(())
+    })
     .expect("write project");
     // @step And the config is loaded
     let loaded = load_config_with_dirs(data.path(), cwd.path()).expect("load");

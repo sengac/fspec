@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-073
 @providers
@@ -5,6 +6,9 @@
 @bug
 Feature: RPC-073 List Providers Wiring
   """
+  RPC-451: a failed provider listing is an error, not an empty list; the
+  graceful-degradation scenario is replaced by
+  provider-listing-failures-are-shown.feature.
   Bug 3: SessionManager::list_providers in
   rust/sessions/src/handle_impl.rs:709-715 unconditionally returns
   Vec::new(), so the model selector dialog opens empty.
@@ -62,12 +66,6 @@ Feature: RPC-073 List Providers Wiring
     When the trait override list_providers maps the value into a codelet_rpc_types::ProviderInfo
     Then the resulting codelet_rpc_types::ProviderInfo has key='anthropic', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
     Then context_window and max_output_tokens are converted from usize to u32 with saturating cast
-
-  Scenario: list_providers degrades gracefully to Vec::new() and logs via tracing::error when list_providers_info returns Err
-    Given an environment is set up such that list_providers_info returns Err (e.g. corrupt ~/.fspec/providers/foo.json)
-    When the test calls handle.list_providers()
-    Then the call returns Vec::new() and does not panic
-    Then a tracing::error event with target 'handle_impl' and the underlying error is emitted
 
   Scenario: Source-shape regression: handle_impl.rs list_providers body calls list_providers_info and no longer returns the empty Vec::new() stub
     Given the file rust/sessions/src/handle_impl.rs

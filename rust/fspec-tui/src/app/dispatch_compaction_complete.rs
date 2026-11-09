@@ -48,8 +48,31 @@ impl App {
         session_id: &SessionId,
         result: &CompactionResult,
     ) {
-        self.agent_view_store.clear_compaction_progress(session_id);
+        self.record_compaction_complete(session_id, result);
+        self.show_compaction_reduction(session_id, result);
+    }
 
+    /// BUG-648: the state and transcript part (steps 1 and 4), applied when
+    /// a transcript page delivers the chunk, live or replayed on attach.
+    pub(crate) fn record_compaction_complete(
+        &mut self,
+        session_id: &SessionId,
+        result: &CompactionResult,
+    ) {
+        self.agent_view_store.clear_compaction_progress(session_id);
+        let text = format_compaction_notice(result);
+        let _ = self
+            .action_tx
+            .send(Action::EmitSessionNotice(session_id.clone(), text));
+    }
+
+    /// BUG-648: the 10-second reduction badge (steps 2 and 3), a one-shot
+    /// effect shown only when the chunk arrives live, never on a replay.
+    pub(crate) fn show_compaction_reduction(
+        &mut self,
+        session_id: &SessionId,
+        result: &CompactionResult,
+    ) {
         let reduction = result.compression_ratio.round().max(0.0) as i32;
         self.agent_view_store
             .set_compaction_reduction(session_id.clone(), reduction);
@@ -58,11 +81,6 @@ impl App {
             .agent_view_store
             .bump_compaction_reduction_seq(session_id.clone());
         self.arm_compaction_hide(session_id.clone(), seq);
-
-        let text = format_compaction_notice(result);
-        let _ = self
-            .action_tx
-            .send(Action::EmitSessionNotice(session_id.clone(), text));
     }
 }
 

@@ -17,45 +17,24 @@ use tracing::debug;
 use crate::components::Action;
 
 use super::state::App;
+use super::work_units_refetch::{refetch_work_units, send_or_log};
 
 impl App {
     /// RPC-012 bootstrap: seed BoardStore via `backend.list_work_units()`
     /// and spawn the five subscriber tasks. Lazy session creation is
     /// deferred to the first `Action::EnterWorkUnit` / `OpenAgentView`.
     ///
-    /// RPC-015 extension: additionally fire `backend.checkpoint_counts()`
-    /// and dispatch `Action::CheckpointCountsLoaded(counts)` so the
-    /// BoardView header paints the live counts on the very first frame.
+    /// RPC-015 extension: the checkpoint counts and (RPC-018) the
+    /// workspace info load too — BUG-657: in a background task, so the
+    /// first frame draws the board without waiting on git.
     pub async fn bootstrap(&mut self) -> Result<()> {
         let units = self.backend.list_work_units().await?;
         self.dispatch(Action::WorkUnitsLoaded(units));
-        // RPC-015: best-effort — failure is non-fatal because the header
-        // already paints the default `Checkpoints: None` until the call
-        // succeeds. We still surface the error to the tracing layer so
-        // misconfigured cwds don't go silently undiagnosed.
-        match self.backend.checkpoint_counts().await {
-            Ok(counts) => {
-                self.dispatch(Action::CheckpointCountsLoaded(counts));
-            }
-            Err(err) => {
-                debug!("bootstrap: backend.checkpoint_counts() failed: {err}");
-            }
-        }
-        // RPC-018: best-effort workspace fetch — failure is non-fatal
-        // because the SessionFooter just hides the right-side content
-        // until the real value arrives via a later refresh.
-        match self.backend.get_workspace_info().await {
-            Ok(info) => {
-                self.dispatch(Action::WorkspaceInfoLoaded(info));
-            }
-            Err(err) => {
-                debug!("bootstrap: backend.get_workspace_info() failed: {err}");
-            }
-        }
+        self.spawn_git_values_load();
         self.spawn_subscriber_tasks();
+        self.spawn_load_workspaces(); // RPC-445
         self.spawn_session_manifest_issues(true);
         self.initialize_startup_model().await;
-        self.initialize_default_thinking_level();
         // MUX-001 R6: load the persisted mux config (shared
         // fspec-config.json, tui.mux) so a restart restores the saved
         // grid; missing key → default preset.
@@ -73,34 +52,36 @@ impl App {
         // creation path on a fresh start. Nothing restorable → the
         // client lands on the board.
         self.spawn_session_restore(None);
-        self.start_viewer_server().await;
         Ok(())
     }
 
-    /// RPC-373: start the RPC-372 attachment viewer server bound to the current
-    /// working directory. Best-effort / non-fatal — mirrors the
-    /// `checkpoint_counts` pattern: on success store the handle + port so the
-    /// board `D` key can build the FOUNDATION.md URL; on failure log via
-    /// `debug!` and leave `viewer_port = None` (the `D` key then no-ops). cwd is
-    /// resolved from `std::env::current_dir()` (the same source the rest of the
-    /// TUI uses at startup).
-    async fn start_viewer_server(&mut self) {
-        let cwd = match std::env::current_dir() {
-            Ok(cwd) => cwd,
-            Err(err) => {
-                debug!("bootstrap: current_dir() failed; viewer disabled: {err}");
-                return;
+    /// BUG-657: load the git-derived bootstrap values off the bootstrap
+    /// path; each result arrives on the action bus. The task is tracked
+    /// like every other bootstrap load (`next_pending_task`).
+    fn spawn_git_values_load(&mut self) {
+        let tx = self.action_tx.clone();
+        // RPC-015 / RPC-453: the start workspace's counts (the workspace
+        // list is not loaded yet); a failure is shown.
+        let checkpoints = self.checkpoint_calls();
+        let backend = self.backend.clone();
+        self.pending_tasks.push(tokio::spawn(async move {
+            send_or_log(
+                &tx,
+                match checkpoints.counts().await {
+                    Ok(counts) => Action::CheckpointCountsLoaded(counts),
+                    Err(err) => Action::SessionOperationFailed(format!(
+                        "Checkpoint counts could not be loaded: {err:#}"
+                    )),
+                },
+            );
+            // RPC-018: best-effort workspace fetch — failure is non-fatal
+            // because the SessionFooter just hides the right-side content
+            // until the real value arrives via a later refresh.
+            match backend.get_workspace_info().await {
+                Ok(info) => send_or_log(&tx, Action::WorkspaceInfoLoaded(info)),
+                Err(err) => debug!("bootstrap: backend.get_workspace_info() failed: {err}"),
             }
-        };
-        match codelet_attachment_viewer::start_viewer(cwd).await {
-            Ok(handle) => {
-                self.viewer_port = Some(handle.port);
-                self.viewer_handle = Some(handle);
-            }
-            Err(err) => {
-                debug!("bootstrap: start_viewer() failed; D key will no-op: {err}");
-            }
-        }
+        }));
     }
 
     /// PROV-120: restore the TS-parity "first-available" startup model
@@ -109,25 +90,6 @@ impl App {
     /// (300-LoC ceiling).
     pub(crate) async fn initialize_startup_model(&mut self) {
         super::bootstrap_model::initialize_startup_model(self).await
-    }
-
-    /// TUI-093: restore the persisted default thinking level to the active
-    /// session at startup — the thinking-level analogue of
-    /// `initialize_startup_model` and parity with the TS
-    /// `useDefaultThinkingLevel` "load on mount → apply to active session".
-    /// Best-effort: with no active session yet (the lazy `create_session` path)
-    /// this just logs; the per-session guarded apply then fires when the first
-    /// session is created/resumed via `refresh_session_chrome`.
-    pub(crate) fn initialize_default_thinking_level(&mut self) {
-        let loaded =
-            codelet_sessions::default_thinking_level_persistence::load_default_thinking_level_opt();
-        debug!(
-            "bootstrap: default thinking level = {:?}",
-            loaded.map(|l| l as u8)
-        );
-        if let Some(session) = self.active_session_rx_snapshot() {
-            let _ = self.apply_default_thinking_level_if_needed(&session);
-        }
     }
 
     /// Spawn the subscriber tasks per RPC-009 architecture note [2]
@@ -144,20 +106,19 @@ impl App {
         let work_units_task = tokio::spawn(async move {
             loop {
                 match rx.recv().await {
-                    Ok(units) => {
-                        let _ = tx.send(Action::WorkUnitsLoaded(units));
-                    }
+                    Ok(units) => send_or_log(&tx, Action::WorkUnitsLoaded(units)),
                     Err(broadcast::error::RecvError::Lagged(n)) => {
                         debug!("work_units subscriber lagged by {n}; resyncing");
-                        if let Ok(snapshot) = backend.list_work_units().await {
-                            let _ = tx.send(Action::WorkUnitsLoaded(snapshot));
-                        }
+                        // BUG-379: a failed resync is shown, never dropped.
+                        refetch_work_units(backend.as_ref(), &tx, "after missed updates").await;
                     }
                     Err(broadcast::error::RecvError::Closed) => break,
                 }
             }
         });
         self.subscriber_tasks.push(work_units_task);
+        self.spawn_workspace_work_units_subscriber(); // RPC-445
+        self.spawn_workspace_git_state_subscriber(); // RPC-454
 
         let tx = self.action_tx.clone();
         let mut rx = self.backend.chunks_rx();

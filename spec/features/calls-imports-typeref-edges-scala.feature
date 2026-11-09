@@ -1,4 +1,6 @@
 @KGRAPH-052
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — Scala
   """
   Uses ast-grep patterns and edge_helpers shared functions.

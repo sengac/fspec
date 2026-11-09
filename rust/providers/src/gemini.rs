@@ -56,14 +56,30 @@ impl crate::model_limits::ModelLimitsResolver for GeminiProvider {
     }
 
     /// Default context window when no registry data is available.
-    fn default_context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    fn default_context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
     }
 
     /// Default max output tokens when no registry data is available.
-    fn default_max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn default_max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
+}
+
+/// TOOL-010: the Gemini generation config — temperature 1.0 (strongly
+/// recommended by Google; other values cause looping), topP 0.95, topK 64 —
+/// plus the facade's `thinkingConfig` when one is given. BUG-442: nothing is
+/// forced without one (no level chosen sends none; the model decides).
+pub fn gemini_generation_config(thinking_config: Option<&serde_json::Value>) -> serde_json::Value {
+    let mut gen_config = serde_json::json!({
+        "temperature": 1.0,
+        "topP": 0.95,
+        "topK": 64
+    });
+    if let Some(thinking) = thinking_config.and_then(|config| config.get("thinkingConfig")) {
+        gen_config["thinkingConfig"] = thinking.clone();
+    }
+    serde_json::json!({ "generationConfig": gen_config })
 }
 
 impl GeminiProvider {
@@ -232,51 +248,8 @@ impl GeminiProvider {
         let system_prompt = build_gemini_system_prompt(&self.model_name, preamble);
         agent_builder = agent_builder.preamble(&system_prompt);
 
-        // TOOL-010: Apply generation config for Gemini models
-        // Based on Gemini CLI and opencode research:
-        // - temperature: 1.0 (strongly recommended by Google, other values cause looping)
-        // - topP: 0.95 (standard Gemini value)
-        // - topK: 64 (standard Gemini value)
-        // - thinkingConfig: required for Gemini 3 models
-        //
-        // The facade returns {"thinkingConfig": {...}} but rig expects {"generationConfig": {...}}
-        let thinking_cfg = thinking_config
-            .as_ref()
-            .and_then(|config| config.get("thinkingConfig").cloned())
-            .or_else(|| {
-                // Provide default thinking config for Gemini 3 models
-                // Gemini 3 uses thinkingLevel enum instead of thinkingBudget
-                // Note: You cannot disable thinking for Gemini 3 Pro
-                if self.model_name.contains("gemini-3") {
-                    tracing::debug!(
-                        "Using default thinking level HIGH for Gemini 3 model: {}",
-                        self.model_name
-                    );
-                    Some(serde_json::json!({
-                        "includeThoughts": true,
-                        "thinkingLevel": "high"
-                    }))
-                } else {
-                    None
-                }
-            });
-
-        // ALWAYS apply generation config with proper defaults for ALL Gemini models
-        // This is critical for Gemini 3 which requires specific parameter values
-        let mut gen_config = serde_json::json!({
-            "temperature": 1.0,
-            "topP": 0.95,
-            "topK": 64
-        });
-
-        // Add thinking config if present (Gemini 3 or explicitly provided)
-        if let Some(thinking_cfg) = thinking_cfg {
-            gen_config["thinkingConfig"] = thinking_cfg;
-        }
-
-        let generation_config = serde_json::json!({
-            "generationConfig": gen_config
-        });
+        // TOOL-010 / BUG-442: generation config, with thinking only when given.
+        let generation_config = gemini_generation_config(thinking_config.as_ref());
         tracing::debug!("Applying Gemini generation config: {:?}", generation_config);
         agent_builder = agent_builder.additional_params(generation_config);
 
@@ -334,12 +307,12 @@ impl LlmProvider for GeminiProvider {
         &self.model_name
     }
 
-    fn context_window(&self) -> usize {
-        CONTEXT_WINDOW
+    fn context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
     }
 
-    fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+    fn max_output_tokens(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
     }
 
     fn supports_caching(&self) -> bool {

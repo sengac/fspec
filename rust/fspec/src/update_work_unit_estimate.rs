@@ -15,10 +15,10 @@
 //!   - 1 on any [`codelet_fspec_core::FspecCoreError`]; prints
 //!     `✗ Failed to update estimate: <reason>` to stderr.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::update_work_unit_estimate;
 use codelet_fspec_core::js_compat::parse_js_int;
 use serde_json::json;
@@ -40,7 +40,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `update-work-unit-estimate`
 /// clap subcommand. Returns the process exit code.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // TS: `parseInt(estimate, 10)`. `parse_js_int` reproduces JS `parseInt`
     // exactly: leading-digit values coerce to a number (`5abc` → 5,

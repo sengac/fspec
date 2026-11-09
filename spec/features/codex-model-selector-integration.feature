@@ -1,5 +1,7 @@
 @PROV-018
 @PROV-033
+@providers
+@model-selection
 Feature: Codex Model Selector Integration — All OpenAI Cloud Models in Codex Section When OAuth Active
   """
   PROV-033 FIX: When Codex OAuth tokens exist, extractCodexSection() must move ALL models

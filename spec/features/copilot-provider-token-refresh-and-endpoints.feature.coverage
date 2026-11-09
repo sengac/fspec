@@ -4,67 +4,9 @@
       "name": "Cached Copilot token is refreshed when within 60 seconds of expiry",
       "testMappings": [
         {
-          "file": "rust/providers/src/copilot/provider_tests.rs",
-          "lines": "140-155",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/provider.rs",
-              "lines": [
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov057_copilot_cached_token_refresh.rs",
+          "lines": "104-136",
+          "implMappings": []
         }
       ]
     },
@@ -72,28 +14,9 @@
       "name": "Cached Copilot token is reused when not near expiry",
       "testMappings": [
         {
-          "file": "rust/providers/src/copilot/provider_tests.rs",
-          "lines": "165-184",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/copilot/provider.rs",
-              "lines": [
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov057_copilot_cached_token_refresh.rs",
+          "lines": "138-160",
+          "implMappings": []
         }
       ]
     },
@@ -102,7 +25,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/provider_tests.rs",
-          "lines": "251-283",
+          "lines": "98-131",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/provider.rs",
@@ -133,7 +56,9 @@
                 218,
                 219,
                 220
-              ]
+              ],
+              "firstLine": "/// PROV-057: Ensure the cached Copilot token is still valid, refreshing",
+              "lastLine": "fn max_output_tokens_limit(&self) -> Option<usize> {"
             }
           ]
         }
@@ -145,11 +70,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/providers/tests/prov057_copilot_cached_token_refresh.rs",
       "rust/providers/src/copilot/provider_tests.rs"
     ],
     "implFiles": [
       "rust/providers/src/copilot/provider.rs"
     ],
-    "totalLinesCovered": 160
+    "totalLinesCovered": 116
   }
 }

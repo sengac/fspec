@@ -28,7 +28,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "/// `r`/`R`: open a single-file restore confirmation — but only when",
+              "lastLine": ""
             }
           ]
         }
@@ -62,7 +64,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "/// `r`/`R`: open a single-file restore confirmation — but only when",
+              "lastLine": ""
             }
           ]
         }
@@ -92,7 +96,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "/// checkpoint — a no-op when no checkpoints exist.",
+              "lastLine": "/// Route a key while the restore dialog is active. On `Confirm`,"
             }
           ]
         }
@@ -103,7 +109,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
-          "lines": "112-131",
+          "lines": "112-135",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
@@ -138,7 +144,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "let target = match self.restore_dialog.as_ref() {",
+              "lastLine": "/// follow-up actions — a single-file success reloads that file's diff"
             }
           ]
         }
@@ -149,7 +157,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/restore_tests.rs",
-          "lines": "133-148",
+          "lines": "137-152",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/restore.rs",
@@ -180,7 +188,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// `Restoring`); `n`/Esc cancels. On a terminal phase, any key",
+              "lastLine": "/// `Restoring` so the modal shows progress until the result arrives."
             }
           ]
         }
@@ -228,7 +238,9 @@
                 140,
                 141,
                 142
-              ]
+              ],
+              "firstLine": "pub fn on_restore_result(",
+              "lastLine": "}"
             }
           ]
         }
@@ -276,7 +288,9 @@
                 140,
                 141,
                 142
-              ]
+              ],
+              "firstLine": "pub fn on_restore_result(",
+              "lastLine": "}"
             }
           ]
         }
@@ -293,6 +307,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/checkpoints/restore.rs"
     ],
-    "totalLinesCovered": 315
+    "totalLinesCovered": 319
   }
 }

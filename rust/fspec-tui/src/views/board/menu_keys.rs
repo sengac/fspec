@@ -10,10 +10,12 @@
 //!    Up/Down (j/k) walk the cursor (wrapping), Enter executes the row,
 //!    Esc closes the dropdown (NO app-level exit cascade), Left/Right
 //!    walk the ring (the open item follows the focus — GUI parity);
-//!    every other key is swallowed.
+//!    a key shown in one of its rows runs that row (TUI-129); every
+//!    other key is swallowed.
 //! 2. **Bar focus (item or chip)** — Up/Down drop focus back into the
 //!    focused column (R3); Enter opens the item's dropdown / activates
-//!    the chip (R4/R5); Left/Right walk the ring (R2).
+//!    the chip (R4/R5); Left/Right walk the ring (R2); a board shortcut
+//!    key falls through to the shortcut arms (TUI-129).
 //! 3. **No bar focus** — Left/Right walk the ring (R2: columns are the
 //!    ring's front half; this supersedes `FocusPrev/NextColumn`),
 //!    Up/Down keep their column-selection meaning, Enter keeps
@@ -24,6 +26,7 @@
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
+use crate::components::menu_bar::item_keys::{row_for_key, shortcut_for_key};
 use crate::components::{Action, EventResult};
 use crate::store::BoardStore;
 
@@ -32,6 +35,16 @@ use super::BoardView;
 /// True iff a modifier-free ring/confirm key is pressed.
 fn plain(code: KeyCode, key: &KeyEvent) -> bool {
     code == key.code && key.modifiers == KeyModifiers::NONE
+}
+
+/// A key the focused bar does not use: TUI-129 lets a board shortcut
+/// through to the shortcut arms (`None`); any other key is claimed as
+/// ignored, as before.
+fn not_for_the_bar(key: &KeyEvent) -> Option<EventResult> {
+    if shortcut_for_key(key).is_some() {
+        return None;
+    }
+    Some(EventResult::ignored())
 }
 
 /// Route the board's menu-bar keys against `store`. `Some(result)` when
@@ -79,7 +92,13 @@ pub(super) fn handle_menu_keys(
             view.emit(Action::MenuMove(1));
             return Some(EventResult::consumed());
         }
-        // R6: every other key is swallowed while the dropdown is open.
+        // TUI-129: a key shown in one of the open dropdown's rows runs
+        // that row.
+        if let Some(row) = row_for_key(category, key) {
+            view.emit(Action::MenuExecuteItem { category, row });
+            return Some(EventResult::consumed());
+        }
+        // R6: no other key reaches the board while the dropdown is open.
         return Some(EventResult::ignored());
     }
 
@@ -113,7 +132,7 @@ pub(super) fn handle_menu_keys(
                     view.emit(Action::MenuMove(1));
                     return Some(EventResult::consumed());
                 }
-                return Some(EventResult::ignored());
+                return not_for_the_bar(key);
             }
             crate::components::menu_bar::MenuFocus::ZoneB(index) => {
                 if plain(KeyCode::Up, key)
@@ -138,7 +157,7 @@ pub(super) fn handle_menu_keys(
                     view.emit(Action::MenuMove(1));
                     return Some(EventResult::consumed());
                 }
-                return Some(EventResult::ignored());
+                return not_for_the_bar(key);
             }
             // MENU-009 R3/R4: the right-aligned Zone C button (the
             // board's single `New Agent`). Enter activates it (the
@@ -168,7 +187,7 @@ pub(super) fn handle_menu_keys(
                     view.emit(Action::MenuMove(1));
                     return Some(EventResult::consumed());
                 }
-                return Some(EventResult::ignored());
+                return not_for_the_bar(key);
             }
         }
     }

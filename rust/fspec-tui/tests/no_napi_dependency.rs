@@ -12,24 +12,25 @@
 //! RPC-067 migrated the cargo-metadata BFS walk and the source-tree
 //! scan into the shared `codelet-test-helpers` crate.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use codelet_test_helpers::{assert_no_import_in_sources, assert_no_transitive_dependency};
 
 #[test]
-fn no_codelet_napi_in_transitive_dependency_graph() {
+fn no_codelet_napi_in_transitive_dependency_graph() -> TestResult {
     // @step Given the RPC-044 changes are applied to the codelet workspace
     // @step When I run `cargo test -p codelet-fspec-tui --test no_napi_dependency`
     // @step Then the command exits with code 0
     // @step And the test parses `cargo metadata` output for codelet-fspec-tui
     // @step And the resulting transitive package set does not contain the package name `codelet-napi`
     assert_no_transitive_dependency!("codelet-fspec-tui", "codelet-napi");
+    Ok(())
 }
 
 #[test]
-fn no_codelet_napi_import_in_source() {
+fn no_codelet_napi_import_in_source() -> TestResult {
     // @step Given the RPC-044 changes are applied to the codelet workspace
     // @step When I run `cargo test -p codelet-fspec-tui --test no_napi_dependency`
     // @step And no `.rs` file under `rust/fspec-tui/src/` contains the substring `codelet_napi`
     assert_no_import_in_sources!("fspec-tui", "codelet_napi");
+    Ok(())
 }

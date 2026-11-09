@@ -10,18 +10,20 @@
             {
               "file": "rust/fspec/src/main.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "mod add_hotspot;",
+              "lastLine": "mod export_work_units;"
             }
           ]
         }
@@ -78,7 +80,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "use crate::common::spec_project_root;",
+              "lastLine": "match list_prefixes::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -135,7 +139,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "use crate::common::spec_project_root;",
+              "lastLine": "match list_prefixes::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -166,7 +172,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "// Resolve project root from CWD. The TS implementation uses",
+              "lastLine": ""
             }
           ]
         }
@@ -198,7 +206,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "\"version\": \"2.0.0\",",
+              "lastLine": "\"capabilities\": ["
             }
           ]
         }
@@ -214,18 +224,20 @@
             {
               "file": "rust/fspec/src/main.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "mod add_hotspot;",
+              "lastLine": "mod export_work_units;"
             }
           ]
         }
@@ -274,7 +286,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Strongly-typed args mirrored from the TypeScript Commander.js flag",
+              "lastLine": ""
             }
           ]
         }
@@ -285,48 +299,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_prefixes.rs",
-          "lines": "441-468",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/list_prefixes.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34
-              ]
-            }
-          ]
+          "lines": "454-478"
         }
       ]
     }
@@ -341,9 +314,8 @@
     "implFiles": [
       "rust/fspec/src/main.rs",
       "rust/fspec/src/list_prefixes.rs",
-      "rust/fspec-core/src/io/ensure.rs",
-      "rust/fspec-core/src/help/configs/list_prefixes.rs"
+      "rust/fspec-core/src/io/ensure.rs"
     ],
-    "totalLinesCovered": 579
+    "totalLinesCovered": 542
   }
 }

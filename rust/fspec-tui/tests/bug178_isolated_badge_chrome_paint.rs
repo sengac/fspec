@@ -20,13 +20,9 @@
 //! real `App` + real `AgentViewStore` + `MockBackend`, rendered into
 //! a `ratatui::TestBackend`.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::IsolationState;
@@ -60,14 +56,14 @@ fn agent_app_with_session() -> (App, Arc<MockBackend>) {
 
 /// Render the full App (Navigator + Compositor) into a 100x24
 /// TestBackend and return the buffer for header-row assertions.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(100, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Header row text — row 0 holds the SessionHeader strip.
@@ -82,23 +78,24 @@ fn header_text(buf: &Buffer) -> String {
 /// Column index of the `I` glyph inside the first `[ISOLATED]` badge
 /// on row 0 (panics via `expect` when the badge is absent — only call
 /// after asserting `header_text` contains `[ISOLATED]`).
-fn isolated_badge_i_col(buf: &Buffer) -> u16 {
+fn isolated_badge_i_col(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
     let row = header_text(buf);
-    let idx = row.find("[ISOLATED]").expect("find [ISOLATED] badge");
+    let idx = row.find("[ISOLATED]").or_fail("find [ISOLATED] badge")?;
     let col = row[..idx].chars().count() as u16 + 1; // skip the '['
     assert_eq!(
         buf[(col, 0)].symbol(),
         "I",
         "cell at col {col} should be 'I'"
     );
-    col
+    Ok(col)
 }
 
 // ───────────────────────── tests ──────────────────────────────────────────
 
 /// Scenario: paint_header_and_role paints [ISOLATED] when store says session is isolated
 #[test]
-fn scenario_paint_header_and_role_paints_isolated_when_store_says_session_is_isolated() {
+fn scenario_paint_header_and_role_paints_isolated_when_store_says_session_is_isolated() -> TestResult
+{
     // @step Given an App with a single session s-1 in AgentView
     let (mut app, _mock) = agent_app_with_session();
     // @step And the store's isolation_state_by_session[s-1] is IsolationState { is_isolated: true, worktree_path: Some("/tmp/wt"), base_commit: Some("abc123") }
@@ -111,7 +108,7 @@ fn scenario_paint_header_and_role_paints_isolated_when_store_says_session_is_iso
         },
     );
     // @step When the App renders
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     // @step Then the header row contains the substring "[ISOLATED]"
     let row = header_text(&buf);
     assert!(
@@ -119,17 +116,19 @@ fn scenario_paint_header_and_role_paints_isolated_when_store_says_session_is_iso
         "header must paint '[ISOLATED]' when the store says isolated; got: {row:?}"
     );
     // And the badge paints green (RPC-029 badge colour contract)
-    let col = isolated_badge_i_col(&buf);
+    let col = isolated_badge_i_col(&buf)?;
     assert_eq!(
         buf[(col, 0)].fg,
         Color::Green,
         "[ISOLATED] fg must be Green"
     );
+    Ok(())
 }
 
 /// Scenario: paint_header_and_role does not paint [ISOLATED] when store says session is not isolated
 #[test]
-fn scenario_paint_header_and_role_does_not_paint_isolated_when_store_says_not_isolated() {
+fn scenario_paint_header_and_role_does_not_paint_isolated_when_store_says_not_isolated(
+) -> TestResult {
     // @step Given an App with a single session s-1 in AgentView
     let (mut app, _mock) = agent_app_with_session();
     // @step And the store's isolation_state_by_session[s-1] is IsolationState { is_isolated: false, worktree_path: None, base_commit: None }
@@ -142,33 +141,37 @@ fn scenario_paint_header_and_role_does_not_paint_isolated_when_store_says_not_is
         },
     );
     // @step When the App renders
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     // @step Then the header row does NOT contain the substring "[ISOLATED]"
     let row = header_text(&buf);
     assert!(
         !row.contains("[ISOLATED]"),
         "header must NOT paint '[ISOLATED]' when the store says non-isolated; got: {row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: paint_header_and_role does not paint [ISOLATED] when no isolation chunk has arrived
 #[test]
-fn scenario_paint_header_and_role_does_not_paint_isolated_when_no_isolation_chunk_has_arrived() {
+fn scenario_paint_header_and_role_does_not_paint_isolated_when_no_isolation_chunk_has_arrived(
+) -> TestResult {
     // @step Given an App with a single session s-1 in AgentView
     let (mut app, _mock) = agent_app_with_session();
     // @step When the App renders
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     // @step Then the header row does NOT contain the substring "[ISOLATED]"
     let row = header_text(&buf);
     assert!(
         !row.contains("[ISOLATED]"),
         "header must NOT paint '[ISOLATED]' when no IsolationState entry exists; got: {row:?}"
     );
+    Ok(())
 }
 
 /// Scenario: IsolationStateChange(true, ...) chunk dispatched before render makes badge appear
 #[test]
-fn scenario_isolation_state_change_true_chunk_dispatched_before_render_makes_badge_appear() {
+fn scenario_isolation_state_change_true_chunk_dispatched_before_render_makes_badge_appear(
+) -> TestResult {
     // @step Given an App with a single session s-1 in AgentView
     let (mut app, _mock) = agent_app_with_session();
     // @step When Action::ChunkReceived(s-1, StreamChunk::IsolationStateChange { is_isolated: true, worktree_path: Some("/tmp/wt"), base_commit: Some("abc123") }) is dispatched
@@ -181,24 +184,26 @@ fn scenario_isolation_state_change_true_chunk_dispatched_before_render_makes_bad
         },
     ));
     // @step And the App renders
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     // @step Then the header row contains the substring "[ISOLATED]"
     let row = header_text(&buf);
     assert!(
         row.contains("[ISOLATED]"),
         "header must paint '[ISOLATED]' after an IsolationStateChange(true, ...) chunk; got: {row:?}"
     );
-    let col = isolated_badge_i_col(&buf);
+    let col = isolated_badge_i_col(&buf)?;
     assert_eq!(
         buf[(col, 0)].fg,
         Color::Green,
         "[ISOLATED] fg must be Green"
     );
+    Ok(())
 }
 
 /// Scenario: IsolationStateChange(false, None) chunk dispatched before render removes badge
 #[test]
-fn scenario_isolation_state_change_false_chunk_dispatched_before_render_removes_badge() {
+fn scenario_isolation_state_change_false_chunk_dispatched_before_render_removes_badge() -> TestResult
+{
     // @step Given an App with a single session s-1 in AgentView
     let (mut app, _mock) = agent_app_with_session();
     // @step And Action::ChunkReceived(s-1, StreamChunk::IsolationStateChange { is_isolated: true, worktree_path: Some("/tmp/wt"), base_commit: Some("abc123") }) is dispatched
@@ -220,11 +225,12 @@ fn scenario_isolation_state_change_false_chunk_dispatched_before_render_removes_
         },
     ));
     // @step And the App renders
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     // @step Then the header row does NOT contain the substring "[ISOLATED]"
     let row = header_text(&buf);
     assert!(
         !row.contains("[ISOLATED]"),
         "header must drop '[ISOLATED]' after an IsolationStateChange(false, None) chunk; got: {row:?}"
     );
+    Ok(())
 }

@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "171-266",
+          "lines": "182-281",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
               "lines": [
+                35,
                 36,
                 37,
                 38,
@@ -50,12 +51,26 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub fn close_pane(&mut self) -> bool {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
+                68,
+                69,
                 70,
                 71,
                 72,
@@ -100,49 +115,30 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116
-              ]
+                114
+              ],
+              "firstLine": "#[allow(clippy::too_many_arguments)]",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "self.apply_mux_pane_close(action);",
+              "lastLine": "_ => {}"
             }
           ]
         }
@@ -153,11 +149,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "276-348",
+          "lines": "307-366",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
+                68,
+                69,
                 70,
                 71,
                 72,
@@ -202,14 +200,15 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116
-              ]
+                114
+              ],
+              "firstLine": "#[allow(clippy::too_many_arguments)]",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
               "lines": [
+                35,
                 36,
                 37,
                 38,
@@ -250,8 +249,20 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub fn close_pane(&mut self) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -262,11 +273,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "357-417",
+          "lines": "389-432",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
+                68,
+                69,
                 70,
                 71,
                 72,
@@ -311,10 +324,10 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116
-              ]
+                114
+              ],
+              "firstLine": "#[allow(clippy::too_many_arguments)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -325,11 +338,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "427-470",
+          "lines": "460-490",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/panes.rs",
               "lines": [
+                35,
                 36,
                 37,
                 38,
@@ -370,47 +384,40 @@
                 73,
                 74,
                 75,
-                76
-              ]
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub fn close_pane(&mut self) -> bool {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "self.apply_mux_pane_close(action);",
+              "lastLine": "_ => {}"
             }
           ]
         }
@@ -421,15 +428,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "653-692",
+          "lines": "691-715",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
-                81,
-                82,
-                83
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "match kind {",
+              "lastLine": "super::MuxPaneKind::Agent => agent_view.handle_event(event),"
             }
           ]
         }
@@ -440,15 +449,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "696-732",
+          "lines": "734-759",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
-                81,
-                82,
-                83
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "match kind {",
+              "lastLine": "super::MuxPaneKind::Agent => agent_view.handle_event(event),"
             }
           ]
         }
@@ -459,21 +470,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug183_mux_pane_esc_close.rs",
-          "lines": "736-764",
+          "lines": "773-795",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/views/navigator_auxiliary.rs",
               "lines": [
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "let closing = match action {",
+              "lastLine": "}"
             }
           ]
         }
@@ -490,8 +510,9 @@
     "implFiles": [
       "rust/fspec-tui/src/views/multiplex/panes.rs",
       "rust/fspec-tui/src/views/multiplex/keys.rs",
-      "rust/fspec-tui/src/views/navigator.rs"
+      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/views/navigator_auxiliary.rs"
     ],
-    "totalLinesCovered": 727
+    "totalLinesCovered": 654
   }
 }

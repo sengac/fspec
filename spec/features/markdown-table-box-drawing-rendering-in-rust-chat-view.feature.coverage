@@ -84,7 +84,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "/// Render one contiguous pipe block. If it has no separator row it is not a",
+              "lastLine": "out.push(right);"
             }
           ]
         }
@@ -100,7 +102,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
-                159,
                 160,
                 161,
                 162,
@@ -114,8 +115,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "/// Emit a `│ a │ b │` content row with each cell padded per alignment.",
+              "lastLine": "}"
             }
           ]
         }
@@ -131,8 +136,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
-                111,
-                112,
                 113,
                 114,
                 115,
@@ -176,8 +179,12 @@
                 153,
                 154,
                 155,
-                156
-              ]
+                156,
+                157,
+                158
+              ],
+              "firstLine": "// Data rows are those after the separator; pad/truncate to header length.",
+              "lastLine": "}"
             }
           ]
         }
@@ -219,7 +226,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "pub fn format_markdown_tables(input: &str) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -261,14 +270,10 @@
                 38,
                 39,
                 40
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/src/store/agent_view/markdown_tables_tests.rs",
-          "lines": "219-256",
-          "implMappings": [
+              ],
+              "firstLine": "pub fn format_markdown_tables(input: &str) -> String {",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
               "lines": [
@@ -346,7 +351,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "/// Render one contiguous pipe block. If it has no separator row it is not a",
+              "lastLine": "out.push(right);"
             }
           ]
         }
@@ -373,7 +380,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// Render one contiguous pipe block. If it has no separator row it is not a",
+              "lastLine": "}"
             }
           ]
         }
@@ -389,28 +398,59 @@
             {
               "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
               "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "for paragraph in text.split('\\n') {",
+              "lastLine": "/// Wrap a single newline-free paragraph by word-splitting, breaking"
             }
           ]
         }
@@ -429,6 +469,6 @@
       "rust/fspec-tui/src/store/agent_view/markdown_tables.rs",
       "rust/fspec-tui/src/views/agent/text_wrap.rs"
     ],
-    "totalLinesCovered": 586
+    "totalLinesCovered": 578
   }
 }

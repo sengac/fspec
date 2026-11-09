@@ -8,6 +8,8 @@ use uuid::Uuid;
 
 #[path = "indexing_legacy_v1.rs"]
 mod legacy;
+#[path = "same_tick.rs"]
+mod same_tick;
 
 pub type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
@@ -16,24 +18,57 @@ pub struct Fixture {
     pub ids: Vec<Uuid>,
 }
 
+/// BUG-460: the explicit diagnostic root. A runner may set
+/// `FSPEC_INDEX_DIAGNOSTIC_ROOT` (with a matching `TMPDIR`, the BUG-275
+/// harness); otherwise this process creates its own isolated root once and
+/// points both variables at it before any fixture or child process exists,
+/// so the tests run under plain `cargo test` and still prove every fixture
+/// stays inside the root.
+pub fn diagnostic_root() -> TestResult<PathBuf> {
+    static ROOT: std::sync::OnceLock<Result<PathBuf, String>> = std::sync::OnceLock::new();
+    let root = ROOT.get_or_init(|| {
+        if let Some(root) = std::env::var_os("FSPEC_INDEX_DIAGNOSTIC_ROOT") {
+            return PathBuf::from(root)
+                .canonicalize()
+                .map_err(|error| format!("the diagnostic root cannot be resolved: {error}"));
+        }
+        let root = tempfile::Builder::new()
+            .prefix("fspec-index-diagnostics-")
+            .tempdir()
+            .map_err(|error| format!("cannot create the diagnostic root: {error}"))?
+            .keep();
+        let root = root
+            .canonicalize()
+            .map_err(|error| format!("the diagnostic root cannot be resolved: {error}"))?;
+        std::env::set_var("FSPEC_INDEX_DIAGNOSTIC_ROOT", &root);
+        std::env::set_var("TMPDIR", &root);
+        Ok(root)
+    });
+    root.clone().map_err(Into::into)
+}
+
 impl Fixture {
     pub fn new(count: usize, bytes: usize) -> TestResult<Self> {
-        let allowed =
-            PathBuf::from(std::env::var("FSPEC_INDEX_DIAGNOSTIC_ROOT")?).canonicalize()?;
+        let allowed = diagnostic_root()?;
         let directory = setup_temp_directory()?;
         let path = directory.path().canonicalize()?;
         assert!(
             path.starts_with(&allowed),
             "fixture escaped the explicit diagnostic root"
         );
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(path.clone())?;
         codelet_core::persistence::reset_stores_for_tests();
         assert_eq!(codelet_common::get_data_dir()?, path);
-        let mut store = MessageStore::new()?;
+        let store = MessageStore::new()?;
         let mut ids = Vec::new();
         for number in 0..count {
             ids.push(store.store("user", &format!("synthetic-{number}:{}", "x".repeat(bytes)))?);
         }
+        drop(store);
+        // BUG-494: start every fixture in the same-tick state (BUG-519)
+        // instead of reaching it only when a run happens to produce it.
+        same_tick::share_index_tick(&path)?;
         Ok(Self { directory, ids })
     }
 

@@ -55,12 +55,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Add Architecture Diagrams",
         example: "fspec add-diagram \"Architecture\" \"System Overview\" \"graph TB\\n  User-->API\\n  API-->Database\"\nfspec add-diagram \"Architecture\" \"Component Structure\" \"graph LR\\n  CLI-->Core\\n  Core-->Utils\"",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Update Existing Diagram",
         example: "# Adding a diagram with the same title replaces the existing one\nfspec add-diagram \"Architecture\" \"System Overview\" \"graph TB\\n  User-->Gateway\\n  Gateway-->Services\"",
-        description: "undefined",
+        description: None,
     }),
 ];
 

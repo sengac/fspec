@@ -14,15 +14,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             },
             {
               "file": "rust/providers/src/openai_discovery.rs",
@@ -31,13 +33,23 @@
                 20,
                 34,
                 48
-              ]
+              ],
+              "firstLine": ".unwrap_or_else(|| \"an invalid endpoint\".to_string())",
+              "lastLine": "}"
             },
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                321
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models_with_auth(",
+              "lastLine": ""
             }
           ]
         }
@@ -57,15 +69,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             },
             {
               "file": "rust/providers/src/openai_discovery.rs",
@@ -74,13 +88,23 @@
                 20,
                 34,
                 48
-              ]
+              ],
+              "firstLine": ".unwrap_or_else(|| \"an invalid endpoint\".to_string())",
+              "lastLine": "}"
             },
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                321
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models_with_auth(",
+              "lastLine": ""
             }
           ]
         }
@@ -100,15 +124,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             },
             {
               "file": "rust/providers/src/openai_discovery.rs",
@@ -117,13 +143,23 @@
                 20,
                 34,
                 48
-              ]
+              ],
+              "firstLine": ".unwrap_or_else(|| \"an invalid endpoint\".to_string())",
+              "lastLine": "}"
             },
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                321
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models_with_auth(",
+              "lastLine": ""
             }
           ]
         }
@@ -143,15 +179,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             },
             {
               "file": "rust/providers/src/openai_discovery.rs",
@@ -160,7 +198,9 @@
                 20,
                 34,
                 48
-              ]
+              ],
+              "firstLine": ".unwrap_or_else(|| \"an invalid endpoint\".to_string())",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/error.rs",
@@ -169,13 +209,23 @@
                 40,
                 86,
                 112
-              ]
+              ],
+              "firstLine": "pub enum ModelDiscoveryFailure {",
+              "lastLine": "ProviderError::RateLimit {"
             },
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                321
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models_with_auth(",
+              "lastLine": ""
             }
           ]
         }
@@ -195,15 +245,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             },
             {
               "file": "rust/providers/src/openai_discovery.rs",
@@ -212,7 +264,9 @@
                 20,
                 34,
                 48
-              ]
+              ],
+              "firstLine": ".unwrap_or_else(|| \"an invalid endpoint\".to_string())",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/error.rs",
@@ -221,13 +275,23 @@
                 40,
                 86,
                 112
-              ]
+              ],
+              "firstLine": "pub enum ModelDiscoveryFailure {",
+              "lastLine": "ProviderError::RateLimit {"
             },
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                321
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models_with_auth(",
+              "lastLine": ""
             }
           ]
         }
@@ -247,15 +311,17 @@
                 32,
                 46,
                 67
-              ]
+              ],
+              "firstLine": "fn label(&self) -> &'static str {",
+              "lastLine": "pub(super) fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {"
             },
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                26,
-                522,
-                566
-              ]
+                22
+              ],
+              "firstLine": "use discovery::probe_profile_models;",
+              "lastLine": "use discovery::probe_profile_models;"
             }
           ]
         }
@@ -273,9 +339,9 @@
       "rust/sessions/src/profile_discovery.rs",
       "rust/sessions/src/profile_sections.rs",
       "rust/providers/src/openai_discovery.rs",
-      "rust/providers/src/openai.rs",
+      "rust/providers/src/openai/agent.rs",
       "rust/providers/src/error.rs"
     ],
-    "totalLinesCovered": 285
+    "totalLinesCovered": 303
   }
 }

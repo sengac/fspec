@@ -1,6 +1,8 @@
 @GIT-038
 @gitoxide-integration
 @isolated-sessions
+@codelet
+@context-management
 Feature: Send merge conflict context to LLM for AI-assisted resolution
   """
   When /merge-worktree detects conflicts, send a user message to the Rust session

@@ -1,0 +1,536 @@
+{
+  "scenarios": [
+    {
+      "name": "ConnectMCP connects a bearer-guarded legacy SSE server and calls its tool",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "65-93",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/types.rs",
+              "lines": [
+                69,
+                70
+              ],
+              "firstLine": "/// Transport type for MCP connections.",
+              "lastLine": "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]"
+            },
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "pub async fn connect(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/sse_connect.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// MCP-006: connect to an MCP server over the legacy HTTP+SSE transport.",
+              "lastLine": ")"
+            },
+            {
+              "file": "rust/tools/src/mcp/remote_connect.rs",
+              "lines": "1-150",
+              "firstLine": "// MCP-006: the tail shared by the remote (Streamable HTTP and legacy SSE)",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "McpTransport::Sse => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A legacy SSE server that requires credentials refuses a connection without headers",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "95-113",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "fn check_status(status: reqwest::StatusCode) -> Result<(), LegacySseError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreachable SSE url fails the connect",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "115-130",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub async fn connect(",
+              "lastLine": ".map_err(|error| LegacySseError::Request(error.without_url().to_string()))?;"
+            },
+            {
+              "file": "rust/tools/src/mcp/sse_connect.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "let timeout = std::time::Duration::from_secs(timeout_secs);",
+              "lastLine": "))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A server that never sends the endpoint event times out",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "132-151",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_connect.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "let timeout = std::time::Duration::from_secs(timeout_secs);",
+              "lastLine": "))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An endpoint on another origin is refused",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "153-170",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "let endpoint = url",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Streamable HTTP server is not mistaken for a legacy SSE server",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "172-188",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "check_status(response.status())?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A daemon client configures a legacy SSE server for one session only",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "201-245",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "/// MCP-006: connect to a legacy (2024-11-05) HTTP+SSE MCP endpoint; never",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_mcp.rs",
+              "lines": [
+                23
+              ],
+              "firstLine": "SessionMcpTransport::Sse { url, headers } => HostMcpTransport::Sse { url, headers },",
+              "lastLine": "SessionMcpTransport::Sse { url, headers } => HostMcpTransport::Sse { url, headers },"
+            },
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                200,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "args: Vec<String>,",
+              "lastLine": "connections: &McpConnectionMap,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A disconnected SSE server can be connected again",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "247-268",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/sse_transport.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "async fn close(&mut self) -> Result<(), Self::Error> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug output of an SSE transport hides the url and header values",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs",
+          "lines": "270-291",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": ".debug_struct(\"Sse\")",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/mcp006_legacy_sse_transport.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/mcp/types.rs",
+      "rust/tools/src/mcp/sse_transport.rs",
+      "rust/tools/src/mcp/sse_connect.rs",
+      "rust/tools/src/mcp/remote_connect.rs",
+      "rust/tools/src/mcp/connect_tool.rs",
+      "rust/rpc-types/src/session_mcp.rs",
+      "rust/sessions/src/session_mcp.rs",
+      "rust/tools/src/mcp/host_config.rs"
+    ],
+    "totalLinesCovered": 516
+  }
+}

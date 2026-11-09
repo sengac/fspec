@@ -100,6 +100,13 @@ impl Navigator {
                 _ => EventResult::ignored(),
             };
         }
+        // TUI-130: a paste goes into the open custom-model form.
+        if let Event::Paste(text) = event {
+            return match self.model_selector.handle_paste(text) {
+                ModelSelectorEvent::Consumed => EventResult::consumed(),
+                _ => EventResult::ignored(),
+            };
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };

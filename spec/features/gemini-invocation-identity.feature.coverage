@@ -10,15 +10,18 @@
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
               "lines": [
-                174,
                 175,
                 176,
                 177,
                 178,
                 179,
                 180,
-                181
-              ]
+                181,
+                182,
+                183
+              ],
+              "firstLine": "part: PartKind::FunctionCall(function_call),",
+              "lastLine": "},"
             }
           ]
         }
@@ -42,7 +45,9 @@
                 201,
                 202,
                 203
-              ]
+              ],
+              "firstLine": "self.append(JournalEvent::Terminal { outcome }, None)?;",
+              "lastLine": "return Err(\"tool dispatch lacks an acknowledged unique invocation\".into());"
             }
           ]
         }
@@ -60,6 +65,6 @@
       "rust/patches/rig-core/src/providers/gemini/streaming.rs",
       "rust/agent-loop/src/stream_journal.rs"
     ],
-    "totalLinesCovered": 138
+    "totalLinesCovered": 139
   }
 }

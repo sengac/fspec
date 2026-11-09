@@ -9,22 +9,11 @@
 //! - RPC-032: messages.rs (MessageStore + binary index)
 //! - RPC-033: manifest.rs (SessionStore + SessionManifest + every
 //!   session-level free function; MESSAGE_STORE + SESSION_STORE singletons)
-//! - RPC-034: blob.rs + blob_processing.rs (BlobStore + BLOB_STORE
-//!   singleton + store_blob/get_blob/blob_exists facade +
-//!   should_use_blob_storage + BLOB_REF_PREFIX + envelope blob
-//!   processing/rehydration)
+//! - RPC-034: blob.rs + blob_processing.rs (BlobStore + BLOB_STORE singleton,
+//!   blob facade, should_use_blob_storage, envelope blob rehydration)
 //!
-//! Phase 1 of RPC-030 is now complete after RPC-035: codelet-napi no
-//! longer owns any pure-Rust persistence logic OR persistence test
-//! ownership. Its `persistence/mod.rs` is reduced to a ~15-line facade
-//! (doc-comment + `pub use codelet_core::persistence::*;` + the
-//! `#[cfg(not(feature = "noop"))] mod napi_bindings;` gate). The
-//! credentials + knowledge-graph reset that previously lived in the
-//! NAPI `set_data_directory` wrapper is inlined into the
-//! `#[napi] persistence_set_data_directory` entry point in
-//! `rust/napi/src/persistence/napi_bindings.rs`. The 48-test +
-//! 9-test persistence suites that previously lived under codelet-napi
-//! now live in `rust/core/src/persistence/{tests,lazy_init_tests}.rs`.
+//! RPC-035 completed the lift; the persistence tests live in
+//! `rust/core/src/persistence/{tests,lazy_init_tests}.rs`.
 
 pub mod archive;
 pub mod blob;
@@ -37,10 +26,12 @@ pub mod compaction_boundary;
 pub mod compaction_commit;
 pub mod conversation_commit;
 pub mod history;
+pub mod input_receipts;
 pub mod manifest;
 pub mod manifest_commit;
 mod manifest_delete;
 mod manifest_discovery;
+pub use manifest_delete::release_session_ownership;
 pub use manifest_discovery::session_manifest_issues;
 mod manifest_updates;
 pub mod request_settlement;

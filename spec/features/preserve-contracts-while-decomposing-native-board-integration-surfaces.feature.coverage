@@ -1,0 +1,290 @@
+{
+  "scenarios": [
+    {
+      "name": "Ordered public and implementation contracts retain their baseline",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "98-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/refac019/appended.rs",
+              "lines": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "/// Members appended after the frozen baseline by approved additive work:",
+              "lastLine": "\"submit_input\","
+            },
+            {
+              "file": "rust/fspec-tui/src/components/mod.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "include!(\"action_runtime.rs\");",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backend consumers retain object safety and existing defaults",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "179-221",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "lines": [
+                71,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "WorkUnitDetails(String),",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Decomposed integration source remains below the module ceiling",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "223-251",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ],
+              "firstLine": "use crate::views::multiplex::{",
+              "lastLine": "include!(\"navigator_mux_routing.rs\");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MCP mappings equal the resolved service methods exactly",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "253-300",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                96,
+                97,
+                98,
+                101,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "use changed_files::collect_changed_files;",
+              "lastLine": "last_state_change_at: None,"
+            },
+            {
+              "file": "rust/fspec-tui/tests/refac019/appended.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "\"ConfirmRemoveSavedDaemon\",",
+              "lastLine": "line.split_once(' ')"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/refac019_contracts.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/tests/refac019/appended.rs",
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/rpc/src/lib.rs"
+    ],
+    "totalLinesCovered": 346
+  }
+}

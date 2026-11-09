@@ -5,6 +5,8 @@ mod app_support;
 #[path = "bug244/support.rs"]
 pub mod support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
 use app_support::{drain, rendered};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{
@@ -29,7 +31,7 @@ fn app(fixture: &Fixture) -> Result<App, Box<dyn std::error::Error>> {
 
 async fn queued_page(app: &mut App) -> Result<Action, Box<dyn std::error::Error>> {
     while let Some(task) = app.next_pending_task() {
-        let _ = task.await;
+        task.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         if matches!(action, Action::Transcript(TranscriptAction::Loaded { .. })) {
@@ -43,6 +45,11 @@ async fn queued_page(app: &mut App) -> Result<Action, Box<dyn std::error::Error>
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn resume_recovers_a_missed_server_clear_without_reopening() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given an open tab displaying content from a previous server generation
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -50,7 +57,7 @@ async fn resume_recovers_a_missed_server_clear_without_reopening() -> TestResult
     background.handle_output(StreamChunk::done());
     let mut app = app(&fixture)?;
     app.dispatch(Action::ReattachSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     assert!(rendered(&app, &fixture.id)?.contains("old-generation-only"));
     // @step When the server clears without delivering its lifecycle event and the user resumes
     tokio::task::block_in_place(|| background.clear_history())?;
@@ -59,7 +66,7 @@ async fn resume_recovers_a_missed_server_clear_without_reopening() -> TestResult
     background.handle_output(StreamChunk::text("new-generation-second".into()));
     background.handle_output(StreamChunk::done());
     app.dispatch(Action::AttachToSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step Then only new generation content renders exactly once in order
     let text = rendered(&app, &fixture.id)?;
     assert!(!text.contains("old-generation-only"), "{text}");
@@ -72,6 +79,11 @@ async fn resume_recovers_a_missed_server_clear_without_reopening() -> TestResult
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn archive_installation_during_partial_hydration_recovers_atomically() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a tab with a partial payload and pinned snapshot from an unseeded generation
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -99,12 +111,12 @@ async fn archive_installation_during_partial_hydration_recovers_atomically() -> 
         Ok((StreamChunk::text("archive-first-unique".into()), None)),
         Ok((StreamChunk::done(), None)),
     ])?);
-    drain(&mut app).await;
+    drain(&mut app).await?;
     app.dispatch(Action::AttachToSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     let before_late = rendered(&app, &fixture.id)?;
     app.dispatch(late);
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step Then old bytes and late responses are discarded and authoritative history renders once
     let text = rendered(&app, &fixture.id)?;
     assert_eq!(
@@ -122,6 +134,11 @@ async fn archive_installation_during_partial_hydration_recovers_atomically() -> 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn unchanged_generation_reconnect_preserves_deduplication() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given an open hydrated tab with existing transcript content
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -129,16 +146,16 @@ async fn unchanged_generation_reconnect_preserves_deduplication() -> TestResult 
     background.handle_output(StreamChunk::done());
     let mut app = app(&fixture)?;
     app.dispatch(Action::ReattachSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step When the user resumes twice without a generation change
     for _ in 0..2 {
         app.dispatch(Action::AttachToSession(fixture.id.clone()));
-        drain(&mut app).await;
+        drain(&mut app).await?;
     }
     background.handle_output(StreamChunk::text("unchanged-next".into()));
     background.handle_output(StreamChunk::done());
     app.dispatch(Action::Transcript(TranscriptAction::Poll));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step Then existing and subsequent content each render exactly once
     let text = rendered(&app, &fixture.id)?;
     assert_eq!(text.matches("unchanged-original").count(), 1);
@@ -149,6 +166,11 @@ async fn unchanged_generation_reconnect_preserves_deduplication() -> TestResult 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn transient_page_failures_preserve_displayed_history() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given an open hydrated tab with existing transcript content
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -156,7 +178,7 @@ async fn transient_page_failures_preserve_displayed_history() -> TestResult {
     background.handle_output(StreamChunk::done());
     let mut app = app(&fixture)?;
     app.dispatch(Action::ReattachSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step When a transport failure occurs before resume succeeds
     app.dispatch(Action::Transcript(TranscriptAction::Poll));
     let mut failed = queued_page(&mut app).await?;
@@ -173,7 +195,7 @@ async fn transient_page_failures_preserve_displayed_history() -> TestResult {
     background.handle_output(StreamChunk::text("transport-next".into()));
     background.handle_output(StreamChunk::done());
     app.dispatch(Action::AttachToSession(fixture.id.clone()));
-    drain(&mut app).await;
+    drain(&mut app).await?;
     // @step Then displayed content remains intact and catch up renders each event once
     let text = rendered(&app, &fixture.id)?;
     assert_eq!(text.matches("transport-preserved").count(), 1);

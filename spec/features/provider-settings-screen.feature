@@ -1,4 +1,6 @@
 @TUI-074
+@providers
+@provider-settings
 Feature: Create ProviderSettingsScreen component
   """
   ProviderSettingsScreen composes useProviderSettingsState hook with useInput keyboard handler and ProviderSettingsPanel presentation component - follows orchestrator pattern established by ModelSelectorScreen (TUI-073)

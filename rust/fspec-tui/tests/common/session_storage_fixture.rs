@@ -1,3 +1,4 @@
+use crate::common::TaskOutcome;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -15,6 +16,8 @@ pub struct StorageFixture {
     pub directory: TempDir,
     pub manager: Arc<SessionManager>,
     pub backends: Vec<Arc<dyn FspecBackend>>,
+    /// Transport name of each entry in `backends`, for assertion messages.
+    pub labels: Vec<&'static str>,
     previous_directory: Option<PathBuf>,
     previous_key: Option<std::ffi::OsString>,
     server: JoinHandle<()>,
@@ -36,9 +39,12 @@ impl StorageFixture {
             directory.path().join("spec/work-units.json"),
             "{\"workUnits\":{}}",
         )?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         codelet_core::persistence::reset_stores_for_tests();
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
+        // BUG-437: sessions are created in the manager's start workspace.
+        manager.set_default_project(directory.path().to_path_buf())?;
         let watcher = Arc::new(WorkUnitsWatcher::new(directory.path())?);
         let service = Arc::new(SharedFspecService::with_session_manager(
             watcher,
@@ -57,6 +63,7 @@ impl StorageFixture {
             directory,
             manager,
             backends: vec![embedded, websocket],
+            labels: vec!["embedded", "websocket"],
             previous_directory,
             previous_key,
             server,
@@ -72,7 +79,10 @@ impl StorageFixture {
     }
 
     pub fn select_model(&self) {
-        self.manager.set_default_model("anthropic/claude-opus-4-5");
+        assert_eq!(
+            self.manager.set_default_model("anthropic/claude-opus-4-5"),
+            Ok(())
+        );
     }
 }
 
@@ -80,7 +90,14 @@ impl Drop for StorageFixture {
     fn drop(&mut self) {
         self.server.abort();
         if let Some(directory) = &self.previous_directory {
-            let _ = codelet_common::set_data_directory(directory.clone());
+            let isolated = codelet_test_helpers::isolated_user_directory();
+            assert!(
+                isolated.is_ok(),
+                "BUG-640: isolate the user directory: {isolated:?}"
+            );
+            if let Err(error) = codelet_common::set_data_directory(directory.clone()) {
+                tracing::error!(%error, "session storage fixture could not restore the data directory");
+            }
         }
         codelet_core::persistence::reset_stores_for_tests();
         match &self.previous_key {
@@ -90,13 +107,16 @@ impl Drop for StorageFixture {
     }
 }
 
-pub async fn drain(app: &mut App) {
+/// Run every spawned app task and dispatch every queued action until both
+/// are empty. A panicked task is returned as an error; a task the App
+/// cancelled is finished.
+pub async fn drain(app: &mut App) -> Result<(), codelet_test_helpers::Failure> {
     loop {
         while let Some(task) = app.next_pending_task() {
-            let _ = task.await;
+            task.await.completed_or_cancelled()?;
         }
         let Some(action) = app.try_recv_action() else {
-            break;
+            return Ok(());
         };
         app.dispatch(action);
     }
@@ -155,10 +175,68 @@ pub fn compact(text: &str) -> String {
         .collect()
 }
 
-pub fn creation_actions() -> Vec<Action> {
+/// One user input in a creation path.
+pub enum Step {
+    Dispatch(Box<Action>),
+    Press(KeyCode),
+}
+
+/// Each user creation path as its inputs. Entering a board card opens the
+/// creation dialog for that card (626eee1ec); confirming the dialog with
+/// Enter is what creates the session.
+pub fn creation_flows() -> Vec<(&'static str, Vec<Step>)> {
     vec![
-        Action::CreateSessionSubmitted { isolated: false },
-        Action::EnterWorkUnit("BUG-271".into()),
-        Action::ModelSelected(None, "anthropic".into(), "claude-opus-4-5".into()),
+        (
+            "dialog",
+            vec![Step::Dispatch(Box::new(Action::CreateSessionSubmitted {
+                isolated: false,
+            }))],
+        ),
+        (
+            "work unit",
+            vec![
+                Step::Dispatch(Box::new(Action::EnterWorkUnit(BOARD_CARD.into()))),
+                Step::Press(KeyCode::Enter),
+            ],
+        ),
+        (
+            "model selection",
+            vec![Step::Dispatch(Box::new(Action::ModelSelected(
+                None,
+                "anthropic".into(),
+                "claude-opus-4-5".into(),
+            )))],
+        ),
     ]
+}
+
+/// Apply `step` to `app` and run everything it spawns.
+pub async fn perform(app: &mut App, step: Step) -> Result<(), codelet_test_helpers::Failure> {
+    match step {
+        Step::Dispatch(action) => app.dispatch(*action),
+        Step::Press(code) => key(app, code),
+    }
+    drain(app).await
+}
+
+/// The board card the work-unit creation path enters.
+pub const BOARD_CARD: &str = "BUG-271";
+
+/// An app on `backend` whose board shows `BOARD_CARD`.
+pub fn board_app(backend: Arc<dyn FspecBackend>) -> App {
+    let mut app = App::new(backend);
+    app.dispatch(Action::WorkUnitsLoaded(vec![
+        codelet_rpc_types::WorkUnitInfo {
+            id: BOARD_CARD.into(),
+            title: "Session storage diagnostics".into(),
+            status: "implementing".into(),
+            work_type: "bug".into(),
+            description: None,
+            estimate: None,
+            epic: None,
+            attachments: Vec::new(),
+            last_state_change_at: None,
+        },
+    ]));
+    app
 }

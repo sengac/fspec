@@ -1,0 +1,275 @@
+{
+  "scenarios": [
+    {
+      "name": "Every Action variant has a production emitter and a production handler",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui132_every_action_variant_is_reachable.rs",
+          "lines": "317-339",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/mod.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "macro_rules! compose_action_finish {",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The scaffolding nothing shows is gone",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui132_every_action_variant_is_reachable.rs",
+          "lines": "354-360",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/events.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) fn route_event(&mut self, event: &Event) -> EventResult {",
+              "lastLine": "let composer_result = self.compositor.handle_event(event);"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/reconnect.rs",
+              "lines": [
+                77
+              ],
+              "firstLine": "tokio::time::sleep(delay).await;",
+              "lastLine": "tokio::time::sleep(delay).await;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The resume view still deletes a session after its confirm",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui132_live_paths_and_footer_hints.rs",
+          "lines": "52-95",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "// The view opened its own delete confirm.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The API key row offers delete only when the provider is configured",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui132_live_paths_and_footer_hints.rs",
+          "lines": "138-161",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "pub fn footer_hint_for(kind: Option<RowKind>, configured: bool) -> String {",
+              "lastLine": "/// RPC-106: Translate the view's currently-focused NavItem into a `RowKind`"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider row advertises its arrow keys and delete",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui132_live_paths_and_footer_hints.rs",
+          "lines": "163-190",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "pub fn footer_hint_for(kind: Option<RowKind>, configured: bool) -> String {",
+              "lastLine": "/// RPC-106: Translate the view's currently-focused NavItem into a `RowKind`"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The shared terminal crate exports only the input queue",
+      "testMappings": [
+        {
+          "file": "rust/tui/tests/tui132_input_queue_only.rs",
+          "lines": "17-40",
+          "implMappings": [
+            {
+              "file": "rust/tui/src/lib.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "firstLine": "//! TUI (Terminal User Interface) - part of CLI Interface bounded context",
+              "lastLine": "pub use input_queue::InputQueue;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui132_every_action_variant_is_reachable.rs",
+      "rust/fspec-tui/tests/tui132_live_paths_and_footer_hints.rs",
+      "rust/tui/tests/tui132_input_queue_only.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/transport/websocket/reconnect.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs",
+      "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
+      "rust/tui/src/lib.rs"
+    ],
+    "totalLinesCovered": 287
+  }
+}

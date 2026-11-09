@@ -12,11 +12,11 @@
 //! These tests pin BOTH layers:
 //!   * the pure `project_display_infos` projection (ProviderCredentialInfo
 //!     -> ProviderDisplayInfo), and
-//!   * the end-to-end App dispatch wiring (Action::ProviderCredentialsLoaded
+//!   * the end-to-end App dispatch wiring (Action::ProviderSettingsRefreshed
 //!     now drives `set_provider_display_infos`, so `nav_items` is non-empty).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
@@ -46,16 +46,17 @@ fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCreden
     }
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn count_kind(
@@ -74,7 +75,7 @@ fn count_kind(
 // ────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn loading_credentials_populates_rich_nav_tree() {
+async fn loading_credentials_populates_rich_nav_tree() -> TestResult {
     // @step Given the backend returns provider credentials for "openai", "anthropic", and "gemini"
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![
@@ -86,8 +87,11 @@ async fn loading_credentials_populates_rich_nav_tree() {
     let mut app = App::new(backend);
 
     // @step When the Provider Settings view folds the loaded credentials
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Provider));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Provider,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then the view's nav tree contains three collapsed provider rows
     let view = &app.navigator().provider_settings;
@@ -112,6 +116,7 @@ async fn loading_credentials_populates_rich_nav_tree() {
     // (a non-empty nav_items forces render_list down the render_nav_items
     //  branch, so the placeholder is unreachable)
     assert!(!view.nav_items.is_empty(), "nav_items must be populated");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -119,7 +124,7 @@ async fn loading_credentials_populates_rich_nav_tree() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_api_key_provider_reveals_editable_api_key_row() {
+fn expanding_api_key_provider_reveals_editable_api_key_row() -> TestResult {
     // @step Given the Provider Settings view has loaded a "gemini" provider of credential type "api_key"
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -141,7 +146,7 @@ fn expanding_api_key_provider_reveals_editable_api_key_row() {
         .nav_items
         .iter()
         .position(|item| item.provider_id == "gemini" && matches!(item.kind, NavItemKind::ApiKey))
-        .expect("Gemini API-key row must be present");
+        .or_fail("Gemini API-key row must be present")?;
     assert!(matches!(
         view.focused_nav_item().map(|i| &i.kind),
         Some(NavItemKind::ApiKey)
@@ -158,6 +163,7 @@ fn expanding_api_key_provider_reveals_editable_api_key_row() {
             sub: DetailSub::EditApiKey { .. },
         } if provider_id == "gemini"
     ));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -165,7 +171,7 @@ fn expanding_api_key_provider_reveals_editable_api_key_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_configured_oauth_provider_reveals_logout_and_login_rows() {
+fn expanding_configured_oauth_provider_reveals_logout_and_login_rows() -> TestResult {
     // @step Given the Provider Settings view has loaded an "anthropic" provider of credential type "oauth" that is configured
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -191,6 +197,7 @@ fn expanding_configured_oauth_provider_reveals_logout_and_login_rows() {
         )) >= 1,
         "expected at least one OAuth login row under anthropic"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -198,7 +205,7 @@ fn expanding_configured_oauth_provider_reveals_logout_and_login_rows() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_uncredentialed_oauth_provider_reveals_login_rows() {
+fn expanding_uncredentialed_oauth_provider_reveals_login_rows() -> TestResult {
     // @step Given the Provider Settings view has loaded a "codex" provider of credential type "oauth" that is not configured
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -227,6 +234,7 @@ fn expanding_uncredentialed_oauth_provider_reveals_login_rows() {
         )) >= 1,
         "expected at least one OAuth login row under codex"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -234,7 +242,7 @@ fn expanding_uncredentialed_oauth_provider_reveals_login_rows() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_openai_provider_reveals_profiles_and_add_profile_row() {
+fn expanding_openai_provider_reveals_profiles_and_add_profile_row() -> TestResult {
     // @step Given the Provider Settings view has loaded an "openai" provider with profiles "fast" and "local"
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -274,6 +282,7 @@ fn expanding_openai_provider_reveals_profiles_and_add_profile_row() {
         0,
         "openai must never get an ApiKey row"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -281,7 +290,7 @@ fn expanding_openai_provider_reveals_profiles_and_add_profile_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn header_item_count_grows_when_provider_is_expanded() {
+fn header_item_count_grows_when_provider_is_expanded() -> TestResult {
     // @step Given the Provider Settings view has loaded a "gemini" provider of credential type "api_key"
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -305,4 +314,5 @@ fn header_item_count_grows_when_provider_is_expanded() {
         "expanded: header should report 4 items, got {:?}",
         view.title_text()
     );
+    Ok(())
 }

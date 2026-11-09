@@ -5,54 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "94-117",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation.rs",
-              "lines": [
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371
-              ]
-            }
-          ]
+          "lines": "87-110",
+          "implMappings": []
         }
       ]
     },
@@ -61,25 +15,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "124-156",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation.rs",
-              "lines": [
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371
-              ]
-            }
-          ]
+          "lines": "117-148",
+          "implMappings": []
         }
       ]
     },
@@ -88,46 +25,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "163-202",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation.rs",
-              "lines": [
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408
-              ]
-            }
-          ]
+          "lines": "155-194",
+          "implMappings": []
         }
       ]
     },
@@ -136,46 +35,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "209-239",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation.rs",
-              "lines": [
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408
-              ]
-            }
-          ]
+          "lines": "201-235",
+          "implMappings": []
         }
       ]
     },
@@ -184,11 +45,14 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "246-260",
+          "lines": "242-257",
           "implMappings": [
             {
               "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
               "lines": [
+                243,
+                244,
+                245,
                 246,
                 247,
                 248,
@@ -200,11 +64,10 @@
                 254,
                 255,
                 256,
-                257,
-                258,
-                259,
-                260
-              ]
+                257
+              ],
+              "firstLine": "fn deleted_tautological_gemini_test_file_is_absent() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -215,7 +78,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "267-295",
+          "lines": "264-290",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -268,7 +131,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "if matches!(assistant_msg, Message::Assistant { .. }) {",
+              "lastLine": ""
             }
           ]
         }
@@ -279,7 +144,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "302-343",
+          "lines": "297-342",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -332,7 +197,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "if matches!(assistant_msg, Message::Assistant { .. }) {",
+              "lastLine": ""
             }
           ]
         }
@@ -343,7 +210,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "350-365",
+          "lines": "349-365",
           "implMappings": [
             {
               "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
@@ -364,7 +231,9 @@
                 363,
                 364,
                 365
-              ]
+              ],
+              "firstLine": "fn deleted_tautological_empty_turn_test_file_is_absent() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -375,22 +244,25 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_real_integration_coverage_test.rs",
-          "lines": "372-391",
+          "lines": "372-392",
           "implMappings": [
             {
               "file": "rust/cli/tests/compaction_convergence_watchdog_test.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57
-              ]
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "// Scenario: Normal compaction succeeds without watchdog intervention",
+              "lastLine": ""
             }
           ]
         }
@@ -405,11 +277,10 @@
       "rust/cli/tests/compaction_real_integration_coverage_test.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/gemini_continuation.rs",
       "rust/cli/tests/compaction_real_integration_coverage_test.rs",
       "rust/cli/src/interactive_helpers.rs",
       "rust/cli/tests/compaction_convergence_watchdog_test.rs"
     ],
-    "totalLinesCovered": 502
+    "totalLinesCovered": 396
   }
 }

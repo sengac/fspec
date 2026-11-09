@@ -18,7 +18,7 @@
 #![allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
 
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::default_model_persistence::load_default_model_with_dir;
@@ -63,21 +63,44 @@ async fn selected_default_model_survives_restart() {
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a data directory with no persisted default model
     let (_tmp, dir) = seed_data_dir();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(dir.clone()).expect("set data dir");
     assert!(
-        load_default_model_with_dir(&dir).is_none(),
+        load_default_model_with_dir(&dir)
+            .expect("the default model loads")
+            .is_none(),
         "precondition: nothing persisted yet"
     );
 
     // @step And a session manager whose default model is set to "anthropic/claude-opus-4-5"
-    let manager1 = Arc::new(SessionManager::new());
+    let manager1 = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager1.set_default_project(workspace)),
+        Ok(())
+    );
     let handle1: &dyn SessionManagerHandle = manager1.as_ref();
-    handle1.set_default_model("anthropic/claude-opus-4-5");
+    assert_eq!(
+        handle1.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
 
-    // @step When a fresh session manager is constructed against the same data directory
+    // @step When a fresh session manager is constructed against the same data directory and restores the persisted default model
     drop(manager1);
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(dir).expect("re-set data dir");
-    let manager2 = Arc::new(SessionManager::new());
+    let manager2 = SessionManager::new();
+    // BUG-463: the daemon restores the persisted default after construction.
+    manager2
+        .restore_persisted_default_model()
+        .expect("the persisted default model is restored");
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager2.set_default_project(workspace)),
+        Ok(())
+    );
     let handle2: &dyn SessionManagerHandle = manager2.as_ref();
 
     // @step Then the fresh session manager reports the default model "anthropic/claude-opus-4-5"
@@ -88,7 +111,9 @@ async fn selected_default_model_survives_restart() {
     );
 
     // @step And the first create_session is no longer declined
-    let sid = handle2.create_session(None);
+    let sid = handle2
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     assert!(
         !sid.value.is_empty(),
         "first create_session must succeed after restart"
@@ -107,8 +132,15 @@ async fn first_launch_no_config_has_no_default() {
     let (_tmp, dir) = seed_data_dir();
 
     // @step When a session manager is constructed against that data directory
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(dir).expect("set data dir");
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step Then the session manager reports no default model
@@ -118,10 +150,12 @@ async fn first_launch_no_config_has_no_default() {
     );
 
     // @step And the first create_session is declined until a model is selected
-    let sid = handle.create_session(None);
+    let result = handle.create_session_checked(None);
     assert!(
-        sid.value.is_empty(),
-        "create_session must decline (empty id) with no default model"
+        result
+            .as_ref()
+            .is_err_and(|error| error.contains("no default model")),
+        "create_session must fail naming the missing default model, got {result:?}"
     );
 }
 
@@ -135,14 +169,22 @@ async fn empty_model_selection_is_never_persisted() {
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a data directory with no persisted default model
     let (_tmp, dir) = seed_data_dir();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(dir.clone()).expect("set data dir");
 
     // @step And a session manager constructed against that data directory
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When the default model is set to an empty string
-    handle.set_default_model("");
+    // BUG-411: an empty model is refused (and so never persisted).
+    assert!(handle.set_default_model("").is_err());
 
     // @step Then no default model file is written to disk
     assert!(
@@ -158,25 +200,21 @@ async fn empty_model_selection_is_never_persisted() {
 }
 
 // =============================================================================
-// Scenario: A missing or malformed config file degrades to no default model
+// Scenario: A missing default model file loads as no default model (BUG-463:
+// a malformed one is an error — default-model-read-failures-are-reported)
 // =============================================================================
 #[test]
-fn missing_or_malformed_config_loads_none() {
-    // @step Given a data directory whose default model file is missing or malformed
+fn missing_default_model_file_loads_none() {
+    // @step Given a data directory with no default model file
     let tmp = tempfile::tempdir().expect("tempdir");
     let dir = tmp.path().to_path_buf();
-    assert!(
-        load_default_model_with_dir(&dir).is_none(),
-        "a missing default-model.json must load as None"
-    );
-    std::fs::write(dir.join("default-model.json"), "{ not valid json").expect("write malformed");
 
     // @step When the persisted default model is loaded from that data directory
-    let loaded = load_default_model_with_dir(&dir);
+    let loaded = load_default_model_with_dir(&dir).expect("a missing file is not an error");
 
     // @step Then the loaded default model is none
     assert!(
         loaded.is_none(),
-        "a malformed default-model.json must load as None (graceful degradation)"
+        "a missing default-model.json must load as None"
     );
 }

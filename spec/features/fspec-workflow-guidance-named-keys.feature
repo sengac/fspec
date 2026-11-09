@@ -1,4 +1,7 @@
+@BUG-582
 @TOOL-020
+@tools
+@workflow
 Feature: Replace positional `_` args with named keys in fspec tool guidance
   """
   This is a documentation-only change to rust/tools/src/fspec_workflow_guidance.rs - no Rust code changes needed

@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "name": "Adding a scenario adds an empty coverage entry",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug346_coverage_entries_follow_scenarios.rs",
+          "lines": "48-73",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario/coverage_entry.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "/// Append an empty entry for `scenario` to `<feature>.coverage` and",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Linking coverage recomputes the total from the scenario list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug346_coverage_entries_follow_scenarios.rs",
+          "lines": "75-98",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/link_coverage/stats.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "let total_scenarios = scenarios.len() as i64;",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug346_coverage_entries_follow_scenarios.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/add_scenario/coverage_entry.rs",
+      "rust/fspec-core/src/commands/link_coverage/stats.rs"
+    ],
+    "totalLinesCovered": 91
+  }
+}

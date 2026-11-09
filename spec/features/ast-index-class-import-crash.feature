@@ -1,4 +1,6 @@
 @KGRAPH-055
+@parser
+@code-analysis
 Feature: Python and Java ast_index crashes on real repos — imported classes create dangling Function slug references
   """
   edge_helpers.rs:285 — strip leading underscores from original_name before first_char.is_uppercase() check

@@ -15,6 +15,11 @@ use crate::deep_search_provider_config::request_config_for_provider;
 
 pub const COMPACTION_SUB_AGENT_MAX_DEPTH: usize = 20;
 
+/// CMPCT-087: the compactor's system role. The full compaction instruction is
+/// sent once, in the task.
+const COMPACTOR_PREAMBLE: &str = "You are the fspec compactor sub-agent. Gather evidence from the target \
+session with SessionSearch and return the requested hierarchical summary DAG exactly as instructed.";
+
 struct SearchRegistration(Uuid);
 
 impl Drop for SearchRegistration {
@@ -97,6 +102,9 @@ pub(crate) async fn execute_captured_compaction_subagent(
          Do not include subsequently appended records in the DAG.",
         evidence.source().prefix.len(),
     ));
+    let prompt = prompt.as_str();
+    // BUG-614 (Q7): the conversation that generated the latest candidate.
+    let conversation = &std::sync::Mutex::new(None);
     codelet_cli::compaction_timing::scope(
         ephemeral,
         deadline,
@@ -104,18 +112,16 @@ pub(crate) async fn execute_captured_compaction_subagent(
         tokio::time::timeout_at(
             deadline,
             codelet_cli::compaction_operation::build_validated_dag(
-                &prompt,
-                &codelet_core::compaction::DagValidationContext {
-                    persisted_turn_count: evidence.source().prefix.len(),
-                    required_coverage_end: evidence.source().prefix.len().checked_sub(1),
-                    existing_dag: evidence.existing_dag().map(|(content, _)| content),
-                    ..Default::default()
-                },
-                |task| async move {
+                &evidence.validation_context(),
+                |request| async move {
                     Box::pin(run(
                         ephemeral,
                         project_path,
-                        &task,
+                        prompt,
+                        Turn {
+                            request,
+                            conversation,
+                        },
                         target_session_id,
                         provider_name,
                         model_id,
@@ -135,11 +141,20 @@ pub(crate) async fn execute_captured_compaction_subagent(
     .map_err(|_| "compaction builder deadline exceeded".to_string())?
 }
 
+/// One builder turn: the first candidate or a correction, and the shared
+/// conversation that a correction continues.
+struct Turn<'conversation> {
+    request: codelet_cli::compaction_operation::BuildRequest,
+    conversation:
+        &'conversation std::sync::Mutex<Option<crate::compaction_execution::Conversation>>,
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn run(
     ephemeral: Uuid,
     project_path: &Path,
     prompt: &str,
+    turn: Turn<'_>,
     target: Uuid,
     provider_name: &str,
     model_id: Option<&str>,
@@ -152,13 +167,35 @@ async fn run(
         context_capacity: context_window.map(|capacity| capacity as u64),
         output_reservation: max_output_tokens.map(|tokens| tokens as u64),
     };
+    // BUG-543: under test-support the registered stub provider builds its
+    // own compactor agent (the stub answers compactor requests with a DAG);
+    // it has no Rhai script for CustomProvider discovery.
+    #[cfg(feature = "test-support")]
+    if codelet_providers::stub_provider::is_stub_registered(provider_name) {
+        let agent = codelet_providers::stub_provider::StubProvider::new().create_rig_agent(
+            ephemeral,
+            Some(COMPACTOR_PREAMBLE),
+            None,
+        );
+        return Box::pin(crate::compaction_execution::run(
+            agent,
+            ephemeral,
+            &task,
+            provider_name,
+            COMPACTION_SUB_AGENT_MAX_DEPTH,
+            turn.request,
+            turn.conversation,
+            limits,
+        ))
+        .await;
+    }
     if custom_provider_registered(provider_name) {
         let handle = CustomProvider::create_rig_agent(
             project_path,
             provider_name,
             model_id.unwrap_or("default"),
             ephemeral,
-            Some(prompt),
+            Some(COMPACTOR_PREAMBLE),
             None,
             true,
         )
@@ -169,6 +206,8 @@ async fn run(
             &task,
             provider_name,
             COMPACTION_SUB_AGENT_MAX_DEPTH,
+            turn.request,
+            turn.conversation,
             limits,
         ))
         .await;
@@ -186,7 +225,7 @@ async fn run(
             let config = request_config_for_provider(
                 provider_name,
                 provider.model(),
-                prompt,
+                COMPACTOR_PREAMBLE,
                 $oauth(&provider),
             )
             .map_err(|error| error.to_string())?;
@@ -210,7 +249,7 @@ async fn run(
                 .tool(SessionSearchTool::new(ephemeral))
                 .build();
             Box::pin(crate::compaction_execution::run(
-                agent, ephemeral, &task, provider_name, COMPACTION_SUB_AGENT_MAX_DEPTH, limits,
+                agent, ephemeral, &task, provider_name, COMPACTION_SUB_AGENT_MAX_DEPTH, turn.request, turn.conversation, limits,
             )).await
         }};
     }
@@ -221,6 +260,8 @@ async fn run(
         "codex" => build_and_run!(manager.get_codex(), |_| false, codex),
         "zai" => build_and_run!(manager.get_zai(), |_| false),
         "github-copilot" | "copilot" => Err("github-copilot compactor sub-agent builder pending: CopilotProvider::client accessor not yet implemented".into()),
-        _ => Err(format!("Unsupported provider for compactor sub-agent: {provider_name}")),
+        _ => Err(format!(
+            "Unsupported provider for compactor sub-agent: {provider_name}. Supported: claude, openai, gemini, codex, zai, github-copilot"
+        )),
     }
 }

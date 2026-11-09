@@ -20,11 +20,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70
-              ]
+                67
+              ],
+              "firstLine": "pub enum ProviderSettingsEvent {",
+              "lastLine": "}"
             }
           ]
         }
@@ -40,8 +39,10 @@
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                64
-              ]
+                81
+              ],
+              "firstLine": "KeyCode::Tab => ProviderSettingsEvent::SwitchToModels,",
+              "lastLine": "KeyCode::Tab => ProviderSettingsEvent::SwitchToModels,"
             }
           ]
         }
@@ -57,16 +58,6 @@
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
                 40,
                 41,
                 42,
@@ -91,8 +82,27 @@
                 61,
                 62,
                 63,
-                64
-              ]
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "pub(super) fn handle_list_key(",
+              "lastLine": "KeyCode::Tab => ProviderSettingsEvent::SwitchToModels,"
             }
           ]
         }
@@ -103,29 +113,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs",
-          "lines": "162-175",
+          "lines": "159-172",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
                 179,
                 180,
                 181,
@@ -160,15 +152,10 @@
                 210,
                 211,
                 212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220
-              ]
+                213
+              ],
+              "firstLine": "fn handle_filter_key(view: &mut ProviderSettingsView, key: KeyEvent) -> ProviderSettingsEvent {",
+              "lastLine": "}"
             }
           ]
         }
@@ -186,6 +173,6 @@
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 177
+    "totalLinesCovered": 156
   }
 }

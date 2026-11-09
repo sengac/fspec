@@ -4,10 +4,9 @@
 //! Byte-for-byte parity with `node dist/index.js link-coverage --help` piped to
 //! non-TTY. Reference fixture: `rust/fspec/tests/fixtures/help/link-coverage.txt`.
 //!
-//! ## Quirk: trailing literal `undefined` in COMMON PATTERNS
-//! The TS commonPatterns entries carry `{pattern, example}` but the formatter
-//! also reads `description`, which is absent — so each pattern's third line
-//! renders as the literal text `undefined`. Reproduced verbatim.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -56,6 +55,21 @@ const OPTIONS: &[CommandOption] = &[
         description: "Skip step comment validation (ONLY allowed for task work units - story and bug work units require MANDATORY step validation)",
         default_value: None,
     },
+    CommandOption {
+        flag: "--test-mapping-index <index>",
+        description: "Zero-based test mapping index for implementation-only linking; requires --test-file and --expected-scenario-hash",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--expected-scenario-hash <hash>",
+        description: "Expected canonical scenario SHA-256 from show-coverage --mapping-json; required with --test-mapping-index",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--replace",
+        description: "Replace the scenario's mappings of --test-file with one mapping holding --test-lines, keeping their implementation mappings, and check only the new lines (without it a second link adds another mapping); requires --test-lines",
+        default_value: None,
+    },
 ];
 
 const PATTERN_1_EXAMPLE: &str = "# After writing tests\n<test-command>  # Tests fail (red)\nfspec link-coverage user-auth --scenario \"Login\" --test-file src/__tests__/auth.test.ts --test-lines 45-62\n\n# After implementing\n<test-command>  # Tests pass (green)\nfspec link-coverage user-auth --scenario \"Login\" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10-24";
@@ -65,12 +79,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Forward ACDD Workflow",
         example: PATTERN_1_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Reverse ACDD Workflow",
         example: PATTERN_2_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -118,7 +132,7 @@ const COMMON_ERRORS: &[CommonError] = &[
 
 const RELATED: &[&str] = &[
     "show-coverage",
-    "audit-coverage",
+    "audit",
     "unlink-coverage",
     "create-feature",
 ];
@@ -130,9 +144,12 @@ const NOTES: &[&str] = &[
     "Coverage tracking is CRITICAL for reverse ACDD to track mapping progress",
     "Line ranges: \"45-62\" for range, \"10,11,12,23,24\" for specific lines",
     "Step validation: Test files must include step comments (// @step Given...) matching feature file steps",
-    "Step comments support both @step prefix (recommended) and plain format (backward compatible)",
-    "Parameterized steps ({int}, {string}) match via hybrid similarity algorithm",
+    "Only @step comments count, and each must repeat its step's keyword and text exactly (runs of spaces count as one); plain comments such as // Given... do not",
+    "Long step comments: end the @step line with a backslash and continue on the next comment line; the parts are joined with one space",
+    "There is no similarity matching: a step comment with other words, stale wording or different letter case does not match",
     "Step validation fails with helpful system-reminder showing exact text to add to test file",
+    "Implementation mappings record the text of their first and last line (firstLine, lastLine) so fspec audit detects code that moved; the first line must be non-blank and unique in the file, so start the range at a distinctive line such as a signature",
+    "Without --test-lines and --impl-file, --test-file links the scenario's exact @step block (its @step comments in step order with no other @step comment between) when it occurs exactly once in the file; otherwise link-coverage fails naming how often it occurs",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

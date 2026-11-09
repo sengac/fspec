@@ -4,19 +4,24 @@
       "name": "Empty session manager produces an empty navigation list",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "441-455",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "184-195",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
                 48,
                 49,
                 50,
                 51,
-                52
-              ]
+                52,
+                53,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "return NavigationTarget::CreateDialog;"
             }
           ]
         }
@@ -26,19 +31,21 @@
       "name": "Single subordinate appears once in the navigation list",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "459-478",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "74-85",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
                 48,
                 49,
                 50,
                 51,
-                52
-              ]
+                52,
+                53
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,19 +55,21 @@
       "name": "Five subordinates appear once each in spawn order",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "482-513",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "87-103",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
                 48,
                 49,
                 50,
                 51,
-                52
-              ]
+                52,
+                53
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,26 +79,12 @@
       "name": "Shift+Right from the board cycles through every session exactly once",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "517-559",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "105-131",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
                 61,
                 62,
                 63,
@@ -121,27 +116,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
+                92
+              ],
+              "firstLine": "pub fn get_next_target(nav_list: &[Uuid], active_session: Option<Uuid>) -> NavigationTarget {",
+              "lastLine": "}"
             }
           ]
         }
@@ -151,65 +129,12 @@
       "name": "Shift+Left from the last subordinate cycles back to the board exactly once per session",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "564-607",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "133-160",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -240,30 +165,10 @@
                 127,
                 128,
                 129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                130
+              ],
+              "firstLine": "pub fn get_prev_target(nav_list: &[Uuid], active_session: Option<Uuid>) -> NavigationTarget {",
+              "lastLine": "}"
             }
           ]
         }
@@ -273,13 +178,12 @@
       "name": "Two subordinates do not loop on the first subordinate (regression)",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "611-652",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "162-182",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                47,
                 48,
                 49,
                 50,
@@ -324,27 +228,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
+                92
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "}"
             }
           ]
         }
@@ -354,48 +241,26 @@
       "name": "Shift+Right from the last session shows the create-session dialog",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "656-681",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "197-213",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                77,
-                78,
-                79,
+                48,
+                52,
+                61,
+                66,
+                71,
+                73,
+                75,
+                76,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
+                82
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "NavigationTarget::CreateDialog"
             }
           ]
         }
@@ -405,47 +270,25 @@
       "name": "Shift+Left from the first session returns to the board",
       "testMappings": [
         {
-          "file": "rust/napi/tests/navigation_hierarchy_test.rs",
-          "lines": "685-710",
+          "file": "rust/sessions/tests/cov057_shift_arrow_cycling.rs",
+          "lines": "215-230",
           "implMappings": [
             {
-              "file": "rust/napi/src/navigation.rs",
+              "file": "rust/sessions/src/navigation.rs",
               "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                48,
+                52,
+                100,
+                101,
+                106,
+                107,
+                112,
+                114,
+                115,
+                117
+              ],
+              "firstLine": "pub fn build_navigation_list(",
+              "lastLine": "NavigationTarget::Board"
             }
           ]
         }
@@ -457,11 +300,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/navigation_hierarchy_test.rs"
+      "rust/sessions/tests/cov057_shift_arrow_cycling.rs"
     ],
     "implFiles": [
-      "rust/napi/src/navigation.rs"
+      "rust/sessions/src/navigation.rs"
     ],
-    "totalLinesCovered": 571
+    "totalLinesCovered": 300
   }
 }

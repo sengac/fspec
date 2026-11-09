@@ -1,4 +1,6 @@
 @KGRAPH-048
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — C#
   """
   Uses KindMatcher for method extraction. Resolves C# using statements

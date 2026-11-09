@@ -54,3 +54,47 @@ Feature: Port update-scenario command to Rust
     When I dispatch update-scenario with feature "spec/features/no-coverage.feature" old-name "Only scenario" new-name "Renamed scenario"
     Then the response has success true
     And the feature file header line reads "  Scenario: Renamed scenario"
+
+  Scenario: Rename scenario preserves steps
+    Given a feature file "spec/features/test.feature" containing a scenario "Login test" with 5 indented steps
+    When I dispatch update-scenario with feature "test" old-name "Login test" new-name "User authentication test"
+    Then the response has success true
+    And the feature file header line reads "  Scenario: User authentication test"
+    And all 5 steps should remain unchanged with their indentation
+    And step order should be preserved
+
+  Scenario: Rename scenario preserves tags
+    Given a feature file "spec/features/test.feature" containing a scenario "Payment processing" tagged @critical @high
+    When I dispatch update-scenario with feature "test" old-name "Payment processing" new-name "Process payment transaction"
+    Then the response has success true
+    And the scenario tag line above the header still reads "  @critical @high"
+    And the feature file header line reads "  Scenario: Process payment transaction"
+
+  Scenario: Rename scenario when multiple scenarios exist
+    Given a feature file "spec/features/test.feature" containing scenarios "First", "Second" and "Third"
+    When I dispatch update-scenario with feature "test" old-name "Second" new-name "Middle scenario"
+    Then the response has success true
+    And the "First" scenario should remain unchanged
+    And the "Second" scenario should be renamed to "Middle scenario"
+    And the "Third" scenario should remain unchanged
+
+  Scenario: Rename scenario with special characters
+    Given a feature file "spec/features/test.feature" containing a scenario "User can login"
+    When I dispatch update-scenario with feature "test" old-name "User can login" new-name "User can't login with invalid credentials"
+    Then the response has success true
+    And the feature file header line reads "  Scenario: User can't login with invalid credentials"
+    And the feature file should be valid Gherkin
+
+  Scenario: Handle feature file with invalid syntax
+    Given a feature file "spec/features/broken.feature" with Gherkin syntax errors
+    When I dispatch update-scenario with feature "broken" old-name "Some scenario" new-name "New name"
+    Then the response has success false
+    And the response error contains "Invalid Gherkin syntax"
+    And the file should remain unchanged
+
+  Scenario: Rename scenario from nested directory
+    Given a feature file "spec/features/auth/login.feature" containing a scenario "Login flow"
+    When I dispatch update-scenario with feature "spec/features/auth/login.feature" old-name "Login flow" new-name "Authentication workflow"
+    Then the response has success true
+    And the feature file header line reads "  Scenario: Authentication workflow"
+    And the file should remain valid

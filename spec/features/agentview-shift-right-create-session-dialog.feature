@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @feature-management
 @cli
@@ -13,7 +14,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   Mount path (single unified entry point): Action::OpenCreateSessionDialog{preselect} → App::handle_open_create_session_dialog (dispatch_create_session_dialog.rs) → compositor.push(CreateSessionDialog::new(preselect, work_unit).with_action_tx(tx)). Already idempotent on CREATE_SESSION_DIALOG_ID. Shift+Right path is rewired to use this same helper instead of the orphan store-flag setter.
   ratatui Style for selected option button: Style::default().bg(Color::Blue).fg(Color::White).add_modifier(Modifier::BOLD). Unselected: Style::default().fg(Color::Gray). These match TS Ink's <Text backgroundColor='blue' color='white' bold> / <Text color='gray'>.
   Action variants involved (already defined in components/mod.rs): Action::SessionNext (emitted by AgentView dispatch on Shift+Right), Action::OpenCreateSessionDialog{preselect: Option<CreateSessionOption>}, Action::CreateSessionSubmitted{isolated: bool}, Action::CreateSessionCancelled. No new Action variants required.
-  Test fixtures use ratatui::backend::TestBackend with 80x24 and read styled cells via Buffer::get(x,y).style — assert bg/fg/modifier on the exact cells covering ' Yes ' / ' Yes - Isolated ' / ' Cancel '. Snapshots via insta for the rendered glyph layer. End-to-end Shift+Right test feeds KeyEvent{code: Right, modifiers: SHIFT} through App::handle_event and asserts on compositor state.
+  Test fixtures use ratatui::backend::TestBackend with 80x24 and read styled cells via Buffer::get(x,y).style — assert bg/fg/modifier on the exact cells covering ' Start ' / ' Start in Worktree ' / ' Cancel '. Snapshots via insta for the rendered glyph layer. End-to-end Shift+Right test feeds KeyEvent{code: Right, modifiers: SHIFT} through App::handle_event and asserts on compositor state.
   """
 
   # ========================================
@@ -24,14 +25,14 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   1. Shift+Right at the last (or only) open session must result in CreateSessionDialog being pushed onto the compositor — observable via compositor.contains(CREATE_SESSION_DIALOG_ID) == true after App::dispatch returns
   #   2. Shift+Right with zero open sessions also mounts CreateSessionDialog (NavTarget::CreateDialog from navigate_next on an empty store)
   #   3. The dispatch path for NavTarget::CreateDialog is unified with the RPC-060 path: handle_session_cycle calls handle_open_create_session_dialog(None) (or emits Action::OpenCreateSessionDialog{preselect:None}) — NOT the orphan store flag setter
-  #   4. CreateSessionDialog rendering EXACTLY matches src/components/CreateSessionDialog.tsx: three centered button cells with labels ' Yes ', ' Yes - Isolated ', ' Cancel ' (one space pad each side)
+  #   4. CreateSessionDialog rendering EXACTLY matches src/components/CreateSessionDialog.tsx: three centered button cells with labels ' Start ', ' Start in Worktree ', ' Cancel ' (one space pad each side)
   #   5. Selected button styling: backgroundColor=Blue, foreground=White, bold; unselected: foreground=Gray, no background, no bold — NO ▸/○ marker glyphs
   #   6. Footer is exactly '← → Select | Enter Confirm | Esc Cancel' using ASCII pipe U+007C (not box-drawing U+2502), rendered dim
   #   7. Generic Shift+Right creation always shows 'Start New Agent?' regardless of the current session's focus (BUG-281).
   #   8. Generic creation describes an unassigned conversation; story-specific Board Enter uses captured story intent (BUG-280).
   #   9. Dialog border is rounded cyan (Accent::Cyan) — already correct in the current Rust port; preserve it
-  #   10. Left/Right cycle wraps: Yes → Yes - Isolated → Cancel → Yes; Left wraps the other way — matches TS modulo arithmetic
-  #   11. Enter on Yes emits Action::CreateSessionSubmitted{isolated:false}; Enter on Yes - Isolated emits Action::CreateSessionSubmitted{isolated:true}; Enter on Cancel or Esc emits Action::CreateSessionCancelled — and the dialog removes itself via its callback
+  #   10. Left/Right cycle wraps: Start → Start in Worktree → Cancel → Start; Left wraps the other way — matches TS modulo arithmetic
+  #   11. Enter on Start emits Action::CreateSessionSubmitted{isolated:false}; Enter on Start in Worktree emits Action::CreateSessionSubmitted{isolated:true}; Enter on Cancel or Esc emits Action::CreateSessionCancelled — and the dialog removes itself via its callback
   #   12. CreateSessionDialog must continue to delegate all rendering to dialog_theme::render_dialog (the canonical base dialog primitive) — no Block/Paragraph hand-rendering
   #   13. User draft in MultiLineInput is preserved across the Shift+Right summon (the user has not switched sessions, only opened a modal) — current RPC-096 contract retained
   #   14. Source-shape: create_session_dialog.rs stays under 300 LoC after the refactor
@@ -41,11 +42,11 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   2. Given AgentView with three open sessions and current_session_index==2 (the last), when the user presses Shift+Right, then CreateSessionDialog is mounted and current_session_index stays 2
   #   3. Given AgentView with zero open sessions, when the user presses Shift+Right, then CreateSessionDialog is mounted with title 'Start New Agent?'
   #   4. Given current session has WorkUnitContext{id:'RPC-097'}, Shift+Right still offers an unassigned new agent and preserves that session's focus.
-  #   5. Given the dialog is freshly mounted with default selection Yes, the rendered 80x24 buffer shows ' Yes ' painted with bg=Blue/fg=White/bold and ' Yes - Isolated ' and ' Cancel ' painted with fg=Gray — and contains NO ▸ or ○ glyph anywhere
-  #   6. Given the dialog is mounted, when the user presses Right, then ' Yes - Isolated ' becomes the blue-bg/white/bold selected button; pressing Right again selects ' Cancel '; pressing Right again wraps to ' Yes '
-  #   7. Given the dialog is mounted with default selection Yes, when the user presses Left, then selection wraps to ' Cancel '
-  #   8. Given the dialog is mounted with selection on Yes, when the user presses Enter, then Action::CreateSessionSubmitted{isolated:false} is emitted and the dialog is removed from the compositor
-  #   9. Given the dialog is mounted with selection on Yes - Isolated, when the user presses Enter, then Action::CreateSessionSubmitted{isolated:true} is emitted (downstream RPC-060 routes this to backend.create_isolated_session)
+  #   5. Given the dialog is freshly mounted with default selection Start, the rendered 80x24 buffer shows ' Start ' painted with bg=Blue/fg=White/bold and ' Start in Worktree ' and ' Cancel ' painted with fg=Gray — and contains NO ▸ or ○ glyph anywhere
+  #   6. Given the dialog is mounted, when the user presses Right, then ' Start in Worktree ' becomes the blue-bg/white/bold selected button; pressing Right again selects ' Cancel '; pressing Right again wraps to ' Start '
+  #   7. Given the dialog is mounted with default selection Start, when the user presses Left, then selection wraps to ' Cancel '
+  #   8. Given the dialog is mounted with selection on Start, when the user presses Enter, then Action::CreateSessionSubmitted{isolated:false} is emitted and the dialog is removed from the compositor
+  #   9. Given the dialog is mounted with selection on Start in Worktree, when the user presses Enter, then Action::CreateSessionSubmitted{isolated:true} is emitted (downstream RPC-060 routes this to backend.create_isolated_session)
   #   10. Given the dialog is mounted with selection on Cancel, when the user presses Enter, then Action::CreateSessionCancelled is emitted and the dialog is removed; the original MultiLineInput buffer is untouched
   #   11. Given the dialog is mounted, when the user presses Esc, then Action::CreateSessionCancelled is emitted and the dialog is removed
   #   12. Given the user has typed 'pending' into MultiLineInput at the last session index, when Shift+Right mounts the dialog and the user presses Esc, then 'pending' is still in the MultiLineInput buffer
@@ -56,7 +57,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   # ========================================
   Background: User Story
     As a user pressing Shift+Right at the end of the open-sessions list in the Rust AgentView
-    I want to summon the Create Session dialog and pick Yes / Yes - Isolated / Cancel
+    I want to summon the Create Session dialog and pick Start / Start in Worktree / Cancel
     So that I can start a fresh AI session — bound or unbound to my current work unit — without ever leaving the keyboard
 
   @rust
@@ -89,7 +90,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     When the user presses Shift+Right
     Then the Compositor contains CREATE_SESSION_DIALOG_ID
     And the rendered dialog title is "Start New Agent?"
-    And the rendered description is "Begin a fresh AI conversation, not linked to any task."
+    And the rendered description is "Starts a new agent, not linked to any work unit."
 
   @rust
   @tui
@@ -99,18 +100,18 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     Given an App in AgentView with one open session bound to WorkUnitContext with id "RPC-097"
     When the user presses Shift+Right
     Then the rendered dialog title is "Start New Agent?"
-    And the rendered description is "Begin a fresh AI conversation, not linked to any task."
+    And the rendered description is "Starts a new agent, not linked to any work unit."
 
   @rust
   @tui
   @agent-view
   @tui-component
-  Scenario: Freshly mounted dialog paints the Yes button blue/white/bold and the other two buttons gray
+  Scenario: Freshly mounted dialog paints the Start button blue/white/bold and the other two buttons gray
     Given an App in AgentView with one open session
     When the user presses Shift+Right
     And I render the App onto an 80x24 TestBackend
-    Then the cells covering " Yes " have background Color::Blue and foreground Color::White and Modifier::BOLD
-    And the cells covering " Yes - Isolated " have foreground Color::Gray
+    Then the cells covering " Start " have background Color::Blue and foreground Color::White and Modifier::BOLD
+    And the cells covering " Start in Worktree " have foreground Color::Gray
     And the cells covering " Cancel " have foreground Color::Gray
     And no cell in the buffer contains the glyph "▸"
     And no cell in the buffer contains the glyph "○"
@@ -120,20 +121,20 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @agent-view
   @tui-component
   Scenario: Right arrow cycles selection forward with wrap-around
-    Given the CreateSessionDialog is mounted with default selection Yes
+    Given the CreateSessionDialog is mounted with default selection Start
     When the user presses Right
-    Then the selected option is Yes - Isolated
+    Then the selected option is Start in Worktree
     When the user presses Right
     Then the selected option is Cancel
     When the user presses Right
-    Then the selected option is Yes
+    Then the selected option is Start
 
   @rust
   @tui
   @agent-view
   @tui-component
-  Scenario: Left arrow wraps from Yes back to Cancel
-    Given the CreateSessionDialog is mounted with default selection Yes
+  Scenario: Left arrow wraps from Start back to Cancel
+    Given the CreateSessionDialog is mounted with default selection Start
     When the user presses Left
     Then the selected option is Cancel
 
@@ -141,8 +142,8 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @tui
   @agent-view
   @tui-component
-  Scenario: Enter on Yes emits CreateSessionSubmitted with isolated false and dismisses the dialog
-    Given the CreateSessionDialog is mounted with selection Yes
+  Scenario: Enter on Start emits CreateSessionSubmitted with isolated false and dismisses the dialog
+    Given the CreateSessionDialog is mounted with selection Start
     When the user presses Enter
     Then Action::CreateSessionSubmitted with isolated false is emitted
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
@@ -151,8 +152,8 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @tui
   @agent-view
   @tui-component
-  Scenario: Enter on Yes - Isolated emits CreateSessionSubmitted with isolated true
-    Given the CreateSessionDialog is mounted with selection Yes - Isolated
+  Scenario: Enter on Start in Worktree emits CreateSessionSubmitted with isolated true
+    Given the CreateSessionDialog is mounted with selection Start in Worktree
     When the user presses Enter
     Then Action::CreateSessionSubmitted with isolated true is emitted
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
@@ -283,7 +284,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @tui
   @agent-view
   @tui-component
-  Scenario: BoardView Shift+Right then Enter on Yes switches to AgentView and submits create-session
+  Scenario: BoardView Shift+Right then Enter on Start switches to AgentView and submits create-session
     Given an App in BoardView with a selected work unit that has no attached session
     When the user presses Shift+Right once
     Then the Compositor contains CREATE_SESSION_DIALOG_ID

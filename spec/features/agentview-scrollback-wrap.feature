@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @scrollback
@@ -5,6 +6,7 @@
 @bug
 @tui
 @RPC-078
+@BUG-390
 Feature: AgentView scrollback wraps long lines and tracks visual rows for stick-to-bottom
   """
   ratatui Paragraph rendered without an explicit wrap clips at the right edge. The TS Ink reference pre-wraps every chunk into one Line per visual row using a width-aware splitter. RPC-078 ports that splitter to Rust so (a) no characters are dropped at the right edge and (b) stick-to-bottom math counts visual rows — not chunks — keeping the most recent line anchored to the last viewport row.
@@ -50,7 +52,7 @@ Feature: AgentView scrollback wraps long lines and tracks visual rows for stick-
   Scenario: End-to-end App.render top-fills scrollback when only a user line and an API error are present
     Given an App with an active session s-1 and the AgentView routed
     When the App dispatches Action::ChunkReceived(s-1, StreamChunk::UserInput{text:"what is this card about?"}) followed by Action::ChunkReceived(s-1, StreamChunk::Error{error:"provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests"})
-    Then row y=1 (the first row of the scrollback area, immediately below the SessionHeader at y=0) contains "You: what is this card about?"
+    Then row y=2 (the first row of the scrollback area, below the SessionHeader at y=0 and the MENU-003 menu bar row at y=1) contains "You: what is this card about?"
     When App.render is called into an 80x24 TestBackend buffer
-    Then row y=2 contains "API Error:"
-    Then no row between y=1 and the bottom of the scrollback area (y=h-3 where the footer sits) is blank above the first message — the empty rows fall BELOW the API error line, never above the user line
+    Then row y=4 contains "API Error:"
+    Then no row between y=2 and the bottom of the scrollback area (y=h-3 where the footer sits) is blank above the first message — the empty rows fall BELOW the API error line, never above the user line

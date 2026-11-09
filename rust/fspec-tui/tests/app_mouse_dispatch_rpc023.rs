@@ -6,8 +6,7 @@
 //! asserts that BoardView::handle_event observed it (Action::SelectNext
 //! arrives on the action bus + `App::dispatch` advances the BoardStore).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -36,7 +35,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 
 /// Scenario: Event::Mouse is no longer dropped by the App run loop
 #[tokio::test]
-async fn event_mouse_is_no_longer_dropped_by_the_app_run_loop() {
+async fn event_mouse_is_no_longer_dropped_by_the_app_run_loop() -> TestResult {
     // @step Given an App constructed with a MockBackend, the action bus wired, and the Navigator set to ViewMode::Board
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -49,12 +48,12 @@ async fn event_mouse_is_no_longer_dropped_by_the_app_run_loop() {
     app.board_store_mut().set_selected_index_for("backlog", 0);
 
     // @step And BoardView has been rendered through Navigator::render_with_stores so last_content_area is populated
-    let mut terminal = Terminal::new(TestBackend::new(120, 30)).expect("Terminal::new");
+    let mut terminal = Terminal::new(TestBackend::new(120, 30)).or_fail("Terminal::new")?;
     terminal
         .draw(|frame| {
             app.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
+        .or_fail("draw")?;
 
     // @step When Event::Mouse(ScrollDown) inside the BACKLOG content area is fed through App::handle_event
     let event = Event::Mouse(MouseEvent {
@@ -74,9 +73,10 @@ async fn event_mouse_is_no_longer_dropped_by_the_app_run_loop() {
     // @step And the action bus carries Action::SelectNext
     let action = app
         .try_recv_action()
-        .expect("Action::SelectNext expected on the action bus");
+        .or_fail("Action::SelectNext expected on the action bus")?;
     assert!(
         matches!(action, Action::SelectNext),
         "expected Action::SelectNext, got {action:?}"
     );
+    Ok(())
 }

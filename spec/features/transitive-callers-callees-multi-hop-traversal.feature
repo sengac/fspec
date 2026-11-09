@@ -1,5 +1,7 @@
 @done
 @KGRAPH-061
+@parser
+@code-analysis
 Feature: Transitive Callers / Callees (Multi-Hop Traversal)
   """
   Implement ast_callers and ast_callees as two new GraphSearchAction variants sharing the BFS traversal module from KGRAPH-060. ast_callers traverses reversed adjacency list (incoming Calls edges), ast_callees traverses forward adjacency list (outgoing Calls edges). Wire in graph_search_handler.rs and types.rs.

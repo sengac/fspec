@@ -123,35 +123,22 @@ fn invalid(option: &str, reason: impl std::fmt::Display) -> RequestOptionsError 
     }
 }
 
+/// What Codex advertises for a model's request options.
+///
+/// MODEL-014: each control is either advertised (`Some`, a list or flag that
+/// requests are checked against; an empty list supports nothing) or not
+/// advertised (`None`): Codex /models lists efforts but no summary, context
+/// or verbosity values, so those controls are sent unvalidated, as BUG-441
+/// does with no snapshot at all.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct CodexCapabilities {
     pub stale: bool,
-    pub efforts: Vec<Effort>,
-    pub contexts: Vec<String>,
-    pub summaries: Vec<String>,
-    pub verbosities: Vec<String>,
-    pub service_tiers: Vec<String>,
-    pub sequential_cutoff: bool,
+    pub efforts: Option<Vec<Effort>>,
+    pub contexts: Option<Vec<String>>,
+    pub summaries: Option<Vec<String>>,
+    pub verbosities: Option<Vec<String>>,
+    pub service_tiers: Option<Vec<String>>,
+    pub sequential_cutoff: Option<bool>,
     pub defaults: CodexRequestOptions,
-}
-
-impl CodexCapabilities {
-    pub fn conservative() -> Self {
-        Self {
-            efforts: ["none", "minimal", "low", "medium", "high"]
-                .into_iter()
-                .map(|level| Effort::Named(level.into()))
-                .collect(),
-            summaries: vec!["auto".into()],
-            defaults: CodexRequestOptions {
-                reasoning: Some(ReasoningOptions {
-                    effort: Some(Effort::Named("high".into())),
-                    ..ReasoningOptions::default()
-                }),
-                ..CodexRequestOptions::default()
-            },
-            ..Self::default()
-        }
-    }
 }

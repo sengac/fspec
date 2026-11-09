@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: fspec remove-aggregate-from-foundation CLI subcommand (Rust port)
   """
   Clap derive subcommand `remove-aggregate-from-foundation` mirrors the TS Commander.js

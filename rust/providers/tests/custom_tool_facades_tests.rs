@@ -71,8 +71,7 @@ fn tool_style_openai_preset_generates_snake_case_tool_names() {
     // @step When I resolve the tool list
     let tools = resolve_tools(&mut cfg, &loader).expect("resolve succeeds");
 
-    // @step Then the list contains read_file, write_file, edit_file, run_bash,
-    //       grep_search, glob_search, list_dir, and web_search
+    // @step Then the list contains read_file, write_file, edit_file, run_bash, grep_search, glob_search, list_dir, and web_search
     let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
     for expected in [
         "read_file",
@@ -130,8 +129,7 @@ fn default_tool_style_claude_generates_pascal_case_tool_names() {
 // =========================================================================
 #[test]
 fn map_tool_params_renames_parameter_names() {
-    // @step Given a Rhai script whose map_tool_params renames the incoming
-    //       "filepath" to "file_path" for file:read
+    // @step Given a Rhai script whose map_tool_params renames the incoming "filepath" to "file_path" for file:read
     let (_tmp, mut cfg) =
         facade_config_with_script("my-llm", DEFINE_TOOLS_AND_RENAMING_MAP, ToolStyle::Claude);
     let loader = make_loader();
@@ -187,8 +185,7 @@ fn map_tool_params_returning_unit_uses_default_mapping() {
     let mapped = apply_map_tool_params(&adapter, raw).expect("map_tool_params runs");
     let internal = default_to_internal_file(&def.maps_to, &mapped).expect("internal file params");
 
-    // @step Then the resulting InternalFileParams::Read has file_path equal to "a.txt"
-    //       via default field-by-field deserialization
+    // @step Then the resulting InternalFileParams::Read has file_path equal to "a.txt" via default field-by-field deserialization
     match internal {
         InternalFileParams::Read { file_path, .. } => {
             assert_eq!(file_path, "a.txt");
@@ -202,8 +199,7 @@ fn map_tool_params_returning_unit_uses_default_mapping() {
 // =========================================================================
 #[test]
 fn partial_tool_list_hides_unlisted_categories() {
-    // @step Given a Rhai script whose define_tools returns only a file:read
-    //       tool and a bash tool
+    // @step Given a Rhai script whose define_tools returns only a file:read tool and a bash tool
     let (_tmp, mut cfg) =
         facade_config_with_script("my-llm", DEFINE_TOOLS_TWO_ENTRIES, ToolStyle::Claude);
     let loader = make_loader();
@@ -234,16 +230,24 @@ fn partial_tool_list_hides_unlisted_categories() {
 // =========================================================================
 #[test]
 fn rhai_error_in_define_tools_falls_back_to_preset() {
-    // @step Given a Rhai script whose define_tools throws a runtime error
-    //       and tool_style is "claude"
+    // @step Given a Rhai script whose define_tools throws a runtime error and tool_style is "claude"
     let (_tmp, mut cfg) =
         facade_config_with_script("my-llm", DEFINE_TOOLS_RUNTIME_ERROR, ToolStyle::Claude);
     let loader = make_loader();
 
     // @step When I resolve the tool list
-    let tools = resolve_tools(&mut cfg, &loader).expect("resolve falls back to preset");
+    let log = CapturedLog::default();
+    let subscriber = tracing_subscriber::fmt()
+        .with_writer({
+            let log = log.clone();
+            move || log.clone()
+        })
+        .with_ansi(false)
+        .finish();
+    let tools = tracing::subscriber::with_default(subscriber, || resolve_tools(&mut cfg, &loader))
+        .expect("resolve falls back to preset");
 
-    // @step Then the resolved list matches the claude preset
+    // @step Then the resolved list matches the claude preset and a tracing::warn is logged with the script error
     let claude_preset = preset_tools(ToolStyle::Claude);
     let resolved_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
     let preset_names: Vec<&str> = claude_preset.iter().map(|t| t.name.as_str()).collect();
@@ -251,6 +255,40 @@ fn rhai_error_in_define_tools_falls_back_to_preset() {
         resolved_names, preset_names,
         "resolved names {resolved_names:?} should match claude preset {preset_names:?}"
     );
+    let logged = log.text();
+    let warning = logged
+        .lines()
+        .find(|line| line.contains("define_tools raised runtime error"))
+        .unwrap_or_else(|| panic!("expected a define_tools warning, got {logged:?}"));
+    assert!(warning.contains("WARN"), "expected WARN level: {warning}");
+    assert!(
+        warning.contains("define_tools boom"),
+        "warning should carry the script error: {warning}"
+    );
+}
+
+/// Collects formatted tracing output for assertions.
+#[derive(Clone, Default)]
+struct CapturedLog(Arc<std::sync::Mutex<Vec<u8>>>);
+
+impl CapturedLog {
+    fn text(&self) -> String {
+        String::from_utf8_lossy(&self.0.lock().expect("log lock")).into_owned()
+    }
+}
+
+impl std::io::Write for CapturedLog {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.0
+            .lock()
+            .map_err(|_| std::io::Error::other("log lock poisoned"))?
+            .extend_from_slice(bytes);
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
 }
 
 // =========================================================================
@@ -258,8 +296,7 @@ fn rhai_error_in_define_tools_falls_back_to_preset() {
 // =========================================================================
 #[test]
 fn unknown_maps_to_identifier_is_rejected_with_clear_error() {
-    // @step Given a Rhai script whose define_tools returns a tool with
-    //       maps_to "mystery:foo"
+    // @step Given a Rhai script whose define_tools returns a tool with maps_to "mystery:foo"
     let (_tmp, mut cfg) =
         facade_config_with_script("my-llm", DEFINE_TOOLS_UNKNOWN_MAPS_TO, ToolStyle::Claude);
     let loader = make_loader();
@@ -267,8 +304,7 @@ fn unknown_maps_to_identifier_is_rejected_with_clear_error() {
     // @step When I resolve the tool list
     let result = resolve_tools(&mut cfg, &loader);
 
-    // @step Then I receive an error whose message contains "mystery:foo"
-    //       and lists valid identifiers like "file:read"
+    // @step Then I receive an error whose message contains "mystery:foo" and lists valid identifiers like "file:read"
     let err = result.expect_err("resolve should fail");
     let msg = format!("{err}");
     assert!(
@@ -286,8 +322,7 @@ fn unknown_maps_to_identifier_is_rejected_with_clear_error() {
 // =========================================================================
 #[test]
 fn adapter_exposes_rhai_provided_name_and_definition() {
-    // @step Given a RhaiToolDef with name "my_read", description "read a file",
-    //       and parameters schema {type:"object", properties:{path:{type:"string"}}}
+    // @step Given a RhaiToolDef with name "my_read", description "read a file", and parameters schema {type:"object", properties:{path:{type:"string"}}}
     let parameters = serde_json::json!({
         "type": "object",
         "properties": {
@@ -307,8 +342,7 @@ fn adapter_exposes_rhai_provided_name_and_definition() {
     let adapter = RhaiToolFacadeAdapter::new(Arc::new(def), Arc::new(cfg), Arc::clone(&loader))
         .expect("build adapter");
 
-    // @step Then adapter.name() returns "my_read" and adapter.parameters_schema() returns the JSON schema
-    //       that matches the supplied parameters
+    // @step Then adapter.name() returns "my_read" and adapter.parameters_schema() returns the JSON schema that matches the supplied parameters
     assert_eq!(adapter.name(), "my_read");
     assert_eq!(adapter.parameters_schema(), &parameters);
 }
@@ -330,8 +364,7 @@ fn resolved_tools_are_cached_for_system_prompt_introspection() {
         .as_ref()
         .expect("resolved_tools populated");
 
-    // @step Then the field contains exactly the RhaiToolDef entries returned
-    //       by resolution
+    // @step Then the field contains exactly the RhaiToolDef entries returned by resolution
     assert_eq!(
         cached.len(),
         tools.len(),

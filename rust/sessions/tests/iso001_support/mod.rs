@@ -84,11 +84,29 @@ fn manager_with_seeded_cache() -> Arc<SessionManager> {
     let cache_dir = shared_dir().join("cache");
     std::fs::create_dir_all(&cache_dir).expect("create cache dir");
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("seed models.json");
-    let _ = codelet_common::set_data_directory(shared_dir().to_path_buf());
+    codelet_common::set_data_directory(shared_dir().to_path_buf())
+        .expect("set the shared data directory");
     let home_dir = shared_dir().join("home");
     std::fs::create_dir_all(&home_dir).expect("create home dir");
     std::env::set_var("HOME", &home_dir);
-    Arc::new(SessionManager::new())
+    disable_rlcd_in_user_config(&home_dir);
+    SessionManager::new()
+}
+
+/// Keep the suite hermetic: the RLCD semantic security stage is enabled by
+/// default and would otherwise probe whatever RLCD service is running on
+/// the host, so file-op verdicts would depend on a live model score. These
+/// tests pin the isolation path policy, not RLCD (RLCD has its own suite).
+fn disable_rlcd_in_user_config(home_dir: &Path) {
+    let user_dir = home_dir.join(".fspec");
+    // BUG-640: the test-support resolver reads only FSPEC_USER_DIR.
+    std::env::set_var("FSPEC_USER_DIR", &user_dir);
+    std::fs::create_dir_all(&user_dir).expect("create user config dir");
+    std::fs::write(
+        user_dir.join("fspec-config.json"),
+        r#"{"rlcd":{"enabled":false}}"#,
+    )
+    .expect("write user config");
 }
 
 /// Wire the tool-callbacks manager slot + the codelet-tools OnceLocks the
@@ -227,36 +245,28 @@ pub fn unique_tmp_dir() -> PathBuf {
     dir
 }
 
-/// Pull the next `UserNotification` chunk for `sid` off `rx`.
-///
-/// Each `recv` is bounded by the remaining budget so a missing notification
-/// fails in `timeout` instead of blocking forever (the broadcast recv only
-/// unblocks on a new item or a closed channel).
+/// Pull the next `UserNotification` chunk for `sid` off `rx` (TEST-042: the
+/// test waits on the chunk itself; only the deadlock guard ends a stream
+/// that never delivers it).
 pub async fn next_user_notification(
     rx: &mut tokio::sync::broadcast::Receiver<(SessionId, StreamChunk)>,
     sid: &SessionId,
-    timeout: std::time::Duration,
 ) -> StreamChunk {
-    let deadline = tokio::time::Instant::now() + timeout;
-    while tokio::time::Instant::now() < deadline {
-        let remaining = deadline.saturating_duration_since(tokio::time::Instant::now());
-        match tokio::time::timeout(remaining, rx.recv()).await {
-            Ok(Ok((id, chunk))) => {
-                if id == *sid && matches!(chunk, StreamChunk::UserNotification { .. }) {
-                    return chunk;
+    let next = codelet_test_helpers::deadlock_guard("a UserNotification chunk", async {
+        loop {
+            match rx.recv().await {
+                Ok((id, chunk)) => {
+                    if id == *sid && matches!(chunk, StreamChunk::UserNotification { .. }) {
+                        return chunk;
+                    }
                 }
-            }
-            Ok(Err(tokio::sync::broadcast::error::RecvError::Lagged(_))) => continue,
-            Ok(Err(tokio::sync::broadcast::error::RecvError::Closed)) => {
-                panic!("chunks broadcast closed before the expected chunk arrived");
-            }
-            // Timed out waiting for the next item — re-check the deadline.
-            Err(_) => {
-                if tokio::time::Instant::now() >= deadline {
-                    break;
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                    panic!("chunks broadcast closed before the expected chunk arrived");
                 }
             }
         }
-    }
-    panic!("timed out waiting for a UserNotification chunk for {sid}");
+    })
+    .await;
+    next.unwrap_or_else(|failure| panic!("{failure} (session {sid})"))
 }

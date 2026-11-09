@@ -11,10 +11,11 @@
 //!
 //! CGC equivalent: `find_class_hierarchy()` + `find_function_overrides()`.
 
-use crate::ast_dispatch::AST_QUERIES;
 use crate::database::GraphDatabase;
+use crate::dispatch_helpers::{error_result, stamp};
+use crate::query_index::{rows, with_source};
 use serde_json::Value;
-use std::collections::{HashSet, VecDeque};
+use std::collections::{BTreeSet, HashSet};
 
 /// Default max BFS depth for hierarchy traversal.
 const DEFAULT_MAX_DEPTH: u32 = 3;
@@ -30,7 +31,8 @@ struct HierarchyNode {
 ///
 /// Returns the full inheritance tree for a type: parents (via Extends),
 /// children (via reverse Extends), implemented interfaces (via Implements),
-/// and methods (functions in the same file as the type).
+/// and methods (via HasMethod). Each level and list is in slug order; a
+/// failed query is an error, never an empty list (KGRAPH-077).
 ///
 /// Mirrors CGC's `find_class_hierarchy()` return structure.
 pub async fn dispatch_ast_hierarchy(
@@ -39,49 +41,52 @@ pub async fn dispatch_ast_hierarchy(
     max_depth: Option<u32>,
     _include_methods: Option<bool>,
 ) -> String {
-    let depth_limit = max_depth.unwrap_or(DEFAULT_MAX_DEPTH);
+    match hierarchy(db, node_id, max_depth.unwrap_or(DEFAULT_MAX_DEPTH)).await {
+        Ok(result) => stamp(db, result),
+        Err(error) => error_result(db, "ast_hierarchy", error),
+    }
+}
 
-    // Verify type exists by querying all_types and matching slug
-    let type_info = match find_type(db, node_id).await {
-        Some(info) => info,
-        None => {
-            return serde_json::json!({
-                "action": "ast_hierarchy",
-                "error": format!("Type not found: {node_id}"),
-            })
-            .to_string();
-        }
-    };
+async fn hierarchy(db: &GraphDatabase, node_id: &str, depth_limit: u32) -> Result<Value, String> {
+    let index = db.query_index().await?;
+    let mut type_info = index
+        .types
+        .get(node_id)
+        .cloned()
+        .ok_or_else(|| format!("Type not found: {node_id}"))?;
+    if let (Value::Object(map), Some(path)) = (&mut type_info, index.type_path(node_id)) {
+        map.insert("path".to_string(), Value::String(path.to_string()));
+    }
+    let type_info = with_source(db, "type_source", node_id, type_info).await?;
 
     // BFS upward: find parents via Extends edges
-    let parents = bfs_traverse(db, node_id, "type_extends", depth_limit).await;
+    let parents = bfs_traverse(db, node_id, "type_extends", depth_limit).await?;
 
     // BFS downward: find children via reverse Extends edges
-    let children = bfs_traverse(db, node_id, "type_extended_by", depth_limit).await;
+    let children = bfs_traverse(db, node_id, "type_extended_by", depth_limit).await?;
 
     // Direct interfaces via Implements edges (single-hop only)
-    let interfaces = query_single_hop(db, node_id, "type_implements").await;
+    let interfaces = sorted_rows(db, node_id, "type_implements").await?;
 
-    // Find methods: functions in the same file as this type
-    let methods = find_methods_in_file(db, node_id).await;
+    // The type's methods: the functions its HasMethod edges lead to (the
+    // functions defined in its body or in its impl blocks, KGRAPH-075).
+    let methods = sorted_rows(db, node_id, "type_methods").await?;
 
-    serde_json::json!({
+    let as_json = |nodes: &[HierarchyNode]| -> Vec<Value> {
+        nodes
+            .iter()
+            .map(|n| {
+                serde_json::json!({
+                    "slug": n.slug,
+                    "name": n.name,
+                    "depth": n.depth,
+                    "via": "Extends",
+                })
+            })
+            .collect()
+    };
+    Ok(serde_json::json!({
         "action": "ast_hierarchy",
-        "type": type_info,
-        "parents": parents.iter().map(|n| serde_json::json!({
-            "slug": n.slug,
-            "name": n.name,
-            "depth": n.depth,
-            "via": "Extends",
-        })).collect::<Vec<_>>(),
-        "children": children.iter().map(|n| serde_json::json!({
-            "slug": n.slug,
-            "name": n.name,
-            "depth": n.depth,
-            "via": "Extends",
-        })).collect::<Vec<_>>(),
-        "interfaces": interfaces,
-        "methods": methods,
         "summary": format!(
             "Type '{}' has {} parent(s), {} child(ren), {} interface(s), {} method(s)",
             type_info["name"].as_str().unwrap_or(node_id),
@@ -90,28 +95,16 @@ pub async fn dispatch_ast_hierarchy(
             interfaces.len(),
             methods.len(),
         ),
-    })
-    .to_string()
+        "type": type_info,
+        "parents": as_json(&parents),
+        "children": as_json(&children),
+        "interfaces": interfaces,
+        "methods": methods,
+    }))
 }
 
-/// Find a type by slug, returning its metadata.
-async fn find_type(db: &GraphDatabase, slug: &str) -> Option<Value> {
-    let all_types = db
-        .query_with_source(AST_QUERIES, "all_types", None)
-        .await
-        .ok()?;
-
-    if let Value::Array(types) = all_types {
-        for t in types {
-            if t.get("slug").and_then(|v| v.as_str()) == Some(slug) {
-                return Some(t);
-            }
-        }
-    }
-    None
-}
-
-/// BFS traverse Extends (or reverse Extends) edges iteratively.
+/// BFS over Extends (or reverse Extends) edges, one query per type reached,
+/// each level in slug order.
 ///
 /// `query_name` should be one of:
 /// - `"type_extends"` — find parents (outgoing Extends)
@@ -121,101 +114,54 @@ async fn bfs_traverse(
     start_slug: &str,
     query_name: &str,
     max_depth: u32,
-) -> Vec<HierarchyNode> {
+) -> Result<Vec<HierarchyNode>, String> {
     let mut visited: HashSet<String> = HashSet::new();
-    let mut queue: VecDeque<(String, u32)> = VecDeque::new();
-    let mut results: Vec<HierarchyNode> = Vec::new();
-
     visited.insert(start_slug.to_string());
-    queue.push_back((start_slug.to_string(), 0));
-
-    while let Some((current_slug, current_depth)) = queue.pop_front() {
-        if current_depth >= max_depth {
-            continue;
-        }
-
-        let params = serde_json::json!({ "slug": current_slug });
-        let neighbors = match db
-            .query_with_source(AST_QUERIES, query_name, Some(&params))
-            .await
-        {
-            Ok(Value::Array(items)) => items,
-            _ => continue,
-        };
-
-        for item in neighbors {
-            let slug = match item.get("slug").and_then(|v| v.as_str()) {
-                Some(s) => s.to_string(),
-                None => continue,
-            };
-
-            if !visited.insert(slug.clone()) {
-                continue;
+    let mut frontier = vec![start_slug.to_string()];
+    let mut results: Vec<HierarchyNode> = Vec::new();
+    for depth in 1..=max_depth {
+        let mut next: BTreeSet<(String, String)> = BTreeSet::new();
+        for slug in &frontier {
+            for item in sorted_rows(db, slug, query_name).await? {
+                let neighbour = item.get("slug").and_then(Value::as_str).ok_or_else(|| {
+                    format!("Graph query '{query_name}' returned a row without slug: {item}")
+                })?;
+                if !visited.contains(neighbour) {
+                    let name = item.get("name").and_then(Value::as_str).unwrap_or_default();
+                    next.insert((neighbour.to_string(), name.to_string()));
+                }
             }
-
-            let name = item
-                .get("name")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string();
-
-            let depth = current_depth + 1;
-            results.push(HierarchyNode {
-                slug: slug.clone(),
-                name,
-                depth,
-            });
-
-            queue.push_back((slug, depth));
+        }
+        if next.is_empty() {
+            break;
+        }
+        frontier = Vec::new();
+        for (slug, name) in next {
+            if visited.insert(slug.clone()) {
+                frontier.push(slug.clone());
+                results.push(HierarchyNode { slug, name, depth });
+            }
         }
     }
-
-    results
+    Ok(results)
 }
 
-/// Query a single-hop edge relationship (e.g., Implements).
-async fn query_single_hop(db: &GraphDatabase, slug: &str, query_name: &str) -> Vec<Value> {
+/// The rows of a single-hop query from `slug`, in slug order.
+async fn sorted_rows(
+    db: &GraphDatabase,
+    slug: &str,
+    query_name: &str,
+) -> Result<Vec<Value>, String> {
     let params = serde_json::json!({ "slug": slug });
-    match db
-        .query_with_source(AST_QUERIES, query_name, Some(&params))
-        .await
-    {
-        Ok(Value::Array(items)) => items,
-        _ => Vec::new(),
-    }
-}
-
-/// Find methods (functions) in the same file as the given type.
-///
-/// Since our schema doesn't have Type→Function containment edges,
-/// we find the file containing the type, then return all functions
-/// in that file as an approximation of the type's methods.
-async fn find_methods_in_file(db: &GraphDatabase, type_slug: &str) -> Vec<Value> {
-    // Step 1: Find the file containing this type via type_container query
-    let params = serde_json::json!({ "slug": type_slug });
-    let file_slug = match db
-        .query_with_source(AST_QUERIES, "type_container", Some(&params))
-        .await
-    {
-        Ok(Value::Array(items)) => items
-            .first()
-            .and_then(|f| f.get("slug").and_then(|v| v.as_str()))
-            .map(|s| s.to_string()),
-        _ => None,
-    };
-
-    let file_slug = match file_slug {
-        Some(s) => s,
-        None => return Vec::new(),
-    };
-
-    // Step 2: Find all functions in that file via file_functions query
-    let file_params = serde_json::json!({ "slug": file_slug });
-    match db
-        .query_with_source(AST_QUERIES, "file_functions", Some(&file_params))
-        .await
-    {
-        Ok(Value::Array(items)) => items,
-        _ => Vec::new(),
-    }
+    let mut found = rows(db, query_name, Some(&params)).await?;
+    found.sort_by(|a, b| {
+        let key = |row: &Value| {
+            row.get("slug")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        };
+        key(a).cmp(&key(b))
+    });
+    Ok(found)
 }

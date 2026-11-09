@@ -44,7 +44,7 @@ Feature: Foundation discovery removal commands documentation
 
   Scenario: Help setup section includes remove-persona command
     Given I am using fspec
-    When I run "fspec help setup"
+    When I run "fspec bootstrap" and read its CONFIGURATION & SETUP section
     Then the output should include "fspec remove-persona <name>"
     And the output should include "Description: Remove persona from foundation.json"
     And the output should include example usage for removing personas
@@ -52,7 +52,7 @@ Feature: Foundation discovery removal commands documentation
 
   Scenario: Help setup section includes remove-capability command
     Given I am using fspec
-    When I run "fspec help setup"
+    When I run "fspec bootstrap" and read its CONFIGURATION & SETUP section
     Then the output should include "fspec remove-capability <name>"
     And the output should include "Description: Remove capability from foundation.json"
     And the output should include example usage for removing capabilities
@@ -60,7 +60,7 @@ Feature: Foundation discovery removal commands documentation
 
   Scenario: Removal commands show placeholder removal examples
     Given I am using fspec
-    When I run "fspec help setup"
+    When I run "fspec bootstrap" and read its CONFIGURATION & SETUP section
     Then the remove-persona examples should include removing placeholder text
     And the output should show 'fspec remove-persona "[QUESTION: Who uses this?]"'
     And the remove-capability examples should include removing placeholder text
@@ -70,7 +70,7 @@ Feature: Foundation discovery removal commands documentation
     Given I have a foundation draft with placeholder personas
     And the draft contains '[QUESTION: Who uses this?]' placeholder
     When I run "fspec discover-foundation --finalize"
-    Then the command should fail with exit code 1
+    Then finalization should be refused
     And the error message should explain how to fill placeholders
     And the error message should explain how to remove unwanted placeholders
     And the error message should include "fspec remove-persona" command example

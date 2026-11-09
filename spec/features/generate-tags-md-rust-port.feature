@@ -1,5 +1,7 @@
 @wip
 @RPC-236
+@cli
+@tag-management
 Feature: Port generate-tags-md command to Rust
   """
   Core impl rust/fspec-core/src/commands/generate_tags_md.rs mirrors generate_foundation_md.rs (RPC-233): exists-check spec/tags.json -> schema-validate -> parse -> render markdown -> mkdir parent -> write -> message 'Generated <out> from spec/tags.json'. Signature pub async fn run(args_json,&Path). NOTE: unlike foundation_md, tags-md.ts renders via sections.join('\n') where the final pushed section is '' so the rendered markdown ENDS WITH a single trailing newline (TS-faithful).

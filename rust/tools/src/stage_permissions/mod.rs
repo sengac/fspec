@@ -34,7 +34,6 @@ pub use matcher::{StageCheckResult, StagePermissionsMatcher};
 
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
-use tracing::warn;
 
 /// Global stage permissions matcher instance
 /// Uses RwLock to allow reinitialization (e.g., when project changes)
@@ -61,75 +60,64 @@ impl std::fmt::Display for StageBlockedError {
 
 impl std::error::Error for StageBlockedError {}
 
-/// Get the system stage permissions config path (~/.fspec/stage-permissions.json)
-pub fn system_config_path() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(".fspec").join("stage-permissions.json"))
+/// The system stage permissions config path,
+/// `<user dir>/stage-permissions.json` (BUG-656: the one user-directory
+/// resolver).
+pub fn system_config_path() -> Result<PathBuf, String> {
+    codelet_common::user_dir::fspec_user_dir()
+        .map(|directory| directory.join("stage-permissions.json"))
 }
 
-/// Get the project stage permissions config path (.fspec/stage-permissions.json relative to project root)
-pub fn project_config_path(project_root: &Path) -> PathBuf {
-    project_root.join(".fspec").join("stage-permissions.json")
+/// Get the project stage permissions config path (.fspec/stage-permissions.json
+/// relative to the project root; WT-015: shared state, so an isolated copy
+/// holding a state-root pointer reads the main checkout's).
+pub fn project_config_path(project_root: &Path) -> Result<PathBuf, String> {
+    codelet_common::spec_paths::ProjectRoots::resolve(project_root)
+        .map(|roots| roots.stage_permissions())
+        .map_err(|error| format!("cannot resolve the stage permissions config: {error}"))
 }
 
 /// Load stage permissions configuration from system and project paths.
 /// Project config takes precedence over system config.
 /// If no config files exist, returns default ACDD permissions.
-pub fn load_stage_permissions_config(project_root: Option<&Path>) -> StagePermissionsConfig {
-    let mut system_config = StagePermissionsConfig::empty();
-    let mut project_config = StagePermissionsConfig::empty();
-    let mut any_config_found = false;
-
-    // Load system config if it exists
-    if let Some(system_path) = system_config_path() {
-        if system_path.exists() {
-            match StagePermissionsConfig::load_from_file(&system_path) {
-                Ok(config) => {
-                    system_config = config;
-                    any_config_found = true;
-                }
-                Err(e) => {
-                    warn!(
-                        "Failed to load system stage permissions config from {:?}: {}",
-                        system_path, e
-                    );
-                }
-            }
+pub fn load_stage_permissions_config(
+    project_root: Option<&Path>,
+) -> Result<StagePermissionsConfig, String> {
+    // BUG-449: an unreadable or invalid config file is an error, never
+    // silently replaced by the defaults.
+    let load = |path: PathBuf| -> Result<Option<StagePermissionsConfig>, String> {
+        if !path.exists() {
+            return Ok(None);
         }
-    }
-
-    // Load project config if it exists
-    if let Some(root) = project_root {
-        let project_path = project_config_path(root);
-        if project_path.exists() {
-            match StagePermissionsConfig::load_from_file(&project_path) {
-                Ok(config) => {
-                    project_config = config;
-                    any_config_found = true;
-                }
-                Err(e) => {
-                    warn!(
-                        "Failed to load project stage permissions config from {:?}: {}",
-                        project_path, e
-                    );
-                }
-            }
-        }
-    }
-
-    // If no config files found, use default ACDD permissions
-    if !any_config_found {
-        return StagePermissionsConfig::default_acdd();
-    }
-
-    // Merge configs (project takes precedence)
-    StagePermissionsConfig::merge(system_config, project_config)
+        StagePermissionsConfig::load_from_file(&path)
+            .map(Some)
+            .map_err(|error| {
+                format!(
+                    "cannot load the stage permissions config {}: {error}",
+                    path.display()
+                )
+            })
+    };
+    let system = load(system_config_path()?)?;
+    let project = match project_root {
+        Some(root) => load(project_config_path(root)?)?,
+        None => None,
+    };
+    // No config file at all: the default ACDD permissions (BLOCK-006).
+    Ok(match (system, project) {
+        (None, None) => StagePermissionsConfig::default_acdd(),
+        (system, project) => StagePermissionsConfig::merge(
+            system.unwrap_or_else(StagePermissionsConfig::empty),
+            project.unwrap_or_else(StagePermissionsConfig::empty),
+        ),
+    })
 }
 
 /// Initialize the global stage permissions matcher.
 /// Should be called once at startup with the project root.
 /// Can be called again to reinitialize with a different project root.
-pub fn init_stage_permissions(project_root: Option<&Path>) {
-    let config = load_stage_permissions_config(project_root);
+pub fn init_stage_permissions(project_root: Option<&Path>) -> Result<(), String> {
+    let config = load_stage_permissions_config(project_root)?;
     let matcher = StagePermissionsMatcher::new(config);
 
     // Write lock to update the matcher
@@ -139,13 +127,14 @@ pub fn init_stage_permissions(project_root: Option<&Path>) {
         Err(poisoned) => poisoned.into_inner(),
     };
     *guard = Some(matcher);
+    Ok(())
 }
 
 /// Check if a file write is allowed for the given stage.
 /// Returns Ok(()) if allowed, Err(StageBlockedError) if blocked.
 ///
 /// If stage is empty/None, allows all writes (no work unit active).
-/// If stage permissions are not initialized, allows all writes.
+/// BUG-449: if stage permissions are not initialized, the write is refused.
 pub fn check_write_permission(path: &str, stage: Option<&str>) -> Result<(), StageBlockedError> {
     // If no stage (no work unit active), allow all writes
     let stage = match stage {
@@ -160,8 +149,16 @@ pub fn check_write_permission(path: &str, stage: Option<&str>) -> Result<(), Sta
         Err(poisoned) => poisoned.into_inner(),
     };
 
-    // If matcher not initialized, allow all writes
-    if let Some(ref matcher) = *guard {
+    // BUG-449: an uninitialized matcher refuses (sessions use stage_gate).
+    let Some(ref matcher) = *guard else {
+        return Err(StageBlockedError {
+            reason: "stage permissions are not initialized".to_string(),
+            guidance: None,
+            category: String::new(),
+            stage: stage.to_string(),
+        });
+    };
+    {
         let result = matcher.check_write(path, stage);
 
         if result.blocked {
@@ -195,8 +192,8 @@ pub fn check_write_raw(path: &str, stage: &str) -> StageCheckResult {
 }
 
 /// Reload the stage permissions configuration.
-pub fn reload_stage_permissions(project_root: Option<&Path>) {
-    init_stage_permissions(project_root);
+pub fn reload_stage_permissions(project_root: Option<&Path>) -> Result<(), String> {
+    init_stage_permissions(project_root)
 }
 
 #[cfg(test)]
@@ -221,8 +218,10 @@ mod tests {
 
     #[test]
     fn test_load_default_config_when_no_files() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().expect("failed to create temp dir");
-        let config = load_stage_permissions_config(Some(tmp.path()));
+        let config = load_stage_permissions_config(Some(tmp.path())).expect("the config loads");
 
         // Should use default ACDD permissions
         assert!(!config.categories.is_empty());
@@ -231,10 +230,12 @@ mod tests {
 
     #[test]
     fn test_load_project_config() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let tmp = TempDir::new().expect("failed to create temp dir");
         create_test_config(tmp.path());
 
-        let config = load_stage_permissions_config(Some(tmp.path()));
+        let config = load_stage_permissions_config(Some(tmp.path())).expect("the config loads");
 
         assert!(!config.categories.is_empty());
         assert!(!config.permissions.is_empty());
@@ -242,6 +243,8 @@ mod tests {
 
     #[test]
     fn test_stage_blocked_error_display() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let error = StageBlockedError {
             reason: "Cannot write implementation files in testing stage".to_string(),
             guidance: Some("Move to implementing stage first.".to_string()),
@@ -257,6 +260,8 @@ mod tests {
 
     #[test]
     fn test_stage_blocked_error_display_without_guidance() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         let error = StageBlockedError {
             reason: "Write blocked".to_string(),
             guidance: None,
@@ -269,6 +274,8 @@ mod tests {
 
     #[test]
     fn test_check_write_permission_no_stage() {
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         // No stage means no work unit active - should allow all
         let result = check_write_permission("src/auth.ts", None);
         assert!(result.is_ok());

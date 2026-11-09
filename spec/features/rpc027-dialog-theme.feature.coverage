@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "84-117",
+          "lines": "85-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -304,7 +304,9 @@
                 292,
                 293,
                 294
-              ]
+              ],
+              "firstLine": "//! RPC-027 — Canonical fspec dialog theme.",
+              "lastLine": "// Footer pinned to the bottom of the body block."
             }
           ]
         }
@@ -315,7 +317,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "120-156",
+          "lines": "129-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -448,7 +450,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "let body_h = dialog.rows.len() as u16;",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -459,7 +463,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "159-187",
+          "lines": "170-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -592,7 +596,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "let body_h = dialog.rows.len() as u16;",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -603,7 +609,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "190-231",
+          "lines": "203-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -736,7 +742,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "let body_h = dialog.rows.len() as u16;",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -747,7 +755,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "234-265",
+          "lines": "247-278",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -880,7 +888,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "let body_h = dialog.rows.len() as u16;",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -891,7 +901,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "268-336",
+          "lines": "280-356",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -1024,7 +1034,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "let body_h = dialog.rows.len() as u16;",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -1035,7 +1047,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "339-352",
+          "lines": "364-376",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
@@ -1063,23 +1075,25 @@
                 21,
                 22,
                 23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "//! RPC-027 — Helper row builders for the canonical dialog theme.",
+              "lastLine": "/// RPC-383: count the wrapped visual rows of `text` at `width`,"
             }
           ]
         }
@@ -1090,7 +1104,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "355-377",
+          "lines": "372-393",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme_rows.rs",
@@ -1118,23 +1132,25 @@
                 21,
                 22,
                 23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "//! RPC-027 — Helper row builders for the canonical dialog theme.",
+              "lastLine": "/// RPC-383: count the wrapped visual rows of `text` at `width`,"
             }
           ]
         }
@@ -1145,7 +1161,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "380-422",
+          "lines": "395-439",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -1185,7 +1201,9 @@
                 250,
                 251,
                 252
-              ]
+              ],
+              "firstLine": "// it fall back to a COMPACT layout (drop the gaps; then, if still too",
+              "lastLine": "body.y + body.height"
             }
           ]
         }
@@ -1196,26 +1214,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "425-453",
+          "lines": "450-481",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "/// Compute the centered dialog rect inside `area`. The returned rect",
+              "lastLine": "}"
             }
           ]
         }
@@ -1226,26 +1255,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc027_dialog_theme.rs",
-          "lines": "456-484",
+          "lines": "484-516",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "/// Compute the centered dialog rect inside `area`. The returned rect",
+              "lastLine": "}"
             }
           ]
         }
@@ -1263,6 +1303,6 @@
       "rust/fspec-tui/src/components/dialog_theme.rs",
       "rust/fspec-tui/src/components/dialog_theme_rows.rs"
     ],
-    "totalLinesCovered": 1456
+    "totalLinesCovered": 1505
   }
 }

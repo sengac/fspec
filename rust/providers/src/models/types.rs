@@ -63,6 +63,9 @@ pub struct ModelInfo {
     /// Interleaved thinking configuration
     #[serde(default)]
     pub interleaved: Option<InterleavedConfig>,
+    /// models.dev reasoning controls (effort list, token budget, toggle);
+    /// absent when models.dev lists none for the model.
+    pub reasoning_options: Option<Vec<super::ReasoningOption>>,
 
     /// Input/output modalities
     pub modalities: Option<Modalities>,
@@ -163,12 +166,18 @@ pub struct LimitInfo {
     pub output: u32,
 }
 
-impl Default for LimitInfo {
-    fn default() -> Self {
-        Self {
-            context: 128000,
-            output: 4096,
-        }
+/// PROV-173: no guessed `Default`. models.dev puts a limit block on every
+/// model and writes 0 for a limit that does not apply (embedding and image
+/// models), so these accessors read 0 as unavailable.
+impl LimitInfo {
+    /// The catalog context window, or `None` when the catalog gives 0.
+    pub fn context_window(&self) -> Option<u32> {
+        Some(self.context).filter(|value| *value > 0)
+    }
+
+    /// The catalog output limit, or `None` when the catalog gives 0.
+    pub fn max_output_tokens(&self) -> Option<u32> {
+        Some(self.output).filter(|value| *value > 0)
     }
 }
 
@@ -261,12 +270,16 @@ mod tests {
             tool_call: true,
             temperature: true,
             interleaved: None,
+            reasoning_options: None,
             modalities: Some(Modalities {
                 input: vec![Modality::Text, Modality::Image],
                 output: vec![Modality::Text],
             }),
             cost: None,
-            limit: LimitInfo::default(),
+            limit: LimitInfo {
+                context: 200_000,
+                output: 16_000,
+            },
             status: None,
             experimental: None,
             options: HashMap::new(),

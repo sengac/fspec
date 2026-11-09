@@ -262,3 +262,144 @@ fn scenario_dispatcher_rejects_an_empty_tag_list() {
         "expected required-tag message; got: {err}"
     );
 }
+
+// ---------- scenarios moved from delete-scenarios-by-tag (COV-072) ----------
+
+/// Every scenario name in a feature source, parsed with the real parser.
+fn scenario_names(body: &str) -> Vec<String> {
+    let feature = codelet_fspec_core::io::gherkin::parse_feature_lenient(body)
+        .expect("modified file re-parses as Gherkin");
+    let mut names: Vec<String> = feature.scenarios.iter().map(|s| s.name.clone()).collect();
+    for rule in &feature.rules {
+        names.extend(rule.scenarios.iter().map(|s| s.name.clone()));
+    }
+    names
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes matching scenarios across several files and leaves files without matches untouched
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_matching_scenarios_across_several_files() {
+    // @step Given a project root tempdir with three features holding five @obsolete scenarios between them and a fourth feature with none
+    let tmp = TempDir::new().expect("tempdir");
+    let one = "Feature: One\n\n  @obsolete\n  Scenario: One old a\n    Given a\n\n  @obsolete\n  Scenario: One old b\n    Given b\n\n  Scenario: One keep\n    Given c\n";
+    let two = "Feature: Two\n\n  Scenario: Two keep\n    Given a\n\n  @obsolete\n  Scenario: Two old\n    Given b\n";
+    let three = "Feature: Three\n\n  @obsolete\n  Scenario: Three old a\n    Given a\n\n  Scenario: Three keep\n    Given b\n\n  @obsolete\n  Scenario: Three old b\n    Given c\n";
+    let four = "Feature: Four\n\n  @current\n  Scenario: Four keep\n    Given a\n";
+    write_feature(tmp.path(), "spec/features/one.feature", one);
+    write_feature(tmp.path(), "spec/features/two.feature", two);
+    write_feature(tmp.path(), "spec/features/three.feature", three);
+    write_feature(tmp.path(), "spec/features/four.feature", four);
+
+    // @step When I dispatch delete-scenarios with tags=['@obsolete']
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@obsolete"]})));
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data = data_of(&result);
+
+    // @step Then the dispatcher returns success=true with deletedCount=5 and fileCount=3
+    assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
+    assert_eq!(data["deletedCount"].as_u64(), Some(5), "got data: {data}");
+    assert_eq!(data["fileCount"].as_u64(), Some(3), "got data: {data}");
+
+    // @step And the dispatcher message equals 'Deleted 5 scenario(s) from 3 file(s). All modified files validated successfully.'
+    assert_eq!(
+        data["message"].as_str(),
+        Some("Deleted 5 scenario(s) from 3 file(s). All modified files validated successfully."),
+        "got data: {data}"
+    );
+
+    // @step And each modified file re-parses as valid Gherkin holding only its untagged scenario
+    for (rel, keep) in [
+        ("spec/features/one.feature", "One keep"),
+        ("spec/features/two.feature", "Two keep"),
+        ("spec/features/three.feature", "Three keep"),
+    ] {
+        let after = read_feature(tmp.path(), rel);
+        assert_eq!(
+            scenario_names(&after),
+            vec![keep.to_string()],
+            "{rel}:\n{after}"
+        );
+    }
+
+    // @step And the feature without @obsolete scenarios is byte-equal to its pre-call contents
+    assert_eq!(read_feature(tmp.path(), "spec/features/four.feature"), four);
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher keeps the feature tags and the Background of a modified file
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_keeps_the_feature_tags_and_the_background() {
+    // @step Given a project root tempdir with one feature tagged @feature-tag that has a Background, two scenarios tagged @cleanup and one untagged scenario
+    let tmp = TempDir::new().expect("tempdir");
+    let header = "@feature-tag\nFeature: Demo\n\n  Background: Shared setup\n    Given a shared precondition\n";
+    let body = format!(
+        "{header}\n  @cleanup\n  Scenario: Clean one\n    Given a\n\n  Scenario: Keeper\n    Given b\n\n  @cleanup\n  Scenario: Clean two\n    Given c\n"
+    );
+    write_feature(tmp.path(), "spec/features/demo.feature", &body);
+
+    // @step When I dispatch delete-scenarios with tags=['@cleanup']
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@cleanup"]})));
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data = data_of(&result);
+
+    // @step Then the dispatcher returns success=true with deletedCount=2
+    assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
+    assert_eq!(data["deletedCount"].as_u64(), Some(2), "got data: {data}");
+
+    let after = read_feature(tmp.path(), "spec/features/demo.feature");
+
+    // @step And the feature file still starts with the @feature-tag line, the Feature line and the Background with its step
+    assert!(after.starts_with(header), "got:\n{after}");
+    let feature = codelet_fspec_core::io::gherkin::parse_feature_lenient(&after)
+        .expect("modified file re-parses as Gherkin");
+    assert_eq!(
+        feature.tags,
+        vec!["feature-tag".to_string()],
+        "got:\n{after}"
+    );
+    assert!(feature.background.is_some(), "got:\n{after}");
+
+    // @step And the only scenario left is the untagged one
+    assert_eq!(
+        scenario_names(&after),
+        vec!["Keeper".to_string()],
+        "got:\n{after}"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher deletes scenarios whose tag contains special characters
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_dispatcher_deletes_scenarios_whose_tag_contains_special_characters() {
+    // @step Given a project root tempdir with one feature containing a scenario tagged @bug-#123, a scenario tagged @bug-123 and an untagged scenario
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/demo.feature",
+        "Feature: Demo\n\n  @bug-#123\n  Scenario: Hash tagged\n    Given a\n\n  @bug-123\n  Scenario: Plain number tagged\n    Given b\n\n  Scenario: Untagged\n    Given c\n",
+    );
+
+    // @step When I dispatch delete-scenarios with tags=['@bug-#123']
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@bug-#123"]})));
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data = data_of(&result);
+
+    // @step Then the dispatcher returns success=true with deletedCount=1
+    assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
+    assert_eq!(data["deletedCount"].as_u64(), Some(1), "got data: {data}");
+
+    // @step And the feature file re-parses as valid Gherkin without the @bug-#123 scenario
+    let after = read_feature(tmp.path(), "spec/features/demo.feature");
+    assert_eq!(
+        scenario_names(&after),
+        vec!["Plain number tagged".to_string(), "Untagged".to_string()],
+        "got:\n{after}"
+    );
+}

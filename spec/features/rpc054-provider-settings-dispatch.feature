@@ -36,7 +36,7 @@ Feature: ProviderSettingsView — App dispatch wiring for the /provider slash co
     Then SlashCommandAction::Provider is dispatched
     And Action::OpenProviderSettingsView is sent on the action bus
     And the Navigator's active_view is ViewMode::ProviderSettings
-    And backend.list_provider_credentials is awaited and the response is routed through Action::ProviderCredentialsLoaded
+    And backend.list_provider_credentials is awaited and the response is routed through the numbered Action::ProviderSettingsRefreshed
     And the ProviderSettingsView's providers field is populated with the loaded list
 
   @slash
@@ -75,36 +75,7 @@ Feature: ProviderSettingsView — App dispatch wiring for the /provider slash co
     And backend.set_provider_credentials("anthropic", ProviderCredentialInput::api_key("sk-test-1")) is awaited
     And on Ok the action Action::ProviderSettingsStatus("✓ anthropic credentials saved") is dispatched
     And a follow-up backend.list_provider_credentials() refresh is dispatched
-    And the resulting Action::ProviderCredentialsLoaded folds the new list into the view
-
-  @test-connection
-  Scenario: Pressing t inside Detail::Summary runs a connection test
-    Given the ProviderSettingsView is in Detail::Summary for "openai"
-    When the user presses "t"
-    Then Action::TestProviderConnection("openai") is dispatched
-    And backend.test_provider_connection("openai") is awaited
-    And on Ok the action Action::ProviderTestComplete { provider_id: "openai", result: TestConnectionResult { success: true, latency_ms: 42, .. } } is dispatched
-    And the view's last_status updates to TestOk { latency_ms: 42 }
-
-  @test-connection
-  Scenario: Backend test_provider_connection error surfaces inline as ✗
-    Given the ProviderSettingsView is in Detail::Summary for "openai"
-    When the user presses "t"
-    And backend.test_provider_connection returns Err("unreachable: dns")
-    Then Action::ProviderSettingsStatus("✗ unreachable: dns") is dispatched
-    And the view's last_status updates to Error { message: "unreachable: dns" }
-    And NO panic occurs
-    And NO scrollback notice is emitted to the AgentView
-
-  @refresh-models
-  Scenario: Pressing r inside Detail::Summary refreshes the model cache
-    Given the ProviderSettingsView is in Detail::Summary for "openai"
-    When the user presses "r"
-    Then Action::RefreshProviderModels("openai") is dispatched
-    And backend.refresh_models_cache("openai") is awaited
-    And on Ok the action Action::ProviderModelsRefreshed { provider_id: "openai", model_count: 8 } is dispatched
-    And a follow-up backend.list_provider_credentials() refresh is dispatched
-    And the openai row's model_count repaints from 4 to 8
+    And the resulting Action::ProviderSettingsRefreshed folds the new list into the view
 
   @delete
   @confirm-dialog

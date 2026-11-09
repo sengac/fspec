@@ -286,11 +286,10 @@
                 355,
                 356,
                 357,
-                358,
-                359,
-                360,
-                361
-              ]
+                358
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -571,11 +570,10 @@
                 355,
                 356,
                 357,
-                358,
-                359,
-                360,
-                361
-              ]
+                358
+              ],
+              "firstLine": "fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -856,11 +854,10 @@
                 355,
                 356,
                 357,
-                358,
-                359,
-                360,
-                361
-              ]
+                358
+              ],
+              "firstLine": "fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1141,11 +1138,10 @@
                 355,
                 356,
                 357,
-                358,
-                359,
-                360,
-                361
-              ]
+                358
+              ],
+              "firstLine": "fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1426,11 +1422,10 @@
                 355,
                 356,
                 357,
-                358,
-                359,
-                360,
-                361
-              ]
+                358
+              ],
+              "firstLine": "fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1446,6 +1441,7 @@
             {
               "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
+                632,
                 633,
                 634,
                 635,
@@ -1478,9 +1474,10 @@
                 662,
                 663,
                 664,
-                665,
-                666
-              ]
+                665
+              ],
+              "firstLine": "if let Some(g) = &extracted.given {",
+              "lastLine": "for path in files {"
             }
           ]
         }
@@ -1496,6 +1493,7 @@
             {
               "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
+                734,
                 735,
                 736,
                 737,
@@ -1888,9 +1886,10 @@
                 1124,
                 1125,
                 1126,
-                1127,
-                1128
-              ]
+                1127
+              ],
+              "firstLine": "struct SimilarityConfig {",
+              "lastLine": "pub fn extract_steps_from_example(example: &str) -> ExtractedSteps {"
             }
           ]
         }
@@ -1906,6 +1905,7 @@
             {
               "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
+                734,
                 735,
                 736,
                 737,
@@ -2298,9 +2298,10 @@
                 1124,
                 1125,
                 1126,
-                1127,
-                1128
-              ]
+                1127
+              ],
+              "firstLine": "struct SimilarityConfig {",
+              "lastLine": "pub fn extract_steps_from_example(example: &str) -> ExtractedSteps {"
             }
           ]
         }
@@ -2311,11 +2312,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_scenarios.rs",
-          "lines": "354-377",
+          "lines": "362-384",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
+                386,
+                387,
                 388,
                 389,
                 390,
@@ -2336,7 +2339,9 @@
                 405,
                 406,
                 407
-              ]
+              ],
+              "firstLine": "result.trim_matches('-').to_string()",
+              "lastLine": "lines.push(\"  # BUSINESS RULES:\".to_string());"
             }
           ]
         }
@@ -2347,11 +2352,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_scenarios.rs",
-          "lines": "378-412",
+          "lines": "386-419",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
               "lines": [
+                1128,
                 1129,
                 1130,
                 1131,
@@ -2511,9 +2517,10 @@
                 1285,
                 1286,
                 1287,
-                1288,
-                1289
-              ]
+                1288
+              ],
+              "firstLine": "let normalized = example.trim();",
+              "lastLine": "for m in re.find_iter(content) {"
             }
           ]
         }
@@ -2540,7 +2547,202 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// failure (rendered body) and surfaces hard errors via other variants."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Background is built from the user story of the work unit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "488-525",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ],
+              "firstLine": "let user_story = extra.get(\"userStory\");",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generated file places the architecture docstring between the Feature line and the example mapping comments",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "527-587",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275
+              ],
+              "firstLine": "let architecture_docstring = build_architecture_docstring(extra);",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate reminder names the files to investigate, the next steps and the override flag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "589-633",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "if !detected.is_empty() && !args.ignore_possible_duplicates {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch writes the file without duplicate warnings when no existing scenario matches",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "635-666",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "let detected = scan_existing_features(project_root, &active_example_texts);",
+              "lastLine": "if !detected.is_empty() && !args.ignore_possible_duplicates {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch fails when the work unit has no title and no feature name",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "668-704",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ],
+              "firstLine": "let feature_file: PathBuf = if let Some(feature) = &args.feature {",
+              "lastLine": "crate::io::spec_paths::features_dir_of(project_root).join(format!(\"{kebab}.feature\"))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The work unit ID is written as a feature-level tag only",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_scenarios.rs",
+          "lines": "706-733",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275
+              ],
+              "firstLine": "let feature_content = format!(",
+              "lastLine": ");"
             }
           ]
         }
@@ -2548,8 +2750,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 17,
+    "coveredScenarios": 17,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/generate_scenarios.rs"
@@ -2557,6 +2759,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/generate_scenarios.rs"
     ],
-    "totalLinesCovered": 2696
+    "totalLinesCovered": 3007
   }
 }

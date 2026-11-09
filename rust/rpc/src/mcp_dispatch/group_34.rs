@@ -4,8 +4,8 @@ pub(super) mod blocklist_list {
     #[derive(serde::Deserialize, schemars::JsonSchema)]
     #[serde(deny_unknown_fields)]
     pub struct Args {}
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -13,13 +13,13 @@ pub(super) mod blocklist_list {
         Ok(())
     }
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
-        let args: Args =
+        let _args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .blocklist_list(tarpc::context::current())
             .await
-            .map_err(|e| InvokeError::Transport(e.to_string()))?;
+            .map_err(|e| InvokeError::Transport(e.to_string()))?
+            .map_err(InvokeError::Daemon)?;
         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
@@ -31,8 +31,8 @@ pub(super) mod merge_session_worktree {
         session_id: SessionId,
         strategy: MergeStrategy,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -42,7 +42,6 @@ pub(super) mod merge_session_worktree {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .merge_session_worktree(tarpc::context::current(), args.session_id, args.strategy)
             .await
@@ -58,8 +57,8 @@ pub(super) mod discard_session_worktree {
     pub struct Args {
         session_id: SessionId,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -69,7 +68,6 @@ pub(super) mod discard_session_worktree {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .discard_session_worktree(tarpc::context::current(), args.session_id)
             .await

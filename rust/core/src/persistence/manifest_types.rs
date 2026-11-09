@@ -75,6 +75,14 @@ pub struct SessionManifest {
     /// Token usage statistics.
     #[serde(default)]
     pub token_usage: TokenUsage,
+    /// MODEL-015: the Claude per-message effort log of the conversation
+    /// (its top-level effort and the effort messages, by user message id).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub effort_log: Option<codelet_providers::claude_effort::EffortLog>,
+    /// BUG-601: the blocklist rule ids this session turned off; they are off
+    /// for this session only and come back with it when it is resumed.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]
+    pub blocklist_disabled_rules: std::collections::BTreeSet<String>,
 }
 
 impl SessionManifest {
@@ -100,6 +108,8 @@ impl SessionManifest {
             merged_from: Vec::new(),
             compaction: None,
             token_usage: TokenUsage::default(),
+            effort_log: None,
+            blocklist_disabled_rules: Default::default(),
         }
     }
 
@@ -136,6 +146,7 @@ impl SessionManifest {
         cache_create: u64,
     ) {
         self.token_usage.current_context_tokens = input;
+        self.token_usage.current_context_output_tokens = output;
         self.token_usage.cumulative_billed_input += input;
         self.token_usage.cumulative_billed_output += output;
         self.token_usage.cache_read_tokens = cache_read;

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rpc087_dispatch_routes_through_recovery_stream_shape.rs",
-          "lines": "21-48",
+          "lines": "21-46",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/dispatch.rs",
@@ -80,7 +80,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "macro_rules! run_with_provider {",
+              "lastLine": "$images,"
             }
           ]
         }
@@ -97,6 +99,6 @@
     "implFiles": [
       "rust/agent-loop/src/dispatch.rs"
     ],
-    "totalLinesCovered": 98
+    "totalLinesCovered": 96
   }
 }

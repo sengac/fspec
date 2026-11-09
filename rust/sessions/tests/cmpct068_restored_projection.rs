@@ -9,7 +9,6 @@ use codelet_core::persistence::compaction_commit::{commit_compaction, publish_co
 use codelet_core::persistence::*;
 use codelet_core::SessionManagerHandle;
 use codelet_rpc_types::TokenRestoreState;
-use std::sync::atomic::Ordering;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
@@ -54,13 +53,19 @@ async fn scenario_restored_committed_context_refreshes_without_claiming_completi
         snapshot.context_fill.threshold,
         f64::from(
             background
-                .cached_compaction_threshold
-                .load(Ordering::Acquire)
+                .model_limits()
+                .compaction_threshold
+                .ok_or("compaction threshold")?
         )
     );
     assert_eq!(
         snapshot.context_fill.context_window,
-        f64::from(background.cached_context_window.load(Ordering::Acquire))
+        f64::from(
+            background
+                .model_limits()
+                .context_window
+                .ok_or("context window")?
+        )
     );
     // @step And the refresh is reconciliation rather than a delivered completion notice
     assert!(snapshot.reconciled);

@@ -86,7 +86,8 @@ mod tests {
     fn mux_nav(panes: &[MuxPaneKind], focus: usize) -> Navigator {
         let (mut nav, _rx) = fresh();
         nav.mux.enable_default();
-        nav.mux.set_pane_list(panes.to_vec(), None);
+        nav.mux
+            .set_layout(crate::views::multiplex::MuxLayout::columns(panes).unwrap());
         nav.active_view = ViewMode::Mux;
         nav.mux.set_focus(focus);
         nav
@@ -120,7 +121,11 @@ mod tests {
         );
         // @step And the saved mux layout still lists the Files pane so a later /mux off then /mux on restores it
         assert!(
-            nav.mux.config().panes.contains(&MuxPaneKind::ChangedFiles),
+            nav.mux
+                .config()
+                .layout
+                .leaves()
+                .contains(&MuxPaneKind::ChangedFiles),
             "the saved tui.mux pane list must be untouched"
         );
         // @step And the TUI is still in mux mode with a surviving pane focused
@@ -149,7 +154,11 @@ mod tests {
             &[MuxPaneKind::Board, MuxPaneKind::Agent],
         );
         assert!(
-            nav.mux.config().panes.contains(&MuxPaneKind::Checkpoints),
+            nav.mux
+                .config()
+                .layout
+                .leaves()
+                .contains(&MuxPaneKind::Checkpoints),
             "the saved tui.mux pane list must be untouched"
         );
         assert_eq!(nav.active_view, ViewMode::Mux);
@@ -171,7 +180,7 @@ mod tests {
             "the mux config must be disabled on exit"
         );
         assert_eq!(
-            nav.mux.config().panes,
+            nav.mux.config().layout.leaves(),
             vec![MuxPaneKind::Checkpoints],
             "the saved tui.mux pane list must survive the exit"
         );

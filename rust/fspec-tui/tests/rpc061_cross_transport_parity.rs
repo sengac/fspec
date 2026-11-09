@@ -8,14 +8,9 @@
 //! StubSessionManagerHandle. Mirrors the RPC-059 cross-transport parity
 //! pattern.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock,
-    clippy::too_many_lines
-)]
+#![allow(clippy::await_holding_lock, clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, OrFailErr, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -28,44 +23,51 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::{IncomingMessageInput, SessionId};
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 fn sample_input(source: &str, role: &str, message: &str) -> IncomingMessageInput {
@@ -82,23 +84,23 @@ fn sample_input(source: &str, role: &str, message: &str) -> IncomingMessageInput
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn add_supervisor_round_trips_identically_across_transports() {
+async fn add_supervisor_round_trips_identically_across_transports() -> TestResult {
     // @step Given a fresh StubSessionManagerHandle behind both transports
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.add_supervisor_calls();
 
     // @step When add_supervisor is called via the embedded transport with subordinate=SessionId("sub-em") and supervisor=SessionId("sup")
     embedded
         .add_supervisor(SessionId::new("sub-em"), SessionId::new("sup"))
         .await
-        .expect("embedded add_supervisor");
+        .or_fail("embedded add_supervisor")?;
 
     // @step And add_supervisor is called via the WebSocket transport with subordinate=SessionId("sub-ws") and supervisor=SessionId("sup")
     websocket
         .add_supervisor(SessionId::new("sub-ws"), SessionId::new("sup"))
         .await
-        .expect("websocket add_supervisor");
+        .or_fail("websocket add_supervisor")?;
 
     // @step Then the stub's add_supervisor_calls counter increased by 2
     assert_eq!(
@@ -108,11 +110,14 @@ async fn add_supervisor_round_trips_identically_across_transports() {
     );
 
     // @step And the stub now reports two subordinates for "sup"
-    let subs = stub.get_subordinates(&SessionId::new("sup"));
+    let subs = stub
+        .get_subordinates(&SessionId::new("sup"))
+        .or_fail("get_subordinates reads the session")?;
     assert_eq!(subs.len(), 2, "stub should report two subordinates");
     let strings: Vec<String> = subs.iter().map(|s| s.value.clone()).collect();
     assert!(strings.contains(&"sub-em".to_string()));
     assert!(strings.contains(&"sub-ws".to_string()));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -120,24 +125,24 @@ async fn add_supervisor_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn get_supervisors_round_trips_identically_across_transports() {
+async fn get_supervisors_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with add_supervisor(sub, sup)
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.add_supervisor(&SessionId::new("sub"), &SessionId::new("sup"))
-        .expect("seed add_supervisor");
-    let (embedded, websocket) = dual_backends(service).await;
+        .or_fail("seed add_supervisor")?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.get_supervisors_calls();
 
     // @step When get_supervisors is called via the embedded transport
     let em = embedded
         .get_supervisors(SessionId::new("sub"))
         .await
-        .expect("embedded get_supervisors");
+        .or_fail("embedded get_supervisors")?;
     // @step And get_supervisors is called via the WebSocket transport
     let ws = websocket
         .get_supervisors(SessionId::new("sub"))
         .await
-        .expect("websocket get_supervisors");
+        .or_fail("websocket get_supervisors")?;
 
     // @step Then both calls return [SessionId("sup")]
     assert_eq!(em, vec![SessionId::new("sup")]);
@@ -150,6 +155,7 @@ async fn get_supervisors_round_trips_identically_across_transports() {
         2,
         "get_supervisors_calls should increment by 2"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -157,26 +163,26 @@ async fn get_supervisors_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn get_subordinates_round_trips_identically_across_transports() {
+async fn get_subordinates_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with two subordinates of "sup"
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.add_supervisor(&SessionId::new("sub-a"), &SessionId::new("sup"))
-        .expect("seed add_supervisor a");
+        .or_fail("seed add_supervisor a")?;
     stub.add_supervisor(&SessionId::new("sub-b"), &SessionId::new("sup"))
-        .expect("seed add_supervisor b");
-    let (embedded, websocket) = dual_backends(service).await;
+        .or_fail("seed add_supervisor b")?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.get_subordinates_calls();
 
     // @step When get_subordinates is called via the embedded transport
     let em = embedded
         .get_subordinates(SessionId::new("sup"))
         .await
-        .expect("embedded get_subordinates");
+        .or_fail("embedded get_subordinates")?;
     // @step And get_subordinates is called via the WebSocket transport
     let ws = websocket
         .get_subordinates(SessionId::new("sup"))
         .await
-        .expect("websocket get_subordinates");
+        .or_fail("websocket get_subordinates")?;
 
     // @step Then both calls return [SessionId("sub-a"), SessionId("sub-b")] (same order)
     assert_eq!(em.len(), 2);
@@ -186,6 +192,7 @@ async fn get_subordinates_round_trips_identically_across_transports() {
         2,
         "get_subordinates_calls should increment by 2"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -193,23 +200,23 @@ async fn get_subordinates_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn get_subordinate_round_trips_identically_across_transports() {
+async fn get_subordinate_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with add_supervisor(sub, sup)
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.add_supervisor(&SessionId::new("sub"), &SessionId::new("sup"))
-        .expect("seed add_supervisor");
-    let (embedded, websocket) = dual_backends(service).await;
+        .or_fail("seed add_supervisor")?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.get_subordinate_calls();
 
     // @step When get_subordinate is called via each transport
     let em = embedded
         .get_subordinate(SessionId::new("sup"))
         .await
-        .expect("embedded get_subordinate");
+        .or_fail("embedded get_subordinate")?;
     let ws = websocket
         .get_subordinate(SessionId::new("sup"))
         .await
-        .expect("websocket get_subordinate");
+        .or_fail("websocket get_subordinate")?;
 
     // @step Then both calls return Some(SessionId("sub"))
     assert_eq!(em, Some(SessionId::new("sub")));
@@ -220,6 +227,7 @@ async fn get_subordinate_round_trips_identically_across_transports() {
         2,
         "get_subordinate_calls should increment by 2"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -227,10 +235,10 @@ async fn get_subordinate_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn receive_incoming_message_round_trips_identically_across_transports() {
+async fn receive_incoming_message_round_trips_identically_across_transports() -> TestResult {
     // @step Given a fresh StubSessionManagerHandle behind both transports
-    let (_temp, service, stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
+    let (_temp, service, stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.receive_incoming_message_calls();
 
     let em_input = sample_input("sup", "reviewer", "embedded fix lint");
@@ -240,13 +248,13 @@ async fn receive_incoming_message_round_trips_identically_across_transports() {
     embedded
         .receive_incoming_message(SessionId::new("sub"), em_input.clone())
         .await
-        .expect("embedded receive_incoming_message");
+        .or_fail("embedded receive_incoming_message")?;
 
     // @step And receive_incoming_message is called via the WebSocket transport
     websocket
         .receive_incoming_message(SessionId::new("sub"), ws_input.clone())
         .await
-        .expect("websocket receive_incoming_message");
+        .or_fail("websocket receive_incoming_message")?;
 
     // @step Then the stub's receive_incoming_message_calls counter increased by 2
     assert_eq!(
@@ -269,6 +277,7 @@ async fn receive_incoming_message_round_trips_identically_across_transports() {
         messages.iter().any(|m| m == "websocket fix lint"),
         "stub should have recorded websocket payload"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -276,23 +285,25 @@ async fn receive_incoming_message_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn remove_supervisor_round_trips_identically_across_transports() {
+async fn remove_supervisor_round_trips_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with add_supervisor(sub, sup)
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.add_supervisor(&SessionId::new("sub"), &SessionId::new("sup"))
-        .expect("seed add_supervisor");
-    let (embedded, websocket) = dual_backends(service).await;
+        .or_fail("seed add_supervisor")?;
+    let (embedded, websocket) = dual_backends(service).await?;
     let initial = stub.remove_supervisor_calls();
 
     // @step When remove_supervisor is called via the embedded transport
     embedded
         .remove_supervisor(SessionId::new("sup"))
         .await
-        .expect("embedded remove_supervisor");
+        .or_fail("embedded remove_supervisor")?;
 
     // @step Then the stub now reports no subordinates for "sup"
     assert!(
-        stub.get_subordinates(&SessionId::new("sup")).is_empty(),
+        stub.get_subordinates(&SessionId::new("sup"))
+            .or_fail("get_subordinates reads the session")?
+            .is_empty(),
         "stub should report no subordinates after remove_supervisor"
     );
 
@@ -300,7 +311,7 @@ async fn remove_supervisor_round_trips_identically_across_transports() {
     websocket
         .remove_supervisor(SessionId::new("sup"))
         .await
-        .expect("websocket remove_supervisor");
+        .or_fail("websocket remove_supervisor")?;
 
     // @step Then both transports landed exactly one call each on the stub
     assert_eq!(
@@ -308,6 +319,7 @@ async fn remove_supervisor_round_trips_identically_across_transports() {
         2,
         "remove_supervisor_calls should increment by 2"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -315,12 +327,12 @@ async fn remove_supervisor_round_trips_identically_across_transports() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn circular_add_supervisor_is_rejected_identically_across_transports() {
+async fn circular_add_supervisor_is_rejected_identically_across_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle seeded with add_supervisor(sub, sup)
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.add_supervisor(&SessionId::new("sub"), &SessionId::new("sup"))
-        .expect("seed add_supervisor");
-    let (embedded, websocket) = dual_backends(service).await;
+        .or_fail("seed add_supervisor")?;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     // @step When add_supervisor(sup, sub) is attempted via the embedded transport
     let em_err = embedded
@@ -329,7 +341,7 @@ async fn circular_add_supervisor_is_rejected_identically_across_transports() {
 
     // @step Then it returns Err with message "circular supervision not allowed"
     let em_msg = em_err
-        .expect_err("embedded should reject cycle")
+        .or_fail_err("embedded should reject cycle")?
         .to_string();
     assert!(
         em_msg.contains("circular supervision not allowed"),
@@ -341,10 +353,11 @@ async fn circular_add_supervisor_is_rejected_identically_across_transports() {
         .add_supervisor(SessionId::new("sup"), SessionId::new("sub"))
         .await;
     let ws_msg = ws_err
-        .expect_err("websocket should reject cycle")
+        .or_fail_err("websocket should reject cycle")?
         .to_string();
     assert!(
         ws_msg.contains("circular supervision not allowed"),
         "websocket error must include 'circular supervision not allowed': {ws_msg}"
     );
+    Ok(())
 }

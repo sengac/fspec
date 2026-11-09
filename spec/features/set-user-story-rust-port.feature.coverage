@@ -17,8 +17,6 @@
                 86,
                 87,
                 88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -66,8 +64,12 @@
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "&args.action,"
             }
           ]
         }
@@ -83,8 +85,6 @@
             {
               "file": "rust/fspec-core/src/commands/set_user_story.rs",
               "lines": [
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -93,8 +93,12 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120
+              ],
+              "firstLine": "// (role, action, benefit) so on-disk JSON matches the TS",
+              "lastLine": ".insert(\"userStory\".to_string(), Value::Object(user_story));"
             }
           ]
         }
@@ -110,14 +114,16 @@
             {
               "file": "rust/fspec-core/src/commands/set_user_story.rs",
               "lines": [
-                94,
-                95,
                 96,
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102
+              ],
+              "firstLine": "// Validate work unit exists (mirrors src/commands/set-user-story.ts:25-27).",
+              "lastLine": "reason: format!(\"Work unit '{}' does not exist\", args.work_unit_id),"
             }
           ]
         }
@@ -133,8 +139,6 @@
             {
               "file": "rust/fspec-core/src/commands/set_user_story.rs",
               "lines": [
-                133,
-                134,
                 135,
                 136,
                 137,
@@ -148,8 +152,12 @@
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149,
+                150
+              ],
+              "firstLine": "// `src/commands/set-user-story.ts:54-57`. Returned in",
+              "lastLine": "s.push_str(&format!(\"  I want to {action}\\n\"));"
             }
           ]
         }
@@ -171,8 +179,10 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                91
+              ],
+              "firstLine": "let args: SetUserStoryArgs =",
+              "lastLine": "// Load (auto-create on first run). On a brand-new workspace this writes"
             }
           ]
         }
@@ -189,6 +199,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/set_user_story.rs"
     ],
-    "totalLinesCovered": 430
+    "totalLinesCovered": 264
   }
 }

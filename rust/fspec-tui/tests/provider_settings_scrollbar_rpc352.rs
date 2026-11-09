@@ -12,11 +12,10 @@
 //! the proportional `■`/`│` scrollbar column appears beside the list on
 //! overflow and is absent when the list fits.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -94,7 +93,7 @@ fn press_down(v: &mut ProviderSettingsView, n: usize) {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn overflowing_provider_list_paints_scrollbar_column() {
+fn overflowing_provider_list_paints_scrollbar_column() -> TestResult {
     // @step Given a provider nav-item list of 30 items in a viewport 10 content rows tall
     let mut v = view_with(30);
     render_lines(&mut v, 60, 14);
@@ -107,6 +106,7 @@ fn overflowing_provider_list_paints_scrollbar_column() {
 
     // @step Then a scrollbar column is painted beside the list
     assert!(has_scrollbar(&lines), "scrollbar column painted: {lines:?}");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ fn overflowing_provider_list_paints_scrollbar_column() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn fitting_provider_list_paints_no_scrollbar() {
+fn fitting_provider_list_paints_no_scrollbar() -> TestResult {
     // @step Given a provider nav-item list of 3 items in a viewport tall enough to show them all
     let mut v = view_with(3);
 
@@ -132,6 +132,7 @@ fn fitting_provider_list_paints_no_scrollbar() {
         3,
         "all 3 provider rows painted: {lines:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -139,7 +140,7 @@ fn fitting_provider_list_paints_no_scrollbar() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scrollbar_steals_no_content_row() {
+fn scrollbar_steals_no_content_row() -> TestResult {
     // @step Given a provider nav-item list of 30 items in a viewport 10 content rows tall
     let mut v = view_with(30);
     render_lines(&mut v, 60, 14);
@@ -156,6 +157,7 @@ fn scrollbar_steals_no_content_row() {
         visible,
         "all {visible} visible rows must paint content beside the scrollbar: {lines:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -163,20 +165,21 @@ fn scrollbar_steals_no_content_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scrolling_moves_the_scrollbar_thumb() {
+fn scrolling_moves_the_scrollbar_thumb() -> TestResult {
     // @step Given a provider nav-item list of 30 items in a viewport 10 content rows tall
     let mut v = view_with(30);
     let top_lines = render_lines(&mut v, 60, 14);
-    let top_thumb = thumb_line(&top_lines).expect("thumb painted at top");
+    let top_thumb = thumb_line(&top_lines).or_fail("thumb painted at top")?;
 
     // @step When the list is scrolled down
     press_down(&mut v, 28);
     let down_lines = render_lines(&mut v, 60, 14);
-    let down_thumb = thumb_line(&down_lines).expect("thumb painted after scroll");
+    let down_thumb = thumb_line(&down_lines).or_fail("thumb painted after scroll")?;
 
     // @step Then the thumb is painted on a lower row than at the top of the list
     assert!(
         down_thumb > top_thumb,
         "thumb moved down: top={top_thumb} down={down_thumb}"
     );
+    Ok(())
 }

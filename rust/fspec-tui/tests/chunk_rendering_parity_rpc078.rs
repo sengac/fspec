@@ -20,8 +20,7 @@
 //! Authoritative reference: spec/attachments/RPC-078/chunk-variant-matrix.md
 //!                          spec/attachments/RPC-078/before-after-architecture.md
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -99,7 +98,7 @@ fn first_span_fg(app: &App, id: &SessionId) -> Option<Color> {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn user_input_chunk_renders_as_green_you_prefixed_line() {
+fn user_input_chunk_renders_as_green_you_prefixed_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -124,6 +123,7 @@ fn user_input_chunk_renders_as_green_you_prefixed_line() {
             "scrollback must not use wrong-prefix 'user> '; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ fn user_input_chunk_renders_as_green_you_prefixed_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn text_assistant_chunk_renders_as_white_circle_bullet_prefixed_line() {
+fn text_assistant_chunk_renders_as_white_circle_bullet_prefixed_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -161,6 +161,7 @@ fn text_assistant_chunk_renders_as_white_circle_bullet_prefixed_line() {
             "scrollback must not emit '[done]' literal; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -168,7 +169,7 @@ fn text_assistant_chunk_renders_as_white_circle_bullet_prefixed_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn error_chunk_renders_as_api_error_prefixed_status_line() {
+fn error_chunk_renders_as_api_error_prefixed_status_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -193,6 +194,7 @@ fn error_chunk_renders_as_api_error_prefixed_status_line() {
             "scrollback must not emit '[error]' literal; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -200,7 +202,7 @@ fn error_chunk_renders_as_api_error_prefixed_status_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn done_chunk_produces_no_scrollback_line() {
+fn done_chunk_produces_no_scrollback_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -223,6 +225,7 @@ fn done_chunk_produces_no_scrollback_line() {
             "scrollback must not emit '[done]' literal; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -230,7 +233,7 @@ fn done_chunk_produces_no_scrollback_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn interrupted_chunk_renders_as_warning_prefixed_status_line() {
+fn interrupted_chunk_renders_as_warning_prefixed_status_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -256,6 +259,7 @@ fn interrupted_chunk_renders_as_warning_prefixed_status_line() {
             "scrollback must not surface raw 'queued' debug text; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -263,7 +267,7 @@ fn interrupted_chunk_renders_as_warning_prefixed_status_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() {
+fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -285,6 +289,7 @@ fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() {
             "scrollback must not emit '[notice]' literal; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -292,7 +297,8 @@ fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn incoming_message_chunk_parses_supervisor_prefix_and_renders_as_magenta_bracket_w_line() {
+fn incoming_message_chunk_parses_supervisor_prefix_and_renders_as_magenta_bracket_w_line(
+) -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -322,6 +328,7 @@ fn incoming_message_chunk_parses_supervisor_prefix_and_renders_as_magenta_bracke
             "scrollback must not use wrong-prefix 'supervisor> '; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -329,7 +336,7 @@ fn incoming_message_chunk_parses_supervisor_prefix_and_renders_as_magenta_bracke
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn thinking_chunk_renders_as_yellow_thinking_prefixed_block() {
+fn thinking_chunk_renders_as_yellow_thinking_prefixed_block() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -344,7 +351,7 @@ fn thinking_chunk_renders_as_yellow_thinking_prefixed_block() {
     assert_eq!(chunks.len(), 1, "expected exactly one chunk");
     let first_line_text: String = chunks[0]
         .first()
-        .expect("at least one Line")
+        .or_fail("at least one Line")?
         .spans
         .iter()
         .map(|s| s.content.as_ref())
@@ -362,6 +369,7 @@ fn thinking_chunk_renders_as_yellow_thinking_prefixed_block() {
             "scrollback must not use wrong-prefix '(thinking)'; got {line:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -370,7 +378,7 @@ fn thinking_chunk_renders_as_yellow_thinking_prefixed_block() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn user_input_is_not_duplicated_when_session_manager_broadcasts_userinput_back() {
+fn user_input_is_not_duplicated_when_session_manager_broadcasts_userinput_back() -> TestResult {
     // @step Given an AgentView with an open session s-1 backed by a real session manager
     // (MockBackend models a "real" session manager — its send_input is a no-op so
     //  the broadcast must come from explicit Action::ChunkReceived in this test;
@@ -378,7 +386,12 @@ fn user_input_is_not_duplicated_when_session_manager_broadcasts_userinput_back()
     let mut app = app_with_session();
 
     // @step When the App dispatches Action::InputSubmitted("is this card done?")
-    app.dispatch(Action::InputSubmitted("is this card done?".to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(
+            session,
+            "is this card done?".to_string(),
+        ));
+    }
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "You: is this card done?"
     // (After the RPC-078 fix the synchronous push at handle_input_submitted is
@@ -407,4 +420,5 @@ fn user_input_is_not_duplicated_when_session_manager_broadcasts_userinput_back()
         after_count, 1,
         "user input must not be duplicated; got {after:?}"
     );
+    Ok(())
 }

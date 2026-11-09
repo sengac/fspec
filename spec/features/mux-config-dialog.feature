@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @tui
 @ui-enhancement
 @keyboard-navigation
 @MUX-004
+@BUG-299
 Feature: Mux configuration dialog + /mux slash-popup entry
   """
   New MuxConfigDialog Component (Priority::Foreground, stable id 'mux-config-dialog', components/mux_config_dialog.rs <300 LoC + a rows sibling file) built on the base dialog architecture: dialog_theme::FspecDialog/render_dialog rows (Enabled, Orientation, one row per pane). State: draft MuxConfig + field cursor (usize over the 2 + n_panes rows). Emitted actions: Action::MuxConfigApplied(draft MuxConfig) on Enter, Action::MuxConfigAppliedAndSaved on 's' (App::dispatch persists via the existing save_mux_config path), Compositor-removal callback on every commit/close. App wiring: handle_open_mux_config_dialog() in a new app/dispatch_mux_config.rs (idempotent via compositor.contains, seeds from navigator.mux.config()). mux_parser: MuxSubcommand::Toggle renamed to Config (bare /mux). Slash registry: SlashCommandAction::Mux + SLASH_COMMANDS row 'mux' / 'Configure the mux layout'; handle_slash_command(Mux) opens the dialog. App::dispatch arms for the two new Actions live in dispatch_mux.rs. MUX-001 R1 scenarios/tests in rust-mux-mode.feature + tests/mux001.rs + tests/bug166_* get updated to the dialog behavior.
@@ -54,9 +56,9 @@ Feature: Mux configuration dialog + /mux slash-popup entry
     When I submit the slash command "/mux"
     Then the MuxConfigDialog is open on the compositor
     And the dialog shows an Enabled row with Off
-    And the dialog shows an Orientation row with Horizontal
-    And the dialog shows a Pane row for Board
-    And the dialog shows a Pane row for Agent
+    And the dialog shows the layout field with "board, agent"
+    And the dialog preview shows a box labelled board
+    And the dialog preview shows a box labelled agent
     And the TUI is still in the single Board view (the dialog is an overlay and mux is not yet active)
 
   # R1: /mux on and /mux off keep their explicit toggle semantics
@@ -73,70 +75,30 @@ Feature: Mux configuration dialog + /mux slash-popup entry
     And the TUI shows the single Board view
     And no MuxConfigDialog is open on the compositor
 
-  # R3: the dialog body shows exactly the Enabled, Orientation and pane rows
-  Scenario: the dialog body shows the enabled, orientation and pane rows in order
-    Given the TUI is showing the single Board view with one open agent session
-    When I submit the slash command "/mux"
-    Then the dialog body rows appear in the order: Enabled, Orientation, Pane 1, Pane 2
-    And the dialog footer lists the editing keybindings (cursor, value, add, remove, save, apply, cancel)
-
-  # R4: cursor movement wraps; Left/Right cycle the highlighted row's value
-  Scenario: cursor wraps and values cycle per highlighted row
-    Given the MuxConfigDialog is open with the default two panes
-    When I press Up on the Enabled row
-    Then the cursor wraps to the last Pane row
-    When I press Down on the last Pane row
-    Then the cursor wraps back to the Enabled row
-    When I press Down to the Orientation row and press Right
-    Then the Orientation row shows Vertical
-    When I press Right again
-    Then the Orientation row shows Horizontal
-    When I move the cursor to the Agent Pane row and press Right three times
-    Then the Pane row shows Board again (the cycle is Board -> Agent -> Files -> Checkpoints -> Board)
-
-  # R4: 'a' appends a pane row (max 4) and Backspace removes it (min 2)
-  Scenario: adding a third pane and applying it rebuilds the grid
-    Given the MuxConfigDialog is open with the default two panes
-    When I press "a" to append a pane row
-    Then the dialog shows a third Pane row with kind Board
-    When I move the cursor to the third Pane row and cycle its kind to Files
-    And I press Enter to apply
-    Then the MuxConfigDialog is closed
-    And mux mode is active with three panes: Board, Agent and Files
-    And the split scale is re-derived for three panes (one entry per inter-pane gap, last pane takes the remainder)
-
-  Scenario: pane count stays within the 2 to 4 bounds
-    Given the MuxConfigDialog is open with the default two panes and the cursor on a Pane row
-    When I press Backspace
-    Then the pane row is NOT removed (minimum of two panes)
-    Given the MuxConfigDialog is open with four panes
-    When I press "a"
-    Then no fifth Pane row is added (maximum of four panes)
-
   # R5: Enter applies the draft; 's' applies + persists; Esc cancels
   Scenario: Enter applies the draft layout and closes the dialog
     Given the MuxConfigDialog is open with the default two panes while mux is off
-    When I cycle the second Pane row's kind to Checkpoints
+    When I replace the layout field text with "board, checkpoints"
     And I press Enter to apply
     Then the MuxConfigDialog is closed
     And the live mux layout has panes Board and Checkpoints
     And the shared fspec-config.json is NOT written (apply does not save)
 
-  Scenario: S applies the draft and persists it to the shared config
+  Scenario: Save applies the draft and persists it to the shared config
     Given the MuxConfigDialog is open with the default two panes while mux is off
-    When I set the Orientation row to Vertical
-    And I press "s" to save
+    When I replace the layout field text with "[board, agent]"
+    And I activate the Save button
     Then the MuxConfigDialog is closed
-    And the live mux layout is vertical with panes Board and Agent
-    And the shared fspec-config.json tui.mux key contains the vertical orientation and the two-pane list
+    And the live mux layout is "[board, agent]": Board over Agent in one column
+    And the shared fspec-config.json tui.mux key contains the layout string "[board, agent]"
 
   Scenario: Esc closes the dialog without applying or saving
     Given the MuxConfigDialog is open with the default two panes
-    And the live mux layout is horizontal with panes Board and Agent
-    When I cycle the second Pane row's kind to Files
+    And the live mux layout is "board, agent"
+    When I replace the layout field text with "board, files"
     And I press Esc to cancel
     Then the MuxConfigDialog is closed
-    And the live mux layout is still horizontal with panes Board and Agent
+    And the live mux layout is still "board, agent"
 
   # R2: idempotent reopen
   Scenario: reopening while the dialog is open is a no-op
@@ -150,7 +112,7 @@ Feature: Mux configuration dialog + /mux slash-popup entry
   # R7: commit with Enabled On enters mux; Enabled Off exits mux
   Scenario: committing with Enabled On enters mux mode with the draft layout
     Given the TUI is showing the single Agent view with one open agent session
-    And the MuxConfigDialog is open with Enabled set to Off and panes Board, Agent and Files
+    And the MuxConfigDialog is open with Enabled set to Off and the layout field "board, agent, files"
     When I move the cursor to the Enabled row and press Right to set it to On
     And I press Enter to apply
     Then mux mode is active with three panes: Board, Agent and Files
@@ -183,4 +145,4 @@ Feature: Mux configuration dialog + /mux slash-popup entry
     Given the TUI is showing the single Board view with one open agent session
     When I submit the slash command "/mux help"
     Then a one-line notice appears in the agent scrollback
-    And the notice mentions the config dialog (bare /mux) and the on/off subcommands
+    And the notice mentions the config dialog (bare /mux), the layout string with an example and the on/off subcommands

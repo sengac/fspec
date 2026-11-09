@@ -1,5 +1,7 @@
 @done
 @RPC-281
+@cli
+@feature-management
 Feature: Port remove-tag-from-feature command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_tag_from_feature.rs reuses crate::io::gherkin::parse_feature_lenient for the existence pre-check and a TS-parity whole-line filter for the actual removal pass.

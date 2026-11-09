@@ -32,8 +32,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let draft_path = project_root.join("spec").join("foundation.json.draft");
-    let final_path = project_root.join("spec").join("foundation.json");
+    let draft_path = crate::io::spec_paths::foundation_draft(project_root)?;
+    let final_path = crate::io::spec_paths::foundation(project_root)?;
 
     let (phase, doc) = if draft_path.exists() {
         ("draft", read_json(&draft_path)?)

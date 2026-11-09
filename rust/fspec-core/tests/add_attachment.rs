@@ -552,7 +552,7 @@ fn validates_md_mermaid_fences_and_accepts_fence_free_markdown() {
 // ───────────────────────── BUG-151 scenarios ─────────────────────────
 //
 // Feature: spec/features/add-attachment-rust-port.feature (BUG-151
-// scenarios, mirrored from the TS-side work-unit-attachments.feature)
+// scenarios; the TS-era BUG-151 feature was merged into it by COV-072)
 //
 // BUG-151: add-attachment truncates the source file to 0 bytes when it
 // already lives in spec/attachments/<ID>/. std::fs::copy opens the
@@ -857,4 +857,72 @@ fn bug_151_duplicate_from_different_source_does_not_overwrite_registered_attachm
     // @step And the work unit's registered attachments must be unchanged on disk
     let json_after = fs::read(work_units_path(tmp.path())).expect("read post");
     assert_eq!(json_before, json_after, "work-units.json must NOT change");
+}
+
+// ───────────────── valid Mermaid attachments (COV-072) ─────────────────
+//
+// Moved in from the TypeScript-era FEAT-015 Mermaid attachment feature:
+// a valid diagram passes the Mermaid check and is attached unchanged.
+
+#[test]
+fn valid_mmd_attachment_is_validated_and_attached() {
+    // Scenario: A .mmd attachment with valid Mermaid is validated and attached
+
+    // @step Given a work unit AUTH-001 and a source file flowchart.mmd containing the valid Mermaid 'graph TD' flowchart
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("AUTH-001", "backlog", None));
+    let bytes: &[u8] = b"graph TD\n  A[Start] --> B[Done]\n";
+    write_file(tmp.path(), "flowchart.mmd", bytes);
+
+    // @step When I dispatch add-attachment with workUnitId='AUTH-001' filePath='flowchart.mmd'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "filePath": "flowchart.mmd"}),
+    ));
+
+    // @step Then the dispatcher returns success
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step And the rendered output contains the substring '✓ Attachment added successfully'
+    assert!(
+        result.data.contains("✓ Attachment added successfully"),
+        "data: {}",
+        result.data
+    );
+
+    // @step And spec/attachments/AUTH-001/flowchart.mmd exists on disk with the same bytes as the source
+    let dest = tmp.path().join("spec/attachments/AUTH-001/flowchart.mmd");
+    assert_eq!(fs::read(&dest).expect("read copied file"), bytes);
+}
+
+#[test]
+fn md_attachment_with_valid_mermaid_block_is_attached() {
+    // Scenario: A .md attachment whose mermaid code block is valid is attached
+
+    // @step Given a work unit AUTH-001 and a source file architecture.md containing one mermaid code block with valid syntax
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("AUTH-001", "backlog", None));
+    let bytes: &[u8] =
+        b"# Architecture\n\n```mermaid\nsequenceDiagram\n  Alice->>Bob: Hello\n```\n\nNotes.\n";
+    write_file(tmp.path(), "architecture.md", bytes);
+
+    // @step When I dispatch add-attachment with workUnitId='AUTH-001' filePath='architecture.md'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "filePath": "architecture.md"}),
+    ));
+
+    // @step Then the dispatcher returns success
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step And spec/attachments/AUTH-001/architecture.md exists on disk with the same bytes as the source
+    let dest = tmp.path().join("spec/attachments/AUTH-001/architecture.md");
+    assert_eq!(fs::read(&dest).expect("read copied file"), bytes);
+
+    // @step And spec/work-units.json on disk shows AUTH-001.attachments=['spec/attachments/AUTH-001/architecture.md']
+    let on_disk = read_work_units(tmp.path());
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-001"]["attachments"],
+        json!(["spec/attachments/AUTH-001/architecture.md"])
+    );
 }

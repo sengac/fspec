@@ -1,5 +1,6 @@
-use crate::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
+use crate::compaction_threshold::{compaction_threshold_for, CompactionThresholdConfig};
 use crate::interactive::StreamOutput;
+use crate::model_limits::{required_limits, ModelLimitUnavailable, RequiredLimits};
 use crate::session::Session;
 use codelet_core::persistence::compaction_boundary::{
     CommittedGeneration, CompactionTokenProvenance,
@@ -16,23 +17,26 @@ pub(crate) struct CompactionPublication {
 }
 
 impl CompactionPublication {
-    pub fn new(session: &Session) -> Self {
+    /// PROV-165: publishing a compaction needs both model limits.
+    pub fn new(session: &Session) -> Result<Self, ModelLimitUnavailable> {
         let manager = session.provider_manager();
-        let capacity = manager.context_window() as u64;
-        let reservation = manager.max_output_tokens() as u64;
+        let RequiredLimits {
+            context_window: capacity,
+            max_output_tokens: reservation,
+        } = required_limits(manager)?;
         let configuration = manager
             .compaction_threshold_override()
             .map(|(kind, value)| CompactionThresholdConfig::from_type_value(kind, value));
-        Self {
+        Ok(Self {
             original_tokens: session.token_tracker.input_tokens,
             capacity,
-            threshold: resolve_compaction_threshold(
+            threshold: compaction_threshold_for(
                 capacity,
                 reservation,
                 session.current_model_id().as_deref(),
                 configuration.as_ref(),
             ),
-        }
+        })
     }
 
     pub fn publish<O: StreamOutput>(
@@ -66,7 +70,7 @@ impl CompactionPublication {
             provenance,
         };
         let fill = context
-            .context_fill()
+            .context_fill()?
             .ok_or("committed context requires usable selected limits")?;
         let saved = &manifest.token_usage;
         let snapshot = CommittedContextSnapshot {
@@ -84,7 +88,8 @@ impl CompactionPublication {
             context_fill: fill,
             original_tokens: convert(self.original_tokens)?,
             covered_turns: Some(
-                u32::try_from(boundary.covered_prefix.len()).map_err(|error| error.to_string())?,
+                u32::try_from(boundary.covered_prefix().len())
+                    .map_err(|error| error.to_string())?,
             ),
             retained_turns: Some(
                 u32::try_from(boundary.verified_suffix.len()).map_err(|error| error.to_string())?,

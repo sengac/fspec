@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_discard_tests.rs",
-          "lines": "31-93",
+          "lines": "34-101",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -25,13 +25,7 @@
                 540,
                 541,
                 542,
-                543,
-                544,
-                545,
                 546,
-                547,
-                548,
-                549,
                 550,
                 551,
                 552,
@@ -92,8 +86,13 @@
                 607,
                 608,
                 609,
-                610
-              ]
+                610,
+                611,
+                612,
+                613
+              ],
+              "firstLine": "return Err(GitError::UnsupportedMergeStrategy);",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -104,7 +103,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_discard_tests.rs",
-          "lines": "100-135",
+          "lines": "107-152",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -124,13 +123,7 @@
                 540,
                 541,
                 542,
-                543,
-                544,
-                545,
                 546,
-                547,
-                548,
-                549,
                 550,
                 551,
                 552,
@@ -191,8 +184,13 @@
                 607,
                 608,
                 609,
-                610
-              ]
+                610,
+                611,
+                612,
+                613
+              ],
+              "firstLine": "return Err(GitError::UnsupportedMergeStrategy);",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -203,7 +201,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_discard_tests.rs",
-          "lines": "142-162",
+          "lines": "158-187",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -223,13 +221,7 @@
                 540,
                 541,
                 542,
-                543,
-                544,
-                545,
                 546,
-                547,
-                548,
-                549,
                 550,
                 551,
                 552,
@@ -290,8 +282,13 @@
                 607,
                 608,
                 609,
-                610
-              ]
+                610,
+                611,
+                612,
+                613
+              ],
+              "firstLine": "return Err(GitError::UnsupportedMergeStrategy);",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -302,7 +299,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_discard_tests.rs",
-          "lines": "169-203",
+          "lines": "193-234",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -322,13 +319,7 @@
                 540,
                 541,
                 542,
-                543,
-                544,
-                545,
                 546,
-                547,
-                548,
-                549,
                 550,
                 551,
                 552,
@@ -389,8 +380,13 @@
                 607,
                 608,
                 609,
-                610
-              ]
+                610,
+                611,
+                612,
+                613
+              ],
+              "firstLine": "return Err(GitError::UnsupportedMergeStrategy);",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -401,7 +397,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_discard_tests.rs",
-          "lines": "210-254",
+          "lines": "240-289",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -421,13 +417,7 @@
                 540,
                 541,
                 542,
-                543,
-                544,
-                545,
                 546,
-                547,
-                548,
-                549,
                 550,
                 551,
                 552,
@@ -488,8 +478,13 @@
                 607,
                 608,
                 609,
-                610
-              ]
+                610,
+                611,
+                612,
+                613
+              ],
+              "firstLine": "return Err(GitError::UnsupportedMergeStrategy);",
+              "lastLine": "/// ```"
             }
           ]
         }
@@ -506,6 +501,6 @@
     "implFiles": [
       "rust/git/src/session_status.rs"
     ],
-    "totalLinesCovered": 615
+    "totalLinesCovered": 636
   }
 }

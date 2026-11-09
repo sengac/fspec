@@ -4,128 +4,9 @@
       "name": "Name-only search excludes source code matches",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "67-94",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+          "lines": "7-43",
+          "implMappings": []
         }
       ]
     },
@@ -133,43 +14,9 @@
       "name": "Content search finds matches in source code and docstrings",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "99-135",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/dispatch_helpers.rs",
-              "lines": [
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+          "lines": "48-97",
+          "implMappings": []
         }
       ]
     },
@@ -177,27 +24,9 @@
       "name": "Default search mode is name-only for backward compatibility",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "140-172",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/dispatch_helpers.rs",
-              "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+          "lines": "102-139",
+          "implMappings": []
         }
       ]
     },
@@ -205,41 +34,9 @@
       "name": "Decorator filter returns functions with matching decorator",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "177-209",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/dispatch_helpers.rs",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+          "lines": "144-192",
+          "implMappings": []
         }
       ]
     },
@@ -247,29 +44,9 @@
       "name": "Parameter filter returns functions with matching parameter name",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "214-250",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/dispatch_helpers.rs",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+          "lines": "197-239",
+          "implMappings": []
         }
       ]
     },
@@ -277,31 +54,9 @@
       "name": "Query combined with decorator filter uses AND logic",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "255-280",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/query_combined_with_decorator.rs",
+          "lines": "7-46",
+          "implMappings": []
         }
       ]
     },
@@ -309,38 +64,9 @@
       "name": "All search mode searches every field",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "285-315",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/query_combined_with_decorator.rs",
+          "lines": "51-82",
+          "implMappings": []
         }
       ]
     },
@@ -348,41 +74,9 @@
       "name": "Decorator matching strips leading symbols for cross-language matching",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_search_filter_test.rs",
-          "lines": "320-353",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/dispatch_helpers.rs",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_search_filter_test/query_combined_with_decorator.rs",
+          "lines": "87-127",
+          "implMappings": []
         }
       ]
     }
@@ -392,12 +86,10 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/ast_search_filter_test.rs"
+      "rust/graph/tests/ast_search_filter_test/name_only_search_excludes.rs",
+      "rust/graph/tests/ast_search_filter_test/query_combined_with_decorator.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/graph/ast_dispatch.rs",
-      "rust/napi/src/graph/dispatch_helpers.rs"
-    ],
-    "totalLinesCovered": 517
+    "implFiles": [],
+    "totalLinesCovered": 330
   }
 }

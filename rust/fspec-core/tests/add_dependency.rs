@@ -567,3 +567,81 @@ fn auto_creates_work_units_then_reports_missing_source_error() {
     assert!(v["workUnits"].as_object().unwrap().is_empty());
     assert!(v["states"]["backlog"].as_array().unwrap().is_empty());
 }
+
+#[test]
+fn two_depends_on_targets_added_one_after_another_are_both_kept_in_order() {
+    // @step Given a project root tempdir with spec/work-units.json containing API-001, API-002 and UI-001, all status=backlog
+    let tmp = TempDir::new().expect("tempdir");
+    let pre = seed_units(&[
+        ("API-001", "backlog"),
+        ("API-002", "backlog"),
+        ("UI-001", "backlog"),
+    ]);
+    write_work_units(tmp.path(), &pre);
+
+    // @step When I dispatch add-dependency with workUnitId='UI-001' and dependsOn='API-001'
+    let first = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "UI-001", "dependsOn": "API-001"}),
+    ));
+    assert!(first.success, "expected success=true, got {first:?}");
+
+    // @step And I dispatch add-dependency with workUnitId='UI-001' and dependsOn='API-002'
+    let second = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "UI-001", "dependsOn": "API-002"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(second.success, "expected success=true, got {second:?}");
+
+    // @step And spec/work-units.json on disk shows UI-001.dependsOn=['API-001', 'API-002']
+    let v = read_work_units(tmp.path());
+    assert_eq!(
+        v["workUnits"]["UI-001"]["dependsOn"],
+        json!(["API-001", "API-002"])
+    );
+}
+
+#[test]
+fn blocks_depends_on_and_relates_to_edges_coexist_on_one_work_unit() {
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001, API-001, DB-001 and SEC-001, all status=backlog
+    let tmp = TempDir::new().expect("tempdir");
+    let pre = seed_units(&[
+        ("AUTH-001", "backlog"),
+        ("API-001", "backlog"),
+        ("DB-001", "backlog"),
+        ("SEC-001", "backlog"),
+    ]);
+    write_work_units(tmp.path(), &pre);
+
+    // @step When I dispatch add-dependency with workUnitId='AUTH-001' and blocks='API-001'
+    let blocks = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "blocks": "API-001"}),
+    ));
+    assert!(blocks.success, "expected success=true, got {blocks:?}");
+
+    // @step And I dispatch add-dependency with workUnitId='AUTH-001' and dependsOn='DB-001'
+    let depends = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "dependsOn": "DB-001"}),
+    ));
+    assert!(depends.success, "expected success=true, got {depends:?}");
+
+    // @step And I dispatch add-dependency with workUnitId='AUTH-001' and relatesTo='SEC-001'
+    let relates = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "relatesTo": "SEC-001"}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(relates.success, "expected success=true, got {relates:?}");
+
+    // @step And spec/work-units.json on disk shows AUTH-001.blocks=['API-001'], AUTH-001.dependsOn=['DB-001'] and AUTH-001.relatesTo=['SEC-001']
+    let v = read_work_units(tmp.path());
+    let auth = &v["workUnits"]["AUTH-001"];
+    assert_eq!(auth["blocks"], json!(["API-001"]));
+    assert_eq!(auth["dependsOn"], json!(["DB-001"]));
+    assert_eq!(auth["relatesTo"], json!(["SEC-001"]));
+}

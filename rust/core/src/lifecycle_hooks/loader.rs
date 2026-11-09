@@ -40,7 +40,7 @@ pub fn load_lifecycle_hooks(
     };
 
     let project_config = match project_root {
-        Some(root) => load_config_file(&root.join("spec").join("fspec-hooks.json"))?,
+        Some(root) => load_config_file(&codelet_common::spec_paths::hooks_config_of(root))?,
         None => None,
     };
 

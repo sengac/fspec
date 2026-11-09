@@ -90,7 +90,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "impl CodexHistory {",
+              "lastLine": ".iter()"
             },
             {
               "file": "rust/providers/src/codex/history_lineage.rs",
@@ -161,7 +163,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "Ok(Some(index))",
+              "lastLine": "item.value[\"type\"].as_str(),"
             },
             {
               "file": "rust/providers/src/codex/history_replay.rs",
@@ -198,7 +202,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }
@@ -294,7 +300,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "impl CodexHistory {",
+              "lastLine": ".iter()"
             },
             {
               "file": "rust/providers/src/codex/history_lineage.rs",
@@ -365,7 +373,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "Ok(Some(index))",
+              "lastLine": "item.value[\"type\"].as_str(),"
             },
             {
               "file": "rust/providers/src/codex/history_replay.rs",
@@ -402,7 +412,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
             }
           ]
         }

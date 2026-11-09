@@ -1,0 +1,9 @@
+  Scenario: Auto-compact on done status change
+    Given work unit AUTH-001 is at "implementing" status
+    And work unit has 10 rules with 3 deleted
+    When I run "fspec update-work-unit-status AUTH-001 done"
+    Then auto-compact should trigger before status change
+    And deleted rules should be permanently removed
+    And remaining rules should be renumbered sequentially
+    And nextRuleId should be reset to remaining item count
+    And then status should update to "done"

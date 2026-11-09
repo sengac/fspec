@@ -9,8 +9,8 @@
 //! `create_session` succeeds. The session-present path stays unchanged (it
 //! still calls `set_session_model` and never touches the default-model path).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -28,23 +28,24 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 
 /// Drain spawned backend tasks then pump any follow-up actions back through
 /// dispatch until quiescent.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: Selecting a model with no active session sets the default model
 // =============================================================================
 #[tokio::test]
-async fn no_session_model_selection_calls_set_default_model() {
+async fn no_session_model_selection_calls_set_default_model() -> TestResult {
     // @step Given no session exists and no default model is set
     let (mut app, mock) = fresh_app();
     assert!(
@@ -64,7 +65,7 @@ async fn no_session_model_selection_calls_set_default_model() {
 
     // @step Then handle_model_selected does not return early
     // @step And the backend set_default_model is called with "anthropic/claude-opus-4-8"
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         mock.set_default_model_calls(),
         prior_default + 1,
@@ -80,6 +81,7 @@ async fn no_session_model_selection_calls_set_default_model() {
         prior_session,
         "the no-session branch must NOT call set_session_model"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -87,11 +89,11 @@ async fn no_session_model_selection_calls_set_default_model() {
 //           unchanged (no regression — default-model path not taken)
 // =============================================================================
 #[tokio::test]
-async fn active_session_model_selection_updates_live_session_only() {
+async fn active_session_model_selection_updates_live_session_only() -> TestResult {
     // @step Given an active session exists
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_session = mock.set_session_model_calls();
     let prior_default = mock.set_default_model_calls();
 
@@ -102,7 +104,7 @@ async fn active_session_model_selection_updates_live_session_only() {
         "openai".to_string(),
         "gpt-5.1-codex".to_string(),
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the live session model is updated via set_session_model
     assert_eq!(
@@ -112,7 +114,7 @@ async fn active_session_model_selection_updates_live_session_only() {
     );
     let last = mock
         .last_set_session_model()
-        .expect("last set_session_model");
+        .or_fail("last set_session_model")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "openai");
     assert_eq!(last.2, "gpt-5.1-codex");
@@ -123,4 +125,5 @@ async fn active_session_model_selection_updates_live_session_only() {
         prior_default,
         "the active-session branch must NOT call set_default_model"
     );
+    Ok(())
 }

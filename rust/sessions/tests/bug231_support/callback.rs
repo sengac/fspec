@@ -1,7 +1,6 @@
 use super::{Fixture, Result};
 use codelet_rpc_types::{FspecResult, StreamChunk};
 use codelet_tools::execution_context::{scope_invocation, WorkUnitAttribution};
-use std::time::Duration;
 
 pub async fn verify(fixture: &Fixture) -> Result {
     let session = fixture.manager.get_session(&fixture.first.value)?;
@@ -17,7 +16,7 @@ pub async fn verify(fixture: &Fixture) -> Result {
         .admit_tool_invocation(&fixture.first, WorkUnitAttribution::Card("AUTH-001".into()))?;
     let mut chunks = session.subscribe_to_stream();
     let responder = tokio::spawn(async move {
-        let request = tokio::time::timeout(Duration::from_secs(5), async {
+        let request = codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 if let StreamChunk::FspecCommandRequest { fspec_request } = chunks.recv().await? {
                     return Ok::<_, tokio::sync::broadcast::error::RecvError>(fspec_request);

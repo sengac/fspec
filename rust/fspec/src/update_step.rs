@@ -21,7 +21,7 @@
 //!   - 1 on any escalated [`codelet_fspec_core::FspecCoreError`]; the
 //!     unwrapped reason is written to stderr prefixed with `Error:`.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -46,7 +46,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `update-step` clap
 /// subcommand. Returns the process exit code.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj = Map::new();
     obj.insert("feature".to_string(), Value::String(args.feature.clone()));

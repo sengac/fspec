@@ -20,14 +20,14 @@
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::Notify;
 
 /// Default 422 fixture served when no /v1/classifier body is configured.
-const DEFAULT_CLASSIFIER_422: &str = r#"{"error":{"message":"no fixture configured","type":"invalid_request_error","code":422}}"#;
+const DEFAULT_CLASSIFIER_422: &str =
+    r#"{"error":{"message":"no fixture configured","type":"invalid_request_error","code":422}}"#;
 
 /// Configurable /v1/classifier response (RLCD-002: status, headers, delay).
 #[derive(Clone, Default)]
@@ -39,8 +39,8 @@ pub struct ClassifierResponse {
     pub body: String,
     /// Optional `Retry-After` header value (for 429).
     pub retry_after: Option<String>,
-    /// Milliseconds to sleep before responding (for timeout tests).
-    pub delay_ms: u64,
+    /// Never respond (for timeout tests; TEST-042: a stall, not a sleep).
+    pub stalled: bool,
 }
 
 #[derive(Default)]
@@ -66,9 +66,7 @@ pub struct MockRlcd {
 impl MockRlcd {
     /// A mock reporting `{"status":"ready","model":"<model>"}` on /health.
     pub fn ready(model: &str) -> Self {
-        Self::with_health(Some(&format!(
-            r#"{{"status":"ready","model":"{model}"}}"#
-        )))
+        Self::with_health(Some(&format!(r#"{{"status":"ready","model":"{model}"}}"#)))
     }
 
     /// A mock with an explicit /health body (or `None` = never ready).
@@ -111,10 +109,11 @@ impl MockRlcd {
         guard.answer.retry_after = Some(value.to_string());
     }
 
-    /// Delay the /v1/classifier response by N milliseconds (timeout tests).
-    pub fn set_delay_ms(&self, ms: u64) {
+    /// Never answer /v1/classifier (timeout tests: the client's request
+    /// budget always runs out first).
+    pub fn stall(&self) {
         let mut guard = self.state.lock().expect("mock lock poisoned");
-        guard.answer.delay_ms = ms;
+        guard.answer.stalled = true;
     }
 
     /// How many /v1/classifier requests have arrived so far.
@@ -124,7 +123,11 @@ impl MockRlcd {
 
     /// The captured /v1/classifier request bodies, in arrival order.
     pub fn classifier_bodies(&self) -> Vec<String> {
-        self.state.lock().expect("mock lock poisoned").bodies.clone()
+        self.state
+            .lock()
+            .expect("mock lock poisoned")
+            .bodies
+            .clone()
     }
 
     /// Base URL once [`start`](Self::start) has been called.
@@ -276,8 +279,8 @@ async fn handle_connection(mut socket: TcpStream, state: Arc<Mutex<State>>) {
     // the guard is dropped here (before the sleep below) so the spawned
     // task future stays Send
 
-    if answer.delay_ms > 0 {
-        tokio::time::sleep(Duration::from_millis(answer.delay_ms)).await;
+    if answer.stalled {
+        std::future::pending::<()>().await;
     }
 
     let body = if answer.body.is_empty() {
@@ -296,9 +299,7 @@ async fn handle_connection(mut socket: TcpStream, state: Arc<Mutex<State>>) {
         }
     };
     let reason = if status < 400 { "OK" } else { "Error" };
-    let mut response = format!(
-        "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\n"
-    );
+    let mut response = format!("HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\n");
     if let Some(retry_after) = &answer.retry_after {
         response.push_str(&format!("Retry-After: {retry_after}\r\n"));
     }
@@ -314,10 +315,7 @@ async fn handle_connection(mut socket: TcpStream, state: Arc<Mutex<State>>) {
 /// present in `buf`, else `None`.
 fn head_bounds(buf: &[u8]) -> Option<(usize, usize)> {
     const NEEDLE: &[u8] = b"\r\n\r\n";
-    let idx = buf
-        .windows(NEEDLE.len())
-        .position(|w| w == NEEDLE)?
-        + NEEDLE.len();
+    let idx = buf.windows(NEEDLE.len()).position(|w| w == NEEDLE)? + NEEDLE.len();
     let head = String::from_utf8_lossy(&buf[..idx - NEEDLE.len()]);
     let mut body_len = 0usize;
     for line in head.lines() {

@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "A malformed session id is rejected",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug369_session_exec_stdin_and_id_errors.rs",
+          "lines": "14-28",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "/// Parse a wire-portable `SessionId` into a UUID. BUG-369: a malformed id",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A poisoned exec-stdin state lock is reported",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug369_session_exec_stdin_and_id_errors.rs",
+          "lines": "30-49",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/lock_state.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "//! BUG-369: fallible access to session state behind a `std::sync::RwLock`",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The default write_exec_stdin reports that it is unsupported",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug369_session_exec_stdin_and_id_errors.rs",
+          "lines": "51-64",
+          "implMappings": [
+            {
+              "file": "rust/core/src/session_manager_handle/handle_trait_3.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": "text: &str,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug369_session_exec_stdin_and_id_errors.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/lock_state.rs",
+      "rust/core/src/session_manager_handle/handle_trait_3.rs"
+    ],
+    "totalLinesCovered": 88
+  }
+}

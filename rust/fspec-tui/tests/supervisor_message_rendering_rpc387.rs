@@ -15,8 +15,7 @@
 //! (magenta) is asserted. This mirrors how the real subordinate view renders
 //! supervisor messages.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -94,7 +93,8 @@ fn first_span_fg(app: &App, id: &SessionId) -> Option<Color> {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn incoming_message_space_separated_backend_envelope_renders_magenta_bracket_w_line() {
+fn incoming_message_space_separated_backend_envelope_renders_magenta_bracket_w_line() -> TestResult
+{
     // @step Given a subordinate session with an empty scrollback
     let mut app = app_with_session();
 
@@ -116,6 +116,7 @@ fn incoming_message_space_separated_backend_envelope_renders_magenta_bracket_w_l
 
     // @step And the rendered chunk is colored magenta
     assert_eq!(first_span_fg(&app, &sid("s-1")), Some(Color::Magenta));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -125,7 +126,7 @@ fn incoming_message_space_separated_backend_envelope_renders_magenta_bracket_w_l
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_space_separated_supervisor_envelope_yields_role_and_body() {
+fn parse_space_separated_supervisor_envelope_yields_role_and_body() -> TestResult {
     // @step Given a supervisor envelope "[SUPERVISOR: reviewer | Session: s-2] please check this" separated by a space
     let mut app = app_with_session();
     let envelope = "[SUPERVISOR: reviewer | Session: s-2] please check this".to_string();
@@ -149,6 +150,7 @@ fn parse_space_separated_supervisor_envelope_yields_role_and_body() {
         lines,
         vec!["[W] reviewer> please check this".to_string(), String::new()]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -157,7 +159,7 @@ fn parse_space_separated_supervisor_envelope_yields_role_and_body() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_newline_separated_supervisor_envelope_yields_role_and_body() {
+fn parse_newline_separated_supervisor_envelope_yields_role_and_body() -> TestResult {
     // @step Given a supervisor envelope "[SUPERVISOR: reviewer | Session: s-2]\nplease check this" separated by a newline
     let mut app = app_with_session();
     let envelope = "[SUPERVISOR: reviewer | Session: s-2]\nplease check this".to_string();
@@ -181,6 +183,7 @@ fn parse_newline_separated_supervisor_envelope_yields_role_and_body() {
         lines,
         vec!["[W] reviewer> please check this".to_string(), String::new()]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -188,7 +191,7 @@ fn parse_newline_separated_supervisor_envelope_yields_role_and_body() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_supervisor_envelope_without_header_falls_back_to_supervisor_role() {
+fn parse_supervisor_envelope_without_header_falls_back_to_supervisor_role() -> TestResult {
     // @step Given a raw message "raw body without header" with no envelope header
     let mut app = app_with_session();
     let envelope = "raw body without header".to_string();
@@ -215,4 +218,5 @@ fn parse_supervisor_envelope_without_header_falls_back_to_supervisor_role() {
             String::new()
         ]
     );
+    Ok(())
 }

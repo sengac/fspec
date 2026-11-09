@@ -23,10 +23,12 @@
                 11,
                 12,
                 13,
-                14,
                 15,
-                16
-              ]
+                16,
+                17
+              ],
+              "firstLine": "//! UI-side state ownership added in RPC-012.",
+              "lastLine": "mod board_viewport;"
             }
           ]
         }
@@ -55,10 +57,12 @@
                 11,
                 12,
                 13,
-                14,
                 15,
-                16
-              ]
+                16,
+                17
+              ],
+              "firstLine": "//! UI-side state ownership added in RPC-012.",
+              "lastLine": "mod board_viewport;"
             }
           ]
         }
@@ -87,10 +91,12 @@
                 11,
                 12,
                 13,
-                14,
                 15,
-                16
-              ]
+                16,
+                17
+              ],
+              "firstLine": "//! UI-side state ownership added in RPC-012.",
+              "lastLine": "mod board_viewport;"
             }
           ]
         }

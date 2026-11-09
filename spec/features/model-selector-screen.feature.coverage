@@ -6,12 +6,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "118-152",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [195, 196, 197, 198, 199]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -21,12 +16,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "155-190",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [189, 190, 191, 192, 193]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -36,12 +26,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "193-230",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [201, 202, 203, 204, 205, 206, 207, 208, 209]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -51,12 +36,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "233-266",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [211, 212, 213, 214, 215, 216, 217, 218]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -66,12 +46,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "272-298",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [161, 162, 163, 164, 165, 166, 167, 168, 169]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -81,12 +56,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "300-344",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [161, 162, 163, 164, 165, 166, 167, 168, 169]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -96,12 +66,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "351-373",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [171, 172, 173, 174, 175]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -111,12 +76,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "380-418",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -126,12 +86,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "421-453",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -141,12 +96,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "460-489",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [177, 178, 179, 180, 181]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -156,12 +106,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "492-522",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -171,12 +116,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "525-558",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [138, 139, 140, 141, 142]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -186,12 +126,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "562-597",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [133, 134, 135, 136, 137]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -201,12 +136,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "600-642",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [127, 128, 129, 130, 131, 132]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -216,12 +146,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "649-676",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [183, 184, 185, 186, 187]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -231,12 +156,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "683-704",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -246,12 +166,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "707-729",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorView.tsx",
-              "lines": "1-285"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -261,12 +176,7 @@
         {
           "file": "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx",
           "lines": "732-758",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ModelSelectorScreen.tsx",
-              "lines": [88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -278,10 +188,7 @@
     "testFiles": [
       "src/tui/components/__tests__/ModelSelectorScreen.integration.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/ModelSelectorScreen.tsx",
-      "src/tui/components/ModelSelectorView.tsx"
-    ],
-    "totalLinesCovered": 959
+    "implFiles": [],
+    "totalLinesCovered": 584
   }
 }

@@ -5,32 +5,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "12-43",
+          "lines": "23-53",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -99,16 +120,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -119,32 +134,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "46-76",
+          "lines": "60-88",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -213,16 +249,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -233,32 +263,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "257-286",
+          "lines": "313-341",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -327,16 +378,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -347,32 +392,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "289-310",
+          "lines": "348-370",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -441,16 +507,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -461,32 +521,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "111-137",
+          "lines": "143-170",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -555,16 +636,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -575,32 +650,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "140-167",
+          "lines": "177-202",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -669,16 +765,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -689,32 +779,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "170-197",
+          "lines": "209-234",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -783,16 +894,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -803,32 +908,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "313-340",
+          "lines": "377-403",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -897,16 +1023,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -917,32 +1037,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "200-226",
+          "lines": "241-266",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "fn normalize_base_url(url: &str) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
                 89,
                 90,
                 91,
@@ -1011,16 +1152,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ]
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -1031,89 +1166,37 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "87-130",
+          "lines": "98-136",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254
-              ]
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models(base_url: &str) -> Result<Vec<String>, ProviderError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -1124,89 +1207,374 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/openai_local_provider_test.rs",
-          "lines": "261-293",
+          "lines": "275-306",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/agent.rs",
               "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub async fn list_local_models(base_url: &str) -> Result<Vec<String>, ProviderError> {",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// BUG-309: the endpoint origin (scheme://host:port) without path, query or",
+              "lastLine": ")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile's Max Output Tokens sets the request output limit",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov164_profile_output_limit.rs",
+          "lines": "23-38",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager/impl_3.rs",
+              "lines": [
+                175,
+                176,
+                177
+              ],
+              "firstLine": "// PROV-165: the OpenAI request cap needs a known output limit.",
+              "lastLine": "ProviderError::config("
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// PROV-164: send the session's resolved output limit (profile Max Output",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Without a profile output limit the OpenAI provider is not built",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov164_profile_output_limit.rs",
+          "lines": "40-63",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager/impl_3.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
                 178,
                 179,
                 180,
                 181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
                 189,
                 190,
                 191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254
-              ]
+                192
+              ],
+              "firstLine": ".map_err(|_| ProviderError::auth(\"openai\", \"OPENAI_API_KEY not set\"))?;",
+              "lastLine": ")"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_4.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "// PROV-171: OpenAI trusts the registry; its only defaults are the",
+              "lastLine": "ProviderType::Gemini => Box::new(ConstantResolver {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An OpenAI provider without limit overrides reports no limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov171_openai_env_limits.rs",
+          "lines": "46-60",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai/env_limits.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "impl OpenAIEnvLimits {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/llm_provider.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "fn context_window(&self) -> Option<usize> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A non-numeric OPENAI_MAX_OUTPUT_TOKENS fails OpenAI provider construction",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov171_openai_env_limits.rs",
+          "lines": "62-75",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai/env_limits.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "fn read_limit(variable: &'static str) -> Result<Option<usize>, ProviderError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "// PROV-171: explicit limit overrides; unset is None, invalid is an error.",
+              "lastLine": "} = OpenAIEnvLimits::from_env()?;"
+            },
+            {
+              "file": "rust/providers/src/error.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "/// PROV-171: an explicit limit override environment variable holds a",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A zero or empty OPENAI_CONTEXT_WINDOW fails OpenAI provider construction",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov171_openai_env_limits.rs",
+          "lines": "77-96",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai/env_limits.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "fn read_limit(variable: &'static str) -> Result<Option<usize>, ProviderError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/openai/construction.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "// PROV-171: explicit limit overrides; unset is None, invalid is an error.",
+              "lastLine": "} = OpenAIEnvLimits::from_env()?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An invalid limit override fails selecting an OpenAI model",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov171_openai_env_limits.rs",
+          "lines": "98-115",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager_runtime.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                92
+              ],
+              "firstLine": "/// PROV-171: the OPENAI_* limit overrides of an OpenAI selection (an invalid",
+              "lastLine": "self.openai_env_limits = openai_env_limits_for(&self.current_provider)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching a session to a profile model fails while OPENAI_MAX_OUTPUT_TOKENS is invalid",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov171_profile_invalid_env_limit.rs",
+          "lines": "51-81",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager_runtime.rs",
+              "lines": [
+                92
+              ],
+              "firstLine": "self.openai_env_limits = openai_env_limits_for(&self.current_provider)?;",
+              "lastLine": "self.openai_env_limits = openai_env_limits_for(&self.current_provider)?;"
+            },
+            {
+              "file": "rust/sessions/src/profile_model_limits.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "super::model_resolution::apply_profile_env_vars(provider, profile_name, model_id)?;",
+              "lastLine": ".map_err(|error| format!(\"Failed to set profile model: {error}\"))?;"
             }
           ]
         }
@@ -1214,15 +1582,28 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 18,
+    "coveredScenarios": 18,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/openai_local_provider_test.rs"
+      "rust/providers/tests/openai_local_provider_test.rs",
+      "rust/providers/tests/prov164_profile_output_limit.rs",
+      "rust/providers/tests/prov171_openai_env_limits.rs",
+      "rust/sessions/tests/prov171_profile_invalid_env_limit.rs"
     ],
     "implFiles": [
-      "rust/providers/src/openai.rs"
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/openai/construction.rs",
+      "rust/providers/src/openai/agent.rs",
+      "rust/providers/src/openai_discovery.rs",
+      "rust/providers/src/manager/impl_3.rs",
+      "rust/providers/src/manager/impl_4.rs",
+      "rust/providers/src/openai/env_limits.rs",
+      "rust/providers/src/openai/llm_provider.rs",
+      "rust/providers/src/error.rs",
+      "rust/providers/src/manager_runtime.rs",
+      "rust/sessions/src/profile_model_limits.rs"
     ],
-    "totalLinesCovered": 1366
+    "totalLinesCovered": 1591
   }
 }

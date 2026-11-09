@@ -5,18 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_period_new_agent_rpc395.rs",
-          "lines": "121-139",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-              "lines": [
-                31,
-                32,
-                33,
-                34
-              ]
-            }
-          ]
+          "lines": "148-170",
+          "implMappings": []
         }
       ]
     },
@@ -36,10 +26,7 @@
     "testFiles": [
       "rust/fspec-tui/tests/board_period_new_agent_rpc395.rs"
     ],
-    "implFiles": [
-      "rust/fspec-tui/src/views/board.rs",
-      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs"
-    ],
-    "totalLinesCovered": 94
+    "implFiles": [],
+    "totalLinesCovered": 23
   }
 }

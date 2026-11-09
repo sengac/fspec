@@ -5,10 +5,9 @@
 //! piped to non-TTY. Reference fixture:
 //! `rust/fspec/tests/fixtures/help/search-implementation.txt`.
 //!
-//! ## Quirk: literal `undefined` in COMMON PATTERNS
-//! The TS help config feeds `{title, commands}` objects but the formatter
-//! consumes `{pattern, example, description}`, so all three interpolate as
-//! the literal text `undefined`. Reproduced verbatim for byte parity.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandExample, CommandHelpConfig, CommandOption, CommonPattern, CommonPatternEntry,
@@ -61,14 +60,14 @@ const OPTIONS: &[CommandOption] = &[
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Find manual file operations that could use utilities",
+        example: "fspec search-implementation --function=\"readFile\" --show-work-units\nfspec search-implementation --function=\"writeFile\" --show-work-units",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Impact analysis before refactoring",
+        example: "fspec search-implementation --function=parseGherkin\nfspec search-implementation --function=formatFeature",
+        description: None,
     }),
 ];
 
@@ -90,11 +89,7 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &[
-    "compare-implementations",
-    "search-scenarios",
-    "show-coverage",
-];
+const RELATED: &[&str] = &["compare-implementations", "context", "show-coverage"];
 
 const NOTES: &[&str] = &[
     "Searches implementation files linked in coverage data",

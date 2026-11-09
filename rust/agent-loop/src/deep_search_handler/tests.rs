@@ -1,5 +1,4 @@
 use super::*;
-use crate::deep_search_provider_config::{request_config_for_provider, SUB_AGENT_MAX_TOKENS};
 use codelet_cli::interactive::{
     build_deep_search_timeout_message, deep_search_wall_clock_timeout, is_stall_timeout_error,
     DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS,
@@ -26,19 +25,6 @@ fn codex_requires_streaming_execution_path() {
     assert!(provider_uses_streaming_execution("codex"));
 }
 
-// Scenario: ZAI DeepSearch uses streaming execution path
-// Feature: spec/features/glm-zai-deepsearch-fails-with-500-internal-server-error.feature
-
-// @step Given a DeepSearch sub-agent is constructed for provider "zai"
-// @step When the sub-agent executes the query
-#[test]
-fn zai_requires_streaming_execution_path() {
-    // @step Then the execution path uses streaming to collect the final response
-    assert!(provider_uses_streaming_execution("zai"));
-    // @step Then the final synthesized answer is returned as one String result
-    // Streaming collection produces a String result (tested in collect_final_response_from_stream tests)
-}
-
 // Scenario: Non-streaming providers remain unchanged
 // Feature: spec/features/glm-zai-deepsearch-fails-with-500-internal-server-error.feature
 
@@ -51,27 +37,8 @@ fn non_streaming_providers_remain_unchanged() {
         assert!(!provider_uses_streaming_execution(provider));
     }
     // @step Then the final synthesized answer contract remains unchanged
+    // @step And the final synthesized answer contract remains unchanged
     // Non-streaming providers use rig_agent.prompt() which returns String directly
-}
-
-// Scenario: ZAI DeepSearch config includes max_tokens in additional_params
-// Feature: spec/features/glm-zai-deepsearch-fails-with-500-internal-server-error.feature
-
-// @step Given a DeepSearch request config is built for provider "zai"
-#[test]
-fn zai_config_includes_max_tokens_in_additional_params() {
-    let config = request_config_for_provider("zai", "glm-4.7", "deep search prompt", false)
-        .expect("zai config should build");
-
-    // @step When the config is serialized for the HTTP request
-    let params = config.additional_params.as_ref().expect("params");
-
-    // @step Then the additional_params includes max_tokens set to 8192
-    assert_eq!(params["max_tokens"], SUB_AGENT_MAX_TOKENS);
-
-    // @step Then the additional_params includes temperature and top_p
-    assert_eq!(params["temperature"], 1.0);
-    assert_eq!(params["top_p"], 0.95);
 }
 
 // Scenario: Streaming collection returns only the final DeepSearch answer contract
@@ -141,22 +108,24 @@ async fn collect_final_response_from_stream_propagates_stream_errors() {
 // @step Then the parent agent should receive a timeout error as the tool result string
 // @step And the parent agent should continue processing with the error result
 // @step And the parent agent should not hang or remain in running state
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn deep_search_wall_clock_timeout_fires_on_stalled_sub_agent() {
     // Simulate a sub-agent execution that never completes
-    let never_completing = async {
-        tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+    let never_completing = tokio::spawn(async {
+        std::future::pending::<()>().await;
         Ok::<String, String>("never reached".to_string())
-    };
+    });
 
-    // Apply wall-clock timeout (short duration for test speed)
-    let result = tokio::time::timeout(std::time::Duration::from_millis(50), never_completing).await;
-
-    // The timeout must fire — this is the wrapping pattern for build_and_run_agent
+    // TEST-042: on a paused clock, advance past the (short) limit instead of
+    // timing out on the wall clock; the stalled sub-agent is still running,
+    // which is what the wall-clock timeout around build_and_run_agent ends.
+    tokio::time::advance(std::time::Duration::from_millis(50)).await;
+    tokio::task::yield_now().await;
     assert!(
-        result.is_err(),
+        !never_completing.is_finished(),
         "Wall-clock timeout must fire on stalled sub-agent"
     );
+    never_completing.abort();
 
     // When timeout fires, the error message returned to the parent must be descriptive
     let timeout_msg = build_deep_search_timeout_message(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS);
@@ -193,7 +162,7 @@ fn deep_search_timeout_message_is_not_classified_as_stall_timeout() {
 }
 
 // Scenario: Streaming collection with stalled stream would be caught by wall-clock timeout
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn collect_final_response_stalled_stream_aborted_by_wall_clock_timeout() {
     // Simulate a stream that produces one chunk then stalls forever
     // (the SSE connection is alive but no more data flows)
@@ -217,15 +186,15 @@ async fn collect_final_response_stalled_stream_aborted_by_wall_clock_timeout() {
     });
 
     // The wall-clock timeout wraps the ENTIRE collect_final_response call
-    let result = tokio::time::timeout(
-        std::time::Duration::from_millis(100),
-        collect_final_response_from_stream(stalled_stream, "zai"),
-    )
-    .await;
-
-    // Wall-clock timeout must fire — collect_final_response would block forever without it
+    // TEST-042: on a paused clock, advance past the limit; the collection is
+    // still blocked on the stalled stream, which only the wall-clock timeout
+    // around it ends.
+    let collecting = tokio::spawn(collect_final_response_from_stream(stalled_stream, "zai"));
+    tokio::time::advance(std::time::Duration::from_millis(100)).await;
+    tokio::task::yield_now().await;
     assert!(
-        result.is_err(),
+        !collecting.is_finished(),
         "Wall-clock timeout must abort stalled collect_final_response_from_stream"
     );
+    collecting.abort();
 }

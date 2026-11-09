@@ -18,6 +18,8 @@
 //!    source of the `saturating_sub(.., output_tokens)` pattern, and all delta-based
 //!    call sites delegate to it.
 
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use codelet_cli::interactive::flush_partial_state_before_compaction;
 use codelet_cli::session::Session;
 use codelet_core::compaction::TokenTracker;
@@ -124,11 +126,11 @@ fn per_turn_delta_never_underflows_when_cumulative_ticks_backward() {
 
 #[test]
 fn delta_computation_is_centralized_in_single_helper() {
-    // @step Given the fspec codelet-cli Rust crate
+    // @step Given the codelet-cli Rust crate
     // Read the four interactive-module source files directly from the repo so
     // this test fails if any future refactor re-introduces a duplicate
     // `saturating_sub(.. , output_tokens)` outside the helper.
-    let stream_loop = include_str!("../src/interactive/stream_loop.rs");
+    let stream_loop = stream_loop_source_tree::stream_loop_source();
     let gemini_continuation = gemini_source::gemini_continuation_source();
     let recovery_compaction = include_str!("../src/interactive/recovery_compaction.rs");
     // The helper itself lives in codelet-core. It is the single production-code
@@ -180,7 +182,7 @@ fn delta_computation_is_centralized_in_single_helper() {
         count
     }
 
-    let interactive_count = count_output_saturating_sub(stream_loop)
+    let interactive_count = count_output_saturating_sub(&stream_loop)
         + count_output_saturating_sub(gemini_continuation)
         + count_output_saturating_sub(recovery_compaction);
     let helper_count = count_output_saturating_sub(token_tracker_model);

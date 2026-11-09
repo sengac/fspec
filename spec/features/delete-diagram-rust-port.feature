@@ -1,8 +1,11 @@
+@BUG-582
 @done
 @RPC-216
+@BUG-535
 @rust
 @cli
 @mutation
+@diagram
 Feature: Port delete-diagram command to Rust
   """
   Framing A divergence — match-by-title: The TS implementation filters
@@ -13,10 +16,10 @@ Feature: Port delete-diagram command to Rust
   `section` argument is accepted for CLI shape parity and echoed verbatim in success
   and error messages, but does NOT participate in lookup.
 
-  Framing A divergence — FOUNDATION.md regeneration: generate-foundation-md (RPC-233)
-  is unported. The Rust port writes spec/foundation.json and prints the two CLI status
-  lines ('  Updated: spec/foundation.json' + '  Regenerated: spec/FOUNDATION.md') but
-  does NOT actually regenerate the markdown file.
+  FOUNDATION.md regeneration (BUG-535): after writing spec/foundation.json the command
+  regenerates spec/FOUNDATION.md with generate_foundation_md::regenerate, like
+  update-foundation, so the CLI status lines ('  Updated: spec/foundation.json' +
+  '  Regenerated: spec/FOUNDATION.md') are true.
 
   No auto-create: Unlike add-diagram, the TS delete-diagram uses `existsSync` directly
   and errors when spec/foundation.json is missing. The Rust port preserves this — it
@@ -85,3 +88,9 @@ Feature: Port delete-diagram command to Rust
     Then the dispatcher returns success=true
     And spec/foundation.json architectureDiagrams is empty
     And the response message echoes the supplied section 'AnythingElse'
+
+  Scenario: Dispatcher regenerates FOUNDATION.md after deleting a diagram
+    Given spec/foundation.json is a complete foundation with diagrams 'Alpha Flow' and 'Beta Flow' and spec/FOUNDATION.md shows both
+    When I dispatch delete-diagram with section='Architecture' title='Alpha Flow'
+    Then spec/FOUNDATION.md no longer shows 'Alpha Flow'
+    And it still shows the heading '### Beta Flow'

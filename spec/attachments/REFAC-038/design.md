@@ -1,0 +1,7 @@
+# REFAC-038 design
+
+TUI-118 must flip the two RPC-093 cursor scenarios in `rust/fspec-tui/tests/thinking_indicator_animation_parity_rpc093.rs` (535 lines, over the 300-line limit). Pure restructure, no production change:
+- The timing constants and `buf_line` move to `tests/thinking_indicator_rpc093_support/mod.rs`, together with the re-exported API the tests use (`InputTransitionState`, `render_input_transition`, `AgentView`, `INPUT_PLACEHOLDER_HINT`, `SessionStatus`, `tick_should_draw`, `current_frame_glyph`).
+- New helpers: `hiding(visible, started_at, done)` and `showing(placeholder, visible, started_at)` build the phase states, `render_line(state, width)` and `first_cell(state)` paint the input row, `cursor_visible(status, state)` wraps `AgentView::is_cursor_visible_for`, `hiding_visible` reads a Hiding count, `is_animating` is the run-loop predicate, and `assert_state` compares phases through `Debug` (the enum has no `PartialEq`, and adding one would be a production change). The asserting helpers use `#[track_caller]`.
+- The 3-line banner comments become one `/// Scenario:` doc line, the long 28-vs-27 char note is condensed, and the one `unwrap()` becomes `expect("read input_transition.rs")`. Every test and `@step` comment is kept.
+- Result: 295 test lines + 100 support lines. Coverage test ranges re-written in place (impl mappings kept, totalLinesCovered adjusted by the range delta of -141).

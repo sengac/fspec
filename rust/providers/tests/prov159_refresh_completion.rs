@@ -93,7 +93,10 @@ async fn scenario_refresh_persistence_respects_streaming_credential_deadlines() 
                 .open(home.join(".fspec-auth.lock"))?;
             guard.lock()?;
             let _ = ready.send(());
-            let _ = released.recv_timeout(Duration::from_secs(1));
+            // TEST-042: hold the lock until released, under the deadlock guard.
+            let _ = codelet_test_helpers::deadlock_guard_blocking("the lock release", move || {
+                released.recv()
+            });
             Ok(())
         });
         bounded(held).await??;

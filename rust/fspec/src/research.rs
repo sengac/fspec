@@ -41,7 +41,7 @@
 //! bare message on stderr (parity with the TS `output.error(error.message)` +
 //! `process.exit(1)` catch path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -51,7 +51,7 @@ use serde_json::{json, Map, Value};
 use crate::common::render_core_error;
 
 /// Strongly-typed args mirrored from the TS Commander.js registration at
-/// `src/commands/research.ts:277-282` (`--tool <name>`, `--work-unit <id>`,
+/// `src/commands/research.ts:277-282` (`--tool <name>`, `--work-unit <workUnitId>`,
 /// plus forwarded positional/unknown args). In the LIST-only port only
 /// `--tool` affects behaviour; the rest are accepted for surface parity and
 /// forwarded into the JSON args object so future EXECUTE work threads through
@@ -67,7 +67,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `research` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by
     // fspec_core::commands::research::run.
@@ -76,7 +76,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         obj.insert("tool".to_string(), json!(t));
     }
     if let Some(w) = &args.work_unit {
-        obj.insert("workUnit".to_string(), json!(w));
+        obj.insert("workUnitId".to_string(), json!(w));
     }
     let args_json = Value::Object(obj).to_string();
 

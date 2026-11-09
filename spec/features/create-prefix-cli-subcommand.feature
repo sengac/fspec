@@ -37,11 +37,11 @@ Feature: Create prefix CLI subcommand
     Then spec/prefixes.json now exists in the directory
     Then spec/prefixes.json contains a top-level prefixes object with an AUTH key whose description is 'Auth features'
 
-  Scenario: CLI rejects a lowercase prefix with exit 1 and stderr Error prefix
+  Scenario: CLI rejects a lowercase prefix with exit 1 and the '✗ Failed to create prefix:' stderr prefix
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./rust/target/release/fspec create-prefix auth "bad case"` from that directory
     Then the command exits with code 1
-    Then stderr contains the substring 'Error:'
+    Then stderr contains the substring '✗ Failed to create prefix:'
     Then stderr contains the substring 'Prefix must be 2-6 uppercase letters'
     Then spec/prefixes.json was NOT created in the directory
 
@@ -49,7 +49,7 @@ Feature: Create prefix CLI subcommand
     Given spec/prefixes.json contains AUTH (description 'Auth features')
     When I run `./rust/target/release/fspec create-prefix AUTH "Different desc"` from that directory
     Then the command exits with code 1
-    Then stderr contains the substring 'Error:'
+    Then stderr contains the substring '✗ Failed to create prefix:'
     Then stderr contains the substring 'Prefix AUTH already exists'
     Then spec/prefixes.json is byte-identical to its pre-call content
 
@@ -57,7 +57,7 @@ Feature: Create prefix CLI subcommand
     Given spec/prefixes.json exists in the working directory but contains invalid JSON
     When I run `./rust/target/release/fspec create-prefix AUTH "Auth features"` from that directory
     Then the command exits with code 1
-    Then stderr contains the substring 'Error:'
+    Then stderr contains the substring '✗ Failed to create prefix:'
     Then stderr contains the substring 'Failed to parse prefixes.json'
 
   Scenario: CLI missing positional argument fails with a clap usage error

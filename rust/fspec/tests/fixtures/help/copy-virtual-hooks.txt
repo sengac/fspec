@@ -11,7 +11,7 @@ PREREQUISITES
   • Source work unit must have virtual hooks configured
 
 USAGE
-  fspec copy-virtual-hooks --from <sourceId> --to <targetId> [--hook-name <name>]
+  fspec copy-virtual-hooks --from <workUnitId> --to <workUnitId> [--hook-name <name>]
 
 OPTIONS
   --from <workUnitId>

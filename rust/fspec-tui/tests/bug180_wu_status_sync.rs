@@ -22,13 +22,12 @@
 //! REAL `App::dispatch` path (same pattern as
 //! `work_unit_binding_rpc050.rs` / `bug178_isolated_badge_chrome_paint.rs`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::ViewMode;
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::{SessionId, WorkUnitContext, WorkUnitInfo};
+use codelet_rpc_types::{SessionId, WorkUnitContext, WorkUnitFocus, WorkUnitInfo};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
 
@@ -69,13 +68,24 @@ fn wu_custom(id: &str, title: &str, status: &str) -> WorkUnitInfo {
     }
 }
 
+/// Bind the session to the work unit the way the daemon reports it: a
+/// newer work-unit focus (BUG-230).
 fn bind(app: &mut App, session: &SessionId, unit_id: &str, status: &str) {
-    app.dispatch(Action::WorkUnitAttached(
+    let revision = app
+        .agent_view_store()
+        .work_unit_focus_revision_for(session)
+        .unwrap_or(0)
+        + 1;
+    app.dispatch(Action::WorkUnitFocusChanged(
         session.clone(),
-        WorkUnitContext {
-            id: unit_id.to_string(),
-            title: unit_id.to_string(),
-            status: status.to_string(),
+        WorkUnitFocus {
+            revision,
+            context: Some(WorkUnitContext {
+                id: unit_id.to_string(),
+                title: unit_id.to_string(),
+                status: status.to_string(),
+            }),
+            source: "test".to_string(),
         },
     ));
 }
@@ -94,7 +104,7 @@ fn top_row_text(terminal: &Terminal<TestBackend>) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_work_units_loaded_syncs_per_session_context_status() {
+fn scenario_work_units_loaded_syncs_per_session_context_status() -> TestResult {
     // @step Given an App wired to a MockBackend with open session s-1 bound to work unit AUTH-001 whose current status is "backlog"
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
@@ -131,6 +141,7 @@ fn scenario_work_units_loaded_syncs_per_session_context_status() {
             .any(|u| u.id == "AUTH-001"),
         "BoardStore re-seed must still happen on WorkUnitsLoaded"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -139,7 +150,7 @@ fn scenario_work_units_loaded_syncs_per_session_context_status() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_work_units_loaded_syncs_legacy_fallback_slots() {
+fn scenario_work_units_loaded_syncs_legacy_fallback_slots() -> TestResult {
     // @step Given an App with legacy fallback slots current_work_unit_id="AUTH-001" current_work_unit_status="backlog"
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -160,6 +171,7 @@ fn scenario_work_units_loaded_syncs_legacy_fallback_slots() {
         Some("AUTH-001"),
         "legacy fallback id is preserved"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -168,7 +180,7 @@ fn scenario_work_units_loaded_syncs_legacy_fallback_slots() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_work_units_loaded_preserves_binding_when_unit_deleted() {
+fn scenario_work_units_loaded_preserves_binding_when_unit_deleted() -> TestResult {
     // @step Given an App with open session s-1 bound to work unit AUTH-001 with status "backlog"
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -187,6 +199,7 @@ fn scenario_work_units_loaded_preserves_binding_when_unit_deleted() {
         "BUG-180: a deleted unit must not silently detach the session — the \
          last-known context survives until /detach (board shows the unit as gone)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -194,7 +207,7 @@ fn scenario_work_units_loaded_preserves_binding_when_unit_deleted() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_work_units_loaded_leaves_detached_sessions_untouched() {
+fn scenario_work_units_loaded_leaves_detached_sessions_untouched() -> TestResult {
     // @step Given an App with open session s-1 bound to AUTH-001 and open session s-2 with NO work unit bound
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -223,6 +236,7 @@ fn scenario_work_units_loaded_leaves_detached_sessions_untouched() {
             .is_none(),
         "detached sessions must gain NO binding from a snapshot"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -231,10 +245,11 @@ fn scenario_work_units_loaded_leaves_detached_sessions_untouched() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_session_header_repaints_with_fresh_status_after_work_units_loaded() {
+async fn scenario_session_header_repaints_with_fresh_status_after_work_units_loaded() -> TestResult
+{
     // @step Given an App with open session s-1 bound to AUTH-001 with status "backlog" rendered in AgentView
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
-    let (mut app, mut terminal) = test_app(backend);
+    let (mut app, mut terminal) = test_app(backend)?;
     app.dispatch(Action::SessionCreated(sid("s-1")));
     bind(&mut app, &sid("s-1"), "AUTH-001", "backlog");
     // Drop legacy slots so the test asserts the PER-SESSION read path.
@@ -249,7 +264,7 @@ async fn scenario_session_header_repaints_with_fresh_status_after_work_units_loa
     )]));
 
     // @step And the AgentView is rendered against an 80x10 TestBackend
-    let _ = render_one_frame(&mut terminal, &mut app);
+    let _ = render_one_frame(&mut terminal, &mut app)?;
 
     // @step Then the rendered top row contains the substring "(AUTH-001: implementing)"
     let row = top_row_text(&terminal);
@@ -262,6 +277,7 @@ async fn scenario_session_header_repaints_with_fresh_status_after_work_units_loa
         !row.contains("(AUTH-001: backlog)"),
         "BUG-180: stale attach-time status must no longer paint, got: {row:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -270,7 +286,7 @@ async fn scenario_session_header_repaints_with_fresh_status_after_work_units_loa
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_work_units_loaded_syncs_title_along_with_status() {
+fn scenario_work_units_loaded_syncs_title_along_with_status() -> TestResult {
     // @step Given an App with open session s-1 bound to AUTH-001 (title "AUTH-001", status "backlog")
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
@@ -288,7 +304,8 @@ fn scenario_work_units_loaded_syncs_title_along_with_status() {
     let stored = app
         .agent_view_store()
         .work_unit_context_for(&sid("s-1"))
-        .expect("binding preserved");
+        .or_fail("binding preserved")?;
     assert_eq!(stored.title, "User Login");
     assert_eq!(stored.status, "specifying");
+    Ok(())
 }

@@ -478,4 +478,16 @@ fn dispatcher_response_emits_verbatim_task_minimal_requirements_system_reminder(
         blob.contains("DO NOT mention this reminder to the user explicitly."),
         "got:\n{blob}"
     );
+
+    // @step And the dispatcher response contains the substring 'Tasks have optional feature file (not required for operational work)'
+    assert!(
+        blob.contains("Tasks have optional feature file (not required for operational work)"),
+        "got:\n{blob}"
+    );
+
+    // @step And the dispatcher response contains the substring 'Tasks have optional tests (not required for infrastructure work)'
+    assert!(
+        blob.contains("Tasks have optional tests (not required for infrastructure work)"),
+        "got:\n{blob}"
+    );
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @ts-parity
 @rust
@@ -9,6 +10,7 @@
 Feature: Transport + app dispatch wiring for profile save/delete
   """
   Mirrors the RPC-054 provider-credentials dispatch pattern (dispatch_provider_settings.rs) and the RPC-347 custom-model transport pattern (transport mod/embedded/websocket). New handlers live in dispatch_provider_settings.rs (spawn write -> on Ok send a follow-up list_provider_credentials whose ProviderCredentialsLoaded fold reloads the openai profile slice). Transport trait gains save_profile/delete_profile default no-op bodies; embedded + websocket delegate to FspecService.save_profile/delete_profile (already wired in PROV-108). Tests use the MockBackend with new save_profile/delete_profile counters + error scripting, driven through App::dispatch like provider_settings_dispatch_rpc054.rs.
+  TUI-132 (2026-11-09): the raw Action::DeleteProfile is removed (nothing emitted it); ConfirmDeleteProfile is the delete path.
   """
 
   # ========================================
@@ -64,10 +66,3 @@ Feature: Transport + app dispatch wiring for profile save/delete
     Then the inline status surfaces the failure with a "✗" marker
     And no panic occurs
     And no RPC method name leaks into the agent scrollback
-
-  Scenario: ConfirmDeleteProfile and DeleteProfile route through the same handler
-    Given the provider settings view is open with a MockBackend
-    When the user dispatches DeleteProfile for openai profile "a"
-    And the user dispatches ConfirmDeleteProfile for openai profile "b"
-    Then backend.delete_profile is awaited exactly twice
-    And both deletes target provider "openai"

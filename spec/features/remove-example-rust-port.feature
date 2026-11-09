@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-273
+@cli
+@remove
 Feature: Port remove-example command to Rust
   """
   Core impl file: rust/fspec-core/src/commands/remove_example.rs — replaces the NotYetPorted stub.

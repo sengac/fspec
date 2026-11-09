@@ -261,7 +261,7 @@ fn a_legacy_profile_without_the_loop_detection_keys_loads_unchanged() {
     // @step When the local-server profiles are loaded from fspec-config.json
     let guard = EnvGuard::capture(&["FSPEC_USER_DIR"]);
     std::env::set_var("FSPEC_USER_DIR", dir.path());
-    let profiles = load_local_server_profiles();
+    let profiles = load_local_server_profiles().expect("the profiles load");
     let legacy = profiles
         .iter()
         .find(|p| p.name == "legacy")
@@ -310,7 +310,7 @@ fn a_ts_written_float_loop_detection_value_saturates_on_read() {
     // @step When the local-server profiles are loaded from fspec-config.json
     let guard = EnvGuard::capture(&["FSPEC_USER_DIR"]);
     std::env::set_var("FSPEC_USER_DIR", dir.path());
-    let profiles = load_local_server_profiles();
+    let profiles = load_local_server_profiles().expect("the profiles load");
     let ts = profiles
         .iter()
         .find(|p| p.name == "ts-written")

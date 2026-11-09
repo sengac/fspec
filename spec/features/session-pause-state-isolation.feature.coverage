@@ -4,13 +4,67 @@
       "name": "Pause state is stored per-session not globally",
       "testMappings": [
         {
-          "file": "rust/napi/tests/session_pause_state_test.rs",
-          "lines": "81-128",
+          "file": "rust/sessions/tests/cov057_session_pause_state.rs",
+          "lines": "20-68",
           "implMappings": [
-            {"file": "rust/tools/src/tool_pause.rs", "lines": [45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]}
+            {
+              "file": "rust/sessions/src/background_session/interactions.rs",
+              "lines": [
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ],
+              "firstLine": "pub fn get_pause_state(&self) -> Option<PauseState> {",
+              "lastLine": "}"
+            }
           ]
         }
       ]
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/cov057_session_pause_state.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/interactions.rs"
+    ],
+    "totalLinesCovered": 85
+  }
 }

@@ -1,11 +1,13 @@
+@BUG-582
 @done
 @session-creation
 @model-selection
 @tui
 @MODEL-006
+@BUG-410
 Feature: Selecting a model in /model with no active session does nothing
   """
-  Re-creation funnels through post_create_session_action so empty ids map to SessionCreationDeclined and real ids seed the active session via SessionCreated
+  Re-creation funnels through run_session_creation: a created id seeds the active session via SessionCreated, and a create_session error (for example no default model, BUG-410) becomes SessionOperationFailed and seeds nothing
   """
 
   # ========================================
@@ -15,11 +17,11 @@ Feature: Selecting a model in /model with no active session does nothing
   # BUSINESS RULES:
   #   1. Selecting a model with no active session must result in a session being created or an explicit decline dialog, never a silent no-op
   #   2. The re-creation of the session only fires after set_default_model resolves Ok
-  #   3. An empty SessionId from the retried create_session maps to Action::SessionCreationDeclined and never seeds an empty active session
+  #   3. A failed retried create_session is shown through the session failure dialog and never seeds an active session
   #
   # EXAMPLES:
   #   1. No session active, open /model, pick anthropic/claude-opus-4-8 -> default model set -> create_session retried -> Action::SessionCreated dispatched -> Agent view usable
-  #   2. set_default_model succeeds but the retried create_session returns an empty id -> Action::SessionCreationDeclined -> error dialog shown
+  #   2. set_default_model succeeds but the retried create_session fails -> Action::SessionOperationFailed -> session failure dialog shown
   #   3. Selecting a model with an active session updates the live session via set_session_model and does NOT call set_default_model or create_session (no regression)
   #
   # ========================================
@@ -37,15 +39,15 @@ Feature: Selecting a model in /model with no active session does nothing
     And an Action::SessionCreated is dispatched
     And a usable active session exists
 
-  Scenario: Retried session creation is declined with an empty id
+  Scenario: Retried session creation fails
     Given no session is active and no default model is set
-    And the next create_session returns an empty session id
+    And the next create_session fails because no default model is set
     And the model selector is open with session_id None
     When I select the model "anthropic/claude-opus-4-8" with Enter
     Then the backend set_default_model is called with "anthropic/claude-opus-4-8"
     And create_session is retried after the default is committed
-    And an Action::SessionCreationDeclined is dispatched
-    And no empty active session is seeded
+    And the session failure dialog is shown
+    And no active session is seeded
 
   Scenario: Selecting a model with an active session does not retry creation
     Given an active session exists

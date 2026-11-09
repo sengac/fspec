@@ -10,11 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
                 99,
                 100,
                 101,
@@ -106,8 +101,23 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "/// Dispatcher entry point. The dispatcher passes the canonical project",
+              "lastLine": "}"
             }
           ]
         }
@@ -123,11 +133,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
                 99,
                 100,
                 101,
@@ -219,8 +224,23 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "/// Dispatcher entry point. The dispatcher passes the canonical project",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,11 +256,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
                 99,
                 100,
                 101,
@@ -332,8 +347,23 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "/// Dispatcher entry point. The dispatcher passes the canonical project",
+              "lastLine": "}"
             }
           ]
         }
@@ -349,6 +379,14 @@
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
                 67,
                 68,
                 69,
@@ -380,17 +418,6 @@
                 95,
                 96,
                 97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
                 109,
                 110,
                 111,
@@ -400,8 +427,13 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "/// Regex source for the epic-id validation. Hand-rolled validator (we",
+              "lastLine": "}"
             }
           ]
         }
@@ -412,23 +444,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "198-244",
+          "lines": "203-254",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "// Duplicate check.",
+              "lastLine": "}"
             }
           ]
         }
@@ -439,13 +472,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "246-267",
+          "lines": "256-278",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -464,8 +495,12 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181,
+                182
+              ],
+              "firstLine": "// Merge with existing epics, preserving insertion order. Re-read the",
+              "lastLine": ".entry(\"epics\".to_string())"
             }
           ]
         }
@@ -476,18 +511,58 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "269-294",
+          "lines": "280-305",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "// Read existing epics. TS uses a bare try/catch at lines 42-48 that",
+              "lastLine": "}"
             }
           ]
         }
@@ -498,21 +573,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "296-314",
+          "lines": "307-326",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -523,26 +597,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "316-350",
+          "lines": "328-362",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "/// Render the success block written to `DispatchResult.data` — mirrors",
+              "lastLine": "}"
             }
           ]
         }
@@ -553,26 +626,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_epic.rs",
-          "lines": "352-393",
+          "lines": "364-405",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_epic.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205
-              ]
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "/// Render the success block written to `DispatchResult.data` — mirrors",
+              "lastLine": "}"
             }
           ]
         }
@@ -589,6 +661,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/create_epic.rs"
     ],
-    "totalLinesCovered": 759
+    "totalLinesCovered": 818
   }
 }

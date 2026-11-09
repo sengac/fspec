@@ -6,10 +6,9 @@
 //! mutation methods used by App::dispatch to drive viewport-aware
 //! selection (PageUp/PageDown/Home/End + auto-scrolling arrow keys).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{BoardStore, COLUMN_ORDER};
 use codelet_rpc_types::WorkUnitInfo;
+use codelet_test_helpers::TestResult;
 
 fn wu(id: &str, status: &str) -> WorkUnitInfo {
     WorkUnitInfo {
@@ -36,7 +35,7 @@ fn seed_backlog(n: usize) -> BoardStore {
 
 /// Scenario: Default BoardStore reports zero scroll_offset for every column
 #[test]
-fn default_boardstore_reports_zero_scroll_offset_for_every_column() {
+fn default_boardstore_reports_zero_scroll_offset_for_every_column() -> TestResult {
     // @step Given a freshly constructed BoardStore via BoardStore::default()
     let store = BoardStore::default();
     // @step When the developer reads scroll_offset_for for each of the seven canonical columns
@@ -48,11 +47,12 @@ fn default_boardstore_reports_zero_scroll_offset_for_every_column() {
             "fresh BoardStore.scroll_offset_for({column}) must be 0"
         );
     }
+    Ok(())
 }
 
 /// Scenario: set_scroll_offset_for stores per-column offsets independently
 #[test]
-fn set_scroll_offset_for_stores_per_column_offsets_independently() {
+fn set_scroll_offset_for_stores_per_column_offsets_independently() -> TestResult {
     // @step Given a freshly constructed BoardStore via BoardStore::default()
     let mut store = BoardStore::default();
     // @step When the developer calls set_scroll_offset_for("backlog", 4)
@@ -65,11 +65,12 @@ fn set_scroll_offset_for_stores_per_column_offsets_independently() {
     assert_eq!(store.scroll_offset_for("done"), 12);
     // @step And scroll_offset_for("implementing") returns 0
     assert_eq!(store.scroll_offset_for("implementing"), 0);
+    Ok(())
 }
 
 /// Scenario: move_selection within visible viewport leaves scroll_offset unchanged
 #[test]
-fn move_selection_within_visible_viewport_leaves_scroll_offset_unchanged() {
+fn move_selection_within_visible_viewport_leaves_scroll_offset_unchanged() -> TestResult {
     // @step Given a BoardStore seeded with twenty story work units all in the backlog column
     let mut store = seed_backlog(20);
     // @step And the focused column is "backlog" with selected index 3 and scroll_offset 0
@@ -82,11 +83,12 @@ fn move_selection_within_visible_viewport_leaves_scroll_offset_unchanged() {
     assert_eq!(store.selected_index_for("backlog"), 4);
     // @step And scroll_offset_for("backlog") returns 0
     assert_eq!(store.scroll_offset_for("backlog"), 0);
+    Ok(())
 }
 
 /// Scenario: move_selection beyond bottom of viewport scrolls the focused column down
 #[test]
-fn move_selection_beyond_bottom_of_viewport_scrolls_focused_column_down() {
+fn move_selection_beyond_bottom_of_viewport_scrolls_focused_column_down() -> TestResult {
     // @step Given a BoardStore seeded with twenty story work units all in the backlog column
     let mut store = seed_backlog(20);
     // @step And the focused column is "backlog" with selected index 9 and scroll_offset 0
@@ -114,11 +116,12 @@ fn move_selection_beyond_bottom_of_viewport_scrolls_focused_column_down() {
         "selected_index {selected} must be inside [{offset}, {})",
         offset + viewport_height
     );
+    Ok(())
 }
 
 /// Scenario: move_selection above top of viewport scrolls the focused column up
 #[test]
-fn move_selection_above_top_of_viewport_scrolls_focused_column_up() {
+fn move_selection_above_top_of_viewport_scrolls_focused_column_up() -> TestResult {
     // @step Given a BoardStore seeded with twenty story work units all in the backlog column
     let mut store = seed_backlog(20);
     // @step And the focused column is "backlog" with selected index 5 and scroll_offset 5
@@ -135,11 +138,12 @@ fn move_selection_above_top_of_viewport_scrolls_focused_column_up() {
         offset < 5,
         "scroll_offset must decrement below 5 after moving selection above the visible viewport (was {offset})"
     );
+    Ok(())
 }
 
 /// Scenario: move_selection wraps to first index when moving past the last unit
 #[test]
-fn move_selection_wraps_to_first_index_when_moving_past_the_last_unit() {
+fn move_selection_wraps_to_first_index_when_moving_past_the_last_unit() -> TestResult {
     // @step Given a BoardStore seeded with three story work units all in the backlog column
     let mut store = seed_backlog(3);
     // @step And the focused column is "backlog" with selected index 2 and scroll_offset 0
@@ -152,11 +156,12 @@ fn move_selection_wraps_to_first_index_when_moving_past_the_last_unit() {
     assert_eq!(store.selected_index_for("backlog"), 0);
     // @step And scroll_offset_for("backlog") returns 0
     assert_eq!(store.scroll_offset_for("backlog"), 0);
+    Ok(())
 }
 
 /// Scenario: move_selection wraps to last index when moving above the first unit
 #[test]
-fn move_selection_wraps_to_last_index_when_moving_above_the_first_unit() {
+fn move_selection_wraps_to_last_index_when_moving_above_the_first_unit() -> TestResult {
     // @step Given a BoardStore seeded with five story work units all in the backlog column
     let mut store = seed_backlog(5);
     // @step And the focused column is "backlog" with selected index 0 and scroll_offset 0
@@ -176,11 +181,12 @@ fn move_selection_wraps_to_last_index_when_moving_above_the_first_unit() {
         "selected_index {selected} must be inside [{offset}, {})",
         offset + viewport_height
     );
+    Ok(())
 }
 
 /// Scenario: scroll_focused_column advances the selection by viewport_height
 #[test]
-fn scroll_focused_column_advances_the_selection_by_viewport_height() {
+fn scroll_focused_column_advances_the_selection_by_viewport_height() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = seed_backlog(30);
     // @step And the focused column is "backlog" with selected index 0 and scroll_offset 0
@@ -196,11 +202,12 @@ fn scroll_focused_column_advances_the_selection_by_viewport_height() {
         store.scroll_offset_for("backlog") > 0,
         "scroll_focused_column(1, 10) must also advance the scroll_offset above 0"
     );
+    Ok(())
 }
 
 /// Scenario: select_first_in_focused resets the focused column to index 0 with offset 0
 #[test]
-fn select_first_in_focused_resets_focused_column_to_index_0_offset_0() {
+fn select_first_in_focused_resets_focused_column_to_index_0_offset_0() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = seed_backlog(30);
     // @step And the focused column is "backlog" with selected index 17 and scroll_offset 8
@@ -213,11 +220,12 @@ fn select_first_in_focused_resets_focused_column_to_index_0_offset_0() {
     assert_eq!(store.selected_index_for("backlog"), 0);
     // @step And scroll_offset_for("backlog") returns 0
     assert_eq!(store.scroll_offset_for("backlog"), 0);
+    Ok(())
 }
 
 /// Scenario: select_last_in_focused jumps to the last unit
 #[test]
-fn select_last_in_focused_jumps_to_the_last_unit() {
+fn select_last_in_focused_jumps_to_the_last_unit() -> TestResult {
     // @step Given a BoardStore seeded with thirty story work units all in the backlog column
     let mut store = seed_backlog(30);
     // @step And the focused column is "backlog" with selected index 0 and scroll_offset 0
@@ -228,4 +236,5 @@ fn select_last_in_focused_jumps_to_the_last_unit() {
     store.select_last_in_focused();
     // @step Then selected_index_for("backlog") returns 29
     assert_eq!(store.selected_index_for("backlog"), 29);
+    Ok(())
 }

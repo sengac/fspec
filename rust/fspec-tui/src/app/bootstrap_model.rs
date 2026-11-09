@@ -15,16 +15,28 @@
 //! 300-LoC source-shape ceiling (mirrors bootstrap_git_state.rs /
 //! bootstrap_session_removed.rs).
 
-use tracing::debug;
-
 use super::state::App;
 
 pub(crate) async fn initialize_startup_model(app: &mut App) {
-    let persisted = codelet_sessions::last_used_model_persistence::load_persisted_model_string();
+    // BUG-461: a user config that cannot be read is shown; no startup model
+    // is chosen over it.
+    let persisted =
+        match codelet_sessions::last_used_model_persistence::load_persisted_model_string() {
+            Ok(persisted) => persisted,
+            Err(error) => {
+                app.dispatch(crate::Action::SessionOperationFailed(format!(
+                    "The last used model could not be read: {error}"
+                )));
+                return;
+            }
+        };
     let sections = match app.backend.list_providers().await {
         Ok(sections) => sections,
+        // RPC-451: a failed listing is shown, not dropped.
         Err(err) => {
-            debug!("bootstrap: backend.list_providers() failed: {err}");
+            app.dispatch(crate::Action::SessionOperationFailed(format!(
+                "The provider list could not be read: {err:#}"
+            )));
             return;
         }
     };
@@ -33,7 +45,9 @@ pub(crate) async fn initialize_startup_model(app: &mut App) {
         persisted.as_deref(),
     ) {
         if let Err(err) = app.backend.set_default_model(resolved.model_string).await {
-            debug!("bootstrap: backend.set_default_model() failed: {err}");
+            app.dispatch(crate::Action::SessionOperationFailed(format!(
+                "The startup model could not be set: {err:#}"
+            )));
         }
     }
 }

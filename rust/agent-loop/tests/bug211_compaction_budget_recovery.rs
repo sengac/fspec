@@ -23,6 +23,8 @@ async fn scenario_streaming_synthesis_preserves_the_final_original_evidence_page
         "Build the summary",
         "codex",
         20,
+        codelet_cli::compaction_operation::BuildRequest::First,
+        &std::sync::Mutex::new(None),
         codelet_providers::request_admission::AdmissionLimits {
             context_capacity: Some(200_000),
             output_reservation: Some(4096),
@@ -203,7 +205,7 @@ async fn scenario_fresh_user_input_retries_a_failed_builder_before_ordinary_infe
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
-async fn scenario_repeated_builder_failures_wait_for_fresh_user_input() {
+async fn scenario_repeated_builder_failures_wait_for_the_next_input() {
     // @step Given automatic compaction failed before committing a summary
     let mut fixture = automatic::Harness::new(false, true, false).await;
     fixture.send();
@@ -222,8 +224,9 @@ async fn scenario_repeated_builder_failures_wait_for_fresh_user_input() {
         |chunk| matches!(chunk, StreamChunk::Error { error, .. } if error.contains("retry later"))
     ));
     // @step And no ordinary inference or automatic retry starts
+    // TEST-042: no waiting window. The turn has ended (Done, Idle), and an
+    // automatic retry would belong to that turn.
     assert_eq!(fixture.infer.load(Ordering::SeqCst), 1);
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     assert_eq!(fixture.builders.load(Ordering::SeqCst), 2);
     assert!(!chunks
         .iter()
@@ -260,13 +263,14 @@ async fn scenario_unrelated_inference_blocks_cannot_restart_compaction() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
-async fn scenario_background_notifications_cannot_authorize_a_failed_builder_retry() {
+async fn scenario_background_notifications_retry_a_failed_builder() {
     // @step Given automatic compaction failed before committing a summary
     let mut fixture = automatic::Harness::new(false, true, false).await;
     fixture.send();
     fixture.until_done().await;
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1);
     fixture.fail_builder.store(false, Ordering::SeqCst);
-    // @step When another agent sends a background notification
+    // @step When another agent sends a background notification after the builder becomes available
     fixture
         .session
         .receive_incoming_message(
@@ -279,18 +283,147 @@ async fn scenario_background_notifications_cannot_authorize_a_failed_builder_ret
         )
         .expect("deliver notification");
     let chunks = fixture.until_done().await;
-    // @step Then the failed operation remains blocked
-    assert!(chunks
+    // @step Then the builder runs again with a fresh budget and commits a summary
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 2, "{chunks:?}");
+    let committed = chunks
         .iter()
-        .any(|chunk| matches!(chunk, StreamChunk::Error { .. })));
+        .position(|chunk| matches!(chunk, StreamChunk::CompactionComplete { .. }));
+    assert!(
+        committed.is_some(),
+        "the notification retries the builder: {chunks:?}"
+    );
+    // @step And the notification runs ordinary inference after the commit
+    let finished = chunks.iter().position(|chunk| matches!(chunk, StreamChunk::Text { text, .. } if text.contains("Original task finished")));
+    assert!(finished.is_some() && committed < finished, "{chunks:?}");
+    assert_eq!(fixture.infer.load(Ordering::SeqCst), 2);
     assert!(fixture
         .session
         .inner
         .lock()
         .await
         .ensure_compaction_inference_ready()
-        .is_err());
-    // @step And neither a builder nor ordinary inference starts
-    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1);
+        .is_ok());
+    assert!(!chunks
+        .iter()
+        .any(|chunk| matches!(chunk, StreamChunk::Error { .. })));
+}
+
+// BUG-641: a failed threshold compaction carries on uncompacted while the
+// context fits the usable window; only a context that does not fit is held.
+
+#[path = "support/bug641_threshold.rs"]
+pub mod threshold;
+
+/// 80% of the 200000-token window, and the window minus the 4096 reservation.
+const FITS_PAST_THRESHOLD: u64 = 170_000;
+const PAST_USABLE_WINDOW: u64 = 199_000;
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn scenario_a_failed_threshold_compaction_carries_on_uncompacted_while_the_context_fits() {
+    // @step Given the compaction threshold is below the usage and the usage fits the usable window
+    let mut fixture = threshold::Harness::new(FITS_PAST_THRESHOLD).await;
+    // @step When a user message triggers threshold compaction and the builder fails
+    fixture.send();
+    let chunks = fixture.until_done().await;
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1, "{chunks:?}");
+    // @step Then the UI warns Compaction failed with the exact builder error
+    let warnings = threshold::notifications(&chunks);
+    assert!(
+        warnings.iter().any(|warning| warning
+            .starts_with("Compaction failed: compaction builder failed: ")
+            && warning.contains(threshold::BUILDER_ERROR)),
+        "{warnings:?}"
+    );
+    // @step And the same turn answers from the uncompacted context and the session is not held
+    assert!(threshold::answered(&chunks), "{chunks:?}");
     assert_eq!(fixture.infer.load(Ordering::SeqCst), 1);
+    assert!(threshold::errors(&chunks).is_empty(), "{chunks:?}");
+    assert!(!chunks
+        .iter()
+        .any(|chunk| matches!(chunk, StreamChunk::CompactionComplete { .. })));
+    assert!(!fixture.is_held().await);
+    assert_eq!(fixture.session.get_status(), SessionStatus::Idle);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn scenario_a_failed_in_turn_threshold_compaction_carries_on_uncompacted_while_the_context_fits(
+) {
+    // @step Given a turn starts below the compaction threshold
+    let mut fixture = threshold::Harness::new(0).await;
+    // @step When a tool round reports usage past the threshold that still fits and the builder fails
+    fixture
+        .tool_round_usage
+        .store(FITS_PAST_THRESHOLD, Ordering::SeqCst);
+    fixture.send();
+    let chunks = fixture.until_done().await;
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1, "{chunks:?}");
+    // @step Then the UI warns Compaction failed with the exact builder error
+    let warnings = threshold::notifications(&chunks);
+    assert!(
+        warnings.iter().any(|warning| warning
+            .starts_with("Compaction failed: compaction builder failed: ")
+            && warning.contains(threshold::BUILDER_ERROR)),
+        "{warnings:?}"
+    );
+    // @step And the turn continues uncompacted to its answer and the session is not held
+    assert!(threshold::answered(&chunks), "{chunks:?}");
+    assert_eq!(fixture.infer.load(Ordering::SeqCst), 2);
+    assert!(threshold::errors(&chunks).is_empty(), "{chunks:?}");
+    assert!(!fixture.is_held().await);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn scenario_a_failed_threshold_compaction_holds_the_turn_when_the_context_does_not_fit() {
+    // @step Given the usage is past the usable window
+    let mut fixture = threshold::Harness::new(PAST_USABLE_WINDOW).await;
+    // @step When a user message triggers threshold compaction and the builder fails
+    fixture.send();
+    let chunks = fixture.until_done().await;
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1, "{chunks:?}");
+    // @step Then the turn ends with the overflow error naming the usage, the usable window and the builder error
+    let errors = threshold::errors(&chunks);
+    assert!(
+        errors.iter().any(|error| error.contains("context of 199")
+            && error.contains(
+                "tokens does not fit the usable window of 195904 tokens: compaction builder failed: "
+            )
+            && error.contains(threshold::BUILDER_ERROR)),
+        "{errors:?}"
+    );
+    // @step And no ordinary inference starts and the session is held
+    assert_eq!(fixture.infer.load(Ordering::SeqCst), 0);
+    assert!(!threshold::answered(&chunks));
+    assert!(fixture.is_held().await);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn scenario_the_next_input_retries_a_threshold_compaction_that_carried_on() {
+    // @step Given a failed threshold compaction carried on uncompacted
+    let mut fixture = threshold::Harness::new(FITS_PAST_THRESHOLD).await;
+    fixture.send();
+    let first = fixture.until_done().await;
+    assert!(threshold::answered(&first), "{first:?}");
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 1);
+    // @step When the next user message arrives after the builder becomes available
+    fixture.fail_builder.store(false, Ordering::SeqCst);
+    fixture.send();
+    let chunks = fixture.until_done().await;
+    // @step Then a new summary is committed before ordinary inference
+    assert_eq!(fixture.builders.load(Ordering::SeqCst), 2, "{chunks:?}");
+    let committed = chunks
+        .iter()
+        .position(|chunk| matches!(chunk, StreamChunk::CompactionComplete { .. }));
+    let answered = chunks.iter().position(
+        |chunk| matches!(chunk, StreamChunk::Text { text, .. } if text.contains(threshold::ANSWER)),
+    );
+    assert!(
+        committed.is_some() && answered.is_some() && committed < answered,
+        "{chunks:?}"
+    );
+    assert_eq!(fixture.infer.load(Ordering::SeqCst), 2);
+    assert!(threshold::errors(&chunks).is_empty(), "{chunks:?}");
 }

@@ -27,7 +27,7 @@ OPTIONS
     Enable interactive mode with prompts for bug details
 
 TYPICAL WORKFLOW
-  Encounter a bug while using fspec,Run: fspec report-bug-to-github,System automatically gathers context (version, platform, git status, work unit),Browser opens with pre-filled GitHub issue,Review and submit the issue
+  Encounter a bug while using fspec. Run: fspec report-bug-to-github. System automatically gathers context (version, platform, git status, work unit). Browser opens with pre-filled GitHub issue. Review and submit the issue
 
 EXAMPLES
   1. Generate bug report with automatic context gathering and open in browser
@@ -59,15 +59,15 @@ Generating bug report...
 
 COMMON ERRORS
   ✗ Browser failed to open
-    Fix: undefined
+    Fix: Check that you have a default browser configured. The issue URL is still generated and can be copied manually.
 
   ✗ No work unit context found
-    Fix: undefined
+    Fix: This is normal if you don't have work units. The bug report will still be generated with system context.
 
 RELATED COMMANDS
-  fspec fspec validate - Validate feature files
-  fspec fspec check - Run comprehensive validation
-  fspec fspec show-work-unit - View work unit details
+  fspec validate - Validate feature files
+  fspec audit - Report every exact drift problem with its fix command
+  fspec show-work-unit - View work unit details
 
 NOTES
   • Automatically includes: fspec version, Node version, OS platform

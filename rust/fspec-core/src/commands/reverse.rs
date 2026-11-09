@@ -90,7 +90,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         // Strategy D persona path works WITHOUT a session (dispatcher-only).
         if strategy == "D" {
             if let Some(ctx) = args.implementation_context.as_deref() {
-                return Ok(handle_strategy_d(project_root, ctx));
+                return handle_strategy_d(project_root, ctx);
             }
         }
         return handle_strategy(project_root, strategy);
@@ -462,7 +462,10 @@ fn handle_initial_analysis(project_root: &Path, dry_run: bool) -> Result<String,
 /// Strategy-D persona-driven discovery (dispatcher-only; works WITHOUT a
 /// session). Reads `spec/foundation.json` personas and builds the persona
 /// guidance reminder (parity with `handleStrategyD`, `reverse.ts:554-624`).
-fn handle_strategy_d(project_root: &Path, implementation_context: &str) -> String {
+fn handle_strategy_d(
+    project_root: &Path,
+    implementation_context: &str,
+) -> Result<String, FspecCoreError> {
     #[derive(Deserialize)]
     struct Persona {
         #[serde(default)]
@@ -477,7 +480,7 @@ fn handle_strategy_d(project_root: &Path, implementation_context: &str) -> Strin
     }
 
     let personas: Vec<Persona> =
-        std::fs::read_to_string(project_root.join("spec").join("foundation.json"))
+        std::fs::read_to_string(crate::io::spec_paths::foundation(project_root)?)
             .ok()
             .and_then(|c| serde_json::from_str::<Foundation>(&c).ok())
             .map(|f| f.personas)
@@ -532,7 +535,7 @@ fn handle_strategy_d(project_root: &Path, implementation_context: &str) -> Strin
     guidance.push_str("5. Link coverage: fspec link-coverage <feature> --scenario \"...\" --test-file <path> --test-lines <range> --skip-validation\n");
 
     let reminder = wrap_system_reminder(&sr);
-    render_output(Some(&reminder), None, Some(&guidance), &[])
+    Ok(render_output(Some(&reminder), None, Some(&guidance), &[]))
 }
 
 // ---------- project analysis ----------
@@ -602,7 +605,7 @@ fn is_test_file_name(name: &str) -> bool {
 /// List `spec/features/*.feature` (non-recursive); ENOENT → empty
 /// (parity with `findFeatureFiles`, `reverse.ts:292-302`).
 fn find_feature_files(cwd: &Path) -> Vec<String> {
-    let dir = cwd.join("spec").join("features");
+    let dir = crate::io::spec_paths::features_dir_of(cwd);
     let entries = match std::fs::read_dir(&dir) {
         Ok(e) => e,
         Err(_) => return Vec::new(),
@@ -834,6 +837,73 @@ fn detect_gaps(analysis: &AnalysisResult) -> GapAnalysis {
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
     use super::*;
+
+    // Feature: spec/features/strategy-d-processes-existing-feature-files-instead-of-scanning-src-for-implementation-files.feature
+    #[test]
+    fn reverse_suggests_strategy_d_for_an_unmapped_implementation_file() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let root = tmp.path();
+        // @step Given a project with src/components/MusicPlayer.tsx implementation file
+        std::fs::create_dir_all(root.join("src/components")).unwrap();
+        std::fs::write(
+            root.join("src/components/MusicPlayer.tsx"),
+            "export const MusicPlayer = () => null;\n",
+        )
+        .unwrap();
+        // @step Given no feature file exists at spec/features/music-player.feature
+        assert!(!root.join("spec/features/music-player.feature").exists());
+        // @step When AI runs 'fspec reverse' to analyze project gaps
+        let result = crate::dispatch_command(crate::DispatchRequest {
+            command: "reverse".to_string(),
+            args_json: "{}".to_string(),
+            project_root: root.to_path_buf(),
+        });
+        let session = load_session(root);
+        delete_session(root);
+        assert!(result.success, "reverse failed: {:?}", result.error);
+        // @step Then Strategy D (Full Reverse ACDD) should be suggested
+        assert!(
+            result
+                .data
+                .contains("Suggested: Strategy D (Full Reverse ACDD)\nTo choose this strategy, run: fspec reverse --strategy=D"),
+            "output: {}",
+            result.data
+        );
+        // @step Then gap analysis should report '1 implementation files without features'
+        assert!(
+            result
+                .data
+                .contains("Detected: 1 implementation files without features\n"),
+            "output: {}",
+            result.data
+        );
+        // @step Then session.gaps.files should contain 'src/components/MusicPlayer.tsx'
+        let session = session.expect("reverse saved a gap-detection session");
+        assert_eq!(session.gaps.unmapped_implementation, 1);
+        assert_eq!(
+            session.gaps.files,
+            vec!["src/components/MusicPlayer.tsx".to_string()]
+        );
+    }
+
+    #[test]
+    fn derive_feature_name_maps_an_implementation_file_to_its_feature_file() {
+        // @step Given derive_feature_name receives 'src/components/MusicPlayer.tsx'
+        let path = "src/components/MusicPlayer.tsx";
+        // @step When the function converts PascalCase to kebab-case
+        let name = derive_feature_name(path);
+        // @step Then it should return 'music-player'
+        assert_eq!(name, "music-player");
+        // @step Then has_feature_file should check for 'spec/features/music-player.feature'
+        assert!(has_feature_file(
+            path,
+            &["spec/features/music-player.feature".to_string()]
+        ));
+        assert!(!has_feature_file(
+            path,
+            &["spec/features/cli-command-interface.feature".to_string()]
+        ));
+    }
 
     #[test]
     fn derive_feature_name_camel_and_pascal() {

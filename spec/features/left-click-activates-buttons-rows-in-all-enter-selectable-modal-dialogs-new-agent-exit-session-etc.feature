@@ -1,3 +1,5 @@
+@BUG-582
+@COV-075
 @done
 @dialog
 @mouse-events
@@ -7,7 +9,7 @@
 @mux
 @tui-component
 @tui-112
-Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.)
+Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Close Agent, etc.)
   """
   Every modal dialog in the Rust TUI that commits a choice with Enter must
   also commit it with a single mouse left-click (user decision 2026-10-07):
@@ -16,7 +18,7 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
 
   Scope (R1-R3):
   * Three-button dialogs (R1): Start New Agent? (CreateSessionDialog),
-  Exit Session? (ExitConfirmationDialog), Exit fspec?
+  Close Agent? (ExitConfirmationDialog), Exit fspec?
   (BoardExitConfirmationDialog) — left-click a button commits it.
   * Shared-button-row dialogs (R2): ConfirmDialog, MergeConfirmDialog,
   SessionWorktreesDialog — left-click a button returns that outcome.
@@ -48,8 +50,8 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   #   5. R5: A left-click inside the dialog rect but NOT on any activatable control (gaps between buttons, the title row, description text, footer, border) is Ignored — nothing is selected, committed, or dismissed. A left-click in the gap BETWEEN two three-button dialog buttons does nothing (buttons carry the exact ` <label> ` cells they paint, no bleed).
   #
   # EXAMPLES:
-  #   1. CreateSessionDialog (Start New Agent?): user left-clicks the 'Yes - Isolated' button directly without touching the keyboard; the dialog emits Action::CreateSessionSubmitted{isolated:true} and removes itself — same as Left,Left,Enter.
-  #   2. Exit Session? dialog (Esc cascade level 7, idle agent): user left-clicks 'Close Session' once; the session closes and the view returns to the board — identical to Right,Right,Enter.
+  #   1. CreateSessionDialog (Start New Agent?): user left-clicks the 'Start in Worktree' button directly without touching the keyboard; the dialog emits Action::CreateSessionSubmitted{isolated:true} and removes itself — same as Left,Left,Enter.
+  #   2. Close Agent? dialog (Esc cascade level 7, idle agent): user left-clicks 'Close' once; the session closes and the view returns to the board — identical to Right,Right,Enter.
   #   3. Exit fspec? dialog: user left-clicks the 'Exit' button once; the app quits (Action::Quit emitted, dialog removed). Left-clicking the 'Cancel' button dismisses the dialog and stays on the board (no action emitted).
   #   4. MergeConfirmDialog (agent view, worktree has unmerged changes): user left-clicks the 'Discard' button once; the view receives the Discard outcome (the same outcome Left/Right+Enter on Discard produces) and proceeds with the discard. Left-clicking 'Cancel' dismisses without acting.
   #   5. SessionWorktreesDialog (agent view): user left-clicks the 'Prune' button once; the view receives the Prune outcome (same as Left/Right+Enter on Prune) and prunes the listed detached worktrees. Left-clicking 'Cancel' dismisses without acting.
@@ -68,9 +70,9 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   # ========================================================
   # R1 — three-button dialogs: click commits that button
   # ========================================================
-  Scenario: Start New Agent — clicking Yes - Isolated commits it
-    Given the "Start New Agent?" dialog is open with "Yes" highlighted
-    When the user left-clicks the "Yes - Isolated" button
+  Scenario: Start New Agent — clicking Start in Worktree commits it
+    Given the "Start New Agent?" dialog is open with "Start" highlighted
+    When the user left-clicks the "Start in Worktree" button
     Then a non-isolated session creation is NOT emitted
     And an isolated session creation is emitted
     And the dialog is removed
@@ -82,21 +84,21 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
     And the dialog is removed
 
   Scenario: Start New Agent — keyboard behavior is unchanged
-    Given the "Start New Agent?" dialog is open with "Yes" highlighted
+    Given the "Start New Agent?" dialog is open with "Start" highlighted
     When the user presses Right then Enter
     Then an isolated session creation is emitted
     And the dialog is removed
 
-  Scenario: Exit Session — clicking Close Session commits it
-    Given the "Exit Session?" dialog is open with "Detach" highlighted
-    When the user left-clicks the "Close Session" button
+  Scenario: Close Agent — clicking Close commits it
+    Given the "Close Agent?" dialog is open with "Close" highlighted
+    When the user left-clicks the "Close" button
     Then the exit choice CloseSession is committed
     And the dialog is removed
 
-  Scenario: Exit Session — clicking Detach commits it
-    Given the "Exit Session?" dialog is open with "Detach" highlighted
-    When the user left-clicks the "Detach" button
-    Then the exit choice Detach is committed
+  Scenario: Close Agent — clicking Cancel dismisses it
+    Given the "Close Agent?" dialog is open with "Close" highlighted
+    When the user left-clicks the "Cancel" button
+    Then the exit choice Cancel is committed
     And the dialog is removed
 
   Scenario: Exit fspec — clicking Exit commits quit
@@ -150,17 +152,17 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
     Then the thinking level High is committed for the session
     And the dialog is closed
 
-  Scenario: Mux Layout — clicking Pane 2 applies with the cursor on Pane 2
+  Scenario: Mux Layout — clicking Apply applies with the cursor on Apply
     Given the Mux Layout dialog is open with the cursor on "Enabled"
-    When the user left-clicks the "Pane 2" row
+    When the user left-clicks the "Apply" button
     Then the mux config is applied
-    And the cursor is on the "Pane 2" row
+    And the cursor is on the "Apply" button
 
-  Scenario: Mux Layout — clicking Orientation applies with the cursor on Orientation
+  Scenario: Mux Layout — clicking the layout field focuses it without applying
     Given the Mux Layout dialog is open with the cursor on "Enabled"
-    When the user left-clicks the "Orientation" row
-    Then the mux config is applied
-    And the cursor is on the "Orientation" row
+    When the user left-clicks the "Layout" field
+    Then the mux config is not applied and the dialog stays open
+    And the cursor is on the "Layout" field
 
   Scenario: Role dialog — clicking the draft row saves the role
     Given the Role dialog is open with a non-empty draft
@@ -203,7 +205,7 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
     And the dialog stays open
 
   Scenario: Wheel navigation behavior is unchanged
-    Given the "Start New Agent?" dialog is open with "Yes" highlighted
+    Given the "Start New Agent?" dialog is open with "Start" highlighted
     When the user scrolls right then scrolls left
-    Then "Yes" is highlighted again
+    Then "Start" is highlighted again
     And no action is emitted

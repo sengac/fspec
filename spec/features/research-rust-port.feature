@@ -117,4 +117,4 @@ Feature: Port research command to Rust
   Scenario: Both front doors converge on the same fspec-core function
     Given an empty project root tempdir
     When I dispatch research with no flags via the dispatcher and via the standalone binary
-    Then both invocations enumerate the same five bundled research tools
+    Then both invocations enumerate the same four bundled research tools

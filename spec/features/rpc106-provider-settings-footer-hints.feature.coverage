@@ -1,24 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Provider row selection yields the \"Enter: expand\" hint with FOOTER_COMMON suffix",
+      "name": "Provider row selection yields the \"Enter/→: expand\" hint with FOOTER_COMMON suffix",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "86-99",
+          "lines": "90-105",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -34,8 +25,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -46,20 +67,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "106-132",
+          "lines": "111-139",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -75,8 +87,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -87,20 +129,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "139-162",
+          "lines": "145-170",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -116,8 +149,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -128,20 +191,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "169-192",
+          "lines": "176-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -157,8 +211,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -169,20 +253,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "199-227",
+          "lines": "207-237",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -198,8 +273,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -210,20 +315,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "234-257",
+          "lines": "243-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -239,8 +335,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -251,11 +377,111 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "264-277",
+          "lines": "274-289",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "Some(RowKind::OauthStatus) => {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Separator is U+00B7 MIDDLE DOT, never the pipe character",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "295-315",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
                 42,
                 43,
                 44,
@@ -295,67 +521,23 @@
                 78,
                 79,
                 80,
-                81
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Separator is U+00B7 MIDDLE DOT, never the pipe character",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "284-302",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
-              "lines": [
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66
-              ]
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "/// The separator is U+00B7 MIDDLE DOT.",
+              "lastLine": "///"
             }
           ]
         }
@@ -366,20 +548,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "309-347",
+          "lines": "321-361",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -395,8 +568,38 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),",
+              "lastLine": "///"
             }
           ]
         }
@@ -407,7 +610,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "345-386",
+          "lines": "368-422",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -432,7 +635,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "wheel: crate::components::scroll_viewport::WheelVelocity::new(),",
+              "lastLine": "self.status = status.into();"
             }
           ]
         }
@@ -443,7 +648,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "416-443",
+          "lines": "429-458",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -468,7 +673,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "wheel: crate::components::scroll_viewport::WheelVelocity::new(),",
+              "lastLine": "self.status = status.into();"
             }
           ]
         }
@@ -479,7 +686,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "450-462",
+          "lines": "464-478",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -503,8 +710,18 @@
                 40,
                 41,
                 42,
-                43
-              ]
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// The separator is U+00B7 MIDDLE DOT.",
+              "lastLine": "ProviderSettingsMode::OAuthSuccess { .. } => \"Enter/Esc: continue\".to_string(),"
             }
           ]
         }
@@ -522,6 +739,6 @@
       "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 615
+    "totalLinesCovered": 843
   }
 }

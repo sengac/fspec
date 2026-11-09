@@ -44,7 +44,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "use super::escape::html_escape;",
+              "lastLine": "prism_css = PRISM_THEME_CSS,"
             }
           ]
         }
@@ -101,7 +103,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js\"></script>",
+              "lastLine": "badge.textContent = rawLanguage;"
             }
           ]
         }
@@ -134,7 +138,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "document.querySelectorAll('pre.code-block').forEach((pre) => {",
+              "lastLine": "const badge = document.createElement('div');"
             }
           ]
         }
@@ -150,7 +156,6 @@
             {
               "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
-                76,
                 77,
                 78,
                 79,
@@ -170,8 +175,11 @@
                 93,
                 94,
                 95,
-                96
-              ]
+                96,
+                97
+              ],
+              "firstLine": "const toggleButton = document.getElementById('theme-toggle');",
+              "lastLine": "}"
             }
           ]
         }
@@ -187,7 +195,6 @@
             {
               "file": "rust/attachment-viewer/src/markdown/template/scripts.rs",
               "lines": [
-                98,
                 99,
                 100,
                 101,
@@ -223,8 +230,17 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "const MIN_FONT_SIZE = 10;",
+              "lastLine": "}"
             }
           ]
         }
@@ -235,7 +251,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
-          "lines": "144-160",
+          "lines": "140-157",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/template/styles.rs",
@@ -274,7 +290,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": ":root {",
+              "lastLine": "padding: 2rem calc(2rem * var(--font-scale));"
             }
           ]
         }
@@ -285,7 +303,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/viewer_prism_theme_fonts.rs",
-          "lines": "163-186",
+          "lines": "159-185",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/template/mod.rs",
@@ -318,7 +336,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "pub fn viewer_template(title: &str, content_html: &str) -> String {",
+              "lastLine": "prism_css = PRISM_THEME_CSS,"
             }
           ]
         }
@@ -347,7 +367,9 @@
                 21,
                 22,
                 23
-              ]
+              ],
+              "firstLine": "pub const HEAD_SCRIPTS: &str = r#\"",
+              "lastLine": "});"
             }
           ]
         }
@@ -373,7 +395,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "const languageMap = {",
+              "lastLine": "}"
             }
           ]
         }
@@ -392,6 +416,6 @@
       "rust/attachment-viewer/src/markdown/template/scripts.rs",
       "rust/attachment-viewer/src/markdown/template/styles.rs"
     ],
-    "totalLinesCovered": 441
+    "totalLinesCovered": 451
   }
 }

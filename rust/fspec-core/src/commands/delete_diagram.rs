@@ -12,9 +12,9 @@
 //!
 //! * **Match key**: TS filters on `(section, title)`; Rust filters on
 //!   `title` only and echoes the supplied section in the message.
-//! * **FOUNDATION.md regeneration**: `generate-foundation-md` is unported,
-//!   so the Rust core does NOT touch `spec/FOUNDATION.md`. The CLI bridge
-//!   still prints `  Regenerated: spec/FOUNDATION.md` for stdout parity.
+//! * **FOUNDATION.md regeneration** (BUG-535): after the write the core
+//!   regenerates `spec/FOUNDATION.md` like `update-foundation`, so the CLI
+//!   line `  Regenerated: spec/FOUNDATION.md` is true.
 //! * **Auto-create**: foundation.json is NOT auto-created here (unlike
 //!   `add-diagram`). Missing file → explicit error.
 //!
@@ -44,7 +44,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let foundation_path = project_root.join("spec").join("foundation.json");
+    let foundation_path = crate::io::spec_paths::foundation(project_root)?;
 
     // No auto-create — explicit missing-file error (parity with TS
     // delete-diagram.ts:30-35).
@@ -55,6 +55,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "delete-diagram")?;
     let raw = std::fs::read_to_string(&foundation_path).map_err(|source| FspecCoreError::Io {
         command: "delete-diagram",
         source,
@@ -98,6 +100,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     write_json_atomic(&foundation_path, &data)?;
+    // BUG-535: keep FOUNDATION.md in step with foundation.json.
+    crate::commands::generate_foundation_md::regenerate(project_root);
 
     let message = format!(
         "Deleted diagram '{}' from section '{}'",

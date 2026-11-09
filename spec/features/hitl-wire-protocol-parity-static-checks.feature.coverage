@@ -1,0 +1,154 @@
+{
+  "scenarios": [
+    {
+      "name": "The send path contains no option-label comparison",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_static_checks.rs",
+          "lines": "19-62",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "fn send_hitl_response(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/hitl_mapping.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "/// Map the wire response to the internal tool response — direct",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New wire shapes round-trip through serde_json",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_static_checks.rs",
+          "lines": "68-142",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ],
+              "firstLine": "/// One option presented to the user inside an HITL question.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/rpc410_hitl_wire_protocol_static_checks.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/sessions/src/hitl_mapping.rs",
+      "rust/rpc-types/src/session_state.rs"
+    ],
+    "totalLinesCovered": 212
+  }
+}

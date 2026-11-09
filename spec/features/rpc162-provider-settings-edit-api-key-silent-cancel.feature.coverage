@@ -5,20 +5,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "94-122",
+          "lines": "107-133",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "view.status.clear();"
             }
           ]
         }
@@ -29,20 +31,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "128-147",
+          "lines": "149-160",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "view.status.clear();"
             }
           ]
         }
@@ -53,28 +57,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "153-182",
+          "lines": "176-211",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "// key.delete as sibling boolean flags both wired to"
             }
           ]
         }
@@ -85,16 +91,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "188-216",
+          "lines": "225-249",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118
-              ]
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "fn handle_edit_key(",
+              "lastLine": "}"
             }
           ]
         }
@@ -105,16 +121,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "222-239",
+          "lines": "265-279",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118
-              ]
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "fn handle_edit_key(",
+              "lastLine": "}"
             }
           ]
         }
@@ -125,20 +151,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "245-271",
+          "lines": "292-314",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "view.status.clear();"
             }
           ]
         }
@@ -149,20 +177,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "277-300",
+          "lines": "326-343",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "view.status.clear();"
             }
           ]
         }
@@ -173,28 +203,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_edit_silent_cancel_rpc162.rs",
-          "lines": "306-332",
+          "lines": "360-388",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "if draft.is_empty() {",
+              "lastLine": "// key.delete as sibling boolean flags both wired to"
             }
           ]
         }
@@ -211,6 +243,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
-    "totalLinesCovered": 276
+    "totalLinesCovered": 273
   }
 }

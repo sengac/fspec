@@ -18,7 +18,7 @@
 //! precedence chain in `input_area.rs` is HITL > exec-stdin > pause >
 //! composer).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use codelet_rpc_types::{ExecStdinRequest, SessionId};
 
@@ -32,6 +32,11 @@ pub type ExecStdinBySession = HashMap<SessionId, ExecStdinState>;
 pub struct ExecStdinState {
     generation: u64,
     request: Option<ExecStdinRequest>,
+    /// TUI-117: exec sessions (command runs) muted by Ctrl+X.
+    muted: HashSet<String>,
+    /// BUG-364: the current probe failed while a request was open; the
+    /// notice is possibly stale until the next set / clear.
+    probe_error: Option<String>,
 }
 
 impl ExecStdinState {
@@ -78,6 +83,7 @@ impl AgentViewStore {
         let state = self.exec_stdin_by_session.entry(session).or_default();
         state.advance();
         state.request = Some(clean);
+        state.probe_error = None;
     }
 
     /// Drop the exec-stdin slot for `session` — called after a
@@ -90,5 +96,49 @@ impl AgentViewStore {
             .or_default();
         state.advance();
         state.request = None;
+        state.probe_error = None;
+    }
+
+    /// BUG-364: mark `session`'s open request as possibly stale because its
+    /// current probe failed. Returns false (nothing recorded) when no
+    /// request is open.
+    pub(crate) fn mark_exec_stdin_probe_failed(
+        &mut self,
+        session: &SessionId,
+        error: String,
+    ) -> bool {
+        match self.exec_stdin_by_session.get_mut(session) {
+            Some(state) if state.request.is_some() => {
+                state.probe_error = Some(error);
+                true
+            }
+            _ => false,
+        }
+    }
+
+    /// BUG-364: the failure of the current probe for `session`'s open
+    /// request, if any.
+    pub fn exec_stdin_probe_error(&self, session: &SessionId) -> Option<&str> {
+        self.exec_stdin_by_session
+            .get(session)?
+            .probe_error
+            .as_deref()
+    }
+
+    /// TUI-117: mute further requests from `exec_session` (one command
+    /// run) for `session`.
+    pub fn mute_exec_stdin(&mut self, session: &SessionId, exec_session: String) {
+        self.exec_stdin_by_session
+            .entry(session.clone())
+            .or_default()
+            .muted
+            .insert(exec_session);
+    }
+
+    /// TUI-117: true when `exec_session` was muted for `session`.
+    pub fn exec_stdin_is_muted(&self, session: &SessionId, exec_session: &str) -> bool {
+        self.exec_stdin_by_session
+            .get(session)
+            .is_some_and(|state| state.muted.contains(exec_session))
     }
 }

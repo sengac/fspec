@@ -18,7 +18,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "#[derive(Debug)]",
+              "lastLine": ""
             }
           ]
         },
@@ -110,7 +112,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "//! `set-user-story` shell-facing CLI bridge (RPC-298).",
+              "lastLine": "}"
             }
           ]
         }
@@ -156,7 +160,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -248,7 +254,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "//! `set-user-story` shell-facing CLI bridge (RPC-298).",
+              "lastLine": "}"
             }
           ]
         }
@@ -268,7 +276,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "if !rendered.ends_with('\\n') {",
+              "lastLine": "Ok(0)"
             }
           ]
         },
@@ -360,7 +370,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "//! `set-user-story` shell-facing CLI bridge (RPC-298).",
+              "lastLine": "}"
             }
           ]
         }
@@ -406,7 +418,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         },
@@ -498,7 +512,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "//! `set-user-story` shell-facing CLI bridge (RPC-298).",
+              "lastLine": "}"
             }
           ]
         }
@@ -509,7 +525,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_set_user_story.rs",
-          "lines": "299-326",
+          "lines": "302-329",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/set_user_story.rs",
@@ -637,141 +653,9 @@
                 121,
                 122,
                 123
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_set_user_story.rs",
-          "lines": "300-326",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/set_user_story.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123
-              ]
+              ],
+              "firstLine": "//! `set-user-story` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -789,6 +673,6 @@
       "rust/fspec/src/set_user_story.rs",
       "rust/fspec-core/src/help/configs/set_user_story.rs"
     ],
-    "totalLinesCovered": 1304
+    "totalLinesCovered": 937
   }
 }

@@ -5,80 +5,8 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug277_search_worker_lifetime.rs",
-          "lines": "23-107",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/session_search/mod.rs",
-              "lines": [
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237
-              ]
-            }
-          ]
+          "lines": "20-110",
+          "implMappings": []
         }
       ]
     },
@@ -87,11 +15,16 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug277_search_worker_lifetime.rs",
-          "lines": "111-146",
+          "lines": "114-149",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/manifest_messages.rs",
               "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
                 99,
                 100,
                 101,
@@ -102,13 +35,10 @@
                 106,
                 107,
                 108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114
-              ]
+                109
+              ],
+              "firstLine": "/// Get ALL messages for a session, ignoring compaction state.",
+              "lastLine": "}"
             }
           ]
         }
@@ -119,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug277_search_worker_lifetime.rs",
-          "lines": "150-186",
+          "lines": "153-189",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/server.rs",
@@ -155,7 +85,9 @@
                 192,
                 193,
                 194
-              ]
+              ],
+              "firstLine": "let cancellable = self",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -166,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug277_search_worker_lifetime.rs",
-          "lines": "190-230",
+          "lines": "193-233",
           "implMappings": [
             {
               "file": "rust/common/src/read_work.rs",
@@ -268,8 +200,31 @@
                 176,
                 177,
                 178,
-                179
-              ]
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "pub fn read_until(",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,7 +235,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug277_search_worker_lifetime.rs",
-          "lines": "234-294",
+          "lines": "237-297",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/session_search_handler.rs",
@@ -355,7 +310,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "pub fn create_handler(",
+              "lastLine": "// ============================================================================"
             }
           ]
         }
@@ -370,12 +327,11 @@
       "rust/agent-loop/tests/bug277_search_worker_lifetime.rs"
     ],
     "implFiles": [
-      "rust/tools/src/session_search/mod.rs",
       "rust/core/src/persistence/manifest_messages.rs",
       "rust/patches/rig-core/src/tool/server.rs",
       "rust/common/src/read_work.rs",
       "rust/agent-loop/src/session_search_handler.rs"
     ],
-    "totalLinesCovered": 541
+    "totalLinesCovered": 502
   }
 }

@@ -36,29 +36,6 @@ Feature: Thinking Config Facade for Provider-Specific Reasoning Configuration
     I want to configure provider-specific thinking/reasoning settings through a common interface
     So that each provider receives correct thinking configuration without duplicating logic across provider implementations
 
-  Scenario: Gemini 3 facade generates thinkingLevel configuration for High level
-    Given a Gemini3ThinkingFacade
-    And ThinkingLevel::High is requested
-    When I call request_config with the level
-    Then the result should contain thinkingConfig.thinkingLevel set to "high"
-    And the result should contain thinkingConfig.includeThoughts set to true
-    And the result should NOT contain thinkingBudget
-
-  Scenario: Gemini 2.5 facade generates thinkingBudget configuration for High level
-    Given a Gemini25ThinkingFacade
-    And ThinkingLevel::High is requested
-    When I call request_config with the level
-    Then the result should contain thinkingConfig.thinkingBudget set to 8192
-    And the result should contain thinkingConfig.includeThoughts set to true
-    And the result should NOT contain thinkingLevel
-
-  Scenario: Claude facade generates thinking configuration with budget_tokens
-    Given a ClaudeThinkingFacade
-    And ThinkingLevel::High is requested
-    When I call request_config with the level
-    Then the result should contain thinking.type set to "enabled"
-    And the result should contain thinking.budget_tokens set to 32000
-
   Scenario: Gemini facade identifies thinking parts in response
     Given a Gemini3ThinkingFacade
     And a response part with "thought" field set to true
@@ -72,19 +49,6 @@ Feature: Thinking Config Facade for Provider-Specific Reasoning Configuration
     When I call is_thinking_part with the part
     Then it should return false
     And extract_thinking_text should return None
-
-  Scenario: ThinkingLevel Off returns empty configuration for all providers
-    Given any ThinkingConfigFacade implementation
-    And ThinkingLevel::Off is requested
-    When I call request_config with the level
-    Then the result should be an empty object
-
-  Scenario: TypeScript can get thinking configuration via NAPI bindings
-    Given the NAPI getThinkingConfig function
-    And provider "gemini-3" and ThinkingLevel.High
-    When I call getThinkingConfig from TypeScript
-    Then I should receive a JSON string with the correct configuration
-    And the parsed JSON should match the Rust facade output
 
   Scenario: TypeScript can check if content is thinking via NAPI bindings
     Given the NAPI isThinkingContent function

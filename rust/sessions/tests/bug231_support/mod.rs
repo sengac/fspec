@@ -7,7 +7,6 @@ use serde_json::json;
 use std::{
     path::Path,
     sync::{Arc, OnceLock},
-    time::Duration,
 };
 
 pub type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -26,6 +25,9 @@ pub struct Fixture {
 
 impl Fixture {
     pub async fn new() -> Result<Self> {
+        // BUG-347 / BUG-449: never consult the host's ~/.fspec or a live RLCD
+        // engine; permission outcomes must not depend on the machine.
+        codelet_test_helpers::isolated_user_directory()?;
         if DATA.get().is_none() {
             let _ = DATA.set(setup_temp_directory()?);
         }
@@ -35,7 +37,7 @@ impl Fixture {
             data.path().join("cache/models.json"),
             include_str!("../fixtures/rpc422_models.json"),
         )?;
-        let _ = codelet_common::set_data_directory(data.path().to_owned());
+        codelet_common::set_data_directory(data.path().to_owned())?;
         std::env::set_var("ANTHROPIC_API_KEY", "offline-test");
         let project = setup_temp_directory()?;
         std::fs::create_dir_all(project.path().join("spec"))?;
@@ -54,7 +56,7 @@ impl Fixture {
                 &json!({"workUnits":cards, "states":{"implementing":["AUTH-001","AUTH-002","AUTH-003"]}}),
             )?,
         )?;
-        let manager = SessionManager::new_arc();
+        let manager = SessionManager::new();
         let first = create(&manager, project.path()).await?;
         let second = create(&manager, project.path()).await?;
         manager.set_session_focus(&first, Some("AUTH-001"), "setup")?;
@@ -114,12 +116,12 @@ impl Fixture {
     }
 
     pub async fn wait_focus(&self, id: &SessionId, expected: Option<&str>) -> Result {
-        tokio::time::timeout(Duration::from_secs(5), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 if self.focus(id)?.as_deref() == expected {
                     return Ok::<(), Box<dyn std::error::Error>>(());
                 }
-                tokio::time::sleep(Duration::from_millis(10)).await;
+                codelet_test_helpers::yield_now().await;
             }
         })
         .await??;

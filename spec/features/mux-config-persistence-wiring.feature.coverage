@@ -5,11 +5,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
-          "lines": "111-137",
+          "lines": "132-149",
           "implMappings": [
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
               "lines": [
+                131,
+                132,
+                133,
                 134,
                 135,
                 136,
@@ -30,17 +33,15 @@
                 151,
                 152,
                 153,
-                154
-              ]
+                154,
+                155
+              ],
+              "firstLine": "/// Convenience: persist using the globally configured data directory",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/store/mux_state.rs",
               "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
                 57,
                 58,
                 59,
@@ -55,19 +56,21 @@
                 68,
                 69,
                 70,
-                71
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/state.rs",
-              "lines": [
-                396,
-                397,
-                398,
-                399,
-                400,
-                401
-              ]
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "pub fn load(&mut self) {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec/src/client.rs",
@@ -81,51 +84,65 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "// BUG-167: initialise the process-global data directory BEFORE the App is",
+              "lastLine": ".map_err(|e| anyhow::anyhow!(\"codelet_common::set_data_directory: {e}\"))?;"
             }
           ]
         }
       ]
     },
     {
-      "name": "committing the mux config dialog with 's' persists tui.mux to the shared config",
+      "name": "committing the mux config dialog with Save persists tui.mux to the shared config",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
-          "lines": "147-185",
+          "lines": "167-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mux_config_dialog.rs",
               "lines": [
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ],
+              "firstLine": "fn commit(&mut self, save: bool) -> EventResult {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61
-              ]
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "Action::MuxConfigAppliedAndSaved(draft) => {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
               "lines": [
+                47,
+                48,
                 49,
                 50,
                 51,
@@ -134,10 +151,14 @@
                 54,
                 55,
                 56,
-                57,
-                58,
-                59,
-                60,
+                56,
+                56,
+                56,
+                56,
+                56,
+                56,
+                56,
+                56,
                 61,
                 62,
                 63,
@@ -165,14 +186,10 @@
                 85,
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                88
+              ],
+              "firstLine": "/// user file so project-scope keys are never mirrored into it.",
+              "lastLine": "data_dir = %data_dir.display(),"
             }
           ]
         }
@@ -183,21 +200,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
-          "lines": "194-217",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
-              "lines": [
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349
-              ]
-            }
-          ]
+          "lines": "215-233",
+          "implMappings": []
         }
       ]
     },
@@ -206,11 +210,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
-          "lines": "225-256",
+          "lines": "246-271",
           "implMappings": [
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
               "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
                 102,
                 103,
                 104,
@@ -237,8 +246,11 @@
                 125,
                 126,
                 127,
-                128
-              ]
+                128,
+                129
+              ],
+              "firstLine": "/// Load the persisted mux config from the shared config.",
+              "lastLine": "}"
             }
           ]
         }
@@ -249,11 +261,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug167_mux_config_persistence_wiring.rs",
-          "lines": "264-300",
+          "lines": "288-321",
           "implMappings": [
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
               "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
                 49,
                 50,
                 51,
@@ -299,8 +321,44 @@
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// Persist `config` (a JSON object) under `tui.mux` in the USER-scope",
+              "lastLine": "}"
             }
           ]
         }
@@ -317,12 +375,10 @@
     "implFiles": [
       "rust/sessions/src/mux_config_persistence.rs",
       "rust/fspec-tui/src/store/mux_state.rs",
-      "rust/fspec-tui/src/app/state.rs",
       "rust/fspec/src/client.rs",
       "rust/fspec-tui/src/components/mux_config_dialog.rs",
-      "rust/fspec-tui/src/app/dispatch_mux.rs",
-      "rust/fspec-tui/src/app/dispatch.rs"
+      "rust/fspec-tui/src/app/dispatch_mux.rs"
     ],
-    "totalLinesCovered": 360
+    "totalLinesCovered": 386
   }
 }

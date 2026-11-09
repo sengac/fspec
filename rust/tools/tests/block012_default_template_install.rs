@@ -32,6 +32,7 @@ const SENTINEL_RULE_ID: &str = "sentinel-block012";
 /// clears session allowances, and resets the project root via
 /// `init_blocklist(None)` so later `#[serial]` tests start clean.
 struct HomeGuard {
+    prior_user_dir: Option<std::ffi::OsString>,
     prior_home: Option<std::ffi::OsString>,
     home_tmp: tempfile::TempDir,
 }
@@ -41,7 +42,14 @@ impl HomeGuard {
         let home_tmp = tempfile::tempdir().expect("tempdir for HOME redirect");
         let prior_home = std::env::var_os("HOME");
         std::env::set_var("HOME", home_tmp.path());
+        // BUG-656: the system blocklist lives in the user directory, which a
+        // test build resolves only from FSPEC_USER_DIR. It is left absent:
+        // these scenarios install into a missing ~/.fspec.
+        let prior_user_dir = std::env::var_os("FSPEC_USER_DIR");
+        let user_dir = home_tmp.path().join(".fspec");
+        std::env::set_var("FSPEC_USER_DIR", &user_dir);
         Self {
+            prior_user_dir,
             prior_home,
             home_tmp,
         }
@@ -66,12 +74,16 @@ impl Drop for HomeGuard {
             Some(home) => std::env::set_var("HOME", home),
             None => std::env::remove_var("HOME"),
         }
+        match self.prior_user_dir.take() {
+            Some(directory) => std::env::set_var("FSPEC_USER_DIR", directory),
+            None => std::env::remove_var("FSPEC_USER_DIR"),
+        }
     }
 }
 
 /// Parse the system blocklist file on disk (under the redirected HOME).
 fn read_system_blocklist() -> BlocklistConfig {
-    let path = system_config_path().expect("HOME must be set under HomeGuard");
+    let path = system_config_path().expect("FSPEC_USER_DIR is set under HomeGuard");
     BlocklistConfig::load_from_file(&path).expect("system blocklist must parse")
 }
 
@@ -269,13 +281,18 @@ fn scenario_install_failure_degrades_gracefully_without_breaking_command_checkin
     // @step Given a fresh environment where "~/.fspec" exists as a regular file so the template write fails
     std::fs::write(_guard.home().join(".fspec"), "not a directory").expect("write ~/.fspec file");
 
+    // @step And the RLCD settings are read from a separate, readable user directory
+    // (BUG-482: the RLCD user directory defaults to ~/.fspec, and since
+    // BUG-451 an unreadable RLCD config refuses the command)
+    codelet_test_helpers::isolated_user_directory().expect("isolate the RLCD user directory");
+
     // @step When the AI runs "echo hello" via Bash
     let result = check_bash_command("echo hello", uuid::Uuid::nil());
 
     // @step Then the command check completes without error
     assert!(
         result.is_ok(),
-        "a failed template install must never break command checking"
+        "a failed template install must never break command checking: {result:?}"
     );
 
     // @step And no panic or install failure propagates to the caller

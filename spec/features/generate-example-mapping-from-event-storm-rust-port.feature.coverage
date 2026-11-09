@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "138-169",
+          "lines": "138-180",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -27,11 +28,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -227,8 +223,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -239,11 +241,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "170-193",
+          "lines": "182-204",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -261,11 +264,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -461,8 +459,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -473,11 +477,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "194-211",
+          "lines": "206-222",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -495,11 +500,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -695,8 +695,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -707,11 +713,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "212-229",
+          "lines": "224-240",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -729,11 +736,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -929,8 +931,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -941,11 +949,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "230-256",
+          "lines": "242-267",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -963,11 +972,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -1163,8 +1167,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -1175,11 +1185,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "257-277",
+          "lines": "269-293",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -1197,11 +1208,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -1397,8 +1403,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -1409,11 +1421,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "278-298",
+          "lines": "295-314",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -1431,11 +1444,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -1631,8 +1639,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -1643,11 +1657,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "299-319",
+          "lines": "316-341",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -1665,11 +1680,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -1865,8 +1875,14 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
             }
           ]
         }
@@ -1877,11 +1893,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
-          "lines": "320-351",
+          "lines": "343-377",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
               "lines": [
+                81,
                 82,
                 83,
                 84,
@@ -1899,11 +1916,6 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -2099,8 +2111,161 @@
                 296,
                 297,
                 298,
-                299
-              ]
+                299,
+                300,
+                301,
+                302,
+                303
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let r = GenerateExampleMappingResult {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Domain events add no examples while policies and hotspots are still transformed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "lines": "396-430",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "// Process Event Storm items (mirrors TS:92-153).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hotspots get sequential question ids from an undefined nextQuestionId",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "lines": "432-462",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "let mut next_question_id = wu",
+              "lastLine": ".unwrap_or(0);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second run and add-question continue the question ids without duplicates",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "lines": "464-528",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253
+              ],
+              "firstLine": "// Persist updated counters. `nextExampleId` is written verbatim (TS keeps",
+              "lastLine": "wu.extra"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A hotspot concern with several sentences is kept whole",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs",
+          "lines": "530-554",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs",
+              "lines": [
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "// Derive questions from hotspots (with concern).",
+              "lastLine": "// TS pushes `answer: undefined` which JSON.stringify drops,"
             }
           ]
         }
@@ -2108,8 +2273,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/generate_example_mapping_from_event_storm.rs"
@@ -2117,6 +2282,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs"
     ],
-    "totalLinesCovered": 2176
+    "totalLinesCovered": 2425
   }
 }

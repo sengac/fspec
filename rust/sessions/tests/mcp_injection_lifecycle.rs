@@ -14,24 +14,16 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::time::Duration;
-
 use codelet_tools::{cleanup_mcp_session, get_mcp_connections, init_mcp_session, McpInjection};
 use uuid::Uuid;
 
-/// Helper: drain any pending MCP injections so the test can prove the
-/// receiver is alive without blocking. Returns immediately if nothing
-/// is queued.
+/// Helper: prove the receiver is alive and holds no injection, without
+/// blocking (TEST-042: try_recv, no waiting window).
 async fn no_pending_injection(rx: &mut tokio::sync::mpsc::Receiver<McpInjection>) -> bool {
-    tokio::select! {
-        biased;
-        _ = tokio::time::sleep(Duration::from_millis(20)) => true,
-        msg = rx.recv() => {
-            // Drain whatever we got and report unexpected traffic.
-            let _ = msg;
-            false
-        }
-    }
+    matches!(
+        rx.try_recv(),
+        Err(tokio::sync::mpsc::error::TryRecvError::Empty)
+    )
 }
 
 // =============================================================================
@@ -133,9 +125,10 @@ async fn scenario_idempotent_reinit_replaces_entry() {
     // receiver, in contrast, is still open and starts empty. This is
     // exactly the singleton-per-session semantic the RPC-062
     // attachment requires (no leaked old connections).
-    let first_after_replace = tokio::time::timeout(Duration::from_millis(100), rx_first.recv())
-        .await
-        .expect("rx_first.recv() must complete (channel was closed by re-init)");
+    let first_after_replace =
+        codelet_test_helpers::deadlock_guard("rx_first.recv()", rx_first.recv())
+            .await
+            .expect("rx_first.recv() must complete (channel was closed by re-init)");
     assert!(
         first_after_replace.is_none(),
         "the FIRST receiver must observe its channel as closed after idempotent re-init",

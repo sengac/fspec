@@ -22,13 +22,10 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let error = match backend
-                .delete_checkpoint(work_unit_id.clone(), name.clone())
-                .await
-            {
+            let error = match calls.delete(work_unit_id.clone(), name.clone()).await {
                 Ok(()) => None,
                 Err(e) => Some(e.to_string()),
             };
@@ -48,10 +45,10 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let error = match backend.delete_all_checkpoints().await {
+            let error = match calls.delete_all().await {
                 Ok(()) => None,
                 Err(e) => Some(e.to_string()),
             };

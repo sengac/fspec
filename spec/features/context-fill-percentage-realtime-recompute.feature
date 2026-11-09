@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-419
 @tui
@@ -6,8 +7,14 @@
 @agent-view
 @header
 @RPC-101
+@BUG-459
 Feature: Context Fill Percentage Realtime Recompute
   """
+  BUG-459: CMPCT-067 (coherent request context fill) supersedes the local
+  recompute: the backend and TUI consume the context-fill snapshot and never
+  recompute fill from cumulative display counters, so the local-recompute,
+  cached-threshold and ContextFillUpdate-override scenarios are retired (see
+  coherent-request-context-fill.feature).
   RPC-101 ROOT CAUSE (recompute cadence — fixed, retained):
   • TS AgentView.tsx updateTokenStateFromChunk only called setContextFillPercentage on ContextFillUpdate, ignoring the high-cadence TokenUpdate stream.
   • Rust token_state.rs apply_chunk routed TokenUpdate to apply_token_tracker which never touched context_fill_pct.
@@ -40,54 +47,12 @@ Feature: Context Fill Percentage Realtime Recompute
     I want to see the SessionHeader [X%] context-fill badge update in real-time on every TokenUpdate (same cadence as the `tokens: X↓ Y↑` counters), AND have the last known percentage survive an ESC interrupt that skips the final ContextFillUpdate
     So that I can monitor approaching compaction live during streaming and after interrupts — instead of staring at a frozen percentage that only refreshes when the backend chooses to emit a ContextFillUpdate (end-of-turn or not at all on ESC)
 
-  Scenario: TokenUpdate after cached threshold recomputes the badge locally without a new ContextFillUpdate
-    Given a session has received ContextFillUpdate with fill_percentage=10 and threshold=100000 tokens
-    When a TokenUpdate with input_tokens=45000 arrives without an accompanying ContextFillUpdate
-    Then the SessionHeader badge MUST display [45%] (recomputed locally from 45000/100000)
-    When a further TokenUpdate with input_tokens=90000 arrives later in the same turn
-    Then the SessionHeader badge MUST display [90%] at TokenUpdate cadence
-
   Scenario: TokenUpdate without prior ContextFillUpdate leaves the badge unchanged
     Given a fresh session with no ContextFillUpdate received yet (threshold cache is 0)
     When a TokenUpdate with input_tokens=50000 arrives
     Then the SessionHeader badge MUST remain at [0%] (no threshold means no recompute, never divide by zero)
 
-  Scenario: Authoritative ContextFillUpdate overrides any locally-recomputed value
-    Given a session with cached threshold=100000 tokens after a ContextFillUpdate{fill_percentage=5}
-    And a TokenUpdate with input_tokens=50000 has locally recomputed the badge to [50%]
-    When the backend emits an authoritative ContextFillUpdate{fill_percentage=62} (the backend remains authoritative whenever it speaks)
-    Then the SessionHeader badge MUST display [62%] (backend value wins)
-    And the cached threshold MUST remain at 100000 tokens for subsequent TokenUpdates
-
-  Scenario: Local recompute preserves overshoot above 100% (RPC-100 invariant)
-    Given a session with cached threshold=100000 tokens
-    When a TokenUpdate with input_tokens=110000 arrives
-    Then the SessionHeader badge MUST display [110%] (NOT clamped to 100 — the pre-compaction overshoot signal is preserved)
-
-  Scenario: ContextFillUpdate with non-positive threshold does not wipe a previously-cached good threshold
-    Given a session has received ContextFillUpdate{fill_percentage=50, threshold=100000}
-    When a subsequent fixture-style ContextFillUpdate{fill_percentage=60, threshold=0.0} arrives (older fixtures only set fill_percentage)
-    Then the badge MUST display [60%] from the new fill_percentage
-    Then the cached threshold MUST remain at 100000 tokens (non-positive threshold MUST NOT erase cached value)
-    When a TokenUpdate with input_tokens=75000 arrives
-    Then the badge MUST recompute against the cached threshold and display [75%]
-
-  Scenario: Local recompute uses the backend physical-occupancy formula including output and reasoning tokens
-    Given a session with cached threshold=100000 tokens (from a prior ContextFillUpdate)
-    When a TokenUpdate with input_tokens=50000, output_tokens=3000 and reasoning_tokens=2000 arrives
-    Then the SessionHeader badge MUST display [55%] computed as trunc((50000+3000+2000)/100000*100) with no cache discount applied
-
   Scenario: Cache-heavy TokenUpdate no longer collapses the badge (oscillation regression)
     Given a session with cached threshold=168000 tokens and an authoritative ContextFillUpdate showing 110%
     When a bare TokenUpdate arrives with input_tokens=175000 (including cache_read_input_tokens=150000 and cache_creation_input_tokens=5000), output_tokens=3000 and reasoning_tokens=8000
     Then the SessionHeader badge MUST remain [110%] computed as trunc(186000/168000*100) instead of collapsing to [24%]
-
-  Scenario: Local recompute truncates like the backend instead of rounding
-    Given a session with cached threshold=100000 tokens
-    When a TokenUpdate with input_tokens=45900 and no output or reasoning tokens arrives
-    Then the SessionHeader badge MUST display [45%] (truncation matching the backend's `as u32` cast, not [46%] from rounding)
-
-  Scenario: Missing optional token fields are treated as zero
-    Given a session with cached threshold=100000 tokens
-    When a TokenUpdate with input_tokens=40000, output_tokens=1000 and absent reasoning and cache fields arrives
-    Then the SessionHeader badge MUST display [41%] without error

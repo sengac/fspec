@@ -6,68 +6,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "88-121",
-          "implMappings": [
-            {
-              "file": "extension/src/background/browser-tools.ts",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                166,
-                167,
-                168,
-                169,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -77,68 +16,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "123-142",
-          "implMappings": [
-            {
-              "file": "extension/src/background/browser-tools.ts",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                166,
-                167,
-                168,
-                169,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -148,72 +26,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "144-218",
-          "implMappings": [
-            {
-              "file": "extension/src/background/browser-tools.ts",
-              "lines": [
-                144,
-                145,
-                146,
-                147,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                166,
-                167,
-                168,
-                169,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -223,25 +36,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "220-241",
-          "implMappings": [
-            {
-              "file": "extension/src/background/browser-tools.ts",
-              "lines": [
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -251,18 +46,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "243-262",
-          "implMappings": [
-            {
-              "file": "extension/src/background/browser-tools.ts",
-              "lines": [
-                174,
-                175,
-                176,
-                177,
-                178
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -272,22 +56,7 @@
         {
           "file": "extension/src/background/__tests__/browser-execute-script.test.ts",
           "lines": "264-285",
-          "implMappings": [
-            {
-              "file": "extension/manifest.json",
-              "lines": [
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -299,10 +68,7 @@
     "testFiles": [
       "extension/src/background/__tests__/browser-execute-script.test.ts"
     ],
-    "implFiles": [
-      "extension/src/background/browser-tools.ts",
-      "extension/manifest.json"
-    ],
-    "totalLinesCovered": 388
+    "implFiles": [],
+    "totalLinesCovered": 193
   }
 }

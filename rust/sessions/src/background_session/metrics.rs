@@ -45,27 +45,93 @@ impl BackgroundSession {
         *self.model_id.write().expect("model_id lock poisoned") = model_id;
     }
 
-    pub fn set_model_limits(
+    /// PROV-165: cache the selected model's resolved limits.
+    pub fn set_model_limits(&self, limits: crate::model_resolution::ResolvedModelLimits) {
+        *self
+            .model_limits
+            .write()
+            .expect("model_limits lock poisoned") = limits;
+    }
+
+    /// PROV-165: the selected model's resolved limits (`None` = unavailable).
+    pub fn model_limits(&self) -> crate::model_resolution::ResolvedModelLimits {
+        *self
+            .model_limits
+            .read()
+            .expect("model_limits lock poisoned")
+    }
+
+    /// MODEL-011: the chosen level, exactly as chosen.
+    pub fn get_base_thinking_level(&self) -> codelet_rpc_types::ThinkingLevel {
+        self.base_thinking_level
+            .read()
+            .expect("base_thinking_level lock poisoned")
+            .clone()
+    }
+
+    /// MODEL-011: store `level` unchanged (BUG-455: ModelDefault means no
+    /// level was chosen). Callers that take a user's choice check it first
+    /// ([`crate::thinking_options::accepted`]).
+    pub fn set_base_thinking_level(&self, level: codelet_rpc_types::ThinkingLevel) {
+        *self
+            .base_thinking_level
+            .write()
+            .expect("base_thinking_level lock poisoned") = level;
+    }
+
+    /// MODEL-012: set the session's level from its current model's saved
+    /// level (when a session is created or resumed, and when it switches
+    /// model). A saved level the model offers is applied; otherwise the level
+    /// is not set, and a saved level that is not offered or cannot be read is
+    /// explained in a warning notice (product owner, 2026-11-04/05).
+    pub fn apply_saved_thinking_level(&self) {
+        let applied = match self.thinking_target() {
+            Ok(target) => crate::thinking_options::saved_level_for(
+                &target,
+                crate::default_thinking_level_persistence::load_default_thinking_level(
+                    target.model(),
+                ),
+            ),
+            Err(error) => crate::thinking_options::SavedLevel {
+                level: codelet_rpc_types::ThinkingLevel::ModelDefault,
+                notice: Some(format!(
+                    "the saved thinking level cannot be applied: {error}; the thinking level is not set"
+                )),
+            },
+        };
+        self.set_base_thinking_level(applied.level);
+        if let Some(message) = applied.notice {
+            tracing::warn!(session = %self.id, %message, "saved thinking level not applied");
+            self.handle_output(codelet_rpc_types::StreamChunk::UserNotification {
+                message,
+                severity: codelet_rpc_types::NotificationSeverity::Warning,
+            });
+        }
+    }
+
+    /// MODEL-011: cache the selected model's thinking target.
+    pub fn set_thinking_target(&self, target: codelet_providers::thinking_wire::ThinkingTarget) {
+        *self
+            .thinking_target
+            .write()
+            .expect("thinking_target lock poisoned") = Some(target);
+    }
+
+    /// MODEL-011: the selected model's thinking target; an error when no
+    /// model has been resolved for the session yet.
+    pub fn thinking_target(
         &self,
-        context_window: u32,
-        max_output_tokens: u32,
-        compaction_threshold: u32,
-    ) {
-        self.cached_context_window
-            .store(context_window, Ordering::Release);
-        self.cached_max_output_tokens
-            .store(max_output_tokens, Ordering::Release);
-        self.cached_compaction_threshold
-            .store(compaction_threshold, Ordering::Release);
-    }
-
-    pub fn get_base_thinking_level(&self) -> u8 {
-        self.base_thinking_level.load(Ordering::Acquire)
-    }
-
-    pub fn set_base_thinking_level(&self, level: u8) {
-        let clamped = level.min(3);
-        self.base_thinking_level.store(clamped, Ordering::Release);
+    ) -> Result<codelet_providers::thinking_wire::ThinkingTarget, String> {
+        self.thinking_target
+            .read()
+            .map_err(|_| {
+                format!(
+                    "the thinking target lock of session {} is poisoned",
+                    self.id
+                )
+            })?
+            .clone()
+            .ok_or_else(|| format!("session {} has no model resolved yet", self.id))
     }
 
     pub fn get_model_id(&self) -> Option<String> {

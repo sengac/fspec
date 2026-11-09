@@ -8,7 +8,7 @@ use super::super::{
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
     name: "file",
-    description: "Specific feature file to validate (e.g., spec/features/login.feature). If omitted, validates all .feature files in spec/features/",
+    description: "Specific feature file to validate (e.g., spec/features/login.feature). If omitted, validates all .feature files in spec/features/ and reports .feature.coverage files whose feature does not exist",
     required: false,
 }];
 
@@ -51,13 +51,13 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &["format", "create-feature", "check", "validate-tags"];
+const RELATED: &[&str] = &["format", "create-feature", "audit", "validate-tags"];
 
 const NOTES: &[&str] = &[
     "Uses official @cucumber/gherkin parser for validation",
     "Exit code 0 = all valid, non-zero = errors found",
     "Run before committing feature files",
-    "Part of fspec check command",
+    "fspec audit runs the same checks in its gherkin area",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

@@ -128,7 +128,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "//! Copilot prompt cache control injection (PROV-058).",
+              "lastLine": "mod tests;"
             }
           ]
         }
@@ -139,7 +141,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
-          "lines": "91-117",
+          "lines": "98-124",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/prompt_cache.rs",
@@ -152,7 +154,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": ".get(\"model\")",
+              "lastLine": ""
             }
           ]
         }
@@ -163,7 +167,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
-          "lines": "122-143",
+          "lines": "129-150",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/prompt_cache.rs",
@@ -176,7 +180,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": ".get(\"model\")",
+              "lastLine": ""
             }
           ]
         }
@@ -187,13 +193,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
-          "lines": "148-180",
+          "lines": "155-189",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -205,7 +209,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// Tag the first message with `role == \"system\"` with cache control.",
+              "lastLine": "}"
             }
           ]
         }
@@ -216,12 +222,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/copilot/prompt_cache_tests.rs",
-          "lines": "185-223",
+          "lines": "194-236",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/prompt_cache.rs",
               "lines": [
-                104,
                 105,
                 106,
                 107,
@@ -230,8 +235,11 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114
+              ],
+              "firstLine": "/// Tag the last tool definition in the `tools` array with cache control.",
+              "lastLine": "}"
             }
           ]
         }
@@ -248,6 +256,6 @@
     "implFiles": [
       "rust/providers/src/copilot/prompt_cache.rs"
     ],
-    "totalLinesCovered": 348
+    "totalLinesCovered": 352
   }
 }

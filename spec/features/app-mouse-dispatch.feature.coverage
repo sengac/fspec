@@ -10,12 +10,14 @@
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
+                108,
+                109,
                 110,
                 111,
-                112,
-                113,
-                114
-              ]
+                112
+              ],
+              "firstLine": "impl BoardView {",
+              "lastLine": "action_tx: Some(action_tx),"
             }
           ]
         }

@@ -20,49 +20,23 @@
 //!      BYPASSES the gate (dispatch.rs:247-250) — pinned via
 //!      `App::handle_event(&Event::Paste)` (Navigator path exists today).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::{Arc, Mutex};
 
 use codelet_fspec_tui::views::agent::multiline_input::MultiLineInput;
-use codelet_fspec_tui::{Component, EventResult, Priority, ViewMode};
+use codelet_fspec_tui::ViewMode;
 use codelet_rpc_types::SessionStatus;
 use crossterm::event::Event;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
 mod common;
+use common::hitl_route;
 
 use common::harness::{seed_sid, AppTestHarness};
 
-/// Minimal modal layer that records every event it receives and
-/// consumes them all (modal semantics). Shared `Arc<Mutex<Vec<Event>>>`
-/// lets the test inspect what the compositor actually delivered.
-struct RecordingModal {
-    events: Arc<Mutex<Vec<Event>>>,
-}
-
-impl Component for RecordingModal {
-    fn priority(&self) -> Priority {
-        Priority::Foreground
-    }
-    fn id(&self) -> &str {
-        "recording-modal"
-    }
-    fn handle_event(&mut self, event: &Event) -> EventResult {
-        self.events.lock().unwrap().push(event.clone());
-        EventResult::consumed()
-    }
-    fn render(&mut self, _area: Rect, _buf: &mut Buffer) {}
-}
-
-/// Render the App once into an off-screen buffer so per-frame caches
-/// (`AgentView::last_is_compacting` — the RPC-095 gate input) refresh.
-fn render_once(h: &mut AppTestHarness) {
-    let area = Rect::new(0, 0, 80, 24);
-    let mut buf = Buffer::empty(area);
-    h.app.render(area, &mut buf);
-}
+mod rpc403_paste_support;
+use rpc403_paste_support::{render_once, rpc411_hitl_request, RecordingModal};
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Multi-line paste with no modal open is inserted verbatim and
@@ -70,7 +44,7 @@ fn render_once(h: &mut AppTestHarness) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn multi_line_paste_with_no_modal_open_is_inserted_verbatim_and_grows_the_input() {
+fn multi_line_paste_with_no_modal_open_is_inserted_verbatim_and_grows_the_input() -> TestResult {
     // @step Given the agent view is active with no modal open
     let mut h = AppTestHarness::new();
     assert_eq!(h.app.active_view(), ViewMode::Agent);
@@ -98,6 +72,7 @@ fn multi_line_paste_with_no_modal_open_is_inserted_verbatim_and_grows_the_input(
         (2, "line three".len()),
         "cursor must land at the end of the pasted text"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -105,7 +80,7 @@ fn multi_line_paste_with_no_modal_open_is_inserted_verbatim_and_grows_the_input(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn crlf_line_endings_are_normalized_to_lf_on_paste() {
+fn crlf_line_endings_are_normalized_to_lf_on_paste() -> TestResult {
     // @step Given the agent view is active with no modal open
     // Full routed path: App::handle_paste → (fallback) Navigator →
     // AgentView → MultiLineInput Event::Paste branch. Note: at the
@@ -133,6 +108,7 @@ fn crlf_line_endings_are_normalized_to_lf_on_paste() {
         "no '\\r' may enter the buffer; got {:?}",
         h.app.navigator().agent.input.value()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -140,7 +116,7 @@ fn crlf_line_endings_are_normalized_to_lf_on_paste() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn paste_is_inserted_at_the_cursor_preserving_existing_text() {
+fn paste_is_inserted_at_the_cursor_preserving_existing_text() -> TestResult {
     // @step Given the agent input contains "prefix" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("prefix");
@@ -151,6 +127,7 @@ fn paste_is_inserted_at_the_cursor_preserving_existing_text() {
 
     // @step Then the input buffer contains "prefixpasted"
     assert_eq!(input.value(), "prefixpasted");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -158,7 +135,7 @@ fn paste_is_inserted_at_the_cursor_preserving_existing_text() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn paste_while_a_modal_is_open_is_delivered_to_the_modal_intact() {
+fn paste_while_a_modal_is_open_is_delivered_to_the_modal_intact() -> TestResult {
     // @step Given a modal layer with a paste handler is open above the agent view
     let mut h = AppTestHarness::new();
     h.app.navigator_mut().agent.input.set_value("agent draft");
@@ -171,7 +148,7 @@ fn paste_while_a_modal_is_open_is_delivered_to_the_modal_intact() {
     let _ = h.app.handle_paste("multi\nline\npaste");
 
     // @step Then the modal receives the full paste string as a single paste event
-    let events = recorded.lock().unwrap();
+    let events = recorded.lock().or_fail("expected a value")?;
     let pastes: Vec<&Event> = events
         .iter()
         .filter(|e| matches!(e, Event::Paste(_)))
@@ -186,7 +163,7 @@ fn paste_while_a_modal_is_open_is_delivered_to_the_modal_intact() {
     );
     match pastes[0] {
         Event::Paste(s) => assert_eq!(s, "multi\nline\npaste", "paste payload must be intact"),
-        _ => panic!("filtered event must be Event::Paste"),
+        _ => return Err("filtered event must be Event::Paste".into()),
     }
     assert!(
         !events.iter().any(|e| matches!(e, Event::Key(_))),
@@ -200,15 +177,16 @@ fn paste_while_a_modal_is_open_is_delivered_to_the_modal_intact() {
         "agent draft",
         "a consumed modal paste must never leak into the agent input"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Paste while the session is compacting is suppressed
+// Scenario: Paste while the session is compacting lands in the composer
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn paste_while_the_session_is_compacting_is_suppressed() {
-    // @step Given the agent input contains "draft" and the compacting edit gate is active
+fn paste_while_the_session_is_compacting_lands_in_the_composer() -> TestResult {
+    // @step Given the agent input contains "draft" and the session is compacting
     let mut h = AppTestHarness::new();
     h.app.navigator_mut().agent.input.set_value("draft");
     h.app
@@ -218,19 +196,16 @@ fn paste_while_the_session_is_compacting_is_suppressed() {
     render_once(&mut h);
 
     // @step When I paste "more text"
-    // Both delivery paths must be gated: the App paste entry point AND
-    // the Navigator → AgentView::handle_event(Event::Paste) path (the
-    // route the fallback fix uses; it exists today and bypasses the
-    // gate via dispatch.rs:247-250 → runtime FAIL expected).
+    // TUI-115: the composer stays editable while Compacting.
     let _ = h.app.handle_paste("more text");
-    let _ = h.app.handle_event(&Event::Paste("more text".to_string()));
 
-    // @step Then the input buffer still contains only "draft"
+    // @step Then the input buffer contains "draftmore text"
     assert_eq!(
         h.app.navigator().agent.input.value(),
-        "draft",
-        "paste must be suppressed by the block_edits (Compacting) gate"
+        "draftmore text",
+        "a paste while Compacting lands in the composer (TUI-115)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -239,7 +214,7 @@ fn paste_while_the_session_is_compacting_is_suppressed() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn large_paste_keeps_the_full_buffer_but_caps_the_input_at_6_visible_rows() {
+fn large_paste_keeps_the_full_buffer_but_caps_the_input_at_6_visible_rows() -> TestResult {
     // @step Given the agent view is active with no modal open
     let mut h = AppTestHarness::new();
     assert_eq!(h.app.active_view(), ViewMode::Agent);
@@ -270,41 +245,17 @@ fn large_paste_keeps_the_full_buffer_but_caps_the_input_at_6_visible_rows() {
         6,
         "visible rows must clamp at the 6-row cap"
     );
+    Ok(())
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Supplementary test (RPC-403 review, warning 2 — documented, no @step
-// comments): RPC-411 replaced the HitlDialog modal with the inline HITL
-// prompt. Options mode must CONSUME Event::Paste (swallow it) so a
-// paste can never leak into the composer draft; freeform/Other mode
-// inserts the paste into the SHARED composer input (TS parity — the
-// real MultiLineInput is active). See
-// tests/inline_hitl_prompt_rpc411.rs for the full key/paste matrix.
-// ─────────────────────────────────────────────────────────────────────────
-
-fn rpc411_hitl_request() -> codelet_rpc_types::HitlRequest {
-    use codelet_rpc_types::{HitlOption, HitlQuestion, HitlRequest};
-    HitlRequest {
-        questions: vec![HitlQuestion {
-            id: "q-1".to_string(),
-            header: "Apply?".to_string(),
-            question: "Run tool?".to_string(),
-            options: vec![
-                HitlOption {
-                    label: "Yes".to_string(),
-                    description: "run".to_string(),
-                },
-                HitlOption {
-                    label: "No".to_string(),
-                    description: "skip".to_string(),
-                },
-            ],
-        }],
-    }
-}
+// Supplementary test (RPC-403 review, warning 2 — no @step comments): the
+// inline HITL options prompt (RPC-411) swallows Event::Paste so it never
+// leaks into the composer draft; freeform/Other mode pastes into the shared
+// input. Full key/paste matrix: tests/inline_hitl_prompt_rpc411.rs.
 
 #[test]
-fn paste_while_hitl_options_prompt_is_active_is_swallowed_and_never_reaches_the_agent_input() {
+fn paste_while_hitl_options_prompt_is_active_is_swallowed_and_never_reaches_the_agent_input(
+) -> TestResult {
     use codelet_fspec_tui::Action;
     use codelet_rpc_types::SessionId;
 
@@ -318,6 +269,7 @@ fn paste_while_hitl_options_prompt_is_active_is_swallowed_and_never_reaches_the_
     h.app.navigator_mut().agent.input.set_value("agent draft");
     h.app.dispatch(Action::HitlPromptFetched {
         session_id: SessionId::new("s-1"),
+        route: hitl_route(&SessionId::new("s-1")),
         request: rpc411_hitl_request(),
     });
     let area = Rect::new(0, 0, 100, 20);
@@ -344,4 +296,5 @@ fn paste_while_hitl_options_prompt_is_active_is_swallowed_and_never_reaches_the_
             .is_some(),
         "swallowed paste must leave the HITL slot active and unchanged"
     );
+    Ok(())
 }

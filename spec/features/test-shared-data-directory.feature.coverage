@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "The shared temp directory is the same live directory for every caller",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug406_test_shared_data_directory.rs",
+          "lines": "9-21",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "/// BUG-406: one temp directory per test process, alive for the whole",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No test drops the set_data_directory result",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug406_test_shared_data_directory.rs",
+          "lines": "23-59",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": ".map_err(Clone::clone)",
+              "lastLine": "std::fs::create_dir_all(&directory)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/test-helpers/tests/bug406_test_shared_data_directory.rs"
+    ],
+    "implFiles": [
+      "rust/test-helpers/src/lib.rs"
+    ],
+    "totalLinesCovered": 77
+  }
+}

@@ -32,31 +32,31 @@ Feature: Equal-division pane splits (no minimums) with live resize
   # SCENARIOS (one per business rule)
   # ========================================
   # R1: three panes divide the width equally
-  Scenario: /mux board agent agent divides the width equally across three panes
+  Scenario: /mux board, agent, agent divides the width equally across three panes
     Given mux mode is active on a 120-column terminal
-    When I submit the slash command "/mux board agent agent"
+    When I submit the slash command "/mux board, agent, agent"
     Then the grid shows three panes: Board, Agent and Agent
     And each pane gets an equal share of the width (39, 39 and 40 columns with the 1-col dividers; the last pane absorbs the integer-division remainder)
     And no pane collapses to a 1-column sliver
 
   # R1: four panes divide the width equally
-  Scenario: /mux 4 divides the width equally across four panes
+  Scenario: /mux board, agent, files, checkpoints divides the width equally across four panes
     Given mux mode is active on a 200-column terminal
-    When I submit the slash command "/mux 4"
+    When I submit the slash command "/mux board, agent, files, checkpoints"
     Then the grid shows four panes: Board, Agent, ChangedFiles and Checkpoints
     And each pane gets an equal share of the width (49, 49, 49 and 50 columns with the 3-col dividers; the last pane absorbs the integer-division remainder)
 
   # R1: two panes still divide equally (backwards compatible)
   Scenario: two panes divide the width equally
     Given mux mode is active on a 120-column terminal
-    When I submit the slash command "/mux board agent"
+    When I submit the slash command "/mux board, agent"
     Then the grid shows two panes: Board and Agent
     And each pane gets an equal share of the width (59 and 60 columns with the 1-col divider; the last pane absorbs the integer-division remainder)
 
   # R2: no minimum clamps in the default layout math
   Scenario: a board pane narrower than 64 columns is not clamped up
     Given mux mode is active on a 100-column terminal
-    When I submit the slash command "/mux board agent agent"
+    When I submit the slash command "/mux board, agent, agent"
     Then the Board pane is 32 columns wide (an equal third, not clamped to the 64-column minimum)
     And the remaining panes take the other two equal thirds (32 and 34 columns; the last pane absorbs the integer-division remainder)
     And the board view degrades gracefully when it cannot fit its columns
@@ -76,9 +76,9 @@ Feature: Equal-division pane splits (no minimums) with live resize
     And no stale cached pane rect is used
 
   # R4: an explicit split percent is honored without minimum clamping
-  Scenario: /mux board agent 40 honors the percent even below the old minimum
+  Scenario: /mux board:2, agent:3 honors the weights even below the old minimum
     Given mux mode is active on a 120-column terminal
-    When I submit the slash command "/mux board agent 40"
-    Then the Board pane is 40 percent of the width (47 columns)
+    When I submit the slash command "/mux board:2, agent:3"
+    Then the Board pane gets two fifths of the width (47 columns)
     And the Agent pane takes the remainder (72 columns)
     And the Board pane is not clamped up to the 64-column minimum

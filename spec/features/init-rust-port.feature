@@ -3,6 +3,7 @@
 @initialization
 @agent-registry
 @RPC-239
+@bootstrap
 Feature: Port init command to Rust
   """
   Core impl rust/fspec-core/src/commands/init.rs: replace the NotYetPorted
@@ -142,6 +143,7 @@ Feature: Port init command to Rust
     Then the dispatcher returns success=false
     Then the error message begins with the substring 'Unknown agent: bogus.'
     Then the error message contains the substring 'Valid agent IDs:'
+    Then the error message lists each of the 19 agent ids with its description on its own line
 
   Scenario: Rejects an empty agent list because headless selection is unsupported
     Given an empty project root directory
@@ -170,3 +172,31 @@ Feature: Port init command to Rust
     When I inspect rust/fspec-core/src/commands/init.rs
     Then init::run scaffolds files via blocking std::fs and contains the inlined agent registry table
     Then the CLI bridge rust/fspec/src/init.rs delegates to init::run and contains no inline scaffolding or registry logic
+
+  Scenario: The claude slash command lists only the sync-version and bootstrap commands
+    Given an empty project root directory
+    When I dispatch init against that project root with agent list ['claude']
+    Then the only lines of .claude/commands/fspec.md that start with 'fspec ' are 'fspec --sync-version <the running version>' and 'fspec bootstrap', in that order
+    Then .claude/commands/fspec.md does NOT contain the substring 'fspec --help' or 'fspec help '
+    Then .claude/commands/fspec.md does NOT contain the substring 'ACDD' or 'Example Mapping'
+    Then .claude/commands/fspec.md ends with the line 'YOU MUST RUN THOSE COMMANDS AND WAIT FOR THEM TO FINISH BEFORE CONTINUING ANY FURTHER.'
+
+  Scenario: Installing another agent keeps earlier agents' files and the user's own command files
+    Given a project root where init installed the claude and cursor agents and .claude/commands/ holds a custom user command file
+    When I dispatch init against that project root with agent list ['aider']
+    Then spec/AGENTS.md and .claude/commands/fspec.md still exist
+    Then spec/CURSOR.md and .cursor/commands/fspec.md still exist
+    Then the custom user command file in .claude/commands/ is unchanged
+    Then spec/AIDER.md and .aider/fspec.md exist in the project root
+
+  Scenario: An existing doc file is overwritten without a prompt or a backup
+    Given a project root whose spec/AGENTS.md holds outdated content
+    When I dispatch init against that project root with agent list ['claude']
+    Then the dispatcher returns success=true and cancelled=false
+    Then spec/AGENTS.md is byte-identical to the doc init writes into an empty project root
+    Then spec/ holds no file other than AGENTS.md and fspec-config.json
+
+  Scenario: Projects without tool configuration get byte-identical agent docs
+    Given two empty project root directories
+    When I dispatch init against each project root with agent list ['claude']
+    Then spec/AGENTS.md is byte-identical in both project roots

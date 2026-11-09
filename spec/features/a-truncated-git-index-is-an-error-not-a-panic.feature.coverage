@@ -1,0 +1,275 @@
+{
+  "scenarios": [
+    {
+      "name": "Listings report a truncated index",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug696_truncated_index.rs",
+          "lines": "52-71",
+          "implMappings": [
+            {
+              "file": "rust/git/src/index_guard.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ],
+              "firstLine": "pub(crate) fn ensure_index_not_truncated(path: &Path, hash: gix::hash::Kind) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/change_type.rs",
+              "lines": [
+                149
+              ],
+              "firstLine": "let index = crate::index_guard::index_or_empty(repo)?;",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            },
+            {
+              "file": "rust/git/src/index_blob.rs",
+              "lines": [
+                22
+              ],
+              "firstLine": "let index = crate::index_guard::index_or_empty(&repo)?;",
+              "lastLine": "let index = crate::index_guard::index_or_empty(&repo)?;"
+            },
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "pub(crate) fn staged_files_with(",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The worktree snapshot reports a truncated index",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug696_truncated_index.rs",
+          "lines": "74-84",
+          "implMappings": [
+            {
+              "file": "rust/git/src/index_guard.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub(crate) fn ensure_index_not_truncated(path: &Path, hash: gix::hash::Kind) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/tree_utils.rs",
+              "lines": [
+                58,
+                59
+              ],
+              "firstLine": "// BUG-696: a truncated index is an error, not a gix-index panic.",
+              "lastLine": "crate::index_guard::ensure_index_not_truncated(&repo.index_path(), repo.object_hash())?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Staging and committing report a truncated index",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug696_truncated_index.rs",
+          "lines": "87-99",
+          "implMappings": [
+            {
+              "file": "rust/git/src/index_guard.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub(crate) fn ensure_index_not_truncated(path: &Path, hash: gix::hash::Kind) -> Result<()> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/git/src/repo_ops.rs",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390
+              ],
+              "firstLine": "pub fn git_add(dir: impl AsRef<Path>, filepath: &str) -> Result<()> {",
+              "lastLine": "crate::index_guard::ensure_index_not_truncated(&index_path, repo.object_hash())?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An index of the minimum length still goes to gix",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug696_truncated_index.rs",
+          "lines": "102-116",
+          "implMappings": [
+            {
+              "file": "rust/git/src/index_guard.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub(crate) fn ensure_index_not_truncated(path: &Path, hash: gix::hash::Kind) -> Result<()> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/bug696_truncated_index.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/index_guard.rs",
+      "rust/git/src/change_type.rs",
+      "rust/git/src/index_blob.rs",
+      "rust/git/src/status.rs",
+      "rust/git/src/tree_utils.rs",
+      "rust/git/src/repo_ops.rs"
+    ],
+    "totalLinesCovered": 206
+  }
+}

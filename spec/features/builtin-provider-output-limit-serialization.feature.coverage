@@ -10,11 +10,25 @@
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                1173,
-                1174,
-                1216,
-                1261
-              ]
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1229,
+                1274
+              ],
+              "firstLine": "pub struct CompletionRequest {",
+              "lastLine": "max_completion_tokens: max_tokens,"
             }
           ]
         }
@@ -30,11 +44,25 @@
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                1173,
-                1174,
-                1216,
-                1261
-              ]
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1229,
+                1274
+              ],
+              "firstLine": "pub struct CompletionRequest {",
+              "lastLine": "max_completion_tokens: max_tokens,"
             }
           ]
         }
@@ -50,11 +78,25 @@
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                1173,
-                1174,
-                1216,
-                1261
-              ]
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1229,
+                1274
+              ],
+              "firstLine": "pub struct CompletionRequest {",
+              "lastLine": "max_completion_tokens: max_tokens,"
             }
           ]
         }
@@ -71,6 +113,6 @@
     "implFiles": [
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
     ],
-    "totalLinesCovered": 68
+    "totalLinesCovered": 104
   }
 }

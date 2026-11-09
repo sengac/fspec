@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov160_reconnect_status.rs",
-          "lines": "53-169",
+          "lines": "50-178",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
@@ -150,31 +150,45 @@
                 210,
                 211,
                 212
-              ]
+              ],
+              "firstLine": "#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "fn status(&self) -> Option<Value> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -202,7 +216,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "use std::sync::Arc;",
+              "lastLine": "}"
             }
           ]
         }
@@ -221,6 +237,6 @@
       "rust/providers/src/codex/session.rs",
       "rust/sessions/src/provider_status.rs"
     ],
-    "totalLinesCovered": 299
+    "totalLinesCovered": 321
   }
 }

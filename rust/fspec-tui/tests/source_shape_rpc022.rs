@@ -8,48 +8,16 @@
 //! cannot silently relocate ProviderInfo / ModelEntry / the five new
 //! RPC methods / the new Priority::Foreground variant.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
-
-fn src_dir() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
-}
-
-fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root()
-        .join("rpc-types")
-        .join("src")
-        .join("lib.rs")
-}
-
-fn rpc_lib() -> std::path::PathBuf {
-    common::workspace_root()
-        .join("rpc")
-        .join("src")
-        .join("lib.rs")
-}
-
-fn core_session_manager_handle() -> std::path::PathBuf {
-    common::workspace_root()
-        .join("core")
-        .join("src")
-        .join("session_manager_handle.rs")
-}
-
-fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
-}
-
-fn count_lines_path(path: &std::path::Path) -> usize {
-    common::read_to_string_or_panic(path).lines().count()
-}
+mod source_shape_support;
+use codelet_test_helpers::TestResult;
+use source_shape_support::*;
 
 /// Scenario: New shared types live in rpc-types
 #[test]
-fn new_shared_types_live_in_rpc_types() {
+fn new_shared_types_live_in_rpc_types() -> TestResult {
     // @step Given rust/rpc-types/src/lib.rs after RPC-022 lands
-    let src = read_raw(&rpc_types_lib());
+    let src = read_tree(&rpc_types_lib()?)?;
     // @step Then the file contains the substring "pub struct ProviderInfo"
     assert!(src.contains("pub struct ProviderInfo"));
     // @step And the file contains the substring "pub key: String"
@@ -62,27 +30,28 @@ fn new_shared_types_live_in_rpc_types() {
     assert!(src.contains("pub struct ModelEntry"));
     // @step And the file contains the substring "pub id: String"
     assert!(src.contains("pub id: String"));
-    // @step And the file contains the substring "pub context_window: u32"
-    assert!(src.contains("pub context_window: u32"));
+    // @step And the file contains the substring "pub context_window: Option<u32>"
+    assert!(src.contains("pub context_window: Option<u32>"));
     // @step And the file contains the substring "pub supports_reasoning: bool"
     assert!(src.contains("pub supports_reasoning: bool"));
     // @step And the file contains the substring "pub supports_vision: bool"
     assert!(src.contains("pub supports_vision: bool"));
     // @step And the file contains the substring "pub is_custom: bool"
     assert!(src.contains("pub is_custom: bool"));
+    Ok(())
 }
 
 /// Scenario: FspecService trait gains five new RPC methods
 #[test]
-fn fspec_service_trait_gains_five_new_rpc_methods() {
+fn fspec_service_trait_gains_five_new_rpc_methods() -> TestResult {
     // @step Given rust/rpc/src/lib.rs after RPC-022 lands
-    let raw = read_raw(&rpc_lib());
+    let raw = read_raw(&rpc_lib()?)?;
     // Whitespace-collapsed view so the multi-line trait declarations
     // (which the rustfmt'd file wraps across 4-5 lines per method)
     // still match the canonical Gherkin signature.
     let collapsed: String = raw.split_whitespace().collect::<Vec<_>>().join(" ");
-    // @step Then the file contains the substring "async fn list_providers() -> Vec<ProviderInfo>"
-    assert!(collapsed.contains("async fn list_providers() -> Vec<ProviderInfo>"));
+    // @step Then the file contains the substring "async fn list_providers() -> Result<Vec<ProviderInfo>, String>"
+    assert!(collapsed.contains("async fn list_providers() -> Result<Vec<ProviderInfo>, String>"));
     // @step And the file contains the substring "async fn set_session_model(session_id: SessionId, provider_id: String, model_id: String) -> Result<(), String>"
     assert!(collapsed.contains(
         "async fn set_session_model( session_id: SessionId, provider_id: String, model_id: String, ) -> Result<(), String>"
@@ -95,25 +64,26 @@ fn fspec_service_trait_gains_five_new_rpc_methods() {
     ) || collapsed.contains(
         "async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>"
     ));
-    // @step And the file contains the substring "async fn get_session_role(session_id: SessionId) -> Option<String>"
-    assert!(
-        collapsed.contains("async fn get_session_role(session_id: SessionId) -> Option<String>")
-    );
+    // @step And the file contains the substring "async fn get_session_role(session_id: SessionId) -> Result<Option<String>, String>"
+    assert!(collapsed.contains(
+        "async fn get_session_role(session_id: SessionId) -> Result<Option<String>, String>"
+    ));
     // @step And the file contains the substring "async fn set_session_role(session_id: SessionId, role: Option<String>) -> Result<(), String>"
     assert!(collapsed.contains(
         "async fn set_session_role( session_id: SessionId, role: Option<String>, ) -> Result<(), String>"
     ) || collapsed.contains(
         "async fn set_session_role(session_id: SessionId, role: Option<String>) -> Result<(), String>"
     ));
+    Ok(())
 }
 
 /// Scenario: SessionManagerHandle trait gains the new methods with default impls
 #[test]
-fn session_manager_handle_trait_gains_new_methods_with_default_impls() {
+fn session_manager_handle_trait_gains_new_methods_with_default_impls() -> TestResult {
     // @step Given rust/core/src/session_manager_handle.rs after RPC-022 lands
-    let src = read_raw(&core_session_manager_handle());
-    // @step Then the file contains the substring "fn list_providers(&self) -> Vec<ProviderInfo>"
-    assert!(src.contains("fn list_providers(&self) -> Vec<ProviderInfo>"));
+    let src = read_tree(&core_session_manager_handle()?)?;
+    // @step Then the file contains the substring "fn list_providers(&self) -> Result<Vec<ProviderInfo>, String>"
+    assert!(src.contains("fn list_providers(&self) -> Result<Vec<ProviderInfo>, String>"));
     // @step And the file contains the substring "fn set_model(&self, session_id: &SessionId, provider_id: &str, model_id: &str) -> Result<(), String>"
     assert!(src.contains("fn set_model("));
     assert!(src.contains("session_id: &SessionId"));
@@ -122,8 +92,9 @@ fn session_manager_handle_trait_gains_new_methods_with_default_impls() {
     // @step And the file contains the substring "fn set_thinking_level(&self, session_id: &SessionId, level: ThinkingLevel) -> Result<(), String>"
     assert!(src.contains("fn set_thinking_level("));
     assert!(src.contains("level: ThinkingLevel"));
-    // @step And the file contains the substring "fn get_role(&self, session_id: &SessionId) -> Option<String>"
-    assert!(src.contains("fn get_role(&self, session_id: &SessionId) -> Option<String>"));
+    // @step And the file contains the substring "fn get_role(&self, session_id: &SessionId) -> Result<Option<String>, String>"
+    assert!(src
+        .contains("fn get_role(&self, session_id: &SessionId) -> Result<Option<String>, String>"));
     // @step And the file contains the substring "fn set_role(&self, session_id: &SessionId, role: Option<String>) -> Result<(), String>"
     assert!(src.contains("fn set_role("));
     assert!(src.contains("role: Option<String>"));
@@ -138,13 +109,14 @@ fn session_manager_handle_trait_gains_new_methods_with_default_impls() {
         occurrences_ok_unit >= 3,
         "expected >=3 Ok(()) defaults (set_model/set_thinking_level/set_role), got {occurrences_ok_unit}"
     );
+    Ok(())
 }
 
 /// Scenario: FspecBackend trait declares the five new methods
 #[test]
-fn fspec_backend_trait_declares_five_new_methods() {
+fn fspec_backend_trait_declares_five_new_methods() -> TestResult {
     // @step Given rust/fspec-tui/src/transport/mod.rs after RPC-022 lands
-    let src = read_raw(&src_dir().join("transport").join("mod.rs"));
+    let src = read_raw(&src_dir()?.join("transport").join("mod.rs"))?;
     // @step Then the file contains the substring "async fn list_providers"
     assert!(src.contains("async fn list_providers"));
     // @step And the file contains the substring "async fn set_session_model"
@@ -155,14 +127,15 @@ fn fspec_backend_trait_declares_five_new_methods() {
     assert!(src.contains("async fn get_session_role"));
     // @step And the file contains the substring "async fn set_session_role"
     assert!(src.contains("async fn set_session_role"));
+    Ok(())
 }
 
 /// Scenario: Both transports implement the five new FspecBackend methods
 #[test]
-fn both_transports_implement_five_new_backend_methods() {
+fn both_transports_implement_five_new_backend_methods() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-022 lands
-    let embedded = read_raw(&src_dir().join("transport").join("embedded.rs"));
-    let websocket = read_raw(&src_dir().join("transport").join("websocket.rs"));
+    let embedded = read_raw(&src_dir()?.join("transport").join("embedded.rs"))?;
+    let websocket = read_raw(&src_dir()?.join("transport").join("websocket.rs"))?;
     // @step Then rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn list_providers"
     assert!(embedded.contains("async fn list_providers"));
     // @step And rust/fspec-tui/src/transport/embedded.rs contains the substring "async fn set_session_model"
@@ -183,13 +156,14 @@ fn both_transports_implement_five_new_backend_methods() {
     assert!(websocket.contains("async fn get_session_role"));
     // @step And rust/fspec-tui/src/transport/websocket.rs contains the substring "async fn set_session_role"
     assert!(websocket.contains("async fn set_session_role"));
+    Ok(())
 }
 
 /// Scenario: New modal dialog modules and dispatch helper exist
 #[test]
-fn new_modal_dialog_modules_and_dispatch_helper_exist() {
+fn new_modal_dialog_modules_and_dispatch_helper_exist() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-022 lands
-    let src = src_dir();
+    let src = src_dir()?;
     // @step Then the file rust/fspec-tui/src/components/thinking_level_dialog.rs exists
     assert!(src
         .join("components")
@@ -206,23 +180,27 @@ fn new_modal_dialog_modules_and_dispatch_helper_exist() {
         .join("app")
         .join("dispatch_model_thinking_dialogs.rs")
         .exists());
+    Ok(())
 }
 
 /// Scenario: New RPC-022 modules stay under 300 lines
 #[test]
-fn new_rpc022_modules_stay_under_300_lines() {
+fn new_rpc022_modules_stay_under_300_lines() -> TestResult {
     // @step Given the new files introduced by RPC-022
-    let thinking_level = src_dir()
+    let thinking_level = src_dir()?
         .join("components")
         .join("thinking_level_dialog.rs");
-    let role_banner = src_dir().join("views").join("agent").join("role_banner.rs");
-    let dispatch = src_dir()
+    let role_banner = src_dir()?
+        .join("views")
+        .join("agent")
+        .join("role_banner.rs");
+    let dispatch = src_dir()?
         .join("app")
         .join("dispatch_model_thinking_dialogs.rs");
-    // @step When a test counts the line-count of every .rs file
-    let lines_thinking = count_lines_path(&thinking_level);
-    let lines_role = count_lines_path(&role_banner);
-    let lines_dispatch = count_lines_path(&dispatch);
+    // @step When a test counts the physical lines of every .rs file
+    let lines_thinking = count_lines_path(&thinking_level)?;
+    let lines_role = count_lines_path(&role_banner)?;
+    let lines_dispatch = count_lines_path(&dispatch)?;
     // @step Then rust/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
     assert!(
         lines_thinking < 300,
@@ -238,26 +216,28 @@ fn new_rpc022_modules_stay_under_300_lines() {
         lines_dispatch < 300,
         "dispatch_model_thinking_dialogs.rs has {lines_dispatch} lines (>= 300)"
     );
+    Ok(())
 }
 
 /// Scenario: Priority enum gains a Foreground variant numbered 900
 #[test]
-fn priority_enum_gains_foreground_variant_numbered_900() {
+fn priority_enum_gains_foreground_variant_numbered_900() -> TestResult {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-022 lands
-    let src = read_raw(&src_dir().join("components").join("mod.rs"));
+    let src = read_raw(&src_dir()?.join("components").join("mod.rs"))?;
     // @step Then the Priority enum contains the variant "Foreground = 900"
     assert!(src.contains("Foreground = 900"));
     // @step And Priority::Foreground sorts strictly between Priority::High (800) and Priority::Critical (1000)
     use codelet_fspec_tui::Priority;
     assert!(Priority::High < Priority::Foreground);
     assert!(Priority::Foreground < Priority::Critical);
+    Ok(())
 }
 
 /// Scenario: Action enum gains the new RPC-022 variants
 #[test]
-fn action_enum_gains_new_rpc022_variants() {
+fn action_enum_gains_new_rpc022_variants() -> TestResult {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-022 lands
-    let src = read_raw(&src_dir().join("components").join("mod.rs"));
+    let src = read_raw(&src_dir()?.join("components").join("mod.rs"))?;
     // @step Then the file contains the substring "ModelSelected"
     assert!(src.contains("ModelSelected"));
     // @step And the file contains the substring "ThinkingLevelSelected"
@@ -268,23 +248,25 @@ fn action_enum_gains_new_rpc022_variants() {
     assert!(src.contains("SessionRoleLoaded"));
     // @step And the file contains the substring "ListProvidersLoaded"
     assert!(src.contains("ListProvidersLoaded"));
-    // @step And the file contains the substring "OpenThinkingDialog"
-    assert!(src.contains("OpenThinkingDialog"));
+    Ok(())
 }
 
 /// Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite
 #[test]
-fn new_view_component_files_do_not_import_forbidden_crates() {
+fn new_view_component_files_do_not_import_forbidden_crates() -> TestResult {
     // @step Given the new RPC-022 files (thinking_level_dialog.rs, role_banner.rs)
     let files = [
-        src_dir()
+        src_dir()?
             .join("components")
             .join("thinking_level_dialog.rs"),
-        src_dir().join("views").join("agent").join("role_banner.rs"),
+        src_dir()?
+            .join("views")
+            .join("agent")
+            .join("role_banner.rs"),
     ];
     // @step When a test scans each *.rs file
     for path in files {
-        let src = common::strip_rust_comments(&read_raw(&path));
+        let src = common::strip_rust_comments(&read_raw(&path)?);
         // @step Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
         assert!(
             !src.contains("codelet_core::"),
@@ -318,4 +300,5 @@ fn new_view_component_files_do_not_import_forbidden_crates() {
             path.display()
         );
     }
+    Ok(())
 }

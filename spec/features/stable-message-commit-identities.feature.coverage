@@ -64,22 +64,10 @@
                 80,
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                83
+              ],
+              "firstLine": "pub fn store_with_id(",
+              "lastLine": "}"
             }
           ]
         }
@@ -126,19 +114,10 @@
                 57,
                 58,
                 59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
+                60
+              ],
+              "firstLine": "pub fn store_with_id(",
+              "lastLine": "}"
             }
           ]
         }
@@ -185,19 +164,10 @@
                 57,
                 58,
                 59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
+                60
+              ],
+              "firstLine": "pub fn store_with_id(",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,11 +206,10 @@
                 26,
                 27,
                 28,
-                29,
-                30,
-                31,
-                32
-              ]
+                29
+              ],
+              "firstLine": "pub fn append_message_idempotent(",
+              "lastLine": "}"
             }
           ]
         }
@@ -258,6 +227,6 @@
       "rust/core/src/persistence/messages/write.rs",
       "rust/core/src/persistence/conversation_commit.rs"
     ],
-    "totalLinesCovered": 346
+    "totalLinesCovered": 307
   }
 }

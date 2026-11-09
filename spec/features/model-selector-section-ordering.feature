@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @ts-parity
 @model-selection
 @providers
 @PROV-130
+@BUG-340
 Feature: Provider section ordering + default-model selection parity (profiles/custom before cloud)
   """
   Fix location: rust/sessions/src/handle_impl.rs list_providers() (~L957-1023) — partition mapped ProviderInfo into cloud vs custom by the source p.is_custom flag; apply PROV-129 synthesize_codex_section + PROV-127 retain_populated_cloud_sections to the cloud group; assemble final order as build_local_profile_sections() ++ custom_sections ++ cloud_sections (TS modelInitializationService.ts:196-200).
@@ -30,7 +32,7 @@ Feature: Provider section ordering + default-model selection parity (profiles/cu
     So that the auto-selected default model matches the TypeScript reference
 
   Scenario: A local-server profile section precedes cloud sections and provides the default model
-    Given a local-server openai profile with a custom model is configured
+    Given a reachable local-server openai profile with a custom model is configured
     And a credentialed cloud provider is present in the models.dev catalog
     When list_providers() assembles the provider list
     Then the local-server profile section appears before every cloud section

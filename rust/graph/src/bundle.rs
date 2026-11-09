@@ -6,7 +6,6 @@
 //! Extracted from `database.rs` to keep that file focused on core lifecycle
 //! (init/open/close, data loading, querying).
 
-use std::collections::HashMap;
 use std::path::Path;
 
 use tracing::info;
@@ -30,7 +29,7 @@ impl GraphDatabase {
         use zip::write::SimpleFileOptions;
         use zip::ZipWriter;
 
-        let entities = self.export_all_entities()?;
+        let entities = self.export_all_entities().await?;
         let jsonl = entities_to_jsonl(&entities);
 
         // Count nodes and edges
@@ -147,160 +146,24 @@ impl GraphDatabase {
         Ok(())
     }
 
-    /// Read all nodes and edges from the graph snapshot as `GraphEntity` values.
+    /// Read all nodes and edges of the graph as `GraphEntity` values.
     ///
-    /// Iterates Arrow record batches directly for nodes and uses
-    /// `edge_batch_for_save` for edges (resolving numeric IDs to slugs).
-    pub fn export_all_entities(&self) -> Result<Vec<GraphEntity>, String> {
-        use arrow_array::cast::AsArray;
-        use arrow_array::types::UInt64Type;
-
-        let storage = self.db.snapshot();
-        let mut entities = Vec::new();
-
-        // Phase 1: Export nodes and build node-id → slug map
-        let mut id_to_slug: HashMap<u64, String> = HashMap::new();
-
-        for (type_name, segment) in &storage.node_segments {
-            for batch in &segment.batches {
-                if batch.num_rows() == 0 {
-                    continue;
-                }
-                let schema = batch.schema();
-                // Column 0 is the internal `id` (UInt64)
-                let id_col = batch.column(0).as_primitive::<UInt64Type>();
-
-                for row in 0..batch.num_rows() {
-                    let node_id = id_col.value(row);
-                    let mut props = serde_json::Map::new();
-
-                    // Columns 1..n are user-defined properties
-                    for col_idx in 1..batch.num_columns() {
-                        let field = schema.field(col_idx);
-                        if let Some(val) = arrow_value_to_json(
-                            batch.column(col_idx).as_ref(),
-                            row,
-                            field.data_type(),
-                        ) {
-                            props.insert(field.name().clone(), val);
-                        }
-                    }
-
-                    let slug = props
-                        .get("slug")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .to_string();
-                    id_to_slug.insert(node_id, slug.clone());
-
-                    entities.push(GraphEntity::Node {
-                        node_type: type_name.clone(),
-                        slug,
-                        properties: props,
-                    });
-                }
-            }
-        }
-
-        // Phase 2: Export edges — resolve numeric IDs to slugs
-        for type_name in storage.edge_segments.keys() {
-            if let Ok(Some(batch)) = storage.edge_batch_for_save(type_name) {
-                if batch.num_rows() == 0 {
-                    continue;
-                }
-                let schema = batch.schema();
-                // Columns: [0]=id, [1]=src, [2]=dst, [3..]=props
-                let src_col = batch.column(1).as_primitive::<UInt64Type>();
-                let dst_col = batch.column(2).as_primitive::<UInt64Type>();
-
-                for row in 0..batch.num_rows() {
-                    let from_slug = id_to_slug
-                        .get(&src_col.value(row))
-                        .cloned()
-                        .unwrap_or_default();
-                    let to_slug = id_to_slug
-                        .get(&dst_col.value(row))
-                        .cloned()
-                        .unwrap_or_default();
-
-                    let mut props = serde_json::Map::new();
-                    for col_idx in 3..batch.num_columns() {
-                        let field = schema.field(col_idx);
-                        if let Some(val) = arrow_value_to_json(
-                            batch.column(col_idx).as_ref(),
-                            row,
-                            field.data_type(),
-                        ) {
-                            props.insert(field.name().clone(), val);
-                        }
-                    }
-
-                    entities.push(GraphEntity::Edge {
-                        edge_type: type_name.clone(),
-                        from_slug,
-                        to_slug,
-                        properties: props,
-                    });
-                }
-            }
-        }
-
-        Ok(entities)
-    }
-}
-
-/// Convert a single Arrow array value at `row` to a `serde_json::Value`.
-///
-/// Returns `None` for null values (so they can be omitted from the property map).
-/// Handles the types used in the AST code schema: Utf8, Int32, UInt64, Boolean, Date64.
-fn arrow_value_to_json(
-    array: &dyn arrow_array::Array,
-    row: usize,
-    data_type: &arrow_schema::DataType,
-) -> Option<serde_json::Value> {
-    use arrow_array::cast::AsArray;
-    use arrow_schema::DataType;
-
-    if array.is_null(row) {
-        return None;
-    }
-
-    match data_type {
-        DataType::Utf8 => {
-            let arr = array.as_string::<i32>();
-            Some(serde_json::Value::String(arr.value(row).to_string()))
-        }
-        DataType::LargeUtf8 => {
-            let arr = array.as_string::<i64>();
-            Some(serde_json::Value::String(arr.value(row).to_string()))
-        }
-        DataType::Int32 => {
-            let arr = array.as_primitive::<arrow_array::types::Int32Type>();
-            Some(serde_json::Value::Number(arr.value(row).into()))
-        }
-        DataType::UInt64 => {
-            let arr = array.as_primitive::<arrow_array::types::UInt64Type>();
-            Some(serde_json::Value::Number(arr.value(row).into()))
-        }
-        DataType::Boolean => {
-            let arr = array.as_boolean();
-            Some(serde_json::Value::Bool(arr.value(row)))
-        }
-        DataType::Date64 => {
-            let arr = array.as_primitive::<arrow_array::types::Date64Type>();
-            let millis = arr.value(row);
-            // Convert epoch millis to ISO string
-            if let Some(dt) = arrow_array::temporal_conversions::date64_to_datetime(millis) {
-                Some(serde_json::Value::String(
-                    dt.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
-                ))
-            } else {
-                Some(serde_json::Value::Number(millis.into()))
-            }
-        }
-        _ => {
-            // Unsupported type — skip
-            None
-        }
+    /// KGRAPH-072: nanograph 1.3.0's export API reads the committed datasets
+    /// and returns portable rows (`{type,data}` / `{edge,from,to,data}`, edge
+    /// endpoints by `@key`), the same shape the loader takes.
+    pub async fn export_all_entities(&self) -> Result<Vec<GraphEntity>, String> {
+        let rows = super::database::erased(nanograph::store::export::build_export_rows_at_path(
+            self.path(),
+            false,
+            false,
+        ))
+        .await
+        .map_err(|e| format!("Failed to export graph at {}: {e}", self.path().display()))?;
+        let jsonl = rows
+            .iter()
+            .map(serde_json::Value::to_string)
+            .collect::<Vec<_>>()
+            .join("\n");
+        jsonl_to_entities(&jsonl)
     }
 }

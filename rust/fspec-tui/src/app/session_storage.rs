@@ -28,6 +28,12 @@ pub(crate) async fn publish_manifest_issues(
 }
 
 impl App {
+    /// TUI-124: the failed session operations shown to the user (a close
+    /// that did not happen, a delete that failed, ...), oldest first.
+    pub fn session_operation_errors(&self) -> &[String] {
+        &self.session_storage.errors
+    }
+
     pub(crate) fn spawn_session_manifest_issues(&mut self, replay: bool) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;

@@ -10,13 +10,6 @@
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -32,8 +25,18 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                74,
+                74,
+                74
+              ],
+              "firstLine": "// RPC-445: only sessions of the workspace the board shows.",
+              "lastLine": "// BUG-400: an unobserved status stays unknown (None)."
             }
           ]
         }
@@ -49,10 +52,6 @@
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                122,
-                123,
-                124,
-                125,
                 126,
                 127,
                 128,
@@ -71,8 +70,14 @@
                 141,
                 142,
                 143,
-                144
-              ]
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// original index, fold markers when ANY folded cell is focused) OR the",
+              "lastLine": "&& f == o"
             }
           ]
         }
@@ -88,14 +93,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -113,8 +110,16 @@
                 89,
                 90,
                 91,
-                92
-              ]
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "/// The per-frame agent-bar [`MenuSnapshot`]: the store's painted chips",
+              "lastLine": "chips,"
             }
           ]
         }
@@ -130,10 +135,6 @@
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
               "lines": [
-                122,
-                123,
-                124,
-                125,
                 126,
                 127,
                 128,
@@ -152,8 +153,14 @@
                 141,
                 142,
                 143,
-                144
-              ]
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// original index, fold markers when ANY folded cell is focused) OR the",
+              "lastLine": "&& f == o"
             }
           ]
         }
@@ -207,15 +214,12 @@
                 69,
                 70,
                 71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
-                78,
-                79
-              ]
+                78
+              ],
+              "firstLine": "pub fn build_snapshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -269,15 +273,12 @@
                 69,
                 70,
                 71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
-                78,
-                79
-              ]
+                78
+              ],
+              "firstLine": "pub fn build_snapshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -297,6 +298,6 @@
       "rust/fspec-tui/src/views/agent/menu_render.rs",
       "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs"
     ],
-    "totalLinesCovered": 118
+    "totalLinesCovered": 474
   }
 }

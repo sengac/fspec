@@ -23,15 +23,19 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// Total context = total_input + output + reasoning (for threshold checks)",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
-                83,
-                84,
-                85
-              ]
+                71,
+                72,
+                73
+              ],
+              "firstLine": "fn token_usage(&self) -> Option<crate::completion::Usage> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
@@ -39,7 +43,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "ResponseInProgress,",
+              "lastLine": "ResponseCompleted,"
             }
           ]
         }
@@ -68,7 +74,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// Total context = total_input + output + reasoning (for threshold checks)",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
@@ -85,10 +93,35 @@
                 95,
                 96,
                 97,
-                122,
-                123,
-                124
-              ]
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "#[derive(Debug, Deserialize, Clone, Serialize, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,19 +150,31 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// Total context = total_input + output + reasoning (for threshold checks)",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
               "lines": [
+                28,
                 29,
                 30,
                 31,
                 32,
-                53,
-                54,
-                55
-              ]
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "impl GetTokenUsage for PartialUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,15 +203,19 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// Total context = total_input + output + reasoning (for threshold checks)",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
-                83,
-                84,
-                85
-              ]
+                71,
+                72,
+                73
+              ],
+              "firstLine": "fn token_usage(&self) -> Option<crate::completion::Usage> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -195,15 +244,19 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "/// Total context = total_input + output + reasoning (for threshold checks)",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
-                83,
-                84,
-                85
-              ]
+                71,
+                72,
+                73
+              ],
+              "firstLine": "fn token_usage(&self) -> Option<crate::completion::Usage> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -224,6 +277,6 @@
       "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
       "rust/patches/rig-core/src/providers/gemini/streaming.rs"
     ],
-    "totalLinesCovered": 213
+    "totalLinesCovered": 244
   }
 }

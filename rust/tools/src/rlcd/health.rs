@@ -59,7 +59,11 @@ pub async fn health_check(url: &str, timeout: Duration) -> Result<String, RlcdEr
         }
     };
     let status = value.get("status").and_then(Value::as_str).unwrap_or("");
-    let model = value.get("model").and_then(Value::as_str).unwrap_or("").to_string();
+    let model = value
+        .get("model")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
     if status != "ready" || model.is_empty() {
         return Err(RlcdError::Health {
             detail: format!(

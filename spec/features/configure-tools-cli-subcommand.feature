@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @configuration
 @cli
@@ -55,3 +56,9 @@ Feature: fspec configure-tools CLI subcommand
     And running `fspec configure-tools --quality-commands "via-cli"` afterwards exits 0
     And spec/fspec-config.json still shows tools.test.command='via-dispatcher' and tools.qualityCheck.commands=['via-cli']
     And the CLI bridge module rust/fspec/src/configure_tools.rs contains NO inline config-merge or file-write logic — its only computation is JSON arg marshalling
+
+  Scenario: configure-tools command appears in help output
+    Given the fspec Rust binary is built and on PATH
+    When I run `fspec --help`
+    Then the exit code is 0
+    And stdout lists configure-tools with the summary 'Configure test and quality check commands'

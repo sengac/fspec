@@ -1,0 +1,231 @@
+{
+  "scenarios": [
+    {
+      "name": "A session's question event on the bridge carries the question text",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bridge022_bridge_shows_and_answers_questions.rs",
+          "lines": "164-198",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/bridge.rs",
+              "lines": [
+                10,
+                13,
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "let session_for_events = session.clone();",
+              "lastLine": "Err(tokio::sync::broadcast::error::RecvError::Lagged(count)) => {"
+            },
+            {
+              "file": "rust/agent-loop/src/bridge_control.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "/// BRIDGE-022: the JSON the bridge forwards for `chunk` from `session`. The",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "question_response answers the question named by its request id",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bridge022_bridge_shows_and_answers_questions.rs",
+          "lines": "200-235",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/bridge_control.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "\"question_response\" => {",
+              "lastLine": "response,"
+            },
+            {
+              "file": "rust/tools/src/bridge_multiplexed.rs",
+              "lines": [
+                345,
+                346,
+                347,
+                348,
+                349,
+                350
+              ],
+              "firstLine": "// BRIDGE-022: a question_response's answers are an object,",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A question_response with a wrong, missing or approval id answers nothing",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bridge022_bridge_shows_and_answers_questions.rs",
+          "lines": "237-277",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/bridge_control.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "\"question_response\" => {",
+              "lastLine": "response,"
+            },
+            {
+              "file": "rust/tools/src/bridge_multiplexed.rs",
+              "lines": [
+                345,
+                346,
+                347,
+                348,
+                349,
+                350
+              ],
+              "firstLine": "// BRIDGE-022: a question_response's answers are an object,",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bridge answers a question its parent holds and the parent is told",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bridge022_bridge_shows_and_answers_questions.rs",
+          "lines": "279-321",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/bridge_control.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "\"question_response\" => {",
+              "lastLine": "response,"
+            },
+            {
+              "file": "rust/tools/src/bridge_multiplexed.rs",
+              "lines": [
+                345,
+                346,
+                347,
+                348,
+                349,
+                350
+              ],
+              "firstLine": "// BRIDGE-022: a question_response's answers are an object,",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bridge022_bridge_shows_and_answers_questions.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/agent_loop/bridge.rs",
+      "rust/agent-loop/src/bridge_control.rs",
+      "rust/tools/src/bridge_multiplexed.rs"
+    ],
+    "totalLinesCovered": 268
+  }
+}

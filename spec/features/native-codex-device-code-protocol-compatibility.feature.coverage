@@ -66,7 +66,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Deserialize)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -167,7 +169,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub async fn poll_device_token(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/codex_device_auth.rs",
@@ -215,7 +219,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "device_code: &DeviceCodeResponse,",
+              "lastLine": "}"
             }
           ]
         }
@@ -283,7 +289,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "let status = response.status();",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/codex_device_auth.rs",
@@ -355,7 +363,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -366,7 +376,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug279_device_protocol.rs",
-          "lines": "153-204",
+          "lines": "153-207",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_device_auth.rs",
@@ -393,12 +403,13 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "pub async fn device_auth_login(config: DeviceAuthConfig) -> Result<CodexTokens> {",
+              "lastLine": "config: &DeviceAuthConfig,"
             },
             {
               "file": "rust/providers/src/codex/device_session.rs",
               "lines": [
-                54,
                 55,
                 56,
                 57,
@@ -467,8 +478,27 @@
                 120,
                 121,
                 122,
-                123
-              ]
+                123,
+                124
+              ],
+              "firstLine": "pub async fn start_device_login() -> Result<DeviceCodeResponse, AuthError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/tests/device_protocol/support.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "pub async fn count(server: &MockServer, endpoint: &str) -> Result<usize, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,7 +509,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug279_device_protocol.rs",
-          "lines": "208-244",
+          "lines": "211-247",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_device_auth.rs",
@@ -527,7 +557,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "device_code: &DeviceCodeResponse,",
+              "lastLine": "}"
             }
           ]
         }
@@ -544,8 +576,9 @@
     "implFiles": [
       "rust/providers/src/codex/codex_device_auth.rs",
       "rust/providers/src/codex/device_poll.rs",
-      "rust/providers/src/codex/device_session.rs"
+      "rust/providers/src/codex/device_session.rs",
+      "rust/providers/tests/device_protocol/support.rs"
     ],
-    "totalLinesCovered": 655
+    "totalLinesCovered": 667
   }
 }

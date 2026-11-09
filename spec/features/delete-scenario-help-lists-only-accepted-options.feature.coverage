@@ -1,0 +1,63 @@
+{
+  "scenarios": [
+    {
+      "name": "The help does not offer a force option",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug495_delete_scenario_help_lists_accepted_options.rs",
+          "lines": "29-37",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/delete_scenario.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                48
+              ],
+              "firstLine": "/// BUG-495: delete-scenario never asks for confirmation, so the TS help's",
+              "lastLine": "usage: Some(\"fspec delete-scenario <file> <scenario>\"),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The force option stays an unknown argument",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug495_delete_scenario_help_lists_accepted_options.rs",
+          "lines": "39-55",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_07.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ],
+              "firstLine": "DeleteScenario {",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug495_delete_scenario_help_lists_accepted_options.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/help/configs/delete_scenario.rs",
+      "rust/fspec/src/cli_registration/mode_07.rs"
+    ],
+    "totalLinesCovered": 36
+  }
+}

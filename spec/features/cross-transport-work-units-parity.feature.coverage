@@ -5,8 +5,20 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/cross_transport_push_parity.rs",
-          "lines": "27-81",
+          "lines": "25-81",
           "implMappings": [
+            {
+              "file": "rust/rpc-server/src/client/replay_watch.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "let initial = watch_rx.borrow_and_update().clone();",
+              "lastLine": "}"
+            },
             {
               "file": "rust/rpc-server/src/client.rs",
               "lines": [
@@ -20,14 +32,6 @@
                 8,
                 9,
                 10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
                 19,
                 20,
                 21,
@@ -113,9 +117,6 @@
                 101,
                 102,
                 103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -143,10 +144,10 @@
                 131,
                 132,
                 133,
-                134,
-                135,
-                136
-              ]
+                247
+              ],
+              "firstLine": "//! Client-side adapter: build a tarpc client over a tokio-tungstenite",
+              "lastLine": "tokio::spawn(async move {"
             }
           ]
         }
@@ -161,8 +162,9 @@
       "rust/rpc-server/tests/cross_transport_push_parity.rs"
     ],
     "implFiles": [
+      "rust/rpc-server/src/client/replay_watch.rs",
       "rust/rpc-server/src/client.rs"
     ],
-    "totalLinesCovered": 191
+    "totalLinesCovered": 185
   }
 }

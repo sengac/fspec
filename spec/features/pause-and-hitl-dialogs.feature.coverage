@@ -5,22 +5,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "124-166",
+          "lines": "25-54",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -65,11 +57,10 @@
                 104,
                 105,
                 106,
-                107,
-                108,
-                109,
-                110
-              ]
+                107
+              ],
+              "firstLine": "pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {",
+              "lastLine": "// exec-stdin request when neither HITL nor a pause occupies"
             }
           ]
         }
@@ -80,19 +71,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "168-203",
+          "lines": "57-79",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
                 68,
                 69,
                 70,
@@ -130,11 +113,10 @@
                 102,
                 103,
                 104,
-                105,
-                106,
-                107,
-                108
-              ]
+                105
+              ],
+              "firstLine": "let generation = self.agent_view_store.advance_exec_stdin_generation(&id);",
+              "lastLine": "}"
             }
           ]
         }
@@ -145,19 +127,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "205-233",
+          "lines": "82-102",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
                 68,
                 69,
                 70,
@@ -195,11 +169,10 @@
                 102,
                 103,
                 104,
-                105,
-                106,
-                107,
-                108
-              ]
+                105
+              ],
+              "firstLine": "let generation = self.agent_view_store.advance_exec_stdin_generation(&id);",
+              "lastLine": "}"
             }
           ]
         }
@@ -210,296 +183,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "235-262",
+          "lines": "105-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Esc on the inline HITL prompt cancels through the backend",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "268-295",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Backend.get_hitl_request error during the chunk-driven probe sets no slot",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "301-344",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Backend.send_hitl_response error on Esc-cancel still clears the slot and emits no scrollback notice",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "346-379",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-              "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "385-426",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -514,32 +202,25 @@
                 122,
                 123,
                 124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
+                125
+              ],
+              "firstLine": "// quiet). BUG-364: a failed read reaches the app as",
+              "lastLine": "send_to_app(&action_tx, action);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the inline HITL prompt cancels through the backend",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "lines": "134-161",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+              "lines": [
                 151,
                 152,
                 153,
@@ -551,35 +232,56 @@
                 159,
                 160,
                 161,
+                162
+              ],
+              "firstLine": "pub(crate) fn handle_hitl_cancelled(&mut self, session_id: SessionId) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
+          "lines": "168-212",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/mod.rs",
+              "lines": [
+                58,
+                73
+              ],
+              "firstLine": "pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)",
+              "lastLine": "pub mod dispatch_mux_apply; // MUX-001: /mux subcommand + dialog-draft applier"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                56,
+                133,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                158,
+                159,
+                160,
+                161,
                 162,
                 163,
                 164,
                 165,
                 166,
                 167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
                 191,
                 192,
                 193,
@@ -620,9 +322,6 @@
                 228,
                 229,
                 230,
-                231,
-                232,
-                233,
                 234,
                 235,
                 236,
@@ -653,28 +352,10 @@
                 261,
                 262,
                 263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284
-              ]
+                264
+              ],
+              "firstLine": "pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -682,16 +363,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/pause_hitl_rpc053.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-      "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs"
+      "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
+      "rust/fspec-tui/src/app/mod.rs"
     ],
-    "totalLinesCovered": 831
+    "totalLinesCovered": 416
   }
 }

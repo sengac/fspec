@@ -291,3 +291,80 @@ fn auto_creates_work_units_then_reports_missing_source_error() {
     assert!(v["workUnits"].as_object().unwrap().is_empty());
     assert!(v["states"]["backlog"].as_array().unwrap().is_empty());
 }
+
+// ---------- scenario moved from work-item-types-for-stories-tasks-and-bugs (COV-072) ----------
+
+fn dispatch(project_root: &Path, command: &str, args: Value) -> codelet_fspec_core::DispatchResult {
+    dispatch_command(DispatchRequest {
+        command: command.to_string(),
+        args_json: args.to_string(),
+        project_root: project_root.to_path_buf(),
+    })
+}
+
+#[test]
+fn a_task_work_unit_accepts_optional_example_mapping_in_specifying() {
+    // @step Given a project root tempdir with spec/work-units.json containing the task CLEAN-001 status=specifying
+    let tmp = TempDir::new().expect("tempdir");
+    let mut seeded: Value =
+        serde_json::from_str(&seed_units(&[("CLEAN-001", "specifying")])).expect("parse seed");
+    seeded["workUnits"]["CLEAN-001"]["type"] = json!("task");
+    write_work_units(
+        tmp.path(),
+        &serde_json::to_string_pretty(&seeded).expect("serialise seed"),
+    );
+
+    // @step When I dispatch add-rule with workUnitId='CLEAN-001' and rule='Remove dead code only'
+    let rule = dispatch(
+        tmp.path(),
+        "add-rule",
+        json!({"workUnitId": "CLEAN-001", "rule": "Remove dead code only"}),
+    );
+
+    // @step And I dispatch add-example with workUnitId='CLEAN-001' and example='Unused helper is deleted'
+    let example = dispatch(
+        tmp.path(),
+        "add-example",
+        json!({"workUnitId": "CLEAN-001", "example": "Unused helper is deleted"}),
+    );
+
+    // @step Then both dispatches return success=true
+    assert!(
+        rule.success,
+        "add-rule: expected success=true, got {rule:?}"
+    );
+    assert!(
+        example.success,
+        "add-example: expected success=true, got {example:?}"
+    );
+
+    // @step And spec/work-units.json on disk shows CLEAN-001.rules[0].text='Remove dead code only' and CLEAN-001.examples[0].text='Unused helper is deleted'
+    let v = read_work_units(tmp.path());
+    assert_eq!(
+        v["workUnits"]["CLEAN-001"]["rules"][0]["text"].as_str(),
+        Some("Remove dead code only"),
+        "got {v}"
+    );
+    assert_eq!(
+        v["workUnits"]["CLEAN-001"]["examples"][0]["text"].as_str(),
+        Some("Unused helper is deleted"),
+        "got {v}"
+    );
+
+    // @step And dispatching update-work-unit-status with workUnitId='CLEAN-001' and status='implementing' returns success=true without questions, assumptions or a feature file
+    let moved = dispatch(
+        tmp.path(),
+        "update-work-unit-status",
+        json!({"workUnitId": "CLEAN-001", "status": "implementing"}),
+    );
+    assert!(
+        moved.success,
+        "task must move to implementing; got {moved:?}"
+    );
+    let v = read_work_units(tmp.path());
+    assert_eq!(
+        v["workUnits"]["CLEAN-001"]["status"].as_str(),
+        Some("implementing"),
+        "got {v}"
+    );
+}

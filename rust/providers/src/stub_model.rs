@@ -92,8 +92,9 @@ impl CompletionModel for StubModel {
         // non-streaming faithful so future callers (e.g. PROV-103
         // token-usage smoke tests) work uniformly.
         request::record(&request)?;
+        let text = compactor_dag(&request)?.unwrap_or_else(|| "hi back".to_string());
         Ok(RigCompletionResponse {
-            choice: OneOrMany::one(AssistantContent::text("hi back")),
+            choice: OneOrMany::one(AssistantContent::text(text)),
             usage: Usage::new(),
             raw_response: StubCompletion::end_turn(),
         })
@@ -147,7 +148,12 @@ impl CompletionModel for StubModel {
         // CMPCT-045: honor the deterministic-response hook (text
         // substitution) so a streaming sub-agent run can also be
         // test-controlled.
-        let text = deterministic_response().unwrap_or_else(|| "hi back".to_string());
+        // BUG-543: a test-set deterministic response wins; otherwise a
+        // compactor request gets a covering DAG.
+        let text = match deterministic_response() {
+            Some(text) => text,
+            None => compactor_dag(&request)?.unwrap_or_else(|| "hi back".to_string()),
+        };
         let rig_stream: StreamingResult<StubCompletion> = Box::pin(stream! {
             yield Ok(RawStreamingChoice::Message(text));
             yield Ok(RawStreamingChoice::FinalResponse(StubCompletion::end_turn()));
@@ -155,6 +161,32 @@ impl CompletionModel for StubModel {
 
         Ok(StreamingCompletionResponse::stream(rig_stream))
     }
+}
+
+/// BUG-543: answer a compactor sub-agent request with a valid summary DAG.
+///
+/// The compactor task names its target ("Target session: <id>") and the
+/// number of captured turns ("This operation covers exactly N ..."); the
+/// stub replies with one D1 node covering turns 0..N-1, so a stub-backed
+/// session can run a real manual compaction end to end. Any other request
+/// keeps the canned reply.
+fn compactor_dag(request: &CompletionRequest) -> Result<Option<String>, CompletionError> {
+    let text = String::from_utf8_lossy(&request::serialize(request)?).into_owned();
+    if !text.contains("Target session: ") {
+        return Ok(None);
+    }
+    let covered = text
+        .split("This operation covers exactly ")
+        .nth(1)
+        .and_then(|tail| tail.split(|c: char| !c.is_ascii_digit()).next())
+        .and_then(|count| count.parse::<usize>().ok())
+        .filter(|count| *count > 0);
+    Ok(covered.map(|count| {
+        format!(
+            "<dag-node depth=\"D1\" turns=\"0-{}\" label=\"Stub summary\">\nThe stub provider summarised the earlier conversation.\n</dag-node>",
+            count - 1
+        )
+    }))
 }
 
 // ---------------------------------------------------------------------

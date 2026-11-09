@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "56-80",
+          "lines": "33-53",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -20,7 +20,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "bot: MinimalBot | null;",
+              "lastLine": "isPaused?: boolean;"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "82-102",
+          "lines": "57-71",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -49,7 +51,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "pauseInfo?: PauseInfo;",
+              "lastLine": "// ============================================================================"
             }
           ]
         }
@@ -60,7 +64,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "104-124",
+          "lines": "75-89",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -78,7 +82,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "pauseInfo?: PauseInfo;",
+              "lastLine": "// ============================================================================"
             }
           ]
         }
@@ -89,24 +95,34 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "126-152",
+          "lines": "93-110",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307
+              ],
+              "firstLine": "* Handle /stop command - interrupt agent operation",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,24 +133,34 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "154-173",
+          "lines": "114-128",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307
+              ],
+              "firstLine": "* Handle /stop command - interrupt agent operation",
+              "lastLine": "}"
             }
           ]
         }
@@ -145,21 +171,28 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "175-204",
+          "lines": "132-153",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314
+              ],
+              "firstLine": "* Handle /clear command - reset session",
+              "lastLine": "}"
             }
           ]
         }
@@ -170,19 +203,24 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "206-231",
+          "lines": "157-175",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                339,
+                340
+              ],
+              "firstLine": "* Handle unknown command - show error with available commands",
+              "lastLine": "response = handleUnknownCommand(command);"
             }
           ]
         }
@@ -193,7 +231,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "233-259",
+          "lines": "179-197",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -203,7 +241,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "* Handle /status command - show agent state",
+              "lastLine": "isPaused?: boolean,"
             }
           ]
         }
@@ -214,48 +254,8 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-slash-commands.test.ts",
-          "lines": "261-280",
-          "implMappings": [
-            {
-              "file": "bridge/telegram-endpoint.ts",
-              "lines": [
-                659,
-                660,
-                661,
-                662,
-                663,
-                664,
-                665,
-                666,
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675,
-                676,
-                677,
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684,
-                685,
-                686,
-                687,
-                688,
-                689,
-                690,
-                691,
-                692
-              ]
-            }
-          ]
+          "lines": "201-215",
+          "implMappings": []
         }
       ]
     }
@@ -268,9 +268,8 @@
       "bridge/__tests__/telegram-slash-commands.test.ts"
     ],
     "implFiles": [
-      "bridge/telegram-slash-commands.ts",
-      "bridge/telegram-endpoint.ts"
+      "bridge/telegram-slash-commands.ts"
     ],
-    "totalLinesCovered": 332
+    "totalLinesCovered": 264
   }
 }

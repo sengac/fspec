@@ -66,7 +66,16 @@ pub fn build_gate_state(command: &str, args_json: &str, project_root: &str) -> S
             .and_then(Value::as_str)
             .unwrap_or("")
             .to_string();
-        if let Some((title, epic)) = work_unit_meta(project_root, &work_unit_id) {
+        let meta = match work_unit_meta(project_root, &work_unit_id) {
+            Ok(meta) => meta,
+            // WT-015: a broken state-root pointer; the command itself fails
+            // on it, naming the pointer file, once the gate lets it run.
+            Err(error) => {
+                warn!(command, error = %error, "rlcd gate: cannot resolve the state root");
+                None
+            }
+        };
+        if let Some((title, epic)) = meta {
             return format!(
                 "command=update-work-unit-status; workUnit={work_unit_id}; \
                  transition=to {status}; title={title}; epic={epic}; args={args_json}"
@@ -81,8 +90,17 @@ pub fn build_gate_state(command: &str, args_json: &str, project_root: &str) -> S
 }
 
 /// Best-effort `(title, epic)` lookup in `spec/work-units.json`.
-fn work_unit_meta(project_root: &str, work_unit_id: &str) -> Option<(String, String)> {
-    let path = std::path::Path::new(project_root).join("spec/work-units.json");
+fn work_unit_meta(
+    project_root: &str,
+    work_unit_id: &str,
+) -> std::io::Result<Option<(String, String)>> {
+    let path =
+        codelet_common::spec_paths::ProjectRoots::resolve(std::path::Path::new(project_root))?
+            .work_units();
+    Ok(work_unit_meta_at(&path, work_unit_id))
+}
+
+fn work_unit_meta_at(path: &std::path::Path, work_unit_id: &str) -> Option<(String, String)> {
     let content = std::fs::read_to_string(path).ok()?;
     let value: Value = serde_json::from_str(&content).ok()?;
     let unit = value.get("workUnits")?.get(work_unit_id)?;
@@ -104,15 +122,16 @@ fn work_unit_meta(project_root: &str, work_unit_id: &str) -> Option<(String, Str
 // session-allowance helpers (blocklist API, keyed 'rlcd-gate:<command>')
 // ============================================================================
 
-/// Whether the session already allows the gate for `command` (AllowSession).
+/// Whether `session_id` already allows the gate for `command` (AllowSession;
+/// BUG-606: only the session that chose it).
 #[must_use]
-pub fn is_session_gate_allowed(command: &str) -> bool {
-    is_session_allowed(&format!("{GATE_ALLOWANCE_KEY}{command}"))
+pub fn is_session_gate_allowed(session_id: Uuid, command: &str) -> bool {
+    is_session_allowed(session_id, &format!("{GATE_ALLOWANCE_KEY}{command}"))
 }
 
-/// Record the gate allowance for `command` (user chose AllowSession).
-pub fn allow_session_gate(command: &str) {
-    allow_for_session(&format!("{GATE_ALLOWANCE_KEY}{command}"));
+/// Record `session_id`'s gate allowance for `command` (it chose AllowSession).
+pub fn allow_session_gate(session_id: Uuid, command: &str) {
+    allow_for_session(session_id, &format!("{GATE_ALLOWANCE_KEY}{command}"));
 }
 
 /// Clear every gate allowance (TUI restart path — the blocklist
@@ -143,7 +162,15 @@ pub async fn run_rlcd_gate(
     args_json: &str,
     project_root: &str,
 ) -> GateVerdict {
-    let config = load_rlcd_config();
+    // BUG-451: an unloadable RLCD config rejects the gated command.
+    let config = match load_rlcd_config() {
+        Ok(config) => config,
+        Err(error) => {
+            return GateVerdict::Rejected {
+                reason: format!("RLCD workflow gate: {error}"),
+            }
+        }
+    };
     let gate_config = config.gate.clone();
 
     // Ungated command / disabled engine: execute without any RLCD work.
@@ -151,7 +178,7 @@ pub async fn run_rlcd_gate(
         return GateVerdict::Execute;
     }
     // Session allowance (AllowSession): execute without asking.
-    if is_session_gate_allowed(command) {
+    if is_session_gate_allowed(session_id, command) {
         return GateVerdict::Execute;
     }
 
@@ -219,12 +246,7 @@ pub async fn run_rlcd_gate(
 }
 
 /// Outcome (c): Triple pause; AllowOnce/AllowSession execute, Deny rejects.
-fn gate_pause(
-    session_id: Uuid,
-    command: &str,
-    args_json: &str,
-    reason: String,
-) -> GateVerdict {
+fn gate_pause(session_id: Uuid, command: &str, args_json: &str, reason: String) -> GateVerdict {
     let response = pause_for_user(
         session_id,
         PauseRequest {
@@ -236,7 +258,7 @@ fn gate_pause(
     );
     match response {
         PauseResponse::AllowSession => {
-            allow_session_gate(command);
+            allow_session_gate(session_id, command);
             GateVerdict::Execute
         }
         // AllowOnce and Resumed (no pause handler registered) execute once.

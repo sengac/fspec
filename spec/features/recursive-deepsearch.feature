@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RLM-002
+@tools
+@history-search
 Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned system prompt
   """
   DeepSearchTool struct gets a depth field. The handler chain passes depth through: parent handler registration (depth=0) → execute_deep_search(depth) → build_and_run_agent conditionally adds DeepSearchTool::new(session_id).with_depth(depth+1) when depth < max_recursion_depth.

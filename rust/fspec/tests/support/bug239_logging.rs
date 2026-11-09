@@ -19,6 +19,7 @@ pub fn child(name: &str, payloads: bool, mode: &str) -> (String, tempfile::TempD
         .env("BUG239_CHILD", "1")
         .env("BUG239_MODE", mode)
         .env("HOME", home.path())
+        .env("FSPEC_USER_DIR", home.path().join(".fspec"))
         .env("RUST_LOG", "trace")
         .env_remove("FSPEC_LOG_PAYLOADS");
     if payloads {

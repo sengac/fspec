@@ -1,5 +1,7 @@
 @done
 @RPC-281
+@cli
+@feature-management
 Feature: remove-tag-from-feature CLI subcommand (Rust shell front-door)
   """
   Files: rust/fspec/src/remove_tag_from_feature.rs (NEW CLI bridge); rust/fspec/tests/cli_remove_tag_from_feature.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/remove-tag-from-feature.txt (captured help fixture from `node dist/index.js remove-tag-from-feature --help`).

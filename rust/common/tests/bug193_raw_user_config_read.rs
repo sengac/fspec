@@ -32,7 +32,7 @@ fn raw_user_file_read_ignores_the_project_scope_file() {
     let project = tempfile::tempdir().unwrap();
     fs::create_dir_all(project.path().join("spec")).unwrap();
     fs::write(
-        project_config_path(project.path()),
+        project_config_path(project.path()).unwrap(),
         r#"{"agent": "claude", "tools": {"test": {"command": "mvn test"}}}"#,
     )
     .unwrap();

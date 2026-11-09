@@ -93,7 +93,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! Background-priority placeholder component (RPC-008 rule [14]).",
+              "lastLine": "use super::*;"
             }
           ]
         }

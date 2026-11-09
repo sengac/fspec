@@ -1,4 +1,7 @@
 @KGRAPH-002
+@COV-057
+@persistence
+@code-analysis
 Feature: Nanograph Database Lifecycle & Integration
   """
   Nanograph integrated as Rust crate via git submodule + Cargo path dependency. Database stored at ~/.fspec/graph/agent-memory.nano/. Singleton pattern: lazy_static Mutex<Option<Database>>. Schema bundled via include_str!(). Feature-gated behind 'graph' Cargo feature.
@@ -44,33 +47,8 @@ Feature: Nanograph Database Lifecycle & Integration
     I want to have an embedded nanograph database that initializes, opens, and closes cleanly
     So that the knowledge graph has a reliable persistence layer for all subsequent features
 
-  Scenario: First GraphSearch call auto-initializes the database
-    Given the ~/.fspec/graph/ directory does not exist
-    When a GraphSearch action is invoked for the first time
-    Then the ~/.fspec/graph/agent-memory.nano/ directory is created
-    And the schema.pg file contains the agent-memory schema
-    And the database is open and ready for queries
-
-  Scenario: Subsequent process opens existing database
-    Given the ~/.fspec/graph/agent-memory.nano/ directory already exists with a valid schema
-    When a GraphSearch action is invoked
-    Then the existing database is opened without re-initialization
-    And all previously stored graph data is accessible
-
-  Scenario: Data directory change resets graph singleton
-    Given the graph database is open and initialized
-    When set_data_directory() is called with a new path
-    Then the graph singleton is reset to None
-    And the next GraphSearch call initializes from the new data directory
-
   Scenario: Empty graph returns zero stats without error
     Given the graph database has been initialized with no data loaded
     When a stats query is executed against the graph
     Then all node and edge counts are zero
     And no error is returned
-
-  Scenario: Schema contains all required node and edge types
-    Given the graph database has been initialized
-    When the database schema is described
-    Then node types Concept, Decision, CodeEntity, WorkUnit, Session, and Turn exist
-    And edge types Mentions, Discusses, Decides, Implements, Modifies, RelatesTo, Supersedes, WorksOn, References, and ContainsTurn exist

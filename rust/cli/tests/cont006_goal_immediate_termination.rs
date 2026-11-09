@@ -1,6 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/goal-immediate-termination.feature
-//! Feature: spec/features/completion-goal-teardown-layout-guards.feature
 //!
 //! CONT-006: /goal immediate termination and atomic goal teardown on
 //! accepted done().
@@ -21,6 +20,10 @@
 //! - source-shape tests pinning the wiring that cannot be driven without a
 //!   live provider stream (rpc082/083 precedent).
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use std::sync::Mutex;
 
 use codelet_cli::interactive::done_early_exit::{
@@ -68,23 +71,14 @@ impl StreamOutput for RecordingOutput {
     }
 }
 
-/// Build a Session without depending on a single-credential environment
-/// (mirrors auto_continue_engine_test.rs::fresh_session).
+/// An offline session for an explicitly selected provider, whatever this
+/// machine has credentialed (BUG-548).
 fn fresh_session() -> Session {
-    for name in ["claude", "openai", "gemini", "codex", "zai"] {
-        if let Ok(pm) = codelet_providers::ProviderManager::with_provider(name) {
-            return Session::from_provider_manager(pm);
-        }
-    }
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 fn stream_loop_source() -> String {
-    std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/interactive/stream_loop.rs"
-    ))
-    .expect("stream_loop.rs must be readable")
+    stream_loop_source_tree::stream_loop_source()
 }
 
 /// The `StreamUserItem(ToolResult)` arm region of stream_loop.rs — from the

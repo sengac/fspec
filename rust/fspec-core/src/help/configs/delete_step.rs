@@ -6,11 +6,9 @@
 //!
 //! Captured fixture: `rust/fspec/tests/fixtures/help/delete-step.txt`
 //!
-//! Note: the TS help config documents three positional arguments
-//! (`file`, `scenario`, `index`) and a `--force` flag. The TS Commander.js
-//! registration only wires `<feature> <scenario> <step>`, but the help
-//! page is rendered verbatim from this config, so the Rust port mirrors the
-//! config (not the runtime registration) for byte-for-byte fixture parity.
+//! BUG-505: the TS help config documented a 0-based `index` argument and a
+//! `--force` flag, but the command matches the step by its text and has no
+//! confirmation; the help now describes the real `<step>` argument.
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption};
 
@@ -26,21 +24,17 @@ const ARGUMENTS: &[CommandArgument] = &[
         required: true,
     },
     CommandArgument {
-        name: "index",
-        description: "Step index (0-based)",
+        name: "step",
+        description: "Step text, with or without its keyword (e.g. \"Given I am logged in\" or \"I am logged in\"); text matching several steps is refused, so add the keyword to pick one",
         required: true,
     },
 ];
 
-const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--force",
-    description: "Skip confirmation",
-    default_value: None,
-}];
+const OPTIONS: &[CommandOption] = &[];
 
 const EXAMPLES: &[CommandExample] = &[CommandExample {
-    command: "fspec delete-step spec/features/login.feature \"Login with valid credentials\" 2",
-    description: Some("Delete step"),
+    command: "fspec delete-step spec/features/login.feature \"Login with valid credentials\" \"And I see the dashboard\"",
+    description: Some("Delete step (its data table or doc string goes with it)"),
     output: Some("✓ Deleted step from scenario"),
 }];
 
@@ -49,7 +43,7 @@ const RELATED: &[&str] = &["add-step", "update-step"];
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "delete-step",
     description: "Delete a step from a scenario",
-    usage: Some("fspec delete-step <file> <scenario> <index> [options]"),
+    usage: Some("fspec delete-step <file> <scenario> <step>"),
     arguments: ARGUMENTS,
     options: OPTIONS,
     examples: EXAMPLES,

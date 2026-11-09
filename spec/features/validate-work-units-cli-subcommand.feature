@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validation
 @cli
@@ -67,8 +68,8 @@ Feature: Validate-work-units CLI subcommand
     Then both paths agree the store is invalid
     Then the CLI bridge module rust/fspec/src/validate_work_units.rs contains NO inline validation logic — its only computation is JSON arg marshalling
 
-  Scenario: CLI rejects the documented-only --fix flag at runtime
-    Given the --fix option appears in `validate-work-units --help` output (for byte-parity with the TS rich help)
+  Scenario: CLI rejects the --fix flag at runtime
+    Given the --fix option does not appear in `validate-work-units --help` output (the CLI has no --fix, CLI-016)
     When I run `./rust/target/release/fspec validate-work-units --fix` against a clean store
     Then the command exits with code 1
     Then stderr contains the substring "error: unknown option '--fix'"

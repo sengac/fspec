@@ -61,7 +61,8 @@ async fn test_form_page_served_at_root_url_with_auth_link() {
         let _ = claude_browser_oauth_login_inner(config).await;
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When a GET request is made to the server root URL
     let client = reqwest::Client::new();

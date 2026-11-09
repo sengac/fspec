@@ -21,9 +21,10 @@
 //!   - inner success=false → `Error: <error>` to stderr, exit 1
 //!   - dry-run with files  → 'Dry run mode - no files modified' + would-delete list
 //!   - real delete w/ files → `✓ <message>` + 'Deleted files:' list
+//!   - BUG-645: both also list the coverage files (`coverageFiles`)
 //!   - empty (no files / no match) → bare message line, exit 0
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -43,7 +44,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `delete-features` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({
         "tags": args.tags,
@@ -82,6 +83,12 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         .and_then(Value::as_array)
         .map(|arr| arr.iter().filter_map(Value::as_str).collect())
         .unwrap_or_default();
+    // BUG-645: the coverage files deleted with the features.
+    let coverage_files: Vec<&str> = value
+        .get("coverageFiles")
+        .and_then(Value::as_array)
+        .map(|arr| arr.iter().filter_map(Value::as_str).collect())
+        .unwrap_or_default();
 
     if args.dry_run && !files.is_empty() {
         // Parity with TS dry-run branch (lines 152-160).
@@ -91,12 +98,27 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         for file in &files {
             println!("  - {file}");
         }
+        if !coverage_files.is_empty() {
+            println!(
+                "\nWould delete {} coverage file(s):\n",
+                coverage_files.len()
+            );
+            for file in &coverage_files {
+                println!("  - {file}");
+            }
+        }
     } else if !files.is_empty() {
         // Parity with TS real-delete branch (lines 161-166).
         println!("✓ {message}");
         println!("\nDeleted files:");
         for file in &files {
             println!("  - {file}");
+        }
+        if !coverage_files.is_empty() {
+            println!("\nDeleted coverage files:");
+            for file in &coverage_files {
+                println!("  - {file}");
+            }
         }
     } else {
         // Parity with TS empty branch (lines 167-169).

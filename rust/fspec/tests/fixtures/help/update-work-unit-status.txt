@@ -12,20 +12,20 @@ PREREQUISITES
   • For transition to active states: All blocking dependencies must be completed (status: done)
 
 USAGE
-  fspec update-work-unit-status <id> <status>
+  fspec update-work-unit-status <workUnitId> <status>
 
 ARGUMENTS
-  <id> (required)
+  <workUnitId> (required)
     Work unit ID (e.g., AUTH-001)
   <status> (required)
     New status: backlog, specifying, testing, implementing, validating, done, blocked
 
 OPTIONS
-  undefined
+  --reason <reason>
     Reason for status change (optional, added to state history)
-  undefined
+  --blocked-reason <reason>
     Reason for blocked status (required when status is "blocked")
-  undefined
+  --skip-temporal-validation
     Skip temporal ordering validation (for reverse ACDD or importing existing work)
 
 TYPICAL WORKFLOW

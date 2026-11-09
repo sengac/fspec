@@ -12,16 +12,13 @@
 //! order and the wiring of the compactor-sub-agent escalation in
 //! `stream_loop.rs` without needing a live LLM.
 
-use std::fs;
-use std::path::PathBuf;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 
-fn stream_loop_source() -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
-}
-
+/// BUG-306: the compaction cascade lives in stream_loop/recovery_compaction.rs,
+/// dispatched from stream_loop/recovery.rs and restarted by stream_loop/restart.rs.
 fn error_cascade_source() -> String {
-    let source = stream_loop_source();
+    let source = stream_loop_source_tree::stream_loop_module("recovery_compaction");
     let start = find(&source, "let branch = classify_compaction_branch(");
     source[start..].to_owned()
 }
@@ -44,11 +41,14 @@ fn overflow_check_runs_before_network_retry_arm() {
 
     // The new robust overflow classifier must be invoked in the error arm...
     let overflow_at = find(&src, "let is_context_overflow = is_context_overflow_error(");
-    // ...strictly before the NET-001 transient-network arm...
-    let network_at = find(&src, "provider_recovery::should_retry_network_error(");
+    // ...and the cascade that owns it is dispatched strictly before the
+    // NET-001 transient-network arm in stream_loop/recovery.rs...
+    let dispatch = stream_loop_source_tree::stream_loop_module("recovery");
+    let cascade_at = find(&dispatch, "recovery_compaction::recover(");
+    let network_at = find(&dispatch, "provider_recovery::should_retry_network_error(");
 
     assert!(
-        overflow_at < network_at,
+        cascade_at < network_at,
         "CMPCT-044: is_context_overflow_error (char {overflow_at}) must run BEFORE \
          is_transient_network_error (char {network_at}) — overflow 400s that abort \
          the SSE stream must never be misclassified as network retries"
@@ -59,13 +59,13 @@ fn overflow_check_runs_before_network_retry_arm() {
     // branch (AFTER the classifier, not the Path-B one above it) must sit
     // before the network arm.
     let recovery_at = src[overflow_at..]
-        .find("in_loop_compaction_restart!(")
+        .find("restart::compact(")
         .map(|offset| overflow_at + offset)
         .unwrap_or_else(|| {
             panic!("CMPCT-044: no begin_compaction_recovery after the overflow classifier")
         });
     assert!(
-        overflow_at < recovery_at && recovery_at < network_at,
+        overflow_at < recovery_at,
         "CMPCT-044: the overflow branch must invoke begin_compaction_recovery \
          (char {recovery_at}) between the overflow classifier and the \
          network-retry arm — no 'Reconnecting...' retry status for overflows"
@@ -105,7 +105,7 @@ fn overflow_error_routes_to_compactor_sub_agent_recovery() {
 
     // The overflow branch must invoke the shared recovery entry
     // (begin_compaction_recovery) exactly like Paths B/C do today...
-    let recovery_at = find(&src, "in_loop_compaction_restart!(");
+    let recovery_at = find(&src, "restart::compact(");
     let overflow_at = find(&src, "is_context_overflow_error(");
     assert!(
         overflow_at < recovery_at || recovery_at < overflow_at,
@@ -113,7 +113,10 @@ fn overflow_error_routes_to_compactor_sub_agent_recovery() {
     );
     // ...and must escalate to the compactor sub-agent handler when the
     // in-view path cannot resolve the overflow (registry lookup).
-    let compactor_at = find(&stream_loop_source(), "compactor_sub_agent");
+    let compactor_at = find(
+        &stream_loop_source_tree::stream_loop_module("restart"),
+        "compactor_sub_agent",
+    );
     assert!(
         compactor_at > 0,
         "CMPCT-044: stream_loop.rs must reference the compactor sub-agent \
@@ -151,38 +154,19 @@ fn sub_agent_escalation_shares_the_compaction_retry_budget() {
     // @step When the error cascade processes it
     // @step Then the turn terminates with the structured compaction-budget-exhausted error
     // @step And the compactor sub-agent is not spawned for a turn past the retry budget
-    let src = stream_loop_source();
-
-    // The in_loop_compaction_restart! macro owns compaction_retry_count +
-    // MAX_COMPACTION_RETRIES; the compactor escalation must sit inside the
-    // macro definition (so its rounds count toward the same budget) rather
-    // than bypassing it with a separate counter.
-    let macro_def_at = find(&src, "macro_rules! in_loop_compaction_restart {");
-    let macro_end_at = src
-        .find("\n    loop {")
-        .unwrap_or_else(|| panic!("CMPCT-044: primary `loop {{` not found after macro def"));
-    assert!(
-        macro_def_at < macro_end_at,
-        "sanity: macro def precedes the primary loop"
-    );
-
-    let compactor_at = macro_def_at
-        + find(
-            &src[macro_def_at..],
-            "crate::compactor_sub_agent::run_compactor_sub_agent_round",
-        );
-    assert!(
-        compactor_at > macro_def_at && compactor_at < macro_end_at,
-        "CMPCT-044: the compactor sub-agent escalation (char {compactor_at}) must \
-         live inside the in_loop_compaction_restart! macro definition (chars \
-         {macro_def_at}-{macro_end_at}) so it shares the MAX_COMPACTION_RETRIES budget"
-    );
-
-    // And the budget check itself still precedes the escalation inside the macro.
+    // BUG-306: stream_loop/restart.rs::compact owns compaction_retry_count and
+    // MAX_COMPACTION_RETRIES; the compactor escalation runs inside it, after
+    // the budget check, so its rounds count toward the same budget.
+    let src = stream_loop_source_tree::stream_loop_module("restart");
+    let restart_at = find(&src, "pub(super) async fn compact<");
     let budget_check_at = find(&src, "compaction_retry_count > MAX_COMPACTION_RETRIES");
+    let compactor_at = find(
+        &src,
+        "crate::compactor_sub_agent::run_compactor_sub_agent_round",
+    );
     assert!(
-        macro_def_at < budget_check_at && budget_check_at < compactor_at,
+        restart_at < budget_check_at && budget_check_at < compactor_at,
         "CMPCT-044: the MAX_COMPACTION_RETRIES guard (char {budget_check_at}) must \
-         run before the compactor escalation (char {compactor_at})"
+         run before the compactor escalation (char {compactor_at}) inside compact()"
     );
 }

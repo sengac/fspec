@@ -36,9 +36,10 @@ fn assert_saved_messages(data_dir: &Path, messages: &[(Uuid, &str)]) -> TestResu
 #[serial]
 fn scenario_independent_stores_retain_every_committed_append_after_reopening() -> TestResult {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let mut first = MessageStore::new()?;
-    let mut second = MessageStore::new()?;
+    let first = MessageStore::new()?;
+    let second = MessageStore::new()?;
 
     let first_id = first.store("user", "first committed message")?;
     let second_id = second.store("assistant", "second committed message, different length")?;
@@ -64,10 +65,11 @@ fn scenario_independent_stores_retain_every_committed_append_after_reopening() -
 #[serial]
 fn scenario_metadata_updates_preserve_another_stores_messages_and_metadata() -> TestResult {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let mut first = MessageStore::new()?;
+    let first = MessageStore::new()?;
     let shared_id = first.store("assistant", "shared message")?;
-    let mut second = MessageStore::new()?;
+    let second = MessageStore::new()?;
     assert!(second.get(shared_id).is_some());
 
     let other_id = first.store("user", "peer append")?;
@@ -102,11 +104,12 @@ fn scenario_metadata_updates_preserve_another_stores_messages_and_metadata() -> 
 #[serial]
 fn scenario_appending_after_another_store_compacts_history_uses_current_offsets() -> TestResult {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let mut first = MessageStore::new()?;
+    let first = MessageStore::new()?;
     let orphan_id = first.store("user", &"orphan".repeat(128))?;
     let retained_id = first.store("assistant", "retained message")?;
-    let mut second = MessageStore::new()?;
+    let second = MessageStore::new()?;
     assert!(second.get(orphan_id).is_some());
     assert!(second.get(retained_id).is_some());
 
@@ -135,9 +138,10 @@ fn scenario_appending_after_another_store_compacts_history_uses_current_offsets(
 #[serial]
 fn scenario_cleanup_retains_referenced_messages_appended_by_another_store() -> TestResult {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let mut first = MessageStore::new()?;
-    let mut second = MessageStore::new()?;
+    let first = MessageStore::new()?;
+    let second = MessageStore::new()?;
 
     let retained_id = first.store("user", "referenced peer message")?;
     let orphan_id = first.store("assistant", "orphaned peer message")?;
@@ -158,6 +162,7 @@ fn scenario_cleanup_retains_referenced_messages_appended_by_another_store() -> T
 #[serial]
 fn scenario_concurrent_independent_writers_retain_every_message() -> TestResult {
     let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     let stores = (0..4)
         .map(|_| MessageStore::new())
@@ -166,7 +171,7 @@ fn scenario_concurrent_independent_writers_retain_every_message() -> TestResult 
     let writers: Vec<_> = stores
         .into_iter()
         .enumerate()
-        .map(|(writer, mut store)| {
+        .map(|(writer, store)| {
             let barrier = Arc::clone(&barrier);
             std::thread::spawn(move || -> Result<Vec<(Uuid, String)>, String> {
                 barrier.wait();
@@ -195,4 +200,181 @@ fn scenario_concurrent_independent_writers_retain_every_message() -> TestResult 
         .map(|(message_id, content)| (*message_id, content.as_str()))
         .collect();
     assert_saved_messages(data_dir.path(), &expected)
+}
+
+/// BUG-519: give the message history and its saved index one shared
+/// modification time, an hour in the past, as when both files are written
+/// within one filesystem timestamp tick. A rebuilt index gets a new time.
+fn share_modification_time(data_dir: &Path) -> TestResult {
+    let shared = std::time::SystemTime::now() - std::time::Duration::from_secs(3600);
+    for name in ["messages/messages.jsonl", "messages/messages.idx"] {
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(data_dir.join(name))?
+            .set_modified(shared)?;
+    }
+    Ok(())
+}
+
+/// @step Given a store has committed messages and saved its index
+/// @step And the saved index has the same modification time as the message history
+/// @step When a cold store reopens the history
+/// @step Then it reads every committed message with its original content
+/// @step And reopening uses the saved index without rebuilding it
+#[test]
+#[serial]
+fn scenario_reopening_reuses_an_index_published_in_the_same_timestamp_tick() -> TestResult {
+    let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
+    let store = MessageStore::new()?;
+    let mut messages = Vec::new();
+    for sequence in 0..8 {
+        let content = format!("same-tick message {sequence}");
+        messages.push((store.store("user", &content)?, content));
+    }
+    drop(store);
+
+    share_modification_time(data_dir.path())?;
+
+    let expected: Vec<_> = messages
+        .iter()
+        .map(|(message_id, content)| (*message_id, content.as_str()))
+        .collect();
+    assert_saved_messages(data_dir.path(), &expected)
+}
+
+/// @step Given a store has committed two messages and saved its index
+/// @step And the message history is rewritten to the same size with the two records swapped
+/// @step And the saved index has the same modification time as the message history
+/// @step When a cold store reopens the history
+/// @step Then it rebuilds the index from the history
+/// @step And it reads every committed message with its original content
+#[test]
+#[serial]
+fn scenario_reopening_rebuilds_a_same_tick_index_whose_last_record_no_longer_matches() -> TestResult
+{
+    let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
+    let store = MessageStore::new()?;
+    let first_id = store.store("user", "first record before the rewrite")?;
+    let second_id = store.store("assistant", "second record before the rewrite")?;
+    drop(store);
+
+    let history_path = data_dir.path().join("messages/messages.jsonl");
+    let history = std::fs::read_to_string(&history_path)?;
+    let lines: Vec<&str> = history.lines().collect();
+    assert_eq!(lines.len(), 2);
+    std::fs::write(&history_path, format!("{}\n{}\n", lines[1], lines[0]))?;
+    share_modification_time(data_dir.path())?;
+    let index_path = data_dir.path().join("messages/messages.idx");
+    let stale_index = std::fs::read(&index_path)?;
+
+    let reopened = MessageStore::new()?;
+    assert_ne!(
+        std::fs::read(&index_path)?,
+        stale_index,
+        "an index whose last record no longer matches the history must be rebuilt"
+    );
+    for (message_id, content) in [
+        (first_id, "first record before the rewrite"),
+        (second_id, "second record before the rewrite"),
+    ] {
+        let message = reopened
+            .get(message_id)
+            .ok_or_else(|| format!("committed message {message_id} is missing"))?;
+        assert_eq!(message.content, content);
+    }
+    Ok(())
+}
+
+/// BUG-519: rewrite the completeness proof (messages.verified) for the
+/// current generation of both files, as the store does when it publishes the
+/// proof after an index written in the same timestamp tick as its history.
+#[cfg(unix)]
+fn prove_current_generation(data_dir: &Path) -> TestResult {
+    use std::os::unix::fs::MetadataExt;
+    let stamp = |name: &str| -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+        let metadata = std::fs::metadata(data_dir.join("messages").join(name))?;
+        let time =
+            |time: std::time::SystemTime| -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+                let since = time.duration_since(std::time::UNIX_EPOCH)?;
+                Ok(serde_json::json!({
+                    "secs_since_epoch": since.as_secs(),
+                    "nanos_since_epoch": since.subsec_nanos(),
+                }))
+            };
+        Ok(serde_json::json!({
+            "length": metadata.len(),
+            "modified": time(metadata.modified()?)?,
+            "created": metadata.created().ok().map(time).transpose()?,
+            "identity": [metadata.dev(), metadata.ino(), metadata.ctime(), metadata.ctime_nsec()],
+        }))
+    };
+    let proof_path = data_dir.join("messages/messages.verified");
+    let mut proof: serde_json::Value = serde_json::from_slice(&std::fs::read(&proof_path)?)?;
+    assert_eq!(proof["version"], 1, "unexpected completeness proof version");
+    proof["generation"] = serde_json::json!({
+        "messages": stamp("messages.jsonl")?,
+        "index": stamp("messages.idx")?,
+    });
+    std::fs::write(proof_path, serde_json::to_vec(&proof)?)?;
+    Ok(())
+}
+
+fn index_publications<T>(action: impl FnOnce() -> T) -> (T, usize) {
+    let (value, operations) =
+        codelet_core::persistence::messages::durability::observe(None, action);
+    let publications = operations
+        .iter()
+        .filter(|operation| **operation == "index.write")
+        .count();
+    (value, publications)
+}
+
+/// @step Given a store has committed messages and saved its index
+/// @step And the saved index has the same modification time as the message history
+/// @step And its completeness proof matches the current generation of both files
+/// @step When a cold store reopens the history and appends a fresh message
+/// @step Then reopening uses the saved index without rebuilding it
+/// @step And the append publishes the index once without rescanning the history
+#[cfg(unix)]
+#[test]
+#[serial]
+fn scenario_reopening_keeps_the_completeness_of_a_same_tick_index_whose_proof_matches() -> TestResult
+{
+    let data_dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
+    let store = MessageStore::new()?;
+    let first_id = store.store("user", "certified same-tick message")?;
+    drop(store);
+
+    share_modification_time(data_dir.path())?;
+    prove_current_generation(data_dir.path())?;
+
+    let (reopened, publications) = index_publications(MessageStore::new);
+    let reopened = reopened?;
+    assert_eq!(
+        publications, 0,
+        "a proven same-tick index must not be rebuilt"
+    );
+    let (appended, publications) =
+        index_publications(|| reopened.store("user", "fresh message after reopening"));
+    let appended = appended?;
+    assert_eq!(
+        publications, 1,
+        "a proven same-tick index must not be rescanned before an append"
+    );
+    for (message_id, content) in [
+        (first_id, "certified same-tick message"),
+        (appended, "fresh message after reopening"),
+    ] {
+        let message = reopened
+            .get(message_id)
+            .ok_or_else(|| format!("committed message {message_id} is missing"))?;
+        assert_eq!(message.content, content);
+    }
+    Ok(())
 }

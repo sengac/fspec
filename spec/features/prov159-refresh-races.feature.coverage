@@ -10,8 +10,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -35,8 +33,31 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "async fn ensure_inner(state: &mut TokenState) -> Result<(), Error> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -52,9 +73,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -86,14 +104,32 @@
                 151,
                 152,
                 153,
+                154,
+                155,
+                156,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
                 179,
                 180,
                 181,
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "};"
             }
           ]
         }
@@ -109,9 +145,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -119,13 +152,52 @@
                 127,
                 128,
                 129,
+                130,
+                131,
+                132,
+                133,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
                 216,
                 217,
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,9 +213,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -151,13 +220,52 @@
                 127,
                 128,
                 129,
+                130,
+                131,
+                132,
+                133,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
                 216,
                 217,
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -173,9 +281,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -183,13 +288,52 @@
                 127,
                 128,
                 129,
+                130,
+                131,
+                132,
+                133,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
                 216,
                 217,
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/credential_refresh.rs",
@@ -208,7 +352,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub async fn refresh_codex_tokens(refresh_token: &str) -> Result<CodexTokens, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -226,6 +372,6 @@
       "rust/providers/src/codex/auth_refresh.rs",
       "rust/providers/src/codex/credential_refresh.rs"
     ],
-    "totalLinesCovered": 358
+    "totalLinesCovered": 492
   }
 }

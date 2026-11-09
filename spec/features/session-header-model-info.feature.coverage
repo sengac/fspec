@@ -1,0 +1,230 @@
+{
+  "scenarios": [
+    {
+      "name": "Known catalog model resolves friendly name and capability flags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "64-83",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/cloud_models.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "/// fspec-tui header).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini provider slug is mapped to google before lookup",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "85-100",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/cloud_models.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "/// fspec-tui header).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown model falls back to the raw slug with no capability flags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "102-121",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/cloud_models.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "/// fspec-tui header).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Size badge uses the compaction threshold when it is available",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "123-133",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "pub fn size_badge_label(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Size badge falls back to the context window when the compaction threshold is unavailable",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "139-150",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "pub fn size_badge_label(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No size badge is shown when both limits are unavailable",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui001_session_header_model_info.rs",
+          "lines": "153-162",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "pub fn size_badge_label(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui001_session_header_model_info.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/cloud_models.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs"
+    ],
+    "totalLinesCovered": 194
+  }
+}

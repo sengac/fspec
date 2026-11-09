@@ -35,7 +35,8 @@ fn custom_provider_compactor_sub_agent_stays_on_the_read_only_tool_surface() {
     //  (1) the custom provider builder accepts a sub-agent gate, and
     //  (2) the compactor spawner passes the gate on the custom-provider dispatch.
     let custom_provider_src = repo_source("providers/src/custom/custom_provider.rs");
-    let compactor_src = repo_source("agent-loop/src/generate_compaction_handler.rs");
+    // BUG-306: the compactor spawner lives in agent-loop/src/compaction_builder.rs.
+    let compactor_src = repo_source("agent-loop/src/compaction_builder.rs");
 
     // @step When the compactor agent is built through the custom-provider path
     // (1) `create_rig_agent` must carry a `sub_agent: bool` gate.
@@ -46,10 +47,21 @@ fn custom_provider_compactor_sub_agent_stays_on_the_read_only_tool_surface() {
     );
 
     // (2) the compactor spawner's custom-provider dispatch must pass `true`.
+    let dispatch = compactor_src
+        .find("CustomProvider::create_rig_agent(")
+        .expect("the compactor spawner must dispatch custom providers");
+    let arguments = &compactor_src[dispatch..];
+    let arguments = &arguments[..arguments.find(".map_err(").expect("call end")];
+    let last_argument = arguments
+        .trim_end()
+        .trim_end_matches(')')
+        .trim_end()
+        .trim_end_matches(',')
+        .rsplit(',')
+        .next()
+        .map(str::trim);
     assert!(
-        compactor_src.contains(
-            "true, // sub_agent: the compactor must stay on the 7-tool read-only surface"
-        ) || compactor_src.contains("true, // sub_agent"),
+        last_argument == Some("true"),
         "the compactor spawner must pass `sub_agent: true` to \
          CustomProvider::create_rig_agent on the custom-provider dispatch arm"
     );

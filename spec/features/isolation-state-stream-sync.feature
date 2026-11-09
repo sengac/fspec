@@ -1,6 +1,8 @@
 @isolation-state
 @stream-chunk
 @GIT-029
+@codelet
+@multi-session
 Feature: Isolation State Stream Sync
   """
   GlobalSessionStreamManager handles IsolationStateChange StreamChunk events

@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-175
+@cli
+@foundation-management
 Feature: Port add-command-to-foundation command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_command_to_foundation.rs — Rust parity port of

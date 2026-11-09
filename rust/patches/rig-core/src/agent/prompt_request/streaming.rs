@@ -646,7 +646,10 @@ where
                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Text(text)));
                             did_call_tool = false;
                         },
-                        Ok(StreamedAssistantContent::ToolCall(tool_call)) => {
+                        Ok(StreamedAssistantContent::ToolCall(mut tool_call)) => {
+                            // BUG-303: record wire-valid arguments; invalid ones are explained, not run.
+                            let invalid_arguments =
+                                crate::tool::arguments::normalize(&mut tool_call.function.arguments);
                             let tool_span = info_span!(
                                 parent: tracing::Span::current(),
                                 "execute_tool",
@@ -685,12 +688,19 @@ where
                                 tool_span.record("gen_ai.tool.name", &tool_call.function.name);
                                 tool_span.record("gen_ai.tool.call.arguments", &tool_args);
 
-                                let tool_result = match
-                                agent.tool_server_handle.call_tool(&tool_call.function.name, &tool_args).await {
-                                    Ok(thing) => thing,
-                                    Err(e) => {
-                                        tracing::debug!("Error while calling tool: {e}");
-                                        e.to_string()
+                                let tool_result = if let Some(invalid) = &invalid_arguments {
+                                    tracing::warn!(tool = %tool_call.function.name, received = ?invalid, "BUG-303: tool call arguments are not a JSON object; returning usage guidance without executing");
+                                    let definition = agent.tool_server_handle.get_tool_defs(None).await.ok().and_then(|definitions| {
+                                        definitions.into_iter().find(|definition| definition.name.eq_ignore_ascii_case(&tool_call.function.name))
+                                    });
+                                    invalid.guidance(&tool_call.function.name, definition.as_ref())
+                                } else {
+                                    match agent.tool_server_handle.call_tool(&tool_call.function.name, &tool_args).await {
+                                        Ok(thing) => thing,
+                                        Err(e) => {
+                                            tracing::debug!("Error while calling tool: {e}");
+                                            e.to_string()
+                                        }
                                     }
                                 };
 
@@ -1123,7 +1133,6 @@ mod tests {
     use crate::client::completion::CompletionClient;
     use crate::providers::anthropic;
     use crate::streaming::StreamingPrompt;
-    use base64::Engine as _;
     use futures::StreamExt;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -1232,280 +1241,6 @@ mod tests {
     // cannot be executed by `cargo test`. The Layer 2 safety net logic is fully
     // covered by codelet-common's test suite.
 
-    // =========================================================================
-    // CMPCT-031: Defense-in-depth text-size bound on tool_result content
-    // Feature: spec/features/defense-in-depth-bound-tool-result-text-size-in-rig-patch-parse-tool-result-content.feature
-    //
-    // These tests exercise `bound_tool_result_text` directly (pure fn, no I/O)
-    // and observe `parse_tool_result_content` end-to-end for the verbose-tool
-    // cascade scenario. All six scenarios from the feature file are covered
-    // one-to-one by the #[test] fns below, with @step comments matching the
-    // Gherkin step text verbatim.
-    // =========================================================================
-
-    /// Helper: build a UTF-8 string of exactly `bytes` ASCII chars.
-    fn ascii_of_len(bytes: usize) -> String {
-        // Using 'a' so .len() == char count == byte count, and there are no
-        // multi-byte code points to complicate boundary math.
-        "a".repeat(bytes)
-    }
-
-    /// Scenario: A 200 KiB text tool result is replaced by a truncation marker
-    #[test]
-    fn test_cmpct_031_200kib_text_replaced_by_truncation_marker() {
-        // @step Given parse_tool_result_content is called with a plain-text payload of 200 KiB
-        let payload = ascii_of_len(200 * 1024);
-        let result = parse_tool_result_content(&payload);
-
-        // @step When the helper evaluates the byte length against MAX_TOOL_RESULT_TEXT_BYTES
-        assert_eq!(result.len(), 1, "expected a single ToolResultContent");
-        let text = match &result[0] {
-            ToolResultContent::Text(t) => t.text.clone(),
-            other => panic!("expected Text variant, got {other:?}"),
-        };
-
-        // @step Then the returned ToolResultContent::text payload is a JSON truncation marker
-        let parsed: serde_json::Value =
-            serde_json::from_str(&text).expect("marker must be valid JSON");
-        assert!(parsed.is_object(), "marker must be a JSON object");
-
-        // @step And the marker has field "status" equal to "truncated"
-        assert_eq!(
-            parsed.get("status").and_then(|v| v.as_str()),
-            Some("truncated")
-        );
-
-        // @step And the marker has field "original_bytes" equal to the original byte length
-        assert_eq!(
-            parsed.get("original_bytes").and_then(|v| v.as_u64()),
-            Some(payload.len() as u64)
-        );
-
-        // @step And the marker has field "max_bytes" equal to MAX_TOOL_RESULT_TEXT_BYTES
-        assert_eq!(
-            parsed.get("max_bytes").and_then(|v| v.as_u64()),
-            Some(MAX_TOOL_RESULT_TEXT_BYTES as u64)
-        );
-
-        // @step And the marker has field "preview" containing the first 2048 bytes of the original text
-        let preview = parsed
-            .get("preview")
-            .and_then(|v| v.as_str())
-            .expect("preview field must be a string");
-        assert_eq!(preview.len(), 2048);
-        assert_eq!(preview, &payload[..2048]);
-
-        // @step And the marker has field "suffix" containing the last 512 bytes of the original text
-        let suffix = parsed
-            .get("suffix")
-            .and_then(|v| v.as_str())
-            .expect("suffix field must be a string");
-        assert_eq!(suffix.len(), 512);
-        assert_eq!(suffix, &payload[payload.len() - 512..]);
-
-        // @step And the marker has a non-empty "hint" field
-        let hint = parsed
-            .get("hint")
-            .and_then(|v| v.as_str())
-            .expect("hint field must be a string");
-        assert!(!hint.is_empty(), "hint must be non-empty");
-    }
-
-    /// Scenario: A 32 KiB text tool result is stored verbatim without a truncation marker
-    #[test]
-    fn test_cmpct_031_32kib_text_stored_verbatim() {
-        // @step Given parse_tool_result_content is called with a plain-text payload of 32 KiB
-        let payload = ascii_of_len(32 * 1024);
-        let result = parse_tool_result_content(&payload);
-
-        // @step When the helper evaluates the byte length against MAX_TOOL_RESULT_TEXT_BYTES
-        assert_eq!(result.len(), 1);
-        let text = match &result[0] {
-            ToolResultContent::Text(t) => t.text.clone(),
-            other => panic!("expected Text variant, got {other:?}"),
-        };
-
-        // @step Then the returned ToolResultContent::text payload equals the original 32 KiB verbatim
-        assert_eq!(text, payload);
-
-        // @step And the payload does NOT contain a JSON truncation marker
-        // A quick structural check: if it parsed as our marker object, .get("status") would
-        // yield "truncated". For raw "aaa..." text this either fails to parse as JSON or
-        // does not contain the sentinel.
-        let is_marker = serde_json::from_str::<serde_json::Value>(&text)
-            .ok()
-            .and_then(|v| v.get("status").and_then(|s| s.as_str()).map(str::to_owned))
-            == Some("truncated".to_string());
-        assert!(!is_marker, "payload must not be a truncation marker");
-    }
-
-    /// Scenario: A text payload exactly at the bound is stored verbatim
-    #[test]
-    fn test_cmpct_031_exact_bound_stored_verbatim() {
-        // @step Given parse_tool_result_content is called with a plain-text payload of exactly MAX_TOOL_RESULT_TEXT_BYTES bytes
-        let payload = ascii_of_len(MAX_TOOL_RESULT_TEXT_BYTES);
-        let result = parse_tool_result_content(&payload);
-
-        // @step When the helper evaluates the byte length
-        assert_eq!(result.len(), 1);
-        let text = match &result[0] {
-            ToolResultContent::Text(t) => t.text.clone(),
-            other => panic!("expected Text variant, got {other:?}"),
-        };
-
-        // @step Then the returned ToolResultContent::text payload equals the original verbatim
-        assert_eq!(text, payload);
-
-        // @step And the bound condition is a strict greater-than (`>`) not greater-than-or-equal (`>=`)
-        // Verified by a one-byte-over check through the helper directly: len == MAX stays verbatim,
-        // len == MAX + 1 becomes a marker.
-        let one_byte_over = ascii_of_len(MAX_TOOL_RESULT_TEXT_BYTES + 1);
-        let bounded = bound_tool_result_text(one_byte_over);
-        let parsed: serde_json::Value =
-            serde_json::from_str(&bounded).expect("one-over must be a JSON marker");
-        assert_eq!(
-            parsed.get("status").and_then(|v| v.as_str()),
-            Some("truncated")
-        );
-    }
-
-    /// Scenario: An oversized image is still rejected by the existing image size check
-    #[test]
-    fn test_cmpct_031_oversized_image_still_rejected_by_existing_check() {
-        // @step Given parse_tool_result_content is called with an oversized IMAGE payload
-        // Build a tool result JSON envelope of {"type":"image","data":"<b64>","media_type":"image/png"}
-        // whose base64 data will be rejected by check_image_dimensions. We use a known-oversized
-        // 1x1 PNG padded by repeating large-dimension header bytes; the actual check is delegated
-        // to codelet_common. For this test we feed a synthetic ~128 KiB base64 payload — the point
-        // is that the image branch handles it (either accepts or produces an error_msg) WITHOUT
-        // ever consulting the text bound, because the JSON envelope takes the "type":"image"
-        // branch at line 90 before any text-branch code runs.
-        let fake_b64 = "A".repeat(128 * 1024);
-        let envelope = serde_json::json!({
-            "type": "image",
-            "data": fake_b64,
-            "media_type": "image/png",
-        })
-        .to_string();
-        let result = parse_tool_result_content(&envelope);
-
-        // @step When the helper evaluates the payload
-        assert_eq!(result.len(), 1);
-
-        // @step Then the existing image-size rejection path fires unchanged
-        // Either we got an Image variant (accepted by check_image_dimensions) OR a Text
-        // variant whose content is the rejection error_msg — but it is NEVER the truncation
-        // marker and NEVER the raw envelope JSON.
-        match &result[0] {
-            ToolResultContent::Image(_) => { /* accepted by existing path */ }
-            ToolResultContent::Text(t) => {
-                // @step And the new text bound is NOT consulted
-                // Ensure this is not the CMPCT-031 marker: that would prove the text branch
-                // took over, which would be a regression.
-                let is_marker = serde_json::from_str::<serde_json::Value>(&t.text)
-                    .ok()
-                    .and_then(|v| v.get("status").and_then(|s| s.as_str()).map(str::to_owned))
-                    == Some("truncated".to_string());
-                assert!(
-                    !is_marker,
-                    "image rejection must NOT flow through the CMPCT-031 text bound"
-                );
-                // @step And the behavior matches the pre-change image handling exactly
-                // i.e. the payload is the existing image rejection error_msg, NOT the raw envelope.
-                assert_ne!(
-                    t.text, envelope,
-                    "image branch must not fall through to raw-text handling"
-                );
-            }
-        }
-    }
-
-    /// Scenario: The truncation marker is valid UTF-8 JSON that the model can reason about
-    #[test]
-    fn test_cmpct_031_truncation_marker_is_valid_utf8_json() {
-        // @step Given parse_tool_result_content has produced a truncation marker for an oversized text payload
-        let payload = ascii_of_len(200 * 1024);
-        let result = parse_tool_result_content(&payload);
-        assert_eq!(result.len(), 1);
-        let text = match &result[0] {
-            ToolResultContent::Text(t) => t.text.clone(),
-            other => panic!("expected Text variant, got {other:?}"),
-        };
-
-        // @step When the marker is read back as UTF-8 and parsed as JSON
-        assert!(text.is_ascii() || std::str::from_utf8(text.as_bytes()).is_ok());
-        let parsed: serde_json::Value =
-            serde_json::from_str(&text).expect("marker must parse as JSON from UTF-8 bytes");
-
-        // @step Then parsing succeeds with no errors
-        let obj = parsed.as_object().expect("marker must be a JSON object");
-
-        // @step And every field value round-trips cleanly (no mojibake, no unescaped control chars)
-        // Reserialize and reparse; equality proves round-trip stability.
-        let reserialized = serde_json::to_string(&parsed).expect("reserialization must succeed");
-        let reparsed: serde_json::Value =
-            serde_json::from_str(&reserialized).expect("reparse must succeed");
-        assert_eq!(parsed, reparsed);
-
-        // @step And the top-level object contains exactly the expected keys: status, original_bytes, max_bytes, preview, suffix, hint
-        let mut keys: Vec<&str> = obj.keys().map(String::as_str).collect();
-        keys.sort_unstable();
-        assert_eq!(
-            keys,
-            vec![
-                "hint",
-                "max_bytes",
-                "original_bytes",
-                "preview",
-                "status",
-                "suffix",
-            ]
-        );
-    }
-
-    /// Scenario: Running a verbose tool no longer cascades into PromptCancelled
-    #[test]
-    fn test_cmpct_031_verbose_tool_output_is_bounded_before_chat_history() {
-        // @step Given an fspec interactive session whose agent has just invoked a tool that returned 500 KiB of plain text output
-        let payload = ascii_of_len(500 * 1024);
-
-        // @step When the rig patch processes that tool result via parse_tool_result_content
-        let result = parse_tool_result_content(&payload);
-        assert_eq!(result.len(), 1);
-        let text = match &result[0] {
-            ToolResultContent::Text(t) => t.text.clone(),
-            other => panic!("expected Text variant, got {other:?}"),
-        };
-
-        // @step Then the resulting chat_history entry for that tool_result holds only the truncation marker
-        let parsed: serde_json::Value =
-            serde_json::from_str(&text).expect("marker must be valid JSON");
-        assert_eq!(
-            parsed.get("status").and_then(|v| v.as_str()),
-            Some("truncated")
-        );
-
-        // @step And the chat_history byte count for that tool_result is bounded by a small constant (marker overhead + preview + suffix)
-        // Marker overhead is the JSON scaffolding + key names + numeric fields + hint text.
-        // Upper bound = preview (2048) + suffix (512) + generous 4096-byte overhead cap.
-        let upper_bound = 2048 + 512 + 4096;
-        assert!(
-            text.len() <= upper_bound,
-            "marker size {} exceeded upper bound {}",
-            text.len(),
-            upper_bound
-        );
-
-        // @step And the next LLM turn does NOT exceed the context window from this tool_result alone
-        // Proxy: the payload held in chat_history is orders of magnitude smaller than the original.
-        assert!(
-            text.len() < payload.len() / 10,
-            "bounded payload {} must be <<1/10 of original {}",
-            text.len(),
-            payload.len()
-        );
-    }
-
     /// UTF-8 boundary regression: preview must not split a multi-byte character.
     /// Not a feature scenario — internal safety net for the boundary walker.
     #[test]
@@ -1594,211 +1329,10 @@ mod tests {
         let resp = FinalResponse::empty();
         assert_eq!(resp.stop_reason(), None);
     }
-
-    // =========================================================================
-    // BUG-168: Defense-in-depth image count cap on PDF-shape tool results
-    // Feature: spec/features/defense-in-depth-pdf-image-count-cap-in-rig-patch.feature
-    //
-    // These tests exercise `parse_tool_result_content` end-to-end for the
-    // pages-array cap and `pdf_pages_to_contents` directly. All four scenarios
-    // from the feature file are covered one-to-one, with @step comments
-    // matching the Gherkin step text.
-    // =========================================================================
-
-    /// Helper: build a PNG header base64 with the given dimensions.
-    fn bug168_png_header_b64(width: u32, height: u32) -> String {
-        let mut bytes: Vec<u8> = Vec::new();
-        bytes.extend_from_slice(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
-        bytes.extend_from_slice(&[0x00, 0x00, 0x00, 0x0D]);
-        bytes.extend_from_slice(b"IHDR");
-        bytes.extend_from_slice(&width.to_be_bytes());
-        bytes.extend_from_slice(&height.to_be_bytes());
-        bytes.extend_from_slice(&[8, 2, 0, 0, 0]);
-        base64::engine::general_purpose::STANDARD.encode(&bytes)
-    }
-
-    /// Helper: build a PDF-shape pages array with `count` valid small pages.
-    fn bug168_pages_array(count: usize) -> serde_json::Value {
-        let pages: Vec<serde_json::Value> = (1..=count)
-            .map(|i| {
-                serde_json::json!({
-                    "page_number": i,
-                    "data": bug168_png_header_b64(100, 100),
-                    "media_type": "image/png"
-                })
-            })
-            .collect();
-        serde_json::Value::Array(pages)
-    }
-
-    /// Scenario: A PDF-shape result exceeding the cap is truncated with a continue notice
-    #[test]
-    fn test_bug_168_pdf_shape_result_exceeding_cap_is_truncated_with_continue_notice() {
-        // @step Given parse_tool_result_content is called with a result containing 67 pages
-        let result_json = serde_json::json!({
-            "path": "doc.pdf",
-            "total_pages": 67,
-            "pages": bug168_pages_array(67)
-        })
-        .to_string();
-        let result = parse_tool_result_content(&result_json);
-
-        // @step When the helper converts the pages array to ToolResultContent parts
-        let images = result
-            .iter()
-            .filter(|c| matches!(c, ToolResultContent::Image(_)))
-            .count();
-        let texts = result
-            .iter()
-            .filter(|c| matches!(c, ToolResultContent::Text(_)))
-            .count();
-
-        // @step Then at most MAX_TOOL_RESULT_PDF_PAGES (20) Image parts are returned
-        assert_eq!(
-            images, MAX_TOOL_RESULT_PDF_PAGES,
-            "image count must equal the cap"
-        );
-
-        // @step And a trailing text part states how many pages were dropped and the next offset
-        assert_eq!(texts, 1, "exactly one trailing truncation text part");
-        let trailing = result.last().expect("parts must be non-empty");
-        match trailing {
-            ToolResultContent::Text(t) => {
-                assert!(
-                    t.text.contains("47"),
-                    "truncation notice must state the dropped count: {}",
-                    t.text
-                );
-                assert!(
-                    t.text.contains("offset=21"),
-                    "truncation notice must name the next offset: {}",
-                    t.text
-                );
-            }
-            other => panic!("trailing part must be Text, got {other:?}"),
-        }
-    }
-
-    /// Scenario: A PDF-shape result at or under the cap is unchanged
-    #[test]
-    fn test_bug_168_pdf_shape_result_at_or_under_cap_is_unchanged() {
-        // @step Given parse_tool_result_content is called with a result containing 4 pages
-        let result_json = serde_json::json!({
-            "path": "doc.pdf",
-            "total_pages": 4,
-            "pages": bug168_pages_array(4)
-        })
-        .to_string();
-        let result = parse_tool_result_content(&result_json);
-
-        // @step When the helper converts the pages array to ToolResultContent parts
-        let images = result
-            .iter()
-            .filter(|c| matches!(c, ToolResultContent::Image(_)))
-            .count();
-
-        // @step Then exactly 4 Image parts are returned
-        assert_eq!(images, 4, "all 4 pages must become Image parts");
-
-        // @step And no truncation text part is present
-        assert_eq!(
-            result.len(),
-            4,
-            "no extra parts for a payload under the cap"
-        );
-    }
-
-    /// Scenario: The nested-text variant obeys the same cap
-    #[test]
-    fn test_bug_168_nested_text_variant_obeyes_the_same_cap() {
-        // @step Given parse_tool_result_content is called with a nested-text result whose content holds 67 pages
-        let inner = serde_json::json!({
-            "path": "doc.pdf",
-            "total_pages": 67,
-            "pages": bug168_pages_array(67)
-        })
-        .to_string();
-        let envelope = serde_json::json!({"type": "text", "content": inner}).to_string();
-        let result = parse_tool_result_content(&envelope);
-
-        // @step When the helper converts the nested pages array to ToolResultContent parts
-        let images = result
-            .iter()
-            .filter(|c| matches!(c, ToolResultContent::Image(_)))
-            .count();
-
-        // @step Then at most MAX_TOOL_RESULT_PDF_PAGES (20) Image parts are returned
-        assert_eq!(
-            images, MAX_TOOL_RESULT_PDF_PAGES,
-            "nested variant must obey the cap"
-        );
-
-        // @step And a trailing text part states how many pages were dropped and the next offset
-        let trailing = result.last().expect("parts must be non-empty");
-        match trailing {
-            ToolResultContent::Text(t) => {
-                assert!(t.text.contains("47"), "truncation notice: {}", t.text);
-                assert!(
-                    t.text.contains("offset=21"),
-                    "truncation notice: {}",
-                    t.text
-                );
-            }
-            other => panic!("trailing part must be Text, got {other:?}"),
-        }
-    }
-
-    /// Scenario: The per-image dimension defense remains independent of the count cap
-    #[test]
-    fn test_bug_168_per_image_dimension_defense_remains_independent_of_count_cap() {
-        // @step Given parse_tool_result_content is called with a result whose first page is oversized (fails EXT-016)
-        let mut pages: Vec<serde_json::Value> = vec![serde_json::json!({
-            "page_number": 1,
-            "data": bug168_png_header_b64(10000, 10000),
-            "media_type": "image/png"
-        })];
-        pages.extend(
-            (2..=67)
-                .map(|i| {
-                    serde_json::json!({
-                        "page_number": i,
-                        "data": bug168_png_header_b64(100, 100),
-                        "media_type": "image/png"
-                    })
-                })
-                .collect::<Vec<_>>(),
-        );
-        let result_json = serde_json::json!({
-            "path": "doc.pdf",
-            "total_pages": 67,
-            "pages": pages
-        })
-        .to_string();
-        let result = parse_tool_result_content(&result_json);
-
-        // @step When the helper converts the pages array
-        let images = result
-            .iter()
-            .filter(|c| matches!(c, ToolResultContent::Image(_)))
-            .count();
-
-        // @step Then the oversized page is still rejected by the existing dimension check
-        let first = &result[0];
-        match first {
-            ToolResultContent::Text(t) => {
-                assert!(
-                    t.text.contains("10000"),
-                    "dimension rejection must be first: {}",
-                    t.text
-                );
-            }
-            other => panic!("first page must be rejected as Text, got {other:?}"),
-        }
-
-        // @step And the count cap is applied to the remaining pages independently
-        assert_eq!(
-            images, MAX_TOOL_RESULT_PDF_PAGES,
-            "the cap counts Image parts only, not rejections"
-        );
-    }
 }
+
+#[cfg(test)]
+mod tool_result_text_bound_tests;
+
+#[cfg(test)]
+mod pdf_image_cap_tests;

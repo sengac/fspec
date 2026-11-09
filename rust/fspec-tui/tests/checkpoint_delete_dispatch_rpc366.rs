@@ -9,10 +9,8 @@
 //! was folded back onto the bus. Proves the dispatch without a real git
 //! repo.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 
@@ -23,23 +21,27 @@ use common::MockBackend;
 /// deadline elapses; dispatch every action seen so spawned follow-ups
 /// run, and return Some(action) on first match.
 async fn wait_for<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Option<Action> {
-    let deadline = std::time::Instant::now() + Duration::from_millis(500);
-    while std::time::Instant::now() < deadline {
-        if let Some(action) = app.try_recv_action() {
-            let matched = pred(&action);
-            app.dispatch(action.clone());
-            if matched {
-                return Some(action);
+    // TEST-042: wait for the action itself under the deadlock guard (None
+    // only when the guard expires), dispatching every action on the way.
+    codelet_test_helpers::deadlock_guard("the awaited action", async {
+        loop {
+            while let Some(action) = app.try_recv_action() {
+                let matched = pred(&action);
+                app.dispatch(action.clone());
+                if matched {
+                    return action;
+                }
             }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(Duration::from_millis(5)).await;
-    }
-    None
+    })
+    .await
+    .ok()
 }
 
 /// Scenario: Dispatching DeleteCheckpoint calls the transport delete_checkpoint
 #[tokio::test]
-async fn dispatching_delete_checkpoint_calls_the_transport() {
+async fn dispatching_delete_checkpoint_calls_the_transport() -> TestResult {
     // @step Given an App whose backend records delete calls
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -71,11 +73,12 @@ async fn dispatching_delete_checkpoint_calls_the_transport() {
         mock.last_delete_checkpoint(),
         Some(("AUTH-001".to_string(), "baseline".to_string()))
     );
+    Ok(())
 }
 
 /// Scenario: Dispatching DeleteAllCheckpoints calls the transport delete_all_checkpoints
 #[tokio::test]
-async fn dispatching_delete_all_checkpoints_calls_the_transport() {
+async fn dispatching_delete_all_checkpoints_calls_the_transport() -> TestResult {
     // @step Given an App whose backend records delete calls
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -100,4 +103,5 @@ async fn dispatching_delete_all_checkpoints_calls_the_transport() {
         1,
         "delete_all_checkpoints should be called exactly once"
     );
+    Ok(())
 }

@@ -4,75 +4,9 @@
       "name": "Catch-up fires once for a missed daily schedule",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "85-99",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "84-99",
+          "implMappings": []
         }
       ]
     },
@@ -80,75 +14,9 @@
       "name": "Catch-up fires for a never-run schedule with a past due trigger",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "104-115",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "104-118",
+          "implMappings": []
         }
       ]
     },
@@ -156,75 +24,9 @@
       "name": "No catch-up when last run is recent enough",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "120-136",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "123-139",
+          "implMappings": []
         }
       ]
     },
@@ -232,19 +34,9 @@
       "name": "Paused schedule is skipped during catch-up",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "141-152",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                112,
-                113,
-                114,
-                115
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "144-156",
+          "implMappings": []
         }
       ]
     },
@@ -252,22 +44,9 @@
       "name": "Catch-up does not cause double-fire on first regular tick",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "157-176",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "161-183",
+          "implMappings": []
         }
       ]
     },
@@ -275,23 +54,9 @@
       "name": "Missing schedules.json on startup is handled gracefully",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "181-196",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "188-205",
+          "implMappings": []
         }
       ]
     },
@@ -299,26 +64,9 @@
       "name": "Catch-up respects session limit",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "201-224",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "210-238",
+          "implMappings": []
         }
       ]
     },
@@ -326,69 +74,9 @@
       "name": "Multiple schedules with missed triggers each get one catch-up",
       "testMappings": [
         {
-          "file": "rust/napi/tests/catch_up_test.rs",
-          "lines": "229-249",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/scheduler/catch_up.rs",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102
-              ]
-            }
-          ]
+          "file": "rust/core/tests/catch_up_test.rs",
+          "lines": "243-262",
+          "implMappings": []
         }
       ]
     }
@@ -398,11 +86,9 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/catch_up_test.rs"
+      "rust/core/tests/catch_up_test.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/scheduler/catch_up.rs"
-    ],
-    "totalLinesCovered": 401
+    "implFiles": [],
+    "totalLinesCovered": 151
   }
 }

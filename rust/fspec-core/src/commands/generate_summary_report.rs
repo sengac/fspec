@@ -45,7 +45,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Read spec/work-units.json verbatim (TS: readFile + JSON.parse, wrapped
     // in a try/catch that re-throws as "Failed to generate summary report").
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
     let raw =
         std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
             command: "generate-summary-report",

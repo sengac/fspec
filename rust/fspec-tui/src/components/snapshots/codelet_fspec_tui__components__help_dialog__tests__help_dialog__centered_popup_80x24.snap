@@ -1,6 +1,5 @@
 ---
 source: fspec-tui/src/components/help_dialog.rs
-assertion_line: 295
 expression: rows
 ---
 - "                                                                                "
@@ -13,14 +12,14 @@ expression: rows
 - "  │                                                                        ■ │  "
 - "  │ ↑/k, ↓/j      Navigate work units                                      ■ │  "
 - "  │ ←/h, →/l      Cycle columns → menu items → chips                       ■ │  "
-- "  │ Enter         Work / open focused unit                                 ■ │  "
-- "  │ Enter (item)  Opens its dropdown menu                                  ■ │  "
+- "  │ Enter         Choose agent or full details                             ■ │  "
+- "  │ Enter (item)  Opens its dropdown menu                                  │ │  "
 - "  │ Enter (chip)  Opens that session                                       │ │  "
 - "  │ Shift+Right   Open agent view                                          │ │  "
-- "  │ .             New Agent                                                │ │  "
 - "  │ [ / ]         Reorder (up / down)                                      │ │  "
 - "  │ PageUp/PageDn Scroll column                                            │ │  "
 - "  │ Home / End    First / Last                                             │ │  "
+- "  │ .             New Agent                                                │ │  "
 - "  │                                                                          │  "
 - "  │                               ESC to close                               │  "
 - "  │                                                                          │  "

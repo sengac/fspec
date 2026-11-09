@@ -1,5 +1,7 @@
 @done
 @KGRAPH-063
+@parser
+@code-analysis
 Feature: Source Code and Metadata Storage in Graph Nodes
   """
   DRY approach: Create a single metadata.rs module under ast_pipeline/ with data-driven

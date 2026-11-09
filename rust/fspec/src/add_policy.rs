@@ -24,10 +24,10 @@
 //!     to stderr prefixed with `✗ Failed to add policy:` (parity with the TS
 //!     `output.error('✗ Failed to add policy:', ...)` path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_policy;
 use serde_json::{json, Value};
 
@@ -47,7 +47,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-policy` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by fspec_core::commands::
     // add_policy::run. The dispatcher and CLI both feed the SAME serde shape.

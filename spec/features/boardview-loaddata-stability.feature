@@ -1,4 +1,6 @@
 @BUG-119
+@tui
+@board
 Feature: BoardView loadData stability
   """
   Changes span 3 files: fspecStore.ts (in-flight guard + error handling), globalStreamListener.ts (JS debounce), BoardView.tsx (remove redundant loadData after moves)

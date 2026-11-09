@@ -4,12 +4,14 @@
       "name": "Esc when idle with non-empty input clears the buffer",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
-          "lines": "533-552",
+          "file": "rust/fspec-tui/tests/agentview_esc_cascade_input_clear_rpc095.rs",
+          "lines": "62-81",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
+                35,
+                36,
                 37,
                 38,
                 39,
@@ -40,10 +42,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69
-              ]
+                67
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "return;"
             }
           ]
         }
@@ -53,12 +55,14 @@
       "name": "Esc when idle with whitespace-only input is treated as empty",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs",
-          "lines": "557-578",
+          "file": "rust/fspec-tui/tests/agentview_esc_cascade_input_clear_rpc095.rs",
+          "lines": "87-109",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
+                35,
+                36,
                 37,
                 38,
                 39,
@@ -89,10 +93,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69
-              ]
+                67
+              ],
+              "firstLine": "impl App {",
+              "lastLine": "return;"
             }
           ]
         }
@@ -104,11 +108,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+      "rust/fspec-tui/tests/agentview_esc_cascade_input_clear_rpc095.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_esc_cascade.rs"
     ],
-    "totalLinesCovered": 108
+    "totalLinesCovered": 109
   }
 }

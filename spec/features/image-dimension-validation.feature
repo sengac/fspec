@@ -1,4 +1,6 @@
 @EXT-016
+@tools
+@attachment
 Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 only validated byte size, not pixel dimension limit
   """
   Create a shared image_dimensions module in rust/tools/src/ with functions: extract_png_dimensions(bytes) -> Option<(u32,u32)> and extract_jpeg_dimensions(bytes) -> Option<(u32,u32)> — reusable by both Read tool and parse_tool_result_content

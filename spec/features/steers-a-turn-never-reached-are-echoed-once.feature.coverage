@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "A steer the running turn never reached is echoed once when it starts the next turn",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug348_steer_echoed_once.rs",
+          "lines": "18-59",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "pub fn send_input(&self, input: String, thinking_config: Option<String>) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                90
+              ],
+              "firstLine": "self.send_steers_as_turn(text, thinking_config)",
+              "lastLine": "self.send_steers_as_turn(text, thinking_config)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug348_steer_echoed_once.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/messaging.rs",
+      "rust/sessions/src/background_session/input_modes.rs"
+    ],
+    "totalLinesCovered": 56
+  }
+}

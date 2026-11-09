@@ -29,7 +29,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "u64::try_from(expiry.saturating_sub(chrono::Utc::now().timestamp())).unwrap_or(0)",
+              "lastLine": "})"
             }
           ]
         }
@@ -45,8 +47,6 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -82,8 +82,19 @@
                 194,
                 195,
                 196,
-                197
-              ]
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "async fn ensure_inner(state: &mut TokenState) -> Result<(), Error> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,6 +111,6 @@
     "implFiles": [
       "rust/providers/src/codex/auth_refresh.rs"
     ],
-    "totalLinesCovered": 120
+    "totalLinesCovered": 127
   }
 }

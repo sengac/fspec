@@ -75,7 +75,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -86,26 +88,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
-          "lines": "117-132",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_provider_config.rs",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
-            }
-          ]
+          "lines": "120-135"
         }
       ]
     },
@@ -184,7 +167,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -265,7 +250,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -276,7 +263,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_agent_initiator_test.rs",
-          "lines": "228-240",
+          "lines": "228-239",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/classifier.rs",
@@ -346,7 +333,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -427,7 +416,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -508,7 +499,9 @@
                 147,
                 148,
                 149
-              ]
+              ],
+              "firstLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`",
+              "lastLine": "\"model\": \"gpt-4o\","
             }
           ]
         }
@@ -523,9 +516,8 @@
       "rust/providers/tests/copilot_agent_initiator_test.rs"
     ],
     "implFiles": [
-      "rust/providers/src/copilot/classifier.rs",
-      "rust/napi/src/deep_search_provider_config.rs"
+      "rust/providers/src/copilot/classifier.rs"
     ],
-    "totalLinesCovered": 563
+    "totalLinesCovered": 550
   }
 }

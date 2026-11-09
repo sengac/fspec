@@ -5,9 +5,11 @@
 //
 // Reference: spec/features/persistent-context-in-multi-turn-system.feature
 
+pub mod admission;
 pub mod compaction;
 pub mod context_gathering; // CLI-016: Context gathering with AGENTS.md discovery
 mod durable_summary;
+pub mod effort;
 mod preservation;
 mod provider;
 mod recovery_view;
@@ -48,11 +50,15 @@ pub struct Session {
     pub(crate) durable_summary: Option<durable_summary::DurableSummary>,
     pub provider_session: codelet_providers::session::ProviderSession,
     pub(crate) compaction_inference_block: Option<String>,
+    /// BUG-516: the next agent-stream run is a manual compaction (the
+    /// compactor sub-agent round), not an ordinary inference turn.
+    pub(crate) manual_compaction_requested: bool,
     pub(crate) pending_compaction_commit:
         Option<codelet_core::persistence::compaction_boundary::CompactionIdentity>,
     pub(crate) selected_preparer: Option<selected_compaction::SelectedPreparation>,
     pub(crate) compaction_working_messages: Option<recovery_view::CompactionWorkingView>,
     pub(crate) compaction_operation: Option<crate::compaction_operation::CompactionOperation>,
+    pub(crate) admitted_input: Option<admission::AdmittedInput>,
 
     /// Conversation turns for compaction analysis (CLI-009)
     /// Grouped messages representing user/assistant exchanges
@@ -104,6 +110,9 @@ pub struct Session {
     /// (thinking stripped from the outgoing history clone; the persisted
     /// session history always keeps it).
     pub preserve_thinking_enabled: bool,
+
+    /// MODEL-015: the conversation's Claude per-message effort log.
+    pub effort_log: codelet_providers::claude_effort::EffortLog,
 }
 
 /// CONT-003: the user-set goal driving conditional done() acceptance.
@@ -118,13 +127,7 @@ pub struct SessionGoal {
 }
 
 impl Session {
-    /// Create a new session with the specified provider
-    ///
-    /// # Arguments
-    /// * `provider_name` - Optional provider name (defaults to first available)
-    ///
-    /// # Returns
-    /// * `Result<Session>` - New session or error if provider unavailable
+    /// Create a new session with the specified provider (defaults to first available)
     pub fn new(provider_name: Option<&str>) -> Result<Self> {
         let provider_manager = if let Some(name) = provider_name {
             ProviderManager::with_provider(name)?
@@ -149,10 +152,12 @@ impl Session {
             selected_preparer: None,
             compaction_working_messages: None,
             compaction_operation: None,
+            admitted_input: None,
             pending_compaction_commit: None,
             restored_replay: None,
             durable_summary: None,
             compaction_inference_block: None,
+            manual_compaction_requested: false,
             provider_session: codelet_providers::session::ProviderSession::for_provider(
                 provider_manager.current_provider_name(),
             ),
@@ -169,6 +174,7 @@ impl Session {
             goal: None,
             done_rejections: 0,
             preserve_thinking_enabled: true,
+            effort_log: Default::default(),
         };
         session.apply_provider_runtime_settings();
         session
@@ -197,6 +203,7 @@ impl Session {
         self.reset_provider_state()?;
         // Clear conversation context before switching (matches codelet behavior)
         self.messages.clear();
+        self.effort_log.reset();
         self.turns.clear();
         self.token_tracker = TokenTracker::default();
         self.token_tracker.invalidate_input();
@@ -233,7 +240,8 @@ impl Session {
     /// ```
     /// use codelet_cli::session::{Session, SystemReminderType};
     ///
-    /// let mut session = Session::new(None).unwrap();
+    /// # std::env::set_var("ANTHROPIC_API_KEY", "doc-test-no-network");
+    /// let mut session = Session::new(Some("claude")).expect("offline claude session");
     /// session.add_system_reminder(SystemReminderType::TokenStatus, "50% tokens used");
     /// ```
     pub fn add_system_reminder(&mut self, reminder_type: SystemReminderType, content: &str) {

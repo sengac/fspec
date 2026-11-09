@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "262-313",
+          "lines": "263-314",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
-                96,
                 97,
                 98,
                 99,
@@ -59,8 +58,11 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146
+              ],
+              "firstLine": "/// (`area.width-4` × `area.height-6`, centered). The body is wrapped",
+              "lastLine": "paint_scrollbar(bar_area, buf, viewport_rows, total_rows, state);"
             }
           ]
         }
@@ -71,12 +73,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "314-356",
+          "lines": "315-357",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
-                105,
                 106,
                 107,
                 108,
@@ -112,8 +113,11 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142
+              ],
+              "firstLine": "// RPC-383: the fixed-rect → inner-width → viewport-rows →",
+              "lastLine": "let state = ScrollState {"
             }
           ]
         }
@@ -124,16 +128,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "357-404",
+          "lines": "371-414",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
               "lines": [
-                34,
                 35,
                 36,
-                37
-              ]
+                37,
+                38
+              ],
+              "firstLine": "KeyCode::Down => {",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -144,22 +150,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "405-432",
+          "lines": "420-443",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
+                101,
                 132,
                 133,
                 134,
@@ -169,8 +165,15 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "Action::TurnModalEnd => self.jump_turn_modal(true),",
+              "lastLine": "}"
             }
           ]
         }
@@ -181,7 +184,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "529-557",
+          "lines": "548-572",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mouse_dispatch.rs",
@@ -199,7 +202,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "/// bubbles to the scrollback) when the modal is closed or the event",
+              "lastLine": "| MouseEventKind::Drag(MouseButton::Left)"
             }
           ]
         }
@@ -210,14 +215,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "558-578",
+          "lines": "578-594",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
                 38,
-                39
-              ]
+                39,
+                40
+              ],
+              "firstLine": "pub const MODAL_FOOTER: &str = \"\\u{2191}\\u{2193} Scroll | c Copy | Esc Close\";",
+              "lastLine": "/// A read-only modal rendering one turn's full text in a fixed"
             }
           ]
         }
@@ -228,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "579-616",
+          "lines": "600-638",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
@@ -245,7 +253,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// for `turn_select_mode`). No-op (modal stays closed) when nothing",
+              "lastLine": ""
             }
           ]
         }
@@ -256,7 +266,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "433-458",
+          "lines": "449-470",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
@@ -269,7 +279,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "match action {",
+              "lastLine": "Action::TurnModalPageDown => {"
             }
           ]
         }
@@ -280,7 +292,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "459-491",
+          "lines": "476-504",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
@@ -293,7 +305,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "match action {",
+              "lastLine": "Action::TurnModalPageDown => {"
             }
           ]
         }
@@ -304,46 +318,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
-          "lines": "492-528",
+          "lines": "510-542",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
               "lines": [
-                97,
-                98,
-                99,
                 100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -353,8 +333,15 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "Action::TurnModalHome => self.jump_turn_modal(false),",
+              "lastLine": "}"
             }
           ]
         }
@@ -374,6 +361,6 @@
       "rust/fspec-tui/src/app/dispatch_scroll.rs",
       "rust/fspec-tui/src/views/agent/mouse_dispatch.rs"
     ],
-    "totalLinesCovered": 555
+    "totalLinesCovered": 495
   }
 }

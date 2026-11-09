@@ -24,6 +24,7 @@ Feature: /resume source-shape regression
   * The Action enum gains a `SessionResumeComplete(SessionId)` variant.
   * The dispatch_resume_search_views helper file declares
   `handle_session_resume_complete`.
+  TUI-132 (2026-11-09): Action::SessionResumeComplete and handle_session_resume_complete are removed: nothing emitted the action.
   """
 
   Background: User Story
@@ -36,11 +37,3 @@ Feature: /resume source-shape regression
     Then no file under rust/fspec-tui/src/ matches "codelet_napi"
     And every file under rust/fspec-tui/src/app/, rust/fspec-tui/src/views/agent/, and rust/fspec-tui/src/store/agent_view/ is strictly less than 300 lines of code
     And rust/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
-
-  Scenario: components::Action declares the SessionResumeComplete variant
-    Given rust/fspec-tui/src/components/mod.rs after RPC-049 lands
-    Then the file declares "SessionResumeComplete(" as an Action variant
-
-  Scenario: dispatch_resume_search_views declares the handle_session_resume_complete helper
-    Given rust/fspec-tui/src/app/dispatch_resume_search_views.rs after RPC-049 lands
-    Then the file declares "handle_session_resume_complete"

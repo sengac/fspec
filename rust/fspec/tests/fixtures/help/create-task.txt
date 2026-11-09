@@ -24,11 +24,11 @@ OPTIONS
     Detailed description of the task
   -e, --epic <epic>
     Epic ID to associate with this task
-  -p, --parent <parent>
+  -p, --parent <workUnitId>
     Parent task ID for hierarchical relationships
 
 TYPICAL WORKFLOW
-  Create task: fspec create-task PREFIX "Title",Tasks can skip specifying phase (optional feature file),Move directly to implementing: fspec update-work-unit-status TASK-001 implementing,Complete work without tests (for operational tasks),Move to done: fspec update-work-unit-status TASK-001 done
+  Create task: fspec create-task PREFIX "Title". Tasks can skip specifying phase (optional feature file). Move directly to implementing: fspec update-work-unit-status TASK-001 implementing. Complete work without tests (for operational tasks). Move to done: fspec update-work-unit-status TASK-001 done
 
 EXAMPLES
   1. Create simple task with minimal requirements
@@ -59,19 +59,19 @@ Tasks are for operational work.
 
 COMMON ERRORS
   ✗ Prefix 'PREFIX' is not registered
-    Fix: undefined
+    Fix: Run: fspec create-prefix PREFIX "Description"
 
   ✗ Parent task 'PARENT-001' does not exist
-    Fix: undefined
+    Fix: Create parent first or remove --parent option
 
   ✗ Epic 'epic-name' does not exist
-    Fix: undefined
+    Fix: Run: fspec create-epic epic-name "Title"
 
 RELATED COMMANDS
-  fspec fspec update-work-unit-status - Move task through workflow
-  fspec fspec list-work-units - List all tasks
-  fspec fspec show-work-unit - Show task details
-  fspec fspec update-work-unit - Update task title/description
+  fspec update-work-unit-status - Move task through workflow
+  fspec list-work-units - List all tasks
+  fspec show-work-unit - Show task details
+  fspec update-work-unit - Update task title/description
 
 NOTES
   • Tasks have optional feature files (not required for operational work)

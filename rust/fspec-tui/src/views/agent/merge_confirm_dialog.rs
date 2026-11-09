@@ -34,6 +34,9 @@ use crate::components::dialog_theme::{
 };
 use crate::components::Action;
 
+/// WT-018: the confirmation Discard opens when the session changed cards.
+pub mod discard_cards;
+
 /// Outcome of routing a single event (key or TUI-112 left-click) through
 /// the MergeConfirmDialog.
 #[derive(Debug, Clone, PartialEq, Eq)]

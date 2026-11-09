@@ -169,7 +169,7 @@ fn invocation_with_confirm_wipes_every_dependency_edge() {
     set_field(tmp.path(), "AUTH-002", "blockedBy", &["AUTH-001"]);
     set_field(tmp.path(), "UI-001", "relatesTo", &["AUTH-001"]);
 
-    // @step When I run `fspec clear-dependencies AUTH-001 --confirm`
+    // @step When I run `fspec clear-dependencies AUTH-001 --confirm` in that tempdir
     let (code, stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001", "--confirm"]);
 
     // @step Then the exit code is 0
@@ -214,7 +214,7 @@ fn missing_confirm_flag_exits_1_with_canonical_error_on_stderr() {
     );
     set_field(tmp.path(), "AUTH-001", "blocks", &["AUTH-002"]);
 
-    // @step When I run `fspec clear-dependencies AUTH-001`
+    // @step When I run `fspec clear-dependencies AUTH-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001"]);
 
     // @step Then the exit code is 1
@@ -233,7 +233,7 @@ fn missing_source_work_unit_exits_1_with_canonical_error_on_stderr() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")]);
 
-    // @step When I run `fspec clear-dependencies UNKNOWN-001 --confirm`
+    // @step When I run `fspec clear-dependencies UNKNOWN-001 --confirm` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["UNKNOWN-001", "--confirm"]);
 
     // @step Then the exit code is 1

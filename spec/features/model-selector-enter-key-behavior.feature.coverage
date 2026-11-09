@@ -10,11 +10,6 @@
             {
               "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -45,8 +40,15 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "KeyCode::Enter => {",
+              "lastLine": "// Enter alone on a fresh collapse-by-default open."
             }
           ]
         }
@@ -62,11 +64,6 @@
             {
               "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -97,8 +94,15 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "KeyCode::Enter => {",
+              "lastLine": "// Enter alone on a fresh collapse-by-default open."
             }
           ]
         }
@@ -109,16 +113,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
-          "lines": "84-109",
+          "lines": "89-118",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -149,8 +148,15 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "KeyCode::Enter => {",
+              "lastLine": "// Enter alone on a fresh collapse-by-default open."
             }
           ]
         }
@@ -167,6 +173,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/dispatch.rs"
     ],
-    "totalLinesCovered": 259
+    "totalLinesCovered": 187
   }
 }

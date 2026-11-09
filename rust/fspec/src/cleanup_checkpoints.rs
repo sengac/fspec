@@ -16,16 +16,16 @@
 //! value-parse error. A numeric-but-non-positive value (`0`) is forwarded to
 //! the core, which owns the `--keep-last must be a positive number` guard.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::cleanup_checkpoints;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TS Commander.js registration
 /// (`src/commands/cleanup-checkpoints.ts:108-114`): one positional
-/// `<work-unit-id>` and a `--keep-last <N>` option.
+/// `<workUnitId>` and a `--keep-last <N>` option.
 #[derive(Debug, Default)]
 pub struct CliArgs {
     pub work_unit_id: String,
@@ -38,7 +38,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `cleanup-checkpoints` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Parse `--keep-last`. A non-numeric value is rejected with the same
     // message the core uses for a non-positive value, so the CLI surface is

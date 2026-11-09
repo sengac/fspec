@@ -10,13 +10,6 @@
             {
               "file": "rust/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -36,8 +29,17 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "/// Build the styled `Line` for one file row. `selected` drives the",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,20 +50,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/diff_common/row.rs",
-          "lines": "154-204",
+          "lines": "154-200",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/render.rs",
               "lines": [
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
                 190,
                 191,
                 192,
@@ -71,8 +64,28 @@
                 196,
                 197,
                 198,
-                199
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "render_pane_scrollbar(content, buf, list_width, scroll, visible, checkpoints.len());",
+              "lastLine": "Span::styled(format!(\"{cursor} \"), style),"
             }
           ]
         }
@@ -90,6 +103,6 @@
       "rust/fspec-tui/src/views/diff_common/row.rs",
       "rust/fspec-tui/src/views/checkpoints/render.rs"
     ],
-    "totalLinesCovered": 147
+    "totalLinesCovered": 152
   }
 }

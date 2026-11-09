@@ -3,7 +3,6 @@
 use super::fixture::*;
 use futures::StreamExt;
 use rig::streaming::StreamedAssistantContent;
-use std::time::Duration;
 
 #[tokio::test]
 async fn scenario_rig_rejects_interrupted_and_malformed_http_streams() -> TestResult {
@@ -23,8 +22,11 @@ async fn scenario_rig_rejects_interrupted_and_malformed_http_streams() -> TestRe
         let mut server = Server::start(body, 200, interrupted, false).await?;
         // @step When the real custom rig model consumes each stream
         let mut stream = rig_stream(&server.url).await?;
-        let items: Vec<_> =
-            tokio::time::timeout(Duration::from_secs(5), stream.by_ref().collect()).await?;
+        let items: Vec<_> = codelet_test_helpers::deadlock_guard(
+            "stream.by_ref().collect()",
+            stream.by_ref().collect(),
+        )
+        .await?;
         // @step Then each stream reports one error and no successful FinalResponse or EndTurn
         assert_eq!(
             items.iter().filter(|item| item.is_err()).count(),

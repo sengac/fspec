@@ -1,4 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[path = "support/offline_session.rs"]
+mod offline_session;
 /**
  * Feature: spec/features/implement-system-reminder-infrastructure.feature
  *
@@ -11,9 +13,8 @@
  * - Helper function tests (is_system_reminder, partition_for_compaction)
  * - Full compaction persistence test (ignored - requires real LLM)
  */
-use codelet_cli::session::{
-    system_reminders::{is_system_reminder, partition_for_compaction, SystemReminderType},
-    Session,
+use codelet_cli::session::system_reminders::{
+    is_system_reminder, partition_for_compaction, SystemReminderType,
 };
 use rig::message::{AssistantContent, Message, UserContent};
 use rig::OneOrMany;
@@ -28,7 +29,7 @@ fn test_add_system_reminder_to_messages_array() {
     // Scenario: Add system-reminder to messages array
 
     // @step Given I have a Session with empty messages Vec
-    let mut session = Session::new(None).expect("Failed to create session");
+    let mut session = offline_session::session().expect("Failed to create session");
     assert_eq!(
         session.messages.len(),
         0,
@@ -83,7 +84,7 @@ fn test_multiple_reminder_types_coexist() {
     // Scenario: Multiple reminder types coexist in messages array
 
     // @step Given I have a Session with empty messages Vec
-    let mut session = Session::new(None).expect("Failed to create session");
+    let mut session = offline_session::session().expect("Failed to create session");
 
     // @step When I call add_system_reminder(environment, "Platform: linux")
     session.add_system_reminder(SystemReminderType::Environment, "Platform: linux");
@@ -140,7 +141,7 @@ fn test_deduplication_via_retain_and_push() {
     // New reminders are APPENDED with supersession markers.
 
     // @step Given I have a Session with messages: [user_msg_1, system-reminder(tokenStatus, "50% used")]
-    let mut session = Session::new(None).expect("Failed to create session");
+    let mut session = offline_session::session().expect("Failed to create session");
 
     // Add user message
     session.messages.push(Message::User {
@@ -276,7 +277,7 @@ fn test_partition_for_compaction_separates_reminders() {
     // Scenario: Partition messages for compaction
 
     // @step Given I have a Session with mixed messages: [user_msg, system-reminder(env), assistant_msg, system-reminder(token)]
-    let mut session = Session::new(None).expect("Failed to create session");
+    let mut session = offline_session::session().expect("Failed to create session");
 
     // Add regular user message
     session.messages.push(Message::User {
@@ -334,7 +335,7 @@ fn test_reconstruction_after_compaction_preserves_reminders() {
     // Scenario: Reconstruct messages after compaction preserves reminders
 
     // @step Given I have messages partitioned into system-reminders and compactable
-    let mut session = Session::new(None).expect("Failed to create session");
+    let mut session = offline_session::session().expect("Failed to create session");
 
     // Setup: 3 old messages + 1 system-reminder + 2 recent messages
     session.messages.push(Message::User {

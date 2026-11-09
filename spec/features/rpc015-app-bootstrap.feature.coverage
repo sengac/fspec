@@ -5,8 +5,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/app_bootstrap_rpc015.rs",
-          "lines": "42-72",
+          "lines": "40-69",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "// BUG-180: project the fresh snapshot onto the per-session",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
@@ -66,9 +78,6 @@
                 54,
                 55,
                 56,
-                57,
-                58,
-                59,
                 60,
                 61,
                 62,
@@ -80,8 +89,6 @@
                 68,
                 69,
                 70,
-                71,
-                72,
                 73,
                 74,
                 75,
@@ -180,30 +187,10 @@
                 168,
                 169,
                 170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193
-              ]
+                171
+              ],
+              "firstLine": "//! `App::dispatch` — single mutation surface for [`BoardStore`] +",
+              "lastLine": "// currently-open file search popup."
             }
           ]
         }
@@ -218,8 +205,9 @@
       "rust/fspec-tui/tests/app_bootstrap_rpc015.rs"
     ],
     "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_workspaces.rs",
       "rust/fspec-tui/src/app/dispatch.rs"
     ],
-    "totalLinesCovered": 224
+    "totalLinesCovered": 201
   }
 }

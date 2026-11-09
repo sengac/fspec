@@ -1,0 +1,148 @@
+{
+  "scenarios": [
+    {
+      "name": "A session created by a new manager reaches that manager",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug420_session_manager_structural_self_reference.rs",
+          "lines": "16-41",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                38,
+                38,
+                38,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "/// Create a new session manager with default no-op hooks. BUG-420: the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A manager cannot be built without its self-reference",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug420_session_manager_structural_self_reference.rs",
+          "lines": "43-66",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                38,
+                38,
+                38,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "/// Create a new session manager with default no-op hooks. BUG-420: the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug420_session_manager_structural_self_reference.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager/manager_impl_1.rs"
+    ],
+    "totalLinesCovered": 146
+  }
+}

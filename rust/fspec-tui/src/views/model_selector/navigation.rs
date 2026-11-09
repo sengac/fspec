@@ -79,11 +79,24 @@ impl ModelSelectorView {
         self.adjust_scroll();
     }
 
+    fn lists_nothing_with_reason(&self, key: &str) -> bool {
+        self.providers.iter().any(|provider| {
+            provider.key == key
+                && provider.models.is_empty()
+                && provider.unavailable_reason.is_some()
+        })
+    }
+
     pub(crate) fn toggle_expansion(&mut self, expand: bool) {
         let Some(key) = self.focused_provider_key() else {
             return;
         };
         if key.is_empty() {
+            return;
+        }
+        // BUG-577: a section listed with no models and a reason (Codex
+        // /models failed, timed out or listed none) has nothing to expand.
+        if expand && self.lists_nothing_with_reason(&key) {
             return;
         }
         let changed = if expand {

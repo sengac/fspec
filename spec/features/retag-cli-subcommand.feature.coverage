@@ -115,7 +115,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "//! `retag` shell-facing CLI bridge (RPC-293).",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,7 +238,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "//! `retag` shell-facing CLI bridge (RPC-293).",
+              "lastLine": "}"
             }
           ]
         }
@@ -357,7 +361,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "//! `retag` shell-facing CLI bridge (RPC-293).",
+              "lastLine": "}"
             }
           ]
         }
@@ -478,7 +484,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "//! `retag` shell-facing CLI bridge (RPC-293).",
+              "lastLine": "}"
             }
           ]
         }
@@ -599,7 +607,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "//! `retag` shell-facing CLI bridge (RPC-293).",
+              "lastLine": "}"
             }
           ]
         }

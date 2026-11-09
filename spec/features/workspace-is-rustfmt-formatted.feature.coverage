@@ -1,0 +1,45 @@
+{
+  "scenarios": [
+    {
+      "name": "The workspace passes the format check",
+      "testMappings": [
+        {
+          "file": "rust/test-helpers/tests/bug382_workspace_is_rustfmt_formatted.rs",
+          "lines": "7-26",
+          "implMappings": [
+            {
+              "file": "spec/fspec-config.json",
+              "lines": "1-14",
+              "firstLine": "{",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/tests/device_protocol/legacy_failures.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "assert_eq!(",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/test-helpers/tests/bug382_workspace_is_rustfmt_formatted.rs"
+    ],
+    "implFiles": [
+      "spec/fspec-config.json",
+      "rust/providers/tests/device_protocol/legacy_failures.rs"
+    ],
+    "totalLinesCovered": 28
+  }
+}

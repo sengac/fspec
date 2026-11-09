@@ -13,10 +13,9 @@
 //! spans. No async, no NAPI — a real view + real `ProviderInfo`/`ModelEntry`
 //! rows seeded through the public `set_providers` API.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::ModelSelectorView;
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -57,11 +56,14 @@ fn find_row(buf: &Buffer, needle: &str) -> Option<u16> {
 }
 
 /// Display column (x) where the substring `needle` begins on row `y`.
-fn col_of(buf: &Buffer, y: u16, needle: &str) -> usize {
+fn col_of(buf: &Buffer, y: u16, needle: &str) -> Result<usize, codelet_test_helpers::TestError> {
     let row = row_string(buf, y);
-    row.find(needle)
+    Ok(row
+        .find(needle)
         .map(|byte_idx| row[..byte_idx].chars().count())
-        .unwrap_or_else(|| panic!("substring {needle:?} not found on row {y}: {row:?}"))
+        .or_fail(&format!(
+            "substring {needle:?} not found on row {y}: {row:?}"
+        ))?)
 }
 
 fn cell_fg(buf: &Buffer, x: u16, y: u16) -> Color {
@@ -85,7 +87,7 @@ fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -103,6 +105,8 @@ fn view_with_models(n: usize) -> ModelSelectorView {
         models,
         profile_name: None,
         is_unreachable: false,
+        provider_id: "openai".to_string(),
+        unavailable_reason: None,
     };
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
@@ -112,8 +116,12 @@ fn view_with_models(n: usize) -> ModelSelectorView {
 
 /// Assert every cell of `needle` on row `ty` is dim DarkGray (the two-span
 /// count treatment) and NOT the flat title/name style.
-fn assert_count_is_dark_gray(buf: &Buffer, ty: u16, needle: &str) {
-    let start = col_of(buf, ty, needle) as u16;
+fn assert_count_is_dark_gray(
+    buf: &Buffer,
+    ty: u16,
+    needle: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let start = col_of(buf, ty, needle)? as u16;
     let len = needle.chars().count() as u16;
     for x in start..start + len {
         assert_eq!(
@@ -124,23 +132,24 @@ fn assert_count_is_dark_gray(buf: &Buffer, ty: u16, needle: &str) {
             cell_mod(buf, x, ty)
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Model browse-list title renders count in dim two-span style
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn browse_list_title_renders_count_in_dim_two_span_style() {
+fn browse_list_title_renders_count_in_dim_two_span_style() -> TestResult {
     // @step Given the model selector is in browse mode with 12 models available
     let mut view = view_with_models(12);
 
     // @step When the browse list is rendered
     let buf = render_to_buffer(&mut view);
     let ty = find_row(&buf, "Select Model (12 models)")
-        .expect("title row 'Select Model (12 models)' should be present");
+        .or_fail("title row 'Select Model (12 models)' should be present")?;
 
     // @step Then the title shows "Select Model" in bold yellow
-    let name_start = col_of(&buf, ty, "Select Model") as u16;
+    let name_start = col_of(&buf, ty, "Select Model")? as u16;
     let name_len = "Select Model".chars().count() as u16;
     for x in name_start..name_start + name_len {
         assert_eq!(
@@ -155,21 +164,22 @@ fn browse_list_title_renders_count_in_dim_two_span_style() {
     }
 
     // @step And the count " (12 models)" is shown in dim DarkGray
-    assert_count_is_dark_gray(&buf, ty, "(12 models)");
+    assert_count_is_dark_gray(&buf, ty, "(12 models)")?;
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Single model renders singular noun in dim count span
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn single_model_renders_singular_noun_in_dim_count_span() {
+fn single_model_renders_singular_noun_in_dim_count_span() -> TestResult {
     // @step Given the model selector is in browse mode with 1 model available
     let mut view = view_with_models(1);
 
     // @step When the browse list is rendered
     let buf = render_to_buffer(&mut view);
     let ty = find_row(&buf, "Select Model (1 model)")
-        .expect("title row 'Select Model (1 model)' should be present");
+        .or_fail("title row 'Select Model (1 model)' should be present")?;
 
     // @step Then the count " (1 model)" is shown in dim DarkGray using the singular noun
     let row = row_string(&buf, ty);
@@ -177,14 +187,15 @@ fn single_model_renders_singular_noun_in_dim_count_span() {
         row.contains("(1 model)") && !row.contains("(1 models)"),
         "singular noun must be used, got {row:?}"
     );
-    assert_count_is_dark_gray(&buf, ty, "(1 model)");
+    assert_count_is_dark_gray(&buf, ty, "(1 model)")?;
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Custom-model overlay title is unaffected by the two-span title change
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn custom_model_overlay_title_is_unaffected() {
+fn custom_model_overlay_title_is_unaffected() -> TestResult {
     // @step Given the model selector has the Add Custom Model overlay open
     // A local-server profile section enables the `a` keybind to open the
     // Add Custom Model form; the cursor rests on the profile header.
@@ -196,6 +207,8 @@ fn custom_model_overlay_title_is_unaffected() {
         models: vec![model("base")],
         profile_name: Some("my-profile".to_string()),
         is_unreachable: false,
+        provider_id: "openai".to_string(),
+        unavailable_reason: None,
     };
     view.set_providers(vec![provider]);
     view.handle_key(key(KeyCode::Char('a')));
@@ -205,7 +218,7 @@ fn custom_model_overlay_title_is_unaffected() {
 
     // @step Then the title shows "Add Custom Model" in its existing overlay style with no dim DarkGray count span
     let ty = find_row(&buf, "Add Custom Model")
-        .expect("overlay title row 'Add Custom Model' should be present");
+        .or_fail("overlay title row 'Add Custom Model' should be present")?;
     let row = row_string(&buf, ty);
     assert!(
         !row.contains("models)") && !row.contains("model)"),
@@ -215,7 +228,7 @@ fn custom_model_overlay_title_is_unaffected() {
     // "Add Custom Model" name is Cyan + BOLD (the raw-title scaffold style,
     // full_screen_shell.rs:124-127) — NOT the two-span DarkGray count
     // treatment used by the browse-list title.
-    let name_start = col_of(&buf, ty, "Add Custom Model") as u16;
+    let name_start = col_of(&buf, ty, "Add Custom Model")? as u16;
     let name_len = "Add Custom Model".chars().count() as u16;
     for x in name_start..name_start + name_len {
         assert_eq!(
@@ -230,13 +243,14 @@ fn custom_model_overlay_title_is_unaffected() {
             cell_mod(&buf, x, ty)
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Refreshing state renders the refresh suffix in the dim count span
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn refreshing_suffix_renders_in_dim_count_span_never_bold_name() {
+fn refreshing_suffix_renders_in_dim_count_span_never_bold_name() -> TestResult {
     // @step Given the model selector is in browse mode with 3 models available
     let mut view = view_with_models(3);
 
@@ -248,18 +262,18 @@ fn refreshing_suffix_renders_in_dim_count_span_never_bold_name() {
     // @step When the browse list is rendered
     let buf = render_to_buffer(&mut view);
     let ty = find_row(&buf, "(refreshing...)")
-        .expect("title row with '(refreshing...)' suffix should be present");
+        .or_fail("title row with '(refreshing...)' suffix should be present")?;
 
     // @step Then the "(refreshing...)" suffix is shown in the dim DarkGray count span
-    assert_count_is_dark_gray(&buf, ty, "(refreshing...)");
+    assert_count_is_dark_gray(&buf, ty, "(refreshing...)")?;
     // The count noun span is dim too, so the whole trailing annotation reads
     // as a single dim status region.
-    assert_count_is_dark_gray(&buf, ty, "(3 models)");
+    assert_count_is_dark_gray(&buf, ty, "(3 models)")?;
 
     // @step And the bold-yellow "Select Model" name span never contains the refresh suffix
-    let name_start = col_of(&buf, ty, "Select Model") as u16;
+    let name_start = col_of(&buf, ty, "Select Model")? as u16;
     let name_len = "Select Model".chars().count() as u16;
-    let suffix_start = col_of(&buf, ty, "(refreshing...)") as u16;
+    let suffix_start = col_of(&buf, ty, "(refreshing...)")? as u16;
     assert!(
         suffix_start >= name_start + name_len,
         "refresh suffix must start AFTER the bold name span"
@@ -275,26 +289,27 @@ fn refreshing_suffix_renders_in_dim_count_span_never_bold_name() {
             "name cell {x} should stay BOLD while refreshing"
         );
     }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Browse-list title uses the two-span style, not the shared blue-bold title
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn browse_title_is_two_span_yellow_not_shared_blue_bold() {
+fn browse_title_is_two_span_yellow_not_shared_blue_bold() -> TestResult {
     // @step Given the model selector is in browse mode with 3 models available
     let mut view = view_with_models(3);
 
     // @step When the browse list is rendered
     let buf = render_to_buffer(&mut view);
     let ty = find_row(&buf, "Select Model (3 models)")
-        .expect("title row 'Select Model (3 models)' should be present");
+        .or_fail("title row 'Select Model (3 models)' should be present")?;
 
     // @step Then the "Select Model" name span is bold yellow, not the shared blue-bold title style
     // render_title_with_count (ResumeSession/SearchHistory) paints the WHOLE
     // title Blue+BOLD. The two-span model path paints the name Yellow+BOLD and
     // the count DarkGray — so no cell of the title row is Blue.
-    let name_start = col_of(&buf, ty, "Select Model") as u16;
+    let name_start = col_of(&buf, ty, "Select Model")? as u16;
     let name_len = "Select Model".chars().count() as u16;
     for x in name_start..name_start + name_len {
         assert_eq!(
@@ -309,5 +324,6 @@ fn browse_title_is_two_span_yellow_not_shared_blue_bold() {
         );
     }
     // The count span is DarkGray, also distinct from the all-Blue shared title.
-    assert_count_is_dark_gray(&buf, ty, "(3 models)");
+    assert_count_is_dark_gray(&buf, ty, "(3 models)")?;
+    Ok(())
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "253-273",
+          "lines": "266-287",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -51,7 +51,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "pub fn transform_user_message_cache_control(body: &mut Value) {",
+              "lastLine": ""
             }
           ]
         }
@@ -62,7 +64,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "304-326",
+          "lines": "317-340",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -108,7 +110,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "pub fn transform_user_message_cache_control(body: &mut Value) {",
+              "lastLine": ""
             }
           ]
         }
@@ -119,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "329-354",
+          "lines": "342-368",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -165,7 +169,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "pub fn transform_user_message_cache_control(body: &mut Value) {",
+              "lastLine": ""
             }
           ]
         }
@@ -176,7 +182,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "357-389",
+          "lines": "370-403",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -222,7 +228,9 @@
                 137,
                 138,
                 139
-              ]
+              ],
+              "firstLine": "pub fn transform_user_message_cache_control(body: &mut Value) {",
+              "lastLine": ""
             }
           ]
         }
@@ -233,7 +241,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "276-301",
+          "lines": "289-315",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -249,7 +257,9 @@
                 125,
                 126,
                 127
-              ]
+              ],
+              "firstLine": "messages[i][\"content\"] = json!([",
+              "lastLine": "// Handle array content - add cache_control to the last block"
             }
           ]
         }
@@ -260,7 +270,7 @@
       "testMappings": [
         {
           "file": "rust/providers/src/caching_client.rs",
-          "lines": "392-419",
+          "lines": "405-433",
           "implMappings": [
             {
               "file": "rust/providers/src/caching_client.rs",
@@ -274,7 +284,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "if !content_array.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -291,6 +303,6 @@
     "implFiles": [
       "rust/providers/src/caching_client.rs"
     ],
-    "totalLinesCovered": 341
+    "totalLinesCovered": 347
   }
 }

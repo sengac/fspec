@@ -45,14 +45,6 @@ pub const CLAUDE_REDIRECT_URI: &str = "https://console.anthropic.com/oauth/code/
 /// OAuth scopes
 pub const CLAUDE_SCOPE: &str = "org:create_api_key user:profile user:inference";
 
-/// User-Agent header for OAuth requests
-///
-/// Must match across all OAuth request paths:
-/// - `build_oauth_headers()` (parity reference)
-/// - `ClaudeProvider::from_api_key_with_mode_and_model()` (rig static headers)
-/// - `ClaudeProvider::from_oauth_tokens()` (rig static headers)
-pub const CLAUDE_USER_AGENT: &str = "claude-cli/2.1.3 (external, cli)";
-
 /// Required beta headers for OAuth mode
 pub const REQUIRED_BETA_HEADERS: &[&str] = &["oauth-2025-04-20", "interleaved-thinking-2025-05-14"];
 
@@ -230,7 +222,7 @@ async fn post_json_to_token_endpoint(
 pub fn build_oauth_headers(
     access_token: &str,
     existing_beta: Option<&str>,
-) -> HashMap<String, String> {
+) -> Result<HashMap<String, String>, crate::ProviderError> {
     let mut headers = HashMap::new();
 
     // Authorization
@@ -251,9 +243,13 @@ pub fn build_oauth_headers(
     headers.insert("anthropic-beta".to_string(), betas.join(","));
 
     // User-Agent
-    headers.insert("user-agent".to_string(), CLAUDE_USER_AGENT.to_string());
+    headers.insert(
+        "user-agent".to_string(),
+        crate::claude_protocol::user_agent()?,
+    );
+    headers.insert("x-app".to_string(), "cli".to_string());
 
-    headers
+    Ok(headers)
 }
 
 // =========================================================================

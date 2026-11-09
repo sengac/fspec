@@ -5,27 +5,78 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
-          "lines": "55-85",
+          "lines": "57-86",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// Which way a card moves within its column.",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204
-              ]
+                144
+              ],
+              "firstLine": "Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),",
+              "lastLine": "Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),"
             }
           ]
         }
@@ -36,24 +87,78 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
-          "lines": "86-118",
+          "lines": "88-119",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// Which way a card moves within its column.",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216
-              ]
+                145
+              ],
+              "firstLine": "Action::ReorderDown => self.handle_reorder(super::dispatch_reorder::Reorder::Down),",
+              "lastLine": "Action::ReorderDown => self.handle_reorder(super::dispatch_reorder::Reorder::Down),"
             }
           ]
         }
@@ -64,39 +169,38 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
-          "lines": "119-143",
+          "lines": "121-147",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "/// Which way a card moves within its column.",
+              "lastLine": "};"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216
-              ]
+                144
+              ],
+              "firstLine": "Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),",
+              "lastLine": "Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),"
             }
           ]
         }
@@ -107,15 +211,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs",
-          "lines": "144-179",
+          "lines": "149-184",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board.rs",
               "lines": [
+                61,
                 62,
                 63,
                 64,
-                65,
                 66,
                 67,
                 68,
@@ -180,9 +284,10 @@
                 127,
                 128,
                 129,
-                130,
-                131
-              ]
+                130
+              ],
+              "firstLine": "pub(super) scroll_offsets: HashMap<String, usize>,",
+              "lastLine": "let new_pos = indices"
             }
           ]
         }
@@ -197,9 +302,10 @@
       "rust/fspec-tui/tests/app_dispatch_reorder_rpc017.rs"
     ],
     "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_reorder.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/store/board.rs"
     ],
-    "totalLinesCovered": 249
+    "totalLinesCovered": 325
   }
 }

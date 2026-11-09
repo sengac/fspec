@@ -3,22 +3,22 @@ ADD-DEPENDENCY
 Add dependency relationships between work units to track blockers and dependencies
 
 USAGE
-  fspec add-dependency <id> [dependsOnId] [options]
+  fspec add-dependency <workUnitId> [workUnitId] [options]
 
 ARGUMENTS
-  <id> (required)
+  <workUnitId> (required)
     Work unit ID to add dependency to
-  [dependsOnId] (optional)
+  [workUnitId] (optional)
     Work unit ID that this depends on (shorthand for --depends-on)
 
 OPTIONS
-  --blocks <id>
+  --blocks <workUnitId>
     This work unit blocks the specified work unit
-  --blocked-by <id>
+  --blocked-by <workUnitId>
     This work unit is blocked by the specified work unit
-  --depends-on <id>
+  --depends-on <workUnitId>
     This work unit depends on the specified work unit
-  --relates-to <id>
+  --relates-to <workUnitId>
     This work unit is related to the specified work unit (no blocking)
 
 EXAMPLES

@@ -8,14 +8,16 @@
           "lines": "69-100",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/stub.rs",
               "lines": [
-                1117,
-                1118,
-                1119,
-                1120,
-                1121
-              ]
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "/// `session_cleared_tx` only when the session exists in `sessions`",
+              "lastLine": "next_id: AtomicU64,"
             }
           ]
         }
@@ -26,23 +28,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc055_cross_transport_parity.rs",
-          "lines": "106-141",
+          "lines": "106-143",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/stub.rs",
               "lines": [
-                1106,
-                1107,
-                1108,
-                1109,
-                1110,
-                1111,
-                1112,
-                1113,
-                1114,
-                1115,
-                1116
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "firstLine": "logs_tx: broadcast::Sender<LogRecord>,",
+              "lastLine": "/// RPC-436: session-cleared event sender. `clear_history` fires"
             }
           ]
         }
@@ -57,8 +61,8 @@
       "rust/fspec-tui/tests/rpc055_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/core/src/session_manager_handle.rs"
+      "rust/core/src/session_manager_handle/stub.rs"
     ],
-    "totalLinesCovered": 84
+    "totalLinesCovered": 86
   }
 }

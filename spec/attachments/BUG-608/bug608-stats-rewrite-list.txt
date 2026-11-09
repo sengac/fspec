@@ -1,0 +1,124 @@
+spec/features/add-architecture-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/add-attachment-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/add-background-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/add-cwd-parameter-to-bash-tool-for-worktree-isolation.feature.coverage totalLinesCovered
+spec/features/add-hook-cli-subcommand.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/add-tag-to-feature-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/add-tag-to-scenario-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/add-virtual-hook-rust-port.feature.coverage totalLinesCovered
+spec/features/agent-job-execution.feature.coverage totalLinesCovered
+spec/features/agentview-scrollback-scrollbar-click-and-drag-integration.feature.coverage totalLinesCovered
+spec/features/ast-dead-code-detection.feature.coverage testFiles totalLinesCovered
+spec/features/ast-dependency-graph-population.feature.coverage testFiles totalLinesCovered
+spec/features/ast-extractor-edge-quality.feature.coverage testFiles totalLinesCovered
+spec/features/ast-graph-data-model.feature.coverage testFiles totalLinesCovered
+spec/features/ast-graph-query-interface-graphsearch-integration.feature.coverage testFiles totalLinesCovered
+spec/features/ast-index-class-import-crash.feature.coverage totalLinesCovered
+spec/features/automatic-dag-context-publication.feature.coverage totalLinesCovered
+spec/features/automatic-json-file-initialization.feature.coverage totalLinesCovered
+spec/features/block-notifications.feature.coverage totalLinesCovered
+spec/features/board-key-starts-new-agent.feature.coverage totalLinesCovered
+spec/features/bridge-handler-session-isolation.feature.coverage totalLinesCovered
+spec/features/call-chain-path-tracing-between-two-functions.feature.coverage totalLinesCovered
+spec/features/calls-imports-edges-c-cpp.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-edges-ruby.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-edges-swift.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-csharp.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-go.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-java.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-kotlin.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-php.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-rust.feature.coverage testFiles totalLinesCovered
+spec/features/calls-imports-typeref-edges-scala.feature.coverage testFiles totalLinesCovered
+spec/features/catch-up-on-restart.feature.coverage testFiles totalLinesCovered
+spec/features/class-hierarchy-and-inheritance-traversal.feature.coverage testFiles totalLinesCovered
+spec/features/clear-virtual-hooks-rust-port.feature.coverage totalLinesCovered
+spec/features/cli-command-registration.feature.coverage totalLinesCovered
+spec/features/codex-oauth-integration-bugs.feature.coverage totalLinesCovered
+spec/features/compaction-badge-sign-integrity-ink.feature.coverage totalLinesCovered
+spec/features/compaction-post-inject-loading-state.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/compaction-threshold-tui-config.feature.coverage implFiles totalLinesCovered
+spec/features/compaction-trigger-reliability.feature.coverage totalLinesCovered
+spec/features/coverage-implementation-mapping-integrity.feature.coverage totalLinesCovered
+spec/features/cross-language-calls-imports-typeref-edge-extraction-for-dead-code-detection.feature.coverage testFiles totalLinesCovered
+spec/features/cross-pane-selection-with-correlation-ids.feature.coverage implFiles totalLinesCovered
+spec/features/cross-session-learning-context-injection.feature.coverage testFiles totalLinesCovered
+spec/features/cyclomatic-complexity-analysis.feature.coverage testFiles
+spec/features/dart-ast-index-support.feature.coverage testFiles totalLinesCovered
+spec/features/dart-dead-code-false-positive-reduction.feature.coverage testFiles totalLinesCovered
+spec/features/dart-extension-typekind-not-in-nanograph-schema-ast-index-crashes-on-dart-projects-with-extension-declarations.feature.coverage testFiles totalLinesCovered
+spec/features/decorator-annotation-search.feature.coverage testFiles totalLinesCovered
+spec/features/deep-search-diagnostic-severity.feature.coverage totalLinesCovered
+spec/features/delete-features-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/delete-scenario-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/dependencies-rust-port.feature.coverage totalLinesCovered
+spec/features/discover-foundation-finalize-creates-work-unit-without-adding-to-states-array.feature.coverage totalLinesCovered
+spec/features/display-fspec-version-under-the-board-logo.feature.coverage totalLinesCovered
+spec/features/dynamic-thinking-level-detection-via-keywords.feature.coverage implFiles totalLinesCovered
+spec/features/event-storm-artifact-commands-policies-hotspots-external-systems.feature.coverage totalLinesCovered
+spec/features/export-work-units-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/fix-debug-command-parity-gaps-in-rust-tui.feature.coverage totalLinesCovered
+spec/features/foundation-field-reminder-dedup.feature.coverage totalScenarios coveragePercent
+spec/features/fspec-tui-app-shell.feature.coverage totalLinesCovered
+spec/features/fspec-tui-terminal.feature.coverage totalLinesCovered
+spec/features/full-screen-tui-layout.feature.coverage totalLinesCovered
+spec/features/fulltext-content-search.feature.coverage totalLinesCovered
+spec/features/generate-example-mapping-from-event-storm-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/generate-foundation-md.feature.coverage totalLinesCovered
+spec/features/generate-scenarios-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/github-actions-ci-cd-for-codelet-napi-cross-platform-builds.feature.coverage implFiles totalLinesCovered
+spec/features/in-place-self-update-tui-command.feature.coverage totalLinesCovered
+spec/features/isolated-session-napi-bindings.feature.coverage implFiles totalLinesCovered
+spec/features/lazy-persistence-initialization.feature.coverage testFiles totalLinesCovered
+spec/features/learnings-extraction-pipeline-session-boundary-analysis.feature.coverage totalLinesCovered
+spec/features/learnings-graph-data-model.feature.coverage testFiles totalLinesCovered
+spec/features/learnings-graph-query-interface.feature.coverage testFiles totalLinesCovered
+spec/features/lifted-session-store-in-core-persistence.feature.coverage totalLinesCovered
+spec/features/markdown-tables-per-assistant-message-finalization.feature.coverage totalLinesCovered
+spec/features/migrate-fspec-research-ast-tool-from-tree-sitter-to-codelet-ast-grep.feature.coverage implFiles totalLinesCovered
+spec/features/migrate-session-message-persistence-from-typescript-to-rust.feature.coverage testFiles totalLinesCovered
+spec/features/model-selector-no-auto-select.feature.coverage testFiles totalLinesCovered
+spec/features/model-selector-profile-wire-types.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/model-selector-tab-to-providers.feature.coverage testFiles totalLinesCovered
+spec/features/multi-language-ast-extraction.feature.coverage testFiles totalLinesCovered
+spec/features/multilineinput-should-show-compaction-status-instead-of-conversation-message.feature.coverage totalLinesCovered
+spec/features/multilineinput-up-down-arrow-keys-skip-wrapped-visual-rows-and-jump-to-scrollback.feature.coverage totalLinesCovered
+spec/features/napi-work-units-watcher-callback.feature.coverage implFiles totalLinesCovered
+spec/features/oauth-tui-broken-flows.feature.coverage totalLinesCovered
+spec/features/optimized-compaction-trigger.feature.coverage testFiles totalLinesCovered
+spec/features/overlap-session-limit.feature.coverage testFiles totalLinesCovered
+spec/features/page-diff.feature.coverage totalLinesCovered
+spec/features/portable-graph-bundles.feature.coverage testFiles totalLinesCovered
+spec/features/profile-rename-persistence.feature.coverage totalLinesCovered
+spec/features/provider-configuration-display-and-profiles.feature.coverage totalLinesCovered
+spec/features/provider-settings-detail-summary-t-keybind-removal-shape.feature.coverage totalLinesCovered
+spec/features/refactor-streamchunk-to-use-proper-discriminated-union-types.feature.coverage implFiles totalLinesCovered
+spec/features/refactor-watcher-terminology-to-supervisor-subordinate-with-chainofcommand-graph.feature.coverage implFiles totalLinesCovered
+spec/features/remove-attachment-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/remove-hook-cli-subcommand.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/remove-tag-from-feature-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/remove-tag-from-feature-rust-port.feature.coverage totalLinesCovered
+spec/features/remove-tag-from-scenario-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/remove-virtual-hook-rust-port.feature.coverage totalLinesCovered
+spec/features/rpc-073-slash-clear-no-panic.feature.coverage implFiles totalLinesCovered
+spec/features/rpc056-blocklist-view-cross-transport-parity.feature.coverage totalLinesCovered
+spec/features/schedule-job-log.feature.coverage testFiles totalLinesCovered
+spec/features/session-creation-requires-explicit-model.feature.coverage totalLinesCovered
+spec/features/session-orphan-pruning.feature.coverage totalLinesCovered
+spec/features/session-persistence-with-fork-and-merge.feature.coverage testFiles totalLinesCovered
+spec/features/session-role-and-authority-model.feature.coverage totalScenarios
+spec/features/show-epic-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/slash-command-resume-cross-transport-parity.feature.coverage implFiles totalLinesCovered
+spec/features/slash-command-resume-persistence-lift.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/source-code-metadata-storage.feature.coverage testFiles totalLinesCovered
+spec/features/subordinate-session-persistence.feature.coverage testFiles implFiles totalLinesCovered
+spec/features/thinking-level-dialog.feature.coverage totalLinesCovered
+spec/features/tool-progress-carries-tool-call-id.feature.coverage totalLinesCovered
+spec/features/transitive-callers-callees-multi-hop-traversal.feature.coverage testFiles totalLinesCovered
+spec/features/truncated-tool-call-recovery-auto-chunk-large-writes-and-retry-on-max-tokens.feature.coverage totalLinesCovered
+spec/features/tui-integration-for-codelet-ai-agent.feature.coverage totalLinesCovered
+spec/features/typescript-function-call-integration.feature.coverage implFiles totalLinesCovered
+spec/features/update-scenario-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/update-step-cli-subcommand.feature.coverage totalLinesCovered
+spec/features/variable-symbol-tracking.feature.coverage testFiles totalLinesCovered
+spec/features/virtuallist-scroll-only-mode-for-agentmodal.feature.coverage totalLinesCovered

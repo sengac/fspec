@@ -34,7 +34,6 @@
 mod rig015 {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
-    use std::time::Duration;
 
     use codelet_agent_loop::FspecAgentHooks;
     use codelet_rpc_types::StreamChunk;
@@ -124,13 +123,16 @@ mod rig015 {
         // provider manager resolve the global data dir. The SESSION_STORE
         // / MESSAGE_STORE singletons capture this path at first init, so
         // all tests share one long-lived dir (see shared_data_dir).
-        let _ = codelet_common::set_data_directory(shared_data_dir().to_path_buf());
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
+        codelet_common::set_data_directory(shared_data_dir().to_path_buf())
+            .expect("set the shared data directory");
 
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
         manager.set_hooks(Arc::new(FspecAgentHooks::new()));
 
         codelet_providers::stub_provider::register_stub_provider();
-        manager.set_default_model("stub/canned");
+        assert_eq!(manager.set_default_model("stub/canned"), Ok(()));
 
         let poll = Arc::new(AtomicUsize::new(0));
         codelet_providers::stub_model::set_looping_stream_hook(looping_stream(), Arc::clone(&poll));
@@ -171,24 +173,19 @@ mod rig015 {
         session: &codelet_sessions::background_session::BackgroundSession,
         poll: &Arc<AtomicUsize>,
     ) -> usize {
-        let _ = wait_until(
-            || poll.load(Ordering::Acquire) > 0 && session.is_interrupted.load(Ordering::Acquire),
-            Duration::from_secs(20),
-        )
+        let _ = wait_until(|| {
+            poll.load(Ordering::Acquire) > 0 && session.is_interrupted.load(Ordering::Acquire)
+        })
         .await;
         poll.load(Ordering::Acquire)
     }
 
-    /// Poll `pred` until true or `timeout` elapses.
-    async fn wait_until(mut pred: impl FnMut() -> bool, timeout: Duration) -> bool {
-        let deadline = tokio::time::Instant::now() + timeout;
-        while tokio::time::Instant::now() < deadline {
-            if pred() {
-                return true;
-            }
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
-        pred()
+    /// Poll `pred` until true (TEST-042: between yields, under the
+    /// deadlock guard; false only when the guard expires).
+    async fn wait_until(mut pred: impl FnMut() -> bool) -> bool {
+        codelet_test_helpers::wait_until("the awaited state", || std::future::ready(pred()))
+            .await
+            .is_ok()
     }
 
     // =========================================================================
@@ -241,20 +238,17 @@ mod rig015 {
         // chunk cannot be missed.)
         let session_id_str = session.id.to_string();
         let mut saw_done = false;
-        let _ = wait_until(
-            || loop {
-                match chunks_rx.try_recv() {
-                    Ok((sid, chunk)) => {
-                        if sid.value == session_id_str && matches!(chunk, StreamChunk::Done) {
-                            saw_done = true;
-                            return true;
-                        }
+        let _ = wait_until(|| loop {
+            match chunks_rx.try_recv() {
+                Ok((sid, chunk)) => {
+                    if sid.value == session_id_str && matches!(chunk, StreamChunk::Done) {
+                        saw_done = true;
+                        return true;
                     }
-                    Err(_) => return saw_done,
                 }
-            },
-            Duration::from_secs(5),
-        )
+                Err(_) => return saw_done,
+            }
+        })
         .await;
         assert!(
             saw_done,
@@ -273,25 +267,37 @@ mod rig015 {
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn scenario_persisted_assistant_message_truncated_with_marker_note() {
         // @step Given a stub-provider session whose model streams 40 normal words then an unbounded "the model thinks that" loop
-        let (manager, session, poll, _chunks_rx) = drive_looping_turn().await;
+        let (manager, session, poll, mut chunks_rx) = drive_looping_turn().await;
 
         // @step When the agent loop processes the turn and the loop detector aborts
         let _ = wait_for_abort(&session, &poll).await;
-        // Send turn 2 so the turn fully settles (and the corrective note is
-        // staged for the next turn) — matching the production two-turn flow.
-        session
-            .send_input("continue".to_string(), None)
-            .expect("send_input turn 2");
-        // Allow the persistence write (on the interrupt/Done path) to land.
-        let _ = wait_until(
-            || {
-                codelet_core::persistence::manifest::load_session(session.id)
-                    .map(|m| !m.messages.is_empty())
-                    .unwrap_or(false)
-            },
-            Duration::from_secs(5),
-        )
-        .await;
+
+        // @step And the turn's interrupted event has been published, so its truncated assistant message is persisted
+        // BUG-488: BackgroundOutput persists the accumulated assistant content
+        // (with the marker note) on StreamEvent::Interrupted BEFORE it
+        // broadcasts the interrupted chunk, and `chunks_rx` was subscribed
+        // before turn 1 was sent. Waiting for "any persisted message" raced
+        // the write: turn 1's user message is persisted first. The deadline
+        // only turns a missing chunk into a failure instead of a hang.
+        let session_id_str = session.id.to_string();
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
+            loop {
+                match chunks_rx.recv().await {
+                    Ok((sid, StreamChunk::Interrupted { .. }))
+                    | Ok((sid, StreamChunk::InterruptedWithReason { .. }))
+                        if sid.value == session_id_str =>
+                    {
+                        break;
+                    }
+                    Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                    Err(error) => {
+                        panic!("chunk channel closed before the interrupted chunk: {error}")
+                    }
+                }
+            }
+        })
+        .await
+        .expect("the aborted turn's interrupted chunk must be published");
 
         // @step Then the persisted assistant message contains the normal prose up to the loop onset
         // @step And the persisted assistant message ends with the marker note stating the response was cut off due to repetitive output
@@ -352,14 +358,11 @@ mod rig015 {
 
         // @step When the agent loop starts the next turn
         // (The StubModel records the request chat history.)
-        let note_present = wait_until(
-            || {
-                codelet_providers::stub_model::last_request_history()
-                    .iter()
-                    .any(|m| m.contains("repetitive output"))
-            },
-            Duration::from_secs(10),
-        )
+        let note_present = wait_until(|| {
+            codelet_providers::stub_model::last_request_history()
+                .iter()
+                .any(|m| m.contains("repetitive output"))
+        })
         .await;
 
         // @step Then the next completion request's chat history contains the corrective note

@@ -86,6 +86,11 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 }
             }
 
+            // COV-077: whether the commit gate was installed.
+            if let Some(gate) = data["commitGate"].as_str() {
+                println!("\n{gate}");
+            }
+
             let activation = data["activationMessage"]
                 .as_str()
                 .unwrap_or("Run /fspec in your AI agent to activate");

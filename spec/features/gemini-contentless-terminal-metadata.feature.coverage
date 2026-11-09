@@ -10,10 +10,7 @@
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
               "lines": [
-                153,
-                188,
-                189,
-                190,
+                156,
                 191,
                 192,
                 193,
@@ -31,10 +28,10 @@
                 205,
                 206,
                 207,
-                225,
-                226,
-                227,
-                228,
+                208,
+                209,
+                210,
+                211,
                 229,
                 230,
                 231,
@@ -43,8 +40,14 @@
                 234,
                 235,
                 236,
-                237
-              ]
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "for part in choice.content.into_iter().flat_map(|content| content.parts) {",
+              "lastLine": "}));"
             }
           ]
         }
@@ -60,10 +63,7 @@
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
               "lines": [
-                153,
-                188,
-                189,
-                190,
+                156,
                 191,
                 192,
                 193,
@@ -81,10 +81,10 @@
                 205,
                 206,
                 207,
-                225,
-                226,
-                227,
-                228,
+                208,
+                209,
+                210,
+                211,
                 229,
                 230,
                 231,
@@ -93,8 +93,14 @@
                 234,
                 235,
                 236,
-                237
-              ]
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "for part in choice.content.into_iter().flat_map(|content| content.parts) {",
+              "lastLine": "}));"
             }
           ]
         }
@@ -110,10 +116,7 @@
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
               "lines": [
-                153,
-                188,
-                189,
-                190,
+                156,
                 191,
                 192,
                 193,
@@ -131,10 +134,10 @@
                 205,
                 206,
                 207,
-                225,
-                226,
-                227,
-                228,
+                208,
+                209,
+                210,
+                211,
                 229,
                 230,
                 231,
@@ -143,8 +146,14 @@
                 234,
                 235,
                 236,
-                237
-              ]
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "for part in choice.content.into_iter().flat_map(|content| content.parts) {",
+              "lastLine": "}));"
             }
           ]
         }
@@ -161,6 +170,6 @@
     "implFiles": [
       "rust/patches/rig-core/src/providers/gemini/streaming.rs"
     ],
-    "totalLinesCovered": 217
+    "totalLinesCovered": 220
   }
 }

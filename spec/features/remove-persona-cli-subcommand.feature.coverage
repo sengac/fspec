@@ -36,7 +36,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -47,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_persona.rs",
-          "lines": "107-133",
+          "lines": "110-138",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_persona.rs",
@@ -78,7 +80,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -120,7 +124,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -131,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_persona.rs",
-          "lines": "165-191",
+          "lines": "171-199",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_persona.rs",
@@ -162,7 +168,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -173,7 +181,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_persona.rs",
-          "lines": "196-214",
+          "lines": "205-226",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_persona.rs",
@@ -204,7 +212,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -215,7 +225,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_persona.rs",
-          "lines": "219-240",
+          "lines": "232-252",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_persona.rs",
@@ -246,7 +256,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -257,7 +269,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_persona.rs",
-          "lines": "245-289",
+          "lines": "258-317",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_persona.rs",
@@ -288,7 +300,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// indented detail line (already embedded in the core reason after"
             }
           ]
         }
@@ -305,6 +319,6 @@
     "implFiles": [
       "rust/fspec/src/remove_persona.rs"
     ],
-    "totalLinesCovered": 374
+    "totalLinesCovered": 395
   }
 }

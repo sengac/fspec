@@ -13,7 +13,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": ".and_then(|s| store.isolation_state_for(s))",
+              "lastLine": "let subordinate_label ="
             }
           ]
         }
@@ -32,7 +34,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": ".and_then(|s| store.isolation_state_for(s))",
+              "lastLine": "let subordinate_label ="
             }
           ]
         }
@@ -43,7 +47,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug178_isolated_badge_chrome_paint.rs",
-          "lines": "149-161",
+          "lines": "155-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
@@ -51,7 +55,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": ".and_then(|s| store.isolation_state_for(s))",
+              "lastLine": "let subordinate_label ="
             }
           ]
         }
@@ -70,7 +76,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": ".and_then(|s| store.isolation_state_for(s))",
+              "lastLine": "let subordinate_label ="
             }
           ]
         }
@@ -81,7 +89,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug178_isolated_badge_chrome_paint.rs",
-          "lines": "194-224",
+          "lines": "204-236",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
@@ -89,7 +97,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": ".and_then(|s| store.isolation_state_for(s))",
+              "lastLine": "let subordinate_label ="
             }
           ]
         }
@@ -106,6 +116,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
-    "totalLinesCovered": 138
+    "totalLinesCovered": 142
   }
 }

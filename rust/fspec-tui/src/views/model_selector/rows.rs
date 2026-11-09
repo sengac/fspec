@@ -22,9 +22,13 @@ use crate::components::model_selector_dialog_rows::ModelSelectorRow;
 pub(crate) const LEGEND: &str =
     "[R] Reasoning | [V] Vision | [C] Custom | 📁 Profile (local server)";
 
-/// Footer hint for the mode-view (RPC-337 rule [12]).
-pub(crate) const FOOTER: &str =
-    "Enter Select | ←→ Expand/Collapse | / Filter | r Refresh | Esc Close";
+/// Footer hint for the browse mode-view (RPC-337 rule [12]; BUG-576 / AK-9:
+/// every browse key, Tab and the custom-model keys included).
+pub(crate) const FOOTER: &str = "Enter Select | ←→ Expand/Collapse | / Filter | c Copy | r Refresh | Tab Providers | a/e/d Custom model | Esc Close";
+
+/// BUG-576 / AK-9: the footer while a filter is being typed, where Enter
+/// applies the filter and Esc clears it.
+pub(crate) const FILTER_FOOTER: &str = "Type to filter | Enter Apply | Esc Clear";
 
 /// Placeholder painted once loading has COMPLETED but no models exist
 /// (`loaded == true` with an empty projection). PROV-104 rules [9]/[10]:
@@ -81,12 +85,14 @@ pub(crate) fn build_view_rows(
             badges: String::new(),
             selectable: false,
             provider_key: provider.key.clone(),
+            provider_id: provider.provider_id.clone(),
             model_id: String::new(),
             is_profile: provider.profile_name.is_some(),
             is_unreachable: provider.is_unreachable,
+            unavailable_reason: provider.unavailable_reason.clone(),
             is_custom: false,
             profile_name: provider.profile_name.clone(),
-            context_window: 0,
+            context_window: None,
             supports_reasoning: false,
             supports_vision: false,
         });
@@ -99,9 +105,11 @@ pub(crate) fn build_view_rows(
                 badges: build_badges(model),
                 selectable: true,
                 provider_key: provider.key.clone(),
+                provider_id: provider.provider_id.clone(),
                 model_id: model.id.clone(),
                 is_profile: false,
                 is_unreachable: false,
+                unavailable_reason: None,
                 is_custom: model.is_custom,
                 profile_name: provider.profile_name.clone(),
                 context_window: model.context_window,
@@ -125,28 +133,37 @@ fn build_badges(model: &ModelEntry) -> String {
     if model.supports_vision {
         badges.push_str(" [V]");
     }
-    if model.context_window > 0 {
-        let cw = if model.context_window >= 1_000 {
-            format!("{}k", model.context_window / 1_000)
+    // PROV-169: no size badge when the context window is unavailable.
+    if let Some(window) = model.context_window {
+        let cw = if window >= 1_000 {
+            format!("{}k", window / 1_000)
         } else {
-            model.context_window.to_string()
+            window.to_string()
         };
         badges.push_str(&format!(" [{cw}]"));
     }
     badges
 }
 
-/// Index of the first selectable row whose `model_id` matches
-/// `current_model_id`. Returns `None` when there is no current model or no
-/// matching selectable row. The `selectable` guard ensures a non-selectable
-/// header row (empty `model_id`) can never be matched.
+/// Index of the first selectable row of the current `(section, model)`.
+/// BUG-576: the section and the model must both match, so the same model id
+/// in another section is never taken for the current one. `None` when there
+/// is no current model or no matching selectable row.
 pub(crate) fn index_of_model(
     rows: &[ModelSelectorRow],
-    current_model_id: Option<&str>,
+    current: Option<(&str, &str)>,
 ) -> Option<usize> {
-    let target = current_model_id?;
-    rows.iter()
-        .position(|r| r.selectable && super::model_id::model_ids_match(&r.model_id, target))
+    current?;
+    rows.iter().position(|r| is_current(r, current))
+}
+
+/// Whether `row` is the selectable row of the current `(section, model)`.
+pub(crate) fn is_current(row: &ModelSelectorRow, current: Option<(&str, &str)>) -> bool {
+    current.is_some_and(|(section, model)| {
+        row.selectable
+            && row.provider_key == section
+            && super::model_id::model_ids_match(&row.model_id, model)
+    })
 }
 
 /// PROV-127: pluralize a provider header's model count as a parenthetical
@@ -182,6 +199,10 @@ mod rows_test_support;
 #[cfg(test)]
 #[path = "rows_tests.rs"]
 mod rows_tests;
+
+#[cfg(test)]
+#[path = "rows_tests_header_count.rs"]
+mod rows_tests_header_count;
 
 #[cfg(test)]
 #[path = "rows_tests_profile.rs"]

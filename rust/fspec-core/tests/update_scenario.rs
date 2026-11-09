@@ -260,3 +260,216 @@ fn scenario_renaming_succeeds_even_when_no_coverage_file_exists() {
         "expected renamed header; got:\n{after}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenarios moved from update-scenario.feature (COV-071)
+// ─────────────────────────────────────────────────────────────────────────
+
+fn rename(project_root: &Path, feature: &str, old_name: &str, new_name: &str) -> Value {
+    let result = dispatch_command(req(
+        project_root,
+        json!({"feature": feature, "oldName": old_name, "newName": new_name}),
+    ));
+    data_of(&result)
+}
+
+fn assert_valid_gherkin(body: &str) {
+    let parsed = codelet_fspec_core::io::gherkin::parse_feature_lenient(body);
+    assert!(parsed.is_ok(), "expected valid Gherkin: {parsed:?}\n{body}");
+}
+
+#[test]
+fn scenario_rename_scenario_preserves_steps() {
+    // @step Given a feature file "spec/features/test.feature" containing a scenario "Login test" with 5 indented steps
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: T\n\n  Scenario: Login test\n    Given I am on the login page\n    And I have an account\n    When I enter my credentials\n    Then I am logged in\n    But I see no warning\n";
+    write_feature(tmp.path(), "spec/features/test.feature", body);
+
+    // @step When I dispatch update-scenario with feature "test" old-name "Login test" new-name "User authentication test"
+    let data = rename(tmp.path(), "test", "Login test", "User authentication test");
+
+    // @step Then the response has success true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the feature file header line reads "  Scenario: User authentication test"
+    let after = read_feature(tmp.path(), "spec/features/test.feature");
+    assert!(
+        after
+            .lines()
+            .any(|l| l == "  Scenario: User authentication test"),
+        "got:\n{after}"
+    );
+
+    // @step And all 5 steps should remain unchanged with their indentation
+    // @step And step order should be preserved
+    let steps_before: Vec<&str> = body.lines().skip(3).collect();
+    let steps_after: Vec<&str> = after.lines().skip(3).collect();
+    assert_eq!(steps_before.len(), 5);
+    assert_eq!(steps_after, steps_before);
+}
+
+#[test]
+fn scenario_rename_scenario_preserves_tags() {
+    // @step Given a feature file "spec/features/test.feature" containing a scenario "Payment processing" tagged @critical @high
+    let tmp = TempDir::new().expect("tempdir");
+    let body =
+        "Feature: T\n\n  @critical @high\n  Scenario: Payment processing\n    Given a cart\n";
+    write_feature(tmp.path(), "spec/features/test.feature", body);
+
+    // @step When I dispatch update-scenario with feature "test" old-name "Payment processing" new-name "Process payment transaction"
+    let data = rename(
+        tmp.path(),
+        "test",
+        "Payment processing",
+        "Process payment transaction",
+    );
+
+    // @step Then the response has success true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the scenario tag line above the header still reads "  @critical @high"
+    let after = read_feature(tmp.path(), "spec/features/test.feature");
+    let lines: Vec<&str> = after.lines().collect();
+    assert_eq!(lines[2], "  @critical @high", "got:\n{after}");
+
+    // @step And the feature file header line reads "  Scenario: Process payment transaction"
+    assert_eq!(
+        lines[3], "  Scenario: Process payment transaction",
+        "got:\n{after}"
+    );
+}
+
+#[test]
+fn scenario_rename_scenario_when_multiple_scenarios_exist() {
+    // @step Given a feature file "spec/features/test.feature" containing scenarios "First", "Second" and "Third"
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: T\n\n  Scenario: First\n    Given a\n\n  Scenario: Second\n    Given b\n\n  Scenario: Third\n    Given c\n";
+    write_feature(tmp.path(), "spec/features/test.feature", body);
+
+    // @step When I dispatch update-scenario with feature "test" old-name "Second" new-name "Middle scenario"
+    let data = rename(tmp.path(), "test", "Second", "Middle scenario");
+
+    // @step Then the response has success true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the "First" scenario should remain unchanged
+    let after = read_feature(tmp.path(), "spec/features/test.feature");
+    assert!(
+        after.contains("  Scenario: First\n    Given a\n"),
+        "got:\n{after}"
+    );
+
+    // @step And the "Second" scenario should be renamed to "Middle scenario"
+    assert!(
+        after.contains("  Scenario: Middle scenario\n    Given b\n"),
+        "got:\n{after}"
+    );
+    assert!(!after.contains("Scenario: Second"), "got:\n{after}");
+
+    // @step And the "Third" scenario should remain unchanged
+    assert!(
+        after.contains("  Scenario: Third\n    Given c\n"),
+        "got:\n{after}"
+    );
+    assert_eq!(
+        after,
+        body.replace("Scenario: Second", "Scenario: Middle scenario")
+    );
+}
+
+#[test]
+fn scenario_rename_scenario_with_special_characters() {
+    // @step Given a feature file "spec/features/test.feature" containing a scenario "User can login"
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/test.feature",
+        "Feature: T\n\n  Scenario: User can login\n    Given x\n",
+    );
+
+    // @step When I dispatch update-scenario with feature "test" old-name "User can login" new-name "User can't login with invalid credentials"
+    let data = rename(
+        tmp.path(),
+        "test",
+        "User can login",
+        "User can't login with invalid credentials",
+    );
+
+    // @step Then the response has success true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the feature file header line reads "  Scenario: User can't login with invalid credentials"
+    let after = read_feature(tmp.path(), "spec/features/test.feature");
+    assert!(
+        after
+            .lines()
+            .any(|l| l == "  Scenario: User can't login with invalid credentials"),
+        "got:\n{after}"
+    );
+
+    // @step And the feature file should be valid Gherkin
+    assert_valid_gherkin(&after);
+}
+
+#[test]
+fn scenario_handle_feature_file_with_invalid_syntax() {
+    // @step Given a feature file "spec/features/broken.feature" with Gherkin syntax errors
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: Broken\n\n  Scenario: Some scenario\n    Given x\n  \"\"\"\n    unclosed doc string\n";
+    write_feature(tmp.path(), "spec/features/broken.feature", body);
+
+    // @step When I dispatch update-scenario with feature "broken" old-name "Some scenario" new-name "New name"
+    let data = rename(tmp.path(), "broken", "Some scenario", "New name");
+
+    // @step Then the response has success false
+    assert_eq!(data["success"].as_bool(), Some(false), "got {data}");
+
+    // @step And the response error contains "Invalid Gherkin syntax"
+    assert!(
+        data["error"]
+            .as_str()
+            .unwrap_or("")
+            .contains("Invalid Gherkin syntax"),
+        "got {data}"
+    );
+
+    // @step And the file should remain unchanged
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/broken.feature"),
+        body
+    );
+}
+
+#[test]
+fn scenario_rename_scenario_from_nested_directory() {
+    // @step Given a feature file "spec/features/auth/login.feature" containing a scenario "Login flow"
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/auth/login.feature",
+        "Feature: Login\n\n  Scenario: Login flow\n    Given x\n",
+    );
+
+    // @step When I dispatch update-scenario with feature "spec/features/auth/login.feature" old-name "Login flow" new-name "Authentication workflow"
+    let data = rename(
+        tmp.path(),
+        "spec/features/auth/login.feature",
+        "Login flow",
+        "Authentication workflow",
+    );
+
+    // @step Then the response has success true
+    assert_eq!(data["success"].as_bool(), Some(true), "got {data}");
+
+    // @step And the feature file header line reads "  Scenario: Authentication workflow"
+    let after = read_feature(tmp.path(), "spec/features/auth/login.feature");
+    assert!(
+        after
+            .lines()
+            .any(|l| l == "  Scenario: Authentication workflow"),
+        "got:\n{after}"
+    );
+
+    // @step And the file should remain valid
+    assert_valid_gherkin(&after);
+}

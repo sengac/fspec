@@ -1,35 +1,22 @@
 //! `remove-hook` — Rust port of `src/commands/remove-hook.ts` (RPC-275).
 //!
 //! Removes all entries matching `name` from the array at `hooks[event]`
-//! in `spec/fspec-hooks.json`. Mirrors the TS `removeHook` implementation
-//! at `src/commands/remove-hook.ts:17-35` including the **divergent**
-//! error-handling contract:
+//! in `spec/fspec-hooks.json`.
 //!
-//! ## Critical divergence from `add-hook`
+//! ## Semantics
 //!
-//! Unlike `add-hook`, `remove-hook` does **NOT** swallow read/parse errors.
-//!
-//! * `std::fs::read_to_string` failure → `FspecCoreError::Io { command:
-//!   "remove-hook", source }`. ENOENT propagates; no auto-create.
-//! * `serde_json::from_str` failure → `FspecCoreError::ParseJson { file:
-//!   "fspec-hooks.json", reason }`. The on-disk bytes are LEFT UNCHANGED.
-//!
-//! This matches the TS file at lines 21-22: the `await readFile(...)` +
-//! `JSON.parse(...)` calls run WITHOUT a try/catch, so an ENOENT or a parse
-//! error propagates out of `removeHook()` and is reported by the CLI/agent
-//! layer.
-//!
-//! ## Semantics (mirrors src/commands/remove-hook.ts:24-29)
-//!
-//! 1. Read+parse `spec/fspec-hooks.json` (errors propagate per above).
+//! 1. Read `spec/fspec-hooks.json` through
+//!    [`crate::command_hooks::config_file::load_for_write`]. A missing file
+//!    is an `FspecCoreError::Io` error (nothing to remove from, no file is
+//!    created). A broken file (BUG-611) is backed up to
+//!    `spec/fspec-hooks.json.broken-<timestamp>`, a fresh `{"hooks": {}}`
+//!    config is written, and the backup notice is the command's output.
 //! 2. If the event key exists, retain only entries whose `name != arg.name`.
 //!    All duplicate matches are dropped in a single pass.
 //! 3. Empty array after removal is **retained** — the event key is NOT
-//!    deleted. (TS `config.hooks[event] = […].filter(...)` does NOT delete
-//!    the key when the array becomes empty.)
+//!    deleted.
 //! 4. Missing event key OR no-match name → no mutation, but the file is
-//!    still rewritten (mirrors TS unconditional `fileManager.transaction`
-//!    at line 32-34). The rewrite is idempotent.
+//!    still rewritten. The rewrite is idempotent.
 //! 5. `write_json_atomic(spec/fspec-hooks.json, &config)` to persist.
 //!
 //! ## Unknown-field preservation (and top-level ORDER preservation)
@@ -44,9 +31,11 @@
 
 use std::path::Path;
 
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::Value;
 
+use crate::command_hooks::config_file::{load_for_write, ForWrite};
 use crate::error::FspecCoreError;
 use crate::io::locked_file::write_json_atomic;
 
@@ -69,62 +58,59 @@ struct RemoveHookArgs {
 
 /// Dispatcher entry point.
 ///
-/// Returns `Ok(String::new())` on success — `remove-hook` has no rendered
-/// output, mirroring the TS `Commander.js` action handler which prints
-/// nothing on success.
+/// Returns the BUG-611 backup notice when a broken config was backed up,
+/// and an empty string otherwise.
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
+    run_at(args_json, project_root, chrono::Utc::now()).await
+}
+
+/// [`run`] at `now`, the time a broken config's backup is named after.
+pub async fn run_at(
+    args_json: &str,
+    project_root: &Path,
+    now: DateTime<Utc>,
+) -> Result<String, FspecCoreError> {
     let args: RemoveHookArgs =
         serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "remove-hook",
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let path = project_root.join("spec").join("fspec-hooks.json");
+    let path = crate::io::spec_paths::hooks_config_of(project_root);
 
-    // Read+parse with hard-error propagation (DIVERGES from add-hook).
-    let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
-        command: "remove-hook",
-        source,
-    })?;
-    let parsed: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
-        file: "fspec-hooks.json".to_string(),
-        reason: crate::io::json_error::parse_json_reason(&raw, &e),
-    })?;
-
-    // Top-level must be a JSON object — preserve its key insertion order.
-    let mut config = match parsed {
-        Value::Object(map) => map,
-        _ => {
-            return Err(FspecCoreError::ParseJson {
-                file: "fspec-hooks.json".to_string(),
-                reason: "top-level value must be a JSON object".to_string(),
-            });
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-hook")?;
+    let (mut config, notice) = match load_for_write(project_root, "remove-hook", now)? {
+        ForWrite::Missing(source) => {
+            return Err(FspecCoreError::Io {
+                command: "remove-hook",
+                source,
+            })
         }
+        ForWrite::Config(config) => (config, String::new()),
+        ForWrite::BackedUp { config, notice } => (config, notice),
     };
 
-    // Retain-filter on hooks[event]. Missing `hooks`, missing event key,
-    // or no-match name → silent no-op. Empty-after-filter is RETAINED.
-    if let Some(hooks_val) = config.get_mut("hooks") {
-        if let Some(hooks_obj) = hooks_val.as_object_mut() {
-            if let Some(arr_val) = hooks_obj.get_mut(&args.event) {
-                if let Some(arr) = arr_val.as_array_mut() {
-                    arr.retain(|entry| {
-                        entry
-                            .get("name")
-                            .and_then(Value::as_str)
-                            .is_none_or(|n| n != args.name)
-                    });
-                }
-            }
-        }
+    // Retain-filter on hooks[event]; load_for_write guarantees `hooks`, when
+    // present, is an object of arrays. Missing `hooks`, missing event key,
+    // or no-match name → no-op. Empty-after-filter is RETAINED.
+    if let Some(arr) = config
+        .get_mut("hooks")
+        .and_then(Value::as_object_mut)
+        .and_then(|hooks| hooks.get_mut(&args.event))
+        .and_then(Value::as_array_mut)
+    {
+        arr.retain(|entry| {
+            entry
+                .get("name")
+                .and_then(Value::as_str)
+                .is_none_or(|n| n != args.name)
+        });
     }
 
-    // Persist. The file existed by precondition (read_to_string above
-    // already succeeded), so spec/ is already present.
-    let value = Value::Object(config);
-    write_json_atomic(&path, &value)?;
+    write_json_atomic(&path, &Value::Object(config))?;
 
-    Ok(String::new())
+    Ok(notice)
 }
 
 #[cfg(test)]

@@ -1,0 +1,145 @@
+{
+  "scenarios": [
+    {
+      "name": "Tests in different modules redirect FSPEC_HOME through one shared fixture",
+      "testMappings": [
+        {
+          "file": "rust/providers/src/test_fixtures/env_tests.rs",
+          "lines": "8-35",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/test_fixtures/env.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "use std::ffi::OsString;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/test_fixtures.rs",
+              "lines": [
+                5,
+                6
+              ],
+              "firstLine": "/// BUG-550: the one FSPEC_HOME redirect of the lib tests.",
+              "lastLine": "pub mod env;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every providers lib test that changes the environment runs under the shared guard",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug550_lib_tests_share_one_env_guard.rs",
+          "lines": "357-378",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/oauth/cred_module_tests.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "//! Tests that change `FSPEC_HOME` run under the one shared guard of the lib",
+              "lastLine": "use crate::test_fixtures::env::FspecHome;"
+            },
+            {
+              "file": "rust/providers/src/adapter.rs",
+              "lines": [
+                282,
+                283
+              ],
+              "firstLine": "#[serial_test::serial]",
+              "lastLine": "fn test_detect_env_credential_default() {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The guard reports a test that changes the environment through a helper without the shared guard",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug550_lib_tests_share_one_env_guard.rs",
+          "lines": "380-423",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/test_fixtures/env.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "firstLine": "//! BUG-550: the one FSPEC_HOME redirect the providers lib tests share.",
+              "lastLine": "//! Feature: spec/features/providers-lib-tests-share-one-environment-guard.feature"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/src/test_fixtures/env_tests.rs",
+      "rust/providers/tests/bug550_lib_tests_share_one_env_guard.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/test_fixtures/env.rs",
+      "rust/providers/src/test_fixtures.rs",
+      "rust/providers/src/oauth/cred_module_tests.rs",
+      "rust/providers/src/adapter.rs"
+    ],
+    "totalLinesCovered": 151
+  }
+}

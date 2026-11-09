@@ -13,7 +13,7 @@ const ARGS: &[CommandArgument] = &[
     CommandArgument {
         name: "event",
         description:
-            "Event name when hook should run (e.g., pre-update-work-unit-status, post-implementing)",
+            "Event the hook runs on: pre-<command> or post-<command> of an fspec command (e.g., pre-update-work-unit-status), or pre-<status> or post-<status> of a workflow status (e.g., post-implementing)",
         required: true,
     },
     CommandArgument {
@@ -76,9 +76,11 @@ const RELATED: &[&str] = &["remove-hook", "list-hooks", "validate-hooks"];
 
 const NOTES: &[&str] = &[
     "Creates spec/fspec-hooks.json if it does not exist",
+    "A broken spec/fspec-hooks.json (invalid JSON, or a top-level value, hooks or event value of the wrong shape) is moved to spec/fspec-hooks.json.broken-<timestamp> with a notice before a new configuration is written; an existing backup is never overwritten",
     "Hook scripts must be executable (chmod +x script-path)",
     "Paths must be relative to project root, not to spec/ directory",
-    "Event names follow pre-<command> and post-<command> pattern",
+    "Events are pre-<command> or post-<command> of an fspec command that runs command hooks, or pre-<status> or post-<status> of a workflow status (backlog, specifying, testing, implementing, validating, done, blocked); any other event is rejected and nothing is written",
+    "A pre-<status> or post-<status> hook runs for every work unit on that status change; to add a hook for one work unit only, use fspec add-virtual-hook",
     "Blocking hooks emit <system-reminder> tags on failure (for AI agents)",
     "Use --blocking for quality gates, omit for notifications",
 ];
@@ -94,20 +96,20 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         example:
             "fspec add-hook pre-implementing validate --command spec/hooks/lint.sh --blocking",
         description:
-            "Prevents implementing phase if linting fails. AI agents see failure in <system-reminder>.",
+            Some("Prevents implementing phase if linting fails. AI agents see failure in <system-reminder>."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Automated Testing (Post-Hook)",
         example:
             "fspec add-hook post-implementing test --command spec/hooks/test.sh --timeout 300",
         description:
-            "Runs tests after implementation completes. Failure sets exit code to 1.",
+            Some("Runs tests after implementation completes. Failure sets exit code to 1."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Notification (Non-Blocking Post-Hook)",
         example: "fspec add-hook post-validating notify --command spec/hooks/notify-slack.sh",
         description:
-            "Sends notifications after validation. Failure does not prevent completion.",
+            Some("Sends notifications after validation. Failure does not prevent completion."),
     }),
 ];
 

@@ -18,11 +18,15 @@ mod checkout;
 mod diff;
 mod error;
 pub mod ghost_commit;
+mod head_tree;
+mod index_blob;
+mod index_guard;
 mod merge_commit;
 mod repo_ops;
 pub mod session_diff;
 mod session_result;
 mod session_status;
+mod shared_state;
 pub mod status;
 pub mod three_way_merge;
 pub mod tree_snapshot;
@@ -34,6 +38,7 @@ use std::path::Path;
 
 pub use diff::{get_checkpoint_file_diff, get_file_diff, is_binary_file};
 pub use error::{GitError, Result};
+pub use index_blob::StagedFiles;
 pub use repo_ops::{git_add, git_commit, git_init, git_set_config, resolve_ref};
 pub use session_result::{abort_session, apply_session_changes, get_session_diff, SessionResult};
 pub use session_status::{
@@ -109,7 +114,7 @@ pub(crate) fn git_commit_signature(
         tree: tree_id,
         parents,
         author: signature.clone(),
-        committer: signature,
+        committer: signature.clone(),
         encoding: None,
         message: gix::bstr::BString::from(message),
         extra_headers: vec![],
@@ -119,23 +124,46 @@ pub(crate) fn git_commit_signature(
         .write_object(gix::objs::Object::Commit(commit))
         .map_err(|e| GitError::Other(format!("Failed to write commit: {e}")))?;
 
-    // Advance HEAD: a normal checkout's HEAD is a ref (refs/heads/...),
-    // a detached HEAD is a raw SHA in the HEAD file.
-    let head_ref = repo
-        .head_ref()
-        .map_err(|e| GitError::Head(format!("Failed to read HEAD: {e}")))?;
-    if let Some(mut head_ref) = head_ref {
-        head_ref
-            .set_target_id(commit_id, "commit")
-            .map_err(|e| GitError::Other(format!("Failed to update HEAD: {e}")))?;
-    } else {
-        let head_path = repo
-            .workdir()
-            .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?
-            .join(".git")
-            .join("HEAD");
-        std::fs::write(head_path, format!("{commit_id}\n"))?;
-    }
-
+    advance_head(repo, Some(*parent), commit_id.detach(), &signature)?;
     Ok(commit_id.to_string())
+}
+
+/// BUG-599: point HEAD, and the branch it names when it names one, at
+/// `commit_id`, writing both reflog entries as `committer` (the identity the
+/// commit was written with), so no reflog write looks a committer up in git
+/// config. `previous` is the commit HEAD must point at now; `None` means the
+/// branch is unborn.
+pub(crate) fn advance_head(
+    repo: &gix::Repository,
+    previous: Option<gix::ObjectId>,
+    commit_id: gix::ObjectId,
+    committer: &gix::actor::Signature,
+) -> Result<()> {
+    use gix::refs::transaction::{Change, LogChange, PreviousValue, RefEdit, RefLog};
+    use gix::refs::Target;
+
+    let expected = match previous {
+        Some(id) => PreviousValue::MustExistAndMatch(Target::Object(id)),
+        None => PreviousValue::MustNotExist,
+    };
+    let name = "HEAD"
+        .try_into()
+        .map_err(|e| GitError::Head(format!("Invalid HEAD reference name: {e}")))?;
+    let edit = RefEdit {
+        change: Change::Update {
+            log: LogChange {
+                mode: RefLog::AndReference,
+                force_create_reflog: false,
+                message: "commit".into(),
+            },
+            expected,
+            new: Target::Object(commit_id),
+        },
+        name,
+        deref: true,
+    };
+    let mut time = gix::date::parse::TimeBuf::default();
+    repo.edit_references_as([edit], Some(committer.to_ref(&mut time)))
+        .map_err(|e| GitError::Other(format!("Failed to update HEAD: {e}")))?;
+    Ok(())
 }

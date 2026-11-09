@@ -5,13 +5,22 @@
 //!
 //! Tests for tiktoken-rs based token estimation and file read limits.
 
-use codelet_common::token_estimator::{count_tokens, max_file_tokens, DEFAULT_MAX_FILE_TOKENS};
+use codelet_common::token_estimator::{
+    count_tokens, max_file_tokens, TokenEstimator, DEFAULT_MAX_FILE_TOKENS,
+};
 use codelet_tools::error::ToolError;
 use codelet_tools::read::{ReadArgs, ReadTool};
 use lopdf::{dictionary, Document, Object, Stream};
 use rig::tool::Tool;
 use serial_test::serial;
 use uuid::Uuid;
+
+/// BUG-695: the Read tool loads the blocklist and RLCD config from the user
+/// directory, which a test-support build only resolves to an isolated
+/// temp directory (BUG-640); never the real ~/.fspec.
+fn isolate() {
+    codelet_test_helpers::isolated_home().expect("isolate the user directory");
+}
 
 // ============================================
 // TOKEN ESTIMATION WITH TIKTOKEN-RS
@@ -20,11 +29,18 @@ use uuid::Uuid;
 /// Scenario: Token estimation uses tiktoken-rs cl100k_base encoding
 #[tokio::test]
 async fn test_token_estimation_uses_tiktoken_cl100k_base() {
+    isolate();
     // @step Given a text file with English content
     let english_text = "Hello world, this is a test of the token estimation system.";
 
-    // @step When the token count is estimated using count_tokens
-    let token_count = count_tokens(english_text);
+    // @step When the token count is estimated using TokenEstimator
+    let estimator = TokenEstimator::new().expect("cl100k_base encoder initialises");
+    let token_count = estimator.count_tokens(english_text);
+    assert_eq!(
+        token_count,
+        count_tokens(english_text),
+        "count_tokens wraps the same shared TokenEstimator"
+    );
 
     // @step Then the estimation should use tiktoken-rs cl100k_base encoding
     // "Hello world, this is a test of the token estimation system." = ~14 tokens with cl100k
@@ -45,6 +61,7 @@ async fn test_token_estimation_uses_tiktoken_cl100k_base() {
 /// Scenario: TokenEstimator is shared across codebase
 #[tokio::test]
 async fn test_token_estimator_is_shared() {
+    isolate();
     // @step Given the TokenEstimator utility in rust/common
     // @step When token estimation is needed in any module
     let text = "Multiple modules should use the same encoder";
@@ -71,6 +88,7 @@ async fn test_token_estimator_is_shared() {
 #[tokio::test]
 #[serial]
 async fn test_read_file_under_token_limit() {
+    isolate();
     // Ensure clean env state
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
 
@@ -81,7 +99,7 @@ async fn test_read_file_under_token_limit() {
     let content = "const x = 1;\n".repeat(100); // ~1300 bytes ≈ ~300 tokens
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
-    // @step When the read tool is called
+    // @step When the read tool is called for "/project/src/app.ts"
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
@@ -106,17 +124,22 @@ async fn test_read_file_under_token_limit() {
 #[tokio::test]
 #[serial]
 async fn test_read_file_exceeding_token_limit() {
-    // Set a very low limit to trigger the error without needing a huge file
-    std::env::set_var("CODELET_MAX_FILE_TOKENS", "100");
+    isolate();
+    // Default limit (25,000): no override in the environment
+    std::env::remove_var("CODELET_MAX_FILE_TOKENS");
 
     // @step Given a minified JavaScript file "/project/dist/bundle.js" with 200KB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("bundle.js");
-    // Content that exceeds 100 tokens
-    let content = "var a=1;\n".repeat(200); // ~200 tokens
+    let content = "var a=1;".repeat(25_600); // 200KB on one minified line
+    let expected_tokens = count_tokens(&content);
+    assert!(
+        expected_tokens > DEFAULT_MAX_FILE_TOKENS,
+        "fixture must exceed the default limit, has {expected_tokens} tokens"
+    );
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
-    // @step When the read tool is called
+    // @step When the read tool is called for "/project/dist/bundle.js"
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
@@ -134,31 +157,40 @@ async fn test_read_file_exceeding_token_limit() {
     );
     let err = result.unwrap_err();
 
-    // @step And the error should be a TokenLimit error
     assert!(
         matches!(err, ToolError::TokenLimit { .. }),
         "Error should be TokenLimit, got: {err:?}"
     );
-
-    // @step And the error message should include relevant information
     let err_msg = err.to_string();
     assert!(
         err_msg.contains("Token limit"),
-        "Error should mention token limit"
-    );
-    assert!(
-        err_msg.contains("bundle.js"),
-        "Error should include file path"
+        "Error should mention token limit: {err_msg}"
     );
 
-    // Cleanup
-    std::env::remove_var("CODELET_MAX_FILE_TOKENS");
+    // @step And the error message should include the estimated token count
+    assert!(
+        err_msg.contains(&format!("~{expected_tokens} tokens")),
+        "Error should include the estimated token count {expected_tokens}: {err_msg}"
+    );
+
+    // @step And the error message should include the configured limit of 25,000
+    assert!(
+        err_msg.contains("(limit: 25000)"),
+        "Error should include the default limit: {err_msg}"
+    );
+
+    // @step And the error message should include the file path
+    assert!(
+        err_msg.contains(&file_path.to_string_lossy().to_string()),
+        "Error should include file path: {err_msg}"
+    );
 }
 
 /// Scenario: Read image file exempt from token limit
 #[tokio::test]
 #[serial]
 async fn test_read_image_file_exempt() {
+    isolate();
     // Set a very low limit to verify images bypass it
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "10");
 
@@ -179,7 +211,7 @@ async fn test_read_image_file_exempt() {
     content.extend_from_slice(&[0xAE, 0x42, 0x60, 0x82]);
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
-    // @step When the read tool is called
+    // @step When the read tool is called for "/project/assets/logo.png"
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
@@ -207,6 +239,7 @@ async fn test_read_image_file_exempt() {
 #[tokio::test]
 #[serial]
 async fn test_read_pdf_file_exempt() {
+    isolate();
     // Set a very low limit to verify PDFs bypass it
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "10");
 
@@ -218,7 +251,7 @@ async fn test_read_pdf_file_exempt() {
     let pdf_bytes = create_valid_test_pdf();
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test file");
 
-    // @step When the read tool is called
+    // @step When the read tool is called for "/project/docs/manual.pdf"
     // Use text mode since visual mode requires Pdfium library
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
@@ -299,36 +332,64 @@ fn create_valid_test_pdf() -> Vec<u8> {
 #[tokio::test]
 #[serial]
 async fn test_partial_read_within_token_limit() {
-    // Set a moderate limit
-    std::env::set_var("CODELET_MAX_FILE_TOKENS", "500");
+    isolate();
+    // Default limit (25,000): no override in the environment
+    std::env::remove_var("CODELET_MAX_FILE_TOKENS");
 
     // @step Given a large file "/project/src/large.ts" with 500KB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("large.ts");
-    let content = "const line = 'test';\n".repeat(2500); // Large file
+    let content = "const line = 'test';\n".repeat(25_000); // ~525KB
+    assert!(
+        count_tokens(&content) > DEFAULT_MAX_FILE_TOKENS,
+        "the whole file must exceed the default limit"
+    );
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
-    // @step When the read tool is called with a limit
+    // @step When the read tool is called with offset=0 and limit=100
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
-            offset: Some(1),
-            limit: Some(50), // Only read 50 lines
+            offset: Some(0), // 1-based; 0 reads from the first line like 1
+            limit: Some(100),
             pdf_mode: None,
         })
         .await;
 
     // @step Then only the requested portion should be checked for token limits
-    // @step And the content should be returned if under limit
+    let full = read_tool
+        .call(ReadArgs {
+            file_path: file_path.to_string_lossy().to_string(),
+            offset: None,
+            limit: None,
+            pdf_mode: None,
+        })
+        .await;
     assert!(
-        result.is_ok(),
-        "Partial read of 50 lines should succeed: {:?}",
-        result.err()
+        matches!(full, Err(ToolError::TokenLimit { .. })),
+        "the whole file is over the limit, so only the range check lets the partial read through: {full:?}"
     );
 
-    // Cleanup
-    std::env::remove_var("CODELET_MAX_FILE_TOKENS");
+    // @step And the content should be returned if under 25,000 tokens
+    let output = result.expect("partial read of 100 lines should succeed");
+    let parsed: serde_json::Value = serde_json::from_str(&output).expect("read output is JSON");
+    let text = parsed["content"].as_str().expect("content field");
+    let numbered: Vec<&str> = text
+        .lines()
+        .filter(|line| line.contains(": const line"))
+        .collect();
+    assert_eq!(numbered.len(), 100, "exactly the requested 100 lines");
+    assert!(
+        numbered[0].starts_with("1: "),
+        "starts at line 1: {}",
+        numbered[0]
+    );
+    assert!(
+        numbered[99].starts_with("100: "),
+        "ends at line 100: {}",
+        numbered[99]
+    );
 }
 
 // ============================================
@@ -339,24 +400,56 @@ async fn test_partial_read_within_token_limit() {
 #[tokio::test]
 #[serial]
 async fn test_custom_token_limit_via_env() {
+    isolate();
     // @step Given the environment variable CODELET_MAX_FILE_TOKENS is set to 50000
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "50000");
     // @step And a JavaScript file "/project/dist/bundle.js" with 150KB of content
-    // (This test focuses on the env var behavior, not file reading)
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let file_path = temp_dir.path().join("bundle.js");
+    let content = "const value = computeSomething(input);\n".repeat(3_900); // ~150KB
+    let tokens = count_tokens(&content);
+    assert!(
+        tokens > DEFAULT_MAX_FILE_TOKENS && tokens <= 50_000,
+        "fixture must sit between the default and the custom limit, has {tokens} tokens"
+    );
+    std::fs::write(&file_path, &content).expect("Failed to write test file");
+    let read = |tool: ReadTool| {
+        let path = file_path.to_string_lossy().to_string();
+        async move {
+            tool.call(ReadArgs {
+                file_path: path,
+                offset: None,
+                limit: None,
+                pdf_mode: None,
+            })
+            .await
+        }
+    };
 
-    // @step When max_file_tokens is called
-    let limit = max_file_tokens();
+    // @step When the read tool is called for "/project/dist/bundle.js"
+    let result = read(ReadTool::new(Uuid::nil())).await;
 
-    // @step Then the custom limit should be returned
+    // @step Then the file should be read successfully
+    assert!(
+        result.is_ok(),
+        "read under the custom limit should succeed: {:?}",
+        result.err()
+    );
+
     // @step And the custom limit of 50,000 tokens should be applied
-    assert_eq!(limit, 50000, "Custom limit should be 50000");
-
-    // Verify default when unset
+    assert_eq!(max_file_tokens(), 50000, "Custom limit should be 50000");
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
-    let default_limit = max_file_tokens();
-    assert_eq!(
-        default_limit, DEFAULT_MAX_FILE_TOKENS,
-        "Default limit should be {DEFAULT_MAX_FILE_TOKENS}"
+    assert_eq!(max_file_tokens(), DEFAULT_MAX_FILE_TOKENS);
+    let default_result = read(ReadTool::new(Uuid::nil())).await;
+    assert!(
+        matches!(
+            default_result,
+            Err(ToolError::TokenLimit {
+                max_tokens: DEFAULT_MAX_FILE_TOKENS,
+                ..
+            })
+        ),
+        "the same file is rejected under the default limit: {default_result:?}"
     );
 }
 
@@ -367,7 +460,9 @@ async fn test_custom_token_limit_via_env() {
 /// Scenario: Replace byte-based estimation in interactive_helpers
 #[tokio::test]
 async fn test_interactive_helpers_uses_token_estimator() {
-    // @step Given the migration is complete
+    isolate();
+    // @step Given the existing estimate_tokens() function in interactive_helpers.rs
+    // @step When the migration is complete
     // The count_tokens function is now used instead of estimate_tokens
 
     // @step Then the function should use TokenEstimator::count_tokens()
@@ -389,6 +484,7 @@ async fn test_interactive_helpers_uses_token_estimator() {
 /// Scenario: Replace byte-based estimation in persistence storage
 #[tokio::test]
 async fn test_persistence_storage_uses_token_estimator() {
+    isolate();
     // @step Given the existing estimate_tokens() function in napi/persistence/storage.rs
     // @step When the migration is complete
     // storage.rs now uses count_tokens from codelet_common
@@ -417,6 +513,7 @@ async fn test_persistence_storage_uses_token_estimator() {
 /// Scenario: Replace byte-based estimation in compactor
 #[tokio::test]
 async fn test_compactor_uses_token_estimator() {
+    isolate();
     // @step Given the inline token estimation in compactor.rs
     // @step When the migration is complete
     // compactor.rs now uses count_tokens from codelet_common
@@ -439,6 +536,7 @@ async fn test_compactor_uses_token_estimator() {
 #[tokio::test]
 #[serial]
 async fn test_debug_line_and_token_limits() {
+    isolate();
     use codelet_common::token_estimator::count_tokens;
 
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");

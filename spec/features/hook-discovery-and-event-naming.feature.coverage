@@ -4,53 +4,37 @@
       "name": "Discover hooks for specific event",
       "testMappings": [
         {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "13-35",
+          "file": "rust/fspec-core/tests/hook018_hook_discovery.rs",
+          "lines": "29-40",
           "implMappings": [
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/discovery.rs",
               "lines": [
-                7,
-                8,
-                9,
-                10,
-                11,
                 12,
                 13,
                 14,
                 15,
                 16,
                 17,
-                18
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Discover special lifecycle hooks",
-      "testMappings": [
-        {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "37-56",
-          "implMappings": [
+                18,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "/// `pre-<command>` and `post-<command>`.",
+              "lastLine": "}"
+            },
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/config.rs",
               "lines": [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18
-              ]
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The hooks configured for `event`, in config order.",
+              "lastLine": "}"
             }
           ]
         }
@@ -60,17 +44,37 @@
       "name": "Discover hooks for non-existent event",
       "testMappings": [
         {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "58-76",
+          "file": "rust/fspec-core/tests/hook018_hook_discovery.rs",
+          "lines": "42-53",
           "implMappings": [
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/discovery.rs",
               "lines": [
-                11,
                 12,
                 13,
-                14
-              ]
+                14,
+                15,
+                16,
+                17,
+                18,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "/// `pre-<command>` and `post-<command>`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/config.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The hooks configured for `event`, in config order.",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,20 +84,37 @@
       "name": "Generate event names from command name",
       "testMappings": [
         {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "78-92",
+          "file": "rust/fspec-core/tests/hook018_hook_discovery.rs",
+          "lines": "55-65",
           "implMappings": [
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/discovery.rs",
               "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
                 20,
                 21,
                 22,
-                23,
-                24,
-                25,
-                26
-              ]
+                23
+              ],
+              "firstLine": "/// `pre-<command>` and `post-<command>`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/config.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The hooks configured for `event`, in config order.",
+              "lastLine": "}"
             }
           ]
         }
@@ -103,25 +124,37 @@
       "name": "Event names are case-sensitive",
       "testMappings": [
         {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "94-113",
+          "file": "rust/fspec-core/tests/hook018_hook_discovery.rs",
+          "lines": "67-78",
           "implMappings": [
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/discovery.rs",
               "lines": [
-                7,
-                8,
-                9,
-                10,
-                11,
                 12,
                 13,
                 14,
                 15,
                 16,
                 17,
-                18
-              ]
+                18,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "/// `pre-<command>` and `post-<command>`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/config.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The hooks configured for `event`, in config order.",
+              "lastLine": "}"
             }
           ]
         }
@@ -131,25 +164,37 @@
       "name": "Multiple hooks for same event",
       "testMappings": [
         {
-          "file": "src/hooks/__tests__/discovery.test.ts",
-          "lines": "115-140",
+          "file": "rust/fspec-core/tests/hook018_hook_discovery.rs",
+          "lines": "80-101",
           "implMappings": [
             {
-              "file": "src/hooks/discovery.ts",
+              "file": "rust/fspec-core/src/command_hooks/discovery.rs",
               "lines": [
-                7,
-                8,
-                9,
-                10,
-                11,
                 12,
                 13,
                 14,
                 15,
                 16,
                 17,
-                18
-              ]
+                18,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "/// `pre-<command>` and `post-<command>`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/config.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The hooks configured for `event`, in config order.",
+              "lastLine": "}"
             }
           ]
         }
@@ -157,15 +202,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "src/hooks/__tests__/discovery.test.ts"
+      "rust/fspec-core/tests/hook018_hook_discovery.rs"
     ],
     "implFiles": [
-      "src/hooks/discovery.ts"
+      "rust/fspec-core/src/command_hooks/discovery.rs",
+      "rust/fspec-core/src/command_hooks/config.rs"
     ],
-    "totalLinesCovered": 182
+    "totalLinesCovered": 144
   }
 }

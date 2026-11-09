@@ -959,3 +959,88 @@ fn shared_infrastructure_delegation_uses_gherkin_crate() {
         "commands/show_work_unit.rs must use the gherkin crate to parse feature files; got:\n{src}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Verbose JSON lists soft-deleted rules with their deletedAt timestamps
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+#[serial]
+fn verbose_json_lists_soft_deleted_rules_with_deleted_at() {
+    unset_disable_reminders();
+    // @step Given spec/work-units.json contains AUTH-001 with rules=[{id:0,text:'Rule A',deleted:false},{id:1,text:'Rule B',deleted:true,deletedAt:'2025-01-31T12:00:00.000Z'},{id:2,text:'Rule C',deleted:false}] and status='implementing'
+    let tmp = TempDir::new().expect("tempdir");
+    let rules = r#"[
+        {"id":0,"text":"Rule A","deleted":false,"createdAt":"2025-01-31T10:00:00.000Z"},
+        {"id":1,"text":"Rule B","deleted":true,"createdAt":"2025-01-31T10:00:00.000Z","deletedAt":"2025-01-31T12:00:00.000Z"},
+        {"id":2,"text":"Rule C","deleted":false,"createdAt":"2025-01-31T10:00:00.000Z"}
+    ]"#;
+    write_work_units(
+        tmp.path(),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("rules", rules)],
+        ),
+    );
+
+    // @step When I dispatch show-work-unit with workUnitId='AUTH-001', format='json' and verbose=true
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId":"AUTH-001","format":"json","verbose":true}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+    let data = parse_data(&result.data);
+
+    // @step And the JSON payload's rules array equals ["[0] Rule A", "[2] Rule C"]
+    assert_eq!(data["rules"], json!(["[0] Rule A", "[2] Rule C"]));
+
+    // @step And the JSON payload's deletedRules array equals ["[1] Rule B (deletedAt: 2025-01-31T12:00:00.000Z)"]
+    assert_eq!(
+        data["deletedRules"],
+        json!(["[1] Rule B (deletedAt: 2025-01-31T12:00:00.000Z)"])
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Text format lists the work unit's attachments
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+#[serial]
+fn text_format_lists_attachments() {
+    unset_disable_reminders();
+    // @step Given spec/work-units.json contains AUTH-001 with attachments=['spec/attachments/AUTH-001/flow.mmd','spec/attachments/AUTH-001/notes.md'] and status='specifying'
+    let tmp = TempDir::new().expect("tempdir");
+    let attachments =
+        r#"["spec/attachments/AUTH-001/flow.mmd","spec/attachments/AUTH-001/notes.md"]"#;
+    write_work_units(
+        tmp.path(),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "specifying",
+            &[("attachments", attachments)],
+        ),
+    );
+
+    // @step When I dispatch show-work-unit with workUnitId='AUTH-001'
+    let result = dispatch_command(req(tmp.path(), json!({"workUnitId":"AUTH-001"})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step And the text output has an "Attachments:" section listing "  1. spec/attachments/AUTH-001/flow.mmd" and "  2. spec/attachments/AUTH-001/notes.md"
+    assert!(
+        result.data.contains(
+            "\nAttachments:\n  1. spec/attachments/AUTH-001/flow.mmd\n  2. spec/attachments/AUTH-001/notes.md\n"
+        ),
+        "text output:\n{}",
+        result.data
+    );
+}

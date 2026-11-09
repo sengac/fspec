@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @CMPCT-067
 @compaction
@@ -5,6 +6,7 @@
 @agent-core
 @phase-1
 @bug
+@BUG-459
 Feature: Context fill uses one current request generation basis
   """
   A shared context snapshot identifies model, physical request and committed

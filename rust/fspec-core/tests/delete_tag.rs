@@ -5,11 +5,11 @@
 // (RPC-222). Each scenario maps to exactly one #[test] function with
 // @step comments mirroring the Gherkin steps verbatim.
 //
-// RED PHASE: Until the supervisor wires `commands::delete_tag::run`
-// into the dispatcher (replacing the NotYetPorted stub), these tests
-// will fail with `result.success == false` and `error` containing
-// "not yet ported". That is the expected red state at the end of
-// Phase B.
+// COV-071 merged the TypeScript-era delete-tag feature into this one:
+// the tests at the end of the file prove that deleting a tag keeps the
+// other tags and categories and drops it from the regenerated TAGS.md,
+// and the tag-not-found test also checks that tags.json is left
+// unchanged.
 
 use std::fs;
 use std::path::Path;
@@ -384,6 +384,10 @@ fn rejects_when_tag_not_found_in_any_category() {
         msg.contains("Tag @nonexistent not found in registry"),
         "missing canonical tag-not-found substring; got: {msg}"
     );
+
+    // @step And spec/tags.json content on disk is unchanged from before the call
+    let after = fs::read_to_string(tmp.path().join("spec/tags.json")).expect("read tags.json");
+    assert_eq!(after, raw, "a failed delete must not rewrite tags.json");
 }
 
 #[test]
@@ -553,5 +557,128 @@ fn renders_multi_line_success_block_on_non_dry_run_delete() {
         result.data.contains("Regenerated: spec/TAGS.md"),
         "missing Regenerated line; got:\n{}",
         result.data
+    );
+}
+
+fn category_tag_names(data: &Value, category: &str) -> Vec<String> {
+    data["categories"]
+        .as_array()
+        .expect("categories array")
+        .iter()
+        .find(|c| c["name"].as_str() == Some(category))
+        .unwrap_or_else(|| panic!("category {category} missing from tags.json"))["tags"]
+        .as_array()
+        .expect("tags array")
+        .iter()
+        .map(|t| t["name"].as_str().expect("tag name").to_string())
+        .collect()
+}
+
+const TECHNICAL_AND_STATUS: &str = r#"{
+  "categories": [
+    {"name": "Technical Tags", "description": "t", "required": false, "tags": [
+      {"name": "@obsolete", "description": "Obsolete"},
+      {"name": "@api", "description": "API"},
+      {"name": "@cli", "description": "CLI"}
+    ]},
+    {"name": "Status Tags", "description": "s", "required": false, "tags": [
+      {"name": "@wip", "description": "Work in progress"}
+    ]}
+  ]
+}"#;
+
+#[test]
+fn deleting_one_tag_keeps_the_other_tags_of_its_category_and_drops_it_from_tags_md() {
+    // Scenario: Deleting one tag keeps the other tags of its category and drops it from the regenerated TAGS.md
+
+    // @step Given spec/tags.json has the category 'Technical Tags' with tags '@obsolete', '@api' and '@cli', and the category 'Status Tags' with the tag '@wip'
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), TECHNICAL_AND_STATUS);
+
+    // @step When I dispatch delete-tag with tag '@obsolete' and no flags
+    let result = dispatch_command(req(tmp.path(), json!({"tag": "@obsolete"})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
+
+    // @step And spec/tags.json category 'Technical Tags' holds exactly the tags '@api' and '@cli' in that order
+    let on_disk = read_tags(tmp.path());
+    assert_eq!(
+        category_tag_names(&on_disk, "Technical Tags"),
+        vec!["@api".to_string(), "@cli".to_string()]
+    );
+
+    // @step And spec/tags.json category 'Status Tags' still holds the tag '@wip'
+    assert_eq!(
+        category_tag_names(&on_disk, "Status Tags"),
+        vec!["@wip".to_string()]
+    );
+
+    // @step And the registry holds 3 tags in total
+    let total: usize = on_disk["categories"]
+        .as_array()
+        .expect("categories array")
+        .iter()
+        .map(|c| c["tags"].as_array().map_or(0, Vec::len))
+        .sum();
+    assert_eq!(total, 3);
+
+    // @step And spec/TAGS.md starts with '<!-- THIS FILE IS AUTO-GENERATED FROM spec/tags.json -->'
+    let md = fs::read_to_string(tmp.path().join("spec/TAGS.md")).expect("read TAGS.md");
+    assert!(
+        md.starts_with("<!-- THIS FILE IS AUTO-GENERATED FROM spec/tags.json -->"),
+        "TAGS.md lacks the generated header:\n{md}"
+    );
+
+    // @step And spec/TAGS.md lists '`@api`', '`@cli`' and '`@wip`' but not '@obsolete'
+    for kept in ["`@api`", "`@cli`", "`@wip`"] {
+        assert!(md.contains(kept), "TAGS.md lost {kept}:\n{md}");
+    }
+    assert!(
+        !md.contains("@obsolete"),
+        "TAGS.md still lists @obsolete:\n{md}"
+    );
+}
+
+#[test]
+fn deleting_the_only_tag_of_a_category_keeps_the_category_with_an_empty_tag_list() {
+    // Scenario: Deleting the only tag of a category keeps the category with an empty tag list
+
+    // @step Given spec/tags.json has the category 'Custom Category' with only the tag '@lonely'
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(
+        tmp.path(),
+        r#"{
+  "categories": [
+    {"name": "Custom Category", "description": "c", "required": false, "tags": [
+      {"name": "@lonely", "description": "Only one"}
+    ]}
+  ]
+}"#,
+    );
+
+    // @step When I dispatch delete-tag with tag '@lonely' and no flags
+    let result = dispatch_command(req(tmp.path(), json!({"tag": "@lonely"})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
+
+    // @step And spec/tags.json still has the category 'Custom Category' with an empty tags array
+    let on_disk = read_tags(tmp.path());
+    assert!(category_tag_names(&on_disk, "Custom Category").is_empty());
+
+    // @step And spec/TAGS.md still has the heading '### Custom Category'
+    let md = fs::read_to_string(tmp.path().join("spec/TAGS.md")).expect("read TAGS.md");
+    assert!(
+        md.contains("### Custom Category\n"),
+        "TAGS.md lost the category heading:\n{md}"
     );
 }

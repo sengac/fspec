@@ -104,6 +104,10 @@ async fn scenario_bash_empty_command_error_includes_recovery() {
 /// Scenario: Grep and AstGrep empty pattern errors name the tool and show full usage
 #[tokio::test]
 async fn scenario_grep_and_astgrep_empty_pattern_errors_include_recovery() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given I register the Grep and AstGrep direct tools
     let session = Uuid::new_v4();
     let grep_toolset = single_toolset(GrepTool::new(session));
@@ -182,6 +186,10 @@ async fn scenario_grep_and_astgrep_empty_pattern_errors_include_recovery() {
 /// Scenario: AstGrepRefactor empty source_file error names the tool and shows full usage
 #[tokio::test]
 async fn scenario_astgrep_refactor_empty_source_file_error_includes_recovery() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given I register the AstGrepRefactor direct tool
     let tool = AstGrepRefactorTool::new(Uuid::new_v4());
     let toolset = single_toolset(tool);

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "21-54",
+          "lines": "18-91",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
@@ -44,7 +44,6 @@
                 208,
                 209,
                 210,
-                211,
                 212,
                 213,
                 214,
@@ -56,7 +55,9 @@
                 220,
                 221,
                 222
-              ]
+              ],
+              "firstLine": "limit: Option<usize>,",
+              "lastLine": "/// Arguments for Read tool (rig::tool::Tool)"
             }
           ]
         }
@@ -67,20 +68,40 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "60-101",
+          "lines": "94-144",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203
-              ]
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444
+              ],
+              "firstLine": "\"text\" => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -91,21 +112,28 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "107-141",
+          "lines": "147-184",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212
-              ]
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458
+              ],
+              "firstLine": "\"images\" => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -116,17 +144,30 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "147-182",
+          "lines": "187-225",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92
-              ]
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "pub fn read_pdf_from_bytes(",
+              "lastLine": "}"
             }
           ]
         }
@@ -137,7 +178,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "212-265",
+          "lines": "228-288",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -200,7 +241,9 @@
                 288,
                 289,
                 290
-              ]
+              ],
+              "firstLine": ") -> Result<RenderedPdfPages, PdfError> {",
+              "lastLine": "#[derive(Debug, Clone, Serialize, Deserialize)]"
             }
           ]
         }
@@ -211,22 +254,33 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "227-256",
+          "lines": "291-327",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124
-              ]
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "for page in &self.pages {",
+              "lastLine": "}"
             }
           ]
         }
@@ -237,7 +291,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "262-301",
+          "lines": "330-378",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
@@ -282,7 +336,6 @@
                 208,
                 209,
                 210,
-                211,
                 212,
                 213,
                 214,
@@ -295,7 +348,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "/// Used by both SVG (text-based XML) and plain text file branches to avoid",
+              "lastLine": "#[derive(Debug, Deserialize, Serialize, JsonSchema)]"
             }
           ]
         }
@@ -306,21 +361,34 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_read_test.rs",
-          "lines": "307-334",
+          "lines": "381-421",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221
-              ]
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472
+              ],
+              "firstLine": "let mode =",
+              "lastLine": "}"
             }
           ]
         }
@@ -331,7 +399,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "17-75",
+          "lines": "29-95",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -394,7 +462,9 @@
                 288,
                 289,
                 290
-              ]
+              ],
+              "firstLine": ") -> Result<RenderedPdfPages, PdfError> {",
+              "lastLine": "#[derive(Debug, Clone, Serialize, Deserialize)]"
             }
           ]
         }
@@ -405,7 +475,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "73-116",
+          "lines": "98-151",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -421,7 +491,9 @@
                 270,
                 271,
                 272
-              ]
+              ],
+              "firstLine": "if page_num < start || page_num > end {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -432,17 +504,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "114-163",
+          "lines": "154-202",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
                 99,
                 100,
                 101,
@@ -492,8 +558,11 @@
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149
+              ],
+              "firstLine": "/// Read and extract text from a PDF file, honoring `offset` (1-based) and",
+              "lastLine": "}"
             }
           ]
         }
@@ -504,7 +573,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "161-209",
+          "lines": "205-264",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -611,7 +680,9 @@
                 428,
                 429,
                 430
-              ]
+              ],
+              "firstLine": ") -> Result<ExtractedPdfImages, PdfError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -622,16 +693,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "207-256",
+          "lines": "267-327",
           "implMappings": [
             {
               "file": "rust/common/src/token_estimator.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -641,9 +707,10 @@
                 106,
                 107,
                 108,
-                109,
-                110
-              ]
+                109
+              ],
+              "firstLine": "/// Get the maximum PDF page cap from environment or default.",
+              "lastLine": "}"
             }
           ]
         }
@@ -654,16 +721,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "254-295",
+          "lines": "330-384",
           "implMappings": [
             {
               "file": "rust/common/src/token_estimator.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
@@ -673,9 +735,10 @@
                 106,
                 107,
                 108,
-                109,
-                110
-              ]
+                109
+              ],
+              "firstLine": "/// Get the maximum PDF page cap from environment or default.",
+              "lastLine": "}"
             }
           ]
         }
@@ -686,17 +749,19 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "293-334",
+          "lines": "387-433",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                350,
-                351,
                 352,
                 353,
-                354
-              ]
+                354,
+                355,
+                356
+              ],
+              "firstLine": "// BUG-168: when the caller did not pick a mode explicitly,",
+              "lastLine": "// An explicit pdf_mode always wins."
             }
           ]
         }
@@ -707,7 +772,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "332-371",
+          "lines": "436-477",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -736,7 +801,9 @@
                 226,
                 227,
                 228
-              ]
+              ],
+              "firstLine": "pub fn pdf_pagination_notice(start: usize, end: usize, total: usize, unit: &str) -> Option<String> {",
+              "lastLine": "pub fn render_pdf_pages("
             }
           ]
         }
@@ -747,7 +814,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_pagination_test.rs",
-          "lines": "369-411",
+          "lines": "480-529",
           "implMappings": [
             {
               "file": "rust/tools/src/pdf.rs",
@@ -776,7 +843,9 @@
                 226,
                 227,
                 228
-              ]
+              ],
+              "firstLine": "pub fn pdf_pagination_notice(start: usize, end: usize, total: usize, unit: &str) -> Option<String> {",
+              "lastLine": "pub fn render_pdf_pages("
             }
           ]
         }
@@ -787,7 +856,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
-          "lines": "21-76",
+          "lines": "22-87",
           "implMappings": [
             {
               "file": "rust/tools/src/model_capabilities.rs",
@@ -835,7 +904,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "//! `done.rs` (armed/acceptance state) — a process-global `RwLock<HashMap<Uuid, _>>`",
+              "lastLine": "SESSION_MODEL_VISION"
             }
           ]
         }
@@ -846,13 +917,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
-          "lines": "78-119",
+          "lines": "90-148",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                332,
-                333,
                 334,
                 335,
                 336,
@@ -864,8 +933,12 @@
                 342,
                 343,
                 344,
-                345
-              ]
+                345,
+                346,
+                347
+              ],
+              "firstLine": "FileType::Image(media_type) => {",
+              "lastLine": "FileType::Exempt(exempt_type) => {"
             }
           ]
         }
@@ -876,13 +949,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pdf_vision_fallback_test.rs",
-          "lines": "121-160",
+          "lines": "151-203",
           "implMappings": [
             {
               "file": "rust/tools/src/read.rs",
               "lines": [
-                332,
-                333,
                 334,
                 335,
                 336,
@@ -894,8 +965,12 @@
                 342,
                 343,
                 344,
-                345
-              ]
+                345,
+                346,
+                347
+              ],
+              "firstLine": "FileType::Image(media_type) => {",
+              "lastLine": "FileType::Exempt(exempt_type) => {"
             }
           ]
         }
@@ -917,6 +992,6 @@
       "rust/common/src/token_estimator.rs",
       "rust/tools/src/model_capabilities.rs"
     ],
-    "totalLinesCovered": 1437
+    "totalLinesCovered": 1669
   }
 }

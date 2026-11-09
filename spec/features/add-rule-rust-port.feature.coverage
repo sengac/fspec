@@ -5,19 +5,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_rule.rs",
-          "lines": "78-126",
+          "lines": "104-158",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
+                66,
                 67,
                 68,
                 69,
                 70,
                 71,
                 72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -100,7 +99,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"add-rule\","
             }
           ]
         }
@@ -111,19 +112,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_rule.rs",
-          "lines": "128-168",
+          "lines": "160-202",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
+                66,
                 67,
                 68,
                 69,
                 70,
                 71,
                 72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -206,7 +206,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "command: \"add-rule\","
             }
           ]
         }
@@ -217,21 +219,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_rule.rs",
-          "lines": "170-197",
+          "lines": "204-234",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
-                78,
-                79,
                 80,
                 81,
                 82,
                 83,
                 84,
                 85,
-                86
-              ]
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "// Validate work unit exists (mirrors src/commands/add-rule.ts:28-30).",
+              "lastLine": "};"
             }
           ]
         }
@@ -242,14 +247,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_rule.rs",
-          "lines": "199-226",
+          "lines": "236-263",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -262,8 +264,11 @@
                 100,
                 101,
                 102,
-                103
-              ]
+                103,
+                104
+              ],
+              "firstLine": "// Validate work unit is in specifying state (mirrors",
+              "lastLine": "}"
             }
           ]
         }
@@ -274,12 +279,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_rule.rs",
-          "lines": "228-256",
+          "lines": "265-293",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_rule.rs",
               "lines": [
-                75,
                 76,
                 77,
                 78,
@@ -290,8 +294,39 @@
                 83,
                 84,
                 85,
-                86
-              ]
+                86,
+                87
+              ],
+              "firstLine": "// the canonical empty initial structure to disk before we return the",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A task work unit accepts optional Example Mapping in specifying",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_rule.rs",
+          "lines": "305-370",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_rule.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "let status_str = wu.status.as_str();",
+              "lastLine": "}"
             }
           ]
         }
@@ -299,8 +334,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_rule.rs"
@@ -308,6 +343,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_rule.rs"
     ],
-    "totalLinesCovered": 392
+    "totalLinesCovered": 476
   }
 }

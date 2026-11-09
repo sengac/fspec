@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "12-25",
+          "lines": "12-33",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
@@ -91,7 +91,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "(false, true) => Align::Right,",
+              "lastLine": "widths[j] = widths[j].max(cell.width());"
             }
           ]
         }
@@ -102,7 +104,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "27-39",
+          "lines": "36-52",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/dialog_theme.rs",
@@ -128,7 +130,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub fn has_query_row(&self) -> bool {",
+              "lastLine": ""
             }
           ]
         }
@@ -139,7 +143,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "48-61",
+          "lines": "55-75",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
@@ -258,191 +262,6 @@
                 112,
                 113,
                 114,
-                115
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dialog button row centering accounts for wide Unicode characters",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "63-77",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
-              "lines": [
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Text truncation respects Unicode display width",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "79-93",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
-              "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Text selection copy preserves character count not display width",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "95-110",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-              "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Secret masking uses character count not display width",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "112-126",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/copy.rs",
-              "lines": [
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Animation frame counting uses character count not display width",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
-          "lines": "128-142",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/input_transition.rs",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
                 115,
                 116,
                 117,
@@ -458,10 +277,186 @@
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "//! Width-aware text wrap mirroring `src/tui/utils/textWrap.ts`.",
+              "lastLine": "#[cfg(test)]"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Dialog button row centering accounts for wide Unicode characters",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "lines": "78-95"
+        }
+      ]
+    },
+    {
+      "name": "Text truncation respects Unicode display width",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "lines": "98-126",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/details_strip.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "line2.push('…');",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text selection copy preserves character count not display width",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "lines": "129-148",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ],
+              "firstLine": "/// Char-slice `text[start_col..min(end_col, char_len)]` on unicode scalar",
+              "lastLine": "#[cfg(test)]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Secret masking uses character count not display width",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "lines": "158-178",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/copy.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "/// PROV-138: single source of truth for secret masking. The on-screen mask",
+              "lastLine": "/// existing behaviour."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Animation frame counting uses character count not display width",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/unicode_display_width_rpc431.rs",
+          "lines": "173-192",
+          "implMappings": []
         }
       ]
     }
@@ -477,12 +472,10 @@
       "rust/fspec-tui/src/store/agent_view/markdown_table_render.rs",
       "rust/fspec-tui/src/components/dialog_theme.rs",
       "rust/fspec-tui/src/views/agent/text_wrap.rs",
-      "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
       "rust/fspec-tui/src/views/board/details_strip.rs",
       "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-      "rust/fspec-tui/src/views/provider_settings/copy.rs",
-      "rust/fspec-tui/src/views/agent/input_transition.rs"
+      "rust/fspec-tui/src/views/provider_settings/copy.rs"
     ],
-    "totalLinesCovered": 454
+    "totalLinesCovered": 501
   }
 }

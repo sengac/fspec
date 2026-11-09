@@ -17,7 +17,8 @@
 //!                         │     → clear input, stay on AgentView
 //!                         │
 //!                         └─ otherwise [RPC-098 L7]
-//!                               → push ExitConfirmationDialog onto compositor
+//!                               → request_close (TUI-124): fetch the close
+//!                                 facts, then push the close dialog
 //!                                 (guarded by Compositor::contains to avoid
 //!                                 double-push)
 //!
@@ -27,9 +28,6 @@
 
 use codelet_rpc_types::SessionStatus;
 
-use crate::components::exit_confirmation_dialog::{
-    ExitConfirmationDialog, EXIT_CONFIRMATION_DIALOG_ID,
-};
 use crate::components::Action;
 
 use super::state::App;
@@ -68,19 +66,8 @@ impl App {
                 .send(Action::PendingInputChanged(String::new()));
             return;
         }
-        // RPC-098 L7 — open the exit-confirmation modal.
-        // No-double-push: skip if a dialog is already on the compositor.
-        if self.compositor.contains(EXIT_CONFIRMATION_DIALOG_ID) {
-            return;
-        }
-        // is_busy is `false` here in practice because the L4 branch above
-        // returns early on Running/Compacting. We still compute it defensively
-        // so future cascade tweaks keep the description text accurate.
-        let is_busy = matches!(
-            self.agent_view_store.session_status_for(&session).copied(),
-            Some(SessionStatus::Running) | Some(SessionStatus::Compacting),
-        );
-        let dialog = ExitConfirmationDialog::new(is_busy).with_action_tx(self.action_tx.clone());
-        self.compositor.push(Box::new(dialog));
+        // RPC-098 L7 / TUI-124 — gather what closing will do, then open
+        // the close dialog (no-op while one is already open).
+        self.request_close(session);
     }
 }

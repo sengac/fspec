@@ -4,18 +4,12 @@
       "name": "Clicking a checkpoint name row selects it and loads its files",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "377-403",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "12-42",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -65,8 +59,28 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "KeyCode::PageUp => self.scroll_focused(-self.page_step()),",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -76,18 +90,12 @@
       "name": "Clicking a file row selects it and loads its diff",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "406-432",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "44-74",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -137,8 +145,28 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "KeyCode::PageUp => self.scroll_focused(-self.page_step()),",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -148,18 +176,12 @@
       "name": "Clicking inside the diff pane focuses it without changing any selection",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "436-457",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "76-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -209,8 +231,28 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "KeyCode::PageUp => self.scroll_focused(-self.page_step()),",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -220,18 +262,12 @@
       "name": "A click is swallowed while the restore dialog is open",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "488-513",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "129-155",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -281,8 +317,28 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "KeyCode::PageUp => self.scroll_focused(-self.page_step()),",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -292,18 +348,12 @@
       "name": "Clicking the already-selected checkpoint row changes nothing",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "516-536",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "157-178",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -353,8 +403,28 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "KeyCode::PageUp => self.scroll_focused(-self.page_step()),",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -364,8 +434,8 @@
       "name": "Clicking empty space below the last checkpoint row changes nothing",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "461-485",
+          "file": "rust/fspec-tui/src/views/checkpoints/click_tests.rs",
+          "lines": "101-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
@@ -387,39 +457,40 @@
                 287,
                 288,
                 289
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "461-485",
-          "implMappings": [
+              ],
+              "firstLine": "match old_window {",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
               "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
                 109,
                 110,
-                111
-              ]
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "// cascade stage is in flight (nothing is selectable mid-load).",
+              "lastLine": "total_items: total,"
             }
           ]
         }
@@ -431,12 +502,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/checkpoints/tests.rs"
+      "rust/fspec-tui/src/views/checkpoints/click_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/checkpoints/keys.rs",
       "rust/fspec-tui/src/views/checkpoints/mod.rs"
     ],
-    "totalLinesCovered": 491
+    "totalLinesCovered": 543
   }
 }

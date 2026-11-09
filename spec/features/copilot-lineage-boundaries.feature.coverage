@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-          "lines": "18-63",
+          "lines": "17-66",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/session.rs",
@@ -148,7 +148,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -159,7 +161,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-          "lines": "65-109",
+          "lines": "68-112",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/session.rs",
@@ -302,7 +304,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -313,7 +317,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-          "lines": "111-158",
+          "lines": "114-161",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/session.rs",
@@ -456,7 +460,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -467,7 +473,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-          "lines": "186-234",
+          "lines": "189-237",
           "implMappings": [
             {
               "file": "rust/providers/src/session.rs",
@@ -492,7 +498,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "impl std::fmt::Debug for ProviderSession {",
+              "lastLine": "provider,"
             }
           ]
         }
@@ -503,7 +511,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug268_copilot_lineage_boundaries.rs",
-          "lines": "160-184",
+          "lines": "163-187",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/session.rs",
@@ -646,7 +654,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "pub(crate) fn bind_live_session(session: &mut ProviderSession, owner: uuid::Uuid) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -664,6 +674,6 @@
       "rust/providers/src/copilot/session.rs",
       "rust/providers/src/session.rs"
     ],
-    "totalLinesCovered": 785
+    "totalLinesCovered": 789
   }
 }

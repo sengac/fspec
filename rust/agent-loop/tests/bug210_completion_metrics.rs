@@ -105,7 +105,7 @@ async fn scenario_completion_coverage_matches_the_durable_generation() -> TestRe
     // @step When completion reaches the originating session through the background output adapter
     fixture.run(&output).await?;
     let boundary = fixture.boundary()?;
-    assert_eq!(boundary.covered_prefix.len(), 196);
+    assert_eq!(boundary.covered_prefix().len(), 196);
     assert!(boundary.verified_suffix.is_empty());
     // @step Then completion reports 196 summarized messages and zero retained messages
     let result = fixture.completion()?;
@@ -113,7 +113,7 @@ async fn scenario_completion_coverage_matches_the_durable_generation() -> TestRe
     // @step And the coverage counts equal the committed covered prefix and verified suffix counts
     assert_eq!(
         result.turns_summarized as usize,
-        boundary.covered_prefix.len()
+        boundary.covered_prefix().len()
     );
     assert_eq!(result.turns_kept as usize, boundary.verified_suffix.len());
     Ok(())

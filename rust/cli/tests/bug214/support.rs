@@ -17,7 +17,6 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex, PoisonError,
 };
-use std::time::Duration;
 use tokio::sync::Notify;
 use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
@@ -88,6 +87,7 @@ impl Drop for DropSignal {
 impl Fixture {
     pub async fn new(mode: Mode) -> Result<Self, Box<dyn std::error::Error>> {
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         reset_stores_for_tests();
         let mut manifest =
@@ -207,14 +207,15 @@ impl Fixture {
         );
         let cancel = async move {
             if cancel_pending {
-                tokio::time::timeout(Duration::from_secs(3), started.notified()).await?;
+                codelet_test_helpers::deadlock_guard("started.notified()", started.notified())
+                    .await?;
                 flag.store(true, Ordering::Release);
                 wakeup.notify_one();
             }
-            Ok::<(), tokio::time::error::Elapsed>(())
+            Ok::<(), codelet_test_helpers::Failure>(())
         };
         let (result, cancellation) =
-            tokio::join!(tokio::time::timeout(Duration::from_secs(2), work), cancel);
+            tokio::join!(codelet_test_helpers::deadlock_guard("work", work), cancel);
         cancellation?;
         assert!(
             result.is_ok(),

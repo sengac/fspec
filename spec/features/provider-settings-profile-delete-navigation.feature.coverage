@@ -5,39 +5,43 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "182-215",
+          "lines": "194-229",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
-                40,
-                41,
+                29,
+                30,
+                31,
                 42,
-                43,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                46,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                118,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                135,
+                136
+              ],
+              "firstLine": "Action::SaveProfile {",
+              "lastLine": "Ok(()) => {"
             }
           ]
         }
@@ -48,29 +52,33 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "222-275",
+          "lines": "235-290",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
-                40,
-                41,
+                29,
+                30,
+                31,
                 42,
-                43,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                46,
+                118,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                135,
+                136
+              ],
+              "firstLine": "Action::SaveProfile {",
+              "lastLine": "Ok(()) => {"
             }
           ]
         }
@@ -81,16 +89,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "282-318",
+          "lines": "296-334",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
-                154,
-                155,
-                156,
-                157
-              ]
+                138,
+                139,
+                152,
+                153,
+                154
+              ],
+              "firstLine": "(Ok(before), Ok(after)) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,19 +112,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "325-352",
+          "lines": "340-369",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "old.clone(),",
+              "lastLine": ".await"
             }
           ]
         }
@@ -130,6 +146,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
     ],
-    "totalLinesCovered": 208
+    "totalLinesCovered": 224
   }
 }

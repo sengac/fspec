@@ -185,7 +185,7 @@ async fn scenario_a14_disk_credentials_follow_buffered_freshness() -> TestResult
         let (sent, released) = tokio::join!(send(&first, &url), async {
             bounded(issuer.started.notified()).await?;
             issuer.release.add_permits(1);
-            Ok::<_, tokio::time::error::Elapsed>(())
+            Ok::<_, codelet_test_helpers::Failure>(())
         });
         sent?;
         released?;

@@ -33,8 +33,9 @@ impl Builder {
                 .unwrap_or(inner.current_provider_name())
                 .to_string(),
             model: inner.current_model_id(),
-            capacity: Some(inner.provider_manager().context_window()),
-            output: Some(inner.provider_manager().max_output_tokens()),
+            // PROV-165: `None` when the limit is unavailable.
+            capacity: inner.provider_manager().context_window(),
+            output: inner.provider_manager().max_output_tokens(),
         }
     }
 
@@ -45,6 +46,8 @@ impl Builder {
         caller: &BackgroundSession,
         evidence: CompactionEvidence,
     ) -> Result<(String, tokio::time::Instant), String> {
+        // CMPCT-049 rule 6 (BUG-373): the sub-agent run keeps an INFO audit trail.
+        tracing::info!("[generate-compaction] ENTER");
         let budget = codelet_cli::interactive::deep_search_wall_clock_timeout();
         let deadline = codelet_cli::compaction_timing::deadline()
             .unwrap_or_else(|| tokio::time::Instant::now() + budget);
@@ -67,8 +70,12 @@ impl Builder {
             biased;
             _ = interrupted(caller) => Err("compaction caller cancelled".into()),
             _ = interrupted(target) => Err("compaction target cancelled".into()),
-            result = generation => result.map(|content| (content, deadline))
-                .map_err(|error| format!("compaction target={} failed: {error}", target.id)),
+            result = generation => {
+                let content = result
+                    .map_err(|error| format!("compaction target={} failed: {error}", target.id))?;
+                tracing::info!("[generate-compaction] sub-agent run COMPLETE");
+                Ok((content, deadline))
+            }
         }
     }
 }

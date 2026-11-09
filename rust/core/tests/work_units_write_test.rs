@@ -17,7 +17,6 @@
 use std::fs;
 use std::path::Path;
 use std::thread;
-use std::time::Duration;
 
 use codelet_core::work_units_write::{move_work_unit, Direction};
 use serde_json::Value;
@@ -252,10 +251,7 @@ fn concurrent_move_work_unit_calls_serialize_via_lock() {
     let path_a = path.clone();
     let path_b = path.clone();
     let t1 = thread::spawn(move || move_work_unit(&path_a, "C-003", Direction::Up));
-    // Tiny stagger so the second thread is likely to hit the lock —
-    // not required for correctness, only for the test to exercise the
-    // contention path more reliably across platforms.
-    thread::sleep(Duration::from_millis(5));
+    // TEST-042: no stagger; the lock serialises the two calls either way.
     let t2 = thread::spawn(move || move_work_unit(&path_b, "A-001", Direction::Down));
 
     let r1 = t1.join().expect("t1 join");

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "82-147",
+          "lines": "84-175",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
@@ -73,7 +73,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "/// 3. Invoke code-entry callback with the URL",
+              "lastLine": "let token_response = exchange_authorization_code("
             }
           ]
         }
@@ -84,20 +86,20 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "153-201",
+          "lines": "181-222",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116
-              ]
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// Step 6: Validate state matches PKCE verifier",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,21 +110,25 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "207-249",
+          "lines": "228-272",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "// Step 5: Parse code#state format",
+              "lastLine": "};"
             }
           ]
         }
@@ -133,7 +139,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "255-284",
+          "lines": "278-310",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
@@ -149,7 +155,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "info!(\"Claude headless login — authorize URL: {auth_url}\");",
+              "lastLine": "{"
             }
           ]
         }
@@ -160,7 +168,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "290-335",
+          "lines": "316-367",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
@@ -173,7 +181,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "\"Missing state in authorization code — code must be in 'code#state' format\"",
+              "lastLine": "return Err(anyhow!("
             }
           ]
         }
@@ -184,7 +194,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "341-379",
+          "lines": "373-415",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
@@ -194,7 +204,9 @@
                 97,
                 98,
                 99
-              ]
+              ],
+              "firstLine": "Ok(Err(e)) => return Err(anyhow!(\"Code entry callback failed: {e}\")),",
+              "lastLine": "config.timeout_ms"
             }
           ]
         }
@@ -205,7 +217,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_headless_login_test.rs",
-          "lines": "385-441",
+          "lines": "421-501",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_headless_login.rs",
@@ -216,7 +228,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "\"CSRF validation failed — state mismatch. Expected verifier: {expected_state}, Got: {received_state}\"",
+              "lastLine": "let token_response = exchange_authorization_code("
             }
           ]
         }
@@ -233,6 +247,6 @@
     "implFiles": [
       "rust/providers/src/claude_headless_login.rs"
     ],
-    "totalLinesCovered": 440
+    "totalLinesCovered": 498
   }
 }

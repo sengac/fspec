@@ -1,5 +1,7 @@
 @done
 @SCHED-006
+@codelet
+@session-management
 Feature: Overlap & Session Limit Management
   """
   Create SchedulerState struct with active_runs, queued_jobs, deferred_jobs.

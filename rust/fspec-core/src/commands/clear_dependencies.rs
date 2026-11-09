@@ -39,7 +39,7 @@
 //!
 //! ## Persistence
 //!
-//! Single `ensure_work_units_file` load + single `write_json_atomic` write
+//! Single `ensure_work_units_file` load + single `write_work_units` write
 //! at the end. The TS file uses `fileManager.transaction()` for the same
 //! "load → mutate in-memory → atomic write" lifecycle.
 
@@ -50,7 +50,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::WorkUnitsData;
 
@@ -95,6 +94,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "clear-dependencies")?;
     // Load (auto-create on first run).
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -135,8 +136,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write at end.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&ClearDependenciesResult { success: true }).map_err(|e| {
         FspecCoreError::InvalidArgs {

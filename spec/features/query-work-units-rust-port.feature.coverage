@@ -453,7 +453,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -912,7 +914,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -923,7 +927,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_work_units.rs",
-          "lines": "118-158",
+          "lines": "115-154",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_work_units.rs",
@@ -1371,7 +1375,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -1382,7 +1388,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_work_units.rs",
-          "lines": "159-205",
+          "lines": "156-201",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_work_units.rs",
@@ -1830,7 +1836,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -1841,7 +1849,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_work_units.rs",
-          "lines": "206-266",
+          "lines": "203-262",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_work_units.rs",
@@ -2289,7 +2297,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -2300,7 +2310,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_work_units.rs",
-          "lines": "267-312",
+          "lines": "264-311",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_work_units.rs",
@@ -2748,7 +2758,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -3207,7 +3219,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -3666,7 +3680,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -4125,7 +4141,9 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
@@ -4584,14 +4602,16 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
             }
           ]
         }
       ]
     },
     {
-      "name": "Two front doors \u2014 the same fspec_core::commands::query_work_units::run function serves CLI and dispatcher",
+      "name": "Two front doors — the same fspec_core::commands::query_work_units::run function serves CLI and dispatcher",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_work_units.rs",
@@ -5043,7 +5063,117 @@
                 441,
                 442,
                 443
-              ]
+              ],
+              "firstLine": "//! `query-work-units` — Rust port of `src/commands/query-work-units.ts` (RPC-263).",
+              "lastLine": "serde_json::to_string_pretty(&payload).unwrap_or_else(|_| \"{}\".to_string())"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Type, status and tag filters apply AND semantics",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/query_work_units.rs",
+          "lines": "588-633",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "fn apply_filters(units: &mut Vec<&WorkUnit>, args: &QueryWorkUnitsArgs) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Type filter keeps only work units of that type",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/query_work_units.rs",
+          "lines": "635-659",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
+              "lines": [
+                123,
+                124,
+                125
+              ],
+              "firstLine": "if let Some(want_type) = &args.r#type {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Epic filter returns only work units in that epic",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/query_work_units.rs",
+          "lines": "675-686",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
+              "lines": [
+                116,
+                117,
+                118
+              ],
+              "firstLine": "if let Some(epic) = &args.epic {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Combined status and epic filters apply AND semantics",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/query_work_units.rs",
+          "lines": "688-702",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/query_work_units.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "fn apply_filters(units: &mut Vec<&WorkUnit>, args: &QueryWorkUnitsArgs) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -5051,8 +5181,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/query_work_units.rs"
@@ -5060,6 +5190,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/query_work_units.rs"
     ],
-    "totalLinesCovered": 5837
+    "totalLinesCovered": 5488
   }
 }

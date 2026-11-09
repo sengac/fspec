@@ -10,20 +10,22 @@
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                764,
-                765,
-                766,
-                767,
-                768,
-                769,
-                770,
-                810,
-                811,
-                812,
-                813,
-                814,
-                815
-              ]
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ],
+              "firstLine": "// CONT-001: Per-turn tool activity, captured BEFORE the buffers are",
+              "lastLine": "if !did_call_tool && !turn_called_tools {"
             }
           ]
         }
@@ -39,20 +41,22 @@
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                764,
-                765,
-                766,
-                767,
-                768,
-                769,
-                770,
-                810,
-                811,
-                812,
-                813,
-                814,
-                815
-              ]
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ],
+              "firstLine": "// CONT-001: Per-turn tool activity, captured BEFORE the buffers are",
+              "lastLine": "if !did_call_tool && !turn_called_tools {"
             }
           ]
         }
@@ -68,20 +72,22 @@
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                764,
-                765,
-                766,
-                767,
-                768,
-                769,
-                770,
-                810,
-                811,
-                812,
-                813,
-                814,
-                815
-              ]
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ],
+              "firstLine": "// CONT-001: Per-turn tool activity, captured BEFORE the buffers are",
+              "lastLine": "if !did_call_tool && !turn_called_tools {"
             }
           ]
         }
@@ -97,20 +103,22 @@
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                764,
-                765,
-                766,
-                767,
-                768,
-                769,
-                770,
-                810,
-                811,
-                812,
-                813,
-                814,
-                815
-              ]
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ],
+              "firstLine": "// CONT-001: Per-turn tool activity, captured BEFORE the buffers are",
+              "lastLine": "if !did_call_tool && !turn_called_tools {"
             }
           ]
         }

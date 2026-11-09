@@ -1,0 +1,197 @@
+{
+  "scenarios": [
+    {
+      "name": "A second isolated session cannot take a card another isolated session holds",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt019_one_isolated_session_per_card.rs",
+          "lines": "143-167",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/activity_focus.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                84,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "/// WT-019 (product owner, 2026-11-07): a card is worked in at most one",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving, closing or detaching the holder releases the card",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt019_one_isolated_session_per_card.rs",
+          "lines": "169-198",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/activity_focus.rs",
+              "lines": [
+                84,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "let _claim = self.claim_card(session, context.as_ref())?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-isolated sessions are unaffected",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt019_one_isolated_session_per_card.rs",
+          "lines": "200-217",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/activity_focus.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "/// WT-019: when the isolated `session` moves onto `next`, refuse it if",
+              "lastLine": "return Ok(None);"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/wt019_one_isolated_session_per_card.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/activity_focus.rs"
+    ],
+    "totalLinesCovered": 200
+  }
+}

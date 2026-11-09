@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "122-172",
+          "lines": "31-91",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -87,7 +87,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -98,7 +100,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "182-229",
+          "lines": "97-154",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -180,7 +182,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -191,7 +195,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "239-293",
+          "lines": "160-219",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -273,7 +277,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -284,7 +290,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "303-367",
+          "lines": "225-291",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -366,7 +372,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -377,7 +385,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "377-434",
+          "lines": "297-360",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -459,7 +467,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -470,7 +480,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "444-512",
+          "lines": "366-456",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -552,7 +562,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -563,7 +575,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_merge_tests.rs",
-          "lines": "522-579",
+          "lines": "462-523",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -645,7 +657,9 @@
                 533,
                 534,
                 535
-              ]
+              ],
+              "firstLine": "/// Files that were deleted from main",
+              "lastLine": "//    the post-apply worktree snapshot for the commit tree)"
             }
           ]
         }
@@ -662,6 +676,6 @@
     "implFiles": [
       "rust/git/src/session_status.rs"
     ],
-    "totalLinesCovered": 943
+    "totalLinesCovered": 1002
   }
 }

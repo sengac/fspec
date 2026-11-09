@@ -48,8 +48,6 @@
                 102,
                 103,
                 104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -163,8 +161,12 @@
                 217,
                 218,
                 219,
-                220
-              ]
+                220,
+                221,
+                222
+              ],
+              "firstLine": "/// sessions/working-directories safely.",
+              "lastLine": "fn is_valid_tag(s: &str) -> bool {"
             }
           ]
         }
@@ -175,14 +177,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "119-160",
+          "lines": "120-168",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -196,7 +195,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "// ---- Load tags.json (load-or-init) ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -207,7 +208,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "162-188",
+          "lines": "170-202",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
@@ -224,7 +225,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "// ---- Tag format validation (two gates) ----",
+              "lastLine": "});"
             }
           ]
         }
@@ -235,12 +238,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "190-226",
+          "lines": "204-244",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                88,
                 89,
                 90,
                 91,
@@ -254,8 +256,11 @@
                 99,
                 100,
                 101,
-                102
-              ]
+                102,
+                103
+              ],
+              "firstLine": "// Normalise uppercase characters to lowercase. Mirrors L44-47.",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,7 +271,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "228-256",
+          "lines": "246-278",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
@@ -280,7 +285,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "// Mirrors L50-54 — error uses the ORIGINAL input.",
+              "lastLine": "});"
             }
           ]
         }
@@ -291,13 +298,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "258-285",
+          "lines": "280-311",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -320,8 +325,12 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147
+              ],
+              "firstLine": "let target_index = tags_data",
+              "lastLine": "// ---- Insert and sort within target category ----"
             }
           ]
         }
@@ -332,13 +341,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "287-321",
+          "lines": "313-353",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                147,
-                148,
                 149,
                 150,
                 151,
@@ -410,8 +417,12 @@
                 217,
                 218,
                 219,
-                220
-              ]
+                220,
+                221,
+                222
+              ],
+              "firstLine": "let canonical_category_name = tags_data.categories[target_index].name.clone();",
+              "lastLine": "fn is_valid_tag(s: &str) -> bool {"
             }
           ]
         }
@@ -422,13 +433,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "323-362",
+          "lines": "355-398",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                147,
-                148,
                 149,
                 150,
                 151,
@@ -442,8 +451,12 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164
+              ],
+              "firstLine": "let canonical_category_name = tags_data.categories[target_index].name.clone();",
+              "lastLine": "let now = iso8601_now();"
             }
           ]
         }
@@ -454,11 +467,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "364-430",
+          "lines": "400-470",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
+                160,
+                161,
+                162,
+                163,
                 164,
                 165,
                 166,
@@ -476,9 +493,10 @@
                 178,
                 179,
                 180,
-                181,
-                182
-              ]
+                181
+              ],
+              "firstLine": "// ---- Bump statistics.lastUpdated ----",
+              "lastLine": "crate::io::locked_file::write_bytes_atomic(&tags_md_path, markdown.as_bytes())?;"
             }
           ]
         }
@@ -489,16 +507,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/register_tag.rs",
-          "lines": "432-464",
+          "lines": "472-511",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/register_tag.rs",
               "lines": [
-                102,
-                103,
-                104,
-                105
-              ]
+                107,
+                108
+              ],
+              "firstLine": "// ---- Load tags.json (load-or-init) ----",
+              "lastLine": "let mut tags_data: TagsData = ensure_tags_file(project_root)?;"
             }
           ]
         }
@@ -515,6 +533,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/register_tag.rs"
     ],
-    "totalLinesCovered": 734
+    "totalLinesCovered": 778
   }
 }

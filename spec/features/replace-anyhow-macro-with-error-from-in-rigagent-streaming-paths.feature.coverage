@@ -5,17 +5,19 @@
       "testMappings": [
         {
           "file": "rust/core/src/rig_agent.rs",
-          "lines": "207-235",
+          "lines": "280-309",
           "implMappings": [
             {
               "file": "rust/core/src/rig_agent.rs",
               "lines": [
-                67,
-                68,
-                103,
-                137,
-                177
-              ]
+                73,
+                74,
+                109,
+                143,
+                183
+              ],
+              "firstLine": "/// Get the maximum depth setting",
+              "lastLine": "// Clone history for rig (rig takes ownership and manages it internally)."
             }
           ]
         }
@@ -32,6 +34,6 @@
     "implFiles": [
       "rust/core/src/rig_agent.rs"
     ],
-    "totalLinesCovered": 63
+    "totalLinesCovered": 35
   }
 }

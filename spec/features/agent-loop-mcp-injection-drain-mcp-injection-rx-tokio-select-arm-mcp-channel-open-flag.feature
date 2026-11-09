@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rpc-089
 @rust
@@ -6,6 +7,8 @@
 @regression
 @source-shape
 @RPC-089
+@agent-core
+@agent-interaction
 Feature: Agent loop: MCP injection drain (mcp_injection_rx tokio::select! arm + mcp_channel_open flag)
   """
   Pattern mirrors RPC-082/083/084/085/086/088 regression-shape coverage: read agent_loop.rs as a string, brace-balance to scope assertions to the function body, byte-offset ORDER for sequencing invariants

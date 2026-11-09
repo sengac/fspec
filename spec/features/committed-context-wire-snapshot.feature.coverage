@@ -10,6 +10,7 @@
             {
               "file": "rust/rpc-types/src/committed_compaction.rs",
               "lines": [
+                6,
                 7,
                 8,
                 9,
@@ -18,9 +19,10 @@
                 12,
                 13,
                 14,
-                15,
-                16
-              ]
+                15
+              ],
+              "firstLine": "pub struct CommittedContextSnapshot {",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,13 +38,15 @@
             {
               "file": "rust/rpc-types/src/committed_compaction.rs",
               "lines": [
+                18,
                 19,
                 20,
                 21,
                 22,
-                23,
-                24
-              ]
+                23
+              ],
+              "firstLine": "pub fn reduction_percentage(&self) -> f64 {",
+              "lastLine": "}"
             }
           ]
         }

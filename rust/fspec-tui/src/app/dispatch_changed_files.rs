@@ -29,6 +29,14 @@ impl App {
         self.spawn_changed_files();
     }
 
+    /// RPC-452: the board's selected workspace path (the start workspace
+    /// when nothing else is selected); `None` until the workspace list loads.
+    pub(crate) fn selected_workspace_path(&self) -> Option<String> {
+        self.board_store
+            .selected_workspace()
+            .map(|entry| entry.path.clone())
+    }
+
     /// Spawn `backend.changed_files()` and route the result into the
     /// view via `Action::ChangedFilesLoaded`.
     fn spawn_changed_files(&mut self) {
@@ -37,13 +45,17 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let workspace = self.selected_workspace_path();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            match backend.changed_files().await {
+            match list_changed_files(backend.as_ref(), workspace).await {
                 Ok(files) => {
                     let _ = action_tx.send(Action::ChangedFilesLoaded(files));
                 }
+                // RPC-452: the failure is shown; the view's load ends empty.
                 Err(e) => {
-                    tracing::warn!(error = %e, "changed_files failed");
+                    let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                        "The changed files could not be listed: {e:#}"
+                    )));
                     let _ = action_tx.send(Action::ChangedFilesLoaded(Vec::new()));
                 }
             }
@@ -91,11 +103,23 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let workspace = self.selected_workspace_path();
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let diff = match backend.file_diff(path.clone()).await {
+            let diff = match workspace {
+                Some(workspace) => {
+                    backend
+                        .file_diff_in_workspace(workspace, path.clone())
+                        .await
+                }
+                None => backend.file_diff(path.clone()).await,
+            };
+            // RPC-452: a failed diff is shown, not read as "no diff".
+            let diff = match diff {
                 Ok(diff) => diff,
                 Err(e) => {
-                    tracing::warn!(error = %e, "file_diff failed");
+                    let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                        "The diff of {path} could not be read: {e:#}"
+                    )));
                     None
                 }
             };
@@ -155,5 +179,18 @@ impl App {
             _ => return false,
         }
         true
+    }
+}
+
+/// RPC-452: the board's selected workspace's changed files, or the start
+/// workspace's while no workspace list is loaded (the start workspace is
+/// the default selection).
+pub(crate) async fn list_changed_files(
+    backend: &dyn crate::FspecBackend,
+    workspace: Option<String>,
+) -> anyhow::Result<Vec<ChangedFile>> {
+    match workspace {
+        Some(workspace) => backend.changed_files_in_workspace(workspace).await,
+        None => backend.changed_files().await,
     }
 }

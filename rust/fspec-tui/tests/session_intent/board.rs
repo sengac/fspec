@@ -1,5 +1,6 @@
 //! Feature: spec/features/session-creation-intent.feature
 use super::*;
+use codelet_test_helpers::TestResult;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -15,7 +16,7 @@ async fn board_entry_navigates_to_the_earliest_associated_open_agent() -> TestRe
         let assignments = backend.set_work_unit_context_calls();
         // @step When the user enters the associated story from the board or mux
         enter(&mut app, in_mux);
-        settle(&mut app).await;
+        settle(&mut app).await?;
         // @step Then the earliest associated agent is focused without a creation dialog
         assert_eq!(
             app.agent_view_store().current_session(),
@@ -48,11 +49,16 @@ async fn unassociated_board_entry_offers_story_specific_creation() -> TestResult
             let assignments = backend.set_work_unit_context_calls();
             // @step When the user enters that story from the board or mux
             enter(&mut app, in_mux);
-            settle(&mut app).await;
+            settle(&mut app).await?;
             // @step Then a story-specific dialog offers normal isolated and cancel choices
             assert!(dialog(&app));
             let rendered = text(&mut app);
-            for label in ["Work on AUTH-002?", "Yes", "Yes - Isolated", "Cancel"] {
+            for label in [
+                "Start Agent for AUTH-002?",
+                "Start",
+                "Start in Worktree",
+                "Cancel",
+            ] {
                 assert!(rendered.contains(label), "missing {label}");
             }
             // @step And no session is created or reassigned before confirmation
@@ -83,7 +89,7 @@ async fn board_entry_preserves_an_explicitly_resumed_agent() -> TestResult {
         .set_work_unit_context(sid("resumed"), Some(card("AUTH-001")))
         .await?;
     app.dispatch(Action::AttachToSession(sid("resumed")));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     app.dispatch(Action::WorkUnitFocusChanged(
         sid("resumed"),
         WorkUnitFocus {
@@ -103,7 +109,7 @@ async fn board_entry_preserves_an_explicitly_resumed_agent() -> TestResult {
             source: "delayed".into(),
         },
     ));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then story creation is offered without changing the resumed agent focus
     assert!(dialog(&app));
     assert_eq!(focus(&app, "resumed").as_deref(), Some("AUTH-001"));

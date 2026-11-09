@@ -4,6 +4,7 @@
 @providers
 @PROV-160
 @critical
+@BUG-313
 Feature: Codex reconnect watchdog
   """
   Codex-owned network waiting suspends only the generic generation-stall watchdog while remaining cancellable and protected by raw-network deadlines. Typed exhausted errors bypass the generic network retry layer even through error wrapping. Ordinary providers retain their existing deadlines and retry policy; local tool execution and hard task budgets are unchanged.

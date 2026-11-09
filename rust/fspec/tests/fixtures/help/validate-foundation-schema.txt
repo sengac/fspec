@@ -16,7 +16,6 @@ EXAMPLES
 ✓ All diagrams have valid structure
 
 RELATED COMMANDS
-  fspec show-foundation-schema
   fspec show-foundation
   fspec update-foundation
 

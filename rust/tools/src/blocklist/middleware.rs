@@ -5,7 +5,7 @@
 use super::config::{BlocklistAction, BlocklistConfig};
 use super::matcher::{BlocklistMatcher, CheckResult};
 use super::template::install_default_system_blocklist;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, RwLock};
 use tracing::error;
@@ -17,10 +17,11 @@ static BLOCKLIST_MATCHER: RwLock<Option<BlocklistMatcher>> = RwLock::new(None);
 /// Stored project root for hot-reloading config
 static BLOCKLIST_PROJECT_ROOT: RwLock<Option<PathBuf>> = RwLock::new(None);
 
-/// Session allowances for patterns that user has allowed for the session
-/// BLOCK-005: Cleared on TUI restart (in-memory only)
-static SESSION_ALLOWANCES: LazyLock<RwLock<HashSet<String>>> =
-    LazyLock::new(|| RwLock::new(HashSet::new()));
+/// Session allowances: the rules each session's user allowed for that
+/// session (BLOCK-005: in-memory only). BUG-606: keyed by the session that
+/// asked, so an allowance never reaches another session.
+static SESSION_ALLOWANCES: LazyLock<RwLock<HashMap<uuid::Uuid, HashSet<String>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 /// Error type for blocked commands
 #[derive(Debug)]
@@ -42,14 +43,19 @@ impl std::fmt::Display for BlockedError {
 
 impl std::error::Error for BlockedError {}
 
-/// Get the system blocklist config path (~/.fspec/blocklist.json)
-pub fn system_config_path() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(".fspec").join("blocklist.json"))
+/// The system blocklist config path, `<user dir>/blocklist.json` (BUG-656:
+/// the one user-directory resolver, so a test build never reads the real
+/// `~/.fspec/blocklist.json`).
+pub fn system_config_path() -> Result<PathBuf, String> {
+    codelet_common::user_dir::fspec_user_dir().map(|directory| directory.join("blocklist.json"))
 }
 
-/// Get the project blocklist config path (.fspec/blocklist.json relative to project root)
-pub fn project_config_path(project_root: &Path) -> PathBuf {
-    project_root.join(".fspec").join("blocklist.json")
+/// Get the project blocklist config path (.fspec/blocklist.json relative to
+/// the project root; WT-015: shared state, the main checkout's for a copy).
+pub fn project_config_path(project_root: &Path) -> Result<PathBuf, String> {
+    codelet_common::spec_paths::ProjectRoots::resolve(project_root)
+        .map(|roots| roots.blocklist())
+        .map_err(|error| format!("cannot resolve the blocklist config: {error}"))
 }
 
 /// Load blocklist configuration from system and project paths.
@@ -61,15 +67,18 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
     // Load system config if it exists (BLOCK-012: install the embedded
     // default template first when the file is missing, so the fresh file
     // is loaded and matched in this same call)
-    if let Some(system_path) = system_config_path() {
-        if !system_path.exists() {
-            install_default_system_blocklist(&system_path);
-        }
-        if system_path.exists() {
-            match BlocklistConfig::load_from_file(&system_path) {
-                Ok(config) => system_config = config,
-                Err(e) => {
-                    error!("Failed to load system blocklist config from {system_path:?}: {e}");
+    match system_config_path() {
+        Err(e) => error!("Cannot resolve the system blocklist config: {e}"),
+        Ok(system_path) => {
+            if !system_path.exists() {
+                install_default_system_blocklist(&system_path);
+            }
+            if system_path.exists() {
+                match BlocklistConfig::load_from_file(&system_path) {
+                    Ok(config) => system_config = config,
+                    Err(e) => {
+                        error!("Failed to load system blocklist config from {system_path:?}: {e}");
+                    }
                 }
             }
         }
@@ -77,14 +86,19 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
 
     // Load project config if it exists
     if let Some(root) = project_root {
-        let project_path = project_config_path(root);
-        if project_path.exists() {
-            match BlocklistConfig::load_from_file(&project_path) {
-                Ok(config) => project_config = config,
-                Err(e) => {
-                    error!("Failed to load project blocklist config from {project_path:?}: {e}");
+        match project_config_path(root) {
+            Ok(project_path) if project_path.exists() => {
+                match BlocklistConfig::load_from_file(&project_path) {
+                    Ok(config) => project_config = config,
+                    Err(e) => {
+                        error!(
+                            "Failed to load project blocklist config from {project_path:?}: {e}"
+                        );
+                    }
                 }
             }
+            Ok(_) => {}
+            Err(e) => error!("Failed to load project blocklist config: {e}"),
         }
     }
 
@@ -148,12 +162,20 @@ pub fn middleware_project_root() -> Option<PathBuf> {
 pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
 
-    let project_root = get_project_root();
-    let config = load_blocklist_config(project_root.as_deref());
+    // BUG-601: the command is checked without the rules this session turned off.
+    let config = super::session_rules::session_blocklist_config(session_id);
 
     // The RLCD-004 stage mode (loaded once; the stage re-loads its full
     // config for thresholds — cheap and keeps the layers decoupled).
-    let rlcd_mode = crate::rlcd::config::load_rlcd_config().security.check_mode;
+    // BUG-451: an unloadable RLCD config refuses the command.
+    let rlcd_mode = crate::rlcd::config::load_rlcd_config()
+        .map_err(|error| BlockedError {
+            reason: format!("RLCD security stage: {error}"),
+            guidance: None,
+            rule_id: "rlcd-config".to_string(),
+        })?
+        .security
+        .check_mode;
 
     let result = if config.rules.is_empty() {
         CheckResult::allowed()
@@ -178,7 +200,7 @@ pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), B
         let pattern = result.matched_rule_id.clone().unwrap_or_default();
 
         // Check session allowances first
-        if is_session_allowed(&pattern) {
+        if is_session_allowed(session_id, &pattern) {
             // The user already allowed this rule for the session: the
             // RLCD stage may still apply (checkMode-driven).
             return bash_rlcd_stage(session_id, command, &rlcd_mode, true);
@@ -202,7 +224,7 @@ pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), B
                 bash_rlcd_stage(session_id, command, &rlcd_mode, true)
             }
             PauseResponse::AllowSession => {
-                allow_for_session(&pattern);
+                allow_for_session(session_id, &pattern);
                 bash_rlcd_stage(session_id, command, &rlcd_mode, true)
             }
             PauseResponse::Denied | PauseResponse::Interrupted => Err(BlockedError {
@@ -240,11 +262,21 @@ fn bash_rlcd_stage(
     if !stage {
         return Ok(());
     }
-    let config = crate::rlcd::config::load_rlcd_config();
-    let thresholds =
-        crate::rlcd::security_config::SecurityThresholds::bash(&config.security);
+    let config = crate::rlcd::config::load_rlcd_config().map_err(|error| BlockedError {
+        reason: format!("RLCD security stage: {error}"),
+        guidance: None,
+        rule_id: "rlcd-config".to_string(),
+    })?;
+    let thresholds = crate::rlcd::security_config::SecurityThresholds::bash(&config.security);
     let user = crate::rlcd::security::context_user();
+    // BUG-404: a failed isolation lookup blocks rather than describing the
+    // process cwd for an unknown session.
     let cwd = crate::facade::get_effective_cwd(session_id)
+        .map_err(|reason| BlockedError {
+            reason: format!("cannot resolve the session's isolation context: {reason}"),
+            guidance: None,
+            rule_id: "isolation-lookup".to_string(),
+        })?
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|| ".".to_string());
     // Context-LEADING state (calibrated 2026-09-24): the agent-harness
@@ -273,8 +305,8 @@ fn bash_rlcd_stage(
 pub fn check_file_path(file_path: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
 
-    let project_root = get_project_root();
-    let config = load_blocklist_config(project_root.as_deref());
+    // BUG-601: the path is checked without the rules this session turned off.
+    let config = super::session_rules::session_blocklist_config(session_id);
 
     if config.rules.is_empty() {
         return Ok(());
@@ -299,7 +331,7 @@ pub fn check_file_path(file_path: &str, session_id: uuid::Uuid) -> Result<(), Bl
         let pattern = result.matched_rule_id.clone().unwrap_or_default();
 
         // Check session allowances first
-        if is_session_allowed(&pattern) {
+        if is_session_allowed(session_id, &pattern) {
             return Ok(());
         }
 
@@ -319,7 +351,7 @@ pub fn check_file_path(file_path: &str, session_id: uuid::Uuid) -> Result<(), Bl
         match response {
             PauseResponse::AllowOnce => Ok(()),
             PauseResponse::AllowSession => {
-                allow_for_session(&pattern);
+                allow_for_session(session_id, &pattern);
                 Ok(())
             }
             PauseResponse::Denied | PauseResponse::Interrupted => Err(BlockedError {
@@ -364,28 +396,41 @@ pub fn reload_blocklist(project_root: Option<&Path>) -> BlocklistMatcher {
 // SESSION ALLOWANCES (BLOCK-005)
 // ============================================================================
 
-/// Add a pattern to session allowances.
-/// Called when user selects "Allow Session" in the triple confirmation dialog.
-pub fn allow_for_session(pattern: &str) {
+/// Allow `pattern` for `session_id` only (the user chose "Allow Session"
+/// in that session's triple confirmation).
+pub fn allow_for_session(session_id: uuid::Uuid, pattern: &str) {
     let mut guard = match SESSION_ALLOWANCES.write() {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
     };
-    guard.insert(pattern.to_string());
+    guard
+        .entry(session_id)
+        .or_default()
+        .insert(pattern.to_string());
 }
 
-/// Check if a pattern is allowed for the current session.
-/// Returns true if the pattern was previously allowed via allow_for_session.
-pub fn is_session_allowed(pattern: &str) -> bool {
+/// Whether `session_id` allowed `pattern` for the session (BUG-606: another
+/// session's allowance never counts).
+pub fn is_session_allowed(session_id: uuid::Uuid, pattern: &str) -> bool {
     let guard = match SESSION_ALLOWANCES.read() {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
     };
-    guard.contains(pattern)
+    guard
+        .get(&session_id)
+        .is_some_and(|patterns| patterns.contains(pattern))
 }
 
-/// Clear all session allowances.
-/// Called on TUI restart to reset session memory.
+/// BUG-606: forget every allowance of `session_id` (the session closed).
+pub fn forget_session_allowances(session_id: uuid::Uuid) {
+    let mut guard = match SESSION_ALLOWANCES.write() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    guard.remove(&session_id);
+}
+
+/// Clear every session's allowances.
 pub fn clear_session_allowances() {
     let mut guard = match SESSION_ALLOWANCES.write() {
         Ok(guard) => guard,
@@ -402,6 +447,11 @@ mod tests {
     use serial_test::serial;
     use std::io::Write;
     use tempfile::TempDir;
+
+    // BUG-656: every test first calls codelet_test_helpers::isolated_home(),
+    // so the system blocklist and the RLCD config come from a temporary home
+    // (an empty blocklist.json, RLCD off), never the user's real ~/.fspec.
+    // tests/bug656_blocklist_middleware_tests_isolate_home.rs checks it.
 
     fn create_test_config(dir: &Path, rules: Vec<BlocklistRule>) {
         let fspec_dir = dir.join(".fspec");
@@ -422,6 +472,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_load_empty_config_when_no_files() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         let tmp = TempDir::new().expect("failed to create temp dir");
 
         // Initialize blocklist with temp dir (no project blocklist.json)
@@ -447,6 +498,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_load_project_config() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         let tmp = TempDir::new().expect("failed to create temp dir");
 
         create_test_config(
@@ -481,6 +533,7 @@ mod tests {
 
     #[test]
     fn test_blocked_error_display() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         let error = BlockedError {
             reason: "git checkout is deprecated".to_string(),
             guidance: Some("Use git switch instead.".to_string()),
@@ -495,6 +548,7 @@ mod tests {
 
     #[test]
     fn test_blocked_error_display_without_guidance() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         let error = BlockedError {
             reason: "Dangerous command".to_string(),
             guidance: None,
@@ -505,94 +559,98 @@ mod tests {
     }
 
     // ========================================
-    // SESSION ALLOWANCES TESTS (BLOCK-005)
-    // Feature: spec/features/sensitive-path-prompts.feature
+    // SESSION ALLOWANCE STORE TESTS (BLOCK-005, per session since BUG-606)
+    // Unit tests of the store; the prompt flows are BLOCK-007's tests below.
     // ========================================
 
-    /// Scenario: Session allowances cleared on TUI restart
+    /// An allowance is kept until the store is cleared (a restart).
     #[test]
     #[serial]
     fn test_session_allowances_add_and_check() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         // Start with clean state for test isolation
         clear_session_allowances();
 
-        // @step Given a blocklist rule prompts for "npm install" commands
+        // A prompt rule's pattern.
         let pattern = "^npm\\s+install";
 
-        // @step When the AI runs "npm install" and user allows for session
-        allow_for_session(pattern);
+        // The user allows it for the session.
+        allow_for_session(uuid::Uuid::nil(), pattern);
 
-        // @step Then the AI can run "npm install lodash" without prompting
-        assert!(is_session_allowed(pattern));
+        // It is allowed from now on.
+        assert!(is_session_allowed(uuid::Uuid::nil(), pattern));
 
-        // @step When the user exits and restarts the TUI
+        // A restart clears the store.
         clear_session_allowances();
 
-        // @step And the AI runs "npm install axios"
-        // (pattern check after restart)
+        // The same pattern is checked again
+        // after the restart.
 
-        // @step Then the user should be prompted again
-        assert!(!is_session_allowed(pattern));
+        // It is no longer allowed.
+        assert!(!is_session_allowed(uuid::Uuid::nil(), pattern));
     }
 
-    /// Scenario: Prompt for SSH config access - user allows for session
+    /// An allowance covers exactly its own pattern.
     #[test]
     #[serial]
     fn test_session_allowances_pattern_matching() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         // Start with clean state for test isolation
         clear_session_allowances();
 
-        // @step Given a blocklist rule exists prompting for "~/.ssh" access
+        // A prompt rule's pattern.
         let pattern = "~/.ssh";
 
-        // @step And the user selects "Allow Session"
-        allow_for_session(pattern);
+        // The user allows it for the session.
+        allow_for_session(uuid::Uuid::nil(), pattern);
 
-        // @step When the AI tries to read "~/.ssh/known_hosts" later in the same session
-        // @step Then the file should be read without prompting (same pattern)
-        assert!(is_session_allowed(pattern));
+        // A later check of the same pattern in the same session
+        // is allowed.
+        assert!(is_session_allowed(uuid::Uuid::nil(), pattern));
 
         // Different pattern should NOT be allowed
-        assert!(!is_session_allowed("~/.aws"));
+        assert!(!is_session_allowed(uuid::Uuid::nil(), "~/.aws"));
 
         // Cleanup
         clear_session_allowances();
     }
 
-    /// Scenario: Multiple patterns can be allowed in session
+    /// Several patterns can be allowed in one session.
     #[test]
     #[serial]
     fn test_session_allowances_multiple_patterns() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         // Start with clean state for test isolation
         clear_session_allowances();
 
         // Allow multiple patterns
-        allow_for_session("~/.ssh");
-        allow_for_session(".env");
-        allow_for_session("~/.fspec");
+        allow_for_session(uuid::Uuid::nil(), "~/.ssh");
+        allow_for_session(uuid::Uuid::nil(), ".env");
+        allow_for_session(uuid::Uuid::nil(), "~/.fspec");
 
         // All should be allowed
-        assert!(is_session_allowed("~/.ssh"));
-        assert!(is_session_allowed(".env"));
-        assert!(is_session_allowed("~/.fspec"));
+        assert!(is_session_allowed(uuid::Uuid::nil(), "~/.ssh"));
+        assert!(is_session_allowed(uuid::Uuid::nil(), ".env"));
+        assert!(is_session_allowed(uuid::Uuid::nil(), "~/.fspec"));
 
         // Cleanup
         clear_session_allowances();
     }
 
-    /// Scenario: Session allowances are isolated per test (verify cleanup)
+    /// The store starts empty after a clear.
     #[test]
     #[serial]
     fn test_session_allowances_isolation() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         // Start with clean state
         clear_session_allowances();
 
         // Nothing should be allowed
-        assert!(!is_session_allowed("any-pattern"));
+        assert!(!is_session_allowed(uuid::Uuid::nil(), "any-pattern"));
 
         // Add and verify
-        allow_for_session("test-pattern");
-        assert!(is_session_allowed("test-pattern"));
+        allow_for_session(uuid::Uuid::nil(), "test-pattern");
+        assert!(is_session_allowed(uuid::Uuid::nil(), "test-pattern"));
 
         // Cleanup
         clear_session_allowances();
@@ -607,6 +665,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_prompt_rule_bypassed_when_session_allowed() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::atomic::{AtomicBool, Ordering};
         use std::sync::Arc;
@@ -641,7 +700,7 @@ mod tests {
         init_blocklist(Some(tmp.path()));
 
         // @step And the user previously allowed ".env" pattern for the session
-        allow_for_session("env-prompt");
+        allow_for_session(uuid::Uuid::nil(), "env-prompt");
 
         // @step When the AI attempts to read "~/.env"
         let result = check_file_path("~/.env", uuid::Uuid::nil());
@@ -666,6 +725,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_prompt_rule_allow_once_response() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseKind, PauseResponse};
         use std::sync::atomic::{AtomicBool, Ordering};
         use std::sync::Arc;
@@ -736,7 +796,7 @@ mod tests {
         // @step Then the TUI should prompt again
         // (AllowOnce should NOT add to session allowances, so next access prompts again)
         assert!(
-            !is_session_allowed("env-prompt"),
+            !is_session_allowed(uuid::Uuid::nil(), "env-prompt"),
             "AllowOnce should NOT add to session allowances"
         );
 
@@ -748,6 +808,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_prompt_rule_allow_session_response() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::Arc;
 
@@ -795,7 +856,7 @@ mod tests {
         // @step When the AI attempts to read "~/.ssh/known_hosts" later
         // @step Then the file should be read without prompting
         assert!(
-            is_session_allowed("ssh-prompt"),
+            is_session_allowed(uuid::Uuid::nil(), "ssh-prompt"),
             "AllowSession should add pattern to session allowances"
         );
 
@@ -807,6 +868,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_prompt_rule_deny_response() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::Arc;
 
@@ -865,6 +927,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_session_allowances_cleared_on_restart() {
+        codelet_test_helpers::isolated_home().expect("isolate the home");
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::atomic::{AtomicUsize, Ordering};
         use std::sync::Arc;
@@ -898,11 +961,11 @@ mod tests {
         init_blocklist(Some(tmp.path()));
 
         // @step And the user allowed ".env" pattern for the session
-        allow_for_session("env-prompt");
+        allow_for_session(uuid::Uuid::nil(), "env-prompt");
 
         // Verify initial state - should be allowed
         assert!(
-            is_session_allowed("env-prompt"),
+            is_session_allowed(uuid::Uuid::nil(), "env-prompt"),
             "Pattern should be allowed initially"
         );
 
@@ -911,7 +974,7 @@ mod tests {
 
         // Verify allowance was cleared
         assert!(
-            !is_session_allowed("env-prompt"),
+            !is_session_allowed(uuid::Uuid::nil(), "env-prompt"),
             "Pattern should NOT be allowed after restart"
         );
 

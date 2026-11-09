@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "The isolated user directory disables RLCD",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug347_tools_tests_isolated_from_host_rlcd.rs",
+          "lines": "19-29",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "/// BUG-347: point `FSPEC_USER_DIR` at a per-process temp user directory",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every file-tool test isolates its user directory",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug347_tools_tests_isolated_from_host_rlcd.rs",
+          "lines": "31-53",
+          "implMappings": [
+            {
+              "file": "rust/tools/tests/bug456_providers_pass_session_id_to_tools.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "firstLine": "/// A provider's source as its module tree (the file and its submodules).",
+              "lastLine": "codelet_test_helpers::isolated_user_directory()?;"
+            },
+            {
+              "file": "rust/test-helpers/src/lib.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "/// BUG-347: point `FSPEC_USER_DIR` at a per-process temp user directory",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug347_tools_tests_isolated_from_host_rlcd.rs"
+    ],
+    "implFiles": [
+      "rust/test-helpers/src/lib.rs",
+      "rust/tools/tests/bug456_providers_pass_session_id_to_tools.rs"
+    ],
+    "totalLinesCovered": 94
+  }
+}

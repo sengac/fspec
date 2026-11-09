@@ -127,24 +127,48 @@ pub(super) fn render_form(
             .add_modifier(Modifier::BOLD),
     )));
     lines.push(Line::from(""));
+    let mut items: Vec<Line<'static>> = Vec::new();
+    let mut focused = 0;
     if !form.context.settings {
-        lines.push(name_line(form));
+        if form.is_editing_name {
+            focused = items.len();
+        }
+        items.push(name_line(form));
     }
     if form.context.inherited_auth && !form.context.settings {
-        lines.push(Line::from("Authentication: inherited unless overridden"));
+        items.push(Line::from("Authentication: inherited unless overridden"));
     }
     for (idx, label) in PROFILE_FORM_FIELDS
         .iter()
         .enumerate()
         .skip(form.first_field())
     {
-        lines.push(field_line(form, idx, label));
+        if !form.is_editing_name && idx == form.field_index {
+            focused = items.len();
+        }
+        items.push(field_line(form, idx, label));
     }
-    if !status.is_empty() {
-        lines.push(Line::from(Span::styled(
-            status.to_string(),
-            Style::default().fg(Color::Red),
-        )));
-    }
+    // TUI-131: the status (a save error) wraps in full under the fields,
+    // like the list status (`body_render::paint_list_status`).
+    let status_lines = if status.is_empty() {
+        Vec::new()
+    } else {
+        crate::views::agent::text_wrap::wrapped_lines(
+            status,
+            usize::from(area.width),
+            // BUG-575: a `✓` message arriving while the form is open is green.
+            super::status_text::status_style(status, Style::default().fg(Color::Red)),
+        )
+    };
+    // BUG-578 F21: on a short terminal the field lines scroll so the
+    // focused one stays visible, and the status stays pinned under them.
+    let room = usize::from(area.height).saturating_sub(lines.len() + status_lines.len());
+    let start = if items.len() > room {
+        (focused + 1).saturating_sub(room.max(1))
+    } else {
+        0
+    };
+    lines.extend(items.into_iter().skip(start).take(room.max(1)));
+    lines.extend(status_lines);
     Paragraph::new(lines).render(area, buf);
 }

@@ -10,12 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
                 135,
                 136,
                 137,
@@ -26,8 +20,16 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "// ---- Dry-run: report without modifying ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,12 +45,265 @@
             {
               "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
               "lines": [
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ],
+              "firstLine": "// ---- Perform deletions ----",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ],
+              "firstLine": "/// BUG-486: the block of the scenario whose header is at 0-based `header`:",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher applies AND logic across multiple tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "146-172",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ],
+              "firstLine": "/// Collect scenarios in `feature` whose tags match ALL `wanted` tags, with",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher reports no feature files",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "178-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "// ---- Enumerate feature files (DirectoryNotFound → empty list) ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher reports no matching scenarios",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "200-224",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "// ---- Count total scenarios to delete ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects an empty tag list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "230-264",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "// ---- Require at least one tag (TS CLI rejects empty; dispatcher parity",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes matching scenarios across several files and leaves files without matches untouched",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "283-329",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
                 153,
                 154,
                 155,
@@ -112,23 +367,8 @@
                 213,
                 214,
                 215,
-                216
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dispatcher applies AND logic across multiple tags",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/delete_scenarios.rs",
-          "lines": "141-165",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
-              "lines": [
+                216,
+                217,
                 218,
                 219,
                 220,
@@ -137,8 +377,60 @@
                 223,
                 224,
                 225,
-                226,
-                227,
+                226
+              ],
+              "firstLine": "// ---- Perform deletions ----",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher keeps the feature tags and the Background of a modified file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "335-373",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "pub(crate) fn scenario_block(lines: &[&str], header: usize) -> (usize, Option<usize>) {",
+              "lastLine": "kept.pop();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes scenarios whose tag contains special characters",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_scenarios.rs",
+          "lines": "379-405",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
+              "lines": [
                 228,
                 229,
                 230,
@@ -168,111 +460,10 @@
                 254,
                 255,
                 256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dispatcher reports no feature files",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/delete_scenarios.rs",
-          "lines": "169-187",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dispatcher reports no matching scenarios",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/delete_scenarios.rs",
-          "lines": "191-217",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
-              "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dispatcher rejects an empty tag list",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/delete_scenarios.rs",
-          "lines": "221-248",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/delete_scenarios.rs",
-              "lines": [
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
+                257
+              ],
+              "firstLine": "/// Collect scenarios in `feature` whose tags match ALL `wanted` tags, with",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,15 +471,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/delete_scenarios.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/delete_scenarios.rs"
+      "rust/fspec-core/src/commands/delete_scenarios.rs",
+      "rust/fspec-core/src/commands/delete_scenario.rs"
     ],
-    "totalLinesCovered": 346
+    "totalLinesCovered": 582
   }
 }

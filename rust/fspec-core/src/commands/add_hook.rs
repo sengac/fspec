@@ -1,27 +1,21 @@
 //! `add-hook` — Rust port of `src/commands/add-hook.ts` (RPC-184).
 //!
 //! Appends a single hook entry to `spec/fspec-hooks.json`, creating the
-//! file on first call. Mirrors the TS `addHook` implementation byte-for-byte
-//! including the "swallow read/parse errors and start from scratch"
-//! semantics produced by the bare `try { ... } catch { config = {hooks: {}} }`
-//! at `src/commands/add-hook.ts:26-32`.
+//! file on first call.
 //!
-//! ## Semantics (mirrors src/commands/add-hook.ts:20-54)
+//! ## Semantics
 //!
-//! 1. Try to read+parse `spec/fspec-hooks.json`. **Either** an IO failure
-//!    (ENOENT or otherwise) **OR** a `serde_json::from_str` parse failure
-//!    silently resets the in-memory config to a fresh default whose only
-//!    key is `"hooks": {}` — the "TS bare catch" branch.
+//! 1. Read `spec/fspec-hooks.json` through
+//!    [`crate::command_hooks::config_file::load_for_write`]: a missing file
+//!    starts a fresh `{"hooks": {}}` config; a broken file (BUG-611) is
+//!    backed up to `spec/fspec-hooks.json.broken-<timestamp>` and a fresh
+//!    config is started, and the backup notice is the command's output.
 //! 2. Ensure the `hooks` object exists at the top level (insertion order
 //!    preserved relative to any sibling top-level fields such as `global`).
-//! 3. If the event key is missing from `hooks`, insert an empty array
-//!    (preserving insertion order — `serde_json` is configured with the
-//!    `preserve_order` feature workspace-wide so `Map<String, Value>` is
-//!    backed by `IndexMap`).
-//! 4. Push a new hook entry `{ name, command, blocking[, timeout] }` onto
-//!    that array. `timeout` is OMITTED when not supplied — matching the TS
-//!    `JSON.stringify(undefined) === undefined` semantic.
-//! 5. `std::fs::create_dir_all(spec/)` then `write_json_atomic(spec/fspec-hooks.json, &config)`.
+//! 3. Push a new hook entry `{ name, command, blocking[, timeout] }` onto
+//!    `hooks[event]`, inserting the event's array when it is missing.
+//!    `timeout` is OMITTED when not supplied.
+//! 4. `std::fs::create_dir_all(spec/)` then `write_json_atomic(spec/fspec-hooks.json, &config)`.
 //!
 //! ## Two-front-doors contract
 //!
@@ -43,9 +37,11 @@
 
 use std::path::Path;
 
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
 
+use crate::command_hooks::config_file::{empty_config, load_for_write, ForWrite};
 use crate::error::FspecCoreError;
 use crate::io::locked_file::write_json_atomic;
 
@@ -72,80 +68,57 @@ struct AddHookArgs {
 
 /// Dispatcher entry point.
 ///
-/// Returns `Ok(String::new())` on success — `add-hook` has no rendered
-/// output, mirroring the TS `Commander.js` action handler which prints
-/// nothing on success.
+/// Returns `✓ Hook added: <event>/<name>` (BUG-638), after the BUG-611
+/// backup notice when a broken config was backed up.
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
+    run_at(args_json, project_root, chrono::Utc::now()).await
+}
+
+/// [`run`] at `now`, the time a broken config's backup is named after.
+pub async fn run_at(
+    args_json: &str,
+    project_root: &Path,
+    now: DateTime<Utc>,
+) -> Result<String, FspecCoreError> {
     let args: AddHookArgs =
         serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "add-hook",
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let path = project_root.join("spec").join("fspec-hooks.json");
+    // BUG-590: reject an event no hook ever runs on, before reading or
+    // writing spec/fspec-hooks.json.
+    // The reason is the whole message: the args themselves are well formed.
+    crate::command_hooks::check_hook_event(&args.event).map_err(FspecCoreError::Message)?;
 
-    // Load: TS bare-catch parity. Either an IO failure OR a parse failure
-    // resets the in-memory config to a fresh default whose only key is
-    // `"hooks": {}`.
-    let mut config = load_or_default(&path);
+    let path = crate::io::spec_paths::hooks_config_of(project_root);
 
-    // Ensure the `hooks` key exists at the top level. If absent we INSERT
-    // it (preserving any pre-existing sibling order), and if present we
-    // leave its position untouched.
-    if !config.contains_key("hooks") {
-        config.insert("hooks".to_string(), Value::Object(Map::new()));
-    }
-    // Coerce a non-object `hooks` shape into an empty object to avoid
-    // panicking on garbage data — mirrors the TS spread-clone behaviour.
-    let hooks_entry = match config.get_mut("hooks") {
-        Some(v) if v.is_object() => v,
-        Some(v) => {
-            *v = Value::Object(Map::new());
-            v
-        }
-        // Unreachable: we just inserted "hooks" above. Bail with a
-        // structured error rather than panic to satisfy clippy::expect_used.
-        None => {
-            return Err(FspecCoreError::ParseJson {
-                file: "fspec-hooks.json".to_string(),
-                reason: "internal: failed to materialise hooks object".to_string(),
-            });
-        }
-    };
-    let hooks_obj = match hooks_entry.as_object_mut() {
-        Some(o) => o,
-        None => {
-            return Err(FspecCoreError::ParseJson {
-                file: "fspec-hooks.json".to_string(),
-                reason: "internal: hooks is not an object after coercion".to_string(),
-            });
-        }
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-hook")?;
+    let (mut config, notice) = match load_for_write(project_root, "add-hook", now)? {
+        ForWrite::Missing(_) => (empty_config(), String::new()),
+        ForWrite::Config(config) => (config, String::new()),
+        ForWrite::BackedUp { config, notice } => (config, notice),
     };
 
-    // Initialise the event array if absent — Map<String, Value>'s
-    // backing IndexMap preserves insertion order so a new event key is
-    // appended at the tail.
-    let event_entry = hooks_obj
-        .entry(args.event.clone())
-        .or_insert_with(|| Value::Array(Vec::new()));
-    if !event_entry.is_array() {
-        *event_entry = Value::Array(Vec::new());
-    }
-    let event_arr = match event_entry.as_array_mut() {
-        Some(a) => a,
-        None => {
-            return Err(FspecCoreError::ParseJson {
-                file: "fspec-hooks.json".to_string(),
-                reason: format!(
-                    "internal: hooks['{}'] is not an array after coercion",
-                    args.event
-                ),
-            });
-        }
-    };
+    // load_for_write guarantees `hooks`, when present, is an object of
+    // arrays; insert it when absent, keeping any sibling order.
+    let hooks = config
+        .entry("hooks".to_string())
+        .or_insert_with(|| Value::Object(Map::new()));
+    let event_hooks = hooks
+        .as_object_mut()
+        .map(|hooks| {
+            hooks
+                .entry(args.event.clone())
+                .or_insert_with(|| Value::Array(Vec::new()))
+        })
+        .and_then(Value::as_array_mut)
+        .ok_or_else(|| {
+            FspecCoreError::Message(format!("internal: hooks.{} is not an array", args.event))
+        })?;
 
-    // Build the hook entry. `timeout` is omitted when absent — matches
-    // `JSON.stringify(undefined) === undefined`.
+    let added = format!("✓ Hook added: {}/{}", args.event, args.name);
     let mut entry: Map<String, Value> = Map::new();
     entry.insert("name".to_string(), Value::String(args.name));
     entry.insert("command".to_string(), Value::String(args.command));
@@ -153,47 +126,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     if let Some(timeout) = args.timeout {
         entry.insert("timeout".to_string(), json!(timeout));
     }
-    event_arr.push(Value::Object(entry));
+    event_hooks.push(Value::Object(entry));
 
     // Ensure spec/ exists, then atomic write.
-    let spec_dir = project_root.join("spec");
+    let spec_dir = crate::io::spec_paths::spec_dir_of(project_root);
     std::fs::create_dir_all(&spec_dir).map_err(|source| FspecCoreError::Io {
         command: "add-hook",
         source,
     })?;
+    write_json_atomic(&path, &Value::Object(config))?;
 
-    let value = Value::Object(config);
-    write_json_atomic(&path, &value)?;
-
-    Ok(String::new())
-}
-
-/// "Swallow everything" loader — mirrors the TS bare `try { ... } catch
-/// { config = {hooks: {}} }` at `src/commands/add-hook.ts:26-32`. Either
-/// branch (IO or parse error) returns the default empty config WITHOUT
-/// writing to disk; the caller's subsequent atomic write OVERWRITES any
-/// pre-existing malformed bytes.
-///
-/// On success, returns the parsed top-level `Map<String, Value>` exactly
-/// as deserialised — preserving key insertion order so any sibling keys
-/// (e.g. `global`) keep their original position relative to `hooks`.
-fn load_or_default(path: &Path) -> Map<String, Value> {
-    let raw = match std::fs::read_to_string(path) {
-        Ok(s) => s,
-        Err(_) => return default_config(),
-    };
-    match serde_json::from_str::<Value>(&raw) {
-        Ok(Value::Object(map)) => map,
-        _ => default_config(),
-    }
-}
-
-/// Fresh in-memory config used on read/parse failure. Mirrors the TS
-/// `config = { hooks: {} }` reset.
-fn default_config() -> Map<String, Value> {
-    let mut m = Map::new();
-    m.insert("hooks".to_string(), Value::Object(Map::new()));
-    m
+    Ok(if notice.is_empty() {
+        added
+    } else {
+        format!("{notice}\n{added}")
+    })
 }
 
 #[cfg(test)]
@@ -218,37 +165,5 @@ mod tests {
         let a: AddHookArgs = serde_json::from_str(json).unwrap();
         assert!(a.blocking);
         assert_eq!(a.timeout, Some(300));
-    }
-
-    #[test]
-    fn load_or_default_returns_empty_when_missing() {
-        let tmp = tempfile::tempdir().unwrap();
-        let p = tmp.path().join("missing.json");
-        let cfg = load_or_default(&p);
-        assert_eq!(cfg.keys().collect::<Vec<_>>(), vec!["hooks"]);
-        assert!(cfg["hooks"].as_object().unwrap().is_empty());
-    }
-
-    #[test]
-    fn load_or_default_returns_empty_on_invalid_json() {
-        let tmp = tempfile::tempdir().unwrap();
-        let p = tmp.path().join("bad.json");
-        std::fs::write(&p, "{ not json").unwrap();
-        let cfg = load_or_default(&p);
-        assert_eq!(cfg.keys().collect::<Vec<_>>(), vec!["hooks"]);
-    }
-
-    #[test]
-    fn load_or_default_preserves_sibling_field_order() {
-        let tmp = tempfile::tempdir().unwrap();
-        let p = tmp.path().join("hooks.json");
-        std::fs::write(
-            &p,
-            r#"{"global":{"timeout":30},"hooks":{"pre":[]},"zzz":1}"#,
-        )
-        .unwrap();
-        let cfg = load_or_default(&p);
-        let keys: Vec<&String> = cfg.keys().collect();
-        assert_eq!(keys, vec!["global", "hooks", "zzz"]);
     }
 }

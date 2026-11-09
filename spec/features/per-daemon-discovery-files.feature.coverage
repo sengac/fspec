@@ -1,0 +1,372 @@
+{
+  "scenarios": [
+    {
+      "name": "A daemon entry is written per process",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+          "lines": "34-71",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "pub fn daemons_dir() -> Result<PathBuf> {",
+              "lastLine": "remove_daemon_json(&daemon_entry_path(dir, pid));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Listing returns live daemons and prunes stale entries",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+          "lines": "73-111",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "/// Every local daemon whose process is alive, ordered by pid. Entries for",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing an entry deletes only that daemon's file",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+          "lines": "113-146",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                95,
+                96,
+                97
+              ],
+              "firstLine": "/// Remove this daemon's discovery file (idempotent).",
+              "lastLine": "remove_daemon_json(&daemon_entry_path(dir, pid));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A running daemon registers itself beside daemon.json",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+          "lines": "148-191",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                160
+              ],
+              "firstLine": "// can list every local daemon, not only the daemon.json default.",
+              "lastLine": "common::remove_daemon_entry(&daemons_dir, process::id());"
+            },
+            {
+              "file": "rust/fspec/src/combined.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                98
+              ],
+              "firstLine": "// can list every local daemon, not only the daemon.json default.",
+              "lastLine": "common::remove_daemon_entry(&daemons_dir, process::id());"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fspec status lists every live local daemon",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+          "lines": "193-237",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/status.rs",
+              "lines": [
+                50,
+                56,
+                57,
+                60,
+                64,
+                67
+              ],
+              "firstLine": "print_local_daemons();",
+              "lastLine": "\"  pid={} port={} workspace={}\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second daemon does not replace a live daemon's daemon.json",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery/default_pointer.rs",
+          "lines": "21-55",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// The pid recorded in a daemon.json-schema file, if it can be read.",
+              "lastLine": "/// BUG-289: on shutdown, remove daemon.json only when it names this daemon,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A dead daemon's daemon.json is replaced",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery/default_pointer.rs",
+          "lines": "57-86",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// The pid recorded in a daemon.json-schema file, if it can be read.",
+              "lastLine": "/// BUG-289: on shutdown, remove daemon.json only when it names this daemon,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shutting down hands daemon.json to another live daemon",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery/default_pointer.rs",
+          "lines": "88-133",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "/// BUG-289: on shutdown, remove daemon.json only when it names this daemon,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shutting down leaves another daemon's daemon.json alone",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc446_per_daemon_discovery/default_pointer.rs",
+          "lines": "135-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common/daemon_registry.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "/// BUG-289: on shutdown, remove daemon.json only when it names this daemon,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/rpc446_per_daemon_discovery.rs",
+      "rust/fspec/tests/rpc446_per_daemon_discovery/default_pointer.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/common/daemon_registry.rs",
+      "rust/fspec/src/daemon.rs",
+      "rust/fspec/src/combined.rs",
+      "rust/fspec/src/status.rs"
+    ],
+    "totalLinesCovered": 520
+  }
+}

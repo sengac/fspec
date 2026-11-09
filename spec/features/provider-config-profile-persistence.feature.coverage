@@ -10,14 +10,6 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -136,39 +128,33 @@
                 170,
                 171,
                 172,
-                173,
-                174
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "23-48",
-          "implMappings": [
+                173
+              ],
+              "firstLine": "/// the explicit-off sentinel `0`); `None` removes the key.",
+              "lastLine": "/// Write `key`, or remove it entirely when the value is `None`, so the stored"
+            },
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
               "lines": [
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130,
-                1131,
-                1132
-              ]
+                192,
+                193
+              ],
+              "firstLine": "// MODEL-011: the level exactly as chosen.",
+              "lastLine": "Ok(self.get_session(&session_id.value)?.get_base_thinking_level())"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "firstLine": "fn list_providers(&self) -> Result<Vec<codelet_rpc_types::ProviderInfo>, String> {",
+              "lastLine": "//"
             }
           ]
         }
@@ -184,14 +170,6 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -310,9 +288,10 @@
                 170,
                 171,
                 172,
-                173,
-                174
-              ]
+                173
+              ],
+              "firstLine": "/// the explicit-off sentinel `0`); `None` removes the key.",
+              "lastLine": "/// Write `key`, or remove it entirely when the value is `None`, so the stored"
             }
           ]
         }
@@ -328,14 +307,6 @@
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -454,9 +425,10 @@
                 170,
                 171,
                 172,
-                173,
-                174
-              ]
+                173
+              ],
+              "firstLine": "/// the explicit-off sentinel `0`); `None` removes the key.",
+              "lastLine": "/// Write `key`, or remove it entirely when the value is `None`, so the stored"
             }
           ]
         }
@@ -467,19 +439,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "119-152",
+          "lines": "123-164",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -598,31 +562,14 @@
                 170,
                 171,
                 172,
-                173,
-                174
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "119-152",
-          "implMappings": [
+                173
+              ],
+              "firstLine": "/// the explicit-off sentinel `0`); `None` removes the key.",
+              "lastLine": "/// Write `key`, or remove it entirely when the value is `None`, so the stored"
+            },
             {
               "file": "rust/sessions/src/conversions.rs",
               "lines": [
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
                 178,
                 179,
@@ -631,8 +578,22 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "/// (`compaction_threshold_type` / `compaction_threshold_value`) are folded back",
+              "lastLine": "api_key: wire.api_key.clone(),"
             }
           ]
         }
@@ -643,31 +604,39 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "154-179",
+          "lines": "167-201",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
               "lines": [
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130,
-                1131,
-                1132
-              ]
+                192,
+                193,
+                193,
+                193,
+                193,
+                193,
+                193,
+                193,
+                193,
+                193,
+                193
+              ],
+              "firstLine": "// MODEL-011: the level exactly as chosen.",
+              "lastLine": "Ok(self.get_session(&session_id.value)?.get_base_thinking_level())"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "firstLine": "fn list_providers(&self) -> Result<Vec<codelet_rpc_types::ProviderInfo>, String> {",
+              "lastLine": "//"
             }
           ]
         }
@@ -678,19 +647,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "181-209",
+          "lines": "204-232",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -798,24 +759,21 @@
                 194,
                 195,
                 196,
-                197,
-                198
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "181-209",
-          "implMappings": [
+                197
+              ],
+              "firstLine": "/// sentinel); `None` removes the key.",
+              "lastLine": "(!def.api_key.is_empty()).then(|| Value::String(def.api_key.clone())),"
+            },
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
               "lines": [
-                1134,
-                1135,
-                1136,
-                1137
-              ]
+                13,
+                14,
+                15,
+                16
+              ],
+              "firstLine": "// lossy vs. the 9-field `codelet_providers::custom::ProviderInfo`",
+              "lastLine": "// sibling `list_provider_credentials` for the /provider view)."
             }
           ]
         }
@@ -826,19 +784,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "211-228",
+          "lines": "235-252",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -946,9 +896,10 @@
                 194,
                 195,
                 196,
-                197,
-                198
-              ]
+                197
+              ],
+              "firstLine": "/// sentinel); `None` removes the key.",
+              "lastLine": "(!def.api_key.is_empty()).then(|| Value::String(def.api_key.clone())),"
             }
           ]
         }
@@ -959,19 +910,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",
-          "lines": "230-254",
+          "lines": "255-279",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_persistence.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -1079,9 +1022,10 @@
                 194,
                 195,
                 196,
-                197,
-                198
-              ]
+                197
+              ],
+              "firstLine": "/// sentinel); `None` removes the key.",
+              "lastLine": "(!def.api_key.is_empty()).then(|| Value::String(def.api_key.clone())),"
             }
           ]
         }
@@ -1097,9 +1041,10 @@
     ],
     "implFiles": [
       "rust/sessions/src/profile_persistence.rs",
-      "rust/sessions/src/handle_impl.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/sessions/src/handle_impl/handle_impl_5.rs",
       "rust/sessions/src/conversions.rs"
     ],
-    "totalLinesCovered": 1240
+    "totalLinesCovered": 1094
   }
 }

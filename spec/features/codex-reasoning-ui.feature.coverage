@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/prov150_codex_reasoning_ui.rs",
-          "lines": "24-64",
+          "lines": "27-92",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/presentation.rs",
@@ -103,7 +103,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "use rig::agent::{CancelSignal, StreamingPromptHook};",
+              "lastLine": "self.inner"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -208,7 +210,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -226,6 +230,6 @@
       "rust/providers/src/codex/presentation.rs",
       "rust/providers/src/codex/reasoning.rs"
     ],
-    "totalLinesCovered": 234
+    "totalLinesCovered": 259
   }
 }

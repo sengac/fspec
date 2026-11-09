@@ -63,30 +63,51 @@ pub fn save_default_model_with_dir(data_dir: &Path, model: &str) -> Result<(), S
 
 /// Load a persisted default model from `data_dir`.
 ///
-/// A missing / malformed file, or an absent / empty `model` key, yields `None`
-/// (graceful degradation). Path-injectable core used by the global convenience
-/// wrapper and the tests.
-#[must_use]
-pub fn load_default_model_with_dir(data_dir: &Path) -> Option<String> {
+/// BUG-463: a missing file, or an absent / empty `model` key, is `None`; an
+/// unreadable or malformed file is an error naming it.
+pub fn load_default_model_with_dir(data_dir: &Path) -> Result<Option<String>, String> {
     let path = default_model_path(data_dir);
-    let content = std::fs::read_to_string(&path).ok()?;
-    let file: DefaultModelFile = serde_json::from_str(&content).ok()?;
-    file.model.filter(|m| !m.trim().is_empty())
+    let content = match std::fs::read_to_string(&path) {
+        Ok(content) => content,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(format!("cannot read {}: {error}", path.display())),
+    };
+    let file: DefaultModelFile = serde_json::from_str(&content).map_err(|error| {
+        format!(
+            "{} is not a valid default model file: {error}",
+            path.display()
+        )
+    })?;
+    Ok(file.model.filter(|m| !m.trim().is_empty()))
 }
 
 /// Convenience: persist using the globally configured data directory
-/// ([`codelet_common::get_data_dir`]). Surfaces the data-dir / write error so
-/// the `SessionManager` caller can log it; the caller treats it as non-fatal.
+/// ([`codelet_common::get_data_dir`]). Surfaces the data-dir / write error.
 pub fn save_default_model(model: &str) -> Result<(), String> {
     let data_dir = codelet_common::get_data_dir()?;
     save_default_model_with_dir(&data_dir, model)
 }
 
-/// Convenience: load using the globally configured data directory. Returns
-/// `None` when the data directory is uninitialized or no default is persisted,
-/// so a `SessionManager` constructed before startup wiring degrades gracefully.
-#[must_use]
-pub fn load_default_model() -> Option<String> {
-    let data_dir = codelet_common::get_data_dir().ok()?;
+/// Convenience: load using the globally configured data directory. BUG-463:
+/// an unresolvable data directory is an error, not "no default".
+pub fn load_default_model() -> Result<Option<String>, String> {
+    let data_dir = codelet_common::get_data_dir()?;
     load_default_model_with_dir(&data_dir)
+}
+
+/// BUG-613: forget the persisted default model (a missing file is already
+/// forgotten). Path-injectable core.
+pub fn clear_default_model_with_dir(data_dir: &Path) -> Result<(), String> {
+    let path = default_model_path(data_dir);
+    match std::fs::remove_file(&path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("cannot remove {}: {error}", path.display())),
+    }
+}
+
+/// BUG-613: [`clear_default_model_with_dir`] for the configured data directory.
+pub fn clear_default_model() -> Result<(), String> {
+    let data_dir = codelet_common::get_data_dir()?;
+    clear_default_model_with_dir(&data_dir)
 }

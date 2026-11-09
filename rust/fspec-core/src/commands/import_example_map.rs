@@ -29,7 +29,6 @@ use serde_json::Value;
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
 use crate::io::io_error::format_io_error;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI / dispatcher arguments accepted by `import-example-map`. Field names
@@ -61,6 +60,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         reason: "missing required argument: file".to_string(),
     })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "import-example-map")?;
     // Load work-units.json (auto-create when missing; escalate parse errors).
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -103,14 +104,22 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let rules = append_field(wu, &import_data, "rules");
     let examples = append_field(wu, &import_data, "examples");
     let questions = append_field(wu, &import_data, "questions");
-    let assumptions = append_field(wu, &import_data, "assumptions");
+    // BUG-633: assumptions are stable-id items; each imported one gets the
+    // card's next id.
+    let now = iso8601_now();
+    let assumptions = super::assumption_items::import(
+        &wu.id.clone(),
+        &mut wu.extra,
+        import_data.get(super::assumption_items::KEY),
+        &now,
+    )
+    .map_err(FspecCoreError::Message)?;
 
     // Bump updatedAt (TS: new Date().toISOString()).
-    wu.updated_at = iso8601_now();
+    wu.updated_at = now;
 
     // Atomic write back.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let total = rules + examples + questions + assumptions;
     Ok(format!(

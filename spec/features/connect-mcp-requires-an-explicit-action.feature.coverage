@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "A ConnectMCP call without an action is rejected",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/mcp011_connect_mcp_requires_an_explicit_action.rs",
+          "lines": "12-24",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/types.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                97,
+                98
+              ],
+              "firstLine": "/// Actions supported by the ConnectMCP tool.",
+              "lastLine": "pub action: McpAction,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ConnectMCP schema requires the action",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/mcp011_connect_mcp_requires_an_explicit_action.rs",
+          "lines": "26-42",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "firstLine": "/// MCP-011: ConnectMCP's parameter schema, serialized once.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/mcp011_connect_mcp_requires_an_explicit_action.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/mcp/types.rs",
+      "rust/tools/src/mcp/connect_tool.rs"
+    ],
+    "totalLinesCovered": 56
+  }
+}

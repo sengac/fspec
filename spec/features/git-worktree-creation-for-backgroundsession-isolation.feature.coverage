@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "102-141",
+          "lines": "56-114",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -76,7 +76,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "/// The base commit the worktree was created from",
+              "lastLine": "checkout_to_worktree(&repo, &worktree_path, &commit_id)?;"
             }
           ]
         }
@@ -87,15 +89,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "154-191",
+          "lines": "120-171",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
                 72,
                 73,
                 74,
@@ -138,8 +136,24 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "/// Create a worktree for a session at a specific commit ref",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,7 +164,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "203-228",
+          "lines": "177-218",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -158,7 +172,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "commit_ref: Option<&str>,",
+              "lastLine": "let repo_path = repo_path.as_ref();"
             }
           ]
         }
@@ -169,39 +185,35 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "240-267",
+          "lines": "224-267",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "/// Remove a worktree for a session",
+              "lastLine": ""
             }
           ]
         }
@@ -212,34 +224,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "281-310",
+          "lines": "273-326",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
                 283,
                 284,
                 285,
@@ -273,8 +262,33 @@
                 313,
                 314,
                 315,
-                316
-              ]
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339
+              ],
+              "firstLine": ".into_commit();",
+              "lastLine": "Ok(content) => {"
             }
           ]
         }
@@ -285,14 +299,16 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "321-345",
+          "lines": "332-364",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                73,
-                74
-              ]
+                89,
+                95
+              ],
+              "firstLine": "pub fn create_worktree_at_ref(",
+              "lastLine": "let repo = open_repo(repo_path)?;"
             }
           ]
         }
@@ -303,18 +319,19 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "356-379",
+          "lines": "370-398",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "if worktree_path.exists() || worktree_git_dir.exists() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -325,34 +342,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "391-435",
+          "lines": "404-468",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": [
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
                 174,
                 175,
                 176,
@@ -428,8 +422,33 @@
                 246,
                 247,
                 248,
-                249
-              ]
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "fs::remove_dir_all(&worktree_path)?;",
+              "lastLine": "///"
             }
           ]
         }
@@ -440,7 +459,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_tests.rs",
-          "lines": "452-477",
+          "lines": "474-522",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -488,7 +507,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "//! - Repository opening (`gix::open`)",
+              "lastLine": ""
             }
           ]
         }
@@ -505,6 +526,6 @@
     "implFiles": [
       "rust/git/src/worktree.rs"
     ],
-    "totalLinesCovered": 632
+    "totalLinesCovered": 780
   }
 }

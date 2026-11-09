@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-181
+@cli
+@example-mapping
 Feature: fspec add-example CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_example.rs — clap variant mirroring TS Commander.js registration

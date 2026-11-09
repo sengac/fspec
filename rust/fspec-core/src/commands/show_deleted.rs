@@ -1,12 +1,12 @@
 //! `show-deleted` — Rust port of `src/commands/show-deleted.ts` (RPC-301).
 //!
-//! Displays all soft-deleted items (rules, examples, questions, and
-//! architecture notes) on a work unit. Reads `spec/work-units.json`
+//! Displays all soft-deleted items (rules, examples, questions,
+//! architecture notes and, since BUG-633, assumptions) on a work unit. Reads `spec/work-units.json`
 //! via the shared [`crate::io::ensure::ensure_work_units_file`] helper
 //! (load-or-init parity with TS), then walks the four soft-delete arrays
 //! on the requested work unit and flattens them into a single
 //! `deletedItems` array in the canonical concatenation order:
-//! `rules → examples → questions → architectureNotes`.
+//! `rules → examples → questions → architectureNotes → assumptions`.
 //!
 //! Both invocation paths (the LLM-facing dispatcher AND the standalone
 //! fspec Rust binary's clap subcommand) call this single function —
@@ -116,7 +116,14 @@ struct DeletedItem {
 /// questions, architectureNotes (in that exact order), filters by
 /// `deleted === true`, and projects only `{ id, text, deletedAt }`.
 fn collect_deleted_items(extra: &serde_json::Map<String, Value>) -> Vec<DeletedItem> {
-    const ARRAYS_IN_ORDER: &[&str] = &["rules", "examples", "questions", "architectureNotes"];
+    // BUG-633: removed assumptions come last.
+    const ARRAYS_IN_ORDER: &[&str] = &[
+        "rules",
+        "examples",
+        "questions",
+        "architectureNotes",
+        "assumptions",
+    ];
     let mut out: Vec<DeletedItem> = Vec::new();
     for key in ARRAYS_IN_ORDER {
         let Some(arr) = extra.get(*key).and_then(Value::as_array) else {

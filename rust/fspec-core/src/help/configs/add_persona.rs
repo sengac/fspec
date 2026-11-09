@@ -50,11 +50,11 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "foundation.json not found",
-        fix: "undefined",
+        fix: "Run: fspec discover-foundation to create foundation.json.draft",
     },
     CommonError {
         error: "Persona already exists",
-        fix: "undefined",
+        fix: "Check existing personas in foundation.json or use a different name",
     },
 ];
 
@@ -64,10 +64,10 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const RELATED: &[&str] = &[
-    "fspec discover-foundation - Start foundation discovery process",
-    "fspec remove-persona - Remove persona from foundation",
-    "fspec add-capability - Add capability to foundation",
-    "fspec update-foundation - Update foundation fields",
+    "discover-foundation - Start foundation discovery process",
+    "remove-persona - Remove persona from foundation",
+    "add-capability - Add capability to foundation",
+    "update-foundation - Update foundation fields",
 ];
 
 const NOTES: &[&str] = &[
@@ -93,7 +93,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: &[],
     typical_workflow: Some(
-        "Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies user types,Add each persona: fspec add-persona \"name\" \"description\" --goal \"goal1\" --goal \"goal2\",Repeat for all personas,Finalize foundation: fspec discover-foundation --finalize",
+        "Start foundation discovery: fspec discover-foundation. AI analyzes codebase and identifies user types. Add each persona: fspec add-persona \"name\" \"description\" --goal \"goal1\" --goal \"goal2\". Repeat for all personas. Finalize foundation: fspec discover-foundation --finalize",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

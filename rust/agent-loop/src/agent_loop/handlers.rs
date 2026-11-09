@@ -6,16 +6,13 @@ use std::sync::Arc;
 pub(super) fn register_core_handlers(session: &Arc<BackgroundSession>) {
     let session_for_pause = session.clone();
     let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
-        let state = PauseState {
-            kind: request.kind,
-            tool_name: request.tool_name.clone(),
-            message: request.message.clone(),
-            details: request.details.clone(),
-        };
+        // BUG-291: name the tool call that raised the pause.
+        let state = PauseState::for_session(session_for_pause.id, request);
         session_for_pause.set_pause_state(Some(state));
         session_for_pause.set_status(SessionStatus::Paused);
         let response = session_for_pause.wait_for_pause_response();
-        session_for_pause.set_status(SessionStatus::Running);
+        // BUG-605: an answer after the turn ended keeps the turn's status.
+        session_for_pause.resume_after_interaction();
         response
     });
     set_pause_handler(session.id, Some(pause_handler));
@@ -29,9 +26,9 @@ pub(super) fn register_core_handlers(session: &Arc<BackgroundSession>) {
         move |_session_id, request: codelet_tools::request_user_input::HitlRequest| {
             session_for_hitl.set_hitl_request(Some(request));
             session_for_hitl.set_status(SessionStatus::Paused);
+            // The answer (or BUG-605's cancel) already cleared the request.
             let response = session_for_hitl.wait_for_hitl_response();
-            session_for_hitl.set_hitl_request(None);
-            session_for_hitl.set_status(SessionStatus::Running);
+            session_for_hitl.resume_after_interaction();
             Ok(response)
         },
     );
@@ -39,7 +36,10 @@ pub(super) fn register_core_handlers(session: &Arc<BackgroundSession>) {
     let session_for_exec_stdin = session.clone();
     let exec_stdin_callback: codelet_tools::unified_exec::ExecStdinRequestCallback = Arc::new(
         move |request: Option<codelet_tools::unified_exec::ExecStdinRequest>| {
-            session_for_exec_stdin.set_exec_stdin_request(request);
+            // BUG-369: the detector callback has no caller to report to.
+            if let Err(error) = session_for_exec_stdin.set_exec_stdin_request(request) {
+                tracing::error!(%error, "cannot record the exec-stdin request");
+            }
         },
     );
     codelet_tools::unified_exec::set_exec_stdin_request_callback(
@@ -51,8 +51,8 @@ pub(super) fn register_core_handlers(session: &Arc<BackgroundSession>) {
         session.compaction_in_progress.clone(),
     );
     codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
-    let graph_search_handler = crate::graph_search_handler::create_handler();
-    codelet_tools::set_graph_search_handler(session.id, Some(graph_search_handler));
+    // KGRAPH-073: the graph follows the session's working directory.
+    crate::graph_search_handler::register_for_session(session);
 }
 
 pub(super) fn clear_core_handlers(session: &BackgroundSession) {

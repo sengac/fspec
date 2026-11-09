@@ -10,10 +10,15 @@
 
 mod cache;
 mod lookup;
+mod reasoning;
 mod registry;
 mod types;
 
 pub use cache::{get_cache_dir, reset_revalidation_throttle, ModelCache, DEFAULT_CACHE_TTL};
+pub use reasoning::{
+    BudgetRange, EffortName, NumericKind, NumericRange, ReasoningCapability, ReasoningError,
+    ReasoningLevel, ReasoningOption, TemplateToggle,
+};
 pub use registry::ModelRegistry;
 pub use types::{
     Capability, CostInfo, InterleavedConfig, LimitInfo, Modalities, Modality, ModelInfo,

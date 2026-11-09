@@ -101,3 +101,20 @@ pub(super) fn schedule_loop_retry(
         }
     }
 }
+
+/// RIG-016: once a turn ends without an interrupt or a pending retry, start
+/// the steers it never reached, or the next queued input, as a new turn. An
+/// interrupted turn leaves them parked until the user resumes.
+pub(super) fn start_queued_input(session: &BackgroundSession, state: &LoopState) {
+    if state.compaction_retry_input.is_some()
+        || session
+            .is_interrupted
+            .load(std::sync::atomic::Ordering::Acquire)
+        || session.get_status() != SessionStatus::Idle
+    {
+        return;
+    }
+    if let Err(error) = session.continue_with_inbox() {
+        tracing::warn!(session = %session.id, "[RIG-016] queued input not started: {error}");
+    }
+}

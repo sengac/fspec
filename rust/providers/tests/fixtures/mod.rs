@@ -68,3 +68,17 @@ pub fn setup_fspec_home() -> std::io::Result<(tempfile::TempDir, FspecHomeGuard)
     std::env::set_var("FSPEC_HOME", temp_dir.path());
     Ok((temp_dir, guard))
 }
+
+/// Claude token endpoint response body (`ClaudeTokenResponse` shape: no
+/// id_token, unlike Codex).
+pub fn build_claude_token_response_json(
+    access_token: &str,
+    refresh_token: &str,
+    expires_in: u64,
+) -> serde_json::Value {
+    serde_json::json!({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": expires_in
+    })
+}

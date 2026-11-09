@@ -22,7 +22,8 @@ pub async fn trigger_and_update(
     state: &SchedulerState,
     hooks: Hooks,
 ) -> Result<(), anyhow::Error> {
-    let log_path = Path::new(project_path).join("spec/schedule-log.jsonl");
+    let log_path =
+        codelet_common::spec_paths::ProjectRoots::resolve(Path::new(project_path))?.schedule_log();
     let start = std::time::Instant::now();
 
     // Log "triggered" event
@@ -122,7 +123,29 @@ pub async fn update_last_run(
     name: &str,
     status: &str,
 ) -> Result<(), anyhow::Error> {
-    let content = tokio::fs::read_to_string(schedules_path).await?;
+    let path = schedules_path.to_path_buf();
+    let schedule = name.to_string();
+    let run_status = status.to_string();
+    tokio::task::spawn_blocking(move || record_last_run(&path, &schedule, &run_status)).await??;
+
+    info!("Updated schedule '{}': status={}", name, status);
+    Ok(())
+}
+
+/// BUG-477: stamp `last_run_at` (now) and `last_run_status` on one schedule
+/// while holding the spec lock across the read-modify-write, then replace
+/// schedules.json atomically. Blocking; async callers use `spawn_blocking`.
+pub(crate) fn record_last_run(
+    schedules_path: &Path,
+    name: &str,
+    status: &str,
+) -> Result<(), anyhow::Error> {
+    let spec_dir = schedules_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("{} has no parent directory", schedules_path.display()))?;
+    let _spec_lock = codelet_common::spec_lock::SpecLock::acquire(spec_dir)
+        .map_err(|e| anyhow::anyhow!("Failed to lock {}: {e}", spec_dir.display()))?;
+    let content = std::fs::read_to_string(schedules_path)?;
     let mut schedules: SchedulesFile = serde_json::from_str(&content)?;
 
     if let Some(entry) = schedules.schedules.get_mut(name) {
@@ -131,9 +154,7 @@ pub async fn update_last_run(
     }
 
     let json = serde_json::to_string_pretty(&schedules)?;
-    tokio::fs::write(schedules_path, json).await?;
-
-    info!("Updated schedule '{}': status={}", name, status);
+    codelet_common::spec_lock::replace_file_atomically(schedules_path, json.as_bytes())?;
     Ok(())
 }
 

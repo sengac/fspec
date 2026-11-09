@@ -381,3 +381,162 @@ fn missing_features_directory_surfaces_an_error() {
         result.error
     );
 }
+
+// ═════════════════════════════════════════════════════════════════════════
+// BUG-301: global dry-run parity, unknown fields, mapped stale scenarios
+// ═════════════════════════════════════════════════════════════════════════
+
+const DRIFTED_SIDECAR: &str = r#"{
+  "scenarios": [
+    { "name": "Login", "testMappings": [] },
+    { "name": "OldStale", "testMappings": [] }
+  ],
+  "stats": { "totalScenarios": 2, "coveredScenarios": 0, "coveragePercent": 0 }
+}"#;
+
+#[test]
+fn dry_run_reports_the_updates_a_real_run_would_make() {
+    // @step Given a temp project root has a feature file "user-login.feature" with one new scenario absent from its sidecar and one stale scenario only in the sidecar
+    let tmp = TempDir::new().expect("tempdir");
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        feature_two_scenarios(),
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        DRIFTED_SIDECAR,
+    );
+
+    // @step When I dispatch generate-coverage with dryRun true against that project root
+    let result = req(tmp.path(), json!({ "dryRun": true }));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the rendered output contains the substring "Would update 1 coverage files"
+    assert!(
+        result.data.contains("Would update 1 coverage files"),
+        "{}",
+        result.data
+    );
+
+    // @step And the rendered output names the added scenario "Logout" and the removed scenario "OldStale"
+    assert!(result.data.contains("+ Logout"), "{}", result.data);
+    assert!(result.data.contains("- OldStale"), "{}", result.data);
+
+    // @step And the existing sidecar is left byte-for-byte unchanged
+    let after = fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
+        .expect("sidecar");
+    assert_eq!(after, DRIFTED_SIDECAR);
+}
+
+#[test]
+fn update_preserves_unknown_top_level_sidecar_fields() {
+    // @step Given a temp project root has a feature file "user-login.feature" whose sidecar lacks one scenario and carries an extra top-level field
+    let tmp = TempDir::new().expect("tempdir");
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        feature_two_scenarios(),
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        r#"{"scenarios":[{"name":"Login","testMappings":[]}],"stats":{},"lineage":{"base":"626eee1e"}}"#,
+    );
+
+    // @step When I dispatch generate-coverage against that project root
+    let result = req(tmp.path(), json!({}));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the updated sidecar still contains the extra top-level field
+    let sidecar = read_sidecar(tmp.path());
+    assert_eq!(
+        sidecar["lineage"]["base"].as_str(),
+        Some("626eee1e"),
+        "{sidecar}"
+    );
+    assert!(scenario(&sidecar, "Logout").is_some(), "{sidecar}");
+}
+
+#[test]
+fn update_keeps_a_stale_scenario_that_still_has_test_mappings() {
+    // @step Given a temp project root has a feature file "user-login.feature" whose sidecar has a stale scenario with a test mapping
+    let tmp = TempDir::new().expect("tempdir");
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        feature_two_scenarios(),
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        r#"{"scenarios":[
+            {"name":"Login","testMappings":[]},
+            {"name":"OldMapped","testMappings":[{"file":"src/old.test.ts","lines":"1-9","implMappings":[]}]}
+        ],"stats":{}}"#,
+    );
+
+    // @step When I dispatch generate-coverage against that project root
+    let result = req(tmp.path(), json!({}));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the updated sidecar still contains the stale scenario with its test mapping
+    let sidecar = read_sidecar(tmp.path());
+    let kept = scenario(&sidecar, "OldMapped").expect("mapped stale scenario kept");
+    assert_eq!(
+        kept["testMappings"][0]["file"].as_str(),
+        Some("src/old.test.ts")
+    );
+    assert!(scenario(&sidecar, "Logout").is_some(), "{sidecar}");
+
+    // @step And the rendered output reports the blocked removal of "OldMapped"
+    assert!(result.data.contains("OldMapped"), "{}", result.data);
+    assert!(result.data.contains("--feature-name"), "{}", result.data);
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Scenario: Created sidecar scenario names keep the exact case of the feature file
+// (moved from auto-create-coverage-files, COV-072)
+// ═════════════════════════════════════════════════════════════════════════
+
+#[test]
+fn created_sidecar_scenario_names_keep_the_exact_case_of_the_feature_file() {
+    // @step Given a temp project root has a feature file "user-login.feature" with the single scenario "Login With Valid Credentials" and no coverage sidecar
+    let tmp = TempDir::new().expect("tempdir");
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        "Feature: User Login
+
+  Scenario: Login With Valid Credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I see the dashboard
+",
+    );
+
+    // @step When I dispatch generate-coverage against that project root
+    let result = req(tmp.path(), json!({}));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the created sidecar has one scenario entry named exactly "Login With Valid Credentials"
+    let sidecar = read_sidecar(tmp.path());
+    let names: Vec<&str> = sidecar["scenarios"]
+        .as_array()
+        .expect("scenarios array")
+        .iter()
+        .filter_map(|s| s["name"].as_str())
+        .collect();
+    assert_eq!(names, vec!["Login With Valid Credentials"], "{sidecar}");
+
+    // @step And the sidecar has no scenario entry named "login-with-valid-credentials" or "Login with valid credentials"
+    assert!(
+        scenario(&sidecar, "login-with-valid-credentials").is_none(),
+        "{sidecar}"
+    );
+    assert!(
+        scenario(&sidecar, "Login with valid credentials").is_none(),
+        "{sidecar}"
+    );
+}

@@ -16,18 +16,25 @@
 //!   - [`events`] — `App::handle_event` / `App::handle_paste` /
 //!     `App::render` / `App::run` (terminal + crossterm + render-tick).
 
+pub mod board_card_attachments; // BOARD-024: card-details attachment actions
 pub mod bootstrap;
 mod bootstrap_focus;
 pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
 pub mod bootstrap_model; // PROV-120: initialize_startup_model body (300-LoC ceiling)
 pub mod bootstrap_session_cleared; // RPC-437: (i) session_cleared_rx subscriber (300-LoC ceiling)
 pub mod bootstrap_session_removed; // RPC-434: (h) session_removed_rx subscriber (300-LoC ceiling)
+pub mod checkpoint_calls; // RPC-453
+pub mod composer_draft; // BUG-549: the composer-draft lifecycle
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
+mod copy_notice; // TUI-126: every copy is confirmed
+mod dialog_copy; // TUI-130: c and Ctrl+C copy the dialog on top
 pub mod dispatch;
+pub mod dispatch_agent_close; // TUI-124: close facts, close dialog, close outcome
 pub mod dispatch_agent_exit;
 mod dispatch_archive;
 pub mod dispatch_attach;
 pub mod dispatch_blocklist;
+pub mod dispatch_board_card; // BOARD-024: card chooser + canonical details routing
 pub mod dispatch_board_keybinding; // BOARD-023/MENU-005: board 'u' menu-bar help dialog + help/exit rows
 pub mod dispatch_capability;
 pub mod dispatch_changed_files;
@@ -40,19 +47,25 @@ pub mod dispatch_compaction_complete; // CMPCT-049: CompactionComplete arm body 
 pub mod dispatch_compaction_hide;
 mod dispatch_continue_sync;
 pub mod dispatch_create_session_dialog;
+mod dispatch_daemon_admin; // TUI-121
+mod dispatch_daemons; // RPC-448: board daemon switcher
 pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
 pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
+pub mod dispatch_exec_stdin_recovery; // TUI-117: failed sends, mute, box close
 mod dispatch_focus;
 pub mod dispatch_fspec_runner;
 pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)
 pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
+pub mod dispatch_input_modes; // RIG-016: steer on Enter / queue on Alt+Enter while a turn runs
 pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle
 pub mod dispatch_menu; // MENU-002: board 2-zone menu bar + ring Action arms
 pub mod dispatch_menu_mux; // MENU-004/BUG-200: mux top bar arms + ring seam edges
 pub mod dispatch_menu_zone_c; // MENU-009: Zone C button activation arm
 pub mod dispatch_merge_worktree;
+mod dispatch_missing_profile_limit; // BUG-547
+mod dispatch_model_no_session; // BUG-576
 pub mod dispatch_model_selector;
 mod dispatch_model_sync;
 pub mod dispatch_model_thinking_dialogs;
@@ -68,6 +81,8 @@ mod dispatch_provider_settings_defaults;
 pub mod dispatch_provider_settings_oauth;
 pub mod dispatch_provider_settings_profiles;
 pub mod dispatch_reconnect;
+mod dispatch_reorder; // RPC-450: reorder on the selected board workspace
+mod dispatch_request_chain; // AMGR-022
 pub mod dispatch_resume_search_views;
 pub mod dispatch_role_dialog;
 pub mod dispatch_scroll;
@@ -85,6 +100,7 @@ pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-
 pub mod dispatch_slash_update; // UPD-002: /update apply + shared engine round-trip
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
+mod dispatch_thinking_levels;
 mod dispatch_transcript;
 mod dispatch_transcript_live;
 mod dispatch_transcript_recovery;
@@ -92,14 +108,19 @@ pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
 pub mod dispatch_work_unit_entry;
 pub mod dispatch_work_unit_search;
+mod dispatch_workspace_admin; // TUI-122
+mod dispatch_workspace_git; // RPC-454
+mod dispatch_workspaces; // RPC-445: board header workspace dropdown
 pub mod dispatch_worktrees; // WT-005: /worktrees listing + prune actions
 pub mod events;
 pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
 pub mod merge_worktree_success;
 pub mod mux_parser; // MUX-001: /mux slash-command grammar
+mod provider_settings_refresh; // BUG-575: the numbered Provider Settings refresh
 pub mod run_loop;
 pub mod schedule_parser;
+mod session_arrival; // TUI-125: announced sessions never take focus
 pub mod session_creation;
 mod session_creation_tasks;
 pub mod session_restore; // TUI-113: auto-restore last active session on startup/reconnect
@@ -107,7 +128,10 @@ mod session_storage;
 pub mod slash_parser;
 pub mod state;
 pub mod transcript_sync;
-pub mod update_parser; // UPD-002: /update subcommand parser + message formatting
+pub mod update_parser;
+pub mod url_launcher; // TUI-126: the App's browser launcher
+mod work_units_refetch;
+mod workspace_scoped_calls; // RPC-455 // BUG-379: shared refetch-or-report helpers // UPD-002: /update subcommand parser + message formatting
 
 pub use events::synth_key;
 pub use slash_parser::{parse_slash_command, SlashCommandParse};

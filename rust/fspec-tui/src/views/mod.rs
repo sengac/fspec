@@ -45,6 +45,6 @@ pub use checkpoints::{CheckpointsEvent, CheckpointsView, Pane as CheckpointsPane
 pub use model_selector::{ModelSelectorEvent, ModelSelectorView};
 pub use navigator::{Navigator, ViewMode};
 pub use provider_settings::{
-    DetailStatus, DetailSub, NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo,
-    ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
+    DetailSub, NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo, ProviderSettingsEvent,
+    ProviderSettingsMode, ProviderSettingsView,
 };

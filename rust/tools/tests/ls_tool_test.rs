@@ -12,6 +12,10 @@ use uuid::Uuid;
 /// Scenario: List directory returns files and subdirectories with metadata
 #[tokio::test]
 async fn test_list_directory_returns_files_and_subdirectories_with_metadata() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory with files and subdirectories
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -53,6 +57,10 @@ async fn test_list_directory_returns_files_and_subdirectories_with_metadata() {
 /// Scenario: List specific path returns only contents of that directory
 #[tokio::test]
 async fn test_list_specific_path_returns_only_contents_of_that_directory() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a project with files in multiple directories
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -79,6 +87,10 @@ async fn test_list_specific_path_returns_only_contents_of_that_directory() {
 /// Scenario: List non-existent directory returns error
 #[tokio::test]
 async fn test_list_nonexistent_directory() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a project directory
     // (any directory)
 
@@ -100,6 +112,10 @@ async fn test_list_nonexistent_directory() {
 /// Scenario: Large directory listings are truncated at character limit
 #[tokio::test]
 async fn test_large_directory_listings_are_truncated() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory with many files exceeding output limit
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -127,6 +143,10 @@ async fn test_large_directory_listings_are_truncated() {
 /// Scenario: Output format shows permissions, size, mtime, and name
 #[tokio::test]
 async fn test_output_format_shows_permissions_size_mtime_and_name() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory with files and subdirectories
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -160,6 +180,10 @@ async fn test_output_format_shows_permissions_size_mtime_and_name() {
 /// Scenario: List empty directory
 #[tokio::test]
 async fn test_list_empty_directory() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given an empty directory exists
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -178,6 +202,10 @@ async fn test_list_empty_directory() {
 /// Scenario: List path that is a file
 #[tokio::test]
 async fn test_list_path_that_is_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a path that points to a file, not a directory
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("testfile.txt");
@@ -201,6 +229,10 @@ async fn test_list_path_that_is_file() {
 /// Scenario: List with no path defaults to current directory
 #[tokio::test]
 async fn test_list_defaults_to_current_directory() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given no path is provided
     let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs { path: None };
@@ -220,6 +252,10 @@ async fn test_list_defaults_to_current_directory() {
 /// Scenario: Handle files with special characters in names
 #[tokio::test]
 async fn test_handle_files_with_special_characters() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory with files containing spaces and special characters
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
@@ -244,6 +280,10 @@ async fn test_handle_files_with_special_characters() {
 /// Scenario: Show file sizes in bytes
 #[tokio::test]
 async fn test_show_file_sizes_in_bytes() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file with known size
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();

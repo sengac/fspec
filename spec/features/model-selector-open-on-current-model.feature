@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-341
 @tui
@@ -39,15 +40,15 @@ Feature: Model selector opens on the current model
     Then the cursor is on the selectable row for "claude-sonnet"
     And the cursor is not on the first model "gpt-4o"
 
-  Scenario: Cursor falls back to the first selectable row when no current model is set
+  Scenario: No active selection when no current model is set
     Given no current model is set
     When the model selector loads the providers
-    Then the cursor is on the first selectable row
+    Then no row is auto-selected (PROV-101: no first-row fallback)
 
-  Scenario: Cursor falls back to the first selectable row when the current model is not found
+  Scenario: No active selection when the current model is not found
     Given my current model is "does-not-exist"
     When the model selector loads the providers
-    Then the cursor is on the first selectable row
+    Then no row is auto-selected (PROV-101: no first-row fallback)
 
   Scenario: Seeded cursor on a below-the-fold model is scrolled into view
     Given my current model is in a long list below the viewport fold

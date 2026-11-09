@@ -10,20 +10,14 @@ Feature: Research registry drops the ast tool
   mode) and the `fspec astgrep` subcommand (CLI mode). The LIST mode
   enumerates the remaining four bundled tools, and `--tool=ast` is rejected
   like any unknown tool with the error pointing at `fspec astgrep`.
+
+  COV-075 (product owner, 2026-11-05: duplicates merge into the owning feature): the listing scenario 'research listing no longer offers the ast tool' was removed here; research-rust-port's 'List mode enumerates the bundled tool registry without ast' already asserts it on the same test.
   """
 
   Background: User Story
     As a user listing or selecting research tools
     I want the ast tool removed from the research registry
     So that the registry only offers tools that actually exist
-
-  Scenario: research listing no longer offers the ast tool
-    Given an empty project root tempdir with no spec/fspec-config.json and no research env vars
-    When I dispatch research with no flags
-    Then the dispatcher returns success
-    And the result lists the tool "perplexity"
-    And the result lists the tool "stakeholder"
-    And the result does not list the tool "ast"
 
   Scenario: research rejects the ast tool as unknown
     Given an empty project root tempdir

@@ -7,6 +7,8 @@ use rig::completion::{
 use rig::message::{AssistantContent, Message};
 use rig::streaming::{StreamedAssistantContent, StreamingPrompt};
 
+#[path = "compaction_chunking.rs"]
+mod chunking;
 #[path = "compaction_runway.rs"]
 mod runway;
 #[path = "compaction_settlement.rs"]
@@ -17,12 +19,24 @@ enum Exploration {
     Failed(PromptError),
 }
 
+/// BUG-614 (Q7): the conversation that generated the latest candidate, so a
+/// correction continues it instead of starting a new synthesis.
+pub struct Conversation {
+    messages: Vec<Message>,
+    candidate: String,
+}
+
+type Shared<'conversation> = &'conversation std::sync::Mutex<Option<Conversation>>;
+
+#[allow(clippy::too_many_arguments)]
 pub async fn run<M>(
     agent: Agent<M>,
     session_id: uuid::Uuid,
     task: &str,
     provider: &str,
     maximum_depth: usize,
+    request: codelet_cli::compaction_operation::BuildRequest,
+    conversation: Shared<'_>,
     limits: AdmissionLimits,
 ) -> Result<String, String>
 where
@@ -33,6 +47,30 @@ where
         .await
         .map_err(|error| format!("Compaction attribution configuration failed: {error}"))?;
     let streaming = crate::deep_search_handler::provider_uses_streaming_execution(provider);
+    if let codelet_cli::compaction_operation::BuildRequest::Correction(correction) = request {
+        // A correction answers inside the generating conversation: the
+        // rejected candidate is the assistant turn, the exact error the next
+        // user turn. Exploration is not repeated.
+        let previous = conversation
+            .lock()
+            .map_err(|error| error.to_string())?
+            .take()
+            .ok_or("compactor correction has no generating conversation")?;
+        let mut history = previous.messages;
+        history.push(Message::assistant(previous.candidate));
+        let request =
+            conversation_request(&agent, Message::user(correction), history, provider).await?;
+        return synthesize(
+            agent,
+            request,
+            None,
+            streaming,
+            provider,
+            limits,
+            conversation,
+        )
+        .await;
+    }
     let runway = runway::Runway::new(agent.clone(), provider, limits);
     let exploration = Box::pin(async {
         let error = if streaming {
@@ -91,7 +129,29 @@ where
     drop(phase);
     let error = match result {
         Ok(result) => match result? {
-            Exploration::Complete(response) => return Ok(response),
+            // BUG-614 (Q8): the exploration's final answer is a candidate
+            // chunk too; it is checked and continued like a synthesis chunk.
+            Exploration::Complete(response) => {
+                let mut history = runway.history()?;
+                let prompt = history
+                    .pop()
+                    .ok_or("Compactor has no final exploration request")?;
+                let request = conversation_request(&agent, prompt, history, provider).await?;
+                let first = chunking::Chunk {
+                    text: response,
+                    stop_reason: None,
+                };
+                return synthesize(
+                    agent,
+                    request,
+                    Some(first),
+                    streaming,
+                    provider,
+                    limits,
+                    conversation,
+                )
+                .await;
+            }
             Exploration::Failed(error) => error,
         },
         Err(_) => {
@@ -102,9 +162,11 @@ where
             return synthesize(
                 agent,
                 runway.synthesis_request(runway.history()?)?,
+                None,
                 streaming,
                 provider,
                 limits,
+                conversation,
             )
             .await;
         }
@@ -114,9 +176,11 @@ where
         return synthesize(
             agent,
             runway.synthesis_request(runway.history()?)?,
+            None,
             streaming,
             provider,
             limits,
+            conversation,
         )
         .await;
     }
@@ -129,9 +193,11 @@ where
             synthesize(
                 agent,
                 runway.synthesis_request(runway.history()?)?,
+                None,
                 streaming,
                 provider,
                 limits,
+                conversation,
             )
             .await
         }
@@ -147,9 +213,11 @@ where
             synthesize(
                 agent,
                 runway.synthesis_request(history)?,
+                None,
                 streaming,
                 provider,
                 limits,
+                conversation,
             )
             .await
         }
@@ -162,12 +230,27 @@ async fn synthesis_request<M: CompletionModel>(
     history: Vec<Message>,
     provider: &str,
 ) -> Result<CompletionRequest, String> {
-    let mut request = agent
-        .completion(
+    conversation_request(
+        agent,
+        Message::user(
             "Exploration is finished. Return the complete DAG now using only the gathered evidence. \
              No tools are available. Preserve the authoritative source boundary; do not invent missing evidence.",
-            history,
-        )
+        ),
+        history,
+        provider,
+    )
+    .await
+}
+
+/// A tool-free request that continues `history` with `prompt`.
+async fn conversation_request<M: CompletionModel>(
+    agent: &Agent<M>,
+    prompt: Message,
+    history: Vec<Message>,
+    provider: &str,
+) -> Result<CompletionRequest, String> {
+    let mut request = agent
+        .completion(prompt, history)
         .await
         .map_err(|error| error.to_string())?
         .build();
@@ -183,9 +266,11 @@ async fn synthesis_request<M: CompletionModel>(
 async fn synthesize<M>(
     agent: Agent<M>,
     mut request: CompletionRequest,
+    first: Option<chunking::Chunk>,
     streaming: bool,
     provider: &str,
     limits: AdmissionLimits,
+    conversation: Shared<'_>,
 ) -> Result<String, String>
 where
     M: CompletionModel + 'static,
@@ -207,64 +292,84 @@ where
         }
     }
     let _phase = codelet_cli::compaction_timing::Phase::new("synthesis");
-    tokio::time::timeout_at(
+    let messages: Vec<Message> = request.chat_history.iter().cloned().collect();
+    let candidate = tokio::time::timeout_at(
         codelet_cli::compaction_timing::synthesis_deadline(),
-        async {
-            let bytes = agent
-                .model
-                .prepare_request(request.clone())
-                .map_err(|error| error.to_string())?;
-            admit_complete_request(&bytes, limits).map_err(|error| error.to_string())?;
-            if streaming {
-                let mut stream = agent
-                    .model
-                    .stream(request)
-                    .await
-                    .map_err(|error| error.to_string())?;
-                let mut response = String::new();
-                let mut snapshot = 0;
-                while let Some(item) = stream.next().await {
-                    match item.map_err(|error| error.to_string())? {
-                        StreamedAssistantContent::Text(text) => response.push_str(&text.text),
-                        StreamedAssistantContent::ResponseAttemptStarted => {
-                            snapshot = response.len()
-                        }
-                        StreamedAssistantContent::ResponseAttemptAborted => {
-                            response.truncate(snapshot)
-                        }
-                        StreamedAssistantContent::ToolCall(_)
-                        | StreamedAssistantContent::ToolCallDelta { .. } => {
-                            return Err("Compactor synthesis requested an unavailable tool".into());
-                        }
-                        _ => {}
-                    }
-                }
-                Ok(response)
-            } else {
-                let response = agent
-                    .model
-                    .completion(request)
-                    .await
-                    .map_err(|error| error.to_string())?;
-                let mut text = String::new();
-                for content in response.choice {
-                    match content {
-                        AssistantContent::Text(fragment) => text.push_str(&fragment.text),
-                        AssistantContent::ToolCall(_) => {
-                            return Err("Compactor synthesis requested an unavailable tool".into());
-                        }
-                        _ => {}
-                    }
-                }
-                Ok(text)
-            }
-        },
+        chunking::synthesize_in_chunks(request, first, |request| {
+            synthesis_chunk(&agent, request, streaming, limits)
+        }),
     )
     .await
     .map_err(|_| {
         tracing::warn!(operation_id = ?codelet_cli::compaction_timing::operation_id(),
             phase = "synthesis", provider, retryable = true,
-            "Compaction phase deadline exceeded; fresh user input required for retry");
+            "Compaction phase deadline exceeded; the next input retries it");
         "compaction synthesis deadline exceeded; submit fresh input to retry".to_string()
-    })?
+    })??;
+    *conversation.lock().map_err(|error| error.to_string())? = Some(Conversation {
+        messages,
+        candidate: candidate.clone(),
+    });
+    Ok(candidate)
+}
+
+async fn synthesis_chunk<M>(
+    agent: &Agent<M>,
+    request: CompletionRequest,
+    streaming: bool,
+    limits: AdmissionLimits,
+) -> Result<chunking::Chunk, String>
+where
+    M: CompletionModel + 'static,
+    M::StreamingResponse: Clone + Unpin + GetTokenUsage,
+{
+    let bytes = agent
+        .model
+        .prepare_request(request.clone())
+        .map_err(|error| error.to_string())?;
+    admit_complete_request(&bytes, limits).map_err(|error| error.to_string())?;
+    let unavailable_tool = || "Compactor synthesis requested an unavailable tool".to_string();
+    if streaming {
+        let mut stream = agent
+            .model
+            .stream(request)
+            .await
+            .map_err(|error| error.to_string())?;
+        let mut text = String::new();
+        let mut snapshot = 0;
+        let mut stop_reason = None;
+        while let Some(item) = stream.next().await {
+            match item.map_err(|error| error.to_string())? {
+                StreamedAssistantContent::Text(fragment) => text.push_str(&fragment.text),
+                StreamedAssistantContent::ResponseAttemptStarted => snapshot = text.len(),
+                StreamedAssistantContent::ResponseAttemptAborted => text.truncate(snapshot),
+                StreamedAssistantContent::Final(response) => {
+                    stop_reason = response.stop_reason().map(str::to_owned);
+                }
+                StreamedAssistantContent::ToolCall(_)
+                | StreamedAssistantContent::ToolCallDelta { .. } => return Err(unavailable_tool()),
+                _ => {}
+            }
+        }
+        Ok(chunking::Chunk { text, stop_reason })
+    } else {
+        let response = agent
+            .model
+            .completion(request)
+            .await
+            .map_err(|error| error.to_string())?;
+        let stop_reason = serde_json::to_value(&response.raw_response)
+            .ok()
+            .as_ref()
+            .and_then(chunking::raw_stop_reason);
+        let mut text = String::new();
+        for content in response.choice {
+            match content {
+                AssistantContent::Text(fragment) => text.push_str(&fragment.text),
+                AssistantContent::ToolCall(_) => return Err(unavailable_tool()),
+                _ => {}
+            }
+        }
+        Ok(chunking::Chunk { text, stop_reason })
+    }
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_completed_answers.rs",
-          "lines": "7-50",
+          "lines": "7-51",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/answers.rs",
@@ -68,7 +68,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "8-23",
+          "lines": "7-27",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -158,7 +160,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -169,7 +173,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "25-45",
+          "lines": "29-55",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -248,7 +252,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -259,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "47-73",
+          "lines": "57-83",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -338,7 +344,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -349,7 +357,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "75-90",
+          "lines": "85-100",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -428,7 +436,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -439,7 +449,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "92-123",
+          "lines": "102-133",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -518,7 +528,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -529,7 +541,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "125-153",
+          "lines": "135-163",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -608,7 +620,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -619,7 +633,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "155-173",
+          "lines": "165-183",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -698,7 +712,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -709,7 +725,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "175-201",
+          "lines": "185-211",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -788,7 +804,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -799,7 +817,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "203-214",
+          "lines": "213-224",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -878,7 +896,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "atomic::{AtomicBool, Ordering},",
+              "lastLine": "routing: Option<crate::codex::routing::CodexRoutingHandle>,"
             }
           ]
         }
@@ -889,7 +909,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov148_codex_lifecycle.rs",
-          "lines": "215-264",
+          "lines": "226-279",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -1136,7 +1156,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming/transport.rs",
@@ -1292,7 +1314,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "use super::*;",
+              "lastLine": "}"
             }
           ]
         }
@@ -1312,6 +1336,6 @@
       "rust/providers/src/codex/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/streaming/transport.rs"
     ],
-    "totalLinesCovered": 1410
+    "totalLinesCovered": 1426
   }
 }

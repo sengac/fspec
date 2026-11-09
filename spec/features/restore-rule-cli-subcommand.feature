@@ -1,5 +1,7 @@
 @done
 @RPC-291
+@cli
+@interactive-cli
 Feature: fspec restore-rule CLI subcommand
   """
   CLI bridge: rust/fspec/src/restore_rule.rs — clap variant mirroring TS Commander.js

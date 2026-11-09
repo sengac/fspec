@@ -19,7 +19,6 @@ Feature: codelet-sessions no codelet-napi dependency regression guard
     I want a regression test that asserts codelet-sessions does not transitively depend on codelet-napi (neither in cargo metadata nor in source imports)
     So that the forbidden sessions → napi dependency arrow can never silently reappear
 
-  @rule:sessions_no_napi_test
   @test
   @architecture
   Scenario: codelet-sessions has no transitive codelet-napi dependency and no codelet_napi imports

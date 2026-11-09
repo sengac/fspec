@@ -1,3 +1,8 @@
+@BUG-582
+@BUG-464
+@BUG-445
+@BUG-453
+@RPC-451
 @done
 @RPC-022
 @rust
@@ -22,7 +27,7 @@ Feature: RPC-022 cross-transport parity for list_providers, set_session_model, s
   Like RPC-018, RPC-022 ships these methods with default
   `SessionManagerHandle` impls returning safe defaults:
   - list_providers (free-standing on SharedFspecService): Vec::new() when no SessionManagerHandle is attached
-  - set_session_model / set_thinking_level / set_session_role: Ok(()) — silent no-ops, idempotent
+  - set_session_model / set_thinking_level / set_session_role: refused (BUG-453); the stub inherits the set_role default, which refuses (BUG-464)
   - get_session_role: None
 
   The concrete rust/napi SessionManager override is in scope of this
@@ -37,19 +42,19 @@ Feature: RPC-022 cross-transport parity for list_providers, set_session_model, s
 
   @list-providers
   @embedded
-  Scenario: list_providers returns empty Vec when no session manager is attached (embedded)
+  Scenario: list_providers is refused when no session manager is attached (embedded)
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.list_providers().await is invoked
-    Then the awaited result is Ok(vec![])
+    Then the awaited result is an error saying no session manager is attached
 
   @list-providers
   @websocket
-  Scenario: list_providers crosses tarpc cleanly when no session manager is attached
+  Scenario: list_providers crosses tarpc cleanly with the refusal when no session manager is attached
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
     When backend.list_providers().await is invoked
-    Then the awaited result is Ok(vec![])
+    Then the awaited result is an error saying no session manager is attached
 
   @list-providers
   @parity
@@ -63,69 +68,69 @@ Feature: RPC-022 cross-transport parity for list_providers, set_session_model, s
 
   @set-session-model
   @embedded
-  Scenario: set_session_model returns Ok when no session manager is attached (embedded)
+  Scenario: set_session_model is refused when no session manager is attached (embedded)
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.set_session_model(SessionId::new("anything"), "openai".to_string(), "gpt-5.1-codex".to_string()).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying no session manager is attached
 
   @set-session-model
   @websocket
-  Scenario: set_session_model crosses tarpc cleanly when no session manager is attached
+  Scenario: set_session_model crosses tarpc cleanly with the refusal when no session manager is attached
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
     When backend.set_session_model(SessionId::new("anything"), "openai".to_string(), "gpt-5.1-codex".to_string()).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying no session manager is attached
 
   @set-thinking-level
   @embedded
-  Scenario: set_thinking_level returns Ok when no session manager is attached (embedded)
+  Scenario: set_thinking_level is refused when no session manager is attached (embedded)
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
-    When backend.set_thinking_level(SessionId::new("anything"), ThinkingLevel::High).await is invoked
-    Then the awaited result is Ok(())
+    When backend.set_thinking_level(SessionId::new("anything"), ThinkingLevel::Effort("high")).await is invoked
+    Then the awaited result is an error saying no session manager is attached
 
   @set-thinking-level
   @websocket
-  Scenario: set_thinking_level crosses tarpc cleanly with safe default
+  Scenario: set_thinking_level crosses tarpc cleanly with the refusal
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
-    When backend.set_thinking_level(SessionId::new("anything"), ThinkingLevel::Medium).await is invoked
-    Then the awaited result is Ok(())
+    When backend.set_thinking_level(SessionId::new("anything"), ThinkingLevel::Effort("medium")).await is invoked
+    Then the awaited result is an error saying no session manager is attached
 
   @get-session-role
   @embedded
-  Scenario: get_session_role returns None when no session manager is attached (embedded)
+  Scenario: get_session_role is refused when no session manager is attached (embedded)
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.get_session_role(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(None)
+    Then the awaited result is an error saying no session manager is attached
 
   @get-session-role
   @websocket
-  Scenario: get_session_role crosses tarpc cleanly with safe default
+  Scenario: get_session_role crosses tarpc cleanly with the refusal when no session manager is attached
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
     When backend.get_session_role(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(None)
+    Then the awaited result is an error saying no session manager is attached
 
   @set-session-role
   @embedded
-  Scenario: set_session_role returns Ok when no session manager is attached (embedded)
+  Scenario: set_session_role is refused when no session manager is attached (embedded)
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.set_session_role(SessionId::new("anything"), Some("Reviewer A".to_string())).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying no session manager is attached
     When backend.set_session_role(SessionId::new("anything"), None).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying no session manager is attached
 
   @set-session-role
   @websocket
-  Scenario: set_session_role crosses tarpc cleanly with safe default
+  Scenario: set_session_role crosses tarpc cleanly with the refusal
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
     When backend.set_session_role(SessionId::new("anything"), Some("Reviewer A".to_string())).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying no session manager is attached
 
   @stub
   @session-manager
@@ -135,10 +140,10 @@ Feature: RPC-022 cross-transport parity for list_providers, set_session_model, s
     When backend.list_providers().await is invoked
     Then the awaited result is Ok(vec![])
     When backend.get_session_role(SessionId::new("stub-1")).await is invoked
-    Then the awaited result is Ok(None)
+    Then the awaited result is an error saying get_role is not implemented by this session manager
     When backend.set_session_model(SessionId::new("stub-1"), "openai".to_string(), "gpt-5.1-codex".to_string()).await is invoked
     Then the awaited result is Ok(())
     When backend.set_thinking_level(SessionId::new("stub-1"), ThinkingLevel::Off).await is invoked
     Then the awaited result is Ok(())
     When backend.set_session_role(SessionId::new("stub-1"), None).await is invoked
-    Then the awaited result is Ok(())
+    Then the awaited result is an error saying set_role is not implemented by this session manager

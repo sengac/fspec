@@ -1,7 +1,7 @@
 //! Feature: spec/features/rpc012-board-agent-navigation.feature
 use super::*;
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
 
 #[tokio::test]
 async fn open_agent_view_with_none_mounts_create_session_dialog() -> TestResult {
@@ -30,7 +30,7 @@ async fn open_agent_view_with_none_mounts_create_session_dialog() -> TestResult 
 async fn settle(app: &mut App) -> TestResult {
     loop {
         while let Some(task) = app.next_pending_task() {
-            task.await?;
+            task.await.completed_or_cancelled()?;
         }
         match app.try_recv_action() {
             Some(action) => app.dispatch(action),
@@ -95,5 +95,45 @@ async fn session_created_ignores_ambient_work_unit_selection() -> TestResult {
     assert!(app.board_store().session_for("AUTH-002").is_none());
     // @step And the backend receives no implicit assignment
     assert_eq!(mock.set_work_unit_context_calls(), 0);
+    Ok(())
+}
+
+/// The rendered screen, one line per row.
+fn screen(app: &mut App) -> String {
+    let area = ratatui::layout::Rect::new(0, 0, 200, 50);
+    let mut buffer = ratatui::buffer::Buffer::empty(area);
+    app.render(area, &mut buffer);
+    (0..area.height)
+        .map(|y| {
+            (0..area.width)
+                .map(|x| buffer[(x, y)].symbol().to_string())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[tokio::test]
+async fn entering_a_work_unit_missing_from_the_board_is_reported() -> TestResult {
+    // @step Given an App with bootstrap complete and an empty board
+    let mock = Arc::new(MockBackend::new());
+    let mut app = App::new(mock.clone());
+    app.bootstrap().await?;
+    settle(&mut app).await?;
+    // @step When the App dispatches Action::EnterWorkUnit("GONE-001")
+    app.dispatch(Action::EnterWorkUnit("GONE-001".to_string()));
+    settle(&mut app).await?;
+    // @step Then the failure dialog says work unit GONE-001 is no longer on the board
+    let shown = screen(&mut app);
+    if !shown.contains("Work unit GONE-001 is no longer on the board") {
+        return Err(format!("the missing work unit is not reported:\n{shown}").into());
+    }
+    // @step And no creation dialog is shown
+    if app
+        .compositor()
+        .contains(codelet_fspec_tui::CREATE_SESSION_DIALOG_ID)
+    {
+        return Err("no creation dialog may open for a work unit not on the board".into());
+    }
     Ok(())
 }

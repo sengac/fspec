@@ -220,9 +220,6 @@ pub fn tool() -> String {
 
 pub async fn run(body: String) -> Result<Observed, Box<dyn std::error::Error>> {
     let server = Server::start(vec![body], false).await?;
-    tokio::time::timeout(
-        std::time::Duration::from_secs(2),
-        collect(server.models()?.0),
-    )
-    .await?
+    codelet_test_helpers::deadlock_guard("collect(server.models()?.0)", collect(server.models()?.0))
+        .await?
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @bug
 @BUG-205
@@ -11,7 +12,7 @@ Feature: The /detach slash command is removed while the attach path stays intact
   BUG-205 removed the /detach slash command (RPC-050). Its only effect was
   clearing the session's work-unit binding via backend.set_work_unit_context
   (session, None); with the dialog's Detach option gone it had no UI home, and
-  the board's Close Session teardown already clears the binding.
+  the board's Close teardown already clears the binding.
 
   The detach-only plumbing is deleted with it: SlashCommandAction::Detach and
   its 'detach' registry entry, App::handle_slash_detach,
@@ -23,6 +24,7 @@ Feature: The /detach slash command is removed while the attach path stays intact
   handle_attach_work_unit_to_session / handle_work_unit_attached) and the
   backend set_work_unit_context(Some) / get_work_unit_context RPC surface
   remain intact and are pinned here.
+  TUI-132 (2026-11-09): the attach side is now WorkUnitSessionCreated -> attach_work_unit_to_session -> set_work_unit_context + get_work_unit_focus (WorkUnitFocusChanged); Action::AttachWorkUnitToSession / WorkUnitAttached and their handle_* helpers are removed (nothing emitted them).
   """
 
   # ========================================
@@ -76,6 +78,6 @@ Feature: The /detach slash command is removed while the attach path stays intact
   Scenario: The attach path and the backend work-unit context RPC surface remain intact
     Given the codebase after the removal
     And an App with open session s-1 whose BoardStore holds AUTH-001
-    When Action::AttachWorkUnitToSession("AUTH-001") is dispatched
+    When a session is created for card AUTH-001 (Action::WorkUnitSessionCreated("s-1", "AUTH-001"))
     Then backend.set_work_unit_context(Some(ctx)) still binds a work unit
     And folds it into AgentViewStore

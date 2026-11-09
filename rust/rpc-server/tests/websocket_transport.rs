@@ -31,7 +31,6 @@ use codelet_rpc_server::{bind_and_serve, ws_client_connect, Envelope};
 use common::{connect_with_retry, make_workspace, spawn_rpc_server_with_workspace};
 use futures::{SinkExt, StreamExt};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 use tarpc::context;
 use tokio::net::TcpListener;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
@@ -155,9 +154,9 @@ async fn scenario_5_websocket_frames_are_bincode_encoded_by_default() {
         "real RPC must return live snapshot"
     );
 
-    // Allow the proxy to flush both directions through the recorder.
-    let mut waited = 0u64;
-    loop {
+    // Allow the proxy to flush both directions through the recorder
+    // (TEST-042: polled between yields, under the deadlock guard).
+    let _ = codelet_test_helpers::wait_until("both RPC frames are recorded", || {
         let n = captured
             .lock()
             .unwrap()
@@ -168,12 +167,9 @@ async fn scenario_5_websocket_frames_are_bincode_encoded_by_default() {
                     .unwrap_or(false)
             })
             .count();
-        if n >= 2 || waited >= 1000 {
-            break;
-        }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+        std::future::ready(n >= 2)
+    })
+    .await;
 
     let frames = captured.lock().unwrap().clone();
 
@@ -275,11 +271,11 @@ async fn scenario_6_reserved_envelope_variants_are_rejected_by_server() {
     }
 
     // Allow the server task to process all five frames.
-    let mut waited = 0u64;
-    while stats.rejected_envelopes() < reserved.len() as u64 && waited < 1000 {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let _ = codelet_test_helpers::wait_until("the server counts the rejected frames", || {
+        std::future::ready(stats.rejected_envelopes() >= reserved.len() as u64)
+    })
+    .await;
 
     // @step Then the server records the unsupported variant by name in its rejection log and does not invoke any FspecService method as a result of that frame
     assert_eq!(

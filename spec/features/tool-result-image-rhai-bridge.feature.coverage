@@ -10,7 +10,6 @@
             {
               "file": "rust/providers/src/custom/rig_message_convert.rs",
               "lines": [
-                55,
                 56,
                 57,
                 58,
@@ -74,7 +73,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "UserContent::ToolResult(result) => {",
+              "lastLine": "let content = collapse_parts_to_message_content(parts);"
             }
           ]
         }
@@ -90,7 +91,6 @@
             {
               "file": "rust/providers/src/custom/rig_message_convert.rs",
               "lines": [
-                55,
                 56,
                 57,
                 58,
@@ -154,7 +154,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "UserContent::ToolResult(result) => {",
+              "lastLine": "let content = collapse_parts_to_message_content(parts);"
             }
           ]
         }
@@ -170,7 +172,6 @@
             {
               "file": "rust/providers/src/custom/rig_message_convert.rs",
               "lines": [
-                55,
                 56,
                 57,
                 58,
@@ -234,7 +235,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "UserContent::ToolResult(result) => {",
+              "lastLine": "let content = collapse_parts_to_message_content(parts);"
             }
           ]
         }
@@ -250,7 +253,6 @@
             {
               "file": "rust/providers/src/custom/rig_message_convert.rs",
               "lines": [
-                55,
                 56,
                 57,
                 58,
@@ -314,7 +316,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "UserContent::ToolResult(result) => {",
+              "lastLine": "let content = collapse_parts_to_message_content(parts);"
             }
           ]
         }
@@ -330,7 +334,6 @@
             {
               "file": "rust/providers/src/custom/rig_message_convert.rs",
               "lines": [
-                55,
                 56,
                 57,
                 58,
@@ -394,7 +397,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "UserContent::ToolResult(result) => {",
+              "lastLine": "let content = collapse_parts_to_message_content(parts);"
             }
           ]
         }
@@ -405,7 +410,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
-          "lines": "143-203",
+          "lines": "163-228",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/request_bridge.rs",
@@ -416,7 +421,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub fn messages_to_rhai(messages: &[Message]) -> Result<Dynamic, CustomProviderError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -427,11 +434,19 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
-          "lines": "224-272",
+          "lines": "253-302",
           "implMappings": [
             {
               "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
               "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
                 92,
                 93,
                 94,
@@ -464,11 +479,10 @@
                 121,
                 122,
                 123,
-                124,
-                125,
-                126,
-                127
-              ]
+                124
+              ],
+              "firstLine": "fn anthropic_tool_result_inner(part) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,11 +493,19 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
-          "lines": "277-336",
+          "lines": "307-370",
           "implMappings": [
             {
               "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
               "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
                 92,
                 93,
                 94,
@@ -516,11 +538,10 @@
                 121,
                 122,
                 123,
-                124,
-                125,
-                126,
-                127
-              ]
+                124
+              ],
+              "firstLine": "fn anthropic_tool_result_inner(part) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -531,7 +552,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
-          "lines": "341-358",
+          "lines": "375-392",
           "implMappings": [
             {
               "file": "rust/providers/tests/tool_result_image_bridge_tests.rs",
@@ -550,7 +571,9 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "return raw;",
+              "lastLine": "let conversation = [];"
             }
           ]
         }
@@ -569,6 +592,6 @@
       "rust/providers/src/custom/request_bridge.rs",
       "rust/providers/tests/tool_result_image_bridge_tests.rs"
     ],
-    "totalLinesCovered": 798
+    "totalLinesCovered": 813
   }
 }

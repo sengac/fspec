@@ -27,7 +27,7 @@ Feature: query-example-mapping-stats clap subcommand on the standalone fspec Rus
     When I run `./rust/target/release/fspec query-example-mapping-stats --help` from a shell
     Then the command exits 0
     Then stdout contains the substring 'query-example-mapping-stats'
-    Then stdout advertises the '--status' flag
+    Then stdout advertises the '--format' flag the CLI accepts (CLI-016)
     Then stdout does NOT contain the substring '--workUnitId'
     Then stdout does NOT contain the substring '--hasQuestions'
     Then stdout does NOT contain the substring '--questionsFor'

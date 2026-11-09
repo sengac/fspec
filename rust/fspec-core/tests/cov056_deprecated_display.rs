@@ -35,7 +35,11 @@ fn write_file(root: &Path, rel: &str, body: &str) {
 /// Feature + coverage fixture: `feature_body` is the .feature content after the
 /// `@COV-056` tag line (Feature: header + scenarios included).
 fn fixture(root: &Path, feature_body: &str, coverage_scenarios: &str) {
-    write_file(root, "spec/features/dep-feature.feature", &format!("@COV-056\n{feature_body}\n"));
+    write_file(
+        root,
+        "spec/features/dep-feature.feature",
+        &format!("@COV-056\n{feature_body}\n"),
+    );
     write_file(
         root,
         "spec/features/dep-feature.feature.coverage",
@@ -60,7 +64,10 @@ fn deprecated_marker_appears_in_markdown_report() {
     fixture(tmp.path(), FEATURE_TWO_SCENARIOS, TWO_SCENARIOS);
 
     // @step When the show-coverage command renders the feature in markdown
-    let result = dispatch_command(req(tmp.path(), json!({"featureName": "dep-feature", "format": "markdown"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"featureName": "dep-feature", "format": "markdown"}),
+    ));
     assert!(result.success, "expected success; got {result:?}");
     let out = result.data.as_str();
 
@@ -100,14 +107,15 @@ fn deprecated_marker_appears_in_json_report() {
     fixture(tmp.path(), FEATURE_TWO_SCENARIOS, TWO_SCENARIOS);
 
     // @step When the show-coverage command renders the feature in JSON
-    let result = dispatch_command(req(tmp.path(), json!({"featureName": "dep-feature", "format": "json"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"featureName": "dep-feature", "format": "json"}),
+    ));
     assert!(result.success, "expected success; got {result:?}");
     let payload: Value =
         serde_json::from_str(result.data.as_str()).expect("output must be valid JSON");
 
-    let scenarios = payload["scenarios"]
-        .as_array()
-        .expect("scenarios array");
+    let scenarios = payload["scenarios"].as_array().expect("scenarios array");
     let stale = scenarios
         .iter()
         .find(|s| s["name"].as_str() == Some("Stale behavior"))
@@ -143,7 +151,10 @@ fn untagged_feature_files_render_byte_identical_output() {
     );
 
     // @step When the show-coverage command renders the feature in markdown
-    let result = dispatch_command(req(tmp.path(), json!({"featureName": "dep-feature", "format": "markdown"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"featureName": "dep-feature", "format": "markdown"}),
+    ));
     assert!(result.success, "expected success; got {result:?}");
     let out = result.data.as_str();
 

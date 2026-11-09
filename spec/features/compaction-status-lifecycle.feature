@@ -1,4 +1,7 @@
 @CMPCT-003
+@COV-057
+@session
+@context-management
 Feature: Compaction completion incorrectly sets status to Idle while agent loop is still running
   """
   Rust side: stream_loop.rs emits CompactionStarted/Complete/Continuing. NAPI BackgroundOutput::emit() translates to status changes. Agent loop in session_manager.rs calls apply_pending_dag() after stream completes. JS side: AgentView.tsx handles SessionStateChange and CompactionComplete chunks via useCompaction hook.
@@ -29,51 +32,48 @@ Feature: Compaction completion incorrectly sets status to Idle while agent loop 
     I want to see accurate status indicators during compaction
     So that I know the agent is still working and don't try to type while it's building the DAG
 
-  @post-loop
   Scenario: Post-loop compaction keeps status active through DAG construction
-    Given an agent stream has just finished and emitted Done
+    Given an agent stream response has just finished above the compaction threshold
     And the compaction hook detected that compaction is needed
     When stream_loop emits CompactionStarted
     Then the session status should be Compacting
-    When execute_compaction completes the in-memory setup phase
-    Then stream_loop must NOT emit CompactionComplete
+    When the compaction builder durably commits the DAG
+    Then CompactionComplete should be emitted only after the durable commit
     When stream_loop emits CompactionContinuing
-    Then the NAPI handler should set session status to Running
-    And the retry stream should begin processing the compaction instruction
+    Then the agent-loop BackgroundOutput should set session status to Running
+    And the retry stream should begin processing on the committed context
     When the retry stream finishes and emits Done
-    And the agent_loop calls apply_pending_dag which returns true
-    Then the agent_loop should emit CompactionComplete
+    And the agent_loop reconciles the turn without a pending compaction candidate
+    Then exactly one CompactionComplete should have been emitted for the turn
     And the session status should transition to Idle
 
-  @pre-prompt
   Scenario: Pre-prompt compaction keeps status active through DAG construction
     Given a user prompt would exceed the compaction threshold
     When stream_loop emits CompactionStarted before the API call
     Then the session status should be Compacting
-    When execute_compaction completes the in-memory setup phase
-    Then stream_loop must NOT emit CompactionComplete
+    When the compaction builder durably commits the DAG
+    Then CompactionComplete should be emitted only after the durable commit
     When stream_loop emits CompactionContinuing
-    Then the NAPI handler should set session status to Running
-    And the main stream should process the compaction instruction
+    Then the agent-loop BackgroundOutput should set session status to Running
+    And the main stream should process the prompt on the committed context
     When the main stream finishes and emits Done
-    And the agent_loop calls apply_pending_dag which returns true
-    Then the agent_loop should emit CompactionComplete
+    And the agent_loop reconciles the turn without a pending compaction candidate
+    Then exactly one CompactionComplete should have been emitted for the turn
     And the session status should transition to Idle
 
-  @no-compaction
   Scenario: Normal response without compaction does not emit CompactionComplete from agent_loop
     Given an agent stream completes normally without triggering compaction
     When the stream emits Done
     Then the session status should be Idle
-    And the agent_loop calls apply_pending_dag which returns false
+    And the agent_loop turn compaction application returns false
     And no CompactionComplete event should be emitted from the agent_loop
 
   @napi
   Scenario: CompactionContinuing sets status to Running instead of being a no-op
     Given the session status is Compacting after CompactionStarted was emitted
-    When the NAPI BackgroundOutput receives a CompactionContinuing event
+    When the agent-loop BackgroundOutput receives a CompactionContinuing event
     Then the session status should be set to Running
-    And a SessionStateChange with Running should be emitted to JavaScript
+    And a SessionStateChange with Running should be emitted to stream subscribers
 
   @napi
   Scenario: CompactionComplete is not emitted prematurely from stream_loop

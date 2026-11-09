@@ -5,11 +5,31 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "17-55",
+          "lines": "15-61",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [10, 11, 12, 13, 14, 26, 28, 31, 32, 33, 34, 43, 44, 45, 46, 47, 48]
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                26,
+                28,
+                31,
+                32,
+                33,
+                34,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "#[error(",
+              "lastLine": "if status != SessionStatus::Idle {"
             }
           ]
         }
@@ -20,19 +40,101 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "72-110",
+          "lines": "80-125",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [57, 58, 59, 60, 61, 62, 63, 69, 70, 71, 72, 73]
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "self.status",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/agent-loop/src/agent_manager_handler.rs",
-              "lines": [593, 594, 595, 596, 597, 598, 600, 601, 602, 603]
-            },
-            {
-              "file": "rust/napi/src/agent_manager_handler.rs",
-              "lines": [577, 578, 579, 580, 581, 582, 584, 585, 586, 587]
+              "lines": [
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580
+              ],
+              "firstLine": "/// Handle the `message` action — send a message to any session (AMGR-010 + AMGR-011)",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,11 +145,27 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "114-131",
+          "lines": "127-150",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [43, 44, 45, 46, 47, 48, 57, 58, 59, 60, 61, 62, 63]
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "&self,",
+              "lastLine": "source_session: input.source_session_id.clone(),"
             }
           ]
         }
@@ -58,11 +176,28 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "135-174",
+          "lines": "152-197",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67]
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "self.status",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -73,11 +208,29 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "178-209",
+          "lines": "199-237",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [43, 44, 45, 46, 47, 48, 57, 58, 59, 60, 61, 62, 63, 71, 72]
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                71,
+                72
+              ],
+              "firstLine": "&self,",
+              "lastLine": ".map_err(|reason| AgentMessageError::DeliveryFailed {"
             }
           ]
         }
@@ -88,11 +241,20 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "213-240",
+          "lines": "239-274",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [51, 52, 53, 54, 55, 56]
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "status,",
+              "lastLine": "AgentMessageError::DeliveryFailed {"
             }
           ]
         }
@@ -103,11 +265,20 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "244-258",
+          "lines": "276-296",
           "implMappings": [
             {
               "file": "rust/sessions/src/background_session/agent_message.rs",
-              "lines": [43, 44, 45, 46, 47, 48]
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "&self,",
+              "lastLine": "if status != SessionStatus::Idle {"
             }
           ]
         }
@@ -118,15 +289,35 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/agent_manager_busy_messages.rs",
-          "lines": "58-68",
+          "lines": "63-78",
           "implMappings": [
             {
               "file": "rust/tools/src/agent_manager/mod.rs",
-              "lines": [87, 92, 93, 94]
+              "lines": [
+                115,
+                127,
+                128
+              ],
+              "firstLine": "\"'message' (send a message to idle recipients by ID, with optional context references), \",",
+              "lastLine": "\"Use 'await_idle', then send a fresh message once the recipient is idle. \","
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/agent_manager_busy_messages.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/agent_message.rs",
+      "rust/agent-loop/src/agent_manager_handler.rs",
+      "rust/tools/src/agent_manager/mod.rs"
+    ],
+    "totalLinesCovered": 429
+  }
 }

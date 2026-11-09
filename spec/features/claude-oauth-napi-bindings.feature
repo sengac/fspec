@@ -1,4 +1,6 @@
 @PROV-024
+@providers
+@authentication
 Feature: NAPI bindings for Anthropic OAuth subscription flows
   """
   New file: rust/napi/src/claude_oauth.rs — All NAPI functions in one module. Imports claude_browser_oauth_login from claude_oauth_server, generate_pkce/build_authorize_url/parse_authorization_code/exchange_authorization_code/calculate_expiry from claude_oauth, refresh_access_token_at from claude_oauth, read_claude_auth/write_claude_auth/get_claude_auth_path from claude_auth. Mirrors codex_oauth.rs structure.

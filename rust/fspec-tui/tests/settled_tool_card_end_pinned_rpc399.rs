@@ -7,12 +7,11 @@
 //! (settle) via the store, and assert the rendered (wrapped) `lines` of the
 //! tool-call card. They encode the NEW end-pinned contract: a settled
 //! overflowing body shows the LAST 8 lines (not the first 8), with a
-//! `... +N lines (Enter to view full)` indicator where N lines are hidden
+//! `... +N lines (Tab to select, Enter to view full)` indicator where N lines are hidden
 //! ABOVE the window. They MUST fail (red phase) against the current
 //! first-8 `collapse_tool_body`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, ChunkKind, FspecBackend};
@@ -59,13 +58,16 @@ fn tool_progress_chunk(tool_call_id: &str, name: &str, chunk: &str) -> StreamChu
 }
 
 /// All rendered lines of the FIRST chunk (the tool-call card) in s-1.
-fn first_chunk_lines(app: &App, id: &SessionId) -> Vec<String> {
+fn first_chunk_lines(
+    app: &App,
+    id: &SessionId,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(4096);
-    chunks
+    Ok(chunks
         .first()
         .map(|c| {
             c.lines
@@ -78,16 +80,21 @@ fn first_chunk_lines(app: &App, id: &SessionId) -> Vec<String> {
                 })
                 .collect::<Vec<_>>()
         })
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 /// The stable `seq` of the first chunk (tool-call card).
-fn first_chunk_seq(app: &App, id: &SessionId) -> u64 {
+fn first_chunk_seq(app: &App, id: &SessionId) -> Result<u64, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
-    ctx.scrollback.visible_window(4096).first().unwrap().seq
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
+        .visible_window(4096)
+        .first()
+        .or_fail("expected a value")?
+        .seq)
 }
 
 /// Build a body of `n` numbered lines: "line-1".."line-n".
@@ -111,7 +118,7 @@ fn has_line(lines: &[String], token: &str) -> bool {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn settled_short_body_shows_full_body() {
+fn settled_short_body_shows_full_body() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool-call card whose body has 5 lines
     app.dispatch(Action::ChunkReceived(
@@ -124,7 +131,7 @@ fn settled_short_body_shows_full_body() {
     ));
 
     // @step When the tool-call card is rendered into scrollback lines
-    let lines = first_chunk_lines(&app, &sid("s-1"));
+    let lines = first_chunk_lines(&app, &sid("s-1"))?;
 
     // @step Then the rendered lines show all 5 body lines
     for i in 1..=5 {
@@ -138,6 +145,7 @@ fn settled_short_body_shows_full_body() {
         !lines.iter().any(|l| l.contains(INDICATOR_PREFIX)),
         "no indicator expected; got {lines:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -145,7 +153,7 @@ fn settled_short_body_shows_full_body() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn settled_long_body_collapses_to_last_8() {
+fn settled_long_body_collapses_to_last_8() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool-call card whose body has 20 lines
     app.dispatch(Action::ChunkReceived(
@@ -158,7 +166,7 @@ fn settled_long_body_collapses_to_last_8() {
     ));
 
     // @step When the tool-call card is rendered into scrollback lines
-    let lines = first_chunk_lines(&app, &sid("s-1"));
+    let lines = first_chunk_lines(&app, &sid("s-1"))?;
 
     // @step Then the rendered lines show the last 8 body lines
     for i in 13..=20 {
@@ -172,13 +180,14 @@ fn settled_long_body_collapses_to_last_8() {
         !has_line(&lines, "line-12"),
         "line-12 must be hidden (above the last-8 window); got {lines:?}"
     );
-    // @step And the rendered lines include "... +12 lines (Enter to view full)"
+    // @step And the rendered lines include "... +12 lines (Tab to select, Enter to view full)"
     assert!(
         lines
             .iter()
-            .any(|l| l == "... +12 lines (Enter to view full)"),
+            .any(|l| l == "... +12 lines (Tab to select, Enter to view full)"),
         "expected indicator; got {lines:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -186,7 +195,7 @@ fn settled_long_body_collapses_to_last_8() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn streaming_body_shows_last_10() {
+fn streaming_body_shows_last_10() -> TestResult {
     let mut app = app_with_session();
     // @step Given a streaming tool-call card whose body has 25 lines
     app.dispatch(Action::ChunkReceived(
@@ -201,7 +210,7 @@ fn streaming_body_shows_last_10() {
     }
 
     // @step When the tool-call card is rendered into scrollback lines
-    let lines = first_chunk_lines(&app, &sid("s-1"));
+    let lines = first_chunk_lines(&app, &sid("s-1"))?;
 
     // @step Then the rendered lines show only the last 10 body lines
     for i in 16..=25 {
@@ -219,6 +228,7 @@ fn streaming_body_shows_last_10() {
         !lines.iter().any(|l| l.contains(INDICATOR_PREFIX)),
         "streaming window shows no indicator; got {lines:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -226,7 +236,7 @@ fn streaming_body_shows_last_10() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn finished_stream_stays_pinned_to_end() {
+fn finished_stream_stays_pinned_to_end() -> TestResult {
     let mut app = app_with_session();
     // @step Given a streaming tool-call card whose body has 25 lines
     app.dispatch(Action::ChunkReceived(
@@ -247,7 +257,7 @@ fn finished_stream_stays_pinned_to_end() {
     ));
 
     // @step And the tool-call card is rendered into scrollback lines
-    let lines = first_chunk_lines(&app, &sid("s-1"));
+    let lines = first_chunk_lines(&app, &sid("s-1"))?;
 
     // @step Then the rendered lines show the last 8 body lines
     for i in 18..=25 {
@@ -261,13 +271,14 @@ fn finished_stream_stays_pinned_to_end() {
         !has_line(&lines, "line-1"),
         "line-1 must be hidden after settle (end-pinned); got {lines:?}"
     );
-    // @step And the rendered lines include "... +17 lines (Enter to view full)"
+    // @step And the rendered lines include "... +17 lines (Tab to select, Enter to view full)"
     assert!(
         lines
             .iter()
-            .any(|l| l == "... +17 lines (Enter to view full)"),
+            .any(|l| l == "... +17 lines (Tab to select, Enter to view full)"),
         "expected indicator; got {lines:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -275,7 +286,7 @@ fn finished_stream_stays_pinned_to_end() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn full_body_preserved_for_modal() {
+fn full_body_preserved_for_modal() -> TestResult {
     let mut app = app_with_session();
     // @step Given a settled tool-call card whose body has 20 lines
     app.dispatch(Action::ChunkReceived(
@@ -288,15 +299,15 @@ fn full_body_preserved_for_modal() {
     ));
 
     // @step When the full text for the card's turn is requested for the TurnContentModal
-    let seq = first_chunk_seq(&app, &sid("s-1"));
+    let seq = first_chunk_seq(&app, &sid("s-1"))?;
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let full = ctx
         .scrollback
         .full_text_for_seq(seq)
-        .expect("full text exists");
+        .or_fail("full text exists")?;
 
     // @step Then the returned text contains all 20 body lines
     for i in 1..=20 {
@@ -312,6 +323,7 @@ fn full_body_preserved_for_modal() {
         .first()
         .and_then(|c| c.source.as_ref())
         .map(|s| s.kind.clone())
-        .unwrap();
+        .or_fail("expected a value")?;
     assert!(matches!(kind, ChunkKind::ToolCall { .. }));
+    Ok(())
 }

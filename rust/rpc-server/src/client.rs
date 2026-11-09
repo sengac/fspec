@@ -8,6 +8,14 @@
 //! `Envelope::Event` (RPC-007 chunks), and `Envelope::LogEvent`
 //! (RPC-007 logs) frames.
 
+mod connect;
+mod replay_watch;
+mod trust;
+pub use connect::{install_crypto_provider, ws_connect, ws_connect_trusting, WsConnection};
+pub use trust::{
+    client_tls_config, load_ca_file, CaOrigin, DaemonCa, DaemonCaError, DAEMON_CA_ENV,
+};
+
 use crate::pump::{run_envelope_pump, ClientInbound};
 use crate::transport::ChannelTransport;
 use codelet_rpc::FspecServiceClient;
@@ -94,6 +102,8 @@ pub struct FspecWsClient {
     /// only — dropping it on WS disconnect closes every receiver
     /// returned by [`Self::session_events_rx`] (RPC-010 rule [23]).
     session_events_rx_template: broadcast::Receiver<SessionEvent>,
+    /// RPC-445 / RPC-454: templates for the workspace-keyed pushes.
+    pub(crate) workspace_pushes: crate::client_workspace::WorkspacePushes,
     /// RPC-433: Initial watch receiver cloned by
     /// [`Self::session_snapshot_rx`]. The sender side is owned by the
     /// pump task only — dropping it on WS disconnect closes every
@@ -121,36 +131,7 @@ impl FspecWsClient {
     /// 2. Forwards every subsequent `watch::changed()` notification onto
     ///    the broadcast channel.
     pub fn work_units_rx(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {
-        let (sub_tx, sub_rx) =
-            broadcast::channel::<Vec<WorkUnitInfo>>(WORK_UNITS_BROADCAST_CAPACITY);
-        let mut watch_rx = self.work_units_watch_rx.clone();
-        tokio::spawn(async move {
-            // Replay the current cached snapshot first (if any). Mark it
-            // seen so `changed().await` only fires on subsequent updates,
-            // avoiding double-delivery.
-            {
-                let initial = watch_rx.borrow_and_update().clone();
-                if let Some(payload) = initial {
-                    if sub_tx.send(payload).is_err() {
-                        return;
-                    }
-                }
-            }
-            while watch_rx.changed().await.is_ok() {
-                let next = watch_rx.borrow_and_update().clone();
-                if let Some(payload) = next {
-                    if sub_tx.send(payload).is_err() {
-                        break;
-                    }
-                }
-            }
-            // `changed().await` returned `Err`, meaning every watch
-            // sender (owned by the pump task) was dropped — i.e. the
-            // WS connection closed. Letting `sub_tx` drop here closes
-            // the per-subscriber broadcast so external callers of
-            // [`Self::work_units_rx`] observe `RecvError::Closed`.
-        });
-        sub_rx
+        replay_watch::subscribe(&self.work_units_watch_rx, WORK_UNITS_BROADCAST_CAPACITY)
     }
 
     /// Subscribe to server-pushed `(SessionId, StreamChunk)` events
@@ -209,36 +190,10 @@ impl FspecWsClient {
     /// method is called. When the WS connection drops, the forwarder
     /// exits and the per-subscriber broadcast closes.
     pub fn session_snapshot_rx(&self) -> broadcast::Receiver<Vec<SessionInfo>> {
-        let (sub_tx, sub_rx) =
-            broadcast::channel::<Vec<SessionInfo>>(WORK_UNITS_BROADCAST_CAPACITY);
-        let mut watch_rx = self.session_snapshot_watch_rx.clone();
-        tokio::spawn(async move {
-            // Replay the current cached snapshot first (if any). Mark it
-            // seen so `changed().await` only fires on subsequent
-            // updates, avoiding double-delivery.
-            {
-                let initial = watch_rx.borrow_and_update().clone();
-                if let Some(payload) = initial {
-                    if sub_tx.send(payload).is_err() {
-                        return;
-                    }
-                }
-            }
-            while watch_rx.changed().await.is_ok() {
-                let next = watch_rx.borrow_and_update().clone();
-                if let Some(payload) = next {
-                    if sub_tx.send(payload).is_err() {
-                        break;
-                    }
-                }
-            }
-            // `changed().await` returned `Err`, meaning every watch
-            // sender (owned by the pump task) was dropped — i.e. the
-            // WS connection closed. Letting `sub_tx` drop here closes
-            // the per-subscriber broadcast so external callers of
-            // [`Self::session_snapshot_rx`] observe `RecvError::Closed`.
-        });
-        sub_rx
+        replay_watch::subscribe(
+            &self.session_snapshot_watch_rx,
+            WORK_UNITS_BROADCAST_CAPACITY,
+        )
     }
 }
 
@@ -278,6 +233,8 @@ where
     // [`FspecWsClient::session_events_rx`] (RPC-010 rule [23]).
     let (session_events_tx, session_events_rx_template) =
         broadcast::channel::<SessionEvent>(SESSION_EVENTS_BROADCAST_CAPACITY);
+    let (workspace_push_senders, workspace_pushes) =
+        crate::client_workspace::workspace_push_channels(WORK_UNITS_BROADCAST_CAPACITY);
     // RPC-433: watch channel holding the latest connect-time
     // open-session snapshot. The sender is moved into the pump task so
     // dropping it on WS disconnect tears down every forwarder spawned
@@ -304,6 +261,8 @@ where
                 status_tx,
                 session_events_tx,
                 session_snapshot_tx,
+                workspace_work_units_tx: workspace_push_senders.work_units,
+                workspace_git_state_tx: workspace_push_senders.git_state,
             },
             None,
             None,
@@ -329,5 +288,6 @@ where
         status_rx_template,
         session_events_rx_template,
         session_snapshot_watch_rx,
+        workspace_pushes,
     })
 }

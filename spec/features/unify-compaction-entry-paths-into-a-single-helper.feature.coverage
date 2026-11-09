@@ -7,7 +7,87 @@
           "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "107-239",
           "implMappings": [
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [175, 176, 177, 178, 179, 180, 181, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 324, 325, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 377, 378]}
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                322,
+                323,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                375,
+                376
+              ],
+              "firstLine": "// AFTER text has been emitted.",
+              "lastLine": "output.emit_compaction_progress(\"Context limit reached\", 0, 0);"
+            }
           ]
         }
       ]
@@ -19,7 +99,65 @@
           "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "242-302",
           "implMappings": [
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [175, 176, 177, 178, 179, 180, 181, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 324, 325, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351]}
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                322,
+                323,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349
+              ],
+              "firstLine": "// AFTER text has been emitted.",
+              "lastLine": "}"
+            }
           ]
         }
       ]
@@ -31,7 +169,15 @@
           "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "305-349",
           "implMappings": [
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [377, 378]}
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                375,
+                376
+              ],
+              "firstLine": "output.emit_compaction_started();",
+              "lastLine": "output.emit_compaction_progress(\"Context limit reached\", 0, 0);"
+            }
           ]
         }
       ]
@@ -43,7 +189,26 @@
           "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "352-400",
           "implMappings": [
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 377, 378]}
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                375,
+                376
+              ],
+              "firstLine": "match token_state.lock() {",
+              "lastLine": "output.emit_compaction_progress(\"Context limit reached\", 0, 0);"
+            }
           ]
         }
       ]
@@ -55,16 +220,37 @@
           "file": "rust/cli/tests/compaction_recovery_unification_test.rs",
           "lines": "403-440",
           "implMappings": [
-            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [175, 176, 177, 178, 179, 180, 181, 324, 325]}
+            {
+              "file": "rust/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                322,
+                323
+              ],
+              "firstLine": "// AFTER text has been emitted.",
+              "lastLine": "flush_partial_state_before_compaction(session, assistant_text, streaming_display)?;"
+            }
           ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 5, "coveredScenarios": 5, "coveragePercent": 100,
-    "testFiles": ["rust/cli/tests/compaction_recovery_unification_test.rs"],
-    "implFiles": ["rust/cli/src/interactive/recovery_compaction.rs"],
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/compaction_recovery_unification_test.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/recovery_compaction.rs"
+    ],
     "totalLinesCovered": 476
   }
 }

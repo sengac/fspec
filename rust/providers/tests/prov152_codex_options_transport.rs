@@ -34,7 +34,12 @@ async fn scenario_non_codex_requests_retain_their_existing_configuration(
         .base_url(server.uri())
         .http_client(RefreshingCodexClient::new_api_key())
         .build()?;
-    let codex = CodexResponsesModel::new(client.clone(), "same-name");
+    let codex = CodexResponsesModel::new(client.clone(), "same-name").with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
     let ordinary = ResponsesCompletionModel::new(client, "same-name");
     let config = json!({"store":true,"reasoning":{"effort":"low"}});
     let request = CompletionRequestBuilder::new(codex.clone(), "hello")

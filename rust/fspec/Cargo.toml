@@ -15,6 +15,7 @@ name = "fspec"
 path = "src/main.rs"
 
 [dependencies]
+async-trait.workspace = true
 clap.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
@@ -71,6 +72,9 @@ codelet-providers = { workspace = true, optional = true }
 nix = { version = "0.29", features = ["signal"] }
 
 [dev-dependencies]
+syn = { version = "2", features = ["full", "visit-mut"] }
+proc-macro2 = { version = "1", features = ["span-locations"] }
+quote = "1"
 tokio = { workspace = true, features = ["test-util"] }
 codelet-cli.workspace = true
 rig-core.workspace = true
@@ -102,6 +106,8 @@ tokio-tungstenite.workspace = true
 futures.workspace = true
 serde_json.workspace = true
 regex = "1"
+# RPC-456: tests/rpc456_remote_daemon_over_tls.rs trusts the test CA.
+rustls.workspace = true
 # RPC-067: shared no-codelet-napi dependency-rule helpers used by
 # tests/no_napi_dependency.rs.
 codelet-test-helpers.workspace = true
@@ -137,3 +143,9 @@ test-stub-provider = [
     "codelet-providers/test-support",
     "codelet-agent-loop/test-support",
 ]
+# BUG-543: the crate's standard test run (`cargo test -p codelet-fspec
+# --features test-support`, the convention every crate with test-only seams
+# uses) compiles the stub provider in, so the cross-frontend golden
+# (tests/cross_frontend_parity.rs) is part of the normal run instead of an
+# opt-in that silently skips. Release builds use default features only.
+test-support = ["test-stub-provider"]

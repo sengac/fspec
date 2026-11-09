@@ -16,16 +16,20 @@ pub mod caching_client;
 pub mod catalog;
 pub mod claude;
 pub mod claude_auth;
+pub mod claude_effort;
 pub mod claude_headless_login;
 pub mod claude_oauth;
 pub mod claude_oauth_server;
+pub mod claude_protocol;
 pub mod claude_refreshing_client;
 pub mod codex;
 pub mod copilot;
 pub mod credentials;
 pub mod custom;
+pub mod engine_limits;
 pub mod error;
 pub mod gemini;
+pub mod local_reasoning;
 mod manager;
 pub mod model_limits;
 pub mod models;
@@ -41,6 +45,7 @@ pub mod runtime_options;
 pub mod selected_request;
 mod selection_metadata;
 pub mod session;
+pub mod thinking_wire;
 mod tool_contract;
 pub mod zai;
 
@@ -131,11 +136,13 @@ pub trait LlmProvider: Send + Sync {
     /// Model identifier
     fn model(&self) -> &str;
 
-    /// Context window size in tokens
-    fn context_window(&self) -> usize;
+    /// Context window size in tokens; PROV-167: `None` when the provider
+    /// declares none.
+    fn context_window(&self) -> Option<usize>;
 
-    /// Maximum output tokens
-    fn max_output_tokens(&self) -> usize;
+    /// Maximum output tokens; PROV-167: `None` when the provider declares
+    /// none.
+    fn max_output_tokens(&self) -> Option<usize>;
 
     /// Whether this provider supports prompt caching
     fn supports_caching(&self) -> bool;

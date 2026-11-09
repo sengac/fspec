@@ -15,7 +15,7 @@ fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 128_000,
+        context_window: Some(128_000),
         supports_reasoning: false,
         supports_vision: false,
         is_custom: false,
@@ -32,6 +32,8 @@ fn cloud(key: &str, models: Vec<ModelEntry>) -> ProviderInfo {
         models,
         profile_name: None,
         is_unreachable: false,
+        provider_id: key.to_string(),
+        unavailable_reason: None,
     }
 }
 
@@ -43,6 +45,8 @@ fn profile(provider: &str, name: &str, models: Vec<ModelEntry>, unreachable: boo
         models,
         profile_name: Some(name.to_string()),
         is_unreachable: unreachable,
+        provider_id: provider.to_string(),
+        unavailable_reason: None,
     }
 }
 
@@ -184,8 +188,8 @@ fn zero_model_bearing_sections_resolves_none() {
 
     // @step Then no default model is committed
     assert_eq!(result, None);
-    // @step And the bootstrap create_session declines with an empty SessionId
-    // (a None resolution means no default is committed -> the PROV-101 decline path)
+    // @step And the bootstrap create_session fails because no default model is set
+    // (a None resolution means no default is committed -> create_session fails, BUG-410)
     assert!(result.is_none());
 }
 
@@ -227,6 +231,6 @@ fn ambiguous_multi_provider_with_no_models_resolves_none() {
 
     // @step Then no default model is committed by provider-priority preference
     assert_eq!(result, None);
-    // @step And the bootstrap create_session declines with an empty SessionId
+    // @step And the bootstrap create_session fails because no default model is set
     assert!(result.is_none());
 }

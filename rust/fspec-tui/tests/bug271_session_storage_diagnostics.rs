@@ -1,12 +1,15 @@
 //! Feature: spec/features/session-storage-diagnostics.feature
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
 use codelet_fspec_tui::{Action, App};
 use crossterm::event::KeyCode;
 use serial_test::serial;
 
 #[path = "common/session_storage_fixture.rs"]
 mod fixture;
-use fixture::{compact, creation_actions, drain, key, pages, screen, StorageFixture};
+use fixture::{
+    board_app, compact, creation_flows, drain, key, pages, perform, screen, StorageFixture,
+};
 
 const DAMAGED_ID: &str = "b8c05474-d2ef-4bb9-83f6-899278219946";
 const OTHER_ID: &str = "e374b804-fc07-4bae-b8e1-2ce5593b1d23";
@@ -15,6 +18,11 @@ const OTHER_ID: &str = "e374b804-fc07-4bae-b8e1-2ce5593b1d23";
 #[serial]
 async fn startup_warnings_are_visible_without_a_session() -> Result<(), Box<dyn std::error::Error>>
 {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given unreadable history exists and no session is open
     let fixture = StorageFixture::new().await?;
     let first = fixture.bad_manifest(DAMAGED_ID)?;
@@ -23,7 +31,7 @@ async fn startup_warnings_are_visible_without_a_session() -> Result<(), Box<dyn 
         // @step When each transport bootstraps the application
         let mut app = App::new(backend.clone());
         app.bootstrap().await?;
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step Then a scrollable warning exposes every path cause and recovery instruction without changing history
         assert!(app.compositor().contains("session-storage-dialog"));
         let visible = pages(&mut app);
@@ -61,18 +69,23 @@ async fn startup_warnings_are_visible_without_a_session() -> Result<(), Box<dyn 
 #[serial]
 async fn reconnect_replays_unresolved_manifest_warnings() -> Result<(), Box<dyn std::error::Error>>
 {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given an unresolved manifest warning was dismissed
     let fixture = StorageFixture::new().await?;
     fixture.bad_manifest(DAMAGED_ID)?;
     for backend in &fixture.backends {
         let mut app = App::new(backend.clone());
         app.bootstrap().await?;
-        drain(&mut app).await;
+        drain(&mut app).await?;
         key(&mut app, KeyCode::Esc);
         assert!(!app.compositor().contains("session-storage-dialog"));
         // @step When the application reconnects without an open session
         app.dispatch(Action::Reconnected);
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step Then the warning is visible again from a non draining snapshot
         assert!(app.compositor().contains("session-storage-dialog"));
         assert!(pages(&mut app).contains(DAMAGED_ID));
@@ -85,6 +98,11 @@ async fn reconnect_replays_unresolved_manifest_warnings() -> Result<(), Box<dyn 
 #[serial]
 async fn creation_failures_are_not_missing_model_declines() -> Result<(), Box<dyn std::error::Error>>
 {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a selected model and an unusable sessions directory
     let fixture = StorageFixture::new().await?;
     fixture.select_model();
@@ -92,21 +110,23 @@ async fn creation_failures_are_not_missing_model_declines() -> Result<(), Box<dy
         fixture.directory.path().join("sessions"),
         b"not a directory",
     )?;
-    for backend in &fixture.backends {
+    for (index, backend) in fixture.backends.iter().enumerate() {
         // @step When the user creates a session from the dialog work unit or model selection
-        for action in creation_actions() {
-            let mut app = App::new(backend.clone());
-            app.dispatch(action);
-            drain(&mut app).await;
+        for (path, steps) in creation_flows() {
+            let case = format!("backend {index} ({}) {path} path", fixture.labels[index]);
+            let mut app = board_app(backend.clone());
+            for step in steps {
+                perform(&mut app, step).await?;
+            }
             // @step Then each transport shows the storage failure globally without publishing a session or claiming a missing model
             let visible = compact(&screen(&mut app));
             assert!(
                 visible.contains("persist") || visible.contains("sessionsdir"),
-                "{visible}"
+                "{case}: no storage failure on screen: {visible}"
             );
-            assert!(!visible.contains("nodefaultmodel"), "{visible}");
-            assert!(app.agent_view_store().current_session().is_none());
-            assert!(backend.list_live_sessions().await?.is_empty());
+            assert!(!visible.contains("nodefaultmodel"), "{case}: {visible}");
+            assert!(app.agent_view_store().current_session().is_none(), "{case}");
+            assert!(backend.list_live_sessions().await?.is_empty(), "{case}");
         }
     }
     Ok(())
@@ -116,13 +136,18 @@ async fn creation_failures_are_not_missing_model_declines() -> Result<(), Box<dy
 #[serial]
 async fn missing_model_selection_remains_an_explicit_decline(
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given no default model is selected
     let fixture = StorageFixture::new().await?;
     for backend in &fixture.backends {
         // @step When each transport attempts session creation
         let mut app = App::new(backend.clone());
         app.dispatch(Action::CreateSessionSubmitted { isolated: false });
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step Then the application requests model selection and creates no session
         assert!(compact(&screen(&mut app)).contains("nodefaultmodel"));
         assert!(app.agent_view_store().current_session().is_none());
@@ -135,6 +160,11 @@ async fn missing_model_selection_remains_an_explicit_decline(
 #[serial]
 async fn healthy_creation_preserves_roles_alongside_warnings(
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a selected model and unreadable historical manifests
     let fixture = StorageFixture::new().await?;
     fixture.select_model();
@@ -154,7 +184,7 @@ async fn healthy_creation_preserves_roles_alongside_warnings(
         );
         let mut app = App::new(backend.clone());
         app.bootstrap().await?;
-        drain(&mut app).await;
+        drain(&mut app).await?;
         assert!(pages(&mut app).contains(DAMAGED_ID));
         assert!(std::fs::read(&damaged)?.is_empty());
     }

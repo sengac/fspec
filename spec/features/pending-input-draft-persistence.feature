@@ -40,6 +40,8 @@ Feature: Pending-input draft persistence on session switch
 
   Last-write-wins semantics: aborting the in-flight save is acceptable per the attachment risk note. No version counter.
 
+  BUG-549 (composer-draft-belongs-to-one-session.feature) replaces the single app-wide save slot and the payload mirror: the composer is bound to one session (App::sync_composer_draft after every dispatch and event), PendingInputChanged records the composer's current text, saves are ordered per session with a generation counter, a submit ends the draft with an immediate clear that supersedes pending saves, and hydration (Action::PendingInputHydrated) never overwrites newer local text.
+
   Dependencies:
   - RPC-037 already wired backend.{get,set}_pending_input on EmbeddedFspecBackend, WebSocketFspecBackend, MockBackend trait defaults, and FspecService.
   - RPC-051 introduced the AgentEscPressed dispatch_esc_cascade.rs pattern this card mirrors.

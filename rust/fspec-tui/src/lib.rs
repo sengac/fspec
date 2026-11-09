@@ -19,7 +19,8 @@
 //!   preserves the RPC-005 Q9 host-supplied-Handle invariant at the trait
 //!   boundary (constructor takes a non-defaulted `tokio::runtime::Handle`).
 //! - [`WebSocketFspecBackend`] — wraps `codelet_rpc_server::FspecWsClient`,
-//!   opens the connection via `tokio_tungstenite::connect_async`.
+//!   opens the connection via `codelet_rpc_server::ws_connect` (RPC-458's
+//!   trust; BUG-667).
 //! - [`Compositor`] / [`Component`] / [`Priority`] / [`EventResult`] —
 //!   layered priority dispatcher + the trait every UI element implements.
 //! - [`App`] — application root + run loop (rule [10] [11]).
@@ -30,6 +31,8 @@
 pub mod app;
 pub mod components;
 pub mod compositor;
+pub mod daemon_connect; // TUI-123
+pub mod daemons; // RPC-448
 pub mod mouse;
 pub mod store;
 pub mod terminal;
@@ -67,5 +70,7 @@ pub use views::agent::{
     ConfirmDialog, ConfirmDialogOutcome, RenderedChunk, ResumeSessionView,
     ResumeSessionViewOutcome, SearchHistoryView, SearchHistoryViewOutcome, SLASH_COMMANDS,
 };
-pub use views::multiplex::{MultiplexLayout, MuxConfig, MuxFocus, MuxOrientation, MuxPaneKind};
+pub use views::multiplex::{
+    MultiplexLayout, MuxConfig, MuxFocus, MuxLayout, MuxLayoutError, MuxNode, MuxPaneKind,
+};
 pub use views::{AgentView, BoardView, Navigator, ViewMode};

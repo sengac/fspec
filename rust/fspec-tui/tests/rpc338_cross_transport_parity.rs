@@ -9,13 +9,9 @@
 //! `is_unreachable` values over both the EmbeddedFspecBackend and the
 //! WebSocketFspecBackend. Mirrors the RPC-054 parity harness.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock
-)]
+#![allow(clippy::await_holding_lock)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -28,44 +24,51 @@ use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::{ModelEntry, ProviderInfo};
 use tempfile::TempDir;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 fn seed_providers() -> Vec<ProviderInfo> {
@@ -77,13 +80,15 @@ fn seed_providers() -> Vec<ProviderInfo> {
             models: vec![ModelEntry {
                 id: "claude-sonnet".to_string(),
                 display_name: "claude-sonnet".to_string(),
-                context_window: 200_000,
+                context_window: Some(200_000),
                 supports_reasoning: true,
                 supports_vision: true,
                 is_custom: false,
             }],
             profile_name: None,
             is_unreachable: false,
+            provider_id: "anthropic".to_string(),
+            unavailable_reason: None,
         },
         // Local-server profile section: unreachable.
         ProviderInfo {
@@ -92,29 +97,31 @@ fn seed_providers() -> Vec<ProviderInfo> {
             models: Vec::new(),
             profile_name: Some("down-profile".to_string()),
             is_unreachable: true,
+            provider_id: "openai".to_string(),
+            unavailable_reason: None,
         },
     ]
 }
 
 /// Scenario: Both transports return identical profile and reachability fields
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn list_providers_profile_fields_are_identical_across_transports() {
+async fn list_providers_profile_fields_are_identical_across_transports() -> TestResult {
     // @step Given a provider set containing a local profile section and a cloud provider
-    let (_temp, service, stub) = build_service();
+    let (_temp, service, stub) = build_service()?;
     stub.set_providers(seed_providers());
-    let (embedded, websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     // @step When list_providers() is called over the in-process transport
     let em = embedded
         .list_providers()
         .await
-        .expect("embedded list_providers");
+        .or_fail("embedded list_providers")?;
 
     // @step And list_providers() is called over the websocket transport
     let ws = websocket
         .list_providers()
         .await
-        .expect("websocket list_providers");
+        .or_fail("websocket list_providers")?;
 
     // @step Then both responses contain the same profile_name values for every provider
     let em_profiles: Vec<Option<String>> = em.iter().map(|p| p.profile_name.clone()).collect();
@@ -138,4 +145,5 @@ async fn list_providers_profile_fields_are_identical_across_transports() {
 
     // Full structural parity as a belt-and-braces check.
     assert_eq!(em, ws, "full ProviderInfo parity across transports");
+    Ok(())
 }

@@ -67,12 +67,8 @@ pub struct LoopDetectionWiring {
 
 impl Default for LoopDetectionWiring {
     fn default() -> Self {
-        Self {
-            enabled: true,
-            window: 160,
-            max_repeats: 10,
-            max_retries: 10,
-        }
+        // BUG-419: the named defaults, through the one conversion.
+        Self::from(codelet_sessions::model_resolution::ProfileLoopDetection::default())
     }
 }
 
@@ -694,6 +690,11 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 });
                 return;
             }
+            // BUG-614: the TUI shows why no summary was installed.
+            StreamEvent::SummaryNotInstalled { error } => StreamChunk::user_notification(
+                format!("Summary not installed: {error}"),
+                NotificationSeverity::Warning,
+            ),
             StreamEvent::CompactionFailed { reason } => {
                 self.session.set_status(SessionStatus::Idle);
                 self.session.set_compaction_progress(None);

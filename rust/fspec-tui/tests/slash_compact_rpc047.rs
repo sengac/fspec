@@ -21,10 +21,9 @@
 //! Mirrors the spawned-task + action-bus round-trip pattern established
 //! by `slash_clear_rpc046.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::views::agent::SessionFooter;
@@ -36,7 +35,6 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::text::Line;
 use ratatui::widgets::Widget;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -55,18 +53,24 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 /// Push `count` raw scrollback chunks into the SessionContext for `id`.
 /// Mirrors the `seed_chunks` helper in `slash_clear_rpc046.rs`.
 #[allow(dead_code)]
-fn seed_chunks(app: &mut App, id: &SessionId, count: usize) {
+fn seed_chunks(
+    app: &mut App,
+    id: &SessionId,
+    count: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present for seeded id");
+        .or_fail("SessionContext present for seeded id")?;
     for i in 0..count {
         ctx.scrollback.push(RenderedChunk {
+            row_ends: Vec::new(),
             seq: i as u64,
             lines: vec![Line::from(format!("seed-{i}"))],
             source: None,
         });
     }
+    Ok(())
 }
 
 /// Flatten every visible chunk's text in `id`'s scrollback into a single
@@ -91,29 +95,34 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
         .join("\n")
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn ok_result(ratio: f64, original: u32, compacted: u32, turns: u32) -> CompactionResult {
@@ -131,7 +140,7 @@ fn ok_result(ratio: f64, original: u32, compacted: u32, turns: u32) -> Compactio
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_calls_backend_compact_session_for_focused_session() {
+async fn compact_calls_backend_compact_session_for_focused_session() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_ok(ok_result(60.0, 10_000, 4_000, 12));
@@ -141,16 +150,20 @@ async fn compact_calls_backend_compact_session_for_focused_session() {
     assert_eq!(mock.compact_session_calls(), 0);
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
 
     // @step Then within 1 second backend.compact_session is called exactly once with session_id s-1
     wait_until(
         || mock.compact_session_calls() == 1,
         "backend.compact_session call count to reach 1",
     )
-    .await;
+    .await?;
     assert_eq!(mock.compact_session_calls(), 1);
     assert_eq!(mock.last_compact_session(), Some(sid("s-1")));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -160,7 +173,7 @@ async fn compact_calls_backend_compact_session_for_focused_session() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
+async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.0, original_tokens 10000, compacted_tokens 0, turns_summarized 0, turns_kept 0
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_ok(ok_result(0.0, 10_000, 0, 0));
@@ -169,8 +182,11 @@ async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the round-trip drains
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains no chunk whose text starts with "[compaction]"
     let text = session_scrollback_text(&app, &sid("s-1"));
@@ -193,7 +209,7 @@ async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
             },
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
     let text = session_scrollback_text(&app, &sid("s-1"));
@@ -203,6 +219,7 @@ async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
         1,
         "expected exactly one `{expected}` line in s-1 scrollback, got {text:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -211,7 +228,7 @@ async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_emits_error_notice_into_originating_session_scrollback() {
+async fn compact_emits_error_notice_into_originating_session_scrollback() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Err("out of memory")
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_err("out of memory".to_string());
@@ -220,9 +237,12 @@ async fn compact_emits_error_notice_into_originating_session_scrollback() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
 
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second s-1's scrollback contains a chunk whose text equals "[error] /compact failed: out of memory"
     let text = session_scrollback_text(&app, &sid("s-1"));
@@ -231,14 +251,15 @@ async fn compact_emits_error_notice_into_originating_session_scrollback() {
             .any(|l| l == "[error] /compact failed: out of memory"),
         "expected `[error] /compact failed: out of memory` line in s-1 scrollback, got {text:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: /compact with no current session is a silent no-op
 // ─────────────────────────────────────────────────────────────────────────
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_with_no_current_session_is_a_silent_no_op() {
+#[tokio::test(flavor = "current_thread")]
+async fn compact_with_no_current_session_is_a_silent_no_op() -> TestResult {
     // @step Given an App with NO current session
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -246,10 +267,18 @@ async fn compact_with_no_current_session_is_a_silent_no_op() {
     assert!(app.agent_view_store().current_session().is_none());
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
 
-    tokio::time::sleep(Duration::from_millis(100)).await;
-    drain_pending(&mut app).await;
+    // TEST-042: let any spawned task run before the negative assertion:
+    // on the current-thread runtime a yield runs every ready task
+    // (scheduler rounds, not a time window).
+    for _ in 0..8 {
+        tokio::task::yield_now().await;
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then backend.compact_session is never called
     assert_eq!(
@@ -264,6 +293,7 @@ async fn compact_with_no_current_session_is_a_silent_no_op() {
         0,
         "no sessions should exist for the no-op assertion",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -272,7 +302,7 @@ async fn compact_with_no_current_session_is_a_silent_no_op() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_only_affects_focused_session_background_untouched() {
+async fn compact_only_affects_focused_session_background_untouched() -> TestResult {
     // @step Given an App with two open sessions s-1 (focused) and s-2 (background)
     let mock = Arc::new(MockBackend::new());
     // @step And the MockBackend's compact_session returns Ok with compression_ratio 0.0, original_tokens 1000, compacted_tokens 0, turns_summarized 0, turns_kept 0
@@ -285,18 +315,21 @@ async fn compact_only_affects_focused_session_background_untouched() {
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
 
     // @step Then within 1 second backend.compact_session is called exactly once with session_id s-1
     wait_until(
         || mock.compact_session_calls() == 1,
         "backend.compact_session call count to reach 1",
     )
-    .await;
+    .await?;
     assert_eq!(mock.compact_session_calls(), 1);
     assert_eq!(mock.last_compact_session(), Some(sid("s-1")));
 
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1 is dispatched
     app.dispatch(Action::ChunkReceived(
@@ -311,7 +344,7 @@ async fn compact_only_affects_focused_session_background_untouched() {
             },
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
     let s1_text = session_scrollback_text(&app, &sid("s-1"));
@@ -328,6 +361,7 @@ async fn compact_only_affects_focused_session_background_untouched() {
         s2_text.lines().all(|l| !l.starts_with("[compaction]")),
         "s-2 scrollback must NOT contain a `[compaction]` line, got {s2_text:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -344,7 +378,7 @@ fn row_text(buf: &Buffer, y: u16) -> String {
 }
 
 #[test]
-fn session_footer_renders_compaction_progress_when_some() {
+fn session_footer_renders_compaction_progress_when_some() -> TestResult {
     // @step Given an App with an open session s-1 whose compaction_progress is Some with phase "summarising messages", current 5, total 10
     let progress = CompactionProgress {
         phase: "summarising messages".to_string(),
@@ -378,6 +412,7 @@ fn session_footer_renders_compaction_progress_when_some() {
         !row.contains("5/10") && !row.contains('▰') && !row.contains('▱'),
         "unexpected measured-work presentation in row, got {row:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -385,7 +420,7 @@ fn session_footer_renders_compaction_progress_when_some() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn session_footer_omits_compaction_segment_when_none() {
+fn session_footer_omits_compaction_segment_when_none() -> TestResult {
     // @step Given an App with an open session s-1 whose compaction_progress is None
     let workspace = WorkspaceInfo {
         cwd: "/tmp/scratch".to_string(),
@@ -414,6 +449,7 @@ fn session_footer_omits_compaction_segment_when_none() {
         !row.contains('\u{25B0}'),
         "▰ glyph must be absent when progress is None, got {row:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -422,7 +458,7 @@ fn session_footer_omits_compaction_segment_when_none() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
+async fn compaction_complete_chunk_clears_progress_and_emits_notice() -> TestResult {
     // @step Given an App with an open session s-1 whose compaction_progress is Some with phase "summarising", current 3, total 10
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -454,7 +490,7 @@ async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
         },
     ));
 
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then compaction_progress_for(s-1) becomes None
     assert!(
@@ -471,4 +507,5 @@ async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
         text.lines().any(|l| l == expected),
         "expected `{expected}` in s-1 scrollback, got {text:?}",
     );
+    Ok(())
 }

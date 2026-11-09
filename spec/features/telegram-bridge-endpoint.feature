@@ -1,3 +1,4 @@
+@BUG-582
 @telegram
 @bridge
 @BRIDGE-002
@@ -27,7 +28,7 @@ Feature: Telegram Bridge Endpoint
   #   7. All StreamChunk types handled: text, thinking, tool_call, tool_result, done, error
   #   8. Single standalone TypeScript file: bridge/telegram-endpoint.ts
   #   9. Chunk messages (codelet → endpoint): {type: 'chunk', session_id, data: StreamChunk} - same format as BRIDGE-001 outbound
-  #   10. Input messages (endpoint → codelet): {type: 'input', session_id, message: string} - same format as BRIDGE-001 inbound
+  #   10. Input messages (endpoint → codelet): session envelope {service: 'session', type: 'input', session_id, data: {message, images}} (envelope since e88ce3d91; was {type: 'input', session_id, message})
   #   11. One endpoint instance serves one codelet session at a time. First WebSocket connection establishes the session. Additional connection attempts are rejected. When the session disconnects, the endpoint accepts a new connection. Multiple Telegram users can message the bot - all inputs route to the connected session.
   #   12. Log error to console, drop the message, continue receiving chunks. No buffering - Telegram API outages are usually brief and buffering risks memory growth and stale message floods.
   #   13. Display a simple ✓ completion marker when done chunk is received. Provides clear signal on mobile that the agent finished responding.
@@ -38,8 +39,8 @@ Feature: Telegram Bridge Endpoint
   # EXAMPLES:
   #   1. Codelet sends text chunk 'Hello, I can help' → Endpoint formats with MarkdownV2 → Sent to linked Telegram chat
   #   2. Codelet sends 10,000 char response → Smart truncation: first 1500 + '[...6000 chars omitted...]' + last 1500 → Sent as single message under 4096 limit
-  #   3. User sends 'build the app' in Telegram → Endpoint sends {type: 'input', session_id, message: 'build the app'} via WebSocket → Codelet receives as user input
-  #   4. Codelet sends thinking chunk → Endpoint formats as '💭 [thinking content]' → Sent to Telegram
+  #   3. User sends 'build the app' in Telegram → Endpoint sends {service: 'session', type: 'input', session_id, data: {message: 'build the app'}} via WebSocket → Codelet receives as user input
+  #   4. Codelet sends thinking chunk → Endpoint wraps it in <think>...</think> tags (BRIDGE-006; MarkdownV2-escaped) → Sent to Telegram
   #   5. Codelet sends tool_call chunk for 'Read' → Endpoint formats as '🔧 Running: Read' → Sent to Telegram
   #   6. Codelet sends error chunk → Endpoint formats as '❌ Error: [message]' → Sent to Telegram
   #   7. Code block in response → Endpoint preserves ```language markers → MarkdownV2 formatted code block in Telegram
@@ -146,11 +147,11 @@ Feature: Telegram Bridge Endpoint
 
   @outbound
   @thinking
-  Scenario: Relay thinking chunk with emoji prefix
+  Scenario: Relay thinking chunk wrapped in think tags
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When the codelet sends a thinking chunk "Let me analyze this..."
-    Then the message should be formatted as "💭 Let me analyze this..."
+    Then the message should be wrapped in <think> tags
     And the message should be sent to the linked Telegram chat
 
   @outbound
@@ -231,10 +232,11 @@ Feature: Telegram Bridge Endpoint
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
     When a user sends "build the app" in Telegram
-    Then the endpoint should send a JSON message via WebSocket
-    And the message should have type "input"
-    And the message should contain the session_id
-    And the message should contain "build the app"
+    Then the endpoint should send a JSON envelope via WebSocket
+    And the envelope should target the session service
+    And the envelope type should be "input"
+    And the envelope should contain the session_id
+    And the envelope data should contain "build the app"
 
   @inbound
   @device-switch

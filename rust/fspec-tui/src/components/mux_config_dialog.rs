@@ -1,103 +1,117 @@
 //! MuxConfigDialog — Priority::Foreground modal for configuring the mux
-//! grid layout (MUX-004).
+//! layout (MUX-004, MUX-010).
 //!
-//! Feature: spec/features/mux-config-dialog.feature
+//! Feature: spec/features/mux-config-dialog.feature +
+//! spec/features/mux-nested-column-and-row-layouts-from-a-bracket-layout-string.feature
 //!
-//! Mounted by the bare `/mux` slash command and the `/mux` slash-popup
-//! pick via `App::handle_open_mux_config_dialog` (in
-//! `app/dispatch_mux_config.rs`). The dialog seeds a DRAFT copy of the
-//! live [`MuxConfig`] and edits it in place; the live grid is untouched
-//! until commit (R5 cancel-safe).
+//! Mounted by the bare `/mux` slash command, the `/mux` slash-popup pick
+//! and the board 'M' key via `App::handle_open_mux_config_dialog`. The
+//! dialog edits a DRAFT of the live [`MuxConfig`]; the live grid is
+//! untouched until commit (R5 cancel-safe).
 //!
-//! Body rows (R3, in order): `Enabled` (On/Off), `Orientation`
-//! (Horizontal/Vertical), then one row per configured pane in grid
-//! order showing the pane kind. A field cursor (usize over the
-//! 2 + n_panes rows) drives Up/Down/wheel; Left/Right cycle the
-//! highlighted row's value (R4).
+//! MUX-010 body: the layout-string field, the exact parse / fit error
+//! under it, a live drawn preview of the panes (boxes labelled with their
+//! pane kind, sized by weight; the last valid layout while the text has
+//! an error), the Enabled toggle and the Apply / Save buttons.
 //!
-//! Commit (R5):
-//! - `Enter` → `Action::MuxConfigApplied(draft)` + close.
-//! - `s`     → `Action::MuxConfigAppliedAndSaved(draft)` + close.
-//! - `Esc`   → close without applying or saving.
-//!
-//! Renders via the shared `dialog_theme::render_dialog` with
-//! `Accent::Cyan`.
-//!
-//! Card: MUX-004.
+//! Keys: Tab/Shift+Tab and Down/Up move focus Field → Enabled → Apply →
+//! Save (wrapping); the field takes printable keys and Left/Right/Home/
+//! End/Backspace/Delete; Left/Right/Space toggle Enabled; Enter applies
+//! (on Save it saves); Esc cancels. A commit with an error keeps the
+//! dialog open. A left click on Enabled/Apply/Save focuses and activates
+//! it (COV-075); a click on the field only focuses it.
 
-use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
+use crossterm::event::{Event, KeyCode, KeyEvent, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind};
+use crate::views::multiplex::layout_tree::check_fit;
+use crate::views::multiplex::{MuxConfig, MuxLayout};
 
-use super::dialog_button_hits::{row_list_layout, LastLayout};
-use super::dialog_theme::{render_dialog, Accent, FspecDialog};
-use super::mux_config_dialog_rows::{
-    build_rows, MUX_CONFIG_DIALOG_FOOTER, MUX_CONFIG_DIALOG_TITLE,
-};
+use super::dialog_button_hits::LastLayout;
+use super::mux_config_dialog_field::LayoutField;
+use super::mux_config_dialog_render::{row_target, RowTarget};
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove` AND
 /// `Compositor::contains` to address the dialog idempotently (R2).
 pub const MUX_CONFIG_DIALOG_ID: &str = "mux-config-dialog";
 
-/// Minimum / maximum pane count the dialog enforces (R4/R5).
-const MIN_PANES: usize = 2;
-const MAX_PANES: usize = 4;
+/// Which control of the dialog has the focus.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MuxDialogFocus {
+    Field,
+    Enabled,
+    Apply,
+    Save,
+}
+
+const FOCUS_ORDER: [MuxDialogFocus; 4] = [
+    MuxDialogFocus::Field,
+    MuxDialogFocus::Enabled,
+    MuxDialogFocus::Apply,
+    MuxDialogFocus::Save,
+];
 
 /// Priority::Foreground modal dialog for configuring the mux layout.
 pub struct MuxConfigDialog {
     id: String,
-    /// The draft copy being edited — the live config until commit.
-    draft: MuxConfig,
-    /// Field cursor: 0 = Enabled, 1 = Orientation, 2+i = Pane i+1.
-    cursor: usize,
+    /// The draft being edited; `draft.layout` is the last VALID layout.
+    pub(super) draft: MuxConfig,
+    pub(super) field: LayoutField,
+    pub(super) focus: MuxDialogFocus,
+    /// The exact parse or fit error of the field text, if any.
+    pub(super) error: Option<String>,
+    /// The mux body the layout must fit (the minimum pane size check).
+    fit_area: Rect,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
-    /// TUI-112: last-rendered row geometry for left-click hit-testing
-    /// (R3: a click on a row lands the cursor on it AND applies the
-    /// draft — one-click).
-    last_layout: LastLayout,
+    /// TUI-112: last-rendered row geometry for left-click hit-testing.
+    pub(super) last_layout: LastLayout,
 }
 
 impl MuxConfigDialog {
-    /// Construct a fresh dialog seeded from the live `config`.
-    pub fn new(config: MuxConfig) -> Self {
+    /// A dialog seeded from the live `config`; layouts must fit
+    /// `fit_area` (the live mux body).
+    pub fn new(config: MuxConfig, fit_area: Rect) -> Self {
+        let field = LayoutField::new(&config.layout.to_string());
         Self {
             id: MUX_CONFIG_DIALOG_ID.to_string(),
             draft: config,
-            // Cursor starts on the Enabled row (index 0); the dialog
-            // always has ≥ 3 rows (2 fixed + ≥ 1 pane).
-            cursor: 0,
+            field,
+            focus: MuxDialogFocus::Field,
+            error: None,
+            fit_area,
             action_tx: None,
             pending_action: None,
             last_layout: LastLayout::new(),
         }
     }
 
-    /// Optional builder hook — wire the App's action channel so the
-    /// dialog can emit follow-up actions in addition to stashing them in
-    /// `pending_action`.
+    /// Wire the App's action channel (in addition to `pending_action`).
     pub fn with_action_tx(mut self, action_tx: UnboundedSender<Action>) -> Self {
         self.action_tx = Some(action_tx);
         self
     }
 
-    /// Current draft config (test + dispatcher introspection).
+    /// The draft config (its layout is the last valid one).
     pub fn draft(&self) -> &MuxConfig {
         &self.draft
     }
 
-    /// Test accessor — the current field cursor index.
-    pub fn cursor(&self) -> usize {
-        self.cursor
+    /// The layout field's text.
+    pub fn layout_text(&self) -> String {
+        self.field.text()
     }
 
-    /// Total number of rows the cursor spans (2 + n_panes).
-    fn row_count(&self) -> usize {
-        2 + self.draft.panes.len()
+    /// The exact error shown under the field, if any.
+    pub fn error(&self) -> Option<&str> {
+        self.error.as_deref()
+    }
+
+    pub fn focus(&self) -> MuxDialogFocus {
+        self.focus
     }
 
     /// Test-only: drain any pending action stashed by `handle_event`.
@@ -105,8 +119,7 @@ impl MuxConfigDialog {
         self.pending_action.take()
     }
 
-    /// TUI-112: test accessor — the last-rendered row geometry (frame
-    /// rect is `None` before the first render, R4).
+    /// TUI-112: the last-rendered row geometry (`None` before render).
     pub fn last_layout(&self) -> &LastLayout {
         &self.last_layout
     }
@@ -125,100 +138,87 @@ impl MuxConfigDialog {
         })
     }
 
-    fn move_up(&mut self) {
-        // Wrap: Up from the first row goes to the LAST pane row (R4).
-        let n = self.row_count();
-        self.cursor = if self.cursor == 0 {
-            n - 1
+    fn move_focus(&mut self, forward: bool) {
+        let at = FOCUS_ORDER
+            .iter()
+            .position(|f| *f == self.focus)
+            .unwrap_or(0);
+        let n = FOCUS_ORDER.len();
+        self.focus = FOCUS_ORDER[if forward {
+            (at + 1) % n
         } else {
-            self.cursor - 1
-        };
+            (at + n - 1) % n
+        }];
     }
 
-    fn move_down(&mut self) {
-        // Wrap: Down from the last pane row goes back to Enabled (R4).
-        let n = self.row_count();
-        self.cursor = (self.cursor + 1) % n;
-    }
-
-    fn cycle_value(&mut self, forward: bool) {
-        match self.cursor {
-            0 => {
-                // Enabled: On <-> Off (Left and Right both toggle).
-                self.draft.enabled = !self.draft.enabled;
-            }
-            1 => {
-                // Orientation: Horizontal <-> Vertical (Left and Right
-                // both toggle).
-                self.draft.orientation = match self.draft.orientation {
-                    MuxOrientation::Horizontal => MuxOrientation::Vertical,
-                    MuxOrientation::Vertical => MuxOrientation::Horizontal,
-                };
-            }
-            _ => {
-                // Pane row: cycle kind Board -> Agent -> Files ->
-                // Checkpoints -> Board (forward) or the reverse.
-                let idx = self.cursor - 2;
-                let kinds: [MuxPaneKind; 4] = [
-                    MuxPaneKind::Board,
-                    MuxPaneKind::Agent,
-                    MuxPaneKind::ChangedFiles,
-                    MuxPaneKind::Checkpoints,
-                ];
-                let cur = self.draft.panes.get(idx).copied().unwrap_or_default();
-                let pos = kinds.iter().position(|k| *k == cur).unwrap_or(0);
-                let next = if forward {
-                    (pos + 1) % kinds.len()
-                } else {
-                    (pos + kinds.len() - 1) % kinds.len()
-                };
-                if let Some(slot) = self.draft.panes.get_mut(idx) {
-                    *slot = kinds[next];
+    /// Re-validate the field text: a valid, fitting layout becomes the
+    /// draft layout (the preview follows); otherwise the error shows.
+    fn revalidate(&mut self) {
+        match MuxLayout::parse(&self.field.text()) {
+            Ok(layout) => match check_fit(self.fit_area, &layout) {
+                Ok(()) => {
+                    self.draft.layout = layout;
+                    self.error = None;
                 }
-            }
+                Err(err) => self.error = Some(err.to_string()),
+            },
+            Err(err) => self.error = Some(err.to_string()),
         }
     }
 
-    /// R4: append a new pane row (kind Board, max 4 panes).
-    fn append_pane(&mut self) {
-        if self.draft.panes.len() >= MAX_PANES {
-            return;
+    fn commit(&mut self, save: bool) -> EventResult {
+        if self.error.is_some() {
+            return EventResult::consumed();
         }
-        self.draft.panes.push(MuxPaneKind::Board);
-        // Move the cursor onto the new pane row.
-        self.cursor = self.row_count() - 1;
-    }
-
-    /// R4: remove the highlighted pane row (min 2 panes). No-op when the
-    /// cursor is not on a pane row or the minimum is reached.
-    fn remove_pane(&mut self) {
-        if self.draft.panes.len() <= MIN_PANES {
-            return;
-        }
-        if self.cursor < 2 {
-            return;
-        }
-        let idx = self.cursor - 2;
-        if self.draft.panes.len() > idx {
-            self.draft.panes.remove(idx);
-        }
-        // Keep the cursor on a valid (previous) row.
-        self.cursor = self.cursor.min(self.row_count() - 1);
-    }
-
-    fn apply(&mut self, save: bool) -> EventResult {
         let draft = self.draft.clone();
-        let action = if save {
+        self.emit_action(if save {
             Action::MuxConfigAppliedAndSaved(draft)
         } else {
             Action::MuxConfigApplied(draft)
-        };
-        self.emit_action(action);
+        });
         EventResult::Consumed(Some(self.remove_callback()))
     }
 
-    fn cancel(&self) -> EventResult {
-        EventResult::Consumed(Some(self.remove_callback()))
+    fn activate(&mut self) -> EventResult {
+        self.commit(self.focus == MuxDialogFocus::Save)
+    }
+
+    fn handle_key(&mut self, key: &KeyEvent) -> EventResult {
+        match key.code {
+            KeyCode::Esc => return EventResult::Consumed(Some(self.remove_callback())),
+            KeyCode::Enter if key.modifiers.is_empty() => return self.activate(),
+            KeyCode::Tab | KeyCode::Down => self.move_focus(true),
+            KeyCode::BackTab | KeyCode::Up => self.move_focus(false),
+            _ if self.focus == MuxDialogFocus::Field => match self.field.handle_key(key) {
+                Some(true) => self.revalidate(),
+                Some(false) => {}
+                None => return EventResult::ignored(),
+            },
+            KeyCode::Left | KeyCode::Right | KeyCode::Char(' ')
+                if self.focus == MuxDialogFocus::Enabled =>
+            {
+                self.draft.enabled = !self.draft.enabled;
+            }
+            _ => return EventResult::ignored(),
+        }
+        EventResult::consumed()
+    }
+
+    fn handle_click(&mut self, col: u16, row: u16) -> EventResult {
+        if !self.last_layout.contains(col, row) {
+            return EventResult::ignored();
+        }
+        match self.last_layout.hit(col, row).and_then(row_target) {
+            Some(RowTarget::Field) => {
+                self.focus = MuxDialogFocus::Field;
+                EventResult::consumed()
+            }
+            Some(RowTarget::Control(focus)) => {
+                self.focus = focus;
+                self.activate()
+            }
+            None => EventResult::consumed(),
+        }
     }
 }
 
@@ -232,185 +232,25 @@ impl Component for MuxConfigDialog {
     }
 
     fn handle_event(&mut self, event: &Event) -> EventResult {
-        if let Event::Key(key) = event {
-            // Only consume the documented keybindings (R4); everything
-            // else is ignored so the compositor/Navigator can act.
-            match key.code {
-                KeyCode::Up => {
-                    self.move_up();
-                    return EventResult::consumed();
-                }
-                KeyCode::Down => {
-                    self.move_down();
-                    return EventResult::consumed();
-                }
-                KeyCode::Left => {
-                    self.cycle_value(false);
-                    return EventResult::consumed();
-                }
-                KeyCode::Right => {
-                    self.cycle_value(true);
-                    return EventResult::consumed();
-                }
-                KeyCode::Char('a') | KeyCode::Char('A') => {
-                    self.append_pane();
-                    return EventResult::consumed();
-                }
-                KeyCode::Backspace => {
-                    self.remove_pane();
-                    return EventResult::consumed();
-                }
-                KeyCode::Enter if key.modifiers.is_empty() => return self.apply(false),
-                KeyCode::Char('s') | KeyCode::Char('S') => return self.apply(true),
-                KeyCode::Esc => return self.cancel(),
-                _ => {}
-            }
-            return EventResult::ignored();
-        }
-        // R4: mouse wheel scrolls the cursor like Up/Down.
-        if let Event::Mouse(m) = event {
-            match m.kind {
-                // TUI-112 (R3): a left-click on a row lands the cursor
-                // on that row AND applies the draft config (the same
-                // action Enter emits) — one-click. A click off every
-                // row or outside the frame is Ignored (R4/R5) so it
-                // bubbles.
-                MouseEventKind::Down(MouseButton::Left) => {
-                    let layout = self.last_layout.clone();
-                    if !layout.contains(m.column, m.row) {
-                        return EventResult::ignored();
-                    }
-                    return match layout.hit(m.column, m.row) {
-                        Some(idx) if idx < self.row_count() => {
-                            self.cursor = idx;
-                            self.apply(false)
-                        }
-                        _ => EventResult::ignored(),
-                    };
-                }
+        match event {
+            Event::Key(key) => self.handle_key(key),
+            Event::Mouse(m) => match m.kind {
+                MouseEventKind::Down(MouseButton::Left) => self.handle_click(m.column, m.row),
                 MouseEventKind::ScrollUp => {
-                    self.move_up();
-                    return EventResult::consumed();
+                    self.move_focus(false);
+                    EventResult::consumed()
                 }
                 MouseEventKind::ScrollDown => {
-                    self.move_down();
-                    return EventResult::consumed();
+                    self.move_focus(true);
+                    EventResult::consumed()
                 }
-                _ => {}
-            }
+                _ => EventResult::ignored(),
+            },
+            _ => EventResult::ignored(),
         }
-        EventResult::ignored()
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let rows = build_rows(&self.draft, self.cursor);
-        let dialog = FspecDialog {
-            accent: Accent::Cyan,
-            title: MUX_CONFIG_DIALOG_TITLE,
-            rows,
-            footer: MUX_CONFIG_DIALOG_FOOTER,
-            min_width: 46,
-            query_row: None,
-        };
-        // TUI-112: cache the row geometry (2 + n_panes rows) for
-        // left-click hit-testing, derived from the SAME descriptor that
-        // is painted so the rects line up with the pixels.
-        self.last_layout = row_list_layout(area, &dialog, self.row_count());
-        render_dialog(area, buf, &dialog);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use crate::views::multiplex::MuxConfig;
-    use crossterm::event::KeyModifiers;
-
-    fn two_pane() -> MuxConfig {
-        MuxConfig {
-            orientation: MuxOrientation::Horizontal,
-            splits: vec![50],
-            panes: vec![MuxPaneKind::Board, MuxPaneKind::Agent],
-            focused_pane: 1,
-            enabled: false,
-        }
-    }
-
-    #[test]
-    fn new_seeds_draft_and_defaults_cursor_to_enabled() {
-        let d = MuxConfigDialog::new(two_pane());
-        assert_eq!(d.id(), MUX_CONFIG_DIALOG_ID);
-        assert_eq!(d.priority(), Priority::Foreground);
-        assert_eq!(d.cursor(), 0);
-        assert!(!d.draft().enabled);
-        assert_eq!(d.draft().panes.len(), 2);
-    }
-
-    #[test]
-    fn up_from_enabled_wraps_to_last_pane_row() {
-        let mut d = MuxConfigDialog::new(two_pane());
-        // cursor 0 (Enabled); Up wraps to row_count-1 = 3 (Pane 2)
-        let _ = d.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Up, KeyModifiers::NONE),
-        ));
-        assert_eq!(d.cursor(), 3);
-    }
-
-    #[test]
-    fn down_from_last_pane_row_wraps_to_enabled() {
-        let mut d = MuxConfigDialog::new(two_pane());
-        d.cursor = 3;
-        let _ = d.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Down, KeyModifiers::NONE),
-        ));
-        assert_eq!(d.cursor(), 0);
-    }
-
-    #[test]
-    fn append_pane_respects_max_four() {
-        let mut d = MuxConfigDialog::new(two_pane());
-        // Add up to 4.
-        for _ in 0..2 {
-            let _ = d.handle_event(&crossterm::event::Event::Key(
-                crossterm::event::KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE),
-            ));
-        }
-        assert_eq!(d.draft().panes.len(), 4);
-        // A fifth is rejected.
-        let _ = d.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE),
-        ));
-        assert_eq!(d.draft().panes.len(), 4);
-    }
-
-    #[test]
-    fn remove_pane_respects_min_two() {
-        let mut d = MuxConfigDialog::new(two_pane());
-        // On a pane row (cursor 2 = Pane 1).
-        d.cursor = 2;
-        let _ = d.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE),
-        ));
-        // Minimum of 2 holds.
-        assert_eq!(d.draft().panes.len(), 2);
-    }
-
-    #[test]
-    fn enter_emits_applied_and_esc_emits_nothing() {
-        let mut d = MuxConfigDialog::new(two_pane());
-        let _ = d.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE),
-        ));
-        assert!(matches!(
-            d.take_pending_action(),
-            Some(Action::MuxConfigApplied(_))
-        ));
-        let mut d2 = MuxConfigDialog::new(two_pane());
-        let _ = d2.handle_event(&crossterm::event::Event::Key(
-            crossterm::event::KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE),
-        ));
-        assert!(d2.take_pending_action().is_none());
+        self.render_dialog(area, buf);
     }
 }

@@ -5,25 +5,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
-          "lines": "48-79",
+          "lines": "49-80",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -52,8 +38,24 @@
                 179,
                 180,
                 181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "expires_in: Option<u64>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,14 +66,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
-          "lines": "83-98",
+          "lines": "84-99",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                27,
-                28,
-                29,
                 30,
                 31,
                 32,
@@ -85,8 +84,17 @@
                 40,
                 41,
                 42,
-                43
-              ]
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(super) fn normalized_home(home: &Path) -> Result<PathBuf, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,12 +105,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
-          "lines": "103-146",
+          "lines": "104-147",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/device_session.rs",
               "lines": [
-                93,
                 94,
                 95,
                 96,
@@ -132,8 +139,11 @@
                 120,
                 121,
                 122,
-                123
-              ]
+                123,
+                124
+              ],
+              "firstLine": "pub async fn complete_device_login(device_auth_id: &str) -> Result<CodexTokens, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -144,25 +154,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
-          "lines": "150-209",
+          "lines": "151-211",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -191,8 +187,24 @@
                 179,
                 180,
                 181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "expires_in: Option<u64>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,25 +215,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
-          "lines": "213-243",
+          "lines": "215-246",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/auth_lifecycle.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -250,8 +248,24 @@
                 179,
                 180,
                 181,
-                182
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "expires_in: Option<u64>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -269,6 +283,6 @@
       "rust/providers/src/codex/auth_lifecycle.rs",
       "rust/providers/src/codex/device_session.rs"
     ],
-    "totalLinesCovered": 360
+    "totalLinesCovered": 366
   }
 }

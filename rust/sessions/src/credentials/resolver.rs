@@ -240,7 +240,8 @@ pub const ALL_PROVIDER_IDS: &[&str] = &[
 pub fn update_all_provider_env_vars() -> Result<(), String> {
     for provider_id in ALL_PROVIDER_IDS {
         // Get the API key from the credential store (which was just reloaded)
-        if let Ok(Some(api_key)) = super::store::get_stored_api_key(provider_id) {
+        // BUG-411: a store read failure is returned, not skipped.
+        if let Some(api_key) = super::store::get_stored_api_key(provider_id)? {
             if let Some(env_var) = get_primary_env_var(provider_id) {
                 std::env::set_var(env_var, &api_key);
             }
@@ -264,6 +265,8 @@ pub fn remove_provider_env_vars(provider_id: &str) {
     if let Some(env_vars) = get_provider_env_vars(provider_id) {
         for env_var in env_vars {
             std::env::remove_var(env_var);
+            // BUG-612: no profile delete may bring a removed key back.
+            crate::profile_environment::ledger::forget_var(env_var);
         }
     }
     if provider_id == "anthropic" {

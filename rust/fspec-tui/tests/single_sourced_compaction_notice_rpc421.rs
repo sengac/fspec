@@ -19,15 +19,13 @@
 //! Mirrors the spawned-task + action-bus round-trip pattern established by
 //! `slash_compact_rpc047.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{CompactionResult, SessionId, StreamChunk};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -66,30 +64,35 @@ fn compaction_notice_count(app: &App, id: &SessionId) -> usize {
         .count()
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 /// Await every spawned backend task, then dispatch every queued action.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// The acknowledgement-shaped result the real producers now return:
@@ -109,7 +112,7 @@ fn ack_result(original: u32) -> CompactionResult {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_ok_emits_no_immediate_success_notice() {
+async fn compact_ok_emits_no_immediate_success_notice() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.0, original_tokens 8000, compacted_tokens 0, turns_summarized 0, turns_kept 0
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_ok(ack_result(8_000));
@@ -118,13 +121,16 @@ async fn compact_ok_emits_no_immediate_success_notice() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the RPC round-trip drains
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
     wait_until(
         || mock.compact_session_calls() == 1,
         "backend.compact_session call count to reach 1",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
 
     // @step Then backend.compact_session is called exactly once with session_id s-1
     assert_eq!(mock.compact_session_calls(), 1);
@@ -138,6 +144,7 @@ async fn compact_ok_emits_no_immediate_success_notice() {
          result — got scrollback {:?}",
         session_scrollback_text(&app, &sid("s-1")),
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -146,7 +153,7 @@ async fn compact_ok_emits_no_immediate_success_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact() {
+async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.0, original_tokens 8000, compacted_tokens 0, turns_summarized 0, turns_kept 0
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_ok(ack_result(8_000));
@@ -155,13 +162,16 @@ async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the RPC round-trip drains
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
     wait_until(
         || mock.compact_session_calls() == 1,
         "backend.compact_session call count to reach 1",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
 
     // @step And ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 75.0, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
     app.dispatch(Action::ChunkReceived(
@@ -176,7 +186,7 @@ async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact
             },
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains exactly one line starting with "[compaction]"
     assert_eq!(
@@ -193,6 +203,7 @@ async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact
         text.lines().any(|l| l == expected),
         "expected `{expected}` in s-1 scrollback, got {text:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -201,7 +212,7 @@ async fn exactly_one_notice_when_compaction_complete_chunk_arrives_after_compact
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_failure_still_emits_error_notice_and_no_compaction_notice() {
+async fn compact_failure_still_emits_error_notice_and_no_compaction_notice() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Err("out of memory")
     let mock = Arc::new(MockBackend::new());
     mock.set_compact_session_result_err("out of memory".to_string());
@@ -210,13 +221,16 @@ async fn compact_failure_still_emits_error_notice_and_no_compaction_notice() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
     // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the RPC round-trip drains
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        SlashCommandAction::Compact,
+    ));
     wait_until(
         || mock.compact_session_calls() == 1,
         "backend.compact_session call count to reach 1",
     )
-    .await;
-    drain_pending(&mut app).await;
+    .await?;
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains a line equal to "[error] /compact failed: out of memory"
     let text = session_scrollback_text(&app, &sid("s-1"));
@@ -232,6 +246,7 @@ async fn compact_failure_still_emits_error_notice_and_no_compaction_notice() {
         0,
         "no compaction notice may accompany a failed /compact — got {text:?}",
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -240,7 +255,7 @@ async fn compact_failure_still_emits_error_notice_and_no_compaction_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn auto_compaction_emits_exactly_one_notice_without_preceding_compact() {
+async fn auto_compaction_emits_exactly_one_notice_without_preceding_compact() -> TestResult {
     // @step Given an App with an open session s-1 and no /compact command issued
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -261,7 +276,7 @@ async fn auto_compaction_emits_exactly_one_notice_without_preceding_compact() {
             },
         },
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then s-1's scrollback contains exactly one line starting with "[compaction]"
     assert_eq!(
@@ -270,4 +285,5 @@ async fn auto_compaction_emits_exactly_one_notice_without_preceding_compact() {
         "auto-compaction must land exactly one notice — got scrollback {:?}",
         session_scrollback_text(&app, &sid("s-1")),
     );
+    Ok(())
 }

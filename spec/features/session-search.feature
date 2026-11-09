@@ -1,4 +1,6 @@
 @AMGR-001
+@tools
+@history-search
 Feature: SessionSearch Tool — Native Rust session history search replacing bash/Python scripts
   """
   Session search reuses rust/napi/src/persistence/ (MessageStore, HistoryStore, BlobStore) — all the Python logic from session-search.sh has Rust equivalents except the streaming chunk reassembly which needs porting

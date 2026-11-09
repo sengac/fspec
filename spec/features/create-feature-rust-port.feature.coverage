@@ -82,7 +82,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let mut response = json!({"
             }
           ]
         }
@@ -93,7 +95,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "77-104",
+          "lines": "77-125",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
@@ -121,7 +123,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "response[\"fileNamingReminder\"] = Value::String(reminder);",
+              "lastLine": "\"@critical\","
             }
           ]
         }
@@ -132,7 +136,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "111-137",
+          "lines": "132-161",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
@@ -185,7 +189,9 @@
                 217,
                 218,
                 219
-              ]
+              ],
+              "firstLine": "if c.is_ascii_alphanumeric() {",
+              "lastLine": ""
             }
           ]
         }
@@ -196,11 +202,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "144-166",
+          "lines": "168-192",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
                 247,
                 248,
                 249,
@@ -245,15 +257,10 @@
                 288,
                 289,
                 290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298
-              ]
+                291
+              ],
+              "firstLine": "struct PrefillPattern {",
+              "lastLine": "fn detect_prefill(content: &str) -> Value {"
             }
           ]
         }
@@ -264,11 +271,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "173-188",
+          "lines": "199-216",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
                 416,
                 417,
                 418,
@@ -279,15 +293,10 @@
                 423,
                 424,
                 425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433
-              ]
+                426
+              ],
+              "firstLine": "{}\\n{}\\n\\",
+              "lastLine": "// ─────────────────────────────────────────────────────────────────────────"
             }
           ]
         }
@@ -298,11 +307,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "195-218",
+          "lines": "223-246",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
               "lines": [
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
                 388,
                 389,
                 390,
@@ -322,15 +338,10 @@
                 404,
                 405,
                 406,
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413,
-                414
-              ]
+                407
+              ],
+              "firstLine": "let first_five: Vec<String> = matches",
+              "lastLine": "Found {} placeholder(s) that need to be replaced using CLI commands:\\n\\"
             }
           ]
         }
@@ -341,7 +352,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_feature.rs",
-          "lines": "225-251",
+          "lines": "253-286",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_feature.rs",
@@ -355,7 +366,148 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "// ---- Refuse to overwrite an existing feature file ----",
+              "lastLine": "// `Failed to check if file exists: ${error.message}\\nSuggestion:"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Feature names become kebab-case file names",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/create_feature.rs",
+          "lines": "305-335",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ],
+              "firstLine": "fn to_kebab_case(s: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creates the spec/features directory when it is missing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/create_feature.rs",
+          "lines": "342-367",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "// ---- Ensure spec/features/ exists ----",
+              "lastLine": "})?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A created feature file passes validate",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/create_feature.rs",
+          "lines": "374-394",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "fn generate_feature_template(feature_name: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A coverage sidecar failure does not fail feature creation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/create_feature.rs",
+          "lines": "401-429",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "let coverage_file = match create_coverage_file(&file_abs, &content) {",
+              "lastLine": "}),"
             }
           ]
         }
@@ -363,8 +515,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/create_feature.rs"
@@ -372,6 +524,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/create_feature.rs"
     ],
-    "totalLinesCovered": 423
+    "totalLinesCovered": 631
   }
 }

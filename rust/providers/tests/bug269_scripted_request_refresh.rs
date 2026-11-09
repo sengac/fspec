@@ -223,9 +223,7 @@ async fn caller_cancellation_and_deadline_prevent_inference_after_admitted_refre
         support::wait_requests(&server, "/token", 1).await?;
         // @step When the actual requesting task is cancelled or its caller deadline expires
         if deadline {
-            expire
-                .send(tokio::time::Instant::now() + Duration::from_millis(20))
-                .map_err(|_| "deadline receiver gone")?;
+            expire.send(()).map_err(|_| "deadline receiver gone")?;
             assert_eq!(task.await?, Err("caller deadline".into()));
         } else {
             task.abort();
@@ -259,9 +257,18 @@ async fn credential_root_changes_fail_closed_across_refresh_waits() -> TestResul
     support::wait_requests(&server, "/token", 1).await?;
     let second = support::complete(provider, 0);
     tokio::pin!(second);
-    assert!(tokio::time::timeout(Duration::from_millis(30), &mut second)
-        .await
-        .is_err());
+    // TEST-042: no waiting window; the second request stays pending until it
+    // is parked behind the admitted refresh (it holds the refresh gate too).
+    let parked = codelet_test_helpers::pending_until(
+        "the second request waits on the refresh",
+        &mut second,
+        || {
+            codelet_providers::oauth::scripted_refresh_gate_users(support::NAME)
+                .is_ok_and(|users| users >= 2)
+        },
+    )
+    .await;
+    assert!(parked.is_ok(), "{parked:?}");
     // @step When the active credential root changes before refresh persistence or waiter admission
     std::env::set_var(
         "FSPEC_HOME",

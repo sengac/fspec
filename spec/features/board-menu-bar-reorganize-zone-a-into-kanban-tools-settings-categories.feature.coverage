@@ -5,34 +5,38 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "173-185",
+          "lines": "182-192",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
               "lines": [
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208
-              ]
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299
+              ],
+              "firstLine": "/// MENU-008 R1: the Zone A category list in fixed order — `Kanban`,",
+              "lastLine": "];"
             }
           ]
         }
@@ -43,116 +47,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "188-209",
+          "lines": "198-224",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
               "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The Tools category lists the git tools in order",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "212-236",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
-              "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The Settings category lists the configuration entries in order",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "239-262",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
-              "lines": [
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
                 166,
                 167,
-                168
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The Help category is unchanged",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "266-291",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
-              "lines": [
+                168,
+                169,
                 170,
                 171,
                 172,
@@ -168,8 +71,139 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "/// MENU-008 R2: the 4 Kanban (work-unit workflow) entries — the legacy",
+              "lastLine": "];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Tools category lists the git tools in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "230-252",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                103,
+                104,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ],
+              "firstLine": "MenuAction::Checkpoints => Action::OpenCheckpointsView,",
+              "lastLine": "];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Settings category lists the configuration entries in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "258-294",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245
+              ],
+              "firstLine": "MenuAction::Mux => Action::OpenMuxConfigDialog,",
+              "lastLine": "];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Help category lists Help and Close",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "300-322",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                110,
+                111,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274
+              ],
+              "firstLine": "MenuAction::Help => Action::OpenBoardHelp,",
+              "lastLine": "];"
             }
           ]
         }
@@ -180,45 +214,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "294-355",
+          "lines": "329-386",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The bar row paints the four Zone A items",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "358-376",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
-              "lines": [
+                31,
+                32,
+                33,
                 34,
                 35,
                 36,
@@ -305,19 +308,130 @@
                 117,
                 118,
                 119,
-                120
-              ]
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "/// The action a dropdown row / help-dialog row executes. All variants map",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Focusing the Kanban item opens a 4-row dropdown",
+      "name": "The bar row paints the four Zone A items",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "379-399",
+          "lines": "392-412",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "pub fn paint_menu_bar(",
+              "lastLine": "/// R5 + MENU-006: true when the cell should paint the selected-item"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Focusing the Kanban item opens a 5-row dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "418-436",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/dropdown.rs",
@@ -384,7 +498,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub fn dropdown_rect(area: Rect, item_x: u16, bar_y: u16, category: usize) -> Option<Rect> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -395,24 +511,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "430-464",
+          "lines": "471-506",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
               "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -440,112 +543,23 @@
                 77,
                 78,
                 79,
-                80
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "430-463",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "430-463",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "/// caller keeps the navigation-key cascade running).",
+              "lastLine": "return Some(EventResult::consumed());"
             }
           ]
         }
@@ -556,75 +570,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "467-499",
+          "lines": "513-549",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "471-504",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "/// Called from the catch-all arm of `App::dispatch`'s match.",
+              "lastLine": "self.handle_provider_credentials_loaded(list.clone());"
             }
           ]
         }
@@ -635,12 +599,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "402-427",
+          "lines": "442-465",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/mod.rs",
               "lines": [
-                112,
                 113,
                 114,
                 115,
@@ -676,8 +639,11 @@
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149
+              ],
+              "firstLine": "/// pre-MENU-009).",
+              "lastLine": "let zone_c = self.zone_c.len();"
             }
           ]
         }
@@ -688,55 +654,182 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "503-555",
+          "lines": "573-588",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/keys.rs",
               "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
+          "lines": "555-604",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "The u help dialog lists all ten registry rows in registry order",
+      "name": "The u help dialog lists all thirteen registry rows in registry order",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "595-657",
+          "lines": "648-708",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -755,8 +848,27 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "Self {",
+              "lastLine": "let id = self.id.clone();"
             }
           ]
         }
@@ -767,12 +879,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu008_menu_bar_reorg.rs",
-          "lines": "660-737",
+          "lines": "714-796",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
               "lines": [
-                69,
                 70,
                 71,
                 72,
@@ -822,19 +933,7 @@
                 116,
                 117,
                 118,
-                119,
-                120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -843,8 +942,20 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "pub cells: Vec<DisplayCell>,",
+              "lastLine": "if level < 4 && !cells.is_empty() {"
             }
           ]
         }
@@ -866,9 +977,10 @@
       "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
       "rust/fspec-tui/src/components/menu_bar/mod.rs",
       "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
       "rust/fspec-tui/src/components/menu_bar_help.rs",
       "rust/fspec-tui/src/components/menu_bar/layout.rs"
     ],
-    "totalLinesCovered": 1195
+    "totalLinesCovered": 1208
   }
 }

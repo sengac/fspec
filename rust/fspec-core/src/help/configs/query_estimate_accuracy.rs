@@ -5,14 +5,8 @@
 //! --help` piped to non-TTY. Captured fixture:
 //! `rust/fspec/tests/fixtures/help/query-estimate-accuracy.txt`.
 //!
-//! Framing note: the TS help advertises `--prefix <prefix>` even though
-//! the TS Commander.js registration (lines 164-217 of
-//! `src/commands/query-estimate-accuracy.ts`) actually registers only
-//! `--format <format>`. We preserve the TS help canon here (the byte
-//! fixture asserts the surfaced flag list), and let the standalone clap
-//! subcommand bridge expose only the `--format` flag actually accepted
-//! by the runtime — matching `show-epic`'s identical framing-A
-//! divergence (`rust/fspec-core/src/help/configs/show_epic.rs`).
+//! CLI-016: the options match the clap surface (`-f, --format`); the
+//! TypeScript-only `--prefix` option is gone.
 
 use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 
@@ -34,8 +28,8 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
 }];
 
 const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--prefix <prefix>",
-    description: "Filter by prefix",
+    flag: "-f, --format <format>",
+    description: "Output format (text or json)",
     default_value: None,
 }];
 

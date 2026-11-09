@@ -32,10 +32,10 @@
 //!     (parity with TS chalk-red error path at
 //!     `src/commands/copy-virtual-hooks.ts:123-128`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::copy_virtual_hooks;
 use serde_json::{json, Value};
 
@@ -56,7 +56,7 @@ pub struct CliArgs {
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CLI args into the JSON shape consumed by fspec_core.
     let mut obj = serde_json::Map::new();

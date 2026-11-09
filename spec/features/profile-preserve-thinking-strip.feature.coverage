@@ -51,7 +51,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "pub fn strip_reasoning_from_history(history: &[Message], preserve_thinking: bool) -> Vec<Message> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,16 +69,19 @@
             {
               "file": "rust/core/src/history_strip.rs",
               "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
                 44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52
-              ]
+                45
+              ],
+              "firstLine": "let kept: Vec<AssistantContent> = content",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,7 +100,9 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "let mut out: Vec<Message> = Vec::with_capacity(history.len());",
+              "lastLine": "match message {"
             }
           ]
         }
@@ -111,12 +118,15 @@
             {
               "file": "rust/core/src/history_strip.rs",
               "lines": [
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "out.push(Message::Assistant {",
+              "lastLine": "other => out.push(other.clone()),"
             }
           ]
         }
@@ -133,6 +143,6 @@
     "implFiles": [
       "rust/core/src/history_strip.rs"
     ],
-    "totalLinesCovered": 176
+    "totalLinesCovered": 178
   }
 }

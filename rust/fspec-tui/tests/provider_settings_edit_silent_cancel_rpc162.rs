@@ -20,13 +20,14 @@
 //! routes to Detail::Summary on every exit path) and PASS once
 //! the three exit arms are rewritten to target ProviderSettingsMode::List.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
+use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
+use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_fspec_tui::views::{
     DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 /// Build a synthetic Press event with no modifiers.
@@ -51,16 +52,23 @@ fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCreden
     }
 }
 
-/// Build a ProviderSettingsView seeded with one api_key provider already
-/// transitioned into Detail::EditApiKey mode with an empty draft via the
-/// legacy List → Summary → EditApiKey path. RPC-162 only changes
-/// EditApiKey EXIT transitions so this entry path is still valid.
-fn view_in_edit_api_key_mode_for(provider: &str) -> ProviderSettingsView {
+/// BUG-578: open Detail::EditApiKey for an api_key `provider` the way the UI
+/// does: Enter on the expanded provider's API-key row.
+fn view_in_edit_api_key_mode_for(
+    provider: &str,
+) -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
+    let infos = vec![pinfo(provider, "api_key", true, 1)];
     let mut v = ProviderSettingsView::new();
-    v.set_providers(vec![pinfo(provider, "api_key", true, 1)]);
-    v.handle_key(key(KeyCode::Enter)); // List → Detail::Summary (legacy fallback)
-    v.handle_key(key(KeyCode::Enter)); // Detail::Summary → Detail::EditApiKey
-    v
+    v.set_provider_display_infos(project_display_infos(&infos, &[]));
+    v.set_providers(infos);
+    v.toggle_expansion(provider);
+    v.selected_index = v
+        .nav_items
+        .iter()
+        .position(|n| matches!(n.kind, NavItemKind::ApiKey))
+        .or_fail("the expanded provider has an API-key row")?;
+    v.handle_key(key(KeyCode::Enter));
+    Ok(v)
 }
 
 /// Type each char of `text` into the view (Char arm of handle_edit_key).
@@ -78,14 +86,14 @@ fn press_backspace(view: &mut ProviderSettingsView, n: usize) {
 }
 
 /// Assert the view is in Detail::EditApiKey mode and return the draft.
-fn read_edit_draft(view: &ProviderSettingsView) -> String {
-    match &view.mode {
+fn read_edit_draft(view: &ProviderSettingsView) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::Detail {
             sub: DetailSub::EditApiKey { draft },
             ..
         } => draft.clone(),
-        other => panic!("expected Detail::EditApiKey, got {other:?}"),
-    }
+        other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
+    })
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -94,10 +102,11 @@ fn read_edit_draft(view: &ProviderSettingsView) -> String {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_enter_on_an_empty_edit_api_key_draft_transitions_to_list_mode_and_emits_no_action() {
+fn pressing_enter_on_an_empty_edit_api_key_draft_transitions_to_list_mode_and_emits_no_action(
+) -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with empty draft
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
-    assert_eq!(read_edit_draft(&view), "");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step When the user presses Enter
     let evt = view.handle_key(key(KeyCode::Enter));
@@ -126,6 +135,7 @@ fn pressing_enter_on_an_empty_edit_api_key_draft_transitions_to_list_mode_and_em
         matches!(evt, ProviderSettingsEvent::Consumed),
         "expected Consumed, got {evt:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -134,10 +144,11 @@ fn pressing_enter_on_an_empty_edit_api_key_draft_transitions_to_list_mode_and_em
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_enter_on_an_empty_edit_api_key_draft_never_writes_the_legacy_validation_status() {
+fn pressing_enter_on_an_empty_edit_api_key_draft_never_writes_the_legacy_validation_status(
+) -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with empty draft
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
-    assert_eq!(read_edit_draft(&view), "");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step And view.status is the empty string
     assert_eq!(view.status, "", "precondition: view.status starts empty");
@@ -152,6 +163,7 @@ fn pressing_enter_on_an_empty_edit_api_key_draft_never_writes_the_legacy_validat
         "after silent cancel view.status must be empty, never 'API key cannot be empty'"
     );
     assert_ne!(view.status, "API key cannot be empty");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -160,11 +172,11 @@ fn pressing_enter_on_an_empty_edit_api_key_draft_never_writes_the_legacy_validat
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_list() {
+fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_list() -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with draft "sk-abc"
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
     type_chars(&mut view, "sk-abc");
-    assert_eq!(read_edit_draft(&view), "sk-abc");
+    assert_eq!(read_edit_draft(&view)?, "sk-abc");
 
     // @step When the user presses Enter
     let evt = view.handle_key(key(KeyCode::Enter));
@@ -177,12 +189,16 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
                 api_key,
             } = *action
             else {
-                panic!("expected Emit(SaveProviderCredentials), got {action:?}");
+                return Err(
+                    format!("expected Emit(SaveProviderCredentials), got {action:?}").into(),
+                );
             };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(api_key, "sk-abc");
         }
-        other => panic!("expected Emit(SaveProviderCredentials), got {other:?}"),
+        other => {
+            return Err(format!("expected Emit(SaveProviderCredentials), got {other:?}").into())
+        }
     }
 
     // @step And the view's mode is ProviderSettingsMode::List
@@ -197,6 +213,7 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
         view.status, "",
         "view.status must be empty after save (no Saving… text)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -204,11 +221,11 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_esc_in_edit_api_key_transitions_directly_to_list_mode() {
+fn pressing_esc_in_edit_api_key_transitions_directly_to_list_mode() -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with draft "sk-cancel"
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
     type_chars(&mut view, "sk-cancel");
-    assert_eq!(read_edit_draft(&view), "sk-cancel");
+    assert_eq!(read_edit_draft(&view)?, "sk-cancel");
 
     // @step When the user presses Esc
     let evt = view.handle_key(key(KeyCode::Esc));
@@ -234,6 +251,7 @@ fn pressing_esc_in_edit_api_key_transitions_directly_to_list_mode() {
         matches!(evt, ProviderSettingsEvent::Consumed),
         "expected Consumed, got {evt:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -242,10 +260,11 @@ fn pressing_esc_in_edit_api_key_transitions_directly_to_list_mode() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_list_mode() {
-    // @step Given the ProviderSettingsView is in Detail::EditApiKey for "openai" with empty draft
-    let mut view = view_in_edit_api_key_mode_for("openai");
-    assert_eq!(read_edit_draft(&view), "");
+fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_list_mode(
+) -> TestResult {
+    // @step Given the ProviderSettingsView is in Detail::EditApiKey for "gemini" with empty draft
+    let mut view = view_in_edit_api_key_mode_for("gemini")?;
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step When the user presses Esc
     view.handle_key(key(KeyCode::Esc));
@@ -259,6 +278,7 @@ fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_lis
 
     // @step And view.status is the empty string
     assert_eq!(view.status, "");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -268,18 +288,18 @@ fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_lis
 
 #[test]
 fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_no_validation_chrome(
-) {
+) -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with empty draft
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
-    assert_eq!(read_edit_draft(&view), "");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step When the user types "sk-"
     type_chars(&mut view, "sk-");
-    assert_eq!(read_edit_draft(&view), "sk-");
+    assert_eq!(read_edit_draft(&view)?, "sk-");
 
     // @step And the user presses Backspace 3 times so the draft is empty again
     press_backspace(&mut view, 3);
-    assert_eq!(read_edit_draft(&view), "");
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step And the user presses Enter
     view.handle_key(key(KeyCode::Enter));
@@ -293,6 +313,7 @@ fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_n
 
     // @step And view.status is the empty string
     assert_eq!(view.status, "", "no validation chrome must appear");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -301,10 +322,10 @@ fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_n
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_enter_clears_any_pre_existing_legacy_validation_status() {
+fn empty_enter_clears_any_pre_existing_legacy_validation_status() -> TestResult {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with empty draft
-    let mut view = view_in_edit_api_key_mode_for("anthropic");
-    assert_eq!(read_edit_draft(&view), "");
+    let mut view = view_in_edit_api_key_mode_for("anthropic")?;
+    assert_eq!(read_edit_draft(&view)?, "");
 
     // @step And view.status has been manually set to "API key cannot be empty" (legacy state)
     view.set_status("API key cannot be empty");
@@ -325,6 +346,7 @@ fn empty_enter_clears_any_pre_existing_legacy_validation_status() {
         "expected List after empty-Enter with legacy status, got {:?}",
         view.mode
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -333,16 +355,17 @@ fn empty_enter_clears_any_pre_existing_legacy_validation_status() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verbatim() {
-    // @step Given the ProviderSettingsView is in Detail::EditApiKey for "openai" with draft "sk-test-1"
-    let mut view = view_in_edit_api_key_mode_for("openai");
+fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verbatim() -> TestResult
+{
+    // @step Given the ProviderSettingsView is in Detail::EditApiKey for "gemini" with draft "sk-test-1"
+    let mut view = view_in_edit_api_key_mode_for("gemini")?;
     type_chars(&mut view, "sk-test-1");
-    assert_eq!(read_edit_draft(&view), "sk-test-1");
+    assert_eq!(read_edit_draft(&view)?, "sk-test-1");
 
     // @step When the user presses Enter
     let evt = view.handle_key(key(KeyCode::Enter));
 
-    // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "openai", api_key: "sk-test-1" })
+    // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "gemini", api_key: "sk-test-1" })
     match evt {
         ProviderSettingsEvent::Emit(action) => {
             let Action::SaveProviderCredentials {
@@ -350,12 +373,16 @@ fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verba
                 api_key,
             } = *action
             else {
-                panic!("expected Emit(SaveProviderCredentials), got {action:?}");
+                return Err(
+                    format!("expected Emit(SaveProviderCredentials), got {action:?}").into(),
+                );
             };
-            assert_eq!(provider_id, "openai");
+            assert_eq!(provider_id, "gemini");
             assert_eq!(api_key, "sk-test-1");
         }
-        other => panic!("expected Emit(SaveProviderCredentials), got {other:?}"),
+        other => {
+            return Err(format!("expected Emit(SaveProviderCredentials), got {other:?}").into())
+        }
     }
 
     // @step And the view's mode is ProviderSettingsMode::List
@@ -364,4 +391,5 @@ fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verba
         "expected List after save, got {:?}",
         view.mode
     );
+    Ok(())
 }

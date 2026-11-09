@@ -1,0 +1,641 @@
+{
+  "scenarios": [
+    {
+      "name": "list-work-units selects cards with --work-unit and rejects --id",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "107-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/list_work_units.rs",
+              "lines": [
+                40,
+                41,
+                48,
+                49,
+                50,
+                51,
+                53,
+                153,
+                157,
+                161,
+                165
+              ],
+              "firstLine": "/// Registered prefixes (comma list). No short flag: -p is --parent.",
+              "lastLine": "#[arg(long, value_name = \"workUnitId\", value_delimiter = ',')]"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/args.rs",
+              "lines": [
+                51
+              ],
+              "firstLine": "pub(super) work_unit_id: Option<List>,",
+              "lastLine": "pub(super) work_unit_id: Option<List>,"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/list_work_units/filter.rs",
+              "lines": [
+                114,
+                122,
+                239,
+                240,
+                241,
+                242,
+                243
+              ],
+              "firstLine": "let bad = || format!(\"A --work-unit range must use one prefix: {v}\");",
+              "lastLine": ".transpose()?,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "query-metrics takes --work-unit and rejects --work-unit-id",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "138-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/query_metrics.rs",
+              "lines": [
+                20,
+                21,
+                46
+              ],
+              "firstLine": "//! `--work-unit`, `--type` and `--format` (CLI-020 renamed the TS",
+              "lastLine": "/// `--work-unit <workUnitId>` — query metrics for a single unit when set."
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_01.rs",
+              "lines": [
+                248,
+                249
+              ],
+              "firstLine": "/// `--work-unit <workUnitId>` — query metrics for a single unit.",
+              "lastLine": "#[arg(long = \"work-unit\", value_name = \"workUnitId\")]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "-p means --parent and --prefix has no short flag",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "177-207",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/list_work_units.rs",
+              "lines": [
+                40,
+                41,
+                48,
+                49,
+                50,
+                51,
+                53,
+                153,
+                157,
+                161,
+                165
+              ],
+              "firstLine": "/// Registered prefixes (comma list). No short flag: -p is --parent.",
+              "lastLine": "#[arg(long, value_name = \"workUnitId\", value_delimiter = ',')]"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_01.rs",
+              "lines": [
+                267,
+                268
+              ],
+              "firstLine": "/// Filter by prefix (no short flag: -p means --parent, CLI-020).",
+              "lastLine": "#[arg(long, value_name = \"PREFIX\")]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Link flags show the workUnitId placeholder",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "209-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/add_dependency.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                15,
+                16,
+                17,
+                18,
+                26,
+                31,
+                36,
+                41,
+                103
+              ],
+              "firstLine": "const ARGS: &[CommandArgument] = &[",
+              "lastLine": "usage: Some(\"fspec add-dependency <workUnitId> [workUnitId] [options]\"),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "copy-virtual-hooks and create-story show workUnitId for their card flags",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "238-261",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/copy_virtual_hooks.rs",
+              "lines": [
+                122
+              ],
+              "firstLine": "usage: Some(\"fspec copy-virtual-hooks --from <workUnitId> --to <workUnitId> [--hook-name <name>]\"),",
+              "lastLine": "usage: Some(\"fspec copy-virtual-hooks --from <workUnitId> --to <workUnitId> [--hook-name <name>]\"),"
+            },
+            {
+              "file": "rust/fspec-core/src/help/configs/create_story.rs",
+              "lines": [
+                40
+              ],
+              "firstLine": "flag: \"-p, --parent <workUnitId>\",",
+              "lastLine": "flag: \"-p, --parent <workUnitId>\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit and research JSON args reference the card as workUnitId",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "263-289",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                57,
+                63,
+                357,
+                425,
+                434,
+                441,
+                695,
+                715
+              ],
+              "firstLine": "/// Arguments of `fspec audit [--area <name>]... [--feature <name>]...",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/session.rs",
+              "lines": [
+                87,
+                102,
+                112,
+                123,
+                124,
+                125,
+                126,
+                127,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                494
+              ],
+              "firstLine": "work_unit_id: Option<String>,",
+              "lastLine": "work_unit_id: args.work_unit_id.clone(),"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/research.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                121,
+                134
+              ],
+              "firstLine": "/// `query`, `workUnitId`, `attach` are accepted (parity with the TS",
+              "lastLine": "work_unit_id: Option<String>,"
+            },
+            {
+              "file": "rust/fspec/src/audit.rs",
+              "lines": [
+                53
+              ],
+              "firstLine": "payload[\"workUnitId\"] = json!(work_unit);",
+              "lastLine": "payload[\"workUnitId\"] = json!(work_unit);"
+            },
+            {
+              "file": "rust/fspec/src/research.rs",
+              "lines": [
+                54,
+                79
+              ],
+              "firstLine": "/// `src/commands/research.ts:277-282` (`--tool <name>`, `--work-unit <workUnitId>`,",
+              "lastLine": "obj.insert(\"workUnitId\".to_string(), json!(w));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MCP checkpoint tools take workUnitId",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "300-339",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_19.rs",
+              "lines": [
+                8
+              ],
+              "firstLine": "#[serde(rename = \"workUnitId\")]",
+              "lastLine": "#[serde(rename = \"workUnitId\")]"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_04.rs",
+              "lines": [
+                2,
+                3,
+                4,
+                5,
+                29,
+                30,
+                31,
+                32,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(super) mod checkpoint_diff_files {",
+              "lastLine": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_05.rs",
+              "lines": [
+                2,
+                3,
+                4,
+                5,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "pub(super) mod restore_checkpoint_all {",
+              "lastLine": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+            },
+            {
+              "file": "rust/rpc/src/mcp_dispatch/group_47.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                107,
+                108,
+                109,
+                110,
+                111,
+                148,
+                149,
+                150,
+                151,
+                152,
+                189,
+                190,
+                191,
+                192,
+                193,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "pub(super) mod checkpoint_diff_files_in_workspace {",
+              "lastLine": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auto-advance to done records doneAt",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "341-368",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                225
+              ],
+              "firstLine": ".insert(\"doneAt\".to_string(), serde_json::Value::String(now.clone()));",
+              "lastLine": ".insert(\"doneAt\".to_string(), serde_json::Value::String(now.clone()));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board holds only the new keys after the one-time migration",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "385-434",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_card/document.rs",
+              "lines": [
+                74,
+                76
+              ],
+              "firstLine": "(\"History\", &[\"stateHistory\", \"blockedReason\"]),",
+              "lastLine": "(\"Timestamps\", &[\"createdAt\", \"updatedAt\"]),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The guard test rejects every other card-id name",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/list_work_units/work_unit_name_guard_tests.rs",
+          "lines": "195-250",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
+              "lines": [
+                28,
+                29,
+                50,
+                51,
+                220,
+                221,
+                224,
+                227,
+                230,
+                233,
+                252,
+                253,
+                255,
+                256,
+                259,
+                262,
+                265,
+                268
+              ],
+              "firstLine": "QueryEstimationGuide {",
+              "lastLine": "#[arg(long = \"relates-to\", value_name = \"workUnitId\")]"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_03.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                24,
+                25,
+                26,
+                37,
+                38,
+                39,
+                53,
+                54,
+                55,
+                66,
+                67,
+                68,
+                79,
+                80,
+                81,
+                97,
+                98,
+                99,
+                110,
+                111,
+                112,
+                125,
+                126,
+                127,
+                138,
+                139,
+                140,
+                151,
+                152,
+                153,
+                171,
+                172,
+                174,
+                175,
+                178,
+                181,
+                184,
+                187,
+                195,
+                196,
+                197,
+                211,
+                212,
+                213,
+                221,
+                222,
+                223,
+                231,
+                232,
+                233,
+                241,
+                242,
+                243,
+                251,
+                252,
+                253,
+                264,
+                265,
+                266
+              ],
+              "firstLine": "ClearDependencies {",
+              "lastLine": "#[arg(value_name = \"workUnitId\")]"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_04.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                72,
+                73,
+                74,
+                85,
+                86,
+                87,
+                107,
+                108,
+                109,
+                120,
+                121,
+                122,
+                132,
+                135,
+                205,
+                206,
+                222,
+                223,
+                239,
+                240,
+                254,
+                255
+              ],
+              "firstLine": "AddAttachment {",
+              "lastLine": "#[arg(value_name = \"workUnitId\")]"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_05.rs",
+              "lines": [
+                11,
+                12,
+                28,
+                29,
+                45,
+                46,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "AddBoundedContext {",
+              "lastLine": "#[arg(short = 'p', long, value_name = \"workUnitId\")]"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_08.rs",
+              "lines": [
+                67,
+                68,
+                127,
+                128,
+                140,
+                141,
+                151,
+                152,
+                175,
+                176,
+                280
+              ],
+              "firstLine": "DiscoverEventStorm {",
+              "lastLine": "#[arg(long = \"work-unit\", value_name = \"workUnitId\")]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error hints and docs name the card workUnitId",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli020_one_work_unit_name.rs",
+          "lines": "436-468",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/add_hotspot.rs",
+              "lines": [
+                84
+              ],
+              "firstLine": "fix: \"Ensure work unit exists: fspec show-work-unit <workUnitId>\",",
+              "lastLine": "fix: \"Ensure work unit exists: fspec show-work-unit <workUnitId>\","
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/cli020_one_work_unit_name.rs",
+      "rust/fspec/src/list_work_units/work_unit_name_guard_tests.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/list_work_units.rs",
+      "rust/fspec-core/src/commands/list_work_units/args.rs",
+      "rust/fspec-core/src/commands/list_work_units/filter.rs",
+      "rust/fspec/src/query_metrics.rs",
+      "rust/fspec/src/cli_registration/mode_01.rs",
+      "rust/fspec-core/src/help/configs/add_dependency.rs",
+      "rust/fspec-core/src/help/configs/copy_virtual_hooks.rs",
+      "rust/fspec-core/src/help/configs/create_story.rs",
+      "rust/fspec-core/src/commands/audit.rs",
+      "rust/fspec-core/src/commands/audit/session.rs",
+      "rust/fspec-core/src/commands/research.rs",
+      "rust/fspec/src/audit.rs",
+      "rust/fspec/src/research.rs",
+      "rust/rpc/src/mcp_dispatch/group_19.rs",
+      "rust/rpc/src/mcp_dispatch/group_04.rs",
+      "rust/rpc/src/mcp_dispatch/group_05.rs",
+      "rust/rpc/src/mcp_dispatch/group_47.rs",
+      "rust/fspec-core/src/commands/auto_advance.rs",
+      "rust/fspec-tui/src/components/board_card/document.rs",
+      "rust/fspec/src/cli_registration/mode_02.rs",
+      "rust/fspec/src/cli_registration/mode_03.rs",
+      "rust/fspec/src/cli_registration/mode_04.rs",
+      "rust/fspec/src/cli_registration/mode_05.rs",
+      "rust/fspec/src/cli_registration/mode_08.rs",
+      "rust/fspec-core/src/help/configs/add_hotspot.rs"
+    ],
+    "totalLinesCovered": 675
+  }
+}

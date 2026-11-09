@@ -19,7 +19,7 @@ Feature: TUI custom provider builder sources per-model limits from NAPI
   #   - Rule 3: customProviderSectionBuilder MUST NOT hardcode contextWindow or maxOutput
   #   - Rule 4: SessionHeader badge renders formatContextWindow(compactionThreshold ?? contextWindow)
   #   - Rule 5: Regression test with JSON context_window=1000000 / no Rhai hook / badge=[1M]
-  Background: 
+  Background:
     Given listProviders() is mocked to return a "claude-rhai" custom provider entry
 
   Scenario: customProviderSectionBuilder sources contextWindow from NAPI entry

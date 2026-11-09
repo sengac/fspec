@@ -29,7 +29,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "/// Mirrors TS `extractModelIdForRegistry` regex `^(.+)-(\\d{8})$` → group 1.",
+              "lastLine": ""
             }
           ]
         }

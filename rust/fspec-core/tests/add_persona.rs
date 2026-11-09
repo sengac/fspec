@@ -352,3 +352,76 @@ fn written_file_uses_2_space_indent_trailing_newline_and_preserves_unknown_field
     assert_eq!(out["customKey"]["alpha"].as_bool(), Some(true));
     assert_eq!(out["customKey"]["beta"][0].as_u64(), Some(1));
 }
+
+#[test]
+fn three_placeholder_personas_are_all_cleared_before_real_added() {
+    // Scenario: Three placeholder personas are all cleared before the real persona is added
+
+    // @step Given a project root tempdir with spec/foundation.json whose personas are three placeholders '[QUESTION: Who uses this?]', '[DETECTED: Admin]' and '[QUESTION: Who else?]'
+    let tmp = TempDir::new().expect("tempdir");
+    let mut f = foundation_one_real();
+    f["personas"] = json!([
+        {"name": "[QUESTION: Who uses this?]", "description": "d", "goals": []},
+        {"name": "[DETECTED: Admin]", "description": "d", "goals": []},
+        {"name": "[QUESTION: Who else?]", "description": "d", "goals": []}
+    ]);
+    write_file(tmp.path(), "foundation.json", &f);
+
+    // @step When I dispatch add-persona with name='Developer', description='First real persona', goals=[]
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"name": "Developer", "description": "First real persona", "goals": []}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step And the returned data contains removedPlaceholders=3
+    let data: Value = serde_json::from_str(&result.data).expect("parse data");
+    assert_eq!(data["removedPlaceholders"].as_u64(), Some(3));
+
+    // @step And spec/foundation.json on disk shows the only persona has name='Developer'
+    let out = read_json(tmp.path(), "foundation.json");
+    let personas = out["personas"].as_array().expect("array");
+    assert_eq!(personas.len(), 1, "got {personas:?}");
+    assert_eq!(personas[0]["name"].as_str(), Some("Developer"));
+}
+
+#[test]
+fn placeholder_personas_in_the_draft_are_cleared_before_real_added() {
+    // Scenario: Placeholder personas in foundation.json.draft are cleared before the real persona is added
+
+    // @step Given a project root tempdir with spec/foundation.json.draft whose only persona is named '[QUESTION: Who uses this?]'
+    let tmp = TempDir::new().expect("tempdir");
+    let mut draft = foundation_one_real();
+    draft["personas"] = json!([
+        {"name": "[QUESTION: Who uses this?]", "description": "d", "goals": []}
+    ]);
+    write_file(tmp.path(), "foundation.json.draft", &draft);
+    // @step And spec/foundation.json exists with one real persona "Primary User"
+    write_file(tmp.path(), "foundation.json", &foundation_one_real());
+    let final_before = read_raw(tmp.path(), "foundation.json");
+
+    // @step When I dispatch add-persona with name='Developer', description='Writes code', goals=[]
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"name": "Developer", "description": "Writes code", "goals": []}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step And the returned data contains fileName='foundation.json.draft' and removedPlaceholders=1
+    let data: Value = serde_json::from_str(&result.data).expect("parse data");
+    assert_eq!(data["fileName"].as_str(), Some("foundation.json.draft"));
+    assert_eq!(data["removedPlaceholders"].as_u64(), Some(1));
+
+    // @step And spec/foundation.json.draft on disk shows the only persona has name='Developer'
+    let out = read_json(tmp.path(), "foundation.json.draft");
+    let personas = out["personas"].as_array().expect("array");
+    assert_eq!(personas.len(), 1, "got {personas:?}");
+    assert_eq!(personas[0]["name"].as_str(), Some("Developer"));
+
+    // @step And spec/foundation.json on disk is byte-equal to its pre-call contents
+    assert_eq!(read_raw(tmp.path(), "foundation.json"), final_before);
+}

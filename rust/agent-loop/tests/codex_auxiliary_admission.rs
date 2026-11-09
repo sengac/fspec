@@ -13,7 +13,6 @@ use std::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
         Arc,
     },
-    time::Duration,
 };
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -90,6 +89,7 @@ async fn run_auxiliary(
 ) -> Result<String, String> {
     let request = async {
         if compaction {
+            codelet_test_helpers::isolated_user_directory()?;
             codelet_common::set_data_directory(project.to_path_buf())?;
             codelet_core::persistence::reset_stores_for_tests();
             let manifest = codelet_core::persistence::create_session_with_provider(
@@ -124,7 +124,7 @@ async fn run_auxiliary(
             .await
         }
     };
-    tokio::time::timeout(Duration::from_secs(5), request)
+    codelet_test_helpers::deadlock_guard("request", request)
         .await
         .map_err(|_| "auxiliary request failed to stop before transport".to_string())?
 }

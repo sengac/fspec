@@ -48,7 +48,13 @@ struct CommentEntry {
 /// formatter can re-insert them at the correct positions.
 fn extract_comments(source: &str) -> Vec<CommentEntry> {
     let mut entries: Vec<CommentEntry> = Vec::new();
+    let mut docstring = DocstringTracker::default();
     for (idx, line) in source.split('\n').enumerate() {
+        // BUG-479: a `#` line inside a `"""` / ``` block is text, not a
+        // comment (step docstrings and fspec's description blocks).
+        if docstring.is_text(line) {
+            continue;
+        }
         let trimmed = line.trim_start();
         if trimmed.starts_with('#') {
             entries.push(CommentEntry {
@@ -58,6 +64,37 @@ fn extract_comments(source: &str) -> Vec<CommentEntry> {
         }
     }
     entries
+}
+
+/// Tracks `"""` / ``` docstring blocks line by line (BUG-479). A line that
+/// opens or closes a block, and every line between, is docstring text.
+#[derive(Default)]
+struct DocstringTracker {
+    open: Option<&'static str>,
+}
+
+impl DocstringTracker {
+    /// Feed the next line; true when it belongs to a docstring block.
+    fn is_text(&mut self, line: &str) -> bool {
+        let trimmed = line.trim_start();
+        match self.open {
+            Some(delimiter) => {
+                if trimmed.starts_with(delimiter) {
+                    self.open = None;
+                }
+                true
+            }
+            None => {
+                for delimiter in ["\"\"\"", "```"] {
+                    if trimmed.starts_with(delimiter) {
+                        self.open = Some(delimiter);
+                        return true;
+                    }
+                }
+                false
+            }
+        }
+    }
 }
 
 /// Find the 1-based line number of the first tag (`@...`) line in `source`
@@ -111,8 +148,8 @@ fn insert_comments_before(
 /// rule treats blank lines as a *separator* and discards them), so the parsed
 /// `Feature.description` field is lossy. To preserve inter-paragraph blank
 /// lines we re-extract each feature/scenario/Background/Rule description
-/// verbatim from `source` (mirroring
-/// `commands::show_acceptance_criteria::extract_description_verbatim`).
+/// verbatim from `source` (see
+/// [`extract_description_verbatim`]).
 ///
 /// `source` is also used to re-extract comments (which the parser discards)
 /// so they are re-inserted at the correct positions during formatting.
@@ -121,9 +158,25 @@ pub fn format_feature(feature: &Feature, source: &str) -> String {
     let comments = extract_comments(source);
     let mut comment_map = comments;
     format_feature_into(feature, source, &mut lines, &mut comment_map);
+    // BUG-479: comments after the last construct stay at the end of the file,
+    // separated by one blank line like every feature child.
+    if !comment_map.is_empty() {
+        lines.push(String::new());
+        lines.extend(comment_map.drain(..).map(|c| c.text));
+    }
     let mut out = lines.join("\n");
     out.push('\n');
     out
+}
+
+/// `<indent><keyword>: <name>`, or `<indent><keyword>:` with no trailing
+/// space when the name is empty (BUG-479).
+fn keyword_line(ind: &str, keyword: &str, name: &str) -> String {
+    if name.is_empty() {
+        format!("{ind}{keyword}:")
+    } else {
+        format!("{ind}{keyword}: {name}")
+    }
 }
 
 fn indent(level: usize) -> String {
@@ -141,9 +194,9 @@ fn indent(level: usize) -> String {
 /// comment (`#`) or tag (`@`) line — internal blank lines are kept. Returns
 /// `None` when no description text is present.
 ///
-/// Faithful mirror of
-/// `commands::show_acceptance_criteria::extract_description_verbatim`; kept
-/// local so the `io` layer does not depend on the `commands` layer.
+/// The one verbatim description extractor: the formatter and CLI-019's
+/// `fspec context` (through [`feature_header_lines`] and [`scenario_lines`])
+/// both read descriptions through it.
 fn extract_description_verbatim(
     source: &str,
     start_line: usize,
@@ -168,9 +221,15 @@ fn extract_description_verbatim(
         start += 1;
     }
     // Walk forward and stop at the first comment or tag line — both terminate
-    // description blocks in both Gherkin parsers.
+    // description blocks in both Gherkin parsers — unless it sits inside a
+    // `"""` / ``` block, where it is text (BUG-479).
     let mut end = start;
+    let mut docstring = DocstringTracker::default();
     while end < slice.len() {
+        if docstring.is_text(slice[end]) {
+            end += 1;
+            continue;
+        }
         let trimmed = slice[end].trim_start();
         if trimmed.starts_with('#') || trimmed.starts_with('@') {
             break;
@@ -240,7 +299,7 @@ fn format_feature_into(
     insert_comments_before(feature.position.line, comment_map, lines);
 
     // Feature keyword and name.
-    lines.push(format!("Feature: {}", feature.name));
+    lines.push(keyword_line("", "Feature", &feature.name));
 
     // Description (free-form prose under the Feature header, indent level 1),
     // re-extracted verbatim so inter-paragraph blank lines survive. The block
@@ -344,7 +403,7 @@ fn format_background(
     next_sibling_line: Option<usize>,
 ) {
     let ind = indent(base_indent + 1);
-    lines.push(format!("{ind}Background: {}", bg.name));
+    lines.push(keyword_line(&ind, "Background", &bg.name));
 
     // Description ends at the first step of the Background, or — when the
     // Background is prose-only — at the next sibling construct.
@@ -383,11 +442,7 @@ fn format_scenario(
     }
 
     // Keyword (raw keyword, e.g. "Scenario" or "Scenario Outline").
-    lines.push(format!(
-        "{ind}{}: {}",
-        scenario.keyword.trim(),
-        scenario.name
-    ));
+    lines.push(keyword_line(&ind, scenario.keyword.trim(), &scenario.name));
 
     // Description ends at the first step (or first Examples table when the
     // scenario has no steps), re-extracted verbatim to keep blank lines.
@@ -435,7 +490,7 @@ fn format_rule(
         lines.push(format!("{ind}@{tag}"));
     }
 
-    lines.push(format!("{ind}Rule: {}", rule.name));
+    lines.push(keyword_line(&ind, "Rule", &rule.name));
 
     // Description ends at the Rule's first child (Background → Scenario).
     let rule_desc_end = rule
@@ -729,6 +784,100 @@ fn format_description(description: &str, lines: &mut Vec<String>, indent_level: 
     }
 }
 
+/// CLI-019: the canonical lines of a feature's header without its scenarios
+/// and rules: the tags on one line, `Feature: <name>`, the verbatim
+/// description and the Background. Source comments are not included.
+pub(crate) fn feature_header_lines(feature: &Feature, source: &str) -> Vec<String> {
+    let mut lines = Vec::new();
+    if !feature.tags.is_empty() {
+        lines.push(tag_line(&feature.tags));
+    }
+    lines.push(keyword_line("", "Feature", &feature.name));
+    let first_child = feature
+        .scenarios
+        .first()
+        .map(|s| s.position.line)
+        .into_iter()
+        .chain(feature.rules.first().map(|r| r.position.line))
+        .min();
+    let desc_end = feature
+        .background
+        .as_ref()
+        .map(|bg| bg.position.line)
+        .or(first_child);
+    format_description_block(
+        source,
+        feature.position.line,
+        desc_end,
+        feature.description.as_ref(),
+        &mut lines,
+        1,
+    );
+    if let Some(bg) = &feature.background {
+        lines.push(String::new());
+        format_background(bg, source, &mut lines, 0, &mut Vec::new(), first_child);
+    }
+    lines
+}
+
+/// CLI-019: the canonical lines of one scenario (its tags, keyword line,
+/// description, steps with doc strings and tables, and Examples). A scenario
+/// of a Rule is nested under the Rule's tags, `Rule: <name>` line and
+/// Background; any other scenario starts at column 0. `next_sibling_line`
+/// bounds the description of a step-less scenario (BUG-158).
+pub(crate) fn scenario_lines(
+    scenario: &Scenario,
+    rule: Option<&Rule>,
+    source: &str,
+    next_sibling_line: Option<usize>,
+) -> Vec<String> {
+    let mut lines = Vec::new();
+    let Some(rule) = rule else {
+        format_scenario(
+            scenario,
+            source,
+            &mut lines,
+            0,
+            &mut Vec::new(),
+            next_sibling_line,
+        );
+        return lines
+            .into_iter()
+            .map(|line| {
+                line.strip_prefix(INDENT)
+                    .map_or(line.clone(), str::to_string)
+            })
+            .collect();
+    };
+    if !rule.tags.is_empty() {
+        lines.push(tag_line(&rule.tags));
+    }
+    lines.push(keyword_line("", "Rule", &rule.name));
+    if let Some(bg) = &rule.background {
+        lines.push(String::new());
+        let first = rule.scenarios.first().map(|s| s.position.line);
+        format_background(bg, source, &mut lines, 0, &mut Vec::new(), first);
+    }
+    lines.push(String::new());
+    format_scenario(
+        scenario,
+        source,
+        &mut lines,
+        0,
+        &mut Vec::new(),
+        next_sibling_line,
+    );
+    lines
+}
+
+/// `@a @b` for the parsed tags `a` and `b` (the parser strips the `@`).
+fn tag_line(tags: &[String]) -> String {
+    tags.iter()
+        .map(|tag| format!("@{tag}"))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -830,440 +979,19 @@ mod tests {
         let twice = format_feature(&parse(&out), &out);
         assert_eq!(out, twice, "media-type docstring must be idempotent");
     }
-
-    // ====================================================================
-    // RPC-330: Gherkin Description Blank-Line Preservation in Formatter
-    //
-    // Feature: spec/features/gherkin-description-formatting.feature
-    //
-    // These tests assert that `fspec format` (exercised here through the
-    // formatter entry point `format_feature` over a parsed source) preserves
-    // blank lines between paragraphs inside feature/scenario descriptions.
-    // They are RED until the formatter re-extracts description text from the
-    // raw source instead of the lossy parsed `description` field.
-    // ====================================================================
-
-    #[test]
-    fn rpc330_preserves_blank_line_between_feature_description_paragraphs() {
-        // @step Given a feature file whose Feature header is followed by this description:
-        let src = "Feature: Multi paragraph\n\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the feature description retains exactly one blank line between the two paragraphs:
-        assert_eq!(
-            out,
-            "Feature: Multi paragraph\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n",
-            "full formatted output must match TS-parity layout (no leading blank after Feature header, inter-paragraph blank preserved), got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn rpc330_preserves_blank_line_between_scenario_description_paragraphs() {
-        // @step Given a feature file with a scenario whose header is followed by this description:
-        let src = "Feature: Scenario desc\n\n  Scenario: Has prose\n    First paragraph of the scenario description.\n\n    Second paragraph of the scenario description.\n\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the scenario description retains exactly one blank line between the two paragraphs:
-        assert!(
-            out.contains(
-                "    First paragraph of the scenario description.\n\n    Second paragraph of the scenario description.\n"
-            ),
-            "blank line between scenario description paragraphs was dropped, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn rpc330_single_paragraph_description_is_unchanged() {
-        // @step Given a feature file with a single-line feature description and no internal blank lines:
-        let src =
-            "Feature: One line desc\n\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the description is emitted with no leading or internal blank line and is byte-identical to the input layout:
-        assert_eq!(
-            out,
-            "Feature: One line desc\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n",
-            "single-paragraph description must have no leading/internal blank line, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn rpc330_collapses_more_than_two_blank_lines_to_two() {
-        // @step Given a feature file whose feature description separates "Paragraph one." and "Paragraph two." by four consecutive blank lines
-        let src = "Feature: Excessive blanks\n\n  Paragraph one.\n\n\n\n\n  Paragraph two.\n\n  Scenario: A\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the two paragraphs are separated by exactly two blank lines:
-        assert!(
-            out.contains("  Paragraph one.\n\n\n  Paragraph two.\n"),
-            "four blank lines must collapse to exactly two, got:\n{out}"
-        );
-        assert!(
-            !out.contains("  Paragraph one.\n\n\n\n  Paragraph two.\n"),
-            "must not emit three or more blank lines between paragraphs, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn rpc330_step_docstring_with_internal_blank_line_is_not_regressed() {
-        // @step Given a feature file with a step doc string whose body contains a blank line:
-        let src = "Feature: Docstring intact\n\n  Scenario: A\n    Given step:\n      \"\"\"\n      line one\n\n      line three\n      \"\"\"\n    Then ok\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the step doc string body is emitted unchanged with no spurious blanks added or removed:
-        assert!(
-            out.contains("      \"\"\"\n      line one\n\n      line three\n      \"\"\"\n"),
-            "step doc string body must be preserved exactly, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn rpc330_multi_paragraph_description_is_idempotent() {
-        // @step Given a feature file with a two-paragraph feature description that has already been formatted once
-        let src = "Feature: Multi paragraph\n\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n";
-        let once = format_feature(&parse(src), src);
-
-        // @step When the formatter formats the feature file a second time
-        let twice = format_feature(&parse(&once), &once);
-
-        // @step Then the output of the second run is byte-identical to the output of the first run
-        assert_eq!(
-            once, twice,
-            "multi-paragraph description formatting must be idempotent"
-        );
-    }
-
-    // ====================================================================
-    // Comment Preservation
-    //
-    // The Rust gherkin-0.16.0 parser discards comments entirely. We re-extract
-    // them from raw source text and re-insert them at the correct positions
-    // during formatting, mirroring the TypeScript `commentMap` machinery.
-    // ====================================================================
-
-    #[test]
-    fn preserves_comment_before_feature_keyword() {
-        // @step Given a feature file with a comment before the Feature keyword
-        let src = "# This is a comment\nFeature: One\n\n  Scenario: A\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the comment is preserved in the output
-        assert!(
-            out.contains("# This is a comment"),
-            "comment before feature was lost, got:\n{out}"
-        );
-        // Comment must appear before the Feature keyword
-        let comment_pos = out.find("# This is a comment").expect("comment must exist");
-        let feature_pos = out.find("Feature: One").expect("feature must exist");
-        assert!(
-            comment_pos < feature_pos,
-            "comment must appear before Feature keyword, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn preserves_comment_block_before_scenario() {
-        // @step Given a feature file with a comment block before a Scenario
-        let src = "Feature: One\n\n# Comment before scenario\n  Scenario: A\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the comment block is preserved in the output
-        assert!(
-            out.contains("# Comment before scenario"),
-            "comment block before scenario was lost, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn preserves_multiple_comments_before_steps() {
-        // @step Given a feature file with comments between steps
-        let src = "Feature: One\n\n  Scenario: A\n    Given x\n# Comment before When\n    When y\n    Then z\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then all comments are preserved in the output
-        assert!(
-            out.contains("# Comment before When"),
-            "comment before step was lost, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn preserves_example_mapping_comment_block() {
-        // @step Given a feature file with an EXAMPLE MAPPING CONTEXT comment block
-        let src = "Feature: Example Mapping\n\n# EXAMPLE MAPPING CONTEXT\n# Rules:\n#   1. Password must be 8+ characters\n# Examples:\n#   1. User enters valid credentials\n\n  Scenario: Login\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the entire comment block is preserved
-        assert!(
-            out.contains("# EXAMPLE MAPPING CONTEXT"),
-            "EXAMPLE MAPPING CONTEXT header was lost, got:\n{out}"
-        );
-        assert!(
-            out.contains("# Rules:"),
-            "Rules comment was lost, got:\n{out}"
-        );
-        assert!(
-            out.contains("#   1. Password must be 8+ characters"),
-            "Rule detail comment was lost, got:\n{out}"
-        );
-        assert!(
-            out.contains("# Examples:"),
-            "Examples comment was lost, got:\n{out}"
-        );
-        assert!(
-            out.contains("#   1. User enters valid credentials"),
-            "Example detail comment was lost, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn preserves_indented_comments_before_steps() {
-        // @step Given a feature file with indented comments before steps
-        let src = "Feature: One\n\n  Scenario: A\n    # Indented comment\n    Given x\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the indented comment is preserved with its original indentation
-        assert!(
-            out.contains("    # Indented comment"),
-            "indented comment was lost or had wrong indentation, got:\n{out}"
-        );
-    }
-
-    // ====================================================================
-    // BUG-157: Background section must not duplicate scenarios
-    //
-    // Feature: spec/features/gherkin-background-formatting.feature
-    //
-    // The gherkin-0.16.0 parser stores Background prose in
-    // `Background.description`, so the formatter must NOT re-extract the
-    // Background description verbatim from raw source without bounding the
-    // extraction by the Background's own content. An unbounded extraction
-    // swallows the trailing top-level scenarios and re-emits them nested
-    // under the Background, duplicating every scenario block.
-    // ====================================================================
-
-    /// Feature: spec/features/gherkin-background-formatting.feature
-    #[test]
-    fn bug157_background_prose_does_not_duplicate_scenarios() {
-        // @step Given a feature file with a Background section followed by two scenarios
-        let src = "@test\nFeature: Formatter Background duplication repro\n\n  Background: User Story\n    As a user\n    I want to test\n    So that I can verify\n\n  Scenario: First scenario\n    Given a precondition\n    When I do the action\n    Then I see the result\n\n  Scenario: Second scenario\n    Given another precondition\n    When I do another action\n    Then I see another result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the formatted output contains exactly two Scenario lines
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
-
-        // @step And every scenario is indented at the top level (two spaces)
-        for line in out.lines() {
-            if line.trim_start().starts_with("Scenario:") {
-                assert_eq!(
-                    line,
-                    format!("  {}", line.trim_start()),
-                    "scenario must be 2-space top-level indented, got:\n{out}"
-                );
-            }
-        }
-    }
-
-    /// Feature: spec/features/gherkin-background-formatting.feature
-    #[test]
-    fn bug157_background_prose_formatting_is_idempotent() {
-        // @step Given a feature file with a Background section and two scenarios
-        let src = "Feature: Background idempotent\n\n  Background: User Story\n    As a user\n    I want to test\n    So that I can verify\n\n  Scenario: First scenario\n    Given a precondition\n\n  Scenario: Second scenario\n    Given another precondition\n";
-        let once = format_feature(&parse(src), src);
-
-        // @step When the formatter formats the file twice
-        let twice = format_feature(&parse(&once), &once);
-
-        // @step Then the output of the second run is byte-identical to the output of the first run
-        assert_eq!(
-            once, twice,
-            "formatting must be idempotent, got:\n{once}\n---\n{twice}"
-        );
-    }
-
-    /// Feature: spec/features/gherkin-background-formatting.feature
-    #[test]
-    fn bug157_background_with_steps_is_formatted() {
-        // @step Given a feature file with a Background section containing a Given step and one scenario
-        let src = "Feature: Background with steps\n\n  Background: Setup\n    Given the app is loaded\n\n  Scenario: A scenario\n    Given a precondition\n    Then I see the result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the Background step is emitted under the Background
-        assert!(
-            out.contains("  Background: Setup\n    Given the app is loaded"),
-            "background step missing, got:\n{out}"
-        );
-
-        // @step And the scenario is emitted exactly once at the top level
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 1, "scenario was duplicated, got:\n{out}");
-        assert!(
-            out.contains("  Scenario: A scenario"),
-            "scenario must be 2-space indented, got:\n{out}"
-        );
-    }
-
-    /// Feature: spec/features/gherkin-background-formatting.feature
-    #[test]
-    fn bug157_rule_with_background_is_formatted_without_duplication() {
-        // @step Given a feature file with a Rule containing a Background and one scenario
-        let src = "Feature: Rule with background\n\n  Rule: My rule\n    Background: Setup\n      Given the app is loaded\n\n    Scenario: A scenario\n      Given a precondition\n      Then I see the result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the scenario is emitted exactly once
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 1, "scenario was duplicated, got:\n{out}");
-
-        // @step And the Background step is emitted under the Rule's Background
-        assert!(
-            out.contains("    Background: Setup\n      Given the app is loaded"),
-            "rule background step missing, got:\n{out}"
-        );
-    }
-
-    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
-    #[test]
-    fn bug158_stepless_scenario_does_not_duplicate_scenarios() {
-        // @step Given a feature file where the first scenario is prose-only (no steps) followed by a second scenario with steps
-        let src = "Feature: Step-less scenario\n\n  Scenario: First\n    just some prose here\n\n  Scenario: Second\n    Given a precondition\n    When I do the action\n    Then I see the result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the formatted output contains exactly two Scenario lines
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
-
-        // @step And every scenario is indented at the top level (two spaces)
-        for line in out.lines() {
-            if line.trim_start().starts_with("Scenario:") {
-                assert_eq!(
-                    line,
-                    format!("  {}", line.trim_start()),
-                    "scenario must be 2-space top-level indented, got:\n{out}"
-                );
-            }
-        }
-    }
-
-    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
-    #[test]
-    fn bug158_stepless_scenario_formatting_is_idempotent() {
-        // @step Given a feature file where the first scenario is prose-only (no steps) followed by a second scenario
-        let src = "Feature: Step-less idempotent\n\n  Scenario: First\n    just some prose here\n\n  Scenario: Second\n    Given a precondition\n    When I do the action\n    Then I see the result\n";
-        let once = format_feature(&parse(src), src);
-
-        // @step When the formatter formats the file twice
-        let twice = format_feature(&parse(&once), &once);
-
-        // @step Then the output of the second run is byte-identical to the output of the first run
-        assert_eq!(
-            once, twice,
-            "formatting must be idempotent, got:\n{once}\n---\n{twice}"
-        );
-    }
-
-    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
-    #[test]
-    fn bug158_lowercase_step_keywords_are_formatted_without_duplication() {
-        // @step Given a feature file whose scenarios use lowercase step keywords (given, when, then)
-        let src = "Feature: Lowercase keywords\n\n  Scenario: One\n    given a precondition\n    when I do the action\n    then I see the result\n\n  Scenario: Two\n    given another precondition\n    when I do another action\n    then I see another result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then the formatted output contains exactly the original number of Scenario lines
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
-
-        // @step And the lowercase step lines are preserved verbatim under their scenario
-        assert!(
-            out.contains("    given a precondition"),
-            "lowercase step line was lost or rewritten, got:\n{out}"
-        );
-        assert!(
-            out.contains("    then I see another result"),
-            "lowercase step line was lost or rewritten, got:\n{out}"
-        );
-    }
-
-    /// Feature: spec/features/gherkin-stepless-scenario-formatting.feature
-    #[test]
-    fn bug158_rule_with_stepless_scenario_is_formatted_without_duplication() {
-        // @step Given a feature file with a Rule containing a prose-only scenario followed by a second scenario
-        let src = "Feature: Rule with step-less scenario\n\n  Rule: My rule\n    Scenario: First\n      just some prose here\n\n    Scenario: Second\n      Given a precondition\n      Then I see the result\n";
-
-        // @step When the formatter formats the feature file
-        let out = format_feature(&parse(src), src);
-
-        // @step Then both scenarios are emitted exactly once at the Rule nesting level
-        let scenario_count = out
-            .lines()
-            .filter(|l| l.trim_start().starts_with("Scenario:"))
-            .count();
-        assert_eq!(scenario_count, 2, "scenarios were duplicated, got:\n{out}");
-        assert!(
-            out.contains("    Scenario: First"),
-            "first scenario must be 4-space Rule-nested, got:\n{out}"
-        );
-        assert!(
-            out.contains("    Scenario: Second"),
-            "second scenario must be 4-space Rule-nested, got:\n{out}"
-        );
-    }
-
-    #[test]
-    fn comment_preservation_is_idempotent() {
-        // @step Given a feature file with comments that has been formatted once
-        let src = "# Header comment\nFeature: One\n\n# Before scenario\n  Scenario: A\n    # Before step\n    Given x\n";
-        let once = format_feature(&parse(src), src);
-
-        // @step When the formatter formats the output a second time
-        let twice = format_feature(&parse(&once), &once);
-
-        // @step Then the second formatting is byte-identical to the first
-        assert_eq!(once, twice, "comment preservation must be idempotent");
-    }
 }
+
+#[cfg(test)]
+mod description_tests;
+
+#[cfg(test)]
+mod background_tests;
+
+#[cfg(test)]
+mod stepless_scenario_tests;
+
+#[cfg(test)]
+mod format_rules_tests;
+
+#[cfg(test)]
+mod comment_tests;

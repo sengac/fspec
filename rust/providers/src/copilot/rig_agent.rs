@@ -23,9 +23,8 @@
 //!   tool wiring mirrors [`OpenAIProvider::create_rig_agent`] exactly —
 //!   same 18 tools, same `openai_fspec_tool` / `openai_bridge_tool`
 //!   facades, same `prepend_fspec_guidance` preamble transform.
-//! - `thinking_config` is accepted for parity with the agent loop macro
-//!   but is currently unused — Copilot's chat/completions endpoint does
-//!   not expose a thinking budget primitive.
+//! - `thinking_config` (BUG-440: `reasoning_effort`) is sent as additional
+//!   request parameters.
 
 use crate::copilot::completion_model::CopilotCompletionModel;
 use crate::copilot::provider::CopilotProvider;
@@ -41,10 +40,8 @@ impl CopilotProvider {
     ///   worktree by `session_id` at call time).
     /// * `preamble` - Optional system prompt to append after the fspec
     ///   guidance header. `None` means "fspec guidance only".
-    /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010).
-    ///   Accepted for parity with the macro's call site but currently
-    ///   unused — Copilot's chat/completions endpoint has no thinking
-    ///   budget primitive.
+    /// * `thinking_config` - Optional thinking parameters (BUG-440:
+    ///   `reasoning_effort`), sent as additional request parameters.
     ///
     /// # Returns
     ///
@@ -56,7 +53,7 @@ impl CopilotProvider {
         &self,
         session_id: uuid::Uuid,
         preamble: Option<&str>,
-        _thinking_config: Option<serde_json::Value>,
+        thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CopilotCompletionModel> {
         use codelet_tools::facade::{
             openai_bridge_tool, openai_fspec_tool, prepend_fspec_guidance,
@@ -116,6 +113,14 @@ impl CopilotProvider {
         let preamble_text = preamble.unwrap_or("");
         let effective_preamble = prepend_fspec_guidance(preamble_text);
         agent_builder = agent_builder.preamble(&effective_preamble);
+
+        // BUG-440: the selected thinking level (`reasoning_effort`).
+        if let Some(thinking) = thinking_config {
+            agent_builder = agent_builder.additional_params(crate::openai::merge_thinking_params(
+                serde_json::json!({}),
+                Some(thinking),
+            ));
+        }
 
         agent_builder.build()
     }

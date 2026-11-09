@@ -1,0 +1,136 @@
+{
+  "scenarios": [
+    {
+      "name": "A mapped test file written before testing blocks the move to implementing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug435_temporal_gate_mapped_test_files.rs",
+          "lines": "98-118",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/temporal_mapped.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// Test files mapped in the coverage of `id`'s linked features that mention",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mapped test file that does not mention the work unit is not checked",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug435_temporal_gate_mapped_test_files.rs",
+          "lines": "120-140",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/temporal_mapped.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// Test files mapped in the coverage of `id`'s linked features that mention",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug435_temporal_gate_mapped_test_files.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status/temporal_mapped.rs"
+    ],
+    "totalLinesCovered": 126
+  }
+}

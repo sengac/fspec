@@ -21,7 +21,9 @@
                 30,
                 31,
                 32
-              ]
+              ],
+              "firstLine": "pub(super) fn open_delete_single(&mut self) -> CheckpointsEvent {",
+              "lastLine": "/// `a`/`A`: open the delete-all typed confirmation — a no-op when no"
             }
           ]
         }
@@ -55,7 +57,9 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "fn confirm_delete_single(&mut self) -> CheckpointsEvent {",
+              "lastLine": "/// Confirm delete-all only when the typed phrase matches exactly;"
             }
           ]
         }
@@ -90,7 +94,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "KeyCode::Char('y') | KeyCode::Char('Y') => self.confirm_delete_single(),",
+              "lastLine": "}"
             }
           ]
         }
@@ -166,7 +172,9 @@
                 193,
                 194,
                 195
-              ]
+              ],
+              "firstLine": "pub fn on_delete_result(",
+              "lastLine": "/// Number of checkpoints currently loaded (used by delete tests)."
             }
           ]
         }
@@ -224,7 +232,9 @@
                 175,
                 176,
                 177
-              ]
+              ],
+              "firstLine": "pub fn on_delete_result(",
+              "lastLine": "/// selection, and clear the dependent files/diff so the new selection"
             }
           ]
         }
@@ -235,80 +245,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/delete_tests.rs",
-          "lines": "190-213",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/checkpoints/delete_dialog.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
-            }
-          ]
+          "lines": "194-216"
         }
       ]
     },
@@ -340,7 +277,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "fn confirm_delete_all_if_ready(&mut self) -> CheckpointsEvent {",
+              "lastLine": "/// selection, and return the follow-up actions (reload the new"
             }
           ]
         }
@@ -351,7 +290,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/delete_tests.rs",
-          "lines": "235-258",
+          "lines": "239-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/delete.rs",
@@ -374,7 +313,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "fn confirm_delete_all_if_ready(&mut self) -> CheckpointsEvent {",
+              "lastLine": "/// selection, and return the follow-up actions (reload the new"
             }
           ]
         }
@@ -385,7 +326,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/delete_tests.rs",
-          "lines": "259-287",
+          "lines": "259-285",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/delete.rs",
@@ -441,7 +382,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub(super) fn handle_delete_dialog_key(&mut self, key: KeyEvent) -> CheckpointsEvent {",
+              "lastLine": "/// Confirm the single delete: emit `DeleteCheckpoint` and show the"
             }
           ]
         }
@@ -456,9 +399,8 @@
       "rust/fspec-tui/src/views/checkpoints/delete_tests.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/checkpoints/delete.rs",
-      "rust/fspec-tui/src/views/checkpoints/delete_dialog.rs"
+      "rust/fspec-tui/src/views/checkpoints/delete.rs"
     ],
-    "totalLinesCovered": 541
+    "totalLinesCovered": 475
   }
 }

@@ -46,6 +46,19 @@ pub(crate) fn credential_path(name: &str) -> Result<PathBuf> {
     }
 }
 
+/// How many refresh operations currently hold or wait on the coordination
+/// gate of `name`'s credential path. TEST-042: a test waits until a second
+/// request is parked behind an admitted refresh instead of sleeping.
+#[doc(hidden)]
+pub fn gate_users(name: &str) -> Result<usize> {
+    let path = credential_path(name)?;
+    let gates = GATES
+        .get_or_init(Mutex::default)
+        .lock()
+        .map_err(|_| anyhow!("scripted OAuth coordination unavailable"))?;
+    Ok(gates.get(&path).map_or(0, Weak::strong_count))
+}
+
 pub(crate) fn check_root(name: &str, expected: &Path) -> Result<()> {
     if credential_path(name)? != expected {
         return Err(anyhow!("scripted OAuth credential root changed"));

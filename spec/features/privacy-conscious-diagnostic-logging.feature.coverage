@@ -8,14 +8,16 @@
           "lines": "64-97",
           "implMappings": [
             {
-              "file": "rust/fspec/src/common.rs",
+              "file": "rust/fspec/src/common/tracing_setup.rs",
               "lines": [
-                247,
-                249,
-                250,
-                253,
-                254
-              ]
+                66,
+                68,
+                69,
+                72,
+                73
+              ],
+              "firstLine": ".with(PrivacySpanLayer(PrivacyFields::default()))",
+              "lastLine": "}"
             }
           ]
         }
@@ -29,55 +31,76 @@
           "lines": "99-152",
           "implMappings": [
             {
-              "file": "rust/fspec/src/common.rs",
+              "file": "rust/fspec/src/common/tracing_setup.rs",
               "lines": [
-                224,
-                229,
-                234,
-                264,
-                269,
-                274
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub fn init_tracing_combined(service: &Arc<SharedFspecService>) -> Result<()> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
-                442,
-                446,
-                524
-              ]
+                444,
+                448,
+                527
+              ],
+              "firstLine": "tracing::info!(%session_id, image_count = imgs.len(), input_bytes = message.len(), input = %message, \"Injecting input with images\");",
+              "lastLine": "tracing::info!(success, data_present = data.is_some(), \"Auth response\");"
             },
             {
               "file": "rust/cli/src/interactive/stream_handlers.rs",
               "lines": [
-                148,
-                184
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                111,
-                198,
-                234,
-                350,
-                931
-              ]
+                139,
+                175
+              ],
+              "firstLine": "debug!(%tool_name, args = ?args, \"Tool call\");",
+              "lastLine": "messages.push(Message::User {"
             },
             {
               "file": "rust/common/src/logging/mod.rs",
               "lines": [
-                36,
-                96,
-                100
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1245,
-                1277
-              ]
+                40,
+                100,
+                104
+              ],
+              "firstLine": "let message =",
+              "lastLine": ".fmt_fields(privacy::PrivacyFields::default())"
             },
             {
               "file": "rust/common/src/logging/privacy.rs",
@@ -94,7 +117,9 @@
                 226,
                 242,
                 257
-              ]
+              ],
+              "firstLine": "fn on_new_span(",
+              "lastLine": "fn format_event("
             }
           ]
         }
@@ -114,7 +139,9 @@
                 6,
                 8,
                 13
-              ]
+              ],
+              "firstLine": "pub fn appender(directory: &Path, prefix: &str) -> std::io::Result<RollingFileAppender> {",
+              "lastLine": ".filename_prefix(prefix)"
             },
             {
               "file": "rust/common/src/logging/privacy.rs",
@@ -131,7 +158,9 @@
                 226,
                 242,
                 257
-              ]
+              ],
+              "firstLine": "fn on_new_span(",
+              "lastLine": "fn format_event("
             }
           ]
         }
@@ -147,17 +176,19 @@
             {
               "file": "rust/rpc/src/log_layer.rs",
               "lines": [
-                45,
-                56,
-                91,
-                107,
-                148,
-                157,
-                161,
-                181,
-                190,
-                194
-              ]
+                46,
+                57,
+                92,
+                108,
+                179,
+                188,
+                192,
+                212,
+                221,
+                225
+              ],
+              "firstLine": "fn store_span<S>(attrs: &tracing::span::Attributes<'_>, id: &tracing::Id, ctx: Context<'_, S>)",
+              "lastLine": "fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {"
             }
           ]
         }
@@ -172,16 +203,14 @@
       "rust/fspec/tests/bug239_privacy_logging.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/common.rs",
+      "rust/fspec/src/common/tracing_setup.rs",
       "rust/tools/src/bridge_relay.rs",
       "rust/cli/src/interactive/stream_handlers.rs",
-      "rust/agent-loop/src/agent_loop.rs",
       "rust/common/src/logging/mod.rs",
-      "rust/sessions/src/background_session.rs",
       "rust/common/src/logging/privacy.rs",
       "rust/common/src/logging/private_files.rs",
       "rust/rpc/src/log_layer.rs"
     ],
-    "totalLinesCovered": 254
+    "totalLinesCovered": 277
   }
 }

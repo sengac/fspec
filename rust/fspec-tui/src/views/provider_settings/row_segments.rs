@@ -67,9 +67,6 @@ impl Segment {
 }
 
 /// Paint a `prefix` + per-segment-coloured label into `area` (a single row).
-/// Returns the absolute buffer column AFTER the last painted text cell (so the
-/// RPC-158 inline test-result decoration can append after it), clamped to the
-/// row's right boundary.
 ///
 /// * The whole row is first filled with the band style: `bg = band`, plus
 ///   `Modifier::BOLD` when `selected` (matching `row_render::row_style`).
@@ -87,9 +84,9 @@ pub fn render_segmented_row(
     band_bg: Color,
     area: Rect,
     buf: &mut Buffer,
-) -> u16 {
+) {
     if area.height == 0 || area.width == 0 {
-        return area.x;
+        return;
     }
     let bold = if selected {
         Modifier::BOLD
@@ -134,6 +131,4 @@ pub fn render_segmented_row(
         cell.set_bg(band_bg);
         cell.modifier.insert(bold);
     }
-
-    cursor_x.min(right)
 }

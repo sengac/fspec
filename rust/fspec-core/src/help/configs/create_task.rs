@@ -3,14 +3,9 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js create-task --help`.
 //!
-//! NOTE on quirks faithfully reproduced from the TS reference:
-//! * `relatedCommands` entries already carry a `fspec ` prefix, so the
-//!   formatter renders them as `fspec fspec update-work-unit-status - ...`.
-//! * `typicalWorkflow` is a TS array joined with `,` (no space) into a
-//!   single line.
-//! * The TS help-formatter only reads `error.fix` for COMMON ERRORS; the
-//!   help.ts data uses `solution` (not `fix`), so the rendered Fix line is
-//!   `undefined` in the captured fixture. We mirror that verbatim.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -42,7 +37,7 @@ const OPTS: &[CommandOption] = &[
         default_value: None,
     },
     CommandOption {
-        flag: "-p, --parent <parent>",
+        flag: "-p, --parent <workUnitId>",
         description: "Parent task ID for hierarchical relationships",
         default_value: None,
     },
@@ -79,28 +74,28 @@ const PREREQUISITES: &[&str] = &[
     "Parent task must exist if using --parent",
 ];
 
-const TYPICAL_WORKFLOW: &str = "Create task: fspec create-task PREFIX \"Title\",Tasks can skip specifying phase (optional feature file),Move directly to implementing: fspec update-work-unit-status TASK-001 implementing,Complete work without tests (for operational tasks),Move to done: fspec update-work-unit-status TASK-001 done";
+const TYPICAL_WORKFLOW: &str = "Create task: fspec create-task PREFIX \"Title\". Tasks can skip specifying phase (optional feature file). Move directly to implementing: fspec update-work-unit-status TASK-001 implementing. Complete work without tests (for operational tasks). Move to done: fspec update-work-unit-status TASK-001 done";
 
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Prefix 'PREFIX' is not registered",
-        fix: "undefined",
+        fix: "Run: fspec create-prefix PREFIX \"Description\"",
     },
     CommonError {
         error: "Parent task 'PARENT-001' does not exist",
-        fix: "undefined",
+        fix: "Create parent first or remove --parent option",
     },
     CommonError {
         error: "Epic 'epic-name' does not exist",
-        fix: "undefined",
+        fix: "Run: fspec create-epic epic-name \"Title\"",
     },
 ];
 
 const RELATED: &[&str] = &[
-    "fspec update-work-unit-status - Move task through workflow",
-    "fspec list-work-units - List all tasks",
-    "fspec show-work-unit - Show task details",
-    "fspec update-work-unit - Update task title/description",
+    "update-work-unit-status - Move task through workflow",
+    "list-work-units - List all tasks",
+    "show-work-unit - Show task details",
+    "update-work-unit - Update task title/description",
 ];
 
 const NOTES: &[&str] = &[

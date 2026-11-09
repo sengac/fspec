@@ -1,4 +1,6 @@
 @KGRAPH-020
+@parser
+@model-selection
 Feature: Learnings Graph Data Model & Schema
   """
   Uses nanograph PG schema format. Schema stored at rust/napi/schemas/learnings.pg, bundled via include_str!. Registry in registry.rs manages the singleton.
@@ -57,7 +59,7 @@ Feature: Learnings Graph Data Model & Schema
 
   Scenario: Learnings graph registered as named instance in registry
     Given the GraphDatabase registry exists
-    When I request the Learnings graph by name "learnings"
+    When I request the Learnings graph from the registry
     Then the registry should return a valid GraphDatabase instance
     And the instance should be separate from the "ast-code" graph
     And the database path should be under the global data directory

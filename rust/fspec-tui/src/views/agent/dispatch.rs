@@ -197,23 +197,28 @@ impl AgentView {
                 return EventResult::consumed();
             }
             if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-                self.emit(Action::Interrupt);
+                // TUI-130: with a selection, Ctrl+C copies it instead.
+                if !self.copy_selection_instead_of_interrupt() {
+                    self.emit(Action::Interrupt);
+                }
                 return EventResult::consumed();
+            }
+            if let Some(result) = self.queue_on_alt_enter(key) {
+                return result;
             }
             if key.code == KeyCode::PageUp {
                 self.text_selection_active = false; // COPY-006 rule [7].
                 self.emit(Action::ScrollbackPageUp);
                 return EventResult::consumed();
             }
-            if key.code == KeyCode::PageDown || key.code == KeyCode::End {
+            if key.code == KeyCode::PageDown {
                 self.text_selection_active = false; // COPY-006 rule [7].
                 self.emit(Action::ScrollbackPageDown);
                 return EventResult::consumed();
             }
-            // RPC-094: Home on an empty input jumps scrollback to 0.
-            if key.code == KeyCode::Home && key.modifiers.is_empty() && self.input.is_empty() {
-                self.emit(Action::ScrollbackHome);
-                return EventResult::consumed();
+            // RPC-094 / TUI-129: Home / End on an empty input.
+            if let Some(result) = self.scrollback_jump_key(key) {
+                return result;
             }
             if key.modifiers.contains(KeyModifiers::SHIFT) {
                 if let Some(action) = Self::shift_arrow_to_action(key.code) {
@@ -232,13 +237,9 @@ impl AgentView {
             },
             _ => None,
         };
-        // RPC-095: compute the gate from cached session status +
-        // popup state. block_edits while Compacting; suppress_enter
-        // also true during Compacting (Enter must NOT submit).
-        let gate = InputGate {
-            block_edits: self.last_is_compacting,
-            suppress_enter: self.last_is_compacting,
-        };
+        // TUI-115: the composer stays editable while Compacting (Enter
+        // queues behind the compaction), so the RPC-095 gate stays open.
+        let gate = InputGate::default();
         // RPC-402/RPC-403: single gated entry point — key events
         // reaching here are guaranteed Press (filtered above); the
         // widget's own kind filter is defense-in-depth for direct
@@ -250,7 +251,7 @@ impl AgentView {
                 if value.is_empty() {
                     return EventResult::ignored();
                 }
-                self.emit(Action::InputSubmitted(value));
+                self.emit_submission(value, false);
                 EventResult::consumed()
             }
             InputEventOutcome::Continued => {

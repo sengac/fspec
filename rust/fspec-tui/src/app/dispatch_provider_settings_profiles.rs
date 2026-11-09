@@ -1,35 +1,24 @@
-//! Provider profile writes and backend-loaded settings refresh dispatch.
+//! Provider profile writes and the numbered settings refresh dispatch (BUG-575).
 
 use tokio::task::JoinHandle;
 
 use crate::components::Action;
+use crate::views::provider_settings::refresh::NavigateTarget;
 
 use super::state::App;
 
 impl App {
-    /// Fold credentials into the navigation tree, then reload settings and
-    /// provider-qualified profile definitions from the backend.
-    pub(crate) fn handle_provider_credentials_loaded(
-        &mut self,
-        list: Vec<codelet_rpc_types::ProviderCredentialInfo>,
-    ) {
-        let view = &mut self.navigator.provider_settings;
-        view.apply_provider_credentials(list);
-        // PROV-112: after the nav rebuild, honour a pending navigate target
-        // (set by the OAuth disconnect dispatch) so the cursor returns to the
-        // parent provider row once the Logout row disappears.
-        view.apply_pending_navigate();
-        self.spawn_provider_settings_read();
-    }
-
     /// PROV-109: route the profile write actions. Called from the catch-all
     /// arm of `try_dispatch_provider_settings`. Returns `true` if handled.
     pub(crate) fn try_dispatch_profile_write(&mut self, action: &Action) -> bool {
         match action {
-            Action::ProviderSettingsConfigsLoaded(configs) => {
+            Action::RefreshProviderSettings { navigate } => {
+                self.spawn_provider_settings_refresh(navigate.clone());
+            }
+            Action::ProviderSettingsRefreshed(refresh) => {
                 self.navigator
                     .provider_settings
-                    .set_provider_settings_configs(configs.clone());
+                    .apply_refresh((**refresh).clone());
             }
             Action::SaveProviderSettings {
                 provider_id,
@@ -50,28 +39,12 @@ impl App {
                     definition.clone(),
                 );
             }
-            Action::DeleteProfile {
-                provider_id,
-                profile_name,
-            }
-            | Action::ConfirmDeleteProfile {
+            Action::ConfirmDeleteProfile {
                 provider_id,
                 profile_name,
             } => {
-                // ConfirmDeleteProfile routes through the same backend
-                // round-trip as the raw DeleteProfile arm; the view-layer
-                // opens the confirm dialog before this fires.
+                // The view opens the confirm dialog before this fires.
                 self.handle_delete_profile(provider_id.clone(), profile_name.clone());
-            }
-            Action::ProfileDeleteNavigate { provider_id } => {
-                // PROV-116: a successful delete records the parent provider so
-                // the following reload's `apply_pending_navigate` returns the
-                // cursor to the provider row. Set only on success (this action
-                // is emitted from the Ok branch), so a failed delete leaves no
-                // stale target.
-                self.navigator
-                    .provider_settings
-                    .set_navigate_target(provider_id.clone());
             }
             _ => return false,
         }
@@ -79,8 +52,8 @@ impl App {
     }
 
     /// PROV-109/PROV-136: persist a profile's connection settings and follow up
-    /// with a fresh list refresh so the openai profile slice (reloaded inside
-    /// `handle_provider_credentials_loaded`) repaints with the new state.
+    /// with a numbered refresh (BUG-575) that keeps the cursor on the saved
+    /// profile, under its new name after a rename.
     /// When `old_profile_name` is `Some(old)` and `old != profile_name` this is
     /// an edit-mode RENAME: it routes through `backend.rename_profile` (which
     /// moves the old key to the new name, preserving customModels, and rejects a
@@ -98,6 +71,10 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let navigate = Some(self.navigate_request(NavigateTarget::Profile {
+            provider_id: provider_id.clone(),
+            name: profile_name.clone(),
+        }));
         let rename_from = match old_profile_name {
             Some(old) if old != profile_name => Some(old),
             _ => None,
@@ -125,9 +102,7 @@ impl App {
                     let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
                         "✓ {provider_id}: {profile_name} profile saved"
                     )));
-                    if let Ok(list) = backend.list_provider_credentials().await {
-                        let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                    }
+                    let _ = action_tx.send(Action::RefreshProviderSettings { navigate });
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, profile = %profile_name, "save_profile failed");
@@ -139,32 +114,43 @@ impl App {
     }
 
     /// PROV-109: delete a profile via `backend.delete_profile` and follow up
-    /// with a fresh list refresh so the removed profile disappears from the
-    /// view. Both `DeleteProfile` and `ConfirmDeleteProfile` route here.
+    /// with a numbered refresh so the removed profile disappears from the
+    /// view. `ConfirmDeleteProfile` routes here.
     pub(crate) fn handle_delete_profile(&mut self, provider_id: String, profile_name: String) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
+        // PROV-116 / BUG-575: a successful delete returns the cursor to the
+        // provider row once its own refresh is shown (a failed delete sends
+        // no refresh, so the cursor never jumps).
+        let navigate = Some(self.navigate_request(NavigateTarget::Provider(provider_id.clone())));
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
+            // BUG-613: the daemon clears a default model of the deleted profile.
+            let before = backend.get_default_model().await;
             match backend
                 .delete_profile(provider_id.clone(), profile_name.clone())
                 .await
             {
                 Ok(()) => {
+                    let cleared = match (before, backend.get_default_model().await) {
+                        (Ok(before), Ok(after)) => {
+                            super::dispatch_model_selector::default_cleared_notice(
+                                before.as_deref(),
+                                after.as_deref(),
+                            )
+                            .map(|notice| format!(" — {}", notice.trim_start_matches("[info] ")))
+                        }
+                        (Err(error), _) | (_, Err(error)) => {
+                            Some(format!(" — the default model could not be read: {error:#}"))
+                        }
+                    };
                     let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✓ {provider_id}: {profile_name} profile deleted"
+                        "✓ {provider_id}: {profile_name} profile deleted{}",
+                        cleared.unwrap_or_default()
                     )));
-                    // PROV-116: record the parent provider BEFORE the reload so
-                    // the reload's `apply_pending_navigate` lands the cursor on
-                    // the provider row (sent only here, on success).
-                    let _ = action_tx.send(Action::ProfileDeleteNavigate {
-                        provider_id: provider_id.clone(),
-                    });
-                    if let Ok(list) = backend.list_provider_credentials().await {
-                        let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                    }
+                    let _ = action_tx.send(Action::RefreshProviderSettings { navigate });
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, profile = %profile_name, "delete_profile failed");

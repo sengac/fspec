@@ -10,23 +10,24 @@
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
                 126,
                 127,
                 128,
-                129
-              ]
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "pub(super) fn current(state: &TokenState, binding: &Binding) -> Result<Value, AuthError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
-                30,
-                31,
                 32,
                 33,
                 34,
@@ -38,8 +39,12 @@
                 40,
                 41,
                 42,
-                43
-              ]
+                43,
+                44,
+                45
+              ],
+              "firstLine": "let inner = client(inner)?;",
+              "lastLine": "};"
             },
             {
               "file": "rust/providers/src/codex/websocket.rs",
@@ -53,7 +58,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "timeout: Duration,",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,20 +71,18 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_live_clients.rs",
-          "lines": "162-217",
+          "lines": "149-206",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
-                68,
-                69,
-                70,
                 71,
                 72,
                 73,
-                93,
-                94,
-                95,
+                74,
+                75,
+                76,
+                77,
                 96,
                 97,
                 98,
@@ -93,8 +98,10 @@
                 108,
                 109,
                 110,
-                160,
-                161,
+                111,
+                112,
+                113,
+                114,
                 162,
                 163,
                 164,
@@ -118,8 +125,31 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "pub(super) fn stored_lifetime(access: &str) -> Result<u64, AuthError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -138,6 +168,6 @@
       "rust/providers/src/codex/client_http.rs",
       "rust/providers/src/codex/websocket.rs"
     ],
-    "totalLinesCovered": 251
+    "totalLinesCovered": 275
   }
 }

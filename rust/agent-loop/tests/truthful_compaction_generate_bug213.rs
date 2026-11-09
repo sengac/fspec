@@ -5,7 +5,6 @@ pub mod support;
 
 use codelet_tools::{GenerateCompactionArgs, GenerateCompactionTool};
 use rig::tool::Tool;
-use std::time::Duration;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
@@ -31,7 +30,9 @@ async fn scenario_generated_compaction_reports_unknown_work_for_its_actual_targe
         } else {
             tokio::spawn(async move { tool.call(GenerateCompactionArgs { session_id }).await })
         };
-        let reached = tokio::time::timeout(Duration::from_secs(3), server.arrived.wait()).await;
+        let reached =
+            codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
+                .await;
         let progress = target.get_compaction_progress();
         task.abort();
         let _ = task.await;

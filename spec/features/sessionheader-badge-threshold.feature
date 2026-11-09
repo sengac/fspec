@@ -1,5 +1,7 @@
 @done
 @CTX-009
+@session
+@ui-refinement
 Feature: SessionHeader badge shows compaction threshold
   """
   TypeScript-only change, no Rust modifications needed

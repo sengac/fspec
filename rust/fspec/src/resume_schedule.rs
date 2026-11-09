@@ -29,7 +29,7 @@
 //!     `"Invalid args for fspec command resume-schedule: "` envelope is stripped
 //!     via [`crate::common::render_core_error`].
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -51,7 +51,7 @@ pub struct CliArgs {
 /// subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal the JSON args shape fspec_core::commands::resume_schedule::run
     // validates with serde. The marshalling lives here (not a hard-coded

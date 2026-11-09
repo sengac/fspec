@@ -170,7 +170,7 @@ async fn rejected_or_cancelled_exchange_cannot_send_expired_authorization() -> T
         let request = CompletionRequestBuilder::new(model.clone(), "must not infer").build();
         let diagnostic = if delayed {
             let task = tokio::spawn(async move { model.completion(request).await });
-            tokio::time::timeout(Duration::from_secs(5), async {
+            codelet_test_helpers::deadlock_guard("the awaited block", async {
                 loop {
                     if issuer
                         .received_requests()
@@ -179,7 +179,7 @@ async fn rejected_or_cancelled_exchange_cannot_send_expired_authorization() -> T
                     {
                         break;
                     }
-                    tokio::time::sleep(Duration::from_millis(5)).await;
+                    codelet_test_helpers::yield_now().await;
                 }
             })
             .await?;
@@ -191,8 +191,11 @@ async fn rejected_or_cancelled_exchange_cannot_send_expired_authorization() -> T
             assert!(error.is_cancelled());
             error.to_string()
         } else {
-            let result =
-                tokio::time::timeout(Duration::from_secs(5), model.completion(request)).await?;
+            let result = codelet_test_helpers::deadlock_guard(
+                "model.completion(request)",
+                model.completion(request),
+            )
+            .await?;
             let diagnostic = result
                 .err()
                 .ok_or("rejected exchange unexpectedly succeeded")?

@@ -8,27 +8,27 @@
 //! `tui_popup` from the resume/search mode-view files; the dispatch
 //! orchestrator + Action enum carry the new RPC-026 surface.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
-fn fspec_tui_src() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
-fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+fn read_raw(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(codelet_test_helpers::source_composition::read_source(path)
+        .or_fail("resolve source shape")?)
 }
 
-fn count_lines(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+fn count_lines(path: &std::path::Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(common::read_to_string_or_fail(path)?.lines().count())
 }
 
 /// Scenario: New view files exist with the required shape and forbidden imports absent
 #[test]
-fn new_mode_view_files_exist_with_documented_surface() {
+fn new_mode_view_files_exist_with_documented_surface() -> TestResult {
     // @step Given the repository is at the RPC-026 implementing snapshot
-    let agent_dir = fspec_tui_src().join("views").join("agent");
+    let agent_dir = fspec_tui_src()?.join("views").join("agent");
 
     // @step When the source-shape regression test runs
     // (Implicit: this test body IS the regression scan; the assertions below are the result.)
@@ -36,20 +36,20 @@ fn new_mode_view_files_exist_with_documented_surface() {
     // @step Then rust/fspec-tui/src/views/agent/resume_session_view.rs exists with line count < 300
     let resume = agent_dir.join("resume_session_view.rs");
     assert!(resume.is_file(), "{} must exist", resume.display());
-    assert!(count_lines(&resume) < 300);
+    assert!(count_lines(&resume)? < 300);
 
     // @step And rust/fspec-tui/src/views/agent/search_history_view.rs exists with line count < 300
     let search = agent_dir.join("search_history_view.rs");
     assert!(search.is_file(), "{} must exist", search.display());
-    assert!(count_lines(&search) < 300);
+    assert!(count_lines(&search)? < 300);
 
     // @step And rust/fspec-tui/src/views/agent/confirm_dialog.rs exists with line count < 300
     let dialog = agent_dir.join("confirm_dialog.rs");
     assert!(dialog.is_file(), "{} must exist", dialog.display());
-    assert!(count_lines(&dialog) < 300);
+    assert!(count_lines(&dialog)? < 300);
 
-    let resume_body = read_raw(&resume);
-    let search_body = read_raw(&search);
+    let resume_body = read_raw(&resume)?;
+    let search_body = read_raw(&search)?;
 
     // @step And resume_session_view.rs contains no occurrences of "tui_popup" or "popup_body"
     assert!(!resume_body.contains("tui_popup"));
@@ -71,9 +71,9 @@ fn new_mode_view_files_exist_with_documented_surface() {
     // shell (see views/full_screen_shell.rs tests).
     let resume_render_idx = resume_body
         .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
-        .expect("resume render fn");
+        .or_fail("resume render fn")?;
     let body_after = &resume_body[resume_render_idx..];
-    let brace_idx = body_after.find('{').expect("opening brace");
+    let brace_idx = body_after.find('{').or_fail("opening brace")?;
     let after_brace = &body_after[brace_idx + 1..];
     let trimmed = after_brace.trim_start();
     assert!(
@@ -85,9 +85,9 @@ fn new_mode_view_files_exist_with_documented_surface() {
 
     let search_render_idx = search_body
         .find("pub fn render(&mut self, area: Rect, buf: &mut Buffer)")
-        .expect("search render fn");
+        .or_fail("search render fn")?;
     let s_body_after = &search_body[search_render_idx..];
-    let s_brace_idx = s_body_after.find('{').expect("opening brace");
+    let s_brace_idx = s_body_after.find('{').or_fail("opening brace")?;
     let s_after_brace = &s_body_after[s_brace_idx + 1..];
     let s_trimmed = s_after_brace.trim_start();
     assert!(
@@ -100,21 +100,22 @@ fn new_mode_view_files_exist_with_documented_surface() {
     );
 
     // @step And rust/fspec-tui/src/views/agent.rs line count is < 300
-    let agent_rs = fspec_tui_src().join("views").join("agent.rs");
-    assert!(count_lines(&agent_rs) < 300);
+    let agent_rs = fspec_tui_src()?.join("views").join("agent.rs");
+    assert!(count_lines(&agent_rs)? < 300);
 
     // @step And rust/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
-    let dispatch026 = fspec_tui_src()
+    let dispatch026 = fspec_tui_src()?
         .join("app")
         .join("dispatch_resume_search_views.rs");
-    assert!(count_lines(&dispatch026) < 300);
+    assert!(count_lines(&dispatch026)? < 300);
+    Ok(())
 }
 
 /// Scenario: Old popup files are removed and their identifiers no longer appear
 #[test]
-fn old_popup_files_removed_and_identifiers_gone() {
+fn old_popup_files_removed_and_identifiers_gone() -> TestResult {
     // @step Given the repository is at the RPC-026 implementing snapshot
-    let src = fspec_tui_src();
+    let src = fspec_tui_src()?;
 
     // @step And rust/fspec-tui/src/views/agent/resume_picker.rs does NOT exist
     let picker = src.join("views").join("agent").join("resume_picker.rs");
@@ -129,21 +130,25 @@ fn old_popup_files_removed_and_identifiers_gone() {
     // @step When ripgrep searches rust/fspec-tui/src/ for "SearchPalette"
     // @step Then zero matches are returned
     let mut violations: Vec<String> = Vec::new();
-    fn walk(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
-        for e in std::fs::read_dir(dir).expect("dir") {
-            let e = e.expect("entry");
+    fn walk(
+        dir: &std::path::Path,
+        out: &mut Vec<std::path::PathBuf>,
+    ) -> Result<(), codelet_test_helpers::TestError> {
+        for e in std::fs::read_dir(dir).or_fail("dir")? {
+            let e = e.or_fail("entry")?;
             let p = e.path();
             if p.is_dir() {
-                walk(&p, out);
+                walk(&p, out)?;
             } else if p.extension().and_then(|s| s.to_str()) == Some("rs") {
                 out.push(p);
             }
         }
+        Ok(())
     }
     let mut files: Vec<std::path::PathBuf> = Vec::new();
-    walk(&src, &mut files);
+    walk(&src, &mut files)?;
     for path in &files {
-        let body = read_raw(path);
+        let body = common::read_to_string_or_fail(path)?;
         for needle in ["ResumePicker", "SearchPalette"] {
             if body.contains(needle) {
                 violations.push(format!("{} contains {}", path.display(), needle));
@@ -151,15 +156,16 @@ fn old_popup_files_removed_and_identifiers_gone() {
         }
     }
     assert!(violations.is_empty(), "violations: {violations:?}");
+    Ok(())
 }
 
 /// Scenario: AgentView gains resume_view/search_view fields
 #[test]
-fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
+fn agent_view_orchestrator_owns_the_new_mode_view_fields() -> TestResult {
     // @step Given rust/fspec-tui/src/views/agent.rs after RPC-026 lands
-    let path = fspec_tui_src().join("views").join("agent.rs");
-    let body = read_raw(&path);
-    assert!(count_lines(&path) < 300);
+    let path = fspec_tui_src()?.join("views").join("agent.rs");
+    let body = read_raw(&path)?;
+    assert!(count_lines(&path)? < 300);
     // @step And the file declares the "resume_view" field
     assert!(body.contains("resume_view"));
     // @step And the file declares the "search_view" field
@@ -170,47 +176,45 @@ fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
     // `resume_view`/`search_view` via `as_mut()` before painting the
     // session pane.)
     let pane_render = read_raw(
-        &fspec_tui_src()
+        &fspec_tui_src()?
             .join("views")
             .join("agent")
             .join("pane_render.rs"),
-    );
+    )?;
     assert!(pane_render.contains("self.resume_view.as_mut()"));
     assert!(pane_render.contains("self.search_view.as_mut()"));
+    Ok(())
 }
 
 /// Scenario: handle_slash_command dispatches the renamed Action variants
 #[test]
-fn handle_slash_command_dispatches_open_resume_view_and_open_search_view() {
+fn handle_slash_command_dispatches_open_resume_view_and_open_search_view() -> TestResult {
     // @step Given rust/fspec-tui/src/app/dispatch_slash_commands.rs after RPC-026 lands
-    let path = fspec_tui_src()
+    let path = fspec_tui_src()?
         .join("app")
         .join("dispatch_slash_commands.rs");
-    let body = read_raw(&path);
-    assert!(count_lines(&path) < 300);
+    let body = read_raw(&path)?;
+    assert!(count_lines(&path)? < 300);
     // @step And the file routes "SlashCommandAction::Resume" through handle_open_resume_view
     assert!(body.contains("SlashCommandAction::Resume"));
     assert!(body.contains("handle_open_resume_view"));
     // @step And the file routes "SlashCommandAction::Search" through handle_open_search_view
     assert!(body.contains("SlashCommandAction::Search"));
     assert!(body.contains("handle_open_search_view"));
+    Ok(())
 }
 
 /// Scenario: Action enum gains the RPC-026 mode-view variants
 #[test]
-fn action_enum_gains_mode_view_variants() {
+fn action_enum_gains_mode_view_variants() -> TestResult {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-026 lands
-    let body = read_raw(&fspec_tui_src().join("components").join("mod.rs"));
-    // @step Then the Action enum declares the "OpenResumeView" variant
-    assert!(body.contains("OpenResumeView"));
-    // @step And the Action enum declares the "OpenSearchView" variant
+    let body = read_raw(&fspec_tui_src()?.join("components").join("mod.rs"))?;
+    // @step Then the Action enum declares the "OpenSearchView" variant
     assert!(body.contains("OpenSearchView"));
     // @step And the Action enum declares the "CloseResumeView" variant
     assert!(body.contains("CloseResumeView"));
     // @step And the Action enum declares the "CloseSearchView" variant
     assert!(body.contains("CloseSearchView"));
-    // @step And the Action enum declares the "RequestDeleteSession" variant
-    assert!(body.contains("RequestDeleteSession"));
     // @step And the Action enum declares the "ConfirmDeleteSession" variant
     assert!(body.contains("ConfirmDeleteSession"));
     // Existing RPC-026 variants must still be present
@@ -222,4 +226,5 @@ fn action_enum_gains_mode_view_variants() {
     // Pre-refactor names must NOT appear
     assert!(!body.contains("OpenResumePicker"));
     assert!(!body.contains("OpenSearchPalette"));
+    Ok(())
 }

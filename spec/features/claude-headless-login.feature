@@ -1,5 +1,8 @@
+@BUG-582
 @codex-oauth
 @PROV-022
+@providers
+@authentication
 Feature: Anthropic device auth flow for headless login
   """
   New file: rust/providers/src/claude_headless_login.rs — Simple async function that orchestrates: generate PKCE → invoke code-entry callback with authorize URL → validate state → exchange code → persist tokens. ~80-100 lines. No HTTP server, no hyper dependency, no port binding.

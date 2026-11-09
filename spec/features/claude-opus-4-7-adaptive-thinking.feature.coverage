@@ -5,134 +5,53 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "30-38",
+          "lines": "24-37",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/thinking_config.rs",
               "lines": [
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Opus 4.7 returns adaptive thinking config for High level",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "44-68",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Opus 4.7 returns adaptive thinking config for Low level",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "74-99",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Opus 4.7 returns empty config when thinking is Off",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "105-118",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "/// Model prefixes that require budgeted thinking (pre-adaptive era: these",
+              "lastLine": "}"
             }
           ]
         }
@@ -143,14 +62,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "124-148",
+          "lines": "43-62",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                81,
-                82,
-                83,
                 84,
                 85,
                 86,
@@ -175,75 +91,13 @@
                 105,
                 106,
                 107,
-                108
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Opus 4.6 adaptive behaviour unchanged after adding 4.7",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "154-175",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                35
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Sonnet 4.6 adaptive behaviour unchanged after adding 4.7",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "181-203",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                35
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "NAPI getThinkingConfig returns adaptive for Opus 4.7",
-      "testMappings": [
-        {
-          "file": "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
-          "lines": "210-247",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/thinking_config.rs",
-              "lines": [
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "/// * `is_oauth` - Whether OAuth authentication is being used",
+              "lastLine": "//     headers.push(beta_headers::CONTEXT_1M);"
             }
           ]
         }
@@ -251,8 +105,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
       "rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
@@ -261,6 +115,6 @@
       "rust/tools/src/facade/thinking_config.rs",
       "rust/providers/src/claude.rs"
     ],
-    "totalLinesCovered": 303
+    "totalLinesCovered": 101
   }
 }

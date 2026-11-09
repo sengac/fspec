@@ -3,6 +3,15 @@ use codelet_tools::unified_exec::ExecCommand;
 #[cfg(unix)]
 #[tokio::test]
 async fn unicode_output_does_not_kill_the_tool_server() -> Result<(), Box<dyn std::error::Error>> {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     use codelet_tools::unified_exec::UnifiedExecTool;
     use rig::tool::server::ToolServer;
     use serde_json::{json, Value};
@@ -35,6 +44,11 @@ async fn unicode_output_does_not_kill_the_tool_server() -> Result<(), Box<dyn st
 
 #[test]
 fn unicode_command_previews_preserve_character_boundaries() {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     for character in ["é", "─", "🦀"] {
         let prefix = "x".repeat(56);
         let command = format!("{prefix}{character}more text");
@@ -46,6 +60,11 @@ fn unicode_command_previews_preserve_character_boundaries() {
 
 #[test]
 fn command_previews_preserve_existing_ascii_limits() {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     let command = "x".repeat(60);
     assert_eq!(ExecCommand::Shell(command.clone()).display(), command);
     assert_eq!(ExecCommand::Argv(vec![command.clone()]).display(), command);

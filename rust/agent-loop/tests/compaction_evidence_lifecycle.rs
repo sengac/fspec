@@ -196,17 +196,24 @@ async fn durable_raw_d2_is_used_without_active_message_markers() -> support::Tes
     );
     drop(inner);
     let replacement = RAW_D2.replace("exact durable memory", "rewritten permanent memory");
-    assert!(InjectSummaryTool::new(background.id)
-        .call(InjectSummaryArgs {
-            content: replacement
-        })
-        .await
-        .is_err());
-    InjectSummaryTool::new(background.id)
-        .call(InjectSummaryArgs {
-            content: RAW_D2.into(),
-        })
-        .await?;
+    // BUG-614: a rewritten durable payload is a rejected candidate the model
+    // may correct, never a queued one.
+    let rejected: serde_json::Value = serde_json::from_str(
+        &InjectSummaryTool::new(background.id)
+            .call(InjectSummaryArgs {
+                content: replacement,
+            })
+            .await?,
+    )?;
+    assert_eq!(rejected["status"], "rejected", "{rejected}");
+    let queued: serde_json::Value = serde_json::from_str(
+        &InjectSummaryTool::new(background.id)
+            .call(InjectSummaryArgs {
+                content: RAW_D2.into(),
+            })
+            .await?,
+    )?;
+    assert_eq!(queued["status"], "queued", "{queued}");
     Ok(())
 }
 

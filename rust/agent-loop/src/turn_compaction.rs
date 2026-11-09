@@ -1,10 +1,12 @@
 use crate::compaction_evidence::CompactionEvidence;
 use codelet_cli::session::Session;
-use codelet_core::compaction::{validate_dag_candidate, DagValidationContext};
+use codelet_core::compaction::{validate_dag_candidate, DagValidationContext, DagValidationError};
 use codelet_providers::request_admission::RequestAdmissionError;
 use codelet_rpc_types::{CompactionResult, SessionStatus, StreamChunk};
 use codelet_sessions::background_session::BackgroundSession;
-use codelet_tools::inject_summary::InjectSummaryResult;
+use codelet_tools::inject_summary::{
+    InjectSummaryError, InjectSummaryRejection, InjectSummaryResult, MAX_SUMMARY_ATTEMPTS,
+};
 use std::sync::{atomic::Ordering, Arc, Mutex};
 use uuid::Uuid;
 
@@ -18,15 +20,16 @@ pub struct TurnCompaction {
     operation_id: Uuid,
     pending: Mutex<Option<PendingCandidate>>,
     submitted: std::sync::atomic::AtomicBool,
+    /// BUG-614: inject_summary candidates rejected in this turn.
+    rejections: std::sync::atomic::AtomicUsize,
     original_tokens: u32,
-    threshold: f64,
-    capacity: f64,
+    /// PROV-165: (threshold, capacity), or why the model limits are unavailable.
+    limits: Result<(f64, f64), String>,
 }
 
 impl TurnCompaction {
     pub(crate) fn capture(inner: &Session, session: &BackgroundSession) -> Arc<Self> {
         let manager = inner.provider_manager();
-        let capacity = manager.context_window() as u64;
         let threshold_config = manager
             .compaction_threshold_override()
             .map(|(kind, value)| {
@@ -34,12 +37,17 @@ impl TurnCompaction {
                     kind, value,
                 )
             });
-        let threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            capacity,
-            manager.max_output_tokens() as u64,
-            inner.current_model_id().as_deref(),
-            threshold_config.as_ref(),
-        );
+        let limits = codelet_cli::model_limits::required_limits(manager)
+            .map(|limits| {
+                let threshold = codelet_cli::compaction_threshold::compaction_threshold_for(
+                    limits.context_window,
+                    limits.max_output_tokens,
+                    inner.current_model_id().as_deref(),
+                    threshold_config.as_ref(),
+                );
+                (threshold as f64, limits.context_window as f64)
+            })
+            .map_err(|error| error.to_string());
         Arc::new(Self {
             evidence: inner
                 .capture_durable_compaction(session.id)
@@ -48,6 +56,7 @@ impl TurnCompaction {
             operation_id: Uuid::new_v4(),
             pending: Mutex::new(None),
             submitted: std::sync::atomic::AtomicBool::new(false),
+            rejections: std::sync::atomic::AtomicUsize::new(0),
             original_tokens: u32::try_from(
                 codelet_cli::interactive_helpers::tracked_pre_compaction_basis(
                     &inner.token_tracker,
@@ -55,8 +64,7 @@ impl TurnCompaction {
                 ),
             )
             .unwrap_or(u32::MAX),
-            threshold: threshold as f64,
-            capacity: capacity as f64,
+            limits,
         })
     }
 
@@ -64,22 +72,65 @@ impl TurnCompaction {
         self.evidence.clone()
     }
 
-    pub(crate) fn submit(&self, content: String) -> Result<InjectSummaryResult, String> {
-        self.submit_with_deadline(content, None)
+    /// BUG-614: the main model's inject_summary submission. A candidate that
+    /// fails validation is a typed rejection the model may correct, up to
+    /// [`MAX_SUMMARY_ATTEMPTS`] per turn; nothing is installed.
+    pub(crate) fn submit(
+        &self,
+        content: String,
+    ) -> Result<InjectSummaryResult, InjectSummaryError> {
+        let rejected = self.rejections.load(Ordering::Acquire);
+        if rejected >= MAX_SUMMARY_ATTEMPTS {
+            return Err(InjectSummaryError::Failed(format!(
+                "inject_summary already rejected {rejected} candidates in this turn; nothing was \
+                 installed and no further summary is accepted until the next turn"
+            )));
+        }
+        match self.queue(content, None)? {
+            Ok(result) => Ok(result),
+            Err(error) => {
+                let attempt = self.rejections.fetch_add(1, Ordering::AcqRel) + 1;
+                Err(InjectSummaryError::Rejected(InjectSummaryRejection {
+                    attempt,
+                    max_attempts: MAX_SUMMARY_ATTEMPTS,
+                    error,
+                    coverage_end: self
+                        .evidence
+                        .as_ref()
+                        .ok()
+                        .and_then(|evidence| evidence.source().prefix.len().checked_sub(1)),
+                }))
+            }
+        }
     }
 
+    /// A GenerateCompaction candidate, already validated by its builder.
     pub(crate) fn submit_with_deadline(
         &self,
         content: String,
         deadline: Option<tokio::time::Instant>,
     ) -> Result<InjectSummaryResult, String> {
-        let evidence = self.evidence.as_ref().map_err(Clone::clone)?;
+        self.queue(content, deadline)
+            .map_err(|error| error.to_string())?
+            .map_err(|error| error.to_string())
+    }
+
+    /// Queue a candidate. The outer error means it could not be considered;
+    /// the inner error is the exact validator rejection of the candidate.
+    #[allow(clippy::type_complexity)]
+    fn queue(
+        &self,
+        content: String,
+        deadline: Option<tokio::time::Instant>,
+    ) -> Result<Result<InjectSummaryResult, String>, InjectSummaryError> {
+        let evidence = self.evidence.as_ref().map_err(|error| error.as_str())?;
+        self.limits.as_ref().map_err(|error| error.as_str())?;
         let source = evidence.source();
         let mut pending = self.pending.lock().map_err(|error| error.to_string())?;
         if self.submitted.load(Ordering::Acquire) {
             return Err("compaction candidate already submitted for this operation".into());
         }
-        validate_dag_candidate(
+        let validated = validate_dag_candidate(
             &content,
             &DagValidationContext {
                 persisted_turn_count: source.prefix.len(),
@@ -87,15 +138,23 @@ impl TurnCompaction {
                 existing_dag: evidence.existing_dag().map(|(content, _)| content),
                 ..Default::default()
             },
-        )
-        .map_err(|error| error.to_string())?;
+        );
+        match validated {
+            Err(error @ DagValidationError::InvalidSource(_)) => {
+                return Err(InjectSummaryError::Failed(error.to_string()))
+            }
+            Err(error @ DagValidationError::InvalidCandidate(_)) => {
+                return Ok(Err(error.to_string()))
+            }
+            Ok(_) => {}
+        }
         let injected_tokens = codelet_common::token_estimator::count_tokens(&content) as u64;
         *pending = Some(PendingCandidate { content, deadline });
         self.submitted.store(true, Ordering::Release);
-        Ok(InjectSummaryResult {
+        Ok(Ok(InjectSummaryResult {
             injected_tokens,
             remaining_budget: 0,
-        })
+        }))
     }
 
     pub fn apply(&self, inner: &mut Session, session: &BackgroundSession) -> Result<bool, String> {
@@ -127,6 +186,7 @@ impl TurnCompaction {
         let Some(candidate) = candidate else {
             return Ok(false);
         };
+        let (threshold, capacity) = self.limits.clone()?;
         let check = || {
             if is_cancelled() {
                 Err(RequestAdmissionError::Preparation(
@@ -162,8 +222,8 @@ impl TurnCompaction {
                     let snapshot = codelet_sessions::committed_publication::context_snapshot(
                         &manifest,
                         self.original_tokens,
-                        self.threshold,
-                        self.capacity,
+                        threshold,
+                        capacity,
                         true,
                     )
                     .map_err(|error| error.to_string())?;
@@ -187,7 +247,7 @@ impl TurnCompaction {
                 u64::from(self.original_tokens),
                 u64::from(compacted_tokens),
             ) * 100.0,
-            turns_summarized: u32::try_from(boundary.covered_prefix.len()).unwrap_or(u32::MAX),
+            turns_summarized: u32::try_from(boundary.covered_prefix().len()).unwrap_or(u32::MAX),
             turns_kept: u32::try_from(boundary.verified_suffix.len()).unwrap_or(u32::MAX),
         }));
         Ok(true)

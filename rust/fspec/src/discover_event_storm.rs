@@ -8,15 +8,15 @@
 //!
 //! The TS Commander.js registration at
 //! `src/commands/discover-event-storm.ts:88-98` declares one required
-//! positional `<work-unit-id>` and no flags. On success the core returns the
+//! positional `<workUnitId>` and no flags. On success the core returns the
 //! green confirmation line plus the `<system-reminder>` guidance block, which
 //! this bridge prints verbatim to stdout. On any failure it prints an
 //! `Error:` line to stderr and exits 1.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::discover_event_storm;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
@@ -30,7 +30,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = json!({ "workUnitId": args.work_unit_id }).to_string();
 

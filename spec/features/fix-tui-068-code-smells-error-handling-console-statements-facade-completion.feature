@@ -1,4 +1,6 @@
 @TUI-069
+@tui
+@validation
 Feature: Fix TUI-068 code smells: error handling, console statements, facade completion
   """
   Architecture notes:

@@ -72,11 +72,6 @@ Feature: Scheduler engine lift into codelet-core::scheduler
     Then no file under rust/core/src/scheduler/ contains the text "crate::session_bindings"
     And no file under rust/core/src/scheduler/ contains the text "session_bindings::SessionManager"
 
-  Scenario: rust/napi/src/scheduler/mod.rs is a thin re-export shim
-    Given the file rust/napi/src/scheduler/mod.rs is compiled
-    Then it contains a "pub use codelet_core::scheduler" re-export statement
-    And it still declares a public module named "loop_store"
-
   Scenario: The pure CRUD helpers live in codelet-core::scheduler::crud
     Given the file rust/core/src/scheduler/crud.rs is compiled
     Then it declares a public fn named "schedule_add"

@@ -1,4 +1,6 @@
 @AMGR-009
+@tools
+@agent-manager
 Feature: Core AgentManager tool — spawn, list, get_status, close
   """
   Tool module at rust/tools/src/agent_manager/ with mod.rs (AgentManagerTool struct + Tool impl), handler.rs (static HashMap + set/execute), types.rs (serde-tagged AgentManagerAction enum + result types)
@@ -65,14 +67,14 @@ Feature: Core AgentManager tool — spawn, list, get_status, close
     And my session should show 2 subordinate_ids
     And each subordinate should show my session as spawner_id
 
-  @get_status
+  @get-status
   Scenario: Get status of an existing session
     Given I am an agent with a registered AgentManager handler
     And I have spawned a subordinate session
     When I call AgentManager with action "get_status" and the subordinate's session_id
     Then I should receive a JSON response with session_id, role, status, model, spawner_id, subordinate_ids, and pending_messages
 
-  @get_status
+  @get-status
   @error
   Scenario: Get status of a nonexistent session
     Given I am an agent with a registered AgentManager handler

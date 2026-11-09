@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/fspec/src/blocklist_init_tests.rs",
-          "lines": "93-126",
+          "lines": "116-137",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                89,
                 90,
                 91,
                 92,
@@ -20,9 +21,10 @@
                 97,
                 98,
                 99,
-                100,
-                101
-              ]
+                100
+              ],
+              "firstLine": "// ONCE at startup is sufficient for rule-edit hot-reload. Before",
+              "lastLine": ".with_context(|| format!(\"WorkUnitsWatcher::new({})\", workspace.display()))?,"
             }
           ]
         }
@@ -33,11 +35,12 @@
       "testMappings": [
         {
           "file": "rust/fspec/src/blocklist_init_tests.rs",
-          "lines": "128-156",
+          "lines": "151-166",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                89,
                 90,
                 91,
                 92,
@@ -48,9 +51,10 @@
                 97,
                 98,
                 99,
-                100,
-                101
-              ]
+                100
+              ],
+              "firstLine": "// ONCE at startup is sufficient for rule-edit hot-reload. Before",
+              "lastLine": ".with_context(|| format!(\"WorkUnitsWatcher::new({})\", workspace.display()))?,"
             }
           ]
         }
@@ -61,11 +65,78 @@
       "testMappings": [
         {
           "file": "rust/fspec/src/blocklist_init_tests.rs",
-          "lines": "158-196",
+          "lines": "178-200",
           "implMappings": [
             {
               "file": "rust/fspec/src/common.rs",
               "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "// ONCE at startup is sufficient for rule-edit hot-reload. Before",
+              "lastLine": ".with_context(|| format!(\"WorkUnitsWatcher::new({})\", workspace.display()))?,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System blocklist rules are enforced after service startup",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/blocklist_init_tests.rs",
+          "lines": "221-247",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                96
+              ],
+              "firstLine": "codelet_tools::blocklist::init_blocklist(Some(workspace));",
+              "lastLine": "codelet_tools::blocklist::init_blocklist(Some(workspace));"
+            },
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
                 90,
                 91,
                 92,
@@ -77,8 +148,16 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "/// Load blocklist configuration from system and project paths.",
+              "lastLine": "}"
             }
           ]
         }
@@ -86,15 +165,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 3,
-    "coveredScenarios": 3,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/src/blocklist_init_tests.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/common.rs"
+      "rust/fspec/src/common.rs",
+      "rust/tools/src/blocklist/middleware.rs"
     ],
-    "totalLinesCovered": 138
+    "totalLinesCovered": 172
   }
 }

@@ -50,7 +50,7 @@ fn provider_settings_round_trip_without_changing_credentials() -> Result<(), Box
     let credential_path = directory.path().join("credentials.json");
     let credential_bytes = br#"{"codex":{"access_token":"oauth-secret"}}"#;
     std::fs::write(&credential_path, credential_bytes)?;
-    let handle: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());
+    let handle: Arc<dyn SessionManagerHandle> = SessionManager::new();
     let definition = runtime_definition();
 
     // @step When shared runtime defaults are saved and read through the backend
@@ -111,7 +111,7 @@ fn named_profile_crud_is_provider_scoped() -> Result<(), Box<dyn Error>> {
         }}
     }});
     std::fs::write(&config_path, serde_json::to_vec(&original)?)?;
-    let handle: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());
+    let handle: Arc<dyn SessionManagerHandle> = SessionManager::new();
     let definition = runtime_definition();
 
     // @step When the Codex profile is renamed and deleted through the backend
@@ -186,7 +186,7 @@ fn legacy_openai_profiles_remain_readable() -> Result<(), Box<dyn Error>> {
         "unknownExtension": {"keep": true}
     }}}}});
     std::fs::write(&config_path, serde_json::to_vec(&original)?)?;
-    let handle: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());
+    let handle: Arc<dyn SessionManagerHandle> = SessionManager::new();
 
     // @step When provider settings are read and the profile is edited
     let loaded = handle.list_provider_settings()?;
@@ -236,7 +236,7 @@ fn inherited_authentication_profiles_are_selectable() -> Result<(), Box<dyn Erro
     let models = vec![ModelEntry {
         id: "claude-test".into(),
         display_name: "Claude test".into(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -247,6 +247,8 @@ fn inherited_authentication_profiles_are_selectable() -> Result<(), Box<dyn Erro
         models: models.clone(),
         profile_name: None,
         is_unreachable: false,
+        provider_id: "anthropic".into(),
+        unavailable_reason: None,
     };
 
     // @step When available model sections are loaded

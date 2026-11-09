@@ -19,6 +19,7 @@ pub type Fixture = (
 
 pub fn fixture() -> Result<Fixture, Box<dyn std::error::Error>> {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let manifest = create_session("recovery", directory.path())?;

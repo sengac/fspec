@@ -5,99 +5,51 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs",
-          "lines": "84-129",
+          "lines": "82-128",
           "implMappings": [
             {
-              "file": "rust/rpc-server/src/server.rs",
+              "file": "rust/rpc-server/src/server/session_fanouts.rs",
               "lines": [
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493,
-                494,
-                495,
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs",
-          "lines": "84-129",
-          "implMappings": [
-            {
-              "file": "rust/rpc-server/src/server.rs",
-              "lines": [
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493,
-                494,
-                495,
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524
-              ]
+                45,
+                46,
+                47,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "/// (rule R4). Mirrors `session_created_fanout`; a missed removal is",
+              "lastLine": "/// not the local UI-reset source of truth)."
             }
           ]
         }
@@ -112,8 +64,8 @@
       "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs"
     ],
     "implFiles": [
-      "rust/rpc-server/src/server.rs"
+      "rust/rpc-server/src/server/session_fanouts.rs"
     ],
-    "totalLinesCovered": 168
+    "totalLinesCovered": 84
   }
 }

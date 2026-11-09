@@ -5,10 +5,10 @@
 //! Two-front-doors pattern: both shell argv and LLM tool call paths
 //! converge on fspec_core::commands::query_orphans::run.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_orphans;
 use serde_json::{json, Value};
 
@@ -21,7 +21,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj = serde_json::Map::new();
     if let Some(v) = args.output.as_ref() {

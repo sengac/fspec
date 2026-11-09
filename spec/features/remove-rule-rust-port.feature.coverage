@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "75-120",
+          "lines": "81-131",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
@@ -61,8 +61,6 @@
                 97,
                 98,
                 99,
-                100,
-                101,
                 102,
                 103,
                 104,
@@ -131,8 +129,12 @@
                 167,
                 168,
                 169,
-                170
-              ]
+                170,
+                171,
+                172
+              ],
+              "firstLine": "impl TsIndex {",
+              "lastLine": "}"
             }
           ]
         }
@@ -143,33 +145,33 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "122-153",
+          "lines": "133-168",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "let already_deleted = rule",
+              "lastLine": "}"
             }
           ]
         }
@@ -180,7 +182,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "155-187",
+          "lines": "170-206",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
@@ -188,8 +190,6 @@
                 97,
                 98,
                 99,
-                100,
-                101,
                 102,
                 103,
                 104,
@@ -203,8 +203,12 @@
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": ".ok_or_else(|| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -215,13 +219,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "189-216",
+          "lines": "208-238",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
-                100,
-                101,
                 102,
                 103,
                 104,
@@ -235,8 +237,12 @@
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": ".ok_or_else(|| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -247,7 +253,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "218-243",
+          "lines": "240-269",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
@@ -265,7 +271,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Serialize)]",
+              "lastLine": "let args: RemoveRuleArgs ="
             }
           ]
         }
@@ -276,22 +284,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "245-262",
+          "lines": "271-295",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66
-              ]
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "// Validate work unit exists.",
+              "lastLine": "}"
             }
           ]
         }
@@ -302,7 +309,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_rule.rs",
-          "lines": "264-286",
+          "lines": "297-324",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_rule.rs",
@@ -320,7 +327,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "} else {",
+              "lastLine": "}"
             }
           ]
         }
@@ -337,6 +346,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_rule.rs"
     ],
-    "totalLinesCovered": 420
+    "totalLinesCovered": 447
   }
 }

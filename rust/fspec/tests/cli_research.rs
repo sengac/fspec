@@ -23,6 +23,12 @@ use common::fspec_bin;
 
 fn run_cmd(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
     let mut cmd = Command::new(fspec_bin());
+    // BUG-640: a test build resolves the user directory only from FSPEC_USER_DIR.
+    cmd.env(
+        "FSPEC_USER_DIR",
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory"),
+    );
     cmd.arg("research");
     for a in extra_args {
         cmd.arg(a);
@@ -69,7 +75,8 @@ fn cli_lists_available_research_tools_with_header() {
     // @step And stdout contains "stakeholder"
     assert!(stdout.contains("stakeholder"), "stdout={stdout}");
 
-    // @step And stdout does not contain an "ast" tool entry (CLI-015)
+    // @step And stdout does not contain "--tool=ast"
+    // (CLI-015 removed the ast research tool)
     assert!(
         !stdout.contains("--tool=ast"),
         "stdout must not advertise the ast tool: {stdout}"
@@ -90,6 +97,22 @@ fn cli_tool_listing_includes_per_tool_usage_guidance() {
     // @step And stdout contains "Usage: fspec research --tool=stakeholder <args>"
     assert!(
         stdout.contains("Usage: fspec research --tool=stakeholder <args>"),
+        "stdout={stdout}"
+    );
+
+    // @step And each of perplexity, jira, confluence and stakeholder is listed with a ✓ or ✗ status indicator
+    for tool in ["perplexity", "jira", "confluence", "stakeholder"] {
+        assert!(
+            stdout
+                .lines()
+                .any(|line| line == format!("  ✓ {tool}") || line == format!("  ✗ {tool}")),
+            "no status line for {tool}; stdout={stdout}"
+        );
+    }
+
+    // @step And stdout contains "Perplexity AI research tool for web search and AI-powered answers"
+    assert!(
+        stdout.contains("Perplexity AI research tool for web search and AI-powered answers"),
         "stdout={stdout}"
     );
 }

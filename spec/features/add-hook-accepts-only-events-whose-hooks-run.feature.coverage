@@ -1,0 +1,308 @@
+{
+  "scenarios": [
+    {
+      "name": "A hook on an fspec command event is added",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+          "lines": "57-77",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// BUG-590: reject an event no hook ever runs on, before reading or",
+              "lastLine": "crate::command_hooks::check_hook_event(&args.event).map_err(FspecCoreError::Message)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A hook on a workflow status event is added as a global status hook",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+          "lines": "79-99",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// BUG-590: reject an event no hook ever runs on, before reading or",
+              "lastLine": "crate::command_hooks::check_hook_event(&args.event).map_err(FspecCoreError::Message)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An event that is neither a command nor a status is rejected before writing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+          "lines": "101-119",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// BUG-590: reject an event no hook ever runs on, before reading or",
+              "lastLine": "crate::command_hooks::check_hook_event(&args.event).map_err(FspecCoreError::Message)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An event of a command that runs no command hooks is rejected",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+          "lines": "121-143",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/add_hook.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// BUG-590: reject an event no hook ever runs on, before reading or",
+              "lastLine": "crate::command_hooks::check_hook_event(&args.event).map_err(FspecCoreError::Message)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add-hook's help names only accepted events and points to add-virtual-hook for one work unit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+          "lines": "153-179",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/add_hook.rs",
+              "lines": [
+                82,
+                83
+              ],
+              "firstLine": "\"Events are pre-<command> or post-<command> of an fspec command that runs command hooks, or pre-<status> or post-<status> of a workflow status (backlog, specifying, testing, implementing, validating, done, blocked); any other event is rejected and nothing is written\",",
+              "lastLine": "\"A pre-<status> or post-<status> hook runs for every work unit on that status change; to add a hook for one work unit only, use fspec add-virtual-hook\","
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A guidance mention of add-hook with a rejected event fails the guidance contract",
+      "testMappings": [
+        {
+          "file": "rust/fspec/src/bug590_add_hook_event_guidance_tests.rs",
+          "lines": "11-46",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/guidance_contract_tests.rs",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265
+              ],
+              "firstLine": "fn rejection(mention: &str, fully: bool) -> Option<String> {",
+              "lastLine": "let parsed = CLI.with(|cli| cli.borrow_mut().try_get_matches_from_mut(&args).map(|_| ()));"
+            },
+            {
+              "file": "rust/fspec-core/src/command_hooks/events.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub fn check_hook_event(event: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug590_add_hook_accepts_only_events_whose_hooks_run.rs",
+      "rust/fspec/src/bug590_add_hook_event_guidance_tests.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/command_hooks/events.rs",
+      "rust/fspec-core/src/commands/add_hook.rs",
+      "rust/fspec-core/src/help/configs/add_hook.rs",
+      "rust/fspec/src/guidance_contract_tests.rs"
+    ],
+    "totalLinesCovered": 285
+  }
+}

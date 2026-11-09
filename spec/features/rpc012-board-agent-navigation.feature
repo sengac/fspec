@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-012
 @rust
@@ -5,6 +6,7 @@
 @infrastructure
 @rpc
 @critical
+@BUG-381
 Feature: RPC-012 Board ↔ Agent navigation — App-level handoff via stores and Navigator
   """
   RPC-012 — App-level integration contract for the new Board ↔ Agent
@@ -98,3 +100,9 @@ Feature: RPC-012 Board ↔ Agent navigation — App-level handoff via stores and
     When the App renders against an 80x24 TestBackend
     Then the rendered buffer contains the AgentView "Agent" block title
     And the rendered buffer does NOT contain the BACKLOG SPECIFYING column headers
+
+  Scenario: Entering a work unit that is no longer on the board is reported
+    Given an App with bootstrap complete and an empty board
+    When the App dispatches Action::EnterWorkUnit("GONE-001")
+    Then the failure dialog says work unit GONE-001 is no longer on the board
+    And no creation dialog is shown

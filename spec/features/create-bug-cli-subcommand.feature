@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@work-unit-management
 Feature: fspec create-bug CLI subcommand (Rust port)
   """
   Clap derive subcommand `create-bug` exposes the same surface as the TS Commander.js registration at src/commands/create-bug.ts:278-288 — two positional arguments `<prefix>` and `<title>` plus optional `-d, --description`, `-e, --epic`, and `-p, --parent` flags. The bridge module at rust/fspec/src/create_bug.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::create_bug::run; no validation or rendering logic is duplicated.

@@ -4,67 +4,9 @@
       "name": "Search for a function by name using AstSearch action",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_query_interface_test.rs",
-          "lines": "49-78",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_query_interface_test.rs",
+          "lines": "49-90",
+          "implMappings": []
         }
       ]
     },
@@ -72,56 +14,9 @@
       "name": "Get neighbors of a Function node using AstNeighbors action",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_query_interface_test.rs",
-          "lines": "83-117",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_query_interface_test.rs",
+          "lines": "95-127",
+          "implMappings": []
         }
       ]
     },
@@ -129,18 +24,9 @@
       "name": "Get AST codebase statistics using AstStats action",
       "testMappings": [
         {
-          "file": "rust/napi/tests/ast_query_interface_test.rs",
-          "lines": "122-158",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/ast_dispatch.rs",
-              "lines": [
-                157,
-                158,
-                159
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/ast_query_interface_test.rs",
+          "lines": "132-172",
+          "implMappings": []
         }
       ]
     }
@@ -150,11 +36,9 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/ast_query_interface_test.rs"
+      "rust/graph/tests/ast_query_interface_test.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/graph/ast_dispatch.rs"
-    ],
-    "totalLinesCovered": 198
+    "implFiles": [],
+    "totalLinesCovered": 116
   }
 }

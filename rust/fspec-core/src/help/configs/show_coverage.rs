@@ -35,6 +35,11 @@ const OPTIONS: &[CommandOption] = &[
         description: "Write output to file instead of stdout",
         default_value: None,
     },
+    CommandOption {
+        flag: "--mapping-json",
+        description: "Read ordered mapping indices and canonical scenario hashes as JSON; requires a feature name and leaves --format json unchanged",
+        default_value: None,
+    },
 ];
 
 const EXAMPLES: &[CommandExample] = &[
@@ -77,34 +82,28 @@ const PATTERN_2_EXAMPLE: &str = "# Check what percentage of scenarios are mapped
 
 const PATTERN_3_EXAMPLE: &str = "# Export as JSON for automated checks\nfspec show-coverage --format=json --output=coverage.json\n\n# Parse in CI pipeline to enforce coverage thresholds\njq '.coveragePercent' coverage.json";
 
-// The TS reference output emits the literal string "undefined" for the
-// CommonPattern.description field (because show-coverage-help.ts omits it
-// and the TS formatter prints the missing field as the JS string
-// "undefined"). We reproduce this faithfully for byte-parity.
+// BUG-566: the TypeScript formatter printed `undefined` for keys this config
+// left unset; the config now holds the real text (each fix is the TS
+// `solution`, a pattern without a description prints none).
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Find Coverage Gaps",
         example: PATTERN_1_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Reverse ACDD Progress Tracking",
         example: PATTERN_2_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Export Coverage for CI/CD",
         example: PATTERN_3_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
 ];
 
-const RELATED: &[&str] = &[
-    "link-coverage",
-    "audit-coverage",
-    "unlink-coverage",
-    "list-features",
-];
+const RELATED: &[&str] = &["link-coverage", "audit", "unlink-coverage", "list-features"];
 
 const NOTES: &[&str] = &[
     "Coverage symbols: ✅ FULLY COVERED, ⚠️ PARTIALLY COVERED (test only), ❌ NOT COVERED",

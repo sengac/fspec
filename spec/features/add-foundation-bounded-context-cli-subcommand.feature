@@ -1,5 +1,7 @@
 @done
 @RPC-183
+@cli
+@foundation-management
 Feature: fspec add-foundation-bounded-context CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_foundation_bounded_context.rs — clap-derived struct mirroring

@@ -85,7 +85,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -190,7 +192,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -385,7 +389,9 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "use super::memory_policy;",
+              "lastLine": "self.wire_request(request, true)?,"
             }
           ]
         }
@@ -476,7 +482,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -581,7 +589,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -776,7 +786,9 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "use super::memory_policy;",
+              "lastLine": "self.wire_request(request, true)?,"
             }
           ]
         }
@@ -867,7 +879,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reasoning.rs",
@@ -972,7 +986,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -1167,7 +1183,9 @@
                 188,
                 189,
                 190
-              ]
+              ],
+              "firstLine": "use super::memory_policy;",
+              "lastLine": "self.wire_request(request, true)?,"
             }
           ]
         }

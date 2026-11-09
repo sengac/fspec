@@ -129,7 +129,14 @@ impl Default for DisplayThrottle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::thread::sleep;
+
+    /// TEST-042: let `elapsed` pass for the throttle without sleeping, by
+    /// moving its last emission back.
+    fn age(throttle: &mut DisplayThrottle, elapsed: Duration) {
+        throttle.last_emit = throttle
+            .last_emit
+            .map(|last| last.checked_sub(elapsed).unwrap_or(last));
+    }
 
     #[test]
     fn test_first_call_always_emits() {
@@ -149,7 +156,7 @@ mod tests {
         let mut throttle = DisplayThrottle::new(Duration::from_millis(50));
         throttle.should_emit(); // First call
 
-        sleep(Duration::from_millis(60)); // Wait longer than interval
+        age(&mut throttle, Duration::from_millis(60)); // Longer than interval
 
         assert!(throttle.should_emit()); // Should emit now
     }
@@ -239,8 +246,8 @@ mod tests {
         }
         assert_eq!(emit_count, 1);
 
-        // Wait and emit again
-        sleep(Duration::from_millis(40));
+        // Let the interval pass and emit again
+        age(&mut throttle, Duration::from_millis(40));
         if throttle.should_emit() {
             emit_count += 1;
         }

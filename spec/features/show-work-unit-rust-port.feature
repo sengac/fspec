@@ -7,7 +7,7 @@ Feature: Port show-work-unit command to Rust
   File layout: rust/fspec-core/src/commands/show_work_unit.rs (impl, replaces stub) + rust/fspec-core/src/help/configs/show_work_unit.rs (help config) + rust/fspec-core/tests/show_work_unit.rs (dispatcher tests) + rust/fspec/src/show_work_unit.rs (CLI bridge) + rust/fspec/tests/cli_show_work_unit.rs (CLI shell tests) + rust/fspec/tests/fixtures/help/show-work-unit.txt (TS help fixture)
   Reuses shared modules: gherkin crate (already in fspec-core Cargo.toml) for parsing feature files; io::feature_glob::glob_feature_files for walking spec/features/ (errors silently swallowed to match TS); does NOT use ensure_work_units_file because TS uses bare readFile that escalates ENOENT. WorkUnit.rules/examples/questions/architectureNotes are read inline from wu.extra (parity with show_deleted) so the shared WorkUnit type stays minimal and parallel-port-safe
   Two-front-doors per RPC-003 §7/§11: shell argv → clap → rust/fspec/src/show_work_unit.rs → codelet_fspec_core::commands::show_work_unit::run; LLM tool call JSON → fspec_core::dispatch::dispatch_command → codelet_fspec_core::commands::show_work_unit::run. Both call sites pass JSON-encoded args and project_root: &Path. CLI bridge marshals workUnitId + optional --format into the JSON shape and emits NO business logic
-  JSON structured shape (dispatcher path with format=json): declaration-order fields { id, title, type, status, description?, estimate?, epic?, parent?, children?, blocks?, blockedBy?, dependsOn?, relatesTo?, rules?, deletedRules?, examples?, questions?, assumptions?, architectureNotes?, attachments?, virtualHooks?, createdAt, updatedAt, linkedFeatures, systemReminders?, systemReminder? }. Use #[derive(Serialize)] with explicit #[serde(skip_serializing_if='Option::is_none')] on optional fields
+  JSON structured shape (dispatcher path with format=json): declaration-order fields { id, title, type, status, description?, estimate?, epic?, parent?, children?, blocks?, blockedBy?, dependsOn?, relatesTo?, userStory? (BUG-660), rules?, deletedRules?, examples?, questions?, assumptions?, architectureNotes?, attachments?, virtualHooks?, createdAt, updatedAt, linkedFeatures, systemReminders?, systemReminder? }. Use #[derive(Serialize)] with explicit #[serde(skip_serializing_if='Option::is_none')] on optional fields
   System-reminder generation: helper module within show_work_unit.rs mirrors the five reminder functions from src/utils/system-reminder.ts (getMissingEstimateReminder, getEmptyExampleMappingReminder, getLongDurationReminder, getLargeEstimateReminder, soft-delete count notice). The FSPEC_DISABLE_REMINDERS=1 environment gate is honoured. consolidateReminders strips <system-reminder> wrappers and re-wraps a single block
   linkedFeatures implementation mirrors show_feature::extract_work_unit_tags() but ALWAYS returns an empty array on any error (missing spec/features/, gherkin parse failure, I/O)
   Shared-file wiring needed from supervisor AFTER worker impl lands: (1) help/configs/mod.rs; (2) dispatch.rs (move show-work-unit from run_stub to run_ported); (3) canonical.rs PORTED_COMMANDS; (4) fspec/src/main.rs (Mode::ShowWorkUnit + dispatch + intercept_ts_help branch)
@@ -156,3 +156,16 @@ Feature: Port show-work-unit command to Rust
     When I inspect rust/fspec-core/src/commands/show_work_unit.rs
     Then the file does NOT contain the substring "FspecCoreError::NotYetPorted"
     Then the file uses the shared gherkin crate to parse feature files (mirroring show_feature.rs)
+
+  Scenario: Verbose JSON lists soft-deleted rules with their deletedAt timestamps
+    Given spec/work-units.json contains AUTH-001 with rules=[{id:0,text:'Rule A',deleted:false},{id:1,text:'Rule B',deleted:true,deletedAt:'2025-01-31T12:00:00.000Z'},{id:2,text:'Rule C',deleted:false}] and status='implementing'
+    When I dispatch show-work-unit with workUnitId='AUTH-001', format='json' and verbose=true
+    Then the dispatcher returns success=true
+    And the JSON payload's rules array equals ["[0] Rule A", "[2] Rule C"]
+    And the JSON payload's deletedRules array equals ["[1] Rule B (deletedAt: 2025-01-31T12:00:00.000Z)"]
+
+  Scenario: Text format lists the work unit's attachments
+    Given spec/work-units.json contains AUTH-001 with attachments=['spec/attachments/AUTH-001/flow.mmd','spec/attachments/AUTH-001/notes.md'] and status='specifying'
+    When I dispatch show-work-unit with workUnitId='AUTH-001'
+    Then the dispatcher returns success=true
+    And the text output has an "Attachments:" section listing "  1. spec/attachments/AUTH-001/flow.mmd" and "  2. spec/attachments/AUTH-001/notes.md"

@@ -108,7 +108,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "use super::{get_message, load_session};",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,7 +126,6 @@
             {
               "file": "rust/core/src/persistence/provider_state.rs",
               "lines": [
-                16,
                 17,
                 18,
                 19,
@@ -139,8 +140,11 @@
                 28,
                 29,
                 30,
-                31
-              ]
+                31,
+                32
+              ],
+              "firstLine": "pub fn migrate_provider_state(session_id: Uuid) -> Result<(), ProviderStateError> {",
+              "lastLine": "}"
             }
           ]
         }

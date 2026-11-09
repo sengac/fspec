@@ -4,6 +4,7 @@
 @rust
 @done
 @LIMITS-007
+@BUG-309
 Feature: Integration Tests — All Provider/Model Combinations
   """
   Tests use Rust resolve_model_limits and resolve_context_window / resolve_max_output_tokens functions against real provider structs. ProviderManager.context_window() and max_output_tokens() resolve through ModelLimitsResolver. PROV-161 removes blanket Claude ceilings while preserving backend fallbacks and genuine protocol restrictions.
@@ -31,7 +32,7 @@ Feature: Integration Tests — All Provider/Model Combinations
   #   2. Claude claude-opus-4-6: context=1M, max_output=128k from matching catalog metadata.
   #   3. OpenAI gpt-4o: context=128k, max_output=16384, threshold=102400 (80%)
   #   4. Gemini gemini-2.5-pro: context=1M, max_output=8192, threshold=800k (80%)
-  #   5. Codex default: context=272k, max_output=4096, threshold=217600 (80%)
+  #   5. Codex without catalog or user values: limits unavailable (0/0); see codex-declares-no-static-model-limits
   #   6. Z.AI glm-4-plus: context=128k, max_output=8192, threshold=102400 (80%)
   #   7. Copilot fallback: context=200k, max_output=4096, threshold=160000 (80%)
   #   8. User override 500k on Claude → retained as 500k.
@@ -48,12 +49,12 @@ Feature: Integration Tests — All Provider/Model Combinations
     Then context_window should be 200000 and max_output_tokens should be 8192
 
   Scenario: Claude Opus 4.6 retains 1M context and 128k output
-    Given the Claude provider resolver with max_context_window 200000 and max_output_tokens_limit 8192
+    Given the Claude provider resolver without blanket context or output ceilings
     When resolve_context_window is called with registry value 1000000 and no user override
     Then context_window should be 1000000 and max_output_tokens should be 128000
 
   Scenario: OpenAI gpt-4o trusts registry values without clamping
-    Given the OpenAI provider resolver with no max_context_window and default 128000
+    Given the OpenAI provider resolver with no max_context_window and no default context window
     When resolve_context_window is called with registry value 128000
     Then context_window should be 128000 and max_output_tokens should be 16384
 
@@ -61,11 +62,6 @@ Feature: Integration Tests — All Provider/Model Combinations
     Given the Gemini provider resolver with no max_context_window and default 1000000
     When resolve_context_window is called with registry value 1000000
     Then context_window should be 1000000 and max_output_tokens should be 8192
-
-  Scenario: Codex falls back to 272k default context window with no registry
-    Given the Codex provider resolver with no max_context_window and default 272000
-    When resolve_context_window is called with no registry value and no user override
-    Then context_window should be 272000 and max_output_tokens should be 4096
 
   Scenario: Z.AI resolves 128k context window and 8192 max output
     Given the Z.AI provider resolver with no max_context_window and default 128000

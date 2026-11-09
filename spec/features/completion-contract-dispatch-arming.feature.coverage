@@ -4,51 +4,9 @@
       "name": "Chrome continue state syncs into the inner session and arms the registry",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "58-89",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "66-97",
+          "implMappings": []
         }
       ]
     },
@@ -56,51 +14,9 @@
       "name": "A goal alone arms the registry and registers the goal spec",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "95-136",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "103-144",
+          "implMappings": []
         }
       ]
     },
@@ -108,51 +24,9 @@
       "name": "Neither continue nor goal leaves the registry disarmed",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "142-170",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "150-178",
+          "implMappings": []
         }
       ]
     },
@@ -160,51 +34,9 @@
       "name": "A new real user turn resets the zero-progress nudge counter",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "176-199",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "184-206",
+          "implMappings": []
         }
       ]
     },
@@ -212,51 +44,9 @@
       "name": "Clearing the chrome goal clears the inner goal and disarms the registry",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "205-251",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "213-259",
+          "implMappings": []
         }
       ]
     },
@@ -264,51 +54,9 @@
       "name": "An unchanged chrome goal is not re-applied",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/cont009_completion_contract_sync.rs",
-          "lines": "257-295",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549,
-                1550,
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556,
-                1557,
-                1558,
-                1559,
-                1560,
-                1561,
-                1562,
-                1563,
-                1564,
-                1565,
-                1566,
-                1567,
-                1568,
-                1569,
-                1570,
-                1571,
-                1572,
-                1573,
-                1574,
-                1575,
-                1576,
-                1577
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/completion_contract_dispatch_arming.rs",
+          "lines": "265-303",
+          "implMappings": []
         }
       ]
     },
@@ -317,44 +65,8 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug228_shared_dispatch_wiring.rs",
-          "lines": "38-73",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_loop.rs",
-              "lines": [
-                6,
-                7,
-                8
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590
-              ]
-            }
-          ]
+          "lines": "29-61",
+          "implMappings": []
         }
       ]
     }
@@ -364,14 +76,10 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/tests/cont009_completion_contract_sync.rs",
+      "rust/sessions/tests/completion_contract_dispatch_arming.rs",
       "rust/sessions/tests/bug228_shared_dispatch_wiring.rs"
     ],
-    "implFiles": [
-      "rust/sessions/src/background_session.rs",
-      "rust/napi/src/agent_loop.rs",
-      "rust/agent-loop/src/agent_loop.rs"
-    ],
-    "totalLinesCovered": 490
+    "implFiles": [],
+    "totalLinesCovered": 245
   }
 }

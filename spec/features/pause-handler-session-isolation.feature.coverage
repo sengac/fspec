@@ -117,7 +117,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "//! Tool pause mechanism (BUG-127: per-session isolation)",
+              "lastLine": "/// If a handler is registered for the given session_id, calls it."
             }
           ]
         }
@@ -240,7 +242,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "//! Tool pause mechanism (BUG-127: per-session isolation)",
+              "lastLine": "/// If a handler is registered for the given session_id, calls it."
             }
           ]
         }
@@ -251,7 +255,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
-          "lines": "110-128",
+          "lines": "123-145",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_pause.rs",
@@ -363,7 +367,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "//! Tool pause mechanism (BUG-127: per-session isolation)",
+              "lastLine": "/// If a handler is registered for the given session_id, calls it."
             }
           ]
         }
@@ -374,7 +380,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/pause_handler_session_isolation_test.rs",
-          "lines": "134-158",
+          "lines": "151-174",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_pause.rs",
@@ -486,7 +492,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "//! Tool pause mechanism (BUG-127: per-session isolation)",
+              "lastLine": "/// If a handler is registered for the given session_id, calls it."
             }
           ]
         }
@@ -503,6 +511,6 @@
     "implFiles": [
       "rust/tools/src/tool_pause.rs"
     ],
-    "totalLinesCovered": 550
+    "totalLinesCovered": 553
   }
 }

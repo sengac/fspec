@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "82-139",
+          "lines": "82-135",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -61,7 +61,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -72,16 +74,18 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "141-167",
+          "lines": "141-163",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167
-              ]
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "///   (empty trailing line)",
+              "lastLine": "fn render_text(work_unit_id: &str, items: &[DeletedItem]) -> String {"
             }
           ]
         }
@@ -92,18 +96,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "169-215",
+          "lines": "169-211",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
                 171,
                 172,
                 173,
@@ -117,8 +114,17 @@
                 181,
                 182,
                 183,
-                184
-              ]
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "///   (empty trailing line)",
+              "lastLine": ")),"
             }
           ]
         }
@@ -129,7 +135,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "217-246",
+          "lines": "217-243",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -142,7 +148,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "// Validate work unit exists — error message MUST match TS",
+              "lastLine": "reason: format!(\"Work unit '{work_unit_id}' does not exist\"),"
             }
           ]
         }
@@ -153,7 +161,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "248-272",
+          "lines": "249-269",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -172,7 +180,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "// Load-or-init parity with TS (`src/commands/show-deleted.ts:32`).",
+              "lastLine": "reason: format!(\"Work unit '{work_unit_id}' does not exist\"),"
             }
           ]
         }
@@ -183,7 +193,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "274-315",
+          "lines": "275-313",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -201,7 +211,9 @@
                 11,
                 12,
                 13
-              ]
+              ],
+              "firstLine": "//! `show-deleted` — Rust port of `src/commands/show-deleted.ts` (RPC-301).",
+              "lastLine": "//! RPC-003 §7/§11 two-front-doors invariant."
             }
           ]
         }
@@ -212,7 +224,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "317-381",
+          "lines": "319-380",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -268,7 +280,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -279,7 +293,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_deleted.rs",
-          "lines": "383-407",
+          "lines": "388-412",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_deleted.rs",
@@ -297,7 +311,9 @@
                 11,
                 12,
                 13
-              ]
+              ],
+              "firstLine": "//! `show-deleted` — Rust port of `src/commands/show-deleted.ts` (RPC-301).",
+              "lastLine": "//! RPC-003 §7/§11 two-front-doors invariant."
             }
           ]
         }
@@ -314,6 +330,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/show_deleted.rs"
     ],
-    "totalLinesCovered": 494
+    "totalLinesCovered": 469
   }
 }

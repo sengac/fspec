@@ -2,10 +2,9 @@
 //!
 //! Feature: spec/features/resume-view-proportional-scrollbar.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::mode_view_render::render_session_rows;
 use codelet_rpc_types::SessionInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -47,7 +46,7 @@ fn has_glyph(buf: &Buffer, x: u16, y: u16, glyph: &str) -> bool {
 // ============================================================================
 
 #[test]
-fn scrollbar_appears_when_session_count_exceeds_visible_rows() {
+fn scrollbar_appears_when_session_count_exceeds_visible_rows() -> TestResult {
     // @step Given the resume view has 30 sessions
     let sessions: Vec<SessionInfo> = (0..30)
         .map(|i| make_session(&format!("s-{i}"), &format!("Session {i}")))
@@ -72,6 +71,7 @@ fn scrollbar_appears_when_session_count_exceeds_visible_rows() {
     // The session names should be within the content area (width - 1)
     let joined = rows.join("\n");
     assert!(joined.contains("Session 0"));
+    Ok(())
 }
 
 // ============================================================================
@@ -79,7 +79,7 @@ fn scrollbar_appears_when_session_count_exceeds_visible_rows() {
 // ============================================================================
 
 #[test]
-fn no_scrollbar_when_session_count_fits_in_visible_area() {
+fn no_scrollbar_when_session_count_fits_in_visible_area() -> TestResult {
     // @step Given the resume view has 5 sessions
     let sessions: Vec<SessionInfo> = (0..5)
         .map(|i| make_session(&format!("s-{i}"), &format!("Session {i}")))
@@ -102,6 +102,7 @@ fn no_scrollbar_when_session_count_fits_in_visible_area() {
     let joined = rows.join("\n");
     assert!(joined.contains("Session 0"));
     assert!(joined.contains("Session 4"));
+    Ok(())
 }
 
 // ============================================================================
@@ -109,7 +110,7 @@ fn no_scrollbar_when_session_count_fits_in_visible_area() {
 // ============================================================================
 
 #[test]
-fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
+fn scrollbar_thumb_position_is_proportional_to_scroll_offset() -> TestResult {
     // @step Given the resume view has 30 sessions
     let sessions: Vec<SessionInfo> = (0..30)
         .map(|i| make_session(&format!("s-{i}"), &format!("Session {i}")))
@@ -126,7 +127,7 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
     // Find the first thumb cell
     let thumb_start = (0..area.height)
         .find(|&y| has_glyph(&buf, last_col, y, "■"))
-        .expect("Should find thumb glyph");
+        .or_fail("Should find thumb glyph")?;
     // With scroll_offset=15, total=30, thumb should be around half the track
     let track_height = area.height as usize;
     let expected_pos = (scroll_offset * track_height) / sessions.len();
@@ -136,6 +137,7 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
         (actual_pos as i32 - expected_pos as i32).abs() <= 2,
         "Thumb at row {actual_pos} should be near expected position {expected_pos}"
     );
+    Ok(())
 }
 
 // ============================================================================
@@ -143,7 +145,7 @@ fn scrollbar_thumb_position_is_proportional_to_scroll_offset() {
 // ============================================================================
 
 #[test]
-fn scrollbar_uses_dim_styled_glyphs_for_thumb_and_track() {
+fn scrollbar_uses_dim_styled_glyphs_for_thumb_and_track() -> TestResult {
     // @step Given the resume view has 30 sessions
     let sessions: Vec<SessionInfo> = (0..30)
         .map(|i| make_session(&format!("s-{i}"), &format!("Session {i}")))
@@ -160,4 +162,5 @@ fn scrollbar_uses_dim_styled_glyphs_for_thumb_and_track() {
     // @step And the scrollbar track uses the │ glyph with DIM modifier
     let has_track = (0..area.height).any(|y| has_glyph(&buf, last_col, y, "│"));
     assert!(has_track, "Scrollbar should contain │ track glyph");
+    Ok(())
 }

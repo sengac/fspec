@@ -1,4 +1,8 @@
+@BUG-582
 @TOOL-014
+@BUG-456
+@tools
+@multi-session
 Feature: Require session_id for all tools to support worktree isolation
   """
   ============================================================================
@@ -150,13 +154,13 @@ Feature: Require session_id for all tools to support worktree isolation
 
   Scenario: SearchToolFacadeWrapper REQUIRES session_id parameter in constructor
     Given SearchToolFacadeWrapper is being instantiated
-    Then the constructor signature MUST be SearchToolFacadeWrapper::new(session_id: Uuid)
+    Then the constructor signature MUST be SearchToolFacadeWrapper::new(facade, session_id: Uuid)
     And calling SearchToolFacadeWrapper::new() without session_id MUST fail to compile
     And SearchToolFacadeWrapper MUST NOT implement Default trait
 
   Scenario: LsToolFacadeWrapper REQUIRES session_id parameter in constructor
     Given LsToolFacadeWrapper is being instantiated
-    Then the constructor signature MUST be LsToolFacadeWrapper::new(session_id: Uuid)
+    Then the constructor signature MUST be LsToolFacadeWrapper::new(facade, session_id: Uuid)
     And calling LsToolFacadeWrapper::new() without session_id MUST fail to compile
     And LsToolFacadeWrapper MUST NOT implement Default trait
 
@@ -193,14 +197,8 @@ Feature: Require session_id for all tools to support worktree isolation
   Scenario: Codex provider MUST pass session_id to all tools
     Given a Codex provider creating an agent with session_id
     When tools are instantiated for the agent
-    Then ReadTool MUST be constructed with ReadTool::new(session_id)
-    And WriteTool MUST be constructed with WriteTool::new(session_id)
-    And EditTool MUST be constructed with EditTool::new(session_id)
-    And GrepTool MUST be constructed with GrepTool::new(session_id)
-    And GlobTool MUST be constructed with GlobTool::new(session_id)
-    And LsTool MUST be constructed with LsTool::new(session_id)
-    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+    Then every Codex tool facade wrapper MUST be constructed with session_id
+    And ApplyPatchTool MUST be constructed with ApplyPatchTool::new(session_id)
 
   Scenario: Gemini provider MUST pass session_id to all tools
     Given a Gemini provider creating an agent with session_id
@@ -225,7 +223,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # ============================================================================
   Scenario: ReadTool resolves relative path to worktree in isolated session
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-    And a file exists at ".fspec/worktrees/abc123/src/file.rs"
     When ReadTool reads "src/file.rs"
     Then it should read from ".fspec/worktrees/abc123/src/file.rs"
 
@@ -250,7 +247,7 @@ Feature: Require session_id for all tools to support worktree isolation
 
   Scenario: GlobTool finds files only within worktree in isolated session
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-    When GlobTool searches for "**/*.rs"
+    When GlobTool searches for "*.rs" without a path
     Then it should only return files within ".fspec/worktrees/abc123/"
     And it should not return files from the main project
 

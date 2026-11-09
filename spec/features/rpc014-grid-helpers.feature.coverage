@@ -36,7 +36,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn calculate_column_widths(terminal_width: u16) -> ColumnWidths {",
+              "lastLine": "/// the rest get `base_width`. Mirror of TS `getColumnWidth`."
             }
           ]
         }
@@ -47,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
-          "lines": "41-63",
+          "lines": "46-80",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/grid.rs",
@@ -88,7 +90,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "pub fn calculate_column_widths(terminal_width: u16) -> ColumnWidths {",
+              "lastLine": "/// characters. Mirror of TS `buildBorderRow` — the fill glyph is always"
             }
           ]
         }
@@ -99,7 +103,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
-          "lines": "65-80",
+          "lines": "82-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/grid.rs",
@@ -130,7 +134,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn calculate_column_widths(terminal_width: u16) -> ColumnWidths {",
+              "lastLine": "/// the rest get `base_width`. Mirror of TS `getColumnWidth`."
             }
           ]
         }
@@ -141,11 +147,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/grid_unit_rpc014.rs",
-          "lines": "82-114",
+          "lines": "102-146",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/grid.rs",
               "lines": [
+                81,
+                82,
+                83,
                 84,
                 85,
                 86,
@@ -174,11 +183,10 @@
                 109,
                 110,
                 111,
-                112,
-                113,
-                114,
-                115
-              ]
+                112
+              ],
+              "firstLine": "/// Build one of the four canonical separator strings using box-drawing",
+              "lastLine": "}"
             }
           ]
         }
@@ -195,6 +203,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/board/grid.rs"
     ],
-    "totalLinesCovered": 214
+    "totalLinesCovered": 241
   }
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/no_napi_dependency.rs",
-          "lines": "71-182",
+          "lines": "19-27",
           "implMappings": [
             {
               "file": "rust/fspec-tui/Cargo.toml",
@@ -42,9 +42,15 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "crossterm.workspace = true"
             }
           ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/no_napi_dependency.rs",
+          "lines": "29-35"
         }
       ]
     }
@@ -59,6 +65,6 @@
     "implFiles": [
       "rust/fspec-tui/Cargo.toml"
     ],
-    "totalLinesCovered": 144
+    "totalLinesCovered": 48
   }
 }

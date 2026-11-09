@@ -6,14 +6,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "10-47",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -23,14 +16,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "49-71",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -40,14 +26,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "73-95",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -57,14 +36,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "97-128",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -74,14 +46,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "130-175",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -91,14 +56,7 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "177-220",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                2349
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -110,9 +68,7 @@
     "testFiles": [
       "rust/cli/tests/bug272_terminal_error_history.rs"
     ],
-    "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs"
-    ],
-    "totalLinesCovered": 212
+    "implFiles": [],
+    "totalLinesCovered": 206
   }
 }

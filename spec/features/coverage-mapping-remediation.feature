@@ -1,12 +1,12 @@
+@BUG-582
 @cli
 @validation
 @coverage
 @traceability
 @wip
-@AUDIT-002
 Feature: Remediate coverage-mapping audit findings (dead mappings, divergent links, hygiene)
   """
-  Source of truth for remediation: spec/attachments/AUDIT-002/fixlist.json (P1, 608 items grouped by impl file), problems.json.gz (P0/P2, 8,999 records). Re-link via the coverage link command (featureName + scenario + implFile/implLines + testFile/testLines); validate with show-coverage + audit-coverage + the project validation checks after each band.
+  Source of truth for remediation: spec/attachments/AUDIT-002/fixlist.json (P1, 608 items grouped by impl file), problems.json.gz (P0/P2, 8,999 records). Re-link via the coverage link command (featureName + scenario + implFile/implLines + testFile/testLines); validate with show-coverage + fspec audit + the project validation checks after each band.
   """
 
   # ========================================

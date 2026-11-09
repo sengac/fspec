@@ -4,82 +4,357 @@
       "name": "Claude Code agent receives ULTRATHINK guidance in system-reminder",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "44-60",
+          "file": "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs",
+          "lines": "89-126",
           "implMappings": [
             {
-              "file": "src/commands/discover-foundation.ts",
+              "file": "rust/fspec-core/src/foundation/guidance.rs",
               "lines": [
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447
-              ]
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491
+              ],
+              "firstLine": "pub fn agent_supports_meta_cognition(project_root: &Path) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "let supports_meta = guidance::agent_supports_meta_cognition(project_root);",
+              "lastLine": ");"
             }
           ]
         }
       ]
     },
     {
-      "name": "Project vision field guidance checks agent capabilities for ULTRATHINK",
+      "name": "Project vision field guidance follows the agent's meta-cognition support",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "146-168",
+          "file": "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs",
+          "lines": "186-216",
           "implMappings": [
             {
-              "file": "src/commands/discover-foundation.ts",
+              "file": "rust/fspec-core/src/foundation/guidance.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ],
+              "firstLine": "\"project.vision\" => {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Cursor IDE agent receives 'think a lot' guidance with emoji warning",
-      "testMappings": []
+      "name": "Cursor IDE agent receives 'think a lot' guidance",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs",
+          "lines": "141-156",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/foundation/guidance.rs",
+              "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491
+              ],
+              "firstLine": "pub fn agent_supports_meta_cognition(project_root: &Path) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "let supports_meta = guidance::agent_supports_meta_cognition(project_root);",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Aider CLI agent receives plain text 'think a lot' guidance",
-      "testMappings": []
+      "name": "Aider CLI agent receives 'think a lot' guidance",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs",
+          "lines": "158-173",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/foundation/guidance.rs",
+              "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491
+              ],
+              "firstLine": "pub fn agent_supports_meta_cognition(project_root: &Path) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "let supports_meta = guidance::agent_supports_meta_cognition(project_root);",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Unknown agent receives 'think a lot' guidance without system-reminders",
-      "testMappings": []
-    },
-    {
-      "name": "Initial draft creation uses agent capability detection for ULTRATHINK",
-      "testMappings": []
+      "name": "Unknown agent receives 'think a lot' guidance",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs",
+          "lines": "175-184",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/foundation/guidance.rs",
+              "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491
+              ],
+              "firstLine": "pub fn agent_supports_meta_cognition(project_root: &Path) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/discover_foundation.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "let supports_meta = guidance::agent_supports_meta_cognition(project_root);",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 2,
-    "coveragePercent": 33,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/discover-foundation-multi-agent.test.ts"
+      "rust/fspec-core/tests/bug031_ultrathink_agent_guidance.rs"
     ],
     "implFiles": [
-      "src/commands/discover-foundation.ts"
+      "rust/fspec-core/src/foundation/guidance.rs",
+      "rust/fspec-core/src/commands/discover_foundation.rs"
     ],
-    "totalLinesCovered": 62
+    "totalLinesCovered": 336
   }
 }

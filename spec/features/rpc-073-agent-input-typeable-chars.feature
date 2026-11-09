@@ -22,6 +22,7 @@ Feature: RPC-073 Agent Input Typeable Chars
   4. handle_app_shortcut (?, q, Ctrl+D) — only if 2 and 3 returned Ignored
 
   Reference: spec/attachments/RPC-073/research-bug2-key-dispatch-ts-vs-rust.md
+  TUI-132 (2026-11-09): the DisconnectDialog stage is removed (never shown since RPC-416); dispatch order is Compositor, Navigator, app shortcuts.
   """
 
   Background: User Story
@@ -55,8 +56,3 @@ Feature: RPC-073 Agent Input Typeable Chars
     Given an App is constructed with active_view = Agent and a focused MultiLineInput
     When the app handles a KeyCode::Char('d') event with KeyModifiers::CONTROL
     Then App::should_quit is set to true
-
-  Scenario: When the critical DisconnectDialog is topmost, q is intercepted by the DisconnectDialog handler and the Compositor never sees the event
-    Given an App has a DisconnectDialog pushed onto the Compositor and it is the topmost critical-priority layer
-    When the app handles a KeyCode::Char('q') event
-    Then App::should_quit becomes true and the DisconnectDialog is removed from the Compositor

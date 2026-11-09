@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-116
+@tools
+@provider-abstraction
 Feature: Codex facade maps request_user_input to HITL tool
   """
   Follow the existing facade pattern: HitlToolFacade trait + InternalHitlParams in traits.rs, CodexRequestUserInputFacade in codex.rs, HitlToolFacadeWrapper in wrapper.rs

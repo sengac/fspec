@@ -333,7 +333,7 @@ async fn scenario_release_date_derived_purely_from_version_field() {
         }))
         .unwrap()],
     };
-    let purely_derived = build_catalog_from_response(&response);
+    let purely_derived = build_catalog_from_response(&response).unwrap();
     assert_eq!(
         purely_derived[0].release_date.as_deref(),
         Some("2099-12-31"),

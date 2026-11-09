@@ -323,6 +323,7 @@ fn token_tracker_update_from_usage_stores_cumulative_reasoning() {
 /// Configure a unique temp data dir for the test and return the guard.
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     reset_stores_for_tests();
@@ -359,6 +360,7 @@ fn reasoning_tokens_persist_across_session_restore() {
         &mut manifest,
         &codelet_core::persistence::TokenUsage {
             current_context_tokens: 100,
+            current_context_output_tokens: 0,
             cumulative_billed_input: 100,
             cumulative_billed_output: 50,
             cache_read_tokens: 0,
@@ -449,10 +451,11 @@ fn manifest_token_usage_has_reasoning_tokens_field() {
 #[test]
 fn persist_token_state_signature_carries_reasoning() {
     // @step Given the source of rust/agent-loop/src/persist.rs
+    // persist_token_state now lives in persist_state.rs, split out of persist.rs.
     let persist_src = std::fs::read_to_string(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../agent-loop/src/persist.rs"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../agent-loop/src/persist_state.rs"),
     )
-    .unwrap_or_else(|e| panic!("must read persist.rs: {e}"));
+    .unwrap_or_else(|e| panic!("must read persist_state.rs: {e}"));
 
     // @step When the persist_token_state function signature is scanned
     let fn_start = persist_src

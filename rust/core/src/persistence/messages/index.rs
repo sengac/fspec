@@ -110,6 +110,24 @@ pub(super) fn scan_jsonl_range(
     super::framing::scan_range(data_path, start_offset).map_err(|error| error.to_string())
 }
 
+/// BUG-519: check that a saved index describes the current end of the history.
+///
+/// The entry with the greatest offset must end exactly at `data_file_size` and
+/// read back (framing and content hash verified) with its own id. Used only to
+/// decide whether an index sharing the history's modification time may be
+/// reused; any read failure or mismatch means "rebuild".
+pub(super) fn tail_matches(
+    data_path: &Path,
+    entries: &HashMap<Uuid, IndexEntry>,
+    data_file_size: u64,
+) -> bool {
+    let Some((id, entry)) = entries.iter().max_by_key(|(_, entry)| entry.byte_offset) else {
+        return data_file_size == 0;
+    };
+    entry.byte_offset + u64::from(entry.byte_length) == data_file_size
+        && read_message_at(data_path, entry).is_ok_and(|message| message.id == *id)
+}
+
 /// Read a single message from the data file at the given offset/length.
 pub(super) fn read_message_at(
     data_path: &Path,

@@ -17,7 +17,7 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
   Length(1) /* separator */, Min(0) /* body */, Length(1) /* footer */])
   split of the FULL area Rect.
   The view's mode field is ProviderSettingsMode { List, Detail { provider_id,
-  sub: DetailSub { Summary { last_status }, EditApiKey { draft }, OAuthNotice } } }.
+  sub: DetailSub { EditApiKey { draft } } } } (BUG-578 deleted Summary and OAuthNotice).
   Destructive 'd' on List opens a ConfirmDialog before any backend call fires.
   RPC + dispatch + transport plumbing lives in sibling feature files
   (rpc054-provider-settings-dispatch.feature, rpc054-provider-settings-cross-transport-parity.feature,
@@ -50,69 +50,6 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
     Then selected_index equals 20
     And scroll_offset has advanced so row 20 falls inside the visible window
     And the rendered list shows the row at index 20 (verified via ensure_visible math)
-
-  @list-mode
-  @scrolling
-  @list-mode
-  @enter-detail
-  Scenario: Enter on an api_key row transitions to Detail::Summary
-    Given the ProviderSettingsView is in List mode with "anthropic" focused
-    And the anthropic row's credential_type is "api_key"
-    When the user presses Enter
-    Then the view's mode is Detail { provider_id: "anthropic", sub: Summary { last_status: None } }
-    And the footer hint reads "r: refresh models · Esc: back" (RPC-154 dropped `t: test ·` for TS parity)
-
-  @list-mode
-  @enter-oauth
-  Scenario: Enter on an oauth row transitions directly to Detail::OAuthNotice
-    Given the ProviderSettingsView is in List mode with "codex" focused
-    And the codex row's credential_type is "oauth"
-    When the user presses Enter
-    Then the view's mode is Detail { provider_id: "codex", sub: OAuthNotice }
-    And the body shows the read-only text "codex uses OAuth which is not yet supported in the Rust frontend"
-    And the footer hint reads "Esc: back" (RPC-106 bullet/lowercase-colon style)
-
-  @detail
-  @summary
-  @rpc-154
-  Scenario: t inside Detail::Summary is silently ignored (RPC-154 TS parity)
-    Given the ProviderSettingsView is in Detail { provider_id: "openai", sub: Summary { last_status: None } }
-    When the user presses "t"
-    Then the emitted ProviderSettingsEvent is Consumed
-    And no Action::TestProviderConnection is emitted
-    And view.mode remains Detail::Summary with last_status: None preserved
-
-  @detail
-  @summary
-  Scenario: r inside Detail::Summary emits RefreshProviderModels
-    Given the ProviderSettingsView is in Detail { provider_id: "openai", sub: Summary { last_status: None } }
-    When the user presses "r"
-    Then the emitted ProviderSettingsEvent is Emit(Action::RefreshProviderModels("openai"))
-    And the last_status is updated to RefreshingModels
-    And the body shows "Refreshing models…"
-
-  @detail
-  @summary
-  Scenario: TestOk last_status renders as green "✓ ok (Xms)"
-    Given the ProviderSettingsView is in Detail::Summary for "openai" with last_status = TestOk { latency_ms: 42 }
-    When the view is rendered
-    Then the body contains "✓ openai ok (42ms)" in green
-
-  @detail
-  @summary
-  Scenario: TestErr last_status renders as red "✗ <error>"
-    Given the ProviderSettingsView is in Detail::Summary for "openai" with last_status = TestErr { error: "unreachable: dns resolution failed" }
-    When the view is rendered
-    Then the body contains "✗ unreachable: dns resolution failed" in red
-
-  @detail
-  @enter-edit
-  Scenario: Enter inside Detail::Summary on api_key provider opens EditApiKey
-    Given the ProviderSettingsView is in Detail::Summary for "anthropic" (credential_type api_key)
-    When the user presses Enter
-    Then the view's mode is Detail { provider_id: "anthropic", sub: EditApiKey { draft: "" } }
-    And the body shows "Key: " followed by an empty masked input
-    And the footer hint reads "Enter Save | Esc Cancel"
 
   @detail
   @edit
@@ -185,20 +122,6 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
     When the user presses Esc
     Then the emitted ProviderSettingsEvent is Close
 
-  @esc-hierarchy
-  Scenario: Esc in Detail::Summary returns to List mode
-    Given the ProviderSettingsView is in Detail::Summary for "openai" with selected_index = 5
-    When the user presses Esc
-    Then the view's mode is List
-    And selected_index is still 5 (preserved)
-    And no ProviderSettingsEvent::Close is emitted
-
-  @esc-hierarchy
-  Scenario: Esc in Detail::OAuthNotice returns to List mode
-    Given the ProviderSettingsView is in Detail::OAuthNotice for "codex"
-    When the user presses Esc
-    Then the view's mode is List
-
   @title
   @rendering
   @footer
@@ -206,34 +129,18 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
   Scenario: Footer hint in List mode
     Given the ProviderSettingsView is in List mode
     When the view is rendered
-    Then the footer row contains "Enter Select"
-    And the footer row contains "↑↓ Navigate"
-    And the footer row contains "D Delete"
-    And the footer row contains "Esc Cancel"
-
-  @footer
-  @rendering
-  Scenario: Footer hint in Detail::Summary mode
-    Given the ProviderSettingsView is in Detail::Summary for "openai"
-    When the view is rendered
-    Then the footer row contains "t Test"
-    And the footer row contains "r Refresh Models"
-    And the footer row contains "Esc Back"
+    Then the footer row contains "/ filter"
+    And the footer row contains "Tab: Switch to models"
+    And the footer row contains "Esc: close"
+    And the footer row uses U+00B7 MIDDLE DOT separators, not pipes
 
   @footer
   @rendering
   Scenario: Footer hint in Detail::EditApiKey mode
     Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic"
     When the view is rendered
-    Then the footer row contains "Enter Save"
-    And the footer row contains "Esc Cancel"
-
-  @footer
-  @rendering
-  Scenario: Footer hint in Detail::OAuthNotice mode
-    Given the ProviderSettingsView is in Detail::OAuthNotice for "codex"
-    When the view is rendered
-    Then the footer row contains "Esc Back"
+    Then the footer row contains "Enter: save"
+    And the footer row contains "Esc: cancel"
 
   @list-mode
   @filter

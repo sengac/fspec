@@ -32,6 +32,7 @@ const RELATED: &[&str] = &[
     "restore-example",
     "restore-question",
     "restore-architecture-note",
+    "restore-assumption",
     "compact-work-unit",
     "show-work-unit",
 ];

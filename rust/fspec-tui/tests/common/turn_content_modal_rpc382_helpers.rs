@@ -8,6 +8,7 @@
 
 #![allow(dead_code)]
 
+use codelet_test_helpers::OrFail;
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::rendered_chunk::ChunkSource;
@@ -35,12 +36,18 @@ pub fn tab() -> Event {
 
 /// Push one turn carrying a real `ChunkSource` so the modal has a full
 /// body to render. `lines` mirror the source text split on hard breaks.
-pub fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
+pub fn push_text_turn(
+    app: &mut App,
+    id: &SessionId,
+    seq: u64,
+    text: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     ctx.scrollback.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: text.lines().map(|l| Line::from(l.to_string())).collect(),
         source: Some(ChunkSource {
@@ -51,41 +58,42 @@ pub fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
             full_text: None,
         }),
     });
+    Ok(())
 }
 
 /// An App in `ViewMode::Agent` with one session seeded with three turns
 /// whose bodies carry distinct markers (FIRSTBODY / SECONDBODY / THIRD).
-pub fn agent_app_with_text_turns() -> App {
+pub fn agent_app_with_text_turns() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, "first FIRSTBODY");
-    push_text_turn(&mut app, &sid("s-1"), 1, "second SECONDBODY");
-    push_text_turn(&mut app, &sid("s-1"), 2, "third THIRDBODY");
-    app
+    push_text_turn(&mut app, &sid("s-1"), 0, "first FIRSTBODY")?;
+    push_text_turn(&mut app, &sid("s-1"), 1, "second SECONDBODY")?;
+    push_text_turn(&mut app, &sid("s-1"), 2, "third THIRDBODY")?;
+    Ok(app)
 }
 
 /// An App whose LAST (auto-selected) turn is far taller than any sane
 /// viewport: `TOPMARKER` sits at the very top of the body (so a
 /// stick-to-bottom scrollback scrolls it OFF screen — "collapsed"),
 /// while the modal renders the body from the top and therefore shows it.
-pub fn agent_app_with_collapsed_last_turn() -> App {
+pub fn agent_app_with_collapsed_last_turn() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, "first turn");
-    push_text_turn(&mut app, &sid("s-1"), 1, "second turn");
+    push_text_turn(&mut app, &sid("s-1"), 0, "first turn")?;
+    push_text_turn(&mut app, &sid("s-1"), 1, "second turn")?;
     let mut long = String::from("TOPMARKER\n");
     for i in 0..60 {
         long.push_str(&format!("filler line {i}\n"));
     }
     long.push_str("BOTTOMMARKER");
-    push_text_turn(&mut app, &sid("s-1"), 2, &long);
-    app
+    push_text_turn(&mut app, &sid("s-1"), 2, &long)?;
+    Ok(app)
 }
 
 /// Drain the App's action bus, dispatching each queued Action back into
@@ -108,12 +116,16 @@ pub fn modal_seq(app: &App) -> Option<u64> {
 }
 
 /// Render the App and return the rows of glyphs.
-pub fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+pub fn render_rows(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    (0..buf.area.height)
+    Ok((0..buf.area.height)
         .map(|y| {
             let mut row = String::new();
             for x in 0..buf.area.width {
@@ -121,7 +133,7 @@ pub fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
             }
             row
         })
-        .collect()
+        .collect())
 }
 
 pub fn joined(rows: &[String]) -> String {

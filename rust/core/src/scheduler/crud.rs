@@ -3,17 +3,15 @@
 //!
 //! These five entry points (schedule_add / list / pause / resume /
 //! remove) back the new RPC surface introduced by RPC-058. They reuse
-//! the file-lock + atomic write protocol that the NAPI
-//! [`ScheduleHandler`] already implements (compatible with the
-//! TypeScript `proper-lockfile` protocol via
-//! [`codelet_common::file_lock::with_file_lock`]).
+//! the spec lock + atomic replace protocol of
+//! [`codelet_common::spec_lock`] (BUG-477), shared with every fspec
+//! command that writes spec/ JSON.
 //!
 //! Returns flow uses `Result<*, String>` per the RPC-057 convention so
 //! error messages propagate cleanly through the wire types layer.
 
 use std::path::{Path, PathBuf};
 
-use codelet_common::file_lock::with_file_lock;
 use codelet_rpc_types::ScheduledJob;
 use serde_json::{json, Value};
 
@@ -21,30 +19,29 @@ use serde_json::{json, Value};
 // File-system helpers
 // =============================================================================
 
-fn schedules_path(project: &str) -> PathBuf {
-    Path::new(project).join("spec/schedules.json")
+fn schedules_path(project: &str) -> Result<PathBuf, String> {
+    let roots = codelet_common::spec_paths::ProjectRoots::resolve(Path::new(project))
+        .map_err(|e| e.to_string())?;
+    Ok(roots.schedules())
 }
 
-fn lock_dir_path(project: &str) -> PathBuf {
-    Path::new(project).join("spec/schedules.json.lock")
-}
-
-/// Execute a closure while holding the schedules.json file lock.
+/// Execute a closure while holding the spec lock (BUG-477): the one
+/// cross-process lock every fspec command and codelet writer of spec/ JSON
+/// takes, held across the whole read-modify-write.
 fn with_schedules_lock<F, T>(project: &str, f: F) -> Result<T, String>
 where
     F: FnOnce() -> Result<T, String>,
 {
-    let lock_dir = lock_dir_path(project);
-    match with_file_lock(&lock_dir, || -> Result<Result<T, String>, String> {
-        Ok(f())
-    }) {
-        Ok(result) => result,
-        Err(e) => Err(e),
-    }
+    let spec_dir = codelet_common::spec_paths::spec_dir_of(Path::new(project));
+    std::fs::create_dir_all(&spec_dir)
+        .map_err(|e| format!("Failed to create schedules dir: {e}"))?;
+    let _spec_lock = codelet_common::spec_lock::SpecLock::acquire(&spec_dir)
+        .map_err(|e| format!("Failed to lock {}: {e}", spec_dir.display()))?;
+    f()
 }
 
 fn read_schedules_file(project: &str) -> Result<Value, String> {
-    let path = schedules_path(project);
+    let path = schedules_path(project)?;
     let content = match std::fs::read_to_string(&path) {
         Ok(c) => c,
         Err(_) => {
@@ -57,20 +54,15 @@ fn read_schedules_file(project: &str) -> Result<Value, String> {
 }
 
 fn write_schedules_file(project: &str, data: &Value) -> Result<(), String> {
-    let path = schedules_path(project);
+    let path = schedules_path(project)?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create schedules dir: {e}"))?;
     }
     let content = serde_json::to_string_pretty(data)
         .map_err(|e| format!("Failed to serialize schedules: {e}"))?;
-    let temp_path = path.with_extension(format!("json.tmp.{}", uuid::Uuid::new_v4()));
-    std::fs::write(&temp_path, &content)
-        .map_err(|e| format!("Failed to write temp schedules file: {e}"))?;
-    std::fs::rename(&temp_path, &path).map_err(|e| {
-        let _ = std::fs::remove_file(&temp_path);
-        format!("Failed to atomically replace schedules.json: {e}")
-    })
+    codelet_common::spec_lock::replace_file_atomically(&path, content.as_bytes())
+        .map_err(|e| format!("Failed to atomically replace schedules.json: {e}"))
 }
 
 // =============================================================================

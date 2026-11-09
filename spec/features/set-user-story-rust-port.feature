@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@example-mapping
 Feature: Port set-user-story command to Rust
   """
   Core impl at rust/fspec-core/src/commands/set_user_story.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, builds a UserStory object with the literal field order {role, action, benefit}, assigns it (overwriting any prior value) to workUnit.extra['userStory'], bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic.

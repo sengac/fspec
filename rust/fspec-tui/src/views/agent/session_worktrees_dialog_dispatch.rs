@@ -9,7 +9,7 @@
 //! button's action and removes the dialog; anything else is Ignored so
 //! it bubbles to the view behind the modal).
 
-use crossterm::event::{Event, KeyEventKind, MouseButton, MouseEventKind};
+use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -41,13 +41,27 @@ impl Component for SessionWorktreesDialog {
         Priority::Foreground
     }
 
+    /// TUI-130: c and Ctrl+C copy the chosen worktree's full path.
+    fn copy_text(&self) -> Option<String> {
+        self.chosen_path()
+    }
+
     fn handle_event(&mut self, event: &Event) -> EventResult {
         // TUI-112 (R2): a left-click on a button emits that button's
         // action (Prune / Cancel) and removes the dialog; a click off
         // every button or outside the frame is Ignored (R4/R5) so it
-        // bubbles to the view behind the modal. Wheel behavior is
-        // unchanged (Ignored — the dialog never handled wheel).
+        // bubbles to the view behind the modal. TUI-131: the wheel moves
+        // the chosen worktree like Up/Down, so a long list scrolls.
         if let Event::Mouse(m) = event {
+            let step = match m.kind {
+                MouseEventKind::ScrollUp => Some(KeyCode::Up),
+                MouseEventKind::ScrollDown => Some(KeyCode::Down),
+                _ => None,
+            };
+            if let Some(code) = step {
+                let _ = self.handle_key(code, KeyModifiers::NONE);
+                return EventResult::consumed();
+            }
             if matches!(m.kind, MouseEventKind::Down(MouseButton::Left)) {
                 let layout = self.last_layout().clone();
                 if !layout.contains(m.column, m.row) {

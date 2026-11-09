@@ -2,7 +2,6 @@
 
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 
 use codelet_cli::compaction_operation::CompactionFailure;
 use codelet_cli::compactor_sub_agent::{
@@ -27,6 +26,7 @@ enum Recovery {
     BuilderFailure,
     ProviderOverflow,
     RetryTooLarge,
+    PromptTooLarge,
 }
 
 #[derive(Default)]
@@ -45,7 +45,9 @@ async fn exercise(recovery: Recovery) -> TestResult {
     let builder_fails = matches!(recovery, Recovery::BuilderFailure);
     let provider_overflow = matches!(recovery, Recovery::ProviderOverflow);
     let retry_too_large = matches!(recovery, Recovery::RetryTooLarge);
+    let prompt_too_large = matches!(recovery, Recovery::PromptTooLarge);
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("stream recovery", directory.path(), "openai")?;
@@ -124,13 +126,17 @@ async fn exercise(recovery: Recovery) -> TestResult {
     let agent = RigAgent::new(client.agent("selected-model").max_tokens(4096).build(), 1);
     let output = Output::default();
     let busy = Arc::new(AtomicBool::new(false));
+    // BUG-316: admission counts estimated tokens; this prompt fits the 16k
+    // capacity minus the 4k output reservation alone, but not with the DAG.
     let prompt = if retry_too_large {
-        "task ".repeat(1_500)
+        "task ".repeat(11_500)
+    } else if prompt_too_large {
+        "task ".repeat(13_000)
     } else {
         "resume original task".to_owned()
     };
-    let result = tokio::time::timeout(
-        Duration::from_secs(10),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, &prompt, &mut session, Arc::new(...",
         run_agent_stream(
             agent,
             &prompt,
@@ -143,13 +149,35 @@ async fn exercise(recovery: Recovery) -> TestResult {
         ),
     )
     .await;
+    let invoked = calls.load(Ordering::SeqCst);
+    if builder_fails {
+        assert_eq!(
+            invoked, 1,
+            "recovery returns the builder failure after one invocation"
+        );
+        // BUG-614: the failed builder waits for the next input, which retries it.
+        let retry = codelet_cli::compactor_sub_agent::retry_failed_compactor_for_next_input(
+            &mut session,
+            manifest.id,
+            &busy,
+            &Arc::new(AtomicBool::new(false)),
+            &Arc::new(tokio::sync::Notify::new()),
+            &output,
+        )
+        .await;
+        assert!(retry.is_err(), "the retried builder still fails");
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            2,
+            "the next input retries the builder"
+        );
+    }
     set_compactor_sub_agent_handler(manifest.id, None);
     set_terminal_overflow_owner(manifest.id, false);
     let result = result?;
 
     assert_eq!(
-        calls.load(Ordering::SeqCst),
-        1,
+        invoked, 1,
         "recovery must invoke the registered builder: {result:?}"
     );
     assert!(!busy.load(Ordering::Acquire));
@@ -164,7 +192,7 @@ async fn exercise(recovery: Recovery) -> TestResult {
         .received_requests()
         .await
         .ok_or("requests unavailable")?;
-    if builder_fails || retry_too_large {
+    if builder_fails || retry_too_large || prompt_too_large {
         let error = result.err().ok_or("builder failure must stop recovery")?;
         if builder_fails {
             assert!(matches!(
@@ -172,10 +200,13 @@ async fn exercise(recovery: Recovery) -> TestResult {
                 Some(CompactionFailure::Builder(message)) if message == "declared builder failure"
             ));
         } else {
-            assert!(matches!(
-                error.downcast_ref::<CompactionFailure>(),
-                Some(CompactionFailure::Commit(message)) if message.contains("admission")
-            ));
+            assert!(
+                matches!(
+                    error.downcast_ref::<CompactionFailure>(),
+                    Some(CompactionFailure::Commit(message)) if message.contains("admission")
+                ),
+                "{error:?}"
+            );
         }
         assert_eq!(completions, 0);
         assert!(requests.is_empty());
@@ -219,6 +250,11 @@ async fn hook_triggered_recovery_commits_a_builder_dag_before_resuming() -> Test
 #[serial_test::serial]
 async fn builder_failure_stops_hook_triggered_recovery_without_retrying_oversized_history(
 ) -> TestResult {
+    // @step Given conversation history exceeds the compaction threshold during streaming
+    // @step And the registered compaction builder fails
+    // @step When the compaction hook cancels inference
+    // @step Then recovery returns the builder failure after one invocation
+    // @step And no provider request or compaction completion occurs and inference waits for the next input to retry the builder
     exercise(Recovery::BuilderFailure).await
 }
 
@@ -231,5 +267,22 @@ async fn provider_overflow_invokes_the_registered_compaction_builder() -> TestRe
 #[tokio::test]
 #[serial_test::serial]
 async fn recovery_admits_the_resume_prompt_before_committing_a_replacement() -> TestResult {
+    // @step Given a builder DAG and a resume prompt each fit within the usable context budget
+    // @step But their combined request exceeds the provider capacity
+    // @step When compaction recovery attempts to commit the replacement before the prompt is sent
+    // @step Then recovery rejects the replacement before promotion
+    // @step And no provider request or compaction completion occurs and inference remains blocked
     exercise(Recovery::RetryTooLarge).await
+}
+
+/// Feature: spec/features/stream-recovery-compaction-builder.feature
+/// Scenario: An oversized prompt is refused instead of being summarized away
+#[tokio::test]
+#[serial_test::serial]
+async fn an_oversized_prompt_is_refused_instead_of_being_summarized_away() -> TestResult {
+    // @step Given oversized history and a prompt that alone exceeds the usable context budget
+    // @step When compaction runs before the prompt is sent
+    // @step Then the replacement is rejected before promotion with an admission failure
+    // @step And no provider request or compaction completion occurs and the history is unchanged
+    exercise(Recovery::PromptTooLarge).await
 }

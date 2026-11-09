@@ -51,10 +51,10 @@ impl RhaiCustomProvider {
         );
         crate::oauth::scripted_request_refresh::ensure(provider)
             .await
-            .map_err(|_| {
+            .map_err(|error| {
                 ProviderError::api(
                     self.config_name(),
-                    "scripted OAuth refresh failed before request",
+                    format!("scripted OAuth refresh failed before request: {error:#}"),
                 )
             })
     }

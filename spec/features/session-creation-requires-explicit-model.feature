@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-creation
 @session
@@ -5,13 +6,16 @@
 @rust
 @provider
 @PROV-101
+@BUG-410
+@BUG-421
 Feature: Session creation requires an explicit model
 
   # ARCHITECTURE NOTES (PROV-101 #1/#2):
   # handle_impl.rs create_session / create_isolated_session must NOT default to
   # "anthropic/claude-opus-4-5" via .unwrap_or_else when get_default_model() is
-  # None. With no default: create_session returns an empty SessionId (declined)
-  # and create_isolated_session returns Err — no anthropic substitution. With an
+  # None. With no default: create_session and create_isolated_session return
+  # an Err naming the missing default model (BUG-410: never an empty SessionId)
+  # — no anthropic substitution. With an
   # explicit default the session adopts THAT provider/model.
   # Tests run fully offline: a temp data dir is seeded with a trimmed models.json
   # so registry validation needs no network; dummy creds satisfy detection.
@@ -20,10 +24,10 @@ Feature: Session creation requires an explicit model
     I want session creation to fail loudly when no model is explicitly set
     So that the system never silently substitutes anthropic/claude
 
-  Scenario: create_session declines when no default model is set
+  Scenario: create_session fails when no default model is set
     Given a SessionManager with no default model set
     When I call create_session with no role
-    Then the returned session id value is empty
+    Then create_session returns an error naming the missing default model
     And no session exists in the manager
 
   Scenario: create_session uses the explicit default model, never anthropic

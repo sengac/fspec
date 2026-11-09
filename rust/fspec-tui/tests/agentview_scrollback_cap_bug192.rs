@@ -12,11 +12,10 @@
 //! stable marker geometry on resize, reset semantics and the per-push
 //! invariant.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::{
     RenderedChunk, ScrollbackList, SelectionMode, TurnDir, MAX_SCROLLBACK_VISUAL_ROWS,
 };
+use codelet_test_helpers::{OrFail, TestResult};
 use proptest::{prop_assert, proptest};
 use ratatui::text::{Line, Span};
 
@@ -27,6 +26,7 @@ use ratatui::text::{Line, Span};
 /// Opaque (source-less) chunk: one wrapped `Line` per entry of `rows`.
 fn opaque_chunk(seq: u64, rows: &[&str]) -> RenderedChunk {
     RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: rows
             .iter()
@@ -90,7 +90,7 @@ fn render(list: &mut ScrollbackList, w: u16, h: u16) -> ratatui::buffer::Buffer 
 // ---------------------------------------------------------------------
 
 #[test]
-fn scenario_scrollback_below_cap_is_never_trimmed() {
+fn scenario_scrollback_below_cap_is_never_trimmed() -> TestResult {
     // @step Given a session's ScrollbackList holding chunks totalling 10,000 visual rows
     let mut list = ScrollbackList::new();
     let total = fill(&mut list, 100, 100);
@@ -117,10 +117,11 @@ fn scenario_scrollback_below_cap_is_never_trimmed() {
     // @step And no trim-marker chunk exists in the scrollback
     assert!(!list.first_chunk_is_marker());
     assert_eq!(list.trimmed_rows_total(), 0);
+    Ok(())
 }
 
 #[test]
-fn scenario_pushing_past_the_cap_trims_the_oldest_chunks() {
+fn scenario_pushing_past_the_cap_trims_the_oldest_chunks() -> TestResult {
     // @step Given a session's ScrollbackList holding chunks totalling 20,900 visual rows
     let mut list = ScrollbackList::new();
     assert_eq!(fill(&mut list, 104, 100), 10_400);
@@ -142,12 +143,14 @@ fn scenario_pushing_past_the_cap_trims_the_oldest_chunks() {
     // @step And the oldest chunks have been removed while the newest chunks remain intact
     let chunks = list.chunks();
     assert_eq!(
-        chunks.last().unwrap().lines.len(),
+        chunks.last().or_fail("expected a value")?.lines.len(),
         500,
         "the newest chunk must survive untouched"
     );
     assert_eq!(
-        chunks.last().unwrap().lines[499].spans[0].content.as_ref(),
+        chunks.last().or_fail("expected a value")?.lines[499].spans[0]
+            .content
+            .as_ref(),
         "row 499",
         "newest chunk content intact"
     );
@@ -162,10 +165,11 @@ fn scenario_pushing_past_the_cap_trims_the_oldest_chunks() {
     // @step And the first chunk is a trim-marker line
     assert!(list.first_chunk_is_marker());
     assert_eq!(chunks[0].lines.len(), 1, "the marker is exactly one line");
+    Ok(())
 }
 
 #[test]
-fn scenario_the_trim_marker_accumulates_the_total_trimmed_rows() {
+fn scenario_the_trim_marker_accumulates_the_total_trimmed_rows() -> TestResult {
     // @step Given a session's ScrollbackList that has already trimmed 1,500 older rows
     let mut list = ScrollbackList::new();
     for i in 0..100 {
@@ -209,7 +213,9 @@ fn scenario_the_trim_marker_accumulates_the_total_trimmed_rows() {
         r1.removed_rows + r2.removed_rows,
         "the marker must count every trimmed row, not just the latest trim"
     );
-    let marker_text = list.full_text_for_seq(list.chunks()[0].seq).unwrap();
+    let marker_text = list
+        .full_text_for_seq(list.chunks()[0].seq)
+        .or_fail("expected a value")?;
     assert!(
         marker_text.contains(&(r1.removed_rows + r2.removed_rows).to_string()),
         "marker must show the accumulated count, got: {marker_text}"
@@ -218,10 +224,11 @@ fn scenario_the_trim_marker_accumulates_the_total_trimmed_rows() {
         marker_text.contains("older lines trimmed"),
         "marker must be the '… N older lines trimmed …' line, got: {marker_text}"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_sticky_streaming_shows_no_visible_change_after_a_trim() {
+fn scenario_sticky_streaming_shows_no_visible_change_after_a_trim() -> TestResult {
     // @step Given a stick-to-bottom scrollback whose total rows exceed the cap
     let mut list = ScrollbackList::new();
     list.set_viewport_height(45);
@@ -271,10 +278,11 @@ fn scenario_sticky_streaming_shows_no_visible_change_after_a_trim() {
         top.contains("older lines trimmed"),
         "scrolled to the top, the marker must be the first row, got: {top}"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_a_scrolled_up_viewport_stays_pinned_to_the_same_content() {
+fn scenario_a_scrolled_up_viewport_stays_pinned_to_the_same_content() -> TestResult {
     // @step Given a scrollback with 21,000 visual rows where the user has scrolled up so row 3,000 from the tail is visible
     let mut list = ScrollbackList::new();
     list.set_viewport_height(45);
@@ -311,10 +319,11 @@ fn scenario_a_scrolled_up_viewport_stays_pinned_to_the_same_content() {
         pinned_offset - (res.removed_rows - 1),
         "offset must shrink by (removed rows - marker row)"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_a_scroll_offset_inside_the_removed_region_clamps_to_the_marker() {
+fn scenario_a_scroll_offset_inside_the_removed_region_clamps_to_the_marker() -> TestResult {
     // @step Given a scrollback where the user has scrolled up past the rows that a trim removes
     let mut list = ScrollbackList::new();
     list.set_viewport_height(10);
@@ -342,10 +351,11 @@ fn scenario_a_scroll_offset_inside_the_removed_region_clamps_to_the_marker() {
         top.contains("older lines trimmed"),
         "the marker must be the first visible row, got: {top}"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_the_trim_never_removes_an_in_flight_streaming_chunk() {
+fn scenario_the_trim_never_removes_an_in_flight_streaming_chunk() -> TestResult {
     // @step Given a session with 20,500 total rows and an in-flight assistant chunk at the tail still accumulating deltas
     let mut list = ScrollbackList::new();
     for i in 0..100 {
@@ -376,7 +386,7 @@ fn scenario_the_trim_never_removes_an_in_flight_streaming_chunk() {
     let surviving = list
         .chunks()
         .get(after_idx)
-        .expect("in-flight chunk must survive");
+        .or_fail("in-flight chunk must survive")?;
     assert_eq!(
         surviving.seq, in_flight_seq,
         "the in-flight chunk (protected by the floor) must still be in the list"
@@ -406,10 +416,11 @@ fn scenario_the_trim_never_removes_an_in_flight_streaming_chunk() {
         "total {} — trim must have removed as much as the floor allowed",
         list.total_rows()
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_select_mode_selection_on_a_trimmed_turn_is_cleared() {
+fn scenario_select_mode_selection_on_a_trimmed_turn_is_cleared() -> TestResult {
     // @step Given a scrollback in SELECT (item) mode with a turn selected that the trim removes
     let mut list = ScrollbackList::new();
     for i in 0..110 {
@@ -438,10 +449,11 @@ fn scenario_select_mode_selection_on_a_trimmed_turn_is_cleared() {
     );
     // mode is still Item (only the selection cleared):
     assert_eq!(list.selection_mode(), SelectionMode::Item);
+    Ok(())
 }
 
 #[test]
-fn scenario_the_trim_marker_has_stable_geometry_on_resize() {
+fn scenario_the_trim_marker_has_stable_geometry_on_resize() -> TestResult {
     // @step Given a scrollback whose first chunk is a trim marker
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -452,7 +464,9 @@ fn scenario_the_trim_marker_has_stable_geometry_on_resize() {
     list.trim_to_cap(MAX_SCROLLBACK_VISUAL_ROWS, 0);
     assert!(list.first_chunk_is_marker());
     let marker_seq = list.chunks()[0].seq;
-    let marker_before = list.full_text_for_seq(marker_seq).unwrap();
+    let marker_before = list
+        .full_text_for_seq(marker_seq)
+        .or_fail("expected a value")?;
 
     // @step When the viewport width changes and every chunk is re-wrapped
     list.set_viewport_width(120);
@@ -466,14 +480,16 @@ fn scenario_the_trim_marker_has_stable_geometry_on_resize() {
 
     // @step And its marker text is unchanged
     assert_eq!(
-        list.full_text_for_seq(marker_seq).unwrap(),
+        list.full_text_for_seq(marker_seq)
+            .or_fail("expected a value")?,
         marker_before,
         "resize must not alter the marker text"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_reset_clears_the_chunks_the_marker_and_the_trimmed_counter() {
+fn scenario_reset_clears_the_chunks_the_marker_and_the_trimmed_counter() -> TestResult {
     // @step Given a session whose scrollback has been trimmed at least once
     let mut list = ScrollbackList::new();
     for i in 0..100 {
@@ -498,10 +514,11 @@ fn scenario_reset_clears_the_chunks_the_marker_and_the_trimmed_counter() {
     assert_eq!(list.chunk_count(), 1);
     assert!(!list.first_chunk_is_marker());
     assert_eq!(list.total_rows(), 50);
+    Ok(())
 }
 
 #[test]
-fn scenario_every_push_keeps_the_total_at_or_under_the_cap() {
+fn scenario_every_push_keeps_the_total_at_or_under_the_cap() -> TestResult {
     // @step Given a session's ScrollbackList
     // @step When 200 successive pushes of 200-row chunks are applied (40,000 rows total)
     let mut list = ScrollbackList::new();
@@ -517,11 +534,14 @@ fn scenario_every_push_keeps_the_total_at_or_under_the_cap() {
     }
     // @step And the newest content is always present in the scrollback
     let chunks = list.chunks();
-    assert_eq!(chunks.last().unwrap().lines.len(), 200);
+    assert_eq!(chunks.last().or_fail("expected a value")?.lines.len(), 200);
     assert_eq!(
-        chunks.last().unwrap().lines[199].spans[0].content.as_ref(),
+        chunks.last().or_fail("expected a value")?.lines[199].spans[0]
+            .content
+            .as_ref(),
         "row 199"
     );
+    Ok(())
 }
 
 proptest! {
@@ -556,7 +576,7 @@ fn assistant_text(text: &str) -> codelet_rpc_types::StreamChunk {
 }
 
 #[test]
-fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() {
+fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() -> TestResult {
     use codelet_fspec_tui::store::SessionContext;
 
     let mut ctx = SessionContext::new(codelet_rpc_types::SessionId::new("s-1"));
@@ -577,9 +597,9 @@ fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() {
     let seq_before = ctx
         .scrollback
         .chunks()
-        .get(in_flight_before.unwrap())
+        .get(in_flight_before.or_fail("expected a value")?)
         .map(|c| c.seq)
-        .unwrap();
+        .or_fail("expected a value")?;
 
     // Stream many more deltas: total rows cross the cap mid-stream.
     for i in 0..40u32 {
@@ -599,8 +619,8 @@ fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() {
     let chunk_after = ctx
         .scrollback
         .chunks()
-        .get(in_flight_after.unwrap())
-        .expect("chunk");
+        .get(in_flight_after.or_fail("expected a value")?)
+        .or_fail("chunk")?;
     assert_eq!(
         chunk_after.seq, seq_before,
         "in_flight_assistant must still point at the SAME streaming chunk"
@@ -620,12 +640,12 @@ fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() {
         "a Text delta must accumulate into the in-flight chunk, not push a new one"
     );
     assert_eq!(ctx.in_flight_assistant, in_flight_after);
-    let grown = &ctx.scrollback.chunks()[in_flight_after.unwrap()];
+    let grown = &ctx.scrollback.chunks()[in_flight_after.or_fail("expected a value")?];
     assert!(
         grown
             .source
             .as_ref()
-            .unwrap()
+            .or_fail("expected a value")?
             .text
             .contains("one more delta"),
         "the delta must land in the same in-flight chunk"
@@ -642,10 +662,11 @@ fn store_in_flight_chunk_survives_the_cap_and_stays_appended_to() {
         ctx.scrollback.first_chunk_is_marker(),
         "after crossing the cap the marker must be present"
     );
+    Ok(())
 }
 
 #[test]
-fn store_reset_and_isolation() {
+fn store_reset_and_isolation() -> TestResult {
     use codelet_fspec_tui::store::SessionContext;
 
     // @step Given two open sessions whose scrollbacks are both below the cap
@@ -698,4 +719,5 @@ fn store_reset_and_isolation() {
     assert!(!a.scrollback.first_chunk_is_marker());
     // ...and B is still untouched:
     assert_eq!(b.scrollback.chunk_count(), b_chunks_before);
+    Ok(())
 }

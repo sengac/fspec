@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-022
 @rust
@@ -59,11 +60,11 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
   Scenario: Action::ThinkingLevelSelected spawns set_thinking_level and refreshes the [T:] badge
     Given an App attached to an EmbeddedFspecBackend with a session manager attached
     And an open session SessionId("s-1")
-    When the App dispatches Action::ThinkingLevelSelected(SessionId("s-1"), ThinkingLevel::High)
-    Then a tokio task is spawned that calls backend.set_thinking_level(SessionId("s-1"), ThinkingLevel::High)
+    When the App dispatches Action::ThinkingLevelSelected(SessionId("s-1"), ThinkingLevel::Effort("high"))
+    Then a tokio task is spawned that calls backend.set_thinking_level(SessionId("s-1"), ThinkingLevel::Effort("high"))
     When the spawned task completes
     Then a follow-up tokio task is spawned that calls backend.get_thinking_level(SessionId("s-1"))
-    And Action::ThinkingLevelLoaded(SessionId("s-1"), ThinkingLevel::High) is dispatched
+    And Action::ThinkingLevelLoaded(SessionId("s-1"), ThinkingLevel::Effort("high")) is dispatched
 
   @set-role
   @dispatch

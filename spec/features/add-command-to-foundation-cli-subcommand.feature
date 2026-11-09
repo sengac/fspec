@@ -1,5 +1,7 @@
 @done
 @RPC-175
+@cli
+@foundation-management
 Feature: fspec add-command-to-foundation CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_command_to_foundation.rs — clap-derived struct mirroring the TS

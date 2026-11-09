@@ -62,3 +62,42 @@ Feature: Port update-step command to Rust
     When I dispatch update-step with feature "spec/features/user-auth.feature" scenario "Valid login" current-step "Given I do not exist" and text "Given y"
     Then the response has success false
     And the response error is "Step 'Given I do not exist' not found in scenario 'Valid login'"
+
+  Scenario: Update step in specific scenario when multiple scenarios have same step
+    Given a feature file "spec/features/test.feature" with scenarios "First" and "Second" that both contain step "Given I am logged in"
+    When I dispatch update-step with feature "test" scenario "First" current-step "Given I am logged in" and text "Given I have authenticated"
+    Then the response has success true
+    And the step in "First" scenario should be updated
+    And the step in "Second" scenario should remain unchanged
+
+  Scenario: Update step preserves position in scenario
+    Given a feature file "spec/features/test.feature" with a scenario whose steps are in order: "Given A", "When B", "Then C"
+    When I dispatch update-step with feature "test" scenario "Test scenario" current-step "When B" and text "When B updated"
+    Then the response has success true
+    And the steps should remain in order: "Given A", "When B updated", "Then C"
+
+  Scenario: Update step with special characters
+    Given a feature file "spec/features/test.feature" with scenario "Test scenario" containing step "Given I can login"
+    When I dispatch update-step with feature "test" scenario "Test scenario" current-step "Given I can login" and text "Given I can't login with @invalid credentials"
+    Then the response has success true
+    And the feature file step line reads "    Given I can't login with @invalid credentials"
+    And the feature file should be valid Gherkin
+
+  Scenario: Update And step to Given step
+    Given a feature file "spec/features/test.feature" with scenario "Test scenario" containing step "And I enter password"
+    When I dispatch update-step with feature "test" scenario "Test scenario" current-step "And I enter password" and keyword "Given"
+    Then the response has success true
+    And the feature file step line reads "    Given I enter password"
+
+  Scenario: Update step preserves indentation
+    Given a feature file "spec/features/test.feature" with scenario "Test scenario" whose step "Given I am on page" is indented by 6 spaces
+    When I dispatch update-step with feature "test" scenario "Test scenario" current-step "Given I am on page" and text "Given I am on the login page"
+    Then the response has success true
+    And the feature file step line reads "      Given I am on the login page"
+
+  Scenario: Handle feature file with invalid syntax
+    Given a feature file "spec/features/broken.feature" with Gherkin syntax errors
+    When I dispatch update-step with feature "broken" scenario "Some scenario" current-step "Given test" and text "New text"
+    Then the response has success false
+    And the response error contains "Invalid Gherkin syntax"
+    And the file should remain unchanged

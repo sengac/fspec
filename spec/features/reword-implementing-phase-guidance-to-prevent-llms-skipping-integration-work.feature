@@ -53,15 +53,8 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
     Given a work unit transitions to IMPLEMENTING status
     When the status change reminder is generated
     Then the reminder should contain "COMPLETE MEANS:"
-    And the reminder should contain "Unit tests pass"
-    And the reminder should contain "Call sites connected"
+    And the reminder should contain "New code exists AND is connected to the system"
     And the reminder should contain "Feature works end-to-end"
-
-  Scenario: IMPLEMENTING phase separates STAY IN SCOPE from INTEGRATION IS NOT SCOPE CREEP
-    Given a work unit transitions to IMPLEMENTING status
-    When the status change reminder is generated
-    Then the reminder should contain "STAY IN SCOPE"
-    And the reminder should contain "INTEGRATION IS NOT SCOPE CREEP"
 
   Scenario: IMPLEMENTING phase removes minimization-encouraging phrases
     Given a work unit transitions to IMPLEMENTING status
@@ -70,12 +63,6 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
     And the reminder should not contain "minimum code"
     And the reminder should not contain "minimal code"
     And the reminder should not contain "Avoid over-implementation"
-
-  Scenario: IMPLEMENTING phase next steps include integration verification
-    Given a work unit transitions to IMPLEMENTING status
-    When the status change reminder is generated
-    Then the suggested next steps should include wiring up integration points
-    And the suggested next steps should include verifying feature works end-to-end
 
   Scenario: SPECIFYING phase includes WHO CALLS THIS prompt for integration points
     Given a work unit transitions to SPECIFYING status

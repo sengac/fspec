@@ -95,13 +95,13 @@ async fn reset_during_socket_setup_prevents_the_response_create_message() -> Tes
         &url,
         &history,
     )?);
-    tokio::time::timeout(std::time::Duration::from_secs(4), started.notified()).await?;
+    codelet_test_helpers::deadlock_guard("started.notified()", started.notified()).await?;
     // @step When its generation is reset before the handshake is released
     history.reset()?;
     let reset = history.snapshot()?;
     release.add_permits(1);
-    let (errors, finals) = tokio::time::timeout(std::time::Duration::from_secs(4), task).await??;
-    let server_result = tokio::time::timeout(std::time::Duration::from_secs(4), server).await??;
+    let (errors, finals) = codelet_test_helpers::deadlock_guard("task", task).await??;
+    let server_result = codelet_test_helpers::deadlock_guard("server", server).await??;
     assert!(server_result.is_ok(), "{server_result:?}");
     // @step Then the stream fails without a response create message
     assert_eq!(messages.load(Ordering::SeqCst), 0, "{errors:?}");

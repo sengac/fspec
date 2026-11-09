@@ -110,26 +110,26 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         example:
             "fspec add-virtual-hook AUTH-001 pre-implementing \"<quality-check-commands>\" --blocking",
         description:
-            "Ensures code is clean before starting implementation. Prevents messy code from being committed.",
+            Some("Ensures code is clean before starting implementation. Prevents messy code from being committed."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Type Checking Before Validation",
         example:
             "fspec add-virtual-hook AUTH-001 pre-validating \"<quality-check-commands>\" --blocking",
         description:
-            "Catches type errors before moving to validation phase. Strict quality gate.",
+            Some("Catches type errors before moving to validation phase. Strict quality gate."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Security Scan on Changed Files",
         example: "fspec add-virtual-hook FEAT-123 post-implementing \"npm audit\" --git-context",
         description:
-            "Runs security audit only on changed files for efficiency. Uses git context.",
+            Some("Runs security audit only on changed files for efficiency. Uses git context."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Multiple Quality Checks",
         example:
             "fspec add-virtual-hook AUTH-001 post-implementing \"eslint src/\" --blocking\nfspec add-virtual-hook AUTH-001 post-implementing \"prettier --check .\" --blocking",
-        description: "Adds multiple hooks to same event. Both must pass to proceed.",
+        description: Some("Adds multiple hooks to same event. Both must pass to proceed."),
     }),
 ];
 

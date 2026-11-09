@@ -16,6 +16,7 @@ const DAG: &str = "<dag-node depth=\"D1\" turns=\"0-0\" label=\"Work\">exact DAG
 
 fn commit(messages: Vec<Message>, expected: &Message, persisted: bool) -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("reminders", directory.path(), "openai")?;

@@ -13,12 +13,18 @@
 //! BUG-205: the original third option 'Detach' was removed — it only
 //! dispatched `Action::BackToBoard`, which plain navigation (menu bar,
 //! Shift+Left, mux board-pane focus) already does. The dialog now offers
-//! exactly [Close Session, Cancel] with Close Session pre-selected,
+//! exactly [Close, Cancel] with Close pre-selected,
 //! matching the board 'Exit fspec?' convention.
 //!
-//! Description text is conditional on `is_busy`:
-//! - `true`  → "The agent is currently running. Choose how to exit."
-//! - `false` → "Choose how to exit the session."
+//! TUI-124: the dialog says exactly what closing will do, in the words of
+//! the session's kind (product owner, 2026-11-07): titled "Close Agent?" or
+//! "Close Bot?", its lines come from the [`CloseFacts`] gathered before it
+//! opened (working or idle, sub-agents closed with a bot or kept by an
+//! agent, the session that started a sub-agent, history kept for /resume,
+//! worktrees kept until /worktrees prune) and its options are
+//! [Close | Stop and Close | Close All | Stop and Close All, Cancel].
+//!
+//! Feature: spec/features/agent-close-and-start-dialogs-say-exactly-what-will-happen.feature
 
 use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
@@ -29,6 +35,9 @@ use super::dialog_button_hits::LastLayout;
 use super::dialog_theme::Accent;
 use super::three_button_dialog::render_three_button_dialog;
 use super::{Action, Callback, Component, EventResult, Priority};
+
+mod close_facts;
+pub use close_facts::{CloseFacts, CloseRelations, ClosingSubAgent, SessionKind, SubAgentStatus};
 
 /// Canonical id used by `Compositor::remove`.
 pub const EXIT_CONFIRMATION_DIALOG_ID: &str = "exit-confirmation-dialog";
@@ -43,7 +52,8 @@ const ACCENT: Accent = Accent::Yellow;
 /// only navigated back to the Board, which plain navigation already does).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExitChoice {
-    /// "Close Session" — terminate the backend session.
+    /// The confirm option ("Close", "Stop and Close", "Close All" or
+    /// "Stop and Close All") — close the session (and a bot's sub-agents).
     CloseSession,
     /// "Cancel" — close the dialog, stay on AgentView.
     Cancel,
@@ -51,26 +61,16 @@ pub enum ExitChoice {
 
 const OPTIONS: [ExitChoice; 2] = [ExitChoice::CloseSession, ExitChoice::Cancel];
 
-const TITLE: &str = "Exit Session?";
-const DESCRIPTION_BUSY: &str = "The agent is currently running. Choose how to exit.";
-const DESCRIPTION_IDLE: &str = "Choose how to exit the session.";
 const FOOTER: &str = "← → Navigate | Enter Select | Esc Cancel";
 
 /// Minimum body content width. Mirrors the visual breadth of the TS Ink
 /// ThreeButtonDialog at typical terminal widths.
 const MIN_WIDTH: u16 = 54;
 
-fn option_label(opt: ExitChoice) -> &'static str {
-    match opt {
-        ExitChoice::CloseSession => "Close Session",
-        ExitChoice::Cancel => "Cancel",
-    }
-}
-
 /// Priority::Critical modal dialog for the AgentView ESC exit confirmation.
 pub struct ExitConfirmationDialog {
     id: String,
-    is_busy: bool,
+    facts: CloseFacts,
     selected: ExitChoice,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
@@ -79,14 +79,13 @@ pub struct ExitConfirmationDialog {
 }
 
 impl ExitConfirmationDialog {
-    /// Construct a fresh dialog. `is_busy=true` switches the description
-    /// to the active-stream variant. Default selection is `CloseSession`
-    /// (BUG-205: destructive option pre-selected, matching the board
-    /// 'Exit fspec?' convention).
-    pub fn new(is_busy: bool) -> Self {
+    /// Construct a fresh dialog stating `facts`. Default selection is
+    /// `CloseSession` (BUG-205: destructive option pre-selected, matching
+    /// the board 'Exit fspec?' convention).
+    pub fn new(facts: CloseFacts) -> Self {
         Self {
             id: EXIT_CONFIRMATION_DIALOG_ID.to_string(),
-            is_busy,
+            facts,
             selected: ExitChoice::CloseSession,
             action_tx: None,
             pending_action: None,
@@ -129,7 +128,19 @@ impl ExitConfirmationDialog {
 
     /// Test accessor — whether this instance renders the busy description.
     pub fn is_busy(&self) -> bool {
-        self.is_busy
+        self.facts.busy
+    }
+
+    /// TUI-124: what this dialog states and what confirming closes.
+    pub fn facts(&self) -> &CloseFacts {
+        &self.facts
+    }
+
+    fn option_label(&self, opt: ExitChoice) -> &'static str {
+        match opt {
+            ExitChoice::CloseSession => self.facts.close_label(),
+            ExitChoice::Cancel => "Cancel",
+        }
     }
 
     /// Test accessor — the dialog's accent colour. Returns the same `Accent`
@@ -181,14 +192,6 @@ impl ExitConfirmationDialog {
         Box::new(move |compositor| {
             let _ = compositor.remove(&id);
         })
-    }
-
-    fn description_text(&self) -> &'static str {
-        if self.is_busy {
-            DESCRIPTION_BUSY
-        } else {
-            DESCRIPTION_IDLE
-        }
     }
 }
 
@@ -253,14 +256,15 @@ impl Component for ExitConfirmationDialog {
         // the button row is painted by the shared three-button builder
         // (super::three_button_dialog) so the painted pixels and the
         // click hit-test rects come from one source of truth (TUI-112).
-        let description_text = self.description_text();
-        let labels: Vec<&str> = OPTIONS.iter().map(|o| option_label(*o)).collect();
+        let lines = self.facts.lines();
+        let title = self.facts.title();
+        let labels: Vec<&str> = OPTIONS.iter().map(|o| self.option_label(*o)).collect();
         self.last_layout = render_three_button_dialog(
             area,
             buf,
             ACCENT,
-            TITLE,
-            description_text,
+            &title,
+            &lines,
             FOOTER,
             MIN_WIDTH,
             self.selected_index(),

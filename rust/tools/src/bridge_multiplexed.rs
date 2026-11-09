@@ -252,11 +252,14 @@ pub enum InboundAction {
         message: String,
         images: Option<Vec<crate::bridge_relay::ImageData>>,
     },
-    /// Session control: interrupt, clear, pause_response.
+    /// Session control: interrupt, clear, pause_response, question_response,
+    /// human_action_response (AMGR-023).
     SessionControl {
         session_id: String,
         action: String,
         response: Option<String>,
+        /// AMGR-020: the request a `pause_response` answers.
+        request_id: Option<String>,
     },
     /// Session create: spawn a new codelet session and respond with session:created.
     /// SESS-017: Dashboard "+ > New fspec Session" sends this; the bridge must
@@ -339,14 +342,21 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                     .and_then(|a| a.as_str())
                     .unwrap_or("")
                     .to_string();
-                let response = data
-                    .and_then(|d| d.get("response"))
+                // BRIDGE-022: a question_response's answers are an object,
+                // passed on as its JSON text.
+                let response = data.and_then(|d| d.get("response")).map(|r| match r {
+                    serde_json::Value::String(text) => text.clone(),
+                    other => other.to_string(),
+                });
+                let request_id = data
+                    .and_then(|d| d.get("request_id"))
                     .and_then(|r| r.as_str())
                     .map(std::string::ToString::to_string);
                 InboundAction::SessionControl {
                     session_id,
                     action,
                     response,
+                    request_id,
                 }
             }
             "create" => {
@@ -676,7 +686,9 @@ mod tests {
                 session_id,
                 action,
                 response,
+                request_id,
             } => {
+                assert!(request_id.is_none());
                 assert_eq!(session_id, "abc-123");
                 assert_eq!(action, "interrupt");
                 assert!(response.is_none());

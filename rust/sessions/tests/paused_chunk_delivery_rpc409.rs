@@ -28,7 +28,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_providers::ProviderManager;
 use codelet_rpc_types::{SessionId, SessionState, SessionStatus, StreamChunk};
@@ -46,9 +45,8 @@ type StatusRx = broadcast::Receiver<(SessionId, SessionStatus)>;
 /// broadcast channels (fake env credential — no LLM is ever called).
 fn fresh_session() -> (Arc<BackgroundSession>, ChunksRx, StatusRx) {
     std::env::set_var("ANTHROPIC_API_KEY", "rpc409-fake-key");
-    let tmp = std::env::temp_dir().join(format!("rpc409-{}", Uuid::new_v4()));
-    std::fs::create_dir_all(&tmp).expect("create temp data dir");
-    let _ = codelet_common::set_data_directory(tmp);
+    let tmp = codelet_test_helpers::shared_temp_subdirectory().expect("shared temp subdirectory");
+    codelet_common::set_data_directory(tmp).expect("set the data directory");
 
     let provider_manager =
         ProviderManager::with_provider("claude").expect("claude provider with fake env key");
@@ -89,14 +87,19 @@ fn spawn_parked_status_watcher(mut rx: StatusRx) {
 /// Spawn a dedicated subscriber task that parks on `rx.recv()` and
 /// reports the first chunk matching `pred` on the returned channel.
 /// The stranding only manifests when the subscriber's waker is already
-/// registered at send time, so callers must let this task park BEFORE
-/// triggering the emit — see [`park_subscribers`].
+/// registered at send time, so callers wait for the task to start and
+/// yield to it BEFORE triggering the emit — see [`park_subscribers`].
 fn spawn_parked_subscriber(
     mut rx: ChunksRx,
     pred: impl Fn(&StreamChunk) -> bool + Send + 'static,
-) -> mpsc::UnboundedReceiver<StreamChunk> {
+) -> (
+    mpsc::UnboundedReceiver<StreamChunk>,
+    tokio::sync::oneshot::Receiver<()>,
+) {
     let (notify_tx, notify_rx) = mpsc::unbounded_channel();
+    let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     tokio::spawn(async move {
+        let _ = started_tx.send(());
         loop {
             match rx.recv().await {
                 Ok((_, chunk)) if pred(&chunk) => {
@@ -109,21 +112,27 @@ fn spawn_parked_subscriber(
             }
         }
     });
-    notify_rx
+    (notify_rx, started_rx)
 }
 
-/// Give the spawned watcher tasks time to park on `recv().await` so
-/// their wakers are registered before the handler emits and blocks.
-async fn park_subscribers() {
-    tokio::time::sleep(Duration::from_millis(150)).await;
+/// Let the spawned watcher task reach `recv().await` so its waker is
+/// registered before the handler emits and blocks. TEST-042: no sleep —
+/// wait for the task to start, then yield to the runtime so it parks.
+async fn park_subscribers(started: tokio::sync::oneshot::Receiver<()>) {
+    let started = codelet_test_helpers::deadlock_guard("the subscriber task starts", started).await;
+    assert!(matches!(started, Ok(Ok(()))), "{started:?}");
+    for _ in 0..8 {
+        tokio::task::yield_now().await;
+    }
 }
 
-/// Join a spawned handler with a hard timeout. Returns `None` on
-/// timeout or task panic instead of awaiting forever — callers assert
-/// on the `Option` so a stuck handler FAILS the test rather than
-/// hanging it. Only call this AFTER the unblocking response was sent.
-async fn join_within<T>(handle: tokio::task::JoinHandle<T>, secs: u64) -> Option<T> {
-    tokio::time::timeout(Duration::from_secs(secs), handle)
+/// Join a spawned handler under the deadlock guard. Returns `None` when
+/// the guard expires or the task panics instead of awaiting forever —
+/// callers assert on the `Option` so a stuck handler FAILS the test
+/// rather than hanging it. Only call this AFTER the unblocking response
+/// was sent.
+async fn join_within<T>(handle: tokio::task::JoinHandle<T>) -> Option<T> {
+    codelet_test_helpers::deadlock_guard("the handler task", handle)
         .await
         .ok()
         .and_then(std::result::Result::ok)
@@ -146,8 +155,8 @@ async fn paused_chunk_reaches_subscribers_while_the_pause_wait_is_still_pending(
     let (session, chunks_rx, status_rx) = fresh_session();
     spawn_parked_status_watcher(status_rx);
     session.set_status(SessionStatus::Running);
-    let mut paused_rx = spawn_parked_subscriber(chunks_rx, is_paused_chunk);
-    park_subscribers().await;
+    let (mut paused_rx, started) = spawn_parked_subscriber(chunks_rx, is_paused_chunk);
+    park_subscribers(started).await;
 
     // @step When a tokio task runs the agent-loop pause handler which emits SessionStateChange Paused and blocks in wait_for_pause_response
     let handler_session = Arc::clone(&session);
@@ -158,6 +167,7 @@ async fn paused_chunk_reaches_subscribers_while_the_pause_wait_is_still_pending(
             tool_name: "Read".to_string(),
             message: "Environment files often contain secrets".to_string(),
             details: Some("/tmp/.env".to_string()),
+            tool_call_id: None,
         }));
         handler_session.set_status(SessionStatus::Paused);
         let response = handler_session.wait_for_pause_response();
@@ -168,14 +178,27 @@ async fn paused_chunk_reaches_subscribers_while_the_pause_wait_is_still_pending(
     // @step Then the subscriber receives the Paused chunk within 1 second while the pause is still pending
     // Observe WITHOUT panicking — the handler is parked in a sync recv
     // and a panic here would hang runtime shutdown (see module docs).
-    let got = tokio::time::timeout(Duration::from_secs(1), paused_rx.recv()).await;
+    let got =
+        codelet_test_helpers::deadlock_guard("the chunk on paused_rx", paused_rx.recv()).await;
     let delivered_while_pending = matches!(&got, Ok(Some(_)));
     let wait_still_pending = !handler.is_finished();
 
     // @step And sending a pause response afterwards unblocks the handler with that response
     // UNCONDITIONAL unblock BEFORE any assertion — never reorder.
-    session.send_pause_response(PauseResponse::Denied);
-    let response = join_within(handler, 5).await;
+    // AMGR-020: the reply names the pending request (the Paused chunk came
+    // after set_pause_state stored it).
+    let answered = match session.pending_pause_route() {
+        Some(route) => session.answer_pause(
+            &route.request_id,
+            &codelet_rpc_types::RequestHolder::User,
+            codelet_sessions::background_session::PauseReply::Triple(
+                codelet_rpc_types::ApprovalChoice::Deny,
+            ),
+        ),
+        None => Err("no pending pause to answer".to_string()),
+    };
+    let response = join_within(handler).await;
+    assert_eq!(answered, Ok(()));
 
     assert!(
         delivered_while_pending,
@@ -189,7 +212,7 @@ async fn paused_chunk_reaches_subscribers_while_the_pause_wait_is_still_pending(
     assert_eq!(
         response,
         Some(PauseResponse::Denied),
-        "handler must unblock with the sent response within 5s"
+        "handler must unblock with the sent response"
     );
 }
 
@@ -200,10 +223,10 @@ async fn fspec_request_chunk_reaches_subscribers_while_the_fspec_wait_is_still_p
     // @step Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     let (session, chunks_rx, status_rx) = fresh_session();
     spawn_parked_status_watcher(status_rx);
-    let mut request_rx = spawn_parked_subscriber(chunks_rx, |c| {
+    let (mut request_rx, started) = spawn_parked_subscriber(chunks_rx, |c| {
         matches!(c, StreamChunk::FspecCommandRequest { .. })
     });
-    park_subscribers().await;
+    park_subscribers(started).await;
 
     // @step When a tokio task emits an FspecCommandRequest chunk and blocks in wait_for_fspec_response
     let handler_session = Arc::clone(&session);
@@ -221,7 +244,8 @@ async fn fspec_request_chunk_reaches_subscribers_while_the_fspec_wait_is_still_p
 
     // @step Then the subscriber receives the FspecCommandRequest chunk within 1 second while the wait is still pending
     // Observe WITHOUT panicking (see module docs), unblock, THEN assert.
-    let got = tokio::time::timeout(Duration::from_secs(1), request_rx.recv()).await;
+    let got =
+        codelet_test_helpers::deadlock_guard("the chunk on request_rx", request_rx.recv()).await;
     let delivered_while_pending = matches!(&got, Ok(Some(_)));
     let wait_still_pending = !handler.is_finished();
 
@@ -234,7 +258,7 @@ async fn fspec_request_chunk_reaches_subscribers_while_the_fspec_wait_is_still_p
         system_reminder: None,
         tool_call_id: "rpc409-test".to_string(),
     });
-    let result = join_within(handler, 5).await;
+    let result = join_within(handler).await;
 
     assert!(
         delivered_while_pending,
@@ -246,7 +270,7 @@ async fn fspec_request_chunk_reaches_subscribers_while_the_fspec_wait_is_still_p
     );
     assert!(
         result.as_ref().is_some_and(|r| r.success && r.data == "ok"),
-        "waiter must unblock with the sent result within 5s, got {result:?}"
+        "waiter must unblock with the sent result, got {result:?}"
     );
 }
 
@@ -257,10 +281,14 @@ async fn paused_chunk_reaches_subscribers_while_the_hitl_wait_is_still_pending()
     // @step Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     let (session, chunks_rx, status_rx) = fresh_session();
     spawn_parked_status_watcher(status_rx);
-    let mut paused_rx = spawn_parked_subscriber(chunks_rx, is_paused_chunk);
-    park_subscribers().await;
+    let (mut paused_rx, started) = spawn_parked_subscriber(chunks_rx, is_paused_chunk);
+    park_subscribers(started).await;
 
     // @step When a tokio task emits SessionStateChange Paused and blocks in wait_for_hitl_response
+    // AMGR-020: the question is stored before the wait, as the handler does.
+    session.set_hitl_request(Some(codelet_tools::request_user_input::HitlRequest {
+        questions: Vec::new(),
+    }));
     let handler_session = Arc::clone(&session);
     let handler = tokio::spawn(async move {
         // Shape of the BUG-117 HITL handler: set status Paused, block.
@@ -270,14 +298,23 @@ async fn paused_chunk_reaches_subscribers_while_the_hitl_wait_is_still_pending()
 
     // @step Then the subscriber receives the Paused chunk within 1 second while the wait is still pending
     // Observe WITHOUT panicking (see module docs), unblock, THEN assert.
-    let got = tokio::time::timeout(Duration::from_secs(1), paused_rx.recv()).await;
+    let got =
+        codelet_test_helpers::deadlock_guard("the chunk on paused_rx", paused_rx.recv()).await;
     let delivered_while_pending = matches!(&got, Ok(Some(_)));
     let wait_still_pending = !handler.is_finished();
 
     // @step And sending a HITL response afterwards unblocks the waiter with that response
     // UNCONDITIONAL unblock BEFORE any assertion — never reorder.
-    session.send_hitl_response(HitlResponse::Cancelled { cancelled: false });
-    let response = join_within(handler, 5).await;
+    let answered = match session.pending_question_route() {
+        Some(route) => session.answer_question(
+            &route.request_id,
+            &codelet_rpc_types::RequestHolder::User,
+            HitlResponse::Cancelled { cancelled: false },
+        ),
+        None => Err("no pending question to answer".to_string()),
+    };
+    let response = join_within(handler).await;
+    assert_eq!(answered, Ok(()));
 
     assert!(
         delivered_while_pending,
@@ -289,7 +326,7 @@ async fn paused_chunk_reaches_subscribers_while_the_hitl_wait_is_still_pending()
     );
     assert!(
         matches!(response, Some(HitlResponse::Cancelled { cancelled: false })),
-        "waiter must unblock with the sent response within 5s, got {response:?}"
+        "waiter must unblock with the sent response, got {response:?}"
     );
 }
 
@@ -308,23 +345,43 @@ fn waits_fall_back_to_a_direct_blocking_recv_when_called_off_runtime() {
 
     // @step When the thread calls wait_for_pause_response and a pause response is sent from another thread
     // Report the result over a channel instead of an unbounded join():
-    // recv_timeout below bounds the wait, and if the waiter panics the
+    // the deadlock guard below bounds the wait, and if the waiter panics the
     // sender is dropped, which surfaces as a recv error (= test failure).
+    session.set_pause_state(Some(PauseState {
+        kind: PauseKind::Triple,
+        tool_name: "Read".to_string(),
+        message: "Environment files often contain secrets".to_string(),
+        details: Some("/tmp/.env".to_string()),
+        tool_call_id: None,
+    }));
     let (done_tx, done_rx) = std::sync::mpsc::channel();
     let waiter_session = Arc::clone(&session);
     std::thread::spawn(move || {
         let _ = done_tx.send(waiter_session.wait_for_pause_response());
     });
-    std::thread::sleep(Duration::from_millis(100));
-    session.send_pause_response(PauseResponse::AllowOnce);
+    // TEST-042: no sleep; the response is sent whether or not the waiter
+    // has started waiting yet.
+    let route = session.pending_pause_route().expect("the pause is pending");
+    session
+        .answer_pause(
+            &route.request_id,
+            &codelet_rpc_types::RequestHolder::User,
+            codelet_sessions::background_session::PauseReply::Triple(
+                codelet_rpc_types::ApprovalChoice::Approve,
+            ),
+        )
+        .expect("the pause is answered");
 
     // @step Then the waiter returns that response without panicking
     // Bounded wait: if the waiter never unblocks this FAILS in 5s
     // instead of hanging forever. A leaked parked thread cannot keep
     // the process alive once the test harness exits.
-    let response = done_rx.recv_timeout(Duration::from_secs(5));
+    let response =
+        codelet_test_helpers::deadlock_guard_blocking("the off-runtime waiter", move || {
+            done_rx.recv()
+        });
     assert_eq!(
-        response.ok(),
+        response.ok().and_then(Result::ok),
         Some(PauseResponse::AllowOnce),
         "off-runtime waiter must return the sent response without panicking"
     );

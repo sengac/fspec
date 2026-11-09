@@ -5,11 +5,21 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "23-50",
+          "lines": "26-50",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
                 117,
                 118,
                 119,
@@ -30,16 +40,12 @@
                 134,
                 135,
                 136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                195,
+                196,
+                197
+              ],
+              "firstLine": "/// Resolve the identity prefix lazily, leaking the result for",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,11 +56,21 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "52-77",
+          "lines": "55-78",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
                 117,
                 118,
                 119,
@@ -75,16 +91,12 @@
                 134,
                 135,
                 136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                195,
+                196,
+                197
+              ],
+              "firstLine": "/// Resolve the identity prefix lazily, leaking the result for",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,7 +107,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "80-117",
+          "lines": "83-119",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
@@ -117,7 +129,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "match self.call_script_fn(FN_TRANSFORM_PREAMBLE, args) {",
+              "lastLine": ");"
             }
           ]
         }
@@ -128,7 +142,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "119-144",
+          "lines": "124-146",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
@@ -150,7 +164,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "match self.call_script_fn(FN_TRANSFORM_PREAMBLE, args) {",
+              "lastLine": ");"
             }
           ]
         }
@@ -161,7 +177,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "146-179",
+          "lines": "151-183",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
@@ -184,7 +200,9 @@
                 241,
                 242,
                 243
-              ]
+              ],
+              "firstLine": ".call_script_fn(FN_FORMAT_SYSTEM_PROMPT, args)",
+              "lastLine": ".finish_non_exhaustive()"
             }
           ]
         }
@@ -195,11 +213,20 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "181-244",
+          "lines": "188-245",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
                 147,
                 148,
                 149,
@@ -238,16 +265,26 @@
                 182,
                 183,
                 184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193
-              ]
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// Convert the return value of `format_system_prompt` into a",
+              "lastLine": "}"
             }
           ]
         }
@@ -258,11 +295,20 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "246-272",
+          "lines": "250-276",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
                 147,
                 148,
                 149,
@@ -301,16 +347,26 @@
                 182,
                 183,
                 184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193
-              ]
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// Convert the return value of `format_system_prompt` into a",
+              "lastLine": "}"
             }
           ]
         }
@@ -321,18 +377,20 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "274-300",
+          "lines": "281-304",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ],
+              "firstLine": "fn provider(&self) -> &'static str {",
+              "lastLine": "}"
             }
           ]
         }
@@ -343,11 +401,19 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_system_prompts_tests.rs",
-          "lines": "302-337",
+          "lines": "309-340",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/system_prompt.rs",
               "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
                 93,
                 94,
                 95,
@@ -361,17 +427,26 @@
                 103,
                 104,
                 105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// Invoke a Rhai function and return the resulting [`Dynamic`],",
+              "lastLine": "}"
             }
           ]
         }
@@ -388,6 +463,6 @@
     "implFiles": [
       "rust/providers/src/custom/system_prompt.rs"
     ],
-    "totalLinesCovered": 539
+    "totalLinesCovered": 573
   }
 }

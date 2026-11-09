@@ -4,38 +4,27 @@
       "name": "CodexShellCommandFacade maps workdir to InternalBashParams cwd",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "365-389",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "13-39",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,38 +34,27 @@
       "name": "CodexShellCommandFacade maps timeout_ms to InternalBashParams",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "393-417",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "41-67",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -86,38 +64,27 @@
       "name": "CodexShellCommandFacade maps both workdir and timeout_ms",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "421-442",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "69-92",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -127,38 +94,27 @@
       "name": "CodexShellCommandFacade without optional params defaults to None",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "446-471",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "94-123",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,12 +124,17 @@
       "name": "Codex shell_command schema includes Codex-native approval params",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "475-502",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "125-151",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
                 49,
                 50,
                 51,
@@ -219,8 +180,12 @@
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96
+              ],
+              "firstLine": "pub struct CodexShellCommandFacade;",
+              "lastLine": "}"
             }
           ]
         }
@@ -230,18 +195,27 @@
       "name": "Codex-native approval params are silently ignored in map_params",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "506-531",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "153-180",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                95,
-                96,
-                97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -251,27 +225,30 @@
       "name": "Existing facades remain backward compatible with new InternalBashParams fields",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "535-556",
+          "file": "rust/tools/src/facade/codex/shell_command_params_tests.rs",
+          "lines": "182-205",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/traits.rs",
               "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ],
+              "firstLine": "/// Internal parameters for bash/shell operations.",
+              "lastLine": "}"
             }
           ]
         }
@@ -283,12 +260,12 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex/shell_command_params_tests.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/codex.rs",
       "rust/tools/src/facade/traits.rs"
     ],
-    "totalLinesCovered": 339
+    "totalLinesCovered": 315
   }
 }

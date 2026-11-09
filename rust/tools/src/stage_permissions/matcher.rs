@@ -162,18 +162,18 @@ impl StagePermissionsMatcher {
                 format!(
                     "Blocked: Cannot write {category} files in testing stage. Write tests first, then move to implementing stage."
                 ),
-                "Use: fspec update-work-unit-status <id> implementing".to_string(),
+                "Use: fspec update-work-unit-status <workUnitId> implementing".to_string(),
             ),
             "specifying" => (
                 format!(
                     "Blocked: Cannot write {category} files in specifying stage. Complete the specification first."
                 ),
-                "Use: fspec update-work-unit-status <id> testing (after generating scenarios)"
+                "Use: fspec update-work-unit-status <workUnitId> testing (after generating scenarios)"
                     .to_string(),
             ),
             "validating" => (
                 "Blocked: Cannot write files in validating stage. No modifications allowed during validation.".to_string(),
-                "If changes needed, go back to implementing: fspec update-work-unit-status <id> implementing".to_string(),
+                "If changes needed, go back to implementing: fspec update-work-unit-status <workUnitId> implementing".to_string(),
             ),
             "done" => (
                 "Blocked: Cannot write files for completed work unit. Work is marked as done.".to_string(),
@@ -205,7 +205,7 @@ mod tests {
         let matcher = StagePermissionsMatcher::new(config);
         let stage = "testing";
 
-        // @step And the project defines "impl" category as "src/**/*.ts" excluding test files
+        // @step And the project defines the "impl" category as the .ts files under src/ excluding test files
         // (defined in default_acdd config)
 
         // @step And "testing" stage only allows writing to "spec" and "test" categories
@@ -218,12 +218,11 @@ mod tests {
         assert!(result.blocked);
         assert!(!result.allowed);
 
-        // @step And the AI should receive error "Blocked: Cannot write implementation files in testing stage. Write tests first, then move to implementing stage."
-        assert!(result
-            .reason
-            .as_ref()
-            .expect("reason should be set")
-            .contains("testing stage"));
+        // @step And the AI should receive error "Blocked: Cannot write impl files in testing stage. Write tests first, then move to implementing stage."
+        assert_eq!(
+            result.reason.as_deref(),
+            Some("Blocked: Cannot write impl files in testing stage. Write tests first, then move to implementing stage.")
+        );
     }
 
     /// Feature: spec/features/stage-permissions-acdd-file-write-enforcement.feature
@@ -235,7 +234,7 @@ mod tests {
         let matcher = StagePermissionsMatcher::new(config);
         let stage = "testing";
 
-        // @step And the project defines "test" category as "src/**/*.test.ts" and "src/**/__tests__/**"
+        // @step And the project defines the "test" category as the .test.ts files and __tests__ directories under src/
         // (defined in default_acdd config)
 
         // @step And "testing" stage allows writing to "spec" and "test" categories
@@ -271,12 +270,11 @@ mod tests {
         assert!(result.blocked);
         assert!(!result.allowed);
 
-        // @step And the AI should receive error "Blocked: Cannot write code files in specifying stage. Complete the specification first."
-        assert!(result
-            .reason
-            .as_ref()
-            .expect("reason should be set")
-            .contains("specifying stage"));
+        // @step And the AI should receive error "Blocked: Cannot write impl files in specifying stage. Complete the specification first."
+        assert_eq!(
+            result.reason.as_deref(),
+            Some("Blocked: Cannot write impl files in specifying stage. Complete the specification first.")
+        );
     }
 
     /// Feature: spec/features/stage-permissions-acdd-file-write-enforcement.feature

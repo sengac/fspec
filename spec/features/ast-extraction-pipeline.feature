@@ -1,4 +1,6 @@
 @KGRAPH-017
+@parser
+@code-analysis
 Feature: AST Extraction Pipeline — Tree-Sitter/AST-Grep Parser
   """
   Pipeline module in its own file (ast_pipeline.rs) with per-language extractors in separate files (ast_ts_extractor.rs, ast_rust_extractor.rs)

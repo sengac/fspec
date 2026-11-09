@@ -16,12 +16,11 @@
 //! read the `loopDetection*` keys, so this target fails to compile until
 //! the implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::{ProfileForm, PROFILE_FORM_FIELDS};
 use codelet_fspec_tui::views::provider_settings::profiles_config::load_openai_profile_configs_from;
 use codelet_fspec_tui::views::{ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -33,12 +32,14 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn form_of(view: &mut ProviderSettingsView) -> &mut ProfileForm {
-    match &mut view.mode {
+fn form_of(
+    view: &mut ProviderSettingsView,
+) -> Result<&mut ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &mut view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 /// Build a view sitting in CreateProfile mode with the given form.
@@ -51,22 +52,22 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
     view
 }
 
-fn label_index(label: &str) -> usize {
-    PROFILE_FORM_FIELDS
+fn label_index(label: &str) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(PROFILE_FORM_FIELDS
         .iter()
         .position(|l| *l == label)
-        .expect("PROFILE_FORM_FIELDS must contain {label:?}")
+        .or_fail("PROFILE_FORM_FIELDS must contain {label:?}")?)
 }
 
 /// A create form past the name step, focused on the field with the given label.
-fn form_focused_on(label: &str) -> ProfileForm {
+fn form_focused_on(label: &str) -> Result<ProfileForm, codelet_test_helpers::TestError> {
     let mut form = ProfileForm::new_create();
     form.is_editing_name = false;
     form.name = "local".to_string();
     form.base_url = "http://localhost:8888".to_string();
     form.api_key = "sk-test".to_string();
-    form.field_index = label_index(label);
-    form
+    form.field_index = label_index(label)?;
+    Ok(form)
 }
 
 /// Type a string into the focused field one char at a time.
@@ -78,7 +79,8 @@ fn type_chars(view: &mut ProviderSettingsView, text: &str) {
 
 /// Scenario: The four Loop Detection fields appear after Max Images with the correct defaults
 #[test]
-fn the_four_loop_detection_fields_appear_after_max_images_with_the_correct_defaults() {
+fn the_four_loop_detection_fields_appear_after_max_images_with_the_correct_defaults() -> TestResult
+{
     // @step Given an OpenAI profile "work-vllm" exists with no loopDetection keys stored
     let def = ProfileDefinition {
         base_url: "http://localhost:8888".to_string(),
@@ -90,8 +92,8 @@ fn the_four_loop_detection_fields_appear_after_max_images_with_the_correct_defau
     let form = ProfileForm::from_definition("work-vllm", &def);
 
     // @step Then the "Loop Detection" field appears after "Max Images"
-    let max_idx = label_index("Max Images");
-    let ld_idx = label_index("Loop Detection");
+    let max_idx = label_index("Max Images")?;
+    let ld_idx = label_index("Loop Detection")?;
     assert_eq!(
         ld_idx,
         max_idx + 1,
@@ -99,9 +101,9 @@ fn the_four_loop_detection_fields_appear_after_max_images_with_the_correct_defau
     );
 
     // @step And the "Loop Window", "Loop Repeat", and "Loop Retries" fields appear after "Loop Detection"
-    let lw_idx = label_index("Loop Window");
-    let lr_idx = label_index("Loop Repeat");
-    let lrt_idx = label_index("Loop Retries");
+    let lw_idx = label_index("Loop Window")?;
+    let lr_idx = label_index("Loop Repeat")?;
+    let lrt_idx = label_index("Loop Retries")?;
     assert_eq!(lw_idx, ld_idx + 1, "Loop Window must follow Loop Detection");
     assert_eq!(lr_idx, lw_idx + 1, "Loop Repeat must follow Loop Window");
     assert_eq!(lrt_idx, lr_idx + 1, "Loop Retries must follow Loop Repeat");
@@ -129,11 +131,12 @@ fn the_four_loop_detection_fields_appear_after_max_images_with_the_correct_defau
         form.loop_retries, "10",
         "an absent loopDetectionMaxRetries key must prefill the effective default 10"
     );
+    Ok(())
 }
 
 /// Scenario: Storing loop detection values prefills the fields on re-open
 #[test]
-fn storing_loop_detection_values_prefills_the_fields_on_re_open() {
+fn storing_loop_detection_values_prefills_the_fields_on_re_open() -> TestResult {
     // @step Given an OpenAI profile "work-vllm" stores loopDetectionEnabled false, loopDetectionWindow 320, loopDetectionMaxRepeats 5, loopDetectionMaxRetries 2
     let def = ProfileDefinition {
         base_url: "http://localhost:8888".to_string(),
@@ -162,20 +165,21 @@ fn storing_loop_detection_values_prefills_the_fields_on_re_open() {
 
     // @step And the "Loop Retries" field is prefilled with 2
     assert_eq!(form.loop_retries, "2");
+    Ok(())
 }
 
 /// Scenario: The Loop Detection toggle flips with Space and never accepts text
 #[test]
-fn the_loop_detection_toggle_flips_with_space_and_never_accepts_text() {
+fn the_loop_detection_toggle_flips_with_space_and_never_accepts_text() -> TestResult {
     // @step Given a profile form is open with the "Loop Detection" field focused
-    let mut view = create_view(form_focused_on("Loop Detection"));
+    let mut view = create_view(form_focused_on("Loop Detection")?);
 
     // @step When I press Space
     view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the toggle flips to Disabled
     assert!(
-        !form_of(&mut view).loop_detection,
+        !form_of(&mut view)?.loop_detection,
         "Space must flip the toggle to disabled"
     );
 
@@ -184,7 +188,7 @@ fn the_loop_detection_toggle_flips_with_space_and_never_accepts_text() {
 
     // @step Then the toggle flips back to Enabled
     assert!(
-        form_of(&mut view).loop_detection,
+        form_of(&mut view)?.loop_detection,
         "a second Space must flip the toggle back to enabled"
     );
 
@@ -193,19 +197,20 @@ fn the_loop_detection_toggle_flips_with_space_and_never_accepts_text() {
         view.handle_key(key(KeyCode::Char(c)));
     }
     assert!(
-        form_of(&mut view).loop_detection,
+        form_of(&mut view)?.loop_detection,
         "printable characters must be swallowed, never appended"
     );
+    Ok(())
 }
 
 /// Scenario: Loop Window value saves and round-trips through the form
 #[test]
-fn loop_window_value_saves_and_round_trips_through_the_form() {
+fn loop_window_value_saves_and_round_trips_through_the_form() -> TestResult {
     // @step Given a profile form is open with the "Loop Window" field focused
-    let mut view = create_view(form_focused_on("Loop Window"));
+    let mut view = create_view(form_focused_on("Loop Window")?);
 
     // @step When I clear the field and type 320 and press save
-    form_of(&mut view).loop_window.clear();
+    form_of(&mut view)?.loop_window.clear();
     type_chars(&mut view, "320");
     let event = view.handle_key(key(KeyCode::Enter));
 
@@ -225,7 +230,7 @@ fn loop_window_value_saves_and_round_trips_through_the_form() {
             };
             definition.clone()
         }
-        other => panic!("a valid form must emit SaveProfile, got {other:?}"),
+        other => return Err(format!("a valid form must emit SaveProfile, got {other:?}").into()),
     };
     assert_eq!(
         def.loop_detection_window,
@@ -236,11 +241,12 @@ fn loop_window_value_saves_and_round_trips_through_the_form() {
     // @step And re-opening the form for the saved profile shows the "Loop Window" field prefilled with 320
     let reopened = ProfileForm::from_definition("local", &def);
     assert_eq!(reopened.loop_window, "320");
+    Ok(())
 }
 
 /// Scenario: Empty numeric loop-detection field saves as absent
 #[test]
-fn empty_numeric_loop_detection_field_saves_as_absent() {
+fn empty_numeric_loop_detection_field_saves_as_absent() -> TestResult {
     // @step Given an OpenAI profile "work-vllm" stores loopDetectionWindow 320
     let stored = ProfileDefinition {
         base_url: "http://h".to_string(),
@@ -257,8 +263,8 @@ fn empty_numeric_loop_detection_field_saves_as_absent() {
     // @step And I press save
     let def = form
         .build_definition()
-        .expect("an empty Loop Window field must build without a rejection hint")
-        .expect("a valid form must build a definition");
+        .or_fail("an empty Loop Window field must build without a rejection hint")?
+        .or_fail("a valid form must build a definition")?;
 
     // @step Then the built profile definition has no loopDetectionWindow value
     assert_eq!(
@@ -272,18 +278,19 @@ fn empty_numeric_loop_detection_field_saves_as_absent() {
         reopened.loop_window, "160",
         "an absent loopDetectionWindow key must resolve back to the prefilled default 160"
     );
+    Ok(())
 }
 
 /// Scenario: Non-numeric Loop Window input rejects the save
 #[test]
-fn non_numeric_loop_window_input_rejects_the_save() {
+fn non_numeric_loop_window_input_rejects_the_save() -> TestResult {
     // @step Given a profile form is open with the "Loop Window" field focused
-    let mut view = create_view(form_focused_on("Loop Window"));
+    let mut view = create_view(form_focused_on("Loop Window")?);
 
     // @step When I type "abc" into the "Loop Window" field and press save
     type_chars(&mut view, "abc");
     assert_eq!(
-        form_of(&mut view).loop_window,
+        form_of(&mut view)?.loop_window,
         "abc",
         "the raw (invalid) text must be visible before the save attempt"
     );
@@ -297,7 +304,7 @@ fn non_numeric_loop_window_input_rejects_the_save() {
             codelet_fspec_tui::components::Action::SaveProfile { .. }
         ) {
         } else {
-            panic!("an invalid Loop Window value must NOT emit a SaveProfile action");
+            return Err("an invalid Loop Window value must NOT emit a SaveProfile action".into());
         }
     }
     assert!(
@@ -308,17 +315,18 @@ fn non_numeric_loop_window_input_rejects_the_save() {
 
     // @step And nothing is persisted and the form stays open showing "abc"
     assert_eq!(
-        form_of(&mut view).loop_window,
+        form_of(&mut view)?.loop_window,
         "abc",
         "the form must stay open with the invalid value so the user can fix it"
     );
+    Ok(())
 }
 
 /// Scenario: Non-numeric Loop Repeat input rejects the save
 #[test]
-fn non_numeric_loop_repeat_input_rejects_the_save() {
+fn non_numeric_loop_repeat_input_rejects_the_save() -> TestResult {
     // @step Given a profile form is open with the "Loop Repeat" field focused
-    let mut view = create_view(form_focused_on("Loop Repeat"));
+    let mut view = create_view(form_focused_on("Loop Repeat")?);
 
     // @step When I type "x" into the "Loop Repeat" field and press save
     type_chars(&mut view, "x");
@@ -332,7 +340,7 @@ fn non_numeric_loop_repeat_input_rejects_the_save() {
             codelet_fspec_tui::components::Action::SaveProfile { .. }
         ) {
         } else {
-            panic!("an invalid Loop Repeat value must NOT emit a SaveProfile action");
+            return Err("an invalid Loop Repeat value must NOT emit a SaveProfile action".into());
         }
     }
     assert!(
@@ -343,17 +351,18 @@ fn non_numeric_loop_repeat_input_rejects_the_save() {
 
     // @step And nothing is persisted and the form stays open showing "x"
     assert_eq!(
-        form_of(&mut view).loop_repeat,
+        form_of(&mut view)?.loop_repeat,
         "x",
         "the form must stay open with the invalid value so the user can fix it"
     );
+    Ok(())
 }
 
 /// Scenario: Non-numeric Loop Retries input rejects the save
 #[test]
-fn non_numeric_loop_retries_input_rejects_the_save() {
+fn non_numeric_loop_retries_input_rejects_the_save() -> TestResult {
     // @step Given a profile form is open with the "Loop Retries" field focused
-    let mut view = create_view(form_focused_on("Loop Retries"));
+    let mut view = create_view(form_focused_on("Loop Retries")?);
 
     // @step When I type "1.5" into the "Loop Retries" field and press save
     type_chars(&mut view, "1.5");
@@ -367,7 +376,7 @@ fn non_numeric_loop_retries_input_rejects_the_save() {
             codelet_fspec_tui::components::Action::SaveProfile { .. }
         ) {
         } else {
-            panic!("an invalid Loop Retries value must NOT emit a SaveProfile action");
+            return Err("an invalid Loop Retries value must NOT emit a SaveProfile action".into());
         }
     }
     assert!(
@@ -378,18 +387,19 @@ fn non_numeric_loop_retries_input_rejects_the_save() {
 
     // @step And nothing is persisted and the form stays open showing "1.5"
     assert_eq!(
-        form_of(&mut view).loop_retries,
+        form_of(&mut view)?.loop_retries,
         "1.5",
         "the form must stay open with the invalid value so the user can fix it"
     );
+    Ok(())
 }
 
 /// Supporting: the on-disk config read round-trips all four keys.
 #[test]
-fn config_loader_round_trips_the_loop_detection_keys() {
+fn config_loader_round_trips_the_loop_detection_keys() -> TestResult {
     // @step Given a config file with all four loop-detection keys on one profile and none on another
-    let dir = tempfile::tempdir().expect("tempdir");
-    let project_root = tempfile::tempdir().expect("temp project root");
+    let dir = tempfile::tempdir().or_fail("tempdir")?;
+    let project_root = tempfile::tempdir().or_fail("temp project root")?;
     std::fs::write(
         dir.path().join("fspec-config.json"),
         serde_json::to_string_pretty(&serde_json::json!({
@@ -405,9 +415,9 @@ fn config_loader_round_trips_the_loop_detection_keys() {
                 "legacy": { "baseUrl": "http://legacy", "apiKey": "k" }
             } } }
         }))
-        .expect("json"),
+        .or_fail("json")?,
     )
-    .expect("write");
+    .or_fail("write")?;
 
     // @step When the full-config loader reads the profiles
     let profiles = load_openai_profile_configs_from(dir.path(), project_root.path());
@@ -425,4 +435,5 @@ fn config_loader_round_trips_the_loop_detection_keys() {
     assert_eq!(legacy.loop_detection_window, None);
     assert_eq!(legacy.loop_detection_max_repeats, None);
     assert_eq!(legacy.loop_detection_max_retries, None);
+    Ok(())
 }

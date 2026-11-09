@@ -23,7 +23,7 @@ OPTIONS
     Primary goal for this persona (can be specified multiple times for multiple goals)
 
 TYPICAL WORKFLOW
-  Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies user types,Add each persona: fspec add-persona "name" "description" --goal "goal1" --goal "goal2",Repeat for all personas,Finalize foundation: fspec discover-foundation --finalize
+  Start foundation discovery: fspec discover-foundation. AI analyzes codebase and identifies user types. Add each persona: fspec add-persona "name" "description" --goal "goal1" --goal "goal2". Repeat for all personas. Finalize foundation: fspec discover-foundation --finalize
 
 EXAMPLES
   1. Add persona with multiple goals
@@ -42,16 +42,16 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ foundation.json not found
-    Fix: undefined
+    Fix: Run: fspec discover-foundation to create foundation.json.draft
 
   ✗ Persona already exists
-    Fix: undefined
+    Fix: Check existing personas in foundation.json or use a different name
 
 RELATED COMMANDS
-  fspec fspec discover-foundation - Start foundation discovery process
-  fspec fspec remove-persona - Remove persona from foundation
-  fspec fspec add-capability - Add capability to foundation
-  fspec fspec update-foundation - Update foundation fields
+  fspec discover-foundation - Start foundation discovery process
+  fspec remove-persona - Remove persona from foundation
+  fspec add-capability - Add capability to foundation
+  fspec update-foundation - Update foundation fields
 
 NOTES
   • Draft file (foundation.json.draft) takes precedence over foundation.json

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug261_forced_refresh_recovery.rs",
-          "lines": "38-86",
+          "lines": "38-97",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -73,7 +73,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "let prepared = tokio::time::timeout(idle_timeout, async {",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -84,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug261_forced_refresh_recovery.rs",
-          "lines": "150-191",
+          "lines": "161-202",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -107,7 +109,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "refreshed = true;",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -118,7 +122,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug261_forced_refresh_recovery.rs",
-          "lines": "193-246",
+          "lines": "204-257",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -186,7 +190,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "let prepared = tokio::time::timeout(idle_timeout, async {",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -197,7 +203,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug261_forced_refresh_recovery.rs",
-          "lines": "88-148",
+          "lines": "99-159",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -220,7 +226,9 @@
                 149,
                 150,
                 151
-              ]
+              ],
+              "firstLine": "refreshed = true;",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -231,7 +239,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug261_forced_refresh_recovery.rs",
-          "lines": "248-287",
+          "lines": "259-298",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/client_test_endpoint.rs",
@@ -287,7 +295,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "use super::rewrite_codex_url;",
+              "lastLine": "}"
             }
           ]
         }
@@ -303,8 +313,6 @@
             {
               "file": "rust/providers/tests/prov159_support/mod.rs",
               "lines": [
-                59,
-                60,
                 61,
                 62,
                 63,
@@ -332,26 +340,17 @@
                 85,
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
                 102,
                 103,
                 104,
                 105,
-                106
-              ]
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "pub fn new() -> Result<Self, Box<dyn std::error::Error>> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -370,6 +369,6 @@
       "rust/providers/src/codex/client_test_endpoint.rs",
       "rust/providers/tests/prov159_support/mod.rs"
     ],
-    "totalLinesCovered": 522
+    "totalLinesCovered": 520
   }
 }

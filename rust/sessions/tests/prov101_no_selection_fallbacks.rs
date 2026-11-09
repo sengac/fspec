@@ -49,17 +49,20 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((data_dir, manager))
 }
 
 // =============================================================================
-// Scenario: create_session declines when no default model is set
+// Scenario: create_session fails when no default model is set
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn create_session_declines_when_no_default_model() -> Result<(), String> {
+async fn create_session_fails_when_no_default_model() -> Result<(), String> {
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -68,23 +71,25 @@ async fn create_session_declines_when_no_default_model() -> Result<(), String> {
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let result = handle.create_session_checked(None);
 
-    // @step Then the returned session id value is empty
-    assert!(
-        sid.value.is_empty(),
-        "create_session must decline (empty id) with no default model, got '{}'",
-        sid.value
-    );
+    // @step Then create_session returns an error naming the missing default model
+    match result {
+        Err(error) => assert!(
+            error.contains("no default model"),
+            "the error must name the missing default model, got '{error}'"
+        ),
+        Ok(sid) => return Err(format!("create_session must fail, got id '{}'", sid.value)),
+    }
 
     // @step And no session exists in the manager
     assert!(
         manager
             .list_sessions(
                 &std::env::current_dir()
-                    .map(|p| p.to_string_lossy().to_string())
-                    .unwrap_or_default()
-            )
+                    .map_err(|e| format!("the test process has no working directory: {e}"))?
+                    .to_string_lossy()
+            )?
             .is_empty(),
         "no session must be created when the default model is missing"
     );
@@ -101,11 +106,11 @@ async fn create_session_uses_explicit_default_model() -> Result<(), String> {
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a SessionManager with the default model set to "google/gemini-2.5-pro"
     let (_data_dir, manager) = manager_with_seeded_cache()?;
-    manager.set_default_model("google/gemini-2.5-pro");
+    manager.set_default_model("google/gemini-2.5-pro")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
 
     // @step Then the returned session id value is not empty
     assert!(
@@ -114,7 +119,7 @@ async fn create_session_uses_explicit_default_model() -> Result<(), String> {
     );
 
     // @step And the created session model is "google/gemini-2.5-pro"
-    let resolved = handle.get_session_model(&sid);
+    let resolved = handle.get_session_model(&sid)?;
     assert_eq!(
         resolved.provider_id, "google",
         "provider must be the explicit google, never anthropic"
@@ -152,9 +157,9 @@ async fn create_isolated_session_errors_when_no_default_model() -> Result<(), St
         manager
             .list_sessions(
                 &std::env::current_dir()
-                    .map(|p| p.to_string_lossy().to_string())
-                    .unwrap_or_default()
-            )
+                    .map_err(|e| format!("the test process has no working directory: {e}"))?
+                    .to_string_lossy()
+            )?
             .is_empty(),
         "no session must be created when the default model is missing"
     );

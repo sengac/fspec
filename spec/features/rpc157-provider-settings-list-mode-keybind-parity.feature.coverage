@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "82-104",
+          "lines": "81-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -22,13 +22,7 @@
                 219,
                 220
               ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "82-104",
-          "implMappings": [
+            },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
@@ -47,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "106-129",
+          "lines": "106-126",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -64,32 +58,288 @@
                 219,
                 220
               ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "106-129",
-          "implMappings": [
+            },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                56,
-                57,
-                58,
-                59
-              ]
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "KeyCode::PageDown => paged(view, view.visible_rows().max(1) as i32),",
+              "lastLine": "KeyCode::End => paged(view, i32::MAX / 2),"
             }
           ]
         }
       ]
     },
     {
-      "name": "PageDown is silently ignored in list mode",
+      "name": "PageDown pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "131-158",
+          "lines": "132-151",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PageUp pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "lines": "157-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Home jumps to the first item (RPC-353 SUPERSEDES the RPC-157 no-op)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "lines": "181-199",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End jumps to the last item (RPC-353 SUPERSEDES the RPC-157 no-op)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "lines": "205-223",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lowercase \"r\" is silently ignored in list mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
+          "lines": "229-251",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -156,31 +406,20 @@
                 95,
                 96,
                 97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "131-158",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
             }
           ]
         }
       ]
     },
     {
-      "name": "PageUp is silently ignored in list mode",
+      "name": "Uppercase \"R\" is silently ignored in list mode",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "160-184",
+          "lines": "256-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -247,384 +486,9 @@
                 95,
                 96,
                 97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "160-184",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Home is silently ignored in list mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "186-209",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "186-209",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "End is silently ignored in list mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "211-234",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "211-234",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Lowercase \"r\" is silently ignored in list mode (no RefreshProviderModels)",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "236-261",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "236-261",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Uppercase \"R\" is silently ignored in list mode (no RefreshProviderModels)",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "263-288",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "263-288",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                96,
-                97
-              ]
+              ],
+              "firstLine": "// Two-step Esc cascade — clear filter first, close second.",
+              "lastLine": "// legacy visible_providers()[selected_index] path and opened a"
             }
           ]
         }
@@ -635,17 +499,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "290-343",
+          "lines": "281-332",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
                 42,
                 43,
                 44,
@@ -700,90 +558,10 @@
                 93,
                 94,
                 95,
-                96,
-                97
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_list_keybind_parity_rpc157.rs",
-          "lines": "290-343",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
-              ]
+                96
+              ],
+              "firstLine": "key: KeyEvent,",
+              "lastLine": "// DIFFERENT provider's Detail."
             }
           ]
         }
@@ -801,6 +579,6 @@
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 1054
+    "totalLinesCovered": 603
   }
 }

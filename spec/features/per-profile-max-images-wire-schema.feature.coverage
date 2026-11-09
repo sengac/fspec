@@ -8,46 +8,37 @@
           "lines": "34-69",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/chrome.rs",
               "lines": [
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529,
-                530,
-                531,
-                532,
-                533,
-                534,
-                535,
-                536,
-                537,
-                538,
-                539,
-                540,
-                541,
-                542,
-                543,
-                544,
-                545,
-                546,
-                547,
-                548
-              ]
+                86,
+                87
+              ],
+              "firstLine": "/// RPC-445: a work-units snapshot for a workspace opened besides the",
+              "lastLine": "/// daemon's start workspace, tagged with its canonical path."
+            },
+            {
+              "file": "rust/rpc-types/src/dialogs.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "/// PROV-144: per-profile Max Images limit for the Read tool's image",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,15 +49,31 @@
       "testMappings": [
         {
           "file": "rust/rpc-types/tests/prov144_max_images_wire.rs",
-          "lines": "84-104",
+          "lines": "80-112",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/dialogs.rs",
               "lines": [
-                546,
-                547,
-                548
-              ]
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "/// PROV-144: per-profile Max Images limit for the Read tool's image",
+              "lastLine": "}"
             }
           ]
         }
@@ -81,8 +88,9 @@
       "rust/rpc-types/tests/prov144_max_images_wire.rs"
     ],
     "implFiles": [
-      "rust/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/chrome.rs",
+      "rust/rpc-types/src/dialogs.rs"
     ],
-    "totalLinesCovered": 97
+    "totalLinesCovered": 105
   }
 }

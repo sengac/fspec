@@ -33,7 +33,7 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
   • rust/fspec-tui/src/app.rs::App (existing — RPC-008/RPC-009)
   """
 
-  Background: 
+  Background:
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json containing at least one WorkUnit
 

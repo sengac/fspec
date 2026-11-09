@@ -35,6 +35,7 @@ use uuid::Uuid;
 #[tokio::test]
 #[serial]
 async fn test_fspec_tool_stores_session_id_at_construction() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Setup
     clear_all_fspec_handlers();
 
@@ -92,6 +93,7 @@ async fn test_fspec_tool_stores_session_id_at_construction() {
 #[tokio::test]
 #[serial]
 async fn test_fspec_tool_survives_async_boundaries() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Setup
     clear_all_fspec_handlers();
 
@@ -149,6 +151,7 @@ async fn test_fspec_tool_survives_async_boundaries() {
 #[tokio::test]
 #[serial]
 async fn test_concurrent_sessions_isolated_tool_instances() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Setup
     clear_all_fspec_handlers();
 
@@ -234,6 +237,7 @@ async fn test_concurrent_sessions_isolated_tool_instances() {
 #[test]
 #[serial]
 fn test_cli_pattern_generates_session_uuid() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the Rust CLI is running in single-shot mode
     // (Simulated by this test)
 
@@ -254,6 +258,7 @@ fn test_cli_pattern_generates_session_uuid() {
 #[tokio::test]
 #[serial]
 async fn test_watcher_and_parent_session_isolation() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Setup
     clear_all_fspec_handlers();
 
@@ -311,6 +316,7 @@ async fn test_watcher_and_parent_session_isolation() {
 #[tokio::test]
 #[serial]
 async fn test_bridge_tool_stores_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a session manager has created a session with ID "session-C"
     let session_c = Uuid::new_v4();
 
@@ -367,6 +373,7 @@ async fn test_bridge_tool_stores_session_id() {
 #[test]
 #[serial]
 fn test_registration_functions_accept_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a provider instance (Claude, Gemini, OpenAI, or ZAI)
     let session_id = Uuid::new_v4();
 
@@ -398,6 +405,7 @@ fn test_registration_functions_accept_session_id() {
 #[test]
 #[serial]
 fn test_session_id_at_construction() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the new session-at-construction architecture is implemented
     let session_id = Uuid::new_v4();
 
@@ -442,6 +450,7 @@ fn test_session_id_at_construction() {
 #[test]
 #[serial]
 fn test_nil_uuid_for_testing() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let nil_session = Uuid::nil();
 
     let tool = claude_fspec_tool(nil_session);
@@ -453,6 +462,7 @@ fn test_nil_uuid_for_testing() {
 #[test]
 #[serial]
 fn test_all_providers_have_consistent_api() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let session_id = Uuid::new_v4();
 
     let claude = claude_fspec_tool(session_id);

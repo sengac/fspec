@@ -15,7 +15,7 @@ expression: rows
 - "                  │                                          │                  "
 - "                  │ Disk full                                │                  "
 - "                  │                                          │                  "
-- "                  │           Press ESC to dismiss           │                  "
+- "                  │      c copy · Press ESC to dismiss       │                  "
 - "                  │                                          │                  "
 - "                  ╰──────────────────────────────────────────╯                  "
 - "                                                                                "

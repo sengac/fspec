@@ -4,19 +4,19 @@
       "name": "Worktree has all tracked files in git index after creation",
       "testMappings": [
         {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "48-87",
+          "implMappings": []
+        },
+        {
           "file": "rust/git/tests/worktree_index_initialization_tests.rs",
-          "lines": "27-82",
+          "lines": "26-86",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
-        },
-        {
-          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
-          "lines": "48-87",
-          "implMappings": []
         }
       ]
     },
@@ -24,19 +24,19 @@
       "name": "Worktree has clean git status after creation",
       "testMappings": [
         {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "90-122",
+          "implMappings": []
+        },
+        {
           "file": "rust/git/tests/worktree_index_initialization_tests.rs",
-          "lines": "95-133",
+          "lines": "92-139",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
-        },
-        {
-          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
-          "lines": "90-122",
-          "implMappings": []
         }
       ]
     },
@@ -44,19 +44,19 @@
       "name": "Session Management Panel shows accurate file change count",
       "testMappings": [
         {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "125-177",
+          "implMappings": []
+        },
+        {
           "file": "rust/git/tests/worktree_index_initialization_tests.rs",
-          "lines": "148-196",
+          "lines": "145-204",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
               "lines": "220-305"
             }
           ]
-        },
-        {
-          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
-          "lines": "125-177",
-          "implMappings": []
         }
       ]
     },
@@ -65,7 +65,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/worktree_index_initialization_tests.rs",
-          "lines": "211-284",
+          "lines": "210-295",
           "implMappings": [
             {
               "file": "rust/git/src/worktree.rs",
@@ -81,12 +81,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/git/tests/worktree_index_initialization_tests.rs",
-      "src/git/__tests__/worktree-index-initialization.test.ts"
+      "src/git/__tests__/worktree-index-initialization.test.ts",
+      "rust/git/tests/worktree_index_initialization_tests.rs"
     ],
     "implFiles": [
       "rust/git/src/worktree.rs"
     ],
-    "totalLinesCovered": 372
+    "totalLinesCovered": 409
   }
 }

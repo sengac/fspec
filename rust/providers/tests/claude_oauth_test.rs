@@ -14,7 +14,7 @@ use codelet_providers::claude_oauth::{
     build_authorize_url, build_oauth_headers, calculate_expiry, exchange_authorization_code,
     parse_authorization_code, prefix_tool_name, refresh_access_token_at, rewrite_claude_url,
     strip_tool_name_prefix, CLAUDE_CLIENT_ID, CLAUDE_REDIRECT_URI, CLAUDE_SCOPE,
-    CLAUDE_TOKEN_ENDPOINT, CLAUDE_USER_AGENT, REQUIRED_BETA_HEADERS, TOOL_NAME_PREFIX,
+    CLAUDE_TOKEN_ENDPOINT, REQUIRED_BETA_HEADERS, TOOL_NAME_PREFIX,
 };
 use codelet_providers::oauth_crypto::{generate_pkce, PkceCodes};
 
@@ -324,12 +324,12 @@ async fn test_token_refresh_using_refresh_token_grant() {
 // =========================================================================
 
 #[test]
-fn test_oauth_headers_built_with_required_beta_headers() {
+fn test_oauth_headers_built_with_required_beta_headers() -> Result<(), Box<dyn std::error::Error>> {
     // @step Given an access token "test_access_token"
     let access_token = "test_access_token";
 
     // @step When OAuth headers are built for an API request
-    let headers = build_oauth_headers(access_token, None);
+    let headers = build_oauth_headers(access_token, None)?;
 
     // @step Then the Authorization header should be "Bearer test_access_token"
     assert_eq!(
@@ -350,8 +350,11 @@ fn test_oauth_headers_built_with_required_beta_headers() {
         "Missing thinking beta: {beta}"
     );
 
-    // @step And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
-    assert_eq!(headers.get("user-agent").unwrap(), CLAUDE_USER_AGENT);
+    // @step And the user-agent header should identify the authoritative Claude Code release
+    assert_eq!(
+        headers.get("user-agent"),
+        Some(&codelet_providers::claude_protocol::user_agent()?)
+    );
 
     // @step And the x-api-key header should be removed
     // build_oauth_headers does not include x-api-key; callers must strip it
@@ -359,6 +362,7 @@ fn test_oauth_headers_built_with_required_beta_headers() {
         !headers.contains_key("x-api-key"),
         "x-api-key should not be present"
     );
+    Ok(())
 }
 
 // =========================================================================
@@ -366,7 +370,7 @@ fn test_oauth_headers_built_with_required_beta_headers() {
 // =========================================================================
 
 #[test]
-fn test_oauth_headers_preserve_existing_beta_headers() {
+fn test_oauth_headers_preserve_existing_beta_headers() -> Result<(), Box<dyn std::error::Error>> {
     // @step Given an access token "test_access_token"
     let access_token = "test_access_token";
 
@@ -374,7 +378,7 @@ fn test_oauth_headers_preserve_existing_beta_headers() {
     let existing_beta = Some("prompt-caching-2024-07-31");
 
     // @step When OAuth headers are built for an API request
-    let headers = build_oauth_headers(access_token, existing_beta);
+    let headers = build_oauth_headers(access_token, existing_beta)?;
 
     let beta = headers.get("anthropic-beta").unwrap();
 
@@ -395,6 +399,7 @@ fn test_oauth_headers_preserve_existing_beta_headers() {
         beta.contains("prompt-caching-2024-07-31"),
         "Missing existing beta: {beta}"
     );
+    Ok(())
 }
 
 // =========================================================================
@@ -536,7 +541,6 @@ fn test_claude_oauth_constants() {
         CLAUDE_SCOPE,
         "org:create_api_key user:profile user:inference"
     );
-    assert_eq!(CLAUDE_USER_AGENT, "claude-cli/2.1.3 (external, cli)");
     assert_eq!(TOOL_NAME_PREFIX, "mcp_");
     assert_eq!(REQUIRED_BETA_HEADERS.len(), 2);
     assert!(REQUIRED_BETA_HEADERS.contains(&"oauth-2025-04-20"));

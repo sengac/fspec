@@ -1,0 +1,284 @@
+{
+  "scenarios": [
+    {
+      "name": "No fspec-tui test file or helper module suppresses the lints",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs",
+          "lines": "65-81",
+          "implMappings": [
+            {
+              "file": "rust/test-helpers/src/or_fail.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "//! Turning a missing value or an error into a test failure with `?`, so",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/tests/common/mod.rs",
+              "lines": [
+                25,
+                26,
+                27
+              ],
+              "firstLine": "#![allow(dead_code)]",
+              "lastLine": "use codelet_test_helpers::OrFail;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A deliberate panic carries a scoped, reasoned allow",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs",
+          "lines": "83-103",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/panic_hook.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "#[allow(",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No fspec-tui test drops a task's join error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs",
+          "lines": "105-127",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/task_outcome.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "//! `handle.await.completed_or_cancelled()?` — a finished tokio task as a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A task the App cancelled does not fail a test",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs",
+          "lines": "129-177",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/harness/driving.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "/// Await every queued task, reporting the first that panicked; a task",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/tests/common/task_outcome.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "firstLine": "pub trait TaskOutcome {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No fspec-tui test recovers a poisoned lock",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs",
+          "lines": "185-209",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/model_backend.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ],
+              "firstLine": "use crate::common::TaskOutcome;",
+              "lastLine": "pub fn new() -> Self {"
+            },
+            {
+              "file": "rust/fspec-tui/tests/resume_session_removal_bug.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());",
+              "lastLine": "// BUG-448: never the developer's ~/.fspec (saved profiles, last model)."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug366_tests_honour_panic_lints.rs"
+    ],
+    "implFiles": [
+      "rust/test-helpers/src/or_fail.rs",
+      "rust/fspec-tui/tests/common/mod.rs",
+      "rust/fspec-tui/tests/panic_hook.rs",
+      "rust/fspec-tui/tests/common/task_outcome.rs",
+      "rust/fspec-tui/tests/common/harness/driving.rs",
+      "rust/fspec-tui/tests/common/model_backend.rs",
+      "rust/fspec-tui/tests/resume_session_removal_bug.rs"
+    ],
+    "totalLinesCovered": 286
+  }
+}

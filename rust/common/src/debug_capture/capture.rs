@@ -2,6 +2,7 @@
 //!
 //! Handles capturing debug events to the session file.
 
+use super::error::DebugCaptureError;
 use super::manager::{sanitize_headers, DebugCaptureManager};
 use super::types::{CaptureOptions, DebugEvent};
 use chrono::Utc;
@@ -10,19 +11,31 @@ use std::fs::OpenOptions;
 use std::io::Write;
 
 impl DebugCaptureManager {
-    /// Capture a debug event
+    /// Capture a debug event.
     ///
-    /// This method silently fails if an error occurs to avoid disrupting the main application.
+    /// BUG-467: a failed write is counted with its error and reported by
+    /// `stop_capture`; it cannot be logged here because the tracing
+    /// `DebugCaptureLayer` calls this while holding the manager lock.
     pub fn capture(&mut self, event_type: &str, data: Value, options: Option<CaptureOptions>) {
         if !self.enabled {
             return;
         }
+        if let Err(error) = self.write_event(event_type, data, options) {
+            let count = self.lost_events.as_ref().map_or(0, |(count, _)| *count);
+            self.lost_events = Some((count + 1, error.to_string()));
+        }
+    }
 
-        // Silently return if session file is not set
-        let session_path = match self.session_file.as_ref() {
-            Some(path) => path,
-            None => return,
-        };
+    fn write_event(
+        &mut self,
+        event_type: &str,
+        data: Value,
+        options: Option<CaptureOptions>,
+    ) -> Result<(), DebugCaptureError> {
+        let session_path = self
+            .session_file
+            .clone()
+            .ok_or(DebugCaptureError::NoSessionFile)?;
 
         // Auto-redact headers if present
         let processed_data = if let Some(headers) = data.get("headers") {
@@ -46,22 +59,9 @@ impl DebugCaptureManager {
 
         self.sequence += 1;
 
-        // Append to file - silently fail if file operations fail
-        let file_result = OpenOptions::new().append(true).open(session_path);
-
-        let mut file = match file_result {
-            Ok(f) => f,
-            Err(_) => return,
-        };
-
-        let line = match serde_json::to_string(&event) {
-            Ok(l) => l,
-            Err(_) => return,
-        };
-
-        if writeln!(file, "{line}").is_err() {
-            return;
-        }
+        let line = serde_json::to_string(&event)?;
+        let mut file = OpenOptions::new().append(true).open(&session_path)?;
+        writeln!(file, "{line}")?;
 
         self.event_count += 1;
 
@@ -76,5 +76,6 @@ impl DebugCaptureManager {
                 }
             }
         }
+        Ok(())
     }
 }

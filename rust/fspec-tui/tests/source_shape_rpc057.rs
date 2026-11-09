@@ -12,18 +12,18 @@
 //! `dispatch_merge_worktree.rs`. Mirrors the source_shape_rpc054 /
 //! source_shape_rpc055 / source_shape_rpc056 patterns.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::source_composition::read_source;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
 fn normalise(source: &str) -> String {
@@ -34,212 +34,14 @@ fn normalise(source: &str) -> String {
         .join(" ")
 }
 
-/// Scenario: All five merge/worktree wire types are exported from codelet-rpc-types
-#[test]
-fn rpc_types_exports_merge_worktree_wire_types() {
-    // @step Given the file rust/rpc-types/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc-types/src/lib.rs");
-    let normalised = normalise(&source);
-
-    // @step Then it declares a public enum named "MergeStrategy"
-    assert!(
-        source.contains("pub enum MergeStrategy"),
-        "rpc-types/src/lib.rs should declare pub enum MergeStrategy"
-    );
-
-    // @step And it declares a public enum named "MergeStatus"
-    assert!(
-        source.contains("pub enum MergeStatus"),
-        "rpc-types/src/lib.rs should declare pub enum MergeStatus"
-    );
-
-    // @step And it declares a public struct named "MergeOutcome"
-    assert!(
-        source.contains("pub struct MergeOutcome"),
-        "rpc-types/src/lib.rs should declare pub struct MergeOutcome"
-    );
-
-    // @step And MergeOutcome has fields named status, conflicts, merge_commit
-    for field in ["pub status:", "pub conflicts:", "pub merge_commit:"] {
-        assert!(
-            normalised.contains(field),
-            "MergeOutcome should declare field {field:?}"
-        );
-    }
-
-    // @step And it declares a public struct named "SessionWorktreeInfo"
-    assert!(
-        source.contains("pub struct SessionWorktreeInfo"),
-        "rpc-types/src/lib.rs should declare pub struct SessionWorktreeInfo"
-    );
-
-    // @step And SessionWorktreeInfo has fields named session_id, worktree_path, base_commit, head_commit, dirty
-    for field in [
-        "pub session_id:",
-        "pub worktree_path:",
-        "pub base_commit:",
-        "pub head_commit:",
-        "pub dirty:",
-    ] {
-        assert!(
-            normalised.contains(field),
-            "SessionWorktreeInfo should declare field {field:?}"
-        );
-    }
-
-    // @step And it declares a public struct named "SessionChangesSummary"
-    assert!(
-        source.contains("pub struct SessionChangesSummary"),
-        "rpc-types/src/lib.rs should declare pub struct SessionChangesSummary"
-    );
-
-    // @step And SessionChangesSummary has fields named files_changed, insertions, deletions, commits
-    for field in [
-        "pub files_changed:",
-        "pub insertions:",
-        "pub deletions:",
-        "pub commits:",
-    ] {
-        assert!(
-            normalised.contains(field),
-            "SessionChangesSummary should declare field {field:?}"
-        );
-    }
-}
-
-/// Scenario: SessionManagerHandle declares the five new methods
-#[test]
-fn session_manager_handle_declares_merge_worktree_methods() {
-    // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
-    let normalised = normalise(&source);
-
-    // @step Then it declares a trait method named "merge_session_worktree" returning Result<MergeOutcome, String>
-    assert!(
-        source.contains("fn merge_session_worktree("),
-        "session_manager_handle.rs should declare fn merge_session_worktree"
-    );
-    assert!(
-        normalised.contains("-> Result<MergeOutcome, String>"),
-        "merge_session_worktree should return Result<MergeOutcome, String>"
-    );
-
-    // @step And it declares a trait method named "discard_session_worktree" returning Result<(), String>
-    assert!(
-        source.contains("fn discard_session_worktree("),
-        "session_manager_handle.rs should declare fn discard_session_worktree"
-    );
-
-    // @step And it declares a trait method named "prune_orphaned_worktrees" returning Result<Vec<String>, String>
-    assert!(
-        source.contains("fn prune_orphaned_worktrees("),
-        "session_manager_handle.rs should declare fn prune_orphaned_worktrees"
-    );
-
-    // @step And it declares a trait method named "list_session_worktrees" returning Vec<SessionWorktreeInfo>
-    assert!(
-        source.contains("fn list_session_worktrees("),
-        "session_manager_handle.rs should declare fn list_session_worktrees"
-    );
-    assert!(
-        normalised.contains("-> Vec<SessionWorktreeInfo>"),
-        "list_session_worktrees should return Vec<SessionWorktreeInfo>"
-    );
-
-    // @step And it declares a trait method named "inspect_session_changes" returning Result<SessionChangesSummary, String>
-    assert!(
-        source.contains("fn inspect_session_changes("),
-        "session_manager_handle.rs should declare fn inspect_session_changes"
-    );
-    assert!(
-        normalised.contains("-> Result<SessionChangesSummary, String>"),
-        "inspect_session_changes should return Result<SessionChangesSummary, String>"
-    );
-}
-
-/// Scenario: StubSessionManagerHandle exposes per-call counters for all five methods
-#[test]
-fn stub_exposes_per_call_counters() {
-    // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
-    let normalised = normalise(&source);
-
-    // @step Then StubSessionManagerHandle declares a method named "merge_session_worktree_calls" returning u64
-    // @step And StubSessionManagerHandle declares a method named "discard_session_worktree_calls" returning u64
-    // @step And StubSessionManagerHandle declares a method named "prune_orphaned_worktrees_calls" returning u64
-    // @step And StubSessionManagerHandle declares a method named "list_session_worktrees_calls" returning u64
-    // @step And StubSessionManagerHandle declares a method named "inspect_session_changes_calls" returning u64
-    for counter in [
-        "merge_session_worktree_calls",
-        "discard_session_worktree_calls",
-        "prune_orphaned_worktrees_calls",
-        "list_session_worktrees_calls",
-        "inspect_session_changes_calls",
-    ] {
-        let needle = format!("pub fn {counter}(");
-        assert!(
-            source.contains(&needle),
-            "StubSessionManagerHandle should declare pub fn {counter}"
-        );
-        let sig = format!("pub fn {counter}(&self) -> u64");
-        assert!(
-            normalised.contains(&sig),
-            "StubSessionManagerHandle should declare {counter}(&self) -> u64"
-        );
-    }
-}
-
-/// Scenario: FspecService declares the five new RPC methods
-#[test]
-fn fspec_service_declares_merge_worktree_methods() {
-    // @step Given the file rust/rpc/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
-    let normalised = normalise(&source);
-
-    // @step Then it declares an async fn named "merge_session_worktree" with return type Result<MergeOutcome, String>
-    // @step And it declares an async fn named "discard_session_worktree" with return type Result<(), String>
-    // @step And it declares an async fn named "prune_orphaned_worktrees" with return type Result<Vec<String>, String>
-    // @step And it declares an async fn named "list_session_worktrees" with return type Vec<SessionWorktreeInfo>
-    // @step And it declares an async fn named "inspect_session_changes" with return type Result<SessionChangesSummary, String>
-    for method in [
-        "merge_session_worktree",
-        "discard_session_worktree",
-        "prune_orphaned_worktrees",
-        "list_session_worktrees",
-        "inspect_session_changes",
-    ] {
-        let needle = format!("async fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "rpc/src/lib.rs should declare async fn {method}"
-        );
-    }
-
-    // Spot-check the documented return shapes appear in the service surface.
-    assert!(
-        normalised.contains("-> Result<MergeOutcome, String>"),
-        "merge_session_worktree should return Result<MergeOutcome, String>"
-    );
-    assert!(
-        normalised.contains("-> Vec<SessionWorktreeInfo>"),
-        "list_session_worktrees should return Vec<SessionWorktreeInfo>"
-    );
-    assert!(
-        normalised.contains("-> Result<SessionChangesSummary, String>"),
-        "inspect_session_changes should return Result<SessionChangesSummary, String>"
-    );
-}
+include!("source_shape_rpc057/service_contracts.rs");
 
 /// Scenario: FspecBackend declares the five new methods
 #[test]
-fn fspec_backend_declares_merge_worktree_methods() {
+fn fspec_backend_declares_merge_worktree_methods() -> TestResult {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/transport/mod.rs");
+    let source = read_source(&path).or_fail("resolve transport/mod.rs")?;
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "merge_session_worktree" on the FspecBackend trait returning Result<MergeOutcome>
@@ -274,18 +76,18 @@ fn fspec_backend_declares_merge_worktree_methods() {
         normalised.contains("-> Result<SessionChangesSummary>"),
         "FspecBackend::inspect_session_changes should return Result<SessionChangesSummary>"
     );
+    Ok(())
 }
 
 /// Scenario: Both transports implement the five new methods
 #[test]
-fn both_transports_implement_merge_worktree_methods() {
+fn both_transports_implement_merge_worktree_methods() -> TestResult {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/embedded.rs"))
+        .or_fail("resolve transport/embedded.rs")?;
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
-            .expect("read transport/websocket.rs");
+        read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/websocket.rs"))
+            .or_fail("resolve transport/websocket.rs")?;
 
     // @step Then each file contains an impl of "merge_session_worktree" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "discard_session_worktree" that calls the corresponding tarpc client method
@@ -318,14 +120,16 @@ fn both_transports_implement_merge_worktree_methods() {
             "websocket.rs should forward to the tarpc client's {method}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: MergeConfirmDialog module exists with the documented entry points
 #[test]
-fn merge_confirm_dialog_module_exists() {
+fn merge_confirm_dialog_module_exists() -> TestResult {
     // @step Given the file rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs exists
-    let path = workspace_root().join("rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs");
-    let source = fs::read_to_string(&path).expect("read views/agent/merge_confirm_dialog.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs");
+    let source = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .or_fail("read views/agent/merge_confirm_dialog.rs")?;
 
     // @step Then it declares a public struct named "MergeConfirmDialog"
     assert!(
@@ -369,6 +173,7 @@ fn merge_confirm_dialog_module_exists() {
         source.contains("pub fn handle_key("),
         "MergeConfirmDialog should declare pub fn handle_key"
     );
+    Ok(())
 }
 
 /// Scenario: MergeStrategy and MergeStatus use derive(Default) with default variant attribute (RPC-057 retro 2026-05-27)
@@ -383,23 +188,23 @@ fn merge_confirm_dialog_module_exists() {
 /// byte-equivalent (Default::default() returns the same variant) and
 /// has no serialisation, no API-surface, no runtime semantics change.
 #[test]
-fn merge_strategy_and_status_use_derive_default() {
+fn merge_strategy_and_status_use_derive_default() -> TestResult {
     // @step Given the codelet workspace inherits the lint level `-D warnings` which includes `clippy::derivable_impls`
     // (Verified by rust/sessions/tests/skeleton_invariants.rs
     // scenario_workspace_lints_are_inherited_and_clippy_passes which
     // shells out to `cargo clippy -p codelet-sessions -- -D warnings`.)
 
     // @step Given MergeStrategy is declared in rust/rpc-types/src/lib.rs with FastForward as the conceptual default and MergeStatus is declared with NoChanges as the conceptual default
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc-types/src/lib.rs");
+    let path = workspace_root()?.join("rust/rpc-types/src/lib.rs");
+    let source = read_tree(&path)?;
 
     // Locate MergeStrategy + MergeStatus enum declarations.
     let merge_strategy_decl_idx = source
         .find("pub enum MergeStrategy")
-        .expect("MergeStrategy enum must exist in rust/rpc-types/src/lib.rs");
+        .or_fail("MergeStrategy enum must exist in rust/rpc-types/src/lib.rs")?;
     let merge_status_decl_idx = source
         .find("pub enum MergeStatus")
-        .expect("MergeStatus enum must exist in rust/rpc-types/src/lib.rs");
+        .or_fail("MergeStatus enum must exist in rust/rpc-types/src/lib.rs")?;
 
     // Inspect the 600-byte window BEFORE each enum keyword to capture the
     // attribute block (#[derive(...)], #[serde(...)], etc.).
@@ -430,13 +235,15 @@ fn merge_strategy_and_status_use_derive_default() {
     let strategy_after = &source[merge_strategy_decl_idx..];
     let strategy_body_end = strategy_after
         .find("\n}\n")
-        .expect("MergeStrategy enum body must terminate with `}` on its own line");
+        .or_fail("MergeStrategy enum body must terminate with `}` on its own line")?;
     let strategy_body = &strategy_after[..strategy_body_end];
     assert!(
         strategy_body.contains("#[default]"),
         "MergeStrategy must mark one of its variants with `#[default]`. Got body:\n{strategy_body}"
     );
-    let default_attr_pos = strategy_body.find("#[default]").unwrap();
+    let default_attr_pos = strategy_body
+        .find("#[default]")
+        .or_fail("expected a value")?;
     let after_default_attr = &strategy_body[default_attr_pos..];
     assert!(
         after_default_attr.contains("FastForward"),
@@ -455,13 +262,13 @@ fn merge_strategy_and_status_use_derive_default() {
     let status_after = &source[merge_status_decl_idx..];
     let status_body_end = status_after
         .find("\n}\n")
-        .expect("MergeStatus enum body must terminate with `}` on its own line");
+        .or_fail("MergeStatus enum body must terminate with `}` on its own line")?;
     let status_body = &status_after[..status_body_end];
     assert!(
         status_body.contains("#[default]"),
         "MergeStatus must mark one of its variants with `#[default]`. Got body:\n{status_body}"
     );
-    let default_attr_pos = status_body.find("#[default]").unwrap();
+    let default_attr_pos = status_body.find("#[default]").or_fail("expected a value")?;
     let after_default_attr = &status_body[default_attr_pos..];
     assert!(
         after_default_attr.contains("NoChanges"),
@@ -485,4 +292,16 @@ fn merge_strategy_and_status_use_derive_default() {
     use codelet_rpc_types::{MergeStatus, MergeStrategy};
     assert_eq!(MergeStrategy::default(), MergeStrategy::FastForward);
     assert_eq!(MergeStatus::default(), MergeStatus::NoChanges);
+    Ok(())
+}
+
+include!("source_shape_rpc057/slash_wiring.rs");
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
 }

@@ -24,8 +24,6 @@ use common::{
     connect_with_retry, make_workspace, spawn_rpc_server_with_workspace, write_workspace,
 };
 use futures::StreamExt;
-use std::time::Duration;
-use tokio::time::timeout;
 use tokio_tungstenite::tungstenite::Message;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -40,7 +38,7 @@ async fn scenario_websocket_client_receives_an_initial_work_units_update_frame_o
     // @step When a WebSocket client connects to that port and reads exactly one frame from the inbound channel before any file mutation
     let ws = connect_with_retry(port).await;
     let (_sink, mut stream) = ws.split();
-    let msg = timeout(Duration::from_secs(2), stream.next())
+    let msg = codelet_test_helpers::deadlock_guard("stream.next()", stream.next())
         .await
         .expect("server must publish initial frame within 2s")
         .expect("ws stream not closed")
@@ -76,7 +74,7 @@ async fn scenario_websocket_client_receives_a_work_units_update_frame_on_file_mu
         .expect("ws_client_connect failed");
     let mut rx = client.work_units_rx();
     // Drain the initial snapshot frame so the next recv() reflects the mutation.
-    let _initial: Vec<WorkUnitInfo> = timeout(Duration::from_secs(2), rx.recv())
+    let _initial: Vec<WorkUnitInfo> = codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv())
         .await
         .expect("initial frame must arrive within 2s")
         .expect("broadcast not closed");
@@ -90,7 +88,7 @@ async fn scenario_websocket_client_receives_a_work_units_update_frame_on_file_mu
             ("AUTH-003", "Two factor auth", "specifying"),
         ],
     );
-    let received: Vec<WorkUnitInfo> = timeout(Duration::from_secs(2), rx.recv())
+    let received: Vec<WorkUnitInfo> = codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv())
         .await
         .expect("client must observe push within 2s")
         .expect("broadcast not closed");
@@ -121,7 +119,7 @@ async fn scenario_work_units_update_frames_are_bincode_encoded_and_not_json() {
     // handshake TWO frames: the initial WorkUnitsUpdate followed by
     // the (possibly empty) SessionSnapshot — drain both.
     for _ in 0..2 {
-        timeout(Duration::from_secs(2), stream.next())
+        codelet_test_helpers::deadlock_guard("stream.next()", stream.next())
             .await
             .expect("initial frame within 2s")
             .expect("ws not closed")
@@ -137,7 +135,7 @@ async fn scenario_work_units_update_frames_are_bincode_encoded_and_not_json() {
     );
 
     // @step When the client captures the raw bytes of the inbound frame
-    let msg = timeout(Duration::from_secs(2), stream.next())
+    let msg = codelet_test_helpers::deadlock_guard("stream.next()", stream.next())
         .await
         .expect("push frame within 2s")
         .expect("ws not closed")

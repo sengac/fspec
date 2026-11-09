@@ -31,17 +31,16 @@ pub mod gate_config;
 pub mod gate_map;
 pub mod health;
 pub mod pidfile;
-pub mod service;
 pub mod security;
 pub mod security_config;
+pub mod service;
 pub mod spawn;
 
 pub use client::{HttpRlcdClient, RlcdClient, RlcdQuestion, RlcdResponse};
 pub use config::{
-    load_rlcd_config, load_rlcd_config_from, save_rlcd_url, save_rlcd_url_at, user_dir, RlcdConfig,
+    load_rlcd_config, load_rlcd_config_from, save_rlcd_url, save_rlcd_url_at, RlcdConfig,
     RlcdSpawnConfig,
 };
-pub use gate_config::RlcdGateConfig;
 pub use decision::{DecisionArgs, DecisionTool};
 pub use decision_validate::validate_questions;
 pub use error::RlcdError;
@@ -49,6 +48,7 @@ pub use gate::{
     allow_session_gate, build_gate_state, clear_session_gate_allowances, is_session_gate_allowed,
     run_rlcd_gate, GateVerdict,
 };
+pub use gate_config::RlcdGateConfig;
 pub use gate_map::{map_gate_answer, GateOutcome};
 pub use pidfile::{is_local_url, is_pid_alive, pidfile_path, read_pidfile, spawn_url_of};
 pub use security::{
@@ -57,6 +57,4 @@ pub use security::{
 };
 pub use security_config::{RlcdSecurityConfig, SecurityThresholds};
 pub use service::{global_supervisor, health_check, RlcdStatus, RlcdSupervisor};
-pub use spawn::{
-    ensure_local_server, select_port, EnsureOutcome, PortSelection,
-};
+pub use spawn::{ensure_local_server, select_port, EnsureOutcome, PortSelection};

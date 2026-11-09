@@ -82,7 +82,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "fn persisted_suffix_overlap(",
+              "lastLine": "&& inner"
             }
           ]
         }

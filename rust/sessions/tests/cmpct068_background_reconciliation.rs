@@ -35,6 +35,7 @@ async fn scenario_cold_background_reconciliation_refreshes_context_without_dupli
             &mut manifest,
             &TokenUsage {
                 current_context_tokens: 333,
+                current_context_output_tokens: 0,
                 cumulative_billed_input: 5030,
                 cumulative_billed_output: 2900,
                 cache_read_tokens: 43,
@@ -86,7 +87,7 @@ async fn scenario_cold_background_reconciliation_refreshes_context_without_dupli
     assert_eq!(snapshot.generation, 1);
     assert!(snapshot.reconciled);
     assert_eq!(snapshot.tokens.input_tokens, 333);
-    assert_eq!(snapshot.tokens.output_tokens, 2900);
+    assert_eq!(snapshot.tokens.output_tokens, 1800);
     assert_eq!(snapshot.tokens.cumulative_billed_input, Some(5030));
     assert_eq!(snapshot.tokens.cumulative_billed_output, Some(2900));
     assert_eq!(snapshot.tokens.cache_read_input_tokens, Some(43));
@@ -95,7 +96,7 @@ async fn scenario_cold_background_reconciliation_refreshes_context_without_dupli
     assert_eq!(snapshot.context_fill.effective_tokens, 333.0);
     assert_eq!(snapshot.covered_turns, Some(1));
     assert_eq!(snapshot.retained_turns, Some(1));
-    assert_eq!(background.get_tokens(), (333, 2900, Some(1100)));
+    assert_eq!(background.get_tokens(), (333, 1800, Some(1100)));
     assert!(background
         .inner
         .lock()

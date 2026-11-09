@@ -152,7 +152,7 @@ fn multi_flag_invocation_marshalls_all_arrays() {
         ],
     );
 
-    // @step When I run `fspec add-dependencies AUTH-001 --blocks AUTH-002 AUTH-003 --depends-on FOO-001`
+    // @step When I run `fspec add-dependencies AUTH-001 --blocks AUTH-002 AUTH-003 --depends-on FOO-001` in that tempdir
     let (code, stdout, stderr) = run_cmd(
         tmp.path(),
         &[
@@ -202,7 +202,7 @@ fn missing_source_work_unit_exits_1_with_canonical_error_on_stderr() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")]);
 
-    // @step When I run `fspec add-dependencies NOPE-001 --blocks AUTH-001`
+    // @step When I run `fspec add-dependencies NOPE-001 --blocks AUTH-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["NOPE-001", "--blocks", "AUTH-001"]);
 
     // @step Then the exit code is 1
@@ -221,7 +221,7 @@ fn self_dependency_exits_1_with_canonical_message() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")]);
 
-    // @step When I run `fspec add-dependencies AUTH-001 --blocks AUTH-001`
+    // @step When I run `fspec add-dependencies AUTH-001 --blocks AUTH-001` in that tempdir
     let (code, _stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001", "--blocks", "AUTH-001"]);
 
     // @step Then the exit code is 1
@@ -240,7 +240,7 @@ fn no_flags_supplied_results_in_zero_added_success() {
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(tmp.path(), &[("AUTH-001", "backlog")]);
 
-    // @step When I run `fspec add-dependencies AUTH-001`
+    // @step When I run `fspec add-dependencies AUTH-001` in that tempdir
     let (code, stdout, stderr) = run_cmd(tmp.path(), &["AUTH-001"]);
 
     // @step Then the exit code is 0

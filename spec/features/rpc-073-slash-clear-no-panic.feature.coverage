@@ -5,35 +5,35 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/rpc073_clear_history_no_panic.rs",
-          "lines": "148-217",
+          "lines": "33-95",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -44,35 +44,35 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/rpc073_clear_history_no_panic.rs",
-          "lines": "223-263",
+          "lines": "101-142",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -83,35 +83,35 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/rpc073_clear_history_no_panic.rs",
-          "lines": "269-335",
+          "lines": "149-233",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -122,35 +122,35 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/rpc073_clear_history_no_panic.rs",
-          "lines": "341-403",
+          "lines": "239-303",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_2.rs",
               "lines": [
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -165,8 +165,8 @@
       "rust/fspec/tests/rpc073_clear_history_no_panic.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_2.rs"
     ],
-    "totalLinesCovered": 333
+    "totalLinesCovered": 339
   }
 }

@@ -3,7 +3,6 @@
 use codelet_core::persistence::compaction_commit::*;
 use codelet_core::persistence::*;
 use codelet_test_helpers::setup_temp_directory;
-use std::time::{Duration, Instant};
 
 #[path = "support/compaction_boundary.rs"]
 mod support;
@@ -14,7 +13,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[serial_test::serial]
 fn scenario_publication_callbacks_cannot_reenter_session_ownership() -> TestResult {
     if std::env::var_os("CMPCT055_REENTRY_CHILD").is_none() {
-        let mut child = std::process::Command::new(std::env::current_exe()?)
+        let child = std::process::Command::new(std::env::current_exe()?)
             .args([
                 "--exact",
                 "scenario_publication_callbacks_cannot_reenter_session_ownership",
@@ -22,22 +21,35 @@ fn scenario_publication_callbacks_cannot_reenter_session_ownership() -> TestResu
             ])
             .env("CMPCT055_REENTRY_CHILD", "1")
             .spawn()?;
-        let deadline = Instant::now() + Duration::from_secs(3);
-        loop {
-            if let Some(status) = child.try_wait()? {
+        // TEST-042: wait for the child (polled between yields), under the
+        // deadlock guard; a child blocked on nested ownership only ends when
+        // the guard expires, and is then killed.
+        let child = std::sync::Arc::new(std::sync::Mutex::new(child));
+        let polled = std::sync::Arc::clone(&child);
+        let finished =
+            codelet_test_helpers::wait_until_blocking("the ownership child", move || {
+                polled
+                    .lock()
+                    .map(|mut child| matches!(child.try_wait(), Ok(Some(_)) | Err(_)))
+                    .unwrap_or(true)
+            });
+        let mut child = child.lock().map_err(|_| "child lock poisoned")?;
+        return match finished {
+            Ok(()) => {
+                let status = child.wait()?;
                 assert!(status.success(), "ownership child failed: {status}");
-                return Ok(());
+                Ok(())
             }
-            if Instant::now() >= deadline {
+            Err(_) => {
                 child.kill()?;
                 child.wait()?;
-                return Err("publication callback blocked on nested ownership".into());
+                Err("publication callback blocked on nested ownership".into())
             }
-            std::thread::sleep(Duration::from_millis(20));
-        }
+        };
     }
     // @step Given a promoted generation awaiting publication
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =
@@ -113,6 +125,7 @@ fn scenario_post_promotion_durability_failure_retains_the_compaction_identity() 
 
     // @step Given an admitted candidate with an exact operation and generation
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =

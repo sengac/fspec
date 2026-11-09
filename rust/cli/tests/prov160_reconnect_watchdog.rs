@@ -66,33 +66,62 @@ async fn provider_offline_waiting_is_not_mistaken_for_a_stalled_generation() -> 
     {
         let pending = stream.next();
         tokio::pin!(pending);
+        // BUG-313: the first attempt can take a few hundred milliseconds to
+        // start in debug builds; first reach the offline-waiting state...
+        // (TEST-042: polled between yields, no waiting window.)
+        codelet_test_helpers::pending_until(
+            "the offline request waits for the network",
+            &mut pending,
+            || {
+                matches!(
+                    recovery.status(),
+                    Some(RecoveryStatus::WaitingForNetwork { .. })
+                )
+            },
+        )
+        .await
+        .map_err(|failure| format!("offline request unexpectedly ended: {failure}"))?;
+        // ...then let that wait outlast the generic stall deadline: until
+        // recovery reaches its second offline attempt (a 5 s network backoff,
+        // far past the 20 ms stall deadline), neither the request nor the
+        // generic watchdog may end. TEST-042: the test waits on that event.
         let watchdog = wait_for_stall_deadline(&sessions, "codex", Duration::from_millis(20));
         tokio::pin!(watchdog);
-        tokio::select! {
-            event = &mut pending => return Err(format!("offline request unexpectedly ended: {event:?}").into()),
-            _ = &mut watchdog => return Err("provider offline wait fired generic stall watchdog".into()),
-            _ = tokio::time::sleep(Duration::from_millis(100)) => {},
-        }
+        codelet_test_helpers::deadlock_guard("the second offline attempt", async {
+            tokio::select! {
+                event = &mut pending => Err(format!("offline request unexpectedly ended: {event:?}")),
+                _ = &mut watchdog => Err("provider offline wait fired generic stall watchdog".to_string()),
+                () = async {
+                    while !matches!(
+                        recovery.status(),
+                        Some(RecoveryStatus::WaitingForNetwork { attempt }) if attempt >= 2
+                    ) {
+                        codelet_test_helpers::yield_now().await;
+                    }
+                } => Ok(()),
+            }
+        })
+        .await??;
     }
     // @step Then the caller keeps polling cancellably until recovery while ordinary provider stall detection remains enabled
     assert!(matches!(
         recovery.status(),
         Some(RecoveryStatus::WaitingForNetwork { .. })
     ));
-    tokio::time::timeout(
-        Duration::from_millis(200),
+    codelet_test_helpers::deadlock_guard(
+        "wait_for_stall_deadline(&ordinary, 'openai', Duration::fr...",
         wait_for_stall_deadline(&ordinary, "openai", Duration::from_millis(20)),
     )
     .await?;
-    tokio::time::timeout(
-        Duration::from_millis(200),
+    codelet_test_helpers::deadlock_guard(
+        "wait_for_stall_deadline(&sessions, 'openai', Duration::fr...",
         wait_for_stall_deadline(&sessions, "openai", Duration::from_millis(20)),
     )
     .await?;
     drop(stream);
     assert_eq!(recovery.status(), Some(RecoveryStatus::Cancelled));
-    tokio::time::timeout(
-        Duration::from_millis(200),
+    codelet_test_helpers::deadlock_guard(
+        "wait_for_stall_deadline(&sessions, 'codex', Duration::fro...",
         wait_for_stall_deadline(&sessions, "codex", Duration::from_millis(20)),
     )
     .await?;
@@ -102,7 +131,7 @@ async fn provider_offline_waiting_is_not_mistaken_for_a_stalled_generation() -> 
     let mut stream = provider
         .stream(CompletionRequestBuilder::new(provider.clone(), "original turn").build())
         .await?;
-    let failure = tokio::time::timeout(Duration::from_secs(60), async {
+    let failure = codelet_test_helpers::deadlock_guard("the awaited block", async {
         while let Some(event) = stream.next().await {
             if let Err(error) = event {
                 return Ok::<_, Box<dyn std::error::Error>>(error);

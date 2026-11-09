@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@context-management
 Feature: Port compact-work-unit command to Rust
   """
   Core impl at rust/fspec-core/src/commands/compact_work_unit.rs: ensure_work_units_file -> existence check -> force gate on status!='done' -> compact rules/examples/questions/architectureNotes (filter deleted:true, renumber id from 0) -> reset nextRuleId/nextExampleId/nextQuestionId/nextNoteId -> set updatedAt + meta.lastUpdated -> single write_json_atomic. Arrays and counters live in WorkUnit.extra; status is a typed field; reuse iso8601_now.

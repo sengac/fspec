@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @credentials
@@ -49,8 +50,8 @@ Feature: GitHub Copilot OAuth device flow & token storage
     Then the polling loop should exchange the device code for an access_token
     And a credential should be persisted at "~/.fspec/credentials/copilot_auth.json"
     And the credential file permissions should be 0600
-    And the credential should contain access and refresh fields set to the same token value
-    And the credential expires field should be 0
+    And the credential should contain the GitHub OAuth token under github_oauth_token
+    And the new-schema copilot_token fields are absent until the first exchange
 
   Scenario: Login to GitHub Enterprise Copilot deployment with normalized enterprise URL
     Given I have an active GitHub Copilot subscription on a GitHub Enterprise instance

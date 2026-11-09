@@ -1,0 +1,213 @@
+{
+  "scenarios": [
+    {
+      "name": "Approve for session on a command prompt covers only the session that asked",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug606_approve_for_session_covers_only_the_asking_session.rs",
+          "lines": "151-172",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                203,
+                227,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Session allowances: the rules each session's user allowed for that",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Approve for session on a sensitive file covers only the sub-agent that asked",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug606_approve_for_session_covers_only_the_asking_session.rs",
+          "lines": "176-197",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                334,
+                354,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Session allowances: the rules each session's user allowed for that",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Approve for session on the RLCD workflow gate covers only the session that asked",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug606_approve_for_session_covers_only_the_asking_session.rs",
+          "lines": "201-230",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Allow `pattern` for `session_id` only (the user chose \"Allow Session\"",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                181,
+                261
+              ],
+              "firstLine": "/// Whether `session_id` already allows the gate for `command` (AllowSession;",
+              "lastLine": "allow_session_gate(session_id, command);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Closing a session forgets its session approvals",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug606_approve_for_session_covers_only_the_asking_session.rs",
+          "lines": "234-251",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/blocklist/middleware.rs",
+              "lines": [
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431
+              ],
+              "firstLine": "/// BUG-606: forget every allowance of `session_id` (the session closed).",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                86,
+                87
+              ],
+              "firstLine": "// BUG-606: a closed session's \"approve for session\" choices go with it.",
+              "lastLine": "codelet_tools::blocklist::forget_session_allowances(uuid);"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug606_approve_for_session_covers_only_the_asking_session.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/blocklist/middleware.rs",
+      "rust/tools/src/rlcd/gate.rs",
+      "rust/sessions/src/session_manager/manager_impl_6.rs"
+    ],
+    "totalLinesCovered": 201
+  }
+}

@@ -1,4 +1,6 @@
 @KGRAPH-047
+@parser
+@code-analysis
 Feature: Calls/Imports edges — C and C++
   """
   C/C++ use #include directives for imports and bare function calls.

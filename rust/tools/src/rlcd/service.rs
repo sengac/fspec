@@ -25,13 +25,14 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use once_cell::sync::Lazy;
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
 
-use crate::rlcd::config::{save_rlcd_url_at, user_dir, RlcdConfig};
+use crate::rlcd::config::{save_rlcd_url_at, RlcdConfig};
 use crate::rlcd::discover::discover_healthy_server_for_pid;
 use crate::rlcd::error::RlcdError;
 use crate::rlcd::pidfile::{is_pid_alive, pidfile_path, read_pidfile, spawn_url_of};
 use crate::rlcd::spawn::{ensure_local_server, EnsureOutcome};
+use codelet_common::user_dir::fspec_user_dir;
 
 /// Default foreground poll interval used by [`RlcdSupervisor::ensure_ready`].
 const DEFAULT_POLL_INTERVAL: Duration = Duration::from_millis(250);
@@ -204,15 +205,22 @@ impl RlcdSupervisor {
         if *persisted {
             return;
         }
-        let Some(dir) = user_dir() else {
-            debug!("rlcd: no user dir resolvable — url persist skipped");
-            return;
+        // BUG-451: no error channel here — the failure is logged and the
+        // url is not persisted.
+        let dir = match fspec_user_dir() {
+            Ok(dir) => dir,
+            Err(error) => {
+                tracing::error!(%error, "rlcd: the url cannot be persisted");
+                return;
+            }
         };
         match save_rlcd_url_at(&dir.join("fspec-config.json"), url) {
             Ok(()) => {
                 *persisted = true;
             }
-            Err(e) => warn!(url = %url, error = %e, "rlcd: url persist failed (in-memory re-anchor stands)"),
+            Err(e) => {
+                warn!(url = %url, error = %e, "rlcd: url persist failed (in-memory re-anchor stands)")
+            }
         }
     }
 
@@ -235,7 +243,12 @@ impl RlcdSupervisor {
                 }
             }
             EnsureOutcome::WaitingExisting => {
-                let pidfile = pidfile_path();
+                // BUG-451: without a pidfile path there is no pid to
+                // re-anchor to; the outcome reports the failure.
+                let pidfile = match pidfile_path() {
+                    Ok(pidfile) => pidfile,
+                    Err(error) => return Some(EnsureOutcome::Failed(error)),
+                };
                 if let Some(pid) = read_pidfile(&pidfile).filter(|p| is_pid_alive(*p)) {
                     if let Some((port, model)) = discover_healthy_server_for_pid(pid).await {
                         let url = spawn_url_of(&self.config.spawn.bind_address, port);
@@ -298,11 +311,11 @@ impl RlcdSupervisor {
 /// The shared process-level supervisor (RLCD_STATUS): lazily initialized
 /// from the user config; every consumer reads its snapshot instead of
 /// re-polling.
-static GLOBAL_SUPERVISOR: Lazy<RlcdSupervisor> =
-    Lazy::new(|| RlcdSupervisor::new(crate::rlcd::config::load_rlcd_config()));
+static GLOBAL_SUPERVISOR: Lazy<Result<RlcdSupervisor, String>> =
+    Lazy::new(|| crate::rlcd::config::load_rlcd_config().map(RlcdSupervisor::new));
 
-/// The shared, lazily-initialized global supervisor.
-#[must_use]
-pub fn global_supervisor() -> &'static RlcdSupervisor {
-    &GLOBAL_SUPERVISOR
+/// The shared, lazily-initialized global supervisor. BUG-451: an unloadable
+/// RLCD config is reported instead of supervising the defaults.
+pub fn global_supervisor() -> Result<&'static RlcdSupervisor, String> {
+    GLOBAL_SUPERVISOR.as_ref().map_err(Clone::clone)
 }

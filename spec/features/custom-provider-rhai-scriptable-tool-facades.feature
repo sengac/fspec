@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validator
 @facade
@@ -5,6 +6,7 @@
 @rust
 @providers
 @PROV-066
+@provider-settings
 Feature: Custom provider Rhai-scriptable tool facades
   """
   RhaiToolFacadeAdapter is a getters-only adapter in rust/providers/src/custom/tool_facade.rs (not a full rig::Tool impl, since rig::Tool requires a const NAME incompatible with runtime-defined Rhai tool names). Rhai define_tools/map_tool_params are optional; tool_style presets are static lookup tables; maps_to identifiers route downstream to internal tool dispatchers in rust/tools

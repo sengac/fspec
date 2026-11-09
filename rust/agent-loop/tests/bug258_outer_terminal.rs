@@ -151,7 +151,7 @@ async fn applied_compaction_budget_exhaustion_retains_failure_instead_of_prematu
     support::repeat_applied_compaction(&fixture).await;
     // @step When the automatic continuation budget is exhausted after applied compaction
     fixture.send();
-    tokio::time::timeout(std::time::Duration::from_secs(30), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut exhausted = false;
         loop {
             let chunk = fixture.chunks.recv().await?;

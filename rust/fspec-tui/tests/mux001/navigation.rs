@@ -1,5 +1,6 @@
 //! Feature: spec/features/rust-mux-mode.feature
 use super::*;
+use codelet_test_helpers::TestResult;
 
 fn seed_focus(app: &mut App) {
     app.agent_view_store_mut()
@@ -19,12 +20,12 @@ fn seed_focus(app: &mut App) {
 }
 
 #[tokio::test]
-async fn slash_mux_off_returns_to_the_pre_mux_view() {
+async fn slash_mux_off_returns_to_the_pre_mux_view() -> TestResult {
     // @step Given the TUI is showing the single Agent view
     let _guard = DATA_DIR_GUARD.lock().await;
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     seed_focus(&mut app);
     app.dispatch(Action::OpenAgentView(Some(SessionId::new("s-1"))));
     assert_eq!(app.active_view(), ViewMode::Agent);
@@ -48,13 +49,14 @@ async fn slash_mux_off_returns_to_the_pre_mux_view() {
             .map(|context| context.id.as_str()),
         Some("AUTH-001")
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane_app() {
+async fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane_app() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut app, mock) = fresh_app();
-    app_with_mux(&mut app).await;
+    app_with_mux(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     // @step And the Board pane is focused with work unit AUTH-001 selected
     app.navigator_mut().mux.set_focus(0);
@@ -78,6 +80,7 @@ async fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane_app() {
         .mux
         .effective_panes()
         .contains(&MuxPaneKind::Board));
+    Ok(())
 }
 
 #[tokio::test]
@@ -92,7 +95,7 @@ async fn existing_single_view_behavior_is_unchanged_when_mux_is_off_app(
     seed_focus(&mut app);
     // @step When I press Enter on a selected work unit
     app.dispatch(Action::EnterWorkUnit("AUTH-001".into()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the TUI flips to the single Agent view exactly as before mux existed
     assert_eq!(app.active_view(), ViewMode::Agent);
     // @step And pressing Esc in the Agent view returns to the single Board view

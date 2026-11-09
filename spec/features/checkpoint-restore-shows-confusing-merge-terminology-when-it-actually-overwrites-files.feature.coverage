@@ -4,18 +4,32 @@
       "name": "Restore with dirty working directory shows accurate overwrite option",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/restore-checkpoint-terminology.test.ts",
-          "lines": "98-156",
+          "file": "rust/fspec-core/tests/bug053_restore_checkpoint_overwrite_terminology.rs",
+          "lines": "66-100",
           "implMappings": [
             {
-              "file": "src/commands/restore-checkpoint.ts",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
-                77,
-                78,
-                79,
-                80,
-                118
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "const PROMPT_OPTIONS: &[PromptOption] = &[",
+              "lastLine": "];"
             }
           ]
         }
@@ -25,31 +39,32 @@
       "name": "Option text removes all misleading merge terminology",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/restore-checkpoint-terminology.test.ts",
-          "lines": "158-221",
+          "file": "rust/fspec-core/tests/bug053_restore_checkpoint_overwrite_terminology.rs",
+          "lines": "102-150",
           "implMappings": [
             {
-              "file": "src/commands/restore-checkpoint.ts",
+              "file": "rust/fspec-core/src/commands/restore_checkpoint.rs",
               "lines": [
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "const PROMPT_OPTIONS: &[PromptOption] = &[",
+              "lastLine": "];"
             }
           ]
         }
@@ -61,11 +76,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/restore-checkpoint-terminology.test.ts"
+      "rust/fspec-core/tests/bug053_restore_checkpoint_overwrite_terminology.rs"
     ],
     "implFiles": [
-      "src/commands/restore-checkpoint.ts"
+      "rust/fspec-core/src/commands/restore_checkpoint.rs"
     ],
-    "totalLinesCovered": 146
+    "totalLinesCovered": 118
   }
 }

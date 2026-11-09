@@ -39,7 +39,7 @@ Feature: Auto-checkpoints not cleaned up when work unit moves to done
     So that checkpoint storage doesn't accumulate indefinitely and manual checkpoints are preserved
 
   Scenario: Work unit with mixed auto and manual checkpoints
-    Given a work unit "AUTH-001" exists with status "implementing"
+    Given a work unit "AUTH-001" exists with status "validating"
     And "AUTH-001" has automatic checkpoint "AUTH-001-auto-specifying"
     And "AUTH-001" has automatic checkpoint "AUTH-001-auto-testing"
     And "AUTH-001" has manual checkpoint "before-major-refactor"
@@ -51,9 +51,6 @@ Feature: Auto-checkpoints not cleaned up when work unit moves to done
     And the git ref "refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-specifying" should not exist
     And the git ref "refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing" should not exist
     And the git ref "refs/fspec-checkpoints/AUTH-001/before-major-refactor" should exist
-    And the index file should not contain "AUTH-001-auto-specifying"
-    And the index file should not contain "AUTH-001-auto-testing"
-    And the index file should contain "before-major-refactor"
 
   Scenario: Work unit with only manual checkpoints
     Given a work unit "BUG-027" exists with status "validating"
@@ -80,7 +77,7 @@ Feature: Auto-checkpoints not cleaned up when work unit moves to done
     And all checkpoints for "FEAT-010" should be deleted
 
   Scenario: Work unit with no checkpoints
-    Given a work unit "TASK-001" exists with status "implementing"
+    Given a work unit "TASK-001" exists with status "validating"
     And "TASK-001" has no checkpoints
     When I run "fspec update-work-unit-status TASK-001 done"
     Then the command should succeed

@@ -11,7 +11,6 @@ use codelet_core::persistence::load_session;
 use codelet_providers::codex::history::CodexHistory;
 use codelet_rpc_types::StreamChunk;
 use std::sync::{atomic::Ordering, Arc};
-use std::time::Duration;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -27,13 +26,15 @@ async fn scenario_a_blocked_first_checkpointed_call_permits_truthful_unknown_out
     // @step When exploration expires while that call is still executing
     let running = codex::run(agent, harness.session.id);
     let boundary = async {
-        tokio::time::timeout(Duration::from_secs(1), gate.started.notified()).await?;
+        codelet_test_helpers::deadlock_guard("gate.started.notified()", gate.started.notified())
+            .await?;
         Ok::<_, Box<dyn std::error::Error>>(history.snapshot()?)
     };
     let (result, checkpoint) = tokio::join!(running, boundary);
     let settled = history.snapshot()?;
     gate.release.notify_one();
-    tokio::time::timeout(Duration::from_secs(1), gate.finished.notified()).await?;
+    codelet_test_helpers::deadlock_guard("gate.finished.notified()", gate.finished.notified())
+        .await?;
     // @step Then tool-free synthesis receives explicit outcome unknown records with native call identities
     assert_eq!(result?, codex::DAG);
     assertions::synthesis(&harness.bodies().await, &["blocked-call", "unstarted-call"])?;
@@ -65,11 +66,12 @@ async fn scenario_partial_batches_preserve_genuine_evidence_without_inventing_la
     // @step When exploration expires inside that checkpointed batch
     let (result, started) = tokio::join!(
         codex::run(agent, harness.session.id),
-        tokio::time::timeout(Duration::from_secs(1), gate.started.notified())
+        codelet_test_helpers::deadlock_guard("gate.started.notified()", gate.started.notified())
     );
     started?;
     gate.release.notify_one();
-    tokio::time::timeout(Duration::from_secs(1), gate.finished.notified()).await?;
+    codelet_test_helpers::deadlock_guard("gate.finished.notified()", gate.finished.notified())
+        .await?;
     // @step Then tool-free synthesis marks both unresolved calls outcome unknown without claiming cancellation or success
     assert_eq!(result?, codex::DAG);
     assertions::synthesis(&harness.bodies().await, &["blocked-call", "unstarted-call"])?;
@@ -137,7 +139,7 @@ async fn scenario_completed_checkpoint_evidence_crosses_the_synthesis_barrier() 
     // @step When exploration expires with no unresolved tool outcome
     let (result, boundary) = tokio::join!(
         codex::run(agent, harness.session.id),
-        tokio::time::timeout(Duration::from_secs(1), continued.notified())
+        codelet_test_helpers::deadlock_guard("continued.notified()", continued.notified())
     );
     boundary?;
     assert_eq!(result?, codex::DAG);
@@ -219,17 +221,30 @@ async fn scenario_both_publication_routes_preserve_the_prior_dag_on_invalid_nati
         let call = async {
             if generated {
                 use rig::tool::Tool;
-                codelet_tools::GenerateCompactionTool::new(target)
+                // BUG-614: a self-target failure is a non-fatal
+                // rejected_final result carrying the exact error.
+                let output = codelet_tools::GenerateCompactionTool::new(target)
                     .call(codelet_tools::GenerateCompactionArgs { session_id: None })
                     .await
-                    .map(|_| ())
-                    .map_err(|error| error.to_string())
+                    .map_err(|error| error.to_string())?;
+                let value: serde_json::Value =
+                    serde_json::from_str(&output).map_err(|error| error.to_string())?;
+                match value["status"].as_str() {
+                    Some("rejected_final") => {
+                        Err(value["error"].as_str().unwrap_or_default().to_owned())
+                    }
+                    _ => Ok(()),
+                }
             } else {
                 harness.call(false).await
             }
         };
         let corrupt = async {
-            tokio::time::timeout(Duration::from_secs(1), gate.started.notified()).await?;
+            codelet_test_helpers::deadlock_guard(
+                "gate.started.notified()",
+                gate.started.notified(),
+            )
+            .await?;
             let mut checkpoint = history.snapshot()?.ok_or("native checkpoint")?;
             checkpoint.model = Some("different-native-model".into());
             history.restore(Some(checkpoint))?;
@@ -238,7 +253,8 @@ async fn scenario_both_publication_routes_preserve_the_prior_dag_on_invalid_nati
         let (result, boundary) = tokio::join!(call, corrupt);
         boundary?;
         gate.release.notify_one();
-        tokio::time::timeout(Duration::from_secs(1), gate.finished.notified()).await?;
+        codelet_test_helpers::deadlock_guard("gate.finished.notified()", gate.finished.notified())
+            .await?;
         // @step Then both routes report settlement failure without resetting the absolute deadline
         let error = result.expect_err("settlement must fail closed");
         assert!(

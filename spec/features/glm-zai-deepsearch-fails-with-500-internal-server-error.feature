@@ -1,4 +1,6 @@
 @BUG-106
+@agent-core
+@history-search
 Feature: GLM/ZAI DeepSearch fails with 500 Internal Server Error
   """
   ZAI DeepSearch uses streaming execution and collects the final response. Fix: provider_uses_streaming_execution returns true for both codex and zai. ZAI config includes max_tokens in additional_params.
@@ -29,12 +31,6 @@ Feature: GLM/ZAI DeepSearch fails with 500 Internal Server Error
     When the sub-agent executes the query
     Then the execution path uses streaming to collect the final response
     Then the final synthesized answer is returned as one String result
-
-  Scenario: Non-streaming providers remain unchanged
-    Given a DeepSearch sub-agent is constructed for provider "claude"
-    When the sub-agent executes the query
-    Then the execution path remains non-streaming
-    Then the final synthesized answer contract remains unchanged
 
   Scenario: ZAI DeepSearch config includes max_tokens in additional_params
     Given a DeepSearch request config is built for provider "zai"

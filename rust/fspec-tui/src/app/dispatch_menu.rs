@@ -53,7 +53,8 @@ impl App {
             .set_menu_zone_c(if self.navigator.active_view == ViewMode::Mux {
                 0
             } else {
-                1
+                // TUI-114: `[ New Bot ]` and `[ New Agent ]`.
+                crate::views::board::menu_snapshot::BOARD_ZONE_C.len()
             });
         self.navigator
             .mux
@@ -167,11 +168,10 @@ impl App {
                     self.switch_to_session_index(open_idx);
                 } else {
                     // MENU-002 (board surface): focus the slot and flip
-                    // to the Agent view on it.
-                    self.agent_view_store.focus_session_index(open_idx);
-                    self.agent_view_store
-                        .set_navigation_target(Some(session.clone()));
-                    self.navigator.active_view = ViewMode::Agent;
+                    // to the Agent view on it. BUG-553: through the real
+                    // focus path (active-session pointer, supervisors,
+                    // exec-stdin probe), never a bare store focus.
+                    self.open_agent_view_on(session.clone());
                     // BUG-197 R3: the chip activation leaves the board
                     // bar — drop the board's ring focus so returning to
                     // the board paints NO stale chip highlight (only

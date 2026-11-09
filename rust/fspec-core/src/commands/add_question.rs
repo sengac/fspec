@@ -9,7 +9,7 @@
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load
 //!   `spec/work-units.json` (parity with TS `ensureWorkUnitsFile`).
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write
+//! * [`crate::io::board::write_work_units`] — single atomic write
 //!   at the end (the TS implementation uses `fileManager.transaction`).
 //! * [`crate::io::time::iso8601_now`] — millisecond-precision ISO-8601
 //!   timestamps (parity with TS `new Date().toISOString()`).
@@ -55,7 +55,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `add-question`. Mirrors the TS
@@ -84,6 +83,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-question")?;
     // Load (auto-create on first run).
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -158,8 +159,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = now;
 
     // Single atomic write.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AddQuestionResult {
         success: true,

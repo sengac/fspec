@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @model-selection
 @bug-168
@@ -5,6 +6,7 @@
 @session
 @multimodal
 @high
+@BUG-336
 Feature: Session model capabilities registry consulted by the Read tool
   """
   Today the session's model vision capability (ModelDef.supports_vision /

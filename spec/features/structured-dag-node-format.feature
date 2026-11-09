@@ -1,4 +1,7 @@
+@BUG-582
 @CMPCT-017
+@codelet
+@formatting
 Feature: Structured DAG Node Format and Engine Parsing
   """
   Uses regex to parse <dag-node> blocks — no XML parser needed.

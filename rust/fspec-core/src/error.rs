@@ -108,3 +108,11 @@ pub enum FspecCoreError {
     #[error("{0}")]
     JsonSyntax(String),
 }
+
+/// BUG-640: a failed `fspec-config.json` read-modify-write (lock, read or
+/// write) names the file in its message.
+impl From<codelet_common::fspec_config::ConfigFileError> for FspecCoreError {
+    fn from(error: codelet_common::fspec_config::ConfigFileError) -> Self {
+        FspecCoreError::Message(error.0)
+    }
+}

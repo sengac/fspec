@@ -29,12 +29,14 @@ impl Fixture {
             include_str!("../fixtures/prov101_models.json"),
         )
         .expect("offline model fixture");
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         codelet_common::set_data_directory(directory.path().to_path_buf()).expect("redirect data");
         codelet_core::persistence::reset_stores_for_tests();
         std::env::set_var("OPENAI_API_KEY", "test-no-network");
         std::env::set_var("OPENAI_BASE_URL", url);
         std::env::set_var("OPENAI_MODEL", "o3");
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
         let project = directory.path().to_string_lossy().into_owned();
         let mut sessions = Vec::new();
         for name in ["caller", "target"] {

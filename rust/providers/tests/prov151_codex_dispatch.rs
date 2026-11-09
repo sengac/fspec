@@ -1,3 +1,4 @@
+//! Feature: spec/features/codex-tool-input-streaming.feature
 #[path = "fixtures/prov151.rs"]
 pub mod fixture;
 use fixture::previous::terminal;
@@ -7,10 +8,10 @@ use rig::agent::{AgentBuilder, MultiTurnStreamItem};
 use rig::streaming::{StreamedUserContent, StreamingPrompt};
 use serde_json::json;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 #[tokio::test]
 async fn completed_read_only_calls_wait_for_response_validation() -> TestResult {
+    // @step Given a completed read-only Codex item on an open stream
     let server = Server::start(
         vec![done(item(
             "fc_a",
@@ -26,15 +27,25 @@ async fn completed_read_only_calls_wait_for_response_validation() -> TestResult 
     let agent = AgentBuilder::new(server.models()?.0)
         .tool(ReadTool(calls.clone()))
         .build();
+    // @step When the agent consumes the stream before the response completes
     let mut stream = agent.stream_prompt("read").with_hook(gate.clone()).await;
-    let waiting = tokio::time::timeout(Duration::from_millis(150), async {
+    // TEST-042: no waiting window; the consumer is driven for 32 poll
+    // rounds and must still be waiting on the open response.
+    let mut consuming = Box::pin(async {
         while let Some(event) = stream.next().await {
             event?;
         }
         Ok::<_, Box<dyn std::error::Error>>(())
+    });
+    let mut rounds = 0;
+    let waiting = codelet_test_helpers::pending_until("32 poll rounds", &mut consuming, || {
+        rounds += 1;
+        rounds > 32
     })
     .await;
-    assert!(waiting.is_err());
+    drop(consuming);
+    // @step Then the tool does not run and no hook call or tool result is observed
+    assert!(waiting.is_ok(), "{waiting:?}");
     assert!(calls.lock().map_err(|_| "calls lock")?.is_empty());
     assert_eq!(*gate.calls.lock().map_err(|_| "gate lock")?, 0);
     assert_eq!(*gate.results.lock().map_err(|_| "result lock")?, 0);
@@ -118,6 +129,7 @@ async fn invalid_and_unfinished_calls_never_execute() -> TestResult {
 
 #[tokio::test]
 async fn late_failure_prevents_read_only_execution_without_replay() -> TestResult {
+    // @step Given a completed read-only call followed by a failed response
     let body = [
         done(item("fc_a", "call_a", "read_file", "{}")),
         terminal("failed", None, None),
@@ -128,6 +140,7 @@ async fn late_failure_prevents_read_only_execution_without_replay() -> TestResul
     let agent = AgentBuilder::new(server.models()?.0)
         .tool(ReadTool(calls.clone()))
         .build();
+    // @step When the agent observes the failure
     let mut stream = agent.stream_prompt("read").multi_turn(2).await;
     let mut results = 0;
     let mut errors = 0;
@@ -143,6 +156,7 @@ async fn late_failure_prevents_read_only_execution_without_replay() -> TestResul
             _ => {}
         }
     }
+    // @step Then the tool never runs, no result is returned and the request is not replayed
     assert!(calls.lock().map_err(|_| "calls lock")?.is_empty());
     assert_eq!(results, 0);
     assert_eq!(errors, 1);
@@ -197,12 +211,20 @@ async fn ordinary_responses_does_not_opt_into_early_dispatch() -> TestResult {
         .tool(ReadTool(calls.clone()))
         .build();
     let mut stream = agent.stream_prompt("read").await;
-    let _ = tokio::time::timeout(Duration::from_millis(150), async {
+    // TEST-042: no waiting window; drive the agent for 32 poll rounds on the
+    // open stream.
+    let mut consuming = Box::pin(async {
         while let Some(event) = stream.next().await {
             let _ = event;
         }
+    });
+    let mut rounds = 0;
+    let _ = codelet_test_helpers::pending_until("32 poll rounds", &mut consuming, || {
+        rounds += 1;
+        rounds > 32
     })
     .await;
+    drop(consuming);
     assert!(calls.lock().map_err(|_| "calls lock")?.is_empty());
     Ok(())
 }

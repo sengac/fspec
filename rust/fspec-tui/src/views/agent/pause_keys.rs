@@ -16,16 +16,17 @@
 //! | triple  | Esc       | `PauseTriple { choice: Deny }`             |
 //! | confirm | Y / y     | `PauseConfirmed { accept: true }`          |
 //! | confirm | N/n / Esc | `PauseConfirmed { accept: false }`         |
+//! | human   | Enter     | `PauseHumanAction { reply: Done }`         |
+//! | human   | Esc       | `PauseHumanAction { reply: Cancel }`       |
 //!
-//! Esc NEVER resumes — the pause-resume action is not constructible
-//! from this module (source-shape locked by
-//! `the_pause_modal_is_deleted_and_resume_is_unreachable_from_the_prompt`).
+//! AMGR-023: a human action is answered only from its own prompt; an
+//! approval's Esc denies it.
 //! All actions target the PAUSED session id from the cache, not the
 //! focused index at key time.
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use codelet_rpc_types::{ApprovalChoice, PauseKind};
+use codelet_rpc_types::{ApprovalChoice, HumanActionReply, PauseKind};
 
 use crate::components::{Action, EventResult};
 
@@ -87,6 +88,19 @@ impl AgentView {
                 }
                 _ => {}
             },
+            PauseKind::HumanAction => {
+                let reply = match key.code {
+                    KeyCode::Enter => Some(HumanActionReply::Done),
+                    KeyCode::Esc => Some(HumanActionReply::Cancel),
+                    _ => None,
+                };
+                if let Some(reply) = reply {
+                    self.emit(Action::PauseHumanAction {
+                        session_id: session,
+                        reply,
+                    });
+                }
+            }
         }
         Some(EventResult::consumed())
     }

@@ -129,6 +129,11 @@ every string on that line.
 
 - Full Windows build/install instructions: [BUILD.md](BUILD.md)
   (`build.ps1`, `build-install.ps1`, `install.ps1`).
+- `build-install.ps1` and `install.ps1` work while fspec is running: a
+  running `fspec.exe` cannot be overwritten, so they rename it to
+  `fspec.exe.<id>.old` and move the new binary in (BUG-564). Running fspec
+  processes keep the old version until restarted; the next install deletes
+  the `.old` files no process still holds.
 - The Windows binary is ~275 MB (release-slim) vs ~150 MB on macOS —
   expected (MSVC CRT, static linking), not a sign of corruption.
 - `protoc` is a build-time-only dependency; get it from

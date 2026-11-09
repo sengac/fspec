@@ -4,8 +4,8 @@
       "name": "codelet-test-helpers crate is wired into the workspace as a library",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "35-92",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "4-62",
           "implMappings": [
             {
               "file": "rust/test-helpers/Cargo.toml",
@@ -24,8 +24,15 @@
                 12,
                 13,
                 14,
-                15
-              ]
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ],
+              "firstLine": "[package]",
+              "lastLine": "tempfile = { workspace = true }"
             }
           ]
         }
@@ -35,8 +42,8 @@
       "name": "codelet-test-helpers exposes the shared dependency-rule helper API",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "94-141",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "64-112",
           "implMappings": [
             {
               "file": "rust/test-helpers/src/dependency_rules.rs",
@@ -313,7 +320,9 @@
                 270,
                 271,
                 272
-              ]
+              ],
+              "firstLine": "//! Dependency-rule regression helpers.",
+              "lastLine": "/// fn no_codelet_napi_import_in_source() {"
             }
           ]
         }
@@ -323,20 +332,28 @@
       "name": "codelet-test-helpers itself has no transitive dependency on codelet-napi",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "143-161",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "114-131",
           "implMappings": [
             {
               "file": "rust/test-helpers/Cargo.toml",
               "lines": [
-                9,
                 10,
                 11,
                 12,
                 13,
                 14,
-                15
-              ]
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "proc-macro2 = { version = \"1\", features = [\"span-locations\"] }"
             }
           ]
         }
@@ -346,8 +363,8 @@
       "name": "codelet-core forbidden-arrow regression test passes against the current workspace",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "381-411",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs",
+          "lines": "111-141",
           "implMappings": [
             {
               "file": "rust/core/tests/no_napi_dependency.rs",
@@ -387,7 +404,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "//! RPC-067 dependency-rule regression tests for `codelet-core`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -397,8 +416,8 @@
       "name": "codelet-rpc-types forbidden-arrow regression test passes against the current workspace",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "413-449",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs",
+          "lines": "143-179",
           "implMappings": [
             {
               "file": "rust/rpc-types/tests/no_napi_dependency.rs",
@@ -442,7 +461,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "//! RPC-067 dependency-rule regression tests for `codelet-rpc-types`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -452,8 +473,8 @@
       "name": "Migrated codelet-fspec regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "163-197",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "133-167",
           "implMappings": [
             {
               "file": "rust/fspec/tests/no_napi_dependency.rs",
@@ -493,7 +514,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "//! RPC-044 dependency-rule regression tests for `codelet-fspec`.",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -503,8 +526,8 @@
       "name": "Migrated codelet-fspec-tui regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "199-219",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "169-191",
           "implMappings": [
             {
               "file": "rust/fspec-tui/tests/no_napi_dependency.rs",
@@ -544,7 +567,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "//! RPC-044 dependency-rule regression tests for `codelet-fspec-tui`.",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -554,8 +579,8 @@
       "name": "Migrated codelet-sessions regression test delegates to the shared helper",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "221-241",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "193-215",
           "implMappings": [
             {
               "file": "rust/sessions/tests/no_napi_dependency.rs",
@@ -599,7 +624,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "//! RPC-044 dependency-rule regression tests for `codelet-sessions`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -609,8 +636,8 @@
       "name": "rpc_006_source_shape.rs is left untouched",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "243-268",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+          "lines": "217-243",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
@@ -618,7 +645,6 @@
                 1,
                 2,
                 3,
-                4,
                 5,
                 6,
                 7,
@@ -631,30 +657,20 @@
                 14,
                 15,
                 16,
-                17,
                 18,
-                19,
                 20,
-                21,
                 22,
                 23,
                 24,
-                25,
                 26,
                 27,
                 28,
-                29,
-                30,
-                31,
-                32,
                 33,
                 34,
-                35,
                 36,
                 37,
                 38,
                 39,
-                40,
                 41,
                 42,
                 43,
@@ -662,7 +678,6 @@
                 45,
                 46,
                 47,
-                48,
                 49,
                 50,
                 51,
@@ -683,14 +698,10 @@
                 66,
                 67,
                 68,
-                69,
                 70,
                 71,
                 72,
-                73,
-                74,
                 75,
-                76,
                 77,
                 78,
                 79,
@@ -705,13 +716,11 @@
                 88,
                 89,
                 90,
-                91,
                 92,
                 93,
                 94,
                 95,
                 96,
-                97,
                 98,
                 99,
                 100,
@@ -729,8 +738,6 @@
                 112,
                 113,
                 114,
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -742,17 +749,14 @@
                 125,
                 126,
                 127,
-                128,
                 129,
                 130,
                 131,
                 132,
                 133,
-                134,
                 135,
                 136,
                 137,
-                138,
                 139,
                 140,
                 141,
@@ -762,8 +766,6 @@
                 145,
                 146,
                 147,
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -778,7 +780,6 @@
                 161,
                 162,
                 163,
-                164,
                 165,
                 166,
                 167,
@@ -788,7 +789,6 @@
                 171,
                 172,
                 173,
-                174,
                 175,
                 176,
                 177,
@@ -796,8 +796,6 @@
                 179,
                 180,
                 181,
-                182,
-                183,
                 184,
                 185,
                 186,
@@ -809,7 +807,6 @@
                 192,
                 193,
                 194,
-                195,
                 196,
                 197,
                 198,
@@ -823,22 +820,17 @@
                 206,
                 207,
                 208,
-                209,
                 210,
                 211,
-                212,
                 213,
                 214,
                 215,
                 216,
                 217,
                 218,
-                219,
-                220,
                 221,
                 222,
                 223,
-                224,
                 225,
                 226,
                 227,
@@ -847,13 +839,11 @@
                 230,
                 231,
                 232,
-                233,
                 234,
                 235,
                 236,
                 237,
                 238,
-                239,
                 240,
                 241,
                 242,
@@ -863,12 +853,12 @@
                 246,
                 247,
                 248,
-                249,
-                250,
-                251,
                 252,
-                253
-              ]
+                253,
+                254
+              ],
+              "firstLine": "//! RPC-006 source-shape integration tests.",
+              "lastLine": "bincode_calls.is_empty(),"
             }
           ]
         }
@@ -878,8 +868,8 @@
       "name": "cargo test --workspace passes after all RPC-067 changes",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "349-379",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs",
+          "lines": "79-109",
           "implMappings": [
             {
               "file": "rust/Cargo.toml",
@@ -934,7 +924,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "[workspace]",
+              "lastLine": "license = \"MIT\""
             }
           ]
         }
@@ -944,8 +936,8 @@
       "name": "Sabotaging codelet-core by adding a codelet-napi dependency makes its test fail",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "295-347",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs",
+          "lines": "25-77",
           "implMappings": [
             {
               "file": "rust/test-helpers/src/dependency_rules.rs",
@@ -1038,7 +1030,9 @@
                 185,
                 186,
                 187
-              ]
+              ],
+              "firstLine": "/// macro defined alongside this fn — see callers in",
+              "lastLine": "}"
             }
           ]
         }
@@ -1048,8 +1042,8 @@
       "name": "Source-scan helper ignores comments containing the forbidden substring",
       "testMappings": [
         {
-          "file": "rust/test-helpers/tests/rpc067_shape_invariants.rs",
-          "lines": "270-289",
+          "file": "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs",
+          "lines": "4-23",
           "implMappings": [
             {
               "file": "rust/test-helpers/src/dependency_rules.rs",
@@ -1079,7 +1073,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let bytes = src.as_bytes();",
+              "lastLine": "/// Recursively collect every `.rs` file under `root`."
             }
           ]
         }
@@ -1091,7 +1087,8 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/test-helpers/tests/rpc067_shape_invariants.rs"
+      "rust/test-helpers/tests/rpc067_shape_invariants/codelet_test_helpers_crate.rs",
+      "rust/test-helpers/tests/rpc067_shape_invariants/source_scan_helper_ignores.rs"
     ],
     "implFiles": [
       "rust/test-helpers/Cargo.toml",
@@ -1104,6 +1101,6 @@
       "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
       "rust/Cargo.toml"
     ],
-    "totalLinesCovered": 1293
+    "totalLinesCovered": 1271
   }
 }

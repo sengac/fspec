@@ -1,7 +1,10 @@
+@BUG-582
+@BUG-470
 @done
 @providers
 @provider-abstraction
 @PROV-092
+@BUG-338
 Feature: Complete CustomProvider::create_rig_agent — construct real rig::agent::Agent
   """
   Replaces the opaque CustomRigAgent shim with a fully wired rig::agent::Agent<RhaiCustomProviderModel>. Uses rig builder pattern mirroring claude.rs/codex/mod.rs/copilot/rig_agent.rs. RhaiCustomProviderModel implements rig::completion::CompletionModel and bridges rig CompletionRequest to RhaiCustomProvider::invoke_build_url/headers/request/parse_response, and rig stream() to open_stream() converting StreamChunk to rig RawStreamingChoice. RhaiToolWrapper implements rig::tool::Tool (with dummy const NAME, override name()) and dispatches via apply_map_tool_params + default_to_internal to internal tool impls. thinking_config flows from agent builder additional_params through to Rhai build_request. The session_manager.rs agent_loop dispatch matches on the custom provider name and routes through CustomProvider::create_rig_agent.

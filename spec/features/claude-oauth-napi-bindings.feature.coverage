@@ -4,22 +4,9 @@
       "name": "Successful browser OAuth login via NAPI",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "109-164",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/browser.rs",
+          "lines": "8-77",
+          "implMappings": []
         }
       ]
     },
@@ -27,22 +14,9 @@
       "name": "Browser OAuth login times out",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "170-194",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/browser.rs",
+          "lines": "83-113",
+          "implMappings": []
         }
       ]
     },
@@ -50,24 +24,9 @@
       "name": "Headless login start returns authorize URL and PKCE verifier",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "200-229",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/headless.rs",
+          "lines": "8-27",
+          "implMappings": []
         }
       ]
     },
@@ -75,43 +34,9 @@
       "name": "Headless login complete exchanges code for tokens",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "235-284",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/headless.rs",
+          "lines": "33-94",
+          "implMappings": []
         }
       ]
     },
@@ -119,37 +44,9 @@
       "name": "Headless login complete rejects mismatched state as CSRF",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "290-313",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/headless.rs",
+          "lines": "100-114",
+          "implMappings": []
         }
       ]
     },
@@ -157,30 +54,9 @@
       "name": "Headless login complete rejects code without hash separator",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "319-340",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/headless.rs",
+          "lines": "120-134",
+          "implMappings": []
         }
       ]
     },
@@ -188,43 +64,9 @@
       "name": "Token refresh returns new tokens",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "346-398",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "8-62",
+          "implMappings": []
         }
       ]
     },
@@ -232,43 +74,9 @@
       "name": "Token refresh fails with invalid refresh token",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "404-428",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "68-96",
+          "implMappings": []
         }
       ]
     },
@@ -276,25 +84,9 @@
       "name": "Get tokens returns stored tokens from claude_auth.json",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "434-464",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "102-135",
+          "implMappings": []
         }
       ]
     },
@@ -302,25 +94,9 @@
       "name": "Get tokens returns null when no claude_auth.json exists",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "470-488",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "141-162",
+          "implMappings": []
         }
       ]
     },
@@ -328,26 +104,9 @@
       "name": "Clear tokens removes stored credentials",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "494-525",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "168-205",
+          "implMappings": []
         }
       ]
     },
@@ -355,26 +114,9 @@
       "name": "Clear tokens is idempotent when no credentials exist",
       "testMappings": [
         {
-          "file": "rust/napi/tests/claude_oauth_napi_test.rs",
-          "lines": "531-558",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/claude_oauth.rs",
-              "lines": [
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270
-              ]
-            }
-          ]
+          "file": "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs",
+          "lines": "211-241",
+          "implMappings": []
         }
       ]
     }
@@ -384,11 +126,11 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/claude_oauth_napi_test.rs"
+      "rust/providers/tests/prov024_claude_oauth_flows/browser.rs",
+      "rust/providers/tests/prov024_claude_oauth_flows/headless.rs",
+      "rust/providers/tests/prov024_claude_oauth_flows/tokens.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/claude_oauth.rs"
-    ],
-    "totalLinesCovered": 581
+    "implFiles": [],
+    "totalLinesCovered": 422
   }
 }

@@ -58,19 +58,19 @@ Feature: OpenAI cloud catalog excluded from OpenAI API provider section
     And the other credentialed cloud providers still list their catalog models
 
   @server
-  Scenario: Codex (ChatGPT) continues to list the full cloud OpenAI catalog when OPENAI_API_KEY is also set
+  Scenario: Codex (ChatGPT) lists what Codex /models returns when OPENAI_API_KEY is also set
     Given I am signed in with a Codex (ChatGPT) OAuth credential
     And an OPENAI_API_KEY is set in the environment
     And a local-server openai profile is configured
-    And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5-mini"
+    And Codex /models returns "gpt-6-luna" while the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5-mini"
     When list_providers() assembles the provider list
-    Then the "Codex (ChatGPT)" section lists "gpt-5.4"
-    And the "Codex (ChatGPT)" section lists "gpt-5-mini"
+    Then the "Codex (ChatGPT)" section lists "gpt-6-luna"
+    And the "Codex (ChatGPT)" section lists neither "gpt-5.4" nor "gpt-5-mini"
     And no section with key "openai" and no profile name appears in the list
     And the local-server profile section is still present
 
   @unit
-  Scenario: cloud_model_entries still serves the openai catalog to the Codex re-parenting path
+  Scenario: cloud_model_entries still serves the openai catalog
     Given a models.dev registry where "openai" lists a tool_call model "gpt-5.4"
     When cloud_model_entries is built for "openai" with credentials asserted
     Then the entries contain "gpt-5.4"

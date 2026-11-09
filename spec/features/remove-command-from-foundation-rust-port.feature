@@ -1,5 +1,7 @@
 @done
 @RPC-270
+@cli
+@remove
 Feature: Port remove-command-from-foundation command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_command_from_foundation.rs — Rust parity port of

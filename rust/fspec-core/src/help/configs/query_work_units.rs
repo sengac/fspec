@@ -60,7 +60,7 @@ const OPTIONS: &[CommandOption] = &[
 const RELATED: &[&str] = &[
     "list-work-units",
     "export-work-units",
-    "search-scenarios",
+    "context",
     "compare-implementations",
 ];
 

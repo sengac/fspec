@@ -1,11 +1,15 @@
+@BUG-582
+@done
 @tui
 @ui-refinement
-@done
 @TUI-109
+@BUG-351
+@BUG-355
 Feature: Stream per-item progress (idx/total) for checkpoint enumeration into the shared LoadingDialog counter row
   """
   Implementation:
   - Wire type CheckpointsProgress{loaded,total,done} in rpc-types; transport traits (transport/mod.rs) gain checkpoints_progress_rx() - a broadcast receiver alongside work_units_rx/chunks_rx/logs_rx (embedded: direct broadcast; websocket: forward a new message kind). Server: git's list_all_ghost_checkpoints gains a streaming/callback variant; rpc/src/checkpoints.rs gains collect_checkpoints_stream wired to FspecServiceImpl::list_checkpoints emitting progress; the CLI's non-streaming collect_checkpoints delegates to it with a no-op callback. App: subscriber task folds CheckpointsProgress into the CheckpointsView LoadingDialog via set_progress (slot provided by TUI-106), stale-dropped once list stage flushes. Scenarios extend TUI-107's feature file (checkpoints-view-c-shows-staged-animated-loading-dialog-via-shared-base-instead-of-fake-no-checkpoints-empty-state.feature).
+  - BUG-355 split the capped-enumeration and non-streaming CLI scenarios (the git and rpc halves) into checkpoint-enumeration-streams-per-item-progress-frames.feature so each feature maps to exactly one test file. This feature keeps the TUI fold and subscriber scenarios. Test file: rust/fspec-tui/tests/tui109_checkpoints_progress.rs.
   """
 
   # ========================================
@@ -35,12 +39,6 @@ Feature: Stream per-item progress (idx/total) for checkpoint enumeration into th
     When the CheckpointsLoaded fold arrives with 150 checkpoints
     Then the list renders and the loading dialog is dismissed
 
-  Scenario: Capped enumeration shows (200/250) - truncation does not hide progress
-    Given a repository with 250 checkpoints
-    When the streaming enumeration collects items with the 200-entry cap applied
-    Then the progress counter reaches (200/250) - loaded stops at the cap while the total reflects the full enumeration
-    And the returned list contains exactly 200 entries
-
   Scenario: A late progress event after CheckpointsLoaded is stale-dropped
     Given a Checkpoints view whose list has already flushed via the CheckpointsLoaded fold
     When a late CheckpointsProgress event with done=true arrives after the fold
@@ -52,9 +50,3 @@ Feature: Stream per-item progress (idx/total) for checkpoint enumeration into th
     When the loading dialog is painted while the list load is still in flight
     Then the dialog shows the spinner and the stage label "Loading checkpoint list…"
     And no counter row is painted - the TUI-107 behavior is preserved with no timeout or extra logic
-
-  Scenario: The non-streaming CLI path is byte-identical
-    Given the non-streaming collect_checkpoints delegates to the streaming variant with a no-op callback
-    When the CLI list-checkpoints command runs against a repository with checkpoints
-    Then the output is byte-identical to the pre-streaming behavior
-    And the existing list_checkpoints tests pass unmodified

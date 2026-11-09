@@ -29,7 +29,7 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &["validate", "create-feature", "check"];
+const RELATED: &[&str] = &["validate", "create-feature", "audit"];
 
 const NOTES: &[&str] = &[
     "Uses custom AST-based formatter (NOT prettier-plugin-gherkin)",

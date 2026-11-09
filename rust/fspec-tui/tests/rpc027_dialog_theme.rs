@@ -18,8 +18,7 @@
 //!  10. dialog_rect centers the dialog within the available area
 //!  11. dialog_rect clamps to the parent area when content exceeds it
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -35,15 +34,15 @@ use codelet_fspec_tui::components::dialog_theme_rows::label_description_row;
 
 /// Helper: draw the dialog into an 80x24 TestBackend and return the
 /// resulting Buffer for cell-level assertions.
-fn render_to_buffer(dialog: &FspecDialog<'_>) -> Buffer {
+fn render_to_buffer(dialog: &FspecDialog<'_>) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             render_dialog(frame.area(), frame.buffer_mut(), dialog);
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 /// Helper: scan the buffer for the first cell containing `needle` and
@@ -84,7 +83,7 @@ fn buffer_text(buf: &Buffer) -> String {
 
 /// Scenario: dialog_theme module exposes the canonical public API
 #[test]
-fn dialog_theme_module_exposes_the_canonical_public_api() {
+fn dialog_theme_module_exposes_the_canonical_public_api() -> TestResult {
     // @step Given the file rust/fspec-tui/src/components/dialog_theme.rs exists
     // @step When I inspect its public exports
     // @step Then it exposes the Accent enum with variants Cyan, Yellow and Red
@@ -124,11 +123,12 @@ fn dialog_theme_module_exposes_the_canonical_public_api() {
 
     // @step And it exposes the FOOTER_SEPARATOR constant equal to " │ "
     assert_eq!(FOOTER_SEPARATOR, " │ ");
+    Ok(())
 }
 
 /// Scenario: render_dialog paints a rounded border in the accent color
 #[test]
-fn render_dialog_paints_a_rounded_border_in_the_accent_color() {
+fn render_dialog_paints_a_rounded_border_in_the_accent_color() -> TestResult {
     // @step Given an FspecDialog with accent Yellow, title "Test", a single body row "hello", and footer "esc"
     let dialog = FspecDialog {
         accent: Accent::Yellow,
@@ -144,7 +144,7 @@ fn render_dialog_paints_a_rounded_border_in_the_accent_color() {
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
     let rect = dialog_rect(Rect::new(0, 0, 80, 24), &dialog);
 
     // @step Then the top-left cell of the dialog rect contains "╭"
@@ -165,11 +165,12 @@ fn render_dialog_paints_a_rounded_border_in_the_accent_color() {
     // @step And the border cells have foreground color Color::Yellow
     assert_eq!(buf[(rect.x, rect.y)].fg, Color::Yellow);
     assert_eq!(buf[(rect.x + rect.width - 1, rect.y)].fg, Color::Yellow);
+    Ok(())
 }
 
 /// Scenario: render_dialog paints an opaque black background over the dialog rect
 #[test]
-fn render_dialog_paints_an_opaque_black_background_over_the_dialog_rect() {
+fn render_dialog_paints_an_opaque_black_background_over_the_dialog_rect() -> TestResult {
     // @step Given an FspecDialog with accent Cyan, title "Test", a single body row "hello", and footer ""
     let dialog = FspecDialog {
         accent: Accent::Cyan,
@@ -185,7 +186,7 @@ fn render_dialog_paints_an_opaque_black_background_over_the_dialog_rect() {
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
     let rect = dialog_rect(Rect::new(0, 0, 80, 24), &dialog);
 
     // @step Then every cell inside the dialog rect has background color Color::Black
@@ -198,11 +199,12 @@ fn render_dialog_paints_an_opaque_black_background_over_the_dialog_rect() {
             );
         }
     }
+    Ok(())
 }
 
 /// Scenario: render_dialog paints the inner title as a bold accent-colored row
 #[test]
-fn render_dialog_paints_the_inner_title_as_a_bold_accent_colored_row() {
+fn render_dialog_paints_the_inner_title_as_a_bold_accent_colored_row() -> TestResult {
     // @step Given an FspecDialog with accent Yellow, title "Thinking Level", an empty rows vec, and footer ""
     let dialog = FspecDialog {
         accent: Accent::Yellow,
@@ -214,11 +216,11 @@ fn render_dialog_paints_the_inner_title_as_a_bold_accent_colored_row() {
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
 
     // @step Then the first non-padding body row contains the text "Thinking Level"
     let (title_x, title_y) =
-        find_text(&buf, "Thinking Level").expect("title text must appear in body");
+        find_text(&buf, "Thinking Level").or_fail("title text must appear in body")?;
 
     // @step And every cell of that text has foreground color Color::Yellow
     for i in 0..("Thinking Level".chars().count() as u16) {
@@ -242,11 +244,12 @@ fn render_dialog_paints_the_inner_title_as_a_bold_accent_colored_row() {
     // @step And the title text is NOT rendered into the top border row
     let rect = dialog_rect(Rect::new(0, 0, 80, 24), &dialog);
     assert_ne!(title_y, rect.y, "title must not be on the border row");
+    Ok(())
 }
 
 /// Scenario: render_dialog inserts one blank row between title and body
 #[test]
-fn render_dialog_inserts_one_blank_row_between_title_and_body() {
+fn render_dialog_inserts_one_blank_row_between_title_and_body() -> TestResult {
     // @step Given an FspecDialog with title "T" and a single body row containing "row0"
     let dialog = FspecDialog {
         accent: Accent::Cyan,
@@ -262,10 +265,10 @@ fn render_dialog_inserts_one_blank_row_between_title_and_body() {
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
 
-    let (_, title_y) = find_text(&buf, "T").expect("title row exists");
-    let (_, row0_y) = find_text(&buf, "row0").expect("body row exists");
+    let (_, title_y) = find_text(&buf, "T").or_fail("title row exists")?;
+    let (_, row0_y) = find_text(&buf, "row0").or_fail("body row exists")?;
 
     // @step Then the body row immediately after the title row contains only spaces
     // (i.e. row0 is two positions below the title — one blank row between them)
@@ -275,11 +278,12 @@ fn render_dialog_inserts_one_blank_row_between_title_and_body() {
         title_y + 2,
         "row0 must be exactly two rows below the title (1 blank gap)"
     );
+    Ok(())
 }
 
 /// Scenario: render_dialog paints the selected row with the full-width inverse highlight
 #[test]
-fn render_dialog_paints_the_selected_row_with_the_full_width_inverse_highlight() {
+fn render_dialog_paints_the_selected_row_with_the_full_width_inverse_highlight() -> TestResult {
     // @step Given an FspecDialog with accent Yellow and three body rows where index 1 has selected = true
     let rows = vec![
         DialogRow {
@@ -308,11 +312,11 @@ fn render_dialog_paints_the_selected_row_with_the_full_width_inverse_highlight()
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
 
-    let (_, alpha_y) = find_text(&buf, "alpha").expect("alpha row exists");
-    let (_, bravo_y) = find_text(&buf, "bravo").expect("bravo row exists");
-    let (_, charlie_y) = find_text(&buf, "charlie").expect("charlie row exists");
+    let (_, alpha_y) = find_text(&buf, "alpha").or_fail("alpha row exists")?;
+    let (_, bravo_y) = find_text(&buf, "bravo").or_fail("bravo row exists")?;
+    let (_, charlie_y) = find_text(&buf, "charlie").or_fail("charlie row exists")?;
 
     let rect = dialog_rect(Rect::new(0, 0, 80, 24), &dialog);
     let inner_x_start = rect.x + 1; // inside the border
@@ -353,11 +357,12 @@ fn render_dialog_paints_the_selected_row_with_the_full_width_inverse_highlight()
         Color::Yellow,
         "unselected row index 2 should not carry Yellow bg"
     );
+    Ok(())
 }
 
 /// Scenario: label_description_row prefixes selected rows with "▸ " and others with "  "
 #[test]
-fn label_description_row_prefixes_selected_rows_with_marker_and_others_with_spaces() {
+fn label_description_row_prefixes_selected_rows_with_marker_and_others_with_spaces() -> TestResult {
     // @step Given the helper label_description_row("Low", "fast", true)
     let row_sel = label_description_row("Low", "fast", true);
     // @step Then the resulting DialogRow's first span content is "▸ "
@@ -367,16 +372,17 @@ fn label_description_row_prefixes_selected_rows_with_marker_and_others_with_spac
     let row_unsel = label_description_row("Low", "fast", false);
     // @step Then the resulting DialogRow's first span content is "  "
     assert_eq!(row_unsel.spans[0].content, "  ");
+    Ok(())
 }
 
 /// Scenario: label_description_row dims the description text for unselected rows only
 #[test]
-fn label_description_row_dims_the_description_text_for_unselected_rows_only() {
+fn label_description_row_dims_the_description_text_for_unselected_rows_only() -> TestResult {
     // @step Given the helper label_description_row("Low", "fast", false)
     let row_unsel = label_description_row("Low", "fast", false);
     // @step Then the description span carries Modifier::DIM
     // The description is the LAST span (after marker + label + " - ")
-    let desc = row_unsel.spans.last().expect("description span exists");
+    let desc = row_unsel.spans.last().or_fail("description span exists")?;
     assert!(
         desc.style.add_modifier.contains(Modifier::DIM),
         "unselected description must carry DIM modifier"
@@ -385,16 +391,17 @@ fn label_description_row_dims_the_description_text_for_unselected_rows_only() {
     // @step Given the helper label_description_row("Low", "fast", true)
     let row_sel = label_description_row("Low", "fast", true);
     // @step Then the description span has the default Style (no DIM)
-    let desc = row_sel.spans.last().expect("description span exists");
+    let desc = row_sel.spans.last().or_fail("description span exists")?;
     assert!(
         !desc.style.add_modifier.contains(Modifier::DIM),
         "selected description must NOT carry DIM modifier"
     );
+    Ok(())
 }
 
 /// Scenario: render_dialog paints the footer with Modifier::DIM and centered alignment
 #[test]
-fn render_dialog_paints_the_footer_with_dim_modifier_and_centered_alignment() {
+fn render_dialog_paints_the_footer_with_dim_modifier_and_centered_alignment() -> TestResult {
     // @step Given an FspecDialog with footer "↑↓ Navigate │ Enter Select │ Esc Close"
     let footer = "↑↓ Navigate │ Enter Select │ Esc Close";
     let dialog = FspecDialog {
@@ -411,14 +418,14 @@ fn render_dialog_paints_the_footer_with_dim_modifier_and_centered_alignment() {
     };
 
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&dialog);
+    let buf = render_to_buffer(&dialog)?;
     let text = buffer_text(&buf);
 
     // @step Then the last body row contains the substring "↑↓ Navigate"
     assert!(text.contains("↑↓ Navigate"), "footer text must render");
 
     // @step And every non-blank cell in that row carries the DIM modifier
-    let (footer_x, footer_y) = find_text(&buf, "↑↓ Navigate").expect("footer row found");
+    let (footer_x, footer_y) = find_text(&buf, "↑↓ Navigate").or_fail("footer row found")?;
     let cell = &buf[(footer_x, footer_y)];
     assert!(
         cell.modifier.contains(Modifier::DIM),
@@ -436,12 +443,13 @@ fn render_dialog_paints_the_footer_with_dim_modifier_and_centered_alignment() {
         (footer_x as i32 - expected_x as i32).abs() <= 1,
         "footer must be centered: got x={footer_x}, expected ~{expected_x}"
     );
+    Ok(())
 }
 
 /// Scenario: dialog_rect centers the dialog within the available area
 #[test]
-fn dialog_rect_centers_the_dialog_within_the_available_area() {
-    // @step Given an FspecDialog with content that yields a 50x10 rect on an 80x24 area
+fn dialog_rect_centers_the_dialog_within_the_available_area() -> TestResult {
+    // @step Given an FspecDialog with content that yields a natural rect on an 80x24 area
     // The exact natural size depends on render geometry; we just assert
     // that with adequate area, the rect is centered.
     let dialog = FspecDialog {
@@ -469,11 +477,12 @@ fn dialog_rect_centers_the_dialog_within_the_available_area() {
     let expected_y = (area.height.saturating_sub(rect.height)) / 2;
     assert_eq!(rect.x, expected_x);
     assert_eq!(rect.y, expected_y);
+    Ok(())
 }
 
 /// Scenario: dialog_rect clamps to the parent area when content exceeds it
 #[test]
-fn dialog_rect_clamps_to_the_parent_area_when_content_exceeds_it() {
+fn dialog_rect_clamps_to_the_parent_area_when_content_exceeds_it() -> TestResult {
     // @step Given an FspecDialog with content that would yield a 100x30 rect on a 60x20 area
     let dialog = FspecDialog {
         accent: Accent::Cyan,
@@ -503,4 +512,5 @@ fn dialog_rect_clamps_to_the_parent_area_when_content_exceeds_it() {
     // @step And the returned rect remains fully within the area bounds
     assert!(rect.x + rect.width <= area.x + area.width);
     assert!(rect.y + rect.height <= area.y + area.height);
+    Ok(())
 }

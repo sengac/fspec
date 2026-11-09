@@ -9,15 +9,17 @@
 //!
 //! This module is the single source of truth for the session-file path so
 //! both the command implementation AND its integration tests compute the
-//! same location.
+//! same location. AUDIT-004: the path, file I/O and step counter come from
+//! the shared [`crate::types::guided_session`] module (command `reverse`,
+//! empty scope); the BUG-295 old-path fallback stays here.
 
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
 use crate::io::project_root::find_project_root;
 use crate::io::time::iso8601_now;
+use crate::types::guided_session;
 
 /// Gap analysis counts + the ordered list of files to process. Mirrors the TS
 /// `GapAnalysis` interface (`src/types/reverse-session.ts:14-20`).
@@ -102,47 +104,65 @@ pub struct AnalysisResult {
 /// the project root via boundary-marker walk, SHA-256 hash its string form,
 /// take the first 12 hex characters, and place the file in the OS temp dir as
 /// `fspec-reverse-<hash>.json`.
+///
+/// BUG-295: the root is canonicalized before hashing, so symlinked or
+/// differently spelled paths to the same project share one session file.
 pub fn session_path(project_root: &Path) -> PathBuf {
-    let root = find_project_root(project_root);
-    let mut hasher = Sha256::new();
-    hasher.update(root.to_string_lossy().as_bytes());
-    let digest = hasher.finalize();
-    // Hex-encode manually to avoid a `hex` crate dependency.
-    let mut hex = String::with_capacity(64);
-    for byte in digest.iter() {
-        hex.push_str(&format!("{byte:02x}"));
+    guided_session::session_path("reverse", project_root, &[])
+}
+
+/// BUG-295: the pre-canonicalization session path for this spelling of the
+/// project root, used to find sessions saved before the fix.
+pub fn legacy_session_path(project_root: &Path) -> PathBuf {
+    guided_session::path_for("reverse", &find_project_root(project_root), &[])
+}
+
+/// The session file to read: the canonical one, else a legacy file saved
+/// under this spelling before BUG-295.
+fn existing_session_path(project_root: &Path) -> PathBuf {
+    let canonical = session_path(project_root);
+    let legacy = legacy_session_path(project_root);
+    if !canonical.exists() && legacy.exists() {
+        legacy
+    } else {
+        canonical
     }
-    std::env::temp_dir().join(format!("fspec-reverse-{}.json", &hex[..12]))
+}
+
+/// Remove a legacy session file that differs from the canonical one.
+fn remove_legacy_session(project_root: &Path) {
+    let legacy = legacy_session_path(project_root);
+    if legacy != session_path(project_root) {
+        guided_session::delete(&legacy);
+    }
 }
 
 /// Returns true if a session file exists for the project root. Mirrors
 /// `sessionExists` (`src/utils/reverse-session.ts:31-39`).
 pub fn session_exists(project_root: &Path) -> bool {
-    session_path(project_root).exists()
+    existing_session_path(project_root).exists()
 }
 
 /// Load and parse the session file. Returns `None` on any error (missing file
 /// OR malformed JSON), mirroring the bare `catch` in `loadSession`
 /// (`src/utils/reverse-session.ts:41-49`).
 pub fn load_session(project_root: &Path) -> Option<ReverseSession> {
-    let path = session_path(project_root);
-    let content = std::fs::read_to_string(path).ok()?;
-    serde_json::from_str(&content).ok()
+    guided_session::load(&existing_session_path(project_root))
 }
 
 /// Serialize and write the session file with 2-space indentation. Mirrors
 /// `saveSession` (`src/utils/reverse-session.ts:51-59`).
 pub fn save_session(project_root: &Path, session: &ReverseSession) -> std::io::Result<()> {
-    let path = session_path(project_root);
-    let json = serde_json::to_string_pretty(session).unwrap_or_else(|_| "{}".to_string());
-    std::fs::write(path, json)
+    guided_session::save(&session_path(project_root), session)?;
+    remove_legacy_session(project_root);
+    Ok(())
 }
 
 /// Delete the session file, swallowing a missing-file error. Mirrors
 /// `deleteSession` (`src/utils/reverse-session.ts:61-68`).
 pub fn delete_session(project_root: &Path) {
-    let path = session_path(project_root);
-    let _ = std::fs::remove_file(path);
+    guided_session::delete(&session_path(project_root));
+    remove_legacy_session(project_root);
 }
 
 /// Build a fresh session. Mirrors `createSession`
@@ -185,8 +205,7 @@ pub fn set_strategy(
 /// Advance to the next step. Mirrors `incrementStep`
 /// (`src/utils/reverse-session.ts:113-120`): `currentStep = (currentStep ?? 1) + 1`.
 pub fn increment_step(mut session: ReverseSession) -> ReverseSession {
-    let current = session.current_step.unwrap_or(1);
-    session.current_step = Some(current + 1);
+    session.current_step = Some(guided_session::next_step(session.current_step));
     session.timestamp = iso8601_now();
     session
 }
@@ -195,8 +214,5 @@ pub fn increment_step(mut session: ReverseSession) -> ReverseSession {
 /// (`src/utils/reverse-session.ts:122-127`): requires both counters present
 /// and `currentStep >= totalSteps`.
 pub fn validate_completion(session: &ReverseSession) -> bool {
-    match (session.current_step, session.total_steps) {
-        (Some(current), Some(total)) if current > 0 && total > 0 => current >= total,
-        _ => false,
-    }
+    guided_session::on_last_step(session.current_step, session.total_steps)
 }

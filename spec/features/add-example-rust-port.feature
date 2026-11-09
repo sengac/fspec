@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-181
+@cli
+@example-mapping
 Feature: Port add-example command to Rust
   """
   Core impl file: rust/fspec-core/src/commands/add_example.rs — replaces the NotYetPorted stub.

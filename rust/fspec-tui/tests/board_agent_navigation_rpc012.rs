@@ -3,10 +3,9 @@
 //!
 //! Feature: spec/features/rpc012-board-agent-navigation.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, ViewMode};
@@ -30,7 +29,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 
 /// Scenario: AgentViewStore is empty after App::bootstrap with no pre-created session
 #[tokio::test]
-async fn agent_view_store_is_empty_after_bootstrap_navigator() {
+async fn agent_view_store_is_empty_after_bootstrap_navigator() -> TestResult {
     // @step Given an App constructed against a MockBackend with no scripted session
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![
@@ -39,7 +38,7 @@ async fn agent_view_store_is_empty_after_bootstrap_navigator() {
     ]);
     let mut app = App::new(mock.clone());
     // @step When the developer drives App::bootstrap to completion
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     // @step Then MockBackend.list_work_units_calls equals 1
     assert_eq!(mock.list_work_units_calls(), 1);
     // @step And MockBackend.create_session_calls equals 0
@@ -50,6 +49,7 @@ async fn agent_view_store_is_empty_after_bootstrap_navigator() {
     assert!(!app.agent_view_store().show_create_session_dialog());
     // @step And AgentViewStore.current_work_unit_id returns None
     assert!(app.agent_view_store().current_work_unit_id().is_none());
+    Ok(())
 }
 
 #[path = "board_agent_navigation/creation.rs"]
@@ -57,12 +57,12 @@ mod creation;
 
 /// Scenario: Shift+Right on an attached work unit sets the navigation target
 #[tokio::test]
-async fn open_agent_view_with_session_sets_navigation_target() {
+async fn open_agent_view_with_session_sets_navigation_target() -> TestResult {
     // @step Given an App with bootstrap complete and BoardStore seeded with [AUTH-001 backlog]
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     // @step And BoardStore.attach_session("AUTH-001", SessionId::new("s-1")) has been called
     app.board_store_mut()
         .attach_session("AUTH-001", SessionId::new("s-1"));
@@ -75,16 +75,17 @@ async fn open_agent_view_with_session_sets_navigation_target() {
     );
     // @step And the Navigator's active_view equals ViewMode::Agent
     assert_eq!(app.active_view(), ViewMode::Agent);
+    Ok(())
 }
 
 /// Scenario: ESC from AgentView returns to BoardView preserving focus and selection
 #[tokio::test]
-async fn back_to_board_preserves_focus_and_selection() {
+async fn back_to_board_preserves_focus_and_selection() -> TestResult {
     // @step Given an App with Navigator.active_view = ViewMode::Agent
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-002", "implementing")]);
     let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     app.board_store_mut().set_focused_column("implementing");
     app.board_store_mut()
         .set_selected_index_for("implementing", 0);
@@ -101,21 +102,22 @@ async fn back_to_board_preserves_focus_and_selection() {
     assert_eq!(app.board_store().focused_column(), "implementing");
     // @step And BoardStore.selected_index_for("implementing") still returns 0
     assert_eq!(app.board_store().selected_index_for("implementing"), 0);
+    Ok(())
 }
 
 /// Scenario: Navigator renders BoardView as the first landing view
 #[tokio::test]
-async fn navigator_renders_board_view_as_first_landing_view() {
+async fn navigator_renders_board_view_as_first_landing_view() -> TestResult {
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut app = App::new(mock.clone());
     // @step Given an App with bootstrap complete and Navigator.active_view defaulting to ViewMode::Board
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When the App renders against an 80x24 TestBackend
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     // Move the stores out of the App so we can lend a `&` to board and a `&mut`
     // to agent without violating Rust's borrow rules.
     let mut agent_snapshot = std::mem::take(app.agent_view_store_mut());
@@ -160,6 +162,7 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     // (We assert the body line, not "Agent" as substring — "Agent" might appear
     // in other UI strings; here we check the unique " Agent " block-title pattern.)
     assert!(!joined.contains("Agent — "));
+    Ok(())
 }
 
 /// Scenario: Chunks subscriber forwards background and focused text through transcript routing
@@ -196,7 +199,7 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel(
     );
     let mut saw_s2 = false;
     let mut saw_s1 = false;
-    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("live chunks for s-1 and s-2", async {
         while !saw_s1 || !saw_s2 {
             while let Some(action) = app.try_recv_action() {
                 match action {
@@ -217,7 +220,7 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel(
                     _ => {}
                 }
             }
-            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;
@@ -234,7 +237,7 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel(
 
 /// Scenario: Navigator renders AgentView when active_view is Agent
 #[tokio::test]
-async fn navigator_renders_agent_view_when_active_view_is_agent() {
+async fn navigator_renders_agent_view_when_active_view_is_agent() -> TestResult {
     use codelet_fspec_tui::Navigator;
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
@@ -248,7 +251,7 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
             "s-1",
         )));
     // @step When the App renders against an 80x24 TestBackend
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     let mut nav = Navigator::new(
         std::sync::Arc::new(codelet_fspec_tui::Theme::default()),
         app.action_tx_clone(),
@@ -283,4 +286,5 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     );
     // @step And the rendered buffer does NOT contain the BACKLOG SPECIFYING column headers
     assert!(!joined.contains("BACKLOG"));
+    Ok(())
 }

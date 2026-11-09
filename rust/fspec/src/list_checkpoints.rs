@@ -27,10 +27,10 @@
 //!     written to stderr prefixed with `Error:` (parity with the TS
 //!     chalk-red error path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::list_checkpoints;
 use serde_json::json;
 
@@ -38,12 +38,12 @@ use serde_json::json;
 /// declaration for `list-checkpoints`
 /// (`src/commands/list-checkpoints.ts:83-88`).
 ///
-/// Only the positional `<work-unit-id>` is exposed; the TS registration
+/// Only the positional `<workUnitId>` is exposed; the TS registration
 /// declares no `.option(...)` flags. We marshal the value into the JSON
 /// shape consumed by `fspec_core::commands::list_checkpoints::run`.
 #[derive(Debug, Default)]
 pub struct CliArgs {
-    /// Positional `<work-unit-id>` from clap.
+    /// Positional `<workUnitId>` from clap.
     pub work_unit_id: String,
 }
 
@@ -54,7 +54,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-driven
     // invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core::commands::
     // list_checkpoints::run validates with serde. We deliberately do NOT

@@ -71,7 +71,7 @@ Feature: Port query-metrics command to Rust
 
   Scenario: CLI JSON output matches dispatcher output for the same on-disk state
     Given spec/work-units.json contains AUTH-001 with stateHistory at hour 0 (backlog) and hour 5 (done)
-    When I run `./rust/target/release/fspec query-metrics --work-unit-id AUTH-001 --format json` against that workspace
+    When I run `./rust/target/release/fspec query-metrics --work-unit AUTH-001 --format json` against that workspace
     Then the command exits 0
     Then stdout parses as JSON with cycleTime='5 hours'
     Then stdout equals the DispatchResult.data produced by dispatch_command for the same on-disk state followed by a trailing newline

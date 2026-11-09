@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "17-39",
+          "lines": "21-43",
           "implMappings": [
             {
               "file": "rust/providers/src/cache_optimization.rs",
@@ -97,7 +97,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone)]",
+              "lastLine": "#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -108,7 +110,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "44-71",
+          "lines": "48-75",
           "implMappings": [
             {
               "file": "rust/providers/src/cache_optimization.rs",
@@ -200,7 +202,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone)]",
+              "lastLine": "#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -211,7 +215,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "76-98",
+          "lines": "80-102",
           "implMappings": [
             {
               "file": "rust/providers/src/cache_optimization.rs",
@@ -303,7 +307,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone)]",
+              "lastLine": "#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -314,7 +320,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "103-122",
+          "lines": "107-126",
           "implMappings": [
             {
               "file": "rust/providers/src/cache_optimization.rs",
@@ -406,7 +412,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone)]",
+              "lastLine": "#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]"
             }
           ]
         }
@@ -417,35 +425,37 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "127-169",
+          "lines": "131-175",
           "implMappings": [
             {
-              "file": "rust/providers/src/manager.rs",
+              "file": "rust/providers/src/manager/impl_1.rs",
               "lines": [
-                412,
-                413,
-                414,
-                415,
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433,
-                434
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "//   `fspec-config.json` into `OPENAI_*` env vars via",
+              "lastLine": ""
             }
           ]
         }
@@ -455,42 +465,84 @@
       "name": "Cached tokens from Fireworks response are captured in usage metrics",
       "testMappings": [
         {
-          "file": "rust/providers/tests/session_affinity_integration_test.rs",
-          "lines": "239-262",
+          "file": "rust/providers/tests/session_affinity_integration/cached_tokens.rs",
+          "lines": "6-29",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/construction.rs",
               "lines": [
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ],
+              "firstLine": "pub fn from_api_key_with_options(",
+              "lastLine": "}"
             }
           ]
         }
@@ -502,13 +554,14 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/session_affinity_integration_test.rs"
+      "rust/providers/tests/session_affinity_integration_test.rs",
+      "rust/providers/tests/session_affinity_integration/cached_tokens.rs"
     ],
     "implFiles": [
       "rust/providers/src/cache_optimization.rs",
-      "rust/providers/src/manager.rs",
-      "rust/providers/src/openai.rs"
+      "rust/providers/src/manager/impl_1.rs",
+      "rust/providers/src/openai/construction.rs"
     ],
-    "totalLinesCovered": 561
+    "totalLinesCovered": 603
   }
 }

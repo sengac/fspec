@@ -46,6 +46,9 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
             append_assistant_text(ctx, &clean);
         }
         StreamChunk::UserInput { text } => {
+            // TUI-115: a steer's echo is tagged; a queued input's start
+            // echo is already shown as `Queued #n` and is not repeated.
+            let kind = ctx.busy_inputs.echo_kind(text);
             let clean = sanitize_for_terminal(text);
             flush_in_flight_drop_empty(ctx);
             // RPC-093: UserInput is a turn boundary. Clear the thinking
@@ -53,13 +56,15 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
             // findActiveThinkingBlock returning -1 once a user-input
             // message follows).
             ctx.in_flight_thinking = None;
-            ctx.push_chunk(ChunkSource {
-                text: clean,
-                color: Color::Green,
-                kind: ChunkKind::UserInput,
-                is_streaming: false,
-                full_text: None,
-            });
+            if let Some(kind) = kind {
+                ctx.push_chunk(ChunkSource {
+                    text: clean,
+                    color: Color::Green,
+                    kind,
+                    is_streaming: false,
+                    full_text: None,
+                });
+            }
         }
         StreamChunk::Thinking { thinking, .. } => {
             // RPC-093: port of TS appendThinking — accumulate into the
@@ -140,6 +145,7 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
         }
         // State-only chunks — consumed elsewhere.
         StreamChunk::ProviderWaiting { .. }
+        | StreamChunk::InteractionRequestChanged { .. }
         | StreamChunk::SessionStateChange { .. }
         | StreamChunk::IsolationStateChange { .. }
         | StreamChunk::DebugStateChange { .. }

@@ -72,10 +72,10 @@ fn seed_models_cache(fixture: &str) -> tempfile::TempDir {
 /// single local-server `openai` profile carrying one custom model. Returns the
 /// guard `TempDir`. A custom model keeps the profile reachable (MODEL-004) even
 /// though the `/v1/models` probe to the bogus base URL fails.
-fn seed_local_profile(profile: &str, model_id: &str) -> tempfile::TempDir {
+fn seed_local_profile(profile: &str, model_id: &str, base_url: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().expect("create temp FSPEC_USER_DIR");
     let body = format!(
-        r#"{{"providers":{{"openai":{{"profiles":{{"{profile}":{{"baseUrl":"http://127.0.0.1:1","customModels":[{{"id":"{model_id}"}}]}}}}}}}}}}"#
+        r#"{{"providers":{{"openai":{{"profiles":{{"{profile}":{{"baseUrl":"{base_url}","customModels":[{{"id":"{model_id}"}}]}}}}}}}}}}"#
     );
     fs::write(dir.path().join("fspec-config.json"), body).expect("write fspec-config.json");
     std::env::set_var("FSPEC_USER_DIR", dir.path());
@@ -110,8 +110,10 @@ fn seed_codex_oauth() -> tempfile::TempDir {
             "access_token": "access-tok",
             "refresh_token": "refresh-tok",
             "account_id": "acct-123"
-        }
-    }"#;
+        },
+        "last_refresh": "LAST_REFRESH"
+    }"#
+    .replace("LAST_REFRESH", &chrono::Utc::now().to_rfc3339());
     fs::write(dir.path().join("auth.json"), auth).expect("write codex auth.json");
     std::env::set_var("CODEX_HOME", dir.path());
     dir
@@ -123,13 +125,25 @@ fn seed_codex_oauth() -> tempfile::TempDir {
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
 async fn local_profile_section_precedes_cloud_and_is_default() {
+    // BUG-340: a reachable local server (its /v1/models probe answers), so
+    // the profile section is eligible as the default; an unreachable
+    // profile is skipped by startup selection.
+    let server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/v1/models"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(200)
+                .set_body_json(serde_json::json!({"data": [{"id": "Qwen3-80B"}]})),
+        )
+        .mount(&server)
+        .await;
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     clear_api_keys();
 
-    // @step Given a local-server openai profile with a custom model is configured
-    let _profile_dir = seed_local_profile("work-vllm", "Qwen3-80B");
+    // @step Given a reachable local-server openai profile with a custom model is configured
+    let _profile_dir = seed_local_profile("work-vllm", "Qwen3-80B", &server.uri());
     // Isolate custom-provider discovery + OAuth so ONLY the seeded profile +
     // env-key cloud creds shape the result.
     let (_codex_empty, _fspec_empty) = seed_empty_homes();
@@ -139,10 +153,10 @@ async fn local_profile_section_precedes_cloud_and_is_default() {
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
     let _data_dir = seed_models_cache(MODELS_FIXTURE);
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then the local-server profile section appears before every cloud section
     let profile_idx = providers
@@ -199,10 +213,10 @@ async fn no_profiles_default_comes_from_first_cloud_section() {
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
     let _data_dir = seed_models_cache(MODELS_FIXTURE);
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then only credentialed cloud sections appear in canonical order
     // (PROV-146: the standalone 'openai' cloud section is excluded from
@@ -239,6 +253,26 @@ async fn no_profiles_default_comes_from_first_cloud_section() {
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
 async fn synthesized_codex_section_leads_the_cloud_group() {
+    // PROV-176: the Codex section lists what Codex /models returns; a local
+    // backend answers it so the test never reaches the network.
+    let backend = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/models"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "models": [{
+                    "slug": "gpt-6-luna",
+                    "display_name": "GPT-6-Luna",
+                    "visibility": "list",
+                    "default_reasoning_level": "medium",
+                    "supported_reasoning_levels": [{"effort": "medium"}]
+                }]
+            })),
+        )
+        .mount(&backend)
+        .await;
+    let _redirect =
+        codelet_providers::codex::models_catalog::test_support::redirect(&backend.uri());
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -256,10 +290,10 @@ async fn synthesized_codex_section_leads_the_cloud_group() {
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
     let _data_dir = seed_models_cache(CODEX_MODELS_FIXTURE);
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
 
     // @step Then the Codex (ChatGPT) section appears before the Anthropic cloud section

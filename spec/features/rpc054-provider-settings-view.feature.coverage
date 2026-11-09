@@ -5,11 +5,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "54-72",
+          "lines": "77-90",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
                 150,
                 151,
                 152,
@@ -17,31 +36,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180
-              ]
+                157
+              ],
+              "firstLine": "KeyCode::Left => super::list_actions::arrow_expand_collapse(view, false),",
+              "lastLine": "KeyCode::Enter => {"
             }
           ]
         }
@@ -52,7 +50,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "99-117",
+          "lines": "99-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -80,96 +78,15 @@
       ]
     },
     {
-      "name": "Enter on an api_key row transitions to Detail::Summary",
+      "name": "Typing characters in EditApiKey grows the draft",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "151-172",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on an oauth row transitions directly to Detail::OAuthNotice",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "175-189",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "r inside Detail::Summary emits RefreshProviderModels",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "221-243",
+          "lines": "126-133",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
                 71,
                 72,
                 73,
@@ -177,72 +94,6 @@
                 75,
                 76,
                 77,
-                78
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "TestOk last_status renders as green \"✓ ok (Xms)\"",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "812-857",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/status_text.rs",
-              "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "TestErr last_status renders as red \"✗ <error>\"",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "858-906",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/status_text.rs",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter inside Detail::Summary on api_key provider opens EditApiKey",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "250-274",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
                 78,
                 79,
                 80,
@@ -259,49 +110,10 @@
                 91,
                 92,
                 93,
-                94,
-                95
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Typing characters in EditApiKey grows the draft",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "277-296",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159
-              ]
+                94
+              ],
+              "firstLine": "// draft.slice(0, -1) (see src/tui/inputHandlers/apiKeyEditModeHandler.ts:46).",
+              "lastLine": "provider_id,"
             }
           ]
         }
@@ -312,7 +124,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "299-317",
+          "lines": "149-156",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -326,7 +138,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "ProviderSettingsEvent::Emit(Box::new(Action::SaveProviderCredentials {",
+              "lastLine": "// draft.slice(0, -1) (see src/tui/inputHandlers/apiKeyEditModeHandler.ts:46)."
             }
           ]
         }
@@ -337,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "320-339",
+          "lines": "179-186",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -363,7 +177,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "// (Esc, empty-Enter, and successful Save). Previously these arms",
+              "lastLine": "ProviderSettingsEvent::Emit(Box::new(Action::SaveProviderCredentials {"
             }
           ]
         }
@@ -374,7 +190,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "370-388",
+          "lines": "218-231",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -397,7 +213,9 @@
                 120,
                 121,
                 122
-              ]
+              ],
+              "firstLine": "// (pre-RPC-103 callers using `set_providers(...)` alone), where",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -408,7 +226,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "391-402",
+          "lines": "239-246",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -431,7 +249,9 @@
                 120,
                 121,
                 122
-              ]
+              ],
+              "firstLine": "// (pre-RPC-103 callers using `set_providers(...)` alone), where",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -442,7 +262,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "405-424",
+          "lines": "254-277",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -473,7 +293,9 @@
                 173,
                 174,
                 175
-              ]
+              ],
+              "firstLine": "self.providers.get(self.selected_index)",
+              "lastLine": "self.visible_rows"
             }
           ]
         }
@@ -484,7 +306,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "427-441",
+          "lines": "285-295",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -510,77 +332,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "448-457",
+          "lines": "307-313",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Esc in Detail::Summary returns to List mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "460-481",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Esc in Detail::OAuthNotice returns to List mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "505-519",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "if view.filter_mode {",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -591,7 +364,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "545-557",
+          "lines": "337-350",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -607,22 +380,41 @@
                 128,
                 129,
                 130
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Footer hint in Detail::Summary mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "560-572",
-          "implMappings": [
+              ],
+              "firstLine": "filter: String::new(),",
+              "lastLine": "oauth_generation: 0,"
+            },
             {
-              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
                 120,
                 121,
                 122,
@@ -633,8 +425,20 @@
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "pub const FOOTER_COMMON: &str = \"/ filter · Tab: Switch to models · Esc: close\";",
+              "lastLine": "}"
             }
           ]
         }
@@ -645,7 +449,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "575-587",
+          "lines": "358-364",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -661,34 +465,24 @@
                 128,
                 129,
                 130
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Footer hint in Detail::OAuthNotice mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "590-600",
-          "implMappings": [
+              ],
+              "firstLine": "filter: String::new(),",
+              "lastLine": "oauth_generation: 0,"
+            },
             {
-              "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                66,
+                67
+              ],
+              "firstLine": "pub(super) fn compute_footer_hint(view: &ProviderSettingsView) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -699,23 +493,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "612-630",
+          "lines": "376-392",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "view.filter_mode = true;",
+              "lastLine": "// RPC-160: Tab in List mode emits the new SwitchToModels event."
             }
           ]
         }
@@ -726,7 +522,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "633-654",
+          "lines": "400-414",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -768,7 +564,9 @@
                 158,
                 159,
                 160
-              ]
+              ],
+              "firstLine": "KeyCode::Char('d') | KeyCode::Char('D') => {",
+              "lastLine": "if view.selected_index != before {"
             }
           ]
         }
@@ -779,7 +577,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "657-668",
+          "lines": "425-433",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -800,7 +598,9 @@
                 153,
                 154,
                 155
-              ]
+              ],
+              "firstLine": "view.delete_confirm = Some(ConfirmDialog::new(",
+              "lastLine": "/// RPC-353: page/jump the list-mode selection by `delta` (clamped), clearing"
             }
           ]
         }
@@ -811,7 +611,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "671-688",
+          "lines": "441-454",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -838,26 +638,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "691-712",
+          "lines": "463-481",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "// row's own provider (never a mismatched visible_providers index).",
+              "lastLine": "view.delete_confirm = Some(ConfirmDialog::new("
             }
           ]
         }
@@ -868,26 +670,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "715-734",
+          "lines": "489-505",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "if view.filter_mode {",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -898,26 +702,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "737-746",
+          "lines": "513-519",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "if view.filter_mode {",
+              "lastLine": "ProviderSettingsEvent::Consumed"
             }
           ]
         }
@@ -928,7 +734,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "749-776",
+          "lines": "527-555",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -951,78 +757,9 @@
                 148,
                 149,
                 150
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "t inside Detail::Summary is silently ignored (RPC-154 TS parity)",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "162-194",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+              ],
+              "firstLine": "oauth_tasks: Vec::new(),",
+              "lastLine": "self.providers.get(self.selected_index)"
             }
           ]
         }
@@ -1030,8 +767,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 31,
-    "coveredScenarios": 31,
+    "totalScenarios": 20,
+    "coveredScenarios": 20,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/provider_settings_view_rpc054.rs"
@@ -1040,8 +777,8 @@
       "rust/fspec-tui/src/views/provider_settings/list.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
       "rust/fspec-tui/src/views/provider_settings/detail.rs",
-      "rust/fspec-tui/src/views/provider_settings/status_text.rs"
+      "rust/fspec-tui/src/views/provider_settings/footer_hints.rs"
     ],
-    "totalLinesCovered": 1156
+    "totalLinesCovered": 663
   }
 }

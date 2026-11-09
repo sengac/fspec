@@ -1,4 +1,7 @@
+@BUG-582
 @BRIDGE-016
+@tools
+@inter-agent-coordination
 Feature: Extend Rust bridge message types for command support
   """
   Pure type extension in rust/tools/src/bridge_relay.rs (InboundMessage) and rust/tools/src/bridge.rs (OutboundMessage). No behavioral changes. Uses serde Optional fields with skip_serializing_if for backward-compatible JSON serialization.
@@ -27,15 +30,15 @@ Feature: Extend Rust bridge message types for command support
     I want to deserialize command InboundMessages and serialize commandResponse OutboundMessages
     So that the bridge protocol can carry fspec command traffic
 
-  Scenario: Deserialize command InboundMessage with all fields populated
-    Given a JSON string with type command, session_id, request_id, command, and args_json fields
-    When the JSON is deserialized into an InboundMessage struct
-    Then the request_id, command, and args_json fields should be populated with the JSON values
+  Scenario: Deserialize fspec command envelope with all fields populated
+    Given a JSON envelope with service "fspec", type "command", request_id, and data command and args
+    When the JSON is deserialized into an Envelope and routed with route_inbound
+    Then route_inbound returns FspecCommand with request_id, command, and args_json populated from the JSON values
 
-  Scenario: Backward compatible deserialization of input message without command fields
-    Given a JSON string with type input and session_id but no request_id, command, or args_json fields
-    When the JSON is deserialized into an InboundMessage struct
-    Then the request_id, command, and args_json fields should all be None
+  Scenario: Backward compatible deserialization of input envelope without command fields
+    Given a JSON envelope with service "session", type "input" and session_id but no request_id
+    When the JSON is deserialized into an Envelope and routed with route_inbound
+    Then the envelope request_id should be None and route_inbound returns SessionInput
 
   Scenario: Serialize OutboundMessage with request_id for commandResponse
     Given an OutboundMessage with type commandResponse and request_id set to a value

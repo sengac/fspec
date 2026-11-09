@@ -67,7 +67,7 @@ async fn scenario_configured_model_survives_cold_startup_and_switching_with_unsu
         for model in [MODEL, "second-model"] {
             let selected = format!("openai:{PROFILE}/{model}");
             save_persisted_model_string_to(fixture.directory.path(), &selected)?;
-            let persisted = load_persisted_model_string_from(fixture.directory.path());
+            let persisted = load_persisted_model_string_from(fixture.directory.path())?;
             let (info, log) = enumerate()?;
             // @step Then startup restores the configured selection and settings retain the custom model
             assert_eq!(
@@ -85,7 +85,7 @@ async fn scenario_configured_model_survives_cold_startup_and_switching_with_unsu
                         .profiles
                         .iter()
                         .any(|profile| profile.name == PROFILE)));
-            assert_eq!(load_local_server_profiles()[0].custom_models[0].id, MODEL);
+            assert_eq!(load_local_server_profiles()?[0].custom_models[0].id, MODEL);
             // @step And diagnostics report unsupported discovery and unknown inference without secrets
             diagnostic(&log, "unsupported");
         }

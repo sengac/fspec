@@ -4,16 +4,12 @@
       "name": "Opening the Changed Files view before the scan returns shows the loading dialog instead of the empty message",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "866-893",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "17-44",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
-                38,
-                39,
-                40,
-                41,
                 42,
                 43,
                 44,
@@ -52,8 +48,14 @@
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "let show_dialog = if self.load.is_loaded() {",
+              "lastLine": "let panes = Layout::default()"
             }
           ]
         }
@@ -63,8 +65,8 @@
       "name": "A completed scan with zero files shows the real empty message",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "895-921",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "46-69",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -81,7 +83,9 @@
                 160,
                 161,
                 162
-              ]
+              ],
+              "firstLine": "self.loading.label = label;",
+              "lastLine": "///"
             }
           ]
         }
@@ -91,16 +95,12 @@
       "name": "Selecting a file after the list loads shows the diff stage label until it folds in",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "923-965",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "71-115",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/render.rs",
               "lines": [
-                38,
-                39,
-                40,
-                41,
                 42,
                 43,
                 44,
@@ -139,8 +139,14 @@
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "let show_dialog = if self.load.is_loaded() {",
+              "lastLine": "let panes = Layout::default()"
             }
           ]
         }
@@ -150,8 +156,8 @@
       "name": "A stale diff result for a de-selected path does not clear the current stage",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "967-996",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "117-149",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -173,7 +179,9 @@
                 178,
                 179,
                 180
-              ]
+              ],
+              "firstLine": "pub fn set_files(&mut self, files: Vec<ChangedFile>) {",
+              "lastLine": "// dropped before it spawns a re-fetch."
             }
           ]
         }
@@ -183,8 +191,8 @@
       "name": "ESC is ignored while the loading dialog is active and closes the view after it flushes",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "998-1030",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "151-183",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -230,7 +238,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "// below the old window — the 10s refresh jolted the list up.)",
+              "lastLine": "}"
             }
           ]
         }
@@ -240,18 +250,12 @@
       "name": "The loading dialog renders through the canonical dialog theme",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "1032-1074",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "185-238",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/loading_dialog.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
                 89,
                 90,
                 91,
@@ -267,8 +271,29 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "pub fn render_loading_dialog(",
+              "lastLine": "}"
             }
           ]
         }
@@ -278,8 +303,8 @@
       "name": "Arrowing while a diff is in flight is swallowed so the selection stays put",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "1076-1160",
+          "file": "rust/fspec-tui/src/views/changed_files/loading_tests.rs",
+          "lines": "240-331",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -325,7 +350,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "// below the old window — the 10s refresh jolted the list up.)",
+              "lastLine": "}"
             }
           ]
         }
@@ -337,13 +364,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/loading_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/changed_files/render.rs",
       "rust/fspec-tui/src/views/changed_files/mod.rs",
       "rust/fspec-tui/src/components/loading_dialog.rs"
     ],
-    "totalLinesCovered": 508
+    "totalLinesCovered": 541
   }
 }

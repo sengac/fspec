@@ -121,7 +121,7 @@ async fn terminal(error: &str, expected: &str) -> TestResult {
         return Err("terminal poll authorized".into());
     };
     assert!(error.contains(expected));
-    assert_eq!(count(&server, "/api/accounts/deviceauth/token").await, 1);
+    assert_eq!(count(&server, "/api/accounts/deviceauth/token").await?, 1);
     Ok(())
 }
 

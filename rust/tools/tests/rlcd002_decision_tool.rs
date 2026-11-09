@@ -27,8 +27,8 @@ use std::time::Duration;
 
 use codelet_tools::rlcd::{DecisionArgs, DecisionTool};
 use codelet_tools::ToolError;
-use rlcd_mock::MockRlcd;
 use rig::tool::Tool;
+use rlcd_mock::MockRlcd;
 use serde_json::json;
 use uuid::Uuid;
 
@@ -51,6 +51,16 @@ fn choice_question() -> serde_json::Value {
 }
 
 /// Start a ready mock and build DecisionArgs pointing at it.
+/// BUG-640: a user directory of this binary's own whose empty config keeps
+/// RLCD at its defaults (enabled), so the tool never reads the user's real
+/// `~/.fspec/fspec-config.json`.
+fn isolate_user_directory() {
+    static USER_DIR: std::sync::OnceLock<tempfile::TempDir> = std::sync::OnceLock::new();
+    let directory =
+        USER_DIR.get_or_init(|| tempfile::tempdir().expect("a temp user directory for rlcd002"));
+    std::env::set_var("FSPEC_USER_DIR", directory.path());
+}
+
 async fn ready_tool_and_args(url_override: bool) -> (MockRlcd, DecisionArgs) {
     let mock = MockRlcd::ready("typed-decisions").start().await;
     let args = DecisionArgs {
@@ -87,6 +97,7 @@ fn assert_error_contains(result: Result<String, ToolError>, needles: &[&str]) {
 /// and full probabilities
 #[tokio::test]
 async fn scenario_choice_returns_argmax_confidence_probabilities() {
+    isolate_user_directory();
     // @step Given a mock RLCD server whose /health reports model "typed-decisions"
     let (mock, args) = ready_tool_and_args(true).await;
     mock.set_answers(
@@ -118,7 +129,10 @@ async fn scenario_choice_returns_argmax_confidence_probabilities() {
         );
     }
     for p in ["0.15", "0.05"] {
-        assert!(out.contains(p), "choice output must include probability {p}: {out}");
+        assert!(
+            out.contains(p),
+            "choice output must include probability {p}: {out}"
+        );
     }
     mock.stop().await;
 }
@@ -126,6 +140,7 @@ async fn scenario_choice_returns_argmax_confidence_probabilities() {
 /// Scenario: A score question returns per-criterion scores with a legend
 #[tokio::test]
 async fn scenario_score_returns_scores_with_legend() {
+    isolate_user_directory();
     // @step Given a mock RLCD server whose /health reports model "typed-decisions"
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -161,6 +176,7 @@ async fn scenario_score_returns_scores_with_legend() {
 /// Scenario: A noul question returns P(true) as a single probability
 #[tokio::test]
 async fn scenario_noul_returns_p_true() {
+    isolate_user_directory();
     // @step Given a mock RLCD server whose /health reports model "typed-decisions"
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -193,6 +209,7 @@ async fn scenario_noul_returns_p_true() {
 /// both results
 #[tokio::test]
 async fn scenario_batch_choice_and_score_in_one_request() {
+    isolate_user_directory();
     // @step Given a mock RLCD server whose /health reports model "typed-decisions"
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -249,6 +266,7 @@ async fn scenario_batch_choice_and_score_in_one_request() {
 /// Scenario: A call without state is rejected before any network call
 #[tokio::test]
 async fn scenario_empty_state_rejected_before_network() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that records every request it receives
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -276,6 +294,7 @@ async fn scenario_empty_state_rejected_before_network() {
 /// Scenario: A call with zero questions is rejected before any network call
 #[tokio::test]
 async fn scenario_zero_questions_rejected_before_network() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that records every request it receives
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -304,6 +323,7 @@ async fn scenario_zero_questions_rejected_before_network() {
 /// network call
 #[tokio::test]
 async fn scenario_too_many_questions_rejected_before_network() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that records every request it receives
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -336,11 +356,11 @@ async fn scenario_too_many_questions_rejected_before_network() {
 /// bound explained
 #[tokio::test]
 async fn scenario_choice_single_criterion_rejected() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that records every request it receives
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
-    args.questions =
-        json!({ "q1": { "type": "choice", "criteria": { "only": "only one" } } });
+    args.questions = json!({ "q1": { "type": "choice", "criteria": { "only": "only one" } } });
 
     // @step When the Decision tool is called with a choice question whose criteria map has exactly one entry
     let tool = DecisionTool::new(Uuid::new_v4());
@@ -364,6 +384,7 @@ async fn scenario_choice_single_criterion_rejected() {
 /// Scenario: A score question with a single-entry criteria array is rejected
 #[tokio::test]
 async fn scenario_score_single_criterion_rejected() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that records every request it receives
     let (mock, _base) = ready_tool_and_args(true).await;
     let mut args = _base;
@@ -395,6 +416,7 @@ async fn scenario_score_single_criterion_rejected() {
 /// Scenario: A 422 response surfaces the first detail verbatim
 #[tokio::test]
 async fn scenario_422_surfaces_detail_verbatim() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that answers /v1/classifier with 422 and detail "Loaded model is 'typed-decisions'"
     let (mock, _base) = ready_tool_and_args(true).await;
     let args = _base;
@@ -419,6 +441,7 @@ async fn scenario_422_surfaces_detail_verbatim() {
 /// Scenario: A 429 response with Retry-After reports the busy wait
 #[tokio::test]
 async fn scenario_429_reports_busy_wait() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that answers /v1/classifier with 429 and Retry-After "5"
     let (mock, _base) = ready_tool_and_args(true).await;
     let args = _base;
@@ -441,6 +464,7 @@ async fn scenario_429_reports_busy_wait() {
 /// Scenario: A 500 response maps to an Execution error
 #[tokio::test]
 async fn scenario_500_maps_to_execution() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that answers /v1/classifier with 500
     let (mock, _base) = ready_tool_and_args(true).await;
     let args = _base;
@@ -462,15 +486,19 @@ async fn scenario_500_maps_to_execution() {
 /// Scenario: A timed-out request maps to an Execution error
 #[tokio::test]
 async fn scenario_timeout_maps_to_execution() {
+    isolate_user_directory();
     // @step Given a mock RLCD server that delays /v1/classifier past the request budget
     let (mock, _base) = ready_tool_and_args(true).await;
     let args = _base;
-    mock.set_delay_ms(1500); // far longer than the test's short request budget
+    mock.stall(); // never answers: the test's short request budget runs out
 
     // @step When the Decision tool is called with a valid choice question
     // (a short request budget so the test does not wait on the 60s default)
-    let tool =
-        DecisionTool::with_budgets(Uuid::new_v4(), Duration::from_secs(5), Duration::from_millis(300));
+    let tool = DecisionTool::with_budgets(
+        Uuid::new_v4(),
+        Duration::from_secs(5),
+        Duration::from_millis(300),
+    );
     let started = std::time::Instant::now();
     let result = tool.call(args).await;
     let elapsed = started.elapsed();
@@ -496,6 +524,7 @@ async fn scenario_timeout_maps_to_execution() {
 /// hint
 #[tokio::test]
 async fn scenario_unreachable_fail_open_with_hint() {
+    isolate_user_directory();
     // @step Given no RLCD server is reachable at the configured url
     // (a private, unroutable IP: connect-only, never spawned, health check
     //  fails at the transport layer)
@@ -510,14 +539,20 @@ async fn scenario_unreachable_fail_open_with_hint() {
     // @step When the Decision tool is called with a valid choice question
     // (a short ensure budget so the fail-open degradation is bounded and the
     //  test does not wait on the 10s default)
-    let tool =
-        DecisionTool::with_budgets(Uuid::new_v4(), Duration::from_millis(1500), Duration::from_millis(500));
+    let tool = DecisionTool::with_budgets(
+        Uuid::new_v4(),
+        Duration::from_millis(1500),
+        Duration::from_millis(500),
+    );
     let started = std::time::Instant::now();
     let result = tool.call(args).await;
     let elapsed = started.elapsed();
 
     // @step Then the tool returns a structured error identifying RLCD as unreachable
-    assert!(result.is_err(), "unreachable RLCD must return an error, not a result");
+    assert!(
+        result.is_err(),
+        "unreachable RLCD must return an error, not a result"
+    );
     let err = result.unwrap_err().to_string();
     assert!(
         err.to_lowercase().contains("rlcd unreachable"),
@@ -542,6 +577,7 @@ async fn scenario_unreachable_fail_open_with_hint() {
 /// Scenario: The request echoes the server-reported model name
 #[tokio::test]
 async fn scenario_request_echoes_server_reported_model() {
+    isolate_user_directory();
     // @step Given a mock RLCD server whose /health reports model "custom-variant"
     let mock = MockRlcd::ready("custom-variant").start().await;
     mock.set_answers(
@@ -596,6 +632,7 @@ const PROVIDER_FILES: &[&str] = &[
 /// Scenario: The Decision tool is registered in every provider rig agent
 #[test]
 fn scenario_registered_in_every_provider() {
+    isolate_user_directory();
     // @step Given the RLCD supervisor is available
     // (verified by the other scenarios exercising DecisionTool end-to-end)
 
@@ -605,7 +642,9 @@ fn scenario_registered_in_every_provider() {
     let mut missing = Vec::new();
     for rel in PROVIDER_FILES {
         let path = root.join(rel);
-        let Ok(src) = std::fs::read_to_string(&path) else {
+        // BUG-448: a provider's module tree (openai.rs + openai/agent.rs,
+        // codex/mod.rs + codex/agent.rs).
+        let Ok(src) = codelet_test_helpers::source_composition::read_tree_or_file(&path) else {
             panic!("provider source {rel} not found at {path:?}");
         };
         if !src.contains("DecisionTool::new(session_id)") {
@@ -620,7 +659,8 @@ fn scenario_registered_in_every_provider() {
     );
     for rel in PROVIDER_FILES {
         let path = root.join(rel);
-        let src = std::fs::read_to_string(&path).expect("provider source readable");
+        let src = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+            .expect("provider source readable");
         assert!(
             src.contains("DeepSearchTool::new(session_id)"),
             "{rel} must still register DeepSearchTool (Decision goes alongside it)"
@@ -650,11 +690,15 @@ fn scenario_registered_in_every_provider() {
 /// The tool exposes a hand-written JSON schema naming its parameters.
 #[tokio::test]
 async fn definition_schema_names_parameters() {
+    isolate_user_directory();
     let tool = DecisionTool::new(Uuid::new_v4());
     let def = tool.definition(String::new()).await;
     assert_eq!(def.name, "Decision");
     assert!(!def.description.is_empty());
-    let props = def.parameters.get("properties").expect("schema has properties");
+    let props = def
+        .parameters
+        .get("properties")
+        .expect("schema has properties");
     for key in ["state", "questions", "model", "url"] {
         assert!(
             props.get(key).is_some(),

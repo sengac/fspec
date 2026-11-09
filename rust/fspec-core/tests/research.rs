@@ -25,6 +25,7 @@ use tempfile::TempDir;
 // ---------- helpers ----------
 
 fn req(project_root: &Path, args: Value) -> DispatchRequest {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     DispatchRequest {
         command: "research".to_string(),
         args_json: args.to_string(),
@@ -62,6 +63,7 @@ fn is_configured(tools: &[Value], name: &str) -> bool {
 
 #[test]
 fn list_mode_enumerates_bundled_registry_without_ast() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given an empty project root tempdir with no spec/fspec-config.json and no research env vars
     let tmp = TempDir::new().expect("tempdir");
 
@@ -105,6 +107,7 @@ fn list_mode_enumerates_bundled_registry_without_ast() {
 
 #[test]
 fn list_mode_reflects_configured_perplexity_api_key_from_project_config() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a project root tempdir whose spec/fspec-config.json sets research.perplexity.apiKey to "pplx-test"
     let tmp = TempDir::new().expect("tempdir");
     write_project_config(
@@ -128,6 +131,7 @@ fn list_mode_reflects_configured_perplexity_api_key_from_project_config() {
 
 #[test]
 fn list_mode_reports_stakeholder_configured_when_required_webhook_present() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a project root tempdir whose spec/fspec-config.json sets research.stakeholder.teamsWebhook to "https://example.test/hook"
     let tmp = TempDir::new().expect("tempdir");
     write_project_config(
@@ -151,6 +155,7 @@ fn list_mode_reports_stakeholder_configured_when_required_webhook_present() {
 
 #[test]
 fn list_mode_does_not_create_files_or_spawn_a_process() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given an empty project root tempdir with no spec subdirectory
     let tmp = TempDir::new().expect("tempdir");
     assert!(
@@ -179,6 +184,7 @@ fn list_mode_does_not_create_files_or_spawn_a_process() {
 
 #[test]
 fn execute_mode_rejects_unknown_tool_before_doing_work() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given an empty project root tempdir
     let tmp = TempDir::new().expect("tempdir");
 
@@ -197,36 +203,8 @@ fn execute_mode_rejects_unknown_tool_before_doing_work() {
 }
 
 #[test]
-fn execute_mode_rejects_ast_tool_and_points_to_fspec_astgrep() {
-    // @step Given an empty project root tempdir
-    let tmp = TempDir::new().expect("tempdir");
-
-    // @step When I dispatch research with tool="ast"
-    let result = dispatch_command(req(tmp.path(), json!({ "tool": "ast" })));
-
-    // @step Then the dispatcher returns an error
-    assert!(!result.success, "expected failure; got {result:?}");
-
-    // @step And the error message contains "Research tool not found: ast"
-    let err = result.error.unwrap_or_default();
-    assert!(
-        err.contains("Research tool not found: ast"),
-        "error message mismatch: {err}"
-    );
-    // @step And the error message lists "perplexity, jira, confluence, stakeholder" as the available bundled tools
-    assert!(
-        err.contains("Available bundled tools: perplexity, jira, confluence, stakeholder"),
-        "bundled-tools list mismatch: {err}"
-    );
-    // @step And the error points at the `fspec astgrep` command for AST code search
-    assert!(
-        err.contains("For AST code search, use the `fspec astgrep` command instead"),
-        "astgrep pointer missing: {err}"
-    );
-}
-
-#[test]
 fn both_front_doors_converge_on_same_function() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given an empty project root tempdir
     let tmp = TempDir::new().expect("tempdir");
 

@@ -28,6 +28,18 @@ mod render;
 #[path = "tests.rs"]
 mod tests;
 
+#[cfg(test)]
+mod test_support;
+
+#[cfg(test)]
+mod click_tests;
+
+#[cfg(test)]
+mod loading_tests;
+
+#[cfg(test)]
+mod borders_tests;
+
 /// Which pane currently has focus.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Pane {
@@ -269,7 +281,14 @@ impl ChangedFilesView {
         }
         self.diff_path = Some(path);
         self.diff_scroll = 0;
+        let deleted = self.selected_file().is_some_and(|f| f.change_type == "D");
         self.diff_lines = match diff {
+            // BUG-540: a deleted file is named as such above its removal.
+            Some(text) if !text.is_empty() && deleted => {
+                std::iter::once("File was deleted".to_string())
+                    .chain(text.split('\n').map(sanitize_for_terminal))
+                    .collect()
+            }
             Some(text) if !text.is_empty() => text.split('\n').map(sanitize_for_terminal).collect(),
             _ => vec!["No changes to display".to_string()],
         };
@@ -321,6 +340,11 @@ impl ChangedFilesView {
     }
 
     fn handle_key(&mut self, key: KeyEvent) -> ChangedFilesEvent {
+        // TUI-130: Ctrl+C, the copy wrapper, copies the path like c.
+        let ctrl_c = key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL;
+        if ctrl_c && !self.is_loading() {
+            return self.copy(self.selected_path());
+        }
         if key
             .modifiers
             .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
@@ -347,8 +371,27 @@ impl ChangedFilesView {
             KeyCode::Up => self.scroll_focused(-1),
             KeyCode::PageDown => self.scroll_focused(self.page_step()),
             KeyCode::PageUp => self.scroll_focused(-self.page_step()),
+            // TUI-130: c copies the selected file's full path, C the diff shown.
+            KeyCode::Char('c') => self.copy(self.selected_path()),
+            KeyCode::Char('C') => self.copy(self.shown_diff()),
             _ => ChangedFilesEvent::Consumed,
         }
+    }
+
+    /// TUI-130: copy `text` through `Action::CopyToClipboard`.
+    fn copy(&self, text: Option<String>) -> ChangedFilesEvent {
+        match text {
+            Some(text) => {
+                ChangedFilesEvent::Emit(Box::new(crate::components::Action::CopyToClipboard(text)))
+            }
+            None => ChangedFilesEvent::Consumed,
+        }
+    }
+
+    /// TUI-130: the diff lines shown for the selected file.
+    fn shown_diff(&self) -> Option<String> {
+        let shown = self.diff_path.is_some() && self.diff_path == self.selected_path();
+        shown.then(|| self.diff_lines.join("\n"))
     }
 
     /// TUI-108: key routing while the loading dialog is active. ESC →
@@ -434,17 +477,10 @@ impl ChangedFilesView {
         self.diff_scroll = proposed.clamp(0, max as i64) as usize;
     }
 
-    /// Maximum diff scroll offset: clamps so the LAST FULL PAGE is the
-    /// bottom (the last visible line is the final diff line). Before the
-    /// first render the pane height is unknown (0), so we fall back to the
-    /// len-1 clamp to keep behaviour sane.
+    /// Maximum diff scroll offset in wrapped rows (TUI-131): the last
+    /// full page is the bottom (see `diff_common::max_diff_scroll`).
     fn max_diff_scroll(&self) -> usize {
-        let viewport = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
-        let len = self.diff_lines.len();
-        if viewport == 0 {
-            return len.saturating_sub(1);
-        }
-        len.saturating_sub(viewport)
+        crate::views::diff_common::max_diff_scroll(&self.diff_lines, self.last_diff_rect)
     }
 
     fn page_step(&self) -> i32 {

@@ -52,8 +52,14 @@ dirs.workspace = true
 # Logging
 tracing.workspace = true
 
+# WT-014: the merge apply takes the BUG-477 spec write lock and writes
+# through its atomic replace (codelet-common depends on no codelet crate).
+codelet-common.workspace = true
+
 [dev-dependencies]
 tempfile.workspace = true
+# WT-013/WT-014: TestResult/OrFail and the TEST-042 deadlock guard.
+codelet-test-helpers.workspace = true
 uuid.workspace = true
 
 # BUG-189: pin a file's on-disk mtime in tests so the stat-first

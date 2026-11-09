@@ -25,7 +25,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub fn hardware_cursor_in(&self, area: Rect) -> (u16, u16) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -56,7 +58,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub fn hardware_cursor_in(&self, area: Rect) -> (u16, u16) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,7 +91,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub fn hardware_cursor_in(&self, area: Rect) -> (u16, u16) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -98,7 +104,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_cursor_containment_rpc404.rs",
-          "lines": "198-231",
+          "lines": "202-236",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
@@ -118,7 +124,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub fn hardware_cursor_in(&self, area: Rect) -> (u16, u16) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -134,11 +142,17 @@
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
-                135,
-                136,
-                137,
-                138
-              ]
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "/// RPC-404/RPC-412 hardware cursor: geometry in",
+              "lastLine": "}"
             }
           ]
         }
@@ -156,6 +170,6 @@
       "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
       "rust/fspec-tui/src/views/agent.rs"
     ],
-    "totalLinesCovered": 269
+    "totalLinesCovered": 274
   }
 }

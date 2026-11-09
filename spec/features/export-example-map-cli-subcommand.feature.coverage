@@ -29,7 +29,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ");"
             }
           ]
         }
@@ -49,7 +51,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "render_core_error(&err)"
             }
           ]
         }
@@ -70,7 +74,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -102,7 +108,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -123,7 +131,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "match export_example_map::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }

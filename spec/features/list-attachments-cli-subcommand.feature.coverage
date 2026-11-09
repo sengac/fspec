@@ -1,11 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "CLI exits 2 when the required positional argument is missing",
+      "name": "CLI exits 1 when the required positional argument is missing",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "167-188",
+          "lines": "250-271",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -104,7 +104,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "//! `list-attachments` shell-facing CLI bridge (RPC-241).",
+              "lastLine": "eprintln!(\"Error: {reason}\");"
             }
           ]
         }
@@ -115,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "194-214",
+          "lines": "277-297",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -155,7 +157,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -166,7 +170,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "220-291",
+          "lines": "303-374",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -206,7 +210,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -217,7 +223,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "297-323",
+          "lines": "380-406",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -228,7 +234,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "match &err {"
             }
           ]
         }
@@ -239,7 +247,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "329-355",
+          "lines": "412-438",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -250,7 +258,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "match &err {"
             }
           ]
         }
@@ -261,7 +271,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "361-398",
+          "lines": "444-482",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -360,7 +370,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "//! `list-attachments` shell-facing CLI bridge (RPC-241).",
+              "lastLine": "eprintln!(\"Error: {reason}\");"
             }
           ]
         }
@@ -371,7 +383,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "404-465",
+          "lines": "488-545",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_attachments.rs",
@@ -470,7 +482,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "//! `list-attachments` shell-facing CLI bridge (RPC-241).",
+              "lastLine": "eprintln!(\"Error: {reason}\");"
             }
           ]
         }
@@ -481,7 +495,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_attachments.rs",
-          "lines": "99-220",
+          "lines": "101-244",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/list_attachments.rs",
@@ -575,18 +589,10 @@
                 87,
                 88,
                 89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                90
+              ],
+              "firstLine": "//! `list-attachments` help configuration — Rust port of",
+              "lastLine": "notes: NOTES,"
             }
           ]
         }
@@ -604,6 +610,6 @@
       "rust/fspec/src/list_attachments.rs",
       "rust/fspec-core/src/help/configs/list_attachments.rs"
     ],
-    "totalLinesCovered": 855
+    "totalLinesCovered": 864
   }
 }

@@ -33,7 +33,7 @@ pub struct ModelParseResult<'a> {
 /// Parse a model string into its components.
 ///
 /// Accepts model strings in the format `provider/model-id` with optional
-/// profile prefix (`profile:provider/model-id`) or codex prefix (`codex/model-id`).
+/// profile qualifier (`provider:profile/model-id`) or codex prefix (`codex/model-id`).
 ///
 /// # Errors
 /// Returns an error if:
@@ -47,8 +47,8 @@ pub struct ModelParseResult<'a> {
 /// parse_model_string("anthropic/claude-sonnet-4")
 /// // Returns: registry_provider="anthropic", model_part="claude-sonnet-4", is_profile=false, is_codex=false
 ///
-/// // Profile model
-/// parse_model_string("profile:anthropic/claude-opus-4")
+/// // Profile model ("{provider}:{profile}/{model}")
+/// parse_model_string("anthropic:work/claude-opus-4")
 /// // Returns: registry_provider="anthropic", model_part="claude-opus-4", is_profile=true
 ///
 /// // Codex model
@@ -73,9 +73,16 @@ pub fn parse_model_string(model: &str) -> Result<ModelParseResult<'_>, String> {
         let slash_idx = model
             .find('/')
             .ok_or_else(|| format!("Invalid profile model string '{model}': missing '/'"))?;
-        // For profile models (e.g., "profile:anthropic/claude-opus-4"),
-        // extract the provider between ':' and '/'
-        let provider = &model[colon_idx + 1..slash_idx];
+        // BUG-318: profile models are "{provider}:{profile}/{model}"
+        // (build_model_string / parse_persisted); the registry provider is
+        // the part before ':' and the profile sits between ':' and '/'.
+        let provider = &model[..colon_idx];
+        let profile = &model[colon_idx + 1..slash_idx];
+        if profile.is_empty() {
+            return Err(format!(
+                "Invalid profile model string '{model}': empty profile name"
+            ));
+        }
         let model_id = &model[slash_idx + 1..];
         (provider, model_id)
     } else {
@@ -133,8 +140,8 @@ mod tests {
     /// Scenario: Parse profile model string with colon prefix
     #[test]
     fn parse_profile_model_string() {
-        // @step Given the model string "profile:anthropic/claude-opus-4"
-        let model = "profile:anthropic/claude-opus-4";
+        // @step Given the model string "anthropic:work/claude-opus-4"
+        let model = "anthropic:work/claude-opus-4";
 
         // @step When parse_model_string is called
         let result = parse_model_string(model).expect("should parse successfully");
@@ -247,7 +254,7 @@ mod tests {
         );
 
         // @step When session_manager.rs is examined
-        let sm_content = std::fs::read_to_string(
+        let sm_content = codelet_test_helpers::source_composition::read_tree_or_file(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("src")
                 .join("session_manager.rs"),

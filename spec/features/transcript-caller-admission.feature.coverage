@@ -218,7 +218,9 @@
                 206,
                 207,
                 208
-              ]
+              ],
+              "firstLine": "use codelet_cli::interactive::StreamEvent;",
+              "lastLine": "}"
             }
           ]
         }

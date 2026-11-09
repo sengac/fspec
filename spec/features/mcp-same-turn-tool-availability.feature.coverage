@@ -4,21 +4,23 @@
       "name": "Same-turn tool invocation after connect",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2722-2756",
+          "file": "rust/tools/src/mcp/helper_tests_03.rs",
+          "lines": "120-156",
           "implMappings": [
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/tool_wrappers.rs",
               "lines": [
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "registrations.push(McpToolRegistration {",
+              "lastLine": "registrations"
             }
           ]
         }
@@ -28,21 +30,23 @@
       "name": "Multiple servers connected in same turn",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2761-2803",
+          "file": "rust/tools/src/mcp/helper_tests_03.rs",
+          "lines": "161-207",
           "implMappings": [
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/tool_wrappers.rs",
               "lines": [
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "registrations.push(McpToolRegistration {",
+              "lastLine": "registrations"
             }
           ]
         }
@@ -52,21 +56,23 @@
       "name": "Disconnect removes tools from running agent",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2808-2844",
+          "file": "rust/tools/src/mcp/helper_tests_03.rs",
+          "lines": "212-251",
           "implMappings": [
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/tool_wrappers.rs",
               "lines": [
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "registrations.push(McpToolRegistration {",
+              "lastLine": "registrations"
             }
           ]
         }
@@ -76,45 +82,58 @@
       "name": "Graceful degradation when ToolServerHandle is not set",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2694-2716",
+          "file": "rust/tools/src/mcp/helper_tests_03.rs",
+          "lines": "90-115",
           "implMappings": [
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/tool_wrappers.rs",
               "lines": [
-                1079,
-                1080,
-                1081,
-                1082,
-                1083,
-                1084,
-                1085,
-                1086,
-                1087,
-                1088,
-                1089,
-                1090,
-                1091,
-                1092,
-                1093,
-                1094,
-                1095,
-                1096,
-                1097,
-                1098,
-                1099,
-                1100,
-                1101,
-                1102,
-                1103,
-                1104,
-                1105,
-                1106,
-                1107,
-                1108,
-                1109,
-                1110
-              ]
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "/// MCP-002: Register newly connected server's tools with the running agent's ToolServerHandle.",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,21 +143,23 @@
       "name": "Previous-turn tools coexist with same-turn tools",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2850-2894",
+          "file": "rust/tools/src/mcp/helper_tests_04.rs",
+          "lines": "4-52",
           "implMappings": [
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/tool_wrappers.rs",
               "lines": [
-                975,
-                976,
-                977,
-                978,
-                979,
-                980,
-                981,
-                982
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "registrations.push(McpToolRegistration {",
+              "lastLine": "registrations"
             }
           ]
         }
@@ -148,21 +169,8 @@
       "name": "ToolServerHandle is stored after agent build",
       "testMappings": [
         {
-          "file": "rust/tools/src/mcp.rs",
-          "lines": "2667-2688",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                4999,
-                5000,
-                5001,
-                5002,
-                5003,
-                5004
-              ]
-            }
-          ]
+          "file": "rust/tools/src/mcp/helper_tests_03.rs",
+          "lines": "63-85"
         }
       ]
     }
@@ -172,12 +180,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/mcp.rs"
+      "rust/tools/src/mcp/helper_tests_03.rs",
+      "rust/tools/src/mcp/helper_tests_04.rs"
     ],
     "implFiles": [
-      "rust/tools/src/mcp.rs",
-      "rust/napi/src/session_manager.rs"
+      "rust/tools/src/mcp/tool_wrappers.rs"
     ],
-    "totalLinesCovered": 275
+    "totalLinesCovered": 297
   }
 }

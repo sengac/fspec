@@ -5,95 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "83-107",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/answer_question.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81
-              ]
-            }
-          ]
+          "lines": "91-122"
         }
       ]
     },
@@ -102,7 +14,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "109-139",
+          "lines": "124-177",
           "implMappings": [
             {
               "file": "rust/fspec/src/answer_question.rs",
@@ -190,7 +102,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! `answer-question` shell-facing CLI bridge (RPC-196).",
+              "lastLine": "}"
             }
           ]
         }
@@ -201,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "141-167",
+          "lines": "179-212",
           "implMappings": [
             {
               "file": "rust/fspec/src/answer_question.rs",
@@ -289,7 +203,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! `answer-question` shell-facing CLI bridge (RPC-196).",
+              "lastLine": "}"
             }
           ]
         }
@@ -300,7 +216,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "169-194",
+          "lines": "214-245",
           "implMappings": [
             {
               "file": "rust/fspec/src/answer_question.rs",
@@ -388,7 +304,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! `answer-question` shell-facing CLI bridge (RPC-196).",
+              "lastLine": "}"
             }
           ]
         }
@@ -399,7 +317,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "196-213",
+          "lines": "247-273",
           "implMappings": [
             {
               "file": "rust/fspec/src/answer_question.rs",
@@ -487,7 +405,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! `answer-question` shell-facing CLI bridge (RPC-196).",
+              "lastLine": "}"
             }
           ]
         }
@@ -498,7 +418,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_answer_question.rs",
-          "lines": "215-267",
+          "lines": "275-339",
           "implMappings": [
             {
               "file": "rust/fspec/src/answer_question.rs",
@@ -586,7 +506,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "//! `answer-question` shell-facing CLI bridge (RPC-196).",
+              "lastLine": "}"
             }
           ]
         }
@@ -601,9 +523,8 @@
       "rust/fspec/tests/cli_answer_question.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/help/configs/answer_question.rs",
       "rust/fspec/src/answer_question.rs"
     ],
-    "totalLinesCovered": 676
+    "totalLinesCovered": 659
   }
 }

@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @integration
 @validator
 @rust
 @providers
 @PROV-063
+@provider-settings
 Feature: Custom provider HTTP request/response lifecycle
   """
   RhaiCustomProvider<LlmProvider> delegates to 7 Rhai functions; request_bridge and response_bridge convert between CompletionRequest/Response and Rhai Dynamic; all Rhai calls run in tokio::task::spawn_blocking; HTTP via reqwest; errors flow through map_error

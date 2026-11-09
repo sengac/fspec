@@ -124,8 +124,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -153,8 +151,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             }
           ]
         }
@@ -284,8 +286,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -313,8 +313,12 @@
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "retained_reminders(self, &boundary.source).map_err(CompactionCommitError::Rejected)?;"
             }
           ]
         }

@@ -1,0 +1,304 @@
+--- nanograph-1.3.0/src/plan/physical.rs	2026-11-07 10:55:27.425887621 +1000
++++ nanograph/src/plan/physical.rs	2026-11-07 10:55:27.440200924 +1000
+@@ -276,10 +276,14 @@
+                 .await
+                 .map_err(|e| datafusion_common::DataFusionError::Execution(e.to_string()));
+         }
+-        Err(datafusion_common::DataFusionError::Execution(format!(
+-            "edge type {} has no dataset locator",
+-            self.edge_type
+-        )))
++        // fspec patch (KGRAPH-072): an edge type that has never held a row has
++        // no dataset; it has no edges, so traversing it yields nothing
++        // (upstream 1.3.0 failed every query that traversed such a type).
++        let max_node_id = self.runtime.next_node_id() as usize;
++        Ok(Arc::new(EdgeIndexPair {
++            csr: Arc::new(CsrIndex::build(max_node_id, &mut [])),
++            csc: Arc::new(CsrIndex::build(max_node_id, &mut [])),
++        }))
+     }
+ 
+     async fn resolve_destination_lookup(&self) -> DFResult<Option<Arc<NodeLookup>>> {
+--- nanograph-1.3.0/Cargo.toml	2026-11-07 10:55:27.424990175 +1000
++++ patches/nanograph/Cargo.toml	2026-11-07 10:55:41.752759882 +1000
+@@ -212,3 +212,6 @@
+     "macros",
+     "time",
+ ]
++
++# fspec: a standalone workspace, like patches/rig-core (KGRAPH-072).
++[workspace]
+--- nanograph-1.3.0/src/store/database/persist.rs
++++ nanograph/src/store/database/persist.rs
+@@ -1247,8 +1247,12 @@
+             .iter()
+             .find(|prop| prop.key)
+             .map(|prop| prop.name.as_str());
++        // fspec patch (BUG-643): the delta pairs rows by id, and an Overwrite
++        // load numbers ids from 0, so an id can hold another key than before;
++        // a merge by key would then add the new key and keep the old row.
++        // Merge by key only when every updated row keeps its key.
+         let can_merge_upsert = previous_entry.is_some()
+-            && key_prop.is_some()
++            && key_prop.is_some_and(|key| upserts_keep_keys(&node_delta, key))
+             && !duplicate_field_names
+             && node_delta.delete_ids.is_empty()
+             && node_delta.inserts.is_none()
+@@ -2197,11 +2201,16 @@
+     }
+ 
+     let dataset = open_dataset_for_locator(locator).await?;
+-    let filter = entity_ids
+-        .iter()
+-        .map(|id| format!("{LANCE_INTERNAL_ID_FIELD} = {id}"))
+-        .collect::<Vec<_>>()
+-        .join(" OR ");
++    // fspec patch (BUG-643): one flat IN list; a chain of one OR per id
++    // recursed once per id when parsed and cloned and overflowed the stack.
++    let filter = format!(
++        "{LANCE_INTERNAL_ID_FIELD} IN ({})",
++        entity_ids
++            .iter()
++            .map(|id| id.to_string())
++            .collect::<Vec<_>>()
++            .join(", ")
++    );
+     let mut scanner = dataset.scan();
+     scanner
+         .project(&[LANCE_INTERNAL_ID_FIELD, "_rowid"])
+@@ -2546,6 +2555,18 @@
+         .collect()
+ }
+ 
++// fspec patch (BUG-643): whether each upserted row has the key of the row it
++// replaces (`before_for_updates` and `upserts` hold the rows pairwise).
++fn upserts_keep_keys(delta: &NodeDelta, key_prop: &str) -> bool {
++    let (Some(before), Some(after)) = (&delta.before_for_updates, &delta.upserts) else {
++        return false;
++    };
++    match (before.column_by_name(key_prop), after.column_by_name(key_prop)) {
++        (Some(before), Some(after)) => before.as_ref() == after.as_ref(),
++        _ => false,
++    }
++}
++
+ fn schema_has_duplicate_field_names(schema: &arrow_schema::Schema) -> bool {
+     let mut seen = HashSet::with_capacity(schema.fields().len());
+     schema
+--- nanograph-1.3.0/src/store/database/maintenance.rs
++++ nanograph/src/store/database/maintenance.rs
+@@ -1737,11 +1737,16 @@
+     }
+ 
+     let dataset = open_dataset_for_locator(locator).await?;
+-    let filter = entity_ids
+-        .iter()
+-        .map(|id| format!("{LANCE_INTERNAL_ID_FIELD} = {id}"))
+-        .collect::<Vec<_>>()
+-        .join(" OR ");
++    // fspec patch (BUG-643): one flat IN list; a chain of one OR per id
++    // recursed once per id when parsed and cloned and overflowed the stack.
++    let filter = format!(
++        "{LANCE_INTERNAL_ID_FIELD} IN ({})",
++        entity_ids
++            .iter()
++            .map(|id| id.to_string())
++            .collect::<Vec<_>>()
++            .join(", ")
++    );
+ 
+     let mut scanner = dataset.scan();
+     scanner
+--- nanograph-1.3.0/src/store/lance_io.rs
++++ nanograph/src/store/lance_io.rs
+@@ -559,11 +559,16 @@
+             ))
+         })?;
+ 
+-    let predicate = ids
+-        .iter()
+-        .map(|id| format!("{} = {}", LANCE_INTERNAL_ID_FIELD, id))
+-        .collect::<Vec<_>>()
+-        .join(" OR ");
++    // fspec patch (BUG-643): one flat IN list; a chain of one OR per id
++    // recursed once per id when parsed and cloned and overflowed the stack.
++    let predicate = format!(
++        "{} IN ({})",
++        LANCE_INTERNAL_ID_FIELD,
++        ids.iter()
++            .map(|id| id.to_string())
++            .collect::<Vec<_>>()
++            .join(", ")
++    );
+     dataset
+         .delete(&predicate)
+         .await
+--- nanograph-1.3.0/src/store/namespace.rs
++++ nanograph/src/store/namespace.rs
+@@ -565,11 +565,16 @@
+     } else {
+         "id"
+     };
+-    let predicate = ids
+-        .iter()
+-        .map(|id| format!("{} = {}", id_column, id))
+-        .collect::<Vec<_>>()
+-        .join(" OR ");
++    // fspec patch (BUG-643): one flat IN list; a chain of one OR per id
++    // recursed once per id when parsed and cloned and overflowed the stack.
++    let predicate = format!(
++        "{} IN ({})",
++        id_column,
++        ids.iter()
++            .map(|id| id.to_string())
++            .collect::<Vec<_>>()
++            .join(", ")
++    );
+     dataset
+         .delete(&predicate)
+         .await
+--- nanograph-1.3.0/src/store/namespace_commit.rs
++++ nanograph/src/store/namespace_commit.rs
+@@ -380,11 +380,16 @@
+             ))
+         })?;
+ 
+-    let filter = entity_ids
+-        .iter()
+-        .map(|id| format!("{LANCE_INTERNAL_ID_FIELD} = {id}"))
+-        .collect::<Vec<_>>()
+-        .join(" OR ");
++    // fspec patch (BUG-643): one flat IN list; a chain of one OR per id
++    // recursed once per id when parsed and cloned and overflowed the stack.
++    let filter = format!(
++        "{LANCE_INTERNAL_ID_FIELD} IN ({})",
++        entity_ids
++            .iter()
++            .map(|id| id.to_string())
++            .collect::<Vec<_>>()
++            .join(", ")
++    );
+ 
+     let mut scanner = dataset.scan();
+     scanner.with_row_id();
+--- nanograph-1.3.0/src/store/export.rs
++++ nanograph/src/store/export.rs
+@@ -182,6 +182,118 @@
+     Ok(rows)
+ }
+ 
++/// fspec patch (KGRAPH-078): the portable rows (`{edge, from, to, data}`,
++/// endpoints by `@key`) of one edge type, read at the committed state
++/// `metadata` describes. Only the edge's dataset and its endpoint node
++/// types are read, so a caller can read an edge type's properties, which a
++/// traversal query cannot return, without exporting the whole graph.
++pub async fn build_edge_export_rows(
++    metadata: &DatabaseMetadata,
++    edge_type: &str,
++) -> Result<Vec<JsonValue>> {
++    let edge = metadata
++        .schema_ir()
++        .edge_types()
++        .find(|edge| edge.name == edge_type)
++        .ok_or_else(|| NanoError::Storage(format!("unknown edge type '{}'", edge_type)))?;
++    let mut keys: HashMap<String, HashMap<u64, String>> = HashMap::new();
++    for node_type in [&edge.src_type_name, &edge.dst_type_name] {
++        if keys.contains_key(node_type.as_str()) {
++            continue;
++        }
++        let node = metadata
++            .schema_ir()
++            .node_types()
++            .find(|node| &node.name == node_type)
++            .ok_or_else(|| NanoError::Storage(format!("unknown node type '{}'", node_type)))?;
++        let key_prop = node
++            .properties
++            .iter()
++            .find(|prop| prop.key)
++            .map(|prop| prop.name.as_str())
++            .ok_or_else(|| {
++                NanoError::Storage(format!("node type '{}' has no @key property", node.name))
++            })?;
++        let mut tokens = HashMap::new();
++        if let Some(batch) = read_dataset_batch(metadata.node_dataset_locator(&node.name)).await? {
++            let id_arr = batch
++                .column_by_name("id")
++                .and_then(|col| col.as_any().downcast_ref::<UInt64Array>())
++                .ok_or_else(|| {
++                    NanoError::Storage(format!(
++                        "node batch '{}' missing UInt64 id column",
++                        node.name
++                    ))
++                })?;
++            let key_idx = node_property_index(batch.schema().as_ref(), key_prop).ok_or_else(|| {
++                NanoError::Storage(format!(
++                    "node batch '{}' missing @key property '{}'",
++                    node.name, key_prop
++                ))
++            })?;
++            let key_array = batch.column(key_idx).clone();
++            for row_idx in 0..batch.num_rows() {
++                tokens.insert(
++                    id_arr.value(row_idx),
++                    export_key_token(&key_array, row_idx, key_prop)?,
++                );
++            }
++        }
++        keys.insert(node.name.clone(), tokens);
++    }
++    let mut rows = Vec::new();
++    let Some(batch) = read_dataset_batch(metadata.edge_dataset_locator(&edge.name)).await? else {
++        return Ok(rows);
++    };
++    let column = |name: &str| {
++        batch
++            .column_by_name(name)
++            .and_then(|col| col.as_any().downcast_ref::<UInt64Array>())
++            .ok_or_else(|| {
++                NanoError::Storage(format!(
++                    "edge batch '{}' missing UInt64 {} column",
++                    edge.name, name
++                ))
++            })
++    };
++    let src_arr = column("src")?;
++    let dst_arr = column("dst")?;
++    let endpoint = |node_type: &str, id: u64| {
++        keys.get(node_type)
++            .and_then(|tokens| tokens.get(&id))
++            .cloned()
++            .ok_or_else(|| {
++                NanoError::Storage(format!(
++                    "cannot export portable edge '{}': {} node {} is missing an @key token",
++                    edge.name, node_type, id
++                ))
++            })
++    };
++    for row_idx in 0..batch.num_rows() {
++        let from = endpoint(&edge.src_type_name, src_arr.value(row_idx))?;
++        let to = endpoint(&edge.dst_type_name, dst_arr.value(row_idx))?;
++        let data = export_data_map(
++            &batch,
++            row_idx,
++            &[0, 1, 2],
++            edge.properties.iter().filter_map(|prop| {
++                if is_embedding_property(prop) {
++                    Some(prop.name.as_str())
++                } else {
++                    None
++                }
++            }),
++        );
++        rows.push(serde_json::json!({
++            "edge": edge.name,
++            "from": from,
++            "to": to,
++            "data": data,
++        }));
++    }
++    Ok(rows)
++}
++
+ async fn read_dataset_batch(locator: Option<DatasetLocator>) -> Result<Option<RecordBatch>> {
+     let Some(locator) = locator else {
+         return Ok(None);

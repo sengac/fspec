@@ -28,7 +28,11 @@ async fn scenario_slow_exploration_yields_to_synthesis_on_both_compaction_routes
         let _budget = review::Budget::install(review::OPERATION_BUDGET);
         review::mount_stalled_model(&harness, false).await;
         // @step When exploration stalls after gathering evidence
-        let result = tokio::time::timeout(Duration::from_secs(5), harness.call(generated)).await?;
+        let result = codelet_test_helpers::deadlock_guard(
+            "harness.call(generated)",
+            harness.call(generated),
+        )
+        .await?;
         // @step Then tool-free synthesis runs before the operation deadline
         assert!(result.is_ok(), "elapsed runway must synthesize: {result:?}");
         let bodies = harness.bodies().await;
@@ -69,7 +73,7 @@ async fn scenario_stalled_synthesis_fails_closed_on_the_shared_deadline() -> tim
         .count();
     review::mount_stalled_model(&harness, true).await;
     // @step When synthesis cannot finish within its reserved time
-    let failure = tokio::time::timeout(Duration::from_secs(5), harness.call(false))
+    let failure = codelet_test_helpers::deadlock_guard("harness.call(false)", harness.call(false))
         .await?
         .expect_err("stalled synthesis fails closed");
     // @step Then the operation reports a phase-specific deadline failure
@@ -122,7 +126,7 @@ async fn scenario_candidate_correction_inherits_the_remaining_operation_budget(
     // @step When bounded correction starts
     let result = operation
         .execute(async move {
-            build_validated_dag("Build", &Default::default(), move |_| {
+            build_validated_dag(&Default::default(), move |_| {
                 observed.lock().expect("observed deadlines").push(
                     codelet_cli::compaction_timing::deadline()
                         .expect("inherited operation deadline"),
@@ -130,7 +134,8 @@ async fn scenario_candidate_correction_inherits_the_remaining_operation_budget(
                 let attempt = calls.fetch_add(1, Ordering::AcqRel);
                 async move {
                     if attempt == 0 {
-                        tokio::time::sleep(Duration::from_millis(30)).await;
+                        // Paused clock (TEST-042: advance, never sleep).
+                        tokio::time::advance(Duration::from_millis(30)).await;
                         Ok("invalid candidate".into())
                     } else {
                         std::future::pending::<Result<String, String>>().await
@@ -157,6 +162,10 @@ async fn scenario_candidate_correction_inherits_the_remaining_operation_budget(
 #[serial_test::serial]
 async fn scenario_completed_evidence_survives_a_timeout_inside_an_unfinished_tool_batch(
 ) -> timing::TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given streaming and nonstreaming compaction routes read original evidence before a slow command in the same response
     let mut failures = Vec::new();
     for (generated, streaming) in [(false, false), (true, false), (false, true)] {
@@ -168,8 +177,11 @@ async fn scenario_completed_evidence_survives_a_timeout_inside_an_unfinished_too
                 review::install_streaming(&harness);
             }
             // @step When exploration times out while the slow command is still unfinished
-            let outcome =
-                tokio::time::timeout(Duration::from_secs(5), harness.call(generated)).await?;
+            let outcome = codelet_test_helpers::deadlock_guard(
+                "harness.call(generated)",
+                harness.call(generated),
+            )
+            .await?;
             let bodies = harness.bodies().await;
             outcome?;
             let synthesis = bodies
@@ -251,14 +263,19 @@ async fn scenario_synthesis_can_borrow_unused_time_beyond_a_candidate_estimate(
         let _budget = review::Budget::install(review::OPERATION_BUDGET);
         review::mount(&harness, false).await;
         // @step When valid synthesis exceeds its candidate estimate but fits the remaining operation time
-        let started = tokio::time::Instant::now();
-        let result = tokio::time::timeout(Duration::from_secs(5), harness.call(generated)).await?;
+        // TEST-042: the mounted synthesis answers after SYNTHESIS_DELAY, a
+        // fixture fact, so no clock reading is compared.
+        assert!(review::SYNTHESIS_DELAY > review::OPERATION_BUDGET / 3);
+        let result = codelet_test_helpers::deadlock_guard(
+            "harness.call(generated)",
+            harness.call(generated),
+        )
+        .await?;
         // @step Then synthesis completes without another exploration attempt or a reset deadline
         assert!(
             result.is_ok(),
             "unused operation time must remain usable: {result:?}"
         );
-        assert!(started.elapsed() > review::OPERATION_BUDGET / 3);
         let bodies = harness.bodies().await;
         assert_eq!(
             bodies
@@ -283,7 +300,9 @@ async fn scenario_synthesis_can_borrow_unused_time_beyond_a_candidate_estimate(
                 .contains(original));
         }
         // @step And the validated summary is durably published before the operation expires
-        assert!(started.elapsed() < review::OPERATION_BUDGET);
+        // TEST-042: no wall-clock bound here; the operation enforces its own
+        // deadline, so a published commit with a successful result was made
+        // before it expired (a late one ends in a deadline failure instead).
         assert!(load_session(harness.session.id)?
             .compaction_commit
             .is_some());

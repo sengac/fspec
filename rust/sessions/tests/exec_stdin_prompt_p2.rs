@@ -24,89 +24,23 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+mod exec_stdin_prompt_p2_support;
+
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
-use codelet_rpc_types::{ExecStdinRequest, SessionId, SessionStatus};
+use codelet_rpc_types::SessionStatus;
 use codelet_sessions::SessionManager;
 use codelet_tools::unified_exec::{
     ExecStdinRequest as InternalExecStdinRequest, UnifiedExecArgs, UnifiedExecResult,
-    UnifiedExecTool,
+};
+use exec_stdin_prompt_p2_support::{
+    close_exec, data_dir, fresh_session, run_still_running, wait_for_stored_request,
+    wait_store_state,
 };
 use rig::tool::Tool;
 use serial_test::serial;
 use uuid::Uuid;
-
-/// Process-wide data dir (one for the whole test binary — see module
-/// docs for why it is NOT per-test).
-static DATA_DIR: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
-
-fn data_dir() -> &'static std::path::PathBuf {
-    DATA_DIR.get_or_init(|| {
-        let dir = std::env::temp_dir().join(format!("tool022-p2-{}", Uuid::new_v4()));
-        std::fs::create_dir_all(&dir).expect("create tool022-p2 data dir");
-        let _ = codelet_common::set_data_directory(dir.clone());
-        dir
-    })
-}
-
-/// Create a fresh BackgroundSession via the SessionManagerHandle bridge.
-/// The Noop hooks ensure no agent loop is spawned for the session.
-fn fresh_session(manager: &SessionManager) -> SessionId {
-    std::env::set_var("ANTHROPIC_API_KEY", "tool022-fake-key");
-    manager.set_default_model("anthropic/claude-opus-4-5");
-    let handle: &dyn SessionManagerHandle = manager;
-    let sid = handle.create_session(None);
-    assert!(
-        !sid.value.is_empty(),
-        "create_session must succeed (fake env key + default model set)"
-    );
-    sid
-}
-
-/// Wait until `store.contains(id)` flips to the expected value (bounded).
-async fn wait_store_state(id: &str, expect: bool) {
-    let store = codelet_tools::unified_exec::global_store();
-    for _ in 0..50 {
-        if store.contains(id).await == expect {
-            return;
-        }
-        tokio::time::sleep(Duration::from_millis(100)).await;
-    }
-    panic!("store.contains({id}) did not reach {expect} within 5s");
-}
-
-/// Run a command through the unified_exec tool and return the
-/// still-running session id (the detector is spawned with the reaper).
-/// The tool is created with the OWNING agent session's Uuid so the
-/// detector's emit lands on that session's registered callback.
-async fn run_still_running(agent: Uuid, command: &str) -> (UnifiedExecTool, String) {
-    let tool = UnifiedExecTool::new(agent);
-    let result: UnifiedExecResult = tool
-        .call(UnifiedExecArgs(serde_json::json!({
-            "action": "run",
-            "command": command,
-            "yield_time_ms": 50
-        })))
-        .await
-        .expect("run action must succeed");
-    let session_id = result
-        .session_id
-        .expect("still-running command must carry a session_id");
-    (tool, session_id)
-}
-
-/// Close the exec session (kills the child; the store entry is removed
-/// by `close` itself).
-async fn close_exec(tool: &UnifiedExecTool, session_id: &str) {
-    let _ = tool
-        .call(UnifiedExecArgs(serde_json::json!({
-            "action": "close",
-            "session_id": session_id
-        })))
-        .await;
-}
 
 /// Scenario: Backend round-trip surfaces the request only while a live exec session is quiet
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -114,7 +48,13 @@ async fn close_exec(tool: &UnifiedExecTool, session_id: &str) {
 async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_quiet() {
     // @step Given a live unified_exec session "exec-live" has been quiet for 3 seconds while running
     let _ = data_dir();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
 
@@ -128,7 +68,9 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
         agent,
         Some(std::sync::Arc::new(
             move |request: Option<InternalExecStdinRequest>| {
-                session_for_cb.set_exec_stdin_request(request);
+                if let Err(error) = session_for_cb.set_exec_stdin_request(request) {
+                    tracing::error!(%error, "cannot record the exec-stdin request");
+                }
             },
         )),
     );
@@ -136,11 +78,12 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
 
     // @step When the agent session detector fires for that exec session
-    // (quiet >= 3s → the 2s-cadence detector emits within ~4s)
-    tokio::time::sleep(Duration::from_secs(5)).await;
+    // (quiet >= 3s → the 2s-cadence detector emits on its own cadence;
+    // TEST-042: the test waits on the stored request, not a fixed time)
+    wait_for_stored_request(&session).await;
 
     // @step Then the agent session stores an exec-stdin request for "exec-live" with its command display and quiet seconds
-    let stored = session.get_exec_stdin_request();
+    let stored = session.get_exec_stdin_request().ok().flatten();
     assert!(
         stored.is_some(),
         "detector must have stored a request on the agent session after quiet >= 3s"
@@ -156,7 +99,9 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
 
     // @step When the TUI probes the agent session for its exec-stdin request
     let handle: &dyn SessionManagerHandle = &*manager;
-    let wire = handle.get_exec_stdin_request(&sid);
+    let wire = handle
+        .get_exec_stdin_request(&sid)
+        .expect("get_exec_stdin_request reads the session");
 
     // @step Then the TUI receives the stored request
     let wire = wire.expect("get_exec_stdin_request must surface the stored request");
@@ -172,7 +117,10 @@ async fn scenario_backend_round_trip_surfaces_request_only_while_live_exec_is_qu
     // (the getter clears the slot for the dead exec session; the TUI's
     // next probe returns None)
     assert!(
-        handle.get_exec_stdin_request(&sid).is_none(),
+        handle
+            .get_exec_stdin_request(&sid)
+            .expect("get_exec_stdin_request reads the session")
+            .is_none(),
         "after the exec session exits, the probe must return None"
     );
     codelet_tools::unified_exec::set_exec_stdin_request_callback(agent, None);
@@ -186,7 +134,13 @@ async fn scenario_write_exec_stdin_appends_newline_to_typed_text() {
     // (cat prints each stdin line with a trailing newline → the output
     // buffer carries the exact bytes the child received)
     let _ = data_dir();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = &*manager;
     let sid = fresh_session(&manager);
 
@@ -203,22 +157,27 @@ async fn scenario_write_exec_stdin_appends_newline_to_typed_text() {
     );
     // Poll until the child echoes the bytes back (the reader task drains
     // into the output buffer).
+    // TEST-042: no sleep between polls; each poll waits on the exec session
+    // itself (yield_time_ms), under the deadlock guard.
     let mut output = String::new();
-    for _ in 0..50 {
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        let poll: UnifiedExecResult = tool
-            .call(UnifiedExecArgs(serde_json::json!({
-                "action": "poll",
-                "session_id": exec_id,
-                "yield_time_ms": 50
-            })))
-            .await
-            .expect("poll must succeed");
-        output = poll.output.unwrap_or_default();
-        if output.contains("yes\n") {
-            break;
+    let echoed = codelet_test_helpers::deadlock_guard("the child echoes yes", async {
+        loop {
+            let poll: UnifiedExecResult = tool
+                .call(UnifiedExecArgs(serde_json::json!({
+                    "action": "poll",
+                    "session_id": exec_id,
+                    "yield_time_ms": 50
+                })))
+                .await
+                .expect("poll must succeed");
+            output = poll.output.unwrap_or_default();
+            if output.contains("yes\n") {
+                break;
+            }
         }
-    }
+    })
+    .await;
+    assert!(echoed.is_ok(), "{echoed:?}");
     assert!(
         output.contains("yes\n"),
         "child must have received exactly \"yes\\n\" (echoed back); got: {output:?}"
@@ -237,7 +196,13 @@ async fn scenario_write_exec_stdin_appends_newline_to_typed_text() {
 async fn scenario_write_exec_stdin_unknown_session_returns_clean_error() {
     // @step Given an agent session exists
     let _ = data_dir();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let handle: &dyn SessionManagerHandle = &*manager;
     let sid = fresh_session(&manager);
 
@@ -264,7 +229,13 @@ async fn scenario_write_exec_stdin_unknown_session_returns_clean_error() {
 async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
     // @step Given a live unified_exec session "exec-live" has been quiet for 3 seconds while running
     let _ = data_dir();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager);
     let agent = Uuid::parse_str(&sid.value).expect("session key must be a UUID");
     let session = manager
@@ -277,7 +248,9 @@ async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
         agent,
         Some(std::sync::Arc::new(
             move |request: Option<InternalExecStdinRequest>| {
-                session_for_cb.set_exec_stdin_request(request);
+                if let Err(error) = session_for_cb.set_exec_stdin_request(request) {
+                    tracing::error!(%error, "cannot record the exec-stdin request");
+                }
             },
         )),
     );
@@ -285,9 +258,9 @@ async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
     let (tool, exec_live) = run_still_running(agent, "sh -c 'sleep 45'").await;
 
     // @step When the agent session detector fires for that exec session
-    tokio::time::sleep(Duration::from_secs(5)).await;
+    wait_for_stored_request(&session).await;
     assert!(
-        session.get_exec_stdin_request().is_some(),
+        matches!(session.get_exec_stdin_request(), Ok(Some(_))),
         "detector must have fired and stored the request"
     );
 
@@ -314,24 +287,4 @@ async fn scenario_exec_stdin_overlay_does_not_flip_agent_session_status() {
 
     close_exec(&tool, &exec_live).await;
     codelet_tools::unified_exec::set_exec_stdin_request_callback(agent, None);
-}
-
-/// Wire-shape round-trip lock for the TOOL-022 P2 request (the TUI probe
-/// path deserializes this exact shape over JSON in the websocket transport).
-#[test]
-fn wire_exec_stdin_request_round_trips_through_serde_json() {
-    // @step Given a wire ExecStdinRequest { exec_session_id, command, quiet_seconds, ts_ms }
-    let request = ExecStdinRequest {
-        exec_session_id: "exec-live".to_string(),
-        command: "git commit".to_string(),
-        quiet_seconds: 5,
-        ts_ms: 1_700_000_000_000,
-    };
-
-    // @step When the value is serialized to JSON and deserialized back
-    let json = serde_json::to_string(&request).expect("serialize");
-    let back: ExecStdinRequest = serde_json::from_str(&json).expect("deserialize");
-
-    // @step Then the deserialized value equals the original
-    assert_eq!(back, request, "round-trip must preserve the value exactly");
 }

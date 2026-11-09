@@ -37,9 +37,7 @@ use codelet_rpc_types::{SessionEvent, SessionId, SessionInfo};
 use common::{connect_with_retry, make_workspace};
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
-use tokio::time::timeout;
 use tokio_tungstenite::tungstenite::Message;
 
 /// Bind a daemon with the stub session manager on the CURRENT tokio
@@ -74,7 +72,7 @@ async fn collect_events(
 ) -> Vec<SessionEvent> {
     let mut out = Vec::new();
     while out.len() < count {
-        match timeout(Duration::from_secs(3), rx.recv()).await {
+        match codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv()).await {
             Ok(Ok(ev)) => out.push(ev),
             _ => break,
         }
@@ -103,7 +101,8 @@ async fn scenario_multi_client_created_and_removed_fan_out() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("client A create_session");
+        .expect("client A create_session")
+        .expect("the daemon creates the session");
 
     // @step Then both client A and client B observe a SessionEvent::Created carrying the new session's SessionInfo on their session-event stream
     let events_a = collect_events(&mut rx_a, 1).await;
@@ -160,14 +159,16 @@ async fn scenario_connecting_client_receives_open_session_snapshot() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("client A create_session");
+        .expect("client A create_session")
+        .expect("the daemon creates the session");
 
     // @step And the daemon's in-memory session map holds that session
     let manager_live = ws_a
         .client()
         .list_live_sessions(context::current())
         .await
-        .expect("list_live_sessions rpc");
+        .expect("list_live_sessions rpc")
+        .expect("the live sessions are listed");
     assert!(
         manager_live.iter().any(|s| s == &sid),
         "precondition: the seeded session must be live in the manager"
@@ -180,7 +181,7 @@ async fn scenario_connecting_client_receives_open_session_snapshot() {
 
     // @step Then client B receives an open-session snapshot containing that session as part of the connection handshake, with no RPC poll from the client
     let mut snapshot_rx = ws_b.session_snapshot_rx();
-    let snapshot = timeout(Duration::from_secs(3), snapshot_rx.recv())
+    let snapshot = codelet_test_helpers::deadlock_guard("snapshot_rx.recv()", snapshot_rx.recv())
         .await
         .expect("client B must receive an open-session snapshot during the handshake")
         .expect("snapshot broadcast must not be closed");
@@ -202,7 +203,8 @@ async fn scenario_connecting_client_receives_empty_snapshot_when_no_sessions() {
         .client()
         .list_live_sessions(context::current())
         .await
-        .expect("list_live_sessions rpc");
+        .expect("list_live_sessions rpc")
+        .expect("the live sessions are listed");
     assert!(live.is_empty(), "precondition: no live sessions");
 
     // @step When a client connects to the daemon
@@ -212,7 +214,7 @@ async fn scenario_connecting_client_receives_empty_snapshot_when_no_sessions() {
 
     // @step Then the client receives an EMPTY open-session snapshot during the connection handshake
     let mut snapshot_rx = ws.session_snapshot_rx();
-    let snapshot = timeout(Duration::from_secs(3), snapshot_rx.recv())
+    let snapshot = codelet_test_helpers::deadlock_guard("snapshot_rx.recv()", snapshot_rx.recv())
         .await
         .expect("even with no sessions, the handshake must deliver a (empty) snapshot")
         .expect("snapshot broadcast must not be closed");
@@ -253,11 +255,11 @@ async fn scenario_client_pushed_session_event_frames_rejected() {
     .expect("send SessionSnapshot");
 
     // Allow the server task to process both frames.
-    let mut waited = 0u64;
-    while stats.rejected_envelopes() < base_rejected + 2 && waited < 2_000 {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        waited += 10;
-    }
+    // TEST-042: polled between yields, under the deadlock guard.
+    let _ = codelet_test_helpers::wait_until("the server counts the rejected frames", || {
+        std::future::ready(stats.rejected_envelopes() >= base_rejected + 2)
+    })
+    .await;
 
     // @step Then the server counts both frames in rejected_envelopes, records the variant names SessionEvent and SessionSnapshot in rejected_variants, and the connection stays healthy
     assert_eq!(

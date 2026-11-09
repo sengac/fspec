@@ -1,5 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-// Feature: spec/features/foundation-discovery-agent-guidance.feature
+// Feature: spec/features/foundation-field-reminder-dedup.feature
 //
 // Integration tests for the shared foundation/guidance.rs module (the single
 // source of truth for the 8-field draft table, full-field scan, progress
@@ -245,5 +245,242 @@ fn the_field_reminder_text_comes_from_the_shared_guidance_module_with_examples()
         guidance_src_path.exists(),
         "foundation/guidance.rs must exist: {}",
         guidance_src_path.display()
+    );
+}
+
+// ---------- scenarios moved from DISC-001 and FOUND-010 (COV-072) ----------
+
+/// A draft whose first `filled` fields (in the 8-field order) hold real
+/// values and whose remaining fields still hold their placeholders.
+fn draft_filled_up_to(filled: usize) -> Value {
+    let mut draft = placeholder_draft();
+    let real: [(&str, Value); 7] = [
+        ("/project/name", json!("fspec")),
+        (
+            "/project/vision",
+            json!("Specs that stay in sync with code"),
+        ),
+        ("/project/projectType", json!("cli-tool")),
+        ("/problemSpace/primaryProblem/title", json!("Spec drift")),
+        (
+            "/problemSpace/primaryProblem/description",
+            json!("Specs drift out of sync with code"),
+        ),
+        ("/solutionSpace/overview", json!("A CLI that manages specs")),
+        (
+            "/solutionSpace/capabilities",
+            json!([{"name": "Spec Validation", "description": "Validates Gherkin"}]),
+        ),
+    ];
+    for (pointer, value) in real.into_iter().take(filled) {
+        *draft.pointer_mut(pointer).expect("draft field") = value;
+    }
+    draft
+}
+
+/// Dispatch update-foundation projectName 'fspec' against `draft`; the
+/// systemReminder naming the next unfilled field.
+fn next_field_reminder_after_update(draft: &Value) -> String {
+    let tmp = TempDir::new().expect("tempdir");
+    write_draft(tmp.path(), draft);
+    let result = dispatch_command(DispatchRequest {
+        command: "update-foundation".to_string(),
+        args_json: json!({ "section": "projectName", "content": "fspec" }).to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(result.success, "expected success; got {result:?}");
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    data["systemReminder"]
+        .as_str()
+        .unwrap_or_default()
+        .to_string()
+}
+
+#[test]
+fn the_project_type_reminder_asks_the_ai_to_determine_the_type_and_verify_it_with_the_human() {
+    // @step Given a project root whose spec/foundation.json.draft has project.name and project.vision filled and project.projectType "[QUESTION: What type of project is this?]"
+    let mut draft = draft_filled_up_to(2);
+    draft["project"]["projectType"] = json!("[QUESTION: What type of project is this?]");
+
+    // @step When I dispatch update-foundation with section='projectName' and content='fspec'
+    let reminder = next_field_reminder_after_update(&draft);
+
+    // @step Then the result systemReminder contains 'Field 3/8: project.projectType'
+    assert!(
+        reminder.contains("Field 3/8: project.projectType\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Analyze codebase to determine project type. Verify with human.'
+    assert!(
+        reminder.contains("\nAnalyze codebase to determine project type. Verify with human.\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder lists the example project types cli-tool, web-app and library
+    assert!(
+        reminder.contains(
+            "Examples (non-exhaustive, any short descriptor is valid): cli-tool, web-app, library,"
+        ),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Run: fspec update-foundation projectType "<type>"'
+    assert!(
+        reminder.contains("Run: fspec update-foundation projectType \"<type>\""),
+        "reminder: {reminder}"
+    );
+}
+
+#[test]
+fn a_detected_project_type_is_shown_in_its_reminder_for_the_human_to_verify() {
+    // @step Given a project root whose spec/foundation.json.draft has project.name and project.vision filled and project.projectType "[DETECTED: web-app]"
+    let mut draft = draft_filled_up_to(2);
+    draft["project"]["projectType"] = json!("[DETECTED: web-app]");
+
+    // @step When I dispatch update-foundation with section='projectName' and content='fspec'
+    let reminder = next_field_reminder_after_update(&draft);
+
+    // @step Then the result systemReminder contains 'Field 3/8: project.projectType'
+    assert!(
+        reminder.contains("Field 3/8: project.projectType\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains '[DETECTED: web-app] Analyze codebase to determine project type. Verify with human.'
+    assert!(
+        reminder.contains(
+            "[DETECTED: web-app] Analyze codebase to determine project type. Verify with human."
+        ),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Run: fspec update-foundation projectType "<type>"'
+    assert!(
+        reminder.contains("Run: fspec update-foundation projectType \"<type>\""),
+        "reminder: {reminder}"
+    );
+}
+
+#[test]
+fn the_primary_problem_reminder_asks_for_the_user_perspective() {
+    // @step Given a project root whose spec/foundation.json.draft has the project fields filled and problemSpace.primaryProblem.title "[QUESTION: What problem does this solve?]"
+    let draft = draft_filled_up_to(3);
+    assert_eq!(
+        draft["problemSpace"]["primaryProblem"]["title"],
+        json!("[QUESTION: What problem does this solve?]")
+    );
+
+    // @step When I dispatch update-foundation with section='projectName' and content='fspec'
+    let reminder = next_field_reminder_after_update(&draft);
+
+    // @step Then the result systemReminder contains 'Field 4/8: problemSpace.primaryProblem.title'
+    assert!(
+        reminder.contains("Field 4/8: problemSpace.primaryProblem.title\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'CRITICAL: Think from USER perspective. WHO uses this (persona)?'
+    assert!(
+        reminder.contains("CRITICAL: Think from USER perspective. WHO uses this (persona)?"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'WHAT problem do THEY face? WHY do they need this solution?'
+    assert!(
+        reminder.contains("WHAT problem do THEY face? WHY do they need this solution?"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Requires title, description, impact.'
+    assert!(
+        reminder.contains("Requires title, description, impact."),
+        "reminder: {reminder}"
+    );
+}
+
+#[test]
+fn the_capabilities_reminder_asks_for_what_users_can_do_not_how() {
+    // @step Given a project root whose spec/foundation.json.draft has every field before solutionSpace.capabilities filled and a capability "[QUESTION: What can users DO?]"
+    // (an empty capabilities array is skipped by the chain, like the
+    // TypeScript scan: only placeholder entries make it the next field.)
+    let mut draft = draft_filled_up_to(6);
+    draft["solutionSpace"]["capabilities"] = json!([{
+        "name": "[QUESTION: What can users DO?]",
+        "description": "[QUESTION: What can users DO?]"
+    }]);
+
+    // @step When I dispatch update-foundation with section='projectName' and content='fspec'
+    let reminder = next_field_reminder_after_update(&draft);
+
+    // @step Then the result systemReminder contains 'Field 7/8: solutionSpace.capabilities'
+    assert!(
+        reminder.contains("Field 7/8: solutionSpace.capabilities\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'List 3-7 high-level abilities users have. Focus on WHAT not HOW.'
+    assert!(
+        reminder.contains("List 3-7 high-level abilities users have. Focus on WHAT not HOW."),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Example: "Spec Validation" (WHAT), NOT "Uses Cucumber parser" (HOW)'
+    assert!(
+        reminder
+            .contains("Example: \"Spec Validation\" (WHAT), NOT \"Uses Cucumber parser\" (HOW)"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Run: fspec add-capability "Capability Name" "Capability Description"'
+    assert!(
+        reminder
+            .contains("Run: fspec add-capability \"Capability Name\" \"Capability Description\""),
+        "reminder: {reminder}"
+    );
+}
+
+#[test]
+fn the_personas_reminder_asks_for_every_user_type_with_goals_and_pain_points() {
+    // @step Given a project root whose spec/foundation.json.draft has every field but personas filled and a persona "[QUESTION: Who uses this?]"
+    let draft = draft_filled_up_to(7);
+    assert_eq!(
+        draft["personas"][0]["name"],
+        json!("[QUESTION: Who uses this?]")
+    );
+
+    // @step When I dispatch update-foundation with section='projectName' and content='fspec'
+    let reminder = next_field_reminder_after_update(&draft);
+
+    // @step Then the result systemReminder contains 'Field 8/8: personas'
+    assert!(
+        reminder.contains("Field 8/8: personas\n"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Identify ALL user types from interactions.'
+    assert!(
+        reminder.contains("Identify ALL user types from interactions."),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'CLI tools: who runs commands? Web apps: who uses UI + who calls API?'
+    assert!(
+        reminder.contains("CLI tools: who runs commands? Web apps: who uses UI + who calls API?"),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Ask human about goals and pain points.'
+    assert!(
+        reminder.contains("Ask human about goals and pain points."),
+        "reminder: {reminder}"
+    );
+
+    // @step And the result systemReminder contains 'Run: fspec add-persona "Persona Name" "Persona Description" --goal "Primary goal"'
+    assert!(
+        reminder.contains(
+            "Run: fspec add-persona \"Persona Name\" \"Persona Description\" --goal \"Primary goal\""
+        ),
+        "reminder: {reminder}"
     );
 }

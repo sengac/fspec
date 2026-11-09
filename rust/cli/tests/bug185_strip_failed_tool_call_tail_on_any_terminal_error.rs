@@ -24,6 +24,8 @@
     clippy::uninlined_format_args
 )]
 
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use codelet_cli::interactive_helpers::validate_no_orphan_tool_calls;
 use rig::message::{
     AssistantContent, Message, ToolCall, ToolFunction, ToolResultContent, UserContent,
@@ -71,14 +73,7 @@ fn user_text_message(text: &str) -> Message {
 }
 
 fn stream_loop_source() -> String {
-    let source = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/interactive/stream_loop.rs"
-    ));
-    match source {
-        Ok(s) => s,
-        Err(e) => panic!("failed to read stream_loop.rs: {e}"),
-    }
+    stream_loop_source_tree::stream_loop_source()
 }
 
 // =============================================================================
@@ -348,7 +343,7 @@ fn bug185_terminal_arm_strips_for_any_terminal_error() {
     // The terminal arm lives after the NAPI-008 log comment (unique to the
     // final terminal arm) and must call the strip there.
     let terminal_arm_pos = source
-        .find("NAPI-008: Log error with full details")
+        .find("API error received from provider") // BUG-306: stream_loop/terminal_error.rs
         .expect("final terminal error arm present");
     let strip_pos = source
         .find("strip_failed_tool_call_tail")

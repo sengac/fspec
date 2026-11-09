@@ -12,8 +12,8 @@
 //! seed emit re-adds cache via `TokenDisplayUpdate::total_input()` and a true
 //! 180k context (30k raw + 150k cache_read) is emitted as 330k.
 
-use std::fs;
-use std::path::PathBuf;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 
 use codelet_cli::interactive::flush_partial_state_before_compaction;
 use codelet_cli::interactive::output::TokenInfo;
@@ -69,9 +69,7 @@ fn seed_from_tracker(session: &Session) -> StreamingTokenDisplay {
 }
 
 fn stream_loop_source() -> String {
-    // CARGO_MANIFEST_DIR = rust/cli
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    stream_loop_source_tree::stream_loop_source()
 }
 
 // ===========================================================================
@@ -122,7 +120,18 @@ fn seed_emit_reports_true_total_not_double_counted() {
 fn stream_loop_seed_sites_route_through_audited_constructor() {
     let src = stream_loop_source();
 
-    let raw_new_calls = src.matches("StreamingTokenDisplay::new(").count();
+    // BUG-306: stream_loop/usage.rs finalizes from physical usage (raw input
+    // plus separate cache fields), the same display-basis pattern as the
+    // Gemini finalization site; every other site must seed through the
+    // audited constructor.
+    let usage = stream_loop_source_tree::stream_loop_module("usage");
+    let usage_normalized: String = usage.split_whitespace().collect();
+    assert_eq!(usage.matches("StreamingTokenDisplay::new(").count(), 1);
+    assert!(
+        usage_normalized.contains("StreamingTokenDisplay::new(physical.input_tokens,"),
+        "the final-usage site must source from physical (display-basis) usage"
+    );
+    let raw_new_calls = src.matches("StreamingTokenDisplay::new(").count() - 1;
     let audited_calls = src
         .matches("StreamingTokenDisplay::from_cache_inclusive_total(")
         .count();

@@ -6,54 +6,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "30-48",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -63,54 +16,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "54-85",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -120,54 +26,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "91-108",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -177,54 +36,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "114-128",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -234,54 +46,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "134-145",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -291,54 +56,7 @@
         {
           "file": "rust/tools/tests/footer_cwd_registry_test.rs",
           "lines": "151-172",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/footer_cwd.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -350,9 +68,7 @@
     "testFiles": [
       "rust/tools/tests/footer_cwd_registry_test.rs"
     ],
-    "implFiles": [
-      "rust/tools/src/footer_cwd.rs"
-    ],
-    "totalLinesCovered": 364
+    "implFiles": [],
+    "totalLinesCovered": 118
   }
 }

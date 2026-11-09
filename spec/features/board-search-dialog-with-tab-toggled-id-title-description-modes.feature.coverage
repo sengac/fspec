@@ -5,19 +5,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "106-135",
+          "lines": "102-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281
-              ]
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267
+              ],
+              "firstLine": "let unit = store.selected_work_unit()?;",
+              "lastLine": "/// stays under the 300 LoC ceiling. `agent_store` feeds the"
             }
           ]
         }
@@ -28,7 +30,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "138-160",
+          "lines": "135-158",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -48,7 +50,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "pub(super) wheel: WheelVelocity,",
+              "lastLine": "/// `take_pending_action`) when no `action_tx` is attached."
             }
           ]
         }
@@ -59,7 +63,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "163-215",
+          "lines": "161-223",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
@@ -69,7 +73,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_select_work_unit(&mut self, id: String) {",
+              "lastLine": ""
             },
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
@@ -91,7 +97,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "/// the target card with the column scrolled so it is visible. No-op",
+              "lastLine": "};"
             }
           ]
         }
@@ -102,17 +110,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "218-249",
+          "lines": "226-258",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
               "lines": [
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                175,
+                176,
+                177,
+                178,
+                179
+              ],
+              "firstLine": "fn re_filter(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -123,7 +141,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "252-270",
+          "lines": "261-280",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -135,7 +153,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "pub use super::work_unit_search_filter::{filter_work_units, SearchMatch, SearchMode};",
+              "lastLine": "/// `work_unit_search_dialog_mouse` module (BUG-162) can read them"
             }
           ]
         }
@@ -146,7 +166,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "273-296",
+          "lines": "283-307",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -166,7 +186,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "pub(super) wheel: WheelVelocity,",
+              "lastLine": "/// `take_pending_action`) when no `action_tx` is attached."
             }
           ]
         }
@@ -177,7 +199,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "299-326",
+          "lines": "310-338",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -197,7 +219,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "pub(super) wheel: WheelVelocity,",
+              "lastLine": "/// `take_pending_action`) when no `action_tx` is attached."
             }
           ]
         }
@@ -208,13 +232,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "329-356",
+          "lines": "341-369",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
               "lines": [
                 195
-              ]
+              ],
+              "firstLine": "self.move_by(-1);",
+              "lastLine": "self.move_by(-1);"
             }
           ]
         }
@@ -225,7 +251,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "359-387",
+          "lines": "372-401",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
@@ -236,7 +262,9 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_open_work_unit_search(&mut self) {",
+              "lastLine": "let dialog = WorkUnitSearchDialog::new(units).with_action_tx(self.action_tx.clone());"
             }
           ]
         }
@@ -247,7 +275,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "390-420",
+          "lines": "404-435",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
@@ -264,7 +292,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "pub fn truncate_to(s: &str, max_chars: usize) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -275,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "423-448",
+          "lines": "438-464",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_rows.rs",
@@ -292,26 +322,21 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "pub fn truncate_to(s: &str, max_chars: usize) -> String {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "The board header chord shows the '/' search shortcut",
+      "name": "The board header shows the 2-zone menu bar instead of the search chord",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "451-464",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-              "lines": [
-                33
-              ]
-            }
-          ]
+          "lines": "471-489",
+          "implMappings": []
         }
       ]
     },
@@ -320,13 +345,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_search_dialog_board022.rs",
-          "lines": "467-482",
+          "lines": "492-509",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/help_content.rs",
               "lines": [
-                38
-              ]
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "for entry in CATEGORIES.iter().flat_map(|category| category.entries) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -346,9 +377,8 @@
       "rust/fspec-tui/src/app/dispatch_work_unit_search.rs",
       "rust/fspec-tui/src/store/board_viewport.rs",
       "rust/fspec-tui/src/components/work_unit_search_rows.rs",
-      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
       "rust/fspec-tui/src/components/help_content.rs"
     ],
-    "totalLinesCovered": 472
+    "totalLinesCovered": 510
   }
 }

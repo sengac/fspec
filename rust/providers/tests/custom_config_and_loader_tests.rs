@@ -305,9 +305,17 @@ fn script_loader_reparses_script_when_mtime_changes() {
     let ast1 = loader.load(&script_path).expect("first load");
 
     // @step When I modify the file so its mtime advances and call ScriptLoader::load again
-    std::thread::sleep(Duration::from_millis(1100));
+    // TEST-042: no sleep; the rewritten file's mtime is set a minute later.
+    let loaded_at = fs::metadata(&script_path)
+        .and_then(|metadata| metadata.modified())
+        .expect("script mtime");
     let updated = format!("{VALID_SCRIPT}\nfn extra() {{ 42 }}\n");
     fs::write(&script_path, updated).expect("rewrite script");
+    fs::File::options()
+        .write(true)
+        .open(&script_path)
+        .and_then(|file| file.set_modified(loaded_at + Duration::from_secs(60)))
+        .expect("move the script mtime forward");
     let ast2 = loader.load(&script_path).expect("second load");
 
     // @step Then a new Arc<AST> is returned reflecting the updated script content

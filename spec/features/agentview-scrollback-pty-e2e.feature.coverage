@@ -5,16 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/scrollback_pty_rpc078.rs",
-          "lines": "123-277",
+          "lines": "123-273",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                155,
-                156,
-                157,
-                158,
-                159,
                 160,
                 161,
                 162,
@@ -82,8 +77,14 @@
                 224,
                 225,
                 226,
-                227
-              ]
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "/// Push a chunk with whatever `is_streaming` the caller set.",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -100,6 +101,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
-    "totalLinesCovered": 228
+    "totalLinesCovered": 223
   }
 }

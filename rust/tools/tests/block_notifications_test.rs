@@ -23,6 +23,7 @@ use tempfile::TempDir;
 #[test]
 #[serial]
 fn test_notify_user_when_ai_command_is_blocked() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the user has fspec TUI running with notifications enabled
     // (TUI running is a prerequisite for the test environment)
 
@@ -81,6 +82,7 @@ fn test_notify_user_when_ai_command_is_blocked() {
 #[test]
 #[serial]
 fn test_notify_user_when_ai_file_write_is_blocked_by_stage_permissions() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the user has fspec TUI running with notifications enabled
     // (TUI running is a prerequisite for the test environment)
 
@@ -89,7 +91,7 @@ fn test_notify_user_when_ai_file_write_is_blocked_by_stage_permissions() {
 
     // @step And "testing" stage only allows writing to "spec" and "test" categories
     let tmp = TempDir::new().expect("failed to create temp dir");
-    init_stage_permissions(Some(tmp.path())); // Uses default ACDD config
+    init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load"); // Uses default ACDD config
 
     // @step When the AI tries to write to "src/auth.ts"
     let result = check_write_permission("src/auth.ts", Some(stage));
@@ -113,12 +115,13 @@ fn test_notify_user_when_ai_file_write_is_blocked_by_stage_permissions() {
 #[test]
 #[serial]
 fn test_test_files_not_blocked_in_testing_stage() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the current work unit is in "testing" stage
     let stage = "testing";
 
     // Initialize stage permissions with default ACDD config
     let tmp = TempDir::new().expect("failed to create temp dir");
-    init_stage_permissions(Some(tmp.path()));
+    init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
     // @step When the AI tries to write to a test file
     let result = check_write_permission("src/__tests__/auth.test.ts", Some(stage));
@@ -134,9 +137,10 @@ fn test_test_files_not_blocked_in_testing_stage() {
 #[test]
 #[serial]
 fn test_no_block_when_no_work_unit_active() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Initialize stage permissions
     let tmp = TempDir::new().expect("failed to create temp dir");
-    init_stage_permissions(Some(tmp.path()));
+    init_stage_permissions(Some(tmp.path())).expect("the default ACDD stage permissions load");
 
     // @step Given no work unit is set for the session
     let stage: Option<&str> = None;
@@ -155,6 +159,7 @@ fn test_no_block_when_no_work_unit_active() {
 #[test]
 #[serial]
 fn test_block_notification_message_format() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a blocklist rule blocking "cat" commands
     let tmp = TempDir::new().expect("failed to create temp dir");
     let fspec_dir = tmp.path().join(".fspec");

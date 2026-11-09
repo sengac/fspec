@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @RPC-085
@@ -5,6 +6,7 @@
 @agent-loop
 @rpc
 @thinking
+@BUG-319
 Feature: Agent loop threads /thinking high into the provider request
   """
   RPC-085 (child of RPC-072 family). Thinking config must be computed
@@ -45,28 +47,28 @@ Feature: Agent loop threads /thinking high into the provider request
     And the macro invokes provider.create_rig_agent with role_preamble.as_deref() and $thinking.clone() as the 2nd and 3rd positional arguments
 
   Scenario: agent_loop body computes thinking_config_value per turn
-    Given the agent loop body in rust/agent-loop/src/agent_loop.rs
+    Given the agent loop body in rust/agent-loop/src/agent_loop.rs and its thinking module
     When the source is scanned
-    Then a thinking_config_value binding of type Option<serde_json::Value> is computed once per turn
-    And the computation references compute_effective_thinking_level, is_adaptive_thinking_model, and get_thinking_config
-    And the computation honours the PROV-005 priority order (adaptive first, then TS-passed config, then unified detection)
+    Then a thinking_config_value of type Result<Option<serde_json::Value>, String> is computed once per turn by resolve_turn_thinking
+    And the computation reads the session's level with base_thinking_level and builds the wire form through the turn's ThinkingTarget
+    And a per-turn raw thinking config is refused before the session's level is used
 
   Scenario: All run_with_provider! call sites pass thinking_config_value
-    Given the agent loop body in rust/agent-loop/src/agent_loop.rs
+    Given the agent loop body in rust/agent-loop/src/agent_loop.rs and its provider modules
     When every invocation of the run_with_provider! macro is enumerated
     Then each invocation passes thinking_config_value as its 7th positional argument
     And the enumerated providers cover claude, gemini, zai, codex, and copilot
 
   Scenario: OpenAI inlined arm passes thinking_config_value to create_rig_agent
-    Given the inlined "openai" => { ... } match arm in rust/agent-loop/src/agent_loop.rs
+    Given the run_openai_turn function in rust/agent-loop/src/agent_loop/provider_openai.rs
     When the arm body is parsed
-    Then provider.create_rig_agent is invoked with session.id, role_preamble.as_deref(), and thinking_config_value.clone() as the 1st, 2nd, and 3rd positional arguments
+    Then provider.create_rig_agent is invoked with session.id, role_preamble.as_deref(), and thinking_config_value as the 1st, 2nd, and 3rd positional arguments
 
   Scenario: Custom-provider fallthrough passes thinking_config_value to create_rig_agent
-    Given the `_ =>` custom-provider fallthrough match arm in rust/agent-loop/src/agent_loop.rs
+    Given the run_custom_turn custom-provider path in rust/agent-loop/src/agent_loop/provider_custom.rs
     When the arm body is parsed
     Then codelet_providers::custom::CustomProvider::create_rig_agent is invoked
-    And the final three positional arguments are session.id, role_preamble.as_deref(), and thinking_config_value.clone()
+    And the final four positional arguments are session.id, role_preamble.as_deref(), thinking_config_value and the sub-agent flag false
 
   Scenario: Provider create_rig_agent signature compiles for all 6 instance-based built-in providers
     Given the create_rig_agent method on each of Claude, OpenAI, Gemini, ZAI, Codex, and Copilot

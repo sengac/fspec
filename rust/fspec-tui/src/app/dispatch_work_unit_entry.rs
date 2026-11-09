@@ -25,6 +25,14 @@ impl App {
             }
         } else if let Some(context) = self.lookup_work_unit_context(id) {
             self.open_creation_dialog(None, Some(context));
+        } else {
+            // BUG-381: a card dialog can outlive the board refresh that
+            // removed its card; report the miss instead of dropping it.
+            tracing::warn!(work_unit = %id, "enter on a work unit that is not on the board");
+            let message = format!("Work unit {id} is no longer on the board");
+            self.try_dispatch_session_storage(&crate::components::Action::SessionOperationFailed(
+                message,
+            ));
         }
     }
 }

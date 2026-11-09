@@ -25,8 +25,8 @@ pub async fn infer(server: &MockServer) -> TestResult {
     let request = format!("POST /private-endpoint/v1/chat/completions HTTP/1.1\r\nHost: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", server.address(), body.len());
     stream.write_all(request.as_bytes()).await?;
     let mut response = String::new();
-    tokio::time::timeout(
-        std::time::Duration::from_secs(2),
+    codelet_test_helpers::deadlock_guard(
+        "stream.read_to_string(&mut response)",
         stream.read_to_string(&mut response),
     )
     .await??;
@@ -88,7 +88,7 @@ pub fn enumerate() -> TestResult<(ProviderInfo, String)> {
         .with_max_level(tracing::Level::INFO)
         .with_writer(move || writer.clone())
         .finish();
-    let mut sections = tracing::subscriber::with_default(subscriber, build_local_profile_sections);
+    let mut sections = tracing::subscriber::with_default(subscriber, build_local_profile_sections)?;
     assert_eq!(sections.len(), 1);
     let log = String::from_utf8(buffer.0.lock().map_err(|_| "log lock")?.clone())?;
     Ok((sections.remove(0), log))

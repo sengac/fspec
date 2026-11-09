@@ -12,10 +12,9 @@
 //!   pure-string pre-checks (quoted subgraph title, invalid subgraph
 //!   identifier) run first for canonical error-message parity, then
 //!   `merman_core::Engine::parse_diagram_sync` gates genuine syntax errors.
-//! * **FOUNDATION.md regeneration**: `generate-foundation-md` (RPC-233) IS
-//!   now ported, but this command does NOT itself regenerate FOUNDATION.md.
-//!   The CLI bridge still prints `  Regenerated: spec/FOUNDATION.md` for
-//!   stdout parity.
+//! * **FOUNDATION.md regeneration** (BUG-535): after the write the command
+//!   regenerates `spec/FOUNDATION.md` like `update-foundation`, so the CLI
+//!   line `  Regenerated: spec/FOUNDATION.md` is true.
 //! * **JSON schema validation**: TS calls `validateFoundationJson` (Ajv);
 //!   Rust skips this — no Ajv-equivalent has been ported.
 //!
@@ -83,6 +82,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-diagram")?;
     // Load-or-init foundation.json (auto-creates the canonical generic
     // schema v2.0.0 default when missing).
     let mut data: Value = ensure_foundation_file(project_root)?;
@@ -143,8 +144,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     // Atomic write — preserves all unknown top-level fields verbatim.
-    let path = project_root.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(project_root)?;
     write_json_atomic(&path, &data)?;
+    // BUG-535: keep FOUNDATION.md in step with foundation.json.
+    crate::commands::generate_foundation_md::regenerate(project_root);
 
     serde_json::to_string(&json!({ "success": true, "message": message })).map_err(|e| {
         FspecCoreError::InvalidArgs {

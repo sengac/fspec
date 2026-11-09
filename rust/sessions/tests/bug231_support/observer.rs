@@ -1,12 +1,9 @@
 use super::{Fixture, Result};
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_unit_subscription::WorkUnitSubscription;
-use std::{
-    sync::{
-        atomic::{AtomicBool, AtomicUsize, Ordering},
-        Arc,
-    },
-    time::Duration,
+use std::sync::{
+    atomic::{AtomicBool, AtomicUsize, Ordering},
+    Arc,
 };
 
 struct Released(Arc<AtomicBool>);
@@ -42,14 +39,14 @@ pub async fn verify(fixture: &Fixture) -> Result {
         },
     );
     fixture.wait_focus(&fixture.first, None).await?;
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("three reconciliations", async {
         while calls.load(Ordering::SeqCst) < 3 {
             tokio::task::yield_now().await;
         }
     })
     .await?;
     drop(subscription);
-    tokio::time::timeout(Duration::from_secs(1), async {
+    codelet_test_helpers::deadlock_guard("the dropped subscription releases its callback", async {
         while !released.load(Ordering::SeqCst) {
             tokio::task::yield_now().await;
         }
@@ -61,7 +58,8 @@ pub async fn verify(fixture: &Fixture) -> Result {
         .manager
         .set_session_focus(&fixture.first, Some("AUTH-002"), "followup")?;
     let _ = sender.send(Vec::new());
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    // TEST-042: no sleep. The callback (and the resource it holds) was
+    // already dropped above, so nothing can count this send.
     assert_eq!(calls.load(Ordering::SeqCst), previous);
     assert!(
         fixture

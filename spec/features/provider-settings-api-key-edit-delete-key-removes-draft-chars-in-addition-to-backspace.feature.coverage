@@ -23,7 +23,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "// RPC-163 — TS parity: Ink's useInput exposes key.backspace and",
+              "lastLine": "KeyCode::Char(c) => {"
             }
           ]
         }
@@ -52,7 +54,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "// RPC-163 — TS parity: Ink's useInput exposes key.backspace and",
+              "lastLine": "KeyCode::Char(c) => {"
             }
           ]
         }
@@ -68,6 +72,7 @@
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
+                101,
                 102,
                 103,
                 104,
@@ -138,9 +143,10 @@
                 169,
                 170,
                 171,
-                172,
-                173
-              ]
+                172
+              ],
+              "firstLine": "fn handle_edit_key(",
+              "lastLine": "}"
             }
           ]
         }
@@ -156,6 +162,7 @@
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
+                101,
                 102,
                 103,
                 104,
@@ -226,9 +233,10 @@
                 169,
                 170,
                 171,
-                172,
-                173
-              ]
+                172
+              ],
+              "firstLine": "fn handle_edit_key(",
+              "lastLine": "}"
             }
           ]
         }

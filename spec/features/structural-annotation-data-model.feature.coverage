@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "16-33",
+          "lines": "15-32",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -64,7 +64,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "pub fn file_path(&self) -> Option<String> {",
+              "lastLine": "/// boundaries based on structural signals produce better results."
             }
           ]
         }
@@ -75,7 +77,7 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "39-54",
+          "lines": "38-55",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -134,7 +136,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "pub fn file_path(&self) -> Option<String> {",
+              "lastLine": "/// boundaries based on structural signals produce better results."
             }
           ]
         }
@@ -145,7 +149,7 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "60-75",
+          "lines": "61-78",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -204,7 +208,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "pub fn file_path(&self) -> Option<String> {",
+              "lastLine": "/// boundaries based on structural signals produce better results."
             }
           ]
         }
@@ -215,108 +221,24 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "81-96",
+          "lines": "84-99",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
               "lines": [
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Deprecated PreservationContext still compiles",
-      "testMappings": [
-        {
-          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "102-118",
-          "implMappings": []
-        },
-        {
-          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "105-119",
-          "implMappings": [
-            {
-              "file": "rust/core/src/compaction/deprecated.rs",
-              "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Deprecated BuildStatus still compiles",
-      "testMappings": [
-        {
-          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "124-138",
-          "implMappings": []
-        },
-        {
-          "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "126-140",
-          "implMappings": [
-            {
-              "file": "rust/core/src/compaction/deprecated.rs",
-              "lines": [
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ]
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309
+              ],
+              "firstLine": "/// File operation type for FileModification annotations",
+              "lastLine": "}"
             }
           ]
         }
@@ -327,7 +249,7 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "144-165",
+          "lines": "105-126",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -479,7 +401,9 @@
                 200,
                 201,
                 202
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Default, Serialize, Deserialize)]",
+              "lastLine": "///"
             }
           ]
         }
@@ -490,13 +414,18 @@
       "testMappings": [
         {
           "file": "rust/core/src/compaction/__tests__/structural_annotation.test.rs",
-          "lines": "171-184",
+          "lines": "132-146",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/mod.rs",
               "lines": [
-                31
-              ]
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "pub use model::{",
+              "lastLine": "};"
             }
           ]
         }
@@ -504,17 +433,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/core/src/compaction/__tests__/structural_annotation.test.rs"
     ],
     "implFiles": [
       "rust/core/src/compaction/model.rs",
-      "rust/core/src/compaction/deprecated.rs",
       "rust/core/src/compaction/mod.rs"
     ],
-    "totalLinesCovered": 528
+    "totalLinesCovered": 430
   }
 }

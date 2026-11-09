@@ -25,7 +25,7 @@
 //!    array (initialising the target's array on demand).
 //! 8. Bump the TARGET's `updatedAt` via [`iso8601_now`]; the SOURCE's
 //!    `updatedAt` is NOT touched.
-//! 9. Atomic single-write persistence via [`write_json_atomic`].
+//! 9. Atomic single-write persistence via [`crate::io::board::write_work_units`].
 //!
 //! ## Result shape
 //!
@@ -40,7 +40,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `copy-virtual-hooks`. Mirrors the TS
@@ -105,6 +104,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         }
     };
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "copy-virtual-hooks")?;
     // Load (auto-create) spec/work-units.json.
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -182,8 +183,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         tgt.updated_at = iso8601_now();
     }
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&CopyVirtualHooksResult {
         success: true,

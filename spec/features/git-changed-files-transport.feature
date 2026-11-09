@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-465
 @diff-viewer
 @git-integration
 @rpc
@@ -46,11 +48,11 @@ Feature: Expose git changed-file status and per-file diff to the TUI transport
     When backend.file_diff(path).await is invoked for the modified file
     Then the result is Some diff text containing the changed lines
 
-  Scenario: changed_files returns an empty Vec when no cwd is attached
+  Scenario: changed_files is refused when no cwd is attached
     Given a SharedFspecService constructed without with_cwd
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.changed_files().await is invoked
-    Then the awaited result is an empty Vec
+    Then the awaited result is an error saying no workspace directory is attached
 
   Scenario: WebSocket backend changed_files crosses tarpc and matches the embedded backend
     Given an rpc-server bound to a SharedFspecService with a cwd repo containing one modified and one untracked file

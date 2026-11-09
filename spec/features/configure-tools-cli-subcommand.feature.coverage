@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_configure_tools.rs",
-          "lines": "52-77",
+          "lines": "52-76",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/configure_tools.rs",
@@ -128,7 +128,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "//! `configure-tools` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -139,7 +141,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_configure_tools.rs",
-          "lines": "79-104",
+          "lines": "82-103",
           "implMappings": [
             {
               "file": "rust/fspec/src/configure_tools.rs",
@@ -155,7 +157,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "match configure_tools::run(&args_json, &project_root).await {",
+              "lastLine": ".get(\"reconfigure\")"
             }
           ]
         }
@@ -166,12 +170,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_configure_tools.rs",
-          "lines": "106-137",
+          "lines": "109-136",
           "implMappings": [
             {
               "file": "rust/fspec/src/configure_tools.rs",
               "lines": [
-                44,
                 45,
                 46,
                 47,
@@ -186,7 +189,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "let mut body = serde_json::Map::new();",
+              "lastLine": "let args_json = json!(body).to_string();"
             }
           ]
         }
@@ -197,7 +202,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_configure_tools.rs",
-          "lines": "139-176",
+          "lines": "142-170",
           "implMappings": [
             {
               "file": "rust/fspec/src/configure_tools.rs",
@@ -213,7 +218,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "match configure_tools::run(&args_json, &project_root).await {",
+              "lastLine": ".get(\"reconfigure\")"
             }
           ]
         }
@@ -224,7 +231,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_configure_tools.rs",
-          "lines": "178-228",
+          "lines": "176-238",
           "implMappings": [
             {
               "file": "rust/fspec/src/configure_tools.rs",
@@ -265,7 +272,33 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ".unwrap_or_default();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools command appears in help output",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_configure_tools.rs",
+          "lines": "244-271",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_06.rs",
+              "lines": [
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "/// RPC-208: configure test and quality-check tool commands.",
+              "lastLine": "ConfigureTools {"
             }
           ]
         }
@@ -273,16 +306,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/tests/cli_configure_tools.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/help/configs/configure_tools.rs",
-      "rust/fspec/src/configure_tools.rs"
+      "rust/fspec/src/configure_tools.rs",
+      "rust/fspec/src/cli_registration/mode_06.rs"
     ],
-    "totalLinesCovered": 364
+    "totalLinesCovered": 391
   }
 }

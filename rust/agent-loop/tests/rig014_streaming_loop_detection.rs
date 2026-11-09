@@ -132,7 +132,7 @@ fn scenario_ngram_lockin_detected_mid_stream() {
     }
     let fired_at = feed_words_until_fire(&mut det, &loop_words);
 
-    // @step Then the detector reports an n-gram repetition signal
+    // @step Then the detector reports a loop signal (n-gram repetition or long verbatim suffix)
     let fired_at = fired_at.expect("detector must fire on the n-gram lock-in");
     // With the tolerant 10x repeat threshold the 4-word phrase needs 40
     // words to reach 10 repeats, so the 16-word verbatim suffix signal
@@ -148,7 +148,7 @@ fn scenario_ngram_lockin_detected_mid_stream() {
         "expected NgramRepeat or LongSuffixMatch, got {signal:?}"
     );
 
-    // @step And the signal is reported within 15 words of the loop onset
+    // @step And the signal is reported within 40 words of the loop onset
     // (with the tolerant 10x repeat threshold the n-gram signal needs the
     // tail phrase to accumulate 10 occurrences — 4 words/cycle, so it fires
     // ~30 words in; the 15-word budget from the POC thresholds no longer
@@ -182,7 +182,8 @@ fn scenario_single_token_spam_detected_mid_stream() {
     // @step Then the detector reports a loop signal
     let fired_at = fired_at.expect("detector must fire on single-token spam");
 
-    // @step And the signal is reported within 20 words of the spam onset
+    // @step And the signal is reported within 40 words of the spam onset
+    // (single-token spam fires well inside that budget; the check pins 20)
     assert!(
         fired_at <= 20,
         "detector fired {fired_at} words after spam onset (limit 20)"
@@ -227,22 +228,13 @@ fn scenario_verbatim_paragraph_repetition_detected() {
     let paragraph = normal_prose(30, 5);
     feed_all(&mut det, &paragraph);
 
-    // @step And I feed the same 30-word paragraph verbatim a second time
-    feed_all(&mut det, &paragraph);
-
-    // @step And I feed the same 30-word paragraph verbatim a third time
-    feed_all(&mut det, &paragraph);
-
-    // @step And I feed the same 30-word paragraph verbatim a fourth time
-    feed_all(&mut det, &paragraph);
-
-    // @step And I feed the same 30-word paragraph verbatim a fifth time
-    feed_all(&mut det, &paragraph);
-
-    // @step And I feed the same 30-word paragraph verbatim a sixth time
-    // (the tolerant threshold fires on the 6th copy of a paragraph: the
-    // 160-word window holds 5 copies, so the 6th copy slides the first
-    // out and the 16-word suffix then appears 3 times in the window)
+    // @step And I feed the same 30-word paragraph verbatim five more times
+    // (copies two to five go in whole; the tolerant threshold fires on the
+    // 6th copy: the 160-word window holds 5 copies, so the 6th copy slides
+    // the first out and the 16-word suffix then appears 3 times in the window)
+    for _copy in 2..=5 {
+        feed_all(&mut det, &paragraph);
+    }
     let fired = feed_words_until_fire(&mut det, &paragraph);
 
     // @step Then the detector reports a long verbatim suffix signal

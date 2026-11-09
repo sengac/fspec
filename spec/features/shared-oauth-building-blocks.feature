@@ -1,5 +1,7 @@
 @done
 @PROV-060
+@providers
+@authentication
 Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
   """
   New shared module at rust/providers/src/oauth/ with sub-modules: mod.rs, credential_store.rs, http_middleware.rs, device_flow.rs, callback_server.rs, token_refresh.rs, engine.rs, building_blocks.rs, script_provider.rs

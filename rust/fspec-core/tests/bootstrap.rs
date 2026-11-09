@@ -311,6 +311,47 @@ fn event_storm_reminder_names_the_matching_found_work_unit() {
         result.data.contains("FOUND-001"),
         "reminder must name the matching work unit"
     );
+
+    // @step Then the rendered output contains the substring "fspec show-work-unit FOUND-001"
+    assert!(
+        result.data.contains("fspec show-work-unit FOUND-001"),
+        "reminder must give the next step on the work unit"
+    );
+
+    // @step Then the rendered output contains the substring "fspec add-foundation-bounded-context <name>"
+    assert!(
+        result
+            .data
+            .contains("fspec add-foundation-bounded-context <name>"),
+        "reminder must list the foundation Event Storm commands"
+    );
+
+    // @step Then the rendered output contains the substring "See spec/AGENTS.md"
+    assert!(
+        result.data.contains("See spec/AGENTS.md"),
+        "reminder must point at the AGENTS.md guidance"
+    );
+
+    // @step Then the rendered output contains the substring "Why this matters:"
+    assert!(
+        result.data.contains("Why this matters:"),
+        "reminder must explain why the Event Storm matters"
+    );
+
+    // @step Then the rendered output ends with the event storm system-reminder, after the documentation
+    let start = result
+        .data
+        .rfind("<system-reminder>\nBIG PICTURE EVENT STORMING NEEDED")
+        .expect("the event storm reminder");
+    let header = result
+        .data
+        .find("# fspec Command - Kanban-Based Project Management")
+        .expect("the documentation header");
+    assert!(header < start, "the reminder must follow the documentation");
+    assert!(
+        result.data.ends_with("</system-reminder>"),
+        "the reminder must close the output"
+    );
 }
 
 #[test]
@@ -337,6 +378,34 @@ fn event_storm_reminder_suggests_creating_a_work_unit_when_none_matches() {
     assert!(
         result.data.contains("fspec create-task FOUND"),
         "no-work-unit reminder must suggest create-task FOUND"
+    );
+
+    // @step Then the rendered output contains the substring "Option 2: Conduct Event Storm directly"
+    assert!(
+        result
+            .data
+            .contains("Option 2: Conduct Event Storm directly"),
+        "no-work-unit reminder must offer running the commands directly"
+    );
+
+    // @step Then the rendered output contains the substring "fspec add-foundation-bounded-context <name>"
+    assert!(
+        result
+            .data
+            .contains("fspec add-foundation-bounded-context <name>"),
+        "reminder must list the foundation Event Storm commands"
+    );
+
+    // @step Then the rendered output contains the substring "See spec/AGENTS.md"
+    assert!(
+        result.data.contains("See spec/AGENTS.md"),
+        "reminder must point at the AGENTS.md guidance"
+    );
+
+    // @step Then the rendered output contains the substring "Why this matters:"
+    assert!(
+        result.data.contains("Why this matters:"),
+        "reminder must explain why the Event Storm matters"
     );
 }
 
@@ -401,5 +470,52 @@ fn cli_and_dispatcher_converge_on_the_same_fspec_core_run_function() {
             !bridge_src.contains(forbidden),
             "bridge must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
+    }
+}
+
+#[test]
+fn a_command_reference_explainer_precedes_the_six_help_sections_in_order() {
+    // Scenario: A command reference explainer precedes the six help sections in order
+
+    // @step Given a project root tempdir with no fspec-config.json and no foundation.json
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step When I dispatch bootstrap
+    let result = dispatch_command(req(tmp.path()));
+    assert!(result.success, "expected success=true; got {result:?}");
+    let out = &result.data;
+
+    // @step Then the rendered output contains the substring "**The following sections contain complete fspec command documentation**"
+    let explainer = "**The following sections contain complete fspec command documentation**";
+    let explainer_at = out.find(explainer).expect("missing explainer");
+
+    // @step Then the rendered output contains the substring "**This is your complete command reference for all fspec features**"
+    assert!(
+        out.contains("**This is your complete command reference for all fspec features**"),
+        "missing the command-reference sentence"
+    );
+
+    // @step Then the rendered output contains the substring "`fspec <command> --help` for the full help of one command"
+    assert!(
+        out.contains("`fspec <command> --help` for the full help of one command"),
+        "missing the per-command help pointer"
+    );
+
+    // @step Then the lines "GHERKIN SPECIFICATIONS", "WORK UNIT MANAGEMENT", "EXAMPLE MAPPING", "PROGRESS TRACKING & METRICS", "CONFIGURATION & SETUP" and "LIFECYCLE HOOKS" follow the explainer in that order
+    let sections = [
+        "GHERKIN SPECIFICATIONS",
+        "WORK UNIT MANAGEMENT",
+        "EXAMPLE MAPPING",
+        "PROGRESS TRACKING & METRICS",
+        "CONFIGURATION & SETUP",
+        "LIFECYCLE HOOKS",
+    ];
+    let mut cursor = explainer_at;
+    for section in sections {
+        let line = format!("\n{section}\n");
+        let found = out[cursor..]
+            .find(&line)
+            .unwrap_or_else(|| panic!("section line {section:?} missing after offset {cursor}"));
+        cursor += found + line.len();
     }
 }

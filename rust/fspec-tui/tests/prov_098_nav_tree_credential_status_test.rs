@@ -14,12 +14,11 @@
 //! Pure render/projection tests over hand-built `ProviderDisplayInfo` /
 //! `ProviderCredentialInfo` records — no env, no filesystem, no network.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::nav_item::ProviderDisplayInfo;
 use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -118,7 +117,7 @@ fn any_row_contains(buf: &Buffer, needle: &str) -> bool {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn provider_display_info_defaults_masked_key_and_source_to_none() {
+fn provider_display_info_defaults_masked_key_and_source_to_none() -> TestResult {
     // @step Given a default-constructed ProviderDisplayInfo
     let info = ProviderDisplayInfo::default();
 
@@ -127,6 +126,7 @@ fn provider_display_info_defaults_masked_key_and_source_to_none() {
 
     // @step And its source field is None
     assert!(info.source.is_none(), "default source must be None");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ fn provider_display_info_defaults_masked_key_and_source_to_none() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn projection_copies_env_api_key_masked_key_and_source_verbatim() {
+fn projection_copies_env_api_key_masked_key_and_source_verbatim() -> TestResult {
     // @step Given a ProviderCredentialInfo for "openai" whose masked_key is Some "sk-••••••••cdef" and source is Some "env"
     let info = ProviderCredentialInfo {
         provider_id: "openai".to_string(),
@@ -151,13 +151,14 @@ fn projection_copies_env_api_key_masked_key_and_source_verbatim() {
     let openai = display
         .iter()
         .find(|d| d.id == "openai")
-        .expect("openai display info present");
+        .or_fail("openai display info present")?;
 
     // @step Then the resulting openai ProviderDisplayInfo masked_key is Some "sk-••••••••cdef"
     assert_eq!(openai.masked_key.as_deref(), Some("sk-••••••••cdef"));
 
     // @step And the resulting openai ProviderDisplayInfo source is Some "env"
     assert_eq!(openai.source.as_deref(), Some("env"));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -165,7 +166,7 @@ fn projection_copies_env_api_key_masked_key_and_source_verbatim() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn projection_synthesizes_oauth_display_for_logged_in_provider() {
+fn projection_synthesizes_oauth_display_for_logged_in_provider() -> TestResult {
     // @step Given a ProviderCredentialInfo for "codex" of credential type "oauth" that is configured with masked_key None
     let info = oauth_credential("codex", "Codex (ChatGPT)");
 
@@ -174,7 +175,7 @@ fn projection_synthesizes_oauth_display_for_logged_in_provider() {
     let codex = display
         .iter()
         .find(|d| d.id == "codex")
-        .expect("codex display info present");
+        .or_fail("codex display info present")?;
 
     // @step Then the resulting codex ProviderDisplayInfo masked_key is Some "OAuth"
     assert_eq!(codex.masked_key.as_deref(), Some("OAuth"));
@@ -187,6 +188,7 @@ fn projection_synthesizes_oauth_display_for_logged_in_provider() {
         codex.has_oauth_tokens,
         "codex OAuth login (no env key) must remain OAuth-logged-in"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -194,7 +196,7 @@ fn projection_synthesizes_oauth_display_for_logged_in_provider() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn configured_provider_row_shows_check_masked_key_and_source() {
+fn configured_provider_row_shows_check_masked_key_and_source() -> TestResult {
     // @step Given a ProviderSettings view loaded with an "openai" provider whose masked_key is Some "sk-••••••••cdef" and source is Some "env"
     let infos = vec![api_key_display(
         "openai",
@@ -211,6 +213,7 @@ fn configured_provider_row_shows_check_masked_key_and_source() {
         any_row_contains(&buf, "OpenAI API ✓ sk-••••••••cdef [env]"),
         "expected configured provider annotation"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -218,7 +221,7 @@ fn configured_provider_row_shows_check_masked_key_and_source() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn configured_provider_row_with_no_source_omits_bracket_tag() {
+fn configured_provider_row_with_no_source_omits_bracket_tag() -> TestResult {
     // @step Given a ProviderSettings view loaded with an "openai" provider whose masked_key is Some "sk-••••••••cdef" and source is None
     let infos = vec![api_key_display(
         "openai",
@@ -233,7 +236,7 @@ fn configured_provider_row_with_no_source_omits_bracket_tag() {
     // @step Then the openai provider row contains "OpenAI API ✓ sk-••••••••cdef"
     let y = (0..buf.area.height)
         .find(|&y| row_string(&buf, y).contains("OpenAI API ✓ sk-••••••••cdef"))
-        .expect("openai row present");
+        .or_fail("openai row present")?;
 
     // @step And the openai provider row does not contain "["
     assert!(
@@ -241,6 +244,7 @@ fn configured_provider_row_with_no_source_omits_bracket_tag() {
         "no source ⇒ no bracket tag; row was {:?}",
         row_string(&buf, y)
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -248,7 +252,7 @@ fn configured_provider_row_with_no_source_omits_bracket_tag() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn unconfigured_provider_row_shows_not_configured() {
+fn unconfigured_provider_row_shows_not_configured() -> TestResult {
     // @step Given a ProviderSettings view loaded with a "cohere" provider whose masked_key is None
     let infos = vec![api_key_display("cohere", "Cohere", None, None)];
 
@@ -260,6 +264,7 @@ fn unconfigured_provider_row_shows_not_configured() {
         any_row_contains(&buf, "Cohere (not configured)"),
         "expected unconfigured provider annotation"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -267,7 +272,7 @@ fn unconfigured_provider_row_shows_not_configured() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn configured_api_key_child_row_shows_check_masked_key_and_source() {
+fn configured_api_key_child_row_shows_check_masked_key_and_source() -> TestResult {
     // @step Given a ProviderSettings view loaded with a "gemini" provider whose masked_key is Some "AIza••••••••H3Ck" and source is Some "env"
     let infos = vec![api_key_display(
         "gemini",
@@ -285,6 +290,7 @@ fn configured_api_key_child_row_shows_check_masked_key_and_source() {
         any_row_contains(&buf, "API Key ✓ AIza••••••••H3Ck [env]"),
         "expected configured ApiKey child annotation"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -292,7 +298,7 @@ fn configured_api_key_child_row_shows_check_masked_key_and_source() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn unconfigured_api_key_child_row_shows_not_set() {
+fn unconfigured_api_key_child_row_shows_not_set() -> TestResult {
     // @step Given a ProviderSettings view loaded with a "gemini" provider whose masked_key is None
     let infos = vec![api_key_display("gemini", "Google Gemini", None, None)];
 
@@ -305,6 +311,7 @@ fn unconfigured_api_key_child_row_shows_not_set() {
         any_row_contains(&buf, "API Key (not set)"),
         "expected unconfigured ApiKey child annotation"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -313,7 +320,7 @@ fn unconfigured_api_key_child_row_shows_not_set() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn oauth_logged_in_provider_header_shows_oauth_annotation_and_logout_row() {
+fn oauth_logged_in_provider_header_shows_oauth_annotation_and_logout_row() -> TestResult {
     // @step Given a ProviderSettings view loaded with an "anthropic" provider configured via OAuth with backend masked_key None
     let infos = project_display_infos(&[oauth_credential("anthropic", "Anthropic")], &[]);
 
@@ -338,6 +345,7 @@ fn oauth_logged_in_provider_header_shows_oauth_annotation_and_logout_row() {
         any_row_contains(&buf, "Logout from OAuth [Anthropic]"),
         "expected separate OAuth logout child row"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -345,7 +353,7 @@ fn oauth_logged_in_provider_header_shows_oauth_annotation_and_logout_row() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn oauth_logged_in_codex_header_matches_screenshot_case() {
+fn oauth_logged_in_codex_header_matches_screenshot_case() -> TestResult {
     // @step Given a ProviderSettings view loaded with a "codex" provider configured via OAuth with backend masked_key None
     let infos = project_display_infos(&[oauth_credential("codex", "Codex (ChatGPT)")], &[]);
 
@@ -357,4 +365,5 @@ fn oauth_logged_in_codex_header_matches_screenshot_case() {
         any_row_contains(&buf, "Codex (ChatGPT) ✓ OAuth [ChatGPT]"),
         "expected codex synthetic OAuth header annotation"
     );
+    Ok(())
 }

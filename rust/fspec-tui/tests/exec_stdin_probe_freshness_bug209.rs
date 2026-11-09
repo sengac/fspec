@@ -2,8 +2,10 @@
 
 use codelet_fspec_tui::Action;
 use codelet_rpc_types::{HitlQuestion, HitlRequest, SessionId, StreamChunk};
+use codelet_test_helpers::TestResult;
 
 mod common;
+use common::hitl_route;
 mod exec_stdin_freshness_support;
 use exec_stdin_freshness_support::*;
 
@@ -174,6 +176,7 @@ async fn scenario_human_approval_retains_precedence_over_a_fresh_command_snapsho
         let (mut app, backend) = fresh_app().await?;
         app.dispatch(Action::HitlPromptFetched {
             session_id: session(),
+            route: hitl_route(&session()),
             request: HitlRequest {
                 questions: vec![HitlQuestion {
                     id: "approval".to_owned(),
@@ -204,5 +207,65 @@ async fn scenario_finishing_a_model_turn_preserves_a_live_command_prompt() -> Te
     drain(&mut app).await?;
     // @step Then the command input prompt remains available
     assert_eq!(visible_command(&app), Some("live"));
+    Ok(())
+}
+
+const STALE: &str = "may be stale · probe failed: transport closed";
+
+#[tokio::test]
+async fn scenario_failed_probe_marks_an_open_input_prompt_as_possibly_stale() -> TestResult {
+    for probe in PROBES {
+        // @step Given an input prompt is visible for a session
+        let (mut app, backend) = fresh_app().await?;
+        let shown = snapshot(&mut app, &backend, Probe::Focus, Some(request("git"))).await?;
+        deliver(&mut app, shown);
+        // @step When a probe from either path fails for that session
+        let failed = failed_snapshot(&mut app, &backend, probe).await?;
+        deliver(&mut app, failed);
+        // @step Then the notice row reports that the prompt may be stale because the probe failed
+        assert!(screen_text(&mut app).contains(STALE));
+        // @step And the input prompt remains available
+        assert_eq!(visible_command(&app), Some("git"));
+        // @step And the next command update for that session removes the failure report
+        push(&mut app, Some(request("git")));
+        assert!(!screen_text(&mut app).contains("probe failed"));
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn scenario_failed_probe_with_no_open_input_prompt_is_delivered_without_a_prompt(
+) -> TestResult {
+    for probe in PROBES {
+        // @step Given no input prompt is visible for a session
+        let (mut app, backend) = fresh_app().await?;
+        // @step When a probe from either path fails for that session
+        // @step Then the probe failure is delivered to the app
+        let failed = failed_snapshot(&mut app, &backend, probe).await?;
+        deliver(&mut app, failed);
+        // @step And no input prompt appears
+        assert_eq!(visible_command(&app), None);
+        assert!(!screen_text(&mut app).contains("probe failed"));
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn scenario_superseded_failed_probe_does_not_mark_a_newer_input_prompt() -> TestResult {
+    for probe in PROBES {
+        // @step Given a failed probe result is awaiting delivery from either probe path
+        let (mut app, backend) = fresh_app().await?;
+        let focused = snapshot(&mut app, &backend, Probe::Focus, None).await?;
+        deliver(&mut app, focused);
+        let delayed = failed_snapshot(&mut app, &backend, probe).await?;
+        // @step When a new command input request arrives before the failure is delivered
+        push(&mut app, Some(request("new")));
+        drain(&mut app).await?;
+        deliver(&mut app, delayed);
+        // @step Then the new input prompt is visible without a failure report
+        let screen = screen_text(&mut app);
+        assert!(screen.contains("new may be waiting for input"), "{screen}");
+        assert!(!screen.contains("probe failed"));
+    }
     Ok(())
 }

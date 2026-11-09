@@ -84,6 +84,7 @@ async fn run_bash(command: &str) -> Result<String, codelet_tools::error::ToolErr
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn png_bytes_on_stdout_trigger_image_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints PNG magic bytes (0x89 0x50 0x4E 0x47) followed by a PNG payload to stdout
     let file = write_temp_file(&png_bytes());
     let path = file.path().to_string_lossy().to_string();
@@ -113,6 +114,7 @@ async fn png_bytes_on_stdout_trigger_image_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn jpeg_bytes_on_stdout_trigger_image_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints JPEG magic bytes (0xFF 0xD8 0xFF) followed by a JPEG payload to stdout
     let file = write_temp_file(&jpeg_bytes());
     let path = file.path().to_string_lossy().to_string();
@@ -136,6 +138,7 @@ async fn jpeg_bytes_on_stdout_trigger_image_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn pdf_bytes_on_stdout_trigger_pdf_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints PDF magic bytes ("%PDF-1.4") to stdout
     let file = write_temp_file(&pdf_bytes());
     let path = file.path().to_string_lossy().to_string();
@@ -159,6 +162,7 @@ async fn pdf_bytes_on_stdout_trigger_pdf_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn elf_bytes_on_stdout_trigger_generic_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints ELF magic bytes (0x7F 0x45 0x4C 0x46) to stdout
     let file = write_temp_file(&elf_bytes());
     let path = file.path().to_string_lossy().to_string();
@@ -186,6 +190,7 @@ async fn elf_bytes_on_stdout_trigger_generic_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn gzip_bytes_on_stdout_trigger_generic_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints gzip magic bytes (0x1F 0x8B) followed by compressed payload to stdout
     let file = write_temp_file(&gzip_bytes());
     let path = file.path().to_string_lossy().to_string();
@@ -209,6 +214,7 @@ async fn gzip_bytes_on_stdout_trigger_generic_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn raw_nul_bytes_on_stdout_trigger_generic_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints "\x00\x01\x02\x03hello" to stdout (bytes with an embedded NUL)
     // Octal escapes are POSIX printf (dash's builtin printf supports
     // them; \xNN escapes do not).
@@ -231,6 +237,7 @@ async fn raw_nul_bytes_on_stdout_trigger_generic_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn emoji_and_utf8_text_is_not_flagged() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints "hello 👋 world — café résumé" to stdout
     // @step And the command exits with status 0
     // @step When the Bash tool returns
@@ -248,7 +255,8 @@ async fn emoji_and_utf8_text_is_not_flagged() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn hexdump_of_binary_file_is_text() {
-    // @step Given a bash command pipeline produces canonical hexdump text
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // @step Given a bash command pipeline produces canonical hexdump text (e.g. "00000000  89 50 4e 47 0d 0a 1a 0a  |.PNG....|")
     let file = write_temp_file(&png_bytes());
     let path = file.path().to_string_lossy().to_string();
 
@@ -269,6 +277,7 @@ async fn hexdump_of_binary_file_is_text() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn missing_file_error_is_not_intercepted_by_guard() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command fails with exit code 1
     // @step And stdout is empty
     // @step And stderr contains "cat: /tmp/missing.png: No such file or directory"
@@ -297,7 +306,8 @@ async fn missing_file_error_is_not_intercepted_by_guard() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn mixed_text_and_png_payload_is_intercepted() {
-    // @step Given a bash command prints "header\n" then a PNG payload to stdout
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // @step Given a bash command prints "header\n" then a PNG payload to stdout (mixed text-then-binary)
     let file = write_temp_file(&png_bytes());
     let path = file.path().to_string_lossy().to_string();
 
@@ -321,6 +331,7 @@ async fn mixed_text_and_png_payload_is_intercepted() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn call_with_streaming_still_returns_guard_error() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a stream_callback is provided to call_with_streaming
     let captured: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
     let sink = Arc::clone(&captured);
@@ -360,6 +371,7 @@ async fn call_with_streaming_still_returns_guard_error() {
 // ----------------------------------------------------------------------------
 #[tokio::test]
 async fn binary_payload_with_nonzero_exit_prefers_guard_error() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a bash command prints PNG bytes to stdout
     // @step And the command exits with status 2
     let file = write_temp_file(&png_bytes());

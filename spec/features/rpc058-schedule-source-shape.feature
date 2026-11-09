@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui
 @RPC-058
@@ -58,7 +59,7 @@ Feature: /schedule RPC surface source shape
   Scenario: SessionManagerHandle declares the five new schedule methods
     Given the file rust/core/src/session_manager_handle.rs is compiled
     Then it declares a trait method named "schedule_add" returning Result<ScheduledJob, String>
-    And it declares a trait method named "schedule_list" returning Vec<ScheduledJob>
+    And it declares a trait method named "schedule_list" returning Result<Vec<ScheduledJob>, String>
     And it declares a trait method named "schedule_pause" returning Result<ScheduledJob, String>
     And it declares a trait method named "schedule_resume" returning Result<ScheduledJob, String>
     And it declares a trait method named "schedule_remove" returning Result<(), String>
@@ -74,7 +75,7 @@ Feature: /schedule RPC surface source shape
   Scenario: FspecService declares the five new RPC methods
     Given the file rust/rpc/src/lib.rs is compiled
     Then it declares an async fn named "schedule_add" with return type Result<ScheduledJob, String>
-    And it declares an async fn named "schedule_list" with return type Vec<ScheduledJob>
+    And it declares an async fn named "schedule_list" with return type Result<Vec<ScheduledJob>, String>
     And it declares an async fn named "schedule_pause" with return type Result<ScheduledJob, String>
     And it declares an async fn named "schedule_resume" with return type Result<ScheduledJob, String>
     And it declares an async fn named "schedule_remove" with return type Result<(), String>

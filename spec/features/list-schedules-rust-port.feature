@@ -1,7 +1,9 @@
+@BUG-582
 @done
 @rust
 @cli
 @RPC-250
+@list
 Feature: Port list-schedules command to Rust
   """
   New impl file at rust/fspec-core/src/commands/list_schedules.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.

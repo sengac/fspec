@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "73-117",
+          "lines": "81-128",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
@@ -38,8 +38,6 @@
                 84,
                 85,
                 86,
-                87,
-                88,
                 89,
                 90,
                 91,
@@ -131,8 +129,12 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181,
+                182
+              ],
+              "firstLine": "use crate::io::time::iso8601_now;",
+              "lastLine": "/// stripping the leading `@`. Mirrors JS `text.match(/@\\w+/g) || []` in"
             }
           ]
         }
@@ -143,19 +145,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "119-142",
+          "lines": "130-153",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
                 85,
                 86,
-                87,
-                88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93
+              ],
+              "firstLine": "})?;",
+              "lastLine": "let wu = match data.work_units.get_mut(&args.work_unit_id) {"
             }
           ]
         }
@@ -166,13 +170,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "144-169",
+          "lines": "155-180",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
-                93,
-                94,
                 95,
                 96,
                 97,
@@ -186,8 +188,12 @@
                 105,
                 106,
                 107,
-                108
-              ]
+                108,
+                109,
+                110
+              ],
+              "firstLine": "None => {",
+              "lastLine": "args.work_unit_id, status_str"
             }
           ]
         }
@@ -198,14 +204,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "171-225",
+          "lines": "182-235",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -242,11 +245,10 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160
-              ]
+                157
+              ],
+              "firstLine": "// Mutate: ensure `questions` and `nextQuestionId` exist on the",
+              "lastLine": ".insert(\"nextQuestionId\".to_string(), Value::from(next_id + 1));"
             }
           ]
         }
@@ -257,13 +259,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "227-250",
+          "lines": "237-260",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
-                164,
-                165,
                 166,
                 167,
                 168,
@@ -278,8 +278,12 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181,
+                182
+              ],
+              "firstLine": "let result = AddQuestionResult {",
+              "lastLine": "/// stripping the leading `@`. Mirrors JS `text.match(/@\\w+/g) || []` in"
             }
           ]
         }
@@ -290,18 +294,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "252-310",
+          "lines": "262-320",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
-                162,
-                163,
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168,
+                169
+              ],
+              "firstLine": "write_json_atomic(&path, &data)?;",
+              "lastLine": "mentioned_people: if mentioned_people.is_empty() {"
             }
           ]
         }
@@ -312,13 +318,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_question.rs",
-          "lines": "312-342",
+          "lines": "322-352",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_question.rs",
               "lines": [
-                117,
-                118,
                 119,
                 120,
                 121,
@@ -360,8 +364,12 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162
+              ],
+              "firstLine": "let mentioned_people = extract_mentions(&args.question);",
+              "lastLine": "// Single atomic write."
             }
           ]
         }
@@ -378,6 +386,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_question.rs"
     ],
-    "totalLinesCovered": 519
+    "totalLinesCovered": 515
   }
 }

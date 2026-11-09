@@ -6,47 +6,7 @@
         {
           "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "55-84",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/validate_work_units.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -56,47 +16,7 @@
         {
           "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "85-119",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/validate_work_units.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -105,48 +25,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_validate_work_units.rs",
-          "lines": "120-157",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/validate_work_units.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "lines": "126-164"
         }
       ]
     },
@@ -156,71 +35,36 @@
         {
           "file": "rust/fspec/tests/cli_validate_work_units.rs",
           "lines": "158-218",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/validate_work_units.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
     {
-      "name": "CLI rejects the documented-only --fix flag at runtime",
+      "name": "CLI rejects the --fix flag at runtime",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_validate_work_units.rs",
-          "lines": "226-296",
+          "lines": "226-292",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/cli_registration/mode_07.rs",
               "lines": [
-                1606,
-                1607,
-                1608,
-                1609,
-                1610,
-                1611,
-                1612,
-                1613,
-                1614,
-                1615
-              ]
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "/// RPC-325: validate work-units.json data integrity.",
+              "lastLine": "ValidateWorkUnits {},"
             }
           ]
         }
@@ -235,9 +79,8 @@
       "rust/fspec/tests/cli_validate_work_units.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/validate_work_units.rs",
-      "rust/fspec/src/main.rs"
+      "rust/fspec/src/cli_registration/mode_07.rs"
     ],
-    "totalLinesCovered": 381
+    "totalLinesCovered": 245
   }
 }

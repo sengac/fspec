@@ -34,6 +34,6 @@ Feature: List schedules CLI subcommand
   Scenario: CLI delegates to the same fspec_core function as dispatcher
     Given a project root whose spec/schedules.json contains one shell schedule
     When I dispatch list-schedules through fspec_core::dispatch::dispatch_command with format='json' AND I also invoke `fspec list-schedules --json` from a shell against the same project root
-    Then both call sites return the identical pretty-printed JSON payload byte-for-byte
+    Then the CLI --json output is a bare JSON array equal to the dispatcher payload's schedules array
     And the CLI bridge module rust/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
     And the bridge module's only computation is the boolean-to-format-key JSON arg marshalling

@@ -119,7 +119,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "//! `remove-aggregate-from-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -154,7 +156,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "crate::common::print_next_steps(&parsed);"
             }
           ]
         }
@@ -174,7 +178,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "Ok(0)",
+              "lastLine": "eprintln!(\"Error: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -199,7 +205,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "match remove_aggregate_from_foundation::run(&args_json, &project_root).await {",
+              "lastLine": "// DISC-003 rule 4/14: print the event-storm trailer."
             }
           ]
         }
@@ -210,7 +218,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_aggregate_from_foundation.rs",
-          "lines": "258-279",
+          "lines": "277-298",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/remove_aggregate_from_foundation.rs",
@@ -324,7 +332,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "//! `remove-aggregate-from-foundation` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }

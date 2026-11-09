@@ -1,3 +1,4 @@
+@BUG-582
 @rust
 @work-unit-management
 @cli
@@ -123,7 +124,7 @@ Feature: Port update-work-unit-status command to Rust
     And the git working directory has uncommitted changes
     When the dispatcher runs update-work-unit-status for "AUTH-001" with status "backlog"
     Then no automatic git checkpoint is created
-    And the command succeeds
+    And the command fails because moving back to backlog is not allowed
 
   Scenario: Transitioning to done compacts the work unit and cleans auto-checkpoints
     Given a work unit "AUTH-001" exists with status "validating"
@@ -199,6 +200,8 @@ Feature: Port update-work-unit-status command to Rust
     When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
     Then the command fails
     And the error message reports "Unanswered questions prevent state transition"
+    And the error message lists the unanswered question as "[0] @human: What happens after 3 failed attempts?"
+    And the error message tells to answer it with "fspec answer-question AUTH-001 <index>"
 
   Scenario: Starting work is blocked by incomplete hard dependencies
     Given a work unit "AUTH-001" exists with status "backlog"
@@ -248,3 +251,138 @@ Feature: Port update-work-unit-status command to Rust
     When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
     Then the command succeeds
     And no IPC notification is attempted
+
+  Scenario: A blocked work unit is unblocked by hand once its blocker is done and keeps its blockedBy edge
+    Given a work unit "UI-001" exists with status "blocked"
+    And work unit "API-001" is blocking "UI-001" with status "done"
+    When the dispatcher runs update-work-unit-status for "UI-001" with status "specifying"
+    Then the command succeeds
+    And the work unit status becomes "specifying"
+    And the blockedBy list of "UI-001" still contains "API-001"
+
+  Scenario: Backlog to testing is rejected because specifying comes first
+    Given a work unit "AUTH-001" exists with status "backlog"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    Then the command fails
+    And the error message is "Invalid state transition from 'backlog' to 'testing'. Must move to 'specifying' state first. ACDD requires specification before testing."
+    And the work unit status remains "backlog"
+
+  Scenario: A testing work unit can move back to specifying
+    Given a work unit "AUTH-001" exists with status "testing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    Then the command succeeds
+    And the work unit status becomes "specifying" and only the states.specifying array lists it
+
+  Scenario: An implementing work unit can move back to testing
+    Given a work unit "AUTH-001" exists with status "implementing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    Then the command succeeds
+    And the work unit status becomes "testing" and only the states.testing array lists it
+
+  Scenario: An implementing work unit can move back to specifying
+    Given a work unit "AUTH-001" exists with status "implementing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    Then the command succeeds
+    And the work unit status becomes "specifying" and only the states.specifying array lists it
+
+  Scenario: A validating work unit can move back to implementing with a reason
+    Given a work unit "AUTH-001" exists with status "validating"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and reason "Test failures"
+    Then the command succeeds
+    And the work unit status becomes "implementing" and only the states.implementing array lists it
+    And the state-history entry for "implementing" carries the reason "Test failures"
+
+  Scenario: A story moves through the whole ACDD workflow from backlog to done
+    Given a work unit "AUTH-001" exists with status "backlog" and a backlog state-history entry
+    And the work unit satisfies review validation
+    And its feature "user-login" has a scenario mapped to a test and an implementation
+    When the dispatcher moves "AUTH-001" to "specifying", "testing", "implementing", "validating" and "done" in turn, each with skipTemporalValidation true
+    Then every move succeeds
+    And the work unit status becomes "done" and only the states.done array lists it
+    And the state history lists "backlog", "specifying", "testing", "implementing", "validating" and "done" in that order
+    And the work unit's updatedAt is no longer its creation time
+
+  Scenario: Blocking and unblocking a work unit sets and clears its blockedReason
+    Given a work unit "AUTH-001" exists with status "implementing"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "blocked" and blockedReason "Waiting for API endpoint"
+    Then the command succeeds
+    And the work unit has blockedReason "Waiting for API endpoint" and only the states.blocked array lists it
+    And the state-history entry for "blocked" carries the reason "Waiting for API endpoint"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    Then the command succeeds
+    And the work unit has no blockedReason and only the states.specifying array lists it
+
+  Scenario: The state history records every transition in order
+    Given a work unit "AUTH-001" exists with status "backlog" and a backlog state-history entry
+    And the work unit satisfies review validation
+    And a scenario is tagged with "@AUTH-001"
+    When the dispatcher moves "AUTH-001" to "specifying", to "blocked" with blockedReason "Question", to "specifying" and to "testing" with skipTemporalValidation true
+    Then every move succeeds
+    And the state history has 5 entries: "backlog", "specifying", "blocked", "specifying" and "testing"
+    And only the "blocked" entry carries a reason, "Question"
+    And every entry carries an ISO-8601 timestamp
+
+  Scenario: Moving to testing without an estimate succeeds with a warning
+    Given a work unit "AUTH-001" exists with status "specifying"
+    And the work unit satisfies review validation
+    And the work unit has no estimate
+    And a scenario is tagged with "@AUTH-001"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing" and skipTemporalValidation true
+    Then the command succeeds
+    And the output includes the warning "⚠ No estimate assigned. Consider adding estimate with --estimate=<points>"
+    And the work unit status becomes "testing"
+
+  Scenario: Moving a bug to testing without examples succeeds with a warning
+    Given a bug work unit "BUG-001" exists with status "specifying" and no examples
+    And a feature file is tagged with "@BUG-001" and listed in linkedFeatures
+    When the dispatcher runs update-work-unit-status for "BUG-001" with status "testing" and skipTemporalValidation true
+    Then the command succeeds
+    And the output includes the warning "⚠ No examples captured in Example Mapping. Consider adding examples with 'fspec add-example' before testing."
+    And the work unit status becomes "testing"
+
+  Scenario: A parent work unit moves through the workflow to done without scenarios
+    Given a work unit "AUTH-001" exists with status "specifying" and satisfies review validation
+    And work unit "AUTH-002" has parent "AUTH-001" and status "done"
+    And no feature file is tagged with "@AUTH-001"
+    When the dispatcher moves "AUTH-001" to "testing", "implementing", "validating" and "done" in turn, each with skipTemporalValidation true
+    Then every move succeeds
+    And the work unit status becomes "done"
+
+  Scenario: A feature file written after entering specifying passes the temporal gate
+    Given a work unit "AUTH-001" exists with status "specifying" that entered specifying at "2000-01-01T00:00:00.000Z"
+    And the work unit satisfies review validation
+    And its linked feature file was last modified after the work unit entered "specifying"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "testing"
+    Then the command succeeds
+    And the work unit status becomes "testing"
+
+  Scenario: A passing blocking pre-hook lets the transition proceed
+    Given a work unit "AUTH-001" exists with status "implementing"
+    And a blocking virtual hook "echo hook-passed" is bound to the "pre-validating" event
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "validating"
+    Then the command succeeds
+    And the output includes the hook's stdout "hook-passed"
+    And the work unit status becomes "validating"
+
+  Scenario: An automatic checkpoint is named after the state left and holds the uncommitted changes
+    Given a work unit "AUTH-001" exists with status "testing" in a git repository
+    And the tracked file README.md has the uncommitted content "# changed"
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and skipTemporalValidation true
+    Then the command succeeds
+    And the checkpoint ref "refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing" exists
+    And README.md in that checkpoint reads "# changed"
+    And list-checkpoints for "AUTH-001" lists the checkpoint "AUTH-001-auto-testing"
+
+  Scenario: Leaving backlog does not create an automatic checkpoint
+    Given a work unit "AUTH-001" exists with status "backlog" in a git repository
+    And the git working directory has uncommitted changes
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "specifying"
+    Then the command succeeds
+    And no checkpoint ref exists for "AUTH-001"
+
+  Scenario: A clean working directory does not create an automatic checkpoint
+    Given a work unit "AUTH-001" exists with status "testing" in a git repository
+    And the git working directory has no uncommitted changes
+    When the dispatcher runs update-work-unit-status for "AUTH-001" with status "implementing" and skipTemporalValidation true
+    Then the command succeeds
+    And no checkpoint ref exists for "AUTH-001"

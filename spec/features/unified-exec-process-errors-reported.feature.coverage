@@ -1,0 +1,90 @@
+{
+  "scenarios": [
+    {
+      "name": "Process store kill and wait failures are never discarded",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug363_process_store_errors.rs",
+          "lines": "29-52",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/process_store_handles.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "/// TOOL-022 P4: terminate the session and remove it from the store",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "try_wait distinguishes a running session from an unknown one",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug363_process_store_errors.rs",
+          "lines": "70-84",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/process_store_handles.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                50,
+                55
+              ],
+              "firstLine": "/// Check if a process has exited (non-blocking). `Ok(None)` when the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug363_process_store_errors.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/unified_exec/process_store_handles.rs"
+    ],
+    "totalLinesCovered": 77
+  }
+}

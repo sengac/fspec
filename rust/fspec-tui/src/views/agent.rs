@@ -15,8 +15,10 @@ use codelet_rpc_types::SessionStatus;
 use input_transition::InputTransitionState;
 
 pub mod animation;
+mod busy_composer; // TUI-115
 pub mod chrome;
 pub mod chrome_paint;
+mod composer_session; // BUG-552
 pub mod confirm_dialog;
 mod cursor_anchor;
 pub mod dispatch;
@@ -24,7 +26,6 @@ pub mod dispatch_mode_views;
 mod dispatch_popups;
 pub mod dispatch_select;
 mod exec_stdin_keys;
-pub mod exec_stdin_prompt;
 pub mod file_search_popup;
 pub mod file_search_popup_keys;
 pub mod file_search_popup_mouse;
@@ -52,10 +53,12 @@ mod multiline_input_paste;
 mod multiline_input_render;
 mod multiline_input_select;
 pub mod multiline_wrap;
+mod pane_composer;
 pub mod pane_render;
 mod pause_keys;
 pub mod pause_prompt;
 pub mod popups;
+mod queue_key;
 pub mod reflow_cache;
 pub mod rendered_chunk;
 mod reset_scrollback; // RPC-437: scrollback-reset methods (300-LoC ceiling)
@@ -75,6 +78,8 @@ pub mod slash_command_popup_mouse;
 pub mod slash_command_popup_rows;
 pub mod slash_commands;
 pub mod spinner;
+mod stdin_answer_box; // TUI-116
+mod stdin_box_sessions; // TUI-117
 pub mod text_wrap;
 pub mod transition_driver;
 pub mod turn_modal;
@@ -88,7 +93,7 @@ pub use merge_confirm_dialog::*;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
 pub use reflow_cache::RowReflowCounter;
-pub use rendered_chunk::{ChunkKind, ChunkSource, RenderedChunk};
+pub use rendered_chunk::{ChunkKind, ChunkSource, RenderedChunk, UserInputTag};
 pub use resume_session_view::{ResumeSessionView, ResumeSessionViewOutcome};
 pub use role_banner::RoleBanner;
 pub use scrollback::{ScrollState, ScrollbackList, SelectionMode, TurnDir};
@@ -133,13 +138,16 @@ pub struct AgentView {
     pub turn_modal_offset: usize,
     /// COPY-008: modal text selection + cached body layout (semantics in `turn_modal_select`).
     pub turn_modal_selection: Option<crate::mouse::selection::Selection>,
-    pub(crate) turn_modal_rows: Vec<String>,
+    pub(crate) turn_modal_rows: Vec<(String, text_wrap::RowEnd)>,
     pub(crate) turn_modal_body_origin: Option<Rect>,
     pub(crate) last_render_area: Option<Rect>,
     pub(crate) last_scrollback_area: Option<Rect>,
     pub(crate) scrollback_wheel: WheelVelocity,
     pub(crate) spinner_started_at: Option<Instant>,
     pub(crate) last_is_compacting: bool,
+    /// RIG-016: the focused session's turn is running, so Alt+Enter queues.
+    pub(crate) last_is_running: bool,
+    pub(crate) composer_session: Option<codelet_rpc_types::SessionId>, // BUG-552
     /// COMPACTING-DIAG: last display mode logged by tick_session_transition
     /// ("thinking" / "compacting" / "idle") — flip-detection for the
     /// diagnostic log. `""` (Default) means "log on first frame".
@@ -153,6 +161,8 @@ pub struct AgentView {
     /// `last_hitl` / `last_pause`). `None` when no exec-stdin overlay is
     /// showing for the focused session.
     pub(crate) last_exec_stdin: Option<(codelet_rpc_types::SessionId, String)>,
+    /// TUI-116/TUI-117: the per-session stdin answer boxes (Ctrl+O).
+    pub(crate) stdin_box: stdin_box_sessions::StdinAnswerBox,
     /// RPC-412: freeform HITL header offset (rows to the "> " input line).
     pub(crate) last_hitl_input_offset: Option<u16>,
     pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer, // COPY-006
@@ -200,7 +210,7 @@ impl AgentView {
     pub fn cursor_position(&self) -> Option<(u16, u16)> {
         let area = self.last_input_area?;
         let anchored = cursor_anchor::anchored_input_area(area, self.last_hitl_input_offset);
-        Some(self.input.hardware_cursor_in(anchored))
+        Some(self.focused_input().hardware_cursor_in(anchored))
     }
 
     /// RPC-093 rule [6]: busy iff session is Running or Compacting.
@@ -208,19 +218,17 @@ impl AgentView {
         self.spinner_started_at.is_some()
     }
 
-    /// RPC-093 rule [8]: cursor visible only when (a) status is not
-    /// Running/Compacting AND (b) transition is Idle.
+    /// RPC-093 rule [8] (TUI-118): a Running/Compacting session keeps the
+    /// editable composer mounted (TUI-115), so its caret shows; otherwise
+    /// the cursor shows only once the transition is Idle.
     pub fn is_cursor_visible_for(
         session_status: Option<SessionStatus>,
         transition: &InputTransitionState,
     ) -> bool {
-        if matches!(
+        matches!(
             session_status,
             Some(SessionStatus::Running) | Some(SessionStatus::Compacting)
-        ) {
-            return false;
-        }
-        transition.is_cursor_painted()
+        ) || transition.is_cursor_painted()
     }
 
     /// Cursor gate — RPC-411 HITL-mode logic lives in `hitl_keys.rs`.

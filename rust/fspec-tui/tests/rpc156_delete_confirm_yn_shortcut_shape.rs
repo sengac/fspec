@@ -10,19 +10,18 @@
 //! no TUI rendering, no key event simulation, no async. The slow path
 //! (actual key handling) is exercised by `confirm_dialog_yn_shortcut_rpc164.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn read_source(rel: &str) -> String {
+fn read_source(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
     let manifest = env!("CARGO_MANIFEST_DIR");
     let path: PathBuf = [manifest, rel].iter().collect();
-    fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {}", path.display(), err))
+    Ok(fs::read_to_string(&path)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?)
 }
 
-fn confirm_dialog_rs() -> String {
+fn confirm_dialog_rs() -> Result<String, codelet_test_helpers::TestError> {
     read_source("src/views/agent/confirm_dialog.rs")
 }
 
@@ -31,14 +30,14 @@ fn confirm_dialog_rs() -> String {
 /// the matching closing brace. Used to scope assertions to the dialog
 /// key handler so other unrelated arms in the file don't pollute the
 /// shape check.
-fn handle_key_body(src: &str) -> &str {
+fn handle_key_body(src: &str) -> Result<&str, codelet_test_helpers::TestError> {
     let needle = "fn handle_key(";
     let start = src
         .find(needle)
-        .unwrap_or_else(|| panic!("handle_key function not found in confirm_dialog.rs"));
+        .or_fail("handle_key function not found in confirm_dialog.rs")?;
     let brace_start = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for handle_key not found"));
+        .or_fail("opening brace for handle_key not found")?;
     let abs_open = start + brace_start;
     let bytes = src.as_bytes();
     let mut depth: i32 = 0;
@@ -49,14 +48,14 @@ fn handle_key_body(src: &str) -> &str {
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return &src[abs_open..=i];
+                    return Ok(&src[abs_open..=i]);
                 }
             }
             _ => {}
         }
         i += 1;
     }
-    panic!("matching closing brace for handle_key not found");
+    Err("matching closing brace for handle_key not found".into())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -64,18 +63,19 @@ fn handle_key_body(src: &str) -> &str {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_key_binds_n_and_capital_n_as_cancel_shortcut() {
+fn scenario_handle_key_binds_n_and_capital_n_as_cancel_shortcut() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/agent/confirm_dialog.rs
-    let src = confirm_dialog_rs();
+    let src = confirm_dialog_rs()?;
 
     // @step When I scan the handle_key match body
-    let body = handle_key_body(&src);
+    let body = handle_key_body(&src)?;
 
     // @step Then the source must contain "KeyCode::Char('n') | KeyCode::Char('N')"
     assert!(
         body.contains("KeyCode::Char('n') | KeyCode::Char('N')"),
         "ConfirmDialog::handle_key must bind n/N as cancel-shortcut (TS parity, RPC-156 / RPC-164)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -83,18 +83,19 @@ fn scenario_handle_key_binds_n_and_capital_n_as_cancel_shortcut() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_key_binds_y_and_capital_y_as_primary_shortcut() {
+fn scenario_handle_key_binds_y_and_capital_y_as_primary_shortcut() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/agent/confirm_dialog.rs
-    let src = confirm_dialog_rs();
+    let src = confirm_dialog_rs()?;
 
     // @step When I scan the handle_key match body
-    let body = handle_key_body(&src);
+    let body = handle_key_body(&src)?;
 
     // @step Then the source must contain "KeyCode::Char('y') | KeyCode::Char('Y')"
     assert!(
         body.contains("KeyCode::Char('y') | KeyCode::Char('Y')"),
         "ConfirmDialog::handle_key must bind y/Y as primary-shortcut (TS parity, RPC-156 / RPC-164)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -102,18 +103,19 @@ fn scenario_handle_key_binds_y_and_capital_y_as_primary_shortcut() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_n_arm_wires_to_cancel_index_outcome_not_focused_index() {
+fn scenario_n_arm_wires_to_cancel_index_outcome_not_focused_index() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/agent/confirm_dialog.rs
-    let src = confirm_dialog_rs();
+    let src = confirm_dialog_rs()?;
 
     // @step When I locate the handle_key match arm for KeyCode::Char('n')
-    let body = handle_key_body(&src);
+    let body = handle_key_body(&src)?;
 
     // @step Then the source must contain "outcome_for_index(self.cancel_index())"
     assert!(
         body.contains("outcome_for_index(self.cancel_index())"),
         "n/N arm must dispatch via outcome_for_index(self.cancel_index()) — focus state must NOT be consulted (RPC-156)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -121,12 +123,12 @@ fn scenario_n_arm_wires_to_cancel_index_outcome_not_focused_index() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_key_modifier_guard_rejects_ctrl_alt_modifiers() {
+fn scenario_handle_key_modifier_guard_rejects_ctrl_alt_modifiers() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/agent/confirm_dialog.rs
-    let src = confirm_dialog_rs();
+    let src = confirm_dialog_rs()?;
 
     // @step When I scan the top of the handle_key body
-    let body = handle_key_body(&src);
+    let body = handle_key_body(&src)?;
 
     // @step Then the source must contain "mods.contains(KeyModifiers::CONTROL)"
     assert!(
@@ -145,4 +147,5 @@ fn scenario_handle_key_modifier_guard_rejects_ctrl_alt_modifiers() {
         body.contains("ConfirmDialogOutcome::Ignored"),
         "modifier guard must return ConfirmDialogOutcome::Ignored for Ctrl/Alt + y|Y|n|N (RPC-156)"
     );
+    Ok(())
 }

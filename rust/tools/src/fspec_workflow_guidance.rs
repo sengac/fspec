@@ -244,7 +244,7 @@ command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
 command: "research"  # List available research tools
 
 # Stakeholder questions
-command: "research", args: {"tool": "stakeholder", "platform": "teams", "question": "Support OAuth?", "workUnit": "AUTH-001"}
+command: "research", args: {"tool": "stakeholder", "platform": "teams", "question": "Support OAuth?", "workUnitId": "AUTH-001"}
 ```
 
 ### Import/Export Example Maps
@@ -301,8 +301,8 @@ command: "list-features", args: {"tag": "@critical"}
 command: "show-feature", args: {"feature": "user-authentication"}
 command: "show-feature", args: {"feature": "user-authentication", "format": "json"}
 
-command: "get-scenarios", args: {"tag": "@critical", "format": "json"}
-command: "show-acceptance-criteria", args: {"tag": "@critical", "format": "markdown"}
+command: "context", args: {"tags": "@critical", "format": "json"}
+command: "context", args: {"tags": "@critical and not @wip", "page": 2}
 ```
 
 ### Bulk Operations
@@ -408,11 +408,11 @@ command: "link-coverage", args: {"featureName": "user-authentication", "scenario
 ```
 command: "validate"                    # Gherkin syntax
 command: "validate-tags"               # Tag registry compliance
-command: "check"                       # All validation checks
+command: "audit", args: {"workUnitId": "AUTH-001"}  # All exact drift checks for the card
 
 command: "show-coverage", args: {"featureName": "user-authentication"}
 command: "show-coverage"               # Project-wide
-command: "audit-coverage", args: {"featureName": "user-authentication", "fix": true}
+command: "audit", args: {"feature": ["user-authentication"], "area": ["coverage"]}
 ```
 
 Run ALL tests (not just new ones) to ensure nothing broke.
@@ -511,8 +511,7 @@ command: "show-coverage"                        # All features
 command: "show-coverage", args: {"featureName": "user-auth"}
 command: "show-coverage", args: {"featureName": "user-auth", "format": "json"}
 
-command: "audit-coverage", args: {"featureName": "user-auth"}
-command: "audit-coverage", args: {"featureName": "user-auth", "fix": true}
+command: "audit", args: {"feature": ["user-auth"], "area": ["coverage"]}
 ```
 
 ### Reverse ACDD Coverage
@@ -748,7 +747,7 @@ command: "remove-attachment", args: {"workUnitId": "AUTH-001", "fileName": "old-
 command: "remove-attachment", args: {"workUnitId": "AUTH-001", "fileName": "important.pdf", "keepFile": true}
 ```
 
-Files stored in `spec/attachments/<work-unit-id>/`.
+Files stored in `spec/attachments/<workUnitId>/`.
 
 ---
 
@@ -905,9 +904,9 @@ command: "generate-summary-report", args: {"format": "json", "output": "report.j
 ### Search Scenarios
 
 ```
-command: "search-scenarios", args: {"query": "validation"}
-command: "search-scenarios", args: {"query": "user.*login", "regex": true}
-command: "search-scenarios", args: {"query": "authentication", "json": true}
+command: "context", args: {"text": "validation"}
+command: "context", args: {"regex": "user.*login"}
+command: "context", args: {"text": "authentication", "format": "json"}
 ```
 
 ### Search Implementation
@@ -985,8 +984,8 @@ command: "validate", args: {"file": "spec/features/login.feature"}
 command: "format"                      # Format all feature files
 command: "format", args: {"file": "spec/features/login.feature"}
 
-command: "check"                       # All validation checks
-command: "check", args: {"verbose": true}
+command: "audit"                       # All exact drift checks
+command: "audit", args: {"area": ["gherkin", "tags", "format"]}
 
 command: "validate-tags"               # Tag compliance
 command: "validate-hooks"              # Hook configuration
@@ -1245,7 +1244,7 @@ mod tests {
         assert!(guidance.contains("show-coverage"));
         assert!(guidance.contains("@step"));
         assert!(guidance.contains("unlink-coverage"));
-        assert!(guidance.contains("audit-coverage"));
+        assert!(guidance.contains("command: \"audit\""));
     }
 
     #[test]
@@ -1326,19 +1325,6 @@ mod tests {
         assert!(guidance.contains("AstGrep"));
     }
 
-    // Feature: spec/features/harness-workflow-guidance-references-astgrep-tool.feature
-    #[test]
-    fn test_harness_guidance_references_astgrep_not_research_ast() {
-        // @step Given the harness-only FSPEC workflow guidance constant
-        // @step When I inspect the guidance text
-        let guidance = get_fspec_workflow_guidance();
-        // @step Then it references `AstGrep` for code search during discovery
-        assert!(guidance.contains("**Research first** using the AstGrep tool:"));
-        // @step And it does not reference `research` with the `ast` tool
-        assert!(!guidance.contains("\"tool\": \"ast\""));
-        assert!(!guidance.contains("--tool=ast"));
-    }
-
     #[test]
     fn test_guidance_contains_metrics() {
         let guidance = get_fspec_workflow_guidance();
@@ -1350,7 +1336,7 @@ mod tests {
     #[test]
     fn test_guidance_contains_analysis_commands() {
         let guidance = get_fspec_workflow_guidance();
-        assert!(guidance.contains("search-scenarios"));
+        assert!(guidance.contains("command: \"context\", args: {\"text\""));
         assert!(guidance.contains("search-implementation"));
         assert!(guidance.contains("compare-implementations"));
         assert!(guidance.contains("show-test-patterns"));
@@ -1395,218 +1381,10 @@ mod tests {
         assert!(guidance.contains("spawn"));
         assert!(guidance.contains("subordinate"));
     }
-
-    // Feature: spec/features/fspec-workflow-guidance-named-keys.feature
-    //
-    // Tests that the guidance uses named keys instead of positional `_` args.
-    // These tests verify the fix for TOOL-020.
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_update_work_unit_status() {
-        // @step Given the fspec workflow guidance file exists at rust/tools/src/fspec_workflow_guidance.rs
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the update-work-unit-status examples
-        // @step Then I should see "workUnitId" as a named key
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for update-work-unit-status"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-001", "specifying"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-001\", \"specifying\""),
-            "Guidance should NOT use positional _ args for update-work-unit-status"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_show_work_unit() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the show-work-unit examples
-        // @step Then I should see "workUnitId" as a named key
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-001"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-001\"]"),
-            "Guidance should NOT use positional _ args for show-work-unit"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_create_story() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the create-story examples
-        // @step Then I should see "prefix" and "title" as named keys
-        assert!(
-            guidance.contains("\"prefix\""),
-            "Guidance should use 'prefix' named key for create-story"
-        );
-        assert!(
-            guidance.contains("\"title\""),
-            "Guidance should use 'title' named key for create-story"
-        );
-
-        // @step And I should NOT see "_": ["AUTH", "User Login"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH\""),
-            "Guidance should NOT use positional _ args for create-story"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_add_rule() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the add-rule examples
-        // @step Then I should see "workUnitId" and "rule" as named keys
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for add-rule"
-        );
-        assert!(
-            guidance.contains("\"rule\""),
-            "Guidance should use 'rule' named key for add-rule"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-001", "rule text"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-001\", \"rule text\""),
-            "Guidance should NOT use positional _ args for add-rule"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_add_example() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the add-example examples
-        // @step Then I should see "workUnitId" and "example" as named keys
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for add-example"
-        );
-        assert!(
-            guidance.contains("\"example\""),
-            "Guidance should use 'example' named key for add-example"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_add_dependency() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the add-dependency examples
-        // @step Then I should see "workUnitId" and "dependsOn" as named keys
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for add-dependency"
-        );
-        assert!(
-            guidance.contains("dependsOn"),
-            "Guidance should use 'dependsOn' named key for add-dependency"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-002", "AUTH-001"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-002\", \"AUTH-001\""),
-            "Guidance should NOT use positional _ args for add-dependency"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_add_attachment() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the add-attachment examples
-        // @step Then I should see "workUnitId" and "filePath" as named keys
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for add-attachment"
-        );
-        assert!(
-            guidance.contains("filePath"),
-            "Guidance should use 'filePath' named key for add-attachment"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-001", "file.png"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-001\", \"file.png\""),
-            "Guidance should NOT use positional _ args for add-attachment"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_set_user_story() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the set-user-story examples
-        // @step Then I should see "workUnitId" as a named key
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use 'workUnitId' named key for set-user-story"
-        );
-
-        // @step And I should NOT see "_": ["AUTH-001"] positional pattern for work unit ID
-        assert!(
-            !guidance.contains("\"_\": [\"AUTH-001\"]"),
-            "Guidance should NOT use positional _ args for set-user-story"
-        );
-    }
-
-    #[test]
-    fn test_guidance_does_not_use_positional_args_for_link_coverage() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I inspect the link-coverage examples
-        // @step Then I should see "feature" as a named key
-        assert!(
-            guidance.contains("feature"),
-            "Guidance should use 'feature' named key for link-coverage"
-        );
-
-        // @step And I should NOT see "_": ["user-auth"] positional pattern
-        assert!(
-            !guidance.contains("\"_\": [\"user-auth\""),
-            "Guidance should NOT use positional _ args for link-coverage"
-        );
-    }
-
-    #[test]
-    fn test_guidance_has_no_positional_args_patterns() {
-        // @step Given the fspec workflow guidance file exists
-        let guidance = get_fspec_workflow_guidance();
-
-        // @step When I count all occurrences of "_": [ positional pattern
-        // @step Then the count should be zero
-        let count = guidance.matches("\"_\": [").count();
-        assert_eq!(
-            count, 0,
-            "Guidance should have zero positional _ patterns, but found {count}"
-        );
-
-        // @step And every command example should use named keys matching Rust Args structs
-        assert!(
-            guidance.contains("workUnitId"),
-            "Guidance should use named keys"
-        );
-        assert!(
-            guidance.contains("workUnitId"),
-            "Named keys should match Rust Args structs"
-        );
-    }
 }
+
+#[cfg(test)]
+mod astgrep_reference_tests;
+
+#[cfg(test)]
+mod named_keys_tests;

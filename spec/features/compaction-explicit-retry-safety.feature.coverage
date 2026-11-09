@@ -8,44 +8,9 @@
           "lines": "11-53",
           "implMappings": [
             {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                119,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                1103,
-                1104,
-                1105,
-                1106,
-                1107,
-                1108,
-                1109,
-                1110,
-                1111,
-                1112,
-                1113,
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1470,
-                1471,
-                1472
-              ]
-            },
-            {
               "file": "rust/cli/src/compactor_sub_agent.rs",
               "lines": [
+                172,
                 173,
                 174,
                 175,
@@ -98,7 +63,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "token_state",
+              "lastLine": "if error.promoted_identity().is_some() {"
             },
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -144,7 +111,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "tracing::warn!(operation_id = ?self.identity, phase = \"operation\",",
+              "lastLine": "\"operation identity mismatch\".into(),"
             },
             {
               "file": "rust/cli/src/interactive/compaction_handoff.rs",
@@ -164,7 +133,9 @@
                 22,
                 23,
                 24
-              ]
+              ],
+              "firstLine": "pub fn block_compaction_inference(&mut self, reason: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -178,44 +149,9 @@
           "lines": "57-77",
           "implMappings": [
             {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                119,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                1103,
-                1104,
-                1105,
-                1106,
-                1107,
-                1108,
-                1109,
-                1110,
-                1111,
-                1112,
-                1113,
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1470,
-                1471,
-                1472
-              ]
-            },
-            {
               "file": "rust/cli/src/compactor_sub_agent.rs",
               "lines": [
+                172,
                 173,
                 174,
                 175,
@@ -268,7 +204,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "token_state",
+              "lastLine": "if error.promoted_identity().is_some() {"
             },
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -314,7 +252,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "tracing::warn!(operation_id = ?self.identity, phase = \"operation\",",
+              "lastLine": "\"operation identity mismatch\".into(),"
             },
             {
               "file": "rust/cli/src/interactive/compaction_handoff.rs",
@@ -334,7 +274,9 @@
                 22,
                 23,
                 24
-              ]
+              ],
+              "firstLine": "pub fn block_compaction_inference(&mut self, reason: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -349,11 +291,10 @@
       "rust/agent-loop/tests/bug211_explicit_retry_safety.rs"
     ],
     "implFiles": [
-      "rust/agent-loop/src/agent_loop.rs",
       "rust/cli/src/compactor_sub_agent.rs",
       "rust/cli/src/compaction_operation.rs",
       "rust/cli/src/interactive/compaction_handoff.rs"
     ],
-    "totalLinesCovered": 342
+    "totalLinesCovered": 282
   }
 }

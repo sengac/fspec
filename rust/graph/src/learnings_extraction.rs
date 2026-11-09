@@ -6,7 +6,7 @@
 //! This pipeline:
 //! - Operates at session boundaries (compaction, work unit completion)
 //! - Produces 5-20 entities per extraction (not hundreds)
-//! - Targets the Learnings graph (registry::LEARNINGS_GRAPH)
+//! - Targets the Learnings graph (registry::GraphKind::Learnings)
 //! - Uses Residue categories: Learning, Exploration, Constraint
 //!
 //! The function `extract_learnings_from_text` accepts a pre-computed LLM

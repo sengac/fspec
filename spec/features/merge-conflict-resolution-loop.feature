@@ -1,4 +1,6 @@
 @BUG-099
+@git
+@session-merge
 Feature: Re-merge after conflict resolution enters infinite loop — detect_conflicts() re-detects resolved files as conflicting
   """
   The root cause is that fspec has no equivalent of `git add` to mark a conflict as resolved. Real git uses the index (staging area) — once you `git add` a conflicted file, git stops flagging it. fspec's merge system is stateless: every /merge-worktree call re-detects conflicts from scratch by comparing worktree vs base vs main. The fix adds statefulness via .fspec-pending-conflicts.

@@ -5,6 +5,7 @@
 @rpc
 @embedded
 @RPC-007
+@infrastructure
 Feature: Embedded LogEvent push channel via tracing Layer
   """
   EmbeddedTransport hosts may opt in to a custom tracing_subscriber::Layer

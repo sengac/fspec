@@ -6,11 +6,7 @@
 
 use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 
-const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--fix",
-    description: "Automatically fix issues where possible",
-    default_value: None,
-}];
+const OPTS: &[CommandOption] = &[];
 
 const EXAMPLES: &[CommandExample] = &[CommandExample {
     command: "fspec validate-work-units",
@@ -18,7 +14,7 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
     output: Some("✓ All work units valid\n  Checked 42 work units"),
 }];
 
-const RELATED: &[&str] = &["repair-work-units", "check"];
+const RELATED: &[&str] = &["repair-work-units", "audit"];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "validate-work-units",

@@ -191,7 +191,7 @@ fn cli_exits_1_when_the_coverage_file_is_missing() {
 // Scenario: unlink-coverage --help is byte-for-byte identical to the TS reference
 // ═════════════════════════════════════════════════════════════════════════
 
-const TS_HELP_FIXTURE_UC: &str = include_str!("fixtures/help/unlink-coverage.txt");
+const TS_HELP_FIXTURE_UC: &str = include_str!("fixtures/help/refac020/unlink-coverage.txt");
 
 #[test]
 fn cli_help_matches_ts_formatcommandhelp_reference() {
@@ -212,7 +212,7 @@ fn cli_help_matches_ts_formatcommandhelp_reference() {
     // @step Then the command exits 0
     assert_eq!(code, 0, "--help must exit 0; stderr={stderr}");
 
-    // @step And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/unlink-coverage.txt
+    // @step And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/refac020/unlink-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_UC);
 
     // @step And stdout starts with a blank line followed by 'UNLINK-COVERAGE'

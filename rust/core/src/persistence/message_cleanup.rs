@@ -1,4 +1,4 @@
-use super::{init_message_store, SessionManifest, MESSAGE_STORE};
+use super::{message_store, SessionManifest};
 use std::collections::HashSet;
 use std::fs::{self, File, OpenOptions, TryLockError};
 use std::path::Path;
@@ -6,18 +6,13 @@ use uuid::Uuid;
 
 /// Remove unreferenced messages only when no session writer can be committing a reference.
 pub fn cleanup_orphaned_messages() -> Result<usize, String> {
-    init_message_store()?;
-    let mut messages = MESSAGE_STORE.lock().map_err(|error| error.to_string())?;
-    messages
-        .as_mut()
-        .ok_or("Message store not initialized")?
-        .cleanup_with_references(|| {
+    message_store()?.cleanup_with_references(|| {
             let sessions_dir = codelet_common::get_data_dir()?.join("sessions");
             let Some(leases) = idle_session_leases(&sessions_dir)? else {
                 return Ok(None);
             };
-            let referenced = committed_references(&sessions_dir)?;
-            Ok(Some((referenced, leases)))
+            let (referenced, protected) = committed_references(&sessions_dir)?;
+            Ok(Some((referenced, protected, leases)))
         })
 }
 
@@ -47,8 +42,9 @@ fn idle_session_leases(directory: &Path) -> Result<Option<Vec<File>>, String> {
     Ok(Some(leases))
 }
 
-fn committed_references(directory: &Path) -> Result<HashSet<Uuid>, String> {
+fn committed_references(directory: &Path) -> Result<(HashSet<Uuid>, HashSet<Uuid>), String> {
     let mut referenced = HashSet::new();
+    let mut protected = HashSet::new();
     let entries = fs::read_dir(directory)
         .map_err(|error| format!("Failed to read committed sessions: {error}"))?;
     for entry in entries {
@@ -60,6 +56,10 @@ fn committed_references(directory: &Path) -> Result<HashSet<Uuid>, String> {
             .map_err(|error| format!("Failed to read committed session {path:?}: {error}"))?;
         let session: SessionManifest = serde_json::from_slice(&bytes)
             .map_err(|error| format!("Failed to parse committed session {path:?}: {error}"))?;
+        protected.extend(
+            crate::persistence::input_receipts::retained_ids(session.id)
+                .map_err(|error| error.to_string())?,
+        );
         referenced.extend(
             session
                 .messages
@@ -67,5 +67,5 @@ fn committed_references(directory: &Path) -> Result<HashSet<Uuid>, String> {
                 .map(|message| message.message_id),
         );
     }
-    Ok(referenced)
+    Ok((referenced, protected))
 }

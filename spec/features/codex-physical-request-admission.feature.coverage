@@ -8,32 +8,8 @@
           "lines": "93-101",
           "implMappings": [
             {
-              "file": "rust/providers/src/codex/physical_admission.rs",
-              "lines": [
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22
-              ]
-            },
-            {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -167,8 +143,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             }
           ]
         }
@@ -182,32 +162,8 @@
           "lines": "104-112",
           "implMappings": [
             {
-              "file": "rust/providers/src/codex/physical_admission.rs",
-              "lines": [
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22
-              ]
-            },
-            {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -341,8 +297,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             }
           ]
         }
@@ -356,32 +316,8 @@
           "lines": "115-177",
           "implMappings": [
             {
-              "file": "rust/providers/src/codex/physical_admission.rs",
-              "lines": [
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22
-              ]
-            },
-            {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -515,8 +451,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             }
           ]
         }
@@ -532,18 +472,40 @@
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
                 161,
                 162,
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "fn send_streaming<T>(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
               "lines": [
-                21,
                 22,
                 23,
                 24,
@@ -552,7 +514,7 @@
                 27,
                 28,
                 29,
-                54,
+                30,
                 55,
                 56,
                 57,
@@ -575,7 +537,7 @@
                 74,
                 75,
                 76,
-                78,
+                77,
                 79,
                 80,
                 81,
@@ -691,7 +653,9 @@
                 191,
                 192,
                 193
-              ]
+              ],
+              "firstLine": "pub(super) fn validate_attempt<T>(request: &http::Request<T>) -> Result<(), Error> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -706,11 +670,10 @@
       "rust/providers/tests/cmpct075_physical_admission.rs"
     ],
     "implFiles": [
-      "rust/providers/src/codex/physical_admission.rs",
       "rust/providers/src/codex/streaming.rs",
       "rust/providers/src/codex/client_http.rs",
       "rust/providers/src/codex/recovery.rs"
     ],
-    "totalLinesCovered": 753
+    "totalLinesCovered": 722
   }
 }

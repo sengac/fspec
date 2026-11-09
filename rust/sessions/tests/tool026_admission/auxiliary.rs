@@ -68,14 +68,15 @@ pub async fn verify(fixture: &Fixture) -> Result {
         Some("AUTH-003".into()),
         Some("bound".into()),
         Some("specifying".into()),
-    );
+    )?;
     codelet_sessions::session_tool_callbacks::register_manager(fixture.manager.clone());
     codelet_tools::facade::set_get_effective_cwd_callback(
         codelet_sessions::session_tool_callbacks::isolation_context,
     );
     assert_eq!(
-        codelet_sessions::session_tool_callbacks::work_unit_stage(automatic.to_string()).as_deref(),
-        Some("specifying")
+        codelet_sessions::session_tool_callbacks::work_unit_stage(automatic.to_string())
+            .map(|stage| stage.map(|stage| stage.stage)),
+        Ok(Some("specifying".to_string()))
     );
     let isolated = codelet_test_helpers::setup_temp_directory()?;
     *session.worktree_path.write().map_err(|_| "worktree")? = Some(isolated.path().to_path_buf());

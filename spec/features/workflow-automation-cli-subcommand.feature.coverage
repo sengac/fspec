@@ -36,7 +36,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub event: Option<String>,",
+              "lastLine": "Ok(_data_json) => Ok(0),"
             }
           ]
         }
@@ -78,7 +80,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub event: Option<String>,",
+              "lastLine": "Ok(_data_json) => Ok(0),"
             }
           ]
         }
@@ -120,7 +124,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub event: Option<String>,",
+              "lastLine": "Ok(_data_json) => Ok(0),"
             }
           ]
         }
@@ -131,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_workflow_automation.rs",
-          "lines": "178-208",
+          "lines": "173-200",
           "implMappings": [
             {
               "file": "rust/fspec/src/workflow_automation.rs",
@@ -205,7 +211,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "//! `workflow-automation` shell-facing CLI bridge (RPC-326).",
+              "lastLine": "Ok(_data_json) => Ok(0),"
             }
           ]
         }
@@ -216,7 +224,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_workflow_automation.rs",
-          "lines": "211-240",
+          "lines": "206-237",
           "implMappings": [
             {
               "file": "rust/fspec/src/workflow_automation.rs",
@@ -290,7 +298,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "//! `workflow-automation` shell-facing CLI bridge (RPC-326).",
+              "lastLine": "Ok(_data_json) => Ok(0),"
             }
           ]
         }
@@ -307,6 +317,6 @@
     "implFiles": [
       "rust/fspec/src/workflow_automation.rs"
     ],
-    "totalLinesCovered": 361
+    "totalLinesCovered": 360
   }
 }

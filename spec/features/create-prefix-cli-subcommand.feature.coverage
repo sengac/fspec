@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "61-120",
+          "lines": "61-116",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/create_prefix.rs",
@@ -27,7 +27,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "notes: NOTES,"
             }
           ]
         }
@@ -38,7 +40,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "122-159",
+          "lines": "122-155",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -79,18 +81,20 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "// The core error reason already carries the outer"
             }
           ]
         }
       ]
     },
     {
-      "name": "CLI rejects a lowercase prefix with exit 1 and stderr Error prefix",
+      "name": "CLI rejects a lowercase prefix with exit 1 and the '✗ Failed to create prefix:' stderr prefix",
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "161-194",
+          "lines": "161-195",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -106,7 +110,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "// not a structured payload.",
+              "lastLine": "// doubled string the TS implementation has emitted since"
             }
           ]
         }
@@ -117,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "196-231",
+          "lines": "201-232",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -133,7 +139,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "// not a structured payload.",
+              "lastLine": "// doubled string the TS implementation has emitted since"
             }
           ]
         }
@@ -144,7 +152,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "233-260",
+          "lines": "238-264",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -160,7 +168,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "// not a structured payload.",
+              "lastLine": "// doubled string the TS implementation has emitted since"
             }
           ]
         }
@@ -171,7 +181,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "262-288",
+          "lines": "270-295",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -182,7 +192,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "use crate::common::render_core_error;",
+              "lastLine": "/// declared in TS, so the surface is just two required strings."
             }
           ]
         }
@@ -193,7 +205,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "290-331",
+          "lines": "301-339",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -204,7 +216,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "use crate::common::render_core_error;",
+              "lastLine": "/// declared in TS, so the surface is just two required strings."
             }
           ]
         }
@@ -215,7 +229,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "333-380",
+          "lines": "345-386",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_prefix.rs",
@@ -260,7 +274,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "// doubled string the TS implementation has emitted since"
             }
           ]
         }
@@ -271,7 +287,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_prefix.rs",
-          "lines": "382-410",
+          "lines": "394-418",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/create_prefix.rs",
@@ -293,7 +309,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "notes: NOTES,"
             }
           ]
         }
@@ -311,6 +329,6 @@
       "rust/fspec-core/src/help/configs/create_prefix.rs",
       "rust/fspec/src/create_prefix.rs"
     ],
-    "totalLinesCovered": 497
+    "totalLinesCovered": 471
   }
 }

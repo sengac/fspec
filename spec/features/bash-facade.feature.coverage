@@ -4,13 +4,12 @@
       "name": "Map Gemini run_shell_command parameters to internal BashTool format",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "443-466",
+          "file": "rust/tools/tests/tool004_bash_facade.rs",
+          "lines": "20-46",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/bash.rs",
               "lines": [
-                41,
                 42,
                 43,
                 44,
@@ -21,8 +20,15 @@
                 49,
                 50,
                 51,
-                52
-              ]
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -32,13 +38,12 @@
       "name": "GeminiRunShellCommandFacade provides flat JSON schema",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "468-486",
+          "file": "rust/tools/tests/tool004_bash_facade.rs",
+          "lines": "48-66",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/bash.rs",
               "lines": [
-                24,
                 25,
                 26,
                 27,
@@ -53,8 +58,11 @@
                 36,
                 37,
                 38,
-                39
-              ]
+                39,
+                40
+              ],
+              "firstLine": "fn definition(&self) -> ToolDefinition {",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,8 +72,8 @@
       "name": "BashToolFacadeWrapper integrates with rig Tool trait",
       "testMappings": [
         {
-          "file": "rust/tools/tests/tool_facade_test.rs",
-          "lines": "488-507",
+          "file": "rust/tools/tests/tool004_bash_facade.rs",
+          "lines": "68-88",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
@@ -84,7 +92,9 @@
                 350,
                 351,
                 352
-              ]
+              ],
+              "firstLine": "assert_eq!(wrapper.name(), \"read_file\");",
+              "lastLine": "assert!(def.parameters.get(\"oneOf\").is_none());"
             }
           ]
         }
@@ -96,12 +106,12 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/tests/tool_facade_test.rs"
+      "rust/tools/tests/tool004_bash_facade.rs"
     ],
     "implFiles": [
       "rust/tools/src/facade/bash.rs",
       "rust/tools/src/facade/wrapper.rs"
     ],
-    "totalLinesCovered": 105
+    "totalLinesCovered": 113
   }
 }

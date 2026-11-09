@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "73-90",
+          "lines": "68-86",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -37,7 +37,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "/// `std::env::current_dir()` so the same binary can serve multiple",
+              "lastLine": "for file in files {"
             }
           ]
         }
@@ -48,7 +50,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "93-111",
+          "lines": "88-108",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -105,7 +107,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// `std::env::current_dir()` so the same binary can serve multiple",
+              "lastLine": "}"
             }
           ]
         }
@@ -116,7 +120,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "114-159",
+          "lines": "110-161",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -291,7 +295,9 @@
                 236,
                 237,
                 238
-              ]
+              ],
+              "firstLine": "/// `std::env::current_dir()` so the same binary can serve multiple",
+              "lastLine": "fn render_text(features: &[FeatureInfo], tag_filter: Option<&str>) -> String {"
             }
           ]
         }
@@ -302,7 +308,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "162-193",
+          "lines": "163-195",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -314,7 +320,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "// I/O error reading a single feature file is treated as a",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -325,7 +333,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "196-230",
+          "lines": "197-234",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -345,7 +353,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "// `src/commands/list-features.ts:92-95`). Tag filter is applied",
+              "lastLine": "Ok(s) => s,"
             }
           ]
         }
@@ -356,15 +366,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "233-265",
+          "lines": "236-272",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
               "lines": [
-                114,
-                115,
-                116
-              ]
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "// Sort alphabetically by file path (parity with TS",
+              "lastLine": "features.sort_by(|a, b| a.file.cmp(&b.file));"
             }
           ]
         }
@@ -375,7 +388,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "268-286",
+          "lines": "274-292",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -385,7 +398,9 @@
                 247,
                 248,
                 249
-              ]
+              ],
+              "firstLine": "for f in features {",
+              "lastLine": "format!(\" [{}]\", f.tags.join(\" \"))"
             }
           ]
         }
@@ -396,7 +411,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "289-322",
+          "lines": "294-327",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -433,7 +448,9 @@
                 270,
                 271,
                 272
-              ]
+              ],
+              "firstLine": "return \"No feature files found in spec/features/\".to_string();",
+              "lastLine": "clippy::unwrap_used,"
             }
           ]
         }
@@ -444,7 +461,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "325-353",
+          "lines": "329-358",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -461,7 +478,9 @@
                 270,
                 271,
                 272
-              ]
+              ],
+              "firstLine": "tag",
+              "lastLine": "clippy::unwrap_used,"
             }
           ]
         }
@@ -472,7 +491,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "356-410",
+          "lines": "360-415",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/list_features.rs",
@@ -490,7 +509,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "if !parsed.tags.iter().any(|t| t == needle) {",
+              "lastLine": "// Sort alphabetically by file path (parity with TS"
             }
           ]
         }
@@ -501,7 +522,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/list_features.rs",
-          "lines": "413-461",
+          "lines": "417-463",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/feature_glob.rs",
@@ -650,7 +671,9 @@
                 142,
                 143,
                 144
-              ]
+              ],
+              "firstLine": "//! Shared helper that enumerates `spec/features/**/*.feature` for the",
+              "lastLine": ""
             }
           ]
         }
@@ -668,6 +691,6 @@
       "rust/fspec-core/src/commands/list_features.rs",
       "rust/fspec-core/src/io/feature_glob.rs"
     ],
-    "totalLinesCovered": 849
+    "totalLinesCovered": 867
   }
 }

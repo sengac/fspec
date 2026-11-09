@@ -1,321 +1,266 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/fspec-logo-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/fspec-logo-light.svg">
-  <img alt="fspec" src="assets/fspec-logo-light.svg" width="248">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/fspec-readme-intro.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/fspec-readme-intro-light.svg">
+    <img src="assets/fspec-readme-intro-light.svg" alt="fspec: a blueprint becoming a software factory" width="240">
+  </picture>
+</p>
 
-**The Spec-Driven, Multi-Agent Harness**
+<h1 align="center">Specifications in. Software out.</h1>
 
-[![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center"><strong>A spec-driven, multi-agent development environment for your terminal.</strong></p>
 
----
+<p align="center">
+  <a href="#get-started">Get started</a> ·
+  <a href="#the-workflow">The workflow</a> ·
+  <a href="#use-your-existing-agent">External agents</a> ·
+  <a href="#documentation">Documentation</a> ·
+  <a href="https://github.com/sengac/fspec/releases">Releases</a>
+</p>
 
-## Install
+fspec brings AI coding agents, a live Kanban board, and executable specifications into one workspace. Capture what you want to build, turn examples into Gherkin acceptance criteria, and track the work from specification through tests, implementation, and review.
 
-**macOS / Linux** — install the latest prebuilt binary from GitHub Releases:
+Use it as a complete terminal coding environment or as a command-line toolkit for the agent you already use. The native application is written in Rust and ships as a single binary.
+
+## What you can do
+
+- **Run multiple agents.** Work on separate jobs, delegate to worker sessions, search previous conversations, and use read-only research agents to investigate a question.
+- **Keep requirements beside the code.** Store project foundations, work units, Example Mapping, domain models, Gherkin features, and coverage links in your repository.
+- **Make progress visible.** Follow stories, bugs, dependencies, and blockers on the board. Split the terminal into live board, agent, changed-file, and checkpoint panes.
+- **Connect specs to implementation.** Link scenarios to tests and implementation locations, audit the links, and apply workflow gates as work advances.
+- **Choose how agents work.** Configure providers and models, use separate Git worktrees, connect MCP tools, and set command and file-access rules.
+- **Keep the work running elsewhere.** Host sessions in a daemon and attach terminal clients, or use the separate Telegram bridge for remote interaction.
+
+## Get started
+
+### 1. Install
+
+Download a prebuilt binary from [GitHub Releases](https://github.com/sengac/fspec/releases), or use the installer for your platform. A Rust toolchain is not required for prebuilt binaries.
+
+**macOS / Linux**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
 ```
 
-**Windows (PowerShell):**
+**Windows PowerShell**
 
 ```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
+powershell -ExecutionPolicy ByPass -c `
+  "irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex"
 ```
 
-**Building from source** (requires a Rust toolchain):
+These commands download and execute an installation script. You can inspect [the shell installer](scripts/install.sh) or [the PowerShell installer](scripts/install.ps1) first. The default installation directory is `~/.local/bin` on macOS/Linux or `%USERPROFILE%\.local\bin` on Windows; ensure it is on your `PATH`.
 
-```bash
-./scripts/build-install.sh
-```
+See [Windows troubleshooting](docs/WINDOWS.md) for platform-specific setup and [building from source](#build-and-contribute) for a local build.
 
-See [BUILD.md](docs/BUILD.md) for complete build instructions, cross-compilation, and the `release-slim` profile rationale.
-
-**Windows** — known platform gotchas (SSH/git `Permission denied (publickey)`, PowerShell script encoding, etc.) and verified fixes: [docs/WINDOWS.md](docs/WINDOWS.md).
-
----
-
-## Update
-
-fspec updates **in place** — it replaces the binary it was installed from, so there's no second copy to manage and no PATH juggling. The same engine powers both the TUI slash command and the CLI subcommand.
-
-**In the TUI:**
-
-```
-/update          # check for the latest release and install it if newer
-/update check    # just report the latest version, don't download
-```
-
-**From the shell:**
-
-```bash
-fspec update          # download, verify, and replace the installed binary
-fspec update --check  # query only; exits 0 if current, 1 if an update is available
-```
-
-`--check` is scriptable — wire it into a cron job or CI step to detect stale installs.
-
-### How it works
-
-1. **Check** — queries the GitHub API for the latest release and finds the asset matching your platform (e.g. `aarch64-apple-darwin`)
-2. **Download** — fetches the release archive to a temp file next to the installed binary
-3. **Verify** — computes the SHA-256 of the download and compares it (constant-time) against the digest GitHub publishes for that asset
-4. **Replace** — extracts the binary and atomically renames it into place (on Windows the rename is scheduled after the process exits, since the running `.exe` is locked)
-
-If any step fails — network error, missing asset, checksum mismatch — the installed binary is **left untouched**. A restart is required after a successful update to activate the new version.
-
----
-
-## What is fspec?
-
-**fspec** (Factory Spec) is infrastructure for running a software factory—multiple AI agents working jobs in parallel, driven by specifications, managed on a Kanban board.
-
-This isn't another agent harness. It's a **coding factory**.
-
-### How fspec differs from agent harnesses
-
-Many agent harnesses support multiple agents and basic planning. The difference is **how work gets broken down and executed**.
-
-In a typical agent harness, you describe a task and the agent writes code. Planning is informal, code is produced directly, and there's no structural guarantee that the output matches your intent. You can add formal planning via external frameworks (BMAD, GSD, etc.), but those frameworks are bolted on — they don't enforce a spec-first, test-first pipeline or tie every line of code back to a verifiable requirement.
-
-fspec uses **Acceptance Criteria Driven Development (ACDD)** — a disciplined pipeline where every feature must pass through specification, testing, and implementation in order:
-
-1. **Features on a board** — Work is broken into user-facing capabilities, each tracked as a work unit on a Kanban board
-2. **Specification first** — Before any code, the agent writes Gherkin scenarios capturing exactly what the feature should do, asking clarifying questions to uncover edge cases
-3. **Tests before code** — Failing tests are written from the spec, proving the agent understands the requirements
-4. **Minimal implementation** — Just enough code to make the tests pass, nothing more
-
-This discipline produces code that is **robust** (every behavior is tested), **isolated** (each feature is independently specified and tested), and **behavior-driven** (the spec is the source of truth, not the code).
-
-| | Agent Harness | fspec (ACDD) |
-|---|---|---|
-| **Work breakdown** | Free-form prompts or tasks | Features as user capabilities on a Kanban board |
-| **Spec → code** | Code written directly from prompts | Gherkin spec → failing tests → minimal implementation |
-| **Quality guarantee** | Depends on agent judgment | Every acceptance criterion has a failing test before code is written |
-| **Traceability** | None or informal | Every line of code links back to a Gherkin scenario |
-| **Scope control** | Agents tend to over-implement | Tests dictate exactly what gets implemented |
-| **Concurrency** | Optional, unstructured | Structured — each agent pulls a specified work unit from the board |
-
-In a factory, you don't stand at every machine. You design the product, write the specifications, and let the production line run. You check output quality. You fix bottlenecks. But the machines do the work.
-
-### Why Kanban?
-
-In the 1940s, Toyota engineer Taiichi Ohno faced a problem: American car factories outproduced Japanese ones by a factor of ten. His solution was **Kanban**—a visual system where cards represent work items flowing through production stages. Each station pulls work when ready. Nothing gets built without a card. Nothing moves forward until quality checks pass.
-
-Toyota's production system revolutionized manufacturing. The Kanban board became the heartbeat of the factory floor.
-
-fspec applies the same principle to software production. Work units are jobs. The Kanban board is your production floor. AI agents are workstations. Specifications are blueprints. Tests are quality control. The factory runs whether you're watching or not.
-
-### The dark factory
-
-The term comes from [Dan Shapiro's framework](https://www.danshapiro.com/blog/2026/01/the-five-levels-from-spicy-autocomplete-to-the-software-factory/) mapping AI-assisted coding to five levels of autonomy—borrowing from self-driving cars. Most developers operate at Levels 2-3: pair programming with AI, reviewing AI-generated code. fspec is built for **Levels 4 and 5**, where specifications become the primary human input and AI agents autonomously produce working software.
-
-The "dark factory" references the [Fanuc factory in Japan](https://en.wikipedia.org/wiki/Lights_out_(manufacturing))—a robot factory staffed by robots, running with the lights off because no humans are present. In software, it means: specs go in, code comes out. The factory runs in the dark.
-
-fspec makes this possible through **Acceptance Criteria Driven Development (ACDD)**: you describe what you want, the AI asks clarifying questions, writes Gherkin scenarios capturing your intent, generates failing tests, then writes just enough code to pass. Every line traces back to a requirement. The specification *is* the source of truth.
-
----
-
-## Quick Start
-
-### Run
+### 2. Open your project
 
 ```bash
 cd /path/to/your/project
 fspec
 ```
 
-This opens the factory floor—your Kanban board with AI workstations ready to take jobs.
+The default mode opens the terminal UI and runs the local service in the same process. Start in the repository you want the agents to work on.
 
-![Interactive Kanban](assets/interactive-kanban.png)
+### 3. Start an agent and choose a model
 
----
+From the board, press **`.`** to start an agent. Choose **Normal** to work in the current project or **Isolated** to use a separate Git worktree.
 
-## First Run: Starting the Factory
+In the agent conversation, use:
 
-When you first run `fspec`, the production floor is empty—no jobs queued. Here's how to get the factory running:
-
-### 1. Spin up an agent
-
-Press **`.`** (or **Shift+Right**) to start a new AI workstation. A dialog appears:
-
-```
-Start New Agent?
-Begin a fresh AI conversation, not linked to any task.
-
-Mode:  Normal  / Isolated
-```
-
-- **Normal** — Agent works directly in your project
-- **Isolated** — Agent works in a git worktree (safe for experimental changes)
-
-Press **Enter** on "Yes" to bring the workstation online.
-
-### 2. Configure the provider and model
-
-Before you start coding, choose an AI provider and model:
-
-```
+```text
 /provider
 /model
 ```
 
-Each command opens an interactive selection screen. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list of supported providers and models.
+Configure your provider credentials or sign-in, then select a model. Supported integrations include Anthropic, Codex (ChatGPT), Gemini, GitHub Copilot, OpenRouter, and others. OpenAI-compatible server profiles support endpoints such as Ollama and vLLM. See [provider configuration](docs/PROVIDERS.md) for the current options and authentication requirements.
 
-### 3. Use it however you want
+Provider usage is subject to the provider's pricing and terms. Check those terms before using subscription credentials with third-party tools.
 
-**fspec doesn't force any workflow.** Each AI agent is a full-featured coding assistant. You can:
+### 4. Give it a job
 
-- Ask it to write code, refactor, debug, or explain things
-- Have it review PRs, write documentation, or answer questions
-- Use it exactly like any other AI coding tool
+You can chat directly with an agent to investigate, code, review, or debug. To use the specification-driven workflow, start with a request like:
 
-The factory workflow is available when you want it, not required. fspec provides the infrastructure—you decide how to run your production line.
-
-### 4. Foundation discovery (setting up the factory)
-
-To run the full factory workflow, start with **Foundation Discovery**. This establishes your product blueprint. For new projects without `spec/foundation.json`, tell the AI:
-
-```
-"Let's set up fspec for this project"
-"Run fspec discover-foundation"
+```text
+Help me set up fspec for this project. Discover its foundation,
+then create a story for password reset. Ask me about the rules
+and edge cases before writing the acceptance criteria.
 ```
 
-The AI guides you through creating your project's requirements document:
+The agent uses fspec's commands to capture the project foundation and create work units. Review the requirements with it, then select a card on the board and press **Enter** to start working on that job.
 
-- Analyzes your codebase
-- Asks about project vision, personas, and capabilities
-- Builds `foundation.json` field by field
-- Finalizes with `fspec discover-foundation --finalize`
+## The workflow
 
-This is a one-time setup that establishes the blueprint for all future production.
+fspec uses **Acceptance Criteria Driven Development (ACDD)**: agree on the behavior, write tests for it, then implement it.
 
-### 5. Queue jobs
-
-Once the foundation exists (or skip it for quick tasks), tell the AI what you want to build:
-
-```
-"Create a story for user authentication"
-"I need to add a payment processing feature"
-"There's a bug where login fails on mobile"
+```text
+backlog → specifying → testing → implementing → validating → done
 ```
 
-The AI creates work units (stories, bugs, or tasks) and queues them in the backlog. These are your production jobs.
+1. **Discover the intent.** Capture the project's vision and capabilities. Use Example Mapping to record rules, concrete examples, and unanswered questions. Event Storming supports domain events, commands, aggregates, policies, and bounded contexts.
+2. **Specify the behavior.** Turn the agreed examples into Gherkin scenarios with concrete Given/When/Then steps.
+3. **Write the tests.** Create tests for those scenarios and establish the failing behavior before implementation.
+4. **Implement and validate.** Make the tests pass, link the implementation, run the project's checks, and review the result.
 
-### 6. Run the production line
+Stories and bugs follow the testing phase. Operational **tasks** skip that phase. Work can enter **blocked** with a reason, and unresolved blocking dependencies prevent it from starting.
 
-Now you have jobs on the board! Work flows through the factory:
+Status transitions enforce checks for the applicable work type and phase, including specification readiness, test/implementation mappings, temporal ordering, and audits. Lifecycle hooks add project-specific checks. Configure the project's actual test and quality commands with `fspec configure-tools`.
 
+These checks support a disciplined process; they do not prove that a test is sufficient or that an implementation is correct. Review the acceptance criteria, test results, and code before shipping.
+
+### A small CLI example
+
+After completing foundation discovery, run this from your project root to create a namespace and capture the start of a story. Creating a story requires `spec/foundation.json`; if it is missing, ask your agent to run `fspec discover-foundation`, complete the guided fields, and finalize the foundation first:
+
+```bash
+fspec create-prefix AUTH "Authentication"
+fspec create-story AUTH "Reset a forgotten password"
 ```
-BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
+
+Use the work-unit ID returned by `create-story` in the following commands. In a fresh namespace, that is `AUTH-001`:
+
+```bash
+fspec update-work-unit-status AUTH-001 specifying
+fspec set-user-story AUTH-001 \
+  --role "account holder" \
+  --action "reset my password" \
+  --benefit "regain access to my account"
+
+fspec add-rule AUTH-001 "A reset link can be used only once"
+fspec add-example AUTH-001 "Using an already-consumed link is rejected"
+fspec show-work-unit AUTH-001
 ```
 
-- Press **Enter** on any job to assign it to an agent
-- Agents move jobs through stages automatically
-- Each stage has quality gates (see "How the factory works" below)
+Continue discovery with your agent before moving the card through the workflow. `fspec generate-scenarios AUTH-001` creates a feature **scaffold containing discovery context**, not finished acceptance scenarios. The agent still needs to write and review the scenarios and steps.
 
-Multiple agents can work different jobs simultaneously—one implements a feature while another fixes a bug. This is parallel production.
+For example, the agreed behavior might become:
 
-Or ignore the board entirely and just chat with an agent—the factory infrastructure is there when you need it.
+```gherkin
+Scenario: A password reset link cannot be reused
+  Given a password reset link has already been used
+  When the account holder submits a new password with that link
+  Then the password is not changed
+  And the account holder is asked to request a new reset link
+```
 
----
+Use `fspec validate`, `fspec audit`, and `fspec show-coverage` to inspect specification health and traceability. Run `fspec <command> --help` for command-specific arguments, or `fspec bootstrap` for the complete agent workflow guide.
 
-## Keyboard shortcuts
+### What lives in your repository
 
-| Key | Action |
-|-----|--------|
-| `.` | Spin up new AI agent |
-| **Shift+Right** | Navigate to next session (or create new) |
-| **Shift+Left** | Navigate to previous session (or back to board) |
-| **Enter** | Assign selected job to an agent |
-| **↑ ↓ ← →** | Navigate board |
-| **C** | View git checkpoints |
-| **F** | View changed files |
-| **D** | View FOUNDATION.md |
-| **Esc** | Exit / Go back |
+| Location | Purpose |
+| --- | --- |
+| `spec/foundation.json` | Project vision, personas, capabilities, and domain context |
+| `spec/FOUNDATION.md` | Human-readable foundation generated from the JSON source |
+| `spec/work-units.json` | Work units, workflow state, and discovery data |
+| `spec/features/*.feature` | Gherkin acceptance criteria |
+| `spec/features/*.feature.coverage` | Scenario-to-test-to-implementation mappings |
+| `spec/fspec-config.json` | Project configuration, including test and quality commands |
+| `spec/attachments/` | Supporting material attached to work units |
 
----
+Coverage mappings record relationships; they are not a replacement for executing tests or measuring runtime code coverage.
 
-## How the factory works
+## Run a software factory
 
-1. **You specify what to build** — A feature, a bug fix, a task
-2. **The agent asks questions** — Clarifies edge cases, rules, and expectations
-3. **The agent writes specs** — Generates Gherkin scenarios from your answers
-4. **The agent writes tests** — Failing tests that prove the spec isn't implemented
-5. **The agent writes code** — Just enough to make the tests pass
-6. **Quality control** — Every line of code links back to a requirement
+### Parallel agents and shared context
 
-This is **Acceptance Criteria Driven Development (ACDD)**. Specifications are blueprints. Tests are quality control. Code is the product. The factory produces software that provably meets requirements.
+Agents can delegate work through **AgentManager**, retrieve previous decisions with **SessionSearch**, and use **DeepSearch** for scoped, read-only research. Each has a different purpose: persistent workers do work, history search recalls context, and research agents answer focused questions. See [scaling work](docs/SCALING.md).
 
----
+Use **Isolated** sessions when agents need independent working directories. Git worktrees separate changes, but they are not security sandboxes. Review changes and resolve conflicts before bringing them back with `/merge-worktree`. See [worktrees](docs/WORKTREES.md).
 
-## Key capabilities
+### See several views at once
 
-- **Parallel production** — Multiple agents working different jobs simultaneously
-- **Example mapping** — Agents discover rules, examples, and edge cases by asking questions
-- **Gherkin generation** — Specs written automatically from your answers
-- **Test-first development** — Tests before code, always
-- **Kanban workflow** — Toyota-style production flow from backlog to done
-- **Git checkpoints** — Automatic save points for safe experimentation
-- **Coverage tracking** — Link code to requirements
-- **Isolated sessions** — Work in git worktrees for safe experimentation
+Use `/mux` to configure a split layout containing the board, agent sessions, changed files, and checkpoints. Drag dividers to resize panes; **Shift+Left/Right** moves focus between panes in mux mode. Keyboard input goes to the focused pane. See [multiplexing](docs/MULTIPLEXING.md).
 
----
+### Attach to a running daemon
 
-## Supported providers
+Run the service separately from its frontend:
 
-fspec works with any AI provider that supports tool calling. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list and configuration.
+```bash
+# On the machine hosting the project:
+fspec daemon --bind 127.0.0.1:3777
 
-> **⚠️ Subscription Tokens**: Some tokens (like `CLAUDE_CODE_OAUTH_TOKEN`) come from subscription services rather than pay-per-use APIs. Check your provider's terms of service before using subscription tokens with third-party tools.
+# In another terminal:
+fspec client --connect ws://127.0.0.1:3777
+fspec status --connect ws://127.0.0.1:3777
+```
 
----
+For another machine, use an authenticated tunnel or the documented TLS/token configuration. Do not expose an unauthenticated daemon port. See [client/server operation](docs/CLIENT_SERVER.md) for transport, discovery, and remote access.
 
-## Scaling work
+The [Telegram bridge](docs/TELEGRAM.md) is a separate Node.js sidecar with its own protocol, not another daemon client.
 
-AgentManager, SessionSearch, and DeepSearch enable parallel work across multiple agents. See [docs/SCALING.md](docs/SCALING.md) for details.
+## Use your existing agent
 
----
+Keep using Claude Code, Codex, Cursor, or another shell-capable coding agent. fspec can supply the workflow and CLI without replacing its interface.
 
-## Multiplexing
+```bash
+cd /path/to/your/project
+fspec init
+```
 
-Watch the whole factory at once: mux mode splits the TUI screen into a grid of live views—Board, agent sessions, Changed Files, and Checkpoints—so you can supervise parallel production without switching views. Type `/mux` to configure the grid, `Shift+←/→` to move pane focus, and drag the dividers to resize. See [docs/MULTIPLEXING.md](docs/MULTIPLEXING.md) for the full configuration reference and how input routing works.
+The interactive selector installs the chosen agent's workflow documentation and activation command. For scripted setup, specify the agent:
 
----
+```bash
+fspec init --agent=claude
+# Or:
+fspec init --agent=codex
+```
 
-## One daemon, many clients
+Activate `/fspec` in Claude Code or `/prompts:fspec` in Codex. The installed command loads `fspec bootstrap`, after which the agent can manage specifications and work units through the CLI. See [external-agent setup](docs/EXTERNAL.md).
 
-Run the factory on one machine and attach TUIs from any number of others: the daemon hosts the sessions, clients are just frontends. Reach the loopback-only daemon across your machines with a Tailscale tailnet (no exposed ports, WireGuard-encrypted), and monitor from your phone through the separate Telegram/relay bridge. See [docs/CLIENT_SERVER.md](docs/CLIENT_SERVER.md) for the client/server architecture, daemon/client modes, and the Tailscale setup.
+For MCP hosts, `fspec client --mcp` exposes service tools over stdio through the frontend. Full RPC access requires a matching daemon. Read [MCP service access](docs/CLIENT_MCP.md) for compatibility, transport restrictions, and authorization boundaries before connecting a host.
 
----
+## Safety and control
 
-## Using with external agents
+**Agents execute with the filesystem, shell, and network access of the account running fspec.** Use an OS/container sandbox when you need a real isolation boundary.
 
-fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
+- **Command and file rules:** block, allow, or prompt for matching operations. See [blocklist configuration](docs/BLOCKLIST.md).
+- **Checkpoints:** inspect and restore saved project states. Checkpoints and worktrees help manage changes; neither replaces backups or review.
+- **Private diagnostics:** conversation and tool payloads are omitted from diagnostic logs by default. See [logging and retention](docs/PRIVACY_LOGGING.md) before enabling payload diagnostics.
+- **Remote access:** protect daemon connections and credentials. See [security recommendations](docs/SECURITY.md) and [daemon transport](docs/CLIENT_SERVER.md).
 
----
+## Update
 
-## Telegram bridge
+```bash
+fspec update --check
+fspec update
+```
 
-Monitor and interact with your factory from your phone via Telegram. See [docs/TELEGRAM.md](docs/TELEGRAM.md) for setup instructions.
+The check reports whether an update is available. The updater downloads the matching release asset, verifies its digest, and replaces the installed binary in place. Restart after updating. Inside the TUI, use `/update check` or `/update`.
 
----
+## Build and contribute
 
-## Isolated sessions and worktrees
+The main application is a Cargo workspace under `rust/`. You need Rust via rustup, a native compiler/linker toolchain, and the Protocol Buffers compiler (`protoc`) at build time.
 
-Work in git worktrees for safe experimentation and parallel development. See [docs/WORKTREES.md](docs/WORKTREES.md) for details.
+```bash
+git clone https://github.com/sengac/fspec.git
+cd fspec
+./scripts/build.sh
+./rust/target/release-slim/fspec --version
+```
 
----
+Use `./scripts/build-install.sh` to build and install locally. Windows build scripts, packaging, and cross-compilation instructions are in [BUILD.md](docs/BUILD.md).
 
-## Security
+The CLI and agent-facing tools share command implementations in `rust/fspec-core/`. The terminal interface lives in `rust/fspec-tui/`; agent execution, sessions, providers, tools, graphs, and RPC are separate workspace crates.
 
-fspec agents have full access to your file system, network, and shell. See [docs/SECURITY.md](docs/SECURITY.md) for sandboxing recommendations and ExitBox integration.
+Read [AGENTS.md](AGENTS.md) and [the testing guide](docs/TESTING.md) before contributing. Follow specification → failing tests → implementation for behavior changes. Keep tests scoped to the affected package and target:
 
-Diagnostic logs omit conversation and tool payloads by default. See [docs/PRIVACY_LOGGING.md](docs/PRIVACY_LOGGING.md) for explicit local payload diagnostics, credential safeguards, private storage, and retention.
+```bash
+cd rust
+cargo check -p codelet-fspec
+cargo test -p codelet-fspec --test no_napi_dependency
+```
 
----
+Do not run unscoped `cargo test` or `cargo test --workspace`: this workspace's integration-test binaries can consume substantial disk space and memory.
 
-## Command and file blocklist
+## Documentation
 
-Block, allow, or prompt for approval on specific commands and file access patterns. See [docs/BLOCKLIST.md](docs/BLOCKLIST.md) for configuration details.
+- **Set up:** [Providers](docs/PROVIDERS.md) · [Build](docs/BUILD.md) · [Windows](docs/WINDOWS.md) · [External agents](docs/EXTERNAL.md)
+- **Work in parallel:** [Scaling](docs/SCALING.md) · [Multiplexing](docs/MULTIPLEXING.md) · [Worktrees](docs/WORKTREES.md)
+- **Connect:** [Client/server](docs/CLIENT_SERVER.md) · [MCP service access](docs/CLIENT_MCP.md) · [Telegram](docs/TELEGRAM.md)
+- **Operate safely:** [Security](docs/SECURITY.md) · [Blocklists](docs/BLOCKLIST.md) · [Diagnostic privacy](docs/PRIVACY_LOGGING.md)
+- **Develop:** [Contribution guidelines](AGENTS.md) · [Testing](docs/TESTING.md) · [Formal verification](docs/FORMAL_VERIFICATION.md)
+
+## License
+
+[MIT](LICENSE).

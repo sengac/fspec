@@ -1,3 +1,4 @@
+@BUG-582
 @feature-management
 @cli
 @done
@@ -21,7 +22,7 @@ Feature: Port show-feature command to Rust
     Given a temp project root contains spec/features/login.feature with valid gherkin and no @PREFIX-NNN tags
     When I dispatch show-feature with feature='login' and format='text'
     Then the dispatcher returns success=true
-    And the data field reproduces the file content verbatim followed by '\n\nWork Units: None\n'
+    And the data field reproduces the file content verbatim followed by '\n\nWork Units: None\n\n'
 
   Scenario: Direct path lookup resolves a feature path ending in .feature
     Given a temp project root contains spec/features/login.feature with valid gherkin and no @PREFIX-NNN tags
@@ -85,3 +86,10 @@ Feature: Port show-feature command to Rust
     When I inspect rust/fspec-core/src/
     Then the helper io::feature_glob::glob_feature_files is publicly accessible from the crate root
     And commands/show_feature.rs no longer returns FspecCoreError::NotYetPorted
+
+  Scenario: JSON output path writes the JSON render to disk
+    Given a temp project root contains spec/features/reporting.feature with valid gherkin and no work-unit tags
+    When I dispatch show-feature with feature='reporting', format='json', and output='report.json'
+    Then the dispatcher returns success=true
+    And the file <project_root>/report.json exists with the same bytes as the data field
+    And report.json parses as JSON with a 'feature' object and a 'workUnits' array

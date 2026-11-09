@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-233
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port generate-foundation-md command to Rust
   """
   Rust port of src/commands/generate-foundation-md.ts (RPC-233), child of
@@ -102,3 +104,40 @@ Feature: Port generate-foundation-md command to Rust
     Given a foundation with bounded contexts, aggregates, commands and events
     When the FOUNDATION.md generator emits the bounded-context map and per-context event-flow diagrams
     Then every emitted diagram validates as Ok under merman so valid foundations still render byte-identically
+
+  Scenario: Renders an architecture diagram in a mermaid code fence under its title
+    Given spec/foundation.json has an architectureDiagram titled 'fspec System Context' whose mermaidCode has three lines
+    When I dispatch generate-foundation-md with no output override
+    Then generation succeeds
+    And spec/FOUNDATION.md has the heading '### fspec System Context' followed by the diagram lines unchanged inside a mermaid code fence
+
+  Scenario: A schema-invalid foundation.json fails and leaves FOUNDATION.md unchanged
+    Given spec/foundation.json lacks the required problemSpace and spec/FOUNDATION.md holds earlier content
+    When I dispatch generate-foundation-md with no output override
+    Then generation fails
+    And the error message contains 'foundation.json has validation errors: ' naming problemSpace
+    And spec/FOUNDATION.md still holds the earlier content
+
+  Scenario: Regenerating from an unchanged foundation.json writes identical bytes
+    Given spec/foundation.json exists with a valid generic foundation
+    When I dispatch generate-foundation-md twice with no output override
+    Then the second spec/FOUNDATION.md is byte-identical to the first
+
+  Scenario: A single invalid diagram fails generation naming its index, title and parse error
+    Given spec/foundation.json has three architectureDiagrams and the one at architectureDiagrams[1] titled 'Data Flow' has an unterminated node label
+    And spec/FOUNDATION.md holds earlier content
+    When I dispatch generate-foundation-md with no output override
+    Then generation fails
+    And the error message lists '  - architectureDiagrams[1] (title: "Data Flow"): ' followed by the merman parse error naming the unterminated node label
+    And the error message contains the line "Fix the diagram(s) in spec/foundation.json"
+    And the error message ends with "Run 'fspec generate-foundation-md' again after fixing"
+    And spec/FOUNDATION.md still holds the earlier content
+
+  Scenario: Every invalid diagram is reported in one failure
+    Given spec/foundation.json has five architectureDiagrams and the ones at architectureDiagrams[1] and architectureDiagrams[3] are invalid
+    And spec/FOUNDATION.md holds earlier content
+    When I dispatch generate-foundation-md with no output override
+    Then generation fails
+    And the error message contains "Found 2 invalid diagrams:"
+    And the error message lists architectureDiagrams[1] and architectureDiagrams[3], each with its title and merman parse error, and no other diagram
+    And spec/FOUNDATION.md still holds the earlier content

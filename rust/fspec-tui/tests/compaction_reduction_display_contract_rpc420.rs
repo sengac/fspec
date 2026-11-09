@@ -15,13 +15,9 @@
 //! `agentview_session_header_compaction_percentage_rpc100.rs` plus the
 //! dual-transport harness of `rpc037_cross_transport_parity.rs`.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -78,14 +74,14 @@ fn drain_actions(app: &mut App) {
 }
 
 /// Render the full App into a 100x24 `TestBackend` and return the buffer.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(100, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -114,51 +110,58 @@ fn body_text(buf: &Buffer) -> String {
 
 // ── dual-transport harness (mirrors rpc037_cross_transport_parity.rs) ─────
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_service() -> (
-    TempDir,
-    Arc<SharedFspecService>,
-    Arc<StubSessionManagerHandle>,
-) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_service() -> Result<
+    (
+        TempDir,
+        Arc<SharedFspecService>,
+        Arc<StubSessionManagerHandle>,
+    ),
+    codelet_test_helpers::TestError,
+> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service, stub)
+    Ok((temp, service, stub))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 // ───────────────────────── tests ──────────────────────────────────────────
 
 /// Scenario: CompactionComplete percent value renders directly in the badge and the notice
 #[test]
-fn compaction_complete_percent_value_renders_directly_in_badge_and_notice() {
+fn compaction_complete_percent_value_renders_directly_in_badge_and_notice() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
 
@@ -186,7 +189,7 @@ fn compaction_complete_percent_value_renders_directly_in_badge_and_notice() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
     let body = body_text(&buf);
 
@@ -203,11 +206,12 @@ fn compaction_complete_percent_value_renders_directly_in_badge_and_notice() {
         ),
         "notice must render the wire percent directly, got body:\n{body}"
     );
+    Ok(())
 }
 
 /// Scenario: Regression — a 99.0 percent wire value renders COMPACTED 99% and never 9800%
 #[test]
-fn regression_99_percent_wire_value_renders_99_never_9800() {
+fn regression_99_percent_wire_value_renders_99_never_9800() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
 
@@ -227,7 +231,7 @@ fn regression_99_percent_wire_value_renders_99_never_9800() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "COMPACTED 99%"
@@ -241,11 +245,12 @@ fn regression_99_percent_wire_value_renders_99_never_9800() {
         "the (1-99)*100 = -9800 inversion (sign-masked by .abs()) must \
          never appear, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: The 0.0 sentinel renders as a zero-percent reduction
 #[test]
-fn zero_sentinel_renders_as_zero_percent_reduction() {
+fn zero_sentinel_renders_as_zero_percent_reduction() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
 
@@ -265,7 +270,7 @@ fn zero_sentinel_renders_as_zero_percent_reduction() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
     let body = body_text(&buf);
 
@@ -285,25 +290,29 @@ fn zero_sentinel_renders_as_zero_percent_reduction() {
         "the pre-fix inversion turned 0.0 into '100.0% reduction'; that \
          must never happen, got body:\n{body}"
     );
+    Ok(())
 }
 
 /// Scenario: Stub parity — the canned CompactionResult round-trips as 50.0 percent on both transports
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn stub_parity_canned_result_round_trips_as_50_percent_on_both_transports() {
+async fn stub_parity_canned_result_round_trips_as_50_percent_on_both_transports() -> TestResult {
     // @step Given a StubSessionManagerHandle serving both the embedded and WebSocket transports
-    let (_temp, service, _stub) = build_service();
-    let (embedded, websocket) = dual_backends(service).await;
-    let session = embedded.create_session(None).await.expect("create_session");
+    let (_temp, service, _stub) = build_service()?;
+    let (embedded, websocket) = dual_backends(service).await?;
+    let session = embedded
+        .create_session(None)
+        .await
+        .or_fail("create_session")?;
 
     // @step When compact_session is called for the same session via each transport
     let em_res = embedded
         .compact_session(session.clone())
         .await
-        .expect("em compact");
+        .or_fail("em compact")?;
     let ws_res = websocket
         .compact_session(session.clone())
         .await
-        .expect("ws compact");
+        .or_fail("ws compact")?;
 
     // @step Then both transports return CompactionResult with original_tokens 1000, compacted_tokens 500, compression_ratio 50.0, turns_summarized 4, turns_kept 2
     for (label, res) in [("embedded", &em_res), ("websocket", &ws_res)] {
@@ -331,7 +340,7 @@ async fn stub_parity_canned_result_round_trips_as_50_percent_on_both_transports(
         },
     ));
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let body = body_text(&buf);
     assert!(
         body.contains(
@@ -340,11 +349,12 @@ async fn stub_parity_canned_result_round_trips_as_50_percent_on_both_transports(
         "the canned 50.0 percent stub result must format as a 50.0% \
          reduction notice, got body:\n{body}"
     );
+    Ok(())
 }
 
 /// Scenario: Producer formula feeds the display pipeline end-to-end
 #[test]
-fn producer_formula_feeds_display_pipeline_end_to_end() {
+fn producer_formula_feeds_display_pipeline_end_to_end() -> TestResult {
     // @step Given the wire value is computed by the real producer formula compression_ratio(10000, 4000) * 100.0 equal to 60.0
     let wire_ratio = codelet_cli::interactive_helpers::compression_ratio(10000, 4000) * 100.0;
     assert!(
@@ -369,7 +379,7 @@ fn producer_formula_feeds_display_pipeline_end_to_end() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
     let body = body_text(&buf);
 
@@ -385,4 +395,5 @@ fn producer_formula_feeds_display_pipeline_end_to_end() {
         "the producer-derived 60.0 percent must format as '60.0% \
          reduction', got body:\n{body}"
     );
+    Ok(())
 }

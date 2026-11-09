@@ -154,6 +154,7 @@ impl StreamOutput for Output {
 
 pub async fn run(provider: ProviderType, scripts: Vec<Vec<Step>>) -> TestResult<Session> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     codelet_core::persistence::reset_stores_for_tests();
     let manifest = codelet_core::persistence::create_session_with_provider(
@@ -183,8 +184,8 @@ pub async fn run(provider: ProviderType, scripts: Vec<Vec<Step>>) -> TestResult<
         })
         .build();
     let mut session = session(provider)?;
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(agent), 'C...",
         run_agent_stream(
             RigAgent::with_default_depth(agent),
             "Continue",

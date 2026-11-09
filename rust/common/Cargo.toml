@@ -35,9 +35,20 @@ dirs.workspace = true
 chrono.workspace = true
 uuid.workspace = true
 
+# BUG-477: cross-process spec write lock (spec_lock.rs)
+fs2 = "0.4"
+# BUG-597: the locked file is still the file at the lock path (file identity)
+same-file = "1"
+
 # Token Estimation (PROV-002)
 tiktoken-rs.workspace = true
 once_cell.workspace = true
+
+[features]
+# BUG-640: the user-directory resolver refuses to fall back to <home>/.fspec
+# unless FSPEC_USER_DIR is set. codelet-test-helpers enables it, so every
+# test build has it; release builds never do.
+test-support = []
 
 [dev-dependencies]
 tempfile.workspace = true

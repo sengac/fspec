@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @BUG-211
 @phase-1
 @agent-core
 @context-management
 @compaction
+@BUG-304
 Feature: Compaction synthesis admission
   """
   Final synthesis preserves the selected provider's historical tool evidence

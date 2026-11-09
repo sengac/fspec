@@ -56,7 +56,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "use super::{ResponseChunk, ResponseChunkKind, StreamingCompletionResponse};",
+              "lastLine": ".incomplete_details"
             }
           ]
         }
@@ -72,7 +74,6 @@
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming/terminal.rs",
               "lines": [
-                22,
                 23,
                 24,
                 25,
@@ -134,14 +135,13 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub fn finish(chunk: ResponseChunk) -> Result<Option<Terminal>, CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
               "lines": [
-                39,
-                40,
-                41,
                 42,
                 43,
                 44,
@@ -171,10 +171,10 @@
                 68,
                 69,
                 70,
-                71,
-                72,
-                73
-              ]
+                71
+              ],
+              "firstLine": "pub struct StreamingCompletionResponse {",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,7 +190,6 @@
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming/transport.rs",
               "lines": [
-                111,
                 112,
                 113,
                 114,
@@ -225,7 +224,9 @@
                 143,
                 144,
                 145
-              ]
+              ],
+              "firstLine": "if let StreamingCompletionChunk::Response(chunk) = data {",
+              "lastLine": "}"
             }
           ]
         }
@@ -284,7 +285,9 @@
                 143,
                 144,
                 145
-              ]
+              ],
+              "firstLine": "ItemChunkKind::OutputItemAdded(message) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -355,7 +358,9 @@
                 143,
                 144,
                 145
-              ]
+              ],
+              "firstLine": "tracing::trace!(\"SSE connection opened\");",
+              "lastLine": "}"
             }
           ]
         }
@@ -374,6 +379,6 @@
       "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/streaming/transport.rs"
     ],
-    "totalLinesCovered": 372
+    "totalLinesCovered": 365
   }
 }

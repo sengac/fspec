@@ -2,6 +2,7 @@
 @context-window
 @napi
 @CTX-006
+@codelet
 Feature: Rust-Authoritative Context Window — Single Source of Truth
   """
   Approach: Add model_limits (context_window, max_output_tokens) to SessionModel in Rust session state. This is the lightest-touch change — no new NAPI query function needed, just extend the existing snapshot that useRustSessionState already polls

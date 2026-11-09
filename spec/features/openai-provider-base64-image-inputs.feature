@@ -6,6 +6,7 @@
 @bug-fix
 @multimodal
 @image
+@attachment
 Feature: OpenAI Chat Completions rejects base64 user images with detail=None
   """
   Fix location: rust/patches/rig-core/src/providers/openai/completion/mod.rs line 445-447. Current code returns ConversionError if detail is None. Replace `let detail = detail.ok_or(...)?` with `let detail = detail.unwrap_or_default();` to match the URL branch at line 431. `ImageDetail::default()` = `Auto` (verified at completion/mod.rs:218-228 where the enum is defined with #[serde(rename_all="lowercase")]). No other sites changed.

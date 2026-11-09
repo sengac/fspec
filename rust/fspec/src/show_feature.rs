@@ -2,7 +2,7 @@
 //!
 //! Feature: spec/features/show-feature-cli-subcommand.feature
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -27,7 +27,7 @@ struct StructuredOutcome {
 
 /// Entry point for the `show-feature` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut base: Map<String, Value> = Map::new();
     base.insert("feature".to_string(), Value::String(args.feature.clone()));

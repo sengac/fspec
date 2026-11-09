@@ -27,8 +27,7 @@ fspec show-work-unit AUTH-001
 # Add rules/examples/questions
 fspec add-rule AUTH-001 "Must validate email"
 fspec add-example AUTH-001 "User with valid credentials"
-fspec add-question AUTH-001 "Should we support OAuth?" --human
-    undefined
+fspec add-question AUTH-001 "@human: Should we support OAuth?"
 
   • Export work unit data for processing
     Example: # Export as JSON for scripts/tools
@@ -36,7 +35,6 @@ fspec show-work-unit AUTH-001 --format json > auth-001.json
 
 # Process with jq
 fspec show-work-unit AUTH-001 --format json | jq .rules
-    undefined
 
   • Check system reminders
     Example: # View work unit to see reminders
@@ -46,7 +44,6 @@ fspec show-work-unit AUTH-001
 # <system-reminder>
 # Missing estimate for work unit AUTH-001
 # </system-reminder>
-    undefined
 
 
 TYPICAL WORKFLOW

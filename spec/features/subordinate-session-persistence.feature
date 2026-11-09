@@ -1,4 +1,6 @@
 @AMGR-014
+@codelet
+@supervisor
 Feature: Spawned subordinate sessions not searchable — no persistence manifest created
   """
   handle_spawn creates a SessionManifest via with_provider() before create_session_with_id(). Manifest ID overridden to match subordinate UUID. Provider extracted from model string split on '/'.

@@ -32,7 +32,8 @@ fn make_fake_archive(tmp: &Path, name: &str) -> PathBuf {
     let fake_bin = tmp.join("fake-fsbuild-dir");
     fs::create_dir_all(&fake_bin).expect("mkdir fake bin dir");
     let fake_bin_path = fake_bin.join("fspec");
-    fs::write(&fake_bin_path, "#!/bin/sh\necho \"fspec 9.9.9 (fake)\"\n").expect("write fake fspec");
+    fs::write(&fake_bin_path, "#!/bin/sh\necho \"fspec 9.9.9 (fake)\"\n")
+        .expect("write fake fspec");
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -122,7 +123,11 @@ fn run_install(
     }
     cmd.env(
         "PATH",
-        format!("{}:{}", stub_dir.display(), std::env::var("PATH").unwrap_or_default()),
+        format!(
+            "{}:{}",
+            stub_dir.display(),
+            std::env::var("PATH").unwrap_or_default()
+        ),
     );
     cmd.env("INSTALL_DIR", install_dir.to_string_lossy().to_string());
     cmd.env("FAKE_ARCHIVE", archive.to_string_lossy().to_string());
@@ -185,7 +190,10 @@ fn scenario_one_line_curl_install_on_apple_silicon_mac() {
 
     // @step And it installs the fspec binary to ~/.local/bin/fspec
     let installed = install_dir.join("fspec");
-    assert!(installed.is_file(), "fspec binary should be installed at {installed:?}");
+    assert!(
+        installed.is_file(),
+        "fspec binary should be installed at {installed:?}"
+    );
 
     // @step And it prints the installed version from fspec --version
     assert!(
@@ -243,7 +251,10 @@ fn scenario_install_on_x86_64_linux() {
     // @step And the installed binary runs without glibc version errors
     let installed = install_dir.join("fspec");
     assert!(installed.is_file(), "fspec binary should be installed");
-    let run = Command::new(&installed).arg("--version").output().expect("run fake fspec");
+    let run = Command::new(&installed)
+        .arg("--version")
+        .output()
+        .expect("run fake fspec");
     let ver = String::from_utf8_lossy(&run.stdout);
     assert!(
         run.status.success() && ver.contains("9.9.9"),
@@ -261,11 +272,19 @@ fn scenario_from_source_build_via_build_install_sh() {
     // @step Given a developer with cargo and git installed
     // (static check — the full build is slow and toolchain-dependent)
     assert!(
-        Command::new("cargo").arg("--version").output().map(|o| o.status.success()).unwrap_or(false),
+        Command::new("cargo")
+            .arg("--version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false),
         "cargo should be available in this environment"
     );
     assert!(
-        Command::new("git").arg("--version").output().map(|o| o.status.success()).unwrap_or(false),
+        Command::new("git")
+            .arg("--version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false),
         "git should be available in this environment"
     );
 
@@ -283,7 +302,10 @@ fn scenario_from_source_build_via_build_install_sh() {
         content.contains("cargo build") && content.contains("release-slim"),
         "must run cargo build with the release-slim profile"
     );
-    assert!(content.contains("codelet-fspec"), "must build the codelet-fspec package");
+    assert!(
+        content.contains("codelet-fspec"),
+        "must build the codelet-fspec package"
+    );
 
     // @step And it installs the built binary to ~/.local/bin/fspec
     assert!(
@@ -323,7 +345,10 @@ fn scenario_unsupported_architecture_fails_fast() {
     );
 
     // @step Then it exits with a non-zero status
-    assert!(!ok, "install.sh must fail on unsupported arch. output: {combined}");
+    assert!(
+        !ok,
+        "install.sh must fail on unsupported arch. output: {combined}"
+    );
 
     // @step And it prints an error naming the unsupported architecture
     assert!(
@@ -405,7 +430,10 @@ fn scenario_checksum_mismatch_aborts_installation() {
     );
 
     // @step Then it aborts with a non-zero exit
-    assert!(!ok, "install.sh must abort on checksum mismatch. output: {combined}");
+    assert!(
+        !ok,
+        "install.sh must abort on checksum mismatch. output: {combined}"
+    );
 
     // @step And it prints the expected and actual hashes
     assert!(
@@ -481,11 +509,13 @@ fn scenario_install_directory_not_on_path_prints_instructions() {
     let archive = make_fake_archive(tmp.path(), "fspec-x86_64-unknown-linux-gnu.tar.gz");
 
     // @step Given the install directory is not on the user PATH
-    assert!(!std::env::var("PATH")
-        .unwrap_or_default()
-        .split(':')
-        .any(|p| p == install_dir.to_string_lossy().as_ref()),
-        "install dir must not be on PATH");
+    assert!(
+        !std::env::var("PATH")
+            .unwrap_or_default()
+            .split(':')
+            .any(|p| p == install_dir.to_string_lossy().as_ref()),
+        "install dir must not be on PATH"
+    );
 
     // @step When the installer completes
     let (ok, combined) = run_install(
@@ -501,7 +531,8 @@ fn scenario_install_directory_not_on_path_prints_instructions() {
 
     // @step Then it prints instructions for adding the install directory to the shell config
     assert!(
-        combined.contains("PATH") && (combined.contains("export") || combined.contains("shell config")),
+        combined.contains("PATH")
+            && (combined.contains("export") || combined.contains("shell config")),
         "should print PATH instructions. output: {combined}"
     );
 }
@@ -587,7 +618,10 @@ fn scenario_readme_documents_the_one_line_install() {
 fn scenario_install_sh_help_exits_zero() {
     // @step When they run scripts/install.sh --help (via --help flag)
     let out = Command::new("bash")
-        .args(["-c", &format!("{} --help", scripts_dir().join("install.sh").display())])
+        .args([
+            "-c",
+            &format!("{} --help", scripts_dir().join("install.sh").display()),
+        ])
         .output()
         .expect("run install.sh --help");
     assert!(out.status.success(), "install.sh --help should exit 0");
@@ -607,10 +641,19 @@ fn scenario_install_sh_help_exits_zero() {
 fn scenario_build_install_sh_help_exits_zero() {
     // @step When they run scripts/build-install.sh --help (via --help flag)
     let out = Command::new("bash")
-        .args(["-c", &format!("{} --help", scripts_dir().join("build-install.sh").display())])
+        .args([
+            "-c",
+            &format!(
+                "{} --help",
+                scripts_dir().join("build-install.sh").display()
+            ),
+        ])
         .output()
         .expect("run build-install.sh --help");
-    assert!(out.status.success(), "build-install.sh --help should exit 0");
+    assert!(
+        out.status.success(),
+        "build-install.sh --help should exit 0"
+    );
     let combined = format!(
         "{}{}",
         String::from_utf8_lossy(&out.stdout),

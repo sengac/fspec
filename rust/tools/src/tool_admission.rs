@@ -12,8 +12,8 @@ mod auxiliary;
 mod registry;
 pub use auxiliary::{register_auxiliary, register_auxiliary_for_owner, AuxiliaryScope};
 pub use registry::{
-    authorization_identity, register_session, unregister_session, AdmissionHandler,
-    ContextValidator,
+    authorization_identity, is_standalone_auxiliary, register_session, unregister_session,
+    AdmissionHandler, ContextValidator,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -104,7 +104,11 @@ pub(crate) fn validate_card(
 ) -> Result<(), AttributionError> {
     match attribution {
         WorkUnitAttribution::Card(id) => {
-            let bytes = std::fs::read(project.join("spec/work-units.json")).map_err(|error| {
+            let roots =
+                codelet_common::spec_paths::ProjectRoots::resolve(project).map_err(|error| {
+                    AttributionError(format!("cannot resolve project cards: {error}"))
+                })?;
+            let bytes = std::fs::read(roots.work_units()).map_err(|error| {
                 AttributionError(format!("cannot read trusted project cards: {error}"))
             })?;
             let snapshot: Value = serde_json::from_slice(&bytes).map_err(|error| {

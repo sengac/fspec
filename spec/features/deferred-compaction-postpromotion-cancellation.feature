@@ -1,8 +1,10 @@
+@BUG-582
 @BUG-214
 @phase-1
 @agent-core
 @compaction
 @context-management
+@BUG-320
 Feature: Deferred compaction cancellation preserves reconciled inference readiness
   """
   Architecture notes:

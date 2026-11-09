@@ -23,7 +23,12 @@ async fn direct_error(url: &str) -> Result<CompletionError, Box<dyn std::error::
             RefreshingCodexClient::new_api_key().with_idle_timeout(Duration::from_millis(100)),
         )
         .build()?;
-    let model = CodexResponsesModel::new(client, "shared-model");
+    let model = CodexResponsesModel::new(client, "shared-model").with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
     let request = CompletionRequestBuilder::new(model.clone(), "Hello").build();
     model
         .completion(request)
@@ -96,7 +101,11 @@ async fn scenario_direct_completion_rejection_capture_obeys_its_deadline() -> Te
     // @step Given a direct completion rejection whose body never finishes
     let server = fixture::StalledRejection::start().await?;
     // @step When the real model requests a nonstreaming completion
-    let error = tokio::time::timeout(Duration::from_secs(2), direct_error(&server.url)).await??;
+    let error = codelet_test_helpers::deadlock_guard(
+        "direct_error(&server.url)",
+        direct_error(&server.url),
+    )
+    .await??;
     // @step Then typed incomplete evidence returns before the harness deadline without replay
     let rejection = model_diagnostic(&error)?;
     assert_eq!(rejection.status, Some(400));

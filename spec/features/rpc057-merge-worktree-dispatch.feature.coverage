@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "104-126",
+          "lines": "109-135",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
@@ -44,7 +44,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "/// /debug). Otherwise spawn `backend.inspect_session_changes(...)`",
+              "lastLine": "/// non-zero result re-dispatches `Action::OpenMergeConfirmDialog`"
             }
           ]
         }
@@ -55,7 +57,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "132-169",
+          "lines": "141-182",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
@@ -83,7 +85,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_inspect_changes_loaded(",
+              "lastLine": "&mut self,"
             }
           ]
         }
@@ -94,11 +98,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "174-208",
+          "lines": "188-226",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
+                99,
                 100,
                 101,
                 102,
@@ -110,10 +115,10 @@
                 108,
                 109,
                 110,
-                111,
-                112,
-                113
-              ]
+                111
+              ],
+              "firstLine": "pub(crate) fn handle_open_merge_confirm_dialog(",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,7 +129,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "213-242",
+          "lines": "232-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
@@ -195,7 +200,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "match idx {",
+              "lastLine": ""
             }
           ]
         }
@@ -206,7 +213,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "247-275",
+          "lines": "271-300",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
@@ -278,7 +285,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "session_id,",
+              "lastLine": ""
             }
           ]
         }
@@ -289,7 +298,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "280-300",
+          "lines": "306-327",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
@@ -343,7 +352,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "&self.session_id",
+              "lastLine": ""
             }
           ]
         }
@@ -354,7 +365,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "305-326",
+          "lines": "333-355",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
@@ -408,7 +419,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "&self.session_id",
+              "lastLine": ""
             }
           ]
         }
@@ -419,7 +432,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "331-350",
+          "lines": "361-381",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
@@ -462,7 +475,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "self.focused",
+              "lastLine": ""
             }
           ]
         }
@@ -473,13 +488,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "355-407",
+          "lines": "389-466",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -508,8 +521,12 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147
+              ],
+              "firstLine": "/// on Conflict).",
+              "lastLine": "pub(crate) fn handle_discard_confirmed(&mut self, session_id: SessionId) {"
             }
           ]
         }
@@ -520,18 +537,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "411-447",
+          "lines": "472-511",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
                 211,
                 212,
                 213,
@@ -546,8 +556,17 @@
                 222,
                 223,
                 224,
-                225
-              ]
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "/// Map a `MergeOutcome` to the matching action-bus event(s).",
+              "lastLine": "// destroySession → onExit flow). Queued AFTER the notice so"
             }
           ]
         }
@@ -558,18 +577,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "451-506",
+          "lines": "517-574",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
                 232,
                 233,
                 234,
@@ -590,8 +602,20 @@
                 249,
                 250,
                 251,
-                252
-              ]
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "// destroySession → onExit flow). Queued AFTER the notice so",
+              "lastLine": "/// act on it."
             }
           ]
         }
@@ -602,13 +626,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "510-546",
+          "lines": "580-631",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -637,8 +659,12 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147
+              ],
+              "firstLine": "/// on Conflict).",
+              "lastLine": "pub(crate) fn handle_discard_confirmed(&mut self, session_id: SessionId) {"
             }
           ]
         }
@@ -649,7 +675,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "551-597",
+          "lines": "637-686",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
@@ -670,12 +696,10 @@
                 160,
                 161,
                 162,
-                163,
-                164,
-                165,
-                166,
-                167
-              ]
+                163
+              ],
+              "firstLine": "pub(crate) fn handle_discard_confirmed(&mut self, session_id: SessionId) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -686,7 +710,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "601-632",
+          "lines": "692-729",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
@@ -707,12 +731,10 @@
                 160,
                 161,
                 162,
-                163,
-                164,
-                165,
-                166,
-                167
-              ]
+                163
+              ],
+              "firstLine": "pub(crate) fn handle_discard_confirmed(&mut self, session_id: SessionId) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -723,16 +745,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/merge_worktree_rpc057.rs",
-          "lines": "636-677",
+          "lines": "735-774",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
-                169,
-                170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174
+              ],
+              "firstLine": "/// Route the RPC-057 Action variants through their helpers. Called",
+              "lastLine": "match action {"
             }
           ]
         }
@@ -750,6 +774,6 @@
       "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
       "rust/fspec-tui/src/views/agent/merge_confirm_dialog.rs"
     ],
-    "totalLinesCovered": 1020
+    "totalLinesCovered": 1086
   }
 }

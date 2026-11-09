@@ -1,5 +1,6 @@
 #![doc = "Feature: spec/features/background-response-attempt-rollback.feature"]
 
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{components::dialog_theme_rows::fixed_dialog_rect, Action, App, ViewMode};
@@ -50,7 +51,7 @@ fn drain_app(app: &mut App) {
 /// @step And the modal and its text selection are dismissed
 /// @step And scrollback keyboard navigation resumes without pressing Escape
 #[test]
-fn aborting_inspected_output_in_a_reused_streaming_block_closes_its_modal() {
+fn aborting_inspected_output_in_a_reused_streaming_block_closes_its_modal() -> TestResult {
     let mut app = app();
     let session = sid("focused");
     emit(
@@ -115,6 +116,7 @@ fn aborting_inspected_output_in_a_reused_streaming_block_closes_its_modal() {
                 .and_then(|seq| ctx.scrollback.full_text_for_seq(seq))
         });
     assert!(selected_text.is_some_and(|text| text.contains("completed tool result")));
+    Ok(())
 }
 
 fn app() -> App {
@@ -163,7 +165,7 @@ fn select_modal_text(app: &mut App) {
 /// @step And scrollback keyboard and mouse navigation work without pressing Escape
 /// @step And replacement output can be inspected normally
 #[test]
-fn aborting_the_inspected_attempt_closes_its_turn_modal() {
+fn aborting_the_inspected_attempt_closes_its_turn_modal() -> TestResult {
     let mut app = app();
     let session = sid("focused");
     emit(
@@ -239,13 +241,14 @@ fn aborting_the_inspected_attempt_closes_its_turn_modal() {
     let _ = app.handle_event(&key(KeyCode::Esc));
     drain_app(&mut app);
     assert_eq!(app.navigator().agent.turn_modal_seq, None);
+    Ok(())
 }
 
 /// @step Given a turn modal showing completed output
 /// @step When another response attempt is aborted in either the focused or a background session
 /// @step Then the inspected output remains open and unchanged
 #[test]
-fn rollback_preserves_a_modal_whose_inspected_output_remains() {
+fn rollback_preserves_a_modal_whose_inspected_output_remains() -> TestResult {
     for target in ["focused", "background"] {
         let mut app = app();
         let focused = sid("focused");
@@ -277,4 +280,5 @@ fn rollback_preserves_a_modal_whose_inspected_output_remains() {
         assert_eq!(app.navigator().agent.turn_modal_selection, selection);
         assert!(render_app(&mut app).contains("completed output"));
     }
+    Ok(())
 }

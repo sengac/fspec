@@ -20,7 +20,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -46,7 +48,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -72,7 +76,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/providers/src/codex/metadata.rs",
@@ -92,19 +98,25 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
               "lines": [
                 126
-              ]
+              ],
+              "firstLine": "metadata.apply_http_headers(response.headers());",
+              "lastLine": "metadata.apply_http_headers(response.headers());"
             },
             {
               "file": "rust/providers/src/codex/websocket.rs",
               "lines": [
                 168
-              ]
+              ],
+              "firstLine": "metadata.apply_websocket_headers(response.headers());",
+              "lastLine": "metadata.apply_websocket_headers(response.headers());"
             }
           ]
         }
@@ -130,7 +142,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -140,7 +154,9 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             }
           ]
         }

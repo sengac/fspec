@@ -133,4 +133,4 @@ Feature: RPC-016 BoardView per-column scroll viewport + ⏩/🟢 indicators + ke
     And the rendered buffer contains the substring "Status: backlog"
     And the rendered buffer contains the substring "Checkpoints: None"
     And the rendered buffer contains the substring "← →"
-    And the rendered buffer contains the substring "Work Agent"
+    And the rendered buffer contains the substring "Choose"

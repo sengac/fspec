@@ -8,27 +8,29 @@
           "lines": "25-49",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/chrome.rs",
               "lines": [
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "/// performs the `home::home_dir()` substitution at render time so the",
+              "lastLine": "/// RPC-445: a work-units snapshot for a workspace opened besides the"
             }
           ]
         }
@@ -39,13 +41,15 @@
       "testMappings": [
         {
           "file": "rust/rpc-types/tests/prov142_auto_continue_flag.rs",
-          "lines": "52-83",
+          "lines": "52-82",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/chrome.rs",
               "lines": [
-                496
-              ]
+                69
+              ],
+              "firstLine": "/// performs the `home::home_dir()` substitution at render time so the",
+              "lastLine": "/// performs the `home::home_dir()` substitution at render time so the"
             }
           ]
         }
@@ -60,8 +64,8 @@
       "rust/rpc-types/tests/prov142_auto_continue_flag.rs"
     ],
     "implFiles": [
-      "rust/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/chrome.rs"
     ],
-    "totalLinesCovered": 76
+    "totalLinesCovered": 75
   }
 }

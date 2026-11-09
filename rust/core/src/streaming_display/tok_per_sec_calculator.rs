@@ -158,7 +158,14 @@ impl Default for TokPerSecCalculator {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
-    use std::thread::sleep;
+
+    /// TEST-042: let `elapsed` pass for the calculator without sleeping, by
+    /// moving every recorded sample back.
+    fn age(calc: &mut TokPerSecCalculator, elapsed: Duration) {
+        for (at, _) in &mut calc.samples {
+            *at = at.checked_sub(elapsed).unwrap_or(*at);
+        }
+    }
 
     #[test]
     fn test_new_calculator_empty() {
@@ -193,8 +200,8 @@ mod tests {
         let mut calc = TokPerSecCalculator::new();
 
         calc.record(100);
-        // Sleep to ensure time gap
-        sleep(Duration::from_millis(60));
+        // Let time pass between the records
+        age(&mut calc, Duration::from_millis(60));
         let result = calc.record(100);
 
         // Should have a rate now (200 tokens over ~60ms)
@@ -217,7 +224,7 @@ mod tests {
         let mut calc = TokPerSecCalculator::new();
 
         calc.record(100);
-        sleep(Duration::from_millis(60));
+        age(&mut calc, Duration::from_millis(60));
         calc.record(100);
 
         let rate1 = calc.current_rate();
@@ -232,7 +239,7 @@ mod tests {
         let mut calc = TokPerSecCalculator::new();
 
         calc.record(100);
-        sleep(Duration::from_millis(60));
+        age(&mut calc, Duration::from_millis(60));
         calc.record(100);
 
         calc.reset();
@@ -284,9 +291,9 @@ mod tests {
 
         // Record some samples
         calc.record(10);
-        sleep(Duration::from_millis(20));
+        age(&mut calc, Duration::from_millis(20));
         calc.record(10);
-        sleep(Duration::from_millis(20));
+        age(&mut calc, Duration::from_millis(20));
         calc.record(10);
 
         // Samples within TIME_WINDOW should still be there

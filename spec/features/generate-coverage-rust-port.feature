@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @validation
 @coverage-tracking
 @cli
 @RPC-231
+@BUG-301
 Feature: Port generate-coverage command to Rust
   """
   Core impl: rust/fspec-core/src/commands/generate_coverage.rs rewrites the stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/CoverageStats + calculate_stats) — REUSE only, no extension. Scans spec/features/*.feature; for each, resolves <feature>.feature.coverage and computes one of four statuses (created/recreated/updated/skipped) mirroring src/utils/coverage-file.ts createCoverageFile. Scenario names come from io::gherkin::parse_feature_lenient over top-level feature.scenarios. Created/recreated bodies are written via io::locked_file::write_json_atomic (2-space JSON, no trailing newline). Updated sidecars preserve existing test mappings + unknown stats fields (serde_json::Value path like delete_scenario::update_coverage), drop stale scenarios, add new empty ones, recompute totalScenarios/coveredScenarios/coveragePercent.
@@ -58,3 +60,27 @@ Feature: Port generate-coverage command to Rust
     Given a temp project root has no spec/features directory
     When I dispatch generate-coverage against that project root
     Then the dispatcher returns an error whose message contains "Failed to read features directory"
+
+  Scenario: Dry-run reports the updates a real run would make
+    Given a temp project root has a feature file "user-login.feature" with one new scenario absent from its sidecar and one stale scenario only in the sidecar
+    When I dispatch generate-coverage with dryRun true against that project root
+    Then the rendered output contains the substring "Would update 1 coverage files"
+    And the rendered output names the added scenario "Logout" and the removed scenario "OldStale"
+    And the existing sidecar is left byte-for-byte unchanged
+
+  Scenario: Update preserves unknown top-level sidecar fields
+    Given a temp project root has a feature file "user-login.feature" whose sidecar lacks one scenario and carries an extra top-level field
+    When I dispatch generate-coverage against that project root
+    Then the updated sidecar still contains the extra top-level field
+
+  Scenario: Update keeps a stale scenario that still has test mappings
+    Given a temp project root has a feature file "user-login.feature" whose sidecar has a stale scenario with a test mapping
+    When I dispatch generate-coverage against that project root
+    Then the updated sidecar still contains the stale scenario with its test mapping
+    And the rendered output reports the blocked removal of "OldMapped"
+
+  Scenario: Created sidecar scenario names keep the exact case of the feature file
+    Given a temp project root has a feature file "user-login.feature" with the single scenario "Login With Valid Credentials" and no coverage sidecar
+    When I dispatch generate-coverage against that project root
+    Then the created sidecar has one scenario entry named exactly "Login With Valid Credentials"
+    And the sidecar has no scenario entry named "login-with-valid-credentials" or "Login with valid credentials"

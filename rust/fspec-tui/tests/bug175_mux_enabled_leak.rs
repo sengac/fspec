@@ -10,8 +10,8 @@
 //! This test file validates the acceptance criteria defined in the
 //! feature file. Scenarios map directly to Gherkin scenarios.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::board_exit_confirmation_dialog::BOARD_EXIT_CONFIRMATION_DIALOG_ID;
@@ -36,16 +36,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn esc() -> Event {
@@ -57,11 +58,15 @@ fn enter() -> Event {
 }
 
 /// Open N sessions so the agent store has live sessions.
-async fn app_with_sessions(app: &mut App, n_sessions: usize) {
+async fn app_with_sessions(
+    app: &mut App,
+    n_sessions: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n_sessions {
         app.dispatch(Action::SessionCreated(sid(&format!("s-{i}"))));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Simulate the BUG-175 corruption: the persisted `tui.mux.enabled` flag
@@ -77,11 +82,15 @@ fn simulate_leaked_persisted_flag(app: &mut App) {
 /// the user-scope `fspec-config.json` the way a real `~/.fspec` does.
 static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
-async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+async fn root_data_dir() -> Result<
+    (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir),
+    codelet_test_helpers::TestError,
+> {
     let guard = DATA_DIR_GUARD.lock().await;
-    let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
-    (guard, tmp)
+    let tmp = tempfile::tempdir().or_fail("tempdir")?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).or_fail("set data dir")?;
+    Ok((guard, tmp))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -92,22 +101,22 @@ async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::Tem
 /// Scenario: bootstrap force-disables a persisted mux grid and keeps the saved layout for /mux on
 #[tokio::test]
 #[serial]
-async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layout_for_mux_on() {
+async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layout_for_mux_on(
+) -> TestResult {
     // @step Given a fresh TUI bootstrap with a saved tui.mux config of Board and Agent at 50/50 with enabled true
-    let (_data_guard, _data) = root_data_dir().await;
+    let (_data_guard, _data) = root_data_dir().await?;
     let user_config = _data.path().join("fspec-config.json");
     std::fs::write(
         &user_config,
-        r#"{"tui":{"mux":{"orientation":"Vertical","splits":[40],"panes":["Board","Agent"],"focused_pane":1,"enabled":true}}}"#,
+        r#"{"tui":{"mux":{"layout":"board, agent","focused_pane":0,"enabled":true}}}"#,
     )
-    .expect("seed user-scope fspec-config.json");
+    .or_fail("seed user-scope fspec-config.json")?;
     let (mut app, _mock) = fresh_app();
     // The /mux slash command only routes while a session is open
     // (handle_input_submitted drops input with no current session), so
     // the fresh bootstrap seeds one session first.
-    app_with_sessions(&mut app, 1).await;
+    app_with_sessions(&mut app, 1).await?;
     app.load_mux_config();
-    use codelet_fspec_tui::views::multiplex::MuxOrientation;
     // @step When the TUI starts
     // (bootstrap loads the config — the observable state is what
     // `load_mux_config` leaves on the live layout + view)
@@ -128,38 +137,47 @@ async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layou
     );
     // The saved LAYOUT is a preference — it must survive the force-off.
     assert_eq!(
-        app.navigator().mux.config().orientation,
-        MuxOrientation::Vertical,
-        "the saved orientation must survive bootstrap"
+        app.navigator().mux.config().layout.to_string(),
+        "board, agent",
+        "the saved layout string must survive bootstrap"
     );
     assert_eq!(
-        app.navigator().mux.config().splits,
-        vec![40],
-        "the saved split scale must survive bootstrap"
+        app.navigator().mux.config().focused_pane,
+        0,
+        "the saved home focus (not the default 1) must survive bootstrap"
     );
     // @step And when I submit the slash command "/mux on" the grid is the saved 50/50 Board | Agent layout
-    app.dispatch(Action::InputSubmitted("/mux on".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "/mux on".to_string()));
+    }
+    drain_pending(&mut app).await?;
     assert!(
         app.navigator().mux.config().enabled,
         "/mux on must re-enable the mux"
     );
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(
-        app.mux_state().config().orientation,
-        MuxOrientation::Vertical,
-        "/mux on must restore the saved orientation"
+        app.mux_state().config().layout.to_string(),
+        "board, agent",
+        "/mux on must restore the saved layout"
     );
     assert_eq!(
-        app.mux_state().config().splits,
-        vec![40],
-        "/mux on must restore the saved split scale"
+        app.mux_state().config().focused_pane,
+        0,
+        "/mux on must keep the saved home focus"
+    );
+    let rects = app.navigator().mux.pane_rects().to_vec();
+    assert_eq!(
+        rects.iter().map(|r| r.width).collect::<Vec<_>>(),
+        vec![59, 60],
+        "the saved 50/50 columns"
     );
     assert_eq!(
-        app.mux_state().config().panes.len(),
+        app.navigator().mux.pane_rects().len(),
         2,
         "/mux on must restore the saved pane list"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -169,11 +187,11 @@ async fn bootstrap_force_disables_a_persisted_mux_grid_and_keeps_the_saved_layou
 
 /// Scenario: back-to-board lands on the single Board view when the persisted mux flag is on but the grid is not active
 #[tokio::test]
-async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_grid_is_not_active()
-{
+async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_grid_is_not_active(
+) -> TestResult {
     // @step Given the TUI is on the single Agent view with one agent session open
     let (mut app, mock) = fresh_app();
-    app_with_sessions(&mut app, 1).await;
+    app_with_sessions(&mut app, 1).await?;
     app.navigator_mut().active_view = ViewMode::Agent;
     assert_eq!(
         app.agent_view_store().current_session(),
@@ -193,15 +211,15 @@ async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_
     );
     // @step When the agent session is closed
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "the exit confirmation dialog must open on ESC from the agent view"
     );
-    // BUG-205: Close Session is pre-selected (the Detach option was
+    // BUG-205: Close is pre-selected (the Detach option was
     // removed), so a single Enter commits the close.
     let _ = app.handle_event(&enter());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         mock.destroy_session_calls(),
         1,
@@ -219,11 +237,12 @@ async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_
     );
     // @step And Esc on the board opens the exit-fspec confirmation dialog
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "Esc must be alive on the board — the pre-fix state made it a dead key (the sessionless-agent BackToBoard no-op loop)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -242,14 +261,17 @@ mod entry;
 
 /// Scenario: /mux default enters the grid with the enabled flag in lockstep with the live view
 #[tokio::test]
-async fn mux_default_enters_the_grid_with_the_enabled_flag_in_lockstep_with_the_live_view() {
+async fn mux_default_enters_the_grid_with_the_enabled_flag_in_lockstep_with_the_live_view(
+) -> TestResult {
     // @step Given the TUI is on the single Board view with one agent session open
     let (mut app, _mock) = fresh_app();
-    app_with_sessions(&mut app, 1).await;
+    app_with_sessions(&mut app, 1).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When I submit the slash command "/mux default"
-    app.dispatch(Action::InputSubmitted("/mux default".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "/mux default".to_string()));
+    }
+    drain_pending(&mut app).await?;
     // @step Then the TUI is in mux mode
     assert_eq!(
         app.active_view(),
@@ -261,4 +283,5 @@ async fn mux_default_enters_the_grid_with_the_enabled_flag_in_lockstep_with_the_
         app.navigator().mux.config().enabled,
         "the invariant: enabled ⇔ ViewMode::Mux. Pre-fix, /mux default entered the grid with enabled=false — every flag-gated path (Shift+Left/Right intercept, key classification, the R6 auto-save) silently mis-fired inside the grid"
     );
+    Ok(())
 }

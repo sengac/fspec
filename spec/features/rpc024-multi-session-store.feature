@@ -5,6 +5,7 @@
 @agent-view
 @store
 @session-switch
+@BUG-401
 Feature: RPC-024 AgentViewStore multi-session state primitives
   """
   RPC-024 (store slice) — Replace the single-slot
@@ -13,8 +14,8 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
 
   Adds:
   - `pub fn append_session(SessionContext)` — sole producer.
-  - `pub fn cycle_session(delta: isize)` — wraps with `.rem_euclid`,
-  no-op for length 0 / 1.
+  - `pub fn focus_session_index(usize)` — focus by index, no-op when
+  out of range (RPC-096 replaced the wrapping `cycle_session`).
   - `pub fn current_session_context[_mut]()` — focused SessionContext.
   - `pub fn session_context_mut_for(&SessionId)` — id-keyed lookup.
   - `pub fn set_input_draft(idx, String)` — persist outgoing draft.
@@ -35,12 +36,12 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
     I want the AgentViewStore to hold multiple concurrent SessionContexts and let me cycle between them with wrap-around
     So that the App layer can route Shift+←/→ into a real multi-session model without losing per-session state
 
-  Scenario: An empty AgentViewStore reports zero open sessions and a no-op cycle_session
+  Scenario: An empty AgentViewStore reports zero open sessions and a no-op focus
     Given a default AgentViewStore
     Then open_sessions is empty
-    And session_index() returns (0, 0)
+    And session_index() returns None
     And current_session() returns None
-    When cycle_session(1) is called
+    When focus_session_index(0) is called on the empty store
     Then current_session_index is still 0
     And open_sessions is still empty
 
@@ -50,7 +51,7 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
     Then open_sessions has length 1
     And open_sessions[0].id equals "s-1"
     And current_session_index is 0
-    And session_index() returns (1, 1)
+    And session_index() returns Some((1, 1))
     And current_session() returns Some("s-1")
 
   Scenario: Successive append_session calls accumulate in creation order
@@ -61,33 +62,27 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
     Then open_sessions has length 3
     And open_sessions ids in order are "s-1", "s-2", "s-3"
     And current_session_index is 2
-    And session_index() returns (3, 3)
+    And session_index() returns Some((3, 3))
     And current_session() returns Some("s-3")
 
-  Scenario: cycle_session(-1) decrements current_session_index without wrap when not at zero
+  Scenario: focus_session_index(idx) decrements current_session_index when idx < current
     Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     And current_session_index is 2
-    When cycle_session(-1) is called
+    When focus_session_index(1) is called
     Then current_session_index is 1
-    And session_index() returns (2, 3)
+    And session_index() returns Some((2, 3))
     And current_session() returns Some("s-2")
 
-  Scenario: cycle_session(-1) wraps from index 0 to len-1; cycle_session(1) wraps back
+  Scenario: focus_session_index out-of-range is a no-op (RPC-096 removed wrap-around)
     Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
-    And current_session_index is 0
-    When cycle_session(-1) is called
-    Then current_session_index is 2
-    And current_session() returns Some("s-3")
-    When cycle_session(1) is called
-    Then current_session_index is 0
-    And current_session() returns Some("s-1")
+    When focus_session_index(99) is called
+    Then current_session_index is unchanged at 0
+    And current_session() still returns Some("s-1")
 
-  Scenario: cycle_session is a self-loop when only one session is open
+  Scenario: focus_session_index on a single-session store is a self-loop
     Given an AgentViewStore with open_sessions ["s-1"]
     And current_session_index is 0
-    When cycle_session(-1) is called
-    Then current_session_index is 0
-    When cycle_session(1) is called
+    When focus_session_index(0) is called
     Then current_session_index is 0
     And current_session() returns Some("s-1")
 
@@ -96,15 +91,15 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
     And current_session_index is 1
     When set_input_draft(1, "hello world") is called
     Then open_sessions[1].input_draft equals "hello world"
-    When cycle_session(-1) is called
+    When focus_session_index(0) is called
     Then the incoming draft is the saved (empty) draft on s-1
-    When cycle_session(1) is called
+    When focus_session_index(1) is called
     Then the outgoing draft was preserved on s-2
 
   Scenario: SessionContext owns its own scrollback
     Given an AgentViewStore with open_sessions ["s-1", "s-2"]
-    When three text chunks are recorded on s-1's SessionContext
-    And five text chunks are recorded on s-2's SessionContext
+    When three user-input chunks are recorded on s-1's SessionContext
+    And five user-input chunks are recorded on s-2's SessionContext
     Then s-1 still has 3 scrollback chunks
     And s-2 still has 5 scrollback chunks
 
@@ -124,6 +119,6 @@ Feature: RPC-024 AgentViewStore multi-session state primitives
 
   Scenario: session_index() is derived from current_session_index + 1 and open_sessions.len()
     Given the AgentViewStore type
-    Then session_index() returns (0, 0) for an empty store
+    Then session_index() returns None for an empty store
     When sessions are appended
-    Then session_index() returns (current_session_index + 1, len)
+    Then session_index() returns Some((current_session_index + 1, len))

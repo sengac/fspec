@@ -15,7 +15,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  detect-agent → remove-files → confirmation,Common pattern: fspec remove-init-files (then fspec init --agent=newagent to switch)
+  detect-agent → remove-files → confirmation. Common pattern: fspec remove-init-files (then fspec init --agent=newagent to switch)
 
 EXAMPLES
   1. Remove fspec init files for detected agent

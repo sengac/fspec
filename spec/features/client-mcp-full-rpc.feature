@@ -2,6 +2,7 @@
 @rpc
 @integration
 @tool-execution
+@BUG-296
 Feature: Complete RPC access through the MCP frontend
   Every daemon operation has a typed discoverable tool.
 
@@ -24,8 +25,3 @@ Feature: Complete RPC access through the MCP frontend
     When the client reads the result continuation
     Then it receives bounded JSON text from the same result snapshot
     And the operation is not executed again
-
-  Scenario: Reject stale approval responses atomically
-    Given a pending daemon interaction
-    When that interaction changes before its checked response is dispatched
-    Then the response is rejected without answering the newer interaction

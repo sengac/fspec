@@ -1,4 +1,6 @@
 @EXT-010
+@browser
+@web-tools
 Feature: browser_execute_script returns null — eval() blocked by CSP in extension isolated world
   """
   Replace eval()-based execution in browser-tools.ts with chrome.userScripts.execute() using USER_SCRIPT world. Add ChromeUserScriptsForTools interface to deps. Call configureWorld() in service-worker.ts on startup. Add userScripts permission to manifest.json.

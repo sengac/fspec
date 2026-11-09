@@ -111,7 +111,7 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
   @thresholds
   Scenario: Gemini session triggers compaction at 80% of context window
     Given an active Gemini session with a 1,000,000-token context window
-    And resolve_compaction_threshold returns 800,000 tokens for the Gemini family default
+    And compaction_threshold_for returns 800,000 tokens for the Gemini family default
     When the session's total input tokens exceed 800,000
     Then the compaction hook fires
     And token_state.compaction_needed becomes true
@@ -122,7 +122,7 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
   @thresholds
   Scenario: Claude session honours user threshold override
     Given an active Claude session with a user override threshold of 150,000 tokens
-    And resolve_compaction_threshold returns the override value
+    And compaction_threshold_for returns the override value
     When the session's total input tokens exceed 150,000
     Then the compaction hook fires at the override threshold, not the default 80 percent threshold
     And compaction recovery runs

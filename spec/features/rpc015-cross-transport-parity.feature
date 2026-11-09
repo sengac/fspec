@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-015
 @rust
@@ -36,9 +37,3 @@ Feature: RPC-015 cross-transport parity for FspecBackend::checkpoint_counts
     And a WebSocketFspecBackend connected to that server via the standard ws_server_for test helper
     When backend.checkpoint_counts().await is invoked
     Then the awaited result is Ok(CheckpointCounts { manual: 1, auto: 1 })
-
-  Scenario: napi::count_checkpoints is wired through the same git helper
-    Given rust/napi/src/git.rs after RPC-015 lands
-    When a developer reads the file source raw
-    Then the file contains the substring "pub fn count_checkpoints"
-    And the function body contains the substring "codelet_git::ghost_commit::count_checkpoints"

@@ -78,3 +78,59 @@ Feature: Port validate command to Rust
     Then the rendered output marks the file invalid
     Then the rendered output contains the substring 'Excessive blank lines detected'
     Then the dispatcher result reports an exit code of 1
+
+  Scenario: Validate feature file with doc strings
+    Given spec/features/login.feature is a valid feature file with a scenario step carrying a properly closed doc string
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+
+  Scenario: Validate feature file with data tables
+    Given spec/features/login.feature is a valid feature file with a scenario step carrying a properly formatted data table
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+
+  Scenario: Validate feature file with feature-level tags
+    Given spec/features/login.feature is a valid feature file with the tags @authentication and @critical at feature level
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    And the parsed feature carries the tags @authentication and @critical
+
+  Scenario: Validate feature file with scenario-level tags
+    Given spec/features/login.feature is a valid feature file with the tags @smoke and @regression on one scenario and @edge-case on another
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    And the parsed feature attaches @smoke and @regression to the first scenario and @edge-case to the second
+
+  Scenario: Validate feature file with both feature-level and scenario-level tags
+    Given spec/features/login.feature is a valid feature file with the tag @authentication at feature level and the tags @smoke, @regression and @edge-case at scenario level
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    And the parsed feature attaches @authentication to the feature and each scenario's tags to that scenario
+
+  Scenario: Validate scenario-level tags with proper indentation
+    Given spec/features/login.feature is a valid feature file with the scenario tags @email and @sms indented 2 spaces above their scenario
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature'
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output is exactly '✓ spec/features/login.feature is valid'
+    And the parsed feature attaches @email and @sms to the scenario
+
+  Scenario: Detect file not found
+    Given no file exists at spec/features/nonexistent.feature
+    When I dispatch the validate command against that project root with the file argument 'spec/features/nonexistent.feature'
+    Then the dispatcher result reports an exit code of 1
+    And the rendered output contains "✗ spec/features/nonexistent.feature has syntax errors:"
+    And the rendered output contains "Line 0: File not found: spec/features/nonexistent.feature"
+
+  Scenario: Validate with verbose output
+    Given spec/features/login.feature is a syntactically valid feature file
+    When I dispatch the validate command against that project root with the file argument 'spec/features/login.feature' and verbose=true
+    Then the dispatcher result reports an exit code of 0
+    And the rendered output contains "Parsing spec/features/login.feature..."
+    And the rendered output contains "  AST generated successfully"
+    And the rendered output contains the feature name line "  Feature: Login"
+    And the rendered output contains the scenario count line "  Scenarios: 1"

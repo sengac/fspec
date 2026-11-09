@@ -35,6 +35,7 @@ use std::path::PathBuf;
 fn setup_lazy_test_env() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
     let guard = TEST_MUTEX.lock().unwrap();
     let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(temp_dir.path().to_path_buf())
         .expect("Failed to set data directory");
     reset_stores_for_tests();

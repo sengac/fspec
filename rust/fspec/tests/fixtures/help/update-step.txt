@@ -34,21 +34,18 @@ fspec update-step user-auth "Login" "I log in" --text "I submit valid credential
 
 # Verify change
 fspec show-feature user-auth
-    undefined
 
   • Change step type
     Example: # Convert Given to When for better flow
 fspec update-step checkout "Purchase" "Given I complete checkout" --keyword When
 
 # Result: "When I complete checkout"
-    undefined
 
   • Batch update multiple steps
     Example: # Update multiple steps in a scenario
 fspec update-step login "Valid login" "I enter email" --text "I enter my email address"
 fspec update-step login "Valid login" "I click login" --text "I submit the login form"
 fspec validate
-    undefined
 
 
 TYPICAL WORKFLOW

@@ -137,4 +137,4 @@ Feature: 'u' → menu-bar help re-purpose + help content + snapshot/shape test m
     When I render the App at 120x24
     Then the frame matches the insta snapshot 'menu005_mux_120x24' with the bar on the mux top row and no per-pane bars (the board pane's header row 3 is blank)
     When I render the App at 80x24
-    Then the frame matches the insta snapshot 'menu005_mux_80x24'
+    Then the frame matches the insta snapshot 'menu005_mux_80x24' with the bar's buttons wrapped onto a second bar row (MUX-013)

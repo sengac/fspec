@@ -1,0 +1,181 @@
+{
+  "scenarios": [
+    {
+      "name": "A keyword at the start of the new text replaces the step keyword",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug506_update_step_text_carries_the_keyword.rs",
+          "lines": "37-46",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_step.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295
+              ],
+              "firstLine": "// BUG-506: a keyword at the start of --text becomes the step keyword",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text without a keyword keeps the current keyword",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug506_update_step_text_carries_the_keyword.rs",
+          "lines": "48-57",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_step.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295
+              ],
+              "firstLine": "// BUG-506: a keyword at the start of --text becomes the step keyword",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A keyword option that contradicts the keyword in the text is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug506_update_step_text_carries_the_keyword.rs",
+          "lines": "59-74",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_step.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295
+              ],
+              "firstLine": "// BUG-506: a keyword at the start of --text becomes the step keyword",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug506_update_step_text_carries_the_keyword.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_step.rs"
+    ],
+    "totalLinesCovered": 147
+  }
+}

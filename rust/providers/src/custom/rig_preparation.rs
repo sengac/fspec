@@ -3,7 +3,6 @@ use super::{
 };
 use crate::custom::conversion::dynamic_to_json_value;
 use crate::custom::error_mapping::map_rhai_error_to_provider;
-use crate::custom::request_bridge::request_to_rhai;
 use crate::custom::rig_message_convert::rig_messages_to_internal;
 use rhai::{Dynamic, Scope};
 use rig::completion::{CompletionError, CompletionRequest};
@@ -21,14 +20,14 @@ impl RhaiCustomProviderModel {
         history.extend(request.chat_history.clone());
         let messages = rig_messages_to_internal(request.preamble.as_deref(), &history);
         let tools = tools_for_rhai(&request);
-        let argument = request_to_rhai(
-            &messages,
-            &tools,
-            extract_thinking_config(&request).as_ref(),
-        )
-        .map_err(crate::error::ProviderError::from)
-        .map_err(provider_error_to_rig)?;
         let provider = self.provider();
+        let argument = provider
+            .request_argument(
+                &messages,
+                &tools,
+                extract_thinking_config(&request).as_ref(),
+            )
+            .map_err(provider_error_to_rig)?;
         let body = provider
             .engine_handle()
             .call_fn::<Dynamic>(

@@ -4,24 +4,27 @@
       "name": "Add C4Context diagram with complex example",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/add-diagram.test.ts",
-          "lines": "687-729",
+          "file": "rust/fspec-core/tests/add_diagram_c4.rs",
+          "lines": "76-91",
           "implMappings": [
             {
-              "file": "src/utils/mermaid-validation.ts",
+              "file": "rust/fspec-core/src/utils/mermaid_validation.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "pub fn validate_mermaid_syntax(code: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -31,24 +34,27 @@
       "name": "Add C4Context diagram from reported issue",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/add-diagram.test.ts",
-          "lines": "731-773",
+          "file": "rust/fspec-core/tests/add_diagram_c4.rs",
+          "lines": "116-131",
           "implMappings": [
             {
-              "file": "src/utils/mermaid-validation.ts",
+              "file": "rust/fspec-core/src/utils/mermaid_validation.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "pub fn validate_mermaid_syntax(code: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,24 +64,27 @@
       "name": "Add simple C4Context diagram",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/add-diagram.test.ts",
-          "lines": "775-818",
+          "file": "rust/fspec-core/tests/add_diagram_c4.rs",
+          "lines": "145-160",
           "implMappings": [
             {
-              "file": "src/utils/mermaid-validation.ts",
+              "file": "rust/fspec-core/src/utils/mermaid_validation.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "pub fn validate_mermaid_syntax(code: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -87,11 +96,11 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/add-diagram.test.ts"
+      "rust/fspec-core/tests/add_diagram_c4.rs"
     ],
     "implFiles": [
-      "src/utils/mermaid-validation.ts"
+      "rust/fspec-core/src/utils/mermaid_validation.rs"
     ],
-    "totalLinesCovered": 163
+    "totalLinesCovered": 84
   }
 }

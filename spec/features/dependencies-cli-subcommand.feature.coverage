@@ -124,27 +124,10 @@
                 112,
                 113,
                 114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                115
+              ],
+              "firstLine": "//! `dependencies` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -182,7 +165,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub graph: bool,",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,7 +205,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub graph: bool,",
+              "lastLine": "}"
             }
           ]
         }
@@ -258,7 +245,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub graph: bool,",
+              "lastLine": "}"
             }
           ]
         }
@@ -296,7 +285,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub graph: bool,",
+              "lastLine": "}"
             }
           ]
         }
@@ -307,7 +298,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_dependencies.rs",
-          "lines": "252-275",
+          "lines": "257-281",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/dependencies.rs",
@@ -426,27 +417,10 @@
                 112,
                 113,
                 114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                115
+              ],
+              "firstLine": "//! `dependencies` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -464,6 +438,6 @@
       "rust/fspec-core/src/help/configs/dependencies.rs",
       "rust/fspec/src/dependencies.rs"
     ],
-    "totalLinesCovered": 566
+    "totalLinesCovered": 529
   }
 }

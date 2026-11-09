@@ -1,13 +1,14 @@
 //! `add-assumption` — Rust port of `src/commands/add-assumption.ts` (RPC-169).
 //!
-//! Appends a raw assumption string to a work unit's `assumptions` array
-//! during the specifying phase. Unlike rules/examples/questions/notes,
-//! assumptions are plain strings (no stable-id wrapper) per the TS
-//! `WorkUnit.assumptions?: string[]` type at `src/types/index.ts:160`.
+//! Appends an assumption to a work unit's `assumptions` array during the
+//! specifying phase. BUG-633: assumptions are stable-id items like rules
+//! (`{id, text, deleted, createdAt}` with `nextAssumptionId`); a card's
+//! plain-string assumptions are converted first, keeping their indices
+//! (see [`super::assumption_items`]).
 //!
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`]
-//! * [`crate::io::locked_file::write_json_atomic`]
+//! * [`crate::io::board::write_work_units`]
 //! * [`crate::io::time::iso8601_now`]
 //!
 //! Two-front-doors: bridge marshals JSON `{workUnitId, assumption}` and
@@ -16,11 +17,9 @@
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 #[derive(Debug, Deserialize)]
@@ -44,6 +43,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-assumption")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists.
@@ -71,25 +72,23 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let now = iso8601_now();
 
-    // Append the raw assumption string (init array if missing or non-array).
-    let assumptions_entry = wu
-        .extra
-        .entry("assumptions".to_string())
-        .or_insert_with(|| Value::Array(Vec::new()));
-    if !assumptions_entry.is_array() {
-        *assumptions_entry = Value::Array(Vec::new());
-    }
-    let count = if let Value::Array(arr) = assumptions_entry {
-        arr.push(Value::String(args.assumption.clone()));
-        arr.len()
-    } else {
-        0
+    // BUG-633: assumptions are stable-id items; the card's string
+    // assumptions are converted first.
+    let count = {
+        let invalid = |reason| FspecCoreError::InvalidArgs {
+            command: "add-assumption",
+            reason,
+        };
+        super::assumption_items::push(&args.work_unit_id, &mut wu.extra, &args.assumption, &now)
+            .map_err(invalid)?;
+        super::assumption_items::active(&args.work_unit_id, wu.extra.get("assumptions"))
+            .map_err(invalid)?
+            .len()
     };
 
     wu.updated_at = now;
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AddAssumptionResult {
         success: true,

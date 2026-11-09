@@ -1,3 +1,5 @@
+@BUG-699
+@BUG-582
 @done
 @rust
 @work-management
@@ -73,7 +75,7 @@ Feature: Port prioritize-work-unit command to Rust
     Given FEAT-017 is in states.specifying and AUTH-001 is in states.testing
     When I run `fspec prioritize-work-unit FEAT-017 --before AUTH-001`
     Then the process exits with code 1
-    And stderr contains "Data integrity error"
+    And stderr contains "Cannot prioritize across columns. FEAT-017 (specifying) and AUTH-001 (testing) are in different columns."
 
   Scenario: Reject prioritizing a non-existent work unit
     Given spec/work-units.json does not contain MISSING-999
@@ -87,6 +89,7 @@ Feature: Port prioritize-work-unit command to Rust
     When I run `fspec prioritize-work-unit DONE-001 --position top`
     Then the process exits with code 1
     And stderr contains "Cannot prioritize work units in done column"
+    And stderr contains "Only backlog, specifying, testing, implementing, validating, blocked can be prioritized."
 
   Scenario: Relative placement with before and after
     Given spec/work-units.json implementing order is AUTH-002, AUTH-001
@@ -99,3 +102,37 @@ Feature: Port prioritize-work-unit command to Rust
     When I inspect rust/fspec/src/prioritize_work_unit.rs
     Then the source declares it calls codelet_fspec_core::commands::prioritize_work_unit::run
     Then the source does NOT perform any file IO directly on spec/work-units.json
+
+  Scenario: Position top reorders a work unit within the specifying column
+    Given spec/work-units.json specifying order is FEAT-018, FEAT-019, FEAT-017
+    When I run `fspec prioritize-work-unit FEAT-017 --position top`
+    Then the process exits with code 0
+    And the specifying order becomes FEAT-017, FEAT-018, FEAT-019
+    And FEAT-017 still has status specifying
+
+  Scenario: Position top reorders a work unit within the implementing column
+    Given spec/work-units.json implementing order is AUTH-002, AUTH-003, AUTH-001
+    When I run `fspec prioritize-work-unit AUTH-001 --position top`
+    Then the process exits with code 0
+    And the implementing order becomes AUTH-001, AUTH-002, AUTH-003
+    And AUTH-001 still has status implementing
+
+  Scenario: Prioritizing the only work unit in a column succeeds as a no-op
+    Given AUTH-001 is the only work unit in states.implementing
+    When I run `fspec prioritize-work-unit AUTH-001 --position top`
+    Then the process exits with code 0
+    And the implementing order is still AUTH-001 alone
+    And the backlog order is still AUTH-002 alone
+
+  Scenario: Position bottom moves a work unit to the end of its column
+    Given spec/work-units.json backlog order is AUTH-001, AUTH-002, AUTH-003
+    When I run `fspec prioritize-work-unit AUTH-001 --position bottom`
+    Then the process exits with code 0
+    And the backlog order becomes AUTH-002, AUTH-003, AUTH-001
+
+  Scenario: Reject placement before a non-existent work unit
+    Given spec/work-units.json backlog contains AUTH-001 and does not contain AUTH-999
+    When I run `fspec prioritize-work-unit AUTH-001 --before AUTH-999`
+    Then the process exits with code 1
+    And stderr contains "Work unit 'AUTH-999' does not exist"
+    And spec/work-units.json is byte-identical to its pre-call content

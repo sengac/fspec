@@ -6,11 +6,9 @@ USAGE
   fspec query-metrics [options]
 
 OPTIONS
-  --metric <metric>
-    Specific metric to query
   --format <format>
     Output format: table or json
-  --work-unit-id <id>
+  --work-unit <workUnitId>
     Specific work unit to query metrics for
 
 EXAMPLES

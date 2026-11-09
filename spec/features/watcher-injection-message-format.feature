@@ -1,6 +1,7 @@
 @watcher
 @codelet
 @WATCH-006
+@COV-057
 Feature: Watcher Injection Message Format
   """
   Add WatcherInput struct in session_manager.rs near SessionRole types (before BackgroundSession)
@@ -35,38 +36,33 @@ Feature: Watcher Injection Message Format
     I want to inject messages into the parent session stream
     So that the parent session can receive and respond to watcher observations and suggestions
 
-  @wip
   Scenario: Format peer watcher message with structured prefix
-    Given a watcher session with role "code-reviewer" and authority "Peer"
+    Given a watcher session with role "code-reviewer"
     And the watcher session id is "abc123"
     When the watcher sends message "Consider adding error handling"
-    Then the formatted message should be "[WATCHER: code-reviewer | Authority: Peer | Session: abc123] Consider adding error handling"
+    Then the formatted message should be "[SUPERVISOR: code-reviewer | Session: abc123] Consider adding error handling"
 
-  @wip
   Scenario: Format supervisor watcher message with structured prefix
-    Given a watcher session with role "security-auditor" and authority "Supervisor"
+    Given a watcher session with role "security-auditor"
     And the watcher session id is "xyz789"
     When the watcher sends message "CRITICAL: SQL injection vulnerability detected"
-    Then the parent should receive a WatcherInput chunk
+    Then the parent should receive an IncomingMessage chunk
     And the chunk should contain the formatted message with structured prefix
 
-  @wip
   Scenario: Receive watcher input queues message asynchronously
     Given a parent session exists
     When receive_watcher_input is called with a valid WatcherInput
     Then the input should be queued via the watcher input channel
     And the method should return immediately without blocking
 
-  @wip
   Scenario: Empty watcher message returns error
-    Given a watcher session with role "test-watcher" and authority "Peer"
+    Given a watcher session with role "test-watcher"
     And the watcher session id is "test123"
     When the watcher sends an empty message
     Then an error should be returned with message "message cannot be empty"
 
-  @wip
   Scenario: Multiline watcher message preserves formatting
-    Given a watcher session with role "code-reviewer" and authority "Peer"
+    Given a watcher session with role "code-reviewer"
     And the watcher session id is "abc123"
     When the watcher sends a multiline message:
       """

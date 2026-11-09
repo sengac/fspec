@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "16-48",
+          "lines": "15-48",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -78,7 +78,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "self.class = match code {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -94,7 +96,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": ".as_ref()",
+              "lastLine": ".map_err(|_| NetworkFailure::SetupDeadline.into_http_error())??;"
             }
           ]
         }
@@ -105,7 +109,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "132-160",
+          "lines": "131-160",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -164,7 +168,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "#[error(\"Codex rejection status={status:?} class={class:?} code={code:?} message={message:?} request_id={request_id:?} retry_after={retry_after:?} attempts={attempts:?} evidence={state:?}: {body:?}\")]",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,7 +181,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "163-192",
+          "lines": "162-192",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -192,7 +198,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "EvidenceState::Complete,",
+              "lastLine": "diagnostic.retry_after = header(\"retry-after\");"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -215,7 +223,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "if let TokenMode::OAuth { token_state } = &mode {",
+              "lastLine": ".map_err(|_| NetworkFailure::SetupDeadline.into_http_error())??;"
             }
           ]
         }
@@ -226,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "195-241",
+          "lines": "194-241",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -253,11 +263,17 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "self.class = match code {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
               "lines": [
+                59,
+                60,
+                61,
+                62,
                 63,
                 64,
                 65,
@@ -266,11 +282,28 @@
                 68,
                 69,
                 70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
                 106,
-                107,
-                108,
-                109
-              ]
+                107
+              ],
+              "firstLine": "pub fn parse(kind: &str, value: &mut Value) -> Result<Self, CompletionError> {",
+              "lastLine": ".map(|error| backend_error(error.clone(), redactor)),"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -281,7 +314,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "let completion_mode = validate_completion.clone();",
+              "lastLine": "let mut total_usage: Option<rig::providers::openai::responses_api::ResponsesUsage> = None;"
             }
           ]
         }
@@ -292,13 +327,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "244-273",
+          "lines": "243-273",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
               "lines": [
-                135,
-                136,
                 137,
                 138,
                 139,
@@ -309,7 +342,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "let end = body",
+              "lastLine": "};"
             },
             {
               "file": "rust/providers/src/codex/diagnostic_redaction.rs",
@@ -370,7 +405,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "pub fn from_headers(headers: &http::HeaderMap) -> Self {",
+              "lastLine": "redact(value, spans, limit)"
             }
           ]
         }
@@ -381,7 +418,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "276-294",
+          "lines": "275-294",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -427,7 +464,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "let mut network = response.bytes_stream();",
+              "lastLine": "};"
             }
           ]
         }
@@ -438,7 +477,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "51-107",
+          "lines": "50-107",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostic_redaction.rs",
@@ -482,7 +521,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "pub fn from_headers(headers: &http::HeaderMap) -> Self {",
+              "lastLine": "spans.push(start..end);"
             },
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -498,7 +539,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "Some(attempts),",
+              "lastLine": "diagnostic.retry_after = header(\"retry-after\");"
             }
           ]
         }
@@ -509,7 +552,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
-          "lines": "110-129",
+          "lines": "109-129",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -555,7 +598,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "let mut network = response.bytes_stream();",
+              "lastLine": "};"
             }
           ]
         }
@@ -566,12 +611,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_direct_rejections.rs",
-          "lines": "36-92",
+          "lines": "40-97",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -617,8 +661,11 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78
+              ],
+              "firstLine": "let inner = client(inner)?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -629,7 +676,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/cmpct076_direct_rejections.rs",
-          "lines": "95-107",
+          "lines": "99-116",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/client_http.rs",
@@ -643,7 +690,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "if !response.status().is_success() {",
+              "lastLine": "routing.observe_headers(response.headers());"
             },
             {
               "file": "rust/providers/src/codex/diagnostics.rs",
@@ -689,7 +738,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "let mut network = response.bytes_stream();",
+              "lastLine": "};"
             }
           ]
         }
@@ -712,6 +763,6 @@
       "rust/providers/src/codex/diagnostic_redaction.rs",
       "rust/providers/src/codex/client_http.rs"
     ],
-    "totalLinesCovered": 835
+    "totalLinesCovered": 866
   }
 }

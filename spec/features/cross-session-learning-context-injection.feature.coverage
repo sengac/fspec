@@ -4,39 +4,9 @@
       "name": "Inject relevant decisions into session context at session start",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "29-72",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_context.rs",
-              "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "27-69",
+          "implMappings": []
         }
       ]
     },
@@ -44,33 +14,9 @@
       "name": "Surface failed explorations as warnings in session context",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "75-116",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_context.rs",
-              "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "71-112",
+          "implMappings": []
         }
       ]
     },
@@ -78,32 +24,9 @@
       "name": "Graceful fallback when Learnings graph is not initialized",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "119-133",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_context.rs",
-              "lines": [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "114-131",
+          "implMappings": []
         }
       ]
     },
@@ -111,39 +34,9 @@
       "name": "Subordinate session receives learnings from supervisor domain",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "254-284",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_context.rs",
-              "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "249-280",
+          "implMappings": []
         }
       ]
     },
@@ -151,74 +44,9 @@
       "name": "Post-session learnings extraction loads entities into graph",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "183-251",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_extraction.rs",
-              "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "178-247",
+          "implMappings": []
         }
       ]
     },
@@ -226,56 +54,9 @@
       "name": "Context volume capped at token limit",
       "testMappings": [
         {
-          "file": "rust/napi/tests/cross_session_learning_test.rs",
-          "lines": "136-180",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/learnings_context.rs",
-              "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169
-              ]
-            }
-          ]
+          "file": "rust/graph/tests/cross_session_learning_test.rs",
+          "lines": "133-176",
+          "implMappings": []
         }
       ]
     }
@@ -285,12 +66,9 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/cross_session_learning_test.rs"
+      "rust/graph/tests/cross_session_learning_test.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/graph/learnings_context.rs",
-      "rust/napi/src/graph/learnings_extraction.rs"
-    ],
-    "totalLinesCovered": 429
+    "implFiles": [],
+    "totalLinesCovered": 249
   }
 }

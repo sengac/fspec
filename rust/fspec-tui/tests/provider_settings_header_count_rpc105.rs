@@ -10,11 +10,10 @@
 //! mod.rs (which still renders "(M configured)" via `configured_count()`)
 //! and PASS once RPC-105 lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::nav_item::{OAuthMethod, ProviderDisplayInfo};
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsView};
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 const CANONICAL_PROVIDER_IDS: [&str; 17] = [
@@ -104,12 +103,6 @@ fn seventeen_provider_infos() -> Vec<ProviderDisplayInfo> {
 fn view_with_nav_items(infos: Vec<ProviderDisplayInfo>) -> ProviderSettingsView {
     let mut v = ProviderSettingsView::new();
     v.set_provider_display_infos(infos);
-    // PROV-113: browser OAuth-login rows are gated out of the nav tree unless
-    // the transport supports the local OAuth server. These RPC-105 count
-    // fixtures shape anthropic to contribute a Browser oauth-login child row,
-    // so enable browser login to count the full tree (matches the embedded
-    // transport the App runs under).
-    v.set_browser_login_enabled(true);
     v
 }
 
@@ -128,7 +121,7 @@ fn type_filter(view: &mut ProviderSettingsView, text: &str) {
 // Scenario: Title shows nav item count for all collapsed providers
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_shows_nav_item_count_for_collapsed_providers() {
+fn title_shows_nav_item_count_for_collapsed_providers() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let infos = seventeen_provider_infos();
     let view = view_with_nav_items(infos);
@@ -144,13 +137,14 @@ fn title_shows_nav_item_count_for_collapsed_providers() {
 
     // @step Then the title text equals "Provider Settings (17 items)"
     assert_eq!(title, "Provider Settings (17 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Title count grows when a provider is expanded
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_count_grows_when_provider_expanded() {
+fn title_count_grows_when_provider_expanded() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
@@ -165,13 +159,14 @@ fn title_count_grows_when_provider_expanded() {
 
     // @step Then the title text equals "Provider Settings (22 items)"
     assert_eq!(view.title_text(), "Provider Settings (22 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Title count shrinks when a filter is applied
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_count_shrinks_when_filter_applied() {
+fn title_count_shrinks_when_filter_applied() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
@@ -183,13 +178,14 @@ fn title_count_shrinks_when_filter_applied() {
 
     // @step Then the title text equals "Provider Settings (1 items)"
     assert_eq!(view.title_text(), "Provider Settings (1 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Title count reflects both filter and expansion
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_count_reflects_filter_and_expansion_together() {
+fn title_count_reflects_filter_and_expansion_together() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
@@ -202,13 +198,14 @@ fn title_count_reflects_filter_and_expansion_together() {
 
     // @step Then the title text equals "Provider Settings (6 items)"
     assert_eq!(view.title_text(), "Provider Settings (6 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Title text never contains the substring "configured"
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_text_never_contains_configured() {
+fn title_text_never_contains_configured() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let view = view_with_nav_items(seventeen_provider_infos());
 
@@ -220,13 +217,14 @@ fn title_text_never_contains_configured() {
         !title.contains("configured"),
         "title must NOT contain 'configured', got {title:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Title uses nav_items length not configured count
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn title_uses_nav_items_length_not_configured_count() {
+fn title_uses_nav_items_length_not_configured_count() -> TestResult {
     // @step Given a ProviderSettingsView with 5 providers loaded as raw credential infos where 2 are configured
     let mut view = ProviderSettingsView::new();
     let raw = vec![
@@ -293,13 +291,14 @@ fn title_uses_nav_items_length_not_configured_count() {
 
     // @step And the title text does not contain "2 configured"
     assert!(!title.contains("2 configured"));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Backspacing a filter character grows the title count back
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn backspacing_filter_grows_title_count() {
+fn backspacing_filter_grows_title_count() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
@@ -312,20 +311,24 @@ fn backspacing_filter_grows_title_count() {
     let _ = view.handle_key(key(KeyCode::Backspace));
 
     // @step Then the filter equals "openai" minus the last character
-    assert_eq!(view.filter, "openai".strip_suffix('i').unwrap());
+    assert_eq!(
+        view.filter,
+        "openai".strip_suffix('i').or_fail("expected a value")?
+    );
 
     // @step And the title text equals "Provider Settings (N items)" where N matches the new filtered nav_items length
     let expected = format!("Provider Settings ({} items)", view.nav_items.len());
     assert_eq!(view.title_text(), expected);
     // The shorter prefix "opena" still only matches "openai" — count 1.
     assert_eq!(view.title_text(), "Provider Settings (1 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Clearing the filter via Esc restores the full count
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn esc_in_filter_mode_restores_full_count() {
+fn esc_in_filter_mode_restores_full_count() -> TestResult {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
@@ -343,19 +346,20 @@ fn esc_in_filter_mode_restores_full_count() {
 
     // @step And the title text equals "Provider Settings (17 items)"
     assert_eq!(view.title_text(), "Provider Settings (17 items)");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: configured_count method is removed
 // ────────────────────────────────────────────────────────────────────────
 #[test]
-fn configured_count_method_is_removed_from_source() {
+fn configured_count_method_is_removed_from_source() -> TestResult {
     // @step Given the ProviderSettingsView source file
     let source = std::fs::read_to_string(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/src/views/provider_settings/mod.rs"
     ))
-    .expect("mod.rs must exist");
+    .or_fail("mod.rs must exist")?;
 
     // @step When I search for the method name "configured_count"
     let has_method = source.contains("fn configured_count");
@@ -365,4 +369,5 @@ fn configured_count_method_is_removed_from_source() {
         !has_method,
         "mod.rs must no longer declare 'fn configured_count'"
     );
+    Ok(())
 }

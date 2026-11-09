@@ -10,8 +10,6 @@
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -46,8 +44,14 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Feed a raw mouse event (with an injected `now`) and return the",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,7 +62,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/gesture.rs",
-          "lines": "159-174",
+          "lines": "166-183",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
@@ -73,24 +77,24 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "_ => Vec::new(),",
+              "lastLine": "if now.duration_since(at) >= HOLD {"
             }
           ]
         }
       ]
     },
     {
-      "name": "A quick click produces no selection gesture",
+      "name": "A quick click cancels any active selection",
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/gesture.rs",
-          "lines": "175-193",
+          "lines": "185-202",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -125,8 +129,14 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Feed a raw mouse event (with an injected `now`) and return the",
+              "lastLine": "}"
             }
           ]
         }
@@ -137,13 +147,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/gesture.rs",
-          "lines": "194-214",
+          "lines": "204-223",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -178,8 +186,14 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Feed a raw mouse event (with an injected `now`) and return the",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,13 +204,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/gesture.rs",
-          "lines": "215-235",
+          "lines": "225-244",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -231,8 +243,14 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Feed a raw mouse event (with an injected `now`) and return the",
+              "lastLine": "}"
             }
           ]
         }
@@ -248,8 +266,6 @@
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
-                68,
-                69,
                 70,
                 71,
                 72,
@@ -295,8 +311,16 @@
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "/// Feed a raw mouse event (with an injected `now`) and return the",
+              "lastLine": "}"
             }
           ]
         }
@@ -313,6 +337,6 @@
     "implFiles": [
       "rust/fspec-tui/src/mouse/gesture.rs"
     ],
-    "totalLinesCovered": 346
+    "totalLinesCovered": 357
   }
 }

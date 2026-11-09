@@ -58,8 +58,8 @@ where
     ];
     let messages = serde_json::to_value(&session.messages)?;
     let output = Output::default();
-    let result = tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, 'resume original task', &mut ses...",
         run_agent_stream(
             agent,
             "resume original task",
@@ -111,6 +111,7 @@ async fn equivalent_typed_overflow_routes_select_the_same_protocol(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given selected OpenAI and Anthropic adapters receiving structured overflow rejections
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     let openai = MockServer::start().await;
     let anthropic = MockServer::start().await;

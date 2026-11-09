@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    {
+      "name": "Source composition rejects ambiguous or broken macro chains",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019/composition.rs",
+          "lines": "5-100",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/refac019/composition.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 96
+  }
+}

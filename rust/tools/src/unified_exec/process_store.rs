@@ -4,15 +4,12 @@
 //! with LRU eviction that protects the N most recently used sessions.
 
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::process::Child;
-use tokio::sync::{mpsc, Mutex, Notify};
+use tokio::sync::{Mutex, Notify};
 use tokio::time::Instant as TokioInstant;
-
-use super::types::quiet_secs_since;
-use super::{LRU_PROTECT_COUNT, MAX_UNIFIED_EXEC_PROCESSES};
 
 /// TOOL-022 P4 (G1/G2/G3): platform-agnostic kill handle for a child
 /// process. `Child` stays inside the entry (the reaper, the LRU
@@ -56,7 +53,7 @@ pub struct ProcessEntry {
     /// The child process handle
     pub child: Child,
     /// Channel to send bytes to the process stdin
-    pub stdin_tx: mpsc::Sender<Vec<u8>>,
+    pub stdin_tx: super::stdin_write::StdinSender,
     /// Buffered output from the process (stdout + stderr interleaved)
     pub output_buffer: Arc<Mutex<Vec<u8>>>,
     /// Notification when new output is available
@@ -75,16 +72,19 @@ pub struct ProcessEntry {
     /// (process group / taskkill), used by the BashTool delegation
     /// loop on ESC abort.
     pub kill_handle: ChildHandle,
+    /// BUG-368: for a PTY session, where the PTY child's real status is
+    /// recorded (`child` is only the liveness anchor); `None` for pipes.
+    pub pty_exit: Option<super::exec_exit::PtyExitSlot>,
 }
 
 /// Global process store. Thread-safe via tokio::sync::Mutex.
 pub struct ProcessStore {
-    entries: Mutex<HashMap<String, ProcessEntry>>,
+    pub(super) entries: Mutex<HashMap<String, ProcessEntry>>,
     /// TOOL-022 P4: exit statuses reaped by the reaper whose entry was
     /// removed — retained briefly so a poller racing the reaper can
     /// recover the REAL exit code instead of the reaper-race `-1`
     /// (research §9.6). Lazy-pruned on each insert.
-    exited: Mutex<HashMap<String, (std::process::ExitStatus, std::time::Instant)>>,
+    exited: Mutex<HashMap<String, (super::exec_exit::ExecExit, std::time::Instant)>>,
 }
 
 /// How long a reaped-but-removed session's exit status is retained for
@@ -118,13 +118,16 @@ impl ProcessStore {
         };
         if let Some(mut entry) = entry {
             entry.kill_handle.kill();
-            let _ = entry.child.kill().await;
+            // BUG-363: nothing to return here; report the failure.
+            if let Err(error) = entry.child.kill().await {
+                tracing::error!(session = session_id, %error, "cannot kill exec session");
+            }
         }
     }
 
     /// TOOL-022 P4: record the exit status of a session whose entry was
     /// removed (reaper / eviction), so a racing poller can recover it.
-    pub async fn stash_exit(&self, session_id: &str, status: std::process::ExitStatus) {
+    pub async fn stash_exit(&self, session_id: &str, status: super::exec_exit::ExecExit) {
         let mut exited = self.exited.lock().await;
         // Lazy prune: drop statuses older than the retention window.
         let now = Instant::now();
@@ -134,12 +137,12 @@ impl ProcessStore {
 
     /// TOOL-022 P4: recover the exit status of a session whose entry is
     /// gone (reaped by the reaper after our `get_output_handles`).
-    pub async fn recover_exit(&self, session_id: &str) -> Option<std::process::ExitStatus> {
+    pub async fn recover_exit(&self, session_id: &str) -> Option<super::exec_exit::ExecExit> {
         let exited = self.exited.lock().await;
         exited
             .get(session_id)
             .filter(|(_, at)| Instant::now().duration_since(*at) <= EXIT_STATUS_RETENTION)
-            .map(|(status, _)| *status)
+            .map(|(status, _)| status.clone())
     }
 
     /// Insert a new process entry. Returns the session_id.
@@ -211,122 +214,6 @@ impl ProcessStore {
             })
             .collect()
     }
-
-    /// Evict the least recently used session (not in the top N most recent).
-    /// Returns the evicted session_id, or None if store is under capacity.
-    pub async fn evict_lru_if_full(&self) -> Option<String> {
-        let mut entries = self.entries.lock().await;
-        if entries.len() < MAX_UNIFIED_EXEC_PROCESSES {
-            return None;
-        }
-
-        // Build metadata for the pure selection function
-        let meta: Vec<(String, Instant, bool)> = entries
-            .iter_mut()
-            .map(|(id, e)| {
-                let has_exited = e.child.try_wait().map(|s| s.is_some()).unwrap_or(false);
-                (id.clone(), e.last_used, has_exited)
-            })
-            .collect();
-
-        let victim_id = session_id_to_evict(&meta);
-
-        if let Some(ref id) = victim_id {
-            let mut entry = entries.remove(id);
-            // Kill the process (TOOL-022 P4: the full process tree via
-            // the kill handle — for PTY sessions the direct `Child` is
-            // only the liveness anchor, NOT the PTY shell).
-            if let Some(ref mut e) = entry {
-                e.kill_handle.kill();
-                let _ = e.child.kill().await;
-            }
-        }
-
-        victim_id
-    }
-
-    /// Get the stdin sender for a session.
-    pub async fn get_stdin_tx(&self, session_id: &str) -> Option<mpsc::Sender<Vec<u8>>> {
-        let entries = self.entries.lock().await;
-        entries.get(session_id).map(|e| e.stdin_tx.clone())
-    }
-
-    /// Get the output buffer and notify handle for a session.
-    pub async fn get_output_handles(
-        &self,
-        session_id: &str,
-    ) -> Option<(Arc<Mutex<Vec<u8>>>, Arc<Notify>)> {
-        let mut entries = self.entries.lock().await;
-        if let Some(entry) = entries.get_mut(session_id) {
-            entry.last_used = Instant::now();
-            Some((
-                Arc::clone(&entry.output_buffer),
-                Arc::clone(&entry.output_notify),
-            ))
-        } else {
-            None
-        }
-    }
-
-    /// Check if a process has exited (non-blocking).
-    pub async fn try_wait(&self, session_id: &str) -> Option<Option<std::process::ExitStatus>> {
-        let mut entries = self.entries.lock().await;
-        if let Some(entry) = entries.get_mut(session_id) {
-            match entry.child.try_wait() {
-                Ok(status) => Some(status),
-                Err(_) => Some(None),
-            }
-        } else {
-            None
-        }
-    }
-
-    /// TOOL-022: seconds since the session's last output (floored).
-    ///
-    /// None when the session does not exist. Pure timestamp arithmetic —
-    /// no output content is inspected.
-    pub async fn quiet_secs(&self, session_id: &str) -> Option<u64> {
-        let entries = self.entries.lock().await;
-        let entry = entries.get(session_id)?;
-        Some(quiet_secs_since(
-            entry.last_output_micros.load(Ordering::Relaxed),
-            now_micros(),
-        ))
-    }
-
-    /// TOOL-022 P4: the platform kill handle for the session's child
-    /// (cloned — the handle is an `Arc<dyn Fn>`). `None` when the
-    /// session does not exist.
-    pub async fn kill_handle(&self, session_id: &str) -> Option<ChildHandle> {
-        let entries = self.entries.lock().await;
-        entries.get(session_id).map(|e| ChildHandle {
-            kill: Arc::clone(&e.kill_handle.kill),
-        })
-    }
-
-    /// TOOL-022 P4: terminate the session and remove it from the store
-    /// (the BashTool abort path). `Ok(true)` when the session existed
-    /// and was killed, `Ok(false)` when it was already gone (reaper /
-    /// poll drained it first) — NOT an error.
-    pub async fn close_session(&self, session_id: &str) -> Result<bool, String> {
-        let entry = self.entries.lock().await.remove(session_id);
-        match entry {
-            Some(mut entry) => {
-                // TOOL-022 P4: full process tree (PTY child + anchor /
-                // process group), not just the direct child.
-                entry.kill_handle.kill();
-                let _ = entry.child.kill().await;
-                Ok(true)
-            }
-            None => Ok(false),
-        }
-    }
-
-    /// Get all session IDs (for reaper iteration).
-    pub async fn session_ids(&self) -> Vec<String> {
-        let entries = self.entries.lock().await;
-        entries.keys().cloned().collect()
-    }
 }
 
 impl Default for ProcessStore {
@@ -355,48 +242,4 @@ static GLOBAL_STORE: Lazy<ProcessStore> = Lazy::new(ProcessStore::new);
 /// Get a reference to the global ProcessStore.
 pub fn global_store() -> &'static ProcessStore {
     &GLOBAL_STORE
-}
-
-// ============================================================================
-// LRU Eviction Policy (pure function, testable without processes)
-// ============================================================================
-
-/// Select the session ID to evict from a list of (id, last_used, has_exited) metadata.
-///
-/// Policy (matches Codex reference):
-/// 1. Protect the 8 most recently used sessions from eviction.
-/// 2. Among unprotected sessions, prefer evicting already-exited ones first.
-/// 3. If no exited sessions outside protected set, evict the least recently used.
-/// 4. Returns None if the metadata is empty or all sessions are protected.
-pub fn session_id_to_evict(meta: &[(String, Instant, bool)]) -> Option<String> {
-    if meta.is_empty() {
-        return None;
-    }
-
-    // Sort by recency (most recent first) to identify the protected set
-    let mut by_recency: Vec<(String, Instant, bool)> = meta.to_vec();
-    by_recency.sort_by_key(|(_, last_used, _)| std::cmp::Reverse(*last_used));
-
-    let protected: std::collections::HashSet<&str> = by_recency
-        .iter()
-        .take(LRU_PROTECT_COUNT)
-        .map(|(id, _, _)| id.as_str())
-        .collect();
-
-    // Sort by LRU (oldest first)
-    let mut lru: Vec<&(String, Instant, bool)> = meta.iter().collect();
-    lru.sort_by_key(|(_, last_used, _)| *last_used);
-
-    // Prefer evicting exited sessions outside the protected set
-    if let Some((id, _, _)) = lru
-        .iter()
-        .find(|(id, _, exited)| !protected.contains(id.as_str()) && *exited)
-    {
-        return Some(id.clone());
-    }
-
-    // Fall back to oldest unprotected session
-    lru.into_iter()
-        .find(|(id, _, _)| !protected.contains(id.as_str()))
-        .map(|(id, _, _)| id.clone())
 }

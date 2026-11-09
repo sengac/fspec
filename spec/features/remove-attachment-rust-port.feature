@@ -1,6 +1,8 @@
 @done
 @rust
 @RPC-268
+@cli
+@remove
 Feature: Port remove-attachment command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_attachment.rs. Reuses io::ensure::ensure_work_units_file

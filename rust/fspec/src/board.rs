@@ -29,7 +29,7 @@
 //!     `✗ Failed to display board:` (parity with the TS catch at
 //!     `src/commands/display-board.ts:123-126`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -49,7 +49,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `board` clap subcommand.
 /// Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let format = args.format.as_deref().unwrap_or("text").to_string();
     let limit = args.limit.unwrap_or(25);

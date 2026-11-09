@@ -51,8 +51,6 @@
                 39,
                 40,
                 41,
-                42,
-                43,
                 44,
                 45,
                 46,
@@ -225,7 +223,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "use super::super::completion::CompletionModel;",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
@@ -493,7 +493,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "use async_stream::stream;",
+              "lastLine": "mod usage_tests;"
             },
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -554,7 +556,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "pub fn decide_tool_result_early_exit(",
+              "lastLine": "}"
             }
           ]
         }
@@ -626,7 +630,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "pub fn decide_tool_result_early_exit(",
+              "lastLine": "}"
             }
           ]
         }
@@ -683,8 +689,6 @@
                 39,
                 40,
                 41,
-                42,
-                43,
                 44,
                 45,
                 46,
@@ -857,7 +861,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "use super::super::completion::CompletionModel;",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
@@ -1125,7 +1131,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "use async_stream::stream;",
+              "lastLine": "mod usage_tests;"
             }
           ]
         }
@@ -1182,8 +1190,6 @@
                 39,
                 40,
                 41,
-                42,
-                43,
                 44,
                 45,
                 46,
@@ -1356,7 +1362,9 @@
                 213,
                 214,
                 215
-              ]
+              ],
+              "firstLine": "use super::super::completion::CompletionModel;",
+              "lastLine": "}"
             }
           ]
         }
@@ -1635,7 +1643,9 @@
                 261,
                 262,
                 263
-              ]
+              ],
+              "firstLine": "use async_stream::stream;",
+              "lastLine": "mod usage_tests;"
             }
           ]
         }
@@ -1659,11 +1669,6 @@
                 109,
                 110,
                 111,
-                112,
-                113,
-                114,
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -1688,10 +1693,6 @@
                 138,
                 139,
                 140,
-                141,
-                142,
-                143,
-                144,
                 145,
                 146,
                 147,
@@ -1703,13 +1704,6 @@
                 153,
                 154,
                 155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
                 163,
                 164,
                 165,
@@ -1758,8 +1752,24 @@
                 208,
                 209,
                 210,
-                211
-              ]
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ],
+              "firstLine": "pub async fn run_rlcd_security_check(",
+              "lastLine": "/// Bridges into the async stage via `block_in_place` + `Handle::block_on`,"
             }
           ]
         }
@@ -1779,6 +1789,6 @@
       "rust/cli/src/interactive/done_early_exit.rs",
       "rust/tools/src/rlcd/security.rs"
     ],
-    "totalLinesCovered": 1903
+    "totalLinesCovered": 1895
   }
 }

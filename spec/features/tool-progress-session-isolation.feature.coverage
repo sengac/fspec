@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool_progress_session_isolation_test.rs",
-          "lines": "22-57",
+          "lines": "23-66",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_progress.rs",
@@ -94,7 +94,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "//! Tool progress callback registry (TOOL-011, BUG-126)",
+              "lastLine": "let session_id = Uuid::new_v4();"
             }
           ]
         }
@@ -105,7 +107,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool_progress_session_isolation_test.rs",
-          "lines": "67-104",
+          "lines": "72-119",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_progress.rs",
@@ -194,7 +196,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "//! Tool progress callback registry (TOOL-011, BUG-126)",
+              "lastLine": "let session_id = Uuid::new_v4();"
             }
           ]
         }
@@ -205,7 +209,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool_progress_session_isolation_test.rs",
-          "lines": "109-125",
+          "lines": "126-140",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_progress.rs",
@@ -294,7 +298,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "//! Tool progress callback registry (TOOL-011, BUG-126)",
+              "lastLine": "let session_id = Uuid::new_v4();"
             }
           ]
         }
@@ -305,7 +311,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool_progress_session_isolation_test.rs",
-          "lines": "131-174",
+          "lines": "146-194",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_progress.rs",
@@ -394,7 +400,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "//! Tool progress callback registry (TOOL-011, BUG-126)",
+              "lastLine": "let session_id = Uuid::new_v4();"
             }
           ]
         }
@@ -405,7 +413,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool_progress_session_isolation_test.rs",
-          "lines": "180-221",
+          "lines": "200-257",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_progress.rs",
@@ -494,7 +502,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "//! Tool progress callback registry (TOOL-011, BUG-126)",
+              "lastLine": "let session_id = Uuid::new_v4();"
             }
           ]
         }
@@ -511,6 +521,6 @@
     "implFiles": [
       "rust/tools/src/tool_progress.rs"
     ],
-    "totalLinesCovered": 597
+    "totalLinesCovered": 634
   }
 }

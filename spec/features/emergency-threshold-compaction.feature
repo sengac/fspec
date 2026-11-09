@@ -1,5 +1,9 @@
+@BUG-582
 @done
 @CMPCT-012
+@BUG-306
+@codelet
+@context-management
 Feature: Emergency Threshold Compaction Safety Net
   """
   CMPCT-011 created annotation_detector module (rust/core/src/compaction/annotation_detector.rs) with detect_annotations(), ToolCallInfo, and TurnContext — all pub, tested, ready to call. When rewriting stream_loop's compaction trigger, also wire per-turn annotation detection: after each completed turn, call detect_annotations() with the turn's tool calls, serialize resulting Vec<StructuralAnnotation> into the persisted message metadata (StoredMessage.metadata HashMap). This is required by CMPCT-011 rules [7],[9],[10] but the wiring naturally belongs here since stream_loop.rs is being modified anyway.
@@ -48,8 +52,8 @@ Feature: Emergency Threshold Compaction Safety Net
     When pre-prompt compaction is triggered
     Then execute_compaction is called with the session and compaction_in_progress flag
     And the compaction_in_progress flag is set to true
-    And session messages are cleared and system reminders are restored
-    And the compaction system instruction is injected as a user message
+    And committed session messages are unchanged while the compaction view holds only system reminders and the instruction
+    And the compaction system instruction is the last user message of the compaction view
     And the original user prompt is embedded in the instruction so the agent knows what to resume
     And no separate LLM calls are made during the compaction setup
 
@@ -70,7 +74,7 @@ Feature: Emergency Threshold Compaction Safety Net
     When the /compact command is executed
     Then execute_compaction is called with the session and compaction_in_progress flag
     And no last_user_message is embedded because compaction was agent-initiated
-    And the compaction system instruction is injected as a user message
+    And the compaction system instruction is the last user message of the compaction view
     And the agent can build a DAG via SessionSearch on the next turn
 
   @compaction-in-progress-flag
@@ -103,7 +107,7 @@ Feature: Emergency Threshold Compaction Safety Net
     When the call sites are updated to use execute_compaction
     Then the callers handle Ok(()) on success without expecting metrics or anchor data
     And compaction events are emitted using pre-compaction token counts captured before the call
-    And token tracker is reset after compaction
+    And the token tracker keeps the committed basis until the summary is durably applied
 
   @annotation-detection
   Scenario: Per-turn annotation detection wired into stream loop

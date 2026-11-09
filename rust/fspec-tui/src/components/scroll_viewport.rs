@@ -122,6 +122,15 @@ impl WheelVelocity {
         }
     }
 
+    /// TEST-042 test seam: move the last step `by` into the past, as if
+    /// that long had passed, so a test never waits. False when no step was
+    /// taken yet or the clock is younger than `by`.
+    pub fn age(&self, by: Duration) -> bool {
+        let aged = self.last.get().and_then(|prev| prev.checked_sub(by));
+        self.last.set(aged.or(self.last.get()));
+        aged.is_some()
+    }
+
     /// Current velocity (1..=MAX_VELOCITY). Exposed for assertions.
     pub fn velocity(&self) -> u32 {
         self.velocity.get()

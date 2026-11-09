@@ -46,10 +46,10 @@ impl Drop for ProfileFixture {
     }
 }
 
-fn section() -> ProviderInfo {
-    let mut sections = build_local_profile_sections();
+fn section() -> TestResult<ProviderInfo> {
+    let mut sections = build_local_profile_sections()?;
     assert_eq!(sections.len(), 1);
-    sections.remove(0)
+    Ok(sections.remove(0))
 }
 
 async fn listing(server: &MockServer, response: ResponseTemplate) {
@@ -97,7 +97,7 @@ async fn scenario_optional_discovery_preserves_an_independently_usable_configure
         })?;
 
         // @step When the server builds the local profile sections
-        let info = section();
+        let info = section()?;
 
         // @step Then the configured model remains present and the profile is not marked unreachable
         assert!(!info.is_unreachable);
@@ -137,7 +137,7 @@ async fn scenario_authentication_and_server_failures_remain_visible_with_configu
         )?;
 
         // @step When the server builds the local profile sections
-        let info = section();
+        let info = section()?;
 
         // @step Then the profile is marked unreachable and its custom model is retained
         assert!(info.is_unreachable);
@@ -160,7 +160,7 @@ async fn scenario_transport_failures_remain_visible_with_configured_models() -> 
     )?;
 
     // @step When the server builds the local profile sections
-    let info = section();
+    let info = section()?;
 
     // @step Then the profile is marked unreachable and its custom model is retained
     assert!(info.is_unreachable);
@@ -180,7 +180,7 @@ async fn scenario_unsupported_discovery_without_a_usable_configured_model_remain
             let _fixture = ProfileFixture::new(&format!("{}/proxy", server.uri()), custom)?;
 
             // @step When the server builds the local profile sections
-            let info = section();
+            let info = section()?;
 
             // @step Then the profile remains present and is not marked unreachable
             assert_eq!(info.profile_name.as_deref(), Some("fixture"));
@@ -207,7 +207,7 @@ async fn scenario_successful_empty_discovery_does_not_invent_configured_models()
     let _fixture = ProfileFixture::new(&format!("{}/proxy", server.uri()), json!([]))?;
 
     // @step When the server builds the local profile sections
-    let info = section();
+    let info = section()?;
 
     // @step Then the profile remains present with no models and is not marked unreachable
     assert_eq!(info.profile_name.as_deref(), Some("fixture"));
@@ -229,7 +229,7 @@ fn scenario_a_configured_model_cannot_bypass_a_skipped_probe_without_a_runtime()
     )?;
 
     // @step When the server builds the local profile sections
-    let info = section();
+    let info = section()?;
 
     // @step Then the profile is marked unreachable without attempting an HTTP request
     assert!(info.is_unreachable);
@@ -256,7 +256,7 @@ async fn scenario_a_configured_model_cannot_bypass_a_skipped_probe_on_a_current_
     )?;
 
     // @step When the server builds the local profile sections
-    let info = section();
+    let info = section()?;
 
     // @step Then the profile is marked unreachable without attempting an HTTP request
     assert!(info.is_unreachable);

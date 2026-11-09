@@ -222,6 +222,10 @@ pub enum StreamEvent {
     CompactionProgress(CompactionProgressInfo),
     /// UX-002: Compaction completed successfully
     CompactionComplete(CompactionCompleteInfo),
+    /// BUG-614: a summary submission installed nothing; the turn continues.
+    SummaryNotInstalled {
+        error: String,
+    },
     /// UX-002: Compaction failed
     CompactionFailed {
         reason: String,
@@ -267,7 +271,7 @@ pub trait StreamOutput: Send + Sync {
         _snapshot: codelet_rpc_types::CommittedContextSnapshot,
         context: codelet_rpc_types::RequestContextSnapshot,
     ) -> Result<(), String> {
-        if let Some(fill) = context.context_fill() {
+        if let Some(fill) = context.context_fill()? {
             self.emit_context_fill(&ContextFillInfo {
                 fill_percentage: fill.fill_percentage,
                 effective_tokens: fill.effective_tokens as u64,
@@ -435,6 +439,12 @@ pub trait StreamOutput: Send + Sync {
 
     /// UX-002: Emit compaction failed event
     #[inline]
+    fn emit_summary_not_installed(&self, error: &str) {
+        self.emit(StreamEvent::SummaryNotInstalled {
+            error: error.to_owned(),
+        });
+    }
+
     fn emit_compaction_failed(&self, reason: &str) {
         self.emit(StreamEvent::CompactionFailed {
             reason: reason.to_string(),
@@ -445,6 +455,20 @@ pub trait StreamOutput: Send + Sync {
     #[inline]
     fn emit_compaction_continuing(&self) {
         self.emit(StreamEvent::CompactionContinuing);
+    }
+}
+
+/// The CLI's preview of a tool result: at most 500 bytes, cut on a char
+/// boundary (BUG-642), then "..." when the content is longer.
+pub fn tool_result_preview(content: &str) -> String {
+    const MAX_PREVIEW_LENGTH: usize = 500;
+    if content.len() > MAX_PREVIEW_LENGTH {
+        format!(
+            "{}...",
+            &content[..content.floor_char_boundary(MAX_PREVIEW_LENGTH)]
+        )
+    } else {
+        content.to_string()
     }
 }
 
@@ -491,13 +515,7 @@ impl StreamOutput for CliOutput {
                 std::io::stdout().flush().ok();
             }
             StreamEvent::ToolResult(tool_result) => {
-                // Truncate if too long
-                const MAX_PREVIEW_LENGTH: usize = 500;
-                let preview = if tool_result.content.len() > MAX_PREVIEW_LENGTH {
-                    format!("{}...", &tool_result.content[..MAX_PREVIEW_LENGTH])
-                } else {
-                    tool_result.content.clone()
-                };
+                let preview = tool_result_preview(&tool_result.content);
 
                 // Format output based on error status
                 if tool_result.is_error {
@@ -596,6 +614,10 @@ impl StreamOutput for CliOutput {
                     info.compacted_tokens,
                     info.compression_ratio * 100.0
                 );
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::SummaryNotInstalled { error } => {
+                print!("\r\n[Summary not installed: {error}]\r\n");
                 std::io::stdout().flush().ok();
             }
             StreamEvent::CompactionFailed { reason } => {

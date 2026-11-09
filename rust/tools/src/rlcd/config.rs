@@ -10,10 +10,10 @@
 //! (only the `rlcd` key changes; every other key is preserved verbatim —
 //! the same contract as `tui.lastUsedModel`).
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use tracing::{debug, warn};
+use tracing::debug;
 
 use crate::rlcd::gate_config::RlcdGateConfig;
 use crate::rlcd::security_config::RlcdSecurityConfig;
@@ -123,98 +123,59 @@ fn default_backend() -> String {
     "rlcd".to_string()
 }
 
-
 // ============================================================================
-// user dir resolution (mirror of codelet-sessions profile_sections::fspec_user_dir)
-// ============================================================================
-
-/// Resolve the fspec user directory: `FSPEC_USER_DIR` env override (tests) →
-/// `dirs::home_dir()/.fspec` → `$HOME/.fspec` last resort.
-///
-/// Mirrors `codelet_sessions::profile_sections::fspec_user_dir` (that one is
-/// `pub(crate)` in codelet-sessions, so codelet-tools keeps its own copy —
-/// the crate arrow tools → sessions is forbidden).
-#[must_use]
-pub fn user_dir() -> Option<PathBuf> {
-    if let Some(override_dir) = std::env::var_os("FSPEC_USER_DIR") {
-        return Some(PathBuf::from(override_dir));
-    }
-    if let Some(home) = dirs::home_dir() {
-        return Some(home.join(".fspec"));
-    }
-    std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".fspec"))
-}
-
-// ============================================================================
-// load (never fatal, never writes)
+// load (never writes)
 // ============================================================================
 
-/// Read the `fspec-config.json` at `config_path` into a `Value`.
-/// `None` on a missing or malformed file (mirrors
-/// `profile_sections::read_config_value`).
-fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
+/// Read the `fspec-config.json` at `config_path` into a `Value`. `Ok(None)`
+/// when the file does not exist; BUG-451: an unreadable file or malformed
+/// JSON is an error.
+fn read_config_value(config_path: &Path) -> Result<Option<serde_json::Value>, String> {
     let content = match std::fs::read_to_string(config_path) {
         Ok(content) => content,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            debug!(path = %config_path.display(), "rlcd config read: file not found (defaults apply)");
-            return None;
+            debug!(path = %config_path.display(), "rlcd config read: file not found (not configured)");
+            return Ok(None);
         }
-        Err(e) => {
-            warn!(path = %config_path.display(), error = %e, "rlcd config read: failed to read file");
-            return None;
-        }
+        Err(e) => return Err(format!("cannot read {}: {e}", config_path.display())),
     };
-    match serde_json::from_str::<serde_json::Value>(&content) {
-        Ok(value) => Some(value),
-        Err(e) => {
-            warn!(path = %config_path.display(), error = %e, "rlcd config read: malformed JSON (defaults apply)");
-            None
-        }
-    }
+    serde_json::from_str::<serde_json::Value>(&content)
+        .map(Some)
+        .map_err(|e| format!("{} is not valid JSON: {e}", config_path.display()))
 }
 
 /// Path-injectable core: load the RLCD config from the given
-/// `fspec-config.json` path. Missing/malformed file or section → full
-/// defaults. Never errors, never writes.
-#[must_use]
-pub fn load_rlcd_config_from(config_path: &Path) -> RlcdConfig {
-    let root = match read_config_value(config_path) {
-        Some(v) if v.is_object() => v,
-        _ => return RlcdConfig::default(),
+/// `fspec-config.json` path. A missing file or a missing `rlcd` section
+/// means "not configured" (the documented defaults); BUG-451: an unreadable
+/// or malformed file, a non-object root and a malformed `rlcd` section are
+/// errors. Never writes.
+pub fn load_rlcd_config_from(config_path: &Path) -> Result<RlcdConfig, String> {
+    let Some(root) = read_config_value(config_path)? else {
+        return Ok(RlcdConfig::default());
     };
-    let Some(section) = root.get("rlcd").and_then(|v| v.as_object()) else {
-        return RlcdConfig::default();
+    let root = root
+        .as_object()
+        .ok_or_else(|| format!("{} is not a JSON object", config_path.display()))?;
+    let Some(section) = root.get("rlcd") else {
+        return Ok(RlcdConfig::default());
     };
-    serde_json::from_value(serde_json::Value::Object(section.clone()))
-        .unwrap_or_else(|e| {
-            warn!(error = %e, "rlcd config: section malformed (defaults apply)");
-            RlcdConfig::default()
-        })
+    serde_json::from_value(section.clone()).map_err(|e| {
+        format!(
+            "the rlcd section of {} is malformed: {e}",
+            config_path.display()
+        )
+    })
 }
 
 /// Convenience: load using the env-resolved user directory
 /// (`FSPEC_USER_DIR` / `~/.fspec`).
-#[must_use]
-pub fn load_rlcd_config() -> RlcdConfig {
-    match user_dir() {
-        Some(dir) => load_rlcd_config_from(&dir.join("fspec-config.json")),
-        None => RlcdConfig::default(),
-    }
+pub fn load_rlcd_config() -> Result<RlcdConfig, String> {
+    load_rlcd_config_from(&codelet_common::user_dir::fspec_user_dir()?.join("fspec-config.json"))
 }
 
 // ============================================================================
 // save (key-preserving read-merge-write)
 // ============================================================================
-
-/// Write the JSON `Value` back to `config_path` (pretty + trailing newline).
-/// `preserve_order` serde keeps existing key order (mirrors
-/// `profile_sections::write_config_value`).
-fn write_config_value(config_path: &Path, root: &serde_json::Value) -> std::io::Result<()> {
-    let mut serialized = serde_json::to_string_pretty(root)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
-    serialized.push('\n');
-    std::fs::write(config_path, &serialized)
-}
 
 /// Path-injectable core: persist `rlcd.url = url` into
 /// `<config_path>`, preserving every unrelated key verbatim (the
@@ -227,31 +188,27 @@ pub fn save_rlcd_url_at(config_path: &Path, url: &str) -> Result<(), String> {
     if url.trim().is_empty() {
         return Ok(());
     }
-    let mut root = read_config_value(config_path).unwrap_or_else(|| serde_json::json!({}));
-    if !root.is_object() {
-        root = serde_json::json!({});
-    }
-    let obj = root
-        .as_object_mut()
-        .ok_or_else(|| "fspec-config.json root is not a JSON object".to_string())?;
-    let section = obj.entry("rlcd").or_insert_with(|| serde_json::json!({}));
-    let section_obj = section
-        .as_object_mut()
-        .ok_or_else(|| "fspec-config.json `rlcd` is not a JSON object".to_string())?;
-    section_obj.insert(
-        "url".to_string(),
-        serde_json::Value::String(url.to_string()),
-    );
-    if let Some(parent) = config_path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to create user directory: {e}"))?;
-    }
-    write_config_value(config_path, &root)
-        .map_err(|e| format!("Failed to write fspec-config.json: {e}"))
+    // BUG-451: a missing file starts empty; an unreadable, malformed or
+    // non-object one is an error (it is never overwritten). BUG-640: one
+    // locked read-modify-write.
+    codelet_common::fspec_config::update_config_file(config_path, |root| {
+        let obj = root
+            .as_object_mut()
+            .ok_or_else(|| "fspec-config.json root is not a JSON object".to_string())?;
+        let section = obj.entry("rlcd").or_insert_with(|| serde_json::json!({}));
+        let section_obj = section
+            .as_object_mut()
+            .ok_or_else(|| "fspec-config.json `rlcd` is not a JSON object".to_string())?;
+        section_obj.insert(
+            "url".to_string(),
+            serde_json::Value::String(url.to_string()),
+        );
+        Ok::<_, String>(())
+    })
 }
 
 /// Convenience: persist `rlcd.url` using the env-resolved user directory.
 pub fn save_rlcd_url(url: &str) -> Result<(), String> {
-    let dir = user_dir().ok_or_else(|| "Could not resolve fspec user directory".to_string())?;
+    let dir = codelet_common::user_dir::fspec_user_dir()?;
     save_rlcd_url_at(&dir.join("fspec-config.json"), url)
 }

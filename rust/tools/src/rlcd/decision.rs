@@ -123,8 +123,16 @@ fn render(resp: &RlcdResponse) -> String {
             }
         }
     }
-    let in_tok = resp.usage.get("input_tokens").and_then(Value::as_u64).unwrap_or(0);
-    let out_tok = resp.usage.get("output_tokens").and_then(Value::as_u64).unwrap_or(0);
+    let in_tok = resp
+        .usage
+        .get("input_tokens")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
+    let out_tok = resp
+        .usage
+        .get("output_tokens")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
     lines.push(format!("usage: {in_tok} in / {out_tok} out tokens"));
     lines.join("\n")
 }
@@ -238,7 +246,11 @@ impl Tool for DecisionTool {
         };
 
         // 3. ensure the engine is ready (bounded; fail-open on failure)
-        let mut config = load_rlcd_config();
+        // BUG-451: an unloadable RLCD config is the tool's error.
+        let mut config = load_rlcd_config().map_err(|message| ToolError::Execution {
+            tool: "Decision",
+            message,
+        })?;
         if let Some(url) = &args.url {
             config.url = url.clone();
         }
@@ -255,16 +267,16 @@ impl Tool for DecisionTool {
             Err(e) => {
                 return Err(ToolError::Execution {
                     tool: "Decision",
-                    message: format!("RLCD unreachable: {e} (fail-open; set rlcd.url to point at a live engine)"),
+                    message: format!(
+                        "RLCD unreachable: {e} (fail-open; set rlcd.url to point at a live engine)"
+                    ),
                 })
             }
         };
         let model = args.model.clone().unwrap_or(model);
 
         // 4. classify
-        let base_url = supervisor
-            .effective_base_url()
-            .unwrap_or(configured_url);
+        let base_url = supervisor.effective_base_url().unwrap_or(configured_url);
         let client = HttpRlcdClient;
         let response: RlcdResponse = client
             .classify(

@@ -3,11 +3,8 @@
 //! Feature: spec/features/provider-settings-oauth-login.feature
 //!
 //! Extracted from `mod.rs` so the new OAuth-login modes can be added without
-//! pushing that file past the 300-LoC ceiling. The OAuth login modes
-//! (`OAuthBrowserWaiting`, `OAuthDeviceWaiting`, `OAuthHeadlessCodeEntry`,
-//! `OAuthSuccess`, `OAuthError`) replace the dead-end `DetailSub::OAuthNotice`
-//! placeholder for login rows (PROV-112 keeps `OAuthNotice` only for the
-//! still-unwired github-copilot login, pending PROV-114).
+//! pushing that file past the 300-LoC ceiling. BUG-578 F22: the dead Summary
+//! and OAuthNotice detail views are gone; Detail holds only the API-key edit.
 
 use super::profile_form;
 
@@ -60,14 +57,16 @@ pub enum ProviderSettingsMode {
         verification_url: String,
     },
     /// PROV-113: anthropic headless code entry. The authorize URL is shown
-    /// immediately with a "Code:" input. While `code_input` is empty, `c`
-    /// copies the URL and `o` opens it; once non-empty `c`/`o` are literal
-    /// chars. Enter submits only when `code_input` is non-empty.
+    /// immediately with a "Code:" input. TUI-126: the screen opens on the
+    /// URL, where `c` copies and `o` opens it; with `code_focused` every
+    /// printable character is code text. Enter submits only when
+    /// `code_input` is non-empty.
     OAuthHeadlessCodeEntry {
         provider_id: String,
         authorize_url: String,
         pkce_verifier: String,
         code_input: String,
+        code_focused: bool,
     },
     /// PROV-113: a login succeeded — shows the provider success label +
     /// "Press Enter or Esc to continue". Enter/Esc returns to list.
@@ -104,11 +103,5 @@ pub enum ProviderSettingsMode {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DetailSub {
-    Summary {
-        last_status: Option<super::DetailStatus>,
-    },
-    EditApiKey {
-        draft: String,
-    },
-    OAuthNotice,
+    EditApiKey { draft: String },
 }

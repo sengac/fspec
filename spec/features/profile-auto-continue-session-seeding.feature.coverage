@@ -5,14 +5,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov142_session_seed.rs",
-          "lines": "113-156",
+          "lines": "115-160",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
               "lines": [
-                215,
-                216,
-                217,
                 218,
                 219,
                 220,
@@ -26,20 +23,17 @@
                 228,
                 229,
                 230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
                 241,
                 242,
-                243
-              ]
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "let session = Arc::new(BackgroundSession::new(",
+              "lastLine": "let session_for_pre = session.clone();"
             }
           ]
         }
@@ -50,14 +44,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov142_session_seed.rs",
-          "lines": "163-200",
+          "lines": "167-206",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
               "lines": [
-                215,
-                216,
-                217,
                 218,
                 219,
                 220,
@@ -71,20 +62,17 @@
                 228,
                 229,
                 230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
                 241,
                 242,
-                243
-              ]
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "let session = Arc::new(BackgroundSession::new(",
+              "lastLine": "let session_for_pre = session.clone();"
             }
           ]
         }
@@ -95,14 +83,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov142_session_seed.rs",
-          "lines": "207-243",
+          "lines": "213-248",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
               "lines": [
-                215,
-                216,
-                217,
                 218,
                 219,
                 220,
@@ -116,20 +101,17 @@
                 228,
                 229,
                 230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
                 241,
                 242,
-                243
-              ]
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ],
+              "firstLine": "let session = Arc::new(BackgroundSession::new(",
+              "lastLine": "let session_for_pre = session.clone();"
             }
           ]
         }
@@ -146,6 +128,6 @@
     "implFiles": [
       "rust/sessions/src/session_creation_helper.rs"
     ],
-    "totalLinesCovered": 206
+    "totalLinesCovered": 185
   }
 }

@@ -14,6 +14,7 @@ pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 pub fn setup() -> Result<tempfile::TempDir, Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     Ok(directory)
@@ -77,7 +78,10 @@ pub fn dialogue(root: &Path) -> Result<(SessionManifest, Vec<Value>), Box<dyn st
             json!([{"type":"tool_result","tool_use_id":"item-exact","call_id":"call-exact","content":"authentic output"}]),
         ),
     ] {
-        let envelope = json!({"uuid":Uuid::new_v4(),"provider":"codex","message":{"role":role,"content":content}});
+        // BUG-332: fixture originals are full message envelopes.
+        let envelope = json!({"uuid":Uuid::new_v4(),"parentUuid":null,
+            "timestamp":"2026-01-01T00:00:00Z","type":role,"provider":"codex",
+            "message":{"role":role,"content":content},"requestId":null});
         append_message_with_metadata(
             &mut manifest,
             role,

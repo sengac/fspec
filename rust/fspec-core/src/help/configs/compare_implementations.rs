@@ -4,15 +4,10 @@
 //! Byte-for-byte parity with `node dist/index.js compare-implementations
 //! --help` piped to non-TTY.
 //!
-//! ## TS `undefined`-render bug (intentionally preserved — RPC-207 decision)
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
-//! The TS help config declares its `commonPatterns` entries as
-//! `{ title, commands }` objects, but the TS formatter only reads
-//! `{ pattern, example, description }`. Each missing field renders the literal
-//! string `undefined`, producing two `• undefined` / `Example: undefined` /
-//! `undefined` blocks. The fixture captured from the live TS CLI preserves
-//! this bug, so the Rust config reproduces it verbatim with three `"undefined"`
-//! string fields per structured pattern.
 
 use super::super::{
     CommandExample, CommandHelpConfig, CommandOption, CommonPattern, CommonPatternEntry,
@@ -38,19 +33,16 @@ const OPTIONS: &[CommandOption] = &[
     },
 ];
 
-// The TS `commonPatterns` were declared with `{ title, commands }` keys that
-// the formatter never reads, so each rendered field is the literal
-// `undefined`. Preserved intentionally for byte-parity (see module doc).
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Find inconsistencies in CLI commands",
+        example: "fspec compare-implementations --tag=@cli --show-coverage",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Review authentication approaches",
+        example: "fspec compare-implementations --tag=@authentication\nfspec compare-implementations --tag=@security",
+        description: None,
     }),
 ];
 
@@ -71,11 +63,7 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &[
-    "search-implementation",
-    "show-test-patterns",
-    "search-scenarios",
-];
+const RELATED: &[&str] = &["search-implementation", "show-test-patterns", "context"];
 
 const NOTES: &[&str] = &[
     "Automatically detects naming convention differences (camelCase, snake_case, kebab-case)",

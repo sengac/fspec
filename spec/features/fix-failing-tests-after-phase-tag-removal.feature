@@ -19,7 +19,7 @@ Feature: Fix failing tests after phase tag removal
   # EXAMPLES:
   #   1. feature-level-tag-management.test.ts expects result.success=true but gets false because validation fails
   #   2. generate-tags-md.test.ts and tags-md.test.ts check for Usage column in output but it no longer exists
-  #   3. get-scenarios.test.ts expects 1 scenario but gets 3 because test features now have more tags after adding required component/feature-group
+  #   3. the TypeScript tag-query test (its command was removed by CLI-019) expected 1 scenario but got 3 because test features now have more tags after adding required component/feature-group
   #   4. retag.test.ts expects '@critical' in output but feature now has @cli @validation instead of @critical
   #
   # ========================================
@@ -42,14 +42,6 @@ Feature: Fix failing tests after phase tag removal
     Then assertions fail because Usage column no longer exists in output
     When I remove Usage column assertions from both test files
     Then both test files pass
-
-  Scenario: Fix tag count expectations after adding required tags
-    Given get-scenarios.test.ts expects specific scenario counts
-    And test features now have additional component and feature-group tags
-    When test runs with updated tag filter logic
-    Then more scenarios match because features have more tags
-    When I update expected counts to match new tag totals
-    Then get-scenarios test passes
 
   Scenario: Fix retag test expectations after replacing phase tags
     Given retag.test.ts expects @critical tag in test features

@@ -32,7 +32,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "content = apply_config_replacements(project_root, content)?;"
             }
           ]
         }
@@ -70,7 +72,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "content = apply_config_replacements(project_root, content)?;"
             }
           ]
         }
@@ -108,7 +112,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "content = apply_config_replacements(project_root, content)?;"
             }
           ]
         }
@@ -179,8 +185,16 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// 2. Append the Big-Picture-Event-Storm reminder when needed",
+              "lastLine": ".and_then(Value::as_str)"
             }
           ]
         }
@@ -251,8 +265,16 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// 2. Append the Big-Picture-Event-Storm reminder when needed",
+              "lastLine": ".and_then(Value::as_str)"
             }
           ]
         }
@@ -323,8 +345,16 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// 2. Append the Big-Picture-Event-Storm reminder when needed",
+              "lastLine": ".and_then(Value::as_str)"
             }
           ]
         }
@@ -335,17 +365,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/bootstrap.rs",
-          "lines": "266-311",
+          "lines": "269-355",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -447,8 +471,20 @@
                 228,
                 229,
                 230,
-                231
-              ]
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "if !cmd.is_empty() {",
+              "lastLine": "format!("
             }
           ]
         }
@@ -459,17 +495,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/bootstrap.rs",
-          "lines": "313-338",
+          "lines": "357-410",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -600,8 +630,20 @@
                 257,
                 258,
                 259,
-                260
-              ]
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ],
+              "firstLine": "if !cmd.is_empty() {",
+              "lastLine": ""
             }
           ]
         }
@@ -612,17 +654,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/bootstrap.rs",
-          "lines": "340-362",
+          "lines": "416-429",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/bootstrap.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -662,8 +698,20 @@
                 166,
                 167,
                 168,
-                169
-              ]
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ],
+              "firstLine": "if !cmd.is_empty() {",
+              "lastLine": ".ok()"
             }
           ]
         }
@@ -674,7 +722,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/bootstrap.rs",
-          "lines": "364-401",
+          "lines": "440-455",
           "implMappings": [
             {
               "file": "rust/fspec/src/bootstrap.rs",
@@ -699,7 +747,36 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "pub async fn run(_args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command reference explainer precedes the six help sections in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bootstrap.rs",
+          "lines": "480-504",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/bootstrap_doc.txt",
+              "lines": [
+                1924,
+                1925,
+                1926,
+                1927,
+                1928,
+                1929,
+                1930,
+                1931,
+                1932
+              ],
+              "firstLine": "## Step 12: Complete Command Reference",
+              "lastLine": "**This is your complete command reference for all fspec features**. Run `fspec --help` at any time to list every command, and `fspec <command> --help` for the full help of one command."
             }
           ]
         }
@@ -707,16 +784,17 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 10,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/bootstrap.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/commands/bootstrap.rs",
-      "rust/fspec/src/bootstrap.rs"
+      "rust/fspec/src/bootstrap.rs",
+      "rust/fspec-core/src/commands/bootstrap_doc.txt"
     ],
-    "totalLinesCovered": 878
+    "totalLinesCovered": 980
   }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @provider-abstraction
 @facade-pattern
 @tools
@@ -36,7 +37,7 @@ Feature: Provider-Specific Tool Facades
 
   Scenario: Map Claude web search parameters to internal format
     Given a ClaudeWebSearchFacade is registered
-    When Claude sends parameters {action: {type: 'search', query: 'rust async'}}
+    When Claude sends parameters {action_type: 'search', query: 'rust async'}
     Then the facade maps to InternalParams::Search with query 'rust async'
     And the base web search tool executes with the mapped parameters
 
@@ -48,8 +49,8 @@ Feature: Provider-Specific Tool Facades
 
   Scenario: Map Gemini web_fetch URL to internal open_page format
     Given a GeminiWebFetchFacade is registered
-    When Gemini sends parameters {prompt: 'https://example.com summarize this'} to tool 'web_fetch'
-    Then the facade extracts the URL and maps to InternalParams::OpenPage with url 'https://example.com'
+    When Gemini sends parameters {url: 'https://example.com'} to tool 'web_fetch'
+    Then the facade maps to InternalParams::OpenPage with url 'https://example.com'
     And the base web search tool executes the open_page action
 
   Scenario: Registry returns only facades for requested provider
@@ -64,8 +65,8 @@ Feature: Provider-Specific Tool Facades
     Then the schema has type 'object' with properties containing only {query: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
-  Scenario: Claude facade provides complex schema with action variants
+  Scenario: Claude facade provides flat schema with action_type enum
     Given a ClaudeWebSearchFacade is created
     When I request the tool definition
-    Then the schema contains an 'action' property with 'oneOf' variants
-    And the variants include search, open_page, and find_in_page action types
+    Then the schema contains an 'action_type' property with enum values
+    And the enum values include search, open_page, and find_in_page action types

@@ -97,7 +97,7 @@ pub async fn last_request(server: &MockServer) -> TestResult<Value> {
 }
 
 pub async fn wait_requests(server: &MockServer, count: usize) -> TestResult {
-    tokio::time::timeout(Duration::from_secs(3), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if server
                 .received_requests()
@@ -106,7 +106,7 @@ pub async fn wait_requests(server: &MockServer, count: usize) -> TestResult {
             {
                 break;
             }
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;

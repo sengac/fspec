@@ -5,6 +5,8 @@
 @model-selector
 @tui
 @RPC-337
+@BUG-300
+@BUG-508
 Feature: Model selector view interaction
   """
   The model selector is a full-screen Navigator mode-view (ViewMode::ModelSelector), replacing the Compositor modal. /model dispatches Action::OpenModelSelectorView (and spawns list_providers); Esc returns to Agent. Provider header rows stay non-selectable; navigation (up/down, PageUp/Down, Home/End, mouse-wheel) skips them with wrap-around. Selecting a model row with Enter emits Action::ModelSelected(Option<session_id>, provider_key, model_id) and returns to the prior view. Following the TypeScript implementation (ModelSelectorScreen.tsx Enter handler + modelSelectionService.selectModel), the Enter handler has NO session-existence guard: the selection is always emitted and the view always closes; only the downstream backend write (set_session_model) and the green (current) marker are gated on a present session. With no active session the selector still closes but no backend write fires. The mode-view supports filter (/), expand/collapse of provider groups (left/right arrows) and refresh (r); footer reads 'Enter Select | <-> Expand/Collapse | / Filter | r Refresh | Esc Close'.
@@ -28,12 +30,12 @@ Feature: Model selector view interaction
     Then the model selector closes
     And I am returned to the Agent view
 
-  Scenario: Navigation skips non-selectable provider headers
+  Scenario: Navigation moves through provider headers
     Given the model selector shows a provider header followed by model rows
     And the cursor is on the last model row above a provider header
     When I press the down arrow
-    Then the cursor lands on the next selectable model row
-    And the provider header is skipped
+    Then the cursor moves to the next row (the provider header)
+    And the cursor rests on the non-selectable provider header (TS parity, PROV-104: no header-skipping)
 
   Scenario: Selecting a model with an active session commits the choice
     Given the model selector is open with an active session
@@ -41,7 +43,14 @@ Feature: Model selector view interaction
     When I press Enter
     Then a model selection is emitted for the current session, provider and model
     And the model selector view closes
-    And the session header badge updates to the selected model
+
+  Scenario: The session header badge shows the model chosen in the model selector
+    Given an agent session whose header shows the model "claude-haiku"
+    And the model selector is open with that session and the cursor on the model row "claude-sonnet"
+    When I press Enter and the backend accepts the model
+    Then the model selector closes back to the agent view
+    And the session header row shows "claude-sonnet"
+    And the session header row no longer shows "claude-haiku"
 
   Scenario: Selecting a model with no active session still emits the selection
     Given the model selector is open with no current session

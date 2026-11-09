@@ -30,7 +30,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "\"Events should use past tense naming convention\",",
+              "lastLine": "typical_workflow: None,"
             }
           ]
         }
@@ -46,8 +48,6 @@
             {
               "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -61,7 +61,6 @@
                 57,
                 58,
                 59,
-                60,
                 61,
                 62,
                 63,
@@ -78,8 +77,12 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -95,8 +98,6 @@
             {
               "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -110,7 +111,6 @@
                 57,
                 58,
                 59,
-                60,
                 61,
                 62,
                 63,
@@ -127,8 +127,12 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -144,8 +148,6 @@
             {
               "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -159,7 +161,6 @@
                 57,
                 58,
                 59,
-                60,
                 61,
                 62,
                 63,
@@ -176,8 +177,12 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -193,8 +198,6 @@
             {
               "file": "rust/fspec/src/add_domain_event_to_foundation.rs",
               "lines": [
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -208,7 +211,6 @@
                 57,
                 58,
                 59,
-                60,
                 61,
                 62,
                 63,
@@ -225,8 +227,12 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "let reason = strip_dispatch_envelope(&raw);"
             }
           ]
         }
@@ -244,6 +250,6 @@
       "rust/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
       "rust/fspec/src/add_domain_event_to_foundation.rs"
     ],
-    "totalLinesCovered": 331
+    "totalLinesCovered": 327
   }
 }

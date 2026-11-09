@@ -10,6 +10,10 @@
 pub use crate::profile_environment::apply_profile_env_vars;
 use codelet_providers::ProviderManager;
 
+mod wire_limits;
+
+pub use wire_limits::{resolve_current_model_limits, WireLimitError};
+
 /// BUG-168: resolve the vision capability of the manager's currently selected
 /// model, for the tool-layer session capability registry.
 ///
@@ -21,9 +25,11 @@ use codelet_providers::ProviderManager;
 ///    config's `ModelDef.supports_vision` (absent -> `false`).
 /// 3. **Cloud/codex** — the models.dev registry entry's vision capability
 ///    (no registry or miss -> `false`, conservative).
-pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
+///
+/// PROV-175: an invalid profile config is an error, not "no vision".
+pub fn resolve_model_vision(pm: &ProviderManager) -> Result<bool, String> {
     let Some(composite) = pm.selected_model_string() else {
-        return false;
+        return Ok(false);
     };
 
     // Profile selection: "provider:profile/model" (colon before the slash).
@@ -32,12 +38,14 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
         if colon < slash && composite.starts_with("openai:") {
             let profile_name = &composite[colon + 1..slash];
             let model_id = &composite[slash + 1..];
-            return crate::profile_sections::load_local_server_profiles()
+            // BUG-168: an undeclared hasVision is no vision (conservative);
+            // PROV-175: a profile config that cannot be loaded is an error.
+            return Ok(crate::profile_sections::load_local_server_profiles()?
                 .into_iter()
                 .find(|p| p.name == profile_name)
                 .and_then(|p| p.custom_models.into_iter().find(|c| c.id == model_id))
                 .and_then(|c| c.has_vision)
-                .unwrap_or(false);
+                .unwrap_or(false));
         }
     }
 
@@ -46,23 +54,22 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
         let provider = pm.current_provider_name();
         let model_id = &composite[slash + 1..];
         if codelet_providers::custom_provider_registered(provider) {
-            return codelet_providers::custom::discover_provider_configs()
-                .ok()
-                .and_then(|configs| {
-                    configs
-                        .into_iter()
-                        .find(|c| c.name == provider)
-                        .and_then(|c| c.models.get(model_id).cloned())
-                })
+            let configs = codelet_providers::custom::discover_provider_configs()
+                .map_err(|error| format!("the custom provider configs cannot be read: {error}"))?;
+            return Ok(configs
+                .into_iter()
+                .find(|c| c.name == provider)
+                .and_then(|c| c.models.get(model_id).cloned())
                 .map(|def| def.supports_vision)
-                .unwrap_or(false);
+                .unwrap_or(false));
         }
     }
 
     // Cloud/codex: models.dev registry capability.
-    pm.selected_model_info()
+    Ok(pm
+        .selected_model_info()
         .map(|info| info.has_capability(codelet_providers::models::Capability::Vision))
-        .unwrap_or(false)
+        .unwrap_or(false))
 }
 
 pub fn resolve_profile_max_images(pm: &ProviderManager) -> Option<u32> {
@@ -102,10 +109,14 @@ pub fn resolve_profile_loop_detection(pm: &ProviderManager) -> ProfileLoopDetect
 /// Limits resolved for a selected model, read back from the provider manager
 /// after the selection is applied. Values are already clamped by the provider's
 /// `ModelLimitsResolver`.
+///
+/// PROV-165: each limit is `None` when it is unavailable; the compaction
+/// threshold exists only when both limits do.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct ResolvedModelLimits {
-    pub context_window: u32,
-    pub max_output_tokens: u32,
-    pub compaction_threshold: u32,
+    pub context_window: Option<u32>,
+    pub max_output_tokens: Option<u32>,
+    pub compaction_threshold: Option<u32>,
 }
 
 /// Apply a `provider/model` selection to an existing [`ProviderManager`],
@@ -225,23 +236,7 @@ pub fn apply_model_selection(
         pm.set_facade_override(None);
     }
 
-    Ok(resolve_current_model_limits(pm))
-}
-
-pub fn resolve_current_model_limits(pm: &ProviderManager) -> ResolvedModelLimits {
-    let threshold = pm.compaction_threshold_override().map(|(kind, value)| {
-        codelet_cli::compaction_threshold::CompactionThresholdConfig::from_type_value(kind, value)
-    });
-    ResolvedModelLimits {
-        context_window: pm.context_window() as u32,
-        max_output_tokens: pm.max_output_tokens() as u32,
-        compaction_threshold: codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            pm.context_window() as u64,
-            pm.max_output_tokens() as u64,
-            pm.selected_model_id().as_deref(),
-            threshold.as_ref(),
-        ) as u32,
-    }
+    resolve_current_model_limits(pm).map_err(|error| error.to_string())
 }
 
 /// WT-012: build a `ProviderManager` for a model string, funneling the
@@ -277,6 +272,17 @@ pub(crate) async fn resolve_provider_manager_and_limits(
     let mut provider_manager = ProviderManager::with_model_support()
         .await
         .map_err(|e| format!("Failed to create provider manager: {e}"))?;
-    let limits = apply_model_selection(&mut provider_manager, model)?;
+    apply_model_selection(&mut provider_manager, model)?;
+    // BUG-547: a local profile model's missing context window is asked of
+    // its engine, and a limit still missing refuses the selection here
+    // (session create, resume and model switch), never at the first turn.
+    crate::profile_limits::resolve_missing_profile_limits(&mut provider_manager, model).await?;
+    let limits =
+        resolve_current_model_limits(&provider_manager).map_err(|error| error.to_string())?;
+    // PROV-176: a listed Codex model models.dev has no limits for is refused.
+    crate::codex_section::refuse_codex_model_without_limits(model, &limits)?;
+    // MODEL-014: a Codex selection fetches Codex /models once, here (session
+    // create, resume and set_model); turns reuse what this manager holds.
+    provider_manager.fetch_codex_catalog().await;
     Ok((provider_manager, limits))
 }

@@ -1,8 +1,9 @@
 //! `remove-attachment` help configuration — Rust port of
 //! `src/commands/remove-attachment-help.ts`.
 //!
-//! See `add_attachment.rs` for the three TS quirks (comma-joined workflow,
-//! double-`fspec` related commands, `Fix: undefined`).
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -48,15 +49,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        fix: "undefined",
+        fix: "Create the work unit first or check the work unit ID",
     },
     CommonError {
         error: "Work unit 'AUTH-001' has no attachments to remove",
-        fix: "undefined",
+        fix: "The work unit has no attachments. Use 'fspec list-attachments AUTH-001' to verify.",
     },
     CommonError {
         error: "Attachment 'diagram.png' not found for work unit 'AUTH-001'",
-        fix: "undefined",
+        fix: "The file name doesn't match any tracked attachments. Use 'fspec list-attachments AUTH-001' to see available attachments. Ensure the file name matches exactly (case-sensitive).",
     },
 ];
 
@@ -71,9 +72,9 @@ const NOTES: &[&str] = &[
 // TS quirk: each entry already includes "fspec " prefix; the formatter
 // prefixes again, producing "fspec fspec …".
 const RELATED: &[&str] = &[
-    "fspec add-attachment - Add attachment",
-    "fspec list-attachments - List all attachments",
-    "fspec show-work-unit - View work unit details",
+    "add-attachment - Add attachment",
+    "list-attachments - List all attachments",
+    "show-work-unit - View work unit details",
 ];
 
 const PREREQUISITES: &[&str] = &[
@@ -96,7 +97,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: &[],
     typical_workflow: Some(
-        "List attachments: fspec list-attachments AUTH-001,Identify attachment to remove,Remove attachment: fspec remove-attachment AUTH-001 old-diagram.png,Verify removal: fspec list-attachments AUTH-001",
+        "List attachments: fspec list-attachments AUTH-001. Identify attachment to remove. Remove attachment: fspec remove-attachment AUTH-001 old-diagram.png. Verify removal: fspec list-attachments AUTH-001",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

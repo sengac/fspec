@@ -22,7 +22,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "match update_session_manifest(session_id, |current| {",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -91,7 +93,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "pub(crate) struct SelectionEnvironment {",
+              "lastLine": "}"
             }
           ]
         }
@@ -102,7 +106,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "171-182",
+          "lines": "173-184",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_switch.rs",
@@ -133,7 +137,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub(crate) fn persist_selection(",
+              "lastLine": "}"
             }
           ]
         }
@@ -144,7 +150,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "184-195",
+          "lines": "186-197",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_switch.rs",
@@ -175,7 +181,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub(crate) fn persist_selection(",
+              "lastLine": "}"
             }
           ]
         }
@@ -186,26 +194,28 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "197-209",
+          "lines": "199-211",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
               "lines": [
-                1246,
-                1247,
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259
-              ]
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "// so uncredentialed/known-absent providers do not render as dead",
+              "lastLine": "// `[...profileSections, ...customSections, ...cloudSections]` —"
             }
           ]
         }
@@ -216,16 +226,25 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "246-261",
+          "lines": "248-267",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
               "lines": [
-                1242,
-                1243,
-                1244,
-                1245
-              ]
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "// PROV-176: the \"Codex (ChatGPT)\" section lists the models",
+              "lastLine": "// PROV-127: drop cloud/custom sections whose model list is empty"
             }
           ]
         }
@@ -236,7 +255,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "263-294",
+          "lines": "269-300",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_switch.rs",
@@ -320,7 +339,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub(crate) struct SelectionEnvironment {",
+              "lastLine": "}"
             }
           ]
         }
@@ -331,7 +352,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/model_switch_durable_identity.rs",
-          "lines": "211-244",
+          "lines": "213-246",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_switch.rs",
@@ -350,7 +371,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "fn validate_identity(manifest: &SessionManifest, model: &str) -> Result<(), ManifestCommitError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -367,8 +390,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/model_switch.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_5.rs"
     ],
-    "totalLinesCovered": 410
+    "totalLinesCovered": 421
   }
 }

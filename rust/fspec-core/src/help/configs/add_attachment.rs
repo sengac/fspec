@@ -1,16 +1,9 @@
 //! `add-attachment` help configuration — Rust port of
 //! `src/commands/add-attachment-help.ts`.
 //!
-//! IMPORTANT — this config preserves three TS quirks for byte-parity:
-//!   1. `typical_workflow` mirrors TS where the source is `string[]` but the
-//!      formatter renders `${config.typicalWorkflow}` — i.e. the JS Array's
-//!      `.toString()` which is comma-joined. We pre-join with `,` here.
-//!   2. `related_commands` entries in TS already include the literal "fspec "
-//!      prefix, and the help-formatter prefixes them AGAIN with `fspec ` —
-//!      producing `fspec fspec <name>`. We mirror this here.
-//!   3. `common_errors` items in TS specify `solution:` but the formatter
-//!      reads `err.fix` (which is `undefined`) producing `Fix: undefined`.
-//!      We use the literal string "undefined" here.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -61,15 +54,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        fix: "undefined",
+        fix: "Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'",
     },
     CommonError {
         error: "Source file 'diagram.png' does not exist",
-        fix: "undefined",
+        fix: "Check the file path is correct (absolute or relative to current directory)",
     },
     CommonError {
         error: "Attachment 'diagram.png' already exists",
-        fix: "undefined",
+        fix: "The file has already been attached to this work unit. Use 'fspec list-attachments AUTH-001' to see all attachments. Remove the old attachment first with 'fspec remove-attachment'.",
     },
 ];
 
@@ -85,12 +78,12 @@ const NOTES: &[&str] = &[
 // TS quirk #2: each entry already includes "fspec " prefix; the formatter
 // prefixes again, producing "fspec fspec …".
 const RELATED: &[&str] = &[
-    "fspec list-attachments - List all attachments for a work unit",
-    "fspec remove-attachment - Remove attachment",
-    "fspec show-work-unit - View work unit details (includes attachments)",
-    "fspec add-architecture-note - Add text-based architecture notes",
-    "fspec add-rule - Add business rules",
-    "fspec add-example - Add examples",
+    "list-attachments - List all attachments for a work unit",
+    "remove-attachment - Remove attachment",
+    "show-work-unit - View work unit details (includes attachments)",
+    "add-architecture-note - Add text-based architecture notes",
+    "add-rule - Add business rules",
+    "add-example - Add examples",
 ];
 
 const PREREQUISITES: &[&str] = &[
@@ -114,7 +107,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQUISITES,
     common_patterns: &[],
     typical_workflow: Some(
-        "Create work unit: fspec create-story AUTH \"User Authentication\",Move to specifying: fspec update-work-unit-status AUTH-001 specifying,Start Example Mapping: Add rules, examples, questions,Add architecture notes: fspec add-architecture-note AUTH-001 \"Uses JWT tokens\",Add attachments: fspec add-attachment AUTH-001 docs/auth-flow.png,Continue discovery until all questions answered,Generate scenarios: fspec generate-scenarios AUTH-001",
+        "Create work unit: fspec create-story AUTH \"User Authentication\". Move to specifying: fspec update-work-unit-status AUTH-001 specifying. Start Example Mapping: Add rules, examples, questions. Add architecture notes: fspec add-architecture-note AUTH-001 \"Uses JWT tokens\". Add attachments: fspec add-attachment AUTH-001 docs/auth-flow.png. Continue discovery until all questions answered. Generate scenarios: fspec generate-scenarios AUTH-001",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

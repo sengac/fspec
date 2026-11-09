@@ -31,16 +31,14 @@ fspec dependencies AUTH-999
 
 # Delete with cascading
 fspec delete-work-unit AUTH-999 --cascade-dependencies
-    undefined
 
   • Scripted Deletion
     Example: # Delete in automated scripts
 fspec delete-work-unit AUTH-999 --skip-confirmation --cascade-dependencies
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Verify work unit: fspec show-work-unit <id> → 2. Check dependencies: fspec dependencies <id> → 3. Delete: fspec delete-work-unit <id> --cascade-dependencies
+  1. Verify work unit: fspec show-work-unit <workUnitId> → 2. Check dependencies: fspec dependencies <workUnitId> → 3. Delete: fspec delete-work-unit <workUnitId> --cascade-dependencies
 
 EXAMPLES
   1. Delete work unit (with confirmation)

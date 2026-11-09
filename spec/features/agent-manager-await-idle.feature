@@ -1,5 +1,7 @@
 @done
 @AMGR-015
+@tools
+@agent-manager
 Feature: AgentManager await_idle action — efficient blocking wait for subordinate agents to finish
   """
   The handler in agent_manager_handler.rs must subscribe to each target session's supervisor_broadcast channel (tokio::broadcast::Receiver<StreamChunk>) and use tokio::select! to wait for SessionStateChange(Idle) events rather than polling get_status()

@@ -5,10 +5,9 @@
 //! piped to non-TTY. Reference fixture:
 //! `rust/fspec/tests/fixtures/help/unlink-coverage.txt`.
 //!
-//! ## Quirk: trailing literal `undefined` in COMMON PATTERNS
-//! The TS commonPatterns entries carry `{pattern, example}` but the formatter
-//! also reads `description`, which is absent — so each pattern's third line
-//! renders as the literal text `undefined`. Reproduced verbatim.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -28,8 +27,8 @@ fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.
 const PATTERN_3_EXAMPLE: &str = r#"# Test file was deleted
 fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/old-auth.test.ts
 
-# Or use audit-coverage --fix
-fspec audit-coverage user-auth --fix"#;
+# Then confirm no broken mappings remain
+fspec audit --feature user-auth"#;
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
     name: "feature-name",
@@ -60,23 +59,33 @@ const OPTIONS: &[CommandOption] = &[
         description: "Remove all mappings for the scenario (reset to uncovered)",
         default_value: None,
     },
+    CommandOption {
+        flag: "--test-mapping-index <index>",
+        description: "Zero-based test mapping index to unlink; requires --test-file and --expected-scenario-hash and cannot be combined with --all",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--expected-scenario-hash <hash>",
+        description: "Expected canonical scenario SHA-256 from show-coverage --mapping-json; required with --test-mapping-index",
+        default_value: None,
+    },
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Reset Scenario Coverage",
         example: PATTERN_1_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Remove Implementation Only",
         example: PATTERN_2_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Clean Up After Deletion",
         example: PATTERN_3_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -114,13 +123,13 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &["link-coverage", "show-coverage", "audit-coverage"];
+const RELATED: &[&str] = &["link-coverage", "show-coverage", "audit"];
 
 const NOTES: &[&str] = &[
     "Use --all to completely reset scenario coverage (makes it uncovered)",
     "Unlinking test file also removes all its implementation mappings",
     "Unlinking only implementation keeps test mapping intact",
-    "Consider using audit-coverage --fix instead for batch cleanup",
+    "Run fspec audit afterwards to confirm no broken mappings remain",
     "Does not modify feature files or test/implementation files, only .coverage files",
 ];
 

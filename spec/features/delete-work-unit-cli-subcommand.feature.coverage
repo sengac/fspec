@@ -46,7 +46,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "}"
             }
           ]
         }
@@ -89,7 +91,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -132,7 +136,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,7 +181,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -218,7 +226,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -229,7 +239,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_delete_work_unit.rs",
-          "lines": "294-318",
+          "lines": "313-340",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/delete_work_unit.rs",
@@ -366,10 +376,10 @@
                 130,
                 131,
                 132,
-                133,
-                134,
-                135
-              ]
+                133
+              ],
+              "firstLine": "//! `delete-work-unit` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -387,6 +397,6 @@
       "rust/fspec/src/delete_work_unit.rs",
       "rust/fspec-core/src/help/configs/delete_work_unit.rs"
     ],
-    "totalLinesCovered": 504
+    "totalLinesCovered": 505
   }
 }

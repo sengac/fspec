@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @dialog
 @navigation
@@ -11,6 +12,7 @@ Feature: BoardView Esc key incorrectly bound to 'q' for exit
   Fix is in rust/fspec-tui/src/app/events.rs: replace KeyCode::Char('q') at line 130 with KeyCode::Esc that pushes a board exit confirmation dialog onto the compositor (guarded by compositor.contains() to prevent double-push)
   New BoardExitConfirmationDialog component lives in rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs and emits Action::QuitApp on confirm; the App dispatch sets should_quit=true
   DisconnectDialog 'q'/'r' bindings (events.rs lines 101-122) and Ctrl+D (lines 134-139) are preserved unchanged
+  TUI-132 (2026-11-09): the DisconnectDialog and its q/r bindings are removed (never shown since RPC-416).
   """
 
   # ========================================
@@ -64,19 +66,6 @@ Feature: BoardView Esc key incorrectly bound to 'q' for exit
     When I press the Esc key
     Then the dialog disappears
     And I am returned to the BoardView
-    And the application is still running
-
-  Scenario: DisconnectDialog still honors 'q' to quit
-    Given the backend connection has dropped
-    And the DisconnectDialog is showing
-    When I press the 'q' key
-    Then the application exits
-
-  Scenario: DisconnectDialog still honors 'r' to reconnect
-    Given the backend connection has dropped
-    And the DisconnectDialog is showing
-    When I press the 'r' key
-    Then a manual reconnection attempt is initiated
     And the application is still running
 
   Scenario: AgentView Esc-cascade still clears non-empty input

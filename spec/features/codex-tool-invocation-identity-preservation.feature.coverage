@@ -21,7 +21,9 @@
                 142,
                 143,
                 144
-              ]
+              ],
+              "firstLine": "serde_json::from_value(value)",
+              "lastLine": "#[serde(skip_serializing_if = \"Option::is_none\")]"
             }
           ]
         }
@@ -48,7 +50,9 @@
                 142,
                 143,
                 144
-              ]
+              ],
+              "firstLine": "serde_json::from_value(value)",
+              "lastLine": "#[serde(skip_serializing_if = \"Option::is_none\")]"
             }
           ]
         }
@@ -64,7 +68,6 @@
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
-                145,
                 146,
                 147,
                 148,
@@ -107,20 +110,92 @@
                 185,
                 186,
                 187,
-                188,
-                189,
-                190
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/agent-loop/tests/tool_invocation_identity.rs",
-          "lines": "44-195",
-          "implMappings": [
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "pub fn persist_tool_result_identified(",
+              "lastLine": "}"
+            },
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
                 341,
                 342,
                 343,
@@ -132,56 +207,62 @@
                 349,
                 350,
                 351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/agent-loop/tests/tool_invocation_identity.rs",
-          "lines": "44-195",
-          "implMappings": [
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519
+              ],
+              "firstLine": "fn persist_assistant_outcome(",
+              "lastLine": "}"
+            },
             {
               "file": "rust/cli/src/interactive/stream_handlers.rs",
               "lines": [
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "output.emit(StreamEvent::ToolCall(ToolCallEvent {",
+              "lastLine": "// CRITICAL: Add final assistant text to message history (CLI-008) - shared"
             }
           ]
         }
@@ -202,6 +283,6 @@
       "rust/agent-loop/src/background_output.rs",
       "rust/cli/src/interactive/stream_handlers.rs"
     ],
-    "totalLinesCovered": 612
+    "totalLinesCovered": 391
   }
 }

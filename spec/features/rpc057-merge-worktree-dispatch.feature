@@ -17,7 +17,7 @@ Feature: /merge-worktree flow + worktree RPC surface
   * merge_session_worktree(session_id, strategy) -> Result<MergeOutcome>
   * discard_session_worktree(session_id) -> Result<()>
   * prune_orphaned_worktrees() -> Result<Vec<String>>
-  * list_session_worktrees() -> Vec<SessionWorktreeInfo>
+  * list_session_worktrees() -> Result<Vec<SessionWorktreeInfo>, String> (BUG-465)
   * inspect_session_changes(session_id) -> Result<SessionChangesSummary>
   2. Replacing the `SlashCommandAction::MergeWorktree` notice fallback
   in dispatch_slash_commands.rs with a real `handle_slash_merge_worktree`

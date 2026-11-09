@@ -29,6 +29,8 @@ use codelet_git::{create_worktree, inspect_session, merge_session, FSPEC_WORKTRE
 /// Run `git` in `dir`, panicking with the output on failure.
 fn git(dir: &Path, args: &[&str]) {
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(args)
         .current_dir(dir)
         .output()
@@ -615,6 +617,8 @@ fn committed_submodule_is_not_deleted_by_diff_or_merge() {
     fs::create_dir_all(&vendor).expect("create vendor dir");
     let dest = vendor.join("lib");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args([
             "clone",
             inner.path().to_str().expect("str"),

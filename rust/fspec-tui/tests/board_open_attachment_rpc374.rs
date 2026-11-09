@@ -2,15 +2,15 @@
 //!
 //! Feature: spec/features/rust-board-open-attachment.feature
 //!
-//! Board-key + picker + URL-building tests. The board's `A`/`a` arm always
+//! Board-key + picker + open tests. The board's `A`/`a` arm always
 //! consumes the key and emits `Action::OpenAttachmentPicker` only when the
-//! selected work unit has attachments. The picker lists basenames; selecting
-//! an attachment opens it at the percent-encoded viewer URL built by the pure
-//! `App::attachment_url` / `App::attachment_target` seam so no real browser
-//! launches in tests.
+//! selected work unit has attachments. The picker lists basenames; BUG-469:
+//! selecting an attachment reads it from the daemon for the selected
+//! workspace and opens it in the viewer (a recording launcher, so no real
+//! browser launches in tests).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
@@ -53,7 +53,7 @@ fn store_with(attachments: Vec<String>) -> BoardStore {
 }
 
 #[test]
-fn pressing_a_on_a_card_with_attachments_opens_the_picker() {
+fn pressing_a_on_a_card_with_attachments_opens_the_picker() -> TestResult {
     // @step Given a card is selected that has two attachments
     let (view, mut rx) = fresh();
     let store = store_with(vec![
@@ -66,7 +66,9 @@ fn pressing_a_on_a_card_with_attachments_opens_the_picker() {
     let result = view.handle_event(&event, &store);
 
     // @step Then the open-attachment-picker action is emitted
-    let action = rx.try_recv().expect("Action::OpenAttachmentPicker on bus");
+    let action = rx
+        .try_recv()
+        .or_fail("Action::OpenAttachmentPicker on bus")?;
     assert!(
         matches!(action, Action::OpenAttachmentPicker),
         "expected OpenAttachmentPicker, got {action:?}"
@@ -74,10 +76,11 @@ fn pressing_a_on_a_card_with_attachments_opens_the_picker() {
 
     // @step And the key event is consumed
     assert!(matches!(result, EventResult::Consumed(None)));
+    Ok(())
 }
 
 #[test]
-fn pressing_a_on_a_card_with_no_attachments_is_a_silent_no_op() {
+fn pressing_a_on_a_card_with_no_attachments_leaves_it_to_the_app_to_say_so() -> TestResult {
     // @step Given a card is selected that has no attachments
     let (view, mut rx) = fresh();
     let store = store_with(Vec::new());
@@ -86,15 +89,39 @@ fn pressing_a_on_a_card_with_no_attachments_is_a_silent_no_op() {
     let event = Event::Key(KeyEvent::new(KeyCode::Char('A'), KeyModifiers::NONE));
     let result = view.handle_event(&event, &store);
 
-    // @step Then no open-attachment-picker action is emitted
-    assert!(rx.try_recv().is_err(), "expected no action on bus");
+    // @step Then the open-attachment-picker action is emitted, and the App says the card has no attachments (TUI-129)
+    let action = rx
+        .try_recv()
+        .or_fail("Action::OpenAttachmentPicker on bus")?;
+    assert!(
+        matches!(action, Action::OpenAttachmentPicker),
+        "expected OpenAttachmentPicker, got {action:?}"
+    );
+    let mock = Arc::new(MockBackend::new());
+    let backend: Arc<dyn FspecBackend> = mock;
+    let mut app = App::new(backend);
+    app.dispatch(Action::WorkUnitsLoaded(vec![wu(
+        "RPC-001",
+        "implementing",
+        Vec::new(),
+    )]));
+    app.board_store_mut().set_focused_column("implementing");
+    app.board_store_mut()
+        .set_selected_index_for("implementing", 0);
+    app.dispatch(action);
+    assert!(
+        app.compositor().contains("session-storage-dialog"),
+        "the App must say the card has no attachments; layers={:?}",
+        app.compositor().layer_ids()
+    );
 
     // @step And the key event is consumed
     assert!(matches!(result, EventResult::Consumed(None)));
+    Ok(())
 }
 
 #[test]
-fn pressing_lowercase_a_behaves_the_same_as_uppercase_a() {
+fn pressing_lowercase_a_behaves_the_same_as_uppercase_a() -> TestResult {
     // @step Given a card is selected that has two attachments
     let (view, mut rx) = fresh();
     let store = store_with(vec![
@@ -107,7 +134,9 @@ fn pressing_lowercase_a_behaves_the_same_as_uppercase_a() {
     let result = view.handle_event(&event, &store);
 
     // @step Then the open-attachment-picker action is emitted
-    let action = rx.try_recv().expect("Action::OpenAttachmentPicker on bus");
+    let action = rx
+        .try_recv()
+        .or_fail("Action::OpenAttachmentPicker on bus")?;
     assert!(
         matches!(action, Action::OpenAttachmentPicker),
         "expected OpenAttachmentPicker, got {action:?}"
@@ -115,10 +144,11 @@ fn pressing_lowercase_a_behaves_the_same_as_uppercase_a() {
 
     // @step And the key event is consumed
     assert!(matches!(result, EventResult::Consumed(None)));
+    Ok(())
 }
 
 #[test]
-fn the_picker_lists_the_selected_work_units_attachments() {
+fn the_picker_lists_the_selected_work_units_attachments() -> TestResult {
     // @step Given a work unit with attachments "spec/attachments/RPC-001/design.md" and "spec/attachments/RPC-001/a b.md"
     let attachments = vec![
         "spec/attachments/RPC-001/design.md".to_string(),
@@ -134,45 +164,108 @@ fn the_picker_lists_the_selected_work_units_attachments() {
 
     // @step And the entries show the basenames "design.md" and "a b.md"
     assert_eq!(labels, vec!["design.md".to_string(), "a b.md".to_string()]);
+    Ok(())
 }
 
-#[test]
-fn selecting_an_attachment_opens_it_at_the_encoded_viewer_url() {
-    // @step Given the attachment viewer server is running on a known port
-    let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
+/// The URLs a recording launcher was asked to open.
+type Launched = Arc<std::sync::Mutex<Vec<String>>>;
+
+/// BUG-469: an App over `mock` whose launcher records every URL.
+fn recording_app(
+    mock: &Arc<MockBackend>,
+) -> Result<(App, Launched), codelet_test_helpers::TestError> {
+    let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.set_viewer_port_for_test(Some(53999));
-
-    // @step When I select the attachment "spec/attachments/RPC-001/a b.md"
-    let target = app.attachment_target("spec/attachments/RPC-001/a b.md");
-
-    // @step Then the target is the percent-encoded view URL for that attachment on that port
-    assert_eq!(
-        target.as_deref(),
-        Some("http://127.0.0.1:53999/view/spec/attachments/RPC-001/a%20b.md")
-    );
-    assert_eq!(
-        App::attachment_url(53999, "spec/attachments/RPC-001/a b.md"),
-        "http://127.0.0.1:53999/view/spec/attachments/RPC-001/a%20b.md"
-    );
+    let launched = Arc::new(std::sync::Mutex::new(Vec::new()));
+    let record = Arc::clone(&launched);
+    app.set_board_attachment_launcher_for_test(Arc::new(move |url: &str| {
+        record
+            .lock()
+            .map_err(|_| "launcher lock poisoned".to_string())?
+            .push(url.to_owned());
+        Ok(())
+    }));
+    Ok((app, launched))
 }
 
-#[test]
-fn selecting_an_attachment_is_a_safe_no_op_when_the_viewer_server_is_unavailable() {
-    // @step Given the attachment viewer server is not running
-    let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
-    let mut app = App::new(backend);
-    app.set_viewer_port_for_test(None);
+async fn settle(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
+    for _ in 0..6 {
+        while let Some(task) = app.next_pending_task() {
+            task.await.completed_or_cancelled()?;
+        }
+        // TEST-042: scheduler rounds, not a time window: on the
+        // current-thread test runtime every ready task (a spawned backend
+        // call, a subscriber forwarding a push) runs before this resumes.
+        for _ in 0..8 {
+            tokio::task::yield_now().await;
+        }
+        while let Some(action) = app.try_recv_action() {
+            app.dispatch(action);
+        }
+    }
+    Ok(())
+}
 
-    // @step When I select an attachment
-    let target = app.attachment_target("spec/attachments/RPC-001/a b.md");
-
-    // @step Then there is no target and no browser is launched
-    assert!(target.is_none(), "expected no target, got {target:?}");
-    // Dispatching OpenAttachment with no port must not panic and must not
-    // launch a browser (the open::that call is gated behind the Some branch
-    // AND behind Handle::try_current(), which is None in this non-async test).
+#[tokio::test(flavor = "current_thread")]
+async fn selecting_an_attachment_opens_it_from_the_selected_workspace_on_the_daemon() -> TestResult
+{
+    // @step Given the board shows workspace "beta"
+    let mock = Arc::new(MockBackend::new());
+    mock.script_card_attachment(Ok(b"# Beta design\n".to_vec()));
+    let (mut app, launched) = recording_app(&mock)?;
+    app.board_store_mut().set_workspaces(vec![
+        codelet_rpc_types::WorkspaceEntry {
+            path: "/work/alpha".into(),
+            name: "alpha".into(),
+            start: true,
+        },
+        codelet_rpc_types::WorkspaceEntry {
+            path: "/work/beta".into(),
+            name: "beta".into(),
+            start: false,
+        },
+    ]);
+    app.dispatch(Action::OpenWorkspaceDropdown);
+    app.dispatch(Action::ChooseWorkspace(Some(1)));
+    settle(&mut app).await?;
+    // @step When I select the attachment "spec/attachments/BETA-001/a b.md"
     app.dispatch(Action::OpenAttachment(
-        "spec/attachments/RPC-001/a b.md".to_string(),
+        "spec/attachments/BETA-001/a b.md".into(),
     ));
+    settle(&mut app).await?;
+    // @step Then it is read from "beta" on the daemon
+    assert_eq!(
+        mock.card_attachment_requests(),
+        vec![(
+            "/work/beta".to_string(),
+            "spec/attachments/BETA-001/a b.md".to_string()
+        )]
+    );
+    // @step And the viewer opens its percent-encoded view URL
+    let urls = launched.lock().or_fail("launcher lock")?.clone();
+    assert_eq!(urls.len(), 1, "{urls:?}");
+    assert!(
+        urls[0].ends_with("/view/spec/attachments/BETA-001/a%20b.md"),
+        "{urls:?}"
+    );
+    Ok(())
+}
+
+#[tokio::test(flavor = "current_thread")]
+async fn selecting_an_attachment_before_the_workspace_list_loads_shows_why_nothing_opened(
+) -> TestResult {
+    // @step Given the workspace list has not loaded
+    let mock = Arc::new(MockBackend::new());
+    let (mut app, launched) = recording_app(&mock)?;
+    // @step When I select an attachment
+    app.dispatch(Action::OpenAttachment(
+        "spec/attachments/RPC-001/a b.md".into(),
+    ));
+    settle(&mut app).await?;
+    // @step Then nothing is read from the daemon and no browser is launched
+    assert!(mock.card_attachment_requests().is_empty());
+    assert!(launched.lock().or_fail("launcher lock")?.is_empty());
+    // @step And an error explains that no workspace is selected
+    assert!(app.compositor().contains("session-storage-dialog"));
+    Ok(())
 }

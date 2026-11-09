@@ -162,31 +162,6 @@ fn dispatcher_reports_a_load_failure_when_the_config_is_missing() {
 }
 
 #[test]
-fn dispatcher_reports_a_load_failure_when_the_config_is_malformed_json() {
-    // Scenario: Dispatcher reports a load failure when the config is malformed JSON
-
-    // @step Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    let tmp = TempDir::new().expect("tempdir");
-    write_hooks(tmp.path(), "{ not json");
-
-    // @step When I dispatch the validate-hooks command against that project root
-    let result = dispatch_command(req(tmp.path(), json!({})));
-    assert!(result.success, "{result:?}");
-    let data = parse_data(&result);
-
-    // @step Then the result is invalid with exitCode 1
-    assert_eq!(data["valid"].as_bool(), Some(false), "got {data}");
-    assert_eq!(data["exitCode"].as_i64(), Some(1), "got {data}");
-
-    // @step Then the message is 'Failed to load hook configuration'
-    assert_eq!(
-        message(&data),
-        "Failed to load hook configuration",
-        "got {data}"
-    );
-}
-
-#[test]
 fn dispatcher_lists_every_missing_script_across_multiple_events() {
     // Scenario: Dispatcher lists every missing script across multiple events
 

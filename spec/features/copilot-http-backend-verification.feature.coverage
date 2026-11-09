@@ -1,0 +1,92 @@
+{
+  "scenarios": [
+    {
+      "name": "Policy-disabled models are hidden from the Copilot catalog",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov163_copilot_http.rs",
+          "lines": "34-57",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/models/builder.rs",
+              "lines": [
+                30,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "/// in the input is preserved in the output. BUG-462: a limit that does not",
+              "lastLine": ".collect()"
+            },
+            {
+              "file": "rust/providers/src/copilot/models/schema.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "/// PROV-163: false when the account's policy disables this model.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The live Copilot backend completes a request with stored credentials",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov163_copilot_http.rs",
+          "lines": "59-97",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/models/fetch.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "pub async fn fetch_models(base_url: &str, token: &str) -> Result<Vec<ModelInfo>, ProviderError> {",
+              "lastLine": ".await"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov163_copilot_http.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/copilot/models/builder.rs",
+      "rust/providers/src/copilot/models/schema.rs",
+      "rust/providers/src/copilot/models/fetch.rs"
+    ],
+    "totalLinesCovered": 94
+  }
+}

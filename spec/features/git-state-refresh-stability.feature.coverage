@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "194-264",
+          "lines": "225-284",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_git_state.rs",
@@ -41,20 +41,15 @@
                 155,
                 156,
                 157,
-                158,
                 159,
                 160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
                 172,
                 173,
                 174,
@@ -70,13 +65,13 @@
                 184,
                 185,
                 186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
+                186,
+                186,
+                186,
+                186,
+                186,
+                186,
+                186,
                 194,
                 195,
                 196,
@@ -116,8 +111,15 @@
                 230,
                 231,
                 232,
-                233
-              ]
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "/// R4: re-fetch the checkpoint list when the view is already loaded.",
+              "lastLine": "}"
             }
           ]
         }
@@ -128,11 +130,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "272-302",
+          "lines": "299-324",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                196,
                 197,
                 198,
                 199,
@@ -178,7 +181,9 @@
                 239,
                 240,
                 241
-              ]
+              ],
+              "firstLine": "/// re-loads the diff for the (re-)selected path.",
+              "lastLine": "} else if self.selected_index >= self.file_scroll + visible {"
             }
           ]
         }
@@ -189,7 +194,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "310-337",
+          "lines": "340-364",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -225,7 +230,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "/// highlighted row and the scroll window never diverge (same anchor",
+              "lastLine": "Some(visible) if visible > 0 => {"
             }
           ]
         }
@@ -236,11 +243,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "345-372",
+          "lines": "380-406",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                196,
                 197,
                 198,
                 199,
@@ -286,7 +294,9 @@
                 239,
                 240,
                 241
-              ]
+              ],
+              "firstLine": "/// re-loads the diff for the (re-)selected path.",
+              "lastLine": "} else if self.selected_index >= self.file_scroll + visible {"
             }
           ]
         }
@@ -297,11 +307,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "429-510",
+          "lines": "468-538",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
+                319,
                 320,
                 321,
                 322,
@@ -387,7 +398,9 @@
                 402,
                 403,
                 404
-              ]
+              ],
+              "firstLine": "self.diff_lines.clear();",
+              "lastLine": "// cascade re-fetches the selected file's diff) preserves the"
             }
           ]
         }
@@ -398,7 +411,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "590-630",
+          "lines": "634-683",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
@@ -438,7 +451,9 @@
                 363,
                 364,
                 365
-              ]
+              ],
+              "firstLine": "/// BUG-184: a re-load of the SAME key (the git-state refresh cascade",
+              "lastLine": ".map(|r| r.height as usize)"
             }
           ]
         }
@@ -449,7 +464,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "114-186",
+          "lines": "156-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_git_state.rs",
@@ -508,20 +523,15 @@
                 155,
                 156,
                 157,
-                158,
                 159,
                 160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
                 172,
                 173,
                 174,
@@ -537,13 +547,13 @@
                 184,
                 185,
                 186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
+                186,
+                186,
+                186,
+                186,
+                186,
+                186,
+                186,
                 194,
                 195,
                 196,
@@ -583,8 +593,15 @@
                 230,
                 231,
                 232,
-                233
-              ]
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "/// R4: re-fetch the changed-files list when the view is already",
+              "lastLine": "}"
             }
           ]
         }
@@ -595,7 +612,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug184_git_state_refresh_stability.rs",
-          "lines": "380-421",
+          "lines": "400-447",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
@@ -657,7 +674,9 @@
                 279,
                 280,
                 281
-              ]
+              ],
+              "firstLine": "/// first row. Dependent files + diff are cleared so the App re-loads",
+              "lastLine": "self.selected_checkpoint = self.checkpoint_scroll + visible - 1;"
             }
           ]
         }
@@ -676,6 +695,6 @@
       "rust/fspec-tui/src/views/changed_files/mod.rs",
       "rust/fspec-tui/src/views/checkpoints/mod.rs"
     ],
-    "totalLinesCovered": 931
+    "totalLinesCovered": 898
   }
 }

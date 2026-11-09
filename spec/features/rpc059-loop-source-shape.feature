@@ -58,7 +58,7 @@ Feature: /loop RPC surface source shape
     Given the file rust/core/src/session_manager_handle.rs is compiled
     Then it declares a trait method named "loop_add" returning Result<RegisteredLoop, String>
     And it declares a trait method named "loop_cancel" returning Result<bool, String>
-    And it declares a trait method named "loop_list" returning Vec<RegisteredLoop>
+    And it declares a trait method named "loop_list" returning Result<Vec<RegisteredLoop>, String>
 
   Scenario: StubSessionManagerHandle exposes per-call counters for all three loop methods
     Given the file rust/core/src/session_manager_handle.rs is compiled
@@ -70,7 +70,7 @@ Feature: /loop RPC surface source shape
     Given the file rust/rpc/src/lib.rs is compiled
     Then it declares an async fn named "loop_add" with return type Result<RegisteredLoop, String>
     And it declares an async fn named "loop_cancel" with return type Result<bool, String>
-    And it declares an async fn named "loop_list" with return type Vec<RegisteredLoop>
+    And it declares an async fn named "loop_list" with return type Result<Vec<RegisteredLoop>, String>
 
   Scenario: FspecBackend declares the three new methods
     Given the file rust/fspec-tui/src/transport/mod.rs is compiled

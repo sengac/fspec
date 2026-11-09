@@ -7,7 +7,7 @@ Feature: Bracketed paste never reaches agent input — compositor stub drops mul
   """
   Replace Compositor::handle_paste char-splitting stub (compositor.rs:188-209): forward real Event::Paste(String) to the top modal layer's handle_event; return consumed/not-consumed
   App::handle_paste (app/events.rs:157-167): if compositor did not consume, fall back through Navigator → AgentView → MultiLineInput::handle_event Event::Paste branch (multiline_input.rs:223-236) — mirror the Event::Key routing path
-  Normalize \r\n and lone \r to \n before textarea.insert_str; gate paste behind the same block_edits (Compacting) gate as typed edits in handle_key_gated path
+  Normalize \r\n and lone \r to \n before textarea.insert_str; gate paste behind the same block_edits gate as typed edits in handle_key_gated path (TUI-115: the agent view no longer closes that gate while Compacting)
   Audit compositor text-input layers (role_dialog has Event::Paste at :155; check other dialogs) — each must handle Event::Paste or safely ignore; do not regress modal text entry
   """
 
@@ -20,7 +20,7 @@ Feature: Bracketed paste never reaches agent input — compositor stub drops mul
   #   2. When a modal layer is open, the paste event is delivered to the modal as a real paste event (not exploded into per-character key events)
   #   3. If the compositor does not consume the paste, it falls through to the agent view input
   #   4. CRLF line endings in pasted text are normalized to LF before insertion; no carriage returns enter the buffer
-  #   5. While the session is Compacting (edit gate active), paste into the agent input is suppressed and the buffer is unchanged
+  #   5. While the session is Compacting the composer stays editable (TUI-115), so a paste lands in the agent input
   #   6. A multi-line paste grows the input area up to the 6-row cap
   #
   # EXAMPLES:
@@ -28,7 +28,7 @@ Feature: Bracketed paste never reaches agent input — compositor stub drops mul
   #   2. User pastes 'foo\r\nbar' from Windows: buffer becomes 'foo\nbar' with no \r characters
   #   3. User pastes into the input that already has 'prefix' before the cursor: pasted text is inserted at the cursor, existing text preserved
   #   4. User pastes while the role dialog modal is open: the dialog's paste handler receives the full paste string intact and the agent input is untouched
-  #   5. User pastes while session is Compacting: nothing is inserted, buffer unchanged
+  #   5. User pastes while session is Compacting: the text is inserted after the draft
   #   6. User pastes a 10-line snippet: all 10 lines are in the buffer but the input displays at most 6 rows
   #
   # ========================================
@@ -62,10 +62,10 @@ Feature: Bracketed paste never reaches agent input — compositor stub drops mul
     Then the modal receives the full paste string as a single paste event
     And the agent input buffer is unchanged
 
-  Scenario: Paste while the session is compacting is suppressed
-    Given the agent input contains "draft" and the compacting edit gate is active
+  Scenario: Paste while the session is compacting lands in the composer
+    Given the agent input contains "draft" and the session is compacting
     When I paste "more text"
-    Then the input buffer still contains only "draft"
+    Then the input buffer contains "draftmore text"
 
   Scenario: Large paste keeps the full buffer but caps the input at 6 visible rows
     Given the agent view is active with no modal open

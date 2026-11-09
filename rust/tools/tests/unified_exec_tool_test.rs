@@ -27,6 +27,7 @@ use uuid::Uuid;
 /// Scenario: Run a short-lived command returns exit_code and output
 #[tokio::test]
 async fn test_run_short_lived_command_returns_exit_code_and_output() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -53,6 +54,7 @@ async fn test_run_short_lived_command_returns_exit_code_and_output() {
 /// Scenario: Run command as argv array uses execvp without shell interpretation
 #[tokio::test]
 async fn test_run_command_as_argv_array() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -83,6 +85,7 @@ async fn test_run_command_as_argv_array() {
 /// Scenario: Run an interactive process with tty returns session_id
 #[tokio::test]
 async fn test_run_interactive_process_with_tty_returns_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -122,6 +125,7 @@ async fn test_run_interactive_process_with_tty_returns_session_id() {
 /// Scenario: Run a long-running command yields session_id after yield_time_ms
 #[tokio::test]
 async fn test_run_long_running_command_yields_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -166,6 +170,7 @@ async fn test_run_long_running_command_yields_session_id() {
 /// Scenario: Yield time is clamped to minimum 250ms
 #[tokio::test]
 async fn test_yield_time_clamped_to_minimum() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -204,6 +209,7 @@ async fn test_yield_time_clamped_to_minimum() {
 /// Scenario: Yield time is clamped to maximum 30000ms
 #[test]
 fn test_yield_time_clamped_to_maximum() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     // We test the clamp function directly to avoid a 30s wait
     // @step When I call the run action with yield_time_ms 60000
@@ -221,6 +227,7 @@ fn test_yield_time_clamped_to_maximum() {
 /// Scenario: Write input to a running session and receive output
 #[tokio::test]
 async fn test_write_input_to_running_session() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session with session_id from command "cat" and tty true
     let tool = UnifiedExecTool::new(Uuid::nil());
     let run_result: UnifiedExecResult = tool
@@ -270,6 +277,7 @@ async fn test_write_input_to_running_session() {
 /// Scenario: Write causes process to exit returns exit_code
 #[tokio::test]
 async fn test_write_causes_process_exit() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session with session_id from command "cat" and tty true
     // Note: PTY is currently pipe-mode fallback (FIX-1 documented limitation).
     // We use `head -n1` (argv form) instead of `cat` with Ctrl+D because
@@ -321,6 +329,7 @@ async fn test_write_causes_process_exit() {
 /// Scenario: Poll a running session returns new output
 #[tokio::test]
 async fn test_poll_running_session() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session with session_id that is producing output
     let tool = UnifiedExecTool::new(Uuid::nil());
     let run_result: UnifiedExecResult = tool
@@ -334,8 +343,7 @@ async fn test_poll_running_session() {
 
     // Process may have exited or still running
     if let Some(session_id) = run_result.session_id.as_deref() {
-        // Give process time to produce more output
-        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        // TEST-042: no sleep; the poll below waits on the session itself.
 
         // @step When I call the poll action with that session_id
         let poll_result: UnifiedExecResult = tool
@@ -362,6 +370,7 @@ async fn test_poll_running_session() {
 /// Scenario: Poll uses higher minimum yield time of 5000ms
 #[test]
 fn test_poll_uses_higher_minimum_yield_time() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session with session_id
     // @step When I call the poll action with yield_time_ms 1000
     // @step Then the effective yield_time_ms should be at least 5000ms
@@ -379,6 +388,7 @@ fn test_poll_uses_higher_minimum_yield_time() {
 /// Scenario: List active sessions returns session metadata
 #[tokio::test]
 async fn test_list_active_sessions() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given there are 3 running sessions in the ProcessStore
     let tool = UnifiedExecTool::new(Uuid::nil());
     let mut session_ids = Vec::new();
@@ -431,6 +441,7 @@ async fn test_list_active_sessions() {
 /// Scenario: List with no active sessions returns empty array
 #[tokio::test]
 async fn test_list_returns_array() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given there are no running sessions in the ProcessStore
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -457,6 +468,7 @@ async fn test_list_returns_array() {
 /// Scenario: Close a running session kills the process
 #[tokio::test]
 async fn test_close_running_session() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session with session_id
     let tool = UnifiedExecTool::new(Uuid::nil());
     let run_result: UnifiedExecResult = tool
@@ -494,6 +506,7 @@ async fn test_close_running_session() {
 /// Scenario: Close with invalid session_id returns error
 #[tokio::test]
 async fn test_close_invalid_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -519,6 +532,7 @@ async fn test_close_invalid_session_id() {
 /// Scenario: LRU eviction when ProcessStore is full
 #[test]
 fn test_lru_eviction_policy() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given 64 running sessions in the ProcessStore
     // Build synthetic metadata: 64 sessions with sequential timestamps
     let base = Instant::now();
@@ -559,6 +573,7 @@ fn test_lru_eviction_policy() {
 /// LRU eviction prefers already-exited processes
 #[test]
 fn test_lru_eviction_prefers_exited() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let base = Instant::now();
     let mut meta: Vec<(String, Instant, bool)> = (0..64)
         .map(|i| {
@@ -584,6 +599,7 @@ fn test_lru_eviction_prefers_exited() {
 /// LRU eviction returns None when fewer than max processes
 #[test]
 fn test_lru_eviction_empty() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let meta: Vec<(String, Instant, bool)> = Vec::new();
     assert!(session_id_to_evict(&meta).is_none());
 }
@@ -591,6 +607,7 @@ fn test_lru_eviction_empty() {
 /// Scenario: Background reaper cleans up exited processes
 #[tokio::test]
 async fn test_background_reaper_cleanup() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a session whose process has exited
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -626,8 +643,17 @@ async fn test_background_reaper_cleanup() {
         let session_id = result2.session_id.as_deref().unwrap();
 
         // @step When the background reaper task runs
-        // Wait for the process to exit (1s) + reaper interval (2s) + margin
-        tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
+        // TEST-042: wait until the reaper has removed the exited session.
+        let reaped = session_id.to_string();
+        let _ = codelet_test_helpers::wait_until("the reaper removes the session", || {
+            let reaped = reaped.clone();
+            async move {
+                !codelet_tools::unified_exec::global_store()
+                    .contains(&reaped)
+                    .await
+            }
+        })
+        .await;
 
         // @step Then the session should be removed from ProcessStore
         let poll_result = tool
@@ -653,8 +679,17 @@ async fn test_background_reaper_cleanup() {
     let session_id = result.session_id.as_deref().unwrap();
 
     // @step When the background reaper task runs
-    // Wait for sleep 0.5 to exit + reaper interval (2s) + margin
-    tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
+    // TEST-042: wait until the reaper has removed the exited session.
+    let reaped = session_id.to_string();
+    let _ = codelet_test_helpers::wait_until("the reaper removes the session", || {
+        let reaped = reaped.clone();
+        async move {
+            !codelet_tools::unified_exec::global_store()
+                .contains(&reaped)
+                .await
+        }
+    })
+    .await;
 
     // @step Then the session should be removed from ProcessStore
     let poll_result = tool
@@ -679,6 +714,7 @@ async fn test_background_reaper_cleanup() {
 /// Scenario: Output buffer capped at 1 MiB
 #[test]
 fn test_output_buffer_cap() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a running session producing output
     // We test the buffer cap directly with a Vec<u8> simulating the buffer logic
 
@@ -720,6 +756,7 @@ fn test_output_buffer_cap() {
 /// Scenario: Blocked command is rejected before execution
 #[tokio::test]
 async fn test_blocked_command_rejected() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     use codelet_tools::blocklist::init_blocklist;
     use std::io::Write;
     use tempfile::TempDir;
@@ -772,6 +809,7 @@ async fn test_blocked_command_rejected() {
 /// Scenario: Session isolation uses effective_cwd for workdir
 #[tokio::test]
 async fn test_session_isolation_effective_cwd() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a session with effective_cwd set to "/tmp/worktree"
     // Note: effective_cwd is set via global callback, tested at integration level
     let tool = UnifiedExecTool::new(Uuid::nil());
@@ -799,6 +837,7 @@ async fn test_session_isolation_effective_cwd() {
 /// Scenario: Explicit workdir overrides default but not session isolation
 #[tokio::test]
 async fn test_explicit_workdir() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -826,6 +865,7 @@ async fn test_explicit_workdir() {
 
 #[test]
 fn test_yield_time_constants() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     assert_eq!(MIN_YIELD_TIME_MS, 250);
     assert_eq!(MIN_EMPTY_YIELD_TIME_MS, 5_000);
     assert_eq!(MAX_YIELD_TIME_MS, 30_000);

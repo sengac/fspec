@@ -5,11 +5,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "342-378",
+          "lines": "101-136",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -20,11 +22,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "380-404",
+          "lines": "142-165",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -35,11 +39,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "406-427",
+          "lines": "171-187",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -50,11 +56,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "429-450",
+          "lines": "193-209",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -65,11 +73,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "452-478",
+          "lines": "215-236",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,11 +90,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "480-501",
+          "lines": "242-258",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,11 +107,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "533-556",
+          "lines": "266-290",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,11 +124,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "528-556",
+          "lines": "298-322",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -125,11 +141,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "558-586",
+          "lines": "328-352",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -140,11 +158,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation_event_storm.rs",
-          "lines": "588-631",
+          "lines": "358-402",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation_event_storm.rs",
-              "lines": "1-53"
+              "lines": "1-53",
+              "firstLine": "//! `show-foundation-event-storm` shell-facing CLI bridge (RPC-306).",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,7 +178,9 @@
     "testFiles": [
       "rust/fspec/tests/cli_show_foundation_event_storm.rs"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 281
+    "implFiles": [
+      "rust/fspec/src/show_foundation_event_storm.rs"
+    ],
+    "totalLinesCovered": 293
   }
 }

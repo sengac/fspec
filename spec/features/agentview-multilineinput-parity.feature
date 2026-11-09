@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @agent-view
 @input
 @rpc
 @RPC-095
+@BUG-390
 Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, and Esc cascade
   """
   Rust render loop is currently event-driven only — no idle ticks. Spinner needs an 80ms timer that fires only while is_loading || is_compacting.
@@ -25,7 +27,7 @@ Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, a
   #   7. Pressing Esc when idle with a non-empty input buffer (after trim) clears the buffer and stays on AgentView — does NOT navigate to Board
   #   8. Pressing Esc when idle with an empty input buffer navigates back to the Board (L7 exit-confirmation deferred to a follow-up card)
   #   9. The SessionHeader's is_loading flag is wired from session status (Running == is_loading), no longer hard-coded to false in agent.rs
-  #   10. The idle placeholder string remains verbatim: "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn)"
+  #   10. The idle placeholder string is verbatim (RPC-426): "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
   #   11. The dangling unused constant PLACEHOLDER_FOOTER_HINTS in agent.rs:72 is removed
   #   12. All new modules (spinner.rs, input_transition.rs) stay under the 300-LoC source-shape ceiling
   #   13. Defer L7 exit-confirmation to follow-up card. When idle + empty input, Esc → BackToBoard (current behaviour).
@@ -131,7 +133,7 @@ Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, a
     Given I am viewing the AgentView for an Idle session
     And the input buffer is empty
     When the AgentView renders the input row
-    Then the input row shows the placeholder text "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn)"
+    Then the input row shows the placeholder text "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
 
   Scenario: New modules stay under the 300-LoC source-shape ceiling
     Given rust/fspec-tui/src/views/agent/spinner.rs exists

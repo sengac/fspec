@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
-          "lines": "47-92",
+          "lines": "43-86",
           "implMappings": [
             {
               "file": "rust/providers/src/credentials.rs",
@@ -14,19 +14,20 @@
                 33,
                 34,
                 35,
-                73,
                 74,
                 75,
                 76,
-                136,
-                137,
                 138,
                 139,
                 140,
                 141,
                 142,
-                143
-              ]
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// current working directory. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,19 +47,20 @@
                 33,
                 34,
                 35,
-                73,
                 74,
                 75,
                 76,
-                136,
-                137,
                 138,
                 139,
                 140,
                 141,
                 142,
-                143
-              ]
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// current working directory. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -74,10 +76,6 @@
             {
               "file": "rust/providers/src/manager.rs",
               "lines": [
-                19,
-                20,
-                21,
-                22,
                 23,
                 24,
                 25,
@@ -128,25 +126,72 @@
                 70,
                 71,
                 72,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// Provider type enum",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_1.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Create ProviderManager with explicit provider selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -162,10 +207,6 @@
             {
               "file": "rust/providers/src/manager.rs",
               "lines": [
-                19,
-                20,
-                21,
-                22,
                 23,
                 24,
                 25,
@@ -216,25 +257,72 @@
                 70,
                 71,
                 72,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// Provider type enum",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_1.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Create ProviderManager with explicit provider selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,10 +338,6 @@
             {
               "file": "rust/providers/src/manager.rs",
               "lines": [
-                19,
-                20,
-                21,
-                22,
                 23,
                 24,
                 25,
@@ -304,25 +388,72 @@
                 70,
                 71,
                 72,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// Provider type enum",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_1.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Create ProviderManager with explicit provider selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -333,15 +464,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
-          "lines": "243-285",
+          "lines": "237-276",
           "implMappings": [
             {
               "file": "rust/providers/src/manager.rs",
               "lines": [
-                19,
-                20,
-                21,
-                22,
                 23,
                 24,
                 25,
@@ -392,25 +519,72 @@
                 70,
                 71,
                 72,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// Provider type enum",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/manager/impl_1.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Create ProviderManager with explicit provider selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -421,7 +595,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
-          "lines": "287-318",
+          "lines": "282-309",
           "implMappings": [
             {
               "file": "rust/providers/src/credentials.rs",
@@ -430,19 +604,20 @@
                 33,
                 34,
                 35,
-                73,
                 74,
                 75,
                 76,
-                136,
-                137,
                 138,
                 139,
                 140,
                 141,
                 142,
-                143
-              ]
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// current working directory. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -453,7 +628,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/copilot_provider_manager_integration_test.rs",
-          "lines": "320-380",
+          "lines": "316-394",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/mod.rs",
@@ -477,7 +652,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "pub mod behavior_facade;",
+              "lastLine": "self.bind_session(state)"
             }
           ]
         }
@@ -494,8 +671,9 @@
     "implFiles": [
       "rust/providers/src/credentials.rs",
       "rust/providers/src/manager.rs",
+      "rust/providers/src/manager/impl_1.rs",
       "rust/providers/src/copilot/mod.rs"
     ],
-    "totalLinesCovered": 682
+    "totalLinesCovered": 824
   }
 }

@@ -30,6 +30,10 @@ fn create_file_of_size(dir: &TempDir, name: &str, size_bytes: usize) -> String {
 /// Scenario: Small image within size limit is returned normally
 #[tokio::test]
 async fn test_small_image_within_size_limit_is_returned_normally() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have a PNG image file at "/tmp/small-screenshot.png" that is 500KB
     let temp_dir = TempDir::new().unwrap();
     let file_path = create_file_of_size(&temp_dir, "small-screenshot.png", 500 * 1024); // 500KB
@@ -64,6 +68,10 @@ async fn test_small_image_within_size_limit_is_returned_normally() {
 /// Scenario: Oversized image returns a validation error instead of image data
 #[tokio::test]
 async fn test_oversized_image_returns_validation_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have a JPEG image file at "/tmp/huge-photo.jpg" that is 8MB raw
     let temp_dir = TempDir::new().unwrap();
     let path = temp_dir.path().join("huge-photo.jpg");
@@ -118,6 +126,10 @@ async fn test_oversized_image_returns_validation_error() {
 /// Scenario: Image at exactly the size limit is accepted
 #[tokio::test]
 async fn test_image_at_exactly_the_size_limit_is_accepted() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have an image file at "/tmp/boundary.png" that is exactly 3.75MB raw
     let temp_dir = TempDir::new().unwrap();
     // 3.75MB raw = 3,932,160 bytes → exactly 5,242,880 bytes base64 (5MB)
@@ -157,6 +169,10 @@ async fn test_image_at_exactly_the_size_limit_is_accepted() {
 /// Scenario: SVG files are treated as text and bypass image size validation
 #[tokio::test]
 async fn test_svg_files_are_treated_as_text() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have an SVG file at "/tmp/large-diagram.svg" that is 10MB of XML text
     // Note: We create a smaller SVG (~25KB) rather than 10MB because the token limit
     // would reject a 10MB text file. The key assertion is that SVG is returned as text,
@@ -211,6 +227,10 @@ async fn test_svg_files_are_treated_as_text() {
 /// Scenario: Agent loop continues after oversized image error
 #[tokio::test]
 async fn test_agent_loop_continues_after_oversized_image_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // @step Given I have an oversized image at "/tmp/massive.png" that is 15MB raw

@@ -5,6 +5,7 @@
 @rust
 @workspace
 @build
+@BUG-292
 Feature: fspec binary — crate layout, source-shape invariants, and build artifact
   """
   RPC-010 (parent RPC-002, depends on RPC-009). Source-shape +
@@ -164,7 +165,7 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
   Scenario: --workspace <path> overrides CWD for the WorkUnitsWatcher root
     Given a tempdir `<A>` containing seeded work-units (id "A-1")
     And a different tempdir `<B>` containing seeded work-units (id "B-1")
-    When the developer runs `cd <A> && fspec daemon --workspace <B>`
+    When the developer runs `cd <A> && fspec --workspace <B> daemon`
     Then the daemon's WorkUnitsWatcher is rooted at `<B>`
     And `list_work_units` returns the work units from `<B>` (NOT `<A>`)
 
@@ -174,7 +175,7 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Given a tempdir `<W>` containing seeded work-units
     When the developer runs `fspec --workspace <W>` (combined)
     Then the embedded backend's `list_work_units` returns the seeded units
-    When the developer runs `fspec daemon --workspace <W>`
+    When the developer runs `fspec --workspace <W> daemon`
     Then the WebSocket-attached client's `list_work_units` returns the same seeded units
 
   @smoke

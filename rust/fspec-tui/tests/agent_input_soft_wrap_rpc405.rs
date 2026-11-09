@@ -5,9 +5,8 @@
 //! (user-observable) through the TestBackend render harness so the
 //! file compiles today and fails on BEHAVIOR (red phase).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{AgentView, AgentViewStore};
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::layout::Rect;
 use ratatui::Terminal;
@@ -26,10 +25,10 @@ fn render_rows(
     h: u16,
     store: &mut AgentViewStore,
     view: &mut AgentView,
-) -> (Vec<String>, Rect) {
-    let mut term = Terminal::new(TestBackend::new(w, h)).unwrap();
+) -> Result<(Vec<String>, Rect), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("expected a value")?;
     term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), store))
-        .unwrap();
+        .or_fail("expected a value")?;
     let buf = term.backend().buffer().clone();
     let rows: Vec<String> = (0..buf.area.height)
         .map(|y| {
@@ -38,8 +37,10 @@ fn render_rows(
                 .collect::<String>()
         })
         .collect();
-    let input_area = view.last_input_area.expect("input area recorded by render");
-    (rows, input_area)
+    let input_area = view
+        .last_input_area
+        .or_fail("input area recorded by render")?;
+    Ok((rows, input_area))
 }
 
 /// Body text of an input row: strip the 1-col pad + 2-col "> " prompt
@@ -61,7 +62,8 @@ const LONG_LINE: &str =
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn typing_past_the_right_edge_grows_the_input_to_two_rows_with_head_and_tail_visible() {
+fn typing_past_the_right_edge_grows_the_input_to_two_rows_with_head_and_tail_visible() -> TestResult
+{
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -71,7 +73,7 @@ fn typing_past_the_right_edge_grows_the_input_to_two_rows_with_head_and_tail_vis
     assert_eq!(view.input.line_count(), 1, "single logical line");
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 2 terminal rows tall
     assert_eq!(
@@ -103,6 +105,7 @@ fn typing_past_the_right_edge_grows_the_input_to_two_rows_with_head_and_tail_vis
             "input row {y} shows more than 56 cols of buffer text: {body:?}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -111,10 +114,10 @@ fn typing_past_the_right_edge_grows_the_input_to_two_rows_with_head_and_tail_vis
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn recalled_multi_line_history_entry_renders_fully_and_shrinks_the_scrollback() {
+fn recalled_multi_line_history_entry_renders_fully_and_shrinks_the_scrollback() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal with an empty input
     let (mut view, mut store) = harness();
-    let (_rows, input_before) = render_rows(60, 12, &mut store, &mut view);
+    let (_rows, input_before) = render_rows(60, 12, &mut store, &mut view)?;
     assert_eq!(input_before.height, 1, "empty input must be 1 row tall");
 
     // @step And the scrollback area is 9 terminal rows tall
@@ -128,7 +131,7 @@ fn recalled_multi_line_history_entry_renders_fully_and_shrinks_the_scrollback() 
     // @step When the user recalls a history entry consisting of the three lines "alpha", "bravo" and "charlie"
     // dispatch_history_recall calls set_value — simulate it directly.
     view.input.set_value("alpha\nbravo\ncharlie");
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 3 terminal rows tall
     assert_eq!(
@@ -153,6 +156,7 @@ fn recalled_multi_line_history_entry_renders_fully_and_shrinks_the_scrollback() 
     assert_eq!(input.y, 9, "3-row input starts at row 9");
     let scrollback_after = input.y - 1 - 1;
     assert_eq!(scrollback_after, 7, "scrollback must shrink to 7 rows");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -161,7 +165,8 @@ fn recalled_multi_line_history_entry_renders_fully_and_shrinks_the_scrollback() 
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn buffer_wrapping_past_the_cap_shows_the_last_six_visual_rows_when_the_cursor_is_at_the_end() {
+fn buffer_wrapping_past_the_cap_shows_the_last_six_visual_rows_when_the_cursor_is_at_the_end(
+) -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -190,7 +195,7 @@ fn buffer_wrapping_past_the_cap_shows_the_last_six_visual_rows_when_the_cursor_i
     assert_eq!(view.input.cursor(), (8, 5), "cursor at end of row09");
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 6 terminal rows tall
     assert_eq!(
@@ -215,6 +220,7 @@ fn buffer_wrapping_past_the_cap_shows_the_last_six_visual_rows_when_the_cursor_i
         !rows.join("\n").contains("row01"),
         "row01 must be scrolled out of view"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -222,7 +228,7 @@ fn buffer_wrapping_past_the_cap_shows_the_last_six_visual_rows_when_the_cursor_i
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() {
+fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -247,7 +253,7 @@ fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() {
         crossterm::event::KeyModifiers::NONE,
     );
     assert_eq!(view.input.cursor(), (8, 5), "cursor at end of row09");
-    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view);
+    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step When the user presses the Up arrow key 8 times
     for _ in 0..8 {
@@ -257,7 +263,7 @@ fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() {
         );
     }
     assert_eq!(view.input.cursor().0, 0, "cursor must reach the first line");
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 6 terminal rows tall
     assert_eq!(
@@ -282,6 +288,7 @@ fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() {
         !rows.join("\n").contains("row09"),
         "row09 must be scrolled out of view"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -290,7 +297,7 @@ fn moving_the_cursor_to_the_top_scrolls_the_six_row_window_up() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row() {
+fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -298,7 +305,7 @@ fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row(
     view.input.set_value(LONG_LINE);
 
     // @step And the input area is 2 terminal rows tall
-    let (_rows, input_before) = render_rows(60, 12, &mut store, &mut view);
+    let (_rows, input_before) = render_rows(60, 12, &mut store, &mut view)?;
     assert_eq!(
         input_before.height, 2,
         "precondition: wrapped 83-char line must occupy 2 rows"
@@ -316,7 +323,7 @@ fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row(
         "word01 word02 word03 word04 word05 word06 word07 word08",
         "buffer must be the 55-char line after 28 backspaces"
     );
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 1 terminal row tall
     assert_eq!(
@@ -330,6 +337,7 @@ fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row(
     assert_eq!(input.y, 11, "1-row input sits on the last row");
     let scrollback = input.y - 1 - 1;
     assert_eq!(scrollback, 9, "scrollback must regain the row (9 rows)");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -337,7 +345,7 @@ fn deleting_text_shrinks_the_input_back_down_and_the_scrollback_regains_the_row(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_buffer_shows_the_one_row_placeholder() {
+fn empty_buffer_shows_the_one_row_placeholder() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -345,7 +353,7 @@ fn empty_buffer_shows_the_one_row_placeholder() {
     assert!(view.input.is_empty(), "buffer must start empty");
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 1 terminal row tall
     assert_eq!(input.height, 1, "empty input must be exactly 1 row tall");
@@ -356,6 +364,7 @@ fn empty_buffer_shows_the_one_row_placeholder() {
         body.starts_with("Type a message..."),
         "placeholder hint must be visible on the input row, got {body:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -363,7 +372,7 @@ fn empty_buffer_shows_the_one_row_placeholder() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn wide_cjk_characters_wrap_without_being_split() {
+fn wide_cjk_characters_wrap_without_being_split() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -373,7 +382,7 @@ fn wide_cjk_characters_wrap_without_being_split() {
     assert_eq!(view.input.line_count(), 1, "single logical line");
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 2 terminal rows tall
     assert_eq!(
@@ -405,6 +414,7 @@ fn wide_cjk_characters_wrap_without_being_split() {
         total, 30,
         "all 30 wide chars must be painted whole (none split/dropped)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -412,7 +422,7 @@ fn wide_cjk_characters_wrap_without_being_split() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn emoji_wraps_at_the_correct_display_width_boundary() {
+fn emoji_wraps_at_the_correct_display_width_boundary() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -422,7 +432,7 @@ fn emoji_wraps_at_the_correct_display_width_boundary() {
     assert_eq!(view.input.line_count(), 1, "single logical line");
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 2 terminal rows tall
     assert_eq!(
@@ -446,6 +456,7 @@ fn emoji_wraps_at_the_correct_display_width_boundary() {
         second.starts_with('😀'),
         "second input row must start with the emoji, got {second:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -453,13 +464,13 @@ fn emoji_wraps_at_the_correct_display_width_boundary() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_enter_mid_wrap_submits_the_entire_buffer_unchanged() {
+fn pressing_enter_mid_wrap_submits_the_entire_buffer_unchanged() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
     // @step And the input buffer contains the single 83-character line "word01 word02 word03 word04 word05 word06 word07 word08 word09 word10 word11 word12"
     view.input.set_value(LONG_LINE);
-    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view);
+    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step And the cursor has been moved 40 characters to the left so it sits on the first visual row
     for _ in 0..40 {
@@ -483,7 +494,7 @@ fn pressing_enter_mid_wrap_submits_the_entire_buffer_unchanged() {
     // @step Then the submitted value is the full 83-character line "word01 word02 word03 word04 word05 word06 word07 word08 word09 word10 word11 word12"
     let value = match outcome {
         codelet_fspec_tui::views::agent::InputEventOutcome::Submitted(v) => v,
-        other => panic!("plain Enter must submit the buffer; got {other:?}"),
+        other => return Err(format!("plain Enter must submit the buffer; got {other:?}").into()),
     };
     assert_eq!(value, LONG_LINE, "submitted value must be the full line");
 
@@ -492,6 +503,7 @@ fn pressing_enter_mid_wrap_submits_the_entire_buffer_unchanged() {
         !value.contains('\n'),
         "wrapping is visual only — no newline may leak into the submitted value"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -499,7 +511,7 @@ fn pressing_enter_mid_wrap_submits_the_entire_buffer_unchanged() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn input_height_derives_from_the_exact_renderer_body_width() {
+fn input_height_derives_from_the_exact_renderer_body_width() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -510,7 +522,7 @@ fn input_height_derives_from_the_exact_renderer_body_width() {
     view.input.set_value(&"x".repeat(57));
 
     // @step When the agent view renders a frame
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step Then the input area is 2 terminal rows tall
     assert_eq!(
@@ -533,6 +545,7 @@ fn input_height_derives_from_the_exact_renderer_body_width() {
         second_count, 1,
         "second input row must hold exactly the 1 overflow x"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -543,7 +556,7 @@ fn input_height_derives_from_the_exact_renderer_body_width() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn supplementary_wrapped_single_line_past_cap_shows_last_six_visual_rows() {
+fn supplementary_wrapped_single_line_past_cap_shows_last_six_visual_rows() -> TestResult {
     let (mut view, mut store) = harness();
 
     // 8 segments of exactly 56 chars each ("SEGn " + padding), then a
@@ -558,7 +571,7 @@ fn supplementary_wrapped_single_line_past_cap_shows_last_six_visual_rows() {
     line.push_str("TAIL");
     view.input.set_value(&line); // cursor lands at End
 
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
 
     assert_eq!(
         input.height,
@@ -575,4 +588,5 @@ fn supplementary_wrapped_single_line_past_cap_shows_last_six_visual_rows() {
         !rows.join("\n").contains("SEG1"),
         "SEG1 (first visual row) must be scrolled out of the 6-row window"
     );
+    Ok(())
 }

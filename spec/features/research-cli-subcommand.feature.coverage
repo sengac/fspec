@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_research.rs",
-          "lines": "46-68",
+          "lines": "46-78",
           "implMappings": [
             {
               "file": "rust/fspec/src/research.rs",
@@ -71,7 +71,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "// Trailing blank line per tool (TS `output.log()`)."
             }
           ]
         }
@@ -82,7 +84,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_research.rs",
-          "lines": "70-86",
+          "lines": "86-118",
           "implMappings": [
             {
               "file": "rust/fspec/src/research.rs",
@@ -117,7 +119,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "fn print_listing(envelope: &Value) {",
+              "lastLine": "// Trailing blank line per tool (TS `output.log()`)."
             }
           ]
         }
@@ -128,7 +132,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_research.rs",
-          "lines": "88-104",
+          "lines": "122-131",
           "implMappings": [
             {
               "file": "rust/fspec/src/research.rs",
@@ -163,7 +167,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ""
             }
           ]
         }
@@ -174,7 +180,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_research.rs",
-          "lines": "106-128",
+          "lines": "140-158",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/research.rs",
@@ -227,9 +233,10 @@
                 46,
                 47,
                 48,
-                49,
-                50
-              ]
+                49
+              ],
+              "firstLine": "//! `research` help configuration.",
+              "lastLine": "command: \"fspec research --tool=stakeholder --work-unit=AUTH-001\","
             }
           ]
         }
@@ -247,6 +254,6 @@
       "rust/fspec/src/research.rs",
       "rust/fspec-core/src/help/configs/research.rs"
     ],
-    "totalLinesCovered": 251
+    "totalLinesCovered": 265
   }
 }

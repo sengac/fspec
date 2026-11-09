@@ -120,7 +120,8 @@ fn scenario_clap_exposes_show_epic_with_epicid_help() {
         "help must mention the positional epicId argument; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT advertise the '--format' flag (TS show-epic-help.ts omits it from OPTIONS)
+    // @step Then stdout does NOT advertise the '--format' flag
+    // (TS show-epic-help.ts omits it from OPTIONS)
     // The `--format` flag is still registered on the clap variant for runtime
     // compatibility — we simply don't document it in the help block, matching
     // the TS Commander.js help reference byte-for-byte.

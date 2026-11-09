@@ -1,11 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "Stats action returns JSON on empty graph",
+      "name": "AstStats action returns JSON on empty graph",
       "testMappings": [
         {
           "file": "rust/tools/src/graph_search/tests.rs",
-          "lines": "36-56",
+          "lines": "50-81",
           "implMappings": [
             {
               "file": "rust/tools/src/graph_search/handler.rs",
@@ -74,18 +74,20 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "//! GraphSearch Tool — Handler Registration",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "Search action returns matching concepts",
+      "name": "AstSearch action returns matching code entities",
       "testMappings": [
         {
           "file": "rust/tools/src/graph_search/tests.rs",
-          "lines": "61-85",
+          "lines": "86-119",
           "implMappings": [
             {
               "file": "rust/tools/src/graph_search/handler.rs",
@@ -154,7 +156,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "//! GraphSearch Tool — Handler Registration",
+              "lastLine": ""
             }
           ]
         }
@@ -165,7 +169,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/graph_search/tests.rs",
-          "lines": "90-107",
+          "lines": "124-168",
           "implMappings": [
             {
               "file": "rust/tools/src/graph_search/mod.rs",
@@ -288,8 +292,14 @@
                 116,
                 117,
                 118,
-                119
-              ]
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "//! GraphSearch Tool — Definition & Entry Point",
+              "lastLine": "\"type\": \"string\","
             }
           ]
         }
@@ -300,7 +310,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/graph_search/tests.rs",
-          "lines": "112-131",
+          "lines": "173-194",
           "implMappings": [
             {
               "file": "rust/tools/src/graph_search/handler.rs",
@@ -318,7 +328,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Looks up the handler and calls it. Returns a descriptive error string",
+              "lastLine": ".to_string()"
             }
           ]
         }
@@ -336,6 +348,6 @@
       "rust/tools/src/graph_search/handler.rs",
       "rust/tools/src/graph_search/mod.rs"
     ],
-    "totalLinesCovered": 428
+    "totalLinesCovered": 397
   }
 }

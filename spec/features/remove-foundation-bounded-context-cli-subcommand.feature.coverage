@@ -34,8 +34,12 @@
                 52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -75,8 +79,12 @@
                 52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,7 +116,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "let args_json = json!({",
+              "lastLine": "crate::common::print_next_steps(&parsed);"
             }
           ]
         }
@@ -119,16 +129,18 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_remove_foundation_bounded_context.rs",
-          "lines": "189-214",
+          "lines": "202-223",
           "implMappings": [
             {
               "file": "rust/fspec/src/remove_foundation_bounded_context.rs",
               "lines": [
-                51,
                 52,
                 53,
-                54
-              ]
+                54,
+                55
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +166,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "match remove_foundation_bounded_context::run(&args_json, &project_root).await {",
+              "lastLine": "crate::common::print_next_steps(&parsed);"
             }
           ]
         }

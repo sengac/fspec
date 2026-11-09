@@ -12,7 +12,6 @@ use rig::{
     providers::openai,
 };
 use serde_json::{json, Value};
-use std::time::Duration;
 use tokio::net::TcpListener;
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 
@@ -74,7 +73,7 @@ async fn rejected_websocket_upgrades_never_downgrade_to_http() -> TestResult {
         let previous = history.snapshot()?;
         // @step When I request a completion
         let model = model(&server.uri())?.with_history(history.clone());
-        let error = tokio::time::timeout(Duration::from_secs(2), async {
+        let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
             let mut stream = model
                 .stream(CompletionRequestBuilder::new(model.clone(), "next").build())
                 .await?
@@ -154,7 +153,7 @@ async fn every_explicitly_selected_full_current_dag_websocket_request_sends_full
         assert_eq!(finals, 1);
         messages.push(rig::message::Message::user(suffix));
     }
-    let requests = tokio::time::timeout(Duration::from_secs(2), task)
+    let requests = codelet_test_helpers::deadlock_guard("task", task)
         .await??
         .map_err(|error| error.to_string())?;
     // @step Then both captured requests contain their complete current DAG input
@@ -219,8 +218,8 @@ async fn accepted_websocket_failures_recover_only_on_the_selected_transport() ->
     });
     let history = CodexHistory::default();
     let previous = history.snapshot()?;
-    let observed = tokio::time::timeout(
-        Duration::from_secs(4),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "fixture::collect(model(&url)?.with_history(history.clone()))",
         fixture::collect(model(&url)?.with_history(history.clone())),
     )
     .await??;

@@ -7,8 +7,7 @@
 //! invariants (no stdin prompt, no self-restart). The dispatch handler calls
 //! the shared `codelet_fspec_core::update` engine (rule [0]).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::Path;
 
 use codelet_fspec_core::update::UpdateOutcome;
@@ -18,10 +17,10 @@ use codelet_fspec_tui::app::update_parser::{
 };
 use codelet_fspec_tui::views::agent::slash_commands::SLASH_COMMANDS;
 
-fn dispatch_source() -> String {
+fn dispatch_source() -> Result<String, codelet_test_helpers::TestError> {
     let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
     let path = manifest.join("src/app/dispatch_slash_update.rs");
-    std::fs::read_to_string(&path).expect("read dispatch_slash_update.rs")
+    Ok(std::fs::read_to_string(&path).or_fail("read dispatch_slash_update.rs")?)
 }
 
 // =============================================================================
@@ -29,7 +28,7 @@ fn dispatch_source() -> String {
 // =============================================================================
 
 #[test]
-fn tui_update_reports_up_to_date_when_already_on_the_latest_release() {
+fn tui_update_reports_up_to_date_when_already_on_the_latest_release() -> TestResult {
     // @step Given fspec is running at the latest released version
     let current = "0.10.0";
 
@@ -52,6 +51,7 @@ fn tui_update_reports_up_to_date_when_already_on_the_latest_release() {
     // @step And the installed binary is unchanged
     // (UpToDate outcome is a no-op in the engine — verified in
     //  rust/fspec-core/tests/upd002_update_engine.rs)
+    Ok(())
 }
 
 // =============================================================================
@@ -59,7 +59,7 @@ fn tui_update_reports_up_to_date_when_already_on_the_latest_release() {
 // =============================================================================
 
 #[test]
-fn tui_update_installs_the_latest_release_in_place() {
+fn tui_update_installs_the_latest_release_in_place() -> TestResult {
     // @step Given fspec is running at an older version
     let current = "0.9.3";
 
@@ -72,7 +72,7 @@ fn tui_update_installs_the_latest_release_in_place() {
 
     // @step Then the TUI shows a checking line while the release is looked up
     // (the dispatch handler pushes a checking line before spawning the task)
-    let src = dispatch_source();
+    let src = dispatch_source()?;
     assert!(
         src.contains("checking for latest release"),
         "dispatch must emit a checking line before spawning the update task"
@@ -94,6 +94,7 @@ fn tui_update_installs_the_latest_release_in_place() {
         msg.to_lowercase().contains("restart"),
         "success line must instruct the user to restart, got: {msg}"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -101,7 +102,7 @@ fn tui_update_installs_the_latest_release_in_place() {
 // =============================================================================
 
 #[test]
-fn tui_update_fails_safely_with_no_network() {
+fn tui_update_fails_safely_with_no_network() -> TestResult {
     // @step Given fspec is running at an older version
     let current = "0.9.3";
 
@@ -133,6 +134,7 @@ fn tui_update_fails_safely_with_no_network() {
 
     // @step And fspec keeps working at its current version
     // (the TUI session is unaffected — the update runs as a spawned task)
+    Ok(())
 }
 
 // =============================================================================
@@ -140,7 +142,7 @@ fn tui_update_fails_safely_with_no_network() {
 // =============================================================================
 
 #[test]
-fn tui_update_never_prompts_for_confirmation() {
+fn tui_update_never_prompts_for_confirmation() -> TestResult {
     // @step Given fspec is running in the TUI with the terminal in raw mode
     // (TUI precondition)
 
@@ -148,7 +150,7 @@ fn tui_update_never_prompts_for_confirmation() {
     // (mock-server precondition — verified in the engine test)
 
     // @step When the user enters "/update"
-    let src = dispatch_source();
+    let src = dispatch_source()?;
 
     // @step Then the update proceeds without blocking on a stdin yes/no prompt
     assert!(
@@ -159,6 +161,7 @@ fn tui_update_never_prompts_for_confirmation() {
         !src.contains("confirm") && !src.contains("yes/no"),
         "dispatch_slash_update.rs must not prompt for confirmation"
     );
+    Ok(())
 }
 
 // =============================================================================
@@ -166,7 +169,7 @@ fn tui_update_never_prompts_for_confirmation() {
 // =============================================================================
 
 #[test]
-fn tui_update_does_not_restart_the_running_tui() {
+fn tui_update_does_not_restart_the_running_tui() -> TestResult {
     // @step Given fspec is running in the TUI
     // (TUI precondition)
 
@@ -174,7 +177,7 @@ fn tui_update_does_not_restart_the_running_tui() {
     // (mock-server precondition — verified in the engine test)
 
     // @step When the user enters "/update" and the update succeeds
-    let src = dispatch_source();
+    let src = dispatch_source()?;
 
     // @step Then the running TUI session continues without interruption
     assert!(
@@ -185,6 +188,7 @@ fn tui_update_does_not_restart_the_running_tui() {
     // @step And the new version activates on the next fspec launch
     // (the success message instructs a manual restart — asserted in the
     //  installs-the-latest-release test above)
+    Ok(())
 }
 
 // =============================================================================
@@ -192,7 +196,7 @@ fn tui_update_does_not_restart_the_running_tui() {
 // =============================================================================
 
 #[test]
-fn tui_exposes_update_via_the_palette_and_typed_input() {
+fn tui_exposes_update_via_the_palette_and_typed_input() -> TestResult {
     // @step Given the TUI slash command registry
     let registry = SLASH_COMMANDS;
 
@@ -211,4 +215,5 @@ fn tui_exposes_update_via_the_palette_and_typed_input() {
         matches!(typed, SlashCommandParse::UpdateSubcommand(_)),
         "/update must be routed as UpdateSubcommand, got: {typed:?}"
     );
+    Ok(())
 }

@@ -10,31 +10,6 @@
             {
               "file": "rust/common/src/types.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
                 78,
@@ -46,8 +21,33 @@
                 84,
                 85,
                 86,
-                87
-              ]
+                87,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ],
+              "firstLine": "/// Image content (request-side only)",
+              "lastLine": "}"
             }
           ]
         }
@@ -63,31 +63,6 @@
             {
               "file": "rust/common/src/types.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
                 78,
@@ -99,8 +74,33 @@
                 84,
                 85,
                 86,
-                87
-              ]
+                87,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ],
+              "firstLine": "/// Image content (request-side only)",
+              "lastLine": "}"
             }
           ]
         }
@@ -116,31 +116,6 @@
             {
               "file": "rust/common/src/types.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
                 76,
                 77,
                 78,
@@ -152,8 +127,36 @@
                 84,
                 85,
                 86,
-                87
-              ]
+                87,
+                130,
+                163,
+                164,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ],
+              "firstLine": "/// Image content (request-side only)",
+              "lastLine": "}"
             }
           ]
         }
@@ -200,7 +203,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "/// `extract_text_from_content()` method.",
+              "lastLine": "let mut system_prompt: Option<String> = None;"
             }
           ]
         }
@@ -231,7 +236,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "/// `messages_to_rhai(&messages)` directly and then unwrap the array, so",
+              "lastLine": "}"
             }
           ]
         }
@@ -262,7 +269,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "/// `messages_to_rhai(&messages)` directly and then unwrap the array, so",
+              "lastLine": "}"
             }
           ]
         }
@@ -312,7 +321,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "pub fn convert_assistant_content(",
+              "lastLine": "}"
             }
           ]
         }
@@ -364,7 +375,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::stream::StreamUsage;",
+              "lastLine": ".unwrap_or_default();"
             }
           ]
         }
@@ -384,6 +397,6 @@
       "rust/providers/src/custom/request_bridge.rs",
       "rust/providers/src/custom/response_bridge.rs"
     ],
-    "totalLinesCovered": 491
+    "totalLinesCovered": 488
   }
 }

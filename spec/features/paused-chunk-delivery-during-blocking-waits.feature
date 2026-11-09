@@ -2,6 +2,7 @@
 @session
 @rpc
 @RPC-409
+@pause-integration
 Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — inline pause prompt never appears
   """
   Root cause (RPC-409): tokio broadcast::Sender::send wakes the subscriber task into the current worker's non-stealable LIFO slot; the agent-loop pause/fspec/hitl handlers then block that worker in a std mpsc recv, stranding the subscriber until the wait resolves. Fix: BackgroundSession wait_for_pause_response / wait_for_fspec_response / wait_for_hitl_response wrap the blocking recv in tokio::task::block_in_place, guarded on RuntimeFlavor::MultiThread with a direct-recv fallback off-runtime. See spec/attachments/RPC-409/investigation.md.

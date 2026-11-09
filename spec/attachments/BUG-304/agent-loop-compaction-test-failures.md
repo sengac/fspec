@@ -1,0 +1,52 @@
+# Pre-existing agent-loop compaction test failures (2026-10-30)
+
+`cargo test --profile ci-test -p codelet-agent-loop --features test-support` scoped to the compaction binaries below. Every listed failure also fails on HEAD (c81986cf + BUG-303) without CMPCT-084.
+
+Common root: the shared fixture `agent-loop/tests/support/bug210_completion_metrics.rs:110` asserts that a padded preamble prepares to exactly COMPACTED input tokens, and gets 11371 instead of 90336. Every test that builds this fixture panics, including all of `bug229_compactor_runway` and `bug229_codex_runway`, several of which run for over 60 s first.
+
+```
+bug211_compaction_budget_recovery.rs passed=4 failed=4
+bug211_synthesis_admission.rs passed=1 failed=1
+bug214_builder_subprocess.rs passed=0 failed=1
+bug215_effective_compaction_limits.rs passed=0 failed=4
+cmpct044_terminal_overflow_test.rs passed=3 failed=4
+cmpct045_generate_compaction_behavioral.rs passed=8 failed=17
+cmpct054_terminal_dependencies.rs passed=2 failed=1
+truthful_compaction_generate_bug213.rs passed=0 failed=1
+```
+
+## Failing tests
+- a_zero_tracker_basis_falls_back_to_a_content_estimate
+- background_terminal_overflow_compacts_via_the_same_entry_point
+- calling_session_target_stashes_pending_dag_instead_of_locking_inner
+- compaction_flag_true_during_run_and_false_after_pin
+- compaction_lifecycle_events_carry_the_recalculated_post_pin_basis
+- compactor_handler_registration_lifecycle_mirrors_deep_search
+- compactor_sub_agent_provider_arms_match_the_deep_search_clone
+- existing_dag_is_captured_before_any_clear_and_drives_incremental_mode
+- generate_compaction_handler_registration_lifecycle_mirrors_deep_search
+- generate_compaction_tool_wired_into_every_provider_tool_chain
+- partial_dag_node_blocks_are_recovered_into_the_fallback
+- scenario_codex_continuation_capacity_recovery_retains_final_tool_evidence
+- scenario_exhausted_exploration_can_finish_a_summary_without_further_tools
+- scenario_explicit_limits_and_provider_clamps_remain_authoritative
+- scenario_generated_compaction_reports_unknown_work_for_its_actual_target
+- scenario_invalid_explicit_limits_fail_closed_without_durable_promotion
+- scenario_invalid_synthesized_summaries_are_never_installed
+- scenario_missing_context_and_output_metadata_use_effective_provider_defaults
+- scenario_missing_output_metadata_uses_the_effective_provider_reservation
+- scenario_original_session_cancellation_terminates_only_its_compaction_builder_subprocesses
+- scenario_oversized_synthesis_is_rejected_before_provider_dispatch
+- scenario_provider_failures_do_not_trigger_budget_synthesis
+- scenario_streaming_synthesis_preserves_the_final_original_evidence_page
+- scenario_terminal_recovery_invokes_the_turn_builder_before_cleanup
+- self_target_capture_never_awaits_the_callers_inner_lock
+- stash_lock_failure_restores_the_calling_sessions_status
+- sub_agent_timeout_pins_a_free_fallback_dag
+- successful_dag_is_pinned_to_the_target_and_sub_agent_session_is_ephemeral
+- terminal_non_overflow_error_does_not_compact
+- terminal_overflow_without_compactable_turns_does_not_compact
+- the_045_fallback_builder_delegates_to_the_shared_compaction_dag_primitive
+- tool_result_is_the_pinned_dag_text
+- unknown_target_session_is_rejected_with_an_execution_error
+- unparseable_sub_agent_output_pins_a_fallback_dag

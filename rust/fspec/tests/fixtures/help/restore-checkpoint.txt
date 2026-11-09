@@ -23,7 +23,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  Create baseline: fspec checkpoint AUTH-001 baseline,Try approach A: Make experimental changes,Doesn't work: fspec restore-checkpoint AUTH-001 baseline,Try approach B: Make different changes,Works: Keep approach B, checkpoint now exists for future experiments
+  Create baseline: fspec checkpoint AUTH-001 baseline. Try approach A: Make experimental changes. Doesn't work: fspec restore-checkpoint AUTH-001 baseline. Try approach B: Make different changes. Works: Keep approach B, checkpoint now exists for future experiments
 
 EXAMPLES
   1. Restore after failed experiment
@@ -56,18 +56,18 @@ Use Read and Edit tools to resolve conflicts.
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   ✗ Checkpoint 'baseline' not found for AUTH-001
-    Fix: undefined
+    Fix: List checkpoints with 'fspec list-checkpoints AUTH-001' or create checkpoint with 'fspec checkpoint AUTH-001 baseline'
 
   ✗ Merge conflicts detected
-    Fix: undefined
+    Fix: This is expected when changes conflict. AI: Use Read and Edit tools to resolve conflicts. Run tests after resolving.
 
 RELATED COMMANDS
-  fspec fspec checkpoint - Create manual checkpoint
-  fspec fspec list-checkpoints - List all checkpoints
-  fspec fspec cleanup-checkpoints - Delete old checkpoints
+  fspec checkpoint - Create manual checkpoint
+  fspec list-checkpoints - List all checkpoints
+  fspec cleanup-checkpoints - Delete old checkpoints
 
 NOTES
   • Restoration uses 'git stash apply' (preserves stash for re-restoration)

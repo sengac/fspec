@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/prov155_codex_session_routing.rs",
-          "lines": "8-57",
+          "lines": "9-93",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/routing.rs",
@@ -138,7 +138,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "use bytes::Bytes;",
+              "lastLine": "};"
             }
           ]
         }
@@ -155,6 +157,6 @@
     "implFiles": [
       "rust/providers/src/codex/routing.rs"
     ],
-    "totalLinesCovered": 178
+    "totalLinesCovered": 213
   }
 }

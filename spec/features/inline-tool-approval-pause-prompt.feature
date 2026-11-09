@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui
 @input
@@ -141,7 +142,7 @@ Feature: Inline Tool-Approval Pause Prompt
     And session s-1 has a Triple pause slot
     When the user presses Esc
     Then backend.pause_triple is called exactly once with (s-1, ApprovalChoice::Deny)
-    And backend.pause_resume is NEVER called
+    And backend.pause_human_action is NEVER called
     And the pause slot for s-1 is cleared
 
   Scenario: Y approves a confirm prompt
@@ -161,7 +162,7 @@ Feature: Inline Tool-Approval Pause Prompt
     And session s-1 has a Confirm pause slot
     When the user presses Esc
     Then backend.pause_confirm is called exactly once with (s-1, false)
-    And backend.pause_resume is NEVER called
+    And backend.pause_human_action is NEVER called
 
   Scenario: Printable keys are swallowed while the pause prompt is showing
     Given an App with a MockBackend and a focused session s-1
@@ -231,9 +232,9 @@ Feature: Inline Tool-Approval Pause Prompt
   # ─────────────────────────────────────────────────────────────────────
   # Source shape — modal removal + Esc-deny lock
   # ─────────────────────────────────────────────────────────────────────
-  Scenario: The pause modal is deleted and resume is unreachable from the prompt
+  Scenario: The pause modal is deleted and an approval prompt never sends a human-action reply
     Given the codelet-fspec-tui crate sources
     Then the file rust/fspec-tui/src/components/pause_dialog.rs does not exist
     And components/mod.rs declares no OpenPauseDialog action variant
-    And views/agent/pause_keys.rs and app/dispatch_pause_hitl.rs never construct Action::PauseResumed from a pause-prompt key path
+    And views/agent/pause_keys.rs sends Action::PauseHumanAction only from the human-action prompt, never from an approval or confirm prompt
     And the files pause_prompt.rs, pause_keys.rs, input_area.rs, and store/agent_view/pause_state.rs each stay under 300 lines

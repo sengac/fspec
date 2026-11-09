@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-318
+@estimation
 Feature: Port update-work-unit-estimate command to Rust
   """
   Core impl at rust/fspec-core/src/commands/update_work_unit_estimate.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Reads work-units via read_work_units_or_empty (ENOENT→empty, mirrors TS fileManager.readJSON default). FIBONACCI = [1,2,3,5,8,13,21]. Writes spec/work-units.json atomically via io::locked_file::write_json_atomic. estimate stored in WorkUnit.extra; updated_at typed.
@@ -89,3 +90,12 @@ Feature: Port update-work-unit-estimate command to Rust
     When I dispatch update-work-unit-estimate via the dispatcher with workUnitId='TASK-001' and estimate=3
     And I run `./rust/target/release/fspec update-work-unit-estimate TASK-001 3` in an identical workspace
     Then both invocations produce the same success result and the same on-disk estimate 3
+
+  Scenario: Dispatcher blocks estimating a bug whose feature file has prefill placeholders
+    Given spec/work-units.json contains work unit 'BUG-001' of type 'bug'
+    And spec/features contains a feature file tagged @BUG-001 that contains a role-placeholder token
+    When I dispatch update-work-unit-estimate with workUnitId='BUG-001' and estimate=2
+    Then the dispatcher returns success=false
+    And the error message contains the substring 'ACDD VIOLATION: Cannot estimate work unit with incomplete feature file'
+    And the error message contains the substring 'Remove all prefill placeholders from feature file'
+    And spec/work-units.json work unit 'BUG-001' has no estimate

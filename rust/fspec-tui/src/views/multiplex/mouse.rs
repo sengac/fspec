@@ -34,9 +34,9 @@ pub enum MouseDecision {
 /// match wins — the dividers are disjoint by construction).
 fn divider_hit(layout: &MultiplexLayout, col: u16, row: u16) -> Option<usize> {
     layout
-        .divider_rects
+        .dividers
         .iter()
-        .position(|d| crate::mouse::hit_test::rect_contains(*d, col, row))
+        .position(|d| crate::mouse::hit_test::rect_contains(d.rect, col, row))
 }
 
 /// Classify a mouse event against the current mux layout.

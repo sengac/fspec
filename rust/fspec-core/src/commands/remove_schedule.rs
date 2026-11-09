@@ -73,8 +73,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let path = project_root.join("spec").join("schedules.json");
+    let path = crate::io::spec_paths::schedules(project_root)?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-schedule")?;
     // Read directly; a missing file → default empty map so the not-found
     // branch fires (parity with the TS transaction read returning the default).
     let mut data = load_or_default(&path)?;

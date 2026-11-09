@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug161_search_dialog_modal_keys.rs",
-          "lines": "77-104",
+          "lines": "74-106",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -15,7 +15,9 @@
                 191,
                 192,
                 193
-              ]
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,7 +38,9 @@
                 191,
                 192,
                 193
-              ]
+              ],
+              "firstLine": "KeyCode::Char(c) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -60,7 +64,9 @@
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "// BUG-161: modifier-chorded keys are CONSUMED (no-op) so chords",
+              "lastLine": "}"
             }
           ]
         }
@@ -84,7 +90,9 @@
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "// BUG-161: modifier-chorded keys are CONSUMED (no-op) so chords",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,7 +103,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug161_search_dialog_modal_keys.rs",
-          "lines": "201-227",
+          "lines": "206-233",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -108,7 +116,9 @@
                 230,
                 231,
                 232
-              ]
+              ],
+              "firstLine": "KeyCode::Enter => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,18 +134,6 @@
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
                 173,
                 174,
                 175,
@@ -203,7 +201,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "match key.code {",
+              "lastLine": "}"
             }
           ]
         }
@@ -214,7 +214,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug161_search_dialog_modal_keys.rs",
-          "lines": "179-198",
+          "lines": "184-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -226,7 +226,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "// BUG-161: the dialog is a true modal — any key it does not",
+              "lastLine": "}"
             }
           ]
         }
@@ -243,6 +245,6 @@
     "implFiles": [
       "rust/fspec-tui/src/components/work_unit_search_dialog.rs"
     ],
-    "totalLinesCovered": 326
+    "totalLinesCovered": 325
   }
 }

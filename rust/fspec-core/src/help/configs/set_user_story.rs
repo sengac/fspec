@@ -9,7 +9,7 @@ use super::super::{
 };
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
-    name: "work-unit-id",
+    name: "workUnitId",
     description: "Work unit ID (e.g., AUTH-001, DASH-002). Must match existing work unit.",
     required: true,
 }];
@@ -102,7 +102,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "set-user-story",
     description:
         "Set the user story for a work unit, capturing the role, action, and benefit for Example Mapping",
-    usage: Some("fspec set-user-story <work-unit-id> [options]"),
+    usage: Some("fspec set-user-story <workUnitId> [options]"),
     arguments: ARGUMENTS,
     options: OPTIONS,
     examples: EXAMPLES,

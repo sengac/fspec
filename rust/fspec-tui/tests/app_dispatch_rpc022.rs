@@ -11,10 +11,9 @@
 //! get_session_role) plus the follow-up Action::ModelInfoLoaded /
 //! Action::ThinkingLevelLoaded / Action::SessionRoleLoaded refreshes.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, ThinkingLevel};
@@ -31,9 +30,9 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 /// Drain `app.next_pending_task()` until empty so spawned backend
 /// tasks observably complete before we assert against MockBackend
 /// counters / store mutations driven by `Action::ModelInfoLoaded` etc.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     // Run any follow-up actions emitted onto the bus by completing
     // backend tasks (e.g. ModelInfoLoaded after set_session_model).
@@ -43,19 +42,20 @@ async fn drain_pending(app: &mut App) {
         // (set_session_model → get_model_info → ModelInfoLoaded). Keep
         // draining until quiescent.
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Scenario: Action::ModelSelected spawns set_session_model and refreshes SessionHeader chrome
 #[tokio::test]
-async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() {
+async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend wrapping a SharedFspecService with a session manager attached
     // @step And an open session SessionId("s-1") with current_session_index = 0
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // Snapshot baseline call counts.
     let prior_set_calls = mock.set_session_model_calls();
 
@@ -67,11 +67,11 @@ async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() {
     ));
     // @step Then a tokio task is spawned that calls backend.set_session_model(SessionId("s-1"), "openai", "gpt-5.1-codex")
     // @step When the spawned task completes
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.set_session_model_calls(), prior_set_calls + 1);
     let last = mock
         .last_set_session_model()
-        .expect("last set_session_model");
+        .or_fail("last set_session_model")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "openai");
     assert_eq!(last.2, "gpt-5.1-codex");
@@ -79,45 +79,48 @@ async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() {
     // @step And Action::ModelInfoLoaded(SessionId("s-1"), <fresh ModelInfo>) is dispatched
     // (We've already drained pending — the follow-up ModelInfoLoaded
     // action has been pumped through dispatch above.)
+    Ok(())
 }
 
 /// Scenario: Action::ThinkingLevelSelected spawns set_thinking_level and refreshes the [T:] badge
 #[tokio::test]
-async fn action_thinking_level_selected_spawns_set_thinking_level_and_refreshes_badge() {
+async fn action_thinking_level_selected_spawns_set_thinking_level_and_refreshes_badge() -> TestResult
+{
     // @step Given an App attached to an EmbeddedFspecBackend with a session manager attached
     // @step And an open session SessionId("s-1")
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior = mock.set_thinking_level_calls();
 
-    // @step When the App dispatches Action::ThinkingLevelSelected(SessionId("s-1"), ThinkingLevel::High)
+    // @step When the App dispatches Action::ThinkingLevelSelected(SessionId("s-1"), ThinkingLevel::Effort("high"))
     app.dispatch(Action::ThinkingLevelSelected(
         SessionId::new("s-1"),
-        ThinkingLevel::High,
+        ThinkingLevel::Effort("high".to_string()),
     ));
-    // @step Then a tokio task is spawned that calls backend.set_thinking_level(SessionId("s-1"), ThinkingLevel::High)
+    // @step Then a tokio task is spawned that calls backend.set_thinking_level(SessionId("s-1"), ThinkingLevel::Effort("high"))
     // @step When the spawned task completes
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.set_thinking_level_calls(), prior + 1);
     let last = mock
         .last_set_thinking_level()
-        .expect("last set_thinking_level");
+        .or_fail("last set_thinking_level")?;
     assert_eq!(last.0, SessionId::new("s-1"));
-    assert_eq!(last.1, ThinkingLevel::High);
+    assert_eq!(last.1, ThinkingLevel::Effort("high".to_string()));
     // @step Then a follow-up tokio task is spawned that calls backend.get_thinking_level(SessionId("s-1"))
-    // @step And Action::ThinkingLevelLoaded(SessionId("s-1"), ThinkingLevel::High) is dispatched
+    // @step And Action::ThinkingLevelLoaded(SessionId("s-1"), ThinkingLevel::Effort("high")) is dispatched
     // (Drained above; the follow-up arm has been pumped through dispatch.)
+    Ok(())
 }
 
 /// Scenario: Action::SetSessionRole(Some) spawns set_session_role and updates AgentViewStore.role_by_session
 #[tokio::test]
-async fn action_set_session_role_some_spawns_set_role_and_updates_store() {
+async fn action_set_session_role_some_spawns_set_role_and_updates_store() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend with a session manager attached
     // @step And an open session SessionId("s-1") whose role_for is None
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(app
         .agent_view_store()
         .role_for(&SessionId::new("s-1"))
@@ -134,16 +137,19 @@ async fn action_set_session_role_some_spawns_set_role_and_updates_store() {
         Some("You are a security reviewer")
     );
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), Some("You are a security reviewer".to_string()))
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.set_session_role_calls(), prior + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, Some("You are a security reviewer".to_string()));
+    Ok(())
 }
 
 /// Scenario: Action::SetSessionRole(None) clears the role and persists via backend
 #[tokio::test]
-async fn action_set_session_role_none_clears_role_and_persists() {
+async fn action_set_session_role_none_clears_role_and_persists() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend with a session manager attached
     // @step And an open session SessionId("s-1") whose role_for is Some("Reviewer A")
     let (mut app, mock) = fresh_app();
@@ -163,21 +169,24 @@ async fn action_set_session_role_none_clears_role_and_persists() {
         .role_for(&SessionId::new("s-1"))
         .is_none());
     // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(mock.set_session_role_calls(), prior + 1);
-    let last = mock.last_set_session_role().expect("last set_session_role");
+    let last = mock
+        .last_set_session_role()
+        .or_fail("last set_session_role")?;
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, None);
+    Ok(())
 }
 
 /// Scenario: Action::SessionRoleLoaded folds a backend-fetched role into AgentViewStore
 #[tokio::test]
-async fn action_session_role_loaded_folds_backend_role_into_store() {
+async fn action_session_role_loaded_folds_backend_role_into_store() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend with a session manager attached
     // @step And an open session SessionId("s-1") whose role_for is None
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     let prior_writes = mock.set_session_role_calls();
     // @step When the App dispatches Action::SessionRoleLoaded(SessionId("s-1"), Some("Reviewer A".to_string()))
     app.dispatch(Action::SessionRoleLoaded(
@@ -190,17 +199,18 @@ async fn action_session_role_loaded_folds_backend_role_into_store() {
         Some("Reviewer A")
     );
     // @step And no backend task is spawned in response
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         mock.set_session_role_calls(),
         prior_writes,
         "SessionRoleLoaded must NOT trigger a backend write"
     );
+    Ok(())
 }
 
 /// Scenario: Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session
 #[tokio::test]
-async fn action_session_created_spawns_get_session_role() {
+async fn action_session_created_spawns_get_session_role() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend with a session manager that returns Some("Reviewer A") from get_session_role
     let (mut app, mock) = fresh_app();
     mock.seed_session_role(SessionId::new("s-9"), Some("Reviewer A".to_string()));
@@ -212,9 +222,19 @@ async fn action_session_created_spawns_get_session_role() {
     //  that backend.get_session_role(sid) is spawned — assert that.)
     // @step And a tokio task is spawned that calls backend.get_session_role(SessionId("s-9"))
     // @step When the spawned task completes
-    // Give the spawned task a moment to issue the read.
-    tokio::time::sleep(Duration::from_millis(20)).await;
-    drain_pending(&mut app).await;
+    // TEST-042: wait for the spawned read's result to land, not a delay.
+    codelet_test_helpers::deadlock_guard("the session role", async {
+        while app
+            .agent_view_store()
+            .role_for(&SessionId::new("s-9"))
+            .is_none()
+        {
+            drain_pending(&mut app).await?;
+            tokio::task::yield_now().await;
+        }
+        Ok::<(), codelet_test_helpers::TestError>(())
+    })
+    .await??;
     assert!(
         mock.get_session_role_calls() > prior_get_calls,
         "expected get_session_role to be called, before={prior_get_calls} after={}",
@@ -226,11 +246,12 @@ async fn action_session_created_spawns_get_session_role() {
         app.agent_view_store().role_for(&SessionId::new("s-9")),
         Some("Reviewer A")
     );
+    Ok(())
 }
 
 /// Scenario: Action::ModelSelected against a service with no session manager is a silent no-op
 #[tokio::test]
-async fn action_model_selected_against_no_session_manager_is_silent_no_op() {
+async fn action_model_selected_against_no_session_manager_is_silent_no_op() -> TestResult {
     // @step Given an App attached to an EmbeddedFspecBackend wrapping a SharedFspecService with NO session manager attached
     // (MockBackend's defaults for set_session_model return Ok(()) and
     //  for get_model_info return ModelInfo::default(); the "no session
@@ -246,24 +267,26 @@ async fn action_model_selected_against_no_session_manager_is_silent_no_op() {
     ));
     // @step Then no panic occurs
     // @step And no spawned task fails
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // If we reach this line, neither dispatch nor drain panicked.
+    Ok(())
 }
 
 /// Scenario: dispatch_model_thinking_dialogs.rs stays under 300 lines
 #[test]
-fn dispatch_model_thinking_dialogs_rs_stays_under_300_lines() {
+fn dispatch_model_thinking_dialogs_rs_stays_under_300_lines() -> TestResult {
     // @step Given the file rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs after RPC-022 lands
-    let path = common::workspace_root()
+    let path = common::workspace_root()?
         .join("fspec-tui")
         .join("src")
         .join("app")
         .join("dispatch_model_thinking_dialogs.rs");
     // @step When a test counts the line-count of the file
-    let lines = common::read_to_string_or_panic(&path).lines().count();
+    let lines = common::read_to_string_or_fail(&path)?.lines().count();
     // @step Then the file has fewer than 300 lines
     assert!(
         lines < 300,
         "dispatch_model_thinking_dialogs.rs has {lines} lines"
     );
+    Ok(())
 }

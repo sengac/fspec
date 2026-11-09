@@ -21,8 +21,6 @@ use codelet_rpc_server::{bind_and_serve, ws_client_connect, Envelope};
 use codelet_rpc_types::WorkUnitInfo;
 use common::{connect_with_retry, make_workspace, write_workspace};
 use std::sync::Arc;
-use std::time::Duration;
-use tokio::time::timeout;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn scenario_both_transports_produce_byte_identical_work_units_update_payloads() {
@@ -44,7 +42,7 @@ async fn scenario_both_transports_produce_byte_identical_work_units_update_paylo
         .expect("ws_client_connect failed");
     let mut ws_rx = ws_client.work_units_rx();
     // Drain the initial WS snapshot so the next recv reflects the mutation.
-    let _initial = timeout(Duration::from_secs(2), ws_rx.recv())
+    let _initial = codelet_test_helpers::deadlock_guard("ws_rx.recv()", ws_rx.recv())
         .await
         .expect("initial WS frame within 2s")
         .expect("broadcast not closed");
@@ -57,14 +55,16 @@ async fn scenario_both_transports_produce_byte_identical_work_units_update_paylo
             ("AUTH-002", "Reset password", "implementing"),
         ],
     );
-    let embedded_payload: Vec<WorkUnitInfo> = timeout(Duration::from_secs(2), embedded_rx.recv())
-        .await
-        .expect("embedded must observe within 2s")
-        .expect("embedded broadcast not closed");
-    let ws_payload: Vec<WorkUnitInfo> = timeout(Duration::from_secs(2), ws_rx.recv())
-        .await
-        .expect("ws must observe within 2s")
-        .expect("ws broadcast not closed");
+    let embedded_payload: Vec<WorkUnitInfo> =
+        codelet_test_helpers::deadlock_guard("embedded_rx.recv()", embedded_rx.recv())
+            .await
+            .expect("embedded must observe within 2s")
+            .expect("embedded broadcast not closed");
+    let ws_payload: Vec<WorkUnitInfo> =
+        codelet_test_helpers::deadlock_guard("ws_rx.recv()", ws_rx.recv())
+            .await
+            .expect("ws must observe within 2s")
+            .expect("ws broadcast not closed");
 
     // @step Then the two Vec<WorkUnitInfo> values are equal under PartialEq and the bincode encoding of each via Envelope::WorkUnitsUpdate produces identical byte sequences
     assert_eq!(

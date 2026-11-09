@@ -4,6 +4,9 @@
 @keyboard-navigation
 @mouse-events
 @MUX-001
+@BUG-164
+@BUG-300
+@BUG-165
 Feature: Mux mode — multiplexed top-level views with /mux configuration
   """
   New views/multiplex/ module (mod/layout/render/keys/mouse/presets) + store/mux_state.rs (MuxState + serde, shared fspec-config.json under tui.mux) + app/mux_parser.rs (/mux grammar) + app/dispatch_mux.rs. ViewMode::Mux in Navigator; MultiplexLayout owns MuxConfig + cached pane rects. App::dispatch is the single mutation surface; keyboard isolation = unfocused panes receive NO events.
@@ -35,7 +38,7 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
   #   13. The mux config persists in the shared CONFIG-008 fspec-config.json under tui.mux (user scope, project-scope override via deep merge). Missing key -> default preset. Loaded at bootstrap; auto-saved on /mux save and on mux exit.
   #   14. The divider is mouse-drag-resizable ONLY. Tab pane/divider cycling and keyboard divider resize were removed (2026-08-26 user directive): Tab is reserved for the agent view's turn-select mode; Esc exits mux MODE only via /mux off (the 2026-08-26 blanket "Esc is never a mux exit" rule is superseded by BUG-183 — Esc on the focused Files/Checkpoints pane closes that PANE from the live grid, see spec/features/mux-pane-esc-close.feature).
   #   15. R15 (BUG-164, 2026-08-27): BackToBoard (session close, detach, ESC with no session) FOCUSES the board pane within the active mux grid instead of flipping the whole view out of Mux. The grid, its pane list, and its layout are retained; only the in-grid focus moves to the Board pane.
-  #   16. R16 (BUG-165, 2026-08-27): Esc pressed while the Board pane is focused in mux mode pushes the BoardExitConfirmationDialog onto the compositor — identical to the single Board view (R9: dialogs overlay the mux). This applies regardless of whether agent panes are rendered (with no open agents the agent slots are dropped, only the Board pane remains, and Esc must still offer the exit dialog). Esc on a focused AGENT pane keeps the existing agent exit-confirmation cascade (Detach / Close Session / Cancel).
+  #   16. R16 (BUG-165, 2026-08-27): Esc pressed while the Board pane is focused in mux mode pushes the BoardExitConfirmationDialog onto the compositor — identical to the single Board view (R9: dialogs overlay the mux). This applies regardless of whether agent panes are rendered (with no open agents the agent slots are dropped, only the Board pane remains, and Esc must still offer the exit dialog). Esc on a focused AGENT pane keeps the existing agent exit-confirmation cascade (Close / Cancel).
   #
   # EXAMPLES:
   #   1. User types /mux in the agent input; the MuxConfigDialog opens (MUX-004 supersession — the bare /mux no longer toggles). Entering mux mode now happens via /mux on (default preset: 2-pane horizontal Board | Agent, agent pane the persisted home focus), or by committing the dialog with Enabled: On. /mux off returns to the single Agent view that was active before mux was entered.
@@ -81,8 +84,8 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
     Given the TUI is showing the single Board view
     When I submit the slash command "/mux on"
     Then mux mode is active with the default preset
-    And the grid shows two horizontal panes: Board on the left and Agent on the right
-    And the split is 50/50 with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
+    And the grid shows the default layout "board, agent": Board on the left and Agent on the right
+    And the two columns share the width equally with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
     And the mux footer row is painted at the bottom of the screen
 
   # R1: /mux off returns to the pre-mux view
@@ -94,55 +97,25 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
     And the TUI shows the single Agent view that was active before mux was entered
     And the board and agent store state is unchanged by the round trip
 
-  # R3: /mux v sets vertical orientation
-  Scenario: /mux v sets the grid to vertical
-    Given mux mode is active with panes Board and Agent
-    When I submit the slash command "/mux v"
-    Then the grid is vertical with Board on top and Agent on the bottom
-
-  # R3: /mux h sets horizontal orientation
-  Scenario: /mux h sets the grid to horizontal
-    Given mux mode is active with panes Board and Agent
-    When I submit the slash command "/mux h"
-    Then the grid is horizontal with Board on the left and Agent on the right
-
-  # R4: /mux 3 sets the pane count to three
-  Scenario: /mux 3 sets the pane count to three
-    Given mux mode is active with the default two panes
-    When I submit the slash command "/mux 3"
-    Then the grid shows three panes: Board, Agent and ChangedFiles
-
-  # R4: /mux 4 sets the pane count to four
-  Scenario: /mux 4 sets the pane count to four
-    Given mux mode is active with three panes
-    When I submit the slash command "/mux 4"
-    Then the grid shows four panes: Board, Agent, ChangedFiles and Checkpoints
-
-  # R4: /mux 2 collapses the pane count to two
-  Scenario: /mux 2 collapses the pane count to two
-    Given mux mode is active with four panes
-    When I submit the slash command "/mux 2"
-    Then the grid shows two panes: Board and Agent
-
   # R5: explicit pane list + split percent
-  Scenario: /mux board agent 40 sets an explicit pane list and split
+  Scenario: /mux board:2, agent:3 sets an explicit layout with weights
     Given mux mode is active
-    When I submit the slash command "/mux board agent 40"
+    When I submit the slash command "/mux board:2, agent:3"
     Then the grid shows Board at 40 percent on the left and Agent at 60 percent on the right
 
   # R5: explicit two-pane list
-  Scenario: the mux files checkpoints command sets a two-pane list
+  Scenario: the mux files, checkpoints command sets a two-pane layout
     Given mux mode is active
-    When I submit the slash command "/mux files checkpoints"
+    When I submit the slash command "/mux files, checkpoints"
     Then the grid shows ChangedFiles on the left and Checkpoints on the right
 
   # R7: invalid pane kind leaves config unchanged and shows an error
   Scenario: /mux with an invalid pane kind leaves the config unchanged and shows an error
-    Given mux mode is active with panes Board and Agent at a 50/50 split
-    When I submit the slash command "/mux board zzz"
-    Then a one-line error "/mux: unknown pane kind: zzz" is shown in the agent scrollback
-    And the grid still shows Board and Agent at a 50/50 split
-    And the out-of-range command "/mux board agent 5" is rejected with a one-line error and leaves the config unchanged
+    Given mux mode is active with the layout "board, agent"
+    When I submit the slash command "/mux board, zzz"
+    Then a one-line error "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints" is shown in the agent scrollback
+    And the grid still shows the layout "board, agent"
+    And the bad-weight command "/mux board, agent:0" is rejected with a one-line error and leaves the config unchanged
 
   # R2: keyboard input routes only to the focused pane
   Scenario: pressing j on the focused board pane moves the selection
@@ -197,44 +170,36 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
 
   # R4: divider drag resizes the split live
   Scenario: dragging the divider left resizes the split live
-    Given mux mode is active with Board and Agent panes at a 50/50 split on a 120-column terminal
+    Given mux mode is active with the layout "board, agent" on a 120-column terminal
     When I press the mouse down on the divider and drag it left
     Then the Board pane shrinks and the Agent pane grows live during the drag
 
   # R4 (BUG-166): releasing the divider stores the released percent — the
   # old snap-back to an equal split is fixed; the 64-column minimum clamp
   # was removed by MUX-003 and is not re-introduced
-  Scenario: releasing the divider stores the released percent without snapping back
-    Given mux mode is active with Board and Agent panes at a 50/50 split on a 120-column terminal
+  Scenario: releasing the divider stores the released width as weights without snapping back
+    Given mux mode is active with the layout "board, agent" on a 120-column terminal
     When I release the mouse at a position that would make the Board pane 40 columns
-    Then the Board pane keeps its released 34 percent of the width (40/119, rounded — no 64-column minimum, no equal-split reset)
+    Then the Board pane keeps its released 40 columns and the stored layout reads "board:17, agent:33" (34 percent of the pair, reduced — no 64-column minimum, no equal-split reset)
     And the drag state is cleared after the release
-
-  # R5 (superseded by MUX-003): an explicit split percent is honored as-is —
-  # the old 64-column board minimum clamp is removed
-  Scenario: split clamping never produces a pane narrower than the minimum width
-    Given a 110-column terminal with two mux panes
-    When the split is requested at 10/90
-    Then the first pane is clamped to the 64-column board minimum and the second pane takes the 44-column remainder
-    And no board pane rect is ever narrower than the 64-column minimum
 
   # R6: /mux save persists the config to the shared fspec-config.json
   Scenario: /mux save persists the config to the shared fspec-config.json
-    Given mux mode is active with panes Board and Agent at a 40/60 vertical split
+    Given mux mode is active with the layout "[board:2, agent:3]"
     When I submit the slash command "/mux save"
-    Then the shared fspec-config.json exists and its tui.mux key contains the saved orientation, splits and pane list
+    Then the shared fspec-config.json exists and its tui.mux key contains the layout string "[board:2, agent:3]"
 
   # R6: a fresh bootstrap restores the saved mux config
   Scenario: a fresh bootstrap restores the saved mux config
-    Given a fresh TUI bootstrap with a saved tui.mux config of 40/60 vertical Board and Agent
+    Given a fresh TUI bootstrap with a saved tui.mux layout "[board:2, agent:3]"
     When I submit the slash command "/mux on"
-    Then the grid restores the saved 40/60 vertical Board | Agent layout
+    Then the grid restores the saved layout: Board over Agent in one column at 40/60
 
   # R6: a fresh bootstrap with no saved config applies the default preset
   Scenario: a fresh bootstrap with no saved config applies the default preset
     Given a fresh TUI bootstrap with no tui.mux config present
     When I submit the slash command "/mux on"
-    Then the grid applies the default preset: horizontal Board | Agent at 50/50
+    Then the grid applies the default layout "board, agent" with equal columns
 
   # R8: Enter on a board work unit in mux mode focuses the agent pane
   Scenario: Enter on a board work unit in mux mode focuses the agent pane
@@ -249,26 +214,24 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
 
   # BUG-164: BackToBoard is a "focus the board" semantic — it must never
   # flip the whole view out of the active mux grid.
-  @BUG-164
   Scenario: closing a session in mux mode retains the mux and focuses the board pane
     Given mux mode is active with Board and Agent panes and two agent sessions are open
     And the Agent pane is focused
-    When the exit dialog is answered with Close Session
+    When the exit dialog is answered with Close
     Then the destroyed session is removed from the open-session list
     And the TUI is still in mux mode with the same panes and layout
     And the Board pane is focused within the grid
     And no single-view flip to Board occurs
 
-  @BUG-164
-  Scenario: detaching from a session in mux mode retains the mux and focuses the board pane
-  # BUG-164: the Detach choice routes the same BackToBoard action — the
-  # grid must survive that transition too.
+  Scenario: cancelling the exit dialog in mux mode retains the mux and keeps the agent pane focused
+  # BUG-164: the grid survives the exit dialog. BUG-205 removed the Detach
+  # choice; Cancel keeps the session open and the Agent pane focused.
     Given mux mode is active with Board and Agent panes and one agent session is open
     And the Agent pane is focused
-    When the exit dialog is answered with Detach
+    When the exit dialog is answered with Cancel
     Then the session remains open in the store
     And the TUI is still in mux mode with the same panes and layout
-    And the Board pane is focused within the grid
+    And the Agent pane stays focused within the grid
 
   # R9: dialogs overlay mux mode and capture input
   Scenario: pressing ? in mux mode shows the HelpDialog over the full screen
@@ -292,14 +255,12 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
     And pressing Esc in the Agent view returns to the single Board view
     And no mux footer row is painted and no pane divider is rendered
 
-  @BUG-165
   Scenario: pressing Esc on the board pane in mux mode with no open agents shows the exit dialog
     Given mux mode is active with the default Board and Agent panes and no agent sessions are open
     When I press the Esc key
     Then the BoardExitConfirmationDialog is shown over the full screen
     And the Board pane is still focused and the mux grid is retained
 
-  @BUG-165
   Scenario: confirming the board exit dialog in mux mode quits the application
     Given mux mode is active with the default Board and Agent panes and no agent sessions are open
     When I press the Esc key
@@ -308,9 +269,8 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
     Then the application exits
     And the BoardExitConfirmationDialog is removed from the compositor
 
-  @BUG-165
   Scenario: pressing Esc on the agent pane in mux mode with an open agent still shows the agent exit dialog
     Given mux mode is active with the default Board and Agent panes and one agent session is open
     When I press the Esc key
-    Then the agent exit confirmation dialog (Detach / Close Session / Cancel) is shown
+    Then the agent exit confirmation dialog (Close / Cancel) is shown
     And the Agent pane is focused

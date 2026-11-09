@@ -21,7 +21,7 @@
 //!
 //! These two gaps cause five real `spec/features/*.feature` files in
 //! this repo to be silently dropped from any command that calls
-//! `Feature::parse` (RPC-299 `show-acceptance-criteria`, RPC-304
+//! `Feature::parse` (CLI-019 `context`, RPC-304
 //! `show-feature`, RPC-130 `list-scenario-tags`, RPC-198
 //! `show-work-unit`). The parity-fix orchestration treats this as
 //! "fix ALL issues, even pre-existing".
@@ -47,11 +47,56 @@
 //!      downstream code.
 //!
 //! Verbatim description rendering (see
-//! `commands/show_acceptance_criteria::extract_description_verbatim`)
+//! `io::gherkin_format::extract_description_verbatim`)
 //! continues to read from the **original**, un-sanitised content, so
 //! the U+200B never appears in user-visible output.
 
 use gherkin::{Feature, GherkinEnv, ParseError};
+
+/// BUG-563: fspec does not support Gherkin `Rule:` blocks (business rules
+/// live on the work unit). Returns one `(line, message)` per Rule block of
+/// `content`; empty when there is none or the file does not parse (parse
+/// errors are reported by the parse itself).
+pub fn rule_block_errors(content: &str) -> Vec<(usize, String)> {
+    let Ok(feature) = parse_feature_lenient(content) else {
+        return Vec::new();
+    };
+    let lines: Vec<&str> = content.split('\n').collect();
+    feature
+        .rules
+        .iter()
+        .map(|rule| {
+            let line = rule.position.line;
+            let text = lines.get(line.saturating_sub(1)).map(|l| l.trim()).unwrap_or("");
+            (
+                line,
+                format!(
+                    "line {line}: Rule blocks are not supported ('{text}'): the scenarios after it become children of the Rule. Keep business rules on the work unit with fspec add-rule and remove or reword the line"
+                ),
+            )
+        })
+        .collect()
+}
+
+/// BUG-563: fail `command` when the feature at `feature_path` holds a Rule
+/// block. A missing or unreadable feature is left to the caller.
+pub fn reject_rule_blocks(
+    feature_path: &std::path::Path,
+    command: &'static str,
+) -> Result<(), crate::error::FspecCoreError> {
+    let Ok(content) = std::fs::read_to_string(feature_path) else {
+        return Ok(());
+    };
+    let errors = rule_block_errors(&content);
+    if errors.is_empty() {
+        return Ok(());
+    }
+    let messages: Vec<String> = errors.into_iter().map(|(_, message)| message).collect();
+    Err(crate::error::FspecCoreError::InvalidArgs {
+        command,
+        reason: format!("{}: {}", feature_path.display(), messages.join("; ")),
+    })
+}
 
 /// Parse a Gherkin feature file with a one-shot lenient fallback when
 /// the strict parser fails on description prose or table escape
@@ -81,7 +126,7 @@ pub fn parse_feature_lenient(content: &str) -> Result<Feature, ParseError> {
 /// (`Background-priority`, `Scenario Outline if present)`, etc.). The
 /// prefix breaks the parser's `starts_with` keyword check but is
 /// otherwise invisible because the verbatim description extractor in
-/// `show_acceptance_criteria` reads from the original source.
+/// `io::gherkin_format` reads from the original source.
 ///
 /// Step-table cell preprocessing rewrites `\"` → `\\"` so the parser's
 /// official `\\` escape collapses back to the original `\"` byte pair.

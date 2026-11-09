@@ -243,7 +243,7 @@ fn parse_compaction_threshold(provider: &str, map: &Map) -> Option<(String, u64)
 pub struct RhaiScriptedLimits {
     /// Script-supplied `context_window`, or `None` when the script did
     /// not define/return one (in which case the TUI-supplied value or
-    /// the JSON ModelDef default wins).
+    /// the JSON ModelDef value, if declared, wins).
     pub context_window: Option<usize>,
     /// Script-supplied `max_output_tokens`, or `None`.
     pub max_output_tokens: Option<usize>,

@@ -158,6 +158,7 @@ pub fn git_add(dir: impl AsRef<Path>, filepath: &str) -> Result<()> {
     // Read the index file directly so we can mutate it
     let index_path = path.join(".git/index");
     let mut index = if index_path.exists() {
+        crate::index_guard::ensure_index_not_truncated(&index_path, repo.object_hash())?;
         gix::index::File::at(&index_path, repo.object_hash(), false, Default::default())
             .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
     } else {
@@ -386,6 +387,7 @@ pub fn git_commit(
     // Read current index
     let index_path = path.join(".git/index");
     let index = if index_path.exists() {
+        crate::index_guard::ensure_index_not_truncated(&index_path, repo.object_hash())?;
         gix::index::File::at(&index_path, repo.object_hash(), false, Default::default())
             .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
     } else {
@@ -422,7 +424,7 @@ pub fn git_commit(
         tree: tree_id,
         parents,
         author: signature.clone(),
-        committer: signature,
+        committer: signature.clone(),
         encoding: None,
         message: BString::from(message),
         extra_headers: vec![],
@@ -433,28 +435,9 @@ pub fn git_commit(
         .write_object(gix::objs::Object::Commit(commit))
         .map_err(|e| GitError::Other(format!("Failed to write commit: {}", e)))?;
 
-    // Update HEAD ref
-    let head_ref = repo
-        .head_ref()
-        .map_err(|e| GitError::Head(format!("Failed to read HEAD: {}", e)))?;
-
-    if let Some(mut head_ref) = head_ref {
-        // Update existing ref
-        head_ref
-            .set_target_id(commit_id, "commit")
-            .map_err(|e| GitError::Other(format!("Failed to update HEAD: {}", e)))?;
-    } else {
-        // Create the branch ref (initial commit on unborn branch)
-        let head_content = fs::read_to_string(path.join(".git/HEAD"))?;
-        if let Some(ref_path) = head_content.strip_prefix("ref: ") {
-            let ref_path = ref_path.trim();
-            let full_ref_path = path.join(".git").join(ref_path);
-            if let Some(parent_dir) = full_ref_path.parent() {
-                fs::create_dir_all(parent_dir)?;
-            }
-            fs::write(full_ref_path, format!("{}\n", commit_id))?;
-        }
-    }
+    // BUG-599: HEAD and its branch move with the commit's own identity in
+    // their reflogs (an unborn branch is created).
+    crate::advance_head(&repo, parent, commit_id.detach(), &signature)?;
 
     Ok(commit_id.to_string())
 }

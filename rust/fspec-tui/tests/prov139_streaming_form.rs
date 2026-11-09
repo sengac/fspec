@@ -7,11 +7,10 @@
 // Each Gherkin step maps to a `// @step` comment immediately above the code
 // that exercises it.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::{ProfileForm, PROFILE_FORM_FIELDS};
 use codelet_fspec_tui::views::{ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -23,12 +22,12 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 /// Build a view sitting in CreateProfile mode with the given form.
@@ -42,28 +41,30 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
 }
 
 /// The Streaming field's index into [`PROFILE_FORM_FIELDS`] (the 6th, last).
-fn streaming_field_index() -> usize {
-    PROFILE_FORM_FIELDS
+fn streaming_field_index() -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(PROFILE_FORM_FIELDS
         .iter()
         .position(|label| *label == "Streaming")
-        .expect("PROFILE_FORM_FIELDS must contain a \"Streaming\" entry")
+        .or_fail("PROFILE_FORM_FIELDS must contain a \"Streaming\" entry")?)
 }
 
 /// A create form past the name step, focused on the Streaming field.
-fn form_focused_on_streaming(streaming: bool) -> ProfileForm {
+fn form_focused_on_streaming(
+    streaming: bool,
+) -> Result<ProfileForm, codelet_test_helpers::TestError> {
     let mut form = ProfileForm::new_create();
     form.is_editing_name = false;
     form.name = "local".to_string();
     form.base_url = "http://localhost:8888".to_string();
     form.api_key = "sk-test".to_string();
     form.streaming = streaming;
-    form.field_index = streaming_field_index();
-    form
+    form.field_index = streaming_field_index()?;
+    Ok(form)
 }
 
 /// Scenario: New create-profile form seeds Streaming to enabled
 #[test]
-fn new_create_profile_form_seeds_streaming_to_enabled() {
+fn new_create_profile_form_seeds_streaming_to_enabled() -> TestResult {
     // @step Given the user opens the create-profile form
     // @step When the form is initialized
     let form = ProfileForm::new_create();
@@ -73,36 +74,38 @@ fn new_create_profile_form_seeds_streaming_to_enabled() {
         form.streaming,
         "a brand-new create form must seed Streaming to enabled (true)"
     );
+    Ok(())
 }
 
 /// Scenario: Space toggles the Streaming field
 #[test]
-fn space_toggles_the_streaming_field() {
+fn space_toggles_the_streaming_field() -> TestResult {
     // @step Given the user is on the create-profile form with the Streaming field focused
-    let mut view = create_view(form_focused_on_streaming(true));
-    assert!(form_of(&view).streaming, "precondition: Streaming enabled");
+    let mut view = create_view(form_focused_on_streaming(true)?);
+    assert!(form_of(&view)?.streaming, "precondition: Streaming enabled");
 
     // @step When the user presses Space
     view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the Streaming field flips from Enabled to Disabled
     assert!(
-        !form_of(&view).streaming,
+        !form_of(&view)?.streaming,
         "Space must flip Streaming from enabled to disabled"
     );
+    Ok(())
 }
 
 /// Scenario: Typing a printable character does not mutate the Streaming field
 #[test]
-fn typing_a_printable_character_does_not_mutate_the_streaming_field() {
+fn typing_a_printable_character_does_not_mutate_the_streaming_field() -> TestResult {
     // @step Given the user is on the create-profile form with the Streaming field focused and Streaming enabled
-    let mut view = create_view(form_focused_on_streaming(true));
+    let mut view = create_view(form_focused_on_streaming(true)?);
 
     // @step When the user types the letter x
     view.handle_key(key(KeyCode::Char('x')));
 
     // @step Then the Streaming field stays Enabled with no text appended
-    let form = form_of(&view);
+    let form = form_of(&view)?;
     assert!(
         form.streaming,
         "typing a printable char must not toggle Streaming off"
@@ -117,11 +120,12 @@ fn typing_a_printable_character_does_not_mutate_the_streaming_field() {
             && !form.compaction_threshold.contains('x'),
         "the 'x' must not have been appended to any text field"
     );
+    Ok(())
 }
 
 /// Scenario: Editing a profile seeds Streaming from the stored definition
 #[test]
-fn editing_a_profile_seeds_streaming_from_the_stored_definition() {
+fn editing_a_profile_seeds_streaming_from_the_stored_definition() -> TestResult {
     // @step Given a stored profile whose streaming flag is set to disabled
     let def = ProfileDefinition {
         base_url: "http://h".to_string(),
@@ -138,20 +142,22 @@ fn editing_a_profile_seeds_streaming_from_the_stored_definition() {
         !form.streaming,
         "edit form must seed Streaming from the stored disabled definition"
     );
+    Ok(())
 }
 
 /// Scenario: build_definition emits the current toggle value
 #[test]
-fn build_definition_emits_the_current_toggle_value() {
+fn build_definition_emits_the_current_toggle_value() -> TestResult {
     // @step Given the user is on the profile form with Streaming toggled to disabled
-    let form = form_focused_on_streaming(false);
+    let form = form_focused_on_streaming(false)?;
 
     // @step When the form builds a profile definition
     let def = form
         .build_definition()
-        .expect("valid form must build without a rejection hint")
-        .expect("valid form must build a definition");
+        .or_fail("valid form must build without a rejection hint")?
+        .or_fail("valid form must build a definition")?;
 
     // @step Then the built definition carries streaming set to disabled
     assert_eq!(def.streaming, Some(false));
+    Ok(())
 }

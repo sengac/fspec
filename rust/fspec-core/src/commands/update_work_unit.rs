@@ -93,6 +93,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "update-work-unit")?;
     // Load typed work units (auto-creates spec/work-units.json on ENOENT,
     // parity with TS `ensureWorkUnitsFile`). Used for existence + circular
     // checks; the actual mutation happens on the raw object tree below.
@@ -170,7 +172,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Round-trip the raw work-units object so existing entries keep their
     // exact key order. Fall back to the typed data on any read failure.
     let mut wu_top: Map<String, Value> =
-        read_raw_object(&project_root.join("spec").join("work-units.json")).unwrap_or_else(|| {
+        read_raw_object(&crate::io::spec_paths::work_units(project_root)?).unwrap_or_else(|| {
             serde_json::to_value(&work_units_data)
                 .ok()
                 .and_then(|v| match v {
@@ -282,7 +284,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // final work-units transaction).
     if let Some(new_epic) = args.epic.as_deref() {
         let mut epics_top: Map<String, Value> =
-            read_raw_object(&project_root.join("spec").join("epics.json")).unwrap_or_default();
+            read_raw_object(&crate::io::spec_paths::epics(project_root)?).unwrap_or_default();
         if let Some(epics_obj) = epics_top.get_mut("epics").and_then(Value::as_object_mut) {
             // Remove from old epic. TS (update-work-unit.ts:94-98) has NO
             // `oldEpic !== epic` guard: a same-epic re-assignment still
@@ -313,13 +315,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 }
             }
         }
-        let epics_path = project_root.join("spec").join("epics.json");
+        let epics_path = crate::io::spec_paths::epics(project_root)?;
         write_json_atomic(&epics_path, &Value::Object(epics_top))?;
     }
 
     // Atomic write of work-units.json.
-    let wu_path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&wu_path, &Value::Object(wu_top))?;
+    crate::io::board::write_work_units(project_root, &Value::Object(wu_top))?;
 
     let result = UpdateWorkUnitResult { success: true };
     serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {

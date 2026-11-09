@@ -137,13 +137,15 @@ pub async fn execute_deep_search(
     )
     .map_err(|error| error.to_string())?;
     tracing::debug!(
-        "[deep-search] execute_deep_search ENTER provider='{}' model={:?} depth={}/{} project={} ephemeral={}",
+        "[deep-search] execute_deep_search ENTER provider='{}' model={:?} depth={}/{} project={} ephemeral={} context_window={:?} max_output_tokens={:?}",
         provider_name,
         model_id,
         depth,
         max_recursion_depth,
         project_path.display(),
         ephemeral_session_id,
+        context_window,
+        max_output_tokens,
     );
 
     // 2. Register SessionSearch handler for ephemeral session
@@ -194,14 +196,15 @@ pub async fn execute_deep_search(
         None
     };
 
-    // KGRAPH-009: Register GraphSearch handler for ephemeral session when graph is available
-    let graph_available =
-        codelet_graph::registry::is_graph_initialized(codelet_graph::registry::LEARNINGS_GRAPH)
-            || codelet_graph::registry::is_graph_initialized(
-                codelet_graph::registry::AST_CODE_GRAPH,
-            );
+    // KGRAPH-009: Register GraphSearch handler for ephemeral session when graph is available.
+    // KGRAPH-073: available is the on-disk state of the project's code graph
+    // and the learnings graph, never what this process happened to open.
+    let graph_available = codelet_graph::registry::code_graph_available(project_path)
+        || codelet_graph::registry::learnings_graph_available();
     let _gs_cleanup = if graph_available {
-        let gs_handler = crate::graph_search_handler::create_handler();
+        let gs_handler = crate::graph_search_handler::create_handler(
+            crate::graph_search_handler::fixed_root_source(project_path.to_path_buf()),
+        );
         set_graph_search_handler(ephemeral_session_id, Some(gs_handler));
         Some(GraphSearchCleanup(ephemeral_session_id))
     } else {
@@ -673,33 +676,27 @@ async fn build_and_run_agent(
             )
         }
         "github-copilot" | "copilot" => {
-            // PROV-057 Layer 3 — DeepSearch sub-agent dispatch for GitHub
-            // Copilot. The request config is assembled here (proving the
-            // provider is registered and routed end-to-end through the
-            // DeepSearch config layer) but the actual rig agent build step
-            // depends on accessors on `CopilotProvider` that are being
-            // wired in parallel by the Layer 2 work. Until that lands this
-            // branch returns a distinct error message so callers can tell
-            // apart:
-            //   (a) the provider isn't registered at all
-            //       → "Unsupported provider for DeepSearch sub-agent: …"
-            //   (b) the provider is registered and config resolved but the
-            //       rig agent builder is not yet hooked up
-            //       → "github-copilot DeepSearch agent builder pending …"
-            //
-            // Scenario: DeepSearch sub-agents can use github-copilot as their provider
-            // Feature: spec/features/github-copilot-end-to-end-integration.feature
+            // PROV-163: Copilot sub-agents build through the shared
+            // auxiliary builder (`provider.client().agent(provider.model())`),
+            // so they reuse CopilotProvider's HTTP middleware and
+            // bearer-token refresh like the parent session.
             let provider = manager
                 .get_github_copilot()
                 .map_err(|e| format!("Failed to get GitHub Copilot provider: {e}"))?;
-            let _request_config =
+            let request_config =
                 request_config_for_provider(provider_name, provider.model(), system_prompt, false)
                     .map_err(|e| {
                         format!("Failed to build GitHub Copilot DeepSearch config: {e}")
                     })?;
-            Err(
-                "github-copilot DeepSearch agent builder pending: CopilotProvider::client accessor not yet implemented (PROV-057 Layer 2 in progress)"
-                    .to_string(),
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
+                provider_name,
+                can_recurse,
+                graph_available
             )
         }
         _ => Err(format!(
@@ -712,3 +709,11 @@ async fn build_and_run_agent(
 #[cfg(test)]
 #[path = "deep_search_handler/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "deep_search_handler/zai_tests.rs"]
+mod zai_tests;
+
+#[cfg(test)]
+#[path = "deep_search_handler/execution_mode_tests.rs"]
+mod execution_mode_tests;

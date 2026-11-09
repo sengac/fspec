@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "37-60",
+          "lines": "36-66",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
@@ -61,7 +61,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "project_root: Option<&Path>,",
+              "lastLine": "&user_config,"
             }
           ]
         }
@@ -72,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "63-86",
+          "lines": "68-95",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
@@ -128,7 +130,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "project_root: Option<&Path>,",
+              "lastLine": "&user_config,"
             }
           ]
         }
@@ -139,36 +143,38 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "89-126",
+          "lines": "97-139",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166
-              ]
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "/// Merge and compile HookDefinition entries from both config levels.",
+              "lastLine": "}"
             }
           ]
         }
@@ -179,7 +185,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "129-156",
+          "lines": "141-173",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/config.rs",
@@ -196,7 +202,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "/// Check if an event key is an agent lifecycle event (vs fspec CLI event).",
+              "lastLine": "}"
             }
           ]
         }
@@ -207,7 +215,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "159-185",
+          "lines": "175-206",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
@@ -221,7 +229,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "let notification = merge_and_compile_definitions(",
+              "lastLine": "&user_config,"
             }
           ]
         }
@@ -232,7 +242,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "188-216",
+          "lines": "208-242",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
@@ -257,7 +267,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "// Only process agent lifecycle events",
+              "lastLine": "None => return Ok(vec![]),"
             }
           ]
         }
@@ -268,32 +280,39 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "219-244",
+          "lines": "244-285",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112
-              ]
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                243
+              ],
+              "firstLine": "/// Resolve the global timeout from the config hierarchy.",
+              "lastLine": "timeout: def.timeout.unwrap_or(global_timeout),"
             }
           ]
         }
@@ -304,7 +323,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "247-283",
+          "lines": "287-338",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/compiled.rs",
@@ -354,7 +373,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "//! Agent Lifecycle Hooks — Compiled Types",
+              "lastLine": "#[derive(Debug)]"
             }
           ]
         }
@@ -365,11 +386,12 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "287-320",
+          "lines": "342-380",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/compiled.rs",
               "lines": [
+                75,
                 76,
                 77,
                 78,
@@ -378,8 +400,18 @@
                 81,
                 82,
                 83,
-                84
-              ]
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Matcher for filtering tool names.",
+              "lastLine": "}"
             }
           ]
         }
@@ -390,11 +422,12 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "323-355",
+          "lines": "382-419",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/compiled.rs",
               "lines": [
+                75,
                 76,
                 77,
                 78,
@@ -403,8 +436,18 @@
                 81,
                 82,
                 83,
-                84
-              ]
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Matcher for filtering tool names.",
+              "lastLine": "}"
             }
           ]
         }
@@ -415,7 +458,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "358-386",
+          "lines": "421-455",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/loader.rs",
@@ -427,7 +470,9 @@
                 200,
                 201,
                 202
-              ]
+              ],
+              "firstLine": "// Parse as HookDefinition[]",
+              "lastLine": "fn extract_groups(event: &str, config: &Option<FspecHooksConfig>) -> Result<Vec<HookGroupConfig>> {"
             }
           ]
         }
@@ -438,7 +483,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "390-413",
+          "lines": "459-486",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/config.rs",
@@ -462,7 +507,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "pub struct HookDefinition {",
+              "lastLine": "/// Contains an optional matcher regex and a list of sequential commands."
             }
           ]
         }
@@ -473,7 +520,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_config_test.rs",
-          "lines": "416-441",
+          "lines": "488-515",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/config.rs",
@@ -497,7 +544,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "pub struct HookDefinition {",
+              "lastLine": "/// Contains an optional matcher regex and a list of sequential commands."
             }
           ]
         }
@@ -589,7 +638,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "payload_json: &str,",
+              "lastLine": "}"
             }
           ]
         }
@@ -621,7 +672,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": ".current_dir(&ctx.cwd)",
+              "lastLine": "stdout: String::new(),"
             }
           ]
         }
@@ -637,6 +690,8 @@
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
+                31,
+                32,
                 33,
                 34,
                 35,
@@ -679,8 +734,12 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// Run all session_start hooks and collect outcomes.",
+              "lastLine": "}"
             }
           ]
         }
@@ -692,80 +751,7 @@
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
           "lines": "250-276",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -779,8 +765,6 @@
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
-                77,
-                78,
                 79,
                 80,
                 81,
@@ -819,8 +803,14 @@
                 114,
                 115,
                 116,
-                117
-              ]
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "/// Run all session_end hooks.",
+              "lastLine": "}"
             }
           ]
         }
@@ -831,7 +821,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "303-324",
+          "lines": "305-327",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/executor.rs",
@@ -865,7 +855,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "let stdout = read_stdout(stdout_handle).await;",
+              "lastLine": "}"
             }
           ]
         }
@@ -876,7 +868,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "327-349",
+          "lines": "335-365",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
@@ -903,7 +895,9 @@
                 238,
                 239,
                 240
-              ]
+              ],
+              "firstLine": "message: message.to_string(),",
+              "lastLine": "\"Hook '{}' timed out after {}s\","
             }
           ]
         }
@@ -914,25 +908,8 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "352-374",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308
-              ]
-            }
-          ]
+          "lines": "367-399",
+          "implMappings": []
         }
       ]
     },
@@ -941,7 +918,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "378-393",
+          "lines": "403-420",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
@@ -1012,7 +989,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "if let Some(ref pd) = hso.permission_decision {",
+              "lastLine": "if !stderr.is_empty() {"
             }
           ]
         }
@@ -1023,24 +1002,20 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "396-416",
+          "lines": "422-443",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "// Priority 4: Exit code 2 + non-empty stderr → Deny",
+              "lastLine": "}"
             }
           ]
         }
@@ -1051,21 +1026,27 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "419-439",
+          "lines": "445-471",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "// Priority 4: Exit code 2 + non-empty stderr → Deny",
+              "lastLine": "}"
             }
           ]
         }
@@ -1076,25 +1057,24 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "442-464",
+          "lines": "473-500",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "// Non-zero exit (not 2) → Warning, continue",
+              "lastLine": "}"
             }
           ]
         }
@@ -1105,23 +1085,25 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "468-483",
+          "lines": "504-521",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+                63
+              ],
+              "firstLine": "// Priority 1: hookSpecificOutput.permissionDecision",
+              "lastLine": "}"
             }
           ]
         }
@@ -1132,23 +1114,25 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "486-507",
+          "lines": "523-547",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+                63
+              ],
+              "firstLine": "// Priority 1: hookSpecificOutput.permissionDecision",
+              "lastLine": "}"
             }
           ]
         }
@@ -1159,23 +1143,25 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "510-524",
+          "lines": "549-566",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
               "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
+                63
+              ],
+              "firstLine": "// Priority 1: hookSpecificOutput.permissionDecision",
+              "lastLine": "}"
             }
           ]
         }
@@ -1186,7 +1172,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "527-547",
+          "lines": "568-592",
           "implMappings": [
             {
               "file": "rust/core/src/lifecycle_hooks/response.rs",
@@ -1195,7 +1181,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "_ => {}",
+              "lastLine": "}"
             }
           ]
         }
@@ -1206,29 +1194,8 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "550-570",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430
-              ]
-            }
-          ]
+          "lines": "594-618",
+          "implMappings": []
         }
       ]
     },
@@ -1237,22 +1204,8 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "573-590",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430
-              ]
-            }
-          ]
+          "lines": "620-641",
+          "implMappings": []
         }
       ]
     },
@@ -1261,23 +1214,8 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_engine_test.rs",
-          "lines": "593-614",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316
-              ]
-            }
-          ]
+          "lines": "643-668",
+          "implMappings": []
         }
       ]
     },
@@ -1287,84 +1225,7 @@
         {
           "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "86-115",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1374,84 +1235,7 @@
         {
           "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "119-148",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1460,85 +1244,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
-          "lines": "152-186",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272
-              ]
-            }
-          ]
+          "lines": "153-198"
         }
       ]
     },
@@ -1552,7 +1258,6 @@
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
-                122,
                 123,
                 124,
                 125,
@@ -1631,8 +1336,12 @@
                 198,
                 199,
                 200,
-                201
-              ]
+                201,
+                202,
+                203
+              ],
+              "firstLine": "/// Run all user_prompt_submit hooks.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1648,16 +1357,18 @@
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
-                162,
-                163,
                 164,
                 165,
                 166,
                 167,
                 168,
                 169,
-                170
-              ]
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// Check for blocking via JSON response",
+              "lastLine": "}"
             }
           ]
         }
@@ -1686,7 +1397,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": ".clone()",
+              "lastLine": "additional_context.push(stdout_trimmed.to_string());"
             }
           ]
         }
@@ -1702,7 +1415,6 @@
             {
               "file": "rust/core/src/lifecycle_hooks/engine.rs",
               "lines": [
-                78,
                 79,
                 80,
                 81,
@@ -1743,8 +1455,12 @@
                 116,
                 117,
                 118,
-                119
-              ]
+                119,
+                120,
+                121
+              ],
+              "firstLine": "/// Run all session_end hooks.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1756,59 +1472,7 @@
         {
           "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
           "lines": "220-252",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1817,58 +1481,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/lifecycle_hooks_session_test.rs",
-          "lines": "256-297",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265
-              ]
-            }
-          ]
+          "lines": "264-317"
         }
       ]
     },
@@ -1878,84 +1491,7 @@
         {
           "file": "rust/core/tests/lifecycle_hooks_tool_test.rs",
           "lines": "200-260",
-          "implMappings": [
-            {
-              "file": "rust/core/src/lifecycle_hooks/engine.rs",
-              "lines": [
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -2034,6 +1570,6 @@
       "rust/core/src/lifecycle_hooks/engine.rs",
       "rust/core/src/lifecycle_hooks/response.rs"
     ],
-    "totalLinesCovered": 2443
+    "totalLinesCovered": 2150
   }
 }

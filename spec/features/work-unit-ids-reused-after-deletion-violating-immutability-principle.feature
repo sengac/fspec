@@ -43,15 +43,7 @@ Feature: Work unit IDs reused after deletion violating immutability principle
   @critical
   @happy-path
   Scenario: Multiple prefixes maintain separate high water marks
-    Given I have a project with work-units.json
-    When I create work unit "AUTH-001" with type "story"
-    And I create work unit "DASH-005" with type "story"
-    And I create work unit "TASK-010" with type "task"
-    Then the prefixCounters should contain:
-      | prefix | counter |
-      | AUTH   | 1       |
-      | DASH   | 5       |
-      | TASK   | 10      |
+    Given I have a project whose work-units.json has prefixCounters AUTH 1, DASH 5 and TASK 10
     When I create a new bug
     And I create a new story with prefix "AUTH"
     And I create a new story with prefix "DASH"
@@ -63,7 +55,7 @@ Feature: Work unit IDs reused after deletion violating immutability principle
 
   @critical
   @migration
-  Scenario: Migration calculates high water marks from existing IDs
+  Scenario: Next IDs are calculated from existing IDs when prefixCounters is absent
     Given I have a work-units.json file without prefixCounters field
     And existing work units:
       | id       | type  |
@@ -71,13 +63,6 @@ Feature: Work unit IDs reused after deletion violating immutability principle
       | BUG-025  | bug   |
       | AUTH-003 | story |
       | DASH-007 | story |
-    When the migration system loads work-units.json
-    Then the prefixCounters field should be created
-    And the prefixCounters should contain:
-      | prefix | counter |
-      | BUG    | 25      |
-      | AUTH   | 3       |
-      | DASH   | 7       |
     When I create a new bug
     Then the new bug should have ID "BUG-026"
 
@@ -87,8 +72,6 @@ Feature: Work unit IDs reused after deletion violating immutability principle
     Given I have an existing project with work-units.json
     And the highest bug ID is "BUG-054"
     And the work-units.json file has no prefixCounters field
-    When I run migration to add prefixCounters
-    Then the prefixCounters.BUG should be set to 54
     When I create a new bug with title "Attachment duplication"
     Then the new bug should have ID "BUG-055"
     And the prefixCounters.BUG should be updated to 55

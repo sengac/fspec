@@ -155,15 +155,20 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let workspace = self.selected_workspace_path();
         let handle: tokio::task::JoinHandle<()> = tokio::spawn(async move {
-            let files = match backend.changed_files().await {
-                Ok(files) => files,
-                Err(e) => {
-                    tracing::warn!(error = %e, "git-state refresh: changed_files failed");
-                    Vec::new()
-                }
-            };
-            let _ = action_tx.send(Action::GitChangedFilesLoaded(files));
+            // RPC-452: the selected workspace; a failed refresh is shown and
+            // the current list is kept.
+            let _ = action_tx.send(
+                match super::dispatch_changed_files::list_changed_files(backend.as_ref(), workspace)
+                    .await
+                {
+                    Ok(files) => Action::GitChangedFilesLoaded(files),
+                    Err(e) => Action::SessionOperationFailed(format!(
+                        "The changed files could not be refreshed: {e:#}"
+                    )),
+                },
+            );
         });
         self.pending_tasks.push(handle);
     }
@@ -175,17 +180,17 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        let calls = self.checkpoint_calls();
         let action_tx = self.action_tx.clone();
         let handle: tokio::task::JoinHandle<()> = tokio::spawn(async move {
-            let list = match backend.list_checkpoints().await {
-                Ok(list) => list,
-                Err(e) => {
-                    tracing::warn!(error = %e, "git-state refresh: list_checkpoints failed");
-                    Vec::new()
-                }
-            };
-            let _ = action_tx.send(Action::GitCheckpointsLoaded(list));
+            // RPC-453: the selected workspace; a failed refresh is shown and
+            // the current list is kept.
+            let _ = action_tx.send(match calls.list().await {
+                Ok(list) => Action::GitCheckpointsLoaded(list),
+                Err(e) => Action::SessionOperationFailed(format!(
+                    "The checkpoints could not be refreshed: {e:#}"
+                )),
+            });
         });
         self.pending_tasks.push(handle);
     }

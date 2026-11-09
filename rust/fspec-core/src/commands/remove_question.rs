@@ -11,7 +11,7 @@
 //!
 //! Reuses existing shared infrastructure:
 //! * [`crate::io::ensure::ensure_work_units_file`] — auto-create + load.
-//! * [`crate::io::locked_file::write_json_atomic`] — single atomic write.
+//! * [`crate::io::board::write_work_units`] — single atomic write.
 //! * [`crate::io::time::iso8601_now`] — millisecond ISO-8601 timestamps.
 //!
 //! ## Two-front-doors
@@ -27,7 +27,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `remove-question`.
@@ -111,6 +110,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-question")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists.
@@ -218,8 +219,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = RemoveQuestionResult {
         success: true,

@@ -16,22 +16,10 @@
                 63,
                 64,
                 65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                66
+              ],
+              "firstLine": "if list_height == 0 {",
+              "lastLine": "// loading indicator; a loaded-but-empty list shows an explicit"
             }
           ]
         }
@@ -42,7 +30,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/model_selector/tests_loading_empty.rs",
-          "lines": "72-108",
+          "lines": "72-104",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/rows_render.rs",
@@ -53,22 +41,10 @@
                 63,
                 64,
                 65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
+                66
+              ],
+              "firstLine": "if list_height == 0 {",
+              "lastLine": "// loading indicator; a loaded-but-empty list shows an explicit"
             }
           ]
         }
@@ -85,6 +61,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/rows_render.rs"
     ],
-    "totalLinesCovered": 108
+    "totalLinesCovered": 76
   }
 }

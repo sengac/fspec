@@ -4,10 +4,11 @@ pub(super) mod move_work_unit_up {
     #[derive(serde::Deserialize, schemars::JsonSchema)]
     #[serde(deny_unknown_fields)]
     pub struct Args {
+        workspace: String,
         id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -17,9 +18,8 @@ pub(super) mod move_work_unit_up {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
-            .move_work_unit_up(tarpc::context::current(), args.id)
+            .move_work_unit_up(tarpc::context::current(), args.workspace, args.id)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
@@ -31,10 +31,11 @@ pub(super) mod move_work_unit_down {
     #[derive(serde::Deserialize, schemars::JsonSchema)]
     #[serde(deny_unknown_fields)]
     pub struct Args {
+        workspace: String,
         id: String,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -44,9 +45,8 @@ pub(super) mod move_work_unit_down {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
-            .move_work_unit_down(tarpc::context::current(), args.id)
+            .move_work_unit_down(tarpc::context::current(), args.workspace, args.id)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
@@ -60,8 +60,8 @@ pub(super) mod get_model_info {
     pub struct Args {
         session_id: SessionId,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -71,11 +71,11 @@ pub(super) mod get_model_info {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .get_model_info(tarpc::context::current(), args.session_id)
             .await
-            .map_err(|e| InvokeError::Transport(e.to_string()))?;
+            .map_err(|e| InvokeError::Transport(e.to_string()))?
+            .map_err(InvokeError::Daemon)?;
         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

@@ -1,0 +1,306 @@
+{
+  "scenarios": [
+    {
+      "name": "A configured bearer header authenticates the handshake, discovery and a tool call",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "55-80",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/http_and_session_registry.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let custom_headers = match http_headers::parse_mcp_http_headers(headers.into_iter().flatten()) {",
+              "lastLine": "serve_and_discover("
+            },
+            {
+              "file": "rust/tools/src/mcp/http_headers.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "firstLine": "pub fn parse_mcp_http_headers<'a>(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A server that requires credentials refuses a connection without headers",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "82-99",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/http_and_session_registry.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let custom_headers = match http_headers::parse_mcp_http_headers(headers.into_iter().flatten()) {",
+              "lastLine": "serve_and_discover("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A reserved MCP header is refused",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "101-119",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/http_and_session_registry.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let custom_headers = match http_headers::parse_mcp_http_headers(headers.into_iter().flatten()) {",
+              "lastLine": "serve_and_discover("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent connections each send only their own token",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "121-157",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/http_and_session_registry.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let custom_headers = match http_headers::parse_mcp_http_headers(headers.into_iter().flatten()) {",
+              "lastLine": "serve_and_discover("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A daemon client configures an HTTP MCP server with headers for a session",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "173-201",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                51,
+                52
+              ],
+              "firstLine": "Http {",
+              "lastLine": "},"
+            },
+            {
+              "file": "rust/sessions/src/session_mcp.rs",
+              "lines": [
+                22
+              ],
+              "firstLine": "SessionMcpTransport::Http { url, headers } => HostMcpTransport::Http { url, headers },",
+              "lastLine": "SessionMcpTransport::Http { url, headers } => HostMcpTransport::Http { url, headers },"
+            },
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                188,
+                200,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "let mut established: HashMap<String, McpConnection> = HashMap::new();",
+              "lastLine": "/// write lock; a kept server that changed meanwhile aborts the swap."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An invalid header value is refused without revealing it",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "203-236",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/host_config.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "InvalidUrl(String),",
+              "lastLine": "/// Whether `connection` was configured with exactly `server`'s transport."
+            },
+            {
+              "file": "rust/tools/src/mcp/http_headers.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "firstLine": "#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug output of an HTTP transport shows header names but never values",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/mcp004_mcp_http_headers.rs",
+          "lines": "238-256",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_mcp.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": ".debug_struct(\"Http\")",
+              "lastLine": "Self::Sse { headers, .. } => f"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/mcp004_mcp_http_headers.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/mcp/http_and_session_registry.rs",
+      "rust/tools/src/mcp/http_headers.rs",
+      "rust/rpc-types/src/session_mcp.rs",
+      "rust/sessions/src/session_mcp.rs",
+      "rust/tools/src/mcp/host_config.rs"
+    ],
+    "totalLinesCovered": 314
+  }
+}

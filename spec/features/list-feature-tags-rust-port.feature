@@ -1,7 +1,9 @@
+@BUG-582
 @done
 @rust
 @cli
 @RPC-244
+@list
 Feature: Port list-feature-tags command to Rust
   """
   New impl file at rust/fspec-core/src/commands/list_feature_tags.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_features::run. Args struct deserializes `{file: String (required), showCategories?: bool, format?: 'text'|'json'}` with `#[serde(default)]` on the optional fields.

@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@diagram
 Feature: fspec add-diagram CLI subcommand (Rust port)
   """
   Clap derive subcommand `add-diagram` mirrors the TS Commander.js registration at

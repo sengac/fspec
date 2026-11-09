@@ -1,6 +1,8 @@
+@BUG-582
 @done
 @agent-manager
 @AMGR-012
+@tools
 Feature: Role management — set_role AgentManager action
   """
   set_role action dispatched in agent_manager handler — calls session_set_role(session_id, role_name, None, None) NAPI binding; empty role calls session_clear_role or sets empty

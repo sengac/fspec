@@ -16,12 +16,11 @@
 //! Scenarios 6–7 (terminal keyboard-enhancement flag plumbing) live in
 //! tests/terminal_keyboard_enhancement_rpc402.rs.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::multiline_input::{
     InputEventOutcome, InputGate, MultiLineInput,
 };
 use codelet_fspec_tui::Action;
+use codelet_test_helpers::TestResult;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 mod common;
@@ -46,7 +45,7 @@ fn key_event_with_kind(code: KeyCode, mods: KeyModifiers, kind: KeyEventKind) ->
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn shift_enter_mid_word_splits_the_line_and_grows_the_input_to_2_rows() {
+fn shift_enter_mid_word_splits_the_line_and_grows_the_input_to_2_rows() -> TestResult {
     // @step Given the agent input contains "hello world" with the cursor between "hello " and "world"
     let mut input = MultiLineInput::new();
     input.set_value("hello world");
@@ -84,6 +83,7 @@ fn shift_enter_mid_word_splits_the_line_and_grows_the_input_to_2_rows() {
 
     // @step And the input area reports 2 visible rows
     assert_eq!(input.visible_rows(), 2, "input must auto-grow to 2 rows");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ fn shift_enter_mid_word_splits_the_line_and_grows_the_input_to_2_rows() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn alt_enter_inserts_a_newline_instead_of_submitting() {
+fn alt_enter_inserts_a_newline_instead_of_submitting() -> TestResult {
     // @step Given the agent input contains "first line" with the cursor at the end
     let mut input = MultiLineInput::new();
     input.set_value("first line");
@@ -127,6 +127,7 @@ fn alt_enter_inserts_a_newline_instead_of_submitting() {
 
     // @step And the input area reports 2 visible rows
     assert_eq!(input.visible_rows(), 2, "input must auto-grow to 2 rows");
+    Ok(())
 }
 
 /// Supplementary (business rule 5 covers BOTH chords): Alt+Enter is an
@@ -136,7 +137,7 @@ fn alt_enter_inserts_a_newline_instead_of_submitting() {
 /// fallthrough bypassed `gate.block_edits`). (No @step comments: this
 /// augments the two gated/Alt scenarios rather than mapping 1:1.)
 #[test]
-fn alt_enter_is_gated_while_compacting() {
+fn alt_enter_is_gated_while_compacting() -> TestResult {
     let mut input = MultiLineInput::new();
     input.set_value("first line");
 
@@ -164,6 +165,7 @@ fn alt_enter_is_gated_while_compacting() {
         1,
         "gated Alt+Enter must not grow the input"
     );
+    Ok(())
 }
 
 /// Supplementary (rule 2/5 review follow-up): ANY modifier-Enter combo
@@ -172,7 +174,7 @@ fn alt_enter_is_gated_while_compacting() {
 /// Compacting. (No @step comments: augments the modifier-Enter
 /// scenarios rather than mapping 1:1.)
 #[test]
-fn ctrl_enter_inserts_a_newline_instead_of_submitting() {
+fn ctrl_enter_inserts_a_newline_instead_of_submitting() -> TestResult {
     let mut input = MultiLineInput::new();
     input.set_value("first line");
 
@@ -187,13 +189,14 @@ fn ctrl_enter_inserts_a_newline_instead_of_submitting() {
         "first line\n",
         "Ctrl+Enter must insert a newline at the cursor"
     );
+    Ok(())
 }
 
 /// Supplementary: Ctrl+Enter is an EDIT — the RPC-095 compacting gate
 /// must swallow it exactly like Shift+Enter / Alt+Enter. (No @step
 /// comments: augments the gated scenarios rather than mapping 1:1.)
 #[test]
-fn ctrl_enter_is_gated_while_compacting() {
+fn ctrl_enter_is_gated_while_compacting() -> TestResult {
     let mut input = MultiLineInput::new();
     input.set_value("first line");
 
@@ -221,6 +224,7 @@ fn ctrl_enter_is_gated_while_compacting() {
         1,
         "gated Ctrl+Enter must not grow the input"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -229,7 +233,7 @@ fn ctrl_enter_is_gated_while_compacting() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn plain_enter_submits_the_full_multi_line_buffer_and_resets_the_input() {
+fn plain_enter_submits_the_full_multi_line_buffer_and_resets_the_input() -> TestResult {
     // @step Given the agent input contains 3 lines composed with Shift+Enter
     let mut input = MultiLineInput::new();
     for (i, line) in ["line1", "line2", "line3"].iter().enumerate() {
@@ -258,7 +262,7 @@ fn plain_enter_submits_the_full_multi_line_buffer_and_resets_the_input() {
                 "submitted value must be all 3 lines joined by '\\n'"
             );
         }
-        other => panic!("plain Enter must submit; got {other:?}"),
+        other => return Err(format!("plain Enter must submit; got {other:?}").into()),
     }
 
     // @step And the input buffer is empty
@@ -267,6 +271,7 @@ fn plain_enter_submits_the_full_multi_line_buffer_and_resets_the_input() {
 
     // @step And the input area reports 1 visible row
     assert_eq!(input.visible_rows(), 1, "input must reset to 1 row");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -274,7 +279,7 @@ fn plain_enter_submits_the_full_multi_line_buffer_and_resets_the_input() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn key_release_events_are_ignored_by_the_input() {
+fn key_release_events_are_ignored_by_the_input() -> TestResult {
     // Drives the REAL production path: App::handle_event → Navigator →
     // AgentView::handle_event (dispatch.rs), where the Press-kind
     // filter must drop Release/Repeat events BEFORE any branch
@@ -311,7 +316,7 @@ fn key_release_events_are_ignored_by_the_input() {
     assert!(
         !actions
             .iter()
-            .any(|a| matches!(a, Action::InputSubmitted(_))),
+            .any(|a| matches!(a, Action::InputSubmitted(..))),
         "a Release event must never submit; emitted actions: {actions:?}"
     );
 
@@ -321,6 +326,7 @@ fn key_release_events_are_ignored_by_the_input() {
         "draft",
         "buffer must be unchanged by a Release event"
     );
+    Ok(())
 }
 
 /// Supplementary (rule 3, defense-in-depth): the widget-level
@@ -328,7 +334,7 @@ fn key_release_events_are_ignored_by_the_input() {
 /// protecting direct callers that bypass dispatch.rs. (No @step
 /// comments: the scenario maps 1:1 to the dispatch-path test above.)
 #[test]
-fn key_release_events_are_ignored_at_the_widget_boundary() {
+fn key_release_events_are_ignored_at_the_widget_boundary() -> TestResult {
     let mut input = MultiLineInput::new();
     input.set_value("draft");
 
@@ -349,6 +355,7 @@ fn key_release_events_are_ignored_at_the_widget_boundary() {
         "draft",
         "buffer must be unchanged by a Release event"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -356,7 +363,7 @@ fn key_release_events_are_ignored_at_the_widget_boundary() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn shift_enter_is_swallowed_while_the_session_is_compacting() {
+fn shift_enter_is_swallowed_while_the_session_is_compacting() -> TestResult {
     // @step Given the agent input contains "draft" and the compacting edit gate is active
     let mut input = MultiLineInput::new();
     input.set_value("draft");
@@ -387,4 +394,5 @@ fn shift_enter_is_swallowed_while_the_session_is_compacting() {
         1,
         "input must not grow while compacting"
     );
+    Ok(())
 }

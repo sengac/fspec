@@ -4,40 +4,9 @@
       "name": "Streaming surfaces vLLM-native `reasoning` field as reasoning output",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1756-1792",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
-              "lines": [
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327
-              ]
-            }
-          ]
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_streaming_tests.rs",
+          "lines": "120-161",
+          "implMappings": []
         }
       ]
     },
@@ -45,40 +14,9 @@
       "name": "Streaming still surfaces Z.AI/GLM `reasoning_content` field as reasoning output",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1798-1831",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
-              "lines": [
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327
-              ]
-            }
-          ]
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_streaming_tests.rs",
+          "lines": "163-201",
+          "implMappings": []
         }
       ]
     },
@@ -86,40 +24,9 @@
       "name": "Streaming concatenates reasoning with reasoning_content first then reasoning when both fields are present",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1837-1877",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
-              "lines": [
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327
-              ]
-            }
-          ]
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_streaming_tests.rs",
+          "lines": "203-248",
+          "implMappings": []
         }
       ]
     },
@@ -127,40 +34,9 @@
       "name": "Streaming passes through normal content chunks unchanged when no reasoning fields are present",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1883-1916",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
-              "lines": [
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327
-              ]
-            }
-          ]
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_streaming_tests.rs",
+          "lines": "250-285",
+          "implMappings": []
         }
       ]
     },
@@ -168,78 +44,12 @@
       "name": "Non-streaming surfaces vLLM-native `reasoning` field on the assistant message",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1594-1638",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_tests.rs",
+          "lines": "70-116",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                881,
-                882,
-                883,
-                884,
-                885,
-                886,
-                887,
-                888,
-                889,
-                890,
-                891,
-                892,
-                893,
-                894,
-                895,
-                896,
-                897,
-                898,
-                899,
-                900,
-                901,
-                902,
-                903,
-                904,
-                905,
-                906,
-                907,
-                908,
-                909,
-                910,
-                911,
-                912,
-                913,
-                914,
-                915,
-                916,
-                917,
-                918,
-                919,
-                920,
-                921,
-                922,
-                923,
-                924,
-                925,
-                926,
-                927,
-                928
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Non-streaming surfaces Z.AI/GLM `reasoning_content` field on the assistant message",
-      "testMappings": [
-        {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1641-1681",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-              "lines": [
-                129,
-                130,
                 131,
                 132,
                 133,
@@ -265,36 +75,9 @@
                 153,
                 154,
                 155,
-                156
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Non-streaming works unchanged when the assistant message has no reasoning field",
-      "testMappings": [
-        {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1684-1724",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-              "lines": [
-                881,
-                882,
-                883,
-                884,
-                885,
-                886,
-                887,
-                888,
-                889,
-                890,
-                891,
-                892,
-                893,
+                156,
+                157,
+                158,
                 894,
                 895,
                 896,
@@ -329,8 +112,289 @@
                 925,
                 926,
                 927,
-                928
-              ]
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967
+              ],
+              "firstLine": "Assistant {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-streaming surfaces Z.AI/GLM `reasoning_content` field on the assistant message",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_tests.rs",
+          "lines": "118-160",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967
+              ],
+              "firstLine": "Assistant {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-streaming works unchanged when the assistant message has no reasoning field",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_tests.rs",
+          "lines": "162-204",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967
+              ],
+              "firstLine": "Assistant {",
+              "lastLine": "}"
             }
           ]
         }
@@ -340,8 +404,8 @@
       "name": "Outgoing request body never contains reasoning-suppression keys",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1727-1750",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_081_tests.rs",
+          "lines": "206-230",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -433,7 +497,9 @@
                 1240,
                 1241,
                 1242
-              ]
+              ],
+              "firstLine": "/// Enable strict mode for tool schemas.",
+              "lastLine": ".into_iter()"
             }
           ]
         }
@@ -445,12 +511,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/prov_081_streaming_tests.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/prov_081_tests.rs"
     ],
     "implFiles": [
-      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
     ],
-    "totalLinesCovered": 608
+    "totalLinesCovered": 714
   }
 }

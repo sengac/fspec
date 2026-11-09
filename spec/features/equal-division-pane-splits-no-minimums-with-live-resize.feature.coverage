@@ -1,37 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "/mux board agent agent divides the width equally across three panes",
+      "name": "/mux board, agent, agent divides the width equally across three panes",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "41-68",
+          "lines": "51-70",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -49,35 +27,58 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "/mux 4 divides the width equally across four panes",
+      "name": "/mux board, agent, files, checkpoints divides the width equally across four panes",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "76-96",
+          "lines": "89-107",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234
-              ]
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -88,33 +89,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "104-119",
+          "lines": "123-129",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -132,8 +111,16 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -144,33 +131,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "127-155",
+          "lines": "147-162",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -188,8 +153,16 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -200,33 +173,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "163-183",
+          "lines": "180-205",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -244,8 +195,43 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/drag.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "firstLine": "pub fn reweight(layout: &mut MuxLayout, divider: &Divider, before_cells: u16) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -256,11 +242,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "191-238",
+          "lines": "224-273",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/render.rs",
               "lines": [
+                31,
                 32,
                 33,
                 34,
@@ -292,62 +279,34 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
                 69,
                 70,
                 71,
-                72,
                 73,
-                74,
                 75,
                 76,
                 77,
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub checkpoints: &'a mut CheckpointsView,",
+              "lastLine": "width: area.width,"
             }
           ]
         }
       ]
     },
     {
-      "name": "/mux board agent 40 honors the percent even below the old minimum",
+      "name": "/mux board:2, agent:3 honors the weights even below the old minimum",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux003.rs",
-          "lines": "247-266",
+          "lines": "290-304",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/layout.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
               "lines": [
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -365,8 +324,16 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn split(available: u16, weights: &[u32]) -> Vec<u16> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -381,10 +348,10 @@
       "rust/fspec-tui/tests/mux003.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/multiplex/layout.rs",
-      "rust/fspec-tui/src/views/multiplex/mod.rs",
+      "rust/fspec-tui/src/views/multiplex/layout_tree/geometry.rs",
+      "rust/fspec-tui/src/views/multiplex/layout_tree/drag.rs",
       "rust/fspec-tui/src/views/multiplex/render.rs"
     ],
-    "totalLinesCovered": 443
+    "totalLinesCovered": 359
   }
 }

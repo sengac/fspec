@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @error-handling
 @cli
 @bug-fix
 @compaction
 @PROV-010
+@validation
 Feature: False positive prompt-too-long detection triggers empty compaction on Opus 4.6
   """
   Fix is_prompt_too_long_error() in rust/cli/src/interactive/stream_loop.rs to exclude thinking budget errors

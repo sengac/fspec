@@ -10,8 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                57,
-                58,
                 59,
                 60,
                 61,
@@ -103,8 +101,13 @@
                 147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "write_json_atomic(&path, &data)?;"
             }
           ]
         }
@@ -115,14 +118,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
-          "lines": "121-140",
+          "lines": "127-153",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -130,8 +130,13 @@
                 125,
                 126,
                 127,
-                128
-              ]
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "return Err(FspecCoreError::InvalidArgs {",
+              "lastLine": "let mut item: Map<String, Value> = Map::new();"
             }
           ]
         }
@@ -147,9 +152,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                118,
-                119,
-                120,
                 121,
                 122,
                 123,
@@ -157,8 +159,13 @@
                 125,
                 126,
                 127,
-                128
-              ]
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "return Err(FspecCoreError::InvalidArgs {",
+              "lastLine": "let mut item: Map<String, Value> = Map::new();"
             }
           ]
         }
@@ -169,22 +176,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
-          "lines": "197-223",
+          "lines": "213-245",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "// the add path). Capture its stable id, then drop the borrow.",
+              "lastLine": ""
             }
           ]
         }
@@ -195,27 +204,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
-          "lines": "225-285",
+          "lines": "247-307",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -243,8 +236,26 @@
                 130,
                 131,
                 132,
-                133
-              ]
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "// [3] Find the bounded context by name (TS does NOT filter deleted on",
+              "lastLine": "es.insert(\"nextItemId\".to_string(), Value::from(item_id + 1));"
             }
           ]
         }
@@ -255,14 +266,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_command_to_foundation.rs",
-          "lines": "287-308",
+          "lines": "309-330",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_command_to_foundation.rs",
               "lines": [
-                74,
-                75,
-                76,
                 77,
                 78,
                 79,
@@ -299,8 +307,13 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "let root = data",
+              "lastLine": ""
             }
           ]
         }
@@ -317,6 +330,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_command_to_foundation.rs"
     ],
-    "totalLinesCovered": 432
+    "totalLinesCovered": 446
   }
 }

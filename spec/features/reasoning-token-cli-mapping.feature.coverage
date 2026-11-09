@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_012_token_info_reasoning_test.rs",
-          "lines": "17-35",
+          "lines": "14-31",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/output.rs",
@@ -29,7 +29,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "output_tokens: usage.output_tokens,",
+              "lastLine": "output_tokens: update.output_tokens,"
             }
           ]
         }
@@ -45,9 +47,6 @@
             {
               "file": "rust/cli/src/interactive/output.rs",
               "lines": [
-                31,
-                32,
-                33,
                 34,
                 35,
                 36,
@@ -58,8 +57,17 @@
                 41,
                 42,
                 43,
-                44
-              ]
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// Create TokenInfo from ApiTokenUsage with tokens per second",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,6 +84,6 @@
     "implFiles": [
       "rust/cli/src/interactive/output.rs"
     ],
-    "totalLinesCovered": 64
+    "totalLinesCovered": 67
   }
 }

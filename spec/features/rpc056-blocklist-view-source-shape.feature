@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-445
 @done
 @testing
 @tui
@@ -32,7 +34,7 @@ Feature: /blocklist RPC surface source shape
 
   Scenario: SessionManagerHandle declares blocklist_list
     Given the file rust/core/src/session_manager_handle.rs is compiled
-    Then it declares a trait method named "blocklist_list" that returns Vec<BlocklistRuleInfo>
+    Then it declares a trait method named "blocklist_list" that returns Result<Vec<BlocklistRuleInfo>, String>
 
   Scenario: StubSessionManagerHandle exposes a blocklist_list call counter
     Given the file rust/core/src/session_manager_handle.rs is compiled
@@ -40,7 +42,7 @@ Feature: /blocklist RPC surface source shape
 
   Scenario: FspecService declares blocklist_list
     Given the file rust/rpc/src/lib.rs is compiled
-    Then it declares an async fn named "blocklist_list" with return type Vec<BlocklistRuleInfo>
+    Then it declares an async fn named "blocklist_list" with return type Result<Vec<BlocklistRuleInfo>, String>
 
   Scenario: FspecBackend declares blocklist_list
     Given the file rust/fspec-tui/src/transport/mod.rs is compiled

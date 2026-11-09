@@ -4,14 +4,12 @@
       "name": "A PDF-shape result exceeding the cap is truncated with a continue notice",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1517-1560",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/pdf_image_cap_tests.rs",
+          "lines": "45-91",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -73,8 +71,21 @@
                 176,
                 177,
                 178,
-                179
-              ]
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool",
+              "lastLine": "}"
             }
           ]
         }
@@ -84,8 +95,8 @@
       "name": "A PDF-shape result at or under the cap is unchanged",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1562-1589",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/pdf_image_cap_tests.rs",
+          "lines": "93-120",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -108,7 +119,9 @@
                 197,
                 198,
                 199
-              ]
+              ],
+              "firstLine": "let dropped = pages.len() - last_rendered_page;",
+              "lastLine": "// The content field may contain a JSON string with image data"
             }
           ]
         }
@@ -118,26 +131,32 @@
       "name": "The nested-text variant obeys the same cap",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1591-1622",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/pdf_image_cap_tests.rs",
+          "lines": "122-160",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258
-              ]
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
+              ],
+              "firstLine": "// Check for text type from Read tool: {\"type\":\"text\",\"content\":\"...\"}",
+              "lastLine": "}"
             }
           ]
         }
@@ -147,13 +166,12 @@
       "name": "The per-image dimension defense remains independent of the count cap",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1624-1680",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/pdf_image_cap_tests.rs",
+          "lines": "162-214",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                150,
                 151,
                 152,
                 153,
@@ -169,8 +187,21 @@
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "if image_parts >= MAX_TOOL_RESULT_PDF_PAGES {",
+              "lastLine": "}"
             }
           ]
         }
@@ -182,11 +213,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/patches/rig-core/src/agent/prompt_request/streaming/pdf_image_cap_tests.rs"
     ],
     "implFiles": [
       "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
-    "totalLinesCovered": 273
+    "totalLinesCovered": 302
   }
 }

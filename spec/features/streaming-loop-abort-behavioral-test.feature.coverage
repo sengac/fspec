@@ -5,11 +5,15 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
-          "lines": "181-246",
+          "lines": "193-258",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
+                110,
+                111,
+                112,
+                113,
                 114,
                 115,
                 116,
@@ -92,16 +96,46 @@
                 193,
                 194,
                 195,
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
+                196
+              ],
+              "firstLine": "/// HOOK-013: Track last tool call name+args for post_tool_use hooks",
+              "lastLine": "if let Ok(fired) = self.loop_abort_fired.lock() {"
             },
             {
               "file": "rust/providers/src/stub_model.rs",
               "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
                 135,
                 136,
                 137,
@@ -131,34 +165,31 @@
                 161,
                 162,
                 163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "async fn stream(",
+              "lastLine": "std::sync::LazyLock::new(|| std::sync::Mutex::new(None));"
             }
           ]
         }
@@ -169,7 +200,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
-          "lines": "254-313",
+          "lines": "264-337",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -202,7 +233,70 @@
                 331,
                 332,
                 333
-              ]
+              ],
+              "firstLine": "///   the cooldown (a new loop episode).",
+              "lastLine": "self.last_signal = Some(signal);"
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629
+              ],
+              "firstLine": "fn persist_assistant_outcome(",
+              "lastLine": "}"
             }
           ]
         }
@@ -213,32 +307,72 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig015_loop_abort_behavioral.rs",
-          "lines": "321-369",
+          "lines": "343-390",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529,
-                530
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "if let Some(loop_abort_note) = (!pending.is_manual_compaction)",
+              "lastLine": "});"
+            },
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389
+              ],
+              "firstLine": "pub fn build_loop_abort_recovery_message(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub fn interrupt_loop_detector(&self, note: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -256,8 +390,9 @@
       "rust/agent-loop/src/background_output.rs",
       "rust/providers/src/stub_model.rs",
       "rust/agent-loop/src/stream_loop_detector.rs",
-      "rust/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/sessions/src/background_session/interruption.rs"
     ],
-    "totalLinesCovered": 366
+    "totalLinesCovered": 484
   }
 }

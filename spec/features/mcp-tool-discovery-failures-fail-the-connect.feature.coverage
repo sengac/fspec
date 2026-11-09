@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "A tools/list error fails the connect",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/mcp012_tool_discovery_failures_fail_the_connect.rs",
+          "lines": "45-59",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/stdio_and_routing.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// MCP-012: tool discovery is bounded like the handshake, and a failed or",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unanswered tools/list fails the connect within the timeout",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/mcp012_tool_discovery_failures_fail_the_connect.rs",
+          "lines": "61-76",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/mcp/stdio_and_routing.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "// MCP-012: tool discovery is bounded like the handshake, and a failed or",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/mcp012_tool_discovery_failures_fail_the_connect.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/mcp/stdio_and_routing.rs"
+    ],
+    "totalLinesCovered": 93
+  }
+}

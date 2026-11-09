@@ -1,5 +1,7 @@
 @wip
 @RPC-236
+@cli
+@tag-management
 Feature: fspec generate-tags-md CLI subcommand
   """
   CLI bridge: rust/fspec/src/generate_tags_md.rs — clap-derived struct mirroring the TS

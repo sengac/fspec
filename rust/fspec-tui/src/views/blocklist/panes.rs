@@ -8,6 +8,9 @@
 //! plus `Showing X-Y of N`), the right details pane, and the empty-state
 //! placeholder. Split out of `render.rs` so every file stays under 300
 //! lines; called by `BlocklistView::render` in `render.rs`.
+//!
+//! TUI-131 (spec/features/long-text-wraps-instead-of-being-cut-off.feature):
+//! the details pane wraps every field to the pane width.
 
 use std::collections::HashSet;
 
@@ -17,7 +20,10 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
+use unicode_width::UnicodeWidthStr;
+
 use super::{action_color, derive_category};
+use crate::views::agent::text_wrap::{wrap_rows_hanging, wrapped_lines};
 use crate::views::diff_common::render_pane_scrollbar;
 
 /// Render the windowed left list pane. Reconciles `scroll_offset` /
@@ -141,13 +147,49 @@ pub(super) fn render_left_pane(
     }
 }
 
+/// TUI-131: `label` (white) then `value`, wrapped to `width` with the
+/// value's first row after the label, so a long value is shown whole.
+fn field_lines(label: &str, value: &str, value_style: Style, width: usize) -> Vec<Line<'static>> {
+    let first_width = width.saturating_sub(label.width());
+    wrap_rows_hanging(value, first_width, width)
+        .into_iter()
+        .enumerate()
+        .map(|(row, (text, _))| {
+            let value = Span::styled(text, value_style);
+            if row == 0 {
+                let label = Span::styled(label.to_string(), Style::default().fg(Color::White));
+                Line::from(vec![label, value])
+            } else {
+                Line::from(value)
+            }
+        })
+        .collect()
+}
+
+/// TUI-131: a white `heading` row, then `text` wrapped to `width`.
+fn section_lines(heading: &str, text: &str, style: Style, width: usize) -> Vec<Line<'static>> {
+    let mut lines = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            heading.to_string(),
+            Style::default().fg(Color::White),
+        )),
+    ];
+    lines.extend(wrapped_lines(text, width, style));
+    lines
+}
+
+/// Paint the details of the `focused` rule. TUI-131: every field is
+/// wrapped to the pane width (`text_wrap`), so a long pattern, reason or
+/// guidance is shown whole instead of being cut at the pane edge.
 pub(super) fn render_right_pane(
     area: Rect,
     buf: &mut Buffer,
     focused: Option<&codelet_rpc_types::BlocklistRuleInfo>,
     session_disabled: &HashSet<String>,
 ) {
-    let mut lines: Vec<Line<'_>> = Vec::new();
+    let width = usize::from(area.width);
+    let mut lines: Vec<Line<'static>> = Vec::new();
     if let Some(rule) = focused {
         lines.push(Line::from(Span::styled(
             "Rule Details",
@@ -156,57 +198,26 @@ pub(super) fn render_right_pane(
                 .add_modifier(Modifier::BOLD),
         )));
         lines.push(Line::from(""));
-        lines.push(Line::from(vec![
-            Span::styled("ID: ", Style::default().fg(Color::White)),
-            Span::raw(rule.id.clone()),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("Action: ", Style::default().fg(Color::White)),
-            Span::styled(
-                rule.action.clone(),
-                Style::default().fg(action_color(&rule.action)),
-            ),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("Source: ", Style::default().fg(Color::White)),
-            Span::styled(rule.source.clone(), Style::default().fg(Color::DarkGray)),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("Category: ", Style::default().fg(Color::White)),
-            Span::styled(
-                derive_category(&rule.pattern).to_string(),
-                Style::default().fg(Color::Magenta),
-            ),
-        ]));
-        lines.push(Line::from(""));
-        lines.push(Line::from(Span::styled(
-            "Pattern:",
-            Style::default().fg(Color::White),
-        )));
-        lines.push(Line::from(Span::styled(
-            rule.pattern.clone(),
-            Style::default().fg(Color::DarkGray),
-        )));
+        let category = derive_category(&rule.pattern).to_string();
+        let action = Style::default().fg(action_color(&rule.action));
+        let dim = Style::default().fg(Color::DarkGray);
+        let magenta = Style::default().fg(Color::Magenta);
+        lines.extend(field_lines("ID: ", &rule.id, Style::default(), width));
+        lines.extend(field_lines("Action: ", &rule.action, action, width));
+        lines.extend(field_lines("Source: ", &rule.source, dim, width));
+        lines.extend(field_lines("Category: ", &category, magenta, width));
+        lines.extend(section_lines("Pattern:", &rule.pattern, dim, width));
         if !rule.reason.is_empty() {
-            lines.push(Line::from(""));
-            lines.push(Line::from(Span::styled(
+            lines.extend(section_lines(
                 "Reason:",
-                Style::default().fg(Color::White),
-            )));
-            lines.push(Line::from(rule.reason.clone()));
+                &rule.reason,
+                Style::default(),
+                width,
+            ));
         }
-        if let Some(g) = rule.guidance.as_ref() {
-            if !g.is_empty() {
-                lines.push(Line::from(""));
-                lines.push(Line::from(Span::styled(
-                    "Guidance:",
-                    Style::default().fg(Color::White),
-                )));
-                lines.push(Line::from(Span::styled(
-                    g.clone(),
-                    Style::default().fg(Color::Green),
-                )));
-            }
+        if let Some(g) = rule.guidance.as_ref().filter(|g| !g.is_empty()) {
+            let green = Style::default().fg(Color::Green);
+            lines.extend(section_lines("Guidance:", g, green, width));
         }
         lines.push(Line::from(""));
         let disabled = session_disabled.contains(&rule.id);
@@ -215,10 +226,8 @@ pub(super) fn render_right_pane(
         } else {
             (Color::Green, "enabled")
         };
-        lines.push(Line::from(vec![
-            Span::styled("Session Status: ", Style::default().fg(Color::White)),
-            Span::styled(status_text, Style::default().fg(status_color)),
-        ]));
+        let status = Style::default().fg(status_color);
+        lines.extend(field_lines("Session Status: ", status_text, status, width));
     } else {
         lines.push(Line::from(Span::styled(
             "(no rule selected)",

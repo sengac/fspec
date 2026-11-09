@@ -32,8 +32,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -107,8 +105,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -146,8 +148,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -221,8 +221,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -260,8 +264,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -335,8 +337,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -374,8 +380,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -449,8 +453,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -461,7 +469,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_persona.rs",
-          "lines": "186-219",
+          "lines": "189-225",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_persona.rs",
@@ -488,8 +496,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -563,8 +569,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -575,7 +585,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_persona.rs",
-          "lines": "220-251",
+          "lines": "227-257",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_persona.rs",
@@ -602,8 +612,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -677,8 +685,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -689,7 +701,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_persona.rs",
-          "lines": "252-282",
+          "lines": "259-288",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_persona.rs",
@@ -716,8 +728,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -791,8 +801,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -803,7 +817,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_persona.rs",
-          "lines": "283-312",
+          "lines": "290-318",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_persona.rs",
@@ -830,8 +844,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -905,8 +917,12 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
             }
           ]
         }
@@ -917,7 +933,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_persona.rs",
-          "lines": "313-347",
+          "lines": "320-354",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_persona.rs",
@@ -944,8 +960,6 @@
                 113,
                 114,
                 115,
-                116,
-                117,
                 118,
                 119,
                 120,
@@ -1019,8 +1033,118 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193
+              ],
+              "firstLine": "reason: format!(\"failed to parse args: {e}\"),",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Three placeholder personas are all cleared before the real persona is added",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_persona.rs",
+          "lines": "356-388",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "// Clear an all-placeholder array before appending the real persona.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Placeholder personas in foundation.json.draft are cleared before the real persona is added",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_persona.rs",
+          "lines": "390-427",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_persona.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "// Draft precedence: prefer foundation.json.draft when present.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1028,8 +1152,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_persona.rs"
@@ -1037,6 +1161,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_persona.rs"
     ],
-    "totalLinesCovered": 1170
+    "totalLinesCovered": 1311
   }
 }

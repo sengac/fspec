@@ -4,8 +4,8 @@
       "name": "persist_user_message writes a User MessageEnvelope before the LLM stream begins",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "102-138",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "16-48",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
@@ -48,7 +48,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "let envelope = envelope(",
+              "lastLine": ") -> Result<(), String> {"
             }
           ]
         }
@@ -58,12 +60,20 @@
       "name": "persist_assistant_message_internal writes an Assistant envelope with provider and stop_reason",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "140-179",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "54-89",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
                 66,
                 67,
                 68,
@@ -116,19 +126,10 @@
                 115,
                 116,
                 117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129
-              ]
+                118
+              ],
+              "firstLine": "pub fn persist_assistant_message_internal(",
+              "lastLine": "}"
             }
           ]
         }
@@ -138,21 +139,23 @@
       "name": "PROV-039 — stop_reason=None becomes the literal \"unknown\" on disk",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "181-209",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "95-119",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
                 110,
-                111
-              ]
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "MessagePayload::Assistant(AssistantMessage {",
+              "lastLine": "}),"
             }
           ]
         }
@@ -162,12 +165,24 @@
       "name": "persist_tool_result_internal writes a User envelope tagged with provider \"tool\"",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "211-254",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "125-164",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
                 132,
                 133,
                 134,
@@ -211,20 +226,10 @@
                 172,
                 173,
                 174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
+                175
+              ],
+              "firstLine": "pub fn persist_tool_result_internal(",
+              "lastLine": "}"
             }
           ]
         }
@@ -234,8 +239,8 @@
       "name": "persist_token_state updates the session manifest's cumulative token totals",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "256-279",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "170-189",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
@@ -265,7 +270,9 @@
                 212,
                 213,
                 214
-              ]
+              ],
+              "firstLine": "content",
+              "lastLine": "content: String,"
             }
           ]
         }
@@ -275,41 +282,61 @@
       "name": "persist_user_message returns Err on a missing manifest without panicking",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "281-303",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+          "lines": "195-213",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
-                33,
-                34,
-                35
-              ]
+                16,
+                17,
+                18,
+                218,
+                219
+              ],
+              "firstLine": "pub fn persist_user_message(session_id: &uuid::Uuid, text: &str) -> Result<(), String> {",
+              "lastLine": ".map_err(|_| \"persistence admission failed; original remains with caller\")?;"
             }
           ]
         }
       ]
     },
     {
-      "name": "Source-shape — agent_loop body invokes persist_user_message before dispatching to the provider",
+      "name": "Source-shape — the turn loop durably persists the input before dispatching to the provider",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "321-357",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_turn.rs",
+          "lines": "11-85",
           "implMappings": [
             {
-              "file": "rust/agent-loop/src/agent_loop.rs",
+              "file": "rust/agent-loop/src/agent_loop/prompt.rs",
               "lines": [
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "if let Err(error) = admission::store_original(session, pending).await {",
+              "lastLine": "session.set_status(SessionStatus::Running);"
             }
           ]
         }
@@ -319,12 +346,16 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::ToolResult arm persists assistant before tool_result",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "359-395",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_turn.rs",
+          "lines": "92-115",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
+                136,
+                137,
+                138,
+                139,
                 140,
                 141,
                 142,
@@ -335,50 +366,64 @@
                 147,
                 148,
                 149,
-                150,
-                151,
-                152,
-                153,
-                154
-              ]
+                150
+              ],
+              "firstLine": "// the POC-validated RIG-014 defaults.",
+              "lastLine": "text_loop_detector: Arc::new(std::sync::Mutex::new(detector)),"
             }
           ]
         }
       ]
     },
     {
-      "name": "Source-shape — BackgroundOutput's StreamEvent::Done arm persists assistant then token state",
+      "name": "Source-shape — the Done arm persists the assistant and token state is settled per provider request",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "397-437",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_turn.rs",
+          "lines": "122-188",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281
-              ]
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665
+              ],
+              "firstLine": "StreamEvent::Done(stop_reason) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -388,18 +433,20 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::Error arm flushes accumulated assistant content",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "439-464",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_arms.rs",
+          "lines": "11-28",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                250,
-                251,
-                252,
-                253,
-                254
-              ]
+                613,
+                614,
+                615,
+                616,
+                617
+              ],
+              "firstLine": "StreamEvent::Error(error) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -409,18 +456,69 @@
       "name": "Source-shape — BackgroundOutput's StreamEvent::Interrupted arm flushes accumulated assistant content",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "466-491",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_arms.rs",
+          "lines": "35-80",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                255,
-                256,
-                257,
-                258,
-                259
-              ]
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629
+              ],
+              "firstLine": "fn persist_assistant_outcome(",
+              "lastLine": "}"
             }
           ]
         }
@@ -430,8 +528,8 @@
       "name": "Boundary — persistence calls in codelet-agent-loop import from crate::persist (not codelet_napi)",
       "testMappings": [
         {
-          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs",
-          "lines": "493-540",
+          "file": "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_arms.rs",
+          "lines": "87-148",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persist.rs",
@@ -456,7 +554,9 @@
                 18,
                 19,
                 20
-              ]
+              ],
+              "firstLine": "use crate::persistence_retry::{submit, PersistenceSpool, RecoveryRecord};",
+              "lastLine": "pub fn persist_user_content("
             }
           ]
         }
@@ -468,13 +568,15 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/agent-loop/tests/rpc080_agent_loop_persistence.rs"
+      "rust/agent-loop/tests/rpc080_agent_loop_persistence/behaviour.rs",
+      "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_turn.rs",
+      "rust/agent-loop/tests/rpc080_agent_loop_persistence/source_shape_arms.rs"
     ],
     "implFiles": [
       "rust/agent-loop/src/persist.rs",
-      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/agent_loop/prompt.rs",
       "rust/agent-loop/src/background_output.rs"
     ],
-    "totalLinesCovered": 682
+    "totalLinesCovered": 811
   }
 }

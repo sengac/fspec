@@ -59,7 +59,7 @@ fn remediation_for(key: &str) -> &'static str {
 
 /// Dispatcher entry point. `args_json` carries no flags for this command.
 pub async fn run(_args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {
-    let user_dir = user_dir();
+    let user_dir = codelet_common::user_dir::fspec_user_dir().map_err(FspecCoreError::Message)?;
     let config_path = user_dir.join("fspec-config.json");
 
     // ---- Resolve the user-scope file contents (read-only) ----
@@ -154,24 +154,6 @@ pub async fn run(_args_json: &str, _project_root: &Path) -> Result<String, Fspec
         "message": message,
         "warnings": warnings
     }))
-}
-
-/// Resolve the user-scope dir: `FSPEC_USER_DIR` override first (tests),
-/// then `$HOME/.fspec` (Windows: `USERPROFILE`). Returns a relative
-/// `.fspec` when no home can be resolved — the (almost certainly absent)
-/// file then simply validates as clean, matching the sibling commands'
-/// graceful-degrade convention.
-fn user_dir() -> std::path::PathBuf {
-    if let Some(dir) = std::env::var_os("FSPEC_USER_DIR") {
-        if !dir.is_empty() {
-            return std::path::PathBuf::from(dir);
-        }
-    }
-    let home = std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE"));
-    match home {
-        Some(h) => std::path::PathBuf::from(h).join(".fspec"),
-        None => std::path::PathBuf::from(".fspec"),
-    }
 }
 
 /// Short human name for a JSON top-level value (warning text only).

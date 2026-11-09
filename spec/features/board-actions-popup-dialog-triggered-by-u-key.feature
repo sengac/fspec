@@ -6,6 +6,7 @@
 @ui-enhancement
 @tui
 @BOARD-023
+@BUG-436
 Feature: Board actions popup dialog triggered by the u key
   """
   New Action::OpenBoardKeybindingDialog variant (components/mod.rs Action enum, next to OpenMuxConfigDialog) emitted by BoardView via views/board/keys.rs handle_mode_view_key on modifier-free 'u'/'U' (case-insensitive — the arm matches BOTH KeyCode::Char('u') and KeyCode::Char('U') with a no-CONTROL guard, mirroring the a/c/f/d/m pattern). App::dispatch gains a new app/dispatch_board_keybinding.rs try_dispatch arm calling handle_open_board_keybinding_dialog() — idempotent on dialog id 'board-actions-dialog' (compositor.contains guard), seeds the dialog with the selected work unit's session target (Option<SessionId> snapshot at open time). The dialog (components/board_keybinding_dialog.rs) is titled 'Actions' and lists exactly 8 rows — the six board shortcuts from views/board/board_shortcuts.rs (C/F/D/./ /M) then '? Help' then 'Esc Exit'; there is NO trigger row inside the dialog (it is already open; Esc closes it). Two further Action variants OpenBoardHelp and OpenBoardExitConfirmation route to the SAME push helpers the stage-4 App shortcuts in app/events.rs use for '?' (HelpDialog::for_board) and Esc (BoardExitConfirmationDialog) — one shared push helper each (DRY).
@@ -74,17 +75,15 @@ Feature: Board actions popup dialog triggered by the u key
     I want to press the 'u' key to open an actions popup dialog explaining every board shortcut and select one with the up/down arrows
     So that I can discover and trigger board actions without memorizing the top-row chord, and the header stays uncluttered
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: u opens the actions dialog from the single Board view
     Given I am in the single Board view with mux disabled
     When I press the 'u' key
     Then the actions dialog is open overlaying the board with a Yellow accent border and the title 'Menu bar'
-    And the dialog body lists 10 rows in registry order: . New Agent, / Search, D FOUNDATION.md, A Attachments, F Changed Files, C Checkpoints, M Mux, P Providers, ? Help, Esc Exit — each with a one-line description
+    And the dialog body lists 13 rows in registry order: . New Agent, / Search, D FOUNDATION.md, A Attachments, b New Bot, F Changed Files, C Checkpoints, M Mux, P Providers, s Daemons, w Workspaces, ? Help, Esc Exit — each with a one-line description
     And the first row ('. New Agent') is highlighted and the board view is still visible underneath
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: U opens the actions dialog (case-insensitive trigger)
@@ -93,7 +92,6 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is open overlaying the board with the title 'Menu bar'
     And the first row ('. New Agent') is highlighted
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Ctrl+U does not open the actions dialog
@@ -102,26 +100,23 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is not open
     And the key falls through to the App-level handling
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: The actions dialog body lists all board shortcuts with descriptions
     Given I am in the single Board view
     When I open the actions dialog with 'u'
-    Then the dialog shows 10 rows in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "F Changed Files", "C Checkpoints", "M Mux", "P Providers", "? Help", "Esc Exit"
+    Then the dialog shows 13 rows in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot", "F Changed Files", "C Checkpoints", "M Mux", "P Providers", "s Daemons", "w Workspaces", "? Help", "Esc Exit"
     And each row shows its key, a label, and a one-line description
     And the footer reads "↑↓ Navigate │ Enter Execute │ Esc Close"
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: The actions dialog has no trigger row
     Given I am in the single Board view
     When I open the actions dialog with 'u'
-    Then the dialog shows exactly 10 rows
+    Then the dialog shows exactly 13 rows
     And no row in the dialog body advertises the 'u' trigger key
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Down moves the selection to the next row
@@ -129,7 +124,6 @@ Feature: Board actions popup dialog triggered by the u key
     When I press the Down arrow
     Then "/ Search" is highlighted
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Up moves the selection to the previous row
@@ -137,7 +131,6 @@ Feature: Board actions popup dialog triggered by the u key
     When I press the Up arrow
     Then ". New Agent" is highlighted
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Up from the first row wraps to the last row
@@ -145,7 +138,6 @@ Feature: Board actions popup dialog triggered by the u key
     When I press the Up arrow
     Then "Esc Exit" (the last row) is highlighted
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Down from the last row wraps to the first row
@@ -153,7 +145,6 @@ Feature: Board actions popup dialog triggered by the u key
     When I press the Down arrow
     Then ". New Agent" (the first row) is highlighted
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Enter executes the highlighted action and closes the dialog
@@ -162,7 +153,6 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is closed
     And the Changed Files view opens — the same outcome as pressing 'f' directly on the board
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Enter on the Mux row opens the Mux config dialog
@@ -171,7 +161,6 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is closed
     And the Mux config dialog is open seeded from the live mux config — the same dialog bare /mux opens
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Enter on the Help row opens the board help dialog
@@ -180,7 +169,6 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is closed
     And the board Help dialog (the one '?' opens) is open on top
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Enter on the Exit row opens the exit confirmation
@@ -190,7 +178,6 @@ Feature: Board actions popup dialog triggered by the u key
     And the "Exit fspec?" confirmation dialog is open with Exit pre-selected
     And pressing Esc inside the confirmation cancels it and I stay on the board
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Esc closes the dialog without executing the highlighted row
@@ -201,18 +188,16 @@ Feature: Board actions popup dialog triggered by the u key
     And the exit confirmation is NOT open
     And I am still on the board
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Keys behind the dialog never leak to the board
     Given the actions dialog is open
     And a work unit below the current selection is available in the focused column
-    When I press 'j' then 'f'
+    When I press 'j' then ']' (keys no row of the dialog shows; a row's own key runs that row, TUI-129)
     Then the board selection has NOT moved
-    And the Changed Files view has NOT opened
+    And no card was moved and no notice opened
     And the actions dialog is still open
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: Pressing u again while open is a no-op
@@ -220,17 +205,15 @@ Feature: Board actions popup dialog triggered by the u key
     When I press 'u' again
     Then the actions dialog remains open exactly once (no stacked second layer)
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: The board header chord row is replaced by a short Actions hint
     Given I am in the single Board view
     When I look at the board header's keybinding hint row
-    Then the row reads "Actions Help" — the 2-zone menu bar's Zone A items
+    Then the row reads "Kanban Tools Settings Help" — the 2-zone menu bar's Zone A items
     And the old chord "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ . New Agent ◆ / Search ◆ M Mux" is no longer rendered in the header
     And the checkpoint status row above it is unchanged
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: u opens the actions dialog from the focused Board pane in mux mode
@@ -244,7 +227,6 @@ Feature: Board actions popup dialog triggered by the u key
     Then the actions dialog is open overlaying the whole grid
     And the view remains Mux while the dialog is open
 
-  @BOARD-023
   @dialog
   @board-view
   Scenario: The board help dialog advertises the u keybinding

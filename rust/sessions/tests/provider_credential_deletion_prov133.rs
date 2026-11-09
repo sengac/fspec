@@ -142,6 +142,7 @@ fn seed_codex_auth(home: &Path) {
 fn configured(handle: &dyn SessionManagerHandle, provider_id: &str) -> bool {
     handle
         .list_provider_credentials()
+        .expect("list_provider_credentials reads the session")
         .into_iter()
         .find(|p| p.provider_id == provider_id)
         .map(|p| p.configured)
@@ -160,7 +161,7 @@ fn deleting_api_key_provider_unsets_env_and_clears_credentials_json() {
     let _env = EnvGuard::capture_and_clear();
     let home = redirect_home();
     let manager = SessionManager::new();
-    let handle: &dyn SessionManagerHandle = &manager;
+    let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step Given OpenAI is configured via the OPENAI_API_KEY environment variable
     std::env::set_var("OPENAI_API_KEY", "sk-openai-prov133");
@@ -188,7 +189,7 @@ fn deleting_api_key_provider_unsets_env_and_clears_credentials_json() {
     );
 
     // @step And OpenAI has no entry in credentials.json
-    let raw = fs::read_to_string(credentials_json_path(home.path())).unwrap_or_default();
+    let raw = std::fs::read_to_string(credentials_json_path(home.path())).unwrap_or_default();
     assert!(
         !raw.contains("openai"),
         "PROV-133: credentials.json must no longer contain an openai entry; got: {raw}"
@@ -212,7 +213,7 @@ fn deleting_oauth_provider_removes_its_auth_file() {
     let _env = EnvGuard::capture_and_clear();
     let home = redirect_home();
     let manager = SessionManager::new();
-    let handle: &dyn SessionManagerHandle = &manager;
+    let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step Given Anthropic is configured via OAuth tokens in claude_auth.json
     seed_claude_auth(home.path());
@@ -254,7 +255,7 @@ fn deleting_one_provider_leaves_others_untouched() {
     let _env = EnvGuard::capture_and_clear();
     let home = redirect_home();
     let manager = SessionManager::new();
-    let handle: &dyn SessionManagerHandle = &manager;
+    let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step Given Anthropic is configured via OAuth tokens in claude_auth.json
     seed_claude_auth(home.path());
@@ -303,7 +304,7 @@ fn deleting_provider_with_no_credential_is_safe_noop() {
     let _env = EnvGuard::capture_and_clear();
     let home = redirect_home();
     let manager = SessionManager::new();
-    let handle: &dyn SessionManagerHandle = &manager;
+    let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step Given OpenAI has no environment variable, credentials.json entry, or auth file
     assert!(

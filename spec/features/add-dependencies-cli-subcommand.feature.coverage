@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_dependencies.rs",
-          "lines": "85-108",
+          "lines": "113-139",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_dependencies.rs",
@@ -106,7 +106,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "//! `add-dependencies` shell-facing CLI bridge (RPC-176).",
+              "lastLine": ".and_then(|v| v[\"added\"].as_u64())"
             }
           ]
         }
@@ -117,19 +119,11 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_dependencies.rs",
-          "lines": "110-151",
+          "lines": "141-197",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_dependencies.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -167,8 +161,18 @@
                 89,
                 90,
                 91,
-                92
-              ]
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "// Marshal clap args into the canonical JSON shape consumed by",
+              "lastLine": "}"
             }
           ]
         }
@@ -179,7 +183,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_dependencies.rs",
-          "lines": "153-170",
+          "lines": "199-216",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_dependencies.rs",
@@ -195,7 +199,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "})",
+              "lastLine": ".ok()"
             }
           ]
         }
@@ -206,7 +212,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_dependencies.rs",
-          "lines": "172-186",
+          "lines": "218-235",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_dependencies.rs",
@@ -222,7 +228,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "})",
+              "lastLine": ".ok()"
             }
           ]
         }
@@ -233,7 +241,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_dependencies.rs",
-          "lines": "188-214",
+          "lines": "237-263",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_dependencies.rs",
@@ -252,7 +260,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "if let Some(v) = args.relates_to.as_ref() {",
+              "lastLine": "Ok(rendered) => {"
             }
           ]
         }
@@ -269,6 +279,6 @@
     "implFiles": [
       "rust/fspec/src/add_dependencies.rs"
     ],
-    "totalLinesCovered": 304
+    "totalLinesCovered": 325
   }
 }

@@ -150,7 +150,9 @@
                 138,
                 139,
                 140
-              ]
+              ],
+              "firstLine": "mod journal;",
+              "lastLine": "let mut lower = cursor.byte_offset + 1;"
             }
           ]
         }

@@ -35,5 +35,5 @@ Feature: AgentView Esc Cascade Input Clear
     And session s-1 has SessionStatus::Idle
     And the input buffer contains only whitespace "   "
     When the user presses Esc
-    Then Action::BackToBoard is dispatched
-    And Navigator.active_view becomes ViewMode::Board
+    Then an ExitConfirmationDialog is pushed onto the compositor
+    And Navigator.active_view stays at ViewMode::Agent

@@ -5,7 +5,6 @@ pub mod support;
 
 use codelet_core::persistence::*;
 use codelet_core::session_manager_handle::SessionManagerHandle;
-use codelet_rpc_types::StreamChunk;
 use serde_json::json;
 use support::{cold_resume, envelope, manager, next_anthropic_wire, next_wire, TestResult};
 
@@ -45,7 +44,7 @@ async fn marker_wrapped_durable_summary_survives_cold_restore() -> TestResult {
         .env("CMPCT060_BASELINE", baseline.to_string())
         .kill_on_drop(true)
         .spawn()?;
-    let status = tokio::time::timeout(std::time::Duration::from_secs(30), child.wait()).await??;
+    let status = codelet_test_helpers::deadlock_guard("child.wait()", child.wait()).await??;
     assert!(status.success(), "cold process restore failed: {status}");
     let wire: serde_json::Value =
         serde_json::from_slice(&std::fs::read(directory.path().join("cold060.json"))?)?;
@@ -93,7 +92,6 @@ async fn quoted_and_split_markers_remain_legitimate_user_content() -> TestResult
 async fn reminder_text_cannot_discard_a_mixed_tool_result_envelope() -> TestResult {
     // @step Given a persisted user envelope with quoted reminder text and a tool result
     let (_directory, manager, session_id, baseline) = manager().await?;
-    let mut output = manager.chunks_tx().subscribe();
     let envelope = envelope(json!([
         {"type": "text", "text": "quoted <system-reminder> <!-- type:quote -->"},
         {"type": "tool_result", "tool_use_id": "call_saved", "content": "saved result"}
@@ -110,22 +108,13 @@ async fn reminder_text_cannot_discard_a_mixed_tool_result_envelope() -> TestResu
         ],
     )?;
     let wire = next_anthropic_wire(&manager, &session_id, baseline).await?;
-    // @step Then its text remains in model history and its tool result remains in UI replay
+    // @step Then its text and its tool result both remain in model history
+    let encoded = wire.to_string();
+    assert!(encoded.contains("quoted <system-reminder>"), "{wire}");
     assert!(
-        wire.to_string().contains("quoted <system-reminder>"),
-        "{wire}"
+        encoded.contains("call_saved") && encoded.contains("saved result"),
+        "mixed envelope lost its saved tool result: {wire}"
     );
-    let mut found = false;
-    while let Ok((_, chunk)) = output.try_recv() {
-        if let StreamChunk::ToolResult {
-            tool_result: result,
-            ..
-        } = chunk
-        {
-            found |= result.tool_call_id == "call_saved" && result.content == "saved result";
-        }
-    }
-    assert!(found, "mixed envelope lost its saved tool result");
     Ok(())
 }
 

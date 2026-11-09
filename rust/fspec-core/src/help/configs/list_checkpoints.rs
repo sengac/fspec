@@ -5,21 +5,9 @@
 //! piped to non-TTY (captured fixture:
 //! `rust/fspec/tests/fixtures/help/list-checkpoints.txt`).
 //!
-//! Inherits the same three TS quirks that `list_attachments::CONFIG`
-//! documents:
-//!   1. `typical_workflow` mirrors TS where the source is `string[]` but
-//!      the help formatter renders `${config.typicalWorkflow}` — i.e. the
-//!      JS Array's `.toString()` which is comma-joined. We pre-join with
-//!      `,` here so the Rust formatter (which prints the field verbatim)
-//!      produces the same line.
-//!   2. `related_commands` entries in TS already include the literal
-//!      `"fspec "` prefix (e.g. `"fspec checkpoint - Create manual
-//!      checkpoint"`), and the help-formatter prefixes them AGAIN with
-//!      `fspec ` — producing `fspec fspec checkpoint - ...`. We mirror
-//!      this here.
-//!   3. `common_errors` items in TS specify `solution:` but the formatter
-//!      reads `err.fix` (which is `undefined`) producing `Fix: undefined`.
-//!      We use the literal string `"undefined"` here.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
@@ -47,12 +35,11 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        // TS quirk #3: solution → undefined under the help formatter.
-        fix: "undefined",
+        fix: "Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'",
     },
     CommonError {
         error: "No checkpoints found for <workUnitId>",
-        fix: "undefined",
+        fix: "Not an error - work unit has no checkpoints yet. Create a checkpoint with 'fspec checkpoint' or transition status.",
     },
 ];
 
@@ -68,10 +55,10 @@ const NOTES: &[&str] = &[
 // TS quirk #2: each entry already includes "fspec " prefix; the formatter
 // prefixes again, producing "fspec fspec …".
 const RELATED: &[&str] = &[
-    "fspec checkpoint - Create manual checkpoint",
-    "fspec restore-checkpoint - Restore a checkpoint",
-    "fspec cleanup-checkpoints - Delete old checkpoints",
-    "fspec update-work-unit-status - Auto-creates checkpoints",
+    "checkpoint - Create manual checkpoint",
+    "restore-checkpoint - Restore a checkpoint",
+    "cleanup-checkpoints - Delete old checkpoints",
+    "update-work-unit-status - Auto-creates checkpoints",
 ];
 
 const PREREQUISITES: &[&str] = &["Work unit must exist", "Git repository must be initialized"];
@@ -92,7 +79,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     common_patterns: &[],
     // TS quirk #1: comma-joined Array.toString()
     typical_workflow: Some(
-        "Create checkpoints: fspec checkpoint AUTH-001 baseline,List checkpoints: fspec list-checkpoints AUTH-001,Choose checkpoint: See available names and timestamps,Restore: fspec restore-checkpoint AUTH-001 baseline,Or cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5",
+        "Create checkpoints: fspec checkpoint AUTH-001 baseline. List checkpoints: fspec list-checkpoints AUTH-001. Choose checkpoint: See available names and timestamps. Restore: fspec restore-checkpoint AUTH-001 baseline. Or cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

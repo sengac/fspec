@@ -58,7 +58,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "let path = crate::io::spec_paths::work_units(project_root).map_err(|e| e.to_string())?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -103,7 +105,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "let feature_files = soft_glob_features(project_root);",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,7 +145,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "validate(project_root, &work_unit_id)",
+              "lastLine": "}"
             }
           ]
         }
@@ -166,7 +172,9 @@
                 143,
                 144,
                 145
-              ]
+              ],
+              "firstLine": "fn soft_glob_features(project_root: &Path) -> Vec<String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,7 +201,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "let lines: Vec<&str> = content.split('\\n').collect();",
+              "lastLine": "}"
             }
           ]
         }
@@ -216,7 +226,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "let work_unit_id =",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -237,7 +249,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "let path = crate::io::spec_paths::work_units(project_root).map_err(|e| e.to_string())?;",
+              "lastLine": ""
             }
           ]
         }

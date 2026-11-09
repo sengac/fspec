@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
-          "lines": "34-52",
+          "lines": "33-53",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -20,7 +20,9 @@
                 264,
                 265,
                 266
-              ]
+              ],
+              "firstLine": "9 => super::profile_form_streaming::streaming_label(self.loop_detection),",
+              "lastLine": "}"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
-          "lines": "58-78",
+          "lines": "59-82",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -46,7 +48,9 @@
                 264,
                 265,
                 266
-              ]
+              ],
+              "firstLine": "9 => super::profile_form_streaming::streaming_label(self.loop_detection),",
+              "lastLine": "}"
             }
           ]
         }
@@ -57,7 +61,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
-          "lines": "84-103",
+          "lines": "88-110",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -77,7 +81,9 @@
                 165,
                 166,
                 167
-              ]
+              ],
+              "firstLine": "// PROV-143: prefill the stored toggle; an absent key ⇒ disabled.",
+              "lastLine": "loop_retries: def.loop_detection_max_retries().to_string(),"
             }
           ]
         }
@@ -88,7 +94,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
-          "lines": "109-132",
+          "lines": "116-142",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -103,7 +109,9 @@
                 264,
                 265,
                 266
-              ]
+              ],
+              "firstLine": "9 => super::profile_form_streaming::streaming_label(self.loop_detection),",
+              "lastLine": "}"
             }
           ]
         }
@@ -114,7 +122,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_compaction_threshold_prov115.rs",
-          "lines": "138-158",
+          "lines": "148-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -129,7 +137,9 @@
                 264,
                 265,
                 266
-              ]
+              ],
+              "firstLine": "9 => super::profile_form_streaming::streaming_label(self.loop_detection),",
+              "lastLine": "}"
             }
           ]
         }
@@ -146,6 +156,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
-    "totalLinesCovered": 265
+    "totalLinesCovered": 174
   }
 }

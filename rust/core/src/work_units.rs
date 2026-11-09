@@ -150,6 +150,14 @@ const COLUMN_ORDER: [&str; 7] = [
     "blocked",
 ];
 
+/// BUG-497: `<project root>/spec/work-units.json`, the root resolved from
+/// `workspace` as every fspec command resolves it (BUG-523).
+fn work_units_path(workspace: &Path) -> Result<PathBuf> {
+    let roots = codelet_common::spec_paths::ProjectRoots::resolve(workspace)?;
+    // WT-015: the board is shared state, at the state root of a copy.
+    Ok(roots.work_units())
+}
+
 /// One-shot read of `<workspace>/spec/work-units.json`.
 ///
 /// Returns an empty vec (NOT an error) if the file does not exist —
@@ -164,7 +172,7 @@ const COLUMN_ORDER: [&str; 7] = [
 /// referenced from `states` (and records referenced from unknown
 /// columns) are appended afterwards, sorted by id for determinism.
 pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
-    let path = workspace.join("spec").join("work-units.json");
+    let path = work_units_path(workspace)?;
     if !path.exists() {
         debug!(
             "work-units.json does not exist at {}; returning empty snapshot",
@@ -207,6 +215,12 @@ pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
 /// publishes every snapshot (initial + every change) on a
 /// `tokio::sync::broadcast` channel. Drops the underlying debouncer on
 /// drop — there is no global state, so multiple workspaces are isolated.
+///
+/// BUG-539: work-units.json can be corrupt for a moment while an agent
+/// edits it. A corrupt or unreadable file at startup gives an empty board
+/// (construction does not fail); a corrupt or unreadable re-read keeps the
+/// last good snapshot, publishes nothing and is reported on
+/// [`Self::subscribe_reload_failures`]. The next valid write reloads.
 pub struct WorkUnitsWatcher {
     /// Latest known snapshot. Read by [`Self::snapshot`] and updated by
     /// the debouncer callback before the broadcast send.
@@ -214,6 +228,9 @@ pub struct WorkUnitsWatcher {
     /// Broadcast tx kept alive so subscribers can clone receivers from
     /// it via [`Self::subscribe`].
     tx: broadcast::Sender<Vec<WorkUnitInfo>>,
+    /// BUG-539: one message per failed read (startup or re-read); the
+    /// board keeps its last good snapshot meanwhile.
+    failures: broadcast::Sender<String>,
     /// Owned debouncer — dropping the watcher tears down fs-watching.
     /// Stored behind a `Mutex<Option<...>>` so [`Drop`] can take it out
     /// without requiring `&mut self`.
@@ -232,12 +249,19 @@ impl WorkUnitsWatcher {
     /// usual broadcast-channel race: subscribers that subscribe AFTER
     /// the initial broadcast must call `snapshot()` to fill in).
     pub fn new(workspace: &Path) -> Result<Self> {
-        let initial = read_snapshot(workspace)?;
+        // BUG-539: a corrupt or unreadable board at startup is an empty
+        // board, not a startup failure; the watcher below reloads it as
+        // soon as the file is valid again.
+        let initial = read_snapshot(workspace).unwrap_or_else(|error| {
+            warn!("work-units snapshot unreadable at startup; starting with an empty board: {error:#}");
+            Vec::new()
+        });
         let (tx, _) = broadcast::channel::<Vec<WorkUnitInfo>>(64);
+        let (failures, _) = broadcast::channel::<String>(64);
         let state = Arc::new(RwLock::new(initial.clone()));
 
         let workspace_buf = workspace.to_path_buf();
-        let work_units_path = workspace_buf.join("spec").join("work-units.json");
+        let work_units_path = work_units_path(&workspace_buf)?;
         let spec_dir = work_units_path
             .parent()
             .map(Path::to_path_buf)
@@ -245,6 +269,7 @@ impl WorkUnitsWatcher {
 
         let cb_state = Arc::clone(&state);
         let cb_tx = tx.clone();
+        let cb_failures = failures.clone();
         let cb_path = work_units_path;
         let mut debouncer = new_debouncer(
             Duration::from_millis(100),
@@ -281,7 +306,13 @@ impl WorkUnitsWatcher {
                         // can call `snapshot()` to backfill.
                         let _ = cb_tx.send(snapshot);
                     }
-                    Err(e) => warn!("failed to reload work-units snapshot: {e}"),
+                    // BUG-539: keep the last good snapshot (no broadcast,
+                    // the watcher keeps running) and report the failure.
+                    Err(e) => {
+                        let message = format!("{e:#}");
+                        warn!("failed to reload work-units snapshot; keeping the last good board: {message}");
+                        let _ = cb_failures.send(message);
+                    }
                 }
             },
         )
@@ -308,6 +339,7 @@ impl WorkUnitsWatcher {
         Ok(Self {
             state,
             tx,
+            failures,
             _debouncer: Arc::new(Mutex::new(Some(debouncer))),
             _workspace: workspace_buf,
         })
@@ -326,6 +358,13 @@ impl WorkUnitsWatcher {
     /// receive it; pair this with [`Self::snapshot`] to backfill.
     pub fn subscribe(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {
         self.tx.subscribe()
+    }
+
+    /// BUG-539: subscribe to failed re-reads of `work-units.json` (corrupt
+    /// or unreadable content). Each message names the file and the error;
+    /// the board keeps its last good snapshot until the next valid read.
+    pub fn subscribe_reload_failures(&self) -> broadcast::Receiver<String> {
+        self.failures.subscribe()
     }
 
     pub fn workspace(&self) -> &Path {
@@ -399,6 +438,48 @@ mod tests {
                 "DONE-001"
             ]
         );
+    }
+
+    // Feature: spec/features/work-unit-details-panel-shows-incorrect-work-unit-after-reordering.feature
+    // Done column order is the states.done file order; nothing re-sorts it
+    // by updatedAt (H-DONE-ORDER A, product owner, 2026-11-06).
+    #[test]
+    fn read_snapshot_lists_done_column_in_file_order_not_updated_order() {
+        let tmp = TempDir::new().unwrap();
+        // @step Given the states.done array in work-units.json is [BOARD-003, BOARD-005, BOARD-001]
+        // @step And BOARD-001 has the most recent updatedAt of the three
+        write_workspace(
+            &tmp,
+            r#"{
+              "workUnits": {
+                "BOARD-001": {"id": "BOARD-001", "title": "One",   "type": "story", "status": "done", "updatedAt": "2025-10-28T12:00:00Z"},
+                "BOARD-003": {"id": "BOARD-003", "title": "Three", "type": "story", "status": "done", "updatedAt": "2025-10-28T11:00:00Z"},
+                "BOARD-005": {"id": "BOARD-005", "title": "Five",  "type": "story", "status": "done", "updatedAt": "2025-10-28T09:00:00Z"}
+              },
+              "states": {
+                "backlog":      [],
+                "specifying":   [],
+                "testing":      [],
+                "implementing": [],
+                "validating":   [],
+                "done":         ["BOARD-003", "BOARD-005", "BOARD-001"],
+                "blocked":      []
+              }
+            }"#,
+        );
+        // @step When the board snapshot is read from spec/work-units.json
+        let snap = read_snapshot(tmp.path()).unwrap();
+        let done: Vec<&str> = snap
+            .iter()
+            .filter(|u| u.status == "done")
+            .map(|u| u.id.as_str())
+            .collect();
+        // @step Then position 0 of the done column is BOARD-003
+        assert_eq!(done.first().copied(), Some("BOARD-003"));
+        // @step And position 1 of the done column is BOARD-005
+        assert_eq!(done.get(1).copied(), Some("BOARD-005"));
+        // @step And position 2 of the done column is BOARD-001, not moved first by its updatedAt
+        assert_eq!(done, vec!["BOARD-003", "BOARD-005", "BOARD-001"]);
     }
 
     #[test]

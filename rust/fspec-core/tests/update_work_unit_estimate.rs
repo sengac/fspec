@@ -303,3 +303,52 @@ fn dispatcher_is_the_single_source_of_truth_for_estimate() {
         Some(3)
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Dispatcher blocks estimating a bug whose feature file has prefill placeholders
+// (moved from prevent-story-point-estimation-before-feature-file-completion, BUG-013; COV-072)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn dispatcher_blocks_bug_with_prefill_placeholders() {
+    // @step Given spec/work-units.json contains work unit 'BUG-001' of type 'bug'
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &one_unit_typed("BUG-001", "bug"));
+
+    // @step And spec/features contains a feature file tagged @BUG-001 that contains a role-placeholder token
+    write_feature(
+        tmp.path(),
+        "bug.feature",
+        "@BUG-001\nFeature: Bug\n\n  Background:\n    As a [role]\n    I want the bug fixed\n",
+    );
+
+    // @step When I dispatch update-work-unit-estimate with workUnitId='BUG-001' and estimate=2
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "BUG-001", "estimate": 2 }),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected success=false; got {result:?}");
+
+    // @step And the error message contains the substring 'ACDD VIOLATION: Cannot estimate work unit with incomplete feature file'
+    let msg = result.error.as_deref().unwrap_or("");
+    assert!(
+        msg.contains("ACDD VIOLATION: Cannot estimate work unit with incomplete feature file"),
+        "error must name the incomplete feature file; got: {msg}"
+    );
+
+    // @step And the error message contains the substring 'Remove all prefill placeholders from feature file'
+    assert!(
+        msg.contains("Remove all prefill placeholders from feature file"),
+        "error must say the prefill placeholders must be removed first; got: {msg}"
+    );
+
+    // @step And spec/work-units.json work unit 'BUG-001' has no estimate
+    let on_disk = read_work_units(tmp.path());
+    assert!(
+        on_disk["workUnits"]["BUG-001"].get("estimate").is_none(),
+        "a blocked estimate must not be written; got {}",
+        on_disk["workUnits"]["BUG-001"]
+    );
+}

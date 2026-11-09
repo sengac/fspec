@@ -48,6 +48,7 @@ impl App {
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
             return;
         };
+        self.end_composer_draft(&session_id); // BUG-549 rule 6
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }

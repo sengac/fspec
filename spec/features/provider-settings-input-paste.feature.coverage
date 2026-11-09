@@ -33,7 +33,9 @@
                 37,
                 38,
                 39
-              ]
+              ],
+              "firstLine": "/// name while `is_editing_name`). Chars outside `(' '..='~')` are dropped.",
+              "lastLine": "text: &str,"
             }
           ]
         }
@@ -64,7 +66,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "let value = form.field_value(idx);",
+              "lastLine": "};"
             }
           ]
         }
@@ -75,12 +79,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
-          "lines": "180-224",
+          "lines": "173-215",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
               "lines": [
-                173,
                 174,
                 175,
                 176,
@@ -102,7 +105,9 @@
                 192,
                 193,
                 194
-              ]
+              ],
+              "firstLine": "/// PROV-137 — inline API-key paste sink. Appends each printable-ASCII char of",
+              "lastLine": "}"
             }
           ]
         }
@@ -113,41 +118,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
-          "lines": "230-262",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/paste.rs",
-              "lines": [
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43
-              ]
-            }
-          ]
+          "lines": "220-240"
         }
       ]
     }
@@ -162,9 +133,8 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
       "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
-      "rust/fspec-tui/src/views/provider_settings/detail.rs",
-      "rust/fspec-tui/src/views/provider_settings/paste.rs"
+      "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
-    "totalLinesCovered": 217
+    "totalLinesCovered": 175
   }
 }

@@ -14,6 +14,10 @@ pub(super) struct PendingInput {
     pub is_fresh_user_input: bool,
     pub is_compaction_retry: bool,
     pub manual_compaction_epoch: Option<u64>,
+    /// BUG-516: a queued manual /compact request (never a conversation
+    /// message); runs the compactor sub-agent round instead of a turn.
+    pub is_manual_compaction: bool,
     pub interrupt_epoch: u64,
     pub cancelled_at_submission: bool,
+    pub submission: Option<uuid::Uuid>,
 }

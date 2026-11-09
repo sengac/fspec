@@ -93,6 +93,10 @@ fn create_jpeg_with_dimensions(
 /// Scenario: Read tool rejects PNG image exceeding pixel dimension limit
 #[tokio::test]
 async fn test_read_tool_rejects_png_exceeding_pixel_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // @step Given I have a PNG image file at "/tmp/full-page-screenshot.png"
@@ -154,6 +158,10 @@ async fn test_read_tool_rejects_png_exceeding_pixel_limit() {
 /// Scenario: Read tool accepts image within pixel dimension limit
 #[tokio::test]
 async fn test_read_tool_accepts_image_within_pixel_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // @step Given I have a PNG image file at "/tmp/viewport-screenshot.png"
@@ -194,6 +202,10 @@ async fn test_read_tool_accepts_image_within_pixel_limit() {
 /// Scenario: Image exactly at pixel dimension limit is accepted
 #[tokio::test]
 async fn test_read_tool_accepts_image_exactly_at_pixel_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // @step Given I have a PNG image file with dimensions 5999x5999 pixels
@@ -224,6 +236,10 @@ async fn test_read_tool_accepts_image_exactly_at_pixel_limit() {
 /// Scenario: Corrupt image with invalid header is handled gracefully
 #[tokio::test]
 async fn test_read_tool_allows_corrupt_header_image_through() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // @step Given I have a PNG file with a corrupt or invalid header
@@ -263,6 +279,10 @@ async fn test_read_tool_allows_corrupt_header_image_through() {
 /// which validates the Layer 3 (bridge) path via build_user_content_with_images.
 #[tokio::test]
 async fn test_read_tool_rejects_jpeg_exceeding_pixel_limit() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     let temp_dir = TempDir::new().unwrap();
 
     // Create a JPEG image with dimensions 9000x6000 pixels
@@ -299,6 +319,10 @@ async fn test_read_tool_rejects_jpeg_exceeding_pixel_limit() {
 /// Tests the base64 dimension extraction safety net (Layer 2)
 #[tokio::test]
 async fn test_parse_tool_result_content_detects_oversized_image_from_base64() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use base64::{engine::general_purpose::STANDARD, Engine};
     use codelet_tools::image_dimensions::{
         extract_dimensions_from_base64, MAX_IMAGE_PIXEL_DIMENSION,

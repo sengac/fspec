@@ -48,7 +48,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "fn append(&mut self, event: JournalEvent, message_id: Option<Uuid>) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -122,7 +124,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub(crate) fn append_unowned(&self, record: &JournalRecord) -> Result<(), JournalError> {",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -133,7 +137,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug270_streaming_speed.rs",
-          "lines": "174-224",
+          "lines": "174-227",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_journal.rs",
@@ -176,7 +180,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "fn append(&mut self, event: JournalEvent, message_id: Option<Uuid>) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -194,6 +200,6 @@
       "rust/agent-loop/src/stream_journal.rs",
       "rust/core/src/persistence/transcript/writer.rs"
     ],
-    "totalLinesCovered": 309
+    "totalLinesCovered": 312
   }
 }

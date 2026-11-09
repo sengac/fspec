@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "101-120",
+          "lines": "94-120",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/terminal/sanitize.rs",
@@ -38,7 +38,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn sanitize_for_terminal(text: &str) -> String {",
+              "lastLine": ""
             }
           ]
         }
@@ -49,7 +51,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "128-145",
+          "lines": "124-146",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/terminal/sanitize.rs",
@@ -82,7 +84,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn sanitize_for_terminal(text: &str) -> String {",
+              "lastLine": ""
             }
           ]
         }
@@ -93,7 +97,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "152-163",
+          "lines": "150-165",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/record_chunk.rs",
@@ -198,7 +202,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -209,18 +215,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "170-180",
+          "lines": "169-183",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/record_chunk.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "StreamChunk::Thinking { thinking, .. } => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -268,7 +277,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub fn handle_tool_call(ctx: &mut SessionContext, info: &ToolCallInfo) {",
+              "lastLine": "/// (`chunkProcessor.ts:507-536`)."
             }
           ]
         }
@@ -284,19 +295,8 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
                 96,
                 97,
-                98,
                 99,
                 100,
                 101,
@@ -326,8 +326,20 @@
                 125,
                 126,
                 127,
-                128
-              ]
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "pub fn produce_diff_strings(pending: &PendingToolDiff) -> (String, String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -347,7 +359,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "StreamChunk::ToolResult { tool_result, .. } => {",
+              "lastLine": "// the ToolResult body fold (rule [10])."
             }
           ]
         }
@@ -439,7 +453,9 @@
                 110,
                 111,
                 112
-              ]
+              ],
+              "firstLine": "| StreamChunk::InterruptedWithReason { .. }",
+              "lastLine": "_ => \"⚠ Interrupted\","
             }
           ]
         }
@@ -450,7 +466,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "639-707",
+          "lines": "641-710",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/record_chunk.rs",
@@ -459,7 +475,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "chunk,",
+              "lastLine": "| StreamChunk::Interrupted { .. }"
             }
           ]
         }
@@ -482,7 +500,9 @@
                 22,
                 23,
                 24
-              ]
+              ],
+              "firstLine": "pub fn sanitize_work_unit(unit: &mut WorkUnitInfo) {",
+              "lastLine": ".attachments"
             }
           ]
         }
@@ -505,7 +525,9 @@
                 22,
                 23,
                 24
-              ]
+              ],
+              "firstLine": "pub fn sanitize_work_unit(unit: &mut WorkUnitInfo) {",
+              "lastLine": ".attachments"
             }
           ]
         }
@@ -516,14 +538,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "366-390",
+          "lines": "366-391",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/hitl_state.rs",
               "lines": [
-                132,
-                133,
-                134,
                 135,
                 136,
                 137,
@@ -532,8 +551,13 @@
                 140,
                 141,
                 142,
-                143
-              ]
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "pub fn sanitize_hitl_request(mut request: HitlRequest) -> HitlRequest {",
+              "lastLine": ""
             }
           ]
         }
@@ -544,17 +568,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "397-429",
+          "lines": "398-431",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/pause_state.rs",
               "lines": [
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -567,8 +585,17 @@
                 60,
                 61,
                 62,
-                63
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "pub fn set_pause_state(&mut self, session: SessionId, route: RequestRoute, state: PauseState) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -584,17 +611,20 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                91,
-                92,
-                93,
                 94,
                 95,
                 96,
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "scrollback_next_seq: 0,",
+              "lastLine": "}"
             }
           ]
         }
@@ -605,7 +635,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "437-454",
+          "lines": "439-456",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
@@ -655,7 +685,9 @@
                 193,
                 194,
                 195
-              ]
+              ],
+              "firstLine": "self.loading.label = label;",
+              "lastLine": "/// back to the first row. The diff cache is cleared so the App"
             }
           ]
         }
@@ -666,11 +698,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "462-496",
+          "lines": "464-498",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
+                187,
                 188,
                 189,
                 190,
@@ -705,7 +738,9 @@
                 219,
                 220,
                 221
-              ]
+              ],
+              "firstLine": "self.loading.label = label;",
+              "lastLine": "/// Replace the checkpoint list from a git-state refresh, keeping the"
             }
           ]
         }
@@ -716,28 +751,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "503-524",
+          "lines": "505-526",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/resume_session_view.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
                 141,
                 142,
                 143,
@@ -758,8 +776,27 @@
                 158,
                 159,
                 160,
-                161
-              ]
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ],
+              "firstLine": "pub fn set_sessions(&mut self, sessions: Vec<SessionInfo>) {",
+              "lastLine": "/// Route a key event through the view."
             }
           ]
         }
@@ -770,32 +807,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "531-548",
+          "lines": "533-550",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "pub fn set_rules(&mut self, rules: Vec<BlocklistRuleInfo>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -806,15 +842,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "555-574",
+          "lines": "557-576",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/state.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -861,8 +893,13 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "pub fn write_error(&self) -> Option<&str> {",
+              "lastLine": "self.rebuild_rows();"
             }
           ]
         }
@@ -873,20 +910,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "602-608",
+          "lines": "622-632",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/error_dialog.rs",
               "lines": [
-                41,
-                42,
-                43,
-                44,
                 45,
                 46,
                 47,
-                48
-              ]
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "pub fn new(message: impl Into<String>) -> Self {",
+              "lastLine": "/// Read-only accessor for the error message body."
             }
           ]
         }
@@ -897,7 +937,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "615-630",
+          "lines": "636-655",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/loading_dialog.rs",
@@ -915,7 +955,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "pub fn new(title: impl Into<String>, label: impl Into<String>) -> Self {",
+              "lastLine": "/// `\"(idx/total)\"` row."
             }
           ]
         }
@@ -926,7 +968,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui111_sanitize_ingress.rs",
-          "lines": "715-756",
+          "lines": "718-759",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/terminal/sanitize.rs",
@@ -959,7 +1001,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn sanitize_for_terminal(text: &str) -> String {",
+              "lastLine": ""
             }
           ]
         }
@@ -990,6 +1034,6 @@
       "rust/fspec-tui/src/components/error_dialog.rs",
       "rust/fspec-tui/src/components/loading_dialog.rs"
     ],
-    "totalLinesCovered": 1113
+    "totalLinesCovered": 1144
   }
 }

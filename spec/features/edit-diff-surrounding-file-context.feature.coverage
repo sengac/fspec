@@ -95,7 +95,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "/// Build the typed diff display rows for an Edit, injecting up to",
+              "lastLine": "/// Concatenate `[before-context] + [fragment rows] + [after-context]`."
             },
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
@@ -118,7 +120,9 @@
                 165,
                 166,
                 167
-              ]
+              ],
+              "firstLine": "/// Error, Interrupted).",
+              "lastLine": "// so tables in intermediate messages render as grids too."
             }
           ]
         }
@@ -134,9 +138,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
-                82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -176,8 +177,21 @@
                 121,
                 122,
                 123,
-                124
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "/// Read the post-edit file and slice up to [`CONTEXT_LINES`] unchanged lines",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,9 +207,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
-                82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -235,8 +246,21 @@
                 121,
                 122,
                 123,
-                124
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "/// Read the post-edit file and slice up to [`CONTEXT_LINES`] unchanged lines",
+              "lastLine": "}"
             }
           ]
         }
@@ -269,7 +293,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Build the typed diff display rows for an Edit, injecting up to",
+              "lastLine": "// Fallback path: no file / unreadable / new_string empty or not locatable."
             }
           ]
         }
@@ -280,11 +306,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_context_rpc394.rs",
-          "lines": "279-299",
+          "lines": "282-303",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "file": "rust/fspec-tui/src/store/agent_view/diff_context.rs",
               "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
                 85,
                 86,
                 87,
@@ -297,26 +347,10 @@
                 94,
                 95,
                 96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                97
+              ],
+              "firstLine": "/// Build the typed diff display rows for an Edit, injecting up to",
+              "lastLine": "let path = file_path?;"
             }
           ]
         }
@@ -360,7 +394,9 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "/// is empty (a Write / pure addition has no surrounding-context concept here).",
+              "lastLine": ""
             }
           ]
         }
@@ -376,9 +412,8 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/diff_context.rs",
-      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-      "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs"
+      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs"
     ],
-    "totalLinesCovered": 545
+    "totalLinesCovered": 568
   }
 }

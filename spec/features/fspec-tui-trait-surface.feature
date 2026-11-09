@@ -22,7 +22,7 @@ Feature: FspecBackend trait surface + transport-agnostic consumer
     When I inspect the public trait declaration
     Then a public async_trait FspecBackend with bounds Send + Sync is defined
     And the trait declares async fn list_work_units returning Result<Vec<WorkUnitInfo>>
-    And the trait declares async fn list_sessions returning Result<Vec<SessionInfo>>
+    And the trait declares async fn list_sessions(project_path: String) returning Result<Vec<SessionInfo>>
     And the trait declares async fn create_session(role: Option<String>) returning Result<SessionId>
     And the trait declares async fn send_input(id: SessionId, text: String) returning Result<()>
     And the trait declares async fn interrupt(id: SessionId) returning Result<()>

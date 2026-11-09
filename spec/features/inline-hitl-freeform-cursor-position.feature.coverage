@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "85-119",
+          "lines": "98-137",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
@@ -21,25 +21,31 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(crate) fn anchored_input_area(area: Rect, offset: Option<u16>) -> Rect {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
-                150,
-                151,
-                152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156
+              ],
+              "firstLine": "/// diagnostic log. `\"\"` (Default) means \"log on first frame\".",
+              "lastLine": "pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103
-              ]
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "pub(super) fn paint_input_area(",
+              "lastLine": "buf: &mut Buffer,"
             }
           ]
         }
@@ -50,7 +56,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "125-156",
+          "lines": "143-179",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
@@ -66,16 +72,20 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(crate) fn anchored_input_area(area: Rect, offset: Option<u16>) -> Rect {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103
-              ]
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "pub(super) fn paint_input_area(",
+              "lastLine": "buf: &mut Buffer,"
             }
           ]
         }
@@ -86,7 +96,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "163-194",
+          "lines": "186-219",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
@@ -102,16 +112,20 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(crate) fn anchored_input_area(area: Rect, offset: Option<u16>) -> Rect {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103
-              ]
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "pub(super) fn paint_input_area(",
+              "lastLine": "buf: &mut Buffer,"
             }
           ]
         }
@@ -122,7 +136,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "200-244",
+          "lines": "225-276",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
@@ -138,7 +152,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(crate) fn anchored_input_area(area: Rect, offset: Option<u16>) -> Rect {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
@@ -171,7 +187,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "pub fn render_hitl_prompt(",
+              "lastLine": "return Some(next);"
             }
           ]
         }
@@ -182,16 +200,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "250-276",
+          "lines": "282-307",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -205,14 +218,19 @@
                 100,
                 101,
                 102,
-                103
-              ]
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "let rows = if BusyKind::of(store, sid).is_some() {",
+              "lastLine": "buf: &mut Buffer,"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -225,8 +243,12 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70
+              ],
+              "firstLine": "/// BUG-194: the transition operand is the focused session's OWN",
+              "lastLine": "// BUG-194: the focused session's own per-session transition"
             }
           ]
         }
@@ -237,7 +259,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc412_hitl_freeform_cursor_position.rs",
-          "lines": "282-305",
+          "lines": "313-339",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/cursor_anchor.rs",
@@ -253,16 +275,20 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "pub(crate) fn anchored_input_area(area: Rect, offset: Option<u16>) -> Rect {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
-                150,
-                151,
-                152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156
+              ],
+              "firstLine": "/// diagnostic log. `\"\"` (Default) means \"log on first frame\".",
+              "lastLine": "pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,"
             }
           ]
         }
@@ -283,6 +309,6 @@
       "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
       "rust/fspec-tui/src/views/agent/hitl_keys.rs"
     ],
-    "totalLinesCovered": 332
+    "totalLinesCovered": 353
   }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @rust
 @session
 @session-management

@@ -40,6 +40,14 @@ use serial_test::serial;
 use std::net::{SocketAddr, SocketAddrV4};
 use std::sync::Mutex;
 use tempfile::TempDir;
+
+/// BUG-347: a port nothing is listening on (bound, read, released).
+fn free_port() -> u16 {
+    std::net::TcpListener::bind("127.0.0.1:0")
+        .and_then(|listener| listener.local_addr())
+        .map(|address| address.port())
+        .expect("bind an ephemeral port")
+}
 use tracing::field::{Field, Visit};
 use tracing::Subscriber;
 use tracing_subscriber::layer::Layer;
@@ -91,7 +99,11 @@ impl<S> Layer<S> for WarnLayer
 where
     S: Subscriber + for<'a> LookupSpan<'a>,
 {
-    fn on_event(&self, event: &tracing::Event<'_>, _ctx: tracing_subscriber::layer::Context<'_, S>) {
+    fn on_event(
+        &self,
+        event: &tracing::Event<'_>,
+        _ctx: tracing_subscriber::layer::Context<'_, S>,
+    ) {
         record_warn_event(&self.0, event);
     }
 }
@@ -108,8 +120,7 @@ fn record_warn_event(capture: &WarnCapture, event: &tracing::Event<'_>) {
     guard.push(visitor.0);
 }
 
-static LOG_LAYER: once_cell::sync::OnceCell<Arc<WarnCapture>> =
-    once_cell::sync::OnceCell::new();
+static LOG_LAYER: once_cell::sync::OnceCell<Arc<WarnCapture>> = once_cell::sync::OnceCell::new();
 
 /// Install the capture layer as the global subscriber (once per process) and
 /// return a handle to it.
@@ -125,10 +136,7 @@ fn test_log_layer() -> &'static Arc<WarnCapture> {
 /// Drain (and return) all WARN-level event messages captured so far.
 fn drain_warn_events() -> Vec<String> {
     let layer = test_log_layer();
-    let mut guard = layer
-        .entries
-        .lock()
-        .expect("warn capture lock poisoned");
+    let mut guard = layer.entries.lock().expect("warn capture lock poisoned");
     std::mem::take(&mut guard)
 }
 
@@ -170,7 +178,7 @@ fn scenario_fresh_machine_defaults() {
     assert!(!path.exists(), "fresh temp dir must have no config file");
 
     // @step When the RLCD config is loaded
-    let cfg = load_rlcd_config_from(&path);
+    let cfg = load_rlcd_config_from(&path).expect("the rlcd config loads");
 
     // @step Then the resolved config uses url "http://127.0.0.1:8000"
     assert_eq!(cfg.url, "http://127.0.0.1:8000");
@@ -186,36 +194,16 @@ fn scenario_fresh_machine_defaults() {
     assert!(!path.exists(), "loading must never write a config file");
 }
 
-/// Scenario: A malformed config file resolves to defaults without failing
-#[test]
-fn scenario_malformed_config_resolves_to_defaults() {
-    // @step Given a user config directory whose fspec-config.json contains invalid JSON
-    let tmp = TempDir::new().expect("tempdir");
-    let path = tmp.path().join("fspec-config.json");
-    fs::write(&path, "this is { not json").expect("write malformed config");
-
-    // @step When the RLCD config is loaded
-    let cfg = load_rlcd_config_from(&path);
-
-    // @step Then the resolved config uses the default url "http://127.0.0.1:8000"
-    assert_eq!(cfg.url, "http://127.0.0.1:8000");
-    // @step And loading does not return an error
-    // (the loader resolves to defaults instead of erroring — reaching this
-    //  point with a fully-populated default config IS the proof)
-    assert!(cfg.enabled, "malformed config still resolves to the enabled default");
-}
-
 /// Scenario: A partial config fills only the missing fields from defaults
 #[test]
 fn scenario_partial_config_fills_missing_fields() {
     // @step Given a user config directory whose fspec-config.json sets rlcd.url to "http://10.0.0.5:9000" only
     let tmp = TempDir::new().expect("tempdir");
     let path = tmp.path().join("fspec-config.json");
-    fs::write(&path, r#"{"rlcd":{"url":"http://10.0.0.5:9000"}}"#)
-        .expect("write partial config");
+    fs::write(&path, r#"{"rlcd":{"url":"http://10.0.0.5:9000"}}"#).expect("write partial config");
 
     // @step When the RLCD config is loaded
-    let cfg = load_rlcd_config_from(&path);
+    let cfg = load_rlcd_config_from(&path).expect("the rlcd config loads");
 
     // @step Then the resolved config uses url "http://10.0.0.5:9000"
     assert_eq!(cfg.url, "http://10.0.0.5:9000");
@@ -255,7 +243,9 @@ fn scenario_write_preserves_unrelated_keys() {
 
     // and the round-tripped config loads the written url
     assert_eq!(
-        load_rlcd_config_from(&path).url,
+        load_rlcd_config_from(&path)
+            .expect("the rlcd config loads")
+            .url,
         "http://127.0.0.1:9100"
     );
 }
@@ -285,13 +275,16 @@ async fn scenario_healthy_local_detected_with_reported_model() {
         .expect("already-healthy server must be detected within the budget");
 
     // @step Then the RLCD status reports reachable true
-    assert!(sup.reachable(), "status must report reachable after a ready /health");
+    assert!(
+        sup.reachable(),
+        "status must report reachable after a ready /health"
+    );
     // @step And the RLCD status carries the model name "typed-decisions"
     assert_eq!(model, "typed-decisions");
     assert_eq!(sup.model().as_deref(), Some("typed-decisions"));
     // @step And no local server has been spawned
     assert!(
-        read_pidfile(&pidfile_path()).is_none(),
+        read_pidfile(&pidfile_path().expect("the pidfile path resolves")).is_none(),
         "a healthy existing server must not trigger a spawn (no pidfile)"
     );
     mock.stop().await;
@@ -319,13 +312,19 @@ async fn scenario_down_server_flips_unreachable_and_back() {
     sup.refresh().await;
 
     // @step Then the RLCD status reports reachable false
-    assert!(!sup.reachable(), "stopped server must flip the status to unreachable");
+    assert!(
+        !sup.reachable(),
+        "stopped server must flip the status to unreachable"
+    );
     assert!(sup.unreachable_reason().is_some());
 
     // @step And a single down transition warning has been logged
     let warns = drain_warn_events();
     assert_eq!(
-        warns.iter().filter(|m| m.to_lowercase().contains("down")).count(),
+        warns
+            .iter()
+            .filter(|m| m.to_lowercase().contains("down"))
+            .count(),
         1,
         "exactly one down-transition warning expected, got: {warns:?}"
     );
@@ -334,7 +333,10 @@ async fn scenario_down_server_flips_unreachable_and_back() {
     sup.refresh().await;
     let warns_again = drain_warn_events();
     assert_eq!(
-        warns_again.iter().filter(|m| m.to_lowercase().contains("down")).count(),
+        warns_again
+            .iter()
+            .filter(|m| m.to_lowercase().contains("down"))
+            .count(),
         0,
         "steady-state down polls must not re-log the transition warning: {warns_again:?}"
     );
@@ -383,7 +385,10 @@ async fn scenario_remote_url_is_connect_only() {
         url: "http://192.168.1.50:9000".to_string(),
         ..RlcdConfig::default()
     };
-    assert!(!is_local_url(&cfg.url), "remote host must not be classified as local");
+    assert!(
+        !is_local_url(&cfg.url),
+        "remote host must not be classified as local"
+    );
 
     // @step And no server is running on that remote host
     // (192.168.1.50 is not routable from the test environment; every connect
@@ -398,7 +403,10 @@ async fn scenario_remote_url_is_connect_only() {
     let _ = started;
 
     // @step Then the status reports unreachable
-    assert!(!sup.reachable(), "unroutable remote host must report unreachable");
+    assert!(
+        !sup.reachable(),
+        "unroutable remote host must report unreachable"
+    );
     assert!(sup.unreachable_reason().is_some());
     // @step And no local server spawn has been attempted
     match outcome {
@@ -406,7 +414,7 @@ async fn scenario_remote_url_is_connect_only() {
         other => panic!("remote URL must be connect-only, got {other:?}"),
     }
     // @step And no pidfile has been created
-    assert!(read_pidfile(&pidfile_path()).is_none());
+    assert!(read_pidfile(&pidfile_path().expect("the pidfile path resolves")).is_none());
 }
 
 // ============================================================================
@@ -447,10 +455,7 @@ async fn probe_base_port() -> u16 {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
         .expect("bind probe");
-    listener
-        .local_addr()
-        .expect("local addr")
-        .port()
+    listener.local_addr().expect("local addr").port()
 }
 
 /// Scenario: When the configured port is free it is used for the spawn
@@ -470,11 +475,15 @@ async fn scenario_free_configured_port_is_used() {
     };
 
     // @step When the supervisor selects a port for spawning
-    let sel = select_port(&cfg).await.expect("port selection must succeed");
+    let sel = select_port(&cfg)
+        .await
+        .expect("port selection must succeed");
 
     // @step Then port 8000 is selected
     match sel {
-        PortSelection::SpawnFree { port } => assert_eq!(port, free, "free configured port must be selected"),
+        PortSelection::SpawnFree { port } => {
+            assert_eq!(port, free, "free configured port must be selected")
+        }
         other => panic!("expected SpawnFree({free}), got {other:?}"),
     }
 }
@@ -501,12 +510,17 @@ async fn scenario_occupied_non_rlcd_port_skipped() {
     //  [occupied+1, occupied+5] is free in any healthy environment)
 
     // @step When the supervisor selects a port for spawning
-    let sel = select_port(&cfg).await.expect("port selection must succeed");
+    let sel = select_port(&cfg)
+        .await
+        .expect("port selection must succeed");
 
     // @step Then port 8001 is selected
     match sel {
         PortSelection::SpawnFree { port } => {
-            assert!(port > occupied, "the occupied port must be skipped, got {port}");
+            assert!(
+                port > occupied,
+                "the occupied port must be skipped, got {port}"
+            );
             assert!(
                 port <= occupied + 5,
                 "selected port must stay inside the scan window: {port}"
@@ -533,19 +547,25 @@ async fn scenario_occupied_healthy_rlcd_port_reused() {
 
     // @step When the supervisor selects a port for spawning
     let _user_dir = UserDirGuard::new(&TempDir::new().expect("temp user dir"));
-    let sel = select_port(&cfg).await.expect("port selection must succeed");
+    let sel = select_port(&cfg)
+        .await
+        .expect("port selection must succeed");
 
     // @step Then the supervisor connects to the existing server on port 8000
     // @step And no new server process has been spawned
     match sel {
         PortSelection::ReuseExisting { port, model } => {
-            assert_eq!(port, mock.port(), "the existing server's port must be reused");
+            assert_eq!(
+                port,
+                mock.port(),
+                "the existing server's port must be reused"
+            );
             assert_eq!(model, "m1");
         }
         other => panic!("expected ReuseExisting, got {other:?}"),
     }
     assert!(
-        read_pidfile(&pidfile_path()).is_none(),
+        read_pidfile(&pidfile_path().expect("the pidfile path resolves")).is_none(),
         "reusing an existing server must not spawn (no pidfile)"
     );
     mock.stop().await;
@@ -587,7 +607,10 @@ async fn scenario_all_ports_occupied_fails_open() {
     // @step And a single spawn-failure warning has been logged
     let warns = drain_warn_events();
     assert_eq!(
-        warns.iter().filter(|m| m.to_lowercase().contains("spawn")).count(),
+        warns
+            .iter()
+            .filter(|m| m.to_lowercase().contains("spawn"))
+            .count(),
         1,
         "exactly one spawn-failure warning expected, got: {warns:?}"
     );
@@ -600,6 +623,10 @@ async fn scenario_all_ports_occupied_fails_open() {
         url: "http://127.0.0.1:1".to_string(),
         spawn: RlcdSpawnConfig {
             binary: FAKE_BINARY.to_string(),
+            // BUG-347: a free port, never the default 8000 a live host
+            // RLCD service may be listening on.
+            port: free_port(),
+            port_scan_limit: 1,
             ..Default::default()
         },
         ..RlcdConfig::default()
@@ -607,7 +634,10 @@ async fn scenario_all_ports_occupied_fails_open() {
     let consumer = RlcdSupervisor::new(consumer_cfg);
     let started = Instant::now();
     assert!(
-        consumer.ensure_ready(Duration::from_millis(300)).await.is_err(),
+        consumer
+            .ensure_ready(Duration::from_millis(300))
+            .await
+            .is_err(),
         "consumer must degrade (error), never hard-block"
     );
     assert!(
@@ -632,9 +662,8 @@ async fn scenario_stale_pidfile_removed() {
     let _user_dir = UserDirGuard::new(&tmp_user);
     let dead_pid: u32 = 999_999_999;
     assert!(!is_pid_alive(dead_pid), "impossible pid must be dead");
-    let pidfile = pidfile_path();
-    fs::create_dir_all(pidfile.parent().expect("parent"))
-        .expect("create rlcd dir");
+    let pidfile = pidfile_path().expect("the pidfile path resolves");
+    fs::create_dir_all(pidfile.parent().expect("parent")).expect("create rlcd dir");
     fs::write(&pidfile, dead_pid.to_string()).expect("write stale pidfile");
     assert_eq!(read_pidfile(&pidfile), Some(dead_pid));
 
@@ -647,6 +676,10 @@ async fn scenario_stale_pidfile_removed() {
         url: "http://127.0.0.1:1".to_string(),
         spawn: RlcdSpawnConfig {
             binary: FAKE_BINARY.to_string(),
+            // BUG-347: a free port, never the default 8000 a live host
+            // RLCD service may be listening on.
+            port: free_port(),
+            port_scan_limit: 1,
             ..Default::default()
         },
         ..RlcdConfig::default()
@@ -676,9 +709,8 @@ async fn scenario_live_pid_still_loading_suppresses_spawn() {
     let _user_dir = UserDirGuard::new(&tmp_user);
     let live_pid = std::process::id();
     assert!(is_pid_alive(live_pid), "precondition: test pid is alive");
-    let pidfile = pidfile_path();
-    fs::create_dir_all(pidfile.parent().expect("parent"))
-        .expect("create rlcd dir");
+    let pidfile = pidfile_path().expect("the pidfile path resolves");
+    fs::create_dir_all(pidfile.parent().expect("parent")).expect("create rlcd dir");
     fs::write(&pidfile, live_pid.to_string()).expect("write live pid");
     let pid_before = read_pidfile(&pidfile).expect("pidfile readable");
 
@@ -691,6 +723,10 @@ async fn scenario_live_pid_still_loading_suppresses_spawn() {
         url: never_ready.base_url(),
         spawn: RlcdSpawnConfig {
             binary: FAKE_BINARY.to_string(),
+            // BUG-347: a free port, never the default 8000 a live host
+            // RLCD service may be listening on.
+            port: free_port(),
+            port_scan_limit: 1,
             ..Default::default()
         },
         ..RlcdConfig::default()
@@ -762,7 +798,7 @@ async fn scenario_local_spawn_detaches_and_records_pid() {
     // @step Then the process is started with arguments "serve --host 127.0.0.1 --port <chosen>"
     // @step And its stdout and stderr are appended to ~/.fspec/logs/rlcd-serve.log
     // @step And its pid is written to the pidfile
-    let pidfile = pidfile_path();
+    let pidfile = pidfile_path().expect("the pidfile path resolves");
     let Some(pid) = read_pidfile(&pidfile) else {
         panic!("pidfile must record the spawned pid");
     };
@@ -775,7 +811,10 @@ async fn scenario_local_spawn_detaches_and_records_pid() {
             .replace('\0', " ")
             .trim()
             .to_string();
-        assert!(cmdline.contains("serve"), "cmdline must contain 'serve': {cmdline}");
+        assert!(
+            cmdline.contains("serve"),
+            "cmdline must contain 'serve': {cmdline}"
+        );
         assert!(
             cmdline.contains("--host 127.0.0.1"),
             "cmdline must bind the configured address: {cmdline}"
@@ -796,10 +835,11 @@ async fn scenario_local_spawn_detaches_and_records_pid() {
         );
         // the serve log must exist (stdout/err appended):
         let serve_log = tmp_user.path().join("logs/rlcd-serve.log");
-        let deadline = Instant::now() + Duration::from_secs(10);
-        while !serve_log.exists() && Instant::now() < deadline {
-            tokio::time::sleep(Duration::from_millis(100)).await;
-        }
+        // TEST-042: polled between yields, under the deadlock guard.
+        let _ = codelet_test_helpers::wait_until("the serve log exists", || {
+            std::future::ready(serve_log.exists())
+        })
+        .await;
         assert!(
             serve_log.exists(),
             "stdout/err must be appended to logs/rlcd-serve.log"
@@ -842,10 +882,7 @@ async fn scenario_local_spawn_detaches_and_records_pid() {
 fn persisted_rlcd_url(user_dir: &std::path::Path) -> Option<String> {
     let raw = fs::read_to_string(user_dir.join("fspec-config.json")).ok()?;
     let root: serde_json::Value = serde_json::from_str(&raw).ok()?;
-    root.get("rlcd")?
-        .get("url")?
-        .as_str()
-        .map(str::to_string)
+    root.get("rlcd")?.get("url")?.as_str().map(str::to_string)
 }
 
 /// Scenario: Reusing an existing healthy server on a different port
@@ -860,18 +897,13 @@ async fn scenario_reuse_on_different_port_reanchors_and_persists() {
     let mut _holder: Option<tokio::net::TcpListener> = None;
     let (mock, mock_port) = loop {
         let base = probe_base_port().await;
-        let Ok(mock) = MockRlcd::ready("m1")
-            .start_on_port(base + 1)
-            .await
-        else {
+        let Ok(mock) = MockRlcd::ready("m1").start_on_port(base + 1).await else {
             continue; // base+1 collides: retry on a fresh base
         };
-        let h = tokio::net::TcpListener::bind(SocketAddrV4::new(
-            std::net::Ipv4Addr::LOCALHOST,
-            base,
-        ))
-        .await
-        .expect("bind occupant port");
+        let h =
+            tokio::net::TcpListener::bind(SocketAddrV4::new(std::net::Ipv4Addr::LOCALHOST, base))
+                .await
+                .expect("bind occupant port");
         _holder = Some(h);
         break (mock, base + 1);
     };
@@ -895,14 +927,21 @@ async fn scenario_reuse_on_different_port_reanchors_and_persists() {
         .expect("the healthy in-window server must be reached within budget");
 
     // @step Then the user config file now contains rlcd.url pointing at the occupied port
-    let persisted = persisted_rlcd_url(tmp_user.path()).expect(
-        "re-anchoring to a different healthy port must persist rlcd.url",
+    let persisted = persisted_rlcd_url(tmp_user.path())
+        .expect("re-anchoring to a different healthy port must persist rlcd.url");
+    assert_eq!(
+        persisted,
+        mock.base_url(),
+        "persisted url must be the occupied healthy port"
     );
-    assert_eq!(persisted, mock.base_url(), "persisted url must be the occupied healthy port");
     // @step And the supervisor's effective base url points at the occupied port
-    assert_eq!(sup.effective_base_url().as_deref(), Some(mock.base_url().as_str()));
+    assert_eq!(
+        sup.effective_base_url().as_deref(),
+        Some(mock.base_url().as_str())
+    );
     // @step And a fresh supervisor built from the persisted config reaches the server
-    let fresh_cfg = load_rlcd_config_from(&tmp_user.path().join("fspec-config.json"));
+    let fresh_cfg = load_rlcd_config_from(&tmp_user.path().join("fspec-config.json"))
+        .expect("the rlcd config loads");
     assert_eq!(fresh_cfg.url, mock.base_url());
     let fresh = RlcdSupervisor::new(fresh_cfg);
     let fresh_model = fresh
@@ -912,7 +951,7 @@ async fn scenario_reuse_on_different_port_reanchors_and_persists() {
     assert_eq!(fresh_model, model);
     // @step And no second server process has been spawned
     assert!(
-        read_pidfile(&pidfile_path()).is_none(),
+        read_pidfile(&pidfile_path().expect("the pidfile path resolves")).is_none(),
         "reusing an existing server must not spawn (no pidfile)"
     );
     drop(_holder); // the configured port was occupied for the whole test
@@ -942,7 +981,7 @@ async fn scenario_live_pidfile_healthy_on_different_port_reanchors() {
     let tmp_user = TempDir::new().expect("temp user dir");
     let _user_dir = UserDirGuard::new(&tmp_user);
     let live_pid = std::process::id();
-    let pidfile = pidfile_path();
+    let pidfile = pidfile_path().expect("the pidfile path resolves");
     fs::create_dir_all(pidfile.parent().expect("parent")).expect("create rlcd dir");
     fs::write(&pidfile, live_pid.to_string()).expect("write live pid");
     assert!(
@@ -969,7 +1008,10 @@ async fn scenario_live_pidfile_healthy_on_different_port_reanchors() {
     assert_eq!(model, "m2");
 
     // @step Then the supervisor connects to the healthy port found on the local loopback listeners
-    assert_eq!(sup.effective_base_url().as_deref(), Some(mock.base_url().as_str()));
+    assert_eq!(
+        sup.effective_base_url().as_deref(),
+        Some(mock.base_url().as_str())
+    );
     // @step And the user config file now contains rlcd.url pointing at that port
     // (the shared persistence contract, also covered by the
     //  spawn-persistence scenario above)
@@ -993,8 +1035,11 @@ async fn scenario_failed_spawn_leaves_url_untouched() {
     let tmp_user = TempDir::new().expect("temp user dir");
     let _user_dir = UserDirGuard::new(&tmp_user);
     let path = tmp_user.path().join("fspec-config.json");
-    fs::write(&path, r#"{"theme":"dark","rlcd":{"url":"http://127.0.0.1:8000"}}"#)
-        .expect("write pre-existing config");
+    fs::write(
+        &path,
+        r#"{"theme":"dark","rlcd":{"url":"http://127.0.0.1:8000"}}"#,
+    )
+    .expect("write pre-existing config");
     let cfg = RlcdConfig {
         url: format!("http://127.0.0.1:{base}"),
         spawn: RlcdSpawnConfig {
@@ -1013,12 +1058,11 @@ async fn scenario_failed_spawn_leaves_url_untouched() {
     );
 
     // @step Then the attempt reports unreachable
-    assert!(
-        sup.unreachable_reason()
-            .expect("unreachable status must carry a reason")
-            .to_lowercase()
-            .contains("rlcd")
-    );
+    assert!(sup
+        .unreachable_reason()
+        .expect("unreachable status must carry a reason")
+        .to_lowercase()
+        .contains("rlcd"));
     // @step And the user config file's rlcd.url is unchanged
     assert_eq!(
         persisted_rlcd_url(tmp_user.path()).as_deref(),
@@ -1042,6 +1086,10 @@ async fn scenario_all_consumers_read_shared_status_and_fail_open() {
         url: "http://127.0.0.1:1".to_string(),
         spawn: RlcdSpawnConfig {
             binary: FAKE_BINARY.to_string(),
+            // BUG-347: a free port, never the default 8000 a live host
+            // RLCD service may be listening on.
+            port: free_port(),
+            port_scan_limit: 1,
             ..Default::default()
         },
         ..RlcdConfig::default()
@@ -1086,7 +1134,7 @@ async fn scenario_all_consumers_read_shared_status_and_fail_open() {
 
     // And the global supervisor is the shared, lazily-initialized instance
     // every consumer uses:
-    let global = global_supervisor();
+    let global = global_supervisor().expect("the global supervisor loads its config");
     assert!(
         global.config().url.starts_with("http"),
         "global supervisor must carry a url"

@@ -3,14 +3,9 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js create-bug --help`.
 //!
-//! NOTE on quirks faithfully reproduced from the TS reference:
-//! * `relatedCommands` entries already carry a `fspec ` prefix, so the
-//!   formatter renders them as `fspec fspec search-scenarios - ...`.
-//! * `typicalWorkflow` is a TS array joined with `,` (no space) into a
-//!   single line.
-//! * The TS help-formatter only reads `error.fix` for COMMON ERRORS; the
-//!   help.ts data uses `solution` (not `fix`), so the rendered Fix line is
-//!   `undefined` in the captured fixture. We mirror that verbatim.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -42,13 +37,13 @@ const OPTS: &[CommandOption] = &[
         default_value: None,
     },
     CommandOption {
-        flag: "-p, --parent <parent>",
+        flag: "-p, --parent <workUnitId>",
         description: "Parent bug ID for hierarchical relationships",
         default_value: None,
     },
 ];
 
-const EXAMPLE_1_OUTPUT: &str = "✓ Created bug BUG-001\n  Title: Login validation broken\n\n<system-reminder>\nBug BUG-001 created successfully.\n\nCRITICAL: Research existing code FIRST before fixing bugs.\n  fspec search-scenarios --query=\"login\"\n  fspec search-implementation --function=\"validateLogin\"\n  fspec show-coverage\n</system-reminder>";
+const EXAMPLE_1_OUTPUT: &str = "✓ Created bug BUG-001\n  Title: Login validation broken\n\n<system-reminder>\nBug BUG-001 created successfully.\n\nCRITICAL: Research existing code FIRST before fixing bugs.\n  fspec context --text \"login\"\n  fspec search-implementation --function=\"validateLogin\"\n  fspec show-coverage\n</system-reminder>";
 const EXAMPLE_2_OUTPUT: &str =
     "✓ Created bug BUG-002\n  Title: Memory leak in dashboard\n  Epic: performance";
 const EXAMPLE_3_OUTPUT: &str =
@@ -78,31 +73,31 @@ const PREREQUISITES: &[&str] = &[
     "Parent bug must exist if using --parent",
 ];
 
-const TYPICAL_WORKFLOW: &str = "Create bug: fspec create-bug PREFIX \"Title\",Follow research guidance from system-reminder,Search scenarios: fspec search-scenarios --query=\"keyword\",Search implementation: fspec search-implementation --function=\"functionName\",Check coverage: fspec show-coverage feature-name,Add reproduction steps: fspec add-example BUG-001 \"Reproduction steps\",Add fix scenarios: fspec add-rule BUG-001 \"Expected behavior\",Move to specifying: fspec update-work-unit-status BUG-001 specifying";
+const TYPICAL_WORKFLOW: &str = "Create bug: fspec create-bug PREFIX \"Title\". Follow research guidance from system-reminder. Load related acceptance criteria: fspec context --text \"keyword\". Search implementation: fspec search-implementation --function=\"functionName\". Check coverage: fspec show-coverage feature-name. Add reproduction steps: fspec add-example BUG-001 \"Reproduction steps\". Add fix scenarios: fspec add-rule BUG-001 \"Expected behavior\". Move to specifying: fspec update-work-unit-status BUG-001 specifying";
 
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Prefix 'PREFIX' is not registered",
-        fix: "undefined",
+        fix: "Run: fspec create-prefix PREFIX \"Description\"",
     },
     CommonError {
         error: "Parent bug 'PARENT-001' does not exist",
-        fix: "undefined",
+        fix: "Create parent first or remove --parent option",
     },
     CommonError {
         error: "Epic 'epic-name' does not exist",
-        fix: "undefined",
+        fix: "Run: fspec create-epic epic-name \"Title\"",
     },
 ];
 
 const RELATED: &[&str] = &[
-    "fspec search-scenarios - Search existing scenarios by keyword",
-    "fspec search-implementation - Search implementation for function usage",
-    "fspec show-coverage - Check test coverage for features",
-    "fspec list-features - List all feature files",
-    "fspec add-rule - Add expected behavior rule",
-    "fspec add-example - Add reproduction steps",
-    "fspec update-work-unit-status - Move bug through ACDD workflow",
+    "context - Load the acceptance criteria that mention a keyword",
+    "search-implementation - Search implementation for function usage",
+    "show-coverage - Check test coverage for features",
+    "list-features - List all feature files",
+    "add-rule - Add expected behavior rule",
+    "add-example - Add reproduction steps",
+    "update-work-unit-status - Move bug through ACDD workflow",
 ];
 
 const NOTES: &[&str] = &[

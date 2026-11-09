@@ -59,3 +59,19 @@ Feature: board CLI subcommand
     When I dispatch board through fspec_core::dispatch::dispatch_command with format='json'
     Then the dispatcher's DispatchResult.data summary matches the CLI's JSON summary against the same on-disk state
     Then the CLI bridge module rust/fspec/src/board.rs contains NO inline column-building, point-summing, or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: Text mode shows every column with its work units, estimates and the point summary
+    Given a project root whose spec/foundation.json exists and spec/work-units.json contains AUTH-001 (backlog, 5), AUTH-002 (specifying, 8), AUTH-003 (testing, 3), DASH-001 (implementing, 5), API-001 (validating, 5) and SEC-001 (done, 3)
+    When I run `./rust/target/release/fspec board` from that directory
+    Then the command exits 0
+    And stdout has a header line with the work unit count for each of backlog, specifying, testing, implementing, validating, done and blocked
+    And stdout lists each work unit as '<id>  <title>  [<estimate>]', e.g. 'AUTH-001  Title AUTH-001  [5]'
+    And stdout ends with the summary line '26 points in progress, 3 points completed'
+
+  Scenario: Text mode --limit caps each column and reports the overflow
+    Given a project root whose spec/foundation.json exists and spec/work-units.json lists AUTH-001 (5), AUTH-002 (3), AUTH-003 (8), AUTH-004 (5) and AUTH-005 (2) in backlog
+    When I run `./rust/target/release/fspec board --limit 2` from that directory
+    Then the command exits 0
+    And the backlog column lists only 'AUTH-001  Title AUTH-001  [5]' and 'AUTH-002  Title AUTH-002  [3]'
+    And the backlog column ends with the overflow line '… 3 more'
+    And no other column shows an overflow line

@@ -65,17 +65,17 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Review Quality Gates Before Implementing",
         example: "fspec list-virtual-hooks AUTH-001\n# Review hooks, then:\nfspec update-work-unit-status AUTH-001 implementing",
-        description: "Check what quality checks will run before starting implementation.",
+        description: Some("Check what quality checks will run before starting implementation."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Debug Hook Execution",
         example: "fspec list-virtual-hooks AUTH-001\n# If hook fails, review command and fix",
-        description: "When a hook fails, list hooks to see the exact command being executed.",
+        description: Some("When a hook fails, list hooks to see the exact command being executed."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Compare Hooks Across Work Units",
         example: "fspec list-virtual-hooks AUTH-001\nfspec list-virtual-hooks AUTH-002",
-        description: "Compare quality checks between related work units to ensure consistency.",
+        description: Some("Compare quality checks between related work units to ensure consistency."),
     }),
 ];
 

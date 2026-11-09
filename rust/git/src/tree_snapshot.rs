@@ -139,7 +139,8 @@ fn file_mode(executable: bool) -> u32 {
 }
 
 /// Write a regular file to `workdir.join(path)`, preserving
-/// parent-directory creation and the executable bit (WT-006).
+/// parent-directory creation and the executable bit (WT-006), replacing
+/// any existing file atomically (WT-014).
 ///
 /// On Unix the executable bit comes from `executable`; on Windows the
 /// mode is a no-op.
@@ -153,7 +154,9 @@ pub fn write_file_with_mode(
     if let Some(parent) = full_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    std::fs::write(&full_path, content)?;
+    // WT-014: temp file, fsync, rename (the BUG-477 spec write path), so
+    // a reader of main never sees a partly written file.
+    codelet_common::spec_lock::replace_file_atomically(&full_path, content)?;
 
     #[cfg(unix)]
     {

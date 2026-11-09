@@ -29,7 +29,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "if let Some(result) = super::workspace_dropdown::handle_mouse(view, event, store) {",
+              "lastLine": "// events are also routed to the recognizer even when the cursor"
             }
           ]
         }
@@ -60,7 +62,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "/// `src/tui/components/BoardView.tsx:535-540` — going below 0 wraps",
+              "lastLine": "let wrapped = proposed.rem_euclid(len_i) as usize;"
             }
           ]
         }
@@ -71,16 +75,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "125-148",
+          "lines": "128-153",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
               "lines": [
-                57,
-                58,
-                59,
-                60
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "let in_content = view",
+              "lastLine": "}"
             }
           ]
         }
@@ -91,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "151-170",
+          "lines": "156-177",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
@@ -126,7 +140,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "///   * `Down(Left)` inside a `last_column_header_areas[idx]`        → SetFocusedColumn(idx)",
+              "lastLine": "// the border-free content width). Anything else outside the strip"
             }
           ]
         }
@@ -137,7 +153,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "225-256",
+          "lines": "237-270",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
@@ -172,7 +188,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "if let Some(rect) = view.last_details_area.get() {",
+              "lastLine": ""
             }
           ]
         }
@@ -183,7 +201,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "259-300",
+          "lines": "273-317",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
@@ -218,7 +236,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "if let Some(rect) = view.last_details_area.get() {",
+              "lastLine": ""
             }
           ]
         }
@@ -229,7 +249,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_mouse_rpc023.rs",
-          "lines": "303-330",
+          "lines": "320-349",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/mouse.rs",
@@ -250,7 +270,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "if down {",
+              "lastLine": ".unwrap_or(false);"
             }
           ]
         }
@@ -276,6 +298,6 @@
       "rust/fspec-tui/src/views/board/mouse.rs",
       "rust/fspec-tui/src/store/board_viewport.rs"
     ],
-    "totalLinesCovered": 405
+    "totalLinesCovered": 368
   }
 }

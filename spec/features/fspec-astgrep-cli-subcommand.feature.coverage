@@ -51,7 +51,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -108,7 +110,9 @@
                 86,
                 87,
                 88
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -119,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_astgrep.rs",
-          "lines": "100-129",
+          "lines": "97-124",
           "implMappings": [
             {
               "file": "rust/fspec/src/astgrep.rs",
@@ -145,7 +149,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "println!(\"{}\", content.content);",
+              "lastLine": "}"
             }
           ]
         }
@@ -162,6 +168,6 @@
     "implFiles": [
       "rust/fspec/src/astgrep.rs"
     ],
-    "totalLinesCovered": 198
+    "totalLinesCovered": 196
   }
 }

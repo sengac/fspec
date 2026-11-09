@@ -79,7 +79,8 @@ async fn invalid_target_never_dispatches_to_the_handler() {
 
 #[tokio::test]
 #[serial_test::serial]
-async fn handler_rejection_and_missing_handler_are_not_queued_success() {
+async fn handler_rejection_and_missing_handler_are_not_queued_success(
+) -> Result<(), Box<dyn std::error::Error>> {
     let caller = Uuid::new_v4();
     let tool = GenerateCompactionTool::new(caller);
     let missing = tool.call(GenerateCompactionArgs { session_id: None }).await;
@@ -89,8 +90,11 @@ async fn handler_rejection_and_missing_handler_are_not_queued_success() {
     set_generate_compaction_handler(caller, Some(handler));
     let rejected = tool.call(GenerateCompactionArgs { session_id: None }).await;
     set_generate_compaction_handler(caller, None);
-    assert!(matches!(
-        rejected,
-        Err(ToolError::Execution { message, .. }) if message == "captured candidate rejected"
-    ));
+    // BUG-614: the caller's own failed generation is a non-fatal
+    // rejected_final result, never queued success.
+    let rejected: serde_json::Value = serde_json::from_str(&rejected?)?;
+    assert_eq!(rejected["status"], "rejected_final");
+    assert_eq!(rejected["installed"], false);
+    assert_eq!(rejected["error"], "captured candidate rejected");
+    Ok(())
 }

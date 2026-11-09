@@ -1,0 +1,109 @@
+{
+  "scenarios": [
+    {
+      "name": "fspec status reports a TLS failure instead of panicking",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug619_wss_connect_with_two_crypto_providers.rs",
+          "lines": "42-72",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/entry.rs",
+              "lines": [
+                3,
+                4
+              ],
+              "firstLine": "// BUG-619: every rustls client in this process uses the ring provider.",
+              "lastLine": "codelet_rpc_server::install_crypto_provider();"
+            },
+            {
+              "file": "rust/rpc-server/src/client/connect.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "/// BUG-619: rustls cannot pick a process crypto provider when more than one",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ws_connect chooses ring when both crypto providers are linked",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug619_wss_connect_with_two_crypto_providers.rs",
+          "lines": "74-104",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/client/connect.rs",
+              "lines": [
+                37,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "install_crypto_provider();",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-server/src/client.rs",
+              "lines": [
+                14
+              ],
+              "firstLine": "pub use connect::{install_crypto_provider, ws_connect, ws_connect_trusting, WsConnection};",
+              "lastLine": "pub use connect::{install_crypto_provider, ws_connect, ws_connect_trusting, WsConnection};"
+            },
+            {
+              "file": "rust/rpc-server/src/lib.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "pub use client::{",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug619_wss_connect_with_two_crypto_providers.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/cli_registration/entry.rs",
+      "rust/rpc-server/src/client/connect.rs",
+      "rust/rpc-server/src/client.rs",
+      "rust/rpc-server/src/lib.rs"
+    ],
+    "totalLinesCovered": 95
+  }
+}

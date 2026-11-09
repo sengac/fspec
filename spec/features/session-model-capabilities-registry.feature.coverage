@@ -12,10 +12,6 @@
               "lines": [
                 10,
                 11,
-                12,
-                13,
-                14,
-                15,
                 16,
                 17,
                 18,
@@ -29,8 +25,6 @@
                 26,
                 27,
                 28,
-                29,
-                30,
                 31,
                 32,
                 33,
@@ -42,8 +36,6 @@
                 39,
                 40,
                 41,
-                42,
-                43,
                 44,
                 45,
                 46,
@@ -58,15 +50,18 @@
                 55,
                 56,
                 57,
-                58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
-                65
-              ]
+                65,
+                66,
+                67,
+                68,
+                69,
+                71,
+                72
+              ],
+              "firstLine": "pub use crate::profile_environment::apply_profile_env_vars;",
+              "lastLine": ".unwrap_or(false))"
             }
           ]
         }
@@ -82,16 +77,18 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47
-              ]
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": ".and_then(|c| c.has_vision)",
+              "lastLine": "let model_id = &composite[slash + 1..];"
             }
           ]
         }
@@ -107,18 +104,25 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
                 35,
                 36,
                 37,
-                38
-              ]
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "// Profile selection: \"provider:profile/model\" (colon before the slash).",
+              "lastLine": "}"
             }
           ]
         }
@@ -132,28 +136,30 @@
           "lines": "125-147",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
               "lines": [
-                1362,
-                1363,
-                1364,
-                1365,
-                1366,
-                1367,
-                1368,
-                1369,
-                1370,
-                1371,
-                1372,
-                1373,
-                1374,
-                1375,
-                1376,
-                1377,
-                1378,
-                1379,
-                1380
-              ]
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                86,
+                86,
+                86,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "resolved",
+              "lastLine": "// SUPERSEDES the standalone PROV-122 `save_persisted_model_string` call."
             }
           ]
         }
@@ -164,19 +170,19 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug168_model_vision_resolution.rs",
-          "lines": "149-164",
+          "lines": "149-166",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "// Cloud/codex: models.dev registry capability.",
+              "lastLine": ".unwrap_or(false))"
             }
           ]
         }
@@ -192,8 +198,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/model_resolution.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_6.rs"
     ],
-    "totalLinesCovered": 201
+    "totalLinesCovered": 199
   }
 }

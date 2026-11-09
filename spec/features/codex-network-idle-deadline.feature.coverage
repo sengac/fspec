@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov154_codex_deadline.rs",
-          "lines": "29-59",
+          "lines": "29-62",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -25,12 +25,13 @@
                 190,
                 191,
                 192
-              ]
+              ],
+              "firstLine": "let stream = async_stream::try_stream! {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                176,
                 177,
                 178,
                 179,
@@ -66,8 +67,11 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213
+              ],
+              "firstLine": "pub async fn retry(&mut self, error: CompletionError) -> Result<(), CompletionError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -140,7 +144,9 @@
                 169,
                 170,
                 171
-              ]
+              ],
+              "firstLine": "let generation = generation?;",
+              "lastLine": "};"
             }
           ]
         }
@@ -151,7 +157,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov154_codex_deadline.rs",
-          "lines": "62-83",
+          "lines": "65-91",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -187,7 +193,9 @@
                 221,
                 222,
                 223
-              ]
+              ],
+              "firstLine": "match kind {",
+              "lastLine": "yield Choice::FinalResponse(Final {"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -207,7 +215,9 @@
                 190,
                 191,
                 192
-              ]
+              ],
+              "firstLine": "let stream = async_stream::try_stream! {",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/interactive/provider_recovery.rs",
@@ -247,7 +257,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "pub async fn wait_for_stall_deadline(session: &ProviderSession, provider: &str, timeout: Duration) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -267,6 +279,6 @@
       "rust/providers/src/codex/streaming.rs",
       "rust/cli/src/interactive/provider_recovery.rs"
     ],
-    "totalLinesCovered": 254
+    "totalLinesCovered": 262
   }
 }

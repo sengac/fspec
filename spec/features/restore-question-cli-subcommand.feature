@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-290
+@cli
+@example-mapping
 Feature: fspec restore-question CLI subcommand (Rust port)
   """
   Clap derive subcommand `restore-question` exposes the same surface as the TS Commander.js registration at src/commands/restore-question.ts:88-110 — two positional arguments `<workUnitId>` and `<index>`, no flags wired into the action (the help-doc advertises `--ids` but the TS CLI does not implement it; we mirror Commander's actual surface — positional-only).

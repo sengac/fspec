@@ -19,8 +19,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -70,8 +68,12 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -96,8 +98,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -147,8 +147,12 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -173,8 +177,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -224,8 +226,12 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,7 +242,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/pause_schedule.rs",
-          "lines": "155-240",
+          "lines": "161-265",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/pause_schedule.rs",
@@ -250,8 +256,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -301,8 +305,12 @@
                 131,
                 132,
                 133,
-                134
-              ]
+                134,
+                135,
+                136
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -319,6 +327,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/pause_schedule.rs"
     ],
-    "totalLinesCovered": 406
+    "totalLinesCovered": 425
   }
 }

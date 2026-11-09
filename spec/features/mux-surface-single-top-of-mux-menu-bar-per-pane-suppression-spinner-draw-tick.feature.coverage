@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "303-366",
+          "lines": "335-400",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_render.rs",
@@ -33,15 +33,15 @@
                 60,
                 61,
                 62,
-                63,
                 64,
-                65,
-                66,
                 67,
                 68,
                 69,
-                70
-              ]
+                70,
+                71
+              ],
+              "firstLine": "pub fn paint_bar(",
+              "lastLine": ".map(|r| r.x)"
             }
           ]
         }
@@ -52,7 +52,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "370-416",
+          "lines": "403-461",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
@@ -87,7 +87,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "pub fn build_snapshot(",
+              "lastLine": ".chain(chips_zone_b)"
             }
           ]
         }
@@ -98,7 +100,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "420-463",
+          "lines": "464-509",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
@@ -133,7 +135,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "pub fn build_snapshot(",
+              "lastLine": ".chain(chips_zone_b)"
             }
           ]
         }
@@ -144,23 +148,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "467-494",
+          "lines": "512-541",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/render.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "menu_snapshot::build_snapshot(agent_store, store.menu_focus(), store.open_menu(), now_ms());",
+              "lastLine": ".item_rects"
             }
           ]
         }
@@ -171,11 +177,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "498-532",
+          "lines": "544-581",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/render.rs",
               "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
                 112,
                 113,
                 114,
@@ -193,14 +205,10 @@
                 126,
                 127,
                 128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
+                129
+              ],
+              "firstLine": "super::MuxPaneKind::Agent => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -211,27 +219,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "536-590",
+          "lines": "584-662",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
               "lines": [
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233
-              ]
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "match focused_kind(layout) {",
+              "lastLine": "if plain(KeyCode::Left, key) && agent_view.input.is_empty() {"
             }
           ]
         }
@@ -242,7 +252,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "621-689",
+          "lines": "665-735",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
@@ -455,7 +465,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": "// BUG-200 R-EDGES: the `MenuMove` arm borrows `self.board_store`",
+              "lastLine": "//"
             }
           ]
         }
@@ -466,7 +478,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "637-655",
+          "lines": "738-758",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
@@ -568,25 +580,30 @@
                 213,
                 214,
                 215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233
-              ]
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "/// the outcome (emitting / dismissing / forwarding).",
+              "lastLine": "if plain(KeyCode::Left, key) && agent_view.input.is_empty() {"
             }
           ]
         }
@@ -597,35 +614,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "659-691",
+          "lines": "761-795",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139
-              ]
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "// MENU-004 R-KEYS: the top-row bar claims its keys BEFORE the",
+              "lastLine": "}"
             }
           ]
         }
@@ -636,7 +654,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "695-753",
+          "lines": "798-859",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
@@ -645,44 +663,9 @@
                 144,
                 145,
                 146
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "695-753",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
-              "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186
-              ]
+              ],
+              "firstLine": "pub fn menu_close_dropdown(&mut self) {",
+              "lastLine": ""
             }
           ]
         }
@@ -693,27 +676,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "757-796",
+          "lines": "862-903",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
               "lines": [
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233
-              ]
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ],
+              "firstLine": "match focused_kind(layout) {",
+              "lastLine": "if plain(KeyCode::Left, key) && agent_view.input.is_empty() {"
             }
           ]
         }
@@ -724,7 +709,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "800-828",
+          "lines": "906-936",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
@@ -736,7 +721,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "/// board store's `menu_move` mirror for the mux bar).",
+              "lastLine": "/// dropdown (the already-open item closes — GUI parity, R4)."
             }
           ]
         }
@@ -747,7 +734,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "832-868",
+          "lines": "939-977",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
@@ -766,7 +753,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "_ => self.open_menu = Some((category, 0)),",
+              "lastLine": ".map(|c| c.entries.len())"
             }
           ]
         }
@@ -777,21 +766,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "872-898",
+          "lines": "980-1009",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
               "lines": [
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "pub(crate) fn menu_reanchor_or_close(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -802,18 +793,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "902-934",
+          "lines": "1012-1047",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
               "lines": [
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub fn menu_execute_item(&mut self, category: usize, row: usize) -> Option<items::MenuAction> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -824,15 +817,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "938-965",
+          "lines": "1050-1079",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
               "lines": [
-                136,
-                137,
-                138
-              ]
+                143,
+                144,
+                145
+              ],
+              "firstLine": "pub fn menu_close_dropdown(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -843,14 +838,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "969-1001",
+          "lines": "1082-1116",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
               "lines": [
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -881,8 +873,18 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "return MuxBarKeyOutcome::Forward;",
+              "lastLine": "// ── 2. a bar item or Zone B cell has the focus (dropdown closed) ─────"
             }
           ]
         }
@@ -893,68 +895,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1005-1041",
+          "lines": "1119-1158",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
               "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on a pane view label focuses that pane",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1045-1080",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
-              "lines": [
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Clicking a menu item focuses it and opens its dropdown",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1084-1111",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
-              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
                 71,
                 72,
                 73,
@@ -982,18 +943,61 @@
                 95,
                 96,
                 97,
+                98
+              ],
+              "firstLine": "Action::MenuChipActivate(index) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a pane view label focuses that pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1161-1199",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "// state (the dropdown closed in-view; the entry is",
+              "lastLine": "else {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a menu item focuses it and opens its dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+          "lines": "1202-1231",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
                 98,
                 99,
                 100,
                 101,
-                102,
-                103,
                 104,
                 105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -1049,16 +1053,7 @@
                 162,
                 163,
                 164,
-                165,
-                166,
-                167,
                 168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
                 175,
                 176,
                 177,
@@ -1076,8 +1071,53 @@
                 189,
                 190,
                 191,
-                192
-              ]
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "pub(crate) fn classify_bar_mouse(layout: &MultiplexLayout, event: &Event) -> MuxBarMouseDecision {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1088,7 +1128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1115-1144",
+          "lines": "1234-1265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_state.rs",
@@ -1100,7 +1140,9 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "/// board store's `menu_move` mirror for the mux bar).",
+              "lastLine": "/// dropdown (the already-open item closes — GUI parity, R4)."
             }
           ]
         }
@@ -1111,24 +1153,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1148-1175",
+          "lines": "1268-1297",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -1138,12 +1167,27 @@
                 162,
                 163,
                 164,
-                165,
-                166,
-                167,
                 168,
-                169
-              ]
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "// beneath it (e.g. the board pane's own ring walk).",
+              "lastLine": "// Every DisplayCell variant carries the ORIGINAL zone_b"
             }
           ]
         }
@@ -1154,7 +1198,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1179-1204",
+          "lines": "1368-1395",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
@@ -1182,7 +1226,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "/// the SAME derivation `menu_snapshot::build_snapshot` uses.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1193,33 +1239,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1208-1252",
+          "lines": "1398-1450",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
                 36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56
-              ]
+                37
+              ],
+              "firstLine": "match menu_mouse::classify_bar_mouse(&self.mux, event) {",
+              "lastLine": "self.emit_menu_action(Action::MenuDismissBar);"
             }
           ]
         }
@@ -1230,33 +1278,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1256-1289",
+          "lines": "1453-1488",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
                 98,
                 99,
                 100,
                 101,
-                102,
-                103,
                 104,
                 105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -1282,8 +1314,23 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "// Inert unless the last frame painted the bar + cached its geometry.",
+              "lastLine": "return match kind {"
             }
           ]
         }
@@ -1294,21 +1341,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1293-1329",
+          "lines": "1491-1529",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131
-              ]
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ],
+              "firstLine": "_ => unreachable!(\"guard above\"),",
+              "lastLine": "// starts one row below the bar, so this arm never double-fires"
             }
           ]
         }
@@ -1319,26 +1368,28 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1333-1362",
+          "lines": "1532-1564",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
-              ]
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "| MouseEventKind::ScrollDown",
+              "lastLine": "MouseEventKind::ScrollLeft | MouseEventKind::ScrollRight"
             }
           ]
         }
@@ -1349,11 +1400,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1366-1398",
+          "lines": "1567-1602",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/keys.rs",
               "lines": [
+                39,
+                40,
                 41,
                 42,
                 43,
@@ -1368,10 +1421,10 @@
                 52,
                 53,
                 54,
-                55,
-                56,
-                57
-              ]
+                55
+              ],
+              "firstLine": "/// Classify a key event against the current mux layout.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1382,7 +1435,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1402-1425",
+          "lines": "1605-1631",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator_menu_bar.rs",
@@ -1407,7 +1460,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "pub fn is_menu_bar_animating(&self) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1418,7 +1473,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1429-1447",
+          "lines": "1634-1654",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator_menu_bar.rs",
@@ -1443,7 +1498,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "pub fn is_menu_bar_animating(&self) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1454,22 +1511,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1451-1485",
+          "lines": "1658-1674",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/render.rs",
               "lines": [
-                64,
-                65,
-                66,
-                67,
-                68,
                 69,
                 70,
                 71,
-                72,
                 73,
-                74,
                 75,
                 76,
                 77,
@@ -1480,7 +1530,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "let body = if bar_painted_this_frame {",
+              "lastLine": "layout.body_area = Some(body);"
             }
           ]
         }
@@ -1491,11 +1543,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1237-1300",
+          "lines": "1300-1365",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/window.rs",
               "lines": [
+                97,
                 98,
                 99,
                 100,
@@ -1539,9 +1592,10 @@
                 138,
                 139,
                 140,
-                141,
-                142
-              ]
+                141
+              ],
+              "firstLine": "/// MUX-004 R-CHIPS / chip-click selection: rotate the agent window and",
+              "lastLine": "}"
             }
           ]
         }
@@ -1562,7 +1616,7 @@
       "rust/fspec-tui/src/views/multiplex/render.rs",
       "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
       "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
-      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/fspec-tui/src/views/navigator_mux_routing.rs",
       "rust/fspec-tui/src/views/multiplex/menu_state.rs",
       "rust/fspec-tui/src/app/dispatch_menu.rs",
       "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
@@ -1570,6 +1624,6 @@
       "rust/fspec-tui/src/views/navigator_menu_bar.rs",
       "rust/fspec-tui/src/views/multiplex/window.rs"
     ],
-    "totalLinesCovered": 2269
+    "totalLinesCovered": 2302
   }
 }

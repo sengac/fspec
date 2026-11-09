@@ -6,7 +6,7 @@ use codelet_core::{
     work_units::WorkUnitsWatcher,
 };
 use codelet_tools::execution_context::{scope_invocation, WorkUnitAttribution};
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
@@ -61,7 +61,7 @@ async fn scenario_same_card_status_refresh_retains_correct_authorization_stage()
         Some("AUTH-001".into()),
         Some("old".into()),
         Some("implementing".into()),
-    );
+    )?;
     codelet_sessions::session_tool_callbacks::register_manager(fixture.manager.clone());
     // @step When a successful status update changes that card's stage
     fixture.status("AUTH-001", "validating").await?;
@@ -79,8 +79,8 @@ async fn scenario_same_card_status_refresh_retains_correct_authorization_stage()
     assert!(fixture.focus(&fixture.first)?.is_none());
     assert_eq!(
         codelet_sessions::session_tool_callbacks::work_unit_stage(fixture.first.value.clone())
-            .as_deref(),
-        Some("specifying")
+            .map(|stage| stage.map(|stage| stage.stage)),
+        Ok(Some("specifying".to_string()))
     );
     bug231_support::metadata::verify_callback_lock(&fixture).await
 }
@@ -100,7 +100,7 @@ async fn scenario_external_completion_or_deletion_clears_only_sessions_focused_o
         Some("AUTH-001".into()),
         Some("bound".into()),
         Some("testing".into()),
-    );
+    )?;
     let watcher = Arc::new(WorkUnitsWatcher::new(fixture.project.path())?);
     let _subscription = fixture.manager.watch_work_units(&watcher);
     // @step When a real work-unit snapshot marks "AUTH-001" completed or removes it
@@ -209,7 +209,7 @@ async fn scenario_sessionless_commands_refresh_metadata_without_claiming_another
     assert_eq!(fixture.focus(&fixture.second)?.as_deref(), Some("AUTH-002"));
     // @step And updates to an already focused card still refresh its metadata
     fixture.shell("AUTH-001", "validating")?;
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if fixture
                 .manager
@@ -221,7 +221,7 @@ async fn scenario_sessionless_commands_refresh_metadata_without_claiming_another
             {
                 break;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
         Ok::<(), Box<dyn std::error::Error>>(())
     })
@@ -254,7 +254,7 @@ async fn scenario_watcher_reconciliation_updates_a_busy_session_outside_the_runt
         .is_none());
     drop(guard);
     // @step And the deferred environment reminder reflects cleared activity
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if serde_json::to_string(&session.inner.lock().await.messages)?
                 .contains("Current work unit: NONE")

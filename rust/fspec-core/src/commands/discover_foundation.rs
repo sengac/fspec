@@ -93,13 +93,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let draft_path = match args.draft_path.as_deref() {
         Some(p) => project_root.join(p),
-        None => project_root.join("spec").join("foundation.json.draft"),
+        None => crate::io::spec_paths::foundation_draft(project_root)?,
     };
     let final_path = match args.output.as_deref() {
         Some(p) => project_root.join(p),
-        None => project_root.join("spec").join("foundation.json"),
+        None => crate::io::spec_paths::foundation(project_root)?,
     };
 
+    // BUG-477: hold the spec lock from the first read to the last write
+    // (draft, foundation.json and the FOUND work unit).
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "discover-foundation")?;
     if args.finalize {
         return finalize(
             project_root,
@@ -390,7 +393,7 @@ Then re-run: fspec discover-foundation --finalize"
     let mut md_generated = false;
     if auto_generate_md {
         crate::commands::generate_foundation_md::regenerate(project_root);
-        md_generated = project_root.join("spec").join("FOUNDATION.md").exists();
+        md_generated = crate::io::spec_paths::foundation_md(project_root)?.exists();
     }
 
     let final_path_display = draft_path_display(project_root, final_path);
@@ -439,7 +442,7 @@ Foundation is ready.",
 /// result fields `workUnitCreated` / `workUnitId`. The whole block is
 /// best-effort — the caller swallows every error.
 fn create_found_work_unit(project_root: &Path) -> Result<Option<(String, bool)>, FspecCoreError> {
-    let wu_path = project_root.join("spec").join("work-units.json");
+    let wu_path = crate::io::spec_paths::work_units(project_root)?;
 
     // Load existing work-units.json as a raw object (preserve key order). When
     // absent, start from the canonical empty store shape.
@@ -543,7 +546,7 @@ fn create_found_work_unit(project_root: &Path) -> Result<Option<(String, bool)>,
         }
     }
 
-    write_json_atomic(&wu_path, &Value::Object(top))?;
+    crate::io::board::write_work_units(project_root, &Value::Object(top))?;
     Ok(Some((next_id, true)))
 }
 

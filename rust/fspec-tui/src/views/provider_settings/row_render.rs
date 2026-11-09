@@ -117,19 +117,13 @@ pub(super) fn row_prefix(kind: RowKind, selected: bool) -> String {
 /// character of e.g. a profile row lands at display column 9
 /// (`"  " + "    " + "📁 " = 2 + 4 + 3 = 9` — emoji glyph occupies the
 /// 2-cell slot at indices 6/7, trailing space at 8).
-///
-/// **Return value (RPC-158):** the absolute buffer column AFTER the
-/// last cell of the painted `prefix+label` text. Callers can use this
-/// as the x-coordinate to append inline decorations (e.g. test-result
-/// span) on top of the row's colour band. The returned column is
-/// clamped to `area.x + area.width` and saturates at `u16::MAX`.
-pub fn render_row(kind: RowKind, label: &str, selected: bool, area: Rect, buf: &mut Buffer) -> u16 {
+pub fn render_row(kind: RowKind, label: &str, selected: bool, area: Rect, buf: &mut Buffer) {
     if area.height == 0 || area.width == 0 {
-        return area.x;
+        return;
     }
     let style = row_style(kind, selected);
     let prefix = row_prefix(kind, selected);
-    let raw = format!("{prefix}{label}");
+    let raw = fit_row(&prefix, label, usize::from(area.width));
     // Pre-fill the entire row with the row style so the colour band
     // covers the full width even on rows shorter than `area.width`.
     for x in area.x..area.x + area.width {
@@ -139,10 +133,8 @@ pub fn render_row(kind: RowKind, label: &str, selected: bool, area: Rect, buf: &
     }
     // Paint the text on top. `set_stringn` clamps to `area.width`
     // display columns and correctly handles unicode-width for wide
-    // glyphs (📁/🔑 take two display cells). The returned (x, _) is
-    // the column AFTER the last painted display cell — exactly what
-    // we want to expose to callers.
-    let (end_x, _end_y) = buf.set_stringn(area.x, area.y, &raw, area.width as usize, style);
+    // glyphs (📁/🔑 take two display cells).
+    buf.set_stringn(area.x, area.y, &raw, area.width as usize, style);
     // Wide-glyph continuation cells (the second half of 📁/🔑) get
     // reset to default style by `set_stringn`, which would punch a
     // hole in the colour band. Walk the row once more and force the
@@ -151,12 +143,10 @@ pub fn render_row(kind: RowKind, label: &str, selected: bool, area: Rect, buf: &
     for x in area.x..area.x + area.width {
         buf[(x, area.y)].set_style(style);
     }
-    end_x
 }
 
-/// RPC-158: returns the row's background tint when `selected` (so the
-/// inline test-result decoration can match the colour band) or
-/// `Color::Reset` when unselected. Mirrors the bg side of `row_style`.
+/// RPC-158: returns the row's background tint when `selected` (the
+/// segmented painter's colour band) or `Color::Reset` when unselected. Mirrors the bg side of `row_style`.
 pub fn row_band_bg(kind: RowKind, selected: bool) -> Color {
     if !selected {
         return Color::Reset;
@@ -167,4 +157,38 @@ pub fn row_band_bg(kind: RowKind, selected: bool) -> Color {
         RowKind::OauthLogin => Color::Magenta,
         RowKind::OauthStatus | RowKind::AddProfile => Color::Green,
     }
+}
+
+/// BUG-578 F21: `prefix + label` fitted to `width` display cells. A label
+/// that does not fit ends in `…`; a profile label keeps its BUG-547
+/// "— missing …" limits whole and shortens the name and URL part instead.
+pub(super) fn fit_row(prefix: &str, label: &str, width: usize) -> String {
+    use unicode_width::UnicodeWidthStr;
+    let raw = format!("{prefix}{label}");
+    if raw.width() <= width {
+        return raw;
+    }
+    if let Some((head, missing)) =
+        label.split_once(super::settings_config::MISSING_LIMITS_SEPARATOR)
+    {
+        let tail = format!("— missing {missing}");
+        let budget = width.saturating_sub(prefix.width() + tail.width() + 1);
+        if budget > 0 {
+            return format!("{prefix}{}…{tail}", cut_to_width(head, budget));
+        }
+    }
+    format!("{}…", cut_to_width(&raw, width.saturating_sub(1)))
+}
+
+/// The longest start of `text` that fits in `width` display cells.
+fn cut_to_width(text: &str, width: usize) -> &str {
+    use unicode_width::UnicodeWidthChar;
+    let mut used = 0;
+    for (index, ch) in text.char_indices() {
+        used += ch.width().unwrap_or(0);
+        if used > width {
+            return &text[..index];
+        }
+    }
+    text
 }

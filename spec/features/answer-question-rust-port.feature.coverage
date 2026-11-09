@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "78-127",
+          "lines": "88-159",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                207,
                 208,
                 209,
                 210,
@@ -36,8 +35,11 @@
                 230,
                 231,
                 232,
-                233
-              ]
+                233,
+                234
+              ],
+              "firstLine": "\"rule\" | \"rules\" => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,12 +50,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "129-152",
+          "lines": "161-187",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                207,
                 208,
                 209,
                 210,
@@ -79,24 +80,26 @@
                 230,
                 231,
                 232,
-                233
-              ]
+                233,
+                234
+              ],
+              "firstLine": "\"rule\" | \"rules\" => {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "addTo=assumption appends raw string to assumptions array",
+      "name": "addTo=assumption appends an assumption item to the assumptions array",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "154-182",
+          "lines": "189-222",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                234,
                 235,
                 236,
                 237,
@@ -109,8 +112,11 @@
                 244,
                 245,
                 246,
-                247
-              ]
+                247,
+                248
+              ],
+              "firstLine": "\"assumption\" | \"assumptions\" => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -121,15 +127,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "184-216",
+          "lines": "224-266",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                203,
                 204,
-                205
-              ]
+                205,
+                206
+              ],
+              "firstLine": "if let (Some(ans), Some(add_to_raw)) = (args.answer.as_ref(), args.add_to.as_ref()) {",
+              "lastLine": "if add_to_norm != \"none\" {"
             }
           ]
         }
@@ -140,12 +148,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "218-243",
+          "lines": "268-296",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                180,
                 181,
                 182,
                 183,
@@ -163,8 +170,11 @@
                 195,
                 196,
                 197,
-                198
-              ]
+                198,
+                199
+              ],
+              "firstLine": "// Mark the question selected and (optionally) record the answer.",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,18 +185,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "245-272",
+          "lines": "298-325",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                75,
                 76,
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81
+              ],
+              "firstLine": "if !data.work_units.contains_key(&args.work_unit_id) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,11 +209,190 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "274-302",
+          "lines": "327-355",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "let status_str = data",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No questions array yields canonical error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "357-384",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "// Validate questions array exists and is non-empty.",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Out-of-range index yields canonical error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "386-414",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "if args.index < 0 || (args.index as usize) >= questions_len {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Raw-string legacy question entry is rejected",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "416-444",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "let entry = &arr[idx];",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-creates spec/work-units.json when missing then reports canonical missing-source error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "446-474",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": "});"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent answers to different questions are all recorded",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "485-543",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
                 82,
                 83,
                 84,
@@ -218,23 +409,8 @@
                 95,
                 96,
                 97,
-                98
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "No questions array yields canonical error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "304-331",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/answer_question.rs",
-              "lines": [
+                98,
+                99,
                 100,
                 101,
                 102,
@@ -253,23 +429,8 @@
                 115,
                 116,
                 117,
-                118
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Out-of-range index yields canonical error",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "333-361",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/answer_question.rs",
-              "lines": [
+                118,
+                119,
                 120,
                 121,
                 122,
@@ -279,23 +440,22 @@
                 126,
                 127,
                 128,
-                129
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Raw-string legacy question entry is rejected",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "363-391",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/answer_question.rs",
-              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
                 145,
                 146,
                 147,
@@ -314,31 +474,256 @@
                 160,
                 161,
                 162,
-                163
-              ]
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Auto-creates spec/work-units.json when missing then reports canonical missing-source error",
+      "name": "Answering the same question twice keeps the last answer and adds both rules",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/answer_question.rs",
-          "lines": "393-421",
+          "lines": "545-580",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/answer_question.rs",
               "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "// Mark the question selected and (optionally) record the answer.",
+              "lastLine": "\"assumption\" | \"assumptions\" => {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The testing gate lists only the questions answer-question has not answered",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/answer_question.rs",
+          "lines": "582-626",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/answer_question.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "// Mark the question selected and (optionally) record the answer.",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// Block the transition if any non-deleted, non-selected questions remain.",
+              "lastLine": "}"
             }
           ]
         }
@@ -346,15 +731,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/answer_question.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/answer_question.rs"
+      "rust/fspec-core/src/commands/answer_question.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/queries.rs"
     ],
-    "totalLinesCovered": 502
+    "totalLinesCovered": 987
   }
 }

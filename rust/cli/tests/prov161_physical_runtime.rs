@@ -43,7 +43,9 @@ async fn scenario_resolved_output_budgets_reach_physical_requests() -> TestResul
             .get_openai(session_id)?
             .create_rig_agent(session_id, None, None),
     )
-    .with_output_limit(Some(u64::try_from(manager.max_output_tokens())?));
+    .with_output_limit(Some(u64::try_from(
+        manager.max_output_tokens().ok_or("output limit")?,
+    )?));
 
     // @step When the selected agent prepares a physical request
     let admitted = selected
@@ -59,7 +61,7 @@ async fn scenario_resolved_output_budgets_reach_physical_requests() -> TestResul
     let physical: Value = serde_json::from_slice(&requests[0].body)?;
 
     // @step Then the serialized output limit and admission reservation equal the effective saved budget
-    assert_eq!(manager.max_output_tokens(), usize::try_from(BUDGET)?);
+    assert_eq!(manager.max_output_tokens(), Some(usize::try_from(BUDGET)?));
     assert_eq!(admitted.output_reservation(), BUDGET);
     assert_eq!(prepared["max_completion_tokens"], BUDGET);
     assert_eq!(physical["max_completion_tokens"], BUDGET);
@@ -93,8 +95,12 @@ async fn scenario_streaming_preferences_control_progressive_display() -> TestRes
 
     // @step When a response containing multiple assistant text chunks is delivered
     let observe_pending = async {
-        tokio::time::timeout(std::time::Duration::from_secs(5), server.deltas_sent).await??;
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        codelet_test_helpers::deadlock_guard("server.deltas_sent", server.deltas_sent).await??;
+        // TEST-042: no waiting window; hand the runtime to the stream 32
+        // times so the sent deltas are read.
+        for _ in 0..32 {
+            tokio::task::yield_now().await;
+        }
         {
             let events = output.0.lock().map_err(|error| error.to_string())?;
             assert!(
@@ -188,7 +194,7 @@ async fn scenario_codex_output_budgets_omit_unsupported_wire_parameters() -> Tes
     assert_eq!(admitted.output_reservation(), BUDGET);
     assert_eq!(
         session.provider_manager().max_output_tokens(),
-        usize::try_from(BUDGET)?
+        Some(usize::try_from(BUDGET)?)
     );
     for body in [&prepared, &physical] {
         assert!(body.get("max_output_tokens").is_none());

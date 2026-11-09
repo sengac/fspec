@@ -24,16 +24,23 @@
 
 mod bounded_reads;
 mod client;
+mod client_workspace;
 mod envelope;
 mod focus_fanout;
 mod pump;
 mod server;
 mod transport;
+mod workspace_fanout;
 
-pub use client::{ws_client_connect, FspecWsClient};
+pub use client::{
+    client_tls_config, install_crypto_provider, load_ca_file, ws_client_connect, ws_connect,
+    ws_connect_trusting, CaOrigin, DaemonCa, DaemonCaError, FspecWsClient, WsConnection,
+    DAEMON_CA_ENV,
+};
 pub use codelet_rpc::register_log_layer;
 pub use envelope::Envelope;
-pub use server::{bind_and_serve, request_shutdown, ConnectedClientGuard};
+pub use server::{bind_and_serve, bind_and_serve_tls, request_shutdown, ConnectedClientGuard};
+pub mod tls; // RPC-456
 
 use codelet_rpc::{ServerStatsHandle, SharedFspecService};
 use std::sync::{

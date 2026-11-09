@@ -1,0 +1,104 @@
+
+CONTEXT
+Load acceptance criteria (scenarios with their steps, tags and location) selected by a cucumber tag expression, in pages
+
+WHEN TO USE
+  Before working on a card, load its acceptance criteria with fspec context --tags @<workUnitId>, and read every page. Use it to find the scenarios of a tag, feature or phrase
+
+WHEN NOT TO USE
+  To change scenarios (use add-scenario, update-scenario or update-step) or to see coverage (use show-coverage)
+
+PREREQUISITES
+  • spec/features exists
+
+USAGE
+  fspec context [options]
+
+OPTIONS
+  --tags <expression>
+    Cucumber tag expression with and, or, not and parentheses, e.g. '@auth and not @wip'. A scenario also has the tags of its Feature and Rule
+  --text <text>
+    Only scenarios whose name, step text, doc string or table cell contains the text (case-insensitive)
+  --regex <pattern>
+    Only scenarios whose name, step text, doc string or table cell matches the regular expression ((?i) ignores case)
+  --feature <name>
+    Only the feature file with this name (e.g. user-login or user-login.feature)
+  --format <format>
+    Output format: markdown, text or json
+    Default: markdown
+  --page <number>
+    The page to print
+    Default: 1
+  --page-size <chars>
+    The most characters of acceptance criteria on one page; a scenario is never split
+    Default: 40000
+
+EXAMPLES
+  1. Load the acceptance criteria of card AUTH-001 before working on it
+  $ fspec context --tags @AUTH-001
+
+  2. Scenarios tagged @auth (on the scenario, its Rule or its Feature) that are not @wip
+  $ fspec context --tags '@auth and not @wip'
+  ## spec/features/user-login.feature
+
+```gherkin
+@auth
+Feature: User login
+
+  Background: User Story
+    As a user
+    I want to log in
+    So that I see my board
+```
+
+### Login with valid credentials
+
+Location: spec/features/user-login.feature:10
+Inherited tags: @auth
+
+```gherkin
+@smoke
+Scenario: Login with valid credentials
+  Given I am on the login page
+  When I enter valid credentials
+  Then I see my board
+```
+
+---
+
+page 1 of 1
+
+  3. The second page of smoke or critical scenarios that are not deprecated
+  $ fspec context --tags '(@smoke or @critical) and not @deprecated' --page 2
+
+  4. Scenarios that mention a phrase, ignoring case
+  $ fspec context --text 'invalid password'
+
+  5. Scenarios of one feature that match a regular expression
+  $ fspec context --regex 'log(in|out)' --feature user-login
+
+  6. One JSON page (page, pages, nextCommand, features, items) of at most 20000 characters
+  $ fspec context --tags @AUTH-001 --format json --page-size 20000
+
+COMMON ERRORS
+  ✗ invalid tag expression '@a not @b': ...
+    Fix: Join tags with and, or and not, e.g. '@a and not @b', and quote the expression
+
+  ✗ page 3 does not exist: there are 2 pages
+    Fix: Use a page from 1 to the page count, or follow the 'Next page:' command
+
+  ✗ feature 'x' does not exist in spec/features/
+    Fix: Run fspec list-features for the feature names
+
+RELATED COMMANDS
+  fspec show-feature
+  fspec list-features
+  fspec show-work-unit
+
+NOTES
+  • Each acceptance criterion is one scenario with all its steps, doc strings, data tables and Examples, its tags, its inherited Feature and Rule tags and its file:line
+  • A page prints each feature's header (tags, name, description and Background) once, above that feature's first scenario on the page
+  • Scenarios are ordered by feature file path, then line. A scenario larger than --page-size is alone on its page
+  • Every page ends with 'page N of M' and, except the last, 'Next page:' with the exact command for the next page
+  • All given filters must match; matching is exact (no semantic search)
+

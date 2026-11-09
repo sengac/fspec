@@ -1,5 +1,7 @@
 @done
 @GIT-036
+@git
+@multi-session
 Feature: Merge worktree slash command with auto-close session workflow
   """
   Architecture:

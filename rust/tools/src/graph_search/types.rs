@@ -18,6 +18,9 @@ pub enum GraphSearchAction {
     // ── AST Graph Actions ────────────────────────────────────
     /// Search AST code entities (functions, types, files) by name/pattern.
     AstSearch {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         query: String,
         entity_type: Option<String>,
         #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
@@ -33,17 +36,30 @@ pub enum GraphSearchAction {
     },
     /// Get AST graph neighbors of a code entity node.
     AstNeighbors {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         node_id: String,
         #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         depth: Option<usize>,
         edge_types: Option<Vec<String>>,
     },
     /// Get AST codebase statistics (node/edge type counts).
-    AstStats,
+    AstStats {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
+    },
 
-    /// Index the project codebase into the AST graph.
+    /// Index a root (the session's working directory by default) into its
+    /// own code graph.
     AstIndex {
-        /// Optional directory to index.
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
+        /// Not accepted: `ast_index` takes the directory to index as `root`;
+        /// `path` is the query glob filter. Kept so a stray `path` fails
+        /// loudly instead of being ignored.
         path: Option<String>,
         /// When `true`, deletes the existing on-disk database and clears
         /// the in-memory graph singleton before re-indexing.
@@ -57,6 +73,9 @@ pub enum GraphSearchAction {
 
     /// Detect dead code: orphan files, uncalled functions, unreferenced types.
     AstDeadCode {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         entity_type: Option<String>,
         #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         limit: Option<usize>,
@@ -66,6 +85,9 @@ pub enum GraphSearchAction {
 
     /// Find call chain(s) between two functions via multi-hop CALLS edge traversal.
     AstCallChain {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// Source function slug or name.
         from: String,
         /// Target function slug or name.
@@ -77,6 +99,9 @@ pub enum GraphSearchAction {
 
     /// Find all transitive callers of a function via multi-hop incoming CALLS edges.
     AstCallers {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// Function slug or name to find callers of.
         node_id: String,
         /// Maximum BFS depth (default 5).
@@ -89,6 +114,9 @@ pub enum GraphSearchAction {
 
     /// Find all transitive callees of a function via multi-hop outgoing CALLS edges.
     AstCallees {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// Function slug or name to find callees of.
         node_id: String,
         /// Maximum BFS depth (default 5).
@@ -101,6 +129,9 @@ pub enum GraphSearchAction {
 
     /// Get the full inheritance hierarchy for a type.
     AstHierarchy {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// Type slug to find hierarchy for.
         node_id: String,
         /// Maximum BFS depth for parent/child traversal (default 3).
@@ -113,6 +144,9 @@ pub enum GraphSearchAction {
 
     /// Query cyclomatic complexity of functions in the codebase.
     AstComplexity {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// Function slug for single-function lookup. Omit for top-N mode.
         node_id: Option<String>,
         /// Maximum results to return (default 20, only for top-N mode).
@@ -127,12 +161,18 @@ pub enum GraphSearchAction {
 
     /// Export the AST graph to a portable `.astbundle` ZIP archive.
     AstExport {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// File path for the output `.astbundle` file.
         output_path: String,
     },
 
     /// Import a `.astbundle` ZIP archive into the AST graph.
     AstImport {
+        /// KGRAPH-073: directory whose code graph to use; a relative root joins
+        /// the session's working directory, which is also the default.
+        root: Option<String>,
         /// File path to the `.astbundle` file to import.
         input_path: String,
         /// Import mode: `"overwrite"` (default) or `"merge"`.

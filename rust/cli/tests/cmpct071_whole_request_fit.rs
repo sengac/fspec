@@ -1,7 +1,6 @@
 // Feature: spec/features/whole-request-admission-before-dag-commit.feature
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 
 use anyhow::Context;
 use codelet_cli::compactor_sub_agent::{
@@ -56,6 +55,7 @@ struct Fixture {
 impl Fixture {
     async fn new(capacity: usize, reservation: usize, instructions: &str) -> anyhow::Result<Self> {
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory().map_err(std::io::Error::other)?;
         codelet_common::set_data_directory(directory.path().to_owned())
             .map_err(anyhow::Error::msg)?;
         codelet_core::persistence::reset_stores_for_tests();
@@ -162,8 +162,8 @@ impl Fixture {
     async fn run(
         &mut self,
     ) -> anyhow::Result<Result<(), codelet_cli::compaction_operation::CompactionFailure>> {
-        Ok(tokio::time::timeout(
-            Duration::from_secs(2),
+        Ok(codelet_test_helpers::deadlock_guard(
+            "run_compactor_sub_agent_round( &mut self.session, self.se...",
             run_compactor_sub_agent_round(
                 &mut self.session,
                 self.session_id,

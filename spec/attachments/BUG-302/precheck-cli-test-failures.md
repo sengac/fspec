@@ -1,0 +1,129 @@
+# Pre-existing codelet-cli test failures (2026-10-30)
+
+Baseline: commit 9fa9a798. Command: `cargo test --profile ci-test -p codelet-cli --no-fail-fast`.
+HEAD: 688 passed / 82 failed. HEAD + CONT-012: 693 passed / 80 failed. Every failure below also fails on HEAD without CONT-012.
+
+Main cause: source-shape tests read `rust/cli/src/interactive/stream_loop.rs` as text, but the code moved into `stream_loop/*.rs` in the split in commit 2699693b (2026-10-25). These tests now assert against a 102-line facade, so the auto-continue and done() guards have had no effect since then.
+
+Other failures:
+- `bug221_thinking_only_exhaustion::non_length_thinking_only_completions_do_not_enter_exhaustion_recovery`: the `None` finish_reason case now errors with `ResponseError: missing OpenAI finish reason` (fail-closed terminal validation).
+- `codelet-sessions` `prov161_runtime_reload::scenario_next_turn_reloads_settings_without_replacing_conversation` (panics at prov161_runtime_reload.rs:51) also fails on HEAD.
+
+## Failures by test binary
+
+```
+8 compaction_trigger_reliability_test.rs
+7 cmpct050_orphan_tool_call_recovery.rs
+5 system_reminder_infrastructure_test.rs
+5 emergency_threshold_compaction_test.rs
+5 cmpct044_cascade_ordering_test.rs
+4 incremental_dag_condensation_test.rs
+4 cmpct052_inference_handoff.rs
+4 cmpct044_overflow_classifier_test.rs
+3 tool_progress_tool_call_id_bug149.rs
+3 rpc087_error_recovery_wiring_shape.rs
+3 provider_manager_test.rs
+3 cont005_done_immediate_termination.rs
+3 compaction_error_cascade_test.rs
+2 tool_progress_registration_key_rpc398.rs
+2 token_002_per_call_site_delta_test.rs
+2 compaction_real_integration_coverage_test.rs
+2 bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs
+2 bug170_strip_failed_tool_call_tail.rs
+1 verify_rig_reexport.rs
+1 token_001_cumulative_billed_output_test.rs
+1 stream_recovery_compaction_builder.rs
+1 provider_session_extensions.rs
+1 prov160_reconnect_watchdog.rs
+1 prov150_codex_reasoning_ui.rs
+1 cont006_goal_immediate_termination.rs
+1 compaction_tool_call_preservation_test.rs
+1 cmpct044_subagent_surface_test.rs
+1 cmpct041_seed_cache_double_count_test.rs
+1 bug221_thinking_only_exhaustion.rs
+1 autocompact_buffer_test.rs
+1 auto_continue_engine_test.rs
+```
+
+## Failing tests
+
+- auto_continue_engine_test.rs :: stream_loop_nudges_only_at_the_clean_final_response_settle_point
+- autocompact_buffer_test.rs :: test_usable_context_zero_max_output_fallback
+- bug170_strip_failed_tool_call_tail.rs :: bug170_stale_cache_token_state_is_invalidated_after_strip
+- bug170_strip_failed_tool_call_tail.rs :: bug170_terminal_arm_wires_strip_before_returning_err
+- bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs :: bug185_prompt_too_long_cascade_still_runs_before_terminal_arm
+- bug185_strip_failed_tool_call_tail_on_any_terminal_error.rs :: bug185_terminal_arm_strips_for_any_terminal_error
+- bug221_thinking_only_exhaustion.rs :: non_length_thinking_only_completions_do_not_enter_exhaustion_recovery
+- cmpct041_seed_cache_double_count_test.rs :: stream_loop_seed_sites_route_through_audited_constructor
+- cmpct044_cascade_ordering_test.rs :: compaction_branch_classification_runs_before_overflow_string_classifier
+- cmpct044_cascade_ordering_test.rs :: overflow_branch_is_gated_on_compactable_turns
+- cmpct044_cascade_ordering_test.rs :: overflow_check_runs_before_network_retry_arm
+- cmpct044_cascade_ordering_test.rs :: overflow_error_routes_to_compactor_sub_agent_recovery
+- cmpct044_cascade_ordering_test.rs :: sub_agent_escalation_shares_the_compaction_retry_budget
+- cmpct044_overflow_classifier_test.rs :: overflow_classifier_matches_bedrock_vertex_wording
+- cmpct044_overflow_classifier_test.rs :: overflow_classifier_matches_every_prompt_too_long_error
+- cmpct044_overflow_classifier_test.rs :: overflow_classifier_matches_provider_variant_wording
+- cmpct044_overflow_classifier_test.rs :: overflow_classifier_sees_through_anyhow_context_wrasing
+- cmpct044_subagent_surface_test.rs :: custom_provider_compactor_sub_agent_stays_on_the_read_only_tool_surface
+- cmpct050_orphan_tool_call_recovery.rs :: all_in_loop_entry_paths_funnel_through_the_choke_point
+- cmpct050_orphan_tool_call_recovery.rs :: begin_compaction_recovery_preserves_trailing_user_tool_result
+- cmpct050_orphan_tool_call_recovery.rs :: execute_compaction_still_refuses_unrecovered_orphan
+- cmpct050_orphan_tool_call_recovery.rs :: manual_compact_recovers_persisted_orphan
+- cmpct050_orphan_tool_call_recovery.rs :: prompt_cancelled_after_tool_result_compacts_cleanly
+- cmpct050_orphan_tool_call_recovery.rs :: safety_net_closes_orphans_after_all_mutations
+- cmpct050_orphan_tool_call_recovery.rs :: trailing_plain_user_text_prompt_is_still_popped
+- cmpct052_inference_handoff.rs :: accepted_summary_submission_stops_inference_at_the_tool_boundary
+- cmpct052_inference_handoff.rs :: rejected_self_target_generation_blocks_ordinary_inference
+- cmpct052_inference_handoff.rs :: rejected_summary_submission_blocks_subsequent_inference
+- cmpct052_inference_handoff.rs :: self_target_generation_yields_before_ordinary_inference
+- compaction_error_cascade_test.rs :: execute_compaction_helper_clears_prior_turns_and_resets_tracker
+- compaction_error_cascade_test.rs :: execute_compaction_helper_emits_compaction_continuing_once
+- compaction_error_cascade_test.rs :: stream_loop_declares_compaction_retry_counter_and_checks_budget
+- compaction_real_integration_coverage_test.rs :: stream_end_path_selects_embed_in_instruction_when_no_partial_text
+- compaction_real_integration_coverage_test.rs :: stream_end_path_selects_resume_from_partial_when_partial_text_saved
+- compaction_tool_call_preservation_test.rs :: execute_compaction_refuses_on_orphans_remaining
+- compaction_trigger_reliability_test.rs :: after_recovery_restart_stream_does_not_immediately_re_trigger_the_hook
+- compaction_trigger_reliability_test.rs :: final_response_branch_triggers_recovery_when_compaction_needed_is_set
+- compaction_trigger_reliability_test.rs :: gemini_session_triggers_compaction_at_80_percent_of_context_window
+- compaction_trigger_reliability_test.rs :: in_loop_macro_handles_gemini_continuation_exhaustion
+- compaction_trigger_reliability_test.rs :: in_loop_macro_handles_prompt_cancelled_from_mid_stream_hook_cancellation
+- compaction_trigger_reliability_test.rs :: in_loop_macro_handles_upstream_prompt_too_long_error
+- compaction_trigger_reliability_test.rs :: post_loop_safety_net_runs_recovery_when_loop_exits_via_break_with_flag_set
+- compaction_trigger_reliability_test.rs :: user_interrupt_takes_priority_over_compaction_recovery
+- cont005_done_immediate_termination.rs :: final_response_fallback_runs_the_identical_shared_teardown
+- cont005_done_immediate_termination.rs :: pending_assistant_text_is_preserved_in_history_before_the_early_break
+- cont005_done_immediate_termination.rs :: stream_loop_wiring_pins_early_exit_ordering_and_single_teardown_invariants
+- cont006_goal_immediate_termination.rs :: stream_loop_wiring_pins_goal_mode_early_exit_and_single_teardown_invariants
+- emergency_threshold_compaction_test.rs :: test_callers_adapt_to_ok_return_type
+- emergency_threshold_compaction_test.rs :: test_post_compaction_context_floor
+- emergency_threshold_compaction_test.rs :: test_post_loop_compaction_uses_in_view_dag_flow
+- emergency_threshold_compaction_test.rs :: test_pre_prompt_compaction_uses_in_view_dag_flow
+- emergency_threshold_compaction_test.rs :: test_slash_compact_uses_in_view_dag_flow
+- incremental_dag_condensation_test.rs :: test_execute_compaction_appends_resume_prompt_fresh
+- incremental_dag_condensation_test.rs :: test_execute_compaction_appends_resume_prompt_incremental
+- incremental_dag_condensation_test.rs :: test_first_compaction_uses_fresh_instruction
+- incremental_dag_condensation_test.rs :: test_second_compaction_uses_incremental_instruction
+- prov150_codex_reasoning_ui.rs :: cli_reasoning_presentation_respects_completed_delivery_selection
+- prov160_reconnect_watchdog.rs :: provider_offline_waiting_is_not_mistaken_for_a_stalled_generation
+- provider_manager_test.rs :: test_automatic_claude_provider_selection_with_api_key
+- provider_manager_test.rs :: test_claude_code_oauth_fallback
+- provider_manager_test.rs :: test_priority_based_provider_selection
+- provider_session_extensions.rs :: independent_provider_extensions_receive_session_lifecycle_events
+- rpc087_error_recovery_wiring_shape.rs :: stream_loop_guards_retry_with_max_network_retries
+- rpc087_error_recovery_wiring_shape.rs :: stream_loop_sanitises_image_content_after_classifier_check
+- rpc087_error_recovery_wiring_shape.rs :: stream_loop_wires_every_classifier_predicate
+- stream_recovery_compaction_builder.rs :: recovery_admits_the_resume_prompt_before_committing_a_replacement
+- system_reminder_infrastructure_test.rs :: test_add_system_reminder_to_messages_array
+- system_reminder_infrastructure_test.rs :: test_deduplication_via_retain_and_push
+- system_reminder_infrastructure_test.rs :: test_multiple_reminder_types_coexist
+- system_reminder_infrastructure_test.rs :: test_partition_for_compaction_separates_reminders
+- system_reminder_infrastructure_test.rs :: test_reconstruction_after_compaction_preserves_reminders
+- token_001_cumulative_billed_output_test.rs :: delta_computation_is_centralized_in_single_helper
+- token_002_per_call_site_delta_test.rs :: gemini_continuation_normal_completion_uses_shared_finalization
+- token_002_per_call_site_delta_test.rs :: stream_loop_main_turn_finalization_site_uses_compute_output_delta_result
+- tool_progress_registration_key_rpc398.rs :: run_agent_stream_internal_declares_session_id_param
+- tool_progress_registration_key_rpc398.rs :: stream_loop_registers_and_clears_under_threaded_session_id
+- tool_progress_tool_call_id_bug149.rs :: active_tool_call_id_set_on_tool_call_and_cleared_on_tool_result
+- tool_progress_tool_call_id_bug149.rs :: progress_callback_emits_the_active_tool_call_id
+- tool_progress_tool_call_id_bug149.rs :: stray_progress_with_no_active_tool_call_is_safe
+- verify_rig_reexport.rs :: cli/src/session/mod.rs

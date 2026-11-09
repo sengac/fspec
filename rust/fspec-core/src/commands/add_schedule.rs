@@ -141,7 +141,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ── Load (auto-create with default when missing) ──────────────────────
-    let path = project_root.join("spec").join("schedules.json");
+    let path = crate::io::spec_paths::schedules(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-schedule")?;
     let mut data = load_or_default(&path)?;
 
     // 5. Duplicate check (no write occurs on duplicate).

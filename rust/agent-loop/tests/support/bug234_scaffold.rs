@@ -1,7 +1,7 @@
 use super::{review, timing};
 use rig::client::CompletionClient;
 use serde_json::{json, Value};
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use wiremock::{Mock, ResponseTemplate};
 
 pub const ASSISTANT_TEXT: &str = "Read the authoritative originals before summarizing";
@@ -113,6 +113,8 @@ pub async fn verify_signed_reasoning() -> timing::TestResult {
                     "Summarize originals",
                     "zai",
                     20,
+                    codelet_cli::compaction_operation::BuildRequest::First,
+                    &std::sync::Mutex::new(None),
                     codelet_providers::request_admission::AdmissionLimits {
                         context_capacity: Some(200_000),
                         output_reservation: Some(4096),
@@ -122,7 +124,8 @@ pub async fn verify_signed_reasoning() -> timing::TestResult {
             })
         })),
     );
-    let result = tokio::time::timeout(Duration::from_secs(5), harness.call(false)).await?;
+    let result =
+        codelet_test_helpers::deadlock_guard("harness.call(false)", harness.call(false)).await?;
     codelet_tools::set_session_search_handler(target, None);
     result?;
     let bodies = harness.bodies().await;

@@ -3,9 +3,13 @@
 @session-management
 @persistence
 @BUG-255
+@BUG-460
+@BUG-527
 Feature: Avoid full transcript replay on every streamed journal append
   """
   Reuse validated admission indexes only within a journal writer. Detect changed directory or tail stamps and rebuild; cold opens and all explicit reads validate every immutable record. Use the existing writer lease and durability boundaries; mutate indexes only after durable acknowledgement, invalidate on errors. Recovery lanes retain a writer and use per-session mutexes, with global lookup held only to clone a lane handle. Deterministic admission observations count record reads and lifecycle work; use real temporary journals and controlled filesystem stalls.
+  BUG-527: the isolation scenario asserts an ordering - the second session completes while the first writer is still
+  stalled - instead of a 3-second bound; a deadline only turns a deadlock into a failure.
   """
 
   # ========================================
@@ -44,6 +48,7 @@ Feature: Avoid full transcript replay on every streamed journal append
     Given two sessions and an exclusively locked first transcript writer
     When both sessions attempt durable transcript admission
     Then the second session completes without waiting for the first writer
+    And the first writer is still stalled when the second session completes
 
   Scenario: Retried publication retains durable identity
     Given a transcript admission whose directory acknowledgement fails

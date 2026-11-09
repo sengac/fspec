@@ -5,7 +5,7 @@ use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
 use std::sync::Arc;
 
-pub type TestResult = Result<(), Box<dyn std::error::Error>>;
+pub use codelet_test_helpers::TestResult;
 
 pub struct Fixture {
     pub directory: tempfile::TempDir,
@@ -34,7 +34,7 @@ impl Fixture {
             directory.path().join("spec/work-units.json"),
             "{\"workUnits\":{}}",
         )?;
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
         let id = SessionId::new(
             manager
                 .create_session(

@@ -28,7 +28,7 @@ async fn registry_entry_set_at_session_creation_for_a_vision_model() {
         .expect("registry selection");
 
     // @step When the session creation path resolves the model capabilities
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then the tool-layer registry reports the session model supports vision
     assert!(
@@ -48,7 +48,7 @@ fn registry_entry_set_at_session_creation_for_a_non_vision_custom_model() {
             .expect("custom provider manager");
 
     // @step When the session creation path resolves the model capabilities
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then the tool-layer registry reports the session model does not support vision
     assert!(
@@ -68,7 +68,7 @@ fn registry_entry_set_at_session_creation_for_a_vision_custom_model() {
             .expect("custom provider manager");
 
     // @step When the session creation path resolves the model capabilities
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then the tool-layer registry reports the session model supports vision
     assert!(vision, "ModelDef.supports_vision=true must resolve to true");
@@ -97,7 +97,7 @@ fn profile_model_vision_flag_flows_from_fspec_config() {
     // @step When the session is created with that profile model
     // (profile selections route through set_model_direct_with_profile; the
     // resolver reads the profile name back off the manager's composite string)
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then the tool-layer registry reports the session model supports vision
     assert!(vision, "profile hasVision=true must resolve to true");
@@ -116,7 +116,7 @@ fn profile_model_without_vision_flag_resolves_false() {
         .expect("profile selection must succeed");
 
     // @step When the session is created with that profile model
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then the tool-layer registry reports the session model does not support vision
     assert!(!vision, "profile hasVision=false must resolve to false");
@@ -132,7 +132,7 @@ fn model_switch_updates_the_resolution_to_the_new_model() {
         ProviderManager::with_provider_and_model("mytestprov", Some("vision-model"), None, None)
             .expect("custom provider manager");
     assert!(
-        resolve_model_vision(&pm),
+        resolve_model_vision(&pm).expect("vision resolves"),
         "initial custom model must be vision-capable"
     );
 
@@ -142,7 +142,7 @@ fn model_switch_updates_the_resolution_to_the_new_model() {
 
     // @step Then the registry entry is updated to report no vision support
     assert!(
-        !resolve_model_vision(&pm),
+        !resolve_model_vision(&pm).expect("vision resolves"),
         "after the switch the resolution must follow the new model"
     );
 }
@@ -152,6 +152,8 @@ fn model_switch_updates_the_resolution_to_the_new_model() {
 #[serial]
 fn unresolvable_models_resolve_conservatively_to_no_vision() {
     // @step Given a provider/model pair that cannot be resolved against the registry, custom config, or profiles
+    // BUG-336: own data dir and sentinel OPENAI key, never the host's.
+    let (_tmp, _guard) = tmp_data_dir();
     let mut pm =
         ProviderManager::with_provider_and_model("openai", Some("no-such-model"), None, None)
             .expect("openai manager (sentinel key)");
@@ -159,7 +161,7 @@ fn unresolvable_models_resolve_conservatively_to_no_vision() {
         .expect("direct selection must succeed");
 
     // @step When the vision capability is resolved
-    let vision = resolve_model_vision(&pm);
+    let vision = resolve_model_vision(&pm).expect("vision resolves");
 
     // @step Then it resolves to false rather than guessing true
     assert!(

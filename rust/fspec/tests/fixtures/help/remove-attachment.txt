@@ -23,7 +23,7 @@ OPTIONS
     Keep the file on disk (only remove from work unit tracking)
 
 TYPICAL WORKFLOW
-  List attachments: fspec list-attachments AUTH-001,Identify attachment to remove,Remove attachment: fspec remove-attachment AUTH-001 old-diagram.png,Verify removal: fspec list-attachments AUTH-001
+  List attachments: fspec list-attachments AUTH-001. Identify attachment to remove. Remove attachment: fspec remove-attachment AUTH-001 old-diagram.png. Verify removal: fspec list-attachments AUTH-001
 
 EXAMPLES
   1. Remove attachment and delete file
@@ -43,18 +43,18 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first or check the work unit ID
 
   ✗ Work unit 'AUTH-001' has no attachments to remove
-    Fix: undefined
+    Fix: The work unit has no attachments. Use 'fspec list-attachments AUTH-001' to verify.
 
   ✗ Attachment 'diagram.png' not found for work unit 'AUTH-001'
-    Fix: undefined
+    Fix: The file name doesn't match any tracked attachments. Use 'fspec list-attachments AUTH-001' to see available attachments. Ensure the file name matches exactly (case-sensitive).
 
 RELATED COMMANDS
-  fspec fspec add-attachment - Add attachment
-  fspec fspec list-attachments - List all attachments
-  fspec fspec show-work-unit - View work unit details
+  fspec add-attachment - Add attachment
+  fspec list-attachments - List all attachments
+  fspec show-work-unit - View work unit details
 
 NOTES
   • By default, both tracking entry and file are removed

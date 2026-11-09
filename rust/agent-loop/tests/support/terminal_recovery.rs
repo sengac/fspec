@@ -20,6 +20,7 @@ pub fn fixture() -> (
 ) {
     let directory = codelet_test_helpers::setup_temp_directory().expect("create data directory");
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(directory.path().to_path_buf()).expect("redirect data");
     std::env::set_var("ANTHROPIC_API_KEY", "test-no-network");
     let mut inner = Session::new(Some("claude")).expect("create offline session");

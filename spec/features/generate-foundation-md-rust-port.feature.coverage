@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "193-208",
+          "lines": "233-251",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
@@ -92,7 +92,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "/// On success returns the human-readable message",
+              "lastLine": "generate_foundation_md(&foundation).map_err(|reason| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -103,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "209-222",
+          "lines": "251-259",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
@@ -190,7 +192,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "/// On success returns the human-readable message",
+              "lastLine": "generate_foundation_md(&foundation).map_err(|reason| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -201,7 +205,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "223-237",
+          "lines": "268-277",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
@@ -288,7 +292,9 @@
                 144,
                 145,
                 146
-              ]
+              ],
+              "firstLine": "/// On success returns the human-readable message",
+              "lastLine": "generate_foundation_md(&foundation).map_err(|reason| FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -299,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "248-263",
+          "lines": "293-299",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/generators/foundation_md.rs",
@@ -346,7 +352,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub fn generate_foundation_md(foundation: &Value) -> Result<String, String> {",
+              "lastLine": ""
             }
           ]
         }
@@ -357,7 +365,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "264-275",
+          "lines": "312-322",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/generators/foundation_md.rs",
@@ -404,7 +412,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub fn generate_foundation_md(foundation: &Value) -> Result<String, String> {",
+              "lastLine": ""
             }
           ]
         }
@@ -415,27 +425,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "276-286",
+          "lines": "328-335",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "fn build_diagram_error_message(errors: &[String]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -446,27 +458,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "287-294",
+          "lines": "341-344",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "fn build_diagram_error_message(errors: &[String]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -477,15 +491,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "238-247",
+          "lines": "283-287",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
               "lines": [
-                155,
-                156,
-                157
-              ]
+                175,
+                176,
+                177
+              ],
+              "firstLine": "pub fn regenerate(project_root: &Path) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -496,7 +512,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "314-340",
+          "lines": "352-377",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/generators/foundation_md_util.rs",
@@ -509,7 +525,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "/// Mermaid validation for the FOUNDATION.md generator. Delegates to the",
+              "lastLine": "}"
             }
           ]
         }
@@ -520,7 +538,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
-          "lines": "342-366",
+          "lines": "379-411",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/generators/foundation_md.rs",
@@ -555,7 +573,294 @@
                 303,
                 304,
                 305
-              ]
+              ],
+              "firstLine": "// Bounded Context Map (Mermaid diagram).",
+              "lastLine": "sections.push(\"```mermaid\".to_string());"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Renders an architecture diagram in a mermaid code fence under its title",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+          "lines": "412-447",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/generators/foundation_md.rs",
+              "lines": [
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "fn render_architecture_diagrams(foundation: &Value, sections: &mut Vec<String>) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A schema-invalid foundation.json fails and leaves FOUNDATION.md unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+          "lines": "449-478",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "if let Err(schema_errors) = validate_foundation(&foundation) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Regenerating from an unchanged foundation.json writes identical bytes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+          "lines": "480-498",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "fn generate(project_root: &Path, output_path: Option<&str>) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A single invalid diagram fails generation naming its index, title and parse error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+          "lines": "506-557",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "// Validate all Mermaid diagrams in architectureDiagrams (lightweight",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every invalid diagram is reported in one failure",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+          "lines": "559-603",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_foundation_md.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "// Validate all Mermaid diagrams in architectureDiagrams (lightweight",
+              "lastLine": "}"
             }
           ]
         }
@@ -563,8 +868,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 10,
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/src/commands/generate_foundation_md.rs"
@@ -574,6 +879,6 @@
       "rust/fspec-core/src/generators/foundation_md.rs",
       "rust/fspec-core/src/generators/foundation_md_util.rs"
     ],
-    "totalLinesCovered": 555
+    "totalLinesCovered": 910
   }
 }

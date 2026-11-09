@@ -66,7 +66,7 @@ fn list_providers_does_not_panic_without_runtime() {
 
     // @step And list_providers is called from a plain non-tokio context
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the server builds the provider list
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| handle.list_providers()));
@@ -94,10 +94,10 @@ fn skipped_probe_degrades_to_empty_unreachable_section() {
 
     // @step And list_providers is called from a plain non-tokio context so the /v1/models probe is skipped
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the server builds the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then the "spark-local" entry has profile_name Some("spark-local")
     let section =
@@ -137,10 +137,10 @@ async fn probe_still_runs_on_multi_thread_runtime() {
 
     // @step And list_providers is called on a multi-thread tokio runtime
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the server builds the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
 
     // @step Then the "spark-local" entry is present in the list
     let section = find_profile(&providers, "spark-local")

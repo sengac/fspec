@@ -13,7 +13,6 @@ use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::message::{AssistantContent, Message};
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::sync::Notify;
 
 struct Output;
@@ -31,6 +30,7 @@ impl StreamOutput for Output {
 #[serial_test::serial]
 async fn a_reconnected_response_can_be_followed_by_another_turn() -> transport::TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     let manifest = codelet_core::persistence::create_session_with_provider(
@@ -57,8 +57,8 @@ async fn a_reconnected_response_can_be_followed_by_another_turn() -> transport::
         .clone();
     let model = server.models()?.0.with_history(history);
     let agent = rig::agent::AgentBuilder::new(model.clone()).build();
-    tokio::time::timeout(
-        Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(agent), 'i...",
         run_agent_stream(
             RigAgent::with_default_depth(agent),
             "inspect",

@@ -48,7 +48,7 @@ const OVERWRITE_CHOICE: &str = "Overwrite files (discard changes)";
 ///
 /// Parity with TS Commander.js registration
 /// (`src/commands/restore-checkpoint.ts:193-199`): two positional arguments
-/// `<work-unit-id>` and `<checkpoint-name>`, no `.option(...)` flags. The
+/// `<workUnitId>` and `<checkpoint-name>`, no `.option(...)` flags. The
 /// dispatcher path additionally honours `force`, `userChoice`, and
 /// `workingDirectoryDirty` (mirroring `RestoreCheckpointOptions`) plus
 /// `format` ("text" | "json").

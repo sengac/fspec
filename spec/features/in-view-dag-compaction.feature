@@ -1,5 +1,8 @@
-@wip
 @CMPCT-011
+@session
+@context-management
+@COV-057
+@BUG-516
 Feature: In-View DAG Construction Compaction Flow
   """
   execute_compaction() in interactive_helpers.rs lines 170-303 is rewritten in-place. The new flow: (1) set compaction_in_progress=true on BackgroundSession, (2) call clear_history(), (3) inject compaction system instruction as Message::User, (4) return Ok with a sentinel indicating 'agent takes over'. The old LLM prompt creation, turn conversion, compactor.compact(), and kept-turns reconstruction are all removed.
@@ -52,35 +55,6 @@ Feature: In-View DAG Construction Compaction Flow
     I want to have my context compacted via in-view DAG construction instead of batch LLM calls
     So that compaction costs zero marginal LLM tokens, completes in <5 seconds, and I retain full judgment over what to keep
 
-  @compaction-flow
-  Scenario: execute_compaction sets flag, clears context, and injects system instruction
-    Given a session with 300 messages and compaction_in_progress flag set to false
-    When compaction is triggered and execute_compaction is called
-    Then the compaction_in_progress flag should be set to true before clearing
-    And in-memory session state should be cleared and system reminders restored
-    And a compaction system instruction should be injected as the next user message
-    And execute_compaction should return control to the agent loop
-    And no separate LLM calls should be made during compaction
-    And wall-clock compaction time should be less than 5 seconds
-
-  @compaction-flow
-  Scenario: execute_compaction makes zero LLM calls
-    Given the old execute_compaction that creates LLM prompt functions and calls compactor.compact
-    When the rewritten execute_compaction is called
-    Then no ProviderManager or LLM prompt functions should be created
-    And no compactor.compact call should be made
-    And no summarization budget should be calculated
-
-  @compaction-instruction
-  Scenario: Compaction system instruction guides agent through DAG construction
-    Given a session where compaction has just cleared the context
-    When the compaction system instruction is injected as a user message
-    Then the instruction should tell the agent to search via SessionSearch
-    And the instruction should specify D0, D1, and D2 depth levels for the DAG
-    And the instruction should tell the agent to call inject_summary with the complete DAG
-    And the instruction should be concise and under 500 tokens
-
-  @compaction-flow
   @integration
   Scenario: Agent builds DAG via SessionSearch and calls inject_summary
     Given a session where compaction system instruction has been injected
@@ -89,20 +63,19 @@ Feature: In-View DAG Construction Compaction Flow
     Then SessionSearch results should be trimmed via Layer 0 trimming
     And the agent can build a hierarchical D0/D1/D2 DAG from trimmed results
     And the agent can call inject_summary with the DAG content
-    And after inject_summary the context contains only system reminders and the pinned DAG
+    And after the submitted summary is applied the context contains only system reminders and the pinned DAG
 
-  @compaction-flow
   @integration
-  Scenario: inject_summary handler clears compaction_in_progress flag
+  Scenario: inject_summary hands the DAG to the turn's compaction and leaves the flag to the turn end
     Given a session with compaction_in_progress flag set to true
     When the agent calls inject_summary with DAG content
-    Then the inject_summary handler should clear the compaction_in_progress flag
-    And subsequent SessionSearch calls should return full untrimmed content
+    Then the compaction_in_progress flag stays set until the turn that applies the summary ends
+    And SessionSearch calls keep returning Layer 0 trimmed content while the flag is set
+    And the DAG is applied when the turn's compaction operation is applied
 
-  @napi-integration
-  Scenario: session_compact NAPI binding triggers in-view flow
+  Scenario: session_compact NAPI binding queues the compactor agent instead of the in-view flow
     Given a session accessible via the session_compact NAPI binding
     When session_compact is called
-    Then the same in-view compaction flow as execute_compaction should be triggered
+    Then no in-view compaction working view is installed and ordinary inference is not blocked
     And no batch LLM pipeline should be used
-    And the compaction_in_progress flag should be set to true
+    And one internal manual-compaction request is queued for the agent loop

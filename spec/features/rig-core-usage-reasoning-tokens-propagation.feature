@@ -1,4 +1,7 @@
+@BUG-582
 @RIG-011
+@codelet
+@context-management
 Feature: rig-core Usage Reasoning Tokens Propagation
   """
   Key files: rust/patches/rig-core/src/completion/request.rs (Usage struct),

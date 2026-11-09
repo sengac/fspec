@@ -1,0 +1,605 @@
+{
+  "scenarios": [
+    {
+      "name": "A prompt sent while a chip click is waiting goes to the session it was typed in",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs",
+          "lines": "162-195",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                54
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/composer_draft.rs",
+              "lines": [
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-552: the composer's submissions are stamped with the session",
+              "lastLine": "self.navigator.agent.set_composer_session(focused.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                22,
+                23,
+                24
+              ],
+              "firstLine": "Action::InputSubmitted(session, text) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                254
+              ],
+              "firstLine": "self.emit_submission(value, false);",
+              "lastLine": "self.emit_submission(value, false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "/// Spawn `backend.send_input` for `session`, the session whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A steer submitted while a new session is taking focus goes to the running session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs",
+          "lines": "197-226",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                54
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/composer_draft.rs",
+              "lines": [
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-552: the composer's submissions are stamped with the session",
+              "lastLine": "self.navigator.agent.set_composer_session(focused.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                22,
+                23,
+                24
+              ],
+              "firstLine": "Action::InputSubmitted(session, text) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                254
+              ],
+              "firstLine": "self.emit_submission(value, false);",
+              "lastLine": "self.emit_submission(value, false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "/// Spawn `backend.send_input` for `session`, the session whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A queued input submitted while an attach is waiting is queued on the session it was typed in",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs",
+          "lines": "228-269",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                54
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/composer_draft.rs",
+              "lines": [
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-552: the composer's submissions are stamped with the session",
+              "lastLine": "self.navigator.agent.set_composer_session(focused.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                25,
+                26,
+                27
+              ],
+              "firstLine": "Action::InputQueued(session, text) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/queue_key.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "firstLine": "/// Submit the buffer as a queued input on Alt+Enter while busy.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_input_modes.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "/// `Action::InputQueued`: queue the text behind `session`'s running",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /clear submitted while focus is moving clears no other session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs",
+          "lines": "275-309",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                54
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/composer_draft.rs",
+              "lines": [
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-552: the composer's submissions are stamped with the session",
+              "lastLine": "self.navigator.agent.set_composer_session(focused.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                22,
+                23,
+                24
+              ],
+              "firstLine": "Action::InputSubmitted(session, text) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                254
+              ],
+              "firstLine": "self.emit_submission(value, false);",
+              "lastLine": "self.emit_submission(value, false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "/// Spawn `backend.send_input` for `session`, the session whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /role submitted while focus is moving sets the role on the session it was typed in",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs",
+          "lines": "311-334",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/composer_session.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                54
+              ],
+              "firstLine": "impl AgentView {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/composer_draft.rs",
+              "lines": [
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// BUG-552: the composer's submissions are stamped with the session",
+              "lastLine": "self.navigator.agent.set_composer_session(focused.clone());"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                22,
+                23,
+                24
+              ],
+              "firstLine": "Action::InputSubmitted(session, text) => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                254
+              ],
+              "firstLine": "self.emit_submission(value, false);",
+              "lastLine": "self.emit_submission(value, false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "/// Spawn `backend.send_input` for `session`, the session whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug552_submission_goes_to_typed_in_session.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/composer_session.rs",
+      "rust/fspec-tui/src/app/composer_draft.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_submit.rs",
+      "rust/fspec-tui/src/views/agent/queue_key.rs",
+      "rust/fspec-tui/src/app/dispatch_input_modes.rs"
+    ],
+    "totalLinesCovered": 518
+  }
+}

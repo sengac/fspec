@@ -7,26 +7,27 @@
 //! slash-command dispatch routing. Mirrors the source_shape_rpc054
 //! pattern.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::fs;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+use codelet_test_helpers::source_composition::read_source;
+
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
 /// Scenario: SessionManagerHandle declares set_debug_directory
 #[test]
-fn session_manager_handle_declares_set_debug_directory() {
+fn session_manager_handle_declares_set_debug_directory() -> TestResult {
     // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .or_fail("read session_manager_handle.rs")?;
 
     // @step Then it declares a trait method named "set_debug_directory" that takes a PathBuf and returns Result<(), String>
     assert!(
@@ -47,14 +48,15 @@ fn session_manager_handle_declares_set_debug_directory() {
                 .contains("fn set_debug_directory(&self, path: PathBuf) -> Result<(), String>"),
         "session_manager_handle.rs should declare set_debug_directory(&self, path: PathBuf) -> Result<(), String>; got normalised={normalised:?}"
     );
+    Ok(())
 }
 
 /// Scenario: FspecService declares set_debug_directory
 #[test]
-fn fspec_service_declares_set_debug_directory() {
+fn fspec_service_declares_set_debug_directory() -> TestResult {
     // @step Given the file rust/rpc/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
+    let path = workspace_root()?.join("rust/rpc/src/lib.rs");
+    let source = read_source(&path).or_fail("read rpc/src/lib.rs")?;
 
     // @step Then it declares an async fn named "set_debug_directory" with parameter type String and return type Result<(), String>
     assert!(
@@ -68,32 +70,33 @@ fn fspec_service_declares_set_debug_directory() {
             ),
         "rpc/src/lib.rs should declare set_debug_directory(path: String) -> Result<(), String>"
     );
+    Ok(())
 }
 
 /// Scenario: FspecBackend declares set_debug_directory
 #[test]
-fn fspec_backend_declares_set_debug_directory() {
+fn fspec_backend_declares_set_debug_directory() -> TestResult {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/transport/mod.rs");
+    let source = read_source(&path).or_fail("read transport/mod.rs")?;
 
     // @step Then it declares an async fn named "set_debug_directory" on the FspecBackend trait
     assert!(
         source.contains("async fn set_debug_directory("),
         "transport/mod.rs should declare async fn set_debug_directory"
     );
+    Ok(())
 }
 
 /// Scenario: Both transports implement set_debug_directory
 #[test]
-fn both_transports_implement_set_debug_directory() {
+fn both_transports_implement_set_debug_directory() -> TestResult {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/embedded.rs"))
+        .or_fail("read transport/embedded.rs")?;
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
-            .expect("read transport/websocket.rs");
+        read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/websocket.rs"))
+            .or_fail("read transport/websocket.rs")?;
 
     // @step Then each file contains an impl of "set_debug_directory" that calls the corresponding tarpc client method
     assert!(
@@ -112,4 +115,21 @@ fn both_transports_implement_set_debug_directory() {
         websocket.contains(".set_debug_directory("),
         "websocket.rs should forward to the tarpc client's set_debug_directory"
     );
+    Ok(())
+}
+
+/// Scenario: /debug slash command wiring lives in dispatch_slash_debug.rs
+#[test]
+fn slash_debug_wiring_lives_in_dispatch_slash_debug() -> TestResult {
+    // @step Given the file rust/fspec-tui/src/app/dispatch_slash_debug.rs exists
+    let source =
+        read_source(&workspace_root()?.join("rust/fspec-tui/src/app/dispatch_slash_debug.rs"))
+            .or_fail("read app/dispatch_slash_debug.rs")?;
+
+    // @step Then it declares a method named "handle_slash_debug"
+    assert!(
+        source.contains("fn handle_slash_debug("),
+        "dispatch_slash_debug.rs should declare fn handle_slash_debug"
+    );
+    Ok(())
 }

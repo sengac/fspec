@@ -22,8 +22,11 @@
     clippy::uninlined_format_args
 )]
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use codelet_cli::interactive_helpers::validate_no_orphan_tool_calls;
-use codelet_cli::session::Session;
 use rig::message::{
     AssistantContent, Message, ToolCall, ToolFunction, ToolResultContent, UserContent,
 };
@@ -321,7 +324,7 @@ fn bug170_system_reminders_survive_the_strip() {
 #[test]
 fn bug170_stale_cache_token_state_is_invalidated_after_strip() {
     // @step Given the session token tracker carries cache_read_input_tokens and cache_creation_input_tokens from the last successful request
-    let mut session = Session::new(None).expect("test session");
+    let mut session = offline_session::session().expect("test session");
     session.token_tracker.input_tokens = 99_000;
     session.token_tracker.output_tokens = 4_000;
     session.token_tracker.cache_read_input_tokens = Some(80_000);
@@ -405,10 +408,7 @@ fn bug170_prompt_too_long_classifier_positive() {
 #[test]
 fn bug170_terminal_arm_wires_strip_before_returning_err() {
     // @step Given the strip removes a failed tool pair from the session message stack
-    let source = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/interactive/stream_loop.rs"
-    ));
+    let source = Ok::<String, std::io::Error>(stream_loop_source_tree::stream_loop_source());
     let source = match source {
         Ok(s) => s,
         Err(e) => panic!("failed to read stream_loop.rs: {e}"),
@@ -436,7 +436,7 @@ fn bug170_terminal_arm_wires_strip_before_returning_err() {
         "the prompt-too-long classifier must still gate the compaction-recovery cascade"
     );
     let terminal_arm_pos = source
-        .find("NAPI-008: Log error with full details")
+        .find("API error received from provider") // BUG-306: stream_loop/terminal_error.rs
         .expect("final terminal error arm present");
     let strip_pos = source
         .find("strip_failed_tool_call_tail")
@@ -451,7 +451,7 @@ fn bug170_terminal_arm_wires_strip_before_returning_err() {
     // (the strip path lives in the final terminal error arm — anchored on its NAPI-008
     // log comment, which only that arm carries — before the emit_error/return-Err tail)
     let terminal_arm_pos = source
-        .find("NAPI-008: Log error with full details")
+        .find("API error received from provider") // BUG-306: stream_loop/terminal_error.rs
         .expect("final terminal error arm present");
     let strip_pos = source
         .find("strip_failed_tool_call_tail")

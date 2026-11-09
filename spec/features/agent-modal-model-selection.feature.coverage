@@ -6,57 +6,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "279-316",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -66,57 +16,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "318-345",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -126,57 +26,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "347-371",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -186,57 +36,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "373-399",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -246,57 +46,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "401-432",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -306,57 +56,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "434-468",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -366,57 +66,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "474-498",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -426,57 +76,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "500-517",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -486,57 +86,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "519-535",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -546,57 +96,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "537-556",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -606,57 +106,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "562-582",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -666,57 +116,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "584-611",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -726,57 +126,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "613-650",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -786,57 +136,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "656-676",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -846,57 +146,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "678-704",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -906,57 +156,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "706-742",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -966,57 +166,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "744-782",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1026,57 +176,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "788-806",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1086,57 +186,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "808-839",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1146,57 +196,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "841-878",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1206,57 +206,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "884-902",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1266,57 +216,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "904-923",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -1326,57 +226,7 @@
         {
           "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
           "lines": "925-939",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -1388,9 +238,7 @@
     "testFiles": [
       "src/tui/__tests__/AgentModal-model-selection.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/AgentModal.tsx"
-    ],
-    "totalLinesCovered": 1631
+    "implFiles": [],
+    "totalLinesCovered": 619
   }
 }

@@ -43,12 +43,10 @@ pub fn update_session_manifest(
 ) -> Result<SessionManifest, ManifestCommitError> {
     ensure_writer_access(session_id)?;
     init_session_store().map_err(ManifestCommitError::Store)?;
-    SESSION_STORE
-        .lock()
-        .map_err(|error| ManifestCommitError::Store(error.to_string()))?
-        .as_mut()
-        .ok_or_else(|| ManifestCommitError::Store("not initialized".into()))?
-        .update(session_id, update)
+    // BUG-610: the store lock is held only to take the session's writer;
+    // the closure runs under that session's writer lock alone, so a panic
+    // in it never makes persistence unavailable for other sessions.
+    session_writer(session_id)?.update(update, &mut record_committed)
 }
 
 pub(super) fn append(
@@ -57,16 +55,22 @@ pub(super) fn append(
     content: &str,
     metadata: std::collections::HashMap<String, serde_json::Value>,
 ) -> Result<Uuid, String> {
-    init_message_store()?;
+    let store = message_store()?;
     let mut message_id = Uuid::nil();
+    // BUG-625: the append runs under this session's writer lock only; no
+    // daemon-wide lock is held, so a panic in it poisons only this session.
     let committed = update_session_manifest(session.id, |current| {
-        let mut store = MESSAGE_STORE
-            .lock()
-            .map_err(|error| ManifestCommitError::Store(error.to_string()))?;
+        // BUG-332: every stored conversation row carries a message envelope;
+        // caller metadata overrides the plain-text envelope fields.
+        let mut fields = super::message_envelope::text_envelope_metadata(
+            role,
+            &current.provider,
+            content,
+            Utc::now(),
+        );
+        fields.extend(metadata);
         message_id = store
-            .as_mut()
-            .ok_or_else(|| ManifestCommitError::Store("message store not initialized".into()))?
-            .store_with_metadata(role, content, metadata)
+            .store_with_metadata(role, content, fields)
             .map_err(ManifestCommitError::Store)?;
         current.add_message(message_id, super::messages::MessageSource::Native);
         Ok(())

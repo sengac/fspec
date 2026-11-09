@@ -9,6 +9,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[serial_test::serial]
 fn scenario_competing_processes_cannot_delete_an_owned_session() -> TestResult {
     if let Ok(directory) = std::env::var("CMPCT064_DELETE_CHILD") {
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.into())?;
         reset_stores_for_tests();
         let mut store = SessionStore::new()?;
@@ -26,6 +27,7 @@ fn scenario_competing_processes_cannot_delete_an_owned_session() -> TestResult {
     }
     // @step Given a process owns a committed session writer lock
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut outcomes = Vec::new();

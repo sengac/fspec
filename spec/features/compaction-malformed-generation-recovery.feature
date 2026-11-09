@@ -1,3 +1,4 @@
+@BUG-474
 @cli
 @done
 @BUG-232
@@ -24,9 +25,10 @@ Feature: Compaction malformed generation recovery
     When the production builder receives a valid replacement within its correction budget
     Then correction explains complete node syntax and identifies the operation and attempt
     And only the complete validated replacement becomes committed memory
+    And the correction continues the same synthesis conversation after the rejected candidate
 
-  Scenario: Exhausted malformed generation keeps inference blocked
+  Scenario: Exhausted malformed generation leaves inference available
     Given every generated candidate has malformed node structure
     When the production summary handoff exhausts three candidate attempts
     Then failure identifies the target operation attempt and syntax remedy
-    And durable originals and committed memory remain unchanged with ordinary inference blocked
+    And durable originals and committed memory remain unchanged and ordinary inference is not blocked

@@ -36,17 +36,18 @@ use codelet_tools::tool_pause::{
 /// Map the internal `tool_pause::PauseState` shape onto the
 /// wire-portable `codelet_rpc_types::PauseState`:
 ///
-/// * `kind`: `Continue` and `Confirm` both collapse to
-///   `RpcPauseKind::Confirm` (the wire enum intentionally omits
-///   `Continue` per its doc-comment); `Triple` maps to
-///   `RpcPauseKind::Triple`.
+/// * `kind`: AMGR-023: `Continue` (a human action) maps to
+///   `RpcPauseKind::HumanAction`, `Confirm` to `RpcPauseKind::Confirm`
+///   and `Triple` to `RpcPauseKind::Triple`.
 /// * `prompt`: concatenation of `tool_name` and `message` so the
 ///   single-string display surface on the wire shape carries both
 ///   pieces of context the dialog wants to render.
-/// * `tool_call_id`: carried over verbatim from `details`.
+/// * `details`: carried over verbatim (BUG-291: formerly misnamed
+///   `tool_call_id`); `tool_call_id` names the gated tool call.
 pub fn pause_state_to_rpc(internal: ToolPauseState) -> RpcPauseState {
     let kind = match internal.kind {
-        ToolPauseKind::Confirm | ToolPauseKind::Continue => RpcPauseKind::Confirm,
+        ToolPauseKind::Continue => RpcPauseKind::HumanAction,
+        ToolPauseKind::Confirm => RpcPauseKind::Confirm,
         ToolPauseKind::Triple => RpcPauseKind::Triple,
     };
     let prompt = if internal.tool_name.is_empty() {
@@ -57,7 +58,8 @@ pub fn pause_state_to_rpc(internal: ToolPauseState) -> RpcPauseState {
     RpcPauseState {
         kind,
         prompt,
-        tool_call_id: internal.details,
+        details: internal.details,
+        tool_call_id: internal.tool_call_id,
     }
 }
 
@@ -81,6 +83,18 @@ pub fn approval_choice_to_pause_response(choice: ApprovalChoice) -> ToolPauseRes
 /// pause dialog) into the internal `tool_pause::PauseResponse`.
 ///
 /// Mapping: `true` → `Approved`, `false` → `Denied`.
+/// AMGR-023: what the tool waiting on a human action receives: `Done` goes
+/// on (`Resumed`); `Cancel` is the result an interrupt gives
+/// (`Interrupted`).
+pub fn human_action_reply_to_pause_response(
+    reply: codelet_rpc_types::HumanActionReply,
+) -> ToolPauseResponse {
+    match reply {
+        codelet_rpc_types::HumanActionReply::Done => ToolPauseResponse::Resumed,
+        codelet_rpc_types::HumanActionReply::Cancel => ToolPauseResponse::Interrupted,
+    }
+}
+
 pub fn confirm_accept_to_pause_response(accept: bool) -> ToolPauseResponse {
     if accept {
         ToolPauseResponse::Approved
@@ -151,6 +165,9 @@ pub fn custom_model_def_from_wire(
         compaction_threshold,
         reasoning: wire.reasoning,
         has_vision: wire.has_vision,
+        // MODEL-016: not edited through the wire definition; an edit keeps
+        // the stored declaration (BUG-511, save_custom_model_at).
+        thinking_levels: None,
     }
 }
 

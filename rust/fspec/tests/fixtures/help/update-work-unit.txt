@@ -22,7 +22,7 @@ OPTIONS
     New description for the work unit
   -e, --epic <epic>
     Epic ID to associate with (moves work unit to new epic)
-  -p, --parent <parent>
+  -p, --parent <workUnitId>
     Parent work unit ID (for hierarchical relationships, prevents circular references)
 
 COMMON PATTERNS
@@ -32,7 +32,6 @@ fspec create-story AUTH "User auth"
 
 # Refine after Example Mapping
 fspec update-work-unit AUTH-001 --title "OAuth 2.0 authentication" --description "Implement OAuth 2.0 flow with Google"
-    undefined
 
   • Reorganize epic structure
     Example: # Move work units to different epic
@@ -41,7 +40,6 @@ fspec update-work-unit AUTH-002 --epic SECURITY
 
 # Verify epic structure
 fspec show-epic SECURITY
-    undefined
 
   • Create parent-child relationships
     Example: # Break large work unit into subtasks
@@ -50,7 +48,6 @@ fspec create-task AUTH "OAuth testing" --parent AUTH-001
 
 # View hierarchy
 fspec show-work-unit AUTH-001
-    undefined
 
 
 TYPICAL WORKFLOW
@@ -88,7 +85,7 @@ COMMON ERRORS
     Fix: Verify parent ID exists with: fspec list-work-units
 
   ✗ Circular parent relationship detected
-    Fix: Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <id>
+    Fix: Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <workUnitId>
 
   ✗ Work unit type is immutable and cannot be changed after creation
     Fix: Delete this work unit and create a new one with the correct type (story/bug/task)

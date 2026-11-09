@@ -34,40 +34,31 @@ Feature: Tool Discovery and Status Display
     I want to see configuration status and usage guidance for all available tools
     So that I can quickly understand which tools are ready to use and how to configure them
 
-  Scenario: Show tool with CONFIGURED status from environment variable
+  Scenario: Show a tool as configured when its environment variable is set
     Given I have PERPLEXITY_API_KEY environment variable set
     When I run "fspec research"
     Then the output should list Perplexity tool
-    And the status should be "CONFIGURED"
-    And the config source should be "ENV"
+    And the status indicator should be "✓"
 
-  Scenario: Show tool with NOT CONFIGURED status and usage guidance
+  Scenario: Show an unconfigured tool with setup guidance
     Given I have no JIRA_URL or JIRA_TOKEN configured
     When I run "fspec research"
     Then the output should list Jira tool
-    And the status should be "NOT CONFIGURED"
-    And the output should show configuration command examples
-    And the examples should include "export JIRA_URL=..."
-    And the examples should include "export JIRA_TOKEN=..."
+    And the status indicator should be "✗"
+    And the output should show setup guidance
+    And the setup guidance should include the line export JIRA_URL="..."
+    And the setup guidance should include the line export JIRA_TOKEN="..."
 
-  Scenario: Show tool with CONFIGURED status from user config file
+  Scenario: Show a tool as configured from the user config file
     Given I have Confluence configuration in ~/.fspec/fspec-config.json
     When I run "fspec research"
     Then the output should list Confluence tool
-    And the status should be "CONFIGURED"
-    And the config source should be "USER"
+    And the status indicator should be "✓"
 
-  Scenario: List all tools with status indicators and config sources
+  Scenario: List all tools with status indicators
     Given I have mixed tool configurations (some configured, some not)
     When I run "fspec research"
     Then the output should list all registered research tools
     And each tool should show a description
     And each tool should show a status indicator (✓ or ✗)
-    And configured tools should show their config source
-
-  Scenario: Show tool-specific help with configuration requirements
-    Given I want to learn how to configure a specific tool
-    When I run "fspec research --tool=perplexity --help"
-    Then the output should show Perplexity tool description
-    And the output should show configuration requirements
-    And the output should show usage examples
+    And only unconfigured tools should show setup guidance

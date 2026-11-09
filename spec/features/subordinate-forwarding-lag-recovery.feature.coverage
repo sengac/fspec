@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
-          "lines": "35-78",
+          "lines": "34-77",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -44,7 +44,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "fn read_next(&mut self) -> Result<Option<StreamChunk>, RelayOutputError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -62,7 +64,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "for sender in codelet_tools::get_subordinate_chunk_senders(root_parent_id) {",
+              "lastLine": "deliveries.spawn(deliver("
             }
           ]
         }
@@ -73,13 +77,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
-          "lines": "80-113",
+          "lines": "79-112",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge_relay.rs",
               "lines": [
-                228,
-                229,
                 230,
                 231,
                 232,
@@ -102,8 +104,12 @@
                 249,
                 250,
                 251,
-                252
-              ]
+                252,
+                253,
+                254
+              ],
+              "firstLine": "pub fn register_subordinate_chunk_channel(parent_session_id: Uuid) -> SubordinateChunkRx {",
+              "lastLine": "fn remove_subordinate_chunk_senders(session_id: Uuid) {"
             },
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -121,7 +127,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "if let Some(object) = chunk_json.as_object_mut() {",
+              "lastLine": "};"
             }
           ]
         }
@@ -132,7 +140,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
-          "lines": "115-153",
+          "lines": "114-152",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -149,7 +157,9 @@
                 184,
                 185,
                 186
-              ]
+              ],
+              "firstLine": "pub async fn recv(&mut self) -> Result<Option<StreamChunk>, RelayOutputError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -159,7 +169,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "while let Some(completed) = deliveries.join_next().await {",
+              "lastLine": "}"
             }
           ]
         }
@@ -170,7 +182,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
-          "lines": "155-180",
+          "lines": "154-179",
           "implMappings": [
             {
               "file": "rust/sessions/src/subordinate_output.rs",
@@ -210,7 +222,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "pub(crate) fn subscribe(",
+              "lastLine": "}"
             },
             {
               "file": "rust/sessions/src/subordinate_forwarding.rs",
@@ -220,7 +234,9 @@
                 15,
                 16,
                 17
-              ]
+              ],
+              "firstLine": "let mut subscription = session.subscribe_to_relay()?;",
+              "lastLine": "let mut active: Vec<SubordinateChunkTx> = Vec::new();"
             }
           ]
         }

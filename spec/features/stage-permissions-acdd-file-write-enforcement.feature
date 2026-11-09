@@ -1,9 +1,12 @@
 @workflow
 @codelet
 @BLOCK-003
+@BUG-514
 Feature: Stage Permissions - ACDD File Write Enforcement
   """
   Stage Permissions Module: Create rust/tools/src/stage_permissions/ with StagePermissionsConfig (load/save JSON), FileCategory struct (name + glob patterns), StagePermissions (map stage names to writable categories). Integrates with work unit context from session to determine current stage. Loaded from ~/.fspec/stage-permissions.json (user) or .fspec/stage-permissions.json (project).
+  BUG-514: block messages name the file category as configured ("impl" for src/**/*.ts), as
+  block-notifications.feature quotes them; the scenarios quote those exact messages.
   """
 
   # ========================================
@@ -33,15 +36,15 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   Scenario: Block implementation file write in testing stage
     Given the current work unit is in "testing" stage
-    And the project defines "impl" category as "src/**/*.ts" excluding test files
+    And the project defines the "impl" category as the .ts files under src/ excluding test files
     And "testing" stage only allows writing to "spec" and "test" categories
     When the AI tries to write to "src/auth.ts"
     Then the write should be blocked
-    And the AI should receive error "Blocked: Cannot write implementation files in testing stage. Write tests first, then move to implementing stage."
+    And the AI should receive error "Blocked: Cannot write impl files in testing stage. Write tests first, then move to implementing stage."
 
   Scenario: Allow test file write in testing stage
     Given the current work unit is in "testing" stage
-    And the project defines "test" category as "src/**/*.test.ts" and "src/**/__tests__/**"
+    And the project defines the "test" category as the .test.ts files and __tests__ directories under src/
     And "testing" stage allows writing to "spec" and "test" categories
     When the AI tries to write to "src/__tests__/auth.test.ts"
     Then the write should be allowed
@@ -55,7 +58,7 @@ Feature: Stage Permissions - ACDD File Write Enforcement
     And "specifying" stage only allows writing to "spec" category
     When the AI tries to write to "src/feature.ts"
     Then the write should be blocked
-    And the AI should receive error "Blocked: Cannot write code files in specifying stage. Complete the specification first."
+    And the AI should receive error "Blocked: Cannot write impl files in specifying stage. Complete the specification first."
 
   # ====================
   # BACKLOG STAGE

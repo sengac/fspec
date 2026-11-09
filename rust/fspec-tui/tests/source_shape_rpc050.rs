@@ -21,14 +21,13 @@
 //! the ABSENCE of `WorkUnitDetached(` and `handle_slash_detach` /
 //! `handle_work_unit_detached` from the source.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::{Path, PathBuf};
 
-fn fspec_tui_src() -> PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
 fn collect_rs_files(root: &Path) -> Vec<PathBuf> {
@@ -51,8 +50,8 @@ fn collect_rs_files(root: &Path) -> Vec<PathBuf> {
     out
 }
 
-fn read_raw(path: &Path) -> String {
-    std::fs::read_to_string(path).expect("read file")
+fn read_raw(path: &Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(std::fs::read_to_string(path).or_fail("read file")?)
 }
 
 fn strip_rust_comments(src: &str) -> String {
@@ -80,21 +79,21 @@ fn strip_rust_comments(src: &str) -> String {
     out
 }
 
-fn count_lines(path: &Path) -> usize {
-    read_raw(path).lines().count()
+fn count_lines(path: &Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(read_raw(path)?.lines().count())
 }
 
 /// Scenario: No codelet_napi reference and the 300-LoC ceiling holds
 #[test]
-fn no_codelet_napi_reference_and_300_loc_ceiling() {
+fn no_codelet_napi_reference_and_300_loc_ceiling() -> TestResult {
     // @step Given the rust/fspec-tui/src/ tree after the RPC-050 changes
-    let src = fspec_tui_src();
+    let src = fspec_tui_src()?;
     let files = collect_rs_files(&src);
 
     // @step Then no file under rust/fspec-tui/src/ matches "codelet_napi"
     let mut napi_violations: Vec<String> = Vec::new();
     for path in &files {
-        let body = read_raw(path);
+        let body = read_raw(path)?;
         let code = strip_rust_comments(&body);
         if code.contains("codelet_napi") {
             napi_violations.push(format!("{} contains codelet_napi", path.display()));
@@ -114,7 +113,7 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
     let mut loc_violations: Vec<String> = Vec::new();
     for dir in &ceiling_dirs {
         for path in collect_rs_files(dir) {
-            let n = count_lines(&path);
+            let n = count_lines(&path)?;
             if n >= 300 {
                 loc_violations.push(format!("{} has {n} lines (must be < 300)", path.display()));
             }
@@ -127,35 +126,35 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
 
     // @step And rust/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
     let dispatch = src.join("app").join("dispatch.rs");
-    let n = count_lines(&dispatch);
+    let n = count_lines(&dispatch)?;
     assert!(n < 300, "app/dispatch.rs has {n} lines (must be < 300)");
 
     // @step And rust/fspec-tui/src/app/dispatch_slash_commands.rs is strictly less than 300 lines of code
     let dispatch020 = src.join("app").join("dispatch_slash_commands.rs");
-    let n = count_lines(&dispatch020);
+    let n = count_lines(&dispatch020)?;
     assert!(
         n < 300,
         "app/dispatch_slash_commands.rs has {n} lines (must be < 300)"
     );
+    Ok(())
 }
 
 /// Scenario: components::Action declares the new RPC-050 variants
 #[test]
-fn action_enum_declares_rpc050_variants() {
+fn action_enum_declares_rpc050_variants() -> TestResult {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-050 lands
-    let path = fspec_tui_src().join("components").join("mod.rs");
-    let body = read_raw(&path);
+    let path = fspec_tui_src()?.join("components").join("mod.rs");
+    let body = codelet_test_helpers::source_composition::read_source(&path)
+        .or_fail("resolve components/mod.rs")?;
 
-    // @step Then the file declares "AttachWorkUnitToSession(" as an Action variant
+    // @step Then the file declares "WorkUnitFocusChanged(" as an Action variant (TUI-132 removed AttachWorkUnitToSession and WorkUnitAttached: nothing emitted them)
     assert!(
-        body.contains("AttachWorkUnitToSession("),
-        "components/mod.rs must declare Action::AttachWorkUnitToSession(String) variant",
+        body.contains("WorkUnitFocusChanged("),
+        "components/mod.rs must declare Action::WorkUnitFocusChanged",
     );
-
-    // @step And the file declares "WorkUnitAttached(" as an Action variant
     assert!(
-        body.contains("WorkUnitAttached("),
-        "components/mod.rs must declare Action::WorkUnitAttached(SessionId, WorkUnitContext) variant",
+        !body.contains("AttachWorkUnitToSession(") && !body.contains("WorkUnitAttached("),
+        "components/mod.rs must not declare the removed attach variants",
     );
 
     // @step And (BUG-205) the file declares NO "WorkUnitDetached(" Action variant
@@ -163,27 +162,23 @@ fn action_enum_declares_rpc050_variants() {
         !body.contains("WorkUnitDetached("),
         "components/mod.rs must NOT declare Action::WorkUnitDetached after BUG-205 removed /detach",
     );
+    Ok(())
 }
 
 /// Scenario: dispatch_work_unit_binding.rs declares the RPC-050 attach
 /// helpers (BUG-205: the detach helpers are gone)
 #[test]
-fn dispatch_work_unit_binding_declares_attach_helpers_and_no_detach_helpers() {
+fn dispatch_work_unit_binding_declares_attach_helpers_and_no_detach_helpers() -> TestResult {
     // @step Given rust/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
-    let path = fspec_tui_src()
+    let path = fspec_tui_src()?
         .join("app")
         .join("dispatch_work_unit_binding.rs");
-    let body = read_raw(&path);
+    let body = read_raw(&path)?;
 
-    // @step Then the file declares "handle_attach_work_unit_to_session"
+    // @step Then the file declares "attach_work_unit_to_session"
     assert!(
-        body.contains("handle_attach_work_unit_to_session"),
-        "must declare the attach entry helper",
-    );
-    // @step And the file declares "handle_work_unit_attached"
-    assert!(
-        body.contains("handle_work_unit_attached"),
-        "must declare the attach Ok-branch fold helper",
+        body.contains("fn attach_work_unit_to_session("),
+        "must declare the attach helper",
     );
     // @step And (BUG-205) the file declares NO "handle_slash_detach"
     assert!(
@@ -195,4 +190,5 @@ fn dispatch_work_unit_binding_declares_attach_helpers_and_no_detach_helpers() {
         !body.contains("handle_work_unit_detached"),
         "BUG-205: handle_work_unit_detached must be removed with the /detach command",
     );
+    Ok(())
 }

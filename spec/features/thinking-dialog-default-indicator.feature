@@ -35,7 +35,7 @@ Feature: Render (default) indicator in Rust /thinking dialog for TS parity
   Scenario: Default row shows the (default) marker appended to its description
     Given a ThinkingLevelDialog seeded with current level Off and default level High
     When I render it onto an 80x24 TestBackend buffer
-    Then the High row reads "High - ~32K tokens, deep reasoning (default)"
+    Then the high row reads "high - Named effort (default)"
 
   Scenario: No default persisted shows no (default) marker on any row
     Given a ThinkingLevelDialog seeded with current level Off and default level None

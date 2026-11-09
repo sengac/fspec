@@ -11,13 +11,17 @@ use std::{path::PathBuf, sync::Arc};
 pub struct CompactionEvidence {
     source: CompactionSource,
     existing_dag: Option<(String, usize)>,
+    /// CMPCT-085: file identities recorded on the captured persisted originals.
+    required_files: std::collections::BTreeMap<String, String>,
 }
 
 impl CompactionEvidence {
     pub fn capture(source: CompactionSource) -> Result<Self, String> {
         let manifest = load_session(source.session_id)?;
         validate_committed_boundary(&manifest)?;
+        let required_files = codelet_core::compaction::persisted_file_identities(&source.prefix)?;
         let evidence = Self {
+            required_files,
             source,
             existing_dag: manifest.compaction.as_ref().map(|state| {
                 (
@@ -36,6 +40,21 @@ impl CompactionEvidence {
 
     pub fn existing_dag(&self) -> Option<(String, usize)> {
         self.existing_dag.clone()
+    }
+
+    /// CMPCT-085: the validation context the durable commit applies to this
+    /// source, so the builder rejects (and corrects) the same candidates.
+    pub fn validation_context(&self) -> codelet_core::compaction::DagValidationContext {
+        codelet_core::compaction::DagValidationContext {
+            persisted_turn_count: self.source.prefix.len(),
+            required_coverage_end: self.source.prefix.len().checked_sub(1),
+            existing_dag: self
+                .existing_dag
+                .as_ref()
+                .map(|(content, _)| content.clone()),
+            required_files: self.required_files.clone(),
+            required_reminders: Vec::new(),
+        }
     }
 
     fn verify(&self, manifest: &SessionManifest) -> Result<(), String> {

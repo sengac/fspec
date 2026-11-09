@@ -27,10 +27,10 @@ Feature: List scenario tags CLI subcommand
     Then stdout contains the substring '--show-categories'
     Then stdout does NOT contain the substring '--workspace'
 
-  Scenario: CLI exits 2 when required positional arguments are missing
+  Scenario: CLI exits 1 when required positional arguments are missing
     Given an empty directory is set as the current working directory
     When I run `./rust/target/release/fspec list-scenario-tags` (no positionals) from that directory
-    Then the command exits with code 2
+    Then the command exits with code 1
     Then stderr names the missing required argument
 
   Scenario: CLI prints tag list and exits 0 when scenario has tags

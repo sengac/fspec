@@ -23,6 +23,7 @@ pub fn validate(name: &str, args: Value) -> Result<(), InvokeError> {
         "move_work_unit_down" => group_06::move_work_unit_down::validate(args),
         "get_model_info" => group_06::get_model_info::validate(args),
         "get_thinking_level" => group_07::get_thinking_level::validate(args),
+        "get_thinking_options" => group_07::get_thinking_options::validate(args),
         "get_workspace_info" => group_07::get_workspace_info::validate(args),
         "search_files" => group_07::search_files::validate(args),
         "persistence_add_history" => group_08::persistence_add_history::validate(args),
@@ -77,7 +78,6 @@ pub fn validate(name: &str, args: Value) -> Result<(), InvokeError> {
         "set_debug_enabled" => group_24::set_debug_enabled::validate(args),
         "toggle_debug" => group_24::toggle_debug::validate(args),
         "set_debug_directory" => group_25::set_debug_directory::validate(args),
-        "pause_resume" => group_25::pause_resume::validate(args),
         "pause_confirm" => group_25::pause_confirm::validate(args),
         "pause_triple" => group_26::pause_triple::validate(args),
         "send_hitl_response" => group_26::send_hitl_response::validate(args),
@@ -124,6 +124,64 @@ pub fn validate(name: &str, args: Value) -> Result<(), InvokeError> {
         "reply_interaction_checked" => group_40::reply_interaction_checked::validate(args),
         "create_session_checked" => group_40::create_session_checked::validate(args),
         "session_manifest_issues" => group_40::session_manifest_issues::validate(args),
+        "get_work_unit_details" => group_40::get_work_unit_details::validate(args),
+        "list_workspaces" => group_41::list_workspaces::validate(args),
+        "list_workspace_work_units" => group_41::list_workspace_work_units::validate(args),
+        "create_session_in_workspace" => group_41::create_session_in_workspace::validate(args),
+        "get_default_model" => group_41::get_default_model::validate(args),
+        "submit_input" => group_41::submit_input::validate(args),
+        "configure_session_mcp_servers" => group_42::configure_session_mcp_servers::validate(args),
+        "control_exec_stdin" => group_43::control_exec_stdin::validate(args),
+        "create_isolated_session_in_workspace" => {
+            group_44::create_isolated_session_in_workspace::validate(args)
+        }
+        "read_card_attachment" => group_45::read_card_attachment::validate(args),
+        "changed_files_in_workspace" => group_46::changed_files_in_workspace::validate(args),
+        "file_diff_in_workspace" => group_46::file_diff_in_workspace::validate(args),
+        "checkpoint_counts_in_workspace" => {
+            group_47::checkpoint_counts_in_workspace::validate(args)
+        }
+        "list_checkpoints_in_workspace" => group_47::list_checkpoints_in_workspace::validate(args),
+        "checkpoint_diff_files_in_workspace" => {
+            group_47::checkpoint_diff_files_in_workspace::validate(args)
+        }
+        "checkpoint_file_diff_in_workspace" => {
+            group_47::checkpoint_file_diff_in_workspace::validate(args)
+        }
+        "restore_checkpoint_file_in_workspace" => {
+            group_47::restore_checkpoint_file_in_workspace::validate(args)
+        }
+        "restore_checkpoint_all_in_workspace" => {
+            group_47::restore_checkpoint_all_in_workspace::validate(args)
+        }
+        "delete_checkpoint_in_workspace" => {
+            group_47::delete_checkpoint_in_workspace::validate(args)
+        }
+        "delete_all_checkpoints_in_workspace" => {
+            group_47::delete_all_checkpoints_in_workspace::validate(args)
+        }
+        "get_workspace_info_in_workspace" => {
+            group_48::get_workspace_info_in_workspace::validate(args)
+        }
+        "git_state_in_workspace" => group_48::git_state_in_workspace::validate(args),
+        "search_files_in_workspace" => group_49::search_files_in_workspace::validate(args),
+        "search_files_in_session" => group_49::search_files_in_session::validate(args),
+        "persistence_add_history_in_workspace" => {
+            group_49::persistence_add_history_in_workspace::validate(args)
+        }
+        "persistence_get_history_in_workspace" => {
+            group_49::persistence_get_history_in_workspace::validate(args)
+        }
+        "persistence_search_history_in_workspace" => {
+            group_49::persistence_search_history_in_workspace::validate(args)
+        }
+        "add_workspace" => group_50::add_workspace::validate(args),
+        "remove_workspace" => group_50::remove_workspace::validate(args),
+        "blocklist_disabled_rules" => group_50::blocklist_disabled_rules::validate(args),
+        "blocklist_set_rule_enabled" => group_50::blocklist_set_rule_enabled::validate(args),
+        "session_card_changes" => group_51::session_card_changes::validate(args),
+        "move_session_cards_back" => group_51::move_session_cards_back::validate(args),
+        "pause_human_action" => group_51::pause_human_action::validate(args),
         _ => Err(InvokeError::Unknown),
     }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui-component
 @rpc
@@ -8,6 +9,7 @@
 @RPC-048
 Feature: /thinking off|low|med|high inline-arg parsing
   """
+  MODEL-011 (thinking-dialog-offers-only-the-models-levels.feature): the parser no longer knows the levels. Any /thinking argument other than default reaches the dispatcher as ThinkingCommand(arg), which resolves it against the levels the session's model offers (backend get_thinking_options) and sets it, or shows the refusal naming the model and its levels. The med alias and InvalidThinkingLevel are gone.
   New SlashCommandParse variants: `SetThinkingLevel(ThinkingLevel)` and `InvalidThinkingLevel(String)`. parse_slash_command extends its `/thinking ...` branch to call `trimmed.strip_prefix("/thinking ")` and match the trimmed lowercased arg against off|low|med|medium|high; anything else yields InvalidThinkingLevel.
   Dispatch wiring goes into dispatch_slash_commands.rs::handle_input_submitted: new arms for SetThinkingLevel(level) → self.handle_thinking_level_selected(session, level) (existing RPC-022 helper handles backend.set_thinking_level + get_thinking_level refresh) and InvalidThinkingLevel(other) → self.navigator.agent.push_line(&mut self.agent_view_store, format!("[error] unknown thinking level: {other}")). NO changes to dispatch_model_thinking_dialogs.rs are required.
   Tests: extend slash_parser inline `mod tests` to cover all 6 paths (off|low|med|medium|high + invalid + bare). Integration tests in tests/slash_command_wiring_rpc022.rs (or a new tests/slash_thinking_rpc048.rs) drive the App with `submit_input("/thinking high")` against MockBackend and assert (a) backend.set_thinking_level called with (s-1, High), (b) no dialog pushed, (c) send_input NOT called, (d) thinking_level_for(s-1) folds via the refresh, (e) error-arm pushes scrollback line for invalid arg. RPC-024 source-shape (300-LoC ceiling) constraint stays clean — only slash_parser.rs and dispatch_slash_commands.rs are touched, both well under the ceiling.
@@ -43,24 +45,24 @@ Feature: /thinking off|low|med|high inline-arg parsing
     I want to type /thinking off|low|med|medium|high to switch reasoning level inline
     So that I can change thinking levels without opening the picker dialog every time
 
-  Scenario Outline: parse_slash_command recognises /thinking <level> inline arg
+  Scenario Outline: parse_slash_command hands a /thinking argument to the dispatcher
     Given the function parse_slash_command from app/slash_parser.rs
     When it is called with text "<input>"
-    Then it returns SlashCommandParse::SetThinkingLevel(<level>)
+    Then it returns SlashCommandParse::ThinkingCommand("<arg>")
 
     Examples:
-      | input            | level                 |
-      | /thinking off    | ThinkingLevel::Off    |
-      | /thinking low    | ThinkingLevel::Low    |
-      | /thinking med    | ThinkingLevel::Medium |
-      | /thinking medium | ThinkingLevel::Medium |
-      | /thinking high   | ThinkingLevel::High   |
-      | /thinking HIGH   | ThinkingLevel::High   |
+      | input               | arg       |
+      | /thinking off       | off       |
+      | /thinking low       | low       |
+      | /thinking med       | med       |
+      | /thinking xhigh     | xhigh     |
+      | /thinking HIGH      | high      |
+      | /thinking gibberish | gibberish |
 
-  Scenario: parse_slash_command returns InvalidThinkingLevel for an unknown arg
+  Scenario: parse_slash_command clears the level for /thinking default
     Given the function parse_slash_command from app/slash_parser.rs
-    When it is called with text "/thinking gibberish"
-    Then it returns SlashCommandParse::InvalidThinkingLevel("gibberish")
+    When it is called with text "/thinking default"
+    Then it returns SlashCommandParse::SetThinkingLevel(ThinkingLevel::ModelDefault)
 
   Scenario: Bare /thinking continues to open the ThinkingLevelDialog
     Given the function parse_slash_command from app/slash_parser.rs
@@ -70,17 +72,19 @@ Feature: /thinking off|low|med|high inline-arg parsing
   Scenario: Submitting "/thinking high" sets the level via the backend and does NOT open the dialog
     Given an App with one open session SessionId("s-1") wired to a MockBackend
     And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Off)
-    And the MockBackend's get_thinking_level returns ThinkingLevel::High
+    And the MockBackend offers the levels Off, low, medium and high
+    And the MockBackend's get_thinking_level returns the effort high
     When the input is submitted with text "/thinking high"
-    Then within 1 second backend.set_thinking_level is called exactly once with (SessionId("s-1"), ThinkingLevel::High)
+    Then within 1 second backend.set_thinking_level is called exactly once with (SessionId("s-1"), the effort high)
     And no ThinkingLevelDialog is pushed onto the Compositor
     And the text is NOT forwarded to backend.send_input
-    And after the spawned task completes AgentViewStore.thinking_level_for(SessionId("s-1")) is Some(ThinkingLevel::High)
+    And after the spawned task completes AgentViewStore.thinking_level_for(SessionId("s-1")) is the effort high
 
   Scenario: Submitting "/thinking gibberish" emits an error notice and does NOT call the backend
     Given an App with one open session SessionId("s-1") wired to a MockBackend
+    And the MockBackend offers the levels Off, low, medium and high for the model test/model
     When the input is submitted with text "/thinking gibberish"
-    Then SessionId("s-1") scrollback contains a chunk whose text equals "[error] unknown thinking level: gibberish"
+    Then SessionId("s-1") scrollback contains a chunk whose text equals "[error] test/model does not take gibberish; it takes Off, low, medium, high"
     And backend.set_thinking_level is NOT called
     And no ThinkingLevelDialog is pushed onto the Compositor
     And the text is NOT forwarded to backend.send_input

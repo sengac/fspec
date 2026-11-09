@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port add-capability command to Rust
   """
   Rust port of the TypeScript `add-capability` command
@@ -101,3 +102,12 @@ Feature: Port add-capability command to Rust
     And the result name is 'Search'
     And the result description is 'Full text search'
     And the result fileName is 'foundation.json'
+
+  Scenario: Placeholder capabilities in foundation.json.draft are pruned before the new entry is added
+    Given spec/foundation.json.draft exists with solutionSpace.capabilities=[{name:'[DETECTED: cli-tool]'}]
+    And spec/foundation.json exists with solutionSpace.capabilities=[{name:'Reporting'}]
+    When I dispatch add-capability with name='Command Execution' description='Runs CLI commands'
+    Then the dispatcher returns success=true
+    And the result fileName is 'foundation.json.draft' and removedCount is 1
+    And spec/foundation.json.draft solutionSpace.capabilities holds only 'Command Execution'
+    And spec/foundation.json is left unchanged

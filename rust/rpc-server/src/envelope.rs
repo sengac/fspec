@@ -21,6 +21,7 @@
 
 use codelet_rpc_types::{
     LogRecord, SessionEvent, SessionId, SessionInfo, SessionStatus, StreamChunk, WorkUnitInfo,
+    WorkspaceGitState, WorkspaceWorkUnits,
 };
 use serde::{Deserialize, Serialize};
 
@@ -89,6 +90,13 @@ pub enum Envelope {
     /// even when empty, so a connecting client can distinguish
     /// "checked, none open" from "never asked".
     SessionSnapshot(Vec<SessionInfo>),
+    /// RPC-445: server-pushed work-units snapshot of a workspace opened
+    /// besides the start workspace, tagged with its canonical path.
+    /// APPENDED last so existing bincode variant indices stay stable.
+    WorkspaceWorkUnitsUpdate(WorkspaceWorkUnits),
+    /// RPC-454: server-pushed git state of a workspace opened besides the
+    /// start workspace. APPENDED last so bincode variant indices stay stable.
+    WorkspaceGitStateUpdate(WorkspaceGitState),
 }
 
 impl Envelope {
@@ -105,6 +113,8 @@ impl Envelope {
             Envelope::CmdRes => "CmdRes",
             Envelope::SessionEvent(_) => "SessionEvent",
             Envelope::SessionSnapshot(_) => "SessionSnapshot",
+            Envelope::WorkspaceWorkUnitsUpdate(_) => "WorkspaceWorkUnitsUpdate",
+            Envelope::WorkspaceGitStateUpdate(_) => "WorkspaceGitStateUpdate",
         }
     }
 }

@@ -6,9 +6,8 @@
 //! harness as agent_input_soft_wrap_rpc405.rs, so assertions are on
 //! user-observable behavior and fail RED for behavior reasons today.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{AgentView, AgentViewStore};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::layout::Rect;
@@ -28,10 +27,10 @@ fn render_rows(
     h: u16,
     store: &mut AgentViewStore,
     view: &mut AgentView,
-) -> (Vec<String>, Rect) {
-    let mut term = Terminal::new(TestBackend::new(w, h)).unwrap();
+) -> Result<(Vec<String>, Rect), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("expected a value")?;
     term.draw(|f| view.render_with_store(f.area(), f.buffer_mut(), store))
-        .unwrap();
+        .or_fail("expected a value")?;
     let buf = term.backend().buffer().clone();
     let rows: Vec<String> = (0..buf.area.height)
         .map(|y| {
@@ -40,8 +39,10 @@ fn render_rows(
                 .collect::<String>()
         })
         .collect();
-    let input_area = view.last_input_area.expect("input area recorded by render");
-    (rows, input_area)
+    let input_area = view
+        .last_input_area
+        .or_fail("input area recorded by render")?;
+    Ok((rows, input_area))
 }
 
 /// Press one key on the input widget (plain, no modifiers).
@@ -63,7 +64,7 @@ fn ten_lines() -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn cursor_on_the_last_line_of_a_10_line_buffer_sits_on_the_last_input_area_row() {
+fn cursor_on_the_last_line_of_a_10_line_buffer_sits_on_the_last_input_area_row() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -77,8 +78,8 @@ fn cursor_on_the_last_line_of_a_10_line_buffer_sits_on_the_last_input_area_row()
     assert_eq!(view.input.cursor(), (9, 6), "cursor at end of line10");
 
     // @step When the agent view renders a frame and cursor_position() is queried
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
-    let (x, y) = view.cursor_position().expect("cursor pos");
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
+    let (x, y) = view.cursor_position().or_fail("cursor pos")?;
 
     // @step Then the input area is 6 terminal rows tall occupying rows 6 through 11
     assert_eq!(input.height, 6, "input capped at 6 rows");
@@ -101,6 +102,7 @@ fn cursor_on_the_last_line_of_a_10_line_buffer_sits_on_the_last_input_area_row()
         y < 12,
         "hardware cursor row {y} escaped below the 12-row terminal"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -110,7 +112,7 @@ fn cursor_on_the_last_line_of_a_10_line_buffer_sits_on_the_last_input_area_row()
 
 #[test]
 fn scrolling_the_window_up_with_the_cursor_on_the_first_line_pins_the_cursor_to_the_first_input_area_row(
-) {
+) -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -120,14 +122,14 @@ fn scrolling_the_window_up_with_the_cursor_on_the_first_line_pins_the_cursor_to_
     // @step And the cursor is at the end of "line10"
     press(&mut view, KeyCode::End);
     assert_eq!(view.input.cursor(), (9, 6), "cursor at end of line10");
-    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view);
+    let (_rows, _input) = render_rows(60, 12, &mut store, &mut view)?;
 
     // @step When the user presses the Up arrow key 9 times and cursor_position() is queried after a render
     for _ in 0..9 {
         press(&mut view, KeyCode::Up);
     }
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
-    let (x, y) = view.cursor_position().expect("cursor pos");
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
+    let (x, y) = view.cursor_position().or_fail("cursor pos")?;
 
     // @step Then the cursor is on the first logical line
     assert_eq!(view.input.cursor().0, 0, "cursor on the first logical line");
@@ -143,6 +145,7 @@ fn scrolling_the_window_up_with_the_cursor_on_the_first_line_pins_the_cursor_to_
 
     // @step And the cursor x coordinate is 9, the body start column 3 plus the 6-character display column
     assert_eq!(x, 9, "x must be body start 3 + display col 6");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -152,7 +155,7 @@ fn scrolling_the_window_up_with_the_cursor_on_the_first_line_pins_the_cursor_to_
 
 #[test]
 fn cursor_mid_way_through_a_line_wrapped_to_three_visual_rows_lands_on_the_matching_wrapped_row_and_column(
-) {
+) -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -167,8 +170,8 @@ fn cursor_mid_way_through_a_line_wrapped_to_three_visual_rows_lands_on_the_match
     assert_eq!(view.input.cursor(), (0, 80), "cursor at char index 80");
 
     // @step When the agent view renders a frame and cursor_position() is queried
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
-    let (x, y) = view.cursor_position().expect("cursor pos");
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
+    let (x, y) = view.cursor_position().or_fail("cursor pos")?;
 
     // @step Then the input area is 3 terminal rows tall occupying rows 9 through 11
     assert_eq!(input.height, 3, "120 chars at 56-col body width → 3 rows");
@@ -188,6 +191,7 @@ fn cursor_mid_way_through_a_line_wrapped_to_three_visual_rows_lands_on_the_match
         x, 27,
         "x must be body start 3 + segment-2 display col 24 (80 - 56); got x={x}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -196,7 +200,7 @@ fn cursor_mid_way_through_a_line_wrapped_to_three_visual_rows_lands_on_the_match
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn cjk_line_places_the_cursor_at_the_display_width_column_not_the_char_index() {
+fn cjk_line_places_the_cursor_at_the_display_width_column_not_the_char_index() -> TestResult {
     // @step Given the agent view is rendered on a 60x12 terminal
     let (mut view, mut store) = harness();
 
@@ -211,8 +215,8 @@ fn cjk_line_places_the_cursor_at_the_display_width_column_not_the_char_index() {
     assert_eq!(view.input.cursor(), (0, 3), "cursor at char index 3");
 
     // @step When the agent view renders a frame and cursor_position() is queried
-    let (rows, input) = render_rows(60, 12, &mut store, &mut view);
-    let (x, y) = view.cursor_position().expect("cursor pos");
+    let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
+    let (x, y) = view.cursor_position().or_fail("cursor pos")?;
 
     // @step Then the cursor x coordinate is 9, the body start column 3 plus display column 6 for three double-width ideographs
     assert_eq!(
@@ -228,6 +232,7 @@ fn cjk_line_places_the_cursor_at_the_display_width_column_not_the_char_index() {
     // @step And the cursor y coordinate is 11, the single input row
     assert_eq!(input.y, 11, "single-row input sits on the last row");
     assert_eq!(y, 11, "cursor y must be the single input row 11");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -236,8 +241,8 @@ fn cjk_line_places_the_cursor_at_the_display_width_column_not_the_char_index() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn cursor_position_always_lies_inside_the_input_area_rect_across_a_grid_of_buffer_and_cursor_cases()
-{
+fn cursor_position_always_lies_inside_the_input_area_rect_across_a_grid_of_buffer_and_cursor_cases(
+) -> TestResult {
     // @step And a grid of input buffers: an empty buffer, a single short line, a single 120-character wrapped line, and ten logical lines
     let buffers: Vec<(&str, String)> = vec![
         ("empty buffer", String::new()),
@@ -266,10 +271,10 @@ fn cursor_position_always_lies_inside_the_input_area_rect_across_a_grid_of_buffe
                 }
                 _ => press(&mut view, KeyCode::End),
             }
-            let (rows, input) = render_rows(60, 12, &mut store, &mut view);
+            let (rows, input) = render_rows(60, 12, &mut store, &mut view)?;
             let (x, y) = view
                 .cursor_position()
-                .expect("cursor position after render");
+                .or_fail("cursor position after render")?;
 
             // @step Then every returned cursor position lies inside the input area rect recorded by the render
             assert!(
@@ -290,4 +295,5 @@ fn cursor_position_always_lies_inside_the_input_area_rect_across_a_grid_of_buffe
             );
         }
     }
+    Ok(())
 }

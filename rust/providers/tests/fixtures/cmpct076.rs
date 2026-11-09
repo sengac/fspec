@@ -59,7 +59,12 @@ pub async fn model_error(
         .base_url(url)
         .http_client(RefreshingCodexClient::new_api_key().with_idle_timeout(timeout))
         .build()?;
-    let model = CodexResponsesModel::new(client, "shared-model");
+    let model = CodexResponsesModel::new(client, "shared-model").with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
     let request = CompletionRequestBuilder::new(model.clone(), "Hello")
         .preamble("Test instructions".to_owned())
         .build();
@@ -107,9 +112,8 @@ impl StalledRejection {
             socket.write_all(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 1024\r\nx-request-id: broken-request\r\nConnection: close\r\n\r\n").await?;
             socket.write_all(body.as_bytes()).await?;
             if stall {
-                tokio::time::sleep(Duration::from_secs(10)).await;
-            } else {
-                tokio::time::sleep(Duration::from_millis(20)).await;
+                // TEST-042: stall until the fixture is dropped, not for a while.
+                std::future::pending::<()>().await;
             }
             socket.shutdown().await
         });

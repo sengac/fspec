@@ -1,9 +1,11 @@
+@BUG-582
 @done
 @source-shape
 @rust
 @rpc
 @regression
 @RPC-007
+@infrastructure
 Feature: RPC-007 source-shape regression invariants
   """
   Static source-level invariants that protect the architectural decisions of

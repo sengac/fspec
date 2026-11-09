@@ -26,6 +26,21 @@ async fn test_tool_definition_name_and_schema() -> Result<(), Box<dyn std::error
     assert!(definition.description.contains("DAG summary"));
     assert!(definition.description.contains("builder turns"));
     assert!(definition.description.contains("compaction"));
+    // @step And the description should show the exact dag-node, inclusive range and dag-files syntax
+    for syntax in [
+        "Close every <dag-node> with </dag-node>",
+        "<dag-node depth=\"D1\" turns=\"0-1\" label=\"Work\">",
+        "Persisted turn ranges are inclusive",
+        "Same-depth peers must be disjoint",
+        "- path/to/file.rs (Created)",
+        "<dag-files></dag-files>",
+    ] {
+        assert!(
+            definition.description.contains(syntax),
+            "missing {syntax}: {}",
+            definition.description
+        );
+    }
     Ok(())
 }
 

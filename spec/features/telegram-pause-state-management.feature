@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @pause-integration
 @bridge
 @telegram
 @BRIDGE-014
+@BUG-504
 Feature: Telegram Pause State Management Commands
   """
   Extend telegram-slash-commands.ts AVAILABLE_COMMANDS array with /allowonce, /allowsession, /deny commands

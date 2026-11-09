@@ -10,13 +10,6 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -26,8 +19,17 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub enabled: Option<bool>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,13 +45,6 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -59,8 +54,17 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub enabled: Option<bool>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -71,18 +75,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
-          "lines": "78-96",
+          "lines": "73-93",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -92,8 +89,17 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub enabled: Option<bool>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -104,18 +110,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
-          "lines": "101-117",
+          "lines": "95-113",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -125,8 +124,17 @@
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "pub enabled: Option<bool>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -137,23 +145,24 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov144_max_images_resolution.rs",
-          "lines": "122-148",
+          "lines": "115-143",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
               "lines": [
-                1374,
-                1375,
-                1376,
-                1377,
-                1378,
-                1379,
-                1380,
-                1381,
-                1382,
-                1383,
-                1384
-              ]
+                86,
+                86,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "// PROV-123: keep the global default in sync so a NEW session created in",
+              "lastLine": "// `openai:qwen`), so the stored default round-trips to a form a new"
             }
           ]
         }
@@ -169,8 +178,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/model_resolution.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_6.rs"
     ],
-    "totalLinesCovered": 182
+    "totalLinesCovered": 187
   }
 }

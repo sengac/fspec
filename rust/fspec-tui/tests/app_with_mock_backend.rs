@@ -9,8 +9,7 @@
 //!   - "'q' at App level sets should_quit and the run loop exits"
 //!   - "App-with-mock-backend snapshot captures HelpDialog visible after '?' and gone after ESC"
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{synth_key, App, FspecBackend, Priority};
@@ -21,7 +20,9 @@ mod common;
 use common::{buffer_to_rows, render_one_frame, test_app, MockBackend};
 
 /// Helper: build an `App` against a fresh MockBackend.
-fn fresh_app_with_mock_backend() -> (App, ratatui::Terminal<ratatui::backend::TestBackend>) {
+fn fresh_app_with_mock_backend(
+) -> Result<(App, ratatui::Terminal<ratatui::backend::TestBackend>), codelet_test_helpers::TestError>
+{
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     test_app(backend)
 }
@@ -38,7 +39,7 @@ fn fresh_app_with_mock_backend() -> (App, ratatui::Terminal<ratatui::backend::Te
 /// on the App struct, NOT in the Compositor. The Compositor is now
 /// reserved for MODAL layers (HelpDialog, DisconnectDialog).
 #[test]
-fn app_new_pre_populates_the_compositor_with_background_priority_hello_component() {
+fn app_new_pre_populates_the_compositor_with_background_priority_hello_component() -> TestResult {
     // @step Given a mock backend implementing `dyn FspecBackend`
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
 
@@ -60,13 +61,14 @@ fn app_new_pre_populates_the_compositor_with_background_priority_hello_component
     // Silence unused-import warning for `Priority` when this test is
     // the only consumer (legacy RPC-009 invariant).
     let _ = Priority::Background;
+    Ok(())
 }
 
 /// Scenario: '?' at App level pushes the HelpDialog onto the compositor
 #[test]
-fn question_at_app_level_pushes_the_help_dialog_onto_the_compositor() {
+fn question_at_app_level_pushes_the_help_dialog_onto_the_compositor() -> TestResult {
     // @step Given an App constructed against a MockBackend
-    let (mut app, _term) = fresh_app_with_mock_backend();
+    let (mut app, _term) = fresh_app_with_mock_backend()?;
 
     // @step And the App's compositor contains exactly the HelloComponent
     // (RPC-009: compositor is empty until `?` pushes the HelpDialog.)
@@ -91,14 +93,15 @@ fn question_at_app_level_pushes_the_help_dialog_onto_the_compositor() {
         app.compositor().topmost_id(),
         Some("help-dialog".to_string())
     );
+    Ok(())
 }
 
 /// Scenario: ESC while the HelpDialog is on top removes the dialog via
 /// deferred callback
 #[test]
-fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() {
+fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() -> TestResult {
     // @step Given an App with a HelpDialog pushed onto the compositor at Priority::Critical
-    let (mut app, _term) = fresh_app_with_mock_backend();
+    let (mut app, _term) = fresh_app_with_mock_backend()?;
     let _ = app.handle_event(&synth_key(KeyCode::Char('?')));
     assert_eq!(
         app.compositor().topmost_id(),
@@ -116,6 +119,7 @@ fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() {
     // (RPC-009: after ESC the compositor is empty; RootView remains
     // the always-on background on App.root().)
     assert_eq!(app.compositor().len(), 0);
+    Ok(())
 }
 
 /// Scenario: Ctrl+D at App level sets should_quit and the run loop exits.
@@ -124,9 +128,9 @@ fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() {
 /// confirmation dialog (see `boardview_esc_exit_confirmation_rpc102.rs`).
 /// `Ctrl+D` remains the lowest-level hard-exit shortcut.
 #[test]
-fn ctrl_d_at_app_level_sets_should_quit_and_run_loop_exits() {
+fn ctrl_d_at_app_level_sets_should_quit_and_run_loop_exits() -> TestResult {
     // @step Given an App with a MockBackend and the run loop driven by a TestBackend terminal
-    let (mut app, _term) = fresh_app_with_mock_backend();
+    let (mut app, _term) = fresh_app_with_mock_backend()?;
 
     // @step When the App receives a synthetic Key(Ctrl+D) event
     use crossterm::event::{Event, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
@@ -151,18 +155,19 @@ fn ctrl_d_at_app_level_sets_should_quit_and_run_loop_exits() {
     // here without standing up a real TTY (which `App::run` requires
     // for the `TerminalGuard::init()` call).
     let _typecheck: fn(App) -> _ = |app| async move { app.run().await };
+    Ok(())
 }
 
 /// Scenario: App-with-mock-backend snapshot captures HelpDialog visible
 /// after '?' and gone after ESC
 #[test]
-fn app_with_mock_backend_snapshot_captures_help_dialog_visible_then_dismissed() {
+fn app_with_mock_backend_snapshot_captures_help_dialog_visible_then_dismissed() -> TestResult {
     // @step Given an App constructed against a MockBackend on an 80x24 TestBackend terminal
-    let (mut app, mut terminal) = fresh_app_with_mock_backend();
+    let (mut app, mut terminal) = fresh_app_with_mock_backend()?;
 
     // @step When the App processes a synthetic Key('?') event and renders one frame
     let _ = app.handle_event(&synth_key(KeyCode::Char('?')));
-    let frame_visible = render_one_frame(&mut terminal, &mut app);
+    let frame_visible = render_one_frame(&mut terminal, &mut app)?;
     let rows_visible = buffer_to_rows(&frame_visible);
 
     // @step Then the rendered buffer matches the insta snapshot "help_dialog_visible"
@@ -170,9 +175,10 @@ fn app_with_mock_backend_snapshot_captures_help_dialog_visible_then_dismissed() 
 
     // @step When the App processes a synthetic Key(Esc) event and renders one frame
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
-    let frame_dismissed = render_one_frame(&mut terminal, &mut app);
+    let frame_dismissed = render_one_frame(&mut terminal, &mut app)?;
     let rows_dismissed = buffer_to_rows(&frame_dismissed);
 
     // @step Then the rendered buffer matches the insta snapshot "help_dialog_dismissed"
     insta::assert_yaml_snapshot!("help_dialog_dismissed", rows_dismissed);
+    Ok(())
 }

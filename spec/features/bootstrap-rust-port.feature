@@ -100,6 +100,11 @@ Feature: Port bootstrap command to Rust
     Then the dispatcher returns success=true
     Then the rendered output contains the substring "BIG PICTURE EVENT STORMING NEEDED"
     Then the rendered output contains the substring "FOUND-001"
+    Then the rendered output contains the substring "fspec show-work-unit FOUND-001"
+    Then the rendered output contains the substring "fspec add-foundation-bounded-context <name>"
+    Then the rendered output contains the substring "See spec/AGENTS.md"
+    Then the rendered output contains the substring "Why this matters:"
+    Then the rendered output ends with the event storm system-reminder, after the documentation
 
   Scenario: Event Storm reminder suggests creating a work unit when none matches
     Given a project root tempdir whose foundation.json has an empty eventStorm and no matching FOUND work unit
@@ -107,6 +112,10 @@ Feature: Port bootstrap command to Rust
     Then the dispatcher returns success=true
     Then the rendered output contains the substring "BIG PICTURE EVENT STORMING NEEDED"
     Then the rendered output contains the substring "fspec create-task FOUND"
+    Then the rendered output contains the substring "Option 2: Conduct Event Storm directly"
+    Then the rendered output contains the substring "fspec add-foundation-bounded-context <name>"
+    Then the rendered output contains the substring "See spec/AGENTS.md"
+    Then the rendered output contains the substring "Why this matters:"
 
   Scenario: No reminder when the event storm is already populated
     Given a project root tempdir whose foundation.json eventStorm.items already has entries
@@ -119,3 +128,11 @@ Feature: Port bootstrap command to Rust
     When I dispatch bootstrap and also run the CLI subcommand fspec bootstrap against an equivalent project root
     Then both paths produce output containing "# fspec Command - Kanban-Based Project Management"
     Then the CLI bridge module rust/fspec/src/bootstrap.rs contains no documentation-building or transform logic — its only computation is JSON arg marshalling
+
+  Scenario: A command reference explainer precedes the six help sections in order
+    Given a project root tempdir with no fspec-config.json and no foundation.json
+    When I dispatch bootstrap
+    Then the rendered output contains the substring "**The following sections contain complete fspec command documentation**"
+    Then the rendered output contains the substring "**This is your complete command reference for all fspec features**"
+    Then the rendered output contains the substring "`fspec <command> --help` for the full help of one command"
+    Then the lines "GHERKIN SPECIFICATIONS", "WORK UNIT MANAGEMENT", "EXAMPLE MAPPING", "PROGRESS TRACKING & METRICS", "CONFIGURATION & SETUP" and "LIFECYCLE HOOKS" follow the explainer in that order

@@ -1,4 +1,6 @@
 @KGRAPH-057
+@parser
+@code-analysis
 Feature: Add Dart language support to GraphSearch AST index and dead code detection
   """
   The Dart extractor must use DartLang (from rust/tools) for KindMatcher, not pattern matching, since Dart splits function_signature and function_body as sibling nodes at top level

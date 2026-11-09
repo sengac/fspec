@@ -6,32 +6,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "97-130",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                7745,
-                7746,
-                7747,
-                7748,
-                7749,
-                7750,
-                7751,
-                7752,
-                7753,
-                7754,
-                7755,
-                7756,
-                7757,
-                7758,
-                7759,
-                7760,
-                7761,
-                7762,
-                7763
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -41,14 +16,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "132-144",
-          "implMappings": [
-            {
-              "file": "src/tui/store/sessionStore.ts",
-              "lines": [
-                163
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -60,10 +28,7 @@
     "testFiles": [
       "src/tui/components/__tests__/isolated-session-integration.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/AgentView.tsx",
-      "src/tui/store/sessionStore.ts"
-    ],
-    "totalLinesCovered": 67
+    "implFiles": [],
+    "totalLinesCovered": 47
   }
 }

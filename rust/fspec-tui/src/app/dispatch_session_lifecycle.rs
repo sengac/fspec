@@ -74,7 +74,7 @@ impl App {
     /// intuition) unless the restore re-asserts the daemon pointer.
     pub(crate) async fn replay_session_snapshot(&mut self) {
         for info in fetch_session_snapshot(&self.backend).await {
-            self.handle_session_observed(info);
+            self.handle_session_observed(info, super::session_arrival::SessionFocus::Take);
         }
     }
 
@@ -173,11 +173,12 @@ impl App {
         {
             return;
         }
-        // Step 2: per-session reset (store-side, focus-independent).
+        // Step 2: per-session reset (store-side, focus-independent). The
+        // draft ends in memory and in the daemon (BUG-549 rule 6).
         if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session) {
-            ctx.reset_scrollback();
-            ctx.input_draft.clear();
+            ctx.reset_for_clear();
         }
+        self.end_composer_draft(&session);
         // Step 3: focused-session view-local reset — ONE shared code
         // path with the local /clear (DRY). A background-session
         // clear never touches the focused input buffer.

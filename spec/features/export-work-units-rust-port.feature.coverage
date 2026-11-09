@@ -61,7 +61,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// a project_root path.",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -128,7 +130,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// a project_root path.",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -195,7 +199,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// a project_root path.",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -262,7 +268,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// a project_root path.",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }
@@ -329,7 +337,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// a project_root path.",
+              "lastLine": "reason: wrap_failure(&format!(\"failed to serialize result: {e}\")),"
             }
           ]
         }

@@ -1,8 +1,10 @@
+@BUG-582
 @BUG-213
 @phase-1
 @agent-core
 @compaction
 @context-management
+@BUG-310
 Feature: Generated compaction reports activity without a synthetic work total
   """
   Architecture notes:

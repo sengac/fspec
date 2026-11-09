@@ -279,6 +279,7 @@ mod tests {
     }
 
     #[test]
+    #[serial_test::serial]
     fn test_detect_env_credential_default() {
         // @step And duplicated auth detection logic should use detect_env_credential() default
         let provider = TestProvider;

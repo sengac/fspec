@@ -1,12 +1,14 @@
 @done
 @RPC-196
+@cli
+@example-mapping
 Feature: Port answer-question command to Rust
   """
   Core impl at rust/fspec-core/src/commands/answer_question.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates), io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps).
   WorkUnit.questions / rules / assumptions / nextRuleId all live in WorkUnit.extra (round-tripped via
   serde flatten). RuleItem is created with the same shape as add-rule: id, text, deleted, createdAt
-  with post-increment of nextRuleId (default 0). Assumptions are raw strings, not objects (TS parity).
+  with post-increment of nextRuleId (default 0). Assumptions are stable-id items like rules (BUG-633).
   Two-front-doors: CLI bridge parses index with clap usize and forwards JSON workUnitId, index, answer,
   addTo to commands::answer_question::run — no domain logic in the bridge.
   """
@@ -40,12 +42,12 @@ Feature: Port answer-question command to Rust
     And spec/work-units.json on disk shows AUTH-001.rules[0].id=5
     And spec/work-units.json on disk shows AUTH-001.nextRuleId=6
 
-  Scenario: addTo=assumption appends raw string to assumptions array
+  Scenario: addTo=assumption appends an assumption item to the assumptions array
     Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with questions=[{id:0,text:'Q?',deleted:false,createdAt:'x'}]
     When I dispatch answer-question with workUnitId='AUTH-001' index=0 answer='Server is HTTPS only' addTo='assumption'
     Then the dispatcher returns success=true
     And the returned data contains addedTo='assumptions'
-    And spec/work-units.json on disk shows AUTH-001.assumptions=['Server is HTTPS only']
+    And spec/work-units.json on disk shows AUTH-001.assumptions with one item, id 0 and text 'Server is HTTPS only'
     And spec/work-units.json on disk shows AUTH-001 has no rules added
 
   Scenario: addTo=none with answer marks question but does not modify rules/assumptions
@@ -108,3 +110,28 @@ Feature: Port answer-question command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     And spec/work-units.json now exists on disk with the canonical empty initial structure
+
+  Scenario: Concurrent answers to different questions are all recorded
+    Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with unanswered questions 0 'Q0?', 1 'Q1?' and 2 'Q2?' and nextRuleId=0
+    When 3 threads dispatch answer-question at once with workUnitId='AUTH-001', index=0, 1 and 2, answer='Answer 0', 'Answer 1' and 'Answer 2', addTo='rule'
+    Then every dispatch returns success=true
+    And spec/work-units.json on disk shows questions 0, 1 and 2 selected=true with answer 'Answer 0', 'Answer 1' and 'Answer 2'
+    And spec/work-units.json on disk shows 3 rules with ids 0, 1 and 2 whose texts are 'Answer 0', 'Answer 1' and 'Answer 2' in any order
+    And spec/work-units.json on disk shows AUTH-001.nextRuleId=3
+
+  Scenario: Answering the same question twice keeps the last answer and adds both rules
+    Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with questions=[{id:0,text:'Q?',deleted:false,createdAt:'x'}] and nextRuleId=0
+    When I dispatch answer-question with workUnitId='AUTH-001' index=0 answer='Answer A' addTo='rule'
+    And I dispatch answer-question with workUnitId='AUTH-001' index=0 answer='Answer B' addTo='rule'
+    Then both dispatches return success=true
+    And spec/work-units.json on disk shows AUTH-001.questions[0].selected=true
+    And spec/work-units.json on disk shows AUTH-001.questions[0].answer='Answer B'
+    And spec/work-units.json on disk shows AUTH-001.rules as 'Answer A' with id 0 then 'Answer B' with id 1
+
+  Scenario: The testing gate lists only the questions answer-question has not answered
+    Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying that passes review, with unanswered questions 0 'Q0?', 1 'Q1?' and 2 'Q2?'
+    And spec/features/login.feature is tagged @AUTH-001 and has one scenario
+    When I dispatch answer-question with workUnitId='AUTH-001' index=1 answer='Yes' addTo='none'
+    And I dispatch update-work-unit-status with workUnitId='AUTH-001' status='testing' skipTemporalValidation=true
+    Then the update-work-unit-status dispatch returns success=false
+    And its error lists the lines '  - [0] Q0?' and '  - [2] Q2?' and no line for question 1

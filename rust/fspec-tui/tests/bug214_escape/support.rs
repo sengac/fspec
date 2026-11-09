@@ -1,6 +1,7 @@
+use crate::common::TaskOutcome;
+use parking_lot::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
+use std::sync::Arc;
 
 use codelet_cli::compaction_operation::CompactionFailure;
 use codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler;
@@ -109,11 +110,7 @@ impl EscapeFixture {
                 let dropped = dropped.clone();
                 Box::pin(async move {
                     let _pending = PendingBuilder(dropped);
-                    if let Some(sender) = entered
-                        .lock()
-                        .unwrap_or_else(PoisonError::into_inner)
-                        .take()
-                    {
+                    if let Some(sender) = entered.lock().take() {
                         let _ = sender.send(());
                     }
                     std::future::pending().await
@@ -150,7 +147,7 @@ impl EscapeFixture {
                 ),
             }
         }));
-        tokio::time::timeout(Duration::from_secs(3), ready).await??;
+        codelet_test_helpers::deadlock_guard("the compaction start", ready).await??;
         fixture.shared.flush().await?;
         fixture.shared.app.navigator_mut().active_view = ViewMode::Agent;
         assert!(fixture.shared.sessions[0]
@@ -184,7 +181,9 @@ impl EscapeFixture {
             self.shared.app.dispatch(action);
         }
         while let Some(task) = self.shared.app.next_pending_task() {
-            tokio::time::timeout(Duration::from_secs(3), task).await??;
+            codelet_test_helpers::deadlock_guard("the pending task", task)
+                .await?
+                .completed_or_cancelled()?;
         }
         Ok(())
     }
@@ -197,9 +196,12 @@ impl EscapeFixture {
             "real transport must deliver Escape interrupt"
         );
         let task = self.task.take().ok_or("pending pre-prompt stream task")?;
-        let (cancelled, outcome) = tokio::time::timeout(Duration::from_secs(2), task)
+        // BUG-530: the pending builder never completes, so the task ends only
+        // by cancellation (checked below); the deadline is a hang guard that
+        // turns a regression into a failure, not a promptness bound.
+        let (cancelled, outcome) = codelet_test_helpers::deadlock_guard("the Escape task", task)
             .await
-            .map_err(|error| format!("Escape reached the session but pending pre-prompt compaction did not stop promptly: {error}"))??;
+            .map_err(|error| format!("Escape reached the session but pending pre-prompt compaction never stopped: {error}"))??;
         assert!(cancelled, "expected explicit cancellation, got {outcome}");
         assert!(
             self.dropped.load(Ordering::Acquire),

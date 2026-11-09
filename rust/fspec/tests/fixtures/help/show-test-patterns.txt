@@ -17,13 +17,12 @@ OPTIONS
     Output results in JSON format
 
 COMMON PATTERNS
-  • undefined
-    Example: undefined
-    undefined
+  • Review CLI test consistency
+    Example: fspec show-test-patterns --tag=@cli --include-coverage
 
-  • undefined
-    Example: undefined
-    undefined
+  • Analyze critical feature testing
+    Example: fspec show-test-patterns --tag=@critical
+fspec show-test-patterns --tag=@high
 
 
 EXAMPLES
@@ -75,7 +74,7 @@ CLI-002: Validate
 RELATED COMMANDS
   fspec show-coverage
   fspec compare-implementations
-  fspec search-scenarios
+  fspec context
 
 NOTES
   • Analyzes test files from coverage data

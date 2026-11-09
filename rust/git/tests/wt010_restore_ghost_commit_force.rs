@@ -97,19 +97,15 @@ fn non_forced_restore_refuses_to_delete_files_added_after_the_checkpoint() {
     let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
     checkpoint_with_test_file(repo_path, "v1");
-    fs::write(
-        repo_path.join("added-after-checkpoint.txt"),
-        "new work",
-    )
-    .expect("write post-checkpoint file");
+    fs::write(repo_path.join("added-after-checkpoint.txt"), "new work")
+        .expect("write post-checkpoint file");
 
     // @step When I restore the checkpoint with force set to false
-    let result =
-        ghost_commit::restore_ghost_commit(repo_path, "WT010", "snap", false);
+    let result = ghost_commit::restore_ghost_commit(repo_path, "WT010", "snap", false);
 
     // @step Then the restore returns a conflict error listing added-after-checkpoint.txt and the file still exists on disk
-    let err = result
-        .expect_err("force=false restore with a post-checkpoint file must be a conflict");
+    let err =
+        result.expect_err("force=false restore with a post-checkpoint file must be a conflict");
     match err {
         GitError::RestoreConflict { files } => {
             assert!(

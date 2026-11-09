@@ -313,3 +313,38 @@ fn scenario_remove_question_help_matches_ts_formatcommandhelp_reference() {
         "stdout must start with blank line + REMOVE-QUESTION; got:\n{stdout}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI prints question text with special characters in the success line
+// (BUG-020, merged here)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_prints_question_text_with_special_characters() {
+    // @step Given spec/work-units.json contains work unit 'AUTH-001' in 'specifying' status with one question id=0 text '@human: What happens?'
+    let ws = tempfile::tempdir().expect("tempdir");
+    let raw = work_units_specifying_with_questions(
+        r#""questions": [{ "id": 0, "text": "@human: What happens?", "deleted": false, "createdAt": "2026-06-01T00:00:00.000Z", "selected": false }], "nextQuestionId": 1"#,
+    );
+    write_work_units(ws.path(), &raw);
+
+    // @step When I run `fspec remove-question AUTH-001 0`
+    let (code, stdout, stderr) = run_remove_question(ws.path(), &["AUTH-001", "0"]);
+
+    // @step Then the command exits 0
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
+
+    // @step And stdout contains the line '✓ Removed question: "@human: What happens?"'
+    assert!(
+        stdout
+            .lines()
+            .any(|line| line == "✓ Removed question: \"@human: What happens?\""),
+        "stdout must hold the question text; got:\n{stdout}"
+    );
+
+    // @step And stdout does not contain '[object Object]'
+    assert!(!stdout.contains("[object Object]"), "{stdout}");
+}

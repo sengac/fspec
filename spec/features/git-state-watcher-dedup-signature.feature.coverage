@@ -4,12 +4,33 @@
       "name": "Steady-state silence in a clean repo (regression guard)",
       "testMappings": [
         {
-          "file": "rust/core/tests/git_state_watcher.rs",
-          "lines": "270-291",
+          "file": "rust/core/tests/git_state_watcher_dedup_signature.rs",
+          "lines": "132-145",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
               "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
                 489,
                 490,
                 491,
@@ -24,13 +45,10 @@
                 500,
                 501,
                 502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508
-              ]
+                503
+              ],
+              "firstLine": "/// Re-capture the snapshot; publish ONLY when the new capture's STABLE",
+              "lastLine": "}"
             }
           ]
         }
@@ -40,12 +58,33 @@
       "name": "Steady-state silence in a checkpointed repo (BUG-188 regression)",
       "testMappings": [
         {
-          "file": "rust/core/tests/git_state_watcher.rs",
-          "lines": "298-332",
+          "file": "rust/core/tests/git_state_watcher_dedup_signature.rs",
+          "lines": "166-192",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
               "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
                 489,
                 490,
                 491,
@@ -60,13 +99,10 @@
                 500,
                 501,
                 502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508
-              ]
+                503
+              ],
+              "firstLine": "/// Re-capture the snapshot; publish ONLY when the new capture's STABLE",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,12 +112,33 @@
       "name": "A new checkpoint ref produces a frame on the checkpointed repo",
       "testMappings": [
         {
-          "file": "rust/core/tests/git_state_watcher.rs",
-          "lines": "339-373",
+          "file": "rust/core/tests/git_state_watcher_dedup_signature.rs",
+          "lines": "189-224",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
               "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
                 489,
                 490,
                 491,
@@ -96,13 +153,10 @@
                 500,
                 501,
                 502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508
-              ]
+                503
+              ],
+              "firstLine": "/// Re-capture the snapshot; publish ONLY when the new capture's STABLE",
+              "lastLine": "}"
             }
           ]
         }
@@ -112,8 +166,8 @@
       "name": "Two captures of an unchanged checkpointed repo produce equal signatures but unequal raw states",
       "testMappings": [
         {
-          "file": "rust/core/tests/git_state_watcher.rs",
-          "lines": "381-413",
+          "file": "rust/core/tests/git_state_watcher_dedup_signature.rs",
+          "lines": "248-273",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
@@ -188,46 +242,6 @@
                 258,
                 259,
                 260,
-                261
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/core/tests/git_state_watcher.rs",
-          "lines": "381-413",
-          "implMappings": [
-            {
-              "file": "rust/core/src/git_state.rs",
-              "lines": [
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
                 261,
                 262,
                 263,
@@ -235,8 +249,11 @@
                 265,
                 266,
                 267,
-                268
-              ]
+                268,
+                269
+              ],
+              "firstLine": "checkpoint_counts,",
+              "lastLine": "/// Owned debouncer — dropping the watcher tears down fs-watching."
             }
           ]
         }
@@ -248,11 +265,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/core/tests/git_state_watcher.rs"
+      "rust/core/tests/git_state_watcher_dedup_signature.rs"
     ],
     "implFiles": [
       "rust/core/src/git_state.rs"
     ],
-    "totalLinesCovered": 325
+    "totalLinesCovered": 290
   }
 }

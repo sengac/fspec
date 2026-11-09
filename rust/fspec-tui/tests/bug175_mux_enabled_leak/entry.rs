@@ -1,5 +1,6 @@
 //! Feature: spec/features/mux-close-session-landing.feature
 use super::*;
+use crate::common::TaskOutcome;
 
 #[tokio::test]
 async fn enter_on_a_board_work_unit_enters_the_single_agent_view_when_the_persisted_flag_is_on(
@@ -25,7 +26,7 @@ async fn enter_on_a_board_work_unit_enters_the_single_agent_view_when_the_persis
     // @step And the persisted tui.mux enabled flag is on
     simulate_leaked_persisted_flag(&mut app);
     // @step And an open agent is already focused on AUTH-001
-    app_with_sessions(&mut app, 1).await;
+    app_with_sessions(&mut app, 1).await?;
     mock.set_work_unit_context(
         sid("s-1"),
         Some(codelet_rpc_types::WorkUnitContext {
@@ -41,12 +42,16 @@ async fn enter_on_a_board_work_unit_enters_the_single_agent_view_when_the_persis
     ));
     let assignments = mock.set_work_unit_context_calls();
     // @step When I press Enter
-    let _ = app.handle_event(&enter());
-    while let Some(action) = app.try_recv_action() {
-        assert!(!matches!(action, Action::MuxEnterWorkUnit(_)));
-        app.dispatch(action);
-        while let Some(task) = app.next_pending_task() {
-            task.await?;
+    // BOARD-024: Enter opens the card chooser; a second Enter confirms
+    // its default `Open in agent` choice (the existing entry path).
+    for _ in 0..2 {
+        let _ = app.handle_event(&enter());
+        while let Some(action) = app.try_recv_action() {
+            assert!(!matches!(action, Action::MuxEnterWorkUnit(_)));
+            app.dispatch(action);
+            while let Some(task) = app.next_pending_task() {
+                task.await.completed_or_cancelled()?;
+            }
         }
     }
     // @step Then the TUI is on the single Agent view

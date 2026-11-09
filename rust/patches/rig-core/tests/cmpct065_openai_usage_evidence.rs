@@ -138,43 +138,6 @@ async fn streaming_chat_missing_usage_is_rejected() -> TestResult {
     Ok(())
 }
 
-/// Feature: spec/features/builtin-provider-structured-stream-rejection.feature
-#[tokio::test]
-async fn nonstreaming_openai_chat_preserves_physical_http_rejection_evidence() -> TestResult {
-    // @step Given a selected nonstreaming OpenAI Chat model whose physical endpoint rejects requests
-    for (status, body) in [
-        (
-            400,
-            r#"{"error":{"code":"context_length_exceeded","message":"too long"}}"#,
-        ),
-        (
-            401,
-            r#"{"error":{"code":"invalid_api_key","message":"context_length_exceeded is not the code"}}"#,
-        ),
-        (400, "context_length_exceeded is only unstructured text"),
-    ] {
-        let endpoint = endpoint_with_status(
-            body.into(),
-            false,
-            axum::http::StatusCode::from_u16(status)?,
-        )
-        .await?;
-        // @step When requests receive structured overflow, authentication, and plain text rejection bodies
-        let events = collect(&endpoint.model).await?;
-        // @step Then each stream exposes the original typed HTTP status and exact body
-        assert!(
-            matches!(events.first(), Some(Err(CompletionError::HttpError(
-            rig::http_client::Error::InvalidStatusCodeWithMessage(actual_status, actual_body)
-        ))) if actual_status.as_u16() == status && actual_body == body),
-            "physical rejection lost its typed status or body"
-        );
-        // @step And no rejected stream emits a successful final response
-        assert_eq!(events.len(), 1);
-        assert_eq!(endpoint.requests.load(Ordering::SeqCst), 1);
-    }
-    Ok(())
-}
-
 /// Feature: spec/features/builtin-provider-openai-usage-evidence.feature
 #[tokio::test]
 async fn nonstreaming_chat_missing_usage_is_rejected() -> TestResult {

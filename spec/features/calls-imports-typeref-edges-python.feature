@@ -1,4 +1,6 @@
 @KGRAPH-043
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — Python
   """
   Uses edge_helpers for shared call/typeref extraction.

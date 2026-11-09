@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/selection.rs",
-          "lines": "94-114",
+          "lines": "112-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/selection.rs",
@@ -51,7 +51,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "anchor: cell,",
+              "lastLine": "spans.push(RowSpan {"
             }
           ]
         }
@@ -108,7 +110,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "anchor: cell,",
+              "lastLine": "spans.push(RowSpan {"
             }
           ]
         }
@@ -165,7 +169,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "anchor: cell,",
+              "lastLine": "spans.push(RowSpan {"
             }
           ]
         }
@@ -176,7 +182,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/selection.rs",
-          "lines": "184-197",
+          "lines": "202-215",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/selection.rs",
@@ -184,7 +190,9 @@
                 54,
                 55,
                 56
-              ]
+              ],
+              "firstLine": "anchor: Cell { row, col: 0 },",
+              "lastLine": "}"
             }
           ]
         }
@@ -195,7 +203,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/selection.rs",
-          "lines": "199-219",
+          "lines": "217-237",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/selection.rs",
@@ -241,7 +249,9 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": "anchor: cell,",
+              "lastLine": "spans.push(RowSpan {"
             }
           ]
         }

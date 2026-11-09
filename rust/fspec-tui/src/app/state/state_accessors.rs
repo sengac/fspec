@@ -129,6 +129,15 @@ impl App {
         self.subscriber_tasks.len()
     }
 
+    /// TEST-042 test accessor: how many subscriber tasks have ended (a
+    /// closed receiver ends its loop), so a test waits for the exit itself.
+    pub fn finished_subscriber_task_count(&self) -> usize {
+        self.subscriber_tasks
+            .iter()
+            .filter(|task| task.is_finished())
+            .count()
+    }
+
     // ── RPC-012 store + navigator accessors ─────────────────────────────
 
     /// Borrow the BoardStore.
@@ -172,5 +181,12 @@ impl App {
     /// creation on first `Action::EnterWorkUnit`).
     pub fn next_pending_task(&mut self) -> Option<JoinHandle<()>> {
         self.pending_tasks.pop()
+    }
+
+    /// BUG-383 test-only seam (counterpart of [`Self::next_pending_task`]):
+    /// queue a spawned task so a test can drive the drain path with a task
+    /// that hangs or fails.
+    pub fn track_pending_task(&mut self, task: JoinHandle<()>) {
+        self.pending_tasks.push(task);
     }
 }

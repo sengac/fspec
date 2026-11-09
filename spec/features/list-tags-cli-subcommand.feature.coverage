@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "76-126",
+          "lines": "75-125",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -16,7 +16,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "/// additions only, preserving the bridge's `run` signature.",
+              "lastLine": "pub category: Option<String>,"
             }
           ]
         }
@@ -27,7 +29,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "132-176",
+          "lines": "131-175",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -71,7 +73,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// it verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "182-239",
+          "lines": "181-234",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -126,7 +130,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// it verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -137,7 +143,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "245-283",
+          "lines": "240-278",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -153,7 +159,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "// Marshal CliArgs → JSON object expected by",
+              "lastLine": ""
             }
           ]
         }
@@ -164,7 +172,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "289-316",
+          "lines": "284-310",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -179,7 +187,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "// was dead code; downgraded to a debug-only invariant",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -190,7 +200,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "322-348",
+          "lines": "316-342",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -205,7 +215,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "// was dead code; downgraded to a debug-only invariant",
+              "lastLine": "Ok(0)"
             }
           ]
         }
@@ -216,7 +228,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "354-392",
+          "lines": "348-388",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -314,7 +326,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "//! `list-tags` shell-facing CLI bridge (RPC-251).",
+              "lastLine": "}"
             }
           ]
         }
@@ -325,7 +339,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "398-471",
+          "lines": "394-485",
           "implMappings": [
             {
               "file": "rust/fspec/src/list_tags.rs",
@@ -369,7 +383,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// it verbatim via `std::process::ExitCode::from(...)`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -380,63 +396,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_list_tags.rs",
-          "lines": "494-525",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/list_tags.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49
-              ]
-            }
-          ]
+          "lines": "493-520",
+          "implMappings": []
         }
       ]
     }
@@ -449,9 +410,8 @@
       "rust/fspec/tests/cli_list_tags.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/list_tags.rs",
-      "rust/fspec-core/src/help/configs/list_tags.rs"
+      "rust/fspec/src/list_tags.rs"
     ],
-    "totalLinesCovered": 689
+    "totalLinesCovered": 651
   }
 }

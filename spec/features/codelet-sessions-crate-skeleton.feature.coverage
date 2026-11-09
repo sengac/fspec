@@ -29,7 +29,9 @@
                 18,
                 19,
                 20
-              ]
+              ],
+              "firstLine": "members = [",
+              "lastLine": "# a synchronous dispatcher entry point so the standalone fspec Rust"
             }
           ]
         }
@@ -40,7 +42,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/skeleton_invariants.rs",
-          "lines": "80-113",
+          "lines": "80-120",
           "implMappings": [
             {
               "file": "rust/sessions/Cargo.toml",
@@ -99,7 +101,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "parking_lot = { workspace = true }"
             }
           ]
         }
@@ -133,7 +137,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "# forbidden arrow `sessions → napi` is enforced by"
             }
           ]
         }
@@ -163,7 +169,9 @@
                 12,
                 13,
                 14
-              ]
+              ],
+              "firstLine": "//! Smoke test for the `codelet-sessions` crate skeleton (RPC-038).",
+              "lastLine": "fn crate_compiles() {}"
             }
           ]
         }
@@ -196,9 +204,10 @@
                 15,
                 16,
                 17,
-                18,
                 19
-              ]
+              ],
+              "firstLine": "//! `codelet-sessions` - the NAPI-free session-manager crate.",
+              "lastLine": "pub mod chain_of_command;"
             }
           ]
         }
@@ -209,14 +218,16 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/skeleton_invariants.rs",
-          "lines": "335-372",
+          "lines": "345-384",
           "implMappings": [
             {
               "file": "rust/sessions/Cargo.toml",
               "lines": [
                 9,
                 10
-              ]
+              ],
+              "firstLine": "[lints]",
+              "lastLine": "workspace = true"
             }
           ]
         }
@@ -236,6 +247,6 @@
       "rust/sessions/tests/smoke.rs",
       "rust/sessions/src/lib.rs"
     ],
-    "totalLinesCovered": 462
+    "totalLinesCovered": 470
   }
 }

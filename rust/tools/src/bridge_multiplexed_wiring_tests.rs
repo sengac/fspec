@@ -21,31 +21,26 @@ mod multiplexed_wiring_tests {
     use uuid::Uuid;
 
     // =========================================================================
-    // Scenario: Bridge sends auth envelope on connect
+    // Scenario: Bridge builds its auth envelope from the instance metadata
     // =========================================================================
 
-    /// @step Given the bridge is connecting to "ws://127.0.0.1:19876/ws/relay"
-    /// @step When the WebSocket connection is established
-    /// @step Then the first message sent should be an Envelope with service "auth" and type "authenticate"
-    /// @step And the auth data should contain role "agent" and instance metadata
-    /// @step And the instance name should be derived from the current working directory
     #[test]
     fn test_auth_envelope_built_from_instance_metadata() {
-        // @step Given the bridge is connecting to "ws://127.0.0.1:19876/ws/relay"
-        // @step When the WebSocket connection is established
+        // @step Given the bridge's instance metadata for the current working directory
+        // @step When the bridge builds its auth envelope
         let metadata = get_instance_metadata();
 
-        // @step Then the first message sent should be an Envelope with service "auth" and type "authenticate"
+        // @step Then the envelope has service "auth" and type "authenticate"
         let env = Envelope::auth_agent("", &metadata);
         assert_eq!(env.service, Service::Auth);
         assert_eq!(env.msg_type, "authenticate");
 
-        // @step And the auth data should contain role "agent" and instance metadata
+        // @step And the auth data contains role "agent" and the instance metadata
         let data = env.data.as_ref().unwrap();
         assert_eq!(data["role"], "agent");
         assert!(data["instance"]["name"].is_string());
 
-        // @step And the instance name should be derived from the current working directory
+        // @step And the instance name is the name of the current working directory
         let name = data["instance"]["name"].as_str().unwrap();
         assert!(!name.is_empty(), "Instance name should be non-empty");
         let cwd = std::env::current_dir().unwrap();
@@ -54,24 +49,19 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Bridge waits for authSuccess before sending chunks
+    // Scenario: An authSuccess envelope is routed as a successful auth response
     // =========================================================================
 
-    /// @step Given the bridge has connected and sent the auth envelope
-    /// @step When an authSuccess response is received from the server
-    /// @step Then the bridge should enter the message relay loop
-    /// @step And outbound chunks should start flowing
     #[test]
     fn test_auth_success_parsed_correctly() {
-        // @step Given the bridge has connected and sent the auth envelope
+        // @step Given an authSuccess envelope from the relay server
         let auth_success_json = r#"{"service":"auth","type":"authSuccess","data":{}}"#;
         let env: Envelope = serde_json::from_str(auth_success_json).unwrap();
 
-        // @step When an authSuccess response is received from the server
+        // @step When the bridge routes it
         let action = crate::bridge_multiplexed::route_inbound(&env);
 
-        // @step Then the bridge should enter the message relay loop
-        // @step And outbound chunks should start flowing
+        // @step Then it is an auth response that reports success
         match action {
             crate::bridge_multiplexed::InboundAction::AuthResponse { success, .. } => {
                 assert!(success, "authSuccess should report success=true");
@@ -81,24 +71,19 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Auth failure triggers reconnect
+    // Scenario: An authError envelope is routed as a failed auth response
     // =========================================================================
 
-    /// @step Given the bridge has connected and sent the auth envelope
-    /// @step When an authError response is received from the server
-    /// @step Then the connection should be closed
-    /// @step And the bridge should reconnect with exponential backoff
     #[test]
     fn test_auth_error_parsed_correctly() {
-        // @step Given the bridge has connected and sent the auth envelope
+        // @step Given an authError envelope from the relay server with code "AUTH_FAILED"
         let auth_error_json = r#"{"service":"auth","type":"authError","data":{"code":"AUTH_FAILED","message":"Bad key"}}"#;
         let env: Envelope = serde_json::from_str(auth_error_json).unwrap();
 
-        // @step When an authError response is received from the server
+        // @step When the bridge routes it
         let action = crate::bridge_multiplexed::route_inbound(&env);
 
-        // @step Then the connection should be closed
-        // @step And the bridge should reconnect with exponential backoff
+        // @step Then it is an auth response that reports failure
         match action {
             crate::bridge_multiplexed::InboundAction::AuthResponse { success, .. } => {
                 assert!(!success, "authError should report success=false");
@@ -108,45 +93,39 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Outbound chunks sent as relay envelopes
+    // Scenario: Outbound chunks are sent as relay envelopes
     // =========================================================================
 
-    /// @step Given the bridge is authenticated with instance_id "my-project"
-    /// @step And a session "s1" is producing stream chunks
-    /// @step When a text chunk is received from the broadcast channel
-    /// @step Then the bridge should send an Envelope with service "relay" and type "chunk"
-    /// @step And the envelope should include instance_id "my-project" and session_id "s1"
-    /// @step And the data field should contain the original StreamChunk
     #[test]
     fn test_outbound_chunk_wrapped_as_envelope() {
         // @step Given the bridge is authenticated with instance_id "my-project"
         let instance_id = "my-project";
         let session_id = Uuid::new_v4();
 
-        // @step And a session "s1" is producing stream chunks
+        // @step And a session is producing stream chunks
         let chunk_json = json!({
             "type": "text",
             "text": "Hello from the agent"
         });
 
-        // @step When a text chunk is received from the broadcast channel
+        // @step When a text chunk from the session is processed for sending
         let result =
             process_outbound_envelope(&chunk_json, instance_id, &session_id.to_string(), None);
 
-        // @step Then the bridge should send an Envelope with service "relay" and type "chunk"
+        // @step Then the bridge sends an Envelope with service "relay" and type "chunk"
         match result {
             OutboundEnvelopeAction::RelayChunk(env) => {
                 assert_eq!(env.service, Service::Relay);
                 assert_eq!(env.msg_type, "chunk");
 
-                // @step And the envelope should include instance_id "my-project" and session_id "s1"
+                // @step And the envelope includes instance_id "my-project" and the session's id
                 assert_eq!(env.instance_id.as_deref(), Some("my-project"));
                 assert_eq!(
                     env.session_id.as_deref(),
                     Some(session_id.to_string().as_str())
                 );
 
-                // @step And the data field should contain the original StreamChunk
+                // @step And the data field contains the original StreamChunk
                 let data = env.data.unwrap();
                 assert_eq!(data["type"], "text");
                 assert_eq!(data["text"], "Hello from the agent");
@@ -156,22 +135,16 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Outbound command responses sent as fspec envelopes
+    // Scenario: Outbound command results are sent as fspec commandResponse envelopes
     // =========================================================================
 
-    /// @step Given the bridge is authenticated with instance_id "my-project"
-    /// @step And a pending command exists with request_id "r1" for command "board"
-    /// @step When a FspecCommandResult chunk arrives on the broadcast channel matching the pending command
-    /// @step Then the bridge should send an Envelope with service "fspec" and type "commandResponse"
-    /// @step And the envelope should include instance_id "my-project" and request_id "r1"
-    /// @step And the data should contain command "board" and the result
     #[test]
     fn test_outbound_command_response_wrapped_as_envelope() {
         // @step Given the bridge is authenticated with instance_id "my-project"
         let instance_id = "my-project";
         let session_id = Uuid::new_v4().to_string();
 
-        // @step And a pending command exists with request_id "r1" for command "board"
+        // @step And a pending command with request_id "r1" for command "board" is recorded under tool call id "tool-123"
         let pending_commands: PendingCommands = Arc::new(Mutex::new(HashMap::new()));
         {
             let mut map = pending_commands.lock().unwrap();
@@ -181,7 +154,7 @@ mod multiplexed_wiring_tests {
             );
         }
 
-        // @step When a FspecCommandResult chunk arrives on the broadcast channel matching the pending command
+        // @step When an fspecCommandResult chunk for tool call "tool-123" is processed for sending
         let chunk_json = json!({
             "type": "fspecCommandResult",
             "fspecResult": {
@@ -200,17 +173,17 @@ mod multiplexed_wiring_tests {
             Some(&pending_commands),
         );
 
-        // @step Then the bridge should send an Envelope with service "fspec" and type "commandResponse"
+        // @step Then the bridge sends an Envelope with service "fspec" and type "commandResponse"
         match result {
             OutboundEnvelopeAction::CommandResponse(env) => {
                 assert_eq!(env.service, Service::Fspec);
                 assert_eq!(env.msg_type, "commandResponse");
 
-                // @step And the envelope should include instance_id "my-project" and request_id "r1"
+                // @step And the envelope includes instance_id "my-project" and request_id "r1"
                 assert_eq!(env.instance_id.as_deref(), Some("my-project"));
                 assert_eq!(env.request_id.as_deref(), Some("r1"));
 
-                // @step And the data should contain command "board" and the result
+                // @step And the data contains command "board" and the result's success
                 let data = env.data.unwrap();
                 assert_eq!(data["command"], "board");
                 assert_eq!(data["success"], true);
@@ -220,16 +193,12 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Inbound session input dispatched to InputInjector
+    // Scenario: Inbound session input is dispatched to the InputInjector
     // =========================================================================
 
-    /// @step Given the bridge is authenticated
-    /// @step When the server sends an Envelope with service "session" type "input" and session_id "s1"
-    /// @step And the data contains message "hello" and images
-    /// @step Then the InputInjector should be called with message "hello" and the images
     #[tokio::test]
     async fn test_inbound_session_input_dispatched() {
-        // @step Given the bridge is authenticated
+        // @step Given the bridge has an InputInjector for a session
         let session_id = Uuid::new_v4();
         let received_message = Arc::new(Mutex::new(String::new()));
         let received_images = Arc::new(AtomicBool::new(false));
@@ -243,8 +212,8 @@ mod multiplexed_wiring_tests {
             }
         });
 
-        // @step When the server sends an Envelope with service "session" type "input" and session_id "s1"
-        // @step And the data contains message "hello" and images
+        // @step When the server sends an Envelope with service "session" and type "input" for that session
+        // @step And the data contains message "hello" and an image
         let envelope_json = json!({
             "service": "session",
             "type": "input",
@@ -259,33 +228,31 @@ mod multiplexed_wiring_tests {
         let result =
             handle_multiplexed_inbound(&text, session_id, input_injector, None, None, None).await;
 
-        // @step Then the InputInjector should be called with message "hello" and the images
+        // @step Then the InputInjector receives message "hello" and the image
         assert!(result.is_ok());
         assert_eq!(*received_message.lock().unwrap(), "hello");
         assert!(received_images.load(Ordering::SeqCst));
     }
 
     // =========================================================================
-    // Scenario: Inbound session control dispatched to ControlHandler
+    // Scenario: Inbound session control is dispatched to the ControlHandler
     // =========================================================================
 
-    /// @step Given the bridge is authenticated
-    /// @step When the server sends an Envelope with service "session" type "control" and session_id "s1"
-    /// @step And the data contains action "interrupt"
-    /// @step Then the ControlHandler should be called with action "interrupt"
     #[tokio::test]
     async fn test_inbound_session_control_dispatched() {
-        // @step Given the bridge is authenticated
+        // @step Given the bridge has a ControlHandler for a session
         let session_id = Uuid::new_v4();
         let action_received = Arc::new(Mutex::new(String::new()));
         let action_clone = action_received.clone();
 
         let input_injector: InputInjector = Arc::new(|_| {});
-        let control_handler: ControlHandler = Arc::new(move |action: &str, _resp: Option<&str>| {
-            *action_clone.lock().unwrap() = action.to_string();
-        });
+        let control_handler: ControlHandler = Arc::new(
+            move |action: &str, _resp: Option<&str>, _request_id: Option<&str>| {
+                *action_clone.lock().unwrap() = action.to_string();
+            },
+        );
 
-        // @step When the server sends an Envelope with service "session" type "control" and session_id "s1"
+        // @step When the server sends an Envelope with service "session" and type "control" for that session
         // @step And the data contains action "interrupt"
         let envelope_json = json!({
             "service": "session",
@@ -305,22 +272,18 @@ mod multiplexed_wiring_tests {
         )
         .await;
 
-        // @step Then the ControlHandler should be called with action "interrupt"
+        // @step Then the ControlHandler receives action "interrupt"
         assert!(result.is_ok());
         assert_eq!(*action_received.lock().unwrap(), "interrupt");
     }
 
     // =========================================================================
-    // Scenario: Inbound fspec command dispatched to CommandEmitter
+    // Scenario: Inbound fspec commands are dispatched to the CommandEmitter
     // =========================================================================
 
-    /// @step Given the bridge is authenticated
-    /// @step When the server sends an Envelope with service "fspec" type "command" and request_id "r1"
-    /// @step And the data contains command "board" and args
-    /// @step Then the CommandEmitter should be called with command "board" and the args
     #[tokio::test]
     async fn test_inbound_fspec_command_dispatched() {
-        // @step Given the bridge is authenticated
+        // @step Given the bridge has a CommandEmitter and an empty pending-command map
         let session_id = Uuid::new_v4();
         let cmd_received = Arc::new(Mutex::new(String::new()));
         let cmd_clone = cmd_received.clone();
@@ -334,7 +297,7 @@ mod multiplexed_wiring_tests {
 
         let pending_commands: PendingCommands = Arc::new(Mutex::new(HashMap::new()));
 
-        // @step When the server sends an Envelope with service "fspec" type "command" and request_id "r1"
+        // @step When the server sends an Envelope with service "fspec" and type "command" and request_id "r1"
         // @step And the data contains command "board" and args
         let envelope_json = json!({
             "service": "fspec",
@@ -354,24 +317,23 @@ mod multiplexed_wiring_tests {
         )
         .await;
 
-        // @step Then the CommandEmitter should be called with command "board" and the args
+        // @step Then the CommandEmitter receives command "board"
         assert!(result.is_ok());
         assert_eq!(*cmd_received.lock().unwrap(), "board");
+
+        // @step And one pending command is recorded
 
         let map = pending_commands.lock().unwrap();
         assert_eq!(map.len(), 1, "Should have one pending command");
     }
 
     // =========================================================================
-    // Scenario: System ping answered with pong
+    // Scenario: A system ping is answered with a pong
     // =========================================================================
 
-    /// @step Given the bridge is authenticated
-    /// @step When the server sends an Envelope with service "system" and type "ping"
-    /// @step Then the bridge should send an Envelope with service "system" and type "pong"
     #[tokio::test]
     async fn test_system_ping_returns_pong() {
-        // @step Given the bridge is authenticated
+        // @step Given the bridge is handling inbound envelopes for a session
         let session_id = Uuid::new_v4();
         let input_injector: InputInjector = Arc::new(|_| {});
 
@@ -381,7 +343,7 @@ mod multiplexed_wiring_tests {
         let result =
             handle_multiplexed_inbound(text, session_id, input_injector, None, None, None).await;
 
-        // @step Then the bridge should send an Envelope with service "system" and type "pong"
+        // @step Then the bridge answers with an Envelope with service "system" and type "pong"
         match result {
             Ok(Some(pong)) => {
                 assert_eq!(pong.service, Service::System);
@@ -393,38 +355,34 @@ mod multiplexed_wiring_tests {
     }
 
     // =========================================================================
-    // Scenario: Flat protocol code is deleted
+    // Scenario: The flat protocol code is deleted
     // =========================================================================
 
-    /// @step Given the bridge_relay.rs source code
-    /// @step Then there should be no send_connected_message function
-    /// @step And there should be no flat InboundMessage struct for wire parsing
-    /// @step And there should be no is_multiplexed_endpoint branching logic
-    /// @step And all outbound messages should use the Envelope struct
     #[test]
     fn test_flat_protocol_code_deleted() {
         // @step Given the bridge_relay.rs source code
+        // @step When it is checked for the flat protocol
         let source = include_str!("bridge_relay.rs");
 
-        // @step Then there should be no send_connected_message function
+        // @step Then there is no send_connected_message function
         assert!(
             !source.contains("fn send_connected_message"),
             "send_connected_message should be deleted"
         );
 
-        // @step And there should be no flat InboundMessage struct for wire parsing
+        // @step And there is no flat InboundMessage struct
         assert!(
             !source.contains("struct InboundMessage"),
             "InboundMessage struct should be deleted"
         );
 
-        // @step And there should be no is_multiplexed_endpoint branching logic
+        // @step And there is no is_multiplexed_endpoint branching
         assert!(
             !source.contains("is_multiplexed_endpoint"),
             "is_multiplexed_endpoint branching should not exist in bridge_relay.rs"
         );
 
-        // @step And all outbound messages should use the Envelope struct
+        // @step And there is no flat "connected" message
         assert!(
             !source.contains("msg_type: \"connected\""),
             "Flat 'connected' message should be deleted"

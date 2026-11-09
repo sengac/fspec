@@ -11,7 +11,6 @@ use rig::message::Message;
 use serde_json::{json, Value};
 use std::sync::atomic::{AtomicBool, AtomicUsize};
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::sync::Notify;
 use transport::TestResult;
 
@@ -132,8 +131,8 @@ impl Batch {
                 execution: self.execution.clone(),
             })
             .build();
-        tokio::time::timeout(
-            Duration::from_secs(10),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), 'i...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 "inspect",
@@ -154,7 +153,7 @@ impl Batch {
             .messages(messages)
             .build();
         let mut stream = self.model.stream(request).await?;
-        tokio::time::timeout(Duration::from_secs(10), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(chunk) = stream.next().await {
                 chunk?;
             }

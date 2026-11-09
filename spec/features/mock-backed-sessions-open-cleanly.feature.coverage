@@ -1,0 +1,59 @@
+{
+  "scenarios": [
+    {
+      "name": "An agent session on the mock backend opens without an error notice",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug468_mock_backed_sessions_open_cleanly.rs",
+          "lines": "9-19",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/common/mock_methods_7_b.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "pub async fn get_continue_state(&self, _session_id: SessionId) -> Result<(bool, u32)> {",
+              "lastLine": "Ok(())"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug468_mock_backed_sessions_open_cleanly.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/tests/common/mock_methods_7_b.rs"
+    ],
+    "totalLinesCovered": 36
+  }
+}

@@ -5,24 +5,34 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/block_notifications_integration_test.rs",
-          "lines": "60-119",
+          "lines": "75-132",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
+                474,
+                475,
+                495,
+                514,
+                529,
+                544,
+                545,
+                546,
+                569,
                 573,
                 574,
                 575,
                 576,
                 577,
-                578,
-                579,
-                580,
-                581,
-                582,
+                577,
+                577,
+                577,
+                577,
+                577,
+                577,
+                577,
                 583,
                 584,
-                585,
                 586,
                 587,
                 588,
@@ -38,10 +48,6 @@
                 598,
                 599,
                 600,
-                601,
-                602,
-                603,
-                604,
                 605,
                 606,
                 607,
@@ -56,6 +62,8 @@
                 616,
                 617,
                 618,
+                619,
+                620,
                 619,
                 620,
                 621,
@@ -85,11 +93,9 @@
                 645,
                 646,
                 647,
-                648,
                 649,
-                650,
-                651,
-                652,
+                649,
+                649,
                 653,
                 654,
                 655,
@@ -99,13 +105,7 @@
                 659,
                 660,
                 661,
-                662,
-                663,
-                664,
-                665,
-                666,
-                667,
-                668
+                662
               ]
             }
           ]
@@ -122,15 +122,15 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/block_notifications_integration_test.rs",
-          "lines": "162-198",
+          "lines": "178-217",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/wrapper.rs",
               "lines": [
-                261,
-                262,
-                263,
-                264,
+                109,
+                110,
+                111,
+                112,
                 265,
                 266,
                 267,
@@ -252,6 +252,6 @@
     "implFiles": [
       "rust/tools/src/facade/wrapper.rs"
     ],
-    "totalLinesCovered": 340
+    "totalLinesCovered": 341
   }
 }

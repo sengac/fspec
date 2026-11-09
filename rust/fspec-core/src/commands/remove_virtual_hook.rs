@@ -16,11 +16,11 @@
 //!    — ALL errors (incl. ENOENT) are swallowed silently, matching the TS
 //!    try/catch wrapper at `remove-virtual-hook.ts:56-64`.
 //! 6. Bump `updatedAt` on the source unit.
-//! 7. Single atomic write via `write_json_atomic`.
+//! 7. Single atomic write via `write_work_units`.
 //!
 //! ## Persistence
 //!
-//! Single `ensure_work_units_file` load + single `write_json_atomic` write
+//! Single `ensure_work_units_file` load + single `write_work_units` write
 //! at the end. Script cleanup happens BEFORE the work-units write —
 //! matching TS source-of-truth order.
 //!
@@ -39,7 +39,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -85,6 +84,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-virtual-hook")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Source-exists pre-flight (TS remove-virtual-hook.ts:30-32).
@@ -140,7 +141,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Best-effort cleanup of the associated script file (TS try/catch wrapper
     // around cleanupVirtualHookScript). Errors of any kind are swallowed.
-    cleanup_virtual_hook_script(&args.work_unit_id, &args.hook_name, project_root);
+    cleanup_virtual_hook_script(&args.work_unit_id, &args.hook_name, project_root)?;
 
     // Bump updatedAt on the source unit (TS line 67).
     if let Some(wu) = data.work_units.get_mut(&args.work_unit_id) {
@@ -148,8 +149,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write at end.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&RemoveVirtualHookResult {
         success: true,
@@ -169,12 +169,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// ALL errors (incl. file-not-found) are swallowed silently — mirroring the
 /// TS try/catch wrapper at `remove-virtual-hook.ts:56-64` and the catch in
 /// `cleanupVirtualHookScript` at `script-generation.ts:115-122`.
-fn cleanup_virtual_hook_script(work_unit_id: &str, hook_name: &str, project_root: &Path) {
-    let script_path = project_root
-        .join("spec")
-        .join("hooks")
-        .join(".virtual")
-        .join(format!("{work_unit_id}-{hook_name}.sh"));
+fn cleanup_virtual_hook_script(
+    work_unit_id: &str,
+    hook_name: &str,
+    project_root: &Path,
+) -> Result<(), FspecCoreError> {
+    // WT-015: an unresolvable state root is an error, not a missing script.
+    let virtual_dir = crate::io::spec_paths::virtual_hooks_dir(project_root)?;
+    let script_path = virtual_dir.join(format!("{work_unit_id}-{hook_name}.sh"));
     // Intentionally ignore the Result — see TS try/catch wrapper.
     let _ = std::fs::remove_file(&script_path);
+    Ok(())
 }

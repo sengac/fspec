@@ -19,8 +19,8 @@
 //!       scrollback shows the user message routed back via
 //!       MockBackend::send_input).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, ViewMode};
@@ -50,18 +50,19 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 /// and a scripted SessionId for lazy creation. Bootstrap completes;
 /// pending Actions are drained through `App::dispatch` so the stores
 /// reflect the seed list.
-async fn bootstrap_app_with_mock() -> (App, Arc<MockBackend>, Terminal<TestBackend>) {
+async fn bootstrap_app_with_mock(
+) -> Result<(App, Arc<MockBackend>, Terminal<TestBackend>), codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-001", "done"), wu("AUTH-002", "implementing")]);
     mock.script_create_session(SessionId::new("s-mock-1"));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
-    let term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
-    (app, mock, term)
+    let term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
+    Ok((app, mock, term))
 }
 
 fn synth_key(code: KeyCode) -> Event {
@@ -72,40 +73,53 @@ fn synth_key(code: KeyCode) -> Event {
 /// Navigator.active_view defaults to Board so the BoardView's seven
 /// column headers are visible.
 #[tokio::test]
-async fn repl_bootstrap_snapshot_captures_initial_frame_after_bootstrap() {
-    let (mut app, _mock, mut term) = bootstrap_app_with_mock().await;
-    let buf = render_one_frame(&mut term, &mut app);
+async fn repl_bootstrap_snapshot_captures_initial_frame_after_bootstrap() -> TestResult {
+    let (mut app, _mock, mut term) = bootstrap_app_with_mock().await?;
+    let buf = render_one_frame(&mut term, &mut app)?;
     let rows = buffer_to_rows(&buf);
     let joined = rows.join("\n");
     assert!(joined.contains("BACKLOG"), "expected BoardView header");
     assert_eq!(app.active_view(), ViewMode::Board);
     insta::assert_yaml_snapshot!("repl_bootstrap_rpc012", rows);
+    Ok(())
 }
 
 /// RPC-012 rendered-frame checkpoint (b): frame after EnterWorkUnit
 /// drives the Navigator into Agent view and a ChunkReceived populates
 /// the scrollback.
 #[tokio::test]
-async fn repl_after_first_chunk_snapshot_captures_assistant_text() {
-    let (mut app, _mock, mut term) = bootstrap_app_with_mock().await;
+async fn repl_after_first_chunk_snapshot_captures_assistant_text() -> TestResult {
+    let (mut app, _mock, mut term) = bootstrap_app_with_mock().await?;
     // Enter the AgentView and lazy-create a session.
     app.dispatch(Action::EnterWorkUnit("AUTH-002".to_string()));
-    if let Some(handle) = app.next_pending_task() {
-        handle.await.expect("lazy create_session join");
-    }
+    // BUG-280/281: an unattached card opens the creation dialog; confirm "Start" (normal session).
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Enter,
+        KeyModifiers::NONE,
+    )));
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
+    }
+    // Settle until the session and its card binding (WorkUnitFocusChanged) land.
+    loop {
+        while let Some(handle) = app.next_pending_task() {
+            handle.await.completed_or_cancelled()?;
+        }
+        match app.try_recv_action() {
+            Some(action) => app.dispatch(action),
+            None => break,
+        }
     }
     assert_eq!(app.active_view(), ViewMode::Agent);
     // Stream an assistant chunk for the active session.
     let session = app
         .current_session()
-        .expect("lazy create_session must have produced a session");
+        .or_fail("lazy create_session must have produced a session")?;
     app.dispatch(Action::ChunkReceived(
         session,
         StreamChunk::text("Hello!".to_string()),
     ));
-    let buf = render_one_frame(&mut term, &mut app);
+    let buf = render_one_frame(&mut term, &mut app)?;
     let rows = buffer_to_rows(&buf);
     let joined = rows.join("\n");
     assert!(
@@ -113,6 +127,7 @@ async fn repl_after_first_chunk_snapshot_captures_assistant_text() {
         "expected scrollback to include 'Hello!'"
     );
     insta::assert_yaml_snapshot!("repl_after_first_chunk_rpc012", rows);
+    Ok(())
 }
 
 /// RPC-012 rendered-frame checkpoint (c): frame after the user types
@@ -120,16 +135,28 @@ async fn repl_after_first_chunk_snapshot_captures_assistant_text() {
 /// toggles focus (RPC-012 rule [19]); navigation into AgentView is
 /// driven by `EnterWorkUnit` instead.
 #[tokio::test]
-async fn repl_after_submit_snapshot_captures_input_cleared_after_enter() {
-    let (mut app, mock, mut term) = bootstrap_app_with_mock().await;
+async fn repl_after_submit_snapshot_captures_input_cleared_after_enter() -> TestResult {
+    let (mut app, mock, mut term) = bootstrap_app_with_mock().await?;
     // Drive Navigator into Agent view via EnterWorkUnit and complete
     // the lazy create_session task.
     app.dispatch(Action::EnterWorkUnit("AUTH-002".to_string()));
-    if let Some(handle) = app.next_pending_task() {
-        handle.await.expect("lazy create_session join");
-    }
+    // BUG-280/281: an unattached card opens the creation dialog; confirm "Start" (normal session).
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Enter,
+        KeyModifiers::NONE,
+    )));
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
+    }
+    // Settle until the session and its card binding (WorkUnitFocusChanged) land.
+    loop {
+        while let Some(handle) = app.next_pending_task() {
+            handle.await.completed_or_cancelled()?;
+        }
+        match app.try_recv_action() {
+            Some(action) => app.dispatch(action),
+            None => break,
+        }
     }
     assert_eq!(app.active_view(), ViewMode::Agent);
 
@@ -141,7 +168,11 @@ async fn repl_after_submit_snapshot_captures_input_cleared_after_enter() {
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
-    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    // TEST-042: wait for the spawned send_input call, not a delay.
+    codelet_test_helpers::wait_until("the send_input call", || {
+        std::future::ready(mock.send_input_calls() > 0)
+    })
+    .await?;
     assert_eq!(mock.send_input_calls(), 1);
     assert_eq!(
         mock.last_send_input(),
@@ -154,12 +185,13 @@ async fn repl_after_submit_snapshot_captures_input_cleared_after_enter() {
     // with the production rendered frame.
     let session = app
         .current_session()
-        .expect("current session must exist after Enter");
+        .or_fail("current session must exist after Enter")?;
     app.dispatch(Action::ChunkReceived(
         session,
         StreamChunk::user_input("hi".to_string()),
     ));
-    let buf = render_one_frame(&mut term, &mut app);
+    let buf = render_one_frame(&mut term, &mut app)?;
     let rows = buffer_to_rows(&buf);
     insta::assert_yaml_snapshot!("repl_after_submit_rpc012", rows);
+    Ok(())
 }

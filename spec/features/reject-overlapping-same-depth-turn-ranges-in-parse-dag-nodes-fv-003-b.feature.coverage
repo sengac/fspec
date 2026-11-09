@@ -4,8 +4,8 @@
       "name": "Same-depth overlap drops later node and warns",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "363-390",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "23-49",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -53,7 +53,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -63,8 +65,8 @@
       "name": "Disjoint same-depth ranges are both kept",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "392-414",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "51-74",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -112,7 +114,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -122,8 +126,8 @@
       "name": "Boundary touch counts as overlap because turn_end is inclusive",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "417-441",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "76-101",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -171,7 +175,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -181,8 +187,8 @@
       "name": "Cross-depth coverage of the same span is intentional and accepted",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "444-471",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "103-131",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -230,7 +236,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -240,8 +248,8 @@
       "name": "Containment overlap drops only the inner node and preserves disjoint neighbours",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "474-497",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "133-157",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -289,7 +297,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -299,8 +309,8 @@
       "name": "Empty input and singleton same-depth input are unaffected",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "500-520",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "159-180",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -348,7 +358,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -358,8 +370,8 @@
       "name": "Property — every pair of same-depth output nodes has disjoint turn ranges",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "527-559",
+          "file": "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs",
+          "lines": "183-218",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -407,7 +419,9 @@
                 532,
                 533,
                 534
-              ]
+              ],
+              "firstLine": "message_count = mc,",
+              "lastLine": "let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());"
             }
           ]
         }
@@ -419,11 +433,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_same_depth_overlap.test.rs"
     ],
     "implFiles": [
       "rust/core/src/compaction/model.rs"
     ],
-    "totalLinesCovered": 483
+    "totalLinesCovered": 490
   }
 }

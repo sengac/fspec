@@ -5,23 +5,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "99-132",
+          "lines": "103-137",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "// `agentview-chunk-rendering-parity.feature`.",
+              "lastLine": "// sources full text from `ChunkSource::text` / `full_text_for_seq`."
             }
           ]
         }
@@ -32,23 +34,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "138-182",
+          "lines": "143-188",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "// `agentview-chunk-rendering-parity.feature`.",
+              "lastLine": "// sources full text from `ChunkSource::text` / `full_text_for_seq`."
             }
           ]
         }
@@ -59,20 +63,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "189-220",
+          "lines": "195-230",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -100,8 +95,24 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "// below (**RPC-401**), so tool-call cards get the same blank gutter",
+              "lastLine": "// sources full text from `ChunkSource::text` / `full_text_for_seq`."
             }
           ]
         }
@@ -112,23 +123,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "226-263",
+          "lines": "236-274",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "// `agentview-chunk-rendering-parity.feature`.",
+              "lastLine": "// sources full text from `ChunkSource::text` / `full_text_for_seq`."
             }
           ]
         }
@@ -139,20 +152,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "270-307",
+          "lines": "281-319",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -180,8 +184,24 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "// below (**RPC-401**), so tool-call cards get the same blank gutter",
+              "lastLine": "// sources full text from `ChunkSource::text` / `full_text_for_seq`."
             }
           ]
         }
@@ -192,7 +212,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/message_line_spacing_rpc401.rs",
-          "lines": "333-425",
+          "lines": "349-446",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_arrows.rs",
@@ -235,7 +255,9 @@
                 151,
                 152,
                 153
-              ]
+              ],
+              "firstLine": "if let Some(ly) = last_y {",
+              "lastLine": "}"
             }
           ]
         }
@@ -253,6 +275,6 @@
       "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
       "rust/fspec-tui/src/views/agent/scrollback_arrows.rs"
     ],
-    "totalLinesCovered": 425
+    "totalLinesCovered": 448
   }
 }

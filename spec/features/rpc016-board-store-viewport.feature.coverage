@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "35-50",
+          "lines": "37-51",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
@@ -13,7 +13,9 @@
                 16,
                 17,
                 18
-              ]
+              ],
+              "firstLine": "impl BoardStore {",
+              "lastLine": "/// to 0 — mirrors the TS UnifiedBoardLayout `scrollOffsets[column] ?? 0`."
             }
           ]
         }
@@ -24,7 +26,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "51-67",
+          "lines": "54-69",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
@@ -32,7 +34,9 @@
                 23,
                 24,
                 25
-              ]
+              ],
+              "firstLine": "/// RPC-016: set the `scroll_offset` for `column`. Called from",
+              "lastLine": "/// auto-scroll helpers below."
             }
           ]
         }
@@ -43,12 +47,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "68-84",
+          "lines": "72-87",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                29,
                 30,
                 31,
                 32,
@@ -60,38 +63,75 @@
                 38,
                 39,
                 40,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126
-              ]
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "/// RPC-016: move the focused column's `selected_index` by `delta`",
+              "lastLine": "}"
             }
           ]
         }
@@ -102,12 +142,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "85-116",
+          "lines": "90-120",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                29,
                 30,
                 31,
                 32,
@@ -119,38 +158,75 @@
                 38,
                 39,
                 40,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126
-              ]
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "/// RPC-016: move the focused column's `selected_index` by `delta`",
+              "lastLine": "}"
             }
           ]
         }
@@ -161,12 +237,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "117-137",
+          "lines": "123-142",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                29,
                 30,
                 31,
                 32,
@@ -178,38 +253,75 @@
                 38,
                 39,
                 40,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126
-              ]
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "/// RPC-016: move the focused column's `selected_index` by `delta`",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,7 +332,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "153-172",
+          "lines": "188-206",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
@@ -230,7 +342,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "let len_i = len as i32;",
+              "lastLine": "self.selected_index_per_column"
             }
           ]
         }
@@ -241,17 +355,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "173-189",
+          "lines": "209-224",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55
-              ]
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// RPC-016: Home — reset focused column to selected_index=0, offset=0.",
+              "lastLine": "}"
             }
           ]
         }
@@ -262,21 +379,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "190-204",
+          "lines": "227-240",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                66,
-                67,
                 68,
                 69,
                 70,
                 71,
                 72,
                 73,
-                74
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "/// RPC-016: End — jump to the LAST work unit of the focused column.",
+              "lastLine": "}"
             }
           ]
         }
@@ -287,12 +415,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "138-153",
+          "lines": "145-160",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                29,
                 30,
                 31,
                 32,
@@ -309,8 +436,15 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// RPC-016: move the focused column's `selected_index` by `delta`",
+              "lastLine": "}"
             }
           ]
         }
@@ -321,12 +455,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/store_board_viewport_rpc016.rs",
-          "lines": "155-177",
+          "lines": "163-185",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/board_viewport.rs",
               "lines": [
-                29,
                 30,
                 31,
                 32,
@@ -343,8 +476,15 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// RPC-016: move the focused column's `selected_index` by `delta`",
+              "lastLine": "}"
             }
           ]
         }
@@ -361,6 +501,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/board_viewport.rs"
     ],
-    "totalLinesCovered": 384
+    "totalLinesCovered": 496
   }
 }

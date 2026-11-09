@@ -3,6 +3,7 @@
 @resilience
 @cli
 @CMPCT-026
+@context-management
 Feature: Eliminate fragile `&& compaction_triggered` guard — single source of truth
   """
   Structural detection of PromptCancelled in the error chain is the authoritative gate for compaction recovery. The TokenState.compaction_needed flag is defense-in-depth — a warning is logged when the two signals disagree, and the flag is defensively set when PromptCancelled fires without it. Unrelated errors with the flag set bypass recovery and propagate normally (with a warning). Mirrored across stream_loop and gemini_continuation cancel sites.

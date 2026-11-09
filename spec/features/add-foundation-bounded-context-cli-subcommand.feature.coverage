@@ -30,8 +30,12 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,8 +71,12 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +102,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "match add_foundation_ctx::run(&args_json, &project_root).await {",
+              "lastLine": "crate::common::print_next_steps(&parsed);"
             }
           ]
         }
@@ -115,6 +125,6 @@
     "implFiles": [
       "rust/fspec/src/add_foundation_bounded_context.rs"
     ],
-    "totalLinesCovered": 189
+    "totalLinesCovered": 169
   }
 }

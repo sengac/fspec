@@ -5,15 +5,17 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_bounded_context.rs",
-          "lines": "82-106",
+          "lines": "90-117",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
-                48,
-                49,
-                50
-              ]
+                50,
+                51,
+                52
+              ],
+              "firstLine": "#[derive(Debug)]",
+              "lastLine": "pub work_unit_id: String,"
             }
           ]
         }
@@ -24,62 +26,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_bounded_context.rs",
-          "lines": "112-144",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_bounded_context.rs",
-              "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CLI forwards the description and bounded-context flags into the persisted item",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
-          "lines": "146-172",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_bounded_context.rs",
-              "lines": [
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CLI rejects a done-state work unit with exit 1 and the TS-parity error prefix",
-      "testMappings": [
-        {
-          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
-          "lines": "174-206",
+          "lines": "123-153",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_bounded_context.rs",
@@ -90,8 +37,83 @@
                 89,
                 90,
                 91,
-                92
-              ]
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "let args_json = Value::Object(body).to_string();",
+              "lastLine": "} else {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI forwards the description and bounded-context flags into the persisted item",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
+          "lines": "159-188",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/add_bounded_context.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "let mut body = Map::new();",
+              "lastLine": "let args_json = Value::Object(body).to_string();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a done-state work unit with exit 1 and the TS-parity error prefix",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_add_bounded_context.rs",
+          "lines": "194-222",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/add_bounded_context.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "command: \"add-bounded-context\".to_string(),",
+              "lastLine": "if result.success {"
             }
           ]
         }
@@ -102,17 +124,19 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_bounded_context.rs",
-          "lines": "208-227",
+          "lines": "228-282",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_bounded_context.rs",
               "lines": [
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "let result = dispatch_command_without_command_hooks(DispatchRequest {",
+              "lastLine": "});"
             }
           ]
         }
@@ -129,6 +153,6 @@
     "implFiles": [
       "rust/fspec/src/add_bounded_context.rs"
     ],
-    "totalLinesCovered": 176
+    "totalLinesCovered": 225
   }
 }

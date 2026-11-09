@@ -4,7 +4,6 @@
 pub mod support;
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_rpc_types::{SessionStatus, StreamChunk};
 use codelet_tools::GenerateCompactionArgs;
@@ -12,8 +11,6 @@ use rig::tool::Tool;
 use serial_test::serial;
 use support::{assert_clean, assert_no_completion, snapshot, Fixture, Server};
 use tokio::sync::Barrier;
-
-const DEADLINE: Duration = Duration::from_secs(3);
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 #[serial]
@@ -57,7 +54,7 @@ async fn scenario_reciprocal_streaming_requests_terminate_without_acquiring_busy
         barrier.wait().await;
         result
     });
-    let results = tokio::time::timeout(DEADLINE, async {
+    let results = codelet_test_helpers::deadlock_guard("the awaited block", async {
         tokio::join!(&mut first_task, &mut second_task)
     })
     .await;
@@ -98,11 +95,11 @@ async fn scenario_successful_cross_target_compaction_restores_idle_activity() {
     let mut chunks = fixture.target.subscribe_to_stream();
     // @step When a different session compacts the target
     let task = fixture.start();
-    tokio::time::timeout(DEADLINE, server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("builder request");
     server.release.wait().await;
-    let result = tokio::time::timeout(DEADLINE, task)
+    let result = codelet_test_helpers::deadlock_guard("task", task)
         .await
         .expect("bounded compaction")
         .expect("task");
@@ -123,7 +120,7 @@ async fn scenario_successful_cross_target_compaction_restores_idle_activity() {
         .compaction_commit
         .expect("durable committed generation");
     assert!(!boundary.publication_pending);
-    assert_eq!(boundary.covered_prefix.len(), 2);
+    assert_eq!(boundary.covered_prefix().len(), 2);
     let snapshot = fixture
         .target
         .committed_context_snapshot()
@@ -172,7 +169,7 @@ async fn scenario_cancellation_during_generation_releases_target_operation_owner
     let before = snapshot(&fixture.target).await;
     let mut chunks = fixture.target.subscribe_to_stream();
     let task = fixture.start();
-    tokio::time::timeout(DEADLINE, server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("captured target");
     // @step When cross-target compaction is cancelled after capture
@@ -194,13 +191,13 @@ async fn scenario_busy_commit_rejects_the_candidate_without_awaiting_the_target(
     let before = snapshot(&fixture.target).await;
     let mut chunks = fixture.target.subscribe_to_stream();
     let mut task = fixture.start();
-    tokio::time::timeout(DEADLINE, server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("captured target");
     // @step When the target lock becomes busy before the builder returns a valid DAG
     let owner = fixture.target.inner.lock().await;
     server.release.wait().await;
-    let result = tokio::time::timeout(DEADLINE, &mut task).await;
+    let result = codelet_test_helpers::deadlock_guard("&mut task", &mut task).await;
     if result.is_err() {
         task.abort();
         let _ = task.await;
@@ -229,14 +226,14 @@ async fn scenario_a_second_operation_cannot_take_ownership_from_an_active_builde
     let before = snapshot(&fixture.target).await;
     let mut chunks = fixture.target.subscribe_to_stream();
     let task = fixture.start();
-    tokio::time::timeout(DEADLINE, server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("first builder captured target");
     let progress = fixture.target.get_compaction_progress();
     let tool = fixture.tool(&fixture.caller);
     // @step When a second cross-target compaction requests the same target
-    let outcome = tokio::time::timeout(
-        DEADLINE,
+    let outcome = codelet_test_helpers::deadlock_guard(
+        "tool.call(GenerateCompactionArgs { session_id: Some(fixtu...",
         tool.call(GenerateCompactionArgs {
             session_id: Some(fixture.target.id.to_string()),
         }),
@@ -276,11 +273,11 @@ async fn scenario_failed_builder_cannot_publish_a_cross_target_fallback() {
     let mut chunks = fixture.target.subscribe_to_stream();
     // @step When a different session compacts the target
     let task = fixture.start();
-    tokio::time::timeout(DEADLINE, server.arrived.wait())
+    codelet_test_helpers::deadlock_guard("server.arrived.wait()", server.arrived.wait())
         .await
         .expect("builder request");
     server.release.wait().await;
-    let result = tokio::time::timeout(DEADLINE, task)
+    let result = codelet_test_helpers::deadlock_guard("task", task)
         .await
         .expect("bounded failure")
         .expect("task");

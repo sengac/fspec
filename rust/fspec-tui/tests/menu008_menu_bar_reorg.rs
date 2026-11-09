@@ -14,8 +14,8 @@
 //! help dialog and the `P` bare-key arm (the owning surface holds the
 //! menu state the component does not).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::menu_bar::chips::build_chips;
@@ -39,17 +39,20 @@ use serial_test::serial;
 mod common;
 use common::MockBackend;
 
-/// The 10 'u' dialog body row labels in registry order (MENU-008:
-/// Kanban 4, Tools 2, Settings 2, Help 2).
-const DIALOG_ROW_LABELS: [&str; 10] = [
+/// The 13 'u' dialog body row labels in registry order (MENU-008:
+/// Kanban 5, Tools 2, Settings 4 since TUI-123, Help 2).
+const DIALOG_ROW_LABELS: [&str; 13] = [
     "New Agent",
     "Search",
     "FOUNDATION.md",
     "Attachments",
+    "New Bot",
     "Changed Files",
     "Checkpoints",
     "Mux",
     "Providers",
+    "Daemons",
+    "Workspaces",
     "Help",
     "Exit",
 ];
@@ -59,23 +62,24 @@ const DIALOG_ROW_LABELS: [&str; 10] = [
 // ─────────────────────────────────────────────────────────────────────────
 
 /// A 1-chip (Idle, index (1,1)) snapshot — the board/mux default shape.
-fn snap_one_chip() -> MenuSnapshot {
+fn snap_one_chip() -> Result<MenuSnapshot, codelet_test_helpers::TestError> {
     let chip = build_chips(
         &[ChipInput {
             index: (1, 1),
-            status: SessionStatus::Idle,
+            status: Some(SessionStatus::Idle),
             wu_id: None,
             active: false,
+            bot: false,
         }],
         0,
     )
     .pop()
-    .expect("one chip for one open session");
-    MenuSnapshot {
+    .or_fail("one chip for one open session")?;
+    Ok(MenuSnapshot {
         zone_b: vec![ZoneBCell::Chip(0)],
         chips: vec![chip],
         ..Default::default()
-    }
+    })
 }
 
 /// The trimmed row-0 string of a `w`-column buffer.
@@ -105,16 +109,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -122,11 +127,11 @@ fn key(code: KeyCode, mods: KeyModifiers) -> Event {
 }
 
 /// Render the full App into a 120x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -147,21 +152,26 @@ fn buf_text(buf: &Buffer) -> String {
 /// Focus the `item_index`-th menu item (0 = Kanban, 1 = Tools,
 /// 2 = Settings, 3 = Help — MENU-008 four Zone A items), open its
 /// dropdown, and walk the cursor to `cursor_row`.
-async fn open_category_dropdown_at(app: &mut App, item_index: usize, cursor_row: usize) {
+async fn open_category_dropdown_at(
+    app: &mut App,
+    item_index: usize,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     // Focus the last column, then step Right into the bar at item 0.
     app.board_store_mut().set_focused_column("blocked");
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     for _ in 1..=item_index {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     for _ in 0..cursor_row {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -170,7 +180,7 @@ async fn open_category_dropdown_at(app: &mut App, item_index: usize, cursor_row:
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_registry_defines_the_four_categories_in_kanban_tools_settings_help_order() {
+fn the_registry_defines_the_four_categories_in_kanban_tools_settings_help_order() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When the Zone A category list is read
     let labels: Vec<&str> = CATEGORIES.iter().map(|c| c.label).collect();
@@ -178,6 +188,7 @@ fn the_registry_defines_the_four_categories_in_kanban_tools_settings_help_order(
     assert_eq!(labels, vec!["Kanban", "Tools", "Settings", "Help"]);
     // @step And the first category's id is "kanban"
     assert_eq!(CATEGORIES[0].id, "kanban");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -185,23 +196,31 @@ fn the_registry_defines_the_four_categories_in_kanban_tools_settings_help_order(
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_kanban_category_lists_the_work_unit_workflow_entries_in_order() {
+fn the_kanban_category_lists_the_work_unit_workflow_entries_in_order() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When the Kanban category is read
-    assert_eq!(KANBAN.len(), 4);
+    assert_eq!(KANBAN.len(), 5);
     let labels: Vec<&str> = KANBAN.iter().map(|e| e.label).collect();
-    // @step Then it has 4 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
+    // @step Then it has 5 entries in order: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot"
     assert_eq!(
         labels,
-        vec!["New Agent", "Search", "FOUNDATION.md", "Attachments"]
+        vec![
+            "New Agent",
+            "Search",
+            "FOUNDATION.md",
+            "Attachments",
+            "New Bot"
+        ]
     );
     let keys: Vec<&str> = KANBAN.iter().map(|e| e.key).collect();
-    assert_eq!(keys, vec![".", "/", "D", "A"]);
+    assert_eq!(keys, vec![".", "/", "D", "A", "b"]);
     // @step And each entry's action matches the bare board key (OpenAgentView, OpenWorkUnitSearch, OpenFoundation, OpenAttachmentPicker)
     assert_eq!(KANBAN[0].action, MenuAction::NewAgent);
     assert_eq!(KANBAN[1].action, MenuAction::Search);
     assert_eq!(KANBAN[2].action, MenuAction::Foundation);
     assert_eq!(KANBAN[3].action, MenuAction::Attachments);
+    assert_eq!(KANBAN[4].action, MenuAction::NewBot);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -209,7 +228,7 @@ fn the_kanban_category_lists_the_work_unit_workflow_entries_in_order() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_tools_category_lists_the_git_tools_in_order() {
+fn the_tools_category_lists_the_git_tools_in_order() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When the Tools category is read
     // @step Then it has 2 entries in order: "F Changed Files" and "C Checkpoints"
@@ -229,6 +248,7 @@ fn the_tools_category_lists_the_git_tools_in_order() {
         MenuAction::Checkpoints.to_action(),
         Action::OpenCheckpointsView
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -236,18 +256,32 @@ fn the_tools_category_lists_the_git_tools_in_order() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_settings_category_lists_the_configuration_entries_in_order() {
+fn the_settings_category_lists_the_configuration_entries_in_order() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When the Settings category is read
-    // @step Then it has 2 entries in order: "M Mux" and "P Providers"
-    assert_eq!(SETTINGS.len(), 2);
+    // @step Then it has 4 entries in order: "M Mux", "P Providers", "s Daemons" and "w Workspaces"
+    assert_eq!(SETTINGS.len(), 4);
     assert_eq!(SETTINGS[0].key, "M");
     assert_eq!(SETTINGS[0].label, "Mux");
     assert_eq!(SETTINGS[1].key, "P");
     assert_eq!(SETTINGS[1].label, "Providers");
-    // @step And they emit OpenMuxConfigDialog and OpenProviderSettingsView
+    assert_eq!(SETTINGS[2].key, "s");
+    assert_eq!(SETTINGS[2].label, "Daemons");
+    assert_eq!(SETTINGS[3].key, "w");
+    assert_eq!(SETTINGS[3].label, "Workspaces");
+    // @step And they emit OpenMuxConfigDialog, OpenProviderSettingsView, OpenDaemonSwitcher and OpenWorkspaceDropdown
     assert_eq!(SETTINGS[0].action, MenuAction::Mux);
     assert_eq!(SETTINGS[1].action, MenuAction::Providers);
+    assert_eq!(SETTINGS[2].action, MenuAction::Daemons);
+    assert_eq!(SETTINGS[3].action, MenuAction::Workspaces);
+    assert!(matches!(
+        MenuAction::Daemons.to_action(),
+        Action::OpenDaemonSwitcher
+    ));
+    assert!(matches!(
+        MenuAction::Workspaces.to_action(),
+        Action::OpenWorkspaceDropdown
+    ));
     assert!(matches!(
         MenuAction::Mux.to_action(),
         Action::OpenMuxConfigDialog
@@ -256,6 +290,7 @@ fn the_settings_category_lists_the_configuration_entries_in_order() {
         MenuAction::Providers.to_action(),
         Action::OpenProviderSettingsView
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -263,26 +298,27 @@ fn the_settings_category_lists_the_configuration_entries_in_order() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_help_category_is_unchanged() {
+fn the_help_category_lists_help_and_close() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When the Help category is read
-    // @step Then it has 2 entries in order: "? Help" and "Esc Exit"
+    // @step Then it has 2 entries in order: "? Help" and "Esc Close"
     assert_eq!(HELP.len(), 2);
     assert_eq!(HELP[0].key, "?");
     assert_eq!(HELP[0].label, "Help");
     assert_eq!(HELP[1].key, "Esc");
-    assert_eq!(HELP[1].label, "Exit");
-    // @step And they emit OpenBoardHelp and OpenBoardExitConfirmation
+    assert_eq!(HELP[1].label, "Close");
+    // @step And they emit OpenBoardHelp and MenuDismissBar (TUI-135: the Close row only closes the menu)
     assert_eq!(HELP[0].action, MenuAction::Help);
-    assert_eq!(HELP[1].action, MenuAction::Exit);
+    assert_eq!(HELP[1].action, MenuAction::CloseMenu);
     assert!(matches!(
         MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(),
-        Action::OpenBoardExitConfirmation
+        MenuAction::CloseMenu.to_action(),
+        Action::MenuDismissBar
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -291,7 +327,7 @@ fn the_help_category_is_unchanged() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() {
+fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() -> TestResult {
     // @step Given the MenuCategories registry
     // @step When every entry of every category is inspected
     for category in CATEGORIES {
@@ -346,6 +382,7 @@ fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() {
         MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -353,9 +390,9 @@ fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_bar_row_paints_the_four_zone_a_items() {
+fn the_bar_row_paints_the_four_zone_a_items() -> TestResult {
     // @step Given a MenuSnapshot with 1 open session (Idle)
-    let snap = snap_one_chip();
+    let snap = snap_one_chip()?;
     // @step When the bar is rendered into a 120-column row
     let buf = render(&snap, 120);
     let line = row(&buf, 120);
@@ -371,29 +408,31 @@ fn the_bar_row_paints_the_four_zone_a_items() {
         line.contains("[ #1 ● ]"),
         "chip 1 (MENU-011: bracketed): {line}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Focusing the Kanban item opens a 4-row dropdown
+// Scenario: Focusing the Kanban item opens a 5-row dropdown
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn focusing_the_kanban_item_opens_a_4_row_dropdown() {
+fn focusing_the_kanban_item_opens_a_5_row_dropdown() -> TestResult {
     // @step Given the board's menu bar with focus on the 0th menu item
-    let mut snap = snap_one_chip();
+    let mut snap = snap_one_chip()?;
     snap.focus = Some(MenuFocus::Item(0));
     // @step When Enter is pressed
     // (Enter opens the item's dropdown — the panel geometry is pure:
-    // the Kanban category is index 0, 4 entries → height 6)
-    let panel = dropdown_rect(Rect::new(0, 0, 120, 24), 1, 0, 0).expect("panel");
-    // @step Then the Kanban dropdown is open with 4 rows: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments"
-    assert_eq!(panel.height, 6, "4 entries + 2 border rows");
+    // the Kanban category is index 0, 5 entries → height 7)
+    let panel = dropdown_rect(Rect::new(0, 0, 120, 24), 1, 0, 0).or_fail("panel")?;
+    // @step Then the Kanban dropdown is open with 5 rows: ". New Agent", "/ Search", "D FOUNDATION.md", "A Attachments", "b New Bot"
+    assert_eq!(panel.height, 7, "5 entries + 2 border rows");
     let kanban = &CATEGORIES[0];
     assert_eq!(kanban.label, "Kanban");
-    assert_eq!(kanban.entries.len(), 4);
+    assert_eq!(kanban.entries.len(), 5);
     // @step And the Tools and Settings items are not highlighted
     assert_ne!(snap.focus, Some(MenuFocus::Item(1)));
     assert_ne!(snap.focus, Some(MenuFocus::Item(2)));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -401,9 +440,9 @@ fn focusing_the_kanban_item_opens_a_4_row_dropdown() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_ring_walks_across_all_four_items_before_reaching_zone_b() {
+fn the_ring_walks_across_all_four_items_before_reaching_zone_b() -> TestResult {
     // @step Given a MenuSnapshot with 1 open session and MenuFocus on the "Help" item
-    let s = snap_one_chip();
+    let s = snap_one_chip()?;
     // Help is index 3 (Kanban → Tools → Settings → Help).
     assert_eq!(
         s.advance(Some(MenuFocus::Item(3)), 1),
@@ -422,6 +461,7 @@ fn the_ring_walks_across_all_four_items_before_reaching_zone_b() {
         MenuFocus::Item(0),
         "the ring wraps back to Kanban"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -429,11 +469,11 @@ fn the_ring_walks_across_all_four_items_before_reaching_zone_b() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
+async fn scenario_executing_the_tools_row_opens_the_changed_files_view() -> TestResult {
     // @step Given the Tools dropdown open with the cursor on row 0
     let (mut app, _mock) = fresh_app();
-    open_category_dropdown_at(&mut app, 1, 0).await;
-    let buf = render_app(&mut app);
+    open_category_dropdown_at(&mut app, 1, 0).await?;
+    let buf = render_app(&mut app)?;
     let text = buf_text(&buf);
     assert!(
         text.contains("Changed Files"),
@@ -442,7 +482,7 @@ async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
 
     // @step When Enter is pressed
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Changed Files dual-pane view opens (OpenChangedFilesView)
     assert_eq!(
@@ -452,7 +492,7 @@ async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
     );
 
     // @step And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let text = buf_text(&buf);
     assert!(
         !text.contains("New Agent"),
@@ -462,6 +502,7 @@ async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
         app.board_store().menu_focus().is_none(),
         "the bar highlight must clear after executing the row (BUG-196 R2)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -470,11 +511,12 @@ async fn scenario_executing_the_tools_row_opens_the_changed_files_view() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_executing_the_settings_providers_row_opens_the_provider_settings_view() {
+async fn scenario_executing_the_settings_providers_row_opens_the_provider_settings_view(
+) -> TestResult {
     // @step Given the Settings dropdown open with the cursor on row 1
     let (mut app, _mock) = fresh_app();
-    open_category_dropdown_at(&mut app, 2, 1).await;
-    let buf = render_app(&mut app);
+    open_category_dropdown_at(&mut app, 2, 1).await?;
+    let buf = render_app(&mut app)?;
     let text = buf_text(&buf);
     assert!(
         text.contains("Providers"),
@@ -483,7 +525,7 @@ async fn scenario_executing_the_settings_providers_row_opens_the_provider_settin
 
     // @step When Enter is pressed
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the ProviderSettings view opens (OpenProviderSettingsView)
     assert_eq!(
@@ -493,7 +535,7 @@ async fn scenario_executing_the_settings_providers_row_opens_the_provider_settin
     );
 
     // @step And the dropdown closes and the bar highlight clears (BUG-196 R2: execute de-selects the bar)
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let text = buf_text(&buf);
     assert!(
         !text.contains("New Agent"),
@@ -503,6 +545,7 @@ async fn scenario_executing_the_settings_providers_row_opens_the_provider_settin
         app.board_store().menu_focus().is_none(),
         "the bar highlight must clear after executing the row (BUG-196 R2)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -510,51 +553,54 @@ async fn scenario_executing_the_settings_providers_row_opens_the_provider_settin
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn the_p_key_opens_the_provider_settings_view_from_the_board() {
+async fn the_p_key_opens_the_provider_settings_view_from_the_board() -> TestResult {
     // @step Given the board view is active
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When the modifier-free "P" key is pressed
     let _ = app.handle_event(&key(KeyCode::Char('P'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then OpenProviderSettingsView is emitted
     assert_eq!(
         app.active_view(),
         ViewMode::ProviderSettings,
         "P on the board must flip to the ProviderSettings view"
     );
+    Ok(())
 }
 
 /// Scenario (R4): lowercase `p` behaves identically (case-insensitive,
 /// like the a/c/f/d/m arms).
 #[tokio::test]
-async fn the_lowercase_p_key_opens_the_provider_settings_view_from_the_board() {
+async fn the_lowercase_p_key_opens_the_provider_settings_view_from_the_board() -> TestResult {
     // @step Given the board view is active
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When the modifier-free "P" key is pressed
     let _ = app.handle_event(&key(KeyCode::Char('p'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then OpenProviderSettingsView is emitted
     assert_eq!(app.active_view(), ViewMode::ProviderSettings);
+    Ok(())
 }
 
 /// Scenario (R4): `And Ctrl+P falls through to App-level handling` —
 /// the provider settings view must NOT open on the Ctrl chord.
 #[tokio::test]
-async fn ctrl_p_does_not_open_the_provider_settings_view() {
+async fn ctrl_p_does_not_open_the_provider_settings_view() -> TestResult {
     // @step Given the board view is active
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When the modifier-free "P" key is pressed
     let _ = app.handle_event(&key(KeyCode::Char('P'), KeyModifiers::CONTROL));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step And Ctrl+P falls through to App-level handling
     assert_eq!(
         app.active_view(),
         ViewMode::Board,
         "Ctrl+P must fall through — the view stays Board"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -565,17 +611,21 @@ async fn ctrl_p_does_not_open_the_provider_settings_view() {
 /// pane in mux mode (Board-pane key routing parity with the M arm).
 #[tokio::test]
 #[serial]
-async fn p_opens_the_provider_settings_view_from_the_focused_board_pane_in_mux_mode() {
+async fn p_opens_the_provider_settings_view_from_the_focused_board_pane_in_mux_mode() -> TestResult
+{
     // @step Given the board view is active (mux mode, Board pane focused)
     let (mut app, _mock) = fresh_app();
     app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
         "s-1",
     )));
-    drain_pending(&mut app).await;
-    app.dispatch(codelet_fspec_tui::Action::InputSubmitted(
-        "/mux on".to_string(),
-    ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+    if let Some(session) = app.current_session() {
+        app.dispatch(codelet_fspec_tui::Action::InputSubmitted(
+            session,
+            "/mux on".to_string(),
+        ));
+    }
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux, "mux mode must be active");
     assert_eq!(
         app.navigator().mux.focus(),
@@ -584,13 +634,14 @@ async fn p_opens_the_provider_settings_view_from_the_focused_board_pane_in_mux_m
     );
     // @step When the modifier-free "P" key is pressed
     let _ = app.handle_event(&key(KeyCode::Char('P'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then OpenProviderSettingsView is emitted
     assert_eq!(
         app.active_view(),
         ViewMode::ProviderSettings,
         "P in the focused Board pane must flip to ProviderSettings"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -598,12 +649,12 @@ async fn p_opens_the_provider_settings_view_from_the_focused_board_pane_in_mux_m
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_order() {
+async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_order() -> TestResult {
     // @step Given the "u" menu-bar help dialog is open
     let (mut app, _mock) = fresh_app();
     app.handle_event(&key(KeyCode::Char('u'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-    let buf = render_app(&mut app);
+    drain_pending(&mut app).await?;
+    let buf = render_app(&mut app)?;
     let text = buf_text(&buf);
     assert!(
         text.contains("Menu bar"),
@@ -614,26 +665,26 @@ async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_orde
     // (the body is rendered by the same dialog the Given opened; the
     // observation is the full 120x24 frame below)
 
-    // @step Then it shows 10 rows across the four categories: the 4 Kanban rows, then the 2 Tools rows, then the 2 Settings rows, then the 2 Help rows
+    // @step Then it shows 13 rows across the four categories: the 5 Kanban rows, then the 2 Tools rows, then the 4 Settings rows, then the 2 Help rows
     // Find the dialog title row and footer row; the body rows sit
     // strictly between them.
     let title_y = (0..buf.area.height)
         .find(|&y| row_text(&buf, y).contains("Menu bar"))
-        .expect("the dialog title row must render");
+        .or_fail("the dialog title row must render")?;
     let footer_y = (0..buf.area.height)
         .find(|&y| row_text(&buf, y).contains("Esc Close"))
-        .expect("the dialog footer row must render");
+        .or_fail("the dialog footer row must render")?;
     assert!(title_y < footer_y, "title must precede footer");
     // Entry rows paint as `key label - description`; the body's padding
     // rows (one above and one below the entries) carry only borders, so
-    // the " - " separator counts exactly the 10 registry rows.
+    // the " - " separator counts exactly the 13 registry rows.
     let body_rows: Vec<u16> = (title_y + 1..footer_y)
         .filter(|&y| row_text(&buf, y).contains(" - "))
         .collect();
     assert_eq!(
         body_rows.len(),
-        10,
-        "the dialog body must list exactly 10 rows (MENU-008: 4 Kanban + 2 Tools + 2 Settings + 2 Help):\n{text}"
+        13,
+        "the dialog body must list exactly 13 rows (MENU-008 + TUI-114 + TUI-123: 5 Kanban + 2 Tools + 4 Settings + 2 Help):\n{text}"
     );
     // Every registry label appears on its expected body row, in
     // registry order (the body rows above are strictly in frame order).
@@ -647,7 +698,7 @@ async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_orde
 
     // @step And the first row reads ". New Agent" and the last row reads "Esc Exit"
     let first = row_text(&buf, body_rows[0]);
-    let last = row_text(&buf, *body_rows.last().expect("body rows non-empty"));
+    let last = row_text(&buf, *body_rows.last().or_fail("body rows non-empty")?);
     assert!(
         first.contains("New Agent") && first.contains("."),
         "the first body row must be '. New Agent', got: {first}"
@@ -656,6 +707,7 @@ async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_orde
         last.contains("Exit"),
         "the last body row must be 'Esc Exit', got: {last}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -663,33 +715,37 @@ async fn scenario_the_u_help_dialog_lists_all_ten_registry_rows_in_registry_orde
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tight_width_still_degrades_safely_with_the_four_items() {
+fn tight_width_still_degrades_safely_with_the_four_items() -> TestResult {
     // @step Given a MenuSnapshot with 4 open sessions each bound to a long work-unit id
     let chips = build_chips(
         &[
             ChipInput {
                 index: (1, 4),
-                status: SessionStatus::Idle,
+                status: Some(SessionStatus::Idle),
                 wu_id: Some("MENU-008".into()),
                 active: false,
+                bot: false,
             },
             ChipInput {
                 index: (2, 4),
-                status: SessionStatus::Idle,
+                status: Some(SessionStatus::Idle),
                 wu_id: Some("MENU-009".into()),
                 active: false,
+                bot: false,
             },
             ChipInput {
                 index: (3, 4),
-                status: SessionStatus::Idle,
+                status: Some(SessionStatus::Idle),
                 wu_id: Some("MENU-010".into()),
                 active: false,
+                bot: false,
             },
             ChipInput {
                 index: (4, 4),
-                status: SessionStatus::Idle,
+                status: Some(SessionStatus::Idle),
                 wu_id: Some("MENU-011".into()),
                 active: false,
+                bot: false,
             },
         ],
         0,
@@ -713,7 +769,7 @@ fn tight_width_still_degrades_safely_with_the_four_items() {
     // the area; a paint that returned a layout must fit inside 20 cols)
     if painted {
         use codelet_fspec_tui::components::menu_bar::layout::menu_bar_layout;
-        let layout = menu_bar_layout(area, &snap).expect("layout");
+        let layout = menu_bar_layout(area, &snap).or_fail("layout")?;
         for cell in &layout.item_rects {
             assert!(
                 cell.x + cell.width <= 20,
@@ -739,4 +795,5 @@ fn tight_width_still_degrades_safely_with_the_four_items() {
         assert!(line.contains("Kanban"), "Kanban item: {line}");
         assert!(line.contains("Help"), "Help item: {line}");
     }
+    Ok(())
 }

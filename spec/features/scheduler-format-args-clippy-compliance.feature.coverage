@@ -12,7 +12,9 @@
               "lines": [
                 57,
                 77
-              ]
+              ],
+              "firstLine": "let session_name = format!(\"[scheduled] {name} — {timestamp}\");",
+              "lastLine": ".map_err(|e| anyhow::anyhow!(\"Failed to spawn scheduled session for '{name}': {e}\"))?;"
             }
           ]
         }
@@ -31,7 +33,9 @@
                 34,
                 39,
                 55
-              ]
+              ],
+              "firstLine": ".ok_or_else(|| anyhow!(\"Schedule '{name}': missing shell configuration\"))?;",
+              "lastLine": ""
             }
           ]
         }
@@ -42,14 +46,16 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc075_scheduler_format_args_shape.rs",
-          "lines": "188-242",
+          "lines": "188-244",
           "implMappings": [
             {
               "file": "rust/core/src/scheduler/agent_job.rs",
               "lines": [
                 57,
                 77
-              ]
+              ],
+              "firstLine": "let session_name = format!(\"[scheduled] {name} — {timestamp}\");",
+              "lastLine": ".map_err(|e| anyhow::anyhow!(\"Failed to spawn scheduled session for '{name}': {e}\"))?;"
             },
             {
               "file": "rust/core/src/scheduler/shell_job.rs",
@@ -57,7 +63,9 @@
                 34,
                 39,
                 55
-              ]
+              ],
+              "firstLine": ".ok_or_else(|| anyhow!(\"Schedule '{name}': missing shell configuration\"))?;",
+              "lastLine": ""
             }
           ]
         }
@@ -68,13 +76,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc075_scheduler_format_args_shape.rs",
-          "lines": "279-299",
+          "lines": "281-300",
           "implMappings": [
             {
               "file": "rust/core/src/scheduler/agent_job.rs",
               "lines": [
                 57
-              ]
+              ],
+              "firstLine": "let session_name = format!(\"[scheduled] {name} — {timestamp}\");",
+              "lastLine": "let session_name = format!(\"[scheduled] {name} — {timestamp}\");"
             }
           ]
         }
@@ -92,6 +102,6 @@
       "rust/core/src/scheduler/agent_job.rs",
       "rust/core/src/scheduler/shell_job.rs"
     ],
-    "totalLinesCovered": 135
+    "totalLinesCovered": 136
   }
 }

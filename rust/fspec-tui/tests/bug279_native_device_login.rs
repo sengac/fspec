@@ -4,6 +4,8 @@ pub mod auth;
 #[path = "../../providers/tests/device_protocol/support.rs"]
 pub mod support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
 use auth::{Fixture, TestResult};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::components::Action;
@@ -84,11 +86,12 @@ fn enter(app: &mut App) -> TestResult {
 }
 
 async fn result_action(app: &mut App) -> Result<Action, Box<dyn std::error::Error>> {
-    tokio::time::timeout(
-        std::time::Duration::from_secs(5),
+    codelet_test_helpers::deadlock_guard(
+        "app.next_pending_task().ok_or('missing native OAuth task')?",
         app.next_pending_task().ok_or("missing native OAuth task")?,
     )
-    .await??;
+    .await?
+    .completed_or_cancelled()?;
     app.try_recv_action()
         .ok_or_else(|| "missing native OAuth result action".into())
 }
@@ -127,6 +130,11 @@ async fn complete(app: &mut App) -> TestResult {
 #[tokio::test]
 #[serial]
 async fn scenario_native_settings_completes_official_device_authorization() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a native Codex settings login backed by isolated loopback authorization
     let _fixture = Fixture::new()?;
     let server = MockServer::start().await;
@@ -138,15 +146,23 @@ async fn scenario_native_settings_completes_official_device_authorization() -> T
     enter(&mut app)?;
     // @step Then settings shows success and only the authorized synthetic credentials are persisted
     complete(&mut app).await?;
-    assert_eq!(count(&server, "/api/accounts/deviceauth/usercode").await, 1);
-    assert_eq!(count(&server, "/api/accounts/deviceauth/token").await, 1);
-    assert_eq!(count(&server, "/oauth/token").await, 1);
+    assert_eq!(
+        count(&server, "/api/accounts/deviceauth/usercode").await?,
+        1
+    );
+    assert_eq!(count(&server, "/api/accounts/deviceauth/token").await?, 1);
+    assert_eq!(count(&server, "/oauth/token").await?, 1);
     Ok(())
 }
 
 #[tokio::test]
 #[serial]
 async fn scenario_native_settings_reports_redacted_errors_and_permits_retry() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a device authorization server returning a secret bearing start failure
     let fixture = Fixture::new()?;
     let server = MockServer::start().await;
@@ -179,7 +195,7 @@ async fn scenario_native_settings_reports_redacted_errors_and_permits_retry() ->
     assert!(screen.contains("404"));
     assert!(!screen.contains(SECRET));
     assert!(!fixture.directory.path().join("auth.json").exists());
-    assert_eq!(count(&server, "/oauth/token").await, 0);
+    assert_eq!(count(&server, "/oauth/token").await?, 0);
     server.reset().await;
     official_start(&server, usercode()).await;
     official_poll(&server).await;

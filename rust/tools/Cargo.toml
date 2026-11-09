@@ -28,6 +28,8 @@ rig-core.workspace = true
 tokio.workspace = true
 tokio-tungstenite.workspace = true
 futures.workspace = true
+# MCP-006: legacy SSE MCP client transport
+eventsource-stream = "0.2"
 async-trait.workspace = true
 
 # Serialization
@@ -77,8 +79,6 @@ hayro.workspace = true
 
 # Signal handling for browser cleanup
 ctrlc.workspace = true
-napi = "3.8.2"
-napi-derive = "3.5.1"
 once_cell = "1.19"
 dirs.workspace = true
 
@@ -91,6 +91,8 @@ rmcp.workspace = true
 # view with no stack samples.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+# BUG-365: safe process signalling (kill / killpg).
+nix = { version = "0.29", features = ["signal"] }
 pprof = { workspace = true }
 
 [dev-dependencies]

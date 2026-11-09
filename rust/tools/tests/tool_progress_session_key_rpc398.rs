@@ -80,6 +80,11 @@ impl ProgressCollector {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn progress_reaches_callback_registered_under_same_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S
@@ -123,6 +128,11 @@ async fn progress_reaches_callback_registered_under_same_session_id() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn callback_does_not_receive_another_sessions_progress() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under session id A
@@ -161,6 +171,11 @@ async fn callback_does_not_receive_another_sessions_progress() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn incremental_progress_delivered_while_command_running() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S
@@ -204,6 +219,7 @@ async fn incremental_progress_delivered_while_command_running() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn clearing_callback_removes_registration_for_session_id() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     let _lock = RPC398_LOCK.lock().await;
 
     // @step Given a tool-progress callback is registered under a real session id S

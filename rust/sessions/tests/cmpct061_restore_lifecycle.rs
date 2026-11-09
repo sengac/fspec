@@ -1,3 +1,4 @@
+//! Feature: spec/features/structured-generation-aware-session-replay.feature
 #[path = "cmpct060/support.rs"]
 pub mod support;
 
@@ -175,14 +176,17 @@ async fn metadata_only_revision_preserves_runtime_suffix() -> TestResult {
     Ok(())
 }
 
+// Scenario: Refreshing runtime prefix reminders does not corrupt a replay installation
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn refreshed_runtime_prefix_relocates_the_exact_installed_replay() -> TestResult {
+    // @step Given an installed replay with a trusted committed revision
     let (_directory, manager, id, _) = support::manager().await?;
     let background = manager.get_session(&id.value)?;
     let mut manifest = load_session(background.id)?;
     append_message(&mut manifest, "user", "persisted H")?;
     manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    // @step And runtime context is refreshed before a new persisted suffix arrives
     {
         let mut inner = background.inner.lock().await;
         inner
@@ -192,16 +196,20 @@ async fn refreshed_runtime_prefix_relocates_the_exact_installed_replay() -> Test
     }
     append_message(&mut manifest, "user", "persisted T")?;
     let before = background.inner.lock().await.messages.clone();
+    // @step When the current committed history is restored
     manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    // @step Then the exact installed replay is located without losing or duplicating runtime context
     assert_eq!(background.inner.lock().await.messages, before);
     manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
     assert_eq!(background.inner.lock().await.messages, before);
     Ok(())
 }
 
+// Scenario: Ambiguous replay relocation fails without dropping content
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn ambiguous_replay_relocation_retains_content_and_blocks_inference() -> TestResult {
+    // @step Given an installed replay that appears twice after runtime prefix changes
     let (_directory, manager, id, _) = support::manager().await?;
     let background = manager.get_session(&id.value)?;
     let mut manifest = load_session(background.id)?;
@@ -215,9 +223,11 @@ async fn ambiguous_replay_relocation_retains_content_and_blocks_inference() -> T
         .insert(0, Message::user("persisted H"));
     append_message(&mut manifest, "user", "persisted T")?;
     let before = background.inner.lock().await.messages.clone();
-    assert!(manager
-        .restore_session_messages(&id, get_session_message_envelopes(background.id)?)
-        .is_err());
+    // @step When the current committed history is restored
+    let restored =
+        manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?);
+    // @step Then restore reports an explicit conflict and retains all history without fallback
+    assert!(restored.is_err());
     let inner = background.inner.lock().await;
     assert_eq!(inner.messages, before);
     assert!(inner.ensure_compaction_inference_ready().is_err());

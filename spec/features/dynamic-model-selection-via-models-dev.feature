@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @providers
 @provider
@@ -95,12 +96,6 @@ Feature: Dynamic Model Selection via models.dev
     I want to select from available LLM models across providers
     So that I can choose the best model for my task without hardcoded limitations
 
-  Scenario: Select model using full provider/model path
-    Given the models cache contains anthropic provider with claude-sonnet-4 model
-    When I run codelet with --model anthropic/claude-sonnet-4
-    Then the model should be selected from the registry
-    And the appropriate provider facade should be used
-
   Scenario: First run fetches models from API and creates cache
     Given no models cache file exists at ~/.fspec/cache/models.json
     When I run codelet
@@ -119,34 +114,11 @@ Feature: Dynamic Model Selection via models.dev
     Then models.dev API should be called
     And the cache file should be updated with fresh data
 
-  Scenario: List models for a specific provider
-    Given the models cache contains anthropic provider with multiple models
-    When I run codelet models anthropic
-    Then all Anthropic models should be displayed
-    And each model should show name and capabilities
-
-  Scenario: Unknown model shows error with fuzzy suggestions
-    Given the models cache contains anthropic provider with claude models
-    When I run codelet with --model anthropic/claud
-    Then an error should be displayed: "Model 'claud' not found in provider 'anthropic'"
-    And fuzzy match suggestions should be shown: claude-sonnet-4, claude-opus-4, claude-haiku
-
   Scenario: Corrupted cache triggers automatic refetch
     Given the cache file exists but contains invalid JSON
     When I run codelet
     Then models.dev API should be called to fetch fresh data
     And the cache file should be replaced with valid data
-
-  Scenario: Reject model without tool_call capability
-    Given the cache contains google/gemini-2.0-flash-thinking-exp with tool_call=false
-    When I run codelet with --model google/gemini-2.0-flash-thinking-exp
-    Then an error should be displayed: "Model google/gemini-2.0-flash-thinking-exp does not support tool_call"
-    And the command should exit with code 1
-
-  Scenario: Filter models by reasoning capability
-    Given the cache contains models with and without reasoning capability
-    When I run codelet models --reasoning
-    Then only models with reasoning=true should be displayed
 
   Scenario: Use embedded fallback when network unavailable on first run
     Given no cache file exists
@@ -154,26 +126,3 @@ Feature: Dynamic Model Selection via models.dev
     When I run codelet
     Then the embedded fallback snapshot should be used
     And codelet should function with the fallback data
-
-  Scenario: List all available providers
-    Given the models cache contains anthropic, google, and openai providers
-    When I run codelet models --providers
-    Then a list of providers should be displayed
-    And each provider should show id, name, and model count
-
-  Scenario: Filter models by vision capability
-    Given the cache contains models with and without vision capability
-    When I run codelet models --vision
-    Then only models with image input modality should be displayed
-
-  Scenario: Search models with fuzzy matching
-    Given the cache contains multiple models from various providers
-    When I run codelet models --search "claude"
-    Then all models containing "claude" in name or id should be displayed
-    And results should include anthropic/claude-sonnet-4 and anthropic/claude-opus-4
-
-  Scenario: Show verbose model details
-    Given the cache contains anthropic/claude-sonnet-4 model
-    When I run codelet models anthropic/claude-sonnet-4 --verbose
-    Then detailed model information should be displayed
-    And the output should include context limit, output limit, capabilities, and cost

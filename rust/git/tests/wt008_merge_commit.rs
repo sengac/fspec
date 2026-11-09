@@ -17,6 +17,8 @@ use uuid::Uuid;
 /// Run a `git` CLI command in `cwd` and fail the test if it exits non-zero.
 fn run_git(cwd: &Path, args: &[&str]) {
     let out = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(args)
         .current_dir(cwd)
         .output()
@@ -31,6 +33,8 @@ fn run_git(cwd: &Path, args: &[&str]) {
 /// Run a `git` CLI command in `cwd` and return its stdout (must succeed).
 fn git_out(cwd: &Path, args: &[&str]) -> String {
     let out = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(args)
         .current_dir(cwd)
         .output()

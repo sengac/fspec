@@ -2,11 +2,12 @@
 @rust
 @cli
 @RPC-247
+@list
 Feature: Port list-hooks command to Rust
   """
   New impl file at rust/fspec-core/src/commands/list_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_prefixes::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
   Hook config is parsed using a lightweight Rust shape: `struct HookConfigPartial { hooks: IndexMap<String, Vec<serde_json::Value>> }` so that insertion order is preserved AND we can pluck `.name` as `Option<String>` regardless of whether the entry has extra/missing fields. We deliberately do NOT model the full HookDefinition struct because list-hooks only needs the name field (parity with TS `hooks.map(h => h.name)`).
-  Error swallowing: the impl uses a single try-block (Rust equivalent: a helper fn returning Result, then `.unwrap_or_else(|_| empty_result_with_message())`) that catches BOTH the std::fs::read_to_string IO error AND the serde_json::from_str parse error, mapping each to the canonical empty `{events:[], message:'No hooks are configured'}` shape. This is intentionally wider than list-prefixes' swallowing pattern.
+  A missing file maps to the canonical empty `{events:[], message:'No hooks are configured'}` shape; a broken file is an error that leaves it unchanged (BUG-611).
   """
 
   # ========================================
@@ -16,7 +17,7 @@ Feature: Port list-hooks command to Rust
   # BUSINESS RULES:
   #   1. The Rust dispatcher route for `list-hooks` MUST replace the NotYetPorted stub
   #   2. ENOENT on spec/fspec-hooks.json → success with events=[] + message='No hooks are configured'
-  #   3. Invalid JSON in spec/fspec-hooks.json → ALSO swallowed (success with events=[] + message)
+  #   3. A broken spec/fspec-hooks.json is reported as an error and left unchanged (BUG-611)
   #   4. Empty hooks object → events=[] but NO message field
   #   5. Insertion order preserved (IndexMap)
   #   6. Missing `name` field → emits null in JSON
@@ -55,13 +56,6 @@ Feature: Port list-hooks command to Rust
     Then the dispatcher returns success=true
     Then the events array has length 0
     Then the parsed JSON does NOT contain a top-level 'message' field
-
-  Scenario: Swallows invalid JSON as empty result with 'No hooks are configured' message
-    Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    When I dispatch list-hooks with format='json'
-    Then the dispatcher returns success=true
-    Then the events array has length 0
-    Then the parsed JSON has message field equal to 'No hooks are configured'
 
   Scenario: Preserves insertion order of events (not alphabetical)
     Given spec/fspec-hooks.json contains three events declared in order ZED, AAA, MID

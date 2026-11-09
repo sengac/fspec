@@ -5,21 +5,21 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
-          "lines": "34-73",
+          "lines": "33-68",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156
+              ],
+              "firstLine": "impl Drop for RecoveryGuard {",
+              "lastLine": "}"
             }
           ]
         }
@@ -30,21 +30,21 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
-          "lines": "75-158",
+          "lines": "70-150",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156
+              ],
+              "firstLine": "impl Drop for RecoveryGuard {",
+              "lastLine": "}"
             }
           ]
         }
@@ -55,11 +55,37 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
-          "lines": "160-227",
+          "lines": "152-219",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/reconnect.rs",
               "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                130,
                 131,
                 132,
                 133,
@@ -74,8 +100,13 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "pub(super) fn track<T: Clone + Send + 'static>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -92,6 +123,6 @@
     "implFiles": [
       "rust/providers/src/codex/reconnect.rs"
     ],
-    "totalLinesCovered": 225
+    "totalLinesCovered": 243
   }
 }

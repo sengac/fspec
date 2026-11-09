@@ -37,22 +37,28 @@ pub(crate) const AGENT_ZONE_A: &[MenuCategory] = &[MenuCategory {
 
 /// MENU-009 R1: the agent bar's Zone C — the two right-aligned action
 /// buttons: `New Agent` (BUG-199: start a NEW agent — the Create
-/// Session dialog, board-button parity) then `Close Agent`
-/// (BUG-204, superseding BUG-199 R2: the button ALWAYS mounts the
-/// 'Exit Session?' ExitConfirmationDialog — NOT the Esc cascade).
+/// Session dialog, board-button parity) then `Close` (TUI-124: renamed
+/// from 'Close Agent' — one button for agents and bots; BUG-204,
+/// superseding BUG-199 R2: the button ALWAYS mounts the close dialog,
+/// 'Close Agent?' / 'Close Bot?' — NOT the Esc cascade).
 /// MENU-011 R3: the labels are stored BRACKETED — `[ New Agent ]` /
-/// `[ Close Agent ]` (a space between the word and each bracket) — so
+/// `[ Close ]` (a space between the word and each bracket) — so
 /// the layout width, the cached hit-test rects and the painter all
 /// agree (R4); the legacy `[esc]` hint is REMOVED (only the hint text
 /// goes — BUG-204 kept the exit semantics, refining them to the
 /// always-dialog rule). `&'static` (the `AGENT_ZONE_A` precedent).
 pub(crate) const AGENT_ZONE_C: &[ZoneCButton] = &[
+    // TUI-114: `[ New Bot ]` sits directly left of `[ New Agent ]`.
+    ZoneCButton {
+        label: "[ New Bot ]",
+        action: MenuAction::NewBot,
+    },
     ZoneCButton {
         label: "[ New Agent ]",
         action: MenuAction::NewAgent,
     },
     ZoneCButton {
-        label: "[ Close Agent ]",
+        label: "[ Close ]",
         action: MenuAction::CloseAgent,
     },
 ];

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_aggregate.rs",
-          "lines": "83-110",
+          "lines": "90-114",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_aggregate.rs",
@@ -97,7 +97,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "//! `add-aggregate` shell-facing CLI bridge (RPC-165).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -108,7 +110,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_aggregate.rs",
-          "lines": "178-228",
+          "lines": "194-251",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_aggregate.rs",
@@ -200,31 +202,108 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "//! `add-aggregate` shell-facing CLI bridge (RPC-165).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
       ]
     },
     {
-      "name": "CLI persists the aggregate but produces no output and exits 1 (TS logger.success bug parity)",
-      "testMappings": []
+      "name": "CLI persists the aggregate, prints the success line and exits 0",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_add_aggregate.rs",
+          "lines": "121-157",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/add_aggregate.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "CLI rejects a done work unit with exit 1 and no console output (TS logger file-only parity)",
-      "testMappings": []
+      "name": "CLI rejects a done work unit with exit 1 and an error on stderr",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_add_aggregate.rs",
+          "lines": "163-188",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/add_aggregate.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 2,
-    "coveragePercent": 50,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/tests/cli_add_aggregate.rs"
     ],
     "implFiles": [
       "rust/fspec/src/add_aggregate.rs"
     ],
-    "totalLinesCovered": 488
+    "totalLinesCovered": 367
   }
 }

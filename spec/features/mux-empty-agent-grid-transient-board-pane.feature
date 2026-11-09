@@ -63,7 +63,7 @@ Feature: Mux empty agent grid — transient board pane instead of a blank 0-pane
   #
   # EXAMPLES:
   #   1. Saved config panes=[Agent,Agent]. /mux -> open 1 agent -> Esc ->
-  #      Close Session -> Enter. The screen shows a full-width Board pane +
+  #      Close -> Enter. The screen shows a full-width Board pane +
   #      the MUX footer ("MUX 1 panes [Board]") — NOT a blank body. The board's
   #      work units are visible and selectable.
   #   2. In that state, Esc opens the "Exit fspec?" confirmation dialog.
@@ -92,7 +92,7 @@ Feature: Mux empty agent grid — transient board pane instead of a blank 0-pane
   Scenario: closing the last agent in an all-agent layout shows a full-width board pane
     Given mux mode is active with the pane list agent and agent and no board pane
     And one agent session is open
-    When the agent session is closed with Close Session
+    When the agent session is closed with Close
     Then the TUI is still in mux mode with mux enabled
     And the grid renders exactly one pane: a full-width Board pane
     And no blank body is painted above the MUX footer row
@@ -102,9 +102,9 @@ Feature: Mux empty agent grid — transient board pane instead of a blank 0-pane
   Scenario: the transient board pane does not mutate the stored mux config
     Given mux mode is active with the pane list agent and agent and no board pane
     And one agent session is open
-    When the agent session is closed with Close Session
+    When the agent session is closed with Close
     Then the stored mux config still lists exactly the panes agent and agent
-    And the stored config keeps its orientation and focused pane unchanged
+    And the stored config keeps its layout string and focused pane unchanged
     And the rendered pane list (transient board stand-in) differs from the stored config
 
   # Rule 3 + BUG-165: Esc on the transient board pane offers the exit dialog

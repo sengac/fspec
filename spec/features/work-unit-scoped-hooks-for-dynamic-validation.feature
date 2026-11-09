@@ -5,6 +5,7 @@
 Feature: Work unit-scoped hooks for dynamic validation
   """
   Virtual hooks extend the existing fspec hooks system (src/hooks/) to support work unit-scoped ephemeral hooks. Key components: virtualHooks array in WorkUnit type, commands (add-virtual-hook, list-virtual-hooks, remove-virtual-hook, copy-virtual-hooks), hook executor integration to run virtual hooks BEFORE global hooks, git context provider for staged/unstaged file lists. Implementation leverages existing hook infrastructure (executor, discovery, conditions, formatting) with new virtual hook discovery layer.
+  The blocking post-implementing scenario and the two git-context execution scenarios moved to virtual-hook-git-context-and-post-status-hooks (HOOK-019).
   """
 
   # ========================================
@@ -97,21 +98,6 @@ Feature: Work unit-scoped hooks for dynamic validation
     And AI should run "fspec add-virtual-hook AUTH-001 <event> <command>" for each hook
     And virtual hooks should be stored in work-units.json under AUTH-001.virtualHooks array
 
-  Scenario: Blocking virtual hook prevents workflow transition until fixed
-    Given work unit "AUTH-001" has a virtual hook "eslint" configured as blocking at post-implementing
-    And the work unit is in implementing status
-    When I run "fspec update-work-unit-status AUTH-001 validating"
-    And the eslint hook executes and finds 3 errors
-    Then the transition should be blocked
-    And AI should display errors wrapped in <system-reminder> tags
-    And AI should show "✗ Blocked by virtual hook 'eslint'"
-    And AI CANNOT proceed with transition until errors are fixed
-    When user fixes the 3 eslint errors
-    And I run "fspec update-work-unit-status AUTH-001 validating" again
-    And the eslint hook executes and passes
-    Then the transition should succeed
-    And work unit status should be "validating"
-
   Scenario: Convert successful virtual hook to permanent global hook
     Given work unit "AUTH-001" has a virtual hook "eslint" that ran successfully
     When the hook completes without errors
@@ -159,19 +145,6 @@ Feature: Work unit-scoped hooks for dynamic validation
     And it should show "post-implementing: eslint (blocking), prettier (non-blocking)"
     And it should show "post-validating: test-coverage (blocking)"
 
-  Scenario: Create virtual hook with git context for changed files only
-    Given I am working on work unit "AUTH-001"
-    And I have staged files: src/auth.ts, src/utils.ts
-    And I have unstaged files: src/hooks/virtual.ts
-    When user says "run eslint only on changed files"
-    Then AI should ask "Do you want this hook to target only changed files? For example, I can run eslint only on your modified .ts files."
-    When user responds "yes"
-    Then AI should generate a script file "spec/hooks/.virtual/eslint-changed-files-AUTH-001.sh"
-    And the hook context should include git info: {"stagedFiles": ["src/auth.ts", "src/utils.ts"], "unstagedFiles": ["src/hooks/virtual.ts"]}
-    And the script should run "eslint $STAGED_FILES"
-    When the hook executes
-    Then it should only lint the changed files, not the entire codebase
-
   Scenario: Detect shell commands vs script paths correctly
     Given I have a hook command './script.sh' with explicit path prefix
     When the command is evaluated by isShellCommand utility
@@ -195,17 +168,6 @@ Feature: Work unit-scoped hooks for dynamic validation
     And the script should pass file lists to the command
     When the hook is removed
     Then the script file should be deleted automatically
-
-  Scenario: Detect git staged and unstaged files for hooks
-    Given I am in a git repository
-    And I have staged files: src/auth.ts, src/utils.ts
-    And I have unstaged modified files: src/hooks/executor.ts
-    When a virtual hook with gitContext=true executes
-    Then the hook context should include stagedFiles: ["src/auth.ts", "src/utils.ts"]
-    And the hook context should include unstagedFiles: ["src/hooks/executor.ts"]
-    And the hook should receive this context via stdin as JSON
-    When I am not in a git repository
-    Then the hook context should have empty stagedFiles and unstagedFiles arrays
 
   Scenario: System reminder prompts AI about virtual hooks at phase transitions
     Given I am working on work unit "AUTH-001" in specifying status

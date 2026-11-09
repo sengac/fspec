@@ -4,10 +4,7 @@ pub fn merge_messages(
     source_id: Uuid,
     indices: &[usize],
 ) -> Result<(), String> {
-    init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    let store_ref = store.as_ref().ok_or("Session store not initialized")?;
-    let source = store_ref.load(source_id)?;
+    let source = load_session(source_id)?;
     for &idx in indices {
         if idx >= source.messages.len() {
             return Err(format!(
@@ -35,12 +32,7 @@ pub fn merge_messages(
         inserted_at: Some(inserted_at),
         merged_at: Utc::now(),
     });
-    drop(store);
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(target)?;
+    save_session(target)?;
     Ok(())
 }
 
@@ -51,10 +43,7 @@ pub fn cherry_pick(
     index: usize,
     context: usize,
 ) -> Result<Vec<usize>, String> {
-    init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    let store_ref = store.as_ref().ok_or("Session store not initialized")?;
-    let source = store_ref.load(source_id)?;
+    let source = load_session(source_id)?;
     if index >= source.messages.len() {
         return Err(format!(
             "Message index {} is out of range (source has {} messages)",
@@ -82,20 +71,14 @@ pub fn cherry_pick(
         inserted_at: Some(inserted_at),
         merged_at: Utc::now(),
     });
-    drop(store);
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(target)?;
+    save_session(target)?;
     Ok(indices)
 }
 
 /// List all sessions for a project.
 pub fn list_sessions(project: &Path) -> Result<Vec<SessionManifest>, String> {
     init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    Ok(store
+    Ok(lock_store()?
         .as_ref()
         .ok_or("Session store not initialized")?
         .list_for_project(project)
@@ -131,9 +114,21 @@ pub fn delete_session(id: Uuid) -> Result<(), String> {
 /// Rename a session.
 pub fn rename_session(id: Uuid, new_name: &str) -> Result<(), String> {
     init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .rename(id, new_name)
+    // BUG-610: the update runs under the session's writer, not the store lock.
+    let writer = session_writer(id).map_err(|error| error.to_string())?;
+    writer
+        .update(
+            |session| {
+                session.name = new_name.to_string();
+                Ok(())
+            },
+            &mut record_committed,
+        )
+        .map(|_| ())
+        .map_err(|error| {
+            format!(
+                "Failed to update session manifest {:?}: {error}",
+                writer.manifest_path()
+            )
+        })
 }

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "27-67",
+          "lines": "32-64",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -35,7 +35,9 @@
                 189,
                 190,
                 191
-              ]
+              ],
+              "firstLine": "handleCodeletMessage(ws, rawData.toString(), ctx);",
+              "lastLine": "state,"
             }
           ]
         }
@@ -46,7 +48,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "69-109",
+          "lines": "68-105",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -62,7 +64,9 @@
                 201,
                 202,
                 203
-              ]
+              ],
+              "firstLine": "startLocalServer,",
+              "lastLine": "return new Promise<void>((resolve, reject) => {"
             }
           ]
         }
@@ -73,31 +77,8 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "111-129",
-          "implMappings": [
-            {
-              "file": "bridge/relay-message-translation.ts",
-              "lines": [
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37
-              ]
-            }
-          ]
+          "lines": "109-121",
+          "implMappings": []
         }
       ]
     },
@@ -106,31 +87,53 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "131-170",
+          "lines": "129-159",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
               "lines": [
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ],
+              "firstLine": "handleCodeletMessage: (ws: CodeletSocket, data: string) =>",
+              "lastLine": "},"
+            },
+            {
+              "file": "bridge/relay-endpoint-handlers.ts",
+              "lines": [
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ],
+              "firstLine": "export function handleCodeletMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,31 +144,60 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "172-221",
+          "lines": "163-204",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
               "lines": [
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
-              ]
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ],
+              "firstLine": "handleCodeletMessage: (ws: CodeletSocket, data: string) =>",
+              "lastLine": "},"
+            },
+            {
+              "file": "bridge/relay-endpoint-handlers.ts",
+              "lines": [
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ],
+              "firstLine": "export function handleCodeletMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -176,27 +208,8 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "223-258",
-          "implMappings": [
-            {
-              "file": "bridge/relay-message-translation.ts",
-              "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
-            }
-          ]
+          "lines": "212-240",
+          "implMappings": []
         }
       ]
     },
@@ -205,27 +218,8 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "260-292",
-          "implMappings": [
-            {
-              "file": "bridge/relay-message-translation.ts",
-              "lines": [
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76
-              ]
-            }
-          ]
+          "lines": "248-272",
+          "implMappings": []
         }
       ]
     },
@@ -234,7 +228,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "294-335",
+          "lines": "308-338",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -257,7 +251,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "ws.on('open', () => {",
+              "lastLine": ""
             }
           ]
         }
@@ -268,7 +264,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "420-465",
+          "lines": "346-378",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -279,7 +275,9 @@
                 265,
                 266,
                 267
-              ]
+              ],
+              "firstLine": "void connectToRelay().catch((error: Error) => {",
+              "lastLine": "});"
             }
           ]
         }
@@ -290,40 +288,8 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "467-504",
-          "implMappings": [
-            {
-              "file": "bridge/relay-endpoint.ts",
-              "lines": [
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325
-              ]
-            }
-          ]
+          "lines": "386-412",
+          "implMappings": []
         }
       ]
     },
@@ -332,7 +298,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "506-536",
+          "lines": "420-441",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -353,7 +319,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "const state: RelayEndpointState = {",
+              "lastLine": "isRunning: false,"
             }
           ]
         }
@@ -364,34 +332,64 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "432-490",
+          "lines": "453-512",
           "implMappings": [
             {
-              "file": "bridge/relay-endpoint.ts",
+              "file": "bridge/relay-endpoint-handlers.ts",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
                 239,
                 240,
-                241
-              ]
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ],
+              "firstLine": "* Translate relay command message to fspec flat InboundMessage format.",
+              "lastLine": "}"
             }
           ]
         }
@@ -402,34 +400,64 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "492-539",
+          "lines": "516-571",
           "implMappings": [
             {
-              "file": "bridge/relay-endpoint.ts",
+              "file": "bridge/relay-endpoint-handlers.ts",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
                 239,
                 240,
-                241
-              ]
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ],
+              "firstLine": "* Translate relay command message to fspec flat InboundMessage format.",
+              "lastLine": "}"
             }
           ]
         }
@@ -440,34 +468,64 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "541-583",
+          "lines": "575-625",
           "implMappings": [
             {
-              "file": "bridge/relay-endpoint.ts",
+              "file": "bridge/relay-endpoint-handlers.ts",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
                 239,
                 240,
-                241
-              ]
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ],
+              "firstLine": "* Translate relay command message to fspec flat InboundMessage format.",
+              "lastLine": "}"
             }
           ]
         }
@@ -478,7 +536,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "585-616",
+          "lines": "629-662",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -504,7 +562,9 @@
                 270,
                 271,
                 272
-              ]
+              ],
+              "firstLine": "MAX_RECONNECT_DELAY_MS",
+              "lastLine": "// ------------------------------------------------------------------"
             }
           ]
         }
@@ -520,8 +580,8 @@
     ],
     "implFiles": [
       "bridge/relay-endpoint.ts",
-      "bridge/relay-message-translation.ts"
+      "bridge/relay-endpoint-handlers.ts"
     ],
-    "totalLinesCovered": 869
+    "totalLinesCovered": 843
   }
 }

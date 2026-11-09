@@ -25,6 +25,10 @@ where
     ) {
         use crate::debug_capture::get_debug_capture_manager;
 
+        // BUG-467: this layer runs inside tracing, so it must not log: a
+        // manager or lock failure here is refused silently (logging would
+        // re-enter this layer), and a failed capture write is counted by the
+        // manager and reported when the capture stops.
         // Only capture if debug is enabled
         if let Ok(manager_arc) = get_debug_capture_manager() {
             if let Ok(mut manager) = manager_arc.lock() {

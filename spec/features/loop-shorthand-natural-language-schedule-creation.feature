@@ -1,5 +1,7 @@
 @done
 @SCHED-011
+@scheduler
+@schedule-management
 Feature: Loop Shorthand — Natural Language Schedule Creation
   """
   Deterministic parser (no LLM round-trip) — regex-based interval extraction with /^\d+[smhd]$/ for leading tokens and /every\s+(\d+)\s*(s|sec|seconds?|m|min|minutes?|h|hrs?|hours?|d|days?)$/i for trailing clauses
@@ -7,7 +9,7 @@ Feature: Loop Shorthand — Natural Language Schedule Creation
   Registers as a slash command in slashCommands.ts alongside the /schedule family — handler lives in a dedicated loop-command.ts that calls into the scheduler API
   """
 
-  Background: 
+  Background:
     Given the fspec TUI is running
 
   Scenario: Create loop with leading interval token

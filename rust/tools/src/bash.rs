@@ -62,24 +62,25 @@ impl BashTool {
 
     /// Get the effective cwd for this tool instance.
     ///
-    /// Looks up the effective_cwd via the global callback.
-    /// Returns None if no callback registered (non-isolated session).
-    fn get_effective_cwd(&self) -> Option<std::path::PathBuf> {
+    /// Looks up the effective_cwd via the global callback (BUG-404: a
+    /// failed session lookup refuses the command).
+    fn get_effective_cwd(&self) -> Result<Option<std::path::PathBuf>, ToolError> {
         crate::facade::get_effective_cwd(self.session_id)
+            .map_err(|message| crate::facade::isolation_lookup_error("Bash", message))
     }
 
     /// Resolve the working directory: session isolation takes precedence over args.cwd.
-    fn resolve_cwd(&self, args_cwd: Option<String>) -> Option<String> {
-        let effective_cwd = self.get_effective_cwd();
-        effective_cwd
+    fn resolve_cwd(&self, args_cwd: Option<String>) -> Result<Option<String>, ToolError> {
+        let effective_cwd = self.get_effective_cwd()?;
+        Ok(effective_cwd
             .as_ref()
             .map(|p| p.to_string_lossy().to_string())
-            .or(args_cwd)
+            .or(args_cwd))
     }
 
     /// Resolve CWD and update the footer registry so the poller shows the actual directory.
-    fn resolve_and_track_cwd(&self, args_cwd: Option<String>) -> Option<String> {
-        let resolved = self.resolve_cwd(args_cwd);
+    fn resolve_and_track_cwd(&self, args_cwd: Option<String>) -> Result<Option<String>, ToolError> {
+        let resolved = self.resolve_cwd(args_cwd)?;
         // Write the actual CWD to the per-session footer registry.
         // If resolved is None, the command inherits process CWD — record that.
         let cwd_for_footer = resolved.clone().or_else(|| {
@@ -90,7 +91,7 @@ impl BashTool {
         if let Some(cwd) = cwd_for_footer {
             crate::footer_cwd::update_footer_cwd(self.session_id, cwd);
         }
-        resolved
+        Ok(resolved)
     }
 
     /// TOOL-024: an empty `command` is an argument-validation failure — the
@@ -144,7 +145,7 @@ impl BashTool {
 
         // TOOL-013: Determine effective working directory
         // TUI-091: Also update footer CWD registry for dynamic display
-        let cwd = self.resolve_and_track_cwd(args.cwd);
+        let cwd = self.resolve_and_track_cwd(args.cwd)?;
 
         // TOOL-022 P4: delegate to the unified exec session machinery —
         // live session (stdin piped, pager env, abort-flag aware) with
@@ -207,7 +208,7 @@ impl rig::tool::Tool for BashTool {
 
         // TOOL-013: Determine effective working directory
         // TUI-091: Also update footer CWD registry for dynamic display
-        let cwd = self.resolve_and_track_cwd(args.cwd);
+        let cwd = self.resolve_and_track_cwd(args.cwd)?;
 
         // TOOL-022 P4: delegate to the unified exec session machinery —
         // live session (stdin piped, pager env, abort-flag aware) with

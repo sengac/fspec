@@ -9,88 +9,104 @@ use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// Extract Java dependencies from pom.xml and/or build.gradle.
-pub fn extract_java_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
-    let mut entities = Vec::new();
-
-    // Try build.gradle (simpler to parse)
+pub fn extract_java_dependencies(project_root: &Path) -> helpers::Extracted {
+    let mut extracted = helpers::Extracted::default();
     let gradle_path = project_root.join("build.gradle");
     if gradle_path.exists() {
-        let content = std::fs::read_to_string(&gradle_path)
-            .map_err(|e| format!("Failed to read build.gradle: {e}"))?;
+        extracted.add(extract_build_gradle(project_root, &gradle_path));
+    }
+    let pom_path = project_root.join("pom.xml");
+    if pom_path.exists() {
+        extracted.add(extract_pom_xml(project_root, &pom_path));
+    }
+    extracted
+}
 
-        let rel_path = "build.gradle";
-        let file_slug = helpers::slugify_path(rel_path);
-        let line_count = content.lines().count() as i32;
-        entities.push(helpers::build_file_node(
-            rel_path, &file_slug, "groovy", line_count, false,
-        ));
+/// The entities of build.gradle, or why it could not be read.
+fn extract_build_gradle(
+    project_root: &Path,
+    gradle_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let mut entities = Vec::new();
+    let content = helpers::read_manifest(project_root, gradle_path)?;
 
-        for line in content.lines() {
-            let trimmed = line.trim();
-            // Lines like: implementation 'group:artifact:version'
-            // or: testImplementation "group:artifact:version"
-            if let Some((name, version, is_dev)) = parse_gradle_dependency(trimmed) {
-                entities.push(helpers::build_dependency_node(
-                    &name, &version, is_dev, "gradle",
-                ));
-                entities.push(helpers::build_depends_on_edge(&file_slug, &name));
-            }
+    let rel_path = "build.gradle";
+    let file_slug = helpers::file_slug(rel_path);
+    let line_count = content.lines().count() as i32;
+    entities.push(helpers::build_file_node(
+        rel_path, &file_slug, "groovy", line_count, false,
+    ));
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // Lines like: implementation 'group:artifact:version'
+        // or: testImplementation "group:artifact:version"
+        if let Some((name, version, is_dev)) = parse_gradle_dependency(trimmed) {
+            entities.push(helpers::build_dependency_node(
+                &name, &version, is_dev, "gradle",
+            ));
+            entities.push(helpers::build_depends_on_edge(&file_slug, &name));
         }
     }
 
-    // Try pom.xml (basic text parsing, not full XML)
-    let pom_path = project_root.join("pom.xml");
-    if pom_path.exists() {
-        let content = std::fs::read_to_string(&pom_path)
-            .map_err(|e| format!("Failed to read pom.xml: {e}"))?;
+    Ok(entities)
+}
 
-        let rel_path = "pom.xml";
-        let file_slug = helpers::slugify_path(rel_path);
-        let line_count = content.lines().count() as i32;
-        entities.push(helpers::build_file_node(
-            rel_path, &file_slug, "xml", line_count, false,
-        ));
+/// The entities of pom.xml (basic text parsing, not full XML), or why it
+/// could not be read.
+fn extract_pom_xml(
+    project_root: &Path,
+    pom_path: &Path,
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let mut entities = Vec::new();
+    let content = helpers::read_manifest(project_root, pom_path)?;
 
-        // Simple tag-based extraction
-        let mut in_dependency = false;
-        let mut artifact_id = String::new();
-        let mut version = String::new();
-        let mut scope = String::new();
+    let rel_path = "pom.xml";
+    let file_slug = helpers::file_slug(rel_path);
+    let line_count = content.lines().count() as i32;
+    entities.push(helpers::build_file_node(
+        rel_path, &file_slug, "xml", line_count, false,
+    ));
 
-        for line in content.lines() {
-            let trimmed = line.trim();
-            if trimmed.contains("<dependency>") {
-                in_dependency = true;
-                artifact_id.clear();
-                version.clear();
-                scope.clear();
-            } else if trimmed.contains("</dependency>") && in_dependency {
-                in_dependency = false;
-                if !artifact_id.is_empty() {
-                    let is_dev = scope == "test";
-                    let ver = if version.is_empty() {
-                        "*".to_string()
-                    } else {
-                        version.clone()
-                    };
-                    entities.push(helpers::build_dependency_node(
-                        &artifact_id,
-                        &ver,
-                        is_dev,
-                        "maven",
-                    ));
-                    entities.push(helpers::build_depends_on_edge(&file_slug, &artifact_id));
-                }
-            } else if in_dependency {
-                if let Some(val) = extract_xml_tag_value(trimmed, "artifactId") {
-                    artifact_id = val;
-                }
-                if let Some(val) = extract_xml_tag_value(trimmed, "version") {
-                    version = val;
-                }
-                if let Some(val) = extract_xml_tag_value(trimmed, "scope") {
-                    scope = val;
-                }
+    // Simple tag-based extraction
+    let mut in_dependency = false;
+    let mut artifact_id = String::new();
+    let mut version = String::new();
+    let mut scope = String::new();
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed.contains("<dependency>") {
+            in_dependency = true;
+            artifact_id.clear();
+            version.clear();
+            scope.clear();
+        } else if trimmed.contains("</dependency>") && in_dependency {
+            in_dependency = false;
+            if !artifact_id.is_empty() {
+                let is_dev = scope == "test";
+                let ver = if version.is_empty() {
+                    "*".to_string()
+                } else {
+                    version.clone()
+                };
+                entities.push(helpers::build_dependency_node(
+                    &artifact_id,
+                    &ver,
+                    is_dev,
+                    "maven",
+                ));
+                entities.push(helpers::build_depends_on_edge(&file_slug, &artifact_id));
+            }
+        } else if in_dependency {
+            if let Some(val) = extract_xml_tag_value(trimmed, "artifactId") {
+                artifact_id = val;
+            }
+            if let Some(val) = extract_xml_tag_value(trimmed, "version") {
+                version = val;
+            }
+            if let Some(val) = extract_xml_tag_value(trimmed, "scope") {
+                scope = val;
             }
         }
     }

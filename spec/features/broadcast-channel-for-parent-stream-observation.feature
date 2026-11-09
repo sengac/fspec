@@ -1,6 +1,7 @@
 @watcher
 @codelet
 @WATCH-003
+@COV-057
 Feature: Broadcast Channel for Parent Stream Observation
   """
   Add watcher_broadcast: broadcast::Sender<StreamChunk> field to BackgroundSession struct

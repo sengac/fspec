@@ -4,8 +4,8 @@
       "name": "Formatting a file with a step-less scenario does not duplicate scenarios",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1124-1150",
+          "file": "rust/fspec-core/src/io/gherkin_format/stepless_scenario_tests.rs",
+          "lines": "15-41",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -106,7 +106,9 @@
                 488,
                 489,
                 490
-              ]
+              ],
+              "firstLine": "let first_tag_line =",
+              "lastLine": "lines.push(format!(\"{ind}@{tag}\"));"
             }
           ]
         }
@@ -116,8 +118,8 @@
       "name": "Formatting a step-less-scenario file is idempotent",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1152-1164",
+          "file": "rust/fspec-core/src/io/gherkin_format/stepless_scenario_tests.rs",
+          "lines": "43-58",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -218,7 +220,9 @@
                 488,
                 489,
                 490
-              ]
+              ],
+              "firstLine": "let first_tag_line =",
+              "lastLine": "lines.push(format!(\"{ind}@{tag}\"));"
             }
           ]
         }
@@ -228,8 +232,8 @@
       "name": "A scenario with lowercase step keywords is formatted without duplication",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1166-1191",
+          "file": "rust/fspec-core/src/io/gherkin_format/stepless_scenario_tests.rs",
+          "lines": "60-85",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -330,7 +334,9 @@
                 488,
                 489,
                 490
-              ]
+              ],
+              "firstLine": "let first_tag_line =",
+              "lastLine": "lines.push(format!(\"{ind}@{tag}\"));"
             }
           ]
         }
@@ -340,8 +346,8 @@
       "name": "A Rule containing a step-less scenario is formatted without duplication",
       "testMappings": [
         {
-          "file": "rust/fspec-core/src/io/gherkin_format.rs",
-          "lines": "1193-1216",
+          "file": "rust/fspec-core/src/io/gherkin_format/stepless_scenario_tests.rs",
+          "lines": "87-110",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/io/gherkin_format.rs",
@@ -442,7 +448,9 @@
                 488,
                 489,
                 490
-              ]
+              ],
+              "firstLine": "let first_tag_line =",
+              "lastLine": "lines.push(format!(\"{ind}@{tag}\"));"
             }
           ]
         }
@@ -454,11 +462,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-core/src/io/gherkin_format.rs"
+      "rust/fspec-core/src/io/gherkin_format/stepless_scenario_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/io/gherkin_format.rs"
     ],
-    "totalLinesCovered": 474
+    "totalLinesCovered": 477
   }
 }

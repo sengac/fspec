@@ -5,16 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
-          "lines": "124-144",
+          "lines": "127-152",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                205,
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
@@ -34,8 +29,14 @@
                 226,
                 227,
                 228,
-                229
-              ]
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "fn streaming_text_accumulates_into_single_chunk() {",
+              "lastLine": "let mut ctx = SessionContext::new(SessionId::new(\"s-1\"));"
             }
           ]
         }
@@ -46,16 +47,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
-          "lines": "152-172",
+          "lines": "159-184",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                205,
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
@@ -75,8 +71,14 @@
                 226,
                 227,
                 228,
-                229
-              ]
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "fn streaming_text_accumulates_into_single_chunk() {",
+              "lastLine": "let mut ctx = SessionContext::new(SessionId::new(\"s-1\"));"
             }
           ]
         }
@@ -87,16 +89,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
-          "lines": "179-202",
+          "lines": "190-218",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                205,
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
@@ -116,8 +113,14 @@
                 226,
                 227,
                 228,
-                229
-              ]
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "fn streaming_text_accumulates_into_single_chunk() {",
+              "lastLine": "let mut ctx = SessionContext::new(SessionId::new(\"s-1\"));"
             }
           ]
         }
@@ -128,21 +131,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_message_rendering_rpc387.rs",
-          "lines": "96-115",
+          "lines": "96-119",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
                 128,
                 129,
                 130,
                 131,
-                132
-              ]
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// direct scrollback line (session notices, reconnect notices,",
+              "lastLine": "is_streaming: false,"
             }
           ]
         }
@@ -159,6 +164,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/session_context.rs"
     ],
-    "totalLinesCovered": 170
+    "totalLinesCovered": 186
   }
 }

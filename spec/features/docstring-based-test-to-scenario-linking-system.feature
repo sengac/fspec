@@ -26,7 +26,7 @@ Feature: Docstring-based test-to-scenario linking system
   #   9. Test files use comments (// Given, // When, // Then) that must match actual steps in feature file scenarios
   #   10. System validates that test comments match feature file steps exactly (Cucumber-style step matching)
   #   11. Step matching supports parameterized steps using hybrid similarity algorithm for fuzzy matching (e.g., '// Given I have 5 items' matches 'Given I have {int} items')
-  #   12. Existing fspec coverage commands (link-coverage, show-coverage, audit-coverage) are enhanced to validate step comments match feature file steps
+  #   12. Existing fspec coverage commands (link-coverage, show-coverage, fspec audit) are enhanced to validate step comments match feature file steps
   #   13. Step comment validation is a HARD ERROR by default - command fails if test comments don't match feature steps
   #   14. Override flag --skip-step-validation allows linking even when step comments don't match (escape hatch for edge cases)
   #   15. When step validation fails, emit <system-reminder> showing: (1) which steps are missing/mismatched, (2) exact step text from feature file to copy, (3) how to override with --skip-step-validation flag
@@ -39,7 +39,7 @@ Feature: Docstring-based test-to-scenario linking system
   #   1. Developer writes test for 'Login with valid credentials' scenario at lines 45-62 in auth.test.ts, runs link-coverage command, coverage file updated with test mapping
   #   2. Developer implements login function at lines 10-24 in login.ts, runs link-coverage to add implementation mapping to existing test, coverage file shows full traceability
   #   3. Developer runs show-coverage for user-authentication feature, sees 50% coverage (1 of 2 scenarios covered), identifies uncovered scenario to work on next
-  #   4. Developer refactors codebase and moves test files, runs audit-coverage, discovers broken file paths, runs audit-coverage --fix to remove stale mappings
+  #   4. Developer refactors codebase and moves test files, runs fspec audit, discovers broken file paths, runs fspec audit --fix to remove stale mappings
   #   5. Developer runs show-coverage with no arguments, sees project-wide report showing 65% overall coverage across all features, identifies features needing attention
   #   6. Test has '// Given I have 5 items', feature has 'Given I have {int} items', hybrid similarity matches them with high confidence
   #   7. Running 'fspec link-coverage user-auth --scenario Login...' validates that test file contains matching step comments for all Given/When/Then steps in the scenario

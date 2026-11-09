@@ -9,17 +9,30 @@
 //! and `show-work-unit` only; everything else returns an unsupported-
 //! command error so requesting sessions don't hang.
 
-use codelet_rpc_types::{FspecRequest, FspecResult};
+use codelet_rpc_types::{FspecRequest, FspecResult, WorkUnitInfo};
+
+/// TUI-120: the work units of the board's selected workspace (the start
+/// workspace's listing only until the workspace list has loaded).
+async fn list_units(
+    backend: &dyn crate::transport::FspecBackend,
+    workspace: Option<String>,
+) -> anyhow::Result<Vec<WorkUnitInfo>> {
+    match workspace {
+        Some(workspace) => backend.list_workspace_work_units(workspace).await,
+        None => backend.list_work_units().await,
+    }
+}
 
 /// Execute `request` against `backend` and produce an `FspecResult`.
 /// Pure async helper — kept outside any `impl App` block so the runner
 /// task can call it without holding an `App` reference.
 pub(crate) async fn run_fspec_command(
     backend: &dyn crate::transport::FspecBackend,
+    workspace: Option<String>,
     request: &FspecRequest,
 ) -> FspecResult {
     match request.command.as_str() {
-        "list-work-units" => match backend.list_work_units().await {
+        "list-work-units" => match list_units(backend, workspace.clone()).await {
             Ok(units) => match serde_json::to_string(&units) {
                 Ok(data) => FspecResult {
                     success: true,
@@ -46,7 +59,7 @@ pub(crate) async fn run_fspec_command(
         },
         "show-work-unit" => {
             let target_id = parse_show_work_unit_id(&request.args_json);
-            match backend.list_work_units().await {
+            match list_units(backend, workspace.clone()).await {
                 Ok(units) => match target_id {
                     Some(id) => match units.iter().find(|u| u.id == id) {
                         Some(unit) => match serde_json::to_string(unit) {

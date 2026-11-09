@@ -375,3 +375,180 @@ fn successful_run_bumps_timestamps_and_persists_atomically() {
         "meta.lastUpdated must be ISO-8601 Zulu"
     );
 }
+
+// ---------- scenarios moved from the BUG-088, BUG-089 and duplicate question id features (COV-072) ----------
+
+fn event_item(id: u64, text: &str) -> Value {
+    json!({
+        "id": id, "type": "event", "color": "orange", "text": text,
+        "deleted": false, "createdAt": "2026-06-01T00:00:00.000Z"
+    })
+}
+
+/// The ids of the work unit's questions, in array order.
+fn question_ids(v: &Value, id: &str) -> Vec<u64> {
+    v["workUnits"][id]["questions"]
+        .as_array()
+        .map(|a| a.iter().filter_map(|q| q["id"].as_u64()).collect())
+        .unwrap_or_default()
+}
+
+#[test]
+fn domain_events_add_no_examples_while_policies_and_hotspots_are_transformed() {
+    // @step Given spec/work-units.json contains AUTH-001 with an eventStorm holding the event 'TrackPlayed', the policy when='UserAuthenticated' then='LoadDashboard' and the hotspot concern='What happens if session expires?'
+    let tmp = TempDir::new().expect("tempdir");
+    let items = json!([
+        policy_item(
+            0,
+            "Load dashboard",
+            "UserAuthenticated",
+            "LoadDashboard",
+            false
+        ),
+        hotspot_item(1, "Session", "What happens if session expires?", false),
+        event_item(2, "TrackPlayed")
+    ]);
+    write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
+
+    // @step When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    let result = dispatch_command(req(tmp.path(), json!({"workUnitId": "AUTH-001"})));
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step Then the dispatcher returns success with rulesAdded=1, examplesAdded=0, questionsAdded=1
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["rulesAdded"].as_u64(), Some(1), "got {data}");
+    assert_eq!(data["examplesAdded"].as_u64(), Some(0), "got {data}");
+    assert_eq!(data["questionsAdded"].as_u64(), Some(1), "got {data}");
+
+    // @step And the work unit's examples array is empty
+    let v = read_work_units(tmp.path());
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["examples"],
+        json!([]),
+        "events must not become examples; got {v}"
+    );
+}
+
+#[test]
+fn hotspots_get_sequential_question_ids_from_an_undefined_next_question_id() {
+    // @step Given spec/work-units.json contains AUTH-001 with no questions and no nextQuestionId and an eventStorm with 3 hotspots
+    let tmp = TempDir::new().expect("tempdir");
+    let items = json!([
+        hotspot_item(0, "One", "First concern", false),
+        hotspot_item(1, "Two", "Second concern", false),
+        hotspot_item(2, "Three", "Third concern", false)
+    ]);
+    let seed = seed_unit_with_event_storm("AUTH-001", items);
+    assert!(seed["workUnits"]["AUTH-001"]
+        .get("nextQuestionId")
+        .is_none());
+    assert!(seed["workUnits"]["AUTH-001"].get("questions").is_none());
+    write_value(tmp.path(), &seed);
+
+    // @step When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    let result = dispatch_command(req(tmp.path(), json!({"workUnitId": "AUTH-001"})));
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step Then the 3 questions have the ids 0, 1 and 2
+    let v = read_work_units(tmp.path());
+    assert_eq!(question_ids(&v, "AUTH-001"), vec![0, 1, 2], "got {v}");
+
+    // @step And the work unit's nextQuestionId is 3
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["nextQuestionId"].as_u64(),
+        Some(3),
+        "got {v}"
+    );
+}
+
+#[test]
+fn a_second_run_and_add_question_continue_the_question_ids_without_duplicates() {
+    // @step Given spec/work-units.json contains AUTH-001 with an eventStorm with 2 hotspots
+    let tmp = TempDir::new().expect("tempdir");
+    let items = json!([
+        hotspot_item(0, "One", "First concern", false),
+        hotspot_item(1, "Two", "Second concern", false)
+    ]);
+    write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
+
+    // @step And generate-example-mapping-from-event-storm has run once for AUTH-001
+    let first = dispatch_command(req(tmp.path(), json!({"workUnitId": "AUTH-001"})));
+    assert!(
+        first.success,
+        "first run: expected success=true, got {first:?}"
+    );
+
+    // @step When a third hotspot is added and generate-example-mapping-from-event-storm runs again
+    let mut v = read_work_units(tmp.path());
+    v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array_mut()
+        .expect("items array")
+        .push(hotspot_item(2, "Three", "Third concern", false));
+    write_value(tmp.path(), &v);
+    let second = dispatch_command(req(tmp.path(), json!({"workUnitId": "AUTH-001"})));
+    assert!(
+        second.success,
+        "second run: expected success=true, got {second:?}"
+    );
+
+    // @step And I dispatch add-question with workUnitId='AUTH-001' and question='@human: Anything else?'
+    let added = dispatch_command(DispatchRequest {
+        command: "add-question".to_string(),
+        args_json: json!({"workUnitId": "AUTH-001", "question": "@human: Anything else?"})
+            .to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(
+        added.success,
+        "add-question: expected success=true, got {added:?}"
+    );
+
+    // @step Then the question ids are sequential from 0 with no duplicates
+    let v = read_work_units(tmp.path());
+    let ids = question_ids(&v, "AUTH-001");
+    let expected: Vec<u64> = (0..ids.len() as u64).collect();
+    assert_eq!(ids, expected, "got {v}");
+
+    // @step And the added question has the last id and nextQuestionId is one past it
+    let questions = v["workUnits"]["AUTH-001"]["questions"]
+        .as_array()
+        .expect("questions array");
+    let last = questions.last().expect("at least one question");
+    assert_eq!(
+        last["text"].as_str(),
+        Some("@human: Anything else?"),
+        "got {v}"
+    );
+    let last_id = last["id"].as_u64().expect("numeric id");
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["nextQuestionId"].as_u64(),
+        Some(last_id + 1),
+        "got {v}"
+    );
+}
+
+#[test]
+fn hotspot_concern_with_several_sentences_is_kept_whole() {
+    // @step Given spec/work-units.json contains AUTH-001 with an eventStorm hotspot concern='Should drag-and-drop support multi-select? How to handle edge cases?'
+    let tmp = TempDir::new().expect("tempdir");
+    let items = json!([hotspot_item(
+        0,
+        "Drag and drop",
+        "Should drag-and-drop support multi-select? How to handle edge cases?",
+        false
+    )]);
+    write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
+
+    // @step When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    let result = dispatch_command(req(tmp.path(), json!({"workUnitId": "AUTH-001"})));
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step Then a question is appended with text exactly '@human: Should drag-and-drop support multi-select? How to handle edge cases?'
+    let v = read_work_units(tmp.path());
+    let questions = active_entries(&v, "AUTH-001", "questions");
+    assert_eq!(questions.len(), 1, "expected exactly one question");
+    assert_eq!(
+        questions[0]["text"].as_str(),
+        Some("@human: Should drag-and-drop support multi-select? How to handle edge cases?")
+    );
+}

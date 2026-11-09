@@ -279,7 +279,7 @@ fn is_regular_tag(tag: &str) -> bool {
 /// Returns `Err` with a human-readable reason when the file is missing
 /// or malformed — used by the `validateRegistry` pre-flight gate.
 fn load_registered_tags(project_root: &Path) -> Result<HashSet<String>, String> {
-    let path = project_root.join("spec").join("tags.json");
+    let path = crate::io::spec_paths::tags(project_root).map_err(|e| e.to_string())?;
     let body = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let parsed: Value = serde_json::from_str(&body)
         .map_err(|e| crate::io::json_error::parse_json_reason(&body, &e))?;

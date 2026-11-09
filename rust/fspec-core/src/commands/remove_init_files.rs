@@ -226,7 +226,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // object stringifies to `[object Object]` when interpolated into the
     // `Unknown agent: <id>` error, so file detection NEVER resolves to a valid
     // agent in the TS source. We mirror that exact behaviour.
-    let detected_id = match detect_installed_agent(project_root) {
+    let detected_id = match detect_installed_agent(project_root)? {
         Some(id) => id,
         None => {
             return Err(FspecCoreError::Message(
@@ -282,10 +282,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// BUSINESS RULE #1 / EXAMPLE #2) encodes the INTENDED behaviour — return the
 /// detected agent's id — so directory detection resolves correctly. We follow
 /// the spec, not the TS bug.
-fn detect_installed_agent(project_root: &Path) -> Option<String> {
-    let config_path = project_root.join("spec").join("fspec-config.json");
+fn detect_installed_agent(project_root: &Path) -> Result<Option<String>, FspecCoreError> {
+    let config_path = crate::io::spec_paths::config(project_root)?;
+    Ok(detect_installed_agent_from(project_root, &config_path))
+}
+
+fn detect_installed_agent_from(project_root: &Path, config_path: &Path) -> Option<String> {
     if config_path.exists() {
-        if let Ok(content) = std::fs::read_to_string(&config_path) {
+        if let Ok(content) = std::fs::read_to_string(config_path) {
             if let Ok(value) = serde_json::from_str::<serde_json::Value>(&content) {
                 // TS truthiness: a non-empty string `.agent` short-circuits;
                 // empty string / missing / non-string falls through.

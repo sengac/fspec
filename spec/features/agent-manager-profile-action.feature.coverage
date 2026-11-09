@@ -5,13 +5,11 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "28-78",
+          "lines": "28-99",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/session.rs",
               "lines": [
-                58,
-                59,
                 60,
                 61,
                 62,
@@ -85,8 +83,72 @@
                 130,
                 131,
                 132,
-                133
-              ]
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "pub const MIN_DURATION_SECS: u32 = 1;",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,7 +159,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "84-120",
+          "lines": "105-141",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/session.rs",
@@ -149,7 +211,9 @@
                 193,
                 194,
                 195
-              ]
+              ],
+              "firstLine": "let mut manual_scopes =",
+              "lastLine": "}"
             }
           ]
         }
@@ -160,7 +224,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "126-167",
+          "lines": "147-184",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/registry.rs",
@@ -219,7 +283,9 @@
                 145,
                 146,
                 147
-              ]
+              ],
+              "firstLine": "label_prefix: Option<&str>,",
+              "lastLine": "entries"
             }
           ]
         }
@@ -230,7 +296,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "173-214",
+          "lines": "190-228",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/session.rs",
@@ -246,7 +312,9 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": "pub const SAMPLE_FREQUENCY_HZ: i32 = 250;",
+              "lastLine": ""
             }
           ]
         }
@@ -257,7 +325,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "220-261",
+          "lines": "234-275",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/channels.rs",
@@ -363,7 +431,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "pub struct ChannelRegistry {",
+              "lastLine": "}"
             }
           ]
         }
@@ -374,11 +444,12 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "267-316",
+          "lines": "281-331",
           "implMappings": [
             {
               "file": "rust/tools/src/agent_manager/types.rs",
               "lines": [
+                95,
                 96,
                 97,
                 98,
@@ -387,29 +458,28 @@
                 101,
                 102,
                 103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "/// Run a time-bounded runtime profiling window (AMGR-017)",
+              "lastLine": "},"
             }
           ]
         }
@@ -433,7 +503,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "/// Default duration used when caller passes `None` (10 s per architecture note).",
+              "lastLine": "/// gives ~2500 samples/thread in a 10s window and costs < 2% CPU overhead even"
             }
           ]
         }
@@ -444,7 +516,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/profile/tests.rs",
-          "lines": "376-412",
+          "lines": "383-419",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/registry.rs",
@@ -455,7 +527,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "entry.value().reset();",
+              "lastLine": "pub fn snapshot_scopes("
             }
           ]
         }
@@ -467,28 +541,7 @@
         {
           "file": "rust/tools/src/profile/tests.rs",
           "lines": "418-452",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/profile/scope.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -504,9 +557,8 @@
       "rust/tools/src/profile/session.rs",
       "rust/tools/src/profile/registry.rs",
       "rust/tools/src/profile/channels.rs",
-      "rust/tools/src/agent_manager/types.rs",
-      "rust/tools/src/profile/scope.rs"
+      "rust/tools/src/agent_manager/types.rs"
     ],
-    "totalLinesCovered": 733
+    "totalLinesCovered": 791
   }
 }

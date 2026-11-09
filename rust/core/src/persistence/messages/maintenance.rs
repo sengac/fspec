@@ -1,6 +1,7 @@
 use super::durability::{perform, sync_parent};
 use super::{index, MessageStore, StoreGeneration};
 use index::IndexEntry;
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File, OpenOptions};
 use std::io::Write;
@@ -9,9 +10,13 @@ use uuid::Uuid;
 
 impl MessageStore {
     /// Lock a stable sidecar outside the replaceable messages directory.
+    ///
+    /// BUG-625: every read, write and cleanup runs under this file lock. Each
+    /// call opens its own file description, so it also excludes the other
+    /// threads of this process; a panic releases it when it unwinds.
     pub(super) fn with_file_lock<T>(
-        &mut self,
-        operation: impl FnOnce(&mut Self) -> Result<T, String>,
+        &self,
+        operation: impl FnOnce(&Self) -> Result<T, String>,
     ) -> Result<T, String> {
         let _lock = self.lock_file()?;
         operation(self)
@@ -38,20 +43,25 @@ impl MessageStore {
     }
 
     /// Refresh from the saved index, scanning missing bytes or rebuilding as needed.
+    ///
+    /// BUG-625: the caller holds the file lock; the index lock is taken only
+    /// to compare and install in-memory state, never across the file I/O.
     pub(super) fn load_or_build_index(&self) -> Result<(), String> {
         let generation = StoreGeneration::read(self)?;
-        let mut state = self.state.lock().map_err(|error| error.to_string())?;
-        if state.generation.as_ref() == Some(&generation) {
-            return Ok(());
-        }
-        state.cache.clear();
-        state.generation = None;
-        state.fully_scanned = false;
-        if generation.messages.is_none() {
-            state.index.clear();
-            state.generation = Some(generation);
-            state.fully_scanned = true;
-            return Ok(());
+        {
+            let mut state = self.lock_state()?;
+            if state.generation.as_ref() == Some(&generation) {
+                return Ok(());
+            }
+            state.cache.clear();
+            state.generation = None;
+            state.fully_scanned = false;
+            if generation.messages.is_none() {
+                state.index.clear();
+                state.generation = Some(generation);
+                state.fully_scanned = true;
+                return Ok(());
+            }
         }
 
         self.recover_tail_locked()
@@ -60,16 +70,24 @@ impl MessageStore {
         let data_metadata = fs::metadata(&self.messages_file)
             .map_err(|error| format!("Failed to stat messages file: {error}"))?;
         let actual_size = data_metadata.len();
-        let index_is_newer = fs::metadata(&self.index_file)
+        let index_age = fs::metadata(&self.index_file)
             .and_then(|metadata| metadata.modified())
             .ok()
             .zip(data_metadata.modified().ok())
-            .is_some_and(|(index_time, data_time)| index_time > data_time);
+            .map(|(index_time, data_time)| index_time.cmp(&data_time));
 
         if let Some((entries, recorded_size)) = index::load_index(&self.index_file) {
-            if recorded_size == actual_size && index_is_newer {
+            // BUG-519: an index sharing the history's timestamp tick is reused
+            // when its completeness proof matches both files, or else when its
+            // last record matches the history; only a matching proof is complete.
+            let proven = super::verified::matches(self, &generation);
+            let same_tick = index_age == Some(Ordering::Equal)
+                && (proven || index::tail_matches(&self.messages_file, &entries, actual_size));
+            let newer = index_age == Some(Ordering::Greater);
+            if recorded_size == actual_size && (newer || same_tick) {
+                let mut state = self.lock_state()?;
                 state.index = entries;
-                state.fully_scanned = super::verified::matches(self, &generation);
+                state.fully_scanned = proven;
                 state.generation = Some(generation);
                 return Ok(());
             }
@@ -78,12 +96,14 @@ impl MessageStore {
 
         let (entries, final_size) = index::scan_jsonl_range(&self.messages_file, 0)?;
         index::save_index(&self.index_file, &entries, final_size)?;
-        state.index = entries;
-        state.generation = Some(StoreGeneration::read(self)?);
-        state.fully_scanned = true;
-        if let Some(generation) = &state.generation {
-            super::verified::publish(self, generation);
+        let generation = StoreGeneration::read(self)?;
+        {
+            let mut state = self.lock_state()?;
+            state.index = entries;
+            state.generation = Some(generation.clone());
+            state.fully_scanned = true;
         }
+        super::verified::publish(self, &generation);
         Ok(())
     }
 
@@ -91,35 +111,45 @@ impl MessageStore {
     ///
     /// Rewrites `messages.jsonl` to contain only referenced messages,
     /// then rebuilds the binary index. The caller supplies referenced IDs.
-    pub fn cleanup_orphans(&mut self, referenced_ids: &HashSet<Uuid>) -> Result<usize, String> {
+    pub fn cleanup_orphans(&self, referenced_ids: &HashSet<Uuid>) -> Result<usize, String> {
         self.with_file_lock(|store| {
             store.load_or_build_index()?;
-            store.cleanup_orphans_locked(referenced_ids)
+            store.cleanup_orphans_locked(referenced_ids, &HashSet::new())
         })
     }
 
     pub(crate) fn cleanup_with_references<Guard>(
-        &mut self,
-        discover: impl FnOnce() -> Result<Option<(HashSet<Uuid>, Guard)>, String>,
+        &self,
+        discover: impl FnOnce() -> Result<Option<(HashSet<Uuid>, HashSet<Uuid>, Guard)>, String>,
     ) -> Result<usize, String> {
         self.with_file_lock(|store| {
             store.load_or_build_index()?;
-            let Some((referenced, _guard)) = discover()? else {
+            let Some((referenced, protected, _guard)) = discover()? else {
                 return Ok(0);
             };
-            store.cleanup_orphans_locked(&referenced)
+            store.cleanup_orphans_locked(&referenced, &protected)
         })
     }
 
-    fn cleanup_orphans_locked(&mut self, referenced_ids: &HashSet<Uuid>) -> Result<usize, String> {
-        for id in referenced_ids {
+    /// `required` originals must exist; `protected` originals (BUG-284 input
+    /// receipts, whose evidence may still live only in the receipt) are kept
+    /// when present but never required.
+    fn cleanup_orphans_locked(
+        &self,
+        required: &HashSet<Uuid>,
+        protected: &HashSet<Uuid>,
+    ) -> Result<usize, String> {
+        for id in required {
             self.get_recovered_locked(*id)?.ok_or_else(|| {
                 format!("Required original message {id} is missing; cleanup refused")
             })?;
         }
-        let mut state = self.state.lock().map_err(|error| error.to_string())?;
-        let count = state
-            .index
+        let referenced_ids: HashSet<Uuid> = required.union(protected).copied().collect();
+        let referenced_ids = &referenced_ids;
+        // BUG-625: work on a snapshot of the index; the index lock is never
+        // held across the rewrite.
+        let index = self.lock_state()?.index.clone();
+        let count = index
             .keys()
             .filter(|id| !referenced_ids.contains(id))
             .count();
@@ -133,7 +163,7 @@ impl MessageStore {
         let mut new_index = HashMap::new();
         let mut current_offset = 0;
 
-        for (id, entry) in &state.index {
+        for (id, entry) in &index {
             if !referenced_ids.contains(id) {
                 continue;
             }
@@ -173,21 +203,21 @@ impl MessageStore {
             fs::rename(&temp_file, &self.messages_file)
         })
         .map_err(|error| format!("Failed to rename temp file: {error}"))?;
-        state.index = new_index;
-        state.cache.clear();
-        state.generation = None;
-        state.fully_scanned = true;
+        {
+            let mut state = self.lock_state()?;
+            state.index = new_index.clone();
+            state.cache.clear();
+            state.generation = None;
+            state.fully_scanned = true;
+        }
         perform("cleanup.directory", || sync_parent(&self.messages_file))
             .map_err(|error| format!("Cleanup promoted; directory sync failed: {error}"))?;
-        index::save_index(&self.index_file, &state.index, current_offset)
+        index::save_index(&self.index_file, &new_index, current_offset)
             .map_err(|error| format!("Cleanup promoted; derived index failed: {error}"))?;
-        state.generation =
-            Some(StoreGeneration::read(self).map_err(|error| {
-                format!("Cleanup promoted; generation refresh failed: {error}")
-            })?);
-        if let Some(generation) = &state.generation {
-            super::verified::publish(self, generation);
-        }
+        let generation = StoreGeneration::read(self)
+            .map_err(|error| format!("Cleanup promoted; generation refresh failed: {error}"))?;
+        self.lock_state()?.generation = Some(generation.clone());
+        super::verified::publish(self, &generation);
         Ok(count)
     }
 }

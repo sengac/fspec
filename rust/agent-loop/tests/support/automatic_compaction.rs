@@ -235,7 +235,7 @@ impl Harness {
     }
 
     pub async fn until_done(&mut self) -> Vec<StreamChunk> {
-        let result = tokio::time::timeout(Duration::from_secs(20), async {
+        let result = codelet_test_helpers::deadlock_guard("the awaited block", async {
             let mut observed = Vec::new();
             loop {
                 let chunk = self.chunks.recv().await.expect("live stream");

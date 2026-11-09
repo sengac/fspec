@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-271
+@cli
+@remove
 Feature: fspec remove-dependency CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_dependency.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/remove-dependency.ts:133-200).

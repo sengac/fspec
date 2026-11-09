@@ -6,65 +6,7 @@
         {
           "file": "src/tui/__tests__/AgentModal.test.tsx",
           "lines": "335-370",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session.rs",
-              "lines": [
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
-            },
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -74,65 +16,7 @@
         {
           "file": "src/tui/__tests__/AgentModal.test.tsx",
           "lines": "373-408",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session.rs",
-              "lines": [
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
-            },
-            {
-              "file": "src/tui/components/AgentModal.tsx",
-              "lines": [
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -161,28 +45,11 @@
                 59,
                 60,
                 61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
+                61,
                 79,
                 80,
                 81,
                 82,
-                83,
                 84,
                 85,
                 86,
@@ -194,12 +61,31 @@
                 92,
                 93,
                 94,
+                94,
+                94,
+                94,
+                94,
+                94,
+                94,
                 95,
                 96,
                 97,
                 98,
-                99
-              ]
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "pub fn handle_debug_command() -> DebugCommandResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -239,7 +125,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub fn as_usage(&self) -> ApiTokenUsage {",
+              "lastLine": ""
             }
           ]
         }
@@ -254,11 +142,9 @@
       "src/tui/__tests__/AgentModal.test.tsx"
     ],
     "implFiles": [
-      "rust/napi/src/session.rs",
-      "src/tui/components/AgentModal.tsx",
       "rust/common/src/debug_capture/mod.rs",
       "rust/core/src/compaction_hook.rs"
     ],
-    "totalLinesCovered": 302
+    "totalLinesCovered": 208
   }
 }

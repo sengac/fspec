@@ -8,7 +8,7 @@ use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use serde_json::json;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -62,8 +62,10 @@ async fn scenario_embedded_and_websocket_subscribers_receive_identical_typed_int
         .chunks_tx()
         .send((SessionId::new("cause-session"), chunk))?;
     // @step Then both subscribers receive the same reason and queued inputs
-    let (_, local) = tokio::time::timeout(Duration::from_secs(3), embedded_rx.recv()).await??;
-    let (_, remote) = tokio::time::timeout(Duration::from_secs(3), websocket_rx.recv()).await??;
+    let (_, local) =
+        codelet_test_helpers::deadlock_guard("embedded_rx.recv()", embedded_rx.recv()).await??;
+    let (_, remote) =
+        codelet_test_helpers::deadlock_guard("websocket_rx.recv()", websocket_rx.recv()).await??;
     assert_eq!(serde_json::to_value(local)?, expected);
     assert_eq!(serde_json::to_value(remote)?, expected);
     task.abort();

@@ -13,6 +13,12 @@
 //!     {details}                                  ← dim, own line, optional
 //!   [Y] Approve [N] Deny (Esc to cancel)         ← green / red / dim
 //!
+//! HumanAction kind (AMGR-023; 1+N header rows, optional details row,
+//! Done/Cancel row):
+//!   ⏸ {prompt}                                   ← yellow, wrapped
+//!     {details}                                  ← dim, own line, optional
+//!   [Enter] Done [Esc] Cancel                    ← green / red
+//!
 //! Long headers WRAP instead of clipping (TS Ink `<Text>` wraps by
 //! default): `wrap_styled` slices the styled header at the body width
 //! (char-count proxy, consistent with `text_wrap.rs`), and
@@ -21,8 +27,8 @@
 //!
 //! The wire `prompt` already carries `"{tool_name}: {message}"`
 //! (`sessions/src/conversions.rs:52-57`); `tool_call_id` carries the
-//! gated command / file path (`details`). The wire `PauseKind`
-//! collapses Continue into Confirm — Confirm rendering applies.
+//! gated command / file path (`details`). AMGR-023: the wire `PauseKind`
+//! tells a human action apart (`HumanAction`), so it gets its own row.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -49,8 +55,8 @@ pub fn prompt_height(state: &PauseState, width: u16) -> u16 {
     let header_rows = wrap_styled(header_spans(state), width).len() as u16;
     match state.kind {
         PauseKind::Triple => header_rows.saturating_add(1),
-        PauseKind::Confirm => {
-            let details_rows = u16::from(state.tool_call_id.is_some());
+        PauseKind::Confirm | PauseKind::HumanAction => {
+            let details_rows = u16::from(state.details.is_some());
             header_rows.saturating_add(details_rows).saturating_add(1)
         }
     }
@@ -66,6 +72,7 @@ pub fn render_pause_prompt(area: Rect, buf: &mut Buffer, state: &PauseState, sel
     match state.kind {
         PauseKind::Triple => render_triple(area, buf, state, selection),
         PauseKind::Confirm => render_confirm(area, buf, state),
+        PauseKind::HumanAction => render_human_action(area, buf, state),
     }
 }
 
@@ -79,7 +86,7 @@ fn header_spans(state: &PauseState) -> Vec<Span<'static>> {
                 format!("⏸ {}", state.prompt),
                 Style::default().fg(Color::Cyan),
             )];
-            if let Some(details) = &state.tool_call_id {
+            if let Some(details) = &state.details {
                 spans.push(Span::styled(
                     format!(" ({details})"),
                     Style::default().add_modifier(Modifier::DIM),
@@ -87,7 +94,7 @@ fn header_spans(state: &PauseState) -> Vec<Span<'static>> {
             }
             spans
         }
-        PauseKind::Confirm => vec![Span::styled(
+        PauseKind::Confirm | PauseKind::HumanAction => vec![Span::styled(
             format!("⏸ {}", state.prompt),
             Style::default().fg(Color::Yellow),
         )],
@@ -174,11 +181,11 @@ fn render_triple(area: Rect, buf: &mut Buffer, state: &PauseState, selection: us
     paint_line(area, buf, next, Line::from(options));
 }
 
-/// TS InputTransition.tsx:468-489 — yellow wrapped header, optional
-/// dim details line, Y/N row.
-fn render_confirm(area: Rect, buf: &mut Buffer, state: &PauseState) {
+/// Paint the wrapped header and the optional dim details line; returns
+/// the first row index below them.
+fn paint_header_and_details(area: Rect, buf: &mut Buffer, state: &PauseState) -> u16 {
     let mut next = paint_header(area, buf, state);
-    if let Some(details) = &state.tool_call_id {
+    if let Some(details) = &state.details {
         paint_line(
             area,
             buf,
@@ -190,6 +197,29 @@ fn render_confirm(area: Rect, buf: &mut Buffer, state: &PauseState) {
         );
         next += 1;
     }
+    next
+}
+
+/// AMGR-023: a human action — yellow wrapped header, optional dim details
+/// line, Done/Cancel row.
+fn render_human_action(area: Rect, buf: &mut Buffer, state: &PauseState) {
+    let next = paint_header_and_details(area, buf, state);
+    paint_line(
+        area,
+        buf,
+        next,
+        Line::from(vec![
+            Span::styled("[Enter] Done", Style::default().fg(Color::Green)),
+            Span::raw(" "),
+            Span::styled("[Esc] Cancel", Style::default().fg(Color::Red)),
+        ]),
+    );
+}
+
+/// TS InputTransition.tsx:468-489 — yellow wrapped header, optional
+/// dim details line, Y/N row.
+fn render_confirm(area: Rect, buf: &mut Buffer, state: &PauseState) {
+    let next = paint_header_and_details(area, buf, state);
     paint_line(
         area,
         buf,

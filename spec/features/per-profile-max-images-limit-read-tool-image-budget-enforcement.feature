@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @PROV-144
 @rust
@@ -5,6 +6,7 @@
 @session
 @multimodal
 @high
+@attachment
 Feature: Per-profile Max Images Read tool budget enforcement
   """
   The Read tool (rust/tools/src/read.rs, via the new read_image_budget module)

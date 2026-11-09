@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_feature.rs",
-          "lines": "50-78",
+          "lines": "49-84",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_feature.rs",
@@ -61,7 +61,9 @@
                 88,
                 89,
                 90
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ""
             }
           ]
         }
@@ -72,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_feature.rs",
-          "lines": "85-104",
+          "lines": "90-119",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_feature.rs",
@@ -85,7 +87,9 @@
                 79,
                 80,
                 81
-              ]
+              ],
+              "firstLine": "if let Some(rem) = parsed",
+              "lastLine": ""
             }
           ]
         }
@@ -96,7 +100,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_feature.rs",
-          "lines": "111-135",
+          "lines": "125-153",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_feature.rs",
@@ -106,7 +110,9 @@
                 87,
                 88,
                 89
-              ]
+              ],
+              "firstLine": "eprintln!(\"Error: {}\", render_core_error(&err));",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_feature.rs",
-          "lines": "142-162",
+          "lines": "159-183",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_feature.rs",
@@ -141,7 +147,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ""
             }
           ]
         }
@@ -152,7 +160,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_feature.rs",
-          "lines": "169-211",
+          "lines": "189-237",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_feature.rs",
@@ -169,7 +177,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "Ok(data_json) => {",
+              "lastLine": ""
             }
           ]
         }
@@ -186,6 +196,6 @@
     "implFiles": [
       "rust/fspec/src/create_feature.rs"
     ],
-    "totalLinesCovered": 233
+    "totalLinesCovered": 264
   }
 }

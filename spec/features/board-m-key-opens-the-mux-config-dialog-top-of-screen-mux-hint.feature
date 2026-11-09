@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @MUX-009
 @tui
@@ -34,18 +35,16 @@ Feature: Board 'M' key opens the Mux config dialog + top-of-screen Mux hint
     I want to open the mux configuration dialog with the 'M' key and see it advertised in the Board's top hint chord
     So that turn mux on/off and reconfigure the layout without switching to an agent session
 
-  @MUX-009
   @component
   @feature-group
   Scenario: M opens the Mux config dialog from the single Board view
     Given I am in the single Board view with mux disabled
     When I press the 'm' key
     Then the MuxConfigDialog is open overlaying the board
-    And the dialog is seeded from the live mux config showing Enabled Off and the current pane rows
+    And the dialog is seeded from the live mux config showing Enabled Off and the current layout string
     And the board view is still visible underneath
     And mux is still not active
 
-  @MUX-009
   @component
   @feature-group
   Scenario: Ctrl+M does not open the Mux config dialog
@@ -54,22 +53,20 @@ Feature: Board 'M' key opens the Mux config dialog + top-of-screen Mux hint
     Then the MuxConfigDialog is not open
     And the key falls through to the App-level handling
 
-  @MUX-009
   @component
   @feature-group
   Scenario: M opens the Mux config dialog from the focused Board pane in mux mode
     Given I am in mux mode with the Board | Agent grid and the Board pane focused
     When I press the 'M' key
     Then the MuxConfigDialog is open overlaying the whole grid
-    And the dialog shows the live enabled layout with Enabled On and the current pane rows
-    And pressing 's' applies and persists the draft and closes the dialog with the grid keeping the committed layout
+    And the dialog shows the live enabled layout with Enabled On and the current layout string
+    And activating Save applies and persists the draft and closes the dialog with the grid keeping the committed layout
     And pressing Esc closes the dialog without applying or saving
 
-  @MUX-009
   @component
   @feature-group
   Scenario: The Board header top chord row advertises the M Mux binding
     Given I am in the single Board view
     When I look at the board header's keybinding chord row
-    Then the header row 3 shows the 2-zone menu bar's Zone A items (Actions Help)
+    Then the header row 3 shows the 2-zone menu bar's Zone A items (Kanban Tools Settings Help)
     And the row contains no chord separators and no C Checkpoints chord segment

@@ -34,6 +34,7 @@ use tempfile::TempDir;
 /// Configure a unique temp data dir for the test and return the guard.
 fn setup_data_dir() -> TempDir {
     let tmp = tempfile::tempdir().expect("create temp data dir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(tmp.path().to_path_buf())
         .expect("set_data_directory must succeed");
     tmp
@@ -45,7 +46,7 @@ fn store_with_metadata_recreates_missing_messages_dir() {
     // @step Given a MessageStore is constructed against a fresh temp data dir
     let data_dir = setup_data_dir();
     let messages_dir = data_dir.path().join("messages");
-    let mut store = MessageStore::new().expect("MessageStore::new must succeed");
+    let store = MessageStore::new().expect("MessageStore::new must succeed");
 
     // @step And a baseline message is appended successfully
     let _id = store
@@ -93,7 +94,7 @@ fn update_metadata_recreates_missing_messages_dir() {
     // @step Given a MessageStore with one stored message
     let data_dir = setup_data_dir();
     let messages_dir = data_dir.path().join("messages");
-    let mut store = MessageStore::new().expect("MessageStore::new must succeed");
+    let store = MessageStore::new().expect("MessageStore::new must succeed");
     let id = store
         .store_with_metadata("assistant", "needs-metadata", HashMap::new())
         .expect("baseline store must succeed");

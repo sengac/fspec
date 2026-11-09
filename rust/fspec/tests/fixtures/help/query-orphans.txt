@@ -35,7 +35,6 @@ fspec delete-work-unit INVALID-001
 
 # Verify cleanup
 fspec query-orphans
-    undefined
 
   • Bulk Work Unit Validation
     Example: # After creating multiple work units
@@ -50,7 +49,6 @@ fspec query-orphans
 fspec update-work-unit AUTH-001 --epic=authentication
 fspec update-work-unit AUTH-002 --epic=authentication
 fspec update-work-unit AUTH-003 --epic=authentication
-    undefined
 
   • JSON Export for Reporting
     Example: # Export orphans for dashboard
@@ -58,11 +56,10 @@ fspec query-orphans --output json > orphans.json
 
 # Count orphans by status
 jq '[.orphans[].status] | group_by(.) | map({status: .[0], count: length})' orphans.json
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Run orphan detection: fspec query-orphans → 2. Review orphaned work units → 3. Assign epic OR add relationship: fspec update-work-unit <id> --epic=<epic> OR fspec add-dependency <id> --relates-to=<other-id> → 4. Delete if invalid: fspec delete-work-unit <id> → 5. Verify: fspec query-orphans
+  1. Run orphan detection: fspec query-orphans → 2. Review orphaned work units → 3. Assign epic OR add relationship: fspec update-work-unit <workUnitId> --epic=<epic> OR fspec add-dependency <workUnitId> --relates-to=<workUnitId> → 4. Delete if invalid: fspec delete-work-unit <workUnitId> → 5. Verify: fspec query-orphans
 
 EXAMPLES
   1. Find all orphaned work units (no epic, no relationships)
@@ -84,9 +81,9 @@ EXAMPLES
      • Delete
 
 To fix orphaned work units:
-  fspec update-work-unit <id> --epic=<epic-name>
-  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)
-  fspec delete-work-unit <id>
+  fspec update-work-unit <workUnitId> --epic=<epic-name>
+  fspec add-dependency <workUnitId> --depends-on=<workUnitId>  (or --blocks, --relates-to)
+  fspec delete-work-unit <workUnitId>
 
   2. Find orphans excluding completed work
   $ fspec query-orphans --exclude-done

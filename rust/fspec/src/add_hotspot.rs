@@ -30,10 +30,10 @@
 //!     to stderr prefixed with `✗ Failed to add hotspot:` (parity with
 //!     `src/commands/add-hotspot.ts:99`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_hotspot;
 use serde_json::{json, Value};
 
@@ -52,7 +52,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-hotspot` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by fspec_core::commands::
     // add_hotspot::run. Optional fields are omitted when absent.

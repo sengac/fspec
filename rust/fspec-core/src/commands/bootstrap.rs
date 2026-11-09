@@ -57,12 +57,16 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
         ast_research_notes(in_capture),
     );
 
+    // BUG-285: embed the running binary version (the same constant `init`
+    // writes into the slash command) instead of the captured 0.9.3.
+    content = content.replace("__FSPEC_VERSION__", crate::commands::init::FSPEC_VERSION);
+
     // 1. Apply config string-replacements (parity with bootstrap.ts:154-176).
-    content = apply_config_replacements(project_root, content);
+    content = apply_config_replacements(project_root, content)?;
 
     // 2. Append the Big-Picture-Event-Storm reminder when needed
     //    (parity with bootstrap.ts:178-249).
-    if let Some(reminder) = event_storm_reminder(project_root) {
+    if let Some(reminder) = event_storm_reminder(project_root)? {
         content.push_str("\n\n");
         content.push_str(&reminder);
     }
@@ -94,11 +98,17 @@ fn ast_research_notes(in_capture: bool) -> &'static str {
 /// Replace `<test-command>` and `<quality-check-commands>` placeholders from
 /// spec/fspec-config.json. A missing or unparseable config leaves both
 /// placeholders intact (parity with the TS `existsSync`/try-catch guards).
-fn apply_config_replacements(project_root: &Path, content: String) -> String {
-    let config_path = project_root.join("spec").join("fspec-config.json");
+fn apply_config_replacements(
+    project_root: &Path,
+    content: String,
+) -> Result<String, FspecCoreError> {
+    let config_path = crate::io::spec_paths::config(project_root)?;
+    Ok(apply_config_replacements_from(&config_path, content))
+}
 
+fn apply_config_replacements_from(config_path: &Path, content: String) -> String {
     // Missing file → placeholders intact.
-    let raw = match std::fs::read_to_string(&config_path) {
+    let raw = match std::fs::read_to_string(config_path) {
         Ok(raw) => raw,
         Err(_) => return content,
     };
@@ -151,8 +161,12 @@ fn apply_config_replacements(project_root: &Path, content: String) -> String {
 ///   - work-units.json present but parse error     → None (TS catch)
 ///   - matching non-done FOUND- work unit present  → work-unit variant
 ///   - otherwise                                   → no-work-unit variant
-fn event_storm_reminder(project_root: &Path) -> Option<String> {
-    let spec = project_root.join("spec");
+fn event_storm_reminder(project_root: &Path) -> Result<Option<String>, FspecCoreError> {
+    let spec = crate::io::spec_paths::state_spec_dir(project_root)?;
+    Ok(event_storm_reminder_in(&spec))
+}
+
+fn event_storm_reminder_in(spec: &Path) -> Option<String> {
     let foundation_path = spec.join("foundation.json");
 
     // No foundation.json → no reminder.

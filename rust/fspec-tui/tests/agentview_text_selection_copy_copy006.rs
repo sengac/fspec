@@ -14,8 +14,7 @@
 //! driven via `App::poll_selection_tick_for_test`, the public seam that
 //! mirrors the production run loop's 16ms render-tick arm.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 
@@ -46,7 +45,7 @@ impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0
             .lock()
-            .expect("clipboard buffer mutex")
+            .map_err(|error| std::io::Error::other(format!("clipboard buffer mutex: {error}")))?
             .extend_from_slice(buf);
         Ok(buf.len())
     }
@@ -74,44 +73,48 @@ fn app_with_clipboard() -> (App, Arc<Mutex<Vec<u8>>>) {
 
 /// Push `count` single-line chunks ("row-0", "row-1", ...) into the
 /// focused session's scrollback.
-fn seed_rows(app: &mut App, count: usize) {
+fn seed_rows(app: &mut App, count: usize) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(&sid("s-1"))
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     for i in 0..count {
         ctx.scrollback.push(RenderedChunk {
+            row_ends: Vec::new(),
             seq: i as u64,
             lines: vec![Line::from(format!("row-{i}"))],
             source: None,
         });
     }
+    Ok(())
 }
 
 /// Push a single explicit-text row and return its 0-based visual index.
-fn seed_line(app: &mut App, text: &str) -> u64 {
+fn seed_line(app: &mut App, text: &str) -> Result<u64, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(&sid("s-1"))
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     let seq = ctx.scrollback.chunk_count() as u64;
     ctx.scrollback.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: vec![Line::from(text.to_string())],
         source: None,
     });
-    seq
+    Ok(seq)
 }
 
 /// Render one frame so the layout caches `last_scrollback_area` and the
 /// gutter-free `content_width`.
-fn render_app(app: &mut App, w: u16, h: u16) {
-    let mut terminal = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_app(app: &mut App, w: u16, h: u16) -> Result<(), codelet_test_helpers::TestError> {
+    let mut terminal = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     terminal
         .draw(|frame| {
             app.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
 }
 
 /// Drain + dispatch every queued Action so emitted selection Actions run
@@ -132,8 +135,8 @@ fn mouse(kind: MouseEventKind, col: u16, row: u16) -> Event {
 }
 
 /// Snapshot of the injected clipboard buffer as raw bytes.
-fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
-    buf.lock().expect("clipboard buffer mutex").clone()
+fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Result<Vec<u8>, codelet_test_helpers::TestError> {
+    Ok(buf.lock().or_fail("clipboard buffer mutex")?.clone())
 }
 
 /// The OSC 52 sequence the App emits for `text`: `ESC ] 52 ; c ;
@@ -175,15 +178,15 @@ fn scroll_offset(app: &App) -> usize {
 // ---------------------------------------------------------------------
 
 #[test]
-fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
+fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() -> TestResult {
     // @step Given an AgentView showing a multi-line transcript with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 40);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 40)?;
+    render_app(&mut app, 80, 40)?;
     // Anchor the viewport at the top so viewport row N maps to visual
     // row N ("row-N"), making the copied text deterministic.
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2 // header row is 0; scrollback band starts at y=1.
 
     // @step When I drag from the middle of one line to the middle of the line below and release
@@ -205,7 +208,7 @@ fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
     drain(&mut app);
 
     // @step Then the two lines of text without any scrollbar glyphs are written to the clipboard
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52("row-0\nrow-1"),
@@ -218,11 +221,12 @@ fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
         selection_active(&app),
         "selection must persist after commit (rule [2])"
     );
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert!(
         highlight_spans(&app) > 0,
         "the highlight overlay must still be painted after copy"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -230,13 +234,13 @@ fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn long_pressing_a_line_selects_and_copies_it() {
+fn long_pressing_a_line_selects_and_copies_it() -> TestResult {
     // @step Given an AgentView showing a multi-line transcript with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 40);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 40)?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and hold on a line for about half a second and release
@@ -246,20 +250,20 @@ fn long_pressing_a_line_selects_and_copies_it() {
         rect_y + 3,
     ));
     drain(&mut app);
-    // The recognizer's long-press threshold is ~400ms (real Instant); wait
-    // past it, then poll the tick seam so the Begin gesture fires.
-    std::thread::sleep(std::time::Duration::from_millis(450));
-    app.poll_selection_tick_for_test();
+    // The recognizer's long-press threshold is ~400ms: tick as if 450ms had
+    // passed since the press (TEST-042: no sleep) so the Begin fires.
+    app.poll_selection_tick_after_for_test(std::time::Duration::from_millis(450));
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 2, rect_y + 3));
     drain(&mut app);
 
     // @step Then the line under the press becomes selected and its text is written to the clipboard
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52("row-3"),
         "long-press then release must copy the line under the press"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -267,11 +271,11 @@ fn long_pressing_a_line_selects_and_copies_it() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn wheel_scrolling_still_works_and_does_not_select_or_copy() {
+fn wheel_scrolling_still_works_and_does_not_select_or_copy() -> TestResult {
     // @step Given an AgentView showing a multi-line transcript with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 200);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 200)?;
+    render_app(&mut app, 80, 40)?;
     let before = scroll_offset(&app);
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
@@ -289,9 +293,10 @@ fn wheel_scrolling_still_works_and_does_not_select_or_copy() {
     // @step And no selection is created and nothing is written to the clipboard
     assert!(!selection_active(&app), "wheel must not create a selection");
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "wheel scrolling must not write to the clipboard"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -299,13 +304,13 @@ fn wheel_scrolling_still_works_and_does_not_select_or_copy() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn a_quick_click_does_not_select_or_copy() {
+fn a_quick_click_does_not_select_or_copy() -> TestResult {
     // @step Given an AgentView showing a multi-line transcript with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 40);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 40)?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I quickly click a line without dragging
@@ -325,9 +330,10 @@ fn a_quick_click_does_not_select_or_copy() {
         "a quick click must not create a selection"
     );
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "a quick click must not write to the clipboard"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -335,13 +341,13 @@ fn a_quick_click_does_not_select_or_copy() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn esc_clears_an_active_selection_without_copying() {
+fn esc_clears_an_active_selection_without_copying() -> TestResult {
     // @step Given an AgentView with an active text selection
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 40);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 40)?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
                        // Drive a Down + Drag to open a live (uncommitted) selection.
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 3, rect_y));
@@ -352,11 +358,11 @@ fn esc_clears_an_active_selection_without_copying() {
         rect_y + 1,
     ));
     drain(&mut app);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert!(selection_active(&app), "precondition: selection is active");
     assert!(highlight_spans(&app) > 0, "precondition: highlight painted");
     // Nothing copied yet (no Up/Commit).
-    assert!(clip_bytes(&clip).is_empty());
+    assert!(clip_bytes(&clip)?.is_empty());
 
     // @step When I press Esc
     let _ = app.handle_event(&Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE)));
@@ -364,7 +370,7 @@ fn esc_clears_an_active_selection_without_copying() {
 
     // @step Then the highlight disappears
     assert!(!selection_active(&app), "Esc must clear the live selection");
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert_eq!(
         highlight_spans(&app),
         0,
@@ -372,7 +378,8 @@ fn esc_clears_an_active_selection_without_copying() {
     );
 
     // @step And nothing is written to the clipboard by the Esc press
-    assert!(clip_bytes(&clip).is_empty(), "Esc must not copy anything");
+    assert!(clip_bytes(&clip)?.is_empty(), "Esc must not copy anything");
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -380,15 +387,15 @@ fn esc_clears_an_active_selection_without_copying() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn scrolling_clears_an_active_selection() {
+fn scrolling_clears_an_active_selection() -> TestResult {
     // @step Given an AgentView with an active text selection
     let (mut app, _clip) = app_with_clipboard();
-    seed_rows(&mut app, 200);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 200)?;
+    render_app(&mut app, 80, 40)?;
     // Scroll up off the tail so there is room to scroll further, then
     // anchor a live selection via Down + Drag.
     app.dispatch(Action::ScrollbackPageUp);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 3, rect_y));
     drain(&mut app);
@@ -410,7 +417,7 @@ fn scrolling_clears_an_active_selection() {
         !selection_active(&app),
         "scrolling must clear the live selection (rule [7])"
     );
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert_eq!(
         highlight_spans(&app),
         0,
@@ -423,6 +430,7 @@ fn scrolling_clears_an_active_selection() {
         offset_after < offset_before,
         "the transcript must scroll; before={offset_before} after={offset_after}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -431,7 +439,7 @@ fn scrolling_clears_an_active_selection() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
+fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() -> TestResult {
     // @step Given an AgentView whose answer line visually abuts the scrollbar gutter
     // Render at 80 wide: on overflow a 2-col gutter is reserved so
     // content_width = 78. Seed a first "answer" row exactly 78 chars wide
@@ -439,13 +447,13 @@ fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
     // scrollbar (and gutter) to appear.
     let (mut app, clip) = app_with_clipboard();
     let answer: String = "A".repeat(78);
-    let _answer_seq = seed_line(&mut app, &answer);
-    seed_rows(&mut app, 60); // filler: total rows > viewport ⇒ gutter reserved.
-    render_app(&mut app, 80, 40);
+    let _answer_seq = seed_line(&mut app, &answer)?;
+    seed_rows(&mut app, 60)?; // filler: total rows > viewport ⇒ gutter reserved.
+    render_app(&mut app, 80, 40)?;
     // Anchor the viewport at the very top so the answer row (visual row 0)
     // is the first visible row of the scrollback band.
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I select that full line and release
@@ -459,7 +467,7 @@ fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
     drain(&mut app);
 
     // @step Then the clipboard text contains the answer text but not the │ scrollbar glyph
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52(&answer),
@@ -471,6 +479,7 @@ fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
         !bytes.windows(3).any(|w| w == [0xe2, 0x94, 0x82]),
         "the scrollbar glyph │ must NOT appear in the copied text"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -479,13 +488,13 @@ fn copying_a_line_abutting_the_scrollbar_excludes_the_scrollbar_glyph() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn mouse_capture_remains_enabled_throughout_selection_and_copy() {
+fn mouse_capture_remains_enabled_throughout_selection_and_copy() -> TestResult {
     // @step Given an AgentView showing a multi-line transcript with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    seed_rows(&mut app, 40);
-    render_app(&mut app, 80, 40);
+    seed_rows(&mut app, 40)?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I complete a drag selection and copy
@@ -511,7 +520,7 @@ fn mouse_capture_remains_enabled_throughout_selection_and_copy() {
     // is the SOLE sink the flow touches; assert it holds exactly the
     // OSC 52 copy bytes and carries no DisableMouseCapture escape
     // (CSI ?1000/1002/1003/1006 l) that a capture-disable would emit.
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52("row-0\nrow-1"),
@@ -528,4 +537,5 @@ fn mouse_capture_remains_enabled_throughout_selection_and_copy() {
         selection_active(&app),
         "capture never dropped, so the live selection persists after copy"
     );
+    Ok(())
 }

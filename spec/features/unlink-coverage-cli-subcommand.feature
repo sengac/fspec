@@ -61,7 +61,7 @@ Feature: Port unlink-coverage command to Rust
     Given the fspec Rust binary at rust/target/release/fspec has been compiled
     When I run `./rust/target/release/fspec unlink-coverage --help` piped to non-TTY
     Then the command exits 0
-    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/unlink-coverage.txt
+    And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/refac020/unlink-coverage.txt
     And stdout starts with a blank line followed by 'UNLINK-COVERAGE'
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided

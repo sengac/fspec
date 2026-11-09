@@ -25,10 +25,13 @@ use super::dialog_button_hits::{three_button_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 
 /// Paint a three-button dialog into `buf` at `area` and return the
-/// last-rendered button-row hit-test geometry (row index 1).
+/// last-rendered button-row hit-test geometry (the row after the
+/// description lines).
 ///
-/// `description` is the single non-selectable content row above the
-/// button row (rows = [description, button_row]); `selected` is the
+/// `description` holds the non-selectable content rows above the button
+/// row, one per line (rows = [description.., button_row]; TUI-124: a
+/// dialog states everything that will happen, so it may need several
+/// lines); `selected` is the
 /// currently highlighted option index; `labels` are the button texts in
 /// paint order.
 #[allow(clippy::too_many_arguments)]
@@ -37,7 +40,7 @@ pub fn render_three_button_dialog(
     buf: &mut Buffer,
     accent: Accent,
     title: &str,
-    description: &str,
+    description: &[String],
     footer: &str,
     min_width: u16,
     selected: usize,
@@ -46,11 +49,15 @@ pub fn render_three_button_dialog(
     let dim_style = Style::default()
         .add_modifier(Modifier::DIM)
         .bg(Color::Black);
-    let description_row = DialogRow {
-        spans: vec![Span::styled(description.to_string(), dim_style)],
-        selectable: false,
-        selected: false,
-    };
+    let mut rows: Vec<DialogRow> = description
+        .iter()
+        .map(|line| DialogRow {
+            spans: vec![Span::styled(line.clone(), dim_style)],
+            selectable: false,
+            selected: false,
+        })
+        .collect();
+    let button_row_index = rows.len();
 
     // EXACT TS Ink parity (src/components/CreateSessionDialog.tsx /
     // ThreeButtonDialog.tsx): selected button = bg=Blue/fg=White/bold on
@@ -84,9 +91,10 @@ pub fn render_three_button_dialog(
     // `dialog_theme::inner_content_width`'s max() computation so the
     // leading pad equals (final_body_w - raw_row_w) / 2.
     let raw_w: usize = spans.iter().map(|s| s.content.width()).sum();
+    let description_w = description.iter().map(|line| line.width()).max();
     let body_w = [
         title.width(),
-        description.width(),
+        description_w.unwrap_or(0),
         raw_w,
         footer.width(),
         min_width as usize,
@@ -104,23 +112,23 @@ pub fn render_three_button_dialog(
         }
     }
 
-    let button_row = DialogRow {
+    rows.push(DialogRow {
         spans,
         selectable: false,
         selected: false,
-    };
+    });
 
     let dialog = FspecDialog {
         accent,
         title,
-        rows: vec![description_row, button_row],
+        rows,
         footer,
         min_width,
         query_row: None,
     };
     // The layout is derived from the SAME descriptor that is painted so
     // the button rects line up with the pixels (TUI-112 R4/R5).
-    let last_layout = three_button_layout(area, &dialog, 1, labels);
+    let last_layout = three_button_layout(area, &dialog, button_row_index, labels);
     render_dialog(area, buf, &dialog);
     last_layout
 }

@@ -3,11 +3,9 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js delete-work-unit --help`.
 //!
-//! NOTE: the two COMMON PATTERNS entries in the TS source carry no
-//! `description` field, so the TS help formatter interpolates the literal
-//! string `undefined` on the description line. We reproduce that verbatim
-//! by setting `description: "undefined"` on each structured pattern — the
-//! captured fixture asserts this byte-for-byte.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -82,12 +80,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Safe Deletion with Checks",
         example: "# Check what will be deleted\nfspec show-work-unit AUTH-999\nfspec dependencies AUTH-999\n\n# Delete with cascading\nfspec delete-work-unit AUTH-999 --cascade-dependencies",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Scripted Deletion",
         example: "# Delete in automated scripts\nfspec delete-work-unit AUTH-999 --skip-confirmation --cascade-dependencies",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -115,7 +113,7 @@ const PREREQUISITES: &[&str] = &["Work unit must exist in spec/work-units.json"]
 
 const WHEN_TO_USE: &str = "Use this command to permanently remove a work unit from the project. This deletes all associated data including Example Mapping results, dependencies, and state tracking. Use with caution as this operation cannot be undone.";
 
-const TYPICAL_WORKFLOW: &str = "1. Verify work unit: fspec show-work-unit <id> → 2. Check dependencies: fspec dependencies <id> → 3. Delete: fspec delete-work-unit <id> --cascade-dependencies";
+const TYPICAL_WORKFLOW: &str = "1. Verify work unit: fspec show-work-unit <workUnitId> → 2. Check dependencies: fspec dependencies <workUnitId> → 3. Delete: fspec delete-work-unit <workUnitId> --cascade-dependencies";
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "delete-work-unit",

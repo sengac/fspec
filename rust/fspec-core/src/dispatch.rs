@@ -130,7 +130,33 @@ pub(crate) fn unknown_command_with_recovery(command: &str) -> FspecCoreError {
 /// callbacks. The async runtime is used purely to drive the per-command
 /// `async fn run` stubs to completion; in Phase 1 every stub resolves
 /// immediately with [`FspecCoreError::NotYetPorted`].
+///
+/// HOOK-018: the command runs between its `pre-<command>` and
+/// `post-<command>` hooks from `spec/fspec-hooks.json`
+/// ([`crate::command_hooks`]); help requests run no hooks.
 pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
+    if let Some(help_result) = crate::help_dispatch::try_dispatch_help(&req.command, &req.args_json)
+    {
+        return help_result;
+    }
+    // WT-015: before the command hooks, which read the project's hook config.
+    if let Err(error) = crate::io::spec_paths::roots(&req.project_root) {
+        return DispatchResult::from_error(error);
+    }
+    let (project_root, command, args_json) = (
+        req.project_root.clone(),
+        req.command.clone(),
+        req.args_json.clone(),
+    );
+    crate::command_hooks::with_command_hooks(&project_root, &command, &args_json, || {
+        dispatch_command_without_command_hooks(req)
+    })
+}
+
+/// [`dispatch_command`] without the command hooks, for front doors that run
+/// them themselves: the fspec CLI runs every command's hooks once, including
+/// the bridges that route through the dispatcher (HOOK-018).
+pub fn dispatch_command_without_command_hooks(req: DispatchRequest) -> DispatchResult {
     // RPC-414: recognise help requests (`help`, `<cmd> --help`, `<cmd> -h`)
     // BEFORE the canonical lookup so they never fall through to
     // UnknownCommand. Non-help inputs return `None` here and dispatch
@@ -138,6 +164,11 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
     if let Some(help_result) = crate::help_dispatch::try_dispatch_help(&req.command, &req.args_json)
     {
         return help_result;
+    }
+    // WT-015 (product owner, 2026-11-08): a broken state-root pointer fails
+    // every command, readers included, naming the pointer file.
+    if let Err(error) = crate::io::spec_paths::roots(&req.project_root) {
+        return DispatchResult::from_error(error);
     }
 
     // TODO(TOOL-019): NAPI chunk-callback delegation path will be wired in
@@ -211,6 +242,17 @@ fn run_ported(
     if !crate::canonical::is_ported(name) {
         return None;
     }
+
+    // BUG-523: hand every command the project root that owns the spec/ its
+    // loaders resolve (a session or tool call rooted in a subdirectory of
+    // the project otherwise writes a second board there). init is the
+    // exception: it initialises the directory it is given.
+    let resolved = crate::io::project_root::resolve_project_root(project_root);
+    let project_root = if name == "init" {
+        project_root
+    } else {
+        resolved.as_path()
+    };
 
     Some(poll_sync_future(async move {
         match name {
@@ -293,10 +335,6 @@ fn run_ported(
             "show-test-patterns" => {
                 commands::show_test_patterns::run(args_json, project_root).await
             }
-            // RPC-299 — show-acceptance-criteria
-            "show-acceptance-criteria" => {
-                commands::show_acceptance_criteria::run(args_json, project_root).await
-            }
             // RPC-300 — show-coverage
             "show-coverage" => commands::show_coverage::run(args_json, project_root).await,
             // Batch 7 (2026-06-10) — mutation commands
@@ -358,6 +396,11 @@ fn run_ported(
             "restore-rule" => commands::restore_rule::run(args_json, project_root).await,
             // RPC-290 — restore-question
             "restore-question" => commands::restore_question::run(args_json, project_root).await,
+            // BUG-633 — remove-assumption / restore-assumption
+            "remove-assumption" => commands::remove_assumption::run(args_json, project_root).await,
+            "restore-assumption" => {
+                commands::restore_assumption::run(args_json, project_root).await
+            }
             // RPC-287 — restore-architecture-note
             "restore-architecture-note" => {
                 commands::restore_architecture_note::run(args_json, project_root).await
@@ -515,8 +558,6 @@ fn run_ported(
             }
             // RPC-224 — dependencies
             "dependencies" => commands::dependencies::run(args_json, project_root).await,
-            // RPC-237 — get-scenarios
-            "get-scenarios" => commands::get_scenarios::run(args_json, project_root).await,
             // RPC-312 — update-foundation
             "update-foundation" => commands::update_foundation::run(args_json, project_root).await,
             // RPC-208 — configure-tools
@@ -532,6 +573,9 @@ fn run_ported(
             "delete-features" => commands::delete_features::run(args_json, project_root).await,
             "update-scenario" => commands::update_scenario::run(args_json, project_root).await,
             "update-step" => commands::update_step::run(args_json, project_root).await,
+            "update-feature-text" => {
+                commands::update_feature_text::run(args_json, project_root).await
+            }
             // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
             "validate-tags" => commands::validate_tags::run(args_json, project_root).await,
             "validate-work-units" => {
@@ -542,7 +586,6 @@ fn run_ported(
                 commands::validate_foundation_schema::run(args_json, project_root).await
             }
             "validate" => commands::validate::run(args_json, project_root).await,
-            "search-scenarios" => commands::search_scenarios::run(args_json, project_root).await,
             "search-implementation" => {
                 commands::search_implementation::run(args_json, project_root).await
             }
@@ -550,9 +593,9 @@ fn run_ported(
             "generate-tags-md" => commands::generate_tags_md::run(args_json, project_root).await,
             "retag" => commands::retag::run(args_json, project_root).await,
             // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
-            "audit-coverage" => commands::audit_coverage::run(args_json, project_root).await,
+            "audit" => commands::audit::run(args_json, project_root).await, // AUDIT-003
+            "context" => commands::context::run(args_json, project_root).await, // CLI-019
             "board" => commands::board::run(args_json, project_root).await,
-            "check" => commands::check::run(args_json, project_root).await,
             "compare-implementations" => {
                 commands::compare_implementations::run(args_json, project_root).await
             }
@@ -687,11 +730,9 @@ fn run_stub(name: &'static str, _args_json: &str) -> Result<String, FspecCoreErr
         // before reaching this match; intentionally absent here.
         // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
         // before reaching this match; intentionally absent here.
-        // "audit-coverage" — ported (RPC-197, Batch 17). Handled by `run_ported`.
         // "auto-advance" — ported (RPC-198, Batch 18). Handled by `run_ported`.
         // "bootstrap" — ported (RPC-200, Batch 20). Handled by `run_ported`
         // before reaching this match; intentionally absent here.
-        // "check" — ported (RPC-201, Batch 17). Handled by `run_ported`.
         // "checkpoint" — ported (RPC-202, Batch 18). Handled by `run_ported`.
         // "cleanup-checkpoints" — ported (RPC-203, Batch 18). Handled by `run_ported`.
         // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
@@ -739,7 +780,6 @@ fn run_stub(name: &'static str, _args_json: &str) -> Result<String, FspecCoreErr
         // before reaching this match; intentionally absent here.
         // "generate-summary-report" — ported (RPC-235, Batch 17). Handled by `run_ported`.
         // "generate-tags-md" — ported (RPC-236, Batch 16). Handled by `run_ported`.
-        // "get-scenarios" — ported (RPC-237, Batch 14). Handled by `run_ported`.
         // "import-example-map" — ported (RPC-238, Batch 17). Handled by `run_ported`.
         // "init" — ported (RPC-239, Batch 20). Handled by `run_ported`
         // before reaching this match; intentionally absent here.
@@ -843,10 +883,7 @@ fn run_stub(name: &'static str, _args_json: &str) -> Result<String, FspecCoreErr
         // "review" — ported (RPC-295, Batch 20). Handled by `run_ported`
         // before reaching this match; intentionally absent here.
         // "search-implementation" — ported (RPC-296, Batch 16). Handled by `run_ported`.
-        // "search-scenarios" — ported (RPC-297, Batch 16). Handled by `run_ported`.
         // "set-user-story" — ported (RPC-298, Batch 8). Handled by `run_ported`
-        // before reaching this match; intentionally absent here.
-        // "show-acceptance-criteria" — ported (RPC-299). Handled by `run_ported`
         // before reaching this match; intentionally absent here.
         // "show-coverage" — ported (RPC-300). Handled by `run_ported`
         // before reaching this match; intentionally absent here.

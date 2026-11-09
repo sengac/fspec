@@ -85,7 +85,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "use super::lifecycle::invalid;",
+              "lastLine": "}"
             }
           ]
         }

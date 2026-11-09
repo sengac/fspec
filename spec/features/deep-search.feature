@@ -1,13 +1,18 @@
+@BUG-582
 @done
 @rig
 @rust
 @tools
 @RLM-001
+@history-search
+@BUG-514
 Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
   """
   Tool is wired into all 5 providers' create_rig_agent() — same pattern as SessionSearch: import DeepSearchTool from codelet_tools, add .tool(DeepSearchTool::new(session_id)) to each provider's AgentBuilder chain. Verified locations: claude.rs:530, openai.rs:338, gemini.rs:172, codex/mod.rs:364, zai.rs:247.
   AMGR-001 (SessionSearch) provides the foundation for session history access. The implementation pattern: (1) Tool struct in rust/tools/src/session_search/ with types.rs (SessionSearchAction enum, args, results), handler.rs (per-session handler storage via static RwLock<HashMap<Uuid, Handler>>), reassembly.rs (streaming chunk reconstruction). (2) Handler registered in session_manager.rs via set_session_search_handler(session_id, handler) before agent run, cleaned up after. (3) The handler closure captures project_path AND compaction_trimming: Arc<AtomicBool> — the compaction_trimming flag controls whether Layer 0 trimming (CMPCT-010) is applied to SessionSearch results during agent-controlled compaction. (4) inject_summary (CMPCT-008/009) follows the exact same handler pattern — InjectSummaryTool in rust/tools/src/inject_summary.rs with set_inject_summary_handler/has_inject_summary_handler. DeepSearch should follow this same module pattern for its tool structure but does NOT need inject_summary (read-only sub-agent).
   DeepSearch's SessionSearch handler is created via rust/napi/src/session_search_handler.rs::create_handler(project_path, compaction_trimming). The project_path comes from the parent session's project context (same as the parent agent's handler). compaction_trimming must be Arc::new(AtomicBool::new(false)) since the ephemeral sub-agent never does compaction. This avoids the NAPI boundary problem since the handler is pure Rust — no ThreadsafeFunction needed.
+  BUG-514: the execution-mode scenario is checked in rust/agent-loop deep_search_handler, where the mode is chosen
+  (provider_uses_streaming_execution, collect_final_response_from_stream).
   """
 
   Background: User Story
@@ -20,7 +25,7 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
     Given the DeepSearch tool struct exists in the rust/tools/src/deep_search module
     When the rig agent builder includes DeepSearchTool::new(session_id)
     Then DeepSearch has NAME = "DeepSearch"
-    And DeepSearch has Args type = DeepSearchArgs with query (required) and scope (optional Vec<String>) and max_depth (optional usize)
+    And DeepSearch has Args type = DeepSearchArgs with query (required) and scope (optional colon-separated string) and max_depth (optional usize)
     And DeepSearch has Output type = String
     And DeepSearch has Error type = ToolError
     And the definition() returns a JSON schema describing query, scope, and max_depth parameters
@@ -29,7 +34,7 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
   Scenario: Search code files within a scoped directory
     Given a project with source files in "src/auth/"
     And the parent agent has a running session
-    When the parent agent calls DeepSearch with query "How is authentication handled?" and scope ["src/auth/"]
+    When the parent agent calls DeepSearch with query "How is authentication handled?" and scope "src/auth/"
     Then the sub-agent is spawned as an ephemeral instance with a fresh Uuid
     And the sub-agent receives a system prompt describing the code scope as "src/auth/"
     And the sub-agent uses Read, Grep, or AstGrep to explore the scoped files
@@ -116,7 +121,7 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
     Then a SessionSearch handler is created via create_handler(project_path, Arc::new(AtomicBool::new(false)))
     And compaction_trimming is always false for the ephemeral sub-agent
     And the handler is registered via set_session_search_handler(ephemeral_session_id, handler)
-    And after RigAgent::prompt() completes, the handler is cleaned up via set_session_search_handler(ephemeral_session_id, None)
+    And after sub-agent execution completes, the handler is cleaned up via set_session_search_handler(ephemeral_session_id, None)
 
   @read-only-tools
   Scenario: Sub-agent has only read-only search tools
@@ -132,11 +137,12 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
     And the sub-agent does NOT have inject_summary tool
 
   @non-streaming
-  Scenario: Sub-agent uses non-streaming RigAgent::prompt()
-    When the DeepSearch tool executes
-    Then the sub-agent calls RigAgent::prompt(query) not the streaming variant
-    And the call blocks until the sub-agent finishes all tool calls and produces a final answer
-    And the final answer string is returned as the DeepSearch tool result
+  Scenario: Sub-agent runs in its provider-specific execution mode
+    When the DeepSearch sub-agent runs for a provider
+    Then Codex and Z.AI sub-agents run through a stream and every other provider through a single prompt call
+    And a streamed run is consumed past its tool calls until the final answer
+    And the final answer string is the sub-agent result
+    And a streamed run that ends without a final answer is an error, not an empty result
 
   @credentials
   Scenario: Sub-agent reuses parent session credentials

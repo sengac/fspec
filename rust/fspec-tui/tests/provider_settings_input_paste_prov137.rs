@@ -20,13 +20,12 @@
 //! file fails to compile ("no method named handle_paste"). That is the correct
 //! red state. No production source file is touched by this test.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::ProfileForm;
 use codelet_fspec_tui::views::{
     DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::TestResult;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -77,12 +76,12 @@ fn create_view(form: ProfileForm) -> ProviderSettingsView {
     view
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 fn render_to_buffer(view: &mut ProviderSettingsView) -> Buffer {
@@ -118,7 +117,7 @@ fn bullet_count(buf: &Buffer) -> usize {
 // Scenario: Pasting a URL into the focused Base URL field inserts it
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn pasting_a_url_into_the_focused_base_url_field_inserts_it() {
+fn pasting_a_url_into_the_focused_base_url_field_inserts_it() -> TestResult {
     // @step Given the profile create form is open with the Base URL field focused
     let mut view = create_view(form_on_field(0));
 
@@ -127,17 +126,18 @@ fn pasting_a_url_into_the_focused_base_url_field_inserts_it() {
 
     // @step Then the Base URL field contains "https://api.example.com"
     assert_eq!(
-        form_of(&view).field_value(0),
+        form_of(&view)?.field_value(0),
         "https://api.example.com",
         "pasted URL should populate the focused Base URL field"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Pasting an API key into the profile form keeps the field masked
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn pasting_an_api_key_into_the_profile_form_keeps_the_field_masked() {
+fn pasting_an_api_key_into_the_profile_form_keeps_the_field_masked() -> TestResult {
     // @step Given the profile create form is open with the API Key field focused
     let mut view = create_view(form_on_field(1));
 
@@ -146,7 +146,7 @@ fn pasting_an_api_key_into_the_profile_form_keeps_the_field_masked() {
 
     // @step Then the API Key field stores the value "sk-secret123"
     assert_eq!(
-        form_of(&view).field_value(1),
+        form_of(&view)?.field_value(1),
         "sk-secret123",
         "pasted secret should be stored verbatim in the API Key field"
     );
@@ -164,6 +164,7 @@ fn pasting_an_api_key_into_the_profile_form_keeps_the_field_masked() {
         "12-char API key should render as 12 bullet dots, got {} in {text:?}",
         bullet_count(&buf)
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -171,7 +172,8 @@ fn pasting_an_api_key_into_the_profile_form_keeps_the_field_masked() {
 //           newlines and stays masked
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn pasting_a_multi_line_secret_into_the_inline_api_key_entry_strips_newlines_and_stays_masked() {
+fn pasting_a_multi_line_secret_into_the_inline_api_key_entry_strips_newlines_and_stays_masked(
+) -> TestResult {
     // @step Given the inline API-key entry is open with an empty draft
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("anthropic", "api_key", true, 1)]);
@@ -196,7 +198,7 @@ fn pasting_a_multi_line_secret_into_the_inline_api_key_entry_strips_newlines_and
             draft, "sk-abcdef",
             "newline must be stripped from the pasted draft, got {draft:?}"
         ),
-        other => panic!("expected Detail::EditApiKey, got {other:?}"),
+        other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
     }
 
     // @step And the inline API-key entry renders 9 bullet dots and not the plaintext secret
@@ -212,13 +214,14 @@ fn pasting_a_multi_line_secret_into_the_inline_api_key_entry_strips_newlines_and
         "9-char draft should render as 9 bullet dots, got {} in {text:?}",
         bullet_count(&buf)
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Pasting while the provider list is focused does nothing
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn pasting_while_the_provider_list_is_focused_does_nothing() {
+fn pasting_while_the_provider_list_is_focused_does_nothing() -> TestResult {
     // @step Given the provider list is focused with no input field open
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("anthropic", "api_key", true, 1)]);
@@ -237,4 +240,5 @@ fn pasting_while_the_provider_list_is_focused_does_nothing() {
         ProviderSettingsMode::List,
         "mode must stay List and no field value may change"
     );
+    Ok(())
 }

@@ -33,7 +33,11 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
     CommonError {
         error: "Failed to load hook configuration",
-        fix: "Check that spec/fspec-hooks.json exists and contains valid JSON. Run fspec add-hook to create the file if missing.",
+        fix: "spec/fspec-hooks.json does not exist. Add a hook with fspec add-hook <event> <name> --command <path> to create it.",
+    },
+    CommonError {
+        error: "spec/fspec-hooks.json could not be parsed (<reason>); the file was not changed",
+        fix: "Repair the file by hand, or add or remove a hook: add-hook and remove-hook move it to spec/fspec-hooks.json.broken-<timestamp> and write a new configuration.",
     },
 ];
 

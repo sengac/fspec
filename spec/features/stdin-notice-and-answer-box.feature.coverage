@@ -1,0 +1,883 @@
+{
+  "scenarios": [
+    {
+      "name": "The notice sits above the composer and leaves the chat draft in focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "43-63",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "pub(super) fn input_area_height(",
+              "lastLine": "cache_spinner_line(store, sid);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/stdin_answer_box/notice.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// `⌨ ` (magenta) and the bold `command`, then `segments`: on one row",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+O opens a separate answer box with its own buffer",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "65-83",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "pub(super) fn handle_exec_stdin_prompt_key(&mut self, key: &KeyEvent) -> Option<EventResult> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/stdin_answer_box.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ],
+              "firstLine": "const BOX_HEADER_TAIL: &str = \"your answer goes to its stdin\";",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent.rs",
+              "lines": [
+                164,
+                165,
+                213
+              ],
+              "firstLine": "/// TUI-116/TUI-117: the per-session stdin answer boxes (Ctrl+O).",
+              "lastLine": "Some(self.focused_input().hardware_cursor_in(anchored))"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "// TUI-116: the focused stdin answer box is the target, so the",
+              "lastLine": "return true;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter in the answer box writes the line to the command and sends no chat message",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "85-111",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "KeyCode::Enter if key.modifiers.is_empty() => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in the answer box returns to the chat draft and keeps both drafts",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "113-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                61
+              ],
+              "firstLine": "KeyCode::Esc if key.modifiers.is_empty() => self.stdin_box.unfocus(&session),",
+              "lastLine": "KeyCode::Esc if key.modifiers.is_empty() => self.stdin_box.unfocus(&session),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+C in the answer box interrupts only the command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "138-154",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "KeyCode::Char('c') if ctrl => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/action_board_card.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "/// TUI-116: Ctrl+C / Ctrl+D in the stdin answer box — send",
+              "lastLine": "},"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ],
+              "firstLine": "/// TUI-116: Ctrl+C / Ctrl+D in the stdin answer box. Sends",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+D in the answer box ends the command's input",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "156-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "KeyCode::Char('d') if ctrl => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ],
+              "firstLine": "/// TUI-116: Ctrl+C / Ctrl+D in the stdin answer box. Sends",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc with the chat focused still interrupts the agent turn",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "177-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+X dismisses the notice without touching the command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "196-214",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "KeyCode::Char('x') if ctrl => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin_recovery.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                128
+              ],
+              "firstLine": "pub(crate) fn handle_exec_stdin_muted(",
+              "lastLine": "/// Route the TUI-117 Action variants. Called from"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A HITL prompt wins over the notice",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "216-249",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "// focused stdin answer box wins over the pause slot; the stdin",
+              "lastLine": ".and_then(|(s, request)| self.focused_stdin_box_height(s, &request.command, area_width))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ghost panes show no notice",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "251-289",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "// TUI-116: the focused session's exec-stdin request paints the",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A re-probe with no request closes the notice and the answer box",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs",
+          "lines": "296-318",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "None => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ],
+              "firstLine": "/// Clear the slot (exit, new output, a re-probe with no request, a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui116_stdin_notice_answer_box.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/views/agent/stdin_answer_box/notice.rs",
+      "rust/fspec-tui/src/views/agent/exec_stdin_keys.rs",
+      "rust/fspec-tui/src/views/agent/stdin_answer_box.rs",
+      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/hitl_keys.rs",
+      "rust/fspec-tui/src/components/action_board_card.rs",
+      "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+      "rust/fspec-tui/src/app/dispatch_exec_stdin_recovery.rs"
+    ],
+    "totalLinesCovered": 859
+  }
+}

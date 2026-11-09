@@ -16,11 +16,11 @@
 //! `/mux off` then `/mux on` restores the full layout (same transience
 //! as the agent slot dropping on session close).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
-use codelet_fspec_tui::views::multiplex::MuxPaneKind;
+use codelet_fspec_tui::views::multiplex::{MuxLayout, MuxPaneKind};
 use codelet_fspec_tui::views::ViewMode;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::SessionId;
@@ -38,11 +38,13 @@ static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(()
 /// Root the process-global data directory at a fresh throwaway dir and
 /// keep it alive (the established mux004 pattern). Returns the guard
 /// (held for the test's duration) + the TempDir.
-async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, TempDir) {
+async fn root_data_dir(
+) -> Result<(tokio::sync::MutexGuard<'static, ()>, TempDir), codelet_test_helpers::TestError> {
     let guard = DATA_DIR_GUARD.lock().await;
-    let tmp = TempDir::new().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
-    (guard, tmp)
+    let tmp = TempDir::new().or_fail("tempdir")?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).or_fail("set data dir")?;
+    Ok((guard, tmp))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -56,20 +58,23 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 fn esc() -> Event {
@@ -77,41 +82,45 @@ fn esc() -> Event {
 }
 
 /// Poll until a lazy view's load tracker is idle.
-async fn wait_for_view_idle(app: &mut App, changed_files: bool) {
-    for _ in 0..100 {
-        drain_pending(app).await;
-        let idle = if changed_files {
-            !app.navigator().changed_files.load.is_loading()
-        } else {
-            !app.navigator().checkpoints.load.is_loading()
-        };
-        if idle {
-            return;
+async fn wait_for_view_idle(
+    app: &mut App,
+    changed_files: bool,
+) -> Result<(), codelet_test_helpers::TestError> {
+    // TEST-042: wait under the deadlock guard, not a fixed number of sleeps.
+    codelet_test_helpers::deadlock_guard("the lazy view to finish loading", async {
+        loop {
+            drain_pending(app).await?;
+            let idle = if changed_files {
+                !app.navigator().changed_files.load.is_loading()
+            } else {
+                !app.navigator().checkpoints.load.is_loading()
+            };
+            if idle {
+                return Ok::<(), codelet_test_helpers::TestError>(());
+            }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
-    }
-    panic!(
-        "timeout: the {} view did not finish loading",
-        if changed_files {
-            "ChangedFiles"
-        } else {
-            "Checkpoints"
-        }
-    );
+    })
+    .await?
 }
 
 /// Enter mux mode with a specific pane list and wait for the rendered
 /// lazy views (ChangedFiles / Checkpoints) to finish their initial
 /// loads. One agent session is open so the Agent pane has something to
 /// render.
-async fn setup_mux_with_panes(app: &mut App, panes: Vec<MuxPaneKind>) {
+async fn setup_mux_with_panes(
+    app: &mut App,
+    panes: Vec<MuxPaneKind>,
+) -> Result<(), codelet_test_helpers::TestError> {
     // Create a session so the Agent pane has something to render (and
     // the slash-command submit path has a current session).
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(app).await;
-    app.navigator_mut().mux.set_pane_list(panes, None);
+    drain_pending(app).await?;
+    if let Some(mux_layout) = MuxLayout::columns(&panes) {
+        app.navigator_mut().mux.set_layout(mux_layout);
+    }
     submit(app, "/mux on");
-    drain_pending(app).await;
+    drain_pending(app).await?;
     assert_eq!(
         app.active_view(),
         ViewMode::Mux,
@@ -121,11 +130,12 @@ async fn setup_mux_with_panes(app: &mut App, panes: Vec<MuxPaneKind>) {
     // un-rendered pane's view keeps its pre-mux load state).
     let rendered = app.navigator().mux.effective_panes().to_vec();
     if rendered.contains(&MuxPaneKind::ChangedFiles) {
-        wait_for_view_idle(app, true).await;
+        wait_for_view_idle(app, true).await?;
     }
     if rendered.contains(&MuxPaneKind::Checkpoints) {
-        wait_for_view_idle(app, false).await;
+        wait_for_view_idle(app, false).await?;
     }
+    Ok(())
 }
 
 /// Seed a session, enter mux with the given pane list, then close the
@@ -134,28 +144,38 @@ async fn setup_mux_with_panes(app: &mut App, panes: Vec<MuxPaneKind>) {
 /// session, so the session is seeded BEFORE `/mux on` and closed after
 /// — the established pattern (BUG-165's `enter_mux_then_close_the_
 /// session`).
-async fn enter_mux_with_no_sessions(app: &mut App, panes: Vec<MuxPaneKind>) {
+async fn enter_mux_with_no_sessions(
+    app: &mut App,
+    panes: Vec<MuxPaneKind>,
+) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(app).await;
-    app.navigator_mut().mux.set_pane_list(panes, None);
+    drain_pending(app).await?;
+    if let Some(mux_layout) = MuxLayout::columns(&panes) {
+        app.navigator_mut().mux.set_layout(mux_layout);
+    }
     submit(app, "/mux on");
-    drain_pending(app).await;
+    drain_pending(app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
-    app.dispatch(Action::AgentExitChoice {
-        choice: codelet_fspec_tui::components::exit_confirmation_dialog::ExitChoice::CloseSession,
-    });
-    drain_pending(app).await;
+    // TUI-124: closing goes through the close dialog and its facts.
+    app.dispatch(Action::AgentEscPressed);
+    drain_pending(app).await?;
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Enter,
+        KeyModifiers::NONE,
+    )));
+    drain_pending(app).await?;
     assert_eq!(app.agent_view_store().open_sessions().len(), 0);
+    Ok(())
 }
 
 /// Focus the mux pane of the given kind.
-fn focus_pane(app: &mut App, kind: MuxPaneKind) {
+fn focus_pane(app: &mut App, kind: MuxPaneKind) -> Result<(), codelet_test_helpers::TestError> {
     let panes = app.navigator().mux.effective_panes();
-    let idx = panes
-        .iter()
-        .position(|k| *k == kind)
-        .unwrap_or_else(|| panic!("pane kind {kind:?} not in effective panes {panes:?}"));
+    let idx = panes.iter().position(|k| *k == kind).or_fail(&format!(
+        "pane kind {kind:?} not in effective panes {panes:?}"
+    ))?;
     app.navigator_mut().mux.set_focus(idx);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -166,10 +186,11 @@ fn focus_pane(app: &mut App, kind: MuxPaneKind) {
 /// Scenario: Esc on the focused Files mux pane closes the pane and keeps the saved layout
 #[tokio::test]
 #[serial]
-async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_layout() {
+async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_layout() -> TestResult
+{
     // The /mux off tail below triggers the mux-exit R6 auto-save (a
     // real write) — root the data dir for isolation.
-    let (_data_guard, _data) = root_data_dir().await;
+    let (_data_guard, _data) = root_data_dir().await?;
     // @step Given mux mode is active with Board, Agent, Files and Checkpoints panes
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
@@ -181,10 +202,10 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
             MuxPaneKind::Checkpoints,
         ],
     )
-    .await;
+    .await?;
 
     // @step And the Files pane is focused and its list has loaded
-    focus_pane(&mut app, MuxPaneKind::ChangedFiles);
+    focus_pane(&mut app, MuxPaneKind::ChangedFiles)?;
     assert!(
         !app.navigator().changed_files.load.is_loading(),
         "the Files view must be loaded before Esc is honoured"
@@ -192,7 +213,7 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the grid shows Board, Agent and Checkpoints (the Files pane is gone)
     let panes = app.navigator().mux.effective_panes();
@@ -206,9 +227,16 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
         "the Files pane must be removed from the grid, got {panes:?}"
     );
 
-    // @step And the surviving panes rescale to absorb the Files pane's share of the width
+    // @step And the surviving panes of its group absorb the Files pane's share
     let rects = app.navigator().mux.pane_rects();
     assert_eq!(rects.len(), 3, "three pane rects expected");
+    // The top-level group re-divides its 118 available cells (120 minus
+    // two dividers) equally across the three survivors.
+    assert_eq!(
+        rects.iter().map(|r| r.width).collect::<Vec<_>>(),
+        vec![39, 39, 40],
+        "the survivors of the group share the closed pane's width"
+    );
     for (i, rect) in rects.iter().enumerate() {
         assert!(
             rect.width > 0,
@@ -229,14 +257,15 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
     assert!(
         app.mux_state()
             .config()
-            .panes
+            .layout
+            .leaves()
             .contains(&MuxPaneKind::ChangedFiles),
         "the saved tui.mux pane list must be untouched by the live close"
     );
     submit(&mut app, "/mux off");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     submit(&mut app, "/mux on");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.effective_panes(),
         &[
@@ -261,6 +290,7 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
         MuxPaneKind::ChangedFiles,
         "focus must not remain on the closed pane"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -271,8 +301,9 @@ async fn esc_on_the_focused_files_mux_pane_closes_the_pane_and_keeps_the_saved_l
 /// Scenario: Esc on the focused Checkpoints mux pane closes the pane and keeps the saved layout
 #[tokio::test]
 #[serial]
-async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_saved_layout() {
-    let (_data_guard, _data) = root_data_dir().await;
+async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_saved_layout(
+) -> TestResult {
+    let (_data_guard, _data) = root_data_dir().await?;
     // @step Given mux mode is active with Board, Agent and Checkpoints panes and one agent session is open
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
@@ -283,7 +314,7 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
             MuxPaneKind::Checkpoints,
         ],
     )
-    .await;
+    .await?;
     assert_eq!(
         app.agent_view_store().open_sessions().len(),
         1,
@@ -291,7 +322,7 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
     );
 
     // @step And the Checkpoints pane is focused and its list has loaded
-    focus_pane(&mut app, MuxPaneKind::Checkpoints);
+    focus_pane(&mut app, MuxPaneKind::Checkpoints)?;
     assert!(
         !app.navigator().checkpoints.load.is_loading(),
         "the Checkpoints view must be loaded before Esc is honoured"
@@ -299,7 +330,7 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the grid shows Board and Agent (the Checkpoints pane is gone)
     let panes = app.navigator().mux.effective_panes();
@@ -313,14 +344,15 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
     assert!(
         app.mux_state()
             .config()
-            .panes
+            .layout
+            .leaves()
             .contains(&MuxPaneKind::Checkpoints),
         "the saved tui.mux pane list must be untouched by the live close"
     );
     submit(&mut app, "/mux off");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     submit(&mut app, "/mux on");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.effective_panes(),
         &[
@@ -343,6 +375,7 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
         MuxPaneKind::Checkpoints,
         "focus must not remain on the closed pane"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -352,22 +385,22 @@ async fn esc_on_the_focused_checkpoints_mux_pane_closes_the_pane_and_keeps_the_s
 
 /// Scenario: Esc on a Files pane mid-initial-load does not close the pane
 #[tokio::test]
-async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() {
+async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() -> TestResult {
     // @step Given mux mode is active with Board and Files panes
     let (mut app, _mock) = fresh_app();
     // The slash-command submit path needs a current session.
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
-    app.navigator_mut()
-        .mux
-        .set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles], None);
+    drain_pending(&mut app).await?;
+    if let Some(mux_layout) = MuxLayout::columns(&[MuxPaneKind::Board, MuxPaneKind::ChangedFiles]) {
+        app.navigator_mut().mux.set_layout(mux_layout);
+    }
     submit(&mut app, "/mux on");
     // NOTE: no drain here — `/mux on` spawned the initial
     // `changed_files()` load (pending task) and the view is mid-load.
     assert_eq!(app.active_view(), ViewMode::Mux);
 
     // @step And the Files pane is focused and still in its initial load (the loading dialog is showing)
-    focus_pane(&mut app, MuxPaneKind::ChangedFiles);
+    focus_pane(&mut app, MuxPaneKind::ChangedFiles)?;
     assert!(
         app.navigator().changed_files.load.is_loading(),
         "the Files pane must still be in its initial load"
@@ -397,7 +430,7 @@ async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() {
     );
 
     // @step And the initial load completes un-impeded
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         !app.navigator().changed_files.load.is_loading(),
         "the initial load must complete after the reflex Esc"
@@ -409,6 +442,7 @@ async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() {
             .contains(&MuxPaneKind::ChangedFiles),
         "the pane must still be in the grid after the load completes"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -419,13 +453,14 @@ async fn esc_on_a_files_pane_mid_initial_load_does_not_close_the_pane() {
 /// Scenario: closing the last rendered pane exits mux to the single Board view
 #[tokio::test]
 #[serial]
-async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
+async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() -> TestResult {
     // The exit triggers the mux-exit R6 auto-save (a real write) — root
     // the data dir for isolation.
-    let (_data_guard, _data) = root_data_dir().await;
+    let (_data_guard, _data) = root_data_dir().await?;
     // @step Given mux mode is active with Agent and Checkpoints panes and no agent sessions are open
     let (mut app, _mock) = fresh_app();
-    enter_mux_with_no_sessions(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Checkpoints]).await;
+    enter_mux_with_no_sessions(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Checkpoints])
+        .await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
 
     // @step And only the Checkpoints pane renders (the agent slot is dropped) and its list has loaded
@@ -434,12 +469,12 @@ async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
         &[MuxPaneKind::Checkpoints],
         "with zero sessions the agent slot must be dropped"
     );
-    focus_pane(&mut app, MuxPaneKind::Checkpoints);
-    wait_for_view_idle(&mut app, false).await;
+    focus_pane(&mut app, MuxPaneKind::Checkpoints)?;
+    wait_for_view_idle(&mut app, false).await?;
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the TUI leaves mux mode and shows the single Board view
     assert_eq!(
@@ -454,10 +489,11 @@ async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
 
     // @step And the saved mux layout is unchanged
     assert_eq!(
-        app.mux_state().config().panes,
+        app.mux_state().config().layout.leaves(),
         vec![MuxPaneKind::Agent, MuxPaneKind::Checkpoints],
         "the saved tui.mux pane list must survive the exit"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -468,9 +504,9 @@ async fn closing_the_last_rendered_pane_exits_mux_to_the_single_board_view() {
 /// Scenario: closing the Checkpoints pane after the last session closed restores via the saved layout
 #[tokio::test]
 #[serial]
-async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via_the_saved_layout()
-{
-    let (_data_guard, _data) = root_data_dir().await;
+async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via_the_saved_layout(
+) -> TestResult {
+    let (_data_guard, _data) = root_data_dir().await?;
     // @step Given the mux grid shows Board, Agent and Checkpoints with one agent session open
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
@@ -481,7 +517,7 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
             MuxPaneKind::Checkpoints,
         ],
     )
-    .await;
+    .await?;
     assert_eq!(
         app.navigator().mux.effective_panes(),
         &[
@@ -492,10 +528,14 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
     );
 
     // @step When I close the agent session (the agent slot is dropped from the live grid)
-    app.dispatch(Action::AgentExitChoice {
-        choice: codelet_fspec_tui::components::exit_confirmation_dialog::ExitChoice::CloseSession,
-    });
-    drain_pending(&mut app).await;
+    // TUI-124: closing goes through the close dialog and its facts.
+    app.dispatch(Action::AgentEscPressed);
+    drain_pending(&mut app).await?;
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Enter,
+        KeyModifiers::NONE,
+    )));
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.effective_panes(),
         &[MuxPaneKind::Board, MuxPaneKind::Checkpoints],
@@ -503,9 +543,9 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
     );
 
     // @step And I focus the Checkpoints pane and press the Esc key
-    focus_pane(&mut app, MuxPaneKind::Checkpoints);
+    focus_pane(&mut app, MuxPaneKind::Checkpoints)?;
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Checkpoints pane is gone (the agent slot stays dropped — no session open)
     assert_eq!(
@@ -525,11 +565,11 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
     // current session to submit) — the SAVED layout (which still lists
     // the Agent slot and the Checkpoints pane) is what restores.
     app.dispatch(Action::SessionCreated(SessionId::new("s-2")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     submit(&mut app, "/mux off");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     submit(&mut app, "/mux on");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.effective_panes(),
         &[
@@ -539,6 +579,7 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
         ],
         "the saved layout must bring back the agent slot AND the closed Checkpoints pane"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -548,24 +589,25 @@ async fn closing_the_checkpoints_pane_after_the_last_session_closed_restores_via
 
 /// Scenario: closing the last Files pane of a Board+Files grid keeps a full-width Board pane in Mux
 #[tokio::test]
-async fn closing_the_last_files_pane_of_a_board_and_files_grid_keeps_a_full_width_board_pane() {
+async fn closing_the_last_files_pane_of_a_board_and_files_grid_keeps_a_full_width_board_pane(
+) -> TestResult {
     // @step Given mux mode is active with Board and Files panes and no agent sessions are open
     let (mut app, _mock) = fresh_app();
     enter_mux_with_no_sessions(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
     )
-    .await;
+    .await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.agent_view_store().open_sessions().len(), 0);
 
     // @step And the Files pane is focused and its list has loaded
-    focus_pane(&mut app, MuxPaneKind::ChangedFiles);
-    wait_for_view_idle(&mut app, true).await;
+    focus_pane(&mut app, MuxPaneKind::ChangedFiles)?;
+    wait_for_view_idle(&mut app, true).await?;
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the grid shows the full-width Board pane in Mux (no auto-exit)
     assert_eq!(
@@ -587,10 +629,12 @@ async fn closing_the_last_files_pane_of_a_board_and_files_grid_keeps_a_full_widt
     assert!(
         app.mux_state()
             .config()
-            .panes
+            .layout
+            .leaves()
             .contains(&MuxPaneKind::ChangedFiles),
         "the saved tui.mux config must be untouched by the live close"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -600,7 +644,7 @@ async fn closing_the_last_files_pane_of_a_board_and_files_grid_keeps_a_full_widt
 
 /// Scenario: focus clamps to a surviving pane when the last pane is closed
 #[tokio::test]
-async fn focus_clamps_to_a_surviving_pane_when_the_last_pane_is_closed() {
+async fn focus_clamps_to_a_surviving_pane_when_the_last_pane_is_closed() -> TestResult {
     let (mut app, _mock) = fresh_app();
     setup_mux_with_panes(
         &mut app,
@@ -610,15 +654,15 @@ async fn focus_clamps_to_a_surviving_pane_when_the_last_pane_is_closed() {
             MuxPaneKind::ChangedFiles,
         ],
     )
-    .await;
+    .await?;
 
     // Focus the Files pane (index 2, the last pane).
-    focus_pane(&mut app, MuxPaneKind::ChangedFiles);
+    focus_pane(&mut app, MuxPaneKind::ChangedFiles)?;
     assert_eq!(app.navigator().mux.focus(), 2, "Files pane is at index 2");
 
     // Close the Files pane.
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // The grid now has 2 panes; focus must clamp to index 1 (Agent).
     let panes = app.navigator().mux.effective_panes();
@@ -633,6 +677,7 @@ async fn focus_clamps_to_a_surviving_pane_when_the_last_pane_is_closed() {
         MuxPaneKind::Agent,
         "focus must land on the Agent pane (index 1) after clamping"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -642,23 +687,23 @@ async fn focus_clamps_to_a_surviving_pane_when_the_last_pane_is_closed() {
 
 /// Scenario: Esc on the focused Board mux pane still shows the exit dialog
 #[tokio::test]
-async fn esc_on_the_focused_board_mux_pane_still_shows_the_exit_dialog() {
+async fn esc_on_the_focused_board_mux_pane_still_shows_the_exit_dialog() -> TestResult {
     // @step Given mux mode is active with Board and Files panes and no agent sessions are open
     let (mut app, _mock) = fresh_app();
     enter_mux_with_no_sessions(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
     )
-    .await;
+    .await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.agent_view_store().open_sessions().len(), 0);
     // @step And the Board pane is focused
     // No sessions → agent slot is dropped; Board is the first pane.
-    focus_pane(&mut app, MuxPaneKind::Board);
+    focus_pane(&mut app, MuxPaneKind::Board)?;
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the BoardExitConfirmationDialog is shown over the full screen
     assert!(
@@ -680,29 +725,30 @@ async fn esc_on_the_focused_board_mux_pane_still_shows_the_exit_dialog() {
             .contains(&MuxPaneKind::Board),
         "the Board pane must remain in the grid"
     );
+    Ok(())
 }
 
 /// Scenario: Esc on the focused Agent mux pane still shows the agent exit dialog
 #[tokio::test]
-async fn esc_on_the_focused_agent_mux_pane_still_shows_the_agent_exit_dialog() {
+async fn esc_on_the_focused_agent_mux_pane_still_shows_the_agent_exit_dialog() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes and one agent session is open
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
-    app.navigator_mut()
-        .mux
-        .set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::Agent], None);
+    drain_pending(&mut app).await?;
+    if let Some(mux_layout) = MuxLayout::columns(&[MuxPaneKind::Board, MuxPaneKind::Agent]) {
+        app.navigator_mut().mux.set_layout(mux_layout);
+    }
     submit(&mut app, "/mux on");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     // @step And the Agent pane is focused
-    focus_pane(&mut app, MuxPaneKind::Agent);
+    focus_pane(&mut app, MuxPaneKind::Agent)?;
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the agent exit confirmation dialog (Close Session / Cancel) is shown
+    // @step Then the agent exit confirmation dialog (Close / Cancel) is shown
     assert!(
         app.compositor().contains(
             codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID
@@ -718,25 +764,26 @@ async fn esc_on_the_focused_agent_mux_pane_still_shows_the_agent_exit_dialog() {
             .contains(&MuxPaneKind::Agent),
         "the Agent pane must remain in the grid"
     );
+    Ok(())
 }
 
 /// Scenario: Esc in the single Changed Files view still closes to the Board
 #[tokio::test]
-async fn esc_in_the_single_changed_files_view_still_closes_to_the_board() {
+async fn esc_in_the_single_changed_files_view_still_closes_to_the_board() -> TestResult {
     // @step Given the TUI is showing the single Changed Files view with mux inactive
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::OpenChangedFilesView);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.active_view(),
         ViewMode::ChangedFiles,
         "the single ChangedFiles view must be active"
     );
-    wait_for_view_idle(&mut app, true).await;
+    wait_for_view_idle(&mut app, true).await?;
 
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the TUI is back on the single Board view
     assert_eq!(
@@ -750,4 +797,5 @@ async fn esc_in_the_single_changed_files_view_still_closes_to_the_board() {
         !app.navigator().mux.config().enabled,
         "mux must be inactive for the single-view flip"
     );
+    Ok(())
 }

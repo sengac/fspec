@@ -86,3 +86,28 @@ Feature: Port generate-example-mapping-from-event-storm command to Rust
     When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
     Then the work unit's updatedAt is refreshed to a new ISO-8601 timestamp
     Then the file meta.lastUpdated is refreshed to a new ISO-8601 timestamp
+
+  Scenario: Domain events add no examples while policies and hotspots are still transformed
+    Given spec/work-units.json contains AUTH-001 with an eventStorm holding the event 'TrackPlayed', the policy when='UserAuthenticated' then='LoadDashboard' and the hotspot concern='What happens if session expires?'
+    When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    Then the dispatcher returns success with rulesAdded=1, examplesAdded=0, questionsAdded=1
+    And the work unit's examples array is empty
+
+  Scenario: Hotspots get sequential question ids from an undefined nextQuestionId
+    Given spec/work-units.json contains AUTH-001 with no questions and no nextQuestionId and an eventStorm with 3 hotspots
+    When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    Then the 3 questions have the ids 0, 1 and 2
+    And the work unit's nextQuestionId is 3
+
+  Scenario: A second run and add-question continue the question ids without duplicates
+    Given spec/work-units.json contains AUTH-001 with an eventStorm with 2 hotspots
+    And generate-example-mapping-from-event-storm has run once for AUTH-001
+    When a third hotspot is added and generate-example-mapping-from-event-storm runs again
+    And I dispatch add-question with workUnitId='AUTH-001' and question='@human: Anything else?'
+    Then the question ids are sequential from 0 with no duplicates
+    And the added question has the last id and nextQuestionId is one past it
+
+  Scenario: A hotspot concern with several sentences is kept whole
+    Given spec/work-units.json contains AUTH-001 with an eventStorm hotspot concern='Should drag-and-drop support multi-select? How to handle edge cases?'
+    When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
+    Then a question is appended with text exactly '@human: Should drag-and-drop support multi-select? How to handle edge cases?'

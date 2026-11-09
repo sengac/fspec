@@ -1,4 +1,6 @@
 @RIG-011
+@codelet
+@context-management
 Feature: codelet ApiTokenUsage Reasoning Tokens
   """
   Key files: rust/core/src/token_usage.rs (ApiTokenUsage struct, update_from_usage, total_context)

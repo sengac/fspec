@@ -155,6 +155,7 @@ impl ScrollbackList {
             self.chunks.insert(
                 0,
                 RenderedChunk {
+                    row_ends: Vec::new(),
                     seq: TRIM_MARKER_SEQ,
                     lines: vec![marker_line(self.trimmed_rows_total)],
                     source: None,

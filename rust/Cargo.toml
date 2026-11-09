@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    # RPC-072: NAPI-free home for the FspecAgentHooks impl + the agent
+    # RPC-072: home for the FspecAgentHooks impl + the agent
     # loop that drains input_rx, dispatches to the session's LlmProvider,
     # and emits StreamChunk::Text + Done back through
     # BackgroundSession::handle_output. Created here so the `fspec`
@@ -27,17 +27,16 @@ members = [
     "fspec-tui",
     "git",
     "graph",
-    "napi",
     "providers",
     "rpc",
     "rpc-embedded",
     "rpc-server",
     "rpc-types",
-    # RPC-038: NAPI-free home for SessionManager + BackgroundSession.
+    # RPC-038: home for SessionManager + BackgroundSession.
     # Populated by RPC-039/RPC-040.
     "sessions",
     # RPC-067: shared test-only helpers for forbidden-arrow regression
-    # tests. Lives outside the napi/sessions arrow graph so any test
+    # tests. Lives outside the engine crates' arrow graph so any test
     # crate can consume it without pulling forbidden dependencies.
     "test-helpers",
     "tools",
@@ -46,7 +45,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.10.9"
+version = "0.11.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/sengac/fspec"
@@ -54,7 +53,7 @@ repository = "https://github.com/sengac/fspec"
 [workspace.dependencies]
 # Internal
 codelet-cli = { path = "cli" }
-# RPC-072: NAPI-free hooks impl + agent_loop. Consumed by codelet-fspec.
+# RPC-072: hooks impl + agent_loop. Consumed by codelet-fspec.
 codelet-agent-loop = { path = "agent-loop" }
 # RPC-372: axum attachment viewer server crate.
 codelet-attachment-viewer = { path = "attachment-viewer" }
@@ -72,14 +71,11 @@ codelet-rpc = { path = "rpc" }
 codelet-rpc-embedded = { path = "rpc-embedded" }
 codelet-rpc-server = { path = "rpc-server" }
 codelet-rpc-types = { path = "rpc-types" }
-# RPC-038: NAPI-free session manager crate skeleton. Populated by
-# RPC-039/RPC-040; downstream crates (codelet-fspec, codelet-napi) start
-# depending on it from Phase 4 onward.
+# RPC-038: the session manager engine crate (populated by RPC-039/RPC-040).
 codelet-sessions = { path = "sessions" }
 # RPC-067: shared test-only helpers for forbidden-arrow regression
 # tests. Consumed under [dev-dependencies] by every workspace crate
-# that needs to enforce a no-codelet-napi (or any other forbidden-arrow)
-# rule from its tests/*.rs binaries.
+# that needs to enforce a forbidden-arrow rule from its tests/*.rs binaries.
 codelet-test-helpers = { path = "test-helpers" }
 codelet-tools = { path = "tools" }
 codelet-tui = { path = "tui" }
@@ -223,6 +219,10 @@ open = "5"
 
 # === WebSocket (BRIDGE-001) ===
 tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+# RPC-456: the daemon's TLS listener (ring provider — already the provider
+# tokio-tungstenite / reqwest use, so no second crypto backend).
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
 url = "2"
 
 # === RPC (RPC-005) ===
@@ -233,9 +233,8 @@ tarpc = { version = "0.34", features = ["full"] }
 bincode = "1"
 
 # === File Watching (RPC-006) ===
-# notify is the cross-platform fs-watch backbone shared by rust/core
-# (the lifted WorkUnitsWatcher) and rust/napi (the legacy ThreadsafeFunction
-# bridge wrapping it). notify-debouncer-mini coalesces the storms of events
+# notify is the cross-platform fs-watch backbone of rust/core's
+# WorkUnitsWatcher. notify-debouncer-mini coalesces the storms of events
 # notify emits during atomic-write replacements (used by proper-lockfile).
 notify = "6"
 notify-debouncer-mini = "0.4"
@@ -309,27 +308,19 @@ unnecessary_to_owned = "deny"
 # Use patched rig-core with cache token support in streaming responses
 [patch.crates-io]
 rig-core = { path = "patches/rig-core" }
+# KGRAPH-072: nanograph 1.3.0 as published plus patches/nanograph.patch
+# (traversing an edge type with no rows yields nothing instead of an error;
+# BUG-643: an Overwrite load keeps no row whose key is absent from the load).
+nanograph = { path = "patches/nanograph" }
 
 [profile.release]
-# AMGR-018: retain line-table DWARF info EMBEDDED inside the .dylib/.node
-# so the sampling profiler (pprof-rs + backtrace-rs) can resolve internal
-# Rust symbols to file:line, and so `AgentManager.profile` returns
-# meaningful attribution instead of phantom `_napi_register_module_v1`
-# hot spots.
+# AMGR-018: retain line-table DWARF info EMBEDDED inside the binary so the
+# sampling profiler (pprof-rs + backtrace-rs) can resolve internal Rust
+# symbols to file:line.
 #
-# IMPORTANT: We explicitly set `split-debuginfo = "off"` (instead of the
-# macOS default of "packed") because the fspec binary is shipped as a
-# Node SEA (Single Executable Application). At launch, the SEA extracts
-# the embedded `.node` file to a random temp directory like
-# `/var/folders/.../T/fspec-sea-<pid>/codelet-napi.node`. macOS's
-# path-convention `.dSYM` lookup then searches for a sibling
-# `codelet-napi.node.dSYM` bundle in that temp dir — which never exists
-# — so symbol resolution silently fails and every pprof sample resolves
-# to a raw address.
-#
-# Setting `split-debuginfo = "off"` keeps the DWARF section inside the
-# Mach-O so the debug info travels with the binary through the SEA
-# temp-extract step. Combined with `debug = 1` (line-tables-only), the
+# `split-debuginfo = "off"` (instead of the macOS default "packed") keeps
+# the DWARF section inside the Mach-O, so symbolisation does not depend on
+# a sibling `.dSYM` bundle being found next to the executable. Combined with `debug = 1` (line-tables-only), the
 # bloat is bounded: only line number mappings are retained, not full
 # type info.
 #
@@ -344,11 +335,9 @@ codegen-units = 1
 # Slimmed release profile for distribution of the standalone `fspec` Rust
 # ELF/Mach-O binary (rust/fspec). Inherits everything from
 # [profile.release] (opt-level) but drops the embedded DWARF + symbol table
-# that the macOS-SEA pprof contract requires for the `codelet-napi` `.node`
-# artifact.
+# that profiling builds keep.
 #
-# Rationale: the standalone `fspec` binary is NOT packed into a Node SEA
-# and is NOT the pprof sampling target. Keeping `debug = 1` in
+# Rationale: the shipped `fspec` binary is not the pprof sampling target. Keeping `debug = 1` in
 # `[profile.release]` for it inflates the Linux/macOS ELF/Mach-O artifact
 # from ~150 MB to ~800 MB (81% DWARF) for no operational benefit.
 #
@@ -360,14 +349,14 @@ codegen-units = 1
 # "runner has received a shutdown signal"). Thin LTO keeps cross-crate
 # optimization at a small fraction of the memory, and 16 codegen units
 # parallelize codegen. The max-opt fat-LTO profile is retained on
-# `[profile.release]` where the napi `.node` artifact needs it.
+# `[profile.release]` for profiling builds.
 #
 # Use this profile when shipping the standalone CLI:
 #   cargo build --profile release-slim -p codelet-fspec
 # The output lands at:
 #   rust/target/release-slim/fspec
 #
-# Local profiling builds (and any napi build) still use `--release` so the
+# Local profiling builds still use `--release` so the
 # pprof + backtrace-rs symbolisation path documented above keeps working.
 [profile.release-slim]
 inherits = "release"
@@ -388,14 +377,12 @@ opt-level = 0
 # (rust-lang/cargo#10589). The `target/debug/incremental/` directory
 # accumulates ~10-20 GB per `cargo test` cycle in this workspace
 # because:
-#   1. `codelet-napi` has 89 integration test files in tests/*.rs, each
-#      becoming its own test binary that statically links the full
-#      crate (which transitively pulls in nanograph + arrow +
-#      datafusion + lance + tantivy).
+#   1. Crates with many integration test files in tests/*.rs build one
+#      test binary each, statically linking the full crate graph
+#      (nanograph + arrow + datafusion + lance + lance-namespace).
 #   2. Each test binary keeps its own incremental cache under
 #      target/debug/incremental/<crate-hash>/.
-#   3. Shape tests (rust/napi/tests/session_bindings_shape.rs) spawn
-#      nested `cargo test --no-run -p codelet-napi` from within an
+#   3. Shape tests spawn nested `cargo test --no-run` from within an
 #      already-running test binary, doubling the cache footprint.
 #
 # Setting `incremental = false` on the test profile kills the largest

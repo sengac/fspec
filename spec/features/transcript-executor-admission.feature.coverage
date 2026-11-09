@@ -129,7 +129,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "use super::output::{StreamEvent, StreamOutput};",
+              "lastLine": ".publish_committed_context(identity, snapshot, context)"
             }
           ]
         }

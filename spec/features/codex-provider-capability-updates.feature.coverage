@@ -106,7 +106,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "use super::{CodexProvider, CodexResponsesModel, CODEX_BASE_INSTRUCTIONS};",
+              "lastLine": ".tool(request_user_input)"
             },
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -302,7 +304,9 @@
                 189,
                 190,
                 191
-              ]
+              ],
+              "firstLine": "use super::memory_policy;",
+              "lastLine": "self.history.clone(),"
             }
           ]
         }

@@ -67,9 +67,11 @@ impl Fixture {
                 }}}}
             }))?,
         )?;
-        let manager = Arc::new(SessionManager::new());
-        manager.set_default_model("openai/gpt-4o");
-        let session_id = SessionManagerHandle::create_session(manager.as_ref(), None);
+        let manager = SessionManager::new();
+        // BUG-437: sessions need a start workspace.
+        manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
+        manager.set_default_model("openai/gpt-4o")?;
+        let session_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
         let mut original = load_session(Uuid::parse_str(&session_id.value)?)?;
         append_message(&mut original, "user", "original evidence")?;
         Ok(Self {
@@ -91,11 +93,11 @@ impl Fixture {
             inner.provider_manager().selected_model_string().as_deref(),
             Some("openai/gpt-4o")
         );
-        let model = self.manager.get_session_model(&self.session_id);
+        let model = self.manager.get_session_model(&self.session_id)?;
         assert_eq!(model.provider_id, "openai");
         assert_eq!(model.model_id, "gpt-4o");
-        assert_eq!(model.context_window, 128000);
-        assert_eq!(model.max_output_tokens, 16384);
+        assert_eq!(model.context_window, Some(128000));
+        assert_eq!(model.max_output_tokens, Some(16384));
         Ok(())
     }
 
@@ -246,10 +248,12 @@ async fn switching_committed_identity_preserves_ancestry() -> TestResult {
 /// @step Given a persisted session whose inner session is locked
 /// @step When the session attempts to switch model
 /// @step Then the switch fails without changing the durable identity or runtime selection and limits
+/// @step And the prior request environment remains unchanged
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial]
 async fn busy_session_preserves_durable_identity() -> TestResult {
     let fixture = Fixture::new()?;
+    let environment = failure_paths::request_environment();
     let session = fixture.manager.get_session(&fixture.session_id.value)?;
     let guard = session.inner.lock().await;
     assert!(fixture
@@ -257,7 +261,9 @@ async fn busy_session_preserves_durable_identity() -> TestResult {
         .set_model(&fixture.session_id, "openai:Strada", PROFILE_MODEL)
         .is_err());
     drop(guard);
-    fixture.assert_unchanged().await
+    fixture.assert_unchanged().await?;
+    assert_eq!(failure_paths::request_environment(), environment);
+    Ok(())
 }
 
 /// @step Given a persisted session whose manifest is readable but cannot be updated

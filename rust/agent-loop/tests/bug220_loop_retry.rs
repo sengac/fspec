@@ -7,12 +7,9 @@ mod support;
 use codelet_agent_loop::{background_output::LoopDetectionWiring, FspecAgentHooks};
 use codelet_rpc_types::StreamChunk;
 use codelet_sessions::SessionManager;
-use std::{
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-    time::Duration,
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
 };
 use support::{detector_abort, fixture, interruptions, TestResult};
 
@@ -34,7 +31,7 @@ async fn scenario_genuine_loop_recovery_remains_typed_and_bounded() -> TestResul
         polls.clone(),
     );
     let _hook = StreamHook;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
     let id = manager
         .create_session("stub/canned", &directory.path().to_string_lossy())
@@ -44,7 +41,7 @@ async fn scenario_genuine_loop_recovery_remains_typed_and_bounded() -> TestResul
     // @step When the production agent loop exhausts its configured recovery allowance
     session.send_input("explain the architecture".into(), None)?;
     let attempts = LoopDetectionWiring::default().max_retries as usize + 1;
-    tokio::time::timeout(Duration::from_secs(60), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut done = 0;
         while done < attempts {
             let (_, chunk) = chunks.recv().await?;
@@ -59,10 +56,38 @@ async fn scenario_genuine_loop_recovery_remains_typed_and_bounded() -> TestResul
     let events = interruptions(&session);
     assert_eq!(events.len(), attempts);
     assert!(events.iter().all(|event| event["reason"] == "loopDetector"));
+    // TEST-042: no waiting window. Every attempt's Done was read, so the
+    // aborted streams are finished; yield once and nothing polls them.
     let polled = polls.load(Ordering::Acquire);
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    codelet_test_helpers::yield_now().await;
     assert_eq!(polls.load(Ordering::Acquire), polled);
     assert!(polled < 300 * attempts);
+    // @step And the next input after the limit starts a turn with no corrective note and no note is left pending
+    // BUG-615 (TEST-042 causality): the loop discards the note at the limit
+    // after the last attempt's Done is sent, and takes the next input only
+    // once that iteration has settled; so the probe turn's request shows
+    // whether a note was still staged, and its Done orders the read below.
+    codelet_providers::stub_model::clear_looping_stream_hook();
+    session.send_input("probe".into(), None)?;
+    codelet_test_helpers::deadlock_guard("the probe turn finishes", async {
+        while !matches!(chunks.recv().await?.1, StreamChunk::Done) {}
+        Ok::<_, Box<dyn std::error::Error>>(())
+    })
+    .await??;
+    // What the probe turn added after the last looping attempt's reply.
+    let request = codelet_providers::stub_model::last_request_history();
+    let last_attempt = request
+        .iter()
+        .rposition(|message| message.starts_with("repeated "))
+        .ok_or("the probe request holds no looping attempt")?;
+    let added = &request[last_attempt + 1..];
+    assert!(added.iter().any(|message| message.contains("probe")));
+    assert!(
+        !added
+            .iter()
+            .any(|message| message.contains("repetitive output loop")),
+        "the probe turn carried a corrective note: {added:?}"
+    );
     assert!(!session.has_pending_loop_abort_note());
     Ok(())
 }

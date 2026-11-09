@@ -190,7 +190,7 @@ mod tests {
             start_line: 1,
         };
         let (collapsed, full) = produce_diff_strings(&p);
-        assert!(collapsed.contains("(select turn to /expand)"));
-        assert!(!full.contains("(select turn to /expand)"));
+        assert!(collapsed.contains("(Tab to select, Enter to view full)"));
+        assert!(!full.contains("(Tab to select, Enter to view full)"));
     }
 }

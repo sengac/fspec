@@ -63,6 +63,7 @@ impl MockStreamCollector {
 /// Scenario: Stream command output to UI in real-time
 #[tokio::test]
 async fn test_stream_command_output_to_ui_in_real_time() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 
@@ -102,6 +103,7 @@ async fn test_stream_command_output_to_ui_in_real_time() {
 /// Scenario: Buffer complete output for LLM response
 #[tokio::test]
 async fn test_buffer_complete_output_for_llm_response() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 
@@ -145,6 +147,7 @@ async fn test_buffer_complete_output_for_llm_response() {
 /// Scenario: Truncate large output for LLM while streaming full output to UI
 #[tokio::test]
 async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 
@@ -194,6 +197,7 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
 /// Scenario: Emit progress through StreamOutput trait
 #[tokio::test]
 async fn test_emit_progress_through_stream_output_trait() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 
@@ -218,14 +222,14 @@ async fn test_emit_progress_through_stream_output_trait() {
     assert!(result.contains("chunk2"), "Output should contain chunk2");
     assert!(result.contains("chunk3"), "Output should contain chunk3");
 
-    // @step Then each chunk should trigger a callback
+    // @step Then each stdout line should trigger a stream callback
     let chunks = collector.get_chunks();
-    assert!(
-        !chunks.is_empty(),
-        "Expected chunks to be emitted via callback"
+    // @step And the callback should receive each output line as it is produced
+    assert_eq!(
+        chunks,
+        vec!["chunk1\n", "chunk2\n", "chunk3\n"],
+        "each stdout line should reach the callback as its own chunk"
     );
-
-    // @step And the callback should receive the output content
     let all_text = collector.get_all_text();
     assert!(
         all_text.contains("chunk1"),
@@ -241,6 +245,67 @@ async fn test_emit_progress_through_stream_output_trait() {
     );
 }
 
+/// Scenario: Handle abort (ESC) with partial streamed output
+///
+/// BashTool has no timeout (removed in 88529810b); ESC aborts a running
+/// command through the per-session bash abort flag (product owner,
+/// 2026-11-05).
+#[tokio::test]
+async fn test_abort_with_partial_streamed_output() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+
+    use codelet_tools::{clear_bash_abort, request_bash_abort, ToolError};
+
+    // @step Given a bash command that streams some output and then keeps running
+    // Uuid::nil() is the unrestricted no-session id (an unknown session's
+    // isolation lookup fails closed, BUG-404); ABORT_TEST_LOCK serializes
+    // the abort flag it shares with the other abort tests.
+    let session_id = Uuid::nil();
+    clear_bash_abort(session_id);
+    let tool = BashTool::new(session_id);
+    let collector = MockStreamCollector::new();
+    let callback = collector.create_callback();
+    let handle = tokio::spawn(async move {
+        tool.call_with_streaming(
+            BashArgs {
+                command: "echo 'partial-1'; echo 'partial-2'; sleep 10; echo 'completed'"
+                    .to_string(),
+                cwd: None,
+            },
+            Some(callback),
+        )
+        .await
+    });
+    // TEST-042: wait for the streamed output, polled between yields.
+    let _ = codelet_test_helpers::wait_until("partial-2 is streamed", || {
+        std::future::ready(collector.get_all_text().contains("partial-2"))
+    })
+    .await;
+
+    // @step When the user presses ESC and the bash abort is requested during execution
+    request_bash_abort(session_id);
+    let result = codelet_test_helpers::deadlock_guard("the aborted command", handle)
+        .await
+        .expect("abort should end the command well before it finishes")
+        .unwrap();
+
+    // @step Then the user should have seen the partial output streamed before the abort
+    assert_eq!(collector.get_chunks(), vec!["partial-1\n", "partial-2\n"]);
+
+    // @step And the LLM should receive a "Command interrupted by user" error
+    match result {
+        Err(ToolError::Execution { message, .. }) => {
+            assert_eq!(message, "Command interrupted by user");
+        }
+        other => panic!("expected the abort error, got {other:?}"),
+    }
+
+    // @step And the command should not run to completion
+    assert!(!collector.get_all_text().contains("completed"));
+    clear_bash_abort(session_id);
+}
+
 // ==========================================
 // BASH TOOL ABORT TESTS
 // ==========================================
@@ -251,11 +316,11 @@ async fn test_emit_progress_through_stream_output_trait() {
 /// This is critical for ESC key handling in the TUI.
 #[tokio::test]
 async fn test_abort_running_bash_command() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent race conditions with other abort tests
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 
     use codelet_tools::{clear_bash_abort, request_bash_abort};
-    use std::time::{Duration, Instant};
 
     // @step Given a bash command that runs for a long time
     let tool = BashTool::new(Uuid::nil());
@@ -270,7 +335,7 @@ async fn test_abort_running_bash_command() {
         tool.call_with_streaming(
             BashArgs {
                 // Sleep for 10 seconds - we'll abort before it completes
-                command: "sleep 10; echo 'completed'".to_string(),
+                command: "echo started; sleep 10; echo 'completed'".to_string(),
                 cwd: None,
             },
             Some(callback),
@@ -279,24 +344,23 @@ async fn test_abort_running_bash_command() {
     });
 
     // @step When the abort flag is set after 100ms
-    tokio::time::sleep(Duration::from_millis(100)).await;
-    let start = Instant::now();
+    // TEST-042: set it once the command is running, not after a fixed time.
+    let _ = codelet_test_helpers::wait_until("the command starts", || {
+        std::future::ready(collector.get_all_text().contains("started"))
+    })
+    .await;
     request_bash_abort(uuid::Uuid::nil());
 
     // @step Then the command should terminate within 200ms (well before 10 seconds)
+    // TEST-042: no wall-clock bound. An abort that did not work would let
+    // the 10 s sleep finish and the command succeed; the interrupted
+    // result and the missing "completed" line are the proof.
     let result = handle.await.unwrap();
-    let elapsed = start.elapsed();
 
     // Should have been interrupted, not completed
     assert!(
         result.is_err(),
         "Command should have been interrupted, but got: {result:?}"
-    );
-
-    // Should complete quickly after abort (within polling interval + some margin)
-    assert!(
-        elapsed < Duration::from_millis(200),
-        "Abort should terminate command quickly, but took {elapsed:?}"
     );
 
     // The output should NOT contain "completed" since we aborted before sleep finished
@@ -316,6 +380,7 @@ async fn test_abort_running_bash_command() {
 /// subsequent commands can run normally.
 #[tokio::test]
 async fn test_clear_abort_allows_new_commands() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // Acquire lock to prevent race conditions with other abort tests
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
 

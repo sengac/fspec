@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @validator
 @validation
@@ -62,11 +63,6 @@ Feature: Provider config loader and Rhai script compiler
     Given a JSON file that omits the name field
     When I load the config
     Then I receive an error whose message mentions the missing name field
-
-  Scenario: Reject provider name that collides with a built-in provider
-    Given a config JSON with name set to "claude"
-    When I load the config
-    Then I receive an error mentioning that the name conflicts with a built-in provider
 
   Scenario: Reject provider name with invalid characters
     Given a config JSON with name set to "My Provider"

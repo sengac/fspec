@@ -73,7 +73,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -108,7 +110,9 @@
                 115,
                 116,
                 117
-              ]
+              ],
+              "firstLine": "std::fs::write(&out_path, content).map_err(|source| FspecCoreError::Io {",
+              "lastLine": "/// Resolve `file` against `project_root` when it is a relative path."
             }
           ]
         }
@@ -124,14 +128,6 @@
             {
               "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
@@ -146,20 +142,18 @@
                 102,
                 103,
                 104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
-              ]
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "// Resolve the output path relative to project_root, create parents, write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -183,7 +177,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "let data = ensure_work_units_file(project_root)?;",
+              "lastLine": "command: \"export-example-map\","
             }
           ]
         }
@@ -199,10 +195,12 @@
             {
               "file": "rust/fspec-core/src/commands/export_example_map.rs",
               "lines": [
-                51,
-                52,
-                53
-              ]
+                53,
+                54,
+                55
+              ],
+              "firstLine": "// Load work-units.json (auto-create when missing; escalate parse errors",
+              "lastLine": "let data = ensure_work_units_file(project_root)?;"
             }
           ]
         }
@@ -281,7 +279,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -298,6 +298,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/export_example_map.rs"
     ],
-    "totalLinesCovered": 372
+    "totalLinesCovered": 360
   }
 }

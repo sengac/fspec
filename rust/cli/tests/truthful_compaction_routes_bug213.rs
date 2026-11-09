@@ -7,7 +7,6 @@ use codelet_cli::interactive::{begin_compaction_recovery, run_agent_stream, Stre
 use codelet_core::{RigAgent, StreamingTokenDisplay, TokenState};
 use rig::client::CompletionClient;
 use std::sync::{atomic::AtomicBool, Arc, Mutex};
-use std::time::Duration;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -46,7 +45,7 @@ async fn scenario_every_compaction_entry_route_reports_unknown_work_honestly() -
                 .build()?;
         let agent = RigAgent::new(client.agent("o3").build(), 1);
         let started = fixture.started.clone();
-        let observed = tokio::time::timeout(Duration::from_secs(3), async {
+        let observed = codelet_test_helpers::deadlock_guard("the awaited block", async {
             if route == "pre-prompt" {
                 tokio::select! {
                     _ = started.notified() => Ok(()),

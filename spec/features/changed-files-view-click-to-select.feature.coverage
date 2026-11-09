@@ -4,8 +4,8 @@
       "name": "Clicking an unselected file row selects it and reloads its diff",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "448-473",
+          "file": "rust/fspec-tui/src/views/changed_files/click_tests.rs",
+          "lines": "12-42",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
@@ -34,8 +34,14 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let total = self.files.len();",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -45,8 +51,8 @@
       "name": "Clicking the top visible row selects the file at the scroll offset",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "475-507",
+          "file": "rust/fspec-tui/src/views/changed_files/click_tests.rs",
+          "lines": "44-88",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
@@ -75,8 +81,14 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let total = self.files.len();",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -86,8 +98,8 @@
       "name": "Clicking the already-selected file row changes nothing",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "509-530",
+          "file": "rust/fspec-tui/src/views/changed_files/click_tests.rs",
+          "lines": "90-113",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
@@ -116,8 +128,14 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let total = self.files.len();",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -127,8 +145,8 @@
       "name": "Clicking inside the diff pane focuses it without changing the selection",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "532-558",
+          "file": "rust/fspec-tui/src/views/changed_files/click_tests.rs",
+          "lines": "115-141",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
@@ -157,8 +175,14 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let total = self.files.len();",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -168,8 +192,8 @@
       "name": "Clicking empty space below the last file changes nothing",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/changed_files/tests.rs",
-          "lines": "560-582",
+          "file": "rust/fspec-tui/src/views/changed_files/click_tests.rs",
+          "lines": "143-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mouse.rs",
@@ -198,8 +222,14 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "let total = self.files.len();",
+              "lastLine": "visible_items: visible,"
             }
           ]
         }
@@ -211,11 +241,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/changed_files/tests.rs"
+      "rust/fspec-tui/src/views/changed_files/click_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/changed_files/mouse.rs"
     ],
-    "totalLinesCovered": 522
+    "totalLinesCovered": 298
   }
 }

@@ -5,7 +5,7 @@
 //! recent `keepLast` by creation timestamp. Enumerates checkpoint refs via
 //! [`codelet_git::ghost_commit::list_ghost_checkpoints`] (pure gitoxide — no
 //! `git` CLI), correlates each with the metadata index at
-//! `.git/fspec-checkpoints-index/<work_unit_id>.json` to recover timestamps,
+//! `.git/fspec-checkpoints-index/<workUnitId>.json` to recover timestamps,
 //! sorts newest-first, then deletes everything beyond the keep window via
 //! [`codelet_git::ghost_commit::delete_ghost_checkpoint`].
 //!
@@ -36,7 +36,7 @@ use codelet_git::ghost_commit::{delete_ghost_checkpoint, list_ghost_checkpoints}
 ///
 /// Parity with TS Commander.js registration
 /// (`src/commands/cleanup-checkpoints.ts:108-114`): one positional
-/// `<work-unit-id>` and a required `--keep-last <number>` option. We expose
+/// `<workUnitId>` and a required `--keep-last <number>` option. We expose
 /// `format` for the structured dispatcher path.
 #[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -162,7 +162,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 }
 
-/// Read `.git/fspec-checkpoints-index/<work_unit_id>.json` (ENOENT / malformed
+/// Read `.git/fspec-checkpoints-index/<workUnitId>.json` (ENOENT / malformed
 /// JSON → `None`).
 fn read_index(project_root: &Path, work_unit_id: &str) -> Option<Value> {
     let path = project_root

@@ -1,5 +1,7 @@
 @done
 @RPC-274
+@cli
+@foundation-management
 Feature: Port remove-foundation-bounded-context command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_foundation_bounded_context.rs. Signature
@@ -73,3 +75,10 @@ Feature: Port remove-foundation-bounded-context command to Rust
     When I dispatch remove-foundation-bounded-context with contextName='Anything'
     Then the dispatcher returns success=false
     And the error message contains the substring "Bounded context 'Anything' not found (no Event Storm data)"
+
+  Scenario: Removing a bounded context regenerates FOUNDATION.md without it
+    Given a project root tempdir with spec/foundation.json containing an eventStorm bounded_context text='Payments' deleted=false and no children
+    And spec/FOUNDATION.md written by dispatching generate-foundation-md contains 'Payments'
+    When I dispatch remove-foundation-bounded-context with contextName='Payments'
+    Then the dispatcher returns success=true
+    And spec/FOUNDATION.md on disk is regenerated and no longer contains 'Payments'

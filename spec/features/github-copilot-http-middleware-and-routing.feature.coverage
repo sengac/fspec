@@ -10,6 +10,7 @@
             {
               "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
+                59,
                 60,
                 61,
                 62,
@@ -61,18 +62,15 @@
                 108,
                 109,
                 110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
-              ]
+                111
+              ],
+              "firstLine": "pub struct CopilotHeaderFacade;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/copilot/endpoint.rs",
               "lines": [
+                62,
                 63,
                 64,
                 65,
@@ -104,9 +102,10 @@
                 91,
                 92,
                 93,
-                94,
-                95
-              ]
+                94
+              ],
+              "firstLine": "/// Select the [`CopilotEndpoint`] for a given model ID per PROV-055 rule 5.",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/copilot/provider.rs",
@@ -148,7 +147,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "match &deployment {",
+              "lastLine": "let base_url = match auth.endpoints_api.as_deref() {"
             }
           ]
         }
@@ -164,6 +165,7 @@
             {
               "file": "rust/providers/src/copilot/endpoint.rs",
               "lines": [
+                62,
                 63,
                 64,
                 65,
@@ -195,9 +197,10 @@
                 91,
                 92,
                 93,
-                94,
-                95
-              ]
+                94
+              ],
+              "firstLine": "/// Select the [`CopilotEndpoint`] for a given model ID per PROV-055 rule 5.",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/copilot/behavior_facade.rs",
@@ -227,7 +230,9 @@
                 82,
                 83,
                 84
-              ]
+              ],
+              "firstLine": "/// gpt-5-codex, gpt-5-mini, gpt-4o-copilot, etc.).",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/copilot/provider.rs",
@@ -245,7 +250,9 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "Some(api) if !api.is_empty() => CopilotBaseUrl::from_string(api.to_string()),",
+              "lastLine": ".with_auth(auth.clone(), base_url.as_str().to_owned());"
             }
           ]
         }
@@ -268,7 +275,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "// stays on /chat/completions. Check this first so the general rule",
+              "lastLine": "// Match the \"gpt-N\" prefix and extract the numeric family."
             }
           ]
         }
@@ -319,27 +328,20 @@
                 83,
                 84,
                 85
-              ]
+              ],
+              "firstLine": ".get(\"input\")",
+              "lastLine": "/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`"
             },
             {
               "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
-                103,
                 104,
                 105,
                 106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
-              ]
+                107
+              ],
+              "firstLine": "// Copilot-Vision-Request: true (only when vision content is present)",
+              "lastLine": "}"
             }
           ]
         }
@@ -353,20 +355,29 @@
           "lines": "262-302",
           "implMappings": [
             {
-              "file": "rust/providers/src/copilot/provider.rs",
+              "file": "rust/providers/src/copilot/base_url.rs",
               "lines": [
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "/// Compute the API base URL for an active Copilot deployment.",
+              "lastLine": "}"
             }
           ]
         }
@@ -392,22 +403,25 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "// Check 1: Explicit metadata.mode = \"agent\" flag",
+              "lastLine": ""
             },
             {
               "file": "rust/providers/src/copilot/header_facade.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ],
+              "firstLine": "// x-initiator: \"agent\" or \"user\"",
+              "lastLine": ");"
             }
           ]
         }
@@ -426,8 +440,9 @@
       "rust/providers/src/copilot/endpoint.rs",
       "rust/providers/src/copilot/provider.rs",
       "rust/providers/src/copilot/behavior_facade.rs",
-      "rust/providers/src/copilot/classifier.rs"
+      "rust/providers/src/copilot/classifier.rs",
+      "rust/providers/src/copilot/base_url.rs"
     ],
-    "totalLinesCovered": 580
+    "totalLinesCovered": 570
   }
 }

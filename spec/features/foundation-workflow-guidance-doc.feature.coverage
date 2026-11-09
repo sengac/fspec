@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/foundation_guidance_doc_test.rs",
-          "lines": "28-89",
+          "lines": "28-88",
           "implMappings": [
             {
               "file": "rust/tools/src/fspec_workflow_guidance.rs",
@@ -96,7 +96,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "## Phase 0: FOUNDATION (New Projects Only)",
+              "lastLine": "## Phase 0: DISCOVERY (Before Specifying)"
             }
           ]
         }
@@ -104,33 +106,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 24,
-    "coveredScenarios": 24,
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-core/tests/foundation_status.rs",
-      "rust/fspec-core/tests/foundation_status_extended.rs",
-      "rust/fspec-core/tests/foundation_mutation_trailers.rs",
-      "rust/fspec-core/tests/foundation_guidance.rs",
       "rust/tools/tests/foundation_guidance_doc_test.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/foundation_status.rs",
-      "rust/fspec-core/src/commands/show_foundation.rs",
-      "rust/fspec-core/src/commands/add_capability.rs",
-      "rust/fspec-core/src/commands/add_persona.rs",
-      "rust/fspec-core/src/commands/remove_capability.rs",
-      "rust/fspec-core/src/commands/update_foundation.rs",
-      "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
-      "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
-      "rust/fspec-core/src/commands/remove_foundation_bounded_context.rs",
-      "rust/fspec-core/src/commands/discover_foundation.rs",
-      "rust/fspec-core/src/commands/show_foundation_event_storm.rs",
-      "rust/fspec-core/src/commands/validate_foundation_schema.rs",
-      "rust/fspec-core/src/foundation/guidance.rs",
       "rust/tools/src/fspec_workflow_guidance.rs"
     ],
-    "totalLinesCovered": 3352
+    "totalLinesCovered": 147
   },
   "fileName": "foundation-workflow-guidance-doc.feature"
 }

@@ -1,4 +1,9 @@
+@BUG-582
+@BUG-474
 @KGRAPH-009
+@COV-057
+@agent-core
+@research-tools
 Feature: DeepSearch Graph Integration
   """
   Modifies DeepSearch sub-agent builder in rust/tools to conditionally add GraphSearch tool. Injects graph context into system prompt before spawning sub-agent. All integration is opt-in — zero behavior change when graph is absent.
@@ -26,18 +31,18 @@ Feature: DeepSearch Graph Integration
 
   Scenario: GraphSearch tool added when graph database is initialized
     Given the knowledge graph database is initialized and available
-    When a DeepSearch sub-agent is being built
+    When a non-recursive DeepSearch sub-agent is being built
     Then the GraphSearch tool is included in the sub-agent's toolset
     And the sub-agent has 8 tools total
 
   Scenario: DeepSearch works without graph database
     Given no knowledge graph database exists
-    When a DeepSearch sub-agent is being built
+    When a non-recursive DeepSearch sub-agent is being built
     Then the sub-agent has the default 7 tools
     And no error is raised
 
   Scenario: Graph context injected into system prompt when data exists
-    Given the knowledge graph contains concepts related to the search query
+    Given the learnings graph contains learnings related to the search query
     When the DeepSearch system prompt is constructed
-    Then a knowledge graph context section is appended to the prompt
-    And the context includes related concept names and relationships
+    Then a learnings context section is appended to the prompt
+    And the context includes the related learning titles and categories

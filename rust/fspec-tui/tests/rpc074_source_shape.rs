@@ -18,22 +18,23 @@
 //! grep is the cheapest, most precise way to keep an invented behaviour
 //! from creeping back into the Rust port.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::{Path, PathBuf};
 
 /// Workspace root (one level above this crate's manifest dir).
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir
+    Ok(manifest_dir
         .parent()
-        .expect("codelet-fspec-tui manifest dir must have a parent")
-        .to_path_buf()
+        .or_fail("codelet-fspec-tui manifest dir must have a parent")?
+        .to_path_buf())
 }
 
-fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
+fn read(path: &Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_tree_or_file(path)
+            .map_err(|e| format!("failed to read {}: {e}", path.display()))?,
+    )
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -41,17 +42,17 @@ fn read(path: &Path) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn rust_source_files_do_not_contain_ts_divergent_clear_strings() {
+fn rust_source_files_do_not_contain_ts_divergent_clear_strings() -> TestResult {
     // @step Given the file rust/fspec-tui/src/app/dispatch_slash_clear.rs is read into memory
-    let dispatch_path = workspace_root().join("fspec-tui/src/app/dispatch_slash_clear.rs");
-    let dispatch_body = read(&dispatch_path);
+    let dispatch_path = workspace_root()?.join("fspec-tui/src/app/dispatch_slash_clear.rs");
+    let dispatch_body = read(&dispatch_path)?;
 
     // @step And the file rust/core/src/session_manager_handle.rs is read into memory
-    let handle_path = workspace_root()
+    let handle_path = workspace_root()?
         .parent()
-        .expect("rust/ has a parent")
+        .or_fail("rust/ has a parent")?
         .join("rust/core/src/session_manager_handle.rs");
-    let handle_body = read(&handle_path);
+    let handle_body = read_tree(&handle_path)?;
 
     // @step When the test searches both files for the literal strings "history cleared" and "[notice] /clear"
     let dispatch_has_history_cleared = dispatch_body.contains("history cleared");
@@ -80,4 +81,14 @@ fn rust_source_files_do_not_contain_ts_divergent_clear_strings() {
          StreamChunk::UserNotification carrying the literal string \
          `\"history cleared\"`"
     );
+    Ok(())
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
 }

@@ -39,6 +39,7 @@ async fn assert_blocked_failure(
     expected: CompactionFailure,
 ) -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     codelet_core::persistence::reset_stores_for_tests();
     let mut manifest = codelet_core::persistence::create_session_with_provider(
@@ -78,8 +79,8 @@ async fn assert_blocked_failure(
     let busy = Arc::new(AtomicBool::new(false));
     let output = RecordingOutput::default();
     set_compactor_sub_agent_handler(session_id, handler);
-    let result = tokio::time::timeout(
-        Duration::from_secs(2),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_compactor_sub_agent_round(&mut session, session_id, &...",
         run_compactor_sub_agent_round(&mut session, session_id, &state, &busy, &output),
     )
     .await;
@@ -111,17 +112,50 @@ async fn assert_blocked_failure(
             .map_err(|error| error.to_string())?
             .compaction_needed
     );
-    let events = output.0.lock().map_err(|error| error.to_string())?;
-    assert_eq!(
-        events
+    {
+        let events = output.0.lock().map_err(|error| error.to_string())?;
+        assert_eq!(
+            events
+                .iter()
+                .filter(|event| matches!(event, StreamEvent::CompactionFailed { .. }))
+                .count(),
+            1
+        );
+        assert!(!events
             .iter()
-            .filter(|event| matches!(event, StreamEvent::CompactionFailed { .. }))
-            .count(),
-        1
+            .any(|event| matches!(event, StreamEvent::CompactionComplete { .. })));
+    }
+    // BUG-614: the failure stays retryable; the next input runs the builder
+    // again with a fresh budget.
+    let retries = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let counted = retries.clone();
+    set_compactor_sub_agent_handler(
+        session_id,
+        Some(Arc::new(move |_, _| {
+            counted.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async { Ok("still not a complete DAG".into()) })
+        })),
     );
-    assert!(!events
-        .iter()
-        .any(|event| matches!(event, StreamEvent::CompactionComplete { .. })));
+    let retry = codelet_cli::compactor_sub_agent::retry_failed_compactor_for_next_input(
+        &mut session,
+        session_id,
+        &busy,
+        &Arc::new(AtomicBool::new(false)),
+        &Arc::new(tokio::sync::Notify::new()),
+        &output,
+    )
+    .await;
+    set_compactor_sub_agent_handler(session_id, None);
+    assert!(
+        retry.is_err(),
+        "the retried builder still returns invalid output"
+    );
+    assert_eq!(
+        retries.load(Ordering::SeqCst),
+        1,
+        "the next input retries the builder"
+    );
+    assert!(session.ensure_compaction_inference_ready().is_err());
     Ok(())
 }
 
@@ -156,7 +190,7 @@ async fn invalid_builder_output_cannot_become_a_replacement_dag() -> TestResult 
     // @step When automatic compaction runs
     // @step Then a typed invalid-candidate failure is returned
     // @step And committed conversation is unchanged without completion
-    // @step And the busy indicator clears while inference remains blocked
+    // @step And the busy indicator clears and inference waits for the next input to retry the builder
     assert_blocked_failure(
         Some(Arc::new(|_, _| {
             Box::pin(async { Ok("not a complete DAG".into()) })

@@ -25,14 +25,12 @@ COMMON PATTERNS
     Example: fspec update-foundation projectName "fspec"
 fspec update-foundation projectVision "Standardized CLI for AI agent spec management"
 fspec update-foundation projectType "cli-tool"
-    undefined
 
   • Update Problem/Solution Space
     Example: fspec update-foundation problemTitle "Spec Management"
 fspec update-foundation problemDefinition "AI agents lack structured workflow"
 fspec update-foundation problemImpact "high"
 fspec update-foundation solutionOverview "CLI tool with Gherkin specs and ACDD workflow"
-    undefined
 
 
 TYPICAL WORKFLOW

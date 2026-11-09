@@ -1,245 +1,48 @@
 {
   "scenarios": [
     {
-      "name": "First GraphSearch call auto-initializes the database",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/graph_lifecycle_test.rs",
-          "lines": "39-81",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/mod.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Subsequent process opens existing database",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/graph_lifecycle_test.rs",
-          "lines": "87-116",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/mod.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Data directory change resets graph singleton",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/graph_lifecycle_test.rs",
-          "lines": "121-155",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/mod.rs",
-              "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Empty graph returns zero stats without error",
       "testMappings": [
         {
-          "file": "rust/napi/tests/graph_lifecycle_test.rs",
-          "lines": "160-184",
+          "file": "rust/graph/tests/cov057_nanograph_lifecycle.rs",
+          "lines": "32-65",
           "implMappings": [
             {
-              "file": "rust/napi/src/graph/mod.rs",
+              "file": "rust/graph/src/database.rs",
               "lines": [
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Schema contains all required node and edge types",
-      "testMappings": [
-        {
-          "file": "rust/napi/tests/graph_lifecycle_test.rs",
-          "lines": "189-235",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/graph/mod.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575
+              ],
+              "firstLine": "/// Get node/edge type counts from storage.",
+              "lastLine": "}"
             }
           ]
         }
@@ -247,15 +50,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/graph_lifecycle_test.rs"
+      "rust/graph/tests/cov057_nanograph_lifecycle.rs"
     ],
     "implFiles": [
-      "rust/napi/src/graph/mod.rs"
+      "rust/graph/src/database.rs"
     ],
-    "totalLinesCovered": 345
+    "totalLinesCovered": 64
   }
 }

@@ -293,7 +293,9 @@ Suggestions are based on sequential IDs, build/test pairs, and infrastructure pa
             s.confidence.to_uppercase()
         ));
     }
-    out.push_str("To apply a suggestion: fspec add-dependency <from-id> --depends-on=<to-id>");
+    out.push_str(
+        "To apply a suggestion: fspec add-dependency <workUnitId> --depends-on=<workUnitId>",
+    );
     out
 }
 

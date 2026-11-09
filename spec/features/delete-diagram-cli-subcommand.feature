@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@diagram
 Feature: fspec delete-diagram CLI subcommand (Rust port)
   """
   Clap derive subcommand `delete-diagram` mirrors the TS Commander.js registration at

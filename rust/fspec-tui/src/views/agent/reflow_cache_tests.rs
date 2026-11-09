@@ -34,6 +34,7 @@ fn buf_cells(buf: &Buffer, w: u16, h: u16) -> String {
 /// `RowKey`/`RenderedChunk` pair (seq is the stable identity).
 fn chunk_with_line(seq: u64, line: Line<'static>) -> RenderedChunk {
     RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: vec![line],
         source: None,

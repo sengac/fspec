@@ -1,0 +1,240 @@
+{
+  "scenarios": [
+    {
+      "name": "An unparsable feature file fails the status move and names the file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug360_status_gate_feature_read_errors.rs",
+          "lines": "71-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833
+              ],
+              "firstLine": "let Some(feature) = parsed else {",
+              "lastLine": "Ok(tagged)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature file that is not valid UTF-8 fails the status move and names the file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug360_status_gate_feature_read_errors.rs",
+          "lines": "91-109",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// BUG-360/BUG-378: why the feature scan could not read `spec/features`.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreadable spec/features directory fails the status move and names it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug360_status_gate_feature_read_errors.rs",
+          "lines": "111-125",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// BUG-360/BUG-378: why the feature scan could not read `spec/features`.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug360_status_gate_feature_read_errors.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+      "rust/fspec-core/src/commands/audit.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs"
+    ],
+    "totalLinesCovered": 214
+  }
+}

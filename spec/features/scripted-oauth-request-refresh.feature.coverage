@@ -31,7 +31,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -89,7 +91,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -166,8 +170,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -204,7 +223,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -262,7 +283,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -339,8 +362,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -377,7 +415,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -435,7 +475,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -512,8 +554,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -550,7 +607,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -608,7 +667,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -685,8 +746,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -723,7 +799,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -781,7 +859,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -858,8 +938,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -870,7 +965,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug269_scripted_request_refresh.rs",
-          "lines": "204-245",
+          "lines": "204-243",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider_dispatch.rs",
@@ -896,7 +991,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -954,7 +1051,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -1031,8 +1130,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -1043,7 +1157,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug269_scripted_request_refresh.rs",
-          "lines": "247-284",
+          "lines": "245-291",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider_dispatch.rs",
@@ -1069,7 +1183,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {",
+              "lastLine": "///"
             },
             {
               "file": "rust/providers/src/custom/request_auth.rs",
@@ -1127,7 +1243,9 @@
                 59,
                 60,
                 61
-              ]
+              ],
+              "firstLine": "pub(crate) async fn ensure_request_auth(&self) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/oauth/scripted_request_refresh.rs",
@@ -1204,8 +1322,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "let path = custom_oauth_store_path(name);",
+              "lastLine": "}"
             }
           ]
         }
@@ -1224,6 +1357,6 @@
       "rust/providers/src/custom/request_auth.rs",
       "rust/providers/src/oauth/scripted_request_refresh.rs"
     ],
-    "totalLinesCovered": 1290
+    "totalLinesCovered": 1388
   }
 }

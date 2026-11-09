@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "name": "A file operation for an unknown session is refused",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug404_tool_isolation_fails_closed.rs",
+          "lines": "17-33",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "/// Look up a session by id in the registered manager, and only there",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A known non-isolated session is not restricted",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug404_tool_isolation_fails_closed.rs",
+          "lines": "40-60",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/wrapper.rs",
+              "lines": [
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                753,
+                753,
+                765,
+                766
+              ],
+              "firstLine": "/// GIT-020: Get the isolation context for a session.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A standalone auxiliary agent is not restricted",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug404_tool_isolation_fails_closed.rs",
+          "lines": "57-77",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission/registry.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "/// BUG-404: true when `id` is a live auxiliary agent registered with no",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug404_tool_isolation_fails_closed.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_tool_callbacks.rs",
+      "rust/tools/src/facade/wrapper.rs",
+      "rust/tools/src/tool_admission/registry.rs"
+    ],
+    "totalLinesCovered": 111
+  }
+}

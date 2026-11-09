@@ -1,4 +1,6 @@
 @BRIDGE-017
+@tools
+@bridge
 Feature: Command handling pipeline in bridge_relay.rs
   """
   Changes span 4 files across 2 crates: (1) bridge_relay.rs: add CommandEmitter type, extend spawn_relay_task/relay_loop/connect_and_relay/handle_inbound_message with command_emitter + pending_commands params, add command handling in MSG_TYPE_COMMAND match arm, modify outbound loop to intercept fspecCommandResult/fspecCommandRequest chunks. (2) bridge_handler.rs: extend BridgeSessionContext + set_bridge_session_context with command_emitter. (3) lib.rs: export CommandEmitter. (4) session_manager.rs: create command_emitter closure using session.handle_output(StreamChunk::fspec_command_request(...)), pass to set_bridge_session_context. Uses Arc<Mutex<HashMap<String, (String, String)>>> for pending_commands (key=tool_call_id, value=(request_id, command_name)), created per-connection.
@@ -36,19 +38,19 @@ Feature: Command handling pipeline in bridge_relay.rs
 
   @inbound
   @happy-path
-  Scenario: Handle command InboundMessage by emitting FspecCommandRequest
+  Scenario: Handle fspec command envelope by emitting FspecCommandRequest
     Given a bridge relay is connected with a command_emitter configured
     And a pending_commands map is initialized for the connection
-    When the relay receives an InboundMessage with type "command", request_id "r1", command "board", and args_json "{}"
+    When the relay receives an Envelope with service "fspec", type "command", request_id "r1", and data command "board" with args {}
     Then a UUID tool_call_id should be generated
     And the pending_commands map should contain a mapping from the tool_call_id to request_id "r1" and command "board"
     And the command_emitter should be called with command "board", args_json "{}", a project_root from current_dir, and the generated tool_call_id
 
   @inbound
   @graceful-degradation
-  Scenario: Handle command InboundMessage without command_emitter configured
+  Scenario: Handle fspec command envelope without command_emitter configured
     Given a bridge relay is connected without a command_emitter
-    When the relay receives an InboundMessage with type "command", request_id "r2", command "board", and args_json "{}"
+    When the relay receives an Envelope with service "fspec", type "command", request_id "r2", and data command "board" with args {}
     Then no emitter callback should be invoked
     And the handler should return Ok without crashing
     And a warning should be logged about no command emitter being configured
@@ -59,7 +61,7 @@ Feature: Command handling pipeline in bridge_relay.rs
     Given a bridge relay has a pending command with tool_call_id "abc-123" mapped to request_id "r1" and command "board"
     When a FspecCommandResult chunk with toolCallId "abc-123", success true, and data containing results arrives on the broadcast channel
     Then the pending_commands map entry for "abc-123" should be removed
-    And a commandResponse OutboundMessage should be sent with request_id "r1"
+    And a commandResponse envelope with service "fspec" should be sent with request_id "r1"
     And the commandResponse data should contain command "board", success true, and the result value
     And the FspecCommandResult chunk should NOT be forwarded as a regular "chunk" message
 
@@ -69,14 +71,14 @@ Feature: Command handling pipeline in bridge_relay.rs
     Given a bridge relay is connected and processing outbound chunks
     When a FspecCommandRequest chunk with type "fspecCommandRequest" arrives on the broadcast channel
     Then the chunk should be silently skipped
-    And no OutboundMessage should be sent to the WebSocket for this chunk
+    And no envelope should be sent to the WebSocket for this chunk
 
   @outbound
   @backward-compatibility
   Scenario: Forward regular text chunks unchanged
     Given a bridge relay is connected and processing outbound chunks
     When a regular text chunk with type "text" arrives on the broadcast channel
-    Then an OutboundMessage with type "chunk" and request_id None should be sent to the WebSocket
+    Then an Envelope with service "relay", type "chunk" and no request_id should be sent to the WebSocket
     And the chunk data should be forwarded without modification
 
   @outbound

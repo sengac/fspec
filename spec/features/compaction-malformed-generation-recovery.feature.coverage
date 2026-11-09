@@ -10,23 +10,20 @@
             {
               "file": "rust/cli/src/compaction_dag.rs",
               "lines": [
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                242,
-                243,
-                244
-              ]
+                220,
+                221,
+                222
+              ],
+              "firstLine": "format!(",
+              "lastLine": ")"
             },
             {
               "file": "rust/cli/src/session/recovery_view.rs",
               "lines": [
                 29
-              ]
+              ],
+              "firstLine": ".durable_summary",
+              "lastLine": ".durable_summary"
             }
           ]
         }
@@ -37,30 +34,19 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug232_malformed_generation.rs",
-          "lines": "29-73",
+          "lines": "29-87",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
               "lines": [
-                41,
                 62
-              ]
+              ],
+              "firstLine": "&target.compaction_in_progress,",
+              "lastLine": "&target.compaction_in_progress,"
             },
             {
               "file": "rust/cli/src/compaction_operation.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
                 176,
                 177,
                 178,
@@ -75,42 +61,48 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "mut build: Build,",
+              "lastLine": "tracing::warn!(%operation, attempt, %error,"
             }
           ]
         }
       ]
     },
     {
-      "name": "Exhausted malformed generation keeps inference blocked",
+      "name": "Exhausted malformed generation leaves inference available",
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug232_malformed_generation.rs",
-          "lines": "75-96",
+          "lines": "89-114",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
               "lines": [
-                41,
                 62
-              ]
+              ],
+              "firstLine": "&target.compaction_in_progress,",
+              "lastLine": "&target.compaction_in_progress,"
             },
             {
               "file": "rust/cli/src/compaction_operation.rs",
               "lines": [
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
                 176,
                 177,
                 178,
@@ -125,8 +117,25 @@
                 187,
                 188,
                 189,
-                190
-              ]
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ],
+              "firstLine": "mut build: Build,",
+              "lastLine": "tracing::warn!(%operation, attempt, %error,"
             }
           ]
         }
@@ -146,6 +155,6 @@
       "rust/agent-loop/src/generate_compaction_handler.rs",
       "rust/cli/src/compaction_operation.rs"
     ],
-    "totalLinesCovered": 154
+    "totalLinesCovered": 169
   }
 }

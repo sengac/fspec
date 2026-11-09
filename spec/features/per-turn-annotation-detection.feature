@@ -1,5 +1,8 @@
+@BUG-582
 @wip
 @CMPCT-011
+@codelet
+@infrastructure
 Feature: Per-Turn Structural Annotation Detection
   """
   annotation_detector module in rust/core/src/compaction/annotation_detector.rs provides

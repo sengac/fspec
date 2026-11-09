@@ -18,13 +18,8 @@
 //! PROV-112: an OAuth *status* row (`OauthStatus`) now routes — on BOTH
 //! `Enter` AND `d`/`D` — into the dedicated `ProviderSettingsMode::
 //! DisconnectOAuth { provider_id }` confirm flow (it no longer falls into the
-//! api-key delete-confirm path nor a silent no-op). OAuth *login* rows
-//! (`OAuthLogin`) still route to the honest `DetailSub::OAuthNotice`
-//! placeholder (keyed by the correct provider); wiring the real login flow is
-//! pending PROV-113/114. The remaining parity gap is therefore narrower: the
-//! Rust frontend still has no profile-create / profile-edit / OAuth-login
-//! modes, so those rows route to `OAuthNotice` (login) or are consumed as
-//! explicit no-ops (AddProfile, profile/add-profile/oauth-login `d`).
+//! api-key delete-confirm path nor a silent no-op). OAuth *login* rows start
+//! the real login flow (PROV-113/114).
 
 use crate::views::agent::confirm_dialog::ConfirmDialog;
 use crate::views::provider_settings::nav_item::NavItemKind;
@@ -37,7 +32,11 @@ use super::{DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSett
 /// when there is no baseUrl); the edit-form prefill and per-profile delete
 /// both key on the bare name, so split on the `" → "` separator and take the
 /// leading segment.
-fn bare_profile_name(display: &str) -> String {
+pub(super) fn bare_profile_name(display: &str) -> String {
+    // BUG-547: a label may end with the limits the profile is missing.
+    let display = display
+        .split_once(super::settings_config::MISSING_LIMITS_SEPARATOR)
+        .map_or(display, |(label, _)| label);
     match display.split_once(" → ") {
         Some((name, _)) => name.to_string(),
         None => display.to_string(),
@@ -58,6 +57,13 @@ pub(super) fn enter_on_nav_item(
             ProviderSettingsEvent::Consumed
         }
         NavItemKind::Settings => {
+            // BUG-575 (product owner, 2026-11-07): no settings form opens
+            // before the settings have loaded, so a save never writes
+            // defaults over stored settings.
+            if let Some(reason) = view.settings_not_ready() {
+                view.status = reason;
+                return ProviderSettingsEvent::Consumed;
+            }
             let definition = view
                 .provider_configs
                 .get(&provider_id)
@@ -103,7 +109,7 @@ pub(super) fn enter_on_nav_item(
         }
         // PROV-112: Enter on an oauth-status (Logout) row opens the dedicated
         // DisconnectOAuth confirm keyed by this row's provider_id — NOT the
-        // generic OAuthNotice placeholder and NOT the api-key delete confirm.
+        // api-key delete confirm.
         NavItemKind::OAuthStatus { .. } => {
             view.mode = ProviderSettingsMode::DisconnectOAuth { provider_id };
             view.status.clear();
@@ -117,6 +123,8 @@ pub(super) fn enter_on_nav_item(
             if super::oauth_copilot::is_copilot(&provider_id) {
                 super::oauth_copilot::start_deployment_select(view, provider_id)
             } else {
+                // BUG-575: every login start takes a number never used before.
+                view.oauth_generation = super::refresh::fresh_oauth_generation();
                 super::oauth_login::start_oauth_login(view, provider_id, method)
             }
         }

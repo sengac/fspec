@@ -173,19 +173,26 @@ async fn build_subscription_requests_at_built_in_provider_parity() -> TestResult
         .invoke_build_stream_request(
             &messages,
             &tools,
-            Some(json!({
-                "reasoning":{"effort":"high","summary":"auto"}, "store":false
-            })),
+            // MODEL-010: a Rhai script receives the level and the capability.
+            Some(json!({"level": "high", "capability": null})),
         )
         .await?;
     let headers = backend.invoke_build_headers().await?;
     // @step Then the body and subscription headers match the built-in provider
+    // Every tool reaches the script with the harness's required
+    // work_unit_id attribution (codelet_tools::tool_attribution).
+    let attributed =
+        codelet_tools::tool_attribution::decorate_definition(rig::completion::ToolDefinition {
+            name: tools[0].name.clone(),
+            description: tools[0].description.clone(),
+            parameters: tools[0].input_schema.clone(),
+        })?;
     let expected = json!({"model":"gpt-5.3-codex", "instructions":"Instructions", "stream":true,
         "store":false, "reasoning":{"effort":"high","summary":"auto"},
         "input":[{"role":"user","content":[{"type":"input_text","text":"Hello"}]},
         {"type":"function_call","call_id":"call_one","name":"shell_command","arguments":"{\"command\":\"pwd\"}"},
         {"type":"function_call_output","call_id":"call_one","output":"/project"}],
-        "tools":[{"type":"function", "name":"shell_command","description":"Shell", "parameters":tools[0].input_schema}]
+        "tools":[{"type":"function", "name":"shell_command","description":"Shell", "parameters":attributed.parameters}]
     });
     assert_eq!(body, expected);
     for (name, value) in

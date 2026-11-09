@@ -5,15 +5,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "84-160",
+          "lines": "36-133",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
               "lines": [
-                313,
-                314,
-                315,
-                316,
                 317,
                 318,
                 319,
@@ -105,8 +101,24 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Filter for listing sessions",
+              "lastLine": "}"
             }
           ]
         }
@@ -122,10 +134,6 @@
             {
               "file": "rust/git/src/session_status.rs",
               "lines": [
-                313,
-                314,
-                315,
-                316,
                 317,
                 318,
                 319,
@@ -217,8 +225,24 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Filter for listing sessions",
+              "lastLine": "}"
             }
           ]
         }
@@ -229,15 +253,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "228-289",
+          "lines": "205-265",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
               "lines": [
-                313,
-                314,
-                315,
-                316,
                 317,
                 318,
                 319,
@@ -329,8 +349,24 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Filter for listing sessions",
+              "lastLine": "}"
             }
           ]
         }
@@ -341,15 +377,11 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "296-311",
+          "lines": "271-293",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
               "lines": [
-                313,
-                314,
-                315,
-                316,
                 317,
                 318,
                 319,
@@ -441,8 +473,24 @@
                 405,
                 406,
                 407,
-                408
-              ]
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ],
+              "firstLine": "/// Filter for listing sessions",
+              "lastLine": "}"
             }
           ]
         }
@@ -453,7 +501,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "318-386",
+          "lines": "299-370",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -473,7 +521,9 @@
                 432,
                 433,
                 434
-              ]
+              ],
+              "firstLine": "SessionFilter::Orphaned => *status == DerivedSessionStatus::Orphaned,",
+              "lastLine": "/// # Returns"
             }
           ]
         }
@@ -484,7 +534,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "393-419",
+          "lines": "376-404",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -504,7 +554,9 @@
                 432,
                 433,
                 434
-              ]
+              ],
+              "firstLine": "SessionFilter::Orphaned => *status == DerivedSessionStatus::Orphaned,",
+              "lastLine": "/// # Returns"
             }
           ]
         }
@@ -515,7 +567,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "426-454",
+          "lines": "410-446",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -535,7 +587,9 @@
                 432,
                 433,
                 434
-              ]
+              ],
+              "firstLine": "SessionFilter::Orphaned => *status == DerivedSessionStatus::Orphaned,",
+              "lastLine": "/// # Returns"
             }
           ]
         }
@@ -546,7 +600,7 @@
       "testMappings": [
         {
           "file": "rust/git/tests/session_list_inspect_tests.rs",
-          "lines": "461-481",
+          "lines": "452-479",
           "implMappings": [
             {
               "file": "rust/git/src/session_status.rs",
@@ -566,7 +620,9 @@
                 432,
                 433,
                 434
-              ]
+              ],
+              "firstLine": "SessionFilter::Orphaned => *status == DerivedSessionStatus::Orphaned,",
+              "lastLine": "/// # Returns"
             }
           ]
         }
@@ -583,6 +639,6 @@
     "implFiles": [
       "rust/git/src/session_status.rs"
     ],
-    "totalLinesCovered": 800
+    "totalLinesCovered": 887
   }
 }

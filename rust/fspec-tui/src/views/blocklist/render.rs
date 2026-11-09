@@ -22,7 +22,7 @@ use crate::views::diff_common::render_vertical_divider;
 use crate::views::full_screen_shell::render_full_screen_scaffold;
 
 const FOOTER_HINT: &str =
-    "↑↓ Navigate | PgUp/PgDn/Home/End: Scroll | Enter/Space: Toggle Rule | Esc: Close";
+    "↑↓ Navigate | PgUp/PgDn/Home/End: Scroll | Enter/Space: Toggle Rule | c/C: Copy Pattern/Rule | Esc: Close";
 
 impl BlocklistView {
     /// Paint the view into `area` using the shared full-screen scaffold.

@@ -1,4 +1,6 @@
-use std::{sync::Arc, time::Duration};
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
+use std::sync::Arc;
 
 use codelet_core::{persistence, session_manager_handle::SessionManagerHandle};
 use codelet_fspec_tui::{Action, App, EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
@@ -7,8 +9,6 @@ use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
 
 mod common;
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 struct Environment(Vec<(&'static str, Option<std::ffi::OsString>)>);
 
@@ -43,34 +43,35 @@ impl Drop for Environment {
     }
 }
 
-async fn settle(app: &mut App) {
+async fn settle(app: &mut App) -> codelet_test_helpers::TestResult {
     loop {
         while let Some(task) = app.next_pending_task() {
-            assert!(task.await.is_ok());
+            task.await.completed_or_cancelled()?;
         }
         let Some(action) = app.try_recv_action() else {
             break;
         };
         app.dispatch(action);
     }
+    Ok(())
 }
 
 async fn wait_for_card(app: &mut App, session: &SessionId, card: Option<&str>) -> TestResult {
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the focused card", async {
         loop {
-            settle(app).await;
+            settle(app).await?;
             if app
                 .agent_view_store()
                 .work_unit_context_for(session)
                 .map(|context| context.id.as_str())
                 == card
             {
-                return;
+                return Ok::<(), codelet_test_helpers::TestError>(());
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
-    .await?;
+    .await??;
     Ok(())
 }
 
@@ -78,11 +79,16 @@ async fn wait_for_card(app: &mut App, session: &SessionId, card: Option<&str>) -
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 #[serial_test::serial]
 async fn reconnect_snapshots_and_remote_changes_reach_real_tui_backends() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a newly connected client observing two existing sessions
     let root = codelet_test_helpers::setup_temp_directory()?;
     let _environment = Environment::isolate(root.path())?;
-    let (project, _) = common::temp_service();
-    let manager = SessionManager::new_arc();
+    let (project, _) = common::temp_service()?;
+    let manager = SessionManager::new();
     let mut sessions = Vec::new();
     for name in ["focused", "cleared"] {
         let manifest = persistence::create_session_with_provider(
@@ -107,13 +113,13 @@ async fn reconnect_snapshots_and_remote_changes_reach_real_tui_backends() -> Tes
     embedded
         .set_work_unit_focus(sessions[0].clone(), Some("AUTH-002".into()), "test".into())
         .await?;
-    let (address, server) = common::start_ws_server(service).await;
-    let websocket = Arc::new(WebSocketFspecBackend::connect(common::ws_url(address)).await?);
+    let (address, server) = common::start_ws_server(service).await?;
+    let websocket = Arc::new(WebSocketFspecBackend::connect(common::ws_url(address)?).await?);
     let mut app = App::new(websocket);
 
     // @step When it receives authoritative card focus for one session and cleared focus for the other
     app.bootstrap().await?;
-    settle(&mut app).await;
+    settle(&mut app).await?;
     wait_for_card(&mut app, &sessions[0], Some("AUTH-002")).await?;
 
     // @step Then only the first session has a card suffix and a board badge
@@ -134,10 +140,10 @@ async fn reconnect_snapshots_and_remote_changes_reach_real_tui_backends() -> Tes
     wait_for_card(&mut app, &sessions[0], None).await?;
     wait_for_card(&mut embedded_app, &sessions[0], None).await?;
     assert!(app.board_store().session_for("AUTH-002").is_none());
-    let reconnect = Arc::new(WebSocketFspecBackend::connect(common::ws_url(address)).await?);
+    let reconnect = Arc::new(WebSocketFspecBackend::connect(common::ws_url(address)?).await?);
     let mut reconnect_app = App::new(reconnect);
     reconnect_app.bootstrap().await?;
-    settle(&mut reconnect_app).await;
+    settle(&mut reconnect_app).await?;
     assert!(reconnect_app
         .agent_view_store()
         .work_unit_context_for(&sessions[0])
@@ -165,34 +171,6 @@ async fn reconnect_snapshots_and_remote_changes_reach_real_tui_backends() -> Tes
         Some(&sessions[0])
     );
 
-    // @step Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
-    app.dispatch(Action::OpenAgentView(Some(sessions[1].clone())));
-    // @step When the user explicitly assigns card "AUTH-002" to that session
-    let target = app
-        .agent_view_store()
-        .open_sessions()
-        .iter()
-        .position(|context| context.id == sessions[1])
-        .ok_or("missing explicit target")?;
-    app.agent_view_store_mut().focus_session_index(target);
-    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
-    settle(&mut app).await;
-    // @step Then the backend and all card displays identify "AUTH-002"
-    assert_eq!(
-        embedded
-            .get_work_unit_focus(sessions[1].clone())
-            .await?
-            .context
-            .map(|context| context.id),
-        Some("AUTH-002".into())
-    );
-    assert_eq!(
-        embedded
-            .get_work_unit_context(sessions[1].clone())
-            .await?
-            .map(|context| context.id),
-        Some("AUTH-002".into())
-    );
     server.abort();
     Ok(())
 }

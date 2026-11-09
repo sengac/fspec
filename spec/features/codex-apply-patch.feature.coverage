@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "18-57",
+          "lines": "18-61",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
@@ -28,7 +28,9 @@
                 126,
                 127,
                 128
-              ]
+              ],
+              "firstLine": "message: reason,",
+              "lastLine": ""
             }
           ]
         }
@@ -39,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "75-118",
+          "lines": "88-143",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
@@ -73,7 +75,9 @@
                 156,
                 157,
                 158
-              ]
+              ],
+              "firstLine": "match op {",
+              "lastLine": "message: e.content,"
             }
           ]
         }
@@ -84,7 +88,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "124-151",
+          "lines": "149-187",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
@@ -107,7 +111,9 @@
                 175,
                 176,
                 177
-              ]
+              ],
+              "firstLine": "// Read as bytes and run binary-guard BEFORE attempting UTF-8",
+              "lastLine": "message: format!(\"Error reading file: {e}\"),"
             }
           ]
         }
@@ -118,7 +124,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "157-208",
+          "lines": "193-260",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/mod.rs",
@@ -201,7 +207,9 @@
                 181,
                 182,
                 183
-              ]
+              ],
+              "firstLine": "\"ApplyPatch\",",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -212,7 +220,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "214-229",
+          "lines": "266-287",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/parser.rs",
@@ -228,7 +236,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "let lines: Vec<&str> = text.lines().collect();",
+              "lastLine": "let line = lines[i].trim();"
             }
           ]
         }
@@ -239,7 +249,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "244-278",
+          "lines": "312-358",
           "implMappings": [
             {
               "file": "rust/tools/src/apply_patch/hunk.rs",
@@ -282,7 +292,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "fn find_hunk_position(file_lines: &[String], hunk: &Hunk, path: &str) -> Result<usize, String> {",
+              "lastLine": ""
             }
           ]
         }
@@ -293,20 +305,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/apply_patch_tool_test.rs",
-          "lines": "284-301",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/codex/mod.rs",
-              "lines": [
-                357,
-                358,
-                359,
-                360,
-                361,
-                362
-              ]
-            }
-          ]
+          "lines": "364-390"
         }
       ]
     },
@@ -325,9 +324,8 @@
     "implFiles": [
       "rust/tools/src/apply_patch/mod.rs",
       "rust/tools/src/apply_patch/parser.rs",
-      "rust/tools/src/apply_patch/hunk.rs",
-      "rust/providers/src/codex/mod.rs"
+      "rust/tools/src/apply_patch/hunk.rs"
     ],
-    "totalLinesCovered": 431
+    "totalLinesCovered": 495
   }
 }

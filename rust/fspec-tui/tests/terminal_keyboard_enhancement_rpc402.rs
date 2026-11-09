@@ -12,9 +12,8 @@
 //! these tests consume the same plan, so asserting on the plan pins
 //! the real init/teardown ordering.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::terminal::{terminal_mode_plan, ModeCommand};
+use codelet_test_helpers::{OrFail, TestResult};
 
 /// Index of the first occurrence of `cmd` in `list`, or None.
 fn position_of(list: &[ModeCommand], cmd: ModeCommand) -> Option<usize> {
@@ -27,7 +26,7 @@ fn position_of(list: &[ModeCommand], cmd: ModeCommand) -> Option<usize> {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn terminal_without_keyboard_enhancement_support_skips_flag_push_and_pop() {
+fn terminal_without_keyboard_enhancement_support_skips_flag_push_and_pop() -> TestResult {
     // @step Given the terminal does not support keyboard enhancement flags
     let supported = false;
 
@@ -73,6 +72,7 @@ fn terminal_without_keyboard_enhancement_support_skips_flag_push_and_pop() {
             plan.teardown
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -81,7 +81,8 @@ fn terminal_without_keyboard_enhancement_support_skips_flag_push_and_pop() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn supporting_terminal_pushes_flags_on_init_and_pops_them_before_leaving_the_alternate_screen() {
+fn supporting_terminal_pushes_flags_on_init_and_pops_them_before_leaving_the_alternate_screen(
+) -> TestResult {
     // @step Given the terminal supports keyboard enhancement flags
     let supported = true;
 
@@ -89,10 +90,10 @@ fn supporting_terminal_pushes_flags_on_init_and_pops_them_before_leaving_the_alt
     let plan = terminal_mode_plan(supported);
 
     // @step Then keyboard enhancement flags are pushed after raw mode is enabled
-    let raw_idx =
-        position_of(&plan.setup, ModeCommand::EnableRawMode).expect("setup must enable raw mode");
+    let raw_idx = position_of(&plan.setup, ModeCommand::EnableRawMode)
+        .or_fail("setup must enable raw mode")?;
     let push_idx = position_of(&plan.setup, ModeCommand::PushKeyboardEnhancement)
-        .expect("setup must push keyboard enhancement flags on a supporting terminal");
+        .or_fail("setup must push keyboard enhancement flags on a supporting terminal")?;
     assert!(
         push_idx > raw_idx,
         "flags must be pushed AFTER raw mode is enabled \
@@ -103,13 +104,14 @@ fn supporting_terminal_pushes_flags_on_init_and_pops_them_before_leaving_the_alt
 
     // @step And a pop of keyboard enhancement flags is issued before leaving the alternate screen
     let pop_idx = position_of(&plan.teardown, ModeCommand::PopKeyboardEnhancement)
-        .expect("teardown must pop keyboard enhancement flags when they were pushed");
+        .or_fail("teardown must pop keyboard enhancement flags when they were pushed")?;
     let leave_idx = position_of(&plan.teardown, ModeCommand::LeaveAlternateScreen)
-        .expect("teardown must leave the alternate screen");
+        .or_fail("teardown must leave the alternate screen")?;
     assert!(
         pop_idx < leave_idx,
         "flags must be popped BEFORE leaving the alternate screen; \
          pop at {pop_idx}, leave at {leave_idx}: {:?}",
         plan.teardown
     );
+    Ok(())
 }

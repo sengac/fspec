@@ -1,0 +1,149 @@
+{
+  "scenarios": [
+    {
+      "name": "The stub provider's declared limits are resolved",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug448_stub_provider_limits.rs",
+          "lines": "39-52",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager/impl_4.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "// BUG-448: the test-only stub provider declares its own limits.",
+              "lastLine": "}),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Offline test sessions select their provider explicitly and run",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug548_tests_ignore_machine_credentials.rs",
+          "lines": "123-158",
+          "implMappings": [
+            {
+              "file": "rust/cli/tests/support/offline_session.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "const PROVIDER: &str = \"claude\";",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "fn fresh_session() -> Result<Session, codelet_test_helpers::TestError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The source guard reports tests that read the machine's credential set",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug548_tests_ignore_machine_credentials.rs",
+          "lines": "160-194",
+          "implMappings": [
+            {
+              "file": "rust/cli/tests/provider_manager_test.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "/// Helper to clean up test environment",
+              "lastLine": "env::remove_var(\"ZAI_PLAN_API_KEY\");"
+            },
+            {
+              "file": "rust/cli/tests/rig_011_debug_metadata.rs",
+              "lines": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "/// A Codex session that needs no Codex login on this machine (BUG-548).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug448_stub_provider_limits.rs",
+      "rust/providers/tests/bug548_tests_ignore_machine_credentials.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/manager/impl_4.rs",
+      "rust/cli/tests/support/offline_session.rs",
+      "rust/fspec-tui/tests/cont007_live_continue_status_test.rs",
+      "rust/cli/tests/provider_manager_test.rs",
+      "rust/cli/tests/rig_011_debug_metadata.rs"
+    ],
+    "totalLinesCovered": 145
+  }
+}

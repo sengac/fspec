@@ -1,5 +1,7 @@
 @done
 @SCHED-012
+@scheduler
+@schedule-management
 Feature: Schedule Job Log
   """
   New module rust/napi/src/scheduler/job_log.rs — provides append_log_entry() and check_rotation() functions, called from trigger_and_update() and state overlap/defer paths in engine.rs

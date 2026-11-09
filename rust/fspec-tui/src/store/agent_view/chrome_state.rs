@@ -41,27 +41,23 @@ impl AgentViewStore {
         self.model_info_by_session.insert(session_id, info);
     }
 
-    /// RPC-337: remember the model id the user picked for `session_id`
-    /// (set on `Action::ModelSelected`). Seeds the ModelSelector's green
-    /// `(current)` marker on reopen.
-    pub fn set_selected_model_id(&mut self, session_id: SessionId, model_id: String) {
+    /// RPC-337 / BUG-576: remember the session's `(section, model)`, as the
+    /// daemon lists it. Seeds the ModelSelector's `(current)` marker.
+    pub fn set_selected_model(&mut self, session_id: SessionId, selected: (String, String)) {
         if self
-            .selected_model_id_for(&session_id)
-            .is_some_and(|previous| previous != model_id.as_str())
+            .selected_model_for(&session_id)
+            .is_some_and(|previous| *previous != selected)
         {
             if let Some(context) = self.session_context_mut_for(&session_id) {
                 context.provider_waiting = None;
             }
         }
-        self.selected_model_id_by_session
-            .insert(session_id, model_id);
+        self.selected_model_by_session.insert(session_id, selected);
     }
 
-    /// RPC-337: the last model id selected for `session_id`, if any.
-    pub fn selected_model_id_for(&self, session_id: &SessionId) -> Option<&str> {
-        self.selected_model_id_by_session
-            .get(session_id)
-            .map(String::as_str)
+    /// RPC-337 / BUG-576: the session's `(section, model)`, if known.
+    pub fn selected_model_for(&self, session_id: &SessionId) -> Option<&(String, String)> {
+        self.selected_model_by_session.get(session_id)
     }
 
     pub fn thinking_level_for(&self, session_id: &SessionId) -> Option<&ThinkingLevel> {

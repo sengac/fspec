@@ -1,13 +1,16 @@
+@BUG-582
 @done
 @session
 @session-management
 @rpc
 @RPC-070
+@BUG-417
 Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agent crash)
   """
   Architecture: Option B from the fix-proposal.md attachment was chosen — wrap each affected sync->async bridge in tokio::task::block_in_place(|| Handle::current().block_on(...)) instead of refactoring the SessionManagerHandle trait to async fn (Option A) or building per-call runtimes (Option C, rejected).
   Architecture: The fspec binary's main is annotated with #[tokio::main] (default: multi-thread runtime), and codelet-napi's #[napi(tokio_main)] also uses multi-thread, so block_in_place is legal on every production call site. A debug_assert!(handle.runtime_flavor() == MultiThread, ...) inside the helper makes the precondition explicit.
   Architecture: New tarpc-over-duplex integration test lives at rust/rpc/tests/create_session_no_panic_rpc070.rs — spawns the tarpc server on a real multi-thread runtime, connects via tarpc::serde_transport::tcp (or an in-memory duplex from tokio::io::duplex + tarpc::serde_transport::new). Asserts no panic + a non-empty SessionId.
+  BUG-417: the runtime scenarios create sessions in one test-owned temp data directory per binary (rust/fspec/tests/runtime_data_dir_support), seeded with an offline models.dev catalog and the explicit default model anthropic/claude-opus-4-5, and run serially; they never read or write the developer's data directory.
   """
 
   # ========================================

@@ -5,6 +5,7 @@
 @in-memory
 @clear
 @rpc-436
+@code-analysis
 Feature: Daemon-side session cleared broadcast (manager-level liveness gate)
   """
   SessionManager-level support for RPC-436's wire fan-out (the sibling

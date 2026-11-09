@@ -29,7 +29,6 @@ fspec suggest-dependencies
 # Apply HIGH confidence suggestions automatically
 fspec add-dependency AUTH-002 --depends-on AUTH-001
 fspec add-dependency AUTH-003 --depends-on AUTH-001
-    undefined
 
   • Test/Build Pattern Recognition
     Example: # Create build and test work units
@@ -41,7 +40,6 @@ fspec suggest-dependencies
 
 # Apply suggested dependency
 fspec add-dependency TEST-001 --depends-on BUILD-001
-    undefined
 
   • Infrastructure-First Pattern
     Example: # Create schema and feature work
@@ -53,11 +51,10 @@ fspec suggest-dependencies
 
 # Apply infrastructure dependency
 fspec add-dependency ADD-001 --depends-on SCHEMA-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Create work units with consistent naming → 2. Run suggestions: fspec suggest-dependencies → 3. Review suggestions (prioritize HIGH confidence) → 4. Apply dependencies: fspec add-dependency <from-id> --depends-on=<to-id> → 5. Verify: fspec show-work-unit <id>
+  1. Create work units with consistent naming → 2. Run suggestions: fspec suggest-dependencies → 3. Review suggestions (prioritize HIGH confidence) → 4. Apply dependencies: fspec add-dependency <workUnitId> --depends-on=<workUnitId> → 5. Verify: fspec show-work-unit <workUnitId>
 
 EXAMPLES
   1. Get dependency suggestions based on patterns
@@ -76,7 +73,7 @@ EXAMPLES
    ● infrastructure work (schema/migration) should complete before feature work: "Add user features" depends on "Database schema setup"
    Confidence: HIGH
 
-To apply a suggestion: fspec add-dependency <from-id> --depends-on=<to-id>
+To apply a suggestion: fspec add-dependency <workUnitId> --depends-on=<workUnitId>
 
   2. Output suggestions as JSON for automation
   $ fspec suggest-dependencies --output json
@@ -121,7 +118,6 @@ RELATED COMMANDS
   fspec query-orphans
   fspec remove-dependency
   fspec show-work-unit
-  fspec validate-dependencies
 
 NOTES
   • Suggestion Rules:

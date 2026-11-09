@@ -2,7 +2,7 @@
 @tui
 @done
 @TUI-090
-Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
+Feature: CreateSessionDialog should have 3 options: Yes, Start in Worktree, Cancel
   """
   Replaces Yes/No buttons + Normal/Isolated toggle with 3 flat options. Component: src/components/CreateSessionDialog.tsx. Callers: BoardView.tsx, AgentView.tsx via useSessionNavigation.ts
   """
@@ -12,19 +12,19 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Dialog must show exactly 3 options: Yes, Yes - Isolated, Cancel
+  #   1. Dialog must show exactly 3 options: Yes, Start in Worktree, Cancel
   #   2. Left/Right arrows navigate between the 3 options cyclically
-  #   3. Enter confirms the selected option: Yes calls onConfirm(false), Yes - Isolated calls onConfirm(true), Cancel calls onCancel()
+  #   3. Enter confirms the selected option: Yes calls onConfirm(false), Start in Worktree calls onConfirm(true), Cancel calls onCancel()
   #   4. ESC always cancels regardless of selected option
   #   5. Default selected option is Yes (first option)
-  #   6. Context-aware title/description (TUI-067) still applies: 'Work on ID?' for work unit, 'Start New Agent?' for unattached
+  #   6. Context-aware title/description (TUI-067) still applies: 'Start Agent for ID?' for work unit, 'Start New Agent?' for unattached
   #
   # EXAMPLES:
   #   1. User opens dialog, sees [Yes] highlighted, presses Enter → normal session created
-  #   2. User opens dialog, presses Right to select 'Yes - Isolated', presses Enter → isolated session created
+  #   2. User opens dialog, presses Right to select 'Start in Worktree', presses Enter → isolated session created
   #   3. User opens dialog, presses Right twice to select 'Cancel', presses Enter → dialog closes, no session created
   #   4. User opens dialog, presses ESC → dialog closes regardless of which option is highlighted
-  #   5. User opens dialog from board work unit AUTH-001, sees 'Work on AUTH-001?' with Yes/Yes-Isolated/Cancel options
+  #   5. User opens dialog from board work unit AUTH-001, sees 'Start Agent for AUTH-001?' with Start/Start in Worktree/Cancel options
   #
   # ========================================
   Background: User Story
@@ -35,12 +35,12 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
   Scenario: Default option is Yes and creates normal session on Enter
     Given the Create Session dialog is open
     When I press Enter
-    Then the "Yes" option should be highlighted by default
+    Then the "Start" option should be highlighted by default
     Then onConfirm should be called with isolated=false
 
-  Scenario: Selecting Yes - Isolated creates isolated session
+  Scenario: Selecting Start in Worktree creates isolated session
     Given the Create Session dialog is open
-    When I press Right to select "Yes - Isolated"
+    When I press Right to select "Start in Worktree"
     Then onConfirm should be called with isolated=true
     And I press Enter
 
@@ -55,10 +55,10 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
     Given the Create Session dialog is open
     When I press ESC
     Then onCancel should be called
-    And "Yes - Isolated" is currently highlighted
+    And "Start in Worktree" is currently highlighted
 
   Scenario: Context-aware title with 3 options for work unit
     Given I am viewing the board with work unit "AUTH-001"
     When the Create Session dialog opens for that work unit
-    Then the dialog title should be "Work on AUTH-001?"
-    And I should see options "Yes", "Yes - Isolated", and "Cancel"
+    Then the dialog title should be "Start Agent for AUTH-001?"
+    And I should see options "Start", "Start in Worktree", and "Cancel"

@@ -5,11 +5,122 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "112-148",
+          "lines": "112-147",
           "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57,
+                58,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                92,
+                94,
+                95,
+                96,
+                97,
+                99,
+                100,
+                101,
+                102,
+                103,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                123,
+                124,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "pub(super) fn status_from_str(s: &str) -> Option<WorkUnitStatus> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                102,
+                103,
+                105,
+                106,
+                107,
+                107,
+                107,
+                108,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                124
+              ],
+              "firstLine": "// Review validation (Example Mapping + architectural notes + AST research).",
+              "lastLine": "// Warn if no examples captured."
+            },
             {
               "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
                 70,
                 71,
                 72,
@@ -108,70 +219,10 @@
                 165,
                 166,
                 167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230
-              ]
+                168
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let mut warnings: Vec<String> = Vec::new();"
             }
           ]
         }
@@ -182,12 +233,553 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "149-177",
+          "lines": "149-176",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                132,
+                134,
+                135,
+                136,
+                137,
+                139,
+                140
+              ],
+              "firstLine": "\"Invalid status value: {}. Allowed values: {}\",",
+              "lastLine": "let wu = &data.work_units[&id];"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown work unit id is rejected",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "178-202",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "// Check if work unit exists.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving to blocked requires a blockedReason",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "204-242",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                142,
+                143,
+                147,
+                148,
+                150
+              ],
+              "firstLine": "wu.status.as_str().to_string(),",
+              "lastLine": "let is_task = work_type == \"task\";"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specifying to testing is blocked by prefill placeholders",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "257-294",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "let incomplete = incomplete_children(&data, &id)?;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specifying to testing is blocked when the feature has no scenarios",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "296-330",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                86
+              ],
+              "firstLine": "let wu = data",
+              "lastLine": "// BUG-385: validate before mutating; an unknown status or a non-array"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                234,
+                235,
+                236,
+                237,
+                238,
+                243,
+                244
+              ],
+              "firstLine": "// GATE 9: auto-checkpoint before transition (dirty & not →backlog & not from backlog).",
+              "lastLine": "let now = iso8601_now();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "validating transition is blocked when coverage is incomplete",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "345-390",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/output.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "// Collect system reminders in TS order, then consolidate into one block.",
+              "lastLine": "let consolidated = reminders::consolidate(&reminder_parts);"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                86,
+                100,
+                102,
                 104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                143
+              ],
+              "firstLine": "// BUG-385: validate before mutating; an unknown status or a non-array",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                255,
+                256,
+                258,
+                259,
+                260,
+                262,
+                263,
+                264,
+                265,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "// Move the id between state arrays.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Temporal validation blocks a forward transition unless skipped",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "392-447",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+              "lines": [
+                8,
+                10,
+                10,
+                10,
+                10,
+                10,
+                10,
+                10,
+                10,
+                22,
+                24,
+                24,
+                24,
+                24,
+                24,
+                24,
+                24,
+                24,
+                34,
+                36,
+                36,
+                54,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                64,
+                64,
+                66,
+                68,
+                69,
+                70,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ],
+              "firstLine": "pub(super) type Data = crate::types::work_unit::WorkUnitsData;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/output.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "// Build stdout to mirror the TS CLI exactly:",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A dirty working directory creates an automatic checkpoint before the transition",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "520-552",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+              "lines": [
+                100,
+                101,
+                101,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                130,
+                130,
+                130,
+                130,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "/// Soft-dependency warning for `dependsOn` entries that are not `done`.",
+              "lastLine": "let selected = q.get(\"selected\").and_then(Value::as_bool).unwrap_or(false);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transitioning to backlog does not create an automatic checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "554-592",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                105
+              ],
+              "firstLine": "// Special case for tasks: allow specifying → implementing (skip testing).",
+              "lastLine": "let mut parts = vec![format!("
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transitioning to done compacts the work unit and cleans auto-checkpoints",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "594-678",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ],
+              "firstLine": "];",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A blocking pre-hook failure prevents the transition",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "680-737",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ],
+              "firstLine": "// GATE 8 (HOOK-019, HOOK-020): post-<current> then pre-<new> status",
+              "lastLine": ")?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IPC notification is a no-op in the Rust port",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1323-1345",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57,
+                58,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                92,
+                94,
+                95,
+                96,
+                97,
+                99,
+                100,
+                101,
+                102,
+                103,
                 105,
                 106,
                 107,
@@ -201,514 +793,65 @@
                 115,
                 116,
                 117,
-                118
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Unknown work unit id is rejected",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "178-203",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Moving to blocked requires a blockedReason",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "204-243",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
+                118,
+                119,
                 120,
                 121,
-                122,
                 123,
                 124,
-                125,
-                126
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "specifying to testing is blocked by prefill placeholders",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "257-295",
-          "implMappings": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "pub(super) fn status_from_str(s: &str) -> Option<WorkUnitStatus> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                102,
+                103,
+                105,
+                106,
+                107,
+                107,
+                107,
+                108,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                124
+              ],
+              "firstLine": "// Review validation (Example Mapping + architectural notes + AST research).",
+              "lastLine": "// Warn if no examples captured."
+            },
             {
               "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "specifying to testing is blocked when the feature has no scenarios",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "296-333",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "validating transition is blocked when coverage is incomplete",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "345-391",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Temporal validation blocks a forward transition unless skipped",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "392-448",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                399,
-                400,
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413,
-                414,
-                415,
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
-                476,
-                477,
-                478,
-                479,
-                480,
-                481,
-                482,
-                483,
-                484,
-                485,
-                486,
-                487,
-                488,
-                489,
-                490,
-                491,
-                492,
-                493,
-                494
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A dirty working directory creates an automatic checkpoint before the transition",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "520-553",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                495,
-                496,
-                497,
-                498,
-                499,
-                500,
-                501,
-                502,
-                503,
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529,
-                530,
-                531,
-                532
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Transitioning to backlog does not create an automatic checkpoint",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "554-593",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Transitioning to done compacts the work unit and cleans auto-checkpoints",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "594-672",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A blocking pre-hook failure prevents the transition",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "673-731",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "IPC notification is a no-op in the Rust port",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1300-1322",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
                 70,
                 71,
                 72,
@@ -807,6 +950,928 @@
                 165,
                 166,
                 167,
+                168
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let mut warnings: Vec<String> = Vec::new();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task work unit cannot move to testing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "741-771",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "// GATE: tasks have no testing phase.",
+              "lastLine": "));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task work unit skips the testing phase from specifying",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "773-796",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "// GATE: validate state transitions (ACDD enforcement with type-specific rules).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task work unit skips step and coverage gates when moving to validating",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "798-832",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Story work unit cannot skip the testing phase",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "834-871",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "// GATE: validate state transitions (ACDD enforcement with type-specific rules).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specifying to testing is blocked when Example Mapping is incomplete",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "875-901",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// in `src/utils/review-validation.ts`: ordered Level-1 hard blocks for stories",
+              "lastLine": "Ok(reminders::subjective_review_reminder(id, data))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bug work unit must link an existing feature file before testing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "905-931",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                107,
+                107,
+                108,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "// Bugs must link to an existing feature file.",
+              "lastLine": "If the feature has no spec, create a story instead of a bug.\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bug work unit can move to testing when a feature file is linked",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "933-972",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                102,
+                103,
+                105,
+                106,
+                107,
+                107,
+                107,
+                108,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                132,
+                133,
+                134,
+                135,
+                137,
+                138,
+                140,
+                142,
+                143,
+                144,
+                146,
+                147,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// Review validation (Example Mapping + architectural notes + AST research).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specifying to testing is blocked when questions are unanswered",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "976-1036",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                130,
+                130,
+                130,
+                130,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// Block the transition if any non-deleted, non-selected questions remain.",
+              "lastLine": "Ok(())"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Starting work is blocked by incomplete hard dependencies",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1099-1138",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                123,
+                124,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "// GATE: prevent starting work blocked by incomplete dependencies.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Soft dependencies produce a warning but not a block",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1140-1188",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                149,
+                150,
+                151
+              ],
+              "firstLine": "// Warn about soft dependencies (dependsOn) that aren't done.",
+              "lastLine": "warnings.push(w);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backward transition to specifying records the reason",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1192-1230",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A done work unit can move backward to implementing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1232-1252",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parent cannot be marked done while children are incomplete",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1256-1291",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The reason is recorded in the state history",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1293-1321",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                86,
+                100,
+                102,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                143
+              ],
+              "firstLine": "let wu = data",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                243,
+                244
+              ],
+              "firstLine": "// Apply the status change.",
+              "lastLine": "let now = iso8601_now();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A blocked work unit is unblocked by hand once its blocker is done and keeps its blockedBy edge",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1347-1381",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "\"blocked\" => &[",
+              "lastLine": "],"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backlog to testing is rejected because specifying comes first",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1448-1474",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                108,
+                109,
+                110
+              ],
+              "firstLine": "if current_status == \"backlog\" && new_status == \"testing\" {",
+              "lastLine": "parts.push(\"ACDD requires specification before testing.\".to_string());"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A testing work unit can move back to specifying",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1476-1485",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An implementing work unit can move back to testing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1487-1496",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An implementing work unit can move back to specifying",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1498-1507",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A validating work unit can move back to implementing with a reason",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1509-1541",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "pub(super) fn allowed_transitions(from: &str) -> &'static [&'static str] {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "pub(super) fn apply_status_change(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A story moves through the whole ACDD workflow from backlog to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1560-1625",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
                 168,
                 169,
                 170,
@@ -841,267 +1906,6 @@
                 199,
                 200,
                 201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Task work unit cannot move to testing",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "734-765",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Task work unit skips the testing phase from specifying",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "766-790",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Task work unit skips step and coverage gates when moving to validating",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "791-826",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Story work unit cannot skip the testing phase",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "827-865",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "specifying to testing is blocked when Example Mapping is incomplete",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "868-895",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                676,
-                677,
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684,
-                685,
-                686,
-                687,
-                688,
-                689,
-                690,
-                691,
-                692,
-                693,
-                694,
-                695,
-                696,
-                697,
-                698,
-                699,
-                700,
-                701,
-                702,
-                703,
-                704
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Bug work unit must link an existing feature file before testing",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "898-925",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Bug work unit can move to testing when a feature file is linked",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "926-966",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
                 202,
                 203,
                 204,
@@ -1159,199 +1963,28 @@
                 256,
                 257,
                 258,
-                259
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "specifying to testing is blocked when questions are unanswered",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "969-1015",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529,
-                530,
-                531,
-                532,
-                533,
-                534,
-                535,
-                536,
-                537,
-                538,
-                539,
-                540,
-                541,
-                542,
-                543,
-                544
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Starting work is blocked by incomplete hard dependencies",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1077-1117",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Soft dependencies produce a warning but not a block",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1118-1166",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                255,
-                256,
-                257,
-                258
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Backward transition to specifying records the reason",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1169-1208",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A done work unit can move backward to implementing",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1209-1230",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Parent cannot be marked done while children are incomplete",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1233-1269",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
-              "lines": [
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
                 281,
                 282,
                 283,
@@ -1362,72 +1995,569 @@
                 288,
                 289,
                 290,
-                291,
-                292,
-                293
-              ]
+                291
+              ],
+              "firstLine": "fn change_status(project_root: &Path, change: StatusChange<'_>) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "The reason is recorded in the state history",
+      "name": "Blocking and unblocking a work unit sets and clears its blockedReason",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/update_work_unit_status.rs",
-          "lines": "1270-1299",
+          "lines": "1627-1683",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "pub(super) fn apply_status_change(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The state history records every transition in order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1685-1744",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "pub(super) fn apply_status_change(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving to testing without an estimate succeeds with a warning",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1746-1781",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ],
+              "firstLine": "// Warn if no estimate.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving a bug to testing without examples succeeds with a warning",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1783-1825",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// Warn if no examples captured.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A parent work unit moves through the workflow to done without scenarios",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1827-1862",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "// Scenarios must exist (skip for parent work units with children).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature file written after entering specifying passes the temporal gate",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1864-1899",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/temporal.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub(super) fn check_temporal_ordering(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A passing blocking pre-hook lets the transition proceed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1901-1937",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/command_hooks/virtual_hooks.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub fn run_status_hooks(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An automatic checkpoint is named after the state left and holds the uncommitted changes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "1971-2019",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/checkpoints.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "pub(super) fn maybe_auto_checkpoint(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "// GATE 9: auto-checkpoint before transition (dirty & not →backlog & not from backlog).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leaving backlog does not create an automatic checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "2021-2047",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
               "lines": [
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349
-              ]
+                234,
+                235,
+                236,
+                237,
+                238
+              ],
+              "firstLine": "// GATE 9: auto-checkpoint before transition (dirty & not →backlog & not from backlog).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A clean working directory does not create an automatic checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/update_work_unit_status.rs",
+          "lines": "2049-2072",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/checkpoints.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ],
+              "firstLine": "pub(super) fn maybe_auto_checkpoint(",
+              "lastLine": "}"
             }
           ]
         }
@@ -1435,15 +2565,24 @@
     }
   ],
   "stats": {
-    "totalScenarios": 27,
-    "coveredScenarios": 27,
+    "totalScenarios": 44,
+    "coveredScenarios": 44,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/update_work_unit_status.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/update_work_unit_status.rs"
+      "rust/fspec-core/src/commands/update_work_unit_status/transitions.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/review.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/board_state.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/output.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/queries.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/temporal.rs",
+      "rust/fspec-core/src/command_hooks/virtual_hooks.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/checkpoints.rs"
     ],
-    "totalLinesCovered": 2044
+    "totalLinesCovered": 3328
   }
 }

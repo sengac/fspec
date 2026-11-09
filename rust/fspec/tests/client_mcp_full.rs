@@ -66,15 +66,9 @@ async fn checked_approval_relay_preserves_daemon_rejection() -> TestResult {
     let server = client_mcp_full::FullFrontend::new(read(), true, move |name, args| {
         counter.fetch_add(1, Ordering::SeqCst);
         Box::pin(async move {
-            if name == "get_interaction_snapshot" {
-                return Ok(json!(
-                    json!({"pause":{"request_id":"fixture-nonce","state":{"message":"fixture"}}})
-                        .to_string()
-                ));
-            }
-            assert_eq!(name, "reply_interaction_checked");
+            // AMGR-020: the client names the request id; it is forwarded as is.
+            assert_eq!(name, "pause_confirm");
             assert_eq!(args["request_id"], "fixture-nonce");
-            assert_eq!(args["method"], "pause_confirm");
             Err(codelet_rpc::mcp_dispatch::InvokeError::Daemon(
                 "Stale interaction".into(),
             ))
@@ -89,18 +83,20 @@ async fn checked_approval_relay_preserves_daemon_rejection() -> TestResult {
     let result = client
         .call_tool(
             CallToolRequestParams::new("fspec_rpc_pause_confirm").with_arguments(
-                serde_json::from_value(json!({"session_id":{"value":"fixture"},"accept":false}))?,
+                serde_json::from_value(json!({"session_id":{"value":"fixture"},"request_id":"fixture-nonce","accept":false}))?,
             ),
         )
         .await?;
     assert_eq!(result.is_error, Some(true));
-    assert_eq!(calls.load(Ordering::SeqCst), 2);
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
     client.cancel().await?;
     task.await??;
     Ok(())
 }
 #[tokio::test]
 async fn discover_all_and_continue_without_reexecution() -> TestResult {
+    // @step Given the current daemon service declaration
+    // @step Given an operation whose result exceeds one response chunk
     let calls = Arc::new(AtomicUsize::new(0));
     let counter = calls.clone();
     let server = client_mcp_full::FullFrontend::new(read(), true, move |_, _| {
@@ -113,8 +109,23 @@ async fn discover_all_and_continue_without_reexecution() -> TestResult {
         Ok::<_, Box<dyn std::error::Error + Send + Sync>>(())
     });
     let client = ClientInfo::default().serve(b).await?;
+    // @step When the client lists RPC tools
     let tools = client.list_all_tools().await?;
-    assert_eq!(tools.len(), 125);
+    // @step Then every declared method has a matching argument schema
+    let methods = codelet_rpc::mcp_dispatch::methods()?;
+    assert_eq!(tools.len(), 3 + methods.len() + 1);
+    for name in [
+        "fspec_health",
+        "fspec_work_units",
+        "fspec_rpc_result",
+        "fspec_rpc_health",
+    ] {
+        assert!(
+            tools.iter().any(|tool| tool.name == name),
+            "missing tool {name}"
+        );
+    }
+    // @step And unknown arguments are rejected before dispatch
     assert!(client
         .call_tool(
             CallToolRequestParams::new("fspec_rpc_health")
@@ -122,6 +133,7 @@ async fn discover_all_and_continue_without_reexecution() -> TestResult {
         )
         .await
         .is_err());
+    // @step When the client reads the result continuation
     let first = client
         .call_tool(CallToolRequestParams::new("fspec_rpc_health"))
         .await?;
@@ -134,7 +146,9 @@ async fn discover_all_and_continue_without_reexecution() -> TestResult {
             )?),
         )
         .await?;
+    // @step Then it receives bounded JSON text from the same result snapshot
     assert_eq!(next.is_error, Some(false));
+    // @step And the operation is not executed again
     assert_eq!(calls.load(Ordering::SeqCst), 1);
     client.cancel().await?;
     task.await??;
@@ -244,6 +258,7 @@ fn sensitive_categories_retain_state_change_annotations() {
         "reply_interaction_checked",
     ] {
         let method = codelet_rpc::mcp_dispatch::methods()
+            .expect("the MCP catalog builds")
             .into_iter()
             .find(|m| m.name == name)
             .expect("catalogued RPC");

@@ -52,7 +52,9 @@
                 256,
                 257,
                 258
-              ]
+              ],
+              "firstLine": "pub fn capture_screenshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,7 +112,9 @@
                 256,
                 257,
                 258
-              ]
+              ],
+              "firstLine": "pub fn capture_screenshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,7 +172,9 @@
                 256,
                 257,
                 258
-              ]
+              ],
+              "firstLine": "pub fn capture_screenshot(",
+              "lastLine": "}"
             }
           ]
         }
@@ -226,7 +232,9 @@
                 256,
                 257,
                 258
-              ]
+              ],
+              "firstLine": "pub fn capture_screenshot(",
+              "lastLine": "}"
             }
           ]
         }

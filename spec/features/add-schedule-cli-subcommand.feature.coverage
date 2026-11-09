@@ -160,7 +160,9 @@
                 148,
                 149,
                 150
-              ]
+              ],
+              "firstLine": "//! `add-schedule` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -283,7 +285,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "//! `add-schedule` shell-facing CLI bridge (RPC-191).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }

@@ -28,6 +28,7 @@ fn boundary(
 fn explicit_boundaries_order_journal_only_requests_before_later_originals() -> TestResult {
     // @step Given consecutive transcript-only requests with authentic original-prefix boundaries
     let root = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(root.path().into())?;
     reset_stores_for_tests();
     let mut manifest = create_session("request anchors", root.path())?;
@@ -68,6 +69,7 @@ fn explicit_boundaries_order_journal_only_requests_before_later_originals() -> T
 fn request_boundaries_cannot_change_after_the_first_delta() -> TestResult {
     // @step Given an acknowledged request with an authentic original-prefix boundary
     let root = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(root.path().into())?;
     reset_stores_for_tests();
     let mut manifest = create_session("immutable request anchor", root.path())?;
@@ -95,6 +97,7 @@ fn request_boundaries_cannot_change_after_the_first_delta() -> TestResult {
 fn invalid_explicit_boundaries_never_become_inferred_coordinates() -> TestResult {
     // @step Given an explicit request boundary naming an incorrect original-prefix identity
     let root = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(root.path().into())?;
     reset_stores_for_tests();
     let mut manifest = create_session("invalid request anchor", root.path())?;

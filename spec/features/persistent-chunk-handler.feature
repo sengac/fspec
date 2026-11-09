@@ -1,6 +1,7 @@
 @done
 @tui
 @BRIDGE-013
+@state-management
 Feature: TUI persistent chunk handler for bridge input display
   """
   Uses useSessionStreamManager hook at AgentView component level, not inside callbacks

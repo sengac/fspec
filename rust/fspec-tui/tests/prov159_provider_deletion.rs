@@ -20,6 +20,7 @@ fn scenario_a3_provider_deletion_preserves_shared_document_fields() -> TestResul
     // @step And unrelated fields in the shared Codex credential document remain unchanged
     let fixture = Fixture::new()?;
     fixture.seed("A")?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(fixture.directory.path().to_owned())?;
     #[cfg(target_os = "macos")]
     {

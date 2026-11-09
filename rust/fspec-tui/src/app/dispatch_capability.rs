@@ -19,16 +19,20 @@ impl App {
             || self.try_dispatch_model_selector(action)
             || self.try_dispatch_continue_sync(action)
             || self.try_dispatch_model_thinking_dialogs(action)
+            || self.try_dispatch_missing_profile_limit(action)
             || self.try_dispatch_pause_hitl(action)
             || self.try_dispatch_exec_stdin(action)
             || self.try_dispatch_provider_settings(action)
             || self.try_dispatch_blocklist(action)
             || self.try_dispatch_changed_files(action)
+            || self.try_dispatch_board_card(action)
             || self.try_dispatch_viewer(action)
             || self.try_dispatch_work_unit_search(action)
             || self.try_dispatch_checkpoints(action)
             || self.try_dispatch_merge_worktree(action)
             || self.try_dispatch_worktrees(action)
+            || self.try_dispatch_workspaces(action)
+            || self.try_dispatch_daemons(action)
             || self.try_dispatch_slash_schedule(action)
             || self.try_dispatch_slash_loop(action)
             || self.try_dispatch_create_session_dialog(action)
@@ -63,6 +67,9 @@ impl App {
                 tracing::warn!(error = %err, "mux-exit auto-save failed (non-fatal)");
             }
         }
+        // BUG-549: whatever the action did to focus or the composer, the
+        // composer ends the tick bound to the focused session's draft.
+        self.sync_composer_draft();
         self.should_render = true;
     }
 }

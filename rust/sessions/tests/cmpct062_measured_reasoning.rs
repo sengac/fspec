@@ -44,16 +44,24 @@ async fn measured_reasoning_remains_cumulative_after_compacted_cold_session_rest
             None,
         );
         for _request in 0..2 {
+            let mut inner = background.inner.lock().await;
+            // BUG-312: admit the session's own output reservation, which the
+            // stream loop sends as the wire output allowance.
+            let reservation = u64::try_from(
+                inner
+                    .provider_manager()
+                    .max_output_tokens()
+                    .ok_or("output limit")?,
+            )?;
             let model = server.models()?.0.with_request_admission(
                 codelet_providers::request_admission::AdmissionLimits {
                     context_capacity: Some(200_000),
-                    output_reservation: Some(4_000),
+                    output_reservation: Some(reservation),
                 },
             );
             let agent = RigAgent::new(rig::agent::AgentBuilder::new(model).build(), 1);
-            let mut inner = background.inner.lock().await;
-            tokio::time::timeout(
-                std::time::Duration::from_secs(10),
+            codelet_test_helpers::deadlock_guard(
+                "run_agent_stream( agent, 'measured request', &mut inner, ...",
                 run_agent_stream(
                     agent,
                     "measured request",

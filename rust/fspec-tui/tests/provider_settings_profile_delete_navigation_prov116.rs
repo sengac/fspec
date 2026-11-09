@@ -4,15 +4,14 @@
 //! Feature: spec/features/provider-settings-profile-delete-navigation.feature
 //!
 //! App-level dispatch tests against the shared `MockBackend` (scripted Ok/Err +
-//! call counters). The success path must wire `set_navigate_target(provider_id)`
-//! so the reload fold's `apply_pending_navigate()` lands the cursor on the
-//! parent provider row; the Err path must NOT jump; the save path must NOT be
+//! call counters). The success path's numbered refresh carries the navigate
+//! target (BUG-575), so the cursor lands on the parent provider row; the Err
+//! path must NOT jump; the save path must NOT be
 //! changed (TS only navigates on delete).
 //!
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
@@ -21,12 +20,14 @@ use codelet_fspec_tui::{App, FspecBackend};
 use codelet_rpc_types::{
     ProfileDefinition, ProviderCredentialInfo, ProviderProfileConfig, ProviderSettingsConfig,
 };
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
 
-fn seed_backend_profiles(mock: &MockBackend, profiles: &[&str]) {
+fn seed_backend_profiles(
+    mock: &MockBackend,
+    profiles: &[&str],
+) -> Result<(), codelet_test_helpers::TestError> {
     mock.seed_provider_settings(vec![ProviderSettingsConfig {
         provider_id: "openai".to_string(),
         settings: ProfileDefinition::default(),
@@ -38,7 +39,8 @@ fn seed_backend_profiles(mock: &MockBackend, profiles: &[&str]) {
             })
             .collect(),
     }])
-    .expect("backend provider settings fixture must be available");
+    .or_fail("backend provider settings fixture must be available")?;
+    Ok(())
 }
 
 // ─────────────────────────── dispatch helpers ───────────────────────────
@@ -96,29 +98,34 @@ fn profile_def() -> ProfileDefinition {
     }
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -154,23 +161,29 @@ fn profile_rows(view: &ProviderSettingsView) -> Vec<String> {
 }
 
 /// Index of the first `Profile` row (the cursor's pre-delete landing spot).
-fn first_profile_index(view: &ProviderSettingsView) -> usize {
-    view.nav_items
+fn first_profile_index(
+    view: &ProviderSettingsView,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|i| matches!(i.kind, NavItemKind::Profile { .. }))
-        .expect("a profile row must be present in the fixture")
+        .or_fail("a profile row must be present in the fixture")?)
 }
 
-async fn app_expanded_on_first_profile(mock: Arc<MockBackend>, profiles: &[&str]) -> App {
-    seed_backend_profiles(&mock, profiles);
+async fn app_expanded_on_first_profile(
+    mock: Arc<MockBackend>,
+    profiles: &[&str],
+) -> Result<App, codelet_test_helpers::TestError> {
+    seed_backend_profiles(&mock, profiles)?;
     mock.seed_provider_credentials(cred_list());
     let mut app = fresh_app(mock);
-    app.dispatch(Action::ProviderCredentialsLoaded(cred_list()));
-    drain_pending(&mut app).await;
+    app.dispatch(Action::OpenProviderSettingsView);
+    drain_pending(&mut app).await?;
     let view = &mut app.navigator_mut().provider_settings;
     view.toggle_expansion("openai");
-    view.selected_index = first_profile_index(view);
-    app
+    view.selected_index = first_profile_index(view)?;
+    Ok(app)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -179,10 +192,10 @@ async fn app_expanded_on_first_profile(mock: Arc<MockBackend>, profiles: &[&str]
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
+async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() -> TestResult {
     // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await?;
     assert_eq!(
         profile_rows(&app.navigator().provider_settings),
         vec!["fireworks", "home"]
@@ -195,7 +208,7 @@ async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
 
     // The delete removes "fireworks" from the store: the reload now sees only
     // "home".
-    seed_backend_profiles(&mock, &["home"]);
+    seed_backend_profiles(&mock, &["home"])?;
 
     // @step When the user presses "d" and confirms the delete with "y"
     app.dispatch(Action::ConfirmDeleteProfile {
@@ -204,14 +217,15 @@ async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
     });
 
     // @step And the backend delete succeeds and the nav tree refreshes
-    drain_pending(&mut app).await;
-    wait_until(|| mock.delete_profile_calls() >= 1, "delete_profile called").await;
+    drain_pending(&mut app).await?;
+    wait_until(|| mock.delete_profile_calls() >= 1, "delete_profile called").await?;
 
     // @step Then the cursor is on the "openai" provider row
     assert!(
         cursor_on_openai_provider_row(&app.navigator().provider_settings),
         "after a successful delete the cursor must return to the openai provider row"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -219,10 +233,10 @@ async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
+async fn deleting_the_only_profile_returns_cursor_to_provider_row() -> TestResult {
     // @step Given the "openai" provider is expanded with a single profile "fireworks"
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks"]).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks"]).await?;
     assert_eq!(
         profile_rows(&app.navigator().provider_settings),
         vec!["fireworks"]
@@ -235,7 +249,7 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
 
     // The delete removes the profile from the store: the reload must now see an
     // openai with no profiles.
-    seed_backend_profiles(&mock, &[]);
+    seed_backend_profiles(&mock, &[])?;
 
     // @step When the user presses "d" and confirms the delete with "y"
     app.dispatch(Action::ConfirmDeleteProfile {
@@ -244,8 +258,8 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
     });
 
     // @step And the backend delete succeeds and the nav tree refreshes
-    drain_pending(&mut app).await;
-    wait_until(|| mock.delete_profile_calls() >= 1, "delete_profile called").await;
+    drain_pending(&mut app).await?;
+    wait_until(|| mock.delete_profile_calls() >= 1, "delete_profile called").await?;
 
     // @step Then the cursor is on the "openai" provider row
     assert!(
@@ -272,6 +286,7 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
         children,
         vec![NavItemKind::Settings, NavItemKind::AddProfile]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -279,12 +294,12 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
+async fn failed_delete_does_not_move_cursor_and_preserves_profiles() -> TestResult {
     let mock = Arc::new(MockBackend::new());
     // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
     // @step And the cursor is on the "fireworks" profile row
     mock.set_delete_profile_error("delete failed".to_string());
-    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await?;
     assert!(!cursor_on_openai_provider_row(
         &app.navigator().provider_settings
     ));
@@ -296,12 +311,12 @@ async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
     });
 
     // @step And the backend delete returns an error
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || mock.delete_profile_calls() >= 1,
         "delete_profile attempted",
     )
-    .await;
+    .await?;
 
     // @step Then the cursor does not jump to the "openai" provider row
     assert!(
@@ -315,6 +330,7 @@ async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
         vec!["fireworks", "home"],
         "a failed delete must preserve both profiles"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -322,10 +338,10 @@ async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn saving_a_profile_does_not_move_cursor_to_provider_row() {
+async fn saving_a_profile_does_not_move_cursor_to_provider_row() -> TestResult {
     // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await?;
 
     // @step And the cursor is on the "fireworks" profile row
     assert!(!cursor_on_openai_provider_row(
@@ -341,12 +357,13 @@ async fn saving_a_profile_does_not_move_cursor_to_provider_row() {
     });
 
     // @step And the backend save succeeds and the nav tree refreshes
-    drain_pending(&mut app).await;
-    wait_until(|| mock.save_profile_calls() >= 1, "save_profile called").await;
+    drain_pending(&mut app).await?;
+    wait_until(|| mock.save_profile_calls() >= 1, "save_profile called").await?;
 
     // @step Then the cursor is not forced onto the "openai" provider row
     assert!(
         !cursor_on_openai_provider_row(&app.navigator().provider_settings),
         "saving a profile must NOT force the cursor onto the provider row (TS navigates only on delete)"
     );
+    Ok(())
 }

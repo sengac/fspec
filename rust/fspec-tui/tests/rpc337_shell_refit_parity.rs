@@ -7,10 +7,9 @@
 //! count chrome + footer + Clear-first behaviour). Driven at the public
 //! view boundary (no access to the pub(crate) shell fn).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
 
@@ -26,12 +25,16 @@ fn pinfo(id: &str) -> ProviderCredentialInfo {
     }
 }
 
-fn render_to_string(view: &mut ProviderSettingsView, w: u16, h: u16) -> String {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_to_string(
+    view: &mut ProviderSettingsView,
+    w: u16,
+    h: u16,
+) -> Result<String, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -40,18 +43,18 @@ fn render_to_string(view: &mut ProviderSettingsView, w: u16, h: u16) -> String {
         }
         joined.push('\n');
     }
-    joined
+    Ok(joined)
 }
 
 /// Scenario: Migrated view preserves rendered output
 #[test]
-fn migrated_provider_settings_view_renders_title_and_footer_through_shell() {
+fn migrated_provider_settings_view_renders_title_and_footer_through_shell() -> TestResult {
     // @step Given the Provider Settings view rendered with its pre-migration scaffold
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("openai"), pinfo("anthropic")]);
 
     // @step When the same view is rendered through the shared shell
-    let out = render_to_string(&mut view, 80, 24);
+    let out = render_to_string(&mut view, 80, 24)?;
 
     // @step Then the rendered output is identical to the pre-migration snapshot
     // The pre-migration scaffold rendered a `"Provider Settings (N items)"`
@@ -73,4 +76,5 @@ fn migrated_provider_settings_view_renders_title_and_footer_through_shell() {
         last_line.contains("Esc") || last_line.contains("Enter"),
         "footer hint missing on last row: {last_line:?}"
     );
+    Ok(())
 }

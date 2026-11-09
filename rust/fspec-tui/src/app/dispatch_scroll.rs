@@ -218,13 +218,28 @@ impl App {
             let spans = c.scrollback.selection_spans_for_content_width();
             c.scrollback.selected_text(&spans)
         });
+        // TUI-130: through the one copy path, so the copy is confirmed.
         if let Some(text) = text {
-            if text.is_empty() {
-                return;
-            }
-            if let Err(e) = self.clipboard.copy(&text) {
-                tracing::warn!("OSC 52 clipboard copy failed: {e}");
-            }
+            self.handle_copy_to_clipboard(text);
+        }
+    }
+
+    /// TUI-130: copy the whole text of the turn open in the turn modal, or
+    /// else the turn selected in SELECT mode.
+    pub(crate) fn handle_copy_selected_turn(&mut self) {
+        let text = self
+            .agent_view_store
+            .current_session_context()
+            .and_then(|c| {
+                let seq = self
+                    .navigator
+                    .agent
+                    .turn_modal_seq
+                    .or(c.scrollback.selected_seq())?;
+                c.scrollback.full_text_for_seq(seq)
+            });
+        if let Some(text) = text {
+            self.handle_copy_to_clipboard(text);
         }
     }
 
@@ -235,9 +250,13 @@ impl App {
         if text.is_empty() {
             return;
         }
-        if let Err(e) = self.clipboard.copy(&text) {
+        let result = self.clipboard.copy(&text);
+        if let Err(e) = &result {
             tracing::warn!("OSC 52 clipboard copy failed: {e}");
         }
+        // TUI-126: every copy is confirmed (or says why it failed).
+        self.copy_notice.record(&text, &result);
+        self.should_render = true;
     }
 
     /// COPY-006 test seam: replace the OSC 52 clipboard writer with an
@@ -258,5 +277,20 @@ impl App {
     /// the `#[cfg(test)]` cfg.
     pub fn poll_selection_tick_for_test(&mut self) {
         self.navigator.agent.poll_selection_tick();
+    }
+
+    /// TEST-042 test seam: [`Self::poll_selection_tick_for_test`] as if
+    /// `held` more had passed since the press, instead of sleeping.
+    pub fn poll_selection_tick_after_for_test(&mut self, held: std::time::Duration) {
+        self.navigator.agent.poll_selection_tick_after(held);
+        self.navigator
+            .board
+            .poll_selection_tick_after(held, &self.board_store);
+    }
+
+    /// TEST-042 test seam: move the scrollback wheel's last step `by` into
+    /// the past (see `WheelVelocity::age`), instead of sleeping.
+    pub fn age_scrollback_wheel_for_test(&mut self, by: std::time::Duration) -> bool {
+        self.navigator.agent.scrollback_wheel.age(by)
     }
 }

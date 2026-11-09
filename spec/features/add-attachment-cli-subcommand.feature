@@ -2,6 +2,7 @@
 @rust
 @cli
 @RPC-170
+@session-attachment
 Feature: fspec add-attachment CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_attachment.rs — clap-derived struct mirroring TS Commander.js
@@ -34,7 +35,7 @@ Feature: fspec add-attachment CLI subcommand
     And stdout contains the section header 'USAGE' followed by '  fspec add-attachment <workUnitId> <filePath> [options]'
     And stdout contains the section header 'ARGUMENTS'
     And stdout contains the section header 'OPTIONS'
-    And stdout contains the substring 'Fix: undefined'
+    And stdout contains the substring 'Fix: Create the work unit first'
 
   Scenario: CLI successfully adds an attachment and prints the canonical success block
     Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying

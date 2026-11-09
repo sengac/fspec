@@ -442,6 +442,39 @@ fn scenario_show_categories_degrades_when_registry_invalid() {
 }
 
 #[test]
+fn scenario_only_matches_top_level_scenario_not_background() {
+    // Scenario: Only matches top-level Scenario keyword (Background and Rule:Scenario excluded)
+
+    // @step Given the project root contains spec/features/login.feature whose Background block is named 'Login with valid credentials' and whose only top-level Scenario is named 'Other'
+    let tmp = TempDir::new().expect("tempdir");
+    let body = "Feature: F\n\n  Background: Login with valid credentials\n    Given x\n\n  @smoke\n  Scenario: Other\n    Given y\n";
+    write_feature(tmp.path(), "spec/features/login.feature", body);
+
+    // @step When I dispatch list-scenario-tags with file='spec/features/login.feature' and scenario='Login with valid credentials' and format='json'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "file": "spec/features/login.feature",
+            "scenario": "Login with valid credentials",
+            "format": "json"
+        }),
+    ));
+
+    // @step Then DispatchResult.data parses to JSON with success=false and error containing the substring "Scenario 'Login with valid credentials' not found"
+    assert!(
+        result.success,
+        "OUTER dispatcher must succeed; got {result:?}"
+    );
+    let data = parse_data(&result.data);
+    assert_eq!(data["success"].as_bool(), Some(false));
+    let inner_err = data["error"].as_str().unwrap_or_default();
+    assert!(
+        inner_err.contains("Scenario 'Login with valid credentials' not found"),
+        "expected scenario-not-found (Background excluded); got: {inner_err}"
+    );
+}
+
+#[test]
 fn scenario_excludes_scenarios_nested_inside_rule_blocks() {
     // Scenario: Excludes Scenarios nested inside Rule: blocks
 

@@ -1,3 +1,4 @@
+@BUG-582
 @RPC-420
 @work-management
 @codelet
@@ -7,6 +8,7 @@
 @rpc
 @rust
 @RPC-037
+@BUG-459
 Feature: Widen SessionManagerHandle + FspecService + both backends + stub with cross-transport parity tests
   """
   Architecture: send_input on SessionManagerHandle keeps its existing 2-arg signature (session_id, text). A new send_input_with_thinking is added with a default that calls send_input. The rust/napi SessionManager implementation gets to override either or both; current SessionManagerHandle::send_input default in StubSessionManagerHandle keeps working.
@@ -113,7 +115,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
   Scenario: get_effective_cwd / get_supervisors return safe defaults via the stub on both transports
     Given an engineer holds a freshly-created session id
     When the engineer calls backend.get_effective_cwd(sid).await
-    Then the call returns Ok(PathBuf::from("")) (the stub default — an empty PathBuf)
+    Then the call fails on both transports because the stub has no working directory for the session
     When the engineer calls backend.get_supervisors(sid).await
     Then the call returns Ok(Vec::new())
 
@@ -128,17 +130,17 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
     When the engineer calls backend.toggle_debug(sid, "/tmp/debug").await
     Then the call returns Ok(<some path string>) and a StreamChunk::DebugStateChange chunk is observed on chunks_rx for that session
 
-  Scenario: pause_confirm / pause_triple / pause_resume update pause state and emit SessionStateChange
-    Given an engineer seeds the StubSessionManagerHandle with a PauseState { kind: PauseKind::Confirm, prompt: "Apply?", tool_call_id: None } for sid and subscribes to chunks_rx
+  Scenario: pause_confirm / pause_triple / pause_human_action update pause state and emit SessionStateChange
+    Given an engineer seeds the StubSessionManagerHandle with a PauseState { kind: PauseKind::Confirm, prompt: "Apply?", details: None, tool_call_id: None } for sid and subscribes to chunks_rx
     When the engineer calls backend.get_pause_state(sid).await
-    Then the call returns Ok(Some(PauseState { kind: PauseKind::Confirm, prompt: "Apply?", tool_call_id: None }))
+    Then the call returns Ok(Some(PauseState { kind: PauseKind::Confirm, prompt: "Apply?", details: None, tool_call_id: None }))
     When the engineer calls backend.pause_confirm(sid, true).await
     Then the call returns Ok(())
     And a StreamChunk::SessionStateChange { state: SessionState::Running } arrives on chunks_rx for sid within 1 second
     And backend.get_pause_state(sid).await returns Ok(None)
     When the engineer seeds a PauseKind::Triple pause and calls backend.pause_triple(sid, ApprovalChoice::Approve).await
     Then the call returns Ok(()) and backend.get_pause_state(sid).await returns Ok(None)
-    When the engineer seeds another pause and calls backend.pause_resume(sid).await
+    When the engineer seeds another pause and calls backend.pause_human_action(sid, Done).await
     Then the call returns Ok(()) and backend.get_pause_state(sid).await returns Ok(None)
 
   Scenario: HITL request/response round-trips through both transports
@@ -163,7 +165,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
 
   Scenario: set_thinking_level_default closes the tarpc-side gap and round-trips through both transports
     Given an engineer holds a freshly-created session id
-    When the engineer calls backend.set_thinking_level_default(sid, ThinkingLevel::High).await on either transport
+    When the engineer calls backend.set_thinking_level_default(sid, ThinkingLevel::Effort("high")).await on either transport
     Then the call returns Ok(())
     And FspecService::set_thinking_level_default exists in rust/rpc/src/lib.rs as a new tarpc method on the service trait
 

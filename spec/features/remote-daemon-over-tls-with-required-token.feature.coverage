@@ -1,0 +1,255 @@
+{
+  "scenarios": [
+    {
+      "name": "A network bind without TLS or a token is refused",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "87-107",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/tls.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// A loopback bind is always allowed; any other bind only with TLS AND a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A loopback bind needs neither TLS nor a token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "109-116",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/tls.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "/// Whether `bind` is a loopback host (`127.0.0.1`, `::1`, `localhost`).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A TLS daemon serves a wss client that presents the token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "118-128",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "async fn serve(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A TLS daemon rejects a client without the token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "130-143",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/tls.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "/// Build a TLS acceptor from a PEM certificate chain and a PEM private key.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The daemon command refuses a network bind without TLS",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "160-174",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "// RPC-456: a network bind needs TLS AND a token; bad TLS files or a",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The daemon command serves a network bind with TLS and a token",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs",
+          "lines": "176-201",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/daemon.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "// RPC-456: a network bind needs TLS AND a token; bad TLS files or a",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/rpc456_remote_daemon_over_tls.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-server/src/tls.rs",
+      "rust/rpc-server/src/server.rs",
+      "rust/fspec/src/daemon.rs"
+    ],
+    "totalLinesCovered": 224
+  }
+}

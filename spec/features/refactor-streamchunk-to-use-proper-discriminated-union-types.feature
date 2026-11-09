@@ -2,6 +2,7 @@
 @tui
 @session
 @NAPI-010
+@streaming-loop-detection
 Feature: Refactor StreamChunk to use proper discriminated union types
   """
   Rust Changes:

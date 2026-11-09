@@ -5,36 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "51-75",
+          "lines": "51-87",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
                 149,
                 150,
                 151,
@@ -77,8 +52,34 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ],
+              "firstLine": "fn clear(&mut self) -> EventResult {",
+              "lastLine": "return EventResult::ignored();"
             }
           ]
         }
@@ -89,17 +90,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "77-88",
+          "lines": "89-100",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -116,8 +111,16 @@
                 68,
                 69,
                 70,
-                71
-              ]
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// (R3: a click on the draft row saves the role, one-click).",
+              "lastLine": "textarea,"
             }
           ]
         }
@@ -128,17 +131,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "90-104",
+          "lines": "102-116",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
                 55,
                 56,
                 57,
@@ -155,8 +152,16 @@
                 68,
                 69,
                 70,
-                71
-              ]
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// (R3: a click on the draft row saves the role, one-click).",
+              "lastLine": "textarea,"
             }
           ]
         }
@@ -167,28 +172,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "106-144",
+          "lines": "118-158",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "fn remove_callback(&self) -> Callback {",
+              "lastLine": "EventResult::Consumed(Some(self.remove_callback()))"
             }
           ]
         }
@@ -199,28 +202,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "146-176",
+          "lines": "160-192",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "fn remove_callback(&self) -> Callback {",
+              "lastLine": "EventResult::Consumed(Some(self.remove_callback()))"
             }
           ]
         }
@@ -231,37 +232,39 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "178-214",
+          "lines": "199-237",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138
-              ]
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "let _ = compositor.remove(&id);",
+              "lastLine": "}"
             }
           ]
         }
@@ -272,34 +275,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "216-254",
+          "lines": "240-278",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
               "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
-              ]
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "let draft = self.draft();",
+              "lastLine": "fn id(&self) -> &str {"
             }
           ]
         }
@@ -310,7 +315,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "256-269",
+          "lines": "281-294",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/role_dialog.rs",
@@ -526,8 +531,34 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "//! RoleDialog — Priority::Foreground modal for editing the per-session",
+              "lastLine": "selected: false,"
             }
           ]
         }
@@ -538,59 +569,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/role_dialog_rpc063.rs",
-          "lines": "271-284",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_role_dialog.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45
-              ]
-            }
-          ]
+          "lines": "289-305"
         }
       ]
     }
@@ -603,9 +582,8 @@
       "rust/fspec-tui/tests/role_dialog_rpc063.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/components/role_dialog.rs",
-      "rust/fspec-tui/src/app/dispatch_role_dialog.rs"
+      "rust/fspec-tui/src/components/role_dialog.rs"
     ],
-    "totalLinesCovered": 676
+    "totalLinesCovered": 667
   }
 }

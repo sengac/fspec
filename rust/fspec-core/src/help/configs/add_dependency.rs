@@ -10,12 +10,12 @@ use super::super::{
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
-        name: "id",
+        name: "workUnitId",
         description: "Work unit ID to add dependency to",
         required: true,
     },
     CommandArgument {
-        name: "dependsOnId",
+        name: "workUnitId",
         description: "Work unit ID that this depends on (shorthand for --depends-on)",
         required: false,
     },
@@ -23,22 +23,22 @@ const ARGS: &[CommandArgument] = &[
 
 const OPTS: &[CommandOption] = &[
     CommandOption {
-        flag: "--blocks <id>",
+        flag: "--blocks <workUnitId>",
         description: "This work unit blocks the specified work unit",
         default_value: None,
     },
     CommandOption {
-        flag: "--blocked-by <id>",
+        flag: "--blocked-by <workUnitId>",
         description: "This work unit is blocked by the specified work unit",
         default_value: None,
     },
     CommandOption {
-        flag: "--depends-on <id>",
+        flag: "--depends-on <workUnitId>",
         description: "This work unit depends on the specified work unit",
         default_value: None,
     },
     CommandOption {
-        flag: "--relates-to <id>",
+        flag: "--relates-to <workUnitId>",
         description: "This work unit is related to the specified work unit (no blocking)",
         default_value: None,
     },
@@ -100,7 +100,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "add-dependency",
     description:
         "Add dependency relationships between work units to track blockers and dependencies",
-    usage: Some("fspec add-dependency <id> [dependsOnId] [options]"),
+    usage: Some("fspec add-dependency <workUnitId> [workUnitId] [options]"),
     arguments: ARGS,
     options: OPTS,
     examples: EXAMPLES,

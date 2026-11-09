@@ -13,7 +13,7 @@ use rig::{
     streaming::StreamedAssistantContent,
 };
 use serde_json::json;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use support::{model, SocketServer, TestResult};
 use tokio::sync::Notify;
 
@@ -85,7 +85,7 @@ async fn scenario_replacement_output_agrees_with_next_turn_lineage_on_both_trans
         let mut events = Vec::new();
         let mut reasoning = String::new();
         let mut reasoning_start = 0;
-        tokio::time::timeout(Duration::from_secs(4), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(event) = stream.next().await {
                 events.push(match event? {
                     StreamedAssistantContent::ResponseAttemptStarted => {
@@ -114,6 +114,7 @@ async fn scenario_replacement_output_agrees_with_next_turn_lineage_on_both_trans
         // @step Then abandoned output is retracted and the successful answer appears once
         assert_eq!(answer(&stream.choice), "Hello");
         assert_eq!(reasoning, "");
+        // @step And the replacement's usage is reported before the answer its completed event carries
         assert_eq!(
             events,
             [
@@ -122,8 +123,8 @@ async fn scenario_replacement_output_agrees_with_next_turn_lineage_on_both_trans
                 "reasoning",
                 "aborted",
                 "started",
-                "text",
                 "usage",
+                "text",
                 "final"
             ]
         );
@@ -141,7 +142,7 @@ async fn scenario_replacement_output_agrees_with_next_turn_lineage_on_both_trans
             ])
             .build();
         let mut next = model.stream(request).await?;
-        tokio::time::timeout(Duration::from_secs(2), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(event) = next.next().await {
                 event?;
             }
@@ -173,7 +174,7 @@ async fn scenario_streaming_remains_live_before_the_attempt_terminates() -> Test
     // @step When partial text and reasoning arrive
     let mut seen_text = false;
     let mut seen_reasoning = false;
-    tokio::time::timeout(Duration::from_secs(1), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while !seen_text || !seen_reasoning {
             match stream
                 .next()
@@ -213,8 +214,8 @@ async fn scenario_continuation_retries_preserve_earlier_successful_physical_outp
     )
     .await?;
     // @step When the continuation replacement completes
-    let observed = tokio::time::timeout(
-        Duration::from_secs(4),
+    let observed = codelet_test_helpers::deadlock_guard(
+        "fixture::collect(model(&server.url, CodexHistory::default...",
         fixture::collect(model(&server.url, CodexHistory::default(), false)?),
     )
     .await??;

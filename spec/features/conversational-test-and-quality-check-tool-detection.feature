@@ -7,27 +7,7 @@
 @CONFIG-002
 Feature: Conversational Test and Quality Check Tool Detection
   """
-
-  Key architectural decisions:
-  - fspec does ZERO framework detection - purely conversational via system-reminders
-  - AI agent performs all detection using Read/Glob/Grep tools
-  - Config stored in spec/fspec-config.json (extends existing agent config file)
-  - Priority chain: env var (FSPEC_TEST_CMD/FSPEC_QUALITY_CMDS) → config file → system-reminder prompt
-
-  Dependencies and integrations:
-  - Uses existing config utilities (loadConfig/writeConfig from src/utils/config.ts)
-  - Follows agentRuntimeConfig.ts pattern for config lookup
-  - Integrates with formatAgentOutput() for agent-specific system-reminder formatting
-  - Integrates into ACDD workflow state transitions (emits reminders during validating phase)
-
-  Critical implementation requirements:
-  - MUST emit system-reminders guiding AI to detect tools (NEVER run detection code)
-  - MUST support command storage via --test-command and --quality-commands flags
-  - MUST be framework-agnostic (works with ANY language/platform)
-  - MUST include date-aware search queries when no tools detected
-  - MUST update all documentation (AGENTS.md, help files, README.md) to remove hardcoded npm/platform-specific references
-  - Config schema: {tools: {test: {command: string}, qualityCheck: {commands: string[]}}}
-
+  fspec does no framework detection: system-reminders guide the AI agent, which detects tools with Read/Glob/Grep and stores them with fspec configure-tools (spec/fspec-config.json: tools.test.command, tools.qualityCheck.commands). Storage, --reconfigure and help are proven by configure-tools-rust-port and configure-tools-cli-subcommand; the validating reminders (missing command, configured command, chained commands, date-aware search query) by tool-detection-check-functions-not-integrated-into-workflow. This feature keeps the agent-doc placeholder substitution: rust/fspec-core/src/commands/init/templates.rs generate_agent_doc replaces <test-command> and <quality-check-commands> in the generated agent doc from the merged user and project config (quality commands chained with &&).
   """
 
   # ========================================
@@ -78,89 +58,8 @@ Feature: Conversational Test and Quality Check Tool Detection
     I want to detect and configure test and quality check tools conversationally
     So that fspec works on any platform (Node.js, Python, Rust, Go, etc.) without hardcoded assumptions
 
-  Scenario: Emit system-reminder when no test command configured
-    Given spec/fspec-config.json does not have tools.test.command configured
-    When fspec checks for test command during validating phase
-    Then fspec should emit system-reminder
-    And system-reminder should say: 'No test command configured'
-    And system-reminder should tell AI to use Read/Glob tools to detect framework
-    And system-reminder should tell AI to run: fspec configure-tools --test-command <cmd>
-
-  Scenario: Store test command when AI configures tools
-    Given AI detected test framework using Read/Glob tools
-    When AI runs: fspec configure-tools --test-command '<detected-command>'
-    Then fspec should write to spec/fspec-config.json
-    And spec/fspec-config.json should contain tools.test.command = '<detected-command>'
-
-  Scenario: Emit configured test command when config exists
-    Given spec/fspec-config.json has tools.test.command = '<command>'
-    When fspec checks for test command during validating phase
-    Then fspec should emit system-reminder: 'Run tests: <command>'
-    And fspec should NOT prompt AI to configure tools
-
-  Scenario: Chain multiple test frameworks when AI provides chained command
-    Given AI detected multiple test frameworks using Glob
-    When AI runs: fspec configure-tools --test-command '<framework1> && <framework2>'
-    Then fspec should store chained command in spec/fspec-config.json
-    And next validation should emit: 'Run tests: <framework1> && <framework2>'
-
-  Scenario: Include date-aware search queries when no tools detected
-    Given AI used Read/Glob and found no test configuration files
-    When fspec emits system-reminder for tool configuration
-    Then system-reminder should include search query: 'best <platform> testing tools'
-    And platform placeholder should be filled based on project detection
-
-  Scenario: Store multiple quality check commands
-    Given AI detected quality check tools using Glob
-    When AI runs: fspec configure-tools --quality-commands '<tool1>' '<tool2>' '<tool3>'
-    Then fspec should store array of commands in spec/fspec-config.json
-    And next validation should emit chained command: '<tool1> && <tool2> && <tool3>'
-
-  Scenario: Support reconfiguration when tools change
-    Given spec/fspec-config.json has existing tool configuration
-    When AI runs: fspec configure-tools --reconfigure
-    Then fspec should emit system-reminder for re-detection
-    And AI should detect new tools and update configuration
-
-  Scenario: Validate all documentation uses dynamic command placeholders not hardcoded npm
-    Given fspec has help files, slash command sections, project management sections, and AGENTS.md documentation
-    When validation test scans all documentation files for hardcoded npm test, npm run build, npm check patterns
-    Then test should pass when all examples use <test-command> or <quality-check-commands> placeholders
-    Given fspec has help files, slash command sections, project management sections, and AGENTS.md documentation
-    When validation test scans all documentation files for hardcoded npm test, npm run build, npm check patterns
-    Then test should pass when all examples use <test-command> or <quality-check-commands> placeholders
-    And test should fail if any npm test, npm run, or npm check hardcoded patterns found
-
   Scenario: Replace placeholders in generated spec/AGENTS.md with configured commands
-    Given slash command section generators (src/utils/slashCommandSections/*.ts) return content with <test-command> and <quality-check-commands> placeholders
-    And spec/fspec-config.json has tools.test.command = 'npm test' configured
-    When fspec init command calls slash command section generators and assembles the output
+    Given spec/fspec-config.json has tools.test.command = 'npm test' and tools.qualityCheck.commands = ['npm run lint', 'npm run fmt']
+    When fspec init generates spec/AGENTS.md for the claude agent
     Then the generated spec/AGENTS.md file should have all <test-command> placeholders replaced with 'npm test'
-    And placeholder replacement logic reads spec/fspec-config.json to get configured commands
-    And the generated spec/AGENTS.md file should have all <quality-check-commands> placeholders replaced with configured quality commands
-
-  Scenario: configure-tools command appears in help output
-    Given configure-tools command is registered in src/index.ts
-    When user runs 'fspec --help'
-    Then output should list configure-tools in the command list alphabetically
-    And configure-tools should appear between 'compare-implementations' and 'create-epic' commands
-
-  Scenario: configure-tools command shows usage documentation
-    Given configure-tools command is registered with help documentation
-    When user runs 'fspec configure-tools --help'
-    Then output should show usage: fspec configure-tools [options]
-    And output should document --test-command option
-    And output should document --quality-commands option
-    And output should document --reconfigure flag
-    And output should include examples with different platforms
-
-  Scenario: configure-tools command stores test command in config file
-    Given spec/fspec-config.json exists with agent configuration
-    When user runs 'fspec configure-tools --test-command "npm test"'
-    Then spec/fspec-config.json should be updated with tools.test.command = "npm test"
-    And existing agent configuration should be preserved
-
-  Scenario: configure-tools command stores quality check commands in config file
-    Given spec/fspec-config.json exists
-    When user runs 'fspec configure-tools --quality-commands "npm run lint" "npm run typecheck"'
-    Then spec/fspec-config.json should have tools.qualityCheck.commands = ["npm run lint", "npm run typecheck"]
+    And the generated spec/AGENTS.md file should have all <quality-check-commands> placeholders replaced with 'npm run lint && npm run fmt'

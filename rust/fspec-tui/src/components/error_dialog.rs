@@ -10,14 +10,16 @@
 //!
 //! Every render delegates to [`dialog_theme::render_dialog`] so the
 //! visual contract stays byte-equal to the rest of the dialog stack.
+//! TUI-131: the message wraps; an error taller than the screen fills it
+//! and scrolls ([`MessageBody`]), the footer always shown.
 
 use crossterm::event::{Event, KeyCode};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
-use ratatui::text::Span;
 
-use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::dialog_theme::Accent;
+use super::message_dialog_body::{MessageBody, MessageLook};
 use super::{Callback, Component, EventResult, Priority};
 use crate::terminal::sanitize::sanitize_for_terminal;
 
@@ -30,6 +32,8 @@ pub const ERROR_DIALOG_ID: &str = "error-dialog";
 pub struct ErrorDialog {
     id: String,
     message: String,
+    /// TUI-131: the scroll position of the wrapped message.
+    body: MessageBody,
 }
 
 impl ErrorDialog {
@@ -42,6 +46,7 @@ impl ErrorDialog {
         Self {
             id: ERROR_DIALOG_ID.to_string(),
             message: sanitize_for_terminal(&message.into()),
+            body: MessageBody::default(),
         }
     }
 
@@ -60,6 +65,11 @@ impl Component for ErrorDialog {
         &self.id
     }
 
+    /// TUI-130: c and Ctrl+C copy the whole message.
+    fn copy_text(&self) -> Option<String> {
+        Some(self.message.clone())
+    }
+
     fn handle_event(&mut self, event: &Event) -> EventResult {
         if let Event::Key(key) = event {
             if key.code == KeyCode::Esc {
@@ -73,28 +83,21 @@ impl Component for ErrorDialog {
         // RPC-403 review: Critical modal — consume (swallow) pastes so
         // they can never leak into the agent input hidden behind this
         // dialog. No text field here, so nothing is inserted.
-        if matches!(event, Event::Paste(_)) {
+        if matches!(event, Event::Paste(_)) || self.body.handle_scroll(event) {
             return EventResult::consumed();
         }
         EventResult::ignored()
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let body_style = Style::default().fg(Color::Red).bg(Color::Black);
-        let rows = vec![DialogRow {
-            spans: vec![Span::styled(self.message.clone(), body_style)],
-            selectable: false,
-            selected: false,
-        }];
-        let dialog = FspecDialog {
+        let look = MessageLook {
             accent: Accent::Red,
             title: "Error",
-            rows,
-            footer: "Press ESC to dismiss",
+            style: Style::default().fg(Color::Red).bg(Color::Black),
+            footer: "c copy · Press ESC to dismiss",
             min_width: 40,
-            query_row: None,
         };
-        render_dialog(area, buf, &dialog);
+        self.body.render(area, buf, &self.message, &look);
     }
 }
 

@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "A malformed session id is reported as invalid",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug402_session_handle_lookup_errors.rs",
+          "lines": "63-71",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
+              "lines": [
+                159,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "fn pause_human_action(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unknown session is still reported as not found",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug402_session_handle_lookup_errors.rs",
+          "lines": "73-81",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "SessionManager::destroy_session(self, &session_id.value)",
+              "lastLine": "session_id: &SessionId,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug402_session_handle_lookup_errors.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_3.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs"
+    ],
+    "totalLinesCovered": 30
+  }
+}

@@ -349,7 +349,7 @@ fn preserves_insertion_order_with_mixed_present_and_missing_markers() {
         result.data
     );
 
-    // @step Then the substring 'a.png' appears before 'b.png' in the DispatchResult.data
+    // @step Then the substring "a.png" appears before "b.png" in the DispatchResult.data
     let a = result.data.find("a.png").expect("a.png present in output");
     let b = result.data.find("b.png").expect("b.png present in output");
     assert!(

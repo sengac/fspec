@@ -1,7 +1,7 @@
-@wip
 @providers
-@llm-provider
+@provider-abstraction
 @PROV-037
+@COV-057
 Feature: Codex Provider Reasoning Configuration
   """
   Key files: rust/providers/src/codex/mod.rs (create_rig_agent + complete_with_tools),
@@ -48,38 +48,6 @@ Feature: Codex Provider Reasoning Configuration
   # -----------------------------------------------------------------------
   # Bug 1: get_thinking_config() has no codex/openai branch
   # -----------------------------------------------------------------------
-  Scenario: get_thinking_config returns reasoning config for codex provider at High level
-    Given I have the get_thinking_config function
-    When I call get_thinking_config with provider "codex" and level High
-    Then the returned JSON should contain a "reasoning" object
-    And reasoning.effort should be "high"
-    And reasoning.summary should be "auto"
-
-  Scenario: get_thinking_config returns reasoning config for codex model name at Medium level
-    Given I have the get_thinking_config function
-    When I call get_thinking_config with provider "gpt-5.3-codex" and level Medium
-    Then the returned JSON should contain a "reasoning" object
-    And reasoning.effort should be "medium"
-    And reasoning.summary should be "auto"
-
-  Scenario: get_thinking_config returns reasoning config for codex at Low level
-    Given I have the get_thinking_config function
-    When I call get_thinking_config with provider "codex" and level Low
-    Then the returned JSON should contain a "reasoning" object
-    And reasoning.effort should be "low"
-    And reasoning.summary should be "auto"
-
-  Scenario: get_thinking_config returns empty config for codex at Off level
-    Given I have the get_thinking_config function
-    When I call get_thinking_config with provider "codex" and level Off
-    Then the returned JSON should be an empty object
-
-  Scenario: get_thinking_config recognizes gpt-5.1-codex as a codex model
-    Given I have the get_thinking_config function
-    When I call get_thinking_config with provider "gpt-5.1-codex" and level High
-    Then the returned JSON should contain a "reasoning" object
-    And reasoning.effort should be "high"
-
   # -----------------------------------------------------------------------
   # Bug 2: create_rig_agent ignores _thinking_config parameter
   # -----------------------------------------------------------------------

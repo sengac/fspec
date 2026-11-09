@@ -1,4 +1,7 @@
+@BUG-582
 @EXT-014
+@tools
+@attachment
 Feature: Oversized images from Read tool crash the agent loop — pre-validate image size before sending to LLM
   """
   Validation goes in ReadTool::call() in rust/tools/src/read.rs, in the FileType::Image branch, after base64 encoding but before constructing ReadOutput::Image

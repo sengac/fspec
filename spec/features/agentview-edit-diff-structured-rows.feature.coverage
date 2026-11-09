@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "328-347",
+          "lines": "377-409",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                128,
                 129,
                 130,
                 131,
@@ -133,8 +132,11 @@
                 248,
                 249,
                 250,
-                251
-              ]
+                251,
+                252
+              ],
+              "firstLine": "let gutter_width = gutter_width_for(max_line_num);",
+              "lastLine": ""
             }
           ]
         }
@@ -145,12 +147,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "349-365",
+          "lines": "411-456",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                209,
                 210,
                 211,
                 212,
@@ -192,59 +193,11 @@
                 248,
                 249,
                 250,
-                251
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "398-444",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
-              "lines": [
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                251,
+                252
+              ],
+              "firstLine": "/// skipped/trailing regions, indented through [`elision_indent`] (C1/W6).",
+              "lastLine": ""
             }
           ]
         }
@@ -255,12 +208,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "367-383",
+          "lines": "458-477",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                128,
                 129,
                 130,
                 131,
@@ -299,8 +251,11 @@
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168
+              ],
+              "firstLine": "let gutter_width = gutter_width_for(max_line_num);",
+              "lastLine": ""
             }
           ]
         }
@@ -311,7 +266,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "385-403",
+          "lines": "479-508",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -378,30 +333,7 @@
                 107,
                 108,
                 109,
-                110
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "464-492",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
+                110,
                 127,
                 128,
                 129,
@@ -418,7 +350,9 @@
                 140,
                 141,
                 142
-              ]
+              ],
+              "firstLine": "/// (`style_wrapped_line` hands it ONE already-width-fit fragment), so it does",
+              "lastLine": "/// three separating spaces) + white content, NO background, NOT padded. The"
             }
           ]
         }
@@ -429,43 +363,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "405-419",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "494-511",
+          "lines": "510-528",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -482,117 +380,6 @@
                 59,
                 60,
                 61,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "style_row on elision rows uses one uniform dim indentation",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "421-436",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "513-567",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
-              "lines": [
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The gutter style is consistent across all row types",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "437-453",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -617,8 +404,118 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "/// panics. Display-width is the `chars().count()` proxy shared with",
+              "lastLine": "/// already-indented text. Gap markers and collapse hints share this helper."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "style_row on elision rows uses one uniform dim indentation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "530-583",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "/// Build the span for ONE Elision visual row: a single dim span carrying the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "/// **RPC-393 (C1 + W6)**: the ONE helper deciding elision leading indent; gap",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The gutter style is consistent across all row types",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "585-610",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                256,
+                257,
+                258,
+                259,
+                260
+              ],
+              "firstLine": "/// Build the spans for ONE Removed/Added visual row: dim gray gutter (line",
+              "lastLine": "}"
             }
           ]
         }
@@ -629,7 +526,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "454-472",
+          "lines": "612-666",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
@@ -711,82 +608,9 @@
                 116,
                 117,
                 118
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "593-648",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
-              "lines": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
+              ],
+              "firstLine": "/// An unchanged context line with its 1-based file line number.",
+              "lastLine": "/// `MARKER` is `\"[R]- \"` or `\"[A]+ \"`."
             }
           ]
         }
@@ -797,29 +621,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "473-482",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
-              "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "648-660",
+          "lines": "668-681",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -836,6 +638,17 @@
                 59,
                 60,
                 61,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
                 167,
                 168,
                 169,
@@ -855,7 +668,9 @@
                 183,
                 184,
                 185
-              ]
+              ],
+              "firstLine": "/// panics. Display-width is the `chars().count()` proxy shared with",
+              "lastLine": "frags.push(String::new());"
             }
           ]
         }
@@ -871,25 +686,29 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
                 148,
                 149,
-                150
-              ]
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "width: u16,",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -905,32 +724,30 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
                 148,
                 149,
-                150
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "175-222",
-          "implMappings": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "width: u16,",
+              "lastLine": "} else {"
+            },
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
@@ -1033,7 +850,9 @@
                 186,
                 187,
                 188
-              ]
+              ],
+              "firstLine": "let mut frags = wrap_to_width(text, width.max(1));",
+              "lastLine": "let indent = \" \".repeat(gutter_w);"
             }
           ]
         }
@@ -1049,17 +868,30 @@
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "paint_scrollbar(bar_area, buf, viewport_rows, total_rows, state);",
+              "lastLine": "/// (span contents concatenated). Shares the exact `styled_rows`"
             }
           ]
         },
@@ -1070,7 +902,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
               "lines": [
-                145,
                 146,
                 147,
                 148,
@@ -1092,8 +923,13 @@
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "paint_scrollbar(bar_area, buf, viewport_rows, total_rows, state);",
+              "lastLine": "pub fn plain_rows(&self, width: usize) -> Vec<(String, RowEnd)> {"
             }
           ]
         }
@@ -1104,34 +940,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
-          "lines": "277-310",
+          "lines": "322-356",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
                 168,
                 169,
                 170,
                 171,
-                172
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "out.push(Line::from(Span::styled(w, style)));",
+              "lastLine": "}"
             }
           ]
         }
@@ -1152,6 +991,6 @@
       "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
       "rust/fspec-tui/src/views/agent/turn_modal.rs"
     ],
-    "totalLinesCovered": 1512
+    "totalLinesCovered": 1268
   }
 }

@@ -18,28 +18,16 @@ const ARGS: &[CommandArgument] = &[
     },
 ];
 
-const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--ids <ids>",
-    description: "Restore multiple rules with comma-separated IDs (e.g., \"2,5,7\")",
-    default_value: None,
-}];
+const OPTS: &[CommandOption] = &[];
 
 const EXAMPLE_1_OUTPUT: &str =
     "✓ Restored rule from AUTH-001\nRule reappears at index [2] in show-work-unit";
-const EXAMPLE_2_OUTPUT: &str = "✓ Restored 3 rules from AUTH-001";
 
-const EXAMPLES: &[CommandExample] = &[
-    CommandExample {
-        command: "fspec restore-rule AUTH-001 2",
-        description: Some("Restore deleted rule with ID 2"),
-        output: Some(EXAMPLE_1_OUTPUT),
-    },
-    CommandExample {
-        command: "fspec restore-rule AUTH-001 --ids 2,5,7",
-        description: Some("Restore multiple rules at once (bulk restore)"),
-        output: Some(EXAMPLE_2_OUTPUT),
-    },
-];
+const EXAMPLES: &[CommandExample] = &[CommandExample {
+    command: "fspec restore-rule AUTH-001 2",
+    description: Some("Restore deleted rule with ID 2"),
+    output: Some(EXAMPLE_1_OUTPUT),
+}];
 
 const RELATED: &[&str] = &[
     "remove-rule",
@@ -52,7 +40,6 @@ const NOTES: &[&str] = &[
     "Uses stable IDs that never shift when items are removed",
     "Restoring an already-active item is idempotent (succeeds with message)",
     "Non-existent IDs will fail with clear error message",
-    "Bulk restore validates all IDs before restoring any item",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

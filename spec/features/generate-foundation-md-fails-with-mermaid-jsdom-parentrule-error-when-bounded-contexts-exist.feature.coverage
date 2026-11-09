@@ -6,37 +6,7 @@
         {
           "file": "src/utils/__tests__/mermaid-validation-parentrule-fix.test.ts",
           "lines": "13-30",
-          "implMappings": [
-            {
-              "file": "src/utils/mermaid-validation.ts",
-              "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -46,37 +16,7 @@
         {
           "file": "src/utils/__tests__/mermaid-validation-parentrule-fix.test.ts",
           "lines": "32-51",
-          "implMappings": [
-            {
-              "file": "src/utils/mermaid-validation.ts",
-              "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -86,37 +26,7 @@
         {
           "file": "src/utils/__tests__/mermaid-validation-parentrule-fix.test.ts",
           "lines": "53-71",
-          "implMappings": [
-            {
-              "file": "src/utils/mermaid-validation.ts",
-              "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -128,9 +38,7 @@
     "testFiles": [
       "src/utils/__tests__/mermaid-validation-parentrule-fix.test.ts"
     ],
-    "implFiles": [
-      "src/utils/mermaid-validation.ts"
-    ],
-    "totalLinesCovered": 129
+    "implFiles": [],
+    "totalLinesCovered": 57
   }
 }

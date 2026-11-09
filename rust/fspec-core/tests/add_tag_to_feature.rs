@@ -480,3 +480,137 @@ fn scenario_no_missing_required_tags_reminder_when_satisfied() {
         "must not emit missing-required-tags reminder when both component and feature-group are present; got: {reminder}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Moved in from the TypeScript-era feature-level tag management feature (COV-072)
+// ─────────────────────────────────────────────────────────────────────────
+
+/// A feature file with a feature doc string, a Background, a step doc string
+/// with nested indentation, a data table and tagged scenarios.
+const FEATURE_LOGIN_RICH: &str = "@auth\n\
+Feature: Login\n\
+\x20\x20\"\"\"\n\
+\x20\x20Architecture notes:\n\
+\x20\x20\x20\x20- indented note\n\
+\x20\x20\"\"\"\n\
+\n\
+\x20\x20Background: User Story\n\
+\x20\x20\x20\x20As a user\n\
+\x20\x20\x20\x20I want to log in\n\
+\x20\x20\x20\x20So that I can work\n\
+\n\
+\x20\x20@smoke\n\
+\x20\x20Scenario: A\n\
+\x20\x20\x20\x20Given a step with a doc string:\n\
+\x20\x20\x20\x20\x20\x20\"\"\"\n\
+\x20\x20\x20\x20\x20\x20line one\n\
+\x20\x20\x20\x20\x20\x20\x20\x20line two\n\
+\x20\x20\x20\x20\x20\x20\"\"\"\n\
+\x20\x20\x20\x20Then a table:\n\
+\x20\x20\x20\x20\x20\x20| k | v |\n\
+\x20\x20\x20\x20\x20\x20| a | 1 |\n\
+\n\
+\x20\x20@regression @slow\n\
+\x20\x20Scenario: B\n\
+\x20\x20\x20\x20Given y\n";
+
+#[test]
+fn scenario_validate_registry_accepts_registered_tag() {
+    // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
+
+    // @step And spec/tags.json registers '@custom-tag' under Technical Tags
+    let tags = json!({
+        "categories": [
+            {"name": "Technical Tags", "description": "", "required": false, "tags": [
+                {"name": "@custom-tag", "description": "A registered custom tag"}
+            ]}
+        ]
+    });
+    fs::write(
+        tmp.path().join("spec").join("tags.json"),
+        serde_json::to_string_pretty(&tags).unwrap(),
+    )
+    .expect("write tags.json");
+
+    // @step When I dispatch add-tag-to-feature with file='spec/features/login.feature', tags=['@custom-tag'], validateRegistry=true
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "file": "spec/features/login.feature",
+            "tags": ["@custom-tag"],
+            "validateRegistry": true
+        }),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the file on disk equals '@custom-tag\nFeature: Login\n  Scenario: A\n    Given x\n'
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/login.feature"),
+        "@custom-tag\nFeature: Login\n  Scenario: A\n    Given x\n"
+    );
+}
+
+#[test]
+fn scenario_adding_feature_tag_leaves_scenario_tags_untouched() {
+    // @step Given a project root tempdir with spec/features/login.feature tagged '@auth' whose scenario 'A' is tagged '@smoke' and scenario 'B' is tagged '@regression @slow'
+    let tmp = TempDir::new().expect("tempdir");
+    let before = "@auth\nFeature: Login\n\n  @smoke\n  Scenario: A\n    Given x\n\n  @regression @slow\n  Scenario: B\n    Given y\n";
+    write_feature(tmp.path(), "spec/features/login.feature", before);
+
+    // @step When I dispatch add-tag-to-feature with file='spec/features/login.feature' and tags=['@critical']
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"file": "spec/features/login.feature", "tags": ["@critical"]}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the scenario tag lines '  @smoke' and '  @regression @slow' are still directly above their scenarios
+    let after = read_feature(tmp.path(), "spec/features/login.feature");
+    assert!(
+        after.contains("\n  @smoke\n  Scenario: A\n"),
+        "got:\n{after}"
+    );
+    assert!(
+        after.contains("\n  @regression @slow\n  Scenario: B\n"),
+        "got:\n{after}"
+    );
+
+    // @step And the file on disk equals the original with only the line '@critical' added above '@auth'
+    assert_eq!(after, format!("@critical\n{before}"));
+}
+
+#[test]
+fn scenario_adding_feature_tag_preserves_rest_of_file_byte_for_byte() {
+    // @step Given a project root tempdir with spec/features/login.feature holding a feature doc string, a Background, a step doc string with nested indentation and a data table
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_RICH,
+    );
+
+    // @step When I dispatch add-tag-to-feature with file='spec/features/login.feature' and tags=['@critical']
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"file": "spec/features/login.feature", "tags": ["@critical"]}),
+    ));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step And the file on disk equals the line '@critical' followed by the original contents byte-for-byte
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/login.feature"),
+        format!("@critical\n{FEATURE_LOGIN_RICH}")
+    );
+}

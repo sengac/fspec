@@ -65,7 +65,7 @@ RELATED COMMANDS
 NOTES
   • Clears ALL virtual hooks - operation cannot be undone
   • Automatically cleans up all script files in spec/hooks/.virtual/
-  • Sets virtualHooks array to empty [] (not undefined)
+  • Sets virtualHooks to an empty array; the field is kept, not removed
   • Operation is safe even if work unit has no hooks (clears 0 hooks)
   • AI prompts for this decision when work unit transitions to "done" status
   • Consider using remove-virtual-hook to selectively remove specific hooks

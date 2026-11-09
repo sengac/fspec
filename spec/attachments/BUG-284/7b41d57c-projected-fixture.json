@@ -1,0 +1,4376 @@
+{
+  "provenance": {
+    "session_id": "7b41d57c-d7aa-47f3-b2c7-b689012703c4",
+    "source_checkpoint_sha256": "22dc59c7ad7897a046e57ac100b5b86d4e06e01e56af27e654cff533a03e3e63",
+    "source_reconstructed_input_sha256": "add3dfe39d95d67038b85664331a730962a10d43d0fce0afbdb65fb77e811e6a",
+    "scope": "Projected equality/order witness; no raw prompts; not a streaming/cold runtime test"
+  },
+  "checkpoint": {
+    "generation": 1,
+    "model": "gpt-6.1-sol",
+    "protocol": "full-current-dag",
+    "version": 1,
+    "items": [
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0001"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0002"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0001",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0003\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0001",
+        "output": "evidence_item_0004"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0002",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0005\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0002",
+        "output": "evidence_item_0006"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0003",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0007\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0003",
+        "output": "evidence_item_0008"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0004",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0009\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0004",
+        "output": "evidence_item_0010"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0011",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0005",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0012\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0005",
+        "output": "evidence_item_0013"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0014",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0006",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0015\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0006",
+        "output": "evidence_item_0016"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0017",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0018"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0007",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0019\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0007",
+        "output": "evidence_item_0020"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0008",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0021\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0008",
+        "output": "evidence_item_0022"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0009",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0023\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0009",
+        "output": "evidence_item_0024"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0010",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0025\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0010",
+        "output": "evidence_item_0026"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0011",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0027\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0011",
+        "output": "evidence_item_0028"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0012",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0029\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0012",
+        "output": "evidence_item_0030"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0013",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0031\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0013",
+        "output": "evidence_item_0032"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0033",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0014",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0034\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0015",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0035\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0014",
+        "output": "evidence_item_0036"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0015",
+        "output": "evidence_item_0037"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0038",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0016",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0039\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0016",
+        "output": "evidence_item_0040"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0017",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0041\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0017",
+        "output": "evidence_item_0042"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0043",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0018",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0044\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0018",
+        "output": "evidence_item_0045"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0019",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0046\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0019",
+        "output": "evidence_item_0047"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0048",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0020",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0049\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0020",
+        "output": "evidence_item_0050"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0051",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0021",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0052\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0021",
+        "output": "evidence_item_0053"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0054",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0022",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0055\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0022",
+        "output": "evidence_item_0056"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0057",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0023",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0058\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0023",
+        "output": "evidence_item_0059"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0060",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0024",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0061\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0024",
+        "output": "evidence_item_0062"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0063",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0025",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0064\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0025",
+        "output": "evidence_item_0065"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0066",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0026",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0067\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0026",
+        "output": "evidence_item_0068"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0069",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0027",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0070\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0027",
+        "output": "evidence_item_0071"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0072",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0028",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0073\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0028",
+        "output": "evidence_item_0074"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0075",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0029",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0076\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0029",
+        "output": "evidence_item_0077"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0078",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0030",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0079\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0030",
+        "output": "evidence_item_0080"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0081",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0031",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0082\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0031",
+        "output": "evidence_item_0083"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0084",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0085"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0032",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0086\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0032",
+        "output": "evidence_item_0087"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0033",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0088\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0033",
+        "output": "evidence_item_0089"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0090",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0034",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0091\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0034",
+        "output": "evidence_item_0092"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0093",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0035",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0094\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0035",
+        "output": "evidence_item_0095"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0096",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0036",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0097\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0036",
+        "output": "evidence_item_0098"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0099",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0100"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0037",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0101\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0037",
+        "output": "evidence_item_0102"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0103",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0038",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0104\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0038",
+        "output": "evidence_item_0105"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0106",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0039",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0107\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0039",
+        "output": "evidence_item_0108"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0109",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0040",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0110\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0040",
+        "output": "evidence_item_0111"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0112",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0041",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0113\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0041",
+        "output": "evidence_item_0114"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0115",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0042",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0116\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0042",
+        "output": "evidence_item_0117"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0118",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0043",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0119\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0043",
+        "output": "evidence_item_0120"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0121",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0044",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0122\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0044",
+        "output": "evidence_item_0123"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0124",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0045",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0125\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0045",
+        "output": "evidence_item_0126"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0127",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0046",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0128\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0046",
+        "output": "evidence_item_0129"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0130",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0047",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0131\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0047",
+        "output": "evidence_item_0132"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0048",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0133\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0048",
+        "output": "evidence_item_0134"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0049",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0135\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0049",
+        "output": "evidence_item_0136"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0137",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0050",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0138\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0050",
+        "output": "evidence_item_0139"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0140",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0051",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0141\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0051",
+        "output": "evidence_item_0142"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0143",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0052",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0144\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0052",
+        "output": "evidence_item_0145"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0146",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0053",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0147\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0053",
+        "output": "evidence_item_0148"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0149",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0150"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0054",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0151\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0054",
+        "output": "evidence_item_0152"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0153",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0055",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0154\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0055",
+        "output": "evidence_item_0155"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0056",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0156\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0057",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0157\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0058",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0158\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0056",
+        "output": "evidence_item_0159"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0057",
+        "output": "evidence_item_0160"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0058",
+        "output": "evidence_item_0161"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0162",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0059",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0163\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0059",
+        "output": "evidence_item_0164"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0060",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0165\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0060",
+        "output": "evidence_item_0166"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0061",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0167\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0061",
+        "output": "evidence_item_0168"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0169",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0062",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0170\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0062",
+        "output": "evidence_item_0171"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0172",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0063",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0173\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0063",
+        "output": "evidence_item_0174"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0175",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0064",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0176\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0064",
+        "output": "evidence_item_0177"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0178",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0179"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0065",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0180\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0066",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0181\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0067",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0182\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0065",
+        "output": "evidence_item_0183"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0066",
+        "output": "evidence_item_0184"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0067",
+        "output": "evidence_item_0185"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0186",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0068",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0187\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0068",
+        "output": "evidence_item_0188"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0189",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0069",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0190\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0070",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0191\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0069",
+        "output": "evidence_item_0192"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0070",
+        "output": "evidence_item_0193"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0194",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0071",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0195\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0071",
+        "output": "evidence_item_0196"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0197",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0072",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0198\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0072",
+        "output": "evidence_item_0199"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0200",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0073",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0201\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0073",
+        "output": "evidence_item_0202"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0203",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0074",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0204\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0074",
+        "output": "evidence_item_0205"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0075",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0206\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0075",
+        "output": "evidence_item_0207"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0208",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0076",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0209\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0076",
+        "output": "evidence_item_0210"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0211",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0077",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0212\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0077",
+        "output": "evidence_item_0213"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0214",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0078",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0215\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0078",
+        "output": "evidence_item_0216"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0217",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0079",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0218\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0079",
+        "output": "evidence_item_0219"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0220",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0080",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0221\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0080",
+        "output": "evidence_item_0222"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0223",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0081",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0224\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0081",
+        "output": "evidence_item_0225"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0226",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0082",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0227\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0082",
+        "output": "evidence_item_0228"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0229",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0230",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0083",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0231\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0083",
+        "output": "evidence_item_0232"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0233",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0084",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0234\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0084",
+        "output": "evidence_item_0235"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0236",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0237",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0238",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0239",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0240",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0085",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0241\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0085",
+        "output": "evidence_item_0242"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0243",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0086",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0244\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0086",
+        "output": "evidence_item_0245"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0246",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0087",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0247\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0087",
+        "output": "evidence_item_0248"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0249",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0250"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0088",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0251\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0088",
+        "output": "evidence_item_0252"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0253",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0089",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0254\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0089",
+        "output": "evidence_item_0255"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0256",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0257",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0090",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0258\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0090",
+        "output": "evidence_item_0259"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0260",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0091",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0261\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0091",
+        "output": "evidence_item_0262"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0263",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0092",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0264\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0092",
+        "output": "evidence_item_0265"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0266",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0093",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0267\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0094",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0268\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0093",
+        "output": "evidence_item_0269"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0094",
+        "output": "evidence_item_0270"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0271",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0095",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0272\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0095",
+        "output": "evidence_item_0273"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0274",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0096",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0275\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0097",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0276\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0098",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0277\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0096",
+        "output": "evidence_item_0278"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0097",
+        "output": "evidence_item_0279"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0098",
+        "output": "evidence_item_0280"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0281",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0099",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0282\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0100",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0283\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0101",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0284\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0099",
+        "output": "evidence_item_0285"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0100",
+        "output": "evidence_item_0286"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0101",
+        "output": "evidence_item_0287"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0288",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0102",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0289\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0102",
+        "output": "evidence_item_0290"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0291",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0103",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0292\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0103",
+        "output": "evidence_item_0293"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0294",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0295",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0296",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0297",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0298",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0104",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0299\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0104",
+        "output": "evidence_item_0300"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0301",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0105",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0302\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0105",
+        "output": "evidence_item_0303"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0106",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0304\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0107",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0305\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0106",
+        "output": "evidence_item_0306"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0107",
+        "output": "evidence_item_0307"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0308",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0309"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0108",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0310\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0108",
+        "output": "evidence_item_0311"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0109",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0312\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0109",
+        "output": "evidence_item_0313"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0314",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0110",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0315\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0110",
+        "output": "evidence_item_0316"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0317",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0111",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0318\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0111",
+        "output": "evidence_item_0319"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0320",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0112",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0321\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0113",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0322\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0114",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0323\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0115",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0324\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0116",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0325\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0112",
+        "output": "evidence_item_0326"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0113",
+        "output": "evidence_item_0327"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0114",
+        "output": "evidence_item_0328"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0115",
+        "output": "evidence_item_0329"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0116",
+        "output": "evidence_item_0330"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0331",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0117",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0332\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0117",
+        "output": "evidence_item_0333"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0334",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0118",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0335\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0118",
+        "output": "evidence_item_0336"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0337",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0338",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0339",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0119",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0340\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0119",
+        "output": "evidence_item_0341"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0342",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0120",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0343\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0120",
+        "output": "evidence_item_0344"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0345",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0121",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0346\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0121",
+        "output": "evidence_item_0347"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0348",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0122",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0349\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0122",
+        "output": "evidence_item_0350"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0351",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0352",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0353"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0123",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0354\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0123",
+        "output": "evidence_item_0355"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0356",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0357",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0358",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0359",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0124",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0360\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0124",
+        "output": "evidence_item_0361"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0362",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0125",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0363\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0125",
+        "output": "evidence_item_0364"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0365",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0126",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0366\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0126",
+        "output": "evidence_item_0367"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0127",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0368\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0128",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0369\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0127",
+        "output": "evidence_item_0370"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0128",
+        "output": "evidence_item_0371"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0372",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0129",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0373\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0129",
+        "output": "evidence_item_0374"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0375",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0376",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0377",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0378",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0130",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0379\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0130",
+        "output": "evidence_item_0380"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0381",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0131",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0382\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0131",
+        "output": "evidence_item_0383"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0384",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0132",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0385\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0132",
+        "output": "evidence_item_0386"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0387",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0133",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0388\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0133",
+        "output": "evidence_item_0389"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0390",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0134",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0391\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0134",
+        "output": "evidence_item_0392"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0393",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0394",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0395",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0135",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0396\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0135",
+        "output": "evidence_item_0397"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0136",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0398\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0136",
+        "output": "evidence_item_0399"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0400",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0137",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0401\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0138",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0402\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0139",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0403\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0137",
+        "output": "evidence_item_0404"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0138",
+        "output": "evidence_item_0405"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0139",
+        "output": "evidence_item_0406"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0407",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0140",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0408\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0140",
+        "output": "evidence_item_0409"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0410",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0141",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0411\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0141",
+        "output": "evidence_item_0412"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0413",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0414"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0142",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0415\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0143",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0416\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0144",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0417\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0142",
+        "output": "evidence_item_0418"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0143",
+        "output": "evidence_item_0419"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0144",
+        "output": "evidence_item_0420"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0421",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0422",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0423",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0145",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0424\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0145",
+        "output": "evidence_item_0425"
+      },
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0426"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0427"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0146",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0428\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0146",
+        "output": "evidence_item_0429"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0147",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0430\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0148",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0431\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0149",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0432\"}"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0150",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0433\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0147",
+        "output": "evidence_item_0434"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0148",
+        "output": "evidence_item_0435"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0149",
+        "output": "evidence_item_0436"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0150",
+        "output": "evidence_item_0437"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0438",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0439",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0440",
+        "summary": []
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0441",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0151",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0442\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0151",
+        "output": "evidence_item_0443"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0444",
+        "summary": []
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0152",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0445\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0152",
+        "output": "evidence_item_0446"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0153",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0447\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0153",
+        "output": "evidence_item_0448"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0154",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0449\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0154",
+        "output": "evidence_item_0450"
+      },
+      {
+        "type": "reasoning",
+        "encrypted_content": "evidence_item_0451",
+        "summary": []
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0452"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0155",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0453\"}"
+      }
+    ]
+  },
+  "request": {
+    "model": "gpt-6.1-sol",
+    "input": [
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0001"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0002"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0001",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0003\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0001",
+        "output": "evidence_item_0004"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0002",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0005\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0002",
+        "output": "evidence_item_0006"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0003",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0007\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0003",
+        "output": "evidence_item_0008"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0004",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0009\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0004",
+        "output": "evidence_item_0010"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0005",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0012\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0005",
+        "output": "evidence_item_0013"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0006",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0015\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0006",
+        "output": "evidence_item_0016"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0018"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0007",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0019\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0007",
+        "output": "evidence_item_0020"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0008",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0021\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0008",
+        "output": "evidence_item_0022"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0009",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0023\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0009",
+        "output": "evidence_item_0024"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0010",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0025\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0010",
+        "output": "evidence_item_0026"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0011",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0027\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0011",
+        "output": "evidence_item_0028"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0012",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0029\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0012",
+        "output": "evidence_item_0030"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0013",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0031\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0013",
+        "output": "evidence_item_0032"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0014",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0034\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0014",
+        "output": "evidence_item_0036"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0015",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0035\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0015",
+        "output": "evidence_item_0037"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0016",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0039\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0016",
+        "output": "evidence_item_0040"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0017",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0041\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0017",
+        "output": "evidence_item_0042"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0018",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0044\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0018",
+        "output": "evidence_item_0045"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0019",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0046\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0019",
+        "output": "evidence_item_0047"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0020",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0049\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0020",
+        "output": "evidence_item_0050"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0021",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0052\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0021",
+        "output": "evidence_item_0053"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0022",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0055\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0022",
+        "output": "evidence_item_0056"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0023",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0058\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0023",
+        "output": "evidence_item_0059"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0024",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0061\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0024",
+        "output": "evidence_item_0062"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0025",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0064\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0025",
+        "output": "evidence_item_0065"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0026",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0067\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0026",
+        "output": "evidence_item_0068"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0027",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0070\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0027",
+        "output": "evidence_item_0071"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0028",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0073\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0028",
+        "output": "evidence_item_0074"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0029",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0076\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0029",
+        "output": "evidence_item_0077"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0030",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0079\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0030",
+        "output": "evidence_item_0080"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0031",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0082\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0031",
+        "output": "evidence_item_0083"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0085"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0032",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0086\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0032",
+        "output": "evidence_item_0087"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0033",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0088\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0033",
+        "output": "evidence_item_0089"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0034",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0091\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0034",
+        "output": "evidence_item_0092"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0035",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0094\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0035",
+        "output": "evidence_item_0095"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0036",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0097\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0036",
+        "output": "evidence_item_0098"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0100"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0037",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0101\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0037",
+        "output": "evidence_item_0102"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0038",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0104\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0038",
+        "output": "evidence_item_0105"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0039",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0107\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0039",
+        "output": "evidence_item_0108"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0040",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0110\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0040",
+        "output": "evidence_item_0111"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0041",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0113\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0041",
+        "output": "evidence_item_0114"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0042",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0116\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0042",
+        "output": "evidence_item_0117"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0043",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0119\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0043",
+        "output": "evidence_item_0120"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0044",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0122\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0044",
+        "output": "evidence_item_0123"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0045",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0125\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0045",
+        "output": "evidence_item_0126"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0046",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0128\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0046",
+        "output": "evidence_item_0129"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0047",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0131\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0047",
+        "output": "evidence_item_0132"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0048",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0133\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0048",
+        "output": "evidence_item_0134"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0049",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0135\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0049",
+        "output": "evidence_item_0136"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0050",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0138\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0050",
+        "output": "evidence_item_0139"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0051",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0141\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0051",
+        "output": "evidence_item_0142"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0052",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0144\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0052",
+        "output": "evidence_item_0145"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0053",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0147\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0053",
+        "output": "evidence_item_0148"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0150"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0054",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0151\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0054",
+        "output": "evidence_item_0152"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0055",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0154\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0055",
+        "output": "evidence_item_0155"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0056",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0156\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0056",
+        "output": "evidence_item_0159"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0057",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0157\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0057",
+        "output": "evidence_item_0160"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0058",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0158\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0058",
+        "output": "evidence_item_0161"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0059",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0163\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0059",
+        "output": "evidence_item_0164"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0060",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0165\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0060",
+        "output": "evidence_item_0166"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0061",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0167\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0061",
+        "output": "evidence_item_0168"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0062",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0170\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0062",
+        "output": "evidence_item_0171"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0063",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0173\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0063",
+        "output": "evidence_item_0174"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0064",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0176\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0064",
+        "output": "evidence_item_0177"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0179"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0065",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0180\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0065",
+        "output": "evidence_item_0183"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0066",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0181\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0066",
+        "output": "evidence_item_0184"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0067",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0182\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0067",
+        "output": "evidence_item_0185"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0068",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0187\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0068",
+        "output": "evidence_item_0188"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0069",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0190\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0069",
+        "output": "evidence_item_0192"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0070",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0191\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0070",
+        "output": "evidence_item_0193"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0071",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0195\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0071",
+        "output": "evidence_item_0196"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0072",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0198\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0072",
+        "output": "evidence_item_0199"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0073",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0201\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0073",
+        "output": "evidence_item_0202"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0074",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0204\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0074",
+        "output": "evidence_item_0205"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0075",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0206\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0075",
+        "output": "evidence_item_0207"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0076",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0209\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0076",
+        "output": "evidence_item_0210"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0077",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0212\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0077",
+        "output": "evidence_item_0213"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0078",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0215\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0078",
+        "output": "evidence_item_0216"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0079",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0218\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0079",
+        "output": "evidence_item_0219"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0080",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0221\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0080",
+        "output": "evidence_item_0222"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0081",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0224\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0081",
+        "output": "evidence_item_0225"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0082",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0227\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0082",
+        "output": "evidence_item_0228"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0083",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0231\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0083",
+        "output": "evidence_item_0232"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0084",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0234\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0084",
+        "output": "evidence_item_0235"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0085",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0241\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0085",
+        "output": "evidence_item_0242"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0086",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0244\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0086",
+        "output": "evidence_item_0245"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0087",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0247\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0087",
+        "output": "evidence_item_0248"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0250"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0088",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0251\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0088",
+        "output": "evidence_item_0252"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0089",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0254\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0089",
+        "output": "evidence_item_0255"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0090",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0258\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0090",
+        "output": "evidence_item_0259"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0091",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0261\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0091",
+        "output": "evidence_item_0262"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0092",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0264\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0092",
+        "output": "evidence_item_0265"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0093",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0267\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0093",
+        "output": "evidence_item_0269"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0094",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0268\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0094",
+        "output": "evidence_item_0270"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0095",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0272\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0095",
+        "output": "evidence_item_0273"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0096",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0275\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0096",
+        "output": "evidence_item_0278"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0097",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0276\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0097",
+        "output": "evidence_item_0279"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0098",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0277\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0098",
+        "output": "evidence_item_0280"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0099",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0282\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0099",
+        "output": "evidence_item_0285"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0100",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0283\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0100",
+        "output": "evidence_item_0286"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0101",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0284\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0101",
+        "output": "evidence_item_0287"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0102",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0289\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0102",
+        "output": "evidence_item_0290"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0103",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0292\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0103",
+        "output": "evidence_item_0293"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0104",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0299\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0104",
+        "output": "evidence_item_0300"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0105",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0302\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0105",
+        "output": "evidence_item_0303"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0106",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0304\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0106",
+        "output": "evidence_item_0306"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0107",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0305\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0107",
+        "output": "evidence_item_0307"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0309"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0108",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0310\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0108",
+        "output": "evidence_item_0311"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0109",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0312\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0109",
+        "output": "evidence_item_0313"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0110",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0315\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0110",
+        "output": "evidence_item_0316"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0111",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0318\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0111",
+        "output": "evidence_item_0319"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0112",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0321\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0112",
+        "output": "evidence_item_0326"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0113",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0322\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0113",
+        "output": "evidence_item_0327"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0114",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0323\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0114",
+        "output": "evidence_item_0328"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0115",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0324\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0115",
+        "output": "evidence_item_0329"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0116",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0325\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0116",
+        "output": "evidence_item_0330"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0117",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0332\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0117",
+        "output": "evidence_item_0333"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0118",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0335\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0118",
+        "output": "evidence_item_0336"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0119",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0340\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0119",
+        "output": "evidence_item_0341"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0120",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0343\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0120",
+        "output": "evidence_item_0344"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0121",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0346\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0121",
+        "output": "evidence_item_0347"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0122",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0349\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0122",
+        "output": "evidence_item_0350"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0353"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0123",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0354\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0123",
+        "output": "evidence_item_0355"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0124",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0360\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0124",
+        "output": "evidence_item_0361"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0125",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0363\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0125",
+        "output": "evidence_item_0364"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0126",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0366\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0126",
+        "output": "evidence_item_0367"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0127",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0368\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0127",
+        "output": "evidence_item_0370"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0128",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0369\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0128",
+        "output": "evidence_item_0371"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0129",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0373\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0129",
+        "output": "evidence_item_0374"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0130",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0379\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0130",
+        "output": "evidence_item_0380"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0131",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0382\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0131",
+        "output": "evidence_item_0383"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0132",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0385\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0132",
+        "output": "evidence_item_0386"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0133",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0388\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0133",
+        "output": "evidence_item_0389"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0134",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0391\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0134",
+        "output": "evidence_item_0392"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0135",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0396\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0135",
+        "output": "evidence_item_0397"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0136",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0398\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0136",
+        "output": "evidence_item_0399"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0137",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0401\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0137",
+        "output": "evidence_item_0404"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0138",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0402\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0138",
+        "output": "evidence_item_0405"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0139",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0403\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0139",
+        "output": "evidence_item_0406"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0140",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0408\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0140",
+        "output": "evidence_item_0409"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0141",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0411\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0141",
+        "output": "evidence_item_0412"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0414"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0142",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0415\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0142",
+        "output": "evidence_item_0418"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0143",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0416\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0143",
+        "output": "evidence_item_0419"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0144",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0417\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0144",
+        "output": "evidence_item_0420"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0145",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0424\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0145",
+        "output": "evidence_item_0425"
+      },
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0454"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0455"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "evidence_item_0426"
+          }
+        ]
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0427"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0146",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0428\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0146",
+        "output": "evidence_item_0429"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0147",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0430\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0147",
+        "output": "evidence_item_0434"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0148",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0431\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0148",
+        "output": "evidence_item_0435"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0149",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0432\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0149",
+        "output": "evidence_item_0436"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0150",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0433\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0150",
+        "output": "evidence_item_0437"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0151",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0442\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0151",
+        "output": "evidence_item_0443"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0152",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0445\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0152",
+        "output": "evidence_item_0446"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0153",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0447\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0153",
+        "output": "evidence_item_0448"
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0154",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0449\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0154",
+        "output": "evidence_item_0450"
+      },
+      {
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "evidence_item_0452"
+          }
+        ]
+      },
+      {
+        "type": "function_call",
+        "call_id": "evidence_call_0155",
+        "name": "evidence_tool",
+        "arguments": "{\"evidence\":\"evidence_item_0453\"}"
+      },
+      {
+        "type": "function_call_output",
+        "call_id": "evidence_call_0155",
+        "output": "evidence_item_0456"
+      }
+    ]
+  }
+}

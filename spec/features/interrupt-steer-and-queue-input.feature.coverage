@@ -1,0 +1,557 @@
+{
+  "scenarios": [
+    {
+      "name": "A steered input reaches the next provider request after the tool result",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+          "lines": "91-145",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/steer.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                74,
+                75
+              ],
+              "firstLine": "fn at_safe_boundary(state: &State) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                40,
+                41,
+                42,
+                43,
+                44,
+                46,
+                47,
+                48,
+                49,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub fn submit_input(",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A queued input starts a new turn after the running turn completes",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+          "lines": "147-182",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                40,
+                41,
+                42,
+                43,
+                44,
+                46,
+                47,
+                48,
+                49,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": "pub fn submit_input(",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// RIG-016: once a turn ends without an interrupt or a pending retry, start",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queued inputs start in submission order",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+          "lines": "184-212",
+          "implMappings": [
+            {
+              "file": "rust/common/src/input_inbox.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                80,
+                81
+              ],
+              "firstLine": "/// Queue `entry` to start after the running turn.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                92
+              ],
+              "firstLine": "pub fn continue_with_inbox(&self) -> Result<bool, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupting keeps queued inputs parked",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+          "lines": "41-65",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/interrupted.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "let queued = if let Some(input_queue) = &mut context.input_queue {",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/sessions/src/background_session/messaging.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ],
+              "firstLine": "self.input_tx",
+              "lastLine": "interrupt_epoch,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resuming sends the parked inputs",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+          "lines": "67-90",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/input_modes.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "pub fn queued_inputs(&self) -> Vec<String> {",
+              "lastLine": "/// After a turn that completed without an interrupt: start steers it"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A steer waits for every tool call of the response before it is delivered",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug546_steer_waits_for_every_tool_call.rs",
+          "lines": "37-111",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop/driver.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "Some(Ok(MultiTurnStreamItem::StreamAssistantItem(item))) => {",
+              "lastLine": "Control::Next"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/steer.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "//! RIG-016: deliver steered input at the running turn's next safe boundary.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/state.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// BUG-546: a tool result arrived since the last response attempt; the",
+              "lastLine": "pub steer_boundary_pending: bool,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex replays a steered request only when every call has its outcome",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug546_codex_steer_replay.rs",
+          "lines": "18-73",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/history_replay.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "pub(super) fn validate(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop/driver.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "Some(Ok(MultiTurnStreamItem::StreamAssistantItem(item))) => {",
+              "lastLine": "Control::Next"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/rig016_interrupt_steer_queue.rs",
+      "rust/agent-loop/tests/bug546_steer_waits_for_every_tool_call.rs",
+      "rust/providers/tests/bug546_codex_steer_replay.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop/steer.rs",
+      "rust/sessions/src/background_session/input_modes.rs",
+      "rust/agent-loop/src/agent_loop/finalization.rs",
+      "rust/common/src/input_inbox.rs",
+      "rust/cli/src/interactive/stream_loop/interrupted.rs",
+      "rust/sessions/src/background_session/messaging.rs",
+      "rust/cli/src/interactive/stream_loop/driver.rs",
+      "rust/cli/src/interactive/stream_loop/state.rs",
+      "rust/providers/src/codex/history_replay.rs"
+    ],
+    "totalLinesCovered": 656
+  }
+}

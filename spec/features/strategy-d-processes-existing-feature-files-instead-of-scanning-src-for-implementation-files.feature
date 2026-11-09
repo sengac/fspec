@@ -8,7 +8,7 @@
 @REV-003
 Feature: Strategy D processes existing feature files instead of scanning src/ for implementation files
   """
-  Uses tinyglobby for recursive file discovery in src/ directory. Implements deriveFeatureName() function for camelCase/PascalCase to kebab-case conversion. Integrates with existing detectGaps() and suggestStrategy() functions in src/commands/reverse.ts. Modifies GapAnalysis type to replace rawImplementation with unmappedImplementation field.
+  rust/fspec-core/src/commands/reverse.rs: find_implementation_files walks src/ recursively (skipping __tests__, tests and test directories and *.test.ts files) for .ts, .tsx, .js and .jsx files; derive_feature_name turns a camelCase/PascalCase file name into a kebab-case feature name; has_feature_file and find_unmapped_implementation keep the files with no spec/features/<name>.feature; detect_gaps counts them as unmappedImplementation and lists them in gaps.files when no earlier gap type (tests without features, features without tests, unmapped scenarios) applies; suggest_strategy then suggests D.
   """
 
   # ========================================
@@ -47,16 +47,8 @@ Feature: Strategy D processes existing feature files instead of scanning src/ fo
     Then gap analysis should report '1 implementation files without features'
     Then session.gaps.files should contain 'src/components/MusicPlayer.tsx'
 
-  Scenario: Process implementation files instead of existing feature files when running Strategy D
-    Given a project with unmapped src/components/MusicPlayer.tsx
-    Given an existing unrelated feature file spec/features/cli-command-interface.feature
-    When AI runs 'fspec reverse --strategy=D'
-    Then Step 1 guidance should show 'Implementation file: src/components/MusicPlayer.tsx'
-    Then guidance should NOT say 'Read test file: spec/features/cli-command-interface.feature'
-    Then guidance should include persona-driven prompts 'WHO uses this?'
-
   Scenario: Convert implementation filenames to expected feature file names using kebab-case
-    Given deriveFeatureName() function receives 'src/components/MusicPlayer.tsx'
+    Given derive_feature_name receives 'src/components/MusicPlayer.tsx'
     When the function converts PascalCase to kebab-case
     Then it should return 'music-player'
-    Then hasFeatureFile() should check for 'spec/features/music-player.feature'
+    Then has_feature_file should check for 'spec/features/music-player.feature'

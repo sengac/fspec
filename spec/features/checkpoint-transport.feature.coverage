@@ -10,6 +10,11 @@
             {
               "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
                 32,
                 33,
                 34,
@@ -38,8 +43,42 @@
                 57,
                 58,
                 59,
-                60
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// Enumerate every checkpoint across all work units, sort most-recent-first,",
+              "lastLine": "}"
             }
           ]
         }
@@ -96,7 +135,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// view applies so the wire payload never grows unbounded.",
+              "lastLine": "let total = pairs.len();"
             }
           ]
         }
@@ -129,7 +170,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "let mut out: Vec<CheckpointInfo> = Vec::with_capacity(pairs.len().min(MAX_CHECKPOINTS));",
+              "lastLine": "total: 0,"
             }
           ]
         }
@@ -145,18 +188,20 @@
             {
               "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "/// Unified diff for one file against the checkpoint ref — delegates to",
+              "lastLine": "}"
             }
           ]
         }
@@ -167,40 +212,11 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
-          "lines": "147-170",
+          "lines": "153-178",
           "implMappings": [
             {
               "file": "rust/git/src/ghost_commit.rs",
               "lines": [
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
                 476,
                 477,
                 478,
@@ -238,8 +254,125 @@
                 510,
                 511,
                 512,
-                513
-              ]
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628
+              ],
+              "firstLine": "/// Restore working tree from ghost commit",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,7 +383,7 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
-          "lines": "171-189",
+          "lines": "180-198",
           "implMappings": [
             {
               "file": "rust/rpc/src/checkpoints.rs",
@@ -266,7 +399,9 @@
                 121,
                 122,
                 123
-              ]
+              ],
+              "firstLine": "/// Unified diff for one file against the checkpoint ref — delegates to",
+              "lastLine": "}"
             }
           ]
         }
@@ -277,20 +412,22 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
-          "lines": "192-209",
+          "lines": "200-218",
           "implMappings": [
             {
               "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "pub fn restore_file(",
+              "lastLine": "}"
             }
           ]
         }
@@ -301,22 +438,24 @@
       "testMappings": [
         {
           "file": "rust/rpc/tests/checkpoint_transport_rpc362.rs",
-          "lines": "212-229",
+          "lines": "220-238",
           "implMappings": [
             {
               "file": "rust/rpc/src/checkpoints.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ],
+              "firstLine": "pub fn delete_all(cwd: impl AsRef<Path>) -> codelet_git::Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -334,6 +473,6 @@
       "rust/rpc/src/checkpoints.rs",
       "rust/git/src/ghost_commit.rs"
     ],
-    "totalLinesCovered": 374
+    "totalLinesCovered": 501
   }
 }

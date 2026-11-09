@@ -32,13 +32,13 @@
 //!        `✓ Generated spec/FOUNDATION.md`, `✓ Foundation discovered and
 //!        validated successfully`, then (when a FOUND task was created) the
 //!        `✓ Created work unit <id>: Foundation Event Storm` + `  Run: fspec
-//!        show-work-unit <id>` lines; exit 0.
+//!        show-work-unit <workUnitId>` lines; exit 0.
 //!   3. Draft mode:
 //!      * invalid → STDERR `✗ Failed to create draft`; exit 1.
 //!      * valid → STDOUT `✓ Generated <draftPath>`, `Next steps:` and the two
 //!        guidance lines; exit 0.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -74,7 +74,7 @@ impl Default for CliArgs {
 /// Entry point invoked from `main.rs` for the `discover-foundation` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by
     // fspec_core::commands::discover_foundation::run.

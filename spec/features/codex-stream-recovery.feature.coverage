@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov154_codex_recovery.rs",
-          "lines": "111-140",
+          "lines": "111-147",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -35,7 +35,9 @@
                 183,
                 184,
                 185
-              ]
+              ],
+              "firstLine": "let response = tokio::time::timeout(",
+              "lastLine": "None => break,"
             }
           ]
         }
@@ -72,7 +74,9 @@
                 150,
                 151,
                 152
-              ]
+              ],
+              "firstLine": "if status == http::StatusCode::UNAUTHORIZED && !refreshed {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/recovery_auth.rs",
@@ -96,7 +100,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "pub(super) async fn refresh(",
+              "lastLine": "Error::Instance(\"Codex credential refresh returned invalid credentials\".into())"
             }
           ]
         }
@@ -142,22 +148,55 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": ".parse::<u64>()",
+              "lastLine": "if !status.is_success() {"
             },
             {
               "file": "rust/providers/src/codex/client_http.rs",
               "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ],
+              "firstLine": "fn send_streaming<T>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,7 +207,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov154_codex_recovery.rs",
-          "lines": "142-205",
+          "lines": "149-212",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -187,7 +226,9 @@
                 214,
                 215,
                 216
-              ]
+              ],
+              "firstLine": "let validate_completion = Arc::new(AtomicBool::new(false));",
+              "lastLine": "let redactor = client.http_client().redact_diagnostics(client.headers()).await;"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
@@ -206,7 +247,9 @@
                 210,
                 211,
                 212
-              ]
+              ],
+              "firstLine": "return Err(CompletionError::HttpError(",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/providers/src/codex/history.rs",
@@ -234,7 +277,9 @@
                 243,
                 244,
                 245
-              ]
+              ],
+              "firstLine": "request: &Value,",
+              "lastLine": "model: request[\"model\"].as_str().map(str::to_owned),"
             }
           ]
         }
@@ -256,6 +301,6 @@
       "rust/providers/src/codex/reconnect.rs",
       "rust/providers/src/codex/history.rs"
     ],
-    "totalLinesCovered": 333
+    "totalLinesCovered": 369
   }
 }

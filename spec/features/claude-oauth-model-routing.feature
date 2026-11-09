@@ -1,4 +1,6 @@
 @PROV-026
+@providers
+@model-selection
 Feature: Anthropic provider routing and model availability with subscription auth
   """
   claude_auth.rs: Add read_claude_auth_sync() using std::fs (not tokio::fs) for use in sync contexts (credentials.rs, manager.rs). Follows same pattern as Codex's read_codex_auth() which is already sync.

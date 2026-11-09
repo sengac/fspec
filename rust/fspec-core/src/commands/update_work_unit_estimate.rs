@@ -42,7 +42,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// Accepted Fibonacci estimates. Mirrors `FIBONACCI_NUMBERS`
@@ -133,6 +132,9 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
     // parse error would escalate as a ParseJson FspecCoreError before we get
     // here; but ensure_work_units_file returns that as a Result — we surface
     // its Display through the wrap by stringifying via a helper read below.
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "update-work-unit-estimate")
+        .map_err(|e| e.to_string())?;
     let data = ensure_work_units_file(project_root).map_err(|e| e.to_string())?;
 
     // ── Existence check (TS: lines 46-48) ──────────────────────────────
@@ -163,16 +165,18 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
     }
 
     // ── Mutation (TS: lines 122-124). Round-trip raw object for key order. ──
-    let mut top: Map<String, Value> =
-        read_raw_object(&project_root.join("spec").join("work-units.json")).unwrap_or_else(|| {
-            serde_json::to_value(&data)
-                .ok()
-                .and_then(|v| match v {
-                    Value::Object(m) => Some(m),
-                    _ => None,
-                })
-                .unwrap_or_default()
-        });
+    let mut top: Map<String, Value> = read_raw_object(
+        &crate::io::spec_paths::work_units(project_root).map_err(|e| e.to_string())?,
+    )
+    .unwrap_or_else(|| {
+        serde_json::to_value(&data)
+            .ok()
+            .and_then(|v| match v {
+                Value::Object(m) => Some(m),
+                _ => None,
+            })
+            .unwrap_or_default()
+    });
 
     if let Some(unit) = top
         .get_mut("workUnits")
@@ -183,9 +187,8 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
         unit.insert("estimate".to_string(), Value::from(estimate));
         unit.insert("updatedAt".to_string(), Value::String(iso8601_now()));
     }
-
-    let wu_path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&wu_path, &Value::Object(top)).map_err(|e| e.to_string())?;
+    crate::io::board::write_work_units(project_root, &Value::Object(top))
+        .map_err(|e| e.to_string())?;
 
     let result = UpdateEstimateResult { success: true };
     serde_json::to_string_pretty(&result).map_err(|e| format!("failed to serialize result: {e}"))
@@ -382,7 +385,7 @@ mod prefill {
         }
     }
 
-    /// Find the feature file tagged `@<work_unit_id>` under `spec/features`
+    /// Find the feature file tagged `@<workUnitId>` under `spec/features`
     /// and run [`detect_prefill`] on it. Verbatim semantics of
     /// `checkWorkUnitFeatureForPrefill` (`prefill-detection.ts:164-201`):
     /// returns `Ok(None)` when `spec/features` is absent OR no file carries
@@ -394,7 +397,7 @@ mod prefill {
         work_unit_id: &str,
         project_root: &Path,
     ) -> Result<Option<PrefillDetectionResult>, String> {
-        let features_dir = project_root.join("spec").join("features");
+        let features_dir = crate::io::spec_paths::features_dir_of(project_root);
         if !features_dir.exists() {
             return Ok(None);
         }

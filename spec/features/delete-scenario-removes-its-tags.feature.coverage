@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "Deleting a tagged last scenario removes its tag line",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug443_delete_scenario_removes_tags.rs",
+          "lines": "33-51",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "std::fs::write(&feature_path, &new_content).map_err(|source| FspecCoreError::Io {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting a scenario keeps the next scenario's tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug443_delete_scenario_removes_tags.rs",
+          "lines": "53-72",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_scenario.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "std::fs::write(&feature_path, &new_content).map_err(|source| FspecCoreError::Io {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug443_delete_scenario_removes_tags.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/delete_scenario.rs"
+    ],
+    "totalLinesCovered": 49
+  }
+}

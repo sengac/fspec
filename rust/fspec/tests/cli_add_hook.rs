@@ -121,11 +121,11 @@ fn scenario_add_hook_help_matches_ts_formatcommandhelp_reference() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI writes zero bytes to stdout on success and exits 0
+// Scenario: CLI prints the added hook on success and exits 0
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_writes_zero_stdout_bytes_on_success() {
+fn scenario_cli_prints_the_added_hook_on_success() {
     // @step Given an empty directory with no spec/ subdirectory is set as the current working directory
     let tmp = tempfile::tempdir().expect("tempdir");
     assert!(!tmp.path().join("spec").exists());
@@ -144,8 +144,8 @@ fn scenario_cli_writes_zero_stdout_bytes_on_success() {
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
-    // @step Then stdout is exactly zero bytes
-    assert!(stdout.is_empty(), "expected empty stdout, got {stdout:?}");
+    // @step Then stdout is exactly '✓ Hook added: pre-implementing/lint' and a newline
+    assert_eq!(stdout, "✓ Hook added: pre-implementing/lint\n");
 
     // @step Then spec/fspec-hooks.json was created in the directory
     assert!(
@@ -196,11 +196,11 @@ fn scenario_cli_marshals_blocking_and_timeout_flags() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI is silent when invoked against a populated config
+// Scenario: CLI prints the added hook when invoked against a populated config
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_is_silent_against_populated_config() {
+fn scenario_cli_prints_the_added_hook_against_populated_config() {
     // @step Given spec/fspec-hooks.json contains event 'pre-implementing' with a single entry named 'lint'
     let tmp = tempfile::tempdir().expect("tempdir");
     write_hooks(
@@ -228,8 +228,8 @@ fn scenario_cli_is_silent_against_populated_config() {
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
-    // @step Then stdout is exactly zero bytes
-    assert!(stdout.is_empty(), "expected empty stdout, got {stdout:?}");
+    // @step Then stdout is exactly '✓ Hook added: pre-implementing/test' and a newline
+    assert_eq!(stdout, "✓ Hook added: pre-implementing/test\n");
 
     // @step Then the on-disk 'pre-implementing' array has exactly two entries
     let v = read_hooks_json(tmp.path());

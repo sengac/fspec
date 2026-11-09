@@ -5,16 +5,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
-          "lines": "30-49",
+          "lines": "31-53",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
-                22,
                 23,
                 24,
-                25
-              ]
+                25,
+                26
+              ],
+              "firstLine": "/// RPC-012 bootstrap: seed BoardStore via `backend.list_work_units()`",
+              "lastLine": "///"
             }
           ]
         }
@@ -52,9 +54,11 @@
                 25,
                 26,
                 27,
-                28,
-                29
-              ]
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn handle_enter_work_unit(&mut self, id: &str) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -92,19 +96,10 @@
                 72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                75
+              ],
+              "firstLine": "pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -115,24 +110,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
-          "lines": "104-121",
+          "lines": "58-78",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
+                94,
+                95,
+                96,
+                97,
                 98,
                 99,
                 100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109
-              ]
+                101
+              ],
+              "firstLine": ".iter()",
+              "lastLine": "}"
             }
           ]
         }
@@ -143,15 +136,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
-          "lines": "124-145",
+          "lines": "80-104",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                110,
-                111,
-                112
-              ]
+                102
+              ],
+              "firstLine": "Action::SessionCreated(session) => {",
+              "lastLine": "Action::SessionCreated(session) => {"
             }
           ]
         }
@@ -167,27 +160,6 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
                 125,
                 126,
                 127,
@@ -230,8 +202,52 @@
                 164,
                 165,
                 166,
-                167
-              ]
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209
+              ],
+              "firstLine": "/// Fold a freshly-created (non-empty) session into the AgentViewStore and",
+              "lastLine": "let _ = action_tx.send(Action::DebugEnabledLoaded(sid, true));"
             }
           ]
         }
@@ -247,62 +263,29 @@
             {
               "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69
-              ]
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "let mut rx = self.backend.chunks_rx();",
+              "lastLine": "self.subscriber_tasks.push(chunks_task);"
             }
           ]
         }
@@ -313,27 +296,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
-          "lines": "179-198",
+          "lines": "106-163",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                70,
-                71,
-                72,
                 73,
                 74,
                 75,
                 76,
                 77,
                 78,
-                79,
                 80,
                 81,
                 82,
                 83,
                 84,
-                85,
                 86,
                 87,
                 88,
@@ -346,25 +324,27 @@
                 95,
                 96,
                 97,
-                98,
                 99,
                 100,
                 101,
-                102,
-                103,
                 104,
                 105,
                 106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// RPC-364: three-pane CheckpointsView owned by the Navigator.",
+              "lastLine": "/// open for any RENDERED mux pane of kind ChangedFiles / Checkpoints"
             }
           ]
         }
@@ -375,15 +355,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
-          "lines": "241-279",
+          "lines": "239-290",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
                 89,
                 90,
                 91,
@@ -393,25 +369,53 @@
                 95,
                 96,
                 97,
-                98,
                 99,
                 100,
                 101,
-                102,
-                103,
                 104,
                 105,
                 106,
-                107,
                 108,
                 109,
                 110,
-                111,
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "board: BoardView::new(theme, action_tx.clone()),",
+              "lastLine": "/// open for any RENDERED mux pane of kind ChangedFiles / Checkpoints"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Entering a work unit that is no longer on the board is reported",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board_agent_navigation/creation.rs",
+          "lines": "116-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "firstLine": "// BUG-381: a card dialog can outlive the board refresh that",
+              "lastLine": "}"
             }
           ]
         }
@@ -419,8 +423,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/board_agent_navigation_rpc012.rs",
@@ -432,9 +436,8 @@
       "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
-      "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
       "rust/fspec-tui/src/views/navigator.rs"
     ],
-    "totalLinesCovered": 535
+    "totalLinesCovered": 592
   }
 }

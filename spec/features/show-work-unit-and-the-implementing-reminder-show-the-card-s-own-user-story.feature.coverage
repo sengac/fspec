@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "name": "show-work-unit JSON carries the card's user story before its rules",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug660_card_user_story.rs",
+          "lines": "108-143",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                461,
+                477
+              ],
+              "firstLine": "/// BUG-660: the card's stored user story (yellow card).",
+              "lastLine": "user_story,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-work-unit JSON has no userStory key for a card without a user story",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug660_card_user_story.rs",
+          "lines": "145-169",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "fn project_user_story(",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-work-unit text output prints the user story line before the rules",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug660_card_user_story.rs",
+          "lines": "171-210",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
+              "lines": [
+                935,
+                936,
+                937,
+                938,
+                939,
+                940
+              ],
+              "firstLine": "if let Some(story) = &p.user_story {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-work-unit fails with an exact error for a malformed stored user story",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug660_card_user_story.rs",
+          "lines": "212-243",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_work_unit.rs",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "/// BUG-660: the stored `userStory`, or an exact error when it is not an",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The implementing reminder shows the moved card's own user story",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug660_card_user_story.rs",
+          "lines": "245-296",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/enhanced.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "fn user_story_parts(data: &Data, id: &str) -> Option<(String, String, String)> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug660_card_user_story.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/show_work_unit.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders/enhanced.rs"
+    ],
+    "totalLinesCovered": 285
+  }
+}

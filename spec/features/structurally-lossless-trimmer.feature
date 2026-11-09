@@ -1,4 +1,7 @@
+@BUG-582
 @CMPCT-006
+@codelet
+@context-management
 Feature: Layer 0 — Structurally Lossless Trimmer Module
   """
   Trimmer struct lives in rust/core/src/compaction/trimmer.rs. Input type is StoredMessage from rust/napi/src/persistence/types.rs with fields: role (String), content (String), metadata (HashMap<String, Value>). Tool information is in metadata. Output is transformed content String.

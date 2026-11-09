@@ -463,3 +463,263 @@ fn dispatcher_skips_a_file_that_does_not_parse_as_gherkin() {
     // @step Then the result reports invalidCount=0
     assert_eq!(data["invalidCount"].as_u64(), Some(0), "got {data}");
 }
+
+// ---------- scenarios moved from validate-tags.feature (COV-071) ----------
+
+/// Dispatch validate-tags for one file and return the parsed result.
+fn validate_one(root: &Path, file: &str) -> Value {
+    let result = dispatch_command(req(root, json!({ "file": file })));
+    assert!(result.success, "{result:?}");
+    parse_data(&result)
+}
+
+fn assert_counts(data: &Value, valid: u64, invalid: u64) {
+    assert_eq!(data["validCount"].as_u64(), Some(valid), "got {data}");
+    assert_eq!(data["invalidCount"].as_u64(), Some(invalid), "got {data}");
+}
+
+fn login_feature(feature_tags: &str, scenario_tags: &[&str]) -> String {
+    let mut body = format!("{feature_tags}\nFeature: User Login\n");
+    for (i, tags) in scenario_tags.iter().enumerate() {
+        body.push_str(&format!(
+            "\n  {tags}\n  Scenario: S{i}\n    Given a step\n    When another step\n    Then result\n"
+        ));
+    }
+    body
+}
+
+const LOGIN: &str = "spec/features/login.feature";
+
+#[test]
+fn reports_every_unregistered_tag_of_one_file() {
+    // @step Given spec/tags.json registers only the component tag @comp and the feature-group tag @grp
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), &["@comp"], &["@grp"], &[]);
+
+    // @step And spec/features/multi.feature carries the feature-level tags '@comp @grp @unknown1 @unknown2'
+    write_feature(
+        tmp.path(),
+        "spec/features/multi.feature",
+        "@comp @grp @unknown1 @unknown2\nFeature: Multi\n\n  Scenario: A\n    Given x\n",
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/multi.feature'
+    let data = validate_one(tmp.path(), "spec/features/multi.feature");
+
+    // @step Then the result reports validCount=0 and invalidCount=1
+    assert_counts(&data, 0, 1);
+
+    // @step And the file errors include the message 'Unregistered tag: @unknown1 in spec/features/multi.feature'
+    assert!(
+        has_message(
+            &data,
+            "Unregistered tag: @unknown1 in spec/features/multi.feature"
+        ),
+        "got {data}"
+    );
+
+    // @step And the file errors include the message 'Unregistered tag: @unknown2 in spec/features/multi.feature'
+    assert!(
+        has_message(
+            &data,
+            "Unregistered tag: @unknown2 in spec/features/multi.feature"
+        ),
+        "got {data}"
+    );
+}
+
+#[test]
+fn registered_scenario_level_tags_pass() {
+    // @step Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke and @regression as technical tags
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(
+        tmp.path(),
+        &["@cli"],
+        &["@authentication"],
+        &["@smoke", "@regression"],
+    );
+
+    // @step And spec/features/login.feature carries '@cli @authentication' at feature level and '@smoke @regression' on its scenario
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature("@cli @authentication", &["@smoke @regression"]),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=1 and invalidCount=0
+    assert_counts(&data, 1, 0);
+
+    // @step And the file has no errors
+    assert!(all_messages(&data).is_empty(), "got {data}");
+}
+
+#[test]
+fn an_unregistered_scenario_level_tag_is_reported() {
+    // @step Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), &["@cli"], &["@authentication"], &["@smoke"]);
+
+    // @step And spec/features/login.feature carries '@cli @authentication' at feature level and '@smoke @unregistered-scenario-tag' on its scenario
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature(
+            "@cli @authentication",
+            &["@smoke @unregistered-scenario-tag"],
+        ),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=0 and invalidCount=1
+    assert_counts(&data, 0, 1);
+
+    // @step And the file errors are exactly 'Unregistered tag: @unregistered-scenario-tag in spec/features/login.feature'
+    assert_eq!(
+        all_messages(&data),
+        vec!["Unregistered tag: @unregistered-scenario-tag in spec/features/login.feature"]
+    );
+}
+
+#[test]
+fn registered_tags_at_both_levels_pass() {
+    // @step Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke, @regression and @edge-case as technical tags
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(
+        tmp.path(),
+        &["@cli"],
+        &["@authentication"],
+        &["@smoke", "@regression", "@edge-case"],
+    );
+
+    // @step And spec/features/login.feature carries '@cli @authentication' at feature level, '@smoke' on its first scenario and '@regression @edge-case' on its second
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature(
+            "@cli @authentication",
+            &["@smoke", "@regression @edge-case"],
+        ),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=1 and invalidCount=0
+    assert_counts(&data, 1, 0);
+
+    // @step And the file has no errors
+    assert!(all_messages(&data).is_empty(), "got {data}");
+}
+
+#[test]
+fn only_the_unregistered_scenario_tags_of_a_mixed_file_are_reported() {
+    // @step Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), &["@cli"], &["@authentication"], &["@smoke"]);
+
+    // @step And spec/features/login.feature carries '@cli @authentication' at feature level, '@smoke' on its first scenario and '@unregistered-tag1 @unregistered-tag2' on its second
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature(
+            "@cli @authentication",
+            &["@smoke", "@unregistered-tag1 @unregistered-tag2"],
+        ),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=0 and invalidCount=1
+    assert_counts(&data, 0, 1);
+
+    // @step And the file errors are exactly the unregistered-tag messages for @unregistered-tag1 and @unregistered-tag2
+    assert_eq!(
+        all_messages(&data),
+        vec![
+            "Unregistered tag: @unregistered-tag1 in spec/features/login.feature",
+            "Unregistered tag: @unregistered-tag2 in spec/features/login.feature",
+        ]
+    );
+}
+
+#[test]
+fn scenario_tags_do_not_need_component_or_feature_group_tags() {
+    // @step Given spec/tags.json registers @cli as a component tag, @authentication as a feature-group tag and @smoke as a technical tag
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), &["@cli"], &["@authentication"], &["@smoke"]);
+
+    // @step And spec/features/login.feature carries '@cli @authentication' at feature level and only '@smoke' on its scenario
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature("@cli @authentication", &["@smoke"]),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=1 and invalidCount=0
+    assert_counts(&data, 1, 0);
+
+    // @step And no error reports a missing required component or feature-group tag
+    assert!(!has_message(&data, "Missing required"), "got {data}");
+    assert!(all_messages(&data).is_empty(), "got {data}");
+}
+
+#[test]
+fn a_feature_level_work_unit_tag_present_in_work_units_json_passes() {
+    // @step Given spec/work-units.json contains the work unit AUTH-001
+    let tmp = TempDir::new().expect("tempdir");
+    write_tags(tmp.path(), &["@comp"], &["@grp"], &[]);
+    write_work_units(tmp.path(), &["AUTH-001"]);
+
+    // @step And spec/features/auth.feature carries the feature-level tags '@AUTH-001 @comp @grp'
+    write_feature(
+        tmp.path(),
+        "spec/features/auth.feature",
+        "@AUTH-001 @comp @grp\nFeature: Auth\n\n  Scenario: A\n    Given x\n",
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/auth.feature'
+    let data = validate_one(tmp.path(), "spec/features/auth.feature");
+
+    // @step Then the result reports validCount=1 and invalidCount=0
+    assert_counts(&data, 1, 0);
+
+    // @step And the file has no errors
+    assert!(all_messages(&data).is_empty(), "got {data}");
+}
+
+#[test]
+fn work_unit_tags_are_checked_against_work_units_json_not_tags_json() {
+    // @step Given spec/work-units.json contains the work unit AUTH-001
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &["AUTH-001"]);
+
+    // @step And spec/tags.json registers @cli as a component tag and @authentication as a feature-group tag but not @AUTH-001
+    write_tags(tmp.path(), &["@cli"], &["@authentication"], &[]);
+    let tags_json = fs::read_to_string(tmp.path().join("spec/tags.json")).expect("tags.json");
+    assert!(!tags_json.contains("@AUTH-001"));
+
+    // @step And spec/features/login.feature carries the feature-level tags '@AUTH-001 @cli @authentication'
+    write_feature(
+        tmp.path(),
+        LOGIN,
+        &login_feature("@AUTH-001 @cli @authentication", &[]),
+    );
+
+    // @step When I dispatch the validate-tags command with file set to 'spec/features/login.feature'
+    let data = validate_one(tmp.path(), LOGIN);
+
+    // @step Then the result reports validCount=1 and invalidCount=0
+    assert_counts(&data, 1, 0);
+
+    // @step And the file has no errors
+    assert!(all_messages(&data).is_empty(), "got {data}");
+}

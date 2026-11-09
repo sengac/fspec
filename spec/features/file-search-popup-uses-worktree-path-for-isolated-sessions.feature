@@ -1,13 +1,13 @@
+@done
+@BUG-618
 @GIT-033
+@git
+@multi-session
+@rust
+@BUG-541
 Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   """
-  The @file search popup must search the correct directory based on session state:
-  - Isolated sessions: search the worktree (.fspec/worktrees/<session-id>/)
-  - Non-isolated sessions: search the project root
-  - No session yet: fallback to project root
-
-  Implementation: useFileSearchInput hook calls sessionGetEffectiveCwd(sessionId) NAPI
-  which already exists and handles all the logic. No new NAPI functions needed.
+  codelet-rpc: appended RPC search_files_in_session(session: SessionId, prefix, limit) -> Result<Vec<String>, String>: session_manager().get_effective_cwd(session) then codelet_core::file_search::search (empty prefix: no results, as search_files_in_workspace); MCP tool in the appended group. codelet-core: StubSessionManagerHandle can be given a session's working directory (set_effective_cwd), otherwise keeps its error. codelet-fspec-tui: FspecBackend::search_files_in_session (refusing default, embedded, websocket, mock); ScopedCalls carries the composer's session and search_files routes to search_files_in_session for every session (BUG-618, product owner 2026-11-07: every session's @file search uses its own working directory); with no session open it returns 'no session is open, so there are no files to search' (product owner, 2026-11-08). The board's selected workspace never affects @file search. Rewritten for the Rust daemon and TUI by BUG-541 (product owner, 2026-11-06, H-FILE-SEARCH-WORKTREE: route + test); the TypeScript useFileSearchInput scenarios and their deleted test mappings are gone.
   """
 
   # ========================================
@@ -15,89 +15,66 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. When session is isolated, file search MUST use the worktree path, not the project root
-  #   2. When session is non-isolated, file search MUST use the project root (sessionGetEffectiveCwd returns project root)
-  #   3. When session ID is not yet available (before first message), file search uses project root as fallback
-  #   4. File search must call sessionGetEffectiveCwd NAPI function (already exists) to get the correct search path
+  #   1. A new RPC search_files_in_session(session, prefix, limit) searches the session's effective working directory: its worktree when the session is isolated (sessions resolve it; the TUI does not pass a path)
+  #   2. In the agent view, @file search while the composer's session is isolated (its isolation state says so) asks search_files_in_session for that session; BUG-618: so does every non-isolated session, and with no session open the search shows 'no session is open, so there are no files to search'; the board's selected workspace never affects @file search
+  #   3. A session whose working directory cannot be resolved is an error that is shown ('The files could not be searched: ...'); there is no silent fallback to the project root (the old TS fallback scenario is dropped)
   #
   # EXAMPLES:
-  #   1. ISOLATED - NEW FILE: User types @newfile → popup searches worktree and finds newfile.ts that AI just created
-  #   2. ISOLATED - DELETED FILE: AI deletes legacy.js from worktree → user types @legacy → popup does NOT show it
-  #   3. NON-ISOLATED: User types @config → sessionGetEffectiveCwd returns project root → popup searches project root
-  #   4. NO SESSION YET: User types @README before first message → sessionId is null → fallback to project root
-  #   5. FALLBACK: sessionGetEffectiveCwd returns null (edge case) → fallback to project root
-  #   6. WORKTREE STATE: AI modifies package.json in worktree → popup finds it in worktree (reflects worktree state)
+  #   1. isolated session s-1 works in worktree W holding src/newfile.ts; the project root holds src/legacy.js, which was deleted in W: searching 'src/' in s-1 lists src/newfile.ts and not src/legacy.js
+  #   2. in the agent view, isolated s-1 is focused and the user types @src: the search names session s-1, not the workspace
+  #   3. in the agent view, non-isolated s-1 is focused and the board shows workspace beta: the search names session s-1 (BUG-618)
+  #   4. the daemon cannot resolve s-1's working directory: the search fails and the TUI shows that the files could not be searched
+  #
+  # QUESTIONS (ANSWERED):
+  #   Q: should @file search in a NON-isolated session also follow the session's own directory (it can differ from the board's selected workspace), or keep RPC-455's selected-workspace routing?
+  #   A: Conservative option taken (supervisor instruction 2026-11-06, pending product owner review): keep RPC-455's routing for non-isolated sessions and for no session; only isolated sessions search their worktree, as the product owner decided for H-FILE-SEARCH-WORKTREE (2026-11-06). Superseded by BUG-618 (product owner, 2026-11-07): every session searches its own working directory.
   #
   # ========================================
   Background: User Story
-    As a user typing @ to search for files
-    I want the search to use the same directory where the AI operates
-    So that I can find files the AI created and reference files the AI can actually see
+    As a user typing @ to reference a file in an isolated session
+    I want to have the @file search list the files of the session's worktree
+    So that I find the files the agent created there and never pick one it deleted or cannot see
 
-  # ========================================
-  # ISOLATED SESSION SCENARIOS
-  # ========================================
-  @isolated
-  @file-search
-  Scenario: File search in isolated session finds files AI created in worktree
-    Given I have an active isolated session "abc-123"
-    And sessionGetEffectiveCwd("abc-123") returns ".fspec/worktrees/abc-123/"
-    And the AI has created "src/newfile.ts" in the worktree
-    When I type "@newfile" in the input field
-    Then the file search popup should show "src/newfile.ts"
-    And the glob search should have used path ".fspec/worktrees/abc-123/"
+  # ─────────────────────────────────────────────────────────────────────
+  # The daemon searches the session's working directory (rules 1, 3)
+  # ─────────────────────────────────────────────────────────────────────
+  Scenario: Searching files in an isolated session lists its worktree
+    Given session "s-1" works in a worktree holding "src/newfile.ts"
+    And the project root holds "src/legacy.js", which the worktree no longer has
+    When files starting with "src/" are searched in session "s-1" over RPC
+    Then "src/newfile.ts" is found
+    And "src/legacy.js" is not found
 
-  @isolated
-  @file-search
-  Scenario: File search in isolated session does NOT show files AI deleted
-    Given I have an active isolated session "abc-123"
-    And sessionGetEffectiveCwd("abc-123") returns ".fspec/worktrees/abc-123/"
-    And "src/legacy.js" exists in the main project but was deleted from the worktree
-    When I type "@legacy" in the input field
-    Then the file search popup should NOT show "src/legacy.js"
+  Scenario: Searching files in a session whose working directory is unknown fails
+    Given the daemon cannot resolve the working directory of session "s-1"
+    When files starting with "src/" are searched in session "s-1" over RPC
+    Then the search fails naming session "s-1"
 
-  @isolated
-  @file-search
-  Scenario: File search reflects worktree filesystem state
-    Given I have an active isolated session "abc-123"
-    And sessionGetEffectiveCwd("abc-123") returns ".fspec/worktrees/abc-123/"
-    And the AI has modified "package.json" in the worktree
-    When I type "@package" in the input field
-    Then the file search popup should show "package.json"
-    And the search results should reflect the worktree's current state
+  # ─────────────────────────────────────────────────────────────────────
+  # The TUI routes @file search (rules 2, 3)
+  # ─────────────────────────────────────────────────────────────────────
+  Scenario: The agent view searches an isolated session's files in that session
+    Given isolated session "s-1" is focused in the agent view
+    When the user types "@src"
+    Then the file search names session "s-1"
+    And no workspace file search is made
 
-  @non-isolated
-  @file-search
-  Scenario: File search in non-isolated session searches project root
-  # ========================================
-  # NON-ISOLATED SESSION SCENARIOS
-  # ========================================
-    Given I have an active non-isolated session "def-456"
-    And sessionGetEffectiveCwd("def-456") returns the project root path
-    And "src/config.ts" exists in the project root
-    When I type "@config" in the input field
-    Then the file search popup should show "src/config.ts"
-    And the glob search should have used the project root path
+  Scenario: The agent view searches a non-isolated session's files in that session
+    Given the board shows workspace "beta"
+    And non-isolated session "s-1" is focused in the agent view
+    When the user types "@src"
+    Then the file search names session "s-1"
+    And no workspace file search is made
 
-  @no-session
-  @file-search
-  Scenario: File search before session creation uses project root fallback
-  # ========================================
-  # FALLBACK SCENARIOS
-  # ========================================
-    Given no session has been created yet
-    And sessionId is null
-    And "README.md" exists in the project root
-    When I type "@README" in the input field
-    Then the file search popup should show "README.md"
-    And the glob search should have used the project root path
+  Scenario: A failed session file search is shown
+    Given isolated session "s-1" is focused in the agent view
+    And the daemon cannot search the files of session "s-1"
+    When the user types "@src"
+    Then the TUI shows that the files could not be searched
 
-  @fallback
-  @file-search
-  Scenario: File search falls back to project root when sessionGetEffectiveCwd returns null
-    Given I have an active session "ghi-789"
-    But sessionGetEffectiveCwd("ghi-789") returns null
-    And "src/app.ts" exists in the project root
-    When I type "@app" in the input field
-    Then the file search popup should show "src/app.ts"
-    And the glob search should have used the project root path
+  Scenario: With no session open, @file search says there are no files to search
+    Given the board shows workspace "beta"
+    And no session is open in the agent view
+    When the user types "@src"
+    Then the TUI shows 'no session is open, so there are no files to search'
+    And no file search is made

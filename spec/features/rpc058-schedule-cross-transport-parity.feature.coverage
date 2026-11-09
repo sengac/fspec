@@ -8,62 +8,62 @@
           "lines": "88-125",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                631,
-                632,
-                633,
-                634,
-                635,
-                636
-              ]
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "async fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
               "lines": [
-                1011,
-                1012,
-                1013,
-                1014,
-                1015,
-                1016,
-                1017,
-                1018,
-                1019
-              ]
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+              ],
+              "firstLine": "async fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
               "lines": [
-                1790,
-                1791,
-                1792,
-                1793,
-                1794,
-                1795,
-                1796,
-                1797,
-                1798,
-                1799,
-                1800,
-                1801,
-                1802
-              ]
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "firstLine": "async fn schedule_add(self, _ctx: Context, job: ScheduledJob) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_4.rs",
               "lines": [
-                1511,
-                1512,
-                1513,
-                1514,
-                1515,
-                1516,
-                1517,
-                1518,
-                1519,
-                1520
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -74,48 +74,60 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
-          "lines": "132-170",
+          "lines": "128-169",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                1021,
-                1022,
-                1023,
-                1024,
-                1025
-              ]
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "async fn schedule_list(&self) -> Result<Vec<ScheduledJob>> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
               "lines": [
-                638,
-                639,
-                640
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "async fn schedule_list(&self) -> Result<Vec<ScheduledJob>> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
               "lines": [
-                1804,
-                1805,
-                1806,
-                1807,
-                1808,
-                1809,
-                1810
-              ]
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ],
+              "firstLine": "async fn schedule_list(self, _ctx: Context) -> Result<Vec<ScheduledJob>, String> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_4.rs",
               "lines": [
-                1522,
-                1523,
-                1524,
-                1525,
-                1526,
-                1527
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "fn schedule_list(&self) -> Result<Vec<ScheduledJob>, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -129,70 +141,66 @@
           "lines": "177-210",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                642,
-                643,
-                644,
-                645,
-                646,
-                647
-              ]
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "async fn schedule_pause(&self, name: String) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
               "lines": [
-                1027,
-                1028,
-                1029,
-                1030,
-                1031,
-                1032,
-                1033,
-                1034,
-                1035
-              ]
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "async fn schedule_pause(&self, name: String) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
               "lines": [
-                1812,
-                1813,
-                1814,
-                1815,
-                1816,
-                1817,
-                1818,
-                1819,
-                1820,
-                1821,
-                1822,
-                1823,
-                1824,
-                1825,
-                1826,
-                1827,
-                1828,
-                1829,
-                1830,
-                1831,
-                1832
-              ]
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "async fn schedule_pause(self, _ctx: Context, name: String) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_4.rs",
               "lines": [
-                1529,
-                1530,
-                1531,
-                1532,
-                1533,
-                1534,
-                1535,
-                1536,
-                1537,
-                1538
-              ]
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ],
+              "firstLine": "fn schedule_pause(&self, name: &str) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,73 +211,69 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
-          "lines": "217-249",
+          "lines": "219-251",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                1037,
-                1038,
-                1039,
-                1040,
-                1041,
-                1042,
-                1043,
-                1044,
-                1045
-              ]
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "async fn schedule_resume(&self, name: String) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
               "lines": [
-                649,
-                650,
-                651,
-                652,
-                653,
-                654
-              ]
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ],
+              "firstLine": "async fn schedule_resume(&self, name: String) -> Result<ScheduledJob> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
               "lines": [
-                1834,
-                1835,
-                1836,
-                1837,
-                1838,
-                1839,
-                1840,
-                1841,
-                1842,
-                1843,
-                1844,
-                1845,
-                1846,
-                1847,
-                1848,
-                1849,
-                1850,
-                1851,
-                1852,
-                1853,
-                1854
-              ]
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "async fn schedule_resume(self, _ctx: Context, name: String) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_4.rs",
               "lines": [
-                1540,
-                1541,
-                1542,
-                1543,
-                1544,
-                1545,
-                1546,
-                1547,
-                1548,
-                1549
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "fn schedule_resume(&self, name: &str) -> Result<ScheduledJob, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -280,51 +284,60 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
-          "lines": "256-283",
+          "lines": "257-286",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                656,
-                657,
-                658,
-                659,
-                660
-              ]
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "async fn schedule_remove(&self, name: String) -> Result<()> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
               "lines": [
-                1047,
-                1048,
-                1049,
-                1050,
-                1051,
-                1052,
-                1053,
-                1054,
-                1055
-              ]
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "async fn schedule_remove(&self, name: String) -> Result<()> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/rpc/src/service_implementation/schedule_loops.rs",
               "lines": [
-                1856,
-                1857,
-                1858,
-                1859
-              ]
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "firstLine": "async fn schedule_remove(self, _ctx: Context, name: String) -> Result<(), String> {",
+              "lastLine": "}"
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_4.rs",
               "lines": [
-                1551,
-                1552,
-                1553,
-                1554,
-                1555,
-                1556
-              ]
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "fn schedule_remove(&self, _name: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -339,11 +352,11 @@
       "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
-      "rust/core/src/session_manager_handle.rs",
-      "rust/rpc/src/lib.rs"
+      "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
+      "rust/fspec-tui/src/transport/websocket/scheduling_loops.rs",
+      "rust/rpc/src/service_implementation/schedule_loops.rs",
+      "rust/core/src/session_manager_handle/stub/stub_handle_4.rs"
     ],
-    "totalLinesCovered": 347
+    "totalLinesCovered": 325
   }
 }

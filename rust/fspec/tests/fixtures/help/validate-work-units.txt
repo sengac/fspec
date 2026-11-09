@@ -9,8 +9,7 @@ USAGE
   fspec validate-work-units [options]
 
 OPTIONS
-  --fix
-    Automatically fix issues where possible
+  No options available
 
 EXAMPLES
   1. Validate all work units
@@ -20,5 +19,5 @@ EXAMPLES
 
 RELATED COMMANDS
   fspec repair-work-units
-  fspec check
+  fspec audit
 

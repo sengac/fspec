@@ -23,7 +23,7 @@ use serial_test::serial;
 use tempfile::TempDir;
 
 fn make_handle() -> Arc<dyn SessionManagerHandle> {
-    Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>
+    SessionManager::new() as Arc<dyn SessionManagerHandle>
 }
 
 /// Write an `fspec-config.json` into `dir` with the provided `openai` profiles
@@ -158,10 +158,10 @@ fn scenario_delete_custom_model_drops_empty_key() {
     );
 }
 
-// Scenario: delete_custom_model on a missing profile or non-openai provider is an idempotent no-op
+// Scenario: delete_custom_model on a missing profile or non-openai provider is refused
 #[test]
 #[serial]
-fn scenario_delete_custom_model_idempotent_no_op() {
+fn scenario_delete_custom_model_refused() {
     let tmp = TempDir::new().unwrap();
     // @step Given a config without a profile named "does-not-exist"
     seed_config(
@@ -177,21 +177,25 @@ fn scenario_delete_custom_model_idempotent_no_op() {
     // @step And a client calls delete_custom_model for a non-openai provider
     let non_openai = handle.delete_custom_model("anthropic", "work-vllm", "x");
 
-    // @step Then each call returns Ok
+    // @step Then each call returns an error
     assert!(
-        missing.is_ok(),
-        "missing-profile delete should be Ok: {missing:?}"
+        missing
+            .as_ref()
+            .is_err_and(|error| error.contains("does-not-exist")),
+        "missing-profile delete should be refused: {missing:?}"
     );
     assert!(
-        non_openai.is_ok(),
-        "non-openai delete should be Ok: {non_openai:?}"
+        non_openai
+            .as_ref()
+            .is_err_and(|error| error.contains("anthropic")),
+        "non-openai delete should be refused: {non_openai:?}"
     );
 
     // @step And the configuration is left untouched
     let after = std::fs::read_to_string(tmp.path().join("fspec-config.json")).unwrap();
     assert_eq!(
         before, after,
-        "config must be byte-identical after no-op deletes"
+        "config must be byte-identical after refused deletes"
     );
 }
 

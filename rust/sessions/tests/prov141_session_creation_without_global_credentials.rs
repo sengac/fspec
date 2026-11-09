@@ -47,7 +47,7 @@ const PROFILE_CONFIG: &str = r#"{
         "spark": {
           "baseUrl": "http://spark:8001",
           "apiKey": "test",
-          "contextWindow": 262144,
+          "contextWindow": 262144, "maxOutputTokens": 16384,
           "streaming": true
         }
       }
@@ -117,7 +117,9 @@ fn manager_with_seeded_cache(
     // dropped temp dir).
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
@@ -135,26 +137,24 @@ async fn profile_model_session_creation_succeeds_without_global_credentials() ->
     let (_dirs, manager) = manager_with_seeded_cache(PROFILE_CONFIG)?;
 
     // @step And the default model is set to "openai:spark/qwen3.8-27b"
-    manager.set_default_model("openai:spark/qwen3.8-27b");
+    manager.set_default_model("openai:spark/qwen3.8-27b")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
 
-    // @step Then the returned session id value is not empty
-    assert!(
-        !sid.value.is_empty(),
-        "PROV-141: profile-model session creation must succeed with zero global credentials, got empty id"
-    );
+    // @step Then the session is created
+    manager.get_session(&sid.value)?;
 
-    // @step And the created session model is "openai:spark/qwen3.8-27b"
-    // For profile models the session stores the profile-qualified provider
-    // ("spark") and the bare model id ("qwen3.8-27b") — together they
-    // reconstruct the composite "openai:spark/qwen3.8-27b".
-    let resolved = handle.get_session_model(&sid);
+    // @step And the created session reports provider "openai" and model "qwen3.8-27b"
+    // BUG-423: since BUG-318 a profile-qualified model reports its registry
+    // provider ("openai") and the bare model id, not the profile name.
+    let resolved = handle
+        .get_session_model(&sid)
+        .expect("get_session_model reads the session");
     assert_eq!(
-        resolved.provider_id, "spark",
-        "provider must be the profile name (profile-qualified composite)"
+        resolved.provider_id, "openai",
+        "provider must be the profile's registry provider (BUG-318)"
     );
     assert_eq!(
         resolved.model_id, "qwen3.8-27b",
@@ -175,17 +175,20 @@ async fn cloud_registry_model_still_fails_without_credentials_for_its_provider(
     let (_dirs, manager) = manager_with_seeded_cache("{}")?;
 
     // @step And the default model is set to "anthropic/claude-opus-4-5"
-    manager.set_default_model("anthropic/claude-opus-4-5");
+    manager.set_default_model("anthropic/claude-opus-4-5")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let outcome = handle.create_session_checked(None);
 
-    // @step Then the returned session id value is empty
-    assert!(
-        sid.value.is_empty(),
-        "PROV-141: an uncredentialed cloud model must still fail loudly (no silent success)"
-    );
+    // @step Then session creation fails with an error
+    // BUG-399: the failure is an Err, never an empty id.
+    if let Ok(sid) = outcome {
+        return Err(format!(
+            "PROV-141: an uncredentialed cloud model must still fail loudly, got '{}'",
+            sid.value
+        ));
+    }
 
     // @step And the error message names the provider "anthropic"
     // (The per-model credential check in select_model rejects the selection;
@@ -207,17 +210,14 @@ async fn codex_model_session_creation_succeeds_without_global_credentials() -> R
     // @step Given a SessionManager with no provider credentials in the environment
     let (_dirs, manager) = manager_with_seeded_cache("{}")?;
 
-    // @step And the default model is set to "codex/gpt-5"
-    manager.set_default_model("codex/gpt-5");
+    // @step And the default model is set to "codex/o3"
+    manager.set_default_model("codex/o3")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I call create_session with no role
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
 
-    // @step Then the returned session id value is not empty
-    assert!(
-        !sid.value.is_empty(),
-        "PROV-141: codex-model session creation must succeed with zero global credentials"
-    );
+    // @step Then the session is created
+    manager.get_session(&sid.value)?;
     Ok(())
 }

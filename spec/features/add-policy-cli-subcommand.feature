@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-187
+@foundation-management
 Feature: fspec add-policy CLI subcommand (Rust port)
   """
   CLI bridge: rust/fspec/src/add_policy.rs — clap-derived struct mirroring the TS Commander.js

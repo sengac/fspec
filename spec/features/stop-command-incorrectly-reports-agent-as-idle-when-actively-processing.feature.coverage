@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
-          "lines": "77-101",
+          "lines": "35-57",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -18,7 +18,9 @@
                 693,
                 694,
                 695
-              ]
+              ],
+              "firstLine": "response?: string",
+              "lastLine": "service: 'session',"
             }
           ]
         }
@@ -29,7 +31,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
-          "lines": "103-126",
+          "lines": "61-77",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -42,7 +44,9 @@
                 693,
                 694,
                 695
-              ]
+              ],
+              "firstLine": "response?: string",
+              "lastLine": "service: 'session',"
             }
           ]
         }
@@ -53,20 +57,28 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
-          "lines": "128-149",
+          "lines": "81-97",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "* Handle /stop command - interrupt agent operation",
+              "lastLine": "}"
             }
           ]
         }
@@ -84,6 +96,6 @@
       "bridge/telegram-endpoint.ts",
       "bridge/telegram-slash-commands.ts"
     ],
-    "totalLinesCovered": 95
+    "totalLinesCovered": 87
   }
 }

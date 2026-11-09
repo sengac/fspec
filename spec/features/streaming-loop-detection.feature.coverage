@@ -5,161 +5,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "90-131",
+          "lines": "118-166",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Single-token spam in thinking stream is detected mid-stream",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "132-156",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/stream_loop_detector.rs",
-              "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Mild one-off phrase repetition is NOT flagged",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "158-180",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/stream_loop_detector.rs",
-              "lines": [
-                140,
-                141,
                 142,
                 143,
                 144,
@@ -219,20 +69,6 @@
                 198,
                 199,
                 200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
                 215,
                 216,
                 217,
@@ -246,8 +82,313 @@
                 225,
                 226,
                 227,
-                228
-              ]
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "/// Create a detector with the POC-validated default thresholds.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single-token spam in thinking stream is detected mid-stream",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "169-191",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "/// Create a detector with the POC-validated default thresholds.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mild one-off phrase repetition is NOT flagged",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "194-219",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ],
+              "firstLine": "/// Create a detector with the POC-validated default thresholds.",
+              "lastLine": "}"
             }
           ]
         }
@@ -258,7 +399,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "182-203",
+          "lines": "222-248",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -273,7 +414,9 @@
                 206,
                 207,
                 208
-              ]
+              ],
+              "firstLine": "self.latched.clone()",
+              "lastLine": "}"
             }
           ]
         }
@@ -284,7 +427,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "205-242",
+          "lines": "251-287",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -304,7 +447,9 @@
                 222,
                 223,
                 224
-              ]
+              ],
+              "firstLine": "/// The latched signal, if the detector has fired.",
+              "lastLine": "if &window[i..i + n] == tail {"
             }
           ]
         }
@@ -315,13 +460,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "244-268",
+          "lines": "290-311",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
               "lines": [
-                140,
-                141,
                 142,
                 143,
                 144,
@@ -381,20 +524,6 @@
                 198,
                 199,
                 200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
                 215,
                 216,
                 217,
@@ -408,8 +537,63 @@
                 225,
                 226,
                 227,
-                228
-              ]
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ],
+              "firstLine": "/// Create a detector with the POC-validated default thresholds.",
+              "lastLine": "}"
             }
           ]
         }
@@ -420,13 +604,11 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "270-292",
+          "lines": "314-335",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
               "lines": [
-                140,
-                141,
                 142,
                 143,
                 144,
@@ -445,8 +627,50 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ],
+              "firstLine": "/// Create a detector with the POC-validated default thresholds.",
+              "lastLine": "}"
             }
           ]
         }
@@ -457,11 +681,15 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "294-324",
+          "lines": "338-367",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
+                110,
+                111,
+                112,
+                113,
                 114,
                 115,
                 116,
@@ -470,12 +698,10 @@
                 119,
                 120,
                 121,
-                122,
-                123,
-                124,
-                125,
-                126
-              ]
+                122
+              ],
+              "firstLine": "/// HOOK-013: Track last tool call name+args for post_tool_use hooks",
+              "lastLine": "/// re-feeding deltas into the detectors after the stream is cancelled)."
             }
           ]
         }
@@ -486,7 +712,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "326-352",
+          "lines": "370-395",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -496,7 +722,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "if self.latched.is_some() {",
+              "lastLine": "if !character.is_whitespace() {"
             }
           ]
         }
@@ -507,7 +735,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "354-398",
+          "lines": "398-437",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -580,7 +808,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "/// `spec/attachments/RIG-014/poc-streaming-loop-detector.md`). Per-model",
+              "lastLine": "partial_word: String,"
             }
           ]
         }
@@ -591,7 +821,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "400-420",
+          "lines": "444-463",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -633,7 +863,9 @@
                 298,
                 299,
                 300
-              ]
+              ],
+              "firstLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops).",
+              "lastLine": "///"
             }
           ]
         }
@@ -644,7 +876,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "422-440",
+          "lines": "466-483",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -686,7 +918,9 @@
                 298,
                 299,
                 300
-              ]
+              ],
+              "firstLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops).",
+              "lastLine": "///"
             }
           ]
         }
@@ -697,7 +931,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "442-463",
+          "lines": "486-503",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -739,7 +973,9 @@
                 298,
                 299,
                 300
-              ]
+              ],
+              "firstLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops).",
+              "lastLine": "///"
             }
           ]
         }
@@ -750,7 +986,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "465-493",
+          "lines": "506-529",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
@@ -792,7 +1028,9 @@
                 298,
                 299,
                 300
-              ]
+              ],
+              "firstLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops).",
+              "lastLine": "///"
             }
           ]
         }
@@ -803,40 +1041,8 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "495-528",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/background_output.rs",
-              "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195
-              ]
-            }
-          ]
+          "lines": "536-570",
+          "implMappings": []
         }
       ]
     },
@@ -845,25 +1051,8 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "528-574",
+          "lines": "573-602",
           "implMappings": [
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526
-              ]
-            },
             {
               "file": "rust/agent-loop/src/stream_loop_detector.rs",
               "lines": [
@@ -882,7 +1071,9 @@
                 329,
                 330,
                 331
-              ]
+              ],
+              "firstLine": "impl LoopEscalationPolicy {",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -893,13 +1084,55 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "574-604",
+          "lines": "619-648",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                250,
-                251,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475
+              ],
+              "firstLine": "StreamEvent::Text(ref text) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent loop cancels the in-flight provider stream on abort",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
+          "lines": "651-677",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
                 252,
                 253,
                 254,
@@ -918,59 +1151,18 @@
                 267,
                 268,
                 269,
-                270
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                508,
-                509,
-                510,
-                511
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Agent loop cancels the in-flight provider stream on abort",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/rig014_streaming_loop_detection.rs",
-          "lines": "606-634",
-          "implMappings": [
-            {
-              "file": "rust/agent-loop/src/background_output.rs",
-              "lines": [
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195
-              ]
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278
+              ],
+              "firstLine": "LoopEscalationOutcome::Abort => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -986,9 +1178,8 @@
     ],
     "implFiles": [
       "rust/agent-loop/src/stream_loop_detector.rs",
-      "rust/agent-loop/src/background_output.rs",
-      "rust/agent-loop/src/agent_loop.rs"
+      "rust/agent-loop/src/background_output.rs"
     ],
-    "totalLinesCovered": 1211
+    "totalLinesCovered": 1356
   }
 }

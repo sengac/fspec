@@ -32,12 +32,12 @@
 //! focused (BUG-200 seams, kept by the board-pane-focused regression
 //! scenario below).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    components::menu_bar::MenuFocus, App, FspecBackend, MuxOrientation, MuxPaneKind, ViewMode,
+    components::menu_bar::MenuFocus, App, FspecBackend, MuxPaneKind, ViewMode,
 };
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -64,37 +64,45 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(codelet_fspec_tui::Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(codelet_fspec_tui::Action::InputSubmitted(
+            session,
+            text.to_string(),
+        ));
+    }
 }
 
 /// Seed one open session (s-1) and drain the created follow-up actions.
-async fn seed_session(app: &mut App) {
+async fn seed_session(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
         "s-1",
     )));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: the single Board view with the board's OWN bar engaged at
 /// Item(0) — the ring walked Right off the last column (blocked, so the
 /// board store's focused_column is 6 and `menu_focus` is `Item(0)`).
-async fn engage_board_bar(app: &mut App) {
+async fn engage_board_bar(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.board_store_mut().set_focused_column("blocked");
     let _ = app.handle_event(&plain(KeyCode::Right));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: the [Board | Agent] grid entered through the MuxConfigDialog
@@ -103,25 +111,27 @@ async fn engage_board_bar(app: &mut App) {
 /// agent pane).
 fn enter_mux_via_dialog(app: &mut App) {
     submit(app, "/mux");
+    // MUX-010: the dialog opens on the layout field; Tab moves to Enabled.
+    let _ = app.handle_event(&plain(KeyCode::Tab));
     let _ = app.handle_event(&plain(KeyCode::Right)); // Enabled: Off → On
     let _ = app.handle_event(&plain(KeyCode::Enter)); // commit (remove)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Right from the last chip with the agent pane focused wraps
+// Scenario: Right from the last button with the agent pane focused wraps
 // to the first menu item
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_right_from_the_last_chip_with_the_agent_pane_focused_wraps_to_the_first_menu_item(
-) {
+async fn scenario_right_from_the_last_button_with_the_agent_pane_focused_wraps_to_the_first_menu_item(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent] with 1 open session and the AGENT pane is focused (the bar was engaged at the first menu item via the empty-input Left entry rule)
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     enter_mux_via_dialog(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux, "mux must be active");
     assert_eq!(
         app.navigator().mux.focus(),
@@ -130,33 +140,33 @@ async fn scenario_right_from_the_last_chip_with_the_agent_pane_focused_wraps_to_
     );
     // The empty-input Left entry rule engages the bar at Item(0).
     app.handle_event(&plain(KeyCode::Left));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
         "the entry rule must engage the bar at the first menu item"
     );
-    // The ring: Item(0) → Item1 → Item2 → Item3 → ZoneB0 → ZoneB1.
-    for _ in 0..5 {
+    // The ring: Item(0) → Item1 → Item2 → Item3 → ZoneB0 → ZoneB1 →
+    // ZoneC0 → ZoneC1 → ZoneC2 (MUX-013: New Bot, New Agent, Close).
+    for _ in 0..8 {
         app.handle_event(&plain(KeyCode::Right));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
+
+    // @step When I walk the ring Right through the menu items, the view label, the session chip and the buttons onto the last button ([ Close ], MUX-013)
     assert_eq!(
         app.navigator().mux.menu_focus(),
-        Some(MenuFocus::ZoneB(1)),
-        "the arrange must land on the last chip (#1)"
+        Some(MenuFocus::ZoneC(2)),
+        "the walk must land on the last button ([ Close ])"
     );
-
-    // @step When I walk the ring Right through the menu items and the view labels onto the last session chip
-    // (done in the arrange — the walk above lands on ZoneB1)
 
     // @step Then the highlight wraps to the first menu item (Kanban) in the top bar, the bar stays engaged, and the board's focused column is unchanged (the board pane is not focused, so the ring is the closed items⇄chips loop and no column stop is entered)
     app.handle_event(&plain(KeyCode::Right));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
-        "Right off the last chip with the AGENT pane focused must wrap to Item(0) — \
+        "Right off the last button with the AGENT pane focused must wrap to Item(0) — \
          the closed loop, NOT the board's first column"
     );
     assert_eq!(
@@ -167,13 +177,13 @@ async fn scenario_right_from_the_last_chip_with_the_agent_pane_focused_wraps_to_
 
     // @step When I walk the ring Left from the first menu item
     app.handle_event(&plain(KeyCode::Left));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step And the highlight wraps to the last session chip (the ring closes on both ends without any column stop)
+    // @step And the highlight wraps to the last button ([ Close ]) (the ring closes on both ends without any column stop)
     assert_eq!(
         app.navigator().mux.menu_focus(),
-        Some(MenuFocus::ZoneB(1)),
-        "Left from Item(0) with the AGENT pane focused must wrap to the last chip — \
+        Some(MenuFocus::ZoneC(2)),
+        "Left from Item(0) with the AGENT pane focused must wrap to the last button — \
          NOT the board's last column"
     );
     assert_eq!(
@@ -181,26 +191,27 @@ async fn scenario_right_from_the_last_chip_with_the_agent_pane_focused_wraps_to_
         6,
         "the left seam must not touch the board's focused_column off the board pane"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Left from the first menu item with the agent pane focused
-// wraps to the last chip
+// wraps to the last button
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_left_from_the_first_menu_item_with_the_agent_pane_focused_wraps_to_the_last_chip()
-{
+async fn scenario_left_from_the_first_menu_item_with_the_agent_pane_focused_wraps_to_the_last_button(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent] with 1 open session and the AGENT pane is focused with an empty input, and the agent pane's empty-input Left entry rule has engaged the bar at the first menu item (Kanban)
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     enter_mux_via_dialog(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().mux.focus(), 1, "the agent pane is focused");
     app.handle_event(&plain(KeyCode::Left));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -209,19 +220,20 @@ async fn scenario_left_from_the_first_menu_item_with_the_agent_pane_focused_wrap
 
     // @step When I press Left once
     app.handle_event(&plain(KeyCode::Left));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the highlight wraps to the last session chip in the top bar (not onto the board's last column), the bar stays engaged, and the board's focused column is unchanged
+    // @step Then the highlight wraps to the last button ([ Close ], MUX-013) in the top bar (not onto the board's last column), the bar stays engaged, and the board's focused column is unchanged
     assert_eq!(
         app.navigator().mux.menu_focus(),
-        Some(MenuFocus::ZoneB(1)),
-        "Left from Item(0) with the AGENT pane focused must wrap to the last chip (#1)"
+        Some(MenuFocus::ZoneC(2)),
+        "Left from Item(0) with the AGENT pane focused must wrap to the last button ([ Close ])"
     );
     assert_eq!(
         app.board_store().focused_column_index(),
         6,
         "the board's focused column must stay on blocked (the seam must not fire off the board pane)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -231,18 +243,18 @@ async fn scenario_left_from_the_first_menu_item_with_the_agent_pane_focused_wrap
 
 #[tokio::test]
 async fn scenario_entering_mux_via_mux_on_from_a_board_view_with_an_engaged_bar_clears_the_board_bar_state(
-) {
+) -> TestResult {
     // @step Given the single Board view is showing with the board's own bar engaged at the first menu item (Kanban) — the ring was walked Right off the last column (blocked) so the board store's ring focus sits on Item(0) and its focused column is blocked
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.board_store().menu_focus(), Some(MenuFocus::Item(0)));
     assert_eq!(app.board_store().focused_column_index(), 6);
 
     // @step When I submit the slash command "/mux on"
     submit(&mut app, "/mux on");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then mux mode is active and the board store's bar state is cleared — no ring focus and no open dropdown on the board store — while the board's focused column stays on blocked (NOT reset by the entry)
     assert_eq!(app.active_view(), ViewMode::Mux, "mux must be active");
@@ -267,7 +279,7 @@ async fn scenario_entering_mux_via_mux_on_from_a_board_view_with_an_engaged_bar_
         "/mux on focuses the board pane on fresh entry"
     );
     app.handle_event(&plain(KeyCode::Left));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the board's focused column moves to the second-to-last column (done) — the Left walks the visible columns, never the board's invisible (suppressed) bar
     assert_eq!(
@@ -276,6 +288,7 @@ async fn scenario_entering_mux_via_mux_on_from_a_board_view_with_an_engaged_bar_
         "Left must walk the VISIBLE columns (blocked → done) — with the stale Item(0) \
          focus the pre-fix walk went off the board store's hidden ring instead"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -284,21 +297,23 @@ async fn scenario_entering_mux_via_mux_on_from_a_board_view_with_an_engaged_bar_
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_committing_the_mux_config_dialog_from_off_to_on_clears_the_board_bar_state() {
+async fn scenario_committing_the_mux_config_dialog_from_off_to_on_clears_the_board_bar_state(
+) -> TestResult {
     // @step Given the single Board view is showing with the board's own bar engaged at the first menu item (Kanban) — the board store's ring focus sits on Item(0) and its focused column is blocked
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.board_store().menu_focus(), Some(MenuFocus::Item(0)));
     assert_eq!(app.board_store().focused_column_index(), 6);
 
     // @step When I open the mux config dialog ("/mux"), set the Enabled row to On and commit it (the dialog emits MuxConfigApplied with the enabled draft)
     submit(&mut app, "/mux");
-    drain_pending(&mut app).await;
-    app.handle_event(&plain(KeyCode::Right)); // Enabled: Off → On (cursor 0)
+    drain_pending(&mut app).await?;
+    app.handle_event(&plain(KeyCode::Tab)); // field → Enabled (MUX-010)
+    app.handle_event(&plain(KeyCode::Right)); // Enabled: Off → On
     app.handle_event(&plain(KeyCode::Enter)); // commit → MuxConfigApplied
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then mux mode is active and the board store's bar state is cleared — no ring focus and no open dropdown on the board store — while the board's focused column stays on blocked (NOT reset by the entry)
     assert_eq!(
@@ -319,6 +334,7 @@ async fn scenario_committing_the_mux_config_dialog_from_off_to_on_clears_the_boa
         6,
         "the entry must NOT reset the board's focused column (stays on blocked)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -326,29 +342,29 @@ async fn scenario_committing_the_mux_config_dialog_from_off_to_on_clears_the_boa
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_entering_mux_via_mux_default_clears_the_board_bar_state() {
+async fn scenario_entering_mux_via_mux_default_clears_the_board_bar_state() -> TestResult {
     // @step Given the single Board view is showing with the board's own bar engaged at the first menu item (Kanban) — the board store's ring focus sits on Item(0) and its focused column is blocked
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.board_store().menu_focus(), Some(MenuFocus::Item(0)));
     assert_eq!(app.board_store().focused_column_index(), 6);
 
     // @step When I submit the slash command "/mux default"
     submit(&mut app, "/mux default");
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then mux mode is active with the default preset and the board store's bar state is cleared — no ring focus and no open dropdown on the board store — while the board's focused column stays on blocked (NOT reset by the entry)
     assert_eq!(app.active_view(), ViewMode::Mux, "mux must be active");
     let cfg = app.navigator().mux.config();
     assert!(cfg.enabled, "the default preset must enable mux");
     assert_eq!(
-        cfg.panes,
+        cfg.layout.leaves(),
         vec![MuxPaneKind::Board, MuxPaneKind::Agent],
         "the default preset is [Board | Agent]"
     );
-    assert_eq!(cfg.orientation, MuxOrientation::Horizontal);
+    assert_eq!(cfg.layout.to_string(), "board, agent");
     assert!(
         app.board_store().menu_focus().is_none(),
         "/mux default must clear the board store's ring focus"
@@ -362,6 +378,7 @@ async fn scenario_entering_mux_via_mux_default_clears_the_board_bar_state() {
         6,
         "the entry must NOT reset the board's focused column (stays on blocked)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -371,14 +388,15 @@ async fn scenario_entering_mux_via_mux_default_clears_the_board_bar_state() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn scenario_with_the_board_pane_focused_the_bug_200_seam_crossings_stay_in_effect() {
-    // @step Given the mux grid is [Board | Agent] with 1 open session and the Board pane is focused with the ring on the last session chip
+async fn scenario_with_the_board_pane_focused_the_bug_200_seam_crossings_stay_in_effect(
+) -> TestResult {
+    // @step Given the mux grid is [Board | Agent] with 1 open session and the Board pane is focused with the ring on the last button ([ New Agent ], MUX-013)
     let (mut app, _mock) = fresh_app();
-    seed_session(&mut app).await;
-    engage_board_bar(&mut app).await;
+    seed_session(&mut app).await?;
+    engage_board_bar(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Board);
     enter_mux_via_dialog(&mut app);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.focus(),
         1,
@@ -387,40 +405,42 @@ async fn scenario_with_the_board_pane_focused_the_bug_200_seam_crossings_stay_in
     // Shift+Left: move the pane focus onto the Board pane (App-level
     // intercept — the bar never claims Shift+arrows).
     app.handle_event(&shift_left());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.focus(),
         0,
         "the board pane is focused now"
     );
     // Enter the bar off the board's last column (the pre-existing edge
-    // rule), then walk to the last chip: Item(0) → Items → ZoneB0 → ZoneB1.
+    // rule), then walk to the last button: Item(0) → Items → ZoneB0 →
+    // ZoneB1 → ZoneC0 → ZoneC1 (MUX-013: no Close on the board pane).
     app.handle_event(&plain(KeyCode::Right));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().mux.menu_focus(), Some(MenuFocus::Item(0)));
-    for _ in 0..5 {
+    for _ in 0..7 {
         app.handle_event(&plain(KeyCode::Right));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
     assert_eq!(
         app.navigator().mux.menu_focus(),
-        Some(MenuFocus::ZoneB(1)),
-        "the arrange must land on the last chip (#1)"
+        Some(MenuFocus::ZoneC(1)),
+        "the arrange must land on the last button ([ New Agent ])"
     );
 
     // @step When I press Right once
     app.handle_event(&plain(KeyCode::Right));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight clears from the top bar and the board's first column (backlog) is focused (the seam crossing stays in effect on the board pane)
     assert_eq!(
         app.board_store().focused_column_index(),
         0,
-        "Right from the last chip with the BOARD pane focused must land on col0 (backlog)"
+        "Right from the last button with the BOARD pane focused must land on col0 (backlog)"
     );
     assert_eq!(
         app.navigator().mux.menu_focus(),
         None,
         "the bar ring must clear on the column landing"
     );
+    Ok(())
 }

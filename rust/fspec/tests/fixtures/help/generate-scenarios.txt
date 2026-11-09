@@ -18,8 +18,10 @@ ARGUMENTS
     Work unit ID
 
 OPTIONS
-  undefined
+  --feature <name>
     Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.
+  --ignore-possible-duplicates
+    Generate even when similar scenarios exist in other feature files
 
 EXAMPLES
   1. Generate scenarios using work unit title as feature file name

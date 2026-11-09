@@ -35,8 +35,23 @@
                 48,
                 49,
                 50,
-                51
-              ]
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "/// File headers (`--- `/`+++ `) are treated as hunk metadata so they do",
+              "lastLine": "DiffLineKind::Context => Style::default().fg(Color::White),"
             }
           ]
         }
@@ -88,8 +103,17 @@
                 64,
                 65,
                 66,
-                67
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "/// Shorten `path` to fit `max_width` columns. TUI-131: an overflowing",
+              "lastLine": "row_style = row_style.add_modifier(Modifier::BOLD);"
             }
           ]
         }
@@ -100,16 +124,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/diff_common/api_tests.rs",
-          "lines": "59-77",
+          "lines": "61-79",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/diff_common/mod.rs",
               "lines": [
-                24,
-                25,
-                26,
-                27,
-                28,
                 29,
                 30,
                 31,
@@ -127,8 +146,15 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub use row::{file_row, status_color, truncate_path};",
+              "lastLine": "total,"
             }
           ]
         }
@@ -147,6 +173,6 @@
       "rust/fspec-tui/src/views/diff_common/row.rs",
       "rust/fspec-tui/src/views/diff_common/mod.rs"
     ],
-    "totalLinesCovered": 143
+    "totalLinesCovered": 163
   }
 }

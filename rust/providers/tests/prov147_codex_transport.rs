@@ -30,7 +30,14 @@ fn models(
         .http_client(RefreshingCodexClient::new_api_key())
         .build()?;
     Ok((
-        CodexResponsesModel::new(client.clone(), "shared-model"),
+        // BUG-342: the Codex boundary admits a request only against known
+        // limits (PROV-165), as every session's model does.
+        CodexResponsesModel::new(client.clone(), "shared-model").with_request_admission(
+            codelet_providers::request_admission::AdmissionLimits {
+                context_capacity: Some(100_000),
+                output_reservation: Some(1_000),
+            },
+        ),
         ResponsesCompletionModel::new(client, "shared-model"),
     ))
 }
@@ -85,8 +92,10 @@ where
                 events.push(format!("tool:{}", call.function.name));
             }
             StreamedAssistantContent::Usage(usage) => {
-                assert_eq!(usage.input_tokens, 12);
-                assert_eq!(usage.output_tokens, 8);
+                // Normalized usage: input excludes the 3 cached tokens and
+                // output excludes the 4 reasoning tokens (total stays 20).
+                assert_eq!(usage.input_tokens, 9);
+                assert_eq!(usage.output_tokens, 4);
                 assert_eq!(usage.cache_read_input_tokens, Some(3));
                 assert_eq!(usage.reasoning_tokens, Some(4));
                 events.push(format!("usage:{}", usage.total_tokens));
@@ -116,25 +125,22 @@ async fn scenario_existing_streamed_responses_remain_unchanged() -> TestResult {
         .await;
     let (codex, ordinary) = models(&server)?;
     // @step When the response is streamed through the Codex boundary
-    let events = match collect_stream(codex).await {
-        Ok(events) => events,
-        Err(err) => {
-            eprintln!("DEBUG codex stream error: {err:?}");
-            return Err(Box::from(format!("codex stream: {err}")));
-        }
-    };
-    let ordinary_events = match collect_stream(ordinary).await {
-        Ok(events) => events,
-        Err(err) => {
-            eprintln!("DEBUG ordinary stream error: {err:?}");
-            return Err(Box::from(format!("ordinary stream: {err}")));
-        }
-    };
-    // @step Then its request and events match the existing Responses behavior
-    assert_eq!(events, ordinary_events);
+    let events = collect_stream(codex)
+        .await
+        .map_err(|err| format!("codex stream: {err}"))?;
+    let ordinary_events = collect_stream(ordinary)
+        .await
+        .map_err(|err| format!("ordinary stream: {err}"))?;
+    // @step Then it yields the existing Responses content after its response-attempt marker and settles tool calls before the final response
+    let mut content: Vec<&String> = events.iter().skip(1).collect();
+    let mut ordinary_content: Vec<&String> = ordinary_events.iter().collect();
+    content.sort();
+    ordinary_content.sort();
+    assert_eq!(content, ordinary_content);
     assert_eq!(
         events,
         [
+            "ResponseAttemptStarted",
             "text:Hello",
             "reasoning:Thinking",
             "usage:20",
@@ -158,20 +164,14 @@ async fn scenario_existing_direct_completions_remain_unchanged() -> TestResult {
         .await;
     let (codex, ordinary) = models(&server)?;
     // @step When a completion is requested through the Codex boundary
-    let result = match codex.completion(request(codex.clone())).await {
-        Ok(r) => r,
-        Err(err) => {
-            eprintln!("DEBUG codex completion error: {err:?}");
-            return Err(Box::from(format!("codex completion: {err}")));
-        }
-    };
-    let baseline = match ordinary.completion(request(ordinary.clone())).await {
-        Ok(r) => r,
-        Err(err) => {
-            eprintln!("DEBUG ordinary completion error: {err:?}");
-            return Err(Box::from(format!("ordinary completion: {err}")));
-        }
-    };
+    let result = codex
+        .completion(request(codex.clone()))
+        .await
+        .map_err(|err| format!("codex completion: {err}"))?;
+    let baseline = ordinary
+        .completion(request(ordinary.clone()))
+        .await
+        .map_err(|err| format!("ordinary completion: {err}"))?;
     // @step Then its request and result match the existing Responses behavior
     assert_eq!(
         serde_json::to_value(&result.choice)?,

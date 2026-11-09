@@ -1,6 +1,7 @@
+use super::admission::{self, settle};
 use super::state::{LoopState, PendingInput};
-use crate::user_persistence::persist_user_input;
 use codelet_core::lifecycle_hooks::{run_user_prompt, HookMessageLevel};
+use codelet_core::persistence::input_receipts::InputDisposition;
 use codelet_rpc_types::{NotificationSeverity, SessionStatus, StreamChunk};
 use codelet_sessions::background_session::BackgroundSession;
 use std::sync::atomic::Ordering;
@@ -14,7 +15,7 @@ pub(super) fn finish_cancelled_prompt(
         return false;
     }
     session.handle_output(StreamChunk::InterruptedWithReason {
-        queued_inputs: Vec::new(),
+        queued_inputs: session.queued_inputs(),
         reason: session
             .interruption_reason()
             .unwrap_or(codelet_rpc_types::InterruptionReason::User),
@@ -24,23 +25,75 @@ pub(super) fn finish_cancelled_prompt(
     true
 }
 
-pub(super) async fn admit_prompt(
+/// Settle a canceled submission durably before announcing its completion.
+pub(super) async fn cancel_pending(
+    session: &BackgroundSession,
+    pending: &PendingInput,
+    cancelled_at_submission: bool,
+) -> bool {
+    if !cancelled_at_submission && !session.compaction_cancelled(pending.interrupt_epoch) {
+        return false;
+    }
+    settle(session, pending, InputDisposition::Cancelled).await;
+    finish_cancelled_prompt(session, pending.interrupt_epoch, cancelled_at_submission)
+}
+
+/// BUG-516: a manual /compact request is not a conversation input: it takes
+/// no receipt, runs no prompt hooks and stores no original. Cancellation
+/// before it starts discards it (BUG-214).
+async fn admit_manual_compaction(
     session: &BackgroundSession,
     pending: &PendingInput,
     state: &mut LoopState,
 ) -> bool {
-    session.wait_for_settlement().await;
-    let input = &pending.input.text;
-    if pending.is_fresh_user_input {
-        session.admit_input_epoch(pending.interrupt_epoch);
-    }
     if let Some(epoch) = pending.manual_compaction_epoch {
         if session.discard_cancelled_compaction(epoch).await {
             session.handle_output(StreamChunk::done());
             return false;
         }
     }
+    if finish_cancelled_prompt(
+        session,
+        pending.interrupt_epoch,
+        pending.cancelled_at_submission,
+    ) {
+        return false;
+    }
+    state.turn_epoch = pending.interrupt_epoch;
+    true
+}
+
+pub(super) async fn admit_prompt(
+    session: &BackgroundSession,
+    pending: &mut PendingInput,
+    state: &mut LoopState,
+) -> bool {
+    session.wait_for_settlement().await;
+    if pending.is_manual_compaction {
+        return admit_manual_compaction(session, pending, state).await;
+    }
+    if !admission::ensure_receipt(session, pending) {
+        session.handle_output(StreamChunk::error(
+            "Input receipt retention failed; the input was not admitted".into(),
+        ));
+        session.set_status(SessionStatus::Idle);
+        session.handle_output(StreamChunk::done());
+        return false;
+    }
+    let pending = &*pending;
+    let input = &pending.input.text;
+    if pending.is_fresh_user_input {
+        session.admit_input_epoch(pending.interrupt_epoch);
+    }
+    if let Some(epoch) = pending.manual_compaction_epoch {
+        if session.discard_cancelled_compaction(epoch).await {
+            settle(session, pending, InputDisposition::Cancelled).await;
+            session.handle_output(StreamChunk::done());
+            return false;
+        }
+    }
     if pending.is_compaction_retry && session.is_interrupted.load(Ordering::Acquire) {
+        settle(session, pending, InputDisposition::Cancelled).await;
         session.set_status(SessionStatus::Idle);
         session.handle_output(StreamChunk::done());
         return false;
@@ -56,6 +109,9 @@ pub(super) async fn admit_prompt(
                         .map_err(anyhow::Error::new)
                 });
             if let Err(error) = restored {
+                let reason = format!("{error:#}");
+                drop(inner_session);
+                settle(session, pending, InputDisposition::Refused { reason }).await;
                 session.handle_output(StreamChunk::error(format!("{error:#}")));
                 session.set_status(SessionStatus::Idle);
                 session.handle_output(StreamChunk::done());
@@ -93,6 +149,10 @@ pub(super) async fn admit_prompt(
                     .block_reason
                     .unwrap_or_else(|| "Blocked by hook".to_string());
                 tracing::warn!("[HOOK-013] Prompt blocked: {}", reason);
+                let refused = InputDisposition::Refused {
+                    reason: reason.clone(),
+                };
+                settle(session, pending, refused).await;
                 session.handle_output(StreamChunk::user_notification(
                     format!("Prompt blocked: {}", reason),
                     NotificationSeverity::Warning,
@@ -114,31 +174,32 @@ pub(super) async fn admit_prompt(
     }
     if let Some(epoch) = pending.manual_compaction_epoch {
         if session.discard_cancelled_compaction(epoch).await {
+            settle(session, pending, InputDisposition::Cancelled).await;
             session.handle_output(StreamChunk::done());
             return false;
         }
     }
     if pending.is_compaction_retry && session.is_interrupted.load(Ordering::Acquire) {
+        settle(session, pending, InputDisposition::Cancelled).await;
         session.set_status(SessionStatus::Idle);
         session.handle_output(StreamChunk::done());
         return false;
     }
-    let session_id = session.id;
-    let persisted_input = input.clone();
-    let images = pending.input.images.clone().unwrap_or_default();
-    let persistence = tokio::task::spawn_blocking(move || {
-        persist_user_input(&session_id, &persisted_input, &images)
-    })
-    .await;
-    if let Err(error) = persistence
-        .map_err(|error| error.to_string())
-        .and_then(|result| result.map_err(|error| error.to_string()))
-    {
+    if cancel_pending(session, pending, pending.cancelled_at_submission).await {
+        return false;
+    }
+    if let Err(error) = admission::store_original(session, pending).await {
         tracing::error!(
             "Failed to persist user message for session {}: {}",
             session.id,
             error
         );
+        settle(
+            session,
+            pending,
+            InputDisposition::Refused { reason: error },
+        )
+        .await;
         session.handle_output(StreamChunk::error(
             "Conversation persistence requires recovery before inference".into(),
         ));
@@ -146,11 +207,7 @@ pub(super) async fn admit_prompt(
         session.handle_output(StreamChunk::done());
         return false;
     }
-    if finish_cancelled_prompt(
-        session,
-        pending.interrupt_epoch,
-        pending.cancelled_at_submission,
-    ) {
+    if cancel_pending(session, pending, pending.cancelled_at_submission).await {
         return false;
     }
     session.set_status(SessionStatus::Running);

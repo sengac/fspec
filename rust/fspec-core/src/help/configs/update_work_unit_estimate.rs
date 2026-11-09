@@ -3,16 +3,15 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js update-work-unit-estimate --help`.
 //!
-//! NOTE: the TS `-help.ts` declares each common error with a `solution` key,
-//! but the shared `formatCommandHelp` reads `error.fix` — which is therefore
-//! `undefined` and renders the literal string `undefined` after `Fix: `. We
-//! reproduce that quirk verbatim by setting `fix: "undefined"`.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
-        name: "id",
+        name: "workUnitId",
         description: "Work unit ID",
         required: true,
     },
@@ -39,15 +38,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "ACDD requires feature file completion before estimation",
-        fix: "undefined",
+        fix: "Complete the specifying phase first: Use Example Mapping, generate scenarios, and ensure feature file has no prefill placeholders",
     },
     CommonError {
         error: "Feature file has prefill placeholders must be removed first",
-        fix: "undefined",
+        fix: "Remove all placeholders like [role], [action], [benefit] using fspec CLI commands (NOT Write/Edit tools)",
     },
     CommonError {
         error: "Invalid estimate: 7. Must be one of: 1,2,3,5,8,13,21",
-        fix: "undefined",
+        fix: "Use only Fibonacci numbers for estimates",
     },
 ];
 
@@ -78,7 +77,7 @@ const PREREQS: &[&str] = &[
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "update-work-unit-estimate",
     description: "Set story point estimate for a work unit using Fibonacci scale",
-    usage: Some("fspec update-work-unit-estimate <id> <points>"),
+    usage: Some("fspec update-work-unit-estimate <workUnitId> <points>"),
     arguments: ARGS,
     options: &[],
     examples: EXAMPLES,

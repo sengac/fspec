@@ -1,106 +1,93 @@
-//! PROV-101 FIX 1: the TUI surfaces a declined session creation instead of
-//! swallowing it.
+//! PROV-101 FIX 1 / BUG-410: the TUI surfaces a declined session creation
+//! instead of swallowing it.
 //!
 //! Feature: spec/features/session-creation-decline-surfaced.feature
 //!
-//! `create_session` returns an empty `SessionId` when no default model is set
-//! (decline). The TUI must NOT append an empty-id session. A shared helper maps
-//! the result to `Action::SessionCreated` (real id) or
-//! `Action::SessionCreationDeclined` (empty id), and the decline action pushes a
-//! Priority::Critical ErrorDialog. Fully offline against the MockBackend
-//! fixture — no network, no env mutation.
+//! `create_session` returns an error when no default model is set. The TUI
+//! routes every creation error through its single failure path (the session
+//! failure dialog) and never makes a session active that was not created.
+//! Fully offline against the MockBackend fixture — no network, no env
+//! mutation.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::sync::Arc;
-
-use codelet_fspec_tui::app::session_creation::post_create_session_action;
-use codelet_fspec_tui::components::error_dialog::ERROR_DIALOG_ID;
-use codelet_fspec_tui::{Action, App, FspecBackend};
+use codelet_fspec_tui::Action;
 use codelet_rpc_types::SessionId;
+use codelet_test_helpers::TestResult;
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
 
 mod common;
-use common::MockBackend;
+use common::harness::AppTestHarness;
 
-fn fresh_app() -> (App, Arc<MockBackend>) {
-    let mock = Arc::new(MockBackend::new());
-    let backend: Arc<dyn FspecBackend> = mock.clone();
-    let app = App::new(backend);
-    (app, mock)
-}
+const FAILURE_DIALOG_ID: &str = "session-storage-dialog";
+const NO_DEFAULT_MODEL: &str = "no default model is set";
 
-/// Drain spawned backend tasks then pump any follow-up actions back through
-/// dispatch until quiescent.
-async fn drain_pending(app: &mut App) {
-    while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
-    }
-    while let Some(action) = app.try_recv_action() {
-        app.dispatch(action);
-        while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
-        }
-    }
-}
-
-// =============================================================================
-// Scenario: A declined session creation maps to an explicit decline action
-// =============================================================================
-#[test]
-fn declined_result_maps_to_decline_action() {
-    // @step Given a create_session result whose session id value is empty
-    let result = SessionId::new("");
-
-    // @step When the TUI builds the follow-up action for the result
-    let action = post_create_session_action(result);
-
-    // @step Then the follow-up action is the session-creation-declined action
-    assert!(
-        matches!(action, Action::SessionCreationDeclined),
-        "empty id must map to SessionCreationDeclined, got {action:?}"
-    );
-}
-
-// =============================================================================
-// Scenario: A successful session creation maps to a session-created action
-// =============================================================================
-#[test]
-fn real_result_maps_to_session_created_action() {
-    // @step Given a create_session result whose session id value is not empty
-    let result = SessionId::new("s-1");
-
-    // @step When the TUI builds the follow-up action for the result
-    let action = post_create_session_action(result);
-
-    // @step Then the follow-up action is the session-created action
-    assert!(
-        matches!(action, Action::SessionCreated(ref s) if s.value == "s-1"),
-        "non-empty id must map to SessionCreated, got {action:?}"
-    );
+/// The rendered screen, one line per row.
+fn screen(harness: &mut AppTestHarness) -> String {
+    let area = Rect::new(0, 0, 200, 50);
+    let mut buffer = Buffer::empty(area);
+    harness.app.render(area, &mut buffer);
+    (0..area.height)
+        .map(|y| {
+            (0..area.width)
+                .map(|x| buffer[(x, y)].symbol().to_string())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 // =============================================================================
 // Scenario: The TUI surfaces a declined session creation as an explicit error
 // =============================================================================
 #[tokio::test]
-async fn declined_session_creation_surfaces_error_dialog() {
-    // @step Given an App whose backend declines create_session with an empty session id
-    let (mut app, mock) = fresh_app();
-    mock.script_create_session(SessionId::new(""));
+async fn declined_session_creation_surfaces_failure_dialog() -> TestResult {
+    // @step Given an App whose backend rejects create_session because no default model is set
+    let mut harness = AppTestHarness::empty();
+    harness.mock.script_create_session_error(
+        "no default model is set: select a model with /model before creating a session",
+    );
 
     // @step When the user confirms creating a non-isolated session
-    app.dispatch(Action::CreateSessionSubmitted { isolated: false });
-    drain_pending(&mut app).await;
+    harness
+        .app
+        .dispatch(Action::CreateSessionSubmitted { isolated: false });
+    harness.drain_pending().await?;
 
-    // @step Then an error dialog is shown to the user
-    assert!(
-        app.compositor().contains(ERROR_DIALOG_ID),
-        "a declined creation must surface a Priority::Critical ErrorDialog"
-    );
+    // @step Then the session failure dialog names the missing default model
+    if !harness.compositor_contains(FAILURE_DIALOG_ID) {
+        return Err("a declined creation must open the session failure dialog".into());
+    }
+    let shown = screen(&mut harness);
+    if !shown.contains(NO_DEFAULT_MODEL) {
+        return Err(format!("{NO_DEFAULT_MODEL:?} is not shown in:\n{shown}").into());
+    }
 
     // @step And no session becomes the active session
-    assert!(
-        app.agent_view_store().current_session().is_none(),
-        "no empty-id session may become the active session"
-    );
+    if let Some(session) = harness.app.agent_view_store().current_session() {
+        return Err(format!("no session may become active, found {session:?}").into());
+    }
+    Ok(())
+}
+
+// =============================================================================
+// Scenario: A created session becomes the active session
+// =============================================================================
+#[tokio::test]
+async fn created_session_becomes_active() -> TestResult {
+    // @step Given an App whose backend creates the session "s-1"
+    let mut harness = AppTestHarness::empty();
+    harness.mock.script_create_session(SessionId::new("s-1"));
+
+    // @step When the user confirms creating a non-isolated session
+    harness
+        .app
+        .dispatch(Action::CreateSessionSubmitted { isolated: false });
+    harness.drain_pending().await?;
+
+    // @step Then the session "s-1" becomes the active session
+    let active = harness.app.agent_view_store().current_session().cloned();
+    if active != Some(SessionId::new("s-1")) {
+        return Err(format!("expected s-1 to be active, found {active:?}").into());
+    }
+    Ok(())
 }

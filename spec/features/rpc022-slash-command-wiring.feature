@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-022
 @rust
@@ -19,7 +20,7 @@ Feature: Slash-command parsing for /model, /thinking, and /role
 
   - "/model"                  → Action::OpenModelDialog
   - "/thinking"               → Action::OpenThinkingDialog
-  - "/role"                   → Action::SetSessionRole(sid, None)         (treat bare /role as clear)
+  - "/role"                   → opens the RoleDialog (RPC-063; previously cleared the role)
   - "/role clear"             → Action::SetSessionRole(sid, None)
   - "/role <text>"            → Action::SetSessionRole(sid, Some(text))
   - any other "/cmd ..."      → falls through to backend.send_input (existing behaviour)
@@ -46,7 +47,7 @@ Feature: Slash-command parsing for /model, /thinking, and /role
       | input                             | expected_variant                       |
       | /model                            | OpenModelDialog                        |
       | /thinking                         | OpenThinkingDialog                     |
-      | /role                             | ClearRole                              |
+      | /role                             | OpenRoleDialog                         |
       | /role clear                       | ClearRole                              |
       | /role You are a security reviewer | SetRole("You are a security reviewer") |
       | /role  leading space ok           | SetRole("leading space ok")            |
@@ -55,26 +56,26 @@ Feature: Slash-command parsing for /model, /thinking, and /role
 
   @model
   @dispatch
-  Scenario: Submitting "/model" opens the ModelSelectorDialog and spawns list_providers
+  Scenario: Submitting "/model" opens the full-screen ModelSelector and spawns list_providers
     Given an App with one open session SessionId("s-1") and no dialogs pushed
     And the backend's list_providers returns [ProviderInfo{ key: "openai", ... }]
     When the input is submitted with text "/model"
     Then the text is NOT forwarded to backend.send_input
-    And a ModelSelectorDialog with id "model-selector-dialog" is pushed onto the Compositor at Priority::Foreground
+    And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
     And a tokio task is spawned that calls backend.list_providers()
     When the spawned task completes
     Then Action::ListProvidersLoaded([ProviderInfo{ key: "openai", ... }]) is dispatched
-    And the open ModelSelectorDialog now contains 1 provider
+    And the model selector view contains 1 provider
 
   @thinking
   @dispatch
   Scenario: Submitting "/thinking" opens the ThinkingLevelDialog seeded with the cached level
     Given an App with one open session SessionId("s-1") and no dialogs pushed
-    And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Medium)
+    And AgentViewStore.thinking_level_for(SessionId("s-1")) = Some(ThinkingLevel::Effort("medium"))
     When the input is submitted with text "/thinking"
     Then the text is NOT forwarded to backend.send_input
     And a ThinkingLevelDialog is pushed onto the Compositor at Priority::Foreground
-    And the dialog's initial selected_level is ThinkingLevel::Medium
+    And the dialog's initial selected_level is ThinkingLevel::Effort("medium")
 
   @role
   @dispatch
@@ -99,12 +100,11 @@ Feature: Slash-command parsing for /model, /thinking, and /role
 
   @role
   @dispatch
-  @clear
-  Scenario: Submitting bare "/role" is treated as a clear
+  Scenario: Submitting bare "/role" opens the RoleDialog seeded with the existing role
     Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A")
     When the input is submitted with text "/role"
-    Then Action::SetSessionRole(SessionId("s-1"), None) is dispatched
-    And AgentViewStore.role_for(SessionId("s-1")) becomes None
+    Then a RoleDialog is pushed onto the Compositor seeded with the existing role
+    And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
 
   @passthrough
   Scenario: Submitting plain text falls through to backend.send_input unchanged
@@ -123,20 +123,20 @@ Feature: Slash-command parsing for /model, /thinking, and /role
     Then exactly one tokio task is spawned that calls backend.persistence_add_history(SessionId("s-1"), "hello")
 
   @popup-integration
-  Scenario: Slash popup selection of /model also opens the ModelSelectorDialog
+  Scenario: Slash popup selection of /model also opens the full-screen ModelSelector
     Given an App with one open session SessionId("s-1") and the slash popup open with selected command Model
     When the user presses Enter inside the popup
     Then Action::SlashCommandSelected(SlashCommandAction::Model) is dispatched
-    And a ModelSelectorDialog with id "model-selector-dialog" is pushed onto the Compositor at Priority::Foreground
+    And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
     And a tokio task is spawned that calls backend.list_providers()
 
   @popup-integration
   @role
-  @clear
-  Scenario: Slash popup selection of /role is treated as a clear and does not surface a [notice]
+  Scenario: Slash popup selection of /role opens the RoleDialog and does not surface a [notice]
     Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A") and the slash popup open with selected command Role
     When the user presses Enter inside the popup
     Then Action::SlashCommandSelected(SlashCommandAction::Role) is dispatched
-    And AgentViewStore.role_for(SessionId("s-1")) becomes None
-    And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
+    And a RoleDialog is pushed onto the Compositor
+    And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
+    And NO tokio task is spawned that calls backend.set_session_role (the dialog defers persistence)
     And no scrollback line containing the substring "[notice] /role" is appended

@@ -22,13 +22,25 @@ use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{SessionId, SessionInfo, SessionStatus, StreamChunk};
+use codelet_test_helpers::deadlock_guard;
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
 use tempfile::TempDir;
-use tokio::time::{sleep, timeout};
 
 fn build_transport() -> (TempDir, EmbeddedTransport) {
+    let (dir, transport, _stub, _service) = build_transport_with_stub();
+    (dir, transport)
+}
+
+/// BUG-483: like `build_transport`, also returning the stub (so a test can
+/// hold its turns) and the shared service (whose status channel the embedded
+/// transport reads from).
+fn build_transport_with_stub() -> (
+    TempDir,
+    EmbeddedTransport,
+    Arc<StubSessionManagerHandle>,
+    Arc<SharedFspecService>,
+) {
     let dir = tempfile::tempdir().expect("tempdir");
     let workspace = dir.path();
     std::fs::create_dir_all(workspace.join("spec")).expect("mkdir spec");
@@ -39,15 +51,16 @@ fn build_transport() -> (TempDir, EmbeddedTransport) {
     .expect("seed work-units.json");
 
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let stub = Arc::new(StubProvider::new());
-    let manager: Arc<dyn SessionManagerHandle> =
-        Arc::new(StubSessionManagerHandle::with_provider(stub));
+    let stub = Arc::new(StubSessionManagerHandle::with_provider(Arc::new(
+        StubProvider::new(),
+    )));
+    let manager: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
-    let transport = EmbeddedTransport::new(tokio::runtime::Handle::current(), service);
-    (dir, transport)
+    let transport = EmbeddedTransport::new(tokio::runtime::Handle::current(), Arc::clone(&service));
+    (dir, transport, stub, service)
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -60,13 +73,21 @@ async fn scenario_embedded_list_sessions_matches_underlying_session_manager() {
     let seeded: SessionId = client
         .create_session(context::current(), Some("default".to_string()))
         .await
-        .expect("create_session must succeed");
+        .expect("create_session must succeed")
+        .expect("the daemon creates the session");
 
     // @step When a Rust caller invokes FspecServiceClient::list_sessions(context::current()) over the embedded transport
     let listed: Vec<SessionInfo> = client
-        .list_sessions(context::current(), std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
+        .list_sessions(
+            context::current(),
+            std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy()
+                .to_string(),
+        )
         .await
-        .expect("list_sessions must succeed");
+        .expect("list_sessions must succeed")
+        .expect("the daemon lists the sessions");
 
     // @step Then the call returns Ok(Vec<SessionInfo>) with the same length and SessionId values that NAPI list_sessions would return
     let ids: Vec<SessionId> = listed
@@ -98,20 +119,22 @@ async fn scenario_embedded_send_input_emits_at_least_one_streamchunk_within_5s()
     let sid: SessionId = client
         .create_session(context::current(), None)
         .await
-        .expect("create_session must succeed");
+        .expect("create_session must succeed")
+        .expect("the daemon creates the session");
     client
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("send_input must succeed");
+        .expect("send_input must succeed")
+        .expect("daemon accepted the input");
 
     // @step Then send_input returns Ok(()) immediately without holding a tarpc stream
     // (Asserted implicitly above — `send_input` returns `()` per the trait
     // definition; if it ever returned a stream the call site would not type-check.)
 
     // @step And within 5 seconds the chunks_rx receiver yields at least one (SessionId, StreamChunk::Text { .. }) tuple matching the active session
-    let (got_sid, chunk) = timeout(Duration::from_secs(5), rx.recv())
+    let (got_sid, chunk) = deadlock_guard("the first chunk on chunks_rx", rx.recv())
         .await
-        .expect("chunks_rx must yield within 5s")
+        .expect("chunks_rx yields a chunk")
         .expect("broadcast not closed");
     assert_eq!(
         got_sid, sid,
@@ -126,44 +149,48 @@ async fn scenario_embedded_send_input_emits_at_least_one_streamchunk_within_5s()
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_interrupt_flips_state_and_emits_interrupted_chunk() {
     // @step Given a session is actively streaming a stub-provider response on either transport
-    let (_dir, transport) = build_transport();
+    let (_dir, transport, stub, _service) = build_transport_with_stub();
     let client = transport.client();
     let mut rx = transport.chunks_rx();
     let sid: SessionId = client
         .create_session(context::current(), None)
         .await
-        .expect("create_session must succeed");
+        .expect("create_session must succeed")
+        .expect("the daemon creates the session");
+    // TEST-042: the turn is held open, so it is still streaming when the
+    // interrupt arrives and cannot end (and flip the status) afterwards.
+    let turn = stub.hold_turns();
     client
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("send_input must succeed");
+        .expect("send_input must succeed")
+        .expect("daemon accepted the input");
 
     // @step And the caller is subscribed to chunks_rx() for that session
     // (`rx` above)
 
     // @step When the caller calls interrupt(session_id)
-    sleep(Duration::from_millis(10)).await;
     client
         .interrupt(context::current(), sid.clone())
         .await
-        .expect("interrupt must succeed");
+        .expect("interrupt must succeed")
+        .expect("the daemon interrupts the session");
 
     // @step Then the RPC returns Ok(()) immediately
     // (Asserted by `.expect` above — interrupt returns ().)
 
     // @step And the chunks_rx receiver yields a StreamChunk::Interrupted (or equivalent) for that session
-    let mut saw_interrupted = false;
-    for _ in 0..32 {
-        match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((got_sid, StreamChunk::Interrupted { .. }))) if got_sid == sid => {
-                saw_interrupted = true;
-                break;
+    let saw_interrupted = deadlock_guard("the Interrupted chunk", async {
+        loop {
+            match rx.recv().await {
+                Ok((got_sid, StreamChunk::Interrupted { .. })) if got_sid == sid => break true,
+                Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break false,
             }
-            Ok(Ok(_)) => continue,
-            Ok(Err(_)) => break,
-            Err(_) => break,
         }
-    }
+    })
+    .await
+    .expect("chunks_rx yields the Interrupted chunk or closes");
     assert!(
         saw_interrupted,
         "chunks_rx must yield StreamChunk::Interrupted for the interrupted session",
@@ -173,28 +200,36 @@ async fn scenario_interrupt_flips_state_and_emits_interrupted_chunk() {
     let status: SessionStatus = client
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("get_session_status must succeed");
+        .expect("get_session_status must succeed")
+        .expect("the session status is read");
     assert!(
         matches!(status, SessionStatus::Interrupted),
         "post-interrupt status must be SessionStatus::Interrupted, got {status:?}",
     );
+    drop(turn);
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_get_session_status_reflects_idle_running_idle_on_embedded() {
     // @step Given a session is created via create_session on either transport with the StubProvider
-    let (_dir, transport) = build_transport();
+    let (_dir, transport, stub, service) = build_transport_with_stub();
     let client = transport.client();
     let sid: SessionId = client
         .create_session(context::current(), None)
         .await
-        .expect("create_session must succeed");
+        .expect("create_session must succeed")
+        .expect("the daemon creates the session");
+
+    // @step And the stub provider holds each turn open until the caller releases it
+    let turn = stub.hold_turns();
+    let mut status_changes = service.status_changes_rx();
 
     // @step When the caller calls get_session_status(session_id) before any send_input
     let before = client
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("get_session_status must succeed");
+        .expect("get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Idle
     assert!(
@@ -202,15 +237,17 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_embedded() {
         "pre-input status must be SessionStatus::Idle, got {before:?}",
     );
 
-    // @step When the caller calls send_input(session_id, "hi") and immediately calls get_session_status(session_id)
+    // @step When the caller calls send_input(session_id, "hi") and calls get_session_status(session_id) while the turn is held
     client
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("send_input must succeed");
+        .expect("send_input must succeed")
+        .expect("daemon accepted the input");
     let during = client
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("get_session_status must succeed");
+        .expect("get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Running
     assert!(
@@ -218,22 +255,26 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_embedded() {
         "during-stream status must be SessionStatus::Running, got {during:?}",
     );
 
-    // @step When the stub provider has emitted StreamChunk::Done and the caller calls get_session_status(session_id) again
-    // Drain the broadcast until Done arrives so the SessionManager has marked
-    // the session Idle again.
-    let mut rx = transport.chunks_rx();
-    for _ in 0..64 {
-        match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((_, StreamChunk::Done))) => break,
-            Ok(Ok(_)) => continue,
-            _ => break,
+    // @step When the caller releases the turn, receives the session's Idle status change \
+    //     and calls get_session_status(session_id) again
+    turn.release();
+    // The deadlock guard only turns a lost event into a failure instead of a hang.
+    deadlock_guard("the session's Idle status change", async {
+        loop {
+            match status_changes.recv().await {
+                Ok((id, SessionStatus::Idle)) if id == sid => break,
+                Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(error) => panic!("status changes ended before Idle: {error}"),
+            }
         }
-    }
-    sleep(Duration::from_millis(20)).await;
+    })
+    .await
+    .expect("the session's Idle status change must arrive");
     let after = client
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("get_session_status must succeed");
+        .expect("get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Idle
     assert!(

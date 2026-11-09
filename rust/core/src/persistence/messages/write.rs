@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 impl MessageStore {
     /// Store a new message and return its ID.
-    pub fn store(&mut self, role: &str, content: &str) -> Result<Uuid, String> {
+    pub fn store(&self, role: &str, content: &str) -> Result<Uuid, String> {
         self.store_with_metadata(role, content, HashMap::new())
     }
 
@@ -18,7 +18,7 @@ impl MessageStore {
     ///
     /// `_actualTokenCount` overrides token estimation for blob-stored messages.
     pub fn store_with_metadata(
-        &mut self,
+        &self,
         role: &str,
         content: &str,
         metadata: HashMap<String, serde_json::Value>,
@@ -27,7 +27,7 @@ impl MessageStore {
     }
 
     pub fn store_with_id(
-        &mut self,
+        &self,
         id: Uuid,
         role: &str,
         content: &str,
@@ -35,22 +35,11 @@ impl MessageStore {
     ) -> Result<Uuid, String> {
         self.with_file_lock(|store| {
             store.load_or_build_index()?;
-            let indexed = store
-                .state
-                .lock()
-                .map_err(|error| error.to_string())?
-                .index
-                .contains_key(&id);
+            let indexed = store.lock_state()?.index.contains_key(&id);
             if !indexed {
                 store.get_recovered_locked(id)?;
             }
-            let entry = store
-                .state
-                .lock()
-                .map_err(|error| error.to_string())?
-                .index
-                .get(&id)
-                .copied();
+            let entry = store.lock_state()?.index.get(&id).copied();
             if let Some(entry) = entry {
                 let existing = index::read_message_at(&store.messages_file, &entry)?;
                 if existing.id != id
@@ -95,7 +84,7 @@ impl MessageStore {
 
     /// Re-append a message with merged metadata, leaving its old record as dead space.
     pub fn update_metadata(
-        &mut self,
+        &self,
         id: Uuid,
         entries: HashMap<String, serde_json::Value>,
     ) -> Result<(), String> {
@@ -115,7 +104,7 @@ impl MessageStore {
         })
     }
 
-    fn append_message(&mut self, message: StoredMessage) -> Result<(), String> {
+    fn append_message(&self, message: StoredMessage) -> Result<(), String> {
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
@@ -132,25 +121,33 @@ impl MessageStore {
             .map_err(|error| format!("Failed to write message: {error}"))?;
         self.sync_message(&file)?;
         let byte_length = line.len() as u32;
-        let mut state = self.state.lock().map_err(|error| error.to_string())?;
-        state.index.insert(
-            message.id,
-            IndexEntry {
-                byte_offset,
-                byte_length,
-            },
-        );
-        state.cache.put(message.id, message);
+        // BUG-625: record the message under the index lock, then save a
+        // snapshot of the index after releasing it (the file lock is held).
+        let snapshot = {
+            let mut state = self.lock_state()?;
+            state.index.insert(
+                message.id,
+                IndexEntry {
+                    byte_offset,
+                    byte_length,
+                },
+            );
+            state.cache.put(message.id, message);
+            state.index.clone()
+        };
         index::save_index(
             &self.index_file,
-            &state.index,
+            &snapshot,
             byte_offset + byte_length as u64,
         )?;
-        state.generation = Some(StoreGeneration::read(self)?);
-        if state.fully_scanned {
-            if let Some(generation) = &state.generation {
-                super::verified::publish(self, generation);
-            }
+        let generation = StoreGeneration::read(self)?;
+        let fully_scanned = {
+            let mut state = self.lock_state()?;
+            state.generation = Some(generation.clone());
+            state.fully_scanned
+        };
+        if fully_scanned {
+            super::verified::publish(self, &generation);
         }
         Ok(())
     }

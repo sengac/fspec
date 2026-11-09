@@ -1,0 +1,203 @@
+{
+  "scenarios": [
+    {
+      "name": "A coverage file without its feature fails validation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug522_validate_reports_orphan_coverage.rs",
+          "lines": "41-59",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                201,
+                211,
+                212,
+                213,
+                214,
+                215,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "// BUG-522: validating every feature also reports coverage files whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coverage files that match their features pass validation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug522_validate_reports_orphan_coverage.rs",
+          "lines": "61-70",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                201,
+                211,
+                212,
+                213,
+                214,
+                215,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "// BUG-522: validating every feature also reports coverage files whose",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The repository has no orphan coverage files",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug522_validate_reports_orphan_coverage.rs",
+          "lines": "72-94",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "/// BUG-522: `spec/features/*.feature.coverage` files without their feature,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug522_validate_reports_orphan_coverage.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/validate.rs"
+    ],
+    "totalLinesCovered": 185
+  }
+}

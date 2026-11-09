@@ -31,6 +31,7 @@
 mod bash;
 mod bridge_facade;
 mod bridge_registration;
+mod claude_thinking_off;
 mod codex;
 mod file_ops;
 mod fspec_facade;
@@ -56,6 +57,7 @@ pub use bridge_registration::{
     bridge_tool_for_provider, claude_bridge_tool, codex_bridge_tool, gemini_bridge_tool,
     openai_bridge_tool, zai_bridge_tool,
 };
+pub use claude_thinking_off::claude_off_config;
 pub use codex::{
     CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
     CodexRequestUserInputFacade, CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
@@ -133,10 +135,13 @@ pub use web_search::{
     GeminiWebScreenshotFacade,
 };
 pub use wrapper::{
+    declare_unrestricted_tool_access,
     // BLOCK-006: Block notification callbacks
     emit_block_notification,
     get_effective_cwd,
     get_isolation_context,
+    // BUG-404: the refusal for a failed isolation lookup
+    isolation_lookup_error,
     set_block_notification_callback,
     // GIT-020: Effective CWD callback for isolated session support
     set_get_effective_cwd_callback,

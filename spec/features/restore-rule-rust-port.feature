@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-291
+@cli
+@example-mapping
 Feature: Port restore-rule command to Rust
   """
   Core impl: rust/fspec-core/src/commands/restore_rule.rs — replaces the NotYetPorted stub.

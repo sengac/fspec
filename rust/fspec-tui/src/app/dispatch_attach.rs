@@ -63,23 +63,31 @@ impl App {
         self.request_transcript(session);
     }
 
-    pub(crate) fn handle_session_resume_complete(&mut self, session: SessionId) {
-        self.request_transcript(&session);
-    }
-
     pub(crate) fn spawn_list_sessions(&mut self) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let project_path = std::env::current_dir()
-            .map(|path| path.to_string_lossy().to_string())
-            .unwrap_or_default();
+        // BUG-466: an unresolvable current directory or a failed listing is
+        // shown, never an all-projects or silently empty list.
+        // RPC-455: listed for the selected workspace.
+        let project_path = match self.session_list_project() {
+            Ok(project) => project,
+            Err(error) => {
+                self.dispatch(Action::SessionOperationFailed(format!(
+                    "The sessions could not be listed: {error}"
+                )));
+                return;
+            }
+        };
         let backend = self.backend.clone();
         let sender = self.action_tx.clone();
         self.pending_tasks.push(tokio::spawn(async move {
-            if let Ok(sessions) = backend.list_sessions(project_path).await {
-                let _ = sender.send(Action::SessionListLoaded(sessions));
-            }
+            let _ = sender.send(match backend.list_sessions(project_path).await {
+                Ok(sessions) => Action::SessionListLoaded(sessions),
+                Err(error) => Action::SessionOperationFailed(format!(
+                    "The sessions could not be listed: {error:#}"
+                )),
+            });
             super::session_storage::publish_manifest_issues(backend.as_ref(), &sender, false).await;
         }));
     }

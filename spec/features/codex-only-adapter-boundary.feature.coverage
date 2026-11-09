@@ -5,14 +5,16 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov147_codex_transport.rs",
-          "lines": "181-200",
+          "lines": "193-212",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/agent.rs",
               "lines": [
                 83,
                 84
-              ]
+              ],
+              "firstLine": ".tool(AstGrepTool::new(session_id))",
+              "lastLine": ".tool(AstGrepRefactorTool::new(session_id))"
             }
           ]
         }
@@ -23,18 +25,34 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov147_codex_transport.rs",
-          "lines": "103-141",
+          "lines": "112-153",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/model.rs",
               "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
+                154,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ],
+              "firstLine": "type StreamingResponse = <ResponsesModel as CompletionModel>::StreamingResponse;",
+              "lastLine": "}"
             }
           ]
         }
@@ -45,7 +63,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov147_codex_transport.rs",
-          "lines": "143-179",
+          "lines": "149-179",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/model.rs",
@@ -56,7 +74,9 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "mod stream_events;",
+              "lastLine": ""
             }
           ]
         }
@@ -74,6 +94,6 @@
       "rust/providers/src/codex/agent.rs",
       "rust/providers/src/codex/model.rs"
     ],
-    "totalLinesCovered": 110
+    "totalLinesCovered": 121
   }
 }

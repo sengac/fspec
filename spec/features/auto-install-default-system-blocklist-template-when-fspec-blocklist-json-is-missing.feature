@@ -1,4 +1,6 @@
+@BUG-582
 @done
+@BUG-482
 @tools
 @security
 @auto-create
@@ -8,6 +10,7 @@
 Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.json is missing
   """
   Template embedded via include_str! of rust/tools/data/default-blocklist.json in a new codelet-tools module (blocklist/template.rs) mirroring the codex_allowlist.rs precedent. Check-then-write lives in middleware.rs::load_blocklist_config (the single chokepoint every check_bash_command/check_file_path/init_blocklist call funnels through): if system_config_path() exists() is false, install_default_system_blocklist() writes the template (create_dir_all on parent) BEFORE the load, so the fresh file is loaded and matched in the same synchronous call. install failures (no HOME, read-only fs) are tracing::warn! and swallowed so checking never breaks. Existing user file is never touched (guarded by !exists()). Because load_blocklist_config hot-reloads on every check, deleting the file mid-session re-triggers install on the next check (idempotent). Tests use a HomeGuard RAII (redirect HOME to a fresh tempdir; on drop restore HOME + clear_session_allowances + init_blocklist(None)) and are #[serial], mirroring blocklist_init_tests.rs (RPC-407).
+  BUG-482: since BUG-451 an unreadable RLCD config refuses the command, and the RLCD user directory defaults to ~/.fspec, so with ~/.fspec a regular file and no FSPEC_USER_DIR the refusal comes from RLCD, not from the install. The install-failure scenario therefore reads the RLCD settings from a separate, readable user directory (codelet_test_helpers::isolated_user_directory) so it tests the install alone.
   """
 
   # ========================================
@@ -86,6 +89,7 @@ Feature: Auto-install default system blocklist template when ~/.fspec/blocklist.
   # ========================================
   Scenario: Install failure degrades gracefully without breaking command checking
     Given a fresh environment where "~/.fspec" exists as a regular file so the template write fails
+    And the RLCD settings are read from a separate, readable user directory
     When the AI runs "echo hello" via Bash
     Then the command check completes without error
     And no panic or install failure propagates to the caller

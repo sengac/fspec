@@ -5,11 +5,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "70-108",
+          "lines": "78-122",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
+                173,
+                174,
+                175,
                 176,
                 177,
                 178,
@@ -26,8 +29,51 @@
                 189,
                 190,
                 191,
-                192
-              ]
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "// [4] Mutate: seed eventStorm if absent, append item, bump nextItemId.",
+              "lastLine": "Ok(item_id)"
             }
           ]
         }
@@ -38,7 +84,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "110-130",
+          "lines": "124-144",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
@@ -46,7 +92,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "// [description], [timestamp], [boundedContext]). `id`, `deleted`,",
+              "lastLine": "let mut item_body = Map::new();"
             }
           ]
         }
@@ -71,7 +119,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "item_body.insert(",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,34 +132,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "180-217",
+          "lines": "202-243",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
                 211,
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "let item_id = es.get(\"nextItemId\").and_then(Value::as_u64).unwrap_or(0);",
+              "lastLine": "es.insert(\"nextItemId\".to_string(), Value::from(item_id + 1));"
             }
           ]
         }
@@ -120,22 +168,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "223-249",
+          "lines": "245-274",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
-                142,
-                143,
-                144,
                 145,
                 146,
                 147,
                 148,
                 149,
                 150,
-                151
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "// [2] Validate work unit exists.",
+              "lastLine": "}"
             }
           ]
         }
@@ -146,13 +203,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "251-277",
+          "lines": "276-302",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
-                153,
-                154,
                 155,
                 156,
                 157,
@@ -161,8 +216,12 @@
                 160,
                 161,
                 162,
-                163
-              ]
+                163,
+                164,
+                165
+              ],
+              "firstLine": ".is_some();",
+              "lastLine": "if st == \"done\" || st == \"blocked\" {"
             }
           ]
         }
@@ -173,13 +232,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "279-305",
+          "lines": "304-330",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
               "lines": [
-                153,
-                154,
                 155,
                 156,
                 157,
@@ -188,8 +245,12 @@
                 160,
                 161,
                 162,
-                163
-              ]
+                163,
+                164,
+                165
+              ],
+              "firstLine": ".is_some();",
+              "lastLine": "if st == \"done\" || st == \"blocked\" {"
             }
           ]
         }
@@ -200,7 +261,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_bounded_context.rs",
-          "lines": "307-326",
+          "lines": "332-359",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_bounded_context.rs",
@@ -212,7 +273,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "/// as a raw `serde_json::Value` so unknown top-level keys and existing",
+              "lastLine": "mut item_body: Map<String, Value>,"
             }
           ]
         }
@@ -229,6 +292,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_bounded_context.rs"
     ],
-    "totalLinesCovered": 336
+    "totalLinesCovered": 404
   }
 }

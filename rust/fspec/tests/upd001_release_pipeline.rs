@@ -3,12 +3,12 @@
 //! Feature: spec/features/cross-platform-release-pipeline-v0-10-0-via-github-actions.feature
 //!
 //! Scenarios covered:
-//!   - "Workspace version is bumped to 0.10.1"
+//!   - "Every workspace crate reports the workspace version"
 //!   - "Release workflow builds all five targets"
 //!   - "Release is published with self-updater-compatible assets"
 //!   - "Release job is blocked when any build fails"
-//!   - "Release binary reports the new version"
-//!   - "Linux binary runs on old glibc distros"
+//!   - "Binary built by the release jobs reports the workspace version"
+//!   - "x86_64 Linux release asset is a static musl build with no glibc dependency"
 //!   - "Windows archive is a valid zip"
 //!   - "Windows ARM64 user runs the prebuilt binary"
 //!
@@ -29,14 +29,19 @@ use common::{codelet_root, fspec_bin, project_root};
 ///
 /// x86_64 Windows cross-compiles with cargo-xwin on ubuntu-24.04.
 /// aarch64 Windows builds natively on windows-11-arm. Linux targets build
-/// natively on matching runners (x86_64 on ubuntu-20.04 for a glibc 2.31
-/// floor, aarch64 on ubuntu-24.04-arm); macOS builds natively on
-/// macos-latest.
+/// as follows: x86_64 is a static musl binary built on ubuntu-24.04 (no
+/// glibc dependency), aarch64 builds natively on ubuntu-24.04-arm; macOS
+/// builds natively on macos-latest.
 const EXPECTED_TARGETS: [(&str, &str, &str, &str); 5] = [
     ("x86_64-pc-windows-msvc", "ubuntu-24.04", "xwin", "zip"),
     ("aarch64-pc-windows-msvc", "windows-11-arm", "native", "zip"),
-    ("x86_64-unknown-linux-gnu", "ubuntu-20.04", "native", "tar.gz"),
-    ("aarch64-unknown-linux-gnu", "ubuntu-24.04-arm", "native", "tar.gz"),
+    ("x86_64-unknown-linux-gnu", "ubuntu-24.04", "musl", "tar.gz"),
+    (
+        "aarch64-unknown-linux-gnu",
+        "ubuntu-24.04-arm",
+        "native",
+        "tar.gz",
+    ),
     ("aarch64-apple-darwin", "macos-latest", "native", "tar.gz"),
 ];
 
@@ -51,7 +56,10 @@ fn workspace_package_version() -> String {
     // The section is multi-line; find the first `version =` after the header line.
     let header_end = section.find('\n').expect("header newline");
     let body = &section[header_end..];
-    let Some(ver_line) = body.lines().find(|l| l.trim_start().starts_with("version =")) else {
+    let Some(ver_line) = body
+        .lines()
+        .find(|l| l.trim_start().starts_with("version ="))
+    else {
         panic!("no version key under [workspace.package]");
     };
     ver_line
@@ -67,115 +75,37 @@ fn workflow_yaml() -> serde_yaml::Value {
     serde_yaml::from_str(&raw).expect("parse release.yml as YAML")
 }
 
-// =============================================================================
-// Scenario: Workspace version is bumped to 0.10.1
-// =============================================================================
-
-#[test]
-fn scenario_workspace_version_is_bumped_to_0_10_1() {
-    // @step Given the workspace is at version 0.1.0
-    // (precondition — the repo history shows 0.1.0; nothing to assert here)
-
-    // @step When the version bump for v0.10.1 is applied
-    let version = workspace_package_version();
-
-    // @step Then rust/Cargo.toml [workspace.package] version is 0.10.1
-    assert_eq!(
-        version, "0.10.1",
-        "[workspace.package] version must be 0.10.1 after the bump"
-    );
-
-    // @step And Cargo.lock reports 0.10.1 for all member crates
-    let lock = fs::read_to_string(codelet_root().join("Cargo.lock")).expect("read Cargo.lock");
-    // Every workspace member package entry must carry version 0.10.1.
-    for name in ["codelet-fspec", "codelet-fspec-core", "codelet-fspec-tui", "codelet-core"] {
-        let Some(start) = lock.find(&format!("\nname = \"{name}\"\n")) else {
-            panic!("workspace member {name} missing from Cargo.lock");
-        };
-        let entry = &lock[start..start + 200];
-        assert!(
-            entry.contains("version = \"0.10.1\""),
-            "Cargo.lock entry for {name} must report version 0.10.1, got: {entry}"
-        );
-    }
+fn workflow_raw() -> String {
+    fs::read_to_string(project_root().join(".github/workflows/release.yml"))
+        .expect("read .github/workflows/release.yml")
 }
 
-// =============================================================================
-// Scenario: Release workflow builds all five targets
-// =============================================================================
-
-#[test]
-fn scenario_release_workflow_builds_all_five_targets() {
-    // @step Given a git tag matching v* is pushed
-    let wf = workflow_yaml();
-    let on = wf.get("on").expect("workflow must have an `on` trigger");
-    let tags = on
-        .get("push")
-        .and_then(|p| p.get("tags"))
-        .and_then(|t| t.as_sequence())
-        .expect("`on.push.tags` sequence");
-    assert!(
-        tags.iter().any(|t| t.as_str() == Some("v*")),
-        "workflow must trigger on tags matching v*: {tags:?}"
-    );
-
-    // @step When the release workflow runs
-    let jobs = wf.get("jobs").and_then(|j| j.as_mapping()).expect("jobs mapping");
-    let build = jobs.get("build").expect("a `build` job must exist");
-    let matrix = build
-        .get("strategy")
+/// `jobs.build.strategy.matrix.include` of the release workflow.
+fn build_matrix(wf: &serde_yaml::Value) -> Vec<serde_yaml::Value> {
+    wf.get("jobs")
+        .and_then(|j| j.get("build"))
+        .and_then(|b| b.get("strategy"))
         .and_then(|s| s.get("matrix"))
         .and_then(|m| m.get("include"))
         .and_then(|i| i.as_sequence())
-        .expect("strategy.matrix.include sequence");
-
-    // @step Then one build job runs per target (win x86_64, win arm64, linux x86_64, linux arm64, mac arm64)
-    assert_eq!(
-        matrix.len(),
-        5,
-        "exactly 5 matrix entries (rule [0]: exactly 5 targets)"
-    );
-    for (target, os, tool, _archive) in EXPECTED_TARGETS {
-        let entry = matrix
-            .iter()
-            .find(|e| e.get("target").and_then(|t| t.as_str()) == Some(target))
-            .unwrap_or_else(|| panic!("matrix entry for {target} missing"));
-        assert_eq!(
-            entry.get("os").and_then(|o| o.as_str()),
-            Some(os),
-            "target {target} must build on {os} (rule [4])"
-        );
-        assert_eq!(
-            entry.get("tool").and_then(|t| t.as_str()),
-            Some(tool),
-            "target {target} must use build tool {tool} (rule [4])"
-        );
-    }
-
-    // @step And x86_64 Windows is cross-compiled with cargo-xwin on ubuntu-24.04
-    // @step And Linux targets are built natively on matching runners
-    // @step And the macOS target is built natively on macos-latest
-    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
-        .expect("read workflow");
-    assert!(
-        raw.contains("cargo xwin build"),
-        "x86_64 Windows must be built with cargo-xwin (rule [4])"
-    );
-    assert!(
-        raw.contains("ubuntu-20.04"),
-        "x86_64 Linux must build natively on ubuntu-20.04 (glibc 2.31 floor) (rule [4])"
-    );
-
-    // @step And every build uses the release-slim profile and the pinned 1.95.0 toolchain
-    assert!(
-        raw.contains("release-slim"),
-        "build step must use the release-slim profile (rule [4])"
-    );
-    assert!(
-        raw.contains("1.95.0"),
-        "workflow must pin the 1.95.0 toolchain (rule [4])"
-    );
+        .cloned()
+        .expect("strategy.matrix.include sequence")
 }
+
+/// The build-matrix entry whose (asset) `target` is `target`.
+fn matrix_entry<'a>(matrix: &'a [serde_yaml::Value], target: &str) -> &'a serde_yaml::Value {
+    matrix
+        .iter()
+        .find(|e| e.get("target").and_then(|t| t.as_str()) == Some(target))
+        .unwrap_or_else(|| panic!("matrix entry for {target} missing"))
+}
+
+// BUG-293: the version and build-matrix scenarios live in submodules so each
+// file stays under the 300-line ceiling.
+#[path = "upd001_release_pipeline/targets.rs"]
+mod targets;
+#[path = "upd001_release_pipeline/version.rs"]
+mod version;
 
 // =============================================================================
 // Scenario: Release is published with self-updater-compatible assets
@@ -220,7 +150,10 @@ fn scenario_release_job_is_blocked_when_any_build_fails() {
 
     // @step When the workflow reaches the release stage
     let wf = workflow_yaml();
-    let jobs = wf.get("jobs").and_then(|j| j.as_mapping()).expect("jobs mapping");
+    let jobs = wf
+        .get("jobs")
+        .and_then(|j| j.as_mapping())
+        .expect("jobs mapping");
     let release = jobs.get("release").expect("a `release` job must exist");
 
     // @step Then no GitHub Release is created or updated
@@ -285,86 +218,12 @@ fn scenario_windows_arm64_user_runs_the_prebuilt_binary() {
     assert!(
         matrix
             .iter()
-            .any(|e| e.get("target").and_then(|t| t.as_str())
-                == Some("aarch64-pc-windows-msvc")),
+            .any(|e| e.get("target").and_then(|t| t.as_str()) == Some("aarch64-pc-windows-msvc")),
         "aarch64-pc-windows-msvc must be a first-class matrix target"
     );
     assert!(
         raw.contains("cargo build --profile release-slim"),
         "the shipped artifact must be a self-contained release-slim build"
-    );
-}
-
-#[test]
-fn scenario_release_binary_reports_the_new_version() {
-    // @step Given the mac aarch64 release binary is extracted
-    // (local equivalent: the built fspec binary carries the workspace
-    // version via clap `#[command(version)]`)
-
-    // @step When fspec --version is run
-    let output = Command::new(fspec_bin())
-        .arg("--version")
-        .output()
-        .expect("spawn fspec --version");
-
-    // @step Then it prints fspec 0.10.1
-    assert!(output.status.success(), "fspec --version must exit 0");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert_eq!(
-        stdout.trim(),
-        "fspec 0.10.1",
-        "fspec --version must print the bumped workspace version"
-    );
-}
-
-// =============================================================================
-// Scenario: Linux binary runs on old glibc distros
-// =============================================================================
-
-#[test]
-fn scenario_linux_binary_runs_on_old_glibc_distros() {
-    // @step Given the fspec-x86_64-unknown-linux-gnu release asset is downloaded
-    // (structural precondition — the CI build pins the glibc floor; the
-    // actual old-distro smoke test is a manual step per UPD-001 DoD)
-    let raw = fs::read_to_string(project_root().join(".github/workflows/release.yml"))
-        .expect("read workflow");
-
-    // @step When the binary is run on a system with glibc 2.31
-    // The x86_64 Linux build runs natively on ubuntu-20.04 (glibc 2.31),
-    // so the binary links against at most glibc 2.31 symbols.
-    assert!(
-        raw.contains("ubuntu-20.04"),
-        "x86_64 Linux must build natively on ubuntu-20.04 (glibc 2.31 floor) (rule [4])"
-    );
-
-    // @step Then it runs without "version GLIBC_2.39 not found" or similar symbol version errors
-    // (structural assertion — building on ubuntu-20.04 caps the glibc
-    // requirement at 2.31, so the binary runs on any distro with glibc >= 2.31)
-    let wf = workflow_yaml();
-    let build = wf
-        .get("jobs")
-        .and_then(|j| j.as_mapping())
-        .and_then(|j| j.get("build"))
-        .expect("build job");
-    let matrix = build
-        .get("strategy")
-        .and_then(|s| s.get("matrix"))
-        .and_then(|m| m.get("include"))
-        .and_then(|i| i.as_sequence())
-        .expect("matrix include");
-    let x64_linux = matrix
-        .iter()
-        .find(|e| e.get("target").and_then(|t| t.as_str()) == Some("x86_64-unknown-linux-gnu"))
-        .expect("x86_64-unknown-linux-gnu matrix entry");
-    assert_eq!(
-        x64_linux.get("os").and_then(|o| o.as_str()),
-        Some("ubuntu-20.04"),
-        "x86_64 Linux must build on ubuntu-20.04 for the glibc floor"
-    );
-    assert_eq!(
-        x64_linux.get("tool").and_then(|t| t.as_str()),
-        Some("native"),
-        "x86_64 Linux must build natively (cargo build, not cross-compile)"
     );
 }
 

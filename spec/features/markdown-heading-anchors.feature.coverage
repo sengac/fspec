@@ -10,7 +10,6 @@
             {
               "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
-                59,
                 60,
                 61,
                 62,
@@ -25,18 +24,6 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
                 86,
                 87,
                 88,
@@ -66,8 +53,15 @@
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "Event::Start(Tag::Heading { level, .. }) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -122,7 +116,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "match seen.get_mut(&base) {",
+              "lastLine": "mod tests {"
             }
           ]
         }
@@ -133,7 +129,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "46-58",
+          "lines": "40-53",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/slug.rs",
@@ -161,7 +157,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "for ch in text.chars() {",
+              "lastLine": "mod tests {"
             }
           ]
         }
@@ -172,7 +170,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "61-76",
+          "lines": "55-71",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/slug.rs",
@@ -192,7 +190,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "match seen.get_mut(&base) {",
+              "lastLine": "let mut out = String::with_capacity(text.len());"
             }
           ]
         }
@@ -203,7 +203,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "79-91",
+          "lines": "73-86",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/render.rs",
@@ -217,7 +217,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "code_buf.push_str(&text);",
+              "lastLine": "html.push_str(&state.render(&mut seen));"
             }
           ]
         }
@@ -228,18 +230,19 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "94-107",
+          "lines": "88-101",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/render.rs",
               "lines": [
-                68,
-                69,
-                70,
-                71,
-                72,
-                73
-              ]
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "Event::SoftBreak => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,7 +253,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "104-122",
+          "lines": "103-128",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/render.rs",
@@ -262,7 +265,9 @@
                 24,
                 25,
                 26
-              ]
+              ],
+              "firstLine": "/// Render GFM markdown to an HTML fragment with mermaid/code-block/anchor handling.",
+              "lastLine": "options.insert(Options::ENABLE_STRIKETHROUGH);"
             }
           ]
         }
@@ -273,7 +278,7 @@
       "testMappings": [
         {
           "file": "rust/attachment-viewer/tests/markdown_heading_anchors.rs",
-          "lines": "125-141",
+          "lines": "130-146",
           "implMappings": [
             {
               "file": "rust/attachment-viewer/src/markdown/render.rs",
@@ -294,7 +299,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "let events = super::autolink::autolink_events(events);",
+              "lastLine": "\"<pre class=\\\"code-block\\\" data-language=\\\"{}\\\"><code>{}</code></pre>\\n\","
             }
           ]
         }
@@ -312,6 +319,6 @@
       "rust/attachment-viewer/src/markdown/render.rs",
       "rust/attachment-viewer/src/markdown/slug.rs"
     ],
-    "totalLinesCovered": 295
+    "totalLinesCovered": 296
   }
 }

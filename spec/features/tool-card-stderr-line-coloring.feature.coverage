@@ -5,31 +5,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "118-164",
+          "lines": "128-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
-                178
-              ]
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "// to a typed `DiffDisplayRow` ONCE (via the single codec) and wrap it",
+              "lastLine": ""
             }
           ]
         }
@@ -40,31 +43,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "166-219",
+          "lines": "177-231",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
-                178
-              ]
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "// to a typed `DiffDisplayRow` ONCE (via the single codec) and wrap it",
+              "lastLine": ""
             }
           ]
         }
@@ -75,31 +81,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "221-267",
+          "lines": "237-284",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
                 177,
-                178
-              ]
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "// to a typed `DiffDisplayRow` ONCE (via the single codec) and wrap it",
+              "lastLine": ""
             }
           ]
         }
@@ -110,41 +119,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "269-327",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227
-              ]
-            }
-          ]
+          "lines": "290-353",
+          "implMappings": []
         }
       ]
     },
@@ -153,41 +129,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "329-380",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227
-              ]
-            }
-          ]
+          "lines": "359-407"
         }
       ]
     },
@@ -196,7 +138,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "382-441",
+          "lines": "413-468",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/stderr.rs",
@@ -255,7 +197,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub fn style_modal_raw_line<F>(line: &str, wrap: F) -> Vec<Vec<ratatui::text::Span<'static>>>",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,21 +210,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tool_card_stderr_coloring_rpc400.rs",
-          "lines": "443-490",
+          "lines": "474-528",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155
-              ]
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "let needs_prefix = j == 0 && !prefix.is_empty();",
+              "lastLine": "let Some(body) = body else {"
             }
           ]
         }
@@ -296,9 +242,8 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
       "rust/fspec-tui/src/store/agent_view/stderr.rs"
     ],
-    "totalLinesCovered": 541
+    "totalLinesCovered": 494
   }
 }

@@ -25,7 +25,7 @@
 //!    from work unit and file deleted`.
 //! 7. Append `  File: <attachmentPath>` as the second output line.
 //! 8. Bump `updatedAt`, set `meta.lastUpdated` if `meta` exists.
-//! 9. Single `write_json_atomic` write at the end.
+//! 9. Single `write_work_units` write at the end.
 //!
 //! ## Critical divergences from `add-attachment`
 //!
@@ -43,7 +43,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -69,6 +68,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-attachment")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Work-unit gate.
@@ -179,8 +180,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         meta.last_updated = iso8601_now();
     }
 
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     Ok(out)
 }

@@ -95,8 +95,8 @@ fn waiting_changes_chrome_without_entering_the_transcript() -> TestResult {
     }
     apply(&mut store, "first", &StreamChunk::text(String::new()))?;
     apply(&mut store, "first", &StreamChunk::thinking(String::new()))?;
-    assert!(store.selected_model_id_for(&session_id("first")).is_none());
-    store.set_selected_model_id(session_id("first"), "codex/current".into());
+    assert!(store.selected_model_for(&session_id("first")).is_none());
+    store.set_selected_model(session_id("first"), ("codex".into(), "current".into()));
     // @step Then the running chrome reflects only the current waiting message
     for focused in [true, false] {
         let first = render(&mut view, &mut store, "first", focused);
@@ -111,9 +111,9 @@ fn waiting_changes_chrome_without_entering_the_transcript() -> TestResult {
         store.session_status_for(&session_id("first")),
         Some(&SessionStatus::Running)
     );
-    store.set_selected_model_id(session_id("first"), "codex/current".into());
+    store.set_selected_model(session_id("first"), ("codex".into(), "current".into()));
     assert!(render(&mut view, &mut store, "first", true).contains("Codex buffering"));
-    store.set_selected_model_id(session_id("first"), "openai/other".into());
+    store.set_selected_model(session_id("first"), ("openai".into(), "other".into()));
     assert!(!render(&mut view, &mut store, "first", true).contains("Codex buffering"));
     apply(&mut store, "first", &waiting(Some("Waiting for provider"))?)?;
     let replaced = render(&mut view, &mut store, "first", true);
@@ -207,9 +207,9 @@ fn output_and_turn_boundaries_dismiss_waiting() -> TestResult {
         assert!(!render(&mut view, &mut store, "first", true).contains("Codex buffering"));
     }
     let (mut view, mut store) = harness();
-    store.set_selected_model_id(session_id("first"), "codex/current".into());
+    store.set_selected_model(session_id("first"), ("codex".into(), "current".into()));
     apply(&mut store, "first", &waiting(Some("Codex buffering"))?)?;
-    store.set_selected_model_id(session_id("first"), "openai/other".into());
+    store.set_selected_model(session_id("first"), ("openai".into(), "other".into()));
     assert!(!render(&mut view, &mut store, "first", true).contains("Codex buffering"));
     apply(&mut store, "first", &waiting(Some("Codex buffering"))?)?;
     store

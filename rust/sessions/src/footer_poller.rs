@@ -41,13 +41,12 @@ static FOOTER_POLLER_TOKENS: Lazy<StdMutex<HashMap<String, Arc<AtomicBool>>>> =
 /// Process-global chunk-emission target (WT-002).
 ///
 /// The `fspec` binary owns a NON-singleton `SessionManager` whose
-/// `chunks_tx` is the only broadcast the embedded TUI subscribes to; the
-/// NAPI path uses the singleton (`SessionManager::instance()`). Each hook
-/// install site registers the correct sender before any session is
+/// `chunks_tx` is the only broadcast the embedded TUI subscribes to. Each
+/// hook install site registers the correct sender before any session is
 /// created. Registration REPLACES the previous value (tests register a
 /// fresh manager per test; production registers once and re-registers the
-/// same value). When nothing is registered the poller falls back to the
-/// singleton — today's NAPI behavior.
+/// same value). BUG-405: when nothing is registered there is no target —
+/// emission is refused and reported, never sent to a global.
 static CHUNK_SENDER: StdMutex<Option<tokio::sync::broadcast::Sender<(SessionId, StreamChunk)>>> =
     StdMutex::new(None);
 
@@ -59,30 +58,37 @@ pub fn register_chunk_sender(sender: tokio::sync::broadcast::Sender<(SessionId, 
         .expect("footer poller chunk sender lock poisoned") = Some(sender);
 }
 
+/// Clear the registered chunk sender (tests; production registers once).
+pub fn unregister_chunk_sender() {
+    *CHUNK_SENDER
+        .lock()
+        .expect("footer poller chunk sender lock poisoned") = None;
+}
+
 /// Resolve the emission target for chunk emission: the registered
-/// manager-owned `chunks_tx` broadcast, falling back to the singleton
-/// manager's `chunks_tx` when nothing is registered (today's NAPI
-/// behavior).
+/// manager-owned `chunks_tx` broadcast. BUG-405: with nothing registered
+/// this is an error — there is no singleton manager to fall back to.
 ///
 /// WT-004: also used by the shared block-notification emitter
 /// (`session_tool_callbacks::emit_block_notification`) so blocked actions
 /// land on the same broadcast the footer poller uses.
-pub(crate) fn emission_target() -> tokio::sync::broadcast::Sender<(SessionId, StreamChunk)> {
+pub fn emission_target() -> Result<tokio::sync::broadcast::Sender<(SessionId, StreamChunk)>, String>
+{
     CHUNK_SENDER
         .lock()
         .expect("footer poller chunk sender lock poisoned")
         .clone()
-        .unwrap_or_else(|| {
-            crate::session_manager::SessionManager::instance()
-                .chunks_tx()
-                .clone()
+        .ok_or_else(|| {
+            "no chunk sender is registered (register_chunk_sender was not called)".to_string()
         })
 }
 
 /// Spawn a background task that polls git status for a session every 5 seconds.
 ///
 /// Emits `FooterStateUpdate` chunks through the registered manager-owned
-/// `chunks_tx` broadcast (falling back to the singleton when unregistered).
+/// `chunks_tx` broadcast. BUG-405: with no sender registered, no runtime or
+/// a malformed session id the poller is not started and the reason is
+/// logged.
 ///
 /// * `session_id` - The session UUID string
 /// * `cwd` - The effective working directory (project root or worktree path)
@@ -104,32 +110,46 @@ pub fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Optio
 
     let sid = session_id.clone();
     let initial_cwd = worktree_path.unwrap_or(cwd);
+    let session_uuid = match uuid::Uuid::parse_str(&session_id) {
+        Ok(uuid) => uuid,
+        Err(error) => {
+            tracing::error!(session = %session_id, %error, "footer poller not started: malformed session id");
+            return;
+        }
+    };
 
     // TUI-091: Seed the footer CWD registry with the initial value so the
     // footer shows something immediately before any Bash commands run.
-    if let Ok(uuid) = uuid::Uuid::parse_str(&session_id) {
-        codelet_tools::footer_cwd::update_footer_cwd(uuid, initial_cwd.clone());
-    }
+    codelet_tools::footer_cwd::update_footer_cwd(session_uuid, initial_cwd.clone());
 
-    // Try to spawn on an existing runtime, falling back gracefully
-    let Ok(handle) = tokio::runtime::Handle::try_current() else {
-        return;
+    let handle = match tokio::runtime::Handle::try_current() {
+        Ok(handle) => handle,
+        Err(error) => {
+            tracing::error!(session = %session_id, %error, "footer poller not started: no tokio runtime");
+            return;
+        }
+    };
+    let sender = match emission_target() {
+        Ok(sender) => sender,
+        Err(error) => {
+            tracing::error!(session = %session_id, %error, "footer poller not started");
+            return;
+        }
     };
 
-    // Parse the session UUID once for registry lookups inside the loop.
-    let session_uuid = uuid::Uuid::parse_str(&session_id).ok();
-    let sender = emission_target();
-
     handle.spawn(async move {
+        // The home directory, when known, shortens the displayed path to
+        // "~/..."; without one the full path is shown.
         let home = std::env::var("HOME")
             .or_else(|_| std::env::var("USERPROFILE"))
-            .unwrap_or_default();
+            .ok()
+            .filter(|home| !home.is_empty());
 
         // TUI-091: Track previous state so we only emit on change.
         // CWD is now dynamic — we re-read it from the footer-cwd registry
         // each tick.
         let mut prev_cwd = initial_cwd.clone();
-        let mut prev_display_path = if !home.is_empty() && initial_cwd.starts_with(&home) {
+        let mut prev_display_path = if let Some(home) = home.as_deref().filter(|home| initial_cwd.starts_with(*home)) {
             format!("~{}", &initial_cwd[home.len()..])
         } else {
             initial_cwd.clone()
@@ -145,13 +165,17 @@ pub fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Optio
 
             // TUI-091: Read the current CWD from the per-session registry.
             // BashTool writes here after every invocation.
-            let current_cwd = session_uuid
-                .and_then(codelet_tools::footer_cwd::get_footer_cwd)
-                .unwrap_or_else(|| initial_cwd.clone());
+            // The registry is seeded at spawn; an empty entry means the
+            // session's cwd was unregistered (destroyed or re-pointed), so
+            // this poller is finished.
+            let Some(current_cwd) = codelet_tools::footer_cwd::get_footer_cwd(session_uuid) else {
+                tracing::debug!(session = %sid, "footer poller stopping: the session's cwd was unregistered");
+                break;
+            };
 
             // Recompute display_path if CWD changed
             let current_display_path = if current_cwd != prev_cwd {
-                if !home.is_empty() && current_cwd.starts_with(&home) {
+                if let Some(home) = home.as_deref().filter(|home| current_cwd.starts_with(*home)) {
                     format!("~{}", &current_cwd[home.len()..])
                 } else {
                     current_cwd.clone()
@@ -195,7 +219,12 @@ pub fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Optio
                         is_git,
                         branch,
                     );
-                    let _ = sender.send((SessionId::from(sid.clone()), chunk));
+                    // A broadcast send fails only when no client is
+                    // subscribed — routine between attaches, so it is
+                    // reported at debug level rather than as an error.
+                    if let Err(error) = sender.send((SessionId::from(sid.clone()), chunk)) {
+                        tracing::debug!(session = %sid, %error, "footer update has no subscriber");
+                    }
                 }
             }
 

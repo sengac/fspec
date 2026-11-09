@@ -44,17 +44,17 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Daily Prioritization",
         example: "# Morning standup: identify blockers\nfspec query-bottlenecks\n\n# Prioritize highest score bottleneck\nfspec update-work-unit-status AUTH-001 implementing\n\n# After completion\nfspec update-work-unit-status AUTH-001 done\n\n# Re-check for new bottlenecks\nfspec query-bottlenecks",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Automation with JSON Output",
         example: "# Export bottlenecks for dashboard\nfspec query-bottlenecks --output json > bottlenecks.json\n\n# Process with jq (highest score first)\njq '.bottlenecks | sort_by(-.score) | .[0]' bottlenecks.json",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Team Coordination",
         example: "# Identify parallelizable work\nfspec query-bottlenecks\n\n# If bottleneck score is high (5+), assign multiple team members:\n# - Member 1: Complete bottleneck AUTH-001\n# - Member 2-4: Work on unblocked parallel tasks\n\n# After bottleneck complete, previously blocked work can proceed",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -107,7 +107,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: &["spec/work-units.json exists with work units and dependency relationships"],
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Run bottleneck query: fspec query-bottlenecks → 2. Prioritize highest-score bottleneck → 3. Complete bottleneck work unit → 4. Update status: fspec update-work-unit-status <id> done → 5. Re-run query to identify next bottleneck",
+        "1. Run bottleneck query: fspec query-bottlenecks → 2. Prioritize highest-score bottleneck → 3. Complete bottleneck work unit → 4. Update status: fspec update-work-unit-status <workUnitId> done → 5. Re-run query to identify next bottleneck",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

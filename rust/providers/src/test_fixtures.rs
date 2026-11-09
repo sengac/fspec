@@ -2,6 +2,8 @@
 //! Exporting once avoids partially used private copies of integration fixtures.
 #[path = "../tests/prov159_support/mod.rs"]
 pub mod auth;
+/// BUG-550: the one FSPEC_HOME redirect of the lib tests.
+pub mod env;
 #[path = "../tests/prov159_support/network.rs"]
 pub mod network;
 #[path = "../tests/fixtures/prov148.rs"]

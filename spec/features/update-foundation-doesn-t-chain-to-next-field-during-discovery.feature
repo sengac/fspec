@@ -52,10 +52,10 @@ Feature: update-foundation doesn't chain to next field during discovery
     And the system-reminder should mention "project.projectType"
     And the system-reminder should include the command to run next
 
-  Scenario: Show finalize reminder when all fields complete
+  Scenario: Show the finalize command when all fields complete
     Given I have a foundation.json.draft with all fields except last filled
     When I run `fspec update-foundation solutionOverview "My solution"`
     Then the command should exit with code 0
     And the output should contain "Updated \"solutionOverview\" in foundation.json.draft"
-    And the output should contain a system-reminder saying all fields complete
-    And the system-reminder should include "fspec discover-foundation --finalize"
+    And the result should carry no system-reminder and its nextSteps should say "8/8 fields complete"
+    And the nextSteps should include "next: fspec discover-foundation --finalize"

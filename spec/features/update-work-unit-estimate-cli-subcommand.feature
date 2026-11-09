@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-318
+@estimation
 Feature: Port update-work-unit-estimate command to Rust
   """
   Core impl at rust/fspec-core/src/commands/update_work_unit_estimate.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Reads work-units via read_work_units_or_empty (ENOENT→empty, mirrors TS fileManager.readJSON default). FIBONACCI = [1,2,3,5,8,13,21]. Writes spec/work-units.json atomically via io::locked_file::write_json_atomic. estimate stored in WorkUnit.extra; updated_at typed.

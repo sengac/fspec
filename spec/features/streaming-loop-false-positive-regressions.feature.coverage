@@ -50,7 +50,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "pub fn feed(&mut self, delta: &str) -> Option<LoopSignal> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -106,7 +108,9 @@
                 198,
                 199,
                 200
-              ]
+              ],
+              "firstLine": "pub fn feed(&mut self, delta: &str) -> Option<LoopSignal> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,7 +145,9 @@
                 262,
                 263,
                 264
-              ]
+              ],
+              "firstLine": "let m = self.cfg.min_long_match;",
+              "lastLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops)."
             }
           ]
         }
@@ -176,7 +182,9 @@
                 262,
                 263,
                 264
-              ]
+              ],
+              "firstLine": "let m = self.cfg.min_long_match;",
+              "lastLine": "// 4. Drift-tolerant periodicity (last-resort, catches drifting loops)."
             }
           ]
         }
@@ -240,7 +248,9 @@
                 206,
                 207,
                 208
-              ]
+              ],
+              "firstLine": "pub fn feed(&mut self, delta: &str) -> Option<LoopSignal> {",
+              "lastLine": "}"
             }
           ]
         }

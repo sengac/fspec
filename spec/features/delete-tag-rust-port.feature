@@ -1,5 +1,7 @@
 @done
 @RPC-222
+@cli
+@delete
 Feature: Port delete-tag command to Rust
   """
   Files: rust/fspec-core/src/commands/delete_tag.rs (replace stub); rust/fspec-core/src/help/configs/delete_tag.rs (NEW); rust/fspec/src/delete_tag.rs (NEW bridge); rust/fspec-core/tests/delete_tag.rs (NEW dispatcher tests); rust/fspec/tests/cli_delete_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/delete-tag.txt (NEW captured fixture)
@@ -103,6 +105,7 @@ Feature: Port delete-tag command to Rust
     When I dispatch delete-tag with tag '@nonexistent' and no flags
     Then the dispatcher returns success=false
     And the error message contains the substring 'Tag @nonexistent not found in registry'
+    And spec/tags.json content on disk is unchanged from before the call
 
   Scenario: Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated
     Given spec/tags.json contains a tag '@critical' under Phase Tags plus auxiliary fields combinationExamples, usageGuidelines, references, and statistics.lastUpdated set to '1999-01-01T00:00:00.000Z'
@@ -131,3 +134,20 @@ Feature: Port delete-tag command to Rust
     Then the dispatcher output contains the substring '✓ Successfully deleted tag @deprecated from registry'
     And the dispatcher output contains the substring 'Updated: spec/tags.json'
     And the dispatcher output contains the substring 'Regenerated: spec/TAGS.md'
+
+  Scenario: Deleting one tag keeps the other tags of its category and drops it from the regenerated TAGS.md
+    Given spec/tags.json has the category 'Technical Tags' with tags '@obsolete', '@api' and '@cli', and the category 'Status Tags' with the tag '@wip'
+    When I dispatch delete-tag with tag '@obsolete' and no flags
+    Then the dispatcher returns success=true
+    And spec/tags.json category 'Technical Tags' holds exactly the tags '@api' and '@cli' in that order
+    And spec/tags.json category 'Status Tags' still holds the tag '@wip'
+    And the registry holds 3 tags in total
+    And spec/TAGS.md starts with '<!-- THIS FILE IS AUTO-GENERATED FROM spec/tags.json -->'
+    And spec/TAGS.md lists '`@api`', '`@cli`' and '`@wip`' but not '@obsolete'
+
+  Scenario: Deleting the only tag of a category keeps the category with an empty tag list
+    Given spec/tags.json has the category 'Custom Category' with only the tag '@lonely'
+    When I dispatch delete-tag with tag '@lonely' and no flags
+    Then the dispatcher returns success=true
+    And spec/tags.json still has the category 'Custom Category' with an empty tags array
+    And spec/TAGS.md still has the heading '### Custom Category'

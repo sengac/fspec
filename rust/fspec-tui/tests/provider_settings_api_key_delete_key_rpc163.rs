@@ -6,8 +6,7 @@
 //! `KeyCode::Delete` key in the EditApiKey draft buffer behaves identically
 //! to `KeyCode::Backspace` — both pop the last character of `draft` and
 //! re-enter `Detail::EditApiKey` with the trimmed draft, emitting
-//! `ProviderSettingsEvent::Consumed`. In Summary / OAuthNotice sub-modes
-//! Delete is treated as an unrelated key (state preserved, no side-effects).
+//! `ProviderSettingsEvent::Consumed`.
 //!
 //! Mirrors TS `key.backspace || key.delete` from
 //! src/tui/inputHandlers/apiKeyEditModeHandler.ts:46.
@@ -17,12 +16,13 @@
 //! no Delete binding) and PASS once the arm becomes
 //! `KeyCode::Backspace | KeyCode::Delete => { … }`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
+use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
 use codelet_fspec_tui::views::{
-    DetailStatus, DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
+    DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 /// Build a synthetic Press event with no modifiers — mirrors the harness in
@@ -48,35 +48,30 @@ fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCreden
     }
 }
 
-/// Seed an api_key provider and transition into Detail::EditApiKey with an
-/// empty draft via two Enter keystrokes (List → Detail::Summary → EditApiKey).
-fn view_in_edit_api_key_mode() -> ProviderSettingsView {
+/// Seed an api_key provider and open Detail::EditApiKey with an empty draft
+/// the way the UI does: Enter on the expanded provider's API-key row.
+fn view_in_edit_api_key_mode() -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
+    let infos = vec![pinfo("anthropic", "api_key", true, 1)];
     let mut v = ProviderSettingsView::new();
-    v.set_providers(vec![pinfo("anthropic", "api_key", true, 1)]);
+    v.set_provider_display_infos(project_display_infos(&infos, &[]));
+    v.set_providers(infos);
+    v.toggle_expansion("anthropic");
+    v.selected_index = v
+        .nav_items
+        .iter()
+        .position(|n| matches!(n.kind, NavItemKind::ApiKey))
+        .or_fail("the expanded provider has an API-key row")?;
     v.handle_key(key(KeyCode::Enter));
-    v.handle_key(key(KeyCode::Enter));
-    v
-}
-
-/// Seed an api_key provider and transition into Detail::Summary (one Enter).
-fn view_in_summary_mode() -> ProviderSettingsView {
-    let mut v = ProviderSettingsView::new();
-    v.set_providers(vec![pinfo("anthropic", "api_key", true, 1)]);
-    v.handle_key(key(KeyCode::Enter));
-    v
-}
-
-/// Seed an OAuth provider so Enter routes to Detail::OAuthNotice.
-fn view_in_oauth_notice_mode() -> ProviderSettingsView {
-    let mut v = ProviderSettingsView::new();
-    v.set_providers(vec![pinfo("claude-oauth", "oauth", true, 0)]);
-    v.handle_key(key(KeyCode::Enter));
-    v
+    Ok(v)
 }
 
 /// Helper: assert the view is in Detail::EditApiKey for the given provider
 /// and that the draft matches `expected`.
-fn assert_edit_draft_for(view: &ProviderSettingsView, expected_pid: &str, expected_draft: &str) {
+fn assert_edit_draft_for(
+    view: &ProviderSettingsView,
+    expected_pid: &str,
+    expected_draft: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     match &view.mode {
         ProviderSettingsMode::Detail {
             provider_id,
@@ -91,30 +86,9 @@ fn assert_edit_draft_for(view: &ProviderSettingsView, expected_pid: &str, expect
                 "expected draft {expected_draft:?}, got {draft:?}"
             );
         }
-        other => panic!("expected Detail::EditApiKey, got {other:?}"),
+        other => return Err(format!("expected Detail::EditApiKey, got {other:?}").into()),
     }
-}
-
-/// Helper: assert the view is in Detail::Summary for the given provider
-/// with the expected last_status.
-fn assert_summary_with_status(
-    view: &ProviderSettingsView,
-    expected_pid: &str,
-    expected_status: Option<DetailStatus>,
-) {
-    match &view.mode {
-        ProviderSettingsMode::Detail {
-            provider_id,
-            sub: DetailSub::Summary { last_status },
-        } => {
-            assert_eq!(provider_id, expected_pid, "wrong provider in Summary");
-            assert_eq!(
-                last_status, &expected_status,
-                "wrong last_status; expected {expected_status:?}, got {last_status:?}"
-            );
-        }
-        other => panic!("expected Detail::Summary, got {other:?}"),
-    }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -122,25 +96,25 @@ fn assert_summary_with_status(
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_delete_on_multi_character_draft_pops_the_last_character() {
+fn pressing_delete_on_multi_character_draft_pops_the_last_character() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc123"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "abc123".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_edit_draft_for(&view, "anthropic", "abc123");
+    assert_edit_draft_for(&view, "anthropic", "abc123")?;
 
     // @step When I press the Delete key
     let out = view.handle_key(key(KeyCode::Delete));
 
     // @step Then the draft becomes "abc12"
     // @step And the view remains in Detail::EditApiKey for the same provider
-    assert_edit_draft_for(&view, "anthropic", "abc12");
+    assert_edit_draft_for(&view, "anthropic", "abc12")?;
 
     // @step And the keystroke is reported as ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
 
     // @step And no Action is dispatched
@@ -148,6 +122,7 @@ fn pressing_delete_on_multi_character_draft_pops_the_last_character() {
         !matches!(out, ProviderSettingsEvent::Emit(_)),
         "Delete in EditApiKey must NOT emit an Action, got {out:?}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -155,10 +130,10 @@ fn pressing_delete_on_multi_character_draft_pops_the_last_character() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_delete_on_empty_draft_is_a_silent_no_op() {
+fn pressing_delete_on_empty_draft_is_a_silent_no_op() -> TestResult {
     // @step Given I am in the EditApiKey form with an empty draft
-    let mut view = view_in_edit_api_key_mode();
-    assert_edit_draft_for(&view, "anthropic", "");
+    let mut view = view_in_edit_api_key_mode()?;
+    assert_edit_draft_for(&view, "anthropic", "")?;
     // @step And the inline validation status is empty
     assert!(
         view.status.is_empty(),
@@ -170,7 +145,7 @@ fn pressing_delete_on_empty_draft_is_a_silent_no_op() {
 
     // @step Then the draft remains empty
     // @step And the view remains in Detail::EditApiKey for the same provider
-    assert_edit_draft_for(&view, "anthropic", "");
+    assert_edit_draft_for(&view, "anthropic", "")?;
     // @step And the inline validation status remains empty
     assert!(
         view.status.is_empty(),
@@ -181,8 +156,9 @@ fn pressing_delete_on_empty_draft_is_a_silent_no_op() {
     // @step And the keystroke is reported as ProviderSettingsEvent::Consumed
     match out {
         ProviderSettingsEvent::Consumed => {}
-        other => panic!("expected Consumed, got {other:?}"),
+        other => return Err(format!("expected Consumed, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -190,18 +166,19 @@ fn pressing_delete_on_empty_draft_is_a_silent_no_op() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_delete_on_single_character_draft_empties_it() {
+fn pressing_delete_on_single_character_draft_empties_it() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "x"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     view.handle_key(key(KeyCode::Char('x')));
-    assert_edit_draft_for(&view, "anthropic", "x");
+    assert_edit_draft_for(&view, "anthropic", "x")?;
 
     // @step When I press the Delete key
     let _ = view.handle_key(key(KeyCode::Delete));
 
     // @step Then the draft becomes ""
     // @step And the view remains in Detail::EditApiKey for the same provider
-    assert_edit_draft_for(&view, "anthropic", "");
+    assert_edit_draft_for(&view, "anthropic", "")?;
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -209,13 +186,13 @@ fn pressing_delete_on_single_character_draft_empties_it() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn backspace_and_delete_produce_identical_pops_when_alternated() {
+fn backspace_and_delete_produce_identical_pops_when_alternated() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "hello"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     for c in "hello".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
-    assert_edit_draft_for(&view, "anthropic", "hello");
+    assert_edit_draft_for(&view, "anthropic", "hello")?;
 
     // @step When I press the following keys in order: Backspace, Delete, Backspace, Delete, Backspace
     // @step Then the draft is empty after each step matches the same sequence "hell", "hel", "he", "h", ""
@@ -229,12 +206,15 @@ fn backspace_and_delete_produce_identical_pops_when_alternated() {
     let mut last_out: Option<ProviderSettingsEvent> = None;
     for (code, expected_after) in sequence.iter().copied() {
         let out = view.handle_key(key(code));
-        assert_edit_draft_for(&view, "anthropic", expected_after);
+        assert_edit_draft_for(&view, "anthropic", expected_after)?;
         // @step And every keystroke is reported as ProviderSettingsEvent::Consumed
         match out {
             ProviderSettingsEvent::Consumed => {}
             ref other => {
-                panic!("expected Consumed for {code:?} → {expected_after:?}, got {other:?}")
+                return Err(format!(
+                    "expected Consumed for {code:?} → {expected_after:?}, got {other:?}"
+                )
+                .into())
             }
         }
         last_out = Some(out);
@@ -242,11 +222,12 @@ fn backspace_and_delete_produce_identical_pops_when_alternated() {
 
     // @step And the final draft is ""
     // @step And the view remains in Detail::EditApiKey for the same provider throughout
-    assert_edit_draft_for(&view, "anthropic", "");
+    assert_edit_draft_for(&view, "anthropic", "")?;
     assert!(
         last_out.is_some(),
         "expected at least one keystroke processed"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -254,9 +235,9 @@ fn backspace_and_delete_produce_identical_pops_when_alternated() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() {
+fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() -> TestResult {
     // @step Given I am in the EditApiKey form with the draft "abc"
-    let mut view = view_in_edit_api_key_mode();
+    let mut view = view_in_edit_api_key_mode()?;
     // Build the draft to "abc" — each accepted printable char would clear the
     // status (per RPC-161). RPC-162 made empty-Enter a silent cancel rather
     // than a setter of the legacy validation string, so we seed the status
@@ -266,7 +247,7 @@ fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() {
         view.handle_key(key(KeyCode::Char(c)));
     }
     view.set_status("API key cannot be empty");
-    assert_edit_draft_for(&view, "anthropic", "abc");
+    assert_edit_draft_for(&view, "anthropic", "abc")?;
     // @step And the inline validation status is "API key cannot be empty"
     assert_eq!(view.status, "API key cannot be empty");
 
@@ -275,7 +256,7 @@ fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() {
 
     // @step Then the draft becomes "ab"
     // @step And the view remains in Detail::EditApiKey for the same provider
-    assert_edit_draft_for(&view, "anthropic", "ab");
+    assert_edit_draft_for(&view, "anthropic", "ab")?;
 
     // @step And the inline validation status remains "API key cannot be empty"
     assert_eq!(
@@ -283,91 +264,5 @@ fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() {
         "Delete must NOT clear the validation status, got {:?}",
         view.status
     );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Scenario: Pressing Delete in Summary sub-mode is treated as unrelated
-// ────────────────────────────────────────────────────────────────────────
-
-#[test]
-fn pressing_delete_in_summary_sub_mode_is_treated_as_unrelated() {
-    // @step Given I am in Detail::Summary for the provider "anthropic" with last_status Some(Testing)
-    let mut view = view_in_summary_mode();
-    // RPC-154 removed the `t` keybind from handle_summary_key (TS parity:
-    // TS binds no `t` to test-connection on any Detail surface). The
-    // earlier setup pressed `t` to transition Summary { None } →
-    // Summary { Some(Testing) }; after RPC-154 we construct that state
-    // directly. The Delete-key behaviour under test (state preserved,
-    // Consumed, no Action) is independent of HOW we arrived at
-    // last_status: Some(Testing) — what matters is that the precondition
-    // matches the original Gherkin step.
-    view.mode = ProviderSettingsMode::Detail {
-        provider_id: "anthropic".to_string(),
-        sub: DetailSub::Summary {
-            last_status: Some(DetailStatus::Testing),
-        },
-    };
-    assert_summary_with_status(&view, "anthropic", Some(DetailStatus::Testing));
-
-    // @step When I press the Delete key
-    let out = view.handle_key(key(KeyCode::Delete));
-
-    // @step Then the view remains in Detail::Summary for "anthropic"
-    // @step And the last_status remains Some(Testing)
-    assert_summary_with_status(&view, "anthropic", Some(DetailStatus::Testing));
-
-    // @step And the keystroke is reported as ProviderSettingsEvent::Consumed
-    match out {
-        ProviderSettingsEvent::Consumed => {}
-        ref other => panic!("expected Consumed, got {other:?}"),
-    }
-
-    // @step And no Action is dispatched
-    assert!(
-        !matches!(out, ProviderSettingsEvent::Emit(_)),
-        "Delete in Summary must NOT emit an Action, got {out:?}"
-    );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Scenario: Pressing Delete in OAuthNotice sub-mode does not exit the notice
-// ────────────────────────────────────────────────────────────────────────
-
-#[test]
-fn pressing_delete_in_oauth_notice_sub_mode_does_not_exit_the_notice() {
-    // @step Given I am in Detail::OAuthNotice for an OAuth-only provider
-    let mut view = view_in_oauth_notice_mode();
-    assert!(
-        matches!(
-            view.mode,
-            ProviderSettingsMode::Detail {
-                sub: DetailSub::OAuthNotice,
-                ..
-            }
-        ),
-        "precondition: must be in OAuthNotice, got {:?}",
-        view.mode
-    );
-
-    // @step When I press the Delete key
-    let out = view.handle_key(key(KeyCode::Delete));
-
-    // @step Then the view remains in Detail::OAuthNotice
-    assert!(
-        matches!(
-            view.mode,
-            ProviderSettingsMode::Detail {
-                sub: DetailSub::OAuthNotice,
-                ..
-            }
-        ),
-        "Delete must NOT exit OAuthNotice, got {:?}",
-        view.mode
-    );
-
-    // @step And the keystroke is reported as ProviderSettingsEvent::Consumed
-    match out {
-        ProviderSettingsEvent::Consumed => {}
-        ref other => panic!("expected Consumed, got {other:?}"),
-    }
+    Ok(())
 }

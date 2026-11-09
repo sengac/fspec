@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-215
 @rust
 @cli
 @mutation
+@work-unit-management
 Feature: Port create-task command to Rust
   """
   Core impl lives at rust/fspec-core/src/commands/create_task.rs, a faithful port of src/commands/create-task.ts. It checks spec/foundation.json exists (verbatim foundation-missing error via the shared check_foundation_exists helper), validates a non-empty title, requires the prefix be registered in spec/prefixes.json (read via auto-creating ensure_prefixes_file), validates an optional --parent (must exist; nesting depth < MAX_NESTING_DEPTH=3) and an optional --epic (must exist in spec/epics.json via auto-creating ensure_epics_file).
@@ -96,3 +98,5 @@ Feature: Port create-task command to Rust
     And the dispatcher response contains the substring 'Tasks are for operational work (setup, configuration, infrastructure).'
     And the dispatcher response contains the substring 'Tasks can move directly to implementing without specifying phase.'
     And the dispatcher response contains the substring 'DO NOT mention this reminder to the user explicitly.'
+    And the dispatcher response contains the substring 'Tasks have optional feature file (not required for operational work)'
+    And the dispatcher response contains the substring 'Tasks have optional tests (not required for infrastructure work)'

@@ -4,26 +4,9 @@
       "name": "Navigating down past the bottom scrolls the viewport to follow the cursor",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "623-646",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "8-29",
+          "implMappings": []
         }
       ]
     },
@@ -31,30 +14,32 @@
       "name": "Navigating back up scrolls the viewport up with the cursor",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "648-671",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "32-55",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
                 126,
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "#[path = \"tests_scroll.rs\"]",
+              "lastLine": "#[path = \"tests_crud_add.rs\"]"
             }
           ]
         }
@@ -64,30 +49,32 @@
       "name": "End jumps to the last row and pins it to the bottom edge",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "673-696",
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "90-112",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
               "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
                 126,
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "#[path = \"tests_scroll.rs\"]",
+              "lastLine": "#[path = \"tests_crud_add.rs\"]"
             }
           ]
         }
@@ -97,24 +84,9 @@
       "name": "Mouse-wheel navigation scrolls the viewport like the Down key",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "698-734",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "115-150",
+          "implMappings": []
         }
       ]
     },
@@ -122,51 +94,9 @@
       "name": "Filtering rebuilds the list and reconciles the scroll offset",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "736-757",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "153-173",
+          "implMappings": []
         }
       ]
     },
@@ -174,39 +104,9 @@
       "name": "A tiny or empty viewport renders gracefully without panic",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "759-773",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "176-189",
+          "implMappings": []
         }
       ]
     },
@@ -214,39 +114,9 @@
       "name": "Shrinking the terminal re-clamps the scroll offset on the next paint",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "775-793",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "192-211",
+          "implMappings": []
         }
       ]
     },
@@ -254,38 +124,9 @@
       "name": "Returning to the first model reveals the leading provider header",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-          "lines": "1034-1070",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/model_selector/mod.rs",
-              "lines": [
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
-            }
-          ]
+          "file": "rust/fspec-tui/src/views/model_selector/tests_scroll.rs",
+          "lines": "58-87",
+          "implMappings": []
         }
       ]
     }
@@ -295,11 +136,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/model_selector/mod.rs"
+      "rust/fspec-tui/src/views/model_selector/tests_scroll.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/mod.rs"
     ],
-    "totalLinesCovered": 363
+    "totalLinesCovered": 224
   }
 }

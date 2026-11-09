@@ -42,7 +42,7 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
   Scenario: Screenshot reproduction renders only the user input line
     Given an AgentView with a fresh SessionContext for session s-1
     When the chunks subscriber forwards UserInput { text: "please review this card" } for s-1
-    Then the s-1 scrollback contains exactly one line equal to "user> please review this card"
+    Then the s-1 scrollback contains the line "You: please review this card" followed by one blank separator line
     When the chunks subscriber forwards SessionStateChange { state: Running } for s-1
     When the chunks subscriber forwards SessionStateChange { state: Idle } for s-1
     Then no scrollback line contains the literal substring "SessionStateChange" or "UserInput {"
@@ -51,7 +51,7 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::UserInput { text: "hello" }
     Then the scrollback contains exactly one rendered chunk
-    Then the rendered text equals "user> hello"
+    Then the rendered text equals "You: hello"
     Then the scrollback_next_seq cursor equals 1
 
   Scenario: Two SessionStateChange chunks leave scrollback empty and seq at zero
@@ -64,23 +64,23 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
   Scenario: Interleaved visible and silent chunks keep seq monotonic over visible chunks only
     Given a fresh SessionContext for session s-1
     When record_chunk receives UserInput { text: "hi" }, SessionStateChange(Running), Text { text: "hello back" }, SessionStateChange(Idle), Done in that order
-    Then the scrollback contains exactly 3 rendered chunks
-    Then the rendered scrollback lines equal ["user> hi", "assistant> hello back", "[done]"]
-    Then the scrollback_next_seq cursor equals 3
+    Then the scrollback contains exactly 2 rendered chunks
+    Then the rendered scrollback lines equal ["You: hi", "", "● hello back", ""]
+    Then the scrollback_next_seq cursor equals 2
 
   Scenario: IncomingMessage chunk renders as supervisor-prefix line
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::IncomingMessage { text: "supervisor here", images: None }
-    Then the scrollback contains exactly one rendered chunk whose line equals "supervisor> supervisor here"
+    Then the scrollback contains exactly one rendered chunk whose line equals "[W] supervisor> supervisor here"
 
-  Scenario: Interrupted chunk renders as interrupted-with-queued-count line
+  Scenario: Interrupted chunk renders as a flat warning line without the queued count
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::Interrupted { queued_inputs: vec!["a", "b"] }
-    Then the scrollback contains exactly one rendered chunk whose line equals "[interrupted] 2 queued"
+    Then the scrollback contains exactly one rendered chunk whose line equals "⚠ Interrupted"
 
-  Scenario: All state-only and tool variants are suppressed from scrollback
+  Scenario: All state-only variants are suppressed from scrollback
     Given a fresh SessionContext for session s-1
-    When record_chunk receives one of each suppressed variant (SessionStateChange, IsolationStateChange, DebugStateChange, FooterStateUpdate, FspecCommandRequest, FspecCommandResult, WorkUnitsUpdate, SupervisorPendingInjection, CompactionComplete, TokenUpdate, ContextFillUpdate, ToolCall, ToolResult, ToolProgress)
+    When record_chunk receives one of each suppressed variant (SessionStateChange, IsolationStateChange, DebugStateChange, FooterStateUpdate, FspecCommandRequest, FspecCommandResult, WorkUnitsUpdate, SupervisorPendingInjection, CompactionComplete, TokenUpdate, ContextFillUpdate)
     Then the scrollback is empty
     Then the scrollback_next_seq cursor remains 0
 

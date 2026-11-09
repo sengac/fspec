@@ -16,7 +16,7 @@ const ARGS: &[CommandArgument] = &[
         required: true,
     },
     CommandArgument {
-        name: "dependsOnId",
+        name: "workUnitId",
         description: "Work unit ID to remove from dependsOn (shorthand for --depends-on)",
         required: false,
     },
@@ -24,22 +24,22 @@ const ARGS: &[CommandArgument] = &[
 
 const OPTS: &[CommandOption] = &[
     CommandOption {
-        flag: "--blocks <targetId>",
+        flag: "--blocks <workUnitId>",
         description: "Remove blocks relationship (also removes reverse blockedBy from target)",
         default_value: None,
     },
     CommandOption {
-        flag: "--blocked-by <targetId>",
+        flag: "--blocked-by <workUnitId>",
         description: "Remove blockedBy relationship (also removes reverse blocks from target)",
         default_value: None,
     },
     CommandOption {
-        flag: "--depends-on <targetId>",
+        flag: "--depends-on <workUnitId>",
         description: "Remove dependsOn relationship (unidirectional)",
         default_value: None,
     },
     CommandOption {
-        flag: "--relates-to <targetId>",
+        flag: "--relates-to <workUnitId>",
         description: "Remove relatesTo relationship (also removes reverse relatesTo from target)",
         default_value: None,
     },
@@ -79,8 +79,8 @@ const COMMON_ERRORS: &[CommonError] = &[
         fix: "Verify the work unit ID exists with: fspec list-work-units",
     },
     CommonError {
-        error: "Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to",
-        fix: "Provide either a second argument (dependsOnId) or one of the relationship flags",
+        error: "Must specify at least one relationship to remove: <workUnitId> or --blocks/--blocked-by/--depends-on/--relates-to",
+        fix: "Provide either a second workUnitId or one of the relationship flags",
     },
     CommonError {
         error: "Cannot specify dependency both as argument and --depends-on option",
@@ -92,12 +92,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Clean up completed blocker",
         example: "# After AUTH-001 is done, unblock dependent tasks\nfspec remove-dependency AUTH-001 --blocks API-001\nfspec remove-dependency AUTH-001 --blocks UI-001",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Remove all dependencies for a work unit",
         example: "# List current dependencies\nfspec dependencies AUTH-002\n\n# Remove each dependency\nfspec remove-dependency AUTH-002 AUTH-001\nfspec remove-dependency AUTH-002 --relates-to UI-001",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -124,7 +124,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "remove-dependency",
     description:
         "Remove dependency relationships between work units to clean up outdated blockers and dependencies",
-    usage: Some("fspec remove-dependency <workUnitId> [dependsOnId] [options]"),
+    usage: Some("fspec remove-dependency <workUnitId> [workUnitId] [options]"),
     arguments: ARGS,
     options: OPTS,
     examples: EXAMPLES,
@@ -136,7 +136,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQS,
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Verify dependency exists: fspec dependencies <workUnitId> → 2. Remove dependency: fspec remove-dependency <workUnitId> --blocks <targetId> → 3. Verify removal: fspec dependencies <workUnitId>",
+        "1. Verify dependency exists: fspec dependencies <workUnitId> → 2. Remove dependency: fspec remove-dependency <workUnitId> --blocks <workUnitId> → 3. Verify removal: fspec dependencies <workUnitId>",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

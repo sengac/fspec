@@ -141,7 +141,7 @@ fn aggregates_feature_names_scenario_counts_and_tags_sorted_by_file() {
         Some("spec/features/billing.feature")
     );
 
-    // @step Then the auth entry has scenarioCount=3 and tags exactly ['@critical', '@auth']
+    // @step And the auth entry has scenarioCount=3 and tags exactly ['@critical', '@auth']
     assert_eq!(arr[0]["scenarioCount"].as_u64(), Some(3));
     assert_eq!(
         arr[0]["tags"]

@@ -11,16 +11,13 @@
 //! per-session SessionContext regardless of focus and that the
 //! chunks_rx subscriber terminates cleanly when its Sender drops.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, SessionContext};
 use codelet_rpc_types::{
     FspecRequest, SessionId, SessionState, SessionStatus, StreamChunk, WorkUnitInfo,
 };
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -41,7 +38,7 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn background_session_chunk_appends_to_correct_session_context() {
+fn background_session_chunk_appends_to_correct_session_context() -> TestResult {
     // @step Given an App with two open sessions s-1 (focused) and s-2 (background)
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -65,7 +62,7 @@ fn background_session_chunk_appends_to_correct_session_context() {
     let s2_chunks = app
         .agent_view_store()
         .session_context_for(&sid("s-2"))
-        .expect("s-2 SessionContext present")
+        .or_fail("s-2 SessionContext present")?
         .scrollback
         .chunk_count();
     assert_eq!(s2_chunks, 1, "s-2 scrollback must contain the chunk");
@@ -74,10 +71,11 @@ fn background_session_chunk_appends_to_correct_session_context() {
     let s1_chunks = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("s-1 SessionContext present")
+        .or_fail("s-1 SessionContext present")?
         .scrollback
         .chunk_count();
     assert_eq!(s1_chunks, 0, "s-1 (focused) scrollback must be untouched");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -85,7 +83,7 @@ fn background_session_chunk_appends_to_correct_session_context() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn session_state_change_chunk_updates_per_session_status() {
+fn session_state_change_chunk_updates_per_session_status() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -103,6 +101,7 @@ fn session_state_change_chunk_updates_per_session_status() {
         app.agent_view_store().session_status_for(&sid("s-1")),
         Some(&SessionStatus::Running),
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -110,7 +109,7 @@ fn session_state_change_chunk_updates_per_session_status() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn isolation_state_change_chunk_updates_per_session_isolation_state() {
+fn isolation_state_change_chunk_updates_per_session_isolation_state() -> TestResult {
     use codelet_fspec_tui::IsolationState;
 
     // @step Given an App with an open session s-1
@@ -130,7 +129,7 @@ fn isolation_state_change_chunk_updates_per_session_isolation_state() {
     let state: &IsolationState = app
         .agent_view_store()
         .isolation_state_for(&sid("s-1"))
-        .expect("isolation state must be recorded for s-1");
+        .or_fail("isolation state must be recorded for s-1")?;
 
     // @step Then agent_view_store.isolation_state_for(&s-1) returns an IsolationState whose is_isolated is true
     assert!(state.is_isolated);
@@ -140,6 +139,7 @@ fn isolation_state_change_chunk_updates_per_session_isolation_state() {
 
     // @step And the stored IsolationState base_commit equals Some("abc123")
     assert_eq!(state.base_commit.as_deref(), Some("abc123"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ fn isolation_state_change_chunk_updates_per_session_isolation_state() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn debug_state_change_chunk_updates_per_session_debug_flag() {
+fn debug_state_change_chunk_updates_per_session_debug_flag() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -163,6 +163,7 @@ fn debug_state_change_chunk_updates_per_session_debug_flag() {
         app.agent_view_store().debug_enabled_for(&sid("s-1")),
         Some(true),
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -170,7 +171,7 @@ fn debug_state_change_chunk_updates_per_session_debug_flag() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn footer_state_update_chunk_refreshes_workspace_info() {
+fn footer_state_update_chunk_refreshes_workspace_info() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -189,7 +190,7 @@ fn footer_state_update_chunk_refreshes_workspace_info() {
     let ws = app
         .agent_view_store()
         .workspace()
-        .expect("workspace info must be set");
+        .or_fail("workspace info must be set")?;
 
     // @step Then agent_view_store.workspace() returns Some(WorkspaceInfo)
     // (already implicit by the unwrap above)
@@ -199,6 +200,7 @@ fn footer_state_update_chunk_refreshes_workspace_info() {
 
     // @step And the stored WorkspaceInfo.git_branch equals Some("main")
     assert_eq!(ws.git_branch.as_deref(), Some("main"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -206,7 +208,7 @@ fn footer_state_update_chunk_refreshes_workspace_info() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result() {
+async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result() -> TestResult {
     // @step Given an App with an open session s-1 wired to a MockBackend that has seeded work units
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![
@@ -251,16 +253,16 @@ async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result
     ));
 
     // @step Then within 1 second backend.send_fspec_result is called exactly once
-    let result = timeout(Duration::from_secs(1), async {
+    let result = codelet_test_helpers::deadlock_guard("the fspec result", async {
         loop {
             if let Some(r) = mock.last_fspec_result() {
                 return r;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .expect("backend.send_fspec_result must be called within 1 second");
+    .or_fail("backend.send_fspec_result must be called within 1 second")?;
     assert_eq!(mock.send_fspec_result_calls(), 1);
 
     // @step And the captured FspecResult has success == true and tool_call_id == "t-1"
@@ -269,16 +271,17 @@ async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result
 
     // @step And the captured FspecResult.data is a JSON-serialised array containing every seeded work unit
     let value: serde_json::Value =
-        serde_json::from_str(&result.data).expect("FspecResult.data must be JSON");
+        serde_json::from_str(&result.data).or_fail("FspecResult.data must be JSON")?;
     let arr = value
         .as_array()
-        .expect("FspecResult.data must be a JSON array");
+        .or_fail("FspecResult.data must be a JSON array")?;
     let ids: Vec<&str> = arr
         .iter()
         .filter_map(|v| v.get("id").and_then(|s| s.as_str()))
         .collect();
     assert!(ids.contains(&"AUTH-001"));
     assert!(ids.contains(&"AUTH-002"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -286,7 +289,7 @@ async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn fspec_command_request_unknown_command_returns_error_result() {
+async fn fspec_command_request_unknown_command_returns_error_result() -> TestResult {
     // @step Given an App with an open session s-1
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -307,16 +310,16 @@ async fn fspec_command_request_unknown_command_returns_error_result() {
     ));
 
     // @step Then within 1 second backend.send_fspec_result is called exactly once
-    let result = timeout(Duration::from_secs(1), async {
+    let result = codelet_test_helpers::deadlock_guard("the fspec result", async {
         loop {
             if let Some(r) = mock.last_fspec_result() {
                 return r;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .expect("backend.send_fspec_result must be called within 1 second");
+    .or_fail("backend.send_fspec_result must be called within 1 second")?;
     assert_eq!(mock.send_fspec_result_calls(), 1);
 
     // @step And the captured FspecResult has success == false
@@ -330,6 +333,7 @@ async fn fspec_command_request_unknown_command_returns_error_result() {
 
     // @step And the captured FspecResult.tool_call_id equals "t-2"
     assert_eq!(result.tool_call_id, "t-2");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -337,7 +341,7 @@ async fn fspec_command_request_unknown_command_returns_error_result() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn session_status_changed_action_updates_per_session_status() {
+fn session_status_changed_action_updates_per_session_status() -> TestResult {
     // @step Given an App with an open session s-1
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -353,6 +357,7 @@ fn session_status_changed_action_updates_per_session_status() {
         app.agent_view_store().session_status_for(&sid("s-1")),
         Some(&SessionStatus::Running),
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -360,14 +365,14 @@ fn session_status_changed_action_updates_per_session_status() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() {
+async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() -> TestResult {
     // @step Given an App whose chunks_rx Sender is dropped before any chunk has been broadcast
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.bootstrap()
         .await
-        .expect("bootstrap must succeed against MockBackend");
+        .or_fail("bootstrap must succeed against MockBackend")?;
     let initial_task_count = app.subscriber_task_count();
     assert!(
         initial_task_count >= 3,
@@ -377,10 +382,15 @@ async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() {
     // Drop the MockBackend's chunks_tx Sender, mirroring a SessionManager
     // shutdown. After the drop, every active receiver observes
     // `RecvError::Closed` on its next recv() call.
+    let ended_before = app.finished_subscriber_task_count();
     mock.close_chunks_tx();
 
-    // Allow the broadcast layer to propagate the close.
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    // TEST-042: wait for the chunks subscriber to observe the close and
+    // end, not for a fixed time.
+    codelet_test_helpers::wait_until("the chunks subscriber to end", || {
+        std::future::ready(app.finished_subscriber_task_count() > ended_before)
+    })
+    .await?;
 
     // @step When the chunks subscriber task is awaited
     // @step Then the subscriber task completes cleanly without panicking
@@ -389,7 +399,7 @@ async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() {
     // RecvError::Closed without re-spawning or panicking)
     let no_panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         // Drive a few more dispatch ticks to confirm the App is still alive.
-        app.dispatch(Action::Redraw);
+        app.dispatch(Action::SessionCreated(sid("s-tick")));
     }));
     assert!(
         no_panic.is_ok(),
@@ -405,6 +415,7 @@ async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() {
             .any(|c| c.id == sid("s-recovery")),
         "App must still respond to fresh actions after Closed"
     );
+    Ok(())
 }
 
 // Compile-asserter: import of `SessionContext` is intentional (re-exported by

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session
 @agent-manager
@@ -6,7 +7,7 @@
 Feature: AgentManager handler binds to global SessionManager singleton instead of the daemon-owned instance
   """
   Root cause: rust/agent-loop/src/agent_manager_handler.rs calls SessionManager::instance() at lines 43 (create_handler) and 909 (create_async_handler). The fspec binary owns a separate manager built in rust/fspec/src/common.rs::build_service (SessionManager::new() + FspecAgentHooks), so spawns land in the empty Noop-hooks singleton.
-  Fix via dependency injection: give BackgroundSession a Weak<SessionManager> owning-manager back-reference, populated by create_session_with_id / create_isolated_session_with_id from a self-Weak the manager holds when wrapped in Arc. Thread the resolved Arc<SessionManager> into create_handler/create_async_handler instead of SessionManager::instance(); fall back to instance() when the back-reference is absent (NAPI path).
+  Fix via dependency injection: give BackgroundSession a Weak<SessionManager> owning-manager back-reference, populated by create_session_with_id / create_isolated_session_with_id from a self-Weak the manager holds when wrapped in Arc. Thread the resolved Arc<SessionManager> into create_handler/create_async_handler instead of SessionManager::instance(); BUG-405: with the back-reference absent the handler returns an error (SessionManager::instance() was removed).
   """
 
   # ========================================
@@ -18,7 +19,7 @@ Feature: AgentManager handler binds to global SessionManager singleton instead o
   #   2. When the owning manager has real hooks (FspecAgentHooks), the spawned subordinate's agent loop must start so a later message is processed
   #   3. Spawning must fire the owning manager's session_created broadcast so the embedded TUI backend (session_created_rx) creates a subordinate tab
   #   4. All AgentManager actions (spawn, list, get_status, close, message, set_role) and the async actions (await_idle, profile) must resolve subordinates on the owning manager, not the singleton
-  #   5. In the NAPI path (no owning-manager back-reference present), the handler must fall back to SessionManager::instance() so existing NAPI behaviour is unchanged
+  #   5. BUG-405: with no owning-manager back-reference the handler refuses the action with an error; there is no SessionManager singleton to fall back to
   #   6. The fix must not introduce any dependency from codelet-agent-loop or codelet-sessions on codelet-napi
   #
   # EXAMPLES:
@@ -26,7 +27,7 @@ Feature: AgentManager handler binds to global SessionManager singleton instead o
   #   2. After spawning into manager M, a subscriber to M.session_created_tx() receives the subordinate's SessionInfo
   #   3. A subordinate spawned into a manager whose hooks run the agent loop processes a follow-up message and emits output chunks (proving it is alive, not a dead session object)
   #   4. From the spawner, list/get_status/close on the returned subordinate id all succeed against manager M and reflect the chain-of-command relationship
-  #   5. With no owning-manager back-reference set (simulating the NAPI path), spawn still resolves and creates the subordinate on SessionManager::instance()
+  #   5. With no owning-manager back-reference set, spawn fails naming the missing owning manager and creates no subordinate
   #   6. await_idle invoked from the spawner blocks on the subordinate in manager M and returns its idle status (async handler also uses the owning manager)
   #
   # ========================================
@@ -40,7 +41,7 @@ Feature: AgentManager handler binds to global SessionManager singleton instead o
     And a spawner session created by M with an AgentManager handler bound to M
     When the spawner invokes the AgentManager spawn action
     Then the subordinate appears in M.list_sessions()
-    And the subordinate does not appear in SessionManager::instance().list_sessions()
+    And the subordinate does not appear in a second, unrelated SessionManager's list_sessions()
 
   Scenario: Spawn fires the owning manager's session_created broadcast
     Given a daemon-owned SessionManager M that is not the global singleton
@@ -64,10 +65,10 @@ Feature: AgentManager handler binds to global SessionManager singleton instead o
     And the chain-of-command on M records the spawner as the subordinate's supervisor
     And the AgentManager close action removes the subordinate from M
 
-  Scenario: NAPI path falls back to the global singleton when no owning manager is set
+  Scenario: A spawner with no owning manager is refused
     Given a spawner session with no owning-manager back-reference set
     When the spawner invokes the AgentManager spawn action
-    Then the subordinate is created on SessionManager::instance()
+    Then the spawn fails naming the missing owning manager and no subordinate is created
 
   Scenario: set_role and message resolve the subordinate on the owning manager
     Given a daemon-owned SessionManager M whose hooks start the agent loop

@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "The scrollback_perf example builds its chunks with the row ends of their wrap",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug632_examples_compile_in_the_quality_check.rs",
+          "lines": "25-52",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/examples/scrollback_perf.rs",
+              "lines": [
+                26,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source_rows;",
+              "lastLine": "rows"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every fspec-tui example is compiled into the fspec-tui test suite",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug632_examples_compile_in_the_quality_check.rs",
+          "lines": "54-85",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/tests/bug632_examples_compile_in_the_quality_check.rs",
+              "lines": [
+                17,
+                18,
+                21,
+                88,
+                89,
+                92,
+                93
+              ],
+              "firstLine": "#[path = \"../examples/scrollback_perf.rs\"]",
+              "lastLine": "mod repro_env_pause;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every codelet-sessions example is compiled into the codelet-sessions test suite",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug632_session_examples_compile_in_the_suite.rs",
+          "lines": "16-47",
+          "implMappings": [
+            {
+              "file": "rust/sessions/tests/bug632_session_examples_compile_in_the_suite.rs",
+              "lines": [
+                14,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "const COMPILED_IN: &[&str] = &[\"repro_paused_chunk_delay.rs\"];",
+              "lastLine": "mod repro_paused_chunk_delay;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug632_examples_compile_in_the_quality_check.rs",
+      "rust/sessions/tests/bug632_session_examples_compile_in_the_suite.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/examples/scrollback_perf.rs",
+      "rust/fspec-tui/tests/bug632_examples_compile_in_the_quality_check.rs",
+      "rust/sessions/tests/bug632_session_examples_compile_in_the_suite.rs"
+    ],
+    "totalLinesCovered": 114
+  }
+}

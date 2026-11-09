@@ -10,17 +10,20 @@
             {
               "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
-                245,
-                246,
-                247,
-                248,
                 249,
                 250,
                 251,
                 252,
                 253,
-                254
-              ]
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ],
+              "firstLine": "|body_area, buf| render_body(self, body_area, buf),",
+              "lastLine": "self.matches.len(),"
             }
           ]
         }
@@ -36,17 +39,20 @@
             {
               "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
-                245,
-                246,
-                247,
-                248,
                 249,
                 250,
                 251,
                 252,
                 253,
-                254
-              ]
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ],
+              "firstLine": "|body_area, buf| render_body(self, body_area, buf),",
+              "lastLine": "self.matches.len(),"
             }
           ]
         }
@@ -57,22 +63,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc339_search_history_refit.rs",
-          "lines": "137-159",
+          "lines": "146-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
-                245,
-                246,
-                247,
-                248,
                 249,
                 250,
                 251,
                 252,
                 253,
-                254
-              ]
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ],
+              "firstLine": "|body_area, buf| render_body(self, body_area, buf),",
+              "lastLine": "self.matches.len(),"
             }
           ]
         }
@@ -83,22 +92,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc339_search_history_refit.rs",
-          "lines": "171-195",
+          "lines": "178-210",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/search_history_view.rs",
               "lines": [
-                245,
-                246,
-                247,
-                248,
                 249,
                 250,
                 251,
                 252,
                 253,
-                254
-              ]
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ],
+              "firstLine": "|body_area, buf| render_body(self, body_area, buf),",
+              "lastLine": "self.matches.len(),"
             }
           ]
         }
@@ -115,6 +127,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/agent/search_history_view.rs"
     ],
-    "totalLinesCovered": 152
+    "totalLinesCovered": 164
   }
 }

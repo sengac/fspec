@@ -11,9 +11,8 @@
 //!
 //! No App, no backend, no filesystem.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::ProfileForm;
+use codelet_test_helpers::{OrFail, TestResult};
 
 /// A valid create form (base URL, API key and a trimmed name present) with the
 /// compaction-threshold field set to `threshold`.
@@ -32,7 +31,7 @@ fn form_with_threshold(threshold: &str) -> ProfileForm {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn below_minimum_percentage_is_unset() {
+fn below_minimum_percentage_is_unset() -> TestResult {
     // @step Given a profile create form with a valid base URL, API key and name
     // @step And the compaction trigger field contains "0%"
     let form = form_with_threshold("0%");
@@ -40,8 +39,8 @@ fn below_minimum_percentage_is_unset() {
     // @step When the profile is saved
     let def = form
         .build_definition()
-        .expect("a valid profile must still build")
-        .expect("form must build a definition");
+        .or_fail("a valid profile must still build")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has no compaction threshold type
     assert_eq!(
@@ -50,6 +49,7 @@ fn below_minimum_percentage_is_unset() {
     );
     // @step And the saved profile definition has no compaction threshold value
     assert_eq!(def.compaction_threshold_value, None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -57,13 +57,13 @@ fn below_minimum_percentage_is_unset() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn percentage_boundaries_one_and_hundred_are_accepted() {
+fn percentage_boundaries_one_and_hundred_are_accepted() -> TestResult {
     // @step Given a profile create form with a valid base URL, API key and name
     // @step When the compaction trigger field contains "1%" and the profile is saved
     let def = form_with_threshold("1%")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has compaction threshold type "percentage" and value 1
     assert_eq!(def.compaction_threshold_type.as_deref(), Some("percentage"));
@@ -72,12 +72,13 @@ fn percentage_boundaries_one_and_hundred_are_accepted() {
     // @step When the compaction trigger field contains "100%" and the profile is saved
     let def = form_with_threshold("100%")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has compaction threshold type "percentage" and value 100
     assert_eq!(def.compaction_threshold_type.as_deref(), Some("percentage"));
     assert_eq!(def.compaction_threshold_value, Some(100));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ fn percentage_boundaries_one_and_hundred_are_accepted() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn above_maximum_percentage_is_omitted_but_profile_saves() {
+fn above_maximum_percentage_is_omitted_but_profile_saves() -> TestResult {
     // @step Given a profile create form with a valid base URL, API key and name
     // @step And the compaction trigger field contains "101%"
     let form = form_with_threshold("101%");
@@ -95,8 +96,8 @@ fn above_maximum_percentage_is_omitted_but_profile_saves() {
 
     // @step Then the profile is saved successfully
     let def = def
-        .expect("an out-of-range threshold must NOT block saving the profile")
-        .expect("form must build a definition");
+        .or_fail("an out-of-range threshold must NOT block saving the profile")?
+        .or_fail("form must build a definition")?;
 
     // @step And the saved profile definition has no compaction threshold type
     assert_eq!(
@@ -105,6 +106,7 @@ fn above_maximum_percentage_is_omitted_but_profile_saves() {
     );
     // @step And the saved profile definition has no compaction threshold value
     assert_eq!(def.compaction_threshold_value, None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -112,13 +114,13 @@ fn above_maximum_percentage_is_omitted_but_profile_saves() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn below_minimum_token_count_is_unset() {
+fn below_minimum_token_count_is_unset() -> TestResult {
     // @step Given a profile create form with a valid base URL, API key and name
     // @step When the compaction trigger field contains "999" and the profile is saved
     let def = form_with_threshold("999")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has no compaction threshold value
     assert_eq!(
@@ -130,12 +132,13 @@ fn below_minimum_token_count_is_unset() {
     // @step When the compaction trigger field contains "1000" and the profile is saved
     let def = form_with_threshold("1000")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has compaction threshold type "tokens" and value 1000
     assert_eq!(def.compaction_threshold_type.as_deref(), Some("tokens"));
     assert_eq!(def.compaction_threshold_value, Some(1000));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -143,13 +146,13 @@ fn below_minimum_token_count_is_unset() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_and_non_numeric_input_remain_unset() {
+fn empty_and_non_numeric_input_remain_unset() -> TestResult {
     // @step Given a profile create form with a valid base URL, API key and name
     // @step When the compaction trigger field contains "" and the profile is saved
     let def = form_with_threshold("")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has no compaction threshold value
     assert_eq!(def.compaction_threshold_value, None);
@@ -158,10 +161,11 @@ fn empty_and_non_numeric_input_remain_unset() {
     // @step When the compaction trigger field contains "abc" and the profile is saved
     let def = form_with_threshold("abc")
         .build_definition()
-        .expect("valid profile builds")
-        .expect("form must build a definition");
+        .or_fail("valid profile builds")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile definition has no compaction threshold value
     assert_eq!(def.compaction_threshold_value, None);
     assert_eq!(def.compaction_threshold_type, None);
+    Ok(())
 }

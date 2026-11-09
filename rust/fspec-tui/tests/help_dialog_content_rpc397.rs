@@ -15,8 +15,7 @@
 //! truncation (58 body rows comfortably hold the agent variant's ~40 lines),
 //! making substring assertions against the full buffer robust.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::Terminal;
@@ -25,15 +24,17 @@ use codelet_fspec_tui::components::help_dialog::HelpDialog;
 use codelet_fspec_tui::components::Component;
 
 /// Render any Component into a 200x60 TestBackend and return the buffer.
-fn render_200x60<C: Component>(component: &mut C) -> Buffer {
+fn render_200x60<C: Component>(
+    component: &mut C,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(200, 60);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             component.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 /// Flatten a rendered buffer into a single newline-joined string.
@@ -49,10 +50,10 @@ fn join_buffer(buf: &Buffer) -> String {
 }
 
 #[test]
-fn board_help_shows_board_keybindings_and_no_slash_commands() {
+fn board_help_shows_board_keybindings_and_no_slash_commands() -> TestResult {
     // @step Given a HelpDialog constructed for the board rendered against a 200x60 TestBackend
     let mut dialog = HelpDialog::for_board();
-    let buf = render_200x60(&mut dialog);
+    let buf = render_200x60(&mut dialog)?;
 
     // @step When the rendered buffer is inspected
     let text = join_buffer(&buf);
@@ -74,13 +75,14 @@ fn board_help_shows_board_keybindings_and_no_slash_commands() {
             "board help must NOT contain slash command {slash}:\n{text}"
         );
     }
+    Ok(())
 }
 
 #[test]
-fn agent_help_shows_agent_keybindings_and_the_full_slash_command_list() {
+fn agent_help_shows_agent_keybindings_and_the_full_slash_command_list() -> TestResult {
     // @step Given a HelpDialog constructed for the agent rendered against a 200x60 TestBackend
     let mut dialog = HelpDialog::for_agent();
-    let buf = render_200x60(&mut dialog);
+    let buf = render_200x60(&mut dialog)?;
 
     // @step When the rendered buffer is inspected
     let text = join_buffer(&buf);
@@ -114,15 +116,16 @@ fn agent_help_shows_agent_keybindings_and_the_full_slash_command_list() {
         text.contains("Select AI model"),
         "agent help must contain /model description \"Select AI model\":\n{text}"
     );
+    Ok(())
 }
 
 #[test]
-fn neither_help_variant_shows_the_misleading_q_quit_line() {
+fn neither_help_variant_shows_the_misleading_q_quit_line() -> TestResult {
     // @step Given a HelpDialog constructed for the board and a HelpDialog constructed for the agent
     let mut board = HelpDialog::for_board();
     let mut agent = HelpDialog::for_agent();
-    let board_text = join_buffer(&render_200x60(&mut board));
-    let agent_text = join_buffer(&render_200x60(&mut agent));
+    let board_text = join_buffer(&render_200x60(&mut board)?);
+    let agent_text = join_buffer(&render_200x60(&mut agent)?);
 
     // @step When each rendered buffer is inspected
     // (buffers captured above)
@@ -155,4 +158,5 @@ fn neither_help_variant_shows_the_misleading_q_quit_line() {
         agent_text.contains("Ctrl+D") && agent_text.contains("Quit"),
         "agent help must contain \"Ctrl+D\" and \"Quit\":\n{agent_text}"
     );
+    Ok(())
 }

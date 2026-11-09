@@ -2,10 +2,9 @@
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::{SearchHistoryView, SearchHistoryViewOutcome};
 use codelet_rpc_types::{HistoryMatch, SessionId};
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -32,7 +31,7 @@ fn rows_of(buf: &Buffer) -> Vec<String> {
 
 /// Scenario: Slash command /search opens the full-screen search view empty
 #[test]
-fn empty_query_renders_typeahead_placeholder() {
+fn empty_query_renders_typeahead_placeholder() -> TestResult {
     // @step Given AgentView has no popups or mode views open
     let mut v = SearchHistoryView::new();
     let mut buf = Buffer::empty(Rect::new(0, 0, 80, 24));
@@ -43,11 +42,12 @@ fn empty_query_renders_typeahead_placeholder() {
     assert!(joined.contains("(search): "));
     // @step And the body shows the placeholder "(type to search history)"
     assert!(joined.contains("(type to search history)"));
+    Ok(())
 }
 
 /// Scenario: Typing characters emits FilterChanged
 #[test]
-fn typing_characters_emits_filter_changed() {
+fn typing_characters_emits_filter_changed() -> TestResult {
     // @step Given search_view is open with an empty query
     let mut v = SearchHistoryView::new();
     // @step When the user types "g" then "i" then "t"
@@ -55,7 +55,7 @@ fn typing_characters_emits_filter_changed() {
     for c in ['g', 'i', 't'] {
         match v.handle_key(KeyCode::Char(c), KeyModifiers::NONE, 20) {
             SearchHistoryViewOutcome::FilterChanged(q) => emitted.push(q),
-            other => panic!("expected FilterChanged, got {other:?}"),
+            other => return Err(format!("expected FilterChanged, got {other:?}").into()),
         }
     }
     // @step Then search_view.query becomes "git"
@@ -72,11 +72,12 @@ fn typing_characters_emits_filter_changed() {
     // (Widget-level: simulate the backend returning two matches via set_matches.)
     v.set_matches(vec![hmatch("git status"), hmatch("git push")]);
     assert_eq!(v.match_count(), 2);
+    Ok(())
 }
 
 /// Scenario: set_matches folds in results
 #[test]
-fn set_matches_folds_results_with_first_highlighted() {
+fn set_matches_folds_results_with_first_highlighted() -> TestResult {
     // @step Given search_view is open with query "git"
     let mut v = SearchHistoryView::new();
     v.set_query("git");
@@ -93,11 +94,12 @@ fn set_matches_folds_results_with_first_highlighted() {
     // @step And the rendered list shows both rows with the first highlighted
     assert!(joined.contains("git status"));
     assert!(joined.contains("git push"));
+    Ok(())
 }
 
 /// Scenario: Enter on a highlighted match emits Selected(text)
 #[test]
-fn enter_emits_selected_text() {
+fn enter_emits_selected_text() -> TestResult {
     // @step Given search_view is open with query "git" and 2 matches with "git status" highlighted
     let mut v = SearchHistoryView::new();
     v.set_query("git");
@@ -109,11 +111,12 @@ fn enter_emits_selected_text() {
         outcome,
         SearchHistoryViewOutcome::Selected("git status".to_string())
     );
+    Ok(())
 }
 
 /// Scenario: Non-empty query with zero matches renders no-match placeholder
 #[test]
-fn no_match_placeholder_renders_for_unmatched_query() {
+fn no_match_placeholder_renders_for_unmatched_query() -> TestResult {
     // @step Given search_view is open with query "xyzzy"
     let mut v = SearchHistoryView::new();
     v.set_query("xyzzy");
@@ -136,17 +139,19 @@ fn no_match_placeholder_renders_for_unmatched_query() {
     // @step And AgentView.search_view is None
     // (Widget-level: the Dismiss outcome IS what App::dispatch turns into search_view = None.)
     // The widget itself is the outgoing value being dropped by the parent.
+    Ok(())
 }
 
 /// Scenario: SearchHistoryView scrolls past 10 rows using terminal height
 #[test]
-fn scrolls_past_ten_rows_using_terminal_height() {
+fn scrolls_past_ten_rows_using_terminal_height() -> TestResult {
     // @step Given search_view has 40 HistoryMatch values
     let matches: Vec<HistoryMatch> = (0..40).map(|i| hmatch(&format!("entry-{i}"))).collect();
     let mut v = SearchHistoryView::new();
     v.set_query("entry");
     v.set_matches(matches);
-    // @step And the render area height is 24 — visible_rows = 21
+    // @step And the render area height is 24
+    // (visible_rows = 21: height 24 minus the title, separator and footer rows.)
     let visible_rows = 21usize;
     // @step When the user presses ↓ fifteen times
     for _ in 0..15 {
@@ -165,11 +170,12 @@ fn scrolls_past_ten_rows_using_terminal_height() {
     assert_eq!(v.selected_index(), 0);
     // @step And search_view.scroll_offset resets to 0
     assert_eq!(v.scroll_offset(), 0);
+    Ok(())
 }
 
 /// Scenario: Ctrl+R while search_view is open is ignored
 #[test]
-fn ctrl_r_while_search_view_open_is_ignored() {
+fn ctrl_r_while_search_view_open_is_ignored() -> TestResult {
     // @step Given search_view is open
     let mut v = SearchHistoryView::new();
     // @step When the user presses Ctrl+R
@@ -179,4 +185,5 @@ fn ctrl_r_while_search_view_open_is_ignored() {
     // @step And search_view stays open with unchanged query and matches
     assert_eq!(v.query(), "");
     assert_eq!(v.match_count(), 0);
+    Ok(())
 }

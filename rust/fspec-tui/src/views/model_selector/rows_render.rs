@@ -10,7 +10,7 @@
 
 use super::super::header::render_header_row;
 use super::super::selection_style::{base_style, fill_row, token_style, NOSEL, SEL};
-use super::{badge_token_style, EMPTY_PLACEHOLDER, LEGEND, LOADING_PLACEHOLDER};
+use super::{badge_token_style, is_current, LEGEND};
 use crate::components::model_selector_dialog_rows::ModelSelectorRow;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Alignment, Rect};
@@ -34,10 +34,10 @@ pub(crate) fn render_body(
     area: Rect,
     buf: &mut Buffer,
     rows: &[ModelSelectorRow],
-    loaded: bool,
-    selected_index: usize,
+    placeholder: Option<&str>,
+    selected: Option<usize>,
     scroll_offset: usize,
-    current_model_id: Option<&str>,
+    current: Option<(&str, &str)>,
 ) -> Option<Rect> {
     if area.height == 0 {
         return None;
@@ -64,22 +64,20 @@ pub(crate) fn render_body(
     if rows.is_empty() {
         // PROV-104 rules [8]/[9]/[10]: a not-yet-loaded list shows a distinct
         // loading indicator; a loaded-but-empty list shows an explicit
-        // no-models empty state. The two must never be indistinguishable.
-        let message = if loaded {
-            EMPTY_PLACEHOLDER
-        } else {
-            LOADING_PLACEHOLDER
-        };
-        let mid_y = area.y.saturating_add(list_height / 2);
-        let row = Rect {
-            x: area.x,
-            y: mid_y,
-            width: area.width,
-            height: 1,
-        };
-        Paragraph::new(message)
-            .alignment(Alignment::Center)
-            .render(row, buf);
+        // no-models empty state. BUG-576: a failed list shows neither (its
+        // error is shown above the list).
+        if let Some(message) = placeholder {
+            let mid_y = area.y.saturating_add(list_height / 2);
+            let row = Rect {
+                x: area.x,
+                y: mid_y,
+                width: area.width,
+                height: 1,
+            };
+            Paragraph::new(message)
+                .alignment(Alignment::Center)
+                .render(row, buf);
+        }
         return None;
     }
 
@@ -111,8 +109,8 @@ pub(crate) fn render_body(
             row_area,
             buf,
             &rows[abs_i],
-            abs_i == selected_index,
-            current_model_id,
+            selected == Some(abs_i),
+            current,
         );
     }
 
@@ -145,7 +143,7 @@ fn render_row(
     buf: &mut Buffer,
     row: &ModelSelectorRow,
     is_selected: bool,
-    current_model_id: Option<&str>,
+    current: Option<(&str, &str)>,
 ) {
     if !row.selectable {
         // RPC-338: provider header rendering (incl. 📁 / unreachable markers)
@@ -174,7 +172,7 @@ fn render_row(
         };
         spans.push(Span::styled(format!(" {token}"), style));
     }
-    if current_model_id.is_some_and(|c| super::super::model_id::model_ids_match(c, &row.model_id)) {
+    if is_current(row, current) {
         let style = token_style(is_selected, Color::Green);
         spans.push(Span::styled(" (current)".to_string(), style));
     }

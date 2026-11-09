@@ -1,0 +1,81 @@
+{
+  "scenarios": [
+    {
+      "name": "A sign-in success while an older refresh is in flight shows the newest state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug664_sign_in_success_uses_the_numbered_refresh.rs",
+          "lines": "100-159",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "/// PROV-113: a login succeeded — show the success screen and refresh the",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The old unnumbered navigate path is gone",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug664_sign_in_success_uses_the_numbered_refresh.rs",
+          "lines": "174-208",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/refresh.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug664_sign_in_success_uses_the_numbered_refresh.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+      "rust/fspec-tui/src/views/provider_settings/refresh.rs"
+    ],
+    "totalLinesCovered": 123
+  }
+}

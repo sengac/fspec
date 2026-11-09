@@ -27,7 +27,6 @@ use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::{Action, EventResult};
-use crate::mouse::clipboard::Osc52Clipboard;
 use crate::mouse::gesture::SelectionRecognizer;
 use crate::mouse::selection::Selection;
 use crate::store::BoardStore;
@@ -36,6 +35,7 @@ use crate::theme::Theme;
 pub mod borders;
 pub mod checkpoint_status;
 pub mod columns;
+pub mod daemon_switcher; // RPC-448
 pub mod details_select;
 pub mod details_strip;
 pub mod footer;
@@ -49,6 +49,7 @@ pub mod menu_snapshot;
 pub mod mouse;
 pub mod render;
 pub mod viewport;
+pub mod workspace_dropdown; // RPC-445
 
 use self::columns::paint_column_headers;
 use self::details_select::is_selection_nav_key;
@@ -94,14 +95,14 @@ pub struct BoardView {
     /// inside the strip rect) so subsequent drag/release events route to
     /// the recognizer even if the cursor strays onto the border column.
     pub(super) details_press_active: Cell<bool>,
-    /// MENU-002: the 2-zone menu bar's per-frame geometry (bar row y +
-    /// item/cell rects + open panel rect) observed by the most recent
-    /// `render_with_store`. Read by `menu_mouse::handle_menu_mouse`.
+    /// TUI-130: the strip selection came from a long press (whole row), so
+    /// its copy is the row's whole field.
+    pub(super) details_long_press: Cell<bool>,
+    /// MENU-002: the menu bar's per-frame geometry (bar row y, item/cell rects,
+    /// open panel) from the last render; read by `menu_mouse::handle_menu_mouse`.
     pub(super) last_menu_bar_geometry: std::cell::RefCell<Option<menu_mouse::MenuBarGeometry>>,
-    /// COPY-009: OSC 52 clipboard writer (COPY-001). Production writes to
-    /// stdout; tests inject a `Vec<u8>` sink via
-    /// [`BoardView::set_clipboard_writer_for_test`].
-    pub(super) clipboard: RefCell<Osc52Clipboard<Box<dyn std::io::Write + Send>>>,
+    /// RPC-445: header row 1 (workspace selector) from the last render.
+    pub(super) last_workspace_row: Cell<Option<Rect>>,
 }
 
 impl BoardView {
@@ -118,17 +119,10 @@ impl BoardView {
             details_selection: RefCell::new(None),
             selection_unit_id: RefCell::new(None),
             details_press_active: Cell::new(false),
+            details_long_press: Cell::new(false),
             last_menu_bar_geometry: std::cell::RefCell::new(None),
-            clipboard: RefCell::new(Osc52Clipboard::new(Box::new(std::io::stdout()))),
+            last_workspace_row: Cell::new(None),
         }
-    }
-
-    /// COPY-009 test seam: replace the OSC 52 clipboard writer with an
-    /// injected sink so integration tests can assert the exact bytes.
-    /// Not `#[cfg(test)]` — integration tests compile without that cfg,
-    /// mirroring `App::set_clipboard_writer_for_test`.
-    pub fn set_clipboard_writer_for_test(&self, writer: Box<dyn std::io::Write + Send>) {
-        *self.clipboard.borrow_mut() = Osc52Clipboard::new(writer);
     }
 
     /// COPY-009 test seam: the live strip selection, if any.
@@ -167,6 +161,10 @@ impl BoardView {
         // event when the dropdown is open (true-modal, R6), the bar has
         // focus (R2/R3/R4/R5), or a plain column focus walks the ring
         // (R2 — Left/Right supersede FocusPrev/NextColumn).
+        // RPC-445: `w` + the open workspace dropdown (modal) come first.
+        if let Some(result) = workspace_dropdown::handle_key(self, key, store) {
+            return result;
+        }
         if let Some(result) = menu_keys::handle_menu_keys(self, key, store) {
             return result;
         }
@@ -187,10 +185,15 @@ impl BoardView {
             return EventResult::consumed();
         }
 
-        // Enter → hand off to AgentView for the focused work unit.
+        // BOARD-024: Enter → modal chooser (Open in agent / Show full
+        // details) for the captured card; its agent choice still emits
+        // Action::EnterWorkUnit (see components/board_card/events.rs).
         if key.code == KeyCode::Enter {
             if let Some(unit) = store.selected_work_unit() {
-                self.emit(Action::EnterWorkUnit(unit.id.clone()));
+                self.emit(Action::OpenBoardCardChooser {
+                    work_unit_id: unit.id.clone(),
+                    origin: crate::components::board_card::BoardCardOrigin::Board,
+                });
                 return EventResult::consumed();
             }
             return EventResult::ignored();
@@ -242,18 +245,10 @@ impl BoardView {
                 self.emit(Action::ReorderDown);
                 return EventResult::consumed();
             }
-            // BOARD-022: '/' opens the work-unit search dialog. Always
-            // consumes the key; modifier-free so Ctrl-chorded keys (e.g.
-            // the terminal's Ctrl+/ toggle) fall through.
-            KeyCode::Char('/') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.emit(Action::OpenWorkUnitSearch);
-                return EventResult::consumed();
-            }
-            // MUX-009/RPC-356/364/373/374/395: mode-view shortcut arms
-            // (f/c/m/d/a/.) live in `keys.rs` so this file stays under
-            // the 300 LoC ceiling (same split as `mouse.rs`).
+            // TUI-129: the menu registry's keys (`.` `/` D A b F C M P s
+            // w ?) and `u` live in `keys.rs` (same split as `mouse.rs`).
             _ => {
-                if let Some(result) = keys::handle_mode_view_key(self, key, store) {
+                if let Some(result) = keys::handle_mode_view_key(self, key) {
                     return result;
                 }
             }

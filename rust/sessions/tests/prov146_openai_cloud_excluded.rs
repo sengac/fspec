@@ -97,8 +97,10 @@ fn seed_codex_oauth() -> tempfile::TempDir {
             "access_token": "access-tok",
             "refresh_token": "refresh-tok",
             "account_id": "acct-123"
-        }
-    }"#;
+        },
+        "last_refresh": "LAST_REFRESH"
+    }"#
+    .replace("LAST_REFRESH", &chrono::Utc::now().to_rfc3339());
     fs::write(dir.path().join("auth.json"), auth).expect("write codex auth.json");
     std::env::set_var("CODEX_HOME", dir.path());
     dir
@@ -155,10 +157,10 @@ async fn scenario_profile_bridged_key_does_not_populate_openai_cloud_section() {
     // @step And the models.dev catalog offers OpenAI models including "o3" and "gpt-4o"
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
 
     // @step Then no section with key "openai" and no profile name appears in the list
@@ -228,10 +230,10 @@ async fn scenario_raw_openai_key_yields_no_openai_cloud_section() {
     // @step And the models.dev catalog offers OpenAI models
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
 
     // @step Then no section with key "openai" and no profile name appears in the list
@@ -264,11 +266,28 @@ async fn scenario_raw_openai_key_yields_no_openai_cloud_section() {
 }
 
 // =============================================================================
-// Scenario: Codex (ChatGPT) continues to list the full cloud OpenAI catalog
-// when OPENAI_API_KEY is also set
+// Scenario: Codex (ChatGPT) lists what Codex /models returns when
+// OPENAI_API_KEY is also set (PROV-176)
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
-async fn scenario_codex_section_still_lists_all_openai_models_when_openai_key_set() {
+async fn scenario_codex_section_lists_codex_models_when_openai_key_set() {
+    // The Codex /models backend (started before the guard is held).
+    let backend = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .and(wiremock::matchers::path("/models"))
+        .respond_with(
+            wiremock::ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "models": [{
+                    "slug": "gpt-6-luna",
+                    "display_name": "GPT-6-Luna",
+                    "visibility": "list",
+                    "default_reasoning_level": "medium",
+                    "supported_reasoning_levels": [{"effort": "medium"}]
+                }]
+            })),
+        )
+        .mount(&backend)
+        .await;
     let _guard = ENV_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -286,29 +305,29 @@ async fn scenario_codex_section_still_lists_all_openai_models_when_openai_key_se
     // @step And a local-server openai profile is configured
     let _profile_dir = seed_local_profile();
 
-    // @step And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5-mini"
+    // @step And Codex /models returns "gpt-6-luna" while the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5-mini"
+    let _redirect =
+        codelet_providers::codex::models_catalog::test_support::redirect(&backend.uri());
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When list_providers() assembles the provider list
-    let providers = handle.list_providers();
+    let providers = handle.list_providers().expect("the provider list is read");
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
     let codex_models = section_model_ids(&providers, "codex")
         .unwrap_or_else(|| panic!("PROV-146: the 'codex' section must be present; keys: {keys:?}"));
 
-    // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4"
-    assert!(
-        codex_models.iter().any(|id| id == "gpt-5.4"),
-        "PROV-146: 'gpt-5.4' must appear under Codex; got {codex_models:?}",
-    );
+    // @step Then the "Codex (ChatGPT)" section lists "gpt-6-luna"
+    assert_eq!(codex_models, vec!["gpt-6-luna".to_string()]);
 
-    // @step And the "Codex (ChatGPT)" section lists "gpt-5-mini"
-    // (no allowlist filtering — the full OpenAI models.dev catalog is shown)
-    assert!(
-        codex_models.iter().any(|id| id == "gpt-5-mini"),
-        "PROV-146: the full OpenAI catalog must appear under Codex (no allowlist filter); got {codex_models:?}",
-    );
+    // @step And the "Codex (ChatGPT)" section lists neither "gpt-5.4" nor "gpt-5-mini"
+    for absent in ["gpt-5.4", "gpt-5-mini"] {
+        assert!(
+            !codex_models.iter().any(|id| id == absent),
+            "PROV-176: the models.dev catalog is not listed under Codex; got {codex_models:?}",
+        );
+    }
 
     // @step And no section with key "openai" and no profile name appears in the list
     assert!(
@@ -327,8 +346,7 @@ async fn scenario_codex_section_still_lists_all_openai_models_when_openai_key_se
 }
 
 // =============================================================================
-// Scenario: cloud_model_entries still serves the openai catalog to the Codex
-// re-parenting path
+// Scenario: cloud_model_entries still serves the openai catalog
 // =============================================================================
 #[test]
 fn scenario_cloud_model_entries_still_serves_openai_catalog() {

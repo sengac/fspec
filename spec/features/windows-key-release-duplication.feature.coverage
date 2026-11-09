@@ -5,11 +5,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "70-87",
+          "lines": "72-95",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -20,12 +22,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,11 +36,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "89-103",
+          "lines": "97-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -51,12 +53,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,11 +67,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "105-119",
+          "lines": "116-133",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -82,12 +84,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -98,11 +98,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "121-144",
+          "lines": "135-164",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -113,12 +115,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -129,11 +129,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "146-159",
+          "lines": "166-182",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -144,12 +146,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -160,11 +160,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "161-174",
+          "lines": "184-200",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -175,12 +177,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -191,11 +191,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "176-190",
+          "lines": "72-95",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -206,12 +208,10 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
-              ]
+                63
+              ],
+              "firstLine": "// KeyEventKind::Release for every key (ratatui#347, crossterm#772);",
+              "lastLine": "}"
             }
           ]
         }
@@ -222,58 +222,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "192-205",
+          "lines": "184-200",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A repeat q event does not quit the Disconnect dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs",
-          "lines": "207-229",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/events.rs",
-              "lines": [
-                124,
-                125,
-                126,
-                127,
+                60,
+                61,
+                62,
                 128,
                 129,
                 130,
                 131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143
-              ]
+                132
+              ],
+              "firstLine": "if key.kind != KeyEventKind::Press {",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,8 +245,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/tui110_windows_key_release_filter.rs"
@@ -290,6 +254,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/events.rs"
     ],
-    "totalLinesCovered": 287
+    "totalLinesCovered": 264
   }
 }

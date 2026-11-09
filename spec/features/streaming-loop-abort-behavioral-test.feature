@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @session-management
 @session
@@ -6,6 +7,7 @@
 @rust
 @high
 @RIG-015
+@BUG-488
 Feature: Streaming loop abort behavioral test
   """
   RIG-015: Behavioral proof that the RIG-014 streaming loop detector
@@ -36,6 +38,9 @@ Feature: Streaming loop abort behavioral test
   test-support feature) that yields each configured word as a
   RawStreamingChoice::Message delta (incrementing a shared poll
   counter) followed by a FinalResponse.
+  BUG-488: the persistence scenario reads the session only after the turn's interrupted event, which
+  is published after the truncated assistant message is written; waiting for any persisted message
+  raced the write (the user message is persisted first).
   """
 
   # ========================================
@@ -58,7 +63,6 @@ Feature: Streaming loop abort behavioral test
     I want to have the loop detector abort actually stop the in-flight stream and re-prompt the LLM with a corrective note
     So that confidence that the RIG-014 wiring works end-to-end, not just structurally
 
-  @RIG-015
   @streaming-loop-detection
   @end-to-end
   Scenario: Looping stream is cancelled mid-stream and the turn ends
@@ -69,17 +73,16 @@ Feature: Streaming loop abort behavioral test
     And the session reports interrupted
     And the turn completes with an interrupted/done chunk on the chunks broadcast
 
-  @RIG-015
   @streaming-loop-detection
   @end-to-end
   Scenario: Persisted assistant message is truncated with the marker note
     Given a stub-provider session whose model streams 40 normal words then an unbounded "the model thinks that" loop
     When the agent loop processes the turn and the loop detector aborts
+    And the turn's interrupted event has been published, so its truncated assistant message is persisted
     Then the persisted assistant message contains the normal prose up to the loop onset
     And the persisted assistant message ends with the marker note stating the response was cut off due to repetitive output
     And the persisted assistant message does NOT contain the degenerate looping tail
 
-  @RIG-015
   @streaming-loop-detection
   @end-to-end
   Scenario: Next turn's context carries the corrective note

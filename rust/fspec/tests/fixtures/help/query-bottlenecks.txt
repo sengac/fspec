@@ -29,7 +29,6 @@ fspec update-work-unit-status AUTH-001 done
 
 # Re-check for new bottlenecks
 fspec query-bottlenecks
-    undefined
 
   • Automation with JSON Output
     Example: # Export bottlenecks for dashboard
@@ -37,7 +36,6 @@ fspec query-bottlenecks --output json > bottlenecks.json
 
 # Process with jq (highest score first)
 jq '.bottlenecks | sort_by(-.score) | .[0]' bottlenecks.json
-    undefined
 
   • Team Coordination
     Example: # Identify parallelizable work
@@ -48,11 +46,10 @@ fspec query-bottlenecks
 # - Member 2-4: Work on unblocked parallel tasks
 
 # After bottleneck complete, previously blocked work can proceed
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Run bottleneck query: fspec query-bottlenecks → 2. Prioritize highest-score bottleneck → 3. Complete bottleneck work unit → 4. Update status: fspec update-work-unit-status <id> done → 5. Re-run query to identify next bottleneck
+  1. Run bottleneck query: fspec query-bottlenecks → 2. Prioritize highest-score bottleneck → 3. Complete bottleneck work unit → 4. Update status: fspec update-work-unit-status <workUnitId> done → 5. Re-run query to identify next bottleneck
 
 EXAMPLES
   1. List bottleneck work units blocking 2+ work units

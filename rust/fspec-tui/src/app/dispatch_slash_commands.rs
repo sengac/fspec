@@ -13,6 +13,8 @@
 //! `dispatch_slash_submit.rs` so both files stay under the 300-LoC
 //! ceiling.
 
+use codelet_rpc_types::SessionId;
+
 use crate::components::help_dialog::HelpDialog;
 use crate::components::Action;
 use crate::views::agent::slash_commands::SlashCommandAction;
@@ -20,7 +22,32 @@ use crate::views::agent::slash_commands::SlashCommandAction;
 use super::state::App;
 
 impl App {
-    /// Route a `SlashCommandSelected(action)` press. `Help` pushes the
+    /// BUG-560: a command picked from the slash popup, carrying the session
+    /// it was picked in (`None`: no session was open). No popup command
+    /// names its session, so it acts on the focused one and runs only while
+    /// that is still the session it was picked in (BUG-552 rule 4).
+    /// Otherwise it is not run: the session it was picked in says so; a
+    /// pick made in no session is only logged.
+    pub(crate) fn handle_slash_command_pick(
+        &mut self,
+        session: Option<SessionId>,
+        action: SlashCommandAction,
+    ) {
+        if self.agent_view_store.current_session() == session.as_ref() {
+            self.handle_slash_command(action);
+            return;
+        }
+        let command = format!("/{}", action.name());
+        match session {
+            Some(session) => self.push_command_not_run_notice(&session, &command),
+            None => tracing::warn!(
+                command,
+                "slash command picked with no session open not run: a session was focused before it was handled"
+            ),
+        }
+    }
+
+    /// Run `action` (a popup pick or a typed bare command). `Help` pushes the
     /// HelpDialog onto the compositor; `Clear` resets the AgentView's
     /// scrollback + input; `Quit` flips `should_quit`. Every other
     /// variant surfaces a `[notice]` scrollback line so the user knows
@@ -179,12 +206,16 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
+        // RPC-455: the selected workspace; a failed search is shown.
+        let calls = self.scoped_calls();
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
-            if let Ok(matches) = backend.search_files(prefix, 20).await {
-                let _ = action_tx.send(Action::FileSearchResults(matches));
-            }
+            let _ = action_tx.send(match calls.search_files(prefix, 20).await {
+                Ok(matches) => Action::FileSearchResults(matches),
+                Err(error) => Action::SessionOperationFailed(format!(
+                    "The files could not be searched: {error:#}"
+                )),
+            });
         });
         self.pending_tasks.push(handle);
     }

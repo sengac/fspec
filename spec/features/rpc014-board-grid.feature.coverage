@@ -5,28 +5,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "96-108",
+          "lines": "118-131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_strip.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "fn render_placeholder(area: Rect, buf: &mut Buffer) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -37,7 +38,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "110-145",
+          "lines": "134-177",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_strip.rs",
@@ -84,7 +85,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {",
+              "lastLine": "y: row_y + 1,"
             }
           ]
         }
@@ -95,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "147-176",
+          "lines": "180-211",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_strip.rs",
@@ -131,7 +134,9 @@
                 154,
                 155,
                 156
-              ]
+              ],
+              "firstLine": "let rect = Rect {",
+              "lastLine": "line.spans.iter().map(|s| s.content.as_ref()).collect()"
             }
           ]
         }
@@ -142,11 +147,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "178-213",
+          "lines": "214-260",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
+                124,
+                125,
+                126,
                 127,
                 128,
                 129,
@@ -197,18 +205,10 @@
                 174,
                 175,
                 176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187
-              ]
+                177
+              ],
+              "firstLine": "last_workspace_row: Cell::new(None),",
+              "lastLine": "self.clear_details_selection();"
             }
           ]
         }
@@ -219,7 +219,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "215-241",
+          "lines": "263-293",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/columns.rs",
@@ -255,7 +255,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "use crate::views::board::grid::{column_width_at, ColumnWidths};",
+              "lastLine": "}"
             }
           ]
         }
@@ -266,68 +268,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "243-268",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/columns.rs",
-              "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110
-              ]
-            }
-          ]
+          "lines": "296-337"
         }
       ]
     },
@@ -336,68 +277,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "270-289",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/columns.rs",
-              "lines": [
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110
-              ]
-            }
-          ]
+          "lines": "340-367"
         }
       ]
     },
@@ -406,38 +286,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/view_board_unit_rpc014.rs",
-          "lines": "291-318",
+          "lines": "370-399",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                172,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
                 173,
                 174,
                 175,
                 176,
                 177,
                 178,
-                179,
-                180,
-                181,
                 182,
                 183,
-                184,
-                185,
-                186,
-                187,
                 188,
                 189,
                 190,
-                191,
-                192,
                 193,
                 194,
                 195,
                 196,
                 197,
-                198,
                 199,
                 200,
                 201,
@@ -480,14 +357,10 @@
                 238,
                 239,
                 240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247
-              ]
+                241
+              ],
+              "firstLine": "// RPC-445: `w` + the open workspace dropdown (modal) come first.",
+              "lastLine": "self.emit(Action::ReorderUp);"
             }
           ]
         }
@@ -506,6 +379,6 @@
       "rust/fspec-tui/src/views/board.rs",
       "rust/fspec-tui/src/views/board/columns.rs"
     ],
-    "totalLinesCovered": 581
+    "totalLinesCovered": 508
   }
 }

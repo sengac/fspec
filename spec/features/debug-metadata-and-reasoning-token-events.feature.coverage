@@ -5,42 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "19-42",
+          "lines": "29-51",
           "implMappings": []
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "19-42",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/repl_loop.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "19-42",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/repl_loop.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49
-              ]
-            }
-          ]
         }
       ]
     },
@@ -49,68 +15,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "44-76",
+          "lines": "54-81",
           "implMappings": []
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "44-76",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "44-76",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                375,
-                376,
-                377,
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393
-              ]
-            }
-          ]
         }
       ]
     },
@@ -119,24 +25,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "80-112",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                710,
-                711,
-                712,
-                713,
-                714,
-                715,
-                716,
-                717,
-                718,
-                719
-              ]
-            }
-          ]
+          "lines": "88-119",
+          "implMappings": []
         }
       ]
     },
@@ -145,50 +35,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "110-125",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                736,
-                737,
-                738,
-                739,
-                740,
-                741,
-                742,
-                743,
-                744,
-                745,
-                746,
-                747
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "114-145",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                736,
-                737,
-                738,
-                739,
-                740,
-                741,
-                742,
-                743,
-                744,
-                745,
-                746,
-                747,
-                748
-              ]
-            }
-          ]
+          "lines": "122-149",
+          "implMappings": []
         }
       ]
     },
@@ -197,42 +45,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "132-154",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7160,
-                7161,
-                7162,
-                7163,
-                7164,
-                7165
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "148-170",
+          "lines": "156-178",
           "implMappings": []
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "148-170",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7160,
-                7161,
-                7162,
-                7163,
-                7164,
-                7165
-              ]
-            }
-          ]
         }
       ]
     },
@@ -241,42 +55,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "157-207",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7198,
-                7199,
-                7200,
-                7201,
-                7202,
-                7203
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "173-222",
+          "lines": "181-231",
           "implMappings": []
-        },
-        {
-          "file": "rust/cli/tests/rig_011_debug_metadata.rs",
-          "lines": "173-222",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                7198,
-                7199,
-                7200,
-                7201,
-                7202,
-                7203
-              ]
-            }
-          ]
         }
       ]
     }
@@ -288,11 +68,7 @@
     "testFiles": [
       "rust/cli/tests/rig_011_debug_metadata.rs"
     ],
-    "implFiles": [
-      "rust/cli/src/interactive/repl_loop.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
-      "rust/napi/src/session_manager.rs"
-    ],
-    "totalLinesCovered": 581
+    "implFiles": [],
+    "totalLinesCovered": 185
   }
 }

@@ -39,9 +39,12 @@ impl SessionManager {
         id: &SessionId,
         envelopes: Vec<String>,
     ) -> Result<(), RestoreError> {
-        let uuid = uuid::Uuid::parse_str(&id.value)
-            .map_err(|error| RestoreError::Store(error.to_string()))?;
-        let session = self.get_session(&id.value).map_err(RestoreError::Store)?;
+        // BUG-297: like every sibling handle method, a malformed id resolves
+        // to the nil UUID so unknown sessions report "Session not found".
+        let uuid = uuid::Uuid::parse_str(&id.value).unwrap_or_else(|_| uuid::Uuid::nil());
+        let session = self
+            .get_session(&uuid.to_string())
+            .map_err(RestoreError::Store)?;
         let model_replay = Replay::parse(&envelopes)?;
         drop(model_replay.chunks);
         let manifest = load_session(uuid).map_err(RestoreError::Store)?;
@@ -106,6 +109,16 @@ impl SessionManager {
                         .restore_provider_state(&model_replay.envelopes)
                         .map_err(|error| RestoreError::Store(error.to_string()))?;
                 }
+                // MODEL-015: the effort messages of the restored history.
+                let positions = model_replay
+                    .user_ids
+                    .iter()
+                    .map(|(id, index)| (*id, prefix + index))
+                    .collect();
+                inner.effort_log = codelet_providers::claude_effort::EffortLog::restore(
+                    manifest.effort_log.clone(),
+                    &positions,
+                );
                 inner.messages.splice(prefix..end, model_replay.messages);
                 inner.restored_replay = Some(installation);
                 Ok::<(), RestoreError>(())
@@ -122,9 +135,12 @@ impl SessionManager {
         id: &SessionId,
         state: TokenRestoreState,
     ) -> Result<(), RestoreError> {
-        let uuid = uuid::Uuid::parse_str(&id.value)
-            .map_err(|error| RestoreError::Store(error.to_string()))?;
-        let session = self.get_session(&id.value).map_err(RestoreError::Store)?;
+        // BUG-297: like every sibling handle method, a malformed id resolves
+        // to the nil UUID so unknown sessions report "Session not found".
+        let uuid = uuid::Uuid::parse_str(&id.value).unwrap_or_else(|_| uuid::Uuid::nil());
+        let session = self
+            .get_session(&uuid.to_string())
+            .map_err(RestoreError::Store)?;
         let manifest = load_session(uuid).map_err(RestoreError::Store)?;
         let saved = &manifest.token_usage;
         let supplied = [
@@ -171,7 +187,7 @@ impl SessionManager {
                 }
                 let tracker = &mut inner.token_tracker;
                 tracker.input_tokens = saved.current_context_tokens;
-                tracker.output_tokens = saved.cumulative_billed_output;
+                tracker.output_tokens = u64::from(tokens.output_tokens);
                 tracker.cumulative_billed_input = saved.cumulative_billed_input;
                 tracker.cumulative_billed_output = saved.cumulative_billed_output;
                 tracker.cache_read_input_tokens = Some(saved.cache_read_tokens);

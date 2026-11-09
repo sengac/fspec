@@ -55,6 +55,8 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<TreeSnapshot> {
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
     // Get the index - this MUST succeed for properly initialized repos/worktrees
+    // BUG-696: a truncated index is an error, not a gix-index panic.
+    crate::index_guard::ensure_index_not_truncated(&repo.index_path(), repo.object_hash())?;
     let index = repo.index().map_err(|e| GitError::CorruptedIndex {
         message: format!(
             "Git index not available at '{}'. This indicates a corrupted worktree \
@@ -86,10 +88,9 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<TreeSnapshot> {
                 snap.blobs.insert(path_str.clone(), content);
                 // WT-006: the on-disk executable bit is authoritative —
                 // a chmod +x on a tracked 100644 file is a real mode
-                // change that the flat index mode would miss.
-                let is_exec = entry.mode == Mode::FILE_EXECUTABLE
-                    || crate::tree_snapshot::is_file_executable(&full_path);
-                if is_exec {
+                // change that the flat index mode would miss, and
+                // (WT-013) so is a chmod -x on a tracked 100755 file.
+                if tracked_file_is_executable(entry.mode, &full_path) {
                     snap.executables.insert(path_str);
                 }
             }
@@ -180,6 +181,19 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<TreeSnapshot> {
 
     snap.ignored.sort();
     Ok(snap)
+}
+
+/// The executable bit of a tracked regular file: the on-disk bit where
+/// the filesystem has one (Unix), so setting AND clearing it are seen;
+/// elsewhere the index mode, because the disk carries no bit to read.
+#[cfg(unix)]
+fn tracked_file_is_executable(_index_mode: Mode, full_path: &Path) -> bool {
+    crate::tree_snapshot::is_file_executable(full_path)
+}
+
+#[cfg(not(unix))]
+fn tracked_file_is_executable(index_mode: Mode, _full_path: &Path) -> bool {
+    index_mode == Mode::FILE_EXECUTABLE
 }
 
 /// Check if entry is a git/fspec internal file or directory (should be skipped)

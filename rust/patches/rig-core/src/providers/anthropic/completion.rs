@@ -1025,6 +1025,9 @@ where
             }
         }
 
+        // MODEL-015: effort messages are placed in `messages`, never sent as a param.
+        let effort_messages = super::effort::take(&mut completion_request.additional_params)?;
+        let history_offset = usize::from(completion_request.normalized_documents().is_some());
         let request = AnthropicCompletionRequest::try_from(AnthropicRequestParams {
             model: &self.model,
             request: completion_request,
@@ -1041,13 +1044,21 @@ where
         }
 
         async move {
+            let mut request = serde_json::to_value(&request)?;
+            if !effort_messages.is_empty() {
+                let messages = request.get_mut("messages").ok_or_else(|| {
+                    CompletionError::RequestError("the request has no messages".into())
+                })?;
+                super::effort::insert(messages, &effort_messages, history_offset)?;
+            }
             let request: Vec<u8> = serde_json::to_vec(&request)?;
 
-            let req = self
-                .client
-                .post("/v1/messages")?
-                .body(request)
-                .map_err(|e| CompletionError::HttpError(e.into()))?;
+            let req = super::effort::with_beta(
+                self.client.post("/v1/messages")?,
+                !effort_messages.is_empty(),
+            )?
+            .body(request)
+            .map_err(|e| CompletionError::HttpError(e.into()))?;
 
             let response = self
                 .client

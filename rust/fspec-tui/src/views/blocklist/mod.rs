@@ -11,17 +11,13 @@
 //! status, `Esc` dismisses the view.
 //!
 //! The view emits Actions onto the dispatcher rather than mutating
-//! AgentViewStore directly — the per-session disabled set lives on
-//! `AgentViewStore.blocklist_disabled_by_session` (RPC-056) so it
-//! survives close/reopen cycles. The view receives the disabled set
-//! through `render()` / `handle_key()` parameters so test-time render +
-//! key-handler unit tests can drive it without an AgentViewStore.
+//! AgentViewStore directly. BUG-601: the turned-off rules live in the
+//! daemon, which enforces them for the session the view was opened from
+//! (`BlocklistView::session`); `AgentViewStore.blocklist_disabled_by_session`
+//! only caches the daemon's last answer. The view receives that set through
+//! `render()` so render unit tests can drive it without an AgentViewStore.
 //!
-//! TS parity: `src/tui/components/BlocklistListView.tsx`. The TS frontend
-//! also uses an in-memory `Set<string>` lifted to the AgentView component
-//! state — disabled rules are purely a UI affordance and do NOT
-//! flow back into the tool-execution path (a follow-up card can wire
-//! enforcement when the broader rule-management UX lands).
+//! TS parity: `src/tui/components/BlocklistListView.tsx`.
 //!
 //! BLOCK-008 adds viewport scrolling (parity with the
 //! `model_selector`/`changed_files` scroll pattern): the view owns a
@@ -46,6 +42,18 @@ mod mouse;
 #[path = "tests.rs"]
 mod tests;
 
+#[cfg(test)]
+mod test_support;
+
+#[cfg(test)]
+mod framing_tests;
+
+#[cfg(test)]
+mod keybindings_tests;
+
+#[cfg(test)]
+mod mouse_scroll_tests;
+
 /// Outcome of a single key event consumed by the view. Mirrors the
 /// `ProviderSettingsEvent` shape — `Emit(Action)` is the canonical way
 /// the view asks the App to fold state into the dispatcher.
@@ -65,10 +73,9 @@ pub enum BlocklistEvent {
     Close,
 }
 
-/// The BlocklistView state. Owns the rules list + selected_index; the
-/// session-disabled `HashSet<String>` lives ON the AgentViewStore and
-/// is supplied to render + key-handling by reference so the view
-/// stays stateless w.r.t. the per-session lift.
+/// The BlocklistView state. Owns the rules list + selected_index and the
+/// session it was opened from; the daemon's turned-off rules for that
+/// session are cached on the AgentViewStore and supplied to render.
 ///
 /// BLOCK-008: also owns a `scroll_offset` + `visible_rows` viewport
 /// state reconciled via `scroll_viewport::ensure_visible`.
@@ -76,6 +83,9 @@ pub enum BlocklistEvent {
 pub struct BlocklistView {
     pub rules: Vec<BlocklistRuleInfo>,
     pub selected_index: usize,
+    /// BUG-601: the session the view was opened from; Toggle Rule turns
+    /// rules off and on for this session only (None: no session open).
+    pub session: Option<codelet_rpc_types::SessionId>,
     /// Index of the first rule painted in the left pane. Reconciled by
     /// [`adjust_scroll`](BlocklistView::adjust_scroll) so the selection
     /// always stays inside the visible window.
@@ -157,20 +167,18 @@ impl BlocklistView {
         );
     }
 
-    /// Handle a key event. The view itself never mutates the
-    /// session-disabled set — instead, toggle actions emit
-    /// `Action::ToggleBlocklistRule(id)` onto the dispatcher and the
-    /// App task folds the toggle into
-    /// `AgentViewStore.blocklist_disabled_by_session` via
-    /// `handle_toggle_blocklist_rule` (RPC-056 dispatch helper).
-    ///
-    /// This single-source-of-truth design avoids the duplicate-state
-    /// trap that would otherwise let the view's local set drift from
-    /// the store's authoritative set across session switches.
+    /// Handle a key event. The view itself never changes a rule's state:
+    /// toggle actions emit `Action::ToggleBlocklistRule(id)` and the App
+    /// asks the daemon (BUG-601, `handle_toggle_blocklist_rule`), whose
+    /// answer is the only state the view shows.
     ///
     /// BLOCK-008: each navigation arm clamp-moves `selected_index` then
     /// calls `adjust_scroll()` so the selection stays inside the window.
     pub fn handle_key(&mut self, key: KeyEvent) -> BlocklistEvent {
+        // TUI-130: Ctrl+C, the copy wrapper, copies the pattern like c.
+        if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
+            return self.copy(|rule| rule.pattern.clone());
+        }
         if key
             .modifiers
             .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
@@ -204,9 +212,20 @@ impl BlocklistView {
                 BlocklistEvent::Consumed
             }
             KeyCode::Char(' ') => self.toggle_focused(),
+            // TUI-130: c copies the focused rule's pattern, C the whole rule.
+            KeyCode::Char('c') => self.copy(|rule| rule.pattern.clone()),
+            KeyCode::Char('C') => self.copy(rule_detail),
             KeyCode::Char(_) => BlocklistEvent::Consumed,
             KeyCode::Enter => self.toggle_focused(),
             _ => BlocklistEvent::Consumed,
+        }
+    }
+
+    /// TUI-130: copy `text` of the focused rule through `CopyToClipboard`.
+    fn copy(&self, text: impl Fn(&BlocklistRuleInfo) -> String) -> BlocklistEvent {
+        match self.focused_rule() {
+            Some(rule) => BlocklistEvent::Emit(Box::new(Action::CopyToClipboard(text(rule)))),
+            None => BlocklistEvent::Consumed,
         }
     }
 
@@ -303,4 +322,16 @@ pub fn derive_category(pattern: &str) -> &'static str {
     } else {
         "bash"
     }
+}
+
+/// TUI-130: the focused rule's whole detail, as the detail pane lists it.
+fn rule_detail(rule: &BlocklistRuleInfo) -> String {
+    let mut text = format!(
+        "ID: {}\nAction: {}\nSource: {}\nPattern: {}\nReason: {}",
+        rule.id, rule.action, rule.source, rule.pattern, rule.reason
+    );
+    if let Some(guidance) = &rule.guidance {
+        text.push_str(&format!("\nGuidance: {guidance}"));
+    }
+    text
 }

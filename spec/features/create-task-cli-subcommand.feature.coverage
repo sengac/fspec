@@ -18,7 +18,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -29,7 +31,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "127-166",
+          "lines": "136-173",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_task.rs",
@@ -83,7 +85,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +98,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "167-211",
+          "lines": "179-241",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_task.rs",
@@ -143,7 +147,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "let mut obj = serde_json::Map::new();",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,7 +160,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "212-233",
+          "lines": "247-269",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_task.rs",
@@ -164,7 +170,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,7 +183,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "234-256",
+          "lines": "275-295",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_task.rs",
@@ -185,7 +193,9 @@
                 95,
                 96,
                 97
-              ]
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -196,13 +206,15 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "257-315",
+          "lines": "301-367",
           "implMappings": [
             {
               "file": "rust/fspec/src/create_task.rs",
               "lines": [
                 69
-              ]
+              ],
+              "firstLine": "match create_task::run(&args_json, &project_root).await {",
+              "lastLine": "match create_task::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -213,7 +225,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_create_task.rs",
-          "lines": "316-337",
+          "lines": "375-396",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/create_task.rs",
@@ -343,13 +355,10 @@
                 123,
                 124,
                 125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131
-              ]
+                126
+              ],
+              "firstLine": "//! `create-task` help configuration — Rust port of",
+              "lastLine": "notes: NOTES,"
             }
           ]
         }
@@ -367,6 +376,6 @@
       "rust/fspec/src/create_task.rs",
       "rust/fspec-core/src/help/configs/create_task.rs"
     ],
-    "totalLinesCovered": 507
+    "totalLinesCovered": 525
   }
 }

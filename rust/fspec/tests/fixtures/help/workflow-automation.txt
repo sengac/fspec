@@ -10,7 +10,7 @@ PREREQUISITES
   • Work unit is in appropriate state for action
 
 USAGE
-  fspec workflow-automation <action> [work-unit-id] [options]
+  fspec workflow-automation <action> [workUnitId] [options]
 
 Actions:
   record-iteration     - Increment iteration counter for work unit
@@ -20,7 +20,7 @@ Actions:
 ARGUMENTS
   <action> (required)
     Action to perform: record-iteration, auto-advance, validate-alignment
-  <work-unit-id> (required)
+  <workUnitId> (required)
     Work unit ID (required for all actions)
 
 OPTIONS
@@ -43,7 +43,6 @@ fspec workflow-automation record-iteration AUTH-001
 fspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing
 
 # Now in implementing state, ready for next feature
-    undefined
 
   • ACDD State Automation
     Example: # Specifying → Testing (after specs complete)
@@ -54,22 +53,20 @@ fspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state 
 
 # Validating → Done (after validation passes)
 fspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating
-    undefined
 
   • Spec Alignment Validation
     Example: # After creating feature files, validate alignment
 fspec workflow-automation validate-alignment AUTH-001
 
 # If not aligned, add @AUTH-001 tag to scenarios
-fspec add-scenario user-authentication "Login flow" --tags @AUTH-001
+fspec add-tag-to-scenario user-authentication "Login flow" @AUTH-001
 
 # Re-validate
 fspec workflow-automation validate-alignment AUTH-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Start work: fspec update-work-unit-status <id> testing → 2. Write tests (red) → 3. Record iteration: fspec workflow-automation record-iteration <id> → 4. Implement (green) → 5. Tests pass → 6. Auto-advance: fspec workflow-automation auto-advance <id> --event tests-pass --from-state testing → 7. Validate alignment: fspec workflow-automation validate-alignment <id>
+  1. Start work: fspec update-work-unit-status <workUnitId> testing → 2. Write tests (red) → 3. Record iteration: fspec workflow-automation record-iteration <workUnitId> → 4. Implement (green) → 5. Tests pass → 6. Auto-advance: fspec workflow-automation auto-advance <workUnitId> --event tests-pass --from-state testing → 7. Validate alignment: fspec workflow-automation validate-alignment <workUnitId>
 
 EXAMPLES
   1. Increment iteration counter (tracks red→green cycles)
@@ -101,7 +98,7 @@ COMMON ERRORS
     Fix: Verify work unit ID. Run: fspec list-work-units
 
   ✗ Error: Invalid transition: tests-pass from implementing
-    Fix: tests-pass event only valid from "testing" state. Check current state with: fspec show-work-unit <id>
+    Fix: tests-pass event only valid from "testing" state. Check current state with: fspec show-work-unit <workUnitId>
 
   ✗ Error: Work unit is in state "implementing", expected "testing"
     Fix: State mismatch. Verify current state before auto-advance. Use --from-state to ensure safety.

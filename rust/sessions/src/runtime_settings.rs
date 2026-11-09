@@ -14,11 +14,12 @@ impl BackgroundSession {
         self.inherit_continue_state(inner.continue_enabled, inner.continue_budget);
         (inner.continue_enabled, inner.continue_budget) = self.get_continue_state();
         let manager = inner.provider_manager();
-        let limits = resolve_current_model_limits(manager);
+        // MODEL-011: keep the cached thinking target on the turn's model.
+        self.set_thinking_target(
+            codelet_providers::thinking_wire::ThinkingTarget::for_provider_manager(manager),
+        );
         self.set_model_limits(
-            limits.context_window,
-            limits.max_output_tokens,
-            limits.compaction_threshold,
+            resolve_current_model_limits(manager).map_err(|error| error.to_string())?,
         );
         codelet_tools::model_capabilities::set_session_model_max_images(
             self.id,

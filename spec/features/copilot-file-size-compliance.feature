@@ -1,4 +1,6 @@
 @BUG-125
+@providers
+@provider-abstraction
 Feature: Copilot Rust files exceed 300-line limit (PROV-053 rule 21)
   """
   Extracted token refresh orchestration lives in token_refresh.rs. provider.rs still under 300 lines.

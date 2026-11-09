@@ -39,10 +39,12 @@ fn write_daemon_json(path: &std::path::Path, port: u16, pid: u32) {
 /// Spawn fspec daemon with an explicit XDG_RUNTIME_DIR and read its port.
 fn spawn_daemon_with_xdg(workspace: &std::path::Path, xdg: &std::path::Path) -> (ChildGuard, u16) {
     use std::io::BufRead;
-    let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
+    let mut child = common::IsolatedCommand::new(env!("CARGO_BIN_EXE_fspec"))
         .arg("daemon")
         .arg("--workspace")
         .arg(workspace)
+        // BUG-627: HOME in the same temp dir as the runtime dir.
+        .env("HOME", xdg)
         .env("XDG_RUNTIME_DIR", xdg)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

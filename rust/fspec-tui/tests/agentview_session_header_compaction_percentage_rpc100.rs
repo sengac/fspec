@@ -18,13 +18,9 @@
 //! the same fixture pattern as
 //! `agentview_session_header_per_session_tokens_rpc099.rs`.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::ViewMode;
@@ -124,14 +120,14 @@ fn drain_actions(app: &mut App) {
 }
 
 /// Render the full App into a 100x24 `TestBackend` and return the buffer.
-fn render_app_buffer(app: &mut App) -> Buffer {
+fn render_app_buffer(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(100, 24);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Concatenate the symbol of every cell on row `y`.
@@ -182,7 +178,7 @@ fn fg_color_at_substring(buf: &Buffer, needle: &str) -> Option<Color> {
 
 /// Scenario: ContextFillUpdate above 100% renders the raw value (not clamped to 100)
 #[test]
-fn context_fill_update_above_100_renders_raw_value_not_clamped() {
+fn context_fill_update_above_100_renders_raw_value_not_clamped() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -197,7 +193,7 @@ fn context_fill_update_above_100_renders_raw_value_not_clamped() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[105%]"
@@ -217,11 +213,12 @@ fn context_fill_update_above_100_renders_raw_value_not_clamped() {
         Some(Color::Red),
         "context_fill_color band for >=85 must be Red, got fg={fg:?} header={header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: CompactionComplete adds the COMPACTED suffix with reduction taken directly from the percent-unit compression_ratio
 #[test]
-fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
+fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -244,7 +241,7 @@ fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[80%: COMPACTED 60%]"
@@ -252,11 +249,12 @@ fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
         header.contains("[80%: COMPACTED 60%]"),
         "header should show '[80%: COMPACTED 60%]' (wire 60.0 is already percent removed — RPC-420), got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: compaction_reduction is per-session and does not leak across Shift+Right
 #[test]
-fn compaction_reduction_is_per_session_and_does_not_leak() {
+fn compaction_reduction_is_per_session_and_does_not_leak() -> TestResult {
     // @step Given two sessions "s-1" and "s-2" are open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
@@ -285,7 +283,7 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
     drain_actions(&mut app);
 
     // @step When the App renders the AgentView into a 100x24 TestBackend with "s-1" focused
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "COMPACTED 70%"
@@ -297,7 +295,7 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
     // @step When the App dispatches Action::SessionNext to focus "s-2" and re-renders
     app.dispatch(Action::SessionNext);
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[50%]"
@@ -314,7 +312,7 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
     // @step When the App dispatches Action::SessionPrev to focus "s-1" and re-renders
     app.dispatch(Action::SessionPrev);
     drain_actions(&mut app);
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "COMPACTED 70%"
@@ -322,11 +320,12 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
         header.contains("COMPACTED 70%"),
         "s-1 header should show 'COMPACTED 70%' again after Shift+Left, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: SessionStateChange Cleared resets context_fill_pct, tokens, and compaction_reduction
 #[test]
-fn session_state_change_cleared_resets_fill_tokens_and_compaction_reduction() {
+fn session_state_change_cleared_resets_fill_tokens_and_compaction_reduction() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -364,7 +363,7 @@ fn session_state_change_cleared_resets_fill_tokens_and_compaction_reduction() {
     drain_actions(&mut app);
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
 
     // @step Then the SessionHeader text contains "[0%]"
@@ -382,11 +381,12 @@ fn session_state_change_cleared_resets_fill_tokens_and_compaction_reduction() {
         header.contains("tokens: 0↓ 0↑"),
         "after Cleared the token totals must be zero, got: {header:?}"
     );
+    Ok(())
 }
 
 /// Scenario: Compaction notice line and header badge agree on the reduction percentage
 #[test]
-fn compaction_notice_line_and_header_badge_agree_on_reduction_percentage() {
+fn compaction_notice_line_and_header_badge_agree_on_reduction_percentage() -> TestResult {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
@@ -403,7 +403,7 @@ fn compaction_notice_line_and_header_badge_agree_on_reduction_percentage() {
     drain_actions(&mut app);
 
     // @step And the App renders the AgentView into a 100x24 TestBackend
-    let buf = render_app_buffer(&mut app);
+    let buf = render_app_buffer(&mut app)?;
     let header = header_text(&buf);
     let body = body_text(&buf);
 
@@ -417,4 +417,5 @@ fn compaction_notice_line_and_header_badge_agree_on_reduction_percentage() {
         body.contains("60.0% reduction"),
         "scrollback must contain '60.0% reduction' notice line (format_compaction_notice), got body:\n{body}"
     );
+    Ok(())
 }

@@ -1,0 +1,212 @@
+{
+  "scenarios": [
+    {
+      "name": "Both Windows installers install through the same rename-aside function",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug564_windows_installers_rename_aside.rs",
+          "lines": "55-97",
+          "implMappings": [
+            {
+              "file": "scripts/build-install.ps1",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                182
+              ],
+              "firstLine": "function Install-FspecBinary {",
+              "lastLine": "Install-FspecBinary -Source $BINARY -Target $installed"
+            },
+            {
+              "file": "scripts/install.ps1",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                281
+              ],
+              "firstLine": "function Install-FspecBinary {",
+              "lastLine": "Install-FspecBinary -Source $Source -Target $Target"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The new binary replaces fspec.exe by renames inside the install directory",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug564_windows_installers_rename_aside.rs",
+          "lines": "99-152",
+          "implMappings": [
+            {
+              "file": "scripts/build-install.ps1",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "function Install-FspecBinary {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed install leaves fspec.exe as it was",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug564_windows_installers_rename_aside.rs",
+          "lines": "154-199",
+          "implMappings": [
+            {
+              "file": "scripts/install.ps1",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ],
+              "firstLine": "function Install-FspecBinary {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug564_windows_installers_rename_aside.rs"
+    ],
+    "implFiles": [
+      "scripts/build-install.ps1",
+      "scripts/install.ps1"
+    ],
+    "totalLinesCovered": 277
+  }
+}

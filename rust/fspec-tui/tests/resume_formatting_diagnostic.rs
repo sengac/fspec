@@ -3,16 +3,14 @@
 //! The screenshot shows text broken into extremely narrow lines after resume.
 //! This test reproduces the exact resume path and dumps the buffer.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
-use tokio::time::timeout;
 
 mod common;
 use common::{buffer_to_rows, render_one_frame, MockBackend};
@@ -21,16 +19,17 @@ fn sid(s: &str) -> SessionId {
     SessionId::new(s)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -39,7 +38,7 @@ async fn drain_pending(app: &mut App) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_flow_renders_text_correctly() {
+async fn resume_flow_renders_text_correctly() -> TestResult {
     // @step Given an App with session s-1 in AgentView mode
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -61,16 +60,17 @@ async fn resume_flow_renders_text_correctly() {
     app.dispatch(Action::AttachToSession(resume_sid.clone()));
 
     // @step And I drain all pending tasks (resume_session + get_buffered_output)
-    let result = timeout(Duration::from_secs(2), async {
-        drain_pending(&mut app).await;
+    codelet_test_helpers::deadlock_guard("the resume round-trip", async {
+        drain_pending(&mut app).await?;
+        Ok::<(), codelet_test_helpers::TestError>(())
     })
-    .await;
-    assert!(result.is_ok(), "drain_pending should not timeout");
+    .await
+    .or_fail("drain_pending should not timeout")??;
 
     // @step When I render the App into an 80x24 buffer
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
-    let buf = render_one_frame(&mut terminal, &mut app);
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
+    let buf = render_one_frame(&mut terminal, &mut app)?;
 
     let rows = buffer_to_rows(&buf);
     eprintln!("=== resume_flow_render ===");
@@ -99,6 +99,7 @@ async fn resume_flow_renders_text_correctly() {
         }
     }
     assert!(found_assistant, "Assistant line should be intact");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ async fn resume_flow_renders_text_correctly() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_flow_chunk_line_widths() {
+async fn resume_flow_chunk_line_widths() -> TestResult {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
@@ -123,17 +124,18 @@ async fn resume_flow_chunk_line_widths() {
 
     app.dispatch(Action::AttachToSession(resume_sid.clone()));
 
-    let result = timeout(Duration::from_secs(2), async {
-        drain_pending(&mut app).await;
+    codelet_test_helpers::deadlock_guard("the resume round-trip", async {
+        drain_pending(&mut app).await?;
+        Ok::<(), codelet_test_helpers::TestError>(())
     })
-    .await;
-    assert!(result.is_ok());
+    .await
+    .or_fail("drain_pending should not timeout")??;
 
     // Check the chunk lines directly
     let ctx = app
         .agent_view_store()
         .session_context_for(&resume_sid)
-        .expect("session context for resumed session");
+        .or_fail("session context for resumed session")?;
 
     let chunks = ctx.scrollback.chunks();
     eprintln!("chunk_count = {}", chunks.len());
@@ -162,6 +164,7 @@ async fn resume_flow_chunk_line_widths() {
             }
         }
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -169,7 +172,7 @@ async fn resume_flow_chunk_line_widths() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_flow_render_after_drain() {
+async fn resume_flow_render_after_drain() -> TestResult {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
@@ -187,16 +190,17 @@ async fn resume_flow_render_after_drain() {
 
     app.dispatch(Action::AttachToSession(resume_sid.clone()));
 
-    let result = timeout(Duration::from_secs(2), async {
-        drain_pending(&mut app).await;
+    codelet_test_helpers::deadlock_guard("the resume round-trip", async {
+        drain_pending(&mut app).await?;
+        Ok::<(), codelet_test_helpers::TestError>(())
     })
-    .await;
-    assert!(result.is_ok());
+    .await
+    .or_fail("drain_pending should not timeout")??;
 
     // Render and dump
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
-    let buf = render_one_frame(&mut terminal, &mut app);
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
+    let buf = render_one_frame(&mut terminal, &mut app)?;
 
     let rows = buffer_to_rows(&buf);
     eprintln!("=== resume_flow_render_after_drain ===");
@@ -228,4 +232,5 @@ async fn resume_flow_render_after_drain() {
         found_assistant,
         "Assistant line should be intact on one row"
     );
+    Ok(())
 }

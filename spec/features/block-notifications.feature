@@ -1,4 +1,6 @@
 @BLOCK-006
+@tools
+@interaction
 Feature: Block Notifications
   """
   Block Notifications: When AI action is blocked, emit a notification event to TUI showing 'AI was blocked from {action} - {reason}'. Use existing NotificationDialog or toast pattern. Notifications appear briefly then auto-dismiss, allowing user to see what AI attempted.

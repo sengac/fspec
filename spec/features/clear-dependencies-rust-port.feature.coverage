@@ -5,16 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "86-115",
+          "lines": "116-144",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                78,
-                79,
-                80,
-                81,
-                82,
                 83,
                 84,
                 85,
@@ -26,8 +21,12 @@
                 91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -38,22 +37,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "117-135",
+          "lines": "146-168",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                96,
-                97,
-                98,
-                99,
                 100,
                 101,
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "// Load (auto-create on first run).",
+              "lastLine": "}"
             }
           ]
         }
@@ -64,15 +65,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "137-175",
+          "lines": "170-233",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -102,8 +99,18 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "let source_id = args.work_unit_id;",
+              "lastLine": "})"
             }
           ]
         }
@@ -114,13 +121,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "177-209",
+          "lines": "235-278",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                120,
-                121,
                 122,
                 123,
                 124,
@@ -129,8 +134,12 @@
                 127,
                 128,
                 129,
-                130
-              ]
+                130,
+                131,
+                132
+              ],
+              "firstLine": "filter_field_on_unit(&mut data, target_id, \"blocks\", &source_id);",
+              "lastLine": "}"
             }
           ]
         }
@@ -141,15 +150,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "211-239",
+          "lines": "280-316",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -179,8 +184,18 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "let source_id = args.work_unit_id;",
+              "lastLine": "})"
             }
           ]
         }
@@ -191,13 +206,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "241-264",
+          "lines": "318-349",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                164,
-                165,
                 166,
                 167,
                 168,
@@ -217,8 +230,12 @@
                 182,
                 183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187
+              ],
+              "firstLine": "return Vec::new();",
+              "lastLine": "/// missing (TS guard `data.workUnits[targetId]?.<field>`)."
             }
           ]
         }
@@ -229,22 +246,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "266-289",
+          "lines": "351-389",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "// Bump updatedAt on the SOURCE unit only (TS line 89).",
+              "lastLine": "})"
             }
           ]
         }
@@ -255,16 +279,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/clear_dependencies.rs",
-          "lines": "291-323",
+          "lines": "391-431",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/clear_dependencies.rs",
               "lines": [
-                115,
-                116,
-                117,
-                118
-              ]
+                119,
+                120,
+                121,
+                122,
+                123
+              ],
+              "firstLine": "// ── blockedBy branch (bidirectional mirror) ──",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,6 +308,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/clear_dependencies.rs"
     ],
-    "totalLinesCovered": 373
+    "totalLinesCovered": 462
   }
 }

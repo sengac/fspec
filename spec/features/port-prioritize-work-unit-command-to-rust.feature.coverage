@@ -168,17 +168,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -352,17 +345,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -536,17 +522,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -720,17 +699,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -741,7 +713,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
-          "lines": "193-224",
+          "lines": "193-223",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
@@ -904,17 +876,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1088,17 +1053,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1109,7 +1067,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
-          "lines": "260-287",
+          "lines": "259-294",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
@@ -1272,17 +1230,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1293,7 +1244,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
-          "lines": "289-316",
+          "lines": "300-318",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
@@ -1456,17 +1407,10 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
             }
           ]
         }
@@ -1477,7 +1421,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
-          "lines": "318-351",
+          "lines": "331-354",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
@@ -1640,17 +1584,175 @@
                 251,
                 252,
                 253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263
-              ]
+                254
+              ],
+              "firstLine": "// BUG-477: hold the spec lock from the first read to the last write.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Position top reorders a work unit within the specifying column",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
+          "lines": "383-408",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "// ── Remove from current position (filter out any duplicates) ────────",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Position top reorders a work unit within the implementing column",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
+          "lines": "416-441",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "// ── Remove from current position (filter out any duplicates) ────────",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prioritizing the only work unit in a column succeeds as a no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
+          "lines": "449-470",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "// ── Remove from current position (filter out any duplicates) ────────",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Position bottom moves a work unit to the end of its column",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
+          "lines": "478-497",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ],
+              "firstLine": "if let Some(position) = &args.position {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject placement before a non-existent work unit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/prioritize_work_unit.rs",
+          "lines": "508-533",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/prioritize_work_unit.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ],
+              "firstLine": "// ── before/after existence (TS: prioritize-work-unit.ts:45-50) ──────",
+              "lastLine": "}"
             }
           ]
         }
@@ -1658,8 +1760,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/prioritize_work_unit.rs"
@@ -1667,6 +1769,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/prioritize_work_unit.rs"
     ],
-    "totalLinesCovered": 1786
+    "totalLinesCovered": 1888
   }
 }

@@ -1,5 +1,7 @@
 @wip
 @RPC-174
+@cli
+@foundation-management
 Feature: Port add-command command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_command.rs. INLINE style: the TS source

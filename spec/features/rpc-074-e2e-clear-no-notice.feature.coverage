@@ -31,7 +31,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Err the failure is logged via `tracing::error!` ONLY — no",
+              "lastLine": "// this file is free of divergent literals."
             }
           ]
         }

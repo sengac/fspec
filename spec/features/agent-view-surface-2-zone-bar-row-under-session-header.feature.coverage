@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "209-254",
+          "lines": "223-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
@@ -15,7 +15,6 @@
                 40,
                 41,
                 42,
-                43,
                 44,
                 45,
                 46,
@@ -23,11 +22,6 @@
                 48,
                 49,
                 50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -72,8 +66,16 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "/// MENU-009 R1: the agent bar's Zone C — the two right-aligned action",
+              "lastLine": "/// MENU-003: paint the 2-zone bar row into `areas.menu` and refresh"
             }
           ]
         }
@@ -84,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "256-291",
+          "lines": "271-306",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -182,7 +184,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "/// MENU-003: the 6-constraint layout for the `menu_row` panes —",
+              "lastLine": "// (mouse_dispatch.rs) and the hardware cursor (cursor_position) —"
             }
           ]
         }
@@ -193,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "293-320",
+          "lines": "309-336",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -210,7 +214,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "pub(crate) fn activate_menu_chip(&mut self, j: usize) {",
+              "lastLine": "if let Some(idx) = open_idx {"
             }
           ]
         }
@@ -221,7 +227,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "322-340",
+          "lines": "339-357",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -238,7 +244,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "pub(crate) fn activate_menu_chip(&mut self, j: usize) {",
+              "lastLine": "if let Some(idx) = open_idx {"
             }
           ]
         }
@@ -249,7 +257,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "342-358",
+          "lines": "360-376",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -266,7 +274,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "pub(crate) fn activate_menu_chip(&mut self, j: usize) {",
+              "lastLine": "if let Some(idx) = open_idx {"
             }
           ]
         }
@@ -277,7 +287,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "431-454",
+          "lines": "472-501",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -301,7 +311,9 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "MenuFocus::ZoneB(next - items)",
+              "lastLine": "/// R5: activate chip `j` — focus the chip's session (the store"
             }
           ]
         }
@@ -312,19 +324,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "479-500",
+          "lines": "528-549",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
               "lines": [
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174
-              ]
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "if bare_char(key) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -335,7 +349,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "502-520",
+          "lines": "552-570",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -350,7 +364,9 @@
                 145,
                 146,
                 147
-              ]
+              ],
+              "firstLine": "/// MENU-009 R2/R3: activate Zone C button `index` — clear the bar",
+              "lastLine": "self.emit(crate::components::Action::MenuZoneCActivate(index));"
             }
           ]
         }
@@ -361,7 +377,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "522-540",
+          "lines": "573-591",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -378,7 +394,9 @@
                 127,
                 128,
                 129
-              ]
+              ],
+              "firstLine": "pub(crate) fn activate_menu_chip(&mut self, j: usize) {",
+              "lastLine": "if let Some(idx) = open_idx {"
             }
           ]
         }
@@ -389,7 +407,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "566-585",
+          "lines": "619-644",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -415,7 +433,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "MouseEventKind::ScrollRight if self.menu_state.focus().is_some() => {",
+              "lastLine": "return Some(EventResult::consumed());"
             }
           ]
         }
@@ -426,20 +446,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "587-621",
+          "lines": "647-681",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
-                54
-              ]
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "MouseEventKind::ScrollLeft if self.menu_state.focus().is_some() => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -450,20 +472,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "623-640",
+          "lines": "684-702",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
-                54
-              ]
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "MouseEventKind::ScrollLeft if self.menu_state.focus().is_some() => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -474,12 +498,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "642-665",
+          "lines": "705-728",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
               "lines": [
-                64,
                 65,
                 66,
                 67,
@@ -534,19 +557,7 @@
                 116,
                 117,
                 118,
-                119,
-                120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -555,8 +566,20 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// Zone A item rects, in `CATEGORIES` order.",
+              "lastLine": "if level < 4 && !cells.is_empty() {"
             }
           ]
         }
@@ -567,20 +590,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "456-477",
+          "lines": "504-525",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// MENU-007: activate the 'Board View' item — emit",
+              "lastLine": "}"
             }
           ]
         }
@@ -591,7 +616,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "542-564",
+          "lines": "594-616",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -617,7 +642,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "MouseEventKind::ScrollRight if self.menu_state.focus().is_some() => {",
+              "lastLine": "return Some(EventResult::consumed());"
             }
           ]
         }
@@ -628,7 +655,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "667-686",
+          "lines": "732-769",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -663,7 +690,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "/// `menu_row=true`). The cached `zone_c_rects` is the PAINTED set",
+              "lastLine": "if len == 0 {"
             }
           ]
         }
@@ -671,17 +700,29 @@
     },
     {
       "name": "The ring walks items then chips then the Zone C buttons then wraps to the first item",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "379-437",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "The ring wraps left from the first item to the last Zone C button",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
+          "lines": "439-469",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 18,
-    "coveredScenarios": 16,
-    "coveragePercent": 89,
+    "coveredScenarios": 18,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/menu003_agent_surface.rs"
     ],
@@ -692,6 +733,6 @@
       "rust/fspec-tui/src/views/agent/menu_mouse.rs",
       "rust/fspec-tui/src/components/menu_bar/layout.rs"
     ],
-    "totalLinesCovered": 934
+    "totalLinesCovered": 923
   }
 }

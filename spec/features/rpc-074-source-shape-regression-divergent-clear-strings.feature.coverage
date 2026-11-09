@@ -31,27 +31,58 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Err the failure is logged via `tracing::error!` ONLY — no",
+              "lastLine": "// this file is free of divergent literals."
             },
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/stub/stub_impl_2.rs",
               "lines": [
-                1505,
-                1506,
-                1507,
-                1508,
-                1509,
-                1510,
-                1511,
-                1512,
-                1513,
-                1514,
-                1515,
-                1516,
-                1517,
-                1518,
-                1519
-              ]
+                12,
+                13,
+                14,
+                15,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "/// RPC-058: seed a single scheduled job as the only row the stub",
+              "lastLine": "pub fn seed_scheduled_jobs(&self, jobs: Vec<ScheduledJob>) {"
+            },
+            {
+              "file": "rust/core/src/session_manager_handle/stub/stub_handle_1.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ],
+              "firstLine": "fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,8 +98,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
-      "rust/core/src/session_manager_handle.rs"
+      "rust/core/src/session_manager_handle/stub/stub_impl_2.rs",
+      "rust/core/src/session_manager_handle/stub/stub_handle_1.rs"
     ],
-    "totalLinesCovered": 85
+    "totalLinesCovered": 105
   }
 }

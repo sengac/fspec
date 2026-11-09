@@ -1,4 +1,6 @@
 @RIG-011
+@codelet
+@context-management
 Feature: Debug Metadata and Reasoning Token Events
   """
   Key files: rust/cli/src/interactive/stream_loop.rs (debug events + api.request model bug),

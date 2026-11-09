@@ -1,0 +1,226 @@
+{
+  "scenarios": [
+    {
+      "name": "A description line starting with a hash stays in the description",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "70-83",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "start += 1;",
+              "lastLine": "end += 1;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Comments after the last scenario are kept",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "85-98",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "pub fn format_feature(feature: &Feature, source: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Background without a name has no trailing space",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "100-113",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "/// `<indent><keyword>: <name>`, or `<indent><keyword>:` with no trailing",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create-feature writes a formatted feature file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "115-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/create_feature.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "fn generate_feature_template(feature_name: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generate-scenarios writes a formatted feature file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "138-181",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_scenarios.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273
+              ],
+              "firstLine": "let architecture_docstring = build_architecture_docstring(extra);",
+              "lastLine": "comments = comment_block,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every committed feature file is formatted",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs",
+          "lines": "200-256",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin_format.rs",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "pub fn format_feature(feature: &Feature, source: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug479_feature_files_match_the_formatter.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/io/gherkin_format.rs",
+      "rust/fspec-core/src/commands/create_feature.rs",
+      "rust/fspec-core/src/commands/generate_scenarios.rs"
+    ],
+    "totalLinesCovered": 265
+  }
+}

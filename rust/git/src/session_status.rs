@@ -540,10 +540,13 @@ pub fn merge_session_with_strategy(
 
     // 4. Commit the merged state — only when tracked changes exist,
     //    so a no-op merge produces no empty commit.
-    let has_changes =
-        !diff.files_changed.is_empty() || !diff.files_added.is_empty() || !diff.files_deleted.is_empty();
+    let has_changes = !diff.files_changed.is_empty()
+        || !diff.files_added.is_empty()
+        || !diff.files_deleted.is_empty();
     let merge_commit = if has_changes {
-        Some(commit_merged_session(repo_path, session_id, &applied, &diff)?)
+        Some(commit_merged_session(
+            repo_path, session_id, &applied, &diff,
+        )?)
     } else {
         None
     };

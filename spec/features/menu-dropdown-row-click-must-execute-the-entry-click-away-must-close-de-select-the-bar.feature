@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @bug
 @menu-bar
@@ -47,19 +48,13 @@ Feature: Menu dropdown: row click must execute the entry; click away must close 
   Scenario: Clicking a dropdown entry row executes that entry
     Given the board has 1 open session and the Kanban dropdown is open with the cursor on row 0 (New Agent)
     When I click the 'New Agent' row in the open dropdown
-    Then the active view is the Agent view showing that session
+    Then the CreateSessionDialog mounts over the board (BUG-203: the New Agent row always starts a new agent)
     And the dropdown closes and the bar highlight clears
 
   Scenario: Clicking a non-cursor dropdown row executes the clicked row
     Given the board has 2 open sessions and the Kanban dropdown is open with the cursor on row 3 (Attachments)
     When I click the 'New Agent' row (row 0) in the open dropdown
-    Then the active view is the Agent view showing the session that was current before the click
-    And the dropdown closes and the bar highlight clears
-
-  Scenario: Clicking the Help dropdown Exit row opens the exit confirmation
-    Given the Help dropdown is open with the cursor on row 0 (Help)
-    When I click the 'Exit' row in the open dropdown
-    Then the exit confirmation dialog opens
+    Then the CreateSessionDialog mounts over the board (BUG-203: the clicked New Agent row always starts a new agent)
     And the dropdown closes and the bar highlight clears
 
   Scenario: A click on the dropdown border rows does nothing

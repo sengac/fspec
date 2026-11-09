@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "A HITL question without options is rejected",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/bug403_hitl_wire_required_fields.rs",
+          "lines": "11-19",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ],
+              "firstLine": "pub struct HitlQuestion {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A HITL response without answers is rejected",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/bug403_hitl_wire_required_fields.rs",
+          "lines": "21-33",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185
+              ],
+              "firstLine": "pub struct HitlResponse {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The send-path static check requires its end marker",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/bug403_hitl_wire_required_fields.rs",
+          "lines": "35-54",
+          "implMappings": [
+            {
+              "file": "rust/sessions/tests/rpc410_hitl_wire_protocol_static_checks.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": ".expect(\"handle_impl.rs must define send_hitl_response\");",
+              "lastLine": ".expect(\"handle_impl.rs must define get_pause_state after send_hitl_response (the send path's end marker)\");"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-types/tests/bug403_hitl_wire_required_fields.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/session_state.rs",
+      "rust/sessions/tests/rpc410_hitl_wire_protocol_static_checks.rs"
+    ],
+    "totalLinesCovered": 60
+  }
+}

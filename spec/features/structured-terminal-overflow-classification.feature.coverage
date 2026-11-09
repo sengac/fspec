@@ -51,7 +51,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,7 +110,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -165,7 +169,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -222,7 +228,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }

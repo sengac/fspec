@@ -82,3 +82,25 @@ Feature: Validate-tags CLI subcommand
     When I dispatch validate-tags through fspec_core::dispatch::dispatch_command and also run `./rust/target/release/fspec validate-tags` against the same on-disk state
     Then both paths agree the file is invalid
     Then the CLI bridge module rust/fspec/src/validate_tags.rs contains NO inline validation or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: CLI with no flags prints only the summary line for an all-valid tree
+    Given three feature files carry only registered tags
+    When I run `./rust/target/release/fspec validate-tags`
+    Then the command exits 0
+    Then stdout does NOT contain the substring '✓ All tags in '
+    Then stdout is exactly the line '✓ 3 files passed'
+
+  Scenario: CLI with no flags prints only the violation blocks and the summary when some files fail
+    Given three feature files carry only registered tags and two carry the unregistered tag '@nonexistent'
+    When I run `./rust/target/release/fspec validate-tags`
+    Then the command exits with code 1
+    Then stdout does NOT contain the substring '✓ All tags in '
+    Then stdout contains exactly 2 '✗ <file> has tag violations:' blocks
+    Then stdout contains the line '✓ 3 files passed'
+    Then stdout contains the line '✗ 2 files have tag violations'
+
+  Scenario: CLI --summary with --verbose prints only the two summary count lines
+    Given one feature file carries only registered tags and one carries the unregistered tag '@nonexistent'
+    When I run `./rust/target/release/fspec validate-tags --summary --verbose`
+    Then the command exits with code 1
+    Then stdout is exactly the lines '✓ 1 files passed' and '✗ 1 files have tag violations'

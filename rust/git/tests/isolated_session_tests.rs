@@ -23,6 +23,8 @@ use std::process::Command;
 /// Get HEAD commit SHA
 fn get_head_sha(repo_path: &Path) -> String {
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", "HEAD"])
         .current_dir(repo_path)
         .output()
@@ -263,11 +265,15 @@ fn test_create_isolated_session_at_specific_ref() {
     // Create a second commit
     fs::write(repo_path.join("file2.txt"), "Second file\n").expect("Failed to write file2");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["add", "."])
         .current_dir(repo_path)
         .output()
         .expect("Failed to stage files");
     Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["commit", "-m", "Second commit"])
         .current_dir(repo_path)
         .output()
@@ -275,6 +281,8 @@ fn test_create_isolated_session_at_specific_ref() {
 
     // Get first commit SHA
     let output = Command::new("git")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
         .args(["rev-parse", "HEAD~1"])
         .current_dir(repo_path)
         .output()

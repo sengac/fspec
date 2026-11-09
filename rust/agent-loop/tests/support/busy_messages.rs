@@ -30,8 +30,9 @@ impl Fixture {
             include_str!("../fixtures/prov101_models.json"),
         )?;
         codelet_core::persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new();
         let target_id = Uuid::new_v4().to_string();
         manager
             .create_session_with_id(

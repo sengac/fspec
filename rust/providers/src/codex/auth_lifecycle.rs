@@ -24,22 +24,35 @@ pub struct LoginAttempt {
     _done: watch::Sender<bool>,
 }
 
-pub(super) fn normalized_home(home: &Path) -> PathBuf {
-    home.canonicalize().unwrap_or_else(|_| home.to_path_buf())
+/// The canonical Codex home that keys pending logins, so every alias of a
+/// home reaches the same attempt. A home that cannot be resolved is an
+/// error naming it (BUG-658: never keyed by the unresolved path).
+pub(super) fn normalized_home(home: &Path) -> Result<PathBuf, AuthError> {
+    home.canonicalize().map_err(|source| AuthError::Home {
+        path: home.to_path_buf(),
+        source,
+    })
 }
 
-pub(crate) fn cancel_at(home: &Path) {
-    let home = normalized_home(home);
+/// Cancels the pending logins of `home`. BUG-658: callers create the home
+/// first and never hold or await the auth lock here: a login begun earlier
+/// re-checks the cancel flag and its generation under the lock, so it can
+/// never commit afterwards.
+pub(crate) fn cancel_at(home: &Path) -> Result<(), AuthError> {
+    let home = normalized_home(home)?;
     if let Ok(attempts) = ATTEMPTS.lock() {
         if let Some(active) = attempts.get(&home) {
             let _ = active.cancel.send(true);
         }
     }
-    super::device_session::cancel_pending(&home);
+    super::device_session::cancel_pending(&home)?;
+    super::browser_session::cancel_pending(&home)
 }
 
-pub fn cancel_login() {
-    cancel_at(&auth_storage::home());
+/// Cancels the pending login of the current Codex home without waiting on
+/// the auth lock (BUG-658), creating the home when there is none.
+pub fn cancel_login() -> Result<(), AuthError> {
+    auth_storage::cancel_pending_logins(&auth_storage::home())
 }
 
 fn snapshot(home: &Path) -> Result<Value, AuthError> {
@@ -61,8 +74,9 @@ impl LoginAttempt {
     pub(super) async fn begin_until(deadline: Instant) -> Result<Self, AuthError> {
         let home = auth_storage::home();
         std::fs::create_dir_all(&home)?;
-        let home = home.canonicalize()?;
-        super::device_session::cancel_pending(&home);
+        let home = normalized_home(&home)?;
+        super::device_session::cancel_pending(&home)?;
+        super::browser_session::cancel_pending(&home)?;
         let id = uuid::Uuid::new_v4().to_string();
         let (cancel_tx, cancel) = watch::channel(false);
         let (done, done_rx) = watch::channel(false);

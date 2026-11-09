@@ -8,77 +8,6 @@
           "lines": "75-114",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
-            },
-            {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
               "lines": [
                 29,
@@ -99,7 +28,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "use super::stderr::style_modal_raw_line;",
+              "lastLine": "/// shorter, and the content rides through unpadded — no trailing space — when"
             }
           ]
         }
@@ -110,7 +41,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "115-135",
+          "lines": "116-139",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
@@ -157,56 +88,13 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "/// 1-based line of the edit within the file (1 for Write / unknown).",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A Bash tool result renders plain white with no diff coloring",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "136-159",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -233,17 +121,21 @@
                 166,
                 167,
                 168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
+                169
+              ],
+              "firstLine": "/// threshold counts hard `\\n`-delimited BODY lines (pre-wrap) to match",
+              "lastLine": "}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "A Bash tool result renders plain white with no diff coloring",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "139-167"
         }
       ]
     },
@@ -252,7 +144,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "160-203",
+          "lines": "160-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
@@ -264,7 +156,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "\"write\" | \"write_file\" => {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
@@ -290,7 +184,9 @@
                 131,
                 132,
                 133
-              ]
+              ],
+              "firstLine": "/// (the un-truncated body); falls back to joining the cached",
+              "lastLine": ".map(|s| s.content.as_ref())"
             }
           ]
         }
@@ -301,51 +197,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "204-228",
+          "lines": "224-250",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
               "lines": [
@@ -374,7 +227,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// 1-based line of the edit within the file (1 for Write / unknown).",
+              "lastLine": "let file_path = obj.get(\"file_path\").and_then(|v| v.as_str());"
             }
           ]
         }
@@ -385,7 +240,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "229-264",
+          "lines": "252-290",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -457,7 +312,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "use super::stderr::style_modal_raw_line;",
+              "lastLine": "}"
             }
           ]
         }
@@ -468,7 +325,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "265-289",
+          "lines": "292-312",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
@@ -510,7 +367,9 @@
                 63,
                 64,
                 65
-              ]
+              ],
+              "firstLine": "use super::stderr::style_modal_raw_line;",
+              "lastLine": "/// **RPC-393**: style a single WRAPPED diff body line (a fragment produced by"
             }
           ]
         }
@@ -521,26 +380,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
-          "lines": "290-326",
+          "lines": "302-348",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
               "lines": [
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -550,8 +394,27 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "/// threshold counts hard `\\n`-delimited BODY lines (pre-wrap) to match",
+              "lastLine": "}"
             }
           ]
         }
@@ -566,12 +429,11 @@
       "rust/fspec-tui/tests/edit_diff_rendering_rpc391.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/store/agent_view/chunk_processor.rs",
       "rust/fspec-tui/src/store/agent_view/diff_decode.rs",
       "rust/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
       "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
       "rust/fspec-tui/src/views/agent/scrollback_select.rs"
     ],
-    "totalLinesCovered": 661
+    "totalLinesCovered": 544
   }
 }

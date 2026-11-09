@@ -10,10 +10,10 @@ PREREQUISITES
   • Work unit must have eventStorm section initialized
 
 USAGE
-  fspec show-event-storm <work-unit-id>
+  fspec show-event-storm <workUnitId>
 
 ARGUMENTS
-  <work-unit-id> (required)
+  <workUnitId> (required)
     Work unit ID to query
 
 OPTIONS
@@ -39,10 +39,10 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit not found
-    Fix: Ensure work unit exists: fspec show-work-unit <id>
+    Fix: Ensure work unit exists: fspec show-work-unit <workUnitId>
 
   ✗ No Event Storm artifacts
-    Fix: Add Event Storm items first: fspec add-domain-event <id> <text>
+    Fix: Add Event Storm items first: fspec add-domain-event <workUnitId> <text>
 
 RELATED COMMANDS
   fspec add-domain-event

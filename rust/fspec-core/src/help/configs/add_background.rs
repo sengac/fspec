@@ -4,9 +4,9 @@
 //! Byte-for-byte parity with `node dist/index.js add-background --help`
 //! piped to non-TTY (fixture: rust/fspec/tests/fixtures/help/add-background.txt).
 //!
-//! NOTE: the TS `CommonPattern` entries omit a `description` field, so the
-//! formatter prints the JS `undefined` string verbatim after each pattern's
-//! `Example:` line. We mirror that exactly by setting `description: "undefined"`.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommonError, CommonPattern,
@@ -32,12 +32,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "User Story Format",
         example: "fspec add-background login \"As a [role]\\nI want to [action]\\nSo that [benefit]\"",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Update Existing Background",
         example: "# Running add-background again replaces the existing Background\nfspec add-background login \"As a premium user\\nI want to login with SSO\\nSo that I can use corporate credentials\"",
-        description: "undefined",
+        description: None,
     }),
 ];
 

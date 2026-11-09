@@ -20,8 +20,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -209,8 +207,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -236,8 +264,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -425,8 +451,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -437,7 +493,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/compact_work_unit.rs",
-          "lines": "140-164",
+          "lines": "144-172",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
@@ -452,8 +508,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -641,8 +695,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -653,7 +737,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/compact_work_unit.rs",
-          "lines": "166-186",
+          "lines": "174-198",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
@@ -668,8 +752,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -857,8 +939,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -869,7 +981,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/compact_work_unit.rs",
-          "lines": "188-212",
+          "lines": "200-224",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
@@ -884,8 +996,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -1073,8 +1183,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -1085,7 +1225,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/compact_work_unit.rs",
-          "lines": "214-242",
+          "lines": "226-256",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
@@ -1100,8 +1240,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -1289,8 +1427,38 @@
                 253,
                 254,
                 255,
-                256
-              ]
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "assert_eq!(arr[0][\"id\"].as_u64(), Some(0));"
             }
           ]
         }
@@ -1301,7 +1469,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/compact_work_unit.rs",
-          "lines": "244-262",
+          "lines": "258-277",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/compact_work_unit.rs",
@@ -1316,8 +1484,6 @@
                 64,
                 65,
                 66,
-                67,
-                68,
                 69,
                 70,
                 71,
@@ -1423,8 +1589,38 @@
                 171,
                 172,
                 173,
-                174
-              ]
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// Compact one Example-Mapping array on a work unit's `extra` map."
             }
           ]
         }
@@ -1441,6 +1637,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/compact_work_unit.rs"
     ],
-    "totalLinesCovered": 1488
+    "totalLinesCovered": 1681
   }
 }

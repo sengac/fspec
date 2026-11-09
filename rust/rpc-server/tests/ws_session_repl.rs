@@ -1,6 +1,6 @@
 //! Integration tests for the WebSocket session REPL surface (RPC-007).
 //!
-//! Feature: spec/features/session-rpcs-streamchunk-logevent-push-channels-repl-backend.feature
+//! Feature: spec/features/ws-session-repl.feature
 //!
 //! - Scenario: WebSocket list_sessions matches the embedded transport result
 //! - Scenario: WebSocket create_session + send_input yields the same chunk sequence as embedded (cross-transport parity)
@@ -24,21 +24,31 @@ use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionId, SessionInfo, SessionStatus, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
-use tokio::time::timeout;
 
 async fn build_ws() -> (
     tempfile::TempDir,
     EmbeddedTransport,
     codelet_rpc_server::FspecWsClient,
 ) {
+    let (dir, embedded, ws_client, _stub) = build_ws_with_stub().await;
+    (dir, embedded, ws_client)
+}
+
+/// BUG-520: like `build_ws`, also returning the stub so a test can hold its turns.
+async fn build_ws_with_stub() -> (
+    tempfile::TempDir,
+    EmbeddedTransport,
+    codelet_rpc_server::FspecWsClient,
+    Arc<StubSessionManagerHandle>,
+) {
     let (dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
-        Arc::new(StubProvider::new()),
-    ));
+    let stub = Arc::new(StubSessionManagerHandle::with_provider(Arc::new(
+        StubProvider::new(),
+    )));
+    let manager: Arc<dyn SessionManagerHandle> = stub.clone();
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
@@ -51,7 +61,7 @@ async fn build_ws() -> (
     let ws_client = ws_client_connect(ws)
         .await
         .expect("ws_client_connect failed");
-    (dir, embedded, ws_client)
+    (dir, embedded, ws_client, stub)
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -64,7 +74,8 @@ async fn scenario_ws_list_sessions_matches_embedded() {
     let seeded: SessionId = embedded_client
         .create_session(context::current(), Some("default".to_string()))
         .await
-        .expect("create_session must succeed via embedded path");
+        .expect("create_session must succeed via embedded path")
+        .expect("the daemon creates the session");
 
     // @step When the client calls FspecServiceClient::list_sessions(context::current()) over the WebSocket transport
     let ws_listed: Vec<SessionInfo> = ws_client
@@ -72,20 +83,24 @@ async fn scenario_ws_list_sessions_matches_embedded() {
         .list_sessions(
             context::current(),
             std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy()
+                .to_string(),
         )
         .await
-        .expect("WS list_sessions must succeed");
+        .expect("WS list_sessions must succeed")
+        .expect("the sessions are listed");
     let embedded_listed: Vec<SessionInfo> = embedded_client
         .list_sessions(
             context::current(),
             std::env::current_dir()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default(),
+                .expect("the test process has a working directory")
+                .to_string_lossy()
+                .to_string(),
         )
         .await
-        .expect("embedded list_sessions must succeed");
+        .expect("embedded list_sessions must succeed")
+        .expect("the sessions are listed");
 
     // @step Then the call returns Ok(Vec<SessionInfo>) equal to the result of the embedded list_sessions in the parity scenario
     // SessionInfo.id is a flat String (TS-shape compatibility — see
@@ -125,12 +140,14 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("WS create_session must succeed");
+        .expect("WS create_session must succeed")
+        .expect("the daemon creates the session");
     ws_client
         .client()
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("WS send_input must succeed");
+        .expect("WS send_input must succeed")
+        .expect("daemon accepted the input");
 
     // @step Then send_input returns Ok(()) immediately
     // (Asserted by `.expect` above — return type is `()`.)
@@ -139,7 +156,7 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
     let mut ws_chunks: Vec<StreamChunk> = Vec::new();
     let mut em_chunks: Vec<StreamChunk> = Vec::new();
     for _ in 0..16 {
-        match timeout(Duration::from_secs(2), ws_rx.recv()).await {
+        match codelet_test_helpers::deadlock_guard("ws_rx.recv()", ws_rx.recv()).await {
             Ok(Ok((got_sid, c))) if got_sid == sid => {
                 let done = matches!(c, StreamChunk::Done);
                 ws_chunks.push(c);
@@ -152,7 +169,7 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
         }
     }
     for _ in 0..16 {
-        match timeout(Duration::from_secs(2), em_rx.recv()).await {
+        match codelet_test_helpers::deadlock_guard("em_rx.recv()", em_rx.recv()).await {
             Ok(Ok((got_sid, c))) if got_sid == sid => {
                 let done = matches!(c, StreamChunk::Done);
                 em_chunks.push(c);
@@ -180,54 +197,71 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn scenario_get_session_status_reflects_idle_running_idle_on_websocket() {
     // @step Given a session is created via create_session on the WebSocket transport with the StubProvider
-    let (_dir, _embedded, ws_client) = build_ws().await;
+    let (_dir, _embedded, ws_client, stub) = build_ws_with_stub().await;
     let sid: SessionId = ws_client
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("WS create_session must succeed");
+        .expect("WS create_session must succeed")
+        .expect("the daemon creates the session");
+
+    // @step And the stub provider holds each turn open until the caller releases it
+    let turn = stub.hold_turns();
+    let mut status_changes = ws_client.status_changes_rx();
 
     // @step When the caller calls get_session_status(session_id) before any send_input
     let before = ws_client
         .client()
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("WS get_session_status must succeed");
+        .expect("WS get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Idle
-    assert!(matches!(before, SessionStatus::Idle));
+    assert!(matches!(before, SessionStatus::Idle), "before: {before:?}");
 
-    // @step When the caller calls send_input(session_id, "hi") and immediately calls get_session_status(session_id)
+    // @step When the caller calls send_input(session_id, "hi") and calls get_session_status(session_id) while the turn is held
     ws_client
         .client()
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("WS send_input must succeed");
+        .expect("WS send_input must succeed")
+        .expect("daemon accepted the input");
     let during = ws_client
         .client()
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("WS get_session_status must succeed");
+        .expect("WS get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Running
-    assert!(matches!(during, SessionStatus::Running));
+    assert!(
+        matches!(during, SessionStatus::Running),
+        "during: {during:?}"
+    );
 
-    // @step When the stub provider has emitted StreamChunk::Done and the caller calls get_session_status(session_id) again
-    let mut rx = ws_client.chunks_rx();
-    for _ in 0..32 {
-        match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((_, StreamChunk::Done))) => break,
-            Ok(Ok(_)) => continue,
-            _ => break,
+    // @step When the caller releases the turn, receives the session's Idle status change on the WebSocket client \
+    //     and calls get_session_status(session_id) again
+    turn.release();
+    // The deadline only turns a lost event into a failure instead of a hang.
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
+        loop {
+            match status_changes.recv().await {
+                Ok((id, SessionStatus::Idle)) if id == sid => break,
+                Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(error) => panic!("status changes ended before Idle: {error}"),
+            }
         }
-    }
-    tokio::time::sleep(Duration::from_millis(20)).await;
+    })
+    .await
+    .expect("the session's Idle status change must arrive on the WebSocket client");
     let after = ws_client
         .client()
         .get_session_status(context::current(), sid.clone())
         .await
-        .expect("WS get_session_status must succeed");
+        .expect("WS get_session_status must succeed")
+        .expect("the session status is read");
 
     // @step Then the returned SessionStatus is Idle
-    assert!(matches!(after, SessionStatus::Idle));
+    assert!(matches!(after, SessionStatus::Idle), "after: {after:?}");
 }

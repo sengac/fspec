@@ -1,0 +1,93 @@
+{
+  "scenarios": [
+    {
+      "name": "The TUI reorder and the scheduler use the same spec lock",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug477_core_writers_share_spec_lock.rs",
+          "lines": "109-161",
+          "implMappings": [
+            {
+              "file": "rust/core/src/work_units_write.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "/// See module docs for the full semantics.",
+              "lastLine": ".with_context(|| format!(\"lock {}\", spec_dir.display()))?;"
+            },
+            {
+              "file": "rust/core/src/scheduler/trigger.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "pub(crate) fn record_last_run(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/scheduler/crud.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "fn with_schedules_lock<F, T>(project: &str, f: F) -> Result<T, String>",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/bug477_core_writers_share_spec_lock.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/work_units_write.rs",
+      "rust/core/src/scheduler/trigger.rs",
+      "rust/core/src/scheduler/crud.rs"
+    ],
+    "totalLinesCovered": 96
+  }
+}

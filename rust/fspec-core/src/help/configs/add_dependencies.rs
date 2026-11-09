@@ -17,22 +17,22 @@ const ARGS: &[CommandArgument] = &[CommandArgument {
 
 const OPTS: &[CommandOption] = &[
     CommandOption {
-        flag: "--blocks <ids...>",
+        flag: "--blocks <workUnitId>",
         description: "Space-separated list of work unit IDs that this work unit blocks",
         default_value: None,
     },
     CommandOption {
-        flag: "--blocked-by <ids...>",
+        flag: "--blocked-by <workUnitId>",
         description: "Space-separated list of work unit IDs that block this work unit",
         default_value: None,
     },
     CommandOption {
-        flag: "--depends-on <ids...>",
+        flag: "--depends-on <workUnitId>",
         description: "Space-separated list of work unit IDs this work unit depends on",
         default_value: None,
     },
     CommandOption {
-        flag: "--relates-to <ids...>",
+        flag: "--relates-to <workUnitId>",
         description: "Space-separated list of related work unit IDs (non-blocking association)",
         default_value: None,
     },
@@ -78,19 +78,19 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         pattern: "Setting Up Dependency Chain",
         example:
             "# API depends on DB schema and auth\nfspec add-dependencies API-001 --depends-on DB-001 AUTH-001\n\n# UI depends on API\nfspec add-dependencies UI-001 --depends-on API-001",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Marking Blockers",
         example:
             "# Critical bug blocks multiple features\nfspec add-dependencies BUG-001 --blocks FEAT-001 FEAT-002 FEAT-003",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Related Work (Non-Blocking)",
         example:
             "# Documentation relates to multiple features\nfspec add-dependencies DOC-001 --relates-to AUTH-001 API-001 UI-001",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -130,7 +130,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: PREREQS,
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Create work units → 2. Identify dependencies → 3. fspec add-dependencies <id> --depends-on <deps> → 4. Verify: fspec dependencies <id>",
+        "1. Create work units → 2. Identify dependencies → 3. fspec add-dependencies <workUnitId> --depends-on <workUnitId> → 4. Verify: fspec dependencies <workUnitId>",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

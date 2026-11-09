@@ -11,10 +11,10 @@ PREREQUISITES
   • Work unit must be in specifying phase or later
 
 USAGE
-  fspec update-work-unit-estimate <id> <points>
+  fspec update-work-unit-estimate <workUnitId> <points>
 
 ARGUMENTS
-  <id> (required)
+  <workUnitId> (required)
     Work unit ID
   <points> (required)
     Story points (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
@@ -33,13 +33,13 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ ACDD requires feature file completion before estimation
-    Fix: undefined
+    Fix: Complete the specifying phase first: Use Example Mapping, generate scenarios, and ensure feature file has no prefill placeholders
 
   ✗ Feature file has prefill placeholders must be removed first
-    Fix: undefined
+    Fix: Remove all placeholders like [role], [action], [benefit] using fspec CLI commands (NOT Write/Edit tools)
 
   ✗ Invalid estimate: 7. Must be one of: 1,2,3,5,8,13,21
-    Fix: undefined
+    Fix: Use only Fibonacci numbers for estimates
 
 RELATED COMMANDS
   fspec show-work-unit

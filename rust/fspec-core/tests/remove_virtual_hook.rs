@@ -202,7 +202,7 @@ fn scenario_removing_hook_with_duplicate_names_removes_all_matches() {
 fn scenario_removing_hook_deletes_associated_script_file() {
     // Scenario: Removing a hook with an associated script deletes the script file
 
-    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',...,command:'spec/hooks/.virtual/AUTH-001-eslint.sh',blocking:true,gitContext:true}]
+    // @step Given spec/work-units.json contains AUTH-001 with virtualHooks=[{name:'eslint',event:'post-implementing',command:'spec/hooks/.virtual/AUTH-001-eslint.sh',blocking:true,gitContext:true}]
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(
         tmp.path(),

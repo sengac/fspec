@@ -5,10 +5,10 @@
 //! This test file validates that `list_sessions` now accepts a `project_path`
 //! parameter and that both transport backends pass it through correctly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
 use codelet_fspec_tui::{App, FspecBackend};
 use codelet_rpc_types::SessionInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 mod common;
@@ -18,7 +18,7 @@ use common::MockBackend;
  * Scenario: Session list is filtered to current project on /resume
  */
 #[tokio::test]
-async fn session_list_filtered_to_current_project_on_resume() {
+async fn session_list_filtered_to_current_project_on_resume() -> TestResult {
     // @step Given I have sessions persisted in two different projects
     let mock = Arc::new(MockBackend::new());
     let sessions_a = vec![SessionInfo {
@@ -42,6 +42,7 @@ async fn session_list_filtered_to_current_project_on_resume() {
     let mut app = App::new(backend);
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(None));
     app.dispatch(codelet_fspec_tui::Action::SlashCommandSelected(
+        app.current_session(),
         codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
     ));
 
@@ -52,8 +53,8 @@ async fn session_list_filtered_to_current_project_on_resume() {
     );
 
     // Await the spawned list_sessions task so the mock captures the project path
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await task");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
 
     // Drain the action bus and apply SessionListLoaded
     while let Some(action) = app.try_recv_action() {
@@ -66,7 +67,7 @@ async fn session_list_filtered_to_current_project_on_resume() {
         project.is_some(),
         "list_sessions should have been called with a project path"
     );
-    let project = project.unwrap();
+    let project = project.or_fail("expected a value")?;
     assert!(!project.is_empty(), "project path should not be empty");
 
     // @step And sessions from project B should not appear in the list
@@ -83,13 +84,14 @@ async fn session_list_filtered_to_current_project_on_resume() {
             "Only sessions from project A should appear"
         );
     }
+    Ok(())
 }
 
 /**
  * Scenario: Session list refreshes with project filter after deleting a session
  */
 #[tokio::test]
-async fn session_list_refreshes_with_project_filter_after_deleting() {
+async fn session_list_refreshes_with_project_filter_after_deleting() -> TestResult {
     // @step Given I have multiple sessions in the current project
     let mock = Arc::new(MockBackend::new());
     let sessions = vec![
@@ -129,12 +131,13 @@ async fn session_list_refreshes_with_project_filter_after_deleting() {
     let mut app = App::new(backend);
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(None));
     app.dispatch(codelet_fspec_tui::Action::SlashCommandSelected(
+        app.current_session(),
         codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
     ));
 
     // Await the initial list_sessions task
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await task");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
@@ -146,8 +149,8 @@ async fn session_list_refreshes_with_project_filter_after_deleting() {
     app.dispatch(codelet_fspec_tui::Action::ConfirmDeleteSession(sid));
 
     // Await the spawned delete + refresh task
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await task");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
@@ -160,16 +163,17 @@ async fn session_list_refreshes_with_project_filter_after_deleting() {
         "list_sessions should have been called with a project path after delete"
     );
     assert!(
-        !project.unwrap().is_empty(),
+        !project.or_fail("expected a value")?.is_empty(),
         "project path should not be empty on refresh"
     );
+    Ok(())
 }
 
 /**
  * Scenario: Background sessions are included alongside filtered persisted sessions
  */
 #[tokio::test]
-async fn background_sessions_included_with_filtered_persisted() {
+async fn background_sessions_included_with_filtered_persisted() -> TestResult {
     // @step Given I have a background session running in the current project
     let mock = Arc::new(MockBackend::new());
     let sessions = vec![
@@ -212,12 +216,13 @@ async fn background_sessions_included_with_filtered_persisted() {
     let mut app = App::new(backend);
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(None));
     app.dispatch(codelet_fspec_tui::Action::SlashCommandSelected(
+        app.current_session(),
         codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
     ));
 
     // Await the spawned list_sessions task
-    let handle = app.next_pending_task().expect("spawned task");
-    handle.await.expect("await task");
+    let handle = app.next_pending_task().or_fail("spawned task")?;
+    handle.await.completed_or_cancelled()?;
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
@@ -229,16 +234,17 @@ async fn background_sessions_included_with_filtered_persisted() {
         "list_sessions should be called with project path"
     );
     assert!(
-        !project.unwrap().is_empty(),
+        !project.or_fail("expected a value")?.is_empty(),
         "project path should be non-empty"
     );
+    Ok(())
 }
 
 /**
  * Scenario: Cross-transport parity for both embedded and WebSocket backends
  */
 #[tokio::test]
-async fn cross_transport_parity_list_sessions_accepts_project_path() {
+async fn cross_transport_parity_list_sessions_accepts_project_path() -> TestResult {
     // @step Given the FspecBackend trait has a list_sessions method accepting project_path
     // This is verified by the trait definition accepting project_path: String
     // The MockBackend implements FspecBackend and accepts the parameter
@@ -273,4 +279,5 @@ async fn cross_transport_parity_list_sessions_accepts_project_path() {
         Some("/project/b".to_string()),
         "project path should be updated on second call"
     );
+    Ok(())
 }

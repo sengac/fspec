@@ -1,5 +1,7 @@
 @done
 @RPC-289
+@cli
+@interactive-cli
 Feature: fspec restore-example CLI subcommand
   """
   CLI bridge: rust/fspec/src/restore_example.rs — clap variant mirroring TS Commander.js

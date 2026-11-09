@@ -8,10 +8,22 @@
 //! dialog-draft applier (BUG-166 scale re-derivation + R7 ON/OFF
 //! transition) and the on/off handlers.
 
-use crate::views::multiplex::{scale_scales, MuxConfig};
+use crate::views::multiplex::layout_tree::check_fit;
+use crate::views::multiplex::{MuxConfig, MuxLayout};
 
 use super::mux_parser::{parse_mux_command, MuxSubcommand};
 use super::state::App;
+
+/// The `/mux help` notice (MUX-010: the layout grammar, weights, the kept
+/// subcommands and Shift+arrow focus; MUX-012: Left/Right in layout order;
+/// MUX-013: the bar buttons).
+pub(crate) const MUX_HELP: &str = "/mux <layout> sets the panes, e.g. /mux agent, [board, board], \
+     board, files: the top level is columns, each [..] splits the other way (rows, then columns, \
+     ...), pane:N or [..]:N weights a share (default 1); panes are board, agent, files, \
+     checkpoints · /mux opens the config dialog · /mux on|off|save|default|help · \
+     Shift+Left/Right move to the previous/next pane in layout order, Shift+Up/Down to the pane \
+     above/below · on the bar, [ New Bot ] starts a bot, [ New Agent ] starts an agent (in the \
+     next agent pane) and [ Close ] closes the focused pane's bot or agent";
 
 impl App {
     /// Apply a parsed `/mux` subcommand (R1–R7). Parse errors surface
@@ -43,17 +55,14 @@ impl App {
                 // Enabled row. Idempotent while a dialog is open.
                 self.handle_open_mux_config_dialog();
             }
-            MuxSubcommand::Orientation(orientation) => {
-                self.navigator.mux.set_orientation(orientation);
-            }
-            MuxSubcommand::PaneCount(count) => {
-                self.navigator.mux.set_pane_count(count);
-            }
-            MuxSubcommand::PaneList {
-                panes,
-                split_percent,
-            } => {
-                self.navigator.mux.set_pane_list(panes, split_percent);
+            MuxSubcommand::Layout(layout) => {
+                // MUX-010: the layout must fit the minimum pane size at
+                // the current mux body; a refused layout leaves the
+                // config untouched.
+                if !self.mux_layout_fits(&layout) {
+                    return;
+                }
+                self.navigator.mux.set_layout(layout);
             }
             MuxSubcommand::Save => match self.save_mux_config() {
                 Ok(()) => self.push_mux_notice("[mux] saved to fspec-config.json (tui.mux)"),
@@ -63,8 +72,8 @@ impl App {
             },
             MuxSubcommand::Default => {
                 // BUG-175: enter the grid in lockstep with the live
-                // view — the default preset (orientation/splits/panes/
-                // home focus) with the enabled flag ON. Entering
+                // view — the default preset (layout + home focus) with
+                // the enabled flag ON. Entering
                 // ViewMode::Mux with the flag still off would leave
                 // every flag-gated path (Shift+Left/Right intercept,
                 // key classification, the R6 auto-save) mis-firing
@@ -73,25 +82,20 @@ impl App {
                     enabled: true,
                     ..MuxConfig::default()
                 };
-                self.navigator
-                    .mux
-                    .enable_with_config(config, self.navigator.active_view);
+                // MUX-010: with mux already on, keep the view mux was
+                // entered from (the live view is Mux itself).
+                let pre_mux = if self.navigator.mux.config().enabled {
+                    self.navigator.mux.pre_mux_view().unwrap_or_default()
+                } else {
+                    self.navigator.active_view
+                };
+                self.navigator.mux.enable_with_config(config, pre_mux);
                 self.navigator.active_view = crate::views::ViewMode::Mux;
             }
             MuxSubcommand::Help => {
-                // MUX-004: bare /mux opens the config dialog; on/off are
-                // the explicit toggle subcommands.
-                self.push_mux_notice(
-                    "/mux opens the config dialog (panes/orientation/enabled) · \
-                     /mux on|off toggle · /mux [h|v|2..4|<kinds> [pct]|save|default|help]",
-                );
+                self.push_mux_notice(MUX_HELP);
             }
         }
-        // MUX-002: `/mux` (re)applies the grid — enter/keep mux view,
-        // re-sync the agent window to the live open-session list
-        // (unfilled agent slots are dropped; the window re-clamps) and
-        // recompute the pane rects so `pane_rects()` is valid BEFORE
-        // the first render.
         if self.navigator.mux.config().enabled {
             // BUG-201: entering (re-entering) the grid clears the
             // board store's OWN bar state — the board pane's bar is
@@ -111,11 +115,9 @@ impl App {
     }
 
     /// MUX-004 (R5/R7): apply a committed MuxConfigDialog draft to the
-    /// live mux layout. The orientation + pane list are applied
-    /// verbatim; the BUG-166 percentage scale re-derives for the new
-    /// pane count (`scale_scales` keeps equal scales equal; layout-only
-    /// scope — split percents are never hand-edited in the dialog). The
-    /// draft's enabled state decides the R7 transition:
+    /// live mux layout. The MUX-010 layout string (already parsed and
+    /// fit-checked by the dialog) is applied verbatim. The draft's
+    /// enabled state decides the R7 transition:
     ///   - OFF → ON: enter mux mode with the draft layout, remembering
     ///     the current active view as the pre-mux view;
     ///   - ON → OFF: apply the draft layout to the stored config, then
@@ -123,8 +125,7 @@ impl App {
     ///   - unchanged (ON→ON / OFF→OFF): only the layout refreshes.
     pub(crate) fn apply_mux_config_draft(&mut self, draft: MuxConfig) {
         let was_enabled = self.navigator.mux.config().enabled;
-        let mut config = draft;
-        config.splits = scale_scales(&config.splits, config.panes.len());
+        let config = draft;
         if config.enabled {
             let pre_mux = if was_enabled {
                 self.navigator.mux.pre_mux_view().unwrap_or_default()
@@ -152,9 +153,7 @@ impl App {
             // stored config first so the next dialog open (and the R6
             // auto-save on exit) reflects what the user committed.
             let live = self.navigator.mux.config_mut();
-            live.orientation = config.orientation;
-            live.panes = config.panes;
-            live.splits = config.splits;
+            live.layout = config.layout;
             live.focused_pane = config.focused_pane;
             let view = self.navigator.mux.disable();
             self.navigator.active_view = view;
@@ -173,7 +172,23 @@ impl App {
     /// Fresh entry focuses the BOARD pane (index 0) — the view the
     /// user came from — so App-level shortcuts (`?`, `m`) still
     /// fall through from the board pane (R9).
+    /// MUX-010: true when every pane of `layout` meets the minimum pane
+    /// size at the current mux body; otherwise the exact error is pushed.
+    fn mux_layout_fits(&mut self, layout: &MuxLayout) -> bool {
+        match check_fit(self.navigator.mux.body_area(), layout) {
+            Ok(()) => true,
+            Err(err) => {
+                self.push_mux_error(&format!("/mux: {err}"));
+                false
+            }
+        }
+    }
+
     fn handle_mux_on(&mut self) {
+        let saved = self.navigator.mux.config().layout.clone();
+        if !self.mux_layout_fits(&saved) {
+            return;
+        }
         let pre = self.navigator.active_view;
         self.navigator.mux.set_pre_mux_view(pre);
         self.navigator.mux.config_mut().enabled = true;

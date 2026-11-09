@@ -58,7 +58,7 @@ Feature: Keyboard shortcut parity (Shift+up/down history, Ctrl+R search, Esc int
   #   8. Source-shape: dispatch.rs stays under 300 LoC; codelet-fspec-tui MUST NOT depend on codelet-napi
   #
   # ========================================
-  Background: 
+  Background:
     Given an App with a MockBackend
     And the App is in ViewMode::Agent
 

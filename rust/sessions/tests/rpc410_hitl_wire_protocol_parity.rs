@@ -8,10 +8,14 @@
 //! HashMap keyed by answer id — NO option-label inference).
 //!
 //! The tests construct a fresh `SessionManager`, create a session via
-//! the trait's `create_session` bridge (Noop hooks, no agent loop),
+//! the trait's `create_session_checked` bridge (Noop hooks, no agent loop,
+//! one data directory shared by the whole binary — BUG-397),
 //! store a pending internal HITL request on the `BackgroundSession`,
 //! block a std thread on `wait_for_hitl_response()`, then drive the
 //! handle with new wire `HitlResponse{cancelled, answers}` payloads.
+//! Shared helpers live in `rpc410_hitl_wire_protocol_parity_support`;
+//! the two static-check scenarios live in
+//! rpc410_hitl_wire_protocol_static_checks.rs (REFAC-052).
 //!
 //! HANG-SAFETY (see rust/sessions/tests/paused_chunk_delivery_rpc409.rs
 //! module docs): every scenario that parks a waiter UNCONDITIONALLY
@@ -22,117 +26,21 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::sync::Arc;
-use std::time::Duration;
+mod rpc410_hitl_wire_protocol_parity_support;
+
+#[path = "fixtures/offline_catalog.rs"]
+mod offline_catalog;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
-use codelet_rpc_types::{
-    HitlAnswer as WireHitlAnswer, HitlOption as WireHitlOption, HitlQuestion as WireHitlQuestion,
-    HitlRequest as WireHitlRequest, HitlResponse as WireHitlResponse, SessionId,
-};
+use codelet_rpc_types::{HitlAnswer as WireHitlAnswer, HitlResponse as WireHitlResponse};
 use codelet_sessions::SessionManager;
 use codelet_tools::request_user_input::{
-    HitlOption, HitlQuestion, HitlRequest as InternalHitlRequest,
-    HitlResponse as InternalHitlResponse,
+    HitlRequest as InternalHitlRequest, HitlResponse as InternalHitlResponse,
 };
-
-/// Create a fresh BackgroundSession via the SessionManagerHandle bridge.
-/// The Noop hooks ensure no agent loop is spawned for the session.
-async fn fresh_session(manager: &SessionManager) -> SessionId {
-    manager.set_default_model("anthropic/claude-opus-4-5");
-    let handle: &dyn SessionManagerHandle = manager;
-    handle.create_session(None)
-}
-
-/// One internal question with two options.
-fn option_question(id: &str, header: &str, question: &str) -> HitlQuestion {
-    HitlQuestion {
-        id: id.to_string(),
-        header: header.to_string(),
-        question: question.to_string(),
-        options: Some(vec![
-            HitlOption {
-                label: "Option A".to_string(),
-                description: "First choice".to_string(),
-            },
-            HitlOption {
-                label: "Option B".to_string(),
-                description: "Second choice".to_string(),
-            },
-        ]),
-    }
-}
-
-/// One internal freeform question (options: None).
-fn freeform_question(id: &str, header: &str, question: &str) -> HitlQuestion {
-    HitlQuestion {
-        id: id.to_string(),
-        header: header.to_string(),
-        question: question.to_string(),
-        options: None,
-    }
-}
-
-/// A pending internal 3-question request (approach / priority / notes;
-/// notes is freeform).
-fn three_question_request() -> InternalHitlRequest {
-    InternalHitlRequest {
-        questions: vec![
-            option_question("approach", "Approach", "Which approach do you prefer?"),
-            option_question("priority", "Priority", "What is the priority?"),
-            freeform_question("notes", "Notes", "Any additional notes?"),
-        ],
-    }
-}
-
-/// A pending internal request with a single Yes/No question.
-fn yes_no_request() -> InternalHitlRequest {
-    InternalHitlRequest {
-        questions: vec![HitlQuestion {
-            id: "confirm_choice".to_string(),
-            header: "Confirm".to_string(),
-            question: "Proceed with the plan?".to_string(),
-            options: Some(vec![
-                HitlOption {
-                    label: "Yes".to_string(),
-                    description: "Go ahead".to_string(),
-                },
-                HitlOption {
-                    label: "No".to_string(),
-                    description: "Stop here".to_string(),
-                },
-            ]),
-        }],
-    }
-}
-
-/// Spawn a std thread blocked on `wait_for_hitl_response()` for the
-/// given session and return its join handle. The thread returns the
-/// internal response it receives.
-fn spawn_blocked_waiter(
-    manager: &Arc<SessionManager>,
-    sid: &SessionId,
-) -> std::thread::JoinHandle<InternalHitlResponse> {
-    let session = manager
-        .get_session(&sid.value)
-        .expect("session must exist for waiter");
-    std::thread::spawn(move || session.wait_for_hitl_response())
-}
-
-/// Join the waiter with a hard deadline so a broken send path fails
-/// the test instead of hanging it forever. Only call this AFTER the
-/// unblocking `send_hitl_response` was issued.
-fn join_waiter(waiter: std::thread::JoinHandle<InternalHitlResponse>) -> InternalHitlResponse {
-    let deadline = std::time::Instant::now() + Duration::from_secs(5);
-    while !waiter.is_finished() {
-        assert!(
-            std::time::Instant::now() < deadline,
-            "wait_for_hitl_response never unblocked — send_hitl_response did not deliver"
-        );
-        std::thread::sleep(Duration::from_millis(10));
-    }
-    waiter.join().expect("waiter thread must not panic")
-}
+use rpc410_hitl_wire_protocol_parity_support::{
+    freeform_question, fresh_session, join_waiter, option_question, spawn_blocked_waiter,
+    three_question_request, yes_no_request,
+};
 
 // ============================================================================
 // Scenario: A three-question internal request surfaces all questions over
@@ -142,9 +50,13 @@ fn join_waiter(waiter: std::thread::JoinHandle<InternalHitlResponse>) -> Interna
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn three_question_request_surfaces_all_questions_in_order() {
     // @step Given a BackgroundSession with a pending internal HITL request containing questions "approach", "priority" and "notes"
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let session = manager.get_session(&sid.value).expect("session must exist");
     session.set_hitl_request(Some(three_question_request()));
@@ -153,7 +65,9 @@ async fn three_question_request_surfaces_all_questions_in_order() {
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let wire = handle
         .get_hitl_request(&sid)
-        .expect("a pending request must surface on the wire");
+        .expect("get_hitl_request reads the session")
+        .expect("a pending request must surface on the wire")
+        .payload;
 
     // @step Then the wire HitlRequest contains exactly 3 questions with ids "approach", "priority" and "notes" in order
     let ids: Vec<&str> = wire.questions.iter().map(|q| q.id.as_str()).collect();
@@ -182,9 +96,13 @@ async fn three_question_request_surfaces_all_questions_in_order() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn question_without_options_surfaces_empty_options_array() {
     // @step Given a BackgroundSession with a pending internal HITL request whose question "notes" has options None
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let session = manager.get_session(&sid.value).expect("session must exist");
     session.set_hitl_request(Some(InternalHitlRequest {
@@ -195,7 +113,9 @@ async fn question_without_options_surfaces_empty_options_array() {
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let wire = handle
         .get_hitl_request(&sid)
-        .expect("a pending request must surface on the wire");
+        .expect("get_hitl_request reads the session")
+        .expect("a pending request must surface on the wire")
+        .payload;
 
     // @step Then the wire question "notes" has an empty options array
     let notes = wire
@@ -217,9 +137,13 @@ async fn question_without_options_surfaces_empty_options_array() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn cancelled_wire_response_reaches_blocked_tool_as_cancelled() {
     // @step Given a BackgroundSession with a pending internal HITL request
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let session = manager.get_session(&sid.value).expect("session must exist");
     session.set_hitl_request(Some(yes_no_request()));
@@ -232,8 +156,13 @@ async fn cancelled_wire_response_reaches_blocked_tool_as_cancelled() {
     // waiter is never stranded behind an assert; join_waiter below is
     // deadline-bounded either way.
     let handle: &dyn SessionManagerHandle = manager.as_ref();
+    let request_id = session
+        .pending_question_route()
+        .expect("the question is pending")
+        .request_id;
     let send_result = handle.send_hitl_response(
         &sid,
+        &request_id,
         WireHitlResponse {
             cancelled: true,
             answers: vec![],
@@ -258,9 +187,13 @@ async fn cancelled_wire_response_reaches_blocked_tool_as_cancelled() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn multi_answer_wire_response_maps_pass_through_keyed_by_answer_id() {
     // @step Given a BackgroundSession with a pending internal HITL request containing questions "approach" and "notes"
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let session = manager.get_session(&sid.value).expect("session must exist");
     session.set_hitl_request(Some(InternalHitlRequest {
@@ -275,8 +208,13 @@ async fn multi_answer_wire_response_maps_pass_through_keyed_by_answer_id() {
 
     // @step When the handle receives send_hitl_response with answers for "approach" selecting "Option A" and for "notes" with other "free text"
     let handle: &dyn SessionManagerHandle = manager.as_ref();
+    let request_id = session
+        .pending_question_route()
+        .expect("the question is pending")
+        .request_id;
     let send_result = handle.send_hitl_response(
         &sid,
+        &request_id,
         WireHitlResponse {
             cancelled: false,
             answers: vec![
@@ -324,9 +262,13 @@ async fn multi_answer_wire_response_maps_pass_through_keyed_by_answer_id() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn freeform_text_identical_to_option_label_stays_in_other() {
     // @step Given a BackgroundSession with a pending internal HITL request whose question "confirm_choice" has options "Yes" and "No"
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
     let sid = fresh_session(&manager).await;
     let session = manager.get_session(&sid.value).expect("session must exist");
     session.set_hitl_request(Some(yes_no_request()));
@@ -336,8 +278,13 @@ async fn freeform_text_identical_to_option_label_stays_in_other() {
 
     // @step When the handle receives send_hitl_response with an answer for "confirm_choice" with empty selected and other "Yes"
     let handle: &dyn SessionManagerHandle = manager.as_ref();
+    let request_id = session
+        .pending_question_route()
+        .expect("the question is pending")
+        .request_id;
     let send_result = handle.send_hitl_response(
         &sid,
+        &request_id,
         WireHitlResponse {
             cancelled: false,
             answers: vec![WireHitlAnswer {
@@ -369,127 +316,24 @@ async fn freeform_text_identical_to_option_label_stays_in_other() {
 }
 
 // ============================================================================
-// Scenario: The send path contains no option-label comparison
+// Scenario: The HITL parity session tests pass when run one after another in
+// one process (BUG-397)
 // ============================================================================
 
 #[test]
-fn send_path_contains_no_option_label_comparison() {
-    // @step Given the source of handle_impl.rs and the hitl mapping module
-    let manifest = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let handle_src = std::fs::read_to_string(manifest.join("src/handle_impl.rs"))
-        .expect("handle_impl.rs must exist");
-    let mapping_path = manifest.join("src/hitl_mapping.rs");
-    let mapping_src = std::fs::read_to_string(&mapping_path).unwrap_or_else(|e| {
-        panic!(
-            "sessions/src/hitl_mapping.rs must exist (dossier §3.2/§3.3 \
-             extraction): {e}"
-        )
-    });
+fn session_tests_pass_one_after_another_in_one_process() {
+    // @step Given the five HITL parity tests that each create a session
+    let session_tests: [fn(); 5] = [
+        three_question_request_surfaces_all_questions_in_order,
+        question_without_options_surfaces_empty_options_array,
+        cancelled_wire_response_reaches_blocked_tool_as_cancelled,
+        multi_answer_wire_response_maps_pass_through_keyed_by_answer_id,
+        freeform_text_identical_to_option_label_stays_in_other,
+    ];
 
-    // @step When the send_hitl_response path is inspected
-    let fn_start = handle_src
-        .find("fn send_hitl_response(")
-        .expect("handle_impl.rs must define send_hitl_response");
-    let fn_end = handle_src[fn_start..]
-        .find("fn get_pause_state(")
-        .map(|off| fn_start + off)
-        .unwrap_or(handle_src.len());
-    let body = &handle_src[fn_start..fn_end];
-    let send_path = format!("{body}\n{mapping_src}");
-
-    // @step Then it contains no comparison of answer values against option labels
-    for needle in ["is_option_label", ".label ==", "label == "] {
-        assert!(
-            !send_path.contains(needle),
-            "the send path must not compare answer values against option \
-             labels (found {needle:?}) — the RPC-408 heuristic is deleted"
-        );
+    // @step When they run one after another on one thread in the same test process
+    // @step Then every test finds the session it created
+    for run in session_tests {
+        run();
     }
-
-    // @step And it does not read the pending request to classify answers
-    assert!(
-        !body.contains("get_hitl_request"),
-        "send_hitl_response must not read the pending HITL request to \
-         classify answers — the wire payload is authoritative"
-    );
-}
-
-// ============================================================================
-// Scenario: New wire shapes round-trip through serde_json
-// ============================================================================
-
-fn round_trip<T>(value: &T)
-where
-    T: serde::Serialize + serde::de::DeserializeOwned + PartialEq + std::fmt::Debug,
-{
-    let json = serde_json::to_string(value).expect("serialize");
-    let back: T = serde_json::from_str(&json).expect("deserialize");
-    assert_eq!(&back, value, "round-trip must preserve the value exactly");
-}
-
-fn wire_option(label: &str) -> WireHitlOption {
-    WireHitlOption {
-        label: label.to_string(),
-        description: format!("{label} description"),
-    }
-}
-
-#[test]
-fn new_wire_shapes_round_trip_through_serde_json() {
-    // @step Given a wire HitlRequest with 3 questions including one without options and a wire HitlResponse with cancelled false and mixed answers
-    let request = WireHitlRequest {
-        questions: vec![
-            WireHitlQuestion {
-                id: "approach".to_string(),
-                header: "Approach".to_string(),
-                question: "Which approach do you prefer?".to_string(),
-                options: vec![wire_option("Option A"), wire_option("Option B")],
-            },
-            WireHitlQuestion {
-                id: "priority".to_string(),
-                header: "Priority".to_string(),
-                question: "What is the priority?".to_string(),
-                options: vec![wire_option("High"), wire_option("Low")],
-            },
-            WireHitlQuestion {
-                id: "notes".to_string(),
-                header: "Notes".to_string(),
-                question: "Any additional notes?".to_string(),
-                options: vec![],
-            },
-        ],
-    };
-    let response = WireHitlResponse {
-        cancelled: false,
-        answers: vec![
-            WireHitlAnswer {
-                id: "approach".to_string(),
-                selected: vec!["Option A".to_string()],
-                other: None,
-            },
-            WireHitlAnswer {
-                id: "notes".to_string(),
-                selected: vec![],
-                other: Some("free text".to_string()),
-            },
-        ],
-    };
-
-    // @step When each value is serialized to JSON and deserialized back
-    // @step Then each deserialized value equals the original
-    round_trip(&request);
-    round_trip(&response);
-    assert_eq!(request.questions.len(), 3);
-    assert!(request.questions[2].options.is_empty());
-    assert!(!response.cancelled);
-    assert_eq!(response.answers.len(), 2);
-
-    // @step And a cancelled wire HitlResponse with empty answers also round-trips equal
-    let cancelled = WireHitlResponse {
-        cancelled: true,
-        answers: vec![],
-    };
-    round_trip(&cancelled);
-    assert!(cancelled.cancelled);
-    assert!(cancelled.answers.is_empty());
 }

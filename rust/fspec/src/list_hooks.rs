@@ -45,10 +45,10 @@
 //!     error path is rarely hit — missing files and malformed JSON
 //!     both succeed silently with the empty sentinel.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::list_hooks;
 use serde_json::json;
 
@@ -73,7 +73,7 @@ pub async fn run(_args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so
     // script-driven invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that
     // fspec_core::commands::list_hooks::run validates with serde. With
@@ -86,13 +86,9 @@ pub async fn run(_args: CliArgs) -> Result<u8> {
     let args_json = json!(obj).to_string();
 
     match list_hooks::run(&args_json, &project_root).await {
-        Ok(_rendered) => {
-            // BYTE-PARITY WITH TS COMMANDER.JS: the canonical TS
-            // action at `src/commands/list-hooks.ts:51-53` discards the
-            // returned `ListHooksResult` without printing. We MUST NOT
-            // write to stdout here. The dispatcher path retains the
-            // rendered text for the structured-output contract;
-            // this shell-CLI surface stays silent on success.
+        Ok(rendered) => {
+            // BUG-638: print the text the help documents.
+            println!("{}", rendered.trim_end());
             Ok(0)
         }
         Err(err) => {

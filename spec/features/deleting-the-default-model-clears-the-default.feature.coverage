@@ -1,0 +1,438 @@
+{
+  "scenarios": [
+    {
+      "name": "Deleting the default custom model clears the default",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug613_deleting_the_default_model.rs",
+          "lines": "54-77",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "fn delete_custom_model(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "/// BUG-613 (product owner, 2026-11-07): when the default model is one",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/default_model_persistence.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// BUG-613: forget the persisted default model (a missing file is already",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "/// BUG-613: remove `tui.lastUsedModel` from the user config when it is",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting another custom model leaves the default",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug613_deleting_the_default_model.rs",
+          "lines": "79-100",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "fn delete_custom_model(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "/// BUG-613 (product owner, 2026-11-07): when the default model is one",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting the profile that holds the default clears the default",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug613_deleting_the_default_model.rs",
+          "lines": "102-121",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_6.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ],
+              "firstLine": "fn delete_profile(&self, provider_id: &str, profile_name: &str) -> Result<(), String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "/// BUG-613 (product owner, 2026-11-07): when the default model is one",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/default_model_persistence.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// BUG-613: forget the persisted default model (a missing file is already",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/last_used_model_persistence.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "/// BUG-613: remove `tui.lastUsedModel` from the user config when it is",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creating a session without a default model names how to choose one",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug613_deleting_the_default_model.rs",
+          "lines": "123-144",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_creation.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                51,
+                52,
+                53
+              ],
+              "firstLine": "/// BUG-613: how to choose a default model, named by every refusal for want of one.",
+              "lastLine": "})?;"
+            },
+            {
+              "file": "rust/sessions/src/default_project.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ],
+              "firstLine": ".filter(|path| path.is_dir())",
+              "lastLine": ")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TUI reports that the deleted model was the default",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/app/dispatch_model_selector/bug613_tests.rs",
+          "lines": "7-30",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ],
+              "firstLine": "// BUG-613: the daemon clears a deleted default model; say so.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// BUG-613: the daemon clears a default model of the deleted profile.",
+              "lastLine": ")));"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug613_deleting_the_default_model.rs",
+      "rust/fspec-tui/src/app/dispatch_model_selector/bug613_tests.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_6.rs",
+      "rust/sessions/src/session_manager/manager_impl_1.rs",
+      "rust/sessions/src/default_model_persistence.rs",
+      "rust/sessions/src/last_used_model_persistence.rs",
+      "rust/sessions/src/handle_creation.rs",
+      "rust/sessions/src/default_project.rs",
+      "rust/fspec-tui/src/app/dispatch_model_selector.rs",
+      "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
+    ],
+    "totalLinesCovered": 373
+  }
+}

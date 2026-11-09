@@ -69,7 +69,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -139,7 +141,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -214,7 +218,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -284,7 +290,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -359,7 +367,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -429,7 +439,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -504,7 +516,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -574,7 +588,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -649,7 +665,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -719,7 +737,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -730,7 +750,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "289-319",
+          "lines": "302-328",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_coverage.rs",
@@ -794,77 +814,9 @@
                 57,
                 58,
                 59
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "290-321",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_coverage.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -875,7 +827,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "321-345",
+          "lines": "334-354",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_coverage.rs",
@@ -939,77 +891,9 @@
                 57,
                 58,
                 59
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "322-347",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_coverage.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -1084,7 +968,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -1154,7 +1040,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -1165,7 +1053,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "378-406",
+          "lines": "393-417",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_coverage.rs",
@@ -1229,77 +1117,9 @@
                 57,
                 58,
                 59
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "379-408",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_coverage.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -1310,7 +1130,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "408-438",
+          "lines": "423-449",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_coverage.rs",
@@ -1374,77 +1194,9 @@
                 57,
                 58,
                 59
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_show_coverage.rs",
-          "lines": "409-440",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/show_coverage.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -1519,7 +1271,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         },
@@ -1589,7 +1343,9 @@
                 57,
                 58,
                 59
-              ]
+              ],
+              "firstLine": "//! `show-coverage` shell-facing CLI bridge (RPC-300).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -1606,6 +1362,6 @@
     "implFiles": [
       "rust/fspec/src/show_coverage.rs"
     ],
-    "totalLinesCovered": 0
+    "totalLinesCovered": 1703
   }
 }

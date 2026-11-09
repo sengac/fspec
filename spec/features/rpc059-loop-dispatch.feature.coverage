@@ -5,20 +5,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "93-100",
+          "lines": "101-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
                 76,
-                77
-              ]
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "pub fn parse_loop_command(input: &str) -> LoopSubcommand {",
+              "lastLine": "}"
             }
           ]
         }
@@ -29,16 +34,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "101-108",
+          "lines": "110-117",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                80,
-                81,
-                82,
-                83
-              ]
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "// List",
+              "lastLine": "}"
             }
           ]
         }
@@ -49,26 +56,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "109-121",
+          "lines": "119-131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
                 93,
                 94,
                 95,
                 96,
                 97,
-                98
-              ]
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "// Cancel <id>",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,18 +87,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "122-135",
+          "lines": "133-146",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -102,8 +103,18 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "// Leading interval: first whitespace-split token matches `^(\\d+)([smhd])$`",
+              "lastLine": "}"
             }
           ]
         }
@@ -114,18 +125,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "136-149",
+          "lines": "148-161",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -137,8 +141,18 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "// Leading interval: first whitespace-split token matches `^(\\d+)([smhd])$`",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,18 +163,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "150-163",
+          "lines": "163-176",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -172,8 +179,18 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "// Leading interval: first whitespace-split token matches `^(\\d+)([smhd])$`",
+              "lastLine": "}"
             }
           ]
         }
@@ -184,18 +201,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "164-177",
+          "lines": "178-191",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
                 107,
                 108,
                 109,
@@ -207,8 +217,18 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ],
+              "firstLine": "// Leading interval: first whitespace-split token matches `^(\\d+)([smhd])$`",
+              "lastLine": "}"
             }
           ]
         }
@@ -219,19 +239,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "178-191",
+          "lines": "193-206",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
                 128,
                 129,
                 130,
@@ -239,8 +251,21 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// Trailing interval: `<body> every N <unit>` at end of body",
+              "lastLine": "}"
             }
           ]
         }
@@ -251,17 +276,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "192-205",
+          "lines": "208-221",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// Default interval — full body is the prompt.",
+              "lastLine": "}"
             }
           ]
         }
@@ -272,21 +299,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "206-223",
+          "lines": "223-236",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
                 60,
                 61,
                 62,
-                63
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// Convert a unit token (lowercase) + numeric magnitude into a number",
+              "lastLine": "}"
             }
           ]
         }
@@ -297,7 +329,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "224-234",
+          "lines": "242-249",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/slash_parser.rs",
@@ -307,7 +339,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "// arg is trimmed + lowercased so `/thinking HIGH` and",
+              "lastLine": "let arg = rest.trim().to_ascii_lowercase();"
             }
           ]
         }
@@ -318,7 +352,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "235-249",
+          "lines": "251-258",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/slash_parser.rs",
@@ -328,7 +362,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "// arg is trimmed + lowercased so `/thinking HIGH` and",
+              "lastLine": "let arg = rest.trim().to_ascii_lowercase();"
             }
           ]
         }
@@ -339,7 +375,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "250-279",
+          "lines": "264-292",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
@@ -355,7 +391,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "/// RPC-059: `/loop` slash-command popup pick entry point. With no",
+              "lastLine": "}"
             }
           ]
         }
@@ -366,7 +404,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "280-308",
+          "lines": "298-325",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
@@ -382,7 +420,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "/// RPC-059: `/loop` slash-command popup pick entry point. With no",
+              "lastLine": "}"
             }
           ]
         }
@@ -393,12 +433,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "309-345",
+          "lines": "331-363",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -416,8 +455,11 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_loop_list(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -428,12 +470,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "346-370",
+          "lines": "369-389",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
-                82,
                 83,
                 84,
                 85,
@@ -451,8 +492,11 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_loop_list(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -463,11 +507,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "371-408",
+          "lines": "395-430",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
+                60,
                 61,
                 62,
                 63,
@@ -487,8 +532,11 @@
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81
+              ],
+              "firstLine": "pub(crate) fn handle_loop_add(&mut self, interval_seconds: u32, prompt: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -499,11 +547,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "409-437",
+          "lines": "436-462",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
+                60,
                 61,
                 62,
                 63,
@@ -523,8 +572,11 @@
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81
+              ],
+              "firstLine": "pub(crate) fn handle_loop_add(&mut self, interval_seconds: u32, prompt: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -535,12 +587,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "438-474",
+          "lines": "468-499",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
-                102,
                 103,
                 104,
                 105,
@@ -561,7 +612,9 @@
                 120,
                 121,
                 122
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_loop_cancel(&mut self, id: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -572,12 +625,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "475-502",
+          "lines": "505-530",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
               "lines": [
-                102,
                 103,
                 104,
                 105,
@@ -598,7 +650,9 @@
                 120,
                 121,
                 122
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_loop_cancel(&mut self, id: String) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -609,7 +663,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/loop_dispatch_rpc059.rs",
-          "lines": "503-530",
+          "lines": "536-564",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
@@ -626,7 +680,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "/// backend round-trip via `handle_loop_*`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -645,6 +701,6 @@
       "rust/fspec-tui/src/app/slash_parser.rs",
       "rust/fspec-tui/src/app/dispatch_slash_loop.rs"
     ],
-    "totalLinesCovered": 734
+    "totalLinesCovered": 714
   }
 }

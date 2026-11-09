@@ -93,10 +93,12 @@ fn first_add_seeds_assumptions_array_on_clean_specifying_unit() {
     let data: Value = serde_json::from_str(&result.data).expect("parse data");
     assert_eq!(data["assumptionCount"].as_u64(), Some(1));
 
-    // @step And spec/work-units.json on disk shows AUTH-001.assumptions[0]='Users have valid email addresses'
+    // @step And spec/work-units.json on disk shows AUTH-001.assumptions[0] with id 0 and text 'Users have valid email addresses'
     let v = read_work_units(tmp.path());
+    let first = &v["workUnits"]["AUTH-001"]["assumptions"][0];
+    assert_eq!(first["id"].as_u64(), Some(0), "{first}");
     assert_eq!(
-        v["workUnits"]["AUTH-001"]["assumptions"][0].as_str(),
+        first["text"].as_str(),
         Some("Users have valid email addresses")
     );
 
@@ -130,14 +132,20 @@ fn second_add_preserves_insertion_order() {
     let data: Value = serde_json::from_str(&result.data).expect("parse data");
     assert_eq!(data["assumptionCount"].as_u64(), Some(2));
 
-    // @step And spec/work-units.json on disk shows AUTH-001.assumptions=['A1', 'A2']
+    // @step And spec/work-units.json on disk shows AUTH-001.assumptions with ids 0 and 1 and texts 'A1' and 'A2'
     let v = read_work_units(tmp.path());
     let arr = v["workUnits"]["AUTH-001"]["assumptions"]
         .as_array()
         .expect("assumptions");
     assert_eq!(arr.len(), 2);
-    assert_eq!(arr[0].as_str(), Some("A1"));
-    assert_eq!(arr[1].as_str(), Some("A2"));
+    assert_eq!(
+        (arr[0]["id"].as_u64(), arr[0]["text"].as_str()),
+        (Some(0), Some("A1"))
+    );
+    assert_eq!(
+        (arr[1]["id"].as_u64(), arr[1]["text"].as_str()),
+        (Some(1), Some("A2"))
+    );
 }
 
 #[test]

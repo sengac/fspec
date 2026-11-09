@@ -22,8 +22,7 @@
 //! (`You:`, `● `, no Done line, `⚠ Interrupted`, `[W] <role>>`) and
 //! these tests now pin the corrected ladder.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, SessionContext};
@@ -86,10 +85,14 @@ fn session_next_seq(app: &App, id: &SessionId) -> u64 {
         .unwrap_or(0)
 }
 
-fn ctx<'a>(app: &'a App, id: &SessionId) -> &'a SessionContext {
-    app.agent_view_store()
+fn ctx<'a>(
+    app: &'a App,
+    id: &SessionId,
+) -> Result<&'a SessionContext, codelet_test_helpers::TestError> {
+    Ok(app
+        .agent_view_store()
         .session_context_for(id)
-        .expect("SessionContext present")
+        .or_fail("SessionContext present")?)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -97,7 +100,7 @@ fn ctx<'a>(app: &'a App, id: &SessionId) -> &'a SessionContext {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn screenshot_reproduction_renders_only_the_user_input_line() {
+fn screenshot_reproduction_renders_only_the_user_input_line() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -107,7 +110,8 @@ fn screenshot_reproduction_renders_only_the_user_input_line() {
         StreamChunk::user_input("please review this card".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly one line equal to "You: please review this card" (RPC-078 prefix correction)
+    // @step Then the s-1 scrollback contains the line "You: please review this card" followed by one blank separator line
+    // (RPC-078 prefix correction)
     // RPC-401: each message now emits one trailing blank separator line
     // (TS wrapMessageToLines addSeparator=true parity), so the wrapped
     // chunk is the content line followed by one blank gutter row.
@@ -149,6 +153,7 @@ fn screenshot_reproduction_renders_only_the_user_input_line() {
             "scrollback leaked Debug output: {line}"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -156,7 +161,7 @@ fn screenshot_reproduction_renders_only_the_user_input_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn user_input_chunk_renders_as_user_prefix_scrollback_line() {
+fn user_input_chunk_renders_as_user_prefix_scrollback_line() -> TestResult {
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -169,13 +174,15 @@ fn user_input_chunk_renders_as_user_prefix_scrollback_line() {
     // @step Then the scrollback contains exactly one rendered chunk
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
-    // @step Then the rendered text equals "You: hello" (RPC-078 prefix correction)
+    // @step Then the rendered text equals "You: hello"
+    // (RPC-078 prefix correction)
     // RPC-401: plus one trailing blank separator row.
     let lines = session_scrollback_lines(&app, &sid("s-1"));
     assert_eq!(lines, vec!["You: hello".to_string(), String::new()]);
 
     // @step Then the scrollback_next_seq cursor equals 1
     assert_eq!(session_next_seq(&app, &sid("s-1")), 1);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -183,7 +190,7 @@ fn user_input_chunk_renders_as_user_prefix_scrollback_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn two_session_state_change_chunks_leave_scrollback_empty_and_seq_at_zero() {
+fn two_session_state_change_chunks_leave_scrollback_empty_and_seq_at_zero() -> TestResult {
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -204,6 +211,7 @@ fn two_session_state_change_chunks_leave_scrollback_empty_and_seq_at_zero() {
     // @step Then the scrollback_next_seq cursor remains 0
     assert_eq!(session_next_seq(&app, &sid("s-1")), 0);
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 0);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -212,7 +220,8 @@ fn two_session_state_change_chunks_leave_scrollback_empty_and_seq_at_zero() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_only() {
+fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_only() -> TestResult
+{
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -235,10 +244,12 @@ fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_
     ));
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
-    // @step Then the scrollback contains exactly 2 rendered chunks (RPC-078: Done emits NO line)
+    // @step Then the scrollback contains exactly 2 rendered chunks
+    // (RPC-078: Done emits NO line)
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
 
-    // @step Then the rendered scrollback lines equal ["You: hi", "● hello back"] (RPC-078 prefix correction; Done emits no line)
+    // @step Then the rendered scrollback lines equal ["You: hi", "", "● hello back", ""]
+    // (RPC-078 prefix correction; Done emits no line)
     // RPC-401: each of the two messages now carries one trailing blank
     // separator row.
     assert_eq!(
@@ -251,8 +262,10 @@ fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_
         ]
     );
 
-    // @step Then the scrollback_next_seq cursor equals 2 (RPC-078: Done does not bump seq)
+    // @step Then the scrollback_next_seq cursor equals 2
+    // (RPC-078: Done does not bump seq)
     assert_eq!(session_next_seq(&app, &sid("s-1")), 2);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -260,7 +273,7 @@ fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn incoming_message_chunk_renders_as_supervisor_prefix_line() {
+fn incoming_message_chunk_renders_as_supervisor_prefix_line() -> TestResult {
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -273,13 +286,15 @@ fn incoming_message_chunk_renders_as_supervisor_prefix_line() {
         },
     ));
 
-    // @step Then the scrollback contains exactly one rendered chunk whose line equals "[W] supervisor> supervisor here" (RPC-078: bare body w/ no envelope falls back to default role "supervisor")
+    // @step Then the scrollback contains exactly one rendered chunk whose line equals "[W] supervisor> supervisor here"
+    // (RPC-078: bare body w/ no envelope falls back to default role "supervisor")
     // RPC-401: plus one trailing blank separator row.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
         vec!["[W] supervisor> supervisor here".to_string(), String::new()]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -287,7 +302,7 @@ fn incoming_message_chunk_renders_as_supervisor_prefix_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn interrupted_chunk_renders_as_interrupted_with_queued_count_line() {
+fn interrupted_chunk_renders_as_interrupted_with_queued_count_line() -> TestResult {
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -297,13 +312,15 @@ fn interrupted_chunk_renders_as_interrupted_with_queued_count_line() {
         StreamChunk::interrupted(vec!["a".to_string(), "b".to_string()]),
     ));
 
-    // @step Then the scrollback contains exactly one rendered chunk whose line equals "⚠ Interrupted" (RPC-078: queue count is suppressed; the TS Ink reference renders a flat warning line)
+    // @step Then the scrollback contains exactly one rendered chunk whose line equals "⚠ Interrupted"
+    // (RPC-078: queue count is suppressed; the TS Ink reference renders a flat warning line)
     // RPC-401: plus one trailing blank separator row.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
         vec!["\u{26A0} Interrupted".to_string(), String::new()]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -311,15 +328,11 @@ fn interrupted_chunk_renders_as_interrupted_with_queued_count_line() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn all_state_only_and_tool_variants_are_suppressed_from_scrollback() {
+fn all_state_only_and_tool_variants_are_suppressed_from_scrollback() -> TestResult {
     // @step Given a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
-    // @step When record_chunk receives one of each suppressed variant
-    //         (SessionStateChange, IsolationStateChange, DebugStateChange,
-    //         FooterStateUpdate, FspecCommandRequest, FspecCommandResult,
-    //         WorkUnitsUpdate, SupervisorPendingInjection,
-    //         CompactionComplete, TokenUpdate, ContextFillUpdate)
+    // @step When record_chunk receives one of each suppressed variant (SessionStateChange, IsolationStateChange, DebugStateChange, FooterStateUpdate, FspecCommandRequest, FspecCommandResult, WorkUnitsUpdate, SupervisorPendingInjection, CompactionComplete, TokenUpdate, ContextFillUpdate)
     // RPC-091: ToolCall/ToolResult/ToolProgress are NO LONGER suppressed —
     // they render as visible cards per chunkProcessor parity. Covered by
     // spec/features/agentview-chunkprocessor-parity.feature instead.
@@ -400,6 +413,7 @@ fn all_state_only_and_tool_variants_are_suppressed_from_scrollback() {
         0,
         "suppressed chunks must not bump the seq cursor"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -408,8 +422,8 @@ fn all_state_only_and_tool_variants_are_suppressed_from_scrollback() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn session_state_change_still_mutates_per_session_status_pill_even_when_suppressed_from_scrollback()
-{
+fn session_state_change_still_mutates_per_session_status_pill_even_when_suppressed_from_scrollback(
+) -> TestResult {
     // @step Given an App with an open session s-1
     let mut app = app_with_session();
 
@@ -435,5 +449,6 @@ fn session_state_change_still_mutates_per_session_status_pill_even_when_suppress
         "SessionStateChange must NOT leak a scrollback line; got {lines:?}"
     );
     // Sanity — also assert the SessionContext exists.
-    assert_eq!(ctx(&app, &sid("s-1")).scrollback.chunk_count(), 0);
+    assert_eq!(ctx(&app, &sid("s-1"))?.scrollback.chunk_count(), 0);
+    Ok(())
 }

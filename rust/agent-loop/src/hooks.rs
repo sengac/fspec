@@ -34,8 +34,12 @@ pub struct FspecAgentHooks;
 
 impl FspecAgentHooks {
     /// Construct a fresh hooks impl. Stateless.
+    ///
+    /// BUG-610: a process that runs agent sessions (the daemon, combined
+    /// mode) logs every panic before the earlier panic hook runs.
     #[must_use]
     pub fn new() -> Self {
+        codelet_common::panic_log::install();
         Self
     }
 }
@@ -59,7 +63,12 @@ impl SessionManagerHooks for FspecAgentHooks {
                 "[RPC-072] FspecAgentHooks::spawn_agent_loop: starting agent_loop for session {}",
                 session_for_log,
             );
-            agent_loop(session, input_rx, mcp_injection_rx).await;
+            // BUG-610: a panic in this session's loop is logged with its id.
+            codelet_common::panic_log::in_session(
+                session_for_log,
+                agent_loop(session, input_rx, mcp_injection_rx),
+            )
+            .await;
             tracing::debug!(
                 "[RPC-072] FspecAgentHooks::spawn_agent_loop: agent_loop exited for session {}",
                 session_for_log,

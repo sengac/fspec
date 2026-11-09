@@ -4,6 +4,8 @@
 mod attempt_events;
 #[path = "fixtures/prov160.rs"]
 pub mod fixture;
+#[path = "fixtures/pending_phase.rs"]
+mod pending_phase;
 
 use codelet_providers::codex::{
     history::CodexHistory,
@@ -63,11 +65,20 @@ async fn scenario_offline_sessions_recover_the_original_turn_after_reception_ret
     let started = Instant::now();
 
     // @step When connection attempts fail for longer than seven seconds before reception returns
-    tokio::select! {
-        _ = &mut pending => return Err("original turn terminated while the network was still offline".into()),
-        _ = tokio::time::sleep(Duration::from_secs(8)) => {}
-    }
-    assert!(started.elapsed() > Duration::from_secs(7));
+    // TEST-042: no waiting window; the turn must stay pending until recovery
+    // reports its second offline attempt.
+    codelet_test_helpers::pending_until("the second offline attempt", &mut pending, || {
+        matches!(
+            recovery.status(),
+            Some(RecoveryStatus::WaitingForNetwork { attempt: 2 })
+        )
+    })
+    .await
+    .map_err(|_| "original turn terminated while the network was still offline")?;
+    // The first network backoff is 5 s (providers codex reconnect), so the
+    // second attempt starts at least that long after the first (a lower
+    // bound, never a deadline).
+    assert!(started.elapsed() >= Duration::from_secs(5));
     assert!(recovery.is_reconnecting());
     assert!(matches!(
         recovery.status(),
@@ -75,7 +86,7 @@ async fn scenario_offline_sessions_recover_the_original_turn_after_reception_ret
     ));
     assert_eq!(history.snapshot()?, previous);
     let server = endpoint.serve(Reply::Complete).await?;
-    let observed = tokio::time::timeout(Duration::from_secs(12), &mut pending).await??;
+    let observed = codelet_test_helpers::deadlock_guard("&mut pending", &mut pending).await??;
 
     // @step Then the original full request succeeds without a synthetic user message or transport change
     assert_eq!(observed.text, "Hello");
@@ -142,11 +153,17 @@ async fn scenario_cancellation_drops_setup_reads_and_offline_backoff() -> TestRe
             .stream(request)
             .await?
             .filter(attempt_events::is_content);
-        let poll = tokio::time::timeout(Duration::from_millis(150), stream.next()).await;
-        assert!(
-            poll.is_err(),
-            "the selected network phase must still be pending"
-        );
+        // The selected network phase must still be pending once reached.
+        pending_phase::pending_until(&mut stream, || match &server {
+            Some(server) => Ok(server
+                .requests
+                .lock()
+                .map_err(|_| "capture unavailable")?
+                .len()
+                == 1),
+            None => Ok(recovery.is_reconnecting()),
+        })
+        .await?;
         if let Some(server) = &server {
             assert_eq!(
                 server
@@ -196,7 +213,8 @@ async fn scenario_cancellation_drops_setup_reads_and_offline_backoff() -> TestRe
             None => servers.push((endpoint.serve(Reply::Complete).await?, 0)),
         }
     }
-    tokio::time::sleep(Duration::from_secs(6)).await;
+    // TEST-042: no waiting window; every stream was dropped and its recovery
+    // reported cancelled above, so the request counts are final.
     for (server, expected_requests) in servers {
         assert_eq!(
             server

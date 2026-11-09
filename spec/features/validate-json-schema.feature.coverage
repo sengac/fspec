@@ -6,16 +6,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "36-50",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -25,16 +16,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "52-88",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                51,
-                52,
-                53
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -44,16 +26,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "90-201",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                59,
-                60,
-                61
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -63,16 +36,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "203-272",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                59,
-                60,
-                61
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -82,19 +46,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "90-201",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -104,19 +56,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "277-299",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -126,22 +66,7 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "300-332",
-          "implMappings": [
-            {
-              "file": "src/validators/json-schema.ts",
-              "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -153,9 +78,7 @@
     "testFiles": [
       "src/validators/__tests__/json-schema.test.ts"
     ],
-    "implFiles": [
-      "src/validators/json-schema.ts"
-    ],
-    "totalLinesCovered": 435
+    "implFiles": [],
+    "totalLinesCovered": 402
   }
 }

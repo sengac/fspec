@@ -10,7 +10,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                45,
                 46,
                 47,
                 48,
@@ -34,8 +33,11 @@
                 66,
                 67,
                 68,
-                69
-              ]
+                69,
+                70
+              ],
+              "firstLine": "/// Port of `changesToDiffLines`: Myers line diff of `(old, new)` →",
+              "lastLine": ""
             }
           ]
         }
@@ -51,7 +53,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                45,
                 46,
                 47,
                 48,
@@ -75,8 +76,11 @@
                 66,
                 67,
                 68,
-                69
-              ]
+                69,
+                70
+              ],
+              "firstLine": "/// Port of `changesToDiffLines`: Myers line diff of `(old, new)` →",
+              "lastLine": ""
             }
           ]
         }
@@ -92,7 +96,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                71,
                 72,
                 73,
                 74,
@@ -103,8 +106,11 @@
                 79,
                 80,
                 81,
-                82
-              ]
+                82,
+                83
+              ],
+              "firstLine": "/// (`\"+{line}\"`). Splits on `\\n` without filtering empties (TS parity).",
+              "lastLine": "/// Port of `formatWithTreeConnectors`: empty/whitespace-only → `\"\"`; else the"
             }
           ]
         }
@@ -120,7 +126,6 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                164,
                 165,
                 166,
                 167,
@@ -177,8 +182,11 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222
+              ],
+              "firstLine": "text: format!(\"{indent} {}\", hidden_lines_hint(remaining)),",
+              "lastLine": "if let Some(last) = last_shown {"
             }
           ]
         }
@@ -194,6 +202,8 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
+                103,
+                104,
                 105,
                 106,
                 107,
@@ -226,8 +236,25 @@
                 134,
                 135,
                 136,
-                137
-              ]
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "/// Port of `formatDiffForDisplay`: the canonical display string. **RPC-393**:",
+              "lastLine": "}"
             }
           ]
         }
@@ -238,27 +265,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "135-149",
+          "lines": "137-151",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
                 263,
                 264,
                 265,
@@ -271,8 +282,11 @@
                 272,
                 273,
                 274,
-                275
-              ]
+                275,
+                276
+              ],
+              "firstLine": "/// Port of `calculateStartLine`: the 1-based line of the edit within the file.",
+              "lastLine": "};"
             }
           ]
         }
@@ -283,27 +297,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "150-168",
+          "lines": "153-176",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
                 263,
                 264,
                 265,
@@ -321,8 +319,18 @@
                 277,
                 278,
                 279,
-                280
-              ]
+                280,
+                281,
+                282,
+                283,
+                284,
+                295,
+                296,
+                297,
+                298
+              ],
+              "firstLine": "/// Port of `calculateStartLine`: the 1-based line of the edit within the file.",
+              "lastLine": "}"
             }
           ]
         }
@@ -333,12 +341,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "169-190",
+          "lines": "178-199",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                182,
                 183,
                 184,
                 185,
@@ -377,8 +384,11 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222
+              ],
+              "firstLine": "text: strip_prefix(&line.content).to_string(),",
+              "lastLine": "if let Some(last) = last_shown {"
             }
           ]
         }
@@ -389,12 +399,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "191-211",
+          "lines": "201-221",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                235,
                 236,
                 237,
                 238,
@@ -404,8 +413,11 @@
                 242,
                 243,
                 244,
-                245
-              ]
+                245,
+                246
+              ],
+              "firstLine": "DiffOutputKind::Context => DiffDisplayRow::Context { line_no, text },",
+              "lastLine": "});"
             }
           ]
         }
@@ -416,12 +428,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "212-230",
+          "lines": "223-242",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                84,
                 85,
                 86,
                 87,
@@ -440,8 +451,11 @@
                 100,
                 101,
                 102,
-                103
-              ]
+                103,
+                104
+              ],
+              "firstLine": "pub fn format_with_tree_connectors(content: &str) -> String {",
+              "lastLine": "/// a THIN wrapper over [`build_diff_rows`] + [`to_line`] (RPC-390 golden)."
             }
           ]
         }
@@ -452,11 +466,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "231-263",
+          "lines": "228-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
+                103,
+                104,
                 105,
                 106,
                 107,
@@ -573,8 +589,50 @@
                 218,
                 219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ],
+              "firstLine": "/// Port of `formatDiffForDisplay`: the canonical display string. **RPC-393**:",
+              "lastLine": "}"
             }
           ]
         }
@@ -585,12 +643,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/diff_format_rpc390.rs",
-          "lines": "267-290",
+          "lines": "284-308",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/diff_format.rs",
               "lines": [
-                45,
                 46,
                 47,
                 48,
@@ -611,8 +668,11 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67
+              ],
+              "firstLine": "/// Port of `changesToDiffLines`: Myers line diff of `(old, new)` →",
+              "lastLine": ""
             }
           ]
         }
@@ -629,6 +689,6 @@
     "implFiles": [
       "rust/fspec-tui/src/store/agent_view/diff_format.rs"
     ],
-    "totalLinesCovered": 693
+    "totalLinesCovered": 741
   }
 }

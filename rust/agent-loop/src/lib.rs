@@ -32,14 +32,18 @@
 //! `tests/no_napi_dependency.rs` enforces that this crate (and the
 //! transitive closure reached from it) never depends on `codelet-napi`.
 
+// BUG-630: release builds lay out nanograph 1.3.0 futures (via codelet-graph) in
+// this crate too; the default type-layout limit overflows on Database::run_json.
+#![recursion_limit = "256"]
 #![deny(unsafe_code)]
 
 pub mod agent_loop;
 pub mod agent_manager_handler;
 mod auxiliary_agent_builder;
 pub mod background_output;
-mod bridge_control;
+pub mod bridge_control;
 pub mod bridges;
+pub mod claude_effort;
 mod compaction_builder;
 pub mod compaction_evidence;
 pub mod compaction_execution;
@@ -52,6 +56,8 @@ pub mod generate_compaction_handler; // CMPCT-044: clean compaction sub-agent sp
 pub mod graph_search_handler;
 pub mod hooks;
 pub mod inject_summary_handler;
+pub mod input_admission;
+pub mod loop_detection_defaults;
 pub mod persist;
 pub mod persistence_retry;
 pub mod schedule_handler;

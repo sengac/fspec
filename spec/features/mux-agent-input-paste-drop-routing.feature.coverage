@@ -5,23 +5,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "123-160",
+          "lines": "33-72",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
             }
           ]
         }
@@ -32,23 +34,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "166-194",
+          "lines": "76-105",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
             }
           ]
         }
@@ -59,50 +63,52 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "201-236",
+          "lines": "110-146",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "201-236",
-          "implMappings": [
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239
-              ]
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "if result.is_consumed() {",
+              "lastLine": "self.sync_mux_focus_to_session();"
             }
           ]
         }
@@ -113,50 +119,54 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "242-277",
+          "lines": "150-186",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "paste while the focused session is compacting is suppressed",
+      "name": "paste while the focused session is compacting lands in the composer",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "283-318",
+          "lines": "190-226",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
             }
           ]
         }
@@ -167,40 +177,47 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "324-355",
+          "lines": "230-262",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240
-              ]
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ],
+              "firstLine": "/// RPC-403: paste routing mirrors the `Event::Key` stage order —",
+              "lastLine": "}"
             }
           ]
         }
@@ -211,23 +228,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
-          "lines": "362-394",
+          "lines": "267-301",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                72,
+                73,
+                74,
+                75,
                 76,
                 77,
                 78,
                 79,
                 80,
                 81,
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
+                82
+              ],
+              "firstLine": "// BUG-179: a bracketed paste (Event::Paste) — including a terminal",
+              "lastLine": "}"
             }
           ]
         }
@@ -242,9 +261,9 @@
       "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/fspec-tui/src/views/navigator_mux_routing.rs",
       "rust/fspec-tui/src/app/events.rs"
     ],
-    "totalLinesCovered": 386
+    "totalLinesCovered": 368
   }
 }

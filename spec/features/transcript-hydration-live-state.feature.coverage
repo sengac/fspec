@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug244_replay_state.rs",
-          "lines": "16-57",
+          "lines": "17-57",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/transcript_record.rs",
@@ -20,7 +20,9 @@
                 14,
                 15,
                 16
-              ]
+              ],
+              "firstLine": "pub(crate) fn record_transcript_chunk(",
+              "lastLine": ".scrollback"
             }
           ]
         }
@@ -31,12 +33,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug244_replay_state.rs",
-          "lines": "127-157",
+          "lines": "144-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
               "lines": [
-                89,
                 90,
                 91,
                 92,
@@ -57,11 +58,10 @@
                 107,
                 108,
                 109,
-                110,
-                111,
-                112,
-                113
-              ]
+                110
+              ],
+              "firstLine": "fn poll_transcripts_due(&mut self, force: bool) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,28 +77,29 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
               "lines": [
-                6,
-                7,
-                8,
-                9,
                 10,
                 11,
                 12,
                 13,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
+                14,
+                24,
                 47,
-                48,
-                49
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "pub(crate) fn handle_live_transcript_wake(&mut self, session: &SessionId, chunk: &StreamChunk) {",
+              "lastLine": ""
             }
           ]
         }
@@ -117,6 +118,6 @@
       "rust/fspec-tui/src/app/dispatch_transcript.rs",
       "rust/fspec-tui/src/app/dispatch_transcript_live.rs"
     ],
-    "totalLinesCovered": 192
+    "totalLinesCovered": 181
   }
 }

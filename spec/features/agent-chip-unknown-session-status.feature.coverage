@@ -1,0 +1,70 @@
+{
+  "scenarios": [
+    {
+      "name": "An unobserved session is painted with the unknown glyph",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug400_unknown_chip_status.rs",
+          "lines": "19-41",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "let (glyph, style) = match c.status {",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                74,
+                75
+              ],
+              "firstLine": "// BUG-400: an unobserved status stays unknown (None).",
+              "lastLine": "status: store.session_status_for(id).copied(),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An observed status is painted as before",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug400_unknown_chip_status.rs",
+          "lines": "43-66",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "let (glyph, style) = match c.status {",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug400_unknown_chip_status.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/chips.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs"
+    ],
+    "totalLinesCovered": 57
+  }
+}

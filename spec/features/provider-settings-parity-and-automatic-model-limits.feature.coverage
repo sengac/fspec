@@ -69,7 +69,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "let is_expanded = expanded.contains(&provider.id);",
+              "lastLine": "});"
             }
           ]
         }
@@ -106,7 +108,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "pub fn new_for_provider(provider_id: &str) -> Self {",
+              "lastLine": "form"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -149,7 +153,9 @@
                 167,
                 168,
                 169
-              ]
+              ],
+              "firstLine": "pub fn build_definition(",
+              "lastLine": "},"
             }
           ]
         }
@@ -188,7 +194,9 @@
                 206,
                 207,
                 208
-              ]
+              ],
+              "firstLine": "if (!form.context.settings && form.name.trim().is_empty())",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -198,8 +206,6 @@
                 56,
                 57,
                 58,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -210,14 +216,22 @@
                 139,
                 140,
                 141,
-                142
-              ]
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "fn placeholder_for(idx: usize) -> &'static str {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_submit.rs",
               "lines": [
-                49,
-                50,
                 51,
                 52,
                 53,
@@ -229,8 +243,13 @@
                 59,
                 60,
                 61,
-                62
-              ]
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "ProfileFormKey::Submit => match form.build_definition() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -259,18 +278,17 @@
                 206,
                 207,
                 208
-              ]
+              ],
+              "firstLine": "let context_window = parse_token_limit(&form.context_window, \"Context Window\")?;",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_submit.rs",
               "lines": [
-                78,
-                79,
-                80,
                 81,
-                92,
-                93,
-                94,
+                82,
+                83,
+                84,
                 95,
                 96,
                 97,
@@ -286,8 +304,13 @@
                 107,
                 108,
                 109,
-                110
-              ]
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "Err(hint) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -303,6 +326,24 @@
             {
               "file": "rust/fspec-tui/src/views/provider_settings/settings_config.rs",
               "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
                 33,
                 34,
                 35,
@@ -325,29 +366,14 @@
                 52,
                 53,
                 54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
+                55
+              ],
+              "firstLine": "/// Fold the stored settings and profiles into the tree, keeping the",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -360,8 +386,12 @@
                 99,
                 100,
                 101,
-                102
-              ]
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// row's bare name, recovered from its \"{name} → {baseUrl}\" display",
+              "lastLine": "profile_name: name,"
             }
           ]
         }
@@ -384,6 +414,6 @@
       "rust/fspec-tui/src/views/provider_settings/settings_config.rs",
       "rust/fspec-tui/src/views/provider_settings/list_actions.rs"
     ],
-    "totalLinesCovered": 458
+    "totalLinesCovered": 468
   }
 }

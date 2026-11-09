@@ -1,0 +1,197 @@
+{
+  "scenarios": [
+    {
+      "name": "Writing and editing an implementation file is refused while the card is specifying",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug449_stage_write_permissions_are_enforced.rs",
+          "lines": "37-67",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/stage_gate.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// Refuse a write the session's stage does not allow. `Uuid::nil()` (no",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A file the stage allows is written",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug449_stage_write_permissions_are_enforced.rs",
+          "lines": "69-85",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/stage_gate.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "/// Refuse a write the session's stage does not allow. `Uuid::nil()` (no",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed stage lookup refuses the write",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug449_stage_write_permissions_are_enforced.rs",
+          "lines": "87-105",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_tool_callbacks.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// BLOCK-006: resolve the current work unit stage for a session (shared",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug449_stage_write_permissions_are_enforced.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/stage_gate.rs",
+      "rust/sessions/src/session_tool_callbacks.rs"
+    ],
+    "totalLinesCovered": 193
+  }
+}

@@ -1,4 +1,6 @@
 @TUI-082
+@tui
+@remove
 Feature: Remove Role button on RoleBanner for quick role clearing
   """
   Modify RoleDialog.tsx to accept a showRemove prop (true when initialRole is non-empty). Add 'remove' to FocusArea type. Tab cycle and arrow navigation updated to include 'remove' when visible. Remove button calls onSubmit('') to trigger the BUG-121-fixed clear path.

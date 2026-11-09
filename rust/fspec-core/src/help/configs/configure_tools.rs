@@ -85,7 +85,7 @@ const PREREQUISITES: &[&str] = &[
     "Run from project root directory",
 ];
 
-const RELATED: &[&str] = &["bootstrap", "validate", "check", "board"];
+const RELATED: &[&str] = &["bootstrap", "validate", "audit", "board"];
 
 const NOTES: &[&str] = &[
     "Configuration persists in spec/fspec-config.json",

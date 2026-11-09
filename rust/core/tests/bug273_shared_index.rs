@@ -12,7 +12,9 @@ use support::{observed, Fixture, TestResult};
 fn current_peers_reuse_complete_history() -> TestResult {
     // @step Given two current stores sharing verified history
     let _fixture = Fixture::new(4, 128)?;
-    let mut stores = [MessageStore::new()?, MessageStore::new()?];
+    // @step And their saved index and history share one timestamp tick
+    // (Fixture::new puts every store in that state, BUG-494)
+    let stores = [MessageStore::new()?, MessageStore::new()?];
     // @step When they alternate fresh appends
     for round in 0..6 {
         let (result, publications) = observed(|| stores[round % 2].store("user", "fresh identity"));
@@ -21,7 +23,7 @@ fn current_peers_reuse_complete_history() -> TestResult {
         assert_eq!(publications, 1, "round {round} rescanned before admission");
     }
     let (cold, publications) = observed(MessageStore::new);
-    let mut cold = cold?;
+    let cold = cold?;
     assert_eq!(publications, 0, "valid cold open should reuse its index");
     let (result, publications) = observed(|| cold.store("user", "cold peer admission"));
     result?;
@@ -37,6 +39,8 @@ fn current_peers_reuse_complete_history() -> TestResult {
 fn legacy_and_current_readers_coexist() -> TestResult {
     // @step Given compatible legacy and current readers
     let fixture = Fixture::new(4, 128)?;
+    // @step And their saved index and history share one timestamp tick
+    // (Fixture::new puts every store in that state, BUG-494)
     let original = fs::read(fixture.path("messages.jsonl"))?;
     // @step When they repeatedly reopen unchanged history
     for _ in 0..4 {
@@ -71,7 +75,7 @@ fn tampered_indexes_do_not_hide_originals() -> TestResult {
     // @step Given a current index with a verified generation
     let fixture = Fixture::new(3, 64)?;
     let required = fixture.ids[0];
-    let mut writer = MessageStore::new()?;
+    let writer = MessageStore::new()?;
     // @step When an original is omitted from that index
     let path = fixture.path("messages.idx");
     let mut bytes = fs::read(&path)?;
@@ -125,7 +129,7 @@ fn invalid_or_unwritable_certificates_recover_conservatively() -> TestResult {
     let fixture = Fixture::new(2, 64)?;
     for invalid in [Vec::new(), b"not a certificate".to_vec()] {
         fs::write(fixture.path("messages.verified"), invalid)?;
-        let mut cold = MessageStore::new()?;
+        let cold = MessageStore::new()?;
         let (result, publications) = observed(|| cold.store("user", "recover unverified history"));
         result?;
         assert_eq!(publications, 2, "unverified absence must still be checked");
@@ -135,10 +139,10 @@ fn invalid_or_unwritable_certificates_recover_conservatively() -> TestResult {
         "verification.sync",
         "verification.rename",
     ] {
-        let mut writer = MessageStore::new()?;
+        let writer = MessageStore::new()?;
         let (result, _) = durability::observe(Some(boundary), || writer.store("user", boundary));
         let admitted = result?;
-        let mut cold = MessageStore::new()?;
+        let cold = MessageStore::new()?;
         assert!(
             cold.get(admitted).is_some(),
             "cache failure must not lose admitted data"
@@ -157,7 +161,7 @@ fn invalid_or_unwritable_certificates_recover_conservatively() -> TestResult {
 #[serial]
 fn replacing_history_invalidates_a_matching_length_certificate() -> TestResult {
     let fixture = Fixture::new(2, 64)?;
-    let mut reader = MessageStore::new()?;
+    let reader = MessageStore::new()?;
     let path = fixture.path("messages.jsonl");
     let replacement = fixture.path("replacement.jsonl");
     fs::write(&replacement, fs::read(&path)?)?;
@@ -173,16 +177,18 @@ fn replacing_history_invalidates_a_matching_length_certificate() -> TestResult {
 }
 
 #[test]
+#[serial]
 fn isolated_child_writer() -> TestResult {
     let Ok(root) = std::env::var("BUG273_CHILD_STORE") else {
         return Ok(());
     };
     let root = std::path::PathBuf::from(root).canonicalize()?;
-    let allowed =
-        std::path::PathBuf::from(std::env::var("FSPEC_INDEX_DIAGNOSTIC_ROOT")?).canonicalize()?;
+    // BUG-460: the parent established the root and passed it in the env.
+    let allowed = support::diagnostic_root()?;
     assert!(root.starts_with(allowed));
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(root)?;
-    let mut store = MessageStore::new()?;
+    let store = MessageStore::new()?;
     for _ in 0..3 {
         let (result, publications) = observed(|| store.store("user", "child process evidence"));
         result?;
@@ -218,7 +224,7 @@ fn concurrent_processes_share_verified_completeness() -> TestResult {
 fn legacy_append_invalidates_completeness_before_fresh_admission() -> TestResult {
     use std::io::Write;
     let fixture = Fixture::new(2, 64)?;
-    let mut current = MessageStore::new()?;
+    let current = MessageStore::new()?;
     let id = uuid::Uuid::new_v4();
     let content = "legacy writer fixture";
     let record = support::StoredMessage {

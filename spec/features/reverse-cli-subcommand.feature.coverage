@@ -129,7 +129,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -264,7 +266,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -399,7 +403,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -410,7 +416,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_reverse.rs",
-          "lines": "189-208",
+          "lines": "193-215",
           "implMappings": [
             {
               "file": "rust/fspec/src/reverse.rs",
@@ -534,7 +540,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -545,7 +553,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_reverse.rs",
-          "lines": "210-237",
+          "lines": "217-247",
           "implMappings": [
             {
               "file": "rust/fspec/src/reverse.rs",
@@ -669,7 +677,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -680,7 +690,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_reverse.rs",
-          "lines": "239-270",
+          "lines": "249-287",
           "implMappings": [
             {
               "file": "rust/fspec/src/reverse.rs",
@@ -804,7 +814,73 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
+            },
+            {
+              "file": "rust/fspec-core/src/types/reverse_session.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "pub fn session_path(project_root: &Path) -> PathBuf {",
+              "lastLine": "}"
             }
           ]
         }
@@ -815,7 +891,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_reverse.rs",
-          "lines": "272-299",
+          "lines": "289-317",
           "implMappings": [
             {
               "file": "rust/fspec/src/reverse.rs",
@@ -939,7 +1015,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "//! `reverse` shell-facing CLI bridge (RPC-294).",
+              "lastLine": "Err(err) => {"
             }
           ]
         }
@@ -954,8 +1032,9 @@
       "rust/fspec/tests/cli_reverse.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/reverse.rs"
+      "rust/fspec/src/reverse.rs",
+      "rust/fspec-core/src/types/reverse_session.rs"
     ],
-    "totalLinesCovered": 1013
+    "totalLinesCovered": 1084
   }
 }

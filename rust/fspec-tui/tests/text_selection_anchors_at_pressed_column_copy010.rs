@@ -10,8 +10,7 @@
 //! copied). The mid-line assertions are EXPECTED to be RED against the
 //! current code.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{MouseButton, MouseEventKind};
 
 mod common;
@@ -37,13 +36,13 @@ use codelet_fspec_tui::Action;
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_from_a_mid_line_column_in_the_scrollback_copies_from_that_column() {
+fn dragging_from_a_mid_line_column_in_the_scrollback_copies_from_that_column() -> TestResult {
     // @step Given a scrollback whose visible row reads "Hello world" with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "Hello world");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "Hello world")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2 // header row is 0; scrollback band starts at y=1.
 
     // @step When I press the left mouse button at column 6 of that row and drag to the end of the row and release
@@ -58,18 +57,19 @@ fn dragging_from_a_mid_line_column_in_the_scrollback_copies_from_that_column() {
 
     // @step Then the clipboard receives "world"
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52("world"),
         "a drag from column 6 must copy from that column, not the line start"
     );
 
     // @step And the copied text does not start at the beginning of the line
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_ne!(
         bytes,
         osc52("Hello world"),
         "the copied text must NOT be the whole line from column 0"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ fn dragging_from_a_mid_line_column_in_the_scrollback_copies_from_that_column() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column() {
+fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column() -> TestResult {
     use base64::engine::general_purpose::STANDARD;
     use base64::Engine as _;
     use codelet_fspec_tui::views::agent::multiline_input::MultiLineInput;
@@ -124,7 +124,7 @@ fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column
             cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 19, 0),
             area,
         )
-        .expect("Commit must return the selected text");
+        .or_fail("Commit must return the selected text")?;
 
     // @step Then the clipboard receives "brown fox"
     assert_eq!(
@@ -136,6 +136,7 @@ fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column
         osc52_for("brown fox"),
         "the injected OSC 52 writer receives the mid-word bytes"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -144,12 +145,13 @@ fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_from_a_mid_line_column_in_the_turn_content_modal_copies_from_that_column() {
+fn dragging_from_a_mid_line_column_in_the_turn_content_modal_copies_from_that_column() -> TestResult
+{
     use modal::{clip_bytes as mclip, drain_app, modal_body_rect, open_modal_app, osc52 as mosc52};
 
     // @step Given an open turn-content modal showing a body line with known text and mouse capture enabled
     let body = "PREFIX_HEADER SUFFIX_TAIL";
-    let (mut app, clip) = open_modal_app(body, 80, 24);
+    let (mut app, clip) = open_modal_app(body, 80, 24)?;
     let r = modal_body_rect(80, 24, body);
 
     // @step When I press the left mouse button at a mid-line column of the body and drag to the end of the line and release
@@ -175,7 +177,7 @@ fn dragging_from_a_mid_line_column_in_the_turn_content_modal_copies_from_that_co
     drain_app(&mut app);
 
     // @step Then the copied text starts at the pressed column and not at the start of the line
-    let bytes = mclip(&clip);
+    let bytes = mclip(&clip)?;
     assert_eq!(
         bytes,
         mosc52("SUFFIX_TAIL"),
@@ -186,6 +188,7 @@ fn dragging_from_a_mid_line_column_in_the_turn_content_modal_copies_from_that_co
         mosc52(body),
         "the copied text must NOT be the whole line from column 0"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -194,7 +197,8 @@ fn dragging_from_a_mid_line_column_in_the_turn_content_modal_copies_from_that_co
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_column() {
+fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_column(
+) -> TestResult {
     use board::{
         board_with_clipboard, buffer_row_text, clip_bytes as bclip, details_rect, osc52 as bosc52,
         render, wu,
@@ -202,9 +206,9 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
 
     // @step Given a board with a work unit selected and its details strip visible
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
-    let buf = render(&view, &store, 120, 30);
+    let buf = render(&view, &store, 120, 30)?;
     let full = buffer_row_text(&buf, r.x, r.y, r.width);
     assert!(
         full.starts_with("RPC-014: Board grid"),
@@ -213,7 +217,7 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
     // Press at the 'B' of "Board" — char index 9 in "RPC-014: Board grid".
     let press_col = 9u16;
     let expected: String = full.chars().skip(press_col as usize).collect();
-    fn bdrain(rx: &mut tokio::sync::mpsc::UnboundedReceiver<Action>) {
+    fn bdrain(rx: &mut board::BoardRx) {
         while rx.try_recv().is_ok() {}
     }
 
@@ -247,7 +251,7 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
     bdrain(&mut rx);
 
     // @step Then the copied text starts at the pressed column and not at the start of the line
-    let bytes = bclip(&clip);
+    let bytes = bclip(&clip)?;
     assert_eq!(
         bytes,
         bosc52(&expected),
@@ -258,6 +262,7 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
         bosc52(&full),
         "the copied text must NOT be the whole title from column 0"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -266,13 +271,13 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() {
+fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() -> TestResult {
     // @step Given a scrollback whose visible row reads "whole line text" with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "whole line text");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "whole line text")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and hold the left mouse button on that row for about half a second without moving and release
@@ -281,15 +286,15 @@ fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() {
     // the pressed column.
     let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 5, rect_y));
     drain(&mut app);
-    std::thread::sleep(std::time::Duration::from_millis(450));
-    app.poll_selection_tick_for_test();
+    // TEST-042: tick as if 450ms had passed since the press, no sleep.
+    app.poll_selection_tick_after_for_test(std::time::Duration::from_millis(450));
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 5, rect_y));
     drain(&mut app);
 
     // @step Then the whole line text is written to the clipboard
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52("whole line text"),
         "a stationary long-press must still copy the whole line"
     );
@@ -299,11 +304,12 @@ fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() {
         selection_active(&app),
         "the long-press selection must persist after commit"
     );
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     assert!(
         highlight_spans(&app) > 0,
         "the highlight overlay must still be painted after copy"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -311,13 +317,13 @@ fn a_long_press_with_no_drag_still_selects_and_copies_the_whole_line() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_zero_width_drag_copies_nothing() {
+fn a_zero_width_drag_copies_nothing() -> TestResult {
     // @step Given a scrollback whose visible row reads "Hello world" with mouse capture enabled
     let (mut app, clip) = app_with_clipboard();
-    let _ = seed_line(&mut app, "Hello world");
-    render_app(&mut app, 80, 40);
+    let _ = seed_line(&mut app, "Hello world")?;
+    render_app(&mut app, 80, 40)?;
     app.dispatch(Action::ScrollbackHome);
-    render_app(&mut app, 80, 40);
+    render_app(&mut app, 80, 40)?;
     let rect_y = 2u16; // MENU-003: y=1 is the menu bar row; scrollback starts at y=2
 
     // @step When I press and release the left mouse button on the same cell without moving
@@ -330,7 +336,8 @@ fn a_zero_width_drag_copies_nothing() {
 
     // @step Then nothing is written to the clipboard
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "a zero-width drag must not write to the clipboard"
     );
+    Ok(())
 }

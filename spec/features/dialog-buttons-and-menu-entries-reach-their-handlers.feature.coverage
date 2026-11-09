@@ -1,0 +1,485 @@
+{
+  "scenarios": [
+    {
+      "name": "Enter on Merge merges the session's worktree",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "162-184",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "pub(crate) fn handle_open_merge_confirm_dialog(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on Discard discards the session's worktree",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "186-210",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub(crate) fn handle_open_merge_confirm_dialog(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking Merge merges the session's worktree",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "212-246",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "pub(crate) fn handle_open_merge_confirm_dialog(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc closes the merge dialog and changes nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "248-267",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "pub(crate) fn handle_open_merge_confirm_dialog(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/debug with no session open says whether capture is on for the next session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "269-305",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "// RPC-430: pre-session toggle path — mirrors TS AgentView.tsx:2713-2715",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "w with no workspaces listed opens the dropdown so the first workspace can be added",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "307-331",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "/// TUI-127: with no workspaces listed there is nothing to remove.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                19
+              ],
+              "firstLine": "// TUI-127: an empty list opens too, so `a` can add the first one.",
+              "lastLine": "// TUI-127: an empty list opens too, so `a` can add the first one."
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "match shortcut_for_key(key) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings > Workspaces with no workspaces listed opens the dropdown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs",
+          "lines": "333-352",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "/// TUI-127: with no workspaces listed there is nothing to remove.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                19
+              ],
+              "firstLine": "// TUI-127: an empty list opens too, so `a` can add the first one.",
+              "lastLine": "// TUI-127: an empty list opens too, so `a` can add the first one."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui127_dialog_buttons_reach_handlers.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+      "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
+      "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+      "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+      "rust/fspec-tui/src/views/board/keys.rs"
+    ],
+    "totalLinesCovered": 503
+  }
+}

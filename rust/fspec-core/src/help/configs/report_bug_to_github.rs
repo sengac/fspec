@@ -3,20 +3,10 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js report-bug-to-github --help`.
 //!
-//! ⚠️ PARITY QUIRKS (faithful to the TS output):
-//!   * `typicalWorkflow` is a `string[]` in the TS config but `formatCommandHelp`
-//!     interpolates it as `${config.typicalWorkflow}`, so JS comma-joins the
-//!     array into a single line. `typical_workflow` here is that comma-joined
-//!     string.
-//!   * `commonErrors` entries use the field name `solution` in the TS config,
-//!     but `formatCommandHelp` reads `err.fix`, rendering the literal
-//!     `undefined`. Each `CommonError.fix` here is the literal "undefined".
-//!   * `relatedCommands` strings already begin with `fspec ` in the TS config,
-//!     and the formatter prefixes another `fspec `, producing `fspec fspec …`.
-//!     Stored verbatim (with the leading `fspec `) to reproduce the double.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
-//! Unlike `research-help.ts`, this config's `options` use the correct `flag`
-//! field, so the OPTIONS block renders real flags (no `undefined`).
 
 use super::super::{CommandExample, CommandHelpConfig, CommandOption, CommonError};
 
@@ -48,7 +38,7 @@ const OPTIONS: &[CommandOption] = &[
     },
 ];
 
-const TYPICAL_WORKFLOW: &str = "Encounter a bug while using fspec,Run: fspec report-bug-to-github,System automatically gathers context (version, platform, git status, work unit),Browser opens with pre-filled GitHub issue,Review and submit the issue";
+const TYPICAL_WORKFLOW: &str = "Encounter a bug while using fspec. Run: fspec report-bug-to-github. System automatically gathers context (version, platform, git status, work unit). Browser opens with pre-filled GitHub issue. Review and submit the issue";
 
 const EX1_OUTPUT: &str = "Gathering system context...\n✓ fspec version: 0.6.0\n✓ Node version: v22.20.0\n✓ Platform: linux\n✓ Git branch: feature-branch\n✓ Work unit: CLI-014 - Report bug to GitHub\n\nOpening GitHub issue in browser...\n✓ Browser opened with pre-filled issue";
 
@@ -80,11 +70,11 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Browser failed to open",
-        fix: "undefined",
+        fix: "Check that you have a default browser configured. The issue URL is still generated and can be copied manually.",
     },
     CommonError {
         error: "No work unit context found",
-        fix: "undefined",
+        fix: "This is normal if you don't have work units. The bug report will still be generated with system context.",
     },
 ];
 
@@ -96,9 +86,9 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const RELATED: &[&str] = &[
-    "fspec validate - Validate feature files",
-    "fspec check - Run comprehensive validation",
-    "fspec show-work-unit - View work unit details",
+    "validate - Validate feature files",
+    "audit - Report every exact drift problem with its fix command",
+    "show-work-unit - View work unit details",
 ];
 
 const NOTES: &[&str] = &[

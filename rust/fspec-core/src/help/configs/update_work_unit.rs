@@ -31,7 +31,7 @@ const OPTS: &[CommandOption] = &[
         default_value: None,
     },
     CommandOption {
-        flag: "-p, --parent <parent>",
+        flag: "-p, --parent <workUnitId>",
         description:
             "Parent work unit ID (for hierarchical relationships, prevents circular references)",
         default_value: None,
@@ -42,17 +42,17 @@ const PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Refine work unit details",
         example: "# Initial creation\nfspec create-story AUTH \"User auth\"\n\n# Refine after Example Mapping\nfspec update-work-unit AUTH-001 --title \"OAuth 2.0 authentication\" --description \"Implement OAuth 2.0 flow with Google\"",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Reorganize epic structure",
         example: "# Move work units to different epic\nfspec update-work-unit AUTH-001 --epic SECURITY\nfspec update-work-unit AUTH-002 --epic SECURITY\n\n# Verify epic structure\nfspec show-epic SECURITY",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Create parent-child relationships",
         example: "# Break large work unit into subtasks\nfspec create-story AUTH \"OAuth implementation\" --parent AUTH-001\nfspec create-task AUTH \"OAuth testing\" --parent AUTH-001\n\n# View hierarchy\nfspec show-work-unit AUTH-001",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -101,7 +101,7 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
     CommonError {
         error: "Circular parent relationship detected",
-        fix: "Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <id>",
+        fix: "Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "Work unit type is immutable and cannot be changed after creation",

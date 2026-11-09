@@ -4,14 +4,15 @@
 //!
 //! Extracted from `mod.rs` so that module stays under the 300-LoC ceiling.
 //! Dispatches on `self.mode` like `handle_key`, but acts ONLY in the
-//! text-entry modes (create/edit profile form + inline API-key entry). All
+//! text-entry modes (create/edit profile form, inline API-key entry and,
+//! TUI-126, the sign-in code and the GitHub Enterprise host). All
 //! other modes ignore the paste so it falls through untouched. Pasted text is
 //! filtered through the same per-field charset gate used for typed input,
 //! which also strips newlines.
 
 use super::{
-    detail, profile_form_paste, DetailSub, ProviderSettingsEvent, ProviderSettingsMode,
-    ProviderSettingsView,
+    detail, oauth_copilot, oauth_login, profile_form_paste, DetailSub, ProviderSettingsEvent,
+    ProviderSettingsMode, ProviderSettingsView,
 };
 
 /// Route a bracketed-paste blob to the active input mode's paste sink.
@@ -32,6 +33,11 @@ pub(super) fn handle_paste(view: &mut ProviderSettingsView, text: &str) -> Provi
             provider_id,
             sub: DetailSub::EditApiKey { draft },
         } => detail::handle_edit_paste(view, provider_id, draft, text),
+        // TUI-126: the sign-in code and the GitHub Enterprise host.
+        ProviderSettingsMode::OAuthHeadlessCodeEntry { .. } => oauth_login::paste_code(view, text),
+        ProviderSettingsMode::OAuthEnterpriseUrlEntry { .. } => {
+            oauth_copilot::paste_host(view, text)
+        }
         _ => ProviderSettingsEvent::Ignored,
     }
 }

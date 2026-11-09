@@ -3,7 +3,7 @@ DELETE-SCENARIO
 Delete a scenario from a feature file
 
 USAGE
-  fspec delete-scenario <file> <scenario> [options]
+  fspec delete-scenario <file> <scenario>
 
 ARGUMENTS
   <file> (required)
@@ -12,8 +12,7 @@ ARGUMENTS
     Scenario name to delete
 
 OPTIONS
-  --force
-    Skip confirmation
+  No options available
 
 EXAMPLES
   1. Delete scenario and update coverage file

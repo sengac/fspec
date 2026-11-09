@@ -29,7 +29,7 @@ const EXAMPLES: &[CommandExample] = &[
 const RELATED: &[&str] = &[
     "configure-tools",
     "init",
-    "check",
+    "audit",
     "validate-tags",
     "validate-work-units",
 ];

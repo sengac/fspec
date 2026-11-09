@@ -34,7 +34,9 @@
                 32,
                 33,
                 34
-              ]
+              ],
+              "firstLine": "pub(super) fn commit(",
+              "lastLine": "JournalStore::configured(session_id)"
             }
           ]
         }

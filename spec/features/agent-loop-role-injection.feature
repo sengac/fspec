@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-561
 @done
 @session-management
 @RPC-082
@@ -6,6 +8,7 @@
 @rpc
 @role
 @bug120
+@BUG-344
 Feature: Agent loop injects session role as the system prompt every turn
   """
   RPC-082 (child of RPC-072 family). BUG-120 parity: session.get_role()
@@ -23,9 +26,13 @@ Feature: Agent loop injects session role as the system prompt every turn
   agent loop reads the stored role.
 
   Parity reference: rust/napi/src/agent_loop.rs:91-96.
+  BUG-344: the OpenAI and custom-provider turns moved out of agent_loop.rs into
+  agent_loop/provider_openai.rs (run_openai_turn) and agent_loop/provider_custom.rs
+  (run_custom_turn), and run_with_provider! gained several arms; the scenarios read
+  those files and the whole macro.
   """
 
-  Background: 
+  Background:
     Given the BUG-120 fix requires session.get_role() to be read every turn
     And the canonical agent loop passes the result as preamble to provider.create_rig_agent
 
@@ -42,20 +49,20 @@ Feature: Agent loop injects session role as the system prompt every turn
 
   Scenario: run_with_provider! macro reads session.get_role() and passes it to create_rig_agent
     Given the source file rust/agent-loop/src/dispatch.rs
-    When the macro body of run_with_provider! is extracted
+    When the macro body of run_with_provider! is extracted with all of its arms
     Then it contains the expression "session.get_role()"
     And it binds the result to a "role_preamble" local
     And it passes "role_preamble.as_deref()" as the second positional argument to "provider.create_rig_agent"
 
-  Scenario: OpenAI inlined arm reads session.get_role() and passes it to create_rig_agent
-    Given the source file rust/agent-loop/src/agent_loop.rs
-    When the inlined "openai" match arm is extracted
+  Scenario: OpenAI turn reads session.get_role() and passes it to create_rig_agent
+    Given the source file rust/agent-loop/src/agent_loop/provider_openai.rs
+    When the run_openai_turn function body is extracted
     Then it contains "let role_preamble = session.get_role();"
     And the subsequent provider.create_rig_agent call uses "role_preamble.as_deref()" as the second argument
 
-  Scenario: Custom-provider fallthrough arm reads session.get_role() and passes it to CustomProvider::create_rig_agent
-    Given the source file rust/agent-loop/src/agent_loop.rs
-    When the "_" fallthrough match arm is extracted
+  Scenario: Custom-provider turn reads session.get_role() and passes it to CustomProvider::create_rig_agent
+    Given the source file rust/agent-loop/src/agent_loop/provider_custom.rs
+    When the run_custom_turn function body is extracted
     Then it contains "let role_preamble = session.get_role();"
     And the subsequent CustomProvider::create_rig_agent call uses "role_preamble.as_deref()" as the fifth positional argument
 

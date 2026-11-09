@@ -78,8 +78,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let path = project_root.join("spec").join("schedules.json");
+    let path = crate::io::spec_paths::schedules(project_root)?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "pause-schedule")?;
     // Read-directly, NO auto-create. A missing or empty file is modelled as an
     // empty `schedules` map so the name lookup below yields the clean
     // "does not exist" error (the APPROVED divergence).

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
-          "lines": "85-99",
+          "lines": "82-95",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -14,7 +14,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "let code = c as u32;",
+              "lastLine": ""
             }
           ]
         }
@@ -25,7 +27,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
-          "lines": "105-119",
+          "lines": "101-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -34,7 +36,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "let code = c as u32;",
+              "lastLine": ""
             }
           ]
         }
@@ -45,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
-          "lines": "125-145",
+          "lines": "120-139",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -68,7 +72,9 @@
                 162,
                 163,
                 164
-              ]
+              ],
+              "firstLine": "// RPC-161 — drop control chars / DEL / non-ASCII so only",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -79,7 +85,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc153_filter_printable_chars_shape.rs",
-          "lines": "151-176",
+          "lines": "145-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/detail.rs",
@@ -102,7 +108,9 @@
                 162,
                 163,
                 164
-              ]
+              ],
+              "firstLine": "// RPC-161 — drop control chars / DEL / non-ASCII so only",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -119,6 +127,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/detail.rs"
     ],
-    "totalLinesCovered": 121
+    "totalLinesCovered": 116
   }
 }

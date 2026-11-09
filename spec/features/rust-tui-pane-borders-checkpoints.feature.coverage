@@ -4,8 +4,8 @@
       "name": "Checkpoints view shows a vertical divider between the Checkpoints and Files panes",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "106-142",
+          "file": "rust/fspec-tui/src/views/checkpoints/borders_tests.rs",
+          "lines": "18-58",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/diff_common/pane.rs",
@@ -23,15 +23,13 @@
                 80,
                 81,
                 82
-              ]
+              ],
+              "firstLine": ".render(row, buf);",
+              "lastLine": "y: gutter.y + i,"
             },
             {
               "file": "rust/fspec-tui/src/views/checkpoints/render.rs",
               "lines": [
-                61,
-                62,
-                63,
-                64,
                 65,
                 66,
                 67,
@@ -40,8 +38,14 @@
                 70,
                 71,
                 72,
-                73
-              ]
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "&title,",
+              "lastLine": "render_empty(body, buf);"
             }
           ]
         }
@@ -53,12 +57,12 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/checkpoints/tests.rs"
+      "rust/fspec-tui/src/views/checkpoints/borders_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/diff_common/pane.rs",
       "rust/fspec-tui/src/views/checkpoints/render.rs"
     ],
-    "totalLinesCovered": 63
+    "totalLinesCovered": 67
   }
 }

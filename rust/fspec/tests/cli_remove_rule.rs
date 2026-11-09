@@ -178,7 +178,7 @@ fn scenario_cli_matches_ts_nan_behaviour_when_index_is_non_numeric() {
 
 #[test]
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
-    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and rules=[{id:0,...},{id:1,...}]
+    // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and rules=[{id:0,text:'r0',deleted:false,createdAt:'x'},{id:1,text:'r1',deleted:false,createdAt:'x'}]
     let ws = tempfile::tempdir().expect("tempdir");
     let rules = serde_json::json!([
         {"id": 0, "text": "r0", "deleted": false, "createdAt": "x"},

@@ -5,32 +5,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "44-86",
+          "lines": "42-84",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
                 88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88
+              ],
+              "firstLine": "/// before the lazy `create_session` (the AgentView-mount analogue of",
+              "lastLine": "/// before the lazy `create_session` (the AgentView-mount analogue of"
             }
           ]
         }
@@ -41,22 +43,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "88-111",
+          "lines": "86-109",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
+                46,
                 47,
                 48,
                 49,
                 50,
                 51,
-                52,
-                53,
-                54,
-                55,
-                56
-              ]
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "pub(crate) fn handle_stream_chunk_state_updates(",
+              "lastLine": ");"
             }
           ]
         }
@@ -67,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "113-148",
+          "lines": "111-146",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -86,7 +100,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "self.agent_view_store.clear_compaction_progress(session_id);",
+              "lastLine": "old = ?old,"
             }
           ]
         }
@@ -97,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "150-171",
+          "lines": "148-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -106,7 +122,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "new = ?new_status,",
+              "lastLine": "// RPC-053: fire the pause / HITL chunk-driven trigger or"
             }
           ]
         }
@@ -117,7 +135,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "173-208",
+          "lines": "171-206",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -141,7 +159,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "// clear any mounted dialog on resume.",
+              "lastLine": "self.agent_view_store.reset_token_state(session_id);"
             }
           ]
         }
@@ -152,7 +172,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "209-286",
+          "lines": "207-284",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -219,7 +239,9 @@
                 182,
                 183,
                 184
-              ]
+              ],
+              "firstLine": "self.agent_view_store.clear_compaction_reduction(session_id);",
+              "lastLine": "StreamChunk::ExecStdinRequest { request } => {"
             }
           ]
         }
@@ -230,38 +252,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "287-336",
+          "lines": "285-334",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
-                94,
-                95,
-                96,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
                 231,
                 232,
                 233,
@@ -269,8 +267,66 @@
                 235,
                 236,
                 237,
-                238
-              ]
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ],
+              "firstLine": "StreamChunk::FspecCommandRequest { fspec_request } => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_fspec_runner.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "/// Execute `request` against `backend` and produce an `FspecResult`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "338-360",
+          "lines": "336-358",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -296,7 +352,9 @@
                 109,
                 110,
                 111
-              ]
+              ],
+              "firstLine": "base_commit,",
+              "lastLine": ");"
             }
           ]
         }
@@ -307,25 +365,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
-          "lines": "361-407",
+          "lines": "359-410",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
                 88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88,
+                88
+              ],
+              "firstLine": "/// before the lazy `create_session` (the AgentView-mount analogue of",
+              "lastLine": "/// before the lazy `create_session` (the AgentView-mount analogue of"
             }
           ]
         }
@@ -341,8 +401,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/bootstrap.rs",
-      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/app/dispatch_fspec_runner.rs"
     ],
-    "totalLinesCovered": 546
+    "totalLinesCovered": 586
   }
 }

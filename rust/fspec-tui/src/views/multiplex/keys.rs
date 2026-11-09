@@ -4,8 +4,8 @@
 //! Feature: spec/features/rust-mux-mode.feature
 //!
 //! The "trap": unfocused panes receive NO keyboard events.
-//! Shift+Left / Shift+Right drive the mux focus + agent window (MUX-002:
-//! rotation, stop-at-edges, new-agent prompt at the right edge). These
+//! Shift+Left / Shift+Right move the mux focus in layout order (MUX-012:
+//! stop at both ends, new-agent prompt on a last agent pane). These
 //! are the ONLY mux keybindings (2026-08-26 user directive): the 'm'
 //! toggle, Tab pane/divider cycling, and keyboard divider resize were
 //! removed — Tab is reserved for the agent view's turn-select mode and
@@ -26,12 +26,11 @@ use super::MultiplexLayout;
 
 /// What the mux layer wants the Navigator to do with a key.
 pub enum KeyDecision {
-    /// Shift+Left: rotate the agent window backward OR move focus one
-    /// pane left (stop at the first pane — MUX-002, no wrap).
+    /// Shift+Left: focus the previous pane in layout order (stop at the
+    /// first pane — MUX-012, no wrap).
     FocusPrev,
-    /// Shift+Right: rotate the agent window forward, move focus one
-    /// pane right, or prompt for a new agent at the right edge
-    /// (MUX-002 — no wrap).
+    /// Shift+Right: focus the next pane in layout order, or prompt for a
+    /// new agent on a last agent pane (MUX-012 — no wrap).
     FocusNext,
     /// Forward the key to the focused pane only.
     Forward,
@@ -44,13 +43,12 @@ pub fn classify_key(layout: &MultiplexLayout, key: &KeyEvent) -> KeyDecision {
     }
 
     // Shift+Left / Shift+Right: cycle pane focus (R3, panes only).
-    if key.modifiers.contains(KeyModifiers::SHIFT)
-        && matches!(key.code, KeyCode::Left | KeyCode::Right)
-    {
-        return match key.code {
-            KeyCode::Left => KeyDecision::FocusPrev,
-            _ => KeyDecision::FocusNext,
-        };
+    if key.modifiers.contains(KeyModifiers::SHIFT) {
+        match key.code {
+            KeyCode::Left => return KeyDecision::FocusPrev,
+            KeyCode::Right => return KeyDecision::FocusNext,
+            _ => {}
+        }
     }
 
     KeyDecision::Forward

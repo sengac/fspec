@@ -22,7 +22,9 @@
                 28,
                 29,
                 30
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Copy, Default)]",
+              "lastLine": "pub reasoning_tokens: u64,"
             }
           ]
         }
@@ -47,7 +49,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn total_input(&self) -> u64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -72,7 +76,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "pub fn total_input(&self) -> u64 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +100,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "/// Total input tokens = input + cache_read + cache_creation (PROV-001)",
+              "lastLine": "#[inline]"
             }
           ]
         }
@@ -116,7 +124,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "/// Total input tokens = input + cache_read + cache_creation (PROV-001)",
+              "lastLine": "#[inline]"
             }
           ]
         }

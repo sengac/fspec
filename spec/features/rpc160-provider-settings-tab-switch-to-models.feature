@@ -3,6 +3,7 @@
 @rust-frontend
 @provider-settings
 @wip
+@tui
 Feature: Provider settings: Tab keybind in list mode emits SwitchToModels event
   """
   TS reference: src/tui/inputHandlers/listModeHandler.ts lines 57-60 —

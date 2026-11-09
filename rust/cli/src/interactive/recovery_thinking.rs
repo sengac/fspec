@@ -101,7 +101,8 @@ pub fn build_thinking_exhaustion_recovery_message(
     if let Some(reasoning) = captured_reasoning {
         // Truncate very long reasoning to avoid bloating the context
         let truncated = if reasoning.len() > 2000 {
-            &reasoning[..2000]
+            // BUG-642: cut on a char boundary.
+            &reasoning[..reasoning.floor_char_boundary(2000)]
         } else {
             reasoning
         };

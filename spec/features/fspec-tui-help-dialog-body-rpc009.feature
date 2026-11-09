@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui
 @rust
@@ -15,22 +16,18 @@ Feature: Help dialog body update (RPC-009)
     I want the existing RPC-008 HelpDialog body text replaced with one-line-per-key listings for `j`, `k`, `Tab`, `?`, `q`, `Enter`, `Ctrl+C` — same Priority::Critical Component, same tui-popup adapter, no new dialog widget code
     So that pressing `?` shows accurate keybindings for the new two-pane UI introduced in this card without inventing a new dialog framework
 
-  Scenario: HelpDialog body lists every keybinding from the RPC-009 scope on one line each
+  Scenario: HelpDialog body shows the board navigation keybindings within an 80x24 render
     Given an isolated HelpDialog component
     When the dialog is rendered onto an 80x24 TestBackend
     Then the rendered buffer contains the substring "j"
     And the rendered buffer contains the substring "k"
-    And the rendered buffer contains the substring "Tab"
-    And the rendered buffer contains the substring "?"
-    And the rendered buffer contains the substring "q"
     And the rendered buffer contains the substring "Enter"
-    And the rendered buffer contains the substring "Ctrl+C"
     And the rendered buffer contains the substring "ESC"
 
-  Scenario: HelpDialog still uses the tui-popup adapter at Priority::Critical (RPC-008 invariant)
+  Scenario: HelpDialog renders via the shared dialog_theme renderer at Priority::Critical (RPC-008 invariant)
     Given an isolated HelpDialog component
     Then its priority() returns Priority::Critical
-    And its render(...) implementation constructs a `tui_popup::Popup` wrapping a `SizedWidgetRef` adapter
+    And its render(...) implementation uses dialog_theme::render_dialog_at (no tui_popup::Popup)
     And it does NOT define a hand-rolled `centered_rect` helper as the production code path
 
   Scenario: HelpDialog rendering is byte-equal across runs (insta snapshot regenerated)

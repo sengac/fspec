@@ -18,18 +18,11 @@ const ARGS: &[CommandArgument] = &[
     },
 ];
 
-const OPTIONS: &[CommandOption] = &[
-    CommandOption {
-        flag: "--status <status>",
-        description: "Filter by status",
-        default_value: None,
-    },
-    CommandOption {
-        flag: "--epic <epic>",
-        description: "Filter by epic",
-        default_value: None,
-    },
-];
+const OPTIONS: &[CommandOption] = &[CommandOption {
+    flag: "--status <status>",
+    description: "Filter by status",
+    default_value: None,
+}];
 
 const EXAMPLES: &[CommandExample] = &[CommandExample {
     command: "fspec export-work-units json work-units.json",

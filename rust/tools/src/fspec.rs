@@ -2,9 +2,7 @@ use rig::tool::Tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-// NAPI imports for direct function calls (JS-controlled invocation)
 use super::error::ToolError;
-use napi::bindgen_prelude::Function;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FspecTool {
@@ -16,24 +14,6 @@ pub struct FspecTool {
 impl FspecTool {
     pub fn new(session_id: uuid::Uuid) -> Self {
         Self { session_id }
-    }
-
-    /// Execute fspec command via JS-provided callback (JS-controlled invocation).
-    ///
-    /// The callback signature in TypeScript should be:
-    /// `(command: string, argsJson: string, projectRoot: string) => string`
-    ///
-    /// This is called directly with the callback provided by JS at execution time.
-    pub fn execute_with_js_callback(
-        &self,
-        command: String,
-        args_json: String,
-        project_root: String,
-        callback: Function<(String, String, String), String>,
-    ) -> Result<String, String> {
-        callback
-            .call((command, args_json, project_root))
-            .map_err(|e| e.to_string())
     }
 }
 

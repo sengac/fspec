@@ -96,9 +96,7 @@ impl SessionStore {
 
     /// Load a session by ID (returns owned value).
     pub fn load(&self, id: Uuid) -> Result<SessionManifest, String> {
-        let path = self.sessions_dir.join(format!("{id}.json"));
-        super::manifest_commit::read_manifest(&path)
-            .map_err(|error| format!("Failed to load session manifest {path:?}: {error}"))
+        load_manifest(&self.sessions_dir, id)
     }
 
     /// Get the last active session for a project.
@@ -155,55 +153,71 @@ impl SessionStore {
         at_index: usize,
         name: &str,
     ) -> Result<SessionManifest, String> {
-        if at_index >= source.messages.len() {
+        self.commit(&fork_manifest(source, at_index, name)?)
+            .map_err(|error| error.to_string())
+    }
+}
+
+/// Read the committed manifest of session `id` from `sessions_dir`.
+fn load_manifest(sessions_dir: &Path, id: Uuid) -> Result<SessionManifest, String> {
+    let path = sessions_dir.join(format!("{id}.json"));
+    if !path.exists() {
+        return Err(format!("Session {id} not found"));
+    }
+    super::manifest_commit::read_manifest(&path)
+        .map_err(|error| format!("Failed to load session manifest {path:?}: {error}"))
+}
+
+/// The uncommitted manifest of a fork of `source` after `at_index`.
+fn fork_manifest(
+    source: &SessionManifest,
+    at_index: usize,
+    name: &str,
+) -> Result<SessionManifest, String> {
+    if at_index >= source.messages.len() {
+        return Err(format!(
+            "Fork index {} is out of range (session has {} messages)",
+            at_index,
+            source.messages.len()
+        ));
+    }
+    if let Some(ref compaction) = source.compaction {
+        if at_index < compaction.compacted_before_index {
             return Err(format!(
-                "Fork index {} is out of range (session has {} messages)",
-                at_index,
-                source.messages.len()
+                "Cannot fork at index {} which is before compaction boundary {}. \
+                 Compacted messages cannot be individually accessed. \
+                 Fork at index {} or later.",
+                at_index, compaction.compacted_before_index, compaction.compacted_before_index
             ));
         }
-        if let Some(ref compaction) = source.compaction {
-            if at_index < compaction.compacted_before_index {
-                return Err(format!(
-                    "Cannot fork at index {} which is before compaction boundary {}. \
-                     Compacted messages cannot be individually accessed. \
-                     Fork at index {} or later.",
-                    at_index, compaction.compacted_before_index, compaction.compacted_before_index
-                ));
-            }
-        }
-        let mut new_session = if source.provider.is_empty() {
-            SessionManifest::new(name, source.project.clone())
-        } else {
-            SessionManifest::with_provider(name, source.project.clone(), &source.provider)
-        };
-        new_session.forked_from = Some(ForkPoint {
-            source_session_id: source.id,
-            fork_after_index: at_index,
-            forked_at: Utc::now(),
-        });
-        for (i, msg_ref) in source.messages.iter().enumerate() {
-            if i > at_index {
-                break;
-            }
-            new_session.messages.push(MessageRef {
-                message_id: msg_ref.message_id,
-                source: MessageSource::Forked {
-                    from_session: source.id,
-                },
-            });
-        }
-        if let Some(ref compaction) = source.compaction {
-            if at_index >= compaction.compacted_before_index {
-                new_session.compaction = Some(compaction.clone());
-            }
-        }
-        new_session.provider_state = super::provider_state::fork::publish(source, &new_session)
-            .map_err(|error| error.to_string())?;
-        let new_session = self
-            .commit(&new_session)
-            .map_err(|error| error.to_string())?;
-        self.cache.insert(new_session.id, new_session.clone());
-        Ok(new_session)
     }
+    let mut new_session = if source.provider.is_empty() {
+        SessionManifest::new(name, source.project.clone())
+    } else {
+        SessionManifest::with_provider(name, source.project.clone(), &source.provider)
+    };
+    new_session.forked_from = Some(ForkPoint {
+        source_session_id: source.id,
+        fork_after_index: at_index,
+        forked_at: Utc::now(),
+    });
+    for (i, msg_ref) in source.messages.iter().enumerate() {
+        if i > at_index {
+            break;
+        }
+        new_session.messages.push(MessageRef {
+            message_id: msg_ref.message_id,
+            source: MessageSource::Forked {
+                from_session: source.id,
+            },
+        });
+    }
+    if let Some(ref compaction) = source.compaction {
+        if at_index >= compaction.compacted_before_index {
+            new_session.compaction = Some(compaction.clone());
+        }
+    }
+    new_session.provider_state = super::provider_state::fork::publish(source, &new_session)
+        .map_err(|error| error.to_string())?;
+    Ok(new_session)
 }

@@ -13,10 +13,10 @@ PREREQUISITES
   • Work unit should be in "specifying" status
 
 USAGE
-  fspec set-user-story <work-unit-id> [options]
+  fspec set-user-story <workUnitId> [options]
 
 ARGUMENTS
-  <work-unit-id> (required)
+  <workUnitId> (required)
     Work unit ID (e.g., AUTH-001, DASH-002). Must match existing work unit.
 
 OPTIONS

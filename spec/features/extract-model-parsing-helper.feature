@@ -1,4 +1,6 @@
 @RPC-424
+@session
+@help-system
 Feature: Extract model parsing into shared helper function
   """
   The model parsing logic (is_profile_model, is_codex_model, registry_provider, model_part extraction)
@@ -24,7 +26,7 @@ Feature: Extract model parsing into shared helper function
     And is_codex_model is false
 
   Scenario: Parse profile model string with colon prefix
-    Given the model string "profile:anthropic/claude-opus-4"
+    Given the model string "anthropic:work/claude-opus-4"
     When parse_model_string is called
     Then it returns registry_provider "anthropic" and model_part "claude-opus-4"
     And is_profile_model is true

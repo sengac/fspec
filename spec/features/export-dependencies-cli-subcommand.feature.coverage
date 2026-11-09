@@ -31,7 +31,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ");"
             }
           ]
         }
@@ -68,7 +70,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": ");"
             }
           ]
         }
@@ -89,7 +93,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -121,7 +127,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -144,7 +152,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "match export_dependencies::run(&args_json, &project_root).await {",
+              "lastLine": "Ok(0)"
             }
           ]
         }

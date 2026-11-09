@@ -1,0 +1,145 @@
+{
+  "scenarios": [
+    {
+      "name": "Changed files over RPC come from the named workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc452_changed_files_follow_the_selected_workspace.rs",
+          "lines": "97-119",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "async fn changed_files_in_workspace(",
+              "lastLine": "/// RPC-452: the diff of `path` in the named workspace."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A file diff over RPC comes from the named workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc452_changed_files_follow_the_selected_workspace.rs",
+          "lines": "121-143",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                201,
+                261
+              ],
+              "firstLine": "async fn file_diff_in_workspace(",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Changed Files view requests the selected workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc452_changed_files_follow_the_selected_workspace.rs",
+          "lines": "145-160",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_changed_files.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "/// RPC-452: the board's selected workspace's changed files, or the start",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed changed-files listing is shown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc452_changed_files_follow_the_selected_workspace.rs",
+          "lines": "162-176",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_changed_files.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "/// Spawn `backend.changed_files()` and route the result into the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc452_changed_files_follow_the_selected_workspace.rs"
+    ],
+    "implFiles": [
+      "rust/rpc/src/service_implementation/session_mcp.rs",
+      "rust/fspec-tui/src/app/dispatch_changed_files.rs"
+    ],
+    "totalLinesCovered": 133
+  }
+}

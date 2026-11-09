@@ -21,7 +21,6 @@ use rig::providers::openai;
 use rig::streaming::StreamedAssistantContent;
 use serde_json::json;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 use transport::TestResult;
 use wiremock::{matchers::path, Mock, MockServer, ResponseTemplate};
 
@@ -76,11 +75,18 @@ async fn expired_oauth_credentials_wait_cancellably_for_an_offline_issuer_on_eit
             .stream(CompletionRequestBuilder::new(model.clone(), "original turn").build())
             .await?
             .filter(attempt_events::is_content);
-        let pending = tokio::time::timeout(Duration::from_millis(150), stream.next()).await;
-        assert!(
-            pending.is_err(),
-            "offline refresh ended the turn: {pending:?}"
-        );
+        // TEST-042: no waiting window; the turn must stay pending until
+        // recovery reports it is waiting for the network.
+        let mut next = stream.next();
+        codelet_test_helpers::pending_until("recovery waits for the network", &mut next, || {
+            matches!(
+                recovery.status(),
+                Some(RecoveryStatus::WaitingForNetwork { .. })
+            )
+        })
+        .await
+        .map_err(|failure| format!("offline refresh ended the turn: {failure}"))?;
+        drop(next);
         assert_eq!(
             recovery.status(),
             Some(RecoveryStatus::WaitingForNetwork { attempt: 1 })
@@ -121,7 +127,7 @@ async fn rejected_or_malformed_refreshed_credentials_never_enter_offline_waiting
         let mut stream = model
             .stream(CompletionRequestBuilder::new(model.clone(), "original turn").build())
             .await?;
-        let error = tokio::time::timeout(Duration::from_secs(2), async {
+        let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(event) = stream.next().await {
                 if let Err(error) = event {
                     return Ok::<_, Box<dyn std::error::Error>>(error);
@@ -177,7 +183,7 @@ async fn committed_tools_finish_transport_recovery_before_local_execution() -> T
         let mut stream = model
             .stream(CompletionRequestBuilder::new(model.clone(), "inspect").build())
             .await?;
-        tokio::time::timeout(Duration::from_secs(2), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(event) = stream.next().await {
                 if matches!(event?, StreamedAssistantContent::ToolCall(_)) {
                     return Ok::<_, Box<dyn std::error::Error>>(());

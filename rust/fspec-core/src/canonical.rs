@@ -183,11 +183,6 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
         work_unit: "RPC-196",
     },
     CanonicalCommand {
-        name: "audit-coverage",
-        ts_file: "src/commands/audit-coverage.ts",
-        work_unit: "RPC-197",
-    },
-    CanonicalCommand {
         name: "auto-advance",
         ts_file: "src/commands/auto-advance.ts",
         work_unit: "RPC-198",
@@ -201,11 +196,6 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
         name: "bootstrap",
         ts_file: "src/commands/bootstrap.ts",
         work_unit: "RPC-200",
-    },
-    CanonicalCommand {
-        name: "check",
-        ts_file: "src/commands/check.ts",
-        work_unit: "RPC-201",
     },
     CanonicalCommand {
         name: "checkpoint",
@@ -381,11 +371,6 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
         name: "generate-tags-md",
         ts_file: "src/commands/generate-tags-md.ts",
         work_unit: "RPC-236",
-    },
-    CanonicalCommand {
-        name: "get-scenarios",
-        ts_file: "src/commands/get-scenarios.ts",
-        work_unit: "RPC-237",
     },
     CanonicalCommand {
         name: "import-example-map",
@@ -683,19 +668,9 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
         work_unit: "RPC-296",
     },
     CanonicalCommand {
-        name: "search-scenarios",
-        ts_file: "src/commands/search-scenarios.ts",
-        work_unit: "RPC-297",
-    },
-    CanonicalCommand {
         name: "set-user-story",
         ts_file: "src/commands/set-user-story.ts",
         work_unit: "RPC-298",
-    },
-    CanonicalCommand {
-        name: "show-acceptance-criteria",
-        ts_file: "src/commands/show-acceptance-criteria.ts",
-        work_unit: "RPC-299",
     },
     CanonicalCommand {
         name: "show-coverage",
@@ -776,6 +751,35 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
         name: "update-step",
         ts_file: "src/commands/update-step.ts",
         work_unit: "RPC-315",
+    },
+    // BUG-507: added after the TypeScript port; it has no TS source file.
+    CanonicalCommand {
+        name: "update-feature-text",
+        ts_file: "",
+        work_unit: "BUG-507",
+    },
+    // AUDIT-003: added after the TypeScript port; it has no TS source file.
+    CanonicalCommand {
+        name: "audit",
+        ts_file: "",
+        work_unit: "AUDIT-003",
+    },
+    // CLI-019: added after the TypeScript port; it has no TS source file.
+    CanonicalCommand {
+        name: "context",
+        ts_file: "",
+        work_unit: "CLI-019",
+    },
+    // BUG-633: added after the TypeScript port; they have no TS source file.
+    CanonicalCommand {
+        name: "remove-assumption",
+        ts_file: "",
+        work_unit: "BUG-633",
+    },
+    CanonicalCommand {
+        name: "restore-assumption",
+        ts_file: "",
+        work_unit: "BUG-633",
     },
     CanonicalCommand {
         name: "update-tag",
@@ -951,7 +955,6 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "show-foundation",             // RPC-305
     "show-foundation-event-storm", // RPC-306
     "show-test-patterns",          // RPC-307
-    "show-acceptance-criteria",    // RPC-299
     "show-coverage",               // RPC-300
     // Batch 7 (2026-06-10) — mutation commands
     "create-epic",        // RPC-211
@@ -982,6 +985,8 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "restore-rule",              // RPC-291
     "restore-question",          // RPC-290
     "restore-architecture-note", // RPC-287
+    "remove-assumption",         // BUG-633
+    "restore-assumption",        // BUG-633
     "add-tag-to-feature",        // RPC-193
     "remove-tag-from-feature",   // RPC-281
     "add-tag-to-scenario",       // RPC-194
@@ -1040,35 +1045,34 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "add-domain-event-to-foundation",      // RPC-180
     "remove-domain-event-from-foundation", // RPC-272
     "dependencies",                        // RPC-224
-    "get-scenarios",                       // RPC-237
     "update-foundation",                   // RPC-312
     "configure-tools",                     // RPC-208
     // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
-    "create-feature",   // RPC-212
-    "add-scenario",     // RPC-190
-    "add-step",         // RPC-192
-    "add-background",   // RPC-171
-    "add-architecture", // RPC-167
-    "delete-scenario",  // RPC-219
-    "delete-step",      // RPC-221
-    "delete-features",  // RPC-218
-    "update-scenario",  // RPC-314
-    "update-step",      // RPC-315
+    "create-feature",      // RPC-212
+    "add-scenario",        // RPC-190
+    "add-step",            // RPC-192
+    "add-background",      // RPC-171
+    "add-architecture",    // RPC-167
+    "delete-scenario",     // RPC-219
+    "delete-step",         // RPC-221
+    "delete-features",     // RPC-218
+    "update-scenario",     // RPC-314
+    "update-step",         // RPC-315
+    "update-feature-text", // BUG-507
     // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
     "validate-tags",              // RPC-324
     "validate-work-units",        // RPC-325
     "validate-hooks",             // RPC-322
     "validate-foundation-schema", // RPC-321
     "validate",                   // RPC-320
-    "search-scenarios",           // RPC-297
     "search-implementation",      // RPC-296
     "unlink-coverage",            // RPC-311
     "generate-tags-md",           // RPC-236
     "retag",                      // RPC-293
     // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
-    "audit-coverage",          // RPC-197
+    "audit",                   // AUDIT-003
+    "context",                 // CLI-019
     "board",                   // RPC-199
-    "check",                   // RPC-201
     "compare-implementations", // RPC-207
     "delete-scenarios",        // RPC-220
     "format",                  // RPC-230

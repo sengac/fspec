@@ -4,13 +4,12 @@
       "name": "Reconstruct a single-row partial selection",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "97-110",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "20-35",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -25,8 +24,12 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48
+              ],
+              "firstLine": "pub fn selected_text(&self, region: &[RowSpan]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,13 +39,12 @@
       "name": "Reconstruct a multi-row selection joined by newline",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "114-137",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "37-60",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -60,11 +62,6 @@
                 46,
                 47,
                 48,
-                49,
-                50,
-                51,
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -75,8 +72,12 @@
                 61,
                 62,
                 63,
-                64
-              ]
+                64,
+                65,
+                66
+              ],
+              "firstLine": "pub fn selected_text(&self, region: &[RowSpan]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -86,19 +87,21 @@
       "name": "The scrollbar gutter glyph is excluded from copied text",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "139-157",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "62-80",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "fn slice_chars(text: &str, start_col: u16, end_col: u16) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,13 +111,12 @@
       "name": "Scroll offset maps viewport rows to visual rows",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "159-179",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "82-102",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -132,11 +134,6 @@
                 46,
                 47,
                 48,
-                49,
-                50,
-                51,
-                52,
-                53,
                 54,
                 55,
                 56,
@@ -147,8 +144,12 @@
                 61,
                 62,
                 63,
-                64
-              ]
+                64,
+                65,
+                66
+              ],
+              "firstLine": "pub fn selected_text(&self, region: &[RowSpan]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -158,19 +159,21 @@
       "name": "End column beyond content length is clamped without padding",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "181-196",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "104-119",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "fn slice_chars(text: &str, start_col: u16, end_col: u16) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -180,19 +183,21 @@
       "name": "Multi-byte glyphs are sliced on character boundaries",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "198-213",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "121-136",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "fn slice_chars(text: &str, start_col: u16, end_col: u16) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -202,13 +207,12 @@
       "name": "An empty selection reconstructs an empty string",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
-          "lines": "215-228",
+          "file": "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs",
+          "lines": "138-150",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -223,8 +227,12 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48
+              ],
+              "firstLine": "pub fn selected_text(&self, region: &[RowSpan]) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -236,11 +244,11 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/agent/scrollback_copy.rs"
+      "rust/fspec-tui/src/views/agent/scrollback_copy_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/scrollback_copy.rs"
     ],
-    "totalLinesCovered": 242
+    "totalLinesCovered": 237
   }
 }

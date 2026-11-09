@@ -23,7 +23,6 @@ use tokio::task::JoinHandle;
 use crate::components::create_session_dialog::{
     CreateSessionDialog, CreateSessionOption, CREATE_SESSION_DIALOG_ID,
 };
-use crate::components::error_dialog::{ErrorDialog, ERROR_DIALOG_ID};
 use crate::components::Action;
 
 use super::state::App;
@@ -73,6 +72,23 @@ impl App {
     /// flow in `src/tui/views/BoardView.tsx` where `setViewMode('agent')`
     /// is called from inside the dialog's `onConfirm` callback.
     pub(crate) fn handle_create_session_submitted(&mut self, isolated: bool) {
+        self.submit_session_creation(isolated, None);
+    }
+
+    /// TUI-114: mount the create dialog in New Bot mode (idempotent on
+    /// the dialog id, like New Agent). Bots are never bound to a card.
+    pub(crate) fn handle_open_new_bot_dialog(&mut self) {
+        if self.compositor.contains(CREATE_SESSION_DIALOG_ID) {
+            return;
+        }
+        self.pending_creation_context = None;
+        let dialog = CreateSessionDialog::new_bot(None).with_action_tx(self.action_tx.clone());
+        self.compositor.push(Box::new(dialog));
+    }
+
+    /// Shared New Agent / New Bot submit: `role` is the session role
+    /// (the orchestrator role for a bot, `None` for an agent).
+    fn submit_session_creation(&mut self, isolated: bool, role: Option<String>) {
         let card = self
             .pending_creation_context
             .take()
@@ -86,11 +102,19 @@ impl App {
         let originating_session = self.agent_view_store.current_session().cloned();
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let workspace = self
+            .board_store
+            .selected_other_workspace()
+            .map(str::to_owned);
         let handle: JoinHandle<()> =
             tokio::spawn(super::session_creation_tasks::run_session_creation(
                 backend,
-                isolated,
-                card,
+                super::session_creation_tasks::CreationRequest {
+                    isolated,
+                    role,
+                    workspace,
+                    card,
+                },
                 None,
                 originating_session,
                 action_tx,
@@ -102,10 +126,17 @@ impl App {
     /// wire its chrome/attachments. Extracted from `App::dispatch` so the
     /// orchestrator file stays under the 300-LoC ceiling (PROV-101 FIX 3).
     pub(crate) fn handle_session_created(&mut self, session: codelet_rpc_types::SessionId) {
-        self.initialize_session(session);
+        self.initialize_session(session, super::session_arrival::SessionFocus::Take);
     }
 
-    pub(crate) fn initialize_session(&mut self, session: codelet_rpc_types::SessionId) {
+    /// TUI-125: `focus` says whether the session takes focus (the TUI's own
+    /// creation answer, the startup replay) or keeps the current one (a
+    /// session the daemon announced, see `session_arrival.rs`).
+    pub(crate) fn initialize_session(
+        &mut self,
+        session: codelet_rpc_types::SessionId,
+        focus: super::session_arrival::SessionFocus,
+    ) {
         // RPC-385: idempotent guard. The session-created broadcast folds into
         // Action::SessionCreated for EVERY creation path, so a tab the TUI
         // already opened (create-session dialog, isolated dialog, enter-work-
@@ -124,6 +155,18 @@ impl App {
             .session_context_for(&session)
             .is_some()
         {
+            // TUI-125: the creation answer for a tab the daemon's
+            // announcement opened unfocused focuses it (once).
+            if focus == super::session_arrival::SessionFocus::Take {
+                self.focus_announced_creation(&session);
+            }
+            return;
+        }
+        if focus == super::session_arrival::SessionFocus::Keep
+            && self.agent_view_store.current_session().is_some()
+        {
+            self.open_session_unfocused(session.clone());
+            self.wire_opened_session(session);
             return;
         }
         self.agent_view_store
@@ -142,10 +185,15 @@ impl App {
         let _ = self.active_session_tx.send(Some(session.clone()));
         // TUI-113 R3: publish the newly-created (and now focused) session
         // to the daemon's active-session pointer (fire-and-forget). This
-        // fires for EVERY creation path — direct SessionCreated fold,
-        // routed bootstrap/lazy creations, spawned subordinates — so the
-        // daemon pointer tracks the last focused/created session.
+        // fires for every focused creation — direct SessionCreated fold,
+        // routed bootstrap/lazy creations (TUI-125: a session the daemon
+        // announced does not take focus and does not move the pointer).
         self.spawn_set_active_session(session.clone());
+        self.wire_opened_session(session);
+    }
+
+    /// The per-session fetches every newly opened tab gets, focused or not.
+    fn wire_opened_session(&mut self, session: codelet_rpc_types::SessionId) {
         self.refresh_session_chrome(session.clone());
         self.spawn_hydrate_pending_input(session.clone()); // RPC-052
         self.spawn_load_supervisors(session.clone()); // RPC-061
@@ -164,22 +212,6 @@ impl App {
         }
     }
 
-    /// PROV-101 FIX 1: surface a declined `create_session` (empty SessionId,
-    /// i.e. no default model is set) as a Priority::Critical [`ErrorDialog`] so
-    /// the user is alerted instead of an empty-id session being silently
-    /// appended. Idempotent: a second decline while the dialog is open is a
-    /// no-op.
-    pub(crate) fn handle_session_creation_declined(&mut self) {
-        if !self.compositor.contains(ERROR_DIALOG_ID) {
-            let dialog = ErrorDialog::new(
-                "Session creation declined: no default model is set. \
-                 Select a model first (/model)."
-                    .to_string(),
-            );
-            self.compositor.push(Box::new(dialog));
-        }
-    }
-
     /// Route RPC-060 Action variants through their helpers. Called from
     /// the catch-all arm of `App::dispatch`'s match.
     pub(crate) fn try_dispatch_create_session_dialog(&mut self, action: &Action) -> bool {
@@ -189,6 +221,14 @@ impl App {
             }
             Action::CreateSessionSubmitted { isolated } => {
                 self.handle_create_session_submitted(*isolated);
+            }
+            Action::OpenNewBotDialog => self.handle_open_new_bot_dialog(),
+            Action::CreateBotSubmitted { isolated } => self.submit_session_creation(
+                *isolated,
+                Some(codelet_sessions::bot::ORCHESTRATOR_ROLE.to_string()),
+            ),
+            Action::BotSessionCreated(session) => {
+                self.agent_view_store.mark_bot_session(session.clone());
             }
             Action::CreateSessionCancelled => {
                 self.pending_creation_context = None;

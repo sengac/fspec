@@ -1,0 +1,579 @@
+{
+  "scenarios": [
+    {
+      "name": "The header shows the start workspace by default",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "153-165",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                52,
+                53,
+                64,
+                65,
+                96
+              ],
+              "firstLine": "/// The row-1 label for the selected workspace, if the list has loaded.",
+              "lastLine": "super::daemon_switcher::paint_dropdown(row, label_width(store), buf, store, theme);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/header.rs",
+              "lines": [
+                94,
+                95,
+                96
+              ],
+              "firstLine": "// Row 1: RPC-445 workspace selector label.",
+              "lastLine": "y: padded.y + 1,"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_workspaces.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub fn set_workspaces(&mut self, entries: Vec<WorkspaceEntry>) {",
+              "lastLine": "/// The selected workspace's path when it is NOT the start workspace —"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ],
+              "firstLine": "fn handle_workspaces_loaded(&mut self, entries: Vec<codelet_rpc_types::WorkspaceEntry>) {",
+              "lastLine": "// RPC-454: a failed workspace listing is shown."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing w opens a dropdown of every workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "167-183",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                149,
+                150,
+                152
+              ],
+              "firstLine": "/// The dropdown panel anchored under `row`: one line per workspace",
+              "lastLine": "store.workspace_dropdown()?;"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_workspaces.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "pub fn workspace_dropdown(&self) -> Option<usize> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "match shortcut_for_key(key) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Choosing a workspace re-scopes the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "185-204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                41,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                107,
+                108,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                140,
+                145,
+                146,
+                147,
+                153
+              ],
+              "firstLine": "pub(crate) fn try_dispatch_workspaces(&mut self, action: &Action) -> bool {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_workspaces.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "pub fn selected_other_workspace(&self) -> Option<&str> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pushes for the selected workspace refresh the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "206-220",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "Action::WorkspaceWorkUnitsLoaded(push) => {",
+              "lastLine": "Err(broadcast::error::RecvError::Closed) => break,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the workspace row and an entry selects that workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "222-245",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                154,
+                155,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "KeyCode::Up | KeyCode::Char('k') => view.emit(Action::MoveWorkspaceHighlight(-1)),",
+              "lastLine": "view.emit(Action::CloseWorkspaceDropdown);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "// RPC-445: the workspace row + open workspace dropdown go first.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only the selected workspace's sessions are shown",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "247-268",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/workspace_state.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "impl AgentViewStore {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                53,
+                54
+              ],
+              "firstLine": "// RPC-445: only sessions of the workspace the board shows.",
+              "lastLine": ".filter(|c| store.session_in_shown_workspace(&c.id))"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "fn sync_shown_workspace(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New agents start in the selected workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs",
+          "lines": "270-283",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/session_creation_tasks.rs",
+              "lines": [
+                55,
+                66,
+                67,
+                69
+              ],
+              "firstLine": "// BUG-547: kept to create the session again once a missing limit is given.",
+              "lastLine": "// that workspace's repository."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc445_board_workspace_dropdown.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+      "rust/fspec-tui/src/views/board/header.rs",
+      "rust/fspec-tui/src/store/board_workspaces.rs",
+      "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/views/board/mouse.rs",
+      "rust/fspec-tui/src/store/agent_view/workspace_state.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+      "rust/fspec-tui/src/app/session_creation_tasks.rs"
+    ],
+    "totalLinesCovered": 491
+  }
+}

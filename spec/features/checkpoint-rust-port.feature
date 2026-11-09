@@ -1,6 +1,8 @@
 @done
 @RPC-202
 @wip
+@cli
+@checkpoint-management
 Feature: Port checkpoint command to Rust
   """
   File layout: core rust/fspec-core/src/commands/checkpoint.rs is the single source of

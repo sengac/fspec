@@ -5,10 +5,9 @@ use codelet_fspec_tui::views::provider_settings::nav_item::{NavItemKind, Provide
 use codelet_fspec_tui::views::provider_settings::profile_form::ProfileForm;
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::{ProfileDefinition, ProviderProfileConfig, ProviderSettingsConfig};
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{buffer::Buffer, layout::Rect};
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn key(code: KeyCode) -> KeyEvent {
     KeyEvent::new(code, KeyModifiers::NONE)
@@ -186,7 +185,7 @@ fn scenario_automatic_token_limits_remain_independent_in_the_editor() -> TestRes
 }
 
 #[test]
-fn scenario_invalid_token_overrides_cannot_silently_become_automatic() {
+fn scenario_invalid_token_overrides_cannot_silently_become_automatic() -> TestResult {
     // @step Given a provider settings form with an invalid token limit
     for field_index in [2, 3] {
         for invalid in ["not-a-number", "0", "-1", "4294967296", "1.5"] {
@@ -219,6 +218,7 @@ fn scenario_invalid_token_overrides_cannot_silently_become_automatic() {
             assert!(!view.status.is_empty(), "missing error for {invalid}");
         }
     }
+    Ok(())
 }
 
 #[test]

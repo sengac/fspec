@@ -666,6 +666,10 @@
           "description": "Multi-session AgentView features — open multiple sessions, attach, cycle"
         },
         {
+          "name": "@multi-workspace",
+          "description": "One daemon serving many workspaces and clients switching workspaces or daemons (RPC-438/439)"
+        },
+        {
           "name": "@multiple",
           "description": "Multiple simultaneous connections"
         },
@@ -1090,12 +1094,28 @@
       "required": false,
       "tags": [
         {
+          "name": "@action-bus",
+          "description": "Feature area: action bus"
+        },
+        {
+          "name": "@action-enum",
+          "description": "Feature area: action enum"
+        },
+        {
           "name": "@adaptive-thinking",
           "description": "Adaptive thinking mode for Claude 4.6+ models"
         },
         {
+          "name": "@agent-agnostic",
+          "description": "Feature area: agent agnostic"
+        },
+        {
           "name": "@agent-loop",
           "description": "Agent loop dispatch and provider routing in session_manager"
+        },
+        {
+          "name": "@agentview",
+          "description": "Feature area: agentview"
         },
         {
           "name": "@ai-agent",
@@ -1114,6 +1134,10 @@
           "description": "Features that provide contextual guidance to AI agents"
         },
         {
+          "name": "@annotation-detection",
+          "description": "Feature area: annotation detection"
+        },
+        {
           "name": "@anthropic",
           "description": "Anthropic AI provider integration"
         },
@@ -1122,8 +1146,36 @@
           "description": "Features that prevent AI drift and maintain workflow discipline"
         },
         {
+          "name": "@api",
+          "description": "Feature area: api"
+        },
+        {
+          "name": "@api-enhancement",
+          "description": "Feature area: api enhancement"
+        },
+        {
+          "name": "@api-key-mode",
+          "description": "Feature area: api key mode"
+        },
+        {
+          "name": "@app",
+          "description": "Feature area: app"
+        },
+        {
           "name": "@append-mode",
           "description": "AST refactor append mode"
+        },
+        {
+          "name": "@architecture",
+          "description": "Feature area: architecture"
+        },
+        {
+          "name": "@architecture-invariants",
+          "description": "Feature area: architecture invariants"
+        },
+        {
+          "name": "@argv",
+          "description": "Feature area: argv"
         },
         {
           "name": "@ast",
@@ -1142,6 +1194,14 @@
           "description": "AstGrepRefactor tool operations"
         },
         {
+          "name": "@attach",
+          "description": "Feature area: attach"
+        },
+        {
+          "name": "@auth",
+          "description": "Feature area: auth"
+        },
+        {
           "name": "@auth-001",
           "description": "Work unit identifier for authentication features (example in example-mapping feature)"
         },
@@ -1152,6 +1212,10 @@
         {
           "name": "@auth-schema",
           "description": "Authentication credential file schema scenarios"
+        },
+        {
+          "name": "@authorized",
+          "description": "Feature area: authorized"
         },
         {
           "name": "@auto-create",
@@ -1166,6 +1230,10 @@
           "description": "Azure OpenAI provider"
         },
         {
+          "name": "@backoff",
+          "description": "Feature area: backoff"
+        },
+        {
           "name": "@backward-compat",
           "description": "Backward compatibility"
         },
@@ -1174,12 +1242,20 @@
           "description": "Features ensuring compatibility with older file formats or legacy systems"
         },
         {
+          "name": "@backwards-compatibility",
+          "description": "Feature area: backwards compatibility"
+        },
+        {
           "name": "@bare-key",
           "description": "Bare-key (modifier-free) board shortcut scenarios — single-character key arms in views/board/keys.rs"
         },
         {
           "name": "@base64",
           "description": "Base64 encoded content scenarios"
+        },
+        {
+          "name": "@baseline",
+          "description": "Feature area: baseline"
         },
         {
           "name": "@bdd",
@@ -1198,12 +1274,24 @@
           "description": "Blob storage for large content"
         },
         {
+          "name": "@blocklist",
+          "description": "Feature area: blocklist"
+        },
+        {
           "name": "@board-023",
           "description": "Work unit BOARD-023 — board actions popup dialog: the modifier-free 'u' key opens the 'Actions' popup (BoardKeybindingDialog) listing every board shortcut; the header chord row collapses to a 'u Actions' hint"
         },
         {
+          "name": "@boardview",
+          "description": "Feature area: boardview"
+        },
+        {
           "name": "@boundary",
           "description": "Boundary condition scenarios"
+        },
+        {
+          "name": "@bridge-input",
+          "description": "Feature area: bridge input"
         },
         {
           "name": "@browser-integration",
@@ -1216,6 +1304,10 @@
         {
           "name": "@budget-thinking",
           "description": "Budget-based thinking mode for Claude models"
+        },
+        {
+          "name": "@buffer",
+          "description": "Feature area: buffer"
         },
         {
           "name": "@buffer-overflow",
@@ -1314,12 +1406,36 @@
           "description": "Features related to build bundling and module resolution"
         },
         {
+          "name": "@button-release",
+          "description": "Feature area: button release"
+        },
+        {
           "name": "@cache",
           "description": "Caching and persistence features"
         },
         {
           "name": "@callback",
           "description": "Callback and event handling patterns"
+        },
+        {
+          "name": "@callback-server",
+          "description": "Feature area: callback server"
+        },
+        {
+          "name": "@caller-migration",
+          "description": "Feature area: caller migration"
+        },
+        {
+          "name": "@capacity",
+          "description": "Feature area: capacity"
+        },
+        {
+          "name": "@cargo",
+          "description": "Feature area: cargo"
+        },
+        {
+          "name": "@chat-association",
+          "description": "Feature area: chat association"
         },
         {
           "name": "@checkpoints",
@@ -1330,6 +1446,22 @@
           "description": "Continuous integration and build automation"
         },
         {
+          "name": "@clamp",
+          "description": "Feature area: clamp"
+        },
+        {
+          "name": "@clamping",
+          "description": "Feature area: clamping"
+        },
+        {
+          "name": "@classifier",
+          "description": "Feature area: classifier"
+        },
+        {
+          "name": "@claude",
+          "description": "Feature area: claude"
+        },
+        {
           "name": "@cleanup",
           "description": "Cleanup and resource management features"
         },
@@ -1338,8 +1470,20 @@
           "description": "Session history clear (/clear) scenarios and the SessionEvent::Cleared lifecycle event"
         },
         {
+          "name": "@cli-mode",
+          "description": "Feature area: cli mode"
+        },
+        {
           "name": "@clipboard",
           "description": "Clipboard integration (OSC 52 escape-sequence clipboard writes)"
+        },
+        {
+          "name": "@close",
+          "description": "Feature area: close"
+        },
+        {
+          "name": "@cloud",
+          "description": "Feature area: cloud"
         },
         {
           "name": "@cmpct-049",
@@ -1350,12 +1494,32 @@
           "description": "CMPCT-076: bounded typed Codex HTTP and SSE rejection diagnostics"
         },
         {
+          "name": "@code-block",
+          "description": "Feature area: code block"
+        },
+        {
           "name": "@code-review",
           "description": "Code review and quality analysis features"
         },
         {
+          "name": "@code-search",
+          "description": "Feature area: code search"
+        },
+        {
           "name": "@codex",
           "description": "Codex AI agent integration features"
+        },
+        {
+          "name": "@codex-oauth",
+          "description": "Feature area: codex oauth"
+        },
+        {
+          "name": "@collapse",
+          "description": "Feature area: collapse"
+        },
+        {
+          "name": "@combined-filters",
+          "description": "Feature area: combined filters"
         },
         {
           "name": "@command",
@@ -1370,6 +1534,14 @@
           "description": "Compaction scenarios"
         },
         {
+          "name": "@compaction-hook-unchanged",
+          "description": "Feature area: compaction hook unchanged"
+        },
+        {
+          "name": "@compaction-in-progress-flag",
+          "description": "Feature area: compaction in progress flag"
+        },
+        {
           "name": "@compaction-state-on-fork",
           "description": "Compaction state handling on fork"
         },
@@ -1382,6 +1554,10 @@
           "description": "Complex configuration scenarios"
         },
         {
+          "name": "@component",
+          "description": "Feature area: component"
+        },
+        {
           "name": "@concurrency",
           "description": "Concurrent access coordination and file locking mechanisms"
         },
@@ -1390,8 +1566,20 @@
           "description": "Configuration loading and management features"
         },
         {
+          "name": "@confirm-dialog",
+          "description": "Feature area: confirm dialog"
+        },
+        {
+          "name": "@conflict-path",
+          "description": "Feature area: conflict path"
+        },
+        {
           "name": "@connection-error",
           "description": "Connection error handling scenarios"
+        },
+        {
+          "name": "@connection-management",
+          "description": "Feature area: connection management"
         },
         {
           "name": "@content-deduplication",
@@ -1406,24 +1594,68 @@
           "description": "Context preservation scenarios"
         },
         {
+          "name": "@context-floor",
+          "description": "Feature area: context floor"
+        },
+        {
           "name": "@context-preservation",
           "description": "Context preservation before retries near context window limits"
+        },
+        {
+          "name": "@convergence",
+          "description": "Feature area: convergence"
         },
         {
           "name": "@copilot",
           "description": "GitHub Copilot provider integration scenarios"
         },
         {
+          "name": "@core",
+          "description": "Feature area: core"
+        },
+        {
+          "name": "@costs",
+          "description": "Feature area: costs"
+        },
+        {
+          "name": "@counter-reset",
+          "description": "Feature area: counter reset"
+        },
+        {
+          "name": "@create-session-dialog",
+          "description": "Feature area: create session dialog"
+        },
+        {
+          "name": "@credential-fallback",
+          "description": "Feature area: credential fallback"
+        },
+        {
           "name": "@credential-resolution",
           "description": "Credential resolution and priority chain"
+        },
+        {
+          "name": "@credential-store",
+          "description": "Feature area: credential store"
         },
         {
           "name": "@credentials",
           "description": "Credential storage and management features"
         },
         {
+          "name": "@cron",
+          "description": "Feature area: cron"
+        },
+        {
           "name": "@cross-compile",
           "description": "Cross-compilation builds"
+        },
+        {
+          "name": "@cross-session",
+          "description": "Feature area: cross session"
+        },
+        {
+          "name": "@cross-transport",
+          "description": "Feature area: cross transport"
         },
         {
           "name": "@cucumber-parser",
@@ -1432,6 +1664,14 @@
         {
           "name": "@cucumber-style",
           "description": "Cucumber-style step definition and matching patterns"
+        },
+        {
+          "name": "@daemon",
+          "description": "Feature area: daemon"
+        },
+        {
+          "name": "@daemon-boot",
+          "description": "Feature area: daemon boot"
         },
         {
           "name": "@dart",
@@ -1450,8 +1690,20 @@
           "description": "Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates"
         },
         {
+          "name": "@debounce",
+          "description": "Feature area: debounce"
+        },
+        {
+          "name": "@debug",
+          "description": "Feature area: debug"
+        },
+        {
           "name": "@debugging",
           "description": "Debugging and diagnostic features for troubleshooting"
+        },
+        {
+          "name": "@decorator-filter",
+          "description": "Feature area: decorator filter"
         },
         {
           "name": "@deduplication",
@@ -1462,16 +1714,68 @@
           "description": "DeepSearch sub-agent provider configuration"
         },
         {
+          "name": "@deepsearch",
+          "description": "Feature area: deepsearch"
+        },
+        {
           "name": "@default",
           "description": "Scenarios testing default behavior or state"
+        },
+        {
+          "name": "@default-adaptive",
+          "description": "Feature area: default adaptive"
+        },
+        {
+          "name": "@defaults",
+          "description": "Feature area: defaults"
+        },
+        {
+          "name": "@deferred",
+          "description": "Feature area: deferred"
+        },
+        {
+          "name": "@delete-mode",
+          "description": "Feature area: delete mode"
+        },
+        {
+          "name": "@deletion",
+          "description": "Feature area: deletion"
+        },
+        {
+          "name": "@deny-network-egress",
+          "description": "Feature area: deny network egress"
+        },
+        {
+          "name": "@deprecation",
+          "description": "Feature area: deprecation"
+        },
+        {
+          "name": "@depth-limit",
+          "description": "Feature area: depth limit"
         },
         {
           "name": "@destructive-action",
           "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
         },
         {
+          "name": "@detail",
+          "description": "Feature area: detail"
+        },
+        {
           "name": "@development-tools",
           "description": "Development tooling and utilities"
+        },
+        {
+          "name": "@device-flow",
+          "description": "Feature area: device flow"
+        },
+        {
+          "name": "@device-switch",
+          "description": "Feature area: device switch"
+        },
+        {
+          "name": "@different-row",
+          "description": "Feature area: different row"
         },
         {
           "name": "@disconnect",
@@ -1482,12 +1786,32 @@
           "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
         {
+          "name": "@dismiss",
+          "description": "Feature area: dismiss"
+        },
+        {
           "name": "@dispatch",
           "description": "Provider dispatch and routing logic"
         },
         {
           "name": "@document",
           "description": "Document content type scenarios"
+        },
+        {
+          "name": "@done-chunk",
+          "description": "Feature area: done chunk"
+        },
+        {
+          "name": "@double-click",
+          "description": "Feature area: double click"
+        },
+        {
+          "name": "@double-invoke-guard",
+          "description": "Feature area: double invoke guard"
+        },
+        {
+          "name": "@dynamic",
+          "description": "Feature area: dynamic"
         },
         {
           "name": "@edit",
@@ -1498,12 +1822,40 @@
           "description": "Email-related functionality"
         },
         {
+          "name": "@embedded",
+          "description": "Feature area: embedded"
+        },
+        {
+          "name": "@emergency-compaction",
+          "description": "Feature area: emergency compaction"
+        },
+        {
+          "name": "@empty-list",
+          "description": "Feature area: empty list"
+        },
+        {
           "name": "@endpoints-api",
           "description": "Dynamic API endpoint resolution from provider responses (enterprise vs SaaS)"
         },
         {
+          "name": "@enter-detail",
+          "description": "Feature area: enter detail"
+        },
+        {
+          "name": "@enter-edit",
+          "description": "Feature area: enter edit"
+        },
+        {
+          "name": "@enter-oauth",
+          "description": "Feature area: enter oauth"
+        },
+        {
           "name": "@enterprise",
           "description": "Enterprise deployment scenarios with custom hosts and endpoints"
+        },
+        {
+          "name": "@env-loading",
+          "description": "Feature area: env loading"
         },
         {
           "name": "@env-vars",
@@ -1514,12 +1866,56 @@
           "description": "Message envelope metadata scenarios"
         },
         {
+          "name": "@environment-info",
+          "description": "Feature area: environment info"
+        },
+        {
+          "name": "@ephemeral",
+          "description": "Feature area: ephemeral"
+        },
+        {
           "name": "@error-handling",
           "description": "Error Handling"
         },
         {
+          "name": "@error-path",
+          "description": "Feature area: error path"
+        },
+        {
+          "name": "@errors",
+          "description": "Feature area: errors"
+        },
+        {
+          "name": "@esc",
+          "description": "Feature area: esc"
+        },
+        {
+          "name": "@esc-hierarchy",
+          "description": "Feature area: esc hierarchy"
+        },
+        {
           "name": "@eslint",
           "description": "ESLint configuration and linting"
+        },
+        {
+          "name": "@exec-command",
+          "description": "Feature area: exec command"
+        },
+        {
+          "name": "@exhaustion",
+          "description": "Feature area: exhaustion"
+        },
+        {
+          "name": "@exhaustive",
+          "description": "Feature area: exhaustive"
+        },
+        {
+          "name": "@exit",
+          "description": "Feature area: exit"
+        },
+        {
+          "name": "@exports",
+          "description": "Feature area: exports"
         },
         {
           "name": "@facade",
@@ -1530,12 +1926,36 @@
           "description": "Features implementing the facade design pattern"
         },
         {
+          "name": "@fallback",
+          "description": "Feature area: fallback"
+        },
+        {
+          "name": "@fanout",
+          "description": "Feature area: fanout"
+        },
+        {
+          "name": "@feature-group",
+          "description": "Feature area: feature group"
+        },
+        {
           "name": "@file-discovery",
           "description": "File discovery and pattern matching functionality"
         },
         {
           "name": "@file-initialization",
           "description": "Scenarios testing initialization of project files"
+        },
+        {
+          "name": "@file-popup",
+          "description": "Feature area: file popup"
+        },
+        {
+          "name": "@file-search",
+          "description": "Feature area: file search"
+        },
+        {
+          "name": "@file-size",
+          "description": "Feature area: file size"
         },
         {
           "name": "@file-structure",
@@ -1546,6 +1966,10 @@
           "description": "File System Operations"
         },
         {
+          "name": "@file-tracking",
+          "description": "Feature area: file tracking"
+        },
+        {
           "name": "@file-watcher",
           "description": "File system watching and monitoring features"
         },
@@ -1554,12 +1978,48 @@
           "description": "Features using file system watchers (fs.watch) for change detection"
         },
         {
+          "name": "@filter",
+          "description": "Feature area: filter"
+        },
+        {
+          "name": "@filter-mode",
+          "description": "Feature area: filter mode"
+        },
+        {
           "name": "@flexbox",
           "description": "Flexbox layout implementation and responsive design"
         },
         {
+          "name": "@footer",
+          "description": "Feature area: footer"
+        },
+        {
+          "name": "@footer-hint",
+          "description": "Feature area: footer hint"
+        },
+        {
+          "name": "@forbidden",
+          "description": "Feature area: forbidden"
+        },
+        {
+          "name": "@foreground",
+          "description": "Feature area: foreground"
+        },
+        {
+          "name": "@form-fields",
+          "description": "Feature area: form fields"
+        },
+        {
+          "name": "@format",
+          "description": "Feature area: format"
+        },
+        {
           "name": "@format-check",
           "description": "Format and style checking"
+        },
+        {
+          "name": "@fspec-backend",
+          "description": "Feature area: fspec backend"
         },
         {
           "name": "@fullscreen",
@@ -1574,20 +2034,56 @@
           "description": "Google Gemini AI provider integration"
         },
         {
+          "name": "@generic-mechanism",
+          "description": "Feature area: generic mechanism"
+        },
+        {
+          "name": "@get-session-role",
+          "description": "Feature area: get session role"
+        },
+        {
           "name": "@gherkin",
           "description": "Gherkin Specification Compliance"
+        },
+        {
+          "name": "@git-worktree",
+          "description": "Feature area: git worktree"
         },
         {
           "name": "@github-integration",
           "description": "Features integrating with GitHub API or URLs"
         },
         {
+          "name": "@gitoxide",
+          "description": "Feature area: gitoxide"
+        },
+        {
+          "name": "@gitoxide-integration",
+          "description": "Feature area: gitoxide integration"
+        },
+        {
           "name": "@glob",
           "description": "Glob tool operations"
         },
         {
+          "name": "@globalstreamlistener",
+          "description": "Feature area: globalstreamlistener"
+        },
+        {
+          "name": "@glyphs",
+          "description": "Feature area: glyphs"
+        },
+        {
+          "name": "@gpt",
+          "description": "Feature area: gpt"
+        },
+        {
           "name": "@graceful-degradation",
           "description": "Features that gracefully handle missing or invalid data"
+        },
+        {
+          "name": "@graph",
+          "description": "Feature area: graph"
         },
         {
           "name": "@grep",
@@ -1598,12 +2094,72 @@
           "description": "Features that provide AI guidance/prompts rather than code implementation"
         },
         {
+          "name": "@handler",
+          "description": "Feature area: handler"
+        },
+        {
+          "name": "@handler-cleanup",
+          "description": "Feature area: handler cleanup"
+        },
+        {
+          "name": "@handler-dispatch",
+          "description": "Feature area: handler dispatch"
+        },
+        {
+          "name": "@handler-isolation",
+          "description": "Feature area: handler isolation"
+        },
+        {
+          "name": "@handler-reuse",
+          "description": "Feature area: handler reuse"
+        },
+        {
+          "name": "@headers",
+          "description": "Feature area: headers"
+        },
+        {
+          "name": "@heading",
+          "description": "Feature area: heading"
+        },
+        {
+          "name": "@heartbeat",
+          "description": "Feature area: heartbeat"
+        },
+        {
+          "name": "@hello-canned-stream",
+          "description": "Feature area: hello canned stream"
+        },
+        {
+          "name": "@hidden",
+          "description": "Feature area: hidden"
+        },
+        {
           "name": "@highlighting",
           "description": "Scenarios testing visual highlighting behavior"
         },
         {
+          "name": "@history",
+          "description": "Feature area: history"
+        },
+        {
+          "name": "@hit-test",
+          "description": "Feature area: hit test"
+        },
+        {
+          "name": "@hook013",
+          "description": "Feature area: hook013"
+        },
+        {
+          "name": "@http-middleware",
+          "description": "Feature area: http middleware"
+        },
+        {
           "name": "@http-server",
           "description": "HTTP server implementation and lifecycle management"
+        },
+        {
+          "name": "@hydration",
+          "description": "Feature area: hydration"
         },
         {
           "name": "@idempotent",
@@ -1614,24 +2170,72 @@
           "description": "Image content type scenarios"
         },
         {
+          "name": "@import",
+          "description": "Feature area: import"
+        },
+        {
+          "name": "@in-memory",
+          "description": "Feature area: in memory"
+        },
+        {
           "name": "@inbound",
           "description": "Inbound message flow scenarios"
+        },
+        {
+          "name": "@incremental-condensation",
+          "description": "Feature area: incremental condensation"
+        },
+        {
+          "name": "@independence",
+          "description": "Feature area: independence"
         },
         {
           "name": "@indicators",
           "description": "Visual indicators rendered into TUI cells (e.g. last-changed ⏩, attached-session 🟢)"
         },
         {
+          "name": "@initial-selection",
+          "description": "Feature area: initial selection"
+        },
+        {
           "name": "@initialization",
           "description": "File and system initialization features"
+        },
+        {
+          "name": "@injection-timing",
+          "description": "Feature area: injection timing"
         },
         {
           "name": "@ink",
           "description": "Ink (React for CLIs) rendering engine"
         },
         {
+          "name": "@input-blocking",
+          "description": "Feature area: input blocking"
+        },
+        {
+          "name": "@input-format",
+          "description": "Feature area: input format"
+        },
+        {
+          "name": "@input-parsing",
+          "description": "Feature area: input parsing"
+        },
+        {
+          "name": "@insert",
+          "description": "Feature area: insert"
+        },
+        {
+          "name": "@instruction",
+          "description": "Feature area: instruction"
+        },
+        {
           "name": "@interactive",
           "description": "Interactive terminal UI features using Ink"
+        },
+        {
+          "name": "@interception",
+          "description": "Feature area: interception"
         },
         {
           "name": "@internal",
@@ -1642,16 +2246,40 @@
           "description": "Interrupt and cancellation handling features"
         },
         {
+          "name": "@interruption",
+          "description": "Feature area: interruption"
+        },
+        {
+          "name": "@invalid-ids",
+          "description": "Feature area: invalid ids"
+        },
+        {
           "name": "@investigation",
           "description": "Investigation and research tasks for evaluating technical approaches"
+        },
+        {
+          "name": "@invocation",
+          "description": "Feature area: invocation"
         },
         {
           "name": "@ipc",
           "description": "Inter-process communication features using Unix sockets or named pipes"
         },
         {
+          "name": "@isolated",
+          "description": "Feature area: isolated"
+        },
+        {
+          "name": "@isolated-sessions",
+          "description": "Feature area: isolated sessions"
+        },
+        {
           "name": "@isolation",
           "description": "Worktree session-isolation scenarios — isolated sessions, IsolationStateChange stream chunks, isolation badge and toggles"
+        },
+        {
+          "name": "@isolation-state",
+          "description": "Feature area: isolation state"
         },
         {
           "name": "@isomorphic-git",
@@ -1666,6 +2294,10 @@
           "description": "JIRA integration and API features"
         },
         {
+          "name": "@jpeg",
+          "description": "Feature area: jpeg"
+        },
+        {
           "name": "@json-backed",
           "description": "JSON-Backed Documentation"
         },
@@ -1678,12 +2310,32 @@
           "description": "JSON Schema Validation"
         },
         {
+          "name": "@keybinding",
+          "description": "Feature area: keybinding"
+        },
+        {
+          "name": "@keyboard",
+          "description": "Feature area: keyboard"
+        },
+        {
           "name": "@keyboard-navigation",
           "description": "Keyboard input and navigation features"
         },
         {
+          "name": "@knowledge-graph",
+          "description": "Feature area: knowledge graph"
+        },
+        {
           "name": "@kotlin",
           "description": "Kotlin language and JVM features"
+        },
+        {
+          "name": "@layer-one",
+          "description": "Architecture layer one of lazy persistence initialization"
+        },
+        {
+          "name": "@layer-two",
+          "description": "Architecture layer two of lazy persistence initialization"
         },
         {
           "name": "@layout",
@@ -1694,8 +2346,28 @@
           "description": "Machine learning and adaptive features based on usage patterns"
         },
         {
+          "name": "@lib-exports",
+          "description": "Feature area: lib exports"
+        },
+        {
           "name": "@lift",
           "description": "File-layout lift regression scenarios — pin module relocations from codelet-napi into codelet-core (persistence, scheduler, loops, etc.) and prevent NAPI dependencies re-creeping back in"
+        },
+        {
+          "name": "@limit",
+          "description": "Feature area: limit"
+        },
+        {
+          "name": "@line-budget",
+          "description": "Feature area: line budget"
+        },
+        {
+          "name": "@list-mode",
+          "description": "Feature area: list mode"
+        },
+        {
+          "name": "@list-providers",
+          "description": "Feature area: list providers"
         },
         {
           "name": "@llm-integration",
@@ -1706,12 +2378,28 @@
           "description": "Local-only functionality"
         },
         {
+          "name": "@local-server",
+          "description": "Feature area: local server"
+        },
+        {
           "name": "@logging",
           "description": "Logging and diagnostics features"
         },
         {
+          "name": "@loop",
+          "description": "Feature area: loop"
+        },
+        {
+          "name": "@lru",
+          "description": "Feature area: lru"
+        },
+        {
           "name": "@ls",
           "description": "Ls tool operations"
+        },
+        {
+          "name": "@manifest",
+          "description": "Feature area: manifest"
         },
         {
           "name": "@markdown",
@@ -1724,6 +2412,10 @@
         {
           "name": "@marked",
           "description": "Marked library for markdown parsing"
+        },
+        {
+          "name": "@max-output",
+          "description": "Feature area: max output"
         },
         {
           "name": "@max-tokens",
@@ -1778,6 +2470,10 @@
           "description": "Mermaid Diagram Support"
         },
         {
+          "name": "@message",
+          "description": "Feature area: message"
+        },
+        {
           "name": "@message-deduplication",
           "description": "Message deduplication and content-addressing scenarios"
         },
@@ -1790,16 +2486,44 @@
           "description": "Message immutability invariant"
         },
         {
+          "name": "@messaging",
+          "description": "Feature area: messaging"
+        },
+        {
+          "name": "@missing-fixture-fails-clearly",
+          "description": "Feature area: missing fixture fails clearly"
+        },
+        {
           "name": "@modal",
           "description": "Modal overlay and dialog components"
+        },
+        {
+          "name": "@mode-view-suppression",
+          "description": "Feature area: mode view suppression"
         },
         {
           "name": "@model",
           "description": "Model identifier scenarios"
         },
         {
+          "name": "@model-context-testing",
+          "description": "Feature area: model context testing"
+        },
+        {
           "name": "@model-detection",
           "description": "Model detection and identification features"
+        },
+        {
+          "name": "@model-list",
+          "description": "Feature area: model list"
+        },
+        {
+          "name": "@module-registry",
+          "description": "Feature area: module registry"
+        },
+        {
+          "name": "@mouse",
+          "description": "Feature area: mouse"
         },
         {
           "name": "@mouse-events",
@@ -1808,6 +2532,10 @@
         {
           "name": "@multi-agent",
           "description": "Multi-agent compatibility features and agent-specific customizations"
+        },
+        {
+          "name": "@multi-line",
+          "description": "Feature area: multi line"
         },
         {
           "name": "@multi-model",
@@ -1822,12 +2550,24 @@
           "description": "Multi-provider session support for sessions using different LLM providers"
         },
         {
+          "name": "@multi-turn",
+          "description": "Feature area: multi turn"
+        },
+        {
+          "name": "@multi-user",
+          "description": "Feature area: multi user"
+        },
+        {
           "name": "@multimodal",
           "description": "Multimodal content handling (images, PDFs, etc.)"
         },
         {
           "name": "@multiple-bridges",
           "description": "Multiple bridge connection scenarios"
+        },
+        {
+          "name": "@multiple-ids",
+          "description": "Feature area: multiple ids"
         },
         {
           "name": "@mutation",
@@ -1842,16 +2582,112 @@
           "description": "NAPI-RS native module bindings for Node.js"
         },
         {
+          "name": "@napi-bridge",
+          "description": "Feature area: napi bridge"
+        },
+        {
+          "name": "@napi-layer",
+          "description": "Feature area: napi layer"
+        },
+        {
+          "name": "@napi-types",
+          "description": "Feature area: napi types"
+        },
+        {
+          "name": "@narrow-scope",
+          "description": "Feature area: narrow scope"
+        },
+        {
           "name": "@native",
           "description": "Native platform builds"
+        },
+        {
+          "name": "@native-api",
+          "description": "Feature area: native api"
+        },
+        {
+          "name": "@native-messaging",
+          "description": "Feature area: native messaging"
+        },
+        {
+          "name": "@negative",
+          "description": "Feature area: negative"
+        },
+        {
+          "name": "@net001",
+          "description": "Feature area: net001"
+        },
+        {
+          "name": "@network-recovery",
+          "description": "Feature area: network recovery"
+        },
+        {
+          "name": "@new-modules",
+          "description": "Feature area: new modules"
+        },
+        {
+          "name": "@no-alias",
+          "description": "Feature area: no alias"
+        },
+        {
+          "name": "@no-changes",
+          "description": "Feature area: no changes"
+        },
+        {
+          "name": "@no-from-field",
+          "description": "Feature area: no from field"
         },
         {
           "name": "@no-logging",
           "description": "Ensuring secrets are not logged"
         },
         {
+          "name": "@no-op-clear",
+          "description": "Feature area: no op clear"
+        },
+        {
+          "name": "@no-overflow",
+          "description": "Feature area: no overflow"
+        },
+        {
+          "name": "@no-provider",
+          "description": "Feature area: no provider"
+        },
+        {
+          "name": "@no-session",
+          "description": "Feature area: no session"
+        },
+        {
+          "name": "@no-session-manager",
+          "description": "Feature area: no session manager"
+        },
+        {
+          "name": "@no-timestamp",
+          "description": "Feature area: no timestamp"
+        },
+        {
+          "name": "@no-whitelist",
+          "description": "Feature area: no whitelist"
+        },
+        {
           "name": "@non-isolated",
           "description": "Non-isolated session scenarios"
+        },
+        {
+          "name": "@non-navigation",
+          "description": "Feature area: non navigation"
+        },
+        {
+          "name": "@non-streaming",
+          "description": "Feature area: non streaming"
+        },
+        {
+          "name": "@normalisation-pipeline",
+          "description": "Feature area: normalisation pipeline"
+        },
+        {
+          "name": "@null-session",
+          "description": "Feature area: null session"
         },
         {
           "name": "@oauth",
@@ -1862,28 +2698,80 @@
           "description": "Ollama local provider"
         },
         {
+          "name": "@open",
+          "description": "Feature area: open"
+        },
+        {
           "name": "@openai",
           "description": "OpenAI AI provider integration"
+        },
+        {
+          "name": "@optional-scope",
+          "description": "Feature area: optional scope"
         },
         {
           "name": "@outbound",
           "description": "Outbound message flow scenarios"
         },
         {
+          "name": "@output-tokens",
+          "description": "Feature area: output tokens"
+        },
+        {
           "name": "@outside-in-bdd",
           "description": "Outside-in BDD approach using personas and behavior-first thinking"
+        },
+        {
+          "name": "@overflow",
+          "description": "Feature area: overflow"
+        },
+        {
+          "name": "@override",
+          "description": "Feature area: override"
         },
         {
           "name": "@package",
           "description": "npm package configuration"
         },
         {
+          "name": "@page-keys",
+          "description": "Feature area: page keys"
+        },
+        {
+          "name": "@palette",
+          "description": "Feature area: palette"
+        },
+        {
+          "name": "@paragraph",
+          "description": "Feature area: paragraph"
+        },
+        {
           "name": "@parallel-tools",
           "description": "Parallel tool execution scenarios"
         },
         {
+          "name": "@parameter-filter",
+          "description": "Feature area: parameter filter"
+        },
+        {
           "name": "@parity",
           "description": "Cross-transport parity invariants — both transports produce equivalent results"
+        },
+        {
+          "name": "@parse",
+          "description": "Feature area: parse"
+        },
+        {
+          "name": "@parse-tool-result",
+          "description": "Feature area: parse tool result"
+        },
+        {
+          "name": "@partial-text",
+          "description": "Feature area: partial text"
+        },
+        {
+          "name": "@passthrough",
+          "description": "Feature area: passthrough"
         },
         {
           "name": "@path-traversal",
@@ -1894,12 +2782,28 @@
           "description": "Features involving pattern detection and analysis from historical data"
         },
         {
+          "name": "@peer",
+          "description": "Feature area: peer"
+        },
+        {
           "name": "@per-message",
           "description": "Per-message metadata scenarios"
         },
         {
+          "name": "@per-session-manager",
+          "description": "Feature area: per session manager"
+        },
+        {
+          "name": "@per-session-state",
+          "description": "Feature area: per session state"
+        },
+        {
           "name": "@performance",
           "description": "Performance optimization and efficiency features"
+        },
+        {
+          "name": "@placeholder",
+          "description": "Feature area: placeholder"
         },
         {
           "name": "@platform-agnostic",
@@ -1910,8 +2814,60 @@
           "description": "Plugin architecture and dynamic module loading"
         },
         {
+          "name": "@png",
+          "description": "Feature area: png"
+        },
+        {
+          "name": "@poll",
+          "description": "Feature area: poll"
+        },
+        {
+          "name": "@polyfill-bypass",
+          "description": "Feature area: polyfill bypass"
+        },
+        {
+          "name": "@popup-integration",
+          "description": "Feature area: popup integration"
+        },
+        {
+          "name": "@post-load-snapshot",
+          "description": "Feature area: post load snapshot"
+        },
+        {
+          "name": "@pre-configured",
+          "description": "Feature area: pre configured"
+        },
+        {
+          "name": "@preservation",
+          "description": "Feature area: preservation"
+        },
+        {
+          "name": "@preserve",
+          "description": "Feature area: preserve"
+        },
+        {
           "name": "@prettier",
           "description": "Prettier configuration and code formatting"
+        },
+        {
+          "name": "@priority-enum",
+          "description": "Feature area: priority enum"
+        },
+        {
+          "name": "@proactive-compaction",
+          "description": "Feature area: proactive compaction"
+        },
+        {
+          "name": "@processstore",
+          "description": "Feature area: processstore"
+        },
+        {
+          "name": "@profile",
+          "description": "Feature area: profile"
+        },
+        {
+          "name": "@profile-form-mode",
+          "description": "Feature area: profile form mode"
         },
         {
           "name": "@programmatic",
@@ -1922,6 +2878,10 @@
           "description": "Progressive degradation of reasoning effort on repeated exhaustion"
         },
         {
+          "name": "@proportional",
+          "description": "Feature area: proportional"
+        },
+        {
           "name": "@prov-124",
           "description": "Bug PROV-124: /model selector first-arrow-press navigation fix (has_selection gates Enter only)"
         },
@@ -1930,8 +2890,24 @@
           "description": "Provider-related functionality for LLM provider identification"
         },
         {
+          "name": "@provider-manager",
+          "description": "Feature area: provider manager"
+        },
+        {
+          "name": "@provider-wiring",
+          "description": "Feature area: provider wiring"
+        },
+        {
+          "name": "@pty",
+          "description": "Feature area: pty"
+        },
+        {
           "name": "@push",
           "description": "Push notification functionality"
+        },
+        {
+          "name": "@queries",
+          "description": "Feature area: queries"
         },
         {
           "name": "@query-api",
@@ -1946,24 +2922,84 @@
           "description": "React framework and component lifecycle features"
         },
         {
+          "name": "@read-only-tools",
+          "description": "Feature area: read only tools"
+        },
+        {
+          "name": "@read-tool",
+          "description": "Feature area: read tool"
+        },
+        {
+          "name": "@readme-documents-regen",
+          "description": "Feature area: readme documents regen"
+        },
+        {
+          "name": "@real-provider",
+          "description": "Feature area: real provider"
+        },
+        {
           "name": "@real-time",
           "description": "Features with real-time data synchronization and live updates"
+        },
+        {
+          "name": "@reaper",
+          "description": "Feature area: reaper"
         },
         {
           "name": "@reconnect",
           "description": "Reconnection handling scenarios"
         },
         {
+          "name": "@recovery",
+          "description": "Feature area: recovery"
+        },
+        {
+          "name": "@refresh-models",
+          "description": "Feature area: refresh models"
+        },
+        {
+          "name": "@regeneration-knob",
+          "description": "Feature area: regeneration knob"
+        },
+        {
+          "name": "@registration",
+          "description": "Feature area: registration"
+        },
+        {
           "name": "@registry",
           "description": "Provider or component registry"
+        },
+        {
+          "name": "@regression-catch",
+          "description": "Feature area: regression catch"
+        },
+        {
+          "name": "@reminder-formatting",
+          "description": "Feature area: reminder formatting"
+        },
+        {
+          "name": "@render",
+          "description": "Feature area: render"
+        },
+        {
+          "name": "@rendering",
+          "description": "Feature area: rendering"
         },
         {
           "name": "@replace-mode",
           "description": "AST refactor replace mode"
         },
         {
+          "name": "@report-bug-to-github",
+          "description": "Feature area: report bug to github"
+        },
+        {
           "name": "@request-id",
           "description": "API request ID scenarios"
+        },
+        {
+          "name": "@reset",
+          "description": "Feature area: reset"
         },
         {
           "name": "@resilience",
@@ -1978,8 +3014,16 @@
           "description": "Session restore scenarios"
         },
         {
+          "name": "@retry",
+          "description": "Feature area: retry"
+        },
+        {
           "name": "@retry-budget",
           "description": "Retry budget limits for preventing infinite retry loops"
+        },
+        {
+          "name": "@return-type",
+          "description": "Feature area: return type"
         },
         {
           "name": "@reverse-engineering",
@@ -1990,12 +3034,32 @@
           "description": "Code review and quality analysis"
         },
         {
+          "name": "@rhai-engine",
+          "description": "Feature area: rhai engine"
+        },
+        {
+          "name": "@rhai-modules",
+          "description": "Feature area: rhai modules"
+        },
+        {
           "name": "@rig",
           "description": "Rig framework integration"
         },
         {
           "name": "@rlcd-004",
           "description": "Work unit RLCD-004 — RLCD semantic security layer over blocklist (Bash/Read/Write/Edit/ApplyPatch)"
+        },
+        {
+          "name": "@roundtrip",
+          "description": "Feature area: roundtrip"
+        },
+        {
+          "name": "@routing",
+          "description": "Feature area: routing"
+        },
+        {
+          "name": "@rpc-026-parity",
+          "description": "Feature area: rpc 026 parity"
         },
         {
           "name": "@rpc-086",
@@ -2038,20 +3102,80 @@
           "description": "RPC-421: single-sourced compaction notice + honest compact_session acknowledgement"
         },
         {
+          "name": "@rpc-trait",
+          "description": "Feature area: rpc trait"
+        },
+        {
+          "name": "@run",
+          "description": "Feature area: run"
+        },
+        {
           "name": "@runtime",
           "description": "Runtime behavior and dynamic configuration"
+        },
+        {
+          "name": "@runtime-budget",
+          "description": "Feature area: runtime budget"
         },
         {
           "name": "@rust",
           "description": "Rust implementation components"
         },
         {
+          "name": "@rust-frontend",
+          "description": "Feature area: rust frontend"
+        },
+        {
+          "name": "@rust-layer",
+          "description": "Feature area: rust layer"
+        },
+        {
+          "name": "@rust-tui",
+          "description": "Feature area: rust tui"
+        },
+        {
+          "name": "@safety-net",
+          "description": "Feature area: safety net"
+        },
+        {
+          "name": "@save",
+          "description": "Feature area: save"
+        },
+        {
+          "name": "@scheduling",
+          "description": "Feature area: scheduling"
+        },
+        {
+          "name": "@schema",
+          "description": "Feature area: schema"
+        },
+        {
+          "name": "@schema-mismatch",
+          "description": "Feature area: schema mismatch"
+        },
+        {
           "name": "@schema-validation",
           "description": "JSON Schema validation features and commands"
         },
         {
+          "name": "@scope-marker",
+          "description": "Feature area: scope marker"
+        },
+        {
+          "name": "@scripted-provider",
+          "description": "Feature area: scripted provider"
+        },
+        {
+          "name": "@scripted-run-matches-golden",
+          "description": "Feature area: scripted run matches golden"
+        },
+        {
           "name": "@scroll",
           "description": "Scroll-related UI behaviour (offsets, arrows, auto-scroll)"
+        },
+        {
+          "name": "@scroll-and-clear",
+          "description": "Feature area: scroll and clear"
         },
         {
           "name": "@scroll-mode",
@@ -2062,32 +3186,156 @@
           "description": "Windowed scrollback widget rendered O(1) per frame in the Rust ratatui AgentView (RPC-019)"
         },
         {
+          "name": "@scrollbar",
+          "description": "Feature area: scrollbar"
+        },
+        {
           "name": "@scrolling",
           "description": "Scenarios testing viewport scrolling behavior"
+        },
+        {
+          "name": "@sea",
+          "description": "Feature area: sea"
         },
         {
           "name": "@search",
           "description": "Search and query functionality for finding scenarios, work units, and code patterns"
         },
         {
+          "name": "@search-mode",
+          "description": "Feature area: search mode"
+        },
+        {
+          "name": "@selected",
+          "description": "Feature area: selected"
+        },
+        {
+          "name": "@selection",
+          "description": "Feature area: selection"
+        },
+        {
           "name": "@selection-mode",
           "description": "Scenarios testing line selection mode behavior"
+        },
+        {
+          "name": "@self",
+          "description": "Feature area: self"
+        },
+        {
+          "name": "@serde",
+          "description": "Feature area: serde"
+        },
+        {
+          "name": "@serialization",
+          "description": "Feature area: serialization"
         },
         {
           "name": "@server",
           "description": "Server-side components and HTTP endpoints"
         },
         {
+          "name": "@server-startup",
+          "description": "Feature area: server startup"
+        },
+        {
+          "name": "@service",
+          "description": "Feature area: service"
+        },
+        {
           "name": "@session-based",
           "description": "Session-based interactive command pattern (similar to discover-foundation)"
+        },
+        {
+          "name": "@session-context",
+          "description": "Feature area: session context"
+        },
+        {
+          "name": "@session-display",
+          "description": "Feature area: session display"
+        },
+        {
+          "name": "@session-footer",
+          "description": "Feature area: session footer"
+        },
+        {
+          "name": "@session-handler-lifecycle",
+          "description": "Feature area: session handler lifecycle"
+        },
+        {
+          "name": "@session-header",
+          "description": "Feature area: session header"
+        },
+        {
+          "name": "@session-isolation",
+          "description": "Feature area: session isolation"
+        },
+        {
+          "name": "@session-manager",
+          "description": "Feature area: session manager"
+        },
+        {
+          "name": "@session-manager-handle",
+          "description": "Feature area: session manager handle"
+        },
+        {
+          "name": "@session-role-loaded",
+          "description": "Feature area: session role loaded"
+        },
+        {
+          "name": "@session-scoping",
+          "description": "Feature area: session scoping"
+        },
+        {
+          "name": "@session-search",
+          "description": "Feature area: session search"
+        },
+        {
+          "name": "@set-session-model",
+          "description": "Feature area: set session model"
+        },
+        {
+          "name": "@set-session-role",
+          "description": "Feature area: set session role"
+        },
+        {
+          "name": "@set-thinking-level",
+          "description": "Feature area: set thinking level"
         },
         {
           "name": "@setup",
           "description": "Setup and initialization commands"
         },
         {
+          "name": "@shared-helper",
+          "description": "Feature area: shared helper"
+        },
+        {
+          "name": "@shared-types",
+          "description": "Feature area: shared types"
+        },
+        {
+          "name": "@shell",
+          "description": "Feature area: shell"
+        },
+        {
+          "name": "@silent-cancel",
+          "description": "Feature area: silent cancel"
+        },
+        {
           "name": "@similarity-matching",
           "description": "Text similarity and matching algorithms"
+        },
+        {
+          "name": "@single-click",
+          "description": "Feature area: single click"
+        },
+        {
+          "name": "@single-turn",
+          "description": "Feature area: single turn"
+        },
+        {
+          "name": "@slash",
+          "description": "Feature area: slash"
         },
         {
           "name": "@slash-command",
@@ -2096,6 +3344,18 @@
         {
           "name": "@slash-commands",
           "description": "Claude Code slash command implementations"
+        },
+        {
+          "name": "@slash-dispatch",
+          "description": "Feature area: slash dispatch"
+        },
+        {
+          "name": "@slash-popup",
+          "description": "Feature area: slash popup"
+        },
+        {
+          "name": "@slash-registry",
+          "description": "Feature area: slash registry"
         },
         {
           "name": "@smart-scroll",
@@ -2110,6 +3370,14 @@
           "description": "Source-shape regression test pinning file layout and cross-crate invariants"
         },
         {
+          "name": "@split-session-view",
+          "description": "Feature area: split session view"
+        },
+        {
+          "name": "@sse",
+          "description": "Feature area: sse"
+        },
+        {
           "name": "@stable-indices",
           "description": "Stable indices system for maintaining unique IDs across soft-delete operations"
         },
@@ -2118,8 +3386,20 @@
           "description": "Stale credential cache detection and re-detection scenarios"
         },
         {
+          "name": "@stall-detection",
+          "description": "Feature area: stall detection"
+        },
+        {
           "name": "@state",
           "description": "Session state scenarios"
+        },
+        {
+          "name": "@status",
+          "description": "Feature area: status"
+        },
+        {
+          "name": "@status-change",
+          "description": "Feature area: status change"
         },
         {
           "name": "@step-validation",
@@ -2142,6 +3422,14 @@
           "description": "Strategy planning and decision-making features that guide user choices"
         },
         {
+          "name": "@stream-chunk",
+          "description": "Feature area: stream chunk"
+        },
+        {
+          "name": "@stream-event",
+          "description": "Feature area: stream event"
+        },
+        {
           "name": "@streaming",
           "description": "Real-time output streaming features"
         },
@@ -2150,16 +3438,68 @@
           "description": "Message structure preservation scenarios"
         },
         {
+          "name": "@structured-references",
+          "description": "Feature area: structured references"
+        },
+        {
+          "name": "@stub",
+          "description": "Feature area: stub"
+        },
+        {
+          "name": "@stub-registration",
+          "description": "Feature area: stub registration"
+        },
+        {
+          "name": "@styling",
+          "description": "Feature area: styling"
+        },
+        {
+          "name": "@submit-line",
+          "description": "Feature area: submit line"
+        },
+        {
+          "name": "@success-path",
+          "description": "Feature area: success path"
+        },
+        {
+          "name": "@summarization",
+          "description": "Feature area: summarization"
+        },
+        {
+          "name": "@summary",
+          "description": "Feature area: summary"
+        },
+        {
+          "name": "@supersedence",
+          "description": "Feature area: supersedence"
+        },
+        {
+          "name": "@svg-exemption",
+          "description": "Feature area: svg exemption"
+        },
+        {
           "name": "@symlink",
           "description": "Symlink escape attack prevention"
+        },
+        {
+          "name": "@system-prompt",
+          "description": "Feature area: system prompt"
         },
         {
           "name": "@system-reminder",
           "description": "Anti-drift pattern for AI agents using contextual reminders"
         },
         {
+          "name": "@table",
+          "description": "Feature area: table"
+        },
+        {
           "name": "@tarpc",
           "description": "tarpc service trait, transport adapters, and request/response framing"
+        },
+        {
+          "name": "@telegram-api",
+          "description": "Feature area: telegram api"
         },
         {
           "name": "@template",
@@ -2170,6 +3510,10 @@
           "description": "Template and documentation generation"
         },
         {
+          "name": "@test-connection",
+          "description": "Feature area: test connection"
+        },
+        {
           "name": "@testing-framework",
           "description": "Testing framework and infrastructure features"
         },
@@ -2178,12 +3522,24 @@
           "description": "Text content type scenarios"
         },
         {
+          "name": "@text-chunks",
+          "description": "Feature area: text chunks"
+        },
+        {
           "name": "@thinking",
           "description": "Thinking content type scenarios"
         },
         {
           "name": "@thinking-exhaustion",
           "description": "Thinking/reasoning token exhaustion detection and recovery"
+        },
+        {
+          "name": "@thinking-level",
+          "description": "Feature area: thinking level"
+        },
+        {
+          "name": "@thinking-levels",
+          "description": "Feature area: thinking levels"
         },
         {
           "name": "@thinking-preservation",
@@ -2198,12 +3554,28 @@
           "description": "Threshold boundary scenarios"
         },
         {
+          "name": "@thresholds",
+          "description": "Feature area: thresholds"
+        },
+        {
+          "name": "@time-ago",
+          "description": "Feature area: time ago"
+        },
+        {
           "name": "@timeout",
           "description": "Timeout handling and time limit scenarios"
         },
         {
+          "name": "@timer",
+          "description": "Feature area: timer"
+        },
+        {
           "name": "@timestamp",
           "description": "Timestamp-related functionality for temporal ordering and history"
+        },
+        {
+          "name": "@title",
+          "description": "Feature area: title"
         },
         {
           "name": "@token-exchange",
@@ -2222,8 +3594,20 @@
           "description": "TOML configuration file parsing and manipulation"
         },
         {
+          "name": "@tool",
+          "description": "Feature area: tool"
+        },
+        {
           "name": "@tool-call",
           "description": "Tool call content type scenarios"
+        },
+        {
+          "name": "@tool-calling",
+          "description": "Feature area: tool calling"
+        },
+        {
+          "name": "@tool-calls",
+          "description": "Feature area: tool calls"
         },
         {
           "name": "@tool-definition",
@@ -2234,8 +3618,16 @@
           "description": "Scenarios testing tool output message handling"
         },
         {
+          "name": "@tool-prefixing",
+          "description": "Feature area: tool prefixing"
+        },
+        {
           "name": "@tool-result",
           "description": "Tool result content type scenarios"
+        },
+        {
+          "name": "@tool-trait",
+          "description": "Feature area: tool trait"
         },
         {
           "name": "@tool-use",
@@ -2250,6 +3642,10 @@
           "description": "Trackpad and touchpad input handling with smoothing and gesture support"
         },
         {
+          "name": "@transport-impl",
+          "description": "Feature area: transport impl"
+        },
+        {
           "name": "@tree-sitter",
           "description": "Tree-sitter library for language-agnostic AST parsing"
         },
@@ -2260,6 +3656,14 @@
         {
           "name": "@truncation",
           "description": "Output truncation and limit handling"
+        },
+        {
+          "name": "@truncation-recovery",
+          "description": "Feature area: truncation recovery"
+        },
+        {
+          "name": "@trust",
+          "description": "Feature area: trust"
         },
         {
           "name": "@ts-parity",
@@ -2274,6 +3678,14 @@
           "description": "Work unit TUI-113 — auto-restore the last active session on client startup and reconnect: resolution order (focused session → daemon active pointer → most-recent workspace session), ReattachSession/RestoreSession bus tokens, set_active_session pointer tracking (sticky across BackToBoard), RPC-011 create_session fallback preserved for empty daemons"
         },
         {
+          "name": "@tui-input",
+          "description": "Feature area: tui input"
+        },
+        {
+          "name": "@tui-popup",
+          "description": "Feature area: tui popup"
+        },
+        {
           "name": "@turn-selection",
           "description": "Scenarios testing turn-based selection in conversation"
         },
@@ -2286,12 +3698,24 @@
           "description": "Turn boundary scenarios"
         },
         {
+          "name": "@two-line",
+          "description": "Feature area: two line"
+        },
+        {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
         {
+          "name": "@typeahead",
+          "description": "Feature area: typeahead"
+        },
+        {
           "name": "@typescript",
           "description": "TypeScript-specific features and configuration"
+        },
+        {
+          "name": "@typescript-layer",
+          "description": "Feature area: typescript layer"
         },
         {
           "name": "@ui-formatting",
@@ -2302,8 +3726,36 @@
           "description": "UI rendering and layout issues"
         },
         {
+          "name": "@unauthorized",
+          "description": "Feature area: unauthorized"
+        },
+        {
+          "name": "@unknown-error",
+          "description": "Feature area: unknown error"
+        },
+        {
+          "name": "@unselected",
+          "description": "Feature area: unselected"
+        },
+        {
           "name": "@url",
           "description": "URL reference content scenarios"
+        },
+        {
+          "name": "@url-rewriting",
+          "description": "Feature area: url rewriting"
+        },
+        {
+          "name": "@user-input",
+          "description": "Feature area: user input"
+        },
+        {
+          "name": "@user-interaction",
+          "description": "Feature area: user interaction"
+        },
+        {
+          "name": "@user-override",
+          "description": "Feature area: user override"
         },
         {
           "name": "@uuid",
@@ -2314,12 +3766,48 @@
           "description": "Version management and migration features"
         },
         {
+          "name": "@view-imports",
+          "description": "Feature area: view imports"
+        },
+        {
+          "name": "@view-isolation",
+          "description": "Feature area: view isolation"
+        },
+        {
+          "name": "@view-module",
+          "description": "Feature area: view module"
+        },
+        {
+          "name": "@view-render",
+          "description": "Feature area: view render"
+        },
+        {
           "name": "@viewport",
           "description": "Per-column scroll viewport semantics in the BoardView (RPC-016)"
         },
         {
+          "name": "@visibility",
+          "description": "Feature area: visibility"
+        },
+        {
+          "name": "@visible",
+          "description": "Feature area: visible"
+        },
+        {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
+        },
+        {
+          "name": "@vllm",
+          "description": "Feature area: vllm"
+        },
+        {
+          "name": "@vscode",
+          "description": "Feature area: vscode"
+        },
+        {
+          "name": "@watcher-input",
+          "description": "Feature area: watcher input"
         },
         {
           "name": "@web",
@@ -2330,16 +3818,60 @@
           "description": "WebSocket transport for tarpc service"
         },
         {
+          "name": "@wheel-velocity",
+          "description": "Feature area: wheel velocity"
+        },
+        {
+          "name": "@whitelist",
+          "description": "Feature area: whitelist"
+        },
+        {
+          "name": "@wire-format",
+          "description": "Feature area: wire format"
+        },
+        {
+          "name": "@wiring",
+          "description": "Feature area: wiring"
+        },
+        {
+          "name": "@work-unit-context",
+          "description": "Feature area: work unit context"
+        },
+        {
+          "name": "@workdir",
+          "description": "Feature area: workdir"
+        },
+        {
           "name": "@worker-threads",
           "description": "Features involving Node.js worker threads for parallel processing"
+        },
+        {
+          "name": "@workflow-guardrail",
+          "description": "Feature area: workflow guardrail"
+        },
+        {
+          "name": "@workflow-orchestration",
+          "description": "Feature area: workflow orchestration"
         },
         {
           "name": "@workspace",
           "description": "Cargo workspace configuration"
         },
         {
+          "name": "@wrap-around",
+          "description": "Feature area: wrap around"
+        },
+        {
+          "name": "@wrapping",
+          "description": "Feature area: wrapping"
+        },
+        {
           "name": "@write",
           "description": "Write tool operations"
+        },
+        {
+          "name": "@yield",
+          "description": "Feature area: yield"
         },
         {
           "name": "@zoom",
@@ -3266,7 +4798,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-22T05:35:03.706Z",
+    "lastUpdated": "2026-11-03T19:32:56.843Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

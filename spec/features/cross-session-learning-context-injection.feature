@@ -1,4 +1,6 @@
 @KGRAPH-022
+@parser
+@context-management
 Feature: Cross-Session Learning & Periodic Synthesis
   """
   Implementation uses learnings_context.rs in rust/napi/src/graph/ for the standalone context building function, integrated via session_start hook in session_manager.rs

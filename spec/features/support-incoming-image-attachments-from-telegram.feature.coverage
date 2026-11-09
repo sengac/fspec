@@ -5,31 +5,33 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "85-121",
+          "lines": "168-207",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "export async function downloadPhotoAsBase64(",
+              "lastLine": "}"
             }
           ]
         }
@@ -40,31 +42,33 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "123-152",
+          "lines": "211-239",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "export async function downloadPhotoAsBase64(",
+              "lastLine": "}"
             }
           ]
         }
@@ -75,34 +79,36 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "154-175",
+          "lines": "247-266",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465
-              ]
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -113,34 +119,36 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "177-198",
+          "lines": "270-289",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465
-              ]
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -151,13 +159,15 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "200-221",
+          "lines": "293-321",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                538
-              ]
+                943
+              ],
+              "firstLine": "const text = msg.caption || '';",
+              "lastLine": "const text = msg.caption || '';"
             }
           ]
         }
@@ -168,7 +178,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "223-250",
+          "lines": "325-349",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -179,7 +189,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "// Types",
+              "lastLine": "| 'text'"
             }
           ]
         }
@@ -190,7 +202,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "35-51",
+          "lines": "118-132",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -211,7 +223,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "| 'fspec'",
+              "lastLine": "request_id?: string;"
             }
           ]
         }
@@ -222,7 +236,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "53-65",
+          "lines": "136-146",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -243,7 +257,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "| 'fspec'",
+              "lastLine": "request_id?: string;"
             }
           ]
         }
@@ -254,7 +270,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "67-79",
+          "lines": "150-160",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -275,7 +291,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "| 'fspec'",
+              "lastLine": "request_id?: string;"
             }
           ]
         }
@@ -286,25 +304,31 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "356-372",
+          "lines": "482-511",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583
-              ]
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726
+              ],
+              "firstLine": "export function forwardPhotoToSession(",
+              "lastLine": "}"
             }
           ]
         }
@@ -315,31 +339,70 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "252-271",
+          "lines": "357-387",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156
-              ]
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976
+              ],
+              "firstLine": "export async function downloadPhotoAsBase64(",
+              "lastLine": "}"
             }
           ]
         }
@@ -350,7 +413,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "294-313",
+          "lines": "414-437",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
@@ -362,7 +425,9 @@
                 563,
                 564,
                 565
-              ]
+              ],
+              "firstLine": "state.pauseInfo = {",
+              "lastLine": ""
             }
           ]
         }
@@ -373,89 +438,36 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "374-392",
+          "lines": "514-531",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                536,
-                537,
-                538,
-                539,
-                540,
-                541,
-                542,
-                543,
-                544,
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551,
-                552,
-                553,
-                554,
-                555,
-                556,
-                557,
-                558,
-                559,
-                560,
-                561,
-                562,
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612
-              ]
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -466,89 +478,36 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "394-410",
+          "lines": "535-551",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                536,
-                537,
-                538,
-                539,
-                540,
-                541,
-                542,
-                543,
-                544,
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551,
-                552,
-                553,
-                554,
-                555,
-                556,
-                557,
-                558,
-                559,
-                560,
-                561,
-                562,
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571,
-                572,
-                573,
-                574,
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612
-              ]
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -559,34 +518,36 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-image-handling.test.ts",
-          "lines": "318-338",
+          "lines": "445-463",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450,
-                451,
-                452,
-                453,
-                454,
-                455,
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465
-              ]
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
             }
           ]
         }
@@ -594,19 +555,55 @@
     },
     {
       "name": "Pass images to LLM as multimodal input",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-image-handling.test.ts",
+          "lines": "558-589",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                733,
+                734,
+                735,
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748,
+                749,
+                750,
+                751,
+                752,
+                753,
+                754
+              ],
+              "firstLine": "export function handleTelegramMessage(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 16,
-    "coveredScenarios": 15,
-    "coveragePercent": 94,
+    "coveredScenarios": 16,
+    "coveragePercent": 100,
     "testFiles": [
       "bridge/__tests__/telegram-image-handling.test.ts"
     ],
     "implFiles": [
       "bridge/telegram-endpoint.ts"
     ],
-    "totalLinesCovered": 670
+    "totalLinesCovered": 676
   }
 }

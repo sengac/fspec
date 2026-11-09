@@ -1,0 +1,42 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude 4.0 and 4.1 ids are budgeted while 4.6 stays adaptive",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug438_claude_budget_only_thinking_models.rs",
+          "lines": "7-22",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/thinking_config.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// \"claude-opus-4-5-20260101\") are covered. BUG-438: Haiku 4.5 and the",
+              "lastLine": "\"claude-opus-4-1\","
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug438_claude_budget_only_thinking_models.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/facade/thinking_config.rs"
+    ],
+    "totalLinesCovered": 24
+  }
+}

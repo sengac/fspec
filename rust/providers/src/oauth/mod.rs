@@ -25,6 +25,9 @@ pub mod script_provider;
 pub mod script_provider_aliases;
 pub mod scripted_refreshing_client;
 pub(crate) mod scripted_request_refresh;
+#[doc(hidden)]
+pub use scripted_request_refresh::gate_users as scripted_refresh_gate_users;
+mod status_time_modules; // PROV-094
 pub mod token_refresh;
 
 // Re-exports for ergonomic use

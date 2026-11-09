@@ -1,3 +1,4 @@
+@BUG-582
 @agent-view
 @tui-component
 @done
@@ -128,7 +129,7 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
   @mouse
   @wrap-around
   Scenario: ThinkingLevelDialog mouse-wheel down advances and wraps at the last level
-    Given the ThinkingLevelDialog is open with the High level selected
+    Given the ThinkingLevelDialog is open with the Model default level selected
     When the user emits MouseEventKind::ScrollDown inside the dialog rect
     Then the selection wraps to Off
     And the dialog remains visible with the inverse highlight on the new row

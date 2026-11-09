@@ -113,7 +113,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -232,7 +234,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -351,7 +355,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -470,7 +476,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -481,7 +489,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_work_units.rs",
-          "lines": "191-218",
+          "lines": "188-214",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_work_units.rs",
@@ -589,7 +597,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -600,7 +610,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_work_units.rs",
-          "lines": "219-239",
+          "lines": "216-235",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_work_units.rs",
@@ -708,7 +718,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -827,7 +839,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -838,7 +852,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_work_units.rs",
-          "lines": "266-291",
+          "lines": "263-287",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_work_units.rs",
@@ -946,7 +960,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
         }
@@ -957,7 +973,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_work_units.rs",
-          "lines": "292-310",
+          "lines": "289-307",
           "implMappings": [
             {
               "file": "rust/fspec/src/query_work_units.rs",
@@ -1065,9 +1081,15 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "//! `query-work-units` shell-facing CLI bridge (RPC-263).",
+              "lastLine": "_ => err.to_string(),"
             }
           ]
+        },
+        {
+          "file": "rust/fspec/tests/cli_query_work_units.rs",
+          "lines": "94-125"
         }
       ]
     }
@@ -1082,6 +1104,6 @@
     "implFiles": [
       "rust/fspec/src/query_work_units.rs"
     ],
-    "totalLinesCovered": 1361
+    "totalLinesCovered": 1173
   }
 }

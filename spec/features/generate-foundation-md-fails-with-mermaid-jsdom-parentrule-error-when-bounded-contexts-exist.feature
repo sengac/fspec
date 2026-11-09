@@ -1,4 +1,6 @@
 @BUG-123
+@codelet
+@foundation-management
 Feature: generate-foundation-md fails with mermaid JSDOM parentRule error when bounded contexts exist
   """
   Redefines CSSStyleDeclaration.prototype.parentRule with getter+setter before mermaid import

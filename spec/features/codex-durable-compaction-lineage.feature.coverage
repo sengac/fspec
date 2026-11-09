@@ -125,13 +125,15 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
-                149
-              ]
+                149,
+                150,
+                151
+              ],
+              "firstLine": "pub fn commit_durable_compaction(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/session_compaction.rs",
@@ -165,7 +167,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "use super::{ExtensionError, ProviderSession};",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/session.rs",
@@ -185,7 +189,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "#[path = \"session_compaction.rs\"]",
+              "lastLine": ""
             },
             {
               "file": "rust/providers/src/codex/session.rs",
@@ -231,7 +237,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "fn prepare_compaction_generation(",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/core/src/persistence/provider_state/replay.rs",
@@ -268,7 +276,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "for checkpoint in latest.into_values() {",
+              "lastLine": "let mut envelope = serde_json::to_value(&checkpoint.metadata)?;"
             },
             {
               "file": "rust/core/src/persistence/session_replay.rs",
@@ -292,7 +302,9 @@
                 56,
                 57,
                 58
-              ]
+              ],
+              "firstLine": "return Err(format!(",
+              "lastLine": "message.insert(\"content\".into(), content);"
             }
           ]
         }
@@ -308,6 +320,8 @@
             {
               "file": "rust/providers/src/codex/compaction.rs",
               "lines": [
+                18,
+                19,
                 20,
                 21,
                 22,
@@ -415,7 +429,9 @@
                 124,
                 125,
                 126
-              ]
+              ],
+              "firstLine": "pub(super) fn prepare(",
+              "lastLine": "}"
             },
             {
               "file": "rust/core/src/persistence/compaction_boundary.rs",
@@ -436,18 +452,6 @@
                 26,
                 27,
                 28,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
                 135,
                 136,
                 137,
@@ -462,10 +466,22 @@
                 146,
                 147,
                 148,
-                149,
                 150,
-                151
-              ]
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "impl CompactionCheckpoint {",
+              "lastLine": "|| commit.output_reservation == 0"
             },
             {
               "file": "rust/providers/src/codex/checkpoint_restore.rs",
@@ -501,7 +517,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "super::compaction::committed_checkpoint(",
+              "lastLine": "}"
             }
           ]
         }
@@ -542,7 +560,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub(super) fn validate_current_compaction_history(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/selected_request.rs",
@@ -614,7 +634,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "type Prepare =",
+              "lastLine": "}"
             }
           ]
         }
@@ -656,7 +678,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "projected.compaction_commit = None;",
+              "lastLine": "})"
             }
           ]
         }
@@ -672,6 +696,9 @@
             {
               "file": "rust/cli/src/session/compaction.rs",
               "lines": [
+                125,
+                126,
+                127,
                 128,
                 129,
                 130,
@@ -696,7 +723,6 @@
                 149,
                 150,
                 151,
-                152,
                 153,
                 154,
                 155,
@@ -735,8 +761,14 @@
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": ".inspect_err(|error| {",
+              "lastLine": "}"
             }
           ]
         }
@@ -774,8 +806,6 @@
                 141,
                 142,
                 143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -816,13 +846,17 @@
                 183,
                 184,
                 185,
-                186,
                 187,
                 188,
                 189,
                 190,
-                191
-              ]
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "installation = Some(messages);",
+              "lastLine": "Ok(reconciled)"
             }
           ]
         }
@@ -838,6 +872,24 @@
             {
               "file": "rust/core/src/persistence/compaction_commit.rs",
               "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
                 98,
@@ -851,62 +903,18 @@
                 106,
                 107,
                 108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
                 140,
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163
-              ]
+                184,
+                185,
+                186,
+                187,
+                188
+              ],
+              "firstLine": "pub fn commit_compaction_admitted(",
+              "lastLine": "}"
             }
           ]
         }
@@ -934,6 +942,6 @@
       "rust/providers/src/selected_request.rs",
       "rust/core/src/persistence/compaction_commit.rs"
     ],
-    "totalLinesCovered": 1012
+    "totalLinesCovered": 990
   }
 }

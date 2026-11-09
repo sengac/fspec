@@ -25,6 +25,17 @@ pub enum CompactionFailure {
     Commit(String),
 }
 
+impl CompactionFailure {
+    /// The builder failed before anything was installed: a fresh builder may
+    /// retry it, and a threshold compaction may carry on uncompacted (BUG-641).
+    pub fn is_builder_failure(&self) -> bool {
+        matches!(
+            self,
+            Self::Builder(_) | Self::Candidate(_) | Self::Deadline | Self::Unavailable
+        )
+    }
+}
+
 #[derive(Debug)]
 pub struct CompactionOperation {
     identity: Option<Uuid>,
@@ -87,7 +98,7 @@ impl CompactionOperation {
         if let Err(error) = &result {
             tracing::warn!(operation_id = ?self.identity, phase = "operation",
                 effective_budget_ms = self.deadline.as_millis(), attempt = self.attempts,
-                retryable = matches!(error, CompactionFailure::Builder(_) | CompactionFailure::Candidate(_) | CompactionFailure::Deadline | CompactionFailure::Unavailable),
+                retryable = error.is_builder_failure(),
                 failure = %error, "Compaction operation failed; automatic continuation blocked");
             self.block(error.clone());
         }
@@ -96,13 +107,7 @@ impl CompactionOperation {
 
     pub fn block(&mut self, failure: CompactionFailure) {
         self.blocked = true;
-        self.retryable_builder_failure = matches!(
-            failure,
-            CompactionFailure::Builder(_)
-                | CompactionFailure::Candidate(_)
-                | CompactionFailure::Deadline
-                | CompactionFailure::Unavailable
-        );
+        self.retryable_builder_failure = failure.is_builder_failure();
     }
 
     pub fn prevent_fresh_retry(&mut self) {
@@ -158,39 +163,58 @@ pub fn selected_overflow_protocol(admitted: bool, _retry: u32) -> Option<DagProt
     admitted.then_some(DagProtocol::InView)
 }
 
+/// BUG-614 (Q7): what the compactor is asked to produce. A correction
+/// continues the conversation that generated the rejected candidate: the
+/// candidate is its assistant turn and this message, with the exact
+/// validator error, is the next user turn.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BuildRequest {
+    First,
+    Correction(String),
+}
+
+/// Validate every candidate the builder returns, sending each rejection back
+/// for correction within one limit of attempts (BUG-614 Q6). Nothing is
+/// salvaged, clamped or invented.
 pub async fn build_validated_dag<Build, Response>(
-    prompt: &str,
     context: &codelet_core::compaction::DagValidationContext,
     mut build: Build,
 ) -> Result<String, String>
 where
-    Build: FnMut(String) -> Response,
+    Build: FnMut(BuildRequest) -> Response,
     Response: Future<Output = Result<String, String>>,
 {
     use crate::compaction_dag::{DAG_NODE_SYNTAX, DAG_RANGE_RULES};
     use codelet_core::compaction::{validate_dag_candidate, DagValidationError};
+    use codelet_tools::inject_summary::MAX_SUMMARY_ATTEMPTS as ATTEMPTS;
 
     let operation = crate::compaction_timing::operation_id().unwrap_or_else(Uuid::new_v4);
-    let mut task = prompt.to_string();
-    for attempt in 1..=3 {
-        let candidate = crate::compaction_timing::attempt(attempt, 3, build(task)).await?;
+    let mut request = BuildRequest::First;
+    for attempt in 1..=ATTEMPTS {
+        let candidate =
+            crate::compaction_timing::attempt(attempt as u32, ATTEMPTS as u32, build(request))
+                .await?;
         let phase = crate::compaction_timing::Phase::new("validation");
         let validated = validate_dag_candidate(&candidate, context);
         drop(phase);
         match validated {
             Ok(validated) => return Ok(validated.content),
             Err(error @ DagValidationError::InvalidSource(_)) => return Err(error.to_string()),
-            Err(error) if attempt == 3 => {
+            Err(error) if attempt == ATTEMPTS => {
                 return Err(format!(
                     "compaction operation={operation} candidate rejected after {attempt} attempts: {error}\n{DAG_NODE_SYNTAX}\n{DAG_RANGE_RULES}"
                 ));
             }
             Err(error) => {
-                tracing::warn!(%operation, attempt, %error, "compaction builder output requires correction");
-                task = format!(
-                    "{prompt}\n\nThe previous candidate was rejected and was NOT installed.\nCorrection operation={operation} attempt={}/3\nValidation error: {error}\nReturn a complete corrected DAG, not a patch or partial fragment. Preserve the authoritative source boundary and all existing durable payloads.\n{DAG_NODE_SYNTAX}\n{DAG_RANGE_RULES}\n\nRejected candidate:\n{candidate}",
+                let trimmed = candidate.trim_end();
+                tracing::warn!(%operation, attempt, %error,
+                    candidate_chars = candidate.chars().count(),
+                    closed = trimmed.ends_with("</dag-node>") || trimmed.ends_with("</dag-files>"),
+                    "compaction builder output requires correction");
+                request = BuildRequest::Correction(format!(
+                    "The previous candidate was rejected and was NOT installed.\nCorrection operation={operation} attempt={}/{ATTEMPTS}\nValidation error: {error}\nReturn a complete corrected DAG, not a patch or partial fragment. Preserve the authoritative source boundary and all existing durable payloads.\n{DAG_NODE_SYNTAX}\n{DAG_RANGE_RULES}",
                     attempt + 1,
-                );
+                ));
             }
         }
     }

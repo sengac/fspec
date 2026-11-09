@@ -6,77 +6,7 @@
         {
           "file": "src/tui/hooks/__tests__/useHitlInput-other.test.ts",
           "lines": "117-185",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useHitlInput.ts",
-              "lines": [
-                82,
-                83,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -86,34 +16,7 @@
         {
           "file": "src/tui/hooks/__tests__/useHitlInput-other.test.ts",
           "lines": "190-257",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useHitlInput.ts",
-              "lines": [
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -123,63 +26,7 @@
         {
           "file": "src/tui/hooks/__tests__/useHitlInput-other.test.ts",
           "lines": "262-349",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useHitlInput.ts",
-              "lines": [
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -189,30 +36,7 @@
         {
           "file": "src/tui/hooks/__tests__/useHitlInput-other.test.ts",
           "lines": "354-401",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useHitlInput.ts",
-              "lines": [
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -222,14 +46,7 @@
         {
           "file": "src/tui/hooks/__tests__/useHitlInput-other.test.ts",
           "lines": "406-424",
-          "implMappings": [
-            {
-              "file": "src/tui/components/InputTransition.tsx",
-              "lines": [
-                394
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -241,10 +58,7 @@
     "testFiles": [
       "src/tui/hooks/__tests__/useHitlInput-other.test.ts"
     ],
-    "implFiles": [
-      "src/tui/hooks/useHitlInput.ts",
-      "src/tui/components/InputTransition.tsx"
-    ],
-    "totalLinesCovered": 445
+    "implFiles": [],
+    "totalLinesCovered": 292
   }
 }

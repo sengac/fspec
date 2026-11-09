@@ -2,8 +2,8 @@
 //!
 //! Creates a manual ghost-commit checkpoint capturing the current working
 //! tree state (staged, unstaged, untracked) under
-//! `refs/fspec-checkpoints/<work_unit_id>/<checkpoint_name>`, then persists a
-//! metadata entry to `.git/fspec-checkpoints-index/<work_unit_id>.json` so the
+//! `refs/fspec-checkpoints/<workUnitId>/<checkpoint_name>`, then persists a
+//! metadata entry to `.git/fspec-checkpoints-index/<workUnitId>.json` so the
 //! sibling `list-checkpoints`/`cleanup-checkpoints` commands can recover the
 //! original creation timestamp.
 //!
@@ -42,7 +42,7 @@ use codelet_git::ghost_commit::create_ghost_commit;
 ///
 /// Parity with TS Commander.js registration
 /// (`src/commands/checkpoint.ts:80-89`): two positional arguments
-/// `<work-unit-id>` and `<checkpoint-name>`, no `.option(...)` flags. We expose
+/// `<workUnitId>` and `<checkpoint-name>`, no `.option(...)` flags. We expose
 /// `format` ("text" | "json") for the structured dispatcher path.
 #[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -147,7 +147,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 }
 
 /// Append the checkpoint metadata entry to
-/// `.git/fspec-checkpoints-index/<work_unit_id>.json`, creating the directory
+/// `.git/fspec-checkpoints-index/<workUnitId>.json`, creating the directory
 /// and file as needed. Dedupes by name (parity with TS `updateCheckpointIndex`)
 /// and pretty-prints with 2-space indentation.
 fn write_index(

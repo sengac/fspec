@@ -208,7 +208,13 @@ fn load_scenario_tags(
     }
 
     if show_categories {
-        if let Some(cats) = try_categorize(project_root, &tags) {
+        // WT-015: a broken state-root pointer is an error, never a
+        // silent degradation.
+        let categorized = match try_categorize(project_root, &tags) {
+            Ok(categorized) => categorized,
+            Err(error) => return err_payload(error.to_string()),
+        };
+        if let Some(cats) = categorized {
             return ListScenarioTagsResult {
                 success: true,
                 tags,
@@ -243,8 +249,15 @@ fn err_payload(error: String) -> ListScenarioTagsResult {
 /// Build the `categorizedTags` projection from `spec/tags.json`.
 /// Returns `None` if the file is missing, unreadable, or malformed —
 /// the caller silently degrades. Unknown tags map to `"Unknown"`.
-fn try_categorize(project_root: &Path, tags: &[String]) -> Option<Vec<CategorizedTag>> {
-    let path = project_root.join("spec").join("tags.json");
+fn try_categorize(
+    project_root: &Path,
+    tags: &[String],
+) -> Result<Option<Vec<CategorizedTag>>, FspecCoreError> {
+    let path = crate::io::spec_paths::tags(project_root)?;
+    Ok(categorize_from(&path, tags))
+}
+
+fn categorize_from(path: &Path, tags: &[String]) -> Option<Vec<CategorizedTag>> {
     let raw = std::fs::read_to_string(path).ok()?;
     let parsed: TagsRegistry = serde_json::from_str(&raw).ok()?;
 

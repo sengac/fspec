@@ -14,14 +14,13 @@
 //!     Action enum.
 //!   * The `dispatch_resume_search_views.rs` file declares `handle_session_resume_complete`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::{Path, PathBuf};
 
-fn fspec_tui_src() -> PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
 fn collect_rs_files(root: &Path) -> Vec<PathBuf> {
@@ -44,8 +43,8 @@ fn collect_rs_files(root: &Path) -> Vec<PathBuf> {
     out
 }
 
-fn read_raw(path: &Path) -> String {
-    std::fs::read_to_string(path).expect("read file")
+fn read_raw(path: &Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(std::fs::read_to_string(path).or_fail("read file")?)
 }
 
 /// Strip `//` line comments and `/* ... */` block comments so the
@@ -76,21 +75,21 @@ fn strip_rust_comments(src: &str) -> String {
     out
 }
 
-fn count_lines(path: &Path) -> usize {
-    read_raw(path).lines().count()
+fn count_lines(path: &Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(read_raw(path)?.lines().count())
 }
 
 /// Scenario: Source-shape regression — no codelet-napi dep and 300-LoC ceiling
 #[test]
-fn no_codelet_napi_reference_and_300_loc_ceiling() {
+fn no_codelet_napi_reference_and_300_loc_ceiling() -> TestResult {
     // @step Given the rust/fspec-tui/src/ tree after the RPC-049 changes
-    let src = fspec_tui_src();
+    let src = fspec_tui_src()?;
     let files = collect_rs_files(&src);
 
     // @step Then no file under rust/fspec-tui/src/ matches "codelet_napi"
     let mut napi_violations: Vec<String> = Vec::new();
     for path in &files {
-        let body = read_raw(path);
+        let body = read_raw(path)?;
         // Strip comments so doc-prose mentioning `codelet_napi` doesn't
         // false-positive the assertion. The assertion targets real
         // imports / uses, not narrative documentation.
@@ -119,7 +118,7 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
     let mut loc_violations: Vec<String> = Vec::new();
     for dir in &ceiling_dirs {
         for path in collect_rs_files(dir) {
-            let n = count_lines(&path);
+            let n = count_lines(&path)?;
             if n >= 300 {
                 loc_violations.push(format!("{} has {n} lines (must be < 300)", path.display()));
             }
@@ -132,20 +131,7 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
 
     // @step And rust/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
     let dispatch = src.join("app").join("dispatch.rs");
-    let n = count_lines(&dispatch);
+    let n = count_lines(&dispatch)?;
     assert!(n < 300, "app/dispatch.rs has {n} lines (must be < 300)");
-}
-
-/// Scenario: components::Action gains the SessionResumeComplete variant.
-#[test]
-fn action_enum_declares_session_resume_complete_variant() {
-    // @step Given rust/fspec-tui/src/components/mod.rs after RPC-049 lands
-    let path = fspec_tui_src().join("components").join("mod.rs");
-    let body = read_raw(&path);
-
-    // @step Then the file declares "SessionResumeComplete(" as an Action variant
-    assert!(
-        body.contains("SessionResumeComplete("),
-        "components/mod.rs must declare Action::SessionResumeComplete(SessionId) variant",
-    );
+    Ok(())
 }

@@ -5,20 +5,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "49-61",
+          "lines": "49-65",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
                 148,
-                149
-              ]
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ],
+              "firstLine": "self.default_index",
+              "lastLine": "None => Some(ThinkingLevel::ModelDefault),"
             }
           ]
         }
@@ -29,17 +31,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "62-98",
+          "lines": "67-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -133,8 +129,16 @@
                 200,
                 201,
                 202,
-                203
-              ]
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209
+              ],
+              "firstLine": "self.action_tx = Some(action_tx);",
+              "lastLine": ""
             }
           ]
         }
@@ -145,17 +149,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "99-127",
+          "lines": "110-142",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -165,35 +163,45 @@
                 59,
                 60,
                 61,
-                62
-              ]
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "model: String,",
+              "lastLine": ""
             }
           ]
         }
       ]
     },
     {
-      "name": "Arrow keys navigate the 4 levels with wrap-around",
+      "name": "Arrow keys navigate the 5 levels with wrap-around",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "128-159",
+          "lines": "144-185",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
                 91,
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "selected_index: 0,",
+              "lastLine": ""
             }
           ]
         }
@@ -201,50 +209,27 @@
     },
     {
       "name": "Enter on a level emits Action::ThinkingLevelSelected",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "160-200",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
-              "lines": [
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181
-              ]
-            }
-          ]
-        }
-      ]
+      "testMappings": []
     },
     {
       "name": "Esc dismisses the ThinkingLevelDialog without side effects",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "201-231",
+          "lines": "245-286",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
               "lines": [
-                154,
-                155,
-                156,
-                157,
-                158,
-                159
-              ]
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ],
+              "firstLine": "pub fn number_field(&self) -> Option<(String, Option<String>)> {",
+              "lastLine": ""
             }
           ]
         }
@@ -255,7 +240,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs",
-          "lines": "232-247",
+          "lines": "288-305",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -290,12 +275,6 @@
                 28,
                 29,
                 30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
                 37,
                 38,
                 39,
@@ -463,8 +442,16 @@
                 201,
                 202,
                 203,
-                204
-              ]
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "//! ThinkingLevelDialog — Priority::Foreground modal for picking the",
+              "lastLine": "fn handle_event(&mut self, event: &Event) -> EventResult {"
             }
           ]
         }
@@ -473,14 +460,14 @@
   ],
   "stats": {
     "totalScenarios": 7,
-    "coveredScenarios": 7,
-    "coveragePercent": 100,
+    "coveredScenarios": 6,
+    "coveragePercent": 86,
     "testFiles": [
       "rust/fspec-tui/tests/thinking_level_dialog_rpc022.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/components/thinking_level_dialog.rs"
     ],
-    "totalLinesCovered": 557
+    "totalLinesCovered": 539
   }
 }

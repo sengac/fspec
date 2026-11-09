@@ -6,7 +6,7 @@ pub mod prov159_support;
 #[path = "prov159_support/socket.rs"]
 pub mod socket;
 
-use codelet_providers::codex::codex_auth::{clear_codex_oauth, read_codex_auth, write_codex_auth};
+use codelet_providers::codex::codex_auth::{clear_codex_oauth, write_codex_auth};
 use network::{bounded, client, send};
 use prov159_support::{auth, Fixture, TestResult};
 use serial_test::serial;

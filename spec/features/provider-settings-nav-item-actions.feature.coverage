@@ -1,168 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Enter on an OAuthStatus row opens the notice for its own provider, not a mismatched one",
+      "name": "Enter on an OAuthStatus row opens the DisconnectOAuth confirm for its own provider, not a mismatched one",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "116-147",
+          "lines": "168-203",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Enter on an OAuthLogin row opens the notice instead of silently doing nothing",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "154-183",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
-              "lines": [
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "d on an OAuthStatus row deletes that provider, not a mismatched one",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "216-253",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
-              "lines": [
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -170,7 +17,25 @@
                 114,
                 115,
                 116,
-                117,
+                117
+              ],
+              "firstLine": "// PROV-112: Enter on an oauth-status (Logout) row opens the dedicated",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on an OAuthLogin row starts the real login flow instead of silently doing nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "lines": "218-265",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
                 118,
                 119,
                 120,
@@ -180,48 +45,59 @@
                 124,
                 125,
                 126,
-                127
-              ]
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// PROV-113/114: Enter on an OAuth login row starts the real login",
+              "lastLine": "}"
             },
             {
-              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91
-              ]
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "/// Enter on an `OAuthLogin` row. Browser rows enter the waiting screen at",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Legacy set_providers callers keep their pre-existing Enter and d behavior",
+      "name": "d on an OAuthStatus row opens the DisconnectOAuth confirm for that provider, not a mismatched one",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "380-409",
+          "lines": "298-321",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
               "lines": [
-                158,
-                159,
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -258,26 +134,59 @@
                 195,
                 196,
                 197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216
-              ]
+                198
+              ],
+              "firstLine": "/// Dispatch `d` for the focused NavItem. Provider / ApiKey / OAuthStatus",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "/// Returns the currently-focused NavItem from `nav_items`, or",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy set_providers callers keep their pre-existing d behavior",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "lines": "398-413",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "// Legacy fallback — nav_items empty (set_providers-only callers).",
+              "lastLine": "}"
             }
           ]
         }
@@ -288,7 +197,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "113-154",
+          "lines": "118-161",
           "implMappings": []
         }
       ]
@@ -298,7 +207,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "255-279",
+          "lines": "261-274",
           "implMappings": []
         }
       ]
@@ -308,7 +217,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "331-372",
+          "lines": "343-367",
           "implMappings": []
         }
       ]
@@ -323,9 +232,10 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
       "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 453
+    "totalLinesCovered": 313
   }
 }

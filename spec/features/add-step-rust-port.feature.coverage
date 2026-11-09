@@ -5,48 +5,48 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "51-81",
+          "lines": "51-88",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
                 184,
-                185
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                229,
+                230,
+                231,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275
+              ],
+              "firstLine": "// ---- Placement (BUG-620): Gherkin order ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -57,50 +57,67 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "88-110",
+          "lines": "94-130",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
                 245,
-                246
-              ]
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                276,
+                277,
+                278,
+                282,
+                283,
+                284,
+                285,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317
+              ],
+              "firstLine": "// ---- Placement (BUG-620): Gherkin order ----",
+              "lastLine": "}"
             }
           ]
         }
@@ -111,14 +128,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "117-137",
+          "lines": "136-161",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                137,
-                138,
-                139,
                 140,
                 141,
                 142,
@@ -128,8 +142,13 @@
                 146,
                 147,
                 148,
-                149
-              ]
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "// ---- Find the target scenario ----",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -140,14 +159,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "144-168",
+          "lines": "167-195",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -161,8 +177,13 @@
                 66,
                 67,
                 68,
-                69
-              ]
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "// ---- Normalise and validate step type ----",
+              "lastLine": ""
             }
           ]
         }
@@ -173,14 +194,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "175-200",
+          "lines": "201-236",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                110,
-                111,
-                112,
                 113,
                 114,
                 115,
@@ -204,8 +222,13 @@
                 133,
                 134,
                 135,
-                136
-              ]
+                136,
+                137,
+                138,
+                139
+              ],
+              "firstLine": "// ---- Validate existing Gherkin ----",
+              "lastLine": ""
             }
           ]
         }
@@ -216,14 +239,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_step.rs",
-          "lines": "207-231",
+          "lines": "242-274",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_step.rs",
               "lines": [
-                70,
-                71,
-                72,
                 73,
                 74,
                 75,
@@ -239,8 +259,329 @@
                 85,
                 86,
                 87,
-                88
-              ]
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "// ---- Read feature file ----",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adds a Given step after the last Given step when the scenario has no Given placeholder",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "295-341",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317
+              ],
+              "firstLine": "if let Some(step) = steps.iter().rev().find(|s| s.ty == block) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adds When, Then and But steps at the end of their blocks",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "347-392",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                276,
+                277,
+                278,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317
+              ],
+              "firstLine": "_ => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replaces the Given, When and Then placeholders in sequence",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "398-443",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275
+              ],
+              "firstLine": "let placeholder = PLACEHOLDERS[block_rank(block)];",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature name without extension resolves under spec/features",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "449-471",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ],
+              "firstLine": "fn resolve_feature_rel(feature: &str) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The step type is case-insensitive",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "477-501",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "// ---- Normalise and validate step type ----",
+              "lastLine": "let step_keyword = capitalize(&normalized);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature file that is not valid Gherkin is rejected and left unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "509-545",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// ---- Validate existing Gherkin ----",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new step goes after a data table that ends the scenario",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "551-578",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317
+              ],
+              "firstLine": "_ => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new step goes after a doc string that ends the scenario",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_step.rs",
+          "lines": "584-611",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_step.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317
+              ],
+              "firstLine": "_ => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -248,8 +589,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_step.rs"
@@ -257,6 +598,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_step.rs"
     ],
-    "totalLinesCovered": 301
+    "totalLinesCovered": 814
   }
 }

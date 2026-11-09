@@ -11,17 +11,12 @@ use std::path::Path;
 
 use tracing::info;
 
-use crate::rlcd::config::user_dir;
-
 /// The pidfile path: `<user_dir>/rlcd/rlcd.pid` (user dir = `FSPEC_USER_DIR`
-/// override, else `~/.fspec`; falls back to a CWD-relative path when no home
-/// can be resolved).
-#[must_use]
-pub fn pidfile_path() -> std::path::PathBuf {
-    user_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from(".fspec"))
+/// override, else `~/.fspec`). BUG-451: no CWD-relative fallback.
+pub fn pidfile_path() -> Result<std::path::PathBuf, String> {
+    Ok(codelet_common::user_dir::fspec_user_dir()?
         .join("rlcd")
-        .join("rlcd.pid")
+        .join("rlcd.pid"))
 }
 
 /// Read the pid recorded in `pidfile`. `None` when the file is absent,
@@ -91,10 +86,7 @@ pub fn is_local_url(url: &str) -> bool {
     let Ok(parsed) = url::Url::parse(url) else {
         return false;
     };
-    matches!(
-        parsed.host_str(),
-        Some("127.0.0.1" | "localhost" | "[::1]")
-    )
+    matches!(parsed.host_str(), Some("127.0.0.1" | "localhost" | "[::1]"))
 }
 
 /// The port encoded in `url` (falls back to 8000 when it does not parse).

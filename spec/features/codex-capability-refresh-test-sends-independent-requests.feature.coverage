@@ -1,0 +1,38 @@
+{
+  "scenarios": [
+    {
+      "name": "A capability refresh reaches independent direct and streamed requests",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov152_codex_capability_refresh.rs",
+          "lines": "18-136",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "pub fn with_history(mut self, history: super::history::CodexHistory) -> Self {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov152_codex_capability_refresh.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/model.rs"
+    ],
+    "totalLinesCovered": 123
+  }
+}

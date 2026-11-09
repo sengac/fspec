@@ -25,7 +25,7 @@ Feature: Context-aware system-reminders for workflow state transitions
   #   1. When work unit moves to SPECIFYING, AI sees reminder: 'Common commands: fspec add-rule <id> "rule" | fspec remove-rule <id> <index> | fspec add-example <id> "example" | fspec remove-example <id> <index> | fspec add-question <id> "@human: question?" | fspec answer-question <id> <index> --answer "..." | fspec generate-scenarios <id>. For more: fspec help discovery'
   #   2. When work unit moves to TESTING, AI sees reminder: 'Common commands: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range> | fspec show-coverage <feature> | fspec show-feature <name>. Write tests that map to Gherkin scenarios. For more: fspec link-coverage --help'
   #   3. When work unit moves to IMPLEMENTING, AI sees reminder: 'Common commands: fspec link-coverage <feature> --scenario "..." --impl-file <path> --impl-lines <lines> | fspec checkpoint <id> <name> | fspec restore-checkpoint <id> <name> | fspec list-checkpoints <id>. Write minimal code to pass tests. For more: fspec checkpoint --help'
-  #   4. When work unit moves to VALIDATING, AI sees reminder: 'Common commands: fspec validate | fspec validate-tags | fspec check | fspec audit-coverage <feature> | npm test | npm run check. Run ALL tests to ensure nothing broke. For more: fspec check --help'
+  #   4. When work unit moves to VALIDATING, AI sees reminder: 'Common commands: fspec validate | fspec validate-tags | fspec audit --work-unit <id> | npm test | npm run check. Run ALL tests to ensure nothing broke. For more: fspec audit --help'
   #   5. When work unit moves to BACKLOG (deprioritization), no command reminder is shown since backlog is a waiting state with no active work
   #
   # QUESTIONS (ANSWERED):
@@ -61,7 +61,7 @@ Feature: Context-aware system-reminders for workflow state transitions
     And the reminder should contain "fspec add-question <id> \"@human: question?\""
     And the reminder should contain "fspec answer-question <id> <index> --answer \"...\""
     And the reminder should contain "fspec generate-scenarios <id>"
-    And the reminder should contain "For more: fspec help discovery"
+    And the reminder should contain "For more: fspec bootstrap (Example Mapping section)"
     And commands should be displayed one per line
 
   Scenario: Show command reminder when transitioning to TESTING state
@@ -91,11 +91,11 @@ Feature: Context-aware system-reminders for workflow state transitions
     Then a system-reminder should be emitted
     And the reminder should contain "fspec validate"
     And the reminder should contain "fspec validate-tags"
-    And the reminder should contain "fspec check"
-    And the reminder should contain "fspec audit-coverage <feature>"
+    And the reminder should contain "fspec audit --work-unit <id>"
+    And the reminder should NOT contain "fspec check"
     And the reminder should NOT contain "npm test"
     And the reminder should NOT contain "npm run check"
-    And the reminder should contain "For more: fspec check --help"
+    And the reminder should contain "For more: fspec audit --help"
     And commands should be displayed one per line
 
   Scenario: No command reminder when transitioning to BACKLOG state

@@ -10,6 +10,10 @@
             {
               "file": "rust/tools/src/bash_process.rs",
               "lines": [
+                82,
+                83,
+                84,
+                85,
                 86,
                 87,
                 88,
@@ -17,12 +21,10 @@
                 90,
                 91,
                 92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                93
+              ],
+              "firstLine": "/// The user command is passed via `-Command` — PowerShell does not accept",
+              "lastLine": ")"
             }
           ]
         }
@@ -38,6 +40,10 @@
             {
               "file": "rust/tools/src/bash_process.rs",
               "lines": [
+                161,
+                162,
+                163,
+                164,
                 165,
                 166,
                 167,
@@ -68,12 +74,10 @@
                 192,
                 193,
                 194,
-                195,
-                196,
-                197,
-                198,
-                199
-              ]
+                195
+              ],
+              "firstLine": "\"Start-Sleep -Seconds 2147483647\".to_string(),",
+              "lastLine": "});"
             }
           ]
         }
@@ -122,7 +126,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "pub struct WindowsProcessTreeKiller {",
+              "lastLine": "}"
             }
           ]
         }
@@ -138,12 +144,20 @@
             {
               "file": "rust/tools/src/bash_process.rs",
               "lines": [
+                107,
+                108,
+                109,
                 110,
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "/// Build the Unix shell invocation for a user command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -161,6 +175,6 @@
       "rust/tools/src/bash_process.rs",
       "rust/tools/src/bash_process_windows.rs"
     ],
-    "totalLinesCovered": 204
+    "totalLinesCovered": 210
   }
 }

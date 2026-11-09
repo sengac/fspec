@@ -7,24 +7,18 @@
 
 use std::path::{Path, PathBuf};
 
+// BUG-497: the resolution lives in codelet-common so the config code and
+// codelet-core share it; fspec-core keeps re-exporting it.
+pub use codelet_common::project_root::{
+    find_existing_spec_directory, find_project_root, resolve_project_root,
+};
+
 use crate::error::FspecCoreError;
-
-/// Files / directories that mark a project root. Mirrors the TS
-/// `BOUNDARY_MARKERS` constant.
-const BOUNDARY_MARKERS: &[&str] = &[
-    ".git",
-    "package.json",
-    ".gitignore",
-    "Cargo.toml",
-    "pyproject.toml",
-];
-
-/// Maximum directories to walk upward. Matches TS `MAX_SEARCH_DEPTH = 10`.
-const MAX_SEARCH_DEPTH: u32 = 10;
 
 /// Finds or creates the `spec/` directory at the appropriate project root.
 ///
-/// Algorithm (mirrors `findOrCreateSpecDirectory` in the TS source):
+/// Algorithm (mirrors `findOrCreateSpecDirectory` in the TS source; steps 1-3
+/// are [`resolve_project_root`]):
 /// 1. If `cwd/spec` already exists → use it (test isolation).
 /// 2. Walk upward looking for an existing `spec/` that's within a project boundary.
 /// 3. Otherwise find the project root via boundary markers and create `spec/` there.
@@ -34,25 +28,17 @@ const MAX_SEARCH_DEPTH: u32 = 10;
 /// this matches the TS behaviour and keeps the dispatcher resilient when
 /// the agent is sandboxed without filesystem privileges above `cwd`.
 pub fn find_or_create_spec_directory(cwd: &Path) -> Result<PathBuf, FspecCoreError> {
-    // Safety check: if spec/ already exists at cwd, use it (test isolation).
-    let cwd_spec = cwd.join("spec");
-    if cwd_spec.is_dir() {
-        return Ok(cwd_spec);
+    let spec_path = crate::io::spec_paths::spec_dir_of(&resolve_project_root(cwd));
+    if spec_path.is_dir() {
+        return Ok(spec_path);
     }
 
-    // First, try to find an existing spec/ within the project boundary.
-    if let Some(existing) = find_existing_spec_directory(cwd) {
-        return Ok(existing);
-    }
-
-    // Otherwise find the project root and create spec/ there.
-    let project_root = find_project_root(cwd);
-    let spec_path = project_root.join("spec");
+    // No spec/ yet: create it at the resolved project root.
     match std::fs::create_dir_all(&spec_path) {
         Ok(()) => Ok(spec_path),
         Err(_) => {
             // Graceful fallback: create spec/ at cwd.
-            let fallback = cwd.join("spec");
+            let fallback = crate::io::spec_paths::spec_dir_of(cwd);
             std::fs::create_dir_all(&fallback).map_err(|source| FspecCoreError::Io {
                 command: "find_or_create_spec_directory",
                 source,
@@ -60,59 +46,6 @@ pub fn find_or_create_spec_directory(cwd: &Path) -> Result<PathBuf, FspecCoreErr
             Ok(fallback)
         }
     }
-}
-
-/// Searches upward for an existing `spec/` directory inside a project boundary.
-fn find_existing_spec_directory(cwd: &Path) -> Option<PathBuf> {
-    let mut current = cwd.to_path_buf();
-    let mut depth = 0u32;
-
-    while depth < MAX_SEARCH_DEPTH {
-        let candidate = current.join("spec");
-        if candidate.is_dir() && has_project_boundary_marker(&current) {
-            return Some(candidate);
-        }
-
-        match current.parent() {
-            Some(parent) if parent != current => {
-                current = parent.to_path_buf();
-                depth += 1;
-            }
-            _ => break,
-        }
-    }
-
-    None
-}
-
-/// Walks upward for the nearest directory containing any boundary marker.
-/// Returns `cwd` if nothing found (matches TS fallback).
-pub fn find_project_root(cwd: &Path) -> PathBuf {
-    let mut current = cwd.to_path_buf();
-    let mut depth = 0u32;
-
-    while depth < MAX_SEARCH_DEPTH {
-        if has_project_boundary_marker(&current) {
-            return current;
-        }
-
-        match current.parent() {
-            Some(parent) if parent != current => {
-                current = parent.to_path_buf();
-                depth += 1;
-            }
-            _ => break,
-        }
-    }
-
-    cwd.to_path_buf()
-}
-
-/// Returns true if `dir` contains any boundary marker file/directory.
-fn has_project_boundary_marker(dir: &Path) -> bool {
-    BOUNDARY_MARKERS
-        .iter()
-        .any(|marker| dir.join(marker).exists())
 }
 
 #[cfg(test)]

@@ -11,57 +11,60 @@
 //!   * `AgentViewStore::set_session_index` is GONE (the RPC-018 setter
 //!     was replaced by a derived getter in RPC-024).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 mod common;
 
-fn fspec_tui_src() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src")
+fn fspec_tui_src() -> Result<std::path::PathBuf, codelet_test_helpers::TestError> {
+    Ok(common::workspace_root()?.join("fspec-tui").join("src"))
 }
 
-fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+fn read_raw(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    common::read_to_string_or_fail(path)
 }
 
-fn count_lines_path(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+fn count_lines_path(path: &std::path::Path) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(read_raw(path)?.lines().count())
 }
 
 /// Scenario: SessionContext lives in its own sub-module under the 300-LoC ceiling
 #[test]
-fn session_context_module_exists_under_300_loc() {
+fn session_context_module_exists_under_300_loc() -> TestResult {
     // @step Given the rust/fspec-tui crate
-    let path = fspec_tui_src()
+    let path = fspec_tui_src()?
         .join("store")
         .join("agent_view")
         .join("session_context.rs");
     // @step Then a file exists at rust/fspec-tui/src/store/agent_view/session_context.rs
     assert!(path.is_file(), "{} must exist", path.display());
     // @step And that file is under 300 lines
-    let n = count_lines_path(&path);
+    let n = count_lines_path(&path)?;
     assert!(n < 300, "session_context.rs has {n} lines, must be < 300");
     // @step And the file rust/fspec-tui/src/store/agent_view.rs is under 300 lines
-    let agent_view = fspec_tui_src().join("store").join("agent_view.rs");
-    let m = count_lines_path(&agent_view);
+    let agent_view = fspec_tui_src()?.join("store").join("agent_view.rs");
+    let m = count_lines_path(&agent_view)?;
     assert!(m < 300, "store/agent_view.rs has {m} lines, must be < 300");
     // @step And no file under rust/fspec-tui/src/views/ imports codelet_core, codelet_napi, tarpc, or tokio_tungstenite
-    let views_dir = fspec_tui_src().join("views");
-    fn walk(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
-        for e in std::fs::read_dir(dir).expect("dir") {
-            let e = e.expect("entry");
+    let views_dir = fspec_tui_src()?.join("views");
+    fn walk(
+        dir: &std::path::Path,
+        out: &mut Vec<std::path::PathBuf>,
+    ) -> Result<(), codelet_test_helpers::TestError> {
+        for e in std::fs::read_dir(dir).or_fail("dir")? {
+            let e = e.or_fail("entry")?;
             let p = e.path();
             if p.is_dir() {
-                walk(&p, out);
+                walk(&p, out)?;
             } else if p.extension().and_then(|s| s.to_str()) == Some("rs") {
                 out.push(p);
             }
         }
+        Ok(())
     }
     let mut files = Vec::new();
-    walk(&views_dir, &mut files);
+    walk(&views_dir, &mut files)?;
     let mut violations: Vec<String> = Vec::new();
     for path in &files {
-        let body = read_raw(path);
+        let body = read_raw(path)?;
         for needle in [
             "codelet_core::",
             "codelet_napi::",
@@ -74,39 +77,41 @@ fn session_context_module_exists_under_300_loc() {
         }
     }
     assert!(violations.is_empty(), "violations: {violations:?}");
+    Ok(())
 }
 
 /// Scenario: SessionContext module declares the required public surface
 #[test]
-fn session_context_module_declares_public_surface() {
+fn session_context_module_declares_public_surface() -> TestResult {
     // @step Given the rust/fspec-tui crate
     let body = read_raw(
-        &fspec_tui_src()
+        &fspec_tui_src()?
             .join("store")
             .join("agent_view")
             .join("session_context.rs"),
-    );
+    )?;
     // @step Then session_context.rs declares "pub struct SessionContext"
     assert!(body.contains("pub struct SessionContext"));
     // @step And session_context.rs declares the "scrollback" field
     assert!(body.contains("scrollback"));
     // @step And session_context.rs declares the "input_draft" field
     assert!(body.contains("input_draft"));
+    Ok(())
 }
 
 /// Scenario: AgentViewStore exposes the multi-session surface
 #[test]
-fn agent_view_store_exposes_multi_session_surface() {
+fn agent_view_store_exposes_multi_session_surface() -> TestResult {
     // @step Given rust/fspec-tui/src/store/agent_view.rs after RPC-024 lands
-    let body = read_raw(&fspec_tui_src().join("store").join("agent_view.rs"));
+    let body = read_raw(&fspec_tui_src()?.join("store").join("agent_view.rs"))?;
     // @step Then the file declares an "open_sessions" field
     assert!(body.contains("open_sessions"));
     // @step And the file declares a "current_session_index" field
     assert!(body.contains("current_session_index"));
     // @step And the file declares "pub fn append_session"
     assert!(body.contains("pub fn append_session"));
-    // @step And the file declares "pub fn focus_session_index" (RPC-096
-    // replaced cycle_session with end-of-list-aware focus + navigate_*)
+    // @step And the file declares "pub fn focus_session_index"
+    // (RPC-096 replaced cycle_session with end-of-list-aware focus + navigate_*)
     assert!(body.contains("pub fn focus_session_index"));
     // @step And the file declares "pub fn set_input_draft"
     assert!(body.contains("pub fn set_input_draft"));
@@ -116,12 +121,13 @@ fn agent_view_store_exposes_multi_session_surface() {
     assert!(body.contains("pub fn current_session_context"));
     // @step And the file declares "pub fn open_sessions"
     assert!(body.contains("pub fn open_sessions"));
+    Ok(())
 }
 
 /// Scenario: Removing set_session_index closes the explicit-setter regression hole
 #[test]
-fn agent_view_store_no_longer_exposes_set_session_index() {
-    let body = read_raw(&fspec_tui_src().join("store").join("agent_view.rs"));
+fn agent_view_store_no_longer_exposes_set_session_index() -> TestResult {
+    let body = read_raw(&fspec_tui_src()?.join("store").join("agent_view.rs"))?;
     // @step Given the AgentViewStore type
     // @step Then there is no public method named set_session_index on AgentViewStore
     assert!(
@@ -141,13 +147,14 @@ fn agent_view_store_no_longer_exposes_set_session_index() {
         body.contains("current_session_index") && body.contains("open_sessions"),
         "session_index() must derive from current_session_index and open_sessions.len()"
     );
+    Ok(())
 }
 
 /// Scenario: AgentView no longer owns the scrollback / next_seq fields
 #[test]
-fn agent_view_no_longer_owns_scrollback_field() {
+fn agent_view_no_longer_owns_scrollback_field() -> TestResult {
     // @step Given rust/fspec-tui/src/views/agent.rs after RPC-024 lands
-    let body = read_raw(&fspec_tui_src().join("views").join("agent.rs"));
+    let body = read_raw(&fspec_tui_src()?.join("views").join("agent.rs"))?;
     // @step Then the file does NOT declare "pub scrollback: ScrollbackList"
     assert!(
         !body.contains("pub scrollback: ScrollbackList"),
@@ -160,4 +167,5 @@ fn agent_view_no_longer_owns_scrollback_field() {
         "AgentView should no longer own a top-level next_seq — \
          scrollback_next_seq lives on SessionContext after RPC-024"
     );
+    Ok(())
 }

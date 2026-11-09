@@ -1,9 +1,12 @@
+@BUG-582
 @done
 @RPC-013
+@BUG-390
 @rust
 @tui
 @infrastructure
 @rpc
+@BUG-300
 Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + AgentView layout
   """
   RPC-013 (slice 3 of 3) — Source-shape regression locking the structural
@@ -63,8 +66,8 @@ Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + 
     And the file contains the substring "↑↓ Work Units"
     And the file contains the substring "[ Priority Up"
     And the file contains the substring "] Priority Down"
-    And the file contains the substring "↵ Work Agent"
-    And the file contains the substring "ESC Back"
+    And the file contains the substring "↵ Choose"
+    And the file contains the substring "ESC Exit"
     And the file does NOT contain the substring "? help"
     And the file does NOT contain the substring "switch pane"
 

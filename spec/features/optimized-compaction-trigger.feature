@@ -6,8 +6,8 @@ Feature: Optimized Compaction Window Limit Trigger
   """
   Key architectural decisions:
   - Implements optimized isOverflow() algorithm for context compaction
-  - Called after each assistant response to check if compaction is needed
-  - Short-circuit evaluation: disable flag → zero context → calculation (in that order)
+  - Checked before each API call (CompactionHook::on_completion_call) against the resolved compaction threshold
+  - No disable-autocompact setting exists (product owner decision, 2026-11-05)
 
   Dependencies and integrations:
   - rust/core/src/compaction_hook.rs - Replace calculate_effective_tokens() with simple sum
@@ -18,14 +18,13 @@ Feature: Optimized Compaction Window Limit Trigger
   - rust/providers/src/openai.rs - Return model-specific max_output (varies by model variant)
   - rust/providers/src/gemini.rs - Return model-specific max_output (varies by model variant)
 
-  Algorithm (must follow this exact order):
-  1. If disable_autocompact flag is set → return false (no compaction)
-  2. If context_window == 0 → return false (no context limit means no compaction)
-  3. Calculate: token_count = input_tokens + cache_read_tokens + output_tokens
-  4. Calculate: output_reservation = min(model_max_output, SESSION_OUTPUT_TOKEN_MAX)
-  5. If output_reservation == 0 → output_reservation = SESSION_OUTPUT_TOKEN_MAX (fallback)
-  6. Calculate: usable_context = context_window - output_reservation
-  7. Return: token_count > usable_context (strictly greater than, not >=)
+  Algorithm:
+  1. If context_window == 0 or model_max_output == 0 → usable_context = 0 (no 32k fallback)
+  2. Calculate: output_reservation = min(model_max_output, SESSION_OUTPUT_TOKEN_MAX)
+  3. Calculate: usable_context = context_window - output_reservation
+  4. Calculate: threshold = min(user override or default 80% of context_window, usable_context)
+  5. Calculate: token_count = input_tokens + cache_read_tokens + cache_creation_tokens + output_tokens (or the estimated payload, if larger)
+  6. Return: token_count > threshold (strictly greater than, not >=)
 
   Constants:
   - SESSION_OUTPUT_TOKEN_MAX = 32,000 tokens (reasonable upper bound for output reservation)
@@ -33,7 +32,7 @@ Feature: Optimized Compaction Window Limit Trigger
   Type considerations (Rust):
   - All token counts are u64
   - Use saturating_sub for usable_context calculation to prevent underflow
-  - max_output_tokens() returns u64 (0 means unknown/use fallback)
+  - a max_output of 0 leaves no usable context (no fallback); an unavailable limit yields no threshold (PROV-165)
   """
 
   # ========================================
@@ -42,11 +41,11 @@ Feature: Optimized Compaction Window Limit Trigger
   #
   # BUSINESS RULES:
   #   1. Token count = input_tokens + cache_read_tokens + output_tokens (simple sum, no discounting)
-  #   2. Output reservation = min(model_max_output, SESSION_OUTPUT_TOKEN_MAX), fallback to 32k if result is 0
+  #   2. Output reservation = min(model_max_output, SESSION_OUTPUT_TOKEN_MAX); a zero max_output leaves no usable context (no 32k fallback)
   #   3. Usable context = context_window - output_reservation
-  #   4. Trigger compaction when: token_count > usable_context (strictly greater than)
+  #   4. Trigger compaction when: token_count > threshold = min(override or 80% of context_window, usable_context) (strictly greater than)
   #   5. SESSION_OUTPUT_TOKEN_MAX = 32,000 tokens (constant)
-  #   6. Short-circuit: disable flag checked FIRST, then context==0, then calculation
+  #   6. No disable flag: no disable-autocompact setting exists (product owner decision, 2026-11-05)
   #   7. Provider trait MUST expose max_output_tokens() returning model-specific limit (0 if unknown)
   #   8. Each model variant may have different max_output (e.g., Claude Opus vs Sonnet)
   #
@@ -54,13 +53,13 @@ Feature: Optimized Compaction Window Limit Trigger
   #   1. Claude Sonnet 3.5 (200k context, 8192 max output): usable = 200,000 - 8,192 = 191,808
   #   2. GPT-4 (128k context, 4096 max output): usable = 128,000 - 4,096 = 123,904
   #   3. High-output model (200k context, 64k max output): capped at 32k → usable = 200,000 - 32,000 = 168,000
-  #   4. Unknown model (100k context, max_output=0): fallback to 32k → usable = 100,000 - 32,000 = 68,000
+  #   4. Unknown model (100k context, max_output=0): no 32k fallback → usable = 0
   #   5. Token sum: 150k input + 20k cache_read + 5k output = 175,000 total
   #   6. Under threshold: 175,000 total < 191,808 usable → NO compaction
   #   7. Over threshold: 195,000 total > 191,808 usable → TRIGGER compaction
   #   8. Exact boundary: 191,808 total == 191,808 usable → NO trigger (uses > not >=)
   #   9. Zero context: context=0 → returns false immediately (no limit = no compaction)
-  #   10. Disable flag: DISABLE_AUTOCOMPACT=true → returns false regardless of tokens
+  #   10. No disable flag: no disable-autocompact setting exists (product owner decision, 2026-11-05)
   #   11. Benefit: Claude agent gets 11,808 more tokens before compaction (191,808 vs legacy 180,000)
   #
   # ========================================
@@ -96,15 +95,13 @@ Feature: Optimized Compaction Window Limit Trigger
     Then usable context should be 168000 tokens
 
     # 200,000 - min(64,000, 32,000) = 200,000 - 32,000 = 168,000
-  Scenario: Unknown model with zero max_output uses SESSION_OUTPUT_MAX fallback
+  Scenario: Unknown model with zero max_output leaves no usable context
     Given a model with context_window of 100000 tokens
     And the model has max_output_tokens of 0
-    And SESSION_OUTPUT_TOKEN_MAX is 32000
     When I calculate usable context
-    Then usable context should be 68000 tokens
+    Then usable context should be 0 tokens
 
-    # min(0, 32000) = 0, but 0 triggers fallback to SESSION_OUTPUT_MAX
-    # usable = 100,000 - 32,000 = 68,000 (NOT 100,000)
+    # a zero output limit is unavailable, so no usable context (and no threshold) exists
   # ========================================
   # TOKEN COUNTING SCENARIOS
   # ========================================
@@ -128,16 +125,16 @@ Feature: Optimized Compaction Window Limit Trigger
   # ========================================
   # COMPACTION TRIGGER SCENARIOS
   # ========================================
-  Scenario: No compaction when under usable context threshold
+  Scenario: No compaction when under the compaction threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
-    And input_tokens of 150000
+    And input_tokens of 130000
     And cache_read_tokens of 20000
     And output_tokens of 5000
     When I check if compaction should trigger
     Then compaction should NOT trigger
 
-    # total=175,000, usable=191,808 → 175,000 < 191,808 → NO trigger
-  Scenario: Trigger compaction when over usable context threshold
+    # total=155,000, threshold=min(80% of 200,000, 191,808)=160,000 → NO trigger
+  Scenario: Trigger compaction when over the compaction threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
     And input_tokens of 170000
     And cache_read_tokens of 20000
@@ -145,46 +142,11 @@ Feature: Optimized Compaction Window Limit Trigger
     When I check if compaction should trigger
     Then compaction should trigger
 
-    # total=195,000, usable=191,808 → 195,000 > 191,808 → TRIGGER
-  Scenario: Compaction triggers later than legacy 90% threshold
+    # total=195,000, threshold=160,000 → 195,000 > 160,000 → TRIGGER
+  Scenario: No compaction when token count exactly equals the compaction threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
-    And input_tokens of 165000
-    And cache_read_tokens of 10000
-    And output_tokens of 6000
-    When I check if compaction should trigger
-    Then compaction should NOT trigger
-
-    # total=181,000, usable=191,808 → no trigger
-    # Legacy 90% threshold=180,000 would have triggered here
-  Scenario: No compaction when token count exactly equals usable context
-    Given a Claude model with context_window of 200000 and max_output of 8192
-    And input_tokens of 171808
+    And input_tokens of 140000
     And cache_read_tokens of 15000
     And output_tokens of 5000
-    When I check if compaction should trigger
-    Then compaction should NOT trigger
-
-    # total=191,808, usable=191,808 → 191,808 > 191,808 is FALSE
-    # Uses strictly greater than (>), not greater-or-equal (>=)
-  # ========================================
-  # EDGE CASE AND BYPASS SCENARIOS
-  # ========================================
-  Scenario: No compaction when context_window is zero
-    Given a model with context_window of 0 tokens
-    And the model has max_output_tokens of 8192
-    And input_tokens of 50000
-    And cache_read_tokens of 10000
-    And output_tokens of 5000
-    When I check if compaction should trigger
-    Then compaction should NOT trigger
-
-    # context_window = 0 means no context limit, so no compaction needed
-  Scenario: No compaction when disable flag is set
-    Given a model with context_window of 200000 tokens
-    And the model has max_output_tokens of 8192
-    And input_tokens of 190000
-    And cache_read_tokens of 50000
-    And output_tokens of 10000
-    And the disable autocompact flag is set to true
     When I check if compaction should trigger
     Then compaction should NOT trigger

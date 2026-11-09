@@ -26,6 +26,7 @@ pub type SessionFixture = (
 
 pub fn session_fixture() -> Result<SessionFixture, Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let (session, receiver) = new_session(directory.path())?;
@@ -84,7 +85,7 @@ impl Drop for StubGuard {
 
 #[cfg(feature = "test-support")]
 pub async fn done(events: &mut broadcast::Receiver<StreamChunk>, count: usize) -> TestResult {
-    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut completed = 0;
         while completed < count {
             if matches!(events.recv().await?, StreamChunk::Done) {
@@ -96,9 +97,12 @@ pub async fn done(events: &mut broadcast::Receiver<StreamChunk>, count: usize) -
     .await?
 }
 
+/// Recoverable originals: admitted conversation members plus BUG-284 audit
+/// receipts for submissions that were never admitted.
 pub fn originals(id: uuid::Uuid) -> Result<Vec<serde_json::Value>, Box<dyn std::error::Error>> {
+    use codelet_core::persistence::input_receipts::{self, InputDisposition};
     reset_stores_for_tests();
-    codelet_core::persistence::load_session(id)?
+    let mut originals = codelet_core::persistence::load_session(id)?
         .messages
         .into_iter()
         .map(|reference| {
@@ -106,14 +110,20 @@ pub fn originals(id: uuid::Uuid) -> Result<Vec<serde_json::Value>, Box<dyn std::
                 .ok_or("missing original")?;
             Ok(serde_json::to_value(stored.metadata)?)
         })
-        .collect()
+        .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
+    for receipt in input_receipts::list(id)? {
+        if receipt.disposition != InputDisposition::Admitted {
+            originals.push(serde_json::json!({"message":{"content":receipt.content}}));
+        }
+    }
+    Ok(originals)
 }
 
 #[cfg(feature = "test-support")]
 pub async fn wait_for(path: &std::path::Path) -> TestResult {
-    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while !path.exists() {
-            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;

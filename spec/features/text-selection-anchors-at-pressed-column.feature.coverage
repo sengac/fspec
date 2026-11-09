@@ -5,16 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "40-77",
+          "lines": "38-73",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
               "lines": [
-                80,
-                81,
-                82,
-                83,
-                84,
                 85,
                 86,
                 87,
@@ -26,8 +21,15 @@
                 93,
                 94,
                 95,
-                96
-              ]
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub(crate) fn selection_begin(&mut self, cell: crate::mouse::selection::Cell) {",
+              "lastLine": "pub(crate) fn selection_extend(&mut self, cell: crate::mouse::selection::Cell) {"
             }
           ]
         }
@@ -38,25 +40,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "84-142",
+          "lines": "80-140",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
               "lines": [
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "SelectionGesture::Begin(cell) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,7 +71,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "149-195",
+          "lines": "147-192",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
@@ -82,7 +86,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "self.turn_modal_viewport_rows = geom.viewport_rows;",
+              "lastLine": "});"
             }
           ]
         }
@@ -93,12 +99,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "202-265",
+          "lines": "199-266",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/details_select.rs",
               "lines": [
-                91,
                 92,
                 93,
                 94,
@@ -111,8 +116,13 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "SelectionGesture::Begin(cell) => {",
+              "lastLine": "if let Some(sel) = self.details_selection.borrow_mut().as_mut() {"
             }
           ]
         }
@@ -123,23 +133,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "272-312",
+          "lines": "273-313",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/gesture.rs",
               "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
                 104,
                 105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "MouseEventKind::Up(MouseButton::Left) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -150,7 +174,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
-          "lines": "319-347",
+          "lines": "319-343",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/selection.rs",
@@ -160,7 +184,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub fn collapsed(cell: Cell) -> Self {",
+              "lastLine": "}"
             }
           ]
         }
@@ -182,6 +208,6 @@
       "rust/fspec-tui/src/mouse/gesture.rs",
       "rust/fspec-tui/src/mouse/selection.rs"
     ],
-    "totalLinesCovered": 348
+    "totalLinesCovered": 361
   }
 }

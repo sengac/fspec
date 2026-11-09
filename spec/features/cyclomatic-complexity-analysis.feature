@@ -1,5 +1,7 @@
 @done
 @KGRAPH-062
+@parser
+@code-analysis
 Feature: Cyclomatic Complexity Analysis
   """
   Two-phase approach: (1) Add cyclomaticComplexity to ast-code.pg schema + calculate via shared text-based keyword matcher (complexity.rs) in all 14 extractors during ast_index, (2) Add ast_complexity query action via ast_complexity.rs. Schema change requires database reset.

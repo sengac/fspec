@@ -14,7 +14,6 @@
 use std::path::Path;
 use std::process::Command;
 use std::sync::Arc;
-use std::time::Duration;
 
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -91,33 +90,37 @@ fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<Ses
     // persistence singletons BEFORE pointing the data directory at this
     // test's fresh temp dir so session-manifest writes stay hermetic.
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (data_dir, home_dir, manager)
 }
 
 /// Pull the next `IsolationStateChange` chunk for `sid` off the broadcast,
-/// skipping chunks for other sessions. Times out after 5 seconds.
+/// skipping chunks for other sessions (TEST-042: under the deadlock guard).
 async fn next_isolation_chunk(
     rx: &mut tokio::sync::broadcast::Receiver<(SessionId, StreamChunk)>,
     sid: &SessionId,
 ) -> StreamChunk {
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
-    while tokio::time::Instant::now() < deadline {
-        match rx.recv().await {
-            Ok((id, chunk)) => {
-                if id == *sid {
-                    return chunk;
+    // TEST-042: wait for the chunk under the deadlock guard, not a deadline.
+    codelet_test_helpers::deadlock_guard("the expected chunk", async {
+        loop {
+            match rx.recv().await {
+                Ok((id, chunk)) => {
+                    if id == *sid {
+                        return chunk;
+                    }
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                    panic!("chunks broadcast closed before IsolationStateChange arrived");
                 }
             }
-            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
-            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                panic!("chunks broadcast closed before IsolationStateChange arrived");
-            }
         }
-    }
-    panic!("timed out waiting for IsolationStateChange chunk for {sid}");
+    })
+    .await
+    .unwrap_or_else(|failure| panic!("{failure}"))
 }
 
 // =============================================================================

@@ -1,0 +1,70 @@
+{
+  "scenarios": [
+    {
+      "name": "A line comment whose step names a glob matches the step",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug499_step_comments_keep_block_comment_markers.rs",
+          "lines": "48-61",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/link_coverage/step.rs",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "let line = lines[index].trim();",
+              "lastLine": "if let Some(after) = step_marker_text(line) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A one-line block comment still matches without its terminator",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug499_step_comments_keep_block_comment_markers.rs",
+          "lines": "63-77",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/link_coverage/step.rs",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "let line = lines[index].trim();",
+              "lastLine": "if let Some(after) = step_marker_text(line) {"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug499_step_comments_keep_block_comment_markers.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/link_coverage/step.rs"
+    ],
+    "totalLinesCovered": 47
+  }
+}

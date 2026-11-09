@@ -22,7 +22,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_down(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -53,7 +55,9 @@
                 28,
                 29,
                 30
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_up(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -88,7 +92,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "/// PageDown / PageUp: move the selection by one viewport height across",
+              "lastLine": "}"
             }
           ]
         }
@@ -169,7 +175,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_up(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,7 +258,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub(crate) fn move_up(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }

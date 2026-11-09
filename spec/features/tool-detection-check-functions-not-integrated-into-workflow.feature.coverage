@@ -4,19 +4,84 @@
       "name": "Emit system-reminder when moving to validating with no config",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
-          "lines": "47-95",
+          "file": "rust/fspec-core/tests/validating_tool_reminders.rs",
+          "lines": "74-97",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
               "lines": [
+                19,
+                20,
                 21,
-                514,
-                515,
-                516,
-                518,
-                519
-              ]
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub(crate) fn check_test_command(project_root: &Path) -> String {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/output.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "if new_status == \"validating\" {",
+              "lastLine": "}"
             }
           ]
         }
@@ -26,19 +91,71 @@
       "name": "Emit system-reminder when moving to validating with config present",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
-          "lines": "97-134",
+          "file": "rust/fspec-core/tests/validating_tool_reminders.rs",
+          "lines": "99-125",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
               "lines": [
+                19,
+                20,
                 21,
-                514,
-                515,
-                516,
-                518,
-                519
-              ]
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub(crate) fn check_test_command(project_root: &Path) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,195 +165,191 @@
       "name": "Emit quality check reminder when moving to validating",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
-          "lines": "136-174",
+          "file": "rust/fspec-core/tests/validating_tool_reminders.rs",
+          "lines": "127-156",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
               "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub(crate) fn check_quality_commands(project_root: &Path) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chain multiple test frameworks when AI provides chained command",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/validating_tool_reminders.rs",
+          "lines": "158-180",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
+              "lines": [
+                19,
+                20,
                 21,
-                514,
-                518,
-                519
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Integration test verifies check functions are called",
-      "testMappings": []
-    },
-    {
-      "name": "Fail sync-version when tool configuration is missing",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/sync-version.test.ts",
-          "lines": "432-487",
-          "implMappings": [
-            {
-              "file": "src/commands/sync-version.ts",
-              "lines": [
-                129,
-                130,
-                131,
-                132,
-                133
-              ]
-            },
-            {
-              "file": "src/commands/init-help.ts",
-              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub(crate) fn check_test_command(project_root: &Path) -> String {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "Fail sync-version when version is incorrect",
+      "name": "Include date-aware search queries when no tools detected",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/sync-version.test.ts",
-          "lines": "497-553",
+          "file": "rust/fspec-core/tests/validating_tool_reminders.rs",
+          "lines": "182-208",
           "implMappings": [
             {
-              "file": "src/commands/sync-version.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
               "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Emit system-reminder when config file completely missing during sync-version",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/sync-version.test.ts",
-          "lines": "555-600",
-          "implMappings": [
-            {
-              "file": "src/commands/sync-version.ts",
-              "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "configure-tools regenerates agent templates after updating config",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/configure-tools.test.ts",
-          "lines": "298-348",
-          "implMappings": [
-            {
-              "file": "src/commands/configure-tools.ts",
-              "lines": [
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "configure-tools regenerates templates silently without extra output",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/configure-tools.test.ts",
-          "lines": "350-404",
-          "implMappings": [
-            {
-              "file": "src/commands/configure-tools.ts",
-              "lines": [
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192
-              ]
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "pub(crate) fn check_test_command(project_root: &Path) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -244,20 +357,16 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 8,
-    "coveragePercent": 89,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
-      "src/commands/__tests__/sync-version.test.ts",
-      "src/commands/__tests__/configure-tools.test.ts"
+      "rust/fspec-core/tests/validating_tool_reminders.rs"
     ],
     "implFiles": [
-      "src/commands/update-work-unit-status.ts",
-      "src/commands/sync-version.ts",
-      "src/commands/init-help.ts",
-      "src/commands/configure-tools.ts"
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders/configure_tools.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/output.rs"
     ],
-    "totalLinesCovered": 496
+    "totalLinesCovered": 389
   }
 }

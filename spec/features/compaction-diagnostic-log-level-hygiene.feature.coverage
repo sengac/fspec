@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/cmpct049_log_level_hygiene.rs",
-          "lines": "61-148",
+          "lines": "88-158",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -20,7 +20,9 @@
                 60,
                 61,
                 62
-              ]
+              ],
+              "firstLine": "if let Some(progress) = progress {",
+              "lastLine": "let old = self"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/cmpct049_log_level_hygiene.rs",
-          "lines": "155-225",
+          "lines": "164-229",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/animation.rs",
@@ -55,7 +57,24 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "/// flip log and the `spinner_started_at` mirror that `is_busy`",
+              "lastLine": "// per-frame spam."
+            },
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                49,
+                50,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "// CMPCT-049 rule 6 (BUG-373): the sub-agent run keeps an INFO audit trail.",
+              "lastLine": "}"
             }
           ]
         }
@@ -71,8 +90,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
-      "rust/fspec-tui/src/views/agent/animation.rs"
+      "rust/fspec-tui/src/views/agent/animation.rs",
+      "rust/agent-loop/src/generate_compaction_handler.rs"
     ],
-    "totalLinesCovered": 188
+    "totalLinesCovered": 174
   }
 }

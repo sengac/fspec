@@ -25,7 +25,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -40,7 +42,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -71,7 +75,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -86,7 +92,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -117,7 +125,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -132,7 +142,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -163,7 +175,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -178,7 +192,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -209,7 +225,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -224,7 +242,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -255,7 +275,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -270,7 +292,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }
@@ -301,7 +325,9 @@
                 168,
                 176,
                 188
-              ]
+              ],
+              "firstLine": "pub fn status(&self) -> CodexMetadataStatus {",
+              "lastLine": "fn drop(&mut self) {"
             },
             {
               "file": "rust/providers/src/codex/metadata_protocol.rs",
@@ -316,7 +342,9 @@
                 120,
                 137,
                 148
-              ]
+              ],
+              "firstLine": "pub(super) fn apply(state: &mut State, event: &Value) {",
+              "lastLine": "pub(super) fn apply_headers(state: &mut State, event: &Value) {"
             }
           ]
         }

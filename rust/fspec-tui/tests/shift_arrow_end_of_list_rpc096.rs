@@ -8,8 +8,7 @@
 //! `NavTarget`, `navigate_next`, `navigate_prev`, and
 //! `request_create_session_dialog_no_auto` which do not yet exist.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::NavTarget;
@@ -36,7 +35,7 @@ fn sid(s: &str) -> SessionId {
 
 /// Scenario: navigate_next returns CreateDialog and navigate_prev returns Board when the store is empty
 #[test]
-fn empty_store_navigate_next_is_create_dialog_and_navigate_prev_is_board() {
+fn empty_store_navigate_next_is_create_dialog_and_navigate_prev_is_board() -> TestResult {
     // @step Given an AgentViewStore with zero open sessions
     let store = AgentViewStore::default();
     // @step When I call navigate_next on the store
@@ -47,11 +46,12 @@ fn empty_store_navigate_next_is_create_dialog_and_navigate_prev_is_board() {
     let prev = store.navigate_prev();
     // @step Then the result is NavTarget::Board
     assert!(matches!(prev, NavTarget::Board));
+    Ok(())
 }
 
 /// Scenario: navigate_next returns CreateDialog at the last session index
 #[test]
-fn navigate_next_at_last_index_returns_create_dialog() {
+fn navigate_next_at_last_index_returns_create_dialog() -> TestResult {
     // @step Given an AgentViewStore with three open sessions s-1, s-2, s-3 and current_session_index 2
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -62,11 +62,12 @@ fn navigate_next_at_last_index_returns_create_dialog() {
     let next = store.navigate_next();
     // @step Then the result is NavTarget::CreateDialog
     assert!(matches!(next, NavTarget::CreateDialog));
+    Ok(())
 }
 
 /// Scenario: navigate_prev returns Session(idx-1) when not at the first session index
 #[test]
-fn navigate_prev_returns_previous_session_when_not_at_first() {
+fn navigate_prev_returns_previous_session_when_not_at_first() -> TestResult {
     // @step Given an AgentViewStore with three open sessions s-1, s-2, s-3 and current_session_index 2
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -76,11 +77,12 @@ fn navigate_prev_returns_previous_session_when_not_at_first() {
     let prev = store.navigate_prev();
     // @step Then the result is NavTarget::Session(1)
     assert_eq!(prev, NavTarget::Session(1));
+    Ok(())
 }
 
 /// Scenario: navigate_next returns Session(idx+1) when not at the last session index
 #[test]
-fn navigate_next_returns_next_session_when_not_at_last() {
+fn navigate_next_returns_next_session_when_not_at_last() -> TestResult {
     // @step Given an AgentViewStore with three open sessions s-1, s-2, s-3 and current_session_index 0
     let mut app_inst = app();
     app_inst.dispatch(Action::SessionCreated(sid("s-1")));
@@ -95,11 +97,12 @@ fn navigate_next_returns_next_session_when_not_at_last() {
     let next = app_inst.agent_view_store().navigate_next();
     // @step Then the result is NavTarget::Session(1)
     assert_eq!(next, NavTarget::Session(1));
+    Ok(())
 }
 
 /// Scenario: navigate_prev returns Board at the first session index
 #[test]
-fn navigate_prev_at_first_index_returns_board() {
+fn navigate_prev_at_first_index_returns_board() -> TestResult {
     // @step Given an AgentViewStore with three open sessions s-1, s-2, s-3 and current_session_index 0
     let mut app_inst = app();
     app_inst.dispatch(Action::SessionCreated(sid("s-1")));
@@ -113,11 +116,12 @@ fn navigate_prev_at_first_index_returns_board() {
     let prev = app_inst.agent_view_store().navigate_prev();
     // @step Then the result is NavTarget::Board
     assert!(matches!(prev, NavTarget::Board));
+    Ok(())
 }
 
 /// Scenario: Shift+Right with a single attached session opens the Create Session dialog
 #[test]
-fn single_session_shift_right_opens_create_session_dialog() {
+fn single_session_shift_right_opens_create_session_dialog() -> TestResult {
     // @step Given an App with one open session s-1 and current_session_index 0
     let mut app = app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -134,11 +138,12 @@ fn single_session_shift_right_opens_create_session_dialog() {
     assert_eq!(app.agent_view_store().current_session_index(), 0);
     // @step And navigator.active_view stays ViewMode::Agent
     assert_eq!(app.active_view(), ViewMode::Agent);
+    Ok(())
 }
 
 /// Scenario: Shift+Left with a single attached session exits AgentView back to the Board
 #[test]
-fn single_session_shift_left_exits_to_board_view() {
+fn single_session_shift_left_exits_to_board_view() -> TestResult {
     // @step Given an App with one open session s-1 and current_session_index 0
     let mut app = app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -153,11 +158,12 @@ fn single_session_shift_left_exits_to_board_view() {
     assert_eq!(app.agent_view_store().current_session_index(), 0);
     // @step And agent_view_store.show_create_session_dialog() returns false
     assert!(!app.agent_view_store().show_create_session_dialog());
+    Ok(())
 }
 
 /// Scenario: Shift+Right at the last index preserves the typed draft when opening the Create Session dialog
 #[test]
-fn shift_right_at_last_index_preserves_typed_draft() {
+fn shift_right_at_last_index_preserves_typed_draft() -> TestResult {
     // @step Given an App with three open sessions s-1, s-2, s-3 and current_session_index 2
     let mut app = app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -175,11 +181,12 @@ fn shift_right_at_last_index_preserves_typed_draft() {
     assert_eq!(app.navigator().agent.input.value(), "goodbye");
     // @step And agent_view_store.current_session_index stays 2
     assert_eq!(app.agent_view_store().current_session_index(), 2);
+    Ok(())
 }
 
 /// Scenario: Shift+Left at the first index snapshots the outgoing draft before exiting to the Board
 #[test]
-fn shift_left_at_first_index_snapshots_draft_then_exits_to_board() {
+fn shift_left_at_first_index_snapshots_draft_then_exits_to_board() -> TestResult {
     // @step Given an App with three open sessions s-1, s-2, s-3 and current_session_index 0
     let mut app = app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -203,11 +210,12 @@ fn shift_left_at_first_index_snapshots_draft_then_exits_to_board() {
     );
     // @step And agent_view_store.current_session_index stays 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
+    Ok(())
 }
 
 /// Scenario: Mid-list Shift+Right preserves the RPC-024 draft round-trip and session switch
 #[test]
-fn mid_list_shift_right_preserves_rpc024_draft_round_trip() {
+fn mid_list_shift_right_preserves_rpc024_draft_round_trip() -> TestResult {
     // @step Given an App with three open sessions s-1, s-2, s-3 and current_session_index 1
     let mut app = app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -236,13 +244,15 @@ fn mid_list_shift_right_preserves_rpc024_draft_round_trip() {
     assert!(!app.agent_view_store().show_create_session_dialog());
     // @step And navigator.active_view stays ViewMode::Agent
     assert_eq!(app.active_view(), ViewMode::Agent);
+    Ok(())
 }
 
 /// Scenario: cycle_session is removed from the AgentViewStore public API
 #[test]
-fn cycle_session_is_removed_from_public_api() {
+fn cycle_session_is_removed_from_public_api() -> TestResult {
     // @step Given the source file rust/fspec-tui/src/store/agent_view.rs
-    let source = std::fs::read_to_string("src/store/agent_view.rs").expect("read agent_view.rs");
+    let source =
+        std::fs::read_to_string("src/store/agent_view.rs").or_fail("read agent_view.rs")?;
     // @step Then it does not contain the substring "pub fn cycle_session"
     assert!(
         !source.contains("pub fn cycle_session"),
@@ -271,4 +281,5 @@ fn cycle_session_is_removed_from_public_api() {
         line_count < 300 || nav_exists,
         "agent_view.rs is {line_count} lines and no sibling navigation.rs exists"
     );
+    Ok(())
 }

@@ -5,17 +5,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "101-122",
+          "lines": "27-48",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184
-              ]
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "if let Some(result) = menu_keys::handle_menu_keys(self, key, store) {",
+              "lastLine": "// confirmation. When there is no strip selection, fall through so"
             }
           ]
         }
@@ -26,16 +30,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "124-144",
+          "lines": "50-68",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                153,
-                154,
-                155,
-                156
-              ]
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "ViewMode::ProviderSettings => self.handle_provider_settings_event(event),",
+              "lastLine": "ViewMode::ChangedFiles => self.handle_changed_files_event(event),"
             }
           ]
         }
@@ -46,7 +52,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "146-165",
+          "lines": "72-89",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
@@ -86,7 +92,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "/// their raw `name` unchanged.",
+              "lastLine": "mod tests {"
             }
           ]
         }
@@ -97,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "167-201",
+          "lines": "93-128",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
@@ -114,7 +122,9 @@
                 286,
                 287,
                 288
-              ]
+              ],
+              "firstLine": "self.checkpoint_scroll = self.checkpoint_scroll.min(max_scroll);",
+              "lastLine": "}"
             }
           ]
         }
@@ -125,17 +135,135 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "208-232",
+          "lines": "132-154",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
+              "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426
+              ],
+              "firstLine": "/// Fold a `CheckpointFilesLoaded` response. Ignored when the loaded",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/diff_common/diff_render.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
                 57,
                 58,
                 59,
@@ -145,112 +273,10 @@
                 63,
                 64,
                 65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
+                66
+              ],
+              "firstLine": "/// Classify a raw diff line by its leading character(s).",
+              "lastLine": "}"
             }
           ]
         }
@@ -261,11 +287,16 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "234-276",
+          "lines": "158-197",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
               "lines": [
+                285,
+                286,
+                287,
+                288,
+                289,
                 290,
                 291,
                 292,
@@ -364,8 +395,11 @@
                 385,
                 386,
                 387,
-                388
-              ]
+                388,
+                389
+              ],
+              "firstLine": "// List shorter than the window: fall back to the top.",
+              "lastLine": "/// Fold a `CheckpointFileDiffLoaded` response. Ignored when the key"
             }
           ]
         }
@@ -376,19 +410,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/views/checkpoints/tests.rs",
-          "lines": "278-294",
+          "lines": "201-221",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/render.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "Constraint::Percentage(60),",
+              "lastLine": "buf,"
             }
           ]
         }
@@ -407,9 +443,9 @@
       "rust/fspec-tui/src/views/navigator.rs",
       "rust/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
       "rust/fspec-tui/src/views/checkpoints/mod.rs",
-      "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
+      "rust/fspec-tui/src/views/diff_common/diff_render.rs",
       "rust/fspec-tui/src/views/checkpoints/render.rs"
     ],
-    "totalLinesCovered": 465
+    "totalLinesCovered": 476
   }
 }

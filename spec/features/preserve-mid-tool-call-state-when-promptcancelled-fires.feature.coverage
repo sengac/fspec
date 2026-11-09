@@ -5,46 +5,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "85-139",
+          "lines": "92-141",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
                 373,
                 374,
                 375,
@@ -134,87 +99,44 @@
                 459,
                 460,
                 461,
-                462
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "406-455",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-              "lines": [
-                504,
-                505,
-                506,
-                507,
-                508,
-                509,
-                510,
-                511,
-                512,
-                513,
-                514,
-                515,
-                516,
-                517,
-                518,
-                519,
-                520,
-                521,
-                522,
-                523,
-                524,
-                525,
-                526,
-                527,
-                528,
-                529,
-                530,
-                531,
-                532,
-                533,
-                534,
-                535,
-                536,
-                537,
-                538,
-                539,
-                540,
-                541,
-                542,
-                543,
-                544,
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551,
-                552,
-                553,
-                554,
-                555,
-                556,
-                557,
-                558,
-                559,
-                560,
-                561,
-                562,
-                563,
-                564,
-                565,
-                566,
-                567,
-                568,
-                569,
-                570,
-                571
-              ]
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496
+              ],
+              "firstLine": "/// CMPCT-029: Append any tool_call / tool_result messages from rig's",
+              "lastLine": "}"
             }
           ]
         }
@@ -225,7 +147,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "141-217",
+          "lines": "148-222",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -303,7 +225,9 @@
                 543,
                 544,
                 545
-              ]
+              ],
+              "firstLine": "known_results.insert(key);",
+              "lastLine": "for item in content.iter() {"
             }
           ]
         }
@@ -314,7 +238,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "219-268",
+          "lines": "228-272",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -371,7 +295,9 @@
                 317,
                 318,
                 319
-              ]
+              ],
+              "firstLine": "/// by both `execute_compaction()` and the `inject_summary` handler.",
+              "lastLine": ""
             }
           ]
         }
@@ -382,31 +308,44 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "341-404",
+          "lines": "350-415",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596
-              ]
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606
+              ],
+              "firstLine": "pub async fn execute_compaction(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/cli/src/session/recovery_view.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ],
+              "firstLine": "pub fn prepare_compaction_view(&mut self, prompt: Option<&str>) -> Result<(), String> {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -417,46 +356,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_tool_call_preservation_test.rs",
-          "lines": "270-339",
+          "lines": "279-343",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
               "lines": [
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
                 373,
                 374,
                 375,
@@ -546,8 +450,44 @@
                 459,
                 460,
                 461,
-                462
-              ]
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496
+              ],
+              "firstLine": "/// CMPCT-029: Append any tool_call / tool_result messages from rig's",
+              "lastLine": "}"
             }
           ]
         }
@@ -563,8 +503,8 @@
     ],
     "implFiles": [
       "rust/cli/src/interactive_helpers.rs",
-      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/cli/src/session/recovery_view.rs"
     ],
-    "totalLinesCovered": 828
+    "totalLinesCovered": 697
   }
 }

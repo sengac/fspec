@@ -6,15 +6,15 @@
 //! This test file validates the acceptance criteria defined in the
 //! feature file. Scenarios map directly to Gherkin scenarios.
 //!
-//! The exit-confirmation dialog (Close Session / Cancel — BUG-205
-//! removed the Detach option) routes the Close Session choice through
+//! The exit-confirmation dialog (Close / Cancel — BUG-205
+//! removed the Detach option) routes the Close choice through
 //! `Action::BackToBoard`. When the mux grid is active, BackToBoard is
 //! a "focus the board pane within the grid" semantic — it must never
 //! flip the whole view out of Mux (the pre-fix behavior painted the
 //! single Board view and "turned the mux off").
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID;
@@ -38,20 +38,23 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 fn esc() -> Event {
@@ -67,14 +70,18 @@ fn enter() -> Event {
 }
 
 /// Open N sessions and enable mux (default preset: Board | Agent).
-async fn app_with_sessions_and_mux(app: &mut App, n_sessions: usize) {
+async fn app_with_sessions_and_mux(
+    app: &mut App,
+    n_sessions: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n_sessions {
         app.dispatch(Action::SessionCreated(sid(&format!("s-{i}"))));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     // MUX-004: bare /mux now opens the config dialog; the explicit
     // "/mux on" keeps the enable-with-default-preset path.
     submit(app, "/mux on");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -84,10 +91,10 @@ async fn app_with_sessions_and_mux(app: &mut App, n_sessions: usize) {
 
 /// Scenario: closing a session in mux mode retains the mux and focuses the board pane
 #[tokio::test]
-async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pane() {
+async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pane() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes and two agent sessions are open
     let (mut app, mock) = fresh_app();
-    app_with_sessions_and_mux(&mut app, 2).await;
+    app_with_sessions_and_mux(&mut app, 2).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.agent_view_store().open_sessions().len(), 2);
     assert!(app.navigator().mux.config().enabled);
@@ -98,9 +105,9 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
     // sits at start, so the pane hosts s-1.
     let n = app.navigator().mux.pane_rects().len();
     app.navigator_mut().mux.set_focus(n - 1);
-    // @step When the exit dialog is answered with Close Session
+    // @step When the exit dialog is answered with Close
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "the exit confirmation dialog must open on ESC from the agent pane"
@@ -110,13 +117,13 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
         Some(&sid("s-1")),
         "the pane-hosted session s-1 must be the store's current session"
     );
-    let _ = app.handle_event(&enter()); // Close Session is pre-selected (BUG-205)
-    drain_pending(&mut app).await;
+    let _ = app.handle_event(&enter()); // Close is pre-selected (BUG-205)
+    drain_pending(&mut app).await?;
     // @step Then the destroyed session is removed from the open-session list
     assert_eq!(
         mock.destroy_session_calls(),
         1,
-        "Close Session must destroy the pane-hosted session (s-1)"
+        "Close must destroy the pane-hosted session (s-1)"
     );
     assert_eq!(
         mock.last_destroyed_session(),
@@ -162,6 +169,7 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
         ViewMode::Board,
         "the single Board view must NOT be painted while mux is enabled"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -171,24 +179,25 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
 
 /// Scenario: cancelling the exit dialog in mux mode retains the mux and keeps the agent pane focused
 #[tokio::test]
-async fn cancelling_the_exit_dialog_in_mux_mode_retains_the_mux_and_keeps_the_agent_pane_focused() {
+async fn cancelling_the_exit_dialog_in_mux_mode_retains_the_mux_and_keeps_the_agent_pane_focused(
+) -> TestResult {
     // @step Given mux mode is active with Board and Agent panes and one agent session is open
     let (mut app, mock) = fresh_app();
-    app_with_sessions_and_mux(&mut app, 1).await;
+    app_with_sessions_and_mux(&mut app, 1).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     // @step And the Agent pane is focused
     let n = app.navigator().mux.pane_rects().len();
     app.navigator_mut().mux.set_focus(n - 1);
     // @step When the exit dialog is answered with Cancel
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "the exit confirmation dialog must open on ESC from the agent pane"
     );
-    let _ = app.handle_event(&right()); // Close Session -> Cancel
+    let _ = app.handle_event(&right()); // Close -> Cancel
     let _ = app.handle_event(&enter());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the session remains open in the store
     assert_eq!(mock.destroy_session_calls(), 0);
     assert_eq!(
@@ -213,4 +222,5 @@ async fn cancelling_the_exit_dialog_in_mux_mode_retains_the_mux_and_keeps_the_ag
         MuxPaneKind::Agent,
         "Cancel must keep the Agent pane focused (no BackToBoard)"
     );
+    Ok(())
 }

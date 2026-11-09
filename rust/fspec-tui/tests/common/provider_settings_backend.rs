@@ -8,20 +8,27 @@ impl MockBackend {
         &self,
         configs: Vec<ProviderSettingsConfig>,
     ) -> Result<(), BackendError> {
-        *self
-            .provider_settings
-            .lock()
-            .map_err(|error| BackendError::ProviderSettings(error.to_string()))? = configs;
+        *self.controls.provider_settings.lock() = configs;
         Ok(())
+    }
+
+    /// BUG-575: make every later `list_provider_settings` fail with `message`.
+    pub fn fail_list_provider_settings(&self, message: &str) {
+        *self.controls.provider_settings_error.lock() = Some(message.to_string());
+    }
+
+    /// BUG-575: the stored provider settings, as the backend holds them now.
+    pub fn provider_settings_now(&self) -> Vec<ProviderSettingsConfig> {
+        self.controls.provider_settings.lock().clone()
     }
 
     pub(super) fn provider_settings_snapshot(
         &self,
     ) -> Result<Vec<ProviderSettingsConfig>, BackendError> {
-        self.provider_settings
-            .lock()
-            .map(|configs| configs.clone())
-            .map_err(|error| BackendError::ProviderSettings(error.to_string()))
+        if let Some(message) = self.controls.provider_settings_error.lock().clone() {
+            return Err(BackendError::ProviderSettings(message));
+        }
+        Ok(self.controls.provider_settings.lock().clone())
     }
 
     pub(super) fn store_provider_settings(
@@ -29,10 +36,7 @@ impl MockBackend {
         provider_id: String,
         settings: ProfileDefinition,
     ) -> Result<(), BackendError> {
-        let mut configs = self
-            .provider_settings
-            .lock()
-            .map_err(|error| BackendError::ProviderSettings(error.to_string()))?;
+        let mut configs = self.controls.provider_settings.lock();
         if let Some(config) = configs
             .iter_mut()
             .find(|config| config.provider_id == provider_id)

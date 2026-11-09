@@ -1,4 +1,6 @@
 @SCHED-001
+@scheduler
+@workflow
 Feature: Scheduled Workflow Automation
   """
   Scheduler is a tokio task spawned alongside SessionManager::instance(), using the same BackgroundSession/ChainOfCommand/agent_loop patterns as subordinate sessions

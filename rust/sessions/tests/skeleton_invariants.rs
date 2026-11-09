@@ -25,7 +25,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
+    codelet_test_helpers::source_composition::read_tree_or_file(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
@@ -99,7 +99,14 @@ fn scenario_codelet_sessions_builds_standalone_against_empty_modules() {
 
     // @step When I run `cargo build -p codelet-sessions`
     let output = Command::new(env!("CARGO"))
-        .args(["build", "-p", "codelet-sessions", "--manifest-path"])
+        .args([
+            "build",
+            "--profile",
+            "ci-test",
+            "-p",
+            "codelet-sessions",
+            "--manifest-path",
+        ])
         .arg(workspace_root().join("Cargo.toml"))
         .output()
         .expect("cargo build must run");
@@ -255,6 +262,8 @@ fn scenario_smoke_test_runs_and_passes() {
     let output = Command::new(env!("CARGO"))
         .args([
             "test",
+            "--profile",
+            "ci-test",
             "-p",
             "codelet-sessions",
             "--test",
@@ -354,6 +363,8 @@ fn scenario_workspace_lints_are_inherited_and_clippy_passes() {
     let output = Command::new(env!("CARGO"))
         .args([
             "clippy",
+            "--profile",
+            "ci-test",
             "-p",
             "codelet-sessions",
             "--all-targets",

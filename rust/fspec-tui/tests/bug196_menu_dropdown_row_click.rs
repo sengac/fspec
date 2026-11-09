@@ -39,13 +39,12 @@
 //! - the click still lands: the board's card selection / the mux's
 //!   pane focus.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind,
-    ViewMode,
+    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxLayout, MuxPaneKind, ViewMode,
 };
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use crossterm::event::{
@@ -58,7 +57,6 @@ use ratatui::Terminal;
 mod common;
 use common::MockBackend;
 
-const BOARD_EXIT_DIALOG_ID: &str = "board-exit-confirmation-dialog";
 const MUX_CONFIG_DIALOG_ID: &str = "mux-config-dialog";
 const CREATE_SESSION_DIALOG_ID: &str = "create-session-dialog";
 
@@ -73,16 +71,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -99,11 +98,11 @@ fn click(col: u16, row: u16) -> Event {
 }
 
 /// Render the full App into a `w`×`h` buffer.
-fn render_app(app: &mut App, w: u16, h: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_app(app: &mut App, w: u16, h: u16) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -122,32 +121,34 @@ fn buf_text(buf: &Buffer) -> String {
 }
 
 /// The 2-zone menu bar's row (3 rows below the `Checkpoints:` row).
-fn bar_row(buf: &Buffer) -> u16 {
+fn bar_row(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
     let status_y = (0..buf.area.height)
         .find(|&y| row_text(buf, y).contains("Checkpoints:"))
-        .expect("the checkpoint status row must render");
-    status_y + 3
+        .or_fail("the checkpoint status row must render")?;
+    Ok(status_y + 3)
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
         )));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Seed a small board (AUTH-001 backlog, AUTH-002 testing, AUTH-003
 /// blocked) so columns have selectable cards.
-async fn seed_units(app: &mut App) {
+async fn seed_units(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::WorkUnitsLoaded(vec![
         make_unit("AUTH-001", "backlog"),
         make_unit("AUTH-002", "testing"),
         make_unit("AUTH-003", "blocked"),
     ]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
@@ -170,48 +171,54 @@ fn focus_column(app: &mut App, name: &str) {
 
 /// Arrange: the 2-zone bar is focused on the FIRST menu item (dropdown
 /// closed): focus the last column and step Right once.
-async fn focus_first_item(app: &mut App) {
+async fn focus_first_item(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     focus_column(app, "blocked");
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: open the `item_index`-th menu item's dropdown with the
 /// cursor on `cursor_row` (0 = Kanban, 1 = Tools, 2 = Settings,
 /// 3 = Help — MENU-008 four Zone A items).
-async fn open_category_dropdown_at(app: &mut App, item_index: usize, cursor_row: usize) {
-    focus_first_item(app).await;
+async fn open_category_dropdown_at(
+    app: &mut App,
+    item_index: usize,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    focus_first_item(app).await?;
     for _ in 1..=item_index {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     for _ in 0..cursor_row {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: open the Kanban dropdown (item 0) with the cursor on
 /// `cursor_row`.
-async fn open_kanban_dropdown_at(app: &mut App, cursor_row: usize) {
-    open_category_dropdown_at(app, 0, cursor_row).await;
-}
-
-/// Arrange: open the Help dropdown (item 3) with the cursor on
-/// `cursor_row`.
-async fn open_help_dropdown_at(app: &mut App, cursor_row: usize) {
-    open_category_dropdown_at(app, 3, cursor_row).await;
+async fn open_kanban_dropdown_at(
+    app: &mut App,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    open_category_dropdown_at(app, 0, cursor_row).await?;
+    Ok(())
 }
 
 /// The y of the dropdown row whose text contains `needle` (the panel
 /// anchors at bar + 1; the first entry row sits at bar + 2).
-fn dropdown_row_y(buf: &Buffer, needle: &str) -> u16 {
-    let bar = bar_row(buf);
-    (bar + 2..buf.area.height)
+fn dropdown_row_y(buf: &Buffer, needle: &str) -> Result<u16, codelet_test_helpers::TestError> {
+    let bar = bar_row(buf)?;
+    Ok((bar + 2..buf.area.height)
         .find(|&y| row_text(buf, y).contains(needle))
-        .unwrap_or_else(|| panic!("dropdown row '{needle}' not found below row {bar}"))
+        .or_fail(&format!(
+            "dropdown row '{needle}' not found below row {bar}"
+        ))?)
 }
 
 /// The mux bar's row (always row 0 when the bar is painted —
@@ -220,21 +227,23 @@ const MUX_BAR_ROW: u16 = 0;
 
 /// The y of the mux dropdown row whose text contains `needle` (the
 /// panel anchors at row 1; the first entry row sits at row 2).
-fn mux_dropdown_row_y(buf: &Buffer, needle: &str) -> u16 {
-    (MUX_BAR_ROW + 2..buf.area.height)
+fn mux_dropdown_row_y(buf: &Buffer, needle: &str) -> Result<u16, codelet_test_helpers::TestError> {
+    Ok((MUX_BAR_ROW + 2..buf.area.height)
         .find(|&y| row_text(buf, y).contains(needle))
-        .unwrap_or_else(|| panic!("mux dropdown row '{needle}' not found below row {MUX_BAR_ROW}"))
+        .or_fail(&format!(
+            "mux dropdown row '{needle}' not found below row {MUX_BAR_ROW}"
+        ))?)
 }
 
 /// Enable mux with the given pane list (horizontal, equal splits, focus
 /// pane 0) — mirrors `menu004_mux_surface.rs::enable_mux` including the
 /// BUG-182 R7 initial loads for the rendered lazy panes.
 fn enable_mux(app: &mut App, panes: Vec<MuxPaneKind>) {
-    let n = panes.len();
+    let Some(layout) = MuxLayout::columns(&panes) else {
+        return;
+    };
     let config = MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50; n.saturating_sub(1)],
-        panes: panes.clone(),
+        layout,
         focused_pane: 0,
         enabled: true,
     };
@@ -259,26 +268,32 @@ fn focus_last_column(app: &mut App) {
 
 /// Arrange (mux): the mux bar is focused on the first item (Kanban) via
 /// the board ring entry (Right off the last column).
-async fn focus_bar_first_item(app: &mut App) {
+async fn focus_bar_first_item(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     focus_last_column(app);
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange (mux): open the `item_index`-th menu item's dropdown with
 /// the cursor on `cursor_row`.
-async fn mux_open_category_dropdown_at(app: &mut App, item_index: usize, cursor_row: usize) {
-    focus_bar_first_item(app).await;
+async fn mux_open_category_dropdown_at(
+    app: &mut App,
+    item_index: usize,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    focus_bar_first_item(app).await?;
     for _ in 1..=item_index {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     for _ in 0..cursor_row {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -287,11 +302,11 @@ async fn mux_open_category_dropdown_at(app: &mut App, item_index: usize, cursor_
 
 /// Scenario: Clicking a dropdown entry row executes that entry
 #[tokio::test]
-async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() {
+async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() -> TestResult {
     // @step Given the board has 1 open session and the Kanban dropdown is open with the cursor on row 0 (New Agent)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    open_kanban_dropdown_at(&mut app, 0).await;
+    seed_sessions(&mut app, 1).await?;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(
         app.board_store().open_menu(),
         Some((0, 0)),
@@ -299,8 +314,8 @@ async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() {
     );
     // The panel must have painted (the click arm hit-tests against the
     // cached panel rect from this frame).
-    let buf = render_app(&mut app, 120, 24);
-    let new_agent_y = dropdown_row_y(&buf, "New Agent");
+    let buf = render_app(&mut app, 120, 24)?;
+    let new_agent_y = dropdown_row_y(&buf, "New Agent")?;
     assert!(
         row_text(&buf, new_agent_y).contains("New Agent"),
         "the 'New Agent' entry row must be painted:\n{}",
@@ -311,11 +326,11 @@ async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() {
 
     // @step When I click the 'New Agent' row in the open dropdown
     app.handle_event(&click(click_x, new_agent_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the
-    // 'New Agent' row ALWAYS starts a new agent — the pre-BUG-203 R8
-    // substitution, which flipped to the Agent view on session s-1, is gone)
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the New Agent row always starts a new agent)
+    // The pre-BUG-203 R8 substitution, which flipped to the Agent view on
+    // session s-1, is gone.
     assert!(
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "a click on the 'New Agent' row must mount the CreateSessionDialog (BUG-199 parity)"
@@ -336,25 +351,26 @@ async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() {
         app.board_store().menu_focus().is_none(),
         "the bar highlight must clear after the click executed the row"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a non-cursor dropdown row executes the clicked row
 #[tokio::test]
-async fn scenario_clicking_a_non_cursor_dropdown_row_executes_the_clicked_row() {
+async fn scenario_clicking_a_non_cursor_dropdown_row_executes_the_clicked_row() -> TestResult {
     // @step Given the board has 2 open sessions and the Kanban dropdown is open with the cursor on row 3 (Attachments)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    open_kanban_dropdown_at(&mut app, 3).await;
+    seed_sessions(&mut app, 2).await?;
+    open_kanban_dropdown_at(&mut app, 3).await?;
     assert_eq!(
         app.board_store().open_menu(),
         Some((0, 3)),
         "the Kanban dropdown must be open at row 3"
     );
-    let buf = render_app(&mut app, 120, 24);
+    let buf = render_app(&mut app, 120, 24)?;
     // The cursor (Attachments) is the inverse row; the 'New Agent' row
     // (row 0) is NOT the cursor.
-    let new_agent_y = dropdown_row_y(&buf, "New Agent");
-    let attach_y = dropdown_row_y(&buf, "Attachments");
+    let new_agent_y = dropdown_row_y(&buf, "New Agent")?;
+    let attach_y = dropdown_row_y(&buf, "Attachments")?;
     assert_ne!(
         new_agent_y, attach_y,
         "'New Agent' (row 0) and the cursor row (Attachments, row 3) are distinct"
@@ -362,13 +378,12 @@ async fn scenario_clicking_a_non_cursor_dropdown_row_executes_the_clicked_row() 
 
     // @step When I click the 'New Agent' row (row 0) in the open dropdown
     app.handle_event(&click(16, new_agent_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the CreateSessionDialog mounts over the board (BUG-203: a
-    // click on a NON-cursor row executes THAT row — and the 'New Agent' row
-    // now ALWAYS mounts the dialog; the pre-BUG-203 R8 substitution, which
-    // flipped to the Agent view on the session current before the click,
-    // is gone)
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the clicked New Agent row always starts a new agent)
+    // A click on a NON-cursor row executes THAT row; the pre-BUG-203 R8
+    // substitution, which flipped to the Agent view on the session current
+    // before the click, is gone.
     assert!(
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "a click on a NON-cursor row must execute THAT row (GUI parity: click selects + confirms)"
@@ -382,51 +397,19 @@ async fn scenario_clicking_a_non_cursor_dropdown_row_executes_the_clicked_row() 
     // @step And the dropdown closes and the bar highlight clears
     assert_eq!(app.board_store().open_menu(), None);
     assert!(app.board_store().menu_focus().is_none());
-}
-
-/// Scenario: Clicking the Help dropdown Exit row opens the exit confirmation
-#[tokio::test]
-async fn scenario_clicking_the_help_dropdown_exit_row_opens_the_exit_confirmation() {
-    // @step Given the Help dropdown is open with the cursor on row 0 (Help)
-    let (mut app, _mock) = fresh_app();
-    open_help_dropdown_at(&mut app, 0).await;
-    assert_eq!(
-        app.board_store().open_menu(),
-        Some((3, 0)),
-        "the Help dropdown must be open at row 0"
-    );
-    let buf = render_app(&mut app, 120, 24);
-    let exit_y = dropdown_row_y(&buf, "Exit");
-    // Click inside the Help panel's inner area (the Help item sits at
-    // x49 — MENU-011 moved it right to the bracketed "[ Help ]" — so
-    // the panel starts at x49; click x50).
-    let click_x = 50u16;
-
-    // @step When I click the 'Exit' row in the open dropdown
-    app.handle_event(&click(click_x, exit_y));
-    drain_pending(&mut app).await;
-
-    // @step Then the exit confirmation dialog opens
-    assert!(
-        app.compositor().contains(BOARD_EXIT_DIALOG_ID),
-        "the 'Esc Exit' row must execute OpenBoardExitConfirmation"
-    );
-
-    // @step And the dropdown closes and the bar highlight clears
-    assert_eq!(app.board_store().open_menu(), None);
-    assert!(app.board_store().menu_focus().is_none());
+    Ok(())
 }
 
 /// Scenario: A click on the dropdown border rows does nothing
 #[tokio::test]
-async fn scenario_a_click_on_the_dropdown_border_rows_does_nothing() {
+async fn scenario_a_click_on_the_dropdown_border_rows_does_nothing() -> TestResult {
     // @step Given the Kanban dropdown is open with the cursor on row 0
     let (mut app, _mock) = fresh_app();
-    open_kanban_dropdown_at(&mut app, 0).await;
-    let buf = render_app(&mut app, 120, 24);
+    open_kanban_dropdown_at(&mut app, 0).await?;
+    let buf = render_app(&mut app, 120, 24)?;
     // The panel anchors at (x15, bar+1) with a 1-cell border on all
     // sides: the top border row is bar+1 (the panel's first row).
-    let bar = bar_row(&buf);
+    let bar = bar_row(&buf)?;
     let top_border_y = bar + 1;
     assert!(
         !row_text(&buf, top_border_y).contains("New Agent"),
@@ -436,7 +419,7 @@ async fn scenario_a_click_on_the_dropdown_border_rows_does_nothing() {
 
     // @step When I click the panel's top border row
     app.handle_event(&click(16, top_border_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown stays open with the cursor on row 0
     assert_eq!(
@@ -444,22 +427,23 @@ async fn scenario_a_click_on_the_dropdown_border_rows_does_nothing() {
         Some((0, 0)),
         "a click on a border row must NOT close the dropdown or execute anything"
     );
-    let buf = render_app(&mut app, 120, 24);
-    let new_agent_y = dropdown_row_y(&buf, "New Agent");
+    let buf = render_app(&mut app, 120, 24)?;
+    let new_agent_y = dropdown_row_y(&buf, "New Agent")?;
     assert!(
         row_text(&buf, new_agent_y).contains("New Agent"),
         "the panel must still be painted after a border-row click"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking away closes the dropdown and de-selects the bar
 #[tokio::test]
-async fn scenario_clicking_away_closes_the_dropdown_and_de_selects_the_bar() {
+async fn scenario_clicking_away_closes_the_dropdown_and_de_selects_the_bar() -> TestResult {
     // @step Given the Kanban dropdown is open and the board is focused on a kanban column
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     focus_column(&mut app, "backlog");
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.board_store().open_menu(), Some((0, 0)));
     assert_eq!(
         app.board_store().menu_focus(),
@@ -468,7 +452,7 @@ async fn scenario_clicking_away_closes_the_dropdown_and_de_selects_the_bar() {
     );
     // The panel must have painted (the outside-click arm hit-tests
     // against the cached panel rect).
-    let _buf = render_app(&mut app, 120, 24);
+    let _buf = render_app(&mut app, 120, 24)?;
     // The card in another column: BLOCKED is the last column — its
     // content rect starts at x = 118 - 16 (column width) + 1 (menu002
     // parity: card click at (103, 14)).
@@ -477,7 +461,7 @@ async fn scenario_clicking_away_closes_the_dropdown_and_de_selects_the_bar() {
 
     // @step When I click a work-unit card in another column
     app.handle_event(&click(card_x, card_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown closes and that card becomes selected in its column
     assert_eq!(
@@ -498,27 +482,28 @@ async fn scenario_clicking_away_closes_the_dropdown_and_de_selects_the_bar() {
         "clicking away must DE-SELECT the parent menu item (BUG-196: the bar was keeping \
          Item(0) focused, swallowing the surface's key bindings)"
     );
+    Ok(())
 }
 
 /// Scenario: The board key bindings are live again after a click away
 #[tokio::test]
-async fn scenario_the_board_key_bindings_are_live_again_after_a_click_away() {
+async fn scenario_the_board_key_bindings_are_live_again_after_a_click_away() -> TestResult {
     // @step Given the Kanban dropdown is open and the board has no open sessions
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     focus_column(&mut app, "backlog");
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.board_store().open_menu(), Some((0, 0)));
-    let _buf = render_app(&mut app, 120, 24);
+    let _buf = render_app(&mut app, 120, 24)?;
 
     // @step When I click a work-unit card in another column and then press the '.' key
     // Click away (closes + de-selects — the '.' arm must no longer be
     // swallowed by the bar), then press '.' (the new-agent binding).
     app.handle_event(&click(103, 14));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(app.board_store().menu_focus().is_none());
     app.handle_event(&key(KeyCode::Char('.'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the create-session dialog opens (the '.' binding ran and was not swallowed by the bar)
     // No sessions are open, so the '.' arm's OpenAgentView(None) falls
@@ -528,20 +513,21 @@ async fn scenario_the_board_key_bindings_are_live_again_after_a_click_away() {
         "the '.' binding must be live again after the click away (it was swallowed \
          while the Kanban item kept the bar focus)"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a mux dropdown row executes that entry
 #[tokio::test]
-async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() {
+async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() -> TestResult {
     // @step Given the mux 'Settings' dropdown is open with the cursor on row 0 (Mux)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    mux_open_category_dropdown_at(&mut app, 2, 0).await;
+    mux_open_category_dropdown_at(&mut app, 2, 0).await?;
     assert_eq!(
         app.navigator().mux.open_menu(),
         Some((2, 0)),
@@ -549,12 +535,12 @@ async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() {
     );
     // The panel must have painted (the click arm hit-tests against the
     // cached panel rect from this frame).
-    let buf = render_app(&mut app, 240, 24);
+    let buf = render_app(&mut app, 240, 24)?;
     // The Settings item sits at x22 (MENU-011: the bracketed Zone A
     // items — "[ Kanban ]" x1-10, "[ Tools ]" x12-20, "[ Settings ]"
     // x22-33 — so the panel starts at x22, min width 24 → x22..45):
     // click the inner area (x23) of the 'Mux' entry row.
-    let mux_row_y = mux_dropdown_row_y(&buf, "Mux");
+    let mux_row_y = mux_dropdown_row_y(&buf, "Mux")?;
     assert!(
         row_text(&buf, mux_row_y).contains("Mux"),
         "the 'Mux' entry row must be painted:\n{}",
@@ -564,7 +550,7 @@ async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() {
 
     // @step When I click the 'Mux' row in the open dropdown
     app.handle_event(&click(click_x, mux_row_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the mux config dialog opens
     assert!(
@@ -582,15 +568,16 @@ async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() {
         app.navigator().mux.menu_focus().is_none(),
         "the mux bar highlight must clear after the click executed the row"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking away in mux closes the dropdown and de-selects the bar
 #[tokio::test]
-async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_bar() {
+async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_bar() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -599,9 +586,9 @@ async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_ba
             MuxPaneKind::Checkpoints,
         ],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((0, 0)));
     assert_eq!(
         app.navigator().mux.menu_focus(),
@@ -611,7 +598,7 @@ async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_ba
     // The opened dropdown must be on screen (the next frame paints the
     // panel and caches its rect) — the outside-click arm hit-tests
     // against that cached geometry.
-    let _buf = render_app(&mut app, 240, 24);
+    let _buf = render_app(&mut app, 240, 24)?;
     // The Files pane is pane index 1 (pane 0 x0..118, pane 1 x120..237):
     // click well inside the Files pane (menu004 parity: (150, 10)).
     let files_click_x = 150u16;
@@ -619,7 +606,7 @@ async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_ba
 
     // @step When I click the Files pane (outside the dropdown panel and off the bar items)
     app.handle_event(&click(files_click_x, files_click_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown closes AND the Files pane is focused (the click lands on the same event)
     assert_eq!(
@@ -639,15 +626,16 @@ async fn scenario_clicking_away_in_mux_closes_the_dropdown_and_de_selects_the_ba
         "clicking away must DE-SELECT the parent item (BUG-196: the bar was keeping \
          Item(0) focused)"
     );
+    Ok(())
 }
 
 /// Scenario: A mux click on the dropdown border rows does nothing
 #[tokio::test]
-async fn scenario_a_mux_click_on_the_dropdown_border_rows_does_nothing() {
+async fn scenario_a_mux_click_on_the_dropdown_border_rows_does_nothing() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open with the cursor on row 0
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -656,11 +644,11 @@ async fn scenario_a_mux_click_on_the_dropdown_border_rows_does_nothing() {
             MuxPaneKind::Checkpoints,
         ],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((0, 0)));
-    let buf = render_app(&mut app, 240, 24);
+    let buf = render_app(&mut app, 240, 24)?;
     // The Kanban panel anchors at (x1, y1) with a 1-cell border on all
     // sides: the top border row is y1 (the panel's first row), inside
     // the Board pane's body.
@@ -673,7 +661,7 @@ async fn scenario_a_mux_click_on_the_dropdown_border_rows_does_nothing() {
 
     // @step When I click the panel's top border row
     app.handle_event(&click(2, 1));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown stays open with the cursor on row 0
     assert_eq!(
@@ -686,19 +674,20 @@ async fn scenario_a_mux_click_on_the_dropdown_border_rows_does_nothing() {
         focus_before,
         "a border-row click must NOT land on the pane beneath it (the panel owns its rect)"
     );
+    Ok(())
 }
 
 /// Scenario: Esc still closes the dropdown and keeps the item focused
 #[tokio::test]
-async fn scenario_esc_still_closes_the_dropdown_and_keeps_the_item_focused() {
+async fn scenario_esc_still_closes_the_dropdown_and_keeps_the_item_focused() -> TestResult {
     // @step Given the Kanban dropdown is open
     let (mut app, _mock) = fresh_app();
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.board_store().open_menu(), Some((0, 0)));
 
     // @step When I press Esc once
     app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown is closed and the Kanban item stays focused
     assert_eq!(
@@ -712,15 +701,16 @@ async fn scenario_esc_still_closes_the_dropdown_and_keeps_the_item_focused() {
         "R4: the keyboard close is a 'stay on the bar' gesture — the item \
          must stay focused (only the click-away path de-selects)"
     );
-    let buf = render_app(&mut app, 120, 24);
+    let buf = render_app(&mut app, 120, 24)?;
     // MENU-009: the bar row now ALWAYS paints the right-aligned 'New
     // Agent' Zone C button, so 'New Agent' appearing on the bar row is
     // expected — the panel-closed check must target the dropdown's
     // first entry row (bar + 2), not the whole buffer.
     assert!(
-        !row_text(&buf, bar_row(&buf) + 2).contains("New Agent"),
+        !row_text(&buf, bar_row(&buf)? + 2).contains("New Agent"),
         "the panel must be closed (its first entry row must not paint \
          'New Agent'):\n{}",
         buf_text(&buf)
     );
+    Ok(())
 }

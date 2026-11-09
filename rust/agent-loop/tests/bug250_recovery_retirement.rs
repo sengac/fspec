@@ -10,7 +10,6 @@ use codelet_core::persistence::messages::durability::observe;
 use codelet_core::persistence::transcript::JournalStore;
 use codelet_core::persistence::{create_session, delete_session, load_session, SessionStore};
 use std::sync::mpsc;
-use std::time::Duration;
 use storage::{bytes, cold, pending};
 use support::{fixture, manifest, recovery, TestResult};
 use uuid::Uuid;
@@ -40,6 +39,7 @@ fn live_transcript_recovery_remains_authentic_and_idempotent() -> TestResult {
 fn retirement_child() -> TestResult {
     let root = std::path::PathBuf::from(std::env::var("BUG250_ROOT")?);
     let session = Uuid::parse_str(&std::env::var("BUG250_SESSION")?)?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(root)?;
     codelet_core::persistence::reset_stores_for_tests();
     let spool = PersistenceSpool::open(session)?;
@@ -145,26 +145,62 @@ fn recovery_and_deletion_respect_active_session_ownership() -> TestResult {
             .map(|_| ())
             .map_err(|error| error.to_string())
     });
-    entered_rx.recv_timeout(Duration::from_secs(5))?;
+    codelet_test_helpers::deadlock_guard_blocking(
+        "the writer enters its transaction",
+        move || entered_rx.recv(),
+    )??;
     // @step When recovery and deletion race with that transaction
     let (retry_tx, retry_rx) = mpsc::channel();
+    let (opened_tx, opened_rx) = mpsc::channel();
     let retry = std::thread::spawn(move || {
-        let result = PersistenceSpool::open(session).and_then(|spool| spool.retry());
+        // BUG-571: opening the spool also takes the recovery lease briefly;
+        // the test probes for the lease only after the open has returned,
+        // so the owner it sees is retry itself.
+        let result = PersistenceSpool::open(session).and_then(|spool| {
+            let _sent = opened_tx.send(());
+            spool.retry()
+        });
         let _sent = retry_tx.send(result);
     });
-    let early_retry = retry_rx.recv_timeout(Duration::from_millis(200)).ok();
+    // @step And recovery owns the recovery lease before deletion starts
+    // BUG-571: both take the recovery lease before the writer gate. Deletion
+    // starts only once recovery owns the lease (it then waits on the
+    // writer), so deletion meets lease contention and returns; a deletion
+    // that took the lease first would wait on the writer instead.
+    let lease = root
+        .path()
+        .join("persistence-recovery")
+        .join(format!("{session}.lock"));
+    codelet_test_helpers::deadlock_guard_blocking("the recovery spool to open", move || {
+        opened_rx.recv()
+    })??;
+    codelet_test_helpers::wait_until_here("recovery to own the recovery lease", || {
+        lease_is_owned(&lease)
+    })?;
+    // TEST-042: no waiting windows. Deletion must return while the writer
+    // still holds its transaction (a blocked deletion only ends at the
+    // deadlock guard); once it has returned, recovery must not have
+    // acknowledged either.
     let (delete_tx, delete_rx) = mpsc::channel();
     let deletion = std::thread::spawn(move || {
         let _sent = delete_tx.send(delete_session(session));
     });
-    let early_delete = delete_rx.recv_timeout(Duration::from_secs(1)).ok();
+    let early_delete = codelet_test_helpers::deadlock_guard_blocking(
+        "deletion during the transaction",
+        move || delete_rx.recv(),
+    )
+    .ok()
+    .and_then(Result::ok);
+    let early_retry = retry_rx.try_recv().ok();
     release_tx.send(())?;
     writer.join().map_err(|_| "writer thread failed")??;
     retry.join().map_err(|_| "recovery thread failed")?;
     deletion.join().map_err(|_| "deletion thread failed")?;
     let retry_result = match early_retry.as_ref() {
         Some(result) => result.clone(),
-        None => retry_rx.recv_timeout(Duration::from_secs(5))?,
+        None => codelet_test_helpers::deadlock_guard_blocking("the recovery result", move || {
+            retry_rx.recv()
+        })??,
     };
     delete_session(session)?;
     // @step Then recovery cannot acknowledge before ownership and deletion returns without an inverted lock wait
@@ -228,4 +264,20 @@ fn failed_cleanup_after_deletion_reports_promotion_and_remains_retryable() -> Te
     assert!(!pending(root.path(), session).exists());
     assert!(!JournalStore::configured(session)?.directory().exists());
     Ok(())
+}
+
+/// BUG-571: whether another owner holds the session's recovery lease file,
+/// probed with a non-blocking lock that is released at once when it is free.
+fn lease_is_owned(path: &std::path::Path) -> bool {
+    let Ok(file) = std::fs::File::open(path) else {
+        return false;
+    };
+    match file.try_lock() {
+        Ok(()) => {
+            let _released = file.unlock();
+            false
+        }
+        Err(std::fs::TryLockError::WouldBlock) => true,
+        Err(std::fs::TryLockError::Error(_)) => false,
+    }
 }

@@ -4,8 +4,7 @@
 //!
 //! Feature: spec/features/rpc012-board-agent-navigation.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, EventResult, Theme};
@@ -36,7 +35,7 @@ fn fresh() -> (BoardView, tokio::sync::mpsc::UnboundedReceiver<Action>) {
 }
 
 #[test]
-fn enter_emits_enter_work_unit_for_selected_unit() {
+fn enter_emits_enter_work_unit_for_selected_unit() -> TestResult {
     let (view, mut rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(vec![wu("AUTH-002", "implementing")]);
@@ -46,15 +45,29 @@ fn enter_emits_enter_work_unit_for_selected_unit() {
     let event = Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
     let result = view.handle_event(&event, &store);
     assert!(matches!(result, EventResult::Consumed(None)));
-    let action = rx.try_recv().expect("Action::EnterWorkUnit on bus");
+    // BOARD-024: Enter opens the card chooser for the captured card; its
+    // default `Open in agent` choice then emits EnterWorkUnit.
+    let action = rx
+        .try_recv()
+        .or_fail("Action::OpenBoardCardChooser on bus")?;
     match action {
-        Action::EnterWorkUnit(id) => assert_eq!(id, "AUTH-002"),
-        other => panic!("expected EnterWorkUnit, got {other:?}"),
+        Action::OpenBoardCardChooser {
+            work_unit_id,
+            origin,
+        } => {
+            assert_eq!(work_unit_id, "AUTH-002");
+            assert_eq!(
+                origin,
+                codelet_fspec_tui::components::board_card::BoardCardOrigin::Board
+            );
+        }
+        other => return Err(format!("expected OpenBoardCardChooser, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn shift_right_with_attached_session_emits_open_agent_view_some() {
+fn shift_right_with_attached_session_emits_open_agent_view_some() -> TestResult {
     let (view, mut rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(vec![wu("AUTH-001", "backlog")]);
@@ -64,15 +77,16 @@ fn shift_right_with_attached_session_emits_open_agent_view_some() {
 
     let event = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::SHIFT));
     let _ = view.handle_event(&event, &store);
-    let action = rx.try_recv().expect("Action::OpenAgentView on bus");
+    let action = rx.try_recv().or_fail("Action::OpenAgentView on bus")?;
     match action {
         Action::OpenAgentView(Some(id)) => assert_eq!(id, SessionId::new("s-1")),
-        other => panic!("expected OpenAgentView(Some(s-1)), got {other:?}"),
+        other => return Err(format!("expected OpenAgentView(Some(s-1)), got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn shift_right_with_no_attached_session_emits_open_agent_view_none() {
+fn shift_right_with_no_attached_session_emits_open_agent_view_none() -> TestResult {
     let (view, mut rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(vec![wu("AUTH-001", "backlog")]);
@@ -81,20 +95,21 @@ fn shift_right_with_no_attached_session_emits_open_agent_view_none() {
 
     let event = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::SHIFT));
     let _ = view.handle_event(&event, &store);
-    let action = rx.try_recv().expect("Action::OpenAgentView on bus");
+    let action = rx.try_recv().or_fail("Action::OpenAgentView on bus")?;
     match action {
         Action::OpenAgentView(None) => {}
-        other => panic!("expected OpenAgentView(None), got {other:?}"),
+        other => return Err(format!("expected OpenAgentView(None), got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn render_with_store_paints_seven_column_headers() {
+fn render_with_store_paints_seven_column_headers() -> TestResult {
     let (view, _rx) = fresh();
     let mut store = BoardStore::default();
     store.replace_work_units(vec![wu("AUTH-001", "backlog")]);
 
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -104,7 +119,7 @@ fn render_with_store_paints_seven_column_headers() {
             false,
         );
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
 
     let mut joined = String::new();
@@ -129,4 +144,5 @@ fn render_with_store_paints_seven_column_headers() {
         );
     }
     assert!(joined.contains("AUTH-001"));
+    Ok(())
 }

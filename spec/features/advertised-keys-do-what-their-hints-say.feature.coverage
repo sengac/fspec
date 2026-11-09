@@ -1,0 +1,748 @@
+{
+  "scenarios": [
+    {
+      "name": "Every single-key menu row's key does the same thing on the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+          "lines": "55-102",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board.rs",
+              "lines": [
+                248,
+                249,
+                250,
+                251,
+                252
+              ],
+              "firstLine": "// TUI-129: the menu registry's keys (`.` `/` D A b F C M P s",
+              "lastLine": "return result;"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+              "lines": [
+                151,
+                152
+              ],
+              "firstLine": "// TUI-129: `w` opens it through the menu registry (views/board/keys.rs).",
+              "lastLine": "store.workspace_dropdown()?;"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/daemon_switcher.rs",
+              "lines": [
+                178,
+                179,
+                180
+              ],
+              "firstLine": "// TUI-129: `s` opens it through the menu registry (views/board/keys.rs);",
+              "lastLine": "store.daemon_switcher()?;"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                154,
+                179,
+                209
+              ],
+              "firstLine": "/// caller keeps the navigation-key cascade running).",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board help lists the menu keys exactly as the menu shows them",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+          "lines": "104-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_content.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "pub(crate) fn board_help_lines() -> Vec<String> {",
+              "lastLine": "/// The slash-command rows are derived from `SLASH_COMMANDS` so"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A row's key runs that row while a board dropdown is open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+          "lines": "18-37",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_keys.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "// TUI-129: a key shown in one of the open dropdown's rows runs",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A row's key runs that row while a mux bar dropdown is open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+          "lines": "39-56",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "/// The row of `category` whose key `key` presses.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "return MuxBarKeyOutcome::Forward;",
+              "lastLine": "if plain(KeyCode::Up, key) || plain(KeyCode::Down, key) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A row's key runs that row in the menu-bar help dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+          "lines": "58-76",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "/// The registry row whose key `key` presses, as its index in display",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "// R7 (BUG-161 parity): Shift/Ctrl chords are CONSUMED as",
+              "lastLine": ".modifiers"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Help row says it shows the board keybindings",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+          "lines": "78-94",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                247
+              ],
+              "firstLine": "description: \"Show the board keybindings\",",
+              "lastLine": "description: \"Show the board keybindings\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board footer names Exit for Esc and the chooser for Enter",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+          "lines": "141-162",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/footer.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "// TUI-129: Enter opens the chooser and Esc the Exit confirmation.",
+              "lastLine": "const CHOOSER: &str = \"← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Agent / Details (choose) ◆ ESC Exit\";"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing a on a card without attachments says so",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+          "lines": "164-186",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_viewer.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "/// Handle `Action::OpenAttachmentPicker`: push an [`AttachmentPickerDialog`]",
+              "lastLine": "pub(crate) fn handle_open_attachment(&mut self, path: String) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A card that cannot move says why",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+          "lines": "188-224",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_reorder.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) fn handle_reorder(&mut self, direction: Reorder) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End on an empty input jumps to the bottom of the scrollback",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/agent.rs",
+          "lines": "61-99",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "firstLine": "/// RPC-094 / TUI-129: Home and End on an empty input jump the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "// RPC-094 / TUI-129: Home / End on an empty input.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213
+              ],
+              "firstLine": "Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),",
+              "lastLine": "if let Some(ctx) = self.agent_view_store.current_session_context_mut() {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent help describes Home, End, Alt+Enter and Esc as they behave",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/agent.rs",
+          "lines": "114-145",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_content.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "\"Alt+Enter     Newline (queues the draft while busy)\",",
+              "lastLine": "\"ESC           Stop the run, clear the draft, or close the agent\","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A collapsed tool card names Tab and Enter",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/agent.rs",
+          "lines": "147-183",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "/// **BUG-534**: the one hint a collapsed tool card (tool output, Edit/Write",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The empty-answer hint names what Esc does",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/hitl.rs",
+          "lines": "45-80",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ],
+              "firstLine": "/// Dim options-mode footer (TS InputTransition.tsx:459-461).",
+              "lastLine": "return Some(next);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mux Daemons and Workspaces rows show their dropdown on the Board pane",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+          "lines": "96-147",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "Action::CloseWorkspaceDropdown => self.board_store.close_workspace_dropdown(),",
+              "lastLine": "else {"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_daemons.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "// TUI-129: in the mux it opens on the Board pane.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui129_advertised_keys/board.rs",
+      "rust/fspec-tui/tests/tui129_advertised_keys/menus.rs",
+      "rust/fspec-tui/tests/tui129_advertised_keys/agent.rs",
+      "rust/fspec-tui/tests/tui129_advertised_keys/hitl.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/views/board.rs",
+      "rust/fspec-tui/src/views/board/workspace_dropdown.rs",
+      "rust/fspec-tui/src/views/board/daemon_switcher.rs",
+      "rust/fspec-tui/src/views/board/menu_keys.rs",
+      "rust/fspec-tui/src/components/help_content.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
+      "rust/fspec-tui/src/components/menu_bar_help.rs",
+      "rust/fspec-tui/src/components/menu_bar/items.rs",
+      "rust/fspec-tui/src/views/board/footer.rs",
+      "rust/fspec-tui/src/app/dispatch_viewer.rs",
+      "rust/fspec-tui/src/app/dispatch_reorder.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_mode_views.rs",
+      "rust/fspec-tui/src/views/agent/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/store/agent_view/diff_codec.rs",
+      "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
+      "rust/fspec-tui/src/app/dispatch_workspaces.rs",
+      "rust/fspec-tui/src/app/dispatch_daemons.rs"
+    ],
+    "totalLinesCovered": 817
+  }
+}

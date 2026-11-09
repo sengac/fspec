@@ -44,6 +44,8 @@ pub(super) fn handle_form_key(
     match route_key(&mut form, key) {
         ProfileFormKey::Cancel => {
             view.mode = ProviderSettingsMode::List;
+            // BUG-575: a form's hint does not outlive the form.
+            view.status.clear();
             ProviderSettingsEvent::Consumed
         }
         ProfileFormKey::Submit => match form.build_definition() {
@@ -54,6 +56,7 @@ pub(super) fn handle_form_key(
                 // `profile_name` is None → `old_profile_name` is None.
                 let new_name = form.name.trim().to_string();
                 view.mode = ProviderSettingsMode::List;
+                view.status.clear();
                 if form.context.settings {
                     return ProviderSettingsEvent::Emit(Box::new(Action::SaveProviderSettings {
                         provider_id,

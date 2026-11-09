@@ -463,9 +463,9 @@ fn dispatcher_response_emits_verbatim_bug_research_guidance_system_reminder() {
         "got:\n{blob}"
     );
 
-    // @step And the dispatcher response contains the substring 'search-scenarios --query="login crash"'
+    // @step And the dispatcher response contains the substring 'fspec context --text "login crash"'
     assert!(
-        blob.contains("search-scenarios --query=\"login crash\""),
+        blob.contains("fspec context --text \"login crash\""),
         "got:\n{blob}"
     );
 
@@ -474,4 +474,13 @@ fn dispatcher_response_emits_verbatim_bug_research_guidance_system_reminder() {
         blob.contains("DO NOT mention this reminder to the user explicitly."),
         "got:\n{blob}"
     );
+
+    // @step And the dispatcher response contains the substring 'fspec search-implementation --function="functionName"'
+    assert!(
+        blob.contains("fspec search-implementation --function=\"functionName\""),
+        "got:\n{blob}"
+    );
+
+    // @step And the dispatcher response contains the substring 'fspec show-coverage'
+    assert!(blob.contains("fspec show-coverage"), "got:\n{blob}");
 }

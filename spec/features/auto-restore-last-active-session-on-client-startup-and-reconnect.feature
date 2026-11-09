@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @BUG-206
 @tui-113
@@ -111,7 +112,6 @@ Feature: Session auto-restore only restores sessions live in the daemon
     I want to start or reconnect a client and have it re-attach a session that is actually running in the daemon
     So that I never get resurrected sessions I closed, and no fallbacks of any kind
 
-  @BUG-206
   Scenario: Reconnect re-attaches the focused session instead of creating a new one
     Given a client is viewing session "S-focus" and the WebSocket connection drops
     When the supervisor reconnects and Action::Reconnected is dispatched
@@ -120,7 +120,6 @@ Feature: Session auto-restore only restores sessions live in the daemon
     And the re-attach NEVER runs the disk resume_session round-trip (BUG-206: the candidate is live — the disk durable-restore path would double-inject its LLM context)
     And the inline reconnect notice lands in the "S-focus" session's scrollback
 
-  @BUG-206
   Scenario: Reconnect replays output streamed while the connection was down
     Given a client is viewing session "S-focus" and the WebSocket connection drops
     And the daemon streamed 3 assistant text chunks for "S-focus" while the connection was down
@@ -129,7 +128,6 @@ Feature: Session auto-restore only restores sessions live in the daemon
     And the catch-up came from the IN-MEMORY buffer — no disk resume_session
     And live streaming chunks continue after the replay
 
-  @BUG-206
   Scenario: Fresh client process restores the daemon's active session on bootstrap
     Given a daemon has a live session "S-active" set as its active session
     When a new client process starts and App::bootstrap runs
@@ -138,7 +136,6 @@ Feature: Session auto-restore only restores sessions live in the daemon
     And the re-attach is memory-only — NO disk resume_session round-trip
     And the TUI lands in the Agent view on "S-active" with its scrollback replayed
 
-  @BUG-206
   Scenario: Fresh client process lands on the board when no session is live
     Given a daemon's active-session pointer is unset (e.g. no client has attached yet after a daemon restart)
     And the daemon's workspace has ONLY persisted sessions on disk (["S-older", "S-recent"]) — none of them is in the daemon's in-memory map
@@ -146,41 +143,35 @@ Feature: Session auto-restore only restores sessions live in the daemon
     Then nothing is restored — the TUI stays on the board with NO open session
     And the restore path never touched the disk — no resume_session and no list_sessions call
 
-  @BUG-206
   Scenario: Daemon restart lands the client on the board (the pointer is gone)
     Given a daemon was killed and relaunched so its in-memory session map is empty
     And a client stays connected and its supervisor reconnects
     And the re-attach finds no focused session on the fresh daemon
     Then nothing is re-attached — the persisted sessions are NOT resumed from disk
 
-  @BUG-206
   Scenario: Empty daemon lands on the board on reconnect (NO create fallback)
     Given a fresh daemon with no active session and no live sessions
     And a client's supervisor reconnects with no focused session
     When the restore resolution yields no candidate
     Then NO create_session is issued — the client lands on the board
 
-  @BUG-206
   Scenario: A closed candidate is never restored — the liveness gate drops it
     Given the daemon's active pointer still references session "S-closed" but "S-closed" is NOT in the daemon's in-memory map (it was closed)
     When a new client process starts and App::bootstrap runs
     Then the closed "S-closed" candidate is dropped by the liveness gate — nothing restores
 
-  @BUG-206
   Scenario: Reconnect does not recreate a destroyed session
     Given a client whose last-viewed session "S-x" was destroyed and closed while the client was running
     And the daemon has no sessions and no active pointer for its workspace
     When the client reconnects
     Then the closed "S-x" tab is NOT re-opened and NO session is created
 
-  @BUG-206
   Scenario: Focus switches track the daemon active pointer
     Given a client has three open sessions "S-a", "S-b", "S-c"
     When the user cycles focus S-a → S-b → S-c
     Then set_active_session is called with "S-c" last
     And on the next client start "S-c" restores (because it is LIVE) — not "S-a" and not a disk entry
 
-  @BUG-206
   Scenario: Repeated reconnects re-attach idempotently
     Given a client is viewing session "S-focus"
     When the WebSocket flaps and Action::Reconnected fires twice in quick succession
@@ -188,14 +179,12 @@ Feature: Session auto-restore only restores sessions live in the daemon
     And exactly one session exists for "S-focus" in the open-session list
     And no duplicate session tab is appended
 
-  @BUG-206
   Scenario: Esc back to board keeps the active pointer sticky so restart restores the last-viewed session
     Given a client is viewing session "S-focus"
     When the user presses Esc to exit to the board view
     Then the daemon's active-session pointer still references "S-focus" (it is sticky — not cleared on board exit)
     And on the next client start "S-focus" restores as the last-viewed session (while it is still live)
 
-  @BUG-206
   Scenario: A stale pointer is skipped — the daemon's live sessions win
     Given a client reconnects while focused on session "S-focus" (the tab survived the WS drop) and the daemon pointer still references the CLOSED "S-closed" session
     When the supervisor reconnects and Action::Reconnected is dispatched

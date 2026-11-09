@@ -114,7 +114,7 @@ pub async fn cancel(test: &str) -> TestResult {
         )
         .await
     });
-    tokio::time::timeout(std::time::Duration::from_secs(15), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if !server
                 .received_requests()
@@ -127,7 +127,7 @@ pub async fn cancel(test: &str) -> TestResult {
             if operation.is_finished() {
                 break;
             }
-            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
         Ok::<(), Box<dyn std::error::Error>>(())
     })

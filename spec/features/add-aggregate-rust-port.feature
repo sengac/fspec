@@ -1,5 +1,7 @@
 @wip
 @RPC-165
+@cli
+@foundation-management
 Feature: Port add-aggregate command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_aggregate.rs. INLINE style: the TS source

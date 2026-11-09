@@ -18,6 +18,10 @@ use support::{fixture, read, TestResult};
 #[tokio::test]
 #[serial_test::serial]
 async fn captured_tool_result_survives_exhausted_recovery_capacity() -> TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given a dispatched sentinel tool and a session at recovery admission capacity
     let (directory, session, _) = fixture()?;
     std::fs::remove_dir(directory.path().join("messages/messages.jsonl"))?;

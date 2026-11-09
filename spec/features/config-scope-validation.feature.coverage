@@ -6,11 +6,6 @@
         {
           "file": "rust/fspec-core/tests/validate_config.rs",
           "lines": "64-107",
-          "implMappings": []
-        },
-        {
-          "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "64-107",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_config.rs",
@@ -109,7 +104,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "\"message\": message,"
             }
           ]
         }
@@ -120,12 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "111-135",
-          "implMappings": []
-        },
-        {
-          "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "111-135",
+          "lines": "122-154",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_config.rs",
@@ -224,7 +216,9 @@
                 152,
                 153,
                 154
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "\"message\": message,"
             }
           ]
         }
@@ -235,7 +229,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "139-155",
+          "lines": "156-180",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_config.rs",
@@ -266,7 +260,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "pub async fn run(_args_json: &str, _project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -277,12 +273,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "159-179",
-          "implMappings": []
-        },
-        {
-          "file": "rust/fspec-core/tests/validate_config.rs",
-          "lines": "159-179",
+          "lines": "182-210",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_config.rs",
@@ -304,7 +295,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "// ---- Parse; malformed JSON is a reported warning, never a crash ----",
+              "lastLine": "};"
             }
           ]
         }
@@ -321,6 +314,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/validate_config.rs"
     ],
-    "totalLinesCovered": 428
+    "totalLinesCovered": 362
   }
 }

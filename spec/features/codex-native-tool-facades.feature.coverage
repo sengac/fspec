@@ -4,266 +4,20 @@
       "name": "CodexShellCommandFacade maps shell_command to InternalBashParams",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "251-290",
+          "file": "rust/tools/src/facade/codex/native_tool_tests.rs",
+          "lines": "11-41",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CodexReadFileFacade maps read_file to InternalFileParams::Read",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "295-331",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CodexListDirFacade maps list_dir to InternalLsParams::List",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "360-392",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CodexGrepFilesFacade maps grep_files to InternalSearchParams::Grep",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "427-454",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Codex facades validate required parameters",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "272-293",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
                 30,
                 31,
                 32,
                 33,
                 34,
-                35
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Codex facades handle optional parameters gracefully",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "333-351",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
+                35,
+                36,
+                37,
                 38,
                 39,
                 40,
@@ -276,23 +30,16 @@
                 47,
                 48,
                 49,
-                50
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Codex tool schemas use additionalProperties false",
-      "testMappings": [
-        {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "474-509",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/facade/codex.rs",
-              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
                 60,
                 61,
                 62,
@@ -343,12 +90,25 @@
                 107,
                 108,
                 109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
+                110
+              ],
+              "firstLine": "/// Codex-specific facade for shell command execution.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexReadFileFacade maps read_file to InternalFileParams::Read",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_tool_tests.rs",
+          "lines": "81-112",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
                 116,
                 117,
                 118,
@@ -454,6 +214,94 @@
                 218,
                 219,
                 220,
+                221
+              ],
+              "firstLine": "/// Codex-specific facade for file reading.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexListDirFacade maps list_dir to InternalLsParams::List",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_tool_tests.rs",
+          "lines": "167-195",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209
+              ],
+              "firstLine": "\"anchor_line\": {",
+              "lastLine": "None"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexGrepFilesFacade maps grep_files to InternalSearchParams::Grep",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_grep_and_schema_tests.rs",
+          "lines": "47-76",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
+                218,
+                219,
+                220,
                 221,
                 222,
                 223,
@@ -478,44 +326,220 @@
                 242,
                 243,
                 244
-              ]
+              ],
+              "firstLine": "indentation,",
+              "lastLine": "fn tool_name(&self) -> &'static str {"
             }
           ]
         }
       ]
     },
     {
-      "name": "Codex agent does not expose non-native glob tool",
+      "name": "Codex facades validate required parameters",
       "testMappings": [
         {
-          "file": "rust/tools/src/facade/codex.rs",
-          "lines": "718-758",
+          "file": "rust/tools/src/facade/codex/native_tool_tests.rs",
+          "lines": "43-64",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                288,
-                289,
-                290
-              ]
-            },
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex facades handle optional parameters gracefully",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_tool_tests.rs",
+          "lines": "114-137",
+          "implMappings": [
             {
-              "file": "rust/providers/src/codex/mod.rs",
+              "file": "rust/tools/src/facade/codex.rs",
               "lines": [
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "/// - `sandbox_permissions` (optional): Sandbox escalation control",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex tool schemas use additionalProperties false",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_grep_and_schema_tests.rs",
+          "lines": "174-210",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
                 320,
                 321,
                 322,
@@ -541,19 +565,59 @@
                 342,
                 343,
                 344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356
-              ]
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411
+              ],
+              "firstLine": "impl BashToolFacade for CodexShellCommandFacade {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex agent does not expose non-native glob tool",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/facade/codex/native_grep_and_schema_tests.rs",
+          "lines": "116-150",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/facade/codex.rs",
+              "lines": [
+                288,
+                289,
+                290
+              ],
+              "firstLine": "depth,",
+              "lastLine": "}"
             }
           ]
         }
@@ -565,12 +629,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/facade/codex.rs"
+      "rust/tools/src/facade/codex/native_tool_tests.rs",
+      "rust/tools/src/facade/codex/native_grep_and_schema_tests.rs"
     ],
     "implFiles": [
-      "rust/tools/src/facade/codex.rs",
-      "rust/providers/src/codex/mod.rs"
+      "rust/tools/src/facade/codex.rs"
     ],
-    "totalLinesCovered": 682
+    "totalLinesCovered": 719
   }
 }

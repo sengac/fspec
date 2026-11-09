@@ -4,43 +4,39 @@
 //! Byte-for-byte parity with `node dist/index.js retag --help` piped to
 //! non-TTY (see `rust/fspec/tests/fixtures/help/retag.txt`).
 //!
-//! NOTE on surface: the TS help fixture renders POSITIONAL arguments
-//! `<old-tag> <new-tag>` plus a `--dry-run` flag. The clap parsing surface on
-//! the standalone binary uses `--from`/`--to`/`--dry-run` flags (see the
-//! `cli_retag` integration test SURFACE NOTE), but the rendered `--help`
-//! contract is defined by this config and MUST match the captured fixture.
+//! CLI-016: the help describes the `--from` / `--to` / `--dry-run` flags the
+//! CLI parses (the TS help showed positional `<old-tag> <new-tag>`).
 
-use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption};
+use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 
-const ARGUMENTS: &[CommandArgument] = &[
-    CommandArgument {
-        name: "old-tag",
+const OPTIONS: &[CommandOption] = &[
+    CommandOption {
+        flag: "--from <tag>",
         description: "Tag to replace",
-        required: true,
+        default_value: None,
     },
-    CommandArgument {
-        name: "new-tag",
+    CommandOption {
+        flag: "--to <tag>",
         description: "New tag name",
-        required: true,
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--dry-run",
+        description: "Preview changes without making modifications",
+        default_value: None,
     },
 ];
 
-const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--dry-run",
-    description: "Preview changes without making modifications",
-    default_value: None,
-}];
-
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
-        command: "fspec retag @wip @in-progress",
+        command: "fspec retag --from=@wip --to=@in-progress",
         description: Some("Replace @wip with @in-progress in all features"),
         output: Some(
             "✓ Replaced @wip with @in-progress in 5 feature files\n✓ Updated 12 scenarios",
         ),
     },
     CommandExample {
-        command: "fspec retag @old @new --dry-run",
+        command: "fspec retag --from=@old --to=@new --dry-run",
         description: Some("Preview tag replacement"),
         output: Some(
             "[DRY RUN] Would replace @old with @new in:\n  - spec/features/login.feature (2 occurrences)\n  - spec/features/checkout.feature (1 occurrence)",
@@ -60,8 +56,8 @@ const NOTES: &[&str] = &[
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "retag",
     description: "Replace one tag with another across all feature files",
-    usage: Some("fspec retag <old-tag> <new-tag> [options]"),
-    arguments: ARGUMENTS,
+    usage: Some("fspec retag --from <tag> --to <tag> [options]"),
+    arguments: &[],
     options: OPTIONS,
     examples: EXAMPLES,
     related_commands: RELATED,

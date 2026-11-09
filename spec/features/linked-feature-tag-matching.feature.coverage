@@ -1,0 +1,70 @@
+{
+  "scenarios": [
+    {
+      "name": "A feature tagged with a longer id that starts with the work unit id is not linked",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug434_linked_feature_tag_matching.rs",
+          "lines": "55-71",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// BUG-434: whether a tag line (a line starting with `@`) carries `tag` as a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature carrying the work unit tag among other tags is linked",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug434_linked_feature_tag_matching.rs",
+          "lines": "73-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ],
+              "firstLine": "/// BUG-434: whether a tag line (a line starting with `@`) carries `tag` as a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug434_linked_feature_tag_matching.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status/prefill.rs"
+    ],
+    "totalLinesCovered": 52
+  }
+}

@@ -16,9 +16,7 @@ use codelet_rpc_server::{bind_and_serve, ws_client_connect};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
-use tokio::time::timeout;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn scenario_multi_client_unfiltered_chunk_fan_out() {
@@ -53,11 +51,13 @@ async fn scenario_multi_client_unfiltered_chunk_fan_out() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("client A create_session");
+        .expect("client A create_session")
+        .expect("the daemon creates the session");
     ws_a.client()
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("client A send_input");
+        .expect("client A send_input")
+        .expect("daemon accepted the input");
 
     async fn drain_until_done(
         rx: &mut tokio::sync::broadcast::Receiver<(SessionId, StreamChunk)>,
@@ -65,7 +65,7 @@ async fn scenario_multi_client_unfiltered_chunk_fan_out() {
     ) -> Vec<StreamChunk> {
         let mut out = Vec::new();
         for _ in 0..32 {
-            match timeout(Duration::from_secs(2), rx.recv()).await {
+            match codelet_test_helpers::deadlock_guard("rx.recv()", rx.recv()).await {
                 Ok(Ok((got_sid, c))) if got_sid == *sid => {
                     let done = matches!(c, StreamChunk::Done);
                     out.push(c);

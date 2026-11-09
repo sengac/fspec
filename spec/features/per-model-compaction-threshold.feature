@@ -1,6 +1,7 @@
 @done
 @context-window
 @CTX-007
+@providers
 Feature: Per-Model Configurable Compaction Threshold
   """
   Add CompactionThresholdConfig enum (Tokens/Percentage) to compaction_threshold.rs with resolve(context_window) method

@@ -25,6 +25,7 @@ fn n_row_lines(n: usize) -> Vec<Line<'static>> {
 
 fn chunk_with(seq: u64, lines: Vec<Line<'static>>) -> RenderedChunk {
     RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines,
         source: None,

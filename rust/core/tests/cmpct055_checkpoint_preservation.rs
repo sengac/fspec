@@ -19,6 +19,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn provider_checkpoints_survive_captured_prefix_promotion_and_cold_replay() -> TestResult {
     if let Ok(data) = std::env::var("CMPCT055_CHECKPOINT_STORE") {
         let data = std::path::PathBuf::from(data);
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(data.clone())?;
         let session_id = std::env::var("CMPCT055_CHECKPOINT_SESSION")?.parse()?;
         let manifest = load_session(session_id)?;
@@ -34,7 +35,7 @@ fn provider_checkpoints_survive_captured_prefix_promotion_and_cold_replay() -> T
             .ok_or("missing boundary")?;
         // @step Then replay starts with the committed checkpoint followed by the exact ordered conversational suffix
         assert_eq!(boundary.identity.generation, 1);
-        assert_eq!(boundary.covered_prefix.len(), 2);
+        assert_eq!(boundary.covered_prefix().len(), 2);
         assert_eq!(boundary.verified_suffix.len(), 3);
         assert_eq!(replay.len(), 3);
         assert_eq!(replay[0]["_committedCompaction"]["generation"], 1);
@@ -93,6 +94,7 @@ fn provider_checkpoints_survive_captured_prefix_promotion_and_cold_replay() -> T
 
     // @step Given genuine provider checkpoints in a captured prefix and an appended tool suffix
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut manifest =

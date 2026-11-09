@@ -1,3 +1,4 @@
+@BUG-582
 @authentication
 @providers
 @wip
@@ -7,8 +8,10 @@
 @provider-settings
 @tui
 @PROV-113
+@BUG-600
 Feature: Anthropic + Codex OAuth login wiring (browser, headless, device)
   """
+  BUG-600: browser sign-in runs on the client for Anthropic and Codex on every transport (BUG-634), so their browser rows always show and there is no browser capability knob and no route to the daemon-hosted browser login. Providers other than Anthropic, Codex and GitHub Copilot get no login rows. Real WebSocket browser behavior is covered by the daemon browser sign-in features.
   Builds on PROV-112's OAuth boundary (FspecBackend OAuth trait methods, codelet-providers-direct via embedded; websocket no-op defaults). Adds ProviderSettingsMode variants OAuthBrowserWaiting{provider_id}, OAuthDeviceWaiting{provider_id,user_code,verification_url}, OAuthHeadlessCodeEntry{provider_id,authorize_url,pkce_verifier,code_input}, OAuthSuccess{provider_id}, OAuthError{provider_id,error} (replacing DetailSub::OAuthNotice for login rows), plus their sub-handlers + renderers. Backend methods forward to codelet-providers: claude_oauth_server::claude_browser_oauth_login, claude_oauth headless start (sync) + complete (async), codex codex_oauth_server::browser_oauth_login, codex_device_auth start + poll. Dispatch via dispatch_provider_settings_oauth.rs (spawn→backend→status→list_provider_credentials refresh). list_actions.rs Enter on OauthLogin routes by method (browser/headless) and provider; success reload returns cursor to provider row. Generation counter (per-flow monotonically increasing) invalidates stale results after Esc/cancel. Browser rows gated to embedded transport. Offline tests: MockBackend with scripted Ok/Err + call counters; view/key tests drive handle_key; no real OAuth network or ~/.fspec mutation. Files <300 LoC; clippy -D warnings + fmt clean; NO git; do not touch user WIP. Reference: spec/attachments/PROV-105/oauth-parity-spec.md §3,§4.1,§4.2,§6; napi/src/{claude,codex}_oauth.rs for exact flow semantics.
   PROV-159 supersedes historical file-only writes, presentation-only cancellation and forced disk refresh assumptions above. Acceptance rows A1-A17 are distributed across codex-refreshing-client, codex-oauth-login, codex-oauth-napi-bindings, provider-settings-oauth-login and provider-settings-oauth-disconnect. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its two upstream companions. Centralize lifecycle/storage/refresh policy in codelet-providers; RPC, NAPI, legacy refresh and provider deletion delegate to it. Fence credential commits by account AND login generation; preserve independent API keys, unrelated document fields and supported CODEX_HOME sharing. Existing clients must deliberately rebind or require reauthentication, never silently retain an old account.
   The distribution above describes the original planning layout only: all PROV-159 acceptance scenarios now live in the dedicated prov159-* features grouped by primary physical test target. A11-A13 are owned by prov159-rpc-lifecycle.feature with real embedded tarpc tests. This feature retains PROV-113's historical scenarios and coverage.
@@ -25,7 +28,7 @@ Feature: Anthropic + Codex OAuth login wiring (browser, headless, device)
   #   4. On any login success the mode becomes oauth-success showing the provider successLabel ('✓ Connected to Claude'/'✓ Connected to ChatGPT') + 'Press Enter or Esc to continue', then nav reloads; Enter or Esc returns to list
   #   5. On any login error the mode becomes oauth-error showing 'OAuth Login error' + the error message + 'Press Enter to retry | Esc to go back'; Enter retries the last method (browser→startBrowserLogin, device→startDeviceLogin), Esc cancels to list; all other keys absorbed
   #   6. A generation counter invalidates in-flight logins: pressing Esc during waiting/entry increments the generation; a success or error result whose generation no longer matches is dropped and does not change the mode away from list
-  #   7. Browser login rows are only available on the embedded transport (the napi local HTTP server must run on the user's machine); on non-embedded transport the browser rows are gated/disabled while headless/device rows remain available
+  #   7. Anthropic and Codex browser rows always show: browser sign-in runs on the client on every transport (BUG-600).
   #
   # EXAMPLES:
   #   1. User on 'Login with Claude (browser)' presses Enter → 'Claude OAuth Login' + 'Waiting for authorization...'; napi returns tokens → '✓ Connected to Claude'; Enter → back to list with a 'Logout from OAuth [Claude]' row
@@ -34,7 +37,7 @@ Feature: Anthropic + Codex OAuth login wiring (browser, headless, device)
   #   4. User on 'Login with ChatGPT (headless)' presses Enter → 'Codex Device Login' + 'Your code: ABCD-1234' + 'Visit: <url>' + spinner; device authorized elsewhere → '✓ Connected to ChatGPT'
   #   5. Codex browser login fails (napi error) → 'OAuth Login error' + message + 'Press Enter to retry | Esc to go back'; Enter restarts codex browser login; Esc returns to list
   #   6. User presses Esc during codex device-waiting → returns to list; a poll result (success OR error) that arrives after cancel is dropped and does not change the screen
-  #   7. On a non-embedded (websocket) transport the 'Login with Claude (browser)' / 'Login with ChatGPT (browser)' rows are disabled/hidden, while the headless/device rows remain selectable
+  #   7. Any backend shows the Anthropic and Codex browser rows next to their headless/device rows; an unknown OAuth provider shows no login rows (BUG-600).
   #
   # ========================================
   Background: User Story
@@ -141,15 +144,13 @@ Feature: Anthropic + Codex OAuth login wiring (browser, headless, device)
     Then the result is dropped
     And the mode is still list
 
-  @tui
-  @provider-settings
-  @oauth
-  @integration
-  Scenario: Browser login rows are gated to the embedded transport
-    Given the websocket transport is in use
-    And the "anthropic" provider is expanded
-    Then the "Login with Claude (browser)" row is disabled or hidden
-    And the "Login with Claude (headless)" row is selectable
-    Given the "codex" provider is expanded
-    Then the "Login with ChatGPT (browser)" row is disabled or hidden
-    And the "Login with ChatGPT (headless)" row is selectable
+  Scenario: Anthropic and Codex browser login rows show on every backend
+    Given a backend with no browser login capability of its own
+    When the "anthropic" and "codex" providers are expanded
+    Then the "Login with Claude (browser)" and "Login with ChatGPT (browser)" rows are selectable
+    And their headless and device rows are selectable
+
+  Scenario: An unknown OAuth provider offers no login rows
+    Given an OAuth provider other than anthropic, codex and github-copilot is configured
+    When its provider row is expanded
+    Then it shows no "Sign in with browser" row or any other login row

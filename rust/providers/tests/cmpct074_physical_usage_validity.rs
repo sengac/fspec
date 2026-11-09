@@ -103,7 +103,7 @@ async fn missing_physical(continuation: bool) -> TestResult {
                 .build(),
         )
         .await?;
-    let observed = tokio::time::timeout(std::time::Duration::from_secs(4), async {
+    let observed = codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut errors = Vec::new();
         let mut finals = 0;
         let mut measurements = 0;

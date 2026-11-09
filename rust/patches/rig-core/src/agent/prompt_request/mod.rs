@@ -425,6 +425,23 @@ where
                 }
             }
 
+            // BUG-303: record wire-valid arguments; invalid ones are explained, not run.
+            let mut resp = resp;
+            let invalid_arguments: std::collections::HashMap<
+                String,
+                crate::tool::arguments::InvalidToolArguments,
+            > = resp
+                .choice
+                .iter_mut()
+                .filter_map(|choice| match choice {
+                    AssistantContent::ToolCall(tool_call) => {
+                        crate::tool::arguments::normalize(&mut tool_call.function.arguments)
+                            .map(|invalid| (tool_call.id.clone(), invalid))
+                    }
+                    _ => None,
+                })
+                .collect();
+
             let (tool_calls, texts): (Vec<_>, Vec<_>) = resp
                 .choice
                 .iter()
@@ -466,6 +483,12 @@ where
             let tool_calls: Vec<AssistantContent> = tool_calls.into_iter().cloned().collect();
             let tool_content = stream::iter(tool_calls)
                 .map(|choice| {
+                    let invalid = match &choice {
+                        AssistantContent::ToolCall(tool_call) => {
+                            invalid_arguments.get(&tool_call.id).cloned()
+                        }
+                        _ => None,
+                    };
                     let assistant = assistant.clone();
                     let hook1 = hook.clone();
                     let hook2 = hook.clone();
@@ -515,14 +538,28 @@ where
                                     return Err(ToolSetError::Interrupted);
                                 }
                             }
-                            let output =
+                            let output = if let Some(invalid) = &invalid {
+                                tracing::warn!(tool = %tool_name, received = ?invalid, "BUG-303: tool call arguments are not a JSON object; returning usage guidance without executing");
+                                let definition = agent
+                                    .tool_server_handle
+                                    .get_tool_defs(None)
+                                    .await
+                                    .ok()
+                                    .and_then(|definitions| {
+                                        definitions.into_iter().find(|definition| {
+                                            definition.name.eq_ignore_ascii_case(tool_name)
+                                        })
+                                    });
+                                invalid.guidance(tool_name, definition.as_ref())
+                            } else {
                                 match agent.tool_server_handle.call_tool(tool_name, &args).await {
                                     Ok(res) => res,
                                     Err(e) => {
                                         tracing::warn!("Error while executing tool: {e}");
                                         e.to_string()
                                     }
-                                };
+                                }
+                            };
                             if let Some(hook) = hook2 {
                                 hook.on_tool_result_message(
                                     &assistant,

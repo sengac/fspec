@@ -1,0 +1,106 @@
+{
+  "scenarios": [
+    {
+      "name": "The re-fire cooldown keeps working after its lock was poisoned",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/fault_reporting_tests.rs",
+          "lines": "42-62",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                37,
+                38,
+                40,
+                43,
+                46,
+                47,
+                48,
+                49,
+                50,
+                55,
+                58,
+                59,
+                60,
+                61,
+                62,
+                67,
+                70,
+                71,
+                75,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                89
+              ],
+              "firstLine": "/// BUG-376: a panic while the cooldown map was locked poisons it. The map",
+              "lastLine": "cooldown_write().remove(exec_id);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A request for a session without a callback is reported",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/unified_exec/exec_stdin/fault_reporting_tests.rs",
+          "lines": "64-105",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/unified_exec/exec_stdin.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                152
+              ],
+              "firstLine": "pub fn spawn_exec_stdin_detector(",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/src/unified_exec/exec_stdin/fault_reporting_tests.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/unified_exec/exec_stdin/cooldown.rs",
+      "rust/tools/src/unified_exec/exec_stdin.rs"
+    ],
+    "totalLinesCovered": 116
+  }
+}

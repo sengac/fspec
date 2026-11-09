@@ -5,40 +5,245 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "48-76",
+          "lines": "47-88",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "// ---- New scenario with its placeholder steps ----",
+              "lastLine": "serialize(response)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolves a bare identifier to spec/features/<id>.feature",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "94-121",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ],
+              "firstLine": "insert_index = i;",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inserts the new scenario before an existing Scenario Outline",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "127-161",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "// ---- Find insertion point: before the first Scenario Outline/Template",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate scenario name succeeds with a warning",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "167-193",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
                 101,
                 102,
                 103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
+                104
+              ],
+              "firstLine": "Ok(f) => f,",
+              "lastLine": "// least as informative as the sibling commands' form."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing feature file surfaces the not-found error",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "199-231",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "// ---- Read feature file ----",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dry run does not write the file",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "237-264",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
                 130,
                 131,
                 132,
@@ -57,19 +262,80 @@
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": ".iter()",
+              "lastLine": "let trimmed = line.trim();"
             }
           ]
         }
       ]
     },
     {
-      "name": "Resolves a bare identifier to spec/features/<id>.feature",
+      "name": "Two added scenarios stay in the order they were added",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "83-105",
+          "lines": "272-306",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_scenario.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "// ---- New scenario with its placeholder steps ----",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adding a scenario keeps the tags, Background and existing scenarios",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_scenario.rs",
+          "lines": "320-344",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_scenario.rs",
@@ -86,58 +352,40 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ],
+              "firstLine": "let lines: Vec<&str> = content.split('\\n').collect();",
+              "lastLine": "};"
             }
           ]
         }
       ]
     },
     {
-      "name": "Inserts the new scenario before an existing Scenario Outline",
+      "name": "Invalid Gherkin fails with a validate suggestion and leaves the file unchanged",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "112-132",
+          "lines": "359-390",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Duplicate scenario name succeeds with a warning",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "139-160",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_scenario.rs",
-              "lines": [
-                90,
-                91,
-                92,
                 93,
                 94,
                 95,
@@ -145,82 +393,43 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "let feature = match parse_feature_lenient(&content) {",
+              "lastLine": "}));"
             }
           ]
         }
       ]
     },
     {
-      "name": "Missing feature file surfaces the not-found error",
+      "name": "The added scenario uses two-space scenario and four-space step indentation",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "167-192",
+          "lines": "403-418",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_scenario.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dry run does not write the file",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/add_scenario.rs",
-          "lines": "199-218",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/add_scenario.rs",
-              "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
                 142,
                 143,
                 144,
                 145,
-                146,
-                147,
-                148
-              ]
+                146
+              ],
+              "firstLine": "// ---- New scenario with its placeholder steps ----",
+              "lastLine": ");"
             }
           ]
         }
@@ -228,8 +437,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_scenario.rs"
@@ -237,6 +446,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_scenario.rs"
     ],
-    "totalLinesCovered": 271
+    "totalLinesCovered": 556
   }
 }

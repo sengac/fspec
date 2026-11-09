@@ -49,7 +49,19 @@ fn scenario_recover_an_idle_expired_launched_browser() -> Result<(), ChromeError
         timeout: Duration::from_secs(1),
         ..config()
     })?;
-    std::thread::sleep(Duration::from_secs(3));
+    // TEST-042: wait until the idle transport has expired (probing with
+    // short-lived tabs), not a fixed time.
+    let probe = Arc::clone(&original);
+    codelet_test_helpers::wait_until_blocking("the idle transport expires", move || {
+        match probe.new_tab() {
+            Ok(tab) => {
+                probe.cleanup_tab(&tab);
+                false
+            }
+            Err(_) => true,
+        }
+    })
+    .map_err(|failure| ChromeError::LaunchError(failure.to_string()))?;
     let error = original
         .new_tab()
         .err()
@@ -85,7 +97,19 @@ fn scenario_recover_an_idle_expired_connected_browser() -> Result<(), ChromeErro
         timeout: Duration::from_secs(1),
         ..config()
     })?;
-    std::thread::sleep(Duration::from_secs(3));
+    // TEST-042: wait until the idle transport has expired (probing with
+    // short-lived tabs), not a fixed time.
+    let probe = Arc::clone(&original);
+    codelet_test_helpers::wait_until_blocking("the idle transport expires", move || {
+        match probe.new_tab() {
+            Ok(tab) => {
+                probe.cleanup_tab(&tab);
+                false
+            }
+            Err(_) => true,
+        }
+    })
+    .map_err(|failure| ChromeError::LaunchError(failure.to_string()))?;
     let error = original
         .new_tab()
         .err()

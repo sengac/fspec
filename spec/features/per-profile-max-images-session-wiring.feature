@@ -4,6 +4,7 @@
 @session
 @providers
 @high
+@attachment
 Feature: Per-profile Max Images session wiring
   """
   The effective image budget for a session is resolved from the profile's
@@ -31,7 +32,7 @@ Feature: Per-profile Max Images session wiring
   # SESSION WIRING (source-shape)
   # ========================================
   Scenario: Session creation and model-switch set-sites register the max-images budget
-    Given the shared create helper (plain + isolated create), mid-session set_model, and both NAPI model-switch set-sites exist
+    Given the shared create helper (plain + isolated create) and mid-session set_model set-sites exist
     When the max-images budget is resolved through the shared resolver
     Then each set-site registers the budget alongside the vision entry
     And the session destroy path clears the budget alongside the vision entry

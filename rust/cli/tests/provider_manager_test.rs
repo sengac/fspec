@@ -15,8 +15,15 @@ fn cleanup_test_env() {
     env::remove_var("CLAUDE_CODE_OAUTH_TOKEN");
     env::remove_var("OPENAI_API_KEY");
     env::remove_var("GOOGLE_GENERATIVE_AI_API_KEY");
-    env::remove_var("CODEX_HOME");
-    env::remove_var("CLAUDE_HOME");
+    // BUG-306: point file-based credential sources at an empty directory so
+    // the machine's own Codex/Claude/Copilot logins never leak into the test.
+    static EMPTY_HOME: std::sync::OnceLock<tempfile::TempDir> = std::sync::OnceLock::new();
+    let empty = EMPTY_HOME
+        .get_or_init(|| tempfile::tempdir().expect("empty credential home"))
+        .path();
+    env::set_var("CODEX_HOME", empty);
+    env::set_var("CLAUDE_HOME", empty);
+    env::set_var("FSPEC_HOME", empty);
     env::remove_var("ZAI_API_KEY");
     env::remove_var("ZAI_PLAN_API_KEY");
 }
@@ -35,7 +42,8 @@ fn test_automatic_claude_provider_selection_with_api_key() {
     let manager = ProviderManager::new();
     assert!(
         manager.is_ok(),
-        "ProviderManager should initialize successfully"
+        "ProviderManager should initialize successfully: {:?}",
+        manager.as_ref().err()
     );
     let manager = manager.unwrap();
 
@@ -58,21 +66,19 @@ fn test_priority_based_provider_selection() {
 
     // @step When I run codelet without --provider flag and prompt "Who made you?"
     let manager = ProviderManager::new();
-    assert!(
-        manager.is_ok(),
-        "ProviderManager should initialize successfully"
-    );
-    let manager = manager.unwrap();
 
     // @step Then the response should come from Claude provider
-    assert_eq!(
-        manager.current_provider_name(),
-        "claude",
-        "Should select Claude due to higher priority"
+    // BUG-306: PROV-101 removed the silent priority default; with several
+    // credentialed providers the caller must select one explicitly
+    // (spec/features/provider-resolution-no-silent-default.feature).
+    let error = manager.expect_err("ambiguous credentials must not pick a provider");
+    assert!(
+        error.to_string().contains("none was explicitly selected"),
+        "{error}"
     );
 
     // @step And the OpenAI provider should not be used
-    // (verified by checking current provider is claude, not openai)
+    // (no provider is used until one is selected explicitly)
 
     cleanup_test_env();
 }
@@ -93,18 +99,15 @@ fn test_claude_code_oauth_fallback() {
     let manager = ProviderManager::new();
     assert!(
         manager.is_ok(),
-        "ProviderManager should initialize with Claude OAuth"
+        "ProviderManager should initialize with Claude OAuth: {:?}",
+        manager.as_ref().err()
     );
     let manager = manager.unwrap();
 
     // @step Then the response should come from Claude provider via OAuth
-    // Note: If Codex credentials exist in system (e.g., ~/.codex), it may take priority
-    // This is expected behavior - Codex credentials persist outside env vars
-    let provider = manager.current_provider_name();
-    assert!(
-        provider == "claude" || provider == "codex",
-        "Should use Claude OAuth or Codex (if system credentials exist)"
-    );
+    // The credential homes point at an empty directory (cleanup_test_env),
+    // so the machine's own Codex login is never counted (BUG-548).
+    assert_eq!(manager.current_provider_name(), "claude");
 
     // @step And the response should mention "Anthropic"
     // (verified in integration tests)

@@ -17,7 +17,7 @@
 //!   - success → print `result.output` to stdout, exit 0.
 //!   - failure → write `Error:` + the joined error messages to stderr, exit 1.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -46,7 +46,7 @@ struct Outcome {
 /// clap subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let payload_args = serde_json::json!({ "draft": args.draft }).to_string();
     let payload = validate_foundation_schema::run(&payload_args, &project_root).await?;

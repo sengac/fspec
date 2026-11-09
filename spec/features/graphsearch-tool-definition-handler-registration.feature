@@ -1,4 +1,6 @@
 @KGRAPH-003
+@tools
+@history-search
 Feature: GraphSearch Tool Definition & Handler Registration
   """
   Tool definition in codelet-tools, handler in codelet-napi. Follows SessionSearch pattern. Serde-tagged enum with 8 action types. Handler registered per-session, cleaned up on session end. codelet-tools has no nanograph dependency.
@@ -29,24 +31,24 @@ Feature: GraphSearch Tool Definition & Handler Registration
     I want to query the knowledge graph from any agent session using a GraphSearch tool
     So that I can explore concepts, decisions, relationships, and session history stored in the graph database
 
-  Scenario: Stats action returns JSON on empty graph
+  Scenario: AstStats action returns JSON on empty graph
     Given the GraphSearch handler is registered for a session
-    When the agent calls GraphSearch with action_type 'stats'
-    Then the result contains JSON with node and edge type counts all at zero
     And the graph database is empty
+    When the agent calls GraphSearch with action_type 'ast_stats'
+    Then the result contains JSON with AST node and edge type counts all at zero
     And no error is returned
 
-  Scenario: Search action returns matching concepts
+  Scenario: AstSearch action returns matching code entities
     Given the GraphSearch handler is registered for a session
-    When the agent calls GraphSearch with action_type 'search' and query 'authentication'
-    Then the result contains a JSON array of matching Concept nodes
-    And each result includes the concept name, category, and summary
+    When the agent calls GraphSearch with action_type 'ast_search' and query 'login'
+    Then the result contains matching AST entities
+    And each result includes the entity name and type
 
   Scenario: Tool is available when agent session starts
     Given an agent session is started
     When the tool definitions are listed
     Then GraphSearch appears in the list with its JSON schema
-    And the schema describes all 8 action types with their parameters
+    And the schema describes all 16 action types with their parameters
 
   Scenario: Unregistered handler returns descriptive error
     Given no GraphSearch handler is registered for the current session

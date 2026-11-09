@@ -1,5 +1,7 @@
 @done
 @RPC-196
+@cli
+@example-mapping
 Feature: fspec answer-question CLI subcommand
   """
   CLI bridge: rust/fspec/src/answer_question.rs — clap-derived struct mirroring TS Commander.js

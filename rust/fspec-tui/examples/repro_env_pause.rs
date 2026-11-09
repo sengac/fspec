@@ -101,10 +101,11 @@ async fn main() -> anyhow::Result<()> {
                         Err(e) => println!("[buffer] err: {e}"),
                     }
                 }
-                if secs > 30 { if let Ok(Some(_)) = pause {
+                if secs > 30 { if let Ok(Some(pending)) = pause {
                     if !denied {
                         println!("[poll] pause detected -> sending Deny to unblock");
-                        let r = backend.pause_triple(my_sid.clone(), ApprovalChoice::Deny).await;
+                        let request_id = pending.route.request_id;
+                        let r = backend.pause_triple(my_sid.clone(), request_id, ApprovalChoice::Deny).await;
                         println!("[poll] pause_triple(Deny) -> {r:?}");
                         denied = true;
                     } }

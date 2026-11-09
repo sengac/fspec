@@ -1,4 +1,6 @@
 @BUG-126
+@tools
+@multi-session
 Feature: TOOL_PROGRESS_CALLBACK global singleton causes tool output to leak between concurrent sessions
   """
   Uses the same Lazy<RwLock<HashMap<Uuid, T>>> pattern as FSPEC_HANDLERS, SESSION_SEARCH_HANDLERS, etc.

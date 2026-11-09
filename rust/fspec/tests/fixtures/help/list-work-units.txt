@@ -1,45 +1,155 @@
 
 LIST-WORK-UNITS
-List work units with optional filtering by status, prefix, or epic
+Query the board: filter work units by status, type, prefix, epic, ids, time ranges, stateHistory, text, content and links, then pick fields, sort, limit, group and format the result
 
 WHEN TO USE
-  Use this command when you need to view work units in the backlog, see what's in progress, or filter by specific criteria like status, prefix, or epic.
+  Use this command for every question about the board: which cards are in a status, what was done or created in a time range, which cards entered a status, which have open questions or assumptions, what blocks what. Use show-work-unit to read one card in full.
 
 USAGE
   fspec list-work-units [options]
 
 OPTIONS
   -s, --status <status>
-    Filter by workflow status: backlog, specifying, testing, implementing, validating, done, blocked
+    Statuses (comma list): backlog, specifying, testing, implementing, validating, done, blocked
+  -t, --type <type>
+    Types (comma list): story, task, bug
   --prefix <prefix>
-    Filter by work unit prefix (e.g., AUTH, UI, API)
-  --epic <epic>
-    Filter by epic name
+    Prefixes registered in spec/prefixes.json (comma list)
+  -e, --epic <epic>
+    Epics registered in spec/epics.json (comma list)
+  --work-unit <workUnitId>
+    Cards by id, or inclusive ranges of one prefix (comma list), e.g. BUG-600..BUG-620
+  -p, --parent <workUnitId>
+    Cards whose parent is this card
+  --has-children
+    Cards with child cards
+  --estimate-min <n>
+    Estimate at least n (a card without an estimate never matches)
+  --estimate-max <n>
+    Estimate at most n
+  --has-estimate
+    Cards with an estimate
+  --no-estimate
+    Cards without an estimate
+  --created-since <time>
+    Created at or after <time>
+  --created-until <time>
+    Created before <time> (a date covers that whole local day)
+  --updated-since <time>
+    Updated at or after <time>
+  --updated-until <time>
+    Updated before <time>
+  --done-since <time>
+    Done cards whose last transition into done is at or after <time>
+  --done-until <time>
+    Done cards whose last transition into done is before <time>
+  --entered <status>
+    Cards with a stateHistory transition into <status>
+  --entered-since <time>
+    With --entered: a transition at or after <time>
+  --entered-until <time>
+    With --entered: a transition before <time>
+  --text <text>
+    Case-insensitive substring of the title or description
+  --title <text>
+    Case-insensitive substring of the title
+  --has-open-questions
+    Cards with a question that is neither answered nor deleted
+  --has-assumptions
+    Cards with assumptions (provisional decisions)
+  --has-rules
+    Cards with rules (deleted items do not count)
+  --no-rules
+    Cards without rules
+  --has-examples
+    Cards with examples
+  --has-attachments
+    Cards with attachments
+  --has-architecture-notes
+    Cards with architecture notes
+  --tag <@tag>
+    Cards with a feature file whose Feature line holds the card's @ID and whose Feature line or any scenario carries <@tag>
+  --depends-on <workUnitId>
+    Cards whose dependsOn holds the card (comma list); any: dependsOn is not empty
+  --blocked-by <workUnitId>
+    Cards whose blockedBy holds the card (comma list); any: not empty
+  --blocks <workUnitId>
+    Cards whose blocks holds the card (comma list); any: not empty
+  --relates-to <workUnitId>
+    Cards whose relatesTo holds the card (comma list); any: not empty
+  --blocked
+    Status blocked, or blocked by a card that is not done
+  --fields <fields>
+    Output fields (comma list): id, title, type, status, epic, prefix, description, estimate, parent, children, createdAt, updatedAt, doneAt, enteredAt:<status>, ageInStatus, openQuestions, assumptions, rules, examples, architectureNotes, attachments, dependsOn, blocks, blockedBy, relatesTo, dependencies (default id,type,status,epic,title)
+  --format <format>
+    table (default), ids, json, jsonl, count or csv
+  --group-by <key>
+    status, type, prefix, epic, day or week: counts per group (json: the groups with their cards); day and week use the local time of the query's one time filter
+  --sort <field>
+    Sort by an output field (times chronologically, absent values last)
+  --desc
+    Reverse the --sort order
+  --limit <n>
+    Keep the first n cards after sorting
 
 TYPICAL WORKFLOW
-  backlog → specifying → testing → implementing → validating → done. Use --status flag to see work units at each stage.
+  backlog → specifying → testing → implementing → validating → done. Use --status to see each stage, --done-since or --entered for what moved recently.
 
 EXAMPLES
-  1. List all work units
-  $ fspec list-work-units
-  AUTH-001 - User login feature
-UI-002 - Dashboard layout
+  1. Count the cards done in the last 2 days per local day
+  $ fspec list-work-units --status done --done-since 2d --group-by day
+  DAY         COUNT
+2026-11-06  4
+2026-11-07  2
 
-  2. List only backlog items
-  $ fspec list-work-units --status=backlog
-  AUTH-003 - Password reset
-API-004 - User endpoints
+6 work units
 
-  3. List all AUTH-prefixed work units
-  $ fspec list-work-units --prefix=AUTH
-  AUTH-001 - User login feature
-AUTH-003 - Password reset
+  2. Cards in testing or specifying with open questions
+  $ fspec list-work-units --status testing,specifying --has-open-questions
+
+  3. Bugs created since 30 October (local time) that are not done
+  $ fspec list-work-units --type bug --created-since 2026-10-30 --status backlog,specifying,testing,implementing,validating,blocked
+
+  4. Ids of the cards blocked by BUG-123
+  $ fspec list-work-units --blocked-by BUG-123 --format ids
+  BUG-124
+BUG-130
+
+  5. Cards with assumptions (provisional decisions)
+  $ fspec list-work-units --has-assumptions --fields id,title,assumptions
+
+  6. One card's open questions and assumptions
+  $ fspec list-work-units --work-unit AUTH-001 --fields id,openQuestions,assumptions --format json
+
+  7. Cards that entered validating since local midnight of 7 November
+  $ fspec list-work-units --entered validating --entered-since 2026-11-07 --format ids
+
+  8. Cards done in the last week, counted per type
+  $ fspec list-work-units --done-since 1w --group-by type --format count
+  bug 5
+story 3
+
+COMMON ERRORS
+  ✗ Unknown status 'donee'. Valid statuses: backlog, specifying, testing, implementing, validating, done, blocked
+    Fix: Use one of the listed values; types, prefixes, epics, fields, formats, group-by values and sort keys are checked the same way
+
+  ✗ Invalid time 'yesterday' for --created-since
+    Fix: Use YYYY-MM-DD, an ISO-8601 timestamp, a duration back from now (30m, 6h, 2d, 1w) or now
+
+  ✗ --group-by day needs exactly one kind of time filter (created, updated, done or entered)
+    Fix: Add one time filter, e.g. --done-since 2d, so the day of that time is the group key
 
 RELATED COMMANDS
   fspec show-work-unit
+  fspec board
   fspec create-story
   fspec create-bug
   fspec create-task
   fspec update-work-unit-status
-  fspec board
+
+NOTES
+  • Filters are exact (no fuzzy matching): a comma list or a repeated flag matches any of its values, and different filters must all match.
+  • A time is a date (YYYY-MM-DD, the start of that day in the local time zone), an ISO-8601 timestamp (local unless it carries Z or an offset), a duration back from now (Nm, Nh, Nd = N x 24 h, Nw) or now. Since is inclusive, until is exclusive.
+  • Times print in the local time zone with its offset; a field the card does not have is left out of its JSON object and empty in table and csv.
+  • Never read or parse spec/work-units.json directly (no jq, grep or scripts): query it with list-work-units and read one card with show-work-unit.
 

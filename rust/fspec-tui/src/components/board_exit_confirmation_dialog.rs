@@ -244,7 +244,7 @@ impl Component for BoardExitConfirmationDialog {
             buf,
             ACCENT,
             TITLE,
-            DESCRIPTION,
+            &[DESCRIPTION.to_string()],
             FOOTER,
             MIN_WIDTH,
             self.selected_index(),

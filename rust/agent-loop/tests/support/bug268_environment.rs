@@ -10,6 +10,11 @@ pub struct Environment {
 
 impl Environment {
     pub fn new() -> TestResult<Self> {
+        // BUG-447: native provider fixtures drive real tools without a
+        // session manager callback.
+        codelet_tools::facade::declare_unrestricted_tool_access(
+            "native provider fixtures drive tools without a session manager",
+        );
         keyring::set_default_credential_builder(keyring::mock::default_credential_builder());
         let variables = [
             "CLAUDE_CODE_OAUTH_TOKEN",

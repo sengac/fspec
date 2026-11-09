@@ -15,6 +15,10 @@
 //! Renders via the shared `dialog_theme::render_dialog` with
 //! `Accent::Cyan` — mirroring the cyan role banner accent used by
 //! `RoleBanner` (`views/agent/role_banner.rs`).
+//!
+//! TUI-131: the draft stays one row (the click target): a draft longer
+//! than the dialog shows the part around the cursor, cut with `…`, and a
+//! line break in it shows as `⏎` instead of being painted into a cell.
 
 use crossterm::event::{Event, KeyCode, KeyModifiers, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
@@ -26,8 +30,10 @@ use tui_textarea::{Input, TextArea};
 
 use codelet_rpc_types::SessionId;
 
+use super::daemon_form_dialog::scroll_window;
 use super::dialog_button_hits::{row_list_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR};
+use super::dialog_theme_rows::dialog_body_width;
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove` AND
@@ -106,6 +112,24 @@ impl RoleDialog {
             let _ = tx.send(action.clone());
         }
         self.pending_action = Some(action);
+    }
+
+    /// TUI-131: the draft as one row of characters (a line break shown as
+    /// `⏎`) and the cursor's index in it.
+    fn draft_row(&self) -> (Vec<char>, usize) {
+        let (cursor_row, cursor_col) = self.textarea.cursor();
+        let mut chars = Vec::new();
+        let mut cursor = 0;
+        for (i, line) in self.textarea.lines().iter().enumerate() {
+            if i > 0 {
+                chars.push('⏎');
+            }
+            if i == cursor_row {
+                cursor = chars.len() + cursor_col;
+            }
+            chars.extend(line.chars());
+        }
+        (chars, cursor)
     }
 
     fn remove_callback(&self) -> Callback {
@@ -201,12 +225,12 @@ impl Component for RoleDialog {
         // disabled by `selectable: false` — the row paints plain so
         // the textarea's cursor (`set_cursor_position`) can still be
         // placed over it by the parent frame if the App wants to.
-        let draft = self.draft();
+        let (draft, cursor) = self.draft_row();
         let body_row = DialogRow {
             spans: vec![Span::raw(if draft.is_empty() {
                 String::from(" ")
             } else {
-                draft
+                scroll_window(&draft, cursor, dialog_body_width(area))
             })],
             selectable: false,
             selected: false,

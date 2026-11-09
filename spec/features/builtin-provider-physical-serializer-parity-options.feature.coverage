@@ -9,7 +9,32 @@
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
-              "lines": [56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76]
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "let tool_choice = if self.client.ext().oauth_mode {",
+              "lastLine": "}"
             }
           ]
         }
@@ -24,11 +49,36 @@
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
-              "lines": [56,57,58,59,60]
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "let tool_choice = if self.client.ext().oauth_mode {",
+              "lastLine": "};"
             },
             {
               "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs",
-              "lines": [798,799,800,801,802,803,804,805,806,807,808,809,810,811]
+              "lines": [
+                797,
+                798,
+                799,
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810
+              ],
+              "firstLine": "impl TryFrom<message::ToolChoice> for ToolChoice {",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,7 +93,18 @@
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs",
-              "lines": [541,542,543,544,545,546,547,548]
+              "lines": [
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548
+              ],
+              "firstLine": "media_type: Some(DocumentMediaType::TXT),",
+              "lastLine": "data, media_type, .."
             }
           ]
         }
@@ -58,7 +119,22 @@
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
-              "lines": [690,691]
+              "lines": [
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723
+              ],
+              "firstLine": "let stream = req",
+              "lastLine": "};"
             }
           ]
         }
@@ -69,12 +145,14 @@
     "totalScenarios": 4,
     "coveredScenarios": 4,
     "coveragePercent": 100,
-    "testFiles": ["rust/providers/tests/cmpct071_builtin_serializers_options.rs"],
+    "testFiles": [
+      "rust/providers/tests/cmpct071_builtin_serializers_options.rs"
+    ],
     "implFiles": [
       "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
       "rust/patches/rig-core/src/providers/anthropic/completion.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs"
     ],
-    "totalLinesCovered": 157
+    "totalLinesCovered": 168
   }
 }

@@ -1,4 +1,6 @@
 @KGRAPH-042
+@parser
+@code-analysis
 Feature: Calls/Imports/TypeRef edges — PHP
   """
   Uses KindMatcher for `namespace_use_declaration` to find imports, `function_call_expression`/`member_call_expression` for calls.

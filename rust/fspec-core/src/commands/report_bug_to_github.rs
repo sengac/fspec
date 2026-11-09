@@ -228,7 +228,7 @@ fn gather_git_context(project_root: &Path) -> (Option<String>, bool) {
 /// `@{work_unit_id}`. Returns `"spec/features/<file>"`. Mirrors TS lines
 /// 120-135 (bare `catch {}` on a missing features directory → `None`).
 fn find_feature_file(project_root: &Path, work_unit_id: &str) -> Option<String> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     let needle = format!("@{work_unit_id}");
 
     let mut entries: Vec<String> = std::fs::read_dir(&features_dir)

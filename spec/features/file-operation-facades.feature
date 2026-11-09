@@ -1,3 +1,4 @@
+@BUG-582
 @tool-discovery
 @TOOL-003
 @high
@@ -35,21 +36,21 @@ Feature: File Operation Facades
   # Example 1: Gemini sends {path: '/tmp/file.txt'} to read_file → facade maps to ReadArgs
   Scenario: Map Gemini read_file parameters to internal ReadTool format
     Given a GeminiReadFileFacade is registered
-    When Gemini sends parameters {path: '/tmp/file.txt'} to tool 'read_file'
+    When Gemini sends parameters {file_path: '/tmp/file.txt'} to tool 'read_file'
     Then the facade maps to InternalFileParams::Read with file_path '/tmp/file.txt'
     And the same base ReadTool executes with the mapped parameters
 
   # Example 2: Gemini sends {path: '/tmp/file.txt', content: 'hello'} to write_file → facade maps to WriteArgs
   Scenario: Map Gemini write_file parameters to internal WriteTool format
     Given a GeminiWriteFileFacade is registered
-    When Gemini sends parameters {path: '/tmp/file.txt', content: 'hello'} to tool 'write_file'
+    When Gemini sends parameters {file_path: '/tmp/file.txt', content: 'hello'} to tool 'write_file'
     Then the facade maps to InternalFileParams::Write with file_path '/tmp/file.txt' and content 'hello'
     And the same base WriteTool executes with the mapped parameters
 
   # Example 3: Gemini sends {path: '/tmp/file.txt', old_text: 'foo', new_text: 'bar'} to replace → facade maps to EditArgs
   Scenario: Map Gemini replace parameters to internal EditTool format
     Given a GeminiReplaceFacade is registered
-    When Gemini sends parameters {path: '/tmp/file.txt', old_text: 'foo', new_text: 'bar'} to tool 'replace'
+    When Gemini sends parameters {file_path: '/tmp/file.txt', old_string: 'foo', new_string: 'bar'} to tool 'replace'
     Then the facade maps to InternalFileParams::Edit with file_path '/tmp/file.txt', old_string 'foo', new_string 'bar'
     And the same base EditTool executes with the mapped parameters
 
@@ -60,25 +61,25 @@ Feature: File Operation Facades
     Then the agent has tool 'read_file' backed by GeminiReadFileFacade
     And the agent has tool 'write_file' backed by GeminiWriteFileFacade
     And the agent has tool 'replace' backed by GeminiReplaceFacade
-    And all file operation tools use FileToolFacadeWrapper instead of raw tools
+    And all file operation tools use FacadeToolWrapper instead of raw tools
 
   # Rule 4: All file operation facades MUST use flat JSON schemas
   Scenario: GeminiReadFileFacade provides flat JSON schema without nested objects
     Given a GeminiReadFileFacade is created
     When I request the tool definition
-    Then the schema has type 'object' with properties containing only {path: {type: 'string'}}
+    Then the schema has type 'object' with properties containing {file_path: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
   Scenario: GeminiWriteFileFacade provides flat JSON schema without nested objects
     Given a GeminiWriteFileFacade is created
     When I request the tool definition
-    Then the schema has type 'object' with properties containing {path: {type: 'string'}, content: {type: 'string'}}
+    Then the schema has type 'object' with properties containing {file_path: {type: 'string'}, content: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
   Scenario: GeminiReplaceFacade provides flat JSON schema without nested objects
     Given a GeminiReplaceFacade is created
     When I request the tool definition
-    Then the schema has type 'object' with properties containing {path: {type: 'string'}, old_text: {type: 'string'}, new_text: {type: 'string'}}
+    Then the schema has type 'object' with properties containing {file_path: {type: 'string'}, old_string: {type: 'string'}, new_string: {type: 'string'}}
     And the schema does not contain 'oneOf' or nested action objects
 
   # Rule 5: FileToolFacadeWrapper integration with rig::tool::Tool trait

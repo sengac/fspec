@@ -47,8 +47,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use common::{fspec_bin, make_workspace};
-use portable_pty::{native_pty_system, CommandBuilder, PtySize};
+use common::make_workspace;
+use portable_pty::{native_pty_system, PtySize};
 
 /// Cell grid width used for the test. Wide enough that "You: is this
 /// card done?" cannot wrap and the AgentView input panel has room.
@@ -134,7 +134,9 @@ fn end_to_end_user_typing_produces_correct_prefixes_no_duplicates_no_truncation(
         })
         .expect("openpty");
 
-    let mut cmd = CommandBuilder::new(fspec_bin());
+    // BUG-627: the combined-mode daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut cmd = common::fspec_pty_command(&daemon_home);
     cmd.args(["--workspace", ws.path().to_str().expect("utf8 ws path")]);
     // The combined-mode TUI honours $TERM when initialising crossterm.
     cmd.env("TERM", "xterm-256color");

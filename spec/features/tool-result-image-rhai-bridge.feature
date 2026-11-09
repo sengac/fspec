@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @bug-fix
 @rust
@@ -5,6 +6,7 @@
 @multimodal
 @providers
 @BUG-141
+@bridge
 Feature: Propagate ToolResultContent::Image through Rhai custom-provider bridge so build_request sees image blocks
   """
   rig_message_convert.rs::convert_user_message refactored: instead of collapsing each ToolResult's contents into a single joined string, walk the OneOrMany<ToolResultContent> and build a Vec<ToolResultPart> in order — Text → ToolResultPart::Text, Image → ToolResultPart::Image{source: image_to_source(...)}. If image_to_source returns None (Raw/Unknown), skip that entry. Use ContentPart::tool_result_text when the resulting parts vector is exactly one Text entry (preserves backcompat); otherwise use ContentPart::tool_result_parts.

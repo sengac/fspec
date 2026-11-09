@@ -65,7 +65,7 @@ impl StreamOutput for Observer {
         assert_eq!(snapshot.tokens.input_tokens as u64, boundary.input_tokens);
         assert_eq!(
             serde_json::to_value(snapshot.context_fill).map_err(|error| error.to_string())?,
-            serde_json::to_value(context.context_fill().ok_or("usable limits")?)
+            serde_json::to_value(context.context_fill()?.ok_or("usable limits")?)
                 .map_err(|error| error.to_string())?
         );
         assert!(snapshot.reconciled);
@@ -86,6 +86,7 @@ impl StreamOutput for Observer {
 #[serial_test::serial]
 async fn automatic_builder_publication_refreshes_the_authoritative_context() -> TestResult {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     for reject in [false, true] {

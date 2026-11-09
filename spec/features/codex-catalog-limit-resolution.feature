@@ -1,13 +1,24 @@
+@done
 @testing
 @session
 @model-selection
 @compaction
+@BUG-335
+@COV-062
 Feature: Codex selections retain catalog model limits
   """
   The model selector synthesizes Codex models from the OpenAI models.dev
   catalog. Shared selection resolution must use that same catalog source for
   context and output limits while retaining Codex as the transport identity.
   Missing metadata must stay missing rather than introducing guessed limits.
+
+  BUG-335: catalog lookup matches a selection only by catalog key or model id,
+  exactly. A name that is merely a prefix of one catalog model (gpt-4 against
+  gpt-4o) resolves no entry, so it never borrows that model's capacity.
+
+  COV-062: every scenario is linked to its test and implementation, and every
+  step is a byte-identical @step comment in
+  rust/sessions/tests/codex_catalog_limit_resolution.rs.
   """
 
   Background: User story
@@ -32,11 +43,11 @@ Feature: Codex selections retain catalog model limits
   Scenario: An uncatalogued Codex selection does not inherit guessed limits
     Given a Codex session with resolved model limits
     When the session switches to a model absent from the catalog
-    Then active and cached limits are unavailable
-    And no limits from the previous model are retained
+    Then the switch is refused naming the missing context window and output limit
+    And the session keeps its catalogued model and limits
 
   Scenario: A partial Codex model name does not authorize catalog capacity
     Given a Codex session with resolved model limits
     When the session switches to a name that only prefixes a catalog model
-    Then active and cached limits are unavailable
-    And no limits from a different model are used
+    Then the switch is refused naming the missing context window and output limit
+    And the session keeps its catalogued model and limits

@@ -108,12 +108,17 @@ pub async fn run_rlcd_security_check(
     tool_name: &str,
     thresholds: &SecurityThresholds,
 ) -> Result<(), BlockedError> {
-    let config = load_rlcd_config();
+    // BUG-451: an unloadable RLCD config refuses the operation.
+    let config = load_rlcd_config().map_err(|error| BlockedError {
+        reason: format!("RLCD security stage: {error}"),
+        guidance: None,
+        rule_id: "rlcd-config".to_string(),
+    })?;
     if !config.enabled || !matches!(config.security.check_mode.as_str(), "all" | "prompt-only") {
         return Ok(()); // disabled config or unknown checkMode: fail-open
     }
     let security = &config.security;
-    if is_session_allowed(RLCD_CHECK_ALLOWANCE) {
+    if is_session_allowed(session_id, RLCD_CHECK_ALLOWANCE) {
         return Ok(());
     }
     if over_check_cap(session_id, security.max_checks_per_session) {
@@ -133,7 +138,10 @@ pub async fn run_rlcd_security_check(
     let model = match health_check(&config.url, STAGE_HEALTH_BUDGET).await {
         Ok(model) => model,
         Err(e) => {
-            warn_unreachable_once(session_id, &format!("rlcd security: engine unreachable ({e})"));
+            warn_unreachable_once(
+                session_id,
+                &format!("rlcd security: engine unreachable ({e})"),
+            );
             return Ok(());
         }
     };
@@ -145,7 +153,13 @@ pub async fn run_rlcd_security_check(
         criteria: None,
     };
     let response = match HttpRlcdClient
-        .classify(&config.url, &model, state, std::slice::from_ref(&question), STAGE_REQUEST_BUDGET)
+        .classify(
+            &config.url,
+            &model,
+            state,
+            std::slice::from_ref(&question),
+            STAGE_REQUEST_BUDGET,
+        )
         .await
     {
         Ok(response) => response,
@@ -189,7 +203,7 @@ pub async fn run_rlcd_security_check(
         );
         return match response {
             PauseResponse::AllowSession => {
-                allow_for_session(RLCD_CHECK_ALLOWANCE);
+                allow_for_session(session_id, RLCD_CHECK_ALLOWANCE);
                 Ok(())
             }
             // AllowOnce and Resumed (no pause handler registered) execute
@@ -229,7 +243,11 @@ pub fn run_rlcd_security_check_sync(
     let tool_name = tool_name.to_string();
     tokio::task::block_in_place(|| {
         handle.block_on(run_rlcd_security_check(
-            session_id, &state, &instructions, &tool_name, thresholds,
+            session_id,
+            &state,
+            &instructions,
+            &tool_name,
+            thresholds,
         ))
     })
 }
@@ -251,20 +269,22 @@ pub async fn check_file_path_semantic(
 
     // (2) Classify the regex outcome (mirrors check_file_path's internal
     // match): explicit Allow rule / prompt-rule allowance / no rule.
-    use crate::blocklist::{load_blocklist_config, middleware_project_root, BlocklistMatcher};
-    let project_root = middleware_project_root();
-    let config = load_blocklist_config(project_root.as_deref());
+    use crate::blocklist::{session_blocklist_config, BlocklistMatcher};
+    // BUG-601: classified against the same rules the regex layer used.
+    let config = session_blocklist_config(session_id);
     let result = if config.rules.is_empty() {
         crate::blocklist::CheckResult::allowed()
     } else {
         BlocklistMatcher::new(config).check_command(file_path)
     };
-    let explicit_allow =
-        result.matched_action == Some(crate::blocklist::BlocklistAction::Allow);
-    let prompt_allowed =
-        result.matched_action == Some(crate::blocklist::BlocklistAction::Prompt);
+    let explicit_allow = result.matched_action == Some(crate::blocklist::BlocklistAction::Allow);
+    let prompt_allowed = result.matched_action == Some(crate::blocklist::BlocklistAction::Prompt);
 
-    let rlcd_config = load_rlcd_config();
+    let rlcd_config = load_rlcd_config().map_err(|error| BlockedError {
+        reason: format!("RLCD security stage: {error}"),
+        guidance: None,
+        rule_id: "rlcd-config".to_string(),
+    })?;
     let stage = match rlcd_config.security.check_mode.as_str() {
         "all" => !explicit_allow,
         "prompt-only" => prompt_allowed,
@@ -277,7 +297,14 @@ pub async fn check_file_path_semantic(
     // (3) The stage itself. Context-LEADING state (calibrated 2026-09-24):
     // the agent-harness sentence first, the machine-readable marker after.
     let user = context_user();
+    // BUG-404: a failed isolation lookup blocks rather than describing the
+    // process cwd for an unknown session.
     let cwd = crate::facade::get_effective_cwd(session_id)
+        .map_err(|reason| BlockedError {
+            reason: format!("cannot resolve the session's isolation context: {reason}"),
+            guidance: None,
+            rule_id: "isolation-lookup".to_string(),
+        })?
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|| ".".to_string());
     let ctx = format!(

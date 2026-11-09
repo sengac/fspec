@@ -12,6 +12,7 @@ async fn session_routing_persists_across_provider_reconstruction_and_resets_with
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a session with Codex routing and a server turn state
     let directory = tempfile::tempdir()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     let server = MockServer::start().await;
     Mock::given(method("POST"))

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RLCD-001
 @rlcd-001
@@ -5,6 +6,8 @@
 @rlcd
 Feature: RLCD service supervisor: config, health polling, local auto-spawn with port scanning
   """
+  BUG-451: a malformed config is an error, not the defaults (user rule: no
+  fallbacks); see rlcd-config-errors-are-reported.feature.
   New module rust/tools/src/rlcd/ (config.rs, service.rs, error.rs; client.rs arrives in RLCD-002). Status: RLCD_STATUS: RwLock<RlcdStatus{reachable, base_url, model, last_check, spawn_note}>. Polling task: spawn-once guard, tokio::time::interval(10s), Handle::current() only. Config: load_rlcd_config()/load_rlcd_config_from(path) + key-preserving writer mirroring save_persisted_model_string_to. Files stay <300 lines.
   """
 
@@ -25,12 +28,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
     And the resolved config uses the default backend "rlcd"
     And the resolved config has enabled true
     And no config file has been written to disk
-
-  Scenario: A malformed config file resolves to defaults without failing
-    Given a user config directory whose fspec-config.json contains invalid JSON
-    When the RLCD config is loaded
-    Then the resolved config uses the default url "http://127.0.0.1:8000"
-    And loading does not return an error
 
   Scenario: A partial config fills only the missing fields from defaults
     Given a user config directory whose fspec-config.json sets rlcd.url to "http://10.0.0.5:9000" only

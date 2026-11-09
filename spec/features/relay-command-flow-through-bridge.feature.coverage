@@ -4,35 +4,39 @@
       "name": "Translate relay command message to InboundMessage and forward to codelet WebSocket",
       "testMappings": [
         {
-          "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "462-510",
+          "file": "bridge/__tests__/relay-command-flow.test.ts",
+          "lines": "28-64",
           "implMappings": [
             {
-              "file": "bridge/relay-endpoint.ts",
+              "file": "bridge/relay-endpoint-handlers.ts",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
                 239,
                 240,
-                241
-              ]
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "* Translate relay command message to fspec flat InboundMessage format.",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,35 +46,37 @@
       "name": "Drop command message for unknown session",
       "testMappings": [
         {
-          "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "518-554",
+          "file": "bridge/__tests__/relay-command-flow.test.ts",
+          "lines": "72-105",
           "implMappings": [
             {
-              "file": "bridge/relay-endpoint.ts",
+              "file": "bridge/relay-endpoint-handlers.ts",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
                 239,
                 240,
-                241
-              ]
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "function getSessionOrWarn(",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,8 +86,8 @@
       "name": "Forward commandResponse from codelet to relay unchanged",
       "testMappings": [
         {
-          "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "562-601",
+          "file": "bridge/__tests__/relay-command-flow.test.ts",
+          "lines": "113-148",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -108,7 +114,9 @@
                 271,
                 272,
                 273
-              ]
+              ],
+              "firstLine": "MAX_RECONNECT_DELAY_MS",
+              "lastLine": "// Public API"
             }
           ]
         }
@@ -118,8 +126,8 @@
       "name": "No bridge TypeScript files import fspecCallback",
       "testMappings": [
         {
-          "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "609-627",
+          "file": "bridge/__tests__/relay-command-flow.test.ts",
+          "lines": "156-176",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -144,7 +152,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "import { config } from 'dotenv';",
+              "lastLine": "// Re-export for test imports"
             }
           ]
         }
@@ -154,8 +164,8 @@
       "name": "relay-command-executor.ts is deleted",
       "testMappings": [
         {
-          "file": "bridge/__tests__/relay-endpoint.test.ts",
-          "lines": "629-644",
+          "file": "bridge/__tests__/relay-command-flow.test.ts",
+          "lines": "180-198",
           "implMappings": [
             {
               "file": "bridge/relay-endpoint.ts",
@@ -180,7 +190,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "import { config } from 'dotenv';",
+              "lastLine": "// Re-export for test imports"
             }
           ]
         }
@@ -192,11 +204,12 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "bridge/__tests__/relay-endpoint.test.ts"
+      "bridge/__tests__/relay-command-flow.test.ts"
     ],
     "implFiles": [
+      "bridge/relay-endpoint-handlers.ts",
       "bridge/relay-endpoint.ts"
     ],
-    "totalLinesCovered": 267
+    "totalLinesCovered": 255
   }
 }

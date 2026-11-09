@@ -26,7 +26,7 @@
 //! 1 on any [`codelet_fspec_core::FspecCoreError`] (message to stderr prefixed
 //! with `Error:`, parity with the TS chalk-red error path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -48,7 +48,7 @@ pub struct CliArgs {
 /// verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CliArgs → JSON object expected by fspec_core.
     let args_json = json!({ "name": args.name }).to_string();

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "784-802",
+          "lines": "827-849",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -20,7 +20,9 @@
                 307,
                 308,
                 309
-              ]
+              ],
+              "firstLine": "async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {",
+              "lastLine": "message: reason,"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "330-364",
+          "lines": "340-375",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -118,100 +120,9 @@
                 123,
                 124,
                 125
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/tools/src/bridge.rs",
-          "lines": "330-364",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/bridge.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
-              ]
+              ],
+              "firstLine": "pub struct BridgeConnection {",
+              "lastLine": "}"
             }
           ]
         }
@@ -222,7 +133,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "368-395",
+          "lines": "378-405",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -309,7 +220,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "pub struct BridgeConnection {",
+              "lastLine": "}"
             }
           ]
         }
@@ -320,7 +233,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "402-432",
+          "lines": "412-443",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -339,7 +252,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": ".map(BridgeConnection::info)",
+              "lastLine": ""
             }
           ]
         }
@@ -350,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "440-469",
+          "lines": "450-480",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -365,7 +280,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "/// Get a mutable reference to a connection",
+              "lastLine": ""
             }
           ]
         }
@@ -376,7 +293,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "473-510",
+          "lines": "483-521",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -391,7 +308,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "/// Get a mutable reference to a connection",
+              "lastLine": ""
             }
           ]
         }
@@ -402,7 +321,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "518-557",
+          "lines": "528-568",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -529,7 +448,9 @@
                 163,
                 164,
                 165
-              ]
+              ],
+              "firstLine": "pub struct BridgeConnection {",
+              "lastLine": ""
             }
           ]
         }
@@ -540,12 +461,11 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "565-601",
+          "lines": "575-613",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
               "lines": [
-                56,
                 57,
                 58,
                 59,
@@ -562,8 +482,16 @@
                 70,
                 71,
                 72,
-                73
-              ]
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "/// Message to send to external endpoint",
+              "lastLine": "}"
             }
           ]
         }
@@ -574,7 +502,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "609-632",
+          "lines": "621-658",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -587,7 +515,9 @@
                 71,
                 72,
                 73
-              ]
+              ],
+              "firstLine": "pub request_id: Option<String>,",
+              "lastLine": "url,"
             }
           ]
         }
@@ -598,7 +528,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "639-711",
+          "lines": "665-751",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -632,7 +562,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "})?;",
+              "lastLine": "pub connections: HashMap<String, BridgeConnection>,"
             }
           ]
         }
@@ -643,7 +575,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "715-757",
+          "lines": "754-801",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -671,7 +603,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "})?;",
+              "lastLine": "/// Manages all bridge connections for a single session"
             }
           ]
         }
@@ -682,7 +616,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/bridge.rs",
-          "lines": "765-780",
+          "lines": "808-824",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
@@ -745,7 +679,9 @@
                 296,
                 297,
                 298
-              ]
+              ],
+              "firstLine": "impl Tool for BridgeTool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -766,6 +702,6 @@
     "implFiles": [
       "rust/tools/src/bridge.rs"
     ],
-    "totalLinesCovered": 997
+    "totalLinesCovered": 930
   }
 }

@@ -67,8 +67,14 @@ async fn exercise(
             (provider != "openai").then(|| "openai".to_string()),
         )?;
         let limits = codelet_providers::request_admission::AdmissionLimits {
-            context_capacity: Some(inner.provider_manager().context_window() as u64),
-            output_reservation: Some(inner.provider_manager().max_output_tokens() as u64),
+            context_capacity: inner
+                .provider_manager()
+                .context_window()
+                .map(|limit| limit as u64),
+            output_reservation: inner
+                .provider_manager()
+                .max_output_tokens()
+                .map(|limit| limit as u64),
         };
         let client: rig::providers::openai::CompletionsClient =
             rig::providers::openai::CompletionsClient::builder()
@@ -94,7 +100,7 @@ async fn exercise(
         register_compactor_sub_agent_handler(
             fixture.session.id,
             &inner,
-            std::env::temp_dir(),
+            fixture.project(),
             fixture.session.compaction_in_progress.clone(),
         );
         limits
@@ -107,7 +113,7 @@ async fn exercise(
             register_generate_compaction_handler(
                 fixture.session.id,
                 &inner,
-                std::env::temp_dir(),
+                fixture.project(),
                 fixture.session.clone(),
                 None,
             )
@@ -116,6 +122,15 @@ async fn exercise(
             .call(GenerateCompactionArgs { session_id: None })
             .await;
         match result {
+            // BUG-614: a failed self-target generation is a non-fatal
+            // rejected_final result carrying the exact error.
+            Ok(summary)
+                if serde_json::from_str::<serde_json::Value>(&summary)?["status"]
+                    == "rejected_final" =>
+            {
+                let summary: serde_json::Value = serde_json::from_str(&summary)?;
+                Err(summary["error"].as_str().unwrap_or_default().to_owned())
+            }
             Ok(summary) => {
                 let summary: serde_json::Value = serde_json::from_str(&summary)?;
                 assert_eq!(summary["status"], "queued");
@@ -185,7 +200,9 @@ async fn exercise(
         let expected_error = if capacity == Some(0) {
             "positive context capacity"
         } else if output == Some(0) {
-            "positive output reservation"
+            // BUG-448: PROV-174 — the OpenAI provider itself refuses a zero
+            // output limit before the compaction admission check runs.
+            "set a positive limit"
         } else {
             "leaves no input budget"
         };

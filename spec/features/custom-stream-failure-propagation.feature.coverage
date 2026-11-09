@@ -10,12 +10,20 @@
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "let event = match event_result {",
+              "lastLine": "};"
             }
           ]
         }
@@ -31,12 +39,20 @@
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "let event = match event_result {",
+              "lastLine": "};"
             }
           ]
         }
@@ -52,12 +68,20 @@
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "let event = match event_result {",
+              "lastLine": "};"
             }
           ]
         }
@@ -73,12 +97,20 @@
             {
               "file": "rust/providers/src/custom/stream_http.rs",
               "lines": [
+                71,
+                72,
+                73,
+                74,
                 75,
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81
+              ],
+              "firstLine": "let event = match event_result {",
+              "lastLine": "};"
             }
           ]
         }
@@ -99,7 +131,9 @@
                 119,
                 120,
                 121
-              ]
+              ],
+              "firstLine": "if !saw_stop {",
+              "lastLine": "));"
             }
           ]
         }
@@ -125,7 +159,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "if event.data.trim() == \"[DONE]\" {",
+              "lastLine": "}"
             }
           ]
         }
@@ -147,7 +183,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "match processor.process_event(&event.data).await {",
+              "lastLine": "}"
             }
           ]
         }
@@ -169,7 +207,9 @@
                 68,
                 69,
                 70
-              ]
+              ],
+              "firstLine": "let mut events = Box::pin(body_stream.eventsource());",
+              "lastLine": "while let Some(event_result) = events.next().await {"
             }
           ]
         }
@@ -186,6 +226,6 @@
     "implFiles": [
       "rust/providers/src/custom/stream_http.rs"
     ],
-    "totalLinesCovered": 198
+    "totalLinesCovered": 222
   }
 }

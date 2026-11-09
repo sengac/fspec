@@ -21,8 +21,8 @@
 //! config is never mutated). The grid never renders zero panes, the
 //! board is usable, and Esc / Shift+Right / Enter all behave.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::board_exit_confirmation_dialog::BOARD_EXIT_CONFIRMATION_DIALOG_ID;
@@ -47,20 +47,23 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 fn esc() -> Event {
@@ -93,46 +96,54 @@ fn wu(id: &str) -> WorkUnitInfo {
 /// Enter mux mode with the all-agent layout `[Agent, Agent]` (no board
 /// pane) and `n_sessions` open sessions. This is the user's saved
 /// config shape that traps the TUI (BUG-174).
-async fn all_agent_mux(app: &mut App, n_sessions: usize) {
+async fn all_agent_mux(
+    app: &mut App,
+    n_sessions: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n_sessions {
         app.dispatch(Action::SessionCreated(sid(&format!("s-{i}"))));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     app.dispatch(Action::WorkUnitsLoaded(vec![wu("AUTH-001")]));
-    // Explicit all-agent pane list (MUX-001 R5): 2..=4 kinds, no split.
-    submit(app, "/mux agent agent");
-    drain_pending(app).await;
+    // Explicit all-agent layout (MUX-010 layout string).
+    submit(app, "/mux agent, agent");
+    drain_pending(app).await?;
+    Ok(())
 }
 
-/// The realistic trap path: open one agent, then Close Session.
-async fn open_one_then_close(app: &mut App) {
-    all_agent_mux(app, 1).await;
+/// The realistic trap path: open one agent, then Close.
+async fn open_one_then_close(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
+    all_agent_mux(app, 1).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.agent_view_store().open_sessions().len(), 1);
     // Focus the (only) agent pane, then close it via the exit dialog.
     let n = app.navigator().mux.pane_rects().len();
     app.navigator_mut().mux.set_focus(n - 1);
-    app.dispatch(Action::AgentExitChoice {
-        choice: codelet_fspec_tui::components::exit_confirmation_dialog::ExitChoice::CloseSession,
-    });
-    drain_pending(app).await;
+    // TUI-124: closing goes through the close dialog and its facts.
+    app.dispatch(Action::AgentEscPressed);
+    drain_pending(app).await?;
+    let _ = app.handle_event(&enter()); // Enter commits the pre-selected Close
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// The same trap for the DEFAULT (Board|Agent) layout — the pre-existing
 /// BUG-165 shape. Slash submits are silently dropped without a session
 /// (`handle_input_submitted`), so the layout must be entered while a
 /// session is live and that session closed afterwards.
-async fn default_layout_then_close(app: &mut App) {
+async fn default_layout_then_close(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.dispatch(Action::WorkUnitsLoaded(vec![wu("AUTH-001")]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     submit(app, "/mux on");
-    drain_pending(app).await;
+    drain_pending(app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
-    app.dispatch(Action::AgentExitChoice {
-        choice: codelet_fspec_tui::components::exit_confirmation_dialog::ExitChoice::CloseSession,
-    });
-    drain_pending(app).await;
+    // TUI-124: closing goes through the close dialog and its facts.
+    app.dispatch(Action::AgentEscPressed);
+    drain_pending(app).await?;
+    let _ = app.handle_event(&enter()); // Enter commits the pre-selected Close
+    drain_pending(app).await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -142,16 +153,17 @@ async fn default_layout_then_close(app: &mut App) {
 
 /// Scenario: closing the last agent in an all-agent layout shows a full-width board pane
 #[tokio::test]
-async fn closing_the_last_agent_in_an_all_agent_layout_shows_a_full_width_board_pane() {
+async fn closing_the_last_agent_in_an_all_agent_layout_shows_a_full_width_board_pane() -> TestResult
+{
     // @step Given mux mode is active with the pane list agent and agent and no board pane
     // @step And one agent session is open
     let (mut app, _mock) = fresh_app();
-    open_one_then_close(&mut app).await;
-    // @step When the agent session is closed with Close Session
+    open_one_then_close(&mut app).await?;
+    // @step When the agent session is closed with Close
     assert_eq!(
         app.agent_view_store().open_sessions().len(),
         0,
-        "Close Session must empty the open-session list"
+        "Close must empty the open-session list"
     );
     // @step Then the TUI is still in mux mode with mux enabled
     assert_eq!(
@@ -188,9 +200,9 @@ async fn closing_the_last_agent_in_an_all_agent_layout_shows_a_full_width_board_
     // @step And the board work units are visible in the board pane
     let buf = {
         let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(120, 24))
-            .expect("Terminal::new");
+            .or_fail("Terminal::new")?;
         term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-            .expect("draw");
+            .or_fail("draw")?;
         term.backend().buffer().clone()
     };
     let mut joined = String::new();
@@ -204,6 +216,7 @@ async fn closing_the_last_agent_in_an_all_agent_layout_shows_a_full_width_board_
         joined.contains("AUTH-001"),
         "the board pane must paint the work unit (blank body means the trap)"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -212,22 +225,31 @@ async fn closing_the_last_agent_in_an_all_agent_layout_shows_a_full_width_board_
 
 /// Scenario: the transient board pane does not mutate the stored mux config
 #[tokio::test]
-async fn the_transient_board_pane_does_not_mutate_the_stored_mux_config() {
+async fn the_transient_board_pane_does_not_mutate_the_stored_mux_config() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent and no board pane
     // @step And one agent session is open
     let (mut app, _mock) = fresh_app();
-    open_one_then_close(&mut app).await;
-    // @step When the agent session is closed with Close Session
+    open_one_then_close(&mut app).await?;
+    // @step When the agent session is closed with Close
     // (done in the helper)
     // @step Then the stored mux config still lists exactly the panes agent and agent
-    let stored = app.navigator().mux.config().panes.clone();
+    let stored = app.navigator().mux.config().layout.leaves();
     assert_eq!(
         stored,
         vec![MuxPaneKind::Agent, MuxPaneKind::Agent],
         "the stored config must keep the user's all-agent layout (got {stored:?})"
     );
-    // @step And the stored config keeps its orientation and focused pane unchanged
-    // (orientation Horizontal + focused_pane preserved by the layout)
+    // @step And the stored config keeps its layout string and focused pane unchanged
+    assert_eq!(
+        app.navigator().mux.config().layout.to_string(),
+        "agent, agent",
+        "the stored layout string must be unchanged"
+    );
+    assert_eq!(
+        app.navigator().mux.config().focused_pane,
+        1,
+        "the stored (home) focused pane must be unchanged by the transient stand-in"
+    );
     assert!(
         app.navigator().mux.config().enabled,
         "enabled must stay true"
@@ -239,6 +261,7 @@ async fn the_transient_board_pane_does_not_mutate_the_stored_mux_config() {
         &[MuxPaneKind::Board],
         "the rendered list must be the transient board stand-in, not the stored all-agent list"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -247,11 +270,11 @@ async fn the_transient_board_pane_does_not_mutate_the_stored_mux_config() {
 
 /// Scenario: pressing Esc on the transient board pane shows the exit dialog
 #[tokio::test]
-async fn pressing_esc_on_the_transient_board_pane_shows_the_exit_dialog() {
+async fn pressing_esc_on_the_transient_board_pane_shows_the_exit_dialog() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent and no board pane
     // @step And no agent sessions are open
     let (mut app, _mock) = fresh_app();
-    open_one_then_close(&mut app).await;
+    open_one_then_close(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.agent_view_store().open_sessions().len(), 0);
     assert_eq!(
@@ -262,7 +285,7 @@ async fn pressing_esc_on_the_transient_board_pane_shows_the_exit_dialog() {
     assert_eq!(app.compositor().len(), 0, "no dialog may be open yet");
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the BoardExitConfirmationDialog is shown over the full screen
     assert!(
         app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
@@ -280,11 +303,12 @@ async fn pressing_esc_on_the_transient_board_pane_shows_the_exit_dialog() {
     );
     // @step And confirming the Exit option quits the application
     let _ = app.handle_event(&enter());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(
         app.should_quit(),
         "Enter on the pre-selected 'Exit' option must set should_quit=true"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -293,15 +317,15 @@ async fn pressing_esc_on_the_transient_board_pane_shows_the_exit_dialog() {
 
 /// Scenario: Shift+Right on the transient board pane opens the new-agent dialog
 #[tokio::test]
-async fn shift_right_on_the_transient_board_pane_opens_the_new_agent_dialog() {
+async fn shift_right_on_the_transient_board_pane_opens_the_new_agent_dialog() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent and no board pane
     // @step And no agent sessions are open
     let (mut app, mock) = fresh_app();
-    open_one_then_close(&mut app).await;
+    open_one_then_close(&mut app).await?;
     assert_eq!(app.navigator().mux.effective_panes(), &[MuxPaneKind::Board]);
     // @step When I press Shift+Right
     let _ = app.handle_event(&shift_right());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the new-agent CreateSessionDialog is shown
     assert!(
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
@@ -310,12 +334,13 @@ async fn shift_right_on_the_transient_board_pane_opens_the_new_agent_dialog() {
     // @step And confirming it creates an agent session
     mock.script_create_session(sid("s-new"));
     app.dispatch(Action::CreateSessionSubmitted { isolated: false });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.agent_view_store().open_sessions().len(),
         1,
         "confirming the dialog must create one session"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -324,18 +349,18 @@ async fn shift_right_on_the_transient_board_pane_opens_the_new_agent_dialog() {
 
 /// Scenario: creating a session restores the configured agent panes
 #[tokio::test]
-async fn creating_a_session_restores_the_configured_agent_panes() {
+async fn creating_a_session_restores_the_configured_agent_panes() -> TestResult {
     // @step Given mux mode is active with the pane list agent and agent and no board pane
     // @step And no agent sessions are open
     let (mut app, mock) = fresh_app();
-    open_one_then_close(&mut app).await;
+    open_one_then_close(&mut app).await?;
     assert_eq!(app.navigator().mux.effective_panes(), &[MuxPaneKind::Board]);
     // @step When I press Shift+Right and confirm the new-agent dialog
     let _ = app.handle_event(&shift_right());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     mock.script_create_session(sid("s-2"));
     app.dispatch(Action::CreateSessionSubmitted { isolated: false });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the grid shows exactly one agent pane (the transient board pane is gone; the still-unfilled second agent slot is dropped per MUX-002 rule 3)
     let panes = app.navigator().mux.effective_panes();
     assert_eq!(
@@ -354,6 +379,7 @@ async fn creating_a_session_restores_the_configured_agent_panes() {
         MuxPaneKind::Agent,
         "focus must land on an agent pane after the layout restores"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -362,10 +388,10 @@ async fn creating_a_session_restores_the_configured_agent_panes() {
 
 /// Scenario: the default board agent layout with zero sessions renders one board pane
 #[tokio::test]
-async fn the_default_board_agent_layout_with_zero_sessions_renders_one_board_pane() {
+async fn the_default_board_agent_layout_with_zero_sessions_renders_one_board_pane() -> TestResult {
     // @step Given mux mode is active with the default Board and Agent panes
     let (mut app, _mock) = fresh_app();
-    default_layout_then_close(&mut app).await;
+    default_layout_then_close(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     // @step And no agent sessions are open
     assert_eq!(app.agent_view_store().open_sessions().len(), 0);
@@ -379,9 +405,9 @@ async fn the_default_board_agent_layout_with_zero_sessions_renders_one_board_pan
     // @step And the MUX footer shows one pane: Board
     let buf = {
         let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(120, 24))
-            .expect("Terminal::new");
+            .or_fail("Terminal::new")?;
         term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-            .expect("draw");
+            .or_fail("draw")?;
         term.backend().buffer().clone()
     };
     let mut joined = String::new();
@@ -397,8 +423,9 @@ async fn the_default_board_agent_layout_with_zero_sessions_renders_one_board_pan
     );
     // @step And the stored config is unchanged (Board and Agent)
     assert_eq!(
-        app.navigator().mux.config().panes,
+        app.navigator().mux.config().layout.leaves(),
         vec![MuxPaneKind::Board, MuxPaneKind::Agent],
         "the stored default config must remain Board and Agent"
     );
+    Ok(())
 }

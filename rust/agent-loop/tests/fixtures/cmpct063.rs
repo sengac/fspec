@@ -25,6 +25,8 @@ impl Fixture {
     pub fn new() -> Self {
         let directory =
             codelet_test_helpers::setup_temp_directory().expect("create data directory");
+        codelet_test_helpers::isolated_user_directory()
+            .expect("BUG-640: isolate the user directory");
         codelet_common::set_data_directory(directory.path().to_path_buf())
             .expect("redirect persistence to test directory");
         reset_stores_for_tests();
@@ -81,7 +83,9 @@ impl Drop for Fixture {
 pub fn envelope(text: &str) -> Value {
     json!({
         "uuid":Uuid::new_v4(), "parentUuid":Uuid::new_v4(),
-        "timestamp":"2026-10-17T00:00:00Z", "type":"user", "provider":"tool",
+        // BUG-448: a complete stored envelope (BUG-332 requires requestId on
+        // every replayable row), so the original is returned exactly.
+        "timestamp":"2026-10-17T00:00:00Z", "type":"user", "provider":"tool", "requestId":"req-cmpct063",
         "message":{"role":"user", "content":[{
             "type":"tool_result", "tool_use_id":"call-1", "content":text,
             "provider_extension":{"nested":[null, 9, {"evidence":"unchanged"}]}

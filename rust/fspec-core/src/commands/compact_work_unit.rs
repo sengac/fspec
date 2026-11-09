@@ -2,8 +2,8 @@
 //!
 //! Permanently removes soft-deleted Example-Mapping items (`deleted: true`)
 //! from a work unit's `rules`, `examples`, `questions`, and
-//! `architectureNotes` arrays, renumbers the survivors' `id` fields
-//! sequentially from 0, and resets the matching `nextRuleId` /
+//! `architectureNotes` arrays (and, since BUG-633, `assumptions`),
+//! renumbers the survivors' `id` fields sequentially from 0, and resets the matching `nextRuleId` /
 //! `nextExampleId` / `nextQuestionId` / `nextNoteId` counters to the new
 //! array lengths.
 //!
@@ -38,7 +38,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `compact-work-unit`. Mirrors the TS
@@ -64,6 +63,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let id = args.work_unit_id;
     let force = args.force.unwrap_or(false);
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "compact-work-unit")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Existence check (mirrors src/commands/compact-work-unit.ts:70-72).
@@ -90,7 +91,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Mutate the work unit inside a scoped borrow so `data.meta` can be
     // bumped afterwards without overlapping mutable borrows.
-    let (rules_removed, examples_removed, questions_removed, notes_removed) = {
+    let (rules_removed, examples_removed, questions_removed, notes_removed, assumptions_removed) = {
         let wu = data
             .work_units
             .get_mut(&id)
@@ -127,6 +128,27 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         wu.extra
             .insert("nextNoteId".to_string(), Value::from(next_note_id));
 
+        // BUG-633: a card's assumptions (when it has any) are converted to
+        // stable-id items, compacted like the other kinds, and
+        // nextAssumptionId is reset to the survivor count.
+        let assumptions_removed = if wu.extra.contains_key(super::assumption_items::KEY) {
+            super::assumption_items::convert(&id, &mut wu.extra, &now).map_err(|reason| {
+                FspecCoreError::InvalidArgs {
+                    command: "compact-work-unit",
+                    reason,
+                }
+            })?;
+            let (removed, remaining) =
+                compact_array_field(&mut wu.extra, super::assumption_items::KEY);
+            wu.extra.insert(
+                super::assumption_items::NEXT_ID_KEY.to_string(),
+                Value::from(remaining),
+            );
+            removed
+        } else {
+            0
+        };
+
         // Bump the work unit timestamp (mirrors :135).
         wu.updated_at = now.clone();
 
@@ -135,6 +157,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             examples_removed,
             questions_removed,
             notes_removed,
+            assumptions_removed,
         )
     };
 
@@ -144,12 +167,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Single atomic write (TS uses `fileManager.transaction`).
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     // Render the CLI-equivalent output. The dispatcher exposes this verbatim
     // as `DispatchResult.data`; the CLI bridge prints it to stdout.
-    let total_removed = rules_removed + examples_removed + questions_removed + notes_removed;
+    let total_removed =
+        rules_removed + examples_removed + questions_removed + notes_removed + assumptions_removed;
     if total_removed == 0 {
         return Ok("No deleted items to remove\n".to_string());
     }
@@ -167,6 +190,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
     if notes_removed > 0 {
         out.push_str(&format!("    Architecture Notes: {notes_removed}\n"));
+    }
+    if assumptions_removed > 0 {
+        out.push_str(&format!("    Assumptions: {assumptions_removed}\n"));
     }
     Ok(out)
 }

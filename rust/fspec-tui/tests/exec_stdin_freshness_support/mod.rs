@@ -1,8 +1,10 @@
+use crate::common::TaskOutcome;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend, ViewMode};
 use codelet_rpc_types::{ExecStdinRequest, SessionId, SessionState, StreamChunk};
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
 
 use crate::common::MockBackend;
 
@@ -66,7 +68,9 @@ pub fn start_probe(app: &mut App, probe: Probe) -> TestResult {
 
 pub async fn take_completed(app: &mut App) -> TestResult<Vec<Action>> {
     while let Some(task) = app.next_pending_task() {
-        tokio::time::timeout(Duration::from_secs(5), task).await??;
+        codelet_test_helpers::deadlock_guard("the pending task", task)
+            .await?
+            .completed_or_cancelled()?;
     }
     let mut actions = Vec::new();
     while let Some(action) = app.try_recv_action() {
@@ -120,4 +124,39 @@ pub fn visible_command(app: &App) -> Option<&str> {
     app.agent_view_store()
         .exec_stdin_for(&session())
         .map(|request| request.command.as_str())
+}
+
+/// BUG-364: make the next probes fail, start one and collect what it sends.
+pub async fn failed_snapshot(
+    app: &mut App,
+    backend: &MockBackend,
+    probe: Probe,
+) -> TestResult<Vec<Action>> {
+    backend.set_get_exec_stdin_request_error("transport closed".to_owned());
+    start_probe(app, probe)?;
+    let actions = take_completed(app).await?;
+    let failures = actions
+        .iter()
+        .filter(|action| format!("{action:?}").starts_with("ExecStdinProbeFailed"))
+        .count();
+    assert!(
+        failures > 0,
+        "a failed probe must be delivered: {actions:?}"
+    );
+    Ok(actions)
+}
+
+/// BUG-364: render one 160x30 frame and return its text.
+pub fn screen_text(app: &mut App) -> String {
+    let area = Rect::new(0, 0, 160, 30);
+    let mut buffer = Buffer::empty(area);
+    app.render(area, &mut buffer);
+    (0..area.height)
+        .map(|y| {
+            (0..area.width)
+                .map(|x| buffer[(x, y)].symbol().to_string())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }

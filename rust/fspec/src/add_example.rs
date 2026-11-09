@@ -20,10 +20,10 @@
 //!     with the TS `output.error('✗ Failed to add example:', error.message)`
 //!     path at `src/commands/add-example.ts:112`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_example;
 use serde_json::{json, Value};
 
@@ -36,7 +36,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal CliArgs → JSON. We always set both keys (no `None` arms) because
     // the clap variant declares them as required positional arguments.

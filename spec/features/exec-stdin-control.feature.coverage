@@ -1,0 +1,562 @@
+{
+  "scenarios": [
+    {
+      "name": "Interrupt sends SIGINT to a pipe exec session's command",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "35-61",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                54,
+                60,
+                61,
+                62,
+                63,
+                64,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupt reaches a PTY exec session's foreground command",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "65-82",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": "Delivery::Signal(pgid) => interrupt_process_group(session_id, pgid).await,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End of input closes a pipe exec session's stdin",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "86-113",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                84
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End of input ends a PTY exec session's input",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "117-129",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": "Delivery::Signal(pgid) => interrupt_process_group(session_id, pgid).await,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A successful control clears the pending exec-stdin request",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "133-167",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                84
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Control on an unknown exec session or agent session fails with a clean error",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "171-204",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_5.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ],
+              "firstLine": "fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_mcp.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                201
+              ],
+              "firstLine": "async fn control_exec_stdin(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/unified_exec/stdin_control.rs",
+              "lines": [
+                43,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "pub async fn control_stdin(",
+              "lastLine": ".ok_or_else(|| format!(\"Unknown or exited exec session: {session_id}\"))?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "control_exec_stdin is appended after every existing FspecService method",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/tool027_exec_stdin_control.rs",
+          "lines": "207-226",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_declaration/session_mcp.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "/// TOOL-027: send an interrupt (SIGINT to the command only) or end of",
+              "lastLine": ") -> Result<(), String>;"
+            },
+            {
+              "file": "rust/rpc/tests/fixtures/wire_order_frozen.txt",
+              "lines": [
+                134
+              ],
+              "firstLine": "control_exec_stdin",
+              "lastLine": "control_exec_stdin"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/tool027_exec_stdin_control.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_5.rs",
+      "rust/rpc/src/service_implementation/session_mcp.rs",
+      "rust/tools/src/unified_exec/stdin_control.rs",
+      "rust/rpc/src/service_declaration/session_mcp.rs",
+      "rust/rpc/tests/fixtures/wire_order_frozen.txt"
+    ],
+    "totalLinesCovered": 500
+  }
+}

@@ -15,7 +15,7 @@
 //!      on open), Up/Down (1 row), PageUp/PageDown (page), Home/End
 //!      (top/bottom), the mouse wheel, a visible scrollbar (reusing
 //!      `scrollback_paint::paint_scrollbar`), and a dim centered footer
-//!      `↑↓ Scroll | Esc Close`. Scrolling must NOT move the underlying
+//!      `↑↓ Scroll | c Copy | Esc Close`. Scrolling must NOT move the underlying
 //!      turn selection (`selected_seq`).
 //!
 //! These tests target the INTENDED public surface and are EXPECTED to
@@ -42,7 +42,7 @@
 //!
 //! • `TurnContentModal` rendering changes (asserted via the buffer):
 //!     - fixed rect `area.width-4 × area.height-6`, centered;
-//!     - dim centered footer `↑↓ Scroll | Esc Close`;
+//!     - dim centered footer `↑↓ Scroll | c Copy | Esc Close`;
 //!     - single-column scrollbar (`■`/`│`) when content overflows;
 //!     - body windowed by `turn_modal_offset` (no silent clipping).
 //!
@@ -51,8 +51,7 @@
 //! real dispatch + reducer wiring, mirroring `turn_content_modal_rpc382`
 //! and `scrollback_scroll_rpc094`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::rendered_chunk::ChunkSource;
@@ -95,12 +94,18 @@ fn wheel(kind: MouseEventKind, col: u16, row: u16) -> Event {
 
 /// Push one turn carrying a real `ChunkSource` so the modal has a full
 /// body to render.
-fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
+fn push_text_turn(
+    app: &mut App,
+    id: &SessionId,
+    seq: u64,
+    text: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(id)
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     ctx.scrollback.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: text.lines().map(|l| Line::from(l.to_string())).collect(),
         source: Some(ChunkSource {
@@ -111,6 +116,7 @@ fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
             full_text: None,
         }),
     });
+    Ok(())
 }
 
 /// Drain the App's action bus, dispatching each queued Action back into
@@ -137,12 +143,16 @@ fn modal_offset(app: &App) -> usize {
 }
 
 /// Render the App and return the rows of glyphs.
-fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_rows(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Vec<String>, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    (0..buf.area.height)
+    Ok((0..buf.area.height)
         .map(|y| {
             let mut row = String::new();
             for x in 0..buf.area.width {
@@ -150,7 +160,7 @@ fn render_rows(app: &mut App, w: u16, h: u16) -> Vec<String> {
             }
             row
         })
-        .collect()
+        .collect())
 }
 
 fn joined(rows: &[String]) -> String {
@@ -192,47 +202,47 @@ fn modal_interior(rows: &[String]) -> String {
 
 /// An App in `ViewMode::Agent` with one session seeded with three short
 /// turns (FIRSTBODY / SECONDBODY / THIRDBODY).
-fn agent_app_with_short_turns() -> App {
+fn agent_app_with_short_turns() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, "first FIRSTBODY");
-    push_text_turn(&mut app, &sid("s-1"), 1, "second SECONDBODY");
-    push_text_turn(&mut app, &sid("s-1"), 2, "third THIRDBODY");
-    app
+    push_text_turn(&mut app, &sid("s-1"), 0, "first FIRSTBODY")?;
+    push_text_turn(&mut app, &sid("s-1"), 1, "second SECONDBODY")?;
+    push_text_turn(&mut app, &sid("s-1"), 2, "third THIRDBODY")?;
+    Ok(app)
 }
 
 /// An App whose three turns are all short EXCEPT the last, whose body is
 /// a long numbered list (`LINE000`..`LINE099`) plus distinct
 /// `TOPLINE` / `LASTLINE` sentinels at the extremes. Used for the
 /// scrolling scenarios.
-fn agent_app_with_long_last_turn() -> App {
+fn agent_app_with_long_last_turn() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, "first turn");
-    push_text_turn(&mut app, &sid("s-1"), 1, "second turn");
-    push_text_turn(&mut app, &sid("s-1"), 2, &long_body());
-    app
+    push_text_turn(&mut app, &sid("s-1"), 0, "first turn")?;
+    push_text_turn(&mut app, &sid("s-1"), 1, "second turn")?;
+    push_text_turn(&mut app, &sid("s-1"), 2, &long_body())?;
+    Ok(app)
 }
 
 /// An App whose three turns are all long, so the modal overflows on ANY
 /// selected turn. Used by the Down-scroll scenario where the 2nd turn is
 /// the one opened.
-fn agent_app_with_long_turns() -> App {
+fn agent_app_with_long_turns() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.navigator_mut().active_view = ViewMode::Agent;
-    push_text_turn(&mut app, &sid("s-1"), 0, &long_body());
-    push_text_turn(&mut app, &sid("s-1"), 1, &long_body());
-    push_text_turn(&mut app, &sid("s-1"), 2, &long_body());
-    app
+    push_text_turn(&mut app, &sid("s-1"), 0, &long_body())?;
+    push_text_turn(&mut app, &sid("s-1"), 1, &long_body())?;
+    push_text_turn(&mut app, &sid("s-1"), 2, &long_body())?;
+    Ok(app)
 }
 
 /// A 100+-line body with `TOPLINE` / `LASTLINE` sentinels at the extremes.
@@ -248,12 +258,13 @@ fn long_body() -> String {
 /// Open the modal over the LAST turn (auto-selected on entering SELECT
 /// mode) and render once so `last_render_area` is cached (the scroll
 /// reducer sizes the modal viewport from it).
-fn open_modal_on_long_turn(app: &mut App) {
+fn open_modal_on_long_turn(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     let _ = app.handle_event(&tab()); // enter SELECT mode, auto-select last turn
     drain(app);
     let _ = app.handle_event(&key(KeyCode::Enter)); // open modal
     drain(app);
-    let _ = render_rows(app, 60, 20);
+    let _ = render_rows(app, 60, 20)?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -261,9 +272,9 @@ fn open_modal_on_long_turn(app: &mut App) {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_modal_fills_the_screen_regardless_of_short_content() {
+fn the_modal_fills_the_screen_regardless_of_short_content() -> TestResult {
     // @step Given a turn content modal showing a 3-line turn on a 40x12 terminal
-    let mut app = agent_app_with_short_turns();
+    let mut app = agent_app_with_short_turns()?;
     let _ = app.handle_event(&tab());
     drain(&mut app);
     let _ = app.handle_event(&key(KeyCode::Enter)); // open modal on last (short) turn
@@ -271,7 +282,7 @@ fn the_modal_fills_the_screen_regardless_of_short_content() {
     assert!(modal_seq(&app).is_some(), "modal must be open");
 
     // @step When the modal is rendered
-    let rows = render_rows(&mut app, 40, 12);
+    let rows = render_rows(&mut app, 40, 12)?;
 
     // @step Then the modal occupies 36 columns and 6 rows
     // Fixed rect = area.width-4 (36) x area.height-6 (6), centered:
@@ -287,8 +298,8 @@ fn the_modal_fills_the_screen_regardless_of_short_content() {
         bottom.contains('\u{2570}') && bottom.contains('\u{256F}'),
         "modal bottom border row must be at y=8 (6 rows tall); got: {bottom:?}"
     );
-    let left_col = char_col(top, '\u{256D}').expect("top-left corner present");
-    let right_col = char_col(top, '\u{256E}').expect("top-right corner present");
+    let left_col = char_col(top, '\u{256D}').or_fail("top-left corner present")?;
+    let right_col = char_col(top, '\u{256E}').or_fail("top-right corner present")?;
     assert_eq!(
         left_col, 2,
         "modal left edge must be centered at col 2; got {left_col} in {top:?}"
@@ -306,6 +317,7 @@ fn the_modal_fills_the_screen_regardless_of_short_content() {
         "no border above y=3 — modal must not float higher (shrunk); got: {:?}",
         rows[2]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -313,14 +325,14 @@ fn the_modal_fills_the_screen_regardless_of_short_content() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_scrollbar_appears_when_content_overflows_the_viewport() {
+fn a_scrollbar_appears_when_content_overflows_the_viewport() -> TestResult {
     // @step Given a turn content modal showing a turn with 100 wrapped lines on a 20-row screen
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
 
     // @step When the modal is rendered
-    let rows = render_rows(&mut app, 60, 20);
+    let rows = render_rows(&mut app, 60, 20)?;
 
     // @step Then a single-column scrollbar is shown in the modal's rightmost column
     // The canonical painter uses ■ (U+25A0, thumb) / │ (U+2502, track).
@@ -349,6 +361,7 @@ fn a_scrollbar_appears_when_content_overflows_the_viewport() {
         !interior.contains("LASTLINE"),
         "the bottom sentinel must NOT be on the first page (content overflows); got: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -356,9 +369,9 @@ fn a_scrollbar_appears_when_content_overflows_the_viewport() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_down_scrolls_the_body_without_moving_the_selection() {
+fn pressing_down_scrolls_the_body_without_moving_the_selection() -> TestResult {
     // @step Given a turn content modal open over a long turn with the second of three turns selected
-    let mut app = agent_app_with_long_turns();
+    let mut app = agent_app_with_long_turns()?;
     let id = sid("s-1");
     let _ = app.handle_event(&tab()); // SELECT mode, auto-select last (3rd) turn
     drain(&mut app);
@@ -377,7 +390,7 @@ fn pressing_down_scrolls_the_body_without_moving_the_selection() {
         "modal must be open on the 2nd turn"
     );
     // Render so the reducer can size the modal viewport (last_render_area).
-    let _ = render_rows(&mut app, 60, 20);
+    let _ = render_rows(&mut app, 60, 20)?;
     let offset_before = modal_offset(&app);
 
     // @step When I press the Down arrow key
@@ -397,6 +410,7 @@ fn pressing_down_scrolls_the_body_without_moving_the_selection() {
         Some(1),
         "scrolling the modal must NOT move the underlying turn selection"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -404,12 +418,12 @@ fn pressing_down_scrolls_the_body_without_moving_the_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_end_scrolls_to_the_bottom_of_the_content() {
+fn pressing_end_scrolls_to_the_bottom_of_the_content() -> TestResult {
     // @step Given a turn content modal open over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
-    let before = render_rows(&mut app, 60, 20);
+    let before = render_rows(&mut app, 60, 20)?;
     assert!(
         !modal_interior(&before).contains("LASTLINE"),
         "precondition: bottom sentinel must be off-screen before End; got: {before:?}"
@@ -420,11 +434,12 @@ fn pressing_end_scrolls_to_the_bottom_of_the_content() {
     drain(&mut app);
 
     // @step Then the modal shows the final line of the body
-    let after = render_rows(&mut app, 60, 20);
+    let after = render_rows(&mut app, 60, 20)?;
     assert!(
         modal_interior(&after).contains("LASTLINE"),
         "End must scroll to the bottom, revealing the final line; got: {after:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -432,12 +447,12 @@ fn pressing_end_scrolls_to_the_bottom_of_the_content() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_pagedown_advances_the_body_by_a_page() {
+fn pressing_pagedown_advances_the_body_by_a_page() -> TestResult {
     // @step Given a turn content modal open over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
-    let _ = render_rows(&mut app, 60, 20);
+    let _ = render_rows(&mut app, 60, 20)?;
     let offset_before = modal_offset(&app);
 
     // @step When I press the PageDown key
@@ -451,6 +466,7 @@ fn pressing_pagedown_advances_the_body_by_a_page() {
          (a page); before={offset_before}, after={}",
         modal_offset(&app)
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -458,14 +474,14 @@ fn pressing_pagedown_advances_the_body_by_a_page() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_pageup_moves_the_body_back_by_a_page() {
+fn pressing_pageup_moves_the_body_back_by_a_page() -> TestResult {
     // @step Given a turn content modal scrolled to the bottom of a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
     let _ = app.handle_event(&key(KeyCode::End)); // jump to bottom
     drain(&mut app);
-    let _ = render_rows(&mut app, 60, 20);
+    let _ = render_rows(&mut app, 60, 20)?;
     let offset_before = modal_offset(&app);
     assert!(
         offset_before > 1,
@@ -484,6 +500,7 @@ fn pressing_pageup_moves_the_body_back_by_a_page() {
          (a page); before={offset_before}, after={}",
         modal_offset(&app)
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -491,10 +508,10 @@ fn pressing_pageup_moves_the_body_back_by_a_page() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_home_jumps_to_the_top_of_the_content() {
+fn pressing_home_jumps_to_the_top_of_the_content() -> TestResult {
     // @step Given a turn content modal scrolled down over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
     for _ in 0..5 {
         let _ = app.handle_event(&key(KeyCode::Down));
@@ -516,11 +533,12 @@ fn pressing_home_jumps_to_the_top_of_the_content() {
         0,
         "Home must reset the modal scroll offset to the top"
     );
-    let rows = render_rows(&mut app, 60, 20);
+    let rows = render_rows(&mut app, 60, 20)?;
     assert!(
         modal_interior(&rows).contains("TOPLINE"),
         "Home must reveal the top sentinel; got: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -528,13 +546,13 @@ fn pressing_home_jumps_to_the_top_of_the_content() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_mouse_wheel_scrolls_the_modal_body() {
+fn the_mouse_wheel_scrolls_the_modal_body() -> TestResult {
     // @step Given a turn content modal open over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
     // Render so any layout caches are populated.
-    let _ = render_rows(&mut app, 60, 20);
+    let _ = render_rows(&mut app, 60, 20)?;
     let offset_before = modal_offset(&app);
 
     // @step When I scroll the mouse wheel down over the modal
@@ -550,6 +568,7 @@ fn the_mouse_wheel_scrolls_the_modal_body() {
          before={offset_before}, after={}",
         modal_offset(&app)
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -557,20 +576,21 @@ fn the_mouse_wheel_scrolls_the_modal_body() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn the_modal_shows_the_scroll_close_footer() {
+fn the_modal_shows_the_scroll_close_footer() -> TestResult {
     // @step Given a turn content modal open over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
 
     // @step When the modal is rendered
-    let rows = render_rows(&mut app, 60, 20);
+    let rows = render_rows(&mut app, 60, 20)?;
 
-    // @step Then the modal's bottom row shows the dim text "↑↓ Scroll | Esc Close"
+    // @step Then the modal's bottom row shows the dim text "↑↓ Scroll | c Copy | Esc Close"
     assert!(
-        joined(&rows).contains("\u{2191}\u{2193} Scroll | Esc Close"),
-        "modal must render the footer hint '↑↓ Scroll | Esc Close'; got: {rows:?}"
+        joined(&rows).contains("\u{2191}\u{2193} Scroll | c Copy | Esc Close"),
+        "modal must render the footer hint '↑↓ Scroll | c Copy | Esc Close'; got: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -578,12 +598,12 @@ fn the_modal_shows_the_scroll_close_footer() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn re_opening_the_modal_resets_the_scroll_offset_to_the_top() {
+fn re_opening_the_modal_resets_the_scroll_offset_to_the_top() -> TestResult {
     // @step Given a turn content modal that has been scrolled down over a long turn
-    let mut app = agent_app_with_long_last_turn();
-    open_modal_on_long_turn(&mut app);
+    let mut app = agent_app_with_long_last_turn()?;
+    open_modal_on_long_turn(&mut app)?;
     assert!(modal_seq(&app).is_some(), "modal must be open");
-    let _ = render_rows(&mut app, 60, 20);
+    let _ = render_rows(&mut app, 60, 20)?;
     // Scroll down several rows so we are no longer at the top.
     for _ in 0..5 {
         let _ = app.handle_event(&key(KeyCode::Down));
@@ -609,9 +629,10 @@ fn re_opening_the_modal_resets_the_scroll_offset_to_the_top() {
         0,
         "re-opening the modal must reset the scroll offset to the top"
     );
-    let rows = render_rows(&mut app, 60, 20);
+    let rows = render_rows(&mut app, 60, 20)?;
     assert!(
         joined(&rows).contains("TOPLINE"),
         "re-opened modal must show the top sentinel; got: {rows:?}"
     );
+    Ok(())
 }

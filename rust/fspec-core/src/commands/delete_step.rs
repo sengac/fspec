@@ -7,8 +7,10 @@
 //! `Step.keyword` carries a trailing space, so `format!("{}{}", keyword,
 //! value)` reproduces the original line text before trimming.
 //!
-//! Only the single matched step line (`Step.position.line`, 1-based) is
-//! removed via a line-based `split('\n')` / `join('\n')` edit; consecutive
+//! BUG-505: text that matches more than one step is refused (naming the
+//! matching lines) instead of deleting the first match. The matched step line
+//! (`Step.position.line`, 1-based) is removed together with its data table or
+//! doc string via a line-based `split('\n')` / `join('\n')` edit; consecutive
 //! blank lines are collapsed to at most two and the result is re-parsed to
 //! guarantee it is still valid Gherkin before the file is written.
 //! delete-step does NOT touch any coverage sidecar.
@@ -91,32 +93,52 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // ---- Match the step by text OR (keyword + text).trim() ----
+    // BUG-505: text that matches several steps is refused, never guessed.
     let target_arg = args.step.trim();
-    let step = scenario
+    let matches: Vec<&gherkin::Step> = scenario
         .steps
         .iter()
-        .find(|s| {
+        .filter(|s| {
             let full = format!("{}{}", s.keyword, s.value);
             s.value == args.step || full.trim() == target_arg
         })
-        .ok_or(FspecCoreError::InvalidArgs {
-            command: "delete-step",
-            reason: format!(
-                "Step '{}' not found in scenario '{}'",
-                args.step, args.scenario
-            ),
-        })?;
+        .collect();
+    let step = match matches.as_slice() {
+        [step] => *step,
+        [] => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "delete-step",
+                reason: format!(
+                    "Step '{}' not found in scenario '{}'",
+                    args.step, args.scenario
+                ),
+            });
+        }
+        several => {
+            let lines: Vec<String> = several
+                .iter()
+                .map(|s| format!("line {} ({}{})", s.position.line, s.keyword, s.value))
+                .collect();
+            return Err(FspecCoreError::InvalidArgs {
+                command: "delete-step",
+                reason: format!(
+                    "Step '{}' matches {} steps in scenario '{}': {}. Give the step with its keyword to pick one; nothing was deleted",
+                    args.step,
+                    several.len(),
+                    args.scenario,
+                    lines.join(", ")
+                ),
+            });
+        }
+    };
 
-    let step_line = step.position.line;
-
-    // ---- Remove the single step line ----
+    // ---- Remove the step line with its data table or doc string ----
     let lines: Vec<&str> = content.split('\n').collect();
-    let line_index = (step_line - 1) as usize;
+    let line_index = step.position.line - 1;
+    let end_index = step_block_end(&lines, line_index);
     let mut new_lines: Vec<&str> = Vec::with_capacity(lines.len());
     new_lines.extend_from_slice(&lines[..line_index]);
-    if line_index + 1 < lines.len() {
-        new_lines.extend_from_slice(&lines[line_index + 1..]);
-    }
+    new_lines.extend_from_slice(&lines[end_index..]);
 
     // ---- Collapse runs of >2 blank lines ----
     let collapsed = collapse_blank_lines(&new_lines);
@@ -166,10 +188,33 @@ fn resolve_feature_path(project_root: &Path, feature: &str) -> std::path::PathBu
     if feature.ends_with(".feature") || feature.starts_with("spec/features/") {
         project_root.join(feature)
     } else {
-        project_root
-            .join("spec/features")
-            .join(format!("{feature}.feature"))
+        crate::io::spec_paths::features_dir_of(project_root).join(format!("{feature}.feature"))
     }
+}
+
+/// BUG-505: the index just past the step at `line_index` together with its
+/// data table rows (`|`) or doc string (a fenced block) on the following lines.
+fn step_block_end(lines: &[&str], line_index: usize) -> usize {
+    let mut index = line_index + 1;
+    if let Some(fence) = lines
+        .get(index)
+        .map(|line| line.trim_start())
+        .and_then(|line| {
+            ["\"\"\"", "```"]
+                .into_iter()
+                .find(|fence| line.starts_with(fence))
+        })
+    {
+        index += 1;
+        while index < lines.len() && !lines[index].trim_start().starts_with(fence) {
+            index += 1;
+        }
+        return (index + 1).min(lines.len());
+    }
+    while index < lines.len() && lines[index].trim_start().starts_with('|') {
+        index += 1;
+    }
+    index
 }
 
 /// Collapse runs of more than two consecutive blank lines down to two.

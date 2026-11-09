@@ -228,7 +228,8 @@ fn scenario_cli_unknown_work_unit_exits_1_with_stderr() {
         "fspec show-deleted must exit 1 for unknown work unit; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring '✗ Failed to show deleted items:' (TS-parity prefix)
+    // @step Then stderr contains the substring '✗ Failed to show deleted items:'
+    // (TS-parity prefix)
     assert!(
         stderr.contains("✗ Failed to show deleted items:"),
         "stderr must contain '✗ Failed to show deleted items:' prefix; got:\n{stderr}"

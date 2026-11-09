@@ -1,10 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 // Feature: spec/features/rust-mux-mode.feature
 //
 // This test file validates the acceptance criteria defined in the feature
 // file. Scenarios map directly to Gherkin scenarios.
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, OrFailErr, TestResult};
 use std::sync::Arc;
 
 use codelet_rpc_types::WorkUnitInfo;
@@ -73,12 +73,17 @@ fn up(col: u16, row: u16) -> Event {
     })
 }
 
-fn render(nav: &mut Navigator, board: &BoardStore, agent: &mut AgentViewStore) {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render(
+    nav: &mut Navigator,
+    board: &BoardStore,
+    agent: &mut AgentViewStore,
+) -> Result<(), codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
     })
-    .expect("draw");
+    .or_fail("draw")?;
+    Ok(())
 }
 
 /// Enable the default preset on the Navigator's mux layout.
@@ -109,11 +114,15 @@ static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(()
 /// Root the process-global data directory at a fresh throwaway dir and
 /// keep it alive (the established tui093 pattern). Returns the guard
 /// (held for the test's duration) + the TempDir.
-async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+async fn root_data_dir() -> Result<
+    (tokio::sync::MutexGuard<'static, ()>, tempfile::TempDir),
+    codelet_test_helpers::TestError,
+> {
     let guard = DATA_DIR_GUARD.lock().await;
-    let tmp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(tmp.path().to_path_buf()).expect("set data dir");
-    (guard, tmp)
+    let tmp = tempfile::tempdir().or_fail("tempdir")?;
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(tmp.path().to_path_buf()).or_fail("set data dir")?;
+    Ok((guard, tmp))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -122,7 +131,7 @@ async fn root_data_dir() -> (tokio::sync::MutexGuard<'static, ()>, tempfile::Tem
 
 /// Scenario: pressing j on the focused board pane moves the selection
 #[test]
-fn pressing_j_on_the_focused_board_pane_moves_the_selection() {
+fn pressing_j_on_the_focused_board_pane_moves_the_selection() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut nav, mut rx) = fresh();
     enable_default(&mut nav);
@@ -153,6 +162,7 @@ fn pressing_j_on_the_focused_board_pane_moves_the_selection() {
         "agent input must be untouched while the board pane is focused"
     );
     assert_eq!(nav.agent.chunk_count(&agent), 0);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -162,7 +172,7 @@ fn pressing_j_on_the_focused_board_pane_moves_the_selection() {
 
 /// Scenario: pressing k on the focused board pane leaves the agent untouched
 #[test]
-fn pressing_k_on_the_focused_board_pane_leaves_the_agent_untouched() {
+fn pressing_k_on_the_focused_board_pane_leaves_the_agent_untouched() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -175,6 +185,7 @@ fn pressing_k_on_the_focused_board_pane_leaves_the_agent_untouched() {
     // @step Then the agent input and scrollback are still unchanged
     assert!(nav.agent.input.value().is_empty());
     assert_eq!(nav.agent.chunk_count(&agent), 0);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -184,7 +195,7 @@ fn pressing_k_on_the_focused_board_pane_leaves_the_agent_untouched() {
 
 /// Scenario: clicking inside the Agent pane focuses it and routes the click
 #[test]
-fn clicking_inside_the_agent_pane_focuses_it_and_routes_the_click() {
+fn clicking_inside_the_agent_pane_focuses_it_and_routes_the_click() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -193,7 +204,7 @@ fn clicking_inside_the_agent_pane_focuses_it_and_routes_the_click() {
     let mut agent = AgentViewStore::default();
     // MUX-002: the agent pane only renders when a session is open.
     seed_agent_session(&mut agent);
-    render(&mut nav, &board, &mut agent);
+    render(&mut nav, &board, &mut agent)?;
     // @step And the Board pane is focused
     assert!(nav.mux.focus() == 0);
     let rects = nav.mux.pane_rects().to_vec();
@@ -210,6 +221,7 @@ fn clicking_inside_the_agent_pane_focuses_it_and_routes_the_click() {
     // (the agent consumed the click — its mouse dispatch ran; the
     // observable effect is that the focus moved AND the event was
     // consumed rather than ignored)
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -219,13 +231,13 @@ fn clicking_inside_the_agent_pane_focuses_it_and_routes_the_click() {
 
 /// Scenario: clicking in a gap outside every pane rect leaves focus unchanged
 #[test]
-fn clicking_in_a_gap_outside_every_pane_rect_leaves_focus_unchanged() {
+fn clicking_in_a_gap_outside_every_pane_rect_leaves_focus_unchanged() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
     let board = BoardStore::default();
     let mut agent = AgentViewStore::default();
-    render(&mut nav, &board, &mut agent);
+    render(&mut nav, &board, &mut agent)?;
     // @step And the Board pane is focused
     assert!(nav.mux.focus() == 0);
     // @step When I click in a gap outside every pane rect
@@ -238,6 +250,7 @@ fn clicking_in_a_gap_outside_every_pane_rect_leaves_focus_unchanged() {
         "a click outside every pane must not move focus (was: {:?})",
         nav.mux.focus()
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -246,10 +259,11 @@ fn clicking_in_a_gap_outside_every_pane_rect_leaves_focus_unchanged() {
 
 /// Scenario: Shift+Left cycles focus from ChangedFiles to Agent
 #[test]
-fn shift_left_cycles_focus_from_changed_files_to_agent() {
+fn shift_left_cycles_focus_from_changed_files_to_agent() -> TestResult {
     // @step Given mux mode is active with three panes Board, Agent and ChangedFiles
     let (mut nav, _rx) = fresh();
-    nav.mux.set_pane_count(3);
+    nav.mux
+        .set_layout(MuxLayout::parse("board, agent, files").or_fail("layout")?);
     nav.active_view = ViewMode::Mux;
     let board = BoardStore::default();
     let agent = AgentViewStore::default();
@@ -260,6 +274,7 @@ fn shift_left_cycles_focus_from_changed_files_to_agent() {
     // @step Then the Agent pane is focused
     assert!(nav.mux.focus() == 1);
     let _ = agent;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -268,10 +283,11 @@ fn shift_left_cycles_focus_from_changed_files_to_agent() {
 
 /// Scenario: Shift+Left cycles focus from Agent to Board
 #[test]
-fn shift_left_cycles_focus_from_agent_to_board() {
+fn shift_left_cycles_focus_from_agent_to_board() -> TestResult {
     // @step Given mux mode is active with three panes Board, Agent and ChangedFiles
     let (mut nav, _rx) = fresh();
-    nav.mux.set_pane_count(3);
+    nav.mux
+        .set_layout(MuxLayout::parse("board, agent, files").or_fail("layout")?);
     nav.active_view = ViewMode::Mux;
     let board = BoardStore::default();
     let agent = AgentViewStore::default();
@@ -282,6 +298,7 @@ fn shift_left_cycles_focus_from_agent_to_board() {
     // @step Then the Board pane is focused
     assert!(nav.mux.focus() == 0);
     let _ = agent;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -291,10 +308,11 @@ fn shift_left_cycles_focus_from_agent_to_board() {
 
 /// Scenario: Shift+Left at the first pane stops without wrapping
 #[test]
-fn shift_left_at_the_first_pane_stops_without_wrapping() {
+fn shift_left_at_the_first_pane_stops_without_wrapping() -> TestResult {
     // @step Given mux mode is active with three panes Board, Agent and ChangedFiles
     let (mut nav, _rx) = fresh();
-    nav.mux.set_pane_count(3);
+    nav.mux
+        .set_layout(MuxLayout::parse("board, agent, files").or_fail("layout")?);
     nav.active_view = ViewMode::Mux;
     let board = BoardStore::default();
     let agent = AgentViewStore::default();
@@ -311,6 +329,7 @@ fn shift_left_at_the_first_pane_stops_without_wrapping() {
         nav.mux.focus()
     );
     let _ = agent;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -319,16 +338,16 @@ fn shift_left_at_the_first_pane_stops_without_wrapping() {
 
 /// Scenario: dragging the divider left resizes the split live
 #[test]
-fn dragging_the_divider_left_resizes_the_split_live() {
-    // @step Given mux mode is active with Board and Agent panes at a 50/50 split on a 120-column terminal
+fn dragging_the_divider_left_resizes_the_split_live() -> TestResult {
+    // @step Given mux mode is active with the layout "board, agent" on a 120-column terminal
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
     let board = BoardStore::default();
     let mut agent = AgentViewStore::default();
     // MUX-002: the agent pane only renders when a session is open.
     seed_agent_session(&mut agent);
-    render(&mut nav, &board, &mut agent);
-    let divider = nav.mux.divider_rects()[0];
+    render(&mut nav, &board, &mut agent)?;
+    let divider = nav.mux.dividers()[0].rect;
     // @step When I press the mouse down on the divider and drag it left
     let _ = nav.handle_event(&click(divider.x, divider.y + 5), &board);
     assert!(
@@ -343,43 +362,46 @@ fn dragging_the_divider_left_resizes_the_split_live() {
         "board pane must shrink while dragging left (got {})",
         rects[0].width
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: releasing the divider stores the released percent without
-// snapping back
+// Scenario: releasing the divider stores the released width as weights
+// without snapping back
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: releasing the divider stores the released percent without snapping back
+/// Scenario: releasing the divider stores the released width as weights without snapping back
 #[test]
-fn releasing_the_divider_stores_the_released_percent_without_snapping_back() {
-    // @step Given mux mode is active with Board and Agent panes at a 50/50 split on a 120-column terminal
+fn releasing_the_divider_stores_the_released_width_as_weights_without_snapping_back() -> TestResult
+{
+    // @step Given mux mode is active with the layout "board, agent" on a 120-column terminal
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
     let board = BoardStore::default();
     let mut agent = AgentViewStore::default();
     // MUX-002: the agent pane only renders when a session is open.
     seed_agent_session(&mut agent);
-    render(&mut nav, &board, &mut agent);
-    let divider = nav.mux.divider_rects()[0];
+    render(&mut nav, &board, &mut agent)?;
+    let divider = nav.mux.dividers()[0].rect;
     let _ = nav.handle_event(&click(divider.x, divider.y + 5), &board);
     // @step When I release the mouse at a position that would make the Board pane 40 columns
     let _ = nav.handle_event(&drag(40, divider.y + 5), &board);
     let _ = nav.handle_event(&up(40, divider.y + 5), &board);
-    // @step Then the Board pane keeps its released 34 percent of the width (40/119, rounded — no 64-column minimum, no equal-split reset)
+    // @step Then the Board pane keeps its released 40 columns and the stored layout reads "board:17, agent:33" (34 percent of the pair, reduced — no 64-column minimum, no equal-split reset)
     let rects = nav.mux.pane_rects().to_vec();
     assert_eq!(
-        rects[0].width,
-        119 * 34 / 100,
-        "board pane keeps its released width (34% of 119), no 64-col minimum"
+        rects[0].width, 40,
+        "board pane keeps its released 40 columns, no 64-col minimum"
     );
+    assert_eq!(rects[1].width, 119 - 40, "agent pane takes the rest");
     assert_eq!(
-        nav.mux.config().splits,
-        vec![34],
-        "the released percent must be stored in the scale"
+        nav.mux.config().layout.to_string(),
+        "board:17, agent:33",
+        "the released width must be stored as reduced weights"
     );
     // @step And the drag state is cleared after the release
     assert!(!nav.mux.is_dragging());
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -389,7 +411,7 @@ fn releasing_the_divider_stores_the_released_percent_without_snapping_back() {
 
 /// Scenario: Enter on a board work unit in mux mode focuses the agent pane
 #[test]
-fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() {
+fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut nav, mut rx) = fresh();
     enable_default(&mut nav);
@@ -403,11 +425,15 @@ fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() {
     // @step Then the work unit AUTH-001 is bound to the agent pane session
     assert!(result.is_consumed());
     assert!(
+        // BOARD-024: Enter overlays the card chooser (Mux origin); its
+        // default `Open in agent` choice emits MuxEnterWorkUnit.
         matches!(
             rx.try_recv().ok(),
-            Some(Action::MuxEnterWorkUnit(id)) if id == "AUTH-001"
+            Some(Action::OpenBoardCardChooser { work_unit_id, origin })
+                if work_unit_id == "AUTH-001"
+                    && origin == codelet_fspec_tui::components::board_card::BoardCardOrigin::Mux
         ),
-        "Enter on the board pane in mux mode must emit MuxEnterWorkUnit(AUTH-001)"
+        "Enter on the board pane in mux mode must open the AUTH-001 card chooser"
     );
     // @step And the Agent pane is focused
     nav.apply_action(&Action::MuxEnterWorkUnit("AUTH-001".to_string()));
@@ -423,11 +449,11 @@ fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() {
     // layout-level minimum clamp, so the pane is only as wide as its
     // equal share)
     let out = {
-        let mut term = Terminal::new(TestBackend::new(140, 24)).expect("Terminal::new");
+        let mut term = Terminal::new(TestBackend::new(140, 24)).or_fail("Terminal::new")?;
         term.draw(|frame| {
             nav.render_with_stores(frame.area(), frame.buffer_mut(), &board, &mut agent);
         })
-        .expect("draw");
+        .or_fail("draw")?;
         let buf = term.backend().buffer().clone();
         (0..buf.area.height)
             .map(|y| {
@@ -442,6 +468,7 @@ fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() {
         out.contains("BACKLOG"),
         "the board must stay visible in its pane"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -451,7 +478,7 @@ fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane() {
 
 /// Scenario: existing single-view behavior is unchanged when mux is off
 #[test]
-fn existing_single_view_behavior_is_unchanged_when_mux_is_off() {
+fn existing_single_view_behavior_is_unchanged_when_mux_is_off() -> TestResult {
     // @step Given the TUI is showing the single Board view with mux inactive
     let (mut nav, _rx) = fresh();
     assert_eq!(nav.active_view, ViewMode::Board);
@@ -468,11 +495,11 @@ fn existing_single_view_behavior_is_unchanged_when_mux_is_off() {
     nav.apply_action(&Action::BackToBoard);
     assert_eq!(nav.active_view, ViewMode::Board);
     // @step And no mux footer row is painted and no pane divider is rendered
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), &board, &mut agent);
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let rows: Vec<String> = (0..buf.area.height)
         .map(|y| {
@@ -489,6 +516,7 @@ fn existing_single_view_behavior_is_unchanged_when_mux_is_off() {
         !rows.iter().any(|r| r.contains('│') && r.contains("MUX")),
         "no mux divider may be painted when mux is off"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -496,8 +524,17 @@ fn existing_single_view_behavior_is_unchanged_when_mux_is_off() {
 // ─────────────────────────────────────────────────────────────────────────
 
 use codelet_fspec_tui::app::mux_parser::{parse_mux_command, MuxError, MuxSubcommand};
-use codelet_fspec_tui::views::multiplex::{MuxOrientation, MuxPaneKind};
+use codelet_fspec_tui::views::multiplex::layout_tree::compute;
+use codelet_fspec_tui::views::multiplex::{MuxLayout, MuxPaneKind};
 use proptest::{prop_assume, proptest};
+
+/// The layout a `/mux <layout>` line parses to (fails on any other variant).
+fn parsed_layout(line: &str) -> Result<MuxLayout, codelet_test_helpers::TestError> {
+    match parse_mux_command(line) {
+        Ok(MuxSubcommand::Layout(layout)) => Ok(layout),
+        other => Err(format!("{line} must parse to a layout, got {other:?}").into()),
+    }
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: /mux toggles mux mode on with the default preset (parser
@@ -506,158 +543,82 @@ use proptest::{prop_assume, proptest};
 
 /// Scenario: /mux on enables mux mode with the default preset
 #[test]
-fn bare_mux_and_on_off_and_help_parse() {
+fn bare_mux_and_on_off_and_help_parse() -> TestResult {
     // @step Given the TUI is showing the single Board view
     // (parser is pure — no TUI needed; the Given is the pre-state the
     // dispatcher applies the parse result to)
-    // @step When I submit the slash command "/mux"
+    // @step When I submit the slash command "/mux on"
     // MUX-004: bare /mux resolves to Config (opens the MuxConfigDialog),
     // the MUX-001 Toggle behaviour is superseded.
     assert_eq!(parse_mux_command("/mux"), Ok(MuxSubcommand::Config));
-    // @step Then mux mode is active with the default preset
-    // (the dispatcher applies the default preset on Toggle-from-off;
-    // here we assert the parser hands the dispatcher the right variant)
     assert_eq!(parse_mux_command("/mux on"), Ok(MuxSubcommand::On));
+    // @step Then mux mode is active with the default preset
+    // (the dispatcher applies the default preset on /mux on; here we
+    // assert the parser hands the dispatcher the right variant)
     assert_eq!(parse_mux_command("/mux off"), Ok(MuxSubcommand::Off));
     assert_eq!(parse_mux_command("/mux help"), Ok(MuxSubcommand::Help));
-    // @step And the grid shows two horizontal panes: Board on the left and Agent on the right
-    // (the default preset shape is asserted in mux001_app.rs +
-    // presets.rs; the parser only resolves the subcommand)
-    // @step And the split is 50/50 with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
-    // (see above — dispatcher-level assertion)
+    // @step And the grid shows the default layout "board, agent": Board on the left and Agent on the right
+    // (the default layout string itself parses to two columns)
+    let default = parsed_layout("/mux board, agent")?;
+    assert_eq!(default.to_string(), "board, agent");
+    assert_eq!(
+        default.leaves(),
+        vec![MuxPaneKind::Board, MuxPaneKind::Agent]
+    );
+    // @step And the two columns share the width equally with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
+    assert!(
+        default.items().iter().all(|item| item.weight() == 1),
+        "the default columns carry equal weights"
+    );
     // @step And the mux footer row is painted at the bottom of the screen
-    // (render-level assertion in mux001_app.rs)
+    // (render-level assertion in the App-level test below)
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux v sets the grid to vertical
+// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux v sets the grid to vertical
+/// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
 #[test]
-fn mux_v_parses_to_vertical_orientation() {
-    // @step Given mux mode is active with panes Board and Agent
-    // (parser-level: assert the variant carries the right orientation)
-    // @step When I submit the slash command "/mux v"
-    assert_eq!(
-        parse_mux_command("/mux v"),
-        Ok(MuxSubcommand::Orientation(MuxOrientation::Vertical))
-    );
-    // @step Then the grid is vertical with Board on top and Agent on the bottom
-    // (the dispatcher folds this into MuxConfig.orientation)
-    assert_eq!(
-        parse_mux_command("/mux vertical"),
-        Ok(MuxSubcommand::Orientation(MuxOrientation::Vertical))
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux h sets the grid to horizontal
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux h sets the grid to horizontal
-#[test]
-fn mux_h_parses_to_horizontal_orientation() {
-    // @step Given mux mode is active with panes Board and Agent
-    // (parser-level: assert the variant carries the right orientation)
-    // @step When I submit the slash command "/mux h"
-    assert_eq!(
-        parse_mux_command("/mux h"),
-        Ok(MuxSubcommand::Orientation(MuxOrientation::Horizontal))
-    );
-    // @step Then the grid is horizontal with Board on the left and Agent on the right
-    // (the dispatcher folds this into MuxConfig.orientation)
-    assert_eq!(
-        parse_mux_command("/mux horizontal"),
-        Ok(MuxSubcommand::Orientation(MuxOrientation::Horizontal))
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 3 sets the pane count to three
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 3 sets the pane count to three
-#[test]
-fn mux_3_parses_to_pane_count_three() {
-    // @step Given mux mode is active with the default two panes
-    // (parser-level: assert the count round-trips)
-    // @step When I submit the slash command "/mux 3"
-    assert_eq!(parse_mux_command("/mux 3"), Ok(MuxSubcommand::PaneCount(3)));
-    // @step Then the grid shows three panes: Board, Agent and ChangedFiles
-    // (the dispatcher expands the count to the default pane kinds)
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 4 sets the pane count to four
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 4 sets the pane count to four
-#[test]
-fn mux_4_parses_to_pane_count_four() {
-    // @step Given mux mode is active with three panes
-    // (parser-level: assert the count round-trips)
-    // @step When I submit the slash command "/mux 4"
-    assert_eq!(parse_mux_command("/mux 4"), Ok(MuxSubcommand::PaneCount(4)));
-    // @step Then the grid shows four panes: Board, Agent, ChangedFiles and Checkpoints
-    // (the dispatcher expands the count to the default pane kinds)
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 2 collapses the pane count to two
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 2 collapses the pane count to two
-#[test]
-fn mux_2_parses_to_pane_count_two() {
-    // @step Given mux mode is active with four panes
-    // (parser-level: assert the count round-trips)
-    // @step When I submit the slash command "/mux 2"
-    assert_eq!(parse_mux_command("/mux 2"), Ok(MuxSubcommand::PaneCount(2)));
-    // @step Then the grid shows two panes: Board and Agent
-    // (the dispatcher collapses the pane list to the first two kinds)
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux board agent 40 sets an explicit pane list and split
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux board agent 40 sets an explicit pane list and split
-#[test]
-fn mux_board_agent_40_parses_to_pane_list_with_split() {
+fn mux_board_2_agent_3_parses_to_a_weighted_layout() -> TestResult {
     // @step Given mux mode is active
-    // (parser-level: assert the pane kinds + split round-trip)
-    // @step When I submit the slash command "/mux board agent 40"
-    assert_eq!(
-        parse_mux_command("/mux board agent 40"),
-        Ok(MuxSubcommand::PaneList {
-            panes: vec![MuxPaneKind::Board, MuxPaneKind::Agent],
-            split_percent: Some(40),
-        })
-    );
+    // (parser-level: assert the pane kinds + weights round-trip)
+    // @step When I submit the slash command "/mux board:2, agent:3"
+    let layout = parsed_layout("/mux board:2, agent:3")?;
     // @step Then the grid shows Board at 40 percent on the left and Agent at 60 percent on the right
-    // (the dispatcher folds this into MuxConfig.panes + splits)
+    assert_eq!(layout.to_string(), "board:2, agent:3");
+    assert_eq!(
+        layout.leaves(),
+        vec![MuxPaneKind::Board, MuxPaneKind::Agent]
+    );
+    let weights: Vec<u32> = layout
+        .items()
+        .iter()
+        .map(codelet_fspec_tui::MuxNode::weight)
+        .collect();
+    assert_eq!(weights, vec![2, 3], "two fifths for Board, three for Agent");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux files checkpoints sets a two-pane list
+// Scenario: the mux files, checkpoints command sets a two-pane layout
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux files checkpoints sets a two-pane list
+/// Scenario: the mux files, checkpoints command sets a two-pane layout
 #[test]
-fn mux_files_checkpoints_parses_to_pane_list() {
+fn mux_files_checkpoints_parses_to_a_two_pane_layout() -> TestResult {
     // @step Given mux mode is active
     // (parser-level: assert the pane kinds round-trip)
-    // @step When I submit the slash command "/mux files checkpoints"
-    assert_eq!(
-        parse_mux_command("/mux files checkpoints"),
-        Ok(MuxSubcommand::PaneList {
-            panes: vec![MuxPaneKind::ChangedFiles, MuxPaneKind::Checkpoints],
-            split_percent: None,
-        })
-    );
+    // @step When I submit the slash command "/mux files, checkpoints"
+    let layout = parsed_layout("/mux files, checkpoints")?;
     // @step Then the grid shows ChangedFiles on the left and Checkpoints on the right
-    // (the dispatcher folds this into MuxConfig.panes)
+    assert_eq!(
+        layout.leaves(),
+        vec![MuxPaneKind::ChangedFiles, MuxPaneKind::Checkpoints]
+    );
+    assert_eq!(layout.items().len(), 2, "two top-level columns");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -667,51 +628,37 @@ fn mux_files_checkpoints_parses_to_pane_list() {
 
 /// Scenario: /mux with an invalid pane kind leaves the config unchanged and shows an error
 #[test]
-fn invalid_inputs_parse_to_stable_errors() {
-    // @step Given mux mode is active with panes Board and Agent at a 50/50 split
+fn invalid_inputs_parse_to_stable_errors() -> TestResult {
+    // @step Given mux mode is active with the layout "board, agent"
     // (parser-level: the dispatcher leaves the config untouched on Err —
-    // here we assert the error variants are stable + snapshot their text)
-    // @step When I submit the slash command "/mux board zzz"
-    assert!(matches!(
-        parse_mux_command("/mux board zzz"),
-        Err(MuxError::UnknownPaneKind(ref k)) if k == "zzz"
-    ));
-    // @step Then a one-line error "/mux: unknown pane kind: zzz" is shown in the agent scrollback
-    insta::assert_snapshot!(
-        "mux_error_unknown_pane_kind",
-        MuxError::UnknownPaneKind("zzz".to_string()).to_string()
+    // here we assert the error variants and their exact text)
+    // @step When I submit the slash command "/mux board, zzz"
+    let err = parse_mux_command("/mux board, zzz");
+    assert!(matches!(err, Err(MuxError::Layout(_))), "got {err:?}");
+    // @step Then a one-line error "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints" is shown in the agent scrollback
+    assert_eq!(
+        err.map(|_| ()).or_fail_err("an error")?.to_string(),
+        "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints"
     );
-    // @step And the grid still shows Board and Agent at a 50/50 split
-    // (Err ⇒ dispatcher no-op; asserted in the integration test)
-    // @step And the out-of-range command "/mux board agent 5" is rejected with a one-line error and leaves the config unchanged
-    assert!(matches!(
-        parse_mux_command("/mux board agent 5"),
-        Err(MuxError::SplitPercentOutOfRange(5))
-    ));
-    insta::assert_snapshot!(
-        "mux_error_split_percent_out_of_range",
-        MuxError::SplitPercentOutOfRange(5).to_string()
+    // @step And the grid still shows the layout "board, agent"
+    // (Err ⇒ dispatcher no-op; asserted in the App-level test)
+    // @step And the bad-weight command "/mux board, agent:0" is rejected with a one-line error and leaves the config unchanged
+    assert_eq!(
+        parse_mux_command("/mux board, agent:0")
+            .map(|_| ())
+            .or_fail_err("an error")?
+            .to_string(),
+        "/mux: bad weight '0' at column 14; weights are positive integers"
     );
-    assert!(matches!(
-        parse_mux_command("/mux 1"),
-        Err(MuxError::PaneCountOutOfRange(1))
-    ));
-    assert!(matches!(
-        parse_mux_command("/mux 5"),
-        Err(MuxError::PaneCountOutOfRange(5))
-    ));
-    assert!(matches!(
-        parse_mux_command("/mux board agent 95"),
-        Err(MuxError::SplitPercentOutOfRange(95))
-    ));
-    assert!(matches!(
-        parse_mux_command("/mux board"),
-        Err(MuxError::TooFewPanes(1))
-    ));
-    assert!(matches!(
-        parse_mux_command("/mux board agent files checkpoints extra"),
-        Err(MuxError::TooManyPanes(5))
-    ));
+    // The removed MUX-001 forms name the layout syntax instead.
+    for args in ["v", "h", "3", "board agent 40", "board zzz"] {
+        assert_eq!(
+            parse_mux_command(&format!("/mux {args}")),
+            Err(MuxError::RemovedSyntax(args.to_string())),
+            "'/mux {args}' is the removed syntax"
+        );
+    }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -719,16 +666,22 @@ fn invalid_inputs_parse_to_stable_errors() {
 // ─────────────────────────────────────────────────────────────────────────
 
 proptest! {
-    /// Property: well-formed /mux lines always parse to the expected variant.
+    /// Property: well-formed weighted layout lines always parse and
+    /// round-trip through the canonical string.
     #[test]
-    fn well_formed_mux_lines_parse(count in 2usize..=4, pct in 10u16..=90) {
-        let line = format!("/mux {count}");
-        assert!(matches!(parse_mux_command(&line), Ok(MuxSubcommand::PaneCount(c)) if c == count));
-        let line2 = format!("/mux board agent {pct}");
-        assert!(matches!(
-            parse_mux_command(&line2),
-            Ok(MuxSubcommand::PaneList { split_percent: Some(p), .. }) if p == pct
-        ));
+    fn well_formed_mux_lines_parse(a in 1u32..=99, b in 1u32..=99) {
+        let line = format!("/mux board:{a}, [agent, files]:{b}");
+        let parsed = parse_mux_command(&line);
+        let Ok(MuxSubcommand::Layout(layout)) = parsed else {
+            return Err(proptest::test_runner::TestCaseError::fail(format!(
+                "{line} must parse: {parsed:?}"
+            )));
+        };
+        let weight = |w: u32| if w == 1 { String::new() } else { format!(":{w}") };
+        assert_eq!(
+            layout.to_string(),
+            format!("board{}, [agent, files]{}", weight(a), weight(b))
+        );
     }
 }
 
@@ -739,22 +692,25 @@ proptest! {
         prop_assume!(!matches!(
             kind.as_str(),
             "board" | "agent" | "files" | "checkpoints"
+            | "on" | "off" | "save" | "default" | "help" | "h" | "v"
         ));
-        let line = format!("/mux board {kind}");
+        let line = format!("/mux board, {kind}");
+        let expected = format!(
+            "/mux: unknown pane '{kind}' at column 8; panes are board, agent, files, checkpoints"
+        );
         assert!(matches!(
             parse_mux_command(&line),
-            Err(MuxError::UnknownPaneKind(ref k)) if k == &kind
+            Err(ref e) if e.to_string() == expected
         ));
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Mux layout math tests (merged from mux001_layout.rs)
+// Mux layout math tests (merged from mux001_layout.rs; MUX-010: the
+// layout tree geometry replaces calculate_pane_rects)
 // ─────────────────────────────────────────────────────────────────────────
 
 use ratatui::layout::Rect;
-
-use codelet_fspec_tui::views::multiplex::calculate_pane_rects;
 
 fn area(w: u16, h: u16) -> Rect {
     Rect {
@@ -765,151 +721,35 @@ fn area(w: u16, h: u16) -> Rect {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: split clamping never produces a pane narrower than the
-// minimum width (layout-math half)
-// ─────────────────────────────────────────────────────────────────────────
-// MUX-003 supersedes R5: the minimum clamps are removed. An explicit
-// percent is honored as-is (no board minimum); the second pane takes
-// the remainder.
-
-/// Scenario: split clamping never produces a pane narrower than the minimum width
-#[test]
-fn clamping_never_produces_a_sub_minimum_pane() {
-    // @step Given a 110-column terminal with two mux panes
-    let panes = [MuxPaneKind::Board, MuxPaneKind::Agent];
-    // @step When the split is requested at 10/90
-    let rects = calculate_pane_rects(area(110, 24), MuxOrientation::Horizontal, &panes, &[10]);
-    // @step Then the first pane is clamped to the 64-column board minimum and the second pane takes the 44-column remainder
-    // (MUX-003: no minimum — the 10% percent is honored as-is)
-    assert_eq!(
-        rects[0].width,
-        109 * 10 / 100,
-        "10% of 109 available, honored without clamping"
-    );
-    assert_eq!(
-        rects[1].width,
-        110 - rects[0].width - 1,
-        "agent pane takes the remainder minus the 1-col divider"
-    );
-    // @step And no board pane rect is ever narrower than the 64-column minimum
-    // (MUX-003: superseded — panes may be narrower than the old minimum)
-    assert!(
-        rects[0].width >= 1 && rects[1].width >= 1,
-        "both panes non-empty"
-    );
+/// The pane rects of `layout` in `area` (every pane shown).
+fn rects_of(layout: &str, area: Rect) -> Result<Vec<Rect>, codelet_test_helpers::TestError> {
+    let layout = MuxLayout::parse(layout).or_fail("layout")?;
+    Ok(compute(area, &layout, &[]).panes)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux with an explicit pane list and split percent (layout half)
+// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
+// (layout half)
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux with an explicit pane list and split percent
+/// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
 #[test]
-fn explicit_split_percent_is_respected_when_above_minimum() {
+fn explicit_weights_are_respected_below_the_old_minimum() -> TestResult {
     // @step Given mux mode is active
-    let panes = [MuxPaneKind::Board, MuxPaneKind::Agent];
-    // @step When I submit the slash command "/mux board agent 40"
-    // (the dispatcher folds this into splits = [40]; the layout math
-    // consumes it here)
-    let rects = calculate_pane_rects(area(120, 24), MuxOrientation::Horizontal, &panes, &[40]);
+    // @step When I submit the slash command "/mux board:2, agent:3"
+    let rects = rects_of("board:2, agent:3", area(120, 24))?;
     // @step Then the grid shows Board at 40 percent on the left and Agent at 60 percent on the right
-    // (MUX-003: the percent is honored as-is, no minimum clamp)
+    // (MUX-003: the share is honored as-is, no minimum clamp)
     let available = 120u16 - 1; // 1-col divider
-    assert_eq!(rects[0].width, available * 40 / 100);
+    assert_eq!(rects[0].width, available * 2 / 5);
     assert_eq!(rects[1].width, available - rects[0].width);
-    // @step When I submit the slash command "/mux files checkpoints"
-    let panes2 = [MuxPaneKind::ChangedFiles, MuxPaneKind::Checkpoints];
-    let rects2 = calculate_pane_rects(area(120, 24), MuxOrientation::Horizontal, &panes2, &[50]);
+    // @step When I submit the slash command "/mux files, checkpoints"
+    let rects2 = rects_of("files, checkpoints", area(120, 24))?;
     // @step Then the grid shows ChangedFiles on the left and Checkpoints on the right
     assert_eq!(rects2.len(), 2);
     assert_eq!(rects2[0].x, 0);
     assert!(rects2[1].x > rects2[0].x);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux h and /mux v set the grid orientation (layout half)
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux h and /mux v set the grid orientation
-#[test]
-fn orientation_changes_stacking_direction() {
-    // @step Given mux mode is active with panes Board and Agent
-    let panes = [MuxPaneKind::Board, MuxPaneKind::Agent];
-    // @step When I submit the slash command "/mux v"
-    let v = calculate_pane_rects(area(120, 40), MuxOrientation::Vertical, &panes, &[50]);
-    // @step Then the grid is vertical with Board on top and Agent on the bottom
-    assert_eq!(v[0].y, 0);
-    assert!(v[1].y > v[0].y, "second pane must sit below the first");
-    assert_eq!(
-        v[0].width, v[1].width,
-        "vertical panes share the full width"
-    );
-    // @step When I submit the slash command "/mux h"
-    let h = calculate_pane_rects(area(120, 40), MuxOrientation::Horizontal, &panes, &[50]);
-    // @step Then the grid is horizontal with Board on the left and Agent on the right
-    assert_eq!(h[0].x, 0);
-    assert!(h[1].x > h[0].x, "second pane must sit right of the first");
-    assert_eq!(
-        h[0].height, h[1].height,
-        "horizontal panes share the full height"
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux <n> sets the pane count with default pane kinds (layout
-// half — 2/3/4 panes)
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux <n> sets the pane count with default pane kinds
-#[test]
-fn two_three_and_four_panes_partition_the_area() {
-    // @step Given mux mode is active with the default two panes
-    // @step When I submit the slash command "/mux 3"
-    let three = [
-        MuxPaneKind::Board,
-        MuxPaneKind::Agent,
-        MuxPaneKind::ChangedFiles,
-    ];
-    let rects3 = calculate_pane_rects(area(200, 24), MuxOrientation::Horizontal, &three, &[40, 30]);
-    assert_eq!(rects3.len(), 3);
-    // @step Then the grid shows three panes: Board, Agent and ChangedFiles
-    // @step When I submit the slash command "/mux 4"
-    let four = [
-        MuxPaneKind::Board,
-        MuxPaneKind::Agent,
-        MuxPaneKind::ChangedFiles,
-        MuxPaneKind::Checkpoints,
-    ];
-    let rects4 = calculate_pane_rects(
-        area(300, 24),
-        MuxOrientation::Horizontal,
-        &four,
-        &[30, 30, 30],
-    );
-    assert_eq!(rects4.len(), 4);
-    // @step Then the grid shows four panes: Board, Agent, ChangedFiles and Checkpoints
-    // @step When I submit the slash command "/mux 2"
-    let two = [MuxPaneKind::Board, MuxPaneKind::Agent];
-    let rects2 = calculate_pane_rects(area(120, 24), MuxOrientation::Horizontal, &two, &[50]);
-    assert_eq!(rects2.len(), 2);
-    // @step Then the grid shows two panes: Board and Agent
-    // Invariants: panes are contiguous, non-overlapping, and the last
-    // pane takes the remainder (splits has n-1 entries).
-    for (i, r) in rects4.iter().enumerate() {
-        assert!(r.width > 0, "pane {i} must be non-empty");
-        if i > 0 {
-            let prev = &rects4[i - 1];
-            assert_eq!(
-                r.x,
-                prev.x + prev.width + 1,
-                "exactly one divider col between panes"
-            );
-        }
-    }
-    let total: u16 = rects4.iter().map(|r| r.width).sum();
-    assert_eq!(total, 300 - 3, "panes + 3 dividers fill the terminal");
-    let _ = (rects2, rects3);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -918,10 +758,9 @@ fn two_three_and_four_panes_partition_the_area() {
 
 /// Boundary: a tiny terminal degrades gracefully — no panic, no zero-width panes.
 #[test]
-fn tiny_terminal_degrades_gracefully() {
-    let panes = [MuxPaneKind::Board, MuxPaneKind::Agent];
+fn tiny_terminal_degrades_gracefully() -> TestResult {
     // 66 cols: MUX-003 equal division — 65 available / 2 = 32/33.
-    let rects = calculate_pane_rects(area(66, 24), MuxOrientation::Horizontal, &panes, &[50]);
+    let rects = rects_of("board, agent", area(66, 24))?;
     assert_eq!(rects[0].width, 32);
     assert!(
         rects[1].width >= 1,
@@ -929,52 +768,50 @@ fn tiny_terminal_degrades_gracefully() {
     );
     // 10 cols: nothing fits at the board minimum — the layout must
     // still return 2 non-empty rects summing to the available width.
-    let tiny = calculate_pane_rects(area(10, 24), MuxOrientation::Horizontal, &panes, &[50]);
+    let tiny = rects_of("board, agent", area(10, 24))?;
     assert_eq!(tiny.len(), 2);
     assert!(tiny[0].width >= 1 && tiny[1].width >= 1);
+    Ok(())
 }
 
-/// Boundary: vertical orientation divides the rows equally (MUX-003:
-/// no minimum pane height).
+/// Boundary: a row group divides the rows equally (MUX-003: no minimum
+/// pane height).
 #[test]
-fn vertical_orientation_enforces_minimum_height() {
-    let panes = [MuxPaneKind::Board, MuxPaneKind::Agent];
-    // 20 rows: 50% = 9 rows each (no minimum clamp).
-    let rects = calculate_pane_rects(area(120, 20), MuxOrientation::Vertical, &panes, &[50]);
+fn a_row_group_divides_the_rows_equally() -> TestResult {
+    // 20 rows: 19 available = 9 + 10 (no minimum clamp).
+    let rects = rects_of("[board, agent]", area(120, 20))?;
     assert!(rects[0].height >= 1, "board pane must be non-empty");
     assert!(rects[1].height >= 1);
-    // Wide-enough terminal: 50/50 of 40 rows = 19 + 20 (MUX-003: the
-    // last pane absorbs the remainder, no minimum clamp).
-    let comfy = calculate_pane_rects(area(120, 40), MuxOrientation::Vertical, &panes, &[50]);
+    // 40 rows: 19 + 20 (MUX-003: the last pane absorbs the remainder,
+    // no minimum clamp).
+    let comfy = rects_of("[board, agent]", area(120, 40))?;
     assert_eq!(comfy[0].height, 19);
     assert_eq!(comfy[1].height, 20);
+    assert_eq!(comfy[0].width, 120, "a row spans the full width");
+    Ok(())
 }
 
-/// Boundary: the non-board panes take their equal share (MUX-003: no
+/// Boundary: the non-board panes take their weighted share (MUX-003: no
 /// 20-col floor).
 #[test]
-fn non_board_panes_use_the_20_col_floor() {
-    let panes = [MuxPaneKind::Agent, MuxPaneKind::ChangedFiles];
-    let rects = calculate_pane_rects(area(40, 24), MuxOrientation::Horizontal, &panes, &[10]);
-    // 10% of 39 available = 3, honored as-is (no floor).
-    assert_eq!(rects[0].width, 39 * 10 / 100);
+fn non_board_panes_have_no_20_col_floor() -> TestResult {
+    let rects = rects_of("agent:1, files:9", area(40, 24))?;
+    // A tenth of 39 available = 3, honored as-is (no floor).
+    assert_eq!(rects[0].width, 39 / 10);
     assert_eq!(rects[1].width, 40 - rects[0].width - 1);
+    Ok(())
 }
 
-/// Boundary: explicit percents below the old minimums are honored as-is
+/// Boundary: small weights below the old minimums are honored as-is
 /// (MUX-003: no minimums); the last pane takes the remainder.
 #[test]
-fn all_min_splits_leave_remainder_for_last_pane() {
-    let panes = [
-        MuxPaneKind::Board,
-        MuxPaneKind::Agent,
-        MuxPaneKind::Checkpoints,
-    ];
-    // 100 cols: 10% of 98 = 9, 10% of 98 = 9, remainder 80.
-    let rects = calculate_pane_rects(area(100, 24), MuxOrientation::Horizontal, &panes, &[10, 10]);
-    assert_eq!(rects[0].width, 98 * 10 / 100);
-    assert_eq!(rects[1].width, 98 * 10 / 100);
+fn small_weights_leave_remainder_for_last_pane() -> TestResult {
+    // 100 cols: a tenth of 98 = 9, 9, remainder 80.
+    let rects = rects_of("board:1, agent:1, checkpoints:8", area(100, 24))?;
+    assert_eq!(rects[0].width, 98 / 10);
+    assert_eq!(rects[1].width, 98 / 10);
     assert_eq!(rects[2].width, 100 - rects[0].width - rects[1].width - 2);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -996,20 +833,23 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn submit(app: &mut App, text: &str) {
-    app.dispatch(Action::InputSubmitted(text.to_string()));
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, text.to_string()));
+    }
 }
 
 fn session_scrollback_text(app: &App, id: &SessionId) -> String {
@@ -1033,12 +873,13 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
 }
 
 /// Enable mux with the default preset on a fresh app (shared Given).
-async fn app_with_mux(app: &mut App) {
+async fn app_with_mux(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     // MUX-004: bare /mux now opens the config dialog; the explicit
     // "/mux on" keeps the MUX-001 enable-with-default-preset path.
     submit(app, "/mux on");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1047,13 +888,13 @@ async fn app_with_mux(app: &mut App) {
 
 /// Scenario: /mux on enables mux mode with the default preset
 #[tokio::test]
-async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
+async fn slash_mux_on_enables_mux_mode_with_the_default_preset() -> TestResult {
     // @step Given the TUI is showing the single Board view
     let (mut app, _mock) = fresh_app();
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When I submit the slash command "/mux on"
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     submit(&mut app, "/mux on");
     // @step Then mux mode is active with the default preset
     assert_eq!(
@@ -1065,11 +906,19 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
         app.mux_state().config().enabled,
         "mux config must be enabled"
     );
-    // @step And the grid shows two horizontal panes: Board on the left and Agent on the right
+    // @step And the grid shows the default layout "board, agent": Board on the left and Agent on the right
     let cfg = app.mux_state().config();
-    assert_eq!(cfg.panes.len(), 2, "default preset has two panes");
-    // @step And the split is 50/50 with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
-    assert_eq!(cfg.splits, vec![50], "default preset splits 50/50");
+    assert_eq!(cfg.layout.to_string(), "board, agent");
+    let rects = app.navigator().mux.pane_rects().to_vec();
+    assert_eq!(rects.len(), 2, "the default layout has two panes");
+    assert!(rects[0].x < rects[1].x, "Board left of Agent");
+    // @step And the two columns share the width equally with the Board pane focused on fresh entry (the agent pane is the persisted home focus)
+    assert_eq!(
+        (rects[0].width, rects[1].width),
+        (59, 60),
+        "119 available cells split equally (last column takes the remainder)"
+    );
+    assert_eq!(app.navigator().mux.focus(), 0, "fresh entry focuses Board");
     assert_eq!(
         cfg.focused_pane, 1,
         "the agent pane is the persisted home focus (fresh entry focuses Board)"
@@ -1077,9 +926,9 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
     // @step And the mux footer row is painted at the bottom of the screen
     let buf = {
         let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(120, 24))
-            .expect("Terminal::new");
+            .or_fail("Terminal::new")?;
         term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-            .expect("draw");
+            .or_fail("draw")?;
         term.backend().buffer().clone()
     };
     let rows: Vec<String> = (0..buf.area.height)
@@ -1093,6 +942,7 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
         rows.iter().any(|r| r.contains("MUX")),
         "the mux footer row must be painted: {rows:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1103,132 +953,51 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
 mod navigation;
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux v sets the grid to vertical
+// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux v sets the grid to vertical
+/// Scenario: /mux board:2, agent:3 sets an explicit layout with weights
 #[tokio::test]
-async fn slash_mux_v_sets_the_grid_to_vertical() {
-    // @step Given mux mode is active with panes Board and Agent
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    // @step When I submit the slash command "/mux v"
-    submit(&mut app, "/mux v");
-    // @step Then the grid is vertical with Board on top and Agent on the bottom
-    use codelet_fspec_tui::views::multiplex::MuxOrientation;
-    assert_eq!(
-        app.mux_state().config().orientation,
-        MuxOrientation::Vertical
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux h sets the grid to horizontal
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux h sets the grid to horizontal
-#[tokio::test]
-async fn slash_mux_h_sets_the_grid_to_horizontal() {
-    // @step Given mux mode is active with panes Board and Agent
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    submit(&mut app, "/mux v");
-    // @step When I submit the slash command "/mux h"
-    submit(&mut app, "/mux h");
-    // @step Then the grid is horizontal with Board on the left and Agent on the right
-    use codelet_fspec_tui::views::multiplex::MuxOrientation;
-    assert_eq!(
-        app.mux_state().config().orientation,
-        MuxOrientation::Horizontal
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 3 sets the pane count to three
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 3 sets the pane count to three
-#[tokio::test]
-async fn slash_mux_3_sets_the_pane_count_to_three() {
-    // @step Given mux mode is active with the default two panes
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    assert_eq!(app.mux_state().config().panes.len(), 2);
-    // @step When I submit the slash command "/mux 3"
-    submit(&mut app, "/mux 3");
-    // @step Then the grid shows three panes: Board, Agent and ChangedFiles
-    assert_eq!(app.mux_state().config().panes.len(), 3);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 4 sets the pane count to four
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 4 sets the pane count to four
-#[tokio::test]
-async fn slash_mux_4_sets_the_pane_count_to_four() {
-    // @step Given mux mode is active with three panes
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    submit(&mut app, "/mux 3");
-    // @step When I submit the slash command "/mux 4"
-    submit(&mut app, "/mux 4");
-    // @step Then the grid shows four panes: Board, Agent, ChangedFiles and Checkpoints
-    assert_eq!(app.mux_state().config().panes.len(), 4);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux 2 collapses the pane count to two
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux 2 collapses the pane count to two
-#[tokio::test]
-async fn slash_mux_2_collapses_the_pane_count_to_two() {
-    // @step Given mux mode is active with four panes
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    submit(&mut app, "/mux 4");
-    // @step When I submit the slash command "/mux 2"
-    submit(&mut app, "/mux 2");
-    // @step Then the grid shows two panes: Board and Agent
-    assert_eq!(app.mux_state().config().panes.len(), 2);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux board agent 40 sets an explicit pane list and split
-// ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: /mux board agent 40 sets an explicit pane list and split
-#[tokio::test]
-async fn slash_mux_board_agent_40_sets_an_explicit_pane_list_and_split() {
+async fn slash_mux_board_2_agent_3_sets_an_explicit_layout_with_weights() -> TestResult {
     // @step Given mux mode is active
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    // @step When I submit the slash command "/mux board agent 40"
-    submit(&mut app, "/mux board agent 40");
+    app_with_mux(&mut app).await?;
+    // @step When I submit the slash command "/mux board:2, agent:3"
+    submit(&mut app, "/mux board:2, agent:3");
     // @step Then the grid shows Board at 40 percent on the left and Agent at 60 percent on the right
     let cfg = app.mux_state().config();
-    assert_eq!(cfg.splits, vec![40]);
+    assert_eq!(cfg.layout.to_string(), "board:2, agent:3");
+    let rects = app.navigator().mux.pane_rects().to_vec();
+    assert_eq!(rects.len(), 2);
+    assert!(rects[0].x < rects[1].x, "Board left of Agent");
+    // 119 available cells: floor(119 * 2 / 5) = 47 for Board, 72 for Agent.
+    assert_eq!((rects[0].width, rects[1].width), (47, 72));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /mux files checkpoints sets a two-pane list
+// Scenario: the mux files, checkpoints command sets a two-pane layout
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux files checkpoints sets a two-pane list
+/// Scenario: the mux files, checkpoints command sets a two-pane layout
 #[tokio::test]
-async fn slash_mux_files_checkpoints_sets_a_two_pane_list() {
+async fn slash_mux_files_checkpoints_sets_a_two_pane_layout() -> TestResult {
     // @step Given mux mode is active
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    // @step When I submit the slash command "/mux files checkpoints"
-    submit(&mut app, "/mux files checkpoints");
+    app_with_mux(&mut app).await?;
+    // @step When I submit the slash command "/mux files, checkpoints"
+    submit(&mut app, "/mux files, checkpoints");
     // @step Then the grid shows ChangedFiles on the left and Checkpoints on the right
     let cfg = app.mux_state().config();
-    assert_eq!(cfg.panes.len(), 2);
-    use codelet_fspec_tui::views::multiplex::MuxPaneKind;
-    assert_eq!(cfg.panes[0], MuxPaneKind::ChangedFiles);
-    assert_eq!(cfg.panes[1], MuxPaneKind::Checkpoints);
+    assert_eq!(cfg.layout.to_string(), "files, checkpoints");
+    assert_eq!(
+        app.navigator().mux.effective_panes(),
+        &[MuxPaneKind::ChangedFiles, MuxPaneKind::Checkpoints]
+    );
+    let rects = app.navigator().mux.pane_rects().to_vec();
+    assert_eq!(rects.len(), 2);
+    assert!(rects[0].x < rects[1].x, "ChangedFiles left of Checkpoints");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1238,33 +1007,38 @@ async fn slash_mux_files_checkpoints_sets_a_two_pane_list() {
 
 /// Scenario: /mux with an invalid pane kind leaves the config unchanged and shows an error
 #[tokio::test]
-async fn slash_mux_invalid_pane_kind_leaves_config_unchanged_and_shows_an_error() {
-    // @step Given mux mode is active with panes Board and Agent at a 50/50 split
+async fn slash_mux_invalid_pane_kind_leaves_config_unchanged_and_shows_an_error() -> TestResult {
+    // @step Given mux mode is active with the layout "board, agent"
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
+    app_with_mux(&mut app).await?;
+    assert_eq!(app.mux_state().config().layout.to_string(), "board, agent");
     let before = app.mux_state().config().clone();
-    // @step When I submit the slash command "/mux board zzz"
-    submit(&mut app, "/mux board zzz");
-    // @step Then a one-line error "/mux: unknown pane kind: zzz" is shown in the agent scrollback
+    // @step When I submit the slash command "/mux board, zzz"
+    submit(&mut app, "/mux board, zzz");
+    // @step Then a one-line error "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints" is shown in the agent scrollback
     let text = session_scrollback_text(&app, &SessionId::new("s-1"));
     assert!(
-        text.contains("/mux: unknown pane kind: zzz"),
+        text.contains(
+            "/mux: unknown pane 'zzz' at column 8; panes are board, agent, files, checkpoints"
+        ),
         "the one-line error must land in the scrollback; got: {text}"
     );
-    // @step And the grid still shows Board and Agent at a 50/50 split
+    // @step And the grid still shows the layout "board, agent"
     assert_eq!(
         app.mux_state().config(),
         &before,
         "a parse error must leave the config untouched"
     );
-    // @step And the out-of-range command "/mux board agent 5" is rejected with a one-line error and leaves the config unchanged
-    submit(&mut app, "/mux board agent 5");
+    assert_eq!(app.mux_state().config().layout.to_string(), "board, agent");
+    // @step And the bad-weight command "/mux board, agent:0" is rejected with a one-line error and leaves the config unchanged
+    submit(&mut app, "/mux board, agent:0");
     let text = session_scrollback_text(&app, &SessionId::new("s-1"));
     assert!(
-        text.contains("/mux: split percent must be 10..=90, got 5"),
-        "the out-of-range error must land in the scrollback; got: {text}"
+        text.contains("/mux: bad weight '0' at column 14; weights are positive integers"),
+        "the bad-weight error must land in the scrollback; got: {text}"
     );
     assert_eq!(app.mux_state().config(), &before);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1277,28 +1051,33 @@ async fn slash_mux_invalid_pane_kind_leaves_config_unchanged_and_shows_an_error(
 /// Scenario: /mux save persists the config to the shared fspec-config.json
 #[tokio::test]
 #[serial]
-async fn slash_mux_save_persists_the_config_to_the_shared_fspec_config_json() {
-    // @step Given mux mode is active with panes Board and Agent at a 40/60 vertical split
-    let (_data_guard, _data) = root_data_dir().await;
+async fn slash_mux_save_persists_the_config_to_the_shared_fspec_config_json() -> TestResult {
+    // @step Given mux mode is active with the layout "[board:2, agent:3]"
+    let (_data_guard, _data) = root_data_dir().await?;
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    submit(&mut app, "/mux v");
-    submit(&mut app, "/mux board agent 40");
+    app_with_mux(&mut app).await?;
+    submit(&mut app, "/mux [board:2, agent:3]");
+    assert_eq!(
+        app.mux_state().config().layout.to_string(),
+        "[board:2, agent:3]"
+    );
     // @step When I submit the slash command "/mux save"
     submit(&mut app, "/mux save");
-    // @step Then the shared fspec-config.json exists and its tui.mux key contains the saved orientation, splits and pane list
-    let data_dir = codelet_common::get_data_dir().expect("data dir");
+    // @step Then the shared fspec-config.json exists and its tui.mux key contains the layout string "[board:2, agent:3]"
+    let data_dir = codelet_common::get_data_dir().or_fail("data dir")?;
     let path = data_dir.join("fspec-config.json");
     assert!(
         path.exists(),
         "fspec-config.json must exist after /mux save"
     );
-    let raw = fs::read_to_string(&path).expect("read fspec-config.json");
-    assert!(
-        raw.contains("\"mux\""),
-        "the tui.mux key must round-trip: {raw}"
+    let raw = fs::read_to_string(&path).or_fail("read fspec-config.json")?;
+    let json: serde_json::Value = serde_json::from_str(&raw).or_fail("parse fspec-config.json")?;
+    assert_eq!(
+        json["tui"]["mux"]["layout"],
+        serde_json::json!("[board:2, agent:3]"),
+        "the tui.mux key must hold the layout string: {raw}"
     );
-    assert!(raw.contains("40"), "the saved split must round-trip: {raw}");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1308,25 +1087,29 @@ async fn slash_mux_save_persists_the_config_to_the_shared_fspec_config_json() {
 /// Scenario: a fresh bootstrap restores the saved mux config
 #[tokio::test]
 #[serial]
-async fn a_fresh_bootstrap_restores_the_saved_mux_config() {
-    // @step Given a fresh TUI bootstrap with a saved tui.mux config of 40/60 vertical Board and Agent
-    let (_data_guard, _data) = root_data_dir().await;
+async fn a_fresh_bootstrap_restores_the_saved_mux_config() -> TestResult {
+    // @step Given a fresh TUI bootstrap with a saved tui.mux layout "[board:2, agent:3]"
+    let (_data_guard, _data) = root_data_dir().await?;
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    submit(&mut app, "/mux v");
-    submit(&mut app, "/mux board agent 40");
+    app_with_mux(&mut app).await?;
+    submit(&mut app, "/mux [board:2, agent:3]");
     submit(&mut app, "/mux save");
     let (mut app2, _mock2) = fresh_app();
     app2.load_mux_config();
     app2.dispatch(Action::SessionCreated(SessionId::new("s-2")));
-    drain_pending(&mut app2).await;
+    drain_pending(&mut app2).await?;
     // @step When I submit the slash command "/mux on"
     submit(&mut app2, "/mux on");
-    // @step Then the grid restores the saved 40/60 vertical Board | Agent layout
+    // @step Then the grid restores the saved layout: Board over Agent in one column at 40/60
     let cfg = app2.mux_state().config();
-    use codelet_fspec_tui::views::multiplex::MuxOrientation;
-    assert_eq!(cfg.orientation, MuxOrientation::Vertical);
-    assert_eq!(cfg.splits, vec![40]);
+    assert_eq!(cfg.layout.to_string(), "[board:2, agent:3]");
+    let rects = app2.navigator().mux.pane_rects().to_vec();
+    assert_eq!(rects.len(), 2);
+    assert_eq!(rects[0].x, rects[1].x, "one column");
+    assert!(rects[0].y < rects[1].y, "Board over Agent");
+    // 22 available rows (23-row body minus the divider): 8 / 14 (2:3).
+    assert_eq!((rects[0].height, rects[1].height), (8, 14));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1336,21 +1119,22 @@ async fn a_fresh_bootstrap_restores_the_saved_mux_config() {
 /// Scenario: a fresh bootstrap with no saved config applies the default preset
 #[tokio::test]
 #[serial]
-async fn a_fresh_bootstrap_with_no_saved_config_applies_the_default_preset() {
+async fn a_fresh_bootstrap_with_no_saved_config_applies_the_default_preset() -> TestResult {
     // @step Given a fresh TUI bootstrap with no tui.mux config present
-    let (_data_guard, _data) = root_data_dir().await;
+    let (_data_guard, _data) = root_data_dir().await?;
     let (mut app, _mock) = fresh_app();
     app.load_mux_config();
     app.dispatch(Action::SessionCreated(SessionId::new("s-3")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step When I submit the slash command "/mux on"
     submit(&mut app, "/mux on");
-    // @step Then the grid applies the default preset: horizontal Board | Agent at 50/50
+    // @step Then the grid applies the default layout "board, agent" with equal columns
     let cfg = app.mux_state().config();
-    use codelet_fspec_tui::views::multiplex::MuxOrientation;
-    assert_eq!(cfg.orientation, MuxOrientation::Horizontal);
-    assert_eq!(cfg.splits, vec![50]);
-    assert_eq!(cfg.panes.len(), 2);
+    assert_eq!(cfg.layout.to_string(), "board, agent");
+    let rects = app.navigator().mux.pane_rects().to_vec();
+    assert_eq!(rects.len(), 2);
+    assert_eq!((rects[0].width, rects[1].width), (59, 60), "equal columns");
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1363,10 +1147,10 @@ async fn a_fresh_bootstrap_with_no_saved_config_applies_the_default_preset() {
 
 /// Scenario: pressing ? in mux mode shows the HelpDialog over the full screen
 #[tokio::test]
-async fn pressing_question_in_mux_mode_shows_the_help_dialog() {
+async fn pressing_question_in_mux_mode_shows_the_help_dialog() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
+    app_with_mux(&mut app).await?;
     assert_eq!(app.active_view(), ViewMode::Mux);
     // @step When I press the "?" key
     let result = app.handle_event(&codelet_fspec_tui::synth_key(KeyCode::Char('?')));
@@ -1387,6 +1171,7 @@ async fn pressing_question_in_mux_mode_shows_the_help_dialog() {
         &before,
         "keys under an open dialog must not mutate mux state"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1396,10 +1181,10 @@ async fn pressing_question_in_mux_mode_shows_the_help_dialog() {
 
 /// Scenario: closing the dialog leaves mux mode active with the same panes and focus
 #[tokio::test]
-async fn closing_the_dialog_leaves_mux_mode_active() {
+async fn closing_the_dialog_leaves_mux_mode_active() -> TestResult {
     // @step Given mux mode is active with Board and Agent panes and the HelpDialog is open
     let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
+    app_with_mux(&mut app).await?;
     let _ = app.handle_event(&codelet_fspec_tui::synth_key(KeyCode::Char('?')));
     assert!(app.compositor().contains("help-dialog"));
     let before = app.mux_state().config().clone();
@@ -1408,6 +1193,7 @@ async fn closing_the_dialog_leaves_mux_mode_active() {
     // @step Then mux mode is still active with the same panes and focus
     assert_eq!(app.active_view(), ViewMode::Mux);
     assert_eq!(app.mux_state().config(), &before);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────

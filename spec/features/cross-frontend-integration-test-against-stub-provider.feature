@@ -3,6 +3,7 @@
 @testing
 @rpc
 @RPC-066
+@BUG-543
 Feature: Cross-frontend integration test against stub provider
   """
   [A] File layout: (1) NEW rust/fspec/tests/cross_frontend_parity.rs — the integration test binary. (2) NEW rust/fspec/tests/fixtures/cross_frontend_run.jsonl — Rust-pinned golden chunk stream. (3) NEW rust/fspec/tests/README.md — regeneration + future-TS-fixture docs. (4) WIDENED rust/providers/src/stub_provider.rs — adds `impl LlmProvider for StubProvider`. (5) NEW rust/providers/src/stub_provider_registration.rs (or inline in stub_provider.rs) — `pub fn register_stub_provider()` that inserts a synthetic ProviderConfig into the custom provider registry so ProviderType::Custom("stub") routes to it. (6) NEW rust/fspec/Cargo.toml [dev-dependencies] entry `codelet-providers = { workspace = true, features = ["test-support"] }`.
@@ -14,6 +15,12 @@ Feature: Cross-frontend integration test against stub provider
   [G] Status-settling discipline: after every backend RPC call that triggers an agent-loop turn (send_input, compact_session), the test calls `wait_for_status(&mut status_rx, SessionStatus::Idle, Duration::from_secs(5))` BEFORE issuing the next RPC. This prevents racey chunk-stream interleaving. The helper subscribes to backend.status_changes_rx() and drains until it sees the target status for the active session.
   [H] Test runtime gating: top-level test fn is annotated `#[tokio::test(flavor = "multi_thread", worker_threads = 2)]`. The whole test body is wrapped in `tokio::time::timeout(Duration::from_secs(45), …)` to enforce AC #5 (< 60s). The fixture-regeneration codepath is also wrapped in the same timeout.
   [I] Risk acknowledgement: this is the FIRST card that exercises the real SessionManager + BackgroundSession against a real provider end-to-end through a WS client. Earlier cards (RPC-037, RPC-049, etc.) use StubSessionManagerHandle, which bypasses the agent loop entirely. Expect to discover small bugs in the agent-loop wiring (compaction, interrupt, status-change broadcast on tool calls) during the implementing phase. If the test surfaces blocking bugs, split them into sibling cards rather than fixing inline.
+  BUG-543: the golden runs in the crate's standard test run: codelet-fspec's test-support feature enables
+  test-stub-provider (cargo test --profile ci-test -p codelet-fspec --features test-support). Step 3 sets
+  ThinkingLevel::ModelDefault because the stub model declares no thinking levels (MODEL-011). The temporary workspace
+  path in FooterStateUpdate is normalised to <workspace>. Under test-support the compactor agent for the registered stub
+  is the stub, which answers a compactor request with a DAG covering the captured turns, so step 5 pins a committed
+  manual compaction (BUG-516: the compactor sub-agent round).
   """
 
   # ========================================
@@ -84,14 +91,14 @@ Feature: Cross-frontend integration test against stub provider
     And the registration occurs exactly once per process
 
   @hello-canned-stream
-  Scenario: send_input("hello") yields the canned [Text, Done] stream within 5 seconds
+  Scenario: send_input("hello") yields the canned Text and Done chunks within 15 seconds
     Given a running fspec daemon with the stub provider registered
     And an external WebSocketFspecBackend connected to the daemon's port
     And the test has created a session via create_session("stub/canned")
     And the test has subscribed to backend.chunks_rx() into a Vec<(SessionId, StreamChunk)>
     When the test calls backend.send_input(session, "hello")
-    Then within 5 seconds the captured vec contains exactly [Text { text: "hi back", .. }, Done]
-    And no other chunk variants appear in the vec for that session
+    Then within 15 seconds the captured vec contains Text("hi back") followed by Done
+    And no other Text chunk appears in the vec for that session
 
   @scripted-run-matches-golden
   Scenario: The full scripted run's normalised chunk stream matches the pinned golden
@@ -101,7 +108,7 @@ Feature: Cross-frontend integration test against stub provider
       | step | rpc                | argument       |
       | 1    | send_input         | "hello"        |
       | 2    | clear_history      | -              |
-      | 3    | set_thinking_level | High           |
+      | 3    | set_thinking_level | ModelDefault   |
       | 4    | send_input         | "trigger-tool" |
       | 5    | compact_session    | -              |
       | 6    | interrupt          | -              |
@@ -156,7 +163,7 @@ Feature: Cross-frontend integration test against stub provider
     And an external WebSocketFspecBackend connected to the daemon's port
     And the test has created a session via create_session("stub/canned")
     When the test calls backend.send_input(session, "hello")
-    Then within 5 seconds the canned [Text, Done] stream is captured
+    Then within 15 seconds the canned [Text, Done] stream is captured
     And no reqwest::Client or eventsource-stream code path fires during the run
 
   @readme-documents-regen

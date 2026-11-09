@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-316
+@cli
+@tag-management
 Feature: Port update-tag command to Rust
   """
   Files: rust/fspec-core/src/commands/update_tag.rs (replace stub); rust/fspec-core/src/help/configs/update_tag.rs (NEW help config); rust/fspec/src/update_tag.rs (NEW CLI bridge); rust/fspec-core/tests/update_tag.rs (NEW dispatcher tests); rust/fspec/tests/cli_update_tag.rs (NEW CLI shell tests); rust/fspec/tests/fixtures/help/update-tag.txt (NEW captured fixture)
@@ -133,3 +136,18 @@ Feature: Port update-tag command to Rust
     Then the dispatcher output contains the substring '✓ Successfully updated @critical'
     And the dispatcher output contains the substring 'Updated: spec/tags.json'
     And the dispatcher output contains the substring 'Regenerated: spec/TAGS.md'
+
+  Scenario: Update tag handles special characters in description
+    Given spec/tags.json contains a tag '@critical' under Phase Tags with description 'Critical features'
+    When I dispatch update-tag with tag '@critical' and description 'Authentication & authorization with OAuth2.0'
+    Then the dispatcher returns success=true
+    And the @critical description on disk is stored verbatim as 'Authentication & authorization with OAuth2.0'
+
+  Scenario: JSON-backed workflow - modify JSON and regenerate MD
+    Given spec/tags.json contains a tag '@critical' under Phase Tags with description 'Critical features'
+    When I dispatch update-tag with tag '@critical' and description 'Updated test tag description'
+    Then the dispatcher returns success=true
+    And the @critical description in spec/tags.json is 'Updated test tag description'
+    And the @critical tag remains in the Phase Tags category
+    And spec/TAGS.md is regenerated from spec/tags.json with the auto-generation warning header
+    And spec/TAGS.md contains the updated description

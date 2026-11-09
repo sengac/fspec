@@ -18,10 +18,9 @@
 //! until the render-layer fix lands. Scenarios 4 and 5 already pass and act as
 //! regression guards. No production code is touched by this file.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::profile_form::ProfileForm;
 use codelet_fspec_tui::views::{ProviderSettingsMode, ProviderSettingsView};
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::Modifier;
@@ -71,16 +70,19 @@ fn find_row(buf: &Buffer, needle: &str) -> Option<u16> {
 }
 
 /// Display column (x) where the substring `needle` begins on row `y`.
-fn col_of(buf: &Buffer, y: u16, needle: &str) -> usize {
+fn col_of(buf: &Buffer, y: u16, needle: &str) -> Result<usize, codelet_test_helpers::TestError> {
     let row = row_string(buf, y);
-    row.find(needle)
+    Ok(row
+        .find(needle)
         .map(|byte_idx| row[..byte_idx].chars().count())
-        .unwrap_or_else(|| panic!("substring {needle:?} not found on row {y}: {row:?}"))
+        .or_fail(&format!(
+            "substring {needle:?} not found on row {y}: {row:?}"
+        ))?)
 }
 
 /// Assert every cell of `needle` on row `y` carries the DIM modifier.
-fn assert_dim(buf: &Buffer, y: u16, needle: &str) {
-    let start = col_of(buf, y, needle) as u16;
+fn assert_dim(buf: &Buffer, y: u16, needle: &str) -> Result<(), codelet_test_helpers::TestError> {
+    let start = col_of(buf, y, needle)? as u16;
     let len = needle.chars().count() as u16;
     for x in start..start + len {
         assert!(
@@ -89,6 +91,7 @@ fn assert_dim(buf: &Buffer, y: u16, needle: &str) {
             buf[(x, y)].modifier
         );
     }
+    Ok(())
 }
 
 /// A create form past the name step, focused on `field_index`, with a real
@@ -107,7 +110,7 @@ fn form_on_field(field_index: usize) -> ProfileForm {
 // Scenario: Empty Context Window field shows a dim placeholder
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn empty_context_window_field_shows_dim_placeholder() {
+fn empty_context_window_field_shows_dim_placeholder() -> TestResult {
     // @step Given a new profile form is open with the Context Window field empty
     let mut view = create_view(form_on_field(2));
 
@@ -115,7 +118,7 @@ fn empty_context_window_field_shows_dim_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Context Window row shows the placeholder "Automatic (model-specific)"
-    let ry = find_row(&buf, "Context Window").expect("Context Window row should render");
+    let ry = find_row(&buf, "Context Window").or_fail("Context Window row should render")?;
     let row = row_string(&buf, ry);
     assert!(
         row.contains("Automatic (model-specific)"),
@@ -123,14 +126,15 @@ fn empty_context_window_field_shows_dim_placeholder() {
     );
 
     // @step Then the placeholder is rendered with the dim modifier
-    assert_dim(&buf, ry, "Automatic (model-specific)");
+    assert_dim(&buf, ry, "Automatic (model-specific)")?;
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Empty Max Output Tokens field shows a dim placeholder
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn empty_max_output_tokens_field_shows_dim_placeholder() {
+fn empty_max_output_tokens_field_shows_dim_placeholder() -> TestResult {
     // @step Given a new profile form is open with the Max Output Tokens field empty
     let mut view = create_view(form_on_field(3));
 
@@ -138,7 +142,7 @@ fn empty_max_output_tokens_field_shows_dim_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Max Output Tokens row shows the placeholder "Automatic (model-specific)"
-    let ry = find_row(&buf, "Max Output Tokens").expect("Max Output Tokens row should render");
+    let ry = find_row(&buf, "Max Output Tokens").or_fail("Max Output Tokens row should render")?;
     let row = row_string(&buf, ry);
     assert!(
         row.contains("Automatic (model-specific)"),
@@ -146,14 +150,15 @@ fn empty_max_output_tokens_field_shows_dim_placeholder() {
     );
 
     // @step Then the placeholder is rendered with the dim modifier
-    assert_dim(&buf, ry, "Automatic (model-specific)");
+    assert_dim(&buf, ry, "Automatic (model-specific)")?;
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Empty Compaction Threshold field shows a dim placeholder
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn empty_compaction_threshold_field_shows_dim_placeholder() {
+fn empty_compaction_threshold_field_shows_dim_placeholder() -> TestResult {
     // @step Given a new profile form is open with the Compaction Threshold field empty
     let mut view = create_view(form_on_field(4));
 
@@ -162,7 +167,7 @@ fn empty_compaction_threshold_field_shows_dim_placeholder() {
 
     // @step Then the Compaction Threshold row shows the placeholder "80% or 200000"
     let ry =
-        find_row(&buf, "Compaction Threshold").expect("Compaction Threshold row should render");
+        find_row(&buf, "Compaction Threshold").or_fail("Compaction Threshold row should render")?;
     let row = row_string(&buf, ry);
     assert!(
         row.contains("80% or 200000"),
@@ -170,14 +175,15 @@ fn empty_compaction_threshold_field_shows_dim_placeholder() {
     );
 
     // @step Then the placeholder is rendered with the dim modifier
-    assert_dim(&buf, ry, "80% or 200000");
+    assert_dim(&buf, ry, "80% or 200000")?;
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: A field with a typed value shows the value not the placeholder
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn typed_value_shows_value_not_placeholder() {
+fn typed_value_shows_value_not_placeholder() -> TestResult {
     // @step Given a new profile form is open
     let mut form = form_on_field(3);
 
@@ -189,7 +195,7 @@ fn typed_value_shows_value_not_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Max Output Tokens row shows "8192"
-    let ry = find_row(&buf, "Max Output Tokens").expect("Max Output Tokens row should render");
+    let ry = find_row(&buf, "Max Output Tokens").or_fail("Max Output Tokens row should render")?;
     let row = row_string(&buf, ry);
     assert!(
         row.contains("8192"),
@@ -201,13 +207,14 @@ fn typed_value_shows_value_not_placeholder() {
         !row.contains("Automatic (model-specific)"),
         "typed row must not show the automatic placeholder, got {row:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Placeholder hints are never persisted into the saved profile
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn placeholder_hints_are_never_persisted() {
+fn placeholder_hints_are_never_persisted() -> TestResult {
     // @step Given a new profile form is open with base URL and API key filled in
     let mut form = ProfileForm::new_create();
     form.is_editing_name = false;
@@ -223,8 +230,8 @@ fn placeholder_hints_are_never_persisted() {
     // @step When the profile definition is built from the form
     let def = form
         .build_definition()
-        .expect("a form with name + base URL + api key should build a definition")
-        .expect("form must build a definition");
+        .or_fail("a form with name + base URL + api key should build a definition")?
+        .or_fail("form must build a definition")?;
 
     // @step Then the saved profile has no context window value
     assert_eq!(
@@ -247,4 +254,5 @@ fn placeholder_hints_are_never_persisted() {
         def.compaction_threshold_value, None,
         "empty Compaction Threshold must not persist a value"
     );
+    Ok(())
 }

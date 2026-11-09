@@ -10,8 +10,8 @@ use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 const EXAMPLE_OUTPUT: &str = "Work units with Example Mapping: 25/42 (59%)\nTotal rules: 87\nTotal examples: 134\nUnanswered questions: 12";
 
 const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--status <status>",
-    description: "Filter by status",
+    flag: "-f, --format <format>",
+    description: "Output format (text or json)",
     default_value: None,
 }];
 

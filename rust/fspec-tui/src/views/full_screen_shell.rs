@@ -9,38 +9,70 @@
 //! a caller-supplied closure so each view keeps ownership of its own
 //! state (e.g. ProviderSettingsView captures `body_area.height` into
 //! `self.visible_rows` from inside the closure).
+//!
+//! TUI-131 (spec/features/long-text-wraps-instead-of-being-cut-off.feature):
+//! the footer hint wraps onto as many rows as it needs and the body gets
+//! the rows that are left ([`scaffold_rects`]).
 
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Widget};
 
 use crate::views::agent::confirm_dialog::ConfirmDialog;
 use crate::views::agent::mode_view_render::{render_footer_hint, render_title_with_count};
+use crate::views::agent::text_wrap::wrap_to_width;
 
-/// Number of chrome rows the scaffold reserves (title + separator +
-/// footer). Body height = `area.height - CHROME_ROWS`.
-pub(crate) const CHROME_ROWS: u16 = 3;
+/// TUI-131: the scaffold's split of a full-screen area — the title row,
+/// the body and the footer rows (a separator row sits between title and
+/// body). The footer takes as many rows as its hint wraps onto at the
+/// area's width; the body gets the rows that are left.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ScaffoldRects {
+    pub title: Rect,
+    pub body: Rect,
+    pub footer: Rect,
+}
+
+/// TUI-131: split `area` the way the scaffold paints it, with the footer
+/// wrapped to the area's width (`text_wrap::wrap_to_width`). Both the
+/// render and every page-size or hit-test computation use this, so the
+/// body they assume is the body that is painted.
+pub(crate) fn scaffold_rects(area: Rect, footer_hint: &str) -> ScaffoldRects {
+    let title_rows = area.height.min(1);
+    let separator_rows = area.height.saturating_sub(title_rows).min(1);
+    let rest = area.height - title_rows - separator_rows;
+    let wrapped = wrap_to_width(footer_hint, usize::from(area.width)).len();
+    let footer_rows = u16::try_from(wrapped).unwrap_or(u16::MAX).min(rest);
+    let body_rows = rest - footer_rows;
+    let row = |offset: u16, height: u16| Rect {
+        y: area.y + offset,
+        height,
+        ..area
+    };
+    ScaffoldRects {
+        title: row(0, title_rows),
+        body: row(title_rows + separator_rows, body_rows),
+        footer: row(title_rows + separator_rows + body_rows, footer_rows),
+    }
+}
 
 /// TUI-103: the 1-column scrollbar gutter rect the scaffold reserves in
 /// the rightmost body column when the content list exceeds
 /// `visible_rows` entries. Views with a TUI-101 click-and-drag
-/// `ScrollbarDrag` pre-compute this from the same body-rect geometry the
-/// shell splits into (title + separator on top, footer below) and cache
-/// it on render for mouse hit-testing. `None` when no scrollbar shows.
+/// `ScrollbarDrag` pre-compute this from the same body rect the shell
+/// paints ([`scaffold_rects`], TUI-131: below a wrapped footer too) and
+/// cache it on render for mouse hit-testing. `None` when no scrollbar
+/// shows.
 pub(crate) fn mode_view_scrollbar_rect(
     area: Rect,
+    footer_hint: &str,
     visible_rows: usize,
     count: usize,
 ) -> Option<Rect> {
     if count <= visible_rows {
         return None;
     }
-    let body = Rect {
-        x: area.x,
-        y: area.y.saturating_add(2), // title + separator
-        width: area.width,
-        height: area.height.saturating_sub(CHROME_ROWS), // title + separator + footer
-    };
+    let body = scaffold_rects(area, footer_hint).body;
     let content_width = body.width.saturating_sub(1);
     Some(Rect {
         x: body.x + content_width,
@@ -52,7 +84,8 @@ pub(crate) fn mode_view_scrollbar_rect(
 
 /// Render the shared full-screen scaffold:
 ///   1. `Clear.render(area, buf)` — overwrite the underlying view.
-///   2. Vertical split `[Length(1), Length(1), Min(0), Length(1)]`.
+///   2. Vertical split [`scaffold_rects`]: title, separator, body, and
+///      the footer on the rows its hint wraps onto (TUI-131).
 ///   3. `render_title_with_count(title_area, title, count, suffix)`.
 ///   4. `body_fn(body_area, buf)` — caller paints the body.
 ///   5. `render_footer_hint(footer_area, footer_hint)`.
@@ -102,16 +135,8 @@ pub(crate) fn render_full_screen_scaffold_with_title<T, B>(
     B: FnOnce(Rect, &mut Buffer),
 {
     Clear.render(area, buf);
-    let split = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Min(0),
-            Constraint::Length(1),
-        ])
-        .split(area);
-    let (title_area, body_area, footer_area) = (split[0], split[2], split[3]);
+    let rects = scaffold_rects(area, footer_hint);
+    let (title_area, body_area, footer_area) = (rects.title, rects.body, rects.footer);
     title_fn(title_area, buf);
     body_fn(body_area, buf);
     render_footer_hint(footer_area, buf, footer_hint);
@@ -140,16 +165,8 @@ pub(crate) fn render_full_screen_scaffold_raw_title<F>(
     use ratatui::widgets::Paragraph;
 
     Clear.render(area, buf);
-    let split = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Min(0),
-            Constraint::Length(1),
-        ])
-        .split(area);
-    let (title_area, body_area, footer_area) = (split[0], split[2], split[3]);
+    let rects = scaffold_rects(area, footer_hint);
+    let (title_area, body_area, footer_area) = (rects.title, rects.body, rects.footer);
     let style = Style::default()
         .fg(Color::Cyan)
         .add_modifier(Modifier::BOLD);
@@ -174,7 +191,7 @@ mod tests {
     /// Render the scaffold into a `width`x`height` TestBackend and return
     /// the joined rows as a single newline-separated string.
     #[allow(clippy::too_many_arguments)]
-    fn render_to_string(
+    pub(super) fn render_to_string(
         width: u16,
         height: u16,
         title: &str,
@@ -353,87 +370,7 @@ mod tests {
         // @step And the body renderer receives height 0 and produces no output
         assert_eq!(reported.get(), 0);
     }
-
-    /// RPC-339 — render a `width`x`height` TestBackend through the
-    /// title-closure scaffold variant and return the joined rows.
-    fn render_with_title_to_string(
-        width: u16,
-        height: u16,
-        title_text: &str,
-        footer: &str,
-        body_text: &str,
-        overlay: Option<&ConfirmDialog>,
-    ) -> String {
-        use ratatui::widgets::{Paragraph, Widget};
-        let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
-        term.draw(|frame| {
-            render_full_screen_scaffold_with_title(
-                frame.area(),
-                frame.buffer_mut(),
-                |title_area, buf| {
-                    Paragraph::new(title_text).render(title_area, buf);
-                },
-                footer,
-                |body_area, buf| {
-                    Paragraph::new(body_text).render(body_area, buf);
-                },
-                overlay,
-            );
-        })
-        .expect("draw");
-        let buf = term.backend().buffer().clone();
-        let mut joined = String::new();
-        for y in 0..buf.area.height {
-            for x in 0..buf.area.width {
-                joined.push_str(buf[(x, y)].symbol());
-            }
-            joined.push('\n');
-        }
-        joined
-    }
-
-    #[test]
-    fn shell_title_closure_paints_title_body_and_footer_no_overlay() {
-        // @step Given a full-screen area and a caller-supplied title closure, body closure, and a static footer hint
-        let title_text = "(search): auth";
-        let footer = "Enter Select | Esc Cancel";
-
-        // @step When the view is rendered via render_full_screen_scaffold_with_title with overlay None
-        let out = render_with_title_to_string(80, 24, title_text, footer, "search-body-rows", None);
-
-        // @step Then the title closure paints the first row
-        assert!(out.starts_with("(search): auth"));
-
-        // @step And the body closure paints the body sub-rect below the separator
-        assert!(out.contains("search-body-rows"));
-
-        // @step And the static footer hint paints the last row
-        assert!(out.contains("Enter Select | Esc Cancel"));
-
-        // @step And no ConfirmDialog overlay is drawn
-        assert!(!out.contains("Delete"));
-    }
-
-    #[test]
-    fn count_wrapper_preserves_title_count_format() {
-        // @step Given a view rendered via the count-title wrapper render_full_screen_scaffold
-        // @step When it is called with title "Resume Session", count 5, and suffix "available"
-        let out = render_to_string(
-            80,
-            24,
-            "Resume Session",
-            5,
-            "available",
-            "Enter Select | Esc Cancel",
-            "session-row-body",
-            None,
-        );
-
-        // @step Then the title row reads "Resume Session (5 available)"
-        assert!(out.contains("Resume Session (5 available)"));
-
-        // @step And the rendered output is identical to the pre-RPC-339 baseline
-        assert!(out.contains("session-row-body"));
-        assert!(out.contains("Enter Select | Esc Cancel"));
-    }
 }
+
+#[cfg(test)]
+mod title_closure_tests;

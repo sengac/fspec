@@ -11,6 +11,7 @@
 pub mod annotation_detector;
 mod dag_syntax;
 mod dag_validation;
+mod file_identities;
 mod input_accounting;
 mod model;
 pub mod trimmer;
@@ -63,6 +64,7 @@ mod dag_node_parsing_tests {
 
 #[cfg(test)]
 #[allow(
+    dead_code,
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
@@ -70,6 +72,46 @@ mod dag_node_parsing_tests {
 )]
 mod dag_node_proptest {
     include!("__tests__/dag_node_proptest.test.rs");
+    include!("__tests__/dag_node_generators.test.rs");
+}
+
+#[cfg(test)]
+#[allow(
+    dead_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
+mod dag_node_turn_range_validation {
+    include!("__tests__/dag_node_turn_range_validation.test.rs");
+    include!("__tests__/dag_node_generators.test.rs");
+}
+
+#[cfg(test)]
+#[allow(
+    dead_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
+mod dag_node_same_depth_overlap {
+    include!("__tests__/dag_node_same_depth_overlap.test.rs");
+    include!("__tests__/dag_node_generators.test.rs");
+}
+
+#[cfg(test)]
+#[allow(
+    dead_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
+mod dag_node_clamping {
+    include!("__tests__/dag_node_clamping.test.rs");
+    include!("__tests__/dag_node_generators.test.rs");
 }
 
 #[cfg(test)]
@@ -95,6 +137,7 @@ pub use dag_validation::{
     validate_dag_candidate, validate_dag_structure, DagValidationContext, DagValidationError,
     ValidatedDagCandidate,
 };
+pub use file_identities::{include_file_identities, persisted_file_identities};
 pub use model::parse_dag_nodes;
 pub use model::wrap_dag_content;
 

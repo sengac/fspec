@@ -269,13 +269,28 @@ if [[ ! -d "$INSTALL_DIR" ]]; then
   mkdir -p "$INSTALL_DIR"
 fi
 
-if ! cp "$EXTRACTED_BINARY" "$INSTALL_DIR/$BIN_NAME"; then
+# Install atomically (BUG-555): copy to a temporary file in the install
+# directory, make it executable, then rename it over the target. cp onto a
+# running executable fails on Linux with "Text file busy"; a rename replaces
+# the directory entry instead, and running fspec processes keep the old file.
+# On failure the temporary file is removed and the existing binary is untouched.
+install_binary() {
+  local src="$1" dest="$2" tmp
+  tmp="$(mktemp "$(dirname "$dest")/.fspec-install.XXXXXX")" || return 1
+  if cp "$src" "$tmp" && chmod 755 "$tmp" && mv -f "$tmp" "$dest"; then
+    return 0
+  fi
+  rm -f "$tmp"
+  return 1
+}
+
+if ! install_binary "$EXTRACTED_BINARY" "$INSTALL_DIR/$BIN_NAME"; then
   error "Failed to install binary to $INSTALL_DIR/$BIN_NAME"
-  info "You may need to use: sudo cp $EXTRACTED_BINARY $INSTALL_DIR/$BIN_NAME"
+  info "You may need to rerun with sudo, or choose a writable directory with --dir"
   exit 1
 fi
-chmod +x "$INSTALL_DIR/$BIN_NAME"
 success "Installed to $INSTALL_DIR/$BIN_NAME"
+info "Running fspec processes keep the old version until restarted."
 
 # ── PATH check ───────────────────────────────────────────────────────────────
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then

@@ -24,7 +24,7 @@ fn committed_success_resets_operation_attempts() -> Result<(), CompactionFailure
     Ok(())
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn explicit_resolution_retains_the_operation_deadline() -> Result<(), CompactionFailure> {
     // @step Given an operation whose builder fails before its deadline
     let mut operation = CompactionOperation::new(Duration::from_millis(20), 2);
@@ -35,7 +35,8 @@ async fn explicit_resolution_retains_the_operation_deadline() -> Result<(), Comp
             .await,
         Err(CompactionFailure::Builder(_))
     ));
-    tokio::time::sleep(Duration::from_millis(30)).await;
+    // Paused clock (TEST-042: advance past the deadline, never sleep).
+    tokio::time::advance(Duration::from_millis(30)).await;
     // @step When explicit resolution retries the same operation after its deadline
     operation.resolve();
     // @step Then its identity is unchanged and the retry fails with a deadline outcome
@@ -47,15 +48,17 @@ async fn explicit_resolution_retains_the_operation_deadline() -> Result<(), Comp
     Ok(())
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn executing_work_is_bounded_by_its_operation_deadline(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a builder that never completes
     let mut operation = CompactionOperation::new(Duration::from_millis(20), 1);
     operation.begin()?;
     // @step When its declared operation deadline expires
-    let result = tokio::time::timeout(
-        Duration::from_secs(1),
+    // Paused clock: the 20 ms operation deadline fires as soon as the runtime
+    // is idle; the deadlock guard only ends a deadline that never fires.
+    let result = codelet_test_helpers::deadlock_guard(
+        "the operation deadline",
         operation.execute(std::future::pending::<Result<(), CompactionFailure>>()),
     )
     .await?;
@@ -101,6 +104,7 @@ async fn blocked_work_cannot_implicitly_start_another_builder(
         None,
     )?;
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     codelet_core::persistence::reset_stores_for_tests();
     let mut manifest = codelet_core::persistence::create_session_with_provider(

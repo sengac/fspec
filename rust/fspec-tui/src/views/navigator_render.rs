@@ -44,9 +44,13 @@ impl Navigator {
                 self.provider_settings.render(area, buf);
             }
             ViewMode::Blocklist => {
+                // BUG-601: the daemon's answer for the session the view
+                // was opened from.
                 let empty = std::collections::HashSet::new();
-                let disabled = agent_store
-                    .current_session()
+                let disabled = self
+                    .blocklist
+                    .session
+                    .as_ref()
                     .and_then(|sid| agent_store.blocklist_disabled_for(sid))
                     .unwrap_or(&empty);
                 self.blocklist.render(area, buf, disabled);

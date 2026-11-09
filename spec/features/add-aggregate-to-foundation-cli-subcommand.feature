@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: fspec add-aggregate-to-foundation CLI subcommand (Rust port)
   """
   Clap derive subcommand `add-aggregate-to-foundation` mirrors the TS Commander.js

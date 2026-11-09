@@ -61,7 +61,7 @@ mod isolation {
         transcript::{JournalEvent, JournalIdentity, JournalRecord, JournalStore},
     };
     use codelet_test_helpers::setup_temp_directory;
-    use std::{collections::HashMap, fs::OpenOptions, sync::mpsc, time::Duration};
+    use std::{collections::HashMap, fs::OpenOptions, sync::mpsc};
     use uuid::Uuid;
 
     #[test]
@@ -69,6 +69,7 @@ mod isolation {
     fn an_unrelated_session_progresses_during_a_stalled_journal_append() -> TestResult {
         // @step Given two sessions and an exclusively locked first transcript writer
         let directory = setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().into())?;
         reset_stores_for_tests();
         let first = create_session("first", directory.path())?;
@@ -111,24 +112,48 @@ mod isolation {
         started_receiver.recv()?;
         let (sender, receiver) = mpsc::channel();
         let second_worker = std::thread::spawn(move || {
+            // BUG-460: conversation records carry a complete message envelope
+            // (BUG-332) whose uuid is the record id.
+            let id = Uuid::new_v4();
+            let mut metadata = codelet_core::persistence::message_envelope::text_envelope_metadata(
+                "user",
+                "claude",
+                "independent",
+                chrono::Utc::now(),
+            );
+            metadata.insert("uuid".into(), serde_json::json!(id));
             let result = PersistenceSpool::open(second.id).and_then(|spool| {
                 spool.enqueue(&RecoveryRecord {
                     version: 1,
-                    id: Uuid::new_v4(),
+                    id,
                     role: "user".into(),
                     content: "independent".into(),
-                    metadata: HashMap::new(),
+                    metadata,
                 })?;
                 spool.retry()
             });
             let _ = sender.send(result);
         });
-        let independent = receiver.recv_timeout(Duration::from_secs(3));
+        // BUG-527: the property is an ordering, not a duration. The deadline
+        // only turns a deadlock (the second session waiting on the first
+        // writer forever) into a failure instead of a hung suite.
+        let independent =
+            codelet_test_helpers::deadlock_guard_blocking("the independent session", move || {
+                receiver.recv()
+            })
+            .map_err(|failure| failure.to_string())
+            .and_then(|received| received.map_err(|error| error.to_string()));
+        let first_still_stalled = !first_worker.is_finished();
         drop(lease);
         first_worker.join().map_err(|_| "first worker failed")??;
         second_worker.join().map_err(|_| "second worker failed")?;
         // @step Then the second session completes without waiting for the first writer
-        independent.map_err(|_| "unrelated session blocked behind global recovery lock")??;
+        independent.map_err(|_| "unrelated session blocked behind the stalled first writer")??;
+        // @step And the first writer is still stalled when the second session completes
+        assert!(
+            first_still_stalled,
+            "the first writer must still be blocked on its held journal lease when the second session completes"
+        );
         Ok(())
     }
 }

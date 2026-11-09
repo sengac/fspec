@@ -4,8 +4,8 @@
       "name": "Base64 user image with detail=None defaults to image_url.detail=\"auto\"",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1832-1874",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs",
+          "lines": "39-80",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -28,7 +28,9 @@
                 449,
                 450,
                 451
-              ]
+              ],
+              "firstLine": "let tool_call_id = value.id;",
+              "lastLine": "image_url: ImageUrl {"
             }
           ]
         }
@@ -38,8 +40,8 @@
       "name": "Base64 user image with detail=None and image/jpeg also converts successfully",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1875-1904",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs",
+          "lines": "82-110",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -62,7 +64,9 @@
                 449,
                 450,
                 451
-              ]
+              ],
+              "firstLine": "let tool_call_id = value.id;",
+              "lastLine": "image_url: ImageUrl {"
             }
           ]
         }
@@ -72,8 +76,8 @@
       "name": "Base64 user image with explicit detail=High preserves the explicit value",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1905-1931",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs",
+          "lines": "112-137",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -96,7 +100,9 @@
                 449,
                 450,
                 451
-              ]
+              ],
+              "firstLine": "let tool_call_id = value.id;",
+              "lastLine": "image_url: ImageUrl {"
             }
           ]
         }
@@ -106,8 +112,8 @@
       "name": "URL image path behaviour is unchanged",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1932-1958",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs",
+          "lines": "139-164",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -118,7 +124,9 @@
                 431,
                 432,
                 433
-              ]
+              ],
+              "firstLine": "/// Returns:",
+              "lastLine": ") -> Result<Vec<Message>, message::MessageError> {"
             }
           ]
         }
@@ -128,8 +136,8 @@
       "name": "Base64 user image with media_type=None still errors (out of scope for this fix)",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "1959-1988",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs",
+          "lines": "166-194",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -152,7 +160,9 @@
                 449,
                 450,
                 451
-              ]
+              ],
+              "firstLine": "let tool_call_id = value.id;",
+              "lastLine": "image_url: ImageUrl {"
             }
           ]
         }
@@ -164,11 +174,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/prov_083_tests.rs"
     ],
     "implFiles": [
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
     ],
-    "totalLinesCovered": 235
+    "totalLinesCovered": 230
   }
 }

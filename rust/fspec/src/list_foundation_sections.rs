@@ -27,10 +27,10 @@
 //!     written to stderr prefixed with `Error:` (parity with the TS
 //!     chalk-red error path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::list_foundation_sections;
 use serde_json::{json, Map, Value};
 
@@ -56,7 +56,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // driven invocations behave identically. (The fspec_core impl
     // ignores project_root for this command — the section list is a
     // static constant — but we pass CWD anyway for dispatcher symmetry.)
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that
     // `fspec_core::commands::list_foundation_sections::run` validates

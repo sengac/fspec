@@ -150,10 +150,10 @@ fn scenario_remove_attachment_help_matches_ts_fixture_byte_for_byte() {
     // @step And stdout contains the section header 'OPTIONS'
     assert!(stdout.contains("OPTIONS\n"), "help must contain OPTIONS");
 
-    // @step And stdout contains the substring 'Fix: undefined'
+    // @step And stdout contains the substring 'Fix: Create the work unit first or check the work unit ID'
     assert!(
-        stdout.contains("Fix: undefined"),
-        "help must reproduce TS bug 'Fix: undefined'; got:\n{stdout}"
+        stdout.contains("Fix: Create the work unit first or check the work unit ID"),
+        "help must print the real fix, never 'Fix: undefined'; got:\n{stdout}"
     );
 }
 
@@ -286,7 +286,7 @@ fn scenario_cli_surfaces_already_missing_warning_with_exit_0_when_file_is_gone()
 }
 
 #[test]
-fn scenario_cli_exits_2_when_work_unit_id_positional_missing() {
+fn scenario_cli_exits_1_when_work_unit_id_positional_missing() {
     // @step Given an empty directory is set as the current working directory
     let ws = tempfile::tempdir().expect("tempdir");
 
@@ -310,7 +310,7 @@ fn scenario_cli_exits_2_when_work_unit_id_positional_missing() {
 }
 
 #[test]
-fn scenario_cli_exits_2_when_file_name_positional_missing() {
+fn scenario_cli_exits_1_when_file_name_positional_missing() {
     // @step Given an empty directory is set as the current working directory
     let ws = tempfile::tempdir().expect("tempdir");
 

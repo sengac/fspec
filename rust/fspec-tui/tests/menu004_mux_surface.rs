@@ -32,13 +32,12 @@
 //!   "#1" x38-41, 2-cell gap, "#2" x44-47, … (use `find_x` for
 //!   robustness — do NOT hardcode).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind,
-    ViewMode,
+    components::menu_bar::MenuFocus, App, FspecBackend, MuxConfig, MuxLayout, MuxPaneKind, ViewMode,
 };
 use codelet_rpc_types::{SessionId, SessionStatus, WorkUnitInfo};
 use crossterm::event::{
@@ -63,16 +62,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -93,16 +93,20 @@ fn click(col: u16, row: u16) -> Event {
 }
 
 /// Render the full App into a 240x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
     render_app_sized(app, 240, 24)
 }
 
 /// Render the full App into a `w`×`h` buffer.
-fn render_app_sized(app: &mut App, w: u16, h: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+fn render_app_sized(
+    app: &mut App,
+    w: u16,
+    h: u16,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -151,11 +155,11 @@ fn bar_row(_buf: &Buffer) -> u16 {
 /// and MuxConfigDialog paths; dispatch the equivalent open action here
 /// so the test-side entry mirrors the production entry.
 fn enable_mux(app: &mut App, panes: Vec<MuxPaneKind>) {
-    let n = panes.len();
+    let Some(layout) = MuxLayout::columns(&panes) else {
+        return;
+    };
     let config = MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50; n.saturating_sub(1)],
-        panes: panes.clone(),
+        layout,
         focused_pane: 0,
         enabled: true,
     };
@@ -186,13 +190,14 @@ fn focus_pane(app: &mut App, idx: usize) {
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
             format!("s-{i}"),
         )));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Set a session's status.
@@ -204,13 +209,14 @@ fn set_status(app: &mut App, sid: &str, status: SessionStatus) {
 }
 
 /// Seed a small board so the board pane has content.
-async fn seed_units(app: &mut App) {
+async fn seed_units(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::WorkUnitsLoaded(vec![
         make_unit("AUTH-001", "backlog"),
         make_unit("AUTH-002", "testing"),
         make_unit("AUTH-003", "blocked"),
     ]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
@@ -237,65 +243,87 @@ fn focus_last_column(app: &mut App) {
 /// BUG-182 R7: mux entry triggers the initial load of the rendered lazy
 /// panes; BUG-183 R2: Esc only closes the pane once the load has
 /// flushed (a reflex Esc mid-load stays Ignored).
-async fn wait_for_view_idle(app: &mut App, changed_files: bool) {
-    for _ in 0..100 {
-        drain_pending(app).await;
-        let idle = if changed_files {
-            !app.navigator().changed_files.load.is_loading()
-        } else {
-            !app.navigator().checkpoints.load.is_loading()
-        };
-        if idle {
-            return;
+async fn wait_for_view_idle(
+    app: &mut App,
+    changed_files: bool,
+) -> Result<(), codelet_test_helpers::TestError> {
+    // TEST-042: wait under the deadlock guard, not a fixed number of sleeps.
+    codelet_test_helpers::deadlock_guard("the lazy view to finish loading", async {
+        loop {
+            drain_pending(app).await?;
+            let idle = if changed_files {
+                !app.navigator().changed_files.load.is_loading()
+            } else {
+                !app.navigator().checkpoints.load.is_loading()
+            };
+            if idle {
+                return Ok::<(), codelet_test_helpers::TestError>(());
+            }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
-    }
-    panic!("timeout: the lazy view did not finish loading");
+    })
+    .await?
 }
 
 /// Arrange: the mux bar is focused on the first item (Kanban) via the
 /// board ring entry (Right off the last column).
-async fn focus_bar_first_item(app: &mut App) {
+async fn focus_bar_first_item(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     focus_last_column(app);
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: open the `item_index`-th menu item's dropdown with the
 /// cursor on `cursor_row` (0 = Kanban, 1 = Tools, 2 = Settings,
 /// 3 = Help — MENU-008 four Zone A items).
-async fn open_category_dropdown_at(app: &mut App, item_index: usize, cursor_row: usize) {
-    focus_bar_first_item(app).await;
+async fn open_category_dropdown_at(
+    app: &mut App,
+    item_index: usize,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    focus_bar_first_item(app).await?;
     for _ in 1..=item_index {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(app).await;
+    drain_pending(app).await?;
     for _ in 0..cursor_row {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Arrange: open the Kanban dropdown (item 0) with the cursor on
 /// `cursor_row`.
-async fn open_kanban_dropdown_at(app: &mut App, cursor_row: usize) {
-    open_category_dropdown_at(app, 0, cursor_row).await;
+async fn open_kanban_dropdown_at(
+    app: &mut App,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    open_category_dropdown_at(app, 0, cursor_row).await?;
+    Ok(())
 }
 
 /// Arrange: open the Help dropdown (item 3) with the cursor on
 /// `cursor_row`.
-async fn open_help_dropdown_at(app: &mut App, cursor_row: usize) {
-    open_category_dropdown_at(app, 3, cursor_row).await;
+async fn open_help_dropdown_at(
+    app: &mut App,
+    cursor_row: usize,
+) -> Result<(), codelet_test_helpers::TestError> {
+    open_category_dropdown_at(app, 3, cursor_row).await?;
+    Ok(())
 }
 
 /// The y of the dropdown row whose text contains `needle`.
-fn dropdown_row_y(buf: &Buffer, needle: &str) -> u16 {
+fn dropdown_row_y(buf: &Buffer, needle: &str) -> Result<u16, codelet_test_helpers::TestError> {
     let bar = bar_row(buf);
-    (bar + 2..buf.area.height)
+    Ok((bar + 2..buf.area.height)
         .find(|&y| row_text(buf, y).contains(needle))
-        .unwrap_or_else(|| panic!("dropdown row '{needle}' not found below row {bar}"))
+        .or_fail(&format!(
+            "dropdown row '{needle}' not found below row {bar}"
+        ))?)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -304,20 +332,20 @@ fn dropdown_row_y(buf: &Buffer, needle: &str) -> u16 {
 
 /// Scenario: The mux top row paints the 2-zone menu bar full width
 #[tokio::test]
-async fn scenario_the_mux_top_row_paints_the_2_zone_menu_bar_full_width() {
+async fn scenario_the_mux_top_row_paints_the_2_zone_menu_bar_full_width() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions (one Running, one Idle)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
+    seed_sessions(&mut app, 2).await?;
     set_status(&mut app, "s-1", SessionStatus::Running);
-    drain_pending(&mut app).await;
-    seed_units(&mut app).await;
+    drain_pending(&mut app).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let y = bar_row(&buf);
     let row = row_text(&buf, y);
 
@@ -338,7 +366,7 @@ async fn scenario_the_mux_top_row_paints_the_2_zone_menu_bar_full_width() {
     assert!(row.contains("#2"), "chip #2 must paint (Idle):\n{row}");
     // The Running chip's glyph is magenta; verify the cell AFTER the
     // "#1 " prefix carries the magenta fg (the braille dot).
-    let chip1_x = find_x(&buf, y, "#1").expect("chip #1 must be on the bar row");
+    let chip1_x = find_x(&buf, y, "#1").or_fail("chip #1 must be on the bar row")?;
     // The chip cell is "#1 " (prefix) + WU id (when painted) + glyph:
     // scan forward for the cell the chip prefix is followed by.
     let glyph_x = chip1_x + 3;
@@ -367,15 +395,17 @@ async fn scenario_the_mux_top_row_paints_the_2_zone_menu_bar_full_width() {
         row_text(&buf, footer_y).contains("MUX"),
         "the mux footer must still occupy the bottom row (y {footer_y})"
     );
+    Ok(())
 }
 
 /// Scenario: The focused pane label is active and the chips use the global session list
 #[tokio::test]
-async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_session_list() {
+async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_session_list(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 3 open sessions (the focused pane is the Board)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 3).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
@@ -383,7 +413,7 @@ async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_
     focus_pane(&mut app, 0); // Board pane focused
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let y = bar_row(&buf);
     let row = row_text(&buf, y);
 
@@ -396,7 +426,7 @@ async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_
     // standalone cyan foreground — the inverse-video highlight (bg
     // Cyan / fg Black) is the only cyan in the bar row, so 'focused
     // pane' and 'ring-focused' stay distinguishable.
-    let board_x = find_x(&buf, y, "Board").expect("Board label must be on the bar row");
+    let board_x = find_x(&buf, y, "Board").or_fail("Board label must be on the bar row")?;
     assert_eq!(
         buf[(board_x, y)].fg,
         Color::White,
@@ -419,21 +449,22 @@ async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_
         "s-4",
     )));
     set_status(&mut app, "s-4", SessionStatus::Cleared);
-    drain_pending(&mut app).await;
-    let buf2 = render_app(&mut app);
+    drain_pending(&mut app).await?;
+    let buf2 = render_app(&mut app)?;
     let row2 = row_text(&buf2, bar_row(&buf2));
     assert!(
         !row2.contains("#4"),
         "a Cleared session must NOT produce a chip:\n{row2}"
     );
+    Ok(())
 }
 
 /// Scenario: The bar omits the separator and chips when no sessions are open
 #[tokio::test]
-async fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() {
+async fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() -> TestResult {
     // @step Given the mux grid is [Board | Files | Ckpts] with no open sessions
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -444,7 +475,7 @@ async fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_ope
     );
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let y = bar_row(&buf);
     let row = row_text(&buf, y);
 
@@ -473,19 +504,20 @@ async fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_ope
         sep_count, 1,
         "exactly one zone separator on the bar row (no extra separator run):\n{row}"
     );
+    Ok(())
 }
 
 /// Scenario: The board pane's header row 3 is blank in mux
 #[tokio::test]
-async fn scenario_the_board_pane_header_row_3_is_blank_in_mux() {
+async fn scenario_the_board_pane_header_row_3_is_blank_in_mux() -> TestResult {
     // @step Given the mux grid is [Board | Agent] with 1 open session
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
 
     // @step Then the board pane's 4-row header strip still renders (logo checkpoint status divider) but its row 3 is blank (no per-pane menu bar)
     // The board pane starts at y=1 (body row 0). Its header strip is 4 rows
@@ -504,19 +536,20 @@ async fn scenario_the_board_pane_header_row_3_is_blank_in_mux() {
         kanban_count, 1,
         "exactly one 'Kanban' on screen (the mux top row):\n{text}"
     );
+    Ok(())
 }
 
 /// Scenario: The agent panes paint no per-pane menu bar in mux
 #[tokio::test]
-async fn scenario_the_agent_panes_paint_no_per_pane_menu_bar_in_mux() {
+async fn scenario_the_agent_panes_paint_no_per_pane_menu_bar_in_mux() -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with 2 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
 
     // @step When the mux view renders
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let y = bar_row(&buf);
     let row = row_text(&buf, y);
 
@@ -543,15 +576,16 @@ async fn scenario_the_agent_panes_paint_no_per_pane_menu_bar_in_mux() {
         kanban_count, 1,
         "exactly one '[ Kanban ] [ Tools ]' Zone A run on screen (the mux top row; MENU-011: bracketed)"
     );
+    Ok(())
 }
 
 /// Scenario: The board column ring continues into the mux bar
 #[tokio::test]
-async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
+async fn scenario_the_board_column_ring_continues_into_the_mux_bar() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused with the cursor on the last column
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
@@ -560,7 +594,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on the 'Kanban' menu item in the top bar (leaving the columns)
     assert_eq!(
@@ -571,7 +605,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on 'Tools'
     assert_eq!(
@@ -582,7 +616,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on 'Settings'
     assert_eq!(
@@ -593,7 +627,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on 'Help'
     assert_eq!(
@@ -604,7 +638,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on the 'Board' pane label
     assert_eq!(
@@ -615,7 +649,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on chip #1
     assert_eq!(
@@ -623,40 +657,40 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
         Some(MenuFocus::ZoneB(1)),
         "Right from the Board label must land on chip #1"
     );
+    Ok(())
 }
 
 /// Scenario: The mux bar ring wraps in both directions
 #[tokio::test]
-async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
+async fn scenario_the_mux_bar_ring_wraps_in_both_directions() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused with the cursor on the last column
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
     focus_last_column(&mut app);
 
-    // @step When I walk the ring Right until it wraps past the last chip
-    // Enter the bar (Right off last column), then walk 6 more Rights
-    // (Kanban→Tools→Settings→Help→Board→#1→#2) to reach the last chip,
-    // then one more Right wraps past the last chip back to the FIRST
-    // column (backlog) — the ring's right edge re-enters the columns
-    // (BUG-200: one continuous columns⇄items⇄chips ring; pre-BUG-200
-    // this step wrapped back to Kanban instead). Each key is drained
-    // before the next (the key-time classification reads the live
-    // ring state).
-    for _ in 0..8 {
+    // @step When I walk the ring Right until it wraps past the last chip and the [ New Bot ] and [ New Agent ] buttons (MUX-013)
+    // Enter the bar (Right off last column), then walk 8 more Rights
+    // (Kanban→Tools→Settings→Help→Board→#1→#2→New Bot→New Agent) to
+    // reach the last stop (MUX-013: no Close on the board pane), then
+    // one more Right wraps back to the FIRST column (backlog) — the
+    // ring's right edge re-enters the columns (BUG-200). Each key is
+    // drained before the next (the key-time classification reads the
+    // live ring state).
+    for _ in 0..10 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
 
     // @step Then the highlight returns to the first column (backlog) (the ring's right edge re-enters the columns — BUG-200)
     assert_eq!(
         app.board_store_mut().focused_column_index(),
         0,
-        "Right past the last chip must wrap back to the first column (backlog)"
+        "Right past the last button must wrap back to the first column (backlog)"
     );
     assert_eq!(
         app.navigator().mux.menu_focus(),
@@ -670,7 +704,7 @@ async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
     // Kanban (the full ring is 14 stops: 7 columns + 7 bar stops).
     for _ in 0..7 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
 
     // @step Then the highlight lands on 'Kanban' (the ring's left edge, the pre-existing entry rule)
@@ -682,7 +716,7 @@ async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
 
     // @step When I press Left from 'Kanban'
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight wraps to the last column (blocked) (the ring's left edge — BUG-200)
     assert_eq!(
@@ -695,21 +729,22 @@ async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
         None,
         "the bar ring must clear on the column landing"
     );
+    Ok(())
 }
 
 /// Scenario: The agent pane's empty-input Left enters the mux bar
 #[tokio::test]
-async fn scenario_the_agent_pane_empty_input_left_enters_the_mux_bar() {
+async fn scenario_the_agent_pane_empty_input_left_enters_the_mux_bar() -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with 2 open sessions and the Agent pane is focused with an empty input
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
     focus_pane(&mut app, 0); // first Agent pane
 
     // @step When I press bare Left
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight lands on the 'Kanban' menu item in the top bar
     assert_eq!(
@@ -717,21 +752,22 @@ async fn scenario_the_agent_pane_empty_input_left_enters_the_mux_bar() {
         Some(MenuFocus::Item(0)),
         "bare Left on an empty agent input must enter the mux bar at Kanban"
     );
+    Ok(())
 }
 
 /// Scenario: A character key while the bar is focused dismisses it and types into the focused pane input
 #[tokio::test]
 async fn scenario_a_character_key_while_the_bar_is_focused_dismisses_it_and_types_into_the_focused_pane_input(
-) {
+) -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with 2 open sessions the Agent pane is focused and the bar is focused (dropdown closed)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
     focus_pane(&mut app, 0);
     // Enter the bar via bare Left on empty input.
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -740,7 +776,7 @@ async fn scenario_a_character_key_while_the_bar_is_focused_dismisses_it_and_type
 
     // @step When I type 'x'
     app.handle_event(&key(KeyCode::Char('x'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the bar highlight clears AND 'x' is typed into that pane's input on the same keystroke
     assert_eq!(
@@ -753,15 +789,17 @@ async fn scenario_a_character_key_while_the_bar_is_focused_dismisses_it_and_type
         "x",
         "the character must be typed into the focused pane's input"
     );
+    Ok(())
 }
 
 /// Scenario: Up and Down from a closed bar drop focus back into the focused pane input
 #[tokio::test]
-async fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_focused_pane_input() {
+async fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_focused_pane_input(
+) -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with 2 open sessions the Agent pane is focused and the bar is focused (dropdown closed) with a draft 'abc' in its input
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
     // BUG-163 lockstep: the focused agent pane hosts the store's CURRENT
     // session (pane 1 → s-2, the last seeded). Focusing pane 0 instead
@@ -774,16 +812,16 @@ async fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_focused
     // the MOUSE entry path (the keyboard entry requires an empty input,
     // and a character key would dismiss the bar on the same keystroke).
     app.navigator_mut().agent.input.set_value("abc");
-    drain_pending(&mut app).await;
-    let buf = render_app(&mut app);
-    let kanban_x = find_x(&buf, 0, "Kanban").expect("Kanban must be on the bar row");
+    drain_pending(&mut app).await?;
+    let buf = render_app(&mut app)?;
+    let kanban_x = find_x(&buf, 0, "Kanban").or_fail("Kanban must be on the bar row")?;
     // The item click focuses AND toggles its dropdown open (R-MOUSE) —
     // close it with Esc (the item STAYS focused) to reach the Given:
     // bar focused, dropdown closed.
     app.handle_event(&click(kanban_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -802,7 +840,7 @@ async fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_focused
 
     // @step When I press Up
     app.handle_event(&key(KeyCode::Up, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the bar highlight clears and the pane input keeps its draft 'abc' (cursor active)
     assert_eq!(
@@ -815,14 +853,15 @@ async fn scenario_up_and_down_from_a_closed_bar_drop_focus_back_into_the_focused
         "abc",
         "the input draft must be preserved"
     );
+    Ok(())
 }
 
 /// Scenario: The Files pane does not feed the mux bar
 #[tokio::test]
-async fn scenario_the_files_pane_does_not_feed_the_mux_bar() {
+async fn scenario_the_files_pane_does_not_feed_the_mux_bar() -> TestResult {
     // @step Given the mux grid is [Board | Files] and the Files pane is focused
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
@@ -831,9 +870,9 @@ async fn scenario_the_files_pane_does_not_feed_the_mux_bar() {
 
     // @step When I press Left or Right
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the file list scrolls as before and the highlight never moves onto the top menu bar
     assert_eq!(
@@ -844,11 +883,11 @@ async fn scenario_the_files_pane_does_not_feed_the_mux_bar() {
 
     // BUG-182 R7 / BUG-183 R2: the Files pane's initial load is spawned
     // on mux entry and Esc only closes once it has flushed.
-    wait_for_view_idle(&mut app, true).await;
+    wait_for_view_idle(&mut app, true).await?;
 
     // @step When I press Esc
     app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Files pane closes (the bar is untouched and stays reachable by mouse)
     // BUG-183: Esc on the focused Files pane closes it (removes it from
@@ -858,24 +897,25 @@ async fn scenario_the_files_pane_does_not_feed_the_mux_bar() {
         !panes.contains(&MuxPaneKind::ChangedFiles),
         "the Files pane must close on Esc"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on a menu item opens its dropdown at row 0
 #[tokio::test]
-async fn scenario_enter_on_a_menu_item_opens_its_dropdown_at_row_0() {
+async fn scenario_enter_on_a_menu_item_opens_its_dropdown_at_row_0() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions the Board pane is focused and the 'Kanban' item has the bar highlight
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
 
     // @step When I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown opens under 'Kanban' with the cursor on row 0 ('. New Agent') painting over the panes below
     assert_eq!(
@@ -883,32 +923,33 @@ async fn scenario_enter_on_a_menu_item_opens_its_dropdown_at_row_0() {
         Some((0, 0)),
         "the Kanban dropdown must be open at row 0"
     );
-    let buf = render_app(&mut app);
+    let buf = render_app(&mut app)?;
     let row0_y = bar_row(&buf) + 2; // panel border + first entry row
     assert!(
         row_text(&buf, row0_y).contains("New Agent"),
         "the panel's first row must be 'New Agent':\n{}",
         row_text(&buf, row0_y)
     );
+    Ok(())
 }
 
 /// Scenario: Up and Down move the dropdown cursor wrapping at the ends
 #[tokio::test]
-async fn scenario_up_and_down_move_the_dropdown_cursor_wrapping_at_the_ends() {
+async fn scenario_up_and_down_move_the_dropdown_cursor_wrapping_at_the_ends() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open with the cursor on row 0
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((0, 0)));
 
     // @step When I press Down
     app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the cursor moves to row 1 ('/ Search')
     assert_eq!(
@@ -918,11 +959,11 @@ async fn scenario_up_and_down_move_the_dropdown_cursor_wrapping_at_the_ends() {
     );
 
     // @step When I press Down past the last row
-    // Kanban has 4 entries (rows 0..3). From row 1, 3 more Downs wrap.
-    for _ in 0..3 {
+    // Kanban has 5 entries (rows 0..4). From row 1, 4 more Downs wrap.
+    for _ in 0..4 {
         app.handle_event(&key(KeyCode::Down, KeyModifiers::NONE));
     }
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the cursor wraps to row 0
     assert_eq!(
@@ -930,24 +971,26 @@ async fn scenario_up_and_down_move_the_dropdown_cursor_wrapping_at_the_ends() {
         Some((0, 0)),
         "Down past the last row must wrap to row 0"
     );
+    Ok(())
 }
 
 /// Scenario: While a dropdown is open Left and Right walk the ring and re-anchor
 #[tokio::test]
-async fn scenario_while_a_dropdown_is_open_left_and_right_walk_the_ring_and_reanchor() {
+async fn scenario_while_a_dropdown_is_open_left_and_right_walk_the_ring_and_reanchor() -> TestResult
+{
     // @step Given the mux 'Kanban' dropdown is open (cursor row 0) and 'Kanban' has the bar highlight
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
 
     // @step When I press Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the highlight moves to 'Tools' and the open dropdown re-anchors under 'Tools' at row 0
     assert_eq!(
@@ -960,26 +1003,28 @@ async fn scenario_while_a_dropdown_is_open_left_and_right_walk_the_ring_and_rean
         Some((1, 0)),
         "the dropdown must re-anchor under Tools at row 0"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on an open dropdown executes the highlighted row and closes the dropdown
 #[tokio::test]
-async fn scenario_enter_on_an_open_dropdown_executes_the_highlighted_row_and_closes_the_dropdown() {
+async fn scenario_enter_on_an_open_dropdown_executes_the_highlighted_row_and_closes_the_dropdown(
+) -> TestResult {
     // @step Given the mux 'Tools' dropdown is open with the cursor on the 'C Checkpoints' row
     // Tools entries: 0=Changed Files, 1=Checkpoints.
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_category_dropdown_at(&mut app, 1, 1).await;
+    open_category_dropdown_at(&mut app, 1, 1).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((1, 1)));
 
     // @step When I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the checkpoints action is dispatched (the existing App routing runs unchanged) and the dropdown closes
     // In mux mode, executing 'C Checkpoints' opens the checkpoints view.
@@ -996,25 +1041,26 @@ async fn scenario_enter_on_an_open_dropdown_executes_the_highlighted_row_and_clo
         None,
         "the bar focus must clear after execute"
     );
+    Ok(())
 }
 
 /// Scenario: Esc closes the open dropdown and keeps the item focused
 #[tokio::test]
-async fn scenario_esc_closes_the_open_dropdown_and_keeps_the_item_focused() {
+async fn scenario_esc_closes_the_open_dropdown_and_keeps_the_item_focused() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open and 'Kanban' has the bar highlight
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_kanban_dropdown_at(&mut app, 0).await;
+    open_kanban_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((0, 0)));
 
     // @step When I press Esc
     app.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown closes and 'Kanban' stays highlighted
     assert_eq!(
@@ -1027,24 +1073,25 @@ async fn scenario_esc_closes_the_open_dropdown_and_keeps_the_item_focused() {
         Some(MenuFocus::Item(0)),
         "the Kanban item must stay focused"
     );
+    Ok(())
 }
 
 /// Scenario: While a dropdown is open all other keys are swallowed
 #[tokio::test]
-async fn scenario_while_a_dropdown_is_open_all_other_keys_are_swallowed() {
+async fn scenario_while_a_dropdown_is_open_all_other_keys_are_swallowed() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_kanban_dropdown_at(&mut app, 3).await;
+    open_kanban_dropdown_at(&mut app, 3).await?;
 
-    // @step When I press 'a' (not a menu entry shortcut)
-    app.handle_event(&key(KeyCode::Char('a'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    // @step When I press 'x' (not a menu entry shortcut; a row's own key runs that row, TUI-129)
+    app.handle_event(&key(KeyCode::Char('x'), KeyModifiers::NONE));
+    drain_pending(&mut app).await?;
 
     // @step Then nothing is typed and nothing is opened (the key is swallowed — true-modal, BUG-161 parity)
     assert_eq!(
@@ -1057,32 +1104,33 @@ async fn scenario_while_a_dropdown_is_open_all_other_keys_are_swallowed() {
         "",
         "nothing must be typed into the input"
     );
-    // The agent pane's input must not have received the 'a'.
-    let buf = render_app(&mut app);
+    // The agent pane's input must not have received the 'x'.
+    let buf = render_app(&mut app)?;
     assert!(
         row_text(&buf, bar_row(&buf)).contains("Kanban"),
         "the bar must still be present"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on a chip focuses that session without flipping out of mux
 #[tokio::test]
-async fn scenario_enter_on_a_chip_focuses_that_session_without_flipping_out_of_mux() {
+async fn scenario_enter_on_a_chip_focuses_that_session_without_flipping_out_of_mux() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the chip '#2' has the bar highlight
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
     // Navigate to chip #2: Kanban → Tools → Settings → Help → Board → #1 → #2
     // (6 Rights from Kanban)
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     for _ in 0..6 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::ZoneB(2)),
@@ -1091,7 +1139,7 @@ async fn scenario_enter_on_a_chip_focuses_that_session_without_flipping_out_of_m
 
     // @step When I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then session #2 is focused in the agent store and the view stays in Mux (no single-view flip)
     assert_eq!(
@@ -1104,14 +1152,15 @@ async fn scenario_enter_on_a_chip_focuses_that_session_without_flipping_out_of_m
         Some(&SessionId::new("s-2")),
         "session #2 must be focused in the agent store"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on a pane view label focuses that pane
 #[tokio::test]
-async fn scenario_enter_on_a_pane_view_label_focuses_that_pane() {
+async fn scenario_enter_on_a_pane_view_label_focuses_that_pane() -> TestResult {
     // @step Given the mux grid is [Board | Files | Ckpts] and the 'Files' pane label has the bar highlight
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -1123,11 +1172,11 @@ async fn scenario_enter_on_a_pane_view_label_focuses_that_pane() {
     // No sessions → Zone B = [View("Board"), View("Files"), View("Ckpts")]
     // Navigate: Kanban → Tools → Settings → Help → Board → Files
     // (5 Rights from Kanban)
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     for _ in 0..5 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::ZoneB(1)),
@@ -1136,7 +1185,7 @@ async fn scenario_enter_on_a_pane_view_label_focuses_that_pane() {
 
     // @step When I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Files pane is focused (set_focus)
     assert_eq!(
@@ -1144,25 +1193,26 @@ async fn scenario_enter_on_a_pane_view_label_focuses_that_pane() {
         1,
         "the Files pane (index 1) must be focused"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a menu item focuses it and opens its dropdown
 #[tokio::test]
-async fn scenario_clicking_a_menu_item_focuses_it_and_opens_its_dropdown() {
+async fn scenario_clicking_a_menu_item_focuses_it_and_opens_its_dropdown() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    let buf = render_app(&mut app);
-    let help_x = find_x(&buf, 0, "Help").expect("Help must be on the bar row");
+    let buf = render_app(&mut app)?;
+    let help_x = find_x(&buf, 0, "Help").or_fail("Help must be on the bar row")?;
 
     // @step When I click the 'Help' menu item in the top bar
     app.handle_event(&click(help_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then 'Help' is focused and its dropdown is open
     assert_eq!(
@@ -1175,27 +1225,28 @@ async fn scenario_clicking_a_menu_item_focuses_it_and_opens_its_dropdown() {
         Some((3, 0)),
         "the Help dropdown must be open at row 0"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking the already open item closes the dropdown
 #[tokio::test]
-async fn scenario_clicking_the_already_open_item_closes_the_dropdown() {
+async fn scenario_clicking_the_already_open_item_closes_the_dropdown() -> TestResult {
     // @step Given the mux 'Help' dropdown is open (Help item focused)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_help_dropdown_at(&mut app, 0).await;
+    open_help_dropdown_at(&mut app, 0).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((3, 0)));
-    let buf = render_app(&mut app);
-    let help_x = find_x(&buf, 0, "Help").expect("Help must be on the bar row");
+    let buf = render_app(&mut app)?;
+    let help_x = find_x(&buf, 0, "Help").or_fail("Help must be on the bar row")?;
 
     // @step When I click the 'Help' item again
     app.handle_event(&click(help_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown closes
     assert_eq!(
@@ -1208,25 +1259,26 @@ async fn scenario_clicking_the_already_open_item_closes_the_dropdown() {
         Some(MenuFocus::Item(3)),
         "the Help item must stay focused"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a chip activates that session
 #[tokio::test]
-async fn scenario_clicking_a_chip_activates_that_session() {
+async fn scenario_clicking_a_chip_activates_that_session() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    let buf = render_app(&mut app);
-    let chip2_x = find_x(&buf, 0, "#2").expect("chip #2 must be on the bar row");
+    let buf = render_app(&mut app)?;
+    let chip2_x = find_x(&buf, 0, "#2").or_fail("chip #2 must be on the bar row")?;
 
     // @step When I click chip '#2' in the top bar
     app.handle_event(&click(chip2_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then session #2 is focused and the view stays in Mux
     assert_eq!(
@@ -1239,35 +1291,36 @@ async fn scenario_clicking_a_chip_activates_that_session() {
         Some(&SessionId::new("s-2")),
         "session #2 must be focused"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking a chip whose session is outside the agent window rotates the window and focuses its pane
 #[tokio::test]
-async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_and_focuses_its_pane()
-{
+async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_and_focuses_its_pane(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 3 open sessions (the agent window shows #1 and #2) and the first Agent pane (session #1) is focused
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 3).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 3).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
     // Sync the window onto the live session list (the first render does
     // this — pane rects / window math read it).
-    let _buf = render_app(&mut app);
+    let _buf = render_app(&mut app)?;
     focus_pane(&mut app, 1); // first Agent pane → session s-1
     assert_eq!(
         app.navigator().mux.focused_session_id(),
         Some(SessionId::new("s-1")),
         "the focused Agent pane must show session s-1 before the click"
     );
-    let buf = render_app(&mut app);
-    let chip3_x = find_x(&buf, 0, "#3").expect("chip #3 must be on the bar row");
+    let buf = render_app(&mut app)?;
+    let chip3_x = find_x(&buf, 0, "#3").or_fail("chip #3 must be on the bar row")?;
 
     // @step When I click chip '#3' in the top bar (the session is outside the 2-slot agent window)
     app.handle_event(&click(chip3_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the agent window rotates so session #3 is rendered and that pane is focused
     assert_eq!(
@@ -1288,8 +1341,8 @@ async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_an
     );
 
     // @step And chip #3's cells carry the selected-item highlight on the next frame while chip #1's cells keep the #333333 background
-    let buf2 = render_app(&mut app);
-    let chip3_x2 = find_x(&buf2, 0, "#3").expect("chip #3 must paint on the next frame");
+    let buf2 = render_app(&mut app)?;
+    let chip3_x2 = find_x(&buf2, 0, "#3").or_fail("chip #3 must paint on the next frame")?;
     // A 4-cell chip: prefix "#3" + gap + glyph (menu010 chip_cell_range parity).
     for cx in chip3_x2..chip3_x2 + 4 {
         assert_eq!(
@@ -1298,7 +1351,7 @@ async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_an
             "chip #3 cell {cx} must carry the selected-item (inverse) highlight"
         );
     }
-    let chip1_x2 = find_x(&buf2, 0, "#1").expect("chip #1 must paint on the next frame");
+    let chip1_x2 = find_x(&buf2, 0, "#1").or_fail("chip #1 must paint on the next frame")?;
     for cx in chip1_x2..chip1_x2 + 4 {
         assert_ne!(
             buf2[(cx, 0)].bg,
@@ -1306,14 +1359,15 @@ async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_an
             "chip #1 cell {cx} must keep the #333333 background (no stale highlight)"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Clicking a pane label focuses that pane
 #[tokio::test]
-async fn scenario_clicking_a_pane_label_focuses_that_pane() {
+async fn scenario_clicking_a_pane_label_focuses_that_pane() -> TestResult {
     // @step Given the mux grid is [Board | Files | Ckpts]
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -1322,12 +1376,12 @@ async fn scenario_clicking_a_pane_label_focuses_that_pane() {
             MuxPaneKind::Checkpoints,
         ],
     );
-    let buf = render_app(&mut app);
-    let ckpts_x = find_x(&buf, 0, "Ckpts").expect("Ckpts label must be on the bar row");
+    let buf = render_app(&mut app)?;
+    let ckpts_x = find_x(&buf, 0, "Ckpts").or_fail("Ckpts label must be on the bar row")?;
 
     // @step When I click the 'Ckpts' pane label in the top bar
     app.handle_event(&click(ckpts_x, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Checkpoints pane is focused
     assert_eq!(
@@ -1335,16 +1389,17 @@ async fn scenario_clicking_a_pane_label_focuses_that_pane() {
         2,
         "the Checkpoints pane (index 2) must be focused"
     );
+    Ok(())
 }
 
 /// Scenario: Clicking outside the dropdown closes it while the click still lands on the pane
 #[tokio::test]
-async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_lands_on_the_pane()
-{
+async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_lands_on_the_pane(
+) -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![
@@ -1353,14 +1408,14 @@ async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_
             MuxPaneKind::Checkpoints,
         ],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().mux.open_menu(), Some((0, 0)));
     // The opened dropdown must be on screen (the next frame paints the
     // panel and caches its rect) — the outside-click arm hit-tests
     // against that cached geometry.
-    let _buf = render_app(&mut app);
+    let _buf = render_app(&mut app)?;
     // The Files pane is pane index 1. At 240x24 with 3 panes the equal
     // split percent list is [50, 50]: pane 0 takes 50% (x0..118), pane 1
     // takes 50% (x120..237), the last pane absorbs the 1-cell remainder
@@ -1370,7 +1425,7 @@ async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_
 
     // @step When I click the Files pane (outside the dropdown panel and off the bar items)
     app.handle_event(&click(files_click_x, files_click_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the dropdown closes AND the Files pane is focused (the click lands on the same event)
     assert_eq!(
@@ -1389,25 +1444,26 @@ async fn scenario_clicking_outside_the_dropdown_closes_it_while_the_click_still_
         app.navigator().mux.menu_focus().is_none(),
         "clicking away must de-select the parent menu item (BUG-196)"
     );
+    Ok(())
 }
 
 /// Scenario: Wheel left and right over the bar walk the ring
 #[tokio::test]
-async fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() {
+async fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and a bar item is focused
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     assert_eq!(app.navigator().mux.menu_focus(), Some(MenuFocus::Item(0)));
 
     // @step When I wheel ScrollRight over the bar row
     app.handle_event(&mouse(MouseEventKind::ScrollRight, 50, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the ring focus advances one stop (like the Right key)
     assert_eq!(
@@ -1418,7 +1474,7 @@ async fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() {
 
     // @step When I wheel ScrollLeft over the bar row
     app.handle_event(&mouse(MouseEventKind::ScrollLeft, 50, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the ring focus retreats one stop (like the Left key)
     assert_eq!(
@@ -1426,26 +1482,27 @@ async fn scenario_wheel_left_and_right_over_the_bar_walk_the_ring() {
         Some(MenuFocus::Item(0)),
         "wheel left must retreat the ring to Kanban"
     );
+    Ok(())
 }
 
 /// Scenario: Wheel up and down over an open dropdown move the cursor
 #[tokio::test]
-async fn scenario_wheel_up_and_down_over_an_open_dropdown_move_the_cursor() {
+async fn scenario_wheel_up_and_down_over_an_open_dropdown_move_the_cursor() -> TestResult {
     // @step Given the mux 'Kanban' dropdown is open (cursor row 0)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    open_kanban_dropdown_at(&mut app, 0).await;
-    let buf = render_app(&mut app);
-    let search_y = dropdown_row_y(&buf, "Search");
+    open_kanban_dropdown_at(&mut app, 0).await?;
+    let buf = render_app(&mut app)?;
+    let search_y = dropdown_row_y(&buf, "Search")?;
 
     // @step When I wheel ScrollDown over the open dropdown panel
     app.handle_event(&mouse(MouseEventKind::ScrollDown, 30, search_y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the cursor moves to row 1
     assert_eq!(
@@ -1455,10 +1512,10 @@ async fn scenario_wheel_up_and_down_over_an_open_dropdown_move_the_cursor() {
     );
 
     // @step When I wheel ScrollUp over the open dropdown panel
-    let buf2 = render_app(&mut app);
-    let search_y2 = dropdown_row_y(&buf2, "Search");
+    let buf2 = render_app(&mut app)?;
+    let search_y2 = dropdown_row_y(&buf2, "Search")?;
     app.handle_event(&mouse(MouseEventKind::ScrollUp, 30, search_y2));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the cursor returns to row 0
     assert_eq!(
@@ -1466,15 +1523,17 @@ async fn scenario_wheel_up_and_down_over_an_open_dropdown_move_the_cursor() {
         Some((0, 0)),
         "wheel up must return the cursor to row 0"
     );
+    Ok(())
 }
 
 /// Scenario: Wheel over the bar with no bar focus and no open dropdown is ignored
 #[tokio::test]
-async fn scenario_wheel_over_the_bar_with_no_bar_focus_and_no_open_dropdown_is_ignored() {
+async fn scenario_wheel_over_the_bar_with_no_bar_focus_and_no_open_dropdown_is_ignored(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and no bar focus and no dropdown open
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
@@ -1484,9 +1543,9 @@ async fn scenario_wheel_over_the_bar_with_no_bar_focus_and_no_open_dropdown_is_i
 
     // @step When I wheel ScrollLeft or ScrollRight over the bar row
     app.handle_event(&mouse(MouseEventKind::ScrollLeft, 50, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.handle_event(&mouse(MouseEventKind::ScrollRight, 50, 0));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then nothing happens (the event is ignored — the bar is inert)
     assert_eq!(
@@ -1499,20 +1558,22 @@ async fn scenario_wheel_over_the_bar_with_no_bar_focus_and_no_open_dropdown_is_i
         None,
         "no dropdown must open"
     );
+    Ok(())
 }
 
 /// Scenario: Shift+Left and Shift+Right cycle the focused pane without touching the bar
 #[tokio::test]
-async fn scenario_shift_left_and_shift_right_cycle_the_focused_pane_without_touching_the_bar() {
+async fn scenario_shift_left_and_shift_right_cycle_the_focused_pane_without_touching_the_bar(
+) -> TestResult {
     // @step Given the mux grid is [Board | Agent | Agent] and the Board pane is focused with the 'Kanban' item highlighted in the top bar
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 2).await?;
+    seed_units(&mut app).await?;
     enable_mux(
         &mut app,
         vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
     );
-    focus_bar_first_item(&mut app).await;
+    focus_bar_first_item(&mut app).await?;
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
@@ -1522,7 +1583,7 @@ async fn scenario_shift_left_and_shift_right_cycle_the_focused_pane_without_touc
 
     // @step When I press Shift+Right
     app.handle_event(&key(KeyCode::Right, KeyModifiers::SHIFT));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the Agent pane is focused (pane focus moved) and the 'Kanban' bar highlight is unchanged (Shift+arrows never enter or move the bar)
     assert_eq!(
@@ -1535,20 +1596,22 @@ async fn scenario_shift_left_and_shift_right_cycle_the_focused_pane_without_touc
         Some(MenuFocus::Item(0)),
         "the bar highlight must stay on Kanban (Shift+arrows don't touch the bar)"
     );
+    Ok(())
 }
 
 /// Scenario: The draw tick stays open while a session is Running and a bar is painted
 #[tokio::test]
-async fn scenario_the_draw_tick_stays_open_while_a_session_is_running_and_a_bar_is_painted() {
+async fn scenario_the_draw_tick_stays_open_while_a_session_is_running_and_a_bar_is_painted(
+) -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with one session Running
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
+    seed_sessions(&mut app, 1).await?;
     set_status(&mut app, "s-1", SessionStatus::Running);
-    drain_pending(&mut app).await;
-    seed_units(&mut app).await;
+    drain_pending(&mut app).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
     // Force a render so the bar paints and the geometry is cached.
-    let _buf = render_app(&mut app);
+    let _buf = render_app(&mut app)?;
 
     // @step When the run loop evaluates the draw-tick gate
     let animating = app.navigator().is_menu_bar_animating();
@@ -1562,19 +1625,20 @@ async fn scenario_the_draw_tick_stays_open_while_a_session_is_running_and_a_bar_
     // @step And the 16ms tick keeps redrawing so the Running chip's braille frame advances
     // (The run loop ORs this into tick_should_draw — verified by the
     // app/mod.rs tick_should_draw unit tests + this gate being true.)
+    Ok(())
 }
 
 /// Scenario: The draw tick closes when every session is idle
 #[tokio::test]
-async fn scenario_the_draw_tick_closes_when_every_session_is_idle() {
+async fn scenario_the_draw_tick_closes_when_every_session_is_idle() -> TestResult {
     // @step Given the mux grid is [Agent | Agent] with all sessions Idle
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 2).await;
+    seed_sessions(&mut app, 2).await?;
     // All sessions are Idle by default (no status set).
-    drain_pending(&mut app).await;
-    seed_units(&mut app).await;
+    drain_pending(&mut app).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Agent, MuxPaneKind::Agent]);
-    let _buf = render_app(&mut app);
+    let _buf = render_app(&mut app)?;
 
     // @step When the run loop evaluates the draw-tick gate
     let animating = app.navigator().is_menu_bar_animating();
@@ -1584,19 +1648,21 @@ async fn scenario_the_draw_tick_closes_when_every_session_is_idle() {
         !animating,
         "is_menu_bar_animating must be false: all sessions idle"
     );
+    Ok(())
 }
 
 /// Scenario: A 3-row terminal does not paint the bar and keeps the legacy layout
 #[tokio::test]
-async fn scenario_a_3_row_terminal_does_not_paint_the_bar_and_keeps_the_legacy_layout() {
+async fn scenario_a_3_row_terminal_does_not_paint_the_bar_and_keeps_the_legacy_layout() -> TestResult
+{
     // @step Given the mux grid is [Board | Agent] on a 3-row terminal (too short for bar + body + footer)
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     enable_mux(&mut app, vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
 
     // @step When the mux view renders
-    let buf = render_app_sized(&mut app, 240, 3);
+    let buf = render_app_sized(&mut app, 240, 3)?;
 
     // @step Then the top row does not paint a menu bar
     let row0 = row_text(&buf, 0);
@@ -1622,4 +1688,5 @@ async fn scenario_a_3_row_terminal_does_not_paint_the_bar_and_keeps_the_legacy_l
         row_text(&buf, footer_y).contains("MUX"),
         "the mux footer must still be on the bottom row"
     );
+    Ok(())
 }

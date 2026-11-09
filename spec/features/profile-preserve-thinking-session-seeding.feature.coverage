@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
-          "lines": "138-166",
+          "lines": "133-162",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
@@ -32,10 +32,12 @@
                 190,
                 191,
                 192,
-                193,
-                194,
-                195
-              ]
+                195,
+                196,
+                197
+              ],
+              "firstLine": "let resolved = crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -46,7 +48,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
-          "lines": "173-201",
+          "lines": "168-197",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
@@ -57,7 +59,9 @@
                 186,
                 187,
                 188
-              ]
+              ],
+              "firstLine": "codelet_tools::model_capabilities::set_session_model_max_images(",
+              "lastLine": "let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);"
             }
           ]
         }
@@ -68,7 +72,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov143_preserve_thinking_seed.rs",
-          "lines": "208-236",
+          "lines": "203-232",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_creation_helper.rs",
@@ -79,7 +83,9 @@
                 186,
                 187,
                 188
-              ]
+              ],
+              "firstLine": "codelet_tools::model_capabilities::set_session_model_max_images(",
+              "lastLine": "let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);"
             }
           ]
         }
@@ -96,6 +102,6 @@
     "implFiles": [
       "rust/sessions/src/session_creation_helper.rs"
     ],
-    "totalLinesCovered": 124
+    "totalLinesCovered": 127
   }
 }

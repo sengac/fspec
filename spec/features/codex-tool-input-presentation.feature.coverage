@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov151_codex_presentation.rs",
-          "lines": "12-50",
+          "lines": "11-49",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/stream_events.rs",
@@ -134,7 +134,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "use super::answers::Answers;",
+              "lastLine": "id: string(event, \"item_id\")?,"
             },
             {
               "file": "rust/providers/src/codex/presentation.rs",
@@ -232,7 +234,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "use rig::agent::{CancelSignal, StreamingPromptHook};",
+              "lastLine": "self.inner"
             }
           ]
         }

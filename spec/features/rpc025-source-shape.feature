@@ -4,6 +4,8 @@
 @tui
 @persistence
 @source-shape
+@code-quality
+@BUG-459
 Feature: RPC-025 source-shape regressions for the history-store lift and per-session history state
   """
   RPC-025 (source-shape slice) — pin the file layout invariants for
@@ -64,16 +66,7 @@ Feature: RPC-025 source-shape regressions for the history-store lift and per-ses
     And the file declares a "cached_history_snapshot" field
     And store/agent_view/history_accessors.rs declares "pub fn history_state_for"
     And store/agent_view/history_accessors.rs declares "pub fn reset_history_state"
-    And the file declares "pub fn set_history_snapshot"
-
-  Scenario: The NAPI persistence surface becomes a thin delegate layer
-    Given rust/napi/src/persistence/mod.rs after the lift
-    Then rust/napi/src/persistence/history.rs does NOT exist (persistence types live in codelet_core)
-    And rust/napi/src/persistence/mod.rs flat re-exports codelet_core::persistence
-    And rust/napi/src/persistence/napi_bindings.rs::persistence_add_history delegates to history::add
-    And rust/napi/src/persistence/napi_bindings.rs::persistence_get_history delegates to history::get
-    And rust/napi/src/persistence/napi_bindings.rs::persistence_search_history delegates to history::search
-    And the existing #[napi] persistence_add_history / persistence_get_history / persistence_search_history exports keep their JS-facing signatures byte-identical
+    And store/agent_view/history_accessors.rs declares "pub fn set_history_snapshot"
 
   Scenario: HistoryMatch is declared in rust/rpc-types with the expected fields
     Given the rust/rpc-types crate

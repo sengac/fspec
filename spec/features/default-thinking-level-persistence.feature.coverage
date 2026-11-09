@@ -6,52 +6,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "89-152",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -61,16 +16,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "154-180",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                136,
-                137,
-                138
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -80,32 +26,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "186-225",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -115,15 +36,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "227-252",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                114,
-                115
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -133,18 +46,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "254-311",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                82,
-                83,
-                84,
-                85,
-                86
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -154,23 +56,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "317-333",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                1283,
-                1284,
-                1285,
-                1286,
-                1287,
-                1288,
-                1289,
-                1290,
-                1291,
-                1292
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -180,31 +66,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "335-354",
-          "implMappings": [
-            {
-              "file": "src/tui/config/defaultThinkingLevelConfig.ts",
-              "lines": [
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -214,18 +76,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "360-405",
-          "implMappings": [
-            {
-              "file": "src/tui/components/ThinkingLevelDialog.tsx",
-              "lines": [
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -235,18 +86,7 @@
         {
           "file": "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx",
           "lines": "411-436",
-          "implMappings": [
-            {
-              "file": "src/tui/config/defaultThinkingLevelConfig.ts",
-              "lines": [
-                29,
-                30,
-                31,
-                32,
-                33
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -258,11 +98,7 @@
     "testFiles": [
       "src/tui/components/__tests__/TUI-058-default-thinking-level.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/ThinkingLevelDialog.tsx",
-      "src/tui/components/AgentView.tsx",
-      "src/tui/config/defaultThinkingLevelConfig.ts"
-    ],
-    "totalLinesCovered": 430
+    "implFiles": [],
+    "totalLinesCovered": 324
   }
 }

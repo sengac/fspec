@@ -4,22 +4,28 @@
       "name": "Reversed turn range is rejected with a warning",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "235-253",
+          "file": "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs",
+          "lines": "22-39",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
               "lines": [
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
                 462,
                 463,
-                464
-              ]
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474
+              ],
+              "firstLine": "// CMPCT-035 / FV-003-a: reject reversed turn ranges at the parse",
+              "lastLine": "}"
             }
           ]
         }
@@ -29,8 +35,8 @@
       "name": "Forward turn range is parsed unchanged",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "254-272",
+          "file": "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs",
+          "lines": "41-58",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -96,7 +102,9 @@
                 479,
                 480,
                 481
-              ]
+              ],
+              "firstLine": "/// satisfies `turn_start <= turn_end` AND `turn_end < message_count`.",
+              "lastLine": "// range (`turn_start > turn_end`). With this gate in place,"
             }
           ]
         }
@@ -106,22 +114,28 @@
       "name": "Equal start and end is accepted",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "273-290",
+          "file": "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs",
+          "lines": "60-76",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
               "lines": [
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
                 462,
                 463,
-                464
-              ]
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474
+              ],
+              "firstLine": "// CMPCT-035 / FV-003-a: reject reversed turn ranges at the parse",
+              "lastLine": "}"
             }
           ]
         }
@@ -131,8 +145,8 @@
       "name": "Mixed input keeps only well-formed nodes",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "291-313",
+          "file": "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs",
+          "lines": "78-98",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
@@ -198,7 +212,9 @@
                 479,
                 480,
                 481
-              ]
+              ],
+              "firstLine": "/// satisfies `turn_start <= turn_end` AND `turn_end < message_count`.",
+              "lastLine": "// range (`turn_start > turn_end`). With this gate in place,"
             }
           ]
         }
@@ -208,22 +224,28 @@
       "name": "Property — every parsed node satisfies turn_start <= turn_end (unconditional, no clamping)",
       "testMappings": [
         {
-          "file": "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs",
-          "lines": "315-350",
+          "file": "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs",
+          "lines": "101-135",
           "implMappings": [
             {
               "file": "rust/core/src/compaction/model.rs",
               "lines": [
-                456,
-                457,
-                458,
-                459,
-                460,
-                461,
                 462,
                 463,
-                464
-              ]
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474
+              ],
+              "firstLine": "// CMPCT-035 / FV-003-a: reject reversed turn ranges at the parse",
+              "lastLine": "}"
             }
           ]
         }
@@ -235,11 +257,11 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+      "rust/core/src/compaction/__tests__/dag_node_turn_range_validation.test.rs"
     ],
     "implFiles": [
       "rust/core/src/compaction/model.rs"
     ],
-    "totalLinesCovered": 264
+    "totalLinesCovered": 270
   }
 }

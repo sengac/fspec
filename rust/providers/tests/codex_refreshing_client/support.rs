@@ -4,6 +4,15 @@ use rig::http_client::HttpClientExt;
 use wiremock::matchers::{body_string_contains, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
+/// The ChatGPT account the fixture's OAuth credentials belong to.
+pub const ACCOUNT: &str = "acc_12345";
+/// Access token seeded for [`ACCOUNT`] (`prov159_support::tokens`).
+pub const ACCESS: &str = "access-acc_12345";
+/// Access token the mocked OAuth token endpoint rotates to.
+pub const ROTATED_ACCESS: &str = "access-acc_12345-rotated";
+/// Refresh token the mocked OAuth token endpoint rotates to.
+pub const ROTATED_REFRESH: &str = "refresh-acc_12345-rotated";
+
 pub struct Case {
     pub client: RefreshingCodexClient,
     pub issuer: MockServer,
@@ -22,7 +31,7 @@ pub fn request(url: &str) -> Result<http::Request<Vec<u8>>, http::Error> {
 impl Case {
     pub async fn new(expiry: Option<u64>) -> Result<Self, Box<dyn std::error::Error>> {
         let fixture = Fixture::new()?;
-        fixture.seed("A")?;
+        fixture.seed(ACCOUNT)?;
         let issuer = MockServer::start().await;
         let backend = MockServer::start().await;
         Mock::given(method("POST"))
@@ -34,9 +43,9 @@ impl Case {
             .mount(&backend)
             .await;
         let client = RefreshingCodexClient::new_oauth(
-            "access-A".into(),
-            "refresh-A".into(),
-            "A".into(),
+            ACCESS.into(),
+            format!("refresh-{ACCOUNT}"),
+            ACCOUNT.into(),
             expiry,
             issuer.uri(),
         );
@@ -54,8 +63,8 @@ impl Case {
 
     pub async fn refresh(&self, status: u16, expiry: Option<u64>) {
         let mut body = serde_json::json!({
-            "access_token": "access-A-rotated",
-            "refresh_token": "refresh-A-rotated",
+            "access_token": ROTATED_ACCESS,
+            "refresh_token": ROTATED_REFRESH,
             "id_token": "opaque-id"
         });
         if let Some(expiry) = expiry {
@@ -64,7 +73,9 @@ impl Case {
         Mock::given(method("POST"))
             .and(path("/oauth/token"))
             .and(body_string_contains("grant_type=refresh_token"))
-            .and(body_string_contains("refresh_token=refresh-A"))
+            .and(body_string_contains(format!(
+                "refresh_token=refresh-{ACCOUNT}"
+            )))
             .and(body_string_contains(format!(
                 "client_id={}",
                 codelet_providers::codex::codex_oauth::CODEX_CLIENT_ID
@@ -106,7 +117,7 @@ impl Case {
             requests[0].headers["authorization"],
             format!("Bearer {access}")
         );
-        assert_eq!(requests[0].headers["chatgpt-account-id"], "A");
+        assert_eq!(requests[0].headers["chatgpt-account-id"], ACCOUNT);
         assert_eq!(requests[0].headers["originator"], "rust");
         Ok(())
     }

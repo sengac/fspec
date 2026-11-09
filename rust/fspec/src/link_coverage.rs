@@ -8,7 +8,7 @@
 //! logic lives exclusively in fspec_core — the bridge performs only JSON arg
 //! marshalling and envelope decoding.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -27,11 +27,16 @@ pub struct CliArgs {
     pub impl_lines: Option<String>,
     pub skip_validation: bool,
     pub skip_step_validation: bool,
+    /// REFAC-020: paired exact-row selector forwarded to the shared core.
+    pub test_mapping_index: Option<u64>,
+    pub expected_scenario_hash: Option<String>,
+    /// BUG-502: replace the scenario's mappings of the test file.
+    pub replace: bool,
 }
 
 /// Entry point for the `link-coverage` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert(
@@ -59,6 +64,18 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         "skipStepValidation".to_string(),
         Value::Bool(args.skip_step_validation),
     );
+    if let Some(index) = args.test_mapping_index {
+        payload.insert("testMappingIndex".to_string(), Value::from(index));
+    }
+    if let Some(hash) = &args.expected_scenario_hash {
+        payload.insert(
+            "expectedScenarioHash".to_string(),
+            Value::String(hash.clone()),
+        );
+    }
+    if args.replace {
+        payload.insert("replace".to_string(), Value::Bool(true));
+    }
     let args_json = json!(payload).to_string();
 
     match link_coverage::run(&args_json, &project_root).await {

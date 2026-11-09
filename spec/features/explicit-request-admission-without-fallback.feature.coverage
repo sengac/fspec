@@ -10,6 +10,7 @@
             {
               "file": "rust/providers/src/model_limits.rs",
               "lines": [
+                101,
                 102,
                 103,
                 104,
@@ -25,7 +26,7 @@
                 114,
                 115,
                 116,
-                117,
+                118,
                 119,
                 120,
                 121,
@@ -40,9 +41,10 @@
                 130,
                 131,
                 132,
-                133,
-                134
-              ]
+                133
+              ],
+              "firstLine": "/// Convenience wrapper that resolves the context window for a provider.",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,27 +60,19 @@
             {
               "file": "rust/cli/src/compaction_threshold.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "/// Calculate usable context after reserving up to 32k output tokens.",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,7 +94,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "/// Classify typed admission failures and machine-readable provider overflow codes",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/interactive/overflow_classification.rs",
@@ -146,7 +142,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -168,7 +166,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "/// Classify typed admission failures and machine-readable provider overflow codes",
+              "lastLine": "}"
             },
             {
               "file": "rust/cli/src/interactive/overflow_classification.rs",
@@ -214,7 +214,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "pub(super) fn is_context_overflow(error: &anyhow::Error) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -234,6 +236,6 @@
       "rust/cli/src/interactive/error_classifiers.rs",
       "rust/cli/src/interactive/overflow_classification.rs"
     ],
-    "totalLinesCovered": 199
+    "totalLinesCovered": 189
   }
 }

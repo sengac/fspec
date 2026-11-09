@@ -28,6 +28,7 @@ pub enum DiffOutputKind {
     Removed,
 }
 
+use super::diff_codec::hidden_lines_hint;
 /// **RPC-393**: the typed diff DISPLAY row model + its single codec.
 pub use super::diff_codec::{parse_line, to_line, DiffDisplayRow};
 
@@ -161,7 +162,7 @@ fn elision_indent(gutter_width: usize) -> String {
 fn collapse_hint(remaining: usize, gutter_width: usize) -> DiffDisplayRow {
     let indent = elision_indent(gutter_width);
     DiffDisplayRow::Elision {
-        text: format!("{indent} ... +{remaining} lines (select turn to /expand)"),
+        text: format!("{indent} {}", hidden_lines_hint(remaining)),
     }
 }
 

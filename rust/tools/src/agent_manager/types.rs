@@ -101,6 +101,22 @@ pub enum AgentManagerAction {
     /// This call BLOCKS the caller for the full duration — by design. Only one profile
     /// session may be active at a time; overlapping calls are rejected with
     /// `{ error: "profile_session_active", ... }` via the async handler.
+    /// AMGR-021: answer a question the caller holds, by its request id.
+    Answer {
+        request_id: String,
+        #[serde(default)]
+        answers: Option<Vec<RequestAnswer>>,
+        #[serde(default)]
+        cancelled: Option<bool>,
+    },
+    /// AMGR-021: decide an approval the caller holds, by its request id.
+    Approve {
+        request_id: String,
+        choice: ApproveChoice,
+    },
+    /// AMGR-021: pass a request the caller holds up to its own parent, or
+    /// the user at the root.
+    Escalate { request_id: String },
     Profile {
         /// Length of the profiling window in seconds (1..=60, default 10)
         #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u32")]
@@ -120,6 +136,55 @@ pub enum AgentManagerAction {
         #[serde(default)]
         focus: Option<String>,
     },
+}
+
+/// AMGR-021: one question's answer in an `answer` action.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RequestAnswer {
+    /// The question's id.
+    pub id: String,
+    /// Labels of the chosen options.
+    #[serde(default)]
+    pub selected: Vec<String>,
+    /// Free text.
+    #[serde(default)]
+    pub other: Option<String>,
+}
+
+/// AMGR-021: the decision in an `approve` action.
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ApproveChoice {
+    Approve,
+    ApproveSession,
+    Deny,
+}
+
+/// AMGR-021: a pending question or approval as AgentManager reports it.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PendingRequestView {
+    pub request_id: String,
+    /// The sub-agent that asks and waits.
+    pub origin_session_id: String,
+    /// `question`, `approval` or `human_action`.
+    pub kind: String,
+    /// `user`, or the id of the session that holds it.
+    pub holder: String,
+    /// What a question asks.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub questions: Option<Vec<crate::request_user_input::HitlQuestion>>,
+    /// What an approval or human action asks.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approval: Option<ApprovalView>,
+}
+
+/// AMGR-021: the tool call an approval or human action is about.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ApprovalView {
+    pub tool_name: String,
+    pub message: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
 }
 
 /// Context reference for quoting session history in messages (AMGR-011)
@@ -177,6 +242,9 @@ pub struct SessionEntry {
     pub spawner_id: Option<String>,
     /// IDs of subordinate sessions spawned by this session
     pub subordinate_ids: Vec<String>,
+    /// AMGR-021: the question or approval the session waits on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_request: Option<PendingRequestView>,
 }
 
 /// Detailed status returned by `get_status`
@@ -199,6 +267,10 @@ pub struct SessionStatus {
     pub subordinate_ids: Vec<String>,
     /// Number of pending incoming messages
     pub pending_messages: usize,
+    /// AMGR-021: the question or approval the session waits on (boxed: it
+    /// is the largest result).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_request: Option<Box<PendingRequestView>>,
 }
 
 /// Result from any AgentManager action
@@ -233,6 +305,10 @@ pub enum AgentManagerResult {
         /// Per-session await outcomes
         results: Vec<AwaitSessionResult>,
     },
+    /// AMGR-021: an `answer` or `approve` was accepted.
+    RequestAnswered { answered: bool, request_id: String },
+    /// AMGR-021: an `escalate` moved the request to `holder`.
+    RequestEscalated { request_id: String, holder: String },
     /// Error result
     Error {
         error: bool,
@@ -248,6 +324,9 @@ pub struct AwaitSessionResult {
     pub session_id: String,
     /// Outcome of the await for this session
     pub status: AwaitOutcome,
+    /// AMGR-021: the request behind `needs_input` or `waiting_on_user`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub request: Option<PendingRequestView>,
 }
 
 /// Outcome of awaiting a single session (AMGR-015)
@@ -262,6 +341,14 @@ pub enum AwaitOutcome {
     Destroyed,
     /// Calling session was interrupted (Esc) during the wait
     Interrupted,
+    /// AMGR-021: the session, or one below it, has a request the caller
+    /// holds; answer, approve or escalate it.
+    NeedsInput,
+    /// AMGR-021: the session, or one below it, waits on the user for a
+    /// human action; reported once.
+    WaitingOnUser,
+    /// AMGR-021: not finished when await_idle returned for another session.
+    Pending,
 }
 
 impl AgentManagerResult {
@@ -289,6 +376,24 @@ impl AgentManagerResult {
             error: true,
             code: "invalid_parameter".to_string(),
             message: message.to_string(),
+        }
+    }
+
+    /// AMGR-021: an answer, approval or escalation that the request's id,
+    /// kind or holder refused.
+    pub fn request_rejected(message: &str) -> Self {
+        Self::Error {
+            error: true,
+            code: "request_rejected".to_string(),
+            message: message.to_string(),
+        }
+    }
+
+    pub fn request_not_found(request_id: &str) -> Self {
+        Self::Error {
+            error: true,
+            code: "request_not_found".to_string(),
+            message: format!("No pending request {request_id}"),
         }
     }
 

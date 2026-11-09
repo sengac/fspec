@@ -5,13 +5,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov144_max_images_form.rs",
-          "lines": "82-133",
+          "lines": "78-135",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
               "lines": [
-                132
-              ]
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "// PROV-144: prefill the EFFECTIVE limit — the stored value, or the",
+              "lastLine": "max_images: def.max_images_limit().to_string(),"
             }
           ]
         }
@@ -37,7 +42,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// `\"n\"` (n >= 1) ⇒ `Some(n)` (a single Read result returns at most n images).",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,7 +55,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov144_max_images_form.rs",
-          "lines": "174-215",
+          "lines": "178-227",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -63,7 +70,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// `\"n\"` (n >= 1) ⇒ `Some(n)` (a single Read result returns at most n images).",
+              "lastLine": "}"
             }
           ]
         }
@@ -81,6 +90,6 @@
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
       "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs"
     ],
-    "totalLinesCovered": 149
+    "totalLinesCovered": 166
   }
 }

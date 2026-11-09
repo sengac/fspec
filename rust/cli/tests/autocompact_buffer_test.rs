@@ -80,9 +80,9 @@ fn test_usable_context_high_output_capped() {
     assert_eq!(usable, 168_000);
 }
 
-/// Scenario: Zero max_output uses SESSION_OUTPUT_TOKEN_MAX as fallback
+/// Scenario: Zero max_output leaves no usable context
 #[test]
-fn test_usable_context_zero_max_output_fallback() {
+fn test_usable_context_zero_max_output_is_unavailable() {
     // @step Given the provider has a context window of 100,000 tokens
     let context_window: u64 = 100_000;
     // @step And max_output_tokens of 0 (unknown)
@@ -91,8 +91,9 @@ fn test_usable_context_zero_max_output_fallback() {
     // @step When calculating the usable context
     let usable = calculate_usable_context(context_window, max_output);
 
-    // @step Then usable context should be 68,000 tokens (100k - 32k fallback)
-    assert_eq!(usable, 68_000);
+    // @step Then usable context is unavailable (0) because the output limit is unknown
+    // BUG-306: missing limits stay missing rather than guessing a 32k reservation.
+    assert_eq!(usable, 0);
 }
 
 // ==========================================

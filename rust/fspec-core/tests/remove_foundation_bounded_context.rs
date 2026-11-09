@@ -281,3 +281,58 @@ fn removing_against_foundation_without_event_storm_errors() {
         "missing canonical no-event-storm text; got: {msg}"
     );
 }
+
+#[test]
+fn removing_a_bounded_context_regenerates_foundation_md_without_it() {
+    // Scenario: Removing a bounded context regenerates FOUNDATION.md without it
+
+    // @step Given a project root tempdir with spec/foundation.json containing an eventStorm bounded_context text='Payments' deleted=false and no children
+    let tmp = TempDir::new().expect("tempdir");
+    // generate-foundation-md validates against the generic schema, so this
+    // foundation carries every required section.
+    let f = json!({
+        "version": "2.0.0",
+        "project": {"name": "x", "vision": "v", "projectType": "cli-tool"},
+        "problemSpace": {
+            "primaryProblem": {"title": "P", "description": "d", "impact": "high"}
+        },
+        "solutionSpace": {
+            "overview": "o",
+            "capabilities": [{"name": "C", "description": "d"}]
+        },
+        "eventStorm": {
+            "level": "big_picture",
+            "items": [
+                {"id": 1, "type": "bounded_context", "text": "Payments", "color": null, "deleted": false, "createdAt": "2025-01-01T00:00:00.000Z"},
+                {"id": 2, "type": "bounded_context", "text": "Identity", "color": null, "deleted": false, "createdAt": "2025-01-01T00:00:00.000Z"}
+            ],
+            "nextItemId": 3
+        }
+    });
+    write_foundation(tmp.path(), &f);
+
+    // @step And spec/FOUNDATION.md written by dispatching generate-foundation-md contains 'Payments'
+    let generated = dispatch_command(DispatchRequest {
+        command: "generate-foundation-md".to_string(),
+        args_json: "{}".to_string(),
+        project_root: tmp.path().to_path_buf(),
+    });
+    assert!(
+        generated.success,
+        "generate-foundation-md failed: {generated:?}"
+    );
+    let md_path = tmp.path().join("spec/FOUNDATION.md");
+    let before = fs::read_to_string(&md_path).expect("read FOUNDATION.md");
+    assert!(before.contains("Payments"), "FOUNDATION.md:\n{before}");
+
+    // @step When I dispatch remove-foundation-bounded-context with contextName='Payments'
+    let result = dispatch_command(req(tmp.path(), json!({"contextName": "Payments"})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true; got {result:?}");
+
+    // @step And spec/FOUNDATION.md on disk is regenerated and no longer contains 'Payments'
+    let after = fs::read_to_string(&md_path).expect("read FOUNDATION.md");
+    assert!(!after.contains("Payments"), "FOUNDATION.md:\n{after}");
+    assert!(after.contains("Identity"), "FOUNDATION.md:\n{after}");
+}

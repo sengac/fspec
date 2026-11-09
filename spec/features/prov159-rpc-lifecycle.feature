@@ -1,4 +1,7 @@
-@done
+@BUG-686
+@BUG-698
+@wip
+@BUG-582
 @PROV-159
 @phase-1
 @providers
@@ -14,6 +17,8 @@ Feature: Embedded Codex OAuth cancellation retry and operation deadlines
   Cancellation and client disconnect must stop backend work and release the callback listener before immediate retry. Attempt identity and durable generation fencing reject stale callbacks and token commits.
   Use shared isolated-home fixtures, a controlled keyring boundary and real loopback OAuth endpoints; never real user credentials.
   Research: spec/attachments/PROV-159/prov159-oauth-research.md and its two upstream companions.
+  BUG-686: since BUG-634 the TUI hosts the Codex callback listener and the embedded backend starts and exchanges the login, so A11 drives that client flow; the client listener binds the test-support callback address when one is configured.
+  BUG-698: A13's deadline case gives the RPC a deadline far beyond any real run time and moves tokio's clock past it, never waiting on wall-clock time.
   """
 
   Scenario: A11 Esc permits immediate browser retry without a stale callback commit

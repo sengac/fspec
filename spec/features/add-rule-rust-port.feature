@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-189
+@cli
+@example-mapping
 Feature: Port add-rule command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
@@ -54,3 +57,11 @@ Feature: Port add-rule command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     And spec/work-units.json now exists on disk with the canonical empty initial structure
+
+  Scenario: A task work unit accepts optional Example Mapping in specifying
+    Given a project root tempdir with spec/work-units.json containing the task CLEAN-001 status=specifying
+    When I dispatch add-rule with workUnitId='CLEAN-001' and rule='Remove dead code only'
+    And I dispatch add-example with workUnitId='CLEAN-001' and example='Unused helper is deleted'
+    Then both dispatches return success=true
+    And spec/work-units.json on disk shows CLEAN-001.rules[0].text='Remove dead code only' and CLEAN-001.examples[0].text='Unused helper is deleted'
+    And dispatching update-work-unit-status with workUnitId='CLEAN-001' and status='implementing' returns success=true without questions, assumptions or a feature file

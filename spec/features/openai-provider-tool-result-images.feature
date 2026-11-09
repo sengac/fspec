@@ -7,6 +7,7 @@
 @multimodal
 @image
 @tool-result
+@attachment
 Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
   """
   Primary fix location: rust/patches/rig-core/src/providers/openai/completion/mod.rs. The existing `impl TryFrom<message::ToolResult> for Message` at lines 393-414 returns a single Message — NOT suitable because we may need to emit a follow-up user message. Change the integration at lines 507-540 (`TryFrom<OneOrMany<message::UserContent>> for Vec<Message>`) so the tool-results branch (lines 517-524) routes through a NEW helper `tool_result_to_messages(tool_result) -> Result<Vec<Message>, MessageError>` that returns [tool_message] for text-only and [tool_message, user_image_message] for image-bearing results. Flatten the Vec<Vec<Message>> into Vec<Message>. Keep the original `TryFrom<message::ToolResult> for Message` impl for backward compat (it can return ConversionError for image inputs, now an unreachable path inside the crate).

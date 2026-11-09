@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "283-325",
+          "lines": "294-338",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
@@ -38,21 +38,25 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "} = mouse_event;",
+              "lastLine": "// (the `in_bar_row` branch below claims it), never a"
             },
             {
               "file": "rust/fspec-tui/src/store/board_menu.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
                 128,
                 129,
                 130,
                 131,
-                132
-              ]
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "self.menu_open = Some((cat, 0));",
+              "lastLine": "/// R3: drop focus back into the focused column — the bar highlight"
             }
           ]
         }
@@ -96,7 +100,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "} = mouse_event;",
+              "lastLine": "// (the `in_bar_row` branch below claims it), never a"
             }
           ]
         }
@@ -107,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "373-407",
+          "lines": "386-423",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
@@ -140,7 +146,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "} = mouse_event;",
+              "lastLine": "// (the `in_bar_row` branch below claims it), never a"
             }
           ]
         }
@@ -151,18 +159,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "411-471",
+          "lines": "426-488",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -178,8 +179,18 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                74,
+                74,
+                74
+              ],
+              "firstLine": "// RPC-445: only sessions of the workspace the board shows.",
+              "lastLine": "// BUG-400: an unobserved status stays unknown (None)."
             }
           ]
         }
@@ -190,7 +201,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "474-501",
+          "lines": "491-520",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -238,7 +249,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "MouseEventKind::Down(MouseButton::Left) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -249,18 +262,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "505-573",
+          "lines": "523-593",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
                 55,
@@ -276,8 +282,18 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                74,
+                74,
+                74
+              ],
+              "firstLine": "// RPC-445: only sessions of the workspace the board shows.",
+              "lastLine": "// BUG-400: an unobserved status stays unknown (None)."
             }
           ]
         }
@@ -288,33 +304,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "576-614",
+          "lines": "596-639",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "// A left click outside the open dropdown closes it AND",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
                 221,
                 222,
                 223,
@@ -326,24 +338,13 @@
                 229,
                 230,
                 231,
-                232
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "// Off the bar row: a left click OUTSIDE the open dropdown closes it",
+              "lastLine": "}"
             }
           ]
         }
@@ -354,22 +355,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "618-679",
+          "lines": "643-700",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
               "lines": [
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196
-              ]
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "// A bar-row click that hit no item/cell (empty bar space).",
+              "lastLine": "return MuxBarMouseDecision::Swallowed;"
             }
           ]
         }
@@ -386,12 +389,11 @@
     "implFiles": [
       "rust/fspec-tui/src/views/board/menu_mouse.rs",
       "rust/fspec-tui/src/store/board_menu.rs",
-      "rust/fspec-tui/src/app/dispatch_menu.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
       "rust/fspec-tui/src/views/agent/menu_mouse.rs",
-      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
-      "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
-      "rust/fspec-tui/src/views/navigator_mux_events.rs"
+      "rust/fspec-tui/src/views/navigator_mux_routing.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_mouse.rs"
     ],
-    "totalLinesCovered": 719
+    "totalLinesCovered": 610
   }
 }

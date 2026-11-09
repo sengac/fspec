@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "135-186",
+          "lines": "130-183",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -18,14 +18,10 @@
                 151,
                 152,
                 153
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "135-186",
-          "implMappings": [
+              ],
+              "firstLine": "// reduction badge, arm the auto-hide timer, emit the",
+              "lastLine": "StreamChunk::ContinueStateUpdate { continue_state } => {"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
               "lines": [
@@ -47,7 +43,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "pub(crate) fn arm_compaction_hide(&mut self, session_id: SessionId, seq: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,7 +56,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "190-235",
+          "lines": "186-233",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
@@ -74,23 +72,21 @@
                 67,
                 68,
                 69
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "190-235",
-          "implMappings": [
+              ],
+              "firstLine": "pub(crate) fn handle_clear_compaction_reduction(&mut self, session_id: &SessionId, seq: u64) {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
               "lines": [
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "// BUG-180: project the fresh snapshot onto the per-session",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,7 +97,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "239-291",
+          "lines": "236-290",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
@@ -117,23 +113,21 @@
                 67,
                 68,
                 69
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "239-291",
-          "implMappings": [
+              ],
+              "firstLine": "pub(crate) fn handle_clear_compaction_reduction(&mut self, session_id: &SessionId, seq: u64) {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_workspaces.rs",
               "lines": [
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "// BUG-180: project the fresh snapshot onto the per-session",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,18 +143,14 @@
             {
               "file": "rust/fspec-tui/src/store/agent_view/chrome_state.rs",
               "lines": [
-                103,
-                104,
-                105,
-                106
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "295-351",
-          "implMappings": [
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "self.continue_state_by_session.remove(session_id);",
+              "lastLine": ".entry(session_id.clone())"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
               "lines": [
@@ -175,7 +165,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_clear_compaction_reduction(&mut self, session_id: &SessionId, seq: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -199,14 +191,10 @@
                 151,
                 152,
                 153
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
-          "lines": "355-401",
-          "implMappings": [
+              ],
+              "firstLine": "// reduction badge, arm the auto-hide timer, emit the",
+              "lastLine": "StreamChunk::ContinueStateUpdate { continue_state } => {"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
               "lines": [
@@ -228,7 +216,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "pub(crate) fn arm_compaction_hide(&mut self, session_id: SessionId, seq: u64) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -245,9 +235,9 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "rust/fspec-tui/src/app/dispatch_compaction_hide.rs",
-      "rust/fspec-tui/src/app/dispatch.rs",
+      "rust/fspec-tui/src/app/dispatch_workspaces.rs",
       "rust/fspec-tui/src/store/agent_view/chrome_state.rs"
     ],
-    "totalLinesCovered": 609
+    "totalLinesCovered": 360
   }
 }

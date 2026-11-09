@@ -100,7 +100,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -201,7 +203,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub async fn poll_device_token(",
+              "lastLine": "}"
             }
           ]
         }
@@ -302,7 +306,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub async fn poll_device_token(",
+              "lastLine": "}"
             }
           ]
         }
@@ -403,7 +409,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub async fn poll_device_token(",
+              "lastLine": "}"
             }
           ]
         }
@@ -504,7 +512,9 @@
                 94,
                 95,
                 96
-              ]
+              ],
+              "firstLine": "pub async fn poll_device_token(",
+              "lastLine": "}"
             }
           ]
         }
@@ -610,7 +620,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -716,7 +728,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -822,7 +836,9 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -928,7 +944,93 @@
                 155,
                 156,
                 157
-              ]
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Device authorization request posts the client id and parses the device code",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/device_protocol/legacy_failures.rs",
+          "lines": "65-86",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A usercode server error is reported without its response body",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/device_protocol/legacy_failures.rs",
+          "lines": "88-108",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -936,8 +1038,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/providers/tests/device_protocol/legacy_happy.rs",
@@ -948,6 +1050,6 @@
       "rust/providers/src/codex/codex_device_auth.rs",
       "rust/providers/src/codex/device_poll.rs"
     ],
-    "totalLinesCovered": 975
+    "totalLinesCovered": 1066
   }
 }

@@ -1,3 +1,5 @@
+//! Feature: spec/features/tool-pause-handler-mechanism.feature
+
 use codelet_tools::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
@@ -6,7 +8,6 @@ use serial_test::serial;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Condvar, Mutex, PoisonError};
 use std::thread;
-use std::time::Duration;
 
 fn with_clean_handler<T>(f: impl FnOnce(uuid::Uuid) -> T) -> T {
     let sid = uuid::Uuid::new_v4();
@@ -34,6 +35,8 @@ fn wait_for_response<'a>(
 #[serial]
 fn test_no_handler_returns_resumed_immediately() {
     with_clean_handler(|sid| {
+        // @step Given no pause handler is registered
+        // @step When a tool calls pause_for_user
         let response = pause_for_user(
             sid,
             PauseRequest {
@@ -44,6 +47,7 @@ fn test_no_handler_returns_resumed_immediately() {
             },
         );
 
+        // @step Then it should return Resumed immediately without blocking
         assert_eq!(
             response,
             PauseResponse::Resumed,
@@ -70,7 +74,9 @@ fn test_handler_is_invoked_with_request() {
             PauseResponse::Resumed
         });
 
+        // @step Given a pause handler is registered in the current execution context
         set_pause_handler(sid, Some(handler));
+        // @step When a tool calls pause_for_user with a Continue request
         let response = pause_for_user(
             sid,
             PauseRequest {
@@ -81,10 +87,12 @@ fn test_handler_is_invoked_with_request() {
             },
         );
 
+        // @step Then the handler should be invoked with the request details
         assert!(
             handler_called.load(Ordering::SeqCst),
             "Handler should have been called"
         );
+        // @step And the handler's response should be returned to the tool
         assert_eq!(response, PauseResponse::Resumed);
     });
 }
@@ -177,16 +185,19 @@ fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
         });
 
         let signal_for_thread = Arc::clone(&response_signal);
+        // @step And a background thread signals Resumed
+        // TEST-042: no sleep; the handler checks the state before waiting, so
+        // a signal that comes first is still seen.
         let signaler_thread = thread::spawn(move || -> anyhow::Result<()> {
-            thread::sleep(Duration::from_millis(50));
-
             let (lock, cvar) = &*signal_for_thread;
             *mutex_lock(lock)? = Some(PauseResponse::Resumed);
             cvar.notify_one();
             Ok(())
         });
 
+        // @step Given a handler that blocks on a condvar is registered
         set_pause_handler(sid, Some(handler));
+        // @step When pause_for_user is called
         let response = pause_for_user(
             sid,
             PauseRequest {
@@ -201,6 +212,7 @@ fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
             .join()
             .map_err(|_| anyhow::anyhow!("Signaler thread panicked"))??;
 
+        // @step Then pause_for_user should unblock and return Resumed
         assert_eq!(
             response,
             PauseResponse::Resumed,
@@ -235,16 +247,19 @@ fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
         });
 
         let signal_for_thread = Arc::clone(&response_signal);
+        // @step And the user signals Interrupted
+        // TEST-042: no sleep; the handler checks the state before waiting, so
+        // a signal that comes first is still seen.
         let signaler_thread = thread::spawn(move || -> anyhow::Result<()> {
-            thread::sleep(Duration::from_millis(50));
-
             let (lock, cvar) = &*signal_for_thread;
             *mutex_lock(lock)? = Some(PauseResponse::Interrupted);
             cvar.notify_one();
             Ok(())
         });
 
+        // @step Given a blocking handler is registered
         set_pause_handler(sid, Some(handler));
+        // @step When pause_for_user is called
         let response = pause_for_user(
             sid,
             PauseRequest {
@@ -259,6 +274,7 @@ fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
             .join()
             .map_err(|_| anyhow::anyhow!("Signaler thread panicked"))??;
 
+        // @step Then pause_for_user should return Interrupted
         assert_eq!(response, PauseResponse::Interrupted);
         Ok(())
     })

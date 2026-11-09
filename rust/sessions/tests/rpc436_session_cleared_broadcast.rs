@@ -24,7 +24,6 @@
 #![allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_sessions::SessionManager;
 use tokio::sync::Mutex;
@@ -60,8 +59,9 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     // SessionStore pointing at the new temp dir (the store caches its
     // sessions_dir on first touch).
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     Ok((data_dir, manager))
 }
 
@@ -131,7 +131,7 @@ async fn clearing_a_live_session_pushes_exactly_one_cleared_event() -> Result<()
         .map_err(|e| format!("clear_session_history(live): {e}"))?;
 
     // @step Then exactly one cleared event is observed on the cleared broadcast, carrying the cleared session's id
-    let got = tokio::time::timeout(Duration::from_millis(500), cleared_rx.recv())
+    let got = codelet_test_helpers::deadlock_guard("cleared_rx.recv()", cleared_rx.recv())
         .await
         .map_err(|_| "timed out waiting for the session-cleared broadcast".to_string())?
         .map_err(|e| format!("cleared broadcast recv error: {e}"))?;
@@ -148,7 +148,7 @@ async fn clearing_a_live_session_pushes_exactly_one_cleared_event() -> Result<()
     manager
         .clear_session_history(&live)
         .map_err(|e| format!("second clear_session_history: {e}"))?;
-    let got2 = tokio::time::timeout(Duration::from_millis(500), cleared_rx.recv())
+    let got2 = codelet_test_helpers::deadlock_guard("cleared_rx.recv()", cleared_rx.recv())
         .await
         .map_err(|_| "timed out waiting for the second session-cleared broadcast".to_string())?
         .map_err(|e| format!("cleared broadcast recv error: {e}"))?;

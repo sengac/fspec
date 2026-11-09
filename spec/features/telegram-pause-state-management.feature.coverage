@@ -5,15 +5,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "39-70",
+          "lines": "38-67",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                173,
-                174,
-                175,
-                176,
                 177,
                 178,
                 179,
@@ -24,8 +20,22 @@
                 184,
                 185,
                 186,
-                187
-              ]
+                187,
+                188,
+                189,
+                190,
+                191,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ],
+              "firstLine": "* Handle /allowonce command - allow sensitive file access once",
+              "lastLine": "}"
             }
           ]
         }
@@ -36,15 +46,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "75-95",
+          "lines": "74-96",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                173,
-                174,
-                175,
-                176,
                 177,
                 178,
                 179,
@@ -55,8 +61,22 @@
                 184,
                 185,
                 186,
-                187
-              ]
+                187,
+                188,
+                189,
+                190,
+                191,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ],
+              "firstLine": "* Handle /allowonce command - allow sensitive file access once",
+              "lastLine": "}"
             }
           ]
         }
@@ -67,7 +87,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "100-126",
+          "lines": "103-127",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -87,7 +107,9 @@
                 201,
                 202,
                 203
-              ]
+              ],
+              "firstLine": "action: 'allow_once',",
+              "lastLine": "}"
             }
           ]
         }
@@ -98,7 +120,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "131-161",
+          "lines": "134-162",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -119,7 +141,9 @@
                 218,
                 219,
                 220
-              ]
+              ],
+              "firstLine": "response: '✅ Access allowed \\\\(session\\\\)',",
+              "lastLine": "}"
             }
           ]
         }
@@ -130,7 +154,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "166-184",
+          "lines": "169-185",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -151,7 +175,9 @@
                 218,
                 219,
                 220
-              ]
+              ],
+              "firstLine": "response: '✅ Access allowed \\\\(session\\\\)',",
+              "lastLine": "}"
             }
           ]
         }
@@ -162,15 +188,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "189-207",
+          "lines": "192-208",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                173,
-                174,
-                175,
-                176,
                 177,
                 178,
                 179,
@@ -181,8 +203,22 @@
                 184,
                 185,
                 186,
-                187
-              ]
+                187,
+                188,
+                189,
+                190,
+                191,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ],
+              "firstLine": "* Handle /allowonce command - allow sensitive file access once",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,7 +229,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "212-230",
+          "lines": "215-231",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -213,7 +249,9 @@
                 201,
                 202,
                 203
-              ]
+              ],
+              "firstLine": "action: 'allow_once',",
+              "lastLine": "}"
             }
           ]
         }
@@ -224,12 +262,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "235-255",
+          "lines": "238-256",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
               "lines": [
-                124,
                 125,
                 126,
                 127,
@@ -241,8 +278,17 @@
                 133,
                 134,
                 135,
-                136
-              ]
+                136,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ],
+              "firstLine": "* Handle /status command - show agent state",
+              "lastLine": "break;"
             }
           ]
         }
@@ -253,7 +299,7 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "260-284",
+          "lines": "263-285",
           "implMappings": [
             {
               "file": "bridge/telegram-slash-commands.ts",
@@ -276,7 +322,9 @@
                 103,
                 104,
                 105
-              ]
+              ],
+              "firstLine": "const AVAILABLE_COMMANDS = [",
+              "lastLine": "];"
             }
           ]
         }
@@ -287,36 +335,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "351-421",
+          "lines": "356-430",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                779,
-                780,
-                781,
-                782,
-                783,
-                784,
-                785,
-                786,
-                787,
-                788,
-                789,
-                790,
-                791,
-                792,
-                793,
-                794,
-                795,
-                796,
-                797,
-                798,
-                799,
-                800,
-                801,
-                802,
-                803,
                 804,
                 805,
                 806,
@@ -325,8 +348,35 @@
                 809,
                 810,
                 811,
-                812
-              ]
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837
+              ],
+              "firstLine": "if (instanceName) {",
+              "lastLine": "if (envelope.service === 'system' && envelope.type === 'ping') {"
             }
           ]
         }
@@ -337,36 +387,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "426-496",
+          "lines": "437-512",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                779,
-                780,
-                781,
-                782,
-                783,
-                784,
-                785,
-                786,
-                787,
-                788,
-                789,
-                790,
-                791,
-                792,
-                793,
-                794,
-                795,
-                796,
-                797,
-                798,
-                799,
-                800,
-                801,
-                802,
-                803,
                 804,
                 805,
                 806,
@@ -375,8 +400,35 @@
                 809,
                 810,
                 811,
-                812
-              ]
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837
+              ],
+              "firstLine": "if (instanceName) {",
+              "lastLine": "if (envelope.service === 'system' && envelope.type === 'ping') {"
             }
           ]
         }
@@ -387,36 +439,11 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-pause-commands.test.ts",
-          "lines": "499-569",
+          "lines": "519-591",
           "implMappings": [
             {
               "file": "bridge/telegram-endpoint.ts",
               "lines": [
-                779,
-                780,
-                781,
-                782,
-                783,
-                784,
-                785,
-                786,
-                787,
-                788,
-                789,
-                790,
-                791,
-                792,
-                793,
-                794,
-                795,
-                796,
-                797,
-                798,
-                799,
-                800,
-                801,
-                802,
-                803,
                 804,
                 805,
                 806,
@@ -425,8 +452,35 @@
                 809,
                 810,
                 811,
-                812
-              ]
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837
+              ],
+              "firstLine": "if (instanceName) {",
+              "lastLine": "if (envelope.service === 'system' && envelope.type === 'ping') {"
             }
           ]
         }
@@ -434,13 +488,58 @@
     },
     {
       "name": "Telegram endpoint receives pause request from codelet",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "303-350",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582,
+                583,
+                584,
+                585,
+                586
+              ],
+              "firstLine": "// BRIDGE-014: Handle pause_request chunks",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 13,
-    "coveredScenarios": 12,
-    "coveragePercent": 92,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
     "testFiles": [
       "bridge/__tests__/telegram-pause-commands.test.ts"
     ],
@@ -448,6 +547,6 @@
       "bridge/telegram-slash-commands.ts",
       "bridge/telegram-endpoint.ts"
     ],
-    "totalLinesCovered": 699
+    "totalLinesCovered": 773
   }
 }

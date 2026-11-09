@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @BUG-110
+@tools
+@list
 Feature: Codex list_dir facade missing offset and limit pagination params
   """
   Facades map Codex list_dir params to InternalLsParams::List with offset, limit, depth. LsToolFacadeWrapper applies pagination. Follows same pattern as read_file mode/indentation.

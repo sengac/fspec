@@ -4,8 +4,8 @@
       "name": "Tool result with a single base64 image emits tool-message + follow-up user-message",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "2170-2228",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_084_tests.rs",
+          "lines": "47-109",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -102,7 +102,9 @@
                 518,
                 519,
                 520
-              ]
+              ],
+              "firstLine": "/// - `[tool_msg]` for text-only tool results (preserves prior behaviour).",
+              "lastLine": "}"
             }
           ]
         }
@@ -112,8 +114,8 @@
       "name": "Text-only tool result still emits a single tool-message (no regression)",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "2231-2257",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_084_tests.rs",
+          "lines": "111-138",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -210,7 +212,9 @@
                 518,
                 519,
                 520
-              ]
+              ],
+              "firstLine": "/// - `[tool_msg]` for text-only tool results (preserves prior behaviour).",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,8 +224,8 @@
       "name": "Tool result with three images yields one tool-message + one user-message with three image parts",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "2260-2320",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_084_tests.rs",
+          "lines": "140-196",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -318,7 +322,9 @@
                 518,
                 519,
                 520
-              ]
+              ],
+              "firstLine": "/// - `[tool_msg]` for text-only tool results (preserves prior behaviour).",
+              "lastLine": "}"
             }
           ]
         }
@@ -328,8 +334,8 @@
       "name": "Mixed text and image tool result puts text on the tool-message and image on the follow-up user-message",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-          "lines": "2323-2375",
+          "file": "rust/patches/rig-core/src/providers/openai/completion/prov_084_tests.rs",
+          "lines": "198-249",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -426,7 +432,9 @@
                 518,
                 519,
                 520
-              ]
+              ],
+              "firstLine": "/// - `[tool_msg]` for text-only tool results (preserves prior behaviour).",
+              "lastLine": "}"
             }
           ]
         }
@@ -438,7 +446,7 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
+      "rust/patches/rig-core/src/providers/openai/completion/prov_084_tests.rs"
     ],
     "implFiles": [
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs"

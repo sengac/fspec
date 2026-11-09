@@ -99,20 +99,6 @@ Feature: Agent Job Execution
     Then the created session has schedule_triggered set to true
     And the created session has schedule_name set to "nightly-review"
 
-  Scenario: NAPI binding exposes schedule metadata for TUI
-    Given a scheduled session exists with schedule_name "nightly-review"
-    When the TUI calls session_is_scheduled with the session ID
-    Then it returns true
-    When the TUI calls session_schedule_name with the session ID
-    Then it returns "nightly-review"
-
-  Scenario: Non-scheduled session returns false for schedule queries
-    Given a regular (non-scheduled) session exists
-    When the TUI calls session_is_scheduled with the session ID
-    Then it returns false
-    When the TUI calls session_schedule_name with the session ID
-    Then it returns None
-
   Scenario: Agent session runs to natural completion
     Given a schedule "quick-task" with job_type "agent"
     And the schedule has agent config with prompt "Say hello"

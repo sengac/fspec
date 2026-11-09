@@ -1,5 +1,7 @@
 @done
 @AMGR-016
+@codelet
+@agent-manager
 Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to return
   """
   Primary change in rust/cli/src/interactive/stream_loop.rs — wrap stream.next() in tokio::time::timeout inside the inner streaming loop

@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
+mod admission;
 mod bridge;
 mod finalization;
 mod handlers;
@@ -14,10 +15,11 @@ mod reconciliation;
 mod routing;
 mod services;
 mod state;
-mod thinking;
+pub mod thinking;
 
 use crate::background_output::{BackgroundOutput, LoopDetectionWiring};
 use crate::dispatch::InputWithImages;
+use codelet_core::persistence::input_receipts::InputDisposition::Refused;
 use codelet_rpc_types::{SessionStatus, StreamChunk};
 use codelet_sessions::background_session::{BackgroundSession, PromptInput};
 use codelet_tools::McpInjection;
@@ -34,6 +36,7 @@ pub async fn agent_loop(
     let mut state = LoopState::default();
     let mut mcp_channel_open = true;
     lifecycle::start_session_hooks(&session).await;
+    let _continuations = admission::ContinuationRegistration::new(session.id);
     loop {
         let pending = if state.compaction_retry_input.is_some() {
             input::next_retry_input(&session, &mut state)
@@ -42,6 +45,7 @@ pub async fn agent_loop(
             let mut manual_compaction_epoch = None;
             let mut interrupt_epoch = session.compaction_epoch();
             let mut cancelled_at_submission = false;
+            let mut submission = None;
             let mut supervisor_rx = session.incoming_message_rx.lock().await;
             let input_to_process = tokio::select! {
                 biased;
@@ -51,6 +55,7 @@ pub async fn agent_loop(
                             manual_compaction_epoch = prompt_input.compaction_epoch;
                             interrupt_epoch = prompt_input.interrupt_epoch;
                             is_fresh_user_input = manual_compaction_epoch.is_none();
+                            submission = prompt_input.submission;
                             Some(InputWithImages {
                                 text: prompt_input.input,
                                 thinking_config: prompt_input.thinking_config,
@@ -67,6 +72,7 @@ pub async fn agent_loop(
                 result = supervisor_rx.recv() => {
                     result.map(|message| {
                         cancelled_at_submission = message.interrupt_epoch.is_none();
+                        submission = message.submission_id;
                         interrupt_epoch = message.interrupt_epoch.unwrap_or(interrupt_epoch);
                         input::supervisor_input(&session, message)
                     })
@@ -104,31 +110,57 @@ pub async fn agent_loop(
                 is_fresh_user_input,
                 is_compaction_retry: manual_compaction_epoch.is_some(),
                 manual_compaction_epoch,
+                is_manual_compaction: manual_compaction_epoch.is_some(),
                 interrupt_epoch,
                 cancelled_at_submission,
+                submission,
             })
         };
-        let Some(pending) = pending else {
+        let Some(mut pending) = pending else {
             continue;
         };
-        if !prompt::admit_prompt(&session, &pending, &mut state).await {
+        if !prompt::admit_prompt(&session, &mut pending, &mut state).await {
             continue;
         }
         let input = &pending.input.text;
-        let (current_provider, current_model, thinking_model_key) =
+        let (current_provider, current_model, thinking_target) =
             routing::resolve_turn_routing(&session).await;
-        let thinking_config_value = thinking::resolve_turn_thinking(
+        // BUG-439 / MODEL-010: a level the provider or model cannot carry
+        // refuses the turn.
+        let thinking_config_value = match thinking::resolve_turn_thinking(
             &session,
-            &pending.input,
-            &current_provider,
-            current_model.as_deref(),
-            thinking_model_key.as_deref(),
-        );
+            pending.input.thinking_config.as_deref(),
+            &thinking_target,
+        ) {
+            Ok(config) => config,
+            Err(reason) => {
+                admission::settle(
+                    &session,
+                    &pending,
+                    Refused {
+                        reason: reason.clone(),
+                    },
+                )
+                .await;
+                session.handle_output(StreamChunk::error(reason));
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
+            }
+        };
         let mut inner_session = session.inner.lock().await;
-        if prompt::finish_cancelled_prompt(&session, pending.interrupt_epoch, false) {
+        if prompt::cancel_pending(&session, &pending, false).await {
             continue;
         }
         if let Err(error) = session.refresh_runtime_settings_for_turn(&mut inner_session) {
+            admission::settle(
+                &session,
+                &pending,
+                Refused {
+                    reason: error.clone(),
+                },
+            )
+            .await;
             session.handle_output(StreamChunk::error(error));
             session.set_status(SessionStatus::Idle);
             session.handle_output(StreamChunk::done());
@@ -144,14 +176,11 @@ pub async fn agent_loop(
             let resolved = codelet_sessions::model_resolution::resolve_profile_loop_detection(
                 inner_session.provider_manager(),
             );
-            LoopDetectionWiring {
-                enabled: resolved.enabled.unwrap_or(true),
-                window: resolved.window.unwrap_or(160),
-                max_repeats: resolved.max_repeats.unwrap_or(10),
-                max_retries: resolved.max_retries.unwrap_or(10),
-            }
+            LoopDetectionWiring::from(resolved)
         };
         if let Err(error) = inner_session.bind_provider_persistence(session.id) {
+            let reason = error.to_string();
+            admission::settle(&session, &pending, Refused { reason }).await;
             session.handle_output(StreamChunk::error(error.to_string()));
             session.set_status(SessionStatus::Idle);
             session.handle_output(StreamChunk::done());
@@ -168,7 +197,10 @@ pub async fn agent_loop(
             Some(loop_wiring),
         );
         output.reset_turn_loop_detectors();
-        if let Some(loop_abort_note) = session.take_pending_loop_abort_note() {
+        if let Some(loop_abort_note) = (!pending.is_manual_compaction)
+            .then(|| session.take_pending_loop_abort_note())
+            .flatten()
+        {
             tracing::info!(
                 "[RIG-014] injecting loop-abort corrective note into turn context (session={})",
                 session.id
@@ -181,7 +213,7 @@ pub async fn agent_loop(
         let (turn_compaction, compactor_registration) =
             services::register_service_handlers(&session, &inner_session);
         bridge::register_bridge_handlers(&session);
-        let bridge_images = pending.input.images.map(|imgs| {
+        let bridge_images = pending.input.images.clone().map(|imgs| {
             imgs.into_iter()
                 .map(|img| codelet_cli::interactive::BridgeImage {
                     data: img.data,
@@ -193,8 +225,11 @@ pub async fn agent_loop(
             session: session.clone(),
             armed: true,
         };
-        let builder_retry = if pending.is_fresh_user_input {
-            codelet_cli::compactor_sub_agent::retry_failed_compactor_for_user_input(
+        // BUG-614 (Q4): any next input, including background and supervisor
+        // messages, retries a failed builder with a fresh budget. Internal
+        // retries are not new input; a manual /compact restarts it itself.
+        let builder_retry = if !pending.is_retry_input && !pending.is_manual_compaction {
+            codelet_cli::compactor_sub_agent::retry_failed_compactor_for_next_input(
                 &mut inner_session,
                 session.id,
                 &session.compaction_in_progress,
@@ -207,14 +242,15 @@ pub async fn agent_loop(
             Ok(false)
         };
         let builder_retry_failed = builder_retry.is_err();
-        let mut result = if session.compaction_cancelled(pending.interrupt_epoch) {
-            prompt::finish_cancelled_prompt(&session, pending.interrupt_epoch, false);
-            Ok(())
-        } else {
+        // BUG-516: a manual /compact runs the compactor sub-agent round in
+        // the provider's agent stream; it is not an admitted conversation
+        // input, so it skips input admission.
+        let mut result = if pending.is_manual_compaction {
+            inner_session.request_manual_compaction();
             providers::run_selected_provider(
                 &mut inner_session,
-                input,
-                bridge_images,
+                "",
+                None,
                 &session,
                 &output,
                 thinking_config_value,
@@ -223,6 +259,43 @@ pub async fn agent_loop(
                 builder_retry,
             )
             .await
+        } else {
+            match admission::admit_turn(&session, &mut inner_session, &pending).await {
+                admission::Gate::Cancelled => Ok(()),
+                admission::Gate::Refused(error) => Err(error),
+                admission::Gate::Dispatch(submission) => {
+                    // MODEL-015: plan the turn's Claude effort before dispatch.
+                    let planned = crate::claude_effort::plan_turn_effort(
+                        session.id,
+                        &mut inner_session,
+                        &thinking_target,
+                        thinking_config_value.as_ref(),
+                        submission,
+                        pending.is_fresh_user_input,
+                    )
+                    .await;
+                    let result = match planned {
+                        Ok(()) => {
+                            providers::run_selected_provider(
+                                &mut inner_session,
+                                input,
+                                bridge_images,
+                                &session,
+                                &output,
+                                thinking_config_value,
+                                &current_provider,
+                                current_model.clone(),
+                                builder_retry,
+                            )
+                            .await
+                        }
+                        Err(reason) => Err(anyhow::anyhow!(reason)),
+                    };
+                    admission::settle_dispatch(&session, &mut inner_session, submission, &result)
+                        .await;
+                    result
+                }
+            }
         };
         let applied = reconciliation::reconcile_turn(
             &session,
@@ -250,5 +323,6 @@ pub async fn agent_loop(
         .await;
         drop(compactor_registration);
         finalization::schedule_loop_retry(&session, &output, &mut state);
+        finalization::start_queued_input(&session, &state);
     }
 }

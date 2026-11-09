@@ -65,7 +65,9 @@
                 53,
                 54,
                 55
-              ]
+              ],
+              "firstLine": "pub(crate) mod fork;",
+              "lastLine": "})?)"
             }
           ]
         }

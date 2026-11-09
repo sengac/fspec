@@ -9,8 +9,8 @@ USAGE
   fspec query-estimate-accuracy [options]
 
 OPTIONS
-  --prefix <prefix>
-    Filter by prefix
+  -f, --format <format>
+    Output format (text or json)
 
 EXAMPLES
   1. Show accuracy metrics

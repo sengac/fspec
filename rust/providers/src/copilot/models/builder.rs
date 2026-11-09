@@ -9,7 +9,7 @@
 
 use super::schema::{CopilotModelEntry, CopilotModelsResponse};
 use crate::copilot::constants::{COPILOT_NPM_KEY, COPILOT_PROVIDER_ID};
-use crate::models::{LimitInfo, ModelInfo};
+use crate::models::{LimitInfo, ModelInfo, ReasoningOption};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -24,15 +24,18 @@ pub const NPM_OPTION_KEY: &str = "npm";
 
 /// Pure transformation: parsed `/models` response → list of `ModelInfo`.
 ///
-/// Filters out entries where `model_picker_enabled` is `false`, then maps
+/// Filters out entries where `model_picker_enabled` is `false` or whose
+/// policy is disabled for the account (PROV-163), then maps
 /// each survivor through [`build_model_info`]. The relative order of entries
-/// in the input is preserved in the output.
-#[must_use]
-pub fn build_catalog_from_response(response: &CopilotModelsResponse) -> Vec<ModelInfo> {
+/// in the input is preserved in the output. BUG-462: a limit that does not
+/// fit fails the catalog naming the model and value.
+pub fn build_catalog_from_response(
+    response: &CopilotModelsResponse,
+) -> Result<Vec<ModelInfo>, String> {
     response
         .data
         .iter()
-        .filter(|entry| entry.model_picker_enabled)
+        .filter(|entry| entry.model_picker_enabled && entry.policy_allows())
         .map(build_model_info)
         .collect()
 }
@@ -54,8 +57,22 @@ pub fn build_catalog_from_response(response: &CopilotModelsResponse) -> Vec<Mode
 /// - `options["reasoning_variants"]` ← verbatim copy of
 ///   `capabilities.supports.reasoning_effort` as a JSON array of strings
 ///   (empty / missing → empty array)
-#[must_use]
-pub fn build_model_info(entry: &CopilotModelEntry) -> ModelInfo {
+///
+/// BUG-462: a context or output limit that does not fit a `u32` is an error
+/// naming the model and value, never `u32::MAX`.
+pub fn build_model_info(entry: &CopilotModelEntry) -> Result<ModelInfo, String> {
+    let limit = |what: &str, value: u64| {
+        codelet_common::narrow_count(what, value)
+            .map_err(|error| format!("Copilot model {}: {error}", entry.id))
+    };
+    let context = limit(
+        "max_context_window_tokens",
+        entry.capabilities.limits.max_context_window_tokens,
+    )?;
+    let output = limit(
+        "max_output_tokens",
+        entry.capabilities.limits.max_output_tokens,
+    )?;
     let release_date = derive_release_date(&entry.id, &entry.version);
 
     let reasoning_variants: &[String] = entry
@@ -84,7 +101,7 @@ pub fn build_model_info(entry: &CopilotModelEntry) -> ModelInfo {
         ),
     );
 
-    ModelInfo {
+    Ok(ModelInfo {
         id: entry.id.clone(),
         name: entry.name.clone(),
         family: Some(entry.capabilities.family.clone()),
@@ -94,18 +111,16 @@ pub fn build_model_info(entry: &CopilotModelEntry) -> ModelInfo {
         tool_call: entry.capabilities.supports.tool_calls,
         temperature: false,
         interleaved: None,
+        reasoning_options: (!reasoning_variants.is_empty())
+            .then(|| vec![ReasoningOption::Effort(reasoning_variants.to_vec())]),
         modalities: None,
         cost: None,
-        limit: LimitInfo {
-            context: u32::try_from(entry.capabilities.limits.max_context_window_tokens)
-                .unwrap_or(u32::MAX),
-            output: u32::try_from(entry.capabilities.limits.max_output_tokens).unwrap_or(u32::MAX),
-        },
+        limit: LimitInfo { context, output },
         status: None,
         experimental: None,
         options,
         headers: HashMap::new(),
-    }
+    })
 }
 
 /// Strip the `{id}-` prefix from the version string. If the version does not
@@ -163,7 +178,7 @@ mod tests {
                 make_entry("b", "b-2099-01-01", false, None),
             ],
         };
-        let catalog = build_catalog_from_response(&response);
+        let catalog = build_catalog_from_response(&response).expect("the catalog builds");
         assert_eq!(catalog.len(), 1);
         assert_eq!(catalog[0].id, "a");
     }
@@ -171,21 +186,21 @@ mod tests {
     #[test]
     fn release_date_strips_id_prefix_from_version() {
         let entry = make_entry("foo", "foo-2025-09-15", true, None);
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         assert_eq!(info.release_date.as_deref(), Some("2025-09-15"));
     }
 
     #[test]
     fn release_date_falls_back_to_raw_version_when_prefix_missing() {
         let entry = make_entry("foo", "1.2.3", true, None);
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         assert_eq!(info.release_date.as_deref(), Some("1.2.3"));
     }
 
     #[test]
     fn missing_reasoning_effort_yields_empty_variants() {
         let entry = make_entry("foo", "foo-2099-01-01", true, None);
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         let variants = info.options.get(REASONING_VARIANTS_KEY).unwrap();
         assert!(variants.as_array().unwrap().is_empty());
         assert!(!info.reasoning);
@@ -194,7 +209,7 @@ mod tests {
     #[test]
     fn empty_reasoning_effort_array_yields_empty_variants() {
         let entry = make_entry("foo", "foo-2099-01-01", true, Some(vec![]));
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         let variants = info.options.get(REASONING_VARIANTS_KEY).unwrap();
         assert!(variants.as_array().unwrap().is_empty());
         assert!(!info.reasoning);
@@ -208,7 +223,7 @@ mod tests {
             true,
             Some(vec!["low", "medium", "high", "xhigh"]),
         );
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         let variants: Vec<String> = info
             .options
             .get(REASONING_VARIANTS_KEY)
@@ -225,7 +240,7 @@ mod tests {
     #[test]
     fn provider_id_and_npm_are_attached_to_every_entry() {
         let entry = make_entry("foo", "foo-2099-01-01", true, None);
-        let info = build_model_info(&entry);
+        let info = build_model_info(&entry).expect("the model builds");
         assert_eq!(
             info.options
                 .get(PROVIDER_ID_OPTION_KEY)

@@ -44,7 +44,7 @@ Feature: RPC-024 source-shape regressions for the multi-session AgentViewStore r
     Then the file declares an "open_sessions" field
     And the file declares a "current_session_index" field
     And the file declares "pub fn append_session"
-    And the file declares "pub fn cycle_session"
+    And the file declares "pub fn focus_session_index"
     And the file declares "pub fn set_input_draft"
     And the file declares "pub fn session_context_mut_for"
     And the file declares "pub fn current_session_context"

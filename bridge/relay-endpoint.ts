@@ -156,7 +156,7 @@ export function createRelayEndpoint(
     if (state.localWss) {
       return;
     }
-    const port = endpointConfig.websocketPort || 8181;
+    const port = endpointConfig.websocketPort ?? 8181;
     state.localWss = new WebSocketServer({ port });
     state.isRunning = true;
 

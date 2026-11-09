@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "A count that fits is narrowed exactly",
+      "testMappings": [
+        {
+          "file": "rust/common/tests/cmpct088_compaction_counts_are_never_clamped.rs",
+          "lines": "7-15",
+          "implMappings": [
+            {
+              "file": "rust/common/src/counts.rs",
+              "lines": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "firstLine": "/// `value` as a `u32`, or an error naming `what` and the count — never a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A count that does not fit is an error naming it",
+      "testMappings": [
+        {
+          "file": "rust/common/tests/cmpct088_compaction_counts_are_never_clamped.rs",
+          "lines": "17-29",
+          "implMappings": [
+            {
+              "file": "rust/common/src/counts.rs",
+              "lines": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "firstLine": "/// `value` as a `u32`, or an error naming `what` and the count — never a",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/common/tests/cmpct088_compaction_counts_are_never_clamped.rs"
+    ],
+    "implFiles": [
+      "rust/common/src/counts.rs"
+    ],
+    "totalLinesCovered": 34
+  }
+}

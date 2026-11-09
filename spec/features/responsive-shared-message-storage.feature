@@ -1,13 +1,19 @@
+@BUG-582
 @done
 @bug-fix
 @session-management
 @persistence
 @phase-1
 @BUG-273
+@BUG-460
+@BUG-494
 Feature: Avoid history rescans and async worker stalls during shared message-store access
-
   """
   Use a derived completion certificate bound to exact data and index file generations. Only strict full scan can establish completeness; append and cleanup may carry it forward under the existing sidecar lease. Missing/stale certificates fall back to existing recovery. V1 and V2 entry layouts are identical; read both, publish V1 while retaining strict JSONL/hash validation. No live migration or daemon restart.
+  BUG-494: an index and its history written in one filesystem timestamp tick are a normal state
+  (BUG-519), and these checks failed only when a run happened to produce it. The fixture now puts
+  every store in that state - one shared modification time, and the completeness proof re-proved
+  for the resulting generation as the store writes it - so the reuse checks run on it every time.
   """
 
   # ========================================
@@ -28,7 +34,6 @@ Feature: Avoid history rescans and async worker stalls during shared message-sto
   #   5. Given a SessionSearch handler waiting for storage When the tool runs on a single async worker Then unrelated async work continues and the search result is preserved
   #
   # ========================================
-
   Background: User Story
     As a developer running concurrent Fspec clients
     I want to append and search message history without repeated full rescans or blocked async workers
@@ -36,24 +41,22 @@ Feature: Avoid history rescans and async worker stalls during shared message-sto
 
   Scenario: Current peers reuse complete history
     Given two current stores sharing verified history
+    And their saved index and history share one timestamp tick
     When they alternate fresh appends
     Then each append publishes its index only once
 
-
   Scenario: Legacy and current readers coexist
     Given compatible legacy and current readers
+    And their saved index and history share one timestamp tick
     When they repeatedly reopen unchanged history
     Then neither reader repeatedly rebuilds the index
-
 
   Scenario: Tampered indexes do not hide originals
     Given a current index with a verified generation
     When an original is omitted from that index
     Then lookup recovers the intact original and conflicting append is rejected
 
-
   Scenario: Legacy indexes do not bypass integrity
     Given an index published by a legacy writer
     When a cached record contains an invalid content hash
     Then the current reader refuses the corrupt message
-

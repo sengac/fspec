@@ -17,7 +17,6 @@ use rig::message::{AssistantContent, Message, ToolResultContent, UserContent};
 use serde_json::{json, Value};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::Duration;
 use tokio::sync::Notify;
 use transport::TestResult;
 
@@ -70,6 +69,7 @@ fn outcomes(messages: &[Message]) -> Vec<(String, String, String)> {
 #[serial_test::serial]
 async fn accepted_completion_cancels_the_unexecuted_remainder_of_a_committed_batch() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let manifest = create_session_with_provider("accepted completion", directory.path(), "codex")?;
@@ -121,8 +121,8 @@ async fn accepted_completion_cancels_the_unexecuted_remainder_of_a_committed_bat
         .build();
     let output = RecordingOutput::default();
     codelet_tools::set_continue_armed(manifest.id, true);
-    let result = tokio::time::timeout(
-        Duration::from_secs(10),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(agent), 'F...",
         run_agent_stream(
             RigAgent::with_default_depth(agent),
             "Finish the task",
@@ -225,8 +225,8 @@ async fn accepted_completion_cancels_the_unexecuted_remainder_of_a_committed_bat
     let next_agent = rig::agent::AgentBuilder::new(model)
         .preamble("Test instructions")
         .build();
-    tokio::time::timeout(
-        Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(next_agent...",
         run_agent_stream(
             RigAgent::with_default_depth(next_agent),
             "Continue the conversation",

@@ -45,6 +45,7 @@ async fn close_session(tool: &UnifiedExecTool, session_id: &str) {
 /// Scenario: Still-running exec result carries the quiet_seconds timing fact
 #[tokio::test]
 async fn scenario_still_running_result_carries_quiet_seconds() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a unified_exec session is running a command and has not exited
     let tool = UnifiedExecTool::new(Uuid::nil());
     let result: UnifiedExecResult = tool
@@ -82,6 +83,7 @@ async fn scenario_still_running_result_carries_quiet_seconds() {
 /// Scenario: Still-running exec result includes the fixed steering line
 #[tokio::test]
 async fn scenario_still_running_result_includes_steering_line() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a unified_exec session is running a command and has not exited
     let tool = UnifiedExecTool::new(Uuid::nil());
     let result: UnifiedExecResult = tool
@@ -129,6 +131,7 @@ async fn scenario_still_running_result_includes_steering_line() {
 /// Scenario: Exited exec result carries no quiet_seconds and no steering line
 #[tokio::test]
 async fn scenario_exited_result_has_no_quiet_seconds_or_steering() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a unified_exec command printed output and then exited
     let tool = UnifiedExecTool::new(Uuid::nil());
 
@@ -167,6 +170,7 @@ async fn scenario_exited_result_has_no_quiet_seconds_or_steering() {
 /// Scenario: quiet_seconds grows as the process stays quiet
 #[tokio::test]
 async fn scenario_quiet_seconds_grows_as_process_stays_quiet() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a unified_exec session is running a silent command
     let tool = UnifiedExecTool::new(Uuid::nil());
     let run: UnifiedExecResult = tool
@@ -183,9 +187,8 @@ async fn scenario_quiet_seconds_grows_as_process_stays_quiet() {
         .expect("still-running result must carry a session_id");
 
     // @step When the process has been quiet for at least 1 extra second and an exec result is produced via a poll
-    // (poll yield is clamped to the 5s minimum by the tool, so total
-    // quiet ≈ 0.6 + 1.0 + 5.0 ≈ 6.6s, floored)
-    tokio::time::sleep(std::time::Duration::from_millis(1_000)).await;
+    // (poll yield is clamped to the 5s minimum by the tool, so the poll
+    // itself keeps the process quiet past 3s; TEST-042: no extra sleep)
     let poll: UnifiedExecResult = tool
         .call(UnifiedExecArgs(json!({
             "action": "poll",
@@ -219,6 +222,7 @@ async fn scenario_quiet_seconds_grows_as_process_stays_quiet() {
 /// Scenario: quiet_seconds is a floored whole number
 #[test]
 fn scenario_quiet_seconds_is_floored_whole_number() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     // @step Given a unified_exec session is running a command and has been quiet for 4.9 seconds
     // The quiet-seconds computation is the pure floor of elapsed microseconds:
     let last_output_micros = 1_000_000u64;

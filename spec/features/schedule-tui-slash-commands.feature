@@ -1,5 +1,7 @@
 @done
 @SCHED-008
+@tui
+@schedule-management
 Feature: Schedule TUI Slash Commands
   """
   Create src/tui/utils/scheduleCommandParser.ts — parseScheduleCommand() takes the raw /schedule input, extracts subcommand and named flags (--cron, --tz, --role, --prompt, --command, --overlap), handling quoted strings

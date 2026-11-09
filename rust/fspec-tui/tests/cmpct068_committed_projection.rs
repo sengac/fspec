@@ -126,6 +126,7 @@ async fn scenario_committed_compaction_refreshes_counters_before_another_provide
     ));
     // @step When a durable DAG generation commits with a new context snapshot
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     let previous_key = std::env::var_os("ANTHROPIC_API_KEY");
     std::env::set_var("ANTHROPIC_API_KEY", "test-no-network");

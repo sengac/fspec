@@ -5,11 +5,10 @@
 //!
 //! RPC-048 widens this module with the `/thinking <level>` inline-arg
 //! branch — bare `/thinking` still opens the ThinkingLevelDialog
-//! (RPC-022), but `/thinking off|low|med|medium|high` now resolves to
-//! `SetThinkingLevel(level)` and `/thinking <other>` to
-//! `InvalidThinkingLevel(other)` so the dispatcher can dispatch the
-//! backend write OR emit `[error] unknown thinking level: {other}`
-//! without round-tripping through the picker dialog.
+//! (RPC-022), `/thinking default` clears the level (BUG-455), and
+//! MODEL-011 hands any other argument to the dispatcher as
+//! `ThinkingCommand(arg)`, which resolves it against the levels the
+//! session's model offers, without round-tripping through the dialog.
 
 use codelet_rpc_types::ThinkingLevel;
 
@@ -30,16 +29,13 @@ pub enum SlashCommandParse {
     OpenModelDialog,
     /// `/thinking` (bare) — open the ThinkingLevelDialog.
     OpenThinkingDialog,
-    /// `/thinking <off|low|med|medium|high>` — set the per-session
-    /// thinking level inline without opening the picker dialog.
-    /// RPC-048 — mirrors the TS `AgentView.tsx` slash branch.
+    /// `/thinking default` — clear the per-session thinking level
+    /// (BUG-455) inline without opening the picker dialog (RPC-048).
     SetThinkingLevel(ThinkingLevel),
-    /// `/thinking <other>` — the dispatcher emits
-    /// `[error] unknown thinking level: {other}` into the focused
-    /// session's scrollback. The captured arg is lowercased + trimmed
-    /// so the error notice is stable regardless of how the user typed.
-    /// RPC-048.
-    InvalidThinkingLevel(String),
+    /// MODEL-011: `/thinking <arg>` — the dispatcher resolves the
+    /// (trimmed, lowercased) argument against the levels the session's
+    /// model offers and sets it, or shows the refusal naming the levels.
+    ThinkingCommand(String),
     /// `/role` or `/role ` (bare or trailing-space empty arg) — open
     /// the RoleDialog. RPC-063: previously `ClearRole`; users must now
     /// type `/role clear` (or press Ctrl+D inside the dialog) to clear.
@@ -94,9 +90,8 @@ pub enum SlashCommandParse {
 /// Trimming rules:
 ///   - "/model" → `OpenModelDialog`
 ///   - "/thinking" → `OpenThinkingDialog`
-///   - "/thinking off|low|med|medium|high" (case-insensitive) →
-///     `SetThinkingLevel(ThinkingLevel)`
-///   - "/thinking <anything-else>" → `InvalidThinkingLevel(lowercased)`
+///   - "/thinking default" (case-insensitive) → `SetThinkingLevel(ModelDefault)`
+///   - "/thinking <anything-else>" → `ThinkingCommand(lowercased)` (MODEL-011)
 ///   - "/role" (bare) → `OpenRoleDialog`
 ///   - "/role clear" (any case after trimming) → `ClearRole`
 ///   - "/role <text>" → `SetRole(text.trim())`
@@ -124,14 +119,13 @@ pub fn parse_slash_command(text: &str) -> SlashCommandParse {
         if arg.is_empty() {
             return SlashCommandParse::OpenThinkingDialog;
         }
-        let level = match arg.as_str() {
-            "off" => ThinkingLevel::Off,
-            "low" => ThinkingLevel::Low,
-            "med" | "medium" => ThinkingLevel::Medium,
-            "high" => ThinkingLevel::High,
-            _ => return SlashCommandParse::InvalidThinkingLevel(arg),
-        };
-        return SlashCommandParse::SetThinkingLevel(level);
+        // BUG-455: clear the session's level.
+        if arg == "default" {
+            return SlashCommandParse::SetThinkingLevel(ThinkingLevel::ModelDefault);
+        }
+        // MODEL-011: any other argument is resolved against the levels the
+        // session's model offers (the parser cannot know them).
+        return SlashCommandParse::ThinkingCommand(arg);
     }
     if trimmed == "/role" {
         return SlashCommandParse::OpenRoleDialog;

@@ -52,6 +52,7 @@ pub fn warm_invalidation() -> TestResult {
 
 pub fn recovery_scaling() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let session = create_session("streamed scaling", directory.path())?;

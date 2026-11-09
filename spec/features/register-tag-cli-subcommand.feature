@@ -1,5 +1,7 @@
 @done
 @RPC-265
+@cli
+@tag-management
 Feature: register-tag CLI subcommand (Rust shell front-door)
   """
   Files: rust/fspec/src/register_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_register_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/register-tag.txt (captured help fixture from `node dist/index.js register-tag --help`)

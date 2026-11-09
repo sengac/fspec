@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "92-127",
+          "lines": "97-134",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
@@ -26,10 +26,6 @@
                 80,
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
                 87,
                 88,
                 89,
@@ -111,8 +107,13 @@
                 165,
                 166,
                 167,
-                168
-              ]
+                168,
+                169,
+                170,
+                171
+              ],
+              "firstLine": "description: Option<String>,",
+              "lastLine": "// `undefined`, and `JSON.stringify` OMITS keys whose value is `undefined`"
             }
           ]
         }
@@ -123,39 +124,40 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "129-164",
+          "lines": "136-171",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ],
+              "firstLine": "// The TS object literal sets `id: data.eventStorm.nextItemId` then does",
+              "lastLine": "}"
             }
           ]
         }
@@ -166,15 +168,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "166-191",
+          "lines": "173-198",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
-                137,
-                138,
-                139
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "// TS uses `...(options.description && { description })`. Because `&&`",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,10 +199,17 @@
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
-                137,
-                138,
-                139
-              ]
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ],
+              "firstLine": "// TS uses `...(options.description && { description })`. Because `&&`",
+              "lastLine": "}"
             }
           ]
         }
@@ -204,17 +220,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "219-242",
+          "lines": "226-249",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
                 87,
                 88,
                 89,
@@ -229,8 +241,13 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// projectType \"other\", impact \"medium\"), so when the file is missing it",
+              "lastLine": "return Err(FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -241,17 +258,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "244-273",
+          "lines": "251-280",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
                 87,
                 88,
                 89,
@@ -266,8 +279,13 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// projectType \"other\", impact \"medium\"), so when the file is missing it",
+              "lastLine": "return Err(FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -278,12 +296,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "275-304",
+          "lines": "282-311",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
-                77,
                 78,
                 79,
                 80,
@@ -294,21 +311,21 @@
                 85,
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ],
+              "firstLine": "// Load-or-init foundation.json. The TS helper reads via",
+              "lastLine": "};"
             }
           ]
         }
@@ -319,17 +336,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "306-330",
+          "lines": "313-337",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
                 81,
                 82,
-                83,
-                84,
-                85,
-                86,
                 87,
                 88,
                 89,
@@ -344,8 +357,13 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// projectType \"other\", impact \"medium\"), so when the file is missing it",
+              "lastLine": "return Err(FspecCoreError::InvalidArgs {"
             }
           ]
         }
@@ -356,16 +374,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "332-355",
+          "lines": "339-362",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
               "lines": [
-                153,
-                154,
-                155,
-                156
-              ]
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "let es_entry = root_obj",
+              "lastLine": "if !es_entry.is_object() {"
             }
           ]
         }
@@ -376,7 +396,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_aggregate_to_foundation.rs",
-          "lines": "357-375",
+          "lines": "364-384",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs",
@@ -387,7 +407,9 @@
                 70,
                 71,
                 72
-              ]
+              ],
+              "firstLine": "description: Option<String>,",
+              "lastLine": "let args: AddAggregateArgs ="
             }
           ]
         }
@@ -404,6 +426,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_aggregate_to_foundation.rs"
     ],
-    "totalLinesCovered": 508
+    "totalLinesCovered": 514
   }
 }

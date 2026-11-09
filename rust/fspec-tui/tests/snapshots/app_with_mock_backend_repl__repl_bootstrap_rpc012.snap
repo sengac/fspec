@@ -1,12 +1,13 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend_repl.rs
+assertion_line: 83
 expression: rows
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- "│   v0.10.9    [ Kanban ] [ Tools ] [ Settings ] [ Help ]       [ New Agent ]  │"
+- "│   v0.11.0    [ Kanban ] [ Tools ] [ Settings ] [ Help ]       [ New Agent ]  │"
 - ├──────────────────────────────────────────────────────────────────────────────┤
 - │                                                                              │
 - │                                                                              │
@@ -22,7 +23,7 @@ expression: rows
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
-- │           │           │          │          │          │          │          │
 - ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
-- "│← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Pri│"
+- "│  ← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ]  │"
+- │                     Priority Down ◆ ↵ Choose ◆ ESC Exit                      │
 - └──────────────────────────────────────────────────────────────────────────────┘

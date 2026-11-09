@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-258
 @cli
@@ -94,10 +95,10 @@ Feature: Port query-estimate-accuracy command to Rust
     And the byPrefix entry for 'AUTH' has avgAccuracy='3.0 avg iterations' and recommendation='2 samples'
     And the byPrefix entry for 'SEC' has avgAccuracy='3.0 avg iterations' and recommendation='1 sample'
 
-  Scenario: byStoryPoints key iteration order follows first-encounter insertion order
+  Scenario: byStoryPoints key iteration order follows ascending numeric order
     Given spec/work-units.json contains the done work units ZED-001 (estimate=5 iterations=1), AAA-001 (estimate=1 iterations=1), MID-001 (estimate=3 iterations=1) registered in that order
     When I dispatch query-estimate-accuracy with format='json' and no workUnitId
-    Then the byStoryPoints keys appear in the order '5', '1', '3' in the serialized payload
+    Then the byStoryPoints keys appear in ascending numeric order '1', '3', '5' in the serialized payload
 
   Scenario: JSON dispatcher payload is pretty-printed with 2-space indent and canonical field order
     Given spec/work-units.json contains the done work unit AUTH-001 (estimate=5 iterations=2)

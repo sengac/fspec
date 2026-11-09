@@ -140,18 +140,20 @@
                 157,
                 158,
                 159
-              ]
+              ],
+              "firstLine": ") -> ProviderSettingsEvent {",
+              "lastLine": "view.move_clamped(delta);"
             }
           ]
         }
       ]
     },
     {
-      "name": "list.rs handle_list_key has no PageUp/PageDown/Home/End jump-key arms",
+      "name": "list.rs handle_list_key binds PageUp/PageDown/Home/End (RPC-353)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
-          "lines": "117-139",
+          "lines": "117-155",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -286,7 +288,9 @@
                 157,
                 158,
                 159
-              ]
+              ],
+              "firstLine": ") -> ProviderSettingsEvent {",
+              "lastLine": "view.move_clamped(delta);"
             }
           ]
         }
@@ -297,7 +301,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
-          "lines": "141-167",
+          "lines": "156-181",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -313,7 +317,9 @@
                 252,
                 253,
                 254
-              ]
+              ],
+              "firstLine": "self.filter.clear();",
+              "lastLine": "&mut self.scroll_offset,"
             }
           ]
         }
@@ -324,7 +330,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc149_list_mode_keybinds_shape.rs",
-          "lines": "169-201",
+          "lines": "183-232",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -459,7 +465,9 @@
                 157,
                 158,
                 159
-              ]
+              ],
+              "firstLine": ") -> ProviderSettingsEvent {",
+              "lastLine": "view.move_clamped(delta);"
             }
           ]
         }
@@ -477,6 +485,6 @@
       "rust/fspec-tui/src/views/provider_settings/list.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 504
+    "totalLinesCovered": 536
   }
 }

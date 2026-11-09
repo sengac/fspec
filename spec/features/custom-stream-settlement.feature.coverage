@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "35-41",
+          "lines": "37-43",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -261,7 +261,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -505,7 +507,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -626,7 +630,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -637,7 +643,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "43-49",
+          "lines": "45-51",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -893,7 +899,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -1137,7 +1145,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -1258,7 +1268,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -1269,7 +1281,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "51-72",
+          "lines": "53-74",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -1525,7 +1537,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -1769,7 +1783,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -1890,7 +1906,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -1901,7 +1919,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "74-91",
+          "lines": "76-93",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -2157,7 +2175,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -2401,7 +2421,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -2522,7 +2544,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -2533,7 +2557,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "93-113",
+          "lines": "95-116",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -2789,7 +2813,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -3033,7 +3059,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -3154,7 +3182,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -3165,7 +3195,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/bug266_custom_stream_settlement.rs",
-          "lines": "115-121",
+          "lines": "118-124",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
@@ -3421,7 +3451,9 @@
                 249,
                 250,
                 251
-              ]
+              ],
+              "firstLine": "//! Streaming SSE bridge for the Rhai custom provider (PROV-064).",
+              "lastLine": "pub use super::stream_http::open_stream;"
             },
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -3665,7 +3697,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "//! Rhai `Dynamic` → `Vec<StreamChunk>` conversion for the streaming",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/custom/rig_streaming.rs",
@@ -3786,7 +3820,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "use super::{",
+              "lastLine": "}"
             }
           ]
         }
@@ -3805,6 +3841,6 @@
       "rust/providers/src/custom/stream_convert.rs",
       "rust/providers/src/custom/rig_streaming.rs"
     ],
-    "totalLinesCovered": 3718
+    "totalLinesCovered": 3719
   }
 }

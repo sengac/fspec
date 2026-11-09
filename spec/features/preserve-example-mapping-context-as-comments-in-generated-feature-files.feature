@@ -7,19 +7,11 @@
 Feature: Preserve example mapping context as comments in generated feature files
   """
   Architecture notes:
-  - Gherkin parser (@cucumber/gherkin) captures comments in ast.comments array
-  - Current formatter (gherkin-formatter.ts) ignores ast.comments field - MUST be enhanced
-  - Comments use # syntax (Gherkin standard), doc strings use triple quotes (for architecture)
-  - Example mapping data (rules, examples, questions, assumptions) embedded as # comments
-  - System-reminders guide AI to write scenarios based on embedded examples
-  - Comments persist through all format/edit cycles (living documentation)
-
-  Critical implementation requirements:
-  - MUST enhance formatGherkinDocument() to preserve ast.comments
-  - MUST generate context-only feature files (comments + Background, NO scenarios initially)
-  - MUST emit system-reminder instructing AI to write scenarios
-  - MUST NOT conflict with add-architecture (doc strings) or add-background commands
-  - Generated feature files MUST contain zero scenarios (AI writes them later)
+  - generate-scenarios (rust/fspec-core/src/commands/generate_scenarios.rs) writes a context-only file: tags, Feature line, architecture doc string, the bordered # EXAMPLE MAPPING CONTEXT comment block (BUSINESS RULES, EXAMPLES, QUESTIONS (ANSWERED), ASSUMPTIONS) and the Background with the user story; no scenarios
+  - The user story appears only in the Background, never in the comments (FEAT-012 separation)
+  - Comments use # syntax (Gherkin standard); architecture notes stay in the doc string, so add-architecture and the comment block never overwrite each other
+  - One consolidated system-reminder tells the AI to write scenarios from the # EXAMPLES section with the Edit tool, plus the prefill reminder when the Background still holds placeholders
+  - The gherkin crate's parser drops comments, so the formatter (rust/fspec-core/src/io/gherkin_format.rs extract_comments / insert_comments_before) re-extracts them from the raw source and writes each one back before the element it preceded; add-scenario and add-background keep the block
   """
 
   Background: User Story
@@ -62,47 +54,32 @@ Feature: Preserve example mapping context as comments in generated feature files
 
   Scenario: System-reminder guides AI to write scenarios from examples
     Given I generate scenarios for a work unit
-    And the feature file contains "# EXAMPLES: 1. User logs in with valid creds"
+    And the feature file lists "1. User logs in with valid creds" under "# EXAMPLES:"
     When the command completes
     Then a system-reminder should be emitted
-    And the reminder should say "write scenarios based on # EXAMPLES section"
+    And the reminder should say "Write scenarios based on # EXAMPLES section"
     And the reminder should list all examples found
     And the reminder should instruct using Edit tool
-
-  Scenario: Business rules in comments inform scenario preconditions
-    Given a feature file has "# BUSINESS RULES: Passwords must be 8+ chars"
-    When an AI agent reads the file to write scenarios
-    Then the agent should reference the rule in Given steps
-    And scenarios should validate the 8+ character requirement
 
   Scenario: Answered questions preserved in comments
     Given I answer question during example mapping
     And the answer says "OAuth support deferred to Phase 2"
     When I generate scenarios from the work unit
     Then the feature file should contain "# QUESTIONS (ANSWERED):" section
-    And the section should show "Q: OAuth support? A: Phase 2"
-    And developers reading the file understand deferred decisions
+    And the section should show "Q: OAuth support?" followed by "A: OAuth support deferred to Phase 2"
 
   Scenario: Assumptions documented in comments
     Given I add assumption "email verification handled by external service"
     When I generate scenarios from the work unit
     Then the feature file should contain "# ASSUMPTIONS:" section
     And the section should list the email verification assumption
-    And AI agents know not to write scenarios for email verification
+    And the scenario-generation reminder says "Check # ASSUMPTIONS to know what NOT to test"
 
   Scenario: Comment block has visual borders for easy identification
     Given I generate scenarios from a work unit
     When I view the generated feature file
     Then the comment block should have "# ===" separator lines at top and bottom
-    And the block should be visually distinct when scrolling
-
-  Scenario: Multiple examples converted to separate scenarios
-    Given a work unit has 3 examples in example mapping
-    And the examples describe different behaviors
-    When an AI agent writes scenarios based on the comments
-    Then the agent can create 3 separate scenarios
-    And the agent can combine related examples into single scenario
-    And the agent decides based on semantic similarity
+    And the block starts with "# EXAMPLE MAPPING CONTEXT" between the first two separator lines
 
   Scenario: Add-scenario command preserves example mapping comments
     Given a feature file has # example mapping comments at the top
@@ -118,26 +95,12 @@ Feature: Preserve example mapping context as comments in generated feature files
     And the # comments above Background should remain intact
     And no comments should be lost
 
-  Scenario: Gherkin parser captures comments in AST
-    Given I have a feature file with # comment lines
-    When the file is parsed by @cucumber/gherkin parser
-    Then the AST should contain ast.comments array
-    And each comment should have line number and text
-    And comments are not stripped during parsing
-
-  Scenario: Formatter outputs comments from AST to correct positions
-    Given I have a Gherkin AST with comments in ast.comments
-    When formatGherkinDocument() is called
+  Scenario: Formatter puts comments back at their original positions
+    Given I have a feature file with comments before the Feature keyword, a Scenario and a step
+    When the formatter formats it
     Then the formatted output should include all comments
-    And comments should be inserted at their original line positions
+    And an indented comment keeps its indentation
     And comments should appear before the elements they precede
-
-  Scenario: Empty example map creates minimal comment block
-    Given a work unit has no rules, examples, or questions
-    When I run "fspec generate-scenarios" on it
-    Then the feature file should contain a comment block
-    And the block should say "# No example mapping data captured"
-    And the file should still contain Background section
 
   Scenario: Prefill detection still works after adding comments
     Given I generate scenarios without setting user story
@@ -147,34 +110,11 @@ Feature: Preserve example mapping context as comments in generated feature files
     And the reminder should suggest "fspec set-user-story" command
     And the prefill reminder should coexist with scenario generation reminder
 
-  Scenario: Git diffs show example mapping context
-    Given a feature file with # example mapping comments
-    When a developer reviews a PR containing the file
-    Then the git diff should show the # comment block
-    And the developer understands why scenarios exist
-    And the developer sees business rules and examples
-    And the context aids code review
-
-  Scenario: Existing comments are preserved when adding example mapping
-    Given a feature file already has some # comments
-    When I generate scenarios and add example mapping comments
-    Then both the old comments and new comments should exist
-    And the example mapping comment block should be clearly separated
-    And no existing comments should be overwritten
-
   Scenario: Zero scenarios means file incomplete - system reminder triggered
     Given I generate scenarios from a work unit
     And the generated file has # comments + Background
     But the file has zero Scenario blocks
     When the command completes
     Then a system-reminder should be emitted
-    And the reminder should say "now write scenarios"
+    And the reminder should say "ZERO scenarios (AI must write them)"
     And the reminder should reference the # EXAMPLES section
-
-  Scenario: AI uses Edit tool with full context visible
-    Given a feature file with "# EXAMPLES: 1. User logs in with valid creds"
-    When an AI agent opens the file
-    Then the agent can see the full example mapping context
-    And the agent can write "Scenario: User logs in with valid credentials"
-    And the agent can write proper Given/When/Then steps
-    And the agent uses Edit tool to add scenarios directly

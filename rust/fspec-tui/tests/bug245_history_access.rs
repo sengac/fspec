@@ -6,6 +6,7 @@ pub mod support;
 #[path = "bug244/app_support.rs"]
 mod app_support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
 use app_support::drain;
 use codelet_fspec_tui::{Action, App};
 use codelet_rpc_types::{StreamChunk, ToolCallInfo, ToolResultInfo};
@@ -14,6 +15,11 @@ use support::{Fixture, TestResult};
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn original_events_remain_inspectable_outside_the_resident_scrollback() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a real session containing original text and complete tool content
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -41,7 +47,7 @@ async fn original_events_remain_inspectable_outside_the_resident_scrollback() ->
     for backend in [embedded, websocket] {
         let mut app = App::new(backend);
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(&mut app).await;
+        drain(&mut app).await?;
         let context = app
             .agent_view_store_mut()
             .session_context_mut_for(&fixture.id)
@@ -56,8 +62,10 @@ async fn original_events_remain_inspectable_outside_the_resident_scrollback() ->
             .any(|line| line.to_string().contains("/archive")));
         let before = background.get_buffered_output(usize::MAX).len();
         // @step When the TUI inspects an original event using its archive command through either transport
-        app.dispatch(Action::InputSubmitted("/archive 1".into()));
-        drain(&mut app).await;
+        if let Some(session) = app.current_session() {
+            app.dispatch(Action::InputSubmitted(session, "/archive 1".into()));
+        }
+        drain(&mut app).await?;
         let context = app
             .agent_view_store()
             .session_context_for(&fixture.id)
@@ -93,6 +101,11 @@ async fn original_events_remain_inspectable_outside_the_resident_scrollback() ->
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn archive_inspection_rejects_replacement_source_generations() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a hydrated tab whose backend transcript has been replaced without a reset notification
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -102,14 +115,16 @@ async fn archive_inspection_rejects_replacement_source_generations() -> TestResu
     let mut apps = [App::new(embedded), App::new(websocket)];
     for app in &mut apps {
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(app).await;
+        drain(app).await?;
     }
     tokio::task::block_in_place(|| background.clear_history())?;
     background.handle_output(StreamChunk::text("replacement generation payload".into()));
     for app in &mut apps {
         // @step When the user inspects an event from the displayed archive
-        app.dispatch(Action::InputSubmitted("/archive 0".into()));
-        drain(app).await;
+        if let Some(session) = app.current_session() {
+            app.dispatch(Action::InputSubmitted(session, "/archive 0".into()));
+        }
+        drain(app).await?;
         // @step Then a visible archive generation failure preserves the displayed history without presenting replacement content
         let text = app_support::rendered(app, &fixture.id)?;
         assert!(text.contains("Archive incomplete"), "{text}");

@@ -1,4 +1,6 @@
 @SCHED-013
+@scheduler
+@spawn
 Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
   """
   Uses tokio::spawn per entry — LoopStore becomes active task manager not passive data store

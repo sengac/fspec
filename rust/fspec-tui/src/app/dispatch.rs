@@ -19,8 +19,11 @@ impl App {
             Action::Quit => {
                 self.should_quit = true;
             }
-            Action::InputSubmitted(text) => {
-                self.handle_input_submitted(text.clone());
+            Action::InputSubmitted(session, text) => {
+                self.handle_input_submitted(session.clone(), text.clone());
+            }
+            Action::InputQueued(session, text) => {
+                self.handle_input_queued(session.clone(), text.clone());
             }
             Action::Interrupt => self.handle_interrupt(),
             Action::ChunkReceived(id, chunk) => self.handle_chunk_received(id, chunk),
@@ -36,9 +39,6 @@ impl App {
             Action::Reconnecting(n) => {
                 // RPC-416: update the inline notice in place.
                 self.handle_reconnecting(*n);
-            }
-            Action::ManualReconnect => {
-                self.backend.request_manual_reconnect();
             }
             Action::Reconnected => {
                 // RPC-415: respawn subscriber tasks bound to the new client +
@@ -56,13 +56,9 @@ impl App {
                 // COMPACTED badge iff the seq still matches (seq-guard).
                 self.handle_clear_compaction_reduction(session_id, *seq);
             }
-            Action::WorkUnitsLoaded(units) => {
-                self.board_store.replace_work_units(units.clone());
-                // BUG-180: project the fresh snapshot onto the per-session
-                // WorkUnitContext bindings (+ legacy fallback slots) so the
-                // SessionHeader chip tracks the LIVE status.
-                self.agent_view_store.sync_work_unit_contexts(units);
-            }
+            // RPC-445: dropped while another workspace is selected
+            // (body in app/dispatch_workspaces.rs).
+            Action::WorkUnitsLoaded(units) => self.handle_start_work_units_loaded(units),
             Action::CheckpointCountsLoaded(counts) => {
                 // RPC-015: bootstrap delivered fresh checkpoint counts;
                 // store them so the BoardView header repaints with the
@@ -72,7 +68,9 @@ impl App {
             Action::GitStateChanged(state) => {
                 // BUG-182: the ONE centralized git poll frame — body in
                 // app/dispatch_git_state.rs (R3 single-writer paths + R4 re-fetch).
-                self.handle_git_state_changed(state);
+                // RPC-454: the start workspace's frames apply only while it
+                // is selected.
+                self.handle_start_git_state_changed(state);
             }
             Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),
             Action::OpenAgentView(target) => {
@@ -101,12 +99,6 @@ impl App {
                     self.navigator.active_view = ViewMode::Board;
                 }
             }
-            Action::NavigationTargetSet(target) => {
-                self.agent_view_store.set_navigation_target(target.clone());
-            }
-            Action::AttachSession(work_unit_id, session) => {
-                self.handle_legacy_session_attachment(work_unit_id, session);
-            }
             Action::SessionCreated(session) => {
                 self.handle_session_created(session.clone());
             }
@@ -120,13 +112,6 @@ impl App {
                 // idempotent per-session local reset (R3).
                 self.handle_session_cleared(session.clone());
             }
-            Action::SessionCreationDeclined => {
-                // PROV-101 FIX 1: create_session declined (no default model).
-                // Surface it explicitly instead of swallowing an empty id.
-                self.handle_session_creation_declined();
-            }
-            Action::FocusPrevColumn => self.board_store.focus_prev_column(),
-            Action::FocusNextColumn => self.board_store.focus_next_column(),
             Action::SelectNext => {
                 // RPC-016: auto-scrolling arrow nav.
                 let vh = self.navigator.board.last_viewport_height();
@@ -156,31 +141,8 @@ impl App {
                 let vh = self.navigator.board.last_viewport_height();
                 self.board_store.select_index_in_focused(*idx, vh);
             }
-            Action::ReEnableMouseTracking(_owner) => {
-                // RPC-023 scaffolding: no toggle registry yet.
-            }
-            Action::ReorderUp => {
-                if let Some(unit) = self.board_store.selected_work_unit() {
-                    let id = unit.id.clone();
-                    let backend = self.backend.clone();
-                    tokio::spawn(async move {
-                        if let Err(err) = backend.move_work_unit_up(id).await {
-                            tracing::debug!("move_work_unit_up failed: {err}");
-                        }
-                    });
-                }
-            }
-            Action::ReorderDown => {
-                if let Some(unit) = self.board_store.selected_work_unit() {
-                    let id = unit.id.clone();
-                    let backend = self.backend.clone();
-                    tokio::spawn(async move {
-                        if let Err(err) = backend.move_work_unit_down(id).await {
-                            tracing::debug!("move_work_unit_down failed: {err}");
-                        }
-                    });
-                }
-            }
+            Action::ReorderUp => self.handle_reorder(super::dispatch_reorder::Reorder::Up),
+            Action::ReorderDown => self.handle_reorder(super::dispatch_reorder::Reorder::Down),
             Action::ModelInfoLoaded(session_id, info) => {
                 // RPC-018: cache ModelInfo for the SessionHeader.
                 self.agent_view_store
@@ -188,17 +150,16 @@ impl App {
             }
             Action::ThinkingLevelLoaded(session_id, level) => {
                 self.agent_view_store
-                    .set_thinking_level(session_id.clone(), *level);
+                    .set_thinking_level(session_id.clone(), level.clone());
             }
             Action::WorkspaceInfoLoaded(info) => {
                 // RPC-018: cache workspace for the SessionFooter.
                 self.agent_view_store.set_workspace(Some(info.clone()));
             }
-            Action::SlashCommandSelected(slash_action) => {
-                // RPC-020: route the user's slash command pick — Help /
-                // Clear / Quit are wired live; everything else surfaces
-                // a `[notice]` scrollback line.
-                self.handle_slash_command(*slash_action);
+            Action::SlashCommandSelected(session, slash_action) => {
+                // RPC-020: route the user's slash command pick; BUG-560:
+                // only while the session it was picked in is focused.
+                self.handle_slash_command_pick(session.clone(), *slash_action);
             }
             Action::SearchFiles(prefix) => {
                 // RPC-020: kick off a backend file search; the result
@@ -240,6 +201,11 @@ impl App {
                     ctx.scrollback.jump_to_top();
                 }
             }
+            Action::ScrollbackEnd => {
+                if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+                    ctx.scrollback.jump_to_bottom();
+                }
+            }
             Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
             Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
             // TUI-102: scrollbar click/drag jumps to the computed offset and exits stick mode.
@@ -252,6 +218,7 @@ impl App {
             Action::SelectionBeginLine(cell) => self.handle_selection_begin_line(*cell),
             Action::SelectionExtend(cell) => self.handle_selection_extend(*cell),
             Action::SelectionCommit => self.handle_selection_commit(),
+            Action::CopySelectedTurn => self.handle_copy_selected_turn(),
             Action::SelectionClear => self.handle_selection_clear(),
             Action::CopyToClipboard(text) => self.handle_copy_to_clipboard(text.clone()),
             Action::HistoryPrev => self.handle_history_prev(),
@@ -260,7 +227,6 @@ impl App {
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
             // RPC-026 /resume + /search wiring → helpers in app/dispatch_resume_search_views.rs.
-            Action::OpenResumeView => self.handle_open_resume_view(),
             Action::CloseResumeView => self.handle_close_resume_view(),
             Action::OpenSearchView => self.handle_open_search_view(),
             Action::CloseSearchView => self.handle_close_search_view(),
@@ -275,12 +241,10 @@ impl App {
                 self.handle_history_search_results(query.clone(), matches.clone())
             }
             Action::InsertIntoInput(t) => self.handle_insert_into_input(t.clone()),
-            Action::RequestDeleteSession(id) => self.handle_request_delete_session(id.clone()),
             Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
             Action::EmitSessionNotice(sid, text) => {
                 self.handle_emit_session_notice(sid, text.clone())
             }
-            Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
             Action::DebugEnabledLoaded(session_id, enabled) => {
                 // RPC-430: fold debug state from backend hydration into the store.
                 self.agent_view_store

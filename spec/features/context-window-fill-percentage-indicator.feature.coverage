@@ -6,23 +6,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "267-288",
-          "implMappings": [
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                129,
-                130,
-                131,
-                132
-              ]
-            },
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                1112
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -32,31 +16,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "290-320",
-          "implMappings": [
-            {
-              "file": "src/tui/utils/sessionHeaderUtils.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
-            },
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -66,31 +26,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "322-351",
-          "implMappings": [
-            {
-              "file": "src/tui/utils/sessionHeaderUtils.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
-            },
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -100,31 +36,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "353-382",
-          "implMappings": [
-            {
-              "file": "src/tui/utils/sessionHeaderUtils.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
-            },
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -134,31 +46,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "384-413",
-          "implMappings": [
-            {
-              "file": "src/tui/utils/sessionHeaderUtils.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
-            },
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -168,38 +56,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "443-478",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                1159,
-                1160,
-                1161,
-                1162,
-                1163,
-                1164,
-                1165,
-                1166,
-                1167,
-                1168,
-                1169,
-                1170,
-                1171,
-                1172,
-                1173,
-                1174,
-                1175,
-                1176,
-                1177,
-                1178,
-                1179,
-                1180,
-                1181,
-                1182,
-                1183
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -209,26 +66,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "480-525",
-          "implMappings": [
-            {
-              "file": "src/tui/components/SessionHeader.tsx",
-              "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -238,62 +76,7 @@
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
           "lines": "415-441",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137
-              ]
-            },
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                1159,
-                1160,
-                1161,
-                1162,
-                1163,
-                1164,
-                1165,
-                1166,
-                1167,
-                1168,
-                1169,
-                1170,
-                1171,
-                1172,
-                1173,
-                1174,
-                1175,
-                1176,
-                1177,
-                1178,
-                1179,
-                1180,
-                1181,
-                1182,
-                1183
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -305,12 +88,7 @@
     "testFiles": [
       "src/tui/__tests__/context-window-fill-percentage.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/SessionHeader.tsx",
-      "src/tui/components/AgentView.tsx",
-      "src/tui/utils/sessionHeaderUtils.ts",
-      "rust/cli/src/interactive/stream_loop.rs"
-    ],
-    "totalLinesCovered": 391
+    "implFiles": [],
+    "totalLinesCovered": 252
   }
 }

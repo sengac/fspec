@@ -1,3 +1,4 @@
+use crate::common::TaskOutcome;
 use codelet_fspec_tui::App;
 use codelet_rpc_types::SessionId;
 
@@ -15,14 +16,15 @@ pub fn rendered(app: &App, id: &SessionId) -> Result<String, Box<dyn std::error:
         .join("\n"))
 }
 
-pub async fn drain(app: &mut App) {
+pub async fn drain(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     loop {
         while let Some(task) = app.next_pending_task() {
-            let _ = task.await;
+            task.await.completed_or_cancelled()?;
         }
         let Some(action) = app.try_recv_action() else {
             break;
         };
         app.dispatch(action);
     }
+    Ok(())
 }

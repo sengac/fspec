@@ -8,6 +8,9 @@
 //! helpers + the pane-scrollbar gutter (shown only on overflow) from
 //! `crate::views::diff_common` (RPC-363). Uses the full-screen shell
 //! scaffold (RPC-337) for the title + footer chrome.
+//!
+//! TUI-131: the Diff pane is the shared `diff_common::render_diff_pane`
+//! (diff lines wrapped to the pane, scrolled in wrapped rows).
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -19,14 +22,15 @@ use crate::components::checkpoint_restore_dialog::render_restore_modal;
 use crate::components::loading_dialog::render_loading_dialog;
 use crate::sanitize_for_terminal;
 use crate::views::diff_common::{
-    diff_line, file_row, pane_header, render_pane_scrollbar, render_vertical_divider,
+    file_row, max_diff_scroll, pane_header, render_diff_pane, render_pane_scrollbar,
+    render_vertical_divider,
 };
 use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
 use super::{CheckpointsView, Pane};
 
 const FOOTER_HINT: &str =
-    "ESC: Back | Tab/→: Next Pane | ←: Prev Pane | ↑↓: Navigate/Scroll | r: Restore File | t: Restore All | d: Delete | a: Delete All";
+    "ESC: Back | Tab/→: Next Pane | ←: Prev Pane | ↑↓: Navigate/Scroll | r: Restore File | t: Restore All | d: Delete | a: Delete All | c: Copy Name";
 const EMPTY_MESSAGE: &str = "No checkpoints available";
 
 impl CheckpointsView {
@@ -100,7 +104,13 @@ impl CheckpointsView {
                     render_files_pane(top[2], buf, &files, selected_file, file_scroll, focused);
                 files_rect = Some(fr);
                 files_sb_rect = fsb;
-                let (dr, dsb) = render_diff_pane(rows[1], buf, &diff_lines, diff_scroll, focused);
+                let (dr, dsb) = render_diff_pane(
+                    rows[1],
+                    buf,
+                    &diff_lines,
+                    diff_scroll,
+                    focused == Pane::Diff,
+                );
                 diff_rect = Some(dr);
                 diff_sb_rect = dsb;
             },
@@ -115,6 +125,12 @@ impl CheckpointsView {
         self.last_cp_sb_rect = cp_sb_rect;
         self.last_files_sb_rect = files_sb_rect;
         self.last_diff_sb_rect = diff_sb_rect;
+        // TUI-131: the offset counts wrapped rows; keep it on the last page.
+        if diff_rect.is_some() {
+            self.diff_scroll = self
+                .diff_scroll
+                .min(max_diff_scroll(&self.diff_lines, diff_rect));
+        }
         // RPC-365: paint the restore confirmation/status modal over the
         // panes when active so it captures focus visually too.
         if let Some(dialog) = self.dialog() {
@@ -194,7 +210,9 @@ fn checkpoint_line(
     // Sanitize before truncating so control chars are removed from width calc.
     let sanitized = sanitize_for_terminal(&label);
     let avail = width.saturating_sub(2);
-    let text = crate::views::diff_common::truncate_path(&sanitized, avail);
+    // A label is a name, not a path: it keeps its start (TUI-131 keeps
+    // the file name only for paths).
+    let text = crate::components::menu_bar::dropdown_text::truncate(&sanitized, avail);
     Line::from(vec![
         Span::styled(format!("{cursor} "), style),
         Span::styled(text, style),
@@ -237,47 +255,6 @@ fn render_files_pane(
             height: content.height,
         };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
-        Some(sb)
-    } else {
-        None
-    };
-    (content, sb_rect)
-}
-
-fn render_diff_pane(
-    area: Rect,
-    buf: &mut Buffer,
-    diff_lines: &[String],
-    scroll: usize,
-    focused: Pane,
-) -> (Rect, Option<Rect>) {
-    let content = pane_header(area, buf, "Diff", focused == Pane::Diff);
-    let visible = content.height as usize;
-    let overflow = diff_lines.len() > visible;
-    let list_width = if overflow {
-        content.width.saturating_sub(1)
-    } else {
-        content.width
-    };
-    let lines: Vec<Line<'_>> = diff_lines
-        .iter()
-        .skip(scroll)
-        .take(visible)
-        .map(|l| diff_line(l))
-        .collect();
-    let list_area = Rect {
-        width: list_width,
-        ..content
-    };
-    Paragraph::new(lines).render(list_area, buf);
-    let sb_rect = if overflow {
-        let sb = Rect {
-            x: content.x + list_width,
-            y: content.y,
-            width: 1,
-            height: content.height,
-        };
-        render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
         Some(sb)
     } else {
         None

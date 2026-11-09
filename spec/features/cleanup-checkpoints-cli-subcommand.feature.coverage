@@ -84,7 +84,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -174,7 +176,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -264,7 +268,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -354,7 +360,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -444,7 +452,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -534,92 +544,9 @@
                 72,
                 73,
                 74
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
-          "lines": "208-251",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/cleanup_checkpoints.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` shell-facing CLI bridge (RPC-203).",
+              "lastLine": "// `output.error('✗ Failed to cleanup checkpoints: ...')` fires"
             }
           ]
         }
@@ -630,7 +557,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_cleanup_checkpoints.rs",
-          "lines": "253-282",
+          "lines": "264-299",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/cleanup_checkpoints.rs",
@@ -675,7 +602,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "//! `cleanup-checkpoints` help configuration — Rust port of",
+              "lastLine": "command: \"fspec cleanup-checkpoints BUG-003 --keep-last 10\","
             }
           ]
         }
@@ -693,6 +622,6 @@
       "rust/fspec/src/cleanup_checkpoints.rs",
       "rust/fspec-core/src/help/configs/cleanup_checkpoints.rs"
     ],
-    "totalLinesCovered": 779
+    "totalLinesCovered": 667
   }
 }

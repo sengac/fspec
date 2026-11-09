@@ -53,7 +53,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: wrap_failure(&format!("failed to parse args: {e}")),
         })?;
 
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
 
     // Read raw bytes — query-work-units does NOT auto-create the file (TS
     // parity: src/commands/query-work-units.ts:55-57 uses readFile directly

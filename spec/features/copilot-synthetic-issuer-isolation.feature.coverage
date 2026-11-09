@@ -10,7 +10,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -132,7 +131,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -148,7 +149,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -270,7 +270,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -286,7 +288,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -408,7 +409,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -424,7 +427,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -546,7 +548,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -562,7 +566,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -684,7 +687,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -700,7 +705,6 @@
             {
               "file": "rust/providers/src/copilot/test_support.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -822,7 +826,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "pub(crate) fn validate_url(value: &str) -> Result<(), ProviderError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -834,13 +840,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/bug268_copilot_issuer_isolation.rs",
-      "rust/providers/tests/bug268_copilot_request_refresh.rs"
+      "rust/providers/tests/bug268_copilot_issuer_isolation.rs"
     ],
     "implFiles": [
-      "rust/providers/src/copilot/test_support.rs",
-      "rust/providers/src/copilot/http_auth.rs"
+      "rust/providers/src/copilot/test_support.rs"
     ],
-    "totalLinesCovered": 1135
+    "totalLinesCovered": 900
   }
 }

@@ -8,20 +8,31 @@
           "lines": "103-118",
           "implMappings": [
             {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [51, 52, 53, 54, 55]
-            },
-            {
               "file": "rust/providers/src/custom/config.rs",
-              "lines": [185, 186, 187, 188, 189, 190]
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "/// Whether the model supports vision / image input.",
+              "lastLine": "/// Default request parameters when the caller does not specify them."
             },
             {
               "file": "rust/providers/src/custom/management.rs",
-              "lines": [48, 49, 50, 51, 52, 136, 137]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                146,
+                147
+              ],
+              "firstLine": "pub supports_thinking: bool,",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -35,20 +46,31 @@
           "lines": "120-135",
           "implMappings": [
             {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [51, 52, 53, 54, 55]
-            },
-            {
               "file": "rust/providers/src/custom/config.rs",
-              "lines": [185, 186, 187, 188, 189, 190]
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "/// Whether the model supports vision / image input.",
+              "lastLine": "/// Default request parameters when the caller does not specify them."
             },
             {
               "file": "rust/providers/src/custom/management.rs",
-              "lines": [48, 49, 50, 51, 52, 136, 137]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                146,
+                147
+              ],
+              "firstLine": "pub supports_thinking: bool,",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -62,20 +84,31 @@
           "lines": "137-153",
           "implMappings": [
             {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [51, 52, 53, 54, 55]
-            },
-            {
               "file": "rust/providers/src/custom/config.rs",
-              "lines": [185, 186, 187, 188, 189, 190]
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "/// Whether the model supports vision / image input.",
+              "lastLine": "/// Default request parameters when the caller does not specify them."
             },
             {
               "file": "rust/providers/src/custom/management.rs",
-              "lines": [48, 49, 50, 51, 52, 136, 137]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                146,
+                147
+              ],
+              "firstLine": "pub supports_thinking: bool,",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -89,20 +122,31 @@
           "lines": "155-179",
           "implMappings": [
             {
-              "file": "src/tui/services/customProviderSectionBuilder.ts",
-              "lines": [51, 52, 53, 54, 55]
-            },
-            {
               "file": "rust/providers/src/custom/config.rs",
-              "lines": [185, 186, 187, 188, 189, 190]
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "/// Whether the model supports vision / image input.",
+              "lastLine": "/// Default request parameters when the caller does not specify them."
             },
             {
               "file": "rust/providers/src/custom/management.rs",
-              "lines": [48, 49, 50, 51, 52, 136, 137]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                146,
+                147
+              ],
+              "firstLine": "pub supports_thinking: bool,",
+              "lastLine": "_ => {"
             }
           ]
         }
@@ -117,11 +161,9 @@
       "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts"
     ],
     "implFiles": [
-      "src/tui/services/customProviderSectionBuilder.ts",
       "rust/providers/src/custom/config.rs",
-      "rust/providers/src/custom/management.rs",
-      "rust/napi/src/session_manager.rs"
+      "rust/providers/src/custom/management.rs"
     ],
-    "totalLinesCovered": 261
+    "totalLinesCovered": 126
   }
 }

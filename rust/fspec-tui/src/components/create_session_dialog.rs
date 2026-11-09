@@ -1,5 +1,5 @@
 //! CreateSessionDialog — Priority::Foreground modal for picking a new
-//! session creation mode (Yes / Yes - Isolated / Cancel).
+//! session creation mode (Start / Start in Worktree / Cancel).
 //!
 //! Feature: spec/features/rpc060-isolated-session-dialog.feature
 //! Card: RPC-060 (parent RPC-030, phase 7.7).
@@ -7,6 +7,12 @@
 //! Mirrors `src/components/CreateSessionDialog.tsx` (TUI-090) — three
 //! flat options with cyclic Left/Right navigation, cyan accent, and a
 //! work-unit-aware title.
+//!
+//! TUI-124: the dialog says exactly what will be started, in the words of
+//! the kind (product owner, 2026-11-07): "Start New Agent?", "Start Agent
+//! for <id>?" or "Start New Bot?", with [Start, Start in Worktree, Cancel]
+//! and a line saying the worktree option gives it its own new git worktree.
+//! Feature: spec/features/agent-close-and-start-dialogs-say-exactly-what-will-happen.feature
 //!
 //! TUI-112: the button row is ALSO left-click activatable — the shared
 //! paint/hit-test builder lives in `super::three_button_dialog`.
@@ -37,9 +43,9 @@ const ACCENT: Accent = Accent::Cyan;
 /// Left/Right cycling lands on the same option across both frontends.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CreateSessionOption {
-    /// "Yes" — create a normal (non-isolated) session.
+    /// "Start" — create a normal (non-isolated) session.
     Yes,
-    /// "Yes - Isolated" — create a worktree-backed isolated session.
+    /// "Start in Worktree" — create a worktree-backed isolated session.
     Isolated,
     /// "Cancel" — close the dialog without creating a session.
     Cancel,
@@ -59,8 +65,8 @@ const MIN_WIDTH: u16 = 50;
 
 fn option_label(opt: CreateSessionOption) -> &'static str {
     match opt {
-        CreateSessionOption::Yes => "Yes",
-        CreateSessionOption::Isolated => "Yes - Isolated",
+        CreateSessionOption::Yes => "Start",
+        CreateSessionOption::Isolated => "Start in Worktree",
         CreateSessionOption::Cancel => "Cancel",
     }
 }
@@ -70,9 +76,11 @@ pub struct CreateSessionDialog {
     id: String,
     selected: CreateSessionOption,
     work_unit: Option<WorkUnitContext>,
-    /// Work-unit-aware title ("Work on <id>?" / "Start New Agent?"),
+    /// Work-unit-aware title ("Start Agent for <id>?" / "Start New Agent?"),
     /// computed once at construction (it never changes afterwards).
     title: String,
+    /// TUI-114: New Bot mode — confirming creates an orchestrator bot.
+    bot: bool,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
     /// TUI-112: last-rendered button-row geometry for left-click hit-testing.
@@ -82,10 +90,10 @@ pub struct CreateSessionDialog {
 impl CreateSessionDialog {
     /// Construct a fresh dialog. `preselect=None` defaults to
     /// `CreateSessionOption::Yes`. `work_unit=Some(_)` switches the
-    /// title to the context-aware "Work on <id>?" string.
+    /// title to the context-aware "Start Agent for <id>?" string.
     pub fn new(preselect: Option<CreateSessionOption>, work_unit: Option<WorkUnitContext>) -> Self {
         let title = match work_unit.as_ref() {
-            Some(ctx) => format!("Work on {}?", ctx.id),
+            Some(ctx) => format!("Start Agent for {}?", ctx.id),
             None => "Start New Agent?".to_string(),
         };
         Self {
@@ -93,9 +101,20 @@ impl CreateSessionDialog {
             selected: preselect.unwrap_or(CreateSessionOption::Yes),
             work_unit,
             title,
+            bot: false,
             action_tx: None,
             pending_action: None,
             last_layout: LastLayout::new(),
+        }
+    }
+
+    /// TUI-114: the New Bot variant — same options, titled "Start New
+    /// Bot?", and Start / Start in Worktree emit `CreateBotSubmitted`.
+    pub fn new_bot(preselect: Option<CreateSessionOption>) -> Self {
+        Self {
+            title: "Start New Bot?".to_string(),
+            bot: true,
+            ..Self::new(preselect, None)
         }
     }
 
@@ -111,7 +130,7 @@ impl CreateSessionDialog {
     }
 
     /// Test accessor — the dialog title that will be rendered. Format:
-    /// `"Work on <id>?"` when bound to a work unit, otherwise
+    /// `"Start Agent for <id>?"` when bound to a work unit, otherwise
     /// `"Start New Agent?"`.
     pub fn title(&self) -> String {
         self.title.clone()
@@ -142,6 +161,10 @@ impl CreateSessionDialog {
     /// that button).
     fn commit(&mut self, opt: CreateSessionOption) -> EventResult {
         let action = match opt {
+            CreateSessionOption::Yes if self.bot => Action::CreateBotSubmitted { isolated: false },
+            CreateSessionOption::Isolated if self.bot => {
+                Action::CreateBotSubmitted { isolated: true }
+            }
             CreateSessionOption::Yes => Action::CreateSessionSubmitted { isolated: false },
             CreateSessionOption::Isolated => Action::CreateSessionSubmitted { isolated: true },
             CreateSessionOption::Cancel => Action::CreateSessionCancelled,
@@ -249,11 +272,15 @@ impl Component for CreateSessionDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let description_text = if self.work_unit.is_some() {
-            "Start an AI session for this task"
-        } else {
-            "Begin a fresh AI conversation, not linked to any task."
+        let started = match (self.bot, self.work_unit.as_ref()) {
+            (true, _) => "Starts a new bot that hands your tasks to sub-agents.".to_string(),
+            (false, Some(ctx)) => format!("Starts a new agent linked to work unit {}.", ctx.id),
+            (false, None) => "Starts a new agent, not linked to any work unit.".to_string(),
         };
+        let lines = [
+            started,
+            "Start in Worktree gives it its own new git worktree.".to_string(),
+        ];
         let labels: Vec<&str> = OPTIONS.iter().map(|o| option_label(*o)).collect();
         // TUI-112: paint + capture the button-row geometry in one call
         // (shared builder = single source of truth for pixels + hit test).
@@ -262,7 +289,7 @@ impl Component for CreateSessionDialog {
             buf,
             ACCENT,
             &self.title,
-            description_text,
+            &lines,
             FOOTER,
             MIN_WIDTH,
             self.selected_index(),

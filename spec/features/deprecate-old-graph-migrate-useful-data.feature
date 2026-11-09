@@ -1,4 +1,6 @@
 @KGRAPH-024
+@parser
+@migration
 Feature: Deprecate Old Graph & Migrate Useful Data
   """
   Delete 18 purely-old files (~4200 lines): schemas/agent-memory.pg, schemas/graph-queries.gq, entity_pipeline.rs, extractors.rs, merge.rs, watermark.rs, indexing.rs, session_scanner.rs, compaction.rs, dispatch.rs, queries.rs, deepsearch_integration.rs, llm_extraction.rs, llm_validation.rs, llm_caller.rs, tests.rs, graph_lifecycle_test.rs, tool tests.rs. Surgically update 7 shared files: database.rs, registry.rs, dispatch_helpers.rs, llm_response_parser.rs, tool types.rs/mod.rs/handler.rs. Update graph_search_handler.rs to remove old dispatch routing. Update DeepSearch to use Learnings graph context.
@@ -43,9 +45,9 @@ Feature: Deprecate Old Graph & Migrate Useful Data
   Scenario: Graph registry only contains AST and Learnings graph instances
     Given the old monolithic graph infrastructure has been removed
     When the graph registry is initialized
-    Then it should only contain AST_CODE_GRAPH and LEARNINGS_GRAPH constants
+    Then it should only know the Code and Learnings graph kinds
     And the AGENT_MEMORY_GRAPH constant should not exist
-    And get_graph should work for both AST and Learnings graphs
+    And both graph kinds resolve to their own database paths
 
   Scenario: DeepSearch uses Learnings graph context instead of agent-memory
     Given the old monolithic graph infrastructure has been removed

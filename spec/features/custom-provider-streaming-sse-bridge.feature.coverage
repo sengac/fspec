@@ -10,19 +10,26 @@
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
+                64,
                 65,
                 66,
                 67,
                 68,
                 69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "fn handle_text(map: &Map) -> Vec<StreamChunk> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -33,11 +40,16 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "51-74",
+          "lines": "51-75",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
               "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
                 139,
                 140,
                 141,
@@ -87,10 +99,10 @@
                 185,
                 186,
                 187,
-                188,
-                189,
-                190
-              ]
+                188
+              ],
+              "firstLine": "/// Process a single SSE `data` payload. Runs the Rhai script on the",
+              "lastLine": "}"
             }
           ]
         }
@@ -101,32 +113,8 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "79-95",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/custom/stream_http.rs",
-              "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71
-              ]
-            }
-          ]
+          "lines": "80-95",
+          "implMappings": []
         }
       ]
     },
@@ -135,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "100-179",
+          "lines": "100-173",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -230,7 +218,9 @@
                 183,
                 184,
                 185
-              ]
+              ],
+              "firstLine": "/// Accepts Rhai `INT` (i64) values. Missing keys, unit values, negative",
+              "lastLine": "let entry = processor.tool_call_entry(&key);"
             }
           ]
         }
@@ -241,29 +231,28 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "184-225",
+          "lines": "178-220",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "fn handle_stop(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChunk> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -274,29 +263,28 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "230-271",
+          "lines": "225-267",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
               "lines": [
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "fn handle_stop(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChunk> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -307,7 +295,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "276-299",
+          "lines": "272-295",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_convert.rs",
@@ -339,7 +327,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "tracing::warn!(\"parse_stream_chunk returned a non-map value; skipping event\");",
+              "lastLine": ""
             }
           ]
         }
@@ -350,11 +340,16 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "304-341",
+          "lines": "300-335",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream.rs",
               "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
                 139,
                 140,
                 141,
@@ -404,10 +399,10 @@
                 185,
                 186,
                 187,
-                188,
-                189,
-                190
-              ]
+                188
+              ],
+              "firstLine": "/// Process a single SSE `data` payload. Runs the Rhai script on the",
+              "lastLine": "}"
             }
           ]
         }
@@ -418,7 +413,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "346-416",
+          "lines": "340-411",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/stream_http.rs",
@@ -435,7 +430,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "MapErrFut: std::future::Future<Output = ProviderError> + Send + 'static,",
+              "lastLine": "if let Ok(bytes) = chunk {"
             }
           ]
         }
@@ -446,7 +443,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "421-464",
+          "lines": "416-458",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider_stream.rs",
@@ -461,7 +458,9 @@
                 30,
                 31,
                 32
-              ]
+              ],
+              "firstLine": "/// exactly one place.",
+              "lastLine": ".await"
             }
           ]
         }
@@ -472,7 +471,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/custom_streaming_sse_bridge_tests.rs",
-          "lines": "469-559",
+          "lines": "463-550",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider_stream.rs",
@@ -542,7 +541,9 @@
                 102,
                 103,
                 104
-              ]
+              ],
+              "firstLine": "/// the stream without invoking the Rhai script. Runtime errors from",
+              "lastLine": "status,"
             }
           ]
         }
@@ -562,6 +563,6 @@
       "rust/providers/src/custom/stream_http.rs",
       "rust/providers/src/custom/provider_stream.rs"
     ],
-    "totalLinesCovered": 861
+    "totalLinesCovered": 839
   }
 }

@@ -22,9 +22,34 @@ mod integration_tests {
     use crate::BridgeAction;
     use serde_json::json;
     use std::sync::Arc;
-    use std::time::Duration;
     use tokio::sync::broadcast;
     use uuid::Uuid;
+
+    /// TEST-042: wait until the bridge connection for `url` satisfies
+    /// `wanted` (None when there is no entry), polled between yields under the
+    /// deadlock guard, instead of sleeping a fixed time.
+    async fn wait_for_connection(
+        session_id: Uuid,
+        url: &str,
+        wanted: impl Fn(Option<&BridgeConnectionState>) -> bool,
+    ) {
+        let wanted = &wanted;
+        let reached =
+            codelet_test_helpers::wait_until("the bridge connection state", || async move {
+                let manager = get_or_create_bridge_manager(session_id).await;
+                let mgr = manager.read().await;
+                wanted(mgr.connections.get(url).map(|conn| &conn.state))
+            })
+            .await;
+        assert!(reached.is_ok(), "{reached:?}");
+    }
+
+    async fn wait_connected(session_id: Uuid, url: &str) {
+        wait_for_connection(session_id, url, |state| {
+            state == Some(&BridgeConnectionState::Connected)
+        })
+        .await;
+    }
 
     /// Set up session context for integration tests
     fn setup_session_context(session_id: Uuid) {
@@ -74,8 +99,8 @@ mod integration_tests {
             result.message
         );
 
-        // Give the async connection task time to establish
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        // Wait for the async connection task to establish (TEST-042)
+        wait_connected(session_id, &url).await;
 
         // @step And the bridge should be subscribed to the session's broadcast channel
         // Verify by checking the connection state is Connected (not just Connecting)
@@ -113,8 +138,11 @@ mod integration_tests {
         .expect("handle_bridge_action should not error");
 
         // The initial call may succeed (async connect), but state should show failure
-        // Give time for connection attempt
-        tokio::time::sleep(Duration::from_secs(2)).await;
+        // (TEST-042: wait until the attempt has failed, not a fixed time)
+        wait_for_connection(session_id, "ws://127.0.0.1:59999", |state| {
+            !matches!(state, Some(BridgeConnectionState::Connecting))
+        })
+        .await;
 
         // @step Then the tool should return an error containing "Connection refused"
         let manager = get_or_create_bridge_manager(session_id).await;
@@ -157,7 +185,7 @@ mod integration_tests {
         assert!(connect_result.success);
 
         // Wait for connection
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
         // @step When the agent calls Bridge with action "disconnect" and url "ws://localhost:8080"
         let disconnect_result =
@@ -198,7 +226,7 @@ mod integration_tests {
         let session_id = Uuid::new_v4();
         setup_session_context(session_id);
 
-        // @step And the agent has connected a bridge to a WebSocket server
+        // @step And the agent has connected a bridge to "ws://localhost:8080"
         let server = TestWebSocketServer::start()
             .await
             .expect("Test server should start");
@@ -210,14 +238,14 @@ mod integration_tests {
                 .expect("Connect should work");
         assert!(connect_result.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
         // @step When the agent calls Bridge with action "list"
         let list_result = handle_bridge_action(session_id, BridgeAction::List)
             .await
             .expect("List should work");
 
-        // @step Then the tool should return a list containing the connection
+        // @step Then the tool should return a list containing:
         assert!(list_result.success);
         let connections = list_result
             .connections
@@ -263,7 +291,8 @@ mod integration_tests {
             .expect("Connect 2 should work");
         assert!(result2.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url1).await;
+        wait_connected(session_id, &url2).await;
 
         // @step Then both bridges should be connected
         let list_result = handle_bridge_action(session_id, BridgeAction::List)
@@ -321,7 +350,7 @@ mod integration_tests {
                 .expect("Connect should work");
         assert!(connect_result.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
         // @step When the agent produces a text response "I can help with that"
         // We need to send a message through the bridge's relay mechanism
@@ -376,9 +405,22 @@ mod integration_tests {
     async fn test_receive_input_from_endpoint_and_inject() {
         // @step Given an agent session is running
         let session_id = Uuid::new_v4();
-        setup_session_context(session_id);
+        let injected: Arc<std::sync::Mutex<Vec<String>>> = Arc::default();
+        let injected_by_relay = injected.clone();
+        let (broadcast_tx, _) = broadcast::channel::<serde_json::Value>(256);
+        let broadcast_tx = Arc::new(broadcast_tx);
+        let input_injector: InputInjector = Arc::new(move |input: InjectedInput| {
+            injected_by_relay.lock().unwrap().push(input.message);
+        });
+        set_bridge_session_context(
+            session_id,
+            Arc::new(move || broadcast_tx.subscribe()),
+            input_injector,
+            None,
+            None,
+        );
 
-        // @step And the agent has connected a bridge
+        // @step And the agent has connected a bridge to "ws://localhost:8080"
         let server = TestWebSocketServer::start()
             .await
             .expect("Server should start");
@@ -390,22 +432,38 @@ mod integration_tests {
                 .expect("Connect should work");
         assert!(connect_result.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
-        // @step When the endpoint sends a JSON message with input
-        let input_msg = json!({
+        // The relay waits for the server's authSuccess before it reads input.
+        server
+            .send_to_clients(
+                &json!({"service": "auth", "type": "authSuccess", "data": {}}).to_string(),
+            )
+            .await
+            .expect("Server send should work");
+
+        // @step When the endpoint sends a multiplexed envelope:
+        let input_envelope = json!({
+            "service": "session",
             "type": "input",
             "session_id": session_id.to_string(),
-            "message": "build the app"
+            "data": {"message": "build the app"}
         });
         server
-            .send_to_clients(&input_msg.to_string())
+            .send_to_clients(&input_envelope.to_string())
             .await
             .expect("Server send should work");
 
         // @step Then the agent should receive "build the app" as user input
-        // Verify the server sent the message (relay task handles injection)
-        tokio::time::sleep(Duration::from_millis(200)).await;
+        let _ = codelet_test_helpers::wait_until("the relayed input is injected", || {
+            std::future::ready(!injected.lock().unwrap().is_empty())
+        })
+        .await;
+        assert_eq!(
+            *injected.lock().unwrap(),
+            vec!["build the app".to_string()],
+            "the relay should inject the envelope's message into the session"
+        );
 
         // Cleanup
         cleanup_session_context(session_id);
@@ -420,7 +478,7 @@ mod integration_tests {
         let session_id = Uuid::new_v4();
         setup_session_context(session_id);
 
-        // @step And the agent has connected a bridge
+        // @step And the agent has connected a bridge to "ws://localhost:8080"
         let server = TestWebSocketServer::start()
             .await
             .expect("Server should start");
@@ -432,13 +490,13 @@ mod integration_tests {
                 .expect("Connect should work");
         assert!(connect_result.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
         // @step When the WebSocket connection drops unexpectedly
         server.stop_accepting().await;
         // Note: In real impl, the relay task would detect disconnection and set state
 
-        // @step And the agent produces text responses while disconnected
+        // @step And the agent produces text responses "Message 1" and "Message 2"
         let manager = get_or_create_bridge_manager(session_id).await;
         {
             let mut mgr = manager.write().await;
@@ -489,7 +547,7 @@ mod integration_tests {
                 // In real impl, relay task would send buffered messages here
                 let buffered = conn.take_buffer();
 
-                // @step Then the endpoint should receive the buffered messages in order
+                // @step Then "ws://localhost:8080" should receive the buffered messages in order
                 assert_eq!(buffered.len(), 2);
                 assert_eq!(buffered[0].data["text"], "Message 1");
                 assert_eq!(buffered[1].data["text"], "Message 2");
@@ -518,7 +576,7 @@ mod integration_tests {
         let session_id = Uuid::new_v4();
         setup_session_context(session_id);
 
-        // @step And the agent has connected a bridge
+        // @step And the agent has connected a bridge to "ws://localhost:8080"
         let server = TestWebSocketServer::start()
             .await
             .expect("Server should start");
@@ -530,7 +588,7 @@ mod integration_tests {
                 .expect("Connect should work");
         assert!(connect_result.success);
 
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        wait_connected(session_id, &url).await;
 
         // @step And the WebSocket connection has dropped
         // @step And the bridge is attempting to reconnect
@@ -556,7 +614,7 @@ mod integration_tests {
             .await
             .expect("List should work");
 
-        // @step Then the tool should return a list showing reconnecting state
+        // @step Then the tool should return a list containing:
         let connections = list_result.connections.expect("Should have connections");
         assert_eq!(connections.len(), 1);
         assert_eq!(connections[0].url, url);

@@ -12,6 +12,9 @@ mod io;
 #[path = "persistence_retry_ownership.rs"]
 mod ownership;
 
+/// BUG-284: recovery metadata marking a submission original retained
+/// without conversation membership.
+pub const AUDIT_ONLY: &str = "_inputAuditOnly";
 pub const MAX_PENDING_RECORDS: usize = 128;
 pub const MAX_PENDING_BYTES: usize = 16 * 1024 * 1024;
 

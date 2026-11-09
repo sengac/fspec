@@ -20,10 +20,9 @@
 //! assertion are expected to FAIL for the RIGHT reason (missing prompt /
 //! visible_rows not reduced), not a compile error.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::ModelSelectorView;
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -33,7 +32,7 @@ use ratatui::Terminal;
 // Helpers
 // ────────────────────────────────────────────────────────────────────────
 
-const WIDTH: u16 = 80;
+const WIDTH: u16 = 120;
 const HEIGHT: u16 = 24;
 
 /// The scaffold splits the area into title(1) / spacer(1) / body(Min 0) /
@@ -54,7 +53,7 @@ fn model(id: &str) -> ModelEntry {
     ModelEntry {
         id: id.to_string(),
         display_name: id.to_string(),
-        context_window: 200_000,
+        context_window: Some(200_000),
         supports_reasoning: true,
         supports_vision: true,
         is_custom: false,
@@ -70,6 +69,8 @@ fn view_with_models() -> ModelSelectorView {
         models: vec![model("opus"), model("sonnet"), model("haiku")],
         profile_name: None,
         is_unreachable: false,
+        provider_id: "anthropic".to_string(),
+        unavailable_reason: None,
     };
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
@@ -89,6 +90,8 @@ fn view_with_n_models(n: usize) -> ModelSelectorView {
         models: refs.iter().map(|i| model(i)).collect(),
         profile_name: None,
         is_unreachable: false,
+        provider_id: "anthropic".to_string(),
+        unavailable_reason: None,
     };
     let mut v = ModelSelectorView::new();
     v.set_session(Some(SessionId::new("s-1")));
@@ -119,15 +122,21 @@ fn commit_filter(v: &mut ModelSelectorView, text: &str) {
     v.handle_key(key(KeyCode::Enter));
 }
 
-fn render_to_buffer(view: &mut ModelSelectorView) -> Buffer {
+fn render_to_buffer(
+    view: &mut ModelSelectorView,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     render_sized(view, WIDTH, HEIGHT)
 }
 
-fn render_sized(view: &mut ModelSelectorView, width: u16, height: u16) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+fn render_sized(
+    view: &mut ModelSelectorView,
+    width: u16,
+    height: u16,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|f| view.render(f.area(), f.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Concatenate the visible symbols of buffer row `y` into a trimmed String.
@@ -148,13 +157,13 @@ fn find_row(buf: &Buffer, needle: &str) -> Option<u16> {
 // Scenario: Active filter renders prompt with trailing cursor
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn active_filter_renders_prompt_with_trailing_cursor() {
+fn active_filter_renders_prompt_with_trailing_cursor() -> TestResult {
     // @step Given the model selector is in browse mode with models loaded
     let mut view = view_with_models();
     type_active_filter(&mut view, "opus");
 
     // @step When the model selector view is rendered
-    let buf = render_to_buffer(&mut view);
+    let buf = render_to_buffer(&mut view)?;
 
     // @step Then the top row of the body shows "Filter: opus_"
     let top = row_string(&buf, BODY_TOP_Y);
@@ -190,19 +199,20 @@ fn active_filter_renders_prompt_with_trailing_cursor() {
         find_row(&buf, "haiku").is_none(),
         "non-matching model 'haiku' must be excluded from the list"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Committed non-empty filter renders prompt without cursor
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn committed_non_empty_filter_renders_prompt_without_cursor() {
+fn committed_non_empty_filter_renders_prompt_without_cursor() -> TestResult {
     // @step Given the model selector is in browse mode with models loaded
     let mut view = view_with_models();
     commit_filter(&mut view, "opus");
 
     // @step When the model selector view is rendered
-    let buf = render_to_buffer(&mut view);
+    let buf = render_to_buffer(&mut view)?;
 
     // @step Then the top row of the body shows "Filter: opus" without a trailing underscore
     let top = row_string(&buf, BODY_TOP_Y);
@@ -220,18 +230,19 @@ fn committed_non_empty_filter_renders_prompt_without_cursor() {
         top.contains("opus"),
         "committed filter text 'opus' must still appear, got {top:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: No filter renders no prompt row
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn no_filter_renders_no_prompt_row() {
+fn no_filter_renders_no_prompt_row() -> TestResult {
     // @step Given the model selector is in browse mode with models loaded
     let mut view = view_with_models();
 
     // @step When the model selector view is rendered
-    let buf = render_to_buffer(&mut view);
+    let buf = render_to_buffer(&mut view)?;
 
     // @step Then no "Filter:" row is rendered
     assert!(
@@ -255,13 +266,14 @@ fn no_filter_renders_no_prompt_row() {
         top.contains("anthropic"),
         "the model list (provider header) must start at the top of the body, got {top:?}"
     );
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // Scenario: Filter row reserves a line so no model row is hidden
 // ════════════════════════════════════════════════════════════════════════
 #[test]
-fn filter_row_reserves_a_line_so_no_model_row_is_hidden() {
+fn filter_row_reserves_a_line_so_no_model_row_is_hidden() -> TestResult {
     // @step Given the model selector is in browse mode with models loaded
     // Seed enough models (8) so the list overflows a deliberately SHORT body
     // where the last visible model row sits on the clipping boundary just
@@ -277,9 +289,9 @@ fn filter_row_reserves_a_line_so_no_model_row_is_hidden() {
     type_active_filter(&mut with_filter, "m"); // matches every model, auto-expands
 
     // @step When the model selector view is rendered into a fixed-height buffer
-    let baseline = render_sized(&mut no_filter, WIDTH, HEIGHT_SHORT);
+    let baseline = render_sized(&mut no_filter, WIDTH, HEIGHT_SHORT)?;
     let baseline_visible = no_filter.visible_rows_for_test();
-    let buf = render_sized(&mut with_filter, WIDTH, HEIGHT_SHORT);
+    let buf = render_sized(&mut with_filter, WIDTH, HEIGHT_SHORT)?;
     let filtered_visible = with_filter.visible_rows_for_test();
 
     // @step Then visible_rows is reduced by one to reserve the filter line
@@ -305,12 +317,12 @@ fn filter_row_reserves_a_line_so_no_model_row_is_hidden() {
     let boundary_model = baseline_boundary
         .split_whitespace()
         .find(|t| t.starts_with('m'))
-        .expect("baseline boundary row must carry a model id")
+        .or_fail("baseline boundary row must carry a model id")?
         .to_string();
 
     // @step And a filter row is present because filter mode is active
     let prompt_y =
-        find_row(&buf, "Filter: m_").expect("an active filter prompt row must be present");
+        find_row(&buf, "Filter: m_").or_fail("an active filter prompt row must be present")?;
     assert_eq!(
         prompt_y, BODY_TOP_Y,
         "the filter prompt must occupy the very top body row (y={BODY_TOP_Y}), got y={prompt_y}"
@@ -354,6 +366,7 @@ fn filter_row_reserves_a_line_so_no_model_row_is_hidden() {
         "reserving exactly one line drops precisely the baseline boundary model \
          {boundary_model:?} from the shorter window (proving a 1-line, not 0- or 2-line, reservation)"
     );
+    Ok(())
 }
 
 // TEMP PROBE — remove before final

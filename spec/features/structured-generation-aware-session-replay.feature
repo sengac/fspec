@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-559
 @done
 @session
 @compaction-resume

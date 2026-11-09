@@ -18,7 +18,7 @@
 
 query all_functions() {
     match { $fn: Function }
-    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.paramCount, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.isTest, $fn.paramCount, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
 }
 
 query all_files() {
@@ -28,7 +28,7 @@ query all_files() {
 
 query all_types() {
     match { $t: Type }
-    return { $t.slug, $t.name, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
+    return { $t.slug, $t.name, $t.qualifiedName, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
 }
 
 query all_dependencies() {
@@ -155,6 +155,16 @@ query type_implements($slug: String) {
     return { $target.slug, $target.name }
 }
 
+// Type → Function (outgoing HasMethod: the functions defined in the
+// type's body or in its impl blocks)
+query type_methods($slug: String) {
+    match {
+        $t: Type { slug: $slug }
+        $t hasMethod $fn
+    }
+    return { $fn.slug, $fn.name, $fn.lineStart, $fn.lineEnd, $fn.isPublic, $fn.isAsync }
+}
+
 // Type → Type (outgoing Extends)
 query type_extends($slug: String) {
     match {
@@ -209,14 +219,88 @@ query uncalled_functions() {
         $fn: Function
         not { $caller calls $fn }
     }
-    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.isTest, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
 }
 
-// Types with no incoming TypeRef, Extends, or Implements edges
+// Types with no incoming TypeRef edges (Extends and Implements are not
+// checked: a type used only as a base or interface is listed)
 query unreferenced_types() {
     match {
         $t: Type
         not { $fn typeRef $t }
     }
-    return { $t.slug, $t.name, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
+    return { $t.slug, $t.name, $t.qualifiedName, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
+}
+
+// ── Query index (KGRAPH-077) ──────────────────────────────────
+// Loaded once per graph version by GraphDatabase::query_index: every
+// Calls edge, every function and type without its source text, and the
+// file of every function and type. No query runs once per function.
+
+query all_calls() {
+    match {
+        $caller: Function
+        $caller calls $callee
+    }
+    return { $caller.slug as caller, $callee.slug as callee }
+}
+
+query function_index() {
+    match { $fn: Function }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.isTest, $fn.paramCount, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
+}
+
+query type_index() {
+    match { $t: Type }
+    return { $t.slug, $t.name, $t.qualifiedName, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.docstring, $t.decorators, $t.language, $t.truncated }
+}
+
+query all_contains() {
+    match {
+        $f: File
+        $f contains $fn
+    }
+    return { $f.slug as file, $fn.slug as function }
+}
+
+query all_contains_type() {
+    match {
+        $f: File
+        $f containsType $t
+    }
+    return { $f.slug as file, $t.slug as type }
+}
+
+// Source text, fetched only for the rows a response returns.
+query function_source($slug: String) {
+    match { $fn: Function { slug: $slug } }
+    return { $fn.source }
+}
+
+query type_source($slug: String) {
+    match { $t: Type { slug: $slug } }
+    return { $t.source }
+}
+
+query variable_by_slug($slug: String) {
+    match { $v: Variable { slug: $slug } }
+    return { $v.slug }
+}
+
+// Dead code without source: the slugs of uncalled functions and of
+// types without incoming TypeRef edges.
+query uncalled_function_slugs() {
+    match {
+        $fn: Function
+        not { $caller calls $fn }
+    }
+    return { $fn.slug }
+}
+
+query unreferenced_type_slugs() {
+    match {
+        $t: Type
+        not { $fn typeRef $t }
+    }
+    return { $t.slug }
 }

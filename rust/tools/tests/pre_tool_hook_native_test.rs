@@ -50,6 +50,10 @@ fn cleanup(session_id: Uuid) {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_bash_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::BashTool;
     use rig::tool::Tool;
 
@@ -90,6 +94,10 @@ async fn pre_tool_use_hook_fires_for_bash_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_read_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::read::ReadTool;
     use rig::tool::Tool;
 
@@ -132,6 +140,10 @@ async fn pre_tool_use_hook_fires_for_read_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_write_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::write::WriteTool;
     use rig::tool::Tool;
 
@@ -175,6 +187,10 @@ async fn pre_tool_use_hook_fires_for_write_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_edit_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::edit::EditTool;
     use rig::tool::Tool;
 
@@ -221,6 +237,10 @@ async fn pre_tool_use_hook_fires_for_edit_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_ls_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::ls::LsTool;
     use rig::tool::Tool;
 
@@ -260,6 +280,10 @@ async fn pre_tool_use_hook_fires_for_ls_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_glob_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::glob::GlobTool;
     use rig::tool::Tool;
 
@@ -301,6 +325,10 @@ async fn pre_tool_use_hook_fires_for_glob_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_grep_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::grep::GrepTool;
     use rig::tool::Tool;
 
@@ -344,6 +372,10 @@ async fn pre_tool_use_hook_fires_for_grep_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_astgrep_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::astgrep::AstGrepTool;
     use rig::tool::Tool;
 
@@ -385,6 +417,10 @@ async fn pre_tool_use_hook_fires_for_astgrep_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_astgrep_refactor_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::astgrep_refactor::AstGrepRefactorTool;
     use rig::tool::Tool;
 
@@ -434,6 +470,10 @@ async fn pre_tool_use_hook_fires_for_astgrep_refactor_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_fspec_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::fspec::FspecTool;
     use rig::tool::Tool;
 
@@ -475,6 +515,10 @@ async fn pre_tool_use_hook_fires_for_fspec_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_bridge_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::bridge::BridgeTool;
     use rig::tool::Tool;
 
@@ -514,6 +558,10 @@ async fn pre_tool_use_hook_fires_for_bridge_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_hook_fires_for_apply_patch_tool() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::apply_patch::ApplyPatchTool;
     use rig::tool::Tool;
 
@@ -553,6 +601,14 @@ async fn pre_tool_use_hook_fires_for_apply_patch_tool() {
 #[tokio::test]
 #[serial]
 async fn pre_tool_use_allow_handler_lets_native_tool_proceed() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::BashTool;
     use rig::tool::Tool;
 
@@ -592,6 +648,14 @@ async fn pre_tool_use_allow_handler_lets_native_tool_proceed() {
 #[tokio::test]
 #[serial]
 async fn no_registered_handler_lets_native_tool_proceed() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     use codelet_tools::BashTool;
     use rig::tool::Tool;
 

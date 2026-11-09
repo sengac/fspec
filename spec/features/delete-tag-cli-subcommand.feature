@@ -1,5 +1,7 @@
 @done
 @RPC-222
+@cli
+@delete
 Feature: delete-tag CLI subcommand (Rust shell front-door)
   """
   Files: rust/fspec/src/delete_tag.rs (NEW CLI bridge); rust/fspec/tests/cli_delete_tag.rs (NEW CLI tests); rust/fspec/tests/fixtures/help/delete-tag.txt (captured fixture from `node dist/index.js delete-tag --help`)

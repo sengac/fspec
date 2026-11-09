@@ -155,3 +155,21 @@ fn second_run_preserves_previously_stored_quality_commands() {
     let cmds: Vec<&str> = cmds.iter().filter_map(Value::as_str).collect();
     assert_eq!(cmds, vec!["eslint ."]);
 }
+
+#[test]
+fn a_run_on_an_existing_config_keeps_its_agent_setting() {
+    // @step Given a project root tempdir whose spec/fspec-config.json has agent='cursor' and no tools
+    let tmp = TempDir::new().expect("tempdir");
+    write_config(tmp.path(), &json!({"agent": "cursor"}));
+
+    // @step When I dispatch configure-tools with testCommand='npm test'
+    let result = dispatch_command(req(tmp.path(), json!({"testCommand": "npm test"})));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then spec/fspec-config.json shows tools.test.command='npm test'
+    let v = read_config(tmp.path());
+    assert_eq!(v["tools"]["test"]["command"].as_str(), Some("npm test"));
+
+    // @step And spec/fspec-config.json still shows agent='cursor'
+    assert_eq!(v["agent"].as_str(), Some("cursor"));
+}

@@ -1,17 +1,9 @@
 //! `list-attachments` help configuration — Rust port of
 //! `src/commands/list-attachments-help.ts`.
 //!
-//! IMPORTANT — this config preserves three TS quirks for byte-parity:
-//!   1. `typical_workflow` mirrors TS where the source is `string[]` but the
-//!      formatter renders `${config.typicalWorkflow}` — i.e. the JS Array's
-//!      `.toString()` which is comma-joined. We pre-join with `,` here.
-//!   2. `related_commands` entries in TS already include the literal "fspec "
-//!      prefix (e.g. `"fspec add-attachment - Add attachment"`), and the
-//!      help-formatter prefixes them AGAIN with `fspec ` — producing
-//!      `fspec fspec add-attachment - Add attachment`. We mirror this here.
-//!   3. `common_errors` items in TS specify `solution:` but the formatter
-//!      reads `err.fix` (which is `undefined`) producing `Fix: undefined`.
-//!      We use the literal string "undefined" here.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
 //! All three quirks are tested explicitly by
 //! `cli_list_attachments::scenario_clap_exposes_list_attachments_with_flag_aware_help`.
@@ -49,13 +41,11 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        // TS quirk #3: TS `solution` is renamed to `fix` by formatter; it
-        // doesn't exist on these objects, so output is "Fix: undefined".
-        fix: "undefined",
+        fix: "Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'",
     },
     CommonError {
         error: "No attachments found for work unit AUTH-001",
-        fix: "undefined",
+        fix: "The work unit exists but has no attachments. Add attachments with 'fspec add-attachment AUTH-001 <file>'.",
     },
 ];
 
@@ -69,9 +59,9 @@ const NOTES: &[&str] = &[
 // TS quirk #2: each entry already includes "fspec " prefix; the formatter
 // prefixes again, producing "fspec fspec …".
 const RELATED: &[&str] = &[
-    "fspec add-attachment - Add attachment",
-    "fspec remove-attachment - Remove attachment",
-    "fspec show-work-unit - View work unit details (includes attachments)",
+    "add-attachment - Add attachment",
+    "remove-attachment - Remove attachment",
+    "show-work-unit - View work unit details (includes attachments)",
 ];
 
 const PREREQUISITES: &[&str] = &[
@@ -94,7 +84,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     common_patterns: &[],
     // TS quirk #1: comma-joined Array.toString()
     typical_workflow: Some(
-        "View work unit details: fspec show-work-unit AUTH-001,List attachments: fspec list-attachments AUTH-001,Review attachment files in spec/attachments/AUTH-001/,Add more attachments if needed: fspec add-attachment AUTH-001 <file>",
+        "View work unit details: fspec show-work-unit AUTH-001. List attachments: fspec list-attachments AUTH-001. Review attachment files in spec/attachments/AUTH-001/. Add more attachments if needed: fspec add-attachment AUTH-001 <file>",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

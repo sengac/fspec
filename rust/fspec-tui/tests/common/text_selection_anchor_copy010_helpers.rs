@@ -8,8 +8,10 @@
 
 #![allow(dead_code)]
 
+use codelet_test_helpers::OrFail;
+use parking_lot::Mutex;
 use std::io::Write;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
@@ -29,10 +31,7 @@ pub struct SharedWriter(pub Arc<Mutex<Vec<u8>>>);
 
 impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0
-            .lock()
-            .expect("clipboard buffer mutex")
-            .extend_from_slice(buf);
+        self.0.lock().extend_from_slice(buf);
         Ok(buf.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
@@ -58,29 +57,31 @@ pub fn app_with_clipboard() -> (App, Arc<Mutex<Vec<u8>>>) {
 }
 
 /// Push a single explicit-text row and return its 0-based visual index.
-pub fn seed_line(app: &mut App, text: &str) -> u64 {
+pub fn seed_line(app: &mut App, text: &str) -> Result<u64, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store_mut()
         .session_context_mut_for(&sid("s-1"))
-        .expect("SessionContext present");
+        .or_fail("SessionContext present")?;
     let seq = ctx.scrollback.chunk_count() as u64;
     ctx.scrollback.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: vec![Line::from(text.to_string())],
         source: None,
     });
-    seq
+    Ok(seq)
 }
 
 /// Render one frame so the layout caches `last_scrollback_area` and the
 /// gutter-free `content_width`.
-pub fn render_app(app: &mut App, w: u16, h: u16) {
-    let mut terminal = Terminal::new(TestBackend::new(w, h)).expect("Terminal::new");
+pub fn render_app(app: &mut App, w: u16, h: u16) -> Result<(), codelet_test_helpers::TestError> {
+    let mut terminal = Terminal::new(TestBackend::new(w, h)).or_fail("Terminal::new")?;
     terminal
         .draw(|frame| {
             app.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
+        .or_fail("draw")?;
+    Ok(())
 }
 
 /// Drain + dispatch every queued Action so emitted selection Actions run
@@ -101,8 +102,8 @@ pub fn mouse(kind: MouseEventKind, col: u16, row: u16) -> Event {
 }
 
 /// Snapshot of the injected clipboard buffer as raw bytes.
-pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Vec<u8> {
-    buf.lock().expect("clipboard buffer mutex").clone()
+pub fn clip_bytes(buf: &Arc<Mutex<Vec<u8>>>) -> Result<Vec<u8>, codelet_test_helpers::TestError> {
+    Ok(buf.lock().clone())
 }
 
 /// The OSC 52 sequence the App emits for `text`: `ESC ] 52 ; c ;

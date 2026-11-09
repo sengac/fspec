@@ -105,7 +105,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "//! `query-metrics` shell-facing CLI bridge (RPC-261).",
+              "lastLine": "// FspecCoreError::InvalidArgs wrapper prefix so the printed"
             }
           ]
         }
@@ -216,7 +218,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "//! `query-metrics` shell-facing CLI bridge (RPC-261).",
+              "lastLine": "// FspecCoreError::InvalidArgs wrapper prefix so the printed"
             }
           ]
         }
@@ -327,14 +331,10 @@
                 93,
                 94,
                 95
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_query_metrics.rs",
-          "lines": "132-195",
-          "implMappings": [
+              ],
+              "firstLine": "//! `query-metrics` shell-facing CLI bridge (RPC-261).",
+              "lastLine": "// FspecCoreError::InvalidArgs wrapper prefix so the printed"
+            },
             {
               "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
@@ -812,7 +812,9 @@
                 472,
                 473,
                 474
-              ]
+              ],
+              "firstLine": "//! `query-metrics` — Rust port of `src/commands/query-metrics.ts` (RPC-261).",
+              "lastLine": ""
             }
           ]
         }
@@ -923,7 +925,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "//! `query-metrics` shell-facing CLI bridge (RPC-261).",
+              "lastLine": "// FspecCoreError::InvalidArgs wrapper prefix so the printed"
             }
           ]
         }
@@ -1034,14 +1038,10 @@
                 93,
                 94,
                 95
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_query_metrics.rs",
-          "lines": "277-322",
-          "implMappings": [
+              ],
+              "firstLine": "//! `query-metrics` shell-facing CLI bridge (RPC-261).",
+              "lastLine": "// FspecCoreError::InvalidArgs wrapper prefix so the printed"
+            },
             {
               "file": "rust/fspec-core/src/commands/query_metrics.rs",
               "lines": [
@@ -1519,7 +1519,9 @@
                 472,
                 473,
                 474
-              ]
+              ],
+              "firstLine": "//! `query-metrics` — Rust port of `src/commands/query-metrics.ts` (RPC-261).",
+              "lastLine": ""
             }
           ]
         }
@@ -1537,6 +1539,6 @@
       "rust/fspec/src/query_metrics.rs",
       "rust/fspec-core/src/commands/query_metrics.rs"
     ],
-    "totalLinesCovered": 1795
+    "totalLinesCovered": 1685
   }
 }

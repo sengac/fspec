@@ -6,24 +6,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "26-49",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -33,29 +16,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "51-69",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -65,22 +26,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "71-88",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -90,24 +36,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "90-105",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -117,39 +46,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "107-124",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -159,17 +56,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "126-140",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                110,
-                111,
-                112,
-                113
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -179,30 +66,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "142-162",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -212,20 +76,7 @@
         {
           "file": "src/tui/__tests__/BoardView-interactive-kanban.test.tsx",
           "lines": "164-179",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -237,9 +88,7 @@
     "testFiles": [
       "src/tui/__tests__/BoardView-interactive-kanban.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/BoardView.tsx"
-    ],
-    "totalLinesCovered": 248
+    "implFiles": [],
+    "totalLinesCovered": 147
   }
 }

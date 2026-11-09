@@ -28,6 +28,7 @@ const COMMON_ERRORS: &[CommonError] = &[CommonError {
 
 const NOTES: &[&str] = &[
     "Reads from spec/fspec-hooks.json",
+    "A broken spec/fspec-hooks.json is reported as an error and never changed",
     "Shows event names and hook names only (not full configuration)",
     "Use validate-hooks to check if hook scripts exist",
     "Hooks are organized by event (pre-/post- command pattern)",

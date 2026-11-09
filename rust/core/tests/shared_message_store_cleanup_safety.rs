@@ -2,12 +2,11 @@
 
 use codelet_core::persistence::{
     cleanup_orphaned_messages, get_session_message_envelopes, load_session, reset_stores_for_tests,
-    MessageSource, MessageStore, SessionStore,
+    text_envelope_metadata, MessageSource, MessageStore, SessionStore,
 };
 use codelet_test_helpers::setup_temp_directory;
 use serial_test::serial;
 use std::sync::mpsc;
-use std::time::Duration;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -28,10 +27,11 @@ impl Drop for ResetStores {
 fn scenario_cleanup_preserves_messages_when_committed_session_evidence_is_unavailable() -> TestResult
 {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let _reset = ResetStores;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
     let message_id = messages.store("assistant", "original evidence")?;
     assert!(!directory.path().join("sessions").exists());
 
@@ -53,6 +53,7 @@ fn scenario_cleanup_preserves_messages_when_committed_session_evidence_is_unavai
 #[serial]
 fn scenario_cleanup_discovers_committed_references_missing_from_the_session_cache() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let _reset = ResetStores;
@@ -61,9 +62,19 @@ fn scenario_cleanup_discovers_committed_references_missing_from_the_session_cach
         sessions.create("cached baseline", directory.path())?
     };
     load_session(baseline.id)?;
-    let mut messages = MessageStore::new()?;
+    let messages = MessageStore::new()?;
     let orphan_id = messages.store("user", "unreferenced")?;
-    let message_id = messages.store("assistant", "peer original evidence")?;
+    // BUG-332: a conversation row carries its message envelope.
+    let message_id = messages.store_with_metadata(
+        "assistant",
+        "peer original evidence",
+        text_envelope_metadata(
+            "assistant",
+            "",
+            "peer original evidence",
+            chrono::Utc::now(),
+        ),
+    )?;
     let peer = {
         let mut sessions = SessionStore::new()?;
         let mut peer = sessions.create("uncached peer", directory.path())?;
@@ -91,6 +102,7 @@ fn scenario_cleanup_discovers_committed_references_missing_from_the_session_cach
 #[serial]
 fn scenario_cleanup_preserves_messages_awaiting_a_writers_manifest_commit() -> TestResult {
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let _reset = ResetStores;
@@ -103,27 +115,38 @@ fn scenario_cleanup_preserves_messages_awaiting_a_writers_manifest_commit() -> T
     let (continue_tx, continue_rx) = mpsc::channel();
     let writer = std::thread::spawn(move || -> Result<(), String> {
         let mut sessions = SessionStore::new()?;
-        let mut messages = MessageStore::new()?;
+        let messages = MessageStore::new()?;
         sessions
             .update(manifest.id, |current| {
                 let message_id = messages
-                    .store("assistant", "awaiting manifest commit")
+                    .store_with_metadata(
+                        "assistant",
+                        "awaiting manifest commit",
+                        text_envelope_metadata(
+                            "assistant",
+                            "",
+                            "awaiting manifest commit",
+                            chrono::Utc::now(),
+                        ),
+                    )
                     .map_err(codelet_core::persistence::ManifestCommitError::Store)?;
                 current.add_message(message_id, MessageSource::Native);
                 appended_tx.send(message_id).map_err(|error| {
                     codelet_core::persistence::ManifestCommitError::Store(error.to_string())
                 })?;
-                continue_rx
-                    .recv_timeout(Duration::from_secs(10))
-                    .map_err(|error| {
-                        codelet_core::persistence::ManifestCommitError::Store(error.to_string())
-                    })?;
+                // TEST-042: wait for the go-ahead (no timeout).
+                continue_rx.recv().map_err(|error| {
+                    codelet_core::persistence::ManifestCommitError::Store(error.to_string())
+                })?;
                 Ok(())
             })
             .map_err(|error| error.to_string())?;
         Ok(())
     });
-    let message_id = appended_rx.recv_timeout(Duration::from_secs(10))?;
+    let message_id =
+        codelet_test_helpers::deadlock_guard_blocking("the appended message", move || {
+            appended_rx.recv()
+        })??;
 
     let cleanup = cleanup_orphaned_messages();
     continue_tx.send(())?;

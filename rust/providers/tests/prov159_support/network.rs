@@ -124,6 +124,6 @@ pub async fn send(client: &RefreshingCodexClient, url: &str) -> Result<(), Error
 
 pub async fn bounded<F: std::future::Future>(
     future: F,
-) -> Result<F::Output, tokio::time::error::Elapsed> {
-    tokio::time::timeout(std::time::Duration::from_secs(5), future).await
+) -> Result<F::Output, codelet_test_helpers::Failure> {
+    codelet_test_helpers::deadlock_guard("the bounded future", future).await
 }

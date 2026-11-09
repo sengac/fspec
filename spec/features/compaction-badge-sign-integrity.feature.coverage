@@ -18,7 +18,9 @@
                 153,
                 154,
                 155
-              ]
+              ],
+              "firstLine": "// RPC-100) is factored into",
+              "lastLine": "// cache. The `(enabled, budget)` pair keeps the existing"
             }
           ]
         }
@@ -42,7 +44,9 @@
                 165,
                 166,
                 167
-              ]
+              ],
+              "firstLine": "let context_label =",
+              "lastLine": "};"
             }
           ]
         }
@@ -66,14 +70,10 @@
                 153,
                 154,
                 155
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_badge_sign_integrity_cmpct040.rs",
-          "lines": "160-195",
-          "implMappings": [
+              ],
+              "firstLine": "// RPC-100) is factored into",
+              "lastLine": "// cache. The `(enabled, budget)` pair keeps the existing"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/header_build.rs",
               "lines": [
@@ -85,7 +85,9 @@
                 165,
                 166,
                 167
-              ]
+              ],
+              "firstLine": "let context_label =",
+              "lastLine": "};"
             }
           ]
         }
@@ -103,6 +105,6 @@
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "rust/fspec-tui/src/views/agent/header_build.rs"
     ],
-    "totalLinesCovered": 178
+    "totalLinesCovered": 142
   }
 }

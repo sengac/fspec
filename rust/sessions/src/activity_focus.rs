@@ -19,6 +19,25 @@ pub enum FocusError {
     Revision,
     #[error("cannot persist focus: {0}")]
     Persistence(String),
+    /// WT-019 (product owner, 2026-11-07): a card is worked in at most one
+    /// isolated session at a time.
+    #[error(
+        "work unit {card} is already being worked in isolated session {session}; \
+         a card is worked in at most one isolated session at a time"
+    )]
+    CardHeld { card: String, session: String },
+}
+
+/// WT-019: serialises every isolated session's check-and-take of a card,
+/// so two isolated sessions focusing the same card at once cannot both
+/// win. Each critical section only reads other sessions' focus, so a
+/// poisoned lock is still consistent.
+fn claim_lock() -> std::sync::MutexGuard<'static, ()> {
+    static CLAIMS: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    match CLAIMS.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
 }
 
 pub(crate) fn resolve(
@@ -62,6 +81,7 @@ impl SessionManager {
         context: Option<WorkUnitContext>,
         source: &str,
     ) -> Result<WorkUnitFocus, FocusError> {
+        let _claim = self.claim_card(session, context.as_ref())?;
         let mut current = session
             .work_unit_focus
             .lock()
@@ -92,6 +112,53 @@ impl SessionManager {
         Ok(next)
     }
 
+    /// WT-019: when the isolated `session` moves onto `next`, refuse it if
+    /// another live isolated session of the same project focuses that card.
+    /// Returns the claim guard, held until the new focus is stored.
+    fn claim_card(
+        &self,
+        session: &BackgroundSession,
+        next: Option<&WorkUnitContext>,
+    ) -> Result<Option<std::sync::MutexGuard<'static, ()>>, FocusError> {
+        let Some(next) = next else {
+            return Ok(None);
+        };
+        if session.worktree_path().is_none() {
+            return Ok(None);
+        }
+        let guard = claim_lock();
+        if session.activity_focus().context.as_ref().map(|c| &c.id) == Some(&next.id) {
+            return Ok(Some(guard));
+        }
+        let others: Vec<_> = self
+            .sessions
+            .read()
+            .map_err(|_| FocusError::Lock)?
+            .values()
+            .filter(|other| other.id != session.id)
+            .cloned()
+            .collect();
+        let project = std::path::Path::new(&session.project);
+        for other in others {
+            let holds = other.worktree_path().is_some()
+                && crate::focus_reconciliation::same_project(
+                    project,
+                    std::path::Path::new(&other.project),
+                )
+                && other
+                    .activity_focus()
+                    .context
+                    .is_some_and(|c| c.id == next.id);
+            if holds {
+                return Err(FocusError::CardHeld {
+                    card: next.id.clone(),
+                    session: other.id.to_string(),
+                });
+            }
+        }
+        Ok(Some(guard))
+    }
+
     pub(crate) fn restore_activity_focus(
         &self,
         session: &BackgroundSession,
@@ -108,7 +175,8 @@ impl SessionManager {
             Some(Err(FocusError::UnknownCard(_))) | Some(Ok(_)) | None => None,
             Some(Err(error)) => return Err(error.to_string()),
         };
-        if focus.context != context {
+        let changed = focus.context != context;
+        if changed {
             focus.context = context;
             focus.revision = focus
                 .revision
@@ -124,8 +192,16 @@ impl SessionManager {
         *session
             .work_unit_focus
             .lock()
-            .map_err(|error| error.to_string())? = focus;
-        session.schedule_focus_reminder();
+            .map_err(|error| error.to_string())? = focus.clone();
+        if changed {
+            session.schedule_focus_reminder();
+        } else {
+            // BUG-324: the restored history already carries this focus, so
+            // resuming must not re-announce it.
+            session
+                .focus_reminder_revision
+                .store(focus.revision, Ordering::Release);
+        }
         Ok(())
     }
 }

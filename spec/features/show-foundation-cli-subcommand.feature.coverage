@@ -5,11 +5,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "78-120",
+          "lines": "71-131",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -20,11 +22,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "122-139",
+          "lines": "133-156",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -35,11 +39,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "141-155",
+          "lines": "158-175",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -50,11 +56,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "157-171",
+          "lines": "177-194",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -65,11 +73,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "173-193",
+          "lines": "196-222",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -80,11 +90,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "195-215",
+          "lines": "224-250",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -95,11 +107,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "217-241",
+          "lines": "252-283",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -110,11 +124,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "243-257",
+          "lines": "285-305",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -125,11 +141,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "259-273",
+          "lines": "307-324",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -140,11 +158,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "275-289",
+          "lines": "326-343",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -155,11 +175,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "291-318",
+          "lines": "345-387",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
         }
@@ -170,21 +192,167 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "322-345",
+          "lines": "391-414",
           "implMappings": [
             {
               "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "lines": "1-81",
+              "firstLine": "//! `show-foundation` shell-facing CLI bridge (RPC-305).",
+              "lastLine": "eprintln!(\"Error: {err}\");"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "CLI --section flag shows the same section as the positional",
+      "testMappings": [
         {
           "file": "rust/fspec/tests/cli_show_foundation.rs",
-          "lines": "322-345",
+          "lines": "420-436",
           "implMappings": [
             {
-              "file": "rust/fspec/src/show_foundation.rs",
-              "lines": "1-81"
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Optional positional section name (e.g. `whatWeAreBuilding`).",
+              "lastLine": "section_flag: Option<String>,"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/route_01.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "Some(Mode::ShowFoundationEventStorm { r#type, context }) => $forward!(",
+              "lastLine": "),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --section with an unknown field exits 1",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
+          "lines": "438-455",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Optional positional section name (e.g. `whatWeAreBuilding`).",
+              "lastLine": "section_flag: Option<String>,"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/route_01.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "Some(Mode::ShowFoundationEventStorm { r#type, context }) => $forward!(",
+              "lastLine": "),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a positional section together with --section",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
+          "lines": "457-472",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_02.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Optional positional section name (e.g. `whatWeAreBuilding`).",
+              "lastLine": "section_flag: Option<String>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-foundation --help lists the --section option",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/cli_show_foundation.rs",
+          "lines": "474-492",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/help/configs/show_foundation.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "const OPTIONS: &[CommandOption] = &[",
+              "lastLine": "},"
             }
           ]
         }
@@ -192,13 +360,18 @@
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 12,
+    "totalScenarios": 16,
+    "coveredScenarios": 16,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec/tests/cli_show_foundation.rs"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 279
+    "implFiles": [
+      "rust/fspec/src/show_foundation.rs",
+      "rust/fspec/src/cli_registration/mode_02.rs",
+      "rust/fspec/src/cli_registration/route_01.rs",
+      "rust/fspec-core/src/help/configs/show_foundation.rs"
+    ],
+    "totalLinesCovered": 517
   }
 }

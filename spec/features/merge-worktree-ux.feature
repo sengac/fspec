@@ -1,6 +1,7 @@
 @git-integration
 @tui
 @GIT-037
+@multi-session
 Feature: Merge worktree UX: confirmation summary with press-enter-to-close and conflict guidance
   """
   Generic 'action prompt' mechanism threaded through the component stack:

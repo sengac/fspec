@@ -4,12 +4,15 @@
       "name": "Script sets both context_window and max_output_tokens",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "175-196",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+          "lines": "9-30",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
+                84,
+                85,
+                86,
                 87,
                 88,
                 89,
@@ -67,8 +70,12 @@
                 141,
                 142,
                 143,
-                144
-              ]
+                144,
+                145,
+                146
+              ],
+              "firstLine": "mod request_auth;",
+              "lastLine": "/// Build the `config` map passed to script functions."
             },
             {
               "file": "rust/providers/src/custom/model_limits.rs",
@@ -145,7 +152,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "/// is `\"tokens\"` or `\"percentage\"`. Surfaced to NAPI callers via",
+              "lastLine": "if n <= 0 {"
             }
           ]
         }
@@ -155,8 +164,8 @@
       "name": "Legacy script without get_model_limits falls back to JSON ModelDef values",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "202-228",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+          "lines": "36-61",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
@@ -189,7 +198,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "/// is `\"tokens\"` or `\"percentage\"`. Surfaced to NAPI callers via",
+              "lastLine": "tracing::warn!("
             }
           ]
         }
@@ -199,19 +210,12 @@
       "name": "Partial override — only context_window set, max_output_tokens falls back",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "233-254",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+          "lines": "67-88",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
                 102,
                 103,
                 104,
@@ -245,8 +249,20 @@
                 132,
                 133,
                 134,
-                135
-              ]
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// Validate a parsed return value from `get_model_limits`. Anything that",
+              "lastLine": "}"
             }
           ]
         }
@@ -256,8 +272,8 @@
       "name": "Invalid non-positive value is rejected and JSON ModelDef value is used",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "260-289",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+          "lines": "94-123",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
@@ -283,7 +299,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "max_output_tokens: parse_positive_usize(provider, &map, \"max_output_tokens\"),",
+              "lastLine": "tracing::warn!("
             }
           ]
         }
@@ -293,12 +311,15 @@
       "name": "Script branches on config.model_alias to return alias-specific limits",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "295-347",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+          "lines": "129-183",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
+                84,
+                85,
+                86,
                 87,
                 88,
                 89,
@@ -356,8 +377,12 @@
                 141,
                 142,
                 143,
-                144
-              ]
+                144,
+                145,
+                146
+              ],
+              "firstLine": "mod request_auth;",
+              "lastLine": "/// Build the `config` map passed to script functions."
             }
           ]
         }
@@ -367,17 +392,12 @@
       "name": "Script sets an absolute-tokens compaction threshold",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "353-396",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/thresholds_and_bridge.rs",
+          "lines": "9-51",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
-                142,
-                143,
-                144,
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -453,124 +473,19 @@
                 219,
                 220,
                 221,
-                222
-              ]
-            },
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                6904,
-                6905,
-                6906,
-                6907,
-                6908,
-                6909,
-                6910,
-                6911,
-                6912,
-                6913,
-                6914,
-                6915,
-                6916,
-                6917,
-                6918,
-                6919,
-                6920,
-                6921,
-                6922,
-                6923,
-                6924,
-                6925,
-                6926,
-                6927,
-                6928,
-                6929,
-                6930,
-                6931,
-                6932,
-                6933,
-                6934,
-                6935,
-                6936,
-                6937,
-                6938,
-                6939,
-                6940,
-                6941,
-                6942,
-                6943,
-                6944,
-                6945,
-                6946,
-                6947,
-                6948,
-                6949,
-                6950,
-                6951,
-                6952,
-                6953,
-                6954,
-                6955,
-                6956,
-                6957,
-                6958,
-                6959,
-                6960,
-                6961,
-                6962,
-                6963,
-                6964,
-                6965,
-                6966,
-                6967,
-                6968,
-                6969,
-                6970,
-                6971,
-                6972,
-                6973,
-                6974,
-                6975,
-                6976,
-                6977,
-                6978,
-                6979,
-                6980,
-                6981,
-                6982,
-                6983,
-                6984,
-                6985,
-                6986,
-                6987,
-                6988,
-                6989,
-                6990,
-                6991,
-                6992,
-                6993,
-                6994,
-                6995,
-                6996,
-                6997,
-                6998,
-                6999,
-                7000,
-                7001,
-                7002,
-                7003,
-                7004,
-                7005,
-                7006,
-                7007,
-                7008,
-                7009,
-                7010,
-                7011,
-                7012,
-                7013,
-                7014
-              ]
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "/// Parse the optional `compaction_threshold` entry. Returns `None` when",
+              "lastLine": "}"
             }
           ]
         }
@@ -580,12 +495,65 @@
       "name": "Script sets a percentage compaction threshold",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "402-426",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/thresholds_and_bridge.rs",
+          "lines": "57-80",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
                 200,
                 201,
                 202,
@@ -608,8 +576,19 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "/// Parse the optional `compaction_threshold` entry. Returns `None` when",
+              "lastLine": "}"
             }
           ]
         }
@@ -619,12 +598,65 @@
       "name": "Invalid compaction_threshold shape is rejected and no override is surfaced",
       "testMappings": [
         {
-          "file": "rust/providers/tests/rhai_scripted_model_limits_tests.rs",
-          "lines": "432-461",
+          "file": "rust/providers/tests/rhai_scripted_model_limits/thresholds_and_bridge.rs",
+          "lines": "86-115",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/model_limits.rs",
               "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
                 200,
                 201,
                 202,
@@ -647,8 +679,19 @@
                 219,
                 220,
                 221,
-                222
-              ]
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231
+              ],
+              "firstLine": "/// Parse the optional `compaction_threshold` entry. Returns `None` when",
+              "lastLine": "}"
             }
           ]
         }
@@ -660,13 +703,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/rhai_scripted_model_limits_tests.rs"
+      "rust/providers/tests/rhai_scripted_model_limits/limit_overrides.rs",
+      "rust/providers/tests/rhai_scripted_model_limits/thresholds_and_bridge.rs"
     ],
     "implFiles": [
       "rust/providers/src/custom/provider.rs",
-      "rust/providers/src/custom/model_limits.rs",
-      "rust/napi/src/session_manager.rs"
+      "rust/providers/src/custom/model_limits.rs"
     ],
-    "totalLinesCovered": 769
+    "totalLinesCovered": 798
   }
 }

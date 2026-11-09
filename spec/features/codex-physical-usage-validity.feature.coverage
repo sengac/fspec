@@ -10,7 +10,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -144,8 +143,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -159,7 +162,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,7 +180,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -309,8 +313,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -324,7 +332,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -340,7 +350,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -474,8 +483,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -489,7 +502,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -505,7 +520,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -639,8 +653,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -654,7 +672,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -670,7 +690,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -804,8 +823,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -819,7 +842,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -835,7 +860,6 @@
             {
               "file": "rust/providers/src/codex/streaming.rs",
               "lines": [
-                81,
                 82,
                 83,
                 84,
@@ -969,8 +993,12 @@
                 212,
                 213,
                 214,
-                215
-              ]
+                215,
+                216,
+                217
+              ],
+              "firstLine": "pub(super) fn stream(",
+              "lastLine": "if let Some(error) = terminal.error(&redactor) { Err(error)?; }"
             },
             {
               "file": "rust/providers/src/codex/lifecycle.rs",
@@ -984,7 +1012,9 @@
                 40,
                 41,
                 42
-              ]
+              ],
+              "firstLine": "pub fn into_usage(self) -> ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -1002,6 +1032,6 @@
       "rust/providers/src/codex/streaming.rs",
       "rust/providers/src/codex/lifecycle.rs"
     ],
-    "totalLinesCovered": 972
+    "totalLinesCovered": 978
   }
 }

@@ -42,4 +42,19 @@ impl AgentViewStore {
             }
         }
     }
+
+    /// TUI-114: mark `session` as an orchestrator bot (sets its role
+    /// overlay to the bot role).
+    pub fn mark_bot_session(&mut self, session: SessionId) {
+        self.set_role(
+            session,
+            Some(codelet_sessions::bot::ORCHESTRATOR_ROLE.to_string()),
+        );
+    }
+
+    /// TUI-114: true when `session`'s role overlay is a bot role.
+    pub fn is_bot_session(&self, session: &SessionId) -> bool {
+        self.role_for(session)
+            .is_some_and(codelet_sessions::bot::is_bot_role)
+    }
 }

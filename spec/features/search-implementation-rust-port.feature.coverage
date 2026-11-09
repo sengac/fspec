@@ -108,7 +108,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -119,7 +121,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/search_implementation.rs",
-          "lines": "114-135",
+          "lines": "118-138",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/search_implementation.rs",
@@ -222,7 +224,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -233,7 +237,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/search_implementation.rs",
-          "lines": "136-181",
+          "lines": "144-188",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/search_implementation.rs",
@@ -336,7 +340,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -347,7 +353,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/search_implementation.rs",
-          "lines": "182-202",
+          "lines": "194-209",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/search_implementation.rs",
@@ -450,7 +456,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -461,7 +469,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/search_implementation.rs",
-          "lines": "203-226",
+          "lines": "215-233",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/search_implementation.rs",
@@ -564,7 +572,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -575,7 +585,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/search_implementation.rs",
-          "lines": "227-251",
+          "lines": "239-267",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/search_implementation.rs",
@@ -678,7 +688,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// preserved (files sorted by name, then scenario/test/impl declaration order)."
             }
           ]
         }
@@ -695,6 +707,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/search_implementation.rs"
     ],
-    "totalLinesCovered": 761
+    "totalLinesCovered": 753
   }
 }

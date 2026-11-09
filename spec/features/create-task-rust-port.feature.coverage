@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "72-110",
+          "lines": "71-115",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
@@ -30,8 +30,6 @@
                 93,
                 94,
                 95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -204,8 +202,11 @@
                 267,
                 268,
                 269,
-                270
-              ]
+                270,
+                271
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "Ok(render_success(&args, &next_id))"
             }
           ]
         }
@@ -216,13 +217,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "110-143",
+          "lines": "117-163",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                145,
-                146,
                 147,
                 148,
                 149,
@@ -323,8 +322,12 @@
                 244,
                 245,
                 246,
-                247
-              ]
+                247,
+                248,
+                249
+              ],
+              "firstLine": "// Build the new task object in TS object-literal insertion order:",
+              "lastLine": "crate::io::board::write_work_units(project_root, &Value::Object(top))?;"
             }
           ]
         }
@@ -335,7 +338,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "144-171",
+          "lines": "165-196",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
@@ -344,7 +347,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "// 1. Foundation must exist. The original command string mirrors the TS",
+              "lastLine": "check_foundation_exists(project_root, &original_command)?;"
             }
           ]
         }
@@ -355,7 +360,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "172-191",
+          "lines": "198-216",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
@@ -367,7 +372,9 @@
                 92,
                 93,
                 94
-              ]
+              ],
+              "firstLine": "// 2. Validate title (non-empty after trim).",
+              "lastLine": "}"
             }
           ]
         }
@@ -378,13 +385,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "192-213",
+          "lines": "218-244",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -393,8 +398,12 @@
                 103,
                 104,
                 105,
-                106
-              ]
+                106,
+                107,
+                108
+              ],
+              "firstLine": "// 3. Validate prefix is registered.",
+              "lastLine": "}"
             }
           ]
         }
@@ -405,20 +414,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "214-236",
+          "lines": "246-270",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                111,
-                112,
                 113,
                 114,
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120
+              ],
+              "firstLine": "// 4. Validate parent (existence + nesting depth).",
+              "lastLine": "}"
             }
           ]
         }
@@ -429,19 +440,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "237-272",
+          "lines": "272-309",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                119,
-                120,
                 121,
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126,
+                127
+              ],
+              "firstLine": "let depth = nesting_depth(&data, parent, 1);",
+              "lastLine": "}"
             }
           ]
         }
@@ -452,13 +465,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "273-295",
+          "lines": "311-332",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -467,8 +478,12 @@
                 135,
                 136,
                 137,
-                138
-              ]
+                138,
+                139,
+                140
+              ],
+              "firstLine": "// 5. Validate epic (existence). Auto-creates spec/epics.json on ENOENT,",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,14 +494,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "296-347",
+          "lines": "334-393",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                215,
-                216,
-                217,
                 218,
                 219,
                 220,
@@ -536,8 +548,12 @@
                 264,
                 265,
                 266,
-                267
-              ]
+                267,
+                268,
+                269
+              ],
+              "firstLine": "// Update parent's children array if parent exists.",
+              "lastLine": "}"
             }
           ]
         }
@@ -548,13 +564,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "348-379",
+          "lines": "395-432",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                322,
-                323,
                 324,
                 325,
                 326,
@@ -575,8 +589,12 @@
                 341,
                 342,
                 343,
-                344
-              ]
+                344,
+                345,
+                346
+              ],
+              "firstLine": "/// Compute the next `<PREFIX>-NNN` id and the numeric high-water-mark.",
+              "lastLine": "}"
             }
           ]
         }
@@ -587,12 +605,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_task.rs",
-          "lines": "381-409",
+          "lines": "434-493",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_task.rs",
               "lines": [
-                276,
                 277,
                 278,
                 279,
@@ -636,8 +653,11 @@
                 317,
                 318,
                 319,
-                320
-              ]
+                320,
+                321
+              ],
+              "firstLine": "/// `createTask` (create-task.ts:143-163).",
+              "lastLine": ")"
             }
           ]
         }
@@ -654,6 +674,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/create_task.rs"
     ],
-    "totalLinesCovered": 805
+    "totalLinesCovered": 878
   }
 }

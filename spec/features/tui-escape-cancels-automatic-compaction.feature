@@ -1,9 +1,11 @@
+@BUG-582
 @BUG-214
 @tui
 @integration
 @compaction
 @context-management
 @phase-1
+@BUG-530
 Feature: Escape cancels automatic compaction through real session transports
   """
   Architecture notes:
@@ -18,6 +20,8 @@ Feature: Escape cancels automatic compaction through real session transports
   Existing dialog, popup, selection and idle Escape priorities remain unchanged;
   these scenarios have no higher-priority transient UI consuming the keypress.
   Footer presentation and status schema remain owned by BUG-213.
+  BUG-530: the pending compaction never completes on its own, so ending with an explicit cancellation
+  (and dropping the pending builder) proves Escape stopped it; no wall-clock bound is asserted.
   """
 
   Background: User Story
@@ -30,7 +34,7 @@ Feature: Escape cancels automatic compaction through real session transports
     And the focused session has a pending pre-prompt automatic compaction builder
     And no dialog, popup or selection consumes Escape
     When I press Escape through the TUI event handler
-    Then the focused session receives the interrupt and its pending compaction stops promptly
+    Then the focused session receives the interrupt and its pending compaction stops with an explicit cancellation
     And no successful compaction or continuation inference occurs
     And the original conversation remains unchanged and accessible
     And compaction activity is cleared for that session without affecting another session
@@ -40,7 +44,7 @@ Feature: Escape cancels automatic compaction through real session transports
     And the focused session has a pending pre-prompt automatic compaction builder
     And no dialog, popup or selection consumes Escape
     When I press Escape through the TUI event handler
-    Then the focused session receives the interrupt and its pending compaction stops promptly
+    Then the focused session receives the interrupt and its pending compaction stops with an explicit cancellation
     And no successful compaction or continuation inference occurs
     And the original conversation remains unchanged and accessible
     And compaction activity is cleared for that session without affecting another session

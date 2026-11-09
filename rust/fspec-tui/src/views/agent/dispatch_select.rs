@@ -3,6 +3,7 @@
 //! ceiling pinned by `rpc094-agentview-scrollback-scroll.feature`.
 //!
 //! Feature: spec/features/agentview-turn-select-mode.feature
+//!          spec/features/copy-works-everywhere-text-is-shown.feature (TUI-130)
 
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -55,6 +56,11 @@ impl AgentView {
                 self.emit(Action::TurnModalEnd);
                 Some(EventResult::consumed())
             }
+            KeyCode::Char('c') => {
+                // TUI-130: c copies the selected (or open) turn's whole text.
+                self.emit(Action::CopySelectedTurn);
+                Some(EventResult::consumed())
+            }
             KeyCode::Enter => {
                 // RPC-382: Enter on the selected turn opens the turn
                 // content modal (replaces the RPC-381 suppression). The
@@ -87,6 +93,27 @@ impl AgentView {
             }
             _ => None,
         }
+    }
+
+    /// TUI-130 (audit CP-15): Ctrl+C copies a live scrollback or composer
+    /// selection and clears it, so the next Ctrl+C interrupts. False when
+    /// nothing is selected (Ctrl+C interrupts).
+    pub(super) fn copy_selection_instead_of_interrupt(&mut self) -> bool {
+        if self.text_selection_active {
+            self.text_selection_active = false;
+            self.emit(Action::SelectionCommit);
+            self.emit(Action::SelectionClear);
+            return true;
+        }
+        let Some(area) = self.last_input_area else {
+            return false;
+        };
+        let Some(text) = self.input.selected_text_in(area) else {
+            return false;
+        };
+        self.input.clear_selection();
+        self.emit(Action::CopyToClipboard(text));
+        true
     }
 
     /// RPC-381: Tab toggles SELECT mode view-locally and emits the

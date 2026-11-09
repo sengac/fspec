@@ -10,8 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                168,
-                169,
                 170,
                 171,
                 172,
@@ -19,8 +17,12 @@
                 174,
                 175,
                 176,
-                177
-              ]
+                177,
+                178,
+                179
+              ],
+              "firstLine": "// [5] Append the new capability and write.",
+              "lastLine": "write_json_atomic_trailing_newline(&target_path, &data)?;"
             }
           ]
         }
@@ -31,7 +33,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "105-146",
+          "lines": "108-152",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
@@ -44,7 +46,9 @@
                 66,
                 67,
                 68
-              ]
+              ],
+              "firstLine": "// [1] Draft precedence — draft wins when present.",
+              "lastLine": "};"
             }
           ]
         }
@@ -55,13 +59,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "147-177",
+          "lines": "154-183",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                135,
-                136,
                 137,
                 138,
                 139,
@@ -70,8 +72,12 @@
                 142,
                 143,
                 144,
-                145
-              ]
+                145,
+                146,
+                147
+              ],
+              "firstLine": "let caps_entry = solution_obj.get(\"capabilities\");",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,18 +88,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "178-210",
+          "lines": "185-216",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                161,
-                162,
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168
+              ],
+              "firstLine": "// [4] Prune ONLY when every existing entry is a placeholder.",
+              "lastLine": "}"
             }
           ]
         }
@@ -104,18 +112,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "211-241",
+          "lines": "218-247",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                161,
-                162,
                 163,
                 164,
                 165,
-                166
-              ]
+                166,
+                167,
+                168
+              ],
+              "firstLine": "// [4] Prune ONLY when every existing entry is a placeholder.",
+              "lastLine": "}"
             }
           ]
         }
@@ -126,7 +136,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "242-270",
+          "lines": "249-276",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
@@ -138,7 +148,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "// [2] Missing-file guard — do NOT auto-create.",
+              "lastLine": "}"
             }
           ]
         }
@@ -149,20 +161,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "271-295",
+          "lines": "278-301",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                78,
-                79,
                 80,
                 81,
                 82,
                 83,
                 84,
-                85
-              ]
+                85,
+                86,
+                87
+              ],
+              "firstLine": "let raw = std::fs::read_to_string(&target_path).map_err(|source| FspecCoreError::Io {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -173,13 +187,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_capability.rs",
-          "lines": "296-323",
+          "lines": "303-334",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_capability.rs",
               "lines": [
-                179,
-                180,
                 181,
                 182,
                 183,
@@ -192,8 +204,138 @@
                 190,
                 191,
                 192,
-                193
-              ]
+                193,
+                194,
+                195
+              ],
+              "firstLine": "// DISC-003 rule 4: universal progress trailer on the success envelope.",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Placeholder capabilities in foundation.json.draft are pruned before the new entry is added",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/add_capability.rs",
+          "lines": "336-382",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/add_capability.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "// [1] Draft precedence — draft wins when present.",
+              "lastLine": "}"
             }
           ]
         }
@@ -201,8 +343,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/add_capability.rs"
@@ -210,6 +352,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_capability.rs"
     ],
-    "totalLinesCovered": 326
+    "totalLinesCovered": 483
   }
 }

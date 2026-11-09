@@ -4,6 +4,7 @@
 @providers
 @session
 @high
+@attachment
 Feature: Per-profile Max Images resolution
   """
   resolve_profile_max_images (rust/sessions/src/model_resolution.rs) is the

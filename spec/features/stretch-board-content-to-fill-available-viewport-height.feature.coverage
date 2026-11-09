@@ -6,31 +6,7 @@
         {
           "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
           "lines": "24-53",
-          "implMappings": [
-            {
-              "file": "src/tui/components/UnifiedBoardLayout.tsx",
-              "lines": [
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -40,31 +16,7 @@
         {
           "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
           "lines": "57-82",
-          "implMappings": [
-            {
-              "file": "src/tui/components/UnifiedBoardLayout.tsx",
-              "lines": [
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -74,31 +26,7 @@
         {
           "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
           "lines": "86-119",
-          "implMappings": [
-            {
-              "file": "src/tui/components/UnifiedBoardLayout.tsx",
-              "lines": [
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -110,9 +38,7 @@
     "testFiles": [
       "src/tui/__tests__/BoardView-vertical-stretch.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/UnifiedBoardLayout.tsx"
-    ],
-    "totalLinesCovered": 144
+    "implFiles": [],
+    "totalLinesCovered": 90
   }
 }

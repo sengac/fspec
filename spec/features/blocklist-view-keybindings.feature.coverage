@@ -4,8 +4,8 @@
       "name": "Vim keys do not move the selection",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "254-271",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "20-37",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
@@ -29,8 +29,14 @@
                 183,
                 184,
                 185,
-                186
-              ]
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "self.visible_rows,",
+              "lastLine": "if key"
             }
           ]
         }
@@ -40,8 +46,8 @@
       "name": "Arrow keys move the selection one rule at a time",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "273-290",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "39-56",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
@@ -54,7 +60,9 @@
                 164,
                 165,
                 166
-              ]
+              ],
+              "firstLine": "/// `scroll_viewport::ensure_visible` primitive (BLOCK-008) — the",
+              "lastLine": "self.selected_index,"
             }
           ]
         }
@@ -64,22 +72,24 @@
       "name": "PageDown advances the selection by one viewport",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "292-316",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "58-82",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
                 213,
-                214
-              ]
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "KeyCode::PageUp => {",
+              "lastLine": "KeyCode::End => {"
             }
           ]
         }
@@ -89,22 +99,24 @@
       "name": "PageDown clamps at the last rule",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "318-333",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "84-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
                 210,
                 211,
                 212,
                 213,
-                214
-              ]
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "KeyCode::PageUp => {",
+              "lastLine": "KeyCode::End => {"
             }
           ]
         }
@@ -114,37 +126,19 @@
       "name": "PageUp retreats the selection by one viewport",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "335-350",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "101-116",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                218,
-                219,
-                220,
-                221,
                 222,
                 223,
                 224,
                 225,
-                226
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "End selects the last rule and Home selects the first rule",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "352-380",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
-              "lines": [
+                226,
+                227,
+                228,
                 229,
                 230,
                 231,
@@ -157,14 +151,49 @@
                 238,
                 239,
                 240,
-                241,
+                241
+              ],
+              "firstLine": "KeyCode::Char(' ') => self.toggle_focused(),",
+              "lastLine": "if self.selected_index + 1 < self.rules.len() {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End selects the last rule and Home selects the first rule",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "118-146",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
+              "lines": [
                 242,
                 243,
                 244,
                 245,
                 246,
-                247
-              ]
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "self.selected_index += 1;",
+              "lastLine": "self.selected_index = (self.selected_index + step).min(last);"
             }
           ]
         }
@@ -174,8 +203,8 @@
       "name": "Space toggles the focused rule",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "382-400",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "148-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
@@ -200,8 +229,14 @@
                 200,
                 201,
                 202,
-                203
-              ]
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "/// BLOCK-008: each navigation arm clamp-moves `selected_index` then",
+              "lastLine": "self.page_down();"
             }
           ]
         }
@@ -211,15 +246,16 @@
       "name": "Footer hint no longer advertises vim keys",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/src/views/blocklist/tests.rs",
-          "lines": "402-429",
+          "file": "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs",
+          "lines": "171-198",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/blocklist/render.rs",
               "lines": [
-                24,
-                25
-              ]
+                24
+              ],
+              "firstLine": "const FOOTER_HINT: &str =",
+              "lastLine": "const FOOTER_HINT: &str ="
             }
           ]
         }
@@ -231,12 +267,12 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/src/views/blocklist/tests.rs"
+      "rust/fspec-tui/src/views/blocklist/keybindings_tests.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/blocklist/mod.rs",
       "rust/fspec-tui/src/views/blocklist/render.rs"
     ],
-    "totalLinesCovered": 266
+    "totalLinesCovered": 289
   }
 }

@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-266
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port remove-aggregate-from-foundation command to Rust
   """
   Core impl at rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs uses

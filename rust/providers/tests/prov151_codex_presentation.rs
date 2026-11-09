@@ -7,7 +7,6 @@ use rig::agent::AgentBuilder;
 use rig::streaming::StreamingPrompt;
 use serde_json::json;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 #[tokio::test]
 async fn input_fragments_reach_presentation_before_execution() -> TestResult {
@@ -50,8 +49,21 @@ async fn input_fragments_reach_presentation_before_execution() -> TestResult {
                 ))
             ))
         });
-    let pending = tokio::time::timeout(Duration::from_millis(150), stream.next()).await;
-    assert!(pending.is_err());
+    // Wait for the five input fragments while the stream stays pending; the
+    // first request also builds admission's token counter, which takes a
+    // few hundred milliseconds in an unoptimised build.
+    // TEST-042: no waiting window, under the deadlock guard.
+    let mut next = stream.next();
+    let fragments =
+        codelet_test_helpers::pending_until("the five input fragments", &mut next, || {
+            updates.lock().is_ok_and(|updates| updates.len() >= 5)
+        })
+        .await;
+    drop(next);
+    assert!(
+        fragments.is_ok(),
+        "the stream yielded before the tools ran: {fragments:?}"
+    );
     assert!(calls.lock().map_err(|_| "calls lock poisoned")?.is_empty());
     let updates = updates.lock().map_err(|_| "updates lock poisoned")?;
     assert_eq!(updates.len(), 5);

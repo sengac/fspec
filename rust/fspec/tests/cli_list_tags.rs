@@ -206,34 +206,31 @@ fn scenario_cli_text_output_renders_alphabetically_sorted_tags() {
         "fspec list-tags must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'Phase Tags (2 tags)'
+    // @step And stdout contains the substring 'Phase Tags (2 tags)'
     assert!(
         stdout.contains("Phase Tags (2 tags)"),
         "stdout must contain 'Phase Tags (2 tags)' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the exact line '  @aaa - A desc'
+    // @step And stdout contains the exact line '  @aaa - A desc'
     assert!(
         stdout.lines().any(|l| l == "  @aaa - A desc"),
         "stdout must contain exact line '  @aaa - A desc'; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the exact line '  @zed - Z desc'
+    // @step And stdout contains the exact line '  @zed - Z desc'
     assert!(
         stdout.lines().any(|l| l == "  @zed - Z desc"),
         "stdout must contain exact line '  @zed - Z desc'; got:\n{stdout}"
     );
 
-    // @step Then the line '  @aaa - A desc' appears BEFORE the line '  @zed - Z desc' in stdout
+    // @step And the line '  @aaa - A desc' appears BEFORE the line '  @zed - Z desc' in stdout
     let aaa = stdout.find("  @aaa - A desc").expect("@aaa line present");
     let zed = stdout.find("  @zed - Z desc").expect("@zed line present");
     assert!(
         aaa < zed,
         "@aaa must appear before @zed; aaa={aaa} zed={zed}\n{stdout}"
     );
-    // @step And stdout contains the exact line ' @aaa - A desc'
-    // @step And stdout contains the exact line ' @zed - Z desc'
-    // @step And the line ' @aaa - A desc' appears BEFORE the line ' @zed - Z desc' in stdout
 }
 
 // ─────────────────────────────────────────────────────────────────────────

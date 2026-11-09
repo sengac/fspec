@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui-component
 @agent-view
@@ -87,7 +88,7 @@ Feature: TurnContentModal not full-screen and not scrollable (parity gap)
   Scenario: The modal shows the scroll/close footer
     Given a turn content modal open over a long turn
     When the modal is rendered
-    Then the modal's bottom row shows the dim text "↑↓ Scroll | Esc Close"
+    Then the modal's bottom row shows the dim text "↑↓ Scroll | c Copy | Esc Close"
 
   Scenario: Re-opening the modal resets the scroll offset to the top
     Given a turn content modal that has been scrolled down over a long turn

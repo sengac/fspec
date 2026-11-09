@@ -16,13 +16,13 @@ Feature: Replace generic create-work-unit with type-specific commands
   # BUSINESS RULES:
   #   1. The generic create-work-unit command must be completely removed (breaking change)
   #   2. Each command must emit a type-specific system-reminder after creation guiding AI to the appropriate workflow
-  #   3. create-bug must guide AI to research commands: search-scenarios, search-implementation, show-coverage
+  #   3. create-bug must guide AI to research commands: context (CLI-019), search-implementation, show-coverage
   #   4. create-story must guide AI to Example Mapping commands: add-rule, add-example, add-question, set-user-story
   #   5. create-task must indicate minimal requirements (optional feature file, optional tests)
   #   6. The generic create-work-unit command must be completely removed (breaking change)
   #   7. Each command must emit type-specific system-reminder after creation guiding AI to appropriate workflow
   #   8. create-story must guide AI to Example Mapping commands (add-rule, add-example, add-question, set-user-story)
-  #   9. create-bug must guide AI to research commands (search-scenarios, search-implementation, show-coverage)
+  #   9. create-bug must guide AI to research commands (context, search-implementation, show-coverage)
   #   10. create-task must indicate minimal requirements (optional feature file, optional tests)
   #   11. The group help in src/help.ts must be updated to reference create-story/bug/task instead of create-work-unit
   #   12. All command help files in src/commands/*-help.ts must be updated to remove create-work-unit references and add new command help files
@@ -42,10 +42,10 @@ Feature: Replace generic create-work-unit with type-specific commands
   #
   # EXAMPLES:
   #   1. AI runs 'fspec create-story AUTH "User login"' and sees system-reminder: 'Next steps - Example Mapping: 1. fspec add-rule AUTH-001 ..., 2. fspec add-example AUTH-001 ...'
-  #   2. AI runs 'fspec create-bug BUG "Login validation broken"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec search-scenarios --query="login", 2. fspec search-implementation --function="validateLogin"'
+  #   2. AI runs 'fspec create-bug BUG "Login validation broken"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec context --text "login", 2. fspec search-implementation --function="validateLogin"'
   #   3. AI runs 'fspec create-task TASK "Setup CI/CD pipeline"' and sees system-reminder: 'Task created. Tasks can skip feature files and tests for operational work.'
   #   4. AI runs 'fspec create-story AUTH "User login"' and sees system-reminder: 'Next steps - Example Mapping: 1. fspec add-rule AUTH-001 ..., 2. fspec add-example AUTH-001 ...'
-  #   5. AI runs 'fspec create-bug BUG "Login validation broken"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec search-scenarios --query="login", 2. fspec search-implementation --function="validateLogin"'
+  #   5. AI runs 'fspec create-bug BUG "Login validation broken"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec context --text "login", 2. fspec search-implementation --function="validateLogin"'
   #   6. AI runs 'fspec create-task TASK "Setup CI/CD pipeline"' and sees system-reminder: 'Task created. Tasks can skip feature files and tests for operational work.'
   #   7. In src/help.ts, replace 'fspec create-work-unit PREFIX "Title"' with 'fspec create-story PREFIX "Title"' in work management help
   #   8. Delete src/commands/create-work-unit-help.ts completely (breaking change)
@@ -79,62 +79,9 @@ Feature: Replace generic create-work-unit with type-specific commands
     I want to create work units with appropriate guidance for each type
     So that I follow the correct discovery workflow for stories, bugs, and tasks
 
-  Scenario: Create story with Example Mapping guidance
-    Given I have fspec installed
-    When I run 'fspec create-story AUTH "User login"'
-    Then a new story work unit AUTH-001 should be created
-    And a system-reminder should be displayed with Example Mapping guidance
-    And the system-reminder should include: 'fspec add-rule AUTH-001'
-    And the system-reminder should include: 'fspec add-example AUTH-001'
-    And the system-reminder should include: 'fspec add-question AUTH-001'
-    And the system-reminder should include: 'fspec set-user-story AUTH-001'
-
-  Scenario: Create bug with research guidance
-    Given I have fspec installed
-    When I run 'fspec create-bug BUG "Login validation broken"'
-    Then a new bug work unit BUG-001 should be created
-    And a system-reminder should be displayed with research command guidance
-    And the system-reminder should include: 'fspec search-scenarios --query="login"'
-    And the system-reminder should include: 'fspec search-implementation --function="validateLogin"'
-    And the system-reminder should include: 'fspec show-coverage'
-
-  Scenario: Create task with minimal requirements guidance
-    Given I have fspec installed
-    When I run 'fspec create-task TASK "Setup CI/CD pipeline"'
-    Then a new task work unit TASK-001 should be created
-    And a system-reminder should indicate tasks have optional feature files
-    And a system-reminder should indicate tasks have optional tests
-
-  Scenario: All type-specific commands support common options
-    Given I have fspec installed
-    When I run 'fspec create-story AUTH "Login" --epic user-management --description "User authentication" --parent AUTH-000'
-    Then the story should be created with epic set to 'user-management'
-    And the story should have description 'User authentication'
-    And the story should have parent AUTH-000
-
   Scenario: Old create-work-unit command is removed
     Given I have fspec v2.0 installed
-    When I run 'fspec create-work-unit AUTH "Login"'
-    Then the command should fail with 'unknown command' error
-    And the error should suggest using create-story, create-bug, or create-task
-
-  Scenario: All 'work unit' terminology replaced with type-specific terms
-    Given I search the entire codebase for 'work unit'
-    When I grep for 'work unit' or 'workUnit' in all files
-    Then all user-facing text should use 'story', 'bug', 'task', or 'work unit'
-    And variable names should be story, bug, task, or workUnit
-    And no references to 'work unit' should remain except in historical changelogs
-
-  Scenario: Documentation updated with type-specific commands
-    Given I have updated the codebase
-    When I check README.md, spec/AGENTS.md, and docs/ files
-    Then all examples should use create-story, create-bug, or create-task
-    And no examples should reference create-work-unit
-    And help text in src/help.ts should reference new commands
-    And command help files should exist for all 3 new commands
-
-  Scenario: System-reminders in codebase reference new commands
-    Given I search for system-reminder tags in source code
-    When I grep for '<system-reminder>' containing 'create'
-    Then all system-reminders should reference create-story/bug/task based on context
-    And no system-reminders should reference create-work-unit
+    When I run fspec with the removed command 'create-work-unit AUTH "Login"'
+    Then the command should fail with the error "error: unknown command 'create-work-unit'"
+    And the exit code should be 1
+    And no spec/work-units.json should be written

@@ -6,13 +6,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "111-142",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": "3575-3588",
-              "note": "handleModelSelect now delegates to selectModel service"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -22,12 +16,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "204-230",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelSelectionService.ts",
-              "lines": "107-123"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -37,12 +26,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "149-198",
-          "implMappings": [
-            {
-              "file": "src/tui/services/profileEnvironmentService.ts",
-              "lines": "1-38"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -52,12 +36,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "236-273",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelSelectionService.ts",
-              "lines": "65-105"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -67,12 +46,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "279-316",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelSelectionService.ts",
-              "lines": "65-105"
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -82,12 +56,7 @@
         {
           "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
           "lines": "322-372",
-          "implMappings": [
-            {
-              "file": "src/tui/services/modelSelectionService.ts",
-              "lines": "65-123"
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -99,10 +68,7 @@
     "testFiles": [
       "src/tui/services/__tests__/modelSelectionService.test.ts"
     ],
-    "implFiles": [
-      "src/tui/components/AgentView.tsx",
-      "src/tui/services/modelSelectionService.ts",
-      "src/tui/services/profileEnvironmentService.ts"
-    ]
+    "implFiles": [],
+    "totalLinesCovered": 236
   }
 }

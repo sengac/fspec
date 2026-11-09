@@ -4,9 +4,11 @@ pub(super) fn start(app: &mut App, provider_id: String) {
     if tokio::runtime::Handle::try_current().is_err() {
         return;
     }
-    app.navigator
-        .provider_settings
-        .set_navigate_target(provider_id.clone());
+    // BUG-575: the logout's own refresh returns the cursor to the provider
+    // row, unless the user moves it first.
+    let navigate = Some(app.navigate_request(
+        crate::views::provider_settings::refresh::NavigateTarget::Provider(provider_id.clone()),
+    ));
     let backend = app.backend.clone();
     let action_tx = app.action_tx.clone();
     let handle = tokio::spawn(async move {
@@ -17,9 +19,7 @@ pub(super) fn start(app: &mut App, provider_id: String) {
                     .into(),
             ));
         }
-        if let Ok(list) = backend.list_provider_credentials().await {
-            let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-        }
+        let _ = action_tx.send(Action::RefreshProviderSettings { navigate });
     });
     app.pending_tasks.push(handle);
 }

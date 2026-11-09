@@ -3,14 +3,9 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js create-story --help`.
 //!
-//! NOTE on quirks faithfully reproduced from the TS reference:
-//! * `relatedCommands` entries already carry a `fspec ` prefix, so the
-//!   formatter renders them as `fspec fspec add-rule - ...`.
-//! * `typicalWorkflow` is a TS array joined with `,` (no space) into a
-//!   single line.
-//! * The TS help-formatter only reads `error.fix` for COMMON ERRORS; the
-//!   help.ts data uses `solution` (not `fix`), so the rendered Fix line is
-//!   `undefined` in the captured fixture. We mirror that verbatim.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -42,7 +37,7 @@ const OPTS: &[CommandOption] = &[
         default_value: None,
     },
     CommandOption {
-        flag: "-p, --parent <parent>",
+        flag: "-p, --parent <workUnitId>",
         description: "Parent story ID for hierarchical relationships",
         default_value: None,
     },
@@ -79,30 +74,30 @@ const PREREQUISITES: &[&str] = &[
     "Parent story must exist if using --parent",
 ];
 
-const TYPICAL_WORKFLOW: &str = "Create story: fspec create-story PREFIX \"Title\",Follow Example Mapping guidance from system-reminder,Set user story: fspec set-user-story STORY-001 --role \"...\" --action \"...\" --benefit \"...\",Add rules: fspec add-rule STORY-001 \"Rule text\",Add examples: fspec add-example STORY-001 \"Example text\",Add questions: fspec add-question STORY-001 \"@human: Question?\",Generate scenarios: fspec generate-scenarios STORY-001,Move to specifying: fspec update-work-unit-status STORY-001 specifying";
+const TYPICAL_WORKFLOW: &str = "Create story: fspec create-story PREFIX \"Title\". Follow Example Mapping guidance from system-reminder. Set user story: fspec set-user-story STORY-001 --role \"...\" --action \"...\" --benefit \"...\". Add rules: fspec add-rule STORY-001 \"Rule text\". Add examples: fspec add-example STORY-001 \"Example text\". Add questions: fspec add-question STORY-001 \"@human: Question?\". Generate scenarios: fspec generate-scenarios STORY-001. Move to specifying: fspec update-work-unit-status STORY-001 specifying";
 
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Prefix 'PREFIX' is not registered",
-        fix: "undefined",
+        fix: "Run: fspec create-prefix PREFIX \"Description\"",
     },
     CommonError {
         error: "Parent story 'PARENT-001' does not exist",
-        fix: "undefined",
+        fix: "Create parent first or remove --parent option",
     },
     CommonError {
         error: "Epic 'epic-name' does not exist",
-        fix: "undefined",
+        fix: "Run: fspec create-epic epic-name \"Title\"",
     },
 ];
 
 const RELATED: &[&str] = &[
-    "fspec add-rule - Add business rule to story",
-    "fspec add-example - Add concrete example to story",
-    "fspec add-question - Add question for human clarification",
-    "fspec set-user-story - Set user story fields (role, action, benefit)",
-    "fspec generate-scenarios - Generate Gherkin scenarios from example map",
-    "fspec update-work-unit-status - Move story through ACDD workflow",
+    "add-rule - Add business rule to story",
+    "add-example - Add concrete example to story",
+    "add-question - Add question for human clarification",
+    "set-user-story - Set user story fields (role, action, benefit)",
+    "generate-scenarios - Generate Gherkin scenarios from example map",
+    "update-work-unit-status - Move story through ACDD workflow",
 ];
 
 const NOTES: &[&str] = &[

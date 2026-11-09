@@ -2,6 +2,7 @@
 @authentication
 @providers
 @PROV-057
+@COV-057
 Feature: Copilot agent loop dispatch in run_with_provider macro
   """
   PROV-057 L3 (agent-loop half): The run_with_provider! macro in

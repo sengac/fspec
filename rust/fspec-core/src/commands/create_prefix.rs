@@ -90,6 +90,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "create-prefix")?;
     // ── Load existing state (auto-creates spec/prefixes.json) ──────────
     // TS calls ensurePrefixesFile(cwd) which auto-creates an empty
     // PrefixesData and ensures the spec/ directory exists.
@@ -118,7 +120,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // ensure_prefixes_file) to avoid changing the shared helper's
     // signature. The canonical project resolution already happened during
     // ensure_prefixes_file, which created spec/ for us.
-    let spec_path = project_root.join("spec").join("prefixes.json");
+    let spec_path = crate::io::spec_paths::prefixes(project_root)?;
     write_json_atomic(&spec_path, &data)?;
 
     // ── Build dispatcher JSON ──────────────────────────────────────────

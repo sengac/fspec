@@ -43,14 +43,26 @@ pub fn classify(line: &str) -> DiffLineKind {
 /// rendering to prevent ANSI escape sequences, control characters, tabs,
 /// and carriage returns from trashing the terminal display.
 pub fn diff_line(text: &str) -> Line<'static> {
+    let (sanitized, kind) = sanitized_kind(text);
+    Line::from(Span::styled(sanitized, diff_style(kind)))
+}
+
+/// `text` sanitized for the terminal, and its classification.
+pub(super) fn sanitized_kind(text: &str) -> (String, DiffLineKind) {
     let sanitized = sanitize_for_terminal(text);
-    let style = match classify(&sanitized) {
+    let kind = classify(&sanitized);
+    (sanitized, kind)
+}
+
+/// The colour of a diff row of `kind` (TUI-131: every wrapped row of a
+/// line shares it).
+pub(super) fn diff_style(kind: DiffLineKind) -> Style {
+    match kind {
         DiffLineKind::Added => Style::default().fg(Color::Green),
         DiffLineKind::Removed => Style::default().fg(Color::Red),
         DiffLineKind::Hunk => Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
         DiffLineKind::Context => Style::default().fg(Color::White),
-    };
-    Line::from(Span::styled(sanitized, style))
+    }
 }
 
 #[cfg(test)]

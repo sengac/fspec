@@ -10,17 +10,25 @@
 
 use serde_json::Value;
 
-use super::ast_dispatch::AST_QUERIES;
 use super::database::GraphDatabase;
+use super::dispatch_helpers::{error_result, stamp};
+use super::query_index::QueryIndex;
 
 /// Default limit for top-N complexity queries.
 const DEFAULT_LIMIT: usize = 20;
 
+const ACTION: &str = "ast_complexity";
+
 /// Dispatch a cyclomatic complexity query.
+///
+/// Answered from the graph's query index (KGRAPH-077): no query runs per
+/// function, and a failed index query is an error.
 ///
 /// # Modes
 /// - `node_id = Some(slug)`: Return complexity for a specific function
-/// - `node_id = None`: Return top-N most complex functions
+/// - `node_id = None`: Return top-N most complex functions, by complexity
+///   descending and then by slug, with `total` counting every function
+///   that passed the filters
 ///
 /// # Parameters
 /// - `db`: The AST graph database
@@ -35,143 +43,86 @@ pub async fn dispatch_ast_complexity(
     min_threshold: Option<u32>,
     path_filter: Option<&str>,
 ) -> String {
-    match node_id {
-        Some(slug) => dispatch_single_function(db, slug).await,
-        None => {
-            dispatch_top_n(
-                db,
-                limit.unwrap_or(DEFAULT_LIMIT),
-                min_threshold,
-                path_filter,
-            )
-            .await
-        }
-    }
-}
-
-/// Query complexity for a single function by slug.
-async fn dispatch_single_function(db: &GraphDatabase, slug: &str) -> String {
-    let rows = match db
-        .query_with_source(AST_QUERIES, "all_functions", None)
-        .await
-    {
-        Ok(Value::Array(items)) => items,
-        Ok(_) => {
-            return error_json("Query returned non-array result");
-        }
-        Err(e) => {
-            return error_json(&format!("Query failed: {e}"));
-        }
+    let index = match db.query_index().await {
+        Ok(index) => index,
+        Err(error) => return error_result(db, ACTION, error),
     };
-
-    // Find the function matching the slug
-    for row in &rows {
-        let row_slug = row.get("slug").and_then(Value::as_str).unwrap_or("");
-        if row_slug == slug {
-            return build_single_result(row, db).await;
-        }
+    let result = match node_id {
+        Some(slug) => single_function(&index, slug),
+        None => Ok(top_n(
+            &index,
+            limit.unwrap_or(DEFAULT_LIMIT),
+            min_threshold,
+            path_filter,
+        )),
+    };
+    match result {
+        Ok(result) => stamp(db, result),
+        Err(error) => error_result(db, ACTION, error),
     }
-
-    // Not found
-    error_json(&format!("No function found with slug '{slug}'"))
 }
 
-/// Build the JSON response for a single function lookup.
-async fn build_single_result(row: &Value, db: &GraphDatabase) -> String {
-    let slug = row.get("slug").and_then(Value::as_str).unwrap_or("");
+/// Complexity for a single function by slug.
+fn single_function(index: &QueryIndex, slug: &str) -> Result<Value, String> {
+    let row = index
+        .functions
+        .get(slug)
+        .ok_or_else(|| format!("No function found with slug '{slug}'"))?;
     let name = row.get("name").and_then(Value::as_str).unwrap_or("");
     let complexity = row
         .get("cyclomaticComplexity")
         .and_then(Value::as_i64)
         .unwrap_or(1);
-    let line_start = row.get("lineStart").and_then(Value::as_i64);
-    let line_end = row.get("lineEnd").and_then(Value::as_i64);
-
-    // Resolve file path via function_container query
-    let path = resolve_file_path(db, slug).await;
 
     let mut result = serde_json::json!({
-        "action": "ast_complexity",
+        "action": ACTION,
         "slug": slug,
         "name": name,
         "cyclomaticComplexity": complexity,
         "summary": format!("{name} has cyclomatic complexity {complexity}"),
     });
-
-    if let Some(p) = &path {
-        result["path"] = Value::String(p.clone());
+    if let Some(path) = index.function_path(slug) {
+        result["path"] = Value::String(path.to_string());
     }
-    if let Some(ls) = line_start {
+    if let Some(ls) = row.get("lineStart").and_then(Value::as_i64) {
         result["lineStart"] = serde_json::json!(ls);
     }
-    if let Some(le) = line_end {
+    if let Some(le) = row.get("lineEnd").and_then(Value::as_i64) {
         result["lineEnd"] = serde_json::json!(le);
     }
-
-    result.to_string()
+    Ok(result)
 }
 
-/// Query top-N most complex functions across the codebase.
-async fn dispatch_top_n(
-    db: &GraphDatabase,
+/// The top-N most complex functions across the codebase.
+fn top_n(
+    index: &QueryIndex,
     limit: usize,
     min_threshold: Option<u32>,
     path_filter: Option<&str>,
-) -> String {
-    let rows = match db
-        .query_with_source(AST_QUERIES, "all_functions", None)
-        .await
-    {
-        Ok(Value::Array(items)) => items,
-        Ok(_) => {
-            return error_json("Query returned non-array result");
-        }
-        Err(e) => {
-            return error_json(&format!("Query failed: {e}"));
-        }
-    };
-
-    // Collect functions with complexity data, resolve file paths
-    let mut functions: Vec<Value> = Vec::new();
-
-    for row in &rows {
+) -> Value {
+    let mut functions: Vec<(i64, &str, Value)> = Vec::new();
+    for (slug, row) in &index.functions {
         let complexity = row
             .get("cyclomaticComplexity")
             .and_then(Value::as_i64)
             .unwrap_or(0);
-
-        // Skip functions below threshold
-        if let Some(threshold) = min_threshold {
-            if (complexity as u32) < threshold {
-                continue;
-            }
+        if min_threshold.is_some_and(|threshold| complexity < i64::from(threshold)) {
+            continue;
         }
-
-        let slug = row.get("slug").and_then(Value::as_str).unwrap_or("");
-        let name = row.get("name").and_then(Value::as_str).unwrap_or("");
-
-        // Resolve file path
-        let path = resolve_file_path(db, slug).await;
-
-        // Apply path filter
+        let path = index.function_path(slug);
         if let Some(filter) = path_filter {
-            if let Some(ref p) = path {
-                if !p.contains(filter) {
-                    continue;
-                }
-            } else {
+            if !path.is_some_and(|p| p.contains(filter)) {
                 continue;
             }
         }
-
+        let name = row.get("name").and_then(Value::as_str).unwrap_or("");
         let mut entry = serde_json::json!({
             "slug": slug,
             "name": name,
             "cyclomaticComplexity": complexity,
         });
-
-        if let Some(ref p) = path {
-            entry["path"] = Value::String(p.clone());
+        if let Some(p) = path {
+            entry["path"] = Value::String(p.to_string());
         }
         if let Some(ls) = row.get("lineStart").and_then(Value::as_i64) {
             entry["lineStart"] = serde_json::json!(ls);
@@ -179,55 +130,23 @@ async fn dispatch_top_n(
         if let Some(le) = row.get("lineEnd").and_then(Value::as_i64) {
             entry["lineEnd"] = serde_json::json!(le);
         }
-
-        functions.push(entry);
+        functions.push((complexity, slug, entry));
     }
 
-    // Sort by complexity descending
-    functions.sort_by(|a, b| {
-        let ac = a
-            .get("cyclomaticComplexity")
-            .and_then(Value::as_i64)
-            .unwrap_or(0);
-        let bc = b
-            .get("cyclomaticComplexity")
-            .and_then(Value::as_i64)
-            .unwrap_or(0);
-        bc.cmp(&ac)
-    });
-
-    // Apply limit
-    functions.truncate(limit);
-
-    let count = functions.len();
+    // Complexity descending, then slug ascending.
+    functions.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.cmp(b.1)));
+    let total = functions.len();
+    let results: Vec<Value> = functions
+        .into_iter()
+        .take(limit)
+        .map(|(_, _, entry)| entry)
+        .collect();
+    let count = results.len();
     serde_json::json!({
-        "action": "ast_complexity",
-        "results": functions,
+        "action": ACTION,
+        "results": results,
         "count": count,
-        "summary": format!("Top {count} most complex functions"),
+        "total": total,
+        "summary": format!("Top {count} most complex functions of {total}"),
     })
-    .to_string()
-}
-
-/// Resolve a function's file path via the function_container query.
-async fn resolve_file_path(db: &GraphDatabase, fn_slug: &str) -> Option<String> {
-    let params = serde_json::json!({ "slug": fn_slug });
-    if let Ok(Value::Array(container_rows)) = db
-        .query_with_source(AST_QUERIES, "function_container", Some(&params))
-        .await
-    {
-        if let Some(first) = container_rows.first() {
-            return first.get("path").and_then(Value::as_str).map(String::from);
-        }
-    }
-    None
-}
-
-/// Build a standard error JSON response.
-fn error_json(message: &str) -> String {
-    serde_json::json!({
-        "action": "ast_complexity",
-        "error": message,
-    })
-    .to_string()
 }

@@ -162,8 +162,9 @@ pub fn agent_loop_dispatch_supports_provider(provider_name: &str) -> bool {
 pub(crate) struct InputWithImages {
     /// The text prompt
     pub(crate) text: String,
-    /// Optional thinking config JSON (per-turn override; superimposed on
-    /// `session.inner.session_thinking_level`).
+    /// Optional per-turn thinking config JSON (a raw override of the
+    /// session_thinking_level). MODEL-010: a turn carrying one is refused;
+    /// the level is chosen with the thinking dialog or `/thinking`.
     pub(crate) thinking_config: Option<String>,
     /// Optional images from bridge (BRIDGE-007)
     pub(crate) images: Option<Vec<BridgeImageData>>,

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
-          "lines": "21-55",
+          "lines": "21-59",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
@@ -19,28 +19,32 @@
                 100,
                 102,
                 107
-              ]
+              ],
+              "firstLine": "task: &str,",
+              "lastLine": ".ok_or_else(|| \"Compactor returned no final response\".to_string())"
             },
             {
               "file": "rust/agent-loop/src/compaction_builder.rs",
               "lines": [
-                69,
-                70,
-                71,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135
-              ]
+                74,
+                75,
+                76,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ],
+              "firstLine": "let deadline = codelet_cli::compaction_timing::deadline().unwrap_or_else(|| {",
+              "lastLine": ".map_err(|_| \"compaction builder deadline exceeded\".to_string())?"
             }
           ]
         }
@@ -51,31 +55,83 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
-          "lines": "57-109",
+          "lines": "61-113",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253
-              ]
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374
+              ],
+              "firstLine": "async fn synthesize<M>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -86,7 +142,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
-          "lines": "111-154",
+          "lines": "115-159",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_timing.rs",
@@ -101,7 +157,9 @@
                 70,
                 71,
                 76
-              ]
+              ],
+              "firstLine": "ATTEMPT_NUMBER.try_with(|attempt| *attempt).ok()",
+              "lastLine": "let deadline = deadline().unwrap_or_else(attempt_deadline);"
             },
             {
               "file": "rust/cli/src/compaction_operation.rs",
@@ -121,8 +179,25 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ],
+              "firstLine": "let result = crate::compaction_timing::scope(",
+              "lastLine": "match validated {"
             }
           ]
         }
@@ -133,14 +208,25 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
-          "lines": "156-242",
+          "lines": "161-254",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/compaction_runway.rs",
               "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
                 45,
+                46,
+                47,
+                48,
+                49,
+                50,
                 51,
-                52,
                 53,
                 54,
                 55,
@@ -159,18 +245,80 @@
                 68,
                 69,
                 70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
                 90,
-                93,
+                91,
+                92,
                 94,
                 95,
                 96,
                 97,
                 98,
-                174,
-                180,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                193,
                 194,
-                200
-              ]
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ],
+              "firstLine": "fn pending_assistant(&self, assistant: &Message) {",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/mod.rs",
@@ -201,15 +349,13 @@
                 536,
                 537,
                 538
-              ]
+              ],
+              "firstLine": "fn on_tool_result_message(",
+              "lastLine": "return Err(ToolSetError::Interrupted);"
             },
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
               "lines": [
-                687,
-                688,
-                689,
-                690,
                 691,
                 692,
                 693,
@@ -231,15 +377,26 @@
                 709,
                 710,
                 711,
-                1041,
-                1042,
-                1043,
-                1044,
-                1045,
-                1046,
-                1047,
-                1048
-              ]
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1063,
+                1064
+              ],
+              "firstLine": "let tool_result = if let Some(invalid) = &invalid_arguments {",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,7 +407,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
-          "lines": "244-292",
+          "lines": "256-311",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_timing.rs",
@@ -263,21 +420,65 @@
                 70,
                 71,
                 76
-              ]
+              ],
+              "firstLine": "pub fn synthesis_deadline() -> Instant {",
+              "lastLine": "let deadline = deadline().unwrap_or_else(attempt_deadline);"
             },
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314
+              ],
+              "firstLine": "async fn synthesize<M>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -293,26 +494,27 @@
             {
               "file": "rust/agent-loop/src/turn_compaction.rs",
               "lines": [
-                65,
-                68,
-                71,
-                74,
-                93,
-                122,
-                125,
-                128,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                146,
-                147,
-                150,
-                151
-              ]
+                108,
+                111,
+                113,
+                152,
+                181,
+                184,
+                187,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                206,
+                207,
+                210,
+                211
+              ],
+              "firstLine": "pub(crate) fn submit_with_deadline(",
+              "lastLine": "check,"
             },
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
@@ -340,7 +542,9 @@
                 227,
                 228,
                 229
-              ]
+              ],
+              "firstLine": "let deadline = session",
+              "lastLine": ".unwrap_or_else(|| CompactionFailure::Commit(error.to_string()))"
             },
             {
               "file": "rust/agent-loop/src/generate_compaction_handler.rs",
@@ -362,7 +566,9 @@
                 174,
                 175,
                 176
-              ]
+              ],
+              "firstLine": ") -> Result<(String, tokio::time::Instant), String> {",
+              "lastLine": "let mut inner = target"
             }
           ]
         }
@@ -389,6 +595,6 @@
       "rust/cli/src/compactor_sub_agent.rs",
       "rust/agent-loop/src/generate_compaction_handler.rs"
     ],
-    "totalLinesCovered": 691
+    "totalLinesCovered": 890
   }
 }

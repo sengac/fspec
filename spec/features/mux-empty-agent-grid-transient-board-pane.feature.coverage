@@ -5,46 +5,52 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "145-214",
+          "lines": "147-216",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(super) fn refresh_visibility(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -55,24 +61,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "215-249",
+          "lines": "229-257",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247
-              ]
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "self.transient_board = !self.visible.iter().any(|shown| *shown);",
+              "lastLine": "};"
             }
           ]
         }
@@ -83,15 +89,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "250-295",
+          "lines": "274-304",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                245,
-                246,
-                247
-              ]
+                45,
+                46,
+                47
+              ],
+              "firstLine": "self.transient_board = !self.visible.iter().any(|shown| *shown);",
+              "lastLine": "vec![MuxPaneKind::Board]"
             }
           ]
         }
@@ -102,19 +110,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "296-324",
+          "lines": "321-334",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ],
+              "firstLine": "self.transient_board = !self.visible.iter().any(|shown| *shown);",
+              "lastLine": "};"
             }
           ]
         }
@@ -125,46 +138,52 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "327-360",
+          "lines": "353-376",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(super) fn refresh_visibility(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,46 +194,52 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs",
-          "lines": "365-404",
+          "lines": "392-424",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
               "lines": [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251
-              ]
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "pub(super) fn refresh_visibility(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -229,8 +254,8 @@
       "rust/fspec-tui/tests/bug174_mux_empty_agent_grid_transient_board_pane.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/multiplex/window.rs"
+      "rust/fspec-tui/src/views/multiplex/rects.rs"
     ],
-    "totalLinesCovered": 378
+    "totalLinesCovered": 338
   }
 }

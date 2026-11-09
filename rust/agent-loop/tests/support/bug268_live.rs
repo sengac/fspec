@@ -8,7 +8,7 @@ use codelet_providers::{
 use codelet_rpc_types::StreamChunk;
 use codelet_sessions::background_session::BackgroundSession;
 use serde_json::{json, Value};
-use std::{path::Path, sync::Arc, time::Duration};
+use std::{path::Path, sync::Arc};
 use tokio::sync::{broadcast, mpsc};
 use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
@@ -109,7 +109,7 @@ impl Live {
 
     pub async fn turn(&mut self, text: &str) -> TestResult {
         self.background.send_input(text.into(), None)?;
-        let events = tokio::time::timeout(Duration::from_secs(10), async {
+        let events = codelet_test_helpers::deadlock_guard("the awaited block", async {
             let mut events = Vec::new();
             loop {
                 let (_, chunk) = self.chunks.recv().await?;

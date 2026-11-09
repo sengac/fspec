@@ -40,7 +40,8 @@ async fn sigterm_triggers_graceful_drain_with_going_away_close_frame() {
     // @step Given a fspec daemon serving two connected clients
     let (_dir, work_units) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = work_units.parent().unwrap().parent().unwrap();
-    let (child_guard, port) = spawn_fspec_daemon(workspace);
+    let daemon_home = common::TestHome::new();
+    let (child_guard, port) = spawn_fspec_daemon(workspace, &daemon_home);
     let pid = child_guard.0.id();
 
     // Connect two WS clients
@@ -124,7 +125,8 @@ async fn sighup_rebuilds_workspace_watcher_without_exiting() {
     // @step Given a fspec daemon with SharedFspecService.watcher = ArcSwap holding W_old
     let (_dir, work_units) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = work_units.parent().unwrap().parent().unwrap();
-    let (mut child_guard, port) = spawn_fspec_daemon(workspace);
+    let daemon_home = common::TestHome::new();
+    let (mut child_guard, port) = spawn_fspec_daemon(workspace, &daemon_home);
     let pid = child_guard.0.id();
 
     // Give the daemon a moment to initialise.
@@ -173,7 +175,8 @@ async fn sigint_continues_to_trigger_immediate_shutdown() {
     // @step Given a fspec daemon currently serving zero clients
     let (_dir, work_units) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = work_units.parent().unwrap().parent().unwrap();
-    let (child_guard, _port) = spawn_fspec_daemon(workspace);
+    let daemon_home = common::TestHome::new();
+    let (child_guard, _port) = spawn_fspec_daemon(workspace, &daemon_home);
     let pid = child_guard.0.id();
     tokio::time::sleep(Duration::from_millis(100)).await;
 
@@ -206,10 +209,12 @@ async fn connected_client_guard_increments_and_decrements_on_each_connection() {
     let (_dir, work_units) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = work_units.parent().unwrap().parent().unwrap();
     let xdg = tempfile::tempdir().expect("xdg");
-    let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
+    let mut child = common::IsolatedCommand::new(env!("CARGO_BIN_EXE_fspec"))
         .arg("daemon")
         .arg("--workspace")
         .arg(workspace)
+        // BUG-627: HOME in the same temp dir as the runtime dir.
+        .env("HOME", xdg.path())
         .env("XDG_RUNTIME_DIR", xdg.path())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -315,10 +320,12 @@ async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
 
     // Run daemon with XDG_RUNTIME_DIR pointing at the temp dir so we
     // know where daemon.json will land.
-    let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
+    let mut child = common::IsolatedCommand::new(env!("CARGO_BIN_EXE_fspec"))
         .arg("daemon")
         .arg("--workspace")
         .arg(workspace)
+        // BUG-627: HOME in the same temp dir as the runtime dir.
+        .env("HOME", xdg.path())
         .env("XDG_RUNTIME_DIR", xdg.path())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -394,10 +401,12 @@ async fn daemon_json_is_removed_on_every_clean_shutdown_path() {
         xdg: &std::path::Path,
     ) -> (ChildGuard, u16) {
         use std::io::BufRead;
-        let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
+        let mut child = common::IsolatedCommand::new(env!("CARGO_BIN_EXE_fspec"))
             .arg("daemon")
             .arg("--workspace")
             .arg(workspace)
+            // BUG-627: HOME in the same temp dir as the runtime dir.
+            .env("HOME", xdg)
             .env("XDG_RUNTIME_DIR", xdg)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

@@ -208,9 +208,7 @@ fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String
     // ── Determine feature file path (TS :433-453) ───────────────────────
     let feature_file: PathBuf = if let Some(feature) = &args.feature {
         let feature_name = feature.strip_suffix(".feature").unwrap_or(feature);
-        project_root
-            .join("spec/features")
-            .join(format!("{feature_name}.feature"))
+        crate::io::spec_paths::features_dir_of(project_root).join(format!("{feature_name}.feature"))
     } else {
         if work_unit.title.is_empty() {
             return Err(FspecCoreError::Message(format!(
@@ -219,9 +217,7 @@ fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String
             )));
         }
         let kebab = kebab_case(&work_unit.title);
-        project_root
-            .join("spec/features")
-            .join(format!("{kebab}.feature"))
+        crate::io::spec_paths::features_dir_of(project_root).join(format!("{kebab}.feature"))
     };
 
     // Ensure directory exists (TS :456).
@@ -233,7 +229,8 @@ fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String
     }
 
     // Generate example mapping comment block (TS :458-462).
-    let comment_block = generate_example_mapping_comments(extra);
+    let comment_block = generate_example_mapping_comments(&args.work_unit_id, extra)
+        .map_err(FspecCoreError::Message)?;
 
     // Check if feature file exists (TS :464-473).
     if feature_file.exists() {
@@ -265,8 +262,11 @@ fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String
 
     let architecture_docstring = build_architecture_docstring(extra);
 
+    // BUG-479: the formatter's canonical layout — the description directly
+    // under the Feature line, one blank line before the comment block, and
+    // the comment block directly above the Background it precedes.
     let feature_content = format!(
-        "@{wu}\nFeature: {title}\n\n{arch}\n\n{comments}\n\n{background}\n",
+        "@{wu}\nFeature: {title}\n{arch}\n\n{comments}\n{background}\n",
         wu = args.work_unit_id,
         title = title,
         arch = architecture_docstring,
@@ -390,7 +390,10 @@ fn kebab_case(title: &str) -> String {
 
 /// Generate the `# EXAMPLE MAPPING CONTEXT` comment block. Verbatim port of
 /// `generateExampleMappingComments` (`generate-scenarios.ts:132-194`).
-fn generate_example_mapping_comments(extra: &serde_json::Map<String, Value>) -> String {
+fn generate_example_mapping_comments(
+    work_unit_id: &str,
+    extra: &serde_json::Map<String, Value>,
+) -> Result<String, String> {
     let mut lines: Vec<String> = vec![
         "  # ========================================".to_string(),
         "  # EXAMPLE MAPPING CONTEXT".to_string(),
@@ -451,20 +454,19 @@ fn generate_example_mapping_comments(extra: &serde_json::Map<String, Value>) -> 
         }
     }
 
-    // Assumptions (array of strings).
-    if let Some(assumptions) = extra.get("assumptions").and_then(Value::as_array) {
-        if !assumptions.is_empty() {
-            lines.push("  # ASSUMPTIONS:".to_string());
-            for (index, a) in assumptions.iter().enumerate() {
-                let text = a.as_str().unwrap_or("");
-                lines.push(format!("  #   {}. {text}", index + 1));
-            }
-            lines.push("  #".to_string());
+    // Assumptions (BUG-633: strings or stable-id items; removed ones are
+    // skipped).
+    let assumptions = super::assumption_items::active(work_unit_id, extra.get("assumptions"))?;
+    if !assumptions.is_empty() {
+        lines.push("  # ASSUMPTIONS:".to_string());
+        for (index, a) in assumptions.iter().enumerate() {
+            lines.push(format!("  #   {}. {}", index + 1, a.text));
         }
+        lines.push("  #".to_string());
     }
 
     lines.push("  # ========================================".to_string());
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 
 /// Remove a leading `@human:` prefix (case-insensitive) plus following
@@ -653,7 +655,7 @@ fn scan_existing_features(
 /// skipping any that fail to parse (TS catch swallows invalid files).
 fn parse_all_features(project_root: &Path) -> Vec<ParsedFeature> {
     let mut out: Vec<ParsedFeature> = Vec::new();
-    let features_dir = project_root.join("spec/features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     let mut files: Vec<PathBuf> = Vec::new();
     collect_feature_files(&features_dir, &mut files);
     // tinyglobby returns files; the TS code does not sort, but a deterministic

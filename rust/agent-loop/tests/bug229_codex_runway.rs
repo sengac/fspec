@@ -46,6 +46,48 @@ fn model(
         .with_streaming_completions())
 }
 
+/// `padding` bytes that estimate to about `padding` tokens; long runs of one
+/// character collapse into few tokens and tokenize very slowly.
+fn pad(padding: usize) -> String {
+    let mut text = "x!".repeat(padding / 2);
+    if padding % 2 == 1 {
+        text.push('x');
+    }
+    text
+}
+
+fn tokens(body: &[u8]) -> Result<u64, Box<dyn std::error::Error>> {
+    let unbounded = AdmissionLimits {
+        context_capacity: Some(u64::from(u32::MAX)),
+        output_reservation: Some(128_000),
+    };
+    Ok(
+        codelet_providers::request_admission::admit_complete_request(body, unbounded)?
+            .input_tokens(),
+    )
+}
+
+/// Smallest padding whose complete request estimates to `target` tokens.
+fn sized(
+    target: usize,
+    build: impl Fn(usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
+) -> Result<usize, Box<dyn std::error::Error>> {
+    let target = target as u64;
+    let (mut low, mut high) = (0usize, usize::try_from(target)?);
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if tokens(&build(middle)?)? < target {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    if tokens(&build(low)?)? != target {
+        return Err(format!("no padding estimates to exactly {target} tokens").into());
+    }
+    Ok(low)
+}
+
 #[tokio::test]
 #[serial_test::serial]
 async fn scenario_codex_continuation_capacity_recovery_retains_final_tool_evidence(
@@ -67,7 +109,7 @@ async fn scenario_codex_continuation_capacity_recovery_retains_final_tool_eviden
                         "action_type":"originals",
                         "session_id":target, "start_turn":0, "end_turn":0, "limit":1}).to_string()}), true)
             } else if tools {
-                terminal(message(&"replayed physical output ".repeat(10_000)), false)
+                terminal(message(&pad(250_000)), false)
             } else { terminal(message(metrics::DAG), true) }
         }).mount(&fixture.server).await;
     // @step When replayed Codex output makes a physical exploration continuation exceed capacity
@@ -81,6 +123,8 @@ async fn scenario_codex_continuation_capacity_recovery_retains_final_tool_eviden
         "Build the complete summary",
         "codex",
         20,
+        codelet_cli::compaction_operation::BuildRequest::First,
+        &std::sync::Mutex::new(None),
         limits,
     )
     .await;
@@ -129,19 +173,27 @@ async fn scenario_codex_physical_requests_respect_the_exact_incident_boundary(
             let model = model(&server, limits)?;
             let mut request = CompletionRequestBuilder::new(model.clone(), "boundary")
                 .max_tokens(128_000)
-                .preamble("x".into())
                 .build();
-            let mut wire: Value = serde_json::from_slice(&model.prepare_request(request.clone())?)?;
+            // BUG-305: admission counts estimated tokens, so size the padding
+            // against the admitted estimate rather than wire bytes.
             let replay = if continuation {
-                wire["input"]
-                    .as_array_mut()
-                    .ok_or("input")?
-                    .push(message("x"));
-                let padding = occupancy - serde_json::to_vec(&wire)?.len() + 1;
-                message(&"x".repeat(padding))
+                let wire: Value = serde_json::from_slice(&model.prepare_request(request.clone())?)?;
+                let padding = sized(occupancy, |padding| {
+                    let mut wire = wire.clone();
+                    wire["input"]
+                        .as_array_mut()
+                        .ok_or("input")?
+                        .push(message(&pad(padding)));
+                    Ok(serde_json::to_vec(&wire)?)
+                })?;
+                message(&pad(padding))
             } else {
-                let padding = occupancy - serde_json::to_vec(&wire)?.len() + 1;
-                request.preamble = Some("x".repeat(padding));
+                let padding = sized(occupancy, |padding| {
+                    let mut request = request.clone();
+                    request.preamble = Some(pad(padding));
+                    Ok(model.prepare_request(request)?)
+                })?;
+                request.preamble = Some(pad(padding));
                 message("final")
             };
             let count = Arc::new(AtomicUsize::new(0));
@@ -194,8 +246,8 @@ async fn scenario_codex_physical_requests_respect_the_exact_incident_boundary(
             }
             if occupancy == 922_000 {
                 assert_eq!(
-                    requests.last().ok_or("fitting request")?.body.len(),
-                    occupancy
+                    tokens(&requests.last().ok_or("fitting request")?.body)?,
+                    occupancy as u64
                 );
             }
         }

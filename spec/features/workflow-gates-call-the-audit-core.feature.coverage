@@ -1,0 +1,1072 @@
+{
+  "scenarios": [
+    {
+      "name": "A drifted test mapping blocks the move to validating with fspec audit's problem lines",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "163-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ],
+              "firstLine": "pub(crate) fn heading(&self) -> String {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Step text outside the mapped lines blocks the move to implementing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "196-216",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ],
+              "firstLine": "pub(crate) struct WorkUnitAudit {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An uncovered scenario blocks the move to implementing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "218-237",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ],
+              "firstLine": "pub(crate) struct WorkUnitAudit {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scenario without an implementation mapping blocks the move to validating",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "239-262",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648
+              ],
+              "firstLine": "pub(crate) struct AuditedFeature {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A coverage entry for a deleted scenario blocks the move to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "264-287",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ],
+              "firstLine": "pub(crate) struct WorkUnitAudit {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature without scenarios blocks the move to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "289-312",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                786,
+                787,
+                788,
+                789,
+                790,
+                791,
+                792,
+                793,
+                794,
+                795,
+                796,
+                797,
+                798,
+                799,
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834
+              ],
+              "firstLine": "/// A work unit's linked features, else the features carrying its tag at",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A clean audit with every scenario mapped moves the card to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "314-340",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "pub(super) fn check_audit(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scenario mapping its exact @step block moves the card to implementing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "344-358",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// mapping of a live scenario.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A test mapping without the Then @step blocks the move to validating and names the missing step",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "360-386",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "// GATE (AUDIT-005): the audit core over the work unit's features. The",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/drift.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "Some(steps) => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An uncovered scenario of a feature found by its tag blocks the move to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "388-409",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833
+              ],
+              "firstLine": "// AUDIT-005 (BUG-360): a feature file that cannot be read as text or",
+              "lastLine": "Ok(tagged)"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature without a coverage file blocks the move to done",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "411-436",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit/coverage.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "let Some(raw) = target.sidecar else {",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Linked features replace the features found by the work unit's tag",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs",
+          "lines": "438-475",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/audit.rs",
+              "lines": [
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816
+              ],
+              "firstLine": "let linked: Vec<String> = work_unit",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "// GATE: done finalization — parent/child constraints first, then the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/audit005_workflow_gates_call_the_audit_core.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status.rs",
+      "rust/fspec-core/src/commands/update_work_unit_status/audit_gate.rs",
+      "rust/fspec-core/src/commands/audit.rs",
+      "rust/fspec-core/src/commands/audit/drift.rs",
+      "rust/fspec-core/src/commands/audit/coverage.rs"
+    ],
+    "totalLinesCovered": 1010
+  }
+}

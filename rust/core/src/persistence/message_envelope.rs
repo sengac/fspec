@@ -43,15 +43,43 @@ pub struct MessageEnvelope {
     pub request_id: Option<String>,
 }
 
-/// The message payload (either user or assistant)
-/// Uses untagged serde because the inner message has a `role` field that distinguishes them
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// The message payload (either user or assistant).
+///
+/// Serialized untagged (the inner message carries its own `role`). It is
+/// deserialized by that `role` (BUG-322): an untagged derive tried `User`
+/// first, which accepts any role and drops unknown fields, so text-only
+/// assistant messages reloaded as user-shaped messages without their model.
+#[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(untagged)]
 pub enum MessagePayload {
     /// User message (role: "user")
     User(UserMessage),
     /// Assistant message (role: "assistant")
     Assistant(AssistantMessage),
+}
+
+impl<'de> Deserialize<'de> for MessagePayload {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let assistant = value.get("role").and_then(serde_json::Value::as_str) == Some("assistant");
+        if assistant {
+            // An assistant-role payload the assistant shape cannot parse
+            // still loads the way the untagged derive did: as user-shaped.
+            match serde_json::from_value::<AssistantMessage>(value.clone()) {
+                Ok(message) => Ok(MessagePayload::Assistant(message)),
+                Err(_) => serde_json::from_value(value)
+                    .map(MessagePayload::User)
+                    .map_err(serde::de::Error::custom),
+            }
+        } else {
+            serde_json::from_value(value)
+                .map(MessagePayload::User)
+                .map_err(serde::de::Error::custom)
+        }
+    }
 }
 
 /// User message format
@@ -219,535 +247,27 @@ pub enum CacheControl {
 // Note: should_use_blob_storage is in blob.rs
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod tests {
-    use super::*;
+mod tests;
 
-    #[test]
-    fn test_message_envelope_serialization() {
-        let envelope = MessageEnvelope {
-            uuid: Uuid::new_v4(),
-            parent_uuid: None,
-            timestamp: Utc::now(),
-            message_type: "user".to_string(),
-            provider: "claude".to_string(),
-            message: MessagePayload::User(UserMessage {
-                role: "user".to_string(),
-                content: vec![UserContent::Text {
-                    text: "Hello".to_string(),
-                }],
-            }),
-            request_id: None,
-        };
-
-        let json = serde_json::to_string(&envelope).unwrap();
-        let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
-        assert_eq!(envelope, restored);
-    }
-
-    #[test]
-    fn test_tool_use_serialization() {
-        let content = AssistantContent::ToolUse {
-            id: "toolu_123".to_string(),
-            call_id: None,
-            name: "read_file".to_string(),
-            input: serde_json::json!({"path": "/foo.ts"}),
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        assert!(json.contains("\"type\":\"tool_use\""));
-        assert!(json.contains("\"id\":\"toolu_123\""));
-    }
-
-    #[test]
-    fn test_thinking_with_signature() {
-        let content = AssistantContent::Thinking {
-            thinking: "Let me think...".to_string(),
-            signature: Some("sig_abc123".to_string()),
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        assert!(json.contains("\"type\":\"thinking\""));
-        assert!(json.contains("\"signature\":\"sig_abc123\""));
-    }
-
-    // Note: the original `test_blob_threshold` test referencing
-    // `crate::persistence::should_use_blob_storage` is now covered by
-    // `crate::persistence::blob::tests::test_should_use_blob_storage`
-    // (and `test_blob_threshold_boundary_is_strict_greater_than`),
-    // since RPC-034 lifted `should_use_blob_storage` from
-    // `napi::persistence::blob` into the sibling `blob` module.
-
-    // =========================================================================
-    // Extended Message Envelope Tests (NAPI-008)
-    // =========================================================================
-
-    #[test]
-    fn test_message_uuid_preserved_for_identity() {
-        let uuid = Uuid::parse_str("a6bdbefb-902d-4f98-b539-8cbee91ec831").unwrap();
-        let envelope = MessageEnvelope {
-            uuid,
-            parent_uuid: None,
-            timestamp: Utc::now(),
-            message_type: "assistant".to_string(),
-            provider: "claude".to_string(),
-            message: MessagePayload::Assistant(AssistantMessage {
-                role: "assistant".to_string(),
-                id: Some("msg_test".to_string()),
-                model: Some("claude-opus-4-5-20251101".to_string()),
-                content: vec![AssistantContent::Text {
-                    text: "Hello".to_string(),
-                }],
-                stop_reason: Some("end_turn".to_string()),
-                usage: None,
-            }),
-            request_id: None,
-        };
-
-        let json = serde_json::to_string(&envelope).unwrap();
-        let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
-        assert_eq!(
-            restored.uuid,
-            Uuid::parse_str("a6bdbefb-902d-4f98-b539-8cbee91ec831").unwrap()
-        );
-    }
-
-    #[test]
-    fn test_parent_uuid_preserved_for_threading() {
-        let msg1_uuid = Uuid::new_v4();
-        let msg2 = MessageEnvelope {
-            uuid: Uuid::new_v4(),
-            parent_uuid: Some(msg1_uuid),
-            timestamp: Utc::now(),
-            message_type: "assistant".to_string(),
-            provider: "claude".to_string(),
-            message: MessagePayload::Assistant(AssistantMessage {
-                role: "assistant".to_string(),
-                id: Some("msg_test".to_string()),
-                model: None,
-                content: vec![AssistantContent::Text {
-                    text: "Hi there!".to_string(),
-                }],
-                stop_reason: Some("end_turn".to_string()),
-                usage: None,
-            }),
-            request_id: None,
-        };
-
-        let json = serde_json::to_string(&msg2).unwrap();
-        let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
-        assert_eq!(restored.parent_uuid, Some(msg1_uuid));
-    }
-
-    #[test]
-    fn test_tool_result_serialization() {
-        let content = UserContent::ToolResult {
-            tool_use_id: "toolu_01AyTnm7YLfybhnhEhwwZvAY".to_string(),
-            call_id: None,
-            content: r#"{"port": 8080}"#.to_string(),
-            is_error: false,
-            tool_use_result: None,
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::ToolResult {
-                tool_use_id,
-                content,
-                is_error,
-                ..
-            } => {
-                assert_eq!(tool_use_id, "toolu_01AyTnm7YLfybhnhEhwwZvAY");
-                assert_eq!(content, r#"{"port": 8080}"#);
-                assert!(!is_error);
-            }
-            _ => panic!("Expected ToolResult content"),
-        }
-    }
-
-    #[test]
-    fn test_tool_error_result_preserved() {
-        let content = UserContent::ToolResult {
-            tool_use_id: "toolu_xyz789".to_string(),
-            call_id: None,
-            content: "Permission denied".to_string(),
-            is_error: true,
-            tool_use_result: None,
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::ToolResult { is_error, .. } => {
-                assert!(is_error);
-            }
-            _ => panic!("Expected ToolResult content"),
-        }
-    }
-
-    #[test]
-    fn test_tool_result_with_metadata() {
-        let content = UserContent::ToolResult {
-            tool_use_id: "toolu_abc123".to_string(),
-            call_id: None,
-            content: "formatted output".to_string(),
-            is_error: false,
-            tool_use_result: Some(ToolUseResultMetadata::with_output(
-                "raw stdout content",
-                "warning: deprecated",
-            )),
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::ToolResult {
-                tool_use_result, ..
-            } => {
-                let metadata = tool_use_result.expect("Expected metadata");
-                assert_eq!(metadata.stdout, Some("raw stdout content".to_string()));
-                assert_eq!(metadata.stderr, Some("warning: deprecated".to_string()));
-                assert!(!metadata.interrupted);
-            }
-            _ => panic!("Expected ToolResult content"),
-        }
-    }
-
-    #[test]
-    fn test_thinking_without_signature() {
-        let content = AssistantContent::Thinking {
-            thinking: "Let me think about this problem...".to_string(),
-            signature: None,
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: AssistantContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            AssistantContent::Thinking {
-                thinking,
-                signature,
-            } => {
-                assert_eq!(thinking, "Let me think about this problem...");
-                assert!(signature.is_none());
-            }
-            _ => panic!("Expected Thinking content"),
-        }
-    }
-
-    #[test]
-    fn test_base64_image_content() {
-        let content = UserContent::Image {
-            source: ImageSource::Base64 {
-                media_type: "image/png".to_string(),
-                data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
-            },
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::Image { source } => match source {
-                ImageSource::Base64 { media_type, data } => {
-                    assert_eq!(media_type, "image/png");
-                    assert!(data.starts_with("iVBORw0KGgo"));
-                }
-                _ => panic!("Expected Base64 source"),
-            },
-            _ => panic!("Expected Image content"),
-        }
-    }
-
-    #[test]
-    fn test_url_image_reference() {
-        let content = UserContent::Image {
-            source: ImageSource::Url {
-                url: "https://example.com/screenshot.jpg".to_string(),
-            },
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::Image { source } => match source {
-                ImageSource::Url { url } => {
-                    assert_eq!(url, "https://example.com/screenshot.jpg");
-                }
-                _ => panic!("Expected Url source"),
-            },
-            _ => panic!("Expected Image content"),
-        }
-    }
-
-    #[test]
-    fn test_document_with_metadata() {
-        let content = UserContent::Document {
-            source: DocumentSource::Base64 {
-                media_type: "application/pdf".to_string(),
-                data: "JVBERi0xLjQK".to_string(),
-            },
-            title: Some("document.pdf".to_string()),
-            context: Some("Project documentation".to_string()),
-            cache_control: None,
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::Document {
-                source,
-                title,
-                context,
-                ..
-            } => {
-                match source {
-                    DocumentSource::Base64 { media_type, .. } => {
-                        assert_eq!(media_type, "application/pdf");
-                    }
-                    _ => panic!("Expected Base64 source"),
-                }
-                assert_eq!(title, Some("document.pdf".to_string()));
-                assert_eq!(context, Some("Project documentation".to_string()));
-            }
-            _ => panic!("Expected Document content"),
-        }
-    }
-
-    #[test]
-    fn test_multi_part_message_preserves_order() {
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: Some("msg_multipart".to_string()),
-            model: Some("claude-opus-4-5-20251101".to_string()),
-            content: vec![
-                AssistantContent::Text {
-                    text: "Let me check...".to_string(),
-                },
-                AssistantContent::ToolUse {
-                    id: "toolu_read".to_string(),
-                    call_id: None,
-                    name: "read_file".to_string(),
-                    input: serde_json::json!({"path": "/foo.ts"}),
-                },
-                AssistantContent::Text {
-                    text: "Found it.".to_string(),
-                },
-            ],
-            stop_reason: Some("end_turn".to_string()),
-            usage: None,
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(restored.content.len(), 3);
-        assert!(matches!(
-            &restored.content[0],
-            AssistantContent::Text { .. }
-        ));
-        assert!(matches!(
-            &restored.content[1],
-            AssistantContent::ToolUse { .. }
-        ));
-        assert!(matches!(
-            &restored.content[2],
-            AssistantContent::Text { .. }
-        ));
-    }
-
-    #[test]
-    fn test_token_usage_preserved() {
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: Some("msg_usage".to_string()),
-            model: Some("claude-opus-4-5-20251101".to_string()),
-            content: vec![AssistantContent::Text {
-                text: "Response with usage".to_string(),
-            }],
-            stop_reason: Some("end_turn".to_string()),
-            usage: Some(TokenUsagePerMessage {
-                input_tokens: 500,
-                output_tokens: 150,
-                cache_read_input_tokens: Some(200),
-                cache_creation_input_tokens: Some(100),
-            }),
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-
-        let usage = restored.usage.expect("Expected usage");
-        assert_eq!(usage.input_tokens, 500);
-        assert_eq!(usage.output_tokens, 150);
-        assert_eq!(usage.cache_read_input_tokens, Some(200));
-        assert_eq!(usage.cache_creation_input_tokens, Some(100));
-    }
-
-    #[test]
-    fn test_request_id_preserved() {
-        let envelope = MessageEnvelope {
-            uuid: Uuid::new_v4(),
-            parent_uuid: None,
-            timestamp: Utc::now(),
-            message_type: "assistant".to_string(),
-            provider: "claude".to_string(),
-            message: MessagePayload::Assistant(AssistantMessage {
-                role: "assistant".to_string(),
-                id: None,
-                model: None,
-                content: vec![AssistantContent::Text {
-                    text: "Test".to_string(),
-                }],
-                stop_reason: None,
-                usage: None,
-            }),
-            request_id: Some("req_011CWPLKJZcigRWVriKduWSr".to_string()),
-        };
-
-        let json = serde_json::to_string(&envelope).unwrap();
-        let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
-        assert_eq!(
-            restored.request_id,
-            Some("req_011CWPLKJZcigRWVriKduWSr".to_string())
-        );
-    }
-
-    #[test]
-    fn test_stop_reason_preserved() {
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: None,
-            model: None,
-            content: vec![AssistantContent::Text {
-                text: "Complete response".to_string(),
-            }],
-            stop_reason: Some("end_turn".to_string()),
-            usage: None,
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-        assert_eq!(restored.stop_reason, Some("end_turn".to_string()));
-    }
-
-    #[test]
-    fn test_assistant_message_without_optional_fields() {
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: None,
-            model: None,
-            content: vec![AssistantContent::Text {
-                text: "Response without optional fields".to_string(),
-            }],
-            stop_reason: None,
-            usage: None,
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-
-        assert!(restored.id.is_none());
-        assert!(restored.model.is_none());
-        assert!(restored.stop_reason.is_none());
-        assert!(restored.usage.is_none());
-    }
-
-    #[test]
-    fn test_interrupted_tool_execution_metadata() {
-        let content = UserContent::ToolResult {
-            tool_use_id: "toolu_abc123".to_string(),
-            call_id: None,
-            content: "partial output".to_string(),
-            is_error: true,
-            tool_use_result: Some(ToolUseResultMetadata {
-                stdout: Some("partial output".to_string()),
-                stderr: Some("".to_string()),
-                interrupted: true,
-                is_image: false,
-            }),
-        };
-
-        let json = serde_json::to_string(&content).unwrap();
-        let restored: UserContent = serde_json::from_str(&json).unwrap();
-
-        match restored {
-            UserContent::ToolResult {
-                tool_use_result,
-                is_error,
-                ..
-            } => {
-                let metadata = tool_use_result.expect("Expected metadata");
-                assert!(metadata.interrupted);
-                assert!(is_error);
-            }
-            _ => panic!("Expected ToolResult content"),
-        }
-    }
-
-    // =========================================================================
-    // PROV-039: stop_reason persistence must use real value, not hardcoded end_turn
-    // Feature: spec/features/stop-reason-lost-in-streaming-output-truncation-silently-treated-as-normal-completion.feature
-    // =========================================================================
-
-    /// Scenario: OpenAI streaming propagates max_tokens stop_reason instead of hardcoding end_turn
-    #[test]
-    fn test_assistant_message_preserves_max_tokens_stop_reason() {
-        // @step Given the agent is using the OpenAI provider in streaming mode
-        // (Testing persistence layer — provider-agnostic)
-
-        // @step And the model hits the max_tokens limit during text generation
-        // (Simulated by setting stop_reason to "max_tokens")
-
-        // @step When the OpenAI SSE stream emits a response with finish_reason "length"
-        // (At this layer: the normalized stop_reason "max_tokens" arrives at persistence)
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: Some("msg_truncated".to_string()),
-            model: Some("gpt-4o".to_string()),
-            content: vec![AssistantContent::Text {
-                text: "This response was truncated...".to_string(),
-            }],
-            stop_reason: Some("max_tokens".to_string()),
-            usage: None,
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-
-        // @step Then the FinalResponse contains StopReason::MaxTokens
-        assert_eq!(restored.stop_reason, Some("max_tokens".to_string()));
-
-        // @step And the persisted AssistantMessage stop_reason is "max_tokens"
-        assert_ne!(restored.stop_reason, Some("end_turn".to_string()));
-
-        // @step And the stop_reason is not hardcoded to "end_turn"
-        assert_ne!(restored.stop_reason, Some("end_turn".to_string()));
-    }
-
-    /// Scenario: Normal end_turn completion has correct persistence
-    #[test]
-    fn test_assistant_message_preserves_end_turn_stop_reason() {
-        let message = AssistantMessage {
-            role: "assistant".to_string(),
-            id: Some("msg_normal".to_string()),
-            model: Some("claude-opus-4-5-20251101".to_string()),
-            content: vec![AssistantContent::Text {
-                text: "Complete response".to_string(),
-            }],
-            stop_reason: Some("end_turn".to_string()),
-            usage: None,
-        };
-
-        let json = serde_json::to_string(&message).unwrap();
-        let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(restored.stop_reason, Some("end_turn".to_string()));
-    }
+/// BUG-332: the stored envelope fields of a plain-text message, as written for a row
+/// that is not produced by the agent loop's typed commit path (the compaction summary
+/// row and the `append_message` fixture writers). Replay requires every one of
+/// `parentUuid`, `timestamp`, `type`, `provider`, `message` and `requestId`.
+pub fn text_envelope_metadata(
+    role: &str,
+    provider: &str,
+    text: &str,
+    timestamp: DateTime<Utc>,
+) -> std::collections::HashMap<String, serde_json::Value> {
+    std::collections::HashMap::from([
+        ("parentUuid".to_string(), serde_json::Value::Null),
+        ("timestamp".to_string(), serde_json::json!(timestamp)),
+        ("type".to_string(), serde_json::json!(role)),
+        ("provider".to_string(), serde_json::json!(provider)),
+        (
+            "message".to_string(),
+            serde_json::json!({"role": role, "content": [{"type": "text", "text": text}]}),
+        ),
+        ("requestId".to_string(), serde_json::Value::Null),
+    ])
 }

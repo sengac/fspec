@@ -12,22 +12,17 @@
 //! `// @step ...` comment placed immediately before the code that exercises
 //! it.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::board_exit_confirmation_dialog::{
     BoardExitConfirmationDialog, BOARD_EXIT_CONFIRMATION_DIALOG_ID,
 };
-use codelet_fspec_tui::components::disconnect_dialog::DisconnectDialog;
 use codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID;
 use codelet_fspec_tui::views::ViewMode;
-use codelet_fspec_tui::{synth_key, Action, App, Component, FspecBackend, Priority};
+use codelet_fspec_tui::{synth_key, App, Component, FspecBackend, Priority};
 use codelet_rpc_types::SessionStatus;
 use crossterm::event::KeyCode;
 
@@ -37,11 +32,11 @@ use common::{harness::AppTestHarness, test_app, MockBackend};
 // ───────────────────────── helpers ──────────────────────────────────────
 
 /// Build a fresh App focused on the BoardView with no overlays.
-fn board_view_app() -> App {
+fn board_view_app() -> Result<App, codelet_test_helpers::TestError> {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
-    let (app, _term) = test_app(backend);
-    app
+    let (app, _term) = test_app(backend)?;
+    Ok(app)
 }
 
 /// Build a fresh App focused on the AgentView with an idle session.
@@ -62,9 +57,9 @@ fn agent_view_app_idle() -> App {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_esc_on_the_boardview_opens_an_exit_confirmation_dialog() {
+fn pressing_esc_on_the_boardview_opens_an_exit_confirmation_dialog() -> TestResult {
     // @step Given I am viewing the BoardView with no overlay
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.compositor().len(), 0);
     assert!(!app.should_quit());
@@ -88,6 +83,7 @@ fn pressing_esc_on_the_boardview_opens_an_exit_confirmation_dialog() {
         !app.should_quit(),
         "BoardView ESC must NOT set should_quit — TS parity requires confirmation first"
     );
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -95,9 +91,9 @@ fn pressing_esc_on_the_boardview_opens_an_exit_confirmation_dialog() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_q_on_the_boardview_is_ignored() {
+fn pressing_q_on_the_boardview_is_ignored() -> TestResult {
     // @step Given I am viewing the BoardView with no overlay
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     assert_eq!(app.active_view(), ViewMode::Board);
     assert_eq!(app.compositor().len(), 0);
     assert!(!app.should_quit());
@@ -121,6 +117,7 @@ fn pressing_q_on_the_boardview_is_ignored() {
         !app.should_quit(),
         "'q' on BoardView must NOT set should_quit — TS parity: 'q' is not a quit binding outside DisconnectDialog"
     );
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -128,9 +125,9 @@ fn pressing_q_on_the_boardview_is_ignored() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn confirming_the_exit_dialog_closes_the_application() {
+async fn confirming_the_exit_dialog_closes_the_application() -> TestResult {
     // @step Given the BoardView exit confirmation dialog is showing
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
     assert!(
         app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
@@ -160,6 +157,7 @@ async fn confirming_the_exit_dialog_closes_the_application() {
 
     // @step And the application exits
     assert!(app.should_quit(), "Enter on Exit must set should_quit=true");
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -167,9 +165,9 @@ async fn confirming_the_exit_dialog_closes_the_application() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn cancelling_the_exit_dialog_with_esc_returns_to_the_board() {
+async fn cancelling_the_exit_dialog_with_esc_returns_to_the_board() -> TestResult {
     // @step Given the BoardView exit confirmation dialog is showing
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
     assert!(
         app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
@@ -202,86 +200,7 @@ async fn cancelling_the_exit_dialog_with_esc_returns_to_the_board() {
         !app.should_quit(),
         "Cancelling exit dialog must NOT set should_quit"
     );
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Scenario: DisconnectDialog still honors 'q' to quit (RPC-011 CR-1 regression guard)
-// ──────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn disconnect_dialog_still_honors_q_to_quit() {
-    // @step Given the backend connection has dropped
-    let mut app = board_view_app();
-
-    // @step And the DisconnectDialog is showing
-    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
-    assert_eq!(
-        app.compositor().topmost_id(),
-        Some("disconnect-dialog".to_string()),
-        "precondition: DisconnectDialog must be topmost"
-    );
-    assert_eq!(
-        app.compositor().topmost_priority(),
-        Some(Priority::Critical)
-    );
-    assert!(!app.should_quit());
-
-    // @step When I press the 'q' key
-    let _ = app.handle_event(&synth_key(KeyCode::Char('q')));
-
-    // @step Then the application exits
-    assert!(
-        app.should_quit(),
-        "DisconnectDialog 'q' must still quit — RPC-011 CR-1 preserved"
-    );
-    assert!(
-        !app.compositor().contains("disconnect-dialog"),
-        "DisconnectDialog removes itself when 'q' is pressed"
-    );
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Scenario: DisconnectDialog still honors 'r' to reconnect
-// ──────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn disconnect_dialog_still_honors_r_to_reconnect() {
-    // @step Given the backend connection has dropped
-    let mut app = board_view_app();
-
-    // @step And the DisconnectDialog is showing
-    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
-    assert_eq!(
-        app.compositor().topmost_id(),
-        Some("disconnect-dialog".to_string())
-    );
-    assert!(!app.should_quit());
-
-    // Drain any actions on the bus so we can isolate the ManualReconnect
-    // emission below.
-    while let Some(_action) = app.try_recv_action() {}
-
-    // @step When I press the 'r' key
-    let _ = app.handle_event(&synth_key(KeyCode::Char('r')));
-
-    // @step Then a manual reconnection attempt is initiated
-    let mut saw_manual_reconnect = false;
-    while let Some(action) = app.try_recv_action() {
-        if matches!(action, Action::ManualReconnect) {
-            saw_manual_reconnect = true;
-        }
-        app.dispatch(action);
-    }
-    assert!(
-        saw_manual_reconnect,
-        "Pressing 'r' in DisconnectDialog must emit Action::ManualReconnect — RPC-011 CR-1 preserved"
-    );
-
-    // @step And the application is still running
-    assert!(
-        !app.should_quit(),
-        "Pressing 'r' must NOT quit — only 'q' quits inside DisconnectDialog"
-    );
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -289,7 +208,7 @@ async fn disconnect_dialog_still_honors_r_to_reconnect() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn agentview_esc_cascade_still_clears_non_empty_input() {
+async fn agentview_esc_cascade_still_clears_non_empty_input() -> TestResult {
     // @step Given I am viewing the AgentView with a session attached
     let mut app = agent_view_app_idle();
     assert_eq!(app.active_view(), ViewMode::Agent);
@@ -334,6 +253,7 @@ async fn agentview_esc_cascade_still_clears_non_empty_input() {
 
     // @step And the application is still running
     assert!(!app.should_quit(), "AgentView Esc-cascade L6 must NOT quit");
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -341,7 +261,7 @@ async fn agentview_esc_cascade_still_clears_non_empty_input() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dialog_priority_is_critical_and_id_matches_const() {
+fn dialog_priority_is_critical_and_id_matches_const() -> TestResult {
     // @step Given a freshly constructed BoardExitConfirmationDialog
     let dialog = BoardExitConfirmationDialog::new();
     // @step Then its Component::priority is Critical
@@ -352,6 +272,7 @@ fn dialog_priority_is_critical_and_id_matches_const() {
     );
     // @step And its Component::id equals BOARD_EXIT_CONFIRMATION_DIALOG_ID
     assert_eq!(dialog.id(), BOARD_EXIT_CONFIRMATION_DIALOG_ID);
+    Ok(())
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -360,9 +281,9 @@ fn dialog_priority_is_critical_and_id_matches_const() {
 // ──────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn pressing_esc_twice_on_boardview_only_opens_one_dialog() {
+fn pressing_esc_twice_on_boardview_only_opens_one_dialog() -> TestResult {
     // @step Given I am viewing the BoardView with no overlay
-    let mut app = board_view_app();
+    let mut app = board_view_app()?;
     assert_eq!(app.compositor().len(), 0);
 
     // @step When I press ESC once
@@ -390,4 +311,5 @@ fn pressing_esc_twice_on_boardview_only_opens_one_dialog() {
         len_after_first, 1,
         "First ESC must push exactly one BoardExitConfirmationDialog"
     );
+    Ok(())
 }

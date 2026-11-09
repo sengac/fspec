@@ -65,7 +65,9 @@
                 89,
                 90,
                 91
-              ]
+              ],
+              "firstLine": "pub fn segment_line(line: &str, wrap_width: u16) -> Vec<Segment> {",
+              "lastLine": ""
             }
           ]
         }
@@ -98,7 +100,9 @@
                 119,
                 120,
                 121
-              ]
+              ],
+              "firstLine": "self.textarea.is_empty()",
+              "lastLine": "text.split('\\n')"
             }
           ]
         }
@@ -189,7 +193,9 @@
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "pub fn cursor_visual_position(",
+              "lastLine": "}"
             }
           ]
         }
@@ -200,7 +206,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "224-285",
+          "lines": "230-292",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
@@ -212,7 +218,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "/// `last_body_width` so the Up/Down boundary check can use visual",
+              "lastLine": "let (cursor_row, _) = self.cursor_visual(body_width);"
             }
           ]
         }
@@ -223,7 +231,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "292-333",
+          "lines": "299-341",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
@@ -233,7 +241,9 @@
                 47,
                 48,
                 49
-              ]
+              ],
+              "firstLine": "pub fn visible_rows_for_width(&self, body_width: u16) -> u16 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -244,16 +254,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "339-359",
+          "lines": "347-368",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
               "lines": [
-                154,
-                155,
-                156,
-                157
-              ]
+                216,
+                217,
+                218,
+                219
+              ],
+              "firstLine": "if self.is_empty() {",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -264,7 +276,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "365-408",
+          "lines": "374-418",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
@@ -300,7 +312,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn segment_line(line: &str, wrap_width: u16) -> Vec<Segment> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -311,7 +325,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "414-449",
+          "lines": "424-460",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_wrap.rs",
@@ -347,7 +361,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "pub fn segment_line(line: &str, wrap_width: u16) -> Vec<Segment> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -358,7 +374,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "455-495",
+          "lines": "466-507",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
@@ -389,7 +405,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "fn insert_newline_gated(input: &mut MultiLineInput, gate: InputGate) -> InputEventOutcome {",
+              "lastLine": "return Some(insert_newline_gated(input, gate));"
             }
           ]
         }
@@ -400,14 +418,74 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_soft_wrap_rpc405.rs",
-          "lines": "501-536",
+          "lines": "513-549",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                222,
-                223
-              ]
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "/// RPC-405/RPC-406 — input-row height for the layout split:",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "/// RPC-404 — the ONE definition of the input body width: the padded",
+              "lastLine": "}"
             }
           ]
         }
@@ -426,8 +504,8 @@
       "rust/fspec-tui/src/views/agent/multiline_input.rs",
       "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
       "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
-      "rust/fspec-tui/src/views/agent.rs"
+      "rust/fspec-tui/src/views/agent/input_area.rs"
     ],
-    "totalLinesCovered": 679
+    "totalLinesCovered": 737
   }
 }

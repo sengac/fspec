@@ -1,5 +1,7 @@
 @done
 @RPC-273
+@cli
+@remove
 Feature: fspec remove-example CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_example.rs — clap variant mirroring TS Commander.js

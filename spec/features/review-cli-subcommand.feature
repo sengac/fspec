@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @quality-assurance
 @rust
@@ -55,7 +56,7 @@ Feature: review CLI subcommand on the standalone fspec Rust binary
     When I run `./rust/target/release/fspec review --help` from a shell
     Then the command exits 0
     Then stdout contains the substring 'review'
-    Then stdout contains the substring 'work-unit-id'
+    Then stdout contains the substring 'workUnitId'
 
   Scenario: CLI reviews an existing work unit and prints the report
     Given a project root whose work-units store contains the work unit being reviewed

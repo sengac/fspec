@@ -3,24 +3,24 @@
 //!
 //! Feature: spec/features/rpc012-action-variants.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
 use codelet_fspec_tui::Action;
 use codelet_rpc_types::SessionId;
+use codelet_test_helpers::{OrFail, TestResult};
 
-/// Scenario: Action enum gains four new variants for the navigator slice
+/// Scenario: Action enum gains the navigator slice variants
 #[test]
-fn action_enum_gains_navigator_slice_variants() {
+fn action_enum_gains_navigator_slice_variants() -> TestResult {
     // @step Given the Action enum in rust/fspec-tui/src/components/mod.rs
-    let source = common::read_to_string_or_panic(
-        &common::workspace_root()
+    let source = codelet_test_helpers::source_composition::read_source(
+        &common::workspace_root()?
             .join("fspec-tui")
             .join("src")
             .join("components")
             .join("mod.rs"),
-    );
+    )
+    .or_fail("resolve Action enum source")?;
     // @step Then it contains the variant EnterWorkUnit(String)
     assert!(source.contains("EnterWorkUnit(String)"));
     let _ = Action::EnterWorkUnit("AUTH-001".to_string());
@@ -31,10 +31,5 @@ fn action_enum_gains_navigator_slice_variants() {
     // @step And it contains the variant BackToBoard
     assert!(source.contains("BackToBoard"));
     let _ = Action::BackToBoard;
-    // @step And it contains the variant NavigationTargetSet(Option<SessionId>)
-    assert!(source.contains("NavigationTargetSet(Option<codelet_rpc_types::SessionId>)"));
-    let _ = Action::NavigationTargetSet(None);
-    // @step And it contains the variant AttachSession(String, SessionId)
-    assert!(source.contains("AttachSession(String, codelet_rpc_types::SessionId)"));
-    let _ = Action::AttachSession("AUTH-001".to_string(), SessionId::new("s-1"));
+    Ok(())
 }

@@ -3,6 +3,7 @@
 @report-bug-to-github
 @cli
 @RPC-285
+@reporting
 Feature: Port report-bug-to-github command to Rust
   """
   Core impl target: rust/fspec-core/src/commands/report_bug_to_github.rs. Signature changes from the
@@ -130,6 +131,8 @@ Feature: Port report-bug-to-github command to Rust
     Then the dispatcher returns success
     And the report markdown contains "AUTH-001"
     And the report markdown contains "**Feature File**: spec/features/user-login.feature"
+    And the report markdown contains "**Work Unit**: AUTH-001 - Login"
+    And the report markdown contains "**Status**: implementing"
 
   Scenario: Gathering context faithfully replicates the TS work-units file side-effect and is sync-safe
     Given an empty project root tempdir with no spec subdirectory
@@ -144,3 +147,11 @@ Feature: Port report-bug-to-github command to Rust
     When I dispatch report-bug-to-github with bug-description "crash on save" via the dispatcher
     Then the dispatcher returns success
     And the result url starts with "https://github.com/sengac/fspec/issues/new?title="
+
+  Scenario: Git context reports the current branch and uncommitted changes
+    Given a project root tempdir that is a git repository on branch "bug-branch" with one commit and an uncommitted change to a tracked file
+    When I dispatch report-bug-to-github with bug-description "crash on save"
+    Then the dispatcher returns success
+    And the report markdown contains "- Git branch: bug-branch"
+    And the report markdown contains "**Note**: There are uncommitted changes in the working directory."
+    And the report markdown contains "If relevant, please provide git diff output."

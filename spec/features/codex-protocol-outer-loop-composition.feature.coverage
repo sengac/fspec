@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/prov162_protocol_outer_loop.rs",
-          "lines": "21-97",
+          "lines": "21-101",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -252,7 +252,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             }
           ]
         }
@@ -263,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/prov162_protocol_outer_loop.rs",
-          "lines": "118-168",
+          "lines": "122-172",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -510,7 +512,9 @@
                 240,
                 241,
                 242
-              ]
+              ],
+              "firstLine": "use super::lifecycle::{backend_error, invalid, Terminal};",
+              "lastLine": "}"
             }
           ]
         }
@@ -527,6 +531,6 @@
     "implFiles": [
       "rust/providers/src/codex/streaming.rs"
     ],
-    "totalLinesCovered": 612
+    "totalLinesCovered": 616
   }
 }

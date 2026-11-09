@@ -19,7 +19,7 @@
 //!     hard-clipping it — no content is silently dropped;
 //!   * the canonical `scrollback_paint::paint_scrollbar` paints the
 //!     scrollbar when the body overflows the viewport;
-//!   * a dim centered footer `↑↓ Scroll | Esc Close`.
+//!   * a dim centered footer `↑↓ Scroll | c Copy | Esc Close`.
 //!
 //! The scroll offset itself lives on `AgentView.turn_modal_offset`; the
 //! modal is constructed per-frame with that offset via [`with_offset`].
@@ -31,10 +31,11 @@ use crate::components::dialog_theme::{render_dialog_at, Accent, DialogRow};
 use crate::components::dialog_theme_rows::{build_dialog, fixed_dialog_rect, turn_modal_geometry};
 use crate::views::agent::scrollback::ScrollState;
 use crate::views::agent::scrollback_paint::paint_scrollbar;
+use crate::views::agent::text_wrap::{wrap_rows, RowEnd};
 use crate::views::agent::ChunkKind;
 
 /// Footer hint mirroring the TS reference (`TurnContentModal.tsx:171`).
-pub const MODAL_FOOTER: &str = "\u{2191}\u{2193} Scroll | Esc Close";
+pub const MODAL_FOOTER: &str = "\u{2191}\u{2193} Scroll | c Copy | Esc Close";
 
 /// A read-only modal rendering one turn's full text in a fixed
 /// full-screen, scrollable viewport.
@@ -163,12 +164,31 @@ impl TurnContentModal {
 
     /// COPY-008: the plain-text of each wrapped visual row at `width`
     /// (span contents concatenated). Shares the exact `styled_rows`
-    /// windowing so the copied text agrees with what is painted.
-    pub fn plain_rows(&self, width: usize) -> Vec<String> {
-        self.styled_rows(width)
-            .into_iter()
-            .map(|spans| spans.iter().map(|s| s.content.as_ref()).collect::<String>())
-            .collect()
+    /// windowing so the copied text agrees with what is painted. TUI-130:
+    /// with how each row ends, so a copy joins the rows the wrap split
+    /// (a diff row's wrapped fragments stay separate lines).
+    pub fn plain_rows(&self, width: usize) -> Vec<(String, RowEnd)> {
+        use crate::store::agent_view::diff_decode::style_modal_lines;
+        use crate::store::agent_view::stderr::strip_marker;
+        let mut rows = Vec::new();
+        for hard in self.body.split('\n') {
+            let ends: Vec<RowEnd> = if self.is_diff {
+                Vec::new()
+            } else {
+                wrap_rows(&strip_marker(hard), width.max(1))
+                    .into_iter()
+                    .map(|(_, end)| end)
+                    .collect()
+            };
+            for (i, spans) in style_modal_lines(hard, width, self.is_diff)
+                .into_iter()
+                .enumerate()
+            {
+                let text = spans.iter().map(|s| s.content.as_ref()).collect::<String>();
+                rows.push((text, ends.get(i).copied().unwrap_or(RowEnd::Break)));
+            }
+        }
+        rows
     }
 }
 
@@ -176,7 +196,7 @@ impl TurnContentModal {
 /// mirroring the scrollback role coloring (`chunk_wrap::wrap_source`).
 fn title_and_accent(kind: Option<&ChunkKind>) -> (&'static str, Accent) {
     match kind {
-        Some(ChunkKind::UserInput) => ("You", Accent::Cyan),
+        Some(ChunkKind::UserInput | ChunkKind::TaggedUserInput(_)) => ("You", Accent::Cyan),
         Some(ChunkKind::AssistantText) => ("Agent", Accent::Cyan),
         Some(ChunkKind::Thinking) => ("Thinking", Accent::Yellow),
         Some(ChunkKind::ToolCall { is_error: true, .. }) => ("Tool (error)", Accent::Red),

@@ -10,15 +10,19 @@
             {
               "file": "rust/agent-loop/src/fspec_handler.rs",
               "lines": [
-                7,
-                55
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/agent_loop.rs",
-              "lines": [
-                670
-              ]
+                9,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "pub fn create_handler(session: Arc<BackgroundSession>, use_callback: bool) -> FspecHandler {",
+              "lastLine": "if same_project {"
             }
           ]
         }
@@ -34,8 +38,18 @@
             {
               "file": "rust/agent-loop/src/fspec_handler.rs",
               "lines": [
-                55
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let same_project = result.success",
+              "lastLine": "if same_project {"
             }
           ]
         }
@@ -53,7 +67,9 @@
               "lines": [
                 135,
                 172
-              ]
+              ],
+              "firstLine": "fn refresh_authorization(",
+              "lastLine": "drop(authorization);"
             }
           ]
         }
@@ -71,13 +87,9 @@
               "lines": [
                 74,
                 98
-              ]
-            },
-            {
-              "file": "rust/napi/src/work_units_watcher.rs",
-              "lines": [
-                78
-              ]
+              ],
+              "firstLine": "pub fn reconcile_work_units(&self, project: &Path) -> Result<(), FocusError> {",
+              "lastLine": "cards"
             }
           ]
         }
@@ -93,9 +105,19 @@
             {
               "file": "rust/agent-loop/src/fspec_handler.rs",
               "lines": [
-                12,
-                55
-              ]
+                11,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "// BUG-405: the session's owning manager only; no singleton.",
+              "lastLine": "if same_project {"
             }
           ]
         }
@@ -114,7 +136,9 @@
                 14,
                 43,
                 60
-              ]
+              ],
+              "firstLine": "pub fn admit_tool_invocation(",
+              "lastLine": "&& session.activity_focus().revision >= receipt.focus_revision"
             }
           ]
         }
@@ -132,7 +156,9 @@
               "lines": [
                 74,
                 135
-              ]
+              ],
+              "firstLine": "pub fn reconcile_work_units(&self, project: &Path) -> Result<(), FocusError> {",
+              "lastLine": "fn refresh_authorization("
             }
           ]
         }
@@ -148,15 +174,42 @@
             {
               "file": "rust/sessions/src/activity_focus.rs",
               "lines": [
-                145,
-                154
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                608
-              ]
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ],
+              "firstLine": "fn schedule_focus_reminder(&self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -175,14 +228,86 @@
                 15,
                 40,
                 60
-              ]
+              ],
+              "firstLine": "pub fn new(watcher: &WorkUnitsWatcher, observe: impl Fn(&Path) + Send + 'static) -> Self {",
+              "lastLine": ""
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/shared_construction.rs",
               "lines": [
-                835,
-                914
-              ]
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "/// Construct the shared impl with both a workspace watcher and a",
+              "lastLine": "}"
             }
           ]
         }
@@ -198,14 +323,11 @@
     ],
     "implFiles": [
       "rust/agent-loop/src/fspec_handler.rs",
-      "rust/agent-loop/src/agent_loop.rs",
       "rust/sessions/src/focus_reconciliation.rs",
-      "rust/napi/src/work_units_watcher.rs",
       "rust/sessions/src/activity_focus.rs",
-      "rust/sessions/src/background_session.rs",
       "rust/core/src/work_unit_subscription.rs",
-      "rust/rpc/src/lib.rs"
+      "rust/rpc/src/shared_construction.rs"
     ],
-    "totalLinesCovered": 281
+    "totalLinesCovered": 401
   }
 }

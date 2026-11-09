@@ -21,26 +21,25 @@
 //! path (actual Delete keystroke routed through ratatui) is exercised
 //! by RPC-163's runtime tests.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn read_source(rel: &str) -> String {
+fn read_source(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
     let manifest = env!("CARGO_MANIFEST_DIR");
     let path: PathBuf = [manifest, rel].iter().collect();
-    fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {}", path.display(), err))
+    Ok(fs::read_to_string(&path)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?)
 }
 
-fn detail_rs() -> String {
+fn detail_rs() -> Result<String, codelet_test_helpers::TestError> {
     read_source("src/views/provider_settings/detail.rs")
 }
 
 /// Walk braces forward from `abs_open` (which must be the index of an
 /// opening `{`) until the matching close, returning the inclusive
 /// substring.
-fn brace_balanced(src: &str, abs_open: usize) -> &str {
+fn brace_balanced(src: &str, abs_open: usize) -> Result<&str, codelet_test_helpers::TestError> {
     let bytes = src.as_bytes();
     assert!(bytes[abs_open] == b'{', "abs_open must point at `{{`");
     let mut depth: i32 = 0;
@@ -51,27 +50,27 @@ fn brace_balanced(src: &str, abs_open: usize) -> &str {
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return &src[abs_open..=i];
+                    return Ok(&src[abs_open..=i]);
                 }
             }
             _ => {}
         }
         i += 1;
     }
-    panic!("matching closing brace for opener at {abs_open} not found");
+    Err(format!("matching closing brace for opener at {abs_open} not found").into())
 }
 
 /// Extract the body of the named function. Matches on the signature
 /// substring `fn <name>(` so it works for both single-line and
 /// multi-line signatures.
-fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
+fn fn_body<'a>(src: &'a str, fn_name: &str) -> Result<&'a str, codelet_test_helpers::TestError> {
     let needle = format!("fn {fn_name}(");
     let start = src
         .find(&needle)
-        .unwrap_or_else(|| panic!("`fn {fn_name}(` not found"));
+        .or_fail(&format!("`fn {fn_name}(` not found"))?;
     let brace_rel = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for `fn {fn_name}` not found"));
+        .or_fail(&format!("opening brace for `fn {fn_name}` not found"))?;
     brace_balanced(src, start + brace_rel)
 }
 
@@ -79,18 +78,21 @@ fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
 /// the given substring (e.g. `"KeyCode::Backspace | KeyCode::Delete =>"`).
 /// The needle MUST contain `=>` so we can anchor on the arrow and walk
 /// forward to the opening brace.
-fn match_arm_body<'a>(src: &'a str, arm_pattern_with_arrow: &str) -> &'a str {
+fn match_arm_body<'a>(
+    src: &'a str,
+    arm_pattern_with_arrow: &str,
+) -> Result<&'a str, codelet_test_helpers::TestError> {
     assert!(
         arm_pattern_with_arrow.contains("=>"),
         "arm needle must contain `=>`"
     );
     let arrow_start = src
         .find(arm_pattern_with_arrow)
-        .unwrap_or_else(|| panic!("match arm `{arm_pattern_with_arrow}` not found"));
+        .or_fail(&format!("match arm `{arm_pattern_with_arrow}` not found"))?;
     let after_arrow = arrow_start + arm_pattern_with_arrow.len();
-    let brace_rel = src[after_arrow..]
-        .find('{')
-        .unwrap_or_else(|| panic!("opening brace after `{arm_pattern_with_arrow}` not found"));
+    let brace_rel = src[after_arrow..].find('{').or_fail(&format!(
+        "opening brace after `{arm_pattern_with_arrow}` not found"
+    ))?;
     brace_balanced(src, after_arrow + brace_rel)
 }
 
@@ -100,18 +102,19 @@ fn match_arm_body<'a>(src: &'a str, arm_pattern_with_arrow: &str) -> &'a str {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_edit_key_body_contains_merged_backspace_delete_arm() {
+fn scenario_handle_edit_key_body_contains_merged_backspace_delete_arm() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the handle_edit_key function body
-    let body = fn_body(&src, "handle_edit_key");
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step Then the function body must contain "KeyCode::Backspace | KeyCode::Delete =>"
     assert!(
         body.contains("KeyCode::Backspace | KeyCode::Delete =>"),
         "handle_edit_key body must merge Backspace and Delete into a single arm `KeyCode::Backspace | KeyCode::Delete =>` so the two deletion key paths cannot diverge (RPC-155 / RPC-163 TS parity with `key.backspace || key.delete`)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -120,19 +123,20 @@ fn scenario_handle_edit_key_body_contains_merged_backspace_delete_arm() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_merged_backspace_delete_arm_body_contains_draft_pop() {
+fn scenario_merged_backspace_delete_arm_body_contains_draft_pop() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
-    let body = fn_body(&src, "handle_edit_key");
+    let src = detail_rs()?;
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step When I extract the brace-balanced body of the "KeyCode::Backspace | KeyCode::Delete =>" arm inside handle_edit_key
-    let arm_body = match_arm_body(body, "KeyCode::Backspace | KeyCode::Delete =>");
+    let arm_body = match_arm_body(body, "KeyCode::Backspace | KeyCode::Delete =>")?;
 
     // @step Then the arm body must contain "draft.pop()"
     assert!(
         arm_body.contains("draft.pop()"),
         "merged Backspace|Delete arm body must invoke draft.pop() — TS parity with `setDraft((d) => d.slice(0, -1))` at src/tui/inputHandlers/apiKeyEditModeHandler.ts:46 (RPC-155 / RPC-163). Arm body was:\n{arm_body}"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -141,12 +145,12 @@ fn scenario_merged_backspace_delete_arm_body_contains_draft_pop() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_edit_key_body_contains_zero_standalone_delete_arms() {
+fn scenario_handle_edit_key_body_contains_zero_standalone_delete_arms() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the handle_edit_key function body
-    let body = fn_body(&src, "handle_edit_key");
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step Then the function body must contain zero occurrences of the standalone substring "KeyCode::Delete =>" with no preceding "Backspace | " prefix
     //
@@ -179,6 +183,7 @@ fn scenario_handle_edit_key_body_contains_zero_standalone_delete_arms() {
         count_standalone, 0,
         "handle_edit_key body must NOT contain a standalone `KeyCode::Delete =>` arm — Delete may only appear merged with Backspace (`KeyCode::Backspace | KeyCode::Delete =>`) so the two key paths cannot diverge. Found {count_standalone} standalone occurrence(s) out of {count_total} total (RPC-155 / RPC-163)."
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -187,26 +192,27 @@ fn scenario_handle_edit_key_body_contains_zero_standalone_delete_arms() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_merged_backspace_delete_arm_precedes_char_arm_in_handle_edit_key() {
+fn scenario_merged_backspace_delete_arm_precedes_char_arm_in_handle_edit_key() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the handle_edit_key function body
-    let body = fn_body(&src, "handle_edit_key");
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step Then the function body must contain "KeyCode::Backspace | KeyCode::Delete =>"
     let merged_offset = body
         .find("KeyCode::Backspace | KeyCode::Delete =>")
-        .expect("handle_edit_key body must contain the merged `KeyCode::Backspace | KeyCode::Delete =>` arm (RPC-155)");
+        .or_fail("handle_edit_key body must contain the merged `KeyCode::Backspace | KeyCode::Delete =>` arm (RPC-155)")?;
 
     // @step And the function body must contain "KeyCode::Char(c) =>"
-    let char_offset = body.find("KeyCode::Char(c) =>").expect(
+    let char_offset = body.find("KeyCode::Char(c) =>").or_fail(
         "handle_edit_key body must contain the `KeyCode::Char(c) =>` arm (RPC-155 / RPC-161)",
-    );
+    )?;
 
     // @step And the offset of "KeyCode::Backspace | KeyCode::Delete =>" must be less than the offset of "KeyCode::Char(c) =>"
     assert!(
         merged_offset < char_offset,
         "merged Backspace|Delete arm must appear BEFORE the KeyCode::Char(c) arm inside handle_edit_key — this documents the intended evaluation order of deletion vs printable-append paths (RPC-155 / RPC-163 TS parity). merged_offset={merged_offset}, char_offset={char_offset}"
     );
+    Ok(())
 }

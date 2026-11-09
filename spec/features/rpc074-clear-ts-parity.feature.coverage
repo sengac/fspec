@@ -4,8 +4,8 @@
       "name": "/clear resets scrollback but does NOT append any [notice] line",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
-          "lines": "111-145",
+          "file": "rust/fspec-tui/tests/slash_clear_ts_parity_rpc074.rs",
+          "lines": "80-113",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
@@ -31,7 +31,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Err the failure is logged via `tracing::error!` ONLY — no",
+              "lastLine": "// this file is free of divergent literals."
             }
           ]
         }
@@ -41,8 +43,8 @@
       "name": "/clear with backend Err does NOT append any [error] line to scrollback",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/slash_clear_rpc046.rs",
-          "lines": "153-173",
+          "file": "rust/fspec-tui/tests/slash_clear_ts_parity_rpc074.rs",
+          "lines": "121-145",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_clear.rs",
@@ -68,7 +70,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "/// Err the failure is logged via `tracing::error!` ONLY — no",
+              "lastLine": "// this file is free of divergent literals."
             }
           ]
         }
@@ -80,11 +84,11 @@
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/slash_clear_rpc046.rs"
+      "rust/fspec-tui/tests/slash_clear_ts_parity_rpc074.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_slash_clear.rs"
     ],
-    "totalLinesCovered": 98
+    "totalLinesCovered": 101
   }
 }

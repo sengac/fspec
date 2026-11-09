@@ -7,8 +7,8 @@ pub(super) mod set_thinking_level {
         session_id: SessionId,
         level: ThinkingLevel,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -18,7 +18,6 @@ pub(super) mod set_thinking_level {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .set_thinking_level(tarpc::context::current(), args.session_id, args.level)
             .await
@@ -36,8 +35,8 @@ pub(super) mod set_continue_state {
         enabled: bool,
         budget: u32,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -47,7 +46,6 @@ pub(super) mod set_continue_state {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         client
             .set_continue_state(
                 tarpc::context::current(),
@@ -68,8 +66,8 @@ pub(super) mod get_continue_state {
     pub struct Args {
         session_id: SessionId,
     }
-    pub fn schema() -> Value {
-        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    pub fn schema() -> Result<Value, serde_json::Error> {
+        serde_json::to_value(schemars::schema_for!(Args))
     }
     pub fn validate(value: Value) -> Result<(), InvokeError> {
         let _: Args =
@@ -79,11 +77,11 @@ pub(super) mod get_continue_state {
     pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
-        let _ = &args;
         let value = client
             .get_continue_state(tarpc::context::current(), args.session_id)
             .await
-            .map_err(|e| InvokeError::Transport(e.to_string()))?;
+            .map_err(|e| InvokeError::Transport(e.to_string()))?
+            .map_err(InvokeError::Daemon)?;
         serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

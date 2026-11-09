@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "159-173",
+          "lines": "168-182",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -142,7 +142,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -153,7 +155,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "175-189",
+          "lines": "184-198",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -290,7 +292,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -301,7 +305,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "191-208",
+          "lines": "200-217",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -438,7 +442,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -449,7 +455,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "210-222",
+          "lines": "219-231",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -586,7 +592,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -597,7 +605,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "224-235",
+          "lines": "233-244",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -734,7 +742,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -745,7 +755,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "237-248",
+          "lines": "246-257",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -882,7 +892,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -893,7 +905,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "250-265",
+          "lines": "259-274",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -1030,7 +1042,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -1041,7 +1055,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
-          "lines": "267-280",
+          "lines": "276-289",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/scrollbar_drag.rs",
@@ -1178,7 +1192,9 @@
                 130,
                 131,
                 132
-              ]
+              ],
+              "firstLine": "//! Scrollbar click-and-drag navigation state machine (TUI-101).",
+              "lastLine": "} else {"
             }
           ]
         }

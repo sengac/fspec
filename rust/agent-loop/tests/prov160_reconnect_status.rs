@@ -13,8 +13,6 @@ use codelet_sessions::SessionManager;
 use futures::StreamExt;
 use rig::completion::{CompletionModel, CompletionRequestBuilder};
 use rig::providers::openai;
-use std::sync::Arc;
-use std::time::Duration;
 
 #[path = "../../providers/tests/fixtures/attempt_events.rs"]
 mod attempt_events;
@@ -65,11 +63,14 @@ async fn reconnect_lifecycle_is_session_scoped_and_reaches_existing_status_outpu
         r#"{"openai":{"id":"openai","name":"OpenAI","env":["OPENAI_API_KEY"],"models":{"o3":{"id":"o3","name":"o3","tool_call":true,"limit":{"context":200000,"output":100000}}}}}"#,
     )?;
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(temporary.path().to_owned())?;
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("openai/o3");
-    let active_id = SessionManagerHandle::create_session(manager.as_ref(), None);
-    let other_id = SessionManagerHandle::create_session(manager.as_ref(), None);
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
+    manager.set_default_model("openai/o3")?;
+    let active_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
+    let other_id = SessionManagerHandle::create_session_checked(manager.as_ref(), None)?;
     let active = manager.get_session(&active_id.value)?;
     let other = manager.get_session(&other_id.value)?;
     let active_extensions = ProviderSession::for_provider("codex");
@@ -99,8 +100,8 @@ async fn reconnect_lifecycle_is_session_scoped_and_reaches_existing_status_outpu
         false,
     )
     .await?;
-    tokio::time::timeout(
-        Duration::from_secs(30),
+    codelet_test_helpers::deadlock_guard(
+        "consume(model(&server.url, recovery.clone())?)",
         consume(model(&server.url, recovery.clone())?),
     )
     .await??;
@@ -108,8 +109,8 @@ async fn reconnect_lifecycle_is_session_scoped_and_reaches_existing_status_outpu
     assert!(!recovery.is_reconnecting());
 
     let server = transport::Server::start(vec![transport::text(); 6], false).await?;
-    let failed = tokio::time::timeout(
-        Duration::from_secs(60),
+    let failed = codelet_test_helpers::deadlock_guard(
+        "consume(model(&server.url, recovery.clone())?)",
         consume(model(&server.url, recovery.clone())?),
     )
     .await?;
@@ -125,11 +126,20 @@ async fn reconnect_lifecycle_is_session_scoped_and_reaches_existing_status_outpu
         .stream(CompletionRequestBuilder::new(offline.clone(), "original turn").build())
         .await?
         .filter(attempt_events::is_content);
-    assert!(
-        tokio::time::timeout(Duration::from_millis(200), stream.next())
-            .await
-            .is_err()
-    );
+    // TEST-042: no waiting window. Poll the stream until recovery reports it
+    // is waiting for the network; the stream must not yield before that.
+    let waiting = codelet_test_helpers::deadlock_guard("recovery waits for the network", async {
+        tokio::select! {
+            _ = stream.next() => false,
+            () = async {
+                while !matches!(recovery.status(), Some(RecoveryStatus::WaitingForNetwork { .. })) {
+                    codelet_test_helpers::yield_now().await;
+                }
+            } => true,
+        }
+    })
+    .await?;
+    assert!(waiting, "the offline stream yielded before recovery waited");
     assert!(matches!(
         recovery.status(),
         Some(RecoveryStatus::WaitingForNetwork { .. })

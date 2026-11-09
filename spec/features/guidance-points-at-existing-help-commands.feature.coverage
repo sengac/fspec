@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "The specifying reminder points at the bootstrap Example Mapping section",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug538_guidance_points_at_existing_help_commands.rs",
+          "lines": "37-76",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/specifying.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "const SPEC_TAIL: &str = r#\"Research results can be attached to work units for Example Mapping context.",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TOML slash command lists fspec --sync-version and fspec bootstrap",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug538_guidance_points_at_existing_help_commands.rs",
+          "lines": "78-97",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/init/templates.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ],
+              "firstLine": "/// agents get the embedded header section (parity with getHeaderSection()).",
+              "lastLine": ");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bootstrap command reference points at per-command help",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug538_guidance_points_at_existing_help_commands.rs",
+          "lines": "99-120",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/bootstrap_doc.txt",
+              "lines": [
+                1924,
+                1925,
+                1926,
+                1927,
+                1928,
+                1929,
+                1930,
+                1931,
+                1932,
+                1933,
+                1934
+              ],
+              "firstLine": "## Step 12: Complete Command Reference",
+              "lastLine": "---"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug538_guidance_points_at_existing_help_commands.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders/specifying.rs",
+      "rust/fspec-core/src/commands/init/templates.rs",
+      "rust/fspec-core/src/commands/bootstrap_doc.txt"
+    ],
+    "totalLinesCovered": 121
+  }
+}

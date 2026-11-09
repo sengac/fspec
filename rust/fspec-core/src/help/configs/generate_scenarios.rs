@@ -4,11 +4,8 @@
 //! Byte-for-byte parity with `node dist/index.js generate-scenarios --help`.
 //! Captured fixture: `rust/fspec/tests/fixtures/help/generate-scenarios.txt`.
 //!
-//! NOTE: the single OPTION's `flag` is the literal string `"undefined"` — this
-//! reproduces a TS quirk where the help config's option name field is
-//! `undefined` and Commander's help printer interpolates it verbatim. It is
-//! documentation parity, not a binding contract; the implemented clap flag is
-//! `--feature <name>` (plus `--ignore-possible-duplicates`). Likewise the
+//! CLI-016: the options are the `--feature <name>` and
+//! `--ignore-possible-duplicates` flags the CLI parses. The
 //! EXAMPLES still cite the stale "Generated 3 scenarios" output from before the
 //! command became context-only — preserved for byte parity with the captured
 //! fixture.
@@ -21,11 +18,18 @@ const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
     required: true,
 }];
 
-const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "undefined",
-    description: "Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.",
-    default_value: None,
-}];
+const OPTIONS: &[CommandOption] = &[
+    CommandOption {
+        flag: "--feature <name>",
+        description: "Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.",
+        default_value: None,
+    },
+    CommandOption {
+        flag: "--ignore-possible-duplicates",
+        description: "Generate even when similar scenarios exist in other feature files",
+        default_value: None,
+    },
+];
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {

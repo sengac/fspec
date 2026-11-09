@@ -68,30 +68,18 @@ Feature: Add system-reminder to generate-coverage command
     When I run `fspec generate-coverage --dry-run`
     Then the command should succeed
     And the output should display a system-reminder
-    And the reminder should explain the three-step ACDD workflow
+    And the reminder should explain the seven-step ACDD coverage workflow
     And the reminder should reference link-coverage command
 
   Scenario: Reminder explains difference between generate-coverage and link-coverage
     Given I have feature files in spec/features/ directory
     When I run `fspec generate-coverage`
-    Then the system-reminder should clearly state:
-      """
-      generate-coverage creates EMPTY coverage files
-      link-coverage POPULATES coverage files with mappings
-      """
+    Then the system-reminder should state "generate-coverage creates EMPTY coverage files"
+    And the system-reminder should state "link-coverage POPULATES coverage files with test and implementation mappings"
     And the reminder should emphasize that generation and linking are separate steps
 
   Scenario: Reminder shows complete ACDD workflow with coverage commands
     Given I have feature files in spec/features/ directory
     When I run `fspec generate-coverage`
-    Then the system-reminder should include:
-      """
-      ACDD Coverage Workflow:
-      1. Write specifications (feature files)
-      2. Generate coverage files: fspec generate-coverage
-      3. Write tests: Write failing tests for scenarios
-      4. Link tests: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>
-      5. Implement code: Write minimal code to pass tests
-      6. Link implementation: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --impl-file <path> --impl-lines <lines>
-      7. Verify coverage: fspec show-coverage <feature>
-      """
+    Then the system-reminder should list the seven ACDD Coverage Workflow steps from writing specifications to fspec show-coverage <feature>
+    And the link steps should give the link-coverage commands for tests and for implementation

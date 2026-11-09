@@ -292,7 +292,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let (code, stdout, _stderr) = run_list_schedules(ws.path(), &["--json"]);
     assert_eq!(code, 0);
 
-    // @step Then both call sites return data that represents the same schedules
+    // @step Then the CLI --json output is a bare JSON array equal to the dispatcher payload's schedules array
     // The CLI emits a BARE ARRAY (TS-parity `--json` shape); the dispatcher emits
     // an envelope `{schedules:[...], columns:[...]}`. We assert that the CLI
     // array contents equal the dispatcher's `schedules` projection.

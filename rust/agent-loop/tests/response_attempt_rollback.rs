@@ -1,4 +1,4 @@
-#![doc = "Feature: spec/features/background-response-attempt-rollback.feature"]
+#![doc = "Feature: spec/features/background-response-attempt-persistence.feature"]
 
 use std::sync::{atomic::Ordering, Arc};
 
@@ -44,6 +44,39 @@ fn session(
     ))
 }
 
+type Chunks = broadcast::Receiver<(codelet_rpc_types::SessionId, StreamChunk)>;
+
+/// A background session backed by a persisted manifest in `directory`, so the
+/// transcript journal admits its output.
+fn persisted_session(
+    directory: &tempfile::TempDir,
+) -> Result<(Arc<BackgroundSession>, Chunks), Box<dyn std::error::Error>> {
+    reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
+    codelet_common::set_data_directory(directory.path().to_path_buf())?;
+    let manifest = create_session_with_provider("rollback", directory.path(), "codex")?;
+    let (sender, receiver) = broadcast::channel(64);
+    Ok((session(manifest.id, sender), receiver))
+}
+
+/// The emitted deltas were admitted and published, and nothing reported a
+/// persistence failure.
+fn assert_published_without_error(receiver: &mut Chunks) {
+    let mut published = Vec::new();
+    while let Ok((_, chunk)) = receiver.try_recv() {
+        published.push(chunk);
+    }
+    assert!(published
+        .iter()
+        .any(|chunk| matches!(chunk, StreamChunk::Text { .. })));
+    assert!(
+        !published
+            .iter()
+            .any(|chunk| matches!(chunk, StreamChunk::Error { .. })),
+        "{published:?}"
+    );
+}
+
 /// @step Given earlier completed assistant output and a tool result
 /// @step When a later response streams text and reasoning and is aborted
 /// @step And a replacement response completes
@@ -51,14 +84,10 @@ fn session(
 /// @step And subscribers receive attempt boundaries alongside live deltas
 #[tokio::test]
 #[serial_test::serial]
-#[serial_test::serial]
 async fn background_persistence_excludes_abandoned_text_and_reasoning() -> TestResult {
     let directory = setup_temp_directory()?;
-    reset_stores_for_tests();
-    codelet_common::set_data_directory(directory.path().to_path_buf())?;
-    let manifest = create_session_with_provider("rollback", directory.path(), "codex")?;
-    let (sender, mut receiver) = broadcast::channel(64);
-    let background = session(manifest.id, sender);
+    let (background, mut receiver) = persisted_session(&directory)?;
+    let session_id = background.id;
     let output = BackgroundOutput::with_provider(background, "codex".into(), None);
     output.emit(StreamEvent::ResponseAttemptStarted);
     output.emit(StreamEvent::Text("earlier answer".into()));
@@ -105,7 +134,7 @@ async fn background_persistence_excludes_abandoned_text_and_reasoning() -> TestR
     output.emit(StreamEvent::Text("replacement answer".into()));
     output.emit(StreamEvent::Thinking("replacement reasoning".into()));
     output.emit(StreamEvent::Done(Some("end_turn".into())));
-    let messages: Vec<Value> = get_session_message_envelopes(manifest.id)?
+    let messages: Vec<Value> = get_session_message_envelopes(session_id)?
         .into_iter()
         .map(|message| serde_json::from_str(&message))
         .collect::<Result<_, _>>()?;
@@ -128,27 +157,29 @@ async fn background_persistence_excludes_abandoned_text_and_reasoning() -> TestR
     Ok(())
 }
 
-/// @step Given a response attempt has nearly triggered repetition detection
-/// @step When the attempt is aborted and replacement output repeats its words
-/// @step Then the replacement is not interrupted by abandoned detector state
 #[tokio::test]
+#[serial_test::serial]
 async fn aborted_output_does_not_poison_loop_detection() -> TestResult {
+    // @step Given a response attempt in a persisted session has nearly triggered repetition detection
     let directory = setup_temp_directory()?;
-    codelet_common::set_data_directory(directory.path().to_path_buf())?;
-    let (sender, _) = broadcast::channel(64);
-    let background = session(uuid::Uuid::new_v4(), sender);
+    let (background, mut receiver) = persisted_session(&directory)?;
     let output = BackgroundOutput::with_provider(background.clone(), "codex".into(), None);
     output.emit(StreamEvent::ResponseAttemptStarted);
     output.emit(StreamEvent::Text("one two three ".repeat(9)));
     output.emit(StreamEvent::Thinking("four five six ".repeat(9)));
+    assert_published_without_error(&mut receiver);
     assert!(!background.is_interrupted.load(Ordering::Acquire));
+    // @step When the attempt is aborted and replacement output repeats its words
     output.emit(StreamEvent::ResponseAttemptAborted);
     output.emit(StreamEvent::ResponseAttemptStarted);
     for _ in 0..2 {
         output.emit(StreamEvent::Text("one two three ".into()));
         output.emit(StreamEvent::Thinking("four five six ".into()));
     }
+    // @step Then the replacement is not interrupted by abandoned detector state
+    assert_published_without_error(&mut receiver);
     assert!(!background.is_interrupted.load(Ordering::Acquire));
+    reset_stores_for_tests();
     Ok(())
 }
 

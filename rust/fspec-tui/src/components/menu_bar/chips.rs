@@ -40,6 +40,9 @@ pub struct MenuChip {
     /// the painter paints the whole cell inverse (the selected-menu-item
     /// highlight) when true, independent of the ring focus.
     pub active: bool,
+    /// TUI-114: true for an orchestrator bot session — the chip is
+    /// prefixed `bot:`.
+    pub bot: bool,
 }
 
 /// One per-session input row for [`build_chips`]. Callers gather these
@@ -48,13 +51,16 @@ pub struct MenuChip {
 pub struct ChipInput {
     /// 1-based `(n, total)` index — `session_index_for` parity.
     pub index: (usize, usize),
-    /// The session's live status.
-    pub status: SessionStatus,
+    /// The session's live status; `None` when the TUI has not observed one
+    /// yet (BUG-400: painted as unknown, never as Idle).
+    pub status: Option<SessionStatus>,
     /// The work-unit id bound to the session, when any.
     pub wu_id: Option<String>,
     /// MENU-006: true iff this session is the store's current session
     /// (the painter's active-chip highlight source).
     pub active: bool,
+    /// TUI-114: true for an orchestrator bot session.
+    pub bot: bool,
 }
 
 /// Build the chip list from the per-session inputs. `Cleared` sessions
@@ -62,15 +68,19 @@ pub struct ChipInput {
 pub fn build_chips(inputs: &[ChipInput], clock_ms: u64) -> Vec<MenuChip> {
     inputs
         .iter()
-        .filter(|c| c.status != SessionStatus::Cleared)
+        .filter(|c| c.status != Some(SessionStatus::Cleared))
         .map(|c| {
-            let (glyph, style) = status_glyph(c.status, clock_ms);
+            let (glyph, style) = match c.status {
+                Some(status) => status_glyph(status, clock_ms),
+                None => ("?".to_string(), Style::default().fg(Color::DarkGray)),
+            };
             MenuChip {
                 index: c.index,
                 glyph,
                 glyph_style: style,
                 wu_id: c.wu_id.clone(),
                 active: c.active,
+                bot: c.bot,
             }
         })
         .collect()
@@ -101,6 +111,18 @@ fn status_glyph(status: SessionStatus, clock_ms: u64) -> (String, Style) {
     }
 }
 
+/// TUI-114: a chip's full leading prefix — `bot:` for a bot session, then
+/// the `#n ` index prefix. The painter and the layout both use this so the
+/// cell widths agree.
+pub fn chip_prefix(chip: &MenuChip) -> String {
+    let index = index_prefix(chip.index);
+    if chip.bot {
+        format!("bot:{index}")
+    } else {
+        index
+    }
+}
+
 /// Format a chip's leading `#n ` prefix (empty when `n == 0`, which the
 /// store never produces for open sessions).
 pub fn index_prefix(index: (usize, usize)) -> String {
@@ -121,9 +143,10 @@ mod tests {
     fn input(index: usize, status: SessionStatus, wu: Option<&str>) -> ChipInput {
         ChipInput {
             index: (index, 3),
-            status,
+            status: Some(status),
             wu_id: wu.map(str::to_string),
             active: false,
+            bot: false,
         }
     }
 

@@ -31,6 +31,8 @@ pub struct App {
     pub(crate) action_tx: UnboundedSender<Action>,
     pub(crate) action_rx: UnboundedReceiver<Action>,
     pub(crate) backend: Arc<dyn FspecBackend>,
+    /// RPC-448: the daemons the board switcher offers (installed by the binary).
+    pub(crate) daemon_directory: Option<Arc<dyn crate::daemons::DaemonDirectory>>,
     pub(crate) theme: Arc<Theme>,
     pub(crate) navigator: Navigator,
     /// RPC-012: work-units state. Mutated only on the App task.
@@ -48,10 +50,16 @@ pub struct App {
     /// [`App::next_pending_task`] to await deterministically.
     pub(crate) pending_tasks: Vec<JoinHandle<()>>,
     pub(crate) pending_creation_context: Option<codelet_rpc_types::WorkUnitContext>,
+    /// TUI-124: the facts the open close dialog states — what confirming
+    /// closes (None while no close dialog is open).
+    pub(crate) pending_close: Option<crate::components::exit_confirmation_dialog::CloseFacts>,
     pub(crate) completed_story_creations: std::collections::HashSet<SessionId>,
     pub(crate) session_storage: crate::app::session_storage::SessionStorageState,
     pub(crate) model_sync:
         std::collections::HashMap<SessionId, crate::app::dispatch_model_sync::ModelSync>,
+    /// BUG-576: the session created for no-session model selections.
+    pub(crate) no_session_selection:
+        Option<crate::app::dispatch_model_no_session::NoSessionSelection>,
     pub(crate) continue_sync:
         std::collections::HashMap<SessionId, crate::app::dispatch_continue_sync::ContinueSync>,
     pub(crate) transcript_sync:
@@ -61,26 +69,16 @@ pub struct App {
     /// republishes on `Action::SessionCreated`.
     pub(crate) active_session_tx: watch::Sender<Option<SessionId>>,
     pub(crate) active_session_rx: watch::Receiver<Option<SessionId>>,
-    /// RPC-052: single in-flight debounced save handle for the per-session
-    /// pending-input draft. `App::handle_pending_input_changed` aborts any
-    /// previous handle then stores the fresh one so a second edit within the
-    /// 300ms debounce window cancels the previous save.
-    pub(crate) pending_input_save_handle: Option<JoinHandle<()>>,
+    /// BUG-549: the session whose draft the shared composer holds, plus a
+    /// per-session ordered draft-save slot (`app/composer_draft.rs`).
+    pub(crate) composer_drafts: crate::app::composer_draft::ComposerDrafts,
+    /// BUG-575: the number of the last Provider Settings refresh requested.
+    pub(crate) provider_settings_refreshes: u64,
     /// RPC-064: single in-flight debounced abort handle for the `/search`
     /// history-search round-trip. Aborts the previous handle so rapid
     /// keystrokes inside the 150ms debounce window collapse to a single
     /// `backend.persistence_search_history(query)` call.
     pub(crate) search_history_debounce_handle: Option<tokio::task::AbortHandle>,
-    /// TUI-093: per-session guard recording which sessions have already had
-    /// the persisted default thinking level applied (Rust equivalent of the
-    /// TS `appliedToSessionRef`), so a manual `/thinking` pick is never
-    /// clobbered when that session regains focus.
-    pub(crate) applied_default_thinking: std::collections::HashSet<SessionId>,
-    /// RPC-373: local port the RPC-372 viewer server bound to at bootstrap;
-    /// `None` when start failed (the board `D` key then no-ops).
-    pub(crate) viewer_port: Option<u16>,
-    /// RPC-373: handle to the running viewer server, retained so it shuts down cleanly on App drop. `None` when the server failed to start.
-    pub(crate) viewer_handle: Option<codelet_attachment_viewer::ViewerHandle>,
     /// COPY-006: OSC 52 clipboard writer (boxed; tests inject a Vec<u8>).
     pub(crate) clipboard: Osc52Clipboard<Box<dyn std::io::Write + Send>>,
     /// RPC-416: ORIGINATING session + stable scrollback seq of the live inline reconnect notice (replace/remove target this, not focus).
@@ -94,6 +92,12 @@ pub struct App {
     pub(crate) compaction_hide_handles: std::collections::HashMap<SessionId, JoinHandle<()>>, // RPC-417 auto-hide timers
     /// MUX-001: mux config persistence state (shared fspec-config.json, tui.mux).
     pub(crate) mux_state: crate::store::MuxState,
+    /// BOARD-024: card-details attachment workspace, launcher and viewers.
+    pub(crate) board_card: crate::app::board_card_attachments::BoardCardRuntime,
+    /// TUI-126: the confirmation of the latest copy.
+    pub(crate) copy_notice: crate::app::copy_notice::CopyNotice,
+    /// TUI-126: opens URLs in the browser (tests record them).
+    pub(crate) url_launcher: crate::app::url_launcher::UrlLauncher,
 }
 
 impl App {
@@ -121,6 +125,7 @@ impl App {
             action_tx,
             action_rx,
             backend,
+            daemon_directory: None,
             theme,
             navigator,
             board_store: BoardStore::default(),
@@ -130,24 +135,27 @@ impl App {
             subscriber_tasks: Vec::new(),
             pending_tasks: Vec::new(),
             pending_creation_context: None,
+            pending_close: None,
             completed_story_creations: std::collections::HashSet::new(),
             session_storage: Default::default(),
             model_sync: std::collections::HashMap::new(),
+            no_session_selection: None,
             continue_sync: std::collections::HashMap::new(),
             transcript_sync: std::collections::HashMap::new(),
             active_session_tx,
             active_session_rx,
-            pending_input_save_handle: None,
+            composer_drafts: Default::default(),
+            provider_settings_refreshes: 0,
             search_history_debounce_handle: None,
-            applied_default_thinking: std::collections::HashSet::new(),
-            viewer_port: None,
-            viewer_handle: None,
             clipboard: Osc52Clipboard::new(Box::new(std::io::stdout())),
             reconnect_notice: None,
             reconnect_dismiss_handle: None,
             compaction_hide_handles: std::collections::HashMap::new(),
             pre_session_debug_enabled: false,
             mux_state: crate::store::MuxState::new(),
+            board_card: Default::default(),
+            copy_notice: Default::default(),
+            url_launcher: crate::app::url_launcher::system_launcher(),
         }
     }
 }

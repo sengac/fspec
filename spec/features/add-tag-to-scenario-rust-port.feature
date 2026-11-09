@@ -1,5 +1,7 @@
 @done
 @RPC-194
+@cli
+@scenario-generation
 Feature: Port add-tag-to-scenario command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_tag_to_scenario.rs. Reads the target feature
@@ -103,3 +105,9 @@ Feature: Port add-tag-to-scenario command to Rust
     And the file on disk still contains the feature-level tag @authentication
     And the file on disk shows the Login scenario tags as '@smoke' then '@critical'
     And the file on disk shows the Logout scenario tags as '@regression' unchanged
+
+  Scenario: Adding a scenario tag preserves the rest of the file byte-for-byte
+    Given a project root tempdir with spec/features/login.feature holding a feature doc string, a Background, a step doc string with nested indentation, a data table and scenario 'A' tagged '@smoke'
+    When I dispatch add-tag-to-scenario with file='spec/features/login.feature' scenario='A' tags=['@critical']
+    Then the dispatcher returns success=true
+    And the file on disk equals the original with only the line '  @critical' added between '  @smoke' and '  Scenario: A'

@@ -1,0 +1,162 @@
+{
+  "scenarios": [
+    {
+      "name": "Coverage commands leave no lock file beside the coverage files",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug551_coverage_writes_leave_no_lock_files.rs",
+          "lines": "101-130",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "/// Exclusive transaction over the coverage sidecars of one spec root;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A coverage write waits for the spec write lock",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug551_coverage_writes_leave_no_lock_files.rs",
+          "lines": "132-175",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "firstLine": "/// Exclusive transaction over the coverage sidecars of one spec root;",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/io/spec_lock.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "pub(crate) fn lock_dir(dir: &Path, command: &'static str) -> Result<SpecLock, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The cleanup script removes leftover coverage lock files",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug551_coverage_writes_leave_no_lock_files.rs",
+          "lines": "177-218",
+          "implMappings": [
+            {
+              "file": "scripts/remove-coverage-lock-files.sh",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "firstLine": "#!/bin/sh",
+              "lastLine": "echo \"Removed $count coverage lock file(s) from $features\""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug551_coverage_writes_leave_no_lock_files.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+      "rust/fspec-core/src/io/spec_lock.rs",
+      "scripts/remove-coverage-lock-files.sh"
+    ],
+    "totalLinesCovered": 199
+  }
+}

@@ -1,9 +1,11 @@
 @done
 @RPC-022
+@BUG-371
 @rust
 @source-shape
 @rpc
 @tui
+@infrastructure
 Feature: RPC-022 source-shape regression for the modal dialogs port + shared types + new RPC methods
   """
   RPC-022 introduces several new source artefacts. This feature pins
@@ -55,7 +57,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     And the file contains the substring "pub models: Vec<ModelEntry>"
     And the file contains the substring "pub struct ModelEntry"
     And the file contains the substring "pub id: String"
-    And the file contains the substring "pub context_window: u32"
+    And the file contains the substring "pub context_window: Option<u32>"
     And the file contains the substring "pub supports_reasoning: bool"
     And the file contains the substring "pub supports_vision: bool"
     And the file contains the substring "pub is_custom: bool"
@@ -63,19 +65,19 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   @rpc-trait
   Scenario: FspecService trait gains five new RPC methods
     Given rust/rpc/src/lib.rs after RPC-022 lands
-    Then the file contains the substring "async fn list_providers() -> Vec<ProviderInfo>"
+    Then the file contains the substring "async fn list_providers() -> Result<Vec<ProviderInfo>, String>"
     And the file contains the substring "async fn set_session_model(session_id: SessionId, provider_id: String, model_id: String) -> Result<(), String>"
     And the file contains the substring "async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>"
-    And the file contains the substring "async fn get_session_role(session_id: SessionId) -> Option<String>"
+    And the file contains the substring "async fn get_session_role(session_id: SessionId) -> Result<Option<String>, String>"
     And the file contains the substring "async fn set_session_role(session_id: SessionId, role: Option<String>) -> Result<(), String>"
 
   @session-manager-handle
   Scenario: SessionManagerHandle trait gains the new methods with default impls
     Given rust/core/src/session_manager_handle.rs after RPC-022 lands
-    Then the file contains the substring "fn list_providers(&self) -> Vec<ProviderInfo>"
+    Then the file contains the substring "fn list_providers(&self) -> Result<Vec<ProviderInfo>, String>"
     And the file contains the substring "fn set_model(&self, session_id: &SessionId, provider_id: &str, model_id: &str) -> Result<(), String>"
     And the file contains the substring "fn set_thinking_level(&self, session_id: &SessionId, level: ThinkingLevel) -> Result<(), String>"
-    And the file contains the substring "fn get_role(&self, session_id: &SessionId) -> Option<String>"
+    And the file contains the substring "fn get_role(&self, session_id: &SessionId) -> Result<Option<String>, String>"
     And the file contains the substring "fn set_role(&self, session_id: &SessionId, role: Option<String>) -> Result<(), String>"
     And each of the five methods has a default implementation returning the safe default (empty Vec / None / Ok(()))
 
@@ -112,7 +114,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   @line-budget
   Scenario: New RPC-022 modules stay under 300 lines
     Given the new files introduced by RPC-022
-    When a test counts the line-count of every .rs file
+    When a test counts the physical lines of every .rs file
     Then rust/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
     And rust/fspec-tui/src/views/agent/role_banner.rs has fewer than 300 lines
     And rust/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
@@ -131,7 +133,6 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     And the file contains the substring "SetSessionRole"
     And the file contains the substring "SessionRoleLoaded"
     And the file contains the substring "ListProvidersLoaded"
-    And the file contains the substring "OpenThinkingDialog"
 
   @architecture-invariants
   Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite

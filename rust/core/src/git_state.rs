@@ -246,10 +246,11 @@ pub fn git_state_signature(state: &GitState) -> String {
 /// Long-lived centralized git-state watcher over the workspace cwd
 /// (BUG-182).
 ///
-/// Reads the initial snapshot synchronously in [`Self::new`], starts the
-/// debounced fs-watch AND the periodic poll task, and publishes every
-/// CHANGED snapshot on a `tokio::sync::broadcast` channel (dedup: an
-/// unchanged re-snapshot is never re-broadcast). Drops the underlying
+/// Captures the first snapshot on the blocking pool (BUG-657: never on the
+/// constructing thread), starts the debounced fs-watch AND the periodic
+/// poll task, and publishes every CHANGED snapshot on a
+/// `tokio::sync::broadcast` channel (dedup: an unchanged re-snapshot is
+/// never re-broadcast). Drops the underlying
 /// debouncer on drop — there is no global state, so multiple workspaces
 /// are isolated.
 ///
@@ -284,11 +285,11 @@ impl GitStateWatcher {
     /// Construct a new watcher over the workspace `cwd` with the default
     /// 10-second poll interval.
     ///
-    /// Reads the initial snapshot synchronously and broadcasts it
-    /// immediately so that fresh subscribers always see at least the
-    /// initial state once they `subscribe()` and recv (subject to the
-    /// usual broadcast-channel race: subscribers that subscribe AFTER
-    /// the initial broadcast must call [`Self::snapshot`] to backfill).
+    /// BUG-657: returns at once. The first snapshot is captured on the
+    /// blocking pool and broadcast when it lands; until then
+    /// [`Self::snapshot`] is the empty `GitState`. Subscribers that
+    /// subscribe AFTER the first broadcast call [`Self::snapshot`] to
+    /// backfill.
     ///
     /// Never fails: a missing `.git` directory degrades to an empty
     /// `GitState` + a root-directory watch for the `.git` entry; a
@@ -319,33 +320,25 @@ impl GitStateWatcher {
     /// Construct a watcher with an explicit poll interval AND a capture
     /// hook (BUG-187).
     ///
-    /// `on_capture` is invoked on the thread that performs every
-    /// re-capture after the initial one — in production that thread is
-    /// the tokio blocking pool (the capture is dispatched via
-    /// `spawn_blocking` on both the periodic-poll path and the
-    /// debouncer-callback path), so a hook wired there is proof the
-    /// capture never ran on the async pool. The initial (constructor)
-    /// capture does NOT invoke the hook — it runs synchronously in
-    /// `with_cwd` by the BUG-182 contract.
+    /// `on_capture` is invoked on the thread that performs every capture,
+    /// the first one included — in production that thread is the tokio
+    /// blocking pool (the capture is dispatched via `spawn_blocking` on
+    /// the first-capture, periodic-poll and debouncer-callback paths), so
+    /// a hook wired there is proof the capture never ran on the async
+    /// pool or the constructing thread (BUG-657).
     pub fn with_interval_and_captures(
         cwd: &Path,
         poll_interval: Duration,
         on_capture: Option<Arc<dyn Fn() + Send + Sync>>,
     ) -> Self {
-        // BUG-182: the initial snapshot is read synchronously (before any
-        // runtime wiring) and does NOT run the capture hook — the hook
-        // only fires on re-captures dispatched onto the blocking pool.
-        let initial = capture_git_state(cwd, None);
         let (tx, _) = broadcast::channel::<GitState>(GIT_STATE_WATCHER_CAPACITY);
         // BUG-188: the dedup gate compares the stable signature of the
         // NEW capture against the last-published signature — the raw
         // GitState values are never `==`-stable once checkpoint refs exist
         // (see `git_state_signature`), so the signature is stored
-        // alongside the snapshot.
-        let state = Arc::new(RwLock::new((
-            initial.clone(),
-            git_state_signature(&initial),
-        )));
+        // alongside the snapshot. BUG-657: the empty signature matches no
+        // capture, so the first capture is always published.
+        let state = Arc::new(RwLock::new((GitState::default(), String::new())));
 
         // BUG-187 R2: at most one capture in flight — a tick / fs-event
         // that lands while a capture is running is dropped, never queued
@@ -353,6 +346,26 @@ impl GitStateWatcher {
         let in_flight = Arc::new(AtomicBool::new(false));
 
         let handle = tokio::runtime::Handle::try_current().ok();
+
+        // BUG-657: the first capture runs on the blocking pool under the
+        // in-flight guard, so the constructor (built before the TUI draws
+        // anything) never waits on git. Without a runtime there is no pool:
+        // the capture runs here.
+        match &handle {
+            Some(handle) => {
+                in_flight.store(true, Ordering::SeqCst);
+                let state = Arc::clone(&state);
+                let tx = tx.clone();
+                let cwd = cwd.to_path_buf();
+                let in_flight = Arc::clone(&in_flight);
+                let capture = on_capture.clone();
+                handle.spawn_blocking(move || {
+                    re_snapshot_and_publish(&state, &tx, &cwd, capture.as_deref());
+                    in_flight.store(false, Ordering::SeqCst);
+                });
+            }
+            None => re_snapshot_and_publish(&state, &tx, cwd, on_capture.as_deref()),
+        }
 
         // BUG-187: the periodic poll re-captures the full GitState on
         // every tick — catching working-tree changes that emit no `.git`
@@ -372,7 +385,13 @@ impl GitStateWatcher {
             // clone so the original stays usable for the debouncer.
             let poll_handle = handle.clone();
             handle.spawn(async move {
-                let mut interval = tokio::time::interval(poll_interval);
+                // BUG-657: the first tick lands one interval after start —
+                // the first capture is already running, so startup runs one
+                // capture, not two back to back.
+                let mut interval = tokio::time::interval_at(
+                    tokio::time::Instant::now() + poll_interval,
+                    poll_interval,
+                );
                 interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
                 loop {
                     interval.tick().await;
@@ -404,12 +423,6 @@ impl GitStateWatcher {
 
         let debouncer = build_debouncer(&state, &tx, cwd, &in_flight, handle, on_capture.as_ref());
 
-        // Broadcast the initial snapshot so subscribers that subscribe
-        // BEFORE the next change still observe at least one value
-        // (tests use this to wait on the initial snapshot
-        // deterministically — mirrors WorkUnitsWatcher).
-        let _ = tx.send(initial);
-
         Self {
             state,
             tx,
@@ -434,6 +447,21 @@ impl GitStateWatcher {
     /// [`Self::snapshot`] to backfill.
     pub fn subscribe(&self) -> broadcast::Receiver<GitState> {
         self.tx.subscribe()
+    }
+
+    /// BUG-657: subscribe, plus the latest published snapshot when a
+    /// capture has already landed (`None` while the first capture is still
+    /// running: its frame arrives on the receiver). Taken under the state
+    /// lock the publisher sends under, so no frame is missed or seen twice.
+    pub fn subscribe_backfilled(&self) -> (Option<GitState>, broadcast::Receiver<GitState>) {
+        match self.state.read() {
+            Ok(guard) => {
+                let rx = self.tx.subscribe();
+                let backfill = (!guard.1.is_empty()).then(|| guard.0.clone());
+                (backfill, rx)
+            }
+            Err(_) => (None, self.tx.subscribe()),
+        }
     }
 }
 
@@ -466,10 +494,12 @@ fn re_snapshot_and_publish(
         }
         guard.0 = snapshot.clone();
         guard.1 = signature;
+        // BUG-657: sent while the state is still locked, so
+        // `subscribe_backfilled` sees each frame exactly once — either as
+        // its backfill or on its receiver. `send` only errors when there
+        // are zero receivers — that is fine.
+        let _ = tx.send(snapshot);
     }
-    // `send` only errors when there are zero receivers — that is fine;
-    // the next subscriber can call `snapshot()` to backfill.
-    let _ = tx.send(snapshot);
 }
 
 /// Create the debouncer + register the watch. Returns `None` (degraded

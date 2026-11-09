@@ -262,3 +262,175 @@ fn scenario_dry_run_does_not_write_the_file() {
         "dry run must not write the scenario:\n{after}"
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Two added scenarios stay in the order they were added
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_two_added_scenarios_stay_in_the_order_they_were_added() {
+    // @step Given a project root tempdir with spec/features/payment.feature containing 'Feature: Payment\n  Scenario: Existing\n    Given x\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/payment.feature",
+        "Feature: Payment\n  Scenario: Existing\n    Given x\n",
+    );
+
+    // @step When I dispatch add-scenario with feature='payment' and scenario='Credit card payment'
+    let first = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "payment", "scenario": "Credit card payment"}),
+    ));
+    assert!(first.success, "expected success=true, got {first:?}");
+
+    // @step And I dispatch add-scenario with feature='payment' and scenario='PayPal payment'
+    let second = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "payment", "scenario": "PayPal payment"}),
+    ));
+    assert!(second.success, "expected success=true, got {second:?}");
+
+    // @step Then the file spec/features/payment.feature has the scenarios 'Existing', 'Credit card payment' and 'PayPal payment' in that order
+    let after = read_feature(tmp.path(), "spec/features/payment.feature");
+    let scenarios: Vec<&str> = after
+        .lines()
+        .filter_map(|l| l.trim().strip_prefix("Scenario: "))
+        .collect();
+    assert_eq!(
+        scenarios,
+        vec!["Existing", "Credit card payment", "PayPal payment"],
+        "{after}"
+    );
+
+    // @step And the second dispatch returns valid=true
+    let data: Value = serde_json::from_str(&second.data).expect("parse data json");
+    assert_eq!(data["success"].as_bool(), Some(true));
+    assert_eq!(data["valid"].as_bool(), Some(true));
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Adding a scenario keeps the tags, Background and existing scenarios
+// ─────────────────────────────────────────────────────────────────────────
+
+const FEATURE_WITH_TAGS_AND_BACKGROUND: &str = "@auth\n@critical\nFeature: My feature\n\n  Background: User Story\n    As a user\n    I want to log in\n    So that I can work\n\n  Scenario: First\n    Given one\n    Then two\n\n  Scenario: Second\n    Given three\n    Then four\n";
+
+#[test]
+fn scenario_adding_a_scenario_keeps_the_tags_background_and_existing_scenarios() {
+    // @step Given a project root tempdir with spec/features/my-feature.feature that has the feature tags @auth and @critical, a Background and the scenarios 'First' and 'Second'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/my-feature.feature",
+        FEATURE_WITH_TAGS_AND_BACKGROUND,
+    );
+
+    // @step When I dispatch add-scenario with feature='my-feature' and scenario='New scenario'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "my-feature", "scenario": "New scenario"}),
+    ));
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["success"].as_bool(), Some(true));
+
+    // @step Then the file on disk starts with the original content unchanged
+    let after = read_feature(tmp.path(), "spec/features/my-feature.feature");
+    assert!(
+        after.starts_with(FEATURE_WITH_TAGS_AND_BACKGROUND),
+        "original content changed:\n{after}"
+    );
+
+    // @step And 'Scenario: New scenario' is the last scenario in the file
+    let last = after
+        .lines()
+        .rfind(|l| l.trim_start().starts_with("Scenario"));
+    assert_eq!(last, Some("  Scenario: New scenario"), "{after}");
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: Invalid Gherkin fails with a validate suggestion and leaves the file unchanged
+// ─────────────────────────────────────────────────────────────────────────
+
+const BROKEN_FEATURE: &str = "Scenario: Some scenario\n  Given a\n";
+
+#[test]
+fn scenario_invalid_gherkin_fails_with_a_validate_suggestion_and_leaves_the_file_unchanged() {
+    // @step Given a project root tempdir with spec/features/broken.feature that does not parse as Gherkin
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(tmp.path(), "spec/features/broken.feature", BROKEN_FEATURE);
+
+    // @step When I dispatch add-scenario with feature='broken' and scenario='New scenario'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "broken", "scenario": "New scenario"}),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(
+        result.success,
+        "dispatcher envelope itself succeeds; inner success=false"
+    );
+    let data: Value = serde_json::from_str(&result.data).expect("parse data json");
+    assert_eq!(data["success"].as_bool(), Some(false));
+
+    // @step And the error starts with 'Feature file has invalid Gherkin syntax: '
+    let err = data["error"].as_str().unwrap_or("");
+    assert!(
+        err.starts_with("Feature file has invalid Gherkin syntax: "),
+        "unexpected error: {err}"
+    );
+
+    // @step And the suggestion equals "Run 'fspec validate broken' to see syntax errors"
+    assert_eq!(
+        data["suggestion"].as_str(),
+        Some("Run 'fspec validate broken' to see syntax errors")
+    );
+
+    // @step And spec/features/broken.feature is unchanged byte for byte
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/broken.feature"),
+        BROKEN_FEATURE
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: The added scenario uses two-space scenario and four-space step indentation
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_the_added_scenario_uses_two_space_scenario_and_four_space_step_indentation() {
+    // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
+
+    // @step When I dispatch add-scenario with feature='login' and scenario='New scenario'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"feature": "login", "scenario": "New scenario"}),
+    ));
+    assert!(result.success, "expected success=true, got {result:?}");
+
+    // @step Then the line '  Scenario: New scenario' is followed by the lines '    Given [precondition]', '    When [action]' and '    Then [expected outcome]'
+    let after = read_feature(tmp.path(), "spec/features/login.feature");
+    let lines: Vec<&str> = after.lines().collect();
+    let at = lines
+        .iter()
+        .position(|l| *l == "  Scenario: New scenario")
+        .expect("scenario line with two-space indentation");
+    assert_eq!(
+        lines.get(at + 1..at + 4),
+        Some(
+            &[
+                "    Given [precondition]",
+                "    When [action]",
+                "    Then [expected outcome]",
+            ][..]
+        ),
+        "{after}"
+    );
+}

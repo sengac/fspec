@@ -4,8 +4,8 @@
       "name": "Returns empty patterns array when work-units.json is auto-created in an empty workspace",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "86-107",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "66-87",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -275,7 +275,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -285,8 +287,8 @@
       "name": "Ignores non-done work units entirely",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "109-131",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "89-115",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -556,7 +558,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -566,8 +570,8 @@
       "name": "Skips done unit missing iterations field",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "133-151",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "117-135",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -837,7 +841,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -847,8 +853,8 @@
       "name": "Skips done unit missing estimate field",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "153-171",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "137-155",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -1118,7 +1124,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -1128,8 +1136,8 @@
       "name": "Single done unit with estimate=3 and iterations=1 yields a low-confidence pattern",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "173-195",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "157-179",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -1399,7 +1407,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -1409,8 +1419,8 @@
       "name": "Two done units with estimate=3 and iterations [1,2] yield medium confidence",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "197-222",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "181-206",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -1680,7 +1690,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -1690,8 +1702,8 @@
       "name": "Four done units with estimate=5 and iterations [1,2,3,4] yield high confidence",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "224-251",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "208-235",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -1961,7 +1973,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -1971,8 +1985,8 @@
       "name": "Two buckets emit patterns sorted ascending by points",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "253-279",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "237-263",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -2242,7 +2256,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -2252,8 +2268,8 @@
       "name": "JSON field declaration order is preserved",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "281-309",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "265-293",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -2523,7 +2539,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -2533,8 +2551,8 @@
       "name": "Escalates malformed work-units.json as a structured parse error",
       "testMappings": [
         {
-          "file": "rust/fspec/tests/cli_query_estimation_guide.rs",
-          "lines": "311-334",
+          "file": "rust/fspec-core/tests/query_estimation_guide.rs",
+          "lines": "295-314",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimation_guide.rs",
@@ -2804,7 +2822,9 @@
                 263,
                 264,
                 265
-              ]
+              ],
+              "firstLine": "//! `query-estimation-guide` — Rust port of `src/commands/query-estimation-guide.ts` (RPC-259).",
+              "lastLine": "#[test]"
             }
           ]
         }
@@ -2816,11 +2836,11 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec/tests/cli_query_estimation_guide.rs"
+      "rust/fspec-core/tests/query_estimation_guide.rs"
     ],
     "implFiles": [
       "rust/fspec-core/src/commands/query_estimation_guide.rs"
     ],
-    "totalLinesCovered": 3130
+    "totalLinesCovered": 2890
   }
 }

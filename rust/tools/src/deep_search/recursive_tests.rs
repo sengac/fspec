@@ -297,9 +297,16 @@ mod recursive_tests {
 
         // @step When the system prompt is built
         let prompt = build_system_prompt(&scope, true);
+
+        // @step Then the prompt includes DeepSearch in the AVAILABLE TOOLS section
+        let tools_section = prompt
+            .split("AVAILABLE TOOLS:")
+            .nth(1)
+            .and_then(|rest| rest.split("STRATEGY:").next())
+            .unwrap_or_default();
         assert!(
-            prompt.contains("DeepSearch"),
-            "prompt should mention DeepSearch tool when recursion is enabled"
+            tools_section.contains("- DeepSearch"),
+            "AVAILABLE TOOLS section should list DeepSearch when recursion is enabled: {tools_section}"
         );
 
         // @step And the prompt describes the decompose-delegate-aggregate strategy

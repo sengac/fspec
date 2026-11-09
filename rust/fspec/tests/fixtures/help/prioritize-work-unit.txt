@@ -32,18 +32,16 @@ fspec prioritize-work-unit AUTH-002 --after AUTH-001
 
 # Defer non-critical work
 fspec prioritize-work-unit REFAC-005 --position bottom
-    undefined
 
   • Dependency Ordering
     Example: # DB schema must come before API endpoints
 fspec prioritize-work-unit DB-001 --position top
 fspec prioritize-work-unit API-001 --after DB-001
 fspec prioritize-work-unit API-002 --after API-001
-    undefined
 
 
 TYPICAL WORKFLOW
-  1. Review column: fspec list-work-units --status <column> or fspec board → 2. Identify critical work → 3. fspec prioritize-work-unit <id> --position top → 4. Verify order: fspec board
+  1. Review column: fspec list-work-units --status <column> or fspec board → 2. Identify critical work → 3. fspec prioritize-work-unit <workUnitId> --position top → 4. Verify order: fspec board
 
 EXAMPLES
   1. Move AUTH-001 to top of its current column (e.g., backlog)

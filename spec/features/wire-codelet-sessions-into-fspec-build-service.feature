@@ -27,27 +27,24 @@ Feature: Wire codelet-sessions::SessionManager into codelet-fspec build_service
     I want rust/fspec/src/common.rs::build_service to construct a real codelet_sessions::SessionManager and pass it via SharedFspecService::with_session_manager, with codelet-sessions declared as a Cargo dependency
     So that the fspec binary in all three modes runs real agent sessions through the NAPI-free codelet-sessions crate
 
-  @rule:build_service_constructs_session_manager
   @wiring
   Scenario: build_service constructs a real SessionManager and passes it via with_session_manager
     Given the RPC-044 changes are applied to the codelet workspace
     When I open `rust/fspec/src/common.rs`
     Then the file contains the literal substring `use codelet_sessions::SessionManager`
     And the file contains the literal substring `use codelet_core::SessionManagerHandle`
-    And the `build_service` function constructs `let session_manager: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());`
+    And the `build_service` function constructs its session manager with `SessionManager::new()`, which returns the `Arc<SessionManager>` that holds its own self-reference (BUG-420)
     And the `build_service` function calls `SharedFspecService::with_session_manager(watcher, session_manager)` instead of `SharedFspecService::new(watcher)`
     And the `set_data_directory` call still appears before the SessionManager construction
 
-  @rule:cargo_toml_session_dep
   @cargo
   @manifest
   Scenario: rust/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi
     Given the RPC-044 changes are applied to the codelet workspace
     When I open `rust/fspec/Cargo.toml`
     Then the `[dependencies]` table contains `codelet-sessions.workspace = true` or `codelet-sessions = { workspace = true }`
-    And the file contains zero occurrences of the literal substring `codelet-napi`
+    And the file contains zero occurrences of the literal substring `codelet-napi` (outside comments)
 
-  @rule:build_service_returns_handle_attached_service
   @unit
   Scenario: build_service returns a SharedFspecService whose session-manager handle has been attached
     Given the RPC-044 changes are applied to the codelet workspace

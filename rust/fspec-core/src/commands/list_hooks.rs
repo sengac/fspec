@@ -13,26 +13,23 @@
 //!   Empty `hooks: {}` is a valid happy-path: produces `events: []` with
 //!   STILL no `message` field. This branch preserves the JavaScript object
 //!   key insertion order (we model `hooks` as `IndexMap<String, Vec<_>>`).
-//! * Either an `fs::read_to_string` failure (ENOENT or otherwise) **OR**
-//!   a `serde_json::from_str` parse failure →
-//!   `{events: [], message: "No hooks are configured"}`. This is the
-//!   "swallow-everything" branch — wider than `list-prefixes`, exactly
-//!   matching the TS bare `catch (error: unknown) { ... }` at
-//!   `src/commands/list-hooks.ts:38-44`.
+//! * A missing file → `{events: [], message: "No hooks are configured"}`.
+//! * A broken file (BUG-611: invalid JSON, or a top-level value, `hooks` or
+//!   event value of the wrong shape) → an error naming the problem; the
+//!   file is never changed.
 //! * Hook entries missing the `name` field surface as JSON `null`
 //!   (parity with the TS `hooks.map(h => h.name)` semantics — `name`
 //!   is `undefined` in the source array, which JSON.stringify emits as
 //!   `null`).
 //!
-//! list-hooks does NOT auto-create `spec/fspec-hooks.json` (parity with
-//! the read-only TS implementation: missing file → silently treated as
-//! "no hooks").
+//! list-hooks does NOT auto-create `spec/fspec-hooks.json`.
 
 use std::path::Path;
 
-use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
+use crate::command_hooks::config_file::load_for_read;
 use crate::error::FspecCoreError;
 
 /// CLI arguments accepted by `list-hooks`. The TS Commander.js
@@ -48,31 +45,6 @@ struct ListHooksArgs {
     /// `"text"` (default) or `"json"`.
     #[serde(default)]
     format: Option<String>,
-}
-
-/// Deserialised projection of `spec/fspec-hooks.json`. Only the `hooks`
-/// map is read — every other top-level field is ignored. `IndexMap`
-/// preserves declaration-order of event keys so `list-hooks` does not
-/// alphabetise them (parity with the TS `Object.entries(config.hooks)`
-/// iteration order, which honours object-literal insertion order on
-/// every supported V8 / Node version).
-#[derive(Debug, Deserialize)]
-struct HookFile {
-    #[serde(default)]
-    hooks: IndexMap<String, Vec<HookEntry>>,
-}
-
-/// A single hook entry inside one event's hook array. Only `name` is
-/// surfaced by `list-hooks` (TS maps the entry list to `h => h.name`
-/// at `src/commands/list-hooks.ts:34`); every other field — `command`,
-/// `blocking`, `timeout`, `condition`, etc. — is intentionally ignored.
-/// A missing `name` key surfaces as `None`, which serialises to JSON
-/// `null` (parity with `undefined → null` via JSON.stringify in the TS
-/// implementation).
-#[derive(Debug, Deserialize)]
-struct HookEntry {
-    #[serde(default)]
-    name: Option<String>,
 }
 
 /// One event entry in the `events` array of the response shape. Field
@@ -113,7 +85,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let result = load_hook_config(project_root);
+    let result = load_hook_config(project_root)?;
 
     match args.format.as_deref() {
         Some("json") => {
@@ -127,46 +99,35 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 }
 
-/// Read `spec/fspec-hooks.json` and convert it into a [`ListHooksResult`].
-///
-/// This is the "swallow everything" branch — both
-/// `std::fs::read_to_string` failures (ENOENT or otherwise) and
-/// `serde_json::from_str` parse failures map to the canonical empty
-/// payload `{events: [], message: "No hooks are configured"}`. This is
-/// strictly wider than the `list-prefixes` swallow (which only swallows
-/// work-units errors), matching the TS bare `catch (error: unknown)
-/// { return { events: [], message: 'No hooks are configured' }; }` at
-/// `src/commands/list-hooks.ts:38-44`.
-fn load_hook_config(project_root: &Path) -> ListHooksResult {
-    let path = project_root.join("spec").join("fspec-hooks.json");
-
-    let raw = match std::fs::read_to_string(&path) {
-        Ok(s) => s,
-        Err(_) => return empty_with_message(),
+/// Read `spec/fspec-hooks.json` and convert it into a [`ListHooksResult`]:
+/// a missing file is the canonical empty payload, a broken one an error
+/// (BUG-611). An entry's `name` that is missing or not a string is `None`.
+fn load_hook_config(project_root: &Path) -> Result<ListHooksResult, FspecCoreError> {
+    let Some(config) = load_for_read(project_root, "list-hooks")? else {
+        return Ok(empty_with_message());
     };
-
-    let parsed: HookFile = match serde_json::from_str(&raw) {
-        Ok(p) => p,
-        Err(_) => return empty_with_message(),
-    };
-
-    let events = parsed
-        .hooks
+    let events = config
+        .get("hooks")
+        .and_then(Value::as_object)
         .into_iter()
+        .flatten()
         .map(|(event, entries)| EventEntry {
-            event,
-            hooks: entries.into_iter().map(|h| h.name).collect(),
+            event: event.clone(),
+            hooks: entries
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|h| h.get("name").and_then(Value::as_str).map(str::to_string))
+                .collect(),
         })
         .collect();
-
-    ListHooksResult {
+    Ok(ListHooksResult {
         events,
         message: None,
-    }
+    })
 }
 
-/// Build the canonical empty-with-sentinel response. Used by both
-/// branches of the swallow path (missing file AND parse error).
+/// Build the canonical empty-with-sentinel response for a missing file.
 fn empty_with_message() -> ListHooksResult {
     ListHooksResult {
         events: Vec::new(),

@@ -11,6 +11,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn manifest_diagnostics_are_stable_and_non_destructive() -> TestResult {
     // @step Given broken and healthy manifest fixtures
     let dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(dir.path().to_owned())?;
     persistence::reset_stores_for_tests();
     let healthy = persistence::create_session("healthy", dir.path())?;
@@ -76,6 +77,7 @@ fn manifest_diagnostics_are_stable_and_non_destructive() -> TestResult {
 fn store_wide_diagnostic_failures_remain_errors() -> TestResult {
     // @step Given an invalid sessions root
     let dir = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(dir.path().to_owned())?;
     persistence::reset_stores_for_tests();
     let path = dir.path().join("sessions");

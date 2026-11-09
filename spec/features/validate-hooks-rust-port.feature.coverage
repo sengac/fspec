@@ -10,8 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
-                36,
-                37,
                 38,
                 39,
                 40,
@@ -76,21 +74,10 @@
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                102
+              ],
+              "firstLine": "/// Dispatcher entry point. `args_json` carries no flags for this command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -106,8 +93,6 @@
             {
               "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
-                36,
-                37,
                 38,
                 39,
                 40,
@@ -172,21 +157,10 @@
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                102
+              ],
+              "firstLine": "/// Dispatcher entry point. `args_json` carries no flags for this command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -202,8 +176,6 @@
             {
               "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
-                36,
-                37,
                 38,
                 39,
                 40,
@@ -268,21 +240,10 @@
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                102
+              ],
+              "firstLine": "/// Dispatcher entry point. `args_json` carries no flags for this command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -293,13 +254,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_hooks.rs",
-          "lines": "132-152",
+          "lines": "139-162",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
-                36,
-                37,
                 38,
                 39,
                 40,
@@ -364,117 +323,10 @@
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Dispatcher reports a load failure when the config is malformed JSON",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/validate_hooks.rs",
-          "lines": "153-173",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/validate_hooks.rs",
-              "lines": [
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                102
+              ],
+              "firstLine": "/// Dispatcher entry point. `args_json` carries no flags for this command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -485,13 +337,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/validate_hooks.rs",
-          "lines": "174-207",
+          "lines": "168-187",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/validate_hooks.rs",
               "lines": [
-                36,
-                37,
                 38,
                 39,
                 40,
@@ -556,21 +406,10 @@
                 99,
                 100,
                 101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                102
+              ],
+              "firstLine": "/// Dispatcher entry point. `args_json` carries no flags for this command.",
+              "lastLine": "}"
             }
           ]
         }
@@ -578,8 +417,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/validate_hooks.rs"
@@ -587,6 +426,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/validate_hooks.rs"
     ],
-    "totalLinesCovered": 632
+    "totalLinesCovered": 445
   }
 }

@@ -1,7 +1,7 @@
 //! MENU-009 — the menu bar's Zone C: the right-aligned New Agent /
-//! Close Agent action buttons (the agent semantics were superseded by
+//! Close action buttons (the agent semantics were superseded by
 //! BUG-199: start-a-new-agent + the Esc exit gesture, then by BUG-204:
-//! 'Close Agent' ALWAYS mounts the 'Exit Session?' dialog — the
+//! 'Close' ALWAYS mounts the 'Close Agent?' dialog — the
 //! state-dependent interrupt / draft-clear branches moved to the
 //! physical Esc key only).
 //!
@@ -17,7 +17,7 @@
 //! - **Component-level** (scenarios A, B, C, I, L, M, O):
 //!   `paint_menu_bar` / `menu_bar_layout` over a `MenuSnapshot` built from
 //!   the per-surface `&'static` Zone C slices (`BOARD_ZONE_C`,
-//!   `AGENT_ZONE_C`, the mux empty slice) — the shared painter stays
+//!   `AGENT_ZONE_C`) — the shared painter stays
 //!   surface-agnostic, so the snapshot IS the surface.
 //! - **App-level** (scenarios D, E, F, G, H, J, K, N): App + MockBackend
 //!   (the `menu002_board_surface.rs` pattern) — `fresh_app` +
@@ -33,13 +33,14 @@
 //!
 //! Ring geometry (the continuous wrap, R3):
 //! - board: 7 columns → 4 items → chips → `New Agent` (the LAST stop)
-//! - agent: `Board View` → chips → `New Agent` → `Close Agent` → wrap
+//! - agent: `Board View` → chips → `New Agent` → `Close` → wrap
 //!   (MENU-011: the bar paints the items bracketed — `[ New Agent ]` /
-//!   `[ Close Agent ]` — and the legacy `[esc]` hint is removed)
-//! - mux:  byte-identical to pre-MENU-009 (empty `zone_c` slice)
+//!   `[ Close ]` — and the legacy `[esc]` hint is removed)
+//! - mux: MUX-013 gives the mux bar the agent view's buttons (tested in
+//!   mux013_mux_bar_buttons.rs)
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::components::menu_bar::layout::menu_bar_layout;
@@ -65,7 +66,7 @@ use common::MockBackend;
 /// the 2-zone bar row 1 — the `menu007_agent_board_view_item.rs` constant).
 const AGENT_BAR_ROW: u16 = 1;
 
-/// The stable compositor id of the RPC-098 'Exit Session?' dialog.
+/// The stable compositor id of the RPC-098 'Close Agent?' dialog.
 const EXIT_DIALOG_ID: &str = "exit-confirmation-dialog";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -79,16 +80,17 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 fn key(code: KeyCode, mods: KeyModifiers) -> Event {
@@ -105,11 +107,11 @@ fn click(col: u16, row: u16) -> Event {
 }
 
 /// Render the full App (navigator + compositor) into a 120x24 buffer.
-fn render_app(app: &mut App) -> Buffer {
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+fn render_app(app: &mut App) -> Result<Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn row_text(buf: &Buffer, y: u16) -> String {
@@ -137,13 +139,14 @@ fn sid(id: &str) -> SessionId {
 }
 
 /// Seed `n` open sessions (s-1..s-n, Idle by default).
-async fn seed_sessions(app: &mut App, n: usize) {
+async fn seed_sessions(app: &mut App, n: usize) -> Result<(), codelet_test_helpers::TestError> {
     for i in 1..=n {
         app.dispatch(codelet_fspec_tui::Action::SessionCreated(sid(&format!(
             "s-{i}"
         ))));
     }
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
@@ -161,13 +164,14 @@ fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
 }
 
 /// Seed a small board so the focused column has a selectable card.
-async fn seed_units(app: &mut App) {
+async fn seed_units(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::WorkUnitsLoaded(vec![
         make_unit("AUTH-001", "backlog"),
         make_unit("AUTH-002", "testing"),
         make_unit("AUTH-003", "blocked"),
     ]));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// Focus the named column via the existing store seam.
@@ -177,18 +181,22 @@ fn focus_column(app: &mut App, name: &str) {
 
 /// Enter the Agent view on the given session (the RPC-097
 /// jump-into-existing-session path).
-async fn enter_agent_view(app: &mut App, session: &str) {
+async fn enter_agent_view(
+    app: &mut App,
+    session: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     app.dispatch(codelet_fspec_tui::Action::OpenAgentView(Some(sid(session))));
-    drain_pending(app).await;
+    drain_pending(app).await?;
+    Ok(())
 }
 
 /// The header's row 3 — the board's 2-zone menu bar row (3 rows below the
 /// `Checkpoints:` status row; the `menu002_board_surface.rs` helper).
-fn bar_row(buf: &Buffer) -> u16 {
+fn bar_row(buf: &Buffer) -> Result<u16, codelet_test_helpers::TestError> {
     let status_y = (0..buf.area.height)
         .find(|&y| row_text(buf, y).contains("Checkpoints:"))
-        .expect("the checkpoint status row must render");
-    status_y + 3
+        .or_fail("the checkpoint status row must render")?;
+    Ok(status_y + 3)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -197,18 +205,19 @@ fn bar_row(buf: &Buffer) -> u16 {
 
 /// One Idle `#n` chip with the given WU id suffix (a 1-input
 /// `build_chips` — the real builder, so the glyph is live).
-fn chip(i: usize, wu: Option<&'static str>) -> MenuChip {
-    build_chips(
+fn chip(i: usize, wu: Option<&'static str>) -> Result<MenuChip, codelet_test_helpers::TestError> {
+    Ok(build_chips(
         &[ChipInput {
             index: (i + 1, 3),
-            status: SessionStatus::Idle,
+            status: Some(SessionStatus::Idle),
             wu_id: wu.map(str::to_string),
             active: false,
+            bot: false,
         }],
         0,
     )
     .pop()
-    .expect("a single-input build_chips must produce one chip")
+    .or_fail("a single-input build_chips must produce one chip")?)
 }
 
 /// The board-shaped snapshot: the full `CATEGORIES` Zone A + one
@@ -232,8 +241,8 @@ fn board_snapshot(chips: Vec<MenuChip>, focus: Option<MenuFocus>) -> MenuSnapsho
 }
 
 /// The agent-shaped snapshot: the single `Board View` Zone A item plus
-/// the chips plus the agent's two Zone C buttons (New Agent, then
-/// Close Agent — MENU-011 R3: the labels are stored BRACKETED, the
+/// the chips plus the agent's three Zone C buttons (TUI-114 New Bot,
+/// New Agent, then Close — MENU-011 R3: the labels are stored BRACKETED, the
 /// legacy `[esc]` hint removed). The `&'static` slices mirror the
 /// `AGENT_ZONE_A` / `AGENT_ZONE_C` constants the production snapshot
 /// builder reads (the component-level test addresses the labels
@@ -246,11 +255,15 @@ fn agent_snapshot(chips: Vec<MenuChip>, focus: Option<MenuFocus>) -> MenuSnapsho
     }];
     static AGENT_ZONE_C: &[ZoneCButton] = &[
         ZoneCButton {
+            label: "[ New Bot ]",
+            action: MenuAction::NewBot,
+        },
+        ZoneCButton {
             label: "[ New Agent ]",
             action: MenuAction::NewAgent,
         },
         ZoneCButton {
-            label: "[ Close Agent ]",
+            label: "[ Close ]",
             action: MenuAction::CloseAgent,
         },
     ];
@@ -270,38 +283,16 @@ fn agent_snapshot(chips: Vec<MenuChip>, focus: Option<MenuFocus>) -> MenuSnapsho
     }
 }
 
-/// The mux-shaped snapshot: the full `CATEGORIES` Zone A + the pane view
-/// labels (Board active, Files) + chips + the EMPTY Zone C (Q1).
-fn mux_snapshot(chips: Vec<MenuChip>) -> MenuSnapshot {
-    let zone_b = vec![
-        ZoneBCell::View {
-            label: "Board",
-            active: true,
-        },
-        ZoneBCell::View {
-            label: "Files",
-            active: false,
-        },
-    ]
-    .into_iter()
-    .chain(chips.iter().enumerate().map(|(i, _)| ZoneBCell::Chip(i)))
-    .collect();
-    MenuSnapshot {
-        zone_b,
-        chips,
-        // Q1: the mux top bar carries NO Zone C — the empty slice keeps
-        // the ring / layout / paint byte-identical to pre-MENU-009.
-        ..Default::default()
-    }
-}
-
 /// Paint a 1-row bar into a `w`-column buffer and return the layout.
-fn render_bar(snap: &MenuSnapshot, w: u16) -> (Buffer, MenuLayout) {
+fn render_bar(
+    snap: &MenuSnapshot,
+    w: u16,
+) -> Result<(Buffer, MenuLayout), codelet_test_helpers::TestError> {
     let area = Rect::new(0, 0, w, 1);
     let mut buf = Buffer::empty(area);
     let layout = paint_menu_bar(area, &mut buf, snap, &Theme::default())
-        .expect("layout for a non-zero area");
-    (buf, layout)
+        .or_fail("layout for a non-zero area")?;
+    Ok((buf, layout))
 }
 
 /// The trimmed row 0 of a 1-row bar buffer.
@@ -316,28 +307,29 @@ fn bar_line(buf: &Buffer, w: u16) -> String {
 /// Render the view-level agent pane into a `w`-column TestBackend buffer
 /// (the `menu007_agent_board_view_item.rs` zero-sessions pattern — the
 /// App cannot enter the Agent view with an empty open-session list).
-fn render_agent_pane(w: u16) -> Buffer {
+fn render_agent_pane(w: u16) -> Result<Buffer, codelet_test_helpers::TestError> {
     let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
     let mut view = AgentView::new(tx);
     let mut store = codelet_fspec_tui::AgentViewStore::default();
-    let mut term = Terminal::new(TestBackend::new(w, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(w, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| view.render_with_store(frame.area(), frame.buffer_mut(), &mut store))
-        .expect("draw");
-    term.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenarios
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: The board bar paints a right-aligned "New Agent" button and no "Close Agent"
+/// Scenario: The board bar paints a right-aligned "New Agent" button and no "Close"
 #[test]
-fn scenario_the_board_bar_paints_a_right_aligned_new_agent_button_and_no_close_agent() {
+fn scenario_the_board_bar_paints_a_right_aligned_new_agent_button_and_no_close_agent() -> TestResult
+{
     // @step Given a board menu bar snapshot with 1 open session and no ring focus
-    let snap = board_snapshot(vec![chip(0, None)], None);
+    let snap = board_snapshot(vec![chip(0, None)?], None);
 
     // @step When the bar is painted into a 120-column row
-    let (buf, layout) = render_bar(&snap, 120);
+    let (buf, layout) = render_bar(&snap, 120)?;
     let row = bar_line(&buf, 120);
 
     // @step Then the row ends with the right-aligned "[ New Agent ]" Zone C button
@@ -345,24 +337,30 @@ fn scenario_the_board_bar_paints_a_right_aligned_new_agent_button_and_no_close_a
         row.ends_with("[ New Agent ]"),
         "the row must end with the right-aligned New Agent button (MENU-011: bracketed): {row:?}"
     );
+    // TUI-114: "[ New Bot ]" sits directly left of "[ New Agent ]".
+    assert!(
+        row.ends_with("[ New Bot ]  [ New Agent ]"),
+        "New Bot must sit directly left of New Agent (2-cell gap): {row:?}"
+    );
     assert_eq!(
         layout.zone_c_rects.len(),
-        1,
-        "exactly one Zone C rect (the board's single button)"
+        2,
+        "two Zone C rects (TUI-114 New Bot, then New Agent)"
     );
+    let (nb, last) = (&layout.zone_c_rects[0], &layout.zone_c_rects[1]);
+    assert_eq!(nb.x + nb.width + 2, last.x, "the 2-cell inter-button gap");
     // The button is right-aligned at the inner edge (1-cell R1 padding):
     // the last Zone C cell ends at x = width - 1.
-    let last = &layout.zone_c_rects[0];
     assert_eq!(
         last.x + last.width,
         119,
         "New Agent must sit at the inner right edge"
     );
 
-    // @step And the row contains no "Close Agent" button
+    // @step And the row contains no "Close" button
     assert!(
-        !row.contains("Close Agent"),
-        "the board bar must not paint Close Agent: {row:?}"
+        !row.contains("Close"),
+        "the board bar must not paint Close: {row:?}"
     );
 
     // @step And the left-anchored Zone A items and the Zone B chip are unchanged
@@ -372,29 +370,30 @@ fn scenario_the_board_bar_paints_a_right_aligned_new_agent_button_and_no_close_a
     );
     assert!(row.contains('│'), "the dim zone separator: {row:?}");
     assert!(row.contains("[ #1 ● ]"), "the session chip: {row:?}");
+    Ok(())
 }
 
-/// Scenario: The agent bar paints "New Agent" then "Close Agent" right-aligned
+/// Scenario: The agent bar paints "New Agent" then "Close" right-aligned
 /// (MENU-011: both buttons paint bracketed; the legacy `[esc]` hint on
-/// the Close Agent label was removed)
+/// the Close label was removed)
 #[test]
-fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() {
+fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() -> TestResult {
     // @step Given an agent menu bar snapshot with 0 open sessions and no ring focus
     let snap = agent_snapshot(Vec::new(), None);
 
     // @step When the agent bar is painted into a 100-column row
-    let (buf, layout) = render_bar(&snap, 100);
+    let (buf, layout) = render_bar(&snap, 100)?;
     let row = bar_line(&buf, 100);
 
-    // @step Then the row ends with "New Agent" followed by "Close Agent" right-aligned
+    // @step Then the row ends with "New Agent" followed by "Close" right-aligned
     // (MENU-011: the buttons paint BRACKETED — the 2-cell gap is kept,
     // the legacy `[esc]` hint is REMOVED)
     assert!(
-        row.ends_with("[ New Agent ]  [ Close Agent ]"),
-        "the row must end with both Zone C buttons (2-cell gap; MENU-011 bracketed): {row:?}"
+        row.ends_with("[ New Bot ]  [ New Agent ]  [ Close ]"),
+        "the row must end with the Zone C buttons (2-cell gaps; MENU-011 bracketed): {row:?}"
     );
-    assert_eq!(layout.zone_c_rects.len(), 2, "two Zone C rects");
-    let (na, ca) = (&layout.zone_c_rects[0], &layout.zone_c_rects[1]);
+    assert_eq!(layout.zone_c_rects.len(), 3, "three Zone C rects (TUI-114)");
+    let (na, ca) = (&layout.zone_c_rects[1], &layout.zone_c_rects[2]);
     assert_eq!(
         na.x + na.width + 2,
         ca.x,
@@ -403,7 +402,7 @@ fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() 
     assert_eq!(
         ca.x + ca.width,
         99,
-        "Close Agent ends at the inner right edge (MENU-011: 15-cell bracketed label)"
+        "Close ends at the inner right edge (MENU-011: 15-cell bracketed label)"
     );
 
     // @step And the left-anchored "Board View" item is unchanged
@@ -415,59 +414,29 @@ fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() 
         !row.contains('│') && !row.contains('#'),
         "no separator and no chips without sessions: {row:?}"
     );
-}
-
-/// Scenario: The mux bar paints no Zone C buttons — the row is byte-identical to pre-MENU-009
-#[test]
-fn scenario_the_mux_bar_paints_no_zone_c_buttons_the_row_is_byte_identical_to_pre_menu_009() {
-    // @step Given a mux menu bar snapshot with 2 panes and 1 open session
-    let snap = mux_snapshot(vec![chip(0, None)]);
-    assert!(
-        snap.zone_c.is_empty(),
-        "Q1: the mux Zone C is the empty slice"
-    );
-
-    // @step When the mux bar is painted into a 120-column row
-    let (buf, layout) = render_bar(&snap, 120);
-    let row = bar_line(&buf, 120);
-
-    // @step Then the row contains no Zone C button
-    assert!(
-        !row.contains("New Agent") && !row.contains("Close Agent"),
-        "no Zone C button text on the mux bar: {row:?}"
-    );
-    assert!(layout.zone_c_rects.is_empty(), "no Zone C rects: {row:?}");
-
-    // @step And the Zone A items, the pane labels and the chip paint exactly as before
-    assert!(
-        row.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"),
-        "the Zone A items (MENU-011: bracketed): {row:?}"
-    );
-    assert!(row.contains("Board"), "the active pane label: {row:?}");
-    assert!(row.contains("Files"), "the second pane label: {row:?}");
-    assert!(row.contains("[ #1 ● ]"), "the global session chip: {row:?}");
+    Ok(())
 }
 
 /// Scenario: Enter on the board's "New Agent" button activates the "."-key semantics
 #[tokio::test]
 async fn scenario_enter_on_the_board_new_agent_button_mounts_the_create_session_dialog_when_no_open_sessions(
-) {
+) -> TestResult {
     // @step Given the board bar is painted with the "New Agent" Zone C button and no open sessions
     let (mut app, _mock) = fresh_app();
-    seed_units(&mut app).await;
+    seed_units(&mut app).await?;
     focus_column(&mut app, "backlog");
-    render_app(&mut app); // paint the bar (the ring feeds at dispatch tick)
+    render_app(&mut app)?; // paint the bar (the ring feeds at dispatch tick)
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
-        Some(MenuFocus::ZoneC(0)),
+        Some(MenuFocus::ZoneC(1)),
         "Left from the first column must land on the New Agent button (the ring's last stop)"
     );
 
     // @step When the ring focuses "New Agent" and I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the CreateSessionDialog mounts over the board (the "."-key None-target path)
     assert!(
@@ -485,28 +454,29 @@ async fn scenario_enter_on_the_board_new_agent_button_mounts_the_create_session_
         app.board_store().menu_focus().is_none(),
         "executing the button is a 'leave the bar' gesture — the ring focus clears"
     );
+    Ok(())
 }
 
 /// Scenario: A left click on the board's "New Agent" button activates it
 #[tokio::test]
-async fn scenario_a_left_click_on_the_board_new_agent_button_activates_it() {
+async fn scenario_a_left_click_on_the_board_new_agent_button_activates_it() -> TestResult {
     // @step Given the board bar is painted with the "New Agent" Zone C button
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 0);
-    let buf = render_app(&mut app); // cache the bar geometry
-    let y = bar_row(&buf);
-    let x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
+    let buf = render_app(&mut app)?; // cache the bar geometry
+    let y = bar_row(&buf)?;
+    let x = find_x(&buf, y, "New Agent").or_fail("New Agent on the bar row")?;
 
     // @step When I left-click the "New Agent" button
     app.handle_event(&click(x, y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the button
-    // ALWAYS starts a new agent — it never jumps into the selected unit's session)
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the button ALWAYS starts a new agent — the OpenAgentView R8 substitution is gone)
+    // (it never jumps into the selected unit's session)
     assert!(
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "the click must mount the CreateSessionDialog (BUG-199 agent-bar parity)"
@@ -526,34 +496,36 @@ async fn scenario_a_left_click_on_the_board_new_agent_button_activates_it() {
         app.board_store().menu_focus().is_none(),
         "executing the button must clear the board bar's ring focus"
     );
+    Ok(())
 }
 
 /// Scenario: Enter on the agent's "New Agent" button starts a new agent (BUG-199 R1)
 /// (the board-button parity — the MENU-009 "jump into / resume the current
 /// session" semantics are superseded).
 #[tokio::test]
-async fn scenario_enter_on_the_agents_new_agent_button_mounts_the_create_session_dialog() {
-    // @step Given the agent bar is painted with "New Agent" and "Close Agent" and 1 open session
+async fn scenario_enter_on_the_agents_new_agent_button_mounts_the_create_session_dialog(
+) -> TestResult {
+    // @step Given the agent bar is painted with "New Agent" and "Close" and 1 open session
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
-    render_app(&mut app); // cache the agent bar geometry (chips + Zone C rects)
-                          // Ring: Board View → chip #1 → New Agent.
+    seed_sessions(&mut app, 1).await?;
+    enter_agent_view(&mut app, "s-1").await?;
+    render_app(&mut app)?; // cache the agent bar geometry (chips + Zone C rects)
+                           // Ring: Board View → chip #1 → New Bot → New Agent.
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+    for _ in 0..3 {
+        app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+        drain_pending(&mut app).await?;
+    }
     assert_eq!(
         app.navigator().agent.menu_focus(),
-        Some(MenuFocus::ZoneC(0)),
-        "Right x2 from 'Board View' (past the chip) must land on 'New Agent'"
+        Some(MenuFocus::ZoneC(1)),
+        "Right x3 from 'Board View' (past the chip and New Bot) must land on 'New Agent'"
     );
 
     // @step When the ring focuses the agent bar's "New Agent" and I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the CreateSessionDialog mounts over the Agent view (the current session is untouched)
     assert!(
@@ -576,35 +548,37 @@ async fn scenario_enter_on_the_agents_new_agent_button_mounts_the_create_session
         app.navigator().agent.menu_focus().is_none(),
         "activating the button must clear the agent bar's ring focus"
     );
+    Ok(())
 }
 
-/// Scenario: Enter on the agent's "Close Agent" button shows the same exit
+/// Scenario: Enter on the agent's "Close" button shows the same exit
 /// confirmation as Esc (MENU-011: the `[esc]` hint was removed) (BUG-204
 /// supersedes BUG-199 R2 — the idle-session dialog behavior is kept;
 /// the state-dependent branches moved to the physical Esc key).
 #[tokio::test]
-async fn scenario_enter_on_the_agents_close_agent_button_shows_the_esc_exit_confirmation() {
+async fn scenario_enter_on_the_agents_close_agent_button_shows_the_esc_exit_confirmation(
+) -> TestResult {
     // @step Given the agent view shows 1 open idle session and the agent bar is painted
     let (mut app, mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
+    seed_sessions(&mut app, 1).await?;
+    enter_agent_view(&mut app, "s-1").await?;
     app.agent_view_store_mut().set_current_work_unit(
         Some("AUTH-001".to_string()),
         Some("implementing".to_string()),
     );
     app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
-    render_app(&mut app); // cache the agent bar geometry (chips + Zone C rects)
-                          // Ring: Board View → chip #1 → New Agent → Close Agent.
+    render_app(&mut app)?; // cache the agent bar geometry (chips + Zone C rects)
+                           // Ring: Board View → chip #1 → New Bot → New Agent → Close.
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-    for _ in 0..3 {
+    drain_pending(&mut app).await?;
+    for _ in 0..4 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
     assert_eq!(
         app.navigator().agent.menu_focus(),
-        Some(MenuFocus::ZoneC(1)),
-        "Left then Right x3 must land on the 'Close Agent' button"
+        Some(MenuFocus::ZoneC(2)),
+        "Left then Right x4 must land on the 'Close' button"
     );
     assert_eq!(
         mock.destroy_session_calls(),
@@ -612,13 +586,13 @@ async fn scenario_enter_on_the_agents_close_agent_button_shows_the_esc_exit_conf
         "no destroy before the activation"
     );
 
-    // @step When the ring focuses "Close Agent" and I press Enter
+    // @step When the ring focuses "Close" and I press Enter
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-    // @step Then the "Exit Session?" confirmation dialog (Close Session / Cancel) is shown
+    drain_pending(&mut app).await?;
+    // @step Then the "Close Agent?" confirmation dialog (Close / Cancel) is shown
     assert!(
         app.compositor().contains(EXIT_DIALOG_ID),
-        "'Close Agent' must show the Esc exit confirmation dialog"
+        "'Close' must show the Esc exit confirmation dialog"
     );
     // @step And the session is not destroyed until an option is committed
     assert_eq!(
@@ -637,32 +611,34 @@ async fn scenario_enter_on_the_agents_close_agent_button_shows_the_esc_exit_conf
         app.navigator().agent.menu_focus().is_none(),
         "activating the button must clear the agent bar's ring focus"
     );
+    Ok(())
 }
 
-/// Scenario: A left click on the agent's "Close Agent" button shows the
+/// Scenario: A left click on the agent's "Close" button shows the
 /// same exit confirmation as Esc (MENU-011: the label paints bracketed —
-/// `[ Close Agent ]` — and the legacy `[esc]` hint was removed) (BUG-199 R2 — the MENU-009 direct
+/// `[ Close ]` — and the legacy `[esc]` hint was removed) (BUG-199 R2 — the MENU-009 direct
 /// teardown is superseded).
 #[tokio::test]
-async fn scenario_a_left_click_on_the_agents_close_agent_button_shows_the_esc_exit_confirmation() {
+async fn scenario_a_left_click_on_the_agents_close_agent_button_shows_the_esc_exit_confirmation(
+) -> TestResult {
     // @step Given the agent view shows 1 open idle session and the agent bar is painted
     let (mut app, mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
+    seed_sessions(&mut app, 1).await?;
+    enter_agent_view(&mut app, "s-1").await?;
     app.agent_view_store_mut().set_current_work_unit(
         Some("AUTH-001".to_string()),
         Some("implementing".to_string()),
     );
     app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
-    let buf = render_app(&mut app); // cache the agent bar geometry
-    let x = find_x(&buf, AGENT_BAR_ROW, "Close Agent")
-        .expect("Close Agent on the bar row (MENU-011: bracketed, [esc] hint removed)");
+    let buf = render_app(&mut app)?; // cache the agent bar geometry
+    let x = find_x(&buf, AGENT_BAR_ROW, "Close")
+        .or_fail("Close on the bar row (MENU-011: bracketed, [esc] hint removed)")?;
 
-    // @step When I left-click the "Close Agent" button
+    // @step When I left-click the "Close" button
     app.handle_event(&click(x, AGENT_BAR_ROW));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the "Exit Session?" confirmation dialog (Close Session / Cancel) is shown
+    // @step Then the "Close Agent?" confirmation dialog (Close / Cancel) is shown
     assert!(
         app.compositor().contains(EXIT_DIALOG_ID),
         "the click must show the Esc exit confirmation dialog (BUG-199 R2)"
@@ -684,19 +660,20 @@ async fn scenario_a_left_click_on_the_agents_close_agent_button_shows_the_esc_ex
         app.navigator().agent.menu_focus().is_none(),
         "activating the button must clear the agent bar's ring focus"
     );
+    Ok(())
 }
 
 /// Scenario: A focused Zone C button carries the inverse-video ring highlight
 #[test]
-fn scenario_a_focused_zone_c_button_carries_the_inverse_video_ring_highlight() {
+fn scenario_a_focused_zone_c_button_carries_the_inverse_video_ring_highlight() -> TestResult {
     // @step Given a board menu bar snapshot with the ring focus on "New Agent"
-    let snap = board_snapshot(vec![chip(0, None)], Some(MenuFocus::ZoneC(0)));
+    let snap = board_snapshot(vec![chip(0, None)?], Some(MenuFocus::ZoneC(1)));
 
     // @step When the bar is painted into a 120-column row
-    let (buf, layout) = render_bar(&snap, 120);
+    let (buf, layout) = render_bar(&snap, 120)?;
 
     // @step Then the "New Agent" button's cells are styled bg Cyan, fg Black, bold
-    let rect = &layout.zone_c_rects[0];
+    let rect = &layout.zone_c_rects[1];
     for cx in rect.x..rect.x + rect.width {
         let cell = &buf[(cx, 0)];
         assert_eq!(cell.bg, Color::Cyan, "cell {cx} must be inverse bg");
@@ -708,30 +685,36 @@ fn scenario_a_focused_zone_c_button_carries_the_inverse_video_ring_highlight() {
     }
 
     // @step And no other Zone C or Zone A cell is inverted
-    for rect in layout.item_rects.iter().chain(layout.cell_rects.iter()) {
+    for rect in layout
+        .item_rects
+        .iter()
+        .chain(layout.cell_rects.iter())
+        .chain(layout.zone_c_rects.iter().take(1))
+    {
         for cx in rect.x..rect.x + rect.width {
             assert_ne!(
                 buf[(cx, 0)].bg,
                 Color::Cyan,
-                "an unfocused Zone A/Zone B cell at {cx} must not be inverted"
+                "an unfocused Zone A/B/C cell at {cx} must not be inverted"
             );
         }
     }
+    Ok(())
 }
 
 /// Scenario: The ring walks last chip -> "New Agent" -> columns on the board
 #[tokio::test]
-async fn scenario_the_ring_walks_last_chip_to_new_agent_to_columns_on_the_board() {
-    // @step Given the board ring has 7 columns, 4 items and 1 chip
+async fn scenario_the_ring_walks_last_chip_to_new_agent_to_columns_on_the_board() -> TestResult {
+    // @step Given the board ring has 7 columns, 4 items, 1 chip and 2 Zone C buttons
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     focus_column(&mut app, "blocked"); // the last column (ring slot 6)
-    render_app(&mut app);
+    render_app(&mut app)?;
     // Right x5 from the last column: 4 items + 1 chip → the last chip.
     for _ in 0..5 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
     assert_eq!(
         app.board_store().menu_focus(),
@@ -739,19 +722,26 @@ async fn scenario_the_ring_walks_last_chip_to_new_agent_to_columns_on_the_board(
         "Right x5 from the last column must land on chip #1 (the last chip)"
     );
 
-    // @step When the ring walks Right from the last chip
+    // @step When the ring walks Right from the last chip past "New Bot"
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
-
-    // @step Then "New Agent" (the only Zone C button) holds the ring focus
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::ZoneC(0)),
-        "Right from the last chip must land on New Agent"
+        "Right from the last chip must land on New Bot"
     );
-    let buf = render_app(&mut app);
-    let y = bar_row(&buf);
-    let na_x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
+    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    drain_pending(&mut app).await?;
+
+    // @step Then "New Agent" (the last Zone C button) holds the ring focus
+    assert_eq!(
+        app.board_store().menu_focus(),
+        Some(MenuFocus::ZoneC(1)),
+        "Right from New Bot must land on New Agent"
+    );
+    let buf = render_app(&mut app)?;
+    let y = bar_row(&buf)?;
+    let na_x = find_x(&buf, y, "New Agent").or_fail("New Agent on the bar row")?;
     assert!(
         is_inverse(&buf, na_x + 10, y), // MENU-011: bracketed "[ New Agent ]"
         "the New Agent button must paint inverse-video on row {y}:\n{}",
@@ -760,7 +750,7 @@ async fn scenario_the_ring_walks_last_chip_to_new_agent_to_columns_on_the_board(
 
     // @step When the ring walks Right again
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the focus wraps to the first kanban column (no bar highlight)
     assert!(
@@ -771,28 +761,29 @@ async fn scenario_the_ring_walks_last_chip_to_new_agent_to_columns_on_the_board(
 
     // @step When the ring walks Left from the first item
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then "New Agent" holds the ring focus
     assert_eq!(
         app.board_store().menu_focus(),
-        Some(MenuFocus::ZoneC(0)),
+        Some(MenuFocus::ZoneC(1)),
         "Left from the first column must land on the New Agent button (the reverse wrap)"
     );
+    Ok(())
 }
 
-/// Scenario: The ring wraps through both Zone C buttons on the agent bar
+/// Scenario: The ring wraps through all three Zone C buttons on the agent bar
 #[tokio::test]
-async fn scenario_the_ring_wraps_through_both_zone_c_buttons_on_the_agent_bar() {
-    // @step Given the agent bar has the "Board View" item, 1 chip and 2 Zone C buttons
+async fn scenario_the_ring_wraps_through_all_three_zone_c_buttons_on_the_agent_bar() -> TestResult {
+    // @step Given the agent bar has the "Board View" item, 1 chip and 3 Zone C buttons
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
-    render_app(&mut app); // cache the agent bar geometry (chips + Zone C rects)
+    seed_sessions(&mut app, 1).await?;
+    enter_agent_view(&mut app, "s-1").await?;
+    render_app(&mut app)?; // cache the agent bar geometry (chips + Zone C rects)
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE)); // Item(0) = 'Board View'
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE)); // → chip #1
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.navigator().agent.menu_focus(),
         Some(MenuFocus::ZoneB(0)),
@@ -801,64 +792,76 @@ async fn scenario_the_ring_wraps_through_both_zone_c_buttons_on_the_agent_bar() 
 
     // @step When the ring walks Right from the last chip
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
+
+    // @step Then "New Bot" holds the ring focus
+    assert_eq!(
+        app.navigator().agent.menu_focus(),
+        Some(MenuFocus::ZoneC(0)),
+        "Right from the last chip must land on 'New Bot'"
+    );
+
+    // @step When the ring walks Right once more
+    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    drain_pending(&mut app).await?;
 
     // @step Then "New Agent" holds the ring focus
     assert_eq!(
         app.navigator().agent.menu_focus(),
-        Some(MenuFocus::ZoneC(0)),
-        "Right from the last chip must land on 'New Agent'"
+        Some(MenuFocus::ZoneC(1)),
+        "Right from 'New Bot' must land on 'New Agent'"
     );
 
     // @step When the ring walks Right once more
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then "Close Agent" holds the ring focus
+    // @step Then "Close" holds the ring focus
     assert_eq!(
         app.navigator().agent.menu_focus(),
-        Some(MenuFocus::ZoneC(1)),
-        "Right from 'New Agent' must land on 'Close Agent'"
+        Some(MenuFocus::ZoneC(2)),
+        "Right from 'New Agent' must land on 'Close'"
     );
 
     // @step When the ring walks Right once more
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then "Board View" holds the ring focus (the wrap)
     assert_eq!(
         app.navigator().agent.menu_focus(),
         Some(MenuFocus::Item(0)),
-        "Right from 'Close Agent' must wrap back to 'Board View'"
+        "Right from 'Close' must wrap back to 'Board View'"
     );
 
     // @step When the ring walks Left from "Board View"
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then "Close Agent" holds the ring focus (the reverse wrap)
+    // @step Then "Close" holds the ring focus (the reverse wrap)
     assert_eq!(
         app.navigator().agent.menu_focus(),
-        Some(MenuFocus::ZoneC(1)),
+        Some(MenuFocus::ZoneC(2)),
         "Left from 'Board View' must wrap to the last Zone C button"
     );
+    Ok(())
 }
 
 /// Scenario: Zone C drops before Zone B content when the row cannot afford it
 #[test]
-fn scenario_zone_c_drops_before_zone_b_content_when_the_row_cannot_afford_it() {
+fn scenario_zone_c_drops_before_zone_b_content_when_the_row_cannot_afford_it() -> TestResult {
     // @step Given a board menu bar snapshot with 1 chip bound to a long work-unit id
-    let snap = board_snapshot(vec![chip(0, Some("MENU-001"))], None);
+    let snap = board_snapshot(vec![chip(0, Some("MENU-001"))?], None);
 
     // @step When the bar is painted into a 60-column row
     // (MENU-011: the bracketed Zone A is 42 cells — a 40-col area no
     // longer fits even the absolute minimum; 60 cols = 58 inner: the
     // level-0 row (42 + 3 separator + 17 chip = 62) does not fit, so
     // the WU id suffix is the first Zone B ladder step dropped; the
-    // level-1 row (53) plus the 2-cell gap plus the 13-cell bracketed
-    // button (68) still does not fit — Zone C drops BEFORE any further
+    // level-1 row (53) plus the 2-cell gap plus the 26-cell bracketed
+    // New Bot + New Agent buttons (81) still does not fit — Zone C drops BEFORE any further
     // Zone B truncation, R5.)
-    let (buf, layout) = render_bar(&snap, 60);
+    let (buf, layout) = render_bar(&snap, 60)?;
     let row = bar_line(&buf, 60);
 
     // @step Then the row contains no Zone C button
@@ -892,6 +895,7 @@ fn scenario_zone_c_drops_before_zone_b_content_when_the_row_cannot_afford_it() {
             "the painted row must fit within the area width"
         );
     }
+    Ok(())
 }
 
 // Scenario: The Zone C truncation bound holds for any width and chip count (proptest)
@@ -904,7 +908,7 @@ proptest::proptest! {
         // @step Given a board menu bar snapshot with a Zone C "New Agent" button and any number of chips
         let chips: Vec<MenuChip> = (0..chip_count)
             .map(|i| chip(i, Some("A-BIG-UNIT-ID")))
-            .collect();
+            .collect::<Result<_, _>>().map_err(|error| proptest::test_runner::TestCaseError::fail(error.to_string()))?;
         let snap = board_snapshot(chips, None);
 
         // @step When the bar is painted into any render area width
@@ -933,31 +937,31 @@ proptest::proptest! {
 
 /// Scenario: A Zone C click with an open dropdown does NOT fire the click-away dismiss
 #[tokio::test]
-async fn scenario_a_zone_c_click_with_an_open_dropdown_does_not_fire_the_click_away_dismiss() {
+async fn scenario_a_zone_c_click_with_an_open_dropdown_does_not_fire_the_click_away_dismiss(
+) -> TestResult {
     // @step Given the board bar's Kanban dropdown is open and the "New Agent" button is painted
     let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    seed_units(&mut app).await;
+    seed_sessions(&mut app, 1).await?;
+    seed_units(&mut app).await?;
     focus_column(&mut app, "blocked");
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE)); // → Item(0) = Kanban
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE)); // open the Kanban dropdown
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(
         app.board_store().open_menu(),
         Some((0, 0)),
         "the Kanban dropdown must be open at row 0"
     );
-    let buf = render_app(&mut app);
-    let y = bar_row(&buf);
-    let x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
+    let buf = render_app(&mut app)?;
+    let y = bar_row(&buf)?;
+    let x = find_x(&buf, y, "New Agent").or_fail("New Agent on the bar row")?;
 
     // @step When I left-click the "New Agent" button
     app.handle_event(&click(x, y));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the button
-    // ALWAYS starts a new agent — it never resumes the first open session)
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the button ALWAYS starts a new agent — it never resumes the first open session)
     assert!(
         app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "the click must mount the CreateSessionDialog (BUG-199 agent-bar parity)"
@@ -991,25 +995,26 @@ async fn scenario_a_zone_c_click_with_an_open_dropdown_does_not_fire_the_click_a
         app.board_store().menu_focus().is_none(),
         "the bar must be de-selected (the execute path de-selected it)"
     );
+    Ok(())
 }
 
-/// Scenario: With no open sessions the agent bar still shows both Zone C buttons
+/// Scenario: With no open sessions the agent bar still shows all three Zone C buttons
 #[test]
-fn scenario_with_no_open_sessions_the_agent_bar_still_shows_both_zone_c_buttons() {
+fn scenario_with_no_open_sessions_the_agent_bar_still_shows_all_three_zone_c_buttons() -> TestResult
+{
     // @step Given an agent menu bar snapshot with zero open sessions
     // (view-level pane — the App cannot enter the Agent view with an
     // empty open-session list; the zero-chip snapshot is the same shape)
 
     // @step When the agent bar is painted into a 80-column row
-    let buf = render_agent_pane(80);
+    let buf = render_agent_pane(80)?;
     let row = row_text(&buf, AGENT_BAR_ROW);
 
-    // @step Then the row ends with "[ New Agent ]" followed by
-    // "[ Close Agent ]" right-aligned (MENU-011: bracketed, the
-    // `[esc]` hint removed)
+    // @step Then the row ends with "[ New Bot ]", "[ New Agent ]" then "[ Close ]" right-aligned
+    // (MENU-011: bracketed, the `[esc]` hint removed; TUI-114: New Bot)
     assert!(
-        row.ends_with("[ New Agent ]  [ Close Agent ]"),
-        "both Zone C buttons must paint even with an empty chip list: {row:?}"
+        row.ends_with("[ New Bot ]  [ New Agent ]  [ Close ]"),
+        "all three Zone C buttons must paint even with an empty chip list: {row:?}"
     );
 
     // @step And the buttons are independent of the (empty) chip list
@@ -1021,4 +1026,5 @@ fn scenario_with_no_open_sessions_the_agent_bar_still_shows_both_zone_c_buttons(
         !row.contains('│') && !row.contains('#'),
         "no separator and no chips without sessions: {row:?}"
     );
+    Ok(())
 }

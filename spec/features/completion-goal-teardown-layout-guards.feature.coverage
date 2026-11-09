@@ -4,8 +4,8 @@
       "name": "Goal teardown guards preserve a single reminder owner",
       "testMappings": [
         {
-          "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
-          "lines": "510-606",
+          "file": "rust/cli/tests/cont011_completion_goal_teardown_layout_guards.rs",
+          "lines": "30-122",
           "implMappings": [
             {
               "file": "rust/cli/src/session/reminders.rs",
@@ -38,7 +38,9 @@
                 26,
                 27,
                 28
-              ]
+              ],
+              "firstLine": "use super::{context_gathering, system_reminders, Session, SessionGoal, SystemReminderType};",
+              "lastLine": "None => String::new(),"
             },
             {
               "file": "rust/cli/src/interactive/done_early_exit.rs",
@@ -99,7 +101,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "pub fn decide_tool_result_early_exit(",
+              "lastLine": "}"
             }
           ]
         }
@@ -111,12 +115,12 @@
     "coveredScenarios": 1,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/cli/tests/cont006_goal_immediate_termination.rs"
+      "rust/cli/tests/cont011_completion_goal_teardown_layout_guards.rs"
     ],
     "implFiles": [
       "rust/cli/src/session/reminders.rs",
       "rust/cli/src/interactive/done_early_exit.rs"
     ],
-    "totalLinesCovered": 181
+    "totalLinesCovered": 177
   }
 }

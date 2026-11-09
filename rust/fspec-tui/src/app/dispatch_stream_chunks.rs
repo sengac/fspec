@@ -187,6 +187,10 @@ impl App {
             StreamChunk::ExecStdinRequestCleared => {
                 self.handle_exec_stdin_dismissed(session_id);
             }
+            // AMGR-022: a sub-agent request raised, moved or resolved.
+            StreamChunk::InteractionRequestChanged { route, status } => {
+                self.handle_request_changed(route, status);
+            }
             // All other variants: nothing additional to record here.
             _ => {}
         }
@@ -255,8 +259,10 @@ impl App {
             return;
         }
         let backend = self.backend.clone();
+        // TUI-120: answered from the board's selected workspace.
+        let workspace = self.selected_workspace_path();
         let handle = tokio::spawn(async move {
-            let result = run_fspec_command(backend.as_ref(), &request).await;
+            let result = run_fspec_command(backend.as_ref(), workspace, &request).await;
             let _ = backend.send_fspec_result(session_id, result).await;
         });
         self.pending_tasks.push(handle);

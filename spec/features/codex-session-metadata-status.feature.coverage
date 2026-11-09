@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/prov153_codex_session_status.rs",
-          "lines": "13-99",
+          "lines": "11-100",
           "implMappings": [
             {
               "file": "rust/sessions/src/provider_status.rs",
@@ -16,7 +16,9 @@
                 30,
                 42,
                 51
-              ]
+              ],
+              "firstLine": "pub fn prepare_provider_status(self: &Arc<Self>, extensions: &ProviderSession, provider: &str) {",
+              "lastLine": "codex.metadata.reset();"
             },
             {
               "file": "rust/providers/src/codex/metadata_delivery.rs",
@@ -26,17 +28,21 @@
                 54,
                 66,
                 74
-              ]
+              ],
+              "firstLine": "pub(super) fn replace_observer(state: &mut State, observer: PresentationObserver) {",
+              "lastLine": "state.delivery.verified = true;"
             },
             {
               "file": "rust/providers/src/codex/session.rs",
               "lines": [
-                166,
-                171,
-                184,
-                196,
-                199
-              ]
+                174,
+                179,
+                192,
+                204,
+                207
+              ],
+              "firstLine": "fn begin_turn(&self) {",
+              "lastLine": "CodexPresentationEvent::Verification => ProviderStatusEvent::Notification("
             },
             {
               "file": "rust/providers/src/codex/streaming.rs",
@@ -45,15 +51,9 @@
                 92,
                 100,
                 107
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                982,
-                1027,
-                1755
-              ]
+              ],
+              "firstLine": "let metadata = metadata.scoped_stream();",
+              "lastLine": "metadata.begin_response();"
             }
           ]
         }
@@ -71,8 +71,7 @@
       "rust/sessions/src/provider_status.rs",
       "rust/providers/src/codex/metadata_delivery.rs",
       "rust/providers/src/codex/session.rs",
-      "rust/providers/src/codex/streaming.rs",
-      "rust/sessions/src/background_session.rs"
+      "rust/providers/src/codex/streaming.rs"
     ],
     "totalLinesCovered": 110
   }

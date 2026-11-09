@@ -30,7 +30,13 @@ impl AgentView {
     /// COPY-006: poll the recognizer from the run loop's render tick so a
     /// stationary long-press fires its `Begin` gesture (~0.5s).
     pub(crate) fn poll_selection_tick(&mut self) {
-        let gestures = self.recognizer.tick(std::time::Instant::now());
+        self.poll_selection_tick_after(std::time::Duration::ZERO);
+    }
+
+    /// TEST-042: poll the recognizer as if `held` more had passed, so a
+    /// test drives the long-press threshold without waiting.
+    pub(crate) fn poll_selection_tick_after(&mut self, held: std::time::Duration) {
+        let gestures = self.recognizer.tick(std::time::Instant::now() + held);
         self.apply_selection_gestures(&gestures);
     }
 

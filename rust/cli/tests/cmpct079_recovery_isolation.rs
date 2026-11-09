@@ -19,6 +19,7 @@ impl StreamOutput for Output {
 async fn recovery_preparation_preserves_the_authoritative_conversation(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("recovery", directory.path(), "openai")?;
@@ -72,6 +73,7 @@ async fn recovery_preparation_does_not_persist_an_empty_codex_checkpoint(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a durable Codex session with a bound provider persistence writer
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("codex recovery", directory.path(), "codex")?;

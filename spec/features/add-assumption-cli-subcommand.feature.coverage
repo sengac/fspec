@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_assumption.rs",
-          "lines": "65-81",
+          "lines": "75-98",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/add_assumption.rs",
@@ -55,8 +55,16 @@
                 43,
                 44,
                 45,
-                46
-              ]
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ],
+              "firstLine": "//! `add-assumption` help configuration — Rust port of",
+              "lastLine": "};"
             }
           ]
         }
@@ -67,7 +75,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_assumption.rs",
-          "lines": "83-101",
+          "lines": "100-123",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_assumption.rs",
@@ -95,7 +103,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -106,7 +116,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_assumption.rs",
-          "lines": "120-156",
+          "lines": "146-192",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_assumption.rs",
@@ -134,7 +144,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "pub struct CliArgs {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -156,6 +168,6 @@
       "rust/fspec-core/src/help/configs/add_assumption.rs",
       "rust/fspec/src/add_assumption.rs"
     ],
-    "totalLinesCovered": 204
+    "totalLinesCovered": 193
   }
 }

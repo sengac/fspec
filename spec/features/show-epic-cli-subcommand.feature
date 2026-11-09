@@ -22,7 +22,7 @@ Feature: Show epic CLI subcommand
     Then the command exits 0
     Then stdout contains clap-generated help describing the show-epic subcommand
     Then stdout advertises the required positional <epicId> argument
-    Then stdout advertises the '--format' flag
+    Then stdout does NOT advertise the '--format' flag
     Then stdout does NOT contain the substring '--status'
     Then stdout does NOT contain the substring '--prefix'
     Then stdout does NOT contain the substring '--epic'

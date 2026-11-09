@@ -24,9 +24,11 @@ impl App {
     pub(crate) fn handle_hitl_prompt_fetched(
         &mut self,
         session_id: SessionId,
+        route: codelet_rpc_types::RequestRoute,
         request: codelet_rpc_types::HitlRequest,
     ) {
-        self.agent_view_store.set_hitl_prompt(session_id, request);
+        self.agent_view_store
+            .set_hitl_prompt(session_id, route, request);
         self.should_render = true;
     }
 
@@ -165,9 +167,10 @@ impl App {
         match action {
             Action::HitlPromptFetched {
                 session_id,
+                route,
                 request,
             } => {
-                self.handle_hitl_prompt_fetched(session_id.clone(), request.clone());
+                self.handle_hitl_prompt_fetched(session_id.clone(), route.clone(), request.clone());
             }
             Action::HitlPromptNav { session_id, delta } => {
                 self.handle_hitl_prompt_nav(session_id, *delta);

@@ -8,21 +8,14 @@
           "lines": "147-175",
           "implMappings": [
             {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
-              "lines": [
-                369,
-                370,
-                371,
-                372
-              ]
-            },
-            {
               "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
               "lines": [
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": ".ok_or_else(|| CompletionError::ResponseError(\"missing OpenAI usage\".into()))?;",
+              "lastLine": ".ok_or_else(|| CompletionError::ResponseError(\"inconsistent OpenAI usage\".into()))?;"
             },
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -33,7 +26,9 @@
                 957,
                 958,
                 959
-              ]
+              ],
+              "firstLine": "let usage = response",
+              "lastLine": ".ok_or_else(|| CompletionError::ResponseError(\"inconsistent OpenAI usage\".into()))?;"
             }
           ]
         }
@@ -45,21 +40,7 @@
         {
           "file": "rust/patches/rig-core/tests/cmpct065_terminal_usage_evidence.rs",
           "lines": "177-208",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                458,
-                459,
-                460,
-                461,
-                462,
-                463,
-                464,
-                465
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -81,7 +62,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "yield Err(CompletionError::ResponseError(\"missing Gemini usage\".into()));",
+              "lastLine": "yield Ok(streaming::RawStreamingChoice::FinalResponse(StreamingCompletionResponse {"
             }
           ]
         }
@@ -117,7 +100,9 @@
                 21,
                 22,
                 23
-              ]
+              ],
+              "firstLine": "pub fn from_inclusive(",
+              "lastLine": "}"
             }
           ]
         }
@@ -132,13 +117,11 @@
       "rust/patches/rig-core/tests/cmpct065_terminal_usage_evidence.rs"
     ],
     "implFiles": [
-      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-      "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
       "rust/patches/rig-core/src/providers/gemini/streaming.rs",
       "rust/patches/rig-core/src/completion/usage_normalization.rs"
     ],
-    "totalLinesCovered": 185
+    "totalLinesCovered": 173
   }
 }

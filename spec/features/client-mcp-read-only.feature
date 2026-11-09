@@ -1,3 +1,5 @@
+@BUG-582
+@BUG-559
 @cli
 @rpc
 @integration
@@ -19,7 +21,7 @@ Feature: Compatibility read-only tools through the existing frontend
 
   Scenario: Contain backend failures
     Given a backend that fails or returns excessive output
-    When the service client requests work units
+    When the service client requests daemon health
     Then it receives a bounded tool error without backend diagnostics
 
   Scenario: Reject unprotected remote daemon URLs

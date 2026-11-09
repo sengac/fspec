@@ -116,29 +116,33 @@ async fn scenario_cancellation_during_persistence_survives_startup() -> TestResu
     let (heartbeat_tx, heartbeat_rx) = std::sync::mpsc::channel();
     let cancelled_session = session.clone();
     let controller = std::thread::spawn(move || -> Result<bool, String> {
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
-        loop {
-            if std::fs::read_dir(&journal).is_ok_and(|entries| {
-                entries.flatten().any(|entry| {
-                    entry
-                        .path()
-                        .extension()
-                        .is_some_and(|extension| extension == "json")
+        // TEST-042: wait on the journal state, between yields, under the
+        // deadlock guard.
+        codelet_test_helpers::wait_until_blocking(
+            "persistence reaches the journal barrier",
+            move || {
+                std::fs::read_dir(&journal).is_ok_and(|entries| {
+                    entries.flatten().any(|entry| {
+                        entry
+                            .path()
+                            .extension()
+                            .is_some_and(|extension| extension == "json")
+                    })
                 })
-            }) {
-                break;
-            }
-            if std::time::Instant::now() >= deadline {
-                return Err("persistence did not reach journal barrier".into());
-            }
-            std::thread::sleep(std::time::Duration::from_millis(5));
-        }
+            },
+        )
+        .map_err(|failure| failure.to_string())?;
         // @step When I cancel it before storage releases
         cancelled_session.interrupt();
         ready_tx.send(()).map_err(|_| "barrier receiver closed")?;
-        let responsive = heartbeat_rx
-            .recv_timeout(std::time::Duration::from_millis(250))
-            .is_ok();
+        // The heartbeat comes while the lease is still held, or (if
+        // persistence blocked the only async worker) never: only the
+        // deadlock guard ends that case.
+        let responsive =
+            codelet_test_helpers::deadlock_guard_blocking("the heartbeat", move || {
+                heartbeat_rx.recv()
+            })
+            .is_ok_and(|received| received.is_ok());
         lease.unlock().map_err(|error| error.to_string())?;
         Ok(responsive)
     });
@@ -199,10 +203,12 @@ async fn scenario_failed_persistence_retains_cancelled_input_for_recovery() -> T
     // @step Then inference is refused without successful completion
     assert_eq!(polls.load(Ordering::Acquire), 0);
     assert!(session.inner.lock().await.messages.is_empty());
-    assert!(session
-        .get_buffered_output(100)
-        .iter()
-        .any(|chunk| matches!(chunk, codelet_rpc_types::StreamChunk::Error { .. })));
+    let receipts = codelet_core::persistence::input_receipts::list(session.id)?;
+    assert_eq!(receipts.len(), 1);
+    assert_eq!(
+        receipts[0].disposition,
+        codelet_core::persistence::input_receipts::InputDisposition::Cancelled
+    );
     // @step And explicit storage recovery retains the original input exactly once
     std::fs::remove_dir(directory.path().join("messages/messages.jsonl"))?;
     codelet_agent_loop::persist::retry_pending_persistence(&session.id)?;
@@ -229,7 +235,7 @@ async fn scenario_supervisor_and_recovery_inputs_retain_cancellation_ownership()
         "stale supervisor".into(),
     )?)?;
     let epoch = session.compaction_epoch();
-    session.send_compaction_continuation(epoch)?;
+    session.queue_manual_compaction(epoch)?;
     session.interrupt_loop_detector("stale detector retry".into());
     let detector_epoch = session.compaction_epoch();
     // @step When I cancel them before admission and submit new user input

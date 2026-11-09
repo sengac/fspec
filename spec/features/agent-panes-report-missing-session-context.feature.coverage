@@ -1,0 +1,325 @@
+{
+  "scenarios": [
+    {
+      "name": "Focusing a session index that is not open is refused and keeps the current focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs",
+          "lines": "63-82",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_indexing.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "/// BUG-377: no agent session is open at the index a caller asked to focus.",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unfocused pane whose session is no longer open says so",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs",
+          "lines": "84-93",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/pane_composer.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "pub(super) enum PaneComposer<'a> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                289,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298
+              ],
+              "firstLine": "// BUG-194: this pane's session's OWN transition state (ticked",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The focused pane whose session is no longer open says so",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs",
+          "lines": "95-104",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/pane_composer.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ],
+              "firstLine": "pub(super) enum PaneComposer<'a> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298
+              ],
+              "firstLine": "// BUG-377: the focused session's OWN transition state (BUG-194);",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "// BUG-377: no open session is a fresh idle composer; a missing",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Looking up the slot of a session that is not open reports it as missing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs",
+          "lines": "105-119",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_indexing.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "/// BUG-163: the `(current, total)` 1-based index of the session with",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
+              "lines": [
+                190,
+                191,
+                192
+              ],
+              "firstLine": "// BUG-391: `None` when no session is open or the pane's session",
+              "lastLine": "let session_index = sid.as_ref().and_then(|s| store.session_index_for(s));"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                16,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "index: Option<(usize, usize)>,",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar shows no chip for a session that is not open",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs",
+          "lines": "121-131",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "// BUG-391: a session that is not open has no slot, so it gets no chip.",
+              "lastLine": "index,"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_indexing.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "pub fn session_index_for(&self, id: &SessionId) -> Option<(usize, usize)> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug377_agent_panes_report_missing_session_context.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/session_indexing.rs",
+      "rust/fspec-tui/src/views/agent/pane_composer.rs",
+      "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/views/agent/hitl_keys.rs",
+      "rust/fspec-tui/src/views/agent/pane_render.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs"
+    ],
+    "totalLinesCovered": 237
+  }
+}

@@ -31,7 +31,7 @@ async fn test_device_auth_flow_times_out() -> TestResult {
     );
     // @step And no tokens should be persisted
     assert!(!fixture.directory.path().join("auth.json").exists());
-    assert_eq!(count(&server, "/oauth/token").await, 0);
+    assert_eq!(count(&server, "/oauth/token").await?, 0);
     Ok(())
 }
 
@@ -65,32 +65,44 @@ async fn test_usercode_endpoint_network_failure() -> TestResult {
 #[tokio::test]
 #[serial]
 async fn test_request_device_code_sends_correct_request() -> TestResult {
+    // @step Given a usercode endpoint that answers only a JSON POST of the Codex client_id
+    // (official_start answers 415 to anything else)
     let server = MockServer::start().await;
     let mut response = usercode();
     response["interval"] = serde_json::json!(10);
     official_start(&server, response).await;
+    // @step When the device authorization is requested
     let code = request_device_code(&server.uri()).await?;
+    // @step Then exactly one request reaches the usercode endpoint
+    assert_eq!(
+        count(&server, "/api/accounts/deviceauth/usercode").await?,
+        1
+    );
+    // @step And the device_auth_id, user_code and numeric polling interval are returned
     assert_eq!(code.device_auth_id, DEVICE);
     assert_eq!(code.user_code, USER_CODE);
     assert_eq!(code.interval, 10);
-    assert_eq!(count(&server, "/api/accounts/deviceauth/usercode").await, 1);
     Ok(())
 }
 
 #[tokio::test]
 #[serial]
 async fn test_request_device_code_handles_server_error() -> TestResult {
+    // @step Given a usercode endpoint that answers 500 with a secret-bearing body
     let server = MockServer::start().await;
     Mock::given(path("/api/accounts/deviceauth/usercode"))
         .respond_with(ResponseTemplate::new(500).set_body_string(SECRET))
         .mount(&server)
         .await;
+    // @step When the device authorization is requested
     let error = request_device_code(&server.uri())
         .await
         .err()
         .ok_or("server failure succeeded")?
         .to_string();
+    // @step Then the request fails with an error naming status 500
     assert!(error.contains("500"), "{error}");
+    // @step And the error does not contain the response body
     assert!(!error.contains(SECRET));
     Ok(())
 }

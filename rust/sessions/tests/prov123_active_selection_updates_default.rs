@@ -19,18 +19,11 @@
 
 mod prov123_support;
 
-use std::sync::Mutex;
-
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use prov123_support::{
     manager_with_seeded_cache, read_config, read_default_model_json, restore_user_dir,
-    seed_qwen_profile,
+    seed_qwen_profile, DATA_DIR_GUARD,
 };
-
-/// Serializes every test that swaps the process-global data directory and the
-/// `FSPEC_USER_DIR` env var, so a parallel test cannot observe another test's
-/// redirect or persisted files (PROV-118/119 precedent).
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 
 // =============================================================================
 // Scenario: Active-session model switch updates the global default
@@ -43,11 +36,11 @@ async fn active_session_switch_updates_global_default() -> Result<(), String> {
 
     // @step Given the global default model is "anthropic/claude-sonnet-4"
     let (_data_dir, manager, saved) = manager_with_seeded_cache()?;
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model("anthropic/claude-sonnet-4")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step And an active session is running
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(!sid.value.is_empty(), "an active session must be created");
 
     // @step When the user selects model "anthropic/claude-opus-4-8" in the active session and the switch succeeds
@@ -79,20 +72,22 @@ async fn new_session_inherits_active_session_selection() -> Result<(), String> {
 
     // @step Given an active session has switched to model "anthropic/claude-opus-4-8"
     let (_data_dir, manager, saved) = manager_with_seeded_cache()?;
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model("anthropic/claude-sonnet-4")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid_a = handle.create_session(None);
+    let sid_a = handle.create_session_checked(None)?;
     assert!(!sid_a.value.is_empty(), "the first session must be created");
     handle
         .set_model(&sid_a, "anthropic", "claude-opus-4-8")
         .map_err(|e| format!("switch must succeed: {e}"))?;
 
     // @step When the user creates a new session in the same process
-    let sid_b = handle.create_session(None);
+    let sid_b = handle.create_session_checked(None)?;
     assert!(!sid_b.value.is_empty(), "the new session must be created");
 
     // @step Then the new session is created using "anthropic/claude-opus-4-8"
-    let model_b = handle.get_session_model(&sid_b);
+    let model_b = handle
+        .get_session_model(&sid_b)
+        .expect("get_session_model reads the session");
     assert_eq!(
         model_b.provider_id, "anthropic",
         "provider must be anthropic"
@@ -123,9 +118,9 @@ async fn active_session_switch_persists_default_to_disk() -> Result<(), String> 
 
     // @step Given an active session is running
     let (data_dir, manager, saved) = manager_with_seeded_cache()?;
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model("anthropic/claude-sonnet-4")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(!sid.value.is_empty(), "an active session must be created");
 
     // @step When the user selects model "anthropic/claude-opus-4-8" in the active session and the switch succeeds
@@ -165,7 +160,10 @@ async fn active_session_switch_persists_default_to_disk() -> Result<(), String> 
 #[test]
 fn isolated_create_path_does_not_touch_global_default() {
     // @step Given the global default model is "anthropic/claude-opus-4-8"
-    let src = include_str!("../src/session_manager.rs");
+    let src = &codelet_test_helpers::source_composition::read_tree_or_file(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/session_manager.rs"),
+    )
+    .expect("read session_manager module tree");
 
     let iso_start = src
         .find("pub async fn create_isolated_session_with_id")
@@ -214,9 +212,9 @@ async fn profile_qualified_selection_updates_default_and_round_trips() -> Result
     // @step Given an active session is running
     let (data_dir, manager, saved) = manager_with_seeded_cache()?;
     seed_qwen_profile(data_dir.path());
-    manager.set_default_model("anthropic/claude-sonnet-4");
+    manager.set_default_model("anthropic/claude-sonnet-4")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(!sid.value.is_empty(), "an active session must be created");
 
     // @step When the user selects model "openai:qwen/Qwen3-80B" in the active session and the switch succeeds
@@ -234,12 +232,14 @@ async fn profile_qualified_selection_updates_default_and_round_trips() -> Result
     );
 
     // @step And a new session created in the same process resolves "openai:qwen/Qwen3-80B"
-    let sid_b = handle.create_session(None);
+    let sid_b = handle.create_session_checked(None)?;
     assert!(
         !sid_b.value.is_empty(),
         "a new session must resolve the profile-qualified default and be created"
     );
-    let model_b = handle.get_session_model(&sid_b);
+    let model_b = handle
+        .get_session_model(&sid_b)
+        .expect("get_session_model reads the session");
     assert_eq!(
         model_b.provider_id, "openai",
         "the new session must resolve the openai provider from the profile composite"
@@ -264,9 +264,9 @@ async fn empty_selection_never_overwrites_global_default() -> Result<(), String>
 
     // @step Given the global default model is "anthropic/claude-opus-4-8"
     let (data_dir, manager, saved) = manager_with_seeded_cache()?;
-    manager.set_default_model("anthropic/claude-opus-4-8");
+    manager.set_default_model("anthropic/claude-opus-4-8")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(!sid.value.is_empty(), "an active session must be created");
 
     // @step When an empty model string is applied to the active-session switch path

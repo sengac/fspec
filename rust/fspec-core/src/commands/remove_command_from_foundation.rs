@@ -59,7 +59,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // (version/project/problemSpace/solutionSpace only — NOT the richer
     // `ensureFoundationFile` literal), so a missing file is created with
     // exactly that shape. Mirror it here.
-    let path = project_root.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock =
+        crate::io::spec_lock::lock_spec_dir(project_root, "remove-command-from-foundation")?;
     let mut data: Value = read_or_init_json(&path, &foundation_read_default(), "foundation.json")?;
 
     let root = data

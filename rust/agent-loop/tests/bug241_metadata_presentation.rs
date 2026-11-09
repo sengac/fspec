@@ -72,7 +72,7 @@ async fn buffering_is_temporary_waiting_state() -> TestResult {
     let mut stream = model
         .stream(CompletionRequestBuilder::new(model.clone(), "Hello").build())
         .await?;
-    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while stream.next().await.transpose()?.is_some() {}
         Ok::<_, Box<dyn std::error::Error>>(())
     })
@@ -88,16 +88,23 @@ async fn buffering_is_temporary_waiting_state() -> TestResult {
     );
     // @step And buffering never becomes transcript notifications or changes the selected model
     assert!(notices(&chunks).is_empty());
-    assert!(fixture.session.get_buffered_output(100).is_empty());
+    // BUG-648: the waiting notice is journaled as session state (so an
+    // attaching client sees the current one), never as a transcript
+    // notification, and the journal ends with it dismissed, so a replay
+    // cannot resurrect it.
+    let journal = fixture.session.get_buffered_output(100);
+    assert!(notices(&journal).is_empty());
+    assert!(waiting(&journal).ends_with(&waiting(&chunks)));
     assert!(matches!(
         supervisor.try_recv(),
         Err(tokio::sync::broadcast::error::TryRecvError::Empty)
     ));
-    assert!(
-        tokio::time::timeout(std::time::Duration::from_millis(25), relay.recv())
-            .await
-            .is_err()
-    );
+    // TEST-042: no waiting window; the turn has ended, so anything relayed
+    // would already be queued.
+    assert!(!matches!(
+        futures::FutureExt::now_or_never(relay.recv()),
+        Some(Ok(Some(_)))
+    ));
     for chunk in &chunks {
         let wire = codelet_agent_loop::stream_chunk_json::stream_chunk_to_json_value(chunk);
         assert_eq!(wire["type"], "providerWaiting");
@@ -130,7 +137,7 @@ async fn old_streams_cannot_revive_waiting_state() -> TestResult {
         .stream(CompletionRequestBuilder::new(model.clone(), "Old").build())
         .await?;
     for _ in 0..2 {
-        tokio::time::timeout(std::time::Duration::from_secs(3), old.next())
+        codelet_test_helpers::deadlock_guard("old.next()", old.next())
             .await?
             .ok_or("old stream ended")??;
     }
@@ -139,13 +146,13 @@ async fn old_streams_cannot_revive_waiting_state() -> TestResult {
         .stream(CompletionRequestBuilder::new(model.clone(), "New").build())
         .await?;
     for _ in 0..2 {
-        tokio::time::timeout(std::time::Duration::from_secs(3), current.next())
+        codelet_test_helpers::deadlock_guard("current.next()", current.next())
             .await?
             .ok_or("new stream ended")??;
     }
     fixture.drain();
     // @step When old buffering events and stream cleanup arrive
-    tokio::time::timeout(std::time::Duration::from_secs(3), old.next())
+    codelet_test_helpers::deadlock_guard("old.next()", old.next())
         .await?
         .ok_or("old update missing")??;
     drop(old);
@@ -180,7 +187,7 @@ async fn old_streams_cannot_revive_waiting_state() -> TestResult {
         .stream(CompletionRequestBuilder::new(lazy_model.clone(), "Held").build())
         .await?;
     for _ in 0..2 {
-        tokio::time::timeout(std::time::Duration::from_secs(3), held.next())
+        codelet_test_helpers::deadlock_guard("held.next()", held.next())
             .await?
             .ok_or("held stream ended")??;
     }
@@ -230,7 +237,7 @@ async fn verification_remains_actionable_and_turn_scoped() -> TestResult {
     let mut stream = model
         .stream(CompletionRequestBuilder::new(model.clone(), "Hello").build())
         .await?;
-    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while stream.next().await.transpose()?.is_some() {}
         Ok::<_, Box<dyn std::error::Error>>(())
     })

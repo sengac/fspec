@@ -39,9 +39,9 @@ async fn validate_patch_path(
 ) -> Result<std::path::PathBuf, ToolError> {
     let resolved = validate_and_resolve_path(session_id, path, "apply_patch")?;
     let p = resolved.to_string_lossy().to_string();
-    if let Err(blocked) =
-        check_file_path_semantic(&p, session_id, "ApplyPatch", "patch").await
-    {
+    // BLOCK-006 / BUG-449: the session's stage permissions.
+    crate::stage_gate::check_session_write(session_id, "ApplyPatch", &p)?;
+    if let Err(blocked) = check_file_path_semantic(&p, session_id, "ApplyPatch", "patch").await {
         return Err(ToolError::Blocked {
             tool: "apply_patch",
             message: blocked.to_string(),

@@ -266,36 +266,8 @@ async fn enforce_mode_0600(_path: &std::path::Path) -> Result<()> {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
+    use crate::test_fixtures::env::FspecHome;
     use serial_test::serial;
-
-    /// Per-test guard that points `FSPEC_HOME` at a fresh tempdir so writes
-    /// never escape into the user's real `~/.fspec`. Restores the previous
-    /// value on drop.
-    struct FspecHomeGuard {
-        _tempdir: tempfile::TempDir,
-        original: Option<String>,
-    }
-
-    impl FspecHomeGuard {
-        fn new() -> Self {
-            let tempdir = tempfile::tempdir().expect("tempdir");
-            let original = std::env::var("FSPEC_HOME").ok();
-            std::env::set_var("FSPEC_HOME", tempdir.path());
-            Self {
-                _tempdir: tempdir,
-                original,
-            }
-        }
-    }
-
-    impl Drop for FspecHomeGuard {
-        fn drop(&mut self) {
-            match &self.original {
-                Some(val) => std::env::set_var("FSPEC_HOME", val),
-                None => std::env::remove_var("FSPEC_HOME"),
-            }
-        }
-    }
 
     fn sample_auth() -> CopilotAuthJson {
         CopilotAuthJson::from_github_oauth_token("gho_round_trip".to_string(), None)
@@ -304,7 +276,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn read_returns_none_when_file_missing() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let result = read_copilot_auth().await.unwrap();
         assert!(result.is_none());
     }
@@ -312,7 +284,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn write_then_read_round_trips_the_credential() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let original = sample_auth();
         write_copilot_auth(&original).await.unwrap();
         let read_back = read_copilot_auth()
@@ -325,7 +297,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn sync_reader_returns_the_same_content_as_async() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let original = sample_auth();
         write_copilot_auth(&original).await.unwrap();
         let read_back = read_copilot_auth_sync().unwrap().unwrap();
@@ -335,14 +307,14 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn delete_is_idempotent_on_missing_file() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         delete_copilot_auth().await.unwrap();
     }
 
     #[tokio::test]
     #[serial]
     async fn delete_removes_existing_file() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let original = sample_auth();
         write_copilot_auth(&original).await.unwrap();
         let path = get_copilot_auth_path();
@@ -356,7 +328,7 @@ mod tests {
     #[serial]
     async fn write_enforces_mode_0600_on_unix() {
         use std::os::unix::fs::PermissionsExt;
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let original = sample_auth();
         write_copilot_auth(&original).await.unwrap();
         let path = get_copilot_auth_path();
@@ -368,7 +340,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn path_filename_matches_constant() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let path = get_copilot_auth_path();
         assert_eq!(path.file_name().unwrap(), COPILOT_AUTH_FILENAME);
     }
@@ -382,7 +354,7 @@ mod tests {
     #[serial]
     async fn schema_separates_github_oauth_token_from_copilot_token() {
         // Scenario: CopilotAuthJson schema separates GitHub OAuth and Copilot tokens
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
 
         // @step Given a successful Copilot OAuth login completes
         let auth = CopilotAuthJson {
@@ -430,7 +402,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn schema_round_trips_all_prov_057_fields() {
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let auth = CopilotAuthJson {
             github_oauth_token: "gho_full".to_string(),
             copilot_token: Some("tid=abc;exp=1234;:sig".to_string()),
@@ -450,7 +422,7 @@ mod tests {
         // used access_token / refresh_token / expires. Those files must
         // still load as a PROV-057 CopilotAuthJson with the token moved
         // into github_oauth_token.
-        let _guard = FspecHomeGuard::new();
+        let _guard = FspecHome::redirect().expect("redirect FSPEC_HOME");
         let path = get_copilot_auth_path();
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).unwrap();

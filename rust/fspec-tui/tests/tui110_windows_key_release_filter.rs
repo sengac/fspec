@@ -7,11 +7,9 @@
 //! (ratatui#347, crossterm#772). The App event path must process ONLY
 //! `Press` events so each keystroke is registered exactly once.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
 
-use codelet_fspec_tui::components::disconnect_dialog::DisconnectDialog;
 use codelet_fspec_tui::{App, FspecBackend};
 use codelet_rpc_types::WorkUnitInfo;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
@@ -72,7 +70,7 @@ fn board_app() -> (App, Arc<MockBackend>) {
 
 /// Scenario: A single Down-arrow press moves the board selection exactly one row
 #[test]
-fn single_down_arrow_press_moves_the_board_selection_exactly_one_row() {
+fn single_down_arrow_press_moves_the_board_selection_exactly_one_row() -> TestResult {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Press arrives at the app event loop
@@ -93,11 +91,12 @@ fn single_down_arrow_press_moves_the_board_selection_exactly_one_row() {
         1,
         "Press must move 0→1 and the Release must be ignored (not 0→2)"
     );
+    Ok(())
 }
 
 /// Scenario: A key release event is dropped by the central app event loop
 #[test]
-fn a_key_release_event_is_dropped_by_the_central_app_event_loop() {
+fn a_key_release_event_is_dropped_by_the_central_app_event_loop() -> TestResult {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Release arrives at the app event loop
@@ -112,11 +111,12 @@ fn a_key_release_event_is_dropped_by_the_central_app_event_loop() {
         0,
         "a lone Release must not move the selection"
     );
+    Ok(())
 }
 
 /// Scenario: A key repeat event is dropped by the central app event loop
 #[test]
-fn a_key_repeat_event_is_dropped_by_the_central_app_event_loop() {
+fn a_key_repeat_event_is_dropped_by_the_central_app_event_loop() -> TestResult {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Repeat arrives at the app event loop
@@ -131,11 +131,12 @@ fn a_key_repeat_event_is_dropped_by_the_central_app_event_loop() {
         0,
         "a lone Repeat must not move the selection"
     );
+    Ok(())
 }
 
 /// Scenario: A single ? press opens the Help dialog exactly once
 #[test]
-fn a_single_question_press_opens_the_help_dialog_exactly_once() {
+fn a_single_question_press_opens_the_help_dialog_exactly_once() -> TestResult {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     assert!(!app.compositor().contains("help-dialog"));
@@ -162,11 +163,12 @@ fn a_single_question_press_opens_the_help_dialog_exactly_once() {
         1,
         "exactly one compositor layer (the Help dialog) must be open"
     );
+    Ok(())
 }
 
 /// Scenario: A ? release event does not open the Help dialog
 #[test]
-fn a_question_release_event_does_not_open_the_help_dialog() {
+fn a_question_release_event_does_not_open_the_help_dialog() -> TestResult {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Release arrives at the app event loop
@@ -180,11 +182,12 @@ fn a_question_release_event_does_not_open_the_help_dialog() {
         app.compositor().is_empty(),
         "a lone ? Release must not open the Help dialog"
     );
+    Ok(())
 }
 
 /// Scenario: A ? repeat event does not open the Help dialog
 #[test]
-fn a_question_repeat_event_does_not_open_the_help_dialog() {
+fn a_question_repeat_event_does_not_open_the_help_dialog() -> TestResult {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Repeat arrives at the app event loop
@@ -198,11 +201,12 @@ fn a_question_repeat_event_does_not_open_the_help_dialog() {
         app.compositor().is_empty(),
         "a lone ? Repeat must not open the Help dialog"
     );
+    Ok(())
 }
 
 /// Scenario: Press key events still flow to views and dialogs unchanged
 #[test]
-fn press_key_events_still_flow_to_views_and_dialogs_unchanged() {
+fn press_key_events_still_flow_to_views_and_dialogs_unchanged() -> TestResult {
     // @step Given the TUI is running in the board view with a work unit selected
     let (mut app, _mock) = board_app();
     // @step When a Down-arrow key event with kind Press arrives at the app event loop
@@ -217,11 +221,12 @@ fn press_key_events_still_flow_to_views_and_dialogs_unchanged() {
         1,
         "a Press Down must still move the selection 0→1"
     );
+    Ok(())
 }
 
 /// Scenario: A repeat ? event does not trigger the app-level Help shortcut
 #[test]
-fn a_repeat_question_event_does_not_trigger_the_app_level_help_shortcut() {
+fn a_repeat_question_event_does_not_trigger_the_app_level_help_shortcut() -> TestResult {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a ? key event with kind Repeat arrives at the app event loop
@@ -235,54 +240,12 @@ fn a_repeat_question_event_does_not_trigger_the_app_level_help_shortcut() {
         app.compositor().is_empty(),
         "a ? Repeat must not open the Help dialog"
     );
-}
-
-/// Scenario: A repeat q event does not quit the Disconnect dialog
-#[test]
-fn a_repeat_q_event_does_not_quit_the_disconnect_dialog() {
-    // @step Given the Disconnect dialog is open
-    let (mut app, _mock) = board_app();
-    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
-    assert!(app.compositor().contains("disconnect-dialog"));
-    assert!(!app.should_quit());
-    // @step When a q key event with kind Repeat arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(
-        KeyCode::Char('q'),
-        KeyEventKind::Repeat,
-    )));
-    drain_actions(&mut app);
-    // @step Then the app has not quit
-    assert!(!app.should_quit(), "a q Repeat must not quit the app");
-    // @step And the Disconnect dialog is still open
-    assert!(
-        app.compositor().contains("disconnect-dialog"),
-        "the Disconnect dialog must remain open after a q Repeat"
-    );
-}
-
-/// Supplementary: a Press q still quits the Disconnect dialog (no regression).
-#[test]
-fn a_press_q_event_still_quits_the_disconnect_dialog() {
-    // @step Given the Disconnect dialog is open
-    let (mut app, _mock) = board_app();
-    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
-    // @step When a q key event with kind Press arrives at the app event loop
-    let _ = app.handle_event(&Event::Key(key_with_kind(
-        KeyCode::Char('q'),
-        KeyEventKind::Press,
-    )));
-    drain_actions(&mut app);
-    // @step Then the app has quit and the dialog is gone
-    assert!(app.should_quit(), "a q Press must quit the app");
-    assert!(
-        !app.compositor().contains("disconnect-dialog"),
-        "the Disconnect dialog must be removed on quit"
-    );
+    Ok(())
 }
 
 /// Supplementary: Paste events are unaffected by the Press-only key filter.
 #[test]
-fn paste_events_are_unaffected_by_the_press_only_key_filter() {
+fn paste_events_are_unaffected_by_the_press_only_key_filter() -> TestResult {
     // @step Given the TUI is running in the board view with no dialog open
     let (mut app, _mock) = board_app();
     // @step When a Paste event arrives at the app event loop
@@ -293,4 +256,5 @@ fn paste_events_are_unaffected_by_the_press_only_key_filter() {
         !matches!(result, codelet_fspec_tui::EventResult::Consumed(_)),
         "a Paste on the empty board is ignored by all stages"
     );
+    Ok(())
 }

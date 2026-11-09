@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "A fresh repository with no index lists every file the ignore rules do not exclude",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug592_untracked_listing_without_index_skips_ignored_dirs.rs",
+          "lines": "71-94",
+          "implMappings": [
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                234,
+                241
+              ],
+              "firstLine": "pub(crate) fn untracked_files_with_repo(repo: &gix::Repository) -> Result<Vec<String>> {",
+              "lastLine": "let index = crate::index_guard::index_or_empty(repo)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The walk never enters an ignored directory",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug592_untracked_listing_without_index_skips_ignored_dirs.rs",
+          "lines": "96-116",
+          "implMappings": [
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                284,
+                285
+              ],
+              "firstLine": "if is_excluded(&mut excludes, rel_path, gix::index::entry::Mode::DIR)? {",
+              "lastLine": "walk.skip_current_dir();"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A directory that is not ignored and cannot be read is an error naming it",
+      "testMappings": [
+        {
+          "file": "rust/git/tests/bug592_untracked_listing_without_index_skips_ignored_dirs.rs",
+          "lines": "118-141",
+          "implMappings": [
+            {
+              "file": "rust/git/src/status.rs",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ],
+              "firstLine": "let entry = match entry {",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/git/tests/bug592_untracked_listing_without_index_skips_ignored_dirs.rs"
+    ],
+    "implFiles": [
+      "rust/git/src/status.rs"
+    ],
+    "totalLinesCovered": 88
+  }
+}

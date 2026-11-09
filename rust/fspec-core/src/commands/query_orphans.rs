@@ -120,11 +120,11 @@ fn render_text(result: &QueryOrphansResult) -> String {
         out.push('\n');
     }
     out.push_str("To fix orphaned work units:\n");
-    out.push_str("  fspec update-work-unit <id> --epic=<epic-name>\n");
+    out.push_str("  fspec update-work-unit <workUnitId> --epic=<epic-name>\n");
     out.push_str(
-        "  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)\n",
+        "  fspec add-dependency <workUnitId> --depends-on=<workUnitId>  (or --blocks, --relates-to)\n",
     );
-    out.push_str("  fspec delete-work-unit <id>");
+    out.push_str("  fspec delete-work-unit <workUnitId>");
     out
 }
 

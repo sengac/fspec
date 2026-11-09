@@ -6,14 +6,13 @@
 //! through ProviderSettingsView (no App, no backend, no filesystem). Mirrors
 //! the TS profileFormModeHandler.ts / providerSettingsHelpers.ts behaviour.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::profile_form::{
     ProfileForm, DEFAULT_PROFILE_BASE_URL,
 };
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProfileDefinition;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -31,12 +30,12 @@ fn typ(view: &mut ProviderSettingsView, text: &str) {
     }
 }
 
-fn form_of(view: &ProviderSettingsView) -> &ProfileForm {
-    match &view.mode {
+fn form_of(view: &ProviderSettingsView) -> Result<&ProfileForm, codelet_test_helpers::TestError> {
+    Ok(match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => form,
-        other => panic!("expected a form mode, got {other:?}"),
-    }
+        other => return Err(format!("expected a form mode, got {other:?}").into()),
+    })
 }
 
 fn save_action(ev: ProviderSettingsEvent) -> Option<(String, String, ProfileDefinition)> {
@@ -82,7 +81,7 @@ fn form_on_field(name: &str, base_url: &str, api_key: &str, field_index: usize) 
 }
 
 #[test]
-fn create_form_starts_editing_name_with_prefilled_base_url() {
+fn create_form_starts_editing_name_with_prefilled_base_url() -> TestResult {
     // @step Given a new create profile form for provider "openai"
     let form = ProfileForm::new_create();
 
@@ -97,10 +96,11 @@ fn create_form_starts_editing_name_with_prefilled_base_url() {
     assert_eq!(form.api_key, "");
     // @step And the focused field index is 0
     assert_eq!(form.field_index, 0);
+    Ok(())
 }
 
 #[test]
-fn edit_form_prefills_connection_fields_from_stored_profile() {
+fn edit_form_prefills_connection_fields_from_stored_profile() -> TestResult {
     // @step Given an edit profile form for provider "openai" profile "fireworks" with a stored definition
     let def = ProfileDefinition {
         base_url: "https://api.fireworks.ai/inference/v1".to_string(),
@@ -130,10 +130,11 @@ fn edit_form_prefills_connection_fields_from_stored_profile() {
     assert_eq!(form.api_key, "sk-stored");
     // @step And the focused field index is 0
     assert_eq!(form.field_index, 0);
+    Ok(())
 }
 
 #[test]
-fn down_arrow_from_name_editing_focuses_first_connection_field() {
+fn down_arrow_from_name_editing_focuses_first_connection_field() -> TestResult {
     // @step Given a new create profile form for provider "openai"
     let mut view = create_view(ProfileForm::new_create());
 
@@ -141,13 +142,14 @@ fn down_arrow_from_name_editing_focuses_first_connection_field() {
     view.handle_key(key(KeyCode::Down));
 
     // @step Then the name editing flag is false
-    assert!(!form_of(&view).is_editing_name);
+    assert!(!form_of(&view)?.is_editing_name);
     // @step And the focused field index is 0
-    assert_eq!(form_of(&view).field_index, 0);
+    assert_eq!(form_of(&view)?.field_index, 0);
+    Ok(())
 }
 
 #[test]
-fn up_arrow_on_first_field_re_enters_name_editing_in_create_mode() {
+fn up_arrow_on_first_field_re_enters_name_editing_in_create_mode() -> TestResult {
     // @step Given a create profile form for provider "openai" focused on the base URL field
     let mut view = create_view(form_on_field("", DEFAULT_PROFILE_BASE_URL, "", 0));
 
@@ -155,11 +157,12 @@ fn up_arrow_on_first_field_re_enters_name_editing_in_create_mode() {
     view.handle_key(key(KeyCode::Up));
 
     // @step Then the name editing flag is true
-    assert!(form_of(&view).is_editing_name);
+    assert!(form_of(&view)?.is_editing_name);
+    Ok(())
 }
 
 #[test]
-fn tab_is_ignored_and_leaves_focused_field_unchanged() {
+fn tab_is_ignored_and_leaves_focused_field_unchanged() -> TestResult {
     // @step Given a create profile form for provider "openai" focused on the base URL field
     let mut view = create_view(form_on_field("", DEFAULT_PROFILE_BASE_URL, "", 0));
 
@@ -167,13 +170,14 @@ fn tab_is_ignored_and_leaves_focused_field_unchanged() {
     view.handle_key(key(KeyCode::Tab));
 
     // @step Then the focused field index is 0
-    assert_eq!(form_of(&view).field_index, 0);
+    assert_eq!(form_of(&view)?.field_index, 0);
     // @step And the name editing flag is false
-    assert!(!form_of(&view).is_editing_name);
+    assert!(!form_of(&view)?.is_editing_name);
+    Ok(())
 }
 
 #[test]
-fn saving_valid_profile_emits_save_action_and_returns_to_list() {
+fn saving_valid_profile_emits_save_action_and_returns_to_list() -> TestResult {
     // @step Given a create profile form for provider "openai" with name "local" and base URL "http://localhost:8888"
     // focused on the api key field (index 1)
     let mut view = create_view(form_on_field("local", "http://localhost:8888", "", 1));
@@ -184,15 +188,16 @@ fn saving_valid_profile_emits_save_action_and_returns_to_list() {
     let ev = view.handle_key(key(KeyCode::Enter));
 
     // @step Then a SaveProfile action is emitted for provider "openai" profile "local"
-    let (provider_id, profile_name, _def) = save_action(ev).expect("SaveProfile emitted");
+    let (provider_id, profile_name, _def) = save_action(ev).or_fail("SaveProfile emitted")?;
     assert_eq!(provider_id, "openai");
     assert_eq!(profile_name, "local");
     // @step And the provider settings mode returns to list
     assert_eq!(view.mode, ProviderSettingsMode::List);
+    Ok(())
 }
 
 #[test]
-fn saving_with_empty_api_key_does_nothing() {
+fn saving_with_empty_api_key_does_nothing() -> TestResult {
     // @step Given a create profile form for provider "openai" with name "local" and base URL "http://localhost:8888"
     let mut view = create_view(form_on_field("local", "http://localhost:8888", "", 1));
 
@@ -206,10 +211,11 @@ fn saving_with_empty_api_key_does_nothing() {
         view.mode,
         ProviderSettingsMode::CreateProfile { .. }
     ));
+    Ok(())
 }
 
 #[test]
-fn numeric_fields_are_parsed_on_save_and_non_numeric_input_is_omitted() {
+fn numeric_fields_are_parsed_on_save_and_non_numeric_input_is_omitted() -> TestResult {
     // @step Given a create profile form for provider "openai" with name "local" and base URL "http://localhost:8888" and api key "sk-test"
     // focused on the context window field (index 2)
     let mut view = create_view(form_on_field(
@@ -224,15 +230,16 @@ fn numeric_fields_are_parsed_on_save_and_non_numeric_input_is_omitted() {
     // @step And the user presses the Enter key
     let ev = view.handle_key(key(KeyCode::Enter));
 
-    let (_p, _n, def) = save_action(ev).expect("SaveProfile emitted");
+    let (_p, _n, def) = save_action(ev).or_fail("SaveProfile emitted")?;
     // @step Then the emitted definition context window is 128000
     assert_eq!(def.context_window, Some(128000));
     // @step And the emitted definition max output tokens is omitted
     assert_eq!(def.max_output_tokens, None);
+    Ok(())
 }
 
 #[test]
-fn escape_returns_to_list_without_saving() {
+fn escape_returns_to_list_without_saving() -> TestResult {
     // @step Given a create profile form for provider "openai" with name "local" and base URL "http://localhost:8888"
     let mut view = create_view(form_on_field(
         "local",
@@ -248,10 +255,11 @@ fn escape_returns_to_list_without_saving() {
     assert!(save_action(ev).is_none());
     // @step And the provider settings mode returns to list
     assert_eq!(view.mode, ProviderSettingsMode::List);
+    Ok(())
 }
 
 #[test]
-fn compaction_threshold_percentage_is_parsed_on_save() {
+fn compaction_threshold_percentage_is_parsed_on_save() -> TestResult {
     // @step Given a create profile form for provider "openai" with name "local" and base URL "http://localhost:8888" and api key "sk-test"
     // focused on the compaction threshold field (index 4)
     let mut view = create_view(form_on_field(
@@ -266,9 +274,10 @@ fn compaction_threshold_percentage_is_parsed_on_save() {
     // @step And the user presses the Enter key
     let ev = view.handle_key(key(KeyCode::Enter));
 
-    let (_p, _n, def) = save_action(ev).expect("SaveProfile emitted");
+    let (_p, _n, def) = save_action(ev).or_fail("SaveProfile emitted")?;
     // @step Then the emitted definition compaction threshold type is "percentage"
     assert_eq!(def.compaction_threshold_type.as_deref(), Some("percentage"));
     // @step And the emitted definition compaction threshold value is 80
     assert_eq!(def.compaction_threshold_value, Some(80));
+    Ok(())
 }

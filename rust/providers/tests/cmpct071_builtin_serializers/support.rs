@@ -116,7 +116,7 @@ pub async fn assert_request_physical<M: CompletionModel + 'static>(
         .ok_or("missing request capture")?
         .is_empty());
     if let Ok(mut response) = model.stream(request).await {
-        tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while response.next().await.is_some() {}
         })
         .await?;

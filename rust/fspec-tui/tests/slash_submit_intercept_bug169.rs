@@ -22,14 +22,14 @@
 //! calls `backend.send_input` (and never `persistence_add_history`), and
 //! lands the SAME observable effect a popup pick would produce.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
     parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode,
 };
-use codelet_rpc_types::{SessionId, ThinkingLevel};
+use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 mod common;
@@ -41,30 +41,33 @@ fn sid(s: &str) -> SessionId {
 
 /// Drain pending tasks AND any follow-up actions emitted onto the action
 /// bus (the established RPC-022 / RPC-046 / RPC-054 idiom).
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Given: one open session s-1 in AgentView (the precondition shared by
 /// every scenario in the feature file).
-async fn given_app_in_agent_view(mock: &Arc<MockBackend>) -> (App, Arc<MockBackend>) {
+async fn given_app_in_agent_view(
+    mock: &Arc<MockBackend>,
+) -> Result<(App, Arc<MockBackend>), codelet_test_helpers::TestError> {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
     // Flip to Agent view so the scenario's precondition holds (RPC-054
     // pattern — SessionCreated does not move the navigator).
     app.navigator_mut().active_view = ViewMode::Agent;
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
-    (app, mock.clone())
+    Ok((app, mock.clone()))
 }
 
 /// Type `s` char-by-char through the in-App AgentView (the real
@@ -88,7 +91,11 @@ fn press(app: &mut App, code: KeyCode) {
 
 /// The observable side effect of a popup-pick of the given bare command —
 /// the same effect a typed submit must produce (R3).
-fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
+fn assert_popup_pick_effect(
+    app: &mut App,
+    mock: &MockBackend,
+    cmd: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     match cmd {
         "/help" => assert!(
             app.compositor().contains("help-dialog"),
@@ -130,7 +137,7 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
             assert!(
                 app.agent_view_store()
                     .current_session_context()
-                    .expect("s-1 present")
+                    .or_fail("s-1 present")?
                     .scrollback
                     .visible_window(1024)
                     .iter()
@@ -157,7 +164,12 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
                         );
                         app.dispatch(a);
                     }
-                    other => panic!("expected OpenCreateSessionDialog on bus, got {other:?}"),
+                    other => {
+                        return Err(format!(
+                            "expected OpenCreateSessionDialog on bus, got {other:?}"
+                        )
+                        .into())
+                    }
                 }
             }
             assert!(
@@ -175,8 +187,9 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
             1,
             "/merge-worktree must call backend.inspect_session_changes"
         ),
-        _ => panic!("unhandled command {cmd}"),
+        _ => return Err(format!("unhandled command {cmd}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -185,7 +198,7 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() {
+async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() -> TestResult {
     for (cmd, _) in [
         ("/help", ""),
         ("/clear", ""),
@@ -200,13 +213,15 @@ async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() 
         ("/merge-worktree", ""),
     ] {
         let mock = Arc::new(MockBackend::new());
-        let (mut app, _mock) = given_app_in_agent_view(&mock).await;
+        let (mut app, _mock) = given_app_in_agent_view(&mock).await?;
         let prior_send = mock.send_input_calls();
         // @step Given an App with one open session SessionId("s-1") in AgentView
         assert_eq!(app.navigator().active_view, ViewMode::Agent);
         // @step When the input is submitted with text "<cmd>"
-        app.dispatch(Action::InputSubmitted(cmd.to_string()));
-        drain_pending(&mut app).await;
+        if let Some(session) = app.current_session() {
+            app.dispatch(Action::InputSubmitted(session, cmd.to_string()));
+        }
+        drain_pending(&mut app).await?;
         // @step Then the text is NOT forwarded to backend.send_input
         assert_eq!(
             mock.send_input_calls(),
@@ -214,8 +229,9 @@ async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() 
             "{cmd} must NOT be forwarded to backend.send_input"
         );
         // @step And the observable side effect <effect> lands (the same handler a popup pick would invoke)
-        assert_popup_pick_effect(&mut app, &mock, cmd);
+        assert_popup_pick_effect(&mut app, &mock, cmd)?;
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -224,14 +240,16 @@ async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() 
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn removed_detach_command_is_not_intercepted_and_goes_to_the_llm() {
+async fn removed_detach_command_is_not_intercepted_and_goes_to_the_llm() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") in AgentView
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_send = mock.send_input_calls();
 
     // @step When the input is submitted with text "/detach"
-    app.dispatch(Action::InputSubmitted("/detach".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "/detach".to_string()));
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then the text "/detach" IS forwarded to backend.send_input
     assert_eq!(
@@ -249,6 +267,7 @@ async fn removed_detach_command_is_not_intercepted_and_goes_to_the_llm() {
         0,
         "/detach must NOT reach the backend work-unit context path"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -257,9 +276,9 @@ async fn removed_detach_command_is_not_intercepted_and_goes_to_the_llm() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn tab_fill_then_enter_submits_the_command_not_the_text() {
+async fn tab_fill_then_enter_submits_the_command_not_the_text() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") in AgentView
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_send = mock.send_input_calls();
 
     // @step When the user types "/provide" and the slash popup is open with "provider" highlighted
@@ -274,7 +293,7 @@ async fn tab_fill_then_enter_submits_the_command_not_the_text() {
         .agent
         .slash_popup
         .as_ref()
-        .expect("slash popup must be open while typing /provide");
+        .or_fail("slash popup must be open while typing /provide")?;
     assert_eq!(popup.filter(), "provide");
     assert_eq!(popup.matches()[0].name(), "provider");
 
@@ -285,7 +304,7 @@ async fn tab_fill_then_enter_submits_the_command_not_the_text() {
 
     // @step And the user presses Enter
     press(&mut app, KeyCode::Enter);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the text "/provider" is NOT forwarded to backend.send_input
     assert_eq!(
@@ -300,7 +319,8 @@ async fn tab_fill_then_enter_submits_the_command_not_the_text() {
         "Tab-then-Enter must open the ProviderSettingsView"
     );
     // @step And the same effect is observed as a popup pick of the Provider command
-    assert_popup_pick_effect(&mut app, &mock, "/provider");
+    assert_popup_pick_effect(&mut app, &mock, "/provider")?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -309,9 +329,9 @@ async fn tab_fill_then_enter_submits_the_command_not_the_text() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_dismiss_then_enter_also_intercepts() {
+async fn esc_dismiss_then_enter_also_intercepts() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") in AgentView
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_send = mock.send_input_calls();
 
     // @step When the user types "/provider" and the slash popup is open
@@ -330,7 +350,7 @@ async fn esc_dismiss_then_enter_also_intercepts() {
 
     // @step And the user presses Enter
     press(&mut app, KeyCode::Enter);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the text "/provider" is NOT forwarded to backend.send_input
     assert_eq!(
@@ -345,7 +365,8 @@ async fn esc_dismiss_then_enter_also_intercepts() {
         "Esc-then-Enter must open the ProviderSettingsView"
     );
     // @step And the same effect is observed as a popup pick of the Provider command
-    assert_popup_pick_effect(&mut app, &mock, "/provider");
+    assert_popup_pick_effect(&mut app, &mock, "/provider")?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -354,14 +375,19 @@ async fn esc_dismiss_then_enter_also_intercepts() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn registered_name_with_trailing_argument_goes_to_the_llm() {
+async fn registered_name_with_trailing_argument_goes_to_the_llm() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") in AgentView
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_send = mock.send_input_calls();
 
     // @step When the input is submitted with text "/provider openai"
-    app.dispatch(Action::InputSubmitted("/provider openai".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(
+            session,
+            "/provider openai".to_string(),
+        ));
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then a tokio task is spawned that calls backend.send_input(SessionId("s-1"), "/provider openai")
     assert_eq!(mock.send_input_calls(), prior_send + 1);
@@ -375,6 +401,7 @@ async fn registered_name_with_trailing_argument_goes_to_the_llm() {
         ViewMode::Agent,
         "a name-with-argument must NOT open the ProviderSettingsView"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -382,14 +409,19 @@ async fn registered_name_with_trailing_argument_goes_to_the_llm() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn unknown_slash_lines_still_go_to_the_llm() {
+async fn unknown_slash_lines_still_go_to_the_llm() -> TestResult {
     // @step Given an App with one open session SessionId("s-1") in AgentView
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_send = mock.send_input_calls();
 
     // @step When the input is submitted with text "/unknown anything"
-    app.dispatch(Action::InputSubmitted("/unknown anything".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(
+            session,
+            "/unknown anything".to_string(),
+        ));
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then a tokio task is spawned that calls backend.send_input(SessionId("s-1"), "/unknown anything")
     assert_eq!(mock.send_input_calls(), prior_send + 1);
@@ -397,6 +429,7 @@ async fn unknown_slash_lines_still_go_to_the_llm() {
         mock.last_send_input(),
         Some((sid("s-1"), "/unknown anything".to_string()))
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -405,7 +438,7 @@ async fn unknown_slash_lines_still_go_to_the_llm() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_slash_command_resolves_bare_registered_names_to_their_action_variant() {
+fn parse_slash_command_resolves_bare_registered_names_to_their_action_variant() -> TestResult {
     use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
     // @step Given the function parse_slash_command from app/slash_parser.rs
     // @step When it is called with text=<input>
@@ -426,6 +459,7 @@ fn parse_slash_command_resolves_bare_registered_names_to_their_action_variant() 
         parse_slash_command("/merge-worktree"),
         SlashCommandParse::BareCommand(SlashCommandAction::MergeWorktree)
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -434,7 +468,7 @@ fn parse_slash_command_resolves_bare_registered_names_to_their_action_variant() 
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn parse_slash_command_keeps_not_a_slash_command_for_unregistered_lines() {
+fn parse_slash_command_keeps_not_a_slash_command_for_unregistered_lines() -> TestResult {
     // @step Given the function parse_slash_command from app/slash_parser.rs
     // @step When it is called with text=<input>
     // @step Then it returns NotASlashCommand
@@ -459,6 +493,7 @@ fn parse_slash_command_keeps_not_a_slash_command_for_unregistered_lines() {
         parse_slash_command("/providers"),
         SlashCommandParse::NotASlashCommand
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -466,7 +501,7 @@ fn parse_slash_command_keeps_not_a_slash_command_for_unregistered_lines() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn legacy_family_inputs_still_parse_to_their_existing_variants() {
+fn legacy_family_inputs_still_parse_to_their_existing_variants() -> TestResult {
     use codelet_fspec_tui::app::continue_parser::ContinueSubcommand;
     use codelet_fspec_tui::app::goal_parser::GoalSubcommand;
     use codelet_fspec_tui::app::loop_parser::LoopSubcommand;
@@ -477,7 +512,7 @@ fn legacy_family_inputs_still_parse_to_their_existing_variants() {
     // @step Then it returns the same variant as before the fix:
     assert_eq!(
         parse_slash_command("/thinking high"),
-        SlashCommandParse::SetThinkingLevel(ThinkingLevel::High)
+        SlashCommandParse::ThinkingCommand("high".to_string())
     );
     assert_eq!(
         parse_slash_command("/role clear"),
@@ -511,6 +546,7 @@ fn legacy_family_inputs_still_parse_to_their_existing_variants() {
         parse_slash_command("/mux"),
         SlashCommandParse::MuxCommand("/mux".to_string())
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -519,14 +555,16 @@ fn legacy_family_inputs_still_parse_to_their_existing_variants() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn intercepted_bare_commands_do_not_append_to_history() {
+async fn intercepted_bare_commands_do_not_append_to_history() -> TestResult {
     // @step Given an App with one open session SessionId("s-1")
-    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await?;
     let prior_history = mock.persistence_add_history_calls();
 
     // @step When the input is submitted with text "/provider"
-    app.dispatch(Action::InputSubmitted("/provider".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "/provider".to_string()));
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then no tokio task is spawned that calls backend.persistence_add_history
     assert_eq!(
@@ -536,8 +574,10 @@ async fn intercepted_bare_commands_do_not_append_to_history() {
     );
 
     // @step When the input is submitted with text "hello"
-    app.dispatch(Action::InputSubmitted("hello".to_string()));
-    drain_pending(&mut app).await;
+    if let Some(session) = app.current_session() {
+        app.dispatch(Action::InputSubmitted(session, "hello".to_string()));
+    }
+    drain_pending(&mut app).await?;
 
     // @step Then exactly one tokio task is spawned that calls backend.persistence_add_history(SessionId("s-1"), "hello")
     assert_eq!(
@@ -549,4 +589,5 @@ async fn intercepted_bare_commands_do_not_append_to_history() {
         mock.last_persistence_add_history(),
         Some((sid("s-1"), "hello".to_string()))
     );
+    Ok(())
 }

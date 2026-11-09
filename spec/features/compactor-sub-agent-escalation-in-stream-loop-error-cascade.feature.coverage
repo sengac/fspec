@@ -5,68 +5,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "96-122",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1879,
-                1880,
-                1881,
-                1882,
-                1883,
-                1884,
-                1885,
-                1886,
-                1887,
-                1888,
-                1889,
-                1890,
-                1891,
-                1892,
-                1893,
-                1894,
-                1895,
-                1896,
-                1897,
-                1898,
-                1899,
-                1900,
-                1901,
-                1902,
-                1903,
-                1904,
-                1905,
-                1906,
-                1907,
-                1908,
-                1909,
-                1910,
-                1911,
-                1912,
-                1913,
-                1914,
-                1915,
-                1916,
-                1917,
-                1918,
-                1919,
-                1920,
-                1921,
-                1922,
-                1923,
-                1924,
-                1925,
-                1926,
-                1927,
-                1928,
-                1929,
-                1930,
-                1931,
-                1932
-              ]
-            }
-          ]
+          "lines": "95-125",
+          "implMappings": []
         }
       ]
     },
@@ -75,36 +15,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "36-73",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1879,
-                1880,
-                1881,
-                1882,
-                1883,
-                1884,
-                1885,
-                1886,
-                1887,
-                1888,
-                1889,
-                1890,
-                1891,
-                1892,
-                1893,
-                1894,
-                1895,
-                1896,
-                1897,
-                1898,
-                1899,
-                1900
-              ]
-            }
-          ]
+          "lines": "32-73",
+          "implMappings": []
         }
       ]
     },
@@ -113,35 +25,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "76-93",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1700,
-                1701,
-                1702,
-                1703,
-                1704,
-                1705,
-                1706,
-                1707,
-                1708,
-                1709,
-                1710,
-                1711,
-                1712,
-                1713,
-                1714,
-                1715,
-                1716,
-                1717,
-                1718,
-                1719,
-                1720
-              ]
-            }
-          ]
+          "lines": "75-93",
+          "implMappings": []
         }
       ]
     },
@@ -150,50 +35,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "147-188",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                640,
-                641,
-                642,
-                643,
-                644,
-                645,
-                646,
-                647,
-                648,
-                649,
-                650,
-                651,
-                652,
-                653,
-                654,
-                655,
-                656,
-                657,
-                658,
-                659,
-                660,
-                661,
-                662,
-                663,
-                664,
-                665,
-                666,
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675
-              ]
-            }
-          ]
+          "lines": "149-172",
+          "implMappings": []
         }
       ]
     }
@@ -205,9 +48,7 @@
     "testFiles": [
       "rust/cli/tests/cmpct044_cascade_ordering_test.rs"
     ],
-    "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs"
-    ],
-    "totalLinesCovered": 258
+    "implFiles": [],
+    "totalLinesCovered": 116
   }
 }

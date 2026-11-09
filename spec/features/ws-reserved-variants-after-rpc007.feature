@@ -6,6 +6,7 @@
 @envelope
 @regression
 @RPC-007
+@infrastructure
 Feature: Reserved Envelope variants narrowed after RPC-007
   """
   RPC-005 reserved-and-rejected the Envelope variants Event, LogEvent,

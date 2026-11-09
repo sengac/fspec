@@ -22,45 +22,16 @@ impl App {
     /// the first render after the dispatch shows the (possibly empty)
     /// view while the backend call resolves.
     pub(crate) fn handle_open_provider_settings_view(&mut self) {
-        // Reset to a clean list-mode view so a previous session's edit
-        // state never leaks back in.
-        self.navigator.provider_settings = crate::views::ProviderSettingsView::new();
-        // PROV-113: gate the browser login rows to transports that can host the
-        // providers-layer local OAuth HTTP server (embedded only).
-        self.navigator
-            .provider_settings
-            .set_browser_login_enabled(self.backend.supports_browser_oauth());
-        self.spawn_list_provider_credentials();
+        let view = &mut self.navigator.provider_settings;
+        *view = crate::views::ProviderSettingsView::new();
+        // BUG-575: one numbered refresh of credentials and settings.
+        self.refresh_new_provider_settings_view();
     }
 
     /// RPC-054: close the provider settings view; the Navigator's
     /// `apply_action` arm flips back to `Agent`.
     pub(crate) fn handle_close_provider_settings_view(&mut self) {
         self.navigator.provider_settings.set_status("");
-    }
-
-    /// RPC-054: spawn `backend.list_provider_credentials()` and route
-    /// the result into the view via `Action::ProviderCredentialsLoaded`.
-    fn spawn_list_provider_credentials(&mut self) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            match backend.list_provider_credentials().await {
-                Ok(list) => {
-                    let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                }
-                Err(e) => {
-                    tracing::warn!(error = %e, "list_provider_credentials failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✗ list failed: {e}"
-                    )));
-                }
-            }
-        });
-        self.pending_tasks.push(handle);
     }
 
     /// RPC-054: persist the API key via
@@ -87,11 +58,8 @@ impl App {
                     let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
                         "✓ {provider_for_save} credentials saved"
                     )));
-                    // Refresh the list so the configured indicator
-                    // repaints.
-                    if let Ok(list) = backend.list_provider_credentials().await {
-                        let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                    }
+                    // BUG-575: shown through the numbered refresh.
+                    let _ = action_tx.send(Action::RefreshProviderSettings { navigate: None });
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_for_save, "set_provider_credentials failed");
@@ -100,90 +68,6 @@ impl App {
             }
         });
         self.pending_tasks.push(handle);
-    }
-
-    /// RPC-054: spawn a connection-test round-trip and route the
-    /// `TestConnectionResult` back through `Action::ProviderTestComplete`.
-    pub(crate) fn handle_test_provider_connection(&mut self, provider_id: String) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            match backend.test_provider_connection(provider_id.clone()).await {
-                Ok(result) => {
-                    let _ = action_tx.send(Action::ProviderTestComplete {
-                        provider_id,
-                        result,
-                    });
-                }
-                Err(e) => {
-                    tracing::warn!(error = %e, provider = %provider_id, "test_provider_connection failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
-                }
-            }
-        });
-        self.pending_tasks.push(handle);
-    }
-
-    /// RPC-054: fold a `TestConnectionResult` into the view's status
-    /// area. Success renders as "✓ ok (Xms)" and failure as
-    /// "✗ <error>".
-    pub(crate) fn handle_provider_test_complete(
-        &mut self,
-        provider_id: String,
-        result: codelet_rpc_types::TestConnectionResult,
-    ) {
-        let status = if result.success {
-            format!("✓ {} ok ({}ms)", provider_id, result.latency_ms)
-        } else {
-            format!(
-                "✗ {}",
-                result.error.unwrap_or_else(|| "unknown error".to_string())
-            )
-        };
-        self.navigator.provider_settings.set_status(status);
-    }
-
-    /// RPC-054: spawn a refresh-models round-trip and follow up with a
-    /// fresh list refresh so the view repaints with the new model count.
-    pub(crate) fn handle_refresh_provider_models(&mut self, provider_id: String) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            match backend.refresh_models_cache(provider_id.clone()).await {
-                Ok(models) => {
-                    let _ = action_tx.send(Action::ProviderModelsRefreshed {
-                        provider_id: provider_id.clone(),
-                        model_count: models.len() as u32,
-                    });
-                    if let Ok(list) = backend.list_provider_credentials().await {
-                        let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                    }
-                }
-                Err(e) => {
-                    tracing::warn!(error = %e, provider = %provider_id, "refresh_models_cache failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
-                }
-            }
-        });
-        self.pending_tasks.push(handle);
-    }
-
-    /// RPC-054: fold a `ProviderModelsRefreshed` into the view's status
-    /// area.
-    pub(crate) fn handle_provider_models_refreshed(
-        &mut self,
-        provider_id: String,
-        model_count: u32,
-    ) {
-        self.navigator.provider_settings.set_status(format!(
-            "✓ {provider_id} models refreshed ({model_count} models)"
-        ));
     }
 
     /// RPC-054: spawn a delete round-trip and follow up with a fresh
@@ -203,9 +87,8 @@ impl App {
                     let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
                         "✓ {provider_id} credentials cleared"
                     )));
-                    if let Ok(list) = backend.list_provider_credentials().await {
-                        let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-                    }
+                    // BUG-575: shown through the numbered refresh.
+                    let _ = action_tx.send(Action::RefreshProviderSettings { navigate: None });
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, "delete_provider_credentials failed");
@@ -231,42 +114,15 @@ impl App {
             Action::CloseProviderSettingsView => {
                 self.handle_close_provider_settings_view();
             }
-            Action::ProviderCredentialsLoaded(list) => {
-                self.handle_provider_credentials_loaded(list.clone());
-            }
             Action::SaveProviderCredentials {
                 provider_id,
                 api_key,
             } => {
                 self.handle_save_provider_credentials(provider_id.clone(), api_key.clone());
             }
-            Action::TestProviderConnection(id) => {
-                self.handle_test_provider_connection(id.clone());
-            }
-            Action::ProviderTestComplete {
-                provider_id,
-                result,
-            } => {
-                self.handle_provider_test_complete(provider_id.clone(), result.clone());
-            }
-            Action::RefreshProviderModels(id) => {
-                self.handle_refresh_provider_models(id.clone());
-            }
-            Action::ProviderModelsRefreshed {
-                provider_id,
-                model_count,
-            } => {
-                self.handle_provider_models_refreshed(provider_id.clone(), *model_count);
-            }
-            Action::DeleteProviderCredentials(id) => {
-                self.handle_delete_provider_credentials(id.clone());
-            }
             Action::ConfirmDeleteProviderCredentials(id) => {
-                // RPC-054 (revision): ConfirmDialog Primary acceptance
-                // routes through the same backend round-trip as the
-                // legacy raw `DeleteProviderCredentials` arm. The
-                // view-layer is now responsible for opening the
-                // dialog BEFORE this action fires.
+                // RPC-054: the view opens the ConfirmDialog; its Primary
+                // acceptance fires this action.
                 self.handle_delete_provider_credentials(id.clone());
             }
             Action::ProviderSettingsStatus(s) => {
@@ -276,13 +132,13 @@ impl App {
             // sibling module (dispatch_provider_settings_oauth.rs).
             Action::OAuthDisconnect { .. }
             | Action::OAuthLoginStart { .. }
+            | Action::OAuthBrowserReady { .. }
             | Action::OAuthHeadlessReady { .. }
             | Action::OAuthDeviceReady { .. }
             | Action::OAuthLoginHeadlessSubmit { .. }
             | Action::OAuthLoginSucceeded { .. }
             | Action::OAuthLoginFailed { .. }
-            | Action::OAuthOpenUrl { .. }
-            | Action::OAuthCopyUrl { .. } => {
+            | Action::OAuthOpenUrl { .. } => {
                 return self.try_dispatch_oauth(action);
             }
             // PROV-114: github-copilot device-start (own sibling module).

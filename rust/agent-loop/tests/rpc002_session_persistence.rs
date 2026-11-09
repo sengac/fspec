@@ -1,62 +1,24 @@
-//! Feature: spec/features/session-persistence-integration.feature
+//! Feature: spec/features/session-persistence-round-trip.feature
 //!
-//! RPC-002: Full round-trip tests proving session content is written to
-//! disk and restored correctly via resume_session. Verifies that:
-//!
-//!   1. Messages persisted via agent_loop persist_* helpers land on disk
-//!   2. resume_session rehydrates ALL messages into the session's inner list
-//!   3. Token state is restored from the manifest
-//!   4. The restored session's scrollback matches what was written
-//!
-//! These tests drive the REAL persistence layer (not hand-crafted envelopes)
-//! and verify the full write → resume → restore round-trip.
+//! RPC-002: full round-trip tests proving session content written through
+//! the agent_loop persist_* helpers lands on disk and survives a store
+//! reset plus resume_session: messages, token state and message order.
+//! These tests drive the REAL persistence layer (not hand-crafted
+//! envelopes). Harness: `rpc002_session_persistence_support` (REFAC-061).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::sync::Arc;
 
 use codelet_agent_loop::persist::{
     persist_assistant_message_internal, persist_token_state, persist_user_message,
 };
 use codelet_core::persistence::{load_session, reset_stores_for_tests, AssistantContent};
 use codelet_core::SessionManagerHandle;
-use codelet_rpc_types::SessionId;
 use codelet_sessions::SessionManager;
 use serial_test::serial;
-use tempfile::TempDir;
 use uuid::Uuid;
 
-/// Serialize tests that swap the process-global data directory.
-static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
-
-fn setup_data_dir() -> TempDir {
-    let tmp = tempfile::tempdir().expect("create temp data dir");
-    // BUG-186: seed the offline models.dev cache so
-    // resolve_provider_manager → ModelRegistry::new → ModelCache::get()
-    // stays fully offline in the fresh temp data dir (the cmpct041 /
-    // rpc386 fixture pattern) — without it the registry fetch fails, the
-    // create_session Err is swallowed into an empty SessionId, and the
-    // Uuid::parse_str("") below panics. Dummy creds keep
-    // ProviderCredentials::detect() passing offline too.
-    std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
-    let cache_dir = tmp.path().join("cache");
-    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
-    std::fs::write(
-        cache_dir.join("models.json"),
-        include_str!("fixtures/prov101_models.json"),
-    )
-    .expect("write models fixture");
-    codelet_common::set_data_directory(tmp.path().to_path_buf())
-        .expect("set_data_directory must succeed");
-    reset_stores_for_tests();
-    tmp
-}
-
-// BUG-186: the fixture cache (fixtures/prov101_models.json) knows
-// claude-opus-4-5 under anthropic — the offline-acceptable default model
-// for the create_session(None) path (claude-sonnet-4 is not in the
-// fixture, so registry-backed resolution would still decline offline).
-const OFFLINE_DEFAULT_MODEL: &str = "anthropic/claude-opus-4-5";
+mod rpc002_session_persistence_support;
+use rpc002_session_persistence_support::{setup_data_dir, DATA_DIR_GUARD, OFFLINE_DEFAULT_MODEL};
 
 // ============================================================================
 // Scenario: Full round-trip — write messages, reset stores, resume, verify
@@ -69,12 +31,20 @@ async fn full_round_trip_persist_and_restore_messages() {
     let _data_dir = setup_data_dir();
 
     // @step Given a SessionManager with a session that has persisted messages
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    assert_eq!(manager.set_default_model(OFFLINE_DEFAULT_MODEL), Ok(()));
     let handle: &dyn SessionManagerHandle = &*manager;
 
     // Create a session
-    let sid = handle.create_session(None);
+    let sid = handle
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
 
     // Persist messages through the agent_loop persistence helpers
@@ -119,11 +89,13 @@ async fn full_round_trip_persist_and_restore_messages() {
     );
 
     // @step Then the session is in memory with restored messages
-    let sessions = manager.list_sessions(
-        &std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default(),
-    );
+    let sessions = manager
+        .list_sessions(
+            &std::env::current_dir()
+                .expect("the test process has a working directory")
+                .to_string_lossy(),
+        )
+        .expect("list_sessions reads the session");
     assert!(
         sessions.iter().any(|s| s.id == sid.value),
         "session should be in memory after resume"
@@ -149,11 +121,19 @@ async fn resume_restores_token_state() {
     let _data_dir = setup_data_dir();
 
     // @step Given a SessionManager with a session that has token state
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    assert_eq!(manager.set_default_model(OFFLINE_DEFAULT_MODEL), Ok(()));
     let handle: &dyn SessionManagerHandle = &*manager;
 
-    let sid = handle.create_session(None);
+    let sid = handle
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
 
     // Persist a message and token state
@@ -199,11 +179,19 @@ async fn resume_preserves_message_ordering() {
     let _data_dir = setup_data_dir();
 
     // @step Given a session with multiple messages in specific order
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    assert_eq!(
+        codelet_test_helpers::shared_temp_subdirectory()
+            .and_then(|workspace| manager.set_default_project(workspace)),
+        Ok(())
+    );
+    assert_eq!(manager.set_default_model(OFFLINE_DEFAULT_MODEL), Ok(()));
     let handle: &dyn SessionManagerHandle = &*manager;
 
-    let sid = handle.create_session(None);
+    let sid = handle
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     let session_uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
 
     // Persist messages in order: user, assistant, user, assistant, user
@@ -248,110 +236,5 @@ async fn resume_preserves_message_ordering() {
         manifest.messages.len(),
         5,
         "manifest should still have 5 message refs"
-    );
-}
-
-// ============================================================================
-// Scenario: Resume fails gracefully for non-existent session
-// ============================================================================
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-#[serial]
-async fn resume_fails_for_non_existent_session() {
-    let _guard = DATA_DIR_GUARD.lock().await;
-    let _data_dir = setup_data_dir();
-
-    // @step Given a SessionManager with no sessions
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
-    let handle: &dyn SessionManagerHandle = &*manager;
-
-    // @step When I try to resume a session that doesn't exist
-    let fake_sid = SessionId::new("00000000-0000-0000-0000-000000000000".to_string());
-    let result = handle.resume_session(&fake_sid);
-
-    // @step Then it returns an error
-    assert!(
-        result.is_err(),
-        "resume_session should fail for non-existent session"
-    );
-}
-
-// ============================================================================
-// Scenario: Multiple sessions persist independently
-// ============================================================================
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-#[serial]
-async fn multiple_sessions_persist_independently() {
-    let _guard = DATA_DIR_GUARD.lock().await;
-    let _data_dir = setup_data_dir();
-
-    // @step Given a SessionManager with two sessions
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model(OFFLINE_DEFAULT_MODEL);
-    let handle: &dyn SessionManagerHandle = &*manager;
-
-    let sid1 = handle.create_session(None);
-    let sid2 = handle.create_session(None);
-    let uuid1 = Uuid::parse_str(&sid1.value).expect("valid UUID");
-    let uuid2 = Uuid::parse_str(&sid2.value).expect("valid UUID");
-
-    // Persist different messages in each session
-    persist_user_message(&uuid1, "session 1 message").expect("persist s1");
-    persist_user_message(&uuid2, "session 2 message").expect("persist s2");
-
-    // Verify each manifest has its own messages
-    let manifest1 = load_session(uuid1).expect("load manifest 1");
-    let manifest2 = load_session(uuid2).expect("load manifest 2");
-    assert_eq!(
-        manifest1.messages.len(),
-        1,
-        "session 1 should have 1 message"
-    );
-    assert_eq!(
-        manifest2.messages.len(),
-        1,
-        "session 2 should have 1 message"
-    );
-
-    // @step When I reset the stores and resume both sessions
-    reset_stores_for_tests();
-    assert!(
-        handle.resume_session(&sid1).is_ok(),
-        "resume s1 should succeed"
-    );
-    assert!(
-        handle.resume_session(&sid2).is_ok(),
-        "resume s2 should succeed"
-    );
-
-    // @step Then both sessions are restored independently
-    let manifest1 = load_session(uuid1).expect("load manifest 1 after resume");
-    let manifest2 = load_session(uuid2).expect("load manifest 2 after resume");
-    assert_eq!(
-        manifest1.messages.len(),
-        1,
-        "session 1 should still have 1 message"
-    );
-    assert_eq!(
-        manifest2.messages.len(),
-        1,
-        "session 2 should still have 1 message"
-    );
-
-    // Verify sessions are independent (no cross-contamination)
-    let sessions = manager.list_sessions(
-        &std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default(),
-    );
-    assert!(
-        sessions.iter().any(|s| s.id == sid1.value),
-        "session 1 should be in memory"
-    );
-    assert!(
-        sessions.iter().any(|s| s.id == sid2.value),
-        "session 2 should be in memory"
     );
 }

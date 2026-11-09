@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-162
 @agent-view
@@ -63,7 +64,7 @@ Feature: Provider settings: empty-Enter in API-key edit cancels silently (drop i
   @edit
   @silent-cancel
   Scenario: Pressing Esc in EditApiKey with an empty draft also returns directly to List mode
-    Given the ProviderSettingsView is in Detail::EditApiKey for "openai" with empty draft
+    Given the ProviderSettingsView is in Detail::EditApiKey for "gemini" with empty draft
     When the user presses Esc
     Then the view's mode is ProviderSettingsMode::List
     And view.status is the empty string
@@ -94,7 +95,7 @@ Feature: Provider settings: empty-Enter in API-key edit cancels silently (drop i
   @edit
   @save
   Scenario: Non-empty Enter still consumes the draft into the SaveProviderCredentials payload verbatim
-    Given the ProviderSettingsView is in Detail::EditApiKey for "openai" with draft "sk-test-1"
+    Given the ProviderSettingsView is in Detail::EditApiKey for "gemini" with draft "sk-test-1"
     When the user presses Enter
-    Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "openai", api_key: "sk-test-1" })
+    Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "gemini", api_key: "sk-test-1" })
     And the view's mode is ProviderSettingsMode::List

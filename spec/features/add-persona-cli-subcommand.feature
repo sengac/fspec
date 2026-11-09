@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-186
+@foundation-management
 Feature: fspec add-persona CLI subcommand
   """
   File layout: rewrite stub rust/fspec-core/src/commands/add_persona.rs; add CLI bridge rust/fspec/src/add_persona.rs; help config rust/fspec-core/src/help/configs/add_persona.rs; dispatcher test rust/fspec-core/tests/add_persona.rs; CLI test rust/fspec/tests/cli_add_persona.rs; help fixture rust/fspec/tests/fixtures/help/add-persona.txt

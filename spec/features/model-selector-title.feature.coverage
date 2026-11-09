@@ -5,13 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
-          "lines": "132-162",
+          "lines": "140-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                76,
-                77,
                 78,
                 79,
                 80,
@@ -52,8 +50,38 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// MODEL-008: render the browse-list title in the two-span style",
+              "lastLine": "};"
             }
           ]
         }
@@ -64,13 +92,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
-          "lines": "164-184",
+          "lines": "173-191",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                76,
-                77,
                 78,
                 79,
                 80,
@@ -111,8 +137,38 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// MODEL-008: render the browse-list title in the two-span style",
+              "lastLine": "};"
             }
           ]
         }
@@ -123,13 +179,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
-          "lines": "187-224",
+          "lines": "196-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                16,
-                17,
                 18,
                 19,
                 20,
@@ -187,8 +241,12 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77
+              ],
+              "firstLine": "// shell body instead of the browse list.",
+              "lastLine": "}"
             }
           ]
         }
@@ -199,41 +257,43 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
-          "lines": "239-282",
+          "lines": "250-291",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/state.rs",
               "lines": [
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209
-              ]
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "/// Total number of models across ALL providers, independent of which",
+              "lastLine": "}"
             }
           ]
         }
@@ -244,13 +304,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_title_two_span_model008.rs",
-          "lines": "284-312",
+          "lines": "296-327",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                76,
-                77,
                 78,
                 79,
                 80,
@@ -271,8 +329,18 @@
                 95,
                 96,
                 97,
-                98
-              ]
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "// MODEL-008: render the browse-list title in the two-span style",
+              "lastLine": "|body_area, buf| {"
             }
           ]
         }
@@ -290,6 +358,6 @@
       "rust/fspec-tui/src/views/model_selector/render.rs",
       "rust/fspec-tui/src/views/model_selector/state.rs"
     ],
-    "totalLinesCovered": 361
+    "totalLinesCovered": 428
   }
 }

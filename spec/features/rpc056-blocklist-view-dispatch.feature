@@ -9,6 +9,9 @@
 @session-management
 Feature: /blocklist view + blocklist RPC surface
   """
+  BUG-445: session getters return Result; an unknown session or a missing
+  session manager is an error (session-getters-report-lookup-failures).
+
   Phase 7.3 of the RPC-030 roadmap. Reaches TS-parity for the /blocklist
   slash command by:
 
@@ -27,10 +30,10 @@ Feature: /blocklist view + blocklist RPC surface
   (plus PageUp/PageDown/Home/End per BLOCK-010),
   Enter/Space toggle, and Esc dismissal — full parity with
   BlocklistListView.tsx.
-  4. Storing the session-disabled rule ids on `AgentViewStore.blocklist_disabled_by_session`
-  so re-opening the view preserves disabled state across the
-  session's lifetime — TS parity with `useState<Set<string>>` lifted
-  to the AgentView component scope.
+  4. BUG-601: Enter/Space turns the focused rule off or on in the daemon for
+  the session the view was opened from (blocklist_set_rule_enabled), and the
+  view shows the daemon's answer; `AgentViewStore.blocklist_disabled_by_session`
+  only caches the daemon's last answer per session.
 
   TS reference: `AgentView.tsx` line 2757 — `handleBlocklistMode()`
   loads via `blocklistLoad(cwd)` and pushes the BlocklistListView
@@ -38,9 +41,9 @@ Feature: /blocklist view + blocklist RPC surface
   source/action tags + a right-pane details panel.
 
   Out of scope: add / edit / delete / persist CRUD on the blocklist
-  config file (deferred to a follow-up card); no enforcement wiring
-  into the codelet_tools blocklist middleware (the session-disabled
-  set is purely a UI affordance for now, matching TS).
+  config file (deferred to a follow-up card); turning a rule off
+  for a session is enforced by the codelet_tools blocklist middleware since
+  BUG-601 (blocklist-toggle-rule-turns-the-rule-off-for-the-session.feature).
   """
 
   # ========================================
@@ -48,14 +51,14 @@ Feature: /blocklist view + blocklist RPC surface
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. SessionManagerHandle MUST expose a default-impl method blocklist_list(&self) -> Vec<BlocklistRuleInfo> so existing handles compile unchanged; default returns Vec::new()
+  #   1. SessionManagerHandle MUST expose a default-impl method blocklist_list(&self) -> Result<Vec<BlocklistRuleInfo>, String>; BUG-445: the default refuses, and no start workspace or an unloadable config is an error
   #   2. StubSessionManagerHandle overrides blocklist_list with a deterministic in-memory snapshot and exposes a per-call counter (blocklist_list_calls()) for cross-transport parity tests
-  #   3. FspecService (tarpc) declares async fn blocklist_list() -> Vec<BlocklistRuleInfo> and FspecServiceImpl routes through self.inner.session_manager()
+  #   3. FspecService (tarpc) declares async fn blocklist_list() -> Result<Vec<BlocklistRuleInfo>, String> (BUG-445) and FspecServiceImpl routes through self.inner.session_manager()
   #   4. FspecBackend trait exposes async blocklist_list() -> Result<Vec<BlocklistRuleInfo>> with a default Ok(Vec::new()) impl; both EmbeddedFspecBackend and WebSocketFspecBackend forward to the tarpc client
   #   5. BlocklistRuleInfo wire type carries id, pattern, action ("block"|"allow"|"prompt"), reason, guidance, source ("system"|"project")
   #   6. SlashCommandAction::Blocklist dispatches Action::OpenBlocklistView; Navigator flips active_view to ViewMode::Blocklist
   #   7. BlocklistView is a Navigator-owned child view with a left list pane + right details pane; arrow keys (plus PageUp/PageDown/Home/End per BLOCK-010) navigate, Enter/Space toggle, Esc closes
-  #   8. The session-disabled set lives on AgentViewStore.blocklist_disabled_by_session (HashMap<SessionId, HashSet<String>>) so it persists across view open/close
+  #   8. BUG-601: the turned-off rules live in the daemon (saved with the session); AgentViewStore.blocklist_disabled_by_session (HashMap<SessionId, HashSet<String>>) caches the daemon's last answer
   #   9. Category column derived from regex pattern shape: contains "/", starts with "~" or "./" → file_path; else bash
   #   10. Empty-state UX: when blocklist_list returns an empty Vec, the view paints "No blocklist rules configured." with config-path hints
   #
@@ -99,23 +102,21 @@ Feature: /blocklist view + blocklist RPC surface
     When the user presses Up
     Then selected_index equals 0
 
-  Scenario: Space toggles the focused rule into the session-disabled set
+  Scenario: Space emits Toggle Rule for the focused rule
     Given a BlocklistView seeded with rule "git-checkout-block" focused (selected_index 0)
-    And the session-disabled set is empty for the focused session
     When the user presses Space
-    Then the focused session's blocklist_disabled set contains "git-checkout-block"
+    Then a Toggle Rule action for "git-checkout-block" is emitted
     When the user presses Space again
-    Then the focused session's blocklist_disabled set no longer contains "git-checkout-block"
+    Then a Toggle Rule action for "git-checkout-block" is emitted again
 
-  Scenario: Enter behaves identically to Space for toggling
+  Scenario: Enter emits Toggle Rule like Space
     Given a BlocklistView seeded with rule "cat-block" focused
-    And the session-disabled set is empty for the focused session
     When the user presses Enter
-    Then the focused session's blocklist_disabled set contains "cat-block"
+    Then a Toggle Rule action for "cat-block" is emitted
 
   Scenario: A disabled rule paints the dimmed glyph and (disabled) suffix
     Given a BlocklistView seeded with rules [git-checkout-block(system), cat-block(project)]
-    And the focused session's blocklist_disabled set contains "git-checkout-block"
+    And the daemon reports "git-checkout-block" as turned off for the focused session
     When the view is rendered into a 120x24 buffer
     Then the rendered text contains "○ git-checkout-block"
     And the rendered text contains "(disabled)"
@@ -126,13 +127,6 @@ Feature: /blocklist view + blocklist RPC surface
     When the user presses Esc
     Then Action::CloseBlocklistView is observed on the action bus
     And the Navigator's active_view returns to ViewMode::Agent
-
-  Scenario: Session-disabled set persists across close/reopen of the view
-    Given an App with an open session s-1 and the BlocklistView open
-    And the user toggles "git-checkout-block" to disabled then presses Esc
-    When SlashCommandSelected(SlashCommandAction::Blocklist) is dispatched again
-    Then the new BlocklistView reads the existing blocklist_disabled set from AgentViewStore
-    And the row "git-checkout-block" renders with the dimmed glyph
 
   Scenario: Category column derives "file_path" for path-shaped patterns
     Given a BlocklistView with a rule whose pattern is "/etc/passwd"

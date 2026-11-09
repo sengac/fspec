@@ -3,12 +3,15 @@
 @pause-integration
 @session
 @RPC-410
+@BUG-397
+@BUG-432
 Feature: HITL wire protocol parity: multi-question requests and cancel-capable structured responses
   """
   Dossier §3.1: rust/rpc-types/src/lib.rs replaces single-question wire shapes with TS-parity shapes — HitlQuestion{id,header,question,options:Vec<HitlOption>}, HitlRequest{questions:Vec<HitlQuestion>}, HitlAnswer{id,selected:Vec<String>,other:Option<String>}, HitlResponse{cancelled:bool,answers:Vec<HitlAnswer>}. allow_text_input is DROPPED; serde derives match sibling wire types.
   Dossier §3.2/§3.3: handle_impl.rs get_hitl_request becomes full pass-through (every question, options None→[], delete the RPC-053 TODO); send_hitl_response becomes direct mapping (cancelled→Cancelled{true}, else Answered with HashMap keyed by answer id; tracing::warn on unknown ids is allowed but mapping must not depend on the pending request). handle_impl.rs is already >300 lines — mapping helpers extracted to a new sessions/src/hitl_mapping.rs module.
   Dossier §3.4: fspec-tui transport trait (mod.rs), websocket.rs, embedded.rs and test mock backends update to the new shapes; hitl_dialog.rs + dispatch_pause_hitl.rs get MINIMAL mechanical fixes (render questions[0], submit builds HitlResponse{cancelled:false, answers:[one]}, Esc unchanged). Out of scope: any UX change (RPC-411) and napi redesign (legacy path keeps tools-crate internal types; verify it compiles). Old tests pinning the RPC-408 heuristic (rpc408_hitl_response_answer_mapping.rs) and old wire-shape assertions (rpc036_widen_types.rs, rpc037 parity, pause_hitl_rpc053) are rewritten mechanically. hitl-response-answer-mapping.feature scenarios are superseded by this card's feature.
   HANG-SAFETY: all blocking-wait tests follow paused_chunk_delivery_rpc409.rs module rules — unblock the waiter BEFORE any assertion, bound every join/recv with a timeout
+  REFAC-052: the send-path source check and the serde round-trip scenarios moved to hitl-wire-protocol-parity-static-checks.feature (test file rpc410_hitl_wire_protocol_static_checks.rs); this feature keeps the five session scenarios, with shared helpers in rust/sessions/tests/rpc410_hitl_wire_protocol_parity_support/mod.rs.
   """
 
   # ========================================
@@ -22,6 +25,7 @@ Feature: HITL wire protocol parity: multi-question requests and cancel-capable s
   #   4. A non-cancelled wire response maps pass-through to internal Answered: the answers vec becomes a HashMap keyed by each answer's id, preserving selected/other EXACTLY with no label inference and no reading of the pending request to classify answers
   #   5. Freeform text identical to an option label stays in other (the RPC-408 label-inference heuristic is deleted; send path contains no option-label comparison)
   #   6. The existing HitlDialog and transports keep compiling with minimal mechanical changes: first-question rendering and single-answer submit as HitlResponse{cancelled:false, answers:[one]}; Esc behavior and all UX unchanged (RPC-411 replaces the dialog)
+  #   7. BUG-397: every session test creates its session in one data directory that outlives every test in the binary, and a failed session creation names its cause
   #
   # EXAMPLES:
   #   1. An internal request with 3 questions (approach, priority, notes) surfaces a wire HitlRequest whose questions array has exactly those 3 ids in order with headers, question text, and option labels preserved
@@ -29,8 +33,7 @@ Feature: HITL wire protocol parity: multi-question requests and cancel-capable s
   #   3. The user presses Esc: the wire response {cancelled:true, answers:[]} reaches the blocked tool as Cancelled{cancelled:true} and the agent receives the cancellation JSON
   #   4. A wire response with answers [{id:approach, selected:[Option A]}, {id:notes, other:free text}] reaches the tool as Answered with a 2-entry map keyed by approach and notes preserving selected/other exactly
   #   5. The user types freeform text "Yes" that is identical to an option label: the tool still receives it as other:Some("Yes") with selected:[] — no misclassification
-  #   6. The send path source in handle_impl.rs contains no option-label comparison (source-shape check that the RPC-408 heuristic is gone)
-  #   7. The new wire shapes (HitlQuestion, multi-question HitlRequest, HitlAnswer, cancel-capable HitlResponse) round-trip through serde_json equal to the original value
+  #   6. BUG-397: the five session tests run one after another on one thread and each finds the session it created
   #
   # ========================================
   Background: User Story
@@ -70,14 +73,7 @@ Feature: HITL wire protocol parity: multi-question requests and cancel-capable s
     Then the blocked thread receives an Answered response
     And the answer for "confirm_choice" has selected equal to [] and other equal to Some("Yes")
 
-  Scenario: The send path contains no option-label comparison
-    Given the source of handle_impl.rs and the hitl mapping module
-    When the send_hitl_response path is inspected
-    Then it contains no comparison of answer values against option labels
-    And it does not read the pending request to classify answers
-
-  Scenario: New wire shapes round-trip through serde_json
-    Given a wire HitlRequest with 3 questions including one without options and a wire HitlResponse with cancelled false and mixed answers
-    When each value is serialized to JSON and deserialized back
-    Then each deserialized value equals the original
-    And a cancelled wire HitlResponse with empty answers also round-trips equal
+  Scenario: The HITL parity session tests pass when run one after another in one process
+    Given the five HITL parity tests that each create a session
+    When they run one after another on one thread in the same test process
+    Then every test finds the session it created

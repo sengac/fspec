@@ -1,3 +1,5 @@
+@BUG-695
+@BUG-582
 @caching
 @tools
 @high
@@ -108,7 +110,7 @@ Feature: Limit File Reads to 25000 Tokens
     And the result should be more accurate than byte-based approximation
 
   Scenario: TokenEstimator is shared across codebase
-    Given the TokenEstimator utility in rust/core
+    Given the TokenEstimator utility in rust/common
     When token estimation is needed in any module
     Then the shared TokenEstimator should be used
     And no duplicate estimation logic should exist

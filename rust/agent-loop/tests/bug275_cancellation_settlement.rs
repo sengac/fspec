@@ -9,6 +9,10 @@ use support::{chunks, index_fixture, read, Fixture, Gate, TestResult};
 #[tokio::test]
 #[serial_test::serial]
 async fn acknowledgement_precedes_durable_cancellation_settlement() -> TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given a running tool whose cancellation persistence is paused
     let fixture = Fixture::new()?;
     let gate = Gate::new();
@@ -153,6 +157,10 @@ async fn settlement_retains_truthful_tool_outcomes_exactly_once() -> TestResult 
 #[tokio::test]
 #[serial_test::serial]
 async fn failed_settlement_remains_recoverable() -> TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given a cancellation whose required persistence fails
     let fixture = Fixture::new()?;
     let _result = support::run(&fixture, None, true).await;
@@ -205,7 +213,7 @@ fn index_publication_uses_bounded_buffered_writes() -> TestResult {
     let (directory, ids) = index_fixture(4096)?;
     // @step When a cancellation outcome publishes that index
     let (store, boundaries) = durability::observe(None, MessageStore::new);
-    let mut store = store?;
+    let store = store?;
     let (result, publications) = durability::observe(None, || {
         store.store(
             "user",

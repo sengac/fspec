@@ -9,6 +9,7 @@
 //! The [ToolSet] struct is a collection of tools that can be used by an [Agent](crate::agent::Agent)
 //! and optionally RAGged.
 
+pub mod arguments;
 mod middleware;
 pub mod server;
 pub use middleware::ToolMiddleware;

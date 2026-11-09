@@ -54,7 +54,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // Draft precedence: prefer foundation.json.draft when present.
-    let spec_dir = project_root.join("spec");
+    let spec_dir = crate::io::spec_paths::state_spec_dir(project_root)?;
     let draft_path = spec_dir.join("foundation.json.draft");
     let final_path = spec_dir.join("foundation.json");
 
@@ -72,6 +72,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "remove-persona")?;
     let raw = std::fs::read_to_string(&target_path).map_err(|source| FspecCoreError::Io {
         command: "remove-persona",
         source,

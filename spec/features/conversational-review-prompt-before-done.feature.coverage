@@ -4,19 +4,119 @@
       "name": "Story work unit transitioning to done shows review prompt",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
-          "lines": "34-91",
+          "file": "rust/fspec-core/tests/rev005_done_review_prompt.rs",
+          "lines": "94-128",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ],
+              "firstLine": "const DONE_REVIEW: &str = r#\"QUALITY CHECK OPPORTUNITY",
+              "lastLine": "}"
             }
           ]
         }
@@ -26,19 +126,119 @@
       "name": "Bug work unit transitioning to done shows review prompt",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
-          "lines": "104-147",
+          "file": "rust/fspec-core/tests/rev005_done_review_prompt.rs",
+          "lines": "130-165",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ],
+              "firstLine": "const DONE_REVIEW: &str = r#\"QUALITY CHECK OPPORTUNITY",
+              "lastLine": "}"
             }
           ]
         }
@@ -48,63 +248,26 @@
       "name": "Task work unit transitioning to done does NOT show review prompt",
       "testMappings": [
         {
-          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
-          "lines": "169-220",
+          "file": "rust/fspec-core/tests/rev005_done_review_prompt.rs",
+          "lines": "167-198",
           "implMappings": [
             {
-              "file": "src/commands/update-work-unit-status.ts",
+              "file": "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs",
               "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "AI workflow - user accepts review suggestion",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
-          "lines": "230-292",
-          "implMappings": [
-            {
-              "file": "src/commands/update-work-unit-status.ts",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "AI workflow - user declines review suggestion",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
-          "lines": "296-361",
-          "implMappings": [
-            {
-              "file": "src/commands/update-work-unit-status.ts",
-              "lines": [
-                60,
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ],
+              "firstLine": "pub(in crate::commands::update_work_unit_status) fn done_review_reminder(",
+              "lastLine": "}"
             }
           ]
         }
@@ -112,15 +275,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/conversational-review-prompt-before-done.test.ts"
+      "rust/fspec-core/tests/rev005_done_review_prompt.rs"
     ],
     "implFiles": [
-      "src/commands/update-work-unit-status.ts"
+      "rust/fspec-core/src/commands/update_work_unit_status/reminders/status.rs"
     ],
-    "totalLinesCovered": 313
+    "totalLinesCovered": 322
   }
 }

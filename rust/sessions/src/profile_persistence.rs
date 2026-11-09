@@ -20,11 +20,19 @@
 use std::path::Path;
 
 use serde_json::{Map, Value};
-use tracing::{debug, error, info, warn};
+use tracing::{error, info};
 
-use crate::profile_sections::{
-    fspec_user_dir, read_config_value, write_config_value, CompactionThreshold,
-};
+use codelet_common::fspec_config::update_config_file;
+
+use crate::profile_sections::CompactionThreshold;
+
+/// `<user dir>/fspec-config.json`; an unresolvable user directory is an
+/// error (BUG-640: one resolver, no fallback).
+fn user_config_path() -> std::io::Result<std::path::PathBuf> {
+    codelet_common::user_dir::fspec_user_dir()
+        .map(|directory| directory.join("fspec-config.json"))
+        .map_err(std::io::Error::other)
+}
 
 /// On-disk-facing profile definition (connection settings only).
 ///
@@ -110,11 +118,9 @@ pub fn save_profile(
     if !profiles_supported(provider_id) {
         return Ok(());
     }
-    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
-        let msg = "cannot resolve the fspec user directory (~/.fspec): no home directory available";
-        error!(profile = %profile_name, "save_profile: {msg}");
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
-    };
+    let config_path = user_config_path().inspect_err(|error| {
+        error!(profile = %profile_name, %error, "save_profile: no user directory");
+    })?;
     info!(path = %config_path.display(), profile = %profile_name, "save_profile: saving profile");
     save_profile_at(&config_path, provider_id, profile_name, def)
 }
@@ -124,12 +130,7 @@ pub fn save_profile(
 /// Missing file or absent profile is an idempotent no-op that leaves the file
 /// byte-identical (TS `deleteProfile` early-return parity).
 pub fn delete_profile(provider_id: &str, profile_name: &str) -> std::io::Result<()> {
-    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
-        // Deleting a profile whose config file cannot be located is a benign
-        // no-op (there is nothing to delete), so only log at debug level.
-        debug!(profile = %profile_name, "delete_profile: no fspec user directory; no-op");
-        return Ok(());
-    };
+    let config_path = user_config_path()?;
     info!(path = %config_path.display(), profile = %profile_name, "delete_profile: deleting profile");
     delete_profile_at(&config_path, provider_id, profile_name)
 }
@@ -148,11 +149,9 @@ pub fn rename_profile(
     if !profiles_supported(provider_id) {
         return Ok(());
     }
-    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
-        let msg = "cannot resolve the fspec user directory (~/.fspec): no home directory available";
-        error!(old = %old_name, new = %new_name, "rename_profile: {msg}");
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
-    };
+    let config_path = user_config_path().inspect_err(|error| {
+        error!(old = %old_name, new = %new_name, %error, "rename_profile: no user directory");
+    })?;
     info!(path = %config_path.display(), old = %old_name, new = %new_name, "rename_profile: renaming profile");
     rename_profile_at(&config_path, provider_id, old_name, new_name, def)
 }
@@ -281,39 +280,28 @@ pub fn save_profile_at(
     if !profiles_supported(provider_id) {
         return Ok(());
     }
-    let mut root = match read_config_value(config_path) {
-        Some(value @ Value::Object(_)) => value,
-        // Missing, malformed, or non-object JSON: start from an empty object.
-        // A pre-existing file that failed to parse is a data-loss risk (its
-        // contents get replaced), so surface it at warn level.
-        _ => {
-            if config_path.exists() {
-                warn!(
-                    path = %config_path.display(),
-                    "save_profile: existing config file is missing or malformed; starting from an empty object"
-                );
-            }
-            Value::Object(Map::new())
-        }
-    };
-    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
-    let Some(root_obj) = root.as_object_mut() else {
-        return Ok(());
-    };
-    let Some(providers) = ensure_object(root_obj, "providers") else {
-        return Ok(());
-    };
-    let Some(provider) = ensure_object(providers, &storage_id) else {
-        return Ok(());
-    };
-    let Some(profiles) = ensure_object(provider, "profiles") else {
-        return Ok(());
-    };
-    let Some(profile) = ensure_object(profiles, profile_name) else {
-        return Ok(());
-    };
-    merge_profile(profile, def);
-    let result = write_config_value(config_path, &root);
+    // BUG-461: a config that cannot be read is never replaced. BUG-640: one
+    // locked read-modify-write.
+    let result = update_config_file(config_path, |root| {
+        let storage_id = crate::provider_settings::provider_storage_id(root, provider_id);
+        let Some(root_obj) = root.as_object_mut() else {
+            return Ok(());
+        };
+        let Some(providers) = ensure_object(root_obj, "providers") else {
+            return Ok(());
+        };
+        let Some(provider) = ensure_object(providers, &storage_id) else {
+            return Ok(());
+        };
+        let Some(profiles) = ensure_object(provider, "profiles") else {
+            return Ok(());
+        };
+        let Some(profile) = ensure_object(profiles, profile_name) else {
+            return Ok(());
+        };
+        merge_profile(profile, def);
+        Ok::<_, std::io::Error>(())
+    });
     match &result {
         Ok(()) => {
             info!(path = %config_path.display(), profile = %profile_name, "save_profile: write succeeded");
@@ -332,22 +320,20 @@ pub fn delete_profile_at(
     provider_id: &str,
     profile_name: &str,
 ) -> std::io::Result<()> {
-    let Some(mut root) = read_config_value(config_path) else {
-        return Ok(());
-    };
-    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
-    let Some(profiles) = root
-        .get_mut("providers")
-        .and_then(|p| p.get_mut(&storage_id))
-        .and_then(|p| p.get_mut("profiles"))
-        .and_then(Value::as_object_mut)
-    else {
-        return Ok(());
-    };
-    if profiles.remove(profile_name).is_none() {
-        return Ok(());
-    }
-    write_config_value(config_path, &root)
+    // BUG-461: a config that cannot be read is an error, not "nothing to
+    // delete"; nothing removed leaves the file as it was.
+    update_config_file(config_path, |root| {
+        let storage_id = crate::provider_settings::provider_storage_id(root, provider_id);
+        if let Some(profiles) = root
+            .get_mut("providers")
+            .and_then(|p| p.get_mut(&storage_id))
+            .and_then(|p| p.get_mut("profiles"))
+            .and_then(Value::as_object_mut)
+        {
+            profiles.remove(profile_name);
+        }
+        Ok::<_, std::io::Error>(())
+    })
 }
 
 /// Path-injectable core of [`rename_profile`]. Renames `old_name` to `new_name`
@@ -373,39 +359,39 @@ pub fn rename_profile_at(
     if old_name == new_name {
         return save_profile_at(config_path, provider_id, new_name, def);
     }
-    let mut root = match read_config_value(config_path) {
-        Some(value @ Value::Object(_)) => value,
-        _ => Value::Object(Map::new()),
-    };
-    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
-    let Some(root_obj) = root.as_object_mut() else {
-        return Ok(());
-    };
-    let Some(providers) = ensure_object(root_obj, "providers") else {
-        return Ok(());
-    };
-    let Some(provider) = ensure_object(providers, &storage_id) else {
-        return Ok(());
-    };
-    let Some(profiles) = ensure_object(provider, "profiles") else {
-        return Ok(());
-    };
-    // Collision check: never silently overwrite a different existing profile.
-    if profiles.contains_key(new_name) {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::AlreadyExists,
-            format!("A profile named '{new_name}' already exists"),
-        ));
-    }
-    // MOVE the existing object (preserving customModels + unknown keys), or
-    // start fresh if the old profile is somehow absent.
-    let mut profile = match profiles.remove(old_name) {
-        Some(Value::Object(obj)) => obj,
-        _ => Map::new(),
-    };
-    merge_profile(&mut profile, def);
-    profiles.insert(new_name.to_string(), Value::Object(profile));
-    write_config_value(config_path, &root)
+    // BUG-461: a config that cannot be read is never replaced. BUG-640: one
+    // locked read-modify-write.
+    update_config_file(config_path, |root| {
+        let storage_id = crate::provider_settings::provider_storage_id(root, provider_id);
+        let Some(root_obj) = root.as_object_mut() else {
+            return Ok(());
+        };
+        let Some(providers) = ensure_object(root_obj, "providers") else {
+            return Ok(());
+        };
+        let Some(provider) = ensure_object(providers, &storage_id) else {
+            return Ok(());
+        };
+        let Some(profiles) = ensure_object(provider, "profiles") else {
+            return Ok(());
+        };
+        // Collision check: never silently overwrite a different existing profile.
+        if profiles.contains_key(new_name) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                format!("A profile named '{new_name}' already exists"),
+            ));
+        }
+        // MOVE the existing object (preserving customModels + unknown keys), or
+        // start fresh if the old profile is somehow absent.
+        let mut profile = match profiles.remove(old_name) {
+            Some(Value::Object(obj)) => obj,
+            _ => Map::new(),
+        };
+        merge_profile(&mut profile, def);
+        profiles.insert(new_name.to_string(), Value::Object(profile));
+        Ok(())
+    })
 }
 
 #[cfg(test)]

@@ -1,5 +1,7 @@
 @done
 @MODEL-004
+@providers
+@model-selection
 Feature: Custom Model Registration and Facade Override in Model Selector
   """
   Config layer: Extend ProfileConfig in src/utils/provider-config.ts with optional customModels: CustomModelDefinition[]. Add CustomModelDefinition interface with fields: id (string, required), displayName (string, optional), facade ('openai'|'codex'|'claude'|'gemini'|'zai', optional), contextWindow (number, optional), maxOutputTokens (number, optional), reasoning (boolean, optional), hasVision (boolean, optional). Add loadCustomModels() and saveCustomModel() functions.

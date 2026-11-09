@@ -28,7 +28,10 @@ impl StreamOutput for RecordingOutput {
 #[serial_test::serial]
 async fn cli_reasoning_presentation_respects_completed_delivery_selection() -> TestResult {
     let temporary = tempfile::tempdir()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(temporary.path().to_path_buf())?;
+    // BUG-314: drop stores bound to a previous test's data directory.
+    codelet_core::persistence::reset_stores_for_tests();
     for enabled in [false, true] {
         // @step Given a live Codex agent with incremental and completed-only reasoning
         let body = [
@@ -46,9 +49,15 @@ async fn cli_reasoning_presentation_respects_completed_delivery_selection() -> T
         let manager = ProviderManager::for_testing(ProviderType::Codex, Some(272_000), Some(4096));
         let mut session = Session::from_provider_manager(manager);
         let output = RecordingOutput::default();
+        // BUG-314: request settlement persists to the session's manifest.
+        let persisted = codelet_core::persistence::create_session_with_provider(
+            "codex reasoning ui",
+            temporary.path(),
+            "codex",
+        )?;
         // @step When the CLI stream loop runs with completed delivery enabled or disabled
-        tokio::time::timeout(
-            std::time::Duration::from_secs(5),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), 'H...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 "Hello",
@@ -57,7 +66,7 @@ async fn cli_reasoning_presentation_respects_completed_delivery_selection() -> T
                 Arc::new(AtomicBool::new(false)),
                 Arc::new(Notify::new()),
                 &output,
-                uuid::Uuid::new_v4(),
+                persisted.id,
             ),
         )
         .await??;

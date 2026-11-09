@@ -142,150 +142,9 @@
                 191,
                 192,
                 193
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "62-112",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/codex/codex_oauth.rs",
-              "lines": [
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193
-              ]
+              ],
+              "firstLine": ".map_err(|e| anyhow!(\"Failed to parse JWT claims: {e}\"))?;",
+              "lastLine": "pub access_token: String,"
             }
           ]
         }
@@ -296,7 +155,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "117-148",
+          "lines": "119-160",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
@@ -307,24 +166,9 @@
                 25,
                 26,
                 27
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "117-148",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/codex/codex_oauth.rs",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27
-              ]
+              ],
+              "firstLine": "// Re-export shared OAuth crypto primitives from the provider-agnostic module.",
+              "lastLine": "pub const CODEX_CLIENT_ID: &str = \"app_EMoamEEZ73f0CkXaXp7hrann\";"
             }
           ]
         }
@@ -378,7 +222,9 @@
                 272,
                 273,
                 274
-              ]
+              ],
+              "firstLine": "refresh_access_token_at(CODEX_ISSUER, refresh_token).await",
+              "lastLine": "/// of the real CODEX_ISSUER."
             }
           ]
         }
@@ -394,62 +240,81 @@
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
                 91,
                 92,
                 93,
                 94,
                 95,
                 96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145
-              ]
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "/// Parse JWT claims from a token string (no signature verification)",
+              "lastLine": "}"
             }
           ]
         }
@@ -460,21 +325,27 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "233-250",
+          "lines": "230-246",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// Extract account ID from JWT claims",
+              "lastLine": "}"
             }
           ]
         }
@@ -485,23 +356,32 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "255-270",
+          "lines": "252-266",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "/// Extract account ID from JWT claims",
+              "lastLine": "}"
             }
           ]
         }
@@ -512,7 +392,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "275-299",
+          "lines": "272-297",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
@@ -532,7 +412,9 @@
                 208,
                 209,
                 210
-              ]
+              ],
+              "firstLine": "pub expires_in: Option<u64>,",
+              "lastLine": ""
             }
           ]
         }
@@ -543,7 +425,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "304-319",
+          "lines": "303-322",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
@@ -570,7 +452,9 @@
                 295,
                 296,
                 297
-              ]
+              ],
+              "firstLine": "/// Returns a `TokenRefreshResponse` containing id_token, access_token, and refresh_token.",
+              "lastLine": ")"
             }
           ]
         }
@@ -581,7 +465,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "324-350",
+          "lines": "328-354",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/codex_oauth.rs",
@@ -609,7 +493,9 @@
                 233,
                 234,
                 235
-              ]
+              ],
+              "firstLine": ".header(\"Content-Type\", \"application/x-www-form-urlencoded\")",
+              "lastLine": "/// - refresh_token: the provided refresh token"
             }
           ]
         }
@@ -620,15 +506,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/codex_oauth_test.rs",
-          "lines": "355-391",
+          "lines": "360-411",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/mod.rs",
               "lines": [
-                76,
-                77,
-                78,
-                79,
                 80,
                 81,
                 82,
@@ -661,8 +543,14 @@
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "firstLine": "rig_client: CodexResponsesClient,",
+              "lastLine": "fn max_context_window(&self) -> Option<usize> {"
             }
           ]
         }
@@ -716,7 +604,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "if parts.len() != 3 {",
+              "lastLine": "}"
             }
           ]
         }
@@ -734,6 +624,6 @@
       "rust/providers/src/codex/codex_oauth.rs",
       "rust/providers/src/codex/mod.rs"
     ],
-    "totalLinesCovered": 937
+    "totalLinesCovered": 772
   }
 }

@@ -31,25 +31,25 @@ Feature: Replace generic create-work-unit references with type-specific commands
     So that I understand which command to use for creating stories, bugs, or tasks
 
   Scenario: Replace create-work-unit with create-story for feature examples
-    Given I have documentation with "fspec create-work-unit AUTH \"User login feature\""
+    Given I have documentation that runs the removed command "create-work-unit AUTH \"User login feature\""
     When I analyze the context and determine it refers to a new feature
     Then I should replace it with "fspec create-story AUTH \"User login feature\""
     And the documentation intent should remain accurate
 
   Scenario: Replace create-work-unit with create-task for operational examples
-    Given I have documentation with "fspec create-work-unit" for "Add ESLint"
+    Given I have documentation that runs the removed command "create-work-unit" for "Add ESLint"
     When I analyze the context and determine it refers to operational setup
     Then I should replace it with "fspec create-task"
     And the documentation intent should remain accurate
 
   Scenario: Replace create-work-unit with create-bug for bug fix examples
-    Given I have documentation with "fspec create-work-unit" for "Fix validation bug"
+    Given I have documentation that runs the removed command "create-work-unit" for "Fix validation bug"
     When I analyze the context and determine it refers to fixing a bug
     Then I should replace it with "fspec create-bug"
     And the documentation intent should remain accurate
 
   Scenario: Update help text to use create-story for dashboard example
-    Given I have help text showing "fspec create-work-unit DASH \"Dashboard\""
+    Given I have help text showing the removed command "create-work-unit DASH \"Dashboard\""
     When I analyze the context and determine it refers to a new feature
     Then I should replace it with "fspec create-story DASH \"Dashboard\""
     And the help text should accurately guide users

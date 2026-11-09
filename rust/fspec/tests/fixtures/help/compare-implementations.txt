@@ -17,13 +17,12 @@ OPTIONS
     Output results in JSON format
 
 COMMON PATTERNS
-  • undefined
-    Example: undefined
-    undefined
+  • Find inconsistencies in CLI commands
+    Example: fspec compare-implementations --tag=@cli --show-coverage
 
-  • undefined
-    Example: undefined
-    undefined
+  • Review authentication approaches
+    Example: fspec compare-implementations --tag=@authentication
+fspec compare-implementations --tag=@security
 
 
 EXAMPLES
@@ -64,7 +63,7 @@ CLI-002: Validate Command
 RELATED COMMANDS
   fspec search-implementation
   fspec show-test-patterns
-  fspec search-scenarios
+  fspec context
 
 NOTES
   • Automatically detects naming convention differences (camelCase, snake_case, kebab-case)

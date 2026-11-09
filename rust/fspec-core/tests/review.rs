@@ -440,3 +440,65 @@ fn reviewing_a_non_backlog_unit_with_no_example_mapping_reports_an_acdd_failure(
         "got:\n{report}"
     );
 }
+
+// ---------- scenario moved from review-command-with-done-status-integration.feature (COV-071) ----------
+
+#[test]
+fn reviewing_an_in_progress_work_unit_shows_its_current_state() {
+    // Scenario: Reviewing an in-progress work unit shows its current state
+
+    // @step Given a work unit in testing status with a linked feature file whose coverage is 50 percent
+    let tmp = TempDir::new().expect("tempdir");
+    let mut doc = work_units_doc(json!({
+        "id": "AUTH-001", "title": "Login", "type": "story", "status": "testing",
+        "rules": [ { "id": 0, "text": "a rule", "deleted": false } ],
+        "stateHistory": [ { "state": "testing", "timestamp": "2026-06-01T00:00:00.000Z" } ],
+        "createdAt": "2026-06-01T00:00:00.000Z", "updatedAt": "2026-06-01T00:00:00.000Z"
+    }));
+    doc["states"]["validating"] = json!([]);
+    doc["states"]["testing"] = json!(["AUTH-001"]);
+    write_work_units(tmp.path(), doc);
+    write_feature(
+        tmp.path(),
+        "user-login",
+        "@AUTH-001\nFeature: User Login\n\n  Scenario: Covered\n    Given a\n    When b\n    Then c\n\n  Scenario: Uncovered Scenario\n    Given a\n    When b\n    Then c\n",
+    );
+    write_file(
+        tmp.path(),
+        "tests/login.test.ts",
+        "const x: string = 'ok';\n",
+    );
+    write_coverage(
+        tmp.path(),
+        "user-login",
+        json!({
+            "stats": { "totalScenarios": 2, "coveredScenarios": 1, "coveragePercent": 50 },
+            "scenarios": [
+                { "name": "Covered", "testMappings": [ { "file": "tests/login.test.ts", "lines": "1-1" } ] },
+                { "name": "Uncovered Scenario", "testMappings": [] }
+            ]
+        }),
+    );
+
+    // @step When I dispatch review for that work unit id
+    let result = dispatch_command(req(tmp.path(), "AUTH-001"));
+    assert!(result.success, "expected success=true; got {result:?}");
+    let report = &result.data;
+
+    // @step Then the report Summary section contains "**Current State:** testing"
+    let summary = report.split("## Summary").nth(1).unwrap_or_default();
+    assert!(
+        summary.contains("**Current State:** testing"),
+        "got:\n{report}"
+    );
+
+    // @step And the report Coverage Analysis section lists the uncovered scenario name
+    assert!(report.contains("Uncovered Scenario"), "got:\n{report}");
+
+    // @step And the report Priority Actions include "Complete test coverage for all scenarios" and "Continue testing phase"
+    assert!(
+        summary.contains("Complete test coverage for all scenarios"),
+        "got:\n{report}"
+    );
+    assert!(summary.contains("Continue testing phase"), "got:\n{report}");
+}

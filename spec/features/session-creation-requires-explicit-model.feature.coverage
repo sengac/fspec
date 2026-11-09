@@ -1,36 +1,22 @@
 {
   "scenarios": [
     {
-      "name": "create_session declines when no default model is set",
+      "name": "create_session fails when no default model is set",
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
-          "lines": "51-74",
+          "lines": "63-96",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_creation.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                13,
+                14,
+                15,
+                16
+              ],
+              "firstLine": "// BUG-410: a missing default model is an error, never an empty id.",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -41,32 +27,53 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
-          "lines": "77-105",
+          "lines": "101-131",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_creation.rs",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101
-              ]
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "pub(crate) fn create_session_checked(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                18,
+                19,
+                20
+              ],
+              "firstLine": "fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -77,43 +84,46 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov101_no_selection_fallbacks.rs",
-          "lines": "108-127",
+          "lines": "136-166",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
               "lines": [
-                815,
-                816,
-                817,
-                818,
-                819,
-                820,
-                821,
-                822,
-                823,
-                824,
-                825,
-                826,
-                827,
-                828,
-                829,
-                830,
-                831,
-                832,
-                833,
-                834,
-                835,
-                836,
-                837,
-                838,
-                839,
-                840,
-                841,
-                842,
-                843,
-                844,
-                845
-              ]
+                158,
+                159,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ],
+              "firstLine": "// AMGR-020: every reply names the request id and is the user's.",
+              "lastLine": "}"
             }
           ]
         }
@@ -128,8 +138,10 @@
       "rust/sessions/tests/prov101_no_selection_fallbacks.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_creation.rs",
+      "rust/sessions/src/handle_impl/handle_impl_1.rs",
+      "rust/sessions/src/handle_impl/handle_impl_3.rs"
     ],
-    "totalLinesCovered": 144
+    "totalLinesCovered": 164
   }
 }

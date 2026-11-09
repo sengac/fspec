@@ -137,8 +137,8 @@ impl Case {
     where
         M::StreamingResponse: WasmCompatSend + GetTokenUsage,
     {
-        tokio::time::timeout(
-            std::time::Duration::from_secs(15),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( agent, 'Complete the synthetic local ta...",
             run_agent_stream(
                 agent,
                 "Complete the synthetic local task",

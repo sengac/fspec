@@ -1,0 +1,38 @@
+{
+  "format_version": 2,
+  "db_version": 1,
+  "last_tx_id": "manifest-1",
+  "committed_at": "1794010932",
+  "schema_ir_hash": "81103e06d2926802",
+  "next_node_id": 2,
+  "next_edge_id": 1,
+  "next_type_id": 3909149065,
+  "next_prop_id": 4197985326,
+  "schema_identity_version": 1,
+  "datasets": [
+    {
+      "type_id": 152072051,
+      "type_name": "File",
+      "kind": "node",
+      "dataset_path": "nodes/09106f73",
+      "dataset_version": 1,
+      "row_count": 1
+    },
+    {
+      "type_id": 3240738681,
+      "type_name": "Function",
+      "kind": "node",
+      "dataset_path": "nodes/c129bf79",
+      "dataset_version": 1,
+      "row_count": 1
+    },
+    {
+      "type_id": 2063679311,
+      "type_name": "Contains",
+      "kind": "edge",
+      "dataset_path": "edges/7b013f4f",
+      "dataset_version": 1,
+      "row_count": 1
+    }
+  ]
+}

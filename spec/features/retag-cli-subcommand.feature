@@ -1,5 +1,7 @@
 @wip
 @RPC-293
+@cli
+@tag-management
 Feature: fspec retag CLI subcommand
   """
   CLI bridge: rust/fspec/src/retag.rs — clap-derived struct mirroring the TS Commander.js

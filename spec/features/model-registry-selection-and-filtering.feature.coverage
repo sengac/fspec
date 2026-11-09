@@ -1,0 +1,671 @@
+{
+  "scenarios": [
+    {
+      "name": "Select model using full provider/model path",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "16-35",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "/// Parse a model string into (provider, model) tuple",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List models for a specific provider",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "37-57",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// List models for a specific provider",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown model shows error with fuzzy suggestions",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "59-81",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Get a model by provider and model ID",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject model without tool_call capability",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "83-103",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "/// Validate that a model can be used (has tool_call capability)",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter models by reasoning capability",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "105-132",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "/// Filter models by capability",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all available providers",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "134-152",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133
+              ],
+              "firstLine": "/// List all providers",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter models by vision capability",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "154-183",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ],
+              "firstLine": "/// Filter models by capability",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search models with fuzzy matching",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "185-212",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "/// Search for models by name or ID",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show verbose model details",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "214-234",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Get a model by provider and model ID",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A prefix of a catalog model id is not found",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "236-247",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Get a model by provider and model ID",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The registry and model selection sources stay within the file size limit",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/model_registry_selection_test.rs",
+          "lines": "249-274",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/models/registry.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278
+              ],
+              "firstLine": "//! ModelRegistry - Lookup, filtering, and validation for models",
+              "lastLine": "mod tests;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/model_registry_selection_test.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/models/registry.rs"
+    ],
+    "totalLinesCovered": 706
+  }
+}

@@ -13,6 +13,9 @@ use tracing::debug;
 #[path = "selected_request.rs"]
 mod selected_request;
 
+#[path = "rig_agent_turn_params.rs"]
+mod turn_params;
+
 /// Default maximum depth for multi-turn tool execution
 /// Set to usize::MAX - 1 to effectively disable the limit
 /// (rig checks: current_max_depth > self.max_depth + 1, so this prevents overflow)
@@ -38,6 +41,8 @@ where
     /// model; the persisted session history keeps the blocks regardless.
     preserve_thinking: bool,
     settlement_session: Option<uuid::Uuid>,
+    /// MODEL-015: the turn's request params (Claude per-message effort).
+    turn_params: Option<turn_params::TurnParams>,
 }
 
 impl<M> RigAgent<M>
@@ -56,6 +61,7 @@ where
             max_depth,
             preserve_thinking: true,
             settlement_session: None,
+            turn_params: None,
         }
     }
 
@@ -179,7 +185,7 @@ where
         // strip thinking blocks when the flag is disabled.
         let history_for_rig = self.outgoing_history(history);
 
-        self.agent
+        self.agent_for(history)
             .stream_prompt(prompt)
             .with_history(history_for_rig)
             .multi_turn(self.max_depth)
@@ -227,7 +233,7 @@ where
         let observer = hook.request_usage_observer();
         let settlement = hook.clone();
         let stream = self
-            .agent
+            .agent_for(history)
             .stream_prompt(prompt)
             .with_history(history_for_rig)
             .with_hook(hook)

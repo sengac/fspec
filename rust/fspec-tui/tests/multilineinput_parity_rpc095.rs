@@ -10,8 +10,6 @@
 //! Scenarios mapped 1:1 to feature file. Tests must FAIL before
 //! implementation lands (red phase).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::input_transition::{
     render_input_transition, InputTransitionState,
 };
@@ -22,6 +20,7 @@ use codelet_fspec_tui::views::agent::spinner::{
     current_frame_glyph, paint_spinner_line, DOTS_FRAMES, DOTS_INTERVAL_MS,
 };
 use codelet_fspec_tui::views::agent::INPUT_PLACEHOLDER_HINT;
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -31,7 +30,7 @@ use ratatui::style::Modifier;
 // Scenario: Running session paints Thinking spinner on first frame
 // --------------------------------------------------------------------
 #[test]
-fn running_session_paints_thinking_spinner_first_frame() {
+fn running_session_paints_thinking_spinner_first_frame() -> TestResult {
     // @step Given I am viewing the AgentView for a session whose status has just become Running
     // @step And the spinner elapsed-time counter is zero
     let area = Rect::new(0, 0, 60, 1);
@@ -63,13 +62,14 @@ fn running_session_paints_thinking_spinner_first_frame() {
             );
         }
     }
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Running session advances spinner frame at 80ms cadence
 // --------------------------------------------------------------------
 #[test]
-fn spinner_advances_one_frame_per_80ms() {
+fn spinner_advances_one_frame_per_80ms() -> TestResult {
     // @step Given I am viewing the AgentView for a Running session
     // @step When 240 milliseconds have elapsed since the spinner started
     let glyph = current_frame_glyph(240);
@@ -81,13 +81,14 @@ fn spinner_advances_one_frame_per_80ms() {
 
     // @step And the spinner message remains "Thinking... (Esc to stop)"
     // (covered by the input_transition render path — see prior test.)
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Compacting session paints Compacting spinner on first frame
 // --------------------------------------------------------------------
 #[test]
-fn compacting_session_paints_compacting_spinner_first_frame() {
+fn compacting_session_paints_compacting_spinner_first_frame() -> TestResult {
     // @step Given I am viewing the AgentView for a session whose status has just become Compacting
     // @step And the spinner elapsed-time counter is zero
     let area = Rect::new(0, 0, 60, 1);
@@ -111,13 +112,14 @@ fn compacting_session_paints_compacting_spinner_first_frame() {
     // @step And the entire line is rendered with the DIM style modifier
     let cell = &buf[(area.x, 0)];
     assert!(cell.modifier.contains(Modifier::DIM));
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Compacting blocks printable character insertion
 // --------------------------------------------------------------------
 #[test]
-fn compacting_blocks_printable_insert() {
+fn compacting_blocks_printable_insert() -> TestResult {
     // @step Given I am viewing the AgentView for a Compacting session
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
@@ -134,13 +136,14 @@ fn compacting_blocks_printable_insert() {
     assert_eq!(input.value(), "hello");
     // @step And no submit action is dispatched
     assert!(matches!(outcome, InputEventOutcome::Continued));
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Compacting blocks Backspace
 // --------------------------------------------------------------------
 #[test]
-fn compacting_blocks_backspace() {
+fn compacting_blocks_backspace() -> TestResult {
     // @step Given I am viewing the AgentView for a Compacting session
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
@@ -155,13 +158,14 @@ fn compacting_blocks_backspace() {
 
     // @step Then the input buffer still contains exactly "hello"
     assert_eq!(input.value(), "hello");
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Compacting blocks Delete and forward-delete
 // --------------------------------------------------------------------
 #[test]
-fn compacting_blocks_delete() {
+fn compacting_blocks_delete() -> TestResult {
     // @step Given I am viewing the AgentView for a Compacting session
     // @step And the input buffer contains the text "hello"
     // @step And the cursor is at position 0
@@ -177,13 +181,14 @@ fn compacting_blocks_delete() {
 
     // @step Then the input buffer still contains exactly "hello"
     assert_eq!(input.value(), "hello");
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Compacting swallows Enter so input is not submitted
 // --------------------------------------------------------------------
 #[test]
-fn compacting_swallows_enter() {
+fn compacting_swallows_enter() -> TestResult {
     // @step Given I am viewing the AgentView for a Compacting session
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
@@ -200,13 +205,14 @@ fn compacting_swallows_enter() {
     assert!(!matches!(outcome, InputEventOutcome::Submitted(_)));
     // @step And the input buffer still contains exactly "hello"
     assert_eq!(input.value(), "hello");
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Cursor movement still works during Running
 // --------------------------------------------------------------------
 #[test]
-fn running_preserves_cursor_movement_and_spinner_animates() {
+fn running_preserves_cursor_movement_and_spinner_animates() -> TestResult {
     // @step Given I am viewing the AgentView for a Running session
     // @step And the input buffer contains the text "hello"
     // @step And the cursor is at position 0
@@ -232,17 +238,18 @@ fn running_preserves_cursor_movement_and_spinner_animates() {
     // @step And the spinner continues to animate
     //   (frame picker is pure — advancing elapsed_ms gives a new glyph.)
     assert_ne!(current_frame_glyph(0), current_frame_glyph(80));
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Scenario: Idle placeholder text is verbatim
 // --------------------------------------------------------------------
 #[test]
-fn idle_placeholder_text_verbatim() {
+fn idle_placeholder_text_verbatim() -> TestResult {
     // @step Given I am viewing the AgentView for an Idle session
     // @step And the input buffer is empty
     // @step When the AgentView renders the input row
-    // @step Then the input row shows the placeholder text "Type a message..."
+    // @step Then the input row shows the placeholder text "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
 
     // The placeholder constant's leading newline hint is now owned by
     // RPC-426, which switched the primary newline binding to 'Ctrl+J'
@@ -254,6 +261,7 @@ fn idle_placeholder_text_verbatim() {
         INPUT_PLACEHOLDER_HINT,
         "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
     );
+    Ok(())
 }
 
 // --------------------------------------------------------------------
@@ -270,7 +278,7 @@ fn idle_placeholder_text_verbatim() {
 // Scenario: New modules stay under the 300-LoC source-shape ceiling
 // --------------------------------------------------------------------
 #[test]
-fn new_modules_stay_under_300_loc() {
+fn new_modules_stay_under_300_loc() -> TestResult {
     // @step Given rust/fspec-tui/src/views/agent/spinner.rs exists
     let spinner_src = include_str!("../src/views/agent/spinner.rs");
 
@@ -290,21 +298,23 @@ fn new_modules_stay_under_300_loc() {
         transition_loc < 300,
         "input_transition.rs has {transition_loc} lines (>= 300)"
     );
+    Ok(())
 }
 
 // --------------------------------------------------------------------
 // Spinner unit: pure frame-picker is verbatim TS math
 // --------------------------------------------------------------------
 #[test]
-fn spinner_frames_match_typescript_dots_set() {
+fn spinner_frames_match_typescript_dots_set() -> TestResult {
     assert_eq!(
         DOTS_FRAMES,
         ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     );
+    Ok(())
 }
 
 #[test]
-fn spinner_painter_paints_into_target_area() {
+fn spinner_painter_paints_into_target_area() -> TestResult {
     let area = Rect::new(2, 5, 40, 1);
     let mut buf = Buffer::empty(Rect::new(0, 0, 60, 10));
     paint_spinner_line(area, &mut buf, 0, "Thinking", "(Esc to stop)");
@@ -313,4 +323,5 @@ fn spinner_painter_paints_into_target_area() {
     assert_eq!(buf[(2, 5)].symbol(), "⠋");
     // Cell BEFORE area should be untouched.
     assert_eq!(buf[(1, 5)].symbol(), " ");
+    Ok(())
 }

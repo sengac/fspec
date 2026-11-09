@@ -1,5 +1,7 @@
 @done
 @PROV-040
+@codelet
+@context-management
 Feature: Truncated tool call recovery — auto-chunk large writes and retry on max_tokens
   """
   Recovery logic goes in stream_loop.rs at the point where truncated tool call errors are received — after the PROV-039 enriched error is emitted from the provider layer but before it's sent back to the model.

@@ -4,8 +4,8 @@
       "name": "Build request body from messages",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "48-81",
+          "file": "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+          "lines": "9-42",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/request_bridge.rs",
@@ -53,7 +53,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub fn messages_to_rhai(messages: &[Message]) -> Result<Dynamic, CustomProviderError> {",
+              "lastLine": "let thinking_dyn = match thinking_config {"
             }
           ]
         }
@@ -63,22 +65,24 @@
       "name": "Build request URL from config",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "86-114",
+          "file": "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+          "lines": "47-75",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
-                138,
-                139,
                 140,
                 141,
                 142,
                 143,
                 144,
                 145,
-                146
-              ]
+                146,
+                147,
+                148
+              ],
+              "firstLine": "engine,",
+              "lastLine": "build_config_dynamic(&self.config, &self.model_id, &self.model_alias)"
             }
           ]
         }
@@ -88,42 +92,48 @@
       "name": "Build HTTP headers including auth",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "119-154",
+          "file": "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+          "lines": "80-115",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/http.rs",
               "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": "/// Convert a Rhai `Dynamic` (expected to be a `Map` of string→string)",
+              "lastLine": "}"
             }
           ]
         }
@@ -133,24 +143,21 @@
       "name": "Parse plain text response",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "159-205",
+          "file": "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+          "lines": "120-166",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/response_bridge.rs",
               "lines": [
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
                 91,
                 92,
                 93,
@@ -173,8 +180,74 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "/// Map a Rhai stop-reason string to our `StopReason` enum.",
+              "lastLine": "}"
             }
           ]
         }
@@ -184,8 +257,8 @@
       "name": "Parse tool call response",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "210-281",
+          "file": "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+          "lines": "171-242",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/response_bridge.rs",
@@ -228,7 +301,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "use super::stream::StreamUsage;",
+              "lastLine": ".get(\"name\")"
             }
           ]
         }
@@ -238,8 +313,8 @@
       "name": "Map HTTP 401 to auth error",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "286-337",
+          "file": "rust/providers/tests/custom_http_lifecycle/errors_and_end_to_end.rs",
+          "lines": "8-56",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/error_mapping.rs",
@@ -306,7 +381,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "///    retry_after_secs: 30 }  // optional",
+              "lastLine": "}"
             }
           ]
         }
@@ -316,8 +393,8 @@
       "name": "Map HTTP 429 to rate limit error",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "342-385",
+          "file": "rust/providers/tests/custom_http_lifecycle/errors_and_end_to_end.rs",
+          "lines": "61-104",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/error_mapping.rs",
@@ -384,7 +461,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "///    retry_after_secs: 30 }  // optional",
+              "lastLine": "}"
             }
           ]
         }
@@ -394,12 +473,18 @@
       "name": "Surface Rhai runtime errors as provider errors",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "390-434",
+          "file": "rust/providers/tests/custom_http_lifecycle/errors_and_end_to_end.rs",
+          "lines": "109-151",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/error_mapping.rs",
               "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
                 16,
                 17,
                 18,
@@ -462,14 +547,10 @@
                 75,
                 76,
                 77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84
-              ]
+                78
+              ],
+              "firstLine": "/// Convert a Rhai [`EvalAltResult`] (raised by `engine.call_fn`) into a",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,12 +560,13 @@
       "name": "Complete end-to-end request against mock server",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "439-499",
+          "file": "rust/providers/tests/custom_http_lifecycle/errors_and_end_to_end.rs",
+          "lines": "156-216",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
+                224,
                 225,
                 226,
                 227,
@@ -509,9 +591,10 @@
                 246,
                 247,
                 248,
-                249,
-                250
-              ]
+                249
+              ],
+              "firstLine": "&self.model_id",
+              "lastLine": "Ok(extract_text_from_content(&response.content))"
             }
           ]
         }
@@ -521,19 +604,18 @@
       "name": "Provider name reflects config",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "504-519",
+          "file": "rust/providers/tests/custom_http_lifecycle/provider_and_bridges.rs",
+          "lines": "8-23",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
               "lines": [
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
-              ]
+                219,
+                220,
+                221
+              ],
+              "firstLine": "fn name(&self) -> &str {",
+              "lastLine": "}"
             }
           ]
         }
@@ -543,8 +625,8 @@
       "name": "Provider context window reflects selected model",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "524-571",
+          "file": "rust/providers/tests/custom_http_lifecycle/provider_and_bridges.rs",
+          "lines": "28-75",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/provider.rs",
@@ -577,11 +659,10 @@
                 80,
                 81,
                 82,
-                83,
-                84,
-                85,
-                86
-              ]
+                83
+              ],
+              "firstLine": "/// PROV-170: `None` when none of them declares one.",
+              "lastLine": "#[path = \"request_auth.rs\"]"
             }
           ]
         }
@@ -591,8 +672,8 @@
       "name": "Request bridge preserves multi-turn message structure",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "576-619",
+          "file": "rust/providers/tests/custom_http_lifecycle/provider_and_bridges.rs",
+          "lines": "80-123",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/request_bridge.rs",
@@ -605,7 +686,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub fn messages_to_rhai(messages: &[Message]) -> Result<Dynamic, CustomProviderError> {",
+              "lastLine": "/// of `Map`s)."
             }
           ]
         }
@@ -615,8 +698,8 @@
       "name": "Response bridge preserves structured tool call input",
       "testMappings": [
         {
-          "file": "rust/providers/tests/custom_http_lifecycle_tests.rs",
-          "lines": "624-666",
+          "file": "rust/providers/tests/custom_http_lifecycle/provider_and_bridges.rs",
+          "lines": "128-170",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/response_bridge.rs",
@@ -659,7 +742,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "use super::stream::StreamUsage;",
+              "lastLine": ".get(\"name\")"
             }
           ]
         }
@@ -671,7 +756,9 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/tests/custom_http_lifecycle_tests.rs"
+      "rust/providers/tests/custom_http_lifecycle/request_building.rs",
+      "rust/providers/tests/custom_http_lifecycle/errors_and_end_to_end.rs",
+      "rust/providers/tests/custom_http_lifecycle/provider_and_bridges.rs"
     ],
     "implFiles": [
       "rust/providers/src/custom/request_bridge.rs",
@@ -680,6 +767,6 @@
       "rust/providers/src/custom/response_bridge.rs",
       "rust/providers/src/custom/error_mapping.rs"
     ],
-    "totalLinesCovered": 1028
+    "totalLinesCovered": 1082
   }
 }

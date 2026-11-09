@@ -20,8 +20,7 @@
 //! `set_clipboard_writer_for_test` / `details_selection` / the strip
 //! selection wiring) — the correct red state for ACDD.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEventKind};
 
 mod common;
@@ -41,7 +40,7 @@ fn key(code: KeyCode) -> Event {
 
 /// Drain the BoardView's action receiver, dispatching each queued Action
 /// back through the store so selection-clearing reducers run.
-fn drain(rx: &mut tokio::sync::mpsc::UnboundedReceiver<Action>) -> Vec<Action> {
+fn drain(rx: &mut helpers::BoardRx) -> Vec<Action> {
     let mut out = Vec::new();
     while let Ok(action) = rx.try_recv() {
         out.push(action);
@@ -54,14 +53,14 @@ fn drain(rx: &mut tokio::sync::mpsc::UnboundedReceiver<Action>) -> Vec<Action> {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_across_the_id_and_title_row_copies_its_visible_text() {
+fn dragging_across_the_id_and_title_row_copies_its_visible_text() -> TestResult {
     // @step Given a board with a work unit selected and its details strip visible
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     // The id:title row is the first strip row (y == r.y). Read its exact
     // border-free on-screen text from the rendered buffer.
-    let buf = render(&view, &store, 120, 30);
+    let buf = render(&view, &store, 120, 30)?;
     let expected = buffer_row_text(&buf, r.x, r.y, r.width);
     assert!(
         expected.starts_with("RPC-014: Board grid"),
@@ -95,7 +94,7 @@ fn dragging_across_the_id_and_title_row_copies_its_visible_text() {
 
     // @step Then the visible id and title text is written to the clipboard
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52(&expected),
         "dragging the id:title row must copy its exact visible text"
     );
@@ -105,6 +104,7 @@ fn dragging_across_the_id_and_title_row_copies_its_visible_text() {
         strip_selection_active(&view),
         "the strip selection must persist after commit (rule [5])"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -114,16 +114,16 @@ fn dragging_across_the_id_and_title_row_copies_its_visible_text() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn dragging_across_the_wrapped_description_rows_copies_them_as_shown() {
+fn dragging_across_the_wrapped_description_rows_copies_them_as_shown() -> TestResult {
     // @step Given a board with a work unit selected and its details strip visible
     let long = "The board grid renders seven canonical kanban columns with \
         box-drawing separators and a five row details strip plus focused \
         column highlighting and per column viewport scrolling everywhere";
     let units = vec![wu("RPC-014", "Grid", "backlog", Some(long))];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     // Description occupies strip rows 1 and 2 (y == r.y+1, r.y+2).
-    let buf = render(&view, &store, 120, 30);
+    let buf = render(&view, &store, 120, 30)?;
     let line1 = buffer_row_text(&buf, r.x, r.y + 1, r.width);
     let line2 = buffer_row_text(&buf, r.x, r.y + 2, r.width);
     let expected = format!("{line1}\n{line2}");
@@ -184,10 +184,11 @@ fn dragging_across_the_wrapped_description_rows_copies_them_as_shown() {
 
     // @step Then the two visible description lines are written to the clipboard exactly as shown
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         osc52(&expected),
         "dragging the two description rows must copy both visible lines"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -196,16 +197,16 @@ fn dragging_across_the_wrapped_description_rows_copies_them_as_shown() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn copying_a_full_width_description_line_excludes_the_side_border_glyph() {
+fn copying_a_full_width_description_line_excludes_the_side_border_glyph() -> TestResult {
     // @step Given a board with a work unit whose description fills the strip width
     // A long single-word-free description that fills the wrap width (116
     // cols at width 120) so line 1 reaches the strip content edge.
     let filler = "wide ".repeat(60);
     let units = vec![wu("RPC-014", "Grid", "backlog", Some(filler.trim()))];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     // The full-width description line is strip row 1 (y == r.y+1).
-    let buf = render(&view, &store, 120, 30);
+    let buf = render(&view, &store, 120, 30)?;
     let expected = buffer_row_text(&buf, r.x, r.y + 1, r.width);
     assert!(
         !expected.is_empty(),
@@ -240,7 +241,7 @@ fn copying_a_full_width_description_line_excludes_the_side_border_glyph() {
     let _ = drain(&mut rx);
 
     // @step Then the clipboard text excludes the side border glyph
-    let bytes = clip_bytes(&clip);
+    let bytes = clip_bytes(&clip)?;
     assert_eq!(
         bytes,
         osc52(&expected),
@@ -250,6 +251,7 @@ fn copying_a_full_width_description_line_excludes_the_side_border_glyph() {
         !bytes.windows(3).any(|w| w == [0xe2, 0x94, 0x82]),
         "the side border glyph │ must NOT appear in the copied text"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -258,13 +260,13 @@ fn copying_a_full_width_description_line_excludes_the_side_border_glyph() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn changing_the_selected_work_unit_clears_an_active_strip_selection() {
+fn changing_the_selected_work_unit_clears_an_active_strip_selection() -> TestResult {
     // @step Given a board with an active details-strip selection
     let units = vec![
         wu("RPC-014", "Board grid", "backlog", None),
         wu("RPC-015", "Header", "backlog", None),
     ];
-    let (view, mut store, mut rx, _clip) = board_with_clipboard(units, 120, 30);
+    let (view, mut store, mut rx, _clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     // Open a live (committed) strip selection via Down + Drag + Up.
     let _ = view.handle_event(
@@ -294,7 +296,7 @@ fn changing_the_selected_work_unit_clears_an_active_strip_selection() {
     store.set_selected_index_for("backlog", 1);
     let _ = view.handle_event(&key(KeyCode::Down), &store);
     let _ = drain(&mut rx);
-    let _ = render(&view, &store, 120, 30);
+    let _ = render(&view, &store, 120, 30)?;
 
     // @step Then the strip selection is cleared
     assert!(
@@ -315,6 +317,7 @@ fn changing_the_selected_work_unit_clears_an_active_strip_selection() {
             .any(|a| matches!(a, Action::SetFocusedColumn(_))),
         "the board must keep dispatching normally, got {after:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -322,10 +325,10 @@ fn changing_the_selected_work_unit_clears_an_active_strip_selection() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn esc_clears_an_active_strip_selection_without_copying() {
+fn esc_clears_an_active_strip_selection_without_copying() -> TestResult {
     // @step Given a board with an active details-strip selection
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
     let _ = view.handle_event(
         &mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
@@ -347,7 +350,7 @@ fn esc_clears_an_active_strip_selection_without_copying() {
         "precondition: strip selection is active"
     );
     // Snapshot the clipboard bytes BEFORE the Esc press.
-    let before = clip_bytes(&clip);
+    let before = clip_bytes(&clip)?;
 
     // @step When I press Esc
     let _ = view.handle_event(&key(KeyCode::Esc), &store);
@@ -361,10 +364,11 @@ fn esc_clears_an_active_strip_selection_without_copying() {
 
     // @step And nothing is written to the clipboard by the Esc press
     assert_eq!(
-        clip_bytes(&clip),
+        clip_bytes(&clip)?,
         before,
         "the Esc press must not copy anything new"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -372,10 +376,10 @@ fn esc_clears_an_active_strip_selection_without_copying() {
 // ─────────────────────────────────────────────────────────────────────
 
 #[test]
-fn a_quick_click_in_the_details_strip_does_not_select_or_copy() {
+fn a_quick_click_in_the_details_strip_does_not_select_or_copy() -> TestResult {
     // @step Given a board with a work unit selected and its details strip visible
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
-    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
+    let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30)?;
     let r = details_rect(120, 30);
 
     // @step When I quickly click inside the details strip
@@ -397,7 +401,8 @@ fn a_quick_click_in_the_details_strip_does_not_select_or_copy() {
         "a quick click must not create a strip selection"
     );
     assert!(
-        clip_bytes(&clip).is_empty(),
+        clip_bytes(&clip)?.is_empty(),
         "a quick click must not write to the clipboard"
     );
+    Ok(())
 }

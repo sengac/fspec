@@ -8,13 +8,11 @@
 //! and asserts that `backend.move_work_unit_up/_down` was invoked with
 //! the SELECTED work-unit id (not the position).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::WorkUnitInfo;
+use codelet_rpc_types::{WorkUnitInfo, WorkspaceEntry};
 
 mod common;
 
@@ -34,27 +32,35 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
     }
 }
 
-/// Wait until either the mock backend records `expected` calls or the
-/// timeout elapses. The fire-and-forget tokio task App::dispatch spawns
-/// races the test thread, so we poll instead of asserting immediately.
-async fn await_call_count(actual: impl Fn() -> usize, expected: usize, timeout: Duration) {
-    let deadline = std::time::Instant::now() + timeout;
-    while std::time::Instant::now() < deadline {
-        if actual() >= expected {
-            return;
-        }
-        tokio::time::sleep(Duration::from_millis(5)).await;
-    }
-    assert_eq!(actual(), expected, "timed out waiting for {expected} calls");
+/// RPC-450: reorders name the board's workspace, so the board must know it.
+fn show_start_workspace(app: &mut App) {
+    app.board_store_mut().set_workspaces(vec![WorkspaceEntry {
+        path: "/work/start".into(),
+        name: "start".into(),
+        start: true,
+    }]);
+}
+
+/// Wait until the mock backend records `expected` calls. The
+/// fire-and-forget tokio task App::dispatch spawns races the test thread,
+/// so we poll (between yields, under the TEST-042 deadlock guard) instead
+/// of asserting immediately.
+async fn await_call_count(actual: impl Fn() -> usize, expected: usize) -> TestResult {
+    codelet_test_helpers::wait_until("the expected backend calls", || {
+        std::future::ready(actual() >= expected)
+    })
+    .await?;
+    Ok(())
 }
 
 /// Scenario: Action::ReorderUp dispatches backend.move_work_unit_up against the selected work unit
 #[tokio::test]
-async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() {
+async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() -> TestResult {
     // @step Given an App constructed against a mock backend whose BoardStore has "B-002" selected in the backlog column
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
+    show_start_workspace(&mut app);
     let units = vec![
         wu("A-001", "backlog"),
         wu("B-002", "backlog"),
@@ -68,7 +74,7 @@ async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() {
     app.dispatch(Action::ReorderUp);
 
     // Wait for the fire-and-forget tokio task.
-    await_call_count(|| mock.move_work_unit_up_calls(), 1, Duration::from_secs(1)).await;
+    await_call_count(|| mock.move_work_unit_up_calls(), 1).await?;
 
     // @step Then the mock backend records exactly one move_work_unit_up call with id "B-002"
     assert_eq!(mock.move_work_unit_up_calls(), 1);
@@ -76,15 +82,17 @@ async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() {
 
     // @step And the mock backend records zero move_work_unit_down calls
     assert_eq!(mock.move_work_unit_down_calls(), 0);
+    Ok(())
 }
 
 /// Scenario: Action::ReorderDown dispatches backend.move_work_unit_down against the selected work unit
 #[tokio::test]
-async fn action_reorder_down_dispatches_move_work_unit_down_for_selected_id() {
+async fn action_reorder_down_dispatches_move_work_unit_down_for_selected_id() -> TestResult {
     // @step Given an App constructed against a mock backend whose BoardStore has "A-001" selected in the backlog column
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
+    show_start_workspace(&mut app);
     let units = vec![
         wu("A-001", "backlog"),
         wu("B-002", "backlog"),
@@ -97,12 +105,7 @@ async fn action_reorder_down_dispatches_move_work_unit_down_for_selected_id() {
     // @step When the App dispatches Action::ReorderDown
     app.dispatch(Action::ReorderDown);
 
-    await_call_count(
-        || mock.move_work_unit_down_calls(),
-        1,
-        Duration::from_secs(1),
-    )
-    .await;
+    await_call_count(|| mock.move_work_unit_down_calls(), 1).await?;
 
     // @step Then the mock backend records exactly one move_work_unit_down call with id "A-001"
     assert_eq!(mock.move_work_unit_down_calls(), 1);
@@ -113,11 +116,12 @@ async fn action_reorder_down_dispatches_move_work_unit_down_for_selected_id() {
 
     // @step And the mock backend records zero move_work_unit_up calls
     assert_eq!(mock.move_work_unit_up_calls(), 0);
+    Ok(())
 }
 
 /// Scenario: Action::ReorderUp is a no-op when the focused column is empty
 #[tokio::test]
-async fn action_reorder_up_is_a_noop_when_focused_column_is_empty() {
+async fn action_reorder_up_is_a_noop_when_focused_column_is_empty() -> TestResult {
     // @step Given an App constructed against a mock backend whose BoardStore's focused column is empty
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -129,20 +133,24 @@ async fn action_reorder_up_is_a_noop_when_focused_column_is_empty() {
     // @step When the App dispatches Action::ReorderUp
     app.dispatch(Action::ReorderUp);
 
-    // Brief settle window so any (incorrect) spawn would have a chance
-    // to record a call before we assert zero.
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    // TEST-042: let any (incorrect) spawned task run before asserting
+    // zero: on this current-thread runtime a yield runs every ready task
+    // (scheduler rounds, not a time window).
+    for _ in 0..8 {
+        tokio::task::yield_now().await;
+    }
 
     // @step Then the mock backend records zero move_work_unit_up calls
     assert_eq!(mock.move_work_unit_up_calls(), 0);
 
     // @step And the App does not panic
     // (reaching this line is the assertion)
+    Ok(())
 }
 
 /// Scenario: BoardStore::replace_work_units re-anchors per-column selection to the previously-selected work unit id
 #[test]
-fn replace_work_units_reanchors_selection_to_previously_selected_id() {
+fn replace_work_units_reanchors_selection_to_previously_selected_id() -> TestResult {
     use codelet_fspec_tui::BoardStore;
 
     // @step Given a BoardStore seeded with [A-001 backlog, B-002 backlog, C-003 backlog] and the backlog column has selected_index 2 (C-003)
@@ -175,4 +183,5 @@ fn replace_work_units_reanchors_selection_to_previously_selected_id() {
         store.selected_work_unit().map(|u| u.id.as_str()),
         Some("C-003")
     );
+    Ok(())
 }

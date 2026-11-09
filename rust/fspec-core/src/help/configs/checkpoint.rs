@@ -4,13 +4,9 @@
 //! Byte-for-byte parity with `node dist/index.js checkpoint --help` piped to
 //! non-TTY (captured fixture: `rust/fspec/tests/fixtures/help/checkpoint.txt`).
 //!
-//! Inherits the same three TS quirks documented on `list_checkpoints::CONFIG`:
-//!   1. `typical_workflow` is the JS Array's comma-joined `.toString()`; we
-//!      pre-join with `,` so the verbatim Rust formatter matches.
-//!   2. `related_commands` entries already include the literal `"fspec "`
-//!      prefix and the formatter prefixes them AGAIN → `fspec fspec …`.
-//!   3. `common_errors` TS items specify `solution:` but the formatter reads
-//!      `err.fix` (`undefined`) → literal `"undefined"`.
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 
 use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
@@ -52,15 +48,15 @@ const EXAMPLES: &[CommandExample] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit 'AUTH-001' does not exist",
-        fix: "undefined",
+        fix: "Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'",
     },
     CommonError {
         error: "Working directory is clean (no changes to checkpoint)",
-        fix: "undefined",
+        fix: "You can only create checkpoints when there are uncommitted changes. Make some changes first, then create the checkpoint.",
     },
     CommonError {
         error: "Not a git repository",
-        fix: "undefined",
+        fix: "Checkpoints require git. Initialize git with 'git init'",
     },
 ];
 
@@ -83,10 +79,10 @@ const PREREQUISITES: &[&str] = &[
 // TS quirk #2: each entry already includes the "fspec " prefix; the formatter
 // prefixes again, producing "fspec fspec …".
 const RELATED_COMMANDS: &[&str] = &[
-    "fspec restore-checkpoint - Restore a checkpoint",
-    "fspec list-checkpoints - List all checkpoints",
-    "fspec cleanup-checkpoints - Delete old checkpoints",
-    "fspec update-work-unit-status - Auto-creates checkpoints",
+    "restore-checkpoint - Restore a checkpoint",
+    "list-checkpoints - List all checkpoints",
+    "cleanup-checkpoints - Delete old checkpoints",
+    "update-work-unit-status - Auto-creates checkpoints",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
@@ -105,7 +101,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     common_patterns: &[],
     // TS quirk #1: comma-joined Array.toString()
     typical_workflow: Some(
-        "Working on implementation: Make changes to code,Create checkpoint: fspec checkpoint AUTH-001 baseline,Try approach A: Make experimental changes,Doesn't work: fspec restore-checkpoint AUTH-001 baseline,Try approach B: Make different changes,Works: Continue with approach B,Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5",
+        "Working on implementation: Make changes to code. Create checkpoint: fspec checkpoint AUTH-001 baseline. Try approach A: Make experimental changes. Doesn't work: fspec restore-checkpoint AUTH-001 baseline. Try approach B: Make different changes. Works: Continue with approach B. Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

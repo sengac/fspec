@@ -1,6 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/pre-compaction-snapshot-basis-unification.feature
-//! Feature: spec/features/completion-snapshot-delegation-guards.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
 //! Scenarios map directly to Gherkin scenarios.
@@ -22,7 +21,6 @@
 #[path = "support/cont011_delegation.rs"]
 mod delegation;
 
-use std::fs;
 use std::path::PathBuf;
 
 // ===========================================================================
@@ -36,7 +34,8 @@ fn read_workspace_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract a balanced-brace block beginning at `start_marker` inside `src`.
@@ -86,15 +85,16 @@ async fn create_background_session() -> (
     use uuid::Uuid;
 
     let data_dir = tempfile::tempdir().expect("data dir tempdir");
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(data_dir.path().to_path_buf())
         .expect("isolated snapshot data directory must be installed");
     codelet_core::persistence::reset_stores_for_tests();
 
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
 
     codelet_providers::stub_provider::register_stub_provider();
-    manager.set_default_model("stub/canned");
+    assert_eq!(manager.set_default_model("stub/canned"), Ok(()));
 
     let tmp = tempfile::tempdir().expect("tempdir");
     let project = tmp
@@ -224,10 +224,10 @@ async fn auto_and_manual_snapshots_agree_on_the_same_basis() {
         agent_loop_arm.contains("snapshot_pre_compaction_tokens()"),
         "agent-loop twin CompactionStarted arm must use the shared accessor; arm was:\n{agent_loop_arm}"
     );
-    let napi_arm = delegation::napi_compaction_arm();
+    let engine_arm = delegation::engine_compaction_arm();
     assert!(
-        napi_arm.contains("snapshot_pre_compaction_tokens()"),
-        "NAPI twin CompactionStarted arm must use the shared accessor; arm was:\n{napi_arm}"
+        engine_arm.contains("snapshot_pre_compaction_tokens()"),
+        "engine CompactionStarted arm must use the shared accessor; arm was:\n{engine_arm}"
     );
     // @step And all four logical writers retain the shared snapshot and storage accessors
     all_four_pre_compaction_writers_route_through_shared_accessors();
@@ -256,35 +256,27 @@ fn all_four_pre_compaction_writers_route_through_shared_accessors() {
         "BackgroundSession must expose store_pre_compaction_tokens (manual accessor)"
     );
 
-    let agent_loop_src = read_workspace_source("rust/agent-loop/src/background_output.rs");
-    let agent_loop_arm =
-        extract_brace_block_after(&agent_loop_src, "StreamEvent::CompactionStarted =>");
-    let napi_arm = delegation::napi_compaction_arm();
+    let arm = delegation::engine_compaction_arm();
 
-    let handle_impl_src = read_workspace_source("rust/sessions/src/handle_impl.rs");
-    let session_bindings_src = read_workspace_source("rust/napi/src/session_bindings.rs");
+    // BUG-516: the manual /compact writer lives in
+    // BackgroundSession::start_manual_compaction.
+    let handle_impl_src =
+        read_workspace_source("rust/sessions/src/background_session/compaction_handoff.rs");
 
-    for (twin, arm) in [("agent-loop", agent_loop_arm), ("napi", napi_arm.as_str())] {
-        assert!(
-            arm.contains("snapshot_pre_compaction_tokens()"),
-            "[{twin}] AUTO CompactionStarted arm must call the shared \
-             snapshot_pre_compaction_tokens() accessor; arm was:\n{arm}"
-        );
-        assert!(
-            !arm.contains("pre_compaction_tokens") || !arm.contains(".store("),
-            "[{twin}] AUTO CompactionStarted arm must not hand-roll the \
-             load/store snapshot; arm was:\n{arm}"
-        );
-    }
+    assert!(
+        arm.contains("snapshot_pre_compaction_tokens()"),
+        "[agent-loop] AUTO CompactionStarted arm must call the shared \
+         snapshot_pre_compaction_tokens() accessor; arm was:\n{arm}"
+    );
+    assert!(
+        !arm.contains("pre_compaction_tokens") || !arm.contains(".store("),
+        "[agent-loop] AUTO CompactionStarted arm must not hand-roll the \
+         load/store snapshot; arm was:\n{arm}"
+    );
 
     assert!(
         handle_impl_src.contains("store_pre_compaction_tokens("),
-        "manual sessions RPC writer (handle_impl.rs) must route through \
-         store_pre_compaction_tokens()"
-    );
-    assert!(
-        session_bindings_src.contains("store_pre_compaction_tokens("),
-        "manual NAPI writer (session_bindings.rs) must route through \
+        "manual sessions RPC writer (start_manual_compaction) must route through \
          store_pre_compaction_tokens()"
     );
 }

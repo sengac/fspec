@@ -23,10 +23,6 @@
                 59,
                 60,
                 61,
-                62,
-                63,
-                64,
-                65,
                 66,
                 67,
                 68,
@@ -109,8 +105,13 @@
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "/// Dispatcher entry point.",
+              "lastLine": "crate::commands::generate_foundation_md::regenerate(project_root);"
             }
           ]
         }
@@ -121,14 +122,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
-          "lines": "134-166",
+          "lines": "138-173",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
-                63,
-                64,
-                65,
                 66,
                 67,
                 68,
@@ -138,8 +136,13 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78
+              ],
+              "firstLine": "let mut data: Value = read_or_init_json(&path, &foundation_read_default(), \"foundation.json\")?;",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -150,14 +153,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
-          "lines": "168-203",
+          "lines": "175-213",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
-                87,
-                88,
-                89,
                 90,
                 91,
                 92,
@@ -173,8 +173,13 @@
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "Some(arr) => arr,",
+              "lastLine": ""
             }
           ]
         }
@@ -190,9 +195,6 @@
             {
               "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -209,8 +211,13 @@
                 123,
                 124,
                 125,
-                126
-              ]
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "Some(id) => id,",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -221,14 +228,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
-          "lines": "242-273",
+          "lines": "255-286",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -245,8 +249,13 @@
                 123,
                 124,
                 125,
-                126
-              ]
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "Some(id) => id,",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -257,14 +266,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_command_from_foundation.rs",
-          "lines": "275-305",
+          "lines": "288-318",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_command_from_foundation.rs",
               "lines": [
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -281,8 +287,13 @@
                 123,
                 124,
                 125,
-                126
-              ]
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "Some(id) => id,",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -299,6 +310,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_command_from_foundation.rs"
     ],
-    "totalLinesCovered": 406
+    "totalLinesCovered": 411
   }
 }

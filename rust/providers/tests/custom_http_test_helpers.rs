@@ -29,8 +29,8 @@ pub fn config_with_script(name: &str, script_body: &str) -> (TempDir, ProviderCo
         "smart".to_string(),
         ModelDef {
             id: "model-smart-v2".to_string(),
-            context_window: 128_000,
-            max_output_tokens: 4096,
+            context_window: Some(128_000),
+            max_output_tokens: Some(4096),
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
@@ -79,8 +79,8 @@ pub fn config_with_full_script(
         "smart".to_string(),
         ModelDef {
             id: model_id.to_string(),
-            context_window: 128_000,
-            max_output_tokens: 4096,
+            context_window: Some(128_000),
+            max_output_tokens: Some(4096),
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,

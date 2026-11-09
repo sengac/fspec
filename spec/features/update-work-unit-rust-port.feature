@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-317
+@work-unit-management
 Feature: Port update-work-unit command to Rust
   """
   Core impl at rust/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
@@ -102,3 +103,16 @@ Feature: Port update-work-unit command to Rust
     When I dispatch update-work-unit via the dispatcher with workUnitId='AUTH-001' and title='Same'
     And I run `./rust/target/release/fspec update-work-unit AUTH-001 --title Same` in an identical workspace
     Then both invocations produce the same success result and the same on-disk title 'Same'
+
+  Scenario: Dispatcher auto-creates spec/work-units.json before reporting a missing work unit
+    Given a project root tempdir with a spec/ directory and no spec/work-units.json
+    When I dispatch update-work-unit with workUnitId='AUTH-001' and title='New Title'
+    Then the dispatcher returns success=false
+    And the error message contains the substring "Work unit 'AUTH-001' does not exist"
+    And spec/work-units.json now exists on disk with an empty workUnits object
+
+  Scenario: Dispatcher updates a work unit description
+    Given spec/work-units.json contains work unit 'AUTH-001' with title 'Login'
+    When I dispatch update-work-unit with workUnitId='AUTH-001' and description='Updated description'
+    Then the dispatcher returns success=true
+    And spec/work-units.json work unit 'AUTH-001' has description 'Updated description' and title 'Login'

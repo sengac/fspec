@@ -28,13 +28,14 @@ impl Drop for Pending {
 
 static PENDING: LazyLock<Mutex<HashMap<PathBuf, Pending>>> = LazyLock::new(Mutex::default);
 
-pub(super) fn cancel_pending(home: &Path) {
-    let home = normalized_home(home);
+pub(super) fn cancel_pending(home: &Path) -> Result<(), AuthError> {
+    let home = normalized_home(home)?;
     let removed = PENDING
         .lock()
         .ok()
         .and_then(|mut pending| pending.remove(&home));
     drop(removed);
+    Ok(())
 }
 
 fn expire_pending(home: &Path, id: &str) {
@@ -92,7 +93,7 @@ pub async fn start_device_login() -> Result<DeviceCodeResponse, AuthError> {
 
 pub async fn complete_device_login(device_auth_id: &str) -> Result<CodexTokens, AuthError> {
     let pending = {
-        let home = normalized_home(&auth_storage::home());
+        let home = normalized_home(&auth_storage::home())?;
         let mut sessions = PENDING.lock().map_err(|_| AuthError::Changed)?;
         if sessions
             .get(&home)

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_generate_coverage.rs",
-          "lines": "62-82",
+          "lines": "62-86",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/generate_coverage.rs",
@@ -94,13 +94,10 @@
                 82,
                 83,
                 84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                85
+              ],
+              "firstLine": "//! `generate-coverage` help configuration — Rust port of",
+              "lastLine": "when_to_use: Some(\"Use this command when: 1) Setting up coverage tracking for existing features, 2) You added new scenarios to existing .feature files and need to update .coverage files, 3) .feature.coverage files were accidentally deleted. Essential for reverse ACDD setup and maintaining coverage sync.\"),"
             }
           ]
         }
@@ -122,7 +119,9 @@
                 36,
                 37,
                 38
-              ]
+              ],
+              "firstLine": "payload.insert(\"featureName\".to_string(), Value::String(name.clone()));",
+              "lastLine": "Ok(rendered) => {"
             }
           ]
         }
@@ -138,10 +137,14 @@
             {
               "file": "rust/fspec/src/generate_coverage.rs",
               "lines": [
-                29,
-                30,
-                31
-              ]
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "payload.insert(\"dryRun\".to_string(), Value::Bool(args.dry_run));",
+              "lastLine": "let args_json = json!(payload).to_string();"
             }
           ]
         }
@@ -167,7 +170,9 @@
                 46,
                 47,
                 48
-              ]
+              ],
+              "firstLine": "// The core returns the full report string; print it verbatim.",
+              "lastLine": "match &err {"
             }
           ]
         }
@@ -181,10 +186,12 @@
           "lines": "178-196",
           "implMappings": [
             {
-              "file": "rust/fspec/src/main.rs",
+              "file": "rust/fspec/src/cli_registration/mode_06.rs",
               "lines": [
-                1811
-              ]
+                241
+              ],
+              "firstLine": "AddStep {",
+              "lastLine": "AddStep {"
             }
           ]
         }
@@ -195,7 +202,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_generate_coverage.rs",
-          "lines": "203-265",
+          "lines": "203-262",
           "implMappings": [
             {
               "file": "rust/fspec/src/generate_coverage.rs",
@@ -205,7 +212,9 @@
                 35,
                 36,
                 37
-              ]
+              ],
+              "firstLine": "payload.insert(\"featureName\".to_string(), Value::String(name.clone()));",
+              "lastLine": "match generate_coverage::run(&args_json, &project_root).await {"
             }
           ]
         }
@@ -222,8 +231,8 @@
     "implFiles": [
       "rust/fspec-core/src/help/configs/generate_coverage.rs",
       "rust/fspec/src/generate_coverage.rs",
-      "rust/fspec/src/main.rs"
+      "rust/fspec/src/cli_registration/mode_06.rs"
     ],
-    "totalLinesCovered": 289
+    "totalLinesCovered": 287
   }
 }

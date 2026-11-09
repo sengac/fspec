@@ -41,7 +41,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -100,7 +102,9 @@
                 238,
                 239,
                 240
-              ]
+              ],
+              "firstLine": "// ── Rule 2 (TS): Sequential IDs in same prefix (MEDIUM fallback) ──",
+              "lastLine": "}"
             }
           ]
         }
@@ -147,7 +151,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "// ── Rule 3 (TS): Build/Test pairs (HIGH, evaluated first) ──",
+              "lastLine": "}"
             }
           ]
         }
@@ -215,7 +221,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "// ── Rule 4 (TS): Infrastructure before features (HIGH) ──",
+              "lastLine": "}"
             }
           ]
         }
@@ -278,7 +286,9 @@
                 242,
                 243,
                 244
-              ]
+              ],
+              "firstLine": "// ── Rule 2 (TS): Sequential IDs in same prefix (MEDIUM fallback) ──",
+              "lastLine": "}"
             }
           ]
         }
@@ -302,7 +312,9 @@
                 308,
                 309,
                 310
-              ]
+              ],
+              "firstLine": "id.split('-').next().unwrap_or(id).to_string()",
+              "lastLine": ".nth(1)"
             }
           ]
         }
@@ -459,7 +471,9 @@
                 242,
                 243,
                 244
-              ]
+              ],
+              "firstLine": "fn compute_suggestions(data: &WorkUnitsData) -> Vec<DependencySuggestion> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -524,67 +538,9 @@
                 97,
                 98,
                 99
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-core/tests/suggest_dependencies.rs",
-          "lines": "311-339",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/suggest_dependencies.rs",
-              "lines": [
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Serialize)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -616,7 +572,9 @@
                 284,
                 285,
                 286
-              ]
+              ],
+              "firstLine": "fn render_text(suggestions: &[DependencySuggestion]) -> String {",
+              "lastLine": "s.from,"
             }
           ]
         }
@@ -648,7 +606,9 @@
                 284,
                 285,
                 286
-              ]
+              ],
+              "firstLine": "fn render_text(suggestions: &[DependencySuggestion]) -> String {",
+              "lastLine": "s.from,"
             }
           ]
         }
@@ -695,7 +655,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -712,6 +674,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/suggest_dependencies.rs"
     ],
-    "totalLinesCovered": 868
+    "totalLinesCovered": 790
   }
 }

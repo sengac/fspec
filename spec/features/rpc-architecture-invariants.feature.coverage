@@ -4,8 +4,8 @@
       "name": "EmbeddedTransport requires a tokio runtime Handle at construction",
       "testMappings": [
         {
-          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
-          "lines": "21-69",
+          "file": "rust/rpc-embedded/tests/architecture_invariants/scenario_7_embedded_transport_requires.rs",
+          "lines": "4-98",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/src/lib.rs",
@@ -22,7 +22,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "use futures::StreamExt;",
+              "lastLine": "service: Arc<SharedFspecService>,"
             }
           ]
         }
@@ -32,8 +34,8 @@
       "name": "WorkUnitInfo is defined once in rpc-types and re-exported by codelet-napi",
       "testMappings": [
         {
-          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
-          "lines": "70-129",
+          "file": "rust/rpc-embedded/tests/architecture_invariants/scenario_7_embedded_transport_requires.rs",
+          "lines": "100-160",
           "implMappings": [
             {
               "file": "rust/rpc-types/src/lib.rs",
@@ -55,7 +57,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "//! transport, and the NAPI surface:",
+              "lastLine": ""
             }
           ]
         }
@@ -65,29 +69,32 @@
       "name": "Embedded transport uses only tarpc::transport::channel for in-process traffic",
       "testMappings": [
         {
-          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
-          "lines": "130-171",
+          "file": "rust/rpc-embedded/tests/architecture_invariants/scenario_7_embedded_transport_requires.rs",
+          "lines": "162-202",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/src/lib.rs",
               "lines": [
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
                 66,
-                67
-              ]
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ],
+              "firstLine": "/// Obtain a tarpc client connected to the in-process server task.",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,8 +104,8 @@
       "name": "Shared service crate codelet-rpc has no dependency on codelet-core or the NAPI work_units_watcher",
       "testMappings": [
         {
-          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
-          "lines": "172-211",
+          "file": "rust/rpc-embedded/tests/architecture_invariants/scenario_10_codelet_rpc_has.rs",
+          "lines": "4-53",
           "implMappings": [
             {
               "file": "rust/rpc/Cargo.toml",
@@ -117,7 +124,9 @@
                 12,
                 13,
                 14
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "[lints]"
             }
           ]
         }
@@ -127,14 +136,16 @@
       "name": "rpc-server binary binds to 127.0.0.1 loopback only",
       "testMappings": [
         {
-          "file": "rust/rpc-embedded/tests/architecture_invariants.rs",
-          "lines": "212-242",
+          "file": "rust/rpc-embedded/tests/architecture_invariants/scenario_10_codelet_rpc_has.rs",
+          "lines": "55-85",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/main.rs",
               "lines": [
                 29
-              ]
+              ],
+              "firstLine": "/// `codelet-rpc-server` from inside a project root with no flags.",
+              "lastLine": "/// `codelet-rpc-server` from inside a project root with no flags."
             }
           ]
         }
@@ -146,7 +157,8 @@
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/rpc-embedded/tests/architecture_invariants.rs"
+      "rust/rpc-embedded/tests/architecture_invariants/scenario_7_embedded_transport_requires.rs",
+      "rust/rpc-embedded/tests/architecture_invariants/scenario_10_codelet_rpc_has.rs"
     ],
     "implFiles": [
       "rust/rpc-embedded/src/lib.rs",
@@ -154,6 +166,6 @@
       "rust/rpc/Cargo.toml",
       "rust/rpc-server/src/main.rs"
     ],
-    "totalLinesCovered": 282
+    "totalLinesCovered": 339
   }
 }

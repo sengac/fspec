@@ -41,7 +41,10 @@ COMMON ERRORS
     Fix: Create the hook script at the specified path or update the hook configuration to point to the correct path. Remember: paths must be relative to project root.
 
   ✗ Failed to load hook configuration
-    Fix: Check that spec/fspec-hooks.json exists and contains valid JSON. Run fspec add-hook to create the file if missing.
+    Fix: spec/fspec-hooks.json does not exist. Add a hook with fspec add-hook <event> <name> --command <path> to create it.
+
+  ✗ spec/fspec-hooks.json could not be parsed (<reason>); the file was not changed
+    Fix: Repair the file by hand, or add or remove a hook: add-hook and remove-hook move it to spec/fspec-hooks.json.broken-<timestamp> and write a new configuration.
 
 RELATED COMMANDS
   fspec list-hooks

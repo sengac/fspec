@@ -28,7 +28,6 @@ use serde_json::Value;
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -81,6 +80,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-virtual-hook")?;
     let mut data = ensure_work_units_file(project_root)?;
 
     // Source-exists pre-flight (TS add-virtual-hook.ts:33-36).
@@ -154,8 +155,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = iso8601_now();
 
     // Single atomic write at end.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     serde_json::to_string(&AddVirtualHookResult {
         success: true,
@@ -193,16 +193,16 @@ fn derive_hook_name(command: &str) -> String {
     }
 }
 
-/// Generate the virtual-hook shell script under
-/// `<project_root>/spec/hooks/.virtual/<workUnitId>-<hookName>.sh`. Mirrors
-/// `src/hooks/script-generation.ts:45-105` and writes mode 0o755 on Unix.
+/// Write the virtual-hook shell script ([`git_context_script`]) to
+/// `<project_root>/spec/hooks/.virtual/<workUnitId>-<hookName>.sh` with mode
+/// 0o755 on Unix.
 fn generate_virtual_hook_script(
     work_unit_id: &str,
     hook_name: &str,
     command: &str,
     project_root: &Path,
 ) -> Result<std::path::PathBuf, FspecCoreError> {
-    let virtual_dir = project_root.join("spec").join("hooks").join(".virtual");
+    let virtual_dir = crate::io::spec_paths::virtual_hooks_dir(project_root)?;
     std::fs::create_dir_all(&virtual_dir).map_err(|e| FspecCoreError::Io {
         command: "add-virtual-hook",
         source: e,
@@ -211,31 +211,8 @@ fn generate_virtual_hook_script(
     let script_path = virtual_dir.join(&filename);
 
     // Always git-context-style content here — `generate_virtual_hook_script`
-    // is only called when `args.git_context == Some(true)`. Mirrors the TS
-    // `if (gitContext)` branch at `script-generation.ts:64-87`.
-    let script_content = format!(
-        "#!/bin/bash\n\
-set -e\n\
-\n\
-# Read context JSON from stdin\n\
-CONTEXT=$(cat)\n\
-\n\
-# Extract staged and unstaged files from context\n\
-STAGED_FILES=$(echo \"$CONTEXT\" | jq -r '.stagedFiles[]? // empty' 2>/dev/null | tr '\\n' ' ')\n\
-UNSTAGED_FILES=$(echo \"$CONTEXT\" | jq -r '.unstagedFiles[]? // empty' 2>/dev/null | tr '\\n' ' ')\n\
-\n\
-# Combine all changed files\n\
-ALL_FILES=\"$STAGED_FILES $UNSTAGED_FILES\"\n\
-\n\
-# Exit if no files to process\n\
-if [ -z \"$ALL_FILES\" ]; then\n  \
-  echo \"No changed files to process\"\n  \
-  exit 0\n\
-fi\n\
-\n\
-# Run command with changed files\n\
-{command} $ALL_FILES\n"
-    );
+    // is only called when `args.git_context == Some(true)`.
+    let script_content = git_context_script(command);
 
     std::fs::write(&script_path, script_content).map_err(|e| FspecCoreError::Io {
         command: "add-virtual-hook",
@@ -253,6 +230,43 @@ fi\n\
     }
 
     Ok(script_path)
+}
+
+/// BUG-589: the `--git-context` hook script for `command`.
+///
+/// The hook executor passes the context JSON on stdin (HOOK-018), so the
+/// script needs jq; it checks for jq first and fails with exit 127 and a
+/// clear message when jq is missing (never hiding jq's errors). Both file
+/// lists reach one bash array through jq's `@sh` quoting, so every path is
+/// one exact argument and an empty array — no changed files — skips the
+/// command instead of running it on the whole codebase.
+fn git_context_script(command: &str) -> String {
+    format!(
+        "#!/bin/bash\n\
+set -euo pipefail\n\
+\n\
+# The changed files arrive as JSON on stdin; jq reads them\n\
+if ! command -v jq >/dev/null 2>&1; then\n  \
+  echo \"jq is required to read the changed files of this --git-context hook; install jq\" >&2\n  \
+  exit 127\n\
+fi\n\
+\n\
+# Read context JSON from stdin\n\
+CONTEXT=$(cat)\n\
+\n\
+# Staged then unstaged files, one shell-quoted word per path\n\
+QUOTED=$(printf '%s' \"$CONTEXT\" | jq -r '[(.stagedFiles // [])[], (.unstagedFiles // [])[]] | @sh')\n\
+eval \"FILES=($QUOTED)\"\n\
+\n\
+# Exit if no files to process\n\
+if [ \"${{#FILES[@]}}\" -eq 0 ]; then\n  \
+  echo \"No changed files to process\"\n  \
+  exit 0\n\
+fi\n\
+\n\
+# Run command with changed files\n\
+{command} \"${{FILES[@]}}\"\n"
+    )
 }
 
 /// Strip the project root prefix from `full_path` to yield a forward-slash

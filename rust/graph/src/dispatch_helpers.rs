@@ -12,6 +12,11 @@ use super::database::GraphDatabase;
 /// Produces a standardized response with node counts per type and edge counts
 /// (including a calculated total). Used by both AST and Learnings dispatchers.
 pub fn format_graph_stats(db: &GraphDatabase, action_name: &str) -> String {
+    graph_stats(db, action_name).to_string()
+}
+
+/// The graph statistics as a JSON value (see [`format_graph_stats`]).
+pub fn graph_stats(db: &GraphDatabase, action_name: &str) -> Value {
     match db.stats() {
         Ok(stats) => {
             let nodes = stats
@@ -37,13 +42,11 @@ pub fn format_graph_stats(db: &GraphDatabase, action_name: &str) -> String {
                 "nodes": nodes,
                 "edges": edges,
             })
-            .to_string()
         }
         Err(e) => serde_json::json!({
             "action": action_name,
             "error": format!("Failed to get stats: {e}"),
-        })
-        .to_string(),
+        }),
     }
 }
 
@@ -153,3 +156,47 @@ pub const LEARNINGS_SEARCHABLE_FIELDS: &[&str] = &[
     "strategy",
     "domain",
 ];
+
+/// KGRAPH-073: name the canonical root a code-graph result belongs to.
+///
+/// Adds `"root"` to a JSON object result; any other output is returned as
+/// it is, wrapped in an object so the root is never lost.
+pub fn with_root(output: String, root: &std::path::Path) -> String {
+    let root = Value::String(root.display().to_string());
+    match serde_json::from_str::<Value>(&output) {
+        Ok(Value::Object(mut object)) => {
+            object.insert("root".to_string(), root);
+            Value::Object(object).to_string()
+        }
+        Ok(other) => serde_json::json!({ "root": root, "result": other }).to_string(),
+        Err(_) => serde_json::json!({ "root": root, "result": output }).to_string(),
+    }
+}
+
+/// KGRAPH-077: name the graph version a code-graph result read or wrote.
+///
+/// Adds `graph_version` (the manifest db_version) and `indexed_at` (its
+/// commit time) to a JSON object result. When the version cannot be read
+/// the result becomes an error saying so.
+pub fn stamp(db: &GraphDatabase, mut result: Value) -> String {
+    let version = match db.version() {
+        Ok(version) => version,
+        Err(error) => {
+            let action = result.get("action").cloned().unwrap_or(Value::Null);
+            return serde_json::json!({ "action": action, "error": error }).to_string();
+        }
+    };
+    if let Value::Object(map) = &mut result {
+        map.insert("graph_version".to_string(), version.db_version.into());
+        map.insert("indexed_at".to_string(), version.indexed_at.into());
+    }
+    result.to_string()
+}
+
+/// The JSON error result of `action`, stamped with the graph version.
+pub fn error_result(db: &GraphDatabase, action: &str, error: impl Into<String>) -> String {
+    stamp(
+        db,
+        serde_json::json!({ "action": action, "error": error.into() }),
+    )
+}

@@ -14,8 +14,7 @@
 //! regression where an empty id would be folded into a card, or where progress
 //! for another card would bleed into this one.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -55,12 +54,17 @@ fn tool_progress_chunk(tool_call_id: &str, name: &str, chunk: &str) -> StreamChu
 
 /// Return the stored `source.text` of the chunk whose ToolCall tool_call_id
 /// matches `card_id`. Returns None if there is no such card.
-fn card_body_text(app: &App, id: &SessionId, card_id: &str) -> Option<String> {
+fn card_body_text(
+    app: &App,
+    id: &SessionId,
+    card_id: &str,
+) -> Result<Option<String>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .into_iter()
         .find(|c| match c.source.as_ref().map(|s| &s.kind) {
@@ -69,16 +73,21 @@ fn card_body_text(app: &App, id: &SessionId, card_id: &str) -> Option<String> {
             }
             _ => false,
         })
-        .and_then(|c| c.source.as_ref().map(|s| s.text.clone()))
+        .and_then(|c| c.source.as_ref().map(|s| s.text.clone())))
 }
 
 /// Return the `is_streaming` flag of the card whose id matches `card_id`.
-fn card_is_streaming(app: &App, id: &SessionId, card_id: &str) -> Option<bool> {
+fn card_is_streaming(
+    app: &App,
+    id: &SessionId,
+    card_id: &str,
+) -> Result<Option<bool>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
-    ctx.scrollback
+        .or_fail("session context exists")?;
+    Ok(ctx
+        .scrollback
         .visible_window(4096)
         .into_iter()
         .find(|c| match c.source.as_ref().map(|s| &s.kind) {
@@ -87,7 +96,7 @@ fn card_is_streaming(app: &App, id: &SessionId, card_id: &str) -> Option<bool> {
             }
             _ => false,
         })
-        .and_then(|c| c.source.as_ref().map(|s| s.is_streaming))
+        .and_then(|c| c.source.as_ref().map(|s| s.is_streaming)))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -95,7 +104,7 @@ fn card_is_streaming(app: &App, id: &SessionId, card_id: &str) -> Option<bool> {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn progress_with_matching_id_folds_into_streaming_card() {
+fn progress_with_matching_id_folds_into_streaming_card() -> TestResult {
     // @step Given the agent view scrollback contains a ToolCall card with tool_call_id "tc-1"
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -110,7 +119,7 @@ fn progress_with_matching_id_folds_into_streaming_card() {
     ));
 
     // @step Then the card "tc-1" body shows the streamed output
-    let body = card_body_text(&app, &sid("s-1"), "tc-1").expect("card tc-1 exists");
+    let body = card_body_text(&app, &sid("s-1"), "tc-1")?.or_fail("card tc-1 exists")?;
     assert!(
         body.contains("streamed-output-line"),
         "card tc-1 must absorb matching progress; got {body:?}"
@@ -118,10 +127,11 @@ fn progress_with_matching_id_folds_into_streaming_card() {
 
     // @step And the card "tc-1" is still marked as streaming
     assert_eq!(
-        card_is_streaming(&app, &sid("s-1"), "tc-1"),
+        card_is_streaming(&app, &sid("s-1"), "tc-1")?,
         Some(true),
         "card tc-1 must remain streaming after live progress"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -129,7 +139,7 @@ fn progress_with_matching_id_folds_into_streaming_card() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn progress_with_empty_id_matches_no_card_and_is_dropped() {
+fn progress_with_empty_id_matches_no_card_and_is_dropped() -> TestResult {
     // @step Given the agent view scrollback contains a ToolCall card with tool_call_id "tc-1"
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -144,11 +154,12 @@ fn progress_with_empty_id_matches_no_card_and_is_dropped() {
     ));
 
     // @step Then the card "tc-1" body does not show that output
-    let body = card_body_text(&app, &sid("s-1"), "tc-1").expect("card tc-1 exists");
+    let body = card_body_text(&app, &sid("s-1"), "tc-1")?.or_fail("card tc-1 exists")?;
     assert!(
         !body.contains("orphan-output"),
         "empty-id progress must not fold into card tc-1; got {body:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -156,7 +167,7 @@ fn progress_with_empty_id_matches_no_card_and_is_dropped() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn progress_for_another_card_does_not_alter_this_card() {
+fn progress_for_another_card_does_not_alter_this_card() -> TestResult {
     // @step Given a ToolCall card with tool_call_id "tc-1" exists
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -170,7 +181,7 @@ fn progress_for_another_card_does_not_alter_this_card() {
         tool_call_chunk("tc-2", "Bash", "{\"command\":\"two\"}"),
     ));
 
-    let before = card_body_text(&app, &sid("s-1"), "tc-1").expect("card tc-1 exists");
+    let before = card_body_text(&app, &sid("s-1"), "tc-1")?.or_fail("card tc-1 exists")?;
 
     // @step When a ToolProgress with tool_call_id "tc-2" arrives
     app.dispatch(Action::ChunkReceived(
@@ -179,7 +190,7 @@ fn progress_for_another_card_does_not_alter_this_card() {
     ));
 
     // @step Then the card "tc-1" body is unchanged
-    let after = card_body_text(&app, &sid("s-1"), "tc-1").expect("card tc-1 exists");
+    let after = card_body_text(&app, &sid("s-1"), "tc-1")?.or_fail("card tc-1 exists")?;
     assert_eq!(
         before, after,
         "card tc-1 body must be unchanged by progress addressed to tc-2"
@@ -188,4 +199,5 @@ fn progress_for_another_card_does_not_alter_this_card() {
         !after.contains("belongs-to-tc-2"),
         "card tc-1 must not absorb tc-2's output; got {after:?}"
     );
+    Ok(())
 }

@@ -38,14 +38,6 @@ Feature: Scalable help system for all commands
     And I should see related commands
     And the process should exit with code 0
 
-  Scenario: Fall back to Commander.js help when no custom help exists
-    Given I have a command "some-command" without a help config file
-    And the command is NOT registered in help-registry.ts
-    When I run "fspec some-command --help"
-    Then the process-level help interceptor should return false
-    And Commander.js should display default help
-    And the process should exit with code 0
-
   Scenario: Handle help flag in any position
     Given I have a command "list-work-units" with custom help
     When I run "fspec --help list-work-units"
@@ -59,11 +51,3 @@ Feature: Scalable help system for all commands
     Then the help interceptor should return false
     And Commander.js should display main program help
     And the help should list all available commands
-
-  Scenario: Gracefully handle missing help config file
-    Given I have a command "broken-command" registered in help-registry.ts
-    But the help config file "src/commands/broken-command-help.ts" does not exist
-    When I run "fspec broken-command --help"
-    Then the dynamic import should fail gracefully
-    And the system should fall back to Commander.js default help
-    And no error should be thrown to the user

@@ -6,8 +6,7 @@
 //! RPC-015's 4-row header strip + 1-row separator inserts itself between
 //! the top border and the existing 5-row details strip.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, AgentViewStore, BoardStore, BoardView, Theme};
@@ -37,9 +36,13 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
     }
 }
 
-fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
+fn render(
+    width: u16,
+    height: u16,
+    store: &BoardStore,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let (view, _rx) = fresh();
-    let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(width, height)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -49,8 +52,8 @@ fn render(width: u16, height: u16, store: &BoardStore) -> Buffer {
             false,
         );
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 fn join_buffer(buf: &Buffer) -> String {
@@ -74,11 +77,11 @@ fn row_string(buf: &Buffer, y: u16) -> String {
 
 /// Scenario: Empty BoardStore paints the FSPEC logo and Checkpoints: None
 #[test]
-fn empty_board_store_paints_the_fspec_logo_and_checkpoints_none() {
+fn empty_board_store_paints_the_fspec_logo_and_checkpoints_none() -> TestResult {
     // @step Given an empty BoardStore (no work units, default checkpoint_counts = 0/0)
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "┏┓┏┓┏┓┏┓┏┓"
     assert!(
@@ -90,65 +93,66 @@ fn empty_board_store_paints_the_fspec_logo_and_checkpoints_none() {
         joined.contains("Checkpoints: None"),
         "missing 'Checkpoints: None':\n{joined}"
     );
+    Ok(())
 }
 
 /// Scenario: Non-zero checkpoint counts paint the Manual/Auto breakdown
 #[test]
-fn non_zero_checkpoint_counts_paint_the_manual_auto_breakdown() {
+fn non_zero_checkpoint_counts_paint_the_manual_auto_breakdown() -> TestResult {
     // @step Given a BoardStore whose checkpoint_counts has been set to { manual: 2, auto: 5 }
     let mut store = BoardStore::default();
     store.set_checkpoint_counts(CheckpointCounts { manual: 2, auto: 5 });
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "Checkpoints: 2 Manual, 5 Auto"
     assert!(
         joined.contains("Checkpoints: 2 Manual, 5 Auto"),
         "missing 'Checkpoints: 2 Manual, 5 Auto':\n{joined}"
     );
+    Ok(())
 }
 
-/// Scenario: KeybindingShortcuts chord row is painted in the header
+/// Scenario: The 2-zone menu bar row is painted in the header
 /// (BOARD-023 R10 supersession: the six-action chord was replaced by the
 /// short 'u Actions' hint; MENU-002 R1 supersedes that hint with the live
 /// 2-zone menu bar — Zone A "Kanban"/"Tools"/"Settings"/"Help" items after
 /// MENU-008, no session chips on a fresh store)
 #[test]
-fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
+fn the_two_zone_menu_bar_row_is_painted_in_the_header() -> TestResult {
     // @step Given a BoardStore with any selection state
     let store = BoardStore::default();
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
-    // @step Then the header row 3 shows the 2-zone menu bar (MENU-002
-    // supersedes the 'u Actions' hint): Zone A items paint, no chips.
-    assert!(
-        joined.contains("Kanban")
-            && joined.contains("Tools")
-            && joined.contains("Settings")
-            && joined.contains("Help"),
-        "missing the 2-zone bar's Zone A items (Kanban Tools Settings Help): {joined}"
-    );
-    // And the old six-action chord segments no longer render in the header.
-    assert!(
-        !joined.contains("C Checkpoints"),
-        "the old chord must no longer render in the header: {joined}"
-    );
-    // And the BOARD-023 short hint is gone too (superseded by MENU-002).
+    // @step Then the rendered buffer contains the Zone A items "Kanban", "Tools", "Settings" and "Help" (MENU-008 categories)
+    for item in ["Kanban", "Tools", "Settings", "Help"] {
+        assert!(
+            joined.contains(item),
+            "missing the 2-zone bar's Zone A item {item:?}: {joined}"
+        );
+    }
+    // @step And the rendered buffer does NOT contain the substring "u Actions"
     assert!(
         !joined.contains("u Actions"),
         "the 'u Actions' hint must be gone, replaced by the menu bar: {joined}"
     );
+    // @step And the rendered buffer does NOT contain the substring "C Checkpoints"
+    assert!(
+        !joined.contains("C Checkpoints"),
+        "the old chord must no longer render in the header: {joined}"
+    );
+    Ok(())
 }
 
 /// Scenario: New ├──┤ separator sits between the header strip and the details strip
 #[test]
-fn new_plain_separator_sits_between_the_header_strip_and_the_details_strip() {
+fn new_plain_separator_sits_between_the_header_strip_and_the_details_strip() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 in backlog
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     // Header layout after RPC-015:
     //   row 0       = ┌───────┐
     //   rows 1..=4  = 4-row header strip
@@ -193,18 +197,19 @@ fn new_plain_separator_sits_between_the_header_strip_and_the_details_strip() {
         r.contains('├') && r.contains('┴') && r.contains('┤')
     });
     assert!(has_bottom, "expected one row with ├ ┴ ┤ junctions");
+    Ok(())
 }
 
 /// Scenario: KeybindingShortcuts are visible hints only — no Action wiring lands in this card
 #[test]
-fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_card() {
+fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_card() -> TestResult {
     use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
     // @step Given the App has rendered BoardView with the new header strip painted
     let (view, mut rx) = fresh();
     let store = BoardStore::default();
     // Drive a single render to "paint" the header — used only to mirror
     // the Gherkin Given clause; the assertion is on the next key press.
-    let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+    let mut term = Terminal::new(TestBackend::new(120, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         view.render_with_store(
             frame.area(),
@@ -214,7 +219,7 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
             false,
         )
     })
-    .expect("draw");
+    .or_fail("draw")?;
     // @step When the user presses the key 'C'
     let _ = view.handle_event(
         &Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::empty())),
@@ -235,9 +240,7 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
         // Only the established RPC-012/013/014 variants are expected.
         // No new opener variants should appear in this card.
         match a {
-            Action::FocusPrevColumn
-            | Action::FocusNextColumn
-            | Action::SelectNext
+            Action::SelectNext
             | Action::SelectPrev
             | Action::ReorderUp
             | Action::ReorderDown
@@ -249,9 +252,12 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
             // that C emitted no opener — the checkpoints opener is the
             // intended wiring delivered by RPC-364.
             Action::OpenCheckpointsView => {}
-            other => panic!(
-                "C-press must not emit a new opener-action — observed {other:?} in {actions:?}"
-            ),
+            other => {
+                return Err(format!(
+                    "C-press must not emit a new opener-action — observed {other:?} in {actions:?}"
+                )
+                .into())
+            }
         }
     }
     // @step And BoardView continues to emit existing Action variants on existing key events (← / → / ↑ / ↓ / Enter / [ / ] / Shift+Right / ESC)
@@ -272,11 +278,12 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
         had_menu_move,
         "Right arrow must emit Action::MenuMove(1) after MENU-002 (supersedes FocusNextColumn)"
     );
+    Ok(())
 }
 
 /// Scenario: RPC-014 details strip and RPC-013 footer are still painted after RPC-015 inserts its header
 #[test]
-fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header() {
+fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header() -> TestResult {
     // @step Given a BoardStore containing AUTH-001 (story, backlog, title "User Login", description "Sign in with email/password", estimate 5, epic "authentication", no attachments)
     let unit = WorkUnitInfo {
         id: "AUTH-001".to_string(),
@@ -295,7 +302,7 @@ fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header(
     store.set_focused_column("backlog");
     store.set_selected_index_for("backlog", 0);
     // @step When the App renders BoardView against a 120x24 TestBackend
-    let buf = render(120, 24, &store);
+    let buf = render(120, 24, &store)?;
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "AUTH-001: User Login"
     assert!(
@@ -319,9 +326,10 @@ fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header(
     );
     // @step And the rendered buffer contains the substring "← →"
     assert!(joined.contains("← →"), "missing footer arrows:\n{joined}");
-    // @step And the rendered buffer contains the substring "Work Agent"
+    // @step And the rendered buffer contains the substring "Choose"
     assert!(
-        joined.contains("Work Agent"),
-        "missing footer 'Work Agent':\n{joined}"
+        joined.contains("Choose"),
+        "missing footer 'Choose':\n{joined}"
     );
+    Ok(())
 }

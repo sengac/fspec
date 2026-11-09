@@ -24,7 +24,9 @@
                 99,
                 100,
                 101
-              ]
+              ],
+              "firstLine": "pub fn build_thinking_exhaustion_recovery_message(",
+              "lastLine": "if let Some(reasoning) = captured_reasoning {"
             }
           ]
         }
@@ -40,14 +42,16 @@
             {
               "file": "rust/cli/src/interactive/recovery_thinking.rs",
               "lines": [
-                119,
                 120,
                 121,
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126
+              ],
+              "firstLine": "pub fn build_thinking_budget_exhausted_message(max_retries: u32) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -59,27 +63,7 @@
         {
           "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
           "lines": "113-152",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1380,
-                1381,
-                1382,
-                1383,
-                1384,
-                1385,
-                1386,
-                1387,
-                1388,
-                1389,
-                1390,
-                1391,
-                1392,
-                1393
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -118,8 +102,11 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114
+              ],
+              "firstLine": "pub fn build_thinking_exhaustion_recovery_message(",
+              "lastLine": "msg"
             }
           ]
         }
@@ -131,20 +118,7 @@
         {
           "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
           "lines": "220-240",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1411,
-                1412,
-                1413,
-                1414,
-                1415,
-                1416,
-                1417
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -154,17 +128,7 @@
         {
           "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
           "lines": "242-270",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1782,
-                1783,
-                1784,
-                1785
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -177,9 +141,8 @@
       "rust/cli/tests/bug222_truthful_thinking_retry.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/recovery_thinking.rs",
-      "rust/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/interactive/recovery_thinking.rs"
     ],
-    "totalLinesCovered": 299
+    "totalLinesCovered": 275
   }
 }

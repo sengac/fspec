@@ -51,16 +51,16 @@ struct ValidateTagsArgs {
 }
 
 /// Derived tag registry: the flat valid-tag set + the required-category lists.
-struct Registry {
+pub(crate) struct Registry {
     valid_tags: HashSet<String>,
     component: Vec<String>,
     feature_group: Vec<String>,
 }
 
 /// A single per-tag validation error.
-struct TagError {
+pub(crate) struct TagError {
     tag: String,
-    message: String,
+    pub(crate) message: String,
     suggestion: Option<String>,
 }
 
@@ -73,7 +73,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     let registry = load_registry(project_root)?;
-    let work_units = load_work_units(project_root);
+    let work_units = load_work_units(project_root)?;
 
     // ---- Enumerate target files ----
     let files: Vec<String> = match &args.file {
@@ -119,8 +119,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 }
 
 /// Load `spec/tags.json` (auto-create when missing) and derive the registry.
-fn load_registry(project_root: &Path) -> Result<Registry, FspecCoreError> {
-    let tags = ensure_tags_file(project_root)?;
+pub(crate) fn load_registry(project_root: &Path) -> Result<Registry, FspecCoreError> {
+    Ok(registry_of(&ensure_tags_file(project_root)?))
+}
+
+/// The registry of parsed tags data (COV-077: `fspec audit --changed` passes
+/// the staged spec/tags.json).
+pub(crate) fn registry_of(tags: &crate::types::tags::TagsData) -> Registry {
     let mut valid_tags = HashSet::new();
     let mut component = Vec::new();
     let mut feature_group = Vec::new();
@@ -134,20 +139,31 @@ fn load_registry(project_root: &Path) -> Result<Registry, FspecCoreError> {
             }
         }
     }
-    Ok(Registry {
+    Registry {
         valid_tags,
         component,
         feature_group,
-    })
+    }
 }
 
 /// Read `spec/work-units.json` best-effort: any failure (ENOENT, I/O, parse)
 /// yields `None`, matching TS `loadWorkUnitsData`'s bare `catch`. Returns the
 /// set of known work-unit ids when present.
-fn load_work_units(project_root: &Path) -> Option<HashSet<String>> {
-    let path = project_root.join("spec").join("work-units.json");
-    let raw = std::fs::read_to_string(path).ok()?;
-    let data: Value = serde_json::from_str(&raw).ok()?;
+///
+/// WT-015: an unresolvable state root is an error, never "no board".
+pub(crate) fn load_work_units(
+    project_root: &Path,
+) -> Result<Option<HashSet<String>>, FspecCoreError> {
+    let path = crate::io::spec_paths::work_units(project_root)?;
+    Ok(std::fs::read_to_string(path)
+        .ok()
+        .and_then(|raw| work_unit_ids(&raw)))
+}
+
+/// The work unit IDs of a work-units.json text; `None` when it does not
+/// parse (COV-077: `fspec audit --changed` passes the staged file).
+pub(crate) fn work_unit_ids(raw: &str) -> Option<HashSet<String>> {
+    let data: Value = serde_json::from_str(raw).ok()?;
     let map = data.get("workUnits").and_then(Value::as_object)?;
     Some(map.keys().cloned().collect())
 }
@@ -185,9 +201,22 @@ fn validate_file(
             );
         }
     };
-    let feature = match parse_feature_lenient(&content) {
+    let errors = content_errors(file, &content, registry, work_units);
+    (errors.is_empty(), errors)
+}
+
+/// The tag errors of feature file `file` with `content`; a file that does
+/// not parse has none (the Gherkin check reports it). AUDIT-003: `fspec
+/// audit`'s tags area calls this same function.
+pub(crate) fn content_errors(
+    file: &str,
+    content: &str,
+    registry: &Registry,
+    work_units: Option<&HashSet<String>>,
+) -> Vec<TagError> {
+    let feature = match parse_feature_lenient(content) {
         Ok(f) => f,
-        Err(_) => return (true, Vec::new()),
+        Err(_) => return Vec::new(),
     };
 
     // gherkin-0.16 strips the leading '@'; re-prepend for comparison.
@@ -210,8 +239,7 @@ fn validate_file(
     validate_unregistered_feature_tags(&feature_tags, registry, work_units, file, &mut errors);
     validate_scenario_tags(&scenario_tags, registry, file, &mut errors);
     validate_required_category_tags(&feature_tags, registry, &mut errors);
-
-    (errors.is_empty(), errors)
+    errors
 }
 
 fn validate_unregistered_feature_tags(
@@ -336,7 +364,7 @@ fn report_work_unit_tag(
                 tag: tag.to_string(),
                 message: format!("Work unit {tag} not found in spec/work-units.json"),
                 suggestion: Some(format!(
-                    "Add work unit {id} to spec/work-units.json or use 'fspec create-story/create-bug/create-task'"
+                    "Add work unit {id} to spec/work-units.json or create it with fspec create-story, create-bug or create-task"
                 )),
             });
         }

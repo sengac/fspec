@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @navigation
 @tui
@@ -13,6 +14,7 @@ Feature: RPC-023 mouse-port source-shape invariants
   - the 300 LoC ceiling per mouse file + views/board.rs,
   - Action enum gains the three new variants,
   - rect_contains half-open edge semantics.
+  TUI-132 (2026-11-09): mouse/toggle.rs (MouseTrackingToggle) and Action::ReEnableMouseTracking are removed: nothing constructed the toggle, so EnableMouseCapture / DisableMouseCapture live only in terminal.rs.
   """
 
   Background: User Story
@@ -26,7 +28,6 @@ Feature: RPC-023 mouse-port source-shape invariants
     When a developer scans the src/ directory
     Then the file rust/fspec-tui/src/mouse/mod.rs exists
     And the file rust/fspec-tui/src/mouse/hit_test.rs exists
-    And the file rust/fspec-tui/src/mouse/toggle.rs exists
 
   @source-shape
   Scenario: No raw SGR mouse escape strings appear outside terminal.rs
@@ -38,16 +39,16 @@ Feature: RPC-023 mouse-port source-shape invariants
     And no file contains the literal byte sequence "\x1b[?1000l"
 
   @source-shape
-  Scenario: EnableMouseCapture and DisableMouseCapture appear only in terminal.rs and mouse/toggle.rs
+  Scenario: EnableMouseCapture and DisableMouseCapture appear only in terminal.rs
     Given the directory rust/fspec-tui/src
     When a test scans every .rs file with comments stripped for EnableMouseCapture / DisableMouseCapture identifiers
-    Then the only files containing these identifiers are src/terminal.rs and src/mouse/toggle.rs
+    Then the only file containing these identifiers is src/terminal.rs
 
   @source-shape
   Scenario: Dialog-priority components match Event::Key exclusively
-    Given the source of components/disconnect_dialog.rs and components/help_dialog.rs
+    Given the source of components/help_dialog.rs
     When a test scans the stripped source for Event::Mouse pattern arms
-    Then neither file contains an Event::Mouse match arm
+    Then the file contains no Event::Mouse match arm
 
   @source-shape
   Scenario: Mouse module files and views/board.rs stay under 300 lines
@@ -56,12 +57,11 @@ Feature: RPC-023 mouse-port source-shape invariants
     Then each file has fewer than 300 lines
 
   @source-shape
-  Scenario: Action enum gains the three new variants
+  Scenario: Action enum gains the two new variants
     Given rust/fspec-tui/src/components/mod.rs after RPC-023 lands
     When a developer reads the file source raw
     Then the file contains the substring "SetFocusedColumn"
     And the file contains the substring "SelectIndexInFocused"
-    And the file contains the substring "ReEnableMouseTracking"
 
   Scenario: rect_contains is half-open on the right and bottom edges
     Given a Rect with x=5, y=5, width=10, height=10

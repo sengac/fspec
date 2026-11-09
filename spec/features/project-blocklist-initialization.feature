@@ -1,3 +1,4 @@
+@BUG-628
 @done
 @rust
 @tools
@@ -46,3 +47,8 @@ Feature: Project blocklist initialization at service startup
     When I open rust/fspec/src/common.rs
     Then the build_service function contains a literal init_blocklist call
     And both daemon.rs and combined.rs reach build_service so neither mode can skip blocklist initialization
+
+  Scenario: System blocklist rules are enforced after service startup
+    Given a system blocklist at "~/.fspec/blocklist.json" with a block rule for pattern "sentinel-system-rpc407" and a workspace without a project blocklist
+    When the fspec binary builds its service via build_service against that workspace
+    Then running a command matching "sentinel-system-rpc407" is blocked with the system rule id

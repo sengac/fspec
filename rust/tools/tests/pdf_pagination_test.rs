@@ -29,6 +29,10 @@ fn nil_session_non_binding_image_budget() {
 #[tokio::test]
 #[serial]
 async fn scenario_visual_mode_honors_offset_and_limit_for_pdf_pages() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "requirements.pdf" with 67 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("requirements.pdf");
@@ -94,6 +98,10 @@ async fn scenario_visual_mode_honors_offset_and_limit_for_pdf_pages() {
 #[tokio::test]
 #[serial]
 async fn scenario_visual_mode_honors_an_offset_that_starts_mid_document() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "report.pdf" with 10 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("report.pdf");
@@ -146,6 +154,10 @@ async fn scenario_visual_mode_honors_an_offset_that_starts_mid_document() {
 #[tokio::test]
 #[serial]
 async fn scenario_text_mode_honors_offset_and_limit_for_pdf_pages() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "spec.pdf" with 10 pages of text
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("spec.pdf");
@@ -193,6 +205,10 @@ async fn scenario_text_mode_honors_offset_and_limit_for_pdf_pages() {
 #[tokio::test]
 #[serial]
 async fn scenario_images_mode_honors_offset_and_limit_for_embedded_images() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "catalog.pdf" with 6 embedded images
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("catalog.pdf");
@@ -251,6 +267,10 @@ async fn scenario_images_mode_honors_offset_and_limit_for_embedded_images() {
 #[tokio::test]
 #[serial]
 async fn scenario_default_page_cap_bounds_an_unbounded_pdf_read() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "huge.pdf" with 25 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("huge.pdf");
@@ -310,6 +330,10 @@ async fn scenario_default_page_cap_bounds_an_unbounded_pdf_read() {
 #[tokio::test]
 #[serial]
 async fn scenario_configurable_page_cap_via_environment_variable() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "configurable.pdf" with 25 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("configurable.pdf");
@@ -363,6 +387,10 @@ async fn scenario_configurable_page_cap_via_environment_variable() {
 #[tokio::test]
 #[serial]
 async fn scenario_explicit_limit_wins_over_the_default_page_cap() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "limited.pdf" with 25 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("limited.pdf");
@@ -408,6 +436,10 @@ async fn scenario_explicit_limit_wins_over_the_default_page_cap() {
 #[tokio::test]
 #[serial]
 async fn scenario_a_pdf_that_fits_entirely_is_returned_without_a_truncation_notice() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "short.pdf" with 4 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("short.pdf");
@@ -448,6 +480,10 @@ async fn scenario_a_pdf_that_fits_entirely_is_returned_without_a_truncation_noti
 #[tokio::test]
 #[serial]
 async fn scenario_an_offset_beyond_the_document_still_reports_the_total() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PDF file "tail.pdf" with 5 pages
     let temp_dir = tempfile::tempdir().expect("temp dir");
     let file_path = temp_dir.path().join("tail.pdf");

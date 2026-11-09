@@ -90,10 +90,12 @@ impl TestDirectory {
         &self,
         default_model: &str,
     ) -> Result<(Arc<SessionManager>, SessionId), Box<dyn std::error::Error>> {
-        let manager = Arc::new(SessionManager::new());
-        manager.set_default_model(default_model);
+        let manager = SessionManager::new();
+        // BUG-437: sessions need a start workspace.
+        manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
+        manager.set_default_model(default_model)?;
         let handle: &dyn SessionManagerHandle = manager.as_ref();
-        let identifier = handle.create_session(None);
+        let identifier = handle.create_session_checked(None)?;
         if identifier.value.is_empty() {
             return Err("session creation must succeed offline".into());
         }
@@ -105,7 +107,9 @@ impl Drop for TestDirectory {
     fn drop(&mut self) {
         reset_stores_for_tests();
         if let Some(directory) = &self.data_directory {
-            let _ = codelet_common::set_data_directory(directory.clone());
+            if let Err(error) = codelet_common::set_data_directory(directory.clone()) {
+                eprintln!("cannot restore the data directory: {error}");
+            }
         }
         for (key, value) in &self.environment {
             match value {

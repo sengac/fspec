@@ -5,33 +5,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "100-131",
+          "lines": "107-150",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,33 +64,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "137-158",
+          "lines": "156-181",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,33 +123,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "164-184",
+          "lines": "187-212",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -116,33 +182,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "191-234",
+          "lines": "218-271",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -153,33 +241,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "241-292",
+          "lines": "278-330",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,33 +300,55 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "303-337",
+          "lines": "341-378",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
                 53,
                 54,
-                55
-              ]
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ],
+              "firstLine": "pub(crate) fn handle_slash_debug(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -227,22 +359,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "380-409",
+          "lines": "423-453",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256
-              ]
+                51,
+                52,
+                53
+              ],
+              "firstLine": "let is_debug_enabled = sid",
+              "lastLine": ".unwrap_or(false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "if is_debug_enabled {",
+              "lastLine": "}"
             }
           ]
         }
@@ -253,22 +393,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "411-432",
+          "lines": "455-479",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/agent.rs",
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256
-              ]
+                51,
+                52,
+                53
+              ],
+              "firstLine": "let is_debug_enabled = sid",
+              "lastLine": ".unwrap_or(false);"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "if is_debug_enabled {",
+              "lastLine": "}"
             }
           ]
         }
@@ -279,7 +427,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_debug_rpc055.rs",
-          "lines": "438-475",
+          "lines": "485-519",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -288,7 +436,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "// counters AND the compaction-reduction suffix",
+              "lastLine": "self.agent_view_store.reset_token_state(session_id);"
             }
           ]
         }
@@ -304,9 +454,10 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_slash_debug.rs",
-      "rust/fspec-tui/src/views/agent.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+      "rust/fspec-tui/src/views/agent/header_build.rs",
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
     ],
-    "totalLinesCovered": 446
+    "totalLinesCovered": 600
   }
 }

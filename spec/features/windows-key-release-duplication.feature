@@ -6,6 +6,7 @@
 Feature: Key input doubles on Windows (crossterm emits Press + Release)
   """
   Shared stream filter in tui::create_event_stream (rust/tui/src/events.rs): the Event::Key match arm only yields TuiEvent::Key for KeyEventKind::Press events; Paste and Resize pass through unchanged. Known upstream references: ratatui#347, ratatui#1810, crossterm#772 — Windows console delivers both Press and Release; the documented fix is a Press-only filter at the event source.
+  TUI-132 (2026-11-09): the DisconnectDialog stage is removed (never shown since RPC-416), with its repeat-q scenario.
   """
 
   # ========================================
@@ -78,9 +79,3 @@ Feature: Key input doubles on Windows (crossterm emits Press + Release)
     Given the TUI is running in the board view with no dialog open
     When a ? key event with kind Repeat arrives at the app event loop
     Then no dialog is open
-
-  Scenario: A repeat q event does not quit the Disconnect dialog
-    Given the Disconnect dialog is open
-    When a q key event with kind Repeat arrives at the app event loop
-    Then the app has not quit
-    And the Disconnect dialog is still open

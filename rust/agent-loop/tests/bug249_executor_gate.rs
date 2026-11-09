@@ -75,8 +75,8 @@ async fn the_real_executor_cannot_bypass_failed_transcript_admission() -> TestRe
             .join(session.id.to_string()),
     };
     // @step When the actual streaming executor consumes that provider request
-    let result = tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( RigAgent::with_default_depth(agent), 'w...",
         run_agent_stream(
             RigAgent::with_default_depth(agent),
             "write sentinel",

@@ -4,19 +4,12 @@
       "name": "Claude resolver retains catalog context window",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "415-432",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "6-23",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
@@ -30,8 +23,17 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -41,19 +43,12 @@
       "name": "Claude resolver retains catalog maximum output tokens",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "435-452",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "26-43",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
@@ -67,8 +62,17 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -78,19 +82,12 @@
       "name": "Claude resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "455-472",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "46-63",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
@@ -104,8 +101,17 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -115,36 +121,37 @@
       "name": "OpenAI resolver trusts registry values",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "477-497",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "68-87",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/llm_provider.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for OpenAIProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,36 +161,37 @@
       "name": "OpenAI resolver reads default from OPENAI_CONTEXT_WINDOW env var",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "500-517",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "90-106",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/llm_provider.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for OpenAIProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -193,75 +201,77 @@
       "name": "OpenAI resolver reads default from OPENAI_MAX_OUTPUT_TOKENS env var",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "520-537",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "109-125",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/llm_provider.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for OpenAIProvider {",
+              "lastLine": "}"
             }
           ]
         }
       ]
     },
     {
-      "name": "OpenAI resolver falls back to compile-time defaults",
+      "name": "OpenAI resolver without env overrides declares no defaults",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "540-561",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "128-148",
           "implMappings": [
             {
-              "file": "rust/providers/src/openai.rs",
+              "file": "rust/providers/src/openai/llm_provider.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
-              ]
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for OpenAIProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -271,16 +281,12 @@
       "name": "Gemini resolver trusts registry and has correct defaults",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "566-582",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "153-169",
           "implMappings": [
             {
               "file": "rust/providers/src/gemini.rs",
               "lines": [
-                43,
-                44,
-                45,
-                46,
                 47,
                 48,
                 49,
@@ -297,51 +303,14 @@
                 60,
                 61,
                 62,
-                63
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Codex resolver returns correct defaults and suppresses max_output_tokens",
-      "testMappings": [
-        {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "587-602",
-          "implMappings": [
-            {
-              "file": "rust/providers/src/codex/mod.rs",
-              "lines": [
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141
-              ]
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for GeminiProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -351,12 +320,13 @@
       "name": "Codex resolver does not clamp registry values",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "605-619",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "174-188",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/mod.rs",
               "lines": [
+                114,
                 115,
                 116,
                 117,
@@ -383,8 +353,11 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for CodexProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -394,16 +367,12 @@
       "name": "Z.AI resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "624-638",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "193-207",
           "implMappings": [
             {
               "file": "rust/providers/src/zai.rs",
               "lines": [
-                64,
-                65,
-                66,
-                67,
                 68,
                 69,
                 70,
@@ -420,8 +389,14 @@
                 81,
                 82,
                 83,
-                84
-              ]
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for ZAIProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -431,19 +406,12 @@
       "name": "Copilot resolver returns correct defaults",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "643-661",
+          "file": "rust/providers/src/model_limits/provider_resolver_tests.rs",
+          "lines": "212-230",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
                 213,
                 214,
                 215,
@@ -457,8 +425,17 @@
                 223,
                 224,
                 225,
-                226
-              ]
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "firstLine": "impl crate::model_limits::ModelLimitsResolver for CopilotProvider {",
+              "lastLine": "}"
             }
           ]
         }
@@ -466,20 +443,20 @@
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 12,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits/provider_resolver_tests.rs"
     ],
     "implFiles": [
       "rust/providers/src/claude.rs",
-      "rust/providers/src/openai.rs",
+      "rust/providers/src/openai/llm_provider.rs",
       "rust/providers/src/gemini.rs",
       "rust/providers/src/codex/mod.rs",
       "rust/providers/src/zai.rs",
       "rust/providers/src/copilot/provider.rs"
     ],
-    "totalLinesCovered": 487
+    "totalLinesCovered": 438
   }
 }

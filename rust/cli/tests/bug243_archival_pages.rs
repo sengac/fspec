@@ -103,7 +103,7 @@ fn page_full_archival_dialogue_independently_from_reduced_model_replay() -> Test
     let mut unsupported = saved_cursor.clone().ok_or("archive cursor")?;
     unsupported.version = 2;
     assert!(get_session_archival_page(manifest.id, Some(unsupported), 4096).is_err());
-    let mut source_store = MessageStore::new()?;
+    let source_store = MessageStore::new()?;
     source_store.update_metadata(
         large_id,
         std::collections::HashMap::from([("unknown".into(), json!({"changed":true}))]),

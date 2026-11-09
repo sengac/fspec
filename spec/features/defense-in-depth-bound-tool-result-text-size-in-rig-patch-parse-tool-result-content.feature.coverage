@@ -4,8 +4,8 @@
       "name": "A 200 KiB text tool result is replaced by a truncation marker",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "996-1052",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "26-84",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -95,7 +95,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool"
             }
           ]
         }
@@ -105,8 +107,8 @@
       "name": "A 32 KiB text tool result is stored verbatim without a truncation marker",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1054-1080",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "86-112",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -196,7 +198,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool"
             }
           ]
         }
@@ -206,8 +210,8 @@
       "name": "A text payload exactly at the bound is stored verbatim",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1082-1110",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "114-142",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -297,7 +301,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool"
             }
           ]
         }
@@ -307,8 +313,8 @@
       "name": "An oversized image is still rejected by the existing image size check",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1112-1161",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "144-193",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -398,7 +404,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool"
             }
           ]
         }
@@ -408,8 +416,8 @@
       "name": "The truncation marker is valid UTF-8 JSON that the model can reason about",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1163-1204",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "195-236",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -499,7 +507,9 @@
                 116,
                 117,
                 118
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "/// BUG-168: hard cap on the number of Image parts a single PDF-shape tool"
             }
           ]
         }
@@ -509,8 +519,8 @@
       "name": "Running a verbose tool no longer cascades into PromptCancelled",
       "testMappings": [
         {
-          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
-          "lines": "1206-1247",
+          "file": "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs",
+          "lines": "238-278",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
@@ -730,7 +740,9 @@
                 246,
                 247,
                 248
-              ]
+              ],
+              "firstLine": "/// the rig patch replaces it with a truncation marker. Anything strictly",
+              "lastLine": "// EXT-016: Safety net — validate pixel dimensions before creating Image content"
             }
           ]
         }
@@ -742,11 +754,11 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
+      "rust/patches/rig-core/src/agent/prompt_request/streaming/tool_result_text_bound_tests.rs"
     ],
     "implFiles": [
       "rust/patches/rig-core/src/agent/prompt_request/streaming.rs"
     ],
-    "totalLinesCovered": 887
+    "totalLinesCovered": 888
   }
 }

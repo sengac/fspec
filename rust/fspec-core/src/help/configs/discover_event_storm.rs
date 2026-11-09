@@ -67,11 +67,11 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
 const COMMON_ERRORS: &[CommonError] = &[
     CommonError {
         error: "Work unit not found",
-        fix: "Ensure work unit exists: fspec show-work-unit <id>",
+        fix: "Ensure work unit exists: fspec show-work-unit <workUnitId>",
     },
     CommonError {
         error: "Work unit not in specifying status",
-        fix: "Move work unit to specifying: fspec update-work-unit-status <id> specifying",
+        fix: "Move work unit to specifying: fspec update-work-unit-status <workUnitId> specifying",
     },
     CommonError {
         error: "spec/work-units.json not found",

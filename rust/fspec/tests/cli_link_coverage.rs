@@ -55,6 +55,17 @@ Feature: User Login
     Then I see the dashboard
 ";
 
+/// BUG-452: link-coverage reads the linked lines, so the matching step
+/// comments sit at lines 45-48 of a file long enough for the 45-62 range.
+fn matching_test_file() -> String {
+    let filler = |from: usize, to: usize| -> String {
+        (from..=to)
+            .map(|line| format!("// filler line {line}\n"))
+            .collect()
+    };
+    format!("{}{TEST_MATCHING}{}", filler(1, 44), filler(49, 62))
+}
+
 /// Test file whose @step comments match FEATURE_STORY's Login steps.
 const TEST_MATCHING: &str = "// @step Given I am on the login page
 // @step When I enter valid credentials
@@ -77,7 +88,7 @@ const SIDECAR_LOGIN_EMPTY: &str = r#"{
   }
 }"#;
 
-const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/link-coverage.txt");
+const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/refac020/link-coverage.txt");
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Help output matches the captured TS fixture
@@ -102,7 +113,7 @@ fn scenario_help_output_matches_the_captured_ts_fixture() {
     // @step Then the exit code is 0
     assert_eq!(code, 0, "link-coverage --help must exit 0; stderr={stderr}");
 
-    // @step And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/link-coverage.txt
+    // @step And the stdout matches the canonical help fixture at rust/fspec/tests/fixtures/help/refac020/link-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
 
     // @step And stdout contains the substring "--scenario"
@@ -123,7 +134,7 @@ fn scenario_cli_links_a_test_mapping_and_prints_the_success_message() {
         "spec/features/user-login.feature.coverage",
         SIDECAR_LOGIN_EMPTY,
     );
-    write_file(ws.path(), "src/auth.test.ts", TEST_MATCHING);
+    write_file(ws.path(), "src/auth.test.ts", &matching_test_file());
 
     // @step When I run `fspec link-coverage user-login --scenario Login --test-file src/auth.test.ts --test-lines 45-62` in that tempdir
     let (code, stdout, stderr) = run_link(
@@ -250,7 +261,7 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
             "spec/features/user-login.feature.coverage",
             SIDECAR_LOGIN_EMPTY,
         );
-        write_file(ws, "src/auth.test.ts", TEST_MATCHING);
+        write_file(ws, "src/auth.test.ts", &matching_test_file());
     }
 
     // @step When I dispatch link-coverage through fspec_core::dispatch::dispatch_command against that workspace

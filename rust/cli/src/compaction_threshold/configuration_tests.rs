@@ -67,7 +67,7 @@ fn test_builtin_unknown_returns_80_percent() {
 fn test_resolve_priority_user_override() {
     let user_config = CompactionThresholdConfig::Tokens(150_000);
     assert_eq!(
-        resolve_compaction_threshold(200_000, 8_192, Some("claude-sonnet-4"), Some(&user_config)),
+        compaction_threshold_for(200_000, 8_192, Some("claude-sonnet-4"), Some(&user_config)),
         150_000
     );
 }
@@ -75,7 +75,7 @@ fn test_resolve_priority_user_override() {
 #[test]
 fn test_resolve_priority_builtin_gemini() {
     assert_eq!(
-        resolve_compaction_threshold(1_000_000, 65_536, Some("gemini-2.5-pro"), None),
+        compaction_threshold_for(1_000_000, 65_536, Some("gemini-2.5-pro"), None),
         800_000
     );
 }
@@ -83,7 +83,7 @@ fn test_resolve_priority_builtin_gemini() {
 #[test]
 fn test_resolve_priority_claude_default() {
     assert_eq!(
-        resolve_compaction_threshold(200_000, 8_192, Some("claude-sonnet-4"), None),
+        compaction_threshold_for(200_000, 8_192, Some("claude-sonnet-4"), None),
         160_000
     );
 }
@@ -91,7 +91,7 @@ fn test_resolve_priority_claude_default() {
 #[test]
 fn test_resolve_priority_unknown_default() {
     assert_eq!(
-        resolve_compaction_threshold(100_000, 8_192, Some("my-custom-llm"), None),
+        compaction_threshold_for(100_000, 8_192, Some("my-custom-llm"), None),
         80_000
     );
 }
@@ -100,7 +100,7 @@ fn test_resolve_priority_unknown_default() {
 fn test_resolve_clamps_user_threshold_above_context() {
     let user_config = CompactionThresholdConfig::Tokens(300_000);
     assert_eq!(
-        resolve_compaction_threshold(
+        compaction_threshold_for(
             200_000,
             100_000,
             Some("claude-sonnet-4"),
@@ -113,7 +113,7 @@ fn test_resolve_clamps_user_threshold_above_context() {
 #[test]
 fn test_resolve_openai_gpt4o() {
     assert_eq!(
-        resolve_compaction_threshold(128_000, 16_384, Some("gpt-4o"), None),
+        compaction_threshold_for(128_000, 16_384, Some("gpt-4o"), None),
         102_400
     );
 }

@@ -1,0 +1,211 @@
+{
+  "scenarios": [
+    {
+      "name": "validate reports a Rule block naming its line",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug563_rule_blocks_are_rejected.rs",
+          "lines": "65-92",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "/// BUG-563: fspec does not support Gherkin `Rule:` blocks (business rules",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315
+              ],
+              "firstLine": "match check_content(&content) {",
+              "lastLine": "(Some(feature), errors) => {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generate-coverage refuses a feature with a Rule block",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug563_rule_blocks_are_rejected.rs",
+          "lines": "94-116",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "/// BUG-563: fail `command` when the feature at `feature_path` holds a Rule",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/global.rs",
+              "lines": [
+                16,
+                17
+              ],
+              "firstLine": "// BUG-563: a Rule block would hide its scenarios.",
+              "lastLine": "crate::io::gherkin::reject_rule_blocks(feature_path, \"generate-coverage\")?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/plan.rs",
+              "lines": [
+                53,
+                54,
+                55
+              ],
+              "firstLine": "pub(super) fn plan(feature_path: &Path, coverage_path: &Path) -> Result<Plan, FspecCoreError> {",
+              "lastLine": "crate::io::gherkin::reject_rule_blocks(feature_path, \"generate-coverage\")?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "link-coverage, fspec audit and show-coverage reject a feature with a Rule block",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug563_rule_blocks_are_rejected.rs",
+          "lines": "118-164",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/io/gherkin.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ],
+              "firstLine": "/// BUG-563: fail `command` when the feature at `feature_path` holds a Rule",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                141,
+                142
+              ],
+              "firstLine": "// BUG-563: a Rule block would hide its scenarios.",
+              "lastLine": "crate::io::gherkin::reject_rule_blocks(feature_path, \"link-coverage\")?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/show_coverage/single.rs",
+              "lines": [
+                55,
+                56
+              ],
+              "firstLine": "// BUG-563: a Rule block would hide its scenarios.",
+              "lastLine": "crate::io::gherkin::reject_rule_blocks(&feature_path, \"show-coverage\")?;"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/audit/coverage.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ],
+              "firstLine": "// BUG-563: a Rule block hides its scenarios from coverage, so the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug563_rule_blocks_are_rejected.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/io/gherkin.rs",
+      "rust/fspec-core/src/commands/validate.rs",
+      "rust/fspec-core/src/commands/generate_coverage/global.rs",
+      "rust/fspec-core/src/commands/generate_coverage/plan.rs",
+      "rust/fspec-core/src/commands/link_coverage.rs",
+      "rust/fspec-core/src/commands/show_coverage/single.rs",
+      "rust/fspec-core/src/commands/audit/coverage.rs"
+    ],
+    "totalLinesCovered": 191
+  }
+}

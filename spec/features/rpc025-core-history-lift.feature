@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-025
 @rust
@@ -78,9 +79,3 @@ Feature: RPC-025 HistoryStore lifted from codelet_napi into codelet_core
     Then the returned HistoryMatch.text equals "submitted text"
     And HistoryMatch.session_id equals SessionId from the entry's session_id Uuid
     And HistoryMatch.timestamp_iso equals the entry.timestamp formatted via to_rfc3339()
-
-  Scenario: The TS Ink TUI persistence path stays byte-identical via the kept NAPI exports
-    Given the existing #[napi] persistence_add_history / persistence_get_history / persistence_search_history exports
-    Then their JS-facing parameter lists are unchanged
-    And their return types (NapiHistoryEntry) are unchanged
-    And invoking persistence_add_history("hi", "/cwd", "uuid") with the lifted core under it produces the same observable effect (one JSONL line appended) as before the lift

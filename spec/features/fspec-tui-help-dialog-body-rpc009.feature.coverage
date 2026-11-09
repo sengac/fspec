@@ -1,28 +1,30 @@
 {
   "scenarios": [
     {
-      "name": "HelpDialog body lists every keybinding from the RPC-009 scope on one line each",
+      "name": "HelpDialog body shows the board navigation keybindings within an 80x24 render",
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/components/help_dialog.rs",
-          "lines": "234-265",
+          "lines": "295-332",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
                 25
-              ]
+              ],
+              "firstLine": "use ratatui::buffer::Buffer;",
+              "lastLine": "use ratatui::buffer::Buffer;"
             }
           ]
         }
       ]
     },
     {
-      "name": "HelpDialog still uses the tui-popup adapter at Priority::Critical (RPC-008 invariant)",
+      "name": "HelpDialog renders via the shared dialog_theme renderer at Priority::Critical (RPC-008 invariant)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/components/help_dialog.rs",
-          "lines": "267-282",
+          "lines": "257-267",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/help_dialog.rs",
@@ -68,22 +70,41 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "pub fn for_board() -> Self {",
+              "lastLine": "}"
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "HelpDialog rendering is byte-equal across runs (insta snapshot regenerated)",
-      "testMappings": [
+        },
         {
           "file": "rust/fspec-tui/src/components/help_dialog.rs",
-          "lines": "284-300",
+          "lines": "269-293",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/help_dialog.rs",
               "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
                 96,
                 97,
                 98,
@@ -103,7 +124,60 @@
                 112,
                 113,
                 114
-              ]
+              ],
+              "firstLine": "pub fn for_board() -> Self {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HelpDialog rendering is byte-equal across runs (insta snapshot regenerated)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/src/components/help_dialog.rs",
+          "lines": "334-353",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_dialog.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ],
+              "firstLine": "fn render(&mut self, area: Rect, buf: &mut Buffer) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -120,6 +194,6 @@
     "implFiles": [
       "rust/fspec-tui/src/components/help_dialog.rs"
     ],
-    "totalLinesCovered": 126
+    "totalLinesCovered": 210
   }
 }

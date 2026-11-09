@@ -77,20 +77,20 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         pattern: "Remove Broken Hook",
         example:
             "fspec remove-virtual-hook AUTH-001 eslin\nfspec add-virtual-hook AUTH-001 post-implementing \"eslint src/\" --blocking",
-        description: "Remove hook with typo in command name, then add corrected version.",
+        description: Some("Remove hook with typo in command name, then add corrected version."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Replace Hook Configuration",
         example:
             "fspec remove-virtual-hook AUTH-001 eslint\nfspec add-virtual-hook AUTH-001 post-implementing \"eslint src/\" --git-context --blocking",
         description:
-            "Remove existing hook and add new one with different configuration (e.g., add git context).",
+            Some("Remove existing hook and add new one with different configuration (e.g., add git context)."),
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Remove After Workflow Transition",
         example:
             "fspec update-work-unit-status AUTH-001 done\n# Hook failed, no longer needed:\nfspec remove-virtual-hook AUTH-001 experimental-check",
-        description: "Remove experimental or one-time hooks after work unit completion.",
+        description: Some("Remove experimental or one-time hooks after work unit completion."),
     }),
 ];
 

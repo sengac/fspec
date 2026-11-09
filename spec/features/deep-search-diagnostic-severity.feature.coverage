@@ -5,11 +5,17 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug238_deep_search_severity.rs",
-          "lines": "61-77",
+          "lines": "37-53",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
                 139,
                 140,
                 141,
@@ -19,78 +25,34 @@
                 145,
                 146,
                 147,
-                485,
-                486,
-                487,
+                148,
+                149,
                 488,
                 489,
                 490,
                 491,
                 492,
                 493,
-                516,
-                517,
-                518,
+                494,
+                495,
+                496,
                 519,
-                538,
-                539,
-                540,
+                520,
+                521,
+                522,
                 541,
                 542,
-                557,
-                558,
-                559,
+                543,
+                544,
+                545,
                 560,
-                561
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "NAPI DeepSearch success stays out of incident logs",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/bug238_deep_search_severity.rs",
-          "lines": "81-97",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                480,
-                481,
-                482,
-                483,
-                484,
-                485,
-                486,
-                487,
-                488,
-                511,
-                512,
-                513,
-                514,
-                533,
-                534,
-                535,
-                536,
-                537,
-                552,
-                553,
-                554,
-                555,
-                556
-              ]
+                561,
+                562,
+                563,
+                564
+              ],
+              "firstLine": "let ephemeral_session_id = Uuid::new_v4();",
+              "lastLine": ");"
             }
           ]
         }
@@ -101,56 +63,21 @@
       "testMappings": [
         {
           "file": "rust/agent-loop/tests/bug238_deep_search_severity.rs",
-          "lines": "101-115",
+          "lines": "55-71",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
-                530,
-                531,
-                532,
-                533,
-                534,
-                535,
-                536,
-                550,
-                551,
-                552,
                 553,
                 554,
                 555,
-                556
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "NAPI DeepSearch failures remain actionable",
-      "testMappings": [
-        {
-          "file": "rust/agent-loop/tests/bug238_deep_search_severity.rs",
-          "lines": "119-133",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                525,
-                526,
-                527,
-                528,
-                529,
-                530,
-                531,
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551
-              ]
+                556,
+                557,
+                558,
+                559
+              ],
+              "firstLine": "let result = rig_agent.prompt(query).await.map_err(|e| {",
+              "lastLine": "});"
             }
           ]
         }
@@ -158,16 +85,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
       "rust/agent-loop/tests/bug238_deep_search_severity.rs"
     ],
     "implFiles": [
-      "rust/agent-loop/src/deep_search_handler.rs",
-      "rust/napi/src/deep_search_handler.rs"
+      "rust/agent-loop/src/deep_search_handler.rs"
     ],
-    "totalLinesCovered": 156
+    "totalLinesCovered": 81
   }
 }

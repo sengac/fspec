@@ -119,8 +119,8 @@ async fn builder_failure(fixture: &Fixture, row: &str, output: &Output) -> TestR
         // capture. 500 ms expired before this fixture reached either fault.
         Duration::from_secs(5),
     ));
-    let result = tokio::time::timeout(
-        Duration::from_secs(8),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_compactor_sub_agent_round( &mut inner, id, &Arc::new(...",
         run_compactor_sub_agent_round(
             &mut inner,
             id,

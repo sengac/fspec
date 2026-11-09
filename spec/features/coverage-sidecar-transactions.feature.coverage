@@ -1,0 +1,209 @@
+{
+  "scenarios": [
+    {
+      "name": "Competing selected mutations allow one fresh hash and reject the stale one",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/refac020_coverage_transactions/scenarios.rs",
+          "lines": "5-89",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(crate) struct SidecarTransaction {",
+              "lastLine": "reason: format!("
+            },
+            {
+              "file": "rust/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ],
+              "firstLine": "test_file,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy link and unlink wait for the shared sidecar transaction",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/refac020_coverage_transactions/scenarios.rs",
+          "lines": "91-138",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(crate) struct SidecarTransaction {",
+              "lastLine": "reason: format!("
+            },
+            {
+              "file": "rust/fspec-core/src/commands/unlink_coverage.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ],
+              "firstLine": "let not_found = || {",
+              "lastLine": "Some(_) => unique_scenario_index(&coverage, scenario, \"unlink-coverage\")?,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected and global generation wait then preserve latest participating write",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/refac020_coverage_transactions/scenarios.rs",
+          "lines": "140-183",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ],
+              "firstLine": "// BUG-301: dry-run and apply share one plan, so the preview reports",
+              "lastLine": "};"
+            },
+            {
+              "file": "rust/fspec-core/src/commands/generate_coverage/selected.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "firstLine": "let _transaction = if dry_run {",
+              "lastLine": "if !dry_run {"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/refac020_coverage_transactions/scenarios.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/coverage_lineage/transaction.rs",
+      "rust/fspec-core/src/commands/link_coverage.rs",
+      "rust/fspec-core/src/commands/unlink_coverage.rs",
+      "rust/fspec-core/src/commands/generate_coverage.rs",
+      "rust/fspec-core/src/commands/generate_coverage/selected.rs"
+    ],
+    "totalLinesCovered": 291
+  }
+}

@@ -28,13 +28,13 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
         pattern: "Update Project Metadata",
         example:
             "fspec update-foundation projectName \"fspec\"\nfspec update-foundation projectVision \"Standardized CLI for AI agent spec management\"\nfspec update-foundation projectType \"cli-tool\"",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Update Problem/Solution Space",
         example:
             "fspec update-foundation problemTitle \"Spec Management\"\nfspec update-foundation problemDefinition \"AI agents lack structured workflow\"\nfspec update-foundation problemImpact \"high\"\nfspec update-foundation solutionOverview \"CLI tool with Gherkin specs and ACDD workflow\"",
-        description: "undefined",
+        description: None,
     }),
 ];
 

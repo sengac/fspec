@@ -5,21 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "121-140",
+          "lines": "128-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -39,8 +29,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -51,21 +54,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "143-163",
+          "lines": "150-171",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -85,8 +78,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -97,21 +103,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "166-189",
+          "lines": "173-197",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -131,8 +127,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -143,7 +152,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "192-212",
+          "lines": "199-220",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
@@ -157,7 +166,9 @@
                 51,
                 52,
                 53
-              ]
+              ],
+              "firstLine": "pub fn push(&mut self, component: Box<dyn Component>) {",
+              "lastLine": "// walks from highest priority down, FIFO inside each priority"
             }
           ]
         }
@@ -168,21 +179,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "215-239",
+          "lines": "222-251",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -202,8 +203,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -214,7 +228,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "242-264",
+          "lines": "253-276",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
@@ -327,8 +341,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "pub fn push(&mut self, component: Box<dyn Component>) {",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -339,12 +366,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "267-284",
+          "lines": "278-304",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                57,
                 58,
                 59,
                 60,
@@ -353,8 +379,13 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69
+              ],
+              "firstLine": "/// Remove the most recently pushed layer regardless of priority.",
+              "lastLine": "}"
             }
           ]
         }
@@ -365,16 +396,20 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "287-303",
+          "lines": "306-331",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                70,
                 71,
                 72,
-                73
-              ]
+                73,
+                74,
+                75,
+                76
+              ],
+              "firstLine": "/// Remove the layer with the given id. Returns the removed",
+              "lastLine": "}"
             }
           ]
         }
@@ -385,21 +420,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "306-319",
+          "lines": "333-347",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -419,8 +444,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -431,21 +469,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "322-346",
+          "lines": "349-377",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -465,8 +493,21 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ],
+              "firstLine": "};",
+              "lastLine": "continue;"
             }
           ]
         }
@@ -477,20 +518,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "349-377",
+          "lines": "379-408",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178
-              ]
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ],
+              "firstLine": "follow = next;",
+              "lastLine": "/// LAST and ends up visually on top (rule [9])."
             }
           ]
         }
@@ -501,22 +544,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/compositor_tests.rs",
-          "lines": "380-402",
+          "lines": "410-452",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/compositor.rs",
               "lines": [
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167
-              ]
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ],
+              "firstLine": "return result;",
+              "lastLine": "let mut follow: Option<Action> = None;"
             }
           ]
         }
@@ -533,6 +579,6 @@
     "implFiles": [
       "rust/fspec-tui/src/compositor.rs"
     ],
-    "totalLinesCovered": 590
+    "totalLinesCovered": 666
   }
 }

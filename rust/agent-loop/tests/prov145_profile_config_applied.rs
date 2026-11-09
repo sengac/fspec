@@ -1,6 +1,6 @@
 //! PROV-145: per-profile loop-detection runtime wiring in the agent loop.
 //!
-//! Feature: spec/features/per-profile-loop-detection-session-wiring.feature
+//! Feature: spec/features/per-profile-loop-detection-detector-construction.feature
 //! (PER-TURN DETECTOR CONSTRUCTION + RETRY CAP scenarios)
 //!
 //! RED PHASE: `codelet_agent_loop::background_output::LoopDetectionWiring`
@@ -32,111 +32,17 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
-use std::path::PathBuf;
+mod prov145_profile_config_applied_support;
+
 use std::sync::atomic::Ordering;
-use std::sync::Arc;
 
 use codelet_agent_loop::background_output::LoopDetectionWiring;
 use codelet_agent_loop::{stream_loop_detector::StreamLoopDetector, BackgroundOutput};
-use codelet_cli::interactive::StreamOutput;
-use codelet_core::session_manager_handle::SessionManagerHandle;
-use codelet_sessions::background_session::BackgroundSession;
-use codelet_sessions::session_manager::SessionManager;
+use codelet_sessions::model_resolution::ProfileLoopDetection;
+use prov145_profile_config_applied_support::{
+    feed_loop_stream, fresh_background_session, loop_stream_words, read_source, DATA_DIR_GUARD,
+};
 use serial_test::serial;
-
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
-/// PROV-132/cont009 precedent: serialize tests that swap the process-global
-/// data directory.
-static DATA_DIR_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
-
-/// Trimmed offline models.dev catalog (openai only). The same fixture as
-/// rust/fspec-tui/tests/fixtures/prov101_models.json — inlined here so the
-/// agent-loop crate stays self-contained (no cross-crate fixture paths).
-const MODELS_FIXTURE: &str = r#"{
-  "openai": {
-    "id": "openai",
-    "name": "OpenAI",
-    "env": ["OPENAI_API_KEY"],
-    "models": {
-      "o3": {
-        "id": "o3",
-        "name": "o3",
-        "reasoning": true,
-        "tool_call": true,
-        "attachment": true,
-        "temperature": false,
-        "limit": { "context": 200000, "output": 100000 }
-      }
-    }
-  }
-}
-"#;
-
-/// Create a fresh BackgroundSession (Noop hooks — no agent loop spawned).
-/// Mirrors rust/fspec-tui/tests/cont008_goal_back_sync_test.rs.
-async fn fresh_background_session() -> (
-    tempfile::TempDir,
-    Arc<SessionManager>,
-    Arc<BackgroundSession>,
-) {
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let cache_dir = data_dir.path().join("cache");
-    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
-    std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models.json");
-    // RPC-423 precedent (cont009): reset stores BEFORE setting data
-    // directory so init_session_store() points at the fresh temp dir.
-    codelet_core::persistence::reset_stores_for_tests();
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
-    std::env::set_var("OPENAI_API_KEY", "prov145-fake-key");
-    let manager = Arc::new(SessionManager::new());
-    manager.set_default_model("openai/o3");
-    let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
-    let session = manager
-        .get_session(&sid.value)
-        .expect("session must exist after create_session");
-    (data_dir, manager, session)
-}
-
-/// The 10 normal (distinct) words of the loop stream's prefix.
-const NORMAL_WORDS: [&str; 10] = [
-    "the",
-    "architecture",
-    "of",
-    "the",
-    "streaming",
-    "loop",
-    "detector",
-    "relies",
-    "on",
-    "word",
-];
-
-/// The looping phrase (3 words).
-const LOOP_PHRASE: [&str; 3] = ["alpha", "beta", "gamma"];
-
-/// Build the full deterministic loop stream: 10 normal words + 80 loop
-/// words. After warning, enough new complete words remain to independently
-/// trigger again and escalate to abort.
-fn loop_stream_words() -> Vec<String> {
-    let mut words: Vec<String> = NORMAL_WORDS.iter().map(|w| format!("{w} ")).collect();
-    for i in 0..80 {
-        words.push(format!("{} ", LOOP_PHRASE[i % LOOP_PHRASE.len()]));
-    }
-    words
-}
-
-/// Feed the loop stream one word per `StreamEvent::Text` delta through the
-/// given BackgroundOutput.
-fn feed_loop_stream(output: &BackgroundOutput, words: &[String]) {
-    for word in words {
-        output.emit(codelet_cli::interactive::StreamEvent::Text(word.clone()));
-    }
-}
 
 // ---------------------------------------------------------------------------
 // PER-TURN DETECTOR CONSTRUCTION
@@ -182,12 +88,12 @@ async fn a_stored_loop_detection_enabled_false_disables_the_detector() {
 async fn a_wiring_built_from_absent_values_keeps_the_detector_enabled() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
-    // @step Given a per-turn loop-detection wiring built from all absent values
+    // @step Given a per-turn loop-detection wiring converted from a resolution with all values absent
     let (_dir, _manager, session) = fresh_background_session().await;
     let output = BackgroundOutput::with_provider(
         session.clone(),
         "openai".to_string(),
-        Some(LoopDetectionWiring::default()),
+        Some(LoopDetectionWiring::from(ProfileLoopDetection::default())),
     );
 
     // @step When the session's streaming loop detector path feeds a 10-word normal prefix followed by "alpha beta gamma" repeated 10 times
@@ -359,16 +265,35 @@ fn the_agent_loop_reads_the_per_turn_retry_cap_from_the_profile_resolution() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-fn read_source(rel: &str) -> String {
-    // CARGO_MANIFEST_DIR = rust/agent-loop; walk up two parents to repo root.
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .map(|p| p.join(rel))
-        .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
+/// Scenario: The agent loop converts the profile resolution without literal fallbacks
+#[test]
+fn the_agent_loop_converts_the_profile_resolution_without_literal_fallbacks() {
+    // @step Given a profile resolution that stores only loopDetectionWindow 30
+    let resolved = ProfileLoopDetection {
+        window: Some(30),
+        ..ProfileLoopDetection::default()
+    };
+    // @step When it is converted into the per-turn loop-detection wiring
+    let wiring = LoopDetectionWiring::from(resolved);
+    // @step Then the wiring keeps window 30 and takes the named RIG-014 defaults for the absent values
+    use codelet_agent_loop::loop_detection_defaults as defaults;
+    assert_eq!(
+        wiring,
+        LoopDetectionWiring {
+            enabled: defaults::DEFAULT_LOOP_DETECTION_ENABLED,
+            window: 30,
+            max_repeats: defaults::DEFAULT_LOOP_DETECTION_MAX_REPEATS,
+            max_retries: defaults::DEFAULT_LOOP_DETECTION_MAX_RETRIES,
+        }
+    );
+    assert_eq!(
+        LoopDetectionWiring::from(ProfileLoopDetection::default()),
+        LoopDetectionWiring::default()
+    );
+    // @step And the agent loop builds its wiring with LoopDetectionWiring::from and carries no literal fallback values
+    let agent_loop = read_source("rust/agent-loop/src/agent_loop.rs");
+    assert!(agent_loop.contains("LoopDetectionWiring::from("));
+    for literal in ["unwrap_or(true)", "unwrap_or(160)", "unwrap_or(10)"] {
+        assert!(!agent_loop.contains(literal), "literal fallback {literal}");
+    }
 }

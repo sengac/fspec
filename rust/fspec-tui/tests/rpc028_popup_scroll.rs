@@ -5,11 +5,11 @@
 //!
 //! Feature: spec/features/rpc028-scroll-mouse-wrap-parity.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::views::agent::{
     FilePopupOutcome, FileSearchPopup, PopupOutcome, SlashCommandPopup,
 };
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::layout::Rect;
 
@@ -24,7 +24,8 @@ fn make_slash(n: usize) -> SlashCommandPopup {
 }
 
 #[test]
-fn rpc028_slash_scroll_offset_advances_past_visible_rows_so_selection_stays_visible() {
+fn rpc028_slash_scroll_offset_advances_past_visible_rows_so_selection_stays_visible() -> TestResult
+{
     // @step Given the SlashCommandPopup is open with 14 matching commands and visible_rows is 10
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
@@ -42,10 +43,11 @@ fn rpc028_slash_scroll_offset_advances_past_visible_rows_so_selection_stays_visi
     assert!(so <= 10 && 10 < so + 10);
     // @step And the top body row paints the "↑" glyph
     assert!(p.shows_up_indicator());
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_down_at_last_match_wraps_to_first() {
+fn rpc028_slash_down_at_last_match_wraps_to_first() -> TestResult {
     // @step Given the SlashCommandPopup is open with 14 matching commands
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
@@ -57,10 +59,11 @@ fn rpc028_slash_down_at_last_match_wraps_to_first() {
     assert_eq!(p.selected_index(), 0);
     // @step And the scroll_offset is reset to 0 so row 0 is visible
     assert_eq!(p.scroll_offset(), 0);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_up_at_first_match_wraps_to_last_and_scrolls_to_show_it() {
+fn rpc028_slash_up_at_first_match_wraps_to_last_and_scrolls_to_show_it() -> TestResult {
     // @step Given the SlashCommandPopup is open with 14 matching commands
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
@@ -75,10 +78,11 @@ fn rpc028_slash_up_at_first_match_wraps_to_last_and_scrolls_to_show_it() {
     assert!(so <= 13 && 13 < so + 10);
     // @step And the bottom body row stops painting the "↓" glyph
     assert!(!p.shows_down_indicator());
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_mouse_wheel_inside_popup_rect_moves_selection() {
+fn rpc028_slash_mouse_wheel_inside_popup_rect_moves_selection() -> TestResult {
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
     p.set_selected_for_test(5);
@@ -99,13 +103,14 @@ fn rpc028_slash_mouse_wheel_inside_popup_rect_moves_selection() {
     );
     match outcome {
         PopupOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     assert_eq!(p.selected_index(), 6);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_mouse_wheel_outside_popup_rect_is_ignored() {
+fn rpc028_slash_mouse_wheel_outside_popup_rect_is_ignored() -> TestResult {
     // @step Given the SlashCommandPopup is open above AgentView's MultiLineInput
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
@@ -130,48 +135,53 @@ fn rpc028_slash_mouse_wheel_outside_popup_rect_is_ignored() {
     // @step Then the popup returns EventResult::Ignored
     match outcome {
         PopupOutcome::Ignored => {}
-        other => panic!("expected Ignored, got {other:?}"),
+        other => return Err(format!("expected Ignored, got {other:?}").into()),
     }
     // @step And the event bubbles to AgentView so the scrollback scrolls instead
     assert_eq!(p.selected_index(), 5);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_page_down_jumps_by_visible_rows() {
+fn rpc028_slash_page_down_jumps_by_visible_rows() -> TestResult {
     let mut p = make_slash(20);
     p.set_visible_rows_for_test(8);
     assert_eq!(p.selected_index(), 0);
     p.handle_key(KeyCode::PageDown, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 8);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_page_up_jumps_back_by_visible_rows() {
+fn rpc028_slash_page_up_jumps_back_by_visible_rows() -> TestResult {
     let mut p = make_slash(20);
     p.set_visible_rows_for_test(8);
     p.set_selected_for_test(15);
     p.handle_key(KeyCode::PageUp, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 7);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_home_jumps_to_first_with_zero_scroll() {
+fn rpc028_slash_home_jumps_to_first_with_zero_scroll() -> TestResult {
     let mut p = make_slash(20);
     p.set_visible_rows_for_test(8);
     p.set_selected_for_test(15);
     p.handle_key(KeyCode::Home, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 0);
     assert_eq!(p.scroll_offset(), 0);
+    Ok(())
 }
 
 #[test]
-fn rpc028_slash_end_jumps_to_last_with_scroll_so_last_row_visible() {
+fn rpc028_slash_end_jumps_to_last_with_scroll_so_last_row_visible() -> TestResult {
     let mut p = make_slash(20);
     p.set_visible_rows_for_test(8);
     p.handle_key(KeyCode::End, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 19);
     let so = p.scroll_offset();
     assert!(so <= 19 && 19 < so + 8);
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -186,7 +196,7 @@ fn make_file_popup(n: usize) -> FileSearchPopup {
 }
 
 #[test]
-fn rpc028_file_mouse_wheel_up_at_first_wraps_to_last() {
+fn rpc028_file_mouse_wheel_up_at_first_wraps_to_last() -> TestResult {
     // @step Given the FileSearchPopup is open with 12 matches and visible_rows is 10
     let mut p = make_file_popup(12);
     p.set_visible_rows_for_test(10);
@@ -211,17 +221,18 @@ fn rpc028_file_mouse_wheel_up_at_first_wraps_to_last() {
     );
     match outcome {
         FilePopupOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     // @step Then the selected_index wraps to 11
     assert_eq!(p.selected_index(), 11);
     // @step And the scroll_offset advances so the last row is visible
     let so = p.scroll_offset();
     assert!(so <= 11 && 11 < so + 10);
+    Ok(())
 }
 
 #[test]
-fn rpc028_file_mouse_wheel_up_moves_selection_up_one() {
+fn rpc028_file_mouse_wheel_up_moves_selection_up_one() -> TestResult {
     // @step Given the FileSearchPopup is open with 12 matches and visible_rows is 10
     let mut p = make_file_popup(12);
     p.set_visible_rows_for_test(10);
@@ -245,17 +256,18 @@ fn rpc028_file_mouse_wheel_up_moves_selection_up_one() {
     );
     match outcome {
         FilePopupOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     // @step Then the selected_index decreases to 4
     assert_eq!(p.selected_index(), 4);
     // @step And the popup remains visible with the selection inside the window
     let so = p.scroll_offset();
     assert!(so <= 4 && 4 < so + 10);
+    Ok(())
 }
 
 #[test]
-fn rpc028_file_mouse_wheel_down_moves_selection_down_one() {
+fn rpc028_file_mouse_wheel_down_moves_selection_down_one() -> TestResult {
     let mut p = make_file_popup(12);
     p.set_visible_rows_for_test(10);
     p.set_selected_for_test(5);
@@ -276,13 +288,14 @@ fn rpc028_file_mouse_wheel_down_moves_selection_down_one() {
     );
     match outcome {
         FilePopupOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     assert_eq!(p.selected_index(), 6);
+    Ok(())
 }
 
 #[test]
-fn rpc028_file_scroll_offset_advances_past_visible_rows() {
+fn rpc028_file_scroll_offset_advances_past_visible_rows() -> TestResult {
     let mut p = make_file_popup(14);
     p.set_visible_rows_for_test(10);
     for _ in 0..10 {
@@ -292,10 +305,11 @@ fn rpc028_file_scroll_offset_advances_past_visible_rows() {
     let so = p.scroll_offset();
     assert!(so <= 10 && 10 < so + 10);
     assert!(p.shows_up_indicator());
+    Ok(())
 }
 
 #[test]
-fn rpc028_file_home_and_end_keys() {
+fn rpc028_file_home_and_end_keys() -> TestResult {
     let mut p = make_file_popup(14);
     p.set_visible_rows_for_test(8);
     p.handle_key(KeyCode::End, KeyModifiers::NONE);
@@ -303,6 +317,7 @@ fn rpc028_file_home_and_end_keys() {
     p.handle_key(KeyCode::Home, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 0);
     assert_eq!(p.scroll_offset(), 0);
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -312,132 +327,144 @@ fn rpc028_file_home_and_end_keys() {
 // under the 300-LoC source-shape budget. Behaviour is unchanged.
 // ---------------------------------------------------------------------
 
-use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
-
 #[test]
-fn legacy_slash_new_popup_has_full_registry_and_first_selected() {
+fn legacy_slash_new_popup_has_full_registry_and_first_selected() -> TestResult {
     let p = SlashCommandPopup::new();
     assert!(p.match_count() > 0);
     assert_eq!(p.selected_index(), 0);
     assert_eq!(p.filter(), "");
     assert!(p.selected().is_some());
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_set_filter_narrows_matches() {
+fn legacy_slash_set_filter_narrows_matches() -> TestResult {
     let mut p = SlashCommandPopup::new();
     p.set_filter("he");
     assert!(p.match_count() >= 1);
     assert_eq!(p.matches()[0].name(), "help");
     assert_eq!(p.selected_index(), 0);
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_down_wraps_around() {
+fn legacy_slash_down_wraps_around() -> TestResult {
     let mut p = SlashCommandPopup::new();
     for _ in 0..p.match_count() {
         p.handle_key(KeyCode::Down, KeyModifiers::NONE);
     }
     assert_eq!(p.selected_index(), 0);
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_up_wraps_to_end() {
+fn legacy_slash_up_wraps_to_end() -> TestResult {
     let mut p = SlashCommandPopup::new();
     p.handle_key(KeyCode::Up, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), p.match_count() - 1);
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_enter_emits_selected_action() {
+fn legacy_slash_enter_emits_selected_action() -> TestResult {
     let mut p = SlashCommandPopup::new();
     match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
         PopupOutcome::Selected(a) => assert_eq!(a, SlashCommandAction::Help),
-        other => panic!("expected Selected, got {other:?}"),
+        other => return Err(format!("expected Selected, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_tab_returns_filled_with_command_name() {
+fn legacy_slash_tab_returns_filled_with_command_name() -> TestResult {
     let mut p = SlashCommandPopup::new();
     p.set_filter("c");
     match p.handle_key(KeyCode::Tab, KeyModifiers::NONE) {
         PopupOutcome::Filled(s) => assert!(s.starts_with('/'), "got: {s}"),
-        other => panic!("expected Filled, got {other:?}"),
+        other => return Err(format!("expected Filled, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_esc_returns_dismiss() {
+fn legacy_slash_esc_returns_dismiss() -> TestResult {
     let mut p = SlashCommandPopup::new();
     match p.handle_key(KeyCode::Esc, KeyModifiers::NONE) {
         PopupOutcome::Dismiss => {}
-        other => panic!("expected Dismiss, got {other:?}"),
+        other => return Err(format!("expected Dismiss, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_slash_ordinary_char_is_ignored() {
+fn legacy_slash_ordinary_char_is_ignored() -> TestResult {
     let mut p = SlashCommandPopup::new();
     match p.handle_key(KeyCode::Char('q'), KeyModifiers::NONE) {
         PopupOutcome::Ignored => {}
-        other => panic!("expected Ignored, got {other:?}"),
+        other => return Err(format!("expected Ignored, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_file_new_popup_has_no_matches_and_zero_index() {
+fn legacy_file_new_popup_has_no_matches_and_zero_index() -> TestResult {
     let p = FileSearchPopup::new(5, "rea");
     assert_eq!(p.anchor_offset(), 5);
     assert_eq!(p.filter(), "rea");
     assert_eq!(p.match_count(), 0);
     assert_eq!(p.selected_index(), 0);
+    Ok(())
 }
 
 #[test]
-fn legacy_file_set_matches_clamps_selection() {
+fn legacy_file_set_matches_clamps_selection() -> TestResult {
     let mut p = FileSearchPopup::new(0, "");
     p.set_matches(vec!["a".to_string(), "b".to_string(), "c".to_string()]);
     assert_eq!(p.match_count(), 3);
+    Ok(())
 }
 
 #[test]
-fn legacy_file_enter_selects_current_match_for_splice() {
+fn legacy_file_enter_selects_current_match_for_splice() -> TestResult {
     let mut p = FileSearchPopup::new(6, "rea");
     p.set_matches(vec!["README.md".to_string()]);
     match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
         FilePopupOutcome::SelectedEnter(path) => assert_eq!(path, "README.md"),
-        other => panic!("expected SelectedEnter, got {other:?}"),
+        other => return Err(format!("expected SelectedEnter, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_file_tab_selects_current_match_for_partial_fill() {
+fn legacy_file_tab_selects_current_match_for_partial_fill() -> TestResult {
     let mut p = FileSearchPopup::new(6, "rea");
     p.set_matches(vec!["README.md".to_string()]);
     match p.handle_key(KeyCode::Tab, KeyModifiers::NONE) {
         FilePopupOutcome::SelectedTab(path) => assert_eq!(path, "README.md"),
-        other => panic!("expected SelectedTab, got {other:?}"),
+        other => return Err(format!("expected SelectedTab, got {other:?}").into()),
     }
+    Ok(())
 }
 
 #[test]
-fn legacy_file_down_wraps_around() {
+fn legacy_file_down_wraps_around() -> TestResult {
     let mut p = FileSearchPopup::new(0, "");
     p.set_matches(vec!["a".to_string(), "b".to_string()]);
     p.handle_key(KeyCode::Down, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 1);
     p.handle_key(KeyCode::Down, KeyModifiers::NONE);
     assert_eq!(p.selected_index(), 0);
+    Ok(())
 }
 
 #[test]
-fn legacy_file_enter_with_no_matches_is_ignored() {
+fn legacy_file_enter_with_no_matches_is_ignored() -> TestResult {
     let mut p = FileSearchPopup::new(0, "");
     match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
         FilePopupOutcome::Ignored => {}
-        other => panic!("expected Ignored, got {other:?}"),
+        other => return Err(format!("expected Ignored, got {other:?}").into()),
     }
+    Ok(())
 }
 use codelet_fspec_tui::components::thinking_level_dialog::ThinkingLevelDialog;
 use codelet_fspec_tui::components::Component;
@@ -485,7 +512,7 @@ fn matches(n: usize) -> Vec<HistoryMatch> {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc028_resume_home_jumps_to_first_session_and_scrolls_to_top() {
+fn rpc028_resume_home_jumps_to_first_session_and_scrolls_to_top() -> TestResult {
     // @step Given the /resume session picker is open with 20 sessions and visible_rows is 8
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(20));
@@ -506,7 +533,7 @@ fn rpc028_resume_home_jumps_to_first_session_and_scrolls_to_top() {
     let outcome = v.handle_key(KeyCode::Home, KeyModifiers::NONE, visible_rows);
     match outcome {
         ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     // @step Then the selected_index is 0
     assert_eq!(v.selected_index(), 0);
@@ -514,10 +541,11 @@ fn rpc028_resume_home_jumps_to_first_session_and_scrolls_to_top() {
     assert_eq!(v.scroll_offset(), 0);
     // @step And the top body row no longer paints the "↑" glyph
     assert_eq!(v.scroll_offset(), 0);
+    Ok(())
 }
 
 #[test]
-fn rpc028_resume_left_click_on_row_selects_that_row() {
+fn rpc028_resume_left_click_on_row_selects_that_row() -> TestResult {
     // @step Given the /resume session picker is open with 20 sessions and visible_rows is 8
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(20));
@@ -553,12 +581,13 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
     );
     match outcome {
         ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     // @step Then the selected_index becomes 10
     assert_eq!(v.selected_index(), 10);
     // @step And the row is highlighted with the inverse style
     assert!(v.selected().is_some());
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -566,7 +595,7 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc028_search_end_jumps_to_last_match_and_scrolls() {
+fn rpc028_search_end_jumps_to_last_match_and_scrolls() -> TestResult {
     // @step Given the /search history palette has 25 matches and visible_rows is 10
     let mut v = SearchHistoryView::new();
     v.set_matches(matches(25));
@@ -578,7 +607,7 @@ fn rpc028_search_end_jumps_to_last_match_and_scrolls() {
     let outcome = v.handle_key(KeyCode::End, KeyModifiers::NONE, visible_rows);
     match outcome {
         SearchHistoryViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+        other => return Err(format!("expected Continued, got {other:?}").into()),
     }
     // @step Then the selected_index is 24
     assert_eq!(v.selected_index(), 24);
@@ -587,6 +616,7 @@ fn rpc028_search_end_jumps_to_last_match_and_scrolls() {
     assert!(so <= 24 && 24 < so + visible_rows);
     // @step And the top body row paints the "↑" glyph
     assert!(so > 0);
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -594,9 +624,14 @@ fn rpc028_search_end_jumps_to_last_match_and_scrolls() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn rpc028_thinking_level_mouse_wheel_down_advances_and_wraps() {
-    // @step Given the ThinkingLevelDialog is open with the High level selected
-    let mut d = ThinkingLevelDialog::new(SessionId::new("s0".to_string()), ThinkingLevel::High);
+fn rpc028_thinking_level_mouse_wheel_down_advances_and_wraps() -> TestResult {
+    // @step Given the ThinkingLevelDialog is open with the Model default level selected
+    // BUG-455: Model default is the last row, so ScrollDown wraps from it.
+    let mut d = ThinkingLevelDialog::new(
+        SessionId::new("s0".to_string()),
+        ThinkingLevel::ModelDefault,
+        four_levels(),
+    );
     // @step When the user emits MouseEventKind::ScrollDown inside the dialog rect
     let _ = d.handle_event(&Event::Mouse(MouseEvent {
         kind: MouseEventKind::ScrollDown,
@@ -605,9 +640,10 @@ fn rpc028_thinking_level_mouse_wheel_down_advances_and_wraps() {
         modifiers: KeyModifiers::NONE,
     }));
     // @step Then the selection wraps to Off
-    assert_eq!(d.selected_level(), ThinkingLevel::Off);
+    assert_eq!(d.selected_level(), Some(ThinkingLevel::Off));
     // @step And the dialog remains visible with the inverse highlight on the new row
     // (the dialog is still alive — ScrollDown does NOT emit a remove callback.)
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -620,7 +656,7 @@ use codelet_fspec_tui::components::scroll_viewport::{
 };
 
 #[test]
-fn rpc028_scroll_viewport_wrap_index_wraps_both_directions() {
+fn rpc028_scroll_viewport_wrap_index_wraps_both_directions() -> TestResult {
     // @step Given the shared scroll_viewport module is loaded
     // @step When wrap_index(0, -1, 5) is called
     // @step Then it returns 4
@@ -629,226 +665,52 @@ fn rpc028_scroll_viewport_wrap_index_wraps_both_directions() {
     assert_eq!(sv_wrap_index(4, 1, 5), 0);
     // @step And wrap_index(2, 10, 5) returns 2
     assert_eq!(sv_wrap_index(2, 10, 5), 2);
+    Ok(())
 }
 
 #[test]
-fn rpc028_scroll_viewport_ensure_visible_scrolls_down_past_window() {
+fn rpc028_scroll_viewport_ensure_visible_scrolls_down_past_window() -> TestResult {
     // @step Given scroll_offset is 0 and visible_rows is 8 and total is 20
     let mut so: usize = 0;
     // @step When ensure_visible(&mut scroll_offset, 10, 8, 20) is called
     sv_ensure_visible(&mut so, 10, 8, 20);
     // @step Then scroll_offset is updated so 10 lies in [scroll_offset, scroll_offset + 8)
     assert!(so <= 10 && 10 < so + 8);
+    Ok(())
 }
 
 #[test]
-fn rpc028_wheel_velocity_ramps_up_then_resets_after_gap() {
-    use std::thread::sleep;
-    use std::time::Duration;
+fn rpc028_wheel_velocity_ramps_up_then_resets_after_gap() -> TestResult {
+    use std::time::{Duration, Instant};
     // @step Given a fresh WheelVelocity
     let v = SvVel::new();
     // @step When the user emits 5 ScrollDown events within 100ms of each other
+    // TEST-042: the event times are injected, never slept for.
+    let start = Instant::now();
     let mut last = 0;
+    let mut at = start;
     for _ in 0..5 {
-        last = v.step(SvDir::Down);
-        sleep(Duration::from_millis(20));
+        last = v.step_at(SvDir::Down, at);
+        at += Duration::from_millis(20);
     }
     // @step Then the 5th step reports velocity 5
     assert_eq!(last, 5);
     // @step And after a gap of >=150ms the next step resets velocity to 1
-    sleep(Duration::from_millis(200));
-    let next = v.step(SvDir::Down);
+    let next = v.step_at(SvDir::Down, at + Duration::from_millis(200));
     assert_eq!(next, 1);
+    Ok(())
 }
 
-// ---------------------------------------------------------------------
-// TUI-098 — Double-click to resume session
-// ---------------------------------------------------------------------
-
-#[test]
-fn tui098_double_click_same_row_resumes_session() {
-    // @step Given the /resume session picker is open with 20 sessions and visible_rows is 8
-    let mut v = ResumeSessionView::new();
-    v.set_sessions(sessions(20));
-    let visible_rows = 8;
-    // @step And the scroll_offset is 0 so rows 0..7 are visible
-    assert_eq!(v.scroll_offset(), 0);
-    let body_rect = Rect {
-        x: 0,
-        y: 2,
-        width: 60,
-        height: visible_rows as u16,
-    };
-    // @step When the user double-clicks (two left-button-down events within 300ms) on the third visible row
-    // First click — should be Continued (single click)
-    let outcome1 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 2,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    match outcome1 {
-        ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued for first click, got {other:?}"),
-    }
-    // Second click — should be Selected (double click)
-    let outcome2 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 2,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    // @step Then the selected_index becomes 2
-    assert_eq!(v.selected_index(), 2);
-    // @step And the session at index 2 is resumed (ResumeSessionViewOutcome::Selected is emitted)
-    match outcome2 {
-        ResumeSessionViewOutcome::Selected(id) => {
-            assert_eq!(id.to_string(), "s2");
-        }
-        other => panic!("expected Selected, got {other:?}"),
-    }
-    // @step And the /resume view closes
-    // (The caller handles closing the view when Selected is emitted)
-}
-
-#[test]
-fn tui098_two_clicks_over_300ms_are_single_clicks() {
-    use std::thread::sleep;
-    use std::time::Duration;
-    // @step Given the /resume session picker is open with 20 sessions and visible_rows is 8
-    let mut v = ResumeSessionView::new();
-    v.set_sessions(sessions(20));
-    let visible_rows = 8;
-    // @step And the scroll_offset is 0 with selected_index 0
-    assert_eq!(v.scroll_offset(), 0);
-    assert_eq!(v.selected_index(), 0);
-    let body_rect = Rect {
-        x: 0,
-        y: 2,
-        width: 60,
-        height: visible_rows as u16,
-    };
-    // @step When the user clicks on row 3 and then clicks the same row again after 500ms
-    let outcome1 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 3,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    // @step Then the selected_index becomes 3 after the first click
-    match outcome1 {
-        ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
-    }
-    assert_eq!(v.selected_index(), 3);
-    sleep(Duration::from_millis(500));
-    let outcome2 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 3,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    // @step And the selected_index remains 3 after the second click
-    assert_eq!(v.selected_index(), 3);
-    // @step And no session is resumed (ResumeSessionViewOutcome::Selected is NOT emitted)
-    match outcome2 {
-        ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
-    }
-}
-
-#[test]
-fn tui098_footer_hint_text_indicates_double_click_resumes_session() {
-    use ratatui::buffer::Buffer;
-    // @step Given the /resume session picker is open
-    let mut v = ResumeSessionView::new();
-    // @step When the view renders the footer
-    let area = Rect::new(0, 0, 80, 24);
-    let mut buf = Buffer::empty(area);
-    v.render(area, &mut buf);
-    // @step Then the footer displays "DblClick Resume | Enter Select | ↑↓ Navigate | D Delete | Esc Cancel"
-    // The footer is on the last row of the buffer
-    let footer_y = area.height - 1;
-    let footer_text: String = (0..area.width)
-        .map(|x| buf.cell((x, footer_y)).expect("cell in bounds").symbol())
-        .collect();
-    assert!(
-        footer_text.contains("DblClick"),
-        "Footer should contain 'DblClick', got: {footer_text}"
-    );
-    assert!(
-        footer_text.contains("Resume"),
-        "Footer should contain 'Resume', got: {footer_text}"
-    );
-    assert!(
-        footer_text.contains("Enter Select"),
-        "Footer should contain 'Enter Select', got: {footer_text}"
-    );
-}
-
-#[test]
-fn tui098_quick_clicks_different_rows_are_single_clicks() {
-    // @step Given the /resume session picker is open with 20 sessions and visible_rows is 8
-    let mut v = ResumeSessionView::new();
-    v.set_sessions(sessions(20));
-    let visible_rows = 8;
-    // @step And the scroll_offset is 0 with selected_index 0
-    assert_eq!(v.scroll_offset(), 0);
-    assert_eq!(v.selected_index(), 0);
-    let body_rect = Rect {
-        x: 0,
-        y: 2,
-        width: 60,
-        height: visible_rows as u16,
-    };
-    // @step When the user clicks on row 2 and then quickly clicks on row 5 within 200ms
-    let outcome1 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 2,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    // @step Then the selected_index becomes 2 after the first click
-    match outcome1 {
-        ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
-    }
-    assert_eq!(v.selected_index(), 2);
-    let outcome2 = v.handle_mouse(
-        MouseEvent {
-            kind: MouseEventKind::Down(MouseButton::Left),
-            column: 5,
-            row: body_rect.y + 5,
-            modifiers: KeyModifiers::NONE,
-        },
-        body_rect,
-        visible_rows,
-    );
-    // @step And the selected_index becomes 5 after the second click
-    assert_eq!(v.selected_index(), 5);
-    // @step And no session is resumed (ResumeSessionViewOutcome::Selected is NOT emitted)
-    match outcome2 {
-        ResumeSessionViewOutcome::Continued => {}
-        other => panic!("expected Continued, got {other:?}"),
+/// MODEL-011: a model offering Off and the efforts low, medium and high.
+fn four_levels() -> codelet_rpc_types::ThinkingOptions {
+    codelet_rpc_types::ThinkingOptions::Levels {
+        model: "test/model".to_string(),
+        choices: vec![
+            codelet_rpc_types::ThinkingChoice::Off,
+            codelet_rpc_types::ThinkingChoice::Effort("low".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("medium".to_string()),
+            codelet_rpc_types::ThinkingChoice::Effort("high".to_string()),
+        ],
+        takes_off: true,
     }
 }

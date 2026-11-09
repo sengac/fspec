@@ -43,7 +43,9 @@
                 72,
                 73,
                 74
-              ]
+              ],
+              "firstLine": "let home = auth_storage::home();",
+              "lastLine": "return Err(AuthError::Changed);"
             }
           ]
         }
@@ -54,16 +56,8 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov159_refresh_completion.rs",
-          "lines": "64-130",
+          "lines": "64-133",
           "implMappings": [
-            {
-              "file": "rust/providers/src/codex/legacy_auth.rs",
-              "lines": [
-                45,
-                46,
-                47
-              ]
-            },
             {
               "file": "rust/providers/src/codex/auth_refresh.rs",
               "lines": [
@@ -123,7 +117,31 @@
                 244,
                 245,
                 246
-              ]
+              ],
+              "firstLine": "let previous = state.refresh_token.clone();",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ],
+              "firstLine": "pub(crate) async fn transaction_async<T>(",
+              "lastLine": "}"
             }
           ]
         }
@@ -139,8 +157,8 @@
     ],
     "implFiles": [
       "rust/providers/src/codex/auth_refresh.rs",
-      "rust/providers/src/codex/legacy_auth.rs"
+      "rust/providers/src/codex/auth_storage.rs"
     ],
-    "totalLinesCovered": 195
+    "totalLinesCovered": 210
   }
 }

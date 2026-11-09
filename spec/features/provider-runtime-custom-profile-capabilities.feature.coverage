@@ -10,6 +10,13 @@
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
                 24,
                 25,
                 26,
@@ -52,8 +59,17 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "/// BUG-168: resolve the vision capability of the manager's currently selected",
+              "lastLine": "}"
             }
           ]
         }
@@ -70,6 +86,6 @@
     "implFiles": [
       "rust/sessions/src/model_resolution.rs"
     ],
-    "totalLinesCovered": 99
+    "totalLinesCovered": 113
   }
 }

@@ -1,0 +1,246 @@
+{
+  "scenarios": [
+    {
+      "name": "An unresolvable Codex home is an error naming the path",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug658_codex_home_resolution.rs",
+          "lines": "35-60",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "firstLine": "pub(super) fn normalized_home(home: &Path) -> Result<PathBuf, AuthError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "#[error(\"Cannot resolve the Codex home {}: {source}\", path.display())]",
+              "lastLine": "#[error(\"Codex credential document is invalid: {0}\")]"
+            },
+            {
+              "file": "rust/providers/src/codex/device_session.rs",
+              "lines": [
+                96
+              ],
+              "firstLine": "let home = normalized_home(&auth_storage::home())?;",
+              "lastLine": "let home = normalized_home(&auth_storage::home())?;"
+            },
+            {
+              "file": "rust/providers/src/codex/browser_session.rs",
+              "lines": [
+                102
+              ],
+              "firstLine": "let home = normalized_home(&auth_storage::home())?;",
+              "lastLine": "let home = normalized_home(&auth_storage::home())?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sign-out, delete and cancel work when there is no Codex home",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug658_codex_home_resolution.rs",
+          "lines": "64-90",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                41,
+                42,
+                48,
+                49,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "pub(crate) fn cancel_at(home: &Path) -> Result<(), AuthError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/device_session.rs",
+              "lines": [
+                31,
+                32,
+                38
+              ],
+              "firstLine": "pub(super) fn cancel_pending(home: &Path) -> Result<(), AuthError> {",
+              "lastLine": "Ok(())"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                182,
+                183,
+                184,
+                196,
+                197,
+                198
+              ],
+              "firstLine": "pub(crate) fn cancel_pending_logins(home: &Path) -> Result<()> {",
+              "lastLine": "cancel_pending_logins(&home)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A login begun before sign-out cannot commit after it",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug658_codex_home_resolution.rs",
+          "lines": "94-119",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                77
+              ],
+              "firstLine": "pub(crate) fn cancel_at(home: &Path) -> Result<(), AuthError> {",
+              "lastLine": "let home = normalized_home(&home)?;"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                182,
+                183,
+                184
+              ],
+              "firstLine": "pub fn clear_codex_oauth() -> Result<()> {",
+              "lastLine": "cancel_pending_logins(&home)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A login begun before delete cannot commit after it",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug658_codex_home_resolution.rs",
+          "lines": "123-140",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub(crate) fn cancel_at(home: &Path) -> Result<(), AuthError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                196,
+                197,
+                198
+              ],
+              "firstLine": "pub fn delete_codex_auth() -> Result<()> {",
+              "lastLine": "cancel_pending_logins(&home)?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelling a login does not wait for the auth lock",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug658_codex_home_resolution.rs",
+          "lines": "144-180",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "pub(crate) fn cancel_at(home: &Path) -> Result<(), AuthError> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "pub(crate) fn cancel_pending_logins(home: &Path) -> Result<()> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug658_codex_home_resolution.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_lifecycle.rs",
+      "rust/providers/src/codex/auth_storage.rs",
+      "rust/providers/src/codex/device_session.rs",
+      "rust/providers/src/codex/browser_session.rs"
+    ],
+    "totalLinesCovered": 215
+  }
+}

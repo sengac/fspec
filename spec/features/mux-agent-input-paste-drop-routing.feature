@@ -27,7 +27,7 @@ Feature: Mux agent input paste and terminal file drop routing
   #
   # BUSINESS RULES:
   #   1. A bracketed paste (Event::Paste) delivered while mux is active is routed to the FOCUSED pane only — same keyboard-isolation rule as keys (R2); the Board/Files/Checkpoints panes ignore it, the Agent pane inserts it into the live composer
-  #   2. Composer precedence and gates in mux are IDENTICAL to single view: HITL freeform/exec-stdin/pause prompt routes win over the composer (dispatch.rs paste arms), the RPC-095 compacting block_edits gate suppresses paste, CRLF is normalized to LF, and PendingInputChanged is emitted only when the buffer changed
+  #   2. Composer precedence and gates in mux are IDENTICAL to single view: HITL freeform/exec-stdin/pause prompt routes win over the composer (dispatch.rs paste arms), a paste while Compacting lands in the composer (TUI-115), CRLF is normalized to LF, and PendingInputChanged is emitted only when the buffer changed
   #   3. After mux paste routing, App::handle_paste runs the same post-Navigator mux focus sync as App::handle_event (sync_mux_focus_to_session), so the RPC-024/052 draft round-trip always targets the focused pane's window session
   #   4. A paste must never mutate the ghost input_draft of an unfocused agent pane — the single shared MultiLineInput belongs to the focused pane's session only (BUG-163 model)
   #   5. No behavior change outside mux (R10): when mux.config().enabled is false the event flow is byte-for-byte unchanged and the existing RPC-403 paste routing tests stay green
@@ -93,16 +93,16 @@ Feature: Mux agent input paste and terminal file drop routing
     And the second session's input draft still holds the text "ghost-draft"
 
   @bug-179
-  Scenario: paste while the focused session is compacting is suppressed
-  # Rule 2: the compacting block_edits gate is preserved in mux (parity with
-  # the single-view RPC-403 rule 5)
+  Scenario: paste while the focused session is compacting lands in the composer
+  # Rule 2: in mux, as in single view (RPC-403 rule 5, TUI-115), the composer
+  # stays editable while the focused session compacts
     Given mux mode is active with the pane list board, agent and agent
     And two agent sessions are open
     And the second agent pane is focused
     And the focused session is compacting
     And the composer holds the text "hello"
     When I paste a text snippet
-    Then the composer still holds the text "hello"
+    Then the composer holds the text "hello" followed by the snippet
 
   @bug-179
   Scenario: single-view paste is unchanged when the mux layout is disabled

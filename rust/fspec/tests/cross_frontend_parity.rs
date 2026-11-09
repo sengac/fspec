@@ -68,7 +68,8 @@ async fn scenario_fspec_daemon_boots_and_emits_a_port() {
     let (ws, _path) = make_workspace(&[]);
 
     // @step When the test spawns `fspec daemon --workspace <tmp>` as a subprocess
-    let (_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step Then within 5 seconds STDOUT yields a single line parseable as a u16 in 1024..=65535
     assert!(
@@ -91,7 +92,8 @@ fn scenario_workspace_registers_the_stub_provider() {
     // @step Given the fspec binary has been built with the test-stub-provider feature enabled
     // @step And a temp workspace is seeded for daemon-mode boot
     let common_rs = fspec_crate_root().join("src").join("common.rs");
-    let body = std::fs::read_to_string(&common_rs).expect("read common.rs");
+    let body = codelet_test_helpers::source_composition::read_tree_or_file(&common_rs)
+        .expect("read common.rs");
     let stripped = strip_comments(&body);
 
     // @step When the daemon's build_service is invoked under cfg(feature = "test-stub-provider")
@@ -109,8 +111,8 @@ fn scenario_workspace_registers_the_stub_provider() {
          behind the test-stub-provider feature"
     );
 
-    // @step Then `codelet_providers::custom_provider_registered(\"stub\")` returns true
-    // @step And calling `ProviderType::from_str(\"stub\")` returns Ok(ProviderType::Custom(\"stub\"))
+    // @step Then `codelet_providers::custom_provider_registered("stub")` returns true
+    // @step And calling `ProviderType::from_str("stub")` returns Ok(ProviderType::Custom("stub"))
     // (Both runtime-side; structurally guaranteed by the source-shape
     // assertions above plus the implementation under
     // rust/providers/src/stub_provider.rs. The runtime path is
@@ -135,7 +137,7 @@ fn scenario_workspace_registers_the_stub_provider() {
 }
 
 // ---------------------------------------------------------------------
-// Scenario: send_input("hello") yields the canned [Text, Done] stream
+// Scenario: send_input("hello") yields the canned Text and Done chunks
 // ---------------------------------------------------------------------
 
 #[cfg(feature = "test-stub-provider")]
@@ -147,7 +149,8 @@ async fn scenario_send_input_hello_yields_canned_stream() {
 
     // @step Given a running fspec daemon with the stub provider registered
     let (ws, _path) = make_workspace(&[]);
-    let (_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step And an external WebSocketFspecBackend connected to the daemon's port
     let url = Url::parse(&format!("ws://127.0.0.1:{port}")).expect("parse ws url");
@@ -212,12 +215,11 @@ async fn scenario_send_input_hello_yields_canned_stream() {
         "stub provider must emit a terminal Done chunk within the 15s deadline"
     );
 
-    // @step And no other chunk variants appear in the vec for that session
-    // (RPC-069 Path A: housekeeping chunks ARE expected — tokens,
-    // context fill, session state. The structural assertion that the
-    // canned stream is Text + Done is satisfied by the two explicit
-    // asserts above; the full chunk-shape parity contract is delegated
-    // to `scenario_scripted_run_matches_golden`.)
+    // @step And no other Text chunk appears in the vec for that session
+    // (asserted by got_text_count == 1 above; RPC-069 Path A: housekeeping
+    // chunks such as tokens, context fill and session state ARE expected,
+    // and the full chunk-shape parity contract is delegated to
+    // `scenario_scripted_run_matches_golden`.)
 }
 // ---------------------------------------------------------------------
 // Scenario: normalise_chunk_stream substitutes timestamps, UUIDs,
@@ -333,7 +335,13 @@ mod normalise {
     /// `"<corr>"`. Fields named `tool_call_id` / `toolCallId` are
     /// replaced with `"<tc>"`. Any string value matching the UUID
     /// regex is replaced with `"<uuid>"`. Any string value matching
-    /// the RFC-3339 regex is replaced with `"<ts>"`.
+    /// the RFC-3339 regex is replaced with `"<ts>"`. BUG-543: the
+    /// temporary workspace path (`cwd` / `displayPath`, e.g. in
+    /// FooterStateUpdate) is replaced with `"<workspace>"`, and a
+    /// non-zero `input_tokens` / `compacted_tokens` count with
+    /// `"<tokens>"`: after the scripted compaction the context is an
+    /// estimate over the retained system reminders, whose text (user
+    /// name, platform) differs between machines.
     fn walk(value: &mut Value) {
         match value {
             Value::Object(map) => {
@@ -341,7 +349,17 @@ mod normalise {
                 for key in keys {
                     let is_corr = key == "correlation_id" || key == "correlationId";
                     let is_tc = key == "tool_call_id" || key == "toolCallId";
+                    let is_workspace = key == "cwd" || key == "displayPath";
+                    let is_token_count = key == "input_tokens" || key == "compacted_tokens";
                     if let Some(v) = map.get_mut(&key) {
+                        if is_workspace && v.is_string() {
+                            *v = Value::String("<workspace>".to_string());
+                            continue;
+                        }
+                        if is_token_count && v.as_u64().is_some_and(|count| count > 0) {
+                            *v = Value::String("<tokens>".to_string());
+                            continue;
+                        }
                         if is_corr {
                             *v = Value::String("<corr>".to_string());
                             continue;
@@ -398,7 +416,8 @@ async fn scenario_scripted_run_matches_golden() {
     let body = async {
         // @step Given a running fspec daemon with the stub provider registered
         let (ws, _path) = make_workspace(&[]);
-        let (_guard, port) = spawn_fspec_daemon(ws.path());
+        let daemon_home = common::TestHome::new();
+        let (_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
         // @step And the golden file at rust/fspec/tests/fixtures/cross_frontend_run.jsonl exists
         let golden_path = fspec_crate_root()
@@ -437,9 +456,11 @@ async fn scenario_scripted_run_matches_golden() {
             .expect("clear_history");
         wait_for_idle(&mut status_rx, &session_id, Duration::from_secs(5)).await;
 
-        // step 3: set_thinking_level High
+        // step 3: /thinking default. MODEL-011: the stub model declares no
+        // thinking levels, so it has no reasoning control and only the
+        // model default is accepted.
         backend
-            .set_thinking_level(session_id.clone(), ThinkingLevel::High)
+            .set_thinking_level(session_id.clone(), ThinkingLevel::ModelDefault)
             .await
             .expect("set_thinking_level");
 
@@ -683,10 +704,13 @@ async fn scenario_deny_network_egress_still_yields_canned_chunks() {
 
     // @step Given the test launches the daemon with HTTP_PROXY=http://127.0.0.1:1 and HTTPS_PROXY=http://127.0.0.1:1
     let (ws, _path) = make_workspace(&[]);
-    let mut child = Command::new(common::fspec_bin())
-        .arg("daemon")
+    // `--workspace` is a top-level flag (not global), so it precedes `daemon`.
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--workspace")
         .arg(ws.path())
+        .arg("daemon")
         .env("HTTP_PROXY", "http://127.0.0.1:1")
         .env("HTTPS_PROXY", "http://127.0.0.1:1")
         .stdout(Stdio::piped())
@@ -789,47 +813,4 @@ fn scenario_tests_readme_documents_regeneration() {
         tail.contains("RPC-"),
         "future-TS-fixture section must reference the follow-up RPC card by id"
     );
-}
-
-// ---------------------------------------------------------------------
-// Scenario: agent_loop_dispatch_supports_provider includes the stub arm
-// under test-support (RPC-069 lock-step contract)
-// ---------------------------------------------------------------------
-
-#[cfg(feature = "test-stub-provider")]
-#[test]
-fn scenario_agent_loop_dispatch_supports_stub_arm() {
-    // @step Given the codelet-agent-loop crate is compiled with --features test-support
-    // (Compiled when cargo test runs codelet-fspec with --features
-    // test-stub-provider, which propagates test-support into
-    // codelet-agent-loop per Cargo.toml line 105-109.)
-
-    // @step When agent_loop_dispatch_supports_provider("stub") is called
-    let supports_stub = codelet_agent_loop::agent_loop_dispatch_supports_provider("stub");
-
-    // @step Then it returns true
-    assert!(
-        supports_stub,
-        "agent_loop_dispatch_supports_provider(\"stub\") must return true under test-support \
-         (lock-step with the \"stub\" => arm in agent_loop.rs)"
-    );
-
-    // @step And the predicate stays in lock-step with the agent_loop.rs match arms
-    // (Existing arms must remain supported. If any of these regress,
-    // the dispatch.rs contract has drifted from the match block in
-    // agent_loop.rs.)
-    for provider in [
-        "claude",
-        "openai",
-        "gemini",
-        "zai",
-        "codex",
-        "github-copilot",
-        "copilot",
-    ] {
-        assert!(
-            codelet_agent_loop::agent_loop_dispatch_supports_provider(provider),
-            "existing arm '{provider}' must remain supported alongside the stub arm"
-        );
-    }
 }

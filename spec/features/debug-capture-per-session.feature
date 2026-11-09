@@ -1,4 +1,6 @@
 @BUG-134
+@utils
+@session-management
 Feature: Refactor DebugCaptureManager to be truly per-session (one log file per BackgroundSession)
   """
   RUST LAYER 1 - DebugCaptureManager ownership change: Currently rust/common/src/debug_capture/mod.rs:25 has static OnceLock singleton. Refactor so DebugCaptureManager is stored on BackgroundSession (session_manager.rs:486+ struct). BackgroundSession already has pub id: Uuid (line 486) as a perfect key. Add a field like pub debug_capture: Arc<PoisonRecoveryMutex<DebugCaptureManager>> initialized in BackgroundSession::new() (line 628+). Remove the static OnceLock.

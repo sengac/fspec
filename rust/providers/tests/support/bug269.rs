@@ -49,10 +49,10 @@ pub fn install_project_and_global(root: &Path, config: &ProviderConfig) -> TestR
     Ok(())
 }
 
-pub async fn caller_deadline(receiver: tokio::sync::oneshot::Receiver<tokio::time::Instant>) {
-    if let Ok(deadline) = receiver.await {
-        tokio::time::sleep_until(deadline).await;
-    }
+/// The caller's deadline expires when the test fires `receiver` (TEST-042:
+/// the expiry is an event the test sends, not a wall-clock instant).
+pub async fn caller_deadline(receiver: tokio::sync::oneshot::Receiver<()>) {
+    let _ = receiver.await;
 }
 
 pub fn failure_provider(
@@ -242,9 +242,9 @@ pub async fn requests(server: &MockServer, suffix: &str) -> TestResult<Vec<wirem
 }
 
 pub async fn wait_requests(server: &MockServer, suffix: &str, count: usize) -> TestResult {
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         while requests(server, suffix).await?.len() < count {
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
         Ok::<_, Box<dyn std::error::Error>>(())
     })
@@ -253,7 +253,7 @@ pub async fn wait_requests(server: &MockServer, suffix: &str, count: usize) -> T
 }
 
 pub async fn wait_persisted(path: &Path) -> TestResult {
-    tokio::time::timeout(Duration::from_secs(5), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         loop {
             if std::fs::read(path)
                 .ok()
@@ -262,7 +262,7 @@ pub async fn wait_persisted(path: &Path) -> TestResult {
             {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await?;

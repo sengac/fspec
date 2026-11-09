@@ -11,6 +11,7 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
   Canonical primitive: rust/fspec-tui/src/components/dialog_theme.rs::render_dialog. Reuse Accent enum, FspecDialog struct, MARKER_SELECTED/MARKER_UNSELECTED/FOOTER_SEPARATOR constants.
   Reference pattern for new dialogs: rust/fspec-tui/src/components/disconnect_dialog.rs — shortest example of Component impl + render_dialog delegation + Callback-based dismissal.
   Auto-dismiss timing: use tokio::time::sleep + a oneshot dismissal channel, OR rely on the Action::Tick pattern already used in scrollback (count down on each tick). Follow whichever pattern is established in pause_dialog.rs / model_selector_dialog.rs for consistency.
+  TUI-132 (2026-11-09): the StatusDialog wrapper is removed with its scenarios: nothing showed it.
   """
 
   # ========================================
@@ -49,7 +50,7 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the buffer contains a centered rounded border drawn in Color::Red
     Then the title row reads "Error" in bold Color::Red
     Then the body contains a row whose visible text equals "Disk full" in Color::Red
-    Then the footer reads "Press ESC to dismiss" in dim style centered horizontally
+    Then the footer reads "c copy · Press ESC to dismiss" in dim style centered horizontally
     Then no auto-dismiss Callback fires for at least 5 seconds
     When the dialog receives a KeyCode::Esc event
     Then the dialog emits a Callback that calls compositor.remove(ERROR_DIALOG_ID)
@@ -61,9 +62,9 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the buffer contains a centered rounded border drawn in Color::Cyan
     Then the title row reads "Success" in bold Color::Green
     Then the body contains a row whose visible text equals "Saved"
-    Then the footer reads "Closing in 2s... (ESC to dismiss)" in dim style centered horizontally
+    Then the footer reads "Closing in 2s... (c copy · ESC to dismiss)" in dim style centered horizontally
     When 1 second of simulated time elapses
-    Then the footer reads "Closing in 1s... (ESC to dismiss)"
+    Then the footer reads "Closing in 1s... (c copy · ESC to dismiss)"
     When a further 1 second of simulated time elapses
     Then the dialog emits a Callback that calls compositor.remove(NOTIFICATION_DIALOG_ID)
 
@@ -74,44 +75,10 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the buffer contains a centered rounded border drawn in Color::Yellow
     Then the title row reads "Warning" in bold Color::Yellow
     Then the body contains a row whose visible text equals "Slow connection"
-    Then the footer reads "Press ESC to dismiss" in dim style centered horizontally
+    Then the footer reads "c copy · Press ESC to dismiss" in dim style centered horizontally
     Then no auto-dismiss Callback fires for at least 5 seconds
     When the dialog receives a KeyCode::Esc event
     Then the dialog emits a Callback that calls compositor.remove(NOTIFICATION_DIALOG_ID)
-
-  Scenario: StatusDialog in Restoring state shows progress counter and ignores ESC
-    Given a StatusDialog constructed with operation_type "Restoring Files"
-    When the dialog enters Restoring state with current="file3.txt", idx=3, total=10
-    When the dialog is rendered into an 80x24 TestBackend buffer
-    Then the buffer contains a centered rounded border drawn in Color::Cyan
-    Then the title row reads "Restoring Files" in bold Color::Cyan
-    Then the body contains a row whose visible text equals "file3.txt"
-    Then the body contains a row whose visible text equals "(3/10)"
-    When the dialog receives a KeyCode::Esc event
-    Then the dialog returns EventResult::ignored() and emits NO Callback
-
-  Scenario: StatusDialog transitions Restoring to Complete with green title and 3s auto-close
-    Given a StatusDialog currently in Restoring state with operation_type "Restoring Files"
-    When the dialog transitions to Complete state
-    When the dialog is rendered into an 80x24 TestBackend buffer
-    Then the buffer contains a centered rounded border drawn in Color::Cyan
-    Then the title row reads "Restore Complete!" in bold Color::Green
-    Then the footer reads "Closing in 3s... (ESC to dismiss)" in dim style centered horizontally
-    When 3 seconds of simulated time elapse
-    Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID)
-    When a fresh StatusDialog enters Complete state and receives a KeyCode::Esc event before the countdown finishes
-    Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID) immediately
-
-  Scenario: StatusDialog transitions Restoring to Error with red border and ESC dismissal
-    Given a StatusDialog currently in Restoring state
-    When the dialog transitions to Error state with error_message "Permission denied: /etc/passwd"
-    When the dialog is rendered into an 80x24 TestBackend buffer
-    Then the buffer contains a centered rounded border drawn in Color::Red
-    Then the title row reads "Error" in bold Color::Red
-    Then the body contains a row whose visible text equals "Permission denied: /etc/passwd" in Color::Red
-    Then no auto-dismiss Callback fires
-    When the dialog receives a KeyCode::Esc event
-    Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID)
 
   Scenario: No raw FspecDialog struct literals remain in non-test code after the wrappers ship
     Given the rust/fspec-tui crate after RPC-079 implementation completes

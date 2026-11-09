@@ -10,6 +10,9 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
+                70,
+                71,
+                72,
                 73,
                 74,
                 75,
@@ -89,8 +92,21 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -106,29 +122,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
                 96,
                 97,
                 98,
@@ -147,28 +140,6 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
@@ -177,16 +148,10 @@
                 141,
                 142,
                 143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152
-              ]
+                144
+              ],
+              "firstLine": "// Read current nextNoteId (default 0 when missing).",
+              "lastLine": ");"
             }
           ]
         }
@@ -202,8 +167,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
-                81,
-                82,
                 83,
                 84,
                 85,
@@ -216,8 +179,12 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": "let next_id = wu"
             }
           ]
         }
@@ -233,14 +200,19 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
+                64,
+                65,
+                66,
+                67,
+                70,
+                71,
+                72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                75
+              ],
+              "firstLine": "struct AddArchitectureNoteArgs {",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -256,14 +228,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -282,8 +246,20 @@
                 177,
                 178,
                 179,
-                180
-              ]
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ],
+              "firstLine": "Ok(render_success(&args.note))",
+              "lastLine": "}"
             }
           ]
         }
@@ -299,8 +275,6 @@
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
-                138,
-                139,
                 140,
                 141,
                 142,
@@ -312,8 +286,12 @@
                 148,
                 149,
                 150,
-                151
-              ]
+                151,
+                152,
+                153
+              ],
+              "firstLine": "// values in place. Use the same insert semantics here.",
+              "lastLine": "let path = crate::io::spec_paths::work_units(project_root)?;"
             }
           ]
         }
@@ -324,15 +302,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_architecture_note.rs",
-          "lines": "274-302",
+          "lines": "280-312",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_architecture_note.rs",
               "lines": [
-                81,
-                82,
-                83
-              ]
+                83,
+                84,
+                85
+              ],
+              "firstLine": "let mut data = ensure_work_units_file(project_root)?;",
+              "lastLine": "// Validate work unit exists (TS L31-33)."
             }
           ]
         }
@@ -349,6 +329,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_architecture_note.rs"
     ],
-    "totalLinesCovered": 461
+    "totalLinesCovered": 431
   }
 }

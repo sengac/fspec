@@ -13,8 +13,16 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[tokio::test]
 async fn tool_free_codex_callers_use_the_compatibility_boundary() -> TestResult {
-    let provider = CodexProvider::from_api_key("test-key", "shared-model")?;
+    // @step Given a Codex provider used for background learnings extraction
+    let provider = CodexProvider::from_api_key("test-key", "shared-model")?.with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
+    // @step When a tool-free completion model is requested
     let model = provider.completion_model();
+    // @step Then it uses the same Codex-owned boundary as the production agent
     assert!(std::any::type_name_of_val(&model).contains("CodexResponsesModel"));
     let server = MockServer::start().await;
     Mock::given(method("POST"))
@@ -28,7 +36,12 @@ async fn tool_free_codex_callers_use_the_compatibility_boundary() -> TestResult 
         .base_url(server.uri())
         .http_client(RefreshingCodexClient::new_api_key())
         .build()?;
-    let model = CodexResponsesModel::new(client, "shared-model");
+    let model = CodexResponsesModel::new(client, "shared-model").with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
     model
         .completion(
             CompletionRequestBuilder::new(model.clone(), "Extract learnings")
@@ -40,6 +53,7 @@ async fn tool_free_codex_callers_use_the_compatibility_boundary() -> TestResult 
         .received_requests()
         .await
         .ok_or("recording disabled")?;
+    // @step And its requests disable storage and include encrypted reasoning
     let body: Value = requests[0].body_json()?;
     assert_eq!(body["store"], false);
     assert_eq!(
@@ -52,6 +66,7 @@ async fn tool_free_codex_callers_use_the_compatibility_boundary() -> TestResult 
 
 #[tokio::test]
 async fn subscription_direct_completions_buffer_streaming_responses() -> TestResult {
+    // @step Given a Codex subscription endpoint that only accepts streaming requests
     let server = MockServer::start().await;
     let response = fixture::response();
     let body = format!(
@@ -73,7 +88,13 @@ async fn subscription_direct_completions_buffer_streaming_responses() -> TestRes
         .base_url(server.uri())
         .http_client(RefreshingCodexClient::new_api_key())
         .build()?;
-    let model = CodexResponsesModel::new(client, "shared-model").with_streaming_completions();
+    let model = CodexResponsesModel::new(client, "shared-model")
+        .with_request_admission(codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        })
+        .with_streaming_completions();
+    // @step When a direct completion is requested through the Codex boundary
     let result = model
         .completion(
             CompletionRequestBuilder::new(model.clone(), "Hello")
@@ -81,6 +102,7 @@ async fn subscription_direct_completions_buffer_streaming_responses() -> TestRes
                 .build(),
         )
         .await?;
+    // @step And the completed response retains its text and token usage
     assert_eq!(
         result.choice.first(),
         rig::message::AssistantContent::text("Hello")
@@ -90,6 +112,7 @@ async fn subscription_direct_completions_buffer_streaming_responses() -> TestRes
         .received_requests()
         .await
         .ok_or("recording disabled")?;
+    // @step Then the request uses streaming with storage disabled
     let body: Value = requests[0].body_json()?;
     assert_eq!(body["store"], false);
     assert_eq!(body["stream"], true);

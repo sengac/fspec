@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui
 @board
@@ -114,7 +115,7 @@ Feature: Board '/' search dialog with Tab-toggled id/title/description modes
     When I press Enter
     Then the work-unit search dialog is still open
 
-  Scenario: The board header chord shows the '/' search shortcut
+  Scenario: The board header shows the 2-zone menu bar instead of the search chord
     # Supersession note (BOARD-023 R10 + MENU-002 R1 + MENU-005 R5):
     # the header chord row no longer exists — row 3 now hosts the live
     # 2-zone menu bar, and the '/ Search' entry lives in the MenuCategories
@@ -124,9 +125,9 @@ Feature: Board '/' search dialog with Tab-toggled id/title/description modes
     # instead of the deleted CHORD_HINT chord.
     Given a board with any selection state
     When the board is rendered
-    Then the header chord row contains the segment "/ Search"
+    Then the header shows the 2-zone menu bar Zone A items (Kanban Tools Settings Help)
 
   Scenario: The board help dialog lists the '/' search shortcut
     Given the board help dialog is open
     When the help content is inspected
-    Then it lists the '/' key with the description "Search work units"
+    Then it lists the '/' key with its menu label "Search" (TUI-129)

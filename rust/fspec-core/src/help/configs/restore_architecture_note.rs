@@ -19,11 +19,7 @@ const ARGS: &[CommandArgument] = &[
     },
 ];
 
-const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--ids <ids>",
-    description: "Restore multiple architecture notes with comma-separated IDs (e.g., \"2,5,7\")",
-    default_value: None,
-}];
+const OPTS: &[CommandOption] = &[];
 
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
@@ -32,11 +28,6 @@ const EXAMPLES: &[CommandExample] = &[
         output: Some(
             "✓ Restored architecture note from AUTH-001\nArchitecture note reappears at index [2] in show-work-unit",
         ),
-    },
-    CommandExample {
-        description: Some("Restore multiple architecture notes at once (bulk restore)"),
-        command: "fspec restore-architecture-note AUTH-001 --ids 2,5,7",
-        output: Some("✓ Restored 3 architecture notes from AUTH-001"),
     },
 ];
 
@@ -51,7 +42,6 @@ const NOTES: &[&str] = &[
     "Uses stable IDs that never shift when items are removed",
     "Restoring an already-active item is idempotent (succeeds with message)",
     "Non-existent IDs will fail with clear error message",
-    "Bulk restore validates all IDs before restoring any item",
 ];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {

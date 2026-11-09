@@ -5,23 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "97-134",
+          "lines": "108-145",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
               "lines": [
@@ -77,7 +62,26 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub fn reset_token_state(&mut self, session: &SessionId) {",
+              "lastLine": "// Absent id → binding preserved (last-known status)."
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "// store them so the BoardView header repaints with the",
+              "lastLine": "Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),"
             }
           ]
         }
@@ -88,7 +92,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "142-163",
+          "lines": "153-174",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
@@ -145,7 +149,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub fn reset_token_state(&mut self, session: &SessionId) {",
+              "lastLine": "// Absent id → binding preserved (last-known status)."
             }
           ]
         }
@@ -156,7 +162,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "171-190",
+          "lines": "182-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
@@ -213,7 +219,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub fn reset_token_state(&mut self, session: &SessionId) {",
+              "lastLine": "// Absent id → binding preserved (last-known status)."
             }
           ]
         }
@@ -224,22 +232,24 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "197-226",
+          "lines": "208-237",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
                 70,
-                71,
-                72,
                 73,
                 74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
+                75
+              ],
+              "firstLine": "// store them so the BoardView header repaints with the",
+              "lastLine": "Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),"
             }
           ]
         }
@@ -250,23 +260,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "234-265",
+          "lines": "245-276",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch.rs",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
               "lines": [
@@ -277,7 +272,26 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "let tokens = sid",
+              "lastLine": "let is_debug_enabled = sid"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "// store them so the BoardView header repaints with the",
+              "lastLine": "Action::EnterWorkUnit(id) => self.handle_enter_work_unit(id),"
             }
           ]
         }
@@ -288,7 +302,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug180_wu_status_sync.rs",
-          "lines": "273-294",
+          "lines": "284-305",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
@@ -345,7 +359,9 @@
                 107,
                 108,
                 109
-              ]
+              ],
+              "firstLine": "pub fn reset_token_state(&mut self, session: &SessionId) {",
+              "lastLine": "// Absent id → binding preserved (last-known status)."
             }
           ]
         }
@@ -360,8 +376,8 @@
       "rust/fspec-tui/tests/bug180_wu_status_sync.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/store/agent_view/work_unit_state.rs",
+      "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/views/agent/chrome_paint.rs"
     ],
     "totalLinesCovered": 409

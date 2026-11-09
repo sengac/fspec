@@ -8,30 +8,29 @@
 //! service additions, backend forwarders, dispatch helper module, and
 //! UI plumbing. Mirrors the source_shape_rpc060 pattern.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::fs;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
-fn read_source(path: &PathBuf) -> String {
-    fs::read_to_string(path).unwrap_or_else(|_| panic!("read {}", path.display()))
+fn read_source(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(codelet_test_helpers::source_composition::read_source(path)
+        .or_fail(&format!("read {}", path.display()))?)
 }
 
 /// Scenario: codelet-rpc-types exposes IncomingMessageInput
 #[test]
-fn rpc_types_declares_incoming_message_input() {
+fn rpc_types_declares_incoming_message_input() -> TestResult {
     // @step Given the crate codelet-rpc-types is compiled
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/rpc-types/src/lib.rs");
+    let source = read_tree(&path)?;
 
     // @step Then it declares a public struct named "IncomingMessageInput"
     assert!(
@@ -70,14 +69,15 @@ fn rpc_types_declares_incoming_message_input() {
                 && source.contains("Deserialize")),
         "IncomingMessageInput should derive Debug, Clone, PartialEq, Eq, Serialize, Deserialize"
     );
+    Ok(())
 }
 
 /// Scenario: SessionManagerHandle trait declares all five RPC-061 methods
 #[test]
-fn session_manager_handle_declares_supervisor_methods() {
+fn session_manager_handle_declares_supervisor_methods() -> TestResult {
     // @step Given the trait file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = read_tree(&path)?;
 
     // @step Then it declares fn add_supervisor with the documented signature
     assert!(
@@ -104,14 +104,15 @@ fn session_manager_handle_declares_supervisor_methods() {
         source.contains("fn receive_incoming_message("),
         "SessionManagerHandle should declare fn receive_incoming_message"
     );
+    Ok(())
 }
 
 /// Scenario: FspecService trait declares the five RPC-061 methods
 #[test]
-fn fspec_service_declares_supervisor_methods() {
+fn fspec_service_declares_supervisor_methods() -> TestResult {
     // @step Given the crate codelet-rpc is compiled
-    let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/rpc/src/lib.rs");
+    let source = read_source(&path)?;
 
     // @step Then the FspecService trait declares async fn add_supervisor
     assert!(
@@ -138,33 +139,30 @@ fn fspec_service_declares_supervisor_methods() {
         source.contains("async fn receive_incoming_message("),
         "FspecService should declare async fn receive_incoming_message"
     );
+    Ok(())
 }
 
-/// Scenario: components/mod.rs Action enum gains the two RPC-061 variants
+/// Scenario: components/mod.rs Action enum gains the RPC-061 variant
 #[test]
-fn action_enum_gains_rpc061_variants() {
+fn action_enum_gains_rpc061_variants() -> TestResult {
     // @step Given the file rust/fspec-tui/src/components/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/components/mod.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/fspec-tui/src/components/mod.rs");
+    let source = read_source(&path)?;
 
     // @step Then it declares Action::SupervisorsLoaded
     assert!(
         source.contains("SupervisorsLoaded"),
         "Action enum should declare SupervisorsLoaded"
     );
-    // @step And it declares Action::SendToSubordinate
-    assert!(
-        source.contains("SendToSubordinate"),
-        "Action enum should declare SendToSubordinate"
-    );
+    Ok(())
 }
 
 /// Scenario: handle_impl.rs in codelet-sessions wires the supervisor methods
 #[test]
-fn sessions_handle_impl_wires_supervisor_methods() {
+fn sessions_handle_impl_wires_supervisor_methods() -> TestResult {
     // @step Given the file rust/sessions/src/handle_impl.rs is compiled
-    let path = workspace_root().join("rust/sessions/src/handle_impl.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/sessions/src/handle_impl.rs");
+    let source = read_tree(&path)?;
 
     // @step Then it impls fn add_supervisor
     assert!(
@@ -191,14 +189,15 @@ fn sessions_handle_impl_wires_supervisor_methods() {
         source.contains("fn receive_incoming_message("),
         "handle_impl.rs should impl fn receive_incoming_message"
     );
+    Ok(())
 }
 
 /// Scenario: FspecBackend trait gains the five RPC-061 forwarders
 #[test]
-fn fspec_backend_trait_gains_supervisor_forwarders() {
+fn fspec_backend_trait_gains_supervisor_forwarders() -> TestResult {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/fspec-tui/src/transport/mod.rs");
+    let source = read_source(&path)?;
 
     // @step Then it declares async fn add_supervisor
     assert!(
@@ -225,32 +224,104 @@ fn fspec_backend_trait_gains_supervisor_forwarders() {
         source.contains("async fn receive_incoming_message("),
         "FspecBackend should declare async fn receive_incoming_message"
     );
+    Ok(())
 }
 
 /// Scenario: SessionHeader gains a subordinate_label field
 #[test]
-fn session_header_gains_subordinate_label_field() {
+fn session_header_gains_subordinate_label_field() -> TestResult {
     // @step Given the file rust/fspec-tui/src/views/agent/header.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/views/agent/header.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/fspec-tui/src/views/agent/header.rs");
+    let source = read_source(&path)?;
 
     // @step Then SessionHeader declares subordinate_label
     assert!(
         source.contains("subordinate_label"),
         "SessionHeader should declare subordinate_label field"
     );
+    Ok(())
 }
 
 /// Scenario: SessionFooter gains a supervisor_pending_count field
 #[test]
-fn session_footer_gains_supervisor_pending_count_field() {
+fn session_footer_gains_supervisor_pending_count_field() -> TestResult {
     // @step Given the file rust/fspec-tui/src/views/agent/footer.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/views/agent/footer.rs");
-    let source = read_source(&path);
+    let path = workspace_root()?.join("rust/fspec-tui/src/views/agent/footer.rs");
+    let source = read_source(&path)?;
 
     // @step Then SessionFooter declares supervisor_pending_count
     assert!(
         source.contains("supervisor_pending_count"),
         "SessionFooter should declare supervisor_pending_count field"
     );
+    Ok(())
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
+}
+
+/// Scenario: dispatch_supervisor_links.rs has the documented helper surface
+#[test]
+fn dispatch_supervisor_links_has_the_documented_helper_surface() -> TestResult {
+    // @step Given the file rust/fspec-tui/src/app/dispatch_supervisor_links.rs is compiled
+    let source = read_source(
+        &workspace_root()?.join("rust/fspec-tui/src/app/dispatch_supervisor_links.rs"),
+    )?;
+    // @step Then it declares method "handle_supervisors_loaded"
+    assert!(
+        source.contains("fn handle_supervisors_loaded("),
+        "dispatch_supervisor_links.rs should declare fn handle_supervisors_loaded"
+    );
+    // @step And it declares method "try_dispatch_supervisor_links"
+    assert!(
+        source.contains("fn try_dispatch_supervisor_links("),
+        "dispatch_supervisor_links.rs should declare fn try_dispatch_supervisor_links"
+    );
+    // @step And the file stays under 300 lines
+    let lines = source.lines().count();
+    assert!(
+        lines < 300,
+        "dispatch_supervisor_links.rs has {lines} lines (must be < 300)"
+    );
+    Ok(())
+}
+
+/// Scenario: app/dispatch.rs catch-all routes through try_dispatch_supervisor_links
+#[test]
+fn dispatch_catch_all_routes_through_try_dispatch_supervisor_links() -> TestResult {
+    let app_dir = workspace_root()?.join("rust/fspec-tui/src/app");
+    // @step Given the file rust/fspec-tui/src/app/dispatch.rs is compiled
+    let dispatch = read_source(&app_dir.join("dispatch.rs"))?;
+    // @step Then its catch-all arm calls self.dispatch_capability_fallback
+    let catch_all = dispatch
+        .split("_ => {")
+        .nth(1)
+        .or_fail("dispatch.rs has a `_ => {` catch-all arm")?;
+    assert!(
+        catch_all.contains("self.dispatch_capability_fallback("),
+        "dispatch.rs catch-all should call self.dispatch_capability_fallback"
+    );
+    // @step And the file stays under 300 lines
+    let lines = dispatch.lines().count();
+    assert!(
+        lines < 300,
+        "app/dispatch.rs has {lines} lines (must be < 300)"
+    );
+    // @step And dispatch_capability_fallback in rust/fspec-tui/src/app/dispatch_capability.rs calls self.try_dispatch_supervisor_links
+    let capability = read_source(&app_dir.join("dispatch_capability.rs"))?;
+    let fallback = capability
+        .split("fn dispatch_capability_fallback(")
+        .nth(1)
+        .or_fail("dispatch_capability.rs declares fn dispatch_capability_fallback")?;
+    assert!(
+        fallback.contains("self.try_dispatch_supervisor_links("),
+        "dispatch_capability_fallback should call self.try_dispatch_supervisor_links"
+    );
+    Ok(())
 }

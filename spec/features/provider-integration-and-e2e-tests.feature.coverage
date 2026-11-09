@@ -10,9 +10,6 @@
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                288,
-                289,
-                290,
                 291,
                 292,
                 293,
@@ -33,8 +30,13 @@
                 308,
                 309,
                 310,
-                311
-              ]
+                311,
+                312,
+                313,
+                314
+              ],
+              "firstLine": "let rig_client: ClaudeClient = if auth_mode == AuthMode::OAuth {",
+              "lastLine": ""
             }
           ]
         }
@@ -45,27 +47,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/provider_facade_integration_test.rs",
-          "lines": "52-79",
+          "lines": "63-94",
           "implMappings": [
             {
               "file": "rust/providers/src/gemini.rs",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
                 115,
                 116,
                 117,
@@ -80,8 +66,26 @@
                 126,
                 127,
                 128,
-                129
-              ]
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "let rig_client = gemini::Client::new(api_key).map_err(|e| {",
+              "lastLine": "/// * `preamble` - Optional system prompt/preamble for the agent"
             }
           ]
         }
@@ -92,27 +96,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/provider_facade_integration_test.rs",
-          "lines": "85-106",
+          "lines": "100-123",
           "implMappings": [
             {
               "file": "rust/providers/src/gemini.rs",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
                 115,
                 116,
                 117,
@@ -127,8 +115,26 @@
                 126,
                 127,
                 128,
-                129
-              ]
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "let rig_client = gemini::Client::new(api_key).map_err(|e| {",
+              "lastLine": "/// * `preamble` - Optional system prompt/preamble for the agent"
             }
           ]
         }
@@ -139,7 +145,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/provider_facade_integration_test.rs",
-          "lines": "112-125",
+          "lines": "129-142",
           "implMappings": [
             {
               "file": "rust/providers/tests/provider_facade_integration_test.rs",
@@ -166,7 +172,9 @@
                 104,
                 105,
                 106
-              ]
+              ],
+              "firstLine": "// @step And all other facade wrappers are registered",
+              "lastLine": ".expect(\"GOOGLE_GENERATIVE_AI_API_KEY must be set for E2E tests\");"
             }
           ]
         }
@@ -185,6 +193,6 @@
       "rust/providers/src/gemini.rs",
       "rust/providers/tests/provider_facade_integration_test.rs"
     ],
-    "totalLinesCovered": 199
+    "totalLinesCovered": 205
   }
 }

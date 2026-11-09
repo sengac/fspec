@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_pre_prompt_isolation.rs",
-          "lines": "113-122",
+          "lines": "122-131",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
               "lines": [
+                88,
                 89,
                 90,
                 91,
@@ -103,58 +104,9 @@
                 179,
                 180,
                 181
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340
-              ]
+              ],
+              "firstLine": "pub async fn run_compactor_sub_agent_round<O: StreamOutput>(",
+              "lastLine": ".ok_or(CompactionFailure::Unavailable)?;"
             }
           ]
         }
@@ -165,11 +117,12 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_pre_prompt_isolation.rs",
-          "lines": "124-133",
+          "lines": "133-142",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
               "lines": [
+                88,
                 89,
                 90,
                 91,
@@ -262,59 +215,21 @@
                 178,
                 179,
                 180,
-                181
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340
-              ]
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ],
+              "firstLine": "pub async fn run_compactor_sub_agent_round<O: StreamOutput>(",
+              "lastLine": ".map_err(CompactionFailure::Builder)?;"
             }
           ]
         }
@@ -329,9 +244,8 @@
       "rust/cli/tests/cmpct079_pre_prompt_isolation.rs"
     ],
     "implFiles": [
-      "rust/cli/src/compactor_sub_agent.rs",
-      "rust/cli/src/interactive/stream_loop.rs"
+      "rust/cli/src/compactor_sub_agent.rs"
     ],
-    "totalLinesCovered": 298
+    "totalLinesCovered": 219
   }
 }

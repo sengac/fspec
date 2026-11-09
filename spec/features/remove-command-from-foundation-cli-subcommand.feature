@@ -1,5 +1,7 @@
 @done
 @RPC-270
+@cli
+@remove
 Feature: fspec remove-command-from-foundation CLI subcommand
   """
   CLI bridge: rust/fspec/src/remove_command_from_foundation.rs — clap-derived struct mirroring the

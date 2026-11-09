@@ -100,16 +100,20 @@ fn manager_with_seeded_cache(
     // re-initialises against the new dir.
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
 /// Create a session against `openai:spark/o3` and read back the seeded
 /// `preserve_thinking_enabled` flag from the inner session.
 fn seeded_flag(manager: &Arc<SessionManager>) -> bool {
-    manager.set_default_model("openai:spark/o3");
+    assert_eq!(manager.set_default_model("openai:spark/o3"), Ok(()));
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle
+        .create_session_checked(None)
+        .expect("the handle creates the session");
     assert!(
         !sid.value.is_empty(),
         "PROV-143: profile-model session creation must succeed"

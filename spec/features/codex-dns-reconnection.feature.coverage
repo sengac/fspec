@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/prov160_codex_dns.rs",
-          "lines": "17-61",
+          "lines": "16-71",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/network_error.rs",
@@ -69,7 +69,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "pub(super) struct NetworkResolver;",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/recovery_auth.rs",
@@ -81,7 +83,9 @@
                 8,
                 9,
                 10
-              ]
+              ],
+              "firstLine": "pub(super) fn http_client() -> Result<reqwest::Client, Error> {",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/websocket.rs",
@@ -146,7 +150,9 @@
                 177,
                 178,
                 179
-              ]
+              ],
+              "firstLine": "async fn connect(",
+              "lastLine": "}"
             },
             {
               "file": "rust/providers/src/codex/reconnect.rs",
@@ -241,7 +247,9 @@
                 210,
                 211,
                 212
-              ]
+              ],
+              "firstLine": "pub(super) fn track<T: Clone + Send + 'static>(",
+              "lastLine": "Ok(())"
             },
             {
               "file": "rust/providers/src/codex/recovery.rs",
@@ -257,7 +265,9 @@
                 117,
                 118,
                 119
-              ]
+              ],
+              "firstLine": "let response = tokio::time::timeout(",
+              "lastLine": ".map_err(super::network_error::http_setup)?;"
             }
           ]
         }
@@ -278,6 +288,6 @@
       "rust/providers/src/codex/reconnect.rs",
       "rust/providers/src/codex/recovery.rs"
     ],
-    "totalLinesCovered": 272
+    "totalLinesCovered": 283
   }
 }

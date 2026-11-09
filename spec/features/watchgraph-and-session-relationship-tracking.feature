@@ -1,6 +1,7 @@
 @watcher
 @codelet
 @WATCH-002
+@COV-057
 Feature: WatchGraph and Session Relationship Tracking
   """
   Architecture notes:
@@ -71,18 +72,12 @@ Feature: WatchGraph and Session Relationship Tracking
     And get_parent for "xyz" should return None
 
   @unit
-  Scenario: Watcher cannot watch multiple parents
-    Given a WatchGraph with no relationships
-    And session "xyz" is watching session "abc"
-    When I call add_watcher with parent_id "def" and watcher_id "xyz"
-    Then it should return an error "watcher already has a parent"
-
   @unit
   Scenario: Circular watching is prevented
     Given a WatchGraph with no relationships
     And session "B" is watching session "A"
     When I call add_watcher with parent_id "B" and watcher_id "A"
-    Then it should return an error "circular watching not allowed"
+    Then it should return an error "circular supervision not allowed"
 
   @unit
   Scenario: Regular session has no parent

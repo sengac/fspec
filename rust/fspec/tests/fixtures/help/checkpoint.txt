@@ -23,7 +23,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  Working on implementation: Make changes to code,Create checkpoint: fspec checkpoint AUTH-001 baseline,Try approach A: Make experimental changes,Doesn't work: fspec restore-checkpoint AUTH-001 baseline,Try approach B: Make different changes,Works: Continue with approach B,Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5
+  Working on implementation: Make changes to code. Create checkpoint: fspec checkpoint AUTH-001 baseline. Try approach A: Make experimental changes. Doesn't work: fspec restore-checkpoint AUTH-001 baseline. Try approach B: Make different changes. Works: Continue with approach B. Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5
 
 EXAMPLES
   1. Create checkpoint before refactoring
@@ -43,19 +43,19 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ Work unit 'AUTH-001' does not exist
-    Fix: undefined
+    Fix: Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   ✗ Working directory is clean (no changes to checkpoint)
-    Fix: undefined
+    Fix: You can only create checkpoints when there are uncommitted changes. Make some changes first, then create the checkpoint.
 
   ✗ Not a git repository
-    Fix: undefined
+    Fix: Checkpoints require git. Initialize git with 'git init'
 
 RELATED COMMANDS
-  fspec fspec restore-checkpoint - Restore a checkpoint
-  fspec fspec list-checkpoints - List all checkpoints
-  fspec fspec cleanup-checkpoints - Delete old checkpoints
-  fspec fspec update-work-unit-status - Auto-creates checkpoints
+  fspec restore-checkpoint - Restore a checkpoint
+  fspec list-checkpoints - List all checkpoints
+  fspec cleanup-checkpoints - Delete old checkpoints
+  fspec update-work-unit-status - Auto-creates checkpoints
 
 NOTES
   • Checkpoints capture ALL changes including untracked files (respecting .gitignore)

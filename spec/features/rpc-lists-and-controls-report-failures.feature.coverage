@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    {
+      "name": "Session lists and controls report an unknown session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug465_rpc_lists_and_controls_report_failures.rs",
+          "lines": "42-63",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "fn interrupt(&self, session_id: &SessionId) -> Result<(), String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lists and controls over RPC are refused without a session manager",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug465_rpc_lists_and_controls_report_failures.rs",
+          "lines": "65-100",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "async fn list_sessions(self, _ctx: Context, project_path: String) -> Result<Vec<SessionInfo>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Workspace lists over RPC are refused without a workspace",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug465_rpc_lists_and_controls_report_failures.rs",
+          "lines": "102-123",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/health_checkpoints.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "async fn changed_files(self, _ctx: Context) -> Result<Vec<ChangedFile>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed session listing is reported",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug465_rpc_lists_and_controls_report_failures.rs",
+          "lines": "125-145",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_2.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ],
+              "firstLine": "pub fn list_sessions(&self, project_path: &str) -> Result<Vec<SessionInfo>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug465_rpc_lists_and_controls_report_failures.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_1.rs",
+      "rust/rpc/src/service_implementation/interaction_sessions.rs",
+      "rust/rpc/src/service_implementation/health_checkpoints.rs",
+      "rust/sessions/src/session_manager/manager_impl_2.rs"
+    ],
+    "totalLinesCovered": 177
+  }
+}

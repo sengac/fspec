@@ -17,7 +17,7 @@
 //! Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
 //! The CLI surface resolves project_root from CWD (parity with the TS
 //! `process.cwd()` default at `src/commands/list-attachments.ts:17`). The clap
-//! subcommand has a single REQUIRED positional `<WORK_UNIT_ID>` and no flags
+//! subcommand has a single REQUIRED positional `<workUnitId>` and no flags
 //! — matching the TS Commander.js registration at
 //! `src/commands/list-attachments.ts:62-66`.
 //!
@@ -35,10 +35,10 @@
 //!     clap validates before this module is reached, so we never see that
 //!     case here.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::list_attachments;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
@@ -61,7 +61,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-driven
     // invocations behave identically.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     // The marshalling lives here (rather than a hard-coded string literal)

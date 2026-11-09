@@ -65,7 +65,9 @@
                 120,
                 121,
                 122
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "/// Read `.git/fspec-checkpoints-index/<work_unit_id>.json`. Returns the"
             }
           ]
         }
@@ -111,7 +113,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "fn render_text(work_unit_id: &str, displays: &[CheckpointDisplay]) -> String {",
+              "lastLine": "/// Render the 2-space-indented JSON payload. Matches the dispatcher"
             }
           ]
         }
@@ -155,7 +159,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let names: Vec<String> ="
             }
           ]
         }
@@ -199,7 +205,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "let names: Vec<String> ="
             }
           ]
         }
@@ -317,7 +325,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "fn build_display(name: &str, index: &Option<Value>) -> CheckpointDisplay {",
+              "lastLine": "/// Render the 2-space-indented JSON payload. Matches the dispatcher"
             }
           ]
         }
@@ -435,7 +445,9 @@
                 235,
                 236,
                 237
-              ]
+              ],
+              "firstLine": "fn build_display(name: &str, index: &Option<Value>) -> CheckpointDisplay {",
+              "lastLine": "/// Render the 2-space-indented JSON payload. Matches the dispatcher"
             }
           ]
         }
@@ -481,7 +493,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "let names: Vec<String> =",
+              "lastLine": "/// JSON (parity with the TS bare-`catch` swallow)."
             }
           ]
         }
@@ -597,7 +611,9 @@
                 336,
                 337,
                 338
-              ]
+              ],
+              "firstLine": "fn render_json(",
+              "lastLine": "});"
             }
           ]
         }
@@ -695,7 +711,9 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn read_index(project_root: &Path, work_unit_id: &str) -> Option<Value> {",
+              "lastLine": "/// Render the empty-result text sentinel or the populated checkpoint"
             }
           ]
         }
@@ -793,7 +811,9 @@
                 204,
                 205,
                 206
-              ]
+              ],
+              "firstLine": "fn read_index(project_root: &Path, work_unit_id: &str) -> Option<Value> {",
+              "lastLine": "/// Render the empty-result text sentinel or the populated checkpoint"
             }
           ]
         }
@@ -876,7 +896,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "//! `list-checkpoints` — Rust port of `src/commands/list-checkpoints.ts` (RPC-242).",
+              "lastLine": "/// the same binary can serve multiple sessions / working-directories safely."
             }
           ]
         }

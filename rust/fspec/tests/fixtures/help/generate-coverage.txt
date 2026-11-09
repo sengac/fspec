@@ -18,6 +18,8 @@ USAGE
 OPTIONS
   --dry-run
     Preview what coverage files would be created without actually creating them
+  --feature-name <name>
+    Generate only the exact selected feature; return a JSON plan, preserve lineage, and block unsafe removals or invalid metadata. With --dry-run, preview the same plan without writes.
 
 COMMON PATTERNS
   • Reverse ACDD Setup: Run generate-coverage to create empty coverage structures, then use link-coverage to map scenarios to tests
@@ -55,7 +57,7 @@ RELATED COMMANDS
   fspec create-feature
   fspec link-coverage
   fspec show-coverage
-  fspec audit-coverage
+  fspec audit
 
 NOTES
   • Coverage files are automatically created by fspec create-feature for new features

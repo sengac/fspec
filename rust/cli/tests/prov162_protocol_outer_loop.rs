@@ -21,6 +21,10 @@ use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 #[tokio::test]
 #[serial_test::serial]
 async fn typed_protocol_tools_and_outer_nudges_retain_separate_accounting() -> TestResult {
+    // BUG-447: this test drives tools without a session manager callback.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given a real CLI Codex session has typed protocol output a native Read and an armed Done
     let environment = Environment::new()?;
     let root = environment.directory.path();

@@ -41,7 +41,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::FspecCoreError;
 use crate::io::io_error::format_io_error;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus, WorkUnitsData};
 
@@ -135,8 +134,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let from = args.from.as_deref().unwrap_or("undefined");
     let event = args.event.as_deref().unwrap_or("undefined");
 
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "auto-advance")?;
     let raw =
         std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
             command: "auto-advance",
@@ -182,6 +183,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
+    // BUG-661: the move is recorded in stateHistory; a history that is not
+    // an array fails before anything changes, never replaced (BUG-385).
+    if data.work_units[work_unit_id]
+        .extra
+        .get("stateHistory")
+        .is_some_and(|history| !history.is_array())
+    {
+        return Err(FspecCoreError::InvalidArgs {
+            command: "auto-advance",
+            reason: wrap_failure(&format!(
+                "Work unit {work_unit_id} has a malformed stateHistory field: expected an array. Fix spec/work-units.json."
+            )),
+        });
+    }
+
     let to_str = transition.to.as_str().to_string();
     let now = iso8601_now();
 
@@ -206,11 +222,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     wu.updated_at = now.clone();
     if transition.record_completion {
         wu.extra
-            .insert("completedAt".to_string(), serde_json::Value::String(now));
+            .insert("doneAt".to_string(), serde_json::Value::String(now.clone()));
+    }
+    // BUG-661: one stateHistory entry per move; the board writer stamps the
+    // session id of an isolated session on it (WT-018).
+    let entry = serde_json::json!({"state": to_str, "timestamp": now, "reason": "auto-advance"});
+    if let serde_json::Value::Array(history) = wu
+        .extra
+        .entry("stateHistory".to_string())
+        .or_insert_with(|| serde_json::Value::Array(Vec::new()))
+    {
+        history.push(entry);
     }
 
     // Single atomic write (TS uses fileManager.transaction()).
-    write_json_atomic(&work_units_path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AutoAdvanceResult {
         success: true,

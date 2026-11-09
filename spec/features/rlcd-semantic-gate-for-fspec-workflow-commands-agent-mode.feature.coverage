@@ -10,25 +10,6 @@
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
                 159,
                 160,
                 161,
@@ -36,14 +17,6 @@
                 163,
                 164,
                 165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
                 174,
                 175,
                 176,
@@ -87,8 +60,37 @@
                 214,
                 215,
                 216,
-                217
-              ]
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "pub async fn run_rlcd_gate(",
+              "lastLine": "GateOutcome::AskUser { reason } => gate_pause(session_id, command, args_json, reason),"
             }
           ]
         }
@@ -99,7 +101,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "271-305",
+          "lines": "277-314",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate_map.rs",
@@ -143,7 +145,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub fn map_gate_answer(probs: &Value, gate: &RlcdGateConfig) -> GateOutcome {",
+              "lastLine": "}"
             }
           ]
         }
@@ -154,39 +158,39 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "314-358",
+          "lines": "320-371",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246
-              ]
+                160,
+                161,
+                162,
+                164,
+                247,
+                248,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ],
+              "firstLine": "session_id: Uuid,",
+              "lastLine": "},"
             }
           ]
         }
@@ -197,22 +201,23 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "363-416",
+          "lines": "373-437",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245
-              ]
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267
+              ],
+              "firstLine": "match response {",
+              "lastLine": "reason: \"RLCD gate: user denied\".to_string(),"
             }
           ]
         }
@@ -223,110 +228,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "424-476",
+          "lines": "439-500",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "An unreachable engine fails open and executes the command",
-      "testMappings": [
-        {
-          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "487-514",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/gate.rs",
-              "lines": [
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A command not in the gate list passes through without RLCD involvement",
-      "testMappings": [
-        {
-          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "525-551",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/gate.rs",
-              "lines": [
-                149,
-                150,
-                151,
-                152
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A command added to the gate list via config is also gated",
-      "testMappings": [
-        {
-          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "558-590",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/rlcd/config.rs",
-              "lines": [
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
                 125,
                 126,
                 127,
@@ -344,9 +250,95 @@
                 139,
                 140,
                 141,
-                142,
-                143,
-                144,
+                142
+              ],
+              "firstLine": "/// Whether `session_id` already allows the gate for `command` (AllowSession;",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unreachable engine fails open and executes the command",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "506-538",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                165,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "// BUG-451: an unloadable RLCD config rejects the gated command.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command not in the gate list passes through without RLCD involvement",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "544-572",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/gate.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179
+              ],
+              "firstLine": "// Ungated command / disabled engine: execute without any RLCD work.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command added to the gate list via config is also gated",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
+          "lines": "574-611",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/rlcd/config.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                183,
+                184,
                 145,
                 146,
                 147,
@@ -355,22 +347,15 @@
                 150,
                 151,
                 152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167
-              ]
+                134,
+                135,
+                136,
+                137,
+                139,
+                161
+              ],
+              "firstLine": "\"http://127.0.0.1:8000\".to_string()",
+              "lastLine": "/// Missing/malformed files start from `{}`; a non-object root is replaced by"
             }
           ]
         }
@@ -381,12 +366,11 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "601-662",
+          "lines": "617-679",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                53,
                 54,
                 55,
                 56,
@@ -434,8 +418,28 @@
                 98,
                 99,
                 100,
-                101
-              ]
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "pub fn build_gate_state(command: &str, args_json: &str, project_root: &str) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -446,7 +450,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "669-713",
+          "lines": "681-730",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
@@ -461,7 +465,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "fn raw_state(command: &str, args_json: &str) -> String {",
+              "lastLine": "/// every other command uses the raw state."
             }
           ]
         }
@@ -472,16 +478,18 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "724-756",
+          "lines": "736-773",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate.rs",
               "lines": [
-                149,
-                150,
-                151,
-                152
-              ]
+                176,
+                177,
+                178,
+                179
+              ],
+              "firstLine": "// Ungated command / disabled engine: execute without any RLCD work.",
+              "lastLine": "}"
             }
           ]
         }
@@ -492,7 +500,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "767-797",
+          "lines": "779-818",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate_map.rs",
@@ -508,7 +516,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "// (a) proceed: only with a comfortable margin over the next criterion",
+              "lastLine": "}"
             }
           ]
         }
@@ -519,7 +529,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "804-825",
+          "lines": "820-846",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate_map.rs",
@@ -532,7 +542,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "if argmax == \"hold\" || p_hold >= gate.hold_threshold {",
+              "lastLine": "}"
             }
           ]
         }
@@ -543,7 +555,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/rlcd003_workflow_gate.rs",
-          "lines": "832-866",
+          "lines": "848-891",
           "implMappings": [
             {
               "file": "rust/tools/src/rlcd/gate_map.rs",
@@ -587,7 +599,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "pub fn map_gate_answer(probs: &Value, gate: &RlcdGateConfig) -> GateOutcome {",
+              "lastLine": "}"
             }
           ]
         }
@@ -606,6 +620,6 @@
       "rust/tools/src/rlcd/gate_map.rs",
       "rust/tools/src/rlcd/config.rs"
     ],
-    "totalLinesCovered": 917
+    "totalLinesCovered": 979
   }
 }

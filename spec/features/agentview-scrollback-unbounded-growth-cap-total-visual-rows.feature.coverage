@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "92-120",
+          "lines": "93-121",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
@@ -70,7 +70,9 @@
                 123,
                 124,
                 125
-              ]
+              ],
+              "firstLine": "pub const MAX_SCROLLBACK_VISUAL_ROWS: usize = 20_000;",
+              "lastLine": "}"
             }
           ]
         }
@@ -81,7 +83,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "122-165",
+          "lines": "123-166",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
@@ -126,14 +128,16 @@
                 155,
                 156,
                 157,
-                158,
                 159,
                 160,
                 161,
                 162,
                 163,
-                164
-              ]
+                164,
+                165
+              ],
+              "firstLine": "let budget = if marker_present {",
+              "lastLine": "};"
             }
           ]
         }
@@ -144,7 +148,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "167-221",
+          "lines": "168-222",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
@@ -160,26 +164,28 @@
                 155,
                 156,
                 157,
-                158,
                 159,
                 160,
                 161,
                 162,
                 163,
                 164,
-                204,
+                165,
                 205,
                 206,
                 207,
                 208,
-                211,
+                209,
                 212,
                 213,
                 214,
                 215,
                 216,
-                217
-              ]
+                217,
+                218
+              ],
+              "firstLine": "// Accumulate the trimmed counter and build (or update) the marker.",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,12 +196,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "223-274",
+          "lines": "224-275",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
               "lines": [
-                166,
                 167,
                 168,
                 169,
@@ -204,8 +209,11 @@
                 172,
                 173,
                 174,
-                175
-              ]
+                175,
+                176
+              ],
+              "firstLine": "// Scroll-offset compensation: the removed rows were above the",
+              "lastLine": "}"
             }
           ]
         }
@@ -216,12 +224,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "276-314",
+          "lines": "284-323",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
               "lines": [
-                166,
                 167,
                 168,
                 169,
@@ -230,8 +237,11 @@
                 172,
                 173,
                 174,
-                175
-              ]
+                175,
+                176
+              ],
+              "firstLine": "// Scroll-offset compensation: the removed rows were above the",
+              "lastLine": "}"
             }
           ]
         }
@@ -242,12 +252,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "316-345",
+          "lines": "325-355",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
               "lines": [
-                166,
                 167,
                 168,
                 169,
@@ -256,8 +265,11 @@
                 172,
                 173,
                 174,
-                175
-              ]
+                175,
+                176
+              ],
+              "firstLine": "// Scroll-offset compensation: the removed rows were above the",
+              "lastLine": "}"
             }
           ]
         }
@@ -268,12 +280,50 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "347-409",
+          "lines": "348-410",
           "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ],
+              "firstLine": "self.push_source(source);",
+              "lastLine": "scrollback_mutate::rewrap_and_trim_at(self, idx);"
+            },
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_trim.rs",
               "lines": [
-                96,
                 97,
                 98,
                 99,
@@ -319,13 +369,15 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "// Removal budget: `protected_floor == 0` is the \"no protection\"",
+              "lastLine": "}"
             }
           ]
         },
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "558-645",
+          "lines": "559-646",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -363,7 +415,9 @@
                 179,
                 180,
                 181
-              ]
+              ],
+              "firstLine": "color: Color::White,",
+              "lastLine": "/// **BUG-192**: re-wrap a single (growing) chunk and then trim to"
             }
           ]
         }
@@ -374,7 +428,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "411-441",
+          "lines": "422-453",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback_select.rs",
@@ -399,7 +453,9 @@
                 205,
                 206,
                 207
-              ]
+              ],
+              "firstLine": "fn set_selected(&mut self, idx: Option<usize>) {",
+              "lastLine": "None => {"
             }
           ]
         }
@@ -410,7 +466,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "443-473",
+          "lines": "455-489",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/scrollback.rs",
@@ -429,7 +485,9 @@
                 185,
                 186,
                 187
-              ]
+              ],
+              "firstLine": "/// Update cached viewport height. Idempotent.",
+              "lastLine": "self.viewport_width = w;"
             }
           ]
         }
@@ -440,19 +498,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "475-501",
+          "lines": "491-518",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
                 108,
                 109,
-                110
-              ]
+                110,
+                111,
+                112,
+                113,
+                114
+              ],
+              "firstLine": "let mut ctx = Self::new(id);",
+              "lastLine": "/// using the TS Ink chunkProcessor accumulation algorithm"
             }
           ]
         }
@@ -463,7 +523,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "647-701",
+          "lines": "668-723",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
@@ -493,7 +553,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "use crate::views::agent::{",
+              "lastLine": "/// **RPC-091**: index into `scrollback.chunks` of the currently-"
             }
           ]
         }
@@ -504,15 +566,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agentview_scrollback_cap_bug192.rs",
-          "lines": "503-548",
+          "lines": "504-549",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/session_context.rs",
               "lines": [
-                162,
-                163,
-                164,
-                165,
                 166,
                 167,
                 168,
@@ -529,10 +587,10 @@
                 179,
                 180,
                 181,
-                192,
-                193,
-                194,
-                195,
+                182,
+                183,
+                184,
+                185,
                 196,
                 197,
                 198,
@@ -547,8 +605,14 @@
                 207,
                 208,
                 209,
-                210
-              ]
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "/// Lower-level push that allocates the seq cursor and performs the",
+              "lastLine": "assert_eq!(ctx.scrollback.chunk_count(), 1);"
             }
           ]
         }
@@ -568,6 +632,6 @@
       "rust/fspec-tui/src/views/agent/scrollback_select.rs",
       "rust/fspec-tui/src/views/agent/scrollback.rs"
     ],
-    "totalLinesCovered": 941
+    "totalLinesCovered": 981
   }
 }

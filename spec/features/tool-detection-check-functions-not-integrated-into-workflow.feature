@@ -9,7 +9,7 @@
 @CONFIG-003
 Feature: Tool detection check functions not integrated into workflow
   """
-  Integration point: src/commands/update-work-unit-status.ts must import and call checkTestCommand and checkQualityCommands when status changes to 'validating'. Functions exist in src/commands/configure-tools.ts (lines 32-127). Must use formatAgentOutput for system-reminder wrapping. No modifications to check functions themselves - pure integration.
+  Integration point: rust/fspec-core/src/commands/update_work_unit_status/output.rs prints the configure-tools test command check and quality commands check (update_work_unit_status/reminders/configure_tools.rs) before the confirmation line whenever a work unit moves to validating. The checks read spec/fspec-config.json (tools.test.command, tools.qualityCheck.commands chained with &&) and are wrapped for the agent from the config (system-reminder for agents that support them). sync-version runs the same checks; its scenarios live in automatic-version-check-and-update-for-slash-command-files. configure-tools saves the config only: agent templates are not regenerated (product owner, 2026-11-06, H-CONFIGURE-TOOLS A); sync-version reinstalls the agent files on a version change.
   """
 
   # ========================================
@@ -52,81 +52,43 @@ Feature: Tool detection check functions not integrated into workflow
     So that I can complete proper workflow setup without manual intervention and avoid continuing with incorrect configuration
 
   Scenario: Emit system-reminder when moving to validating with no config
-    Given spec/fspec-config.json does not have tools.test.command configured
-    When AI runs 'fspec update-work-unit-status AUTH-001 validating'
-    Then update-work-unit-status command should call checkTestCommand function
+    Given spec/fspec-config.json sets agent 'claude' but has no tools.test.command configured
+    And work unit AUTH-001 is in implementing
+    When work unit AUTH-001 moves to validating through update-work-unit-status
+    Then the status change succeeds
     And system-reminder should be emitted to console output
     And system-reminder should contain text: 'NO TEST COMMAND CONFIGURED'
     And system-reminder should tell AI to run: fspec configure-tools --test-command <cmd>
 
   Scenario: Emit system-reminder when moving to validating with config present
-    Given spec/fspec-config.json has tools.test.command = 'npm test'
-    When AI runs 'fspec update-work-unit-status AUTH-001 validating'
-    Then update-work-unit-status command should call checkTestCommand function
+    Given spec/fspec-config.json sets agent 'claude' and has tools.test.command = 'npm test'
+    And work unit AUTH-001 is in implementing
+    When work unit AUTH-001 moves to validating through update-work-unit-status
+    Then the status change succeeds
     And system-reminder should be emitted to console output
     And system-reminder should contain text: 'RUN TESTS'
     And system-reminder should contain text: 'Run tests: npm test'
+    And the output should not prompt the AI to configure tools
 
   Scenario: Emit quality check reminder when moving to validating
-    Given spec/fspec-config.json has tools.qualityCheck.commands = ['eslint .', 'prettier --check .']
-    When AI runs 'fspec update-work-unit-status AUTH-001 validating'
-    Then update-work-unit-status command should call checkQualityCommands function
+    Given spec/fspec-config.json sets agent 'claude' and has tools.qualityCheck.commands = ['eslint .', 'prettier --check .']
+    And work unit AUTH-001 is in implementing
+    When work unit AUTH-001 moves to validating through update-work-unit-status
+    Then the status change succeeds
     And system-reminder should be emitted to console output
     And system-reminder should contain text: 'RUN QUALITY CHECKS'
     And system-reminder should contain chained command: 'eslint . && prettier --check .'
 
-  Scenario: Integration test verifies check functions are called
-    Given integration test for update-work-unit-status command
-    When test transitions work unit to 'validating' status
-    Then test should spy on checkTestCommand function
-    And test should spy on checkQualityCommands function
-    And test should verify both functions were called with correct cwd argument
-    And test should verify console.log was called with system-reminder output
+  Scenario: Chain multiple test frameworks when AI provides chained command
+    Given AI ran configure-tools with the test command 'cargo test && npm test'
+    And work unit AUTH-001 is in implementing
+    When work unit AUTH-001 moves to validating through update-work-unit-status
+    Then spec/fspec-config.json should store tools.test.command = 'cargo test && npm test'
+    And the output should contain: 'Run tests: cargo test && npm test'
 
-  Scenario: Fail sync-version when tool configuration is missing
-    Given versions match (embedded version equals package.json version)
-    And spec/fspec-config.json does not have tools.test.command configured
-    When AI runs 'fspec --sync-version <current-version>'
-    Then sync-version should call checkTestCommand function
-    And system-reminder should be emitted: 'NO TEST COMMAND CONFIGURED'
-    And command should exit with code 1 (failure)
-    And AI agent workflow should stop (cannot continue without tool setup)
-
-  Scenario: Fail sync-version when version is incorrect
-    Given spec/fspec-config.json has tools.test.command configured
-    And embedded version is 0.6.0 but AI provides 0.5.0
-    When AI runs 'fspec --sync-version 0.5.0'
-    Then command should display version mismatch error
-    And error should show expected version: 0.6.0
-    And error should show provided version: 0.5.0
-    And command should exit with code 1 (failure)
-    And AI agent workflow should stop (cannot continue with wrong version)
-
-  Scenario: Emit system-reminder when config file completely missing during sync-version
-    Given versions match (embedded version equals package.json version)
-    And spec/fspec-config.json file does not exist at all
-    When AI runs 'fspec --sync-version <current-version>'
-    Then sync-version should call checkTestCommand function
-    And system-reminder should be emitted: 'NO TEST COMMAND CONFIGURED'
-    And system-reminder should guide AI to run: 'fspec configure-tools --test-command <cmd>'
-    And command should exit with code 1 (failure)
-
-  Scenario: configure-tools regenerates agent templates after updating config
-    Given spec/fspec-config.json exists with agent = 'claude'
-    And spec/AGENTS.md exists (old template)
-    And .claude/commands/fspec.md exists (old template)
-    When AI runs 'fspec configure-tools --test-command "npm test"'
-    Then config should be updated with tools.test.command = "npm test"
-    And spec/AGENTS.md should be regenerated with latest template
-    And .claude/commands/fspec.md should be regenerated with latest template
-    And templates should reflect current fspec version
-
-  Scenario: configure-tools regenerates templates silently without extra output
-    Given spec/fspec-config.json exists
-    When AI runs 'fspec configure-tools --test-command "npm test"'
-    Then console output should contain: '✓ Tool configuration saved to spec/fspec-config.json'
-    And console output should NOT contain: 'Regenerating templates'
-    And console output should NOT contain: '✓ Templates updated'
-    And console output should NOT mention spec/AGENTS.md
-    And console output should NOT mention .claude/commands/fspec.md
-    But templates should be regenerated in the background
+  Scenario: Include date-aware search queries when no tools detected
+    Given spec/fspec-config.json does not exist
+    And work unit AUTH-001 is in implementing
+    When work unit AUTH-001 moves to validating through update-work-unit-status
+    Then the reminder should include the search query 'best <platform> testing tools' followed by a four-digit year
+    And the reminder should tell the AI to replace <platform> with the detected project type

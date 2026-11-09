@@ -8,14 +8,13 @@
 //! Filter sub-mode, Detail sub-modes, and the delete-confirm dialog
 //! must continue to consume Tab silently (Rules 4 & 5).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::ProviderDisplayInfo;
 use codelet_fspec_tui::views::{
     DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_test_helpers::TestResult;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
 fn key(code: KeyCode) -> KeyEvent {
@@ -69,7 +68,7 @@ fn view_with_n_providers(n: usize) -> ProviderSettingsView {
 
 /// Scenario: Tab in List mode with providers emits SwitchToModels
 #[test]
-fn tab_in_list_mode_with_providers_emits_switch_to_models() {
+fn tab_in_list_mode_with_providers_emits_switch_to_models() -> TestResult {
     // @step Given a ProviderSettingsView in List mode with 17 providers loaded
     let mut view = view_with_n_providers(17);
 
@@ -97,11 +96,12 @@ fn tab_in_list_mode_with_providers_emits_switch_to_models() {
     // (Emit variant would have produced an Action — SwitchToModels never
     // carries an Action payload, so matching the variant above is the
     // assertion.)
+    Ok(())
 }
 
 /// Scenario: Tab in List mode with an empty provider list still emits SwitchToModels
 #[test]
-fn tab_in_list_mode_with_no_providers_still_emits_switch_to_models() {
+fn tab_in_list_mode_with_no_providers_still_emits_switch_to_models() -> TestResult {
     // @step Given a ProviderSettingsView in List mode with zero providers loaded
     let mut view = ProviderSettingsView::new();
     assert!(view.providers.is_empty());
@@ -114,17 +114,19 @@ fn tab_in_list_mode_with_no_providers_still_emits_switch_to_models() {
 
     // @step And view.mode is still ProviderSettingsMode::List
     assert!(matches!(view.mode, ProviderSettingsMode::List));
+    Ok(())
 }
 
 /// Scenario: Tab in List mode with an active filter preserves filter state
 #[test]
-fn tab_with_active_filter_preserves_filter_state() {
+fn tab_with_active_filter_preserves_filter_state() -> TestResult {
     // @step Given a ProviderSettingsView in List mode with 17 providers loaded
     let mut view = ProviderSettingsView::new();
-    let infos: Vec<ProviderDisplayInfo> = (0..17)
+    // 13 providers that do not match "open" plus 4 that do.
+    let infos: Vec<ProviderDisplayInfo> = (0..13)
         .map(|i| {
-            let mut d = display_info(&format!("opener{i}"));
-            d.name = format!("opener{i}");
+            let mut d = display_info(&format!("zeta{i}"));
+            d.name = format!("zeta{i}");
             d
         })
         .chain((0..4).map(|i| {
@@ -133,6 +135,7 @@ fn tab_with_active_filter_preserves_filter_state() {
             d
         }))
         .collect();
+    assert_eq!(infos.len(), 17);
     view.set_provider_display_infos(infos);
 
     // @step And the filter is "open" and filter_mode is false
@@ -141,10 +144,11 @@ fn tab_with_active_filter_preserves_filter_state() {
     view.rebuild_nav_items();
 
     // @step And the nav_items list has been rebuilt to 4 entries
-    // (Synthesise via filter that DOES match all "opener*" + "open_*".
-    // We just want a non-empty post-filter nav_items.)
-    let initial_nav_len = view.nav_items.len();
-    assert!(initial_nav_len > 0, "filter should retain at least one row");
+    assert_eq!(
+        view.nav_items.len(),
+        4,
+        "the filter keeps only the four open_* provider rows"
+    );
 
     // @step When the user presses Tab with no modifiers
     let outcome = view.handle_key(key(KeyCode::Tab));
@@ -158,13 +162,14 @@ fn tab_with_active_filter_preserves_filter_state() {
     // @step And view.filter_mode equals false
     assert!(!view.filter_mode);
 
-    // @step And nav_items length is still {initial_nav_len}
-    assert_eq!(view.nav_items.len(), initial_nav_len);
+    // @step And nav_items length is still 4
+    assert_eq!(view.nav_items.len(), 4);
+    Ok(())
 }
 
 /// Scenario: Tab in filter sub-mode does not trigger SwitchToModels
 #[test]
-fn tab_in_filter_sub_mode_does_not_trigger_switch_to_models() {
+fn tab_in_filter_sub_mode_does_not_trigger_switch_to_models() -> TestResult {
     // @step Given a ProviderSettingsView in List mode with filter_mode true
     let mut view = view_with_n_providers(3);
     view.filter_mode = true;
@@ -186,11 +191,12 @@ fn tab_in_filter_sub_mode_does_not_trigger_switch_to_models() {
 
     // @step And view.filter is still "ant"
     assert_eq!(view.filter, "ant");
+    Ok(())
 }
 
 /// Scenario: Tab in EditApiKey detail mode is silently Consumed
 #[test]
-fn tab_in_edit_api_key_is_silently_consumed() {
+fn tab_in_edit_api_key_is_silently_consumed() -> TestResult {
     // @step Given a ProviderSettingsView in Detail::EditApiKey { draft: "sk-abc" } mode
     let mut view = view_with_n_providers(1);
     view.mode = ProviderSettingsMode::Detail {
@@ -212,13 +218,14 @@ fn tab_in_edit_api_key_is_silently_consumed() {
             // @step And the draft is still "sk-abc"
             assert!(matches!(sub, DetailSub::EditApiKey { draft } if draft == "sk-abc"));
         }
-        _ => panic!("expected Detail::EditApiKey, got {:?}", view.mode),
+        _ => return Err(format!("expected Detail::EditApiKey, got {:?}", view.mode).into()),
     }
+    Ok(())
 }
 
 /// Scenario: Tab while delete-confirm dialog is open routes to dialog focus cycling
 #[test]
-fn tab_during_delete_confirm_routes_to_dialog() {
+fn tab_during_delete_confirm_routes_to_dialog() -> TestResult {
     // @step Given a ProviderSettingsView in List mode
     let mut view = view_with_n_providers(3);
     view.providers[0].configured = true;
@@ -243,11 +250,12 @@ fn tab_during_delete_confirm_routes_to_dialog() {
 
     // @step And no SwitchToModels event is emitted
     // (Asserted above: Consumed != SwitchToModels.)
+    Ok(())
 }
 
 /// Scenario: Direct unit invocation of Tab on a default List-mode view
 #[test]
-fn direct_tab_on_default_list_mode_view_emits_switch_to_models() {
+fn direct_tab_on_default_list_mode_view_emits_switch_to_models() -> TestResult {
     // @step Given a freshly constructed ProviderSettingsView in default List mode
     let mut view = ProviderSettingsView::new();
     let snapshot_selected = view.selected_index;
@@ -267,11 +275,12 @@ fn direct_tab_on_default_list_mode_view_emits_switch_to_models() {
     assert_eq!(view.filter, snapshot_filter);
     assert_eq!(view.filter_mode, snapshot_filter_mode);
     assert!(matches!(view.mode, ProviderSettingsMode::List));
+    Ok(())
 }
 
 /// Scenario: Up then Tab then Down preserves arrow nav contract
 #[test]
-fn up_then_tab_then_down_preserves_arrow_nav_contract() {
+fn up_then_tab_then_down_preserves_arrow_nav_contract() -> TestResult {
     // @step Given a ProviderSettingsView in List mode with 5 providers and cursor at index 2
     let mut view = view_with_n_providers(5);
     view.selected_index = 2;
@@ -296,21 +305,23 @@ fn up_then_tab_then_down_preserves_arrow_nav_contract() {
     // @step And the Down keystroke returns ProviderSettingsEvent::Consumed and selected_index becomes 2
     assert!(matches!(down_out, ProviderSettingsEvent::Consumed));
     assert_eq!(view.selected_index, 2);
+    Ok(())
 }
 
 /// Regression guard: Tab MUST NOT be Emit(Action) — it never carries an Action payload.
 #[test]
-fn tab_never_carries_an_action_payload() {
+fn tab_never_carries_an_action_payload() -> TestResult {
     let mut view = view_with_n_providers(3);
     let outcome = view.handle_key(key(KeyCode::Tab));
     match outcome {
         ProviderSettingsEvent::SwitchToModels => {}
         ProviderSettingsEvent::Emit(action) => {
-            panic!("Tab must not emit Action, got Emit({action:?})");
+            return Err(format!("Tab must not emit Action, got Emit({action:?})").into());
         }
-        other => panic!("Tab must emit SwitchToModels, got {other:?}"),
+        other => return Err(format!("Tab must emit SwitchToModels, got {other:?}").into()),
     }
     // Reference the import so an unused warning doesn't fire under
     // `--deny=warnings` — Action is consumed in the panic arm above.
     let _ = std::marker::PhantomData::<Action>;
+    Ok(())
 }

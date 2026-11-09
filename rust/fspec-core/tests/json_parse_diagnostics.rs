@@ -11,7 +11,6 @@ use std::path::Path;
 
 use codelet_fspec_core::io::json_error::parse_json_reason;
 use codelet_fspec_core::{dispatch_command, DispatchRequest};
-use serde_json::Value;
 use tempfile::TempDir;
 
 /// A multi-line work-units.json whose line 4 has an unquoted key `status:`
@@ -29,14 +28,6 @@ fn req(command: &str, project_root: &Path) -> DispatchRequest {
     DispatchRequest {
         command: command.to_string(),
         args_json: "{}".to_string(),
-        project_root: project_root.to_path_buf(),
-    }
-}
-
-fn req_args(command: &str, project_root: &Path, args_json: &str) -> DispatchRequest {
-    DispatchRequest {
-        command: command.to_string(),
-        args_json: args_json.to_string(),
         project_root: project_root.to_path_buf(),
     }
 }
@@ -135,44 +126,6 @@ fn scenario_single_line_input_places_caret_under_exact_error_column() {
     assert!(
         snippet.contains("key must be a string at line 1 column 3"),
         "missing serde position: {snippet}"
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: Lenient parse sites stay silent on malformed input
-// ─────────────────────────────────────────────────────────────────────────
-#[test]
-fn scenario_lenient_parse_sites_stay_silent_on_malformed_input() {
-    // @step Given a malformed fspec-hooks.json
-    let tmp = TempDir::new().expect("tempdir");
-    seed(tmp.path(), "fspec-hooks.json", "{ not json");
-
-    // @step When I run the list-hooks command against it
-    let result = dispatch_command(req_args("list-hooks", tmp.path(), r#"{"format":"json"}"#));
-
-    // @step Then an empty hook list is returned
-    assert!(
-        result.success,
-        "lenient parse must swallow the error; got {result:?}"
-    );
-    let data: Value =
-        serde_json::from_str(&result.data).expect("dispatch data should be valid JSON");
-    assert_eq!(
-        data["events"].as_array().map(Vec::len),
-        Some(0),
-        "expected empty events array on malformed input, got {}",
-        result.data
-    );
-
-    // @step And no parse error is surfaced
-    assert!(
-        result.error.is_none(),
-        "lenient parse site must not surface a parse error: {result:?}"
-    );
-    assert!(
-        !result.data.contains("Failed to parse"),
-        "lenient parse site must not surface file framing: {}",
-        result.data
     );
 }
 

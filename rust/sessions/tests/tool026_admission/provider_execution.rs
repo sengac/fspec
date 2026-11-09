@@ -112,7 +112,7 @@ async fn execute<M: CompletionModel + 'static>(
         .mount(endpoint)
         .await;
     let agent = codelet_core::RigAgent::new(agent, 4);
-    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+    codelet_test_helpers::deadlock_guard("the awaited block", async {
         if streaming {
             let stream = agent.prompt_streaming("Exercise attributed tools").await;
             futures::pin_mut!(stream);

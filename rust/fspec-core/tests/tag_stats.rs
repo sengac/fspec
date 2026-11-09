@@ -638,3 +638,64 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "commands/tag_stats.rs must no longer be a NotYetPorted stub"
     );
 }
+
+// ---------- scenario moved from tag-stats.feature (COV-071) ----------
+
+#[test]
+fn a_feature_file_with_no_tags_is_counted_as_a_file_but_adds_no_tags() {
+    // Scenario: A feature file with no tags is counted as a file but adds no tags
+
+    // @step Given spec/features/plain.feature has no tags
+    let tmp = TempDir::new().expect("tempdir");
+    write_feature(
+        tmp.path(),
+        "spec/features/plain.feature",
+        "Feature: Plain\n  Scenario: A\n    Given x\n",
+    );
+
+    // @step And spec/features/tagged.feature has feature-level tags '@critical @auth @ui'
+    write_feature(
+        tmp.path(),
+        "spec/features/tagged.feature",
+        &feature_with_tags(&["@critical", "@auth", "@ui"], "Tagged"),
+    );
+
+    // @step When I dispatch tag-stats with format='json'
+    let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+    let data = parse_data(&result.data);
+
+    // @step And the result has totalFiles=2, uniqueTags=3, totalOccurrences=3
+    assert_eq!(data["totalFiles"].as_u64(), Some(2), "{data}");
+    assert_eq!(data["uniqueTags"].as_u64(), Some(3), "{data}");
+    assert_eq!(data["totalOccurrences"].as_u64(), Some(3), "{data}");
+
+    // @step And the statistics only count the tags from the tagged file
+    let mut counted: Vec<(String, u64)> = data["categories"]
+        .as_array()
+        .expect("categories array")
+        .iter()
+        .flat_map(|c| c["tags"].as_array().cloned().unwrap_or_default())
+        .map(|t| {
+            (
+                t["tag"].as_str().unwrap_or_default().to_string(),
+                t["count"].as_u64().unwrap_or(0),
+            )
+        })
+        .collect();
+    counted.sort();
+    assert_eq!(
+        counted,
+        vec![
+            ("@auth".to_string(), 1),
+            ("@critical".to_string(), 1),
+            ("@ui".to_string(), 1)
+        ]
+    );
+    assert!(
+        data["invalidFiles"].as_array().is_none_or(Vec::is_empty),
+        "{data}"
+    );
+}

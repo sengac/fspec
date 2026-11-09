@@ -1,7 +1,6 @@
 @init
 @agent-compatibility
 @initialization
-@AGENT-017
 Feature: Test Codex CLI agent compatibility
   """
   Exercise the common core init dispatcher; use isolated HOME and filesystem state, without invoking a real external agent.

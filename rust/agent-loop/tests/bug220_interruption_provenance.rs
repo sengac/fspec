@@ -159,8 +159,8 @@ async fn scenario_running_tool_cancellation_preserves_its_initiating_cause() -> 
             })
             .build();
         // @step When user stop or the loop detector interrupts the running tool
-        tokio::time::timeout(
-            std::time::Duration::from_secs(5),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::with_default_depth(agent), 'i...",
             run_agent_stream(
                 RigAgent::with_default_depth(agent),
                 "inspect",
@@ -208,7 +208,7 @@ async fn scenario_running_tool_cancellation_preserves_its_initiating_cause() -> 
             .iter()
             .any(|chunk| chunk["type"] == "done"));
         release.notify_one();
-        tokio::time::timeout(std::time::Duration::from_secs(1), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             while !dropped.load(Ordering::Acquire) {
                 tokio::task::yield_now().await;
             }

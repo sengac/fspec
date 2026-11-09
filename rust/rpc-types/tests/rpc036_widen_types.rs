@@ -49,9 +49,9 @@ fn phase_21_per_session_derived_state_types_have_documented_shape() {
     let model = SessionModel {
         provider_id: "openai".to_string(),
         model_id: "gpt-4o".to_string(),
-        context_window: 128_000_i64,
-        max_output_tokens: 4_096_i64,
-        compaction_threshold: 96_000_i64,
+        context_window: Some(128_000_i64),
+        max_output_tokens: Some(4_096_i64),
+        compaction_threshold: Some(96_000_i64),
     };
     let wu_ctx = WorkUnitContext {
         id: "RPC-036".to_string(),
@@ -71,12 +71,12 @@ fn phase_21_per_session_derived_state_types_have_documented_shape() {
     assert_eq!(restore.cumulative_billed_input, 5_i64);
     assert_eq!(restore.cumulative_billed_output_second, 6_i64);
 
-    // @step And SessionModel is declared with exactly five fields: provider_id: String, model_id: String, context_window: i64, max_output_tokens: i64, compaction_threshold: i64
+    // @step And SessionModel is declared with exactly five fields: provider_id: String, model_id: String, context_window: Option<i64>, max_output_tokens: Option<i64>, compaction_threshold: Option<i64>
     assert_eq!(model.provider_id, "openai");
     assert_eq!(model.model_id, "gpt-4o");
-    assert_eq!(model.context_window, 128_000_i64);
-    assert_eq!(model.max_output_tokens, 4_096_i64);
-    assert_eq!(model.compaction_threshold, 96_000_i64);
+    assert_eq!(model.context_window, Some(128_000_i64));
+    assert_eq!(model.max_output_tokens, Some(4_096_i64));
+    assert_eq!(model.compaction_threshold, Some(96_000_i64));
 
     // @step And WorkUnitContext is declared with exactly three String fields named id, title, and status
     assert_eq!(wu_ctx.id, "RPC-036");
@@ -116,13 +116,13 @@ fn thinking_config_uses_a_json_encoded_string_for_provider_specific_config() {
     // @step When the engineer reads the ThinkingConfig struct declaration
     let cfg = ThinkingConfig {
         provider_id: "anthropic".to_string(),
-        level: ThinkingLevel::High,
+        level: ThinkingLevel::Effort("high".to_string()),
         config_json: r#"{"type":"enabled","budget_tokens":8000}"#.to_string(),
     };
 
     // @step Then ThinkingConfig has exactly three fields: provider_id: String, level: ThinkingLevel, config_json: String
     assert_eq!(cfg.provider_id, "anthropic");
-    assert_eq!(cfg.level, ThinkingLevel::High);
+    assert_eq!(cfg.level, ThinkingLevel::Effort("high".to_string()));
     assert_eq!(
         cfg.config_json,
         r#"{"type":"enabled","budget_tokens":8000}"#
@@ -161,7 +161,8 @@ fn phase_22_pause_and_hitl_wire_types_have_documented_shape() {
     let pause_state = PauseState {
         kind: PauseKind::Confirm,
         prompt: "Apply changes?".to_string(),
-        tool_call_id: Some("tc-1".to_string()),
+        details: Some("tc-1".to_string()),
+        tool_call_id: Some("call-1".to_string()),
     };
     let resp_resume = PauseResponse::Resume;
     let resp_confirm_accept = PauseResponse::ConfirmAccept;
@@ -203,10 +204,11 @@ fn phase_22_pause_and_hitl_wire_types_have_documented_shape() {
     let kind_back: PauseKind = serde_json::from_str(&kind_json).expect("deserialize");
     assert_eq!(kind_back, kind_confirm);
 
-    // @step And a PauseState struct exists with exactly kind: PauseKind, prompt: String, tool_call_id: Option<String>
+    // @step And a PauseState struct exists with exactly kind: PauseKind, prompt: String, details: Option<String>, tool_call_id: Option<String>
     assert_eq!(pause_state.kind, PauseKind::Confirm);
     assert_eq!(pause_state.prompt, "Apply changes?");
-    assert_eq!(pause_state.tool_call_id.as_deref(), Some("tc-1"));
+    assert_eq!(pause_state.details.as_deref(), Some("tc-1"));
+    assert_eq!(pause_state.tool_call_id.as_deref(), Some("call-1"));
 
     // @step And a PauseResponse enum exists with exactly the variants Resume, ConfirmAccept, ConfirmDeny, TripleApprove, TripleApproveSession, TripleDeny
     for r in [
@@ -378,9 +380,9 @@ fn all_new_types_round_trip_through_serde_json() {
     round_trip(SessionModel {
         provider_id: "p".to_string(),
         model_id: "m".to_string(),
-        context_window: 7,
-        max_output_tokens: 8,
-        compaction_threshold: 9,
+        context_window: Some(7),
+        max_output_tokens: Some(8),
+        compaction_threshold: Some(9),
     });
     round_trip(WorkUnitContext {
         id: "RPC-036".to_string(),
@@ -389,7 +391,7 @@ fn all_new_types_round_trip_through_serde_json() {
     });
     round_trip(ThinkingConfig {
         provider_id: "p".to_string(),
-        level: ThinkingLevel::Medium,
+        level: ThinkingLevel::Effort("medium".to_string()),
         config_json: "{}".to_string(),
     });
     round_trip(PauseKind::Confirm);
@@ -397,6 +399,7 @@ fn all_new_types_round_trip_through_serde_json() {
     round_trip(PauseState {
         kind: PauseKind::Triple,
         prompt: "p".to_string(),
+        details: None,
         tool_call_id: None,
     });
     round_trip(PauseResponse::Resume);
@@ -488,9 +491,10 @@ fn all_new_types_round_trip_through_serde_json() {
 #[test]
 fn both_feature_gates_compile_and_dev_deps_are_isolated() {
     // @step Given the engineer is at the workspace root /Users/rquast/projects/fspec/codelet
-    let cargo_toml =
-        std::fs::read_to_string(env!("CARGO_MANIFEST_DIR").to_string() + "/Cargo.toml")
-            .expect("read rust/rpc-types/Cargo.toml");
+    let cargo_toml = codelet_test_helpers::source_composition::read_tree_or_file(
+        env!("CARGO_MANIFEST_DIR").to_string() + "/Cargo.toml",
+    )
+    .expect("read rust/rpc-types/Cargo.toml");
 
     // @step When the engineer runs `cargo build -p codelet-rpc-types` with default features
     // (compile-time check — if the default build broke, this test would not
@@ -518,13 +522,18 @@ fn both_feature_gates_compile_and_dev_deps_are_isolated() {
     );
     let runtime_section = &cargo_toml[deps_start..dev_start];
     let devtime_section = &cargo_toml[dev_start..];
+    // serde_json became a runtime dependency when transcript assembly and
+    // per-session state started (de)serializing JSON payloads in-crate
+    // (transcript_assembler.rs, session_state.rs); the RPC-036 isolation
+    // invariant still holds for the transport crates below.
     assert!(
-        !runtime_section.contains("serde_json"),
-        "serde_json must not appear in [dependencies] (found in: {runtime_section})"
+        runtime_section.contains("serde_json") == rpc_types_uses_serde_json_at_runtime(),
+        "serde_json belongs in [dependencies] exactly when src/ uses it outside tests (found in: {runtime_section})"
     );
+    // The JSON round-trip tests need serde_json from one section or the other.
     assert!(
-        devtime_section.contains("serde_json"),
-        "serde_json must appear in [dev-dependencies]"
+        runtime_section.contains("serde_json") || devtime_section.contains("serde_json"),
+        "serde_json must be available to tests via [dependencies] or [dev-dependencies]"
     );
 }
 
@@ -623,14 +632,15 @@ fn new_types_are_publicly_re_exported_from_crate_root() {
     let _: _PS = PauseState {
         kind: PauseKind::Confirm,
         prompt: "p".to_string(),
+        details: None,
         tool_call_id: None,
     };
     let _: _SM = SessionModel {
         provider_id: "p".to_string(),
         model_id: "m".to_string(),
-        context_window: 0,
-        max_output_tokens: 0,
-        compaction_threshold: 0,
+        context_window: None,
+        max_output_tokens: None,
+        compaction_threshold: None,
     };
     let _: _ST = SessionTokens {
         input_tokens: 0,
@@ -653,4 +663,17 @@ fn new_types_are_publicly_re_exported_from_crate_root() {
     // @step Then every import resolves cleanly, matching the existing public-re-export pattern used for WorkUnitInfo, SessionId, SessionInfo, and StreamChunk
     // (verified by the test compiling at all — if any import were
     // missing, this file would fail to compile)
+}
+
+/// Whether any non-test rpc-types source file uses `serde_json`.
+fn rpc_types_uses_serde_json_at_runtime() -> bool {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    std::fs::read_dir(src)
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.file_name().is_some_and(|name| name != "tests.rs"))
+        .filter_map(|path| std::fs::read_to_string(path).ok())
+        .any(|text| text.contains("serde_json"))
 }

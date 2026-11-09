@@ -80,6 +80,7 @@ Feature: Port add-schedule command to Rust
     When I dispatch the add-schedule command with name 'bad-tz' cron '0 2 * * *' timezone 'Not/AZone' jobType 'shell' command 'echo hi'
     Then the dispatcher returns an error mentioning the invalid timezone
     And spec/schedules.json contains no schedule named 'bad-tz'
+    And the error suggests valid IANA timezones like UTC, America/New_York, or Australia/Brisbane
 
   Scenario: Invalid jobType is rejected without writing
     Given an empty project root directory
@@ -104,3 +105,9 @@ Feature: Port add-schedule command to Rust
     When I dispatch the add-schedule command with name 'nightly-review' cron '0 3 * * *' timezone 'UTC' jobType 'shell' command 'echo dup'
     Then the dispatcher returns an error mentioning the schedule already exists
     And the existing 'nightly-review' entry is unchanged
+
+  Scenario: Cron expression with an out-of-range hour is rejected without writing
+    Given spec/schedules.json already contains a schedule named 'nightly-review'
+    When I dispatch the add-schedule command with name 'bad-cron' cron '0 99 * * *' timezone 'UTC' jobType 'shell' command 'echo hi'
+    Then the dispatcher returns an error mentioning "Number '99' of hours field is bigger than upper limit '23'."
+    And spec/schedules.json is byte-for-byte unchanged

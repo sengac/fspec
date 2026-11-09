@@ -1,4 +1,6 @@
 @CMPCT-008
+@tools
+@tool-execution
 Feature: inject_summary Tool Definition and Schema
   """
   File: rust/tools/src/inject_summary.rs — contains InjectSummaryTool struct, InjectSummaryArgs, InjectSummaryResult, InjectSummaryHandler type alias, global handler registry, set/has/execute/clear functions
@@ -43,6 +45,7 @@ Feature: inject_summary Tool Definition and Schema
     Then the tool name should be "inject_summary"
     And the JSON schema should have "content" as a required string parameter
     And the description should explain DAG pinning, builder turn dropping, and compaction persistence
+    And the description should show the exact dag-node, inclusive range and dag-files syntax
 
   @handler-dispatch
   Scenario: Successful inject_summary dispatches to registered handler

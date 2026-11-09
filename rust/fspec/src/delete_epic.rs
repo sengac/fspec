@@ -34,10 +34,10 @@
 //! flag is intentionally swallowed without forwarding into the dispatcher
 //! args. (Forwarding it would be harmless but distorts the parity story.)
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::delete_epic;
 use serde_json::json;
 
@@ -57,7 +57,7 @@ pub struct CliArgs {
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. TS uses `process.cwd()` default.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Touch `args.force` to silence dead-code lints without changing
     // behaviour — TS parity dictates the flag is accepted but not

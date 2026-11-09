@@ -351,3 +351,65 @@ fn format_json_emits_structured_payload_preserving_key_order() {
         "key order mismatch; got {keys:?}"
     );
 }
+
+fn read_marker(dir: &Path) -> String {
+    fs::read_to_string(dir.join("marker.txt")).expect("read marker")
+}
+
+#[test]
+fn restoring_the_same_checkpoint_twice_keeps_the_checkpoint() {
+    // Scenario: Restoring the same checkpoint twice brings its content back each time and keeps the checkpoint
+
+    // @step Given a git repository with a checkpoint "baseline" for "GIT-002" that captured marker.txt as "baseline"
+    let tmp = TempDir::new().expect("tempdir");
+    init_git_repo(tmp.path());
+    create_real_checkpoint(tmp.path(), "GIT-002", "baseline", "baseline\n");
+
+    // @step And marker.txt is changed to "approach A"
+    fs::write(tmp.path().join("marker.txt"), "approach A\n").expect("approach A");
+
+    // @step When the dispatcher runs restore-checkpoint with workUnitId "GIT-002", checkpointName "baseline" and force true
+    let first = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "GIT-002", "checkpointName": "baseline", "force": true }),
+    ));
+    let first_data = parse_data(&first.data);
+
+    // @step Then the result reports success true and marker.txt reads "baseline"
+    assert_eq!(first_data["success"].as_bool(), Some(true), "{first_data}");
+    assert_eq!(read_marker(tmp.path()), "baseline\n");
+
+    // @step And marker.txt is changed to "approach B"
+    fs::write(tmp.path().join("marker.txt"), "approach B\n").expect("approach B");
+
+    // @step And the dispatcher runs restore-checkpoint with workUnitId "GIT-002", checkpointName "baseline" and force true again
+    let second = dispatch_command(req(
+        tmp.path(),
+        json!({ "workUnitId": "GIT-002", "checkpointName": "baseline", "force": true }),
+    ));
+    let second_data = parse_data(&second.data);
+
+    // @step And the result reports success true and marker.txt reads "baseline" again
+    assert_eq!(
+        second_data["success"].as_bool(),
+        Some(true),
+        "{second_data}"
+    );
+    assert_eq!(read_marker(tmp.path()), "baseline\n");
+
+    // @step And the ref "refs/fspec-checkpoints/GIT-002/baseline" still exists
+    let verify = Command::new("git")
+        .args([
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "refs/fspec-checkpoints/GIT-002/baseline",
+        ])
+        .current_dir(tmp.path())
+        .output()
+        .expect("git rev-parse");
+    assert!(
+        verify.status.success(),
+        "checkpoint ref must survive two restores"
+    );
+}

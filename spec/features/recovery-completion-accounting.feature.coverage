@@ -139,17 +139,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -294,17 +298,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -449,17 +457,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -604,17 +616,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -759,17 +775,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -914,17 +934,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }
@@ -1069,17 +1093,21 @@
                 129,
                 130,
                 131
-              ]
+              ],
+              "firstLine": "impl BackgroundSession {",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/agent_loop.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
-                129
-              ]
+                130,
+                131
+              ],
+              "firstLine": "let (current_provider, current_model, thinking_target) =",
+              "lastLine": "&session,"
             }
           ]
         }

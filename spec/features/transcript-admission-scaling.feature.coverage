@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug255_append_scaling.rs",
-          "lines": "136-182",
+          "lines": "160-206",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/transcript/writer.rs",
@@ -68,7 +68,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "pub(crate) fn append_unowned(&self, record: &JournalRecord) -> Result<(), JournalError> {",
+              "lastLine": "Ok(())"
             }
           ]
         }
@@ -79,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug255_append_scaling.rs",
-          "lines": "185-225",
+          "lines": "209-249",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/transcript/writer.rs",
@@ -113,7 +115,9 @@
                 45,
                 46,
                 47
-              ]
+              ],
+              "firstLine": "let previous = slot.take();",
+              "lastLine": "}"
             }
           ]
         }
@@ -124,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug255_append_scaling.rs",
-          "lines": "67-133",
+          "lines": "67-157",
           "implMappings": [
             {
               "file": "rust/agent-loop/src/persistence_retry_ownership.rs",
@@ -157,7 +161,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "pub(super) fn owner(directory: &Path) -> Result<Arc<Mutex<RecoveryOwner>>, String> {",
+              "lastLine": "Ok(None)"
             }
           ]
         }
@@ -168,7 +174,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/bug255_append_scaling.rs",
-          "lines": "227-258",
+          "lines": "251-282",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/transcript/writer.rs",
@@ -223,7 +229,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "let existing = admission.existing(record, &encoded)?;",
+              "lastLine": "}"
             }
           ]
         }
@@ -241,6 +249,6 @@
       "rust/core/src/persistence/transcript/writer.rs",
       "rust/agent-loop/src/persistence_retry_ownership.rs"
     ],
-    "totalLinesCovered": 352
+    "totalLinesCovered": 376
   }
 }

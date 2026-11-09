@@ -37,6 +37,10 @@ pub async fn run(workspace: Option<PathBuf>) -> Result<()> {
 
     let workspace = common::resolve_workspace(workspace)?;
     let service = common::build_service(&workspace)?;
+    // RPC-447: FSPEC_DAEMON_TOKEN requires `Authorization: Bearer <token>`.
+    if let Ok(token) = std::env::var("FSPEC_DAEMON_TOKEN") {
+        service.set_auth_token(token);
+    }
     common::init_tracing_combined(&service)?;
 
     let shutdown: Pin<Box<dyn std::future::Future<Output = Result<ShutdownReason>> + Send>> =
@@ -46,10 +50,31 @@ pub async fn run(workspace: Option<PathBuf>) -> Result<()> {
 
     let djson = common::daemon_json_path()?;
     let started_at = SystemTime::now();
-    if let Err(e) =
-        common::write_daemon_json(&djson, addr.port(), process::id(), &workspace, started_at)
-    {
+    // BUG-289: never take daemon.json from another live daemon.
+    // BUG-595: combined mode serves plain ws on 127.0.0.1.
+    let listener = common::DaemonListener::loopback();
+    if let Err(e) = common::claim_default_pointer(
+        &djson,
+        addr.port(),
+        process::id(),
+        &workspace,
+        started_at,
+        &listener,
+    ) {
         tracing::warn!(error = %e, "failed to write daemon.json (continuing)");
+    }
+    // RPC-446: advertise this daemon in its own discovery file so clients
+    // can list every local daemon, not only the daemon.json default.
+    let daemons_dir = common::daemons_dir()?;
+    if let Err(e) = common::write_daemon_entry(
+        &daemons_dir,
+        addr.port(),
+        process::id(),
+        &workspace,
+        started_at,
+        &listener,
+    ) {
+        tracing::warn!(error = %e, "failed to write the daemon discovery file (continuing)");
     }
 
     eprintln!("PORT={}", addr.port());
@@ -60,13 +85,21 @@ pub async fn run(workspace: Option<PathBuf>) -> Result<()> {
 
     let backend = EmbeddedFspecBackend::new(tokio::runtime::Handle::current(), service.clone());
     let mut app = App::new(Arc::new(backend));
+    // BUG-430: combined mode gets the same daemon switcher as client mode,
+    // with its own in-process daemon connected.
+    let own_url = url::Url::parse(&listener.url(addr.port()))?;
+    crate::daemon_directory::install_daemon_switcher(&mut app, &own_url, None)?;
     let run_result = match app.bootstrap().await {
         Ok(()) => drive_run(app, shutdown).await,
         Err(e) => Err(e),
     };
 
     join.abort();
-    common::remove_daemon_json(&djson);
+    common::remove_daemon_entry(&daemons_dir, process::id());
+    // BUG-289: release daemon.json only if it is ours, handing it on.
+    if let Err(e) = common::release_default_pointer(&djson, &daemons_dir, process::id()) {
+        tracing::warn!(error = %e, "failed to release daemon.json (continuing)");
+    }
 
     run_result
 }

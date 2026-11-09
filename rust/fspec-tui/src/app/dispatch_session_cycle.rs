@@ -8,11 +8,10 @@
 //! Hosts `handle_session_cycle`, the helper invoked from `App::dispatch`
 //! when an `Action::SessionPrev` or `Action::SessionNext` arrives.
 //!
-//! RPC-024: on every session switch BEFORE mutating
-//! `current_session_index`, snapshot the live `MultiLineInput` buffer
-//! into the outgoing `SessionContext.input_draft`; AFTER mutating,
-//! restore the incoming session's saved draft back into the
-//! MultiLineInput.
+//! RPC-024 / BUG-549: on every session switch the composer text becomes
+//! the outgoing (bound) session's `SessionContext.input_draft` and the
+//! incoming session's saved draft is restored into the MultiLineInput
+//! (`App::sync_composer_draft`, app/composer_draft.rs).
 //!
 //! RPC-096: at the ends of the list, Shift+Right opens the Create
 //! Session dialog and Shift+Left exits AgentView back to BoardView.
@@ -27,15 +26,16 @@ use super::state::App;
 impl App {
     /// RPC-097: route `Action::OpenAgentView(target)`. When `target` is
     /// `Some(sid)` the user is jumping into an existing attached
-    /// session — switch the active view to AgentView immediately.
+    /// session — focus it and switch the active view to AgentView
+    /// immediately ([`Self::open_agent_view_on`], BUG-553).
     /// When `None` (BoardView Shift+Right on an unattached work unit)
     /// we mirror TS canonical `sessionGetNext()` semantics:
     ///
     ///   1. If `agent_view_store.first_open_session_id()` returns
     ///      `Some(sid)` — any open session is already in play — we
-    ///      resume that session (set navigation_target + switch
-    ///      active_view to Agent). NO dialog appears. This is the
-    ///      RPC-097 reopen #2 fix: previously the dialog appeared
+    ///      resume that session through the real focus path
+    ///      ([`Self::open_agent_view_on`], BUG-553). NO dialog
+    ///      appears. This is the RPC-097 reopen #2 fix: previously the dialog appeared
     ///      EVERY time the focused work unit had no attachment, even
     ///      when a session was already open from a previous round
     ///      trip (Shift+Right → Shift+Left → Shift+Right).
@@ -52,15 +52,7 @@ impl App {
     ///      not at dialog open time.
     pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {
         match target {
-            Some(sid) => {
-                self.agent_view_store.set_navigation_target(Some(sid));
-                self.navigator.active_view = ViewMode::Agent;
-                // BUG-197 R3/R4: leaving the board via a view flip
-                // drops the board bar's ring focus so returning to the
-                // board paints NO stale chip highlight (only the
-                // MENU-006 active-chip path may highlight).
-                self.board_store.menu_focus_to_columns();
-            }
+            Some(sid) => self.open_agent_view_on(sid),
             None => {
                 // RPC-097 reopen #2: probe the GLOBAL open-session
                 // list before showing the dialog. This is the TS
@@ -69,8 +61,7 @@ impl App {
                 // — if sessionGetNext returns Some, navigate to it;
                 // only on None do we open the create dialog.
                 if let Some(sid) = self.agent_view_store.first_open_session_id() {
-                    self.agent_view_store.set_navigation_target(Some(sid));
-                    self.navigator.active_view = ViewMode::Agent;
+                    self.open_agent_view_on(sid);
                 } else {
                     // No open sessions: preserve RPC-097 reopen #1
                     // contract — dialog overlays BoardView and the
@@ -81,6 +72,32 @@ impl App {
                 }
             }
         }
+    }
+
+    /// BUG-553: open the agent view on exactly `session`, focused through
+    /// the same path as every other route. An open tab is focused with
+    /// [`Self::switch_to_session_index`] (BUG-549 draft swap, daemon
+    /// active-session pointer, supervisors, exec-stdin probe); a session
+    /// with no tab is attached like the resume list does (tab, hydration,
+    /// transcript resume). The legacy navigation target is still recorded
+    /// (RPC-012 / RPC-097) but the agent view shows the focused session.
+    pub(crate) fn open_agent_view_on(&mut self, session: SessionId) {
+        let open_index = self
+            .agent_view_store
+            .open_sessions()
+            .iter()
+            .position(|context| context.id == session);
+        match open_index {
+            Some(index) => self.switch_to_session_index(index),
+            None => self.handle_attach_to_session(session.clone()),
+        }
+        self.agent_view_store.set_navigation_target(Some(session));
+        self.navigator.active_view = ViewMode::Agent;
+        // BUG-197 R3/R4: leaving the board via a view flip drops the
+        // board bar's ring focus so returning to the board paints NO
+        // stale chip highlight (only the MENU-006 active-chip path may
+        // highlight).
+        self.board_store.menu_focus_to_columns();
     }
 
     /// Resolve a Shift+Left/Right keypress (`delta == -1` for prev,
@@ -116,51 +133,43 @@ impl App {
                 self.handle_open_create_session_dialog(None);
             }
             NavTarget::Board => {
-                // RPC-096: snapshot the outgoing draft so a later
-                // BoardView round-trip restores the user's typing.
-                let outgoing_idx = self.agent_view_store.current_session_index();
-                let outgoing_draft = self.navigator.agent.input.value();
-                self.agent_view_store
-                    .set_input_draft(outgoing_idx, outgoing_draft);
+                // RPC-096: the composer keeps the focused session's draft
+                // (recorded by the BUG-549 sync) so a later BoardView
+                // round-trip restores the user's typing.
+                self.sync_composer_draft();
                 self.navigator.active_view = ViewMode::Board;
             }
         }
     }
 
-    /// RPC-024 contract: snapshot outgoing draft, focus `idx`, restore
-    /// incoming draft, refresh supervisor badge (RPC-061 rule [9]).
+    /// RPC-024 contract: focus `idx`; the BUG-549 sync saves the composer
+    /// as the outgoing (bound) session's draft and restores the incoming
+    /// draft; refresh supervisor badge (RPC-061 rule [9]).
     /// BUG-163: also used by `sync_mux_focus_to_session` (mux focus
     /// tracking) — `pub(crate)` so the mux dispatch module can reuse it.
     pub(crate) fn switch_to_session_index(&mut self, idx: usize) {
-        let outgoing_idx = self.agent_view_store.current_session_index();
-        let outgoing_draft = self.navigator.agent.input.value();
-        self.agent_view_store
-            .set_input_draft(outgoing_idx, outgoing_draft);
+        // BUG-377: a missing incoming session is reported, never restored
+        // as an empty draft; focus and the composer stay as they were.
+        let incoming_session = match self.agent_view_store.focus_open_session(idx) {
+            Ok(context) => context.id.clone(),
+            Err(error) => {
+                tracing::error!(%error, "session switch refused");
+                return;
+            }
+        };
+        // BUG-549: the outgoing draft is the BOUND session's (not the old
+        // index's: an append may already have moved the index).
+        self.sync_composer_draft();
 
-        self.agent_view_store.focus_session_index(idx);
-
-        let incoming_draft = self
-            .agent_view_store
-            .current_session_context()
-            .map(|c| c.input_draft.clone())
-            .unwrap_or_default();
-        self.navigator.agent.input.set_value(&incoming_draft);
-
-        if let Some(incoming_session) = self
-            .agent_view_store
-            .current_session_context()
-            .map(|c| c.id.clone())
-        {
-            // TUI-113 R3: keep the daemon's active-session pointer in
-            // sync with the focus (fire-and-forget).
-            self.spawn_set_active_session(incoming_session.clone());
-            self.spawn_load_supervisors(incoming_session.clone());
-            // TOOL-022 P2: re-probe the exec-stdin overlay for the
-            // incoming session on focus switch. The probe clears the
-            // slot when the backend returns None (the exec session no
-            // longer exists / is no longer quiet) and populates it
-            // when a request is pending.
-            self.probe_exec_stdin_for(incoming_session);
-        }
+        // TUI-113 R3: keep the daemon's active-session pointer in
+        // sync with the focus (fire-and-forget).
+        self.spawn_set_active_session(incoming_session.clone());
+        self.spawn_load_supervisors(incoming_session.clone());
+        // TOOL-022 P2: re-probe the exec-stdin overlay for the
+        // incoming session on focus switch. The probe clears the
+        // slot when the backend returns None (the exec session no
+        // longer exists / is no longer quiet) and populates it
+        // when a request is pending.
+        self.probe_exec_stdin_for(incoming_session);
     }
 }

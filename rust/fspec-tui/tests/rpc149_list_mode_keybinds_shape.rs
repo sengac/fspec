@@ -10,23 +10,22 @@
 //! (actual key handling) is exercised by the existing
 //! `provider_settings_*` integration tests in the same crate.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn read_source(rel: &str) -> String {
+fn read_source(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
     let manifest = env!("CARGO_MANIFEST_DIR");
     let path: PathBuf = [manifest, rel].iter().collect();
-    fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {}", path.display(), err))
+    Ok(fs::read_to_string(&path)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?)
 }
 
-fn list_rs() -> String {
+fn list_rs() -> Result<String, codelet_test_helpers::TestError> {
     read_source("src/views/provider_settings/list.rs")
 }
 
-fn mod_rs() -> String {
+fn mod_rs() -> Result<String, codelet_test_helpers::TestError> {
     read_source("src/views/provider_settings/mod.rs")
 }
 
@@ -35,14 +34,14 @@ fn mod_rs() -> String {
 /// closing brace. Used to scope assertions to the list-mode handler so
 /// detail-mode arms (which legitimately keep `r/R`) don't pollute the
 /// shape check.
-fn handle_list_key_body(src: &str) -> &str {
+fn handle_list_key_body(src: &str) -> Result<&str, codelet_test_helpers::TestError> {
     let needle = "fn handle_list_key(";
     let start = src
         .find(needle)
-        .unwrap_or_else(|| panic!("handle_list_key function not found in list.rs"));
+        .or_fail("handle_list_key function not found in list.rs")?;
     let brace_start = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for handle_list_key not found"));
+        .or_fail("opening brace for handle_list_key not found")?;
     let abs_open = start + brace_start;
     // walk braces to find matching close
     let bytes = src.as_bytes();
@@ -54,25 +53,25 @@ fn handle_list_key_body(src: &str) -> &str {
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return &src[abs_open..=i];
+                    return Ok(&src[abs_open..=i]);
                 }
             }
             _ => {}
         }
         i += 1;
     }
-    panic!("matching closing brace for handle_list_key not found");
+    Err("matching closing brace for handle_list_key not found".into())
 }
 
 /// Extract the body of `pub(crate) fn move_clamped(...)`.
-fn move_clamped_body(src: &str) -> &str {
+fn move_clamped_body(src: &str) -> Result<&str, codelet_test_helpers::TestError> {
     let needle = "fn move_clamped(";
     let start = src
         .find(needle)
-        .unwrap_or_else(|| panic!("move_clamped function not found in mod.rs"));
+        .or_fail("move_clamped function not found in mod.rs")?;
     let brace_start = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for move_clamped not found"));
+        .or_fail("opening brace for move_clamped not found")?;
     let abs_open = start + brace_start;
     let bytes = src.as_bytes();
     let mut depth: i32 = 0;
@@ -83,23 +82,23 @@ fn move_clamped_body(src: &str) -> &str {
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return &src[abs_open..=i];
+                    return Ok(&src[abs_open..=i]);
                 }
             }
             _ => {}
         }
         i += 1;
     }
-    panic!("matching closing brace for move_clamped not found");
+    Err("matching closing brace for move_clamped not found".into())
 }
 
 #[test]
-fn scenario_list_rs_handle_list_key_has_no_refresh_models_keybind_arms() {
+fn scenario_list_rs_handle_list_key_has_no_refresh_models_keybind_arms() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/list.rs
-    let src = list_rs();
+    let src = list_rs()?;
 
     // @step When I scan the handle_list_key match body
-    let body = handle_list_key_body(&src);
+    let body = handle_list_key_body(&src)?;
 
     // @step Then the source must NOT contain "KeyCode::Char('r')"
     assert!(
@@ -112,10 +111,11 @@ fn scenario_list_rs_handle_list_key_has_no_refresh_models_keybind_arms() {
         !body.contains("KeyCode::Char('R')"),
         "list.rs handle_list_key must NOT bind `R` (refresh-models is a Rust-only deviation, RPC-149)"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_list_rs_handle_list_key_has_no_page_or_jump_key_arms() {
+fn scenario_list_rs_handle_list_key_has_no_page_or_jump_key_arms() -> TestResult {
     // RPC-353 SUPERSEDES the RPC-149/157 "no Page/Home/End" constraint:
     // the /provider list view now binds PageUp/PageDown/Home/End as a
     // deliberate enhancement beyond TS parity (mouse-wheel + paging scroll,
@@ -123,10 +123,10 @@ fn scenario_list_rs_handle_list_key_has_no_page_or_jump_key_arms() {
     // the paging keys MUST now be present in handle_list_key. The r/R
     // refresh-models removal (RPC-149) is unaffected and still pinned above.
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/list.rs
-    let src = list_rs();
+    let src = list_rs()?;
 
     // @step When I scan the handle_list_key match body
-    let body = handle_list_key_body(&src);
+    let body = handle_list_key_body(&src)?;
 
     // @step Then the source MUST contain "KeyCode::PageUp" (RPC-353)
     assert!(
@@ -151,15 +151,16 @@ fn scenario_list_rs_handle_list_key_has_no_page_or_jump_key_arms() {
         body.contains("KeyCode::End"),
         "list.rs handle_list_key must bind End (RPC-353 paging enhancement)"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_move_clamped_clamps_at_boundary_instead_of_wrapping() {
+fn scenario_move_clamped_clamps_at_boundary_instead_of_wrapping() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/mod.rs
-    let src = mod_rs();
+    let src = mod_rs()?;
 
     // @step When I locate the move_clamped function body
-    let body = move_clamped_body(&src);
+    let body = move_clamped_body(&src)?;
 
     // @step Then the source must contain ".clamp("
     assert!(
@@ -178,15 +179,16 @@ fn scenario_move_clamped_clamps_at_boundary_instead_of_wrapping() {
         !body.contains("% max"),
         "move_clamped must NOT use modulo wrap-around against `max` (Rust-only deviation, RPC-149)"
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_handle_list_key_match_arms_enumerate_exactly_the_ts_contract_surface() {
+fn scenario_handle_list_key_match_arms_enumerate_exactly_the_ts_contract_surface() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/list.rs
-    let src = list_rs();
+    let src = list_rs()?;
 
     // @step When I scan the handle_list_key match body
-    let body = handle_list_key_body(&src);
+    let body = handle_list_key_body(&src)?;
 
     // @step Then the source must contain "KeyCode::Esc"
     assert!(
@@ -229,4 +231,5 @@ fn scenario_handle_list_key_match_arms_enumerate_exactly_the_ts_contract_surface
         body.contains("KeyCode::Char('d') | KeyCode::Char('D')"),
         "delete-credentials d/D arm required (TS parity)"
     );
+    Ok(())
 }

@@ -10,7 +10,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
-                68,
                 69,
                 70,
                 71,
@@ -82,8 +81,15 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// Dispatcher entry point. Both the LLM-facing agent loop and the",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,29 +114,12 @@
                 91,
                 92,
                 93,
-                94
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "108-141",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/create_prefix.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                94,
+                95,
+                96
+              ],
+              "firstLine": "// applied to this error path. Mirror that asymmetry here.",
+              "lastLine": "// TS calls ensurePrefixesFile(cwd) which auto-creates an empty"
             }
           ]
         }
@@ -141,7 +130,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "143-166",
+          "lines": "146-169",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
@@ -154,30 +143,11 @@
                 90,
                 91,
                 92,
-                93,
-                94
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "143-166",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/create_prefix.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                95,
+                96
+              ],
+              "firstLine": "// applied to this error path. Mirror that asymmetry here.",
+              "lastLine": "// TS calls ensurePrefixesFile(cwd) which auto-creates an empty"
             }
           ]
         }
@@ -188,7 +158,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "168-191",
+          "lines": "171-194",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
@@ -201,30 +171,11 @@
                 90,
                 91,
                 92,
-                93,
-                94
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "168-191",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/create_prefix.rs",
-              "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94
-              ]
+                95,
+                96
+              ],
+              "firstLine": "// applied to this error path. Mirror that asymmetry here.",
+              "lastLine": "// TS calls ensurePrefixesFile(cwd) which auto-creates an empty"
             }
           ]
         }
@@ -235,7 +186,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/create_prefix.rs",
-          "lines": "193-216",
+          "lines": "196-219",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
@@ -248,9 +199,11 @@
                 90,
                 91,
                 92,
-                93,
-                94
-              ]
+                95,
+                96
+              ],
+              "firstLine": "// applied to this error path. Mirror that asymmetry here.",
+              "lastLine": "// TS calls ensurePrefixesFile(cwd) which auto-creates an empty"
             }
           ]
         }
@@ -272,9 +225,10 @@
                 103,
                 104,
                 105,
-                106,
-                107
-              ]
+                106
+              ],
+              "firstLine": "// ── Duplicate check (TS: src/commands/create-prefix.ts:39-41) ──────",
+              "lastLine": "}"
             }
           ]
         }
@@ -290,8 +244,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -306,8 +258,12 @@
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126,
+                127
+              ],
+              "firstLine": "prefix: prefix.clone(),",
+              "lastLine": "let result = CreatePrefixResult {"
             }
           ]
         }
@@ -323,10 +279,13 @@
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
+                95,
+                96,
                 97,
-                98,
-                99
-              ]
+                98
+              ],
+              "firstLine": "// ── Load existing state (auto-creates spec/prefixes.json) ──────────",
+              "lastLine": "let mut data = ensure_prefixes_file(project_root)?;"
             }
           ]
         }
@@ -342,8 +301,6 @@
             {
               "file": "rust/fspec-core/src/commands/create_prefix.rs",
               "lines": [
-                127,
-                128,
                 129,
                 130,
                 131,
@@ -355,8 +312,12 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142
+              ],
+              "firstLine": "prefix,",
+              "lastLine": "fn is_valid_prefix_shape(s: &str) -> bool {"
             }
           ]
         }
@@ -376,7 +337,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "use crate::io::locked_file::write_json_atomic;",
+              "lastLine": ""
             }
           ]
         }
@@ -393,6 +356,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/create_prefix.rs"
     ],
-    "totalLinesCovered": 673
+    "totalLinesCovered": 485
   }
 }

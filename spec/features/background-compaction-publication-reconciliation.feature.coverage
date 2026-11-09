@@ -98,7 +98,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "RepresentationOverflow,",
+              "lastLine": "let (Some(threshold), Some(capacity)) = (limits.compaction_threshold, limits.context_window)"
             }
           ]
         }

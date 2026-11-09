@@ -31,6 +31,7 @@ pub fn register_all_modules() -> Vec<RhaiModule> {
         build_json_module(),
         build_oauth_module(),
         build_log_module(),
+        super::status_time_modules::build_time_module(),
     ]
 }
 
@@ -116,13 +117,23 @@ fn build_http_module() -> RhaiModule {
         },
     );
 
+    super::status_time_modules::register_post_status(&mut module);
+
     RhaiModule {
         name: "http".to_string(),
         module,
     }
 }
 
-/// Build the `crypto` module with `sha256` and `base64url_encode`.
+fn crypto_err(message: String) -> Box<rhai::EvalAltResult> {
+    Box::new(rhai::EvalAltResult::ErrorRuntime(
+        message.into(),
+        rhai::Position::NONE,
+    ))
+}
+
+/// Build the `crypto` module with `sha256`, `base64url_encode` and
+/// `base64url_decode`.
 fn build_crypto_module() -> RhaiModule {
     let mut module = Module::new();
 
@@ -145,6 +156,22 @@ fn build_crypto_module() -> RhaiModule {
             use base64::Engine;
             let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(data.as_bytes());
             Ok(Dynamic::from(encoded))
+        },
+    );
+
+    // PROV-094: crypto::base64url_decode(data) -> UTF-8 string. Accepts
+    // padded or unpadded input; invalid base64url or non-UTF-8 bytes are
+    // errors (e.g. a JWT payload segment).
+    module.set_native_fn(
+        "base64url_decode",
+        |data: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            use base64::Engine;
+            let bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
+                .decode(data.trim_end_matches('=').as_bytes())
+                .map_err(|e| crypto_err(format!("crypto::base64url_decode: {e}")))?;
+            let text = String::from_utf8(bytes)
+                .map_err(|e| crypto_err(format!("crypto::base64url_decode: not UTF-8: {e}")))?;
+            Ok(Dynamic::from(text))
         },
     );
 

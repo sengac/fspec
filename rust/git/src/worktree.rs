@@ -113,6 +113,7 @@ pub fn create_worktree_at_ref(
     write_worktree_metadata(&worktree_path, &worktree_git_dir, &commit_sha)?;
     checkout_to_worktree(&repo, &worktree_path, &commit_id)?;
     initialize_worktree_index(&repo, &worktree_git_dir, &commit_id)?;
+    write_state_root_pointer(repo_path, &worktree_path, session_id)?;
 
     Ok(WorktreeCreateResult {
         info: WorktreeInfo {
@@ -124,6 +125,28 @@ pub fn create_worktree_at_ref(
         base_commit: commit_sha,
         created_at: Utc::now(),
     })
+}
+
+/// WT-015: point the worktree's shared spec state (board, ID counters,
+/// epics, tags, foundation, attachments, config) at the project it was
+/// created from, by writing `<worktree>/.fspec/state-root`. `.fspec/` is
+/// never part of a session diff, so the pointer never merges. A project
+/// that is itself an isolated copy shares its own state root, so pointers
+/// never chain. A project without a `spec/` directory has no fspec state to
+/// share and gets no pointer (fspec never creates spec/ in a checkout just
+/// because a session started).
+fn write_state_root_pointer(
+    repo_path: &Path,
+    worktree_path: &Path,
+    session_id: &str,
+) -> Result<()> {
+    let project = repo_path.canonicalize()?;
+    if !codelet_common::spec_paths::has_spec_dir(&project) {
+        return Ok(());
+    }
+    let roots = codelet_common::spec_paths::ProjectRoots::of_content_root(&project)?;
+    codelet_common::spec_paths::write_state_root_pointer(worktree_path, roots.state(), session_id)?;
+    Ok(())
 }
 
 /// Remove a worktree for a session

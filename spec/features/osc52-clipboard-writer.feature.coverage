@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/clipboard.rs",
-          "lines": "63-73",
+          "lines": "70-80",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/clipboard.rs",
@@ -17,7 +17,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub fn copy(&mut self, text: &str) -> std::io::Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -28,7 +30,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/clipboard.rs",
-          "lines": "75-88",
+          "lines": "82-95",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/clipboard.rs",
@@ -40,7 +42,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub fn copy(&mut self, text: &str) -> std::io::Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -51,7 +55,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/clipboard.rs",
-          "lines": "90-100",
+          "lines": "97-107",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/clipboard.rs",
@@ -63,7 +67,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub fn copy(&mut self, text: &str) -> std::io::Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -74,7 +80,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/clipboard.rs",
-          "lines": "102-112",
+          "lines": "109-119",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/clipboard.rs",
@@ -86,7 +92,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub fn copy(&mut self, text: &str) -> std::io::Result<()> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -97,7 +105,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/src/mouse/clipboard.rs",
-          "lines": "114-127",
+          "lines": "121-134",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/mouse/clipboard.rs",
@@ -118,7 +126,9 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub struct Osc52Clipboard<W: Write + Send = std::io::Stdout> {",
+              "lastLine": "}"
             }
           ]
         }

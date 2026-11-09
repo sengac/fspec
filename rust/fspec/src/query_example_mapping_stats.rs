@@ -12,10 +12,10 @@
 //! hasQuestions, questionsFor) is exposed to the LLM agent only. The bridge
 //! mirrors the TS CLI surface exactly: format-only and silent on text path.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::query_example_mapping_stats;
 use serde_json::json;
 
@@ -28,7 +28,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let args_json = match args.format.as_deref() {
         Some(fmt) => json!({ "format": fmt }).to_string(),

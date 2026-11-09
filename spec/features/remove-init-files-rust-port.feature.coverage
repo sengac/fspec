@@ -39,7 +39,9 @@
                 141,
                 142,
                 143
-              ]
+              ],
+              "firstLine": "id: \"qwen\",",
+              "lastLine": "id: \"amazonq\","
             }
           ]
         }
@@ -77,7 +79,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "detection_paths: &[\".amazonq/\"],",
+              "lastLine": "detection_paths: &[\".codex/\"],"
             }
           ]
         }
@@ -93,12 +97,16 @@
             {
               "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
-                132,
-                133,
-                134,
-                135,
-                136
-              ]
+                221,
+                222,
+                258,
+                259,
+                260,
+                261,
+                262
+              ],
+              "firstLine": "// Unspecified keepConfig → false (remove config), per supervisor decision.",
+              "lastLine": "}"
             }
           ]
         }
@@ -114,12 +122,17 @@
             {
               "file": "rust/fspec-core/src/commands/remove_init_files.rs",
               "lines": [
-                106,
-                107,
-                108,
-                109,
-                110
-              ]
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ],
+              "firstLine": "let detected_id = match detect_installed_agent(project_root)? {",
+              "lastLine": "};"
             }
           ]
         }
@@ -146,7 +159,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "doc_template: \"FACTORY.md\",",
+              "lastLine": "detection_paths: &[\".crush/\"],"
             }
           ]
         }
@@ -164,7 +179,9 @@
               "lines": [
                 112,
                 113
-              ]
+              ],
+              "firstLine": "detection_paths: &[\".gemini/\"],",
+              "lastLine": "},"
             }
           ]
         }
@@ -202,7 +219,9 @@
                 134,
                 135,
                 136
-              ]
+              ],
+              "firstLine": "id: \"qwen\",",
+              "lastLine": "id: \"codebuddy\","
             }
           ]
         }
@@ -219,6 +238,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_init_files.rs"
     ],
-    "totalLinesCovered": 311
+    "totalLinesCovered": 316
   }
 }

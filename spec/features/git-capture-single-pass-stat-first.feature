@@ -39,10 +39,10 @@ Feature: Git capture is O(repo size): double lookup_entry_by_path passes, per-fi
     Then the staged, unstaged, and untracked collectors all ran against the SAME gix::Repository handle
     And the combined changed_files list is byte-identical to what the three separate public dir-based calls produce
 
-  Scenario: Staged-with-change-type issues exactly one tree lookup per staged path
+  Scenario: Staged-with-change-type issues no tree lookup per staged path
     Given a temp git repo with committed tracked files, some of which are staged with differing content
     When get_staged_files_with_change_type is called against that repo
-    Then exactly one tree lookup is issued per staged path (the in-HEAD verdict is reused, not re-derived) and the returned paths + A/M/D letters match the previous double-pass result
+    Then no tree lookup is issued per staged path (the in-HEAD verdict comes from the one HEAD tree walk, BUG-657, and is reused, not re-derived) and the returned paths + A/M/D letters match the previous double-pass result
     And a staged NEW file (absent from HEAD) is reported as Added, a staged MODIFIED file as Modified, and a staged file deleted from the working directory as Deleted
 
   Scenario: Unstaged detection is stat-first (no full-file read when the stat matches)

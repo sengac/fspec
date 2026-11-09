@@ -89,6 +89,18 @@ pub enum GitError {
     #[error("Unsupported merge strategy: only FastForward is supported")]
     UnsupportedMergeStrategy,
 
+    /// WT-017: the worktree's copy of shared spec state (board, ID
+    /// counters, epics, tags, foundation, config, ...) differs from the
+    /// session's base. The session reads and writes that state at the main
+    /// checkout, so a changed copy means something wrote around the
+    /// state-root resolver. Nothing was copied or committed.
+    #[error(
+        "Merge refused: the session changed its worktree copy of shared spec state {files:?}, \
+         which lives only in the main checkout; restore these files in the worktree to their \
+         content at the session's base commit and merge again"
+    )]
+    SharedStateModified { files: Vec<String> },
+
     /// Other error
     #[error("{0}")]
     Other(String),

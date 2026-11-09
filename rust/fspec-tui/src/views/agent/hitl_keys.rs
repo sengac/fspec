@@ -32,7 +32,9 @@ use codelet_rpc_types::SessionId;
 
 use crate::components::{Action, EventResult};
 
+use super::input_transition::InputTransitionState;
 use super::multiline_input::InputGate;
+use super::pane_composer::{pane_composer, PaneComposer};
 use super::AgentView;
 
 /// Render-time snapshot of the HITL slot mode, cached as
@@ -59,20 +61,21 @@ impl AgentView {
         store: &crate::store::AgentViewStore,
         session_status: Option<codelet_rpc_types::SessionStatus>,
     ) -> bool {
-        // TOOL-022 P2: the exec-stdin overlay is live — the shared
-        // input is the target, so the cursor shows there even though
-        // the session status stays Running (exec-stdin performs NO
-        // status flip, which would otherwise gate the cursor off via
-        // `is_cursor_visible_for`).
-        if self.last_exec_stdin.is_some() {
+        // TUI-116: the focused stdin answer box is the target, so the
+        // cursor shows there whatever the transition phase (exec-stdin
+        // performs NO status flip). The notice alone changes nothing.
+        if self.stdin_box_focused() {
             return true;
         }
         // BUG-194: the focused session's own per-session transition
         // state (the view no longer holds a shared machine).
-        let transition_state = store
-            .current_session_context()
-            .map(|c| c.input_transition.state.clone())
-            .unwrap_or_default();
+        // BUG-377: no open session is a fresh idle composer; a missing
+        // session paints no composer, so no cursor.
+        let transition_state = match pane_composer(store, store.current_session()) {
+            PaneComposer::NoSession => InputTransitionState::Idle,
+            PaneComposer::Open(context) => context.input_transition.state.clone(),
+            PaneComposer::Missing(_) => return false,
+        };
         if let Some((_, mode)) = &self.last_hitl {
             if matches!(mode, HitlKeyMode::Options) {
                 return false;

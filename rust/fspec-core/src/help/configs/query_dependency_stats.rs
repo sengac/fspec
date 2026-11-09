@@ -19,8 +19,8 @@ use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 const EXAMPLE_OUTPUT: &str = "Total dependencies: 42\nBlocking work units: 5\nBlocked work units: 8\nWork units with no dependencies: 20";
 
 const OPTIONS: &[CommandOption] = &[CommandOption {
-    flag: "--show-critical-path",
-    description: "Highlight critical path through dependencies",
+    flag: "-f, --format <format>",
+    description: "Output format (text or json)",
     default_value: None,
 }];
 

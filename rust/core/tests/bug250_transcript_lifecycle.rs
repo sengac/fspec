@@ -15,6 +15,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn session_deletion_removes_its_private_transcript() -> TestResult {
     // @step Given a session with a durable terminal outcome
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let session = create_session("terminal", directory.path())?;
@@ -44,6 +45,7 @@ fn session_deletion_removes_its_private_transcript() -> TestResult {
 fn failed_transcript_deletion_preserves_the_owning_session() -> TestResult {
     // @step Given a session whose private transcript cannot be removed
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     reset_stores_for_tests();
     let session = create_session("blocked transcript deletion", directory.path())?;

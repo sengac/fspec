@@ -67,7 +67,31 @@
         "COV-050",
         "COV-051",
         "BUG-007",
-        "DEP-002"
+        "DEP-002",
+        "COV-059",
+        "BUG-334",
+        "COV-060",
+        "COV-061",
+        "COV-062",
+        "COV-063",
+        "REFAC-029",
+        "BUG-336",
+        "BUG-337",
+        "BUG-338",
+        "BUG-339",
+        "BUG-344",
+        "BUG-345",
+        "COV-064",
+        "REFAC-033",
+        "REFAC-034",
+        "COV-065",
+        "COV-070",
+        "COV-071",
+        "COV-072",
+        "COV-073",
+        "COV-074",
+        "COV-075",
+        "COV-076"
       ]
     },
     "work-item-types": {
@@ -335,7 +359,9 @@
         "BRIDGE-018",
         "MCP-001",
         "BRIDGE-019",
-        "BRIDGE-020"
+        "BRIDGE-020",
+        "REFAC-032",
+        "REFAC-035"
       ]
     },
     "gitoxide-integration": {
@@ -660,7 +686,8 @@
         "BUG-263",
         "BUG-264",
         "BUG-266",
-        "BUG-268"
+        "BUG-268",
+        "PROV-168"
       ]
     },
     "local-change-protocols": {
@@ -731,7 +758,25 @@
         "LIMITS-004",
         "LIMITS-005",
         "LIMITS-006",
-        "LIMITS-007"
+        "LIMITS-007",
+        "PROV-165",
+        "PROV-166",
+        "PROV-167",
+        "PROV-169",
+        "PROV-170",
+        "PROV-171",
+        "PROV-172",
+        "REFAC-030",
+        "PROV-173",
+        "BUG-340",
+        "REFAC-031",
+        "BUG-341",
+        "BUG-342",
+        "BUG-343",
+        "PROV-174",
+        "PROV-175",
+        "RPC-451",
+        "CMPCT-088"
       ]
     },
     "custom-provider-tui-wiring": {
@@ -1029,7 +1074,8 @@
         "RPC-433",
         "RPC-434",
         "RPC-436",
-        "RPC-437"
+        "RPC-437",
+        "RPC-440"
       ]
     },
     "rust-cli-port": {

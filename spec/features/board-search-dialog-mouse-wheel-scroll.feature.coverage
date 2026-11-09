@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
-          "lines": "82-117",
+          "lines": "78-113",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
@@ -70,20 +70,40 @@
                 128,
                 129,
                 130,
-                131
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
-              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
                 143,
                 144,
                 145,
                 146,
-                147,
-                148,
-                149
-              ]
+                147
+              ],
+              "firstLine": "pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> EventResult {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "fn handle_event(&mut self, event: &Event) -> EventResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -94,7 +114,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
-          "lines": "119-149",
+          "lines": "115-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
@@ -159,8 +179,26 @@
                 128,
                 129,
                 130,
-                131
-              ]
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ],
+              "firstLine": "pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> EventResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -176,20 +214,22 @@
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
               "lines": [
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "match ev.kind {",
+              "lastLine": "}"
             }
           ]
         }
@@ -200,7 +240,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
-          "lines": "176-204",
+          "lines": "182-210",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
@@ -212,7 +252,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> EventResult {",
+              "lastLine": "}"
             }
           ]
         }
@@ -223,7 +265,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug162_search_dialog_mouse_scroll.rs",
-          "lines": "206-239",
+          "lines": "213-250",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog.rs",
@@ -237,7 +279,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "// BUG-162: a stale wheel ramp or in-flight scrollbar drag must",
+              "lastLine": "if self.matches.is_empty() {"
             }
           ]
         }
@@ -267,7 +311,9 @@
                 274,
                 275,
                 276
-              ]
+              ],
+              "firstLine": "vr,",
+              "lastLine": "render_dialog_at(rect, buf, &dialog);"
             },
             {
               "file": "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
@@ -286,7 +332,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "pub(super) fn scrollbar_gutter(rect: Rect, visible: usize) -> Option<Rect> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -304,6 +352,6 @@
       "rust/fspec-tui/src/components/work_unit_search_dialog_mouse.rs",
       "rust/fspec-tui/src/components/work_unit_search_dialog.rs"
     ],
-    "totalLinesCovered": 387
+    "totalLinesCovered": 426
   }
 }

@@ -5,7 +5,7 @@
 @RPC-422
 Feature: Session Persistence Integration
   """
-  Mirrors TypeScript sessionService.ts two-step pattern: persistenceCreateSessionWithProvider() creates manifest, then sessionManagerCreateWithId() creates BackgroundSession. Rust code must follow the same order in SessionManager::create_session_with_id()
+  Mirrors TypeScript sessionService.ts two-step pattern: persistenceCreateSessionWithProvider() creates manifest, then sessionManagerCreateWithId() creates BackgroundSession. Rust code must follow the same order in SessionManager::create_session_with_id(). REFAC-059 moved the destroy, delete, list and resume scenarios to session-persistence-lifecycle.feature.
 
   BUG-186: the rpc002 (agent-loop) and rpc422 (sessions) persistence test suites seed the fresh temp data dir with an offline models.dev cache fixture (rust/sessions/tests/fixtures/rpc422_models.json for rpc422, rust/agent-loop/tests/fixtures/prov101_models.json for rpc002) plus dummy provider credentials, so resolve_provider_manager → ModelRegistry::new → ModelCache::get() stays fully offline and create_session no longer declines with an empty SessionId. rpc422 keeps its own fixture (claude-sonnet-4 + claude-opus-4-5 + o3 + gemini-2.5-pro) because its acceptance criteria pin model "anthropic/claude-sonnet-4", which the shared prov101 fixture does not contain and which would flip PROV-130's first-model ordering assertion in shared consumers.
   """
@@ -27,31 +27,6 @@ Feature: Session Persistence Integration
     Given a SessionManager instance with no existing sessions
     When I call create_session_with_id with model "anthropic/claude-sonnet-4"
     Then the persisted manifest should have provider field set to "anthropic/claude-sonnet-4"
-
-  Scenario: Session destruction removes from memory but preserves manifest
-    Given a SessionManager with a persisted session manifest on disk
-    When I call destroy_session with that session's UUID
-    Then the session should be removed from the in-memory session map
-    And the manifest file at {data_dir}/sessions/{uuid}.json should still exist on disk
-    And the session should still appear in list_sessions via persisted merge
-
-  Scenario: Persistence delete removes manifest from disk
-    Given a SessionManager with a persisted session manifest on disk
-    When I call persistence_delete_session with that session's UUID
-    Then the manifest file at {data_dir}/sessions/{uuid}.json should no longer exist
-
-  Scenario: Session listing includes both in-memory and persisted sessions
-    Given a SessionManager with one in-memory session
-    And a second session manifest persisted on disk but not in memory
-    When I call list_sessions
-    Then the result should contain both sessions
-
-  Scenario: Resume session loads messages from persistence layer
-    Given a persisted session manifest with two stored messages
-    When I call resume_session with that session's UUID
-    Then the BackgroundSession should be created in memory
-    And the session's inner messages should contain the restored messages
-    And the token state should be restored from the manifest
 
   Scenario: Session creation fails gracefully when persistence fails
     Given a SessionManager instance with a corrupted data directory

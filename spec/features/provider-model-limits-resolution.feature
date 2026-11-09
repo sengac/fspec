@@ -1,3 +1,4 @@
+@BUG-582
 @context-window
 @providers
 @done
@@ -16,9 +17,9 @@ Feature: Provider Model Limits Resolution
   #
   # BUSINESS RULES:
   #   1. Claude: no blanket maxima; defaults=200k/8k when metadata and overrides are absent.
-  #   2. OpenAI: max_context_window=None (trusts registry), defaults=128k/4k, reads OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS env vars as default overrides
+  #   2. OpenAI: max_context_window=None (trusts registry), defaults only from OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS env vars (PROV-171: no 128k/4k guess)s as default overrides
   #   3. Gemini: max_context_window=None (trusts registry), defaults=1M/8k — API genuinely supports advertised limits
-  #   4. Codex: max_context_window=None, defaults=272k/4k, should_send_max_output_tokens()=false since API rejects it
+  #   4. Codex: max_context_window=None, no static defaults (0 = unavailable; limits come from the catalog, see codex-declares-no-static-model-limits), should_send_max_output_tokens()=false since API rejects it
   #   5. Z.AI: max_context_window=None, defaults=128k/8k — straightforward implementation
   #   6. Copilot: max_context_window=None, defaults=200k/4k — real limits come from live /models endpoint via registry
   #   7. Each provider implementation must have unit tests verifying clamp behavior, default values, and should_send_max_output_tokens
@@ -27,8 +28,8 @@ Feature: Provider Model Limits Resolution
   #   1. Claude selects claude-opus-4-6 (registry: 1M/128k) → resolver retains 1M/128k.
   #   2. Claude selects claude-sonnet-4 (registry: 200k/8k) → resolver returns 200k/8k (no clamp needed, values agree)
   #   3. OpenAI selects gpt-4o (registry: 128k/16k) → resolver returns 128k/16k (trusted)
-  #   4. Codex with no registry data → resolver returns 272k/4k defaults, should_send_max_output=false
-  #   5. OpenAI with OPENAI_CONTEXT_WINDOW=256000 set → resolver default becomes 256k instead of 128k
+  #   4. Codex with no registry data → limits unavailable (0/0), should_send_max_output=false
+  #   5. OpenAI with OPENAI_CONTEXT_WINDOW=256000 set → resolver default becomes 256k (unset → unavailable)
   #
   # ========================================
   Background: User Story
@@ -69,11 +70,11 @@ Feature: Provider Model Limits Resolution
     When the OpenAI resolver is queried with no registry data
     Then the default max output tokens should be 16384
 
-  Scenario: OpenAI resolver falls back to compile-time defaults
+  Scenario: OpenAI resolver without env overrides declares no defaults
     Given no OPENAI_CONTEXT_WINDOW or OPENAI_MAX_OUTPUT_TOKENS env vars are set
     When the OpenAI resolver is queried with no registry data
-    Then the default context window should be 128000
-    And the default max output tokens should be 4096
+    Then the default context window should be unavailable
+    And the default max output tokens should be unavailable
     And should_send_max_output_tokens should be true
 
   # -- Gemini Provider -------------------------------------------------------
@@ -84,12 +85,6 @@ Feature: Provider Model Limits Resolution
     And should_send_max_output_tokens should be true
 
   # -- Codex Provider --------------------------------------------------------
-  Scenario: Codex resolver returns correct defaults and suppresses max_output_tokens
-    Given the Codex provider's resolver is queried
-    Then the default context window should be 272000
-    And the default max output tokens should be 4096
-    And should_send_max_output_tokens should be false
-
   Scenario: Codex resolver does not clamp registry values
     Given the Codex provider's resolver declares max_context_window as None
     When the registry reports a context window of 300000

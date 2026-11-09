@@ -7,10 +7,7 @@ use super::MockBackend;
 
 impl MockBackend {
     pub fn transcript_requests(&self) -> Vec<SessionId> {
-        self.transcript_requests
-            .lock()
-            .expect("transcript requests fixture lock")
-            .clone()
+        self.core.transcript_requests.lock().clone()
     }
 
     pub(super) fn scripted_transcript_page(
@@ -20,14 +17,8 @@ impl MockBackend {
         snapshot_end: Option<u64>,
         max_bytes: u32,
     ) -> Result<TranscriptPage, BackendError> {
-        self.transcript_requests
-            .lock()
-            .expect("transcript requests fixture lock")
-            .push(session.clone());
-        let chunks = self
-            .buffered_output
-            .lock()
-            .expect("transcript chunks fixture lock");
+        self.core.transcript_requests.lock().push(session.clone());
+        let chunks = self.core.buffered_output.lock();
         let generation = session.value;
         let cursor = cursor.unwrap_or(TranscriptCursor {
             generation: generation.clone(),

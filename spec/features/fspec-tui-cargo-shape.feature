@@ -5,6 +5,7 @@
 @tui
 @rpc
 @RPC-008
+@BUG-459
 Feature: rust/fspec-tui Cargo.toml + workspace shape
   Source-shape regressions for the rust/fspec-tui crate's workspace
   registration, [dependencies] / [dev-dependencies] policy, and the
@@ -37,7 +38,7 @@ Feature: rust/fspec-tui Cargo.toml + workspace shape
     Given rust/fspec-tui/Cargo.toml exists
     When I read its [dev-dependencies] table
     Then the [dev-dependencies] table contains insta with the yaml feature
-    And the [dev-dependencies] table contains tempfile and tokio-test
+    And tempfile is a dependency (BUG-431: the attachment cache) and the [dev-dependencies] table contains tokio-test
     And the [dev-dependencies] table MAY list codelet-core (for real-service integration fixtures)
     And the [dev-dependencies] table does NOT list codelet-napi
 

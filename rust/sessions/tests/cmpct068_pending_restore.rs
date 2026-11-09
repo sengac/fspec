@@ -76,8 +76,8 @@ async fn scenario_cold_notification_loss_blocks_inference_until_exact_identity_r
     inner
         .provider_manager_mut()
         .override_model_limits(Some(200000), Some(4096));
-    let result = tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    let result = codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, 'next', &mut inner, Arc::new(Ato...",
         run_agent_stream(
             agent,
             "next",
@@ -131,8 +131,8 @@ async fn scenario_cold_notification_loss_blocks_inference_until_exact_identity_r
             .build(),
         1,
     );
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, 'next', &mut inner, Arc::new(Ato...",
         run_agent_stream(
             agent,
             "next",

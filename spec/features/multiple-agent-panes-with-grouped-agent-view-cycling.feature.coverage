@@ -5,11 +5,84 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "92-131",
+          "lines": "96-138",
           "implMappings": [
             {
+              "file": "rust/fspec-tui/src/views/multiplex/rects.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "pub(super) fn refresh_visibility(&mut self) {",
+              "lastLine": "}"
+            },
+            {
               "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "186-215"
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "firstLine": "/// Clamp the agent window to the current open-session list and re-derive",
+              "lastLine": "}"
             }
           ]
         }
@@ -20,86 +93,38 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "139-188",
+          "lines": "144-196",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "116-170"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Right at the right edge prompts to create a new agent even when the rightmost pane is not an agent",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "197-245",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": "186-201"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Right rotates the agent window forward when the window can advance",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "254-296",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "116-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Left on the rightmost agent pane rotates the agent window backward",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "305-343",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "136-145"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Right on the rightmost files pane at the last window position prompts to create a new agent",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "352-421",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "116-170"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Right on the rightmost agent pane at the last window position prompts to create a new agent",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "430-487",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "116-170"
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,26 +135,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "495-520",
+          "lines": "202-225",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "93-105"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Shift+Left falls through to focus movement when the window cannot rotate backward",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "529-570",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "93-145"
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "/// Shift+Left (MUX-012): focus the previous pane in layout order;",
+              "lastLine": "}"
             }
           ]
         }
@@ -140,11 +160,579 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux002.rs",
-          "lines": "579-621",
+          "lines": "232-280",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/window.rs",
-              "lines": "44-61"
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "/// the rendered pane list. Called on every session change and every",
+              "lastLine": "// rendered pane list — mouse hit-testing and pre-render"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on a last pane that is not an agent does nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "266-284",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right and Shift+Left walk the panes in layout order and stop at both ends",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "113-163",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right follows the layout order through a nesting three levels deep",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "165-199",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on the last agent pane prompts for a new agent instead of rotating the agent window",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "201-236",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/window.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "firstLine": "/// A session was created while a mux new-agent prompt was pending:",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelling the new-agent dialog leaves the panes, the focus and the agent window unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "238-264",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/mod.rs",
+              "lines": [
+                66,
+                67,
+                68
+              ],
+              "firstLine": "pub(crate) fn cancel_new_agent_request(&mut self) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left moves to the previous pane without rotating the agent window",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux012_layout_order_focus.rs",
+          "lines": "286-308",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "/// MUX-012: true iff Shift+Right on the last pane offers a new agent —",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ],
+              "firstLine": "/// MUX-002/MUX-010/MUX-012: Shift+arrows in mux mode — Left/Right move",
+              "lastLine": "}"
             }
           ]
         }
@@ -156,12 +744,16 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/mux002.rs"
+      "rust/fspec-tui/tests/mux002.rs",
+      "rust/fspec-tui/tests/mux012_layout_order_focus.rs"
     ],
     "implFiles": [
+      "rust/fspec-tui/src/views/multiplex/rects.rs",
+      "rust/fspec-tui/src/views/multiplex/window.rs",
+      "rust/fspec-tui/src/views/multiplex/focus_moves.rs",
       "rust/fspec-tui/src/app/dispatch_mux.rs",
-      "rust/fspec-tui/src/views/multiplex/window.rs"
+      "rust/fspec-tui/src/views/multiplex/mod.rs"
     ],
-    "totalLinesCovered": 460
+    "totalLinesCovered": 855
   }
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @infrastructure
 @utils
@@ -17,14 +18,13 @@ Feature: Use native serde_json errors with good diagnostics for malformed JSON (
   #   2. The shared funnel read_or_init_json and the ensure_* read paths route parse errors through one shared helper (io::json_error), so every ensure_*-based command is upgraded at once (Group 0)
   #   3. The 6 commands that prepended 'Unexpected token in JSON:' (auto_advance, record_iteration, workflow_automation, query_work_units, query_metrics, export_work_units) no longer emit that fabricated prefix; they keep their command-specific outer wrapper but the inner body is the serde snippet (Group 1)
   #   4. ParseJson Display stays recognizable: it contains 'Failed to parse <file>' and the corruption-guidance sentence, with the caret snippet following on subsequent lines
-  #   5. Lenient/silent parse sites (Group 5: list-hooks, list-schedules, read_work_units_or_empty, coverage readers, validate-tags/hooks, search-*, create-* lookups) remain unchanged — they keep returning empty/None on malformed input
+  #   5. Lenient/silent parse sites (Group 5: list-schedules, read_work_units_or_empty, coverage readers, validate-tags, search-*, create-* lookups) remain unchanged — they keep returning empty/None on malformed input (list-hooks and validate-hooks report a broken fspec-hooks.json since BUG-611)
   #   6. When the serde error carries no location, the formatter falls back to the bare serde message (no caret, no panic)
   #
   # EXAMPLES:
   #   1. A work-units.json with an unquoted key `status:` at line 4 column 37 -> error contains 'Failed to parse work-units.json', the corruption sentence, the source line, and a caret above 'key must be a string at line 4 column 37'
   #   2. Running auto-advance against a corrupt work-units.json -> message keeps the 'Failed to auto-advance:' outer wrapper and the serde snippet, and does NOT contain 'Unexpected token in JSON:'
   #   3. A single-line input `{ bad` -> snippet shows ` 1 | { bad` with a caret under column 3 and 'key must be a string at line 1 column 3'
-  #   4. list-hooks (Group 5) against a malformed fspec-hooks.json -> still returns an empty hook list, no parse error surfaced
   #
   # ========================================
   Background: User Story
@@ -60,14 +60,6 @@ Feature: Use native serde_json errors with good diagnostics for malformed JSON (
     Then the snippet contains " 1 | { bad"
     And the snippet contains a caret under column 3
     And the snippet contains "key must be a string at line 1 column 3"
-
-  @rust
-  @resilience
-  Scenario: Lenient parse sites stay silent on malformed input
-    Given a malformed fspec-hooks.json
-    When I run the list-hooks command against it
-    Then an empty hook list is returned
-    And no parse error is surfaced
 
   @rust
   @edge-case

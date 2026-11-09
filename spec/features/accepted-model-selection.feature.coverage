@@ -10,16 +10,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -35,16 +37,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -55,21 +59,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
-          "lines": "136-144",
+          "lines": "138-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -85,16 +91,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -110,16 +118,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -135,16 +145,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -160,16 +172,18 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -180,21 +194,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
-          "lines": "230-240",
+          "lines": "233-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
               "lines": [
-                20,
-                30,
+                28,
                 38,
-                45,
-                52,
-                76,
-                84,
-                89,
-                93
-              ]
+                46,
+                65,
+                72,
+                97,
+                105,
+                110,
+                114
+              ],
+              "firstLine": "session: SessionId,",
+              "lastLine": ") {"
             }
           ]
         }
@@ -211,6 +227,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_model_sync.rs"
     ],
-    "totalLinesCovered": 226
+    "totalLinesCovered": 230
   }
 }

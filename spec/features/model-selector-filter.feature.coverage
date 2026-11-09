@@ -5,23 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_filter_row_model007.rs",
-          "lines": "150-193",
+          "lines": "157-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -41,8 +29,32 @@
                 136,
                 137,
                 138,
-                139
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "use ratatui::style::{Color, Style};",
+              "lastLine": "Paragraph::new(prompt).render(filter_row, buf);"
             }
           ]
         }
@@ -53,23 +65,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_filter_row_model007.rs",
-          "lines": "198-223",
+          "lines": "206-232",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -89,8 +89,32 @@
                 136,
                 137,
                 138,
-                139
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "use ratatui::style::{Color, Style};",
+              "lastLine": "Paragraph::new(prompt).render(filter_row, buf);"
             }
           ]
         }
@@ -101,23 +125,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_filter_row_model007.rs",
-          "lines": "228-259",
+          "lines": "237-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -137,8 +149,32 @@
                 136,
                 137,
                 138,
-                139
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "use ratatui::style::{Color, Style};",
+              "lastLine": "Paragraph::new(prompt).render(filter_row, buf);"
             }
           ]
         }
@@ -149,23 +185,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/model_selector_filter_row_model007.rs",
-          "lines": "263-342",
+          "lines": "273-368",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/model_selector/render.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
                 120,
                 121,
                 122,
@@ -185,8 +209,32 @@
                 136,
                 137,
                 138,
-                139
-              ]
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ],
+              "firstLine": "use ratatui::style::{Color, Style};",
+              "lastLine": "Paragraph::new(prompt).render(filter_row, buf);"
             }
           ]
         }
@@ -203,6 +251,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/model_selector/render.rs"
     ],
-    "totalLinesCovered": 310
+    "totalLinesCovered": 368
   }
 }

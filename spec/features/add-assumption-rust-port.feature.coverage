@@ -5,11 +5,13 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_assumption.rs",
-          "lines": "62-91",
+          "lines": "77-109",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_assumption.rs",
               "lines": [
+                40,
+                41,
                 42,
                 43,
                 44,
@@ -71,15 +73,10 @@
                 100,
                 101,
                 102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110
-              ]
+                103
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,11 +87,49 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_assumption.rs",
-          "lines": "93-118",
+          "lines": "111-141",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_assumption.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
                 78,
                 79,
                 80,
@@ -114,8 +149,16 @@
                 94,
                 95,
                 96,
-                97
-              ]
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -126,19 +169,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_assumption.rs",
-          "lines": "120-143",
+          "lines": "153-174",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_assumption.rs",
               "lines": [
-                52,
-                53,
                 54,
                 55,
                 56,
                 57,
-                58
-              ]
+                58,
+                59,
+                60
+              ],
+              "firstLine": "None => {",
+              "lastLine": "};"
             }
           ]
         }
@@ -149,11 +194,31 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_assumption.rs",
-          "lines": "145-170",
+          "lines": "171-197",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_assumption.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
                 60,
                 61,
                 62,
@@ -169,8 +234,38 @@
                 72,
                 73,
                 74,
-                75
-              ]
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -181,11 +276,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_assumption.rs",
-          "lines": "172-194",
+          "lines": "209-229",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_assumption.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
                 48,
                 49,
                 50,
@@ -196,8 +299,55 @@
                 55,
                 56,
                 57,
-                58
-              ]
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -214,6 +364,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_assumption.rs"
     ],
-    "totalLinesCovered": 252
+    "totalLinesCovered": 397
   }
 }

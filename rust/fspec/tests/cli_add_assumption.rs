@@ -118,8 +118,8 @@ fn scenario_cli_successfully_appends_assumption_and_prints_success_line() {
         .as_array()
         .expect("assumptions");
     assert_eq!(arr.len(), 1);
-    // @step And spec/work-units.json on disk shows AUTH-001.assumptions[0]='Users have valid email'
-    assert_eq!(arr[0].as_str(), Some("Users have valid email"));
+    // @step And spec/work-units.json on disk shows AUTH-001.assumptions[0] with text 'Users have valid email'
+    assert_eq!(arr[0]["text"].as_str(), Some("Users have valid email"));
 }
 
 #[test]

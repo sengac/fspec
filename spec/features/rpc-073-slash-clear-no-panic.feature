@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-073
 @rpc
 @session-management
 @bug
+@BUG-417
 Feature: RPC-073 Slash Clear No Panic
   """
   Bug 1: typing /clear in a Work Agent on the Rust fspec binary panicked
@@ -21,6 +23,7 @@ Feature: RPC-073 Slash Clear No Panic
   / .blocking_write( in any sync trait method body so future siblings are caught.
 
   Reference: spec/attachments/RPC-073/research-bug1-clear-panic-ts-vs-rust.md
+  BUG-417: the runtime scenarios create sessions in one test-owned temp data directory per binary (rust/fspec/tests/runtime_data_dir_support), seeded with an offline models.dev catalog and the explicit default model anthropic/claude-opus-4-5, and run serially; they never read or write the developer's data directory.
   """
 
   Background: User Story

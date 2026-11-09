@@ -24,7 +24,7 @@ impl AgentView {
                 PopupOutcome::Selected(action) => {
                     self.slash_popup = None;
                     self.input.reset();
-                    self.emit(Action::SlashCommandSelected(action));
+                    self.emit_slash_pick(action);
                     return Some(EventResult::consumed());
                 }
                 PopupOutcome::Filled(text) => {

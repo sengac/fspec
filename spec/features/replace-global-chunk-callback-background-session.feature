@@ -50,12 +50,6 @@ Feature: Replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast sender; rewire NAPI
     I want to delete the napi-side GLOBAL_CHUNK_CALLBACK static and rewire BackgroundSession::handle_output to broadcast through the SessionManager-owned chunks_tx (with a thin napi-side subscriber fanning into the JS ThreadsafeFunction), while also having set_status broadcast on status_changes_tx
     So that the agent loop's stream-chunk fan-out has a single push-based source of truth that both the napi adapter and the eventual Rust fspec-tui frontend can subscribe to as peers, with zero unsafe Send/Sync impls and no global OnceCell
 
-  Scenario: The GLOBAL_CHUNK_CALLBACK static, GlobalChunkCallback struct, and its unsafe Send/Sync impls are removed
-    Given the napi-side rust/napi/src/session_manager.rs file previously declared `static GLOBAL_CHUNK_CALLBACK: OnceCell<GlobalChunkCallback>`, a `struct GlobalChunkCallback { callback: ThreadsafeFunction<GlobalChunkCallbackArgs> }`, and `unsafe impl Send for GlobalChunkCallback {}` / `unsafe impl Sync for GlobalChunkCallback {}`
-    When I grep rust/napi/src/session_manager.rs for the regex `GLOBAL_CHUNK_CALLBACK|struct GlobalChunkCallback|unsafe impl (Send|Sync) for GlobalChunkCallback`
-    Then I find zero matches in the file
-    And the `GlobalChunkCallbackArgs` `#[napi(object)]` struct still exists because it is the TS-facing wire shape
-
   Scenario: BackgroundSession::handle_output broadcasts unconditionally on the mandatory chunks_tx field
     Given the BackgroundSession code lives at rust/sessions/src/background_session.rs
     And `BackgroundSession::handle_output(&self, chunk: StreamChunk)` is defined there

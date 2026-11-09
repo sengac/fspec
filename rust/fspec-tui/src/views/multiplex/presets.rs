@@ -1,27 +1,24 @@
-//! MUX-001 — mux presets: the default grid + pane-count expansion.
+//! MUX-001 — mux presets: the default layout.
 //!
 //! Feature: spec/features/rust-mux-mode.feature
 //!
-//! Default preset (R1 / rule [10]): horizontal orientation,
-//! Board | Agent, 50/50 split, agent pane focused.
+//! Default preset (R1 / rule [10], MUX-010 layout string): `board, agent`
+//! (two equal columns), agent pane focused.
 
-use super::{MuxConfig, MuxOrientation, MuxPaneKind};
+use super::{MuxConfig, MuxLayout, MuxNode, MuxPaneKind};
 
-/// The canonical pane-kind order used to expand `/mux <n>` pane counts.
-pub const DEFAULT_PANES: [MuxPaneKind; 4] = [
-    MuxPaneKind::Board,
-    MuxPaneKind::Agent,
-    MuxPaneKind::ChangedFiles,
-    MuxPaneKind::Checkpoints,
-];
+/// The default layout `board, agent`.
+pub fn default_layout() -> MuxLayout {
+    MuxLayout::with_first(
+        MuxNode::pane(MuxPaneKind::Board),
+        vec![MuxNode::pane(MuxPaneKind::Agent)],
+    )
+}
 
-/// The default preset: horizontal Board | Agent at 50/50, agent pane
-/// focused, mux enabled.
+/// The default preset: `board, agent`, agent pane focused, mux enabled.
 pub fn default_config() -> MuxConfig {
     MuxConfig {
-        orientation: MuxOrientation::Horizontal,
-        splits: vec![50],
-        panes: vec![MuxPaneKind::Board, MuxPaneKind::Agent],
+        layout: default_layout(),
         focused_pane: 1, // agent pane focused (default preset, R1)
         enabled: true,
     }
@@ -37,9 +34,7 @@ mod tests {
     fn default_preset_shape() {
         let cfg = default_config();
         assert!(cfg.enabled);
-        assert_eq!(cfg.orientation, MuxOrientation::Horizontal);
-        assert_eq!(cfg.panes, vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
-        assert_eq!(cfg.splits, vec![50]);
+        assert_eq!(cfg.layout.to_string(), "board, agent");
         assert_eq!(cfg.focused_pane, 1);
     }
 }

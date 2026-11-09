@@ -6,17 +6,7 @@
         {
           "file": "src/utils/__tests__/activationMessage.test.ts",
           "lines": "11-21",
-          "implMappings": [
-            {
-              "file": "src/utils/activationMessage.ts",
-              "lines": [
-                13,
-                14,
-                15,
-                16
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -26,17 +16,7 @@
         {
           "file": "src/utils/__tests__/activationMessage.test.ts",
           "lines": "24-35",
-          "implMappings": [
-            {
-              "file": "src/utils/activationMessage.ts",
-              "lines": [
-                18,
-                19,
-                20,
-                21
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -46,17 +26,7 @@
         {
           "file": "src/utils/__tests__/activationMessage.test.ts",
           "lines": "38-49",
-          "implMappings": [
-            {
-              "file": "src/utils/activationMessage.ts",
-              "lines": [
-                23,
-                24,
-                25,
-                26
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -66,16 +36,7 @@
         {
           "file": "src/utils/__tests__/activationMessage.test.ts",
           "lines": "52-67",
-          "implMappings": [
-            {
-              "file": "src/utils/activationMessage.ts",
-              "lines": [
-                38,
-                39,
-                40
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -87,9 +48,7 @@
     "testFiles": [
       "src/utils/__tests__/activationMessage.test.ts"
     ],
-    "implFiles": [
-      "src/utils/activationMessage.ts"
-    ],
-    "totalLinesCovered": 66
+    "implFiles": [],
+    "totalLinesCovered": 51
   }
 }

@@ -162,7 +162,7 @@ async fn refresh_models_cache_force_fetches_catalog_and_returns_provider_models(
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-bug207-dummy");
 
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the models cache is refreshed for that provider
     let result = handle.refresh_models_cache("anthropic");
@@ -218,7 +218,7 @@ async fn refresh_models_cache_with_empty_provider_refreshes_shared_catalog_only(
     std::env::set_var("FSPEC_MODELS_DEV_URL", &mock_url);
 
     let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
+        SessionManager::new() as Arc<dyn SessionManagerHandle>;
 
     // @step When the models cache is refreshed with an empty provider id
     let result = handle.refresh_models_cache("");

@@ -10,14 +10,16 @@
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
-                170,
-                171,
                 172,
                 173,
                 174,
                 175,
-                176
-              ]
+                176,
+                177,
+                178
+              ],
+              "firstLine": "// [5] Remove the first match and write.",
+              "lastLine": "let next_steps = crate::foundation::guidance::draft_trailer(&data);"
             }
           ]
         }
@@ -28,7 +30,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "103-147",
+          "lines": "106-153",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
@@ -41,7 +43,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "// [1] Draft precedence — draft wins when present.",
+              "lastLine": "};"
             }
           ]
         }
@@ -52,16 +56,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "148-175",
+          "lines": "155-181",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
-                150,
-                151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155
+              ],
+              "firstLine": "// [4] First exact case-sensitive match (TS findIndex).",
+              "lastLine": ".position(|c| c.get(\"name\").and_then(Value::as_str) == Some(name.as_str()));"
             }
           ]
         }
@@ -72,13 +78,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "176-203",
+          "lines": "183-209",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
-                107,
-                108,
                 109,
                 110,
                 111,
@@ -96,8 +100,12 @@
                 123,
                 124,
                 125,
-                126
-              ]
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// [3] TS: `if (!caps || caps.length === 0)`. The `!caps` guard fires for",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,13 +116,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "204-237",
+          "lines": "211-243",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
-                154,
-                155,
                 156,
                 157,
                 158,
@@ -127,8 +133,12 @@
                 165,
                 166,
                 167,
-                168
-              ]
+                168,
+                169,
+                170
+              ],
+              "firstLine": "let Some(index) = index else {",
+              "lastLine": "};"
             }
           ]
         }
@@ -139,7 +149,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "238-263",
+          "lines": "245-269",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
@@ -151,7 +161,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "// [2] Missing-file guard — do NOT auto-create.",
+              "lastLine": "}"
             }
           ]
         }
@@ -162,20 +174,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/remove_capability.rs",
-          "lines": "264-290",
+          "lines": "271-298",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/remove_capability.rs",
               "lines": [
-                73,
-                74,
                 75,
                 76,
                 77,
                 78,
                 79,
-                80
-              ]
+                80,
+                81,
+                82
+              ],
+              "firstLine": "let raw = std::fs::read_to_string(&target_path).map_err(|source| FspecCoreError::Io {",
+              "lastLine": "})?;"
             }
           ]
         }

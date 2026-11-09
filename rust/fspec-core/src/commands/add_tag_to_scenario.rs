@@ -319,7 +319,7 @@ fn find_scenario<'a>(feature: &'a gherkin::Feature, name: &str) -> Option<&'a gh
 /// surfaced verbatim through the registry-validation error message
 /// (parity with TS `"Failed to validate against registry: <msg>"`).
 fn load_registered_tags(project_root: &Path) -> Result<Vec<String>, String> {
-    let path = project_root.join("spec").join("tags.json");
+    let path = crate::io::spec_paths::tags(project_root).map_err(|e| e.to_string())?;
     let body = std::fs::read_to_string(&path).map_err(|e| format!("{}: {}", path.display(), e))?;
     let v: Value = serde_json::from_str(&body)
         .map_err(|e| crate::io::json_error::parse_json_reason(&body, &e))?;

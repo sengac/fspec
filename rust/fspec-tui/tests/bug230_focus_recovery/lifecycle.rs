@@ -1,4 +1,5 @@
 use super::*;
+use codelet_test_helpers::TestResult;
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
@@ -50,7 +51,7 @@ async fn dialog_creation_observed_before_acknowledgement_preserves_card_intent()
     app.dispatch(Action::SessionObserved(
         info(&backend, session.clone()).await?,
     ));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then the backend and all card displays identify "AUTH-002"
     assert_eq!(app.board_store().session_for("AUTH-002"), Some(&session));
     Ok(())

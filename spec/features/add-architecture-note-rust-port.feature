@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-168
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port add-architecture-note command to Rust
   """
   Core impl at rust/fspec-core/src/commands/add_architecture_note.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists, appends a new ArchitectureNoteItem object to workUnit.architectureNotes with the literal field order `id, text, deleted, createdAt`, increments workUnit.nextNoteId, bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic so that prefixCounters, migrationHistory and other unknown top-level fields round-trip losslessly.

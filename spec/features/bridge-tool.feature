@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @codelet
 @bridge
@@ -111,9 +112,9 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
-    When the endpoint sends a JSON message:
+    When the endpoint sends a multiplexed envelope:
       """
-      {"type": "input", "session_id": "<session_id>", "message": "build the app"}
+      {"service": "session", "type": "input", "session_id": "<session_id>", "data": {"message": "build the app"}}
       """
     Then the agent should receive "build the app" as user input
 

@@ -11,18 +11,17 @@
 //! source_shape_rpc055 / source_shape_rpc056 / source_shape_rpc057
 //! patterns.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-use std::fs;
+use codelet_test_helpers::source_composition::read_source;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::path::PathBuf;
 
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
 fn normalise(source: &str) -> String {
@@ -33,50 +32,14 @@ fn normalise(source: &str) -> String {
         .join(" ")
 }
 
-/// Scenario: ScheduledJob wire type is exported from codelet-rpc-types
-#[test]
-fn rpc_types_exports_scheduled_job_wire_type() {
-    // @step Given the file rust/rpc-types/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc-types/src/lib.rs");
-    let normalised = normalise(&source);
-
-    // @step Then it declares a public struct named "ScheduledJob"
-    assert!(
-        source.contains("pub struct ScheduledJob"),
-        "rpc-types/src/lib.rs should declare pub struct ScheduledJob"
-    );
-
-    // @step And ScheduledJob has fields named name, cron, timezone, job_type, status
-    // @step And ScheduledJob has fields named created_at, last_run_at, last_run_status
-    // @step And ScheduledJob has fields named role, prompt, command, overlap_policy
-    for field in [
-        "pub name:",
-        "pub cron:",
-        "pub timezone:",
-        "pub job_type:",
-        "pub status:",
-        "pub created_at:",
-        "pub last_run_at:",
-        "pub last_run_status:",
-        "pub role:",
-        "pub prompt:",
-        "pub command:",
-        "pub overlap_policy:",
-    ] {
-        assert!(
-            normalised.contains(field),
-            "ScheduledJob should declare field {field:?}"
-        );
-    }
-}
+include!("source_shape_rpc058/scheduled_job.rs");
 
 /// Scenario: SessionManagerHandle declares the five new schedule methods
 #[test]
-fn session_manager_handle_declares_schedule_methods() {
+fn session_manager_handle_declares_schedule_methods() -> TestResult {
     // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = read_tree(&path)?;
     let normalised = normalise(&source);
 
     // @step Then it declares a trait method named "schedule_add" returning Result<ScheduledJob, String>
@@ -89,14 +52,14 @@ fn session_manager_handle_declares_schedule_methods() {
         "schedule_add/pause/resume should return Result<ScheduledJob, String>"
     );
 
-    // @step And it declares a trait method named "schedule_list" returning Vec<ScheduledJob>
+    // @step And it declares a trait method named "schedule_list" returning Result<Vec<ScheduledJob>, String>
     assert!(
         source.contains("fn schedule_list("),
         "session_manager_handle.rs should declare fn schedule_list"
     );
     assert!(
-        normalised.contains("-> Vec<ScheduledJob>"),
-        "schedule_list should return Vec<ScheduledJob>"
+        normalised.contains("-> Result<Vec<ScheduledJob>, String>"),
+        "schedule_list should return Result<Vec<ScheduledJob>, String>"
     );
 
     // @step And it declares a trait method named "schedule_pause" returning Result<ScheduledJob, String>
@@ -116,14 +79,15 @@ fn session_manager_handle_declares_schedule_methods() {
         source.contains("fn schedule_remove("),
         "session_manager_handle.rs should declare fn schedule_remove"
     );
+    Ok(())
 }
 
 /// Scenario: StubSessionManagerHandle exposes per-call counters for all five schedule methods
 #[test]
-fn stub_exposes_per_call_counters_for_schedule() {
+fn stub_exposes_per_call_counters_for_schedule() -> TestResult {
     // @step Given the file rust/core/src/session_manager_handle.rs is compiled
-    let path = workspace_root().join("rust/core/src/session_manager_handle.rs");
-    let source = fs::read_to_string(&path).expect("read session_manager_handle.rs");
+    let path = workspace_root()?.join("rust/core/src/session_manager_handle.rs");
+    let source = read_tree(&path)?;
     let normalised = normalise(&source);
 
     // @step Then StubSessionManagerHandle declares a method named "schedule_add_calls" returning u64
@@ -149,18 +113,19 @@ fn stub_exposes_per_call_counters_for_schedule() {
             "StubSessionManagerHandle should declare {counter}(&self) -> u64"
         );
     }
+    Ok(())
 }
 
 /// Scenario: FspecService declares the five new RPC methods
 #[test]
-fn fspec_service_declares_schedule_methods() {
+fn fspec_service_declares_schedule_methods() -> TestResult {
     // @step Given the file rust/rpc/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
+    let path = workspace_root()?.join("rust/rpc/src/lib.rs");
+    let source = read_source(&path).or_fail("resolve rpc/src/lib.rs")?;
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "schedule_add" with return type Result<ScheduledJob, String>
-    // @step And it declares an async fn named "schedule_list" with return type Vec<ScheduledJob>
+    // @step And it declares an async fn named "schedule_list" with return type Result<Vec<ScheduledJob>, String>
     // @step And it declares an async fn named "schedule_pause" with return type Result<ScheduledJob, String>
     // @step And it declares an async fn named "schedule_resume" with return type Result<ScheduledJob, String>
     // @step And it declares an async fn named "schedule_remove" with return type Result<(), String>
@@ -184,17 +149,18 @@ fn fspec_service_declares_schedule_methods() {
         "schedule_add/pause/resume should return Result<ScheduledJob, String>"
     );
     assert!(
-        normalised.contains("-> Vec<ScheduledJob>"),
-        "schedule_list should return Vec<ScheduledJob>"
+        normalised.contains("-> Result<Vec<ScheduledJob>, String>"),
+        "schedule_list should return Result<Vec<ScheduledJob>, String>"
     );
+    Ok(())
 }
 
 /// Scenario: FspecBackend declares the five new methods
 #[test]
-fn fspec_backend_declares_schedule_methods() {
+fn fspec_backend_declares_schedule_methods() -> TestResult {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
-    let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/transport/mod.rs");
+    let source = read_source(&path).or_fail("resolve transport/mod.rs")?;
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "schedule_add" on the FspecBackend trait returning Result<ScheduledJob>
@@ -225,18 +191,18 @@ fn fspec_backend_declares_schedule_methods() {
         normalised.contains("-> Result<Vec<ScheduledJob>>"),
         "FspecBackend::schedule_list should return Result<Vec<ScheduledJob>>"
     );
+    Ok(())
 }
 
 /// Scenario: Both transports implement the five new methods
 #[test]
-fn both_transports_implement_schedule_methods() {
+fn both_transports_implement_schedule_methods() -> TestResult {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/embedded.rs"))
+        .or_fail("resolve transport/embedded.rs")?;
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
-            .expect("read transport/websocket.rs");
+        read_source(&workspace_root()?.join("rust/fspec-tui/src/transport/websocket.rs"))
+            .or_fail("resolve transport/websocket.rs")?;
 
     // @step Then each file contains an impl of "schedule_add" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "schedule_list" that calls the corresponding tarpc client method
@@ -269,14 +235,16 @@ fn both_transports_implement_schedule_methods() {
             "websocket.rs should forward to the tarpc client's {method}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: schedule_parser module exists with the documented entry points
 #[test]
-fn schedule_parser_module_exists() {
+fn schedule_parser_module_exists() -> TestResult {
     // @step Given the file rust/fspec-tui/src/app/schedule_parser.rs exists
-    let path = workspace_root().join("rust/fspec-tui/src/app/schedule_parser.rs");
-    let source = fs::read_to_string(&path).expect("read app/schedule_parser.rs");
+    let path = workspace_root()?.join("rust/fspec-tui/src/app/schedule_parser.rs");
+    let source = codelet_test_helpers::source_composition::read_tree_or_file(&path)
+        .or_fail("read app/schedule_parser.rs")?;
 
     // @step Then it declares a public enum named "ScheduleSubcommand"
     assert!(
@@ -300,4 +268,39 @@ fn schedule_parser_module_exists() {
         source.contains("pub fn parse_schedule_command("),
         "schedule_parser.rs should declare pub fn parse_schedule_command"
     );
+    Ok(())
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// Scenario: /schedule slash command wiring lives in dispatch_slash_schedule.rs
+#[test]
+fn schedule_slash_command_wiring_lives_in_dispatch_slash_schedule() -> TestResult {
+    // @step Given the file rust/fspec-tui/src/app/dispatch_slash_schedule.rs exists
+    let source =
+        read_tree(&workspace_root()?.join("rust/fspec-tui/src/app/dispatch_slash_schedule.rs"))?;
+    // @step Then it declares a method named "handle_slash_schedule_help"
+    assert!(source.contains("fn handle_slash_schedule_help("));
+    // @step And it declares a method named "handle_schedule_subcommand"
+    assert!(source.contains("fn handle_schedule_subcommand("));
+    // @step And it declares a method named "handle_schedule_add"
+    assert!(source.contains("fn handle_schedule_add("));
+    // @step And it declares a method named "handle_schedule_list"
+    assert!(source.contains("fn handle_schedule_list("));
+    // @step And it declares a method named "handle_schedule_pause"
+    assert!(source.contains("fn handle_schedule_pause("));
+    // @step And it declares a method named "handle_schedule_resume"
+    assert!(source.contains("fn handle_schedule_resume("));
+    // @step And it declares a method named "handle_schedule_remove"
+    assert!(source.contains("fn handle_schedule_remove("));
+    // @step And it declares a method named "try_dispatch_slash_schedule"
+    assert!(source.contains("fn try_dispatch_slash_schedule("));
+    Ok(())
+}
+
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> Result<String, codelet_test_helpers::TestError> {
+    Ok(
+        codelet_test_helpers::source_composition::read_module_tree(path)
+            .map_err(|error| format!("read {}: {error}", path.display()))?,
+    )
 }

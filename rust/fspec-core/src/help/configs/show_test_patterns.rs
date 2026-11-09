@@ -5,13 +5,10 @@
 //! piped to non-TTY. Reference fixture:
 //! `rust/fspec/tests/fixtures/help/show-test-patterns.txt`.
 //!
-//! ## Quirk: literal `undefined` in COMMON PATTERNS
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
-//! The TS help config feeds `{title, commands}` objects to the formatter,
-//! but the formatter consumes `{pattern, example, description}`. The
-//! resulting `undefined.toString()` interpolation surfaces as the literal
-//! text `undefined`. We faithfully reproduce that quirk here using
-//! `CommonPatternEntry::Structured` with all three fields set to `"undefined"`.
 
 use super::super::{
     CommandExample, CommandHelpConfig, CommandOption, CommonPattern, CommonPatternEntry,
@@ -43,14 +40,14 @@ const OPTIONS: &[CommandOption] = &[
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Review CLI test consistency",
+        example: "fspec show-test-patterns --tag=@cli --include-coverage",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
-        pattern: "undefined",
-        example: "undefined",
-        description: "undefined",
+        pattern: "Analyze critical feature testing",
+        example: "fspec show-test-patterns --tag=@critical\nfspec show-test-patterns --tag=@high",
+        description: None,
     }),
 ];
 
@@ -72,11 +69,7 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &[
-    "show-coverage",
-    "compare-implementations",
-    "search-scenarios",
-];
+const RELATED: &[&str] = &["show-coverage", "compare-implementations", "context"];
 
 const NOTES: &[&str] = &[
     "Analyzes test files from coverage data",

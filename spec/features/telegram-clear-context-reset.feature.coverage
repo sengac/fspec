@@ -4,38 +4,9 @@
       "name": "Clear command resets AI context completely",
       "testMappings": [
         {
-          "file": "rust/napi/tests/telegram_clear_context_test.rs",
-          "lines": "45-98",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                4508,
-                4509,
-                4510,
-                4511,
-                4512,
-                4513,
-                4514,
-                4515,
-                4516,
-                4517,
-                4518,
-                4519,
-                4520,
-                4521,
-                4522,
-                4523,
-                4524,
-                4525,
-                4526,
-                4527,
-                4528,
-                4529,
-                4530
-              ]
-            }
-          ]
+          "file": "rust/cli/tests/telegram_clear_context_test/context.rs",
+          "lines": "4-72",
+          "implMappings": []
         }
       ]
     },
@@ -43,38 +14,9 @@
       "name": "System reminders preserved after clear",
       "testMappings": [
         {
-          "file": "rust/napi/tests/telegram_clear_context_test.rs",
-          "lines": "100-161",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                4508,
-                4509,
-                4510,
-                4511,
-                4512,
-                4513,
-                4514,
-                4515,
-                4516,
-                4517,
-                4518,
-                4519,
-                4520,
-                4521,
-                4522,
-                4523,
-                4524,
-                4525,
-                4526,
-                4527,
-                4528,
-                4529,
-                4530
-              ]
-            }
-          ]
+          "file": "rust/cli/tests/telegram_clear_context_test/context.rs",
+          "lines": "74-133",
+          "implMappings": []
         }
       ]
     },
@@ -82,38 +24,9 @@
       "name": "Token counters reset after clear",
       "testMappings": [
         {
-          "file": "rust/napi/tests/telegram_clear_context_test.rs",
-          "lines": "163-208",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                4508,
-                4509,
-                4510,
-                4511,
-                4512,
-                4513,
-                4514,
-                4515,
-                4516,
-                4517,
-                4518,
-                4519,
-                4520,
-                4521,
-                4522,
-                4523,
-                4524,
-                4525,
-                4526,
-                4527,
-                4528,
-                4529,
-                4530
-              ]
-            }
-          ]
+          "file": "rust/cli/tests/telegram_clear_context_test/state.rs",
+          "lines": "4-59",
+          "implMappings": []
         }
       ]
     },
@@ -121,38 +34,9 @@
       "name": "Clear resets session state not just output buffer",
       "testMappings": [
         {
-          "file": "rust/napi/tests/telegram_clear_context_test.rs",
-          "lines": "210-259",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/session_manager.rs",
-              "lines": [
-                4508,
-                4509,
-                4510,
-                4511,
-                4512,
-                4513,
-                4514,
-                4515,
-                4516,
-                4517,
-                4518,
-                4519,
-                4520,
-                4521,
-                4522,
-                4523,
-                4524,
-                4525,
-                4526,
-                4527,
-                4528,
-                4529,
-                4530
-              ]
-            }
-          ]
+          "file": "rust/cli/tests/telegram_clear_context_test/state.rs",
+          "lines": "61-113",
+          "implMappings": []
         }
       ]
     }
@@ -162,11 +46,10 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/telegram_clear_context_test.rs"
+      "rust/cli/tests/telegram_clear_context_test/context.rs",
+      "rust/cli/tests/telegram_clear_context_test/state.rs"
     ],
-    "implFiles": [
-      "rust/napi/src/session_manager.rs"
-    ],
-    "totalLinesCovered": 304
+    "implFiles": [],
+    "totalLinesCovered": 238
   }
 }

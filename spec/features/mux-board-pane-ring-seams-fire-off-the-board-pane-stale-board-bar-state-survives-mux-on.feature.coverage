@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "Right from the last chip with the agent pane focused wraps to the first menu item",
+      "name": "Right from the last button with the agent pane focused wraps to the first menu item",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
@@ -10,11 +10,6 @@
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
               "lines": [
-                159,
-                160,
-                161,
-                162,
-                163,
                 164,
                 165,
                 166,
@@ -26,17 +21,12 @@
                 172,
                 173,
                 174,
-                175,
-                176,
-                177,
-                178,
                 179,
                 180,
                 181,
                 182,
                 183,
                 184,
-                185,
                 186,
                 187,
                 188,
@@ -85,14 +75,16 @@
                 231,
                 232,
                 233
-              ]
+              ],
+              "firstLine": "// arm below mutates the pane list or the pane focus). It scopes",
+              "lastLine": "//   LAST Zone B cell (last chip when chips paint; the last view"
             }
           ]
         }
       ]
     },
     {
-      "name": "Left from the first menu item with the agent pane focused wraps to the last chip",
+      "name": "Left from the first menu item with the agent pane focused wraps to the last button",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
@@ -135,7 +127,9 @@
                 224,
                 225,
                 226
-              ]
+              ],
+              "firstLine": "// same as Seam 2 (off the board pane `advance` wraps",
+              "lastLine": "// - `delta > 0` (Right off the last column, col6): the store"
             }
           ]
         }
@@ -146,22 +140,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
-          "lines": "228-275",
+          "lines": "237-285",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
@@ -170,8 +153,31 @@
                 192,
                 193,
                 194,
-                195
-              ]
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ],
+              "firstLine": "fn handle_mux_on(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -182,13 +188,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
-          "lines": "277-309",
+          "lines": "292-330",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                124,
-                125,
                 126,
                 127,
                 128,
@@ -213,16 +217,10 @@
                 147,
                 148,
                 149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158
-              ]
+                150
+              ],
+              "firstLine": "pub(crate) fn apply_mux_config_draft(&mut self, draft: MuxConfig) {",
+              "lastLine": "self.mux_load_lazy_panes();"
             }
           ]
         }
@@ -233,15 +231,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
-          "lines": "315-352",
+          "lines": "346-358",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
                 99,
                 100,
                 101,
@@ -256,8 +250,14 @@
                 110,
                 111,
                 112,
-                113
-              ]
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "if self.navigator.mux.config().enabled {",
+              "lastLine": "/// MUX-004 (R5/R7): apply a committed MuxConfigDialog draft to the"
             }
           ]
         }
@@ -268,12 +268,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
-          "lines": "360-405",
+          "lines": "393-434",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
               "lines": [
-                185,
                 186,
                 187,
                 188,
@@ -315,7 +314,9 @@
                 224,
                 225,
                 226
-              ]
+              ],
+              "firstLine": "self.board_store.set_focused_column(COLUMN_ORDER[0]);",
+              "lastLine": "// - `delta > 0` (Right off the last column, col6): the store"
             }
           ]
         }
@@ -333,6 +334,6 @@
       "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
       "rust/fspec-tui/src/app/dispatch_mux_apply.rs"
     ],
-    "totalLinesCovered": 498
+    "totalLinesCovered": 465
   }
 }

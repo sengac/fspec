@@ -138,7 +138,9 @@
                 223,
                 224,
                 225
-              ]
+              ],
+              "firstLine": "fn fragment(",
+              "lastLine": "fn set_fragment("
             }
           ]
         }
@@ -282,7 +284,9 @@
                 223,
                 224,
                 225
-              ]
+              ],
+              "firstLine": "fn fragment(",
+              "lastLine": "fn set_fragment("
             }
           ]
         }
@@ -426,7 +430,9 @@
                 223,
                 224,
                 225
-              ]
+              ],
+              "firstLine": "fn fragment(",
+              "lastLine": "fn set_fragment("
             }
           ]
         }
@@ -438,55 +444,7 @@
         {
           "file": "rust/fspec-tui/tests/bug244_transcript_delivery.rs",
           "lines": "243-273",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1089,
-                1090,
-                1091,
-                1092,
-                1093,
-                1094,
-                1095,
-                1096,
-                1097,
-                1098,
-                1099,
-                1100,
-                1101,
-                1102,
-                1103,
-                1104,
-                1105,
-                1106,
-                1107,
-                1108,
-                1109,
-                1110,
-                1111,
-                1112,
-                1113,
-                1114,
-                1115,
-                1116,
-                1117,
-                1118,
-                1119,
-                1120,
-                1121,
-                1122,
-                1123,
-                1124,
-                1125,
-                1126,
-                1127,
-                1128,
-                1129,
-                1130
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -628,7 +586,9 @@
                 223,
                 224,
                 225
-              ]
+              ],
+              "firstLine": "fn fragment(",
+              "lastLine": "fn set_fragment("
             }
           ]
         }
@@ -643,9 +603,8 @@
       "rust/fspec-tui/tests/bug244_transcript_delivery.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/transcript_journal.rs",
-      "rust/sessions/src/background_session.rs"
+      "rust/sessions/src/transcript_journal.rs"
     ],
-    "totalLinesCovered": 739
+    "totalLinesCovered": 697
   }
 }

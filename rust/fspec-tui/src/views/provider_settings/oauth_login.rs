@@ -11,8 +11,10 @@
 //!     mode. Both emit `Action::OAuthLoginStart { provider, method, generation }`.
 //!   * `handle_oauth_login_key` — the waiting / device-waiting / code-entry /
 //!     success / error mode keyboard contracts, including the generation bump
-//!     on Esc-cancel and the `c`-copies-while-empty / `o`-opens-while-empty
-//!     code-entry rules.
+//!     on Esc-cancel. TUI-126: code entry has a URL part and a Code field;
+//!     on the URL `c` copies and `o` opens it, in the Code field every
+//!     printable character is code text; device login copies its user code
+//!     and opens its verification URL; the error screen copies its text.
 
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -33,6 +35,7 @@ pub(super) fn start_oauth_login(
     view.oauth_last_provider = Some(provider_id.clone());
     view.oauth_last_method = Some(method);
     view.status.clear();
+    view.oauth_browser_url = None;
     if matches!(method, OAuthMethod::Browser) {
         view.mode = ProviderSettingsMode::OAuthBrowserWaiting {
             provider_id: provider_id.clone(),
@@ -52,9 +55,28 @@ pub(super) fn handle_oauth_login_key(
     mode: ProviderSettingsMode,
 ) -> ProviderSettingsEvent {
     match mode {
-        ProviderSettingsMode::OAuthBrowserWaiting { .. }
-        | ProviderSettingsMode::OAuthDeviceWaiting { .. } => match key.code {
+        ProviderSettingsMode::OAuthBrowserWaiting { .. } => match key.code {
             KeyCode::Esc => cancel_to_list(view),
+            KeyCode::Char('c') => match &view.oauth_browser_url {
+                Some(url) => copy(url.clone()),
+                None => ProviderSettingsEvent::Consumed,
+            },
+            KeyCode::Char('o') => match &view.oauth_browser_url {
+                Some(url) => open(url.clone()),
+                None => ProviderSettingsEvent::Consumed,
+            },
+            _ => ProviderSettingsEvent::Consumed,
+        },
+        // TUI-126: c copies the user code, o opens the verification URL; both
+        // do nothing while the device code is still being requested.
+        ProviderSettingsMode::OAuthDeviceWaiting {
+            user_code,
+            verification_url,
+            ..
+        } => match key.code {
+            KeyCode::Esc => cancel_to_list(view),
+            KeyCode::Char('c') if !user_code.is_empty() => copy(user_code),
+            KeyCode::Char('o') if !verification_url.is_empty() => open(verification_url),
             _ => ProviderSettingsEvent::Consumed,
         },
         ProviderSettingsMode::OAuthHeadlessCodeEntry {
@@ -62,13 +84,17 @@ pub(super) fn handle_oauth_login_key(
             authorize_url,
             pkce_verifier,
             code_input,
+            code_focused,
         } => handle_code_entry_key(
             view,
             key,
-            provider_id,
-            authorize_url,
-            pkce_verifier,
-            code_input,
+            CodeEntry {
+                provider_id,
+                authorize_url,
+                pkce_verifier,
+                code_input,
+                code_focused,
+            },
         ),
         ProviderSettingsMode::OAuthSuccess { .. } => match key.code {
             KeyCode::Enter | KeyCode::Esc => {
@@ -78,9 +104,10 @@ pub(super) fn handle_oauth_login_key(
             }
             _ => ProviderSettingsEvent::Consumed,
         },
-        ProviderSettingsMode::OAuthError { provider_id, .. } => match key.code {
+        ProviderSettingsMode::OAuthError { provider_id, error } => match key.code {
             KeyCode::Enter => retry_last_login(view, provider_id),
             KeyCode::Esc => cancel_to_list(view),
+            KeyCode::Char('c') => copy(error),
             _ => ProviderSettingsEvent::Consumed,
         },
         // Unreachable: only the five OAuth login modes are routed here.
@@ -90,6 +117,7 @@ pub(super) fn handle_oauth_login_key(
 
 pub(super) fn cancel_to_list(view: &mut ProviderSettingsView) -> ProviderSettingsEvent {
     view.cancel_oauth_tasks();
+    view.oauth_browser_url = None;
     view.oauth_generation = view.oauth_generation.wrapping_add(1);
     view.mode = ProviderSettingsMode::List;
     view.status.clear();
@@ -127,62 +155,115 @@ fn retry_last_login(view: &mut ProviderSettingsView, provider_id: String) -> Pro
     start_oauth_login(view, provider_id, method)
 }
 
-/// The code-entry keyboard contract (anthropic headless):
-///   * Esc            → cancel (generation bump, back to list)
-///   * Enter          → submit ONLY when `code_input` is non-empty
-///   * `c` (empty)    → copy the authorize URL to the clipboard
-///   * `o` (empty)    → open the authorize URL in the browser
-///   * any other char → append (so `c`/`o` are literal once input is non-empty)
-///   * Backspace      → delete the last char
-fn handle_code_entry_key(
-    view: &mut ProviderSettingsView,
-    key: KeyEvent,
+fn copy(text: String) -> ProviderSettingsEvent {
+    ProviderSettingsEvent::Emit(Box::new(Action::CopyToClipboard(text)))
+}
+
+fn open(url: String) -> ProviderSettingsEvent {
+    ProviderSettingsEvent::Emit(Box::new(Action::OAuthOpenUrl { url }))
+}
+
+/// The fields of `ProviderSettingsMode::OAuthHeadlessCodeEntry`.
+struct CodeEntry {
     provider_id: String,
     authorize_url: String,
     pkce_verifier: String,
-    mut code_input: String,
+    code_input: String,
+    code_focused: bool,
+}
+
+impl CodeEntry {
+    fn into_mode(self) -> ProviderSettingsMode {
+        ProviderSettingsMode::OAuthHeadlessCodeEntry {
+            provider_id: self.provider_id,
+            authorize_url: self.authorize_url,
+            pkce_verifier: self.pkce_verifier,
+            code_input: self.code_input,
+            code_focused: self.code_focused,
+        }
+    }
+}
+
+/// TUI-126: a code character is printable ASCII (the GitHub Enterprise host
+/// field uses the same gate).
+pub(super) fn is_code_char(ch: char) -> bool {
+    (' '..='~').contains(&ch)
+}
+
+/// The code-entry keyboard contract (anthropic headless):
+///   * Esc              → cancel (generation bump, back to list)
+///   * Enter            → submit ONLY when `code_input` is non-empty
+///   * Tab / Up / Down  → move between the URL and the Code field
+///   * on the URL: `c` copies it and `o` opens it without moving focus;
+///     any other printable character or
+///     Backspace moves to the Code field and edits the code
+///   * in the Code field: every printable character, `c` and `o` included,
+///     is typed into the code; Backspace deletes the last character
+fn handle_code_entry_key(
+    view: &mut ProviderSettingsView,
+    key: KeyEvent,
+    mut entry: CodeEntry,
 ) -> ProviderSettingsEvent {
     let event = match key.code {
         KeyCode::Esc => return cancel_to_list(view),
-        KeyCode::Enter => {
-            if code_input.is_empty() {
-                ProviderSettingsEvent::Consumed
-            } else {
-                ProviderSettingsEvent::Emit(Box::new(Action::OAuthLoginHeadlessSubmit {
-                    provider_id: provider_id.clone(),
-                    code: code_input.clone(),
-                    pkce_verifier: pkce_verifier.clone(),
-                    generation: view.oauth_generation,
-                }))
-            }
-        }
-        KeyCode::Char('c') if code_input.is_empty() => {
-            ProviderSettingsEvent::Emit(Box::new(Action::OAuthCopyUrl {
-                url: authorize_url.clone(),
+        KeyCode::Enter if !entry.code_input.is_empty() => {
+            ProviderSettingsEvent::Emit(Box::new(Action::OAuthLoginHeadlessSubmit {
+                provider_id: entry.provider_id.clone(),
+                code: entry.code_input.clone(),
+                pkce_verifier: entry.pkce_verifier.clone(),
+                generation: view.oauth_generation,
             }))
         }
-        KeyCode::Char('o') if code_input.is_empty() => {
-            ProviderSettingsEvent::Emit(Box::new(Action::OAuthOpenUrl {
-                url: authorize_url.clone(),
-            }))
+        KeyCode::Tab | KeyCode::BackTab => {
+            entry.code_focused = !entry.code_focused;
+            ProviderSettingsEvent::Consumed
         }
-        KeyCode::Char(ch) => {
-            code_input.push(ch);
+        KeyCode::Down | KeyCode::Up => {
+            entry.code_focused = key.code == KeyCode::Down;
+            ProviderSettingsEvent::Consumed
+        }
+        KeyCode::Char('c') if !entry.code_focused => copy(entry.authorize_url.clone()),
+        KeyCode::Char('o') if !entry.code_focused => open(entry.authorize_url.clone()),
+        KeyCode::Char(ch) if is_code_char(ch) => {
+            entry.code_focused = true;
+            entry.code_input.push(ch);
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Backspace => {
-            code_input.pop();
+            entry.code_focused = true;
+            entry.code_input.pop();
             ProviderSettingsEvent::Consumed
         }
         _ => ProviderSettingsEvent::Consumed,
     };
     // Rewrite the mode with the (possibly) updated input — Esc/Enter-submit
     // already returned above, so we always stay in code-entry here.
-    view.mode = ProviderSettingsMode::OAuthHeadlessCodeEntry {
+    view.mode = entry.into_mode();
+    event
+}
+
+/// TUI-126: a paste on the code-entry screen goes into the Code field, with
+/// line breaks and surrounding whitespace removed and only code characters
+/// kept.
+pub(super) fn paste_code(view: &mut ProviderSettingsView, text: &str) -> ProviderSettingsEvent {
+    let ProviderSettingsMode::OAuthHeadlessCodeEntry {
+        provider_id,
+        authorize_url,
+        pkce_verifier,
+        mut code_input,
+        ..
+    } = view.mode.clone()
+    else {
+        return ProviderSettingsEvent::Ignored;
+    };
+    code_input.extend(text.trim().chars().filter(|ch| is_code_char(*ch)));
+    view.mode = CodeEntry {
         provider_id,
         authorize_url,
         pkce_verifier,
         code_input,
-    };
-    event
+        code_focused: true,
+    }
+    .into_mode();
+    ProviderSettingsEvent::Consumed
 }

@@ -49,13 +49,11 @@ Feature: /detach and work-unit binding source-shape invariants
 
   Scenario: components::Action declares the new RPC-050 variants
     Given rust/fspec-tui/src/components/mod.rs after RPC-050 lands
-    Then the file declares "AttachWorkUnitToSession(" as an Action variant
-    And the file declares "WorkUnitAttached(" as an Action variant
-    And the file declares "WorkUnitDetached(" as an Action variant
+    Then the file declares "WorkUnitFocusChanged(" as an Action variant (TUI-132 removed AttachWorkUnitToSession and WorkUnitAttached: nothing emitted them)
+    And (BUG-205) the file declares NO "WorkUnitDetached(" Action variant
 
   Scenario: dispatch_work_unit_binding.rs declares the new RPC-050 helpers
     Given rust/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
-    Then the file declares "handle_attach_work_unit_to_session"
-    And the file declares "handle_work_unit_attached"
-    And the file declares "handle_work_unit_detached"
-    And the file declares "handle_slash_detach"
+    Then the file declares "attach_work_unit_to_session"
+    And (BUG-205) the file declares NO "handle_work_unit_detached"
+    And (BUG-205) the file declares NO "handle_slash_detach"

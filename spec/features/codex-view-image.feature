@@ -1,4 +1,7 @@
+@BUG-582
 @BUG-112
+@tools
+@attachment
 Feature: Codex view_image tool
   """
   Uses the FileToolFacade pattern — CodexViewImageFacade maps Codex-native view_image params

@@ -2,6 +2,7 @@
 @compaction-resume
 @phase-1
 @CMPCT-052
+@BUG-320
 Feature: Production summary handoff preserves its captured durable source
   """
   The compaction-inference-handoff contract applies to the real background
@@ -23,8 +24,9 @@ Feature: Production summary handoff preserves its captured durable source
     Then the second submission is rejected without changing the queued candidate
     And only the first candidate can become the committed generation
 
-  Scenario: Production candidate rejection preserves memory and blocks inference
+  Scenario: Production candidate rejection preserves memory and returns the error for correction
     Given a live session with immutable originals and a selected physical serializer
     When its registered summary tool submits an invalid DAG during streaming
-    Then ordinary inference remains blocked without a committed generation
+    Then the exact validator error returns to the model in the same turn without a committed generation
     And committed messages and counters remain unchanged without completion
+    And ordinary inference is not blocked

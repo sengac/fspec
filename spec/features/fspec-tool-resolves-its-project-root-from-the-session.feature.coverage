@@ -1,0 +1,226 @@
+{
+  "scenarios": [
+    {
+      "name": "A relative root in an isolated session resolves to the worktree",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt016_fspec_tool_project_root.rs",
+          "lines": "95-123",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                54,
+                64,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// WT-016: the root comes from the session, never the daemon's cwd.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The default root in a non-isolated session resolves to the session's project",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt016_fspec_tool_project_root.rs",
+          "lines": "125-146",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                54,
+                64,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// WT-016: the root comes from the session, never the daemon's cwd.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An isolated session cannot point the Fspec tool at the main checkout",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/wt016_fspec_tool_project_root.rs",
+          "lines": "148-185",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                54,
+                64,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ],
+              "firstLine": "// WT-016: the root comes from the session, never the daemon's cwd.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/wt016_fspec_tool_project_root.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/fspec_handler.rs"
+    ],
+    "totalLinesCovered": 245
+  }
+}

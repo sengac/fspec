@@ -5,80 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "150-202",
+          "lines": "160-213",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
-              "lines": [
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
               "lines": [
@@ -209,7 +137,45 @@
                 177,
                 178,
                 179
-              ]
+              ],
+              "firstLine": "menu_row: true,",
+              "lastLine": "session_status,"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/render.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "// BUG-163: the agent window in pane order — agent slot `i` renders the",
+              "lastLine": "}"
             }
           ]
         }
@@ -220,79 +186,43 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "209-230",
+          "lines": "220-242",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/multiplex/render.rs",
               "lines": [
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
                 57,
                 58,
                 59,
                 60,
                 61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
-                107
-              ]
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "// BUG-163: the agent window in pane order — agent slot `i` renders the",
+              "lastLine": "}"
             }
           ]
         }
@@ -303,7 +233,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "238-276",
+          "lines": "250-293",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -435,11 +365,14 @@
                 177,
                 178,
                 179
-              ]
+              ],
+              "firstLine": "menu_row: true,",
+              "lastLine": "session_status,"
             },
             {
               "file": "rust/fspec-tui/src/views/multiplex/window.rs",
               "lines": [
+                47,
                 48,
                 49,
                 50,
@@ -466,9 +399,10 @@
                 71,
                 72,
                 73,
-                74,
-                75
-              ]
+                74
+              ],
+              "firstLine": "pub fn sync_window(&mut self, sessions: &[SessionId]) {",
+              "lastLine": "/// space. BUG-174: the list is floored at one pane — an empty"
             }
           ]
         }
@@ -479,66 +413,45 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "284-326",
+          "lines": "301-344",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235
-              ]
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ],
+              "firstLine": "));",
+              "lastLine": "// MultiLineInput AND the spinner (TS early-return order)."
             },
             {
               "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
-              "lines": [
-                144,
                 145,
                 146,
                 147,
@@ -563,8 +476,15 @@
                 166,
                 167,
                 168,
-                169
-              ]
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "/// RPC-024 contract: focus `idx`; the BUG-549 sync saves the composer",
+              "lastLine": "}"
             }
           ]
         }
@@ -575,7 +495,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "334-374",
+          "lines": "361-402",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/pane_render.rs",
@@ -594,7 +514,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "let role_height = role_banner_height(store, sid.as_ref());",
+              "lastLine": "Layout::default()"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_render.rs",
@@ -646,53 +568,24 @@
                 176,
                 177,
                 178
-              ]
+              ],
+              "firstLine": "pub fn render_ghost_draft(&self, area: Rect, buf: &mut Buffer, draft: &str, placeholder: &str) {",
+              "lastLine": "}"
             },
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs",
-          "lines": "348-387",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/input_area.rs",
-              "lines": [
-                188,
-                189,
-                190,
-                191,
-                192,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
                 193,
                 194,
                 195,
@@ -732,8 +625,19 @@
                 229,
                 230,
                 231,
-                232
-              ]
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "// BUG-377: the focused session's OWN transition state (BUG-194);",
+              "lastLine": "// BUG-194: this pane's session's OWN transition state (ticked"
             }
           ]
         }
@@ -748,14 +652,13 @@
       "rust/fspec-tui/tests/bug163_mux_agent_panes_render_distinct_sessions.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/views/multiplex/render.rs",
       "rust/fspec-tui/src/views/agent/pane_render.rs",
+      "rust/fspec-tui/src/views/multiplex/render.rs",
       "rust/fspec-tui/src/views/multiplex/window.rs",
-      "rust/fspec-tui/src/app/dispatch_mux.rs",
-      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
       "rust/fspec-tui/src/views/agent/input_area.rs",
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
       "rust/fspec-tui/src/views/agent/multiline_input_render.rs"
     ],
-    "totalLinesCovered": 856
+    "totalLinesCovered": 725
   }
 }

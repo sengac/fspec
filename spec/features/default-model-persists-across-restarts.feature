@@ -19,7 +19,7 @@ Feature: Default model selection is not persisted across restarts
   #   2. On SessionManager construction the previously persisted default model is loaded into the in-memory default_model field
   #   3. Empty or whitespace-only model strings are never persisted (PROV-101 invariant preserved)
   #   4. Persistence failures are non-fatal: a failed write is logged but never panics or blocks session creation
-  #   5. A missing or malformed config file loads as None (graceful degradation, unchanged pre-PROV-119 behaviour)
+  #   5. A missing default model file loads as None; BUG-463: an unreadable or malformed one is an error, and SessionManager::new no longer reads disk (restore_persisted_default_model does)
   #
   # EXAMPLES:
   #   1. Set default anthropic/claude-opus-4-8, restart process (fresh SessionManager) -> load_default_model returns anthropic/claude-opus-4-8 -> first create_session succeeds
@@ -35,7 +35,7 @@ Feature: Default model selection is not persisted across restarts
   Scenario: A selected default model survives a process restart
     Given a data directory with no persisted default model
     And a session manager whose default model is set to "anthropic/claude-opus-4-5"
-    When a fresh session manager is constructed against the same data directory
+    When a fresh session manager is constructed against the same data directory and restores the persisted default model
     Then the fresh session manager reports the default model "anthropic/claude-opus-4-5"
     And the first create_session is no longer declined
 
@@ -52,7 +52,7 @@ Feature: Default model selection is not persisted across restarts
     Then no default model file is written to disk
     And the session manager reports no default model
 
-  Scenario: A missing or malformed config file degrades to no default model
-    Given a data directory whose default model file is missing or malformed
+  Scenario: A missing default model file loads as no default model
+    Given a data directory with no default model file
     When the persisted default model is loaded from that data directory
     Then the loaded default model is none

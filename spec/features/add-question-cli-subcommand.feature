@@ -1,8 +1,10 @@
+@BUG-582
 @done
 @RPC-188
 @rust
 @cli
 @mutation
+@example-mapping
 Feature: fspec add-question CLI subcommand (Rust port)
   """
   Clap derive subcommand `add-question` exposes the same surface as the TS Commander.js registration at src/commands/add-question.ts:86-100 — two positional arguments `<workUnitId>` and `<question>`, no flags. The bridge module at rust/fspec/src/add_question.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::add_question::run; no validation or rendering logic is duplicated.

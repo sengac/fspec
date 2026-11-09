@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @PROV-110
+@tui
+@provider-settings
 Feature: Profile create/edit form UI in Provider Settings
   """
   Rust ratatui port of the TS profile form (src/tui/inputHandlers/profileFormModeHandler.ts, providerSettingsHelpers.ts, constants/providerSettings.ts). Adds ProviderSettingsMode::CreateProfile{provider_id} and EditProfile{provider_id,profile_name} carrying a ProfileForm state struct (name + five raw-string fields baseUrl/apiKey/contextWindow/maxOutputTokens/compactionThreshold, a field_index into PROFILE_FORM_FIELDS, and is_editing_name). Mirrors the model_selector CustomModelForm pattern for key routing and parse-on-build. Key handling parity: Esc->List; Down/Up move field_index (Down from name editing exits to field 0; Up from field 0 in create re-enters name editing; Up while editing name is a no-op); Tab ignored (TUI-084); printable ASCII 32..=126 appended; Backspace/Delete pops last char; Enter saves only when baseUrl && apiKey && trimmed name are non-empty, building ProfileDefinition (contextWindow/maxOutputTokens parsed via integer parse with non-numeric omitted, compactionThreshold parsed to type+value) and emitting Action::SaveProfile then returning to List. Form UI + state only; nav routing into the form and the backend write live in PROV-111/PROV-108/PROV-109.

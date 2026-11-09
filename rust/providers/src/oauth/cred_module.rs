@@ -83,6 +83,24 @@ pub fn build_cred_module(provider_name: String) -> RhaiModule {
         );
     }
 
+    // PROV-094: cred::read_tokens(name) -> Map | () — the provider's stored
+    // OAuth tokens (`<fspec_home>/oauth/<name>.json`, written by the device
+    // and refresh flows). `()` when none are stored; read errors propagate.
+    {
+        let bound = provider_name.clone();
+        module.set_native_fn(
+            "read_tokens",
+            move |name: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+                ensure_name_matches(&bound, &name)?;
+                match crate::oauth::custom_oauth::read_stored_tokens(&name) {
+                    Ok(Some(tokens)) => Ok(Dynamic::from_map(tokens)),
+                    Ok(None) => Ok(Dynamic::UNIT),
+                    Err(error) => Err(rt_err(format!("cred::read_tokens failed: {error:#}"))),
+                }
+            },
+        );
+    }
+
     // cred::write(name, map) -> ()
     {
         let bound = provider_name.clone();

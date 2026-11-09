@@ -13,7 +13,9 @@
 use std::fs;
 use std::path::Path;
 
+use codelet_fspec_core::commands::init::available_agents;
 use codelet_fspec_core::{dispatch_command, DispatchRequest};
+use codelet_test_helpers::source_composition::read_tree_or_file;
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -218,6 +220,18 @@ fn rejects_an_unknown_agent_id_with_the_valid_id_listing() {
         msg.contains("Valid agent IDs:"),
         "missing valid-id listing; got: {msg}"
     );
+
+    // @step Then the error message lists each of the 19 agent ids with its description on its own line
+    let agents = available_agents();
+    assert_eq!(agents.len(), 19, "registry agents: {agents:?}");
+    let lines: Vec<&str> = msg.lines().collect();
+    for agent in &agents {
+        let line = format!("  - {}: {}", agent.id, agent.description);
+        assert!(
+            lines.contains(&line.as_str()),
+            "missing line {line:?}; got: {msg}"
+        );
+    }
 }
 
 #[test]
@@ -279,7 +293,7 @@ fn shares_one_implementation_between_the_dispatcher_and_the_cli_bridge() {
 
     // @step When I inspect rust/fspec-core/src/commands/init.rs
     let core_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/init.rs");
-    let core_src = fs::read_to_string(&core_path).expect("init.rs readable");
+    let core_src = read_tree_or_file(&core_path).expect("init.rs module tree readable");
 
     // @step Then init::run scaffolds files via blocking std::fs and contains the inlined agent registry table
     assert!(
@@ -426,5 +440,157 @@ fn generated_docs_match_typescript_byte_for_byte() {
         failures.is_empty(),
         "doc parity failures:\n{}",
         failures.join("\n")
+    );
+}
+
+#[test]
+fn the_claude_slash_command_lists_only_the_sync_version_and_bootstrap_commands() {
+    // Scenario: The claude slash command lists only the sync-version and bootstrap commands
+
+    // @step Given an empty project root directory
+    let tmp = TempDir::new().expect("tempdir");
+
+    // @step When I dispatch init against that project root with agent list ['claude']
+    let result = dispatch_command(req(tmp.path(), &["claude"]));
+    assert!(result.success, "expected success=true; got {result:?}");
+    let slash = read_to_string(tmp.path(), ".claude/commands/fspec.md");
+
+    // @step Then the only lines of .claude/commands/fspec.md that start with 'fspec ' are 'fspec --sync-version <the running version>' and 'fspec bootstrap', in that order
+    let command_lines: Vec<&str> = slash
+        .lines()
+        .filter(|line| line.starts_with("fspec "))
+        .collect();
+    let sync_version = format!("fspec --sync-version {}", env!("CARGO_PKG_VERSION"));
+    assert_eq!(
+        command_lines,
+        vec![sync_version.as_str(), "fspec bootstrap"],
+        "slash command:\n{slash}"
+    );
+
+    // @step Then .claude/commands/fspec.md does NOT contain the substring 'fspec --help' or 'fspec help '
+    assert!(!slash.contains("fspec --help"), "slash command:\n{slash}");
+    assert!(!slash.contains("fspec help "), "slash command:\n{slash}");
+
+    // @step Then .claude/commands/fspec.md does NOT contain the substring 'ACDD' or 'Example Mapping'
+    assert!(!slash.contains("ACDD"), "slash command:\n{slash}");
+    assert!(
+        !slash.contains("Example Mapping"),
+        "slash command:\n{slash}"
+    );
+
+    // @step Then .claude/commands/fspec.md ends with the line 'YOU MUST RUN THOSE COMMANDS AND WAIT FOR THEM TO FINISH BEFORE CONTINUING ANY FURTHER.'
+    assert_eq!(
+        slash.lines().last(),
+        Some("YOU MUST RUN THOSE COMMANDS AND WAIT FOR THEM TO FINISH BEFORE CONTINUING ANY FURTHER."),
+        "slash command:\n{slash}"
+    );
+}
+
+#[test]
+fn installing_another_agent_keeps_earlier_agents_files_and_the_users_own_command_files() {
+    // Scenario: Installing another agent keeps earlier agents' files and the user's own command files
+
+    // @step Given a project root where init installed the claude and cursor agents and .claude/commands/ holds a custom user command file
+    let tmp = TempDir::new().expect("tempdir");
+    let first = dispatch_command(req(tmp.path(), &["claude", "cursor"]));
+    assert!(first.success, "claude+cursor install failed: {first:?}");
+    let custom = ".claude/commands/my-custom-command.md";
+    let custom_body = "# My custom command\nkeep me\n";
+    fs::write(tmp.path().join(custom), custom_body).expect("write custom command");
+    let earlier: Vec<(&str, String)> = [
+        "spec/AGENTS.md",
+        ".claude/commands/fspec.md",
+        "spec/CURSOR.md",
+        ".cursor/commands/fspec.md",
+    ]
+    .into_iter()
+    .map(|rel| (rel, read_to_string(tmp.path(), rel)))
+    .collect();
+
+    // @step When I dispatch init against that project root with agent list ['aider']
+    let result = dispatch_command(req(tmp.path(), &["aider"]));
+    assert!(result.success, "aider install failed: {result:?}");
+
+    // @step Then spec/AGENTS.md and .claude/commands/fspec.md still exist
+    // @step Then spec/CURSOR.md and .cursor/commands/fspec.md still exist
+    for (rel, before) in &earlier {
+        assert_eq!(
+            &read_to_string(tmp.path(), rel),
+            before,
+            "{rel} must survive installing aider unchanged"
+        );
+    }
+
+    // @step Then the custom user command file in .claude/commands/ is unchanged
+    assert_eq!(read_to_string(tmp.path(), custom), custom_body);
+
+    // @step Then spec/AIDER.md and .aider/fspec.md exist in the project root
+    assert!(tmp.path().join("spec/AIDER.md").is_file());
+    assert!(tmp.path().join(".aider/fspec.md").is_file());
+}
+
+#[test]
+fn an_existing_doc_file_is_overwritten_without_a_prompt_or_a_backup() {
+    // Scenario: An existing doc file is overwritten without a prompt or a backup
+
+    // @step Given a project root whose spec/AGENTS.md holds outdated content
+    let tmp = TempDir::new().expect("tempdir");
+    fs::create_dir_all(tmp.path().join("spec")).expect("mkdir spec");
+    fs::write(tmp.path().join("spec/AGENTS.md"), "outdated guidelines\n").expect("write doc");
+
+    // @step When I dispatch init against that project root with agent list ['claude']
+    let result = dispatch_command(req(tmp.path(), &["claude"]));
+
+    // @step Then the dispatcher returns success=true and cancelled=false
+    assert!(result.success, "expected success=true; got {result:?}");
+    let data: Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
+    assert_eq!(data["cancelled"].as_bool(), Some(false));
+
+    // @step Then spec/AGENTS.md is byte-identical to the doc init writes into an empty project root
+    let fresh = TempDir::new().expect("fresh tempdir");
+    let fresh_result = dispatch_command(req(fresh.path(), &["claude"]));
+    assert!(
+        fresh_result.success,
+        "fresh install failed: {fresh_result:?}"
+    );
+    assert_eq!(
+        read_to_string(tmp.path(), "spec/AGENTS.md"),
+        read_to_string(fresh.path(), "spec/AGENTS.md"),
+        "the outdated doc must be replaced by the current template"
+    );
+
+    // @step Then spec/ holds no file other than AGENTS.md and fspec-config.json
+    let mut names: Vec<String> = fs::read_dir(tmp.path().join("spec"))
+        .expect("read spec dir")
+        .map(|entry| {
+            entry
+                .expect("spec dir entry")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .collect();
+    names.sort();
+    assert_eq!(names, vec!["AGENTS.md", "fspec-config.json"]);
+}
+
+#[test]
+fn projects_without_tool_configuration_get_byte_identical_agent_docs() {
+    // Scenario: Projects without tool configuration get byte-identical agent docs
+
+    // @step Given two empty project root directories
+    let project_a = TempDir::new().expect("tempdir a");
+    let project_b = TempDir::new().expect("tempdir b");
+
+    // @step When I dispatch init against each project root with agent list ['claude']
+    for project in [&project_a, &project_b] {
+        let result = dispatch_command(req(project.path(), &["claude"]));
+        assert!(result.success, "expected success=true; got {result:?}");
+    }
+
+    // @step Then spec/AGENTS.md is byte-identical in both project roots
+    assert_eq!(
+        fs::read(project_a.path().join("spec/AGENTS.md")).expect("read a"),
+        fs::read(project_b.path().join("spec/AGENTS.md")).expect("read b"),
     );
 }

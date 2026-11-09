@@ -12,16 +12,15 @@
 //! 4. List sessions again — the session should STILL exist
 //! 5. Verify the session manifest is intact on disk
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::await_holding_lock
-)]
+#![allow(clippy::await_holding_lock)]
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
+use parking_lot::Mutex;
 use std::fs;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use codelet_common::get_data_dir;
 use codelet_core::work_units::WorkUnitsWatcher;
@@ -33,47 +32,56 @@ use tempfile::TempDir;
 
 static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());
 
-fn setup_temp_data_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = DATA_DIR_MUTEX.lock().expect("DATA_DIR_MUTEX");
-    let temp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
+fn setup_temp_data_dir(
+) -> Result<(parking_lot::MutexGuard<'static, ()>, TempDir), codelet_test_helpers::TestError> {
+    let guard = DATA_DIR_MUTEX.lock();
+    // BUG-448: never the developer's ~/.fspec (saved profiles, last model).
+    codelet_test_helpers::isolated_user_directory().or_fail("isolated user directory")?;
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
+    codelet_common::set_data_directory(temp.path().to_path_buf()).or_fail("set_data_directory")?;
     codelet_core::persistence::reset_stores_for_tests();
     // Hermetic: seed fake provider keys so `create_session` (which uses
-    // the `openai:spark/qwen3.6` default model) works without relying on
+    // the `anthropic/claude-opus-4-5` default model; BUG-448: never a
+    // developer profile such as openai:spark) works without relying on
     // ambient ANTHROPIC_API_KEY / OPENAI_API_KEY in the developer's shell.
     std::env::set_var("ANTHROPIC_API_KEY", "resume-bug-fake-ant-key");
     std::env::set_var("OPENAI_API_KEY", "resume-bug-fake-openai-key");
-    (guard, temp)
+    Ok((guard, temp))
 }
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
 /// Build a SharedFspecService with a real SessionManager attached.
 fn service_with_session_manager(
     repo_path: &Path,
-) -> (Arc<SharedFspecService>, Arc<SessionManager>) {
-    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).expect("watcher"));
-    let manager = Arc::new(SessionManager::new());
+) -> Result<(Arc<SharedFspecService>, Arc<SessionManager>), codelet_test_helpers::TestError> {
+    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).or_fail("watcher")?);
+    let manager = SessionManager::new();
+    // BUG-437: sessions are created in the manager's start workspace.
+    manager
+        .set_default_project(repo_path.to_path_buf())
+        .or_fail("set the start workspace")?;
     let service = Arc::new(SharedFspecService::with_session_manager(
         watcher,
         Arc::clone(&manager) as Arc<dyn SessionManagerHandle>,
     ));
-    (service, manager)
+    Ok((service, manager))
 }
 
 /// Helper: drain all pending tasks and fold queued actions back into the App.
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     loop {
         let mut drained = false;
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
             drained = true;
         }
         while let Some(action) = app.try_recv_action() {
@@ -84,6 +92,7 @@ async fn drain_pending(app: &mut App) {
             break;
         }
     }
+    Ok(())
 }
 
 /// Scenario: Full /resume flow through App::dispatch with real backend.
@@ -91,12 +100,12 @@ async fn drain_pending(app: &mut App) {
 /// This replicates the exact bug: user does /resume on a session and it
 /// disappears from the session history.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_session_through_app_dispatch_preserves_session() {
+async fn resume_session_through_app_dispatch_preserves_session() -> TestResult {
     // @step Given a fresh data directory with a workspace and real service + session manager
-    let (_guard, temp) = setup_temp_data_dir();
+    let (_guard, temp) = setup_temp_data_dir()?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let (service, manager) = service_with_session_manager(&cwd);
+    workspace_with_seed(&cwd)?;
+    let (service, manager) = service_with_session_manager(&cwd)?;
 
     // @step When I create a session via the real backend (which goes through SessionManager)
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
@@ -105,10 +114,16 @@ async fn resume_session_through_app_dispatch_preserves_session() {
     ));
 
     // Set default model so create_session works
-    manager.set_default_model("openai:spark/qwen3.6");
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
 
     // Create session via the backend (goes through SessionManager::create_session)
-    let session_id = backend.create_session(None).await.expect("create_session");
+    let session_id = backend
+        .create_session(None)
+        .await
+        .or_fail("create_session")?;
 
     tracing::info!(
         session_id = %session_id.value,
@@ -119,7 +134,7 @@ async fn resume_session_through_app_dispatch_preserves_session() {
     let sessions_before = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions before");
+        .or_fail("list_sessions before")?;
     let found_before = sessions_before.iter().any(|s| s.id == session_id.value);
     assert!(
         found_before,
@@ -132,24 +147,27 @@ async fn resume_session_through_app_dispatch_preserves_session() {
         "E2E TEST: list_sessions before resume"
     );
 
-    // @step When I build an App and dispatch OpenResumeView
+    // @step When I build an App and run /resume
     let mut app = App::new(backend.clone());
-    app.dispatch(Action::OpenResumeView);
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
 
     // @step And I drain pending tasks (list_sessions RPC round-trip)
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step And I dispatch AttachToSession with the session ID
     app.dispatch(Action::AttachToSession(session_id.clone()));
 
     // @step And I drain all pending tasks (resume_session round-trip)
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then list_sessions should STILL include the session
     let sessions_after = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions after");
+        .or_fail("list_sessions after")?;
     let found_after = sessions_after.iter().any(|s| s.id == session_id.value);
 
     tracing::info!(
@@ -171,9 +189,9 @@ async fn resume_session_through_app_dispatch_preserves_session() {
     );
 
     // @step And the session manifest should still exist on disk
-    let sessions_dir = get_data_dir().expect("data_dir").join("sessions");
+    let sessions_dir = get_data_dir().or_fail("data_dir")?.join("sessions");
     let manifest_files = fs::read_dir(&sessions_dir)
-        .expect("read sessions dir")
+        .or_fail("read sessions dir")?
         .count();
     tracing::info!(
         manifest_files,
@@ -183,34 +201,38 @@ async fn resume_session_through_app_dispatch_preserves_session() {
         manifest_files > 0,
         "BUG: Session manifest files were deleted after /resume!"
     );
+    Ok(())
 }
 
 /// Scenario: Multiple /resume cycles — open resume, select, open resume again.
 ///
 /// This tests whether repeated /resume calls cause sessions to disappear.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn multiple_resume_cycles_preserve_sessions() {
+async fn multiple_resume_cycles_preserve_sessions() -> TestResult {
     // @step Given a fresh data directory with two sessions
-    let (_guard, temp) = setup_temp_data_dir();
+    let (_guard, temp) = setup_temp_data_dir()?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let (service, manager) = service_with_session_manager(&cwd);
+    workspace_with_seed(&cwd)?;
+    let (service, manager) = service_with_session_manager(&cwd)?;
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
 
-    manager.set_default_model("openai:spark/qwen3.6");
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
 
     // Create two sessions via the backend
     let id1 = backend
         .create_session(None)
         .await
-        .expect("create session 1");
+        .or_fail("create session 1")?;
     let id2 = backend
         .create_session(None)
         .await
-        .expect("create session 2");
+        .or_fail("create session 2")?;
 
     tracing::info!(
         session1 = %id1.value,
@@ -221,28 +243,37 @@ async fn multiple_resume_cycles_preserve_sessions() {
     let mut app = App::new(backend.clone());
 
     // First /resume cycle: select session 1
-    app.dispatch(Action::OpenResumeView);
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(id1.clone()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // Second /resume cycle: select session 2
-    app.dispatch(Action::OpenResumeView);
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(id2.clone()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // Third /resume cycle: select session 1 again
-    app.dispatch(Action::OpenResumeView);
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(id1.clone()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then both sessions should still exist
     let sessions = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions");
+        .or_fail("list_sessions")?;
     let ids: Vec<&str> = sessions.iter().map(|s| s.id.as_str()).collect();
 
     tracing::info!(
@@ -266,39 +297,49 @@ async fn multiple_resume_cycles_preserve_sessions() {
          Sessions: {:?}",
         id2.value, ids
     );
+    Ok(())
 }
 
 /// Scenario: Resume a session, then destroy it via the backend, then verify
 /// destroy_session only removes from memory (manifest persists).
 /// persistence_delete_session is required to remove the manifest.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_then_explicit_destroy_removes_session() {
+async fn resume_then_explicit_destroy_removes_session() -> TestResult {
     // @step Given a fresh data directory with one session
-    let (_guard, temp) = setup_temp_data_dir();
+    let (_guard, temp) = setup_temp_data_dir()?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let (service, manager) = service_with_session_manager(&cwd);
+    workspace_with_seed(&cwd)?;
+    let (service, manager) = service_with_session_manager(&cwd)?;
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
 
-    manager.set_default_model("openai:spark/qwen3.6");
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
 
-    let session_id = backend.create_session(None).await.expect("create session");
+    let session_id = backend
+        .create_session(None)
+        .await
+        .or_fail("create session")?;
 
     // @step When I resume the session
     let mut app = App::new(backend.clone());
-    app.dispatch(Action::OpenResumeView);
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(session_id.clone()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the session should exist
     let sessions_after_resume = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions after resume");
+        .or_fail("list_sessions after resume")?;
     assert!(
         sessions_after_resume
             .iter()
@@ -316,7 +357,7 @@ async fn resume_then_explicit_destroy_removes_session() {
     let sessions_after_destroy = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions after destroy");
+        .or_fail("list_sessions after destroy")?;
     let found_after_destroy = sessions_after_destroy
         .iter()
         .any(|s| s.id == session_id.value);
@@ -344,7 +385,7 @@ async fn resume_then_explicit_destroy_removes_session() {
     let sessions_after_delete = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions after delete");
+        .or_fail("list_sessions after delete")?;
     let found_after_delete = sessions_after_delete
         .iter()
         .any(|s| s.id == session_id.value);
@@ -359,6 +400,7 @@ async fn resume_then_explicit_destroy_removes_session() {
         !found_after_delete,
         "Session should be gone after persistence_delete_session removes the manifest"
     );
+    Ok(())
 }
 
 /// Scenario: Resume a session that was created on disk (not in memory).
@@ -366,21 +408,27 @@ async fn resume_then_explicit_destroy_removes_session() {
 /// This tests the create_session_from_manifest path — the session exists
 /// on disk but the SessionManager doesn't have it in memory.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn resume_session_from_disk_preserves_session() {
+async fn resume_session_from_disk_preserves_session() -> TestResult {
     // @step Given a fresh data directory with a session on disk
-    let (_guard, temp) = setup_temp_data_dir();
+    let (_guard, temp) = setup_temp_data_dir()?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let (service, manager) = service_with_session_manager(&cwd);
+    workspace_with_seed(&cwd)?;
+    let (service, manager) = service_with_session_manager(&cwd)?;
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
 
-    manager.set_default_model("openai:spark/qwen3.6");
+    assert_eq!(
+        manager.set_default_model("anthropic/claude-opus-4-5"),
+        Ok(())
+    );
 
     // Create a session via the backend (this puts it in memory AND on disk)
-    let session_id = backend.create_session(None).await.expect("create session");
+    let session_id = backend
+        .create_session(None)
+        .await
+        .or_fail("create session")?;
 
     tracing::info!(
         session_id = %session_id.value,
@@ -388,9 +436,9 @@ async fn resume_session_from_disk_preserves_session() {
     );
 
     // Verify the manifest exists on disk
-    let sessions_dir = get_data_dir().expect("data_dir").join("sessions");
+    let sessions_dir = get_data_dir().or_fail("data_dir")?.join("sessions");
     let manifest_files_before = fs::read_dir(&sessions_dir)
-        .expect("read sessions dir")
+        .or_fail("read sessions dir")?
         .count();
     assert!(
         manifest_files_before > 0,
@@ -399,16 +447,19 @@ async fn resume_session_from_disk_preserves_session() {
 
     // @step When I resume the session
     let mut app = App::new(backend.clone());
-    app.dispatch(Action::OpenResumeView);
-    drain_pending(&mut app).await;
+    app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
+        codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction::Resume,
+    ));
+    drain_pending(&mut app).await?;
     app.dispatch(Action::AttachToSession(session_id.clone()));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the session should still exist in list_sessions
     let sessions_after = backend
         .list_sessions(String::new())
         .await
-        .expect("list_sessions after");
+        .or_fail("list_sessions after")?;
     let found = sessions_after.iter().any(|s| s.id == session_id.value);
 
     tracing::info!(
@@ -430,10 +481,11 @@ async fn resume_session_from_disk_preserves_session() {
 
     // @step And the manifest should still exist on disk
     let manifest_files_after = fs::read_dir(&sessions_dir)
-        .expect("read sessions dir")
+        .or_fail("read sessions dir")?
         .count();
     assert!(
         manifest_files_after > 0,
         "BUG: Session manifest was deleted from disk after resume!"
     );
+    Ok(())
 }

@@ -1,8 +1,10 @@
+@BUG-582
 @agent-core
 @phase-1
 @context-management
 @compaction
 @CMPCT-054
+@BUG-310
 Feature: Terminal compaction dependency lifetime
   """
   A turn owns its compaction builder registration until terminal decisions finish.

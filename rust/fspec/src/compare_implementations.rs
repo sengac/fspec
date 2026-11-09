@@ -16,7 +16,7 @@
 //!   - otherwise → green `✓ Compared N work units tagged with <tag>`, exit 0.
 //!   - any core error → `✗ Comparison failed: <message>` to stderr, exit 1.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -38,7 +38,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `compare-implementations` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let mut obj: Map<String, Value> = Map::new();
     obj.insert("tag".to_string(), Value::String(args.tag.clone()));

@@ -1,3 +1,4 @@
+@BUG-582
 @CMPCT-046
 @CMPCT-047
 @CMPCT-048
@@ -6,6 +7,7 @@
 @tools
 @context-management
 @CMPCT-045
+@BUG-311
 Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compaction DAG for a session and pins it
   """
   New/changed code inventory: (1) rust/tools/src/generate_compaction/mod.rs — GenerateCompactionTool + GenerateCompactionArgs{session_id: Option<String>} + GenerateCompactionHandler registry (set/has/clear, mirroring deep_search/mod.rs), re-exported from tools lib.rs; (2) rust/agent-loop/src/generate_compaction_handler.rs — execute_generate_compaction spawner (clone of deep_search_handler.rs, compaction prompt instead of DeepSearch system prompt, 7 read-only tools, AMGR-016 wall-clock timeout, BUG-102 provider inheritance) + register_generate_compaction_handler in bridges.rs (captures facade_override/current_provider, model, context_window, max_output, project path, owning SessionManager); (3) call sites in agent-loop/src/agent_loop.rs: registration beside line ~740 (session creation) + cleanup beside set_deep_search_handler(session.id, None) at ~1507; (4) provider tool chains: .tool(GenerateCompactionTool::new(session_id)) beside DeepSearchTool in claude/openai/gemini/codex/zai/copilot/custom create_rig_agent(); (5) rust/cli/src/compaction_dag.rs: build_generate_compaction_prompt(target_uuid, existing_dag: Option<(String, usize)>); (6) pin primitive callable with a DAG string on the agent-loop side (reuse force_inject_fallback_dag shape: reset_session_to_reminders + push wrap_dag_content(dag) + recalculate_token_tracker + reset_after_compaction).
@@ -99,7 +101,7 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
     Given the calling session has a registered GenerateCompaction handler
     And the target UUID does not correspond to a live in-memory session
     When the agent calls GenerateCompaction with that target UUID
-    Then the tool returns a ToolError::Execution stating the target session is not a live session
+    Then the tool returns a ToolError::Execution stating the target session was not found
     And no sub-agent is spawned and no pinning occurs
 
   @agent-core
@@ -151,13 +153,13 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   @context-management
   @session
   @integration
-  Scenario: Calling-session target is pinned by the existing end-of-turn path
+  Scenario: Calling-session target is queued for durable reconciliation
     Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
     And the sub-agent returns a parseable DAG
     When the tool call completes within session A's turn
-    Then the tool result is the DAG text
-    And the DAG is stashed in session A's pending_dag_content rather than pinned in place
-    And the end-of-turn apply_pending_dag path performs the pin, emits CompactionComplete, and clears the flag
+    Then the tool result reports the DAG text as a queued candidate
+    And the candidate awaits durable reconciliation rather than being pinned in place
+    And the compaction flag is cleared once the candidate is queued
     And the handler does not lock session A's inner while the tool call is in flight
 
   @context-management
@@ -170,7 +172,7 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
     When the handler captures the existing DAG and the pre-compaction token basis
     Then the capture does not await session A's inner lock
     And the capture degrades to the lock-free cached token basis, a FRESH rebuild, and the completed-turn count
-    And the sub-agent still runs and the DAG is stashed for the end-of-turn pin
+    And the sub-agent still runs and the DAG is queued as a candidate
 
   @context-management
   @session
@@ -187,33 +189,10 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   @context-management
   @session
   @regression
-  Scenario: Sub-agent timeout pins a free fallback DAG
-  # ============================================================================
-  # Fallback: convergence guarantee when the sub-agent fails
-  # ============================================================================
-    Given a live target session
-    And the compactor sub-agent exceeds the 600s wall-clock timeout without returning a DAG
-    When the handler side completes compaction
-    Then a fallback DAG is pinned to the target session without any further LLM call
-    And the fallback DAG is a generic auto-recovered node covering the session's turns
-    And the tool result is the fallback DAG text with a structured note that it is a free force-inject fallback and the reason
-
   @context-management
   @session
-  Scenario: Unparseable sub-agent output pins a fallback DAG
-    Given the compactor sub-agent returns final text containing no parseable dag-node blocks
-    When the handler side completes compaction
-    Then a fallback DAG is pinned to the target session
-    And the tool result is the fallback DAG text with a structured fallback note
-
   @context-management
   @session
-  Scenario: Partial dag-node blocks from a failed sub-agent are recovered
-    Given the compactor sub-agent times out after emitting some complete dag-node blocks but no final DAG
-    When the handler side completes compaction
-    Then the fallback DAG is assembled from the partial dag-node blocks
-    And the target's in-memory context is reduced to reminders plus the recovered DAG
-
   @context-management
   @integration
   Scenario: compaction_in_progress gates sub-agent reads and is cleared after the pin
@@ -232,7 +211,7 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
     Given GenerateCompaction is invoked for a live target session
     When the sub-agent run and pin complete
     Then the target emitted a Compacting state change and a compaction progress update before the sub-agent was spawned
-    And the target emitted a Running state change followed by CompactionComplete after the pin
+    And the target emitted CompactionComplete after the pin and then returned to its previous state
     And the CompactionComplete event reflects the recalculated post-pin token basis, not just the DAG summary size
 
   @context-management
@@ -244,57 +223,6 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
     When GenerateCompaction completes and pins a DAG to the target
     Then the pre-compaction token basis is a content estimate greater than 0
     And the CompactionComplete event's original_tokens is never 0
-
-  @context-management
-  @session
-  @regression
-  Scenario: Stash-lock failure restores the calling session's status
-    Given the agent calls GenerateCompaction with no arguments on its own session A mid-turn
-    And the sub-agent returns a parseable DAG
-    When stashing the DAG into session A's pending_dag_content fails to acquire the lock
-    Then session A's status is restored to Running instead of staying Compacting
-    And the failure is logged at ERROR level naming the target session
-    And the compaction_in_progress flag is cleared
-
-  @context-management
-  @session
-  @regression
-  Scenario: The 045 fallback builder delegates to the shared compaction_dag primitive
-    Given the compactor sub-agent times out without emitting any dag-node block
-    When the handler assembles the fallback DAG
-    Then it is built by codelet_cli::compaction_dag::build_recovered_or_generic_dag with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to a compaction-sub-agent timeout."
-    And the 045 handler does not format its own generic dag-node template inline
-
-  @agent-core
-  @providers
-  @source-shape
-  Scenario: Compactor sub-agent provider arms match the DeepSearch clone
-    Given the compactor sub-agent's built-in provider match exists
-    When it is compared with the DeepSearch sub-agent's provider match
-    Then it supports the same arms: claude, openai, gemini, codex, zai, and github-copilot/copilot
-    And the copilot arm returns the same distinct pending-builder error shape as DeepSearch instead of falling through to "Unsupported provider"
-
-  @tools
-  @providers
-  @integration
-  Scenario: GenerateCompaction tool wired into provider agent builders
-  # ============================================================================
-  # Tool surface and registration lifecycle
-  # ============================================================================
-    Given all provider implementations exist (Claude, OpenAI, Gemini, Codex, ZAI, GitHub Copilot, custom provider)
-    When each provider's create_rig_agent() method builds an agent
-    Then GenerateCompactionTool::new(session_id) is included in the tool chain beside DeepSearchTool
-    And the parent agent can invoke GenerateCompaction like any other tool
-
-  @agent-core
-  @context-management
-  @integration
-  Scenario: Handler registration lifecycle mirrors the DeepSearch pattern
-    Given a background session is created in the agent loop
-    When the session's handlers are registered
-    Then a GenerateCompaction handler is registered for the session id capturing the provider, model, project path, and owning SessionManager
-    And the handler is re-registered after model or provider changes
-    And the handler is removed for the session id during end-of-turn cleanup
 
   @tools
   @session
@@ -312,7 +240,7 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   @context-management
   @regression
   Scenario: Compaction prompt is INCREMENTAL when the target already has a DAG
-    Given a target session whose context already contains a compaction DAG ending at turn N
+    Given a target session restored from a committed compaction DAG ending at turn N
     When the compactor sub-agent's task prompt is built
     Then the INCREMENTAL compaction instruction is used with the existing DAG embedded
     And the task prompt tells the sub-agent to preserve D2 nodes, promote D0 to D1, and only survey turns from N+1 onward
@@ -321,11 +249,11 @@ Feature: GenerateCompaction tool — DeepSearch-clone tool that builds a compact
   @context-management
   @session
   @integration
-  Scenario: Tool result is the pinned DAG text
+  Scenario: Tool result is the queued DAG candidate
   # ============================================================================
   # Pin: handler-side clear-and-pin of the target session
   # ============================================================================
     Given the compactor sub-agent returns a parseable DAG
     When GenerateCompaction completes successfully
-    Then the tool result string is the DAG text itself so the caller sees exactly what was pinned
-    And the tool returns Ok for both success and fallback outcomes, reserving Err for validation failures, missing handler, and unknown-target rejections
+    Then the tool result reports status queued with the DAG text as its content
+    And the tool returns Ok only for a queued candidate, reserving Err for validation failures, missing handler, builder failures, and unknown-target rejections

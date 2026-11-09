@@ -15,7 +15,6 @@
 
 mod common;
 
-use std::fs;
 use std::io::BufRead;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
@@ -34,7 +33,8 @@ async fn scenario_daemon_emits_the_port_on_stdout_rpc_005_contract_verbatim() {
 
     // @step When the developer spawns `fspec daemon --workspace <temp-workspace>` as a subprocess
     // @step And reads exactly one line from the child's STDOUT
-    let (_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step Then that line parses as a bare integer in the range 1024..=65535
     assert!(
@@ -71,7 +71,8 @@ async fn scenario_daemon_emits_the_port_on_stdout_rpc_005_contract_verbatim() {
 fn scenario_daemon_does_not_call_ratatui_init() {
     // @step Given the file `rust/fspec/src/daemon.rs` exists
     let daemon_rs = fspec_crate_root().join("src").join("daemon.rs");
-    let body = std::fs::read_to_string(&daemon_rs).expect("read rust/fspec/src/daemon.rs");
+    let body = codelet_test_helpers::source_composition::read_tree_or_file(&daemon_rs)
+        .expect("read rust/fspec/src/daemon.rs");
     let stripped = strip_comments(&body);
 
     // @step Then it contains no occurrence of `ratatui::init`
@@ -102,7 +103,8 @@ fn scenario_daemon_does_not_call_ratatui_init() {
 fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
     // @step Given the file `rust/fspec/src/daemon.rs` exists
     let daemon_rs = fspec_crate_root().join("src").join("daemon.rs");
-    let body = std::fs::read_to_string(&daemon_rs).expect("read rust/fspec/src/daemon.rs");
+    let body = codelet_test_helpers::source_composition::read_tree_or_file(&daemon_rs)
+        .expect("read rust/fspec/src/daemon.rs");
 
     // @step Then it calls `common::init_tracing_daemon()` exactly once
     let calls = body.matches("init_tracing_daemon(").count();
@@ -113,8 +115,8 @@ fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
 
     // @step And the `init_tracing_daemon()` body in `common.rs` registers a `tracing_subscriber::fmt` layer that writes to `std::io::stderr`
     let common_rs = fspec_crate_root().join("src").join("common.rs");
-    let common_body =
-        std::fs::read_to_string(&common_rs).expect("read rust/fspec/src/common.rs");
+    let common_body = codelet_test_helpers::source_composition::read_tree_or_file(&common_rs)
+        .expect("read rust/fspec/src/common.rs");
     assert!(
         common_body.contains("init_tracing_daemon"),
         "common.rs must define init_tracing_daemon"
@@ -143,7 +145,8 @@ async fn scenario_bind_defaults_to_loopback_zero_when_omitted() {
 
     // @step When the developer spawns `fspec daemon` with no `--bind` flag
     // @step And reads the port line from STDOUT
-    let (_guard, port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (_guard, port) = spawn_fspec_daemon(ws.path(), &daemon_home);
 
     // @step And the test connects to `ws://127.0.0.1:<that-port>` from the test process
     let url = Url::parse(&format!("ws://127.0.0.1:{port}")).unwrap();
@@ -168,7 +171,9 @@ async fn scenario_bind_127_0_0_1_8080_succeeds_custom_loopback_port() {
     let (ws, _path) = make_workspace(&[("Y-1", "custom-port", "backlog")]);
 
     // @step When the developer spawns `fspec daemon --bind 127.0.0.1:8080`
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg("127.0.0.1:8080")
@@ -208,7 +213,9 @@ async fn scenario_bind_ipv6_loopback_zero_succeeds() {
     let (ws, _path) = make_workspace(&[("Z-1", "ipv6-bind", "backlog")]);
 
     // @step When the developer spawns `fspec daemon --bind '[::1]:0'`
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg("[::1]:0")
@@ -243,7 +250,8 @@ async fn scenario_bind_ipv6_loopback_zero_succeeds() {
 async fn scenario_daemon_handles_sigterm_cleanly_extension_over_rpc_005() {
     // @step Given the developer has spawned `fspec daemon --workspace <temp-workspace>` as a subprocess
     let (ws, _path) = make_workspace(&[("AUTH-1", "sigterm-extension", "backlog")]);
-    let (mut guard, _port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (mut guard, _port) = spawn_fspec_daemon(ws.path(), &daemon_home);
     let pid = guard.0.id();
 
     // @step And the daemon is listening on the captured ephemeral port
@@ -293,7 +301,8 @@ async fn scenario_daemon_handles_sigterm_cleanly_extension_over_rpc_005() {
 async fn scenario_daemon_handles_ctrl_c_sigint_cleanly() {
     // @step Given the developer has spawned `fspec daemon` as a subprocess
     let (ws, _path) = make_workspace(&[("AUTH-2", "sigint", "backlog")]);
-    let (mut guard, _port) = spawn_fspec_daemon(ws.path());
+    let daemon_home = common::TestHome::new();
+    let (mut guard, _port) = spawn_fspec_daemon(ws.path(), &daemon_home);
     let pid = guard.0.id();
 
     // @step When the test sends SIGINT to the child
@@ -340,7 +349,9 @@ async fn scenario_pidfile_path_writes_pid_and_port_on_bootstrap() {
 
     // @step When the developer spawns `fspec daemon --pidfile <P>` as a subprocess
     let (ws, _path) = make_workspace(&[("PID-1", "pidfile-write", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let mut child = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--pidfile")
         .arg(&pidfile_path)
@@ -382,7 +393,8 @@ async fn scenario_pidfile_path_writes_pid_and_port_on_bootstrap() {
 
     // @step And the file's content is parseable so that the pid token equals the child's process pid
     // @step And the file's content is parseable so that the port token equals the listening port
-    let content = fs::read_to_string(&pidfile_path).expect("read pidfile");
+    let content = codelet_test_helpers::source_composition::read_tree_or_file(&pidfile_path)
+        .expect("read pidfile");
     let pid_token = extract_kv(&content, "pid").expect("pidfile must carry a `pid=` token");
     let port_token = extract_kv(&content, "port").expect("pidfile must carry a `port=` token");
     let pid_parsed: u32 = pid_token
@@ -443,7 +455,7 @@ async fn scenario_daemon_writes_daemon_json_so_fspec_client_can_autodiscover_it(
 
     // @step When the developer spawns `fspec daemon` as a subprocess
     let (ws, _path) = make_workspace(&[("DJ-2", "daemon-mode-djson", "backlog")]);
-    let mut child = Command::new(fspec_bin())
+    let mut child = common::IsolatedCommand::new(fspec_bin())
         .arg("daemon")
         .arg("--workspace")
         .arg(ws.path())
@@ -478,7 +490,8 @@ async fn scenario_daemon_writes_daemon_json_so_fspec_client_can_autodiscover_it(
     );
 
     // @step And the JSON contains `port`, `pid`, `workspace`, and `version` keys
-    let content = fs::read_to_string(&daemon_json).expect("read daemon.json");
+    let content = codelet_test_helpers::source_composition::read_tree_or_file(&daemon_json)
+        .expect("read daemon.json");
     let json: serde_json::Value =
         serde_json::from_str(&content).expect("daemon.json must be valid JSON");
     for key in ["port", "pid", "workspace", "version"] {
@@ -526,7 +539,9 @@ async fn scenario_daemon_writes_daemon_json_so_fspec_client_can_autodiscover_it(
 #[test]
 fn scenario_pidfile_is_daemon_only_combined_mode_does_not_accept_it() {
     // @step When the developer spawns `fspec --pidfile /tmp/test.pid` (combined mode)
-    let output = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let output = common::IsolatedCommand::fspec(&daemon_home)
         .arg("--pidfile")
         .arg("/tmp/test.pid")
         .output()
@@ -556,7 +571,9 @@ fn scenario_pidfile_is_daemon_only_combined_mode_does_not_accept_it() {
 #[test]
 fn scenario_bind_0_0_0_0_8080_is_rejected_at_clap_arg_validation() {
     // @step When the developer spawns `fspec daemon --bind 0.0.0.0:8080`
-    let output = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let output = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg("0.0.0.0:8080")
@@ -593,7 +610,9 @@ fn scenario_bind_0_0_0_0_8080_is_rejected_at_clap_arg_validation() {
 #[test]
 fn scenario_bind_with_any_non_loopback_host_is_rejected() {
     // @step When the developer spawns `fspec daemon --bind 192.168.1.5:0`
-    let output = Command::new(fspec_bin())
+    // BUG-627: the daemon gets its own HOME and XDG_RUNTIME_DIR.
+    let daemon_home = common::TestHome::new();
+    let output = common::IsolatedCommand::fspec(&daemon_home)
         .arg("daemon")
         .arg("--bind")
         .arg("192.168.1.5:0")

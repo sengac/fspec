@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @tui-component
 @scrollback
@@ -75,7 +76,7 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
     Given an AgentView with a fresh SessionContext for session s-1
     And the chunks subscriber has forwarded StreamChunk::Text deltas concatenating to "| col1 | col2 |\n|---|---|\n| a | bb |" for s-1
     When the chunks subscriber forwards StreamChunk::Done for s-1
-    Then the final in-flight chunk's source.text equals a pipe-aligned table where every row uses equal column widths
+    Then the final in-flight chunk's source.text equals a Unicode box-drawing table whose border rows share one display width
     And the chunk's is_streaming flag is false
 
   Scenario: ToolCall flushes the in-flight assistant text and pushes a tool-call card
@@ -135,15 +136,15 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
     And the s-1 scrollback ends with a chunk whose source.text equals "API Error: rate limit exceeded"
     And the SessionContext in_flight_assistant slot is None
 
-  Scenario: extractToolArgsDisplay collapses Bash command to a one-line summary
+  Scenario: extractToolArgsDisplay shows the Bash command followed by its remaining params
     Given a ToolCall with name "Bash" and input JSON "{\"command\":\"ls -la\",\"timeout\":5000}"
     When the renderer formats the tool-call header
-    Then the header text equals "● Bash(ls -la)"
+    Then the args display equals "ls -la, { timeout: 5000 }"
 
-  Scenario: extractToolArgsDisplay collapses Fspec command to the command subcommand
+  Scenario: extractToolArgsDisplay shows the Fspec command followed by its remaining params
     Given a ToolCall with name "Fspec" and input JSON "{\"command\":\"show-work-unit\",\"args\":\"{\\\"_\\\":[\\\"AUTH-001\\\"]}\"}"
     When the renderer formats the tool-call header
-    Then the header text equals "● Fspec(show-work-unit)"
+    Then the args display equals "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }"
 
   Scenario: Full round-trip: user asks, assistant thinks, calls a tool, continues, finishes
     Given an AgentView with a fresh SessionContext for session s-1

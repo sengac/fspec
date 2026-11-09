@@ -1,4 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[path = "support/offline_session.rs"]
+mod offline_session;
 // Feature: spec/features/emergency-threshold-compaction.feature
 //
 // This test file validates the acceptance criteria defined in the feature file.
@@ -21,7 +23,7 @@ use std::sync::Arc;
 
 fn create_test_session() -> codelet_cli::session::Session {
     let provider_manager =
-        codelet_providers::ProviderManager::new().expect("Need at least one API key for tests");
+        offline_session::provider_manager().expect("Need at least one API key for tests");
 
     let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
     session.messages.push(Message::User {
@@ -97,19 +99,26 @@ async fn test_pre_prompt_compaction_uses_in_view_dag_flow() {
         "compaction_in_progress flag should be true after execute_compaction"
     );
 
-    // @step And session messages are cleared and system reminders are restored
-    let (system_reminders, _) = partition_for_compaction(&session.messages);
+    // @step And committed session messages are unchanged while the compaction view holds only system reminders and the instruction
+    assert_eq!(
+        session.messages.len(),
+        original_message_count,
+        "committed history is untouched until the DAG is durably applied"
+    );
+    assert!(session.has_compaction_working_view());
+    let view = session.inference_messages().clone();
+    let (reminders, conversation) = partition_for_compaction(&view[..view.len() - 1]);
     assert!(
-        !system_reminders.is_empty(),
-        "System reminders should be preserved"
+        !reminders.is_empty(),
+        "system reminders are kept in the view"
     );
     assert!(
-        session.messages.len() < original_message_count,
-        "Messages should be fewer after compaction"
+        conversation.is_empty(),
+        "the builder reads history through SessionSearch, not the view"
     );
 
-    // @step And the compaction system instruction is injected as a user message
-    let last_msg = session.messages.last().expect("Should have messages");
+    // @step And the compaction system instruction is the last user message of the compaction view
+    let last_msg = view.last().expect("Should have messages");
     let last_text = extract_user_text(last_msg);
     assert!(
         last_text.contains("SessionSearch") && last_text.contains("inject_summary"),
@@ -151,7 +160,7 @@ async fn test_post_loop_compaction_uses_in_view_dag_flow() {
     // (verified above)
 
     // @step And the compaction system instruction includes the original user prompt
-    let last_text = extract_user_text(session.messages.last().unwrap());
+    let last_text = extract_user_text(session.inference_messages().last().unwrap());
     assert!(
         last_text.contains(original_prompt),
         "Compaction instruction should include the original prompt"
@@ -195,14 +204,14 @@ async fn test_slash_compact_uses_in_view_dag_flow() {
     // (verified above)
 
     // @step And no last_user_message is embedded because compaction was agent-initiated
-    let last_text = extract_user_text(session.messages.last().unwrap());
+    let last_text = extract_user_text(session.inference_messages().last().unwrap());
     // With None passed for last_user_message, the instruction is the base COMPACTION_INSTRUCTION_FRESH
     assert!(
         last_text.contains("SessionSearch"),
         "Should contain compaction instruction"
     );
 
-    // @step And the compaction system instruction is injected as a user message
+    // @step And the compaction system instruction is the last user message of the compaction view
     assert!(
         last_text.contains("inject_summary"),
         "Instruction should contain inject_summary guidance"
@@ -297,7 +306,7 @@ async fn test_post_compaction_context_floor() {
     // @step And the context contains the injected DAG summary
     // After execute_compaction, the instruction is present (DAG replaces it after inject_summary)
     let has_instruction = session
-        .messages
+        .inference_messages()
         .iter()
         .any(|m| extract_user_text(m).contains("inject_summary"));
     assert!(
@@ -307,7 +316,7 @@ async fn test_post_compaction_context_floor() {
 
     // @step And the context contains the last user message
     let has_user_prompt = session
-        .messages
+        .inference_messages()
         .iter()
         .any(|m| extract_user_text(m).contains(user_prompt));
     assert!(
@@ -330,7 +339,7 @@ async fn test_post_compaction_context_floor() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_callers_adapt_to_ok_return_type() {
-    // @step Given stream_loop.rs previously matched on the old compaction return type
+    // @step Given stream_loop.rs previously matched on CompactionMetrics from execute_compaction_legacy
     let mut session = create_test_session_with_conversation();
 
     // Capture pre-compaction token count (callers must do this before calling)
@@ -340,7 +349,7 @@ async fn test_callers_adapt_to_ok_return_type() {
     let compaction_flag = Arc::new(AtomicBool::new(false));
     let result = execute_compaction(&mut session, compaction_flag.clone(), None).await;
 
-    // @step Then the callers handle Ok(()) on success without expecting metrics
+    // @step Then the callers handle Ok(()) on success without expecting metrics or anchor data
     match result {
         Ok(()) => {
             // Successfully adapted to unit return type
@@ -356,12 +365,10 @@ async fn test_callers_adapt_to_ok_return_type() {
         "Pre-compaction token count should be non-zero for a session with messages"
     );
 
-    // @step And token tracker is reset after compaction
-    // execute_compaction calls recalculate_token_tracker internally
-    // The token count should be small (only system reminders + instruction)
-    assert!(
-        session.token_tracker.input_tokens < original_tokens || original_tokens == 0,
-        "Token tracker should reflect reduced context after compaction"
+    // @step And the token tracker keeps the committed basis until the summary is durably applied
+    assert_eq!(
+        session.token_tracker.input_tokens, original_tokens,
+        "the committed token basis changes only when the summary is applied"
     );
 }
 

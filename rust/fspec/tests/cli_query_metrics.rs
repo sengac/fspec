@@ -159,11 +159,9 @@ fn scenario_cli_json_output_matches_dispatcher_output() {
     );
     write_work_units(ws.path(), &raw);
 
-    // @step When I run `./rust/target/release/fspec query-metrics --work-unit-id AUTH-001 --format json` against that workspace
-    let (code, stdout, stderr) = run_query_metrics(
-        ws.path(),
-        &["--work-unit-id", "AUTH-001", "--format", "json"],
-    );
+    // @step When I run `./rust/target/release/fspec query-metrics --work-unit AUTH-001 --format json` against that workspace
+    let (code, stdout, stderr) =
+        run_query_metrics(ws.path(), &["--work-unit", "AUTH-001", "--format", "json"]);
 
     // @step Then the command exits 0
     assert_eq!(

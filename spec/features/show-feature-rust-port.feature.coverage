@@ -54,7 +54,9 @@
                 133,
                 134,
                 135
-              ]
+              ],
+              "firstLine": "Feature,",
+              "lastLine": ""
             }
           ]
         }
@@ -90,7 +92,9 @@
                 226,
                 227,
                 228
-              ]
+              ],
+              "firstLine": "Ok(f) => f,",
+              "lastLine": ".and_then(|s| s.to_str())"
             }
           ]
         }
@@ -132,7 +136,9 @@
                 168,
                 169,
                 170
-              ]
+              ],
+              "firstLine": "if outcome.success {",
+              "lastLine": "feature: Option<Feature>,"
             }
           ]
         }
@@ -162,7 +168,9 @@
                 192,
                 193,
                 194
-              ]
+              ],
+              "firstLine": "Some(p) => p,",
+              "lastLine": "let content = match std::fs::read_to_string(&abs) {"
             }
           ]
         }
@@ -173,7 +181,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/show_feature.rs",
-          "lines": "198-259",
+          "lines": "204-268",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_feature.rs",
@@ -239,7 +247,9 @@
                 300,
                 301,
                 302
-              ]
+              ],
+              "firstLine": "/// Resolve a feature reference to an absolute on-disk path. Returns",
+              "lastLine": ""
             }
           ]
         }
@@ -255,10 +265,6 @@
             {
               "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
-                270,
-                271,
-                272,
-                273,
                 274,
                 275,
                 276,
@@ -287,23 +293,32 @@
                 299,
                 300,
                 301,
-                302
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Missing work-units json yields Unknown title and unknown status enrichment",
-      "testMappings": [
-        {
-          "file": "rust/fspec-core/tests/show_feature.rs",
-          "lines": "335-366",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/commands/show_feature.rs",
-              "lines": [
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
                 328,
                 329,
                 330,
@@ -318,26 +333,62 @@
                 339,
                 340,
                 341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360
-              ]
+                342
+              ],
+              "firstLine": "/// Extract work-unit tags from a parsed feature. Mirrors the TS",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work-units json yields Unknown title and unknown status enrichment",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/show_feature.rs",
+          "lines": "351-381",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394
+              ],
+              "firstLine": "/// Load `spec/work-units.json`. Returns `None` on any error (missing /",
+              "lastLine": "}"
             }
           ]
         }
@@ -348,12 +399,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/show_feature.rs",
-          "lines": "367-417",
+          "lines": "383-432",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
-                389,
                 390,
                 391,
                 392,
@@ -434,8 +484,11 @@
                 467,
                 468,
                 469,
-                470
-              ]
+                470,
+                471
+              ],
+              "firstLine": "scenarios: t.scenarios,",
+              "lastLine": "/// shape (`name`, `children[]`, `tags[]`) matches what TS callers of"
             }
           ]
         }
@@ -446,13 +499,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/show_feature.rs",
-          "lines": "418-454",
+          "lines": "434-469",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_feature.rs",
               "lines": [
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -467,8 +518,41 @@
                 128,
                 129,
                 130,
-                131
-              ]
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "/// Dispatcher entry point. Two-front-doors invariant: clap CLI bridge",
+              "lastLine": "}"
             }
           ]
         }
@@ -479,7 +563,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/show_feature.rs",
-          "lines": "455-480",
+          "lines": "471-496",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/show_feature.rs",
@@ -534,7 +618,73 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! `show-feature` — Rust port of `src/commands/show-feature.ts` (RPC-304).",
+              "lastLine": "//!   `\\n\\nWork Units: None\\n`."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON output path writes the JSON render to disk",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/show_feature.rs",
+          "lines": "500-530",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "/// Dispatcher entry point. Two-front-doors invariant: clap CLI bridge",
+              "lastLine": "}"
             }
           ]
         }
@@ -542,8 +692,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 10,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/show_feature.rs"
@@ -551,6 +701,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/show_feature.rs"
     ],
-    "totalLinesCovered": 792
+    "totalLinesCovered": 935
   }
 }

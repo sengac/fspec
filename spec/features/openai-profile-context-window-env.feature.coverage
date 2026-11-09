@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "A profile that declares a context window exports it",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug341_profile_context_window_env.rs",
+          "lines": "56-71",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_environment.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "// BUG-341: a profile without a window must not keep the previous one's.",
+              "lastLine": "ledger::write(&owner, \"OPENAI_STREAMING\", streaming.as_deref());"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to a profile without a context window clears the previous one",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug341_profile_context_window_env.rs",
+          "lines": "73-87",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_environment.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39
+              ],
+              "firstLine": "// BUG-341: a profile without a window must not keep the previous one's.",
+              "lastLine": "ledger::write(&owner, \"OPENAI_STREAMING\", streaming.as_deref());"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug341_profile_context_window_env.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/profile_environment.rs"
+    ],
+    "totalLinesCovered": 41
+  }
+}

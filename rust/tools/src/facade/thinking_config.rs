@@ -1,15 +1,18 @@
 //! Thinking/Reasoning Configuration Facades
 //!
-//! This module implements provider-specific thinking/reasoning configuration
-//! using the facade pattern. Each provider receives thinking config in their
-//! native format while the codebase uses a common ThinkingLevel abstraction.
+//! Provider facades that recognise thinking content in responses, and the
+//! Claude model helpers (adaptive-thinking detection for the beta headers,
+//! 1M context).
+//!
+//! MODEL-010: request thinking is no longer built here. The agent loop's wire
+//! table (thinking-levels-reach-each-provider-through-a-wire-table.feature)
+//! builds each provider's form from the session's level; the legacy level
+//! tables (Claude and Gemini 2.5 budgets, Gemini 3 / Claude adaptive maps)
+//! are gone.
 //!
 //! Feature: spec/features/thinking-config-facade-for-provider-specific-reasoning.feature
-//!
-//! PROV-005: Added adaptive thinking support for Claude Opus 4.6 and Sonnet 4.6.
-//! These models use `{"type": "adaptive"}` instead of budgeted thinking.
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 // =============================================================================
 // CLAUDE MODEL CONSTANTS (PROV-005)
@@ -27,11 +30,23 @@ pub const CLAUDE_SONNET_4_5: &str = "claude-sonnet-4-5";
 /// Claude Opus 4.5 model identifier
 pub const CLAUDE_OPUS_4_5: &str = "claude-opus-4-5";
 
-/// Model prefixes that require budgeted thinking (pre-adaptive era).
-/// All other Claude 4.x+ models default to adaptive thinking.
-/// Uses `starts_with` matching so versioned variants (e.g. "claude-opus-4-5-20260101")
-/// are automatically covered.
-pub const BUDGETED_THINKING_MODELS: &[&str] = &[CLAUDE_OPUS_4_5, CLAUDE_SONNET_4_5];
+/// Claude Haiku 4.5 model identifier
+pub const CLAUDE_HAIKU_4_5: &str = "claude-haiku-4-5";
+
+/// Model prefixes that require budgeted thinking (pre-adaptive era: these
+/// reject `{"type": "adaptive"}`). All other Claude 4.x+ models default to
+/// adaptive thinking. Uses `starts_with` matching so versioned variants (e.g.
+/// "claude-opus-4-5-20260101") are covered. BUG-438: Haiku 4.5 and the
+/// Claude 4.0 / 4.1 ids; 4.0 is matched by its dated ids ("claude-opus-4-2025"),
+/// because a bare "claude-opus-4" prefix would also match 4.6.
+pub const BUDGETED_THINKING_MODELS: &[&str] = &[
+    CLAUDE_OPUS_4_5,
+    CLAUDE_SONNET_4_5,
+    CLAUDE_HAIKU_4_5,
+    "claude-opus-4-1",
+    "claude-opus-4-2025",
+    "claude-sonnet-4-2025",
+];
 
 /// Model prefixes that do NOT support 1M context window.
 /// All Claude 4.5+ models support 1M context EXCEPT Opus 4.5.
@@ -88,12 +103,11 @@ pub fn supports_1m_context(model: &str) -> bool {
     true
 }
 
-/// Provider-agnostic thinking intensity levels.
+/// The CLI session's thinking intensity (PROV-041 exhaustion notices).
 ///
-/// Maps to provider-specific configurations:
-/// - Gemini 3: thinkingLevel enum ("low", "medium", "high")
-/// - Gemini 2.5: thinkingBudget token count
-/// - Claude: thinking.budget_tokens
+/// MODEL-010: no request is built from it; the agent loop's wire table
+/// (`codelet_agent_loop::thinking_config`) turns a session's level into each
+/// provider's form.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ThinkingLevel {
     /// Disable thinking/reasoning entirely
@@ -111,9 +125,6 @@ pub trait ThinkingConfigFacade {
     /// Returns the provider identifier (e.g., "gemini-3", "claude")
     fn provider(&self) -> &'static str;
 
-    /// Generates the request configuration JSON for the specified thinking level
-    fn request_config(&self, level: ThinkingLevel) -> Value;
-
     /// Checks if a response part contains thinking content
     fn is_thinking_part(&self, part: &Value) -> bool;
 
@@ -127,30 +138,6 @@ pub struct Gemini3ThinkingFacade;
 impl ThinkingConfigFacade for Gemini3ThinkingFacade {
     fn provider(&self) -> &'static str {
         "gemini-3"
-    }
-
-    fn request_config(&self, level: ThinkingLevel) -> Value {
-        match level {
-            ThinkingLevel::Off => json!({}),
-            ThinkingLevel::Low => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingLevel": "low"
-                }
-            }),
-            ThinkingLevel::Medium => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingLevel": "medium"
-                }
-            }),
-            ThinkingLevel::High => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingLevel": "high"
-                }
-            }),
-        }
     }
 
     fn is_thinking_part(&self, part: &Value) -> bool {
@@ -176,30 +163,6 @@ impl ThinkingConfigFacade for Gemini25ThinkingFacade {
         "gemini-2.5"
     }
 
-    fn request_config(&self, level: ThinkingLevel) -> Value {
-        match level {
-            ThinkingLevel::Off => json!({}),
-            ThinkingLevel::Low => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingBudget": 2048
-                }
-            }),
-            ThinkingLevel::Medium => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingBudget": 4096
-                }
-            }),
-            ThinkingLevel::High => json!({
-                "thinkingConfig": {
-                    "includeThoughts": true,
-                    "thinkingBudget": 8192
-                }
-            }),
-        }
-    }
-
     fn is_thinking_part(&self, part: &Value) -> bool {
         // Gemini 2.5 uses same response format as Gemini 3
         part.get("thought")
@@ -216,81 +179,13 @@ impl ThinkingConfigFacade for Gemini25ThinkingFacade {
     }
 }
 
-/// Claude thinking facade - uses thinking.type + budget_tokens (budgeted models)
-/// or thinking.type: "adaptive" (4.6 models)
-///
-/// PROV-005: This facade now supports both budgeted and adaptive thinking:
-/// - Opus 4.6, Sonnet 4.6: Always returns `{"type": "adaptive"}` (budget ignored)
-/// - Opus 4.5, Sonnet 4.5, older: Returns `{"type": "enabled", "budget_tokens": N}`
+/// Claude thinking facade: recognises thinking content blocks. MODEL-010:
+/// request thinking is built by the agent loop's wire table.
 pub struct ClaudeThinkingFacade;
-
-impl ClaudeThinkingFacade {
-    /// Build thinking configuration for a specific Claude model.
-    ///
-    /// PROV-005: Model-aware thinking configuration.
-    /// - For Opus/Sonnet 4.6: Returns adaptive thinking, ignoring user budget
-    /// - For other models: Returns budgeted thinking based on level
-    /// - For ThinkingLevel::Off: Always returns None (respects user intent)
-    ///
-    /// # Arguments
-    /// * `model` - The Claude model name (e.g., "claude-opus-4-6")
-    /// * `level` - The thinking intensity level
-    ///
-    /// # Returns
-    /// Some(Value) with thinking config, or None for Off level
-    pub fn request_config_for_model(&self, model: &str, level: ThinkingLevel) -> Option<Value> {
-        // Off always disables thinking (respects user intent - PROV-005 rule [15])
-        if level == ThinkingLevel::Off {
-            return None;
-        }
-
-        // PROV-005: Adaptive thinking models (Opus 4.6, Sonnet 4.6)
-        // User-provided budget_tokens and thinking levels (low/med/high) are ignored
-        // - they all default to adaptive mode
-        // PROV-080: Include display:'summarized' so the API returns visible thinking text.
-        // Without this, newer models (e.g. Opus 4.7) default to display:'omitted',
-        // returning empty thinking blocks that rig-core drops, making thinking appear broken.
-        if is_adaptive_thinking_model(model) {
-            return Some(json!({
-                "thinking": {
-                    "type": "adaptive",
-                    "display": "summarized"
-                }
-            }));
-        }
-
-        // Budget-based thinking for other models
-        Some(self.request_config(level))
-    }
-}
 
 impl ThinkingConfigFacade for ClaudeThinkingFacade {
     fn provider(&self) -> &'static str {
         "claude"
-    }
-
-    fn request_config(&self, level: ThinkingLevel) -> Value {
-        match level {
-            ThinkingLevel::Off => json!({}),
-            ThinkingLevel::Low => json!({
-                "thinking": {
-                    "type": "enabled",
-                    "budget_tokens": 4096
-                }
-            }),
-            ThinkingLevel::Medium => json!({
-                "thinking": {
-                    "type": "enabled",
-                    "budget_tokens": 16000
-                }
-            }),
-            ThinkingLevel::High => json!({
-                "thinking": {
-                    "type": "enabled",
-                    "budget_tokens": 32000
-                }
-            }),
-        }
     }
 
     fn is_thinking_part(&self, part: &Value) -> bool {
@@ -313,108 +208,7 @@ impl ThinkingConfigFacade for ClaudeThinkingFacade {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
-
-    // =========================================================================
-    // Scenario: Gemini 3 facade generates thinkingLevel configuration for High level
-    // =========================================================================
-
-    #[test]
-    fn test_gemini3_high_level_returns_thinking_level_enum() {
-        // @step Given a Gemini3ThinkingFacade
-        let facade = Gemini3ThinkingFacade;
-
-        // @step And ThinkingLevel::High is requested
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config with the level
-        let config = facade.request_config(level);
-
-        // @step Then the result should contain thinkingConfig.thinkingLevel set to "high"
-        assert_eq!(
-            config["thinkingConfig"]["thinkingLevel"].as_str(),
-            Some("high"),
-            "Gemini 3 should use thinkingLevel 'high' for High level"
-        );
-
-        // @step And the result should contain thinkingConfig.includeThoughts set to true
-        assert_eq!(
-            config["thinkingConfig"]["includeThoughts"].as_bool(),
-            Some(true),
-            "includeThoughts should be true"
-        );
-
-        // @step And the result should NOT contain thinkingBudget
-        assert!(
-            config["thinkingConfig"]["thinkingBudget"].is_null(),
-            "Gemini 3 should NOT use thinkingBudget"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Gemini 2.5 facade generates thinkingBudget configuration for High level
-    // =========================================================================
-
-    #[test]
-    fn test_gemini25_high_level_returns_thinking_budget() {
-        // @step Given a Gemini25ThinkingFacade
-        let facade = Gemini25ThinkingFacade;
-
-        // @step And ThinkingLevel::High is requested
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config with the level
-        let config = facade.request_config(level);
-
-        // @step Then the result should contain thinkingConfig.thinkingBudget set to 8192
-        assert_eq!(
-            config["thinkingConfig"]["thinkingBudget"].as_u64(),
-            Some(8192),
-            "Gemini 2.5 should use thinkingBudget 8192 for High level"
-        );
-
-        // @step And the result should contain thinkingConfig.includeThoughts set to true
-        assert_eq!(
-            config["thinkingConfig"]["includeThoughts"].as_bool(),
-            Some(true),
-            "includeThoughts should be true"
-        );
-
-        // @step And the result should NOT contain thinkingLevel
-        assert!(
-            config["thinkingConfig"]["thinkingLevel"].is_null(),
-            "Gemini 2.5 should NOT use thinkingLevel enum"
-        );
-    }
-
-    // =========================================================================
-    // Scenario: Claude facade generates thinking configuration with budget_tokens
-    // =========================================================================
-
-    #[test]
-    fn test_claude_high_level_returns_budget_tokens() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And ThinkingLevel::High is requested
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config with the level
-        let config = facade.request_config(level);
-
-        // @step Then the result should contain thinking.type set to "enabled"
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Claude should use thinking.type 'enabled'"
-        );
-
-        // @step And the result should contain thinking.budget_tokens set to 32000
-        assert_eq!(
-            config["thinking"]["budget_tokens"].as_u64(),
-            Some(32000),
-            "Claude should use budget_tokens 32000 for High level"
-        );
-    }
+    use serde_json::json;
 
     // =========================================================================
     // Scenario: Gemini facade identifies thinking parts in response
@@ -478,125 +272,6 @@ mod tests {
     }
 
     // =========================================================================
-    // Scenario: ThinkingLevel Off returns empty configuration for all providers
-    // =========================================================================
-
-    #[test]
-    fn test_thinking_level_off_returns_empty_for_gemini3() {
-        // @step Given any ThinkingConfigFacade implementation
-        let facade = Gemini3ThinkingFacade;
-
-        // @step And ThinkingLevel::Off is requested
-        let level = ThinkingLevel::Off;
-
-        // @step When I call request_config with the level
-        let config = facade.request_config(level);
-
-        // @step Then the result should be an empty object
-        assert_eq!(config, json!({}), "Off should return empty object");
-    }
-
-    #[test]
-    fn test_thinking_level_off_returns_empty_for_gemini25() {
-        let facade = Gemini25ThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Off);
-        assert_eq!(config, json!({}), "Off should return empty object");
-    }
-
-    #[test]
-    fn test_thinking_level_off_returns_empty_for_claude() {
-        let facade = ClaudeThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Off);
-        assert_eq!(config, json!({}), "Off should return empty object");
-    }
-
-    // =========================================================================
-    // Additional tests for Low and Medium levels
-    // =========================================================================
-
-    #[test]
-    fn test_gemini3_low_level() {
-        let facade = Gemini3ThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Low);
-
-        assert_eq!(
-            config["thinkingConfig"]["thinkingLevel"].as_str(),
-            Some("low"),
-            "Gemini 3 Low should use thinkingLevel 'low'"
-        );
-        assert_eq!(
-            config["thinkingConfig"]["includeThoughts"].as_bool(),
-            Some(true)
-        );
-    }
-
-    #[test]
-    fn test_gemini3_medium_level() {
-        let facade = Gemini3ThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Medium);
-
-        assert_eq!(
-            config["thinkingConfig"]["thinkingLevel"].as_str(),
-            Some("medium"),
-            "Gemini 3 Medium should use thinkingLevel 'medium'"
-        );
-        assert_eq!(
-            config["thinkingConfig"]["includeThoughts"].as_bool(),
-            Some(true)
-        );
-    }
-
-    #[test]
-    fn test_gemini25_low_level() {
-        let facade = Gemini25ThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Low);
-
-        assert_eq!(
-            config["thinkingConfig"]["thinkingBudget"].as_u64(),
-            Some(2048),
-            "Gemini 2.5 Low should use thinkingBudget 2048"
-        );
-    }
-
-    #[test]
-    fn test_gemini25_medium_level() {
-        let facade = Gemini25ThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Medium);
-
-        assert_eq!(
-            config["thinkingConfig"]["thinkingBudget"].as_u64(),
-            Some(4096),
-            "Gemini 2.5 Medium should use thinkingBudget 4096"
-        );
-    }
-
-    #[test]
-    fn test_claude_low_level() {
-        let facade = ClaudeThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Low);
-
-        assert_eq!(config["thinking"]["type"].as_str(), Some("enabled"));
-        assert_eq!(
-            config["thinking"]["budget_tokens"].as_u64(),
-            Some(4096),
-            "Claude Low should use budget_tokens 4096"
-        );
-    }
-
-    #[test]
-    fn test_claude_medium_level() {
-        let facade = ClaudeThinkingFacade;
-        let config = facade.request_config(ThinkingLevel::Medium);
-
-        assert_eq!(config["thinking"]["type"].as_str(), Some("enabled"));
-        assert_eq!(
-            config["thinking"]["budget_tokens"].as_u64(),
-            Some(16000),
-            "Claude Medium should use budget_tokens 16000"
-        );
-    }
-
-    // =========================================================================
     // Provider identification tests
     // =========================================================================
 
@@ -616,36 +291,6 @@ mod tests {
     fn test_claude_provider_name() {
         let facade = ClaudeThinkingFacade;
         assert_eq!(facade.provider(), "claude");
-    }
-
-    // =========================================================================
-    // Scenario: TypeScript can get thinking configuration via NAPI bindings
-    // Note: NAPI bindings tested via this Rust test simulating the flow
-    // =========================================================================
-
-    #[test]
-    fn test_napi_get_thinking_config() {
-        // @step Given the NAPI getThinkingConfig function
-        // The NAPI function will call Gemini3ThinkingFacade.request_config()
-        let facade = Gemini3ThinkingFacade;
-
-        // @step And provider "gemini-3" and ThinkingLevel.High
-        let provider = "gemini-3";
-        let level = ThinkingLevel::High;
-
-        // @step When I call getThinkingConfig from TypeScript
-        // Simulated: TypeScript would call the NAPI binding which calls this
-        let config = facade.request_config(level);
-        let json_string = serde_json::to_string(&config).unwrap();
-
-        // @step Then I should receive a JSON string with the correct configuration
-        assert!(!json_string.is_empty());
-        assert!(json_string.contains("thinkingConfig") || json_string == "{}");
-
-        // @step And the parsed JSON should match the Rust facade output
-        let parsed: serde_json::Value = serde_json::from_str(&json_string).unwrap();
-        assert_eq!(parsed, config);
-        assert_eq!(facade.provider(), provider);
     }
 
     // =========================================================================
@@ -673,139 +318,6 @@ mod tests {
         assert!(
             is_thinking,
             "NAPI should correctly identify thinking content"
-        );
-    }
-
-    // =========================================================================
-    // PROV-005: Model-aware Claude thinking configuration tests
-    // =========================================================================
-
-    #[test]
-    fn test_claude_opus_4_6_returns_adaptive_thinking() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And model "claude-opus-4-6" with ThinkingLevel::High
-        let model = CLAUDE_OPUS_4_6;
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config_for_model
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the result should contain thinking.type set to "adaptive"
-        assert!(config.is_some(), "Config should exist for High level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Opus 4.6 should use adaptive thinking"
-        );
-
-        // @step And the result should NOT contain budget_tokens
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Opus 4.6 should NOT have budget_tokens"
-        );
-    }
-
-    #[test]
-    fn test_claude_sonnet_4_6_returns_adaptive_thinking() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And model "claude-sonnet-4-6" with ThinkingLevel::Medium
-        let model = CLAUDE_SONNET_4_6;
-        let level = ThinkingLevel::Medium;
-
-        // @step When I call request_config_for_model
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the result should contain thinking.type set to "adaptive"
-        assert!(config.is_some(), "Config should exist for Medium level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Sonnet 4.6 should use adaptive thinking"
-        );
-
-        // @step And the result should NOT contain budget_tokens
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Sonnet 4.6 should NOT have budget_tokens"
-        );
-    }
-
-    #[test]
-    fn test_claude_opus_4_5_returns_budgeted_thinking() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And model "claude-opus-4-5" with ThinkingLevel::High
-        let model = CLAUDE_OPUS_4_5;
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config_for_model
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the result should contain thinking.type set to "enabled"
-        assert!(config.is_some(), "Config should exist for High level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Opus 4.5 should use budgeted thinking"
-        );
-
-        // @step And the result should contain budget_tokens
-        assert!(
-            config["thinking"]["budget_tokens"].as_u64().is_some(),
-            "Opus 4.5 should have budget_tokens"
-        );
-    }
-
-    #[test]
-    fn test_claude_thinking_off_returns_none_for_adaptive_model() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And model "claude-opus-4-6" with ThinkingLevel::Off
-        let model = CLAUDE_OPUS_4_6;
-        let level = ThinkingLevel::Off;
-
-        // @step When I call request_config_for_model
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the result should be None
-        assert!(
-            config.is_none(),
-            "Off should return None even for adaptive thinking models"
-        );
-    }
-
-    #[test]
-    fn test_claude_opus_4_7_returns_adaptive_thinking() {
-        // @step Given a ClaudeThinkingFacade
-        let facade = ClaudeThinkingFacade;
-
-        // @step And model "claude-opus-4-7" with ThinkingLevel::High
-        let model = "claude-opus-4-7";
-        let level = ThinkingLevel::High;
-
-        // @step When I call request_config_for_model
-        let config = facade.request_config_for_model(model, level);
-
-        // @step Then the result should use adaptive thinking (default-adaptive)
-        assert!(config.is_some(), "Config should exist for High level");
-        let config = config.unwrap();
-        assert_eq!(
-            config["thinking"]["type"].as_str(),
-            Some("adaptive"),
-            "Opus 4.7 should use adaptive thinking"
-        );
-        assert!(
-            config["thinking"]["budget_tokens"].is_null(),
-            "Opus 4.7 should NOT have budget_tokens"
         );
     }
 

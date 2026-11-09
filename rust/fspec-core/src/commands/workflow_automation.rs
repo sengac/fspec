@@ -27,7 +27,7 @@
 //!
 //! Both the LLM dispatcher AND the standalone binary's clap subcommand call
 //! this single function. Unlike `auto-advance`, the TS Commander shell binds
-//! correctly (positional `<action> <work-unit-id>` + `--event`/`--from-state`),
+//! correctly (positional `<action> <workUnitId>` + `--event`/`--from-state`),
 //! so the CLI bridge at `rust/fspec/src/workflow_automation.rs` marshals
 //! those values straight through — NOT Framing A.
 
@@ -40,7 +40,6 @@ use serde_json::{json, Map, Value};
 use crate::error::FspecCoreError;
 use crate::io::feature_glob::glob_feature_files;
 use crate::io::io_error::format_io_error;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus, WorkUnitsData};
 
@@ -121,7 +120,7 @@ fn status_from_str(name: &str) -> Option<WorkUnitStatus> {
 fn load_work_units(
     project_root: &Path,
 ) -> Result<(std::path::PathBuf, WorkUnitsData), FspecCoreError> {
-    let work_units_path = project_root.join("spec").join("work-units.json");
+    let work_units_path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&work_units_path)
         .map_err(|e| invalid_args(format_io_error(&e, &work_units_path.display().to_string())))?;
     let data: WorkUnitsData = serde_json::from_str(&raw).map_err(|e| {
@@ -157,7 +156,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// `record-iteration` action — increment NESTED `metrics.iterations`
 /// (TS `recordWorkUnitIteration`, workflow-automation.ts:36-61).
 fn record_iteration(project_root: &Path, work_unit_id: &str) -> Result<String, FspecCoreError> {
-    let (path, mut data) = load_work_units(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "workflow-automation")?;
+    let (_path, mut data) = load_work_units(project_root)?;
 
     let wu = data
         .work_units
@@ -186,7 +187,7 @@ fn record_iteration(project_root: &Path, work_unit_id: &str) -> Result<String, F
 
     wu.updated_at = iso8601_now();
 
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = RecordIterationResult {
         success: true,
@@ -204,7 +205,9 @@ fn auto_advance(
     from_state: &str,
     event: &str,
 ) -> Result<String, FspecCoreError> {
-    let (path, mut data) = load_work_units(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "workflow-automation")?;
+    let (_path, mut data) = load_work_units(project_root)?;
 
     // Existence check (workflow-automation.ts:75-77).
     if !data.work_units.contains_key(work_unit_id) {
@@ -266,7 +269,7 @@ fn auto_advance(
 
     wu.updated_at = now;
 
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     let result = AutoAdvanceResult {
         success: true,

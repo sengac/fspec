@@ -14,8 +14,7 @@
 //! (red phase) against the current per-delta-push stub in
 //! rust/fspec-tui/src/store/agent_view/session_context.rs:80-86.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, ChunkKind, FspecBackend};
@@ -79,43 +78,55 @@ fn session_in_flight_thinking(app: &App, id: &SessionId) -> Option<usize> {
         .and_then(|c| c.in_flight_thinking)
 }
 
-fn nth_chunk_source_text(app: &App, id: &SessionId, n: usize) -> String {
+fn nth_chunk_source_text(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<String, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.text.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
-fn nth_chunk_kind(app: &App, id: &SessionId, n: usize) -> ChunkKind {
+fn nth_chunk_kind(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<ChunkKind, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.kind.clone())
-        .expect("ChunkSource present")
+        .or_fail("ChunkSource present")?)
 }
 
-fn nth_chunk_is_streaming(app: &App, id: &SessionId, n: usize) -> bool {
+fn nth_chunk_is_streaming(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<bool, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.is_streaming)
-        .unwrap_or(false)
+        .unwrap_or(false))
 }
 
 fn tool_call_chunk(id: &str, name: &str, input: &str) -> StreamChunk {
@@ -140,7 +151,7 @@ fn tool_result_chunk(tool_call_id: &str, content: &str, is_error: bool) -> Strea
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk() {
+fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -166,7 +177,7 @@ fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk()
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
     // @step And that chunk's source.text equals "The user is asking about cards" without any "[Thinking]" prefix baked in
-    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(stored, "The user is asking about cards");
     assert!(
         !stored.contains("[Thinking]"),
@@ -177,7 +188,7 @@ fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk()
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(0));
 
     // @step And the chunk's source.kind is ChunkKind::Thinking
-    let kind = nth_chunk_kind(&app, &sid("s-1"), 0);
+    let kind = nth_chunk_kind(&app, &sid("s-1"), 0)?;
     assert!(
         matches!(kind, ChunkKind::Thinking),
         "expected Thinking kind, got {kind:?}"
@@ -185,9 +196,10 @@ fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk()
 
     // @step And the chunk's is_streaming flag is true
     assert!(
-        nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "thinking chunk should be is_streaming=true while accumulating"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -196,7 +208,7 @@ fn consecutive_thinking_deltas_accumulate_into_single_in_flight_thinking_chunk()
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
+fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -206,7 +218,7 @@ fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
         StreamChunk::thinking("first line\nsecond line".to_string()),
     ));
 
-    // @step Then the wrapped lines produced for that chunk are exactly the table
+    // @step Then the wrapped lines produced for that chunk are exactly:
     // RPC-401: one trailing blank separator row follows the header + body.
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(
@@ -220,9 +232,10 @@ fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
     );
 
     // @step And the stored chunk.source.text is exactly "first line\nsecond line" (no prefix baked in)
-    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(stored, "first line\nsecond line");
     assert!(!stored.contains("[Thinking]"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -231,7 +244,7 @@ fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn tool_call_finalises_in_flight_thinking_and_pushes_card() {
+fn tool_call_finalises_in_flight_thinking_and_pushes_card() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
     // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "Let me check the files" } for s-1
@@ -240,16 +253,16 @@ fn tool_call_finalises_in_flight_thinking_and_pushes_card() {
         StreamChunk::thinking("Let me check the files".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards ToolCall { tc-1, Read, {"file_path":"/etc/hosts"} } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::ToolCall { tool_call: { id: "tc-1", name: "Read", input: "{\"file_path\":\"/etc/hosts\"}" } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_call_chunk("tc-1", "Read", "{\"file_path\":\"/etc/hosts\"}"),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    let kind0 = nth_chunk_kind(&app, &sid("s-1"), 0);
-    let kind1 = nth_chunk_kind(&app, &sid("s-1"), 1);
+    let kind0 = nth_chunk_kind(&app, &sid("s-1"), 0)?;
+    let kind1 = nth_chunk_kind(&app, &sid("s-1"), 1)?;
     assert!(matches!(kind0, ChunkKind::Thinking));
     assert!(matches!(kind1, ChunkKind::ToolCall { .. }));
 
@@ -265,12 +278,13 @@ fn tool_call_finalises_in_flight_thinking_and_pushes_card() {
 
     // @step And the Thinking chunk at index 0 has is_streaming false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "ToolCall must finalise the in-flight thinking chunk"
     );
 
     // @step And the SessionContext in_flight_thinking slot is None
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -279,52 +293,56 @@ fn tool_call_finalises_in_flight_thinking_and_pushes_card() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn second_thinking_after_tool_call_starts_fresh_chunk() {
+fn second_thinking_after_tool_call_starts_fresh_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "first thought" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "first thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("first thought".to_string()),
     ));
-    // @step And the chunks subscriber has forwarded ToolCall { tc-1, Read, ... } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::ToolCall { tool_call: { id: "tc-1", name: "Read", input: "{\"file_path\":\"/etc/hosts\"}" } } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         tool_call_chunk("tc-1", "Read", "{\"file_path\":\"/etc/hosts\"}"),
     ));
 
-    // @step When the chunks subscriber forwards Thinking { "second thought" } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Thinking { thinking: "second thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("second thought".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly three rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly three rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 3);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::ToolCall { .. }
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 2),
+        nth_chunk_kind(&app, &sid("s-1"), 2)?,
         ChunkKind::Thinking
     ));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "first thought");
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 2),
+        nth_chunk_source_text(&app, &sid("s-1"), 0)?,
+        "first thought"
+    );
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 2)?,
         "second thought"
     );
 
     // @step And the chunk at index 0 has is_streaming false
-    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 0));
+    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 0)?);
     // @step And the chunk at index 2 has is_streaming true
-    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 2));
+    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 2)?);
     // @step And the SessionContext in_flight_thinking slot is Some(2)
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(2));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -333,55 +351,59 @@ fn second_thinking_after_tool_call_starts_fresh_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn user_input_clears_in_flight_thinking_without_mutating() {
+fn user_input_clears_in_flight_thinking_without_mutating() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "first thought" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "first thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("first thought".to_string()),
     ));
-    // @step And the chunks subscriber has forwarded UserInput { "carry on" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::UserInput { text: "carry on" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::user_input("carry on".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards Thinking { "second thought" } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Thinking { thinking: "second thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("second thought".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly three rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly three rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 3);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::UserInput
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 2),
+        nth_chunk_kind(&app, &sid("s-1"), 2)?,
         ChunkKind::Thinking
     ));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "first thought");
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 2),
+        nth_chunk_source_text(&app, &sid("s-1"), 0)?,
+        "first thought"
+    );
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 2)?,
         "second thought"
     );
 
     // @step And the chunk at index 0 has is_streaming true (left untouched by UserInput)
     assert!(
-        nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "UserInput must NOT mutate the existing thinking chunk's is_streaming"
     );
     // @step And the chunk at index 2 has is_streaming true
-    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 2));
+    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 2)?);
     // @step And the SessionContext in_flight_thinking slot is Some(2)
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(2));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -390,10 +412,10 @@ fn user_input_clears_in_flight_thinking_without_mutating() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn thinking_inserts_before_in_flight_assistant() {
+fn thinking_inserts_before_in_flight_assistant() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Text { "Reading" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Text { text: "Reading" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::text("Reading".to_string()),
@@ -401,24 +423,24 @@ fn thinking_inserts_before_in_flight_assistant() {
     // @step And the SessionContext in_flight_assistant slot is Some(0)
     assert_eq!(session_in_flight_assistant(&app, &sid("s-1")), Some(0));
 
-    // @step When the chunks subscriber forwards Thinking { "Hmm" } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Thinking { thinking: "Hmm" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("Hmm".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::AssistantText
     ));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "Hmm");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1), "Reading");
+    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0)?, "Hmm");
+    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1)?, "Reading");
 
     // @step And the SessionContext in_flight_thinking slot is Some(0)
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(0));
@@ -428,6 +450,7 @@ fn thinking_inserts_before_in_flight_assistant() {
         Some(1),
         "in_flight_assistant must be bumped by 1 when a thinking chunk is spliced before it"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -436,32 +459,33 @@ fn thinking_inserts_before_in_flight_assistant() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn done_clears_in_flight_thinking_without_mutating_chunk() {
+fn done_clears_in_flight_thinking_without_mutating_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "settled thought" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "settled thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("settled thought".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards Done for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Done for s-1
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     // @step And that chunk's source.text equals "settled thought"
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 0),
+        nth_chunk_source_text(&app, &sid("s-1"), 0)?,
         "settled thought"
     );
     // @step And that chunk's is_streaming flag is true (Done does not mutate the thinking chunk)
     assert!(
-        nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "Done must NOT mutate is_streaming on the thinking chunk"
     );
     // @step And the SessionContext in_flight_thinking slot is None
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -470,37 +494,38 @@ fn done_clears_in_flight_thinking_without_mutating_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn second_thinking_after_done_starts_fresh_chunk() {
+fn second_thinking_after_done_starts_fresh_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "old thought" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "old thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("old thought".to_string()),
     ));
-    // @step And the chunks subscriber has forwarded Done for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Done for s-1
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
-    // @step When the chunks subscriber forwards Thinking { "new thought" } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Thinking { thinking: "new thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("new thought".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::Thinking
     ));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "old thought");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1), "new thought");
+    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0)?, "old thought");
+    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1)?, "new thought");
     // @step And the SessionContext in_flight_thinking slot is Some(1)
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(1));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -509,44 +534,45 @@ fn second_thinking_after_done_starts_fresh_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn error_clears_in_flight_thinking_without_mutating_chunk() {
+fn error_clears_in_flight_thinking_without_mutating_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "mid thought" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "mid thought" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("mid thought".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards Error { "rate limit exceeded" } for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Error { error: "rate limit exceeded" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::error("rate limit exceeded".to_string()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::Error
     ));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "mid thought");
+    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0)?, "mid thought");
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 1),
+        nth_chunk_source_text(&app, &sid("s-1"), 1)?,
         "API Error: rate limit exceeded"
     );
 
     // @step And the chunk at index 0 has is_streaming true (Error does not mutate it)
     assert!(
-        nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "Error must NOT mutate is_streaming on the thinking chunk"
     );
     // @step And the SessionContext in_flight_thinking slot is None
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -555,43 +581,44 @@ fn error_clears_in_flight_thinking_without_mutating_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn interrupted_clears_in_flight_thinking_without_mutating_chunk() {
+fn interrupted_clears_in_flight_thinking_without_mutating_chunk() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
-    // @step And the chunks subscriber has forwarded Thinking { "interrupted mid-flight" } for s-1
+    // @step And the chunks subscriber has forwarded StreamChunk::Thinking { thinking: "interrupted mid-flight" } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::thinking("interrupted mid-flight".to_string()),
     ));
 
-    // @step When the chunks subscriber forwards Interrupted {} for s-1
+    // @step When the chunks subscriber forwards StreamChunk::Interrupted {} for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::interrupted(Vec::new()),
     ));
 
-    // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly two rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::Interrupted
     ));
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 0),
+        nth_chunk_source_text(&app, &sid("s-1"), 0)?,
         "interrupted mid-flight"
     );
 
     // @step And the chunk at index 0 has is_streaming true (Interrupted does not mutate it)
     assert!(
-        nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "Interrupted must NOT mutate is_streaming on the thinking chunk"
     );
     // @step And the SessionContext in_flight_thinking slot is None
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), None);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -600,7 +627,7 @@ fn interrupted_clears_in_flight_thinking_without_mutating_chunk() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn screenshot_transcript_four_deltas_produce_one_scrollback_row() {
+fn screenshot_transcript_four_deltas_produce_one_scrollback_row() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -611,7 +638,7 @@ fn screenshot_transcript_four_deltas_produce_one_scrollback_row() {
         "work units are in progress or recently completed.",
     ];
 
-    // @step When the chunks subscriber forwards the following Thinking deltas in order for s-1
+    // @step When the chunks subscriber forwards the following Thinking deltas in order for s-1:
     for d in deltas.iter() {
         app.dispatch(Action::ChunkReceived(
             sid("s-1"),
@@ -627,7 +654,7 @@ fn screenshot_transcript_four_deltas_produce_one_scrollback_row() {
     assert_eq!(visible[0], "[Thinking]");
 
     // @step And that chunk's source.text concatenates all four deltas with no "[Thinking]" prefix baked in
-    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let stored = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     let expected: String = deltas.iter().copied().collect();
     assert_eq!(stored, expected);
     assert!(
@@ -637,6 +664,7 @@ fn screenshot_transcript_four_deltas_produce_one_scrollback_row() {
 
     // @step And the SessionContext in_flight_thinking slot is Some(0)
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), Some(0));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -645,11 +673,11 @@ fn screenshot_transcript_four_deltas_produce_one_scrollback_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn full_round_trip_thinking_renders_five_chunks_in_order() {
+fn full_round_trip_thinking_renders_five_chunks_in_order() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
-    // @step When the chunks subscriber forwards the chunks in order for s-1
+    // @step When the chunks subscriber forwards the following chunks in order for s-1:
     let chunks = vec![
         StreamChunk::user_input("how is RPC-093 going?".to_string()),
         StreamChunk::thinking("Let me ".to_string()),
@@ -665,56 +693,56 @@ fn full_round_trip_thinking_renders_five_chunks_in_order() {
         app.dispatch(Action::ChunkReceived(sid("s-1"), c));
     }
 
-    // @step Then the s-1 scrollback contains exactly five rendered chunks in order
+    // @step Then the s-1 scrollback contains exactly five rendered chunks in order:
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 5);
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 0),
+        nth_chunk_kind(&app, &sid("s-1"), 0)?,
         ChunkKind::UserInput
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 1),
+        nth_chunk_kind(&app, &sid("s-1"), 1)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 2),
+        nth_chunk_kind(&app, &sid("s-1"), 2)?,
         ChunkKind::ToolCall { .. }
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 3),
+        nth_chunk_kind(&app, &sid("s-1"), 3)?,
         ChunkKind::Thinking
     ));
     assert!(matches!(
-        nth_chunk_kind(&app, &sid("s-1"), 4),
+        nth_chunk_kind(&app, &sid("s-1"), 4)?,
         ChunkKind::AssistantText
     ));
 
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 0),
+        nth_chunk_source_text(&app, &sid("s-1"), 0)?,
         "how is RPC-093 going?"
     );
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 1),
+        nth_chunk_source_text(&app, &sid("s-1"), 1)?,
         "Let me check the card"
     );
     // tool-call chunk text already includes header + result body
-    let tool_text = nth_chunk_source_text(&app, &sid("s-1"), 2);
+    let tool_text = nth_chunk_source_text(&app, &sid("s-1"), 2)?;
     assert!(tool_text.contains("Fspec(show-work-unit)"));
     assert!(tool_text.contains("ok"));
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 3),
+        nth_chunk_source_text(&app, &sid("s-1"), 3)?,
         "It is in specifying"
     );
     assert_eq!(
-        nth_chunk_source_text(&app, &sid("s-1"), 4),
+        nth_chunk_source_text(&app, &sid("s-1"), 4)?,
         "RPC-093 is in specifying."
     );
 
     // @step And the chunk at index 1 has is_streaming false (finalised by the ToolCall at index 2)
-    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 1));
+    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 1)?);
     // @step And the chunk at index 3 has is_streaming true (Done does not mutate it)
-    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 3));
+    assert!(nth_chunk_is_streaming(&app, &sid("s-1"), 3)?);
     // @step And the chunk at index 4 has is_streaming false (Done finalised the assistant text)
-    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 4));
+    assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 4)?);
 
     // @step And the SessionContext in_flight_thinking slot is None
     assert_eq!(session_in_flight_thinking(&app, &sid("s-1")), None);
@@ -725,7 +753,7 @@ fn full_round_trip_thinking_renders_five_chunks_in_order() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .unwrap();
+        .or_fail("expected a value")?;
     for (i, c) in ctx.scrollback.visible_window(1024).iter().enumerate() {
         let stored = c
             .source
@@ -737,4 +765,5 @@ fn full_round_trip_thinking_renders_five_chunks_in_order() {
             "chunk {i} must not bake [Thinking]; got {stored:?}"
         );
     }
+    Ok(())
 }

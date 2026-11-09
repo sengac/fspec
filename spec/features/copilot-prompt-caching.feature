@@ -1,4 +1,7 @@
+@BUG-582
 @PROV-058
+@providers
+@provider-abstraction
 Feature: Add prompt caching for GitHub Copilot provider connections
   """
   Inject cache control in CopilotHttpClient::send() by parsing the JSON body, checking the model field, and adding copilot_cache_control to the right positions before re-serializing. New pure function: inject_copilot_cache_control(body: &mut Value, model: &str)

@@ -17,6 +17,7 @@
 //! `getFspecUserDir()`) and supports pre-session toggle when no session
 //! is active (mirrors TS `AgentView.tsx:2713-2715`).
 
+use crate::components::notification_dialog::{NotificationDialog, NOTIFICATION_DIALOG_ID};
 use crate::components::Action;
 
 use super::state::App;
@@ -46,21 +47,29 @@ impl App {
     /// override, then `~/.fspec`, then `.fspec` fallback.
     ///
     /// RPC-430: when there is NO current session the handler toggles
-    /// `pre_session_debug_enabled` and emits a scrollback notice (mirrors
-    /// TypeScript's pre-session `toggleDebug(debugDir)` path).
+    /// `pre_session_debug_enabled` (mirrors TypeScript's pre-session
+    /// `toggleDebug(debugDir)` path); TUI-127: a notification says whether
+    /// capture is on for the next session.
     pub(crate) fn handle_slash_debug(&mut self) {
         let debug_dir = resolve_debug_dir();
 
         // RPC-430: pre-session toggle path — mirrors TS AgentView.tsx:2713-2715
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
-            // No active session: toggle the pre-session flag and emit notice.
+            // TUI-127: no session has a scrollback to take the notice, so a
+            // notification says what changed. The next session is started
+            // with capture on (dispatch_create_session_dialog.rs); the daemon
+            // picks its directory, so none is named.
             self.pre_session_debug_enabled = !self.pre_session_debug_enabled;
-            let text = format!("[debug] capture toggled \u{2192} {debug_dir}");
-            // Emit notice to a placeholder session so the user sees feedback.
-            // The notice is emitted via Custom action since there's no session.
-            let _ = self
-                .action_tx
-                .send(Action::Custom(format!("[notice] {text}")));
+            let text = if self.pre_session_debug_enabled {
+                "Debug capture will be on for the next session"
+            } else {
+                "Debug capture is off"
+            };
+            // A second /debug replaces the first notification.
+            let _ = self.compositor.remove(NOTIFICATION_DIALOG_ID);
+            self.compositor.push(Box::new(
+                NotificationDialog::info(text).with_action_tx(self.action_tx.clone()),
+            ));
             return;
         };
 
@@ -81,17 +90,5 @@ impl App {
             let _ = action_tx.send(Action::EmitSessionNotice(session_for_send, text));
         });
         self.pending_tasks.push(handle);
-    }
-
-    /// Route the RPC-055 action variants through their helpers. Called
-    /// from the catch-all arm of `App::dispatch`'s match so the
-    /// orchestrator stays under the 300-LoC ceiling. Currently the
-    /// `/debug` slash command has no dedicated Action variants (it
-    /// re-uses `SlashCommandSelected(Debug)` + `EmitSessionNotice` from
-    /// the established patterns), but the dispatch hook is preserved
-    /// for symmetry with RPC-054's `try_dispatch_provider_settings`.
-    #[allow(dead_code)]
-    pub(crate) fn try_dispatch_slash_debug(&mut self, _action: &Action) -> bool {
-        false
     }
 }

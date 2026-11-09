@@ -10,6 +10,8 @@
             {
               "file": "rust/core/src/persistence/messages/write.rs",
               "lines": [
+                17,
+                18,
                 19,
                 20,
                 21,
@@ -75,6 +77,74 @@
                 81,
                 82,
                 83,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": "/// Store a new message with metadata and return its ID.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
                 84,
                 85,
                 86,
@@ -95,8 +165,36 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/index.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// BUG-519: check that a saved index describes the current end of the history.",
+              "lastLine": "}"
             }
           ]
         }
@@ -112,6 +210,97 @@
             {
               "file": "rust/core/src/persistence/messages/write.rs",
               "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ],
+              "firstLine": "/// Re-append a message with merged metadata, leaving its old record as dead space.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Appending after another store compacts history uses current offsets",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/shared_message_store_index_coherence.rs",
+          "lines": "96-127",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
                 49,
                 50,
                 51,
@@ -167,87 +356,6 @@
                 101,
                 102,
                 103,
-                104
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Appending after another store compacts history uses current offsets",
-      "testMappings": [
-        {
-          "file": "rust/core/tests/shared_message_store_index_coherence.rs",
-          "lines": "96-127",
-          "implMappings": [
-            {
-              "file": "rust/core/src/persistence/messages/maintenance.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -264,20 +372,6 @@
                 117,
                 118,
                 119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -299,8 +393,77 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "/// Refresh from the saved index, scanning missing bytes or rebuilding as needed.",
+              "lastLine": "}"
             }
           ]
         }
@@ -316,35 +479,6 @@
             {
               "file": "rust/core/src/persistence/messages/maintenance.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
                 110,
                 111,
                 112,
@@ -355,20 +489,6 @@
                 117,
                 118,
                 119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
                 134,
                 135,
                 136,
@@ -390,8 +510,77 @@
                 152,
                 153,
                 154,
-                155
-              ]
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "/// Remove orphaned messages (not referenced by any session).",
+              "lastLine": "}"
             }
           ]
         }
@@ -407,9 +596,6 @@
             {
               "file": "rust/core/src/persistence/messages/maintenance.rs",
               "lines": [
-                9,
-                10,
-                11,
                 12,
                 13,
                 14,
@@ -477,8 +663,39 @@
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Lock a stable sidecar outside the replaceable messages directory.",
+              "lastLine": "}"
             }
           ]
         }
@@ -500,7 +717,9 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "state: Mutex::new(StoreState::new()?),",
+              "lastLine": ""
             }
           ]
         }
@@ -516,10 +735,6 @@
             {
               "file": "rust/core/src/persistence/messages/state.rs",
               "lines": [
-                27,
-                28,
-                29,
-                30,
                 31,
                 32,
                 33,
@@ -584,8 +799,24 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "pub(super) struct StoreGeneration {",
+              "lastLine": "}"
             }
           ]
         }
@@ -601,12 +832,6 @@
             {
               "file": "rust/core/src/persistence/messages/maintenance.rs",
               "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
                 45,
                 46,
                 47,
@@ -641,8 +866,39 @@
                 76,
                 77,
                 78,
-                79
-              ]
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// Refresh from the saved index, scanning missing bytes or rebuilding as needed.",
+              "lastLine": "}"
             }
           ]
         }
@@ -653,7 +909,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/shared_message_store_cleanup_safety.rs",
-          "lines": "47-84",
+          "lines": "46-93",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/message_cleanup.rs",
@@ -723,7 +979,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "/// Remove unreferenced messages only when no session writer can be committing a reference.",
+              "lastLine": "}"
             }
           ]
         }
@@ -734,7 +992,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/shared_message_store_cleanup_safety.rs",
-          "lines": "86-140",
+          "lines": "95-160",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/message_cleanup.rs",
@@ -775,13 +1033,10 @@
                 40,
                 41,
                 42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48
-              ]
+                43
+              ],
+              "firstLine": "/// Remove unreferenced messages only when no session writer can be committing a reference.",
+              "lastLine": "}"
             }
           ]
         }
@@ -792,7 +1047,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/shared_message_store_cleanup_safety.rs",
-          "lines": "22-45",
+          "lines": "21-44",
           "implMappings": [
             {
               "file": "rust/core/src/persistence/message_cleanup.rs",
@@ -833,13 +1088,243 @@
                 40,
                 41,
                 42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48
-              ]
+                43
+              ],
+              "firstLine": "/// Remove unreferenced messages only when no session writer can be committing a reference.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reopening reuses an index published in the same timestamp tick as its history",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/shared_message_store_index_coherence.rs",
+          "lines": "214-239",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/index.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// BUG-519: check that a saved index describes the current end of the history.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reopening rebuilds a same-tick index whose last record no longer matches the history",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/shared_message_store_index_coherence.rs",
+          "lines": "241-283",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/index.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ],
+              "firstLine": "/// BUG-519: check that a saved index describes the current end of the history.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reopening keeps the completeness of a same-tick index whose proof matches both files",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/shared_message_store_index_coherence.rs",
+          "lines": "329-372",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/maintenance.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ],
+              "firstLine": "let data_metadata = fs::metadata(&self.messages_file)",
+              "lastLine": "super::verified::publish(self, &generation);"
+            },
+            {
+              "file": "rust/core/src/persistence/messages/verified.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "firstLine": "pub(super) fn matches(store: &MessageStore, generation: &StoreGeneration) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -847,8 +1332,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/core/tests/shared_message_store_index_coherence.rs",
@@ -858,10 +1343,12 @@
     "implFiles": [
       "rust/core/src/persistence/messages/write.rs",
       "rust/core/src/persistence/messages/maintenance.rs",
+      "rust/core/src/persistence/messages/index.rs",
       "rust/core/src/persistence/messages.rs",
       "rust/core/src/persistence/messages/state.rs",
-      "rust/core/src/persistence/message_cleanup.rs"
+      "rust/core/src/persistence/message_cleanup.rs",
+      "rust/core/src/persistence/messages/verified.rs"
     ],
-    "totalLinesCovered": 1033
+    "totalLinesCovered": 1541
   }
 }

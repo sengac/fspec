@@ -53,8 +53,8 @@ Feature: AI-Driven Deep Code Review
     When I run "fspec review VAL-001"
     Then the output should contain a <system-reminder> tag
     And the system-reminder should instruct the AI to detect duplicated validation logic
-    And the system-reminder should suggest creating a shared validator utility
-    And the system-reminder should list the files containing duplicated code
+    And the system-reminder should suggest extracting similar code to shared utilities
+    And the system-reminder should list the 3 implementation files to read
 
   Scenario: Review finds race condition and suggests FOUNDATION.md pattern
     Given I have a work unit "FILE-001" with async file operations
@@ -71,8 +71,8 @@ Feature: AI-Driven Deep Code Review
     When I run "fspec review PROC-001"
     Then the output should contain a <system-reminder> tag
     And the system-reminder should instruct the AI to detect large functions
-    And the system-reminder should suggest refactoring into smaller focused functions
-    And the system-reminder should mention the God object anti-pattern
+    And the system-reminder should suggest splitting large functions
+    And the system-reminder should mention the God function anti-pattern
 
   Scenario: Review checks FOUNDATION.md file size principle
     Given I have a work unit "BIG-001" with a file at 450 lines
@@ -80,15 +80,5 @@ Feature: AI-Driven Deep Code Review
     When I run "fspec review BIG-001"
     Then the output should contain a <system-reminder> tag
     And the system-reminder should instruct the AI to check file sizes against FOUNDATION.md
-    And the system-reminder should report the 450-line file violates the 300-line principle
-    And the system-reminder should suggest refactoring to meet the standard
-
-  Scenario: Review preserves existing static checks
-    Given I have a work unit "TEST-001" with code using "any" type
-    And the work unit has incomplete test coverage
-    And the work unit has ACDD compliance violations
-    When I run "fspec review TEST-001"
-    Then the output should contain critical issue for "any" type usage
-    And the output should contain ACDD compliance violations
-    And the output should contain incomplete test coverage warnings
-    And the output should also contain <system-reminder> for AI-driven deep analysis
+    And the system-reminder should name the 300-line file size limit as an example principle
+    And the system-reminder should ask the AI to note FOUNDATION.md violations with the exact principle violated

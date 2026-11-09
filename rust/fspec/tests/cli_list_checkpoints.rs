@@ -205,7 +205,7 @@ fn scenario_missing_positional_argument_exits_non_zero() {
         "fspec list-checkpoints with NO arg must exit non-zero; stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring 'work-unit-id' or the substring 'workUnitId'
+    // @step Then stderr contains the substring 'work-unit-id' or the substring 'workUnitId' or the substring 'WORK_UNIT_ID'
     assert!(
         stderr.contains("work-unit-id")
             || stderr.contains("workUnitId")
@@ -264,7 +264,7 @@ fn scenario_cli_text_output_renders_manual_checkpoint() {
         &[("baseline", "2026-06-01T10:00:00.000Z")],
     );
 
-    // @step When I run the CLI with arg AUTH-001
+    // @step When I run `./rust/target/release/fspec list-checkpoints AUTH-001`
     let (code, stdout, stderr) = run_list_checkpoints(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits 0
@@ -280,7 +280,7 @@ fn scenario_cli_text_output_renders_manual_checkpoint() {
     );
 
     // @step Then stdout contains the manual icon+label line
-    // @step Then stdout contains the substring '📌 baseline (manual)'
+    // @step Then stdout contains the substring '📌  baseline (manual)'
     assert!(
         stdout.contains("\u{1F4CC}  baseline (manual)"),
         "stdout must contain manual icon+label line; got:\n{stdout}"
@@ -299,8 +299,8 @@ fn scenario_cli_text_output_renders_manual_checkpoint() {
 
 #[test]
 fn scenario_default_combined_tui_mode_preserved_after_adding_list_checkpoints() {
-    // @step Given the Rust binary has list-checkpoints registered as a clap subcommand alongside daemon, client, status, list-work-units, list-prefixes
-    // @step When I run the binary with --help
+    // @step Given the fspec Rust binary has list-checkpoints registered as a clap subcommand alongside daemon, client, status, list-work-units, and list-prefixes
+    // @step When I run `./rust/target/release/fspec --help`
     let output = Command::new(fspec_bin())
         .arg("--help")
         .output()
@@ -314,7 +314,7 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_checkpoints() 
     );
     let help = String::from_utf8_lossy(&output.stdout).into_owned();
 
-    // @step Then the help output lists daemon, client, status, list-work-units, list-prefixes, list-checkpoints as available subcommands
+    // @step Then the help output lists daemon, client, status, list-work-units, list-prefixes, and list-checkpoints as available subcommands
     for sub in [
         "daemon",
         "client",
@@ -329,7 +329,7 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_checkpoints() 
         );
     }
 
-    // @step Then the long-about description still documents that running the binary with no subcommand enters combined TUI mode
+    // @step Then the long-about description still documents that running fspec with no subcommand enters combined TUI mode
     assert!(
         help.contains("combined mode") || help.contains("combined"),
         "long-about must document combined-mode default; got:\n{help}"
@@ -378,18 +378,18 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
     assert_eq!(arr[0]["isAutomatic"].as_bool(), Some(false));
 
-    // @step When I run the CLI with arg AUTH-001 against the same on-disk state
+    // @step When I run `./rust/target/release/fspec list-checkpoints AUTH-001` against the same on-disk state
     let (code, stdout, _stderr) = run_list_checkpoints(ws.path(), &["AUTH-001"]);
     assert_eq!(code, 0);
 
     // @step Then stdout contains the manual icon+label
-    // @step Then stdout contains the substring '📌 baseline (manual)'
+    // @step Then stdout contains the substring '📌  baseline (manual)'
     assert!(
         stdout.contains("\u{1F4CC}  baseline (manual)"),
         "CLI text output must reflect the same baseline checkpoint as the dispatcher; got:\n{stdout}"
     );
 
-    // @step Then the CLI bridge module contains NO inline checkpoint-listing, classification or rendering logic
+    // @step Then the CLI bridge module rust/fspec/src/list_checkpoints.rs contains NO inline checkpoint-listing, classification or rendering logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_checkpoints.rs");
     assert!(
         bridge_path.exists(),

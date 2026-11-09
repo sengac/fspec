@@ -36,10 +36,11 @@ invocation because they:
   2. exercise the full SessionManager + agent-loop wiring against a
      real (deterministic) provider
 
-To run the full suite:
+To run the full suite (BUG-543: `test-support` enables `test-stub-provider`,
+and it is the feature the crate's standard test run uses):
 
 ```
-cargo test --features test-stub-provider -p codelet-fspec --test cross_frontend_parity -- --include-ignored
+cargo test --profile ci-test -p codelet-fspec --features test-support --test cross_frontend_parity
 ```
 
 The source-shape and normalisation-pipeline tests inside the file run on
@@ -55,9 +56,9 @@ chunk emission shape changes (new chunk variant, new field, etc.):
 ```
 rm rust/fspec/tests/fixtures/cross_frontend_run.jsonl
 FSPEC_RPC_066_REGENERATE=1 \
-  cargo test --features test-stub-provider \
+  cargo test --profile ci-test --features test-support \
              -p codelet-fspec --test cross_frontend_parity \
-             scenario_scripted_run_matches_golden -- --include-ignored
+             scenario_scripted_run_matches_golden
 ```
 
 The regeneration codepath captures the full scripted run, normalises it,

@@ -1,4 +1,6 @@
 @BUG-102
+@providers
+@history-search
 Feature: DeepSearch sub-agent applies provider-specific request configuration
   """
   DeepSearch must keep its read-only tool set, but it cannot use a one-size-fits-all

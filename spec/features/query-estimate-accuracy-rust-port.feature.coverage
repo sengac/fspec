@@ -5,28 +5,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "52-79",
+          "lines": "53-81",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "/// Read `spec/work-units.json` with strict semantics:",
+              "lastLine": "}"
             }
           ]
         }
@@ -37,28 +45,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "82-108",
+          "lines": "83-109",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "/// Read `spec/work-units.json` with strict semantics:",
+              "lastLine": "}"
             }
           ]
         }
@@ -69,30 +85,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "110-142",
+          "lines": "111-143",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252
-              ]
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "/// Compute the single-unit payload for the supplied `id`. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -103,30 +123,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "144-170",
+          "lines": "145-171",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252
-              ]
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "/// Compute the single-unit payload for the supplied `id`. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -137,30 +161,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "172-204",
+          "lines": "173-205",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252
-              ]
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ],
+              "firstLine": "/// Compute the single-unit payload for the supplied `id`. Mirrors TS",
+              "lastLine": "}"
             }
           ]
         }
@@ -171,7 +199,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "206-232",
+          "lines": "207-233",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -186,7 +214,9 @@
                 340,
                 341,
                 342
-              ]
+              ],
+              "firstLine": "let mut out: IndexMap<String, PrefixBucket> = IndexMap::new();",
+              "lastLine": ");"
             }
           ]
         }
@@ -197,7 +227,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "234-270",
+          "lines": "235-286",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -271,7 +301,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &RawData, id: &str) -> Result<SingleResult, FspecCoreError> {",
+              "lastLine": "by_story_points.insert("
             }
           ]
         }
@@ -282,7 +314,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "272-302",
+          "lines": "288-329",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -356,7 +388,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &RawData, id: &str) -> Result<SingleResult, FspecCoreError> {",
+              "lastLine": "by_story_points.insert("
             }
           ]
         }
@@ -367,7 +401,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "304-337",
+          "lines": "331-379",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -441,18 +475,20 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &RawData, id: &str) -> Result<SingleResult, FspecCoreError> {",
+              "lastLine": "by_story_points.insert("
             }
           ]
         }
       ]
     },
     {
-      "name": "byStoryPoints key iteration order follows first-encounter insertion order",
+      "name": "byStoryPoints key iteration order follows ascending numeric order",
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "339-369",
+          "lines": "381-420",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -526,7 +562,9 @@
                 321,
                 322,
                 323
-              ]
+              ],
+              "firstLine": "fn compute_single(data: &RawData, id: &str) -> Result<SingleResult, FspecCoreError> {",
+              "lastLine": "by_story_points.insert("
             }
           ]
         }
@@ -537,18 +575,35 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "371-416",
+          "lines": "422-473",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                347,
-                348,
-                349,
-                350,
-                351,
-                352
-              ]
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                151,
+                152,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382
+              ],
+              "firstLine": "/// Aggregate payload. Mirrors `AllWorkUnitsAccuracy` at TS line 36 with",
+              "lastLine": "}"
             }
           ]
         }
@@ -559,28 +614,36 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "418-446",
+          "lines": "475-505",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
               "lines": [
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
                 220,
-                221
-              ]
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ],
+              "firstLine": "/// Read `spec/work-units.json` with strict semantics:",
+              "lastLine": "}"
             }
           ]
         }
@@ -591,7 +654,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/query_estimate_accuracy.rs",
-          "lines": "448-495",
+          "lines": "507-558",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/query_estimate_accuracy.rs",
@@ -628,7 +691,9 @@
                 146,
                 147,
                 148
-              ]
+              ],
+              "firstLine": "by_story_points: IndexMap<String, PointsBucket>,",
+              "lastLine": ""
             }
           ]
         }
@@ -645,6 +710,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/query_estimate_accuracy.rs"
     ],
-    "totalLinesCovered": 1288
+    "totalLinesCovered": 959
   }
 }

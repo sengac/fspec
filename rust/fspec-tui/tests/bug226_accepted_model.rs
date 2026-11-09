@@ -1,5 +1,6 @@
 //! Feature: spec/features/accepted-model-selection.feature
 
+use codelet_test_helpers::TestResult;
 use std::sync::{atomic::Ordering, Arc};
 
 use codelet_fspec_tui::{Action, App};
@@ -15,12 +16,12 @@ fn origin() -> SessionId {
 }
 
 #[tokio::test]
-async fn a_later_rejection_retains_an_earlier_accepted_pending_selection() {
+async fn a_later_rejection_retains_an_earlier_accepted_pending_selection() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, _) = fixture().await;
+    let (mut app, _) = fixture().await?;
     let view = &mut app.navigator_mut().model_selector;
     view.set_session(Some(origin()));
-    view.set_current_model(Some("A".into()));
+    view.set_current_model(Some(("openai", "A")));
     view.set_providers(vec![ProviderInfo {
         key: "openai".into(),
         display_name: "OpenAI".into(),
@@ -37,7 +38,7 @@ async fn a_later_rejection_retains_an_earlier_accepted_pending_selection() {
     // @step When model B is accepted and a subsequent model C request is rejected
     select(&mut app, "B");
     select(&mut app, "reject");
-    let mut actions = responses(&mut app).await;
+    let mut actions = responses(&mut app).await?;
     actions.reverse();
     for action in actions {
         app.dispatch(action);
@@ -61,11 +62,12 @@ async fn a_later_rejection_retains_an_earlier_accepted_pending_selection() {
         .iter()
         .any(|line| line.contains("model A") && line.contains("(current)")));
     assert!(notice(&app, &origin(), "session busy"));
+    Ok(())
 }
 
 fn seed(app: &mut App) {
     app.agent_view_store_mut()
-        .set_selected_model_id(origin(), "A".into());
+        .set_selected_model(origin(), ("openai".into(), "A".into()));
     app.agent_view_store_mut().set_model_info(
         origin(),
         ModelInfo {
@@ -75,13 +77,13 @@ fn seed(app: &mut App) {
     );
 }
 
-async fn fixture() -> (App, Arc<ModelBackend>) {
+async fn fixture() -> Result<(App, Arc<ModelBackend>), codelet_test_helpers::TestError> {
     let backend = Arc::new(ModelBackend::new());
     let mut app = App::new(backend.clone());
     app.dispatch(Action::SessionCreated(origin()));
-    settle(&mut app).await;
+    settle(&mut app).await?;
     seed(&mut app);
-    (app, backend)
+    Ok((app, backend))
 }
 
 fn select(app: &mut App, model: &str) {
@@ -94,8 +96,8 @@ fn select(app: &mut App, model: &str) {
 
 fn assert_model(app: &App, model: &str) {
     assert_eq!(
-        app.agent_view_store().selected_model_id_for(&origin()),
-        Some(model)
+        app.agent_view_store().selected_model_for(&origin()),
+        Some(&("openai".to_string(), model.to_string()))
     );
     assert_eq!(
         app.agent_view_store()
@@ -119,55 +121,58 @@ fn notice(app: &App, session: &SessionId, text: &str) -> bool {
 }
 
 #[tokio::test]
-async fn pending_and_rejected_selection_preserves_accepted_identity() {
+async fn pending_and_rejected_selection_preserves_accepted_identity() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, _) = fixture().await;
+    let (mut app, _) = fixture().await?;
     // @step When model B is requested and rejected as busy
     select(&mut app, "reject");
     // @step Then model A remains selected before and after completion
     assert_model(&app, "A");
-    settle(&mut app).await;
+    settle(&mut app).await?;
     assert_model(&app, "A");
     // @step And the session shows the rejection reason
     assert!(notice(&app, &origin(), "session busy"));
+    Ok(())
 }
 
 #[tokio::test]
-async fn successful_selection_publishes_backend_identity_rather_than_request_alias() {
+async fn successful_selection_publishes_backend_identity_rather_than_request_alias() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, _) = fixture().await;
+    let (mut app, _) = fixture().await?;
     // @step When a model alias is accepted as canonical model B
     select(&mut app, "alias");
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then the selector and header display canonical model B
     assert_model(&app, "B");
+    Ok(())
 }
 
 #[tokio::test]
-async fn selection_feedback_stays_with_its_originating_session() {
+async fn selection_feedback_stays_with_its_originating_session() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, _) = fixture().await;
+    let (mut app, _) = fixture().await?;
     // @step When its rejected selection completes after focus moves to another session
     select(&mut app, "reject");
     app.dispatch(Action::SessionCreated(SessionId::new("other")));
     app.agent_view_store_mut()
-        .set_selected_model_id(SessionId::new("other"), "other-model".into());
-    settle(&mut app).await;
+        .set_selected_model(SessionId::new("other"), ("openai".into(), "m".into()));
+    settle(&mut app).await?;
     // @step Then only the originating session receives the rejection notice
     assert!(notice(&app, &origin(), "session busy"));
     assert!(!notice(&app, &SessionId::new("other"), "session busy"));
     // @step And the other session identity is unchanged
     assert_eq!(
         app.agent_view_store()
-            .selected_model_id_for(&SessionId::new("other")),
-        Some("other-model")
+            .selected_model_for(&SessionId::new("other")),
+        Some(&("openai".to_string(), "m".to_string()))
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn delayed_earlier_selection_cannot_overwrite_a_newer_request() {
+async fn delayed_earlier_selection_cannot_overwrite_a_newer_request() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, backend) = fixture().await;
+    let (mut app, backend) = fixture().await?;
     // @step When model B is delayed and model C is requested next
     backend.hold_write.store(true, Ordering::SeqCst);
     select(&mut app, "B");
@@ -176,13 +181,9 @@ async fn delayed_earlier_selection_cannot_overwrite_a_newer_request() {
     for _attempt in 0..100 {
         tokio::task::yield_now().await;
     }
-    let writes_before_release = backend
-        .writes
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .len();
+    let writes_before_release = backend.writes.lock().len();
     backend.release.add_permits(1);
-    let mut actions = responses(&mut app).await;
+    let mut actions = responses(&mut app).await?;
     // @step Then backend writes complete in request order
     assert_eq!(writes_before_release, 1);
     // @step And reversed response delivery still displays model C
@@ -191,43 +192,46 @@ async fn delayed_earlier_selection_cannot_overwrite_a_newer_request() {
         app.dispatch(action);
     }
     assert_model(&app, "C");
+    Ok(())
 }
 
 #[tokio::test]
-async fn earlier_chrome_hydration_cannot_overwrite_an_accepted_selection() {
+async fn earlier_chrome_hydration_cannot_overwrite_an_accepted_selection() -> TestResult {
     // @step Given an earlier model A chrome read is delayed
-    let (mut app, backend) = fixture().await;
+    let (mut app, backend) = fixture().await?;
     backend.hold_read.store(true, Ordering::SeqCst);
     app.dispatch(Action::ReattachSession(origin()));
     backend.wait_started().await;
     // @step When model B is accepted before that read is delivered
     select(&mut app, "B");
     backend.release.add_permits(1);
-    let mut actions = responses(&mut app).await;
+    let mut actions = responses(&mut app).await?;
     actions.reverse();
     for action in actions {
         app.dispatch(action);
     }
     // @step Then delayed hydration does not replace model B
     assert_model(&app, "B");
+    Ok(())
 }
 
 #[tokio::test]
-async fn reconciliation_failure_retains_accepted_display_and_surfaces_feedback() {
+async fn reconciliation_failure_retains_accepted_display_and_surfaces_feedback() -> TestResult {
     // @step Given a session displays accepted model A
-    let (mut app, backend) = fixture().await;
+    let (mut app, backend) = fixture().await?;
     // @step When a model switch fails and backend metadata cannot be refreshed
     backend.fail_read.store(true, Ordering::SeqCst);
     select(&mut app, "reject");
-    settle(&mut app).await;
+    settle(&mut app).await?;
     // @step Then model A remains selected and the session shows the failure
     assert_model(&app, "A");
     assert!(notice(&app, &origin(), "session busy"));
     assert!(notice(&app, &origin(), "metadata unavailable"));
+    Ok(())
 }
 
 #[test]
-fn selection_without_a_runtime_does_not_publish_an_unaccepted_model() {
+fn selection_without_a_runtime_does_not_publish_an_unaccepted_model() -> TestResult {
     // @step Given a session displays accepted model A without an async runtime
     let mut app = App::new(Arc::new(ModelBackend::new()));
     app.dispatch(Action::SessionCreated(origin()));
@@ -237,4 +241,5 @@ fn selection_without_a_runtime_does_not_publish_an_unaccepted_model() {
     // @step Then model A remains selected and the session shows an unavailable notice
     assert_model(&app, "A");
     assert!(notice(&app, &origin(), "unavailable"));
+    Ok(())
 }

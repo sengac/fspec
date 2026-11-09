@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "54-90",
+          "lines": "55-100",
           "implMappings": [
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
@@ -21,10 +21,6 @@
                 56,
                 57,
                 58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -57,12 +53,10 @@
                 92,
                 93,
                 94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
+                95
+              ],
+              "firstLine": "/// deep-merged view — BUG-193 requires the write half to read the RAW",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,11 +67,188 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "99-127",
+          "lines": "107-141",
           "implMappings": [
             {
               "file": "rust/sessions/src/default_thinking_level_persistence.rs",
               "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": ")",
+              "lastLine": "error"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A user-scope mux save preserves user-scope siblings",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "147-182",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/mux_config_persistence.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "/// deep-merged view — BUG-193 requires the write half to read the RAW",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving to a user scope without any user config file still succeeds",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "189-221",
+          "implMappings": [
+            {
+              "file": "rust/common/src/fspec_config.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "// Source is not an object (scalar/array/null), or target is not an",
+              "lastLine": "/// * An empty / whitespace-only file → `Ok(Value::Object(empty))`."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A malformed user config file fails the save and is left unchanged",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
+          "lines": "224-253",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
                 56,
                 57,
                 58,
@@ -139,136 +310,13 @@
                 114,
                 115,
                 116,
-                117
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A user-scope mux save preserves user-scope siblings",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "135-164",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/mux_config_persistence.rs",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Saving to a user scope without any user config file still succeeds",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "173-193",
-          "implMappings": [
-            {
-              "file": "rust/common/src/fspec_config.rs",
-              "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A malformed user config file degrades to a fresh save without mirroring project keys",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "202-224",
-          "implMappings": [
-            {
-              "file": "rust/common/src/fspec_config.rs",
-              "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// The level a stored entry holds, or why it is not a level.",
+              "lastLine": "})?;"
             }
           ]
         }
@@ -279,11 +327,17 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug193_user_scope_save_no_project_mirror.rs",
-          "lines": "233-254",
+          "lines": "260-284",
           "implMappings": [
             {
               "file": "rust/sessions/src/mux_config_persistence.rs",
               "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
                 107,
                 108,
                 109,
@@ -305,14 +359,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134
-              ]
+                128
+              ],
+              "firstLine": "/// (graceful degradation). Path-injectable core.",
+              "lastLine": "Some(value.clone())"
             }
           ]
         }
@@ -331,6 +381,6 @@
       "rust/sessions/src/default_thinking_level_persistence.rs",
       "rust/common/src/fspec_config.rs"
     ],
-    "totalLinesCovered": 384
+    "totalLinesCovered": 465
   }
 }

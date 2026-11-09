@@ -27,7 +27,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -43,7 +45,6 @@
             {
               "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
-                159,
                 160,
                 161,
                 162,
@@ -54,7 +55,9 @@
                 167,
                 168,
                 169
-              ]
+              ],
+              "firstLine": "fn load_tags_registry(path: &Path) -> (Option<TagsData>, bool) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -153,7 +156,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "fn build_categories(",
+              "lastLine": "}"
             }
           ]
         }
@@ -176,7 +181,9 @@
                 267,
                 268,
                 269
-              ]
+              ],
+              "firstLine": "fn lookup_count(tag_counts: &[(String, usize)], tag: &str) -> usize {",
+              "lastLine": "}"
             }
           ]
         }
@@ -275,7 +282,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "fn build_categories(",
+              "lastLine": "}"
             }
           ]
         }
@@ -354,8 +363,11 @@
                 154,
                 155,
                 156,
-                157
-              ]
+                157,
+                158
+              ],
+              "firstLine": "fn compute_stats(project_root: &Path) -> Result<TagStatsResult, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -404,7 +416,9 @@
                 383,
                 384,
                 385
-              ]
+              ],
+              "firstLine": "fn parse_feature_tags(content: &str) -> Option<Vec<String>> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -420,7 +434,6 @@
             {
               "file": "rust/fspec-core/src/commands/tag_stats.rs",
               "lines": [
-                159,
                 160,
                 161,
                 162,
@@ -431,7 +444,9 @@
                 167,
                 168,
                 169
-              ]
+              ],
+              "firstLine": "fn load_tags_registry(path: &Path) -> (Option<TagsData>, bool) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -464,7 +479,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -546,7 +563,9 @@
                 334,
                 335,
                 336
-              ]
+              ],
+              "firstLine": "fn render_text(result: &TagStatsResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -628,7 +647,9 @@
                 334,
                 335,
                 336
-              ]
+              ],
+              "firstLine": "fn render_text(result: &TagStatsResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -710,7 +731,9 @@
                 334,
                 335,
                 336
-              ]
+              ],
+              "firstLine": "fn render_text(result: &TagStatsResult) -> String {",
+              "lastLine": "}"
             }
           ]
         }
@@ -739,7 +762,92 @@
                 43,
                 44,
                 45
-              ]
+              ],
+              "firstLine": "pub fn glob_feature_files(project_root: &Path) -> Result<Vec<String>, FspecCoreError> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature file with no tags is counted as a file but adds no tags",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/tag_stats.rs",
+          "lines": "644-701",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/tag_stats.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ],
+              "firstLine": "fn compute_stats(project_root: &Path) -> Result<TagStatsResult, FspecCoreError> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -747,8 +855,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 13,
-    "coveredScenarios": 13,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/tag_stats.rs"
@@ -757,6 +865,6 @@
       "rust/fspec-core/src/commands/tag_stats.rs",
       "rust/fspec-core/src/io/feature_glob.rs"
     ],
-    "totalLinesCovered": 1099
+    "totalLinesCovered": 1221
   }
 }

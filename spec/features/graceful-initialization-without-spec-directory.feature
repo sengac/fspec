@@ -6,9 +6,11 @@
 @file-watcher
 @resilience
 @INIT-016
+@BUG-539
 Feature: Graceful Initialization Without Spec Directory
   """
   Extends existing file watcher mechanism to handle missing files and directories gracefully. Uses fs.watch or chokidar with error handling for ENOENT errors. Implements polling fallback when directory doesn't exist yet. File watcher continues running until explicit termination (Ctrl+C).
+  BUG-539 (product owner decision H-CORRUPT-WORK-UNITS): work-units.json can be corrupt only for a moment while an agent edits it. At startup a corrupt or unreadable file gives an empty board (WorkUnitsWatcher::new no longer fails, so build_service no longer aborts the daemon or embedded TUI). While running, a corrupt or unreadable re-read keeps the last good snapshot, publishes no snapshot and is reported on WorkUnitsWatcher::subscribe_reload_failures. The next valid write reloads the board. A missing file still means an empty board.
   """
 
   # ========================================
@@ -21,7 +23,7 @@ Feature: Graceful Initialization Without Spec Directory
   #   3. System must watch for spec directory and work-units.json creation and auto-reload when they appear
   #   4. System must handle temporary removal of work-units.json during upgrades without crashing
   #   5. Existing file watch mechanism for work-units.json changes must be extended to handle missing file/directory cases
-  #   6. Corrupted or invalid work-units.json must be treated same as missing file - show empty board and continue watching
+  #   6. Corrupted or invalid work-units.json at startup shows an empty board and keeps watching; while running it keeps the last good board (BUG-539)
   #   7. No visual distinction between waiting-for-files state and legitimately-empty work units state
   #   8. File watcher must clean up and exit immediately when user terminates fspec command
   #
@@ -61,15 +63,28 @@ Feature: Graceful Initialization Without Spec Directory
     Then the system should automatically reload
     And the system should display the work units again
 
-  Scenario: Handle corrupted work-units.json gracefully
+  Scenario: Start with an empty board when work-units.json is corrupt, then reload once it is fixed
     Given the spec directory exists
     But the work-units.json file contains invalid JSON
-    When I run 'fspec' with no subcommand
-    Then the system should display an empty Kanban board
-    And the system should continue watching the file
+    When fspec starts
+    Then it starts instead of aborting and shows an empty Kanban board
+    And it keeps watching the file
     When the work-units.json file is fixed with valid JSON
-    Then the system should automatically reload
-    And the system should display the work units
+    Then the board reloads on its own and shows the work units
+
+  Scenario: A corrupt re-read while running keeps the last good board until the file is fixed
+    Given fspec is running and the board shows the work unit "AUTH-001"
+    When the work-units.json file becomes invalid JSON
+    Then the reload failure is reported
+    And the board still shows "AUTH-001" and no empty board is published
+    When the work-units.json file is fixed with the work unit "AUTH-002"
+    Then the board reloads on its own and shows "AUTH-002"
+
+  Scenario: Repeated break and fix cycles never blank the board
+    Given fspec is running and the board shows a valid work-units.json
+    When the work-units.json file is broken and fixed five times in a row
+    Then each break is reported as a reload failure while the board keeps the last good content
+    And after each fix the board shows the work units of that fix
 
   Scenario: Clean exit on user termination
     Given I have 'fspec' running and watching for changes

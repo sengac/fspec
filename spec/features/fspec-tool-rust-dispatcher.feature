@@ -111,8 +111,8 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
     And every file is registered in rust/fspec-core/src/commands/mod.rs
 
   Scenario: agent_loop falls back to the Rust dispatcher when the NAPI chunk callback is absent
-    Given the agent_loop.rs source after this work unit is applied
+    Given the agent loop fspec handler sources after this work unit is applied
     When I inspect the fspec_handler closure passed to set_fspec_handler_for_session
-    Then the closure delegates to codelet_fspec_core::dispatch_command on the !is_global_chunk_callback_registered() branch
+    Then the closure delegates to codelet_fspec_core::dispatch_command when is_global_chunk_callback_registered() is false
     And the closure does NOT return the legacy string "Global chunk callback not registered"
     And the codelet-agent-loop crate's Cargo.toml declares codelet-fspec-core as a workspace dependency

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "82-103",
+          "lines": "80-101",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -48,29 +48,9 @@
                 173,
                 174,
                 175
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "82-103",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600
-              ]
+              ],
+              "firstLine": "throttle: DisplayThrottle::with_default_interval(),",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -81,7 +61,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "183-213",
+          "lines": "197-227",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -124,57 +104,9 @@
                 173,
                 174,
                 175
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "183-213",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/recovery_compaction.rs",
-              "lines": [
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203
-              ]
+              ],
+              "firstLine": "throttle: DisplayThrottle::with_default_interval(),",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -185,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "219-245",
+          "lines": "233-259",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -205,7 +137,9 @@
                 173,
                 174,
                 175
-              ]
+              ],
+              "firstLine": "/// total is trusted and the stale split is dropped.",
+              "lastLine": "} else {"
             }
           ]
         }
@@ -216,7 +150,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs",
-          "lines": "251-291",
+          "lines": "265-305",
           "implMappings": [
             {
               "file": "rust/core/src/streaming_display/streaming_token_display.rs",
@@ -240,7 +174,9 @@
                 234,
                 235,
                 236
-              ]
+              ],
+              "firstLine": "// Update rate calculation",
+              "lastLine": "self.input_tokens = usage.input_tokens;"
             }
           ]
         }
@@ -255,10 +191,8 @@
       "rust/cli/tests/cmpct041_seed_cache_double_count_test.rs"
     ],
     "implFiles": [
-      "rust/core/src/streaming_display/streaming_token_display.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
-      "rust/cli/src/interactive/recovery_compaction.rs"
+      "rust/core/src/streaming_display/streaming_token_display.rs"
     ],
-    "totalLinesCovered": 334
+    "totalLinesCovered": 231
   }
 }

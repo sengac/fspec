@@ -1,6 +1,7 @@
 //! Feature: spec/features/codex-capability-aware-request-options.feature
 
 use codelet_providers::codex::{
+    history::CodexHistory,
     refreshing_client::RefreshingCodexClient,
     request_options::{CodexCapabilities, RequestOptionsError},
     CodexResponsesModel,
@@ -33,7 +34,7 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
                 ResponseTemplate::new(200).set_body_json(fixture::response())
             }
         })
-        .expect(3)
+        .expect(4)
         .mount(&server)
         .await;
     let client = openai::Client::<RefreshingCodexClient>::builder()
@@ -41,7 +42,13 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
         .base_url(server.uri())
         .http_client(RefreshingCodexClient::new_api_key())
         .build()?;
-    let model = CodexResponsesModel::new(client, "not-a-catalog-model");
+    // BUG-342: the Codex boundary admits a request only against known limits.
+    let model = CodexResponsesModel::new(client, "not-a-catalog-model").with_request_admission(
+        codelet_providers::request_admission::AdmissionLimits {
+            context_capacity: Some(100_000),
+            output_reservation: Some(1_000),
+        },
+    );
     let cloned = model.clone();
     let config = json!({"reasoning":{"effort":"xhigh","summary":"auto","context":"all_turns"},
         "text":{"verbosity":"low"}, "service_tier":"priority",
@@ -52,11 +59,16 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
             .additional_params(config.clone())
             .build()
     };
+    // @step Given a Codex model whose capability snapshot does not advertise xhigh
+    // BUG-441: missing capabilities no longer reject anything; capabilities
+    // that do not advertise xhigh do.
+    let without_xhigh: CodexCapabilities = serde_json::from_value(json!({"efforts":["low"]}))?;
+    model.set_capabilities(Some(without_xhigh))?;
     let error = cloned
         .completion(request())
         .await
         .err()
-        .ok_or("missing capabilities must reject xhigh")?;
+        .ok_or("capabilities without xhigh must reject it")?;
     assert!(matches!(error, CompletionError::RequestError(ref source)
         if source.downcast_ref::<RequestOptionsError>().is_some()));
     assert!(server
@@ -68,13 +80,18 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
         "efforts":["xhigh",2048], "summaries":["auto"], "contexts":["all_turns"],
         "verbosities":["low"], "service_tiers":["priority"], "sequential_cutoff":true
     }))?;
+    // @step When the capabilities are refreshed and independent direct, streamed and numeric-effort requests are sent
     model.set_capabilities(Some(capabilities.clone()))?;
-    cloned.completion(request()).await?;
-    let mut stream = cloned.stream(request()).await?;
+    // BUG-454: each request is its own conversation (a fresh history), so the
+    // Codex lineage check does not compare it with the previous reply; the
+    // clones share the refreshed capability snapshot.
+    let independent = || cloned.clone().with_history(CodexHistory::default());
+    independent().completion(request()).await?;
+    let mut stream = independent().stream(request()).await?;
     while let Some(event) = stream.next().await {
         event?;
     }
-    cloned
+    independent()
         .completion(
             CompletionRequestBuilder::new(cloned.clone(), "Hello")
                 .preamble("Test instructions".into())
@@ -82,6 +99,7 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
                 .build(),
         )
         .await?;
+    // @step Then the server receives all three requests with the refreshed options
     let requests = server
         .received_requests()
         .await
@@ -102,14 +120,17 @@ async fn scenario_capability_refresh_reaches_direct_and_streamed_requests(
         stale: true,
         ..capabilities
     }))?;
-    assert!(cloned.completion(request()).await.is_err());
+    // BUG-441: stale capabilities validate nothing — the explicit options
+    // reach the server unchanged for it to accept or reject.
+    independent().completion(request()).await?;
+    let requests = server
+        .received_requests()
+        .await
+        .ok_or("recording disabled")?;
+    assert_eq!(requests.len(), 4);
     assert_eq!(
-        server
-            .received_requests()
-            .await
-            .ok_or("recording disabled")?
-            .len(),
-        3
+        requests[3].body_json::<Value>()?["reasoning"]["effort"],
+        "xhigh"
     );
     Ok(())
 }

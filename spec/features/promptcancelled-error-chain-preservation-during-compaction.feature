@@ -20,27 +20,11 @@ Feature: PromptCancelled error chain preservation during compaction
   - The false positive test was corrected to use Error::from instead of .into().
   - The existing test detects_streaming_error_wrapped_prompt_cancelled previously used .into()
   which was a false positive — it now uses Error::from matching the production code path.
+
+  Merged into replace-stringly-typed-is-compaction-cancelled-with-structural-prompterror-downcast (CMPCT-025) by COV-075 (product owner, 2026-11-05: BUG-144 merges into CMPCT-025). Its three scenarios moved there unchanged, with their test and implementation mappings.
   """
 
   Background: User Story
     As a developer
     I want PromptCancelled errors to be detected during compaction
     So that session termination is avoided and graceful recovery can occur
-
-  Scenario: StreamingError::Prompt with PromptCancelled is detected via Error::from conversion
-    Given a StreamingError::Prompt containing Box(PromptError::PromptCancelled) is created
-    When the error is converted using the production path anyhow::Error::from(e)
-    Then extract_prompt_cancelled returns Some(chat_history)
-    And the typed error chain is preserved for downstream downcast_ref extraction
-
-  Scenario: Bare string errors are not mistaken for PromptCancelled
-    Given an anyhow::Error created via anyhow::Error::msg("PromptCancelled")
-    When is_compaction_cancelled is called on that error
-    Then the function returns false
-    And bare string errors are correctly rejected as non-typed cancellations
-
-  Scenario: Error::from path preserves downcast capability for extract_prompt_cancelled
-    Given a StreamingError::Prompt(Box(PromptError::PromptCancelled)) is created
-    When the error is converted via anyhow::Error::from(e) which matches production
-    Then the error chain preserves the original StreamingError and PromptError types
-    And extract_prompt_cancelled successfully downcasts and returns Some(chat_history)

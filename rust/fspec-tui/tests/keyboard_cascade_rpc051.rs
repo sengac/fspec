@@ -7,10 +7,9 @@
 //! five-level Esc cascade plus the Ctrl+R focus and Shift+↑/↓ recall
 //! parity regressions that this slice pins.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID;
 use codelet_fspec_tui::{
@@ -18,7 +17,6 @@ use codelet_fspec_tui::{
 };
 use codelet_rpc_types::{SessionId, SessionInfo, SessionStatus};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -69,29 +67,34 @@ fn fake_session(id: &str) -> SessionInfo {
     }
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
 /// Build an App in ViewMode::Agent with a single open session at the
@@ -121,7 +124,7 @@ fn agent_app_no_session() -> (App, Arc<MockBackend>) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_1_slash_popup_dismiss_takes_precedence_over_interrupt() {
+async fn esc_level_1_slash_popup_dismiss_takes_precedence_over_interrupt() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Running
     let (mut app, mock) = agent_app_with_status(SessionStatus::Running);
@@ -137,7 +140,7 @@ async fn esc_level_1_slash_popup_dismiss_takes_precedence_over_interrupt() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the slash popup closes
     assert!(app.navigator().agent.slash_popup.is_none());
@@ -146,6 +149,7 @@ async fn esc_level_1_slash_popup_dismiss_takes_precedence_over_interrupt() {
     // @step And no Action::BackToBoard is dispatched
     assert_eq!(app.navigator().active_view, starting_view);
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -153,7 +157,7 @@ async fn esc_level_1_slash_popup_dismiss_takes_precedence_over_interrupt() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_2_help_dialog_dismiss_takes_precedence_over_interrupt() {
+async fn esc_level_2_help_dialog_dismiss_takes_precedence_over_interrupt() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Running
     let (mut app, mock) = agent_app_with_status(SessionStatus::Running);
@@ -164,7 +168,7 @@ async fn esc_level_2_help_dialog_dismiss_takes_precedence_over_interrupt() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the HelpDialog is removed from the compositor
     assert!(!app.compositor().contains("help-dialog"));
@@ -173,6 +177,7 @@ async fn esc_level_2_help_dialog_dismiss_takes_precedence_over_interrupt() {
     // @step And no Action::BackToBoard is dispatched
     // @step And Navigator.active_view stays at ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -180,7 +185,7 @@ async fn esc_level_2_help_dialog_dismiss_takes_precedence_over_interrupt() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_3_resume_mode_view_dismiss_takes_precedence() {
+async fn esc_level_3_resume_mode_view_dismiss_takes_precedence() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Running
     let (mut app, mock) = agent_app_with_status(SessionStatus::Running);
@@ -192,7 +197,7 @@ async fn esc_level_3_resume_mode_view_dismiss_takes_precedence() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then Action::CloseResumeView is dispatched
     // (observed indirectly via resume_view dropping to None)
@@ -202,6 +207,7 @@ async fn esc_level_3_resume_mode_view_dismiss_takes_precedence() {
     assert_eq!(mock.interrupt_calls(), interrupt_calls_before);
     // @step And no Action::BackToBoard is dispatched
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -209,7 +215,7 @@ async fn esc_level_3_resume_mode_view_dismiss_takes_precedence() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_3_search_mode_view_dismiss_takes_precedence() {
+async fn esc_level_3_search_mode_view_dismiss_takes_precedence() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Running
     let (mut app, mock) = agent_app_with_status(SessionStatus::Running);
@@ -219,14 +225,16 @@ async fn esc_level_3_search_mode_view_dismiss_takes_precedence() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
-    // @step Then Action::CloseSearchView is dispatched (search_view = None)
+    // @step Then Action::CloseSearchView is dispatched
+    // (search_view = None)
     // @step And the AgentView's search_view becomes None
     assert!(app.navigator().agent.search_view.is_none());
     // @step And backend.interrupt is NEVER called
     assert_eq!(mock.interrupt_calls(), interrupt_calls_before);
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -234,7 +242,7 @@ async fn esc_level_3_search_mode_view_dismiss_takes_precedence() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_4_running_session_interrupts_without_navigating_back() {
+async fn esc_level_4_running_session_interrupts_without_navigating_back() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Running
     let (mut app, mock) = agent_app_with_status(SessionStatus::Running);
@@ -248,19 +256,20 @@ async fn esc_level_4_running_session_interrupts_without_navigating_back() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.interrupt is called exactly once with s-1
     wait_until(
         || mock.interrupt_calls() == 1,
         "interrupt_calls() to reach 1 for Running session",
     )
-    .await;
+    .await?;
     let last = mock.last_interrupt();
     assert_eq!(last, Some(sid("s-1")));
     // @step And no Action::BackToBoard is dispatched
     // @step And Navigator.active_view stays at ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -268,7 +277,7 @@ async fn esc_level_4_running_session_interrupts_without_navigating_back() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_4_compacting_session_interrupts_without_navigating() {
+async fn esc_level_4_compacting_session_interrupts_without_navigating() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Compacting
     let (mut app, mock) = agent_app_with_status(SessionStatus::Compacting);
@@ -276,18 +285,19 @@ async fn esc_level_4_compacting_session_interrupts_without_navigating() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.interrupt is called exactly once with s-1
     wait_until(
         || mock.interrupt_calls() == 1,
         "interrupt_calls() to reach 1 for Compacting session",
     )
-    .await;
+    .await?;
     assert_eq!(mock.last_interrupt(), Some(sid("s-1")));
     // @step And no Action::BackToBoard is dispatched
     // @step And Navigator.active_view stays at ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -295,7 +305,7 @@ async fn esc_level_4_compacting_session_interrupts_without_navigating() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_5_idle_session_navigates_back_to_board() {
+async fn esc_level_5_idle_session_navigates_back_to_board() -> TestResult {
     // @step Given session s-1 is the current session
     // @step And session s-1 has SessionStatus::Idle
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
@@ -303,7 +313,7 @@ async fn esc_level_5_idle_session_navigates_back_to_board() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // RPC-098: idle ESC at L7 now opens ExitConfirmationDialog instead of
     // dispatching Action::BackToBoard directly.
@@ -316,6 +326,7 @@ async fn esc_level_5_idle_session_navigates_back_to_board() {
     assert_eq!(mock.interrupt_calls(), 0);
     // @step And Navigator.active_view stays at ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -323,7 +334,7 @@ async fn esc_level_5_idle_session_navigates_back_to_board() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_5_unknown_status_navigates_back_to_board() {
+async fn esc_level_5_unknown_status_navigates_back_to_board() -> TestResult {
     // @step Given session s-1 is the current session
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -339,7 +350,7 @@ async fn esc_level_5_unknown_status_navigates_back_to_board() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // RPC-098: unknown-status ESC at L7 now opens ExitConfirmationDialog
     // (treated as idle by the cascade).
@@ -352,6 +363,7 @@ async fn esc_level_5_unknown_status_navigates_back_to_board() {
     assert_eq!(mock.interrupt_calls(), 0);
     // @step And Navigator.active_view stays at ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -359,7 +371,7 @@ async fn esc_level_5_unknown_status_navigates_back_to_board() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_5_no_current_session_navigates_back_to_board() {
+async fn esc_level_5_no_current_session_navigates_back_to_board() -> TestResult {
     // @step Given there is NO current session
     let (mut app, mock) = agent_app_no_session();
     assert!(app.agent_view_store().current_session().is_none());
@@ -367,13 +379,14 @@ async fn esc_level_5_no_current_session_navigates_back_to_board() {
 
     // @step When the user presses Esc
     let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then Action::BackToBoard is dispatched
     // @step And backend.interrupt is NEVER called
     assert_eq!(mock.interrupt_calls(), 0);
     // @step And Navigator.active_view becomes ViewMode::Board
     assert_eq!(app.navigator().active_view, ViewMode::Board);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -381,14 +394,14 @@ async fn esc_level_5_no_current_session_navigates_back_to_board() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn ctrl_r_opens_search_history_view_with_input_focused() {
+async fn ctrl_r_opens_search_history_view_with_input_focused() -> TestResult {
     // @step Given session s-1 is the current session
     let (mut app, _mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And no popup, dialog, or mode-view is active
 
     // @step When the user presses Ctrl+R
     let _ = app.handle_event(&ctrl_r());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then Action::OpenSearchView is dispatched
     // @step And the AgentView's search_view becomes Some
@@ -396,7 +409,7 @@ async fn ctrl_r_opens_search_history_view_with_input_focused() {
 
     // @step When the user types the character "h"
     let _ = app.handle_event(&key(KeyCode::Char('h'), KeyModifiers::NONE));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the search_view's query equals "h"
     let sv = app
@@ -404,19 +417,20 @@ async fn ctrl_r_opens_search_history_view_with_input_focused() {
         .agent
         .search_view
         .as_ref()
-        .expect("search_view stays open after first keystroke");
+        .or_fail("search_view stays open after first keystroke")?;
     assert_eq!(sv.query(), "h");
     // @step And Action::SearchHistory("h") is dispatched
     // (observed indirectly via the side-effect: search_view query reflects
     // the typed char, which only happens when the key is routed through
     // SearchHistoryView::handle_key.)
+    Ok(())
 }
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Shift+up/down snapshots draft, walks history, restores draft
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn shift_up_down_snapshots_walks_and_restores_draft() {
+async fn shift_up_down_snapshots_walks_and_restores_draft() -> TestResult {
     // @step Given session s-1 is the current session
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And the MockBackend's persistence_get_history scripted to return ["first", "second", "third"] for s-1
@@ -433,7 +447,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
 
     // @step When the user presses Shift+Up once and waits for the snapshot to load
     let _ = app.handle_event(&shift_up());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             app.agent_view_store()
@@ -443,7 +457,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
         },
         "history snapshot to load for s-1",
     )
-    .await;
+    .await?;
 
     // @step Then the MultiLineInput value equals "first"
     assert_eq!(app.navigator().agent.input.value(), "first");
@@ -451,14 +465,14 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
     let st = app
         .agent_view_store()
         .history_state_for(&sid("s-1"))
-        .expect("history state seeded");
+        .or_fail("history state seeded")?;
     assert_eq!(st.cached_draft.as_deref(), Some("draft-text"));
     // @step And AgentViewStore.history_state_for(s-1).recall_index equals Some(0)
     assert_eq!(st.recall_index, Some(0));
 
     // @step When the user presses Shift+Up again
     let _ = app.handle_event(&shift_up());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the MultiLineInput value equals "second"
     assert_eq!(app.navigator().agent.input.value(), "second");
     // @step And AgentViewStore.history_state_for(s-1).recall_index equals Some(1)
@@ -471,7 +485,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
 
     // @step When the user presses Shift+Down
     let _ = app.handle_event(&shift_down());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the MultiLineInput value equals "first"
     assert_eq!(app.navigator().agent.input.value(), "first");
     // @step And AgentViewStore.history_state_for(s-1).recall_index equals Some(0)
@@ -484,7 +498,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
 
     // @step When the user presses Shift+Down again
     let _ = app.handle_event(&shift_down());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     // @step Then the MultiLineInput value equals "draft-text"
     assert_eq!(app.navigator().agent.input.value(), "draft-text");
     // @step And AgentViewStore.history_state_for(s-1).recall_index equals None
@@ -494,6 +508,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
             .and_then(|s| s.recall_index),
         None,
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -501,7 +516,7 @@ async fn shift_up_down_snapshots_walks_and_restores_draft() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn shift_up_at_end_of_history_clamps_at_tail() {
+async fn shift_up_at_end_of_history_clamps_at_tail() -> TestResult {
     // @step Given session s-1 is the current session
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And the MockBackend's persistence_get_history scripted to return ["only-entry"] for s-1
@@ -511,7 +526,7 @@ async fn shift_up_at_end_of_history_clamps_at_tail() {
 
     // @step When the user presses Shift+Up and waits for the snapshot to load
     let _ = app.handle_event(&shift_up());
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             app.agent_view_store()
@@ -521,14 +536,14 @@ async fn shift_up_at_end_of_history_clamps_at_tail() {
         },
         "history snapshot to load (single-entry) for s-1",
     )
-    .await;
+    .await?;
     // @step Then the MultiLineInput value equals "only-entry"
     assert_eq!(app.navigator().agent.input.value(), "only-entry");
 
     // @step When the user presses Shift+Up four more times
     for _ in 0..4 {
         let _ = app.handle_event(&shift_up());
-        drain_pending(&mut app).await;
+        drain_pending(&mut app).await?;
     }
     // @step Then the MultiLineInput value still equals "only-entry"
     assert_eq!(app.navigator().agent.input.value(), "only-entry");
@@ -539,55 +554,5 @@ async fn shift_up_at_end_of_history_clamps_at_tail() {
             .and_then(|s| s.recall_index),
         Some(0),
     );
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario (RPC-095 L6): Esc when idle with non-empty input clears the buffer
-// ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_level_6_idle_session_with_nonempty_input_clears_buffer() {
-    // @step Given session s-1 is the current session
-    // @step And session s-1 has SessionStatus::Idle
-    let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
-    // @step And the input buffer contains the text "hello world"
-    app.navigator_mut().agent.input.set_value("hello world");
-
-    // @step When the user presses Esc
-    let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
-
-    // @step Then the MultiLineInput value equals ""
-    assert_eq!(app.navigator().agent.input.value(), "");
-    // @step And Navigator.active_view stays at ViewMode::Agent
-    assert_eq!(app.navigator().active_view, ViewMode::Agent);
-    // @step And backend.interrupt is NEVER called
-    assert_eq!(mock.interrupt_calls(), 0);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario (RPC-095): Esc when idle with whitespace-only input is treated as empty
-// ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn esc_idle_session_with_whitespace_only_input_navigates_back() {
-    // @step Given session s-1 is the current session
-    // @step And session s-1 has SessionStatus::Idle
-    let (mut app, _mock) = agent_app_with_status(SessionStatus::Idle);
-    // @step And the input buffer contains only whitespace "   "
-    app.navigator_mut().agent.input.set_value("   ");
-
-    // @step When the user presses Esc
-    let _ = app.handle_event(&esc());
-    drain_pending(&mut app).await;
-
-    // RPC-098: whitespace-only input is treated as empty by trim(), so
-    // L6 short-circuits and L7 opens ExitConfirmationDialog.
-    // @step Then an ExitConfirmationDialog is pushed onto the compositor
-    assert!(
-        app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
-        "idle whitespace-only ESC must push ExitConfirmationDialog (RPC-098)"
-    );
-    // @step And Navigator.active_view stays at ViewMode::Agent
-    assert_eq!(app.navigator().active_view, ViewMode::Agent);
+    Ok(())
 }

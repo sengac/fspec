@@ -6,34 +6,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "18-40",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                542,
-                543,
-                544,
-                545,
-                546,
-                547,
-                548,
-                549,
-                550,
-                551,
-                552,
-                553,
-                554,
-                555,
-                556,
-                557,
-                558,
-                559,
-                560,
-                561,
-                562
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -43,17 +16,7 @@
         {
           "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
           "lines": "42-55",
-          "implMappings": [
-            {
-              "file": "src/tui/components/BoardView.tsx",
-              "lines": [
-                553,
-                554,
-                555,
-                556
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -65,9 +28,7 @@
     "testFiles": [
       "src/tui/components/__tests__/isolated-session-integration.test.tsx"
     ],
-    "implFiles": [
-      "src/tui/components/BoardView.tsx"
-    ],
-    "totalLinesCovered": 62
+    "implFiles": [],
+    "totalLinesCovered": 37
   }
 }

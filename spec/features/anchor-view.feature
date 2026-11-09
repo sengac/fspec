@@ -1,5 +1,7 @@
 @done
 @TUI-057
+@tui
+@navigation
 Feature: Refactor Anchor Viewer from Dialog to Full-Screen View
   """
   Create AnchorView.tsx as full-screen component following WatcherCreateView pattern with position='absolute' and terminal dimensions

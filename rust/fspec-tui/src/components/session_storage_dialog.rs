@@ -66,6 +66,11 @@ impl Component for SessionStorageDialog {
         SESSION_STORAGE_DIALOG_ID
     }
 
+    /// TUI-130: c and Ctrl+C copy the whole message, rows out of view too.
+    fn copy_text(&self) -> Option<String> {
+        Some(self.message.clone())
+    }
+
     fn handle_event(&mut self, event: &Event) -> EventResult {
         match event {
             Event::Key(key) => match key.code {
@@ -116,7 +121,13 @@ impl Component for SessionStorageDialog {
         } else {
             (Accent::Yellow, "Session history warnings")
         };
-        let dialog = build_dialog(accent, title, rows, "↑/↓ PgUp/PgDn · ESC to dismiss", 30);
+        let dialog = build_dialog(
+            accent,
+            title,
+            rows,
+            "↑/↓ PgUp/PgDn · c copy · ESC to dismiss",
+            30,
+        );
         render_dialog_at(rect, buffer, &dialog);
         if self.total > self.visible {
             if let Some(gutter) = gutter_rect(rect, self.visible) {

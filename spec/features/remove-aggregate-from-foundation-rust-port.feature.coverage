@@ -39,10 +39,6 @@
                 85,
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
                 92,
                 93,
                 94,
@@ -104,8 +100,13 @@
                 150,
                 151,
                 152,
-                153
-              ]
+                153,
+                154,
+                155,
+                156
+              ],
+              "firstLine": "item.get(\"deleted\").and_then(Value::as_bool) != Some(true)",
+              "lastLine": "//   - the `in` check requires the aggregate to HAVE a `boundedContextId` key;"
             }
           ]
         }
@@ -131,7 +132,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "Value::Null => false,",
+              "lastLine": "pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {"
             }
           ]
         }
@@ -149,10 +152,6 @@
               "lines": [
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
                 92,
                 93,
                 94,
@@ -165,8 +164,13 @@
                 101,
                 102,
                 103,
-                104
-              ]
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "// file is missing it is created with exactly that slim shape (which has",
+              "lastLine": ""
             }
           ]
         }
@@ -182,9 +186,6 @@
             {
               "file": "rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
               "lines": [
-                106,
-                107,
-                108,
                 109,
                 110,
                 111,
@@ -201,8 +202,13 @@
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "// object without `items`). The `!data.eventStorm` guard passed, so",
+              "lastLine": ".cloned()"
             }
           ]
         }
@@ -218,14 +224,16 @@
             {
               "file": "rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
               "lines": [
-                106,
-                107,
-                108,
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "// object without `items`). The `!data.eventStorm` guard passed, so",
+              "lastLine": ".and_then(Value::as_array)"
             }
           ]
         }
@@ -243,14 +251,15 @@
               "lines": [
                 86,
                 87,
-                88,
-                89,
-                90,
-                91,
                 92,
                 93,
-                94
-              ]
+                94,
+                95,
+                96,
+                97
+              ],
+              "firstLine": "// file is missing it is created with exactly that slim shape (which has",
+              "lastLine": "let es_truthy = data.get(\"eventStorm\").map(is_js_truthy).unwrap_or(false);"
             }
           ]
         }
@@ -266,14 +275,16 @@
             {
               "file": "rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
               "lines": [
-                106,
-                107,
-                108,
                 109,
                 110,
                 111,
-                112
-              ]
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "// object without `items`). The `!data.eventStorm` guard passed, so",
+              "lastLine": ".and_then(Value::as_array)"
             }
           ]
         }
@@ -289,9 +300,13 @@
             {
               "file": "rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
               "lines": [
-                140,
-                141
-              ]
+                92,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "let mut data: Value = read_or_init_json(&path, &foundation_read_default(), \"foundation.json\")?;",
+              "lastLine": "write_json_atomic(&path, &data)?;"
             }
           ]
         }
@@ -313,7 +328,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "item.get(\"deleted\").and_then(Value::as_bool) != Some(true)",
+              "lastLine": "/// objects, arrays, non-empty strings, and non-zero numbers are truthy."
             }
           ]
         }
@@ -330,6 +347,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/remove_aggregate_from_foundation.rs"
     ],
-    "totalLinesCovered": 446
+    "totalLinesCovered": 445
   }
 }

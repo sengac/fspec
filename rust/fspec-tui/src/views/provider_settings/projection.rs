@@ -39,7 +39,9 @@ fn pretty_name(provider_id: &str, display_name: &str) -> String {
 
 /// Per-provider OAuth login rows (method + label). Mirrors TS
 /// `buildOauthLoginNavItems`: anthropic offers browser + headless code,
-/// codex offers browser + device, github-copilot offers device only.
+/// codex offers browser + device, github-copilot offers device only. Other
+/// providers have no sign-in the TUI can drive, so they get no login rows
+/// (BUG-600).
 fn oauth_login_methods(provider_id: &str) -> Vec<(OAuthMethod, String)> {
     match provider_id {
         "anthropic" => vec![
@@ -59,9 +61,7 @@ fn oauth_login_methods(provider_id: &str) -> Vec<(OAuthMethod, String)> {
                 "Sign in with device code".to_string(),
             )]
         }
-        // Unknown OAuth providers still get a generic browser login so the
-        // expansion is never empty.
-        _ => vec![(OAuthMethod::Browser, "Sign in with browser".to_string())],
+        _ => Vec::new(),
     }
 }
 

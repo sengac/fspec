@@ -10,16 +10,6 @@
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -28,8 +18,20 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// PROV-099: derive masked_key + source for ANY provider whose",
+              "lastLine": "};"
             }
           ]
         }
@@ -45,16 +47,6 @@
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -63,8 +55,20 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// PROV-099: derive masked_key + source for ANY provider whose",
+              "lastLine": "};"
             }
           ]
         }
@@ -80,16 +84,6 @@
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
                 154,
                 155,
                 156,
@@ -98,8 +92,20 @@
                 159,
                 160,
                 161,
-                162
-              ]
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "// PROV-099: derive masked_key + source for ANY provider whose",
+              "lastLine": "};"
             }
           ]
         }

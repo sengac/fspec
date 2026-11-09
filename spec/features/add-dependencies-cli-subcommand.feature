@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-176
+@cli
+@dependency-management
 Feature: fspec add-dependencies CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-dependencies.ts:85-125).

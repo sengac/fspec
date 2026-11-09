@@ -1,7 +1,10 @@
+@BUG-582
 @done
 @RPC-188
 @rust
 @mutation
+@cli
+@example-mapping
 Feature: Port add-question command to Rust
   """
   Files (replace stub) rust/fspec-core/src/commands/add_question.rs; NEW rust/fspec-core/src/help/configs/add_question.rs; NEW rust/fspec/src/add_question.rs (bridge); NEW rust/fspec-core/tests/add_question.rs (dispatcher); NEW rust/fspec/tests/cli_add_question.rs; NEW rust/fspec/tests/fixtures/help/add-question.txt

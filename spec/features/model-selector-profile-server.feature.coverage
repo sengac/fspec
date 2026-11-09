@@ -4,28 +4,28 @@
       "name": "A cloud provider reports no profile and is reachable",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "248-262",
+          "file": "rust/sessions/src/profile_sections/tests.rs",
+          "lines": "16-31",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
+                21,
+                22,
                 33,
                 34,
-                35,
-                36,
                 37,
                 38,
-                39
-              ]
+                39,
+                40,
+                41,
+                42,
+                43,
+                46,
+                47
+              ],
+              "firstLine": "mod discovery;",
+              "lastLine": "}"
             }
           ]
         }
@@ -35,20 +35,12 @@
       "name": "A reachable local-server profile is reported as a profile section",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "265-282",
+          "file": "rust/sessions/src/profile_sections/tests.rs",
+          "lines": "33-51",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -59,8 +51,22 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "/// profile** section (`profile_name == Some(..)`) is NEVER dropped by this",
+              "lastLine": "pub fn build_profile_provider_info("
             }
           ]
         }
@@ -70,20 +76,12 @@
       "name": "An unreachable local-server profile with no custom models is marked unreachable",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "285-312",
+          "file": "rust/sessions/src/profile_sections/tests.rs",
+          "lines": "53-81",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -94,8 +92,22 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "/// profile** section (`profile_name == Some(..)`) is NEVER dropped by this",
+              "lastLine": "pub fn build_profile_provider_info("
             }
           ]
         }
@@ -105,20 +117,12 @@
       "name": "A failed-probe profile with custom models is not marked unreachable",
       "testMappings": [
         {
-          "file": "rust/sessions/src/profile_sections.rs",
-          "lines": "315-334",
+          "file": "rust/sessions/src/profile_sections/tests.rs",
+          "lines": "83-103",
           "implMappings": [
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -129,8 +133,22 @@
                 63,
                 64,
                 65,
-                66
-              ]
+                66,
+                67,
+                68,
+                69,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                79,
+                80,
+                81
+              ],
+              "firstLine": "/// profile** section (`profile_name == Some(..)`) is NEVER dropped by this",
+              "lastLine": "pub fn build_profile_provider_info("
             }
           ]
         }
@@ -142,11 +160,11 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections/tests.rs"
     ],
     "implFiles": [
       "rust/sessions/src/profile_sections.rs"
     ],
-    "totalLinesCovered": 153
+    "totalLinesCovered": 167
   }
 }

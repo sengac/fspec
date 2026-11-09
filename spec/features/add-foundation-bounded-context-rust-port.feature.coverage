@@ -11,17 +11,18 @@
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
                 83,
-                84,
-                85,
-                86,
-                87,
                 88,
                 89,
                 90,
                 91,
                 92,
-                93
-              ]
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "// literal).",
+              "lastLine": ""
             }
           ]
         }
@@ -32,19 +33,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
-          "lines": "98-117",
+          "lines": "107-135",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
-              ]
+                123
+              ],
+              "firstLine": "item.insert(\"color\".to_string(), Value::Null);",
+              "lastLine": "item.insert(\"color\".to_string(), Value::Null);"
             }
           ]
         }
@@ -55,14 +52,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
-          "lines": "119-145",
+          "lines": "137-170",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
-                98,
-                99,
-                100,
                 101,
                 102,
                 103,
@@ -78,8 +72,13 @@
                 113,
                 114,
                 115,
-                116
-              ]
+                116,
+                117,
+                118,
+                119
+              ],
+              "firstLine": "if !es_entry.is_object() {",
+              "lastLine": "\"type\".to_string(),"
             }
           ]
         }
@@ -90,14 +89,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
-          "lines": "147-182",
+          "lines": "172-207",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
-                95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -118,8 +114,13 @@
                 115,
                 116,
                 117,
-                118
-              ]
+                118,
+                119,
+                120,
+                121
+              ],
+              "firstLine": "let es_entry = root_obj",
+              "lastLine": ");"
             }
           ]
         }
@@ -130,7 +131,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
-          "lines": "184-209",
+          "lines": "209-234",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
@@ -138,7 +139,9 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "let args: AddFoundationBoundedContextArgs =",
+              "lastLine": "command: \"add-foundation-bounded-context\","
             }
           ]
         }
@@ -149,15 +152,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/add_foundation_bounded_context.rs",
-          "lines": "211-232",
+          "lines": "236-261",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/add_foundation_bounded_context.rs",
               "lines": [
-                120,
-                121,
-                122
-              ]
+                123,
+                124,
+                125
+              ],
+              "firstLine": "item.insert(\"color\".to_string(), Value::Null);",
+              "lastLine": "item.insert(\"createdAt\".to_string(), Value::String(iso8601_now()));"
             }
           ]
         }
@@ -174,6 +179,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/add_foundation_bounded_context.rs"
     ],
-    "totalLinesCovered": 238
+    "totalLinesCovered": 251
   }
 }

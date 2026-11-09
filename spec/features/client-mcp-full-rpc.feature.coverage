@@ -1,0 +1,74 @@
+{
+  "scenarios": [
+    {
+      "name": "Discover the complete typed RPC surface",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/client_mcp_full.rs",
+          "lines": "96-156",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/client_mcp_full.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "let mut all = self.read.list_tools(None, context).await?.tools;",
+              "lastLine": "all.push(Tool::new(\"fspec_rpc_result\",\"Read retained result text by result_id and Unicode scalar offset. Does not repeat RPC. Expires 300 seconds after execution.\",Arc::new(json!({\"type\":\"object\",\"properties\":{\"result_id\":{\"type\":\"string\"},\"offset\":{\"type\":\"integer\",\"minimum\":0}},\"required\":[\"result_id\",\"offset\"],\"additionalProperties\":false}).as_object().cloned().unwrap_or_default())).with_annotations(ToolAnnotations::new().read_only(true).destructive(false).idempotent(true).open_world(false)));"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forward valid calls without an adapter confirmation form",
+      "testMappings": []
+    },
+    {
+      "name": "Read large results without repeating mutations",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/client_mcp_full.rs",
+          "lines": "96-156",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/client_mcp_full.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "let mut all = self.read.list_tools(None, context).await?.tools;",
+              "lastLine": "all.push(Tool::new(\"fspec_rpc_result\",\"Read retained result text by result_id and Unicode scalar offset. Does not repeat RPC. Expires 300 seconds after execution.\",Arc::new(json!({\"type\":\"object\",\"properties\":{\"result_id\":{\"type\":\"string\"},\"offset\":{\"type\":\"integer\",\"minimum\":0}},\"required\":[\"result_id\",\"offset\"],\"additionalProperties\":false}).as_object().cloned().unwrap_or_default())).with_annotations(ToolAnnotations::new().read_only(true).destructive(false).idempotent(true).open_world(false)));"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 2,
+    "coveragePercent": 67,
+    "testFiles": [
+      "rust/fspec/tests/client_mcp_full.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/client_mcp_full.rs"
+    ],
+    "totalLinesCovered": 140
+  }
+}

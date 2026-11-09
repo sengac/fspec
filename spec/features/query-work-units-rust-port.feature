@@ -81,3 +81,25 @@ Feature: Port query-work-units command to Rust
     When I inspect rust/fspec/src/query_work_units.rs
     Then the CLI bridge module delegates to fspec_core::commands::query_work_units::run with the project_root resolved from std::env::current_dir
     Then no filter or rendering logic is duplicated in the CLI bridge
+
+  Scenario: Type, status and tag filters apply AND semantics
+    Given spec/work-units.json contains CLI-001 (story, done, tags '@cli'), CLI-002 (task, done, tags '@cli'), CLI-003 (story, implementing, tags '@cli') and CLI-004 (story, done, tags '@api')
+    When I dispatch query-work-units with type='story' and status='done' and tag='@cli' and format='json'
+    Then the workUnits array contains only CLI-001
+    And the data array contains only the entry {workUnitId:'CLI-001'}
+
+  Scenario: Type filter keeps only work units of that type
+    Given spec/work-units.json contains WU-001 (task), WU-002 (story), WU-003 (bug), WU-004 (task) and WU-005 (no type field)
+    When I dispatch query-work-units with type='task' and format='json'
+    Then the workUnits array contains only WU-001 and WU-004
+    And dispatching with type='story' returns only WU-002 and WU-005, since a missing type counts as story
+
+  Scenario: Epic filter returns only work units in that epic
+    Given spec/work-units.json contains AUTH-001 (implementing, epic 'epic-auth'), AUTH-002 (backlog, epic 'epic-auth'), DASH-001 (implementing, epic 'epic-dash') and DASH-002 (implementing, no epic)
+    When I dispatch query-work-units with epic='epic-auth' and format='json'
+    Then the workUnits array contains only AUTH-001 and AUTH-002
+
+  Scenario: Combined status and epic filters apply AND semantics
+    Given spec/work-units.json contains AUTH-001 (implementing, epic 'epic-auth'), AUTH-002 (backlog, epic 'epic-auth'), DASH-001 (implementing, epic 'epic-dash') and DASH-002 (implementing, no epic)
+    When I dispatch query-work-units with status='implementing' and epic='epic-auth' and format='json'
+    Then the workUnits array contains only AUTH-001

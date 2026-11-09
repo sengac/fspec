@@ -36,8 +36,10 @@ pub(super) fn next_retry_input(
         is_fresh_user_input: false,
         is_compaction_retry: true,
         manual_compaction_epoch,
+        is_manual_compaction: false,
         interrupt_epoch: manual_compaction_epoch.unwrap_or(state.turn_epoch),
         cancelled_at_submission: false,
+        submission: None,
     })
 }
 

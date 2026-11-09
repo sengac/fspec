@@ -31,11 +31,11 @@
 //!
 //! ## Framing A divergence from TypeScript
 //!
-//! * **FOUNDATION.md regeneration**: `generate-foundation-md` (RPC-233) is
-//!   unported, so the Rust core does NOT touch `spec/FOUNDATION.md`. NOTE:
-//!   the TS command does NOT print any "Regenerated" line (it invokes
-//!   `generateFoundationMdCommand`, whose result is discarded). So the CLI
-//!   bridge emits ONLY the `✓ <message>` line, matching TS.
+//! * **FOUNDATION.md regeneration**: after writing foundation.json the core
+//!   regenerates `spec/FOUNDATION.md` (`generate_foundation_md::regenerate`,
+//!   best effort, its result is discarded like the TS
+//!   `generateFoundationMdCommand` call). The CLI bridge prints no
+//!   "Regenerated" line, only the `✓ <message>` line.
 //!
 //! ## Two-front-doors
 //!
@@ -78,7 +78,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // (version/project/problemSpace/solutionSpace only; NO
     // personas/architectureDiagrams). A missing file is created with that
     // minimal shape (then the "no Event Storm data" error fires).
-    let path = project_root.join("spec").join("foundation.json");
+    let path = crate::io::spec_paths::foundation(project_root)?;
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock =
+        crate::io::spec_lock::lock_spec_dir(project_root, "remove-foundation-bounded-context")?;
     let mut data: Value = read_or_init_json(&path, &foundation_read_default(), "foundation.json")?;
 
     // [2] No eventStorm field → not found (no Event Storm data).

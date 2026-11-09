@@ -16,7 +16,10 @@ use ratatui::style::Color;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
+use unicode_width::UnicodeWidthStr;
+
 use super::selection_style::{base_style, fill_row, token_style, NOSEL, SEL};
+use crate::components::menu_bar::dropdown_truncate;
 use crate::components::model_selector_dialog_rows::ModelSelectorRow;
 
 /// Paint a non-selectable provider header row (no badges). RPC-351:
@@ -38,11 +41,17 @@ pub(super) fn render_header_row(
     let marker = if is_selected { SEL } else { NOSEL };
     if !(row.is_profile || row.is_unreachable) {
         // Cloud header — marker + label, no profile/unreachable markers.
-        Paragraph::new(Line::from(Span::styled(
-            format!("{marker}{}", row.label),
-            style,
-        )))
-        .render(area, buf);
+        let label = format!("{marker}{}", row.label);
+        // PROV-176: why the section lists no models. BUG-577: a reason that
+        // does not fit the row ends with an ellipsis instead of being cut.
+        let room = usize::from(area.width).saturating_sub(label.width());
+        let mut spans = vec![Span::styled(label, style)];
+        if let Some(reason) = &row.unavailable_reason {
+            let reason_style = token_style(is_selected, Color::Red);
+            let reason = dropdown_truncate(&format!(" ({reason})"), room);
+            spans.push(Span::styled(reason, reason_style));
+        }
+        Paragraph::new(Line::from(spans)).render(area, buf);
         return;
     }
     // Profile / unreachable header — split the arrow off so the 📁 icon sits

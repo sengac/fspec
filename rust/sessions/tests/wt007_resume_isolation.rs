@@ -70,9 +70,10 @@ fn manager_with_seeded_cache() -> (tempfile::TempDir, tempfile::TempDir, Arc<Ses
     // the data directory at the fresh temp dir, so SessionStore re-initialises
     // against THIS test's dir (it caches `sessions_dir` at first use).
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     std::env::set_var("HOME", home_dir.path());
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     (data_dir, home_dir, manager)
 }
 
@@ -170,27 +171,30 @@ async fn resuming_a_formerly_isolated_session_restores_worktree_isolation() {
         "WT-007: a resumed formerly-isolated session must carry its base_commit"
     );
     // Receive the IsolationStateChange chunk broadcast by the resume path.
-    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    // TEST-042: wait for the chunk under the deadlock guard, not 5 s.
     let mut isolation_chunk = None;
-    while std::time::Instant::now() < deadline {
-        match chunks_rx.recv().await {
-            Ok((
-                sid,
-                codelet_rpc_types::StreamChunk::IsolationStateChange {
-                    is_isolated,
-                    worktree_path,
-                    base_commit,
-                    ..
-                },
-            )) if sid.value == id => {
-                isolation_chunk = Some((is_isolated, worktree_path, base_commit));
-                break;
+    let _ = codelet_test_helpers::deadlock_guard("the IsolationStateChange chunk", async {
+        loop {
+            match chunks_rx.recv().await {
+                Ok((
+                    sid,
+                    codelet_rpc_types::StreamChunk::IsolationStateChange {
+                        is_isolated,
+                        worktree_path,
+                        base_commit,
+                        ..
+                    },
+                )) if sid.value == id => {
+                    isolation_chunk = Some((is_isolated, worktree_path, base_commit));
+                    break;
+                }
+                Ok(_) => {}
+                Err(_) => break,
             }
-            Ok(_) => {}
-            Err(_) => break,
+            tokio::task::yield_now().await;
         }
-        tokio::task::yield_now().await;
-    }
+    })
+    .await;
     let (is_isolated, chunk_worktree, chunk_base) = isolation_chunk
         .expect("WT-007: resuming a formerly-isolated session must broadcast IsolationStateChange");
     assert!(is_isolated, "the isolation chunk must report isolated=true");

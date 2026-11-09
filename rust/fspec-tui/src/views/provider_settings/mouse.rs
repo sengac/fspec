@@ -24,6 +24,16 @@ impl ProviderSettingsView {
     /// TUI-101: scrollbar click-and-drag events are handled when the cursor
     /// lands on the scrollbar gutter.
     pub fn handle_mouse(&mut self, ev: MouseEvent) -> ProviderSettingsEvent {
+        // BUG-575: a cursor move drops any pending return to a row.
+        let before = self.selected_index;
+        let event = self.route_mouse(ev);
+        if self.selected_index != before {
+            self.note_navigation();
+        }
+        event
+    }
+
+    fn route_mouse(&mut self, ev: MouseEvent) -> ProviderSettingsEvent {
         if !matches!(self.mode, super::ProviderSettingsMode::List) {
             return ProviderSettingsEvent::Ignored;
         }
@@ -39,7 +49,11 @@ impl ProviderSettingsView {
             let visible = self.visible_rows;
             if total > visible {
                 if let Some(sb_rect) = self.last_scrollbar_rect {
-                    if rect_contains(sb_rect, ev.column, ev.row) {
+                    // BUG-578 F20: a drag that started on the thumb goes on
+                    // off the gutter column until the button is released.
+                    let follows_drag = self.scrollbar_drag.is_active()
+                        && !matches!(ev.kind, MouseEventKind::Down(_));
+                    if follows_drag || rect_contains(sb_rect, ev.column, ev.row) {
                         let geom = ScrollbarGeometry {
                             area_height: visible,
                             total_items: total,
@@ -47,8 +61,7 @@ impl ProviderSettingsView {
                             current_offset: self.scroll_offset,
                         };
                         if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
-                            self.scroll_offset = offset;
-                            self.adjust_scroll();
+                            self.scroll_to(offset);
                         }
                         return ProviderSettingsEvent::Consumed;
                     }
@@ -67,11 +80,25 @@ impl ProviderSettingsView {
             _ => return ProviderSettingsEvent::Ignored,
         };
         let step = self.wheel.step(dir);
-        let before = self.selected_index;
         self.move_clamped(step);
-        if self.selected_index != before {
-            self.clear_test_result();
-        }
         ProviderSettingsEvent::Consumed
+    }
+}
+
+impl ProviderSettingsView {
+    /// BUG-578 F20: the scrollbar moved the window to `offset`; the
+    /// selection moves to the nearest row inside it, so the window stays
+    /// where the thumb put it.
+    fn scroll_to(&mut self, offset: usize) {
+        let total = self.nav_items.len();
+        let last_offset = total.saturating_sub(self.visible_rows);
+        self.scroll_offset = offset.min(last_offset);
+        let last_visible = (self.scroll_offset + self.visible_rows)
+            .min(total)
+            .saturating_sub(1);
+        self.selected_index = self
+            .selected_index
+            .clamp(self.scroll_offset, last_visible.max(self.scroll_offset));
+        self.adjust_scroll();
     }
 }

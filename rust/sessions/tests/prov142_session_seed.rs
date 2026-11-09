@@ -98,7 +98,9 @@ fn manager_with_seeded_cache(
     // re-initialises against the new dir.
     codelet_core::persistence::reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
+    // BUG-437: sessions need a start workspace.
+    manager.set_default_project(codelet_test_helpers::shared_temp_subdirectory()?)?;
     Ok((vec![codex_home, fspec_home, user_dir, data_dir], manager))
 }
 
@@ -130,9 +132,9 @@ async fn session_against_profile_with_auto_continue_300_starts_on_with_budget_30
     )?;
 
     // @step When a session is created against a model of that profile
-    manager.set_default_model("openai:spark/o3");
+    manager.set_default_model("openai:spark/o3")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(
         !sid.value.is_empty(),
         "PROV-142: profile-model session creation must succeed"
@@ -140,7 +142,9 @@ async fn session_against_profile_with_auto_continue_300_starts_on_with_budget_30
 
     // @step Then the session's auto-continue is enabled
     // @step And the session's continue budget is 300
-    let (enabled, budget) = handle.get_continue_state(&sid);
+    let (enabled, budget) = handle
+        .get_continue_state(&sid)
+        .expect("get_continue_state reads the session");
     assert!(
         enabled,
         "PROV-142: a profile with autoContinue=300 must seed auto-continue ON"
@@ -179,16 +183,18 @@ async fn session_against_profile_with_auto_continue_0_starts_off() -> Result<(),
     )?;
 
     // @step When a session is created against a model of that profile
-    manager.set_default_model("openai:spark/o3");
+    manager.set_default_model("openai:spark/o3")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(
         !sid.value.is_empty(),
         "PROV-142: profile-model session creation must succeed"
     );
 
     // @step Then the session's auto-continue is disabled
-    let (enabled, _budget) = handle.get_continue_state(&sid);
+    let (enabled, _budget) = handle
+        .get_continue_state(&sid)
+        .expect("get_continue_state reads the session");
     assert!(
         !enabled,
         "PROV-142: the explicit-off sentinel (autoContinue=0) must seed auto-continue OFF"
@@ -222,16 +228,18 @@ async fn session_against_profile_without_auto_continue_key_starts_off() -> Resul
     )?;
 
     // @step When a session is created against a model of that profile
-    manager.set_default_model("openai:spark/o3");
+    manager.set_default_model("openai:spark/o3")?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
-    let sid = handle.create_session(None);
+    let sid = handle.create_session_checked(None)?;
     assert!(
         !sid.value.is_empty(),
         "PROV-142: profile-model session creation must succeed"
     );
 
     // @step Then the session's auto-continue is disabled
-    let (enabled, _budget) = handle.get_continue_state(&sid);
+    let (enabled, _budget) = handle
+        .get_continue_state(&sid)
+        .expect("get_continue_state reads the session");
     assert!(
         !enabled,
         "PROV-142: an absent autoContinue key must seed auto-continue OFF (today's behavior)"

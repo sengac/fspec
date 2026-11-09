@@ -19,7 +19,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
+    codelet_test_helpers::source_composition::read_tree_or_file(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
@@ -169,22 +169,24 @@ fn model_limits_and_thinking_level_are_set() {
     // @step When it creates a session
     // @step Then the persisted default thinking level is applied
     assert!(
-        helper_content.contains("load_default_thinking_level"),
-        "Helper must load default thinking level"
+        helper_content.contains("apply_saved_thinking_level"),
+        "Helper must apply the model's saved thinking level (MODEL-012)"
     );
     assert!(
-        helper_content.contains("set_base_thinking_level"),
-        "Helper must set base thinking level"
+        helper_content.contains("set_thinking_target"),
+        "Helper must cache the thinking target the saved level is checked against"
     );
 
     // @step And model limits (context window, max output tokens, compaction threshold) are set
+    // BUG-396: PROV-165 resolves every limit (compaction threshold included)
+    // with apply_model_selection and caches the result whole.
     assert!(
-        helper_content.contains("resolve_compaction_threshold"),
-        "Helper must resolve compaction threshold"
+        helper_content.contains("let resolved = crate::model_resolution::apply_model_selection("),
+        "Helper must resolve the model limits"
     );
     assert!(
-        helper_content.contains("set_model_limits"),
-        "Helper must set model limits"
+        helper_content.contains("set_model_limits(resolved)"),
+        "Helper must cache the resolved limits"
     );
 }
 

@@ -6,19 +6,7 @@
         {
           "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
           "lines": "273-329",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                348,
-                349,
-                350,
-                351,
-                352,
-                353
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -28,19 +16,7 @@
         {
           "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
           "lines": "331-389",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                348,
-                349,
-                350,
-                351,
-                352,
-                353
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -50,19 +26,7 @@
         {
           "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
           "lines": "391-443",
-          "implMappings": [
-            {
-              "file": "src/generators/foundation-md.ts",
-              "lines": [
-                348,
-                349,
-                350,
-                351,
-                352,
-                353
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     }
@@ -74,9 +38,7 @@
     "testFiles": [
       "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts"
     ],
-    "implFiles": [
-      "src/generators/foundation-md.ts"
-    ],
-    "totalLinesCovered": 187
+    "implFiles": [],
+    "totalLinesCovered": 169
   }
 }

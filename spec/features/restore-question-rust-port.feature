@@ -1,5 +1,7 @@
 @done
 @RPC-290
+@cli
+@example-mapping
 Feature: Port restore-question command to Rust
   """
   Reuses shared infrastructure ensure_work_units_file (load/auto-create), write_json_atomic (atomic write), iso8601_now (timestamp). Questions live in WorkUnit.extra under 'questions' as Value::Array of objects keyed by 'id'.

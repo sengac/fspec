@@ -1,5 +1,7 @@
 @done
 @CMPCT-024
+@codelet
+@context-management
 Feature: Preserve partial assistant text and token tracker on hook-triggered compaction
   """
   Extract a pure helper flush_partial_state_before_compaction(session, assistant_text, display) that performs handle_final_response + token tracker update + clears assistant_text. This is directly unit-testable without spinning up a real rig stream.

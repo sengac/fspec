@@ -96,6 +96,13 @@ impl StubProvider {
     }
 }
 
+/// BUG-448: the stub's declared limits, which the provider manager resolves
+/// for the test-only "stub" custom provider (PROV-165 requires declared
+/// limits; custom providers have no defaults).
+pub const STUB_CONTEXT_WINDOW: usize = 200_000;
+/// See [`STUB_CONTEXT_WINDOW`].
+pub const STUB_MAX_OUTPUT_TOKENS: usize = 4_096;
+
 #[async_trait]
 impl LlmProvider for StubProvider {
     fn name(&self) -> &str {
@@ -106,12 +113,12 @@ impl LlmProvider for StubProvider {
         "canned"
     }
 
-    fn context_window(&self) -> usize {
-        200_000
+    fn context_window(&self) -> Option<usize> {
+        Some(STUB_CONTEXT_WINDOW)
     }
 
-    fn max_output_tokens(&self) -> usize {
-        4_096
+    fn max_output_tokens(&self) -> Option<usize> {
+        Some(STUB_MAX_OUTPUT_TOKENS)
     }
 
     fn supports_caching(&self) -> bool {

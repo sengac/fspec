@@ -27,13 +27,13 @@ Feature: Test Antigravity Support
 
   Scenario: Initialize fspec with Antigravity agent
     Given I am in a new project directory
-    When I run "fspec init --agent=antigravity"
-    Then the exit code should be 0
-    And the output should contain "Initialized fspec for Antigravity"
-    And a ".fspec" directory should exist
+    When I dispatch init against that project directory with agent list ['antigravity']
+    Then the dispatcher returns success=true
+    And the filesInstalled array is 'spec/ANTIGRAVITY.md' and '.antigravity/commands/fspec.md'
+    And spec/ANTIGRAVITY.md and .antigravity/commands/fspec.md exist in the project directory
+    And the activation message is 'Add .antigravity/commands/ to your Antigravity configuration to activate'
 
-  Scenario: Verify fspec status in Antigravity environment
+  Scenario: The project config records the Antigravity agent
     Given I have initialized fspec with the "antigravity" agent
-    When I run "fspec status"
-    Then the exit code should be 0
-    And the output should contain "Agent: Antigravity"
+    When I read spec/fspec-config.json
+    Then its agent field is 'antigravity'

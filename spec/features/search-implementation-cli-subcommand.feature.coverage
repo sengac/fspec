@@ -46,7 +46,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -98,7 +100,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -150,7 +154,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -202,7 +208,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -254,7 +262,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -306,7 +316,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }
@@ -358,7 +370,9 @@
                 62,
                 63,
                 64
-              ]
+              ],
+              "firstLine": "/// Entry point for the `search-implementation` clap subcommand.",
+              "lastLine": "FspecCoreError::InvalidArgs { reason, .. } => {"
             }
           ]
         }

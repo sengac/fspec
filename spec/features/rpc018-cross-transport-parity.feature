@@ -1,15 +1,19 @@
+@BUG-582
+@BUG-464
+@BUG-445
 @done
 @RPC-018
 @rust
 @rpc
 @cross-transport
 @parity
+@infrastructure
 Feature: RPC-018 cross-transport parity for get_model_info / get_thinking_level / get_workspace_info
   """
   RPC-018 adds three new RPC methods to the shared FspecService trait:
 
   * get_model_info(session_id) -> ModelInfo
-  * get_thinking_level(session_id) -> ThinkingLevel
+  * get_thinking_level(session_id) -> Result<ThinkingLevel, String> (BUG-464)
   * get_workspace_info() -> WorkspaceInfo
 
   Both FspecBackend impls (EmbeddedFspecBackend + WebSocketFspecBackend)
@@ -63,30 +67,30 @@ Feature: RPC-018 cross-transport parity for get_model_info / get_thinking_level 
     Then the awaited result is Ok with git_branch = None
     And the cwd field equals the supplied tempdir path
 
-  Scenario: get_model_info returns safe defaults when no session manager is attached
+  Scenario: get_model_info is refused when no session manager is attached
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.get_model_info(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(ModelInfo::default()) with display_name = "" and supports_reasoning = false and supports_vision = false and context_window = 0
+    Then the awaited result is an error saying no session manager is attached
 
-  Scenario: get_thinking_level returns ThinkingLevel::Off when no session manager is attached
+  Scenario: get_thinking_level is refused when no session manager is attached
     Given a SharedFspecService constructed via SharedFspecService::new (no session manager attached)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.get_thinking_level(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(ThinkingLevel::Off)
+    Then the awaited result is an error saying no session manager is attached
 
-  Scenario: get_model_info / get_thinking_level cross tarpc cleanly with safe defaults
+  Scenario: get_model_info and get_thinking_level cross tarpc cleanly with the refusal without a session manager
     Given an rpc-server bound to a SharedFspecService with NO session manager attached
     And a WebSocketFspecBackend connected to that server
     When backend.get_model_info(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(ModelInfo::default())
+    Then the awaited result is an error saying no session manager is attached
     When backend.get_thinking_level(SessionId::new("anything")).await is invoked
-    Then the awaited result is Ok(ThinkingLevel::Off)
+    Then the awaited result is an error saying no session manager is attached
 
   Scenario: StubSessionManagerHandle inherits the default SessionManagerHandle implementations
     Given a SharedFspecService constructed via with_session_manager(stub_handle, watcher)
     And an EmbeddedFspecBackend wrapping that shared service
     When backend.get_model_info(SessionId::new("stub-1")).await is invoked
-    Then the awaited result is Ok(ModelInfo::default())
+    Then the awaited result is an error saying get_model_info is not implemented by this session manager
     When backend.get_thinking_level(SessionId::new("stub-1")).await is invoked
-    Then the awaited result is Ok(ThinkingLevel::Off)
+    Then the awaited result is an error saying get_thinking_level is not implemented by this session manager

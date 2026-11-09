@@ -15,10 +15,9 @@
 //! Every test uses ratatui's `TestBackend` so no NAPI, no async, no
 //! real terminal — runs in <100ms.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::provider_settings::icons;
 use codelet_fspec_tui::views::provider_settings::row_render::{render_row, RowKind};
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier};
@@ -71,7 +70,7 @@ fn row_string(buf: &Buffer, width: u16) -> String {
 
 /// Scenario: Selected provider row paints a yellow background band
 #[test]
-fn selected_provider_row_paints_yellow_band() {
+fn selected_provider_row_paints_yellow_band() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI"
     // @step And the row is in the selected state
     let buf = paint(RowKind::Provider { expanded: false }, "OpenAI", true, 40);
@@ -95,11 +94,12 @@ fn selected_provider_row_paints_yellow_band() {
         any_bold,
         "selected provider row should carry Modifier::BOLD"
     );
+    Ok(())
 }
 
 /// Scenario: Unselected provider row paints white foreground on default background
 #[test]
-fn unselected_provider_row_paints_white_on_reset() {
+fn unselected_provider_row_paints_white_on_reset() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI"
     // @step And the row is in the unselected state
     let buf = paint(RowKind::Provider { expanded: false }, "OpenAI", false, 40);
@@ -109,7 +109,7 @@ fn unselected_provider_row_paints_white_on_reset() {
     // We assert the first label character (capital 'O') is fg=White on bg=Reset.
     let first_label_cell = (0..40u16)
         .find(|x| buf[(*x, 0)].symbol() == "O")
-        .expect("label 'OpenAI' first 'O' should appear in row");
+        .or_fail("label 'OpenAI' first 'O' should appear in row")?;
     assert_eq!(cell_fg(&buf, first_label_cell), Color::White);
     assert_eq!(cell_bg(&buf, first_label_cell), Color::Reset);
     // @step And no Modifier::REVERSED flag is set on the row
@@ -119,11 +119,12 @@ fn unselected_provider_row_paints_white_on_reset() {
             "cell {x} should not carry Modifier::REVERSED on unselected provider row"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Selected profile row paints a cyan background band
 #[test]
-fn selected_profile_row_paints_cyan_band() {
+fn selected_profile_row_paints_cyan_band() -> TestResult {
     // @step Given a ProviderSettings row of kind Profile labelled "dev"
     // @step And the row is in the selected state
     let buf = paint(RowKind::Profile, "dev", true, 40);
@@ -133,11 +134,12 @@ fn selected_profile_row_paints_cyan_band() {
         assert_eq!(cell_bg(&buf, x), Color::Cyan, "cell {x}");
         assert_eq!(cell_fg(&buf, x), Color::Black, "cell {x}");
     }
+    Ok(())
 }
 
 /// Scenario: Selected oauth-login row paints a magenta background band
 #[test]
-fn selected_oauth_login_row_paints_magenta_band() {
+fn selected_oauth_login_row_paints_magenta_band() -> TestResult {
     // @step Given a ProviderSettings row of kind OauthLogin labelled "Sign in to GitHub"
     // @step And the row is in the selected state
     let buf = paint(RowKind::OauthLogin, "Sign in to GitHub", true, 40);
@@ -147,11 +149,12 @@ fn selected_oauth_login_row_paints_magenta_band() {
         assert_eq!(cell_bg(&buf, x), Color::Magenta, "cell {x}");
         assert_eq!(cell_fg(&buf, x), Color::Black, "cell {x}");
     }
+    Ok(())
 }
 
 /// Scenario: Selected oauth-status row paints a green background band
 #[test]
-fn selected_oauth_status_row_paints_green_band() {
+fn selected_oauth_status_row_paints_green_band() -> TestResult {
     // @step Given a ProviderSettings row of kind OauthStatus labelled "✓ Signed in as user"
     // @step And the row is in the selected state
     let buf = paint(RowKind::OauthStatus, "✓ Signed in as user", true, 40);
@@ -161,11 +164,12 @@ fn selected_oauth_status_row_paints_green_band() {
         assert_eq!(cell_bg(&buf, x), Color::Green, "cell {x}");
         assert_eq!(cell_fg(&buf, x), Color::Black, "cell {x}");
     }
+    Ok(())
 }
 
 /// Scenario: Selected add-profile row paints a green background band
 #[test]
-fn selected_add_profile_row_paints_green_band() {
+fn selected_add_profile_row_paints_green_band() -> TestResult {
     // @step Given a ProviderSettings row of kind AddProfile labelled "Add Profile"
     // @step And the row is in the selected state
     let buf = paint(RowKind::AddProfile, "Add Profile", true, 40);
@@ -175,11 +179,12 @@ fn selected_add_profile_row_paints_green_band() {
         assert_eq!(cell_bg(&buf, x), Color::Green, "cell {x}");
         assert_eq!(cell_fg(&buf, x), Color::Black, "cell {x}");
     }
+    Ok(())
 }
 
 /// Scenario: Selected api-key row paints a yellow background band
 #[test]
-fn selected_api_key_row_paints_yellow_band() {
+fn selected_api_key_row_paints_yellow_band() -> TestResult {
     // @step Given a ProviderSettings row of kind ApiKey labelled "API Key"
     // @step And the row is in the selected state
     let buf = paint(RowKind::ApiKey, "API Key", true, 40);
@@ -189,11 +194,12 @@ fn selected_api_key_row_paints_yellow_band() {
         assert_eq!(cell_bg(&buf, x), Color::Yellow, "cell {x}");
         assert_eq!(cell_fg(&buf, x), Color::Black, "cell {x}");
     }
+    Ok(())
 }
 
 /// Scenario: Unselected child rows are tinted by their kind on the default background
 #[test]
-fn unselected_profile_row_paints_cyan_on_reset() {
+fn unselected_profile_row_paints_cyan_on_reset() -> TestResult {
     // @step Given a ProviderSettings row of kind Profile labelled "dev"
     // @step And the row is in the unselected state
     let buf = paint(RowKind::Profile, "dev", false, 40);
@@ -201,9 +207,10 @@ fn unselected_profile_row_paints_cyan_on_reset() {
     // @step Then the label span carries fg=Cyan and bg=Reset
     let label_cell = (0..40u16)
         .find(|x| buf[(*x, 0)].symbol() == "d")
-        .expect("profile label 'dev' should appear in row");
+        .or_fail("profile label 'dev' should appear in row")?;
     assert_eq!(cell_fg(&buf, label_cell), Color::Cyan);
     assert_eq!(cell_bg(&buf, label_cell), Color::Reset);
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -212,7 +219,7 @@ fn unselected_profile_row_paints_cyan_on_reset() {
 
 /// Scenario: Every non-provider row prepends a 4-space inner indent after the selection prefix
 #[test]
-fn child_rows_have_four_space_inner_indent() {
+fn child_rows_have_four_space_inner_indent() -> TestResult {
     // @step Given a ProviderSettings row of kind Profile labelled "dev"
     let buf = paint(RowKind::Profile, "dev", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
@@ -227,11 +234,12 @@ fn child_rows_have_four_space_inner_indent() {
             "cell {x} should be space (inner indent)"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Provider rows have no 4-space inner indent — the expand glyph follows the marker directly
 #[test]
-fn provider_row_has_no_inner_indent() {
+fn provider_row_has_no_inner_indent() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=true
     let buf = paint(RowKind::Provider { expanded: true }, "OpenAI", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
@@ -242,31 +250,34 @@ fn provider_row_has_no_inner_indent() {
     assert_eq!(cell_symbol(&buf, 2), "▼");
     // @step And cell at index 2 is NOT a space
     assert_ne!(cell_symbol(&buf, 2), " ");
+    Ok(())
 }
 
 /// Scenario: Provider row paints the ▼ expanded glyph when expanded is true
 #[test]
-fn provider_row_paints_expanded_glyph_when_expanded() {
+fn provider_row_paints_expanded_glyph_when_expanded() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=true
     let buf = paint(RowKind::Provider { expanded: true }, "OpenAI", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the expand glyph at cell index 2 is "▼"
     assert_eq!(cell_symbol(&buf, 2), "▼");
+    Ok(())
 }
 
 /// Scenario: Provider row paints the ▶ collapsed glyph when expanded is false
 #[test]
-fn provider_row_paints_collapsed_glyph_when_collapsed() {
+fn provider_row_paints_collapsed_glyph_when_collapsed() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=false
     let buf = paint(RowKind::Provider { expanded: false }, "OpenAI", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the expand glyph at cell index 2 is "▶"
     assert_eq!(cell_symbol(&buf, 2), "▶");
+    Ok(())
 }
 
 /// Scenario: Selected row prefix is "> " and unselected prefix is "  "
 #[test]
-fn selection_prefix_flips_between_gt_and_spaces() {
+fn selection_prefix_flips_between_gt_and_spaces() -> TestResult {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=false
     // @step When the row is painted selected into a TestBackend buffer of width 40
     let sel = paint(RowKind::Provider { expanded: false }, "OpenAI", true, 40);
@@ -278,36 +289,40 @@ fn selection_prefix_flips_between_gt_and_spaces() {
     // @step Then cells at indices 0 and 1 are "  "
     assert_eq!(cell_symbol(&unsel, 0), " ");
     assert_eq!(cell_symbol(&unsel, 1), " ");
+    Ok(())
 }
 
 /// Scenario: Profile row carries the 📁 folder icon directly after the inner indent
 #[test]
-fn profile_row_has_folder_icon_at_index_6() {
+fn profile_row_has_folder_icon_at_index_6() -> TestResult {
     // @step Given a ProviderSettings row of kind Profile labelled "dev"
     let buf = paint(RowKind::Profile, "dev", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the icon cell at index 6 starts with "📁"
     assert_eq!(cell_symbol(&buf, 6), "📁");
+    Ok(())
 }
 
 /// Scenario: OauthLogin row carries the 🔑 key icon directly after the inner indent
 #[test]
-fn oauth_login_row_has_key_icon_at_index_6() {
+fn oauth_login_row_has_key_icon_at_index_6() -> TestResult {
     // @step Given a ProviderSettings row of kind OauthLogin labelled "Sign in to GitHub"
     let buf = paint(RowKind::OauthLogin, "Sign in to GitHub", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the icon cell at index 6 starts with "🔑"
     assert_eq!(cell_symbol(&buf, 6), "🔑");
+    Ok(())
 }
 
 /// Scenario: AddProfile row carries the "+ " glyph directly after the inner indent
 #[test]
-fn add_profile_row_has_plus_icon_at_index_6() {
+fn add_profile_row_has_plus_icon_at_index_6() -> TestResult {
     // @step Given a ProviderSettings row of kind AddProfile labelled "Add Profile"
     let buf = paint(RowKind::AddProfile, "Add Profile", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the icon cell at index 6 is "+"
     assert_eq!(cell_symbol(&buf, 6), "+");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -318,7 +333,7 @@ fn add_profile_row_has_plus_icon_at_index_6() {
 /// by row_render. These are referenced from list.rs and other render
 /// sites and must stay stable.
 #[test]
-fn icons_module_exposes_canonical_glyphs() {
+fn icons_module_exposes_canonical_glyphs() -> TestResult {
     assert_eq!(icons::EXPANDED, "▼ ");
     assert_eq!(icons::COLLAPSED, "▶ ");
     assert_eq!(icons::FOLDER, "📁 ");
@@ -327,6 +342,7 @@ fn icons_module_exposes_canonical_glyphs() {
     assert_eq!(icons::INDENT, "    ");
     assert_eq!(icons::SEL, "> ");
     assert_eq!(icons::NOSEL, "  ");
+    Ok(())
 }
 
 /// Sanity check on full row text: an unselected expanded OpenAI provider
@@ -334,11 +350,12 @@ fn icons_module_exposes_canonical_glyphs() {
 /// space → label ordering is wired correctly even before colours are
 /// inspected.
 #[test]
-fn provider_row_string_layout_is_canonical() {
+fn provider_row_string_layout_is_canonical() -> TestResult {
     let buf = paint(RowKind::Provider { expanded: true }, "OpenAI", false, 40);
     let s = row_string(&buf, 12);
     assert!(
         s.starts_with("  ▼ OpenAI"),
         "row layout should start with '  ▼ OpenAI', got: {s:?}"
     );
+    Ok(())
 }

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-029
 @rust
@@ -45,7 +46,8 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
   to None/0).
 
   Pair: render tests live in
-  rust/fspec-tui/tests/view_agent_unit_rpc029.rs.
+  rust/fspec-tui/tests/view_agent_unit_rpc029.rs. REFAC-051 moved the header scenarios to
+  rpc029-agent-header-alignment.feature.
 
   SUPERSEDED by MENU-003 (2026-09-30): the agent pane now paints the
   2-zone menu bar row directly below the SessionHeader (single-view
@@ -82,28 +84,6 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
     When the App renders AgentView against an 80x20 TestBackend
     Then the row containing the substring "/tmp/scratch" appears strictly above the row containing the green ">" prompt
 
-  Scenario: Header inserts work-unit prefix between session number and model
-    Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
-    And model_info_by_session["s-1"] is ModelInfo { display_name: "claude-sonnet-4", supports_reasoning: false, supports_vision: false, context_window: 0 }
-    And the store's current_work_unit_id is "RPC-029"
-    And the store's current_work_unit_status is "implementing"
-    When the App renders AgentView against a 120x20 TestBackend
-    Then the rendered buffer's top row contains the substring "#1 (RPC-029: implementing): claude-sonnet-4"
-
-  Scenario: Header omits work-unit prefix when no work unit is set
-    Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
-    And model_info_by_session["s-1"] is ModelInfo { display_name: "claude-sonnet-4", supports_reasoning: false, supports_vision: false, context_window: 0 }
-    And the store has no current_work_unit_id
-    When the App renders AgentView against a 120x20 TestBackend
-    Then the rendered buffer's top row contains the substring "#1: claude-sonnet-4"
-    And the rendered buffer's top row does NOT contain the substring "(RPC"
-
-  Scenario: Header and footer rows paint dark grey #333333 background on every cell
-    Given an AgentViewStore with workspace WorkspaceInfo { cwd: "/tmp/scratch", git_branch: None }
-    When the App renders AgentView against an 80x20 TestBackend
-    Then every cell of the header row has background color RGB(0x33, 0x33, 0x33)
-    And every cell of the footer row has background color RGB(0x33, 0x33, 0x33)
-
   Scenario: Header and footer have horizontal padding of one column on both edges
     Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
     And model_info_by_session["s-1"] is ModelInfo { display_name: "demo", supports_reasoning: false, supports_vision: false, context_window: 0 }
@@ -132,27 +112,3 @@ Feature: RPC-029 AgentView structure alignment with TS Ink original
     When the App renders AgentView against an 80x20 TestBackend
     Then the cell at the cwd position of the footer row has foreground color DarkGray
     And the cell at the branch suffix position of the footer row has foreground color Cyan
-
-  Scenario: Header [DEBUG] badge paints red-bold when debug enabled
-    Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
-    And model_info_by_session["s-1"] is ModelInfo { display_name: "demo", supports_reasoning: false, supports_vision: false, context_window: 0 }
-    And the SessionHeader's is_debug_enabled field is true
-    When the SessionHeader renders against an 80x1 buffer
-    Then the rendered buffer's row 0 contains the substring "[DEBUG]"
-    And the cell containing the "D" of "[DEBUG]" has foreground color Red and Bold modifier
-
-  Scenario: Header [ISOLATED] badge paints green when session is isolated
-    Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
-    And model_info_by_session["s-1"] is ModelInfo { display_name: "demo", supports_reasoning: false, supports_vision: false, context_window: 0 }
-    And the SessionHeader's is_isolated field is true
-    When the SessionHeader renders against an 80x1 buffer
-    Then the rendered buffer's row 0 contains the substring "[ISOLATED]"
-    And the cell containing the "I" of "[ISOLATED]" has foreground color Green
-
-  Scenario: Header prefix + work unit + model run paints cyan and bold
-    Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
-    And model_info_by_session["s-1"] is ModelInfo { display_name: "claude-sonnet-4", supports_reasoning: false, supports_vision: false, context_window: 0 }
-    And the store's current_work_unit_id is "RPC-029"
-    And the store's current_work_unit_status is "implementing"
-    When the App renders AgentView against a 120x20 TestBackend
-    Then the cell containing the "c" of "claude-sonnet-4" in the header row has foreground color Cyan and Bold modifier

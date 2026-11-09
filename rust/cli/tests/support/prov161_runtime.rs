@@ -24,10 +24,20 @@ impl RuntimeFixture {
         let directory = codelet_test_helpers::setup_temp_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         codelet_core::persistence::reset_stores_for_tests();
-        Ok(Self {
+        let mut fixture = Self {
             directory,
             environment: Vec::new(),
-        })
+        };
+        // BUG-640: a test build resolves the user directory only from
+        // FSPEC_USER_DIR. The fixture's directory holds the provider settings
+        // it writes, so it is the user directory too (restored on drop),
+        // unless the caller isolated one already (cont011's bug268
+        // environment).
+        if std::env::var_os("FSPEC_USER_DIR").is_none() {
+            let directory = fixture.directory.path().to_string_lossy().into_owned();
+            fixture.environment("FSPEC_USER_DIR", Some(&directory));
+        }
+        Ok(fixture)
     }
 
     pub fn environment(&mut self, name: &'static str, value: Option<&str>) {
@@ -80,8 +90,8 @@ impl Drop for RuntimeFixture {
 
 pub fn limits(manager: &ProviderManager) -> TestResult<AdmissionLimits> {
     Ok(AdmissionLimits {
-        context_capacity: Some(u64::try_from(manager.context_window())?),
-        output_reservation: Some(u64::try_from(manager.max_output_tokens())?),
+        context_capacity: manager.context_window().map(u64::try_from).transpose()?,
+        output_reservation: manager.max_output_tokens().map(u64::try_from).transpose()?,
     })
 }
 
@@ -153,8 +163,8 @@ pub async fn run<M: CompletionModel + 'static>(
 where
     M::StreamingResponse: WasmCompatSend + GetTokenUsage,
 {
-    tokio::time::timeout(
-        std::time::Duration::from_secs(10),
+    codelet_test_helpers::deadlock_guard(
+        "run_agent_stream( agent, PROMPT, session, Arc::new(Atomic...",
         run_agent_stream(
             agent,
             PROMPT,

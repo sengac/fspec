@@ -9,9 +9,11 @@ use serde_json::json;
 impl<T: HttpClientExt> CompletionModel<T> {
     pub(super) fn streaming_request_bytes(
         &self,
-        request: CompletionRequest,
+        mut request: CompletionRequest,
     ) -> Result<Vec<u8>, CompletionError> {
         request.validate_tool_catalog_overrides()?;
+        // MODEL-015: effort messages are placed in `messages`, never sent as a param.
+        let effort_messages = super::effort::take(&mut request.additional_params)?;
         let max_tokens = request
             .max_tokens
             .or(self.default_max_tokens)
@@ -22,6 +24,7 @@ impl<T: HttpClientExt> CompletionModel<T> {
         if let Some(documents) = request.normalized_documents() {
             full_history.push(documents);
         }
+        let history_offset = full_history.len();
         full_history.extend(request.chat_history);
         let mut messages = full_history
             .into_iter()
@@ -40,6 +43,8 @@ impl<T: HttpClientExt> CompletionModel<T> {
         if self.prompt_caching {
             apply_cache_control(&mut system, &mut messages);
         }
+        let mut messages = serde_json::to_value(&messages)?;
+        super::effort::insert(&mut messages, &effort_messages, history_offset)?;
         let mut body = json!({
             "model": self.model,
             "messages": messages,

@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @querying
 @cli
@@ -50,7 +51,7 @@ Feature: Port dependencies command to Rust
     Given spec/work-units.json contains AUTH-001 with blocks=['AUTH-002','AUTH-003'], AUTH-002 with blocks=['AUTH-004'], and AUTH-003 and AUTH-004 with no relationships
     When I dispatch dependencies with workUnitId='AUTH-001' and graph=true
     Then the dispatcher returns success=true
-    Then the data field equals "AUTH-001\n  blocks → AUTH-002\n    blocks → AUTH-004\n  blocks → AUTH-003"
+    Then the data field equals "AUTH-001\n  blocks → AUTH-002\n    AUTH-002\n      blocks → AUTH-004\n        AUTH-004\n  blocks → AUTH-003\n    AUTH-003"
 
   Scenario: Relationship values fall back to legacy top-level fields when relationships object is absent
     Given spec/work-units.json contains LEGACY-001 with top-level dependsOn=['LEGACY-002'] and no relationships object

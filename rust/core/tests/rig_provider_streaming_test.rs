@@ -1,88 +1,56 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/refactor-providers-to-use-rig-with-streaming.feature
 //!
-//! Tests for Refactoring Providers to use Rig with Streaming - REFAC-003
-//!
-//! These tests verify that ClaudeProvider is refactored to use rig::providers::anthropic
-//! with full streaming support including text chunks, tool call deltas, and extended thinking.
+//! The rig-based ClaudeProvider keeps the LlmProvider interface, reports
+//! streaming support and sends the decided anthropic-beta headers. These tests
+//! build providers and read their properties; they never stream a response.
 
 use codelet_providers::{ClaudeProvider, LlmProvider};
 use codelet_tools::ToolDefinition;
 use serde_json::json;
 
-// ==========================================
-// SCENARIO 1: Replace ClaudeProvider with rig Anthropic provider
-// ==========================================
-
-/// Scenario: Replace ClaudeProvider with rig Anthropic provider
+/// Scenario: Claude provider is created from an API key and a model
 #[test]
 fn test_replace_claude_provider_with_rig_anthropic_provider() {
-    // @step Given the codebase has a custom ClaudeProvider implementation
-    // Current implementation exists in src/providers/claude.rs
-
-    // @step When I refactor to use rig::providers::anthropic::CompletionModel
-    // This test will fail until we implement the refactoring
-
-    // @step Then the ClaudeProvider should use rig's Anthropic client internally
-    // Verify we can create a provider (will use rig internally after refactor)
+    // @step Given an API key and the model "claude-sonnet-4-20250514"
+    // @step When a Claude provider is created from them
     let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514");
 
-    // Provider should still work with the same interface
+    // @step Then the provider is created
     assert!(provider.is_ok(), "Provider should be created successfully");
-
     let provider = provider.unwrap();
 
-    // @step And both completion() and stream() methods should be implemented
-    // Verify provider has expected methods (compilation test)
+    // @step And it reports the name "claude" and the model "claude-sonnet-4-20250514"
     assert_eq!(provider.name(), "claude");
     assert_eq!(provider.model(), "claude-sonnet-4-20250514");
-
-    // @step And all existing ClaudeProvider tests must pass
-    // This is verified by running all tests in claude_provider_test.rs
-    // which will continue to pass after refactoring
 }
 
-// ==========================================
-// SCENARIO 2: Stream text chunks in real-time
-// ==========================================
-
-/// Scenario: Stream text chunks in real-time
+/// Scenario: An API-key Claude provider supports streaming
 #[test]
 fn test_stream_text_chunks_in_real_time() {
-    // @step Given I have an agent using the rig Anthropic provider
+    // @step Given a Claude provider created from an API key and the model "claude-sonnet-4-20250514"
     let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514")
         .expect("Provider should be created");
 
-    // @step When I call stream() with a prompt
-    // This will fail until stream() method is implemented
+    // @step When its streaming support is checked
+    let streaming = provider.supports_streaming();
 
-    // @step Then I should receive text chunks as StreamingCompletionResponse
-    // @step And chunks should arrive in real-time as Claude generates them
-    // @step And the streaming should emit RawStreamingChoice::Message variants
-
-    // After implementation, provider should support streaming
+    // @step Then it supports streaming
     assert!(
-        provider.supports_streaming(),
-        "Provider should support streaming after refactoring to rig"
+        streaming,
+        "the rig-based Claude provider should support streaming"
     );
-
-    // Note: Full streaming test would require mocking rig's streaming response
-    // For now, we verify the supports_streaming() flag changes from false to true
 }
 
-// ==========================================
-// SCENARIO 3: Stream tool call deltas during tool execution
-// ==========================================
-
-/// Scenario: Stream tool call deltas during tool execution
+/// Scenario: A Claude provider supports streaming alongside a Read tool definition
 #[test]
 fn test_stream_tool_call_deltas_during_tool_execution() {
-    // @step Given I have an agent that can use tools
+    // @step Given a Claude provider created from an API key and the model "claude-sonnet-4-20250514"
     let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514")
         .expect("Provider should be created");
 
-    // Create a simple tool definition
-    let _tool = ToolDefinition {
+    // @step And a Read tool definition with a required file_path
+    let tool = ToolDefinition {
         name: "Read".to_string(),
         description: "Read a file".to_string(),
         input_schema: json!({
@@ -96,116 +64,85 @@ fn test_stream_tool_call_deltas_during_tool_execution() {
             "required": ["file_path"]
         }),
     };
+    assert_eq!(tool.input_schema["required"], json!(["file_path"]));
 
-    // @step When Claude requests the Read tool during streaming
-    // This would require mocking the streaming response
+    // @step When its streaming support is checked
+    let streaming = provider.supports_streaming();
 
-    // @step Then I should receive ToolCallDelta chunks as the tool call is built
-    // @step And I should receive a complete ToolCall when the tool request is complete
-    // @step And I should receive a ToolResult after tool execution
-    // @step And the streaming should emit RawStreamingChoice::ToolCallDelta variants
-
-    // Verify streaming is supported (required for tool call deltas)
+    // @step Then it supports streaming
     assert!(
-        provider.supports_streaming(),
+        streaming,
         "Provider must support streaming to emit tool call deltas"
     );
-
-    // Note: Full implementation would stream ToolCallDelta → ToolCall → ToolResult
 }
 
-// ==========================================
-// SCENARIO 4: Authenticate using OAuth with custom headers
-// ==========================================
-
-/// Scenario: Authenticate using OAuth with custom headers
+/// Scenario: An OAuth Claude provider for a budget-only model sends the OAuth
+/// and interleaved-thinking beta headers
 #[test]
 fn test_authenticate_using_oauth_with_custom_headers() {
-    // @step Given CLAUDE_CODE_OAUTH_TOKEN environment variable is set
-    // We'll test with from_api_key_with_mode instead
-
-    // @step When I create a rig Anthropic provider
     use codelet_providers::AuthMode;
+
+    // @step Given an OAuth token and the budget-only model "claude-sonnet-4-20250514"
+    // @step When a Claude provider is created from them in OAuth mode
     let provider = ClaudeProvider::from_api_key_with_mode_and_model(
         "test-oauth-token",
         AuthMode::OAuth,
         "claude-sonnet-4-20250514",
     );
 
-    // @step Then the provider should use Bearer auth header with the OAuth token
+    // @step Then the provider is created in OAuth mode
     assert!(
         provider.is_ok(),
         "Provider should be created with OAuth mode"
     );
-
     let provider = provider.unwrap();
-
-    // @step And requests to the Anthropic API should be authenticated
-    // Verify OAuth mode is detected
     assert!(provider.is_oauth_mode(), "Provider should be in OAuth mode");
 
-    // @step And streaming responses should succeed with valid OAuth credentials
-    // OAuth mode should work with streaming
+    // @step And it supports streaming
     assert!(
         provider.supports_streaming(),
         "OAuth mode should support streaming"
     );
 
-    // Verify OAuth-specific headers would be added
-    // Note: claude-sonnet-4-20250514 is treated as adaptive (default-adaptive for 4.x+),
-    // so interleaved-thinking header is NOT included.
+    // @step And its anthropic-beta header contains "oauth-2025-04-20"
     let beta_header = provider.get_anthropic_beta_header_for_model();
     assert!(
         beta_header.contains("oauth-2025-04-20"),
-        "Beta header should include oauth feature"
+        "Beta header should include oauth feature: {beta_header}"
     );
+
+    // @step And its anthropic-beta header contains "interleaved-thinking-2025-05-14"
+    // BUG-493: claude-sonnet-4-20250514 is a budget-only Claude 4.0 id
+    // (BUG-438, claude-budget-only-thinking-models), not an adaptive model.
     assert!(
-        !beta_header.contains("interleaved-thinking-2025-05-14"),
-        "Beta header should NOT include interleaved-thinking for adaptive model"
+        beta_header.contains("interleaved-thinking-2025-05-14"),
+        "a budget-only model's beta header must include interleaved-thinking: {beta_header}"
     );
 }
 
-// ==========================================
-// SCENARIO 5: Support extended thinking with reasoning chunks
-// ==========================================
-
-/// Scenario: Support extended thinking with reasoning chunks
+/// Scenario: A Claude Sonnet 4.5 provider sends the interleaved-thinking beta header
 #[test]
 fn test_support_extended_thinking_with_reasoning_chunks() {
-    // @step Given I have an agent using the rig Anthropic provider with extended thinking enabled
+    // @step Given a Claude provider created from an API key and the model "claude-sonnet-4-5"
     let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-5")
         .expect("Provider should be created");
 
-    // Extended thinking is enabled via beta header
-    // (interleaved-thinking-2025-05-14 in anthropic-beta header)
+    // @step When its streaming support and anthropic-beta header are checked
+    let streaming = provider.supports_streaming();
+    let beta_header = provider.get_anthropic_beta_header_for_model();
 
-    // @step When Claude generates a response with reasoning
-    // This would be triggered by Claude's internal thinking process
-
-    // @step Then I should receive Reasoning chunks separate from text chunks
-    // @step And the streaming should emit RawStreamingChoice::Reasoning variants
-    // @step And reasoning chunks should be distinguishable from message content
-
-    // Verify streaming is supported (required for reasoning chunks)
+    // @step Then it supports streaming
     assert!(
-        provider.supports_streaming(),
+        streaming,
         "Provider must support streaming to emit reasoning chunks"
     );
 
-    // Verify beta header includes extended thinking
-    let beta_header = provider.get_anthropic_beta_header_for_model();
+    // @step And its anthropic-beta header contains "interleaved-thinking-2025-05-14"
     assert!(
         beta_header.contains("interleaved-thinking-2025-05-14"),
-        "Beta header should include extended thinking feature flag"
+        "Beta header should include extended thinking feature flag: {beta_header}"
     );
-
-    // Note: Full implementation would stream:
-    // Reasoning("thinking...") → Message("response text")
 }
-
-// ==========================================
-// HELPER TESTS: Verify rig integration
-// ==========================================
 
 #[test]
 fn test_rig_is_accessible_via_codelet_namespace() {
@@ -220,18 +157,25 @@ fn test_rig_is_accessible_via_codelet_namespace() {
     });
 }
 
+/// Scenario: The Claude provider keeps the LlmProvider interface and declared limits
 #[test]
 fn test_backward_compatibility_with_existing_llm_provider_trait() {
-    // Verify the refactored provider still implements LlmProvider
+    // @step Given a Claude provider created from an API key and the model "claude-sonnet-4-20250514"
     let provider =
         ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
 
-    // All LlmProvider methods should still work
-    assert_eq!(provider.name(), "claude");
-    assert_eq!(provider.context_window(), 200_000);
-    assert_eq!(provider.max_output_tokens(), 8192);
-    assert!(provider.supports_caching());
+    // @step When its LlmProvider properties are read
+    let (name, context_window, max_output_tokens) = (
+        provider.name(),
+        provider.context_window(),
+        provider.max_output_tokens(),
+    );
 
-    // After refactoring: this should be true (currently false)
-    // assert!(provider.supports_streaming());
+    // @step Then it reports the name "claude", a 200000-token context window and 8192 max output tokens
+    assert_eq!(name, "claude");
+    assert_eq!(context_window, Some(200_000));
+    assert_eq!(max_output_tokens, Some(8192));
+
+    // @step And it supports prompt caching
+    assert!(provider.supports_caching());
 }

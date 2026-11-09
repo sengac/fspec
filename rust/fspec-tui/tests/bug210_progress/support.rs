@@ -1,10 +1,11 @@
+use crate::common::TaskOutcome;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_agent_loop::BackgroundOutput;
 use codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
+use codelet_fspec_tui::app::transcript_sync::TranscriptAction;
 use codelet_fspec_tui::views::agent::chrome_paint::{paint_footer, ChromeAreas};
 use codelet_fspec_tui::{Action, App, EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 use codelet_rpc::SharedFspecService;
@@ -46,12 +47,18 @@ impl Fixture {
             r#"{"workUnits":{}}"#,
         )?;
         codelet_core::persistence::reset_stores_for_tests();
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().into())?;
         std::env::set_var("ANTHROPIC_API_KEY", "bug210-no-network");
-        let manager = Arc::new(SessionManager::new());
-        manager.set_default_model("anthropic/claude-opus-4-5");
+        let manager = SessionManager::new();
+        // BUG-437: sessions are created in the manager's start workspace.
+        manager.set_default_project(directory.path().to_path_buf())?;
+        manager.set_default_model("anthropic/claude-opus-4-5")?;
         let handle: Arc<dyn SessionManagerHandle> = manager.clone();
-        let ids = vec![handle.create_session(None), handle.create_session(None)];
+        let ids = vec![
+            handle.create_session_checked(None)?,
+            handle.create_session_checked(None)?,
+        ];
         let mut sessions = Vec::new();
         for id in &ids {
             let session = manager.get_session(&id.value)?;
@@ -85,7 +92,7 @@ impl Fixture {
         let mut app = App::new(backend);
         app.dispatch(Action::Reconnected);
         while let Some(task) = app.next_pending_task() {
-            task.await?;
+            task.await.completed_or_cancelled()?;
         }
         while let Some(action) = app.try_recv_action() {
             app.dispatch(action);
@@ -112,20 +119,36 @@ impl Fixture {
 
     pub async fn flush(&mut self) -> TestResult {
         let marker = "bug210-progress-stream-barrier";
+        // BUG-648: a session's state chunks are applied from its transcript
+        // pages, in journal order, so the barrier is the marker reaching each
+        // tab's transcript (every earlier chunk has then been applied).
+        let shown = |app: &App, id: &SessionId| {
+            app.agent_view_store()
+                .session_context_for(id)
+                .map_or(0, |context| {
+                    context
+                        .scrollback
+                        .chunks()
+                        .iter()
+                        .filter_map(|chunk| context.scrollback.full_text_for_seq(chunk.seq))
+                        .filter(|text| text.contains(marker))
+                        .count()
+                })
+        };
+        let before: Vec<usize> = self.ids.iter().map(|id| shown(&self.app, id)).collect();
         for session in &self.sessions {
             session.handle_output(StreamChunk::user_notification(
                 marker.into(),
                 NotificationSeverity::Info,
             ));
         }
-        let mut pending_sessions = self.ids.clone();
-        tokio::time::timeout(Duration::from_secs(3), async {
+        codelet_test_helpers::deadlock_guard("the progress chunk", async {
             loop {
                 if let Some(action) = self.app.try_recv_action() {
-                    if let Action::ChunkReceived(
+                    if let Action::Transcript(TranscriptAction::Live(
                         _,
                         chunk @ StreamChunk::CompactionProgressUpdate { progress },
-                    ) = &action
+                    )) = &action
                     {
                         let json =
                             codelet_agent_loop::stream_chunk_json::stream_chunk_to_json_value(
@@ -134,22 +157,18 @@ impl Fixture {
                         assert_eq!(json["type"], "compactionProgressUpdate");
                         assert_eq!(json["progress"], serde_json::to_value(progress)?);
                     }
-                    if let Action::ChunkReceived(
-                        session,
-                        StreamChunk::UserNotification { message, .. },
-                    ) = &action
-                    {
-                        if message == marker {
-                            pending_sessions.retain(|pending| pending != session);
-                        }
-                    }
                     self.app.dispatch(action);
-                    if pending_sessions.is_empty() {
-                        break Ok::<(), Box<dyn std::error::Error + Send + Sync>>(());
-                    }
-                } else {
-                    tokio::task::yield_now().await;
+                    continue;
                 }
+                if self
+                    .ids
+                    .iter()
+                    .zip(&before)
+                    .all(|(id, count)| shown(&self.app, id) > *count)
+                {
+                    break Ok::<(), Box<dyn std::error::Error + Send + Sync>>(());
+                }
+                tokio::task::yield_now().await;
             }
         })
         .await??;
@@ -193,15 +212,11 @@ impl Fixture {
 
     pub async fn start_recovery(&self, index: usize) -> TestResult<tokio::task::JoinHandle<()>> {
         let (entered_tx, entered_rx) = oneshot::channel();
-        let entered = Arc::new(std::sync::Mutex::new(Some(entered_tx)));
+        let entered = Arc::new(parking_lot::Mutex::new(Some(entered_tx)));
         set_compactor_sub_agent_handler(
             self.sessions[index].id,
             Some(Arc::new(move |_, _| {
-                if let Some(sender) = entered
-                    .lock()
-                    .unwrap_or_else(std::sync::PoisonError::into_inner)
-                    .take()
-                {
+                if let Some(sender) = entered.lock().take() {
                     let _ = sender.send(());
                 }
                 Box::pin(std::future::pending())
@@ -221,7 +236,7 @@ impl Fixture {
             )
             .await;
         });
-        tokio::time::timeout(Duration::from_secs(3), entered_rx).await??;
+        codelet_test_helpers::deadlock_guard("the progress task start", entered_rx).await??;
         Ok(task)
     }
 }

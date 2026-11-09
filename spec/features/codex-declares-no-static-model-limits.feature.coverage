@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    {
+      "name": "The Codex resolver declares no default limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug330_codex_static_limits.rs",
+          "lines": "15-32",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/mod.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ],
+              "firstLine": "/// BUG-330 / PROV-165: Codex declares no static context window; without",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex limits resolve as unavailable without catalog or user values",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug330_codex_static_limits.rs",
+          "lines": "34-44",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/manager/impl_4.rs",
+              "lines": [
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "// PROV-165: Codex declares no limits; they come from the",
+              "lastLine": "}),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Codex provider reports no guessed context window",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug330_codex_static_limits.rs",
+          "lines": "46-60",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/completion.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// BUG-330: Codex limits come only from the model catalog or a user value",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No unbuilt test asserts the removed Codex default limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug330_codex_static_limits.rs",
+          "lines": "82-108",
+          "implMappings": [
+            {
+              "file": "rust/Cargo.toml",
+              "lines": [
+                1,
+                2
+              ],
+              "firstLine": "[workspace]",
+              "lastLine": "members = ["
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider object with declared limits reports them",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug330_codex_static_limits.rs",
+          "lines": "62-81",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/claude.rs",
+              "lines": [
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716
+              ],
+              "firstLine": "fn context_window(&self) -> Option<usize> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/lib.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "/// Context window size in tokens; PROV-167: `None` when the provider",
+              "lastLine": "fn max_output_tokens(&self) -> Option<usize>;"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug330_codex_static_limits.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/mod.rs",
+      "rust/providers/src/manager/impl_4.rs",
+      "rust/providers/src/codex/completion.rs",
+      "rust/Cargo.toml",
+      "rust/providers/src/claude.rs",
+      "rust/providers/src/lib.rs"
+    ],
+    "totalLinesCovered": 140
+  }
+}

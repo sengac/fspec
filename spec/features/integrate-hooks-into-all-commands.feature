@@ -1,4 +1,5 @@
 @done
+@HOOK-018
 @workflow
 @cli
 @workflow-automation
@@ -22,7 +23,10 @@ Feature: Integrate hooks into all commands
   #   4. Blocking hook failures prevent command execution (pre-hooks) or prevent exit with success (post-hooks)
   #   5. Non-blocking hook failures do not prevent command execution or success
   #   6. Hooks are filtered by conditions before execution (tags, prefix, epic, estimate)
-  #   7. Hook output is displayed using formatHookOutput() with system-reminders for blocking failures
+  #   7. Hook output is displayed with system-reminders for blocking failures
+  #   8. Both front doors run command hooks: the fspec CLI and agent fspec tool calls (dispatch_command, hook output in the system reminder); a CLI command routed through the dispatcher runs its hooks once
+  #   9. A command reads only its own event's hooks; invalid JSON fails every hooked command except add-hook, remove-hook, list-hooks and validate-hooks, which run no command hooks
+  #   10. Post-hooks run only after the command succeeded
   #
   # EXAMPLES:
   #   1. Command update-work-unit-status triggers pre-update-work-unit-status and post-update-work-unit-status hooks
@@ -64,7 +68,7 @@ Feature: Integrate hooks into all commands
     When I run "fspec update-work-unit-status AUTH-001 implementing"
     Then the command should execute successfully
     And the post-hook should execute after status change
-    And the hook should receive context with new status "implementing"
+    And the hook should see work unit "AUTH-001" saved with status "implementing"
 
   Scenario: Blocking pre-hook failure prevents command execution
     Given I have a blocking pre-hook "lint" for "pre-update-work-unit-status"
@@ -111,3 +115,34 @@ Feature: Integrate hooks into all commands
     And the output should contain "Exit code: 1"
     And the output should contain "Validation failed: tests not passing"
     And the output should contain "</system-reminder>"
+
+  Scenario: Agent fspec tool calls run command hooks
+    Given I have a non-blocking post-hook "notify" for "post-update-work-unit-status"
+    And the hook outputs "Notified" to stdout
+    When an agent fspec tool call runs "update-work-unit-status" for "AUTH-001" with status "implementing"
+    Then the tool call should succeed
+    And the tool call system reminder should contain "Notified"
+
+  Scenario: A CLI command routed through the dispatcher runs its hooks once
+    Given I have a non-blocking post-hook "count" for "post-add-bounded-context" that appends a line to "hook-runs.log"
+    When I run "fspec add-bounded-context AUTH-001 Billing"
+    Then "hook-runs.log" should contain exactly one line
+
+  Scenario: A broken hook configuration fails commands but not the hook management commands
+    Given spec/fspec-hooks.json holds invalid JSON
+    When I run "fspec validate-hooks"
+    Then the output should contain "spec/fspec-hooks.json could not be parsed"
+    When I run "fspec list-work-units"
+    Then the command should exit with non-zero code
+    And the output should contain "Invalid JSON in spec/fspec-hooks.json"
+
+  Scenario: A hook of another event does not affect a command
+    Given I have a hook for "post-implementing" whose script "spec/hooks/later.sh" does not exist yet
+    When I run "fspec update-work-unit-status AUTH-001 implementing"
+    Then the command should execute successfully
+
+  Scenario: A failed command skips its post-hooks
+    Given I have a non-blocking post-hook "notify" for "post-update-work-unit-status" that appends a line to "hook-runs.log"
+    When I run "fspec update-work-unit-status AUTH-001 done"
+    Then the command should exit with non-zero code
+    And "hook-runs.log" should not exist

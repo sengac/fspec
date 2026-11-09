@@ -12,8 +12,7 @@
 //! cell BACKGROUNDS only (pane glyphs stay readable). Mux off → no
 //! purple cells.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
@@ -76,13 +75,13 @@ fn render_buffer(
     nav: &mut Navigator,
     board: &BoardStore,
     agent: &mut AgentViewStore,
-) -> ratatui::buffer::Buffer {
-    let mut term = Terminal::new(TestBackend::new(W, H)).expect("Terminal::new");
+) -> Result<ratatui::buffer::Buffer, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(W, H)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
     })
-    .expect("draw");
-    term.backend().buffer().clone()
+    .or_fail("draw")?;
+    Ok(term.backend().buffer().clone())
 }
 
 /// Render `n` frames (advances the render-driven flash clock n*16ms) and
@@ -92,17 +91,17 @@ fn render_frames(
     board: &BoardStore,
     agent: &mut AgentViewStore,
     n: u32,
-) -> ratatui::buffer::Buffer {
+) -> Result<ratatui::buffer::Buffer, codelet_test_helpers::TestError> {
     let mut buf = ratatui::buffer::Buffer::empty(ratatui::layout::Rect::new(0, 0, W, H));
     for _ in 0..n {
-        let mut term = Terminal::new(TestBackend::new(W, H)).expect("Terminal::new");
+        let mut term = Terminal::new(TestBackend::new(W, H)).or_fail("Terminal::new")?;
         term.draw(|frame| {
             nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
         })
-        .expect("draw");
+        .or_fail("draw")?;
         buf = term.backend().buffer().clone();
     }
-    buf
+    Ok(buf)
 }
 
 /// All cells in the buffer whose background is the flash purple,
@@ -135,7 +134,7 @@ fn symbols_in(buf: &ratatui::buffer::Buffer, x0: u16, y0: u16, w: u16, h: u16) -
 
 /// Scenario: focusing a pane scans a purple strip from the bottom edge to the top
 #[test]
-fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
+fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -153,7 +152,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
         paint_clock, 0,
         "the first frame must paint at the armed clock 0 (bottom edge)"
     );
-    let buf = render_frames(&mut nav, &board, &mut agent, 1);
+    let buf = render_frames(&mut nav, &board, &mut agent, 1)?;
     let agent_rect = nav.mux.pane_rects()[1];
     // @step Then the Agent pane rect shows the dark purple background (RGB 74, 44, 112) as a single full-width row at the pane's bottom edge
     let painted = purple_cells(&buf);
@@ -169,7 +168,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
         !painted.is_empty(),
         "the flash must paint cells at the bottom edge"
     );
-    let top_row = painted.iter().map(|&(_, y)| y).min().expect("non-empty");
+    let top_row = painted.iter().map(|&(_, y)| y).min().or_fail("non-empty")?;
     assert_eq!(
         top_row,
         agent_rect.y + agent_rect.height - 1,
@@ -177,8 +176,8 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
     );
     // Full width: every column of the pane is tinted.
     let cols: Vec<u16> = painted.iter().map(|&(x, _)| x).collect();
-    let min = *cols.iter().min().expect("cols");
-    let max = *cols.iter().max().expect("cols");
+    let min = *cols.iter().min().or_fail("cols")?;
+    let max = *cols.iter().max().or_fail("cols")?;
     assert_eq!(
         min, agent_rect.x,
         "row must start at the pane's left column"
@@ -198,7 +197,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
     }
     // @step And rendering a few frames later the strip has moved UP (a mid-scan position, still 1 row high and full width)
     // 9 frames total so far: frame 9 paints at clock 8*16 = 128 (mid-scan).
-    let mid_buf = render_frames(&mut nav, &board, &mut agent, 8);
+    let mid_buf = render_frames(&mut nav, &board, &mut agent, 8)?;
     let mid_painted = purple_cells(&mid_buf);
     assert!(
         !mid_painted.is_empty(),
@@ -208,13 +207,13 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
         .iter()
         .map(|&(_, y)| y)
         .min()
-        .expect("non-empty");
+        .or_fail("non-empty")?;
     assert_eq!(
         mid_painted
             .iter()
             .map(|&(_, y)| y)
             .max()
-            .expect("non-empty"),
+            .or_fail("non-empty")?,
         mid_top,
         "mid-scan strip must stay exactly 1 row high"
     );
@@ -226,7 +225,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
     // 9 frames have rendered so far; 13 more land on frame 22, which
     // paints at clock 21*16 = 336 (LAST_PAINT_MS — the top edge) and
     // whose post-paint advance (352 ≥ 350) ends the scan.
-    let last_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES - 9);
+    let last_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES - 9)?;
     let end_painted = purple_cells(&last_buf);
     assert!(
         !end_painted.is_empty(),
@@ -236,7 +235,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
         .iter()
         .map(|&(_, y)| y)
         .min()
-        .expect("non-empty");
+        .or_fail("non-empty")?;
     assert_eq!(
         end_top, agent_rect.y,
         "the scan must END at the pane's top edge"
@@ -249,7 +248,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
         !nav.mux.is_flash_active(),
         "the scan animation must end once 350ms of frames have elapsed"
     );
-    let after = render_buffer(&mut nav, &board, &mut agent);
+    let after = render_buffer(&mut nav, &board, &mut agent)?;
     let settled = purple_cells(&after);
     let expected_settled = flash_cells(agent_rect, FLASH_MS);
     assert!(!expected_settled.is_empty(), "settled bar must exist");
@@ -271,6 +270,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
             "settled bar leaked into the Board pane at ({x}, {y})"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -280,7 +280,7 @@ fn focusing_a_pane_scans_a_purple_strip_from_bottom_edge_to_top() {
 
 /// Scenario: the settled frame is a 1-row top bar that persists on the focused pane
 #[test]
-fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() {
+fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -292,7 +292,7 @@ fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() {
     nav.mux.set_focus(1);
     assert!(nav.mux.is_flash_active(), "scan must be in flight at arm");
     // @step When 350ms of rendered frames have elapsed
-    let buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     assert!(
         !nav.mux.is_flash_active(),
         "the scan must end after 350ms of frames"
@@ -329,7 +329,7 @@ fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() {
         );
     }
     // @step And the Agent pane shows the same 1-row top bar on every subsequent rendered frame
-    let later = render_frames(&mut nav, &board, &mut agent, 5);
+    let later = render_frames(&mut nav, &board, &mut agent, 5)?;
     assert_eq!(
         purple_cells(&later),
         settled,
@@ -353,6 +353,7 @@ fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() {
             "settled bar leaked into the mux footer row at ({x}, {y})"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -362,7 +363,7 @@ fn the_settled_frame_is_a_1_row_top_bar_that_persists_on_the_focused_pane() {
 
 /// Scenario: focus change clears the old pane's bar and settles the new pane's top bar
 #[test]
-fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
+fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -372,7 +373,7 @@ fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
     seed_agent_session(&mut agent);
     // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
-    let settled_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let settled_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     let agent_rect = nav.mux.pane_rects()[1];
     let board_rect = nav.mux.pane_rects()[0];
     assert!(
@@ -402,7 +403,7 @@ fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
         0,
         "the new pane's scan must restart at clock 0 (bottom edge)"
     );
-    let next = render_frames(&mut nav, &board, &mut agent, 1);
+    let next = render_frames(&mut nav, &board, &mut agent, 1)?;
     // @step Then the Agent pane has no dark purple background on the next rendered frame
     for (x, y) in &purple_cells(&next) {
         assert!(
@@ -417,7 +418,7 @@ fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
         "scan must be armed on the Board pane"
     );
     // @step When 350ms of rendered frames have elapsed
-    let done = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let done = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     assert!(
         !nav.mux.is_flash_active(),
         "the board scan must have settled"
@@ -445,6 +446,7 @@ fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
             "purple leaked back into the Agent pane at ({x}, {y})"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -455,7 +457,7 @@ fn focus_change_clears_the_old_panes_bar_and_settles_the_new_panes_top_bar() {
 /// Scenario: the bottom-to-top flash and settled top bar are deterministic, background-only and off when mux is disabled
 #[test]
 fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only_and_off_when_mux_is_disabled(
-) {
+) -> TestResult {
     // @step Given mux mode is active with the default two-pane grid
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -466,7 +468,7 @@ fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only
     // @step And the Agent pane is focused with a fresh flash
     nav.mux.set_focus(1);
     // @step When the frame is rendered at a given clock value and then re-rendered at the same clock value
-    let buf_a = render_buffer(&mut nav, &board, &mut agent);
+    let buf_a = render_buffer(&mut nav, &board, &mut agent)?;
     let clock_a = nav.mux.flash_clock_ms();
     let set_a = purple_cells(&buf_a);
     // Re-arm (board then agent) resets the clock to 0; one more frame
@@ -478,7 +480,7 @@ fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only
         0,
         "re-arming must reset the clock"
     );
-    let buf_b = render_buffer(&mut nav, &board, &mut agent);
+    let buf_b = render_buffer(&mut nav, &board, &mut agent)?;
     let clock_b = nav.mux.flash_clock_ms();
     let set_b = purple_cells(&buf_b);
     assert_eq!(
@@ -494,15 +496,15 @@ fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only
     // @step And the Agent pane glyphs are unchanged by the flash (background-only tint)
     let agent_rect = nav.mux.pane_rects()[1];
     // Let the scan settle; compare glyphs across a settled frame.
-    render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     let glyphs_settled = symbols_in(
-        &render_frames(&mut nav, &board, &mut agent, 1),
+        &render_frames(&mut nav, &board, &mut agent, 1)?,
         agent_rect.x,
         agent_rect.y,
         agent_rect.width,
         agent_rect.height,
     );
-    let buf = render_frames(&mut nav, &board, &mut agent, 1);
+    let buf = render_frames(&mut nav, &board, &mut agent, 1)?;
     let glyphs_now = symbols_in(
         &buf,
         agent_rect.x,
@@ -521,7 +523,7 @@ fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only
     let board2 = BoardStore::default();
     let mut agent2 = AgentViewStore::default();
     // @step When the frame is rendered to a terminal buffer
-    let buf2 = render_frames(&mut nav2, &board2, &mut agent2, 1);
+    let buf2 = render_frames(&mut nav2, &board2, &mut agent2, 1)?;
     // @step Then no cell in the buffer has the dark purple background
     for y in 0..buf2.area.height {
         for x in 0..buf2.area.width {
@@ -536,4 +538,5 @@ fn the_bottom_to_top_flash_and_settled_top_bar_are_deterministic_background_only
         nav2.mux.flash_pane().is_none(),
         "no flash may be armed with mux off"
     );
+    Ok(())
 }

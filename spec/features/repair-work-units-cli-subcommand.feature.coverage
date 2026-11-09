@@ -6,41 +6,7 @@
         {
           "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "71-96",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/repair_work_units.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -50,41 +16,7 @@
         {
           "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "98-117",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/repair_work_units.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -94,41 +26,7 @@
         {
           "file": "rust/fspec/tests/cli_repair_work_units.rs",
           "lines": "119-150",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/repair_work_units.rs",
-              "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -137,7 +35,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_repair_work_units.rs",
-          "lines": "152-176",
+          "lines": "152-179",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/repair_work_units.rs",
@@ -185,7 +83,9 @@
                 41,
                 42,
                 43
-              ]
+              ],
+              "firstLine": "//! `repair-work-units` help configuration — Rust port of",
+              "lastLine": "typical_workflow: None,"
             }
           ]
         }
@@ -200,9 +100,8 @@
       "rust/fspec/tests/cli_repair_work_units.rs"
     ],
     "implFiles": [
-      "rust/fspec/src/repair_work_units.rs",
       "rust/fspec-core/src/help/configs/repair_work_units.rs"
     ],
-    "totalLinesCovered": 230
+    "totalLinesCovered": 149
   }
 }

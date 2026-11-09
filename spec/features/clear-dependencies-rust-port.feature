@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-204
+@cli
+@dependency-management
 Feature: Port clear-dependencies command to Rust
   """
   Core impl file: rust/fspec-core/src/commands/clear_dependencies.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with remove_dependency::run).

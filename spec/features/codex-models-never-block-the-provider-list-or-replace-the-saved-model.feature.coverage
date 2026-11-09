@@ -1,0 +1,630 @@
+{
+  "scenarios": [
+    {
+      "name": "A saved Codex model is kept when Codex /models fails at startup",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug577_codex_models_never_replace_the_saved_model.rs",
+          "lines": "102-140",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/startup_model_resolution.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "// BUG-577 (product owner, 2026-11-07): a failed or empty Codex /models",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A saved Codex model is kept when Codex /models lists no models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+          "lines": "246-267",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/startup_model_resolution.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ],
+              "firstLine": "// BUG-577 (product owner, 2026-11-07): a failed or empty Codex /models",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                50,
+                51,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ],
+              "firstLine": "/// BUG-577: the reason shown when `/models` answers with no models to list.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A saved Codex model that Codex /models no longer lists gives way to the first available model",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+          "lines": "269-300",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/startup_model_resolution.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ],
+              "firstLine": "/// Resolve the startup default model from the provider sections and the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The provider list does not wait past the list budget for Codex /models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+          "lines": "302-327",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/models_catalog/listing.rs",
+              "lines": [
+                18,
+                19,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// How long building the provider list waits for Codex `/models`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/codex_section.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "firstLine": "/// The Codex section when Codex has credentials, leading the cloud group",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider lists built during one Codex /models request share it",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+          "lines": "329-363",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/models_catalog/listing.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// The Codex `/models` answer for one provider list, waiting at most the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A slow provider list does not hold up other daemon requests",
+      "testMappings": [
+        {
+          "file": "rust/rpc/tests/bug577_provider_list_on_the_blocking_pool.rs",
+          "lines": "108-139",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/service_implementation/providers.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "firstLine": "async fn list_providers(self, _ctx: Context) -> Result<Vec<ProviderInfo>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Without ChatGPT sign-in the Codex section says where to sign in",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+          "lines": "365-381",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/models_catalog/listing.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "/// The reason the model selector shows in the Codex section header:",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/providers/src/codex/models_catalog/fetch.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ],
+              "firstLine": "/// BUG-577: [`fetch_for_selection`] with its failure typed, so the provider",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long reason is shortened with an ellipsis in the model selector",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug577_codex_models_never_replace_the_saved_model.rs",
+          "lines": "142-159",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/header.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ],
+              "firstLine": "/// Paint a non-selectable provider header row (no badges). RPC-351:",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty Codex section with a reason does not expand",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug577_codex_models_never_replace_the_saved_model.rs",
+          "lines": "161-192",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "fn lists_nothing_with_reason(&self, key: &str) -> bool {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug577_codex_models_never_replace_the_saved_model.rs",
+      "rust/sessions/tests/bug577_codex_models_never_block_the_provider_list.rs",
+      "rust/rpc/tests/bug577_provider_list_on_the_blocking_pool.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/startup_model_resolution.rs",
+      "rust/sessions/src/codex_section.rs",
+      "rust/providers/src/codex/models_catalog/listing.rs",
+      "rust/rpc/src/service_implementation/providers.rs",
+      "rust/providers/src/codex/models_catalog/fetch.rs",
+      "rust/fspec-tui/src/views/model_selector/header.rs",
+      "rust/fspec-tui/src/views/model_selector/navigation.rs"
+    ],
+    "totalLinesCovered": 676
+  }
+}

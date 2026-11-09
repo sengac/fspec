@@ -24,7 +24,7 @@
 //!     is written to stderr prefixed with `Error:` (parity with the TS
 //!     `output.error('Error:', result.error)` path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -44,7 +44,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `delete-scenario` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let body = json!({
         "feature": args.feature,

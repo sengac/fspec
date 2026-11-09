@@ -1,0 +1,178 @@
+{
+  "scenarios": [
+    {
+      "name": "A definition cut inside a multi-byte character is indexed with the rest of its file",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug616_source_cap_multi_byte.rs",
+          "lines": "108-148",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/ast_pipeline/metadata.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "firstLine": "/// Extract source code with a cap on size.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A one-line definition longer than the byte cap keeps whole characters",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug616_source_cap_multi_byte.rs",
+          "lines": "150-167",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/ast_pipeline/metadata.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "firstLine": "/// Extract source code with a cap on size.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unchanged file is not re-extracted by an incremental index",
+      "testMappings": [
+        {
+          "file": "rust/graph/tests/bug616_source_cap_multi_byte.rs",
+          "lines": "169-187",
+          "implMappings": [
+            {
+              "file": "rust/graph/src/ast_pipeline/metadata.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "firstLine": "/// Extract source code with a cap on size.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/graph/tests/bug616_source_cap_multi_byte.rs"
+    ],
+    "implFiles": [
+      "rust/graph/src/ast_pipeline/metadata.rs"
+    ],
+    "totalLinesCovered": 186
+  }
+}

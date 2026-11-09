@@ -42,7 +42,6 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI arguments accepted by `add-bounded-context`. Mirrors the TS
@@ -123,7 +122,7 @@ fn append_event_storm_item(
     work_unit_id: &str,
     mut item_body: Map<String, Value>,
 ) -> Result<u64, FspecCoreError> {
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
 
     // [1] existsSync guard — do NOT auto-create the file.
     if !path.exists() {
@@ -133,6 +132,8 @@ fn append_event_storm_item(
         });
     }
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, command)?;
     let raw =
         std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io { command, source })?;
     let mut root: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
@@ -226,7 +227,7 @@ fn append_event_storm_item(
     es.insert("nextItemId".to_string(), Value::from(item_id + 1));
 
     // Single atomic write of the full document.
-    write_json_atomic(&path, &root)?;
+    crate::io::board::write_work_units(project_root, &root)?;
 
     Ok(item_id)
 }

@@ -1,7 +1,7 @@
 //! Feature: spec/features/coverage-mapping-remediation.feature
 //!
 //! AUDIT-002 — validates the remediation acceptance criteria by driving the
-//! REAL `link-coverage` / `unlink-coverage` / `audit-coverage` command
+//! REAL `link-coverage` / `unlink-coverage` / `audit` command
 //! entry points against a fixture project:
 //!   (1) re-linking a divergent (whole-file blob) impl mapping to a tight
 //!       per-function range passes the audit and leaves no mapping exceeding
@@ -22,7 +22,7 @@
 use std::fs;
 use std::path::Path;
 
-use codelet_fspec_core::{dispatch_command, DispatchResult, DispatchRequest};
+use codelet_fspec_core::{dispatch_command, DispatchRequest, DispatchResult};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -81,7 +81,13 @@ fn write_file(root: &Path, rel: &str, body: &str) {
 
 /// Seed the fixture project (impl + test + feature files) with a fresh
 /// coverage sidecar carrying the given pre-remediation mapping.
-fn seed_fixture(root: &Path, test_file: &str, test_lines: &str, impl_file: &str, impl_lines: Vec<i64>) {
+fn seed_fixture(
+    root: &Path,
+    test_file: &str,
+    test_lines: &str,
+    impl_file: &str,
+    impl_lines: Vec<i64>,
+) {
     write_file(root, "src/thing.rs", IMPL_SOURCE);
     write_file(root, "tests/thing.rs", FIXTURE_TEST);
     write_file(root, "spec/features/thing.feature", FIXTURE_FEATURE);
@@ -134,17 +140,23 @@ fn mapping_span(sidecar: &Value) -> i64 {
     max - min + 1
 }
 
-/// Parse the audit-coverage `{output, exitCode}` envelope into
+/// Parse the fspec audit `{output, exitCode}` envelope into
 /// (structurally clean?, report text).
 fn audit(result: &DispatchResult) -> (bool, String) {
     assert!(
         result.success,
-        "audit-coverage must run, got {:?}",
+        "fspec audit must run, got {:?}",
         result.error
     );
     let envelope: Value = serde_json::from_str(&result.data).expect("audit envelope is JSON");
     let clean = envelope["exitCode"].as_i64() == Some(0);
-    (clean, envelope["output"].as_str().expect("report text").to_string())
+    (
+        clean,
+        envelope["output"]
+            .as_str()
+            .expect("report text")
+            .to_string(),
+    )
 }
 
 /// Walk every test/impl mapping in the sidecar; `check` runs per file ref.
@@ -185,19 +197,17 @@ fn maintainer_relinks_divergent_scenarios_to_their_implementing_functions() {
     // link-coverage UPDATES the existing src/thing.rs impl mapping in place
     // from the blob to the tight range of `alpha` (the function that
     // implements the scenario) — no second mapping is created.
-    let relinked = dispatch_command(
-        req(
-            tmp.path(),
-            "link-coverage",
-            json!({
-                "featureName": "thing",
-                "scenario": SCENARIO,
-                "testFile": "tests/thing.rs",
-                "implFile": "src/thing.rs",
-                "implLines": "1-3"
-            }),
-        ),
-    );
+    let relinked = dispatch_command(req(
+        tmp.path(),
+        "link-coverage",
+        json!({
+            "featureName": "thing",
+            "scenario": SCENARIO,
+            "testFile": "tests/thing.rs",
+            "implFile": "src/thing.rs",
+            "implLines": "1-3"
+        }),
+    ));
     assert!(
         relinked.success,
         "impl-only re-link to the implementing function must succeed, got {:?}",
@@ -210,13 +220,11 @@ fn maintainer_relinks_divergent_scenarios_to_their_implementing_functions() {
     );
 
     // @step And the maintainer re-runs the semantic audit for that feature
-    let (clean, report) = audit(&dispatch_command(
-        req(
-            tmp.path(),
-            "audit-coverage",
-            json!({ "featureName": "thing" }),
-        ),
-    ));
+    let (clean, report) = audit(&dispatch_command(req(
+        tmp.path(),
+        "audit",
+        json!({ "feature": ["thing"], "area": ["coverage"] }),
+    )));
 
     // @step Then each re-linked scenario is judged aligned on re-audit
     // (clean structural audit + a tight single-function range = aligned)
@@ -225,14 +233,17 @@ fn maintainer_relinks_divergent_scenarios_to_their_implementing_functions() {
         "audit must be clean after a tight re-link, got: {report}"
     );
     assert!(
-        report.contains("All mappings valid"),
+        report.contains("No problems found"),
         "audit report must confirm all mappings valid, got: {report}"
     );
 
     // @step And no impl mapping for the feature exceeds a single-function line range
     let sidecar = read_sidecar(tmp.path(), "thing");
     assert_eq!(
-        sidecar["scenarios"][0]["testMappings"].as_array().expect("test mappings").len(),
+        sidecar["scenarios"][0]["testMappings"]
+            .as_array()
+            .expect("test mappings")
+            .len(),
         1,
         "re-link must not create a second test mapping"
     );
@@ -276,56 +287,53 @@ fn maintainer_migrates_or_retires_dead_path_mappings() {
         "spec/features/thing.feature.coverage",
         &serde_json::to_string(&sidecar).expect("sidecar is JSON"),
     );
-    let (clean, report) = audit(&dispatch_command(
-        req(
-            tmp.path(),
-            "audit-coverage",
-            json!({ "featureName": "thing" }),
-        ),
-    ));
-    assert!(!clean, "pre-migration audit must flag the dead mappings, got: {report}");
+    let (clean, report) = audit(&dispatch_command(req(
+        tmp.path(),
+        "audit",
+        json!({ "feature": ["thing"], "area": ["coverage"] }),
+    )));
     assert!(
-        report.contains("Test file not found: tests/old_thing.js"),
+        !clean,
+        "pre-migration audit must flag the dead mappings, got: {report}"
+    );
+    assert!(
+        report.contains("missing-test-file thing") && report.contains("tests/old_thing.js"),
         "audit must name the dead test file, got: {report}"
     );
     assert!(
-        report.contains("Implementation file not found: src/old_thing.js"),
+        report.contains("missing-impl-file thing") && report.contains("src/old_thing.js"),
         "audit must name the dead impl file, got: {report}"
     );
 
     // @step When the maintainer migrates each feature with a live Rust port to its new paths and line ranges
     // Retire the dead test mapping (and its dead impl mapping), then link
     // the live Rust port.
-    let retired = dispatch_command(
-        req(
-            tmp.path(),
-            "unlink-coverage",
-            json!({
-                "featureName": "thing",
-                "scenario": SCENARIO,
-                "testFile": "tests/old_thing.js"
-            }),
-        ),
-    );
+    let retired = dispatch_command(req(
+        tmp.path(),
+        "unlink-coverage",
+        json!({
+            "featureName": "thing",
+            "scenario": SCENARIO,
+            "testFile": "tests/old_thing.js"
+        }),
+    ));
     assert!(
         retired.success,
         "retiring the dead test mapping must succeed, got {:?}",
         retired.error
     );
-    let migrated = dispatch_command(
-        req(
-            tmp.path(),
-            "link-coverage",
-            json!({
-                "featureName": "thing",
-                "scenario": SCENARIO,
-                "testFile": "tests/thing.rs",
-                "testLines": "1-6",
-                "implFile": "src/thing.rs",
-                "implLines": "1-3"
-            }),
-        ),
-    );
+    let migrated = dispatch_command(req(
+        tmp.path(),
+        "link-coverage",
+        json!({
+            "featureName": "thing",
+            "scenario": SCENARIO,
+            "testFile": "tests/thing.rs",
+            "testLines": "1-6",
+            "implFile": "src/thing.rs",
+            "implLines": "1-3"
+        }),
+    ));
     assert!(
         migrated.success,
         "migration link to the live Rust port must succeed, got {:?}",
@@ -343,19 +351,14 @@ fn maintainer_migrates_or_retires_dead_path_mappings() {
     });
 
     // @step And the maintainer re-runs the structural audit
-    let (clean, report) = audit(&dispatch_command(
-        req(
-            tmp.path(),
-            "audit-coverage",
-            json!({ "featureName": "thing" }),
-        ),
-    ));
+    let (clean, report) = audit(&dispatch_command(req(
+        tmp.path(),
+        "audit",
+        json!({ "feature": ["thing"], "area": ["coverage"] }),
+    )));
 
     // @step Then zero file-missing defects remain for the migrated features
-    assert!(
-        clean,
-        "audit must be clean after migration, got: {report}"
-    );
+    assert!(clean, "audit must be clean after migration, got: {report}");
     assert!(
         !report.contains("not found") && !report.contains("missing"),
         "no file-missing defects may remain, got: {report}"

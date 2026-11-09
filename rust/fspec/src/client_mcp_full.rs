@@ -88,10 +88,18 @@ impl ServerHandler for FullFrontend {
             .unwrap_or(0);
         let mut all = self.read.list_tools(None, context).await?.tools;
         if self.compatible {
-            for method in mcp_dispatch::methods() {
+            let methods = mcp_dispatch::methods().map_err(|error| bad(error.to_string()))?;
+            for method in methods {
+                // BUG-413: a schema that is not a JSON object is an error.
+                let schema = method.schema.as_object().cloned().ok_or_else(|| {
+                    bad(format!(
+                        "schema for RPC method {} is not an object",
+                        method.name
+                    ))
+                })?;
                 all.push(Tool::new(format!("fspec_rpc_{}",method.name),
                     format!("Typed daemon RPC {}. {} Output uses immutable JSON text chunks, not streaming execution; legacy snapshot methods still fetch their full backend result.",method.name,if method.read_only {"Read operation."} else {"May change state or contact external services; daemon controls apply. Timeout means outcome unknown."}),
-                    Arc::new(method.schema.as_object().cloned().unwrap_or_default()))
+                    Arc::new(schema))
                     .with_annotations(ToolAnnotations::new().read_only(method.read_only).destructive(method.destructive || !method.read_only).idempotent(method.read_only).open_world(!method.read_only || method.name == "list_providers")));
             }
             all.push(Tool::new("fspec_rpc_result","Read retained result text by result_id and Unicode scalar offset. Does not repeat RPC. Expires 300 seconds after execution.",Arc::new(json!({"type":"object","properties":{"result_id":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["result_id","offset"],"additionalProperties":false}).as_object().cloned().unwrap_or_default())).with_annotations(ToolAnnotations::new().read_only(true).destructive(false).idempotent(true).open_world(false)));
@@ -162,42 +170,14 @@ impl ServerHandler for FullFrontend {
             .strip_prefix("fspec_rpc_")
             .ok_or_else(|| bad("Invalid RPC tool"))?;
         mcp_dispatch::validate(name, args.clone()).map_err(|e| bad(e.to_string()))?;
-        let method = mcp_dispatch::methods()
+        mcp_dispatch::methods()
+            .map_err(|error| bad(error.to_string()))?
             .into_iter()
             .find(|m| m.name == name)
             .ok_or_else(|| bad("Unknown RPC tool"))?;
-        let mut call_name = name.to_owned();
-        let mut call_args = args.clone();
-        if method.request_bound {
-            let snapshot = match self
-                .execute(
-                    "get_interaction_snapshot",
-                    json!({"session_id":args["session_id"]}),
-                )
-                .await
-            {
-                Ok(v) => v,
-                Err(e) => return Ok(failure(e)),
-            };
-            let snapshot: Value = serde_json::from_str(
-                snapshot
-                    .as_str()
-                    .ok_or_else(|| bad("Invalid interaction snapshot"))?,
-            )
-            .map_err(|_| bad("Invalid interaction snapshot"))?;
-            let interaction = snapshot[if name == "send_hitl_response" {
-                "hitl"
-            } else {
-                "pause"
-            }]
-            .clone();
-            if interaction["state"].is_null() {
-                return Err(bad("No pending interaction; no reply sent"));
-            }
-            call_name = "reply_interaction_checked".into();
-            call_args = json!({"session_id":args["session_id"],"method":name,"request_id":interaction["request_id"],"arguments":args.to_string()});
-        }
-        let value = match self.execute(&call_name, call_args).await {
+        // AMGR-020: a reply names its request id itself (the method schema
+        // requires it); the daemon checks it.
+        let value = match self.execute(name, args).await {
             Ok(v) => v,
             Err(e) => return Ok(failure(e)),
         };

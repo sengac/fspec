@@ -80,7 +80,9 @@
                 100,
                 101,
                 102
-              ]
+              ],
+              "firstLine": "fn binding_for(",
+              "lastLine": "}"
             }
           ]
         }

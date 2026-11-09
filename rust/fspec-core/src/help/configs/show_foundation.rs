@@ -22,6 +22,11 @@ const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
 
 const OPTIONS: &[CommandOption] = &[
     CommandOption {
+        flag: "--section <section>",
+        description: "Specific section to show (same as the positional [section])",
+        default_value: None,
+    },
+    CommandOption {
         flag: "--list-sections",
         description: "List section names only (without content)",
         default_value: None,

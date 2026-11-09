@@ -34,7 +34,9 @@
                 69,
                 70,
                 71
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -66,7 +68,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }

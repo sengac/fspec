@@ -20,9 +20,9 @@
 //!      → `[merge] success ...`, NoChanges → `[merge] nothing to merge`,
 //!      Conflict → `Action::SeedPendingInput` carrying the LLM
 //!      conflict-context message, Err → `[error] /merge-worktree: ...`).
-//!   4. `handle_discard_confirmed` — pops the dialog, spawns
-//!      `backend.discard_session_worktree(session_id)`, emits a
-//!      `[discard]` notice on Ok or `[error]` on failure.
+//!   4. `handle_discard_confirmed` — WT-018: the Discard half lives in
+//!      `discard_cards` (the cards the session changed are named before
+//!      the worktree is discarded).
 //!   5. `handle_cancel_merge_dialog` — pops the dialog with no
 //!      backend interaction.
 
@@ -36,6 +36,8 @@ use crate::components::Action;
 use crate::views::agent::merge_confirm_dialog::{MergeConfirmDialog, MERGE_CONFIRM_DIALOG_ID};
 
 use super::state::App;
+
+mod discard_cards;
 
 impl App {
     /// RPC-057: /merge-worktree slash command entry point. With no
@@ -104,7 +106,9 @@ impl App {
         if self.compositor.contains(MERGE_CONFIRM_DIALOG_ID) {
             let _ = self.compositor.remove(MERGE_CONFIRM_DIALOG_ID);
         }
-        let dialog = MergeConfirmDialog::new(session_id, summary);
+        // TUI-127: the dialog sends its choice to App::dispatch.
+        let dialog =
+            MergeConfirmDialog::new(session_id, summary).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 
@@ -138,10 +142,8 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-057: route a `DiscardConfirmed` action — pops the dialog
-    /// before the round-trip completes, spawns
-    /// `backend.discard_session_worktree(...)`, emits the matching
-    /// scrollback notice.
+    /// RPC-057 / WT-018: the merge dialog's Discard. Pops the dialog and
+    /// asks the daemon which cards the session changed.
     pub(crate) fn handle_discard_confirmed(&mut self, session_id: SessionId) {
         let _ = self.compositor.remove(MERGE_CONFIRM_DIALOG_ID);
         if tokio::runtime::Handle::try_current().is_err() {
@@ -149,13 +151,18 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let sid_for_task = session_id;
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            let text = match backend.discard_session_worktree(sid_for_task.clone()).await {
-                Ok(()) => "[discard] worktree discarded".to_string(),
-                Err(e) => format!("[error] /merge-worktree discard: {e}"),
+            let action = match backend.session_card_changes(session_id.clone()).await {
+                Ok(changes) => Action::SessionCardChangesLoaded {
+                    session_id,
+                    changes,
+                },
+                Err(e) => Action::EmitSessionNotice(
+                    session_id,
+                    format!("[error] /merge-worktree discard: {e}"),
+                ),
             };
-            let _ = action_tx.send(Action::EmitSessionNotice(sid_for_task, text));
+            let _ = action_tx.send(action);
         });
         self.pending_tasks.push(handle);
     }
@@ -188,12 +195,30 @@ impl App {
             Action::DiscardConfirmed { session_id } => {
                 self.handle_discard_confirmed(session_id.clone());
             }
+            Action::SessionCardChangesLoaded {
+                session_id,
+                changes,
+            } => {
+                self.handle_session_card_changes_loaded(session_id.clone(), changes.clone());
+            }
+            Action::DiscardSessionCards {
+                session_id,
+                move_back,
+            } => {
+                self.handle_discard_session_cards(session_id.clone(), *move_back);
+            }
+            Action::CancelDiscardCards => self.handle_cancel_discard_cards(),
             Action::CancelMergeDialog => {
                 self.handle_cancel_merge_dialog();
             }
-            Action::MergeSuccess { session_id } => {
+            Action::MergeSuccess {
+                session_id,
+                merge_commit,
+            } => {
                 // WT-009: success teardown (destroy + BackToBoard).
                 self.handle_merge_success_teardown(session_id.clone());
+                // TUI-130: the merge commit stays readable on the board.
+                self.show_merge_success(session_id, merge_commit.as_deref());
             }
             _ => return false,
         }
@@ -224,7 +249,10 @@ fn route_merge_outcome(
             // session and return to the board (TS merge → summary →
             // destroySession → onExit flow). Queued AFTER the notice so
             // the notice is dispatched first (FIFO action bus).
-            let _ = action_tx.send(Action::MergeSuccess { session_id });
+            let _ = action_tx.send(Action::MergeSuccess {
+                session_id,
+                merge_commit: outcome.merge_commit,
+            });
         }
         MergeStatus::NoChanges => {
             let _ = action_tx.send(Action::EmitSessionNotice(

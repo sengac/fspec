@@ -131,7 +131,7 @@ fn missing_confirm_flag_fails_before_any_file_io() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains 'Must confirm clearing all dependencies with --confirm flag'
+    // @step And the error message contains the substring 'Must confirm clearing all dependencies with --confirm flag'
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Must confirm clearing all dependencies with --confirm flag"),
@@ -159,7 +159,7 @@ fn missing_source_work_unit_surfaces_canonical_error() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains "Work unit 'UNKNOWN-001' does not exist"
+    // @step And the error message contains the substring "Work unit 'UNKNOWN-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Work unit 'UNKNOWN-001' does not exist"),

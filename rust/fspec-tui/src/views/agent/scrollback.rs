@@ -14,7 +14,7 @@ use ratatui::widgets::Widget;
 
 use super::reflow_cache::RowReflowCounter;
 use super::RenderedChunk;
-use crate::store::agent_view::chunk_wrap::wrap_source;
+use crate::store::agent_view::chunk_wrap::wrap_source_rows;
 
 pub use select::{SelectionMode, TurnDir};
 
@@ -265,7 +265,7 @@ impl ScrollbackList {
 /// Re-derive `chunk.lines` from `chunk.source` for `width`; no-op without `ChunkSource`.
 fn rewrap_chunk(chunk: &mut RenderedChunk, width: u16) {
     if let Some(source) = chunk.source.as_ref() {
-        chunk.lines = wrap_source(source, width);
+        (chunk.lines, chunk.row_ends) = wrap_source_rows(source, width);
     }
 }
 

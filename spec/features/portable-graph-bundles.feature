@@ -1,5 +1,7 @@
 @done
 @KGRAPH-069
+@parser
+@code-analysis
 Feature: Portable Graph Bundles — Export/Import
   """
   entities_to_jsonl() and jsonl_to_entities() live in graph_entities.rs. export_all_entities(), export_bundle(), and import_bundle() live in bundle.rs. AstExport/AstImport variants dispatched via graph_search_handler.rs to bundle.rs methods. ZIP handling uses the zip crate with deflate compression.

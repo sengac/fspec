@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @RPC-017
 @rust
@@ -21,8 +22,8 @@ Feature: RPC-017 work-units write helper (codelet_core::work_units_write::move_w
   TS `fspec prioritize-work-unit` commands cooperate.
 
   The mkdir-lock helper is the lifted `with_file_lock` from
-  `rust/common/src/file_lock.rs` (extracted from the inlined copy
-  in `rust/napi/src/schedule_handler.rs`).
+  `rust/common/src/file_lock.rs` (extracted from the schedule
+  handler's former inlined copy).
   """
 
   Background: User Story

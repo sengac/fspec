@@ -1,6 +1,10 @@
 use super::ModelInfo;
 use std::collections::HashMap;
 
+/// Find a catalog model by its catalog key or, failing that, by a unique
+/// exact `id`. BUG-335: a name that only prefixes a catalog model (`gpt-4`
+/// against `gpt-4o`) matches nothing, so it never borrows that model's
+/// capacity.
 pub(super) fn find_model<'models>(
     models: &'models HashMap<String, ModelInfo>,
     model: &str,
@@ -9,12 +13,6 @@ pub(super) fn find_model<'models>(
         return Some(found);
     }
     let mut exact = models.values().filter(|definition| definition.id == model);
-    if let Some(found) = exact.next() {
-        return exact.next().is_none().then_some(found);
-    }
-    let mut prefixes = models
-        .iter()
-        .filter(|(key, definition)| key.starts_with(model) || definition.id.starts_with(model));
-    let (_, found) = prefixes.next()?;
-    prefixes.next().is_none().then_some(found)
+    let found = exact.next()?;
+    exact.next().is_none().then_some(found)
 }

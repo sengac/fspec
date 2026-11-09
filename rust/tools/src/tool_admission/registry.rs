@@ -15,6 +15,9 @@ struct Context {
     authorization: Uuid,
     project: PathBuf,
     validator: ContextValidator,
+    /// BUG-404: an auxiliary agent registered with no owning session (it
+    /// authorizes as itself and has no session behind it).
+    standalone: bool,
 }
 
 pub(super) fn trusted_context(id: Uuid) -> Result<(PathBuf, Uuid), AttributionError> {
@@ -39,7 +42,7 @@ pub fn register_session(
     handler: AdmissionHandler,
     validator: ContextValidator,
 ) {
-    register(id, project, id, handler, validator);
+    register(id, project, id, handler, validator, false);
 }
 
 pub(super) fn register(
@@ -48,6 +51,7 @@ pub(super) fn register(
     authorization: Uuid,
     handler: AdmissionHandler,
     validator: ContextValidator,
+    standalone: bool,
 ) {
     CONTEXTS.insert(
         id,
@@ -56,8 +60,16 @@ pub(super) fn register(
             authorization,
             project,
             validator,
+            standalone,
         },
     );
+}
+
+/// BUG-404: true when `id` is a live auxiliary agent registered with no
+/// owning session — it has no session (and so no worktree) behind it, so
+/// the tool layer's isolation lookup must not treat it as unknown.
+pub fn is_standalone_auxiliary(id: Uuid) -> bool {
+    context(id).is_ok_and(|context| context.standalone)
 }
 
 pub fn unregister_session(id: Uuid) {

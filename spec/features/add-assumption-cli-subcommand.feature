@@ -1,5 +1,7 @@
 @done
 @RPC-169
+@cli
+@assumption-management
 Feature: fspec add-assumption CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_assumption.rs — clap-derived struct mirroring TS Commander.js registration
@@ -26,7 +28,7 @@ Feature: fspec add-assumption CLI subcommand
     Then the exit code is 0
     And stdout contains the substring '✓ Assumption added successfully'
     And spec/work-units.json on disk shows AUTH-001.assumptions has length 1
-    And spec/work-units.json on disk shows AUTH-001.assumptions[0]='Users have valid email'
+    And spec/work-units.json on disk shows AUTH-001.assumptions[0] with text 'Users have valid email'
 
   Scenario: CLI rejects a non-specifying status with exit 1 and TS-parity error prefix
     Given a project root tempdir with spec/work-units.json containing AUTH-001 status=backlog

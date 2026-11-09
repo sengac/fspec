@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-214
+@work-unit-management
 Feature: fspec create-story CLI subcommand (Rust port)
   """
   Clap derive subcommand `create-story` exposes the same surface as the TS Commander.js registration at

@@ -388,7 +388,7 @@ fn scenario_cli_trailing_feature_extension_tolerated() {
 // Scenario: show-coverage --help is byte-for-byte identical to TS formatCommandHelp reference
 // ─────────────────────────────────────────────────────────────────────────
 
-const TS_HELP_FIXTURE_SC: &str = include_str!("fixtures/help/show-coverage.txt");
+const TS_HELP_FIXTURE_SC: &str = include_str!("fixtures/help/refac020/show-coverage.txt");
 
 #[test]
 fn scenario_show_coverage_help_matches_ts_formatcommandhelp_reference() {
@@ -409,7 +409,7 @@ fn scenario_show_coverage_help_matches_ts_formatcommandhelp_reference() {
     // @step Then the command exits 0
     assert_eq!(code, 0, "show-coverage --help must exit 0; stderr={stderr}");
 
-    // @step And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/show-coverage.txt
+    // @step And stdout is byte-for-byte identical to the fixture at rust/fspec/tests/fixtures/help/refac020/show-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_SC);
 
     // @step And stdout starts with a blank line followed by the line 'SHOW-COVERAGE'

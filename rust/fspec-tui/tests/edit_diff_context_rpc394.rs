@@ -10,8 +10,7 @@
 //! Every Gherkin step carries a matching `// @step` comment whose text mirrors
 //! the feature file exactly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -22,14 +21,14 @@ use codelet_fspec_tui::store::agent_view::diff_format::{
 
 /// Allocate a unique temp file path (no `tempfile` dep needed) and write
 /// `content` to it. Returns the path; the file is left for the OS to reap.
-fn write_temp_file(content: &str) -> PathBuf {
+fn write_temp_file(content: &str) -> Result<PathBuf, codelet_test_helpers::TestError> {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
     let n = COUNTER.fetch_add(1, Ordering::Relaxed);
     let pid = std::process::id();
     let mut path = std::env::temp_dir();
     path.push(format!("rpc394_ctx_{pid}_{n}.txt"));
-    fs::write(&path, content).expect("write temp file");
-    path
+    fs::write(&path, content).or_fail("write temp file")?;
+    Ok(path)
 }
 
 fn line_no(row: &DiffDisplayRow) -> Option<usize> {
@@ -69,7 +68,7 @@ fn added_rows(rows: &[DiffDisplayRow]) -> Vec<&DiffDisplayRow> {
 }
 
 #[test]
-fn mid_file_edit_shows_three_context_lines_above_and_below() {
+fn mid_file_edit_shows_three_context_lines_above_and_below() -> TestResult {
     // @step Given a fifty-line file whose lines ten and eleven are replaced by two entirely different lines
     // Build a 50-line file; the POST-EDIT file has lines 10 & 11 replaced.
     let old_string = "line10\nline11";
@@ -81,13 +80,13 @@ fn mid_file_edit_shows_three_context_lines_above_and_below() {
             _ => format!("line{n}\n"),
         })
         .collect();
-    let path = write_temp_file(&post_edit);
+    let path = write_temp_file(&post_edit)?;
 
     // @step When I build the context-aware edit diff rows for that edit
     let rows = build_edit_diff_rows_with_context(
         old_string,
         new_string,
-        Some(path.to_str().unwrap()),
+        Some(path.to_str().or_fail("expected a value")?),
         DIFF_COLLAPSED_LINES,
     );
 
@@ -133,10 +132,11 @@ fn mid_file_edit_shows_three_context_lines_above_and_below() {
     assert_eq!(line_no(after[1]), Some(13));
     assert_eq!(row_text(after[2]), "line14");
     assert_eq!(line_no(after[2]), Some(14));
+    Ok(())
 }
 
 #[test]
-fn edit_on_first_line_has_no_before_context_and_trailing_context() {
+fn edit_on_first_line_has_no_before_context_and_trailing_context() -> TestResult {
     // @step Given a file whose first line is replaced by a different line
     let old_string = "line1";
     let new_string = "REPLACED-1";
@@ -149,13 +149,13 @@ fn edit_on_first_line_has_no_before_context_and_trailing_context() {
             }
         })
         .collect();
-    let path = write_temp_file(&post_edit);
+    let path = write_temp_file(&post_edit)?;
 
     // @step When I build the context-aware edit diff rows for that edit
     let rows = build_edit_diff_rows_with_context(
         old_string,
         new_string,
-        Some(path.to_str().unwrap()),
+        Some(path.to_str().or_fail("expected a value")?),
         DIFF_COLLAPSED_LINES,
     );
 
@@ -168,7 +168,7 @@ fn edit_on_first_line_has_no_before_context_and_trailing_context() {
                 DiffDisplayRow::Removed { .. } | DiffDisplayRow::Added { .. }
             )
         })
-        .expect("a change row");
+        .or_fail("a change row")?;
     let before_context = rows[..first_change]
         .iter()
         .filter(|r| matches!(r, DiffDisplayRow::Context { .. }))
@@ -186,10 +186,11 @@ fn edit_on_first_line_has_no_before_context_and_trailing_context() {
     assert_eq!(line_no(after[0]), Some(2));
     assert_eq!(row_text(after[2]), "line4");
     assert_eq!(line_no(after[2]), Some(4));
+    Ok(())
 }
 
 #[test]
-fn edit_on_last_line_has_leading_context_and_no_after_context() {
+fn edit_on_last_line_has_leading_context_and_no_after_context() -> TestResult {
     // @step Given a file whose last line is replaced by a different line
     let old_string = "line10";
     let new_string = "REPLACED-10";
@@ -202,13 +203,13 @@ fn edit_on_last_line_has_leading_context_and_no_after_context() {
             }
         })
         .collect();
-    let path = write_temp_file(&post_edit);
+    let path = write_temp_file(&post_edit)?;
 
     // @step When I build the context-aware edit diff rows for that edit
     let rows = build_edit_diff_rows_with_context(
         old_string,
         new_string,
-        Some(path.to_str().unwrap()),
+        Some(path.to_str().or_fail("expected a value")?),
         DIFF_COLLAPSED_LINES,
     );
 
@@ -238,16 +239,17 @@ fn edit_on_last_line_has_leading_context_and_no_after_context() {
                 DiffDisplayRow::Removed { .. } | DiffDisplayRow::Added { .. }
             )
         })
-        .expect("a change row");
+        .or_fail("a change row")?;
     let after_context = rows[last_change + 1..]
         .iter()
         .filter(|r| matches!(r, DiffDisplayRow::Context { .. }))
         .count();
     assert_eq!(after_context, 0, "no after-context on last-line edit");
+    Ok(())
 }
 
 #[test]
-fn missing_file_falls_back_to_fragments_only_with_no_panic() {
+fn missing_file_falls_back_to_fragments_only_with_no_panic() -> TestResult {
     // @step Given an edit whose file path does not exist on disk
     let old_string = "alpha\nbeta";
     let new_string = "gamma\ndelta";
@@ -274,10 +276,11 @@ fn missing_file_falls_back_to_fragments_only_with_no_panic() {
 
     // @step And no panic occurs
     // (reaching this line proves no panic occurred)
+    Ok(())
 }
 
 #[test]
-fn write_of_a_new_three_line_file_shows_only_added_rows_and_no_context() {
+fn write_of_a_new_three_line_file_shows_only_added_rows_and_no_context() -> TestResult {
     // @step Given a Write of a brand-new three-line file
     // A Write is all-additions: its old_string is empty, so even the
     // context-aware builder must inject no context (no surrounding file lines).
@@ -296,10 +299,11 @@ fn write_of_a_new_three_line_file_shows_only_added_rows_and_no_context() {
 
     // @step And no context row appears in the output
     assert_eq!(context_rows(&rows).len(), 0, "no context rows for a write");
+    Ok(())
 }
 
 #[test]
-fn shared_boundary_line_is_shown_once_and_not_duplicated() {
+fn shared_boundary_line_is_shown_once_and_not_duplicated() -> TestResult {
     // @step Given an edit whose old and new strings share an unchanged middle line inside a larger file
     // The change block sits around line 10 of a 30-line file: the middle line
     // "KEEP" is unchanged while the lines around it ("X"/"Y" → "A"/"B") change.
@@ -313,13 +317,13 @@ fn shared_boundary_line_is_shown_once_and_not_duplicated() {
             _ => format!("line{n}\n"),
         })
         .collect();
-    let path = write_temp_file(&post_edit);
+    let path = write_temp_file(&post_edit)?;
 
     // @step When I build the context-aware edit diff rows for that edit
     let rows = build_edit_diff_rows_with_context(
         old_string,
         new_string,
-        Some(path.to_str().unwrap()),
+        Some(path.to_str().or_fail("expected a value")?),
         DIFF_COLLAPSED_LINES,
     );
 
@@ -343,7 +347,7 @@ fn shared_boundary_line_is_shown_once_and_not_duplicated() {
     let last_added = rows
         .iter()
         .rposition(|r| matches!(r, DiffDisplayRow::Added { .. }))
-        .expect("an added row");
+        .or_fail("an added row")?;
     let after_context_has_keep = rows[last_added + 1..]
         .iter()
         .filter(|r| matches!(r, DiffDisplayRow::Context { .. }))
@@ -352,4 +356,5 @@ fn shared_boundary_line_is_shown_once_and_not_duplicated() {
         !after_context_has_keep,
         "injected after-context must not duplicate the shared 'KEEP' line"
     );
+    Ok(())
 }

@@ -31,10 +31,10 @@
 //!     [`FspecCoreError`] variants; this bridge prints `Error: <reason>` to
 //!     STDERR and exits 1 (parity with the TS catch → `output.error`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::reverse;
 use codelet_fspec_core::FspecCoreError;
 use serde_json::{json, Value};
@@ -66,7 +66,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with the TS `process.cwd()`
     // default at `reverse.ts:29`). The core resolves the session-file path
     // from a boundary-marker walk of this root.
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal the six flags into the JSON args shape. Booleans are only
     // emitted when set so an unset flag relies on the core's `#[serde(default)]`

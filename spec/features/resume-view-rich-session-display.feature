@@ -1,7 +1,9 @@
+@BUG-582
 @TUI-096
 @tui
 @resume
 @session-display
+@session-resume
 Feature: Resume view rich session display
   """
   Architecture notes:

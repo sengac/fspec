@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "78-106",
+          "lines": "72-98",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -30,7 +30,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -41,7 +43,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "108-135",
+          "lines": "101-123",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -66,7 +68,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -77,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "137-149",
+          "lines": "126-138",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -102,7 +106,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -113,7 +119,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "151-163",
+          "lines": "141-153",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -138,7 +144,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -149,7 +157,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "165-177",
+          "lines": "156-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -174,7 +182,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -185,7 +195,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "179-191",
+          "lines": "171-183",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -210,7 +220,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -221,7 +233,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "193-205",
+          "lines": "186-198",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -246,7 +258,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -257,7 +271,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "207-220",
+          "lines": "201-214",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -282,7 +296,9 @@
                 76,
                 77,
                 78
-              ]
+              ],
+              "firstLine": "/// kind whose unselected foreground is `Color::White` rather than its",
+              "lastLine": "};"
             }
           ]
         }
@@ -293,7 +309,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "226-244",
+          "lines": "221-238",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -318,7 +334,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -329,7 +347,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "245-259",
+          "lines": "241-254",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -354,7 +372,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -365,7 +385,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "260-269",
+          "lines": "257-265",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -390,7 +410,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -401,7 +423,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "270-279",
+          "lines": "268-276",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -426,7 +448,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -437,7 +461,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "280-295",
+          "lines": "279-293",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -462,7 +486,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -473,7 +499,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "296-305",
+          "lines": "296-304",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -498,7 +524,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -509,7 +537,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "306-315",
+          "lines": "307-315",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -534,7 +562,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -545,7 +575,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
-          "lines": "316-325",
+          "lines": "318-326",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_render.rs",
@@ -570,7 +600,9 @@
                 101,
                 102,
                 103
-              ]
+              ],
+              "firstLine": "/// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space",
+              "lastLine": "// icon prefix beyond the inner indent."
             }
           ]
         }
@@ -587,6 +619,6 @@
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/row_render.rs"
     ],
-    "totalLinesCovered": 556
+    "totalLinesCovered": 541
   }
 }

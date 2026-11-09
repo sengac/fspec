@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @agent-core
 @context-management
@@ -16,8 +17,8 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
   #   1. A new is_context_overflow_error classifier must be a strict superset of is_prompt_too_long_error: it must match provider-variant wording (OpenAI 'maximum context length', OpenAI-compatible 'context length exceeded' / 'input is too long', Bedrock/Vertex variants) and must keep the PROV-010 exclusion — thinking-budget errors containing 'budget_tokens' must NEVER trigger compaction.
   #   2. In the stream-loop error cascade the overflow check must run BEFORE the transient-network check (NET-001), because some providers' context-overflow 400s abort the SSE stream and would otherwise be misclassified as network errors and retried against the same oversized payload.
   #   3. The compactor sub-agent runs in an EPHEMERAL session (Uuid::new_v4, DeepSearch pattern) with a clean context, inheriting the parent session's provider and model (BUG-102 pattern). Its only context source for the dying session is SessionSearch over the parent's session id — it must NOT read the parent's in-memory message list.
-  #   4. The pin is handler-side, not a tool call (v1): after the sub-agent returns the DAG as its final response, the trigger site (production code, not the LLM) performs the apply_pending_dag mutation under the parent session lock — reset_session_to_reminders, push wrap_dag_content(dag), recalculate_token_tracker. The sub-agent's tool surface stays the 7 read-only DeepSearch base set (no inject_summary tool), so it cannot mis-target or loop.
-  #   5. The compactor sub-agent is bounded by a wall-clock timeout (reusing deep_search_wall_clock_timeout, AMGR-016 pattern) and a fixed max tool-turn depth. On timeout, failure, or unparseable DAG output, the trigger falls back to a FREE force-inject fallback DAG (CMPCT-020 Level-3 pattern — extract_partial_dag_nodes then force_inject_fallback_dag) so the session is ALWAYS reduced, never left oversized.
+  #   4. The pin is handler-side, not a tool call (v1): after the sub-agent returns the DAG as its final response, the trigger site (production code, not the LLM) validates it (validate_dag_structure) and commits it via commit_selected_compaction_guarded — the in-memory messages become the retained system reminders plus the committed compaction summary, the turn list is cleared, token state is reset to the committed boundary, and the persisted history is not truncated. The sub-agent's tool surface stays the 7 read-only DeepSearch base set (no inject_summary tool), so it cannot mis-target or loop.
+  #   5. The compactor sub-agent is bounded by a wall-clock timeout (reusing deep_search_wall_clock_timeout, AMGR-016 pattern) and a fixed max tool-turn depth. On timeout, failure, unparseable DAG output or a missing handler, compaction fails: no fallback DAG is pinned (CMPCT-079/CMPCT-057 removed the fallback DAGs), the parent's in-memory and committed history are unchanged, and exactly one CompactionFailed event is emitted with no CompactionComplete.
   #   6. The compaction_in_progress flag must be set for the whole sub-agent run so SessionSearch Layer-0 trimming applies to the sub-agent's reads of the parent (keeping the sub-agent's own context small), and cleared after the pin completes — consistent with the in-view flow's use of the flag.
   #   7. The compactor sub-agent must use the INCREMENTAL compaction instruction when the parent session already contains a DAG (detected via detect_existing_dag BEFORE any clear), and the FRESH instruction otherwise — preserving D2 durable nodes across sub-agent compactions exactly like the in-view flow does.
   #   8. The sub-agent is the SECOND STAGE of overflow recovery: in-view compaction (Paths A/B/C/D) remains the primary in-place mechanism. The sub-agent fires when the API returns an overflow error the in-loop recovery cannot resolve — including the retry streams issued by in_loop_compaction_restart (they are governed by the same error cascade, so a second overflow routes to the sub-agent without new wiring).
@@ -57,7 +58,7 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     Given a parent session with system reminders and many compactable conversation messages
     And the compactor sub-agent returns a parseable DAG with at least one dag-node block
     When the trigger site pins the sub-agent's DAG to the parent
-    Then the parent's in-memory messages are replaced by the system reminders plus the wrapped DAG
+    Then the parent's in-memory messages are replaced by the retained system reminders plus the committed compaction summary
     And the parent's turn list is cleared
     And the parent's token tracker is recalculated from the reduced message list
 
@@ -69,43 +70,42 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     When the trigger site pins the sub-agent's DAG to the parent
     Then the in-memory context is reduced to reminders plus the DAG
     And the persisted session manifest history is NOT truncated
-    And the DAG content is wrapped in the compaction-dag system-reminder wrapper
+    And the DAG is persisted once as a structurally identified compaction summary
 
   @compaction
   @context-management
   @session
   @regression
-  Scenario: Sub-agent timeout pins a free fallback DAG
+  Scenario: Sub-agent timeout preserves history without a fallback DAG
   # ============================================================================
   # Fallback: convergence guarantee when the sub-agent fails
   # ============================================================================
     Given a parent session that is over its context limit
     And the compactor sub-agent exceeds its wall-clock timeout without returning a DAG
-    When the trigger site completes compaction
-    Then a fallback DAG is pinned to the parent session without any further LLM call
-    And the fallback DAG is a generic auto-recovered node covering the session's turns
-    And the parent's in-memory context is reduced to reminders plus the fallback DAG
-    And the failure is surfaced with exactly one structured CompactionFailed lifecycle event carrying the timeout reason, emitted before the CompactionComplete
+    When the trigger site attempts compaction
+    Then compaction fails without pinning any fallback DAG and without a further LLM call
+    And the parent's in-memory and committed history are unchanged
+    And exactly one CompactionFailed event carries the timeout reason and no CompactionComplete is emitted
 
   @compaction
   @context-management
   @session
-  Scenario: Unparseable sub-agent output pins a fallback DAG
+  Scenario: Unparseable sub-agent output preserves history without a fallback DAG
     Given the compactor sub-agent returns final text containing no parseable dag-node blocks
-    When the trigger site completes compaction
-    Then a fallback DAG is pinned to the parent session
-    And the parent's in-memory context is reduced to reminders plus the fallback DAG
-    And the failure is surfaced with exactly one structured CompactionFailed lifecycle event carrying the unparseable-output reason, emitted before the CompactionComplete
+    When the trigger site attempts compaction
+    Then the attempt fails as an invalid candidate and no fallback DAG is pinned
+    And the parent's in-memory and committed history are unchanged
+    And exactly one CompactionFailed event is emitted and no CompactionComplete is emitted
 
   @compaction
   @context-management
   @session
-  Scenario: Partial dag-node blocks from a failed sub-agent are recovered
+  Scenario: Partial dag-node blocks from a failed sub-agent are never installed
     Given the compactor sub-agent times out after emitting some complete dag-node blocks but no final DAG
-    When the trigger site completes compaction
-    Then the fallback DAG is assembled from the partial dag-node blocks
-    And the parent's in-memory context is reduced to reminders plus the recovered DAG
-    And the failure is surfaced with exactly one structured CompactionFailed lifecycle event carrying the partial-recovery reason, emitted before the CompactionComplete
+    When the trigger site attempts compaction
+    Then the partial dag-node blocks are reported only as failure diagnostics and never installed as a DAG
+    And the parent's in-memory and committed history are unchanged
+    And exactly one CompactionFailed event carries the builder diagnostics and no CompactionComplete is emitted
 
   @compaction
   @context-management
@@ -133,11 +133,11 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
   @context-management
   @session
   @regression
-  Scenario: Missing compactor handler still guarantees a reduced session
+  Scenario: Missing compactor handler fails without a fallback DAG
     Given a session for which no compactor-sub-agent handler is registered
     And the session is over its context limit with a terminal overflow error
     When the trigger site attempts compactor recovery
-    Then a fallback DAG is force-injected into the session without any LLM call
-    And the session's in-memory context is reduced to reminders plus the fallback DAG
+    Then compaction fails as unavailable and no fallback DAG is injected
+    And the session's in-memory and committed history are unchanged
     And the failure is surfaced with a structured compaction-failed lifecycle event
-    And the CompactionComplete event is still emitted exactly once after the pin with the recalculated post-pin token basis
+    And no CompactionComplete event is emitted

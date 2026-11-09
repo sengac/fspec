@@ -10,9 +10,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -83,15 +80,23 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "/// Selected rows use REVERSED+BOLD style for both lines.",
+              "lastLine": "p.to_string()"
             },
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
               "lines": [
-                399,
-                400
-              ]
+                191,
+                192
+              ],
+              "firstLine": "/// SCHED-006: Find a session by its schedule_name metadata.",
+              "lastLine": "pub async fn find_session_by_schedule_name(&self, schedule_name: &str) -> Option<Uuid> {"
             }
           ]
         }
@@ -102,14 +107,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
-          "lines": "120-158",
+          "lines": "130-167",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
@@ -180,8 +182,14 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "/// Selected rows use REVERSED+BOLD style for both lines.",
+              "lastLine": "p.to_string()"
             }
           ]
         }
@@ -192,23 +200,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
-          "lines": "163-191",
+          "lines": "175-197",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                168,
-                169,
-                170,
-                171,
                 172,
                 173,
                 174,
                 175,
                 176,
                 177,
-                178
-              ]
+                178,
+                179,
+                180,
+                181,
+                182
+              ],
+              "firstLine": "let end = (scroll_offset + visible_sessions).min(sessions.len());",
+              "lastLine": "};"
             }
           ]
         }
@@ -224,10 +234,6 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
                 184,
                 185,
                 186,
@@ -237,16 +243,23 @@
                 190,
                 191,
                 192,
-                193
-              ]
+                193,
+                194,
+                195,
+                196,
+                197
+              ],
+              "firstLine": "// Line 1: Name line with selection marker",
+              "lastLine": "let provider_str = info"
             },
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/sessions.rs",
               "lines": [
-                253,
-                254,
-                255
-              ]
+                137,
+                138
+              ],
+              "firstLine": "/// TUI-096: optional timestamp (epoch milliseconds) for time-ago display.",
+              "lastLine": "pub updated_at_ms: Option<i64>,"
             }
           ]
         }
@@ -262,18 +275,20 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                138,
-                139,
-                140,
-                141,
                 142,
                 143,
                 144,
                 145,
                 146,
                 147,
-                148
-              ]
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "if sessions.is_empty() {",
+              "lastLine": ".render(row, buf);"
             }
           ]
         }
@@ -289,14 +304,16 @@
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                152,
-                153,
-                154,
-                155,
                 156,
                 157,
-                158
-              ]
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "firstLine": "let visible_rows = area.height as usize;",
+              "lastLine": "let visible_sessions = visible_rows / 2;"
             }
           ]
         }
@@ -307,14 +324,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/tui096_rich_session_display.rs",
-          "lines": "41-78",
+          "lines": "51-88",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
               "lines": [
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -334,8 +348,15 @@
                 122,
                 123,
                 124,
-                125
-              ]
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "return format!(\"{minutes}m ago\");",
+              "lastLine": "/// Selected rows use REVERSED+BOLD style for both lines."
             }
           ]
         }
@@ -351,9 +372,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/mode_view_render.rs",
-      "rust/sessions/src/session_manager.rs",
-      "rust/rpc-types/src/lib.rs"
+      "rust/sessions/src/session_manager/manager_impl_1.rs",
+      "rust/rpc-types/src/sessions.rs"
     ],
-    "totalLinesCovered": 438
+    "totalLinesCovered": 434
   }
 }

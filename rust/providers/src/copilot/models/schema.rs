@@ -31,6 +31,27 @@ pub struct CopilotModelEntry {
     pub model_picker_enabled: bool,
     /// Capability bag.
     pub capabilities: CopilotModelCapabilities,
+    /// PROV-163: the account's policy for this model, when the endpoint
+    /// reports one (`{"state": "enabled" | "disabled" | ...}`).
+    #[serde(default)]
+    pub policy: Option<CopilotModelPolicy>,
+}
+
+/// PROV-163: `policy` sub-object on a Copilot model entry.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CopilotModelPolicy {
+    /// Policy state; `"disabled"` means the account may not use the model.
+    pub state: String,
+}
+
+impl CopilotModelEntry {
+    /// PROV-163: false when the account's policy disables this model.
+    #[must_use]
+    pub fn policy_allows(&self) -> bool {
+        self.policy
+            .as_ref()
+            .is_none_or(|policy| policy.state != "disabled")
+    }
 }
 
 /// `capabilities` sub-object on a Copilot model entry.

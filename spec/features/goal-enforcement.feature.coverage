@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "60-99",
+          "lines": "58-97",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -31,7 +31,9 @@
                 42,
                 43,
                 44
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Clone, Copy, PartialEq, Eq)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,7 +44,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "105-139",
+          "lines": "103-137",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
@@ -61,7 +63,9 @@
                 342,
                 343,
                 344
-              ]
+              ],
+              "firstLine": "\"done() requires a non-empty summary describing what was completed\",",
+              "lastLine": "// Tier 1 — schema: evidence + substantive goal_assessment."
             }
           ]
         }
@@ -72,7 +76,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "145-169",
+          "lines": "143-167",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
@@ -90,7 +94,9 @@
                 217,
                 218,
                 219
-              ]
+              ],
+              "firstLine": "/// The session this tool instance is bound to.",
+              "lastLine": "let assessment_ok = args"
             }
           ]
         }
@@ -101,7 +107,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "176-204",
+          "lines": "174-202",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
@@ -125,7 +131,9 @@
                 361,
                 362,
                 363
-              ]
+              ],
+              "firstLine": "if !Self::tier1_ok(&args) {",
+              "lastLine": "});"
             }
           ]
         }
@@ -136,16 +144,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "210-240",
+          "lines": "208-238",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
               "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
                 229,
                 230,
                 231,
@@ -180,8 +183,15 @@
                 260,
                 261,
                 262,
-                263
-              ]
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ],
+              "firstLine": "async fn run_verify(&self, command: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -192,7 +202,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "246-277",
+          "lines": "244-275",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
@@ -217,7 +227,9 @@
                 260,
                 261,
                 262
-              ]
+              ],
+              "firstLine": "timeout.as_secs_f64()",
+              "lastLine": "\"done() rejected: verification command failed (exit {code}):\\n{}\","
             }
           ]
         }
@@ -228,31 +240,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "283-332",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1510,
-                1511,
-                1512,
-                1513,
-                1514,
-                1515,
-                1516,
-                1517,
-                1518,
-                1519,
-                1520,
-                1521,
-                1522,
-                1523,
-                1524,
-                1525,
-                1526
-              ]
-            }
-          ]
+          "lines": "281-330",
+          "implMappings": []
         }
       ]
     },
@@ -261,16 +250,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "339-373",
+          "lines": "337-371",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
               "lines": [
-                224,
-                225,
-                226,
-                227,
-                228,
                 229,
                 230,
                 231,
@@ -284,8 +268,15 @@
                 239,
                 240,
                 241,
-                242
-              ]
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "async fn run_verify(&self, command: &str) -> Result<(), String> {",
+              "lastLine": ")),"
             }
           ]
         }
@@ -296,7 +287,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "379-428",
+          "lines": "377-426",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/auto_continue.rs",
@@ -307,7 +298,9 @@
                 125,
                 126,
                 127
-              ]
+              ],
+              "firstLine": "// Escalation: 4+ done() rejections — the model repeatedly claims",
+              "lastLine": "// Stall fast-path: two consecutive zero-activity nudges escalate"
             }
           ]
         }
@@ -318,22 +311,19 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "435-454",
+          "lines": "433-452",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/auto_continue.rs",
               "lines": [
-                141,
-                142,
-                143,
                 144,
                 145,
                 146,
                 147,
-                148,
-                149,
-                150
-              ]
+                148
+              ],
+              "firstLine": "// Budget exhaustion in Goal mode escalates — NOT the AutoContinue",
+              "lastLine": ")"
             }
           ]
         }
@@ -344,7 +334,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "460-488",
+          "lines": "458-486",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/auto_continue.rs",
@@ -357,7 +347,9 @@
                 132,
                 133,
                 134
-              ]
+              ],
+              "firstLine": "// Stall fast-path: two consecutive zero-activity nudges escalate",
+              "lastLine": "}"
             }
           ]
         }
@@ -368,7 +360,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "494-532",
+          "lines": "492-530",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -391,7 +383,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "/// Raise a goal escalation for the session via the per-session pause-handler",
+              "lastLine": ""
             }
           ]
         }
@@ -402,28 +396,8 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "539-567",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                1533,
-                1534,
-                1535,
-                1536,
-                1537,
-                1538,
-                1539,
-                1540,
-                1541,
-                1542,
-                1543,
-                1544,
-                1545,
-                1546
-              ]
-            }
-          ]
+          "lines": "537-565",
+          "implMappings": []
         }
       ]
     },
@@ -432,7 +406,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "573-589",
+          "lines": "571-587",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -443,7 +417,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "/// Effective Goal-mode budget: the larger of the explicit `/continue <n>`",
+              "lastLine": "}"
             }
           ]
         }
@@ -454,7 +430,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "596-612",
+          "lines": "594-610",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/goal.rs",
@@ -465,7 +441,9 @@
                 49,
                 50,
                 51
-              ]
+              ],
+              "firstLine": "/// Effective Goal-mode budget: the larger of the explicit `/continue <n>`",
+              "lastLine": "}"
             }
           ]
         }
@@ -476,28 +454,30 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "619-678",
+          "lines": "617-676",
           "implMappings": [
             {
               "file": "rust/cli/src/session/mod.rs",
               "lines": [
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
                 256,
                 257,
                 258,
                 259,
                 260,
-                261
-              ]
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ],
+              "firstLine": "use rig::message::{Message, UserContent};",
+              "lastLine": "// @step When I access the messages vector"
             }
           ]
         }
@@ -508,34 +488,37 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "684-735",
+          "lines": "682-733",
           "implMappings": [
             {
               "file": "rust/cli/src/session/system_reminders.rs",
               "lines": [
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373,
-                374,
-                375,
-                376
-              ]
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335
+              ],
+              "firstLine": "/// Removes ALL system reminders of the specified type from the conversation.",
+              "lastLine": "}"
             }
           ]
         }
@@ -546,16 +529,11 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/goal_enforcement_test.rs",
-          "lines": "742-767",
+          "lines": "740-765",
           "implMappings": [
             {
               "file": "rust/tools/src/done.rs",
               "lines": [
-                273,
-                274,
-                275,
-                276,
-                277,
                 278,
                 279,
                 280,
@@ -591,8 +569,15 @@
                 310,
                 311,
                 312,
-                313
-              ]
+                313,
+                314,
+                315,
+                316,
+                317,
+                318
+              ],
+              "firstLine": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {",
+              "lastLine": "}"
             }
           ]
         }
@@ -609,11 +594,10 @@
     "implFiles": [
       "rust/cli/src/interactive/goal.rs",
       "rust/tools/src/done.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/cli/src/interactive/auto_continue.rs",
       "rust/cli/src/session/mod.rs",
       "rust/cli/src/session/system_reminders.rs"
     ],
-    "totalLinesCovered": 926
+    "totalLinesCovered": 891
   }
 }

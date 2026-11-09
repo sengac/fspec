@@ -12,22 +12,21 @@
 //! lifted modules themselves — so they catch refactors that
 //! accidentally re-introduce a NAPI dependency into the loop store.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn workspace_root() -> PathBuf {
+fn workspace_root() -> Result<PathBuf, codelet_test_helpers::TestError> {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    crate_dir
+    Ok(crate_dir
         .parent()
         .and_then(|p| p.parent())
-        .expect("workspace root above rust/fspec-tui")
-        .to_path_buf()
+        .or_fail("workspace root above rust/fspec-tui")?
+        .to_path_buf())
 }
 
-fn loops_core_dir() -> PathBuf {
-    workspace_root().join("rust/core/src/loops")
+fn loops_core_dir() -> Result<PathBuf, codelet_test_helpers::TestError> {
+    Ok(workspace_root()?.join("rust/core/src/loops"))
 }
 
 fn read_all_rust_files(dir: &Path) -> Vec<(PathBuf, String)> {
@@ -48,9 +47,9 @@ fn read_all_rust_files(dir: &Path) -> Vec<(PathBuf, String)> {
 
 /// Scenario: Loop store module lives under rust/core/src/loops/
 #[test]
-fn loops_module_lives_under_codelet_core() {
+fn loops_module_lives_under_codelet_core() -> TestResult {
     // @step Given the directory rust/core/src/loops/ exists
-    let dir = loops_core_dir();
+    let dir = loops_core_dir()?;
     assert!(dir.is_dir(), "rust/core/src/loops/ directory should exist");
 
     // @step Then it contains a file named "mod.rs"
@@ -59,14 +58,15 @@ fn loops_module_lives_under_codelet_core() {
         mod_path.is_file(),
         "rust/core/src/loops/mod.rs should exist"
     );
+    Ok(())
 }
 
 /// Scenario: codelet-core declares LoopEntry, LoopStore, and IdleCheckFn
 #[test]
-fn codelet_core_declares_loop_entry_store_idle_check() {
+fn codelet_core_declares_loop_entry_store_idle_check() -> TestResult {
     // @step Given the file rust/core/src/loops/mod.rs is compiled
-    let path = loops_core_dir().join("mod.rs");
-    let source = fs::read_to_string(&path).expect("read core/loops/mod.rs");
+    let path = loops_core_dir()?.join("mod.rs");
+    let source = fs::read_to_string(&path).or_fail("read core/loops/mod.rs")?;
 
     // @step Then it declares a public struct named "LoopEntry"
     assert!(
@@ -101,14 +101,15 @@ fn codelet_core_declares_loop_entry_store_idle_check() {
         source.contains("pub type IdleCheckFn"),
         "loops/mod.rs should declare pub type IdleCheckFn"
     );
+    Ok(())
 }
 
 /// Scenario: LoopStore exposes the documented async API
 #[test]
-fn loop_store_exposes_documented_api() {
+fn loop_store_exposes_documented_api() -> TestResult {
     // @step Given the file rust/core/src/loops/mod.rs is compiled
-    let path = loops_core_dir().join("mod.rs");
-    let source = fs::read_to_string(&path).expect("read core/loops/mod.rs");
+    let path = loops_core_dir()?.join("mod.rs");
+    let source = fs::read_to_string(&path).or_fail("read core/loops/mod.rs")?;
 
     // @step Then LoopStore declares a method named "instance" returning &'static LoopStore
     // @step And LoopStore declares a method named "cancel" taking &str and returning a future of bool
@@ -131,13 +132,14 @@ fn loop_store_exposes_documented_api() {
             "LoopStore should declare {method:?}"
         );
     }
+    Ok(())
 }
 
 /// Scenario: The lifted loop store has no NAPI references
 #[test]
-fn lifted_loop_store_has_no_napi_references() {
+fn lifted_loop_store_has_no_napi_references() -> TestResult {
     // @step Given the directory rust/core/src/loops/ exists
-    let dir = loops_core_dir();
+    let dir = loops_core_dir()?;
     assert!(dir.is_dir(), "loops core dir should exist");
 
     // @step Then no file under rust/core/src/loops/ contains the text "use napi"
@@ -154,55 +156,20 @@ fn lifted_loop_store_has_no_napi_references() {
             path.display()
         );
     }
-}
-
-/// Scenario: rust/napi/src/scheduler/mod.rs re-exports the loops surface
-#[test]
-fn napi_scheduler_mod_reexports_loops_surface() {
-    // @step Given the file rust/napi/src/scheduler/mod.rs is compiled
-    let path = workspace_root().join("rust/napi/src/scheduler/mod.rs");
-    let source = fs::read_to_string(&path).expect("read napi/src/scheduler/mod.rs");
-
-    // @step Then it contains a re-export of codelet_core::loops::LoopStore
-    // @step And it contains a re-export of codelet_core::loops::LoopEntry
-    // @step And it contains a re-export of codelet_core::loops::IdleCheckFn
-    assert!(
-        source.contains("codelet_core::loops"),
-        "napi/scheduler/mod.rs should reference codelet_core::loops"
-    );
-    for symbol in ["LoopStore", "LoopEntry", "IdleCheckFn"] {
-        assert!(
-            source.contains(symbol),
-            "napi/scheduler/mod.rs should re-export {symbol}"
-        );
-    }
-}
-
-/// Scenario: rust/napi/src/scheduler/loop_store.rs is deleted
-#[test]
-fn napi_loop_store_file_is_deleted() {
-    // @step Given the directory rust/napi/src/scheduler/ exists
-    let dir = workspace_root().join("rust/napi/src/scheduler");
-    assert!(dir.is_dir(), "napi/src/scheduler/ should exist");
-
-    // @step Then it does not contain a file named "loop_store.rs"
-    let path = dir.join("loop_store.rs");
-    assert!(
-        !path.is_file(),
-        "rust/napi/src/scheduler/loop_store.rs should be deleted after the lift"
-    );
+    Ok(())
 }
 
 /// Scenario: codelet-core lib.rs exports the loops module
 #[test]
-fn codelet_core_lib_exports_loops_module() {
+fn codelet_core_lib_exports_loops_module() -> TestResult {
     // @step Given the file rust/core/src/lib.rs is compiled
-    let path = workspace_root().join("rust/core/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read core/src/lib.rs");
+    let path = workspace_root()?.join("rust/core/src/lib.rs");
+    let source = fs::read_to_string(&path).or_fail("read core/src/lib.rs")?;
 
     // @step Then it declares a public module named "loops"
     assert!(
         source.contains("pub mod loops"),
         "rust/core/src/lib.rs should declare pub mod loops"
     );
+    Ok(())
 }

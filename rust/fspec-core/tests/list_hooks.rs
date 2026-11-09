@@ -156,42 +156,6 @@ fn scenario_empty_hooks_object_is_no_events_without_message() {
 }
 
 #[test]
-fn scenario_swallows_invalid_json_as_empty_with_message() {
-    // Scenario: Swallows invalid JSON as empty result with 'No hooks are configured' message
-
-    // @step Given spec/fspec-hooks.json exists but contains the malformed bytes '{ not json'
-    let tmp = TempDir::new().expect("tempdir");
-    write_hooks(tmp.path(), "{ not json");
-
-    // @step When I dispatch list-hooks with format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
-
-    // @step Then the dispatcher returns success=true
-    assert!(
-        result.success,
-        "TS bare catch swallows parse errors; expected success=true, got {result:?}"
-    );
-
-    let data = parse_data(&result.data);
-
-    // @step Then the events array has length 0
-    assert_eq!(
-        data["events"].as_array().map(Vec::len),
-        Some(0),
-        "expected empty events array on parse failure, got {}",
-        result.data
-    );
-
-    // @step Then the parsed JSON has message field equal to 'No hooks are configured'
-    assert_eq!(
-        data["message"].as_str(),
-        Some("No hooks are configured"),
-        "parse-error path must carry the canonical sentinel message, got {}",
-        result.data
-    );
-}
-
-#[test]
 fn scenario_preserves_insertion_order_of_events() {
     // Scenario: Preserves insertion order of events (not alphabetical)
 
@@ -209,6 +173,8 @@ fn scenario_preserves_insertion_order_of_events() {
 
     // @step When I dispatch list-hooks with format='json'
     let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
+
+    // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
 
     let data = parse_data(&result.data);

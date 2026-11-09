@@ -21,26 +21,25 @@
 //! `#[cfg(test)] mod tests` block in `detail.rs` itself plus the
 //! integration test `provider_settings_api_key_edit_filter_rpc161.rs`.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::PathBuf;
 
-fn read_source(rel: &str) -> String {
+fn read_source(rel: &str) -> Result<String, codelet_test_helpers::TestError> {
     let manifest = env!("CARGO_MANIFEST_DIR");
     let path: PathBuf = [manifest, rel].iter().collect();
-    fs::read_to_string(&path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {}", path.display(), err))
+    Ok(fs::read_to_string(&path)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?)
 }
 
-fn detail_rs() -> String {
+fn detail_rs() -> Result<String, codelet_test_helpers::TestError> {
     read_source("src/views/provider_settings/detail.rs")
 }
 
 /// Walk braces forward from `abs_open` (which must be the index of an
 /// opening `{`) until the matching close, returning the inclusive
 /// substring.
-fn brace_balanced(src: &str, abs_open: usize) -> &str {
+fn brace_balanced(src: &str, abs_open: usize) -> Result<&str, codelet_test_helpers::TestError> {
     let bytes = src.as_bytes();
     assert!(bytes[abs_open] == b'{', "abs_open must point at `{{`");
     let mut depth: i32 = 0;
@@ -51,27 +50,27 @@ fn brace_balanced(src: &str, abs_open: usize) -> &str {
             b'}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return &src[abs_open..=i];
+                    return Ok(&src[abs_open..=i]);
                 }
             }
             _ => {}
         }
         i += 1;
     }
-    panic!("matching closing brace for opener at {abs_open} not found");
+    Err(format!("matching closing brace for opener at {abs_open} not found").into())
 }
 
 /// Extract the body of the named function. Matches on the signature
 /// substring `fn <name>(` so it works for both single-line and
 /// multi-line signatures.
-fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
+fn fn_body<'a>(src: &'a str, fn_name: &str) -> Result<&'a str, codelet_test_helpers::TestError> {
     let needle = format!("fn {fn_name}(");
     let start = src
         .find(&needle)
-        .unwrap_or_else(|| panic!("`fn {fn_name}(` not found"));
+        .or_fail(&format!("`fn {fn_name}(` not found"))?;
     let brace_rel = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for `fn {fn_name}` not found"));
+        .or_fail(&format!("opening brace for `fn {fn_name}` not found"))?;
     brace_balanced(src, start + brace_rel)
 }
 
@@ -80,9 +79,9 @@ fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_is_printable_ascii_helper_exists_with_canonical_signature() {
+fn scenario_is_printable_ascii_helper_exists_with_canonical_signature() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I scan the file as a string
     // (nothing to do — we just keep the source string)
@@ -92,6 +91,7 @@ fn scenario_is_printable_ascii_helper_exists_with_canonical_signature() {
         src.contains("fn is_printable_ascii(c: char) -> bool"),
         "detail.rs must declare the TS-parity printable-ASCII helper with the canonical signature `fn is_printable_ascii(c: char) -> bool` (RPC-153 / RPC-161 TS parity with filterPrintableChars)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -99,18 +99,19 @@ fn scenario_is_printable_ascii_helper_exists_with_canonical_signature() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_is_printable_ascii_body_evaluates_inclusive_32_through_126_range() {
+fn scenario_is_printable_ascii_body_evaluates_inclusive_32_through_126_range() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the body of the "fn is_printable_ascii(c: char) -> bool" function
-    let body = fn_body(&src, "is_printable_ascii");
+    let body = fn_body(&src, "is_printable_ascii")?;
 
     // @step Then the function body must contain "(32..=126).contains(&code)"
     assert!(
         body.contains("(32..=126).contains(&code)"),
         "is_printable_ascii body must evaluate the inclusive ASCII range (32..=126).contains(&code) — TS parity with filterPrintableChars boundaries (RPC-153 / RPC-161)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -118,12 +119,12 @@ fn scenario_is_printable_ascii_body_evaluates_inclusive_32_through_126_range() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_handle_edit_key_body_contains_guard_and_append_calls() {
+fn scenario_handle_edit_key_body_contains_guard_and_append_calls() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the handle_edit_key function body
-    let body = fn_body(&src, "handle_edit_key");
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step Then the function body must contain "is_printable_ascii(c)"
     assert!(
@@ -136,6 +137,7 @@ fn scenario_handle_edit_key_body_contains_guard_and_append_calls() {
         body.contains("draft.push(c)"),
         "handle_edit_key body must append accepted chars via draft.push(c) (RPC-153 / RPC-161 TS parity)"
     );
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -143,26 +145,27 @@ fn scenario_handle_edit_key_body_contains_guard_and_append_calls() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_is_printable_ascii_guard_precedes_draft_push_in_handle_edit_key() {
+fn scenario_is_printable_ascii_guard_precedes_draft_push_in_handle_edit_key() -> TestResult {
     // @step Given I read the source of rust/fspec-tui/src/views/provider_settings/detail.rs
-    let src = detail_rs();
+    let src = detail_rs()?;
 
     // @step When I extract the handle_edit_key function body
-    let body = fn_body(&src, "handle_edit_key");
+    let body = fn_body(&src, "handle_edit_key")?;
 
     // @step Then the function body must contain "is_printable_ascii(c)"
     let guard_offset = body
         .find("is_printable_ascii(c)")
-        .expect("handle_edit_key must invoke the is_printable_ascii(c) guard (RPC-153)");
+        .or_fail("handle_edit_key must invoke the is_printable_ascii(c) guard (RPC-153)")?;
 
     // @step And the function body must contain "draft.push(c)"
     let push_offset = body
         .find("draft.push(c)")
-        .expect("handle_edit_key must append accepted chars via draft.push(c) (RPC-153)");
+        .or_fail("handle_edit_key must append accepted chars via draft.push(c) (RPC-153)")?;
 
     // @step And the offset of "is_printable_ascii(c)" must be less than the offset of "draft.push(c)"
     assert!(
         guard_offset < push_offset,
         "is_printable_ascii(c) guard must appear BEFORE draft.push(c) so the push lives inside the `if is_printable_ascii(c) {{ … }}` arm and cannot leak control chars / DEL / non-ASCII into the api-key draft (RPC-153 / RPC-161 TS parity). guard_offset={guard_offset}, push_offset={push_offset}"
     );
+    Ok(())
 }

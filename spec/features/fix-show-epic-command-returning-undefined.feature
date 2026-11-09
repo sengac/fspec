@@ -1,14 +1,17 @@
+@done
 @querying
 @bug-fix
 @cli
 @BUG-012
+@BUG-536
 Feature: Fix show-epic command returning undefined
   """
   Architecture notes:
-  - Uses loadEpics() from src/utils/epic-utils.ts to load epics.json
-  - Epic lookup by ID (lowercase-with-hyphens format)
-  - Must handle missing epics.json file gracefully
+  - The Rust CLI bridge (rust/fspec/src/show_epic.rs) calls fspec-core commands::show_epic, which reads spec/epics.json and spec/work-units.json
+  - Epic lookup by ID (lowercase-with-hyphens format); an unknown id or a missing epics.json fails with the core error 'Epic <id> not found'
+  - BUG-536: on that error the CLI also prints 'Try: fspec list-epics' on stderr (product owner 2026-11-06); other failures print no hint
   - Exit code 1 on error, 0 on success
+  - Tests: rust/fspec/tests/bug536_show_epic_unknown_epic_hint.rs
   """
 
   # ========================================
@@ -36,7 +39,7 @@ Feature: Fix show-epic command returning undefined
     And the epic "invalid-epic" does not exist
     When I run "fspec show-epic invalid-epic"
     Then the command should exit with code 1
-    And the output should contain "Epic 'invalid-epic' not found"
+    And the output should contain "Epic invalid-epic not found"
     And the output should suggest running "fspec list-epics"
 
   Scenario: Show helpful suggestion in error message
@@ -54,3 +57,9 @@ Feature: Fix show-epic command returning undefined
     And the output should contain "Epic: user-management"
     And the output should contain "Title: User Management Features"
     And the output should not contain "undefined"
+
+  Scenario: No list-epics hint when epics.json is malformed
+    Given spec/epics.json is not valid JSON
+    When I run "fspec show-epic auth"
+    Then the command should exit with code 1
+    And the output should not contain "Try: fspec list-epics"

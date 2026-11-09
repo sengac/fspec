@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool025_schema_contract.rs",
-          "lines": "67-99",
+          "lines": "67-100",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_attribution.rs",
@@ -15,13 +15,9 @@
                 112,
                 157,
                 166
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                231
-              ]
+              ],
+              "firstLine": "pub fn decorate_definition(",
+              "lastLine": "configure_tool_server(&agent.tool_server_handle, scope).await"
             }
           ]
         }
@@ -32,7 +28,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool025_schema_contract.rs",
-          "lines": "101-138",
+          "lines": "99-137",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_attribution.rs",
@@ -42,7 +38,9 @@
                 33,
                 97,
                 117
-              ]
+              ],
+              "firstLine": "pub fn decorate_definition(",
+              "lastLine": ".is_some_and(|reference| {"
             }
           ]
         }
@@ -53,7 +51,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool025_schema_contract.rs",
-          "lines": "140-158",
+          "lines": "139-158",
           "implMappings": [
             {
               "file": "rust/tools/src/tool_attribution.rs",
@@ -61,7 +59,9 @@
                 17,
                 84,
                 94
-              ]
+              ],
+              "firstLine": "pub fn decorate_definition(",
+              "lastLine": "\"reserved work_unit_id property collides with business arguments; use target_work_unit_id for the business target\","
             }
           ]
         }
@@ -72,7 +72,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/tool025_schema_contract.rs",
-          "lines": "160-186",
+          "lines": "160-187",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/tool/middleware.rs",
@@ -83,7 +83,9 @@
                 77,
                 90,
                 106
-              ]
+              ],
+              "firstLine": "pub trait ToolMiddleware: WasmCompatSend + WasmCompatSync {",
+              "lastLine": "}"
             },
             {
               "file": "rust/patches/rig-core/src/tool/server.rs",
@@ -94,36 +96,108 @@
                 163,
                 211,
                 226
-              ]
+              ],
+              "firstLine": "ToolServerRequestMessageKind::ConfigureMiddleware(middleware) => {",
+              "lastLine": ".await"
             },
             {
-              "file": "rust/tools/src/mcp.rs",
+              "file": "rust/tools/src/mcp/types.rs",
               "lines": [
+                36
+              ],
+              "firstLine": "/// Tool name as reported by the MCP server",
+              "lastLine": "/// Tool name as reported by the MCP server"
+            },
+            {
+              "file": "rust/tools/src/mcp/stdio_and_routing.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ],
+              "firstLine": "if let Err(error) = validate_mcp_tool_definitions(name, &tool_defs) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/tools/src/mcp/http_and_session_registry.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
                 62,
-                450,
-                789,
-                1411
-              ]
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ],
+              "firstLine": "/// MCP-008: create a StreamableHttpClientTransport, perform the MCP initialize",
+              "lastLine": "}"
             },
             {
               "file": "rust/agent-loop/src/deep_search_handler.rs",
               "lines": [
-                275,
-                541
-              ]
-            },
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                273,
-                536
-              ]
+                278,
+                544
+              ],
+              "firstLine": "/// return them from a match arm. This macro avoids duplicating the tool",
+              "lastLine": "handle.tool_adapter_count(),"
             },
             {
               "file": "rust/agent-loop/src/compaction_execution.rs",
               "lines": [
-                25
-              ]
+                35
+              ],
+              "firstLine": "task: &str,",
+              "lastLine": "task: &str,"
+            },
+            {
+              "file": "rust/tools/src/mcp/connect_tool.rs",
+              "lines": [
+                219
+              ],
+              "firstLine": ".await;",
+              "lastLine": ".await;"
             }
           ]
         }
@@ -139,14 +213,15 @@
     ],
     "implFiles": [
       "rust/tools/src/tool_attribution.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/patches/rig-core/src/tool/middleware.rs",
       "rust/patches/rig-core/src/tool/server.rs",
-      "rust/tools/src/mcp.rs",
+      "rust/tools/src/mcp/types.rs",
+      "rust/tools/src/mcp/stdio_and_routing.rs",
+      "rust/tools/src/mcp/http_and_session_registry.rs",
       "rust/agent-loop/src/deep_search_handler.rs",
-      "rust/napi/src/deep_search_handler.rs",
-      "rust/agent-loop/src/compaction_execution.rs"
+      "rust/agent-loop/src/compaction_execution.rs",
+      "rust/tools/src/mcp/connect_tool.rs"
     ],
-    "totalLinesCovered": 152
+    "totalLinesCovered": 203
   }
 }

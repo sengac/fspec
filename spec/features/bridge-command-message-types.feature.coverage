@@ -1,78 +1,106 @@
 {
   "scenarios": [
     {
-      "name": "Deserialize command InboundMessage with all fields populated",
+      "name": "Deserialize fspec command envelope with all fields populated",
       "testMappings": [
         {
-          "file": "rust/tools/src/bridge_relay.rs",
-          "lines": "886-906",
+          "file": "rust/tools/src/bridge_message_types_tests.rs",
+          "lines": "16-39",
           "implMappings": [
             {
-              "file": "rust/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_multiplexed.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393
+              ],
+              "firstLine": "pub struct Envelope {",
+              "lastLine": "InboundAction::Unknown {"
             }
           ]
         }
       ]
     },
     {
-      "name": "Backward compatible deserialization of input message without command fields",
+      "name": "Backward compatible deserialization of input envelope without command fields",
       "testMappings": [
         {
-          "file": "rust/tools/src/bridge_relay.rs",
-          "lines": "909-925",
+          "file": "rust/tools/src/bridge_message_types_tests.rs",
+          "lines": "41-64",
           "implMappings": [
             {
-              "file": "rust/tools/src/bridge_relay.rs",
+              "file": "rust/tools/src/bridge_multiplexed.rs",
               "lines": [
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336
+              ],
+              "firstLine": "pub struct Envelope {",
+              "lastLine": "}"
             }
           ]
         }
@@ -82,12 +110,13 @@
       "name": "Serialize OutboundMessage with request_id for commandResponse",
       "testMappings": [
         {
-          "file": "rust/tools/src/bridge_relay.rs",
-          "lines": "928-949",
+          "file": "rust/tools/src/bridge_message_types_tests.rs",
+          "lines": "66-82",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
               "lines": [
+                57,
                 58,
                 59,
                 60,
@@ -97,10 +126,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69
-              ]
+                67
+              ],
+              "firstLine": "/// Message to send to external endpoint",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,12 +139,13 @@
       "name": "Serialize OutboundMessage without request_id for regular chunks",
       "testMappings": [
         {
-          "file": "rust/tools/src/bridge_relay.rs",
-          "lines": "952-968",
+          "file": "rust/tools/src/bridge_message_types_tests.rs",
+          "lines": "84-103",
           "implMappings": [
             {
               "file": "rust/tools/src/bridge.rs",
               "lines": [
+                57,
                 58,
                 59,
                 60,
@@ -125,10 +155,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69
-              ]
+                67
+              ],
+              "firstLine": "/// Message to send to external endpoint",
+              "lastLine": "}"
             }
           ]
         }
@@ -140,12 +170,12 @@
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/bridge_relay.rs"
+      "rust/tools/src/bridge_message_types_tests.rs"
     ],
     "implFiles": [
-      "rust/tools/src/bridge_relay.rs",
+      "rust/tools/src/bridge_multiplexed.rs",
       "rust/tools/src/bridge.rs"
     ],
-    "totalLinesCovered": 147
+    "totalLinesCovered": 177
   }
 }

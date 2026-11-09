@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "A destroyed session's ownership lock can be taken by another owner",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug288_destroy_releases_ownership.rs",
+          "lines": "20-46",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_delete.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ],
+              "firstLine": "fn release_lease(&mut self, session_id: Uuid) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                76,
+                77,
+                78
+              ],
+              "firstLine": "// BUG-288: release the manifest writer lease so another",
+              "lastLine": "codelet_core::persistence::release_session_ownership(uuid);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A destroyed session stays listed and resumable after its ownership is released",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug288_destroy_releases_ownership.rs",
+          "lines": "48-84",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_delete.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ],
+              "firstLine": "fn release_lease(&mut self, session_id: Uuid) {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_6.rs",
+              "lines": [
+                76,
+                77,
+                78
+              ],
+              "firstLine": "// BUG-288: release the manifest writer lease so another",
+              "lastLine": "codelet_core::persistence::release_session_ownership(uuid);"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug288_destroy_releases_ownership.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/manifest_delete.rs",
+      "rust/sessions/src/session_manager/manager_impl_6.rs"
+    ],
+    "totalLinesCovered": 104
+  }
+}

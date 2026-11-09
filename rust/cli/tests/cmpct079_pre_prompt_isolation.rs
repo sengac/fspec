@@ -10,7 +10,6 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
 };
-use std::time::Duration;
 use wiremock::MockServer;
 
 #[derive(Default)]
@@ -27,6 +26,7 @@ impl StreamOutput for Output {
 
 async fn exercise(cancel: bool) -> Result<(), Box<dyn std::error::Error>> {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_owned())?;
     reset_stores_for_tests();
     let mut manifest = create_session_with_provider("pre-prompt", directory.path(), "openai/o3")?;
@@ -66,28 +66,38 @@ async fn exercise(cancel: bool) -> Result<(), Box<dyn std::error::Error>> {
     let agent = RigAgent::new(client.agent("o3").build(), 1);
     let output = Output::default();
     let busy = Arc::new(AtomicBool::new(false));
-    let result = tokio::time::timeout(
-        Duration::from_millis(200),
-        run_agent_stream(
-            agent,
-            "resume work",
-            &mut session,
-            Arc::new(AtomicBool::new(false)),
-            busy.clone(),
-            Arc::new(tokio::sync::Notify::new()),
-            &output,
-            manifest.id,
-        ),
-    )
-    .await;
-    set_compactor_sub_agent_handler(manifest.id, None);
+    let run = Box::pin(run_agent_stream(
+        agent,
+        "resume work",
+        &mut session,
+        Arc::new(AtomicBool::new(false)),
+        busy.clone(),
+        Arc::new(tokio::sync::Notify::new()),
+        &output,
+        manifest.id,
+    ));
     if cancel {
+        // TEST-042: the run stays pending until the pending builder has
+        // started, then is dropped (cancelled); no waiting window.
+        let mut run = run;
+        let pending =
+            codelet_test_helpers::pending_until("the pre-prompt builder starts", &mut run, || {
+                started.load(Ordering::Acquire)
+            })
+            .await;
+        drop(run);
+        set_compactor_sub_agent_handler(manifest.id, None);
         assert!(
             started.load(Ordering::Acquire),
             "actual pre-prompt builder must start"
         );
-        assert!(result.is_err(), "cancellation drops the running builder");
+        assert!(
+            pending.is_ok(),
+            "cancellation drops the running builder: {pending:?}"
+        );
     } else {
+        let result = codelet_test_helpers::deadlock_guard("the run without a builder", run).await;
+        set_compactor_sub_agent_handler(manifest.id, None);
         assert!(result?.is_err(), "missing builder must fail closed");
     }
     assert_eq!(serde_json::to_value(&session.messages)?, messages);

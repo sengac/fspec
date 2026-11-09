@@ -1,4 +1,6 @@
 @PROV-019
+@codelet
+@authentication
 Feature: Codex OAuth Integration Broken - Token Expiry, Provider Settings UX, and Session Routing Failures
   """
   Rust: mod.rs passes Some(0) to force immediate refresh, refreshing_client.rs handles token lifecycle. TS: listModeHandler.ts and ProviderSettingsView.tsx route 'e' key for OAuth providers. useProviderSettingsState.ts builds provider status display.

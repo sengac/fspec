@@ -1,0 +1,361 @@
+{
+  "scenarios": [
+    {
+      "name": "Interrupted resyncs the queued list from the session's queued inputs",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "46-71",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "/// The number the next queued input gets: one past the highest listed",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13
+              ],
+              "firstLine": "pub(crate) fn handle_live_transcript_wake(&mut self, session: &SessionId, chunk: &StreamChunk) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "InterruptedWithReason appends a queued input the agent view never listed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "73-100",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "/// The number the next queued input gets: one past the highest listed",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13
+              ],
+              "firstLine": "pub(crate) fn handle_live_transcript_wake(&mut self, session: &SessionId, chunk: &StreamChunk) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A local /clear empties the queued list and restarts its numbering",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "102-128",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "/// **TUI-119**: a /clear resets the scrollback and forgets every steer",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/reset_scrollback.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ],
+              "firstLine": "pub fn reset_local_scrollback(&mut self, store: &mut AgentViewStore) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The session_cleared event empties the queued list",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "130-146",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ],
+              "firstLine": "/// **TUI-119**: a /clear resets the scrollback and forgets every steer",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180
+              ],
+              "firstLine": "// Step 2: per-session reset (store-side, focus-independent). The",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A queued input after a resync is numbered past the highest listed number",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "148-171",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// The number the next queued input gets: one past the highest listed",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13
+              ],
+              "firstLine": "pub(crate) fn handle_live_transcript_wake(&mut self, session: &SessionId, chunk: &StreamChunk) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A transcript-replayed interrupt leaves the queued list alone",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui119_queued_list_resync.rs",
+          "lines": "173-196",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ],
+              "firstLine": "/// **TUI-119**: a LIVE `Interrupted` / `InterruptedWithReason` carries",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13
+              ],
+              "firstLine": "pub(crate) fn handle_live_transcript_wake(&mut self, session: &SessionId, chunk: &StreamChunk) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui119_queued_list_resync.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/busy_inputs.rs",
+      "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+      "rust/fspec-tui/src/views/agent/reset_scrollback.rs",
+      "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs"
+    ],
+    "totalLinesCovered": 338
+  }
+}

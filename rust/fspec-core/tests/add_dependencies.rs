@@ -279,6 +279,7 @@ fn bulk_depends_on_writes_only_source_array_with_no_reverse_or_status_change() {
             on_disk["workUnits"]["AUTH-001"].get(*field).is_none(),
             "AUTH-001.{field} should be absent"
         );
+        // @step And spec/work-units.json on disk shows AUTH-002 has no blocks, no blockedBy, no dependsOn, no relatesTo fields
         assert!(
             on_disk["workUnits"]["AUTH-002"].get(*field).is_none(),
             "AUTH-002.{field} should be absent"
@@ -346,7 +347,7 @@ fn missing_target_id_surfaces_canonical_error() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains "Target work unit 'NOPE-999' does not exist"
+    // @step And the error message contains the substring "Target work unit 'NOPE-999' does not exist"
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Target work unit 'NOPE-999' does not exist"),
@@ -375,7 +376,7 @@ fn self_dependency_is_rejected_verbatim() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains 'Cannot create self-dependency'
+    // @step And the error message contains the substring 'Cannot create self-dependency'
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Cannot create self-dependency"),
@@ -405,7 +406,7 @@ fn circular_blocks_chain_is_detected_and_rejected() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains 'Circular dependency detected: AUTH-001 -> AUTH-002 -> AUTH-001'
+    // @step And the error message contains the substring 'Circular dependency detected: AUTH-001 -> AUTH-002 -> AUTH-001'
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Circular dependency detected: AUTH-001 -> AUTH-002 -> AUTH-001"),
@@ -433,7 +434,7 @@ fn missing_source_work_unit_surfaces_canonical_error() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains "Work unit 'NOPE-001' does not exist"
+    // @step And the error message contains the substring "Work unit 'NOPE-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Work unit 'NOPE-001' does not exist"),
@@ -456,7 +457,7 @@ fn auto_creates_work_units_json_when_missing_then_reports_missing_source_error()
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure, got {result:?}");
 
-    // @step And the error message contains "Work unit 'AUTH-001' does not exist"
+    // @step And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
     assert!(
         err.contains("Work unit 'AUTH-001' does not exist"),

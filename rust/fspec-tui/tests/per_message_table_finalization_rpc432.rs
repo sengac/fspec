@@ -11,8 +11,7 @@
 //! and NOT in `flush_in_flight_drop_empty` (ToolCall / Error /
 //! Interrupted / UserInput flushes).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, ChunkKind, FspecBackend};
@@ -47,44 +46,56 @@ fn tool_call_chunk(id: &str, name: &str, input: &str) -> StreamChunk {
 }
 
 /// Get the nth chunk's `source.text` (the stored, possibly-formatted text).
-fn nth_chunk_source_text(app: &App, id: &SessionId, n: usize) -> String {
+fn nth_chunk_source_text(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<String, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.text.clone())
-        .unwrap_or_default()
+        .unwrap_or_default())
 }
 
 /// Get the nth chunk's `is_streaming` flag.
-fn nth_chunk_is_streaming(app: &App, id: &SessionId, n: usize) -> bool {
+fn nth_chunk_is_streaming(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<bool, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
         .map(|s| s.is_streaming)
-        .unwrap_or(true)
+        .unwrap_or(true))
 }
 
 /// Get the nth chunk's `ChunkKind`.
-fn nth_chunk_kind(app: &App, id: &SessionId, n: usize) -> Option<ChunkKind> {
+fn nth_chunk_kind(
+    app: &App,
+    id: &SessionId,
+    n: usize,
+) -> Result<Option<ChunkKind>, codelet_test_helpers::TestError> {
     let ctx = app
         .agent_view_store()
         .session_context_for(id)
-        .expect("session context exists");
+        .or_fail("session context exists")?;
     let chunks = ctx.scrollback.visible_window(1024);
-    chunks
+    Ok(chunks
         .get(n)
         .and_then(|c| c.source.as_ref())
-        .map(|s| s.kind.clone())
+        .map(|s| s.kind.clone()))
 }
 
 /// Count chunks in the session's scrollback.
@@ -115,7 +126,7 @@ fn assert_contains_box_grid(text: &str, label: &str) {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_toolcall_finalizes_intermediate_with_box_drawing_grid() {
+fn scenario_toolcall_finalizes_intermediate_with_box_drawing_grid() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -130,7 +141,7 @@ fn scenario_toolcall_finalizes_intermediate_with_box_drawing_grid() {
     ));
 
     // @step Then the s-1 scrollback's first chunk source.text contains a box-drawing grid with top border "┌" and bottom border "└" instead of raw pipe rows
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after ToolCall flush");
     assert!(
         !chunk0.contains("| h1 | h2 |"),
@@ -139,16 +150,17 @@ fn scenario_toolcall_finalizes_intermediate_with_box_drawing_grid() {
 
     // @step And the first chunk's is_streaming flag is false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "chunk 0 is_streaming must be false after ToolCall flush"
     );
 
     // @step And the s-1 scrollback ends with a ToolCall chunk for "tc-1" after the formatted assistant chunk
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    match nth_chunk_kind(&app, &sid("s-1"), 1) {
+    match nth_chunk_kind(&app, &sid("s-1"), 1)? {
         Some(ChunkKind::ToolCall { tool_call_id, .. }) => assert_eq!(tool_call_id, "tc-1"),
-        other => panic!("expected ToolCall kind at index 1, got {other:?}"),
+        other => return Err(format!("expected ToolCall kind at index 1, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -157,7 +169,7 @@ fn scenario_toolcall_finalizes_intermediate_with_box_drawing_grid() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_error_finalizes_with_box_drawing_grid() {
+fn scenario_error_finalizes_with_box_drawing_grid() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -174,14 +186,15 @@ fn scenario_error_finalizes_with_box_drawing_grid() {
     ));
 
     // @step Then the in-flight assistant chunk's source.text contains a box-drawing grid with top border "┌" and bottom border "└" instead of raw pipe rows
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after Error flush");
 
     // @step And the in-flight assistant chunk's is_streaming flag is false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "chunk 0 is_streaming must be false after Error flush"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -190,7 +203,7 @@ fn scenario_error_finalizes_with_box_drawing_grid() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_interrupted_finalizes_with_box_drawing_grid() {
+fn scenario_interrupted_finalizes_with_box_drawing_grid() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -207,14 +220,15 @@ fn scenario_interrupted_finalizes_with_box_drawing_grid() {
     ));
 
     // @step Then the in-flight assistant chunk's source.text contains a box-drawing grid with top border "┌" and bottom border "└" instead of raw pipe rows
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after Interrupted flush");
 
     // @step And the in-flight assistant chunk's is_streaming flag is false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "chunk 0 is_streaming must be false after Interrupted flush"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -223,7 +237,7 @@ fn scenario_interrupted_finalizes_with_box_drawing_grid() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_userinput_finalizes_with_box_drawing_grid() {
+fn scenario_userinput_finalizes_with_box_drawing_grid() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -240,14 +254,15 @@ fn scenario_userinput_finalizes_with_box_drawing_grid() {
     ));
 
     // @step Then the in-flight assistant chunk's source.text contains a box-drawing grid with top border "┌" and bottom border "└" instead of raw pipe rows
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after UserInput flush");
 
     // @step And the in-flight assistant chunk's is_streaming flag is false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "chunk 0 is_streaming must be false after UserInput flush"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -256,7 +271,7 @@ fn scenario_userinput_finalizes_with_box_drawing_grid() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_done_still_formats_turn_final_message() {
+fn scenario_done_still_formats_turn_final_message() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -268,14 +283,15 @@ fn scenario_done_still_formats_turn_final_message() {
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
     // @step Then the final chunk's source.text contains a box-drawing grid with top border "┌" and bottom border "└" instead of raw pipe rows
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after Done");
 
     // @step And the final chunk's is_streaming flag is false
     assert!(
-        !nth_chunk_is_streaming(&app, &sid("s-1"), 0),
+        !nth_chunk_is_streaming(&app, &sid("s-1"), 0)?,
         "chunk 0 is_streaming must be false after Done"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -284,7 +300,7 @@ fn scenario_done_still_formats_turn_final_message() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_done_after_toolcall_leaves_formatted_unchanged() {
+fn scenario_done_after_toolcall_leaves_formatted_unchanged() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -304,17 +320,18 @@ fn scenario_done_after_toolcall_leaves_formatted_unchanged() {
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
 
     // @step Then the first chunk (intermediate assistant message) still contains a box-drawing grid with top border "┌" and bottom border "└"
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 after Done (was ToolCall-flushed)");
 
     // @step And the second assistant chunk (after the tool call) contains the plain text "done listing"
     // Scrollback layout: 0 = assistant (grid), 1 = tool-call card,
     // 2 = second assistant message.
-    let chunk2 = nth_chunk_source_text(&app, &sid("s-1"), 2);
+    let chunk2 = nth_chunk_source_text(&app, &sid("s-1"), 2)?;
     assert_eq!(
         chunk2, "done listing",
         "second assistant chunk must be the plain follow-up text"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -323,7 +340,7 @@ fn scenario_done_after_toolcall_leaves_formatted_unchanged() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_intermediate_without_table_unchanged_at_flush() {
+fn scenario_intermediate_without_table_unchanged_at_flush() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -338,11 +355,12 @@ fn scenario_intermediate_without_table_unchanged_at_flush() {
     ));
 
     // @step Then the first chunk's source.text equals "Let me check the board" byte-for-byte
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_eq!(
         chunk0, "Let me check the board",
         "non-table prose must be unchanged at flush"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -351,7 +369,7 @@ fn scenario_intermediate_without_table_unchanged_at_flush() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_every_message_in_multi_message_turn_renders_grid() {
+fn scenario_every_message_in_multi_message_turn_renders_grid() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1
     let mut app = app_with_session();
 
@@ -375,8 +393,9 @@ fn scenario_every_message_in_multi_message_turn_renders_grid() {
     // @step Then both assistant chunks contain box-drawing grids with top border "┌" and bottom border "└"
     // Scrollback layout: 0 = first assistant (ToolCall-flushed),
     // 1 = tool-call card, 2 = second assistant (Done-finalized).
-    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0);
+    let chunk0 = nth_chunk_source_text(&app, &sid("s-1"), 0)?;
     assert_contains_box_grid(&chunk0, "chunk 0 (first assistant message)");
-    let chunk2 = nth_chunk_source_text(&app, &sid("s-1"), 2);
+    let chunk2 = nth_chunk_source_text(&app, &sid("s-1"), 2)?;
     assert_contains_box_grid(&chunk2, "chunk 2 (second assistant message)");
+    Ok(())
 }

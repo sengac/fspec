@@ -6,9 +6,9 @@
 //! Owns:
 //!   * `handle_list_key` — Esc cascade, /-to-filter mode, clamped arrow
 //!     nav (no wrap-around; PgUp/PgDn/Home/End added by RPC-353),
-//!     Enter→Detail, `d` opens ConfirmDialog.
+//!     Enter acts on the focused row, `d` opens ConfirmDialog.
 //!   * `render_list` — scrollable provider list, filter input line,
-//!     `(no providers configured)` placeholder.
+//!     loading / failed / `(no providers configured)` placeholder.
 
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::buffer::Buffer;
@@ -19,11 +19,24 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use crate::views::agent::confirm_dialog::ConfirmDialog;
 
-use super::{DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
+use super::{ProviderSettingsEvent, ProviderSettingsView};
 
 /// Dispatch a single key in List mode. Filter-mode sub-state is
 /// checked FIRST so printable chars accumulate into the filter
 /// without triggering the navigation keybinds.
+/// BUG-575: a list key that moves the cursor drops any pending return to a row.
+pub(super) fn handle_list_key_tracked(
+    view: &mut ProviderSettingsView,
+    key: KeyEvent,
+) -> ProviderSettingsEvent {
+    let before = view.selected_index;
+    let event = handle_list_key(view, key);
+    if view.selected_index != before {
+        view.note_navigation();
+    }
+    event
+}
+
 pub(super) fn handle_list_key(
     view: &mut ProviderSettingsView,
     key: KeyEvent,
@@ -67,26 +80,11 @@ pub(super) fn handle_list_key(
         // is checked at the top of handle_list_key.
         KeyCode::Tab => ProviderSettingsEvent::SwitchToModels,
         KeyCode::Up => {
-            // RPC-159: mirror TS contract — clear inline test_result
-            // ONLY when navigation actually moves the focus. At index 0
-            // (boundary), move_clamped is a no-op and test_result is
-            // preserved, matching `if (key.upArrow && selectedIndex > 0)`
-            // in src/tui/inputHandlers/listModeHandler.ts.
-            let before = view.selected_index;
             view.move_clamped(-1);
-            if view.selected_index != before {
-                view.clear_test_result();
-            }
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Down => {
-            // RPC-159: same contract as Up arm — clear test_result only
-            // on actual movement, preserving it at the last visible row.
-            let before = view.selected_index;
             view.move_clamped(1);
-            if view.selected_index != before {
-                view.clear_test_result();
-            }
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Enter => {
@@ -101,24 +99,7 @@ pub(super) fn handle_list_key(
                 let kind = item.kind.clone();
                 return super::list_actions::enter_on_nav_item(view, provider_id, kind);
             }
-            // Legacy fallback — only reachable when nav_items is empty
-            // (pre-RPC-103 callers using `set_providers(...)` alone), where
-            // selected_index correctly indexes visible_providers().
-            let visible = view.visible_providers();
-            let Some(focused) = visible.get(view.selected_index) else {
-                return ProviderSettingsEvent::Consumed;
-            };
-            let pid = focused.provider_id.clone();
-            let ctype = focused.credential_type.clone();
-            let sub = match ctype.as_str() {
-                "oauth" => DetailSub::OAuthNotice,
-                _ => DetailSub::Summary { last_status: None },
-            };
-            view.mode = ProviderSettingsMode::Detail {
-                provider_id: pid,
-                sub,
-            };
-            view.status.clear();
+            // BUG-578 F22: with no rows built there is nothing to open.
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Char('d') | KeyCode::Char('D') => {
@@ -152,14 +133,10 @@ pub(super) fn handle_list_key(
     }
 }
 
-/// RPC-353: page/jump the list-mode selection by `delta` (clamped), clearing
-/// the inline test_result only on actual movement. Always Consumed.
+/// RPC-353: page/jump the list-mode selection by `delta` (clamped). Always
+/// Consumed.
 fn paged(view: &mut ProviderSettingsView, delta: i32) -> ProviderSettingsEvent {
-    let before = view.selected_index;
     view.move_clamped(delta);
-    if view.selected_index != before {
-        view.clear_test_result();
-    }
     ProviderSettingsEvent::Consumed
 }
 
@@ -242,7 +219,7 @@ pub(super) fn render_list(view: &mut ProviderSettingsView, area: Rect, buf: &mut
             width: body_area.width,
             height: 1,
         };
-        Paragraph::new("(no providers configured)")
+        Paragraph::new(view.empty_list_text())
             .alignment(Alignment::Center)
             .render(row, buf);
         return;

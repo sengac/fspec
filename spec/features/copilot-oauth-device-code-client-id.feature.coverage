@@ -22,7 +22,9 @@
                 22,
                 23,
                 24
-              ]
+              ],
+              "firstLine": "/// Well-known GitHub Copilot OAuth App client_id (PROV-057).",
+              "lastLine": "/// PROV-057 investigation document for the full analysis."
             }
           ]
         }

@@ -1,5 +1,6 @@
 @done
 @RPC-018
+@BUG-508
 @rust
 @tui
 @ui
@@ -61,14 +62,14 @@ Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
   Scenario: Header paints model badges and thinking level when session has model info
     Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
     And model_info_by_session["s-1"] is ModelInfo { display_name: "Claude Opus 4.7", supports_reasoning: true, supports_vision: true, context_window: 192000 }
-    And thinking_level_by_session["s-1"] is ThinkingLevel::High
+    And thinking_level_by_session["s-1"] is ThinkingLevel::Effort("high")
     When the App renders AgentView against an 100x20 TestBackend
     Then the rendered buffer's top row contains the substring "#1:"
     And the rendered buffer's top row contains the substring "Claude Opus 4.7"
     And the rendered buffer's top row contains the substring "[R]"
     And the rendered buffer's top row contains the substring "[V]"
     And the rendered buffer's top row contains the substring "[192k]"
-    And the rendered buffer's top row contains the substring "[T:High]"
+    And the rendered buffer's top row contains the substring "[T:high]"
 
   Scenario: Header right-side reflects TokenUpdate followed by ContextFillUpdate
     Given an AgentViewStore with current_session "s-1"
@@ -95,8 +96,8 @@ Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
     And the AgentView has pushed two scrollback lines "user> hi" and "assistant> hello"
     When the App renders AgentView against an 80x10 TestBackend
     Then the rendered buffer's row 0 contains the substring "#1:"
-    And the rendered buffer's rows 1 through 5 contain the substring "user> hi"
-    And the rendered buffer's rows 1 through 5 contain the substring "assistant> hello"
+    And the rendered buffer's rows 2 through 7 contain the substring "user> hi" (MENU-003: row 1 is the menu bar row, row 8 the footer)
+    And the rendered buffer's rows 2 through 7 contain the substring "assistant> hello"
     And the rendered buffer's row 9 is the input prompt row (RPC-029: footer hints removed)
     And the rendered buffer's row 9 does NOT contain the substring "Enter=send"
 

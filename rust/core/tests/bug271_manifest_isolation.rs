@@ -8,6 +8,7 @@ use uuid::Uuid;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn configure(path: &Path) -> Result<(), String> {
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(path.to_path_buf())?;
     reset_stores_for_tests();
     Ok(())

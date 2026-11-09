@@ -2,12 +2,11 @@
 
 use codelet_fspec_tui::store::agent_view::TokenState;
 use codelet_rpc_types::{ContextFillInfo, StreamChunk};
+use codelet_test_helpers::TestResult;
 use serde_json::json;
 
 #[path = "../../providers/tests/fixtures/prov148.rs"]
 pub mod fixture;
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn background() -> Result<
     (
@@ -17,6 +16,7 @@ fn background() -> Result<
     Box<dyn std::error::Error>,
 > {
     let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     let session = codelet_cli::session::Session::from_provider_manager(
         codelet_providers::ProviderManager::for_testing(
@@ -75,9 +75,11 @@ fn multisegment_spend_cannot_change_current_request_fill() -> TestResult {
     Ok(())
 }
 
-#[test]
+// BUG-459: a BackgroundSession is built inside a Tokio runtime (it holds
+// the current runtime handle).
+#[tokio::test]
 #[serial_test::serial]
-fn stale_context_events_cannot_overwrite_a_newer_generation() -> TestResult {
+async fn stale_context_events_cannot_overwrite_a_newer_generation() -> TestResult {
     // @step Given an estimated committed generation snapshot followed by a new measured request
     let mut state = TokenState::default();
     let (_directory, background) = background()?;
@@ -165,7 +167,7 @@ async fn unknown_occupancy_and_capacity_cannot_claim_measured_fit() -> TestResul
             published.provenance,
             codelet_rpc_types::ContextProvenance::Unknown
         );
-        assert!(published.context_fill().is_none());
+        assert!(published.context_fill()?.is_none());
         assert!(state.estimated);
         assert_eq!(state.context_threshold_tokens, 0);
         assert_eq!(state.context_fill_pct, 0);

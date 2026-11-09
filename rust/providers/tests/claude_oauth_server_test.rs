@@ -116,7 +116,8 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step And the server should serve a form page with the authorize URL as a clickable link
     let client = reqwest::Client::new();
@@ -161,8 +162,14 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
 
     // @step And the tokens should be persisted to claude_auth.json with access_token, refresh_token, and expires
     // @step And the OAuth server should shut down
-    // @step And the login function should return the Claude tokens
+    // @step And the login function should return the Claude auth credentials
     let result = login_handle.await.expect("Task should not panic");
+    assert!(
+        tokio::net::TcpStream::connect(("127.0.0.1", port))
+            .await
+            .is_err(),
+        "the OAuth server should no longer accept connections after login"
+    );
     assert!(
         result.is_ok(),
         "Login should succeed, got: {:?}",
@@ -219,7 +226,8 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When the user submits a code with state that does not match the PKCE verifier
     let code_with_wrong_state = "test_auth_code#wrong_state_value";
@@ -340,7 +348,8 @@ async fn test_token_exchange_fails_after_valid_state_validation() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When the user submits a code with valid state
     let code_with_state = format!("test_auth_code#{pkce_verifier}");
@@ -401,7 +410,8 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When a request is made to the /cancel route
     let client = reqwest::Client::new();
@@ -455,7 +465,8 @@ async fn test_code_without_state_hash_separator_is_rejected() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step When the user submits a code without a "#" separator
     let code_without_hash = "abc123nohashhere";
@@ -514,7 +525,8 @@ async fn test_browser_fails_to_open_but_server_still_shows_form_with_link() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     // @step Then the OAuth server should start and serve the form page
     let client = reqwest::Client::new();
@@ -576,7 +588,8 @@ async fn test_server_handles_404_requests_without_shutting_down() {
         claude_browser_oauth_login_inner(config).await
     });
 
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // TEST-042: no sleep; the listener is already bound, so the request
+    // waits in its backlog until the login task accepts it.
 
     let client = reqwest::Client::new();
 

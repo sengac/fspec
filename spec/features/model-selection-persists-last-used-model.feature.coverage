@@ -10,7 +10,6 @@
             {
               "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
-                69,
                 70,
                 71,
                 72,
@@ -20,7 +19,13 @@
                 76,
                 77,
                 78,
-                79,
+                78,
+                78,
+                78,
+                78,
+                78,
+                78,
+                78,
                 80,
                 81,
                 82,
@@ -40,13 +45,10 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                99
+              ],
+              "firstLine": "pub fn save_persisted_model_string_to(user_dir: &Path, model: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -62,7 +64,6 @@
             {
               "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
-                69,
                 70,
                 71,
                 72,
@@ -72,7 +73,13 @@
                 76,
                 77,
                 78,
-                79,
+                78,
+                78,
+                78,
+                78,
+                78,
+                78,
+                78,
                 80,
                 81,
                 82,
@@ -92,13 +99,10 @@
                 96,
                 97,
                 98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104
-              ]
+                99
+              ],
+              "firstLine": "pub fn save_persisted_model_string_to(user_dir: &Path, model: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -109,23 +113,25 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
-          "lines": "105-130",
+          "lines": "105-132",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
               "lines": [
-                1057,
-                1058,
-                1059,
-                1060,
-                1061,
-                1062,
-                1063,
-                1064,
-                1065,
-                1066,
-                1067
-              ]
+                157,
+                158,
+                159,
+                160,
+                161,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ],
+              "firstLine": "let target = session.thinking_target()?;",
+              "lastLine": "fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {"
             }
           ]
         }
@@ -136,36 +142,38 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
-          "lines": "135-170",
+          "lines": "137-175",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
               "lines": [
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254
-              ]
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                38,
+                38,
+                38,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "// contract — the TUI clear path is idempotent (resetting an",
+              "lastLine": "self_weak: self_weak.clone(),"
             }
           ]
         }
@@ -176,16 +184,18 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
-          "lines": "176-192",
+          "lines": "181-197",
           "implMappings": [
             {
               "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
-                69,
                 70,
                 71,
-                72
-              ]
+                72,
+                73
+              ],
+              "firstLine": "pub fn save_persisted_model_string_to(user_dir: &Path, model: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -196,20 +206,20 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/prov122_model_selection_persistence.rs",
-          "lines": "198-229",
+          "lines": "203-236",
           "implMappings": [
             {
               "file": "rust/sessions/src/last_used_model_persistence.rs",
               "lines": [
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
-              ]
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "pub fn save_persisted_model_string(model: &str) -> Result<(), String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -225,9 +235,9 @@
     ],
     "implFiles": [
       "rust/sessions/src/last_used_model_persistence.rs",
-      "rust/sessions/src/handle_impl.rs",
-      "rust/sessions/src/session_manager.rs"
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/sessions/src/session_manager/manager_impl_1.rs"
     ],
-    "totalLinesCovered": 279
+    "totalLinesCovered": 284
   }
 }

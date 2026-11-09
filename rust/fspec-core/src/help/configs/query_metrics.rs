@@ -5,13 +5,8 @@
 //! when piped to non-TTY. Captured fixture:
 //! `rust/fspec/tests/fixtures/help/query-metrics.txt`.
 //!
-//! NOTE — option drift parity: the TS help config exposes
-//! `--metric <metric>` and lists `--format` BEFORE `--work-unit-id`, even
-//! though the TS Commander.js action handler at
-//! `src/commands/query-metrics.ts:182-198` only reads
-//! `--work-unit-id`, `--type`, and `--format`. The fixture is the
-//! authoritative byte-stream the Rust binary must reproduce, so this
-//! help configuration mirrors the documented (drifted) shape verbatim.
+//! CLI-016: the options match the clap surface; the TypeScript-only
+//! `--metric` option is gone.
 
 use super::super::{CommandExample, CommandHelpConfig, CommandOption};
 
@@ -28,17 +23,12 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
 
 const OPTIONS: &[CommandOption] = &[
     CommandOption {
-        flag: "--metric <metric>",
-        description: "Specific metric to query",
-        default_value: None,
-    },
-    CommandOption {
         flag: "--format <format>",
         description: "Output format: table or json",
         default_value: None,
     },
     CommandOption {
-        flag: "--work-unit-id <id>",
+        flag: "--work-unit <workUnitId>",
         description: "Specific work unit to query metrics for",
         default_value: None,
     },

@@ -3,6 +3,7 @@
 @cli
 @rust
 @RPC-186
+@foundation-management
 Feature: Port add-persona command to Rust
   """
   File layout: rewrite stub rust/fspec-core/src/commands/add_persona.rs; add CLI bridge rust/fspec/src/add_persona.rs; help config rust/fspec-core/src/help/configs/add_persona.rs; dispatcher test rust/fspec-core/tests/add_persona.rs; CLI test rust/fspec/tests/cli_add_persona.rs; help fixture rust/fspec/tests/fixtures/help/add-persona.txt
@@ -108,3 +109,19 @@ Feature: Port add-persona command to Rust
     And spec/foundation.json on disk ends with a single trailing newline
     And spec/foundation.json on disk is indented with 2 spaces
     And spec/foundation.json on disk still contains the top-level field "customKey" unchanged
+
+  Scenario: Three placeholder personas are all cleared before the real persona is added
+    Given a project root tempdir with spec/foundation.json whose personas are three placeholders '[QUESTION: Who uses this?]', '[DETECTED: Admin]' and '[QUESTION: Who else?]'
+    When I dispatch add-persona with name='Developer', description='First real persona', goals=[]
+    Then the dispatcher returns success=true
+    And the returned data contains removedPlaceholders=3
+    And spec/foundation.json on disk shows the only persona has name='Developer'
+
+  Scenario: Placeholder personas in foundation.json.draft are cleared before the real persona is added
+    Given a project root tempdir with spec/foundation.json.draft whose only persona is named '[QUESTION: Who uses this?]'
+    And spec/foundation.json exists with one real persona "Primary User"
+    When I dispatch add-persona with name='Developer', description='Writes code', goals=[]
+    Then the dispatcher returns success=true
+    And the returned data contains fileName='foundation.json.draft' and removedPlaceholders=1
+    And spec/foundation.json.draft on disk shows the only persona has name='Developer'
+    And spec/foundation.json on disk is byte-equal to its pre-call contents

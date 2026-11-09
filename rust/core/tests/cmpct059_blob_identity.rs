@@ -13,6 +13,7 @@ fn committed_replay_preserves_distinct_tool_item_and_invocation_identities(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a committed generation with blob-backed tool call and result suffixes using distinct item and invocation identities
     let directory = setup_temp_directory()?;
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().to_path_buf())?;
     reset_stores_for_tests();
     let mut session = create_session_with_provider("tool identity", directory.path(), "openai")?;

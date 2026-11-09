@@ -25,8 +25,12 @@ pub(crate) struct ModelSelectorRow {
     /// True for model rows (Enter emits ModelSelected); false for
     /// provider headers.
     pub(crate) selectable: bool,
-    /// Provider key — populated only when `selectable` is true.
+    /// Provider section key (unique per section, e.g. `"openai:my-profile"`)
+    /// — drives expand/collapse and model selection.
     pub(crate) provider_key: String,
+    /// BUG-325: the section's base provider id (`ProviderInfo.provider_id`),
+    /// sent as the `provider_id` of custom-model writes.
+    pub(crate) provider_id: String,
     /// Model id — populated only when `selectable` is true.
     pub(crate) model_id: String,
     /// RPC-338: true for a local-server profile section header (drives the
@@ -35,6 +39,9 @@ pub(crate) struct ModelSelectorRow {
     /// RPC-338: true when an (unreachable) profile header (drives the red
     /// `(unreachable)` marker). Header rows only.
     pub(crate) is_unreachable: bool,
+    /// PROV-176: why a cloud section lists no models (the Codex section when
+    /// Codex /models cannot be fetched), shown on its header. Header rows only.
+    pub(crate) unavailable_reason: Option<String>,
     /// RPC-344: true for a selectable custom-model row (drives the `[C]`
     /// badge AND gates the `e`/`d` keybinds). Always false for headers.
     pub(crate) is_custom: bool,
@@ -42,9 +49,10 @@ pub(crate) struct ModelSelectorRow {
     /// is a local-server profile section. Set on BOTH the profile header and
     /// its model rows so the a/e/d guards can read it off the focused row.
     pub(crate) profile_name: Option<String>,
-    /// RPC-344: context window of a model row (0 for headers) — used to
+    /// RPC-344: context window of a model row (None for headers and for
+    /// models without one, PROV-169) — used to
     /// prefill the edit form without re-walking providers.
-    pub(crate) context_window: u32,
+    pub(crate) context_window: Option<u32>,
     /// RPC-344: reasoning capability of a model row — edit-form prefill.
     pub(crate) supports_reasoning: bool,
     /// RPC-344: vision capability of a model row — edit-form prefill.

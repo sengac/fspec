@@ -5,120 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "85-104",
+          "lines": "67-84",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
-            },
             {
               "file": "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
               "lines": [
@@ -199,19 +87,10 @@
                 75,
                 76,
                 77
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Action::SendToSubordinate spawns backend.receive_incoming_message exactly once",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "110-143",
-          "implMappings": [
+              ],
+              "firstLine": "//! RPC-061 — per-session supervisor / subordinate state held by",
+              "lastLine": "}"
+            },
             {
               "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
@@ -281,294 +160,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Action::SendToSubordinate Err path emits EmitSessionNotice into the originating session",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "149-181",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Action::SendToSubordinate Err path is a silent no-op without an open session",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "184-209",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
+                67
+              ],
+              "firstLine": "//! App::dispatch routing for supervisor / subordinate links. Introduced: RPC-061.",
+              "lastLine": "}"
             }
           ]
         }
@@ -579,7 +174,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "216-238",
+          "lines": "90-118",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
@@ -600,7 +195,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": ".set_debug_enabled(session_id.clone(), *enabled);",
+              "lastLine": "};"
             }
           ]
         }
@@ -611,14 +208,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "247-265",
+          "lines": "124-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
               "lines": [
-                65,
-                66,
-                67,
                 68,
                 69,
                 70,
@@ -629,7 +223,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "/// RPC-061: bump the pending count for `session` by 1. Invoked by",
+              "lastLine": "}"
             }
           ]
         }
@@ -640,7 +236,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "274-302",
+          "lines": "153-181",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
@@ -711,48 +307,10 @@
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
+                67
+              ],
+              "firstLine": "//! App::dispatch routing for supervisor / subordinate links. Introduced: RPC-061.",
+              "lastLine": "}"
             }
           ]
         }
@@ -763,7 +321,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "332-345",
+          "lines": "187-201",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/header_build.rs",
@@ -780,7 +338,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "/// for a single supervisor, and `Some(\"first8+N\")` when more than one",
+              "lastLine": "Some(format!(\"{short}+{}\", supervisors.len() - 1))"
             }
           ]
         }
@@ -791,7 +351,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "351-361",
+          "lines": "207-218",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/header_build.rs",
@@ -808,7 +368,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "/// for a single supervisor, and `Some(\"first8+N\")` when more than one",
+              "lastLine": "Some(format!(\"{short}+{}\", supervisors.len() - 1))"
             }
           ]
         }
@@ -819,7 +381,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "375-409",
+          "lines": "232-268",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/footer.rs",
@@ -859,7 +421,9 @@
                 85,
                 86,
                 87
-              ]
+              ],
+              "firstLine": "let inner = horizontal_pad(area, 1);",
+              "lastLine": "Line::from(vec![Span::styled("
             }
           ]
         }
@@ -870,7 +434,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/supervisor_links_rpc061.rs",
-          "lines": "415-442",
+          "lines": "274-302",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_resume_search_views.rs",
@@ -884,8 +448,10 @@
                 97,
                 98,
                 99,
-                100
-              ]
+                101
+              ],
+              "firstLine": "pub(crate) fn handle_search_history(&mut self, query: String) {",
+              "lastLine": "let action_tx = self.action_tx.clone();"
             }
           ]
         }
@@ -893,20 +459,20 @@
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/supervisor_links_rpc061.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
       "rust/fspec-tui/src/store/agent_view/supervisor_state.rs",
+      "rust/fspec-tui/src/app/dispatch_supervisor_links.rs",
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "rust/fspec-tui/src/views/agent/header_build.rs",
       "rust/fspec-tui/src/views/agent/footer.rs",
       "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
-    "totalLinesCovered": 982
+    "totalLinesCovered": 499
   }
 }

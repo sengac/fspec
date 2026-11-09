@@ -68,6 +68,7 @@ pub async fn evaluate_and_run(
     state: &SchedulerState,
     hooks: Hooks,
 ) -> Result<(), anyhow::Error> {
+    let roots = codelet_common::spec_paths::ProjectRoots::resolve(Path::new(project_path))?;
     // Step 1: Sweep active_runs — detect completed sessions
     let live_ids = hooks.get_live_session_ids().await;
     let completed = state.sweep_completed(&live_ids).await;
@@ -75,7 +76,7 @@ pub async fn evaluate_and_run(
     // Step 2: Drain queued jobs for completed schedules (one per completed schedule)
     for completed_name in &completed {
         if let Some(queued) = state.drain_queued_for(completed_name).await {
-            let schedules_path = Path::new(project_path).join("spec/schedules.json");
+            let schedules_path = roots.schedules();
             info!(
                 "Firing queued job for '{}' (previous run completed)",
                 queued.schedule_name
@@ -100,7 +101,7 @@ pub async fn evaluate_and_run(
     let session_count = hooks.get_session_count().await;
     if session_count < max_sessions() {
         if let Some(deferred) = state.drain_one_deferred().await {
-            let schedules_path = Path::new(project_path).join("spec/schedules.json");
+            let schedules_path = roots.schedules();
             info!(
                 "Firing deferred job '{}' (session slot available)",
                 deferred.schedule_name
@@ -131,7 +132,7 @@ pub async fn evaluate_and_run(
 
         // Step 5: Overlap check — BEFORE session limit check
         let action = state.check_overlap(&result.name, &result.entry).await;
-        let log_path = Path::new(project_path).join("spec/schedule-log.jsonl");
+        let log_path = roots.schedule_log();
         match action {
             OverlapAction::Skip => {
                 let entry = JobLogEntry {
@@ -187,14 +188,14 @@ pub async fn evaluate_and_run(
                         max_sessions()
                     )),
                 };
-                let log_path = Path::new(project_path).join("spec/schedule-log.jsonl");
+                let log_path = roots.schedule_log();
                 tokio::spawn(async move { append_log_entry(&log_path, &entry).await });
                 continue;
             }
         }
 
         // Step 7: Trigger the job
-        let schedules_path = Path::new(project_path).join("spec/schedules.json");
+        let schedules_path = roots.schedules();
         if let Err(e) = trigger::trigger_and_update(
             &schedules_path,
             &result.name,
@@ -225,7 +226,8 @@ fn max_sessions() -> usize {
 pub async fn evaluate_schedules(
     project_path: &str,
 ) -> Result<Vec<EvaluationResult>, anyhow::Error> {
-    let schedules_path = Path::new(project_path).join("spec/schedules.json");
+    let schedules_path =
+        codelet_common::spec_paths::ProjectRoots::resolve(Path::new(project_path))?.schedules();
 
     // Read schedules file — missing file is not an error
     let content = match tokio::fs::read_to_string(&schedules_path).await {

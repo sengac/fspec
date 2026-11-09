@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @SCHED-009
+@agent-core
+@schedule-management
 Feature: Schedule AI Tool
   """
   Create rust/tools/src/schedule/mod.rs — ScheduleTool struct with session_id, impl Tool for ScheduleTool with ScheduleArgs (action, name, cron, timezone, job_type, role, prompt, command, overlap_policy)
@@ -9,7 +12,7 @@ Feature: Schedule AI Tool
   Create facade files for multi-provider support — schedule_facade.rs with ClaudeScheduleFacade, GeminiScheduleFacade, OpenAIScheduleFacade, ZAIScheduleFacade. Register in ProviderToolRegistry
   """
 
-  Background: 
+  Background:
     Given a session with a registered schedule handler
     And an empty schedules.json file
 

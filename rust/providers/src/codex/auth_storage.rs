@@ -14,6 +14,11 @@ pub(crate) use sources::document;
 pub enum AuthError {
     #[error("Codex credential storage failed: {0}")]
     Io(#[from] std::io::Error),
+    #[error("Cannot resolve the Codex home {}: {source}", path.display())]
+    Home {
+        path: PathBuf,
+        source: std::io::Error,
+    },
     #[error("Codex credential document is invalid: {0}")]
     Json(#[from] serde_json::Error),
     #[error("Codex keyring storage failed: {0}")]
@@ -160,16 +165,23 @@ pub fn read_codex_auth() -> Result<Option<CodexAuthJson>> {
     read(&home())
 }
 
+/// BUG-658: cancels the pending logins of `home` once the home exists,
+/// without taking the auth lock, so a login whose persistence holds or
+/// awaits the lock is cancelled at once rather than waited for.
+pub(crate) fn cancel_pending_logins(home: &Path) -> Result<()> {
+    fs::create_dir_all(home)?;
+    super::auth_lifecycle::cancel_at(home)
+}
+
 pub fn write_codex_auth(auth: &CodexAuthJson) -> Result<()> {
     let home = home();
     transaction(&home, || update(&home, auth, true))?;
-    super::auth_lifecycle::cancel_at(&home);
-    Ok(())
+    super::auth_lifecycle::cancel_at(&home)
 }
 
 pub fn clear_codex_oauth() -> Result<()> {
     let home = home();
-    super::auth_lifecycle::cancel_at(&home);
+    cancel_pending_logins(&home)?;
     transaction(&home, || {
         let mut auth = read(&home)?.unwrap_or(CodexAuthJson {
             openai_api_key: None,
@@ -183,7 +195,7 @@ pub fn clear_codex_oauth() -> Result<()> {
 
 pub fn delete_codex_auth() -> Result<()> {
     let home = home();
-    super::auth_lifecycle::cancel_at(&home);
+    cancel_pending_logins(&home)?;
     transaction(&home, || {
         claim_generation(&home, &uuid::Uuid::new_v4().to_string())?;
         document(&home)?;

@@ -1,4 +1,7 @@
 @BUG-121
+@COV-057
+@session
+@role
 Feature: Submitting empty text in /role dialog does not clear the role
   """
   The NAPI session_set_role binding handles empty role_name by calling session.clear_role() on the Rust Session. AgentView.tsx onSubmit already sends '' for empty submissions.
@@ -23,9 +26,8 @@ Feature: Submitting empty text in /role dialog does not clear the role
     I want to clear the role by submitting empty text in the /role dialog
     So that the role is removed and the RoleBanner disappears
 
-  @NAPI
   Scenario: session_set_role with empty string clears the role
     Given a session exists with role "reviewer"
-    When session_set_role is called with an empty role_name
+    When the AgentManager set_role action is called with an empty role
     Then the session role should be cleared
-    And session_get_role should return null
+    And get_role on the session should return None

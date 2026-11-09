@@ -3,6 +3,7 @@
 @rust
 @cli
 @mutation
+@foundation-management
 Feature: Port remove-capability command to Rust
   """
   Rust port of the TypeScript `remove-capability` command

@@ -129,9 +129,9 @@ pub(super) fn stream(
                     Some(Ok(Event::Message(event))) => {
                         let data: Value = serde_json::from_str(&event.data).map_err(invalid)?;
                         let kind = data["type"].as_str().ok_or_else(|| invalid("missing event type"))?;
-                        if !matches!(kind, "response.completed" | "response.failed" | "response.incomplete") {
-                            super::memory_policy::validate_response(&data["response"])?;
-                        }
+                        // Native memory is refused before any lifecycle parsing,
+                        // terminal events included (codex-sole-dag-memory-policy).
+                        super::memory_policy::validate_response(&data["response"])?;
                         metadata.apply_event(&data);
                         if let Some(routing) = &routing {
                             if let Some(value) = metadata.turn_state() {

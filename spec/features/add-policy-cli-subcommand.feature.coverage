@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_policy.rs",
-          "lines": "82-111",
+          "lines": "90-114",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/add_policy.rs",
@@ -29,37 +29,9 @@
                 113,
                 114,
                 115
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec/tests/cli_add_policy.rs",
-          "lines": "82-111",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/add_policy.rs",
-              "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115
-              ]
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -70,7 +42,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_policy.rs",
-          "lines": "112-150",
+          "lines": "120-153",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_policy.rs",
@@ -84,7 +56,9 @@
                 44,
                 45,
                 46
-              ]
+              ],
+              "firstLine": "#[derive(Debug, Default)]",
+              "lastLine": "}"
             }
           ]
         }
@@ -95,7 +69,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_policy.rs",
-          "lines": "151-181",
+          "lines": "159-184",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_policy.rs",
@@ -144,7 +118,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -155,7 +131,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_policy.rs",
-          "lines": "182-227",
+          "lines": "190-230",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_policy.rs",
@@ -204,7 +180,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -264,7 +242,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -324,7 +304,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -342,6 +324,6 @@
       "rust/fspec-core/src/help/configs/add_policy.rs",
       "rust/fspec/src/add_policy.rs"
     ],
-    "totalLinesCovered": 483
+    "totalLinesCovered": 414
   }
 }

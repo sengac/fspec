@@ -1,10 +1,9 @@
 //! Step-comment validation for `link-coverage` — LOCAL port of
-//! `src/utils/step-validation.ts` + `src/utils/similarity-algorithms.ts`
-//! (RPC-240).
+//! `src/utils/step-validation.ts` (RPC-240).
 //!
-//! Extracts `@step` (and plain `//`) step comments from a test file, matches
-//! each feature-file scenario step to a comment via a weighted hybrid
-//! similarity score with adaptive thresholds, and raises a system-reminder
+//! Extracts `@step` comments from a test file, matches each feature-file
+//! scenario step to a comment with exactly its keyword and text (BUG-509: no
+//! plain `//` comments, no similarity scoring), and raises a system-reminder
 //! error listing the missing steps when a story/bug work unit's test file lacks
 //! required step comments.
 
@@ -19,56 +18,185 @@ use super::{detect_work_unit_type, invalid};
 struct StepComment {
     keyword: String,
     text: String,
+    /// COV-078: the comment's first and last line (1-based; a step continued
+    /// with a trailing backslash ends on its last continuation line).
+    first: usize,
+    last: usize,
 }
 
-/// Validate that every feature step for `scenario` has a matching @step comment
-/// in `test_file`. No-op when `skip_step_validation` or the feature file is
-/// missing. Errors carry the verbatim TS system-reminder.
+const KEYWORDS: [&str; 5] = ["Given", "When", "Then", "And", "But"];
+
+/// Validate that every feature step for `scenario` has a matching @step
+/// comment in the linked lines of `test_file`. BUG-452: the lines checked are
+/// `test_lines` together with the scenario's `existing` ranges in that file
+/// (steps may be spread over several functions); an unreadable feature or
+/// test file, an unparsable range and a scenario missing from the feature are
+/// errors. Errors carry the verbatim TS system-reminder.
 pub(super) fn validate_step_consistency(
     feature_path: &Path,
     scenario: &str,
     project_root: &Path,
     test_file: &str,
+    test_lines: Option<&str>,
+    existing: &[String],
     skip_step_validation: bool,
 ) -> Result<(), FspecCoreError> {
     if skip_step_validation {
         return Ok(());
     }
-    // If the feature file doesn't exist, skip step validation silently
-    // (forward planning).
-    let feature_content = match std::fs::read_to_string(feature_path) {
-        Ok(c) => c,
-        Err(_) => return Ok(()),
-    };
-
-    let feature_steps = match scenario_steps(&feature_content, scenario) {
-        Some(steps) => steps,
-        None => return Ok(()),
-    };
+    let feature_content = std::fs::read_to_string(feature_path).map_err(|error| {
+        invalid(format!(
+            "cannot read feature file {}: {error}",
+            feature_path.display()
+        ))
+    })?;
+    let feature_steps = scenario_steps(&feature_content, scenario).ok_or_else(|| {
+        invalid(format!(
+            "scenario '{scenario}' is not in the feature file {}",
+            feature_path.display()
+        ))
+    })?;
 
     let test_path = project_root.join(test_file);
-    let test_content = std::fs::read_to_string(&test_path).unwrap_or_default();
+    let test_content = std::fs::read_to_string(&test_path).map_err(|error| {
+        invalid(format!(
+            "cannot read test file {}: {error}",
+            test_path.display()
+        ))
+    })?;
+    let file_lines: Vec<&str> = test_content.lines().collect();
+    let mut linked = String::new();
+    for lines in existing.iter().map(String::as_str).chain(test_lines) {
+        // BUG-501: the same comma-list parser fspec audit reads.
+        let ranges = crate::commands::audit::drift::line_ranges(lines)
+            .filter(|ranges| ranges.iter().all(|(_, end)| *end <= file_lines.len()))
+            .ok_or_else(|| {
+                invalid(format!(
+                    "test lines '{lines}' are not a range within {test_file} ({} lines)",
+                    file_lines.len()
+                ))
+            })?;
+        for (start, end) in ranges {
+            for line in &file_lines[start - 1..end] {
+                linked.push_str(line);
+                linked.push('\n');
+            }
+        }
+    }
 
-    let comments = extract_step_comments(&test_content);
-    let missing: Vec<String> = feature_steps
-        .iter()
-        .filter(|fs| match_step(fs, &comments).is_none())
-        .cloned()
-        .collect();
-
+    let missing = missing_steps(&feature_steps, &linked);
     if missing.is_empty() {
         return Ok(());
     }
 
-    let work_unit_type = detect_work_unit_type(feature_path, project_root);
+    let work_unit_type = detect_work_unit_type(feature_path, project_root)?;
     let msg = format_validation_error(&missing, &work_unit_type);
     Err(invalid(format!("{msg}\n\nStep validation failed")))
 }
 
+/// BUG-375: the steps of `steps` that have no matching @step comment in
+/// `test_text` (the same matcher link-coverage enforces).
+pub(crate) fn missing_steps(steps: &[String], test_text: &str) -> Vec<String> {
+    let comments = extract_step_comments(test_text);
+    steps
+        .iter()
+        .filter(|step| match_step(step, &comments).is_none())
+        .cloned()
+        .collect()
+}
+
+/// COV-078: the exact @step blocks of `steps` in `test_text`, as (first
+/// @step line, last @step line), 1-based. A block is a run of consecutive
+/// @step comments that are, in line order, exactly the steps in order (other
+/// lines may sit between them, other @step comments may not). No steps, or a
+/// step without a keyword, has no block.
+pub(crate) fn exact_blocks(steps: &[String], test_text: &str) -> Vec<(usize, usize)> {
+    let wanted: Option<Vec<(String, String)>> = steps
+        .iter()
+        .map(|step| split_keyword(step, &KEYWORDS).map(|(kw, text)| (kw, normalize_ws(text))))
+        .collect();
+    let Some(wanted) = wanted.filter(|wanted| !wanted.is_empty()) else {
+        return Vec::new();
+    };
+    let comments = extract_step_comments(test_text);
+    comments
+        .windows(wanted.len())
+        .filter(|window| {
+            window.iter().zip(&wanted).all(|(comment, (kw, text))| {
+                comment.keyword == *kw && normalize_ws(&comment.text) == *text
+            })
+        })
+        .filter_map(|window| Some((window.first()?.first, window.last()?.last)))
+        .collect()
+}
+
+/// COV-078: `"the exact @step block occurs N times"`, followed by the
+/// candidate `file:first-last` ranges when there are any.
+pub(crate) fn block_count_fact(candidates: &[(String, (usize, usize))]) -> String {
+    let mut fact = format!("the exact @step block occurs {} times", candidates.len());
+    if !candidates.is_empty() {
+        let ranges: Vec<String> = candidates
+            .iter()
+            .map(|(file, (first, last))| format!("{file}:{first}-{last}"))
+            .collect();
+        fact.push_str(&format!(" ({})", ranges.join(", ")));
+    }
+    fact
+}
+
+/// COV-078: `link-coverage --test-file F` without `--test-lines`: the lines
+/// (`first-last`) of the scenario's exact @step block when it occurs exactly
+/// once in `test_file`; an error naming the count otherwise.
+pub(super) fn exact_block_lines(
+    feature_path: &Path,
+    scenario: &str,
+    project_root: &Path,
+    test_file: &str,
+) -> Result<String, FspecCoreError> {
+    let feature_content = std::fs::read_to_string(feature_path).map_err(|error| {
+        invalid(format!(
+            "cannot read feature file {}: {error}",
+            feature_path.display()
+        ))
+    })?;
+    let steps = scenario_steps(&feature_content, scenario).ok_or_else(|| {
+        invalid(format!(
+            "scenario '{scenario}' is not in the feature file {}",
+            feature_path.display()
+        ))
+    })?;
+    let test_path = project_root.join(test_file);
+    let test_content = std::fs::read_to_string(&test_path).map_err(|error| {
+        invalid(format!(
+            "cannot read test file {}: {error}",
+            test_path.display()
+        ))
+    })?;
+    let candidates: Vec<(String, (usize, usize))> = exact_blocks(&steps, &test_content)
+        .into_iter()
+        .map(|range| (test_file.to_string(), range))
+        .collect();
+    match candidates.as_slice() {
+        [(_, (first, last))] => Ok(format!("{first}-{last}")),
+        _ => Err(invalid(format!(
+            "--test-lines omitted, but {} in {test_file} for scenario '{scenario}'\nSuggestion: Pass --test-lines <range>",
+            block_count_fact(&candidates)
+        ))),
+    }
+}
+
 /// Extract `"Keyword text"` steps for a scenario, mirroring TS getScenarioSteps
 /// (`${step.keyword.trim()} ${step.text}`).
-fn scenario_steps(feature_content: &str, scenario_name: &str) -> Option<Vec<String>> {
+pub(crate) fn scenario_steps(feature_content: &str, scenario_name: &str) -> Option<Vec<String>> {
     let feature = parse_feature_lenient(feature_content).ok()?;
+    parsed_scenario_steps(&feature, scenario_name)
+}
+
+/// [`scenario_steps`] of an already parsed feature.
+pub(crate) fn parsed_scenario_steps(
+    feature: &gherkin::Feature,
+    scenario_name: &str,
+) -> Option<Vec<String>> {
     let scenario = feature.scenarios.iter().find(|s| s.name == scenario_name)?;
     Some(
         scenario
@@ -79,44 +207,85 @@ fn scenario_steps(feature_content: &str, scenario_name: &str) -> Option<Vec<Stri
     )
 }
 
-/// Extract step comments from test content. Recognizes the language-agnostic
-/// `@step <Keyword> <text>` form and the plain JS `// <Keyword> <text>` form.
+/// Extract step comments from test content: the language-agnostic
+/// `@step <Keyword> <text>` form only (BUG-509: plain `// <Keyword> <text>`
+/// comments no longer count).
 fn extract_step_comments(test_content: &str) -> Vec<StepComment> {
-    let keywords = ["Given", "When", "Then", "And", "But"];
+    let keywords = KEYWORDS;
     let mut comments = Vec::new();
 
-    for raw in test_content.lines() {
-        let line = raw.trim();
+    let lines: Vec<&str> = test_content.lines().collect();
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index].trim();
+        index += 1;
+        let first = index;
 
-        // @step form: find "@step", then keyword, then the rest (trimming a
-        // trailing block-comment terminator).
-        if let Some(pos) = line.find("@step") {
-            let after = line[pos + "@step".len()..].trim_start();
+        // @step form: a comment whose first token is "@step" (AUDIT-003),
+        // then keyword, then the rest. BUG-499: only a block-comment
+        // terminator that ends the line is cut, so step text such as a glob
+        // keeps its `*/`.
+        if let Some(after) = step_marker_text(line) {
             if let Some((kw, text)) = split_keyword(after, &keywords) {
-                let mut text = text.to_string();
-                if let Some(idx) = text.find("*/") {
-                    text = text[..idx].to_string();
+                let mut text = step_part(text).to_string();
+                // BUG-500: a trailing backslash continues the step on the
+                // next comment line.
+                while let Some(head) = text.strip_suffix('\\') {
+                    let head = head.trim_end().to_string();
+                    match lines.get(index).and_then(|next| comment_body(next)) {
+                        Some(body) => {
+                            index += 1;
+                            text = format!("{head} {}", step_part(body));
+                        }
+                        None => text = head,
+                    }
                 }
                 comments.push(StepComment {
                     keyword: kw,
                     text: text.trim().to_string(),
-                });
-                continue;
-            }
-        }
-
-        // Plain form: `// <Keyword> <text>`.
-        if let Some(rest) = line.strip_prefix("//") {
-            let rest = rest.trim_start();
-            if let Some((kw, text)) = split_keyword(rest, &keywords) {
-                comments.push(StepComment {
-                    keyword: kw,
-                    text: text.trim().to_string(),
+                    first,
+                    last: index,
                 });
             }
         }
     }
     comments
+}
+
+/// AUDIT-003: the text after `@step` when `line` is a comment whose first
+/// token is `@step`: the line starts with a comment marker (`//`, `/*`, `#`,
+/// `--` or `*`, which more marker characters may extend, as in `///`, `//!`,
+/// `/**` or `##`), then `@step` and whitespace. `@step` inside a string
+/// literal or prose never counts.
+fn step_marker_text(line: &str) -> Option<&str> {
+    let line = line.trim_start();
+    let marker = ["//", "/*", "#", "--", "*"]
+        .into_iter()
+        .find(|marker| line.starts_with(marker))?;
+    let rest = line[marker.len()..]
+        .trim_start_matches(['/', '*', '#', '-', '!'])
+        .trim_start();
+    let after = rest.strip_prefix("@step")?;
+    after
+        .starts_with(char::is_whitespace)
+        .then(|| after.trim_start())
+}
+
+/// A piece of @step text without surrounding spaces or the `*/` that ends a
+/// one-line block comment (BUG-499).
+fn step_part(text: &str) -> &str {
+    let text = text.trim();
+    text.strip_suffix("*/").unwrap_or(text).trim_end()
+}
+
+/// BUG-500: the text of a comment line (`//`, `#`, `--`, or a block
+/// comment's leading `*`) after its marker; `None` for any other line.
+fn comment_body(line: &str) -> Option<&str> {
+    let line = line.trim_start();
+    ["//", "#", "--", "*"]
+        .iter()
+        .find_map(|marker| line.strip_prefix(marker))
+        .map(str::trim)
 }
 
 /// Split a string into (keyword, remainder) when it starts with a known step
@@ -137,45 +306,18 @@ fn split_keyword<'a>(s: &'a str, keywords: &[&str]) -> Option<(String, &'a str)>
     None
 }
 
-/// Find the best-matching comment for `feature_step`. Keyword must match; the
-/// hybrid similarity must meet the adaptive threshold.
+/// BUG-509: the comment whose keyword and text equal `feature_step` exactly
+/// (runs of whitespace count as one space). There is no similarity matching.
 fn match_step<'a>(feature_step: &str, comments: &'a [StepComment]) -> Option<&'a StepComment> {
-    let (feature_keyword, feature_text) =
-        match split_keyword(feature_step, &["Given", "When", "Then", "And", "But"]) {
-            Some((k, t)) => (k, normalize_ws(t)),
-            None => return None,
-        };
-    let threshold = adaptive_threshold(&feature_text);
-
-    let mut best: Option<(&StepComment, f64)> = None;
-    for comment in comments {
-        if comment.keyword != feature_keyword {
-            continue;
-        }
-        let comment_text = normalize_ws(&comment.text);
-        let score = hybrid_similarity(&feature_text, &comment_text);
-        if score >= threshold && best.map(|(_, s)| score > s).unwrap_or(true) {
-            best = Some((comment, score));
-        }
-    }
-    best.map(|(c, _)| c)
+    let (feature_keyword, feature_text) = split_keyword(feature_step, &KEYWORDS)?;
+    let feature_text = normalize_ws(feature_text);
+    comments.iter().find(|comment| {
+        comment.keyword == feature_keyword && normalize_ws(&comment.text) == feature_text
+    })
 }
 
 fn normalize_ws(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
-fn adaptive_threshold(text: &str) -> f64 {
-    let len = text.chars().count();
-    if len < 10 {
-        0.85
-    } else if len < 20 {
-        0.80
-    } else if len < 40 {
-        0.75
-    } else {
-        0.70
-    }
 }
 
 /// Format the step-validation error system-reminder (parity with
@@ -201,7 +343,7 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
     lines.push("     - Start fresh with @step comments from the beginning".to_string());
     lines.push("     - Ensures proper test structure and step mapping".to_string());
     lines.push("  2. If test exists from other work unit, use checkpoint restore".to_string());
-    lines.push("     - Run: fspec restore-checkpoint <work-unit-id> <checkpoint-name>".to_string());
+    lines.push("     - Run: fspec restore-checkpoint <workUnitId> <checkpoint-name>".to_string());
     lines.push("     - Do NOT modify tests from other work units retroactively".to_string());
     lines.push("  3. Place step comments NEAR the code that executes each step".to_string());
     lines.push("     - Find the line that executes the step".to_string());
@@ -251,241 +393,6 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
     lines.join("\n")
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Similarity algorithms (port of similarity-algorithms.ts)
-// ─────────────────────────────────────────────────────────────────────────
-//
-// `match_step` compares single step texts (one "step" string). We model each
-// side as a Scenario { name: text, steps: [text] } to mirror the TS caller
-// (matchStep builds `{ name, steps: [name] }`).
-
-struct SimWeights {
-    jaro_winkler: f64,
-    token_set: f64,
-    gherkin_structural: f64,
-    trigram: f64,
-    jaccard: f64,
-}
-
-const DEFAULT_WEIGHTS: SimWeights = SimWeights {
-    jaro_winkler: 0.3,
-    token_set: 0.25,
-    gherkin_structural: 0.2,
-    trigram: 0.15,
-    jaccard: 0.1,
-};
-
-const SHORT_WEIGHTS: SimWeights = SimWeights {
-    jaro_winkler: 0.15,
-    token_set: 0.35,
-    gherkin_structural: 0.2,
-    trigram: 0.1,
-    jaccard: 0.2,
-};
-
-/// Hybrid similarity between two single-step texts (each treated as a scenario
-/// whose name and sole step is the text). Auto-selects short-string weights.
-fn hybrid_similarity(text1: &str, text2: &str) -> f64 {
-    let title_len = text1
-        .trim()
-        .chars()
-        .count()
-        .min(text2.trim().chars().count());
-    let w = if title_len < 20 {
-        &SHORT_WEIGHTS
-    } else {
-        &DEFAULT_WEIGHTS
-    };
-
-    let jw = jaro_winkler(text1, text2);
-    let ts = token_set_ratio(text1, text2);
-    let gs = gherkin_structural(text1, text2);
-    // Trigram on combined text "name steps" — here name == steps == text.
-    let combined1 = format!("{text1} {text1}");
-    let combined2 = format!("{text2} {text2}");
-    let tg = trigram_similarity(&combined1, &combined2);
-    let jc = jaccard_similarity(text1, text2);
-
-    jw * w.jaro_winkler
-        + ts * w.token_set
-        + gs * w.gherkin_structural
-        + tg * w.trigram
-        + jc * w.jaccard
-}
-
-fn jaro_winkler(s1: &str, s2: &str) -> f64 {
-    let a: Vec<char> = s1.to_lowercase().chars().collect();
-    let b: Vec<char> = s2.to_lowercase().chars().collect();
-    if a == b {
-        return 1.0;
-    }
-    let (len1, len2) = (a.len(), b.len());
-    if len1 == 0 && len2 == 0 {
-        return 1.0;
-    }
-    if len1 == 0 || len2 == 0 {
-        return 0.0;
-    }
-    let match_distance = (len1.max(len2) / 2).saturating_sub(1) as isize;
-    let mut a_matches = vec![false; len1];
-    let mut b_matches = vec![false; len2];
-    let mut matches = 0usize;
-
-    for i in 0..len1 {
-        let start = (i as isize - match_distance).max(0) as usize;
-        let end = ((i as isize + match_distance + 1) as usize).min(len2);
-        for j in start..end {
-            if b_matches[j] || a[i] != b[j] {
-                continue;
-            }
-            a_matches[i] = true;
-            b_matches[j] = true;
-            matches += 1;
-            break;
-        }
-    }
-    if matches == 0 {
-        return 0.0;
-    }
-    let mut transpositions = 0usize;
-    let mut k = 0usize;
-    for i in 0..len1 {
-        if !a_matches[i] {
-            continue;
-        }
-        while !b_matches[k] {
-            k += 1;
-        }
-        if a[i] != b[k] {
-            transpositions += 1;
-        }
-        k += 1;
-    }
-    let m = matches as f64;
-    let jaro = (m / len1 as f64 + m / len2 as f64 + (m - transpositions as f64 / 2.0) / m) / 3.0;
-    let mut prefix = 0usize;
-    for i in 0..len1.min(len2).min(4) {
-        if a[i] == b[i] {
-            prefix += 1;
-        } else {
-            break;
-        }
-    }
-    jaro + prefix as f64 * 0.1 * (1.0 - jaro)
-}
-
-fn strip_keywords(text: &str) -> String {
-    let lower = text.to_lowercase();
-    let mut out = String::new();
-    for word in lower.split_whitespace() {
-        if matches!(word, "given" | "when" | "then" | "and" | "but") {
-            continue;
-        }
-        if !out.is_empty() {
-            out.push(' ');
-        }
-        out.push_str(word);
-    }
-    out
-}
-
-fn token_set_ratio(text1: &str, text2: &str) -> f64 {
-    use std::collections::HashSet;
-    let t1 = strip_keywords(text1);
-    let t2 = strip_keywords(text2);
-    let tokens1: HashSet<&str> = t1.split_whitespace().filter(|t| !t.is_empty()).collect();
-    let tokens2: HashSet<&str> = t2.split_whitespace().filter(|t| !t.is_empty()).collect();
-    if tokens1.is_empty() && tokens2.is_empty() {
-        return 1.0;
-    }
-    if tokens1.is_empty() || tokens2.is_empty() {
-        return 0.0;
-    }
-    let intersection = tokens1.intersection(&tokens2).count();
-    let diff1 = tokens1.difference(&tokens2).count();
-    let diff2 = tokens2.difference(&tokens1).count();
-    if diff1 == 0 && diff2 == 0 {
-        return 1.0;
-    }
-    let union = tokens1.len() + tokens2.len() - intersection;
-    intersection as f64 / union as f64
-}
-
-fn trigram_similarity(s1: &str, s2: &str) -> f64 {
-    use std::collections::HashSet;
-    let a = s1.to_lowercase();
-    let b = s2.to_lowercase();
-    if a == b {
-        return 1.0;
-    }
-    if a.is_empty() && b.is_empty() {
-        return 1.0;
-    }
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
-    }
-    let extract = |text: &str| -> HashSet<String> {
-        let padded: Vec<char> = format!("  {text}  ").chars().collect();
-        let mut set = HashSet::new();
-        if padded.len() >= 3 {
-            for i in 0..padded.len() - 2 {
-                set.insert(padded[i..i + 3].iter().collect::<String>());
-            }
-        }
-        set
-    };
-    let set1 = extract(&a);
-    let set2 = extract(&b);
-    if set1.is_empty() && set2.is_empty() {
-        return 1.0;
-    }
-    let intersection = set1.intersection(&set2).count();
-    (2.0 * intersection as f64) / (set1.len() + set2.len()) as f64
-}
-
-fn jaccard_similarity(text1: &str, text2: &str) -> f64 {
-    use std::collections::HashSet;
-    let extract = |text: &str| -> HashSet<String> {
-        let stripped = strip_keywords(text);
-        stripped
-            .split(|c: char| !c.is_ascii_alphanumeric())
-            .filter(|t| !t.is_empty())
-            .map(str::to_lowercase)
-            .collect()
-    };
-    let tokens1 = extract(text1);
-    let tokens2 = extract(text2);
-    if tokens1.is_empty() && tokens2.is_empty() {
-        return 1.0;
-    }
-    if tokens1.is_empty() || tokens2.is_empty() {
-        return 0.0;
-    }
-    let intersection = tokens1.intersection(&tokens2).count();
-    let union = tokens1.union(&tokens2).count();
-    intersection as f64 / union as f64
-}
-
-/// Single-step gherkin structural similarity. Both sides are bare step texts
-/// (the keyword was already split off by `match_step`), so each parses to a
-/// single category. Mirrors gherkinStructuralSimilarity collapsed to one step.
-fn gherkin_structural(text1: &str, text2: &str) -> f64 {
-    // With keyword stripped, both texts are treated as the same (then) bucket
-    // weighting; effectively a jaccard over the lowercased step text.
-    use std::collections::HashSet;
-    let a: HashSet<String> = std::iter::once(text1.to_lowercase()).collect();
-    let b: HashSet<String> = std::iter::once(text2.to_lowercase()).collect();
-    if a == b {
-        return 1.0;
-    }
-    let intersection = a.intersection(&b).count();
-    let union = a.union(&b).count();
-    if union == 0 {
-        return 1.0;
-    }
-    intersection as f64 / union as f64
-}
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -508,13 +415,5 @@ mod tests {
         );
         let m = match_step("Then I see the dashboard", &comments);
         assert!(m.is_none());
-    }
-
-    #[test]
-    fn hybrid_identical_is_one() {
-        assert!(
-            (hybrid_similarity("i am on the login page", "i am on the login page") - 1.0).abs()
-                < 1e-9
-        );
     }
 }

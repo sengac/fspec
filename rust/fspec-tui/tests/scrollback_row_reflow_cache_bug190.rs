@@ -15,12 +15,11 @@
 //! `render_count_visited` / `paint_chunk_rows`) does not exist yet — every
 //! test below fails to compile until the implementation lands.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
 use codelet_fspec_tui::views::agent::{
     ChunkKind, ChunkSource, RenderedChunk, ScrollbackList, TurnDir,
 };
+use codelet_test_helpers::{OrFail, TestResult};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
@@ -42,6 +41,7 @@ fn rect(w: u16, h: u16) -> Rect {
 /// Opaque (source-less) chunk with one visual row per entry of `rows`.
 fn opaque_chunk(seq: u64, rows: &[&str]) -> RenderedChunk {
     RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines: rows.iter().map(|r| Line::from(r.to_string())).collect(),
         source: None,
@@ -67,6 +67,7 @@ fn source_chunk(
     };
     let lines = wrap_source(&source, width);
     RenderedChunk {
+        row_ends: Vec::new(),
         seq,
         lines,
         source: Some(source),
@@ -122,7 +123,7 @@ fn seed_single_row_chunks(list: &mut ScrollbackList, count: usize) {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn steady_state_frames_rewrap_zero_unchanged_rows_and_blit_from_cache() {
+fn steady_state_frames_rewrap_zero_unchanged_rows_and_blit_from_cache() -> TestResult {
     // @step Given a ScrollbackList with settled chunks totalling 50 visual rows rendered into an 80-column by 20-row area
     let mut list = ScrollbackList::new();
     seed_single_row_chunks(&mut list, 50);
@@ -161,6 +162,7 @@ fn steady_state_frames_rewrap_zero_unchanged_rows_and_blit_from_cache() {
         5 * 20,
         "each steady-state frame must blit all 20 visible rows from cache"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -169,7 +171,7 @@ fn steady_state_frames_rewrap_zero_unchanged_rows_and_blit_from_cache() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn cached_frames_paint_byte_identical_cells_to_a_fresh_render() {
+fn cached_frames_paint_byte_identical_cells_to_a_fresh_render() -> TestResult {
     // @step Given a ScrollbackList with multi-style rows (colored spans, wide CJK glyphs, and a long line that wraps across several visual rows)
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -178,11 +180,13 @@ fn cached_frames_paint_byte_identical_cells_to_a_fresh_render() {
         Span::styled(" bold", Style::default().add_modifier(Modifier::BOLD)),
     ]);
     list.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq: 0,
         lines: vec![styled],
         source: None,
     });
     list.push(RenderedChunk {
+        row_ends: Vec::new(),
         seq: 1,
         lines: vec![Line::from(Span::raw("日本語のテキスト"))],
         source: None,
@@ -231,6 +235,7 @@ fn cached_frames_paint_byte_identical_cells_to_a_fresh_render() {
         symbols.contains("日 本 語"),
         "CJK row must be on screen: {symbols:?}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -240,7 +245,7 @@ fn cached_frames_paint_byte_identical_cells_to_a_fresh_render() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn newly_appended_tail_lines_reflow_on_first_appearance_then_hit_cache() {
+fn newly_appended_tail_lines_reflow_on_first_appearance_then_hit_cache() -> TestResult {
     // @step Given a settled chunk rendered at a fixed width with all its rows cached
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -301,6 +306,7 @@ fn newly_appended_tail_lines_reflow_on_first_appearance_then_hit_cache() {
         list.reflow_cache().blit_hits() > blits_before,
         "the steady frame must paint from cache"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -310,7 +316,7 @@ fn newly_appended_tail_lines_reflow_on_first_appearance_then_hit_cache() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn a_viewport_width_change_reflows_every_visible_row_exactly_once() {
+fn a_viewport_width_change_reflows_every_visible_row_exactly_once() -> TestResult {
     // @step Given a ScrollbackList rendered at width 80 whose rows are all cached
     let mut list = ScrollbackList::new();
     seed_single_row_chunks(&mut list, 100);
@@ -348,6 +354,7 @@ fn a_viewport_width_change_reflows_every_visible_row_exactly_once() {
         reflows_before,
         "back to cache-hits after the one-time reflow (R3)"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -357,7 +364,7 @@ fn a_viewport_width_change_reflows_every_visible_row_exactly_once() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn streaming_in_flight_chunks_reflow_only_the_in_flight_chunk_per_delta() {
+fn streaming_in_flight_chunks_reflow_only_the_in_flight_chunk_per_delta() -> TestResult {
     // @step Given an in-flight assistant chunk streaming below settled chunks, all rows cached
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -386,11 +393,15 @@ fn streaming_in_flight_chunks_reflow_only_the_in_flight_chunk_per_delta() {
             .chunks_mut()
             .get_mut(1)
             .and_then(|c| c.source.as_mut())
-            .expect("in-flight chunk carries a source");
+            .or_fail("in-flight chunk carries a source")?;
         source.text.push_str(" tail");
     }
     list.rewrap_at(1);
-    let new_in_flight_rows = list.chunks().get(1).map(|c| c.lines.len()).expect("chunk");
+    let new_in_flight_rows = list
+        .chunks()
+        .get(1)
+        .map(|c| c.lines.len())
+        .or_fail("chunk")?;
     let mut buf = Buffer::empty(area);
     list.render_count_visited(area, &mut buf);
 
@@ -412,6 +423,7 @@ fn streaming_in_flight_chunks_reflow_only_the_in_flight_chunk_per_delta() {
         symbols.contains("tail"),
         "the appended delta must be visible: {symbols:?}"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -421,7 +433,7 @@ fn streaming_in_flight_chunks_reflow_only_the_in_flight_chunk_per_delta() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn externally_mutated_chunk_content_is_detected_and_re_reflected_once() {
+fn externally_mutated_chunk_content_is_detected_and_re_reflected_once() -> TestResult {
     // @step Given a ScrollbackList whose rows are all cached
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -438,10 +450,10 @@ fn externally_mutated_chunk_content_is_detected_and_re_reflected_once() {
     // @step When a caller rewrites one chunk's lines in place through the mutable chunk access
     {
         let chunks = list.chunks_mut();
-        chunks.get_mut(0).expect("chunk 0").lines.clear();
+        chunks.get_mut(0).or_fail("chunk 0")?.lines.clear();
         chunks
             .get_mut(0)
-            .expect("chunk 0")
+            .or_fail("chunk 0")?
             .lines
             .push(Line::from("REPLACED"));
     }
@@ -470,6 +482,7 @@ fn externally_mutated_chunk_content_is_detected_and_re_reflected_once() {
         6,
         "frame 2 blitted the 4 cached rows; frame 3 blits the 2 keeper rows"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -478,7 +491,7 @@ fn externally_mutated_chunk_content_is_detected_and_re_reflected_once() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn reset_clears_the_row_reflow_cache() {
+fn reset_clears_the_row_reflow_cache() -> TestResult {
     // @step Given a ScrollbackList that has been rendered so its rows are cached
     let mut list = ScrollbackList::new();
     list.set_viewport_width(80);
@@ -512,6 +525,7 @@ fn reset_clears_the_row_reflow_cache() {
         "nothing may be blitted after a reset"
     );
     assert_eq!(list.reflow_cache().chunk_count(), 1);
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -520,7 +534,7 @@ fn reset_clears_the_row_reflow_cache() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn the_reflow_cache_is_bounded_even_for_very_long_sessions() {
+fn the_reflow_cache_is_bounded_even_for_very_long_sessions() -> TestResult {
     // @step Given a ScrollbackList with 600 single-row chunks rendered at a fixed width
     let mut list = ScrollbackList::new();
     seed_single_row_chunks(&mut list, 600);
@@ -562,6 +576,7 @@ fn the_reflow_cache_is_bounded_even_for_very_long_sessions() {
         512,
         "re-reflecting evicted rows must not grow the cache past the bound"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -571,7 +586,7 @@ fn the_reflow_cache_is_bounded_even_for_very_long_sessions() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn a_gutter_toggle_counts_as_a_width_change_and_reflows_every_row_once() {
+fn a_gutter_toggle_counts_as_a_width_change_and_reflows_every_row_once() -> TestResult {
     // @step Given a ScrollbackList with 25 one-line chunks rendered into a 20-row area (overflowing, 2-col gutter reserved)
     let mut list = ScrollbackList::new();
     seed_single_row_chunks(&mut list, 25);
@@ -616,6 +631,7 @@ fn a_gutter_toggle_counts_as_a_width_change_and_reflows_every_row_once() {
         reflows_before,
         "back to cache-hits after the gutter-toggle reflow (R3)"
     );
+    Ok(())
 }
 
 // ---------------------------------------------------------------------
@@ -624,7 +640,7 @@ fn a_gutter_toggle_counts_as_a_width_change_and_reflows_every_row_once() {
 
 /// Feature: spec/features/scrollback-row-reflow-cache.feature
 #[test]
-fn scrollbar_and_selection_overlays_keep_painting_every_frame() {
+fn scrollbar_and_selection_overlays_keep_painting_every_frame() -> TestResult {
     // @step Given an overflowing ScrollbackList with a visible scrollbar and a SELECT-mode selected turn
     let mut list = ScrollbackList::new();
     seed_single_row_chunks(&mut list, 50);
@@ -672,4 +688,5 @@ fn scrollbar_and_selection_overlays_keep_painting_every_frame() {
         20,
         "only the first frame reflects rows; overlays paint per frame for free"
     );
+    Ok(())
 }

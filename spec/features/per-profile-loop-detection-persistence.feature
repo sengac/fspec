@@ -4,6 +4,7 @@
 @persistence
 @providers
 @high
+@loop-management
 Feature: Per-profile Loop Detection persistence
   """
   The four loop-detection values round-trip through the on-disk ProfileDef
@@ -17,7 +18,8 @@ Feature: Per-profile Loop Detection persistence
   maxRepeats 10, maxRetries 10). The disk read path
   (rust/sessions/src/profile_sections.rs LocalServerProfile) deserializes the
   numeric keys with the shared lenient u32 deserializer so a TS-written
-  float (e.g. 320.0) saturates rather than dropping the whole profile.
+  integral float (e.g. 320.0) is the same whole number (PROV-175: any other
+  invalid number is an error naming the profile and field).
   Pre-existing profiles without the keys keep working unchanged.
   """
 

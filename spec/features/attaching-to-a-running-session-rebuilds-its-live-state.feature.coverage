@@ -1,0 +1,675 @@
+{
+  "scenarios": [
+    {
+      "name": "Opening a running session with /resume shows its spinner, its running tool's output and its token counts",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "27-80",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restoring the active session at startup shows its pending question",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "82-124",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to the daemon that hosts a compacting session shows its compaction progress",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "126-179",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_compaction_complete.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ],
+              "firstLine": "pub(crate) fn apply_compaction_complete(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to the workspace of a session waiting on an approval shows the approval",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "181-242",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mux pane showing a session with a pending stdin prompt shows the prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "268-337",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/exec_stdin.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "firstLine": "pub fn set_exec_stdin_request(",
+              "lastLine": "Ok(())"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Events missed while the WebSocket was down come back once after the reconnect",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "339-401",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A replayed approval that was answered leaves no prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "403-440",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A replayed fspec command request is not run again",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "442-480",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "/// BUG-648: a live chunk the session journals only wakes its transcript",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247
+              ],
+              "firstLine": "// BUG-648: every journaled chunk's state is applied from its page.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Request and provider-waiting events are journaled where they were broadcast",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug648_journal_holds_every_state_event.rs",
+          "lines": "38-100",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/chunk_journal.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "//! BUG-648: which stream chunks a session journals.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/background_session/output.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ],
+              "firstLine": "pub fn set_status(&self, status: SessionStatus) {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A request answered in one chain member's transcript stays closed when another member's copy arrives later",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+          "lines": "482-530",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/request_chain.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ],
+              "firstLine": "pub fn apply_request_change(&mut self, route: &RequestRoute, status: &RequestStatus) -> bool {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug648_attach_rebuilds_live_state.rs",
+      "rust/sessions/tests/bug648_journal_holds_every_state_event.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+      "rust/fspec-tui/src/app/dispatch_transcript.rs",
+      "rust/fspec-tui/src/app/dispatch_compaction_complete.rs",
+      "rust/sessions/src/background_session/exec_stdin.rs",
+      "rust/rpc-types/src/chunk_journal.rs",
+      "rust/sessions/src/background_session/output.rs",
+      "rust/fspec-tui/src/store/agent_view/request_chain.rs"
+    ],
+    "totalLinesCovered": 930
+  }
+}

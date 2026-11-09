@@ -4,37 +4,9 @@
       "name": "ZAI DeepSearch uses streaming execution path",
       "testMappings": [
         {
-          "file": "rust/napi/src/deep_search_handler/tests.rs",
-          "lines": "24-35",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                137,
-                138,
-                139
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Non-streaming providers remain unchanged",
-      "testMappings": [
-        {
-          "file": "rust/napi/src/deep_search_handler/tests.rs",
-          "lines": "37-50",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/deep_search_handler.rs",
-              "lines": [
-                137,
-                138,
-                139
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/src/deep_search_handler/zai_tests.rs",
+          "lines": "12-20",
+          "implMappings": []
         }
       ]
     },
@@ -42,23 +14,22 @@
       "name": "ZAI DeepSearch config includes max_tokens in additional_params",
       "testMappings": [
         {
-          "file": "rust/napi/src/deep_search_handler/tests.rs",
-          "lines": "53-70",
+          "file": "rust/agent-loop/src/deep_search_handler/zai_tests.rs",
+          "lines": "25-40",
           "implMappings": [
             {
-              "file": "rust/napi/src/deep_search_provider_config.rs",
+              "file": "rust/agent-loop/src/deep_search_provider_config.rs",
               "lines": [
-                88,
-                89,
                 90,
                 91,
                 92,
                 93,
                 94,
                 95,
-                96,
                 97
-              ]
+              ],
+              "firstLine": "fn gemini_request_config(model_name: &str, system_prompt: &str) -> DeepSearchRequestConfig {",
+              "lastLine": "if model_name.contains(\"gemini-3\") {"
             }
           ]
         }
@@ -66,16 +37,15 @@
     }
   ],
   "stats": {
-    "totalScenarios": 3,
-    "coveredScenarios": 3,
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/src/deep_search_handler/tests.rs"
+      "rust/agent-loop/src/deep_search_handler/zai_tests.rs"
     ],
     "implFiles": [
-      "rust/napi/src/deep_search_handler.rs",
-      "rust/napi/src/deep_search_provider_config.rs"
+      "rust/agent-loop/src/deep_search_provider_config.rs"
     ],
-    "totalLinesCovered": 60
+    "totalLinesCovered": 32
   }
 }

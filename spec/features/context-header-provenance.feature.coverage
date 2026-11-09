@@ -65,7 +65,9 @@
                 180,
                 181,
                 182
-              ]
+              ],
+              "firstLine": "/// RPC-029 — build the multi-span right line. Two spans: the dark-grey",
+              "lastLine": "}"
             }
           ]
         }

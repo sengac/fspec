@@ -4,118 +4,9 @@
       "name": "Engine appends dag-files block when agent omits it",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "24-73",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+          "lines": "8-57",
+          "implMappings": []
         }
       ]
     },
@@ -123,81 +14,9 @@
       "name": "Agent-provided dag-files block is preserved without duplication",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "79-110",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+          "lines": "62-118",
+          "implMappings": []
         }
       ]
     },
@@ -205,53 +24,9 @@
       "name": "Merge existing dag-files with new annotations across compactions",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "116-164",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+          "lines": "123-169",
+          "implMappings": []
         }
       ]
     },
@@ -259,53 +34,9 @@
       "name": "No dag-files block when no file modifications exist",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "170-188",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+          "lines": "174-191",
+          "implMappings": []
         }
       ]
     },
@@ -313,8 +44,8 @@
       "name": "Incremental compaction instruction includes dag-files preservation guidance",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "194-213",
+          "file": "rust/agent-loop/tests/file_id_propagation_test/parsing_and_instructions.rs",
+          "lines": "8-28",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -338,7 +69,9 @@
                 324,
                 325,
                 326
-              ]
+              ],
+              "firstLine": "/// In both cases the **pairing key** on the resulting ToolResult is",
+              "lastLine": "/// Used as a defensive guard at the start of [`execute_compaction`]. Any"
             }
           ]
         }
@@ -348,38 +81,36 @@
       "name": "Parse dag-files block from existing DAG content",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "219-245",
+          "file": "rust/agent-loop/tests/file_id_propagation_test/parsing_and_instructions.rs",
+          "lines": "33-58",
           "implMappings": [
             {
-              "file": "rust/napi/src/inject_summary_handler.rs",
+              "file": "rust/agent-loop/src/inject_summary_handler.rs",
               "lines": [
-                163,
-                164,
-                165,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
                 166,
                 167,
                 168,
                 169,
                 170,
                 171,
-                172,
                 173,
                 174,
                 175,
-                176,
-                177,
-                178,
                 179,
                 180,
                 181,
-                182,
-                183,
-                184,
                 185,
-                186,
-                187,
-                188,
                 189,
                 190,
                 191,
@@ -388,36 +119,11 @@
                 194,
                 195,
                 196,
-                197,
                 198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225
-              ]
+                200
+              ],
+              "firstLine": "let path = entry[..paren_start].trim().to_string();",
+              "lastLine": "Some(block)"
             }
           ]
         }
@@ -427,8 +133,8 @@
       "name": "Fresh compaction instruction mentions dag-files in Active Files section",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "251-263",
+          "file": "rust/agent-loop/tests/file_id_propagation_test/parsing_and_instructions.rs",
+          "lines": "63-76",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive_helpers.rs",
@@ -447,7 +153,9 @@
                 294,
                 295,
                 296
-              ]
+              ],
+              "firstLine": ") -> Result<(usize, usize), codelet_providers::session::ExtensionError> {",
+              "lastLine": ""
             }
           ]
         }
@@ -457,53 +165,9 @@
       "name": "dag-files block format uses deterministic path ordering",
       "testMappings": [
         {
-          "file": "rust/napi/tests/file_id_propagation_test.rs",
-          "lines": "269-298",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/inject_summary_handler.rs",
-              "lines": [
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265
-              ]
-            }
-          ]
+          "file": "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+          "lines": "196-227",
+          "implMappings": []
         }
       ]
     }
@@ -513,12 +177,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/napi/tests/file_id_propagation_test.rs"
+      "rust/agent-loop/tests/file_id_propagation_test/dag_files_block.rs",
+      "rust/agent-loop/tests/file_id_propagation_test/parsing_and_instructions.rs"
     ],
     "implFiles": [
-      "rust/napi/src/inject_summary_handler.rs",
-      "rust/cli/src/interactive_helpers.rs"
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/agent-loop/src/inject_summary_handler.rs"
     ],
-    "totalLinesCovered": 619
+    "totalLinesCovered": 332
   }
 }

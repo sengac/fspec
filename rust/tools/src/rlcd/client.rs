@@ -156,19 +156,15 @@ impl RlcdClient for HttpRlcdClient {
             .headers()
             .get("retry-after")
             .and_then(|h| h.to_str().ok().map(str::to_string));
-        let text = response
-            .text()
-            .await
-            .map_err(|e| RlcdError::Server {
-                detail: format!("reading the /v1/classifier body failed: {e}"),
-            })?;
+        let text = response.text().await.map_err(|e| RlcdError::Server {
+            detail: format!("reading the /v1/classifier body failed: {e}"),
+        })?;
 
         if status.is_success() {
-            let parsed: RlcdResponse = serde_json::from_str(&text).map_err(|e| {
-                RlcdError::Server {
+            let parsed: RlcdResponse =
+                serde_json::from_str(&text).map_err(|e| RlcdError::Server {
                     detail: format!("malformed classifier response: {e}"),
-                }
-            })?;
+                })?;
             return Ok(parsed);
         }
         if status.as_u16() == 422 {

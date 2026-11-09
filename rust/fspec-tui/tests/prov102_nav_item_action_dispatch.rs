@@ -14,16 +14,13 @@
 //! the focused row's OWN provider_id. All tests are pure view-layer drives
 //! (no App, no backend, no tokio) — fully offline.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::collections::HashMap;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
 use codelet_fspec_tui::views::provider_settings::projection::project_display_infos;
-use codelet_fspec_tui::views::{
-    DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
-};
+use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
@@ -36,11 +33,15 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn openai_row_index(view: &ProviderSettingsView, kind: NavItemKind) -> usize {
-    view.nav_items
+fn openai_row_index(
+    view: &ProviderSettingsView,
+    kind: NavItemKind,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|item| item.provider_id == "openai" && item.kind == kind)
-        .expect("requested OpenAI navigation row must be present")
+        .or_fail("requested OpenAI navigation row must be present")?)
 }
 
 fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCredentialInfo {
@@ -96,11 +97,14 @@ fn multi_provider_view() -> ProviderSettingsView {
     view
 }
 
-fn focused_kind(view: &ProviderSettingsView) -> NavItemKind {
-    view.focused_nav_item()
-        .expect("a nav item must be focused")
+fn focused_kind(
+    view: &ProviderSettingsView,
+) -> Result<NavItemKind, codelet_test_helpers::TestError> {
+    Ok(view
+        .focused_nav_item()
+        .or_fail("a nav item must be focused")?
         .kind
-        .clone()
+        .clone())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -110,13 +114,13 @@ fn focused_kind(view: &ProviderSettingsView) -> NavItemKind {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_openai_profile_opens_openai_edit_form_not_anthropic() {
+fn enter_on_openai_profile_opens_openai_edit_form_not_anthropic() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
     // @step And the openai provider is expanded so its "fast" profile row is visible
     // (cursor starts on the openai provider row at index 0; Enter expands it)
-    assert!(matches!(focused_kind(&view), NavItemKind::Provider { .. }));
+    assert!(matches!(focused_kind(&view)?, NavItemKind::Provider { .. }));
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the openai "fast" profile row
@@ -125,10 +129,10 @@ fn enter_on_openai_profile_opens_openai_edit_form_not_anthropic() {
         NavItemKind::Profile {
             profile_name: "fast".to_string(),
         },
-    );
-    match focused_kind(&view) {
+    )?;
+    match focused_kind(&view)? {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "fast"),
-        other => panic!("expected openai 'fast' profile row, got {other:?}"),
+        other => return Err(format!("expected openai 'fast' profile row, got {other:?}").into()),
     }
 
     // @step When I press Enter
@@ -149,29 +153,30 @@ fn enter_on_openai_profile_opens_openai_edit_form_not_anthropic() {
             assert_eq!(form.api_key, "sk-fast");
             assert_ne!(provider_id, "anthropic");
         }
-        other => panic!("expected EditProfile mode for openai, got {other:?}"),
+        other => return Err(format!("expected EditProfile mode for openai, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: Enter on an OAuthStatus row opens the notice for its own
-// provider, not a mismatched one
+// Scenario: Enter on an OAuthStatus row opens the DisconnectOAuth confirm for
+// its own provider, not a mismatched one (PROV-112)
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_oauth_status_opens_disconnect_confirm_for_own_provider() {
+fn enter_on_oauth_status_opens_disconnect_confirm_for_own_provider() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
     // @step And the anthropic provider is expanded so its OAuthStatus row is visible
     view.handle_key(key(KeyCode::Down));
-    assert!(matches!(focused_kind(&view), NavItemKind::Provider { .. }));
+    assert!(matches!(focused_kind(&view)?, NavItemKind::Provider { .. }));
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the anthropic OAuthStatus row
     view.handle_key(key(KeyCode::Down));
     assert!(matches!(
-        focused_kind(&view),
+        focused_kind(&view)?,
         NavItemKind::OAuthStatus { .. }
     ));
 
@@ -188,17 +193,18 @@ fn enter_on_oauth_status_opens_disconnect_confirm_for_own_provider() {
             assert_eq!(provider_id, "anthropic");
             assert_ne!(provider_id, "gemini");
         }
-        other => panic!("expected DisconnectOAuth for anthropic, got {other:?}"),
+        other => {
+            return Err(format!("expected DisconnectOAuth for anthropic, got {other:?}").into())
+        }
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // Scenario: Enter on an OAuthLogin row starts the real login flow instead of
 // silently doing nothing.
 //
-// PROV-113 SUPERSESSION: the PROV-102 placeholder routed an OAuthLogin row to
-// the honest `DetailSub::OAuthNotice` "not wired yet" sub-view. PROV-113 wires
-// the real flow: Enter now emits `Action::OAuthLoginStart` keyed by the row's
+// PROV-113 wires the real flow: Enter emits `Action::OAuthLoginStart` keyed by the row's
 // own provider (a Browser row also enters `OAuthBrowserWaiting` immediately; a
 // Headless/Device row leaves the mode to the dispatch start-result). The
 // anti-noop / anti-mismatch invariant is preserved — Enter is never a silent
@@ -206,7 +212,7 @@ fn enter_on_oauth_status_opens_disconnect_confirm_for_own_provider() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_oauth_login_starts_login_flow_not_silent_noop() {
+fn enter_on_oauth_login_starts_login_flow_not_silent_noop() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
@@ -218,7 +224,7 @@ fn enter_on_oauth_login_starts_login_flow_not_silent_noop() {
     view.handle_key(key(KeyCode::Down)); // OAuthStatus
     view.handle_key(key(KeyCode::Down)); // OAuthLogin
     assert!(matches!(
-        focused_kind(&view),
+        focused_kind(&view)?,
         NavItemKind::OAuthLogin { .. }
     ));
 
@@ -226,24 +232,23 @@ fn enter_on_oauth_login_starts_login_flow_not_silent_noop() {
     let event = view.handle_key(key(KeyCode::Enter));
 
     // @step Then the login flow starts for provider_id "anthropic"
-    // @step And the row no longer opens the OAuthNotice placeholder
     match event {
         ProviderSettingsEvent::Emit(action) => {
             let Action::OAuthLoginStart { provider_id, .. } = *action else {
-                panic!("expected Emit(OAuthLoginStart) for anthropic, got {action:?}");
+                return Err(format!(
+                    "expected Emit(OAuthLoginStart) for anthropic, got {action:?}"
+                )
+                .into());
             };
             assert_eq!(provider_id, "anthropic");
         }
-        other => panic!("expected Emit(OAuthLoginStart) for anthropic, got {other:?}"),
-    }
-    // The dead-end OAuthNotice sub-view is never entered for a login row now.
-    assert!(!matches!(
-        &view.mode,
-        ProviderSettingsMode::Detail {
-            sub: DetailSub::OAuthNotice,
-            ..
+        other => {
+            return Err(
+                format!("expected Emit(OAuthLoginStart) for anthropic, got {other:?}").into(),
+            )
         }
-    ));
+    }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -252,7 +257,7 @@ fn enter_on_oauth_login_starts_login_flow_not_silent_noop() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_add_profile_opens_create_form() {
+fn enter_on_add_profile_opens_create_form() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
@@ -260,8 +265,8 @@ fn enter_on_add_profile_opens_create_form() {
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the openai AddProfile row
-    view.selected_index = openai_row_index(&view, NavItemKind::AddProfile);
-    assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
+    view.selected_index = openai_row_index(&view, NavItemKind::AddProfile)?;
+    assert!(matches!(focused_kind(&view)?, NavItemKind::AddProfile));
 
     // @step When I press Enter
     let out = view.handle_key(key(KeyCode::Enter));
@@ -274,8 +279,11 @@ fn enter_on_add_profile_opens_create_form() {
             assert_eq!(form.base_url, "http://localhost:8888");
             assert!(form.is_editing_name);
         }
-        other => panic!("expected CreateProfile mode for openai, got {other:?}"),
+        other => {
+            return Err(format!("expected CreateProfile mode for openai, got {other:?}").into())
+        }
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -286,7 +294,7 @@ fn enter_on_add_profile_opens_create_form() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn d_on_oauth_status_opens_disconnect_for_own_provider_not_mismatched() {
+fn d_on_oauth_status_opens_disconnect_for_own_provider_not_mismatched() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
@@ -297,7 +305,7 @@ fn d_on_oauth_status_opens_disconnect_for_own_provider_not_mismatched() {
     // @step And the cursor is on the anthropic OAuthStatus row
     view.handle_key(key(KeyCode::Down));
     assert!(matches!(
-        focused_kind(&view),
+        focused_kind(&view)?,
         NavItemKind::OAuthStatus { .. }
     ));
 
@@ -316,8 +324,11 @@ fn d_on_oauth_status_opens_disconnect_for_own_provider_not_mismatched() {
             assert_eq!(provider_id, "anthropic");
             assert_ne!(provider_id, "gemini");
         }
-        other => panic!("expected DisconnectOAuth for anthropic, got {other:?}"),
+        other => {
+            return Err(format!("expected DisconnectOAuth for anthropic, got {other:?}").into())
+        }
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -328,7 +339,7 @@ fn d_on_oauth_status_opens_disconnect_for_own_provider_not_mismatched() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn d_on_profile_row_opens_per_profile_delete_confirm() {
+fn d_on_profile_row_opens_per_profile_delete_confirm() -> TestResult {
     // @step Given the Provider Settings nav tree is loaded with openai, anthropic and gemini
     let mut view = multi_provider_view();
 
@@ -341,10 +352,10 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
         NavItemKind::Profile {
             profile_name: "fast".to_string(),
         },
-    );
-    match focused_kind(&view) {
+    )?;
+    match focused_kind(&view)? {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "fast"),
-        other => panic!("expected openai 'fast' profile row, got {other:?}"),
+        other => return Err(format!("expected openai 'fast' profile row, got {other:?}").into()),
     }
 
     // @step When I press d
@@ -362,22 +373,30 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
                 profile_name,
             } = *action
             else {
-                panic!("expected Emit(ConfirmDeleteProfile{{openai,fast}}), got {action:?}");
+                return Err(format!(
+                    "expected Emit(ConfirmDeleteProfile{{openai,fast}}), got {action:?}"
+                )
+                .into());
             };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "fast");
         }
-        other => panic!("expected Emit(ConfirmDeleteProfile{{openai,fast}}), got {other:?}"),
+        other => {
+            return Err(format!(
+                "expected Emit(ConfirmDeleteProfile{{openai,fast}}), got {other:?}"
+            )
+            .into())
+        }
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: Legacy set_providers callers keep their pre-existing Enter and d
-// behavior
+// Scenario: Legacy set_providers callers keep their pre-existing d behavior
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn legacy_set_providers_callers_keep_enter_and_d_behavior() {
+fn legacy_set_providers_callers_keep_d_behavior() -> TestResult {
     // @step Given a Provider Settings view populated only via set_providers with a configured api_key provider
     let mut view = ProviderSettingsView::new();
     view.set_providers(vec![pinfo("anthropic", "api_key", true, 8)]);
@@ -385,25 +404,10 @@ fn legacy_set_providers_callers_keep_enter_and_d_behavior() {
     // @step And the nav tree is empty
     assert!(view.nav_items.is_empty());
 
-    // @step When I press Enter on the provider row
-    view.handle_key(key(KeyCode::Enter));
-
-    // @step Then the Detail view that opens is the Summary sub-view for that provider
-    match &view.mode {
-        ProviderSettingsMode::Detail { provider_id, sub } => {
-            assert_eq!(provider_id, "anthropic");
-            assert!(matches!(sub, DetailSub::Summary { .. }));
-        }
-        other => panic!("expected legacy Detail Summary for anthropic, got {other:?}"),
-    }
-
-    // Return to list mode so the d keybind is exercised in List context.
-    view.reset_to_list();
-    view.set_providers(vec![pinfo("anthropic", "api_key", true, 8)]);
-
     // @step When I press d on the configured provider row
     view.handle_key(key(KeyCode::Char('d')));
 
     // @step Then a delete confirmation dialog is open
     assert!(view.delete_confirm.is_some());
+    Ok(())
 }

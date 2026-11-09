@@ -26,7 +26,10 @@ use source_helpers::{
 #[test]
 fn scenario_default_fixture_is_unreachable_from_production_code() {
     // @step Given the rust/rpc crate after the watcher lift
-    let rpc_lib = read_to_string_or_panic(&workspace_root().join("rpc").join("src").join("lib.rs"));
+    let rpc_lib = codelet_test_helpers::source_composition::read_source(
+        &workspace_root().join("rpc").join("src").join("lib.rs"),
+    )
+    .expect("resolve shared service source");
     let code = strip_rust_comments(&rpc_lib);
     let lines: Vec<&str> = code.lines().collect();
 
@@ -193,7 +196,7 @@ fn scenario_rpc_server_binary_still_binds_loopback_only_after_watcher_integratio
 #[test]
 fn scenario_work_unit_info_continues_to_be_defined_exactly_once_in_rpc_types() {
     // @step Given rust/rpc-types defines a public WorkUnitInfo struct with fields id, title, work_type, status, description, estimate, and epic
-    let rpc_types_lib = read_to_string_or_panic(
+    let rpc_types_lib = read_tree(
         &workspace_root()
             .join("rpc-types")
             .join("src")
@@ -206,21 +209,19 @@ fn scenario_work_unit_info_continues_to_be_defined_exactly_once_in_rpc_types() {
 
     // @step When I inspect rust/napi and rust/core for any local definition of a struct named WorkUnitInfo and run cargo check on the workspace
     let mut local_definitions: Vec<String> = Vec::new();
-    for crate_name in ["napi", "core"] {
-        let src_dir = workspace_root().join(crate_name).join("src");
-        for path in collect_rs_files(&src_dir) {
-            let body = read_to_string_or_panic(&path);
-            let code = strip_rust_comments(&body);
-            if code.contains("pub struct WorkUnitInfo") || code.contains("struct WorkUnitInfo {") {
-                local_definitions.push(path.display().to_string());
-            }
+    let src_dir = workspace_root().join("core").join("src");
+    for path in collect_rs_files(&src_dir) {
+        let body = read_to_string_or_panic(&path);
+        let code = strip_rust_comments(&body);
+        if code.contains("pub struct WorkUnitInfo") || code.contains("struct WorkUnitInfo {") {
+            local_definitions.push(path.display().to_string());
         }
     }
 
     // @step Then no other crate defines WorkUnitInfo locally, both crates re-export the type from rust/rpc-types where they reference it, and the workspace builds successfully
     assert!(
         local_definitions.is_empty(),
-        "Neither rust/napi nor rust/core may redefine WorkUnitInfo. \
+        "rust/core may not redefine WorkUnitInfo. \
          Found local definition(s) in: {local_definitions:?}. \
          Replace with `pub use codelet_rpc_types::WorkUnitInfo;` (or a private use)."
     );
@@ -254,4 +255,11 @@ fn scenario_embedded_push_path_contains_no_bincode_encode_call() {
         "rust/rpc-embedded must not bincode-encode the push path (zero-cost embedded). \
          Found: {bincode_calls:?}"
     );
+}
+
+/// REFAC-021/022: read a source file together with its include!d fragments
+/// and file-backed child modules (split modules read as one text).
+fn read_tree(path: &std::path::Path) -> String {
+    codelet_test_helpers::source_composition::read_module_tree(path)
+        .unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
 }

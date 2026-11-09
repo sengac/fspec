@@ -36,24 +36,23 @@ Feature: Update Documentation and Help
     So that I can effectively use discover-foundation, questionnaire, and code analysis features
 
   Scenario: AGENTS.md documents discover-foundation workflow
-    Given I open AGENTS.md file
-    When I search for "discover-foundation" section
+    Given I run "fspec init" for the claude agent
+    When I search spec/AGENTS.md for the "Bootstrapping Foundation for New Projects" section
     Then I should find workflow documentation with command examples
     And documentation should show how to run discover-foundation command
-    And documentation should explain integration with questionnaire
+    And documentation should describe the draft, field-by-field and finalize workflow and point to fspec discover-foundation --help
 
   Scenario: Help system provides comprehensive command help
     Given I run 'fspec discover-foundation --help'
     When the help output is displayed
     Then it should include "WHEN TO USE" section
-    And it should include "WORKFLOW" section explaining steps
     And it should include "EXAMPLES" section with concrete usage
     And examples should show typical discovery workflow
 
   Scenario: Discovery guide explains code analysis patterns
-    Given I open discovery guidance documentation
-    When I review code analysis patterns
-    Then I should find CLI tool detection pattern with bin field example
-    And I should find web app detection pattern with routes example
-    And I should find library detection pattern with exports example
-    And each pattern should explain WHAT to infer not HOW to implement
+    Given I run 'fspec discover-foundation --help'
+    When I review its COMMON PATTERNS section
+    Then I should find the CLI tools pattern: CLI framework usage and command definitions
+    And I should find the web apps pattern: routes and UI components
+    And I should find the libraries pattern: exports and API
+    And each pattern should name the persona to identify, not how to implement it

@@ -46,7 +46,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "pub(crate) fn publish(",
+              "lastLine": "}"
             }
           ]
         }
@@ -76,7 +78,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "let checkpoint = state",
+              "lastLine": "}"
             }
           ]
         }
@@ -110,7 +114,9 @@
                 29,
                 30,
                 31
-              ]
+              ],
+              "firstLine": "return if source.provider.split('/').next() == Some(\"codex\") {",
+              "lastLine": ".max_by_key(|checkpoint| checkpoint.generation)"
             }
           ]
         }
@@ -131,7 +137,9 @@
                 11,
                 12,
                 13
-              ]
+              ],
+              "firstLine": "let state = match storage::load(source)? {",
+              "lastLine": "if state.checkpoints.is_empty() {"
             }
           ]
         }
@@ -147,6 +155,7 @@
             {
               "file": "rust/core/src/persistence/manifest_store.rs",
               "lines": [
+                149,
                 150,
                 151,
                 152,
@@ -156,18 +165,6 @@
                 156,
                 157,
                 158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
                 171,
                 172,
                 173,
@@ -204,8 +201,26 @@
                 204,
                 205,
                 206,
-                207
-              ]
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223
+              ],
+              "firstLine": "/// Fork a session at a specific message index.",
+              "lastLine": "}"
             }
           ]
         }
@@ -221,16 +236,22 @@
             {
               "file": "rust/core/src/persistence/manifest_store.rs",
               "lines": [
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207
-              ]
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                220,
+                221,
+                222
+              ],
+              "firstLine": "/// Fork a session at a specific message index.",
+              "lastLine": "Ok(new_session)"
             }
           ]
         }
@@ -248,6 +269,6 @@
       "rust/core/src/persistence/provider_state/fork.rs",
       "rust/core/src/persistence/manifest_store.rs"
     ],
-    "totalLinesCovered": 299
+    "totalLinesCovered": 308
   }
 }

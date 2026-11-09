@@ -5,11 +5,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "57-82",
+          "lines": "49-72",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                29,
                 30,
                 31,
                 32,
@@ -72,16 +73,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                92
+              ],
+              "firstLine": "/// the stage-4 `?` shortcut's push helper and its idempotency guard",
+              "lastLine": "// edge. Intercepted here — not in the Navigator — so the"
             }
           ]
         }
@@ -92,11 +87,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "88-110",
+          "lines": "78-101",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                29,
                 30,
                 31,
                 32,
@@ -159,16 +155,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                92
+              ],
+              "firstLine": "/// the stage-4 `?` shortcut's push helper and its idempotency guard",
+              "lastLine": "// edge. Intercepted here — not in the Navigator — so the"
             }
           ]
         }
@@ -179,11 +169,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "116-133",
+          "lines": "107-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                29,
                 30,
                 31,
                 32,
@@ -246,16 +237,10 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                92
+              ],
+              "firstLine": "/// the stage-4 `?` shortcut's push helper and its idempotency guard",
+              "lastLine": "// edge. Intercepted here — not in the Navigator — so the"
             }
           ]
         }
@@ -266,11 +251,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "139-156",
+          "lines": "142-167",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/events.rs",
               "lines": [
+                29,
                 30,
                 31,
                 32,
@@ -333,18 +319,16 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                92
+              ],
+              "firstLine": "/// the stage-4 `?` shortcut's push helper and its idempotency guard",
+              "lastLine": "// edge. Intercepted here — not in the Navigator — so the"
             }
           ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
+          "lines": "173-194"
         }
       ]
     },
@@ -353,7 +337,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "162-185",
+          "lines": "169-190",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input.rs",
@@ -371,94 +355,9 @@
                 178,
                 179,
                 180
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "When the critical DisconnectDialog is topmost, q is intercepted by the DisconnectDialog handler and the Compositor never sees the event",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs",
-          "lines": "191-228",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/events.rs",
-              "lines": [
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+              ],
+              "firstLine": "pub fn scroll_top(&self) -> usize {",
+              "lastLine": ""
             }
           ]
         }
@@ -466,8 +365,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/rpc073_agent_input_typeable_chars.rs"
@@ -476,6 +375,6 @@
       "rust/fspec-tui/src/app/events.rs",
       "rust/fspec-tui/src/views/agent/multiline_input.rs"
     ],
-    "totalLinesCovered": 515
+    "totalLinesCovered": 408
   }
 }

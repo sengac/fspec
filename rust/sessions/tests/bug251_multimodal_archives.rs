@@ -45,6 +45,16 @@ async fn accepted_images_survive_originals_and_cold_next_request() -> TestResult
                 "display lost image metadata"
             );
         }
+        // BUG-433: stub/canned has no catalog entry or model definition, so
+        // the resumed session gets the limits a user would set in the model
+        // settings; without them the turn is refused (PROV-165).
+        manager
+            .get_session(&id.value)?
+            .inner
+            .lock()
+            .await
+            .provider_manager_mut()
+            .override_model_limits(Some(200_000), Some(4_096));
         let wire = next_anthropic_wire(&manager, &id, 0).await?;
         assert!(
             media_blocks(&wire) == images()?.as_array().ok_or("image array")?[1..],
@@ -55,7 +65,7 @@ async fn accepted_images_survive_originals_and_cold_next_request() -> TestResult
     // @step Given a real session accepting Unicode text and two ordered images
     let (directory, _, _, _) = manager().await?;
     codelet_providers::stub_provider::register_stub_provider();
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     manager.set_hooks(Arc::new(codelet_agent_loop::FspecAgentHooks::new()));
     for websocket in [false, true] {
         let id = SessionId::new(
@@ -87,7 +97,7 @@ async fn accepted_images_survive_originals_and_cold_next_request() -> TestResult
             attachments,
         )
         .await?;
-        tokio::time::timeout(std::time::Duration::from_secs(20), async {
+        codelet_test_helpers::deadlock_guard("the awaited block", async {
             loop {
                 let (_, chunk) = chunks.recv().await?;
                 if matches!(chunk, StreamChunk::Done) {

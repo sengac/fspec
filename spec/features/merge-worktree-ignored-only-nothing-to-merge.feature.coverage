@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/wt006_merge_worktree_ignored_only.rs",
-          "lines": "44-86",
+          "lines": "44-96",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
@@ -61,7 +61,9 @@
                 93,
                 94,
                 95
-              ]
+              ],
+              "firstLine": "pub(crate) fn handle_slash_merge_worktree(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -78,6 +80,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_merge_worktree.rs"
     ],
-    "totalLinesCovered": 94
+    "totalLinesCovered": 104
   }
 }

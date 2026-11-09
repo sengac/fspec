@@ -1,6 +1,6 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend.rs
-assertion_line: 169
+assertion_line: 174
 expression: rows_visible
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -13,17 +13,17 @@ expression: rows_visible
 - │ │                                                                        ■ │ │
 - "│ │ ↑/k, ↓/j      Navigate work units                                      ■ │ │"
 - "│ │ ←/h, →/l      Cycle columns → menu items → chips                       ■ │ │"
-- │ │ Enter         Work / open focused unit                                 ■ │ │
-- ├─│ Enter (item)  Opens its dropdown menu                                  ■ │─┤
+- │ │ Enter         Choose agent or full details                             ■ │ │
+- ├─│ Enter (item)  Opens its dropdown menu                                  │ │─┤
 - │B│ Enter (chip)  Opens that session                                       │ │ │
 - ├─│ Shift+Right   Open agent view                                          │ │─┤
-- │ │ .             New Agent                                                │ │ │
 - "│ │ [ / ]         Reorder (up / down)                                      │ │ │"
 - │ │ PageUp/PageDn Scroll column                                            │ │ │
 - │ │ Home / End    First / Last                                             │ │ │
+- │ │ .             New Agent                                                │ │ │
 - │ │                                                                          │ │
 - │ │                               ESC to close                               │ │
-- │ │                                                                          │ │
-- ├─╰──────────────────────────────────────────────────────────────────────────╯─┤
-- "│← → Cycle Columns → menu items → chips ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Pri│"
+- ├─│                                                                          │─┤
+- │ ╰──────────────────────────────────────────────────────────────────────────╯ │
+- │                     Priority Down ◆ ↵ Choose ◆ ESC Exit                      │
 - └──────────────────────────────────────────────────────────────────────────────┘

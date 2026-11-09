@@ -1,4 +1,7 @@
+@BUG-582
 @KGRAPH-056
+@tools
+@code-analysis
 Feature: Add Dart language support to AstGrep and AstGrepRefactor tools via tree-sitter-dart 0.1.0
   """
   Create a LanguageChoice enum to unify SupportLang variants with custom DartLang — both tools dispatch through this enum. The DartLang struct lives in a new rust/tools/src/dart_lang.rs module shared by astgrep.rs and astgrep_refactor.rs.

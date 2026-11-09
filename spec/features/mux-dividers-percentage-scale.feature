@@ -48,8 +48,8 @@ Feature: Mux dividers — one per inter-pane gap, drag release persists, percent
     And the dividers sit immediately to the right of their left pane
 
   # R17: vertical orientation gets full-width row dividers
-  Scenario: vertical three-pane mux paints one row divider between every pair
-    Given mux mode is vertical with three panes on a 40-row terminal
+  Scenario: a three-pane row group paints one row divider between every pair
+    Given mux mode uses the layout "[board, agent, files]" on a 40-row terminal
     When the grid is rendered
     Then two full-width row dividers separate the three stacked panes
 
@@ -57,16 +57,16 @@ Feature: Mux dividers — one per inter-pane gap, drag release persists, percent
   Scenario: releasing a divider keeps the released position instead of resetting to an equal split
     Given mux mode is active with Board and Agent panes at an equal split on a 120-column terminal
     When I press the mouse down on the divider, drag it right past the midpoint and release
-    Then the Board pane keeps its released width (the stored percent of the available width)
+    Then the Board pane keeps its released width (the weights written into the stored layout)
     And the panes do NOT return to the equal 59/60 split
     And the same widths are recomputed on the next frame and after a terminal resize
 
   # R18: the released percent is stored in the config (persists with /mux save)
-  Scenario: releasing the second divider stores the percentage in the mux config
+  Scenario: releasing the second divider stores the weights in the mux layout
     Given mux mode is active with three panes on a 120-column terminal
     When I drag the divider between the second and third panes and release it
-    Then the second split entry of the mux config holds the released percent
-    And the third pane holds the integer remainder of the scale
+    Then the second and third panes' weights in the stored layout hold the released ratio
+    And the first pane's weight keeps its share of the group
 
   # R17: every divider is independently draggable
   Scenario: dragging the second divider resizes its two adjacent panes
@@ -74,7 +74,7 @@ Feature: Mux dividers — one per inter-pane gap, drag release persists, percent
     When I press the mouse down on the second divider and drag it right
     Then the second pane grows and the third pane shrinks live during the drag
     And the first pane keeps its width
-    And releasing stores a non-equal percentage scale in the config
+    And releasing stores non-equal weights in the stored layout
 
   # R17: the dragged divider is highlighted while the drag is in flight
   Scenario: the dragged divider is highlighted while dragging
@@ -83,33 +83,9 @@ Feature: Mux dividers — one per inter-pane gap, drag release persists, percent
     Then the first divider is highlighted (cyan) and the other divider is dimmed
     And releasing clears the highlight
 
-  # R19: the scale rescales when panes are ADDED
-  Scenario: adding a third pane rescales a 40/60 split proportionally
-    Given mux mode is active with Board at 40 percent and Agent at 60 percent
-    When I submit the slash command "/mux board agent agent"
-    Then the new third pane gets an equal share (one third of the width)
-    And the Board and Agent panes shrink proportionally so the whole scale still sums to the full width
-    And no user-set position is thrown away: the relative Board-to-Agent ratio is preserved
-
-  # R19: the scale rescales when panes are REMOVED (proportional
-  # redistribution — the exact inverse of the add-pane rescale)
-  Scenario: removing a pane re-allocates its share to the surviving panes
-    Given mux mode is active with three panes at 40, 30 and 30 percent
-    When I submit the slash command "/mux board agent"
-    Then the surviving panes keep their relative 40-to-30 ratio at the new scale (57 and 43 percent)
-    And the two panes fill the full width with no share lost
-    And the stored scale has exactly one entry (n-1 entries for n panes)
-
-  # R19: /mux n rescales the current scale to n equal-default positions when only equal splits exist
-  Scenario: /mux 4 on an equal two-pane split divides the width equally across four panes
-    Given mux mode is active with the default two panes at an equal split on a 200-column terminal
-    When I submit the slash command "/mux 4"
-    Then each of the four panes gets an equal share of the width
-    And the stored scale has three entries that sum with the remainder to 100
-
   # R20: the persisted config round-trips the full scale
-  Scenario: /mux save persists every split entry and a fresh bootstrap restores them
+  Scenario: /mux save persists the dragged weights and a fresh bootstrap restores them
     Given mux mode is active with three panes whose dividers were dragged to a non-equal scale
     When I submit the slash command "/mux save"
-    Then the tui.mux key in fspec-config.json contains all n-1 split entries
-    And a fresh bootstrap followed by /mux on restores the same non-equal scale
+    Then the tui.mux key in fspec-config.json contains the layout string with the dragged weights
+    And a fresh bootstrap followed by /mux on restores the same non-equal widths

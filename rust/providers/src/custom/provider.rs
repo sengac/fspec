@@ -46,24 +46,21 @@ pub struct RhaiCustomProvider {
     model_alias: String,
     /// Resolved `models[model_alias].id` (sent to the LLM API).
     model_id: String,
-    /// Context window of the selected model. PROV-095: overridden by
-    /// `get_model_limits(config).context_window` when the script defines
-    /// that optional hook and returns a positive integer.
-    context_window: usize,
-    /// Max output tokens of the selected model. PROV-095: overridden by
-    /// `get_model_limits(config).max_output_tokens` when the script
-    /// defines that optional hook and returns a positive integer.
-    max_output_tokens: usize,
-    /// PROV-095: `true` when `get_model_limits` supplied a valid
-    /// positive `context_window`, `false` when it fell back to the JSON
-    /// ModelDef value. Enables the NAPI bridge to tell "script said
-    /// 128_000" (authoritative) from "script didn't say anything and
-    /// ModelDef defaulted to 128_000" (overridable by TUI value).
-    context_window_from_script: bool,
-    /// PROV-095: `true` when `get_model_limits` supplied a valid
-    /// positive `max_output_tokens`, `false` when it fell back to the
-    /// JSON ModelDef value.
-    max_output_tokens_from_script: bool,
+    /// Context window of the selected model: the PROV-095 script override
+    /// (`get_model_limits(config).context_window`), else the JSON ModelDef
+    /// value. PROV-170: `None` when neither declares one.
+    context_window: Option<usize>,
+    /// Max output tokens of the selected model: the script override, else
+    /// the JSON ModelDef value, else the declared `defaults.max_output_tokens`.
+    /// PROV-170: `None` when none of them declares one.
+    max_output_tokens: Option<usize>,
+    /// PROV-095: the valid positive `context_window` returned by
+    /// `get_model_limits`, `None` when the script supplied none. Lets the
+    /// manager tell an authoritative script value from a JSON declaration.
+    script_context_window: Option<usize>,
+    /// PROV-095: the valid positive `max_output_tokens` returned by
+    /// `get_model_limits`, `None` when the script supplied none.
+    script_max_output_tokens: Option<usize>,
     /// PROV-095: Compaction-threshold override surfaced by
     /// `get_model_limits(config).compaction_threshold`. `None` when the
     /// script did not define the hook or returned an invalid shape. The
@@ -102,7 +99,14 @@ impl RhaiCustomProvider {
         })?;
         let model_id = model_def.id.clone();
         let json_context_window = model_def.context_window;
-        let json_max_output_tokens = model_def.max_output_tokens;
+        // PROV-170: same precedence as `selection_metadata` — the model's
+        // own declaration, else the provider's declared default.
+        let json_max_output_tokens = model_def.max_output_tokens.or_else(|| {
+            config
+                .defaults
+                .as_ref()
+                .and_then(|defaults| defaults.max_output_tokens)
+        });
 
         let script_path = std::path::PathBuf::from(&config.script);
         let ast = loader.load(&script_path)?;
@@ -113,16 +117,14 @@ impl RhaiCustomProvider {
         // limits. The optional `get_model_limits(config)` hook is
         // invoked once here and its result is cached in the struct
         // fields for the provider's lifetime (rule 8). Missing hook
-        // and/or invalid return values are silently ignored in favor
-        // of the JSON ModelDef values (rules 4/6).
+        // and/or invalid return values leave the JSON-declared values in
+        // force (rules 4/6); an undeclared limit stays `None` (PROV-170).
         let config_map = build_config_dynamic(&config, &model_id, &model_alias);
         let overrides = invoke_get_model_limits(&engine, &ast, &config.name, config_map);
-        let context_window_from_script = overrides.context_window.is_some();
-        let max_output_tokens_from_script = overrides.max_output_tokens.is_some();
-        let context_window = overrides.context_window.unwrap_or(json_context_window);
-        let max_output_tokens = overrides
-            .max_output_tokens
-            .unwrap_or(json_max_output_tokens);
+        let script_context_window = overrides.context_window;
+        let script_max_output_tokens = overrides.max_output_tokens;
+        let context_window = script_context_window.or(json_context_window);
+        let max_output_tokens = script_max_output_tokens.or(json_max_output_tokens);
         let script_compaction_threshold = overrides.compaction_threshold;
 
         Ok(Self {
@@ -131,8 +133,8 @@ impl RhaiCustomProvider {
             model_id,
             context_window,
             max_output_tokens,
-            context_window_from_script,
-            max_output_tokens_from_script,
+            script_context_window,
+            script_max_output_tokens,
             script_compaction_threshold,
             ast,
             engine,
@@ -169,25 +171,22 @@ impl RhaiCustomProvider {
     /// TUI-supplied (or default) context window when setting up a
     /// custom-provider session.
     pub fn script_context_window(&self) -> Option<usize> {
-        if self.context_window_from_script {
-            Some(self.context_window)
-        } else {
-            None
-        }
+        self.script_context_window
     }
 
     /// PROV-095: Accessor exposing the script-supplied `max_output_tokens`.
     /// Returns `Some(n)` only when `get_model_limits` returned a valid
     /// positive integer for `max_output_tokens`; returns `None` otherwise.
     pub fn script_max_output_tokens(&self) -> Option<usize> {
-        if self.max_output_tokens_from_script {
-            Some(self.max_output_tokens)
-        } else {
-            None
-        }
+        self.script_max_output_tokens
     }
 
     /// Accessor for the provider name (used by streaming glue).
+    /// PROV-094: the provider's JSON configuration.
+    pub(crate) fn provider_config(&self) -> &ProviderConfig {
+        &self.config
+    }
+
     pub(crate) fn config_name(&self) -> &str {
         &self.config.name
     }
@@ -225,11 +224,11 @@ impl LlmProvider for RhaiCustomProvider {
         &self.model_id
     }
 
-    fn context_window(&self) -> usize {
+    fn context_window(&self) -> Option<usize> {
         self.context_window
     }
 
-    fn max_output_tokens(&self) -> usize {
+    fn max_output_tokens(&self) -> Option<usize> {
         self.max_output_tokens
     }
 

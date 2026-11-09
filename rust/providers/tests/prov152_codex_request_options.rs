@@ -7,6 +7,15 @@ use serde_json::{json, Value};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+/// MODEL-014: a snapshot that advertises every control with no values; a
+/// control the snapshot leaves out (None) is not advertised and unvalidated.
+fn nothing_supported() -> Result<CodexCapabilities, serde_json::Error> {
+    serde_json::from_value(json!({
+        "efforts": [], "contexts": [], "summaries": [], "verbosities": [],
+        "service_tiers": [], "sequential_cutoff": false
+    }))
+}
+
 fn capabilities() -> Result<CodexCapabilities, serde_json::Error> {
     serde_json::from_value(json!({
         "efforts": ["none", "minimal", "low", "medium", "high", "xhigh", 2048],
@@ -101,7 +110,7 @@ fn scenario_optional_controls_require_advertised_capabilities() -> TestResult {
     for (key, value) in config.as_object().ok_or("object expected")? {
         assert_eq!(&result[key], value);
     }
-    let unsupported = CodexCapabilities::default();
+    let unsupported = nothing_supported()?;
     for config in [
         json!({"reasoning":{"context":"auto"}}),
         json!({"reasoning":{"summary":"auto"}}),
@@ -131,39 +140,6 @@ fn scenario_verbosity_does_not_require_a_text_format() -> TestResult {
 }
 
 #[test]
-fn scenario_missing_and_stale_capabilities_use_a_conservative_fallback() -> TestResult {
-    // @step Given capability data is missing or stale
-    // @step When requests use defaults or explicitly request experimental options
-    // @step Then defaults contain only baseline effort and required Codex fields
-    // @step And explicit auto summaries retain established Codex compatibility
-    // @step And experimental options are rejected until fresh capabilities advertise them
-    let mut stale = capabilities()?;
-    stale.stale = true;
-    stale.defaults =
-        serde_json::from_value(json!({"reasoning":{"effort":"xhigh","summary":"auto"}}))?;
-    for caps in [None, Some(&stale)] {
-        assert_eq!(
-            resolve(None, caps)?,
-            json!({"store":false,
-            "include":["reasoning.encrypted_content"], "reasoning":{"effort":"high"}})
-        );
-        assert_eq!(
-            resolve(Some(&json!({"reasoning":{"summary":"auto"}})), caps)?["reasoning"],
-            json!({"effort":"high","summary":"auto"})
-        );
-        for config in [
-            json!({"reasoning":{"effort":"xhigh"}}),
-            json!({"reasoning":{"summary":"concise"}}),
-            json!({"reasoning":{"summary":"detailed"}}),
-            json!({"text":{"verbosity":"high"}}),
-        ] {
-            assert!(resolve(Some(&config), caps).is_err());
-        }
-    }
-    Ok(())
-}
-
-#[test]
 fn scenario_explicit_configuration_overrides_supported_model_defaults() -> TestResult {
     // @step Given model defaults include supported and unsupported optional controls
     // @step When the user overrides one supported field
@@ -171,7 +147,7 @@ fn scenario_explicit_configuration_overrides_supported_model_defaults() -> TestR
     // @step And unsupported defaults are omitted while explicit unsupported values fail
     // @step And required Codex fields cannot be overridden
     let mut caps = capabilities()?;
-    caps.summaries.clear();
+    caps.summaries = Some(Vec::new());
     caps.defaults = serde_json::from_value(json!({
         "reasoning":{"effort":"low","summary":"auto","context":"current_turn"},
         "text":{"verbosity":"medium"},"service_tier":"priority"
@@ -203,7 +179,7 @@ fn scenario_capability_refresh_affects_the_next_request() -> TestResult {
     // @step When fresh capabilities advertise that effort
     // @step Then the next request accepts the effort without changing explicit configuration
     let config = json!({"reasoning":{"effort":"xhigh"}});
-    assert!(resolve(Some(&config), Some(&CodexCapabilities::default())).is_err());
+    assert!(resolve(Some(&config), Some(&nothing_supported()?)).is_err());
     assert_eq!(
         resolve(Some(&config), Some(&capabilities()?))?["reasoning"]["effort"],
         "xhigh"

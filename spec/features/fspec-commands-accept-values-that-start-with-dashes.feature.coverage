@@ -1,0 +1,123 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit texts may start with dashes",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug521_values_starting_with_dashes.rs",
+          "lines": "69-107",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_03.rs",
+              "lines": [
+                29,
+                30,
+                71,
+                72,
+                102,
+                103,
+                130,
+                131,
+                203,
+                204
+              ],
+              "firstLine": "#[arg(value_name = \"RULE\", allow_hyphen_values = true)]",
+              "lastLine": "answer: Option<String>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Step text and titles may start with dashes",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug521_values_starting_with_dashes.rs",
+          "lines": "109-145",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/mode_06.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247,
+                248,
+                249
+              ],
+              "firstLine": "#[arg(value_name = \"scenario\", allow_hyphen_values = true)]",
+              "lastLine": "text: String,"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_07.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "#[arg(value_name = \"current-step\", allow_hyphen_values = true)]",
+              "lastLine": "text: Option<String>,"
+            },
+            {
+              "file": "rust/fspec/src/cli_registration/mode_05.rs",
+              "lines": [
+                115,
+                116
+              ],
+              "firstLine": "#[arg(short = 't', long, value_name = \"TITLE\", allow_hyphen_values = true)]",
+              "lastLine": "title: Option<String>,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flags and help keep working",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug521_values_starting_with_dashes.rs",
+          "lines": "147-169",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/cli_registration/support_03.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "firstLine": "fn intercept_ts_help() -> Option<u8> {",
+              "lastLine": "print!(\"{text}\");"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug521_values_starting_with_dashes.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/cli_registration/mode_03.rs",
+      "rust/fspec/src/cli_registration/mode_06.rs",
+      "rust/fspec/src/cli_registration/mode_07.rs",
+      "rust/fspec/src/cli_registration/mode_05.rs",
+      "rust/fspec/src/cli_registration/support_03.rs"
+    ],
+    "totalLinesCovered": 134
+  }
+}

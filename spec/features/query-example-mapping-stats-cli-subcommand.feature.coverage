@@ -5,13 +5,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "100-133",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "99-148",
+          "implMappings": []
         }
       ]
     },
@@ -20,13 +15,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "135-167",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "150-190",
+          "implMappings": []
         }
       ]
     },
@@ -35,13 +25,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "169-185",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "192-211",
+          "implMappings": []
         }
       ]
     },
@@ -50,13 +35,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "187-200",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "213-229",
+          "implMappings": []
         }
       ]
     },
@@ -65,13 +45,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "202-222",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "231-257",
+          "implMappings": []
         }
       ]
     },
@@ -80,13 +55,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "224-254",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "259-305",
+          "implMappings": []
         }
       ]
     },
@@ -95,13 +65,8 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_query_example_mapping_stats.rs",
-          "lines": "258-281",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/query_example_mapping_stats.rs",
-              "lines": "1-51"
-            }
-          ]
+          "lines": "309-332",
+          "implMappings": []
         }
       ]
     }
@@ -114,6 +79,6 @@
       "rust/fspec/tests/cli_query_example_mapping_stats.rs"
     ],
     "implFiles": [],
-    "totalLinesCovered": 174
+    "totalLinesCovered": 226
   }
 }

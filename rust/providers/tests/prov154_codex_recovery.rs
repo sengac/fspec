@@ -127,13 +127,20 @@ async fn cancellation_aborts_network_waits_and_retry_backoff() -> TestResult {
             .mount(&server)
             .await;
         let client = RefreshingCodexClient::new_api_key();
-        let result = tokio::time::timeout(
-            Duration::from_millis(100),
-            client.send_streaming(request(&server)?),
-        )
+        // TEST-042: no waiting window; the send is still waiting after 32
+        // poll rounds, and dropping it cancels the wait.
+        let mut sending = Box::pin(client.send_streaming(request(&server)?));
+        let mut rounds = 0;
+        let waiting = codelet_test_helpers::pending_until("32 poll rounds", &mut sending, || {
+            rounds += 1;
+            rounds > 32
+        })
         .await;
-        assert!(result.is_err(), "cancellation must drop a pending wait");
-        tokio::time::sleep(Duration::from_millis(1100)).await;
+        assert!(
+            waiting.is_ok(),
+            "cancellation must drop a pending wait: {waiting:?}"
+        );
+        drop(sending);
         server.verify().await;
     }
     Ok(())

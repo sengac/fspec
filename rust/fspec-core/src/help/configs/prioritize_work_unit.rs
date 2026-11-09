@@ -3,15 +3,10 @@
 //!
 //! Byte-for-byte parity with `node dist/index.js prioritize-work-unit --help`.
 //!
-//! ## The two `undefined` lines
+//! BUG-566: the TypeScript formatter printed `undefined` for keys this config
+//! left unset; the config now holds the real text (each fix is the TS
+//! `solution`, a pattern without a description prints none).
 //!
-//! The TS `commonPatterns` entries carry only `pattern` + `example` (no
-//! `description`). The TS help formatter unconditionally prints the
-//! description line, so an absent description renders the JS literal
-//! `undefined`. The Rust [`CommonPattern`] struct REQUIRES a `description`,
-//! so we set it to the literal string `"undefined"` to reproduce that
-//! quirk byte-for-byte (see the captured fixture
-//! `rust/fspec/tests/fixtures/help/prioritize-work-unit.txt:35,42`).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
@@ -47,12 +42,12 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Sprint Planning - Prioritize Critical Items",
         example: "# Move critical auth work to top\nfspec prioritize-work-unit AUTH-001 --position top\nfspec prioritize-work-unit AUTH-002 --after AUTH-001\n\n# Defer non-critical work\nfspec prioritize-work-unit REFAC-005 --position bottom",
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Dependency Ordering",
         example: "# DB schema must come before API endpoints\nfspec prioritize-work-unit DB-001 --position top\nfspec prioritize-work-unit API-001 --after DB-001\nfspec prioritize-work-unit API-002 --after API-001",
-        description: "undefined",
+        description: None,
     }),
 ];
 
@@ -138,7 +133,7 @@ pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     prerequisites: &["Work unit must exist", "Work unit must NOT be in done status"],
     common_patterns: COMMON_PATTERNS,
     typical_workflow: Some(
-        "1. Review column: fspec list-work-units --status <column> or fspec board → 2. Identify critical work → 3. fspec prioritize-work-unit <id> --position top → 4. Verify order: fspec board",
+        "1. Review column: fspec list-work-units --status <column> or fspec board → 2. Identify critical work → 3. fspec prioritize-work-unit <workUnitId> --position top → 4. Verify order: fspec board",
     ),
     common_errors: COMMON_ERRORS,
     notes: NOTES,

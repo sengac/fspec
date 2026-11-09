@@ -1,7 +1,9 @@
 @BUG-154
+@session
+@agent-interaction
 Feature: Missing set_owning_manager in create_session_with_id breaks AgentManager communication
   """
-  The fix adds session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default()) call in SessionManager::create_session_with_id() after create_background_session_inner() returns, mirroring the existing call in create_session_from_manifest(). This ensures the AgentManager handler registered by register_agent_manager_handler() captures a non-None owning manager reference, enabling correct session lookup for spawn/list/close/message operations.
+  The fix adds session.set_owning_manager(self.self_weak.clone()) (BUG-420: the self-reference is structural, built by Arc::new_cyclic) call in SessionManager::create_session_with_id() after create_background_session_inner() returns, mirroring the existing call in create_session_from_manifest(). This ensures the AgentManager handler registered by register_agent_manager_handler() captures a non-None owning manager reference, enabling correct session lookup for spawn/list/close/message operations.
   """
 
   # ========================================
@@ -10,7 +12,7 @@ Feature: Missing set_owning_manager in create_session_with_id breaks AgentManage
   #
   # BUSINESS RULES:
   #   1. Every session creation path (create_session_with_id, create_session_from_manifest, create_isolated_session_with_id) MUST call session.set_owning_manager() before spawning the agent loop
-  #   2. The owning_manager reference must be set to self.self_weak.get().cloned().unwrap_or_default() so the AgentManager handler binds to the correct SessionManager instance
+  #   2. The owning_manager reference must be set to self.self_weak.clone() (BUG-420: no defaulted Weak) so the AgentManager handler binds to the correct SessionManager instance
   #   3. The fix must be applied in the session_creation_helper shared helper OR in create_session_with_id after the helper returns, ensuring all three creation paths get the owning manager set
   #
   # EXAMPLES:

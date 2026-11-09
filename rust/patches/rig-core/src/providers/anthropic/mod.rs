@@ -12,6 +12,7 @@
 pub mod client;
 pub mod completion;
 pub mod decoders;
+pub mod effort;
 pub mod metadata;
 mod request_body;
 mod request_usage;

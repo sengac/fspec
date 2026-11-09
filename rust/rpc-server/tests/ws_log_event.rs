@@ -5,6 +5,7 @@
 //!
 //! - Scenario: Tracing emissions are observable as LogEvent on both transports (WS half)
 //! - Scenario: Event and LogEvent ride bincode-encoded Envelope on the WebSocket wire
+//! - Scenario: Forwarding log records over the WebSocket does not feed the log broadcast (BUG-572)
 //!
 //! Will fail to compile until RPC-007 lifts `LogRecord` and adds the new
 //! `Envelope::Event { session_id, chunk }` and `Envelope::LogEvent(LogRecord)`
@@ -22,9 +23,7 @@ use codelet_rpc_server::{bind_and_serve, register_log_layer, ws_client_connect, 
 use codelet_rpc_types::{LogRecord, SessionId, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
-use std::time::Duration;
 use tarpc::context;
-use tokio::time::timeout;
 use tracing::Level;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -57,21 +56,33 @@ async fn scenario_tracing_emit_is_observable_on_ws_log_event() {
     // (Asserted on the embedded side.)
 
     // @step When the host emits tracing::info!("hello")
-    tracing::info!("hello");
-
     // @step Then the WebSocket client receives an Envelope::LogEvent(LogRecord) frame with message "hello" and level INFO
-    // The broadcast carries every tracing event in the process
-    // (including unrelated tarpc-internal trace lines), so drain until
-    // we see the user-emitted "hello" record (or hit the timeout).
-    let record: LogRecord = loop {
-        let next: LogRecord = timeout(Duration::from_secs(2), rx.recv())
-            .await
-            .expect("logs_rx must yield within 2s")
-            .expect("broadcast not closed");
-        if next.message == "hello" {
-            break next;
-        }
-    };
+    // The broadcast carries every tracing event in the process (including
+    // unrelated tarpc-internal trace lines), so drain until the
+    // user-emitted "hello" record arrives. TEST-042: the server's log
+    // fan-out for this connection may subscribe after the first emit (a
+    // record sent before then reaches no one), so "hello" is emitted again
+    // after every drained batch until one arrives, under the deadlock guard.
+    let record: LogRecord =
+        codelet_test_helpers::deadlock_guard("the \"hello\" log record", async {
+            loop {
+                tracing::info!("hello");
+                for _ in 0..64 {
+                    match rx.try_recv() {
+                        Ok(next) if next.message == "hello" => return next,
+                        Ok(_) | Err(tokio::sync::broadcast::error::TryRecvError::Lagged(_)) => {}
+                        Err(tokio::sync::broadcast::error::TryRecvError::Empty) => {
+                            tokio::task::yield_now().await;
+                        }
+                        Err(tokio::sync::broadcast::error::TryRecvError::Closed) => {
+                            panic!("broadcast closed before the hello record")
+                        }
+                    }
+                }
+            }
+        })
+        .await
+        .expect("the hello record arrives");
     assert_eq!(record.message, "hello");
     assert_eq!(record.level, Level::INFO.as_str());
 
@@ -106,12 +117,14 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
         .client()
         .create_session(context::current(), None)
         .await
-        .expect("create_session");
+        .expect("create_session")
+        .expect("the daemon creates the session");
     ws_client
         .client()
         .send_input(context::current(), sid.clone(), "hi".to_string())
         .await
-        .expect("send_input");
+        .expect("send_input")
+        .expect("daemon accepted the input");
     tracing::info!("ping");
 
     // @step Then a synthesized Envelope::Event { session_id, chunk } round-trips via bincode without ambiguity
@@ -149,4 +162,74 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
         json_attempt.is_err(),
         "bincode-encoded Envelope::Event must NOT decode as JSON",
     );
+}
+
+/// BUG-572: the crates the log broadcast is carried by. A record from one of
+/// them below WARN reaching the client means forwarding fed the broadcast.
+fn is_transport_record_below_warn(record: &LogRecord) -> bool {
+    let transport = ["tungstenite", "tokio_tungstenite", "tarpc"]
+        .iter()
+        .any(|krate| record.target == *krate || record.target.starts_with(&format!("{krate}::")));
+    let below_warn = !matches!(record.level.as_str(), "WARN" | "ERROR");
+    transport && below_warn
+}
+
+/// Receive the next record, failing on a transport record below WARN or on
+/// a lag (a lag here can only come from a flood).
+async fn next_checked(rx: &mut tokio::sync::broadcast::Receiver<LogRecord>) -> LogRecord {
+    use tokio::sync::broadcast::error::RecvError;
+    match rx.recv().await {
+        Ok(record) if is_transport_record_below_warn(&record) => {
+            panic!("forwarding fed the log broadcast with a transport record: {record:?}")
+        }
+        Ok(record) => record,
+        Err(RecvError::Lagged(skipped)) => {
+            panic!("the client's logs channel lagged by {skipped} records: the broadcast flooded")
+        }
+        Err(RecvError::Closed) => panic!("the logs channel closed"),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn scenario_forwarding_log_records_does_not_feed_the_log_broadcast() {
+    // @step Given a WebSocket client is connected and subscribed to logs_rx()
+    let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
+    let workspace = path.parent().unwrap().parent().unwrap();
+    let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
+    let service = Arc::new(SharedFspecService::with_session_manager(
+        Arc::clone(&watcher),
+        Arc::clone(&manager),
+    ));
+    register_log_layer(Arc::clone(&service)).expect("register layer");
+    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
+    let ws = connect_with_retry(addr.port()).await;
+    let ws_client = ws_client_connect(ws).await.expect("ws_client_connect");
+    let mut rx = ws_client.logs_rx();
+
+    // The connection's log fan-out subscribes before the connection serves
+    // RPCs, so after one round-trip every record emitted reaches the client.
+    ws_client
+        .client()
+        .health(context::current())
+        .await
+        .expect("health round-trip");
+
+    // @step When the host emits a "hello" record and, once the client has received it, a "marker" record
+    // Writing the "hello" frame makes tungstenite log it. If the transport's
+    // logging were broadcast, those records would reach the client before
+    // "marker", which is emitted only after "hello" arrived.
+    // @step Then no record the client receives before "marker" has a tungstenite, tokio_tungstenite or tarpc target below WARN
+    codelet_test_helpers::deadlock_guard("the hello and marker log records", async {
+        tracing::info!("bug572 hello");
+        while next_checked(&mut rx).await.message != "bug572 hello" {}
+        tracing::info!("bug572 marker");
+        while next_checked(&mut rx).await.message != "bug572 marker" {}
+    })
+    .await
+    .expect("the marker record arrives with no transport record before it");
 }

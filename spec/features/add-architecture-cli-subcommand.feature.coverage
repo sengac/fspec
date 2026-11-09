@@ -6,38 +6,7 @@
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "55-86",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -47,38 +16,7 @@
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
           "lines": "88-121",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "implMappings": []
         }
       ]
     },
@@ -87,39 +25,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
-          "lines": "123-148",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "lines": "132-160"
         }
       ]
     },
@@ -128,39 +34,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
-          "lines": "150-174",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "lines": "166-189"
         }
       ]
     },
@@ -169,39 +43,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
-          "lines": "176-201",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "lines": "195-219"
         }
       ]
     },
@@ -210,39 +52,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_architecture.rs",
-          "lines": "203-247",
-          "implMappings": [
-            {
-              "file": "rust/fspec/src/add_architecture.rs",
-              "lines": [
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
+          "lines": "225-275"
         }
       ]
     }
@@ -254,9 +64,7 @@
     "testFiles": [
       "rust/fspec/tests/cli_add_architecture.rs"
     ],
-    "implFiles": [
-      "rust/fspec/src/add_architecture.rs"
-    ],
-    "totalLinesCovered": 338
+    "implFiles": [],
+    "totalLinesCovered": 195
   }
 }

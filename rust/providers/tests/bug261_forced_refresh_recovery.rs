@@ -58,17 +58,28 @@ async fn forced_refresh_network_failures_enter_cancellable_recovery() -> TestRes
         let mut stream = model
             .stream(CompletionRequestBuilder::new(model.clone(), "original task").build())
             .await?;
-        let terminal = tokio::time::timeout(Duration::from_millis(600), async {
+        // TEST-042: no waiting window; the request must stay pending until
+        // recovery reports the expected typed state.
+        let expected = if deadline {
+            RecoveryStatus::RetryingStream { attempt: 1 }
+        } else {
+            RecoveryStatus::WaitingForNetwork { attempt: 1 }
+        };
+        let mut drained = Box::pin(async {
             while let Some(event) = stream.next().await {
                 event?;
             }
             Ok::<_, CompletionError>(())
+        });
+        let terminal = codelet_test_helpers::pending_until("typed recovery", &mut drained, || {
+            recovery.status() == Some(expected)
         })
         .await;
+        drop(drained);
         api.verify().await;
         // @step Then the original request enters typed recovery and cancellation stops it promptly
         assert!(
-            terminal.is_err(),
+            terminal.is_ok(),
             "refresh ended instead of recovering: {terminal:?}"
         );
         assert_eq!(
@@ -170,7 +181,7 @@ async fn credential_rejection_remains_terminal_after_unauthorized_inference() ->
         let mut stream = model
             .stream(CompletionRequestBuilder::new(model.clone(), "task").build())
             .await?;
-        let error = tokio::time::timeout(Duration::from_secs(1), async {
+        let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
             while let Some(event) = stream.next().await {
                 if let Err(error) = event {
                     return Ok::<_, Box<dyn std::error::Error>>(error);
@@ -208,7 +219,7 @@ async fn repeated_refresh_deadlines_retain_bounded_retry_behavior() -> TestResul
         .stream(CompletionRequestBuilder::new(model.clone(), "original task").build())
         .await?;
     // @step When the original request exhausts its existing stream retry budget
-    let error = tokio::time::timeout(Duration::from_secs(20), async {
+    let error = codelet_test_helpers::deadlock_guard("the awaited block", async {
         while let Some(event) = stream.next().await {
             if let Err(error) = event {
                 return Ok::<_, Box<dyn std::error::Error>>(error);

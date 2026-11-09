@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "149-189",
+          "lines": "19-57",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
@@ -27,7 +27,6 @@
                 40,
                 41,
                 42,
-                43,
                 44,
                 45,
                 46,
@@ -35,11 +34,6 @@
                 48,
                 49,
                 50,
-                51,
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
@@ -52,8 +46,16 @@
                 65,
                 66,
                 67,
-                68
-              ]
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "use super::AgentView;",
+              "lastLine": ""
             }
           ]
         }
@@ -64,7 +66,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "191-227",
+          "lines": "59-92",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
@@ -85,7 +87,6 @@
                 14,
                 15,
                 16,
-                17,
                 18,
                 19,
                 20,
@@ -162,10 +163,6 @@
                 91,
                 92,
                 93,
-                94,
-                95,
-                96,
-                97,
                 98,
                 99,
                 100,
@@ -268,8 +265,14 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204
+              ],
+              "firstLine": "//! MENU-001 — the 1-row menu bar painter.",
+              "lastLine": "cx = paint_text(buf, cx, y, &format!(\"+{count}\"), style);"
             }
           ]
         }
@@ -280,20 +283,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "229-256",
+          "lines": "94-117",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
               "lines": [
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92
-              ]
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// MENU-007: activate the 'Board View' item — emit",
+              "lastLine": "}"
             }
           ]
         }
@@ -304,7 +309,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "258-286",
+          "lines": "119-144",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
@@ -330,7 +335,9 @@
                 75,
                 76,
                 77
-              ]
+              ],
+              "firstLine": "MouseEventKind::ScrollRight if self.menu_state.focus().is_some() => {",
+              "lastLine": "return Some(EventResult::consumed());"
             }
           ]
         }
@@ -341,30 +348,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "288-324",
+          "lines": "146-179",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
               "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
                 73,
                 74,
                 75,
@@ -375,8 +363,52 @@
                 80,
                 81,
                 82,
-                83
-              ]
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "/// LAST stops when painted).",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "pub(crate) const AGENT_ZONE_C: &[ZoneCButton] = &[",
+              "lastLine": "},"
             }
           ]
         }
@@ -387,7 +419,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "351-378",
+          "lines": "207-232",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
@@ -411,7 +443,9 @@
                 113,
                 114,
                 115
-              ]
+              ],
+              "firstLine": "MenuFocus::ZoneB(next - items)",
+              "lastLine": "/// R5: activate chip `j` — focus the chip's session (the store"
             }
           ]
         }
@@ -422,12 +456,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "380-410",
+          "lines": "234-264",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
               "lines": [
-                64,
                 65,
                 66,
                 67,
@@ -482,19 +515,7 @@
                 116,
                 117,
                 118,
-                119,
-                120,
-                121,
-                122,
                 123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
                 132,
                 133,
                 134,
@@ -503,8 +524,20 @@
                 137,
                 138,
                 139,
-                140
-              ]
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ],
+              "firstLine": "/// Zone A item rects, in `CATEGORIES` order.",
+              "lastLine": "if level < 4 && !cells.is_empty() {"
             }
           ]
         }
@@ -515,16 +548,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "412-434",
+          "lines": "266-292",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
               "lines": [
-                168,
-                169,
-                170,
-                171,
-                172,
                 173,
                 174,
                 175,
@@ -532,13 +560,6 @@
                 177,
                 178,
                 179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
                 187,
                 188,
                 189,
@@ -552,8 +573,22 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "description: \"Search work units\",",
+              "lastLine": ""
             }
           ]
         }
@@ -561,16 +596,82 @@
     },
     {
       "name": "Left from 'Board View' wraps to the last Zone C button",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
+          "lines": "181-205",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "/// LAST stops when painted).",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "pub(crate) const AGENT_ZONE_C: &[ZoneCButton] = &[",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 9,
-    "coveredScenarios": 8,
-    "coveragePercent": 89,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-      "rust/fspec-tui/tests/menu005_menu_bar_help.rs"
+      "rust/fspec-tui/tests/menu007_agent_board_view_item.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/menu_render.rs",
@@ -578,9 +679,8 @@
       "rust/fspec-tui/src/views/agent/menu_keys.rs",
       "rust/fspec-tui/src/views/agent/menu_mouse.rs",
       "rust/fspec-tui/src/components/menu_bar/layout.rs",
-      "rust/fspec-tui/src/components/menu_bar/items.rs",
-      "rust/fspec-tui/src/components/help_content.rs"
+      "rust/fspec-tui/src/components/menu_bar/items.rs"
     ],
-    "totalLinesCovered": 791
+    "totalLinesCovered": 755
   }
 }

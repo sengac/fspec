@@ -222,13 +222,13 @@ impl crate::model_limits::ModelLimitsResolver for CopilotProvider {
     }
 
     /// Default context window when no registry data is available.
-    fn default_context_window(&self) -> usize {
-        crate::copilot::CONTEXT_WINDOW
+    fn default_context_window(&self) -> Option<usize> {
+        Some(crate::copilot::CONTEXT_WINDOW)
     }
 
     /// Default max output tokens when no registry data is available.
-    fn default_max_output_tokens(&self) -> usize {
-        crate::copilot::MAX_OUTPUT_TOKENS
+    fn default_max_output_tokens(&self) -> Option<usize> {
+        Some(crate::copilot::MAX_OUTPUT_TOKENS)
     }
 }
 
@@ -242,15 +242,15 @@ impl LlmProvider for CopilotProvider {
         &self.model_name
     }
 
-    fn context_window(&self) -> usize {
+    fn context_window(&self) -> Option<usize> {
         // Real per-model window lives in the /models response (PROV-056).
         // This fallback is the same value used by the dispatch layer for
         // budget calculations when a model hasn't been selected yet.
-        crate::copilot::CONTEXT_WINDOW
+        Some(crate::copilot::CONTEXT_WINDOW)
     }
 
-    fn max_output_tokens(&self) -> usize {
-        crate::copilot::MAX_OUTPUT_TOKENS
+    fn max_output_tokens(&self) -> Option<usize> {
+        Some(crate::copilot::MAX_OUTPUT_TOKENS)
     }
 
     fn supports_caching(&self) -> bool {

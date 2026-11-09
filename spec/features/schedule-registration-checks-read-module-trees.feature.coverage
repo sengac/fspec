@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    {
+      "name": "The OpenAI provider's module tree registers the schedule tool",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug450_schedule_registration_reads_module_trees.rs",
+          "lines": "8-19",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/tests/schedule_tool_test/provider_source.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "firstLine": "pub fn read_provider_source(filename: &str) -> Result<String, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug450_schedule_registration_reads_module_trees.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/tests/schedule_tool_test/provider_source.rs"
+    ],
+    "totalLinesCovered": 22
+  }
+}

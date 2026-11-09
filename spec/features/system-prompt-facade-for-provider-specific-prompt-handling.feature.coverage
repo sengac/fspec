@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "15-59",
+          "lines": "19-58",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -50,18 +50,20 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "/// Gemini base system prompt (adapted from opencode's gemini.txt)",
+              "lastLine": "- **Minimal Output:** Aim for fewer than 3 lines of text output (excluding tool use/code generation) per response whenever practical. Focus strictly on the user's query."
             }
           ]
         }
       ]
     },
     {
-      "name": "Claude API key facade passes preamble through unchanged",
+      "name": "Claude API key facade passes preamble through with fspec guidance",
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "64-96",
+          "lines": "64-100",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -97,7 +99,9 @@
                 119,
                 120,
                 121
-              ]
+              ],
+              "firstLine": "- **Handling Inability:** If unable/unwilling to fulfill a request, state so briefly (1-2 sentences) without excessive justification. Offer alternatives if appropriate.",
+              "lastLine": "</example>"
             }
           ]
         }
@@ -108,35 +112,76 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "101-118",
+          "lines": "106-144",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
               "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148
-              ]
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377
+              ],
+              "firstLine": "/// Prepend fspec workflow guidance to a preamble",
+              "lastLine": "}"
             }
           ]
         }
@@ -147,7 +192,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "123-140",
+          "lines": "150-174",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -175,7 +220,9 @@
                 173,
                 174,
                 175
-              ]
+              ],
+              "firstLine": "/// 2. Gemini 3 specific instruction (from gemini-cli) if model is Gemini 3",
+              "lastLine": "}"
             }
           ]
         }
@@ -186,7 +233,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "145-184",
+          "lines": "180-219",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -266,7 +313,9 @@
                 119,
                 120,
                 121
-              ]
+              ],
+              "firstLine": "/// Gemini base system prompt (adapted from opencode's gemini.txt)",
+              "lastLine": "</example>"
             }
           ]
         }
@@ -277,7 +326,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "189-208",
+          "lines": "225-250",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -322,7 +371,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "/// Gemini base system prompt (adapted from opencode's gemini.txt)",
+              "lastLine": "- **Minimal Output:** Aim for fewer than 3 lines of text output (excluding tool use/code generation) per response whenever practical. Focus strictly on the user's query."
             }
           ]
         }
@@ -333,7 +384,7 @@
       "testMappings": [
         {
           "file": "rust/tools/tests/system_prompt_facade_test.rs",
-          "lines": "213-228",
+          "lines": "256-287",
           "implMappings": [
             {
               "file": "rust/tools/src/facade/system_prompt.rs",
@@ -369,7 +420,9 @@
                 119,
                 120,
                 121
-              ]
+              ],
+              "firstLine": "- **Handling Inability:** If unable/unwilling to fulfill a request, state so briefly (1-2 sentences) without excessive justification. Offer alternatives if appropriate.",
+              "lastLine": "</example>"
             }
           ]
         }
@@ -386,6 +439,6 @@
     "implFiles": [
       "rust/tools/src/facade/system_prompt.rs"
     ],
-    "totalLinesCovered": 453
+    "totalLinesCovered": 541
   }
 }

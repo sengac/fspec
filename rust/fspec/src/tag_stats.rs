@@ -27,10 +27,10 @@
 //!     is written to stderr prefixed with `Error:` (parity with the
 //!     TS chalk-red `output.error('Error:', ...)` path).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::tag_stats;
 use serde_json::json;
 
@@ -50,7 +50,7 @@ pub struct CliArgs {}
 /// propagate it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(_args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // The CLI front door always requests text rendering — the
     // dispatcher front door requests JSON. The shape of the args

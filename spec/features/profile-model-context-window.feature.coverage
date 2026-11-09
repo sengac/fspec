@@ -1,0 +1,239 @@
+{
+  "scenarios": [
+    {
+      "name": "A discovered model of a profile without a declared context window has none",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov169_profile_model_limits.rs",
+          "lines": "15-29",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                147,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub fn merge_profile_models(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/dialogs.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ],
+              "firstLine": "pub struct ModelEntry {",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile's declared context window applies to its discovered models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov169_profile_model_limits.rs",
+          "lines": "31-41",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                147,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub fn merge_profile_models(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A custom model's own context window wins over the profile's",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov169_profile_model_limits.rs",
+          "lines": "43-60",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                147,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ],
+              "firstLine": "pub fn merge_profile_models(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov169_profile_model_limits.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/profile_sections.rs",
+      "rust/rpc-types/src/dialogs.rs"
+    ],
+    "totalLinesCovered": 205
+  }
+}

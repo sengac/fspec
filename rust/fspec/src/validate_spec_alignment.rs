@@ -21,7 +21,7 @@
 //!   - invalid → the returned warnings printed to stderr, exit 1.
 //!   - error → stderr `Error: <msg>`, exit 1.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -39,7 +39,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `validate-spec-alignment` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     let payload: Value = json!({ "workUnitId": args.work_unit_id, "fix": args.fix });
     let args_json = payload.to_string();

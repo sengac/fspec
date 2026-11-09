@@ -13,48 +13,104 @@
                 6,
                 13,
                 18
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1722,
-                1739
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/interruption.rs",
-              "lines": [
-                102,
-                105,
-                108
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/output.rs",
-              "lines": [
-                244
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                775
-              ]
+              ],
+              "firstLine": "pub fn begin_settlement(&self) -> Result<tokio::sync::OwnedMutexGuard<()>, String> {",
+              "lastLine": "self.settlement_gate.try_lock().is_err()"
             },
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                269,
-                525,
-                527
-              ]
+                265,
+                521,
+                523
+              ],
+              "firstLine": "// further deltas and the stream is cancelled).",
+              "lastLine": "if !hooks.post_tool_use.is_empty() {"
             },
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
-                137
-              ]
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "pub fn persist_assistant_message_identified(",
+              "lastLine": "}"
             }
           ]
         }
@@ -73,48 +129,19 @@
                 6,
                 13,
                 18
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1722,
-                1739
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/interruption.rs",
-              "lines": [
-                102,
-                105,
-                108
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/output.rs",
-              "lines": [
-                244
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                775
-              ]
+              ],
+              "firstLine": "pub fn begin_settlement(&self) -> Result<tokio::sync::OwnedMutexGuard<()>, String> {",
+              "lastLine": "self.settlement_gate.try_lock().is_err()"
             },
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                269,
-                525,
-                527
-              ]
-            },
-            {
-              "file": "rust/agent-loop/src/persist.rs",
-              "lines": [
-                137
-              ]
+                265,
+                521,
+                523
+              ],
+              "firstLine": "// further deltas and the stream is cancelled).",
+              "lastLine": "if !hooks.post_tool_use.is_empty() {"
             }
           ]
         }
@@ -133,48 +160,77 @@
                 6,
                 13,
                 18
-              ]
-            },
-            {
-              "file": "rust/sessions/src/background_session.rs",
-              "lines": [
-                1722,
-                1739
-              ]
+              ],
+              "firstLine": "pub fn begin_settlement(&self) -> Result<tokio::sync::OwnedMutexGuard<()>, String> {",
+              "lastLine": "self.settlement_gate.try_lock().is_err()"
             },
             {
               "file": "rust/cli/src/interactive/interruption.rs",
               "lines": [
-                102,
-                105,
-                108
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/output.rs",
-              "lines": [
-                244
-              ]
-            },
-            {
-              "file": "rust/cli/src/interactive/stream_loop.rs",
-              "lines": [
-                775
-              ]
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "let content = match reason {",
+              "lastLine": "};"
             },
             {
               "file": "rust/agent-loop/src/background_output.rs",
               "lines": [
-                269,
-                525,
-                527
-              ]
+                265,
+                521,
+                523
+              ],
+              "firstLine": "// further deltas and the stream is cancelled).",
+              "lastLine": "if !hooks.post_tool_use.is_empty() {"
             },
             {
               "file": "rust/agent-loop/src/persist.rs",
               "lines": [
-                137
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "pub fn persist_tool_result_identified(",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,13 +246,10 @@
     ],
     "implFiles": [
       "rust/sessions/src/background_session/interruption.rs",
-      "rust/sessions/src/background_session.rs",
-      "rust/cli/src/interactive/interruption.rs",
-      "rust/cli/src/interactive/output.rs",
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/agent-loop/src/background_output.rs",
-      "rust/agent-loop/src/persist.rs"
+      "rust/agent-loop/src/persist.rs",
+      "rust/cli/src/interactive/interruption.rs"
     ],
-    "totalLinesCovered": 173
+    "totalLinesCovered": 271
   }
 }

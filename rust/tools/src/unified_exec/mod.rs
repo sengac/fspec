@@ -26,20 +26,29 @@
 //! - `mod.rs` — constants and clamp functions
 //! - `types.rs` — ExecCommand, UnifiedExecResult, UnifiedExecArgs, SessionListEntry
 //! - `tool.rs` — UnifiedExecTool, `Tool` impl, action dispatch
-//! - `process_store.rs` — ProcessStore with LRU eviction
+//! - `process_store.rs` — ProcessStore entries and the global singleton
+//! - `process_store_handles.rs` — per-session handle accessors
+//! - `process_store_eviction.rs` — LRU eviction policy
 //! - `spawning.rs` — pipe/PTY process creation with I/O wiring
+//! - `stdin_control.rs` — TOOL-027 interrupt / end of input for a live session
 //! - `output.rs` — output collection and truncation
 //! - `reaper.rs` — background cleanup and session ID generation
 //! - `exec_stdin.rs` — TOOL-022 P2 deterministic quiet detector + per-agent-session callback
 
+mod exec_exit;
 mod exec_stdin;
 mod output;
 mod owner_scope;
 mod process_store;
+mod process_store_eviction;
+mod process_store_handles;
 mod reaper;
 mod spawning;
+mod stdin_control;
+mod stdin_write;
 mod tool;
 mod types;
+pub use exec_exit::{ExecExit, PtyExitSlot};
 
 pub use crate::bash_process::{
     platform_shell_invocation, pty_liveness_anchor_invocation, windows_shell_fallback_invocation,
@@ -50,8 +59,11 @@ pub use exec_stdin::{
     EXEC_STDIN_QUIET_THRESHOLD_SECS,
 };
 pub use owner_scope::ProcessOwnerScope;
-pub use process_store::{global_store, session_id_to_evict, ChildHandle, ProcessStore};
+pub use process_store::{global_store, ChildHandle, ProcessStore};
+pub use process_store_eviction::session_id_to_evict;
 pub use reaper::{generate_session_id, spawn_reaper};
+pub use stdin_control::StdinControl;
+pub use stdin_write::{write_stdin, StdinSender, StdinWrite};
 pub use tool::{poll_session, poll_session_interruptible, UnifiedExecTool};
 pub use types::{
     quiet_secs_since, ExecCommand, UnifiedExecArgs, UnifiedExecResult, STILL_RUNNING_STEERING,

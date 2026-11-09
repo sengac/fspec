@@ -1,0 +1,20 @@
+# AST research: process-cwd fallbacks in codelet-sessions (RPC-444)
+```
+rust/sessions/src/default_thinking_level_persistence.rs:154:9:std::env::current_dir()
+rust/sessions/src/default_thinking_level_persistence.rs:167:19:std::env::current_dir()
+rust/sessions/src/default_thinking_level_persistence.rs:200:15:std::env::current_dir()
+rust/sessions/src/session_manager.rs:609:9:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:647:32:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:1008:23:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:1891:28:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2027:32:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2207:25:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2212:29:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2220:25:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2225:25:std::env::current_dir()
+rust/sessions/src/handle_impl.rs:2230:25:std::env::current_dir()
+rust/sessions/src/mux_config_persistence.rs:144:9:std::env::current_dir()
+rust/sessions/src/mux_config_persistence.rs:157:19:std::env::current_dir()
+rust/sessions/src/handle_creation.rs:13:19:std::env::current_dir()
+
+```

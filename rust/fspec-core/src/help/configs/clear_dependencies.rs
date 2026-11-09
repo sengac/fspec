@@ -4,10 +4,8 @@
 //! Byte-for-byte parity with `node dist/index.js clear-dependencies --help`.
 //! Captured fixture: `rust/fspec/tests/fixtures/help/clear-dependencies.txt`.
 //!
-//! NOTE: The TS help text declares a `--force` option even though the
-//! Commander.js registration actually uses `--confirm` (see
-//! src/commands/clear-dependencies.ts:106). The help fixture is
-//! authoritative for parity — we mirror the divergence verbatim.
+//! CLI-016: the option is the `--confirm` flag the CLI parses (the TS help
+//! advertised `--force`).
 
 use super::super::{
     CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
@@ -21,8 +19,8 @@ const ARGS: &[CommandArgument] = &[CommandArgument {
 }];
 
 const OPTS: &[CommandOption] = &[CommandOption {
-    flag: "--force",
-    description: "Skip confirmation",
+    flag: "--confirm",
+    description: "Confirm clearing all dependencies",
     default_value: None,
 }];
 
@@ -38,10 +36,7 @@ const COMMON_PATTERNS: &[CommonPatternEntry] = &[];
 
 const RELATED: &[&str] = &["add-dependency", "remove-dependency"];
 
-const NOTES: &[&str] = &[
-    "Removes all relationship types",
-    "Requires confirmation unless --force is used",
-];
+const NOTES: &[&str] = &["Removes all relationship types", "Requires --confirm"];
 
 const PREREQS: &[&str] = &[];
 

@@ -48,12 +48,12 @@ Feature: Fix Compaction Threshold With Corrected Inputs
 
   Scenario: Gemini 2.5 Pro compaction threshold uses 80 percent of context window
     Given a Gemini model with context_window of 1000000 and max_output of 65536
-    When resolve_compaction_threshold is called with model_id "gemini-2.5-pro"
+    When compaction_threshold_for is called with model_id "gemini-2.5-pro"
     Then the threshold should be 800000 tokens (80 percent of 1M)
 
   Scenario: GPT-4o compaction threshold uses 80 percent of context window
     Given an OpenAI model with context_window of 128000 and max_output of 16384
-    When resolve_compaction_threshold is called with model_id "gpt-4o"
+    When compaction_threshold_for is called with model_id "gpt-4o"
     Then the threshold should be 102400 tokens (80 percent of 128k)
 
   Scenario: Sub-agent propagation uses effective context window

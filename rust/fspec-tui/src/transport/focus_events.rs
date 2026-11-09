@@ -41,13 +41,32 @@ async fn refresh(
     client: &FspecServiceClient,
     sender: &broadcast::Sender<(SessionId, WorkUnitFocus)>,
 ) {
-    if let Ok(sessions) = client.list_live_sessions(tarpc::context::current()).await {
-        for session in sessions {
-            if let Ok(Ok(focus)) = client
-                .get_work_unit_focus(tarpc::context::current(), session.clone())
-                .await
-            {
+    // BUG-465: this refresh has no caller to return to; a failed listing
+    // or focus read is logged and that refresh is skipped.
+    let sessions = match client.list_live_sessions(tarpc::context::current()).await {
+        Ok(Ok(sessions)) => sessions,
+        Ok(Err(error)) => {
+            tracing::error!(%error, "cannot list live sessions for focus refresh");
+            return;
+        }
+        Err(error) => {
+            tracing::error!(%error, "cannot reach the daemon for focus refresh");
+            return;
+        }
+    };
+    for session in sessions {
+        match client
+            .get_work_unit_focus(tarpc::context::current(), session.clone())
+            .await
+        {
+            Ok(Ok(focus)) => {
                 let _ = sender.send((session, focus));
+            }
+            Ok(Err(error)) => {
+                tracing::error!(session = %session.value, %error, "cannot read the session focus")
+            }
+            Err(error) => {
+                tracing::error!(session = %session.value, %error, "cannot reach the daemon for the session focus")
             }
         }
     }

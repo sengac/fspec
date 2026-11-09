@@ -54,7 +54,9 @@
                 52,
                 53,
                 54
-              ]
+              ],
+              "firstLine": "pub(crate) fn project_committed_context(",
+              "lastLine": "}"
             }
           ]
         }

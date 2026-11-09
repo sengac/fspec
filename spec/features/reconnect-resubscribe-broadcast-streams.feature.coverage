@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "86-116",
+          "lines": "37-74",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
@@ -37,8 +36,11 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153
+              ],
+              "firstLine": "/// to the CURRENT client's `*_rx()` receivers, then run the RPC-011",
+              "lastLine": "// BUG-361: a failed refetch is shown, never dropped."
             }
           ]
         }
@@ -49,12 +51,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "124-266",
+          "lines": "80-145",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
@@ -81,8 +82,11 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153
+              ],
+              "firstLine": "/// to the CURRENT client's `*_rx()` receivers, then run the RPC-011",
+              "lastLine": "// BUG-361: a failed refetch is shown, never dropped."
             }
           ]
         }
@@ -93,12 +97,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "268-302",
+          "lines": "151-184",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
@@ -125,8 +128,11 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153
+              ],
+              "firstLine": "/// to the CURRENT client's `*_rx()` receivers, then run the RPC-011",
+              "lastLine": "// BUG-361: a failed refetch is shown, never dropped."
             }
           ]
         }
@@ -137,12 +143,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "308-353",
+          "lines": "190-245",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                125,
                 126,
                 127,
                 128,
@@ -169,8 +174,11 @@
                 149,
                 150,
                 151,
-                152
-              ]
+                152,
+                153
+              ],
+              "firstLine": "/// to the CURRENT client's `*_rx()` receivers, then run the RPC-011",
+              "lastLine": "// BUG-361: a failed refetch is shown, never dropped."
             }
           ]
         }
@@ -187,6 +195,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_reconnect.rs"
     ],
-    "totalLinesCovered": 289
+    "totalLinesCovered": 306
   }
 }

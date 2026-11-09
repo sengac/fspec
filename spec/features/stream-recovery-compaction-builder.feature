@@ -2,6 +2,7 @@
 @context-management
 @compaction
 @regression
+@BUG-316
 Feature: Stream recovery invokes the registered compaction builder
   """
   Stream recovery uses the session's registered durable DAG builder when one
@@ -21,7 +22,7 @@ Feature: Stream recovery invokes the registered compaction builder
   Scenario: Recovery admits the resume prompt before committing a replacement
     Given a builder DAG and a resume prompt each fit within the usable context budget
     But their combined request exceeds the provider capacity
-    When hook-triggered recovery attempts to commit the replacement
+    When compaction recovery attempts to commit the replacement before the prompt is sent
     Then recovery rejects the replacement before promotion
     And no provider request or compaction completion occurs and inference remains blocked
 
@@ -30,7 +31,7 @@ Feature: Stream recovery invokes the registered compaction builder
     And the registered compaction builder fails
     When the compaction hook cancels inference
     Then recovery returns the builder failure after one invocation
-    And no provider request or compaction completion occurs and inference remains blocked
+    And no provider request or compaction completion occurs and inference waits for the next input to retry the builder
 
   Scenario: Provider overflow invokes the registered compaction builder
     Given a streaming provider rejects the conversation as exceeding its context limit
@@ -38,3 +39,9 @@ Feature: Stream recovery invokes the registered compaction builder
     When stream recovery handles the provider rejection
     Then recovery invokes the builder once and durably commits its DAG
     And inference resumes with reduced history without exhausting compaction retries
+
+  Scenario: An oversized prompt is refused instead of being summarized away
+    Given oversized history and a prompt that alone exceeds the usable context budget
+    When compaction runs before the prompt is sent
+    Then the replacement is rejected before promotion with an admission failure
+    And no provider request or compaction completion occurs and the history is unchanged

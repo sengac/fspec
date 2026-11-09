@@ -59,6 +59,11 @@ Feature: Port discover-foundation command to Rust
     Then the dispatcher returns valid=false
     And the returned systemReminder contains "ERROR: foundation.json.draft already exists!"
     And spec/foundation.json.draft on disk is byte-equal to its pre-call contents
+    And the returned systemReminder contains "Choose ONE of these three next steps:"
+    And the returned systemReminder contains "→ fspec discover-foundation --finalize"
+    And the returned systemReminder contains "fspec show-foundation, which now auto-shows the draft"
+    And the returned systemReminder contains "→ fspec discover-foundation --force"
+    And the returned systemReminder does not contain the draft content "[QUESTION: What is the project name?]"
 
   Scenario: Running without force when foundation.json already exists is blocked
     Given a project root tempdir that has a spec/foundation.json but no spec/foundation.json.draft
@@ -88,6 +93,8 @@ Feature: Port discover-foundation command to Rust
     Then the dispatcher returns valid=false
     And the returned validationErrors starts with "Schema validation failed."
     And spec/foundation.json is not created
+    And the returned validationErrors contains "Missing required: solutionSpace.capabilities (at least one item required)"
+    And the returned validationErrors contains the fix command 'fspec add-capability "<name>" "<description>"'
 
   Scenario: Finalize success writes foundation.json, deletes the draft, and creates the FOUND work unit
     Given a project root tempdir whose spec/foundation.json.draft is fully filled and schema-valid
@@ -107,3 +114,42 @@ Feature: Port discover-foundation command to Rust
     Then the dispatcher returns valid=true
     And spec/work-units.json still has exactly one FOUND-prefixed work unit
     And the envelope reports workUnitCreated=false reusing workUnitId "FOUND-001"
+
+  Scenario: The FOUND work unit is a backlog task with the Foundation Event Storm description
+    Given a project root tempdir whose spec/foundation.json.draft is fully filled and schema-valid and no FOUND prefix is registered
+    When I dispatch discover-foundation with finalize=true
+    Then the dispatcher returns valid=true
+    And spec/work-units.json has FOUND-001 titled "Conduct Foundation Event Storm for Foundation" with type "task" and status "backlog"
+    And spec/work-units.json states.backlog lists FOUND-001
+    And spec/prefixes.json registers the FOUND prefix with the description "Foundation Event Storm tasks"
+    And FOUND-001's description lists add-foundation-bounded-context, add-aggregate-to-foundation, add-domain-event-to-foundation and show-foundation-event-storm
+    And FOUND-001's description explains why it matters and points to the "Foundation Event Storm" section of spec/AGENTS.md
+
+  Scenario: Discovery without finalize creates no work unit
+    Given a project root tempdir whose spec/foundation.json.draft is fully filled and schema-valid and whose spec/work-units.json has no work units
+    When I dispatch discover-foundation with no flags
+    Then no FOUND work unit is created
+    And spec/work-units.json is byte-equal to its pre-call contents
+
+  Scenario: A refused finalize creates no work unit
+    Given a project root tempdir whose spec/foundation.json.draft still has [QUESTION:] placeholders and whose spec/work-units.json has no work units
+    When I dispatch discover-foundation with finalize=true
+    Then the dispatcher returns valid=false with the validationErrors explaining why
+    And no FOUND work unit is created
+    And spec/work-units.json is byte-equal to its pre-call contents
+
+  Scenario: Finalize is refused while a template persona remains next to a real persona
+    Given a project root tempdir whose spec/foundation.json.draft is filled, with capabilities, a real persona and the template persona "[QUESTION: Who uses this?]"
+    When I dispatch discover-foundation with finalize=true
+    Then the dispatcher returns valid=false
+    And the returned validationErrors contains "Cannot finalize: draft still has unfilled placeholder fields"
+    And the returned validationErrors lists only personas, as "1. personas (placeholder-entries)" with its fix command fspec add-persona
+    And spec/foundation.json is not created
+    And spec/foundation.json.draft on disk is byte-equal to its pre-call contents
+
+  Scenario: Finalize lists every unfilled field with its fix command in one message
+    Given a project root tempdir whose spec/foundation.json.draft has placeholders in project.vision, solutionSpace.overview and personas
+    When I dispatch discover-foundation with finalize=true
+    Then the dispatcher returns valid=false
+    And the returned validationErrors lists the three fields, numbered, each with its fix command
+    And the returned validationErrors ends with "Then re-run: fspec discover-foundation --finalize"

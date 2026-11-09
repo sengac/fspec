@@ -15,8 +15,14 @@ pub enum CommittedPublicationError {
     MissingGeneration,
     #[error("committed context requires finite positive trigger and capacity limits")]
     InvalidLimits,
+    /// PROV-165: the session's model has no available context window or
+    /// compaction threshold.
+    #[error("committed context requires an available context window and compaction threshold")]
+    UnavailableLimits,
     #[error("committed context exceeds the event representation")]
     RepresentationOverflow,
+    #[error("saved reasoning tokens exceed the saved billed output")]
+    InconsistentOutput,
 }
 
 impl BackgroundSession {
@@ -75,7 +81,12 @@ pub(crate) fn saved_tokens(
         |value| u32::try_from(value).map_err(|_| CommittedPublicationError::RepresentationOverflow);
     Ok(TokenTracker {
         input_tokens: convert(saved.current_context_tokens)?,
-        output_tokens: convert(saved.cumulative_billed_output)?,
+        // BUG-326: reply output without reasoning, as the live tracker counts.
+        output_tokens: convert(
+            saved
+                .reply_output_tokens()
+                .ok_or(CommittedPublicationError::InconsistentOutput)?,
+        )?,
         cache_read_input_tokens: Some(convert(saved.cache_read_tokens)?),
         cache_creation_input_tokens: Some(convert(saved.cache_creation_tokens)?),
         cumulative_billed_input: Some(convert(saved.cumulative_billed_input)?),
@@ -98,17 +109,30 @@ pub(crate) fn restored_snapshot(
             .map_err(CommittedPublicationError::InvalidBoundary)?;
         return Ok(None);
     }
+    let limits = session.model_limits();
+    let (Some(threshold), Some(capacity)) = (limits.compaction_threshold, limits.context_window)
+    else {
+        return Err(CommittedPublicationError::UnavailableLimits);
+    };
     let mut snapshot = context_snapshot(
         manifest,
         session.pre_compaction_tokens.load(Ordering::Acquire),
-        f64::from(session.cached_compaction_threshold.load(Ordering::Acquire)),
-        f64::from(session.cached_context_window.load(Ordering::Acquire)),
+        f64::from(threshold),
+        f64::from(capacity),
         true,
     )?;
     snapshot.tokens = tokens.clone();
-    snapshot.context_fill.effective_tokens = f64::from(tokens.input_tokens);
+    // BUG-326: the restored fill is the saved inclusive occupancy, computed
+    // like the live `RequestContextSnapshot::context_fill`.
+    let occupancy = manifest
+        .token_usage
+        .context_occupancy()
+        .ok_or(CommittedPublicationError::RepresentationOverflow)?;
+    let threshold = snapshot.context_fill.threshold as u64;
+    snapshot.context_fill.effective_tokens = occupancy as f64;
     snapshot.context_fill.fill_percentage =
-        (f64::from(tokens.input_tokens) / snapshot.context_fill.threshold * 100.0) as u32;
+        u32::try_from(u128::from(occupancy) * 100 / u128::from(threshold))
+            .map_err(|_| CommittedPublicationError::RepresentationOverflow)?;
     Ok(Some(snapshot))
 }
 
@@ -135,13 +159,13 @@ pub fn context_snapshot(
         .map_err(|_| CommittedPublicationError::RepresentationOverflow)?;
     let generation = i64::try_from(committed.identity.generation)
         .map_err(|_| CommittedPublicationError::RepresentationOverflow)?;
-    let covered_turns = u32::try_from(committed.covered_prefix.len())
+    let covered_turns = u32::try_from(committed.covered_prefix().len())
         .map_err(|_| CommittedPublicationError::RepresentationOverflow)?;
     let retained_turns = u32::try_from(
         manifest
             .messages
             .len()
-            .saturating_sub(committed.covered_prefix.len()),
+            .saturating_sub(committed.covered_prefix().len()),
     )
     .map_err(|_| CommittedPublicationError::RepresentationOverflow)?;
     Ok(CommittedContextSnapshot {

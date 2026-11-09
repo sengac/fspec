@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "24-57",
+          "lines": "26-90",
           "implMappings": [
             {
               "file": "rust/rpc/src/lib.rs",
@@ -63,6 +63,84 @@
                 51,
                 52,
                 53,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                69,
+                71
+              ],
+              "firstLine": "//! codelet-rpc: the fspec tarpc service trait + the single shared service",
+              "lastLine": ""
+            },
+            {
+              "file": "rust/rpc/src/service_declaration/finish.rs",
+              "lines": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "firstLine": "/// The fspec RPC service surface.",
+              "lastLine": "pub trait FspecService {"
+            },
+            {
+              "file": "rust/rpc/src/service_declaration/workspace.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
                 54,
                 55,
                 56,
@@ -77,79 +155,10 @@
                 65,
                 66,
                 67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139
-              ]
+                68
+              ],
+              "firstLine": "/// Return every work unit currently known to the shared service impl.",
+              "lastLine": "/// index reader. Returns an empty Vec when no cwd is attached."
             }
           ]
         }
@@ -160,7 +169,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "59-94",
+          "lines": "92-127",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/src/lib.rs",
@@ -257,7 +266,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "//! codelet-rpc-embedded: in-process tarpc transport that shares one",
+              "lastLine": "/// path returns the broadcast subscription DIRECTLY — no envelope"
             }
           ]
         }
@@ -268,7 +279,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "96-130",
+          "lines": "129-163",
           "implMappings": [
             {
               "file": "rust/rpc/Cargo.toml",
@@ -323,7 +334,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "[package]",
+              "lastLine": "# RPC-007: BroadcastLogLayer (tracing::Layer that publishes LogRecord"
             }
           ]
         }
@@ -334,7 +347,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "132-161",
+          "lines": "165-194",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/main.rs",
@@ -389,7 +402,9 @@
                 48,
                 49,
                 50
-              ]
+              ],
+              "firstLine": "//! `codelet-rpc-server` binary.",
+              "lastLine": ""
             }
           ]
         }
@@ -400,7 +415,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "163-199",
+          "lines": "196-232",
           "implMappings": [
             {
               "file": "rust/rpc-types/src/lib.rs",
@@ -450,6 +465,56 @@
                 43,
                 44,
                 45,
+                48,
+                49
+              ],
+              "firstLine": "//! codelet-rpc-types: shared serde types for the fspec dual-transport RPC.",
+              "lastLine": "pub use input_mode::InputMode;"
+            },
+            {
+              "file": "rust/rpc-types/src/work_units.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
                 46,
                 47,
                 48,
@@ -458,54 +523,10 @@
                 51,
                 52,
                 53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
+                54
+              ],
+              "firstLine": "/// Work unit information shared across all transports and the NAPI surface.",
+              "lastLine": "pub struct CheckpointCounts {"
             }
           ]
         }
@@ -516,7 +537,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
-          "lines": "201-225",
+          "lines": "234-258",
           "implMappings": [
             {
               "file": "rust/rpc-embedded/src/lib.rs",
@@ -613,7 +634,9 @@
                 90,
                 91,
                 92
-              ]
+              ],
+              "firstLine": "//! codelet-rpc-embedded: in-process tarpc transport that shares one",
+              "lastLine": "/// path returns the broadcast subscription DIRECTLY — no envelope"
             }
           ]
         }
@@ -629,11 +652,14 @@
     ],
     "implFiles": [
       "rust/rpc/src/lib.rs",
+      "rust/rpc/src/service_declaration/finish.rs",
+      "rust/rpc/src/service_declaration/workspace.rs",
       "rust/rpc-embedded/src/lib.rs",
       "rust/rpc/Cargo.toml",
       "rust/rpc-server/src/main.rs",
-      "rust/rpc-types/src/lib.rs"
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc-types/src/work_units.rs"
     ],
-    "totalLinesCovered": 720
+    "totalLinesCovered": 741
   }
 }

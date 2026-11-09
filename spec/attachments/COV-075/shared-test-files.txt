@@ -1,0 +1,83 @@
+bridge/__tests__/relay-endpoint.test.ts -> relay-bridge-endpoint.feature, relay-command-flow-through-bridge.feature
+bridge/__tests__/telegram-endpoint.test.ts -> telegram-bridge-endpoint.feature, telegram-user-whitelist.feature
+rust/agent-loop/src/deep_search_handler/tests.rs -> deepsearch-codex-sub-agent-still-fails-because-responses-api-requires-stream-true.feature, glm-zai-deepsearch-fails-with-500-internal-server-error.feature
+rust/agent-loop/src/session_search_handler.rs -> session-search-trimming.feature, session-search-turn-range.feature
+rust/agent-loop/tests/bug210_completion_metrics.rs -> automatic-compaction-completion-metrics.feature, compaction-complete-measurement-basis.feature
+rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs -> completion-snapshot-delegation-guards.feature, pre-compaction-snapshot-basis-unification.feature
+rust/agent-loop/tests/cmpct045/part_03.rs -> generate-compaction-tool.feature, inject-summary-handler.feature
+rust/agent-loop/tests/cmpct045/part_06.rs -> generate-compaction-tool-wiring.feature, generate-compaction-tool.feature
+rust/agent-loop/tests/cmpct045/part_07.rs -> generate-compaction-tool-wiring.feature, generate-compaction-tool.feature
+rust/agent-loop/tests/cmpct054_cancellation_cleanup.rs -> aborted-turn-compaction-dependency-cleanup.feature, inject-summary-handler.feature
+rust/agent-loop/tests/cmpct054_terminal_dependencies.rs -> inject-summary-handler.feature, terminal-compaction-dependency-lifetime.feature
+rust/agent-loop/tests/cmpct069_token_forwarding.rs -> complete-token-event-forwarding.feature, reasoning-token-napi-bridge.feature
+rust/agent-loop/tests/compaction_post_inject_loading_test.rs -> compaction-complete-measurement-basis.feature, compaction-post-inject-loading-state.feature
+rust/agent-loop/tests/rpc082_role_injection.rs -> agent-loop-role-injection.feature, session-role-and-authority-model.feature
+rust/agent-loop/tests/rpc086_token_tracking.rs -> agent-loop-token-tracking.feature, reasoning-token-napi-bridge.feature
+rust/cli/src/compaction_threshold.rs -> compaction-threshold-clamped-inputs.feature, optimized-compaction-trigger.feature
+rust/cli/src/interactive/error_classifiers.rs -> promptcancelled-error-chain-preservation-during-compaction.feature, replace-stringly-typed-is-compaction-cancelled-with-structural-prompterror-downcast.feature
+rust/cli/tests/auto_continue_engine_test.rs -> auto-continue-engine.feature, completion-registration-layout-guards.feature
+rust/cli/tests/cmpct059_runtime_commit.rs -> inject-summary-handler.feature, runtime-durable-dag-installation.feature
+rust/cli/tests/cont006_goal_immediate_termination.rs -> completion-goal-teardown-layout-guards.feature, goal-immediate-termination.feature
+rust/cli/tests/image_content_recovery_test.rs -> image-content-recovery.feature, image-dimension-validation.feature
+rust/core/src/compaction/__tests__/dag_node_proptest.test.rs -> parse-dag-nodes-turn-range-validation.feature, prevent-clamping-from-inverting-turn-ranges-in-parse-dag-nodes-fv-003-c.feature, reject-overlapping-same-depth-turn-ranges-in-parse-dag-nodes-fv-003-b.feature
+rust/core/tests/git_state_watcher.rs -> git-state-watcher-core.feature, git-state-watcher-dedup-signature.feature
+rust/fspec-core/src/io/gherkin_format.rs -> gherkin-background-formatting.feature, gherkin-description-formatting.feature, gherkin-stepless-scenario-formatting.feature
+rust/fspec-core/tests/list_work_units.rs -> fspec-dispatcher-tokio-nesting-safety.feature, list-work-units-rust-port.feature
+rust/fspec-core/tests/research.rs -> research-registry-drops-ast-tool.feature, research-rust-port.feature
+rust/fspec-tui/src/components/help_dialog.rs -> fspec-tui-help-dialog-body-rpc009.feature, fspec-tui-help-dialog.feature
+rust/fspec-tui/src/views/blocklist/tests.rs -> blocklist-view-framing.feature, blocklist-view-keybindings.feature, blocklist-view-mouse-scroll.feature, blocklist-view-scrolling.feature
+rust/fspec-tui/src/views/changed_files/tests.rs -> changed-files-view-click-to-select.feature, changed-files-view-f-shows-staged-animated-loading-dialog-via-shared-base-instead-of-fake-no-changed-files-empty-state.feature, rust-changed-files-view.feature, rust-tui-pane-borders-changed-files.feature
+rust/fspec-tui/src/views/checkpoints/tests.rs -> checkpoints-view-c-shows-staged-animated-loading-dialog-via-shared-base-instead-of-fake-no-checkpoints-empty-state.feature, checkpoints-view-click-to-select.feature, rust-checkpoints-view.feature, rust-tui-pane-borders-checkpoints.feature
+rust/fspec-tui/src/views/full_screen_shell.rs -> full-screen-shell-title-closure.feature, full-screen-shell.feature
+rust/fspec-tui/src/views/model_selector/mod.rs -> model-selector-custom-model-crud.feature, model-selector-default-expansion.feature, model-selector-no-auto-select.feature, model-selector-open-on-current-model.feature, model-selector-scroll.feature, model-selector-tab-to-providers.feature, model-selector-view.feature
+rust/fspec-tui/src/views/model_selector/rows.rs -> model-selector-profile-rendering.feature, model-selector-rows.feature
+rust/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs -> agentview-esc-exit-confirmation-dialog.feature, exit-session-dialog-two-button-options.feature
+rust/fspec-tui/tests/bug164_mux_retained_on_session_exit.rs -> exit-session-close-retains-mux-grid.feature, rust-mux-mode.feature
+rust/fspec-tui/tests/keyboard_cascade_rpc051.rs -> agentview-esc-cascade-input-clear.feature, keyboard-shortcut-cascade-parity.feature
+rust/fspec-tui/tests/menu002_board_surface.rs -> board-surface-header-row-replaced-by-the-2-zone-bar-column-menu-chip-continuous-ring-keys-wheel-mouse.feature, menu-dropdown-cycles-with-the-board-ring-walk.feature
+rust/fspec-tui/tests/menu005_menu_bar_help.rs -> board-new-agent-gesture-prompts-create-session-dialog.feature, u-menu-bar-help-re-purpose-help-content-snapshot-shape-test-migration-tag.feature
+rust/fspec-tui/tests/menu008_menu_bar_reorg.rs -> board-menu-bar-reorganize-zone-a-into-kanban-tools-settings-categories.feature, menubar-component-2-zone-bar-gui-menu-items-anchored-dropdown-with-view-chip-switcher-menucategories-registry-pure-painter.feature
+rust/fspec-tui/tests/refac019_contracts.rs -> preserve-contracts-while-decomposing-native-board-integration-surfaces.feature, refac019-contracts-compile.feature
+rust/fspec-tui/tests/rpc027_dialog_parity_ij.rs -> rpc027-refactor-invariants.feature, ts-reference-files-exist-on-disk-without-git.feature
+rust/fspec-tui/tests/rpc028_popup_scroll.rs -> double-click-to-resume-session-in-resume-view.feature, rpc028-scroll-mouse-wrap-parity.feature
+rust/fspec-tui/tests/slash_clear_rpc046.rs -> rpc074-clear-ts-parity.feature, slash-command-clear.feature
+rust/fspec-tui/tests/slash_detach_rpc050.rs -> remove-detach-slash-command-with-attach-path-intact.feature, slash-command-detach-and-work-unit-binding.feature
+rust/fspec-tui/tests/tui112_dialog_click_activation.rs -> exit-session-dialog-click-activation.feature, left-click-activates-buttons-rows-in-all-enter-selectable-modal-dialogs-new-agent-exit-session-etc.feature
+rust/fspec/src/common/tests/part_1.rs -> rpc017-build-service-cwd-attachment.feature, rpc025-fspec-binary-persistence-bootstrap.feature, wire-codelet-sessions-into-fspec-build-service.feature
+rust/fspec/src/daemon_directory/tests.rs -> combined-mode-daemon-switcher.feature, daemon-switcher-local-token.feature
+rust/fspec/tests/cli_query_bottlenecks.rs -> query-bottlenecks-cli-subcommand.feature, query-bottlenecks-rust-port.feature
+rust/fspec/tests/cli_query_estimation_guide.rs -> query-estimation-guide-cli-subcommand.feature, query-estimation-guide-rust-port.feature
+rust/fspec/tests/cli_query_example_mapping_stats.rs -> query-example-mapping-stats-cli-subcommand.feature, query-example-mapping-stats-rust-port.feature
+rust/fspec/tests/cli_query_orphans.rs -> query-orphans-cli-subcommand.feature, query-orphans-rust-port.feature
+rust/fspec/tests/cli_show_acceptance_criteria.rs -> show-acceptance-criteria-cli-subcommand.feature, show-acceptance-criteria-rust-port.feature
+rust/fspec/tests/cli_show_event_storm.rs -> show-event-storm-cli-subcommand.feature, show-event-storm-rust-port.feature
+rust/fspec/tests/cli_show_foundation.rs -> show-foundation-cli-subcommand.feature, show-foundation-rust-port.feature
+rust/fspec/tests/cli_show_foundation_event_storm.rs -> show-foundation-event-storm-cli-subcommand.feature, show-foundation-event-storm-rust-port.feature
+rust/fspec/tests/cli_show_test_patterns.rs -> show-test-patterns-cli-subcommand.feature, show-test-patterns-rust-port.feature
+rust/fspec/tests/cross_frontend_parity.rs -> cross-frontend-integration-test-against-stub-provider.feature, stub-provider-rig-dispatch.feature
+rust/graph/tests/ast_extraction_pipeline_test/walk_project_directory_with.rs -> ast-entity-deduplication.feature, ast-extraction-pipeline.feature
+rust/graph/tests/graph_reset_test.rs -> graph-compaction-schema-migration.feature, graph-database-reset.feature
+rust/patches/rig-core/src/agent/prompt_request/streaming.rs -> defense-in-depth-bound-tool-result-text-size-in-rig-patch-parse-tool-result-content.feature, defense-in-depth-pdf-image-count-cap-in-rig-patch.feature
+rust/patches/rig-core/src/providers/openai/completion/mod.rs -> openai-provider-base64-image-inputs.feature, openai-provider-reasoning-tokens.feature, openai-provider-tool-result-images.feature
+rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs -> builtin-provider-nonstreaming-rejection-evidence.feature, builtin-provider-openai-usage-evidence.feature
+rust/providers/src/manager/tests_3.rs -> fix-providermanager-resolution-chain-use-modellimitsresolver.feature, per-model-context-window-and-max-output-configuration.feature
+rust/providers/src/manager/tests_4.rs -> fix-providermanager-resolution-chain-use-modellimitsresolver.feature, set-model-direct-stores-provider-prefixed-model-string.feature
+rust/providers/src/manager/tests_5.rs -> agentmanager-spawn-fails-for-profile-qualified-openai-fireworks-models-e-g-kimi-k2-6.feature, fix-providermanager-resolution-chain-use-modellimitsresolver.feature, set-model-direct-stores-provider-prefixed-model-string.feature
+rust/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs -> claude-opus-4-7-adaptive-thinking.feature, opus-4-7-thinking-mode-appears-inactive-due-to-omitted-display-default.feature
+rust/sessions/src/profile_sections/tests.rs -> model-selector-cloud-section-assembly.feature, model-selector-profile-server.feature
+rust/sessions/tests/background_session_shape/api.rs -> move-background-session-into-codelet-sessions.feature, replace-global-chunk-callback-background-session.feature
+rust/sessions/tests/background_session_shape/broadcast.rs -> move-background-session-into-codelet-sessions.feature, replace-global-chunk-callback-background-session.feature
+rust/sessions/tests/background_session_shape/isolation.rs -> move-background-session-into-codelet-sessions.feature, replace-global-chunk-callback-background-session.feature
+rust/sessions/tests/bug251_multimodal_archives.rs -> faithful-multimodal-archives.feature, watcher-loop-and-input-channel-not-integrated.feature
+rust/sessions/tests/cont009_completion_contract_sync.rs -> completion-contract-dispatch-arming.feature, cont009-completion-contract-sync-tests-fail-because-fresh-session-returns-empty-session-id.feature
+rust/sessions/tests/exec_stdin_prompt_p2.rs -> exec-stdin-prompt.feature, exec-stdin-request-wire-shape.feature
+rust/sessions/tests/rpc418_compact_session/compact_populated_clears_conversation.rs -> compression-ratio-clamping.feature, honest-compaction-acknowledgement.feature, rust-tui-compact-real-compaction.feature
+rust/sessions/tests/session_manager_shape/codelet_sessions_tests_assert.rs -> move-sessionmanager-from-codelet-napi-into-codelet-sessions.feature, replace-global-chunk-callback-napi-shell.feature
+rust/tools/src/agent_manager/tests.rs -> agent-manager-await-idle.feature, agent-manager-context-resolution.feature, agent-manager-core.feature, agent-manager-messaging.feature, role-management-set-role.feature
+rust/tools/src/bridge_relay.rs -> bridge-command-handling-pipeline.feature, bridge-command-message-types.feature, telegram-stream-control-channel.feature
+rust/tools/src/deep_search/tests.rs -> deep-search-model-inheritance.feature, deep-search.feature
+rust/tools/src/facade/codex.rs -> codex-grep-files-include-limit.feature, codex-list-dir-pagination.feature, codex-native-tool-facades.feature, codex-read-file-mode-indentation.feature, codex-shell-command-params.feature, codex-shell-exec-facades.feature, codex-view-image.feature, codex-write-stdin-facade.feature
+rust/tools/src/facade/wrapper.rs -> codex-request-user-input-facade.feature, require-session-id-for-all-tools-to-support-worktree-isolation.feature
+rust/tools/src/fspec_workflow_guidance.rs -> fspec-workflow-guidance-named-keys.feature, harness-workflow-guidance-references-astgrep-tool.feature
+rust/tools/src/unified_exec/exec_stdin/tests.rs -> exec-stdin-clock-and-emit-errors.feature, exec-stdin-detector-fault-reporting.feature, exec-stdin-prompt.feature
+rust/tools/tests/tool_facade_test.rs -> bash-facade.feature, directory-listing-facade.feature, facadetoolwrapper-for-rig-integration.feature, file-operation-facades.feature, provider-specific-tool-facades.feature, search-facades.feature

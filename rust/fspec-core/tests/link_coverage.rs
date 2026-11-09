@@ -103,7 +103,23 @@ fn seed_story(root: &Path) {
         "spec/features/user-login.feature.coverage",
         SIDECAR_LOGIN_EMPTY,
     );
-    write_file(root, "src/auth.test.ts", TEST_MATCHING);
+    write_file(root, "src/auth.test.ts", &matching_test_file());
+}
+
+/// BUG-452: link-coverage reads the linked lines, so the matching step
+/// comments sit where the scenarios link them (lines 1-4 and 45-48) in a
+/// file long enough for the 45-62 range.
+fn matching_test_file() -> String {
+    let filler = |from: usize, to: usize| -> String {
+        (from..=to)
+            .map(|line| format!("// filler line {line}\n"))
+            .collect()
+    };
+    format!(
+        "{TEST_MATCHING}{}{TEST_MATCHING}{}",
+        filler(5, 44),
+        filler(49, 62)
+    )
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -165,11 +181,13 @@ fn impl_only_mode_adds_an_implementation_mapping_to_an_existing_test_mapping() {
         "spec/features/user-login.feature",
         FEATURE_STORY,
     );
-    write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
+    write_file(tmp.path(), "src/auth.test.ts", &matching_test_file());
     write_file(
         tmp.path(),
         "src/login.ts",
-        "export const login = () => {};\n",
+        &(1..=30)
+            .map(|n| format!("export const step{n} = () => {{}};\n"))
+            .collect::<String>(),
     );
     let sidecar = r#"{
   "scenarios": [
@@ -256,7 +274,9 @@ fn both_mode_appends_a_test_mapping_carrying_its_implementation_mapping() {
     write_file(
         tmp.path(),
         "src/login.ts",
-        "export const login = () => {};\n",
+        &(1..=30)
+            .map(|n| format!("export const step{n} = () => {{}};\n"))
+            .collect::<String>(),
     );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile, testLines, implFile and implLines
@@ -328,39 +348,6 @@ fn impl_file_without_test_file_surfaces_a_flag_combination_error() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// Scenario: test-file without test-lines surfaces a flag-combination error
-// ═════════════════════════════════════════════════════════════════════════
-
-#[test]
-fn test_file_without_test_lines_surfaces_a_flag_combination_error() {
-    // @step Given a temp project root has a coverage sidecar with scenario "Login"
-    let tmp = TempDir::new().expect("tempdir");
-    write_file(
-        tmp.path(),
-        "spec/features/user-login.feature.coverage",
-        SIDECAR_LOGIN_EMPTY,
-    );
-
-    // @step When I dispatch link-coverage for feature "user-login" with scenario="Login" and testFile only
-    let result = req(
-        tmp.path(),
-        json!({"featureName": "user-login", "scenario": "Login", "testFile": "src/auth.test.ts"}),
-    );
-
-    // @step Then the dispatcher returns an error whose message contains "--test-lines is required when linking test file"
-    assert!(!result.success, "expected failure; got {result:?}");
-    assert!(
-        result
-            .error
-            .as_deref()
-            .unwrap_or("")
-            .contains("--test-lines is required when linking test file"),
-        "error must mention test-lines requirement; got {:?}",
-        result.error
-    );
-}
-
-// ═════════════════════════════════════════════════════════════════════════
 // Scenario: A missing test file without skip-validation errors
 // ═════════════════════════════════════════════════════════════════════════
 
@@ -394,6 +381,17 @@ fn a_missing_test_file_without_skip_validation_errors() {
             .unwrap_or("")
             .contains("File not found"),
         "error must mention File not found; got {:?}",
+        result.error
+    );
+
+    // @step And the error message suggests --skip-validation for forward planning
+    assert!(
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("use --skip-validation for forward planning"),
+        "error must suggest --skip-validation; got {:?}",
         result.error
     );
 }
@@ -459,7 +457,7 @@ fn a_missing_coverage_sidecar_errors_with_a_generate_coverage_suggestion() {
         "spec/features/user-login.feature",
         FEATURE_STORY,
     );
-    write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
+    write_file(tmp.path(), "src/auth.test.ts", &matching_test_file());
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
     let result = req(
@@ -487,6 +485,13 @@ fn a_missing_coverage_sidecar_errors_with_a_generate_coverage_suggestion() {
         "error must suggest generate-coverage; got {:?}",
         result.error
     );
+
+    // @step And the error message carries a <system-reminder> block
+    assert!(
+        err.contains("<system-reminder>") && err.contains("</system-reminder>"),
+        "error must carry a system-reminder block; got {:?}",
+        result.error
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -507,7 +512,7 @@ fn a_scenario_absent_from_the_sidecar_errors_with_available_scenarios_listed() {
         "spec/features/user-login.feature.coverage",
         SIDECAR_LOGIN_EMPTY,
     );
-    write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
+    write_file(tmp.path(), "src/auth.test.ts", &matching_test_file());
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Nope", testFile and testLines
     let result = req(
@@ -533,6 +538,13 @@ fn a_scenario_absent_from_the_sidecar_errors_with_available_scenarios_listed() {
     assert!(
         err.contains("Login"),
         "error must list available scenarios; got {:?}",
+        result.error
+    );
+
+    // @step And the error message carries no <system-reminder> block
+    assert!(
+        !err.contains("<system-reminder>"),
+        "a name absent from the feature file gets no system-reminder; got {:?}",
         result.error
     );
 }
@@ -660,7 +672,7 @@ fn written_sidecar_preserves_unknown_top_level_fields_and_is_atomic_2_space_json
         "spec/features/user-login.feature",
         FEATURE_STORY,
     );
-    write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
+    write_file(tmp.path(), "src/auth.test.ts", &matching_test_file());
     let body = r#"{
   "customField": "keepme",
   "scenarios": [
@@ -701,5 +713,73 @@ fn written_sidecar_preserves_unknown_top_level_fields_and_is_atomic_2_space_json
         sidecar["customField"].as_str(),
         Some("keepme"),
         "unknown top-level field must be preserved; got {sidecar}"
+    );
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Scenario: A scenario in the feature file but missing from the sidecar errors with a generate-coverage system-reminder
+// ═════════════════════════════════════════════════════════════════════════
+
+#[test]
+fn a_scenario_in_the_feature_file_but_missing_from_the_sidecar_errors_with_a_generate_coverage_system_reminder(
+) {
+    // @step Given a temp project root has a feature file with scenarios "Login" and "Logout" and a coverage sidecar listing only "Login"
+    let tmp = TempDir::new().expect("tempdir");
+    let feature = format!(
+        "{FEATURE_STORY}\n  Scenario: Logout\n    Given I am logged in\n    When I log out\n    Then I see the login page\n"
+    );
+    write_file(tmp.path(), "spec/features/user-login.feature", &feature);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
+    write_file(tmp.path(), "src/auth.test.ts", &matching_test_file());
+    let sidecar_before = read_sidecar(tmp.path());
+
+    // @step When I dispatch link-coverage for feature "user-login" with scenario="Logout", testFile and testLines
+    let result = req(
+        tmp.path(),
+        json!({
+            "featureName": "user-login",
+            "scenario": "Logout",
+            "testFile": "src/auth.test.ts",
+            "testLines": "45-62"
+        }),
+    );
+
+    // @step Then the dispatcher returns an error whose message contains "Scenario not found"
+    assert!(!result.success, "expected failure; got {result:?}");
+    let err = result.error.as_deref().unwrap_or("");
+    assert!(
+        err.contains("Scenario not found: \"Logout\""),
+        "error must mention scenario not found; got {:?}",
+        result.error
+    );
+
+    // @step And the error message carries a <system-reminder> block saying "Logout" exists in the feature file but not in the coverage file
+    let reminder_start = err
+        .find("<system-reminder>")
+        .expect("system-reminder opens");
+    let reminder_end = err
+        .find("</system-reminder>")
+        .expect("system-reminder closes");
+    let reminder = &err[reminder_start..reminder_end];
+    assert!(
+        reminder.contains("Scenario \"Logout\" exists in feature file but not in coverage file."),
+        "reminder must name the out-of-sync scenario; got {reminder:?}"
+    );
+
+    // @step And the system-reminder suggests running fspec generate-coverage
+    assert!(
+        reminder.contains("Run: fspec generate-coverage"),
+        "reminder must suggest generate-coverage; got {reminder:?}"
+    );
+
+    // @step And the sidecar is not modified
+    assert_eq!(
+        read_sidecar(tmp.path()),
+        sidecar_before,
+        "a failed link must not touch the sidecar"
     );
 }

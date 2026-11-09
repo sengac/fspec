@@ -36,6 +36,8 @@
 //! out of scope per the CMPCT-030 plan — these structural grep assertions
 //! are the cheapest way to pin the contracts established by CMPCT-023..028.
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
 use std::path::PathBuf;
 
 use codelet_cli::interactive::{
@@ -57,7 +59,7 @@ use gemini_source::gemini_continuation_source;
 // ----------------------------------------------------------------------------
 
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 fn user_text(text: &str) -> Message {

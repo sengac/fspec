@@ -16,8 +16,8 @@ Feature: Mux board-pane ring seams fire off the board pane + stale board bar sta
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. When the Board pane is NOT the focused mux pane, the mux menu bar ring is a closed items⇄Zone B (view labels + chips) loop with no column stops: Right off the last Zone B cell wraps to Item(0) and Left off Item(0) wraps to the last Zone B cell. The board_store's focused_column must not be mutated by any seam crossing in this state.
-  #   2. When the Board pane IS the focused mux pane, the BUG-200 seam crossings remain in effect: Right off the last Zone B cell lands on the first column (Backlog) and dismisses the bar; Left off Item(0) lands on the last column (Blocked) and dismisses the bar.
+  #   1. When the Board pane is NOT the focused mux pane, the mux menu bar ring is a closed items⇄Zone B (view labels + chips)⇄buttons loop with no column stops: Right off the last stop (MUX-013: the last button) wraps to Item(0) and Left off Item(0) wraps to the last stop. The board_store's focused_column must not be mutated by any seam crossing in this state.
+  #   2. When the Board pane IS the focused mux pane, the BUG-200 seam crossings remain in effect: Right off the bar's last stop (MUX-013: the last button) lands on the first column (Backlog) and dismisses the bar; Left off Item(0) lands on the last column (Blocked) and dismisses the bar.
   #   3. Entering mux mode (via /mux on, /mux default, or committing the mux config dialog) clears the board store's bar state — menu_focus and open_menu are reset — so Left/Right in the board pane walks the visible columns, never the board's invisible (suppressed) bar. The board's focused_column is NOT reset.
   #
   # EXAMPLES:
@@ -30,17 +30,17 @@ Feature: Mux board-pane ring seams fire off the board pane + stale board bar sta
     I want to walk the mux menu-bar ring while a pane other than the Board pane is focused, and enter mux mode from a Board view that had its own bar engaged
     So that the ring behaves as a closed items⇄chips loop (never crossing into the board columns off the board pane) and the board's invisible bar state is dropped on entry, so Left/Right never walk a dead bar
 
-  Scenario: Right from the last chip with the agent pane focused wraps to the first menu item
+  Scenario: Right from the last button with the agent pane focused wraps to the first menu item
     Given the mux grid is [Board | Agent] with 1 open session and the AGENT pane is focused (the bar was engaged at the first menu item via the empty-input Left entry rule)
-    When I walk the ring Right through the menu items and the view labels onto the last session chip
+    When I walk the ring Right through the menu items, the view label, the session chip and the buttons onto the last button ([ Close ], MUX-013)
     Then the highlight wraps to the first menu item (Kanban) in the top bar, the bar stays engaged, and the board's focused column is unchanged (the board pane is not focused, so the ring is the closed items⇄chips loop and no column stop is entered)
     When I walk the ring Left from the first menu item
-    And the highlight wraps to the last session chip (the ring closes on both ends without any column stop)
+    And the highlight wraps to the last button ([ Close ]) (the ring closes on both ends without any column stop)
 
-  Scenario: Left from the first menu item with the agent pane focused wraps to the last chip
+  Scenario: Left from the first menu item with the agent pane focused wraps to the last button
     Given the mux grid is [Board | Agent] with 1 open session and the AGENT pane is focused with an empty input, and the agent pane's empty-input Left entry rule has engaged the bar at the first menu item (Kanban)
     When I press Left once
-    Then the highlight wraps to the last session chip in the top bar (not onto the board's last column), the bar stays engaged, and the board's focused column is unchanged
+    Then the highlight wraps to the last button ([ Close ], MUX-013) in the top bar (not onto the board's last column), the bar stays engaged, and the board's focused column is unchanged
 
   Scenario: Entering mux via /mux on from a Board view with an engaged bar clears the board bar state
     Given the single Board view is showing with the board's own bar engaged at the first menu item (Kanban) — the ring was walked Right off the last column (blocked) so the board store's ring focus sits on Item(0) and its focused column is blocked
@@ -60,6 +60,6 @@ Feature: Mux board-pane ring seams fire off the board pane + stale board bar sta
     Then mux mode is active with the default preset and the board store's bar state is cleared — no ring focus and no open dropdown on the board store — while the board's focused column stays on blocked (NOT reset by the entry)
 
   Scenario: With the board pane focused the BUG-200 seam crossings stay in effect
-    Given the mux grid is [Board | Agent] with 1 open session and the Board pane is focused with the ring on the last session chip
+    Given the mux grid is [Board | Agent] with 1 open session and the Board pane is focused with the ring on the last button ([ New Agent ], MUX-013)
     When I press Right once
     Then the highlight clears from the top bar and the board's first column (backlog) is focused (the seam crossing stays in effect on the board pane)

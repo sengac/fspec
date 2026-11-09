@@ -23,7 +23,6 @@
 #![allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_sessions::SessionManager;
 use tokio::sync::Mutex;
@@ -59,8 +58,9 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     // SessionStore pointing at the new temp dir (the store caches its
     // sessions_dir on first touch).
     codelet_core::persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
-    let manager = Arc::new(SessionManager::new());
+    let manager = SessionManager::new();
     Ok((data_dir, manager))
 }
 
@@ -104,7 +104,7 @@ async fn destroying_an_unknown_session_id_pushes_no_removal_event() -> Result<()
     manager
         .destroy_session(&live)
         .map_err(|e| format!("destroy_session(live): {e}"))?;
-    let got = tokio::time::timeout(Duration::from_millis(500), removed_rx.recv())
+    let got = codelet_test_helpers::deadlock_guard("removed_rx.recv()", removed_rx.recv())
         .await
         .map_err(|_| "timed out waiting for the session-removed broadcast".to_string())?
         .map_err(|e| format!("removed broadcast recv error: {e}"))?;

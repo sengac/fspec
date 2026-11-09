@@ -5,30 +5,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "34-65",
+          "lines": "35-65",
           "implMappings": [
             {
-              "file": "rust/rpc-types/src/lib.rs",
+              "file": "rust/rpc-types/src/dialogs.rs",
               "lines": [
-                628,
-                629,
-                630,
-                631,
-                632,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640,
-                641,
-                642,
-                643,
-                644,
-                645
-              ]
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "pub max_images: Option<u32>,",
+              "lastLine": "/// the explicit never-retry sentinel."
             }
           ]
         }
@@ -39,47 +41,52 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "66-104",
+          "lines": "68-105",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/handle_trait_3.rs",
               "lines": [
-                694,
-                695,
-                696,
-                697,
-                698,
-                699,
-                700,
-                701,
-                702,
-                703,
-                704,
-                705,
-                706,
-                707,
-                708,
-                709,
-                710,
-                711,
-                712,
-                713,
-                714,
-                715,
-                716,
-                717,
-                718,
-                719,
-                720,
-                721,
-                722,
-                723,
-                724,
-                725,
-                726,
-                727,
-                728
-              ]
+                66,
+                67,
+                68,
+                69,
+                70,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": "/// AMGR-023: do (Done) or cancel (Cancel) the paused session's human",
+              "lastLine": "}"
             }
           ]
         }
@@ -90,25 +97,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "105-129",
+          "lines": "108-131",
           "implMappings": [
             {
-              "file": "rust/core/src/session_manager_handle.rs",
+              "file": "rust/core/src/session_manager_handle/stub.rs",
               "lines": [
-                1133,
-                1134,
-                1135,
-                1136,
-                1137,
-                1138,
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145
-              ]
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "firstLine": "// RPC-049: per-stub counter of `resume_session` calls. Used by",
+              "lastLine": "// both transports observe the same in-memory state."
             }
           ]
         }
@@ -119,27 +128,29 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "130-162",
+          "lines": "134-165",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/providers_sessions.rs",
               "lines": [
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435
-              ]
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ],
+              "firstLine": "async fn resume_session(session_id: SessionId) -> Result<(), String>;",
+              "lastLine": "async fn set_work_unit_context("
             }
           ]
         }
@@ -150,38 +161,46 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "163-194",
+          "lines": "168-198",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/session_context.rs",
               "lines": [
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621
-              ]
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "firstLine": "async fn get_work_unit_focus(",
+              "lastLine": "_work_unit_id: Option<String>,"
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/backend/session_history.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "async fn restore_session_token_state(",
+              "lastLine": "}"
             }
           ]
         }
@@ -192,38 +211,40 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "195-232",
+          "lines": "201-234",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                663,
-                664,
-                665,
-                666,
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675,
-                676,
-                677,
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684,
-                685,
-                686,
-                687,
-                688
-              ]
+                57,
+                58,
+                59,
+                60,
+                61,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                78,
+                79,
+                80,
+                81,
+                82,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "async fn get_pending_input(&self, session_id: SessionId) -> Result<Option<String>> {",
+              "lastLine": ""
             }
           ]
         }
@@ -234,7 +255,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "233-262",
+          "lines": "237-266",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/loop_parser.rs",
@@ -380,7 +401,9 @@
                 139,
                 140,
                 141
-              ]
+              ],
+              "firstLine": "//! `/loop` subcommand parser — RPC-059.",
+              "lastLine": "interval_seconds,"
             }
           ]
         }
@@ -391,7 +414,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "263-290",
+          "lines": "270-288",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_loop.rs",
@@ -626,8 +649,19 @@
                 228,
                 229,
                 230,
-                231
-              ]
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ],
+              "firstLine": "//! App::dispatch routing for the `/loop …` slash command",
+              "lastLine": "}"
             }
           ]
         }
@@ -642,14 +676,16 @@
       "rust/fspec-tui/tests/source_shape_rpc059.rs"
     ],
     "implFiles": [
-      "rust/rpc-types/src/lib.rs",
-      "rust/core/src/session_manager_handle.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc-types/src/dialogs.rs",
+      "rust/core/src/session_manager_handle/handle_trait_3.rs",
+      "rust/core/src/session_manager_handle/stub.rs",
+      "rust/rpc/src/service_declaration/providers_sessions.rs",
+      "rust/fspec-tui/src/transport/backend/session_context.rs",
+      "rust/fspec-tui/src/transport/backend/session_history.rs",
+      "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
       "rust/fspec-tui/src/app/loop_parser.rs",
       "rust/fspec-tui/src/app/dispatch_slash_loop.rs"
     ],
-    "totalLinesCovered": 762
+    "totalLinesCovered": 755
   }
 }

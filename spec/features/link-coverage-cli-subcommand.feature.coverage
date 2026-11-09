@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "86-110",
+          "lines": "97-121",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
@@ -39,7 +39,9 @@
                 58,
                 59,
                 60
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": "\"skipValidation\".to_string(),"
             }
           ]
         }
@@ -50,25 +52,30 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "117-149",
+          "lines": "128-160",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
               "lines": [
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74
-              ]
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ],
+              "firstLine": "let args_json = json!(payload).to_string();",
+              "lastLine": "}"
             }
           ]
         }
@@ -79,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "156-180",
+          "lines": "164-191",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
@@ -95,7 +102,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "if args.replace {",
+              "lastLine": "serde_json::from_str(&rendered).context(\"parse fspec_core envelope\")?;"
             }
           ]
         }
@@ -106,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "187-211",
+          "lines": "198-222",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
@@ -122,7 +131,9 @@
                 84,
                 85,
                 86
-              ]
+              ],
+              "firstLine": "if args.replace {",
+              "lastLine": "serde_json::from_str(&rendered).context(\"parse fspec_core envelope\")?;"
             }
           ]
         }
@@ -133,7 +144,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "218-236",
+          "lines": "229-247",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
@@ -143,7 +154,9 @@
                 34,
                 35,
                 36
-              ]
+              ],
+              "firstLine": "pub expected_scenario_hash: Option<String>,",
+              "lastLine": ""
             }
           ]
         }
@@ -154,7 +167,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_link_coverage.rs",
-          "lines": "243-300",
+          "lines": "254-311",
           "implMappings": [
             {
               "file": "rust/fspec/src/link_coverage.rs",
@@ -190,7 +203,9 @@
                 65,
                 66,
                 67
-              ]
+              ],
+              "firstLine": "/// Entry point for the `link-coverage` clap subcommand.",
+              "lastLine": "if let Some(index) = args.test_mapping_index {"
             }
           ]
         }
@@ -207,6 +222,6 @@
     "implFiles": [
       "rust/fspec/src/link_coverage.rs"
     ],
-    "totalLinesCovered": 285
+    "totalLinesCovered": 291
   }
 }

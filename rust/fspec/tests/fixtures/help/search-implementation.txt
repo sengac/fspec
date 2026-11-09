@@ -17,13 +17,13 @@ OPTIONS
     Output results in JSON format
 
 COMMON PATTERNS
-  • undefined
-    Example: undefined
-    undefined
+  • Find manual file operations that could use utilities
+    Example: fspec search-implementation --function="readFile" --show-work-units
+fspec search-implementation --function="writeFile" --show-work-units
 
-  • undefined
-    Example: undefined
-    undefined
+  • Impact analysis before refactoring
+    Example: fspec search-implementation --function=parseGherkin
+fspec search-implementation --function=formatFeature
 
 
 EXAMPLES
@@ -64,7 +64,7 @@ src/utils/config-manager.ts
 
 RELATED COMMANDS
   fspec compare-implementations
-  fspec search-scenarios
+  fspec context
   fspec show-coverage
 
 NOTES

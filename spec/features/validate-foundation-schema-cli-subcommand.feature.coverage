@@ -31,7 +31,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "/// clap subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -68,7 +70,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "/// clap subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -105,7 +109,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "/// clap subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "Ok(1)"
             }
           ]
         }
@@ -142,7 +148,9 @@
                 64,
                 65,
                 66
-              ]
+              ],
+              "firstLine": "/// clap subcommand. Returns the process exit code so `main` can propagate it",
+              "lastLine": "Ok(1)"
             }
           ]
         }

@@ -56,7 +56,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -118,7 +120,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -129,7 +133,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_checkpoint.rs",
-          "lines": "123-134",
+          "lines": "126-137",
           "implMappings": [
             {
               "file": "rust/fspec/src/checkpoint.rs",
@@ -167,7 +171,9 @@
                 77,
                 78,
                 79
-              ]
+              ],
+              "firstLine": "let succeeded = match checkpoint::run(&structured_args, &project_root).await {",
+              "lastLine": "Ok(if succeeded { 0 } else { 1 })"
             }
           ]
         }
@@ -185,7 +191,9 @@
               "lines": [
                 34,
                 35
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `checkpoint` clap subcommand.",
+              "lastLine": "pub async fn run(args: CliArgs) -> Result<u8> {"
             }
           ]
         }
@@ -247,7 +255,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "pub async fn run(args: CliArgs) -> Result<u8> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -298,12 +308,10 @@
                 33,
                 34,
                 35,
-                36,
-                37,
-                38,
-                39,
-                40
-              ]
+                36
+              ],
+              "firstLine": "//! `checkpoint` help configuration — Rust port of",
+              "lastLine": "description: Some(\"Create baseline for experiments\"),"
             }
           ]
         }
@@ -321,6 +329,6 @@
       "rust/fspec/src/checkpoint.rs",
       "rust/fspec-core/src/help/configs/checkpoint.rs"
     ],
-    "totalLinesCovered": 377
+    "totalLinesCovered": 373
   }
 }

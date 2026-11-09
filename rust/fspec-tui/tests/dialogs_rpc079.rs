@@ -1,12 +1,12 @@
-//! RPC-079 — Integration tests for the new reusable ErrorDialog /
-//! NotificationDialog / StatusDialog wrappers.
+//! RPC-079 — Integration tests for the reusable ErrorDialog /
+//! NotificationDialog wrappers (TUI-132 removed the StatusDialog, which
+//! nothing showed).
 //!
 //! Feature: spec/features/rust-error-notification-status-dialog-wrappers.feature
 //!
 //! These tests pin the Component-trait surface (priority, id,
 //! handle_event(Esc) -> Callback) and the auto-dismiss timer
-//! behaviour (NotificationDialog 2s countdown, StatusDialog
-//! Complete-state 3s auto-close). Timers run under
+//! behaviour (NotificationDialog 2s countdown). Timers run under
 //! `#[tokio::test(start_paused = true)]` + `tokio::time::advance` so
 //! tests are deterministic and complete in milliseconds of wall time.
 //!
@@ -14,13 +14,9 @@
 //!   1. ErrorDialog renders red bordered modal with sticky ESC-only dismissal
 //!   2. NotificationDialog success severity shows cyan border with green title and 2s countdown
 //!   3. NotificationDialog warning severity with auto_dismiss_ms=0 is sticky with yellow border
-//!   4. StatusDialog in Restoring state shows progress counter and ignores ESC
-//!   5. StatusDialog transitions Restoring to Complete with green title and 3s auto-close
-//!   6. StatusDialog transitions Restoring to Error with red border and ESC dismissal
 //!   7. No raw FspecDialog struct literals remain in non-test code after the wrappers ship
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::time::Duration;
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
@@ -33,7 +29,6 @@ use codelet_fspec_tui::components::error_dialog::{ErrorDialog, ERROR_DIALOG_ID};
 use codelet_fspec_tui::components::notification_dialog::{
     NotificationDialog, NotificationSeverity, NOTIFICATION_DIALOG_ID,
 };
-use codelet_fspec_tui::components::status_dialog::{StatusDialog, StatusKind, STATUS_DIALOG_ID};
 use codelet_fspec_tui::components::{Action, Component, EventResult, Priority};
 use codelet_fspec_tui::compositor::Compositor;
 
@@ -48,15 +43,17 @@ fn key(code: KeyCode) -> Event {
     })
 }
 
-fn render_to_buffer<C: Component>(dialog: &mut C) -> Buffer {
+fn render_to_buffer<C: Component>(
+    dialog: &mut C,
+) -> Result<Buffer, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new(TestBackend)")?;
     terminal
         .draw(|frame| {
             dialog.render(frame.area(), frame.buffer_mut());
         })
-        .expect("draw");
-    terminal.backend().buffer().clone()
+        .or_fail("draw")?;
+    Ok(terminal.backend().buffer().clone())
 }
 
 fn buffer_text(buf: &Buffer) -> String {
@@ -75,7 +72,7 @@ fn buffer_text(buf: &Buffer) -> String {
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal() {
+async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal() -> TestResult {
     // @step Given an ErrorDialog constructed with message "Disk full"
     let mut dialog = ErrorDialog::new("Disk full");
 
@@ -83,7 +80,7 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
     assert_eq!(dialog.id(), ERROR_DIALOG_ID);
 
     // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
+    let buf = render_to_buffer(&mut dialog)?;
     let text = buffer_text(&buf);
 
     // @step Then the buffer contains a centered rounded border drawn in Color::Red
@@ -101,9 +98,9 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
     // @step Then the body contains a row whose visible text equals "Disk full" in Color::Red
     assert!(text.contains("Disk full"), "missing body");
 
-    // @step Then the footer reads "Press ESC to dismiss" in dim style centered horizontally
+    // @step Then the footer reads "c copy · Press ESC to dismiss" in dim style centered horizontally
     assert!(
-        text.contains("Press ESC to dismiss"),
+        text.contains("c copy · Press ESC to dismiss"),
         "missing dismiss footer"
     );
 
@@ -134,11 +131,15 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
                 "ESC must remove dialog"
             );
         }
-        other => panic!(
-            "expected Consumed(Some(cb)), got is_consumed={:?}",
-            other.is_consumed()
-        ),
+        other => {
+            return Err(format!(
+                "expected Consumed(Some(cb)), got is_consumed={:?}",
+                other.is_consumed()
+            )
+            .into())
+        }
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -146,7 +147,8 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(start_paused = true)]
-async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countdown() {
+async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countdown() -> TestResult
+{
     let (tx, mut rx) = unbounded_channel::<Action>();
 
     // @step Given a NotificationDialog constructed with message "Saved" and severity Success
@@ -158,7 +160,7 @@ async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countd
     assert_eq!(dialog.auto_dismiss_ms(), 2000);
 
     // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
+    let buf = render_to_buffer(&mut dialog)?;
     let text = buffer_text(&buf);
 
     // @step Then the buffer contains a centered rounded border drawn in Color::Cyan
@@ -170,20 +172,20 @@ async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countd
     // @step Then the body contains a row whose visible text equals "Saved"
     assert!(text.contains("Saved"), "missing body");
 
-    // @step Then the footer reads "Closing in 2s... (ESC to dismiss)" in dim style centered horizontally
+    // @step Then the footer reads "Closing in 2s... (c copy · ESC to dismiss)" in dim style centered horizontally
     assert!(
-        text.contains("Closing in 2s... (ESC to dismiss)"),
+        text.contains("Closing in 2s... (c copy · ESC to dismiss)"),
         "missing 2s countdown footer; got:\n{text}"
     );
 
     // @step When 1 second of simulated time elapses
     tokio::time::advance(Duration::from_secs(1)).await;
-    let buf = render_to_buffer(&mut dialog);
+    let buf = render_to_buffer(&mut dialog)?;
     let text = buffer_text(&buf);
 
-    // @step Then the footer reads "Closing in 1s... (ESC to dismiss)"
+    // @step Then the footer reads "Closing in 1s... (c copy · ESC to dismiss)"
     assert!(
-        text.contains("Closing in 1s... (ESC to dismiss)"),
+        text.contains("Closing in 1s... (c copy · ESC to dismiss)"),
         "expected 1s countdown after advancing 1s; got:\n{text}"
     );
 
@@ -193,11 +195,12 @@ async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countd
     tokio::task::yield_now().await;
 
     // @step Then the dialog emits a Callback that calls compositor.remove(NOTIFICATION_DIALOG_ID)
-    let action = rx.recv().await.expect("dismissal action");
+    let action = rx.recv().await.or_fail("dismissal action")?;
     match action {
         Action::DismissDialog(id) => assert_eq!(id, NOTIFICATION_DIALOG_ID),
-        other => panic!("expected DismissDialog, got {other:?}"),
+        other => return Err(format!("expected DismissDialog, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -205,7 +208,7 @@ async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countd
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(start_paused = true)]
-async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero() {
+async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero() -> TestResult {
     let (tx, mut rx) = unbounded_channel::<Action>();
 
     // @step Given a NotificationDialog constructed with message "Slow connection" and severity Warning
@@ -215,7 +218,7 @@ async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero
         .with_action_tx(tx);
 
     // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
+    let buf = render_to_buffer(&mut dialog)?;
     let text = buffer_text(&buf);
 
     // @step Then the buffer contains a centered rounded border drawn in Color::Yellow
@@ -228,9 +231,9 @@ async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero
     // @step Then the body contains a row whose visible text equals "Slow connection"
     assert!(text.contains("Slow connection"));
 
-    // @step Then the footer reads "Press ESC to dismiss" in dim style centered horizontally
+    // @step Then the footer reads "c copy · Press ESC to dismiss" in dim style centered horizontally
     assert!(
-        text.contains("Press ESC to dismiss"),
+        text.contains("c copy · Press ESC to dismiss"),
         "expected static dismiss footer; got:\n{text}"
     );
     assert!(
@@ -258,178 +261,20 @@ async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero
             cb(&mut compositor);
             assert!(!compositor.contains(NOTIFICATION_DIALOG_ID));
         }
-        other => panic!(
-            "expected Consumed(Some(cb)); is_consumed={:?}",
-            other.is_consumed()
-        ),
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Scenario 4: StatusDialog in Restoring state shows progress counter and ignores ESC
-// ─────────────────────────────────────────────────────────────────────
-
-#[tokio::test]
-async fn status_dialog_restoring_shows_progress_counter_and_ignores_esc() {
-    // @step Given a StatusDialog constructed with operation_type "Restoring Files"
-    // (Operation type stripped of " Files" suffix because the renderer
-    //  appends " Files" itself to mirror the TS reference. We pass
-    //  "Restoring" so the rendered title is "Restoring Files".)
-    let mut dialog = StatusDialog::new("Restoring");
-
-    // @step When the dialog enters Restoring state with current="file3.txt", idx=3, total=10
-    dialog.set_restoring("file3.txt", 3, 10);
-    assert!(matches!(dialog.state(), StatusKind::Restoring { .. }));
-
-    // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
-    let text = buffer_text(&buf);
-
-    // @step Then the buffer contains a centered rounded border drawn in Color::Cyan
-    assert!(text.contains("\u{256d}"));
-
-    // @step Then the title row reads "Restoring Files" in bold Color::Cyan
-    assert!(text.contains("Restoring Files"));
-
-    // @step Then the body contains a row whose visible text equals "file3.txt"
-    assert!(text.contains("file3.txt"));
-
-    // @step Then the body contains a row whose visible text equals "(3/10)"
-    assert!(text.contains("(3/10)"));
-
-    // @step When the dialog receives a KeyCode::Esc event
-    let result = dialog.handle_event(&key(KeyCode::Esc));
-
-    // @step Then the dialog returns EventResult::ignored() and emits NO Callback
-    match result {
-        EventResult::Ignored(None) => {}
-        EventResult::Ignored(Some(_)) => panic!("ESC during Restoring must emit NO callback"),
-        EventResult::Consumed(_) => panic!("ESC during Restoring must NOT be consumed"),
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Scenario 5: StatusDialog transitions Restoring to Complete with green title and 3s auto-close
-// ─────────────────────────────────────────────────────────────────────
-
-#[tokio::test(start_paused = true)]
-async fn status_dialog_transitions_restoring_to_complete_with_green_title_and_3s_auto_close() {
-    let (tx, mut rx) = unbounded_channel::<Action>();
-
-    // @step Given a StatusDialog currently in Restoring state with operation_type "Restoring Files"
-    let mut dialog = StatusDialog::new("Restoring").with_action_tx(tx.clone());
-    dialog.set_restoring("file1.txt", 1, 1);
-
-    // @step When the dialog transitions to Complete state
-    dialog.transition_to_complete();
-    assert!(matches!(dialog.state(), StatusKind::Complete));
-
-    // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
-    let text = buffer_text(&buf);
-
-    // @step Then the buffer contains a centered rounded border drawn in Color::Cyan
-    assert!(text.contains("\u{256d}"));
-
-    // @step Then the title row reads "Restore Complete!" in bold Color::Green
-    assert!(
-        text.contains("Restore Complete!"),
-        "expected 'Restore Complete!' title; got:\n{text}"
-    );
-
-    // @step Then the footer reads "Closing in 3s... (ESC to dismiss)" in dim style centered horizontally
-    assert!(
-        text.contains("Closing in 3s... (ESC to dismiss)"),
-        "expected 3s countdown footer; got:\n{text}"
-    );
-
-    // @step When 3 seconds of simulated time elapse
-    tokio::time::advance(Duration::from_secs(3)).await;
-    tokio::task::yield_now().await;
-
-    // @step Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID)
-    let action = rx.recv().await.expect("dismissal action");
-    match action {
-        Action::DismissDialog(id) => assert_eq!(id, STATUS_DIALOG_ID),
-        other => panic!("expected DismissDialog, got {other:?}"),
-    }
-
-    // @step When a fresh StatusDialog enters Complete state and receives a KeyCode::Esc event before the countdown finishes
-    let (tx2, _rx2) = unbounded_channel::<Action>();
-    let mut dialog2 = StatusDialog::new("Restoring").with_action_tx(tx2);
-    dialog2.transition_to_complete();
-
-    let result = dialog2.handle_event(&key(KeyCode::Esc));
-
-    // @step Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID) immediately
-    match result {
-        EventResult::Consumed(Some(cb)) => {
-            let mut compositor = Compositor::new();
-            compositor.push(Box::new(StatusDialog::new("Restoring")));
-            assert!(compositor.contains(STATUS_DIALOG_ID));
-            cb(&mut compositor);
-            assert!(!compositor.contains(STATUS_DIALOG_ID));
+        other => {
+            return Err(format!(
+                "expected Consumed(Some(cb)); is_consumed={:?}",
+                other.is_consumed()
+            )
+            .into())
         }
-        other => panic!(
-            "expected Consumed(Some(cb)); is_consumed={:?}",
-            other.is_consumed()
-        ),
     }
-}
-
-// Scenario 6: StatusDialog transitions Restoring to Error
-#[tokio::test(start_paused = true)]
-async fn status_dialog_transitions_restoring_to_error_with_red_border_and_esc_dismissal() {
-    let (tx, mut rx) = unbounded_channel::<Action>();
-
-    // @step Given a StatusDialog currently in Restoring state
-    let mut dialog = StatusDialog::new("Restoring").with_action_tx(tx);
-    dialog.set_restoring("file1.txt", 1, 5);
-
-    // @step When the dialog transitions to Error state with error_message
-    dialog.transition_to_error("Permission denied: a/b/c");
-    assert!(matches!(dialog.state(), StatusKind::Error { .. }));
-
-    // @step When the dialog is rendered into an 80x24 TestBackend buffer
-    let buf = render_to_buffer(&mut dialog);
-    let text = buffer_text(&buf);
-
-    // @step Then the buffer contains a centered rounded border drawn in Color::Red
-    assert!(text.contains("\u{256d}"));
-
-    // @step Then the title row reads Error in bold Color::Red
-    assert!(text.contains("Error"));
-
-    // @step Then the body contains the error message
-    assert!(text.contains("Permission denied: a/b/c"));
-
-    // @step Then no auto-dismiss Callback fires
-    tokio::time::advance(Duration::from_secs(10)).await;
-    tokio::task::yield_now().await;
-    assert!(
-        rx.try_recv().is_err(),
-        "Error state must never auto-dismiss"
-    );
-
-    // @step When the dialog receives a KeyCode::Esc event
-    let result = dialog.handle_event(&key(KeyCode::Esc));
-
-    // @step Then the dialog emits a Callback that calls compositor.remove
-    match result {
-        EventResult::Consumed(Some(cb)) => {
-            let mut compositor = Compositor::new();
-            compositor.push(Box::new(StatusDialog::new("Restoring")));
-            assert!(compositor.contains(STATUS_DIALOG_ID));
-            cb(&mut compositor);
-            assert!(!compositor.contains(STATUS_DIALOG_ID));
-        }
-        other => panic!("expected Consumed; is_consumed={:?}", other.is_consumed()),
-    }
+    Ok(())
 }
 
 // Scenario 7: No raw FspecDialog struct literals remain in non-test code
 #[test]
-fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
+fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() -> TestResult {
     // @step Given the rust/fspec-tui crate after RPC-079 implementation completes
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -491,7 +336,7 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
     // @step When the same search is run inside rust/fspec-tui/src/components/
     // @step Then the only matches occur inside render() methods of files that delegate to dialog_theme::render_dialog
     for (file, lineno, line) in &inside_hits {
-        let body = fs::read_to_string(file).expect("read");
+        let body = fs::read_to_string(file).or_fail("read")?;
         // Find the byte offset of THIS line.
         let mut current_line = 1usize;
         let mut offset = 0usize;
@@ -534,6 +379,7 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
             "FspecDialog literal at {file:?}:{lineno} does not delegate to render_dialog in same fn"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -547,7 +393,7 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
 // The scrollback "API Error: ..." line still appears per RPC-078.
 
 #[test]
-fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
+fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() -> TestResult {
     use codelet_fspec_tui::{App, FspecBackend};
     use codelet_rpc_types::{SessionId, StreamChunk};
     use common::MockBackend;
@@ -581,7 +427,7 @@ fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&SessionId::new("s-1"))
-        .expect("SessionContext must exist for s-1");
+        .or_fail("SessionContext must exist for s-1")?;
     let chunks = ctx.scrollback.visible_window(1024);
     let mut all_text = String::new();
     for chunk in chunks {
@@ -603,6 +449,7 @@ fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
         all_text.contains("Too Many Requests"),
         "scrollback must contain 'Too Many Requests'; got: {all_text:?}"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -618,7 +465,7 @@ fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
 // disconnect_dialog overlay behaviour).
 
 #[test]
-fn end_to_end_app_render_paints_error_dialog_modal_on_top_of_agentview() {
+fn end_to_end_app_render_paints_error_dialog_modal_on_top_of_agentview() -> TestResult {
     use codelet_fspec_tui::{App, FspecBackend};
     use codelet_rpc_types::{SessionId, StreamChunk};
     use common::MockBackend;
@@ -644,7 +491,7 @@ fn end_to_end_app_render_paints_error_dialog_modal_on_top_of_agentview() {
         StreamChunk::error(error_msg),
     ));
     let backend_tb = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend_tb).expect("Terminal::new");
+    let mut terminal = Terminal::new(backend_tb).or_fail("Terminal::new")?;
     let _ = terminal.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     });
@@ -707,4 +554,5 @@ fn end_to_end_app_render_paints_error_dialog_modal_on_top_of_agentview() {
         "scrollback 'API Error:' line must remain visible above/below \
          the centred modal; got buffer:\n{all_text}"
     );
+    Ok(())
 }

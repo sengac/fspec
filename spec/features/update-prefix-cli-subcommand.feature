@@ -1,3 +1,4 @@
+@BUG-582
 @done
 @rust
 @prefixes
@@ -85,14 +86,14 @@ Feature: Port update-prefix command to Rust
   Scenario: CLI surface does NOT expose --epic-id
     Given spec/prefixes.json contains AUTH with description 'Auth features'
     When I run `fspec update-prefix AUTH --epic-id auth-epic` in that project root
-    Then the process exits with code 2
-    Then stderr contains the substring 'unexpected argument'
+    Then the process exits with code 1
+    Then stderr contains the substring 'unknown option'
     Then spec/prefixes.json is byte-identical to its pre-call content
 
   Scenario: CLI requires the prefix positional argument
     Given any project root
     When I run `fspec update-prefix` with no arguments in that project root
-    Then the process exits with code 2
+    Then the process exits with code 1
     Then stderr contains the substring 'required'
 
   Scenario: CLI help surface matches the captured TS fixture

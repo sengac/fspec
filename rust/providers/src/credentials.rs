@@ -62,7 +62,8 @@ pub const SOURCE_DOTENV: &str = "dotenv";
 pub fn mask_api_key(api_key: &str) -> String {
     // TS contract: `apiKey.length < 12` — JavaScript's `.length` counts
     // UTF-16 code units. For the ASCII API keys this matches Rust's
-    // `.len()` byte count exactly. Non-ASCII keys are not in scope.
+    // `.len()` byte count exactly. A non-ASCII key is cut on char
+    // boundaries (BUG-642).
     if api_key.len() < 12 {
         return "••••••••".to_string();
     }
@@ -72,8 +73,9 @@ pub fn mask_api_key(api_key: &str) -> String {
         .iter()
         .find(|p| api_key.starts_with(*p))
         .copied()
-        .unwrap_or(&api_key[..6]);
-    let suffix = &api_key[api_key.len() - 4..];
+        .unwrap_or(&api_key[..api_key.floor_char_boundary(6)]);
+    // BUG-642: the prefix and suffix cut on char boundaries.
+    let suffix = &api_key[api_key.ceil_char_boundary(api_key.len() - 4)..];
     format!("{prefix}••••••••{suffix}")
 }
 

@@ -24,7 +24,7 @@
 //!    `text`, `deleted: false`, `createdAt = iso8601_now()`. Field order is
 //!    `id, text, deleted, createdAt` (matches TS object-literal insertion).
 //! 6. Bump `workUnit.updatedAt = iso8601_now()`.
-//! 7. Atomic write via [`write_json_atomic`].
+//! 7. Atomic write via [`crate::io::board::write_work_units`].
 //! 8. Render `✓ Example added successfully\n\n<system-reminder>EXAMPLE
 //!    CHECK\n\nUser story: "As a <role>..."\nExample: "<text>"\n\n...`
 //!    using `wrapInSystemReminder` parity. `<role>` falls back to
@@ -42,7 +42,6 @@ use serde_json::{Map, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
-use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 
 /// CLI / dispatcher arguments accepted by `add-example`. Mirrors the TS
@@ -62,6 +61,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "add-example")?;
     // Load (auto-create on first run).
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -144,8 +145,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     // Persist atomically.
-    let path = project_root.join("spec").join("work-units.json");
-    write_json_atomic(&path, &data)?;
+    crate::io::board::write_work_units(project_root, &data)?;
 
     // Render the success block (mirrors TS `output.log(...)` calls).
     let role = extract_user_story_role(&data, &args.work_unit_id);

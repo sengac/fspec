@@ -1,4 +1,5 @@
 //! Feature: spec/features/generic-agent-creation.feature
+use codelet_test_helpers::TestResult;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 use super::*;
@@ -16,10 +17,15 @@ async fn new_agent_starts_unassigned_despite_stale_selection() -> TestResult {
             let assignments = backend.set_work_unit_context_calls();
             script(&backend, isolated, "blank");
             // @step When New Agent is confirmed with normal or isolated creation
-            app.dispatch(Action::MenuZoneCActivate(0));
-            settle(&mut app).await;
+            // BUG-426: resolve the button by label; TUI-114 put New Bot first.
+            let new_agent = codelet_fspec_tui::views::board::menu_snapshot::BOARD_ZONE_C
+                .iter()
+                .position(|button| button.label == "[ New Agent ]")
+                .ok_or("the board bar has a New Agent button")?;
+            app.dispatch(Action::MenuZoneCActivate(new_agent));
+            settle(&mut app).await?;
             let rendered = text(&mut app);
-            confirm(&mut app, isolated).await;
+            confirm(&mut app, isolated).await?;
             // @step Then the dialog is generic and the new session has no story
             assert!(rendered.contains("Start New Agent?"));
             assert!(app
@@ -49,6 +55,16 @@ async fn shift_right_navigates_before_offering_unassigned_creation() -> TestResu
             app.agent_view_store_mut().focus_session_index(0);
             if in_mux {
                 mux(&mut app);
+                // MUX-012: Shift+Right moves between panes in layout order
+                // and never rotates the agent window, so navigating within
+                // agents needs one agent pane per open agent.
+                let layout =
+                    codelet_fspec_tui::views::multiplex::MuxLayout::parse("board, agent, agent")
+                        .map_err(|error| format!("layout: {error}"))?;
+                app.navigator_mut().mux.set_layout(layout);
+                app.navigator_mut()
+                    .mux
+                    .sync_window(&[sid("first"), sid("second")]);
                 app.navigator_mut()
                     .mux
                     .focus_agent_pane_for_session(&sid("first"));
@@ -60,7 +76,7 @@ async fn shift_right_navigates_before_offering_unassigned_creation() -> TestResu
             // @step When Shift Right navigates within agents then creates at the right edge in agent or mux mode
             let key = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::SHIFT));
             let _ = app.handle_event(&key);
-            settle(&mut app).await;
+            settle(&mut app).await?;
             assert_eq!(
                 app.agent_view_store().current_session(),
                 Some(&sid("second"))
@@ -68,16 +84,16 @@ async fn shift_right_navigates_before_offering_unassigned_creation() -> TestResu
             assert!(!dialog(&app));
             assert_eq!(backend.create_session_calls(), 0);
             let _ = app.handle_event(&key);
-            settle(&mut app).await;
+            settle(&mut app).await?;
             assert!(dialog(&app));
             assert!(text(&mut app).contains("Start New Agent?"));
-            cancel(&mut app).await;
+            cancel(&mut app).await?;
             assert!(!dialog(&app));
             assert!(!app.navigator().mux.pending_new_agent());
             let _ = app.handle_event(&key);
-            settle(&mut app).await;
+            settle(&mut app).await?;
             assert!(dialog(&app));
-            confirm(&mut app, isolated).await;
+            confirm(&mut app, isolated).await?;
             // @step Then navigation creates nothing and the confirmed new agent is unassigned
             assert_eq!(backend.create_session_calls(), usize::from(!isolated));
             assert_eq!(
@@ -117,7 +133,7 @@ async fn generic_session_observation_and_completion_never_attach_ambient_selecti
         app.agent_view_store_mut().focus_session_index(0);
         app.dispatch(Action::SessionObserved(observed));
         app.dispatch(Action::SessionCreated(sid("generic")));
-        settle(&mut app).await;
+        settle(&mut app).await?;
         // @step Then the session is initialized once without any story assignment
         assert_eq!(app.agent_view_store().open_sessions().len(), 2);
         assert_eq!(

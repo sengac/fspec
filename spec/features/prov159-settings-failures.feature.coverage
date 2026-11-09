@@ -33,7 +33,9 @@
                 23,
                 24,
                 25
-              ]
+              ],
+              "firstLine": "pub(super) fn start(app: &mut App, provider_id: String) {",
+              "lastLine": "}"
             }
           ]
         }

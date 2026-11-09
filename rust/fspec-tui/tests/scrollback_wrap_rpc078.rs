@@ -11,8 +11,7 @@
 //!      latest content stays anchored to the bottom row even when an
 //!      earlier chunk spans multiple rows.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -45,7 +44,7 @@ fn app_with_session() -> App {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() {
+fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() -> TestResult {
     // @step Given an AgentView with a fresh SessionContext for session s-1 viewed in a 80-column terminal
     let mut app = app_with_session();
     // Force the session context's scrollback to know its viewport width
@@ -60,7 +59,7 @@ fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() {
 
     // Drive a render so the scrollback knows its viewport width.
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
     let _ = terminal.draw(|frame| {
         let area = frame.area();
         if let Some(ctx) = app
@@ -80,7 +79,7 @@ fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() {
     let chunks = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("SessionContext present")
+        .or_fail("SessionContext present")?
         .scrollback
         .visible_window(1024);
     assert_eq!(chunks.len(), 1, "expected exactly one chunk");
@@ -108,6 +107,7 @@ fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() {
         concatenated, expected,
         "wrapped Lines must reconstruct the original body verbatim"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ fn long_line_is_pre_wrapped_into_one_rendered_line_per_visual_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
+fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() -> TestResult {
     // @step Given a ScrollbackList rendered into an 80-column by 10-row area in stick-to-bottom mode
     let mut app = app_with_session();
 
@@ -129,7 +129,7 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
 
     // Drive a render so pre-wrap fires.
     let backend = TestBackend::new(80, 10);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
     let _ = terminal.draw(|frame| {
         let area = frame.area();
         if let Some(ctx) = app
@@ -191,6 +191,7 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
     //  to the bottom row, which is the stick-to-bottom invariant. The
     //  earlier wrapped chunk's rows naturally occupy the rows above it
     //  in the viewport.)
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -198,10 +199,8 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn short_scrollback_content_fills_from_top_of_viewport() {
-    // @step Given a ScrollbackList rendered into an 80-column by 24-row area
-    //       in stick-to-bottom mode with only two chunks 'You: hi' and
-    //       'API Error: rate limit'
+fn short_scrollback_content_fills_from_top_of_viewport() -> TestResult {
+    // @step Given a ScrollbackList rendered into an 80-column by 24-row area in stick-to-bottom mode with only two chunks 'You: hi' and 'API Error: rate limit'
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
@@ -214,7 +213,7 @@ fn short_scrollback_content_fills_from_top_of_viewport() {
 
     // @step When the scrollback is rendered into the buffer
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
     let mut first_row_text = String::new();
     let mut rows_above_first_message: Vec<String> = Vec::new();
     let _ = terminal.draw(|frame| {
@@ -270,6 +269,7 @@ fn short_scrollback_content_fills_from_top_of_viewport() {
         "row 2 must be the api error; got {:?}",
         rows_above_first_message[2]
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -278,7 +278,7 @@ fn short_scrollback_content_fills_from_top_of_viewport() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
+fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() -> TestResult {
     // @step Given an App with an active session s-1 and the AgentView routed
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -308,7 +308,7 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
 
     // @step When App.render is called into an 80x24 TestBackend buffer
     let backend = TestBackend::new(80, 24);
-    let mut terminal = Terminal::new(backend).expect("Terminal::new");
+    let mut terminal = Terminal::new(backend).or_fail("Terminal::new")?;
     let _ = terminal.draw(|frame| {
         app.render(frame.area(), frame.buffer_mut());
     });
@@ -370,4 +370,5 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
              message content; got r={r:?}"
         );
     }
+    Ok(())
 }

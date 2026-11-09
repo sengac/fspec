@@ -61,6 +61,26 @@ pub enum WebSearchAction {
     Other,
 }
 
+impl WebSearchAction {
+    /// PAUSE-001 / BUG-556: whether a page action's browser runs headless.
+    /// A paused action always runs visible (pausing a headless browser is
+    /// pointless), whatever `headless` says. `None` for non-page actions.
+    pub fn browser_headless(&self) -> Option<bool> {
+        match self {
+            Self::OpenPage {
+                headless, pause, ..
+            }
+            | Self::FindInPage {
+                headless, pause, ..
+            }
+            | Self::CaptureScreenshot {
+                headless, pause, ..
+            } => Some(*headless && !*pause),
+            Self::Search { .. } | Self::Other => None,
+        }
+    }
+}
+
 // Copied from Codex protocol events
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WebSearchBeginEvent {

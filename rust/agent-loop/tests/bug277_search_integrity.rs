@@ -19,6 +19,7 @@ fn scenario_cancelled_cold_discovery_never_hides_healthy_sessions() -> TestResul
     // @step Given healthy session manifests awaiting their first history discovery
     let directory = codelet_test_helpers::setup_temp_directory()?;
     persistence::reset_stores_for_tests();
+    codelet_test_helpers::isolated_user_directory()?;
     codelet_common::set_data_directory(directory.path().into())?;
     let first = persistence::create_session("first healthy", directory.path())?;
     let second = persistence::create_session("last healthy", directory.path())?;

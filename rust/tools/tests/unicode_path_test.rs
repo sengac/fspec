@@ -50,6 +50,10 @@ fn create_file_with_unicode_whitespace(
 /// Scenario: Resolve file with U+202F on disk when user types regular space
 #[tokio::test]
 async fn test_resolve_file_with_u202f_when_user_types_regular_space() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file on disk named with U+202F in its name
     let temp_dir = TempDir::new().unwrap();
     let (actual_path, _user_typed_path) =
@@ -91,6 +95,10 @@ async fn test_resolve_file_with_u202f_when_user_types_regular_space() {
 /// Scenario: Resolve file with regular space on disk when user pastes U+00A0
 #[tokio::test]
 async fn test_resolve_file_with_regular_space_when_user_pastes_nbsp() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file on disk named with regular ASCII spaces
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("my file.txt");
@@ -127,6 +135,10 @@ async fn test_resolve_file_with_regular_space_when_user_pastes_nbsp() {
 /// Scenario: validate_and_resolve_path normalizes Unicode whitespace before canonicalization
 #[tokio::test]
 async fn test_validate_and_resolve_path_normalizes_unicode_whitespace() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory on disk containing a file with U+202F in its name
     let temp_dir = TempDir::new().unwrap();
     // Create a file with a regular space (the normalized form) so validate_and_resolve_path
@@ -174,6 +186,10 @@ async fn test_validate_and_resolve_path_normalizes_unicode_whitespace() {
 /// Scenario: require_file_exists finds file via directory scan when normalized path also fails
 #[tokio::test]
 async fn test_require_file_exists_directory_scan_fallback() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file on disk named "Screenshot 2026-04-13 at 9.13.45\u202fam.txt"
     let temp_dir = TempDir::new().unwrap();
     let actual_name = format!("Screenshot 2026-04-13 at 9.13.45{NBSP_NARROW}am.txt");
@@ -206,6 +222,10 @@ async fn test_require_file_exists_directory_scan_fallback() {
 /// Scenario: Read tool reads file with U+202F when user provides regular space path
 #[tokio::test]
 async fn test_read_tool_unicode_text_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a text file on disk named with U+202F before "am" containing known content
     let temp_dir = TempDir::new().unwrap();
     let known_content = "This is the content of the screenshot description file.\nLine two.\n";
@@ -242,6 +262,10 @@ async fn test_read_tool_unicode_text_file() {
 /// Scenario: Read tool reads image with U+202F when user provides regular space path
 #[tokio::test]
 async fn test_read_tool_unicode_image_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a PNG image file on disk named "Screenshot 2026-04-13 at 9.13.45\u202fam.png"
     let temp_dir = TempDir::new().unwrap();
     // Minimal valid PNG: 8-byte header + IHDR chunk (1x1 pixel)
@@ -305,6 +329,10 @@ async fn test_read_tool_unicode_image_file() {
 /// Scenario: Edit tool edits file with U+202F when user provides regular space path
 #[tokio::test]
 async fn test_edit_tool_unicode_file() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a text file on disk named with U+202F containing "old content"
     let temp_dir = TempDir::new().unwrap();
     let (actual_path, user_typed_path) =
@@ -346,6 +374,10 @@ async fn test_edit_tool_unicode_file() {
 /// Scenario: Write tool normalizes Unicode whitespace in file path for new files
 #[tokio::test]
 async fn test_write_tool_normalizes_unicode_in_path() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a target directory exists
     let temp_dir = TempDir::new().unwrap();
 
@@ -391,6 +423,10 @@ async fn test_write_tool_normalizes_unicode_in_path() {
 /// Scenario: Ls tool lists directory when path contains Unicode whitespace
 #[tokio::test]
 async fn test_ls_tool_with_unicode_directory_path() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory on disk whose path contains U+202F
     let temp_dir = TempDir::new().unwrap();
     let unicode_dir_name = format!("my{NBSP_NARROW}dir");

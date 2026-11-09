@@ -25,8 +25,9 @@
 //! re-enters / resumes a session — that is the Shift+Right CYCLE
 //! gesture's `OpenAgentView` job). Enter on ANY registry row emits
 //! that entry's Action (resolved via `MenuAction::to_action`) and
-//! closes the dialog — so the registry's Help/Exit rows execute
-//! OpenBoardHelp / OpenBoardExitConfirmation exactly as before.
+//! closes the dialog — so the Help/Exit rows execute OpenBoardHelp /
+//! OpenBoardExitConfirmation exactly as before. TUI-135: the dialog
+//! lists `Esc Exit` in the slot where the Help dropdown shows `Esc Close`.
 //!
 //! Navigation: `↑`/`↓` move the cursor with wrap-around (BOARD-023
 //! R4); the mouse wheel drives the same movement (MuxConfigDialog R4
@@ -53,7 +54,9 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::dialog_theme_rows::label_description_row;
-use super::menu_bar::items::{MenuAction, CATEGORIES, HELP, KANBAN, SETTINGS, TOOLS};
+use super::menu_bar::items::{
+    MenuAction, MenuEntry, CATEGORIES, EXIT, HELP, KANBAN, SETTINGS, TOOLS,
+};
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Stable compositor id (BOARD-023 — kept unchanged this release,
@@ -73,12 +76,26 @@ const MIN_WIDTH: u16 = 48;
 /// these entry counts, so a registry change fails there first.
 const ROW_COUNT: usize = KANBAN.len() + TOOLS.len() + SETTINGS.len() + HELP.len();
 
-/// The per-row actions in registry order (the Enter resolver, R3).
-fn registry_actions() -> Vec<MenuAction> {
+/// TUI-135: the dialog's rows: every registry row in display order, with
+/// the Help dropdown's `Esc Close` row replaced by [`EXIT`]. One row per
+/// registry row, so the row indices and the TUI-129 one-key shortcuts
+/// (`item_keys::flat_row_for_key`) stay aligned with [`CATEGORIES`].
+fn menu_bar_help_entries() -> impl Iterator<Item = &'static MenuEntry> {
     CATEGORIES
         .iter()
-        .flat_map(|c| c.entries.iter().map(|e| e.action))
-        .collect()
+        .flat_map(|category| category.entries.iter())
+        .map(|entry| {
+            if entry.action == MenuAction::CloseMenu {
+                &EXIT
+            } else {
+                entry
+            }
+        })
+}
+
+/// The per-row actions in registry order (the Enter resolver, R3).
+fn registry_actions() -> Vec<MenuAction> {
+    menu_bar_help_entries().map(|e| e.action).collect()
 }
 
 /// Priority::Foreground modal dialog listing the full menu registry
@@ -194,6 +211,11 @@ impl Component for MenuBarHelpDialog {
             return EventResult::consumed();
         }
         if let Event::Key(key) = event {
+            // TUI-129: a row's key runs that row, like Enter on it.
+            if let Some(row) = super::menu_bar::item_keys::flat_row_for_key(key) {
+                self.cursor = row;
+                return self.enter();
+            }
             // R7 (BUG-161 parity): Shift/Ctrl chords are CONSUMED as
             // no-ops so chords like Shift+Right cannot leak through the
             // Compositor to the BoardView or App-level handler behind.
@@ -243,9 +265,7 @@ impl Component for MenuBarHelpDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let rows: Vec<crate::components::dialog_theme::DialogRow> = CATEGORIES
-            .iter()
-            .flat_map(|c| c.entries.iter())
+        let rows: Vec<crate::components::dialog_theme::DialogRow> = menu_bar_help_entries()
             .enumerate()
             .map(|(i, entry)| {
                 label_description_row(
@@ -268,131 +288,4 @@ impl Component for MenuBarHelpDialog {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-
-    fn key(code: KeyCode) -> Event {
-        Event::Key(crossterm::event::KeyEvent::new(
-            code,
-            crossterm::event::KeyModifiers::NONE,
-        ))
-    }
-
-    #[test]
-    fn new_defaults_cursor_to_first_registry_row() {
-        let d = MenuBarHelpDialog::new();
-        // R2: the stable BOARD-023 compositor id is kept unchanged.
-        assert_eq!(d.id(), MENU_BAR_HELP_DIALOG_ID);
-        assert_eq!(d.id(), "board-actions-dialog");
-        assert_eq!(d.priority(), Priority::Foreground);
-        assert_eq!(d.cursor(), 0);
-        // R1: the FULL registry body — MENU-008: 4 Kanban + 2 Tools +
-        // 2 Settings + 2 Help = 10 rows.
-        assert_eq!(ROW_COUNT, 10);
-    }
-
-    #[test]
-    fn up_from_first_row_wraps_to_last_and_down_wraps_back() {
-        let mut d = MenuBarHelpDialog::new();
-        let _ = d.handle_event(&key(KeyCode::Up));
-        assert_eq!(d.cursor(), 9);
-        let _ = d.handle_event(&key(KeyCode::Down));
-        assert_eq!(d.cursor(), 0);
-    }
-
-    #[test]
-    fn enter_on_row_zero_emits_open_create_session_dialog() {
-        // BUG-203: the `.` New Agent row is payload-free — it ALWAYS
-        // mounts the CreateSessionDialog (BUG-199 agent-bar parity),
-        // it never re-enters / resumes a session.
-        let mut d = MenuBarHelpDialog::new();
-        let _ = d.handle_event(&key(KeyCode::Enter));
-        assert!(
-            matches!(
-                d.take_pending_action(),
-                Some(Action::OpenCreateSessionDialog { preselect: None })
-            ),
-            "row 0 (. New Agent) must emit OpenCreateSessionDialog {{ preselect: None }}"
-        );
-    }
-
-    #[test]
-    fn enter_on_checkpoints_row_emits_open_checkpoints_view() {
-        let mut d = MenuBarHelpDialog::new();
-        for _ in 0..5 {
-            let _ = d.handle_event(&key(KeyCode::Down)); // cursor 0 → 5 (C Checkpoints, Tools)
-        }
-        let _ = d.handle_event(&key(KeyCode::Enter));
-        assert!(matches!(
-            d.take_pending_action(),
-            Some(Action::OpenCheckpointsView)
-        ));
-    }
-
-    #[test]
-    fn enter_on_help_and_exit_rows_emit_the_new_variants() {
-        let mut d = MenuBarHelpDialog::new();
-        for _ in 0..8 {
-            let _ = d.handle_event(&key(KeyCode::Down)); // cursor → 8 (? Help)
-        }
-        let _ = d.handle_event(&key(KeyCode::Enter));
-        assert!(matches!(
-            d.take_pending_action(),
-            Some(Action::OpenBoardHelp)
-        ));
-        let mut d2 = MenuBarHelpDialog::new();
-        for _ in 0..9 {
-            let _ = d2.handle_event(&key(KeyCode::Down)); // cursor → 9 (Esc Exit)
-        }
-        let _ = d2.handle_event(&key(KeyCode::Enter));
-        assert!(matches!(
-            d2.take_pending_action(),
-            Some(Action::OpenBoardExitConfirmation)
-        ));
-    }
-
-    #[test]
-    fn u_and_unhandled_keys_are_consumed_no_op() {
-        let mut d = MenuBarHelpDialog::new();
-        assert!(d.handle_event(&key(KeyCode::Char('u'))).is_consumed());
-        assert!(d.handle_event(&key(KeyCode::Char('U'))).is_consumed());
-        assert!(d.handle_event(&key(KeyCode::Char('j'))).is_consumed());
-        assert!(d.handle_event(&key(KeyCode::Char('f'))).is_consumed());
-        assert!(d.handle_event(&key(KeyCode::Char('?'))).is_consumed());
-        assert_eq!(d.cursor(), 0);
-        assert!(d.take_pending_action().is_none());
-    }
-
-    #[test]
-    fn esc_closes_without_emitting_any_action() {
-        let mut d = MenuBarHelpDialog::new();
-        assert!(d.handle_event(&key(KeyCode::Esc)).is_consumed());
-        assert!(d.take_pending_action().is_none());
-    }
-
-    #[test]
-    fn menu_bar_help_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let mut dialog = MenuBarHelpDialog::new();
-        let backend = TestBackend::new(80, 24);
-        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
-        terminal
-            .draw(|frame| {
-                dialog.render(frame.area(), frame.buffer_mut());
-            })
-            .expect("draw");
-        let buf = terminal.backend().buffer().clone();
-        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
-        for y in 0..buf.area.height {
-            let mut row = String::with_capacity(buf.area.width as usize);
-            for x in 0..buf.area.width {
-                row.push_str(buf[(x, y)].symbol());
-            }
-            rows.push(row);
-        }
-        insta::assert_yaml_snapshot!("menu_bar_help_dialog__centered_popup_80x24", rows);
-    }
-}
+mod tests;

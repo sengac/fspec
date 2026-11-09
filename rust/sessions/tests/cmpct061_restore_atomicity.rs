@@ -39,6 +39,7 @@ async fn exercise(failure: &str) -> support::TestResult {
         &mut manifest,
         &TokenUsage {
             current_context_tokens: 333,
+            current_context_output_tokens: 0,
             cumulative_billed_input: 5030,
             cumulative_billed_output: 2900,
             cache_read_tokens: 43,

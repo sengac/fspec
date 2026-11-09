@@ -10,6 +10,12 @@
             {
               "file": "rust/core/src/compaction_hook.rs",
               "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
                 196,
                 197,
                 198,
@@ -41,7 +47,9 @@
                 277,
                 278,
                 279
-              ]
+              ],
+              "firstLine": "async fn on_completion_call(",
+              "lastLine": "}"
             }
           ]
         }
@@ -58,6 +66,6 @@
     "implFiles": [
       "rust/core/src/compaction_hook.rs"
     ],
-    "totalLinesCovered": 79
+    "totalLinesCovered": 85
   }
 }

@@ -10,33 +10,29 @@
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
               "lines": [
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320
-              ]
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343
+              ],
+              "firstLine": "/// Struct representing the token usage for a completion request.",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,14 +76,25 @@
                 354,
                 355,
                 356,
-                357
-              ]
+                357,
+                358,
+                359,
+                360,
+                361
+              ],
+              "firstLine": "pub input_tokens: u64,",
+              "lastLine": "Self::new()"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "Usage AddAssign impl correctly accumulates reasoning_tokens",
+      "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "34-53",
+          "lines": "56-73",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/completion/request.rs",
@@ -118,24 +125,6 @@
                 357,
                 358,
                 359,
-                360,
-                361
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Usage AddAssign impl correctly accumulates reasoning_tokens",
-      "testMappings": [
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "56-73",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/completion/request.rs",
-              "lines": [
                 360,
                 361,
                 362,
@@ -162,57 +151,9 @@
                 383,
                 384,
                 385
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "56-73",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/completion/request.rs",
-              "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
+              ],
+              "firstLine": "/// Cache read tokens (Anthropic-specific, for prompt caching)",
+              "lastLine": "other.cache_read_input_tokens,"
             }
           ]
         }
@@ -256,47 +197,14 @@
                 354,
                 355,
                 356,
-                357
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "76-95",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/completion/request.rs",
-              "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
                 357,
                 358,
                 359,
                 360,
                 361
-              ]
+              ],
+              "firstLine": "pub input_tokens: u64,",
+              "lastLine": "Self::new()"
             }
           ]
         }
@@ -340,47 +248,14 @@
                 354,
                 355,
                 356,
-                357
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "98-117",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/completion/request.rs",
-              "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
                 357,
                 358,
                 359,
                 360,
                 361
-              ]
+              ],
+              "firstLine": "pub input_tokens: u64,",
+              "lastLine": "Self::new()"
             }
           ]
         }
@@ -391,25 +266,42 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "170-183",
+          "lines": "173-186",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
               "lines": [
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150,
-                1151
-              ]
+                1228,
+                1229,
+                1230,
+                1231,
+                1232,
+                1233
+              ],
+              "firstLine": "let usage = response",
+              "lastLine": ".ok_or_else(|| CompletionError::ResponseError(\"inconsistent Responses usage\".into()))?;"
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "impl GetTokenUsage for ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -420,25 +312,42 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "186-199",
+          "lines": "189-202",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
               "lines": [
-                1139,
-                1140,
-                1141,
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150,
-                1151
-              ]
+                1228,
+                1229,
+                1230,
+                1231,
+                1232,
+                1233
+              ],
+              "firstLine": "let usage = response",
+              "lastLine": ".ok_or_else(|| CompletionError::ResponseError(\"inconsistent Responses usage\".into()))?;"
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "firstLine": "impl GetTokenUsage for ResponsesUsage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -449,7 +358,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "202-217",
+          "lines": "205-223",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
@@ -470,7 +379,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "pub struct StreamingCompletionResponse {",
+              "lastLine": "self.usage.token_usage()"
             }
           ]
         }
@@ -481,7 +392,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "220-235",
+          "lines": "226-244",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
@@ -502,7 +413,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "pub struct StreamingCompletionResponse {",
+              "lastLine": "self.usage.token_usage()"
             }
           ]
         }
@@ -513,38 +426,46 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "242-258",
+          "lines": "251-267",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                870,
-                871,
-                872,
-                873,
-                874,
-                875,
-                876,
-                877,
-                878,
-                879,
-                880,
-                881,
-                882,
-                883,
-                884,
-                885,
-                886,
-                887,
-                888,
-                889,
-                890,
-                891,
-                892,
-                893,
-                894,
-                895
-              ]
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029,
+                1030,
+                1031,
+                1032,
+                1033,
+                1034,
+                1035,
+                1036,
+                1037,
+                1038,
+                1039,
+                1040,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048
+              ],
+              "firstLine": "/// Details about completion tokens, including reasoning tokens",
+              "lastLine": "}"
             }
           ]
         }
@@ -555,54 +476,47 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "294-324",
+          "lines": "318-343",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "308-335",
-          "implMappings": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                70,
+                71,
+                72,
+                73
+              ],
+              "firstLine": "pub struct StreamingCompletionResponse {",
+              "lastLine": "}"
+            },
             {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
               "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90
-              ]
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098
+              ],
+              "firstLine": "impl GetTokenUsage for Usage {",
+              "lastLine": "}"
             }
           ]
         }
@@ -613,7 +527,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "261-291",
+          "lines": "270-315",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -641,41 +555,9 @@
                 823,
                 824,
                 825
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "261-306",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-              "lines": [
-                803,
-                804,
-                805,
-                806,
-                807,
-                808,
-                809,
-                810,
-                811,
-                812,
-                813,
-                814,
-                815,
-                816,
-                817,
-                818,
-                819,
-                820,
-                821,
-                822,
-                823,
-                824,
-                825
-              ]
+              ],
+              "firstLine": "content: OneOrMany::one(message::UserContent::tool_result(",
+              "lastLine": "UserContent::Audio { input_audio } => {"
             }
           ]
         }
@@ -686,7 +568,7 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "327-348",
+          "lines": "346-367",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
@@ -708,26 +590,6 @@
                 942,
                 943,
                 944,
-                945
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/rig_011_token_tracking.rs",
-          "lines": "337-359",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
-              "lines": [
-                937,
-                938,
-                939,
-                940,
-                941,
-                942,
-                943,
-                944,
                 945,
                 946,
                 947,
@@ -737,7 +599,9 @@
                 951,
                 952,
                 953
-              ]
+              ],
+              "firstLine": "None",
+              "lastLine": ""
             }
           ]
         }
@@ -754,10 +618,11 @@
     "implFiles": [
       "rust/patches/rig-core/src/completion/request.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+      "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
       "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
       "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
       "rust/patches/rig-core/src/providers/openai/completion/streaming.rs"
     ],
-    "totalLinesCovered": 888
+    "totalLinesCovered": 623
   }
 }

@@ -26,7 +26,9 @@
                 55,
                 56,
                 57
-              ]
+              ],
+              "firstLine": "export function createRelayServer(",
+              "lastLine": ""
             }
           ]
         }
@@ -97,7 +99,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "function handleAuth(client: RelayClient, msg: Record<string, unknown>): void {",
+              "lastLine": "} catch {"
             }
           ]
         }
@@ -168,7 +172,9 @@
                 194,
                 195,
                 196
-              ]
+              ],
+              "firstLine": "function handleAuth(client: RelayClient, msg: Record<string, unknown>): void {",
+              "lastLine": "} catch {"
             }
           ]
         }
@@ -204,7 +210,9 @@
                 176,
                 177,
                 178
-              ]
+              ],
+              "firstLine": "if (",
+              "lastLine": "clientStates.set(client, { channelId, authenticated: true });"
             }
           ]
         }
@@ -220,22 +228,24 @@
             {
               "file": "bridge/relay-server.ts",
               "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
                 220,
                 221,
                 222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234
-              ]
+                223
+              ],
+              "firstLine": "// All other messages require authentication",
+              "lastLine": "}"
             }
           ]
         }
@@ -305,7 +315,9 @@
                 246,
                 247,
                 248
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "},"
             }
           ]
         }
@@ -339,7 +351,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "*/"
             }
           ]
         }
@@ -373,7 +387,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "*/"
             }
           ]
         }
@@ -407,7 +423,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "*/"
             }
           ]
         }
@@ -441,7 +459,9 @@
                 111,
                 112,
                 113
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "*/"
             }
           ]
         }
@@ -461,7 +481,9 @@
                 237,
                 238,
                 239
-              ]
+              ],
+              "firstLine": "// Everything else: forward to all other clients in the channel",
+              "lastLine": ""
             }
           ]
         }
@@ -491,7 +513,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "const channelClients = channels.get(state.channelId);",
+              "lastLine": "*/"
             }
           ]
         }
@@ -526,7 +550,9 @@
                 135,
                 136,
                 137
-              ]
+              ],
+              "firstLine": "if (!sessionId) {",
+              "lastLine": "/**"
             }
           ]
         }
@@ -572,7 +598,9 @@
                 246,
                 247,
                 248
-              ]
+              ],
+              "firstLine": "sender: RelayClient,",
+              "lastLine": "},"
             }
           ]
         }

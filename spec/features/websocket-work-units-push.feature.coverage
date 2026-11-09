@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
-          "lines": "29-66",
+          "lines": "27-64",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
@@ -24,10 +24,6 @@
                 12,
                 13,
                 14,
-                15,
-                16,
-                17,
-                18,
                 19,
                 20,
                 21,
@@ -94,25 +90,6 @@
                 82,
                 83,
                 84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
                 104,
                 105,
                 106,
@@ -133,25 +110,17 @@
                 121,
                 122,
                 123,
-                124,
                 125,
                 126,
+                127,
+                127,
+                127,
                 127,
                 128,
                 129,
                 130,
                 131,
                 132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
                 143,
                 144,
                 145,
@@ -165,8 +134,48 @@
                 153,
                 154,
                 155,
-                156
-              ]
+                155,
+                157,
+                158,
+                159,
+                160,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ],
+              "firstLine": "//! Server-side WebSocket bind/accept loop and per-connection handler.",
+              "lastLine": "tokio_tungstenite::tungstenite::http::HeaderValue::from_static(\"2\"),"
+            },
+            {
+              "file": "rust/rpc-server/src/server/fanouts.rs",
+              "lines": [
+                5
+              ],
+              "firstLine": "use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk};",
+              "lastLine": "use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk};"
             }
           ]
         }
@@ -177,7 +186,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
-          "lines": "68-110",
+          "lines": "66-108",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/pump.rs",
@@ -190,6 +199,33 @@
                 6,
                 7,
                 8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "firstLine": "//! Shared WebSocket → Envelope → tarpc-bytes pump.",
+              "lastLine": "use tokio_tungstenite::{tungstenite::Message, WebSocketStream};"
+            },
+            {
+              "file": "rust/rpc-server/src/pump/inbound.rs",
+              "lines": [
+                5,
+                6,
                 9,
                 10,
                 11,
@@ -220,19 +256,7 @@
                 36,
                 37,
                 38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
                 45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
                 52,
                 53,
                 54,
@@ -338,11 +362,6 @@
                 154,
                 155,
                 156,
-                157,
-                158,
-                159,
-                160,
-                161,
                 162,
                 163,
                 164,
@@ -352,12 +371,10 @@
                 168,
                 169,
                 170,
-                171,
-                172,
-                173,
-                174,
-                175
-              ]
+                171
+              ],
+              "firstLine": "use codelet_rpc_types::{",
+              "lastLine": ""
             }
           ]
         }
@@ -368,7 +385,7 @@
       "testMappings": [
         {
           "file": "rust/rpc-server/tests/websocket_work_units_push.rs",
-          "lines": "112-159",
+          "lines": "110-157",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/envelope.rs",
@@ -436,7 +453,9 @@
                 61,
                 62,
                 63
-              ]
+              ],
+              "firstLine": "//! WebSocket framing envelope for the fspec RPC wire protocol.",
+              "lastLine": "/// cross-transport parity holds for push-driven status updates."
             }
           ]
         }
@@ -452,9 +471,11 @@
     ],
     "implFiles": [
       "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/server/fanouts.rs",
       "rust/rpc-server/src/pump.rs",
+      "rust/rpc-server/src/pump/inbound.rs",
       "rust/rpc-server/src/envelope.rs"
     ],
-    "totalLinesCovered": 523
+    "totalLinesCovered": 522
   }
 }

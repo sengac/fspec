@@ -1,6 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/auto-continue-engine.feature
-//! Feature: spec/features/completion-registration-layout-guards.feature
 //!
 //! CONT-002: Auto-continue engine — session state, pure decision function
 //! (doc §5 table), budget/refund arithmetic, and stream-loop wiring shape.
@@ -8,6 +7,10 @@
 //! codelet_cli::interactive::auto_continue — no copies, no mocks
 //! (PROV-041 test pattern, see thinking_exhaustion_recovery_test.rs).
 
+#[path = "support/offline_session.rs"]
+mod offline_session;
+#[path = "support/stream_loop_source.rs"]
+mod stream_loop_source_tree;
 use codelet_cli::interactive::auto_continue::{
     apply_segment_outcome, build_continue_exhaustion_warning, decide_continuation,
     reset_for_new_user_turn, ContinueDecision, AUTO_CONTINUE_NUDGE_PROMPT, DEFAULT_CONTINUE_BUDGET,
@@ -15,16 +18,10 @@ use codelet_cli::interactive::auto_continue::{
 use codelet_cli::session::Session;
 use rig::tool::Tool;
 
-/// Build a Session without depending on a single-credential environment:
-/// pick the first explicitly-selectable provider (mirrors
-/// compaction_trigger_reliability_test.rs's ProviderManager usage).
+/// An offline session for an explicitly selected provider, whatever this
+/// machine has credentialed (BUG-548).
 fn fresh_session() -> Session {
-    for name in ["claude", "openai", "gemini", "codex", "zai"] {
-        if let Ok(pm) = codelet_providers::ProviderManager::with_provider(name) {
-            return Session::from_provider_manager(pm);
-        }
-    }
-    Session::new(None).expect("failed to create test session")
+    offline_session::session().expect("failed to create test session")
 }
 
 // =============================================================================
@@ -257,11 +254,7 @@ fn a_nudge_followed_by_tool_activity_is_refunded() {
 #[test]
 fn stream_loop_nudges_only_at_the_clean_final_response_settle_point() {
     // @step Given the stream loop settle points
-    let source = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/interactive/stream_loop.rs"
-    ))
-    .expect("stream_loop.rs must be readable");
+    let source = stream_loop_source_tree::stream_loop_source();
 
     // @step Then the continuation decision is consulted only before the FinalResponse emit_done_with_stop_reason
     let occurrences = source.matches("decide_continuation").count();
@@ -269,11 +262,13 @@ fn stream_loop_nudges_only_at_the_clean_final_response_settle_point() {
         occurrences >= 1,
         "stream_loop.rs must consult decide_continuation at the FinalResponse settle point"
     );
-    let decision_pos = source
+    // BUG-306: the FinalResponse settle point lives in stream_loop/final_completion.rs.
+    let settle = stream_loop_source_tree::stream_loop_module("final_completion");
+    let decision_pos = settle
         .find("decide_continuation")
         .expect("decide_continuation call site");
-    let settle_pos = source
-        .rfind("output.emit_done_with_stop_reason(final_stop_reason.take())")
+    let settle_pos = settle
+        .rfind(".emit_done_with_stop_reason(state.final_stop_reason.take())")
         .expect("clean FinalResponse emit site");
     assert!(
         decision_pos < settle_pos,
@@ -398,7 +393,9 @@ fn chain_source(rel: &str) -> String {
         .is_ok_and(|module| module.contains("mod agent;")));
     }
     let path = format!("{}/{}", env!("CARGO_MANIFEST_DIR"), rel);
-    std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"))
+    // BUG-448: a provider's module tree (openai.rs + openai/agent.rs).
+    codelet_test_helpers::source_composition::read_tree_or_file(std::path::Path::new(&path))
+        .unwrap_or_else(|e| panic!("cannot read {path}: {e}"))
 }
 
 #[test]

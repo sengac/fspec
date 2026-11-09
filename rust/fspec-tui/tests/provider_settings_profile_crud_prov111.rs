@@ -9,8 +9,7 @@
 //! `load_openai_profile_configs_from` against per-test temp dirs (no real
 //! `$HOME`, no env mutation, no network).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -36,11 +35,15 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
-fn row_index(view: &ProviderSettingsView, kind: NavItemKind) -> usize {
-    view.nav_items
+fn row_index(
+    view: &ProviderSettingsView,
+    kind: NavItemKind,
+) -> Result<usize, codelet_test_helpers::TestError> {
+    Ok(view
+        .nav_items
         .iter()
         .position(|item| item.provider_id == "openai" && item.kind == kind)
-        .expect("requested OpenAI navigation row must be present")
+        .or_fail("requested OpenAI navigation row must be present")?)
 }
 
 fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCredentialInfo {
@@ -98,22 +101,30 @@ fn openai_view(
     view
 }
 
-fn focused_kind(view: &ProviderSettingsView) -> NavItemKind {
-    view.focused_nav_item()
-        .expect("a nav item must be focused")
+fn focused_kind(
+    view: &ProviderSettingsView,
+) -> Result<NavItemKind, codelet_test_helpers::TestError> {
+    Ok(view
+        .focused_nav_item()
+        .or_fail("a nav item must be focused")?
         .kind
-        .clone()
+        .clone())
 }
 
-fn write_user_config(dir: &Path, contents: &str) {
-    fs::create_dir_all(dir).unwrap();
-    fs::write(dir.join("fspec-config.json"), contents).unwrap();
+fn write_user_config(dir: &Path, contents: &str) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(dir).or_fail("expected a value")?;
+    fs::write(dir.join("fspec-config.json"), contents).or_fail("expected a value")?;
+    Ok(())
 }
 
-fn write_project_config(project_root: &Path, contents: &str) {
+fn write_project_config(
+    project_root: &Path,
+    contents: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     let spec = project_root.join("spec");
-    fs::create_dir_all(&spec).unwrap();
-    fs::write(spec.join("fspec-config.json"), contents).unwrap();
+    fs::create_dir_all(&spec).or_fail("expected a value")?;
+    fs::write(spec.join("fspec-config.json"), contents).or_fail("expected a value")?;
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -122,7 +133,7 @@ fn write_project_config(project_root: &Path, contents: &str) {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_profile_row_opens_edit_form_prefilled() {
+fn enter_on_profile_row_opens_edit_form_prefilled() -> TestResult {
     // @step Given the Provider Settings nav tree has an expanded "openai" provider with a stored profile "fireworks"
     // @step And the per-profile config map carries "fireworks" with baseUrl "https://api.fireworks.ai/inference/v1" and an apiKey
     let mut configs = HashMap::new();
@@ -141,8 +152,8 @@ fn enter_on_profile_row_opens_edit_form_prefilled() {
         NavItemKind::Profile {
             profile_name: "fireworks → https://api.fireworks.ai/inference/v1".to_string(),
         },
-    );
-    assert!(matches!(focused_kind(&view), NavItemKind::Profile { .. }));
+    )?;
+    assert!(matches!(focused_kind(&view)?, NavItemKind::Profile { .. }));
 
     // @step When I press Enter
     view.handle_key(key(KeyCode::Enter));
@@ -164,8 +175,9 @@ fn enter_on_profile_row_opens_edit_form_prefilled() {
             assert!(!form.is_editing_name);
             assert_eq!(form.name, "fireworks");
         }
-        other => panic!("expected EditProfile mode, got {other:?}"),
+        other => return Err(format!("expected EditProfile mode, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -173,13 +185,13 @@ fn enter_on_profile_row_opens_edit_form_prefilled() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn enter_on_add_profile_opens_create_form_with_defaults() {
+fn enter_on_add_profile_opens_create_form_with_defaults() -> TestResult {
     // @step Given the Provider Settings nav tree has an expanded "openai" provider with a trailing Add Profile row
     let mut view = openai_view(&["fast → http://localhost:1"], HashMap::new());
 
     // @step And the cursor is on the Add Profile row
-    view.selected_index = row_index(&view, NavItemKind::AddProfile);
-    assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
+    view.selected_index = row_index(&view, NavItemKind::AddProfile)?;
+    assert!(matches!(focused_kind(&view)?, NavItemKind::AddProfile));
 
     // @step When I press Enter
     view.handle_key(key(KeyCode::Enter));
@@ -195,8 +207,9 @@ fn enter_on_add_profile_opens_create_form_with_defaults() {
             // @step And the form name editing flag is true
             assert!(form.is_editing_name);
         }
-        other => panic!("expected CreateProfile mode, got {other:?}"),
+        other => return Err(format!("expected CreateProfile mode, got {other:?}").into()),
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -205,7 +218,7 @@ fn enter_on_add_profile_opens_create_form_with_defaults() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn d_on_profile_row_opens_per_profile_delete_confirm() {
+fn d_on_profile_row_opens_per_profile_delete_confirm() -> TestResult {
     // @step Given the Provider Settings nav tree has an expanded "openai" provider with profiles "fireworks" and "home"
     let mut view = openai_view(
         &[
@@ -221,12 +234,12 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
         NavItemKind::Profile {
             profile_name: "home → http://localhost:8888".to_string(),
         },
-    );
-    match focused_kind(&view) {
+    )?;
+    match focused_kind(&view)? {
         NavItemKind::Profile { profile_name } => {
             assert_eq!(profile_name, "home → http://localhost:8888")
         }
-        other => panic!("expected the 'home' profile row, got {other:?}"),
+        other => return Err(format!("expected the 'home' profile row, got {other:?}").into()),
     }
 
     // @step When I press "d"
@@ -246,13 +259,22 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
                 profile_name,
             } = *action
             else {
-                panic!("expected Emit(ConfirmDeleteProfile{{openai,home}}), got {action:?}");
+                return Err(format!(
+                    "expected Emit(ConfirmDeleteProfile{{openai,home}}), got {action:?}"
+                )
+                .into());
             };
             assert_eq!(provider_id, "openai");
             assert_eq!(profile_name, "home");
         }
-        other => panic!("expected Emit(ConfirmDeleteProfile{{openai,home}}), got {other:?}"),
+        other => {
+            return Err(format!(
+                "expected Emit(ConfirmDeleteProfile{{openai,home}}), got {other:?}"
+            )
+            .into())
+        }
     }
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -260,13 +282,13 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn d_on_add_profile_row_has_no_delete_action() {
+fn d_on_add_profile_row_has_no_delete_action() -> TestResult {
     // @step Given the Provider Settings nav tree has an expanded "openai" provider with a trailing Add Profile row
     let mut view = openai_view(&["fast → http://localhost:1"], HashMap::new());
 
     // @step And the cursor is on the Add Profile row
-    view.selected_index = row_index(&view, NavItemKind::AddProfile);
-    assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
+    view.selected_index = row_index(&view, NavItemKind::AddProfile)?;
+    assert!(matches!(focused_kind(&view)?, NavItemKind::AddProfile));
 
     // @step When I press "d"
     let out = view.handle_key(key(KeyCode::Char('d')));
@@ -275,6 +297,7 @@ fn d_on_add_profile_row_has_no_delete_action() {
     assert!(view.delete_confirm.is_none());
     // @step And the key is consumed without emitting an action
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -283,10 +306,10 @@ fn d_on_add_profile_row_has_no_delete_action() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn full_config_loader_returns_parsed_definitions_keyed_by_name() {
+fn full_config_loader_returns_parsed_definitions_keyed_by_name() -> TestResult {
     // @step Given a user config fspec-config.json with an openai profile "fireworks" carrying a baseUrl, an apiKey and a contextWindow
-    let user = tempfile::tempdir().unwrap();
-    let project = tempfile::tempdir().unwrap();
+    let user = tempfile::tempdir().or_fail("expected a value")?;
+    let project = tempfile::tempdir().or_fail("expected a value")?;
     write_user_config(
         user.path(),
         r#"{ "providers": { "openai": { "profiles": { "fireworks": {
@@ -294,7 +317,7 @@ fn full_config_loader_returns_parsed_definitions_keyed_by_name() {
             "apiKey": "sk-fw",
             "contextWindow": 131072
         } } } } }"#,
-    );
+    )?;
 
     // @step And an empty project config directory
     // (project tempdir intentionally left without spec/fspec-config.json)
@@ -303,10 +326,11 @@ fn full_config_loader_returns_parsed_definitions_keyed_by_name() {
     let map = load_openai_profile_configs_from(user.path(), project.path());
 
     // @step Then the result maps "fireworks" to a ProfileDefinition whose base URL, api key and context window match the stored values
-    let fw = map.get("fireworks").expect("fireworks present");
+    let fw = map.get("fireworks").or_fail("fireworks present")?;
     assert_eq!(fw.base_url, "https://api.fireworks.ai/inference/v1");
     assert_eq!(fw.api_key, "sk-fw");
     assert_eq!(fw.context_window, Some(131072));
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -315,16 +339,16 @@ fn full_config_loader_returns_parsed_definitions_keyed_by_name() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn full_config_loader_project_overrides_user_by_name() {
+fn full_config_loader_project_overrides_user_by_name() -> TestResult {
     // @step Given a user config fspec-config.json with an openai profile "fireworks" whose baseUrl is "https://user.example/v1"
-    let user = tempfile::tempdir().unwrap();
-    let project = tempfile::tempdir().unwrap();
+    let user = tempfile::tempdir().or_fail("expected a value")?;
+    let project = tempfile::tempdir().or_fail("expected a value")?;
     write_user_config(
         user.path(),
         r#"{ "providers": { "openai": { "profiles": { "fireworks": {
             "baseUrl": "https://user.example/v1", "apiKey": "sk-user"
         } } } } }"#,
-    );
+    )?;
 
     // @step And a project config fspec-config.json with an openai profile "fireworks" whose baseUrl is "https://project.example/v1"
     write_project_config(
@@ -332,14 +356,15 @@ fn full_config_loader_project_overrides_user_by_name() {
         r#"{ "providers": { "openai": { "profiles": { "fireworks": {
             "baseUrl": "https://project.example/v1", "apiKey": "sk-proj"
         } } } } }"#,
-    );
+    )?;
 
     // @step When load_openai_profile_configs_from is called with the user and project directories
     let map = load_openai_profile_configs_from(user.path(), project.path());
 
     // @step Then the result maps "fireworks" to a ProfileDefinition whose base URL is "https://project.example/v1"
-    let fw = map.get("fireworks").expect("fireworks present");
+    let fw = map.get("fireworks").or_fail("fireworks present")?;
     assert_eq!(fw.base_url, "https://project.example/v1");
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -348,7 +373,7 @@ fn full_config_loader_project_overrides_user_by_name() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn stored_config_map_is_queryable_by_provider_and_profile_name() {
+fn stored_config_map_is_queryable_by_provider_and_profile_name() -> TestResult {
     // @step Given a Provider Settings view
     let mut view = ProviderSettingsView::new();
 
@@ -363,12 +388,13 @@ fn stored_config_map_is_queryable_by_provider_and_profile_name() {
     // @step Then profile_config_for("openai", "fireworks") returns the stored ProfileDefinition
     let got = view
         .profile_config_for("openai", "fireworks")
-        .expect("fireworks present");
+        .or_fail("fireworks present")?;
     assert_eq!(got.base_url, "https://api.fireworks.ai/inference/v1");
     assert_eq!(got.api_key, "sk-stored");
 
     // @step And profile_config_for("openai", "missing") returns nothing
     assert!(view.profile_config_for("openai", "missing").is_none());
+    Ok(())
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -377,7 +403,7 @@ fn stored_config_map_is_queryable_by_provider_and_profile_name() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn profile_row_display_string_is_split_back_to_bare_name_for_lookup() {
+fn profile_row_display_string_is_split_back_to_bare_name_for_lookup() -> TestResult {
     // @step Given a Provider Settings nav tree whose "openai" profile row label is "fireworks → https://api.fireworks.ai/inference/v1"
     // @step And the per-profile config map carries "fireworks" with an apiKey
     let mut configs = HashMap::new();
@@ -396,8 +422,8 @@ fn profile_row_display_string_is_split_back_to_bare_name_for_lookup() {
         NavItemKind::Profile {
             profile_name: "fireworks → https://api.fireworks.ai/inference/v1".to_string(),
         },
-    );
-    assert!(matches!(focused_kind(&view), NavItemKind::Profile { .. }));
+    )?;
+    assert!(matches!(focused_kind(&view)?, NavItemKind::Profile { .. }));
 
     // @step When I press Enter
     view.handle_key(key(KeyCode::Enter));
@@ -412,6 +438,9 @@ fn profile_row_display_string_is_split_back_to_bare_name_for_lookup() {
             assert_eq!(form.api_key, "sk-split");
             assert_eq!(form.base_url, "https://api.fireworks.ai/inference/v1");
         }
-        other => panic!("expected EditProfile mode for fireworks, got {other:?}"),
+        other => {
+            return Err(format!("expected EditProfile mode for fireworks, got {other:?}").into())
+        }
     }
+    Ok(())
 }

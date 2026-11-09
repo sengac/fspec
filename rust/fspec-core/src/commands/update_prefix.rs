@@ -93,6 +93,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // need no fallback here.
     let prefix = args.prefix.unwrap_or_default();
 
+    // BUG-477: hold the spec lock from the first read to the last write.
+    let _spec_lock = crate::io::spec_lock::lock_spec_dir(project_root, "update-prefix")?;
     // ── Load existing state (auto-creates spec/prefixes.json) ──────────
     // TS calls ensurePrefixesFile(cwd) which auto-creates an empty
     // PrefixesData and ensures the spec/ directory exists.
@@ -155,7 +157,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     );
 
     // ── Atomic write ───────────────────────────────────────────────────
-    let spec_path = project_root.join("spec").join("prefixes.json");
+    let spec_path = crate::io::spec_paths::prefixes(project_root)?;
     write_json_atomic(&spec_path, &data)?;
 
     // ── Build dispatcher JSON ──────────────────────────────────────────

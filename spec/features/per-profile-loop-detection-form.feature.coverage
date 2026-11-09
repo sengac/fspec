@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "78-134",
+          "lines": "81-135",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -26,34 +26,9 @@
                 50,
                 51,
                 52
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "78-134",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52
-              ]
+              ],
+              "firstLine": "\"Loop Window\",",
+              "lastLine": "pub compaction_threshold: String,"
             }
           ]
         }
@@ -64,7 +39,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "136-166",
+          "lines": "138-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -102,7 +77,9 @@
                 172,
                 173,
                 174
-              ]
+              ],
+              "firstLine": "context_window: opt_num(def.context_window),",
+              "lastLine": "fn focused_text_mut(&mut self) -> &mut String {"
             }
           ]
         }
@@ -113,7 +90,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "169-202",
+          "lines": "172-204",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
@@ -124,7 +101,9 @@
                 31,
                 32,
                 33
-              ]
+              ],
+              "firstLine": "pub(super) fn is_streaming_field(field_index: usize) -> bool {",
+              "lastLine": ""
             }
           ]
         }
@@ -135,60 +114,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "203-233",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
-              "lines": [
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294,
-                295,
-                296,
-                297,
-                298,
-                299,
-                300,
-                301,
-                302,
-                303,
-                304,
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
-                311,
-                312,
-                313,
-                314,
-                315,
-                316,
-                317,
-                318,
-                319,
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327
-              ]
-            }
-          ]
+          "lines": "207-245"
         }
       ]
     },
@@ -197,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "234-269",
+          "lines": "248-282",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -212,7 +138,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// words); `\"n\"` ⇒ `Some(n)`. Non-numeric input (including floats like",
+              "lastLine": "}"
             }
           ]
         }
@@ -223,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "270-306",
+          "lines": "285-323",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -238,7 +166,9 @@
                 91,
                 92,
                 93
-              ]
+              ],
+              "firstLine": "/// words); `\"n\"` ⇒ `Some(n)`. Non-numeric input (including floats like",
+              "lastLine": "}"
             }
           ]
         }
@@ -249,7 +179,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "307-338",
+          "lines": "326-359",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -264,7 +194,9 @@
                 105,
                 106,
                 107
-              ]
+              ],
+              "firstLine": "/// 10); `\"n\"` ⇒ `Some(n)`. Non-numeric input is an `Err` with a user-facing",
+              "lastLine": "}"
             }
           ]
         }
@@ -275,7 +207,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov145_loop_detection_form.rs",
-          "lines": "339-370",
+          "lines": "362-395",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
@@ -291,7 +223,9 @@
                 122,
                 123,
                 124
-              ]
+              ],
+              "firstLine": "pub(super) fn parse_loop_detection_max_retries(raw: &str) -> Result<Option<u32>, String> {",
+              "lastLine": "///"
             }
           ]
         }
@@ -307,9 +241,9 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
-      "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
-      "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs"
+      "rust/fspec-tui/src/views/provider_settings/profile_form_streaming.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs"
     ],
-    "totalLinesCovered": 505
+    "totalLinesCovered": 397
   }
 }

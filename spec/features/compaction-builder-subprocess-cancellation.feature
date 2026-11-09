@@ -3,6 +3,7 @@
 @compaction
 @context-management
 @phase-1
+@BUG-310
 Feature: Cancelling compaction stops subprocesses owned by its builder
   """
   Architecture notes:

@@ -5,8 +5,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "194-245",
-          "implMappings": []
+          "lines": "225-300",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// single Board view AND the focused Board pane in mux mode (mux",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -15,8 +34,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "260-296",
-          "implMappings": []
+          "lines": "306-339",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// single Board view AND the focused Board pane in mux mode (mux",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -25,8 +63,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "298-325",
-          "implMappings": []
+          "lines": "345-369",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// single Board view AND the focused Board pane in mux mode (mux",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -35,8 +92,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "327-377",
-          "implMappings": []
+          "lines": "375-430",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "fn render(&mut self, area: Rect, buf: &mut Buffer) {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -45,8 +131,37 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "379-423",
-          "implMappings": []
+          "lines": "436-473",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ],
+              "firstLine": "fn render(&mut self, area: Rect, buf: &mut Buffer) {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -55,8 +170,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "425-451",
-          "implMappings": []
+          "lines": "479-508",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "fn move_up(&mut self) {",
+              "lastLine": "/// mounts the CreateSessionDialog, it never re-enters a session)."
+            }
+          ]
         }
       ]
     },
@@ -65,8 +206,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "453-478",
-          "implMappings": []
+          "lines": "514-542",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "fn move_up(&mut self) {",
+              "lastLine": "/// mounts the CreateSessionDialog, it never re-enters a session)."
+            }
+          ]
         }
       ]
     },
@@ -75,8 +242,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "480-504",
-          "implMappings": []
+          "lines": "548-569",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "fn move_up(&mut self) {",
+              "lastLine": "/// mounts the CreateSessionDialog, it never re-enters a session)."
+            }
+          ]
         }
       ]
     },
@@ -85,8 +278,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "506-530",
-          "implMappings": []
+          "lines": "575-596",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ],
+              "firstLine": "fn move_up(&mut self) {",
+              "lastLine": "/// mounts the CreateSessionDialog, it never re-enters a session)."
+            }
+          ]
         }
       ]
     },
@@ -95,8 +314,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "532-558",
-          "implMappings": []
+          "lines": "602-625",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "fn enter_action(&self) -> Option<Action> {",
+              "lastLine": ""
+            }
+          ]
         }
       ]
     },
@@ -105,8 +343,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "560-584",
-          "implMappings": []
+          "lines": "631-656",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "fn enter_action(&self) -> Option<Action> {",
+              "lastLine": ""
+            }
+          ]
         }
       ]
     },
@@ -115,8 +372,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "586-609",
-          "implMappings": []
+          "lines": "662-682",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "fn enter_action(&self) -> Option<Action> {",
+              "lastLine": ""
+            }
+          ]
         }
       ]
     },
@@ -125,8 +401,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "611-645",
-          "implMappings": []
+          "lines": "688-722",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ],
+              "firstLine": "fn enter_action(&self) -> Option<Action> {",
+              "lastLine": ""
+            }
+          ]
         }
       ]
     },
@@ -135,8 +430,21 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "647-680",
-          "implMappings": []
+          "lines": "728-758",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191
+              ],
+              "firstLine": "fn cancel(&self) -> EventResult {",
+              "lastLine": ""
+            }
+          ]
         }
       ]
     },
@@ -145,8 +453,75 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "682-720",
-          "implMappings": []
+          "lines": "766-802",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265
+              ],
+              "firstLine": "fn handle_event(&mut self, event: &Event) -> EventResult {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -155,8 +530,75 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "722-750",
-          "implMappings": []
+          "lines": "807-833",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265
+              ],
+              "firstLine": "fn handle_event(&mut self, event: &Event) -> EventResult {",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -165,8 +607,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "752-787",
-          "implMappings": []
+          "lines": "849-881",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/render.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ],
+              "firstLine": "let rows = header::paint(borders::inner_rect(split[1]), buf, store, &view.theme);",
+              "lastLine": "let bar_rect = rows.bar_row;"
+            }
+          ]
         }
       ]
     },
@@ -175,8 +634,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "789-817",
-          "implMappings": []
+          "lines": "893-920",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ],
+              "firstLine": "// single Board view AND the focused Board pane in mux mode (mux",
+              "lastLine": "}"
+            }
+          ]
         }
       ]
     },
@@ -185,8 +663,23 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/board_actions_dialog_board023.rs",
-          "lines": "819-844",
-          "implMappings": []
+          "lines": "922-948",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/help_content.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "\"/             Search work units\",",
+              "lastLine": "\"?             Show this help\","
+            }
+          ]
         }
       ]
     }
@@ -200,11 +693,10 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/board/keys.rs",
-      "rust/fspec-tui/src/components/board_keybinding_dialog.rs",
-      "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
-      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+      "rust/fspec-tui/src/components/menu_bar_help.rs",
+      "rust/fspec-tui/src/views/board/render.rs",
       "rust/fspec-tui/src/components/help_content.rs"
     ],
-    "totalLinesCovered": 874
+    "totalLinesCovered": 962
   }
 }

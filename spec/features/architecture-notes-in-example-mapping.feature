@@ -47,14 +47,6 @@ Feature: Capture architecture notes during Example Mapping
     I want to capture architecture notes and non-functional requirements
     So that generated feature files have complete technical context in docstrings
 
-  Scenario: Add architecture note during Example Mapping
-    Given I have a work unit WORK-001 in specifying status
-    When I run "fspec add-architecture-note WORK-001 'Uses @cucumber/gherkin parser'"
-    Then the architecture note should be added to the work unit
-    And when I run "fspec show-work-unit WORK-001"
-    Then I should see an "Architecture Notes:" section
-    And the section should contain "Uses @cucumber/gherkin parser"
-
   Scenario: Generate scenarios populates docstring with architecture notes
     Given I have a work unit with architecture notes captured
     And the work unit has the note "Uses @cucumber/gherkin parser"
@@ -64,20 +56,6 @@ Feature: Capture architecture notes during Example Mapping
     And the docstring should contain "Uses @cucumber/gherkin parser"
     And the docstring should contain "Must complete validation within 2 seconds"
     And the docstring should NOT contain placeholder text
-
-  Scenario: View architecture notes in work unit
-    Given I have added architecture notes to WORK-001
-    When I run "fspec show-work-unit WORK-001"
-    Then I should see an "Architecture Notes:" section
-    And the section should list all captured notes with indices
-    And the notes should be displayed in the order they were added
-
-  Scenario: Remove architecture note from work unit
-    Given I have a work unit with 3 architecture notes
-    When I run "fspec remove-architecture-note WORK-001 1"
-    Then the architecture note at index 1 should be removed
-    And when I run "fspec show-work-unit WORK-001"
-    Then I should see 2 remaining architecture notes
 
   Scenario: Generated docstring organizes notes by category
     Given I have architecture notes with natural prefixes

@@ -58,7 +58,10 @@ async fn asset(
     axum::extract::State(s): axum::extract::State<MockStateArc>,
     axum::extract::Path(name): axum::extract::Path<String>,
 ) -> (
-    [(axum::http::header::HeaderName, axum::http::header::HeaderValue); 1],
+    [(
+        axum::http::header::HeaderName,
+        axum::http::header::HeaderValue,
+    ); 1],
     Vec<u8>,
 ) {
     let st = s.lock().expect("mock state lock");
@@ -102,7 +105,10 @@ async fn start_mock(tag: &str, asset_bytes: &[u8]) -> String {
         digest,
     }));
     let app = axum::Router::new()
-        .route("/repos/sengac/fspec/releases/latest", axum::routing::get(releases_latest))
+        .route(
+            "/repos/sengac/fspec/releases/latest",
+            axum::routing::get(releases_latest),
+        )
         .route("/assets/{name}", axum::routing::get(asset))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
@@ -143,10 +149,10 @@ fn run_update(cwd: &Path, base_url: &str, check: bool) -> (i32, String, String) 
 async fn scenario_fspec_update_check_reports_availability_via_exit_code() {
     // @step Given fspec is installed at an older version
     // The test binary's `fspec --version` reports the workspace version
-    // (0.10.0). We make the mock serve a NEWER tag so `--check` sees an
+    // (CARGO_PKG_VERSION). The mock serves a far NEWER tag so `--check` sees an
     // update available.
     let asset = make_targz(b"new-binary");
-    let base = start_mock("v0.11.0", &asset).await;
+    let base = start_mock("v99.0.0", &asset).await;
     let cwd = tempdir().expect("tempdir");
 
     // @step When the user runs `fspec update --check`
@@ -154,12 +160,15 @@ async fn scenario_fspec_update_check_reports_availability_via_exit_code() {
 
     // @step Then it prints the latest available version
     assert!(
-        stdout.contains("0.11.0"),
-        "--check must print the latest available version (0.11.0), got: {stdout}"
+        stdout.contains("99.0.0"),
+        "--check must print the latest available version (99.0.0), got: {stdout}"
     );
 
     // @step And it exits with code 1
-    assert_eq!(code, 1, "--check must exit 1 when a newer release is available");
+    assert_eq!(
+        code, 1,
+        "--check must exit 1 when a newer release is available"
+    );
 
     // @step And when fspec is installed at the latest version, `fspec update --check` exits with code 0
     // Serve a tag at or below the running version → up to date → exit 0.
@@ -178,12 +187,12 @@ async fn scenario_fspec_update_check_reports_availability_via_exit_code() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_fspec_update_installs_the_latest_release_in_place() {
     // @step Given fspec is installed at an older version
-    // (the running binary reports 0.10.0; the mock serves v0.11.0)
+    // (the running binary reports the workspace version; the mock serves v99.0.0)
 
     // @step And a newer release exists with an asset for the current platform
-    let new_binary = b"new-binary-0.11.0";
+    let new_binary = b"new-binary-99.0.0";
     let asset = make_targz(new_binary);
-    let base = start_mock("v0.11.0", &asset).await;
+    let base = start_mock("v99.0.0", &asset).await;
     let dir = tempdir().expect("tempdir");
     let install = dir.path().join("fspec");
     std::fs::write(&install, b"old-binary").expect("write installed binary");
@@ -195,7 +204,10 @@ async fn scenario_fspec_update_installs_the_latest_release_in_place() {
     cmd.arg("update");
     cmd.current_dir(dir.path());
     cmd.env("FSPEC_UPDATE_BASE_URL", &base);
-    cmd.env("FSPEC_UPDATE_INSTALL_PATH", install.to_str().expect("install path"));
+    cmd.env(
+        "FSPEC_UPDATE_INSTALL_PATH",
+        install.to_str().expect("install path"),
+    );
     let output = cmd.output().expect("spawn fspec update");
 
     // @step Then it installs the new binary
@@ -213,8 +225,8 @@ async fn scenario_fspec_update_installs_the_latest_release_in_place() {
     // @step And it prints a success line naming the new version
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
-        stdout.contains("0.11.0"),
-        "success line must name the new version (0.11.0), got: {stdout}"
+        stdout.contains("99.0.0"),
+        "success line must name the new version (99.0.0), got: {stdout}"
     );
 }
 

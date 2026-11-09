@@ -23,7 +23,7 @@
 //! lines pre-wrap.
 //!
 //! **RPC-399**: settled tool-call cards are END-pinned — they keep the
-//! header + the LAST 8 body lines + a `... +N lines (Enter to view full)`
+//! header + the LAST 8 body lines + a `... +N lines (Tab to select, Enter to view full)`
 //! indicator (N = lines hidden ABOVE the window). This supersedes the
 //! original RPC-389 first-8 behavior so a card that finishes streaming
 //! stays anchored to the last lines the user was watching instead of
@@ -36,7 +36,7 @@ use unicode_width::UnicodeWidthStr;
 use super::diff_codec::parse_line;
 use super::diff_decode::style_row_lines;
 use super::stderr::{strip_marker, STDERR_MARKER};
-use crate::views::agent::text_wrap::wrap_to_width;
+use crate::views::agent::text_wrap::{wrap_rows, wrap_rows_hanging, RowEnd};
 use crate::views::agent::{ChunkKind, ChunkSource};
 
 /// Default viewport width used when a chunk is recorded before the
@@ -52,26 +52,36 @@ const COLLAPSED_LINES: usize = 8;
 const STREAMING_WINDOW_SIZE: usize = 10;
 
 pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
+    wrap_source_rows(source, width).0
+}
+
+/// TUI-130: [`wrap_source`] with how each line ends in copied text
+/// ([`RowEnd`]), index for index, so a scrollback copy joins the rows the
+/// wrap split without a line break.
+pub fn wrap_source_rows(source: &ChunkSource, width: u16) -> (Vec<Line<'static>>, Vec<RowEnd>) {
     let style = Style::default().fg(source.color);
     let body_style = match &source.kind {
         ChunkKind::ToolCall { is_error: true, .. } => Style::default().fg(Color::Red),
         _ => style,
     };
     let prefix = match &source.kind {
-        ChunkKind::UserInput => "You: ",
-        ChunkKind::AssistantText | ChunkKind::ToolCall { .. } => "\u{25CF} ",
+        ChunkKind::UserInput => "You: ".to_string(),
+        ChunkKind::TaggedUserInput(tag) => tag.prefix(),
+        ChunkKind::AssistantText | ChunkKind::ToolCall { .. } => "\u{25CF} ".to_string(),
         ChunkKind::Thinking
         | ChunkKind::Error
         | ChunkKind::Interrupted
         | ChunkKind::Notification
-        | ChunkKind::Incoming => "",
+        | ChunkKind::Incoming => String::new(),
     };
     let mut out: Vec<Line<'static>> = Vec::new();
+    let mut ends: Vec<RowEnd> = Vec::new();
     // **RPC-093**: Thinking chunks render with a `[Thinking]`
     // header line on top, then the wrapped body. The header is
     // NOT stored in `source.text`.
     if matches!(source.kind, ChunkKind::Thinking) {
         out.push(Line::from(Span::styled("[Thinking]".to_string(), style)));
+        ends.push(RowEnd::Break);
     }
 
     // **RPC-389**: ToolCall bodies are collapsed/windowed here (the
@@ -82,15 +92,20 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     // as every other `ChunkKind`.
     if matches!(source.kind, ChunkKind::ToolCall { .. }) {
         let is_error = matches!(source.kind, ChunkKind::ToolCall { is_error: true, .. });
-        out = wrap_tool_call(source, width, style, body_style, prefix, is_error);
+        (out, ends) = wrap_tool_call(source, width, style, body_style, &prefix, is_error);
     } else {
         let hard_lines: Vec<&str> = source.text.split('\n').collect();
         for (i, hard) in hard_lines.iter().enumerate() {
-            let mut wrapped = wrap_to_width(hard, width as usize);
-            if wrapped.is_empty() {
-                wrapped.push(String::new());
-            }
-            for (j, w) in wrapped.into_iter().enumerate() {
+            // TUI-130: the first row starts after the prefix, so it is
+            // narrower by the prefix width and never cut off.
+            let first_width = if i == 0 {
+                (width as usize).saturating_sub(prefix.width())
+            } else {
+                width as usize
+            };
+            let wrapped = wrap_rows_hanging(hard, first_width, width as usize);
+            for (j, (w, end)) in wrapped.into_iter().enumerate() {
+                ends.push(end);
                 let is_first = i == 0 && j == 0;
                 let needs_prefix = is_first && !prefix.is_empty();
                 let row_style = if i == 0 { style } else { body_style };
@@ -116,7 +131,8 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     // `ChunkKind`. It does NOT leak into the `TurnContentModal`, which
     // sources full text from `ChunkSource::text` / `full_text_for_seq`.
     out.push(Line::default());
-    out
+    ends.push(RowEnd::Break);
+    (out, ends)
 }
 
 /// **RPC-389**: render a `ChunkKind::ToolCall` source with its body
@@ -134,15 +150,17 @@ fn wrap_tool_call(
     body_style: Style,
     prefix: &str,
     is_error: bool,
-) -> Vec<Line<'static>> {
+) -> (Vec<Line<'static>>, Vec<RowEnd>) {
     let (header, body) = match source.text.split_once('\n') {
         Some((h, b)) => (h, Some(b)),
         None => (source.text.as_str(), None),
     };
 
     let mut out: Vec<Line<'static>> = Vec::new();
+    let mut ends: Vec<RowEnd> = Vec::new();
     // Header line — always kept, carries the `● ` prefix.
-    for (j, w) in wrap_header(header, width, prefix).into_iter().enumerate() {
+    for (j, (w, end)) in wrap_header(header, width, prefix).into_iter().enumerate() {
+        ends.push(end);
         let needs_prefix = j == 0 && !prefix.is_empty();
         if needs_prefix {
             out.push(Line::from(Span::styled(format!("{prefix}{w}"), style)));
@@ -152,7 +170,7 @@ fn wrap_tool_call(
     }
 
     let Some(body) = body else {
-        return out;
+        return (out, ends);
     };
 
     // **RPC-393 (CRITICAL #3)**: diff cards parse each HARD canonical line back
@@ -167,9 +185,10 @@ fn wrap_tool_call(
             let row = parse_line(hard);
             for spans in style_row_lines(&row, width as usize) {
                 out.push(Line::from(spans));
+                ends.push(RowEnd::Break);
             }
         }
-        return out;
+        return (out, ends);
     }
 
     let body_lines: Vec<&str> = body.split('\n').collect();
@@ -186,12 +205,9 @@ fn wrap_tool_call(
         } else {
             body_style
         };
-        let mut wrapped = wrap_to_width(&stripped, width as usize);
-        if wrapped.is_empty() {
-            wrapped.push(String::new());
-        }
-        for w in wrapped {
+        for (w, end) in wrap_rows(&stripped, width as usize) {
             out.push(Line::from(Span::styled(w, line_style)));
+            ends.push(end);
         }
     }
 
@@ -200,27 +216,24 @@ fn wrap_tool_call(
         // used elsewhere in the AgentView (e.g. popup hint rows).
         let dim = Style::default().add_modifier(Modifier::DIM);
         out.push(Line::from(Span::styled(text, dim)));
+        ends.push(RowEnd::Break);
     }
 
-    out
+    (out, ends)
 }
 
 /// Wrap a tool-call header line, accounting for the `● ` prefix width on
 /// the first visual row.
-fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<String> {
+fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<(String, RowEnd)> {
     let first_width = (width as usize).saturating_sub(prefix.width());
-    let mut wrapped = wrap_to_width(header, first_width.max(1));
-    if wrapped.is_empty() {
-        wrapped.push(String::new());
-    }
-    wrapped
+    wrap_rows(header, first_width.max(1))
 }
 
 /// **RPC-389/RPC-399**: choose the visible body lines + optional indicator.
 ///
 /// - Streaming: last `STREAMING_WINDOW_SIZE` lines, no indicator.
 /// - Settled: if `> COLLAPSED_LINES`, the LAST `COLLAPSED_LINES` lines
-///   (end-pinned) + a `... +N lines (Enter to view full)` indicator, where
+///   (end-pinned) + a `... +N lines (Tab to select, Enter to view full)` indicator, where
 ///   N is the number of lines hidden ABOVE the window (N = total - 8);
 ///   else all lines, no indicator.
 fn collapse_tool_body<'a>(
@@ -237,7 +250,7 @@ fn collapse_tool_body<'a>(
     }
     if total > COLLAPSED_LINES {
         let remaining = total - COLLAPSED_LINES;
-        let indicator = format!("... +{remaining} lines (Enter to view full)");
+        let indicator = super::diff_codec::hidden_lines_hint(remaining);
         let start = total - COLLAPSED_LINES;
         return (body_lines[start..].to_vec(), Some(indicator));
     }
@@ -245,50 +258,5 @@ fn collapse_tool_body<'a>(
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-
-    /// **RPC-389** boundary: a SETTLED body of exactly `COLLAPSED_LINES`
-    /// (8) lines is the largest body that stays fully inline — the
-    /// `8 > 8 == false` branch returns all lines with no indicator.
-    #[test]
-    fn settled_body_of_exactly_eight_lines_keeps_all_with_no_indicator() {
-        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"];
-        let (visible, indicator) = collapse_tool_body(&body, false);
-        assert_eq!(visible, body);
-        assert_eq!(visible.len(), 8);
-        assert!(indicator.is_none());
-    }
-
-    /// **RPC-389** boundary: a STREAMING body of exactly
-    /// `STREAMING_WINDOW_SIZE` (10) lines is the largest tail that stays
-    /// fully visible — the `10 > 10 == false` branch returns all lines
-    /// with no indicator.
-    #[test]
-    fn streaming_body_of_exactly_ten_lines_keeps_all_with_no_indicator() {
-        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9", "l10"];
-        let (visible, indicator) = collapse_tool_body(&body, true);
-        assert_eq!(visible, body);
-        assert_eq!(visible.len(), 10);
-        assert!(indicator.is_none());
-    }
-
-    /// **RPC-399** boundary: a SETTLED body of 9 lines (one over the
-    /// threshold) collapses to the LAST 8 (end-pinned) with a `... +1 lines`
-    /// indicator (the single hidden line is ABOVE the window).
-    #[test]
-    fn settled_body_of_nine_lines_collapses_to_last_eight_with_indicator() {
-        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9"];
-        let (visible, indicator) = collapse_tool_body(&body, false);
-        assert_eq!(
-            visible,
-            vec!["l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9"]
-        );
-        assert_eq!(
-            indicator,
-            Some("... +1 lines (Enter to view full)".to_string())
-        );
-    }
-}
+#[path = "chunk_wrap_tests.rs"]
+mod tests;

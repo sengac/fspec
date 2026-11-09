@@ -2,10 +2,9 @@
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::views::agent::{ResumeSessionView, ResumeSessionViewOutcome};
 use codelet_rpc_types::{SessionId, SessionInfo};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -45,7 +44,7 @@ fn rows_of(buf: &Buffer) -> Vec<String> {
 
 /// Scenario: ResumeSessionView paints full-screen and hides the normal AgentView layout
 #[test]
-fn render_paints_title_body_and_footer() {
+fn render_paints_title_body_and_footer() -> TestResult {
     // @step Given resume_view is open with 3 SessionInfo values
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s1", "s2", "s3"]));
@@ -64,11 +63,12 @@ fn render_paints_title_body_and_footer() {
     // (Clear leaves spaces; we asserted positive paint above; nothing more to check structurally.)
     // @step And no "Agent —" scrollback title row appears in the buffer
     assert!(!joined.contains("Agent —"));
+    Ok(())
 }
 
 /// Scenario: Empty session list renders the no-sessions placeholder
 #[test]
-fn empty_session_list_paints_placeholder() {
+fn empty_session_list_paints_placeholder() -> TestResult {
     // @step Given resume_view is open
     let mut v = ResumeSessionView::new();
     let mut buf = Buffer::empty(Rect::new(0, 0, 80, 24));
@@ -81,11 +81,12 @@ fn empty_session_list_paints_placeholder() {
     assert_eq!(v.session_count(), 0);
     // @step And the next render shows the centred placeholder "(no sessions to resume)"
     assert!(joined.contains("(no sessions to resume)"));
+    Ok(())
 }
 
 /// Scenario: Enter on a session emits Selected outcome
 #[test]
-fn enter_emits_selected_outcome() {
+fn enter_emits_selected_outcome() -> TestResult {
     // @step Given resume_view is open with sessions ["s-2", "s-3", "s-4"]
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s-2", "s-3", "s-4"]));
@@ -98,11 +99,12 @@ fn enter_emits_selected_outcome() {
         outcome,
         ResumeSessionViewOutcome::Selected(SessionId::new("s-2"))
     );
+    Ok(())
 }
 
 /// Scenario: Esc emits Dismiss
 #[test]
-fn esc_emits_dismiss() {
+fn esc_emits_dismiss() -> TestResult {
     // @step Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s-1", "s-2", "s-3"]));
@@ -110,11 +112,12 @@ fn esc_emits_dismiss() {
     let outcome = v.handle_key(KeyCode::Esc, KeyModifiers::NONE, 20);
     // @step Then Action::CloseResumeView is dispatched
     assert_eq!(outcome, ResumeSessionViewOutcome::Dismiss);
+    Ok(())
 }
 
 /// Scenario: ResumeSessionView scrolls beyond 10 rows using terminal height
 #[test]
-fn scrolls_past_ten_rows_using_terminal_height() {
+fn scrolls_past_ten_rows_using_terminal_height() -> TestResult {
     // @step Given resume_view has 40 SessionInfo values
     let ids: Vec<String> = (0..40).map(|i| format!("s-{i}")).collect();
     let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
@@ -139,11 +142,12 @@ fn scrolls_past_ten_rows_using_terminal_height() {
     v.render(area, &mut buf);
     let joined = rows_of(&buf).join("\n");
     assert!(joined.contains("s-20"));
+    Ok(())
 }
 
 /// Scenario: D opens the delete-confirm dialog without dispatching backend
 #[test]
-fn d_opens_delete_confirm_dialog() {
+fn d_opens_delete_confirm_dialog() -> TestResult {
     // @step Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s-1", "s-2", "s-3"]));
@@ -152,21 +156,22 @@ fn d_opens_delete_confirm_dialog() {
     assert_eq!(v.selected_index(), 1);
     // @step When the user presses D
     let outcome = v.handle_key(KeyCode::Char('D'), KeyModifiers::NONE, 21);
-    // @step Then Action::RequestDeleteSession("s-2") is dispatched
+    // @step Then the view reports a delete request for "s-2"
     assert_eq!(
         outcome,
         ResumeSessionViewOutcome::RequestDelete(SessionId::new("s-2"))
     );
     // @step And resume_view.delete_confirm is Some(ConfirmDialog) with primary_label "Delete"
-    let dialog = v.delete_confirm().expect("delete_confirm Some");
+    let dialog = v.delete_confirm().or_fail("delete_confirm Some")?;
     assert_eq!(dialog.primary_label(), "Delete");
     // @step And no backend call has been made
     // (Widget-level: ResumeSessionView has no backend handle; nothing fired yet — outcome only.)
+    Ok(())
 }
 
 /// Scenario: Enter on Primary confirms deletion and clears the dialog
 #[test]
-fn enter_on_primary_confirms_delete_and_clears_dialog() {
+fn enter_on_primary_confirms_delete_and_clears_dialog() -> TestResult {
     // @step Given resume_view.delete_confirm is Some(ConfirmDialog) with Primary focused
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s-1", "s-2", "s-3"]));
@@ -190,11 +195,12 @@ fn enter_on_primary_confirms_delete_and_clears_dialog() {
     // (Folded into the widget via set_sessions in App::dispatch — covered in the app-level test.)
     // @step And resume_view.delete_confirm is None
     assert!(v.delete_confirm().is_none());
+    Ok(())
 }
 
 /// Scenario: Cancelling the ConfirmDialog leaves the resume view untouched
 #[test]
-fn cancel_delete_confirm_leaves_view_untouched() {
+fn cancel_delete_confirm_leaves_view_untouched() -> TestResult {
     // @step Given resume_view.delete_confirm is Some(ConfirmDialog) with Primary focused
     let mut v = ResumeSessionView::new();
     v.set_sessions(sessions(&["s-1", "s-2", "s-3"]));
@@ -207,11 +213,12 @@ fn cancel_delete_confirm_leaves_view_untouched() {
     assert_eq!(outcome, ResumeSessionViewOutcome::CancelledDelete);
     // @step And resume_view.sessions is unchanged
     assert_eq!(v.session_count(), 3);
+    Ok(())
 }
 
 /// Scenario fragment: Enter / D are no-ops on empty session list
 #[test]
-fn enter_and_d_are_noop_on_empty_list() {
+fn enter_and_d_are_noop_on_empty_list() -> TestResult {
     // @step Given resume_view is open with no sessions
     let mut v = ResumeSessionView::new();
     // @step And pressing Enter is a no-op
@@ -223,4 +230,43 @@ fn enter_and_d_are_noop_on_empty_list() {
     // @step And pressing Esc still dispatches Action::CloseResumeView
     let esc = v.handle_key(KeyCode::Esc, KeyModifiers::NONE, 21);
     assert_eq!(esc, ResumeSessionViewOutcome::Dismiss);
+    Ok(())
+}
+
+/// Scenario: Cancel option closes dialog without deleting
+///
+/// COV-073: moved from the deleted delete-session-from-resume-view-with-
+/// confirmation-dialog feature (TUI-040). The dialog's buttons are
+/// Delete then Cancel, so Right moves focus to Cancel.
+#[test]
+fn cancel_button_closes_delete_dialog_without_deleting() -> TestResult {
+    // @step Given I am in resume mode with the delete confirmation dialog open
+    let mut v = ResumeSessionView::new();
+    v.set_sessions(sessions(&["s-1", "s-2", "s-3"]));
+    let requested = v.handle_key(KeyCode::Char('D'), KeyModifiers::NONE, 21);
+    assert_eq!(
+        requested,
+        ResumeSessionViewOutcome::RequestDelete(SessionId::new("s-1"))
+    );
+    let dialog = v.delete_confirm().or_fail("delete_confirm Some")?;
+    assert_eq!(dialog.buttons(), ["Delete", "Cancel"]);
+    // @step When I navigate to Cancel and press Enter
+    let moved = v.handle_key(KeyCode::Right, KeyModifiers::NONE, 21);
+    assert_eq!(moved, ResumeSessionViewOutcome::Continued);
+    let dialog = v.delete_confirm().or_fail("dialog still open")?;
+    assert_eq!(dialog.focused(), 1);
+    let outcome = v.handle_key(KeyCode::Enter, KeyModifiers::NONE, 21);
+    // @step Then the dialog closes
+    assert!(v.delete_confirm().is_none());
+    // @step And no sessions are deleted
+    // Only ConfirmedDelete makes the app dispatch ConfirmDeleteSession.
+    assert_eq!(outcome, ResumeSessionViewOutcome::CancelledDelete);
+    let ids: Vec<&str> = v.sessions().iter().map(|s| s.id.as_str()).collect();
+    assert_eq!(ids, ["s-1", "s-2", "s-3"]);
+    // @step And resume mode remains active
+    // Only Dismiss closes the view; it still routes the next key itself.
+    let next = v.handle_key(KeyCode::Down, KeyModifiers::NONE, 21);
+    assert_eq!(next, ResumeSessionViewOutcome::Continued);
+    assert_eq!(v.selected_index(), 1);
+    Ok(())
 }

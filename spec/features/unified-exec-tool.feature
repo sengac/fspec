@@ -1,4 +1,7 @@
+@BUG-582
 @TOOL-016
+@tools
+@tool-execution
 Feature: Unified Exec Tool with PTY Session Management
   """
   Create rust/tools/src/unified_exec/ module with mod.rs (constants, types), process_store.rs (ProcessStore HashMap with LRU eviction), and tool.rs (UnifiedExecTool implementing rig::tool::Tool). The tool uses action-based dispatch: run spawns processes, write/poll interact with running sessions, list/close manage sessions. ProcessStore is a global static behind Arc<Mutex<>>. BashTool remains unchanged for direct Claude usage; providers that need session management use UnifiedExecTool via facades.

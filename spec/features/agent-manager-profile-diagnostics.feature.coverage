@@ -4,8 +4,8 @@
       "name": "Attribute runaway subordinate_forwarding recv loop to correct thread and function",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "99-183",
+          "file": "rust/tools/src/profile/diagnostics_tests/attribute_runaway_subordinate_forwarding.rs",
+          "lines": "4-85",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/attribution.rs",
@@ -188,7 +188,9 @@
                 311,
                 312,
                 313
-              ]
+              ],
+              "firstLine": "stacks: &[SampleStack],",
+              "lastLine": "total_samples,"
             }
           ]
         }
@@ -198,8 +200,8 @@
       "name": "Detect stripped build and report debug info unavailable",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "189-255",
+          "file": "rust/tools/src/profile/diagnostics_tests/attribute_runaway_subordinate_forwarding.rs",
+          "lines": "87-150",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/attribution.rs",
@@ -382,7 +384,9 @@
                 311,
                 312,
                 313
-              ]
+              ],
+              "firstLine": "stacks: &[SampleStack],",
+              "lastLine": "total_samples,"
             }
           ]
         }
@@ -392,8 +396,8 @@
       "name": "Filter samples by focus substring to narrow to a single call chain",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "261-337",
+          "file": "rust/tools/src/profile/diagnostics_tests/attribute_runaway_subordinate_forwarding.rs",
+          "lines": "152-232",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/attribution.rs",
@@ -576,7 +580,9 @@
                 311,
                 312,
                 313
-              ]
+              ],
+              "firstLine": "stacks: &[SampleStack],",
+              "lastLine": "total_samples,"
             }
           ]
         }
@@ -586,56 +592,9 @@
       "name": "Walk leaf to root skipping noise frames for attribution",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "343-398",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/profile/attribution.rs",
-              "lines": [
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360
-              ]
-            }
-          ]
+          "file": "rust/tools/src/profile/diagnostics_tests/walk_leaf_to_root.rs",
+          "lines": "4-54",
+          "implMappings": []
         }
       ]
     },
@@ -643,56 +602,9 @@
       "name": "Credit only the outermost inlined symbol per physical frame",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "404-451",
-          "implMappings": [
-            {
-              "file": "rust/tools/src/profile/attribution.rs",
-              "lines": [
-                320,
-                321,
-                322,
-                323,
-                324,
-                325,
-                326,
-                327,
-                328,
-                329,
-                330,
-                331,
-                332,
-                333,
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360
-              ]
-            }
-          ]
+          "file": "rust/tools/src/profile/diagnostics_tests/walk_leaf_to_root.rs",
+          "lines": "56-97",
+          "implMappings": []
         }
       ]
     },
@@ -700,8 +612,8 @@
       "name": "Report cpu_cores_consumed from total sample count",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "457-483",
+          "file": "rust/tools/src/profile/diagnostics_tests/walk_leaf_to_root.rs",
+          "lines": "99-123",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/attribution.rs",
@@ -884,7 +796,9 @@
                 311,
                 312,
                 313
-              ]
+              ],
+              "firstLine": "stacks: &[SampleStack],",
+              "lastLine": "total_samples,"
             }
           ]
         }
@@ -894,12 +808,13 @@
       "name": "Preserve backward compatibility of existing ProfileResult fields",
       "testMappings": [
         {
-          "file": "rust/tools/src/profile/diagnostics_tests.rs",
-          "lines": "489-530",
+          "file": "rust/tools/src/profile/diagnostics_tests/walk_leaf_to_root.rs",
+          "lines": "125-163",
           "implMappings": [
             {
               "file": "rust/tools/src/profile/result.rs",
               "lines": [
+                12,
                 13,
                 14,
                 15,
@@ -928,7 +843,9 @@
                 38,
                 39,
                 40
-              ]
+              ],
+              "firstLine": "/// Top-level result returned by `ProfileSession::run()`",
+              "lastLine": "}"
             }
           ]
         }
@@ -940,12 +857,13 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/tools/src/profile/diagnostics_tests.rs"
+      "rust/tools/src/profile/diagnostics_tests/attribute_runaway_subordinate_forwarding.rs",
+      "rust/tools/src/profile/diagnostics_tests/walk_leaf_to_root.rs"
     ],
     "implFiles": [
       "rust/tools/src/profile/attribution.rs",
       "rust/tools/src/profile/result.rs"
     ],
-    "totalLinesCovered": 1224
+    "totalLinesCovered": 1125
   }
 }

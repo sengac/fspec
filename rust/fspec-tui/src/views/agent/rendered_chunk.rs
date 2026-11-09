@@ -10,6 +10,8 @@
 use ratatui::style::Color;
 use ratatui::text::Line;
 
+use super::text_wrap::RowEnd;
+
 /// Tag carried by [`ChunkSource`] so the renderer can apply the
 /// per-variant prefix (e.g. `'● '` for AssistantText / ToolCall) on
 /// `lineIndex == 0` only — mirroring `src/tui/utils/conversationUtils.ts:64-71`.
@@ -21,6 +23,9 @@ use ratatui::text::Line;
 pub enum ChunkKind {
     /// Green `"You: "` prefix line.
     UserInput,
+    /// **TUI-115**: green user line submitted while the session was busy;
+    /// the tag picks its `"You (steer): "` / `"Queued #n: "` prefix.
+    TaggedUserInput(UserInputTag),
     /// White `"● "` prefix on lineIndex==0; subsequent lines unprefixed.
     AssistantText,
     /// Yellow `"[Thinking]\n…"` block; no `"● "` prefix.
@@ -49,6 +54,25 @@ pub enum ChunkKind {
     Notification,
     /// `IncomingMessage` parsed into `"[W] {role}> {body}"` magenta line.
     Incoming,
+}
+
+/// TUI-115: how a busy user line was submitted, shown as its prefix.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UserInputTag {
+    /// Steered into a running turn: `"You (steer): "`.
+    Steer,
+    /// Queued behind a busy turn as the session's n-th queued input.
+    Queued(u32),
+}
+
+impl UserInputTag {
+    /// The prefix painted before the user's text.
+    pub fn prefix(self) -> String {
+        match self {
+            Self::Steer => "You (steer): ".to_string(),
+            Self::Queued(n) => format!("Queued #{n}: "),
+        }
+    }
 }
 
 /// Original chunk source used to re-derive `RenderedChunk::lines`
@@ -100,4 +124,16 @@ pub struct RenderedChunk {
     /// Optional source for re-wrap on viewport resize. `None` for
     /// pre-RPC-078 callers that pushed already-styled `Line`s directly.
     pub source: Option<ChunkSource>,
+    /// TUI-130: how each row of `lines` ends in copied text, index for
+    /// index, set with `lines` by every wrap of `source`. Opaque
+    /// pre-rendered rows (`source: None`) carry none: each of them is a
+    /// line of its own.
+    pub row_ends: Vec<RowEnd>,
+}
+
+impl RenderedChunk {
+    /// TUI-130: how row `index` ends in copied text.
+    pub fn row_end(&self, index: usize) -> RowEnd {
+        self.row_ends.get(index).copied().unwrap_or(RowEnd::Break)
+    }
 }

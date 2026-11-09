@@ -1,0 +1,1199 @@
+{
+  "scenarios": [
+    {
+      "name": "Every copy is confirmed with what the App knows",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "223-248",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/copy_notice.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "/// Confirm a copy of `text` that `result` says was written or not.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ],
+              "firstLine": "/// COPY-007: write the composer's prompt-free selected text to the",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The API Error dialog copies its whole message",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "250-279",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dialog_copy.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "/// Copy the topmost dialog's text on c or Ctrl+C (`None`: not a copy",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/compositor.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "/// TUI-130: the copy text of the layer that gets events first (the",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/error_dialog.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71
+              ],
+              "firstLine": "/// TUI-130: c and Ctrl+C copy the whole message.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Session error dialog copies rows scrolled out of view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "281-302",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/session_storage_dialog.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72
+              ],
+              "firstLine": "/// TUI-130: c and Ctrl+C copy the whole message, rows out of view too.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dialog_copy.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "/// Copy the topmost dialog's text on c or Ctrl+C (`None`: not a copy",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Notification dialog copies its whole sentence",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "304-320",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/notification_dialog.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239
+              ],
+              "firstLine": "/// TUI-130: c and Ctrl+C copy the whole message.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dialog_copy.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ],
+              "firstLine": "/// Copy the topmost dialog's text on c or Ctrl+C (`None`: not a copy",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board card details copy the whole page and the card id",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "354-419",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/board_card/page.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ],
+              "firstLine": "/// TUI-130: the page's whole text for a copy: `id: title`, then every",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/board_card/events.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "KeyCode::Char('y') => {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long press on the board strip copies the whole field through the App",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "421-457",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ],
+              "firstLine": "/// COPY-009: reconstruct the border-free selected text and write it via",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ],
+              "firstLine": "/// TEST-042 test seam: [`Self::poll_selection_tick_for_test`] as if",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A wrapped URL copied from the scrollback has no line breaks",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "459-480",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// What joins this row to the next one in copied text: a line break,",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// TUI-130: [`wrap_source`] with how each line ends in copied text",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Reconstruct the plain text covered by `region`.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wrapped words are joined by a space and real line breaks are kept",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "482-503",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/text_wrap.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "/// What joins this row to the next one in copied text: a line break,",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "firstLine": "/// Reconstruct the plain text covered by `region`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/rendered_chunk.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138
+              ],
+              "firstLine": "/// TUI-130: how row `index` ends in copied text.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The turn modal copies the whole turn",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "505-526",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ],
+              "firstLine": "/// TUI-130: copy the whole text of the turn open in the turn modal, or",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "firstLine": "KeyCode::Char('c') => {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ],
+              "firstLine": "/// COPY-008: the plain-text of each wrapped visual row at `width`",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "firstLine": "/// COPY-008: reconstruct plain text from viewport-space `spans`,",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+C copies an agent view selection instead of interrupting",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "528-564",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/dispatch_select.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "firstLine": "/// TUI-130 (audit CP-15): Ctrl+C copies a live scrollback or composer",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "firstLine": "/// TUI-130: the prompt-free text of a live selection (`None` when there",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ],
+              "firstLine": "/// COPY-006 rule [3]: reconstruct the selected text (COPY-004) and",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Changed files copy the full path and the diff",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "566-599",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                343,
+                344,
+                345,
+                346,
+                347,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                391,
+                392,
+                393,
+                394,
+                395
+              ],
+              "firstLine": "// TUI-130: Ctrl+C, the copy wrapper, copies the path like c.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkpoints copy the selected checkpoint name",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "601-622",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ],
+              "firstLine": "// TUI-130: Ctrl+C, the copy wrapper, copies the name like c.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The worktrees dialog copies the chosen worktree path",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "624-660",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/session_worktrees_dialog.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                195,
+                196,
+                197,
+                208,
+                209,
+                210,
+                211,
+                212
+              ],
+              "firstLine": "/// Test-only: drain the most recent emitted action stashed by",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/session_worktrees_dialog_dispatch.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47
+              ],
+              "firstLine": "/// TUI-130: c and Ctrl+C copy the chosen worktree's full path.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The model selector copies the focused model and takes a paste in its form",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "662-703",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/crud.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "firstLine": "/// TUI-130: a paste into the open add/edit form goes into its focused",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/views/model_selector/form.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "/// TUI-130: a paste goes into the focused text field, without its",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The blocklist copies the rule pattern and the whole detail",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "705-749",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/blocklist/mod.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ],
+              "firstLine": "// TUI-130: Ctrl+C, the copy wrapper, copies the pattern like c.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A viewer that cannot open names its URL",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "751-786",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/board_card_attachments.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230
+              ],
+              "firstLine": "// TUI-130: the error names the viewer URL, so it can be copied from the",
+              "lastLine": ".map_err(|error| format!(\"browser launch failed: {error} (viewer URL: {shown})\"))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The merge commit sha stays on the board and can be copied",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs",
+          "lines": "788-832",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/merge_worktree_success.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "/// TUI-130: after the teardown, a Notification dialog on the board",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_merge_worktree.rs",
+              "lines": [
+                202,
+                203
+              ],
+              "firstLine": "// TUI-130: the merge commit stays readable on the board.",
+              "lastLine": "self.show_merge_success(session_id, merge_commit.as_deref());"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 17,
+    "coveredScenarios": 17,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui130_copy_works_everywhere_text_is_shown.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/copy_notice.rs",
+      "rust/fspec-tui/src/app/dispatch_scroll.rs",
+      "rust/fspec-tui/src/app/dialog_copy.rs",
+      "rust/fspec-tui/src/compositor.rs",
+      "rust/fspec-tui/src/components/error_dialog.rs",
+      "rust/fspec-tui/src/components/session_storage_dialog.rs",
+      "rust/fspec-tui/src/components/notification_dialog.rs",
+      "rust/fspec-tui/src/components/board_card/page.rs",
+      "rust/fspec-tui/src/components/board_card/events.rs",
+      "rust/fspec-tui/src/views/board/details_select.rs",
+      "rust/fspec-tui/src/views/agent/text_wrap.rs",
+      "rust/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "rust/fspec-tui/src/views/agent/scrollback_copy.rs",
+      "rust/fspec-tui/src/views/agent/rendered_chunk.rs",
+      "rust/fspec-tui/src/views/agent/dispatch_select.rs",
+      "rust/fspec-tui/src/views/agent/turn_modal.rs",
+      "rust/fspec-tui/src/views/agent/turn_modal_select.rs",
+      "rust/fspec-tui/src/views/agent/multiline_input_select.rs",
+      "rust/fspec-tui/src/views/changed_files/mod.rs",
+      "rust/fspec-tui/src/views/checkpoints/keys.rs",
+      "rust/fspec-tui/src/views/agent/session_worktrees_dialog.rs",
+      "rust/fspec-tui/src/views/agent/session_worktrees_dialog_dispatch.rs",
+      "rust/fspec-tui/src/views/model_selector/crud.rs",
+      "rust/fspec-tui/src/views/model_selector/form.rs",
+      "rust/fspec-tui/src/views/blocklist/mod.rs",
+      "rust/fspec-tui/src/app/board_card_attachments.rs",
+      "rust/fspec-tui/src/app/merge_worktree_success.rs",
+      "rust/fspec-tui/src/app/dispatch_merge_worktree.rs"
+    ],
+    "totalLinesCovered": 1279
+  }
+}

@@ -14,7 +14,6 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    time::Duration,
 };
 use tokio::sync::{broadcast, mpsc};
 use wiremock::{matchers::method, Mock, MockServer};
@@ -125,7 +124,7 @@ pub async fn run_case(
         injection_rx,
     )));
     background.send_input("finish the selected task".into(), None)?;
-    let chunks = tokio::time::timeout(Duration::from_secs(10), async {
+    let chunks = codelet_test_helpers::deadlock_guard("the awaited block", async {
         let mut chunks = Vec::new();
         loop {
             let (_, chunk) = chunks_rx.recv().await?;

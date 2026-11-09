@@ -12,8 +12,7 @@
 //! Each Gherkin step carries a matching `// @step` comment whose text
 //! mirrors the feature file exactly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
@@ -83,18 +82,18 @@ fn line_has_bg(line: &Line<'static>, bg: Color) -> bool {
 
 /// Build a diff `ChunkSource` directly (parity with what `chunk_processor`
 /// produces for an Edit) so we can wrap it at an arbitrary width.
-fn diff_source(old: &str, new: &str) -> ChunkSource {
+fn diff_source(old: &str, new: &str) -> Result<ChunkSource, codelet_test_helpers::TestError> {
     use codelet_fspec_tui::store::agent_view::pending_tool_diff::{
         capture_pending_diff, produce_diff_strings,
     };
     let input = format!(
         r#"{{"old_string":{},"new_string":{}}}"#,
-        serde_json::to_string(old).unwrap(),
-        serde_json::to_string(new).unwrap()
+        serde_json::to_string(old).or_fail("expected a value")?,
+        serde_json::to_string(new).or_fail("expected a value")?
     );
-    let pending = capture_pending_diff("Edit", &input).expect("captured");
+    let pending = capture_pending_diff("Edit", &input).or_fail("captured")?;
     let (collapsed, full) = produce_diff_strings(&pending);
-    ChunkSource {
+    Ok(ChunkSource {
         text: format!("Edit(file)\n{collapsed}"),
         color: Color::White,
         kind: ChunkKind::ToolCall {
@@ -104,11 +103,11 @@ fn diff_source(old: &str, new: &str) -> ChunkSource {
         },
         is_streaming: false,
         full_text: Some(format!("Edit(file)\n{full}")),
-    }
+    })
 }
 
 #[test]
-fn scrollback_diff_branch_emits_full_width_bars() {
+fn scrollback_diff_branch_emits_full_width_bars() -> TestResult {
     // @step Given a diff tool-call whose body has a removed line and an added line
     let mut app = app_with_session();
     app.dispatch(Action::ChunkReceived(
@@ -124,13 +123,13 @@ fn scrollback_diff_branch_emits_full_width_bars() {
     let ctx = app
         .agent_view_store()
         .session_context_for(&sid("s-1"))
-        .expect("ctx");
+        .or_fail("ctx")?;
     let source = ctx
         .scrollback
         .visible_window(4096)
         .first()
         .and_then(|c| c.source.clone())
-        .expect("diff source present");
+        .or_fail("diff source present")?;
 
     // @step When the source is wrapped at a known width
     let width: u16 = 50;
@@ -140,7 +139,7 @@ fn scrollback_diff_branch_emits_full_width_bars() {
     let removed = lines
         .iter()
         .find(|l| line_text(l).contains("line2"))
-        .expect("removed line present");
+        .or_fail("removed line present")?;
     assert!(line_has_bg(removed, DIFF_BG_REMOVED));
     assert_eq!(line_width(removed), width as usize);
 
@@ -148,25 +147,27 @@ fn scrollback_diff_branch_emits_full_width_bars() {
     let added = lines
         .iter()
         .find(|l| line_text(l).contains("CHANGED"))
-        .expect("added line present");
+        .or_fail("added line present")?;
     assert!(line_has_bg(added, DIFF_BG_ADDED));
     assert_eq!(line_width(added), width as usize);
+    Ok(())
 }
 
 #[test]
-fn scrollback_diff_branch_uses_real_source_helper() {
+fn scrollback_diff_branch_uses_real_source_helper() -> TestResult {
     // Sanity that diff_source mirrors the real chunk for the modal test.
-    let source = diff_source("line2", "CHANGED");
+    let source = diff_source("line2", "CHANGED")?;
     let lines = wrap_source(&source, 50);
     assert!(lines.iter().any(|l| line_has_bg(l, DIFF_BG_REMOVED)));
     assert!(lines.iter().any(|l| line_has_bg(l, DIFF_BG_ADDED)));
+    Ok(())
 }
 
 // ── decode-level scenarios (drive the same width-aware decode the
 //    scrollback + modal call sites use) ───────────────────────────────
 
 #[test]
-fn removed_line_is_padded_to_a_full_width_red_bar() {
+fn removed_line_is_padded_to_a_full_width_red_bar() -> TestResult {
     // @step Given a decoded removed diff line shorter than the render width
     let line = "  2 [R]- line2";
     let width = 40;
@@ -181,15 +182,16 @@ fn removed_line_is_padded_to_a_full_width_red_bar() {
     let bar = spans
         .iter()
         .find(|s| s.style.bg == Some(DECODE_BG_REMOVED))
-        .expect("red bar span");
+        .or_fail("red bar span")?;
     assert_eq!(bar.style.bg, Some(DIFF_BG_REMOVED));
     assert_eq!(bar.style.fg, Some(Color::White));
     // @step And the span content contains no removed marker
     assert!(spans.iter().all(|s| !s.content.contains("[R]")));
+    Ok(())
 }
 
 #[test]
-fn added_line_is_padded_to_a_full_width_green_bar() {
+fn added_line_is_padded_to_a_full_width_green_bar() -> TestResult {
     // @step Given a decoded added diff line shorter than the render width
     let line = "  3 [A]+ CHANGED";
     let width = 40;
@@ -202,15 +204,16 @@ fn added_line_is_padded_to_a_full_width_green_bar() {
     let bar = spans
         .iter()
         .find(|s| s.style.bg == Some(DECODE_BG_ADDED))
-        .expect("green bar span");
+        .or_fail("green bar span")?;
     assert_eq!(bar.style.bg, Some(DIFF_BG_ADDED));
     assert_eq!(bar.style.fg, Some(Color::White));
     // @step And the span content contains no added marker
     assert!(spans.iter().all(|s| !s.content.contains("[A]")));
+    Ok(())
 }
 
 #[test]
-fn context_line_is_not_given_a_colored_background_bar() {
+fn context_line_is_not_given_a_colored_background_bar() -> TestResult {
     // @step Given a decoded context line of the form 'L 250   foo'
     let line = "L 250   foo";
     let width = 40;
@@ -226,10 +229,11 @@ fn context_line_is_not_given_a_colored_background_bar() {
     // @step And the content is not padded to the render width with a background
     let total: usize = spans.iter().map(span_width).sum();
     assert!(total < width, "context must not be padded to width");
+    Ok(())
 }
 
 #[test]
-fn gap_marker_or_plain_line_is_unchanged() {
+fn gap_marker_or_plain_line_is_unchanged() -> TestResult {
     // @step Given a gap-marker line of the form '... (5 lines)'
     let line = "    ... (5 lines)";
     let width = 40;
@@ -239,10 +243,11 @@ fn gap_marker_or_plain_line_is_unchanged() {
     assert_eq!(spans.len(), 1);
     assert!(spans[0].style.bg.is_none());
     assert_eq!(spans[0].content.as_ref(), line);
+    Ok(())
 }
 
 #[test]
-fn content_already_at_or_over_width_is_not_padded_or_truncated() {
+fn content_already_at_or_over_width_is_not_padded_or_truncated() -> TestResult {
     // @step Given a decoded added diff line whose stripped content display-width is at least the render width
     let line = format!("12 [A]+ {}", "x".repeat(40));
     let width = 10;
@@ -252,15 +257,16 @@ fn content_already_at_or_over_width_is_not_padded_or_truncated() {
     let bar = spans
         .iter()
         .find(|s| s.style.bg == Some(DIFF_BG_ADDED))
-        .expect("green bar span");
+        .or_fail("green bar span")?;
     assert!(!bar.content.ends_with(' '));
     assert!(bar.content.contains(&"x".repeat(40)));
     // @step And the span background is rgb 0,100,0
     assert_eq!(bar.style.bg, Some(DIFF_BG_ADDED));
+    Ok(())
 }
 
 #[test]
-fn zero_width_does_not_panic_and_pads_non_negatively() {
+fn zero_width_does_not_panic_and_pads_non_negatively() -> TestResult {
     // @step Given a decoded removed diff line
     let line = "  2 [R]- line2";
     // @step When it is decoded with width zero
@@ -269,32 +275,37 @@ fn zero_width_does_not_panic_and_pads_non_negatively() {
     let text: String = spans.iter().map(|s| s.content.as_ref()).collect();
     assert!(!text.ends_with("  "));
     assert!(text.contains("line2"));
+    Ok(())
 }
 
-fn render_rows(modal: &TurnContentModal, w: u16, h: u16) -> Vec<Vec<ratatui::buffer::Cell>> {
+fn render_rows(
+    modal: &TurnContentModal,
+    w: u16,
+    h: u16,
+) -> Result<Vec<Vec<ratatui::buffer::Cell>>, codelet_test_helpers::TestError> {
     let backend = TestBackend::new(w, h);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
+    let mut term = Terminal::new(backend).or_fail("Terminal::new")?;
     term.draw(|frame| modal.render(frame.area(), frame.buffer_mut()))
-        .expect("draw");
+        .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
-    (0..buf.area.height)
+    Ok((0..buf.area.height)
         .map(|y| {
             (0..buf.area.width)
                 .map(|x| buf[(x, y)].clone())
                 .collect::<Vec<_>>()
         })
-        .collect()
+        .collect())
 }
 
 #[test]
-fn modal_diff_rows_emit_full_width_bars_while_non_diff_rows_do_not() {
+fn modal_diff_rows_emit_full_width_bars_while_non_diff_rows_do_not() -> TestResult {
     // @step Given a modal body containing a removed-marker row, an added-marker row, and a plain row
-    let source = diff_source("line2", "CHANGED");
-    let full = source.full_text.clone().expect("full text");
+    let source = diff_source("line2", "CHANGED")?;
+    let full = source.full_text.clone().or_fail("full text")?;
     let modal = TurnContentModal::new(full, Some(source.kind));
 
     // @step When the modal decodes rows at the content width
-    let rows = render_rows(&modal, 60, 24);
+    let rows = render_rows(&modal, 60, 24)?;
 
     // @step Then the diff rows are padded full-width with the diff background
     let removed_row = rows
@@ -307,7 +318,7 @@ fn modal_diff_rows_emit_full_width_bars_while_non_diff_rows_do_not() {
                     .collect::<String>()
                     .contains("line2")
         })
-        .expect("removed bar row present");
+        .or_fail("removed bar row present")?;
     let added_row = rows
         .iter()
         .find(|row| {
@@ -318,7 +329,7 @@ fn modal_diff_rows_emit_full_width_bars_while_non_diff_rows_do_not() {
                     .collect::<String>()
                     .contains("CHANGED")
         })
-        .expect("added bar row present");
+        .or_fail("added bar row present")?;
 
     // The colored background must extend to (near) the modal content width
     // — i.e. there is substantial trailing padding past the last text glyph,
@@ -352,4 +363,5 @@ fn modal_diff_rows_emit_full_width_bars_while_non_diff_rows_do_not() {
         diff_bg_rows, 2,
         "exactly the two diff rows carry a diff background"
     );
+    Ok(())
 }

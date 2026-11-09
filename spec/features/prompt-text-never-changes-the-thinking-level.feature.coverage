@@ -1,0 +1,119 @@
+{
+  "scenarios": [
+    {
+      "name": "Prompt words never lower a chosen level",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/model013_prompt_text_never_changes_the_thinking_level.rs",
+          "lines": "31-49",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/thinking.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "pub fn resolve_turn_thinking(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/agent-loop/src/thinking_level_detection.rs",
+              "lines": [
+                15,
+                16,
+                17
+              ],
+              "firstLine": "pub fn base_thinking_level(level: &ThinkingLevel) -> Result<Option<TurnLevel>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prompt words never raise a chosen level",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/model013_prompt_text_never_changes_the_thinking_level.rs",
+          "lines": "51-69",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/thinking.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "pub fn resolve_turn_thinking(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/agent-loop/src/thinking_level_detection.rs",
+              "lines": [
+                15,
+                16,
+                17
+              ],
+              "firstLine": "pub fn base_thinking_level(level: &ThinkingLevel) -> Result<Option<TurnLevel>, String> {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/model013_prompt_text_never_changes_the_thinking_level.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/agent_loop/thinking.rs",
+      "rust/agent-loop/src/thinking_level_detection.rs"
+    ],
+    "totalLinesCovered": 90
+  }
+}

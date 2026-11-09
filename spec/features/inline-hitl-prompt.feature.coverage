@@ -4,8 +4,8 @@
       "name": "Options question renders inline with radios, colors, Other entry, and footer",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "179-283",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/rendering.rs",
+          "lines": "6-110",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
@@ -229,7 +229,9 @@
                 256,
                 257,
                 258
-              ]
+              ],
+              "firstLine": "/// bold header, `: `, plain question, plus the dim mode hint in",
+              "lastLine": "}"
             }
           ]
         }
@@ -239,8 +241,8 @@
       "name": "Multi-question request shows a magenta question progress marker",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "285-325",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/rendering.rs",
+          "lines": "113-153",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
@@ -281,7 +283,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "/// bold header, `: `, plain question, plus the dim mode hint in",
+              "lastLine": "/// Slice styled spans into rows of at most `width` chars, preserving"
             }
           ]
         }
@@ -291,8 +295,8 @@
       "name": "Up and Down wrap the selection across options and the virtual Other entry",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "331-372",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_lifecycle.rs",
+          "lines": "6-51",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/hitl_state.rs",
@@ -306,8 +310,13 @@
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108
+              ],
+              "firstLine": ".map(|q| self.selected_option == q.options.len())",
+              "lastLine": "self.selected_option = (cur + delta).rem_euclid(total.max(1)) as usize;"
             }
           ]
         }
@@ -317,14 +326,12 @@
       "name": "Answers accumulate across questions and submit together after the last question",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "378-451",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_lifecycle.rs",
+          "lines": "58-131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -395,8 +402,12 @@
                 113,
                 114,
                 115,
-                116
-              ]
+                116,
+                117,
+                118
+              ],
+              "firstLine": "pub(crate) fn handle_hitl_prompt_enter(&mut self, session_id: SessionId) {",
+              "lastLine": "/// list, hint cleared. The key handler already cleared the shared"
             }
           ]
         }
@@ -406,17 +417,12 @@
       "name": "Enter on Other activates freeform mode with the shared input, empty-submit hint, and submit",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "738-848",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/other_mode.rs",
+          "lines": "34-157",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
                 129,
                 130,
                 131,
@@ -453,7 +459,12 @@
                 162,
                 163,
                 164,
-                165
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
               ]
             }
           ]
@@ -464,13 +475,12 @@
       "name": "Esc in Other mode returns to the options list without sending anything",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "850-893",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/other_mode.rs",
+          "lines": "160-208",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
-                119,
                 120,
                 121,
                 122,
@@ -482,8 +492,12 @@
                 128,
                 129,
                 130,
-                131
-              ]
+                131,
+                132,
+                133
+              ],
+              "firstLine": "pub(crate) fn handle_hitl_other_exit(&mut self, session_id: &SessionId) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -493,13 +507,12 @@
       "name": "Freeform question consumes the composer draft as the answer",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "899-962",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/freeform_draft_paste.rs",
+          "lines": "6-71",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
-                78,
                 79,
                 80,
                 81,
@@ -516,8 +529,12 @@
                 92,
                 93,
                 94,
-                95
-              ]
+                95,
+                96,
+                97
+              ],
+              "firstLine": "pub(crate) fn handle_hitl_answer_captured(&mut self, session_id: SessionId, text: String) {",
+              "lastLine": "fn hitl_advance_or_submit(&mut self, session_id: SessionId, answer: HitlAnswer) {"
             }
           ]
         }
@@ -527,17 +544,12 @@
       "name": "Composer draft and cursor survive an options-only HITL round-trip",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "964-1012",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/freeform_draft_paste.rs",
+          "lines": "74-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/input_area.rs",
               "lines": [
-                84,
-                85,
-                86,
-                87,
-                88,
                 89,
                 90,
                 91,
@@ -564,8 +576,15 @@
                 112,
                 113,
                 114,
-                115
-              ]
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ],
+              "firstLine": "// TUI-115: a busy session stacks activity + queued + composer + hint.",
+              "lastLine": "// RPC-412: clear any stale freeform cursor offset — only the"
             }
           ]
         }
@@ -575,12 +594,16 @@
       "name": "Esc on an options question cancels the whole request through the backend",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "457-500",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_lifecycle.rs",
+          "lines": "138-181",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs",
               "lines": [
+                140,
+                141,
+                142,
+                143,
                 144,
                 145,
                 146,
@@ -597,8 +620,12 @@
                 157,
                 158,
                 159,
-                160
-              ]
+                160,
+                161,
+                162
+              ],
+              "firstLine": "if state.show_empty_hint {",
+              "lastLine": "}"
             }
           ]
         }
@@ -608,23 +635,15 @@
       "name": "Paused chunk stores a HITL slot that wins over the pause slot and Running clears it",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "506-576",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_lifecycle.rs",
+          "lines": "188-257",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
-                52,
-                53,
-                54,
-                55,
                 56,
                 57,
                 58,
-                59,
-                60,
-                61,
-                62,
                 63,
                 64,
                 65,
@@ -683,8 +702,14 @@
                 118,
                 119,
                 120,
-                121
-              ]
+                121,
+                122,
+                123,
+                124,
+                125
+              ],
+              "firstLine": "pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {",
+              "lastLine": "send_to_app(&action_tx, action);"
             }
           ]
         }
@@ -694,17 +719,12 @@
       "name": "Hotkeys, Tab, scroll, and paste do nothing on an options question",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "582-639",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_and_source.rs",
+          "lines": "6-65",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
-                91,
-                92,
-                93,
-                94,
-                95,
                 96,
                 97,
                 98,
@@ -731,8 +751,15 @@
                 119,
                 120,
                 121,
-                122
-              ]
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ],
+              "firstLine": "if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {",
+              "lastLine": "session_id: session,"
             }
           ]
         }
@@ -742,17 +769,12 @@
       "name": "Paste in Other mode inserts into the shared input",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "1018-1046",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/freeform_draft_paste.rs",
+          "lines": "134-167",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/hitl_keys.rs",
               "lines": [
-                167,
-                168,
-                169,
-                170,
-                171,
                 172,
                 173,
                 174,
@@ -779,8 +801,15 @@
                 195,
                 196,
                 197,
-                198
-              ]
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "firstLine": "// Read + clear the SHARED input; the reducer stays",
+              "lastLine": "let (session, mode) = self.last_hitl.clone()?;"
             }
           ]
         }
@@ -790,64 +819,62 @@
       "name": "The HITL modal is deleted and no construction site remains",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs",
-          "lines": "645-704",
+          "file": "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_and_source.rs",
+          "lines": "72-144",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/action_prompts.rs",
               "lines": [
-                575,
-                576,
-                577,
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
               ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/action_session_context.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                124,
+                125,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ],
+              "firstLine": "WorkUnitFocusChanged(",
+              "lastLine": "/// draft of the session the composer is bound to: the"
             }
           ]
         }
@@ -859,7 +886,11 @@
     "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411.rs"
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/rendering.rs",
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_lifecycle.rs",
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/other_mode.rs",
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/freeform_draft_paste.rs",
+      "rust/fspec-tui/tests/inline_hitl_prompt_rpc411/options_and_source.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/hitl_prompt.rs",
@@ -868,8 +899,9 @@
       "rust/fspec-tui/src/views/agent/hitl_keys.rs",
       "rust/fspec-tui/src/views/agent/input_area.rs",
       "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
-      "rust/fspec-tui/src/components/mod.rs"
+      "rust/fspec-tui/src/components/action_prompts.rs",
+      "rust/fspec-tui/src/components/action_session_context.rs"
     ],
-    "totalLinesCovered": 1437
+    "totalLinesCovered": 1483
   }
 }

@@ -1,0 +1,106 @@
+{
+  "scenarios": [
+    {
+      "name": "A new session without a saved default has the model-default level",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug455_sessions_without_a_chosen_thinking_level.rs",
+          "lines": "26-41",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ],
+              "firstLine": "));",
+              "lastLine": "session.inherit_continue_state(initial_continue_state.0, initial_continue_state.1);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A model-default level sends no thinking parameter whatever the prompt says",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug455_sessions_without_a_chosen_thinking_level.rs",
+          "lines": "43-59",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/thinking.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ],
+              "firstLine": "pub fn resolve_turn_thinking(",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Choosing model default clears an explicit level",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug455_sessions_without_a_chosen_thinking_level.rs",
+          "lines": "61-85",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                192,
+                193
+              ],
+              "firstLine": "// MODEL-011: the level exactly as chosen.",
+              "lastLine": "Ok(self.get_session(&session_id.value)?.get_base_thinking_level())"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug455_sessions_without_a_chosen_thinking_level.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_creation_helper.rs",
+      "rust/agent-loop/src/agent_loop/thinking.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs"
+    ],
+    "totalLinesCovered": 92
+  }
+}

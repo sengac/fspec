@@ -17,7 +17,10 @@ mod agent;
 pub mod auth_lifecycle;
 mod auth_refresh;
 mod auth_storage;
+mod browser_session;
 pub mod codex_auth;
+pub mod codex_browser_authorization;
+pub mod codex_browser_completion;
 pub mod codex_device_auth;
 pub mod codex_oauth;
 pub mod codex_oauth_server;
@@ -33,6 +36,7 @@ mod legacy_auth;
 pub mod memory_policy;
 pub mod metadata;
 mod model;
+pub mod models_catalog;
 mod network_error;
 #[cfg(feature = "test-support")]
 pub mod oauth_test_support;
@@ -55,12 +59,6 @@ use refreshing_client::RefreshingCodexClient;
 /// The Codex backend API **requires** a non-empty `instructions` field;
 /// omitting it returns 400 `{"detail":"Instructions are required"}`.
 pub const CODEX_BASE_INSTRUCTIONS: &str = include_str!("codex_base_instructions.md");
-
-/// GPT-5.1 Codex context window size (272K tokens)
-pub const CONTEXT_WINDOW: usize = 272_000;
-
-/// GPT-5.1 Codex max output tokens (CTX-002) (assumption: same as GPT-4)
-pub const MAX_OUTPUT_TOKENS: usize = 4096;
 
 /// Authentication mode for the Codex provider
 #[derive(Clone, Debug)]
@@ -124,14 +122,16 @@ impl crate::model_limits::ModelLimitsResolver for CodexProvider {
         None
     }
 
-    /// Default context window when no registry data is available.
-    fn default_context_window(&self) -> usize {
-        0
+    /// BUG-330 / PROV-165: Codex declares no static context window; without
+    /// catalog or user values the limit is unavailable.
+    fn default_context_window(&self) -> Option<usize> {
+        None
     }
 
-    /// Default max output tokens when no registry data is available.
-    fn default_max_output_tokens(&self) -> usize {
-        0
+    /// BUG-330 / PROV-165: Codex declares no static output limit; without
+    /// catalog or user values the limit is unavailable.
+    fn default_max_output_tokens(&self) -> Option<usize> {
+        None
     }
 
     /// The Codex backend API **rejects** `max_output_tokens` with HTTP 400:

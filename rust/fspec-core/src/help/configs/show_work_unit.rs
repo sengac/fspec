@@ -48,33 +48,30 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const PATTERN_VIEW_EXAMPLE: &str = "# Check current state\nfspec show-work-unit AUTH-001\n\n# Add rules/examples/questions\nfspec add-rule AUTH-001 \"Must validate email\"\nfspec add-example AUTH-001 \"User with valid credentials\"\nfspec add-question AUTH-001 \"Should we support OAuth?\" --human";
+const PATTERN_VIEW_EXAMPLE: &str = "# Check current state\nfspec show-work-unit AUTH-001\n\n# Add rules/examples/questions\nfspec add-rule AUTH-001 \"Must validate email\"\nfspec add-example AUTH-001 \"User with valid credentials\"\nfspec add-question AUTH-001 \"@human: Should we support OAuth?\"";
 
 const PATTERN_EXPORT_EXAMPLE: &str = "# Export as JSON for scripts/tools\nfspec show-work-unit AUTH-001 --format json > auth-001.json\n\n# Process with jq\nfspec show-work-unit AUTH-001 --format json | jq .rules";
 
 const PATTERN_REMINDERS_EXAMPLE: &str = "# View work unit to see reminders\nfspec show-work-unit AUTH-001\n\n# Output includes:\n# <system-reminder>\n# Missing estimate for work unit AUTH-001\n# </system-reminder>";
 
-// The TS reference fixture renders the `description` field as the literal
-// string "undefined" because the TS source's CommonPattern entries omit
-// the `description` key and Commander's template-string interpolation
-// stringifies `undefined`. The Rust port mirrors that surface byte-for-
-// byte by setting the description to the literal "undefined" — see the
-// captured fixture at rust/fspec/tests/fixtures/help/show-work-unit.txt.
+// BUG-566: the TypeScript formatter printed `undefined` for keys this config
+// left unset; the config now holds the real text (each fix is the TS
+// `solution`, a pattern without a description prints none).
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "View work unit before Example Mapping session",
         example: PATTERN_VIEW_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Export work unit data for processing",
         example: PATTERN_EXPORT_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
     CommonPatternEntry::Structured(CommonPattern {
         pattern: "Check system reminders",
         example: PATTERN_REMINDERS_EXAMPLE,
-        description: "undefined",
+        description: None,
     }),
 ];
 

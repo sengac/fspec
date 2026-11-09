@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_step.rs",
-          "lines": "55-86",
+          "lines": "56-87",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_step.rs",
@@ -216,10 +216,10 @@
                 204,
                 205,
                 206,
-                207,
-                208,
-                209
-              ]
+                207
+              ],
+              "firstLine": "//! `delete-step` — Rust port of `src/commands/delete-step.ts` (RPC-221).",
+              "lastLine": "{"
             }
           ]
         }
@@ -230,7 +230,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_step.rs",
-          "lines": "92-117",
+          "lines": "94-118",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_step.rs",
@@ -441,10 +441,10 @@
                 204,
                 205,
                 206,
-                207,
-                208,
-                209
-              ]
+                207
+              ],
+              "firstLine": "//! `delete-step` — Rust port of `src/commands/delete-step.ts` (RPC-221).",
+              "lastLine": "{"
             }
           ]
         }
@@ -455,7 +455,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_step.rs",
-          "lines": "123-149",
+          "lines": "125-155",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_step.rs",
@@ -666,10 +666,10 @@
                 204,
                 205,
                 206,
-                207,
-                208,
-                209
-              ]
+                207
+              ],
+              "firstLine": "//! `delete-step` — Rust port of `src/commands/delete-step.ts` (RPC-221).",
+              "lastLine": "{"
             }
           ]
         }
@@ -680,7 +680,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/delete_step.rs",
-          "lines": "155-181",
+          "lines": "162-192",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/commands/delete_step.rs",
@@ -891,10 +891,293 @@
                 204,
                 205,
                 206,
-                207,
-                208,
-                209
-              ]
+                207
+              ],
+              "firstLine": "//! `delete-step` — Rust port of `src/commands/delete-step.ts` (RPC-221).",
+              "lastLine": "{"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes a Given, a When and a Then step and keeps the rest byte for byte",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_step.rs",
+          "lines": "210-243",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ],
+              "firstLine": "// ---- Match the step by text OR (keyword + text).trim() ----",
+              "lastLine": "})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes the only step and keeps the scenario header",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_step.rs",
+          "lines": "250-270",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ],
+              "firstLine": "// ---- Remove the step line with its data table or doc string ----",
+              "lastLine": "})?;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes the step only from the named scenario",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_step.rs",
+          "lines": "277-297",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ],
+              "firstLine": "// ---- Locate the scenario by exact name ----",
+              "lastLine": "let new_content = collapsed.join(\"\\n\");"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher deletes a step whose text has an apostrophe and an at sign",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_step.rs",
+          "lines": "304-329",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ],
+              "firstLine": "// ---- Match the step by text OR (keyword + text).trim() ----",
+              "lastLine": "[step] => *step,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects a feature file that is not valid Gherkin and leaves it unchanged",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/delete_step.rs",
+          "lines": "338-364",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/delete_step.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ],
+              "firstLine": "// ---- Parse Gherkin ----",
+              "lastLine": "};"
             }
           ]
         }
@@ -902,8 +1185,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-core/tests/delete_step.rs"
@@ -911,6 +1194,6 @@
     "implFiles": [
       "rust/fspec-core/src/commands/delete_step.rs"
     ],
-    "totalLinesCovered": 948
+    "totalLinesCovered": 1269
   }
 }

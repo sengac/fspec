@@ -9,16 +9,12 @@
       "testMappings": []
     },
     {
-      "name": "Fix tag count expectations after adding required tags",
-      "testMappings": []
-    },
-    {
       "name": "Fix retag test expectations after replacing phase tags",
       "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 4,
+    "totalScenarios": 3,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

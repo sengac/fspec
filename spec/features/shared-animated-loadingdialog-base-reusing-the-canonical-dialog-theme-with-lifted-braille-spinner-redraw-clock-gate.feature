@@ -51,7 +51,7 @@ Feature: Shared animated LoadingDialog base reusing the canonical dialog_theme w
     Then a centered popup with a rounded cyan border and the title "Loading checkpoints" is painted
     And a dialog row begins with the first braille glyph followed by the stage label
     And the counter row is absent while no progress has been reported
-    And the pixel paint comes from the single shared dialog_theme render_dialog implementation the same way StatusDialog does
+    And the pixel paint comes from the single shared dialog_theme render_dialog implementation the same way the other dialogs do
 
   Scenario: Loading is reported distinct from empty on both mode views
     Given a fresh Checkpoints view whose list load is in flight
@@ -86,7 +86,6 @@ Feature: Shared animated LoadingDialog base reusing the canonical dialog_theme w
     Given a LoadingDialog that represents an in-flight lazy load
     When the dismissability of the dialog is queried
     Then the dialog reports NOT dismissable
-    And the StatusDialog anchor reports ESC is ignored in Restoring state so the shared keyboard contract that TUI-107/108 will wire is locked
 
   Scenario: A late stale result for a de-selected item does not clear the current stage's loading
     Given the checkpoints cascade tracker is in the files stage for checkpoint NEW

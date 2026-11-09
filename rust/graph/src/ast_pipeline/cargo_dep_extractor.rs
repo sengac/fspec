@@ -13,39 +13,41 @@ use crate::graph_entities::GraphEntity;
 ///
 /// Handles both single-crate and workspace manifests.
 /// For workspaces, scans all member crate Cargo.toml files.
-pub fn extract_cargo_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_cargo_dependencies(project_root: &Path) -> helpers::Extracted {
+    let mut extracted = helpers::Extracted::default();
     let cargo_path = project_root.join("Cargo.toml");
     if !cargo_path.exists() {
-        return Ok(vec![]);
+        return extracted;
     }
+    let parsed = match helpers::read_manifest(project_root, &cargo_path)
+        .and_then(|content| helpers::parse_toml_manifest(project_root, &cargo_path, &content))
+    {
+        Ok(parsed) => parsed,
+        Err(failure) => {
+            extracted.failures.push(failure);
+            return extracted;
+        }
+    };
 
-    let content = std::fs::read_to_string(&cargo_path)
-        .map_err(|e| format!("Failed to read Cargo.toml: {e}"))?;
-
-    let parsed: toml::Value = content
-        .parse()
-        .map_err(|e| format!("Invalid Cargo.toml: {e}"))?;
-
-    let mut entities = Vec::new();
     let mut seen_deps = HashSet::new();
 
     // Check if this is a workspace
     if let Some(workspace) = parsed.get("workspace") {
         // Extract workspace-level deps first
-        extract_workspace_deps(workspace, &mut entities, &mut seen_deps);
+        extract_workspace_deps(workspace, &mut extracted.entities, &mut seen_deps);
 
-        // Process each member crate
+        // Process each member crate; a member that fails is listed and the
+        // other members are still read (BUG-681).
         if let Some(members) = workspace.get("members").and_then(|v| v.as_array()) {
             for member in members {
                 if let Some(member_path) = member.as_str() {
                     let member_cargo = project_root.join(member_path).join("Cargo.toml");
                     if member_cargo.exists() {
-                        extract_single_crate(
+                        extracted.add(extract_single_crate(
                             &member_cargo,
                             project_root,
-                            &mut entities,
                             &mut seen_deps,
-                        )?;
+                        ));
                     }
                 }
             }
@@ -54,10 +56,14 @@ pub fn extract_cargo_dependencies(project_root: &Path) -> Result<Vec<GraphEntity
 
     // Always process the root Cargo.toml if it has [package]
     if parsed.get("package").is_some() {
-        extract_single_crate(&cargo_path, project_root, &mut entities, &mut seen_deps)?;
+        extracted.add(extract_single_crate(
+            &cargo_path,
+            project_root,
+            &mut seen_deps,
+        ));
     }
 
-    Ok(entities)
+    extracted
 }
 
 /// Extract dependencies from workspace-level `[workspace.dependencies]`.
@@ -82,23 +88,14 @@ fn extract_workspace_deps(
 fn extract_single_crate(
     cargo_path: &Path,
     project_root: &Path,
-    entities: &mut Vec<GraphEntity>,
     seen_deps: &mut HashSet<String>,
-) -> Result<(), String> {
-    let content = std::fs::read_to_string(cargo_path)
-        .map_err(|e| format!("Failed to read {}: {e}", cargo_path.display()))?;
+) -> Result<Vec<GraphEntity>, helpers::ManifestError> {
+    let content = helpers::read_manifest(project_root, cargo_path)?;
+    let parsed = helpers::parse_toml_manifest(project_root, cargo_path, &content)?;
 
-    let parsed: toml::Value = content
-        .parse()
-        .map_err(|e| format!("Invalid {}: {e}", cargo_path.display()))?;
-
-    let rel_path = cargo_path
-        .strip_prefix(project_root)
-        .unwrap_or(cargo_path)
-        .to_string_lossy()
-        .to_string();
-
-    let file_slug = helpers::slugify_path(&rel_path);
+    let rel_path = helpers::manifest_rel_path(project_root, cargo_path);
+    let file_slug = helpers::file_slug(&rel_path);
+    let mut entities = Vec::new();
 
     // Create File node for this Cargo.toml
     let line_count = content.lines().count() as i32;
@@ -132,7 +129,7 @@ fn extract_single_crate(
         }
     }
 
-    Ok(())
+    Ok(entities)
 }
 
 /// Extract version string from a TOML dependency value.

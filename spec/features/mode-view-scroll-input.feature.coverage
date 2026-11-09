@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "123-141",
+          "lines": "125-143",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator_events.rs",
@@ -22,11 +22,14 @@
                 33,
                 34,
                 35
-              ]
+              ],
+              "firstLine": "/// translate its `ProviderSettingsEvent` outcomes onto the action",
+              "lastLine": "// PROV-137: bracketed-paste events (Event::Paste) are delivered as a"
             },
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
               "lines": [
+                21,
                 22,
                 23,
                 24,
@@ -43,8 +46,24 @@
                 35,
                 36,
                 37,
-                38
-              ]
+                38,
+                39,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "/// Route a mouse event in List mode. Wheel events advance the selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -55,7 +74,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "147-164",
+          "lines": "149-167",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator_events.rs",
@@ -72,16 +91,13 @@
                 74,
                 75,
                 76
-              ]
+              ],
+              "firstLine": "match self.provider_settings.handle_key(*key) {",
+              "lastLine": "let _ = tx.send(*action);"
             },
             {
               "file": "rust/fspec-tui/src/views/model_selector/dispatch.rs",
               "lines": [
-                190,
-                191,
-                192,
-                193,
-                194,
                 195,
                 196,
                 197,
@@ -99,8 +115,15 @@
                 209,
                 210,
                 211,
-                212
-              ]
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ],
+              "firstLine": "///",
+              "lastLine": "total_items: total,"
             }
           ]
         }
@@ -111,11 +134,12 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "170-189",
+          "lines": "173-194",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mouse.rs",
               "lines": [
+                21,
                 22,
                 23,
                 24,
@@ -132,8 +156,24 @@
                 35,
                 36,
                 37,
-                38
-              ]
+                38,
+                39,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ],
+              "firstLine": "/// Route a mouse event in List mode. Wheel events advance the selection",
+              "lastLine": "}"
             }
           ]
         }
@@ -144,24 +184,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "195-216",
+          "lines": "200-223",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
                 66,
                 67,
                 68,
@@ -185,8 +212,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "// RPC-353: Page/Home/End paging parity with /model. Reached only",
+              "lastLine": "}"
             }
           ]
         }
@@ -197,24 +239,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "222-239",
+          "lines": "229-246",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
                 66,
                 67,
                 68,
@@ -238,8 +267,23 @@
                 86,
                 87,
                 88,
-                89
-              ]
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ],
+              "firstLine": "// RPC-353: Page/Home/End paging parity with /model. Reached only",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,15 +294,17 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mode_view_scroll_input_rpc353.rs",
-          "lines": "245-263",
+          "lines": "252-270",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                31,
-                32,
-                33
-              ]
+                44,
+                45,
+                46
+              ],
+              "firstLine": "if view.filter_mode {",
+              "lastLine": "}"
             }
           ]
         }
@@ -278,6 +324,6 @@
       "rust/fspec-tui/src/views/model_selector/dispatch.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 274
+    "totalLinesCovered": 309
   }
 }

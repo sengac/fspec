@@ -1,0 +1,206 @@
+{
+  "scenarios": [
+    {
+      "name": "A coverage file missing a scenario is reported",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs",
+          "lines": "50-64",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_coverage_drift.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ],
+              "firstLine": "pub(super) fn coverage_drift(",
+              "lastLine": "for (name, count) in &listed {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A coverage file listing a scenario the feature no longer has is reported",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs",
+          "lines": "66-81",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_coverage_drift.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                105,
+                177
+              ],
+              "firstLine": "if declared.get(name).copied().unwrap_or(0) < *count {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature without a coverage file yet is not reported",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs",
+          "lines": "83-93",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate_coverage_drift.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ],
+              "firstLine": "let coverage_path = format!(\"{feature_path}.coverage\");",
+              "lastLine": "};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A coverage file that lists exactly the feature's scenarios passes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs",
+          "lines": "95-105",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "// BUG-485: a coverage file must list exactly its feature's scenarios.",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The repository has no coverage drift",
+      "testMappings": [
+        {
+          "file": "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs",
+          "lines": "107-125",
+          "implMappings": [
+            {
+              "file": "rust/fspec-core/src/commands/validate.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ],
+              "firstLine": "// BUG-485: a coverage file must list exactly its feature's scenarios.",
+              "lastLine": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-core/tests/bug485_validate_reports_coverage_drift.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-core/src/commands/validate_coverage_drift.rs",
+      "rust/fspec-core/src/commands/validate.rs"
+    ],
+    "totalLinesCovered": 171
+  }
+}

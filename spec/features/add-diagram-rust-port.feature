@@ -1,8 +1,11 @@
+@BUG-582
 @done
 @RPC-178
+@BUG-535
 @rust
 @cli
 @mutation
+@diagram
 Feature: Port add-diagram command to Rust
   """
   Framing A divergence — Mermaid validation: The Rust port skips JSDOM + mermaid.render
@@ -12,11 +15,11 @@ Feature: Port add-diagram command to Rust
   (2) reject subgraph identifiers containing characters outside [A-Za-z0-9_-]. All other
   diagram code strings are accepted as syntactically valid.
 
-  Framing A divergence — FOUNDATION.md regeneration: generate-foundation-md (RPC-233) is
-  itself unported. The Rust port writes spec/foundation.json and prints the two CLI status
-  lines ('  Updated: spec/foundation.json' + '  Regenerated: spec/FOUNDATION.md') but does
-  NOT actually regenerate the markdown file. A follow-up RPC will wire generate-foundation-md
-  in once RPC-233 lands.
+  FOUNDATION.md regeneration (BUG-535): after writing spec/foundation.json the command
+  regenerates spec/FOUNDATION.md with generate_foundation_md::regenerate, like
+  update-foundation and the foundation Event Storm commands, so the CLI status lines
+  ('  Updated: spec/foundation.json' + '  Regenerated: spec/FOUNDATION.md') are true. A
+  rejected call writes nothing and regenerates nothing.
 
   Core impl at rust/fspec-core/src/commands/add_diagram.rs uses
   crate::io::ensure::ensure_foundation_file to load (or auto-create) spec/foundation.json
@@ -119,4 +122,36 @@ Feature: Port add-diagram command to Rust
     Given spec/foundation.json exists with architectureDiagrams=[]
     When I dispatch add-diagram with section='Architecture' title='Bad' code='this is not a diagram at all'
     Then the dispatcher returns success=false
+    And no entry is appended to architectureDiagrams
+
+  Scenario: Dispatcher regenerates FOUNDATION.md after adding a diagram
+    Given spec/foundation.json is a complete foundation with vision 'Original Vision' and spec/FOUNDATION.md does not exist
+    When I dispatch add-diagram with section='Architecture' title='System Context' code='graph TD\n  A-->B'
+    Then spec/FOUNDATION.md exists
+    And it shows 'Original Vision', the heading '### System Context' and the diagram as a mermaid code block
+
+  Scenario: A rejected add-diagram leaves FOUNDATION.md unchanged
+    Given spec/foundation.json is a complete foundation and spec/FOUNDATION.md has been generated from it
+    When I dispatch add-diagram with title='Broken' and a body that matches no mermaid diagram type
+    Then the dispatcher returns success=false
+    And spec/FOUNDATION.md is byte-for-byte unchanged
+
+  Scenario: Dispatcher accepts flowchart, sequence and class diagrams
+    Given spec/foundation.json exists with architectureDiagrams=[]
+    When I dispatch add-diagram with title='Valid Flow' code='flowchart TD\n  A-->B\n  B-->C', title='Valid Sequence' code='sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi' and title='Domain Model' code='classDiagram\n  Class01 <|-- Class02'
+    Then each dispatch returns success=true
+    And spec/foundation.json architectureDiagrams holds the three diagrams in that order with their mermaidCode unchanged
+
+  Scenario: Dispatcher keeps every line of a multi-line diagram
+    Given spec/foundation.json is a complete foundation
+    When I dispatch add-diagram with section='Architecture' title='Complex' code='graph TD\n  A-->B\n  B-->C\n  C-->D'
+    Then the dispatcher returns success=true
+    And the diagram titled 'Complex' has mermaidCode='graph TD\n  A-->B\n  B-->C\n  C-->D'
+    And spec/FOUNDATION.md shows the four lines with their indentation inside one mermaid code block under '### Complex'
+
+  Scenario: Dispatcher error names the parse problem in the diagram
+    Given spec/foundation.json exists with architectureDiagrams=[]
+    When I dispatch add-diagram with section='Architecture' title='Error Test' code='graph TD\n  A[Missing bracket'
+    Then the dispatcher returns success=false
+    And the error message contains the substring 'Unterminated node label (missing `]`)'
     And no entry is appended to architectureDiagrams

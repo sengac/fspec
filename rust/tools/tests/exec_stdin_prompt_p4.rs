@@ -17,7 +17,6 @@
 //! store — the same shape P1/P2 use.
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_tools::bash::BashArgs;
 use codelet_tools::bash::BashTool;
@@ -30,6 +29,11 @@ use uuid::Uuid;
 /// Scenario: Bash delegation surfaces the exec session steering for still-running commands
 #[tokio::test]
 async fn scenario_bash_delegation_surfaces_exec_stdin_prompt() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given an agent session on any provider runs a command via the Bash tool that will not exit quickly
     let agent = Uuid::new_v4();
     let captured = Arc::new(std::sync::Mutex::new(Vec::new()));
@@ -58,9 +62,13 @@ async fn scenario_bash_delegation_surfaces_exec_stdin_prompt() {
         .await
     });
 
-    // The P2 detector fires when quiet >= 3s (2s tick cadence) — wait past
-    // the worst-case fire time (~4s).
-    tokio::time::sleep(Duration::from_millis(5_000)).await;
+    // The P2 detector fires when quiet >= 3s (2s tick cadence) — TEST-042:
+    // wait for the fire itself, not past a worst-case time.
+    let fired = Arc::clone(&captured);
+    let _ = codelet_test_helpers::wait_until("the P2 detector fires", || {
+        std::future::ready(!fired.lock().unwrap().is_empty())
+    })
+    .await;
 
     // @step Then the command runs as a live unified exec session with piped stdin and pager suppression
     // (The store held the live session while the command ran — the
@@ -107,6 +115,11 @@ async fn scenario_bash_delegation_surfaces_exec_stdin_prompt() {
 /// stdout + stderr + exit code, exactly like the pre-P4 Bash result.
 #[tokio::test]
 async fn bash_delegation_preserves_one_shot_result_contract() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given an agent session on any provider runs a command via the Bash tool that will not exit quickly
     // (fast here — the contract is about the RESULT shape, not the wait)
     let tool = BashTool::new(Uuid::new_v4());
@@ -147,6 +160,11 @@ async fn bash_delegation_preserves_one_shot_result_contract() {
 /// The typed text flows into the running command and lands in its output.
 #[tokio::test]
 async fn bash_delegation_stdin_is_piped_and_writable() {
+    codelet_test_helpers::isolated_user_directory().expect("BUG-640: isolate the user directory");
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
     // @step Given an agent session on any provider runs a command via the Bash tool that will not exit quickly
     let tool = BashTool::new(Uuid::new_v4());
     let handle = tokio::spawn(async move {
@@ -158,8 +176,15 @@ async fn bash_delegation_stdin_is_piped_and_writable() {
     });
 
     // @step When the Bash tool executes the command via the unified exec session machinery
-    // (let the spawn settle, then find the live exec session)
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    // (TEST-042: wait until the live exec session exists, then find it)
+    let _ = codelet_test_helpers::wait_until("the live exec session exists", || async {
+        global_store()
+            .list_sessions()
+            .await
+            .iter()
+            .any(|entry| entry.command.contains("read line"))
+    })
+    .await;
     let store = global_store();
     let entries = store.list_sessions().await;
     let exec_session = entries
@@ -174,10 +199,13 @@ async fn bash_delegation_stdin_is_piped_and_writable() {
     // @step Then the command runs as a live unified exec session with piped stdin and pager suppression
     // (The stdin sender existing AND the text below landing in the
     // output proves the stdin is the session's own pipe, not inherited.)
-    stdin_tx
-        .send(b"p4-stdin-ok\n".to_vec())
-        .await
-        .expect("stdin write must succeed");
+    codelet_tools::unified_exec::write_stdin(
+        &stdin_tx,
+        &exec_session.session_id,
+        b"p4-stdin-ok\n".to_vec(),
+    )
+    .await
+    .expect("stdin write must succeed");
 
     // @step And the Bash tool preserves its one-shot contract by blocking until the command exits, returning the formatted stdout, stderr, and exit code
     let result = handle.await.unwrap();

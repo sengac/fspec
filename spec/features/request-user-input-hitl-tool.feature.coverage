@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "403-460",
+          "lines": "440-496",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -295,7 +295,9 @@
                 283,
                 284,
                 285
-              ]
+              ],
+              "firstLine": "//! Request User Input HITL Tool — Provider-agnostic human-in-the-loop tool",
+              "lastLine": "\"description\": \"Short label shown in UI (max 12 chars).\""
             }
           ]
         }
@@ -306,7 +308,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "464-490",
+          "lines": "501-526",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -326,7 +328,9 @@
                 161,
                 162,
                 163
-              ]
+              ],
+              "firstLine": "\"question[{i}].options requires at least {MIN_OPTIONS} items (got {})\",",
+              "lastLine": "}"
             }
           ]
         }
@@ -337,7 +341,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "494-525",
+          "lines": "531-559",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -368,7 +372,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// Maximum options per question",
+              "lastLine": "}"
             }
           ]
         }
@@ -379,22 +385,31 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "529-560",
+          "lines": "564-592",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
               "lines": [
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92
-              ]
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ],
+              "firstLine": "/// Check if a string is valid snake_case",
+              "lastLine": "}"
             }
           ]
         }
@@ -405,7 +420,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "564-597",
+          "lines": "597-626",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -426,7 +441,9 @@
                 73,
                 74,
                 75
-              ]
+              ],
+              "firstLine": "/// A single answer from the user for one question",
+              "lastLine": "/// Answers keyed by question id"
             }
           ]
         }
@@ -437,7 +454,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "600-636",
+          "lines": "631-664",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -448,7 +465,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// Maximum options per question",
+              "lastLine": "if s.is_empty() {"
             }
           ]
         }
@@ -459,19 +478,21 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "640-679",
+          "lines": "669-705",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
               "lines": [
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120
-              ]
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ],
+              "firstLine": "if let Some(opts) = &q.options {",
+              "lastLine": "}"
             }
           ]
         }
@@ -482,7 +503,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "683-736",
+          "lines": "710-762",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -513,7 +534,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "/// Maximum options per question",
+              "lastLine": "}"
             }
           ]
         }
@@ -524,56 +547,53 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "740-765",
+          "lines": "767-789",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
               "lines": [
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
                 169,
                 170,
                 171,
                 172,
-                173
-              ]
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ],
+              "firstLine": "/// Handler function type for HITL execution.",
+              "lastLine": "}"
             }
           ]
         }
@@ -584,7 +604,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "769-800",
+          "lines": "794-818",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -593,7 +613,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": "/// Maximum options per question",
+              "lastLine": "/// Check if a string is valid snake_case"
             }
           ]
         }
@@ -604,18 +626,17 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "804-835",
+          "lines": "823-851",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
               "lines": [
-                102,
-                103,
-                104,
-                105,
-                106,
-                107
-              ]
+                123,
+                124,
+                125
+              ],
+              "firstLine": "if q.id.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -626,15 +647,17 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "839-871",
+          "lines": "856-884",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
               "lines": [
-                108,
-                109,
-                110
-              ]
+                132,
+                133,
+                134
+              ],
+              "firstLine": "if q.header.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -645,7 +668,7 @@
       "testMappings": [
         {
           "file": "rust/tools/src/request_user_input.rs",
-          "lines": "874-915",
+          "lines": "922-972",
           "implMappings": [
             {
               "file": "rust/tools/src/request_user_input.rs",
@@ -654,7 +677,9 @@
                 118,
                 119,
                 120
-              ]
+              ],
+              "firstLine": "\"questions array exceeds maximum of {MAX_QUESTIONS} questions (got {})\",",
+              "lastLine": "}"
             }
           ]
         }
@@ -673,7 +698,9 @@
                 142,
                 143,
                 144
-              ]
+              ],
+              "firstLine": "if q.question.is_empty() {",
+              "lastLine": "}"
             }
           ]
         }
@@ -690,6 +717,6 @@
     "implFiles": [
       "rust/tools/src/request_user_input.rs"
     ],
-    "totalLinesCovered": 967
+    "totalLinesCovered": 939
   }
 }

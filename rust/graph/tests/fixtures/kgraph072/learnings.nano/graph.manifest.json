@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "db_version": 1,
+  "last_tx_id": "manifest-1",
+  "committed_at": "1794010932",
+  "schema_ir_hash": "fdb08353c1b7819c",
+  "next_node_id": 1,
+  "next_edge_id": 0,
+  "next_type_id": 4156794029,
+  "next_prop_id": 4288272084,
+  "schema_identity_version": 1,
+  "datasets": [
+    {
+      "type_id": 1593597371,
+      "type_name": "Learning",
+      "kind": "node",
+      "dataset_path": "nodes/5efc5dbb",
+      "dataset_version": 1,
+      "row_count": 1
+    }
+  ]
+}

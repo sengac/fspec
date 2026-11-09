@@ -8,13 +8,9 @@
 //! through controlled env-var + HOME redirection so the response is
 //! deterministic.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use codelet_test_helpers::{OrFail, TestResult};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -59,7 +55,7 @@ fn ts_canonical_pairs() -> Vec<(&'static str, &'static str)> {
 // Scenario: CANONICAL_PROVIDERS slice declares exactly 17 entries in the TS-canonical order
 // =============================================================================
 #[test]
-fn canonical_providers_slice_has_seventeen_entries_in_ts_canonical_order() {
+fn canonical_providers_slice_has_seventeen_entries_in_ts_canonical_order() -> TestResult {
     // @step Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     let slice: &[CanonicalProvider] = CANONICAL_PROVIDERS;
 
@@ -80,13 +76,14 @@ fn canonical_providers_slice_has_seventeen_entries_in_ts_canonical_order() {
         ids, expected,
         "RPC-107: CANONICAL_PROVIDERS order must match TS SUPPORTED_PROVIDERS"
     );
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: CANONICAL_PROVIDERS display names match the TS PROVIDER_REGISTRY byte-for-byte
 // =============================================================================
 #[test]
-fn canonical_providers_display_names_match_ts_registry_byte_for_byte() {
+fn canonical_providers_display_names_match_ts_registry_byte_for_byte() -> TestResult {
     // @step Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     let slice: &[CanonicalProvider] = CANONICAL_PROVIDERS;
 
@@ -96,13 +93,14 @@ fn canonical_providers_display_names_match_ts_registry_byte_for_byte() {
     // @step Then the display names in order are "OpenAI API", "Anthropic", "Cohere", "Google Gemini", "Mistral AI", "xAI", "Together AI", "Hugging Face", "OpenRouter", "Groq", "DeepSeek", "Moonshot", "Galadriel", "Azure OpenAI", "Z.AI", "Codex (ChatGPT)", "GitHub Copilot"
     let expected: Vec<&str> = ts_canonical_pairs().iter().map(|(_, n)| *n).collect();
     assert_eq!(names, expected, "RPC-107: CANONICAL_PROVIDERS display_name strings must match TS PROVIDER_REGISTRY byte-for-byte");
+    Ok(())
 }
 
 // =============================================================================
 // Scenario: CANONICAL_PROVIDERS tags codex, anthropic, and github-copilot as OAuth auth_type
 // =============================================================================
 #[test]
-fn canonical_providers_marks_anthropic_codex_and_copilot_as_oauth() {
+fn canonical_providers_marks_anthropic_codex_and_copilot_as_oauth() -> TestResult {
     // @step Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     let slice: &[CanonicalProvider] = CANONICAL_PROVIDERS;
 
@@ -137,6 +135,7 @@ fn canonical_providers_marks_anthropic_codex_and_copilot_as_oauth() {
             "RPC-107: '{forbidden}' must NOT be in the ApiKey bucket"
         );
     }
+    Ok(())
 }
 
 // =========================================================================
@@ -191,10 +190,10 @@ struct CwdGuard {
 }
 
 impl CwdGuard {
-    fn set(new_cwd: &Path) -> Self {
-        let prior = std::env::current_dir().expect("cwd");
-        std::env::set_current_dir(new_cwd).expect("set cwd");
-        Self { prior }
+    fn set(new_cwd: &Path) -> Result<Self, codelet_test_helpers::TestError> {
+        let prior = std::env::current_dir().or_fail("cwd")?;
+        std::env::set_current_dir(new_cwd).or_fail("set cwd")?;
+        Ok(Self { prior })
     }
 }
 
@@ -217,15 +216,15 @@ struct DiscoveryFixture {
 }
 
 impl DiscoveryFixture {
-    fn new() -> Self {
-        let home_tmp = TempDir::new().expect("home tempdir");
-        let project_tmp = TempDir::new().expect("project tempdir");
+    fn new() -> Result<Self, codelet_test_helpers::TestError> {
+        let home_tmp = TempDir::new().or_fail("home tempdir")?;
+        let project_tmp = TempDir::new().or_fail("project tempdir")?;
         let fspec_dir = home_tmp.path().join(".fspec");
         let credentials_dir = fspec_dir.join("credentials");
-        fs::create_dir_all(&credentials_dir).unwrap();
+        fs::create_dir_all(&credentials_dir).or_fail("expected a value")?;
         let home_guard = EnvGuard::set_path("HOME", home_tmp.path());
         let fspec_guard = EnvGuard::set_path("FSPEC_HOME", &credentials_dir);
-        let cwd_guard = CwdGuard::set(project_tmp.path());
+        let cwd_guard = CwdGuard::set(project_tmp.path())?;
 
         // Clear ALL provider env vars so detection is deterministic.
         // Tests that need a specific env var add their own EnvGuard::set
@@ -252,15 +251,14 @@ impl DiscoveryFixture {
         ] {
             env_guards.push(EnvGuard::remove(var));
         }
-
-        Self {
+        Ok(Self {
             _home_tmp: home_tmp,
             project_tmp,
             _home_guard: home_guard,
             _fspec_guard: fspec_guard,
             _cwd_guard: cwd_guard,
             _env_guards: env_guards,
-        }
+        })
     }
 
     fn project_root(&self) -> &Path {
@@ -268,9 +266,13 @@ impl DiscoveryFixture {
     }
 }
 
-fn write_project_custom_provider(project_root: &Path, name: &str, env_var: &str) {
+fn write_project_custom_provider(
+    project_root: &Path,
+    name: &str,
+    env_var: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
     let providers_dir = project_root.join(".fspec").join("providers");
-    fs::create_dir_all(&providers_dir).unwrap();
+    fs::create_dir_all(&providers_dir).or_fail("expected a value")?;
     let obj = json!({
         "name": name,
         "display_name": format!("Custom {name}"),
@@ -283,13 +285,14 @@ fn write_project_custom_provider(project_root: &Path, name: &str, env_var: &str)
     });
     fs::write(
         providers_dir.join(format!("{name}.json")),
-        serde_json::to_string_pretty(&obj).unwrap(),
+        serde_json::to_string_pretty(&obj).or_fail("expected a value")?,
     )
-    .unwrap();
+    .or_fail("expected a value")?;
+    Ok(())
 }
 
 fn handle() -> Arc<dyn SessionManagerHandle> {
-    Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>
+    SessionManager::new() as Arc<dyn SessionManagerHandle>
 }
 
 /// TS-canonical ordering for assertions.
@@ -338,13 +341,15 @@ const CANONICAL_DISPLAY_NAMES: [&str; 17] = [
 // =============================================================================
 #[test]
 #[serial]
-fn empty_workspace_returns_seventeen_canonical_rows_in_order() {
+fn empty_workspace_returns_seventeen_canonical_rows_in_order() -> TestResult {
     // @step Given no provider env vars are set in the process environment
     // @step And no custom provider configs exist on disk
-    let _fx = DiscoveryFixture::new();
+    let _fx = DiscoveryFixture::new()?;
 
     // @step When list_provider_credentials is called
-    let list = handle().list_provider_credentials();
+    let list = handle()
+        .list_provider_credentials()
+        .or_fail("list_provider_credentials reads the session")?;
 
     // @step Then the response contains exactly 17 ProviderCredentialInfo entries
     assert_eq!(
@@ -378,6 +383,7 @@ fn empty_workspace_returns_seventeen_canonical_rows_in_order() {
             entry.provider_id
         );
     }
+    Ok(())
 }
 
 // =============================================================================
@@ -385,15 +391,17 @@ fn empty_workspace_returns_seventeen_canonical_rows_in_order() {
 // =============================================================================
 #[test]
 #[serial]
-fn anthropic_api_key_marks_anthropic_row_configured_under_anthropic_slug() {
+fn anthropic_api_key_marks_anthropic_row_configured_under_anthropic_slug() -> TestResult {
     // @step Given the env var ANTHROPIC_API_KEY is set to "sk-ant-test"
     // @step And no other provider env vars are set
     // @step And no custom provider configs exist on disk
-    let _fx = DiscoveryFixture::new();
+    let _fx = DiscoveryFixture::new()?;
     let _anthropic = EnvGuard::set("ANTHROPIC_API_KEY", "sk-ant-test");
 
     // @step When list_provider_credentials is called
-    let list = handle().list_provider_credentials();
+    let list = handle()
+        .list_provider_credentials()
+        .or_fail("list_provider_credentials reads the session")?;
 
     // @step Then the response contains exactly 17 entries in canonical order
     assert_eq!(list.len(), 17, "RPC-107: must yield 17 canonical rows");
@@ -436,6 +444,7 @@ fn anthropic_api_key_marks_anthropic_row_configured_under_anthropic_slug() {
             entry.provider_id
         );
     }
+    Ok(())
 }
 
 // =============================================================================
@@ -443,20 +452,22 @@ fn anthropic_api_key_marks_anthropic_row_configured_under_anthropic_slug() {
 // =============================================================================
 #[test]
 #[serial]
-fn canonical_rows_precede_custom_providers() {
+fn canonical_rows_precede_custom_providers() -> TestResult {
     // @step Given the env var ANTHROPIC_API_KEY is set
     // @step And the env var GROQ_API_KEY is set
     // @step And the env var OPENROUTER_API_KEY is set
     // @step And a custom provider config "my-vllm" exists on disk
-    let fx = DiscoveryFixture::new();
+    let fx = DiscoveryFixture::new()?;
     let _ant = EnvGuard::set("ANTHROPIC_API_KEY", "sk-ant-1");
     let _groq = EnvGuard::set("GROQ_API_KEY", "gsk_1");
     let _orouter = EnvGuard::set("OPENROUTER_API_KEY", "sk-or-1");
     let _vllm_env = EnvGuard::set("MY_VLLM_API_KEY", "vllm-key");
-    write_project_custom_provider(fx.project_root(), "my-vllm", "MY_VLLM_API_KEY");
+    write_project_custom_provider(fx.project_root(), "my-vllm", "MY_VLLM_API_KEY")?;
 
     // @step When list_provider_credentials is called
-    let list = handle().list_provider_credentials();
+    let list = handle()
+        .list_provider_credentials()
+        .or_fail("list_provider_credentials reads the session")?;
 
     // @step Then the response contains exactly 18 entries
     assert_eq!(
@@ -485,12 +496,13 @@ fn canonical_rows_precede_custom_providers() {
         let entry = list
             .iter()
             .find(|e| e.provider_id == target)
-            .unwrap_or_else(|| panic!("RPC-107: '{target}' missing from response"));
+            .or_fail(&format!("RPC-107: '{target}' missing from response"))?;
         assert!(
             entry.configured,
             "RPC-107: '{target}' row must be configured when its env var is set"
         );
     }
+    Ok(())
 }
 
 // =============================================================================
@@ -498,12 +510,14 @@ fn canonical_rows_precede_custom_providers() {
 // =============================================================================
 #[test]
 #[serial]
-fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() {
+fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() -> TestResult {
     // @step Given no provider env vars are set in the process environment
-    let _fx = DiscoveryFixture::new();
+    let _fx = DiscoveryFixture::new()?;
 
     // @step When list_provider_credentials is called
-    let list = handle().list_provider_credentials();
+    let list = handle()
+        .list_provider_credentials()
+        .or_fail("list_provider_credentials reads the session")?;
 
     // @step Then for every canonical entry the display_name differs from the provider_id where the TS canon differs
     let expected: Vec<(&str, &str)> = CANONICAL_ORDER
@@ -515,7 +529,7 @@ fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() {
         let entry = list
             .iter()
             .find(|e| e.provider_id == *id)
-            .unwrap_or_else(|| panic!("RPC-107: '{id}' missing from response"));
+            .or_fail(&format!("RPC-107: '{id}' missing from response"))?;
         assert_eq!(
             &entry.display_name, expected_name,
             "RPC-107: '{id}' display_name must be '{expected_name}', got '{}'",
@@ -524,27 +538,40 @@ fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() {
     }
 
     // @step And the entry with provider_id "openai" has display_name "OpenAI API"
-    let openai = list.iter().find(|e| e.provider_id == "openai").unwrap();
+    let openai = list
+        .iter()
+        .find(|e| e.provider_id == "openai")
+        .or_fail("expected a value")?;
     assert_eq!(openai.display_name, "OpenAI API");
 
     // @step And the entry with provider_id "gemini" has display_name "Google Gemini"
-    let gemini = list.iter().find(|e| e.provider_id == "gemini").unwrap();
+    let gemini = list
+        .iter()
+        .find(|e| e.provider_id == "gemini")
+        .or_fail("expected a value")?;
     assert_eq!(gemini.display_name, "Google Gemini");
 
     // @step And the entry with provider_id "github-copilot" has display_name "GitHub Copilot"
     let copilot = list
         .iter()
         .find(|e| e.provider_id == "github-copilot")
-        .unwrap();
+        .or_fail("expected a value")?;
     assert_eq!(copilot.display_name, "GitHub Copilot");
 
     // @step And the entry with provider_id "azure" has display_name "Azure OpenAI"
-    let azure = list.iter().find(|e| e.provider_id == "azure").unwrap();
+    let azure = list
+        .iter()
+        .find(|e| e.provider_id == "azure")
+        .or_fail("expected a value")?;
     assert_eq!(azure.display_name, "Azure OpenAI");
 
     // @step And the entry with provider_id "codex" has display_name "Codex (ChatGPT)"
-    let codex = list.iter().find(|e| e.provider_id == "codex").unwrap();
+    let codex = list
+        .iter()
+        .find(|e| e.provider_id == "codex")
+        .or_fail("expected a value")?;
     assert_eq!(codex.display_name, "Codex (ChatGPT)");
+    Ok(())
 }
 
 // Silence unused warning for the type alias when only a subset is invoked.
@@ -565,40 +592,45 @@ use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBacken
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_server::bind_and_serve;
 
-fn workspace_with_seed(cwd: &Path) {
-    fs::create_dir_all(cwd.join("spec")).expect("mkdir spec/");
+fn workspace_with_seed(cwd: &Path) -> Result<(), codelet_test_helpers::TestError> {
+    fs::create_dir_all(cwd.join("spec")).or_fail("mkdir spec/")?;
     fs::write(
         cwd.join("spec").join("work-units.json"),
         r#"{"workUnits":{}}"#,
     )
-    .expect("write work-units.json");
+    .or_fail("write work-units.json")?;
+    Ok(())
 }
 
-fn build_real_service() -> (TempDir, Arc<SharedFspecService>) {
-    let temp = tempfile::tempdir().expect("tempdir");
+fn build_real_service(
+) -> Result<(TempDir, Arc<SharedFspecService>), codelet_test_helpers::TestError> {
+    let temp = tempfile::tempdir().or_fail("tempdir")?;
     let cwd = temp.path().to_path_buf();
-    workspace_with_seed(&cwd);
-    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
-    let session_manager = Arc::new(SessionManager::new());
+    workspace_with_seed(&cwd)?;
+    let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).or_fail("watcher")?);
+    let session_manager = SessionManager::new();
     let handle: Arc<dyn DynHandle> = session_manager;
     let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
-    (temp, service)
+    Ok((temp, service))
 }
 
 async fn dual_backends(
     service: Arc<SharedFspecService>,
-) -> (Arc<dyn FspecBackend>, Arc<dyn FspecBackend>) {
+) -> Result<(Arc<dyn FspecBackend>, Arc<dyn FspecBackend>), codelet_test_helpers::TestError> {
     let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),
         service.clone(),
     ));
     let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
         .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-    (embedded, websocket)
+        .or_fail("bind_and_serve")?;
+    let url = url::Url::parse(&format!("ws://{addr}/")).or_fail("ws url")?;
+    let websocket: Arc<dyn FspecBackend> = Arc::new(
+        WebSocketFspecBackend::connect(url)
+            .await
+            .or_fail("connect")?,
+    );
+    Ok((embedded, websocket))
 }
 
 // =============================================================================
@@ -606,30 +638,30 @@ async fn dual_backends(
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 #[serial]
-async fn embedded_and_websocket_surface_identical_canonical_seventeen_rows() {
+async fn embedded_and_websocket_surface_identical_canonical_seventeen_rows() -> TestResult {
     // @step Given a SharedFspecService backed by a StubSessionManagerHandle
     //
     // (RPC-107 contract: the CANONICAL_PROVIDERS slice lives below the
     // wire boundary inside codelet-providers, so we use the REAL
     // SessionManager here rather than the stub — the stub bypasses
     // list_providers_info and would not exercise the slice.)
-    let _fx = DiscoveryFixture::new();
-    let (_temp, service) = build_real_service();
+    let _fx = DiscoveryFixture::new()?;
+    let (_temp, service) = build_real_service()?;
 
     // @step And both an EmbeddedFspecBackend and a WebSocketFspecBackend over that service
-    let (embedded, websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await?;
 
     // @step When list_provider_credentials is called via the embedded transport
     let em_list = embedded
         .list_provider_credentials()
         .await
-        .expect("embedded list");
+        .or_fail("embedded list")?;
 
     // @step And list_provider_credentials is called via the WebSocket transport
     let ws_list = websocket
         .list_provider_credentials()
         .await
-        .expect("websocket list");
+        .or_fail("websocket list")?;
 
     // @step Then both responses contain exactly 17 entries
     assert_eq!(
@@ -680,4 +712,5 @@ async fn embedded_and_websocket_surface_identical_canonical_seventeen_rows() {
         em_names, ws_names,
         "RPC-107: both transports must surface identical display_name strings"
     );
+    Ok(())
 }

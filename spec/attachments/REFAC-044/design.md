@@ -1,0 +1,8 @@
+# REFAC-044 design
+
+BUG-371 (the `pub context_window: u32` substring, stale since PROV-166) and BUG-372 (the RPC-018 300-line check counts module trees) must tag `rpc018-source-shape.feature` and `rpc022-source-shape.feature`. Each of those features maps two test files, a root plus an `include!`d fragment, so the one-test-file gate (BUG-357) would refuse the bug cards. This is a pure restructure, done first:
+- `source_shape_rpc018/surface_invariants.rs` (2 tests) and `source_shape_rpc022/provider_service.rs` (2 tests) are inlined where their `include!` stood, and the fragment files are deleted. No `include!` is left.
+- The helpers both roots had byte-identical copies of (`src_dir`, `rpc_types_lib`, `rpc_lib`, `core_session_manager_handle`, `read_raw`, `count_lines_path`, `read_tree`) move once into `tests/source_shape_support/mod.rs` (directory module, not a test target). Each root declares `mod source_shape_support;` and glob-imports it.
+- Test bodies and `@step` comments are unchanged. A script compared the sorted `#[test]` function texts before and after: 9 of 9 and 10 of 10 match. Roots are now 264 and 290 lines, support 60.
+- Coverage: each scenario is relinked to the single root file at the function whose `@step` comments contain all of the scenario's steps. The old rpc022 ranges had drifted past the end of the file. Impl mappings are kept. Each feature now lists exactly one test file.
+- The behaviour is unchanged on purpose. The three failing tests (rpc018 `new_shared_types_live_in_rpc_types` and `new_and_modified_agent_modules_stay_under_300_lines`, rpc022 `new_shared_types_live_in_rpc_types`) fail exactly as before, and they are fixed by BUG-371 and BUG-372.

@@ -1,4 +1,6 @@
 @CMPCT-021
+@agent-core
+@context-management
 Feature: File ID Propagation Through DAG
   """
   Engine-side: build_dag_files_block in inject_summary_handler.rs, auto-append to DAG in apply_pending_dag after agent content stored

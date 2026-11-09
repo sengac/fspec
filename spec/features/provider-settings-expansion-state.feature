@@ -1,4 +1,6 @@
 @PROV-036
+@providers
+@provider-settings
 Feature: Provider settings tree collapses after OAuth logout confirmation
   """
   Changes confined to useProviderSettingsState.ts. Add expandedProviderIds ref that tracks which providers are expanded, surviving reload(). Add navigateToProviderRef that signals post-reload cursor repositioning. toggleProviderExpansion updates both state and ref. disconnectOauth, removeApiKey, removeProfile set navigateToProviderRef before reload().

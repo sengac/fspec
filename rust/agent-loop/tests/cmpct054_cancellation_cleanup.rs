@@ -47,7 +47,7 @@ async fn scenario_aborting_a_real_turn_releases_every_compaction_dependency() {
     session
         .send_input("recover".into(), None)
         .expect("queue turn");
-    tokio::time::timeout(Duration::from_secs(5), entered.notified())
+    codelet_test_helpers::deadlock_guard("entered.notified()", entered.notified())
         .await
         .expect("real provider request starts");
     assert!(has_compactor_sub_agent_handler(session.id));

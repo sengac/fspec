@@ -29,7 +29,7 @@ Feature: Runtime compaction without substitute success
     When automatic compaction runs
     Then a typed invalid-candidate failure is returned
     And committed conversation is unchanged without completion
-    And the busy indicator clears while inference remains blocked
+    And the busy indicator clears and inference waits for the next input to retry the builder
 
   Scenario: Deadline cancels a stalled builder without changing committed memory
     Given committed conversation and a builder waiting indefinitely

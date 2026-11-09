@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_init.rs",
-          "lines": "44-70",
+          "lines": "44-76",
           "implMappings": [
             {
               "file": "rust/fspec/src/init.rs",
@@ -48,7 +48,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `init` clap subcommand. Returns",
+              "lastLine": "let agent_names = agents.join(\", \");"
             }
           ]
         }
@@ -59,7 +61,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_init.rs",
-          "lines": "72-112",
+          "lines": "78-118",
           "implMappings": [
             {
               "file": "rust/fspec/src/init.rs",
@@ -102,7 +104,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `init` clap subcommand. Returns",
+              "lastLine": "let agent_names = agents.join(\", \");"
             }
           ]
         }
@@ -113,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_init.rs",
-          "lines": "114-137",
+          "lines": "120-142",
           "implMappings": [
             {
               "file": "rust/fspec/src/init.rs",
@@ -156,7 +160,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `init` clap subcommand. Returns",
+              "lastLine": "let agent_names = agents.join(\", \");"
             }
           ]
         }
@@ -172,13 +178,14 @@
             {
               "file": "rust/fspec/src/init.rs",
               "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -194,13 +201,14 @@
             {
               "file": "rust/fspec/src/init.rs",
               "lines": [
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
-              ]
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "Err(err) => {",
+              "lastLine": "}"
             }
           ]
         }
@@ -254,7 +262,9 @@
                 78,
                 79,
                 80
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `init` clap subcommand. Returns",
+              "lastLine": "let agent_names = agents.join(\", \");"
             }
           ]
         }
@@ -265,11 +275,13 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_init.rs",
-          "lines": "220-244",
+          "lines": "233-257",
           "implMappings": [
             {
               "file": "rust/fspec-core/src/help/configs/init.rs",
               "lines": [
+                72,
+                73,
                 74,
                 75,
                 76,
@@ -285,10 +297,10 @@
                 86,
                 87,
                 88,
-                89,
-                90,
-                91
-              ]
+                89
+              ],
+              "firstLine": "pub const CONFIG: CommandHelpConfig = CommandHelpConfig {",
+              "lastLine": "};"
             }
           ]
         }
@@ -306,6 +318,6 @@
       "rust/fspec/src/init.rs",
       "rust/fspec-core/src/help/configs/init.rs"
     ],
-    "totalLinesCovered": 375
+    "totalLinesCovered": 378
   }
 }

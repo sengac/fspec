@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "61-78",
+          "lines": "57-80",
           "implMappings": [
             {
               "file": "rust/providers/src/catalog.rs",
@@ -134,7 +134,9 @@
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "pub const CANONICAL_PROVIDERS: &[CanonicalProvider] = &[",
+              "lastLine": "},"
             }
           ]
         }
@@ -145,7 +147,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "80-94",
+          "lines": "85-97",
           "implMappings": [
             {
               "file": "rust/providers/src/catalog.rs",
@@ -274,7 +276,9 @@
                 170,
                 171,
                 172
-              ]
+              ],
+              "firstLine": "pub const CANONICAL_PROVIDERS: &[CanonicalProvider] = &[",
+              "lastLine": "},"
             }
           ]
         }
@@ -285,7 +289,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "96-121",
+          "lines": "102-139",
           "implMappings": [
             {
               "file": "rust/providers/src/catalog.rs",
@@ -297,7 +301,9 @@
                 21,
                 22,
                 23
-              ]
+              ],
+              "firstLine": "pub enum AuthType {",
+              "lastLine": ""
             }
           ]
         }
@@ -308,21 +314,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "285-323",
+          "lines": "342-387",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
                 105,
                 106,
                 107,
@@ -359,8 +355,20 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": ".unwrap_or(false)"
             }
           ]
         }
@@ -371,21 +379,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "326-372",
+          "lines": "392-448",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
                 105,
                 106,
                 107,
@@ -422,8 +420,20 @@
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": ".unwrap_or(false)"
             }
           ]
         }
@@ -434,21 +444,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "375-418",
+          "lines": "453-506",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
                 105,
                 106,
                 107,
@@ -521,8 +521,20 @@
                 174,
                 175,
                 176,
-                177
-              ]
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "masked_key,"
             }
           ]
         }
@@ -533,28 +545,30 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "422-466",
+          "lines": "511-575",
           "implMappings": [
             {
               "file": "rust/providers/src/custom/management.rs",
               "lines": [
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
                 136,
                 137,
                 138,
                 139,
                 140,
-                141
-              ]
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ],
+              "firstLine": "\"anthropic\" => credentials.has_claude(),",
+              "lastLine": ".unwrap_or(false)"
             }
           ]
         }
@@ -565,46 +579,97 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_canonical_order_rpc107.rs",
-          "lines": "526-583",
+          "lines": "639-716",
           "implMappings": [
             {
-              "file": "rust/sessions/src/handle_impl.rs",
+              "file": "rust/sessions/src/handle_impl/handle_impl_3.rs",
               "lines": [
-                869,
-                870,
-                871,
-                872,
-                873,
-                874,
-                875,
-                876,
-                877,
-                878,
-                879,
-                880,
-                881,
-                882,
-                883,
-                884,
-                885,
-                886,
-                887,
-                888,
-                889,
-                890,
-                891,
-                892,
-                893,
-                894,
-                895,
-                896,
-                897,
-                898,
-                899,
-                900,
-                901,
-                902
-              ]
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                181,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                193
+              ],
+              "firstLine": "fn pause_confirm(",
+              "lastLine": ")"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "fn send_hitl_response(",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_7.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "fn list_provider_credentials(&self) -> Result<Vec<ProviderCredentialInfo>, String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -621,8 +686,10 @@
     "implFiles": [
       "rust/providers/src/catalog.rs",
       "rust/providers/src/custom/management.rs",
-      "rust/sessions/src/handle_impl.rs"
+      "rust/sessions/src/handle_impl/handle_impl_3.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/sessions/src/handle_impl/handle_impl_7.rs"
     ],
-    "totalLinesCovered": 774
+    "totalLinesCovered": 892
   }
 }

@@ -10,6 +10,9 @@
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
+                44,
+                45,
+                46,
                 47,
                 48,
                 49,
@@ -37,11 +40,10 @@
                 71,
                 72,
                 73,
-                74,
-                75,
-                76,
-                77
-              ]
+                74
+              ],
+              "firstLine": "pub(super) fn handle_enter(",
+              "lastLine": "}"
             }
           ]
         }
@@ -52,7 +54,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
-          "lines": "48-88",
+          "lines": "59-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
@@ -65,11 +67,10 @@
                 32,
                 33,
                 34,
-                35,
-                36,
-                37,
-                38
-              ]
+                35
+              ],
+              "firstLine": "/// Insert a newline at the cursor position. Used by Ctrl+J, Shift+Enter,",
+              "lastLine": "}"
             }
           ]
         }
@@ -80,20 +81,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
-          "lines": "90-130",
+          "lines": "108-138",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
+                60,
+                61,
+                62,
                 63,
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70
-              ]
+                67
+              ],
+              "firstLine": "// Plain Enter → submit, unless suppressed.",
+              "lastLine": "return Some(InputEventOutcome::Submitted(buf));"
             }
           ]
         }
@@ -104,17 +107,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
-          "lines": "132-164",
+          "lines": "144-177",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
+                69,
+                70,
+                71,
                 72,
-                73,
-                74,
-                75,
-                76
-              ]
+                73
+              ],
+              "firstLine": "// Any modifier-Enter combo (Shift/Alt/Ctrl/…) → literal newline",
+              "lastLine": "Some(insert_newline_gated(input, gate))"
             }
           ]
         }
@@ -125,20 +130,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
-          "lines": "166-200",
+          "lines": "183-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
+                60,
+                61,
+                62,
                 63,
                 64,
                 65,
                 66,
-                67,
-                68,
-                69,
-                70
-              ]
+                67
+              ],
+              "firstLine": "// Plain Enter → submit, unless suppressed.",
+              "lastLine": "return Some(InputEventOutcome::Submitted(buf));"
             }
           ]
         }
@@ -154,12 +161,14 @@
             {
               "file": "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
               "lines": [
+                69,
+                70,
+                71,
                 72,
-                73,
-                74,
-                75,
-                76
-              ]
+                73
+              ],
+              "firstLine": "// Any modifier-Enter combo (Shift/Alt/Ctrl/…) → literal newline",
+              "lastLine": "Some(insert_newline_gated(input, gate))"
             }
           ]
         }
@@ -183,11 +192,10 @@
                 32,
                 33,
                 34,
-                35,
-                36,
-                37,
-                38
-              ]
+                35
+              ],
+              "firstLine": "/// Insert a newline at the cursor position. Used by Ctrl+J, Shift+Enter,",
+              "lastLine": "}"
             }
           ]
         }
@@ -203,10 +211,14 @@
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
               "lines": [
-                84,
-                85,
-                86
-              ]
+                109,
+                110,
+                111,
+                112,
+                113
+              ],
+              "firstLine": "/// RPC-019 placeholder hint. RPC-426: 'Ctrl+J' is the universal newline",
+              "lastLine": "\"Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns\";"
             }
           ]
         }
@@ -224,6 +236,6 @@
       "rust/fspec-tui/src/views/agent/multiline_input_enter.rs",
       "rust/fspec-tui/src/views/agent.rs"
     ],
-    "totalLinesCovered": 369
+    "totalLinesCovered": 344
   }
 }

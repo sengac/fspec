@@ -17,6 +17,10 @@ use uuid::Uuid;
 /// Scenario: Calling a direct tool with no arguments names the tool and lists accepted parameters
 #[tokio::test]
 async fn scenario_direct_tool_no_args_names_tool_and_lists_params() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have a direct rig tool registered (e.g. WebSearchTool) whose schema declares a required 'action' parameter plus optional parameters
     let tool = WebSearchTool::new(Uuid::new_v4());
     let toolset = ToolSet::from_tools(vec![tool]);
@@ -73,6 +77,10 @@ async fn scenario_direct_tool_no_args_names_tool_and_lists_params() {
 /// Scenario: Facade tool missing a required parameter names the tool and shows full usage
 #[tokio::test]
 async fn scenario_facade_tool_missing_required_param_shows_full_usage() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I call a provider-facade tool (e.g. the Claude WebSearch facade) with arguments missing a required field
     let session_id = Uuid::new_v4();
     let wrapper = FacadeToolWrapper::new(std::sync::Arc::new(ClaudeWebSearchFacade), session_id);
@@ -120,6 +128,10 @@ async fn scenario_facade_tool_missing_required_param_shows_full_usage() {
 /// Scenario: Argument error for any tool (not just Fspec) names the tool, the missing field, and the full usage
 #[tokio::test]
 async fn scenario_any_tool_arg_error_includes_full_usage() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given I have any agent-exposed tool registered (e.g. WebSearch, Read, Bash, or a facade tool)
     let tool = ReadTool::new(Uuid::new_v4());
     let toolset = ToolSet::from_tools(vec![tool]);

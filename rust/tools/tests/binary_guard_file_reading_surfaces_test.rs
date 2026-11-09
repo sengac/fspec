@@ -77,6 +77,10 @@ fn write_temp_text(content: &str) -> NamedTempFile {
 
 #[tokio::test]
 async fn edit_rejects_png_file_with_named_binary_guard_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/icon.png" whose first 8 bytes are the PNG magic signature
     let bytes = png_bytes();
     let file = write_temp_binary(&bytes);
@@ -121,6 +125,10 @@ async fn edit_rejects_png_file_with_named_binary_guard_error() {
 
 #[tokio::test]
 async fn edit_rejects_pdf_file_with_named_binary_guard_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/report.pdf" whose first 5 bytes are "%PDF-"
     let bytes = pdf_bytes();
     let file = write_temp_binary(&bytes);
@@ -165,6 +173,10 @@ async fn edit_rejects_pdf_file_with_named_binary_guard_error() {
 
 #[tokio::test]
 async fn edit_rejects_elf_binary_with_generic_binary_guard_error() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/program" whose first 4 bytes are 0x7F 0x45 0x4C 0x46 (ELF)
     let bytes = elf_bytes();
     let file = write_temp_binary(&bytes);
@@ -209,6 +221,10 @@ async fn edit_rejects_elf_binary_with_generic_binary_guard_error() {
 
 #[tokio::test]
 async fn edit_rejects_file_containing_raw_nul_bytes() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/blob.bin" whose bytes start with 0x00 0x01 0x02 followed by text
     let mut bytes = vec![0x00u8, 0x01, 0x02];
     bytes.extend_from_slice(b"hello world");
@@ -245,6 +261,10 @@ async fn edit_rejects_file_containing_raw_nul_bytes() {
 
 #[tokio::test]
 async fn edit_on_utf8_text_file_succeeds_unchanged() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/notes.md" containing "# Hello world" as UTF-8 text
     let file = write_temp_text("# Hello world");
     let path = file.path().to_string_lossy().to_string();
@@ -279,6 +299,10 @@ async fn edit_on_utf8_text_file_succeeds_unchanged() {
 
 #[tokio::test]
 async fn edit_on_utf8_emoji_cjk_text_succeeds_unchanged() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/i18n.txt" containing "café 👋 中文 résumé" as UTF-8 text
     let original = "café 👋 中文 résumé";
     let file = write_temp_text(original);
@@ -312,6 +336,10 @@ async fn edit_on_utf8_emoji_cjk_text_succeeds_unchanged() {
 
 #[tokio::test]
 async fn apply_patch_update_rejects_pdf_target() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/report.pdf" whose first 5 bytes are "%PDF-"
     let bytes = pdf_bytes();
     let dir = TempDir::new().unwrap();
@@ -360,6 +388,10 @@ async fn apply_patch_update_rejects_pdf_target() {
 
 #[tokio::test]
 async fn apply_patch_update_rejects_png_target() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/icon.png" whose first 8 bytes are the PNG magic signature
     let bytes = png_bytes();
     let dir = TempDir::new().unwrap();
@@ -403,6 +435,10 @@ async fn apply_patch_update_rejects_png_target() {
 
 #[tokio::test]
 async fn apply_patch_update_on_utf8_source_file_succeeds() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/src.rs" containing valid UTF-8 Rust source
     let dir = TempDir::new().unwrap();
     let file_path = dir.path().join("src.rs");
@@ -440,6 +476,10 @@ async fn apply_patch_update_on_utf8_source_file_succeeds() {
 
 #[tokio::test]
 async fn binary_guard_inspects_only_first_8_kib() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a file at "/tmp/big.bin" of 10 MiB whose first 8 bytes are the PNG magic signature
     let mut bytes = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
     bytes.resize(10 * 1024 * 1024, b'A');
@@ -481,6 +521,10 @@ async fn binary_guard_inspects_only_first_8_kib() {
 
 #[tokio::test]
 async fn glob_has_no_binary_guard_surface() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a directory tree containing "spec/attachments/WU-001/diagram.png" and "src/main.rs"
     let dir = TempDir::new().unwrap();
     let png_dir = dir.path().join("spec/attachments/WU-001");

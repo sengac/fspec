@@ -38,11 +38,12 @@ pub struct CommandExample {
     pub output: Option<&'static str>,
 }
 
-/// A documented common pattern.
+/// A documented common pattern. A pattern without a description prints only
+/// its name and example (BUG-566: the TS formatter printed `undefined`).
 pub struct CommonPattern {
     pub pattern: &'static str,
     pub example: &'static str,
-    pub description: &'static str,
+    pub description: Option<&'static str>,
 }
 
 /// Either a free-form string or a structured pattern. Mirrors the TS
@@ -172,7 +173,9 @@ pub fn format_command_help(config: &CommandHelpConfig) -> String {
                 CommonPatternEntry::Structured(p) => {
                     lines.push(format!("  • {}", p.pattern));
                     lines.push(format!("    Example: {}", p.example));
-                    lines.push(format!("    {}", p.description));
+                    if let Some(description) = p.description {
+                        lines.push(format!("    {description}"));
+                    }
                     lines.push(String::new());
                 }
             }

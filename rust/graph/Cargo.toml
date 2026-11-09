@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
-description = "Embedded graph databases for the AST and Learnings dual-graph architecture (RPC-092 lift from rust/napi/src/graph/)"
+description = "Embedded graph databases for the AST and Learnings dual-graph architecture"
 
 # RPC-092: do NOT inherit workspace lints. The source crate (codelet-napi)
 # does not inherit them either, so a verbatim lift cannot newly fail
@@ -14,7 +14,7 @@ description = "Embedded graph databases for the AST and Learnings dual-graph arc
 
 [dependencies]
 # Graph DB
-nanograph = "1.0.0"
+nanograph = "1.3.0"
 
 # Provider — only used by call_learnings_extraction_llm
 codelet-providers = { workspace = true }
@@ -39,10 +39,6 @@ tracing = { workspace = true }
 lazy_static = { workspace = true }
 uuid = { workspace = true }
 
-# Arrow types for export
-arrow-array = "57"
-arrow-schema = "57"
-
 # rig — used inside learnings extraction LLM call
 rig-core = { version = "0.28.0", default-features = false }
 
@@ -65,3 +61,6 @@ tokio = { workspace = true }
 # tests/no_napi_dependency.rs.
 codelet-test-helpers = { workspace = true }
 serde_json = { workspace = true }
+# KGRAPH-072: the no-Merge-load check parses codelet-graph's sources
+# (same syn as codelet-test-helpers).
+syn = { version = "2", features = ["full", "parsing", "visit"] }

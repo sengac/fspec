@@ -223,7 +223,7 @@ fn format_avg(v: f64) -> String {
 ///   to parse work-units.json: …` error (parity with the TS try/catch
 ///   wrapper at lines 50-161).
 fn read_work_units(project_root: &Path) -> Result<RawData, FspecCoreError> {
-    let path = project_root.join("spec").join("work-units.json");
+    let path = crate::io::spec_paths::work_units(project_root)?;
     if !path.exists() {
         return Ok(RawData::default());
     }

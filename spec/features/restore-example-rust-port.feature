@@ -1,5 +1,8 @@
+@BUG-582
 @done
 @RPC-289
+@cli
+@example-mapping
 Feature: Port restore-example command to Rust
   """
   Core impl: rust/fspec-core/src/commands/restore_example.rs — replaces the NotYetPorted stub.

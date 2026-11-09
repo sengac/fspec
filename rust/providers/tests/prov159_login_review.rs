@@ -118,7 +118,7 @@ async fn scenario_cancellation_completes_pending_device_poll() -> TestResult {
         };
         bounded(poll.started.notified()).await?;
         // @step When the login is cancelled before the issuer releases the poll response
-        cancel_login();
+        cancel_login()?;
         // @step Then the backend returns a cancellation error within a bounded wait without task abortion
         let result = bounded(pending).await??;
         let error = result
@@ -157,7 +157,7 @@ async fn scenario_cancellation_completes_callback_listener() -> TestResult {
         .write_all(b"GET /auth/callback HTTP/1.1\r\n")
         .await?;
     // @step When the login is cancelled before any authorization callback arrives
-    cancel_login();
+    cancel_login()?;
     // @step Then the backend returns a cancellation error within a bounded wait without task abortion
     let result = bounded(pending).await??;
     let error = result

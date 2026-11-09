@@ -4,8 +4,8 @@
       "name": "Provider clamps registry value to its hard maximum",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "216-232",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "70-86",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
@@ -34,7 +34,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// * `registry_value` — value from an external registry (e.g. models.dev)",
+              "lastLine": ""
             }
           ]
         }
@@ -44,8 +46,8 @@
       "name": "Provider trusts registry value when no max is declared",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "234-250",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "88-104",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
@@ -74,7 +76,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// * `registry_value` — value from an external registry (e.g. models.dev)",
+              "lastLine": ""
             }
           ]
         }
@@ -84,8 +88,8 @@
       "name": "User override is clamped by provider max",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "252-268",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "106-122",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
@@ -114,7 +118,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// * `registry_value` — value from an external registry (e.g. models.dev)",
+              "lastLine": ""
             }
           ]
         }
@@ -124,8 +130,8 @@
       "name": "User override is trusted when provider declares no max",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "270-286",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "124-140",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
@@ -154,7 +160,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// * `registry_value` — value from an external registry (e.g. models.dev)",
+              "lastLine": ""
             }
           ]
         }
@@ -164,8 +172,8 @@
       "name": "Provider default is used when no registry or user override exists",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "288-304",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "142-158",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
@@ -194,7 +202,9 @@
                 98,
                 99,
                 100
-              ]
+              ],
+              "firstLine": "/// * `registry_value` — value from an external registry (e.g. models.dev)",
+              "lastLine": ""
             }
           ]
         }
@@ -204,16 +214,23 @@
       "name": "Provider can suppress sending max_output_tokens",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "306-313",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "160-167",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
               "lines": [
+                53,
+                54,
                 55,
                 56,
-                57
-              ]
+                57,
+                58,
+                59,
+                60
+              ],
+              "firstLine": "/// Whether the `max_output_tokens` parameter should be sent in API",
+              "lastLine": "}"
             }
           ]
         }
@@ -223,12 +240,17 @@
       "name": "Max output tokens are clamped by provider limit",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "315-331",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "169-185",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
               "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
                 123,
                 124,
                 125,
@@ -239,9 +261,10 @@
                 130,
                 131,
                 132,
-                133,
-                134
-              ]
+                133
+              ],
+              "firstLine": "/// Convenience wrapper that resolves max output tokens for a provider.",
+              "lastLine": "}"
             }
           ]
         }
@@ -251,12 +274,17 @@
       "name": "Provider default max output tokens used when no registry data",
       "testMappings": [
         {
-          "file": "rust/providers/src/model_limits.rs",
-          "lines": "333-349",
+          "file": "rust/providers/src/model_limits/tests.rs",
+          "lines": "187-203",
           "implMappings": [
             {
               "file": "rust/providers/src/model_limits.rs",
               "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
                 123,
                 124,
                 125,
@@ -267,9 +295,10 @@
                 130,
                 131,
                 132,
-                133,
-                134
-              ]
+                133
+              ],
+              "firstLine": "/// Convenience wrapper that resolves max output tokens for a provider.",
+              "lastLine": "}"
             }
           ]
         }
@@ -281,11 +310,11 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/providers/src/model_limits.rs"
+      "rust/providers/src/model_limits/tests.rs"
     ],
     "implFiles": [
       "rust/providers/src/model_limits.rs"
     ],
-    "totalLinesCovered": 274
+    "totalLinesCovered": 287
   }
 }

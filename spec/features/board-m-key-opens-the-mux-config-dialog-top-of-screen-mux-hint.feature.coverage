@@ -5,97 +5,19 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
-          "lines": "119-154",
+          "lines": "118-155",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/keys.rs",
               "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Ctrl+M does not open the Mux config dialog",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
-          "lines": "162-178",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keys.rs",
-              "lines": [
-                59,
-                60,
-                61,
-                62,
-                63,
-                64
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "M opens the Mux config dialog from the focused Board pane in mux mode",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
-          "lines": "194-279",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keys.rs",
-              "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
-              "lines": [
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The Board header top chord row advertises the M Mux binding",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
-          "lines": "287-320",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs",
-              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
                 30,
                 31,
                 32,
@@ -106,10 +28,267 @@
                 37,
                 38,
                 39,
-                40
-              ]
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                104,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "MenuAction::Mux => Action::OpenMuxConfigDialog,",
+              "lastLine": "},"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+M does not open the Mux config dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
+          "lines": "161-169",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "M opens the Mux config dialog from the focused Board pane in mux mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
+          "lines": "195-283",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ],
+              "firstLine": "/// Match the BoardView mode-view shortcuts against `key`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "firstLine": "pub(crate) fn push_mux_error(&mut self, message: &str) {",
+              "lastLine": "self.navigator"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ],
+              "firstLine": "/// The character `key` types when it can be a shortcut.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/items.rs",
+              "lines": [
+                104,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ],
+              "firstLine": "MenuAction::Mux => Action::OpenMuxConfigDialog,",
+              "lastLine": "},"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Board header top chord row advertises the M Mux binding",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/mux009_board_m_key.rs",
+          "lines": "308-326",
+          "implMappings": []
         }
       ]
     }
@@ -123,9 +302,10 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/board/keys.rs",
-      "rust/fspec-tui/src/app/dispatch_mux.rs",
-      "rust/fspec-tui/src/views/board/keybinding_shortcuts.rs"
+      "rust/fspec-tui/src/components/menu_bar/item_keys.rs",
+      "rust/fspec-tui/src/components/menu_bar/items.rs",
+      "rust/fspec-tui/src/app/dispatch_mux.rs"
     ],
-    "totalLinesCovered": 217
+    "totalLinesCovered": 341
   }
 }

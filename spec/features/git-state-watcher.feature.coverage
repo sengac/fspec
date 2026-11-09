@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "120-167",
+          "lines": "141-170",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_git_state.rs",
@@ -167,19 +167,21 @@
                 155,
                 156,
                 157,
-                158,
                 159,
                 160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169
-              ]
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
+                160,
+                172,
+                173,
+                174
+              ],
+              "firstLine": "//! BUG-182 — App::dispatch routing for the git-state push frame.",
+              "lastLine": "}"
             }
           ]
         }
@@ -190,20 +192,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "175-226",
+          "lines": "193-220",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/bootstrap.rs",
               "lines": [
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285
-              ]
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ],
+              "firstLine": "// the ONE centralized git poll stream (R3: folds onto the",
+              "lastLine": "// (h) RPC-434: session_removed_rx → Action::SessionRemoved —"
             }
           ]
         }
@@ -214,78 +218,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "233-291",
+          "lines": "247-278",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
               "lines": [
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
                 184,
                 185,
                 186,
@@ -302,8 +239,44 @@
                 197,
                 198,
                 199,
-                200
-              ]
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249
+              ],
+              "firstLine": "fn handle_mux_on(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -314,11 +287,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "299-344",
+          "lines": "282-327",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/changed_files/mod.rs",
               "lines": [
+                164,
+                165,
+                166,
                 167,
                 168,
                 169,
@@ -358,7 +334,9 @@
                 203,
                 204,
                 205
-              ]
+              ],
+              "firstLine": "pub fn set_files(&mut self, files: Vec<ChangedFile>) {",
+              "lastLine": "/// highlighted row and the scroll window never diverge (same anchor"
             }
           ]
         }
@@ -369,7 +347,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "352-384",
+          "lines": "360-379",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/checkpoints/mod.rs",
@@ -419,7 +397,9 @@
                 244,
                 245,
                 246
-              ]
+              ],
+              "firstLine": "pub fn set_checkpoints(&mut self, checkpoints: Vec<CheckpointInfo>) {",
+              "lastLine": "checkpoint.work_unit_id = sanitize_for_terminal(&checkpoint.work_unit_id);"
             }
           ]
         }
@@ -430,16 +410,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "392-431",
+          "lines": "401-433",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/navigator.rs",
               "lines": [
-                118,
-                119,
-                120,
-                121,
-                122,
                 123,
                 124,
                 125,
@@ -448,8 +423,15 @@
                 128,
                 129,
                 130,
-                131
-              ]
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// demands a frame and the loading dialog's braille spinner freezes",
+              "lastLine": "_ => false,"
             }
           ]
         }
@@ -460,7 +442,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug182_git_state_watcher.rs",
-          "lines": "439-481",
+          "lines": "448-472",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_git_state.rs",
@@ -513,6 +495,6 @@
       "rust/fspec-tui/src/views/checkpoints/mod.rs",
       "rust/fspec-tui/src/views/navigator.rs"
     ],
-    "totalLinesCovered": 706
+    "totalLinesCovered": 569
   }
 }

@@ -66,7 +66,7 @@ Feature: Complete Event Storm interactive workflow with Example Mapping integrat
     And the reminder should ask "Is there significant domain complexity?"
     And the reminder should present choice: Run Event Storm FIRST or skip to Example Mapping
     And the reminder should include concrete examples of when Event Storm helped
-    And the reminder should use ULTRATHINK-style prompts to prevent skipping
+    And the reminder should tell the AI to STOP and assess domain complexity before jumping to Example Mapping
 
   Scenario: AI runs discover-event-storm and receives comprehensive guidance
     Given I have a work unit "AUTH-001" in specifying status
@@ -78,22 +78,11 @@ Feature: Complete Event Storm interactive workflow with Example Mapping integrat
     And guidance should show when to stop criteria
     And guidance should explain generate-example-mapping-from-event-storm for transformation
 
-  Scenario: Event Storm section file is created in slashCommandSections
-    Given I need to add Event Storm guidance
-    When I create "src/utils/slashCommandSections/eventStorm.ts"
-    Then the file should export getEventStormSection() function
-    And the function should return comprehensive Event Storm guidance
-    And guidance should include conversation pattern with examples
-    And guidance should explain when Event Storm is valuable
-    And guidance should show flow: Events → Commands → Policies → Hotspots
-    And guidance should explain transformation via generate-example-mapping-from-event-storm
-
   Scenario: Event Storm section is integrated into bootstrap
-    Given I have created eventStorm.ts section file
-    When I import getEventStormSection in slashCommandTemplate.ts
-    And I add getEventStormSection() to getCompleteWorkflowDocumentation() array
+    Given the fspec bootstrap documentation
+    When AI runs "fspec bootstrap"
     Then bootstrap output should include Event Storm guidance
-    And guidance should appear between bootstrap-foundation and example-mapping sections
+    And the Feature Event Storm section should appear after "## Step 2: Bootstrap Foundation" and before "## Step 5: Example Mapping"
 
   Scenario: bootstrap guidance displays Event Storm workflow
     Given Event Storm section is integrated
@@ -101,5 +90,5 @@ Feature: Complete Event Storm interactive workflow with Example Mapping integrat
     Then AI should see Event Storm section in output
     And section should explain when to use Event Storm vs skip to Example Mapping
     And section should include concrete examples (complex domain vs simple bug)
-    And section should show command: fspec discover-event-storm <work-unit-id>
+    And section should show command: fspec discover-event-storm <workUnitId>
     And section should explain transformation to Example Mapping

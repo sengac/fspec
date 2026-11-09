@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
-          "lines": "99-136",
+          "lines": "102-140",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -21,7 +21,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "pub(crate) fn adjust_scroll(&mut self) {",
+              "lastLine": "pub(crate) fn move_clamped(&mut self, delta: i32) {"
             }
           ]
         }
@@ -32,7 +34,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
-          "lines": "143-191",
+          "lines": "147-196",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -58,7 +60,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "self.delete_confirm = None;",
+              "lastLine": "pub(crate) fn move_clamped(&mut self, delta: i32) {"
             }
           ]
         }
@@ -69,7 +73,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
-          "lines": "197-227",
+          "lines": "202-233",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -105,7 +109,9 @@
                 114,
                 115,
                 116
-              ]
+              ],
+              "firstLine": "view.move_clamped(1);",
+              "lastLine": "};"
             }
           ]
         }
@@ -116,7 +122,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
-          "lines": "233-266",
+          "lines": "239-273",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -132,7 +138,9 @@
                 259,
                 260,
                 261
-              ]
+              ],
+              "firstLine": "pub(crate) fn adjust_scroll(&mut self) {",
+              "lastLine": "pub(crate) fn move_clamped(&mut self, delta: i32) {"
             }
           ]
         }
@@ -143,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov103_nav_tree_navigation.rs",
-          "lines": "273-309",
+          "lines": "280-317",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
@@ -179,6 +187,6 @@
       "rust/fspec-tui/src/views/provider_settings/list.rs",
       "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
     ],
-    "totalLinesCovered": 275
+    "totalLinesCovered": 280
   }
 }

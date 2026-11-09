@@ -24,7 +24,7 @@
 //!     the TS `output.error('Error:', error.message)` path collapsed
 //!     via [`crate::common::render_core_error`]).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -45,7 +45,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `add-tag-to-feature` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by the core. Both the
     // dispatcher and the CLI feed the SAME serde shape, so any future

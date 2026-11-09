@@ -3,6 +3,7 @@
 @providers
 @streaming
 @BUG-104
+@agent-interaction
 Feature: DeepSearch Codex sub-agent still fails because Responses API requires stream=true
   """
   DeepSearch currently runs through rust/napi/src/deep_search_handler.rs using RigAgent::prompt(), while Codex Responses API forces request.stream = Some(true) only in rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs.

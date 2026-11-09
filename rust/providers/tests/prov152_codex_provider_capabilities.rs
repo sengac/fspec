@@ -1,15 +1,16 @@
-//! Feature: spec/features/codex-capability-aware-request-options.feature
+//! Feature: spec/features/codex-provider-capability-updates.feature
 
 use codelet_providers::codex::request_options::{CodexCapabilities, RequestOptionsError};
+use codelet_providers::request_admission::RequestAdmissionError;
 use codelet_providers::CodexProvider;
 use rig::completion::{CompletionError, CompletionModel, CompletionRequestBuilder};
 use serde_json::json;
 
 #[tokio::test]
-// @step Given a Codex provider has an agent with explicit experimental options
+// @step Given a Codex provider whose capability snapshot does not advertise xhigh has an agent with explicit experimental options
 // @step When the trusted capability source updates the provider snapshot
 // @step Then the existing agent uses the updated snapshot on its next request
-// @step And clearing the snapshot restores conservative validation
+// @step And clearing the snapshot leaves explicit options unvalidated, with no capability invented
 async fn scenario_provider_capability_updates_reach_existing_agents(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let provider = CodexProvider::from_api_key("test-key", "not-a-catalog-model")?;
@@ -32,12 +33,15 @@ async fn scenario_provider_capability_updates_reach_existing_agents(
         },
         _ => None,
     };
+    provider.set_capabilities(Some(serde_json::from_value::<CodexCapabilities>(
+        json!({"efforts":["low"]}),
+    )?))?;
     let initial = agent
         .model
         .completion(request())
         .await
         .err()
-        .ok_or("fallback must reject xhigh")?;
+        .ok_or("a snapshot without xhigh must reject it")?;
     assert_eq!(option_error(initial).as_deref(), Some("reasoning.effort"));
     provider.set_capabilities(Some(serde_json::from_value::<CodexCapabilities>(json!({
         "efforts":["xhigh"],"service_tiers":["priority"]
@@ -55,7 +59,13 @@ async fn scenario_provider_capability_updates_reach_existing_agents(
         .completion(request())
         .await
         .err()
-        .ok_or("fallback must be restored")?;
-    assert_eq!(option_error(cleared).as_deref(), Some("reasoning.effort"));
+        .ok_or("the provider has no admission limits, so the request is refused")?;
+    // The options pass through unvalidated and the request reaches
+    // admission, which refuses it before anything is sent.
+    assert!(
+        matches!(&cleared, CompletionError::RequestError(source)
+            if matches!(source.downcast_ref::<RequestAdmissionError>(), Some(RequestAdmissionError::MissingContextCapacity))),
+        "{cleared:?}"
+    );
     Ok(())
 }

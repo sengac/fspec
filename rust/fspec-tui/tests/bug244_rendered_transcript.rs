@@ -10,6 +10,8 @@ mod history_fixture;
 #[path = "bug244/app_support.rs"]
 mod app_support;
 
+mod common; // BUG-487: TaskOutcome lives in tests/common
+use crate::common::TaskOutcome;
 use app_support::{drain, rendered};
 use codelet_fspec_tui::{Action, App};
 use codelet_rpc_types::{SessionId, StreamChunk};
@@ -18,6 +20,11 @@ use support::{Fixture, TestResult};
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn reopened_tabs_render_the_complete_transcript_without_duplicate_tool_cards() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a real saved long transcript with a complete tool result
     let fixture = Fixture::new().await?;
     fixture.seed()?;
@@ -28,11 +35,11 @@ async fn reopened_tabs_render_the_complete_transcript_without_duplicate_tool_car
         // @step When the TUI resumes it twice and reopens its tab using either transport
         for _repeat in 0..2 {
             app.dispatch(Action::AttachToSession(fixture.id.clone()));
-            drain(&mut app).await;
+            drain(&mut app).await?;
         }
         app.dispatch(Action::SessionRemoved(fixture.id.clone()));
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step Then its rendered original text and full tool result remain complete and occur once
         let context = app
             .agent_view_store()
@@ -77,6 +84,11 @@ async fn reopened_tabs_render_the_complete_transcript_without_duplicate_tool_car
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn resuming_a_previously_restored_active_session_preserves_runtime_state() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     use codelet_core::SessionManagerHandle;
 
     // @step Given a cold restored session with new live model messages and token counters
@@ -113,6 +125,11 @@ async fn resuming_a_previously_restored_active_session_preserves_runtime_state()
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn lost_live_wakeups_recover_without_duplicating_the_displayed_transcript() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given an open hydrated session with original text
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -122,7 +139,7 @@ async fn lost_live_wakeups_recover_without_duplicating_the_displayed_transcript(
     for (index, backend) in [embedded, websocket].into_iter().enumerate() {
         let mut app = App::new(backend);
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step When live output arrives without a notification and the transcript is polled
         let new_text = format!("new-after-lost-wakeup-{index}");
         let live = StreamChunk::text(new_text.clone());
@@ -131,14 +148,14 @@ async fn lost_live_wakeups_recover_without_duplicating_the_displayed_transcript(
         app.dispatch(Action::Transcript(
             codelet_fspec_tui::app::transcript_sync::TranscriptAction::Poll,
         ));
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step And the same live notification is received twice
         for _repeat in 0..2 {
             app.dispatch(Action::Transcript(
                 codelet_fspec_tui::app::transcript_sync::TranscriptAction::Wake(fixture.id.clone()),
             ));
         }
-        drain(&mut app).await;
+        drain(&mut app).await?;
         let text = rendered(&app, &fixture.id)?;
         // @step Then the original and new text each render exactly once
         assert_eq!(text.matches("original-before-poll").count(), 1);
@@ -151,6 +168,11 @@ async fn lost_live_wakeups_recover_without_duplicating_the_displayed_transcript(
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn failed_hydration_preserves_displayed_content_and_exposes_retry_state() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     use codelet_core::SessionManagerHandle;
 
     // @step Given an open hydrated session with original text
@@ -162,13 +184,13 @@ async fn failed_hydration_preserves_displayed_content_and_exposes_retry_state() 
     let mut apps = [App::new(embedded), App::new(websocket)];
     for app in &mut apps {
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(app).await;
+        drain(app).await?;
     }
     // @step When its next transcript page fails
     SessionManagerHandle::destroy_session(fixture.manager.as_ref(), &fixture.id)?;
     for app in &mut apps {
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
-        drain(app).await;
+        drain(app).await?;
         let text = rendered(app, &fixture.id)?;
         // @step Then the original text remains visible with a session scoped incomplete transcript notice
         assert_eq!(text.matches("preserved-before-failure").count(), 1);
@@ -182,6 +204,11 @@ async fn failed_hydration_preserves_displayed_content_and_exposes_retry_state() 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]
 async fn late_hydration_cannot_corrupt_a_reopened_tab_or_another_session() -> TestResult {
+    let isolated = codelet_test_helpers::isolated_user_directory();
+    assert!(
+        isolated.is_ok(),
+        "BUG-640: isolate the user directory: {isolated:?}"
+    );
     // @step Given a real session whose hydration response has not reached the TUI
     let fixture = Fixture::new().await?;
     let background = fixture.manager.get_session(&fixture.id.value)?;
@@ -204,7 +231,7 @@ async fn late_hydration_cannot_corrupt_a_reopened_tab_or_another_session() -> Te
         let mut app = App::new(backend);
         app.dispatch(Action::ReattachSession(fixture.id.clone()));
         while let Some(task) = app.next_pending_task() {
-            let _ = task.await;
+            task.await.completed_or_cancelled()?;
         }
         let mut delayed = Vec::new();
         while let Some(action) = app.try_recv_action() {
@@ -217,7 +244,7 @@ async fn late_hydration_cannot_corrupt_a_reopened_tab_or_another_session() -> Te
         for action in delayed {
             app.dispatch(action);
         }
-        drain(&mut app).await;
+        drain(&mut app).await?;
         // @step Then only the current tab transcript renders once and no other session receives its chunks
         let first = rendered(&app, &fixture.id)?;
         let second = rendered(&app, &other_id)?;

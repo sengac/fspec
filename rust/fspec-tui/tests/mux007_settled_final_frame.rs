@@ -8,9 +8,8 @@
 //!
 //! Feature: spec/features/mux-focus-flash-settled-final-frame-persists-on-the-active-pane.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::style::Color;
@@ -74,17 +73,17 @@ fn render_frames(
     board: &BoardStore,
     agent: &mut AgentViewStore,
     n: u32,
-) -> ratatui::buffer::Buffer {
+) -> Result<ratatui::buffer::Buffer, codelet_test_helpers::TestError> {
     let mut buf = ratatui::buffer::Buffer::empty(ratatui::layout::Rect::new(0, 0, W, H));
     for _ in 0..n {
-        let mut term = Terminal::new(TestBackend::new(W, H)).expect("Terminal::new");
+        let mut term = Terminal::new(TestBackend::new(W, H)).or_fail("Terminal::new")?;
         term.draw(|frame| {
             nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
         })
-        .expect("draw");
+        .or_fail("draw")?;
         buf = term.backend().buffer().clone();
     }
-    buf
+    Ok(buf)
 }
 
 /// All cells whose background is the settle purple, EXCLUDING the mux
@@ -139,7 +138,7 @@ fn assert_top_row_bar(painted: &[(u16, u16)], pane_x: u16, pane_w: u16, pane_y: 
 
 /// Scenario: the active pane keeps the settled 1-row top bar after the scan ends
 #[test]
-fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
+fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -152,7 +151,7 @@ fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
     assert_eq!(nav.mux.flash_clock_ms(), 0, "scan must start at clock 0");
     assert!(nav.mux.is_flash_active(), "scan must be in flight");
     // @step When 350ms of rendered frames have elapsed
-    let buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     assert!(
         !nav.mux.is_flash_active(),
         "the scan must end after 350ms of frames"
@@ -170,7 +169,7 @@ fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
         );
     }
     // @step And rendering more frames later the Board pane still shows the same 1-row top bar
-    let later = render_frames(&mut nav, &board, &mut agent, 5);
+    let later = render_frames(&mut nav, &board, &mut agent, 5)?;
     assert_eq!(
         purple_cells(&later),
         settled,
@@ -183,6 +182,7 @@ fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
             "purple body cell ({x}, {y}) lies outside the focused pane"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ fn the_active_pane_keeps_the_settled_1_row_top_bar_after_the_scan_ends() {
 
 /// Scenario: focus change clears the old pane's strip and settles the new pane's strip
 #[test]
-fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
+fn focus_change_clears_the_old_strip_and_settles_the_new_strip() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -202,7 +202,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
     seed_agent_session(&mut agent);
     // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
-    let settled_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let settled_buf = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     let agent_rect = nav.mux.pane_rects()[1];
     let board_rect = nav.mux.pane_rects()[0];
     assert!(
@@ -229,7 +229,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
         0,
         "the new pane's scan must restart at clock 0"
     );
-    let next = render_frames(&mut nav, &board, &mut agent, 1);
+    let next = render_frames(&mut nav, &board, &mut agent, 1)?;
     // @step Then the Agent pane has no dark purple background on the next rendered frame
     for (x, y) in &purple_cells(&next) {
         assert!(
@@ -244,7 +244,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
         "scan must be armed on the Board pane"
     );
     // @step When 350ms of rendered frames have elapsed
-    let done = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let done = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     assert!(
         !nav.mux.is_flash_active(),
         "the board scan must have settled"
@@ -259,6 +259,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
             "purple leaked back into the Agent pane at ({x}, {y})"
         );
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -268,7 +269,7 @@ fn focus_change_clears_the_old_strip_and_settles_the_new_strip() {
 
 /// Scenario: the settled strip keeps pane content readable and never paints with mux off
 #[test]
-fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
+fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -278,17 +279,17 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
     seed_agent_session(&mut agent);
     // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
-    render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     let agent_rect = nav.mux.pane_rects()[1];
     let glyphs_settled = symbols_in(
-        &render_frames(&mut nav, &board, &mut agent, 1),
+        &render_frames(&mut nav, &board, &mut agent, 1)?,
         agent_rect.x,
         agent_rect.y,
         agent_rect.width,
         agent_rect.height,
     );
     // @step When the frame is rendered to a terminal buffer
-    let buf = render_frames(&mut nav, &board, &mut agent, 1);
+    let buf = render_frames(&mut nav, &board, &mut agent, 1)?;
     let painted = purple_cells(&buf);
     // @step Then every dark purple cell lies inside the Agent pane rect
     assert!(
@@ -320,7 +321,7 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
     let board2 = BoardStore::default();
     let mut agent2 = AgentViewStore::default();
     // @step When the frame is rendered to a terminal buffer
-    let buf2 = render_frames(&mut nav2, &board2, &mut agent2, 1);
+    let buf2 = render_frames(&mut nav2, &board2, &mut agent2, 1)?;
     // @step Then no cell in the buffer has the dark purple background
     for y in 0..buf2.area.height {
         for x in 0..buf2.area.width {
@@ -331,6 +332,7 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
             );
         }
     }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -340,7 +342,7 @@ fn the_settled_strip_keeps_content_readable_and_never_paints_with_mux_off() {
 
 /// Scenario: the settled strip is repaint content that does not force continuous redrawing
 #[test]
-fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing() {
+fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing() -> TestResult {
     // @step Given mux mode is active with the default two-pane grid (Board | Agent)
     let (mut nav, _rx) = fresh();
     enable_default(&mut nav);
@@ -349,7 +351,7 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
     seed_agent_session(&mut agent);
     // @step And the Agent pane is focused with the settled 1-row top bar
     nav.mux.set_focus(1);
-    let _ = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES);
+    let _ = render_frames(&mut nav, &board, &mut agent, ELAPSE_FRAMES)?;
     let agent_rect = nav.mux.pane_rects()[1];
     // @step When the run-loop draw gate is evaluated with no other animation in flight
     assert!(!nav.mux.is_flash_active(), "the scan must be settled");
@@ -359,7 +361,7 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
         "the settled strip must NOT keep the draw gate open"
     );
     // @step And the next user-triggered frame still paints the settled 1-row top bar on the Agent pane
-    let buf = render_frames(&mut nav, &board, &mut agent, 1);
+    let buf = render_frames(&mut nav, &board, &mut agent, 1)?;
     let mut painted = purple_cells(&buf);
     assert_top_row_bar(&painted, agent_rect.x, agent_rect.width, agent_rect.y);
     // Pure-math companion: the painted settled cells equal the pure
@@ -371,4 +373,5 @@ fn the_settled_strip_is_repaint_content_that_does_not_force_continuous_redrawing
         painted, expected_settled,
         "the settled frame must paint exactly the pure pattern at the settle boundary"
     );
+    Ok(())
 }

@@ -10,6 +10,23 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                32,
+                33,
+                34,
                 67,
                 68,
                 69,
@@ -17,20 +34,36 @@
                 71,
                 72,
                 73,
-                619,
-                620,
-                621,
-                622,
-                623,
-                624,
-                625,
-                626,
-                627,
-                628,
-                629,
-                630,
-                631
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "fn probe_failed(&self) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -46,22 +79,29 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections/tests.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                53,
+                54,
+                55
+              ],
+              "firstLine": "// @step And that entry has is_unreachable false",
+              "lastLine": "fn unreachable_profile_without_custom_models_is_marked() {"
             }
           ]
         }
@@ -77,6 +117,23 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                32,
+                33,
+                34,
                 67,
                 68,
                 69,
@@ -84,23 +141,36 @@
                 71,
                 72,
                 73,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640
-              ]
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "fn probe_failed(&self) -> bool {",
+              "lastLine": "}"
             }
           ]
         }
@@ -114,23 +184,94 @@
           "lines": "173-195",
           "implMappings": [
             {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "fn probe_failed(&self) -> bool {",
+              "lastLine": "}"
+            },
+            {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                536,
-                619,
-                620,
-                621,
-                622,
-                623,
-                633,
-                634,
-                635,
-                636,
-                637,
-                638,
-                639,
-                640
-              ]
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ],
+              "firstLine": "/// Merge the probe-discovered model ids with the profile's declared custom",
+              "lastLine": "}"
             }
           ]
         }
@@ -146,15 +287,24 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                618
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections/tests.rs",
+              "lines": [
+                33
+              ],
+              "firstLine": "/// Scenario: A reachable local-server profile is reported as a profile section",
+              "lastLine": "/// Scenario: A reachable local-server profile is reported as a profile section"
             }
           ]
         }
@@ -170,26 +320,34 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections/tests.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                16,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "display_name: id.to_string(),",
+              "lastLine": "// @step Given the server builds the provider list"
             }
           ]
         }
@@ -205,26 +363,34 @@
             {
               "file": "rust/sessions/src/profile_sections.rs",
               "lines": [
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604
-              ]
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ],
+              "firstLine": "provider_id: &str,",
+              "lastLine": "key: format!(\"{provider_id}:{profile_name}\"),"
+            },
+            {
+              "file": "rust/sessions/src/profile_sections/tests.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                16,
+                17,
+                18,
+                19
+              ],
+              "firstLine": "display_name: id.to_string(),",
+              "lastLine": "// @step Given the server builds the provider list"
             }
           ]
         }
@@ -239,8 +405,10 @@
       "rust/sessions/tests/bug218_optional_model_discovery.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/profile_sections.rs"
+      "rust/sessions/src/profile_sections.rs",
+      "rust/sessions/src/profile_discovery.rs",
+      "rust/sessions/src/profile_sections/tests.rs"
     ],
-    "totalLinesCovered": 303
+    "totalLinesCovered": 406
   }
 }

@@ -7,15 +7,11 @@
 //! opening, focus traversal, key handling, and the post-confirm
 //! `merge_session_worktree` / `discard_session_worktree` routing.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::too_many_lines
-)]
+#![allow(clippy::too_many_lines)]
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::views::agent::merge_confirm_dialog::{
     MergeConfirmDialog, MergeConfirmDialogOutcome,
@@ -26,7 +22,6 @@ use codelet_rpc_types::{MergeOutcome, MergeStatus, SessionChangesSummary, Sessio
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -35,29 +30,34 @@ fn sid(s: &str) -> SessionId {
     SessionId::new(s)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -85,12 +85,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
         .join("\n")
 }
 
-fn render_dialog(dialog: &MergeConfirmDialog) -> String {
-    let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
+fn render_dialog(dialog: &MergeConfirmDialog) -> Result<String, codelet_test_helpers::TestError> {
+    let mut term = Terminal::new(TestBackend::new(80, 24)).or_fail("Terminal::new")?;
     term.draw(|frame| {
         dialog.render(frame.area(), frame.buffer_mut());
     })
-    .expect("draw");
+    .or_fail("draw")?;
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
     for y in 0..buf.area.height {
@@ -99,7 +99,7 @@ fn render_dialog(dialog: &MergeConfirmDialog) -> String {
         }
         joined.push('\n');
     }
-    joined
+    Ok(joined)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ fn render_dialog(dialog: &MergeConfirmDialog) -> String {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_merge_worktree_with_no_session_is_silent_noop() {
+async fn slash_merge_worktree_with_no_session_is_silent_noop() -> TestResult {
     // @step Given an App with NO open AgentView session
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
@@ -117,9 +117,10 @@ async fn slash_merge_worktree_with_no_session_is_silent_noop() {
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
     app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
         SlashCommandAction::MergeWorktree,
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then no backend method is called
     assert_eq!(mock.inspect_session_changes_calls(), initial_inspect);
@@ -130,6 +131,7 @@ async fn slash_merge_worktree_with_no_session_is_silent_noop() {
 
     // @step And the compositor contains no merge-confirm-dialog
     assert!(!app.compositor().contains("merge-confirm-dialog"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -137,7 +139,7 @@ async fn slash_merge_worktree_with_no_session_is_silent_noop() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() {
+async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose inspect_session_changes returns zero changes
     let mock = Arc::new(MockBackend::new());
     mock.seed_session_changes_summary(SessionChangesSummary {
@@ -149,32 +151,34 @@ async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() {
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_inspect = mock.inspect_session_changes_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
     app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
         SlashCommandAction::MergeWorktree,
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.inspect_session_changes is called exactly once with session_id "s-1"
     wait_until(
         || mock.inspect_session_changes_calls() - initial_inspect == 1,
         "inspect_session_changes called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice carrying "[merge] nothing to merge" for s-1 is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[merge] nothing to merge"),
         "nothing-to-merge notice",
     )
-    .await;
+    .await?;
 
     // @step And no merge-confirm-dialog is pushed onto the compositor
     assert!(!app.compositor().contains("merge-confirm-dialog"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -182,7 +186,7 @@ async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_merge_worktree_opens_dialog_on_changes() {
+async fn slash_merge_worktree_opens_dialog_on_changes() -> TestResult {
     // @step Given an App with open session s-1 wired to a MockBackend whose inspect_session_changes returns SessionChangesSummary { files_changed: 1, insertions: 4, deletions: 2, commits: ["abc1234"] }
     let mock = Arc::new(MockBackend::new());
     mock.seed_session_changes_summary(SessionChangesSummary {
@@ -194,29 +198,31 @@ async fn slash_merge_worktree_opens_dialog_on_changes() {
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_inspect = mock.inspect_session_changes_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
     app.dispatch(Action::SlashCommandSelected(
+        app.current_session(),
         SlashCommandAction::MergeWorktree,
     ));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.inspect_session_changes is called exactly once with session_id "s-1"
     wait_until(
         || mock.inspect_session_changes_calls() - initial_inspect == 1,
         "inspect_session_changes called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second the compositor contains a layer with id "merge-confirm-dialog"
     wait_until(
         || app.compositor().contains("merge-confirm-dialog"),
         "merge-confirm-dialog on compositor",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -224,7 +230,7 @@ async fn slash_merge_worktree_opens_dialog_on_changes() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn merge_confirm_dialog_renders_change_summary() {
+fn merge_confirm_dialog_renders_change_summary() -> TestResult {
     // @step Given a MergeConfirmDialog seeded with SessionChangesSummary { files_changed: 2, insertions: 10, deletions: 3, commits: ["abc1234", "def5678"] }
     let dialog = MergeConfirmDialog::new(
         sid("s-1"),
@@ -238,7 +244,7 @@ fn merge_confirm_dialog_renders_change_summary() {
     );
 
     // @step When the dialog is rendered into a 80x24 buffer
-    let text = render_dialog(&dialog);
+    let text = render_dialog(&dialog)?;
 
     // @step Then the rendered text contains "2 files changed"
     assert!(
@@ -255,6 +261,7 @@ fn merge_confirm_dialog_renders_change_summary() {
     assert!(text.contains("Discard"));
     // @step And the rendered text contains "Cancel"
     assert!(text.contains("Cancel"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -262,7 +269,7 @@ fn merge_confirm_dialog_renders_change_summary() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn merge_confirm_dialog_tab_cycles_focus_forward() {
+fn merge_confirm_dialog_tab_cycles_focus_forward() -> TestResult {
     // @step Given a fresh MergeConfirmDialog
     let mut dialog = MergeConfirmDialog::new(
         sid("s-1"),
@@ -289,6 +296,7 @@ fn merge_confirm_dialog_tab_cycles_focus_forward() {
     dialog.handle_key(KeyCode::Tab, KeyModifiers::NONE);
     // @step Then the focused button index equals 0
     assert_eq!(dialog.focused_button(), 0);
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -296,7 +304,7 @@ fn merge_confirm_dialog_tab_cycles_focus_forward() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn merge_confirm_dialog_enter_on_merge_emits_merge() {
+fn merge_confirm_dialog_enter_on_merge_emits_merge() -> TestResult {
     // @step Given a fresh MergeConfirmDialog for session s-1 with the Merge button focused
     let mut dialog = MergeConfirmDialog::new(
         sid("s-1"),
@@ -315,6 +323,7 @@ fn merge_confirm_dialog_enter_on_merge_emits_merge() {
 
     // @step Then handle_key returns MergeConfirmDialogOutcome::Merge
     assert!(matches!(outcome, MergeConfirmDialogOutcome::Merge { .. }));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -322,7 +331,7 @@ fn merge_confirm_dialog_enter_on_merge_emits_merge() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn merge_confirm_dialog_enter_on_discard_emits_discard() {
+fn merge_confirm_dialog_enter_on_discard_emits_discard() -> TestResult {
     // @step Given a fresh MergeConfirmDialog for session s-1 with the Discard button focused
     let mut dialog = MergeConfirmDialog::new(
         sid("s-1"),
@@ -342,6 +351,7 @@ fn merge_confirm_dialog_enter_on_discard_emits_discard() {
 
     // @step Then handle_key returns MergeConfirmDialogOutcome::Discard
     assert!(matches!(outcome, MergeConfirmDialogOutcome::Discard { .. }));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -349,7 +359,7 @@ fn merge_confirm_dialog_enter_on_discard_emits_discard() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn merge_confirm_dialog_esc_emits_cancel() {
+fn merge_confirm_dialog_esc_emits_cancel() -> TestResult {
     // @step Given a fresh MergeConfirmDialog for session s-1 with the Merge button focused
     let mut dialog = MergeConfirmDialog::new(
         sid("s-1"),
@@ -367,6 +377,7 @@ fn merge_confirm_dialog_esc_emits_cancel() {
 
     // @step Then handle_key returns MergeConfirmDialogOutcome::Cancel
     assert!(matches!(outcome, MergeConfirmDialogOutcome::Cancel));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -376,7 +387,7 @@ fn merge_confirm_dialog_esc_emits_cancel() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
+async fn merge_confirmed_success_tears_down_session_and_emits_notice() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's merge_session_worktree returns Ok(MergeOutcome { status: Success, conflicts: [], merge_commit: Some("abc1234") })
@@ -388,7 +399,7 @@ async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -399,7 +410,7 @@ async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(app.compositor().contains("merge-confirm-dialog"));
 
     let initial = mock.merge_session_worktree_calls();
@@ -414,39 +425,44 @@ async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
         || mock.merge_session_worktree_calls() - initial == 1,
         "merge_session_worktree called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second the compositor no longer contains a layer with id "merge-confirm-dialog"
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text starting with "[merge] success" is observed on the action bus
     // WT-009: Success now queues a MergeSuccess teardown that removes the
     // session context, so capture the notice on the bus BEFORE the
     // teardown action is dispatched.
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(1);
+    // TEST-042: wait for the notice under the deadlock guard, not 1 s.
     let mut saw_success = false;
-    while !saw_success && tokio::time::Instant::now() < deadline {
-        while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
-        }
-        while let Some(action) = app.try_recv_action() {
-            if let Action::EmitSessionNotice(id, text) = &action {
-                if *id == sid("s-1") && text.starts_with("[merge] success") {
-                    saw_success = true;
+    codelet_test_helpers::deadlock_guard("the [merge] success notice", async {
+        while !saw_success {
+            while let Some(handle) = app.next_pending_task() {
+                handle.await.completed_or_cancelled()?;
+            }
+            while let Some(action) = app.try_recv_action() {
+                if let Action::EmitSessionNotice(id, text) = &action {
+                    if *id == sid("s-1") && text.starts_with("[merge] success") {
+                        saw_success = true;
+                    }
+                }
+                app.dispatch(action);
+                while let Some(handle) = app.next_pending_task() {
+                    handle.await.completed_or_cancelled()?;
                 }
             }
-            app.dispatch(action);
-            while let Some(handle) = app.next_pending_task() {
-                let _ = handle.await;
+            if !saw_success {
+                tokio::task::yield_now().await;
             }
         }
-        if !saw_success {
-            tokio::time::sleep(Duration::from_millis(10)).await;
-        }
-    }
+        Ok::<(), codelet_test_helpers::TestError>(())
+    })
+    .await??;
     assert!(saw_success, "expected a [merge] success notice for s-1");
     assert!(
         !app.compositor().contains("merge-confirm-dialog"),
         "dialog should be popped"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -454,7 +470,7 @@ async fn merge_confirmed_success_tears_down_session_and_emits_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
+async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's merge_session_worktree returns Ok(MergeOutcome { status: NoChanges, conflicts: [], merge_commit: None })
@@ -466,7 +482,7 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -477,20 +493,21 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
     app.dispatch(Action::MergeConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[merge] nothing to merge" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[merge] nothing to merge"),
         "nothing-to-merge notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -498,7 +515,7 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn merge_confirmed_conflict_seeds_input() {
+async fn merge_confirmed_conflict_seeds_input() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's merge_session_worktree returns Ok(MergeOutcome { status: Conflict, conflicts: ["src/a.rs", "src/b.rs"], merge_commit: None })
@@ -510,7 +527,7 @@ async fn merge_confirmed_conflict_seeds_input() {
     });
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -521,13 +538,13 @@ async fn merge_confirmed_conflict_seeds_input() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
     app.dispatch(Action::MergeConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::SeedPendingInput for s-1 with text containing "Merge produced conflicts" is observed on the action bus
     // @step And the seeded text contains "src/a.rs"
@@ -545,14 +562,15 @@ async fn merge_confirmed_conflict_seeds_input() {
         },
         "SeedPendingInput with conflict context",
     )
-    .await;
+    .await?;
 
     // @step And the compositor no longer contains a layer with id "merge-confirm-dialog"
     wait_until(
         || !app.compositor().contains("merge-confirm-dialog"),
         "dialog popped",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -560,14 +578,14 @@ async fn merge_confirmed_conflict_seeds_input() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn merge_confirmed_err_emits_error_notice() {
+async fn merge_confirmed_err_emits_error_notice() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's merge_session_worktree returns Err("worktree not found")
     mock.set_merge_session_worktree_error("worktree not found".to_string());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -578,13 +596,13 @@ async fn merge_confirmed_err_emits_error_notice() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
     app.dispatch(Action::MergeConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /merge-worktree: worktree not found" is observed on the action bus
     wait_until(
@@ -594,7 +612,7 @@ async fn merge_confirmed_err_emits_error_notice() {
         },
         "error notice",
     )
-    .await;
+    .await?;
 
     // @step And no Action::SeedPendingInput is observed
     let draft = app
@@ -609,6 +627,7 @@ async fn merge_confirmed_err_emits_error_notice() {
 
     // @step And the compositor no longer contains a layer with id "merge-confirm-dialog"
     assert!(!app.compositor().contains("merge-confirm-dialog"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -616,13 +635,13 @@ async fn merge_confirmed_err_emits_error_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn discard_confirmed_routes_through_backend() {
+async fn discard_confirmed_routes_through_backend() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's discard_session_worktree returns Ok(())
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -633,7 +652,7 @@ async fn discard_confirmed_routes_through_backend() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial = mock.discard_session_worktree_calls();
 
@@ -641,28 +660,29 @@ async fn discard_confirmed_routes_through_backend() {
     app.dispatch(Action::DiscardConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second backend.discard_session_worktree is called exactly once with session_id "s-1"
     wait_until(
         || mock.discard_session_worktree_calls() - initial == 1,
         "discard_session_worktree called once",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second the compositor no longer contains a layer with id "merge-confirm-dialog"
     wait_until(
         || !app.compositor().contains("merge-confirm-dialog"),
         "dialog popped",
     )
-    .await;
+    .await?;
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[discard] worktree discarded" is observed on the action bus
     wait_until(
         || session_scrollback_text(&app, &sid("s-1")).contains("[discard] worktree discarded"),
         "discard notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -670,14 +690,14 @@ async fn discard_confirmed_routes_through_backend() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn discard_confirmed_err_emits_error_notice() {
+async fn discard_confirmed_err_emits_error_notice() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     // @step And the backend's discard_session_worktree returns Err("worktree not found")
     mock.set_discard_session_worktree_error("worktree not found".to_string());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -688,13 +708,13 @@ async fn discard_confirmed_err_emits_error_notice() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When Action::DiscardConfirmed { session_id: "s-1" } is dispatched
     app.dispatch(Action::DiscardConfirmed {
         session_id: sid("s-1"),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /merge-worktree discard: worktree not found" is observed on the action bus
     wait_until(
@@ -704,7 +724,8 @@ async fn discard_confirmed_err_emits_error_notice() {
         },
         "discard error notice",
     )
-    .await;
+    .await?;
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -712,12 +733,12 @@ async fn discard_confirmed_err_emits_error_notice() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn cancel_merge_dialog_pops_without_backend_call() {
+async fn cancel_merge_dialog_pops_without_backend_call() -> TestResult {
     // @step Given an App with open session s-1 and a MergeConfirmDialog on the compositor
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.dispatch(Action::OpenMergeConfirmDialog {
         session_id: sid("s-1"),
         summary: SessionChangesSummary {
@@ -728,14 +749,14 @@ async fn cancel_merge_dialog_pops_without_backend_call() {
             files_ignored: 0,
         },
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     let initial_merge = mock.merge_session_worktree_calls();
     let initial_discard = mock.discard_session_worktree_calls();
 
     // @step When Action::CancelMergeDialog is dispatched
     app.dispatch(Action::CancelMergeDialog);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the compositor no longer contains a layer with id "merge-confirm-dialog"
     assert!(!app.compositor().contains("merge-confirm-dialog"));
@@ -749,4 +770,5 @@ async fn cancel_merge_dialog_pops_without_backend_call() {
     assert!(!text.contains("[merge]"));
     assert!(!text.contains("[discard]"));
     assert!(!text.contains("[error]"));
+    Ok(())
 }

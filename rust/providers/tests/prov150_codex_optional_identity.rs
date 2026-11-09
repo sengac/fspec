@@ -28,7 +28,7 @@ async fn optional_reasoning_identities_retain_compatibility() -> TestResult {
         event(json!({"type":"response.output_item.done", "output_index":1, "item":second})),
         event(
             json!({"type":"response.completed", "response":{"id":"response", "status":"completed",
-            "output":[first, second]}}),
+            "output":[first, second], "usage":{"input_tokens":12,"output_tokens":8,"total_tokens":20}}}),
         ),
     ]
     .concat();

@@ -1,3 +1,9 @@
+//! Profile environment: an openai profile's settings copied into the
+//! process environment the OpenAI client reads (PROV-121). BUG-612: every
+//! write goes through [`ledger`] so deleting the profile removes it.
+
+pub(crate) mod ledger;
+
 pub fn apply_profile_env_vars(
     provider: &str,
     profile_name: &str,
@@ -6,7 +12,8 @@ pub fn apply_profile_env_vars(
     if provider != "openai" {
         return Ok(());
     }
-    let Some(profile) = crate::profile_sections::load_local_server_profiles()
+    // PROV-175: an invalid profile config is the error.
+    let Some(profile) = crate::profile_sections::load_local_server_profiles()?
         .into_iter()
         .find(|profile| profile.name == profile_name)
     else {
@@ -18,19 +25,18 @@ pub fn apply_profile_env_vars(
         );
         return Ok(());
     };
+    let owner = ledger::owner(provider, profile_name);
     if !profile.base_url.is_empty() {
-        std::env::set_var("OPENAI_BASE_URL", &profile.base_url);
+        ledger::write(&owner, "OPENAI_BASE_URL", Some(&profile.base_url));
     }
     if let Some(api_key) = profile.api_key.as_deref().filter(|key| !key.is_empty()) {
-        std::env::set_var("OPENAI_API_KEY", api_key);
+        ledger::write(&owner, "OPENAI_API_KEY", Some(api_key));
     }
-    if let Some(context_window) = profile.context_window {
-        std::env::set_var("OPENAI_CONTEXT_WINDOW", context_window.to_string());
-    }
-    match profile.streaming {
-        Some(enabled) => std::env::set_var("OPENAI_STREAMING", enabled.to_string()),
-        None => std::env::remove_var("OPENAI_STREAMING"),
-    }
+    // BUG-341: a profile without a window must not keep the previous one's.
+    let context_window = profile.context_window.map(|window| window.to_string());
+    ledger::write(&owner, "OPENAI_CONTEXT_WINDOW", context_window.as_deref());
+    let streaming = profile.streaming.map(|enabled| enabled.to_string());
+    ledger::write(&owner, "OPENAI_STREAMING", streaming.as_deref());
     tracing::info!(
         provider,
         profile_name,

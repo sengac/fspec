@@ -16,10 +16,10 @@
 //!     written to stderr prefixed with `Error:` (parity with the TS
 //!     chalk-red error path at `src/commands/add-architecture-note.ts:102-107`).
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_architecture_note;
 use serde_json::json;
 
@@ -37,7 +37,7 @@ pub struct CliArgs {
 /// subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by
     // fspec_core::commands::add_architecture_note::run.

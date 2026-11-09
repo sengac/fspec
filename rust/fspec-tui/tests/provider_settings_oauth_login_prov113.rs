@@ -10,15 +10,15 @@
 //!   2. DISPATCH — `App::dispatch` against the shared `MockBackend`
 //!      (call counters + scripted Ok/Err), fully offline.
 //!   3. TRANSPORT — embedded `oauth_headless_start("anthropic")` yields a real
-//!      claude.ai authorize URL + a >=43-char PKCE verifier; the
-//!      websocket-inherited trait DEFAULT is unsupported.
+//!      claude.ai authorize URL + a >=43-char PKCE verifier; Anthropic and
+//!      Codex browser rows show on every backend and an unknown OAuth
+//!      provider gets no login rows (BUG-600).
 //!
 //! No real OAuth network and no real `~/.fspec` mutation.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
@@ -31,7 +31,6 @@ use codelet_rpc_types::{ProviderCredentialInfo, SessionId};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -103,21 +102,23 @@ fn oauth_provider(id: &str, name: &str) -> ProviderDisplayInfo {
     }
 }
 
-/// Build a view with a single expanded OAuth provider whose browser login is
-/// enabled (embedded transport), cursor placed on the login row matching
-/// `method`.
-fn view_on_login_row(id: &str, name: &str, method: OAuthMethod) -> ProviderSettingsView {
+/// Build a view with a single expanded OAuth provider, cursor placed on the
+/// login row matching `method`.
+fn view_on_login_row(
+    id: &str,
+    name: &str,
+    method: OAuthMethod,
+) -> Result<ProviderSettingsView, codelet_test_helpers::TestError> {
     let mut view = ProviderSettingsView::new();
-    view.set_browser_login_enabled(true);
     view.set_provider_display_infos(vec![oauth_provider(id, name)]);
     view.toggle_expansion(id);
     let idx = view
         .nav_items
         .iter()
         .position(|i| matches!(&i.kind, NavItemKind::OAuthLogin { method: m, .. } if *m == method))
-        .expect("login row present in fixture");
+        .or_fail("login row present in fixture")?;
     view.selected_index = idx;
-    view
+    Ok(view)
 }
 
 /// Concatenate the visible symbols of row `y` into a String.
@@ -151,30 +152,6 @@ fn render_screen(view: &mut ProviderSettingsView) -> Buffer {
     buf
 }
 
-fn has_browser_login_row(view: &ProviderSettingsView) -> bool {
-    view.nav_items.iter().any(|i| {
-        matches!(
-            &i.kind,
-            NavItemKind::OAuthLogin {
-                method: OAuthMethod::Browser,
-                ..
-            }
-        )
-    })
-}
-
-fn has_headless_login_row(view: &ProviderSettingsView) -> bool {
-    view.nav_items.iter().any(|i| {
-        matches!(
-            &i.kind,
-            NavItemKind::OAuthLogin {
-                method: OAuthMethod::Headless,
-                ..
-            }
-        )
-    })
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Anthropic browser login shows the waiting screen and connects on
 // success (view/key half — the start, waiting screen, success folding via the
@@ -182,11 +159,11 @@ fn has_headless_login_row(view: &ProviderSettingsView) -> bool {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn anthropic_browser_login_shows_waiting_then_success_then_list() {
+fn anthropic_browser_login_shows_waiting_then_success_then_list() -> TestResult {
     // @step Given the embedded transport is in use
     // @step And the "anthropic" provider is expanded
     // @step And the cursor is on the "Login with Claude (browser)" row
-    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Browser);
+    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Browser)?;
 
     // @step When the user presses Enter
     let event = view.handle_key(key(KeyCode::Enter));
@@ -196,7 +173,7 @@ fn anthropic_browser_login_shows_waiting_then_success_then_list() {
         ProviderSettingsMode::OAuthBrowserWaiting { provider_id } => {
             assert_eq!(provider_id, "anthropic");
         }
-        other => panic!("expected OAuthBrowserWaiting, got {other:?}"),
+        other => return Err(format!("expected OAuthBrowserWaiting, got {other:?}").into()),
     }
     // Enter on a login row emits the start action carrying the generation.
     match event {
@@ -207,12 +184,12 @@ fn anthropic_browser_login_shows_waiting_then_success_then_list() {
                 ..
             } = *action
             else {
-                panic!("expected Emit(OAuthLoginStart), got {action:?}");
+                return Err(format!("expected Emit(OAuthLoginStart), got {action:?}").into());
             };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(method, OAuthMethod::Browser);
         }
-        other => panic!("expected Emit(OAuthLoginStart), got {other:?}"),
+        other => return Err(format!("expected Emit(OAuthLoginStart), got {other:?}").into()),
     }
 
     // @step And the screen shows "Claude OAuth Login"
@@ -251,6 +228,7 @@ fn anthropic_browser_login_shows_waiting_then_success_then_list() {
     // re-fetch — surfaces the oauth-status/Logout row; that reload is
     // exercised end-to-end with a real assertion in the dispatch test
     // `successful_anthropic_login_reload_surfaces_logout_row` below.)
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -258,7 +236,7 @@ fn anthropic_browser_login_shows_waiting_then_success_then_list() {
 // to oauth-success AND its credentials reload surfaces the oauth-status/Logout
 // row under the expanded provider. This drives the login SUCCESS through
 // `App::dispatch` so `handle_oauth_login_succeeded` fires the real
-// `list_provider_credentials` reload → `ProviderCredentialsLoaded` → the nav
+// `list_provider_credentials` reload → the numbered `ProviderSettingsRefreshed` → the nav
 // re-projection, then asserts the genuine reload outcome (NOT a set-then-assert
 // shortcut).
 // ─────────────────────────────────────────────────────────────────────────
@@ -279,39 +257,81 @@ fn connected_oauth_pinfo(id: &str) -> ProviderCredentialInfo {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn successful_anthropic_login_reload_surfaces_logout_row() {
+async fn successful_anthropic_login_reload_surfaces_logout_row() -> TestResult {
     // @step Given the embedded transport is in use
     // @step And the "anthropic" provider is expanded
     // (the post-login credential reload reports anthropic as OAuth-connected)
     let mock = Arc::new(MockBackend::new());
     mock.seed_provider_credentials(vec![connected_oauth_pinfo("anthropic")]);
     let mut app = fresh_app(mock.clone());
+    let launcher = common::clipboard::Launcher::attach(&mut app);
 
     // Load the initial credential list and expand anthropic so its child rows
     // (including the oauth-status/Logout row) participate in the nav tree.
     app.dispatch(Action::OpenProviderSettingsView);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     app.navigator_mut()
         .provider_settings
         .toggle_expansion("anthropic");
     let calls_before = mock.list_provider_credentials_calls();
 
     // @step When the user presses Enter
-    // (driven via the start action; the mock browser login resolves Ok)
+    // (driven via the start action; BUG-600: the browser login runs on the
+    // client, which serves the code form and opens it in the browser)
     let gen = app.navigator().provider_settings.oauth_generation();
     app.dispatch(Action::OAuthLoginStart {
         provider_id: "anthropic".to_string(),
         method: OAuthMethod::Browser,
         generation: gen,
     });
+    let ready = next_action(&mut app, "the browser form is ready").await?;
+    assert!(
+        matches!(ready, Action::OAuthBrowserReady { .. }),
+        "{ready:?}"
+    );
+    app.dispatch(ready);
+    app.next_pending_task()
+        .or_fail("browser launch task")?
+        .await
+        .completed_or_cancelled()?;
+    let form_url = launcher
+        .opened()?
+        .first()
+        .cloned()
+        .or_fail("the code form opened in the browser")?;
 
     // @step When the backend browser login resolves with tokens
-    drain_pending(&mut app).await;
-    wait_until(
-        || mock.oauth_browser_login_calls() >= 1,
-        "anthropic browser login called",
-    )
-    .await;
+    // (the user pastes code#state into the local form; the client hands it
+    // to the backend's headless completion, which the mock accepts)
+    let client = reqwest::Client::new();
+    let form = client.get(&form_url).send().await?.text().await?;
+    let state = form
+        .split("state=")
+        .nth(1)
+        .and_then(|rest| rest.split(['&', '"']).next())
+        .or_fail("the form carries the authorize URL's state")?
+        .to_owned();
+    let submitted = client
+        .post(format!("{form_url}submit"))
+        .form(&[("code", format!("pasted-code#{state}"))])
+        .send()
+        .await?;
+    assert_eq!(submitted.status(), reqwest::StatusCode::OK);
+    let finished = next_action(&mut app, "the browser login finishes").await?;
+    app.next_pending_task()
+        .or_fail("browser login task")?
+        .await
+        .completed_or_cancelled()?;
+    app.dispatch(finished);
+    drain_pending(&mut app).await?;
+    assert_eq!(mock.oauth_headless_complete_calls(), 1);
+    let (provider, code, _verifier) = mock
+        .oauth_headless_complete_args()
+        .first()
+        .cloned()
+        .or_fail("headless completion arguments")?;
+    assert_eq!(provider, "anthropic");
+    assert_eq!(code, format!("pasted-code#{state}"));
 
     // @step Then the mode becomes oauth-success for provider "anthropic"
     assert!(
@@ -356,6 +376,7 @@ async fn successful_anthropic_login_reload_surfaces_logout_row() {
         Some("Logout from OAuth [Anthropic]"),
         "the post-login reload must surface the anthropic oauth-status/Logout row"
     );
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -365,10 +386,10 @@ async fn successful_anthropic_login_reload_surfaces_logout_row() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn anthropic_headless_code_entry_submits_code_and_connects() {
+fn anthropic_headless_code_entry_submits_code_and_connects() -> TestResult {
     // @step Given the "anthropic" provider is expanded
     // @step And the cursor is on the "Login with Claude (headless)" row
-    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Headless);
+    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Headless)?;
 
     // @step When the user presses Enter
     let event = view.handle_key(key(KeyCode::Enter));
@@ -390,6 +411,7 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
         authorize_url: "https://claude.ai/oauth/authorize?x=1".to_string(),
         pkce_verifier: "verifier-123".to_string(),
         code_input: String::new(),
+        code_focused: false,
     };
 
     // @step Then the mode becomes oauth-headless-code-entry for provider "anthropic"
@@ -415,11 +437,11 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
     match event {
         ProviderSettingsEvent::Emit(action) => {
             let Action::OAuthOpenUrl { url } = *action else {
-                panic!("expected Emit(OAuthOpenUrl), got {action:?}");
+                return Err(format!("expected Emit(OAuthOpenUrl), got {action:?}").into());
             };
             assert_eq!(url, "https://claude.ai/oauth/authorize?x=1");
         }
-        other => panic!("expected Emit(OAuthOpenUrl), got {other:?}"),
+        other => return Err(format!("expected Emit(OAuthOpenUrl), got {other:?}").into()),
     }
 
     // @step And the code input remains empty
@@ -427,7 +449,7 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
         ProviderSettingsMode::OAuthHeadlessCodeEntry { code_input, .. } => {
             assert!(code_input.is_empty(), "input must stay empty after o");
         }
-        other => panic!("expected code-entry, got {other:?}"),
+        other => return Err(format!("expected code-entry, got {other:?}").into()),
     }
 
     // @step When the user types "abc#xyz"
@@ -446,13 +468,17 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
                 ..
             } = *action
             else {
-                panic!("expected Emit(OAuthLoginHeadlessSubmit), got {action:?}");
+                return Err(
+                    format!("expected Emit(OAuthLoginHeadlessSubmit), got {action:?}").into(),
+                );
             };
             assert_eq!(provider_id, "anthropic");
             assert_eq!(code, "abc#xyz");
             assert_eq!(pkce_verifier, "verifier-123");
         }
-        other => panic!("expected Emit(OAuthLoginHeadlessSubmit), got {other:?}"),
+        other => {
+            return Err(format!("expected Emit(OAuthLoginHeadlessSubmit), got {other:?}").into())
+        }
     }
 
     // @step And on success the mode becomes oauth-success for provider "anthropic"
@@ -467,6 +493,7 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
     // @step And the screen shows "✓ Connected to Claude"
     let buf = render_screen(&mut view);
     assert!(screen_contains(&buf, "✓ Connected to Claude"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -475,14 +502,15 @@ fn anthropic_headless_code_entry_submits_code_and_connects() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn headless_code_entry_c_copies_only_while_empty() {
+fn headless_code_entry_c_copies_only_while_empty() -> TestResult {
     // @step Given the "anthropic" provider is in oauth-headless-code-entry with an empty code input
-    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Headless);
+    let mut view = view_on_login_row("anthropic", "Claude", OAuthMethod::Headless)?;
     view.mode = ProviderSettingsMode::OAuthHeadlessCodeEntry {
         provider_id: "anthropic".to_string(),
         authorize_url: "https://claude.ai/auth?z=9".to_string(),
         pkce_verifier: "verifier-xyz".to_string(),
         code_input: String::new(),
+        code_focused: false,
     };
 
     // @step When the user presses "c"
@@ -491,12 +519,12 @@ fn headless_code_entry_c_copies_only_while_empty() {
     // @step Then the authorize URL is copied to the clipboard
     match event {
         ProviderSettingsEvent::Emit(action) => {
-            let Action::OAuthCopyUrl { url } = *action else {
-                panic!("expected Emit(OAuthCopyUrl), got {action:?}");
+            let Action::CopyToClipboard(url) = *action else {
+                return Err(format!("expected Emit(CopyToClipboard), got {action:?}").into());
             };
             assert_eq!(url, "https://claude.ai/auth?z=9");
         }
-        other => panic!("expected Emit(OAuthCopyUrl), got {other:?}"),
+        other => return Err(format!("expected Emit(CopyToClipboard), got {other:?}").into()),
     }
 
     // @step And the code input remains empty
@@ -504,7 +532,7 @@ fn headless_code_entry_c_copies_only_while_empty() {
         ProviderSettingsMode::OAuthHeadlessCodeEntry { code_input, .. } => {
             assert!(code_input.is_empty());
         }
-        other => panic!("expected code-entry, got {other:?}"),
+        other => return Err(format!("expected code-entry, got {other:?}").into()),
     }
 
     // @step When the user types "x"
@@ -516,7 +544,7 @@ fn headless_code_entry_c_copies_only_while_empty() {
         ProviderSettingsMode::OAuthHeadlessCodeEntry { code_input, .. } => {
             assert_eq!(code_input, "x");
         }
-        other => panic!("expected code-entry, got {other:?}"),
+        other => return Err(format!("expected code-entry, got {other:?}").into()),
     }
 
     // @step When the user presses "c"
@@ -527,7 +555,7 @@ fn headless_code_entry_c_copies_only_while_empty() {
         ProviderSettingsMode::OAuthHeadlessCodeEntry { code_input, .. } => {
             assert_eq!(code_input, "xc");
         }
-        other => panic!("expected code-entry, got {other:?}"),
+        other => return Err(format!("expected code-entry, got {other:?}").into()),
     }
 
     // @step And the clipboard is not copied again
@@ -535,6 +563,7 @@ fn headless_code_entry_c_copies_only_while_empty() {
         matches!(event, ProviderSettingsEvent::Consumed),
         "the second `c` is a literal char, NOT a copy — no Action emitted"
     );
+    Ok(())
 }
 
 // ════════════════════════ SECTION 2: DISPATCH ════════════════════════
@@ -543,29 +572,50 @@ fn sid(s: &str) -> SessionId {
     SessionId::new(s)
 }
 
-async fn drain_pending(app: &mut App) {
+async fn drain_pending(app: &mut App) -> Result<(), codelet_test_helpers::TestError> {
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
         while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
+            handle.await.completed_or_cancelled()?;
         }
     }
+    Ok(())
 }
 
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
+async fn wait_until<F: FnMut() -> bool>(
+    mut predicate: F,
+    label: &str,
+) -> Result<(), codelet_test_helpers::TestError> {
+    codelet_test_helpers::deadlock_guard(label, async {
         loop {
             if predicate() {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            codelet_test_helpers::yield_now().await;
         }
     })
     .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
+    .or_fail(&format!("timed out waiting for: {label}"))?;
+    Ok(())
+}
+
+/// The next action the app's tasks send, under the deadlock guard.
+async fn next_action(
+    app: &mut App,
+    label: &str,
+) -> Result<Action, codelet_test_helpers::TestError> {
+    Ok(codelet_test_helpers::deadlock_guard(label, async {
+        loop {
+            if let Some(action) = app.try_recv_action() {
+                return action;
+            }
+            codelet_test_helpers::yield_now().await;
+        }
+    })
+    .await?)
 }
 
 fn fresh_app(mock: Arc<MockBackend>) -> App {
@@ -584,7 +634,7 @@ fn provider_settings_mode(app: &App) -> ProviderSettingsMode {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn codex_headless_enters_device_waiting_and_connects() {
+async fn codex_headless_enters_device_waiting_and_connects() -> TestResult {
     // @step Given the "codex" provider is expanded
     // @step And the cursor is on the "Login with ChatGPT (headless)" row
     let mock = Arc::new(MockBackend::new());
@@ -602,14 +652,14 @@ async fn codex_headless_enters_device_waiting_and_connects() {
         method: OAuthMethod::Headless,
         generation: app.navigator().provider_settings.oauth_generation(),
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the backend codex device-start is called
     wait_until(
         || mock.oauth_device_start_calls() >= 1,
         "oauth_device_start called",
     )
-    .await;
+    .await?;
     assert_eq!(mock.oauth_device_start_calls(), 1);
 
     // @step And the mode becomes oauth-device-waiting for provider "codex"
@@ -637,7 +687,7 @@ async fn codex_headless_enters_device_waiting_and_connects() {
             // @step And the screen shows the verification URL
             assert_eq!(verification_url, "https://chatgpt.com/device");
         }
-        other => panic!("expected OAuthDeviceWaiting, got {other:?}"),
+        other => return Err(format!("expected OAuthDeviceWaiting, got {other:?}").into()),
     }
     // @step And the screen shows "Codex Device Login"
     // @step And the screen shows "Press Esc to cancel"
@@ -649,7 +699,7 @@ async fn codex_headless_enters_device_waiting_and_connects() {
     assert!(screen_contains(&buf, "Press Esc to cancel"));
 
     // @step When the backend device-poll resolves with tokens
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             matches!(
@@ -659,20 +709,21 @@ async fn codex_headless_enters_device_waiting_and_connects() {
         },
         "device poll resolves to success",
     )
-    .await;
+    .await?;
 
     // @step Then the mode becomes oauth-success for provider "codex"
     match provider_settings_mode(&app) {
         ProviderSettingsMode::OAuthSuccess { provider_id } => {
             assert_eq!(provider_id, "codex");
         }
-        other => panic!("expected OAuthSuccess, got {other:?}"),
+        other => return Err(format!("expected OAuthSuccess, got {other:?}").into()),
     }
 
     // @step And the screen shows "✓ Connected to ChatGPT"
     let view = &mut app.navigator_mut().provider_settings;
     let buf = render_screen(view);
     assert!(screen_contains(&buf, "✓ Connected to ChatGPT"));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -683,15 +734,17 @@ async fn codex_headless_enters_device_waiting_and_connects() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
+async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() -> TestResult {
     // @step Given the embedded transport is in use
     // @step And the "codex" provider is expanded
     // @step And the cursor is on the "Login with ChatGPT (browser)" row
     let mock = Arc::new(MockBackend::new());
-    mock.set_oauth_browser_login_error("the browser login was refused".to_string());
+    // BUG-600: the client browser flow starts with the backend's headless
+    // start; injecting its failure fails the browser login.
+    mock.set_oauth_headless_start_error("the browser login was refused".to_string());
     let mut app = fresh_app(mock.clone());
     app.dispatch(Action::SessionCreated(sid("s-err")));
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step When the user presses Enter
     let gen = app.navigator().provider_settings.oauth_generation();
@@ -702,7 +755,7 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
     });
 
     // @step And the backend browser login resolves with an error
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     wait_until(
         || {
             matches!(
@@ -712,8 +765,8 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
         },
         "browser login fails to oauth-error",
     )
-    .await;
-    assert!(mock.oauth_browser_login_calls() >= 1);
+    .await?;
+    assert!(mock.oauth_headless_start_calls() >= 1);
 
     // @step Then the mode becomes oauth-error for provider "codex"
     match provider_settings_mode(&app) {
@@ -726,11 +779,11 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
             );
             // No RPC/method name leaks into the error text.
             assert!(
-                !error.contains("oauth_browser_login") && !error.contains("browser_oauth_login"),
+                !error.contains("oauth_headless_start"),
                 "error must not leak the RPC/method name, got {error:?}"
             );
         }
-        other => panic!("expected OAuthError, got {other:?}"),
+        other => return Err(format!("expected OAuthError, got {other:?}").into()),
     }
 
     // @step And the screen shows "OAuth Login error"
@@ -744,7 +797,7 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
     ));
 
     // @step When the user presses Enter
-    let calls_before = mock.oauth_browser_login_calls();
+    let calls_before = mock.oauth_headless_start_calls();
     let event = app
         .navigator_mut()
         .provider_settings
@@ -765,18 +818,18 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
             }
             (**action).clone()
         }
-        other => panic!("expected retry Emit(OAuthLoginStart), got {other:?}"),
+        other => return Err(format!("expected retry Emit(OAuthLoginStart), got {other:?}").into()),
     };
     app.dispatch(retry_action);
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then codex browser login is started again
     wait_until(
-        || mock.oauth_browser_login_calls() > calls_before,
+        || mock.oauth_headless_start_calls() > calls_before,
         "codex browser login restarted",
     )
-    .await;
-    assert!(mock.oauth_browser_login_calls() > calls_before);
+    .await?;
+    assert!(mock.oauth_headless_start_calls() > calls_before);
 
     // @step When the user presses Esc
     // (drive the error screen again, then Esc returns to list)
@@ -793,6 +846,7 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
         provider_settings_mode(&app),
         ProviderSettingsMode::List
     ));
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -802,7 +856,7 @@ async fn failed_codex_browser_login_shows_error_then_retries_then_cancels() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn cancelling_device_waiting_drops_late_poll_result() {
+async fn cancelling_device_waiting_drops_late_poll_result() -> TestResult {
     // @step Given the "codex" provider is in oauth-device-waiting
     let mock = Arc::new(MockBackend::new());
     let mut app = fresh_app(mock.clone());
@@ -835,7 +889,7 @@ async fn cancelling_device_waiting_drops_late_poll_result() {
         provider_id: "codex".to_string(),
         generation: stale_gen,
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
 
     // @step Then the result is dropped
     // @step And the mode is still list
@@ -850,88 +904,123 @@ async fn cancelling_device_waiting_drops_late_poll_result() {
         error: "too late".to_string(),
         generation: stale_gen,
     });
-    drain_pending(&mut app).await;
+    drain_pending(&mut app).await?;
     assert!(matches!(
         provider_settings_mode(&app),
         ProviderSettingsMode::List
     ));
+    Ok(())
 }
 
 // ════════════════════════ SECTION 3: TRANSPORT / GATING ════════════════════════
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Browser login rows are gated to the embedded transport
-// (view/key — when browser login is disabled, the browser rows are filtered
-// out of the nav tree while headless rows remain selectable).
+// Scenario: Anthropic and Codex browser login rows show on every backend
+// (BUG-600: browser sign-in runs on the client on every transport, so the
+// App shows the rows on a backend that answers none of the browser RPCs).
 // ─────────────────────────────────────────────────────────────────────────
 
-#[test]
-fn browser_login_rows_gated_to_embedded_transport() {
-    // @step Given the websocket transport is in use
-    // (browser login disabled — App sets this from supports_browser_oauth())
-    let mut view = ProviderSettingsView::new();
-    view.set_browser_login_enabled(false);
-    view.set_provider_display_infos(vec![oauth_provider("anthropic", "Claude")]);
+fn provider_info(id: &str) -> ProviderCredentialInfo {
+    ProviderCredentialInfo {
+        provider_id: id.to_string(),
+        display_name: id.to_string(),
+        configured: false,
+        credential_type: "oauth".to_string(),
+        model_count: 0,
+        masked_key: None,
+        source: None,
+    }
+}
 
-    // @step And the "anthropic" provider is expanded
-    view.toggle_expansion("anthropic");
+async fn settings_with(providers: &[&str]) -> Result<App, codelet_test_helpers::TestError> {
+    let mock = Arc::new(MockBackend::new());
+    mock.seed_provider_credentials(providers.iter().map(|id| provider_info(id)).collect());
+    let mut app = fresh_app(mock);
+    app.dispatch(Action::OpenProviderSettingsView);
+    drain_pending(&mut app).await?;
+    for id in providers {
+        app.navigator_mut().provider_settings.toggle_expansion(id);
+    }
+    Ok(app)
+}
 
-    // @step Then the "Login with Claude (browser)" row is disabled or hidden
-    assert!(
-        !has_browser_login_row(&view),
-        "browser login row must be gated out on the websocket transport"
-    );
+fn login_rows(app: &App, provider: &str) -> Vec<(OAuthMethod, String)> {
+    app.navigator()
+        .provider_settings
+        .nav_items
+        .iter()
+        .filter(|item| item.provider_id == provider)
+        .filter_map(|item| match &item.kind {
+            NavItemKind::OAuthLogin { method, label, .. } => Some((*method, label.clone())),
+            _ => None,
+        })
+        .collect()
+}
 
-    // @step And the "Login with Claude (headless)" row is selectable
-    assert!(
-        has_headless_login_row(&view),
-        "the headless login row must remain available"
-    );
+#[tokio::test]
+async fn anthropic_and_codex_browser_rows_show_on_every_backend() -> TestResult {
+    // @step Given a backend with no browser login capability of its own
+    // (MockBackend implements none of the daemon-hosted browser login)
+    // @step When the "anthropic" and "codex" providers are expanded
+    let app = settings_with(&["anthropic", "codex"]).await?;
 
-    // @step Given the "codex" provider is expanded
-    let mut view = ProviderSettingsView::new();
-    view.set_browser_login_enabled(false);
-    view.set_provider_display_infos(vec![oauth_provider("codex", "ChatGPT")]);
-    view.toggle_expansion("codex");
-
-    // @step Then the "Login with ChatGPT (browser)" row is disabled or hidden
-    assert!(
-        !has_browser_login_row(&view),
-        "codex browser login row must be gated out on the websocket transport"
-    );
-
-    // @step And the "Login with ChatGPT (headless)" row is selectable
-    assert!(
-        has_headless_login_row(&view),
-        "the codex headless login row must remain available"
-    );
+    // @step Then the "Login with Claude (browser)" and "Login with ChatGPT (browser)" rows are selectable
+    // @step And their headless and device rows are selectable
+    for provider in ["anthropic", "codex"] {
+        let methods: Vec<OAuthMethod> = login_rows(&app, provider)
+            .into_iter()
+            .map(|(method, _)| method)
+            .collect();
+        assert_eq!(
+            methods,
+            vec![OAuthMethod::Browser, OAuthMethod::Headless],
+            "{provider} offers browser and headless/device rows"
+        );
+    }
+    Ok(())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Transport surface: the embedded transport advertises browser OAuth support
-// and forwards `oauth_headless_start("anthropic")` to the providers-direct
-// wiring (a real claude.ai authorize URL + a >=43-char PKCE verifier), while
-// the websocket-inherited trait DEFAULT is unsupported.
+// Scenario: An unknown OAuth provider offers no login rows (BUG-600: the
+// generic "Sign in with browser" row could only fail).
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn embedded_headless_start_yields_real_url_and_verifier_defaults_unsupported() {
+async fn unknown_oauth_provider_offers_no_login_rows() -> TestResult {
+    // @step Given an OAuth provider other than anthropic, codex and github-copilot is configured
+    // @step When its provider row is expanded
+    let mut app = settings_with(&["some-oauth-provider"]).await?;
+    assert!(app
+        .navigator()
+        .provider_settings
+        .nav_items
+        .iter()
+        .any(|item| item.provider_id == "some-oauth-provider"));
+
+    // @step Then it shows no "Sign in with browser" row or any other login row
+    assert_eq!(login_rows(&app, "some-oauth-provider"), Vec::new());
+    let screen = render_screen(&mut app.navigator_mut().provider_settings);
+    assert!(!screen_contains(&screen, "Sign in with browser"));
+    Ok(())
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Transport surface: the embedded transport forwards `oauth_headless_start("anthropic")` to the providers-direct
+// wiring (a real claude.ai authorize URL + a >=43-char PKCE verifier).
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn embedded_headless_start_yields_real_url_and_verifier() -> TestResult {
     // @step Given the embedded transport is in use
-    let (_dir, service) = common::temp_service();
+    let (_dir, service) = common::temp_service()?;
     let handle = tokio::runtime::Handle::current();
     let embedded = EmbeddedFspecBackend::new(handle, Arc::clone(&service));
 
-    // @step Then the embedded transport supports browser OAuth
-    assert!(
-        embedded.supports_browser_oauth(),
-        "embedded transport must advertise browser OAuth support"
-    );
-
-    // @step And oauth_headless_start("anthropic") yields a real authorize URL + PKCE verifier
+    // @step Then oauth_headless_start("anthropic") yields a real authorize URL + PKCE verifier
     let start = embedded
         .oauth_headless_start("anthropic".to_string())
         .await
-        .expect("embedded oauth_headless_start");
+        .or_fail("embedded oauth_headless_start")?;
     assert!(
         start.authorize_url.contains("claude.ai"),
         "authorize URL must target claude.ai, got {:?}",
@@ -943,12 +1032,5 @@ async fn embedded_headless_start_yields_real_url_and_verifier_defaults_unsupport
         start.pkce_verifier.len()
     );
 
-    // @step When the websocket transport is in use
-    // @step Then it does not support browser OAuth and the login methods are
-    // unsupported defaults
-    // (the websocket transport inherits the trait DEFAULT supports_browser_oauth
-    // == false and Err stubs — proven structurally by the gating view test
-    // `browser_login_rows_gated_to_embedded_transport` and by PROV-112's
-    // transport-default surface test; here we pin only the embedded positive
-    // path so this binary owns a single FSPEC_HOME writer)
+    Ok(())
 }

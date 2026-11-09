@@ -34,6 +34,7 @@ async fn scenario_pending_publication_restore_cannot_claim_completed_reconciliat
             &mut manifest,
             &TokenUsage {
                 current_context_tokens: 333,
+                current_context_output_tokens: 0,
                 cumulative_billed_input: 5030,
                 cumulative_billed_output: 2900,
                 cache_read_tokens: 43,
@@ -67,7 +68,7 @@ async fn scenario_pending_publication_restore_cannot_claim_completed_reconciliat
             StreamChunk::CommittedCompaction { .. } | StreamChunk::CompactionComplete { .. }
         )));
     // @step And the pending generation remains authoritative without losing saved counters
-    assert_eq!(background.get_tokens(), (333, 2900, Some(1100)));
+    assert_eq!(background.get_tokens(), (333, 1800, Some(1100)));
     let mut inner = background.inner.lock().await;
     assert!(inner.ensure_compaction_inference_ready().is_err());
     assert_eq!(load_session(manifest.id)?.compaction_commit, expected);

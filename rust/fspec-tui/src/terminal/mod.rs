@@ -239,9 +239,9 @@ pub fn restore_terminal_modes() -> Result<()> {
 fn register_panic_hook() {
     PANIC_HOOK_REGISTERED.call_once(|| {
         let previous = std::panic::take_hook();
-        std::panic::set_hook(Box::new(move |info| {
+        // BUG-610: the panic is logged first, then the terminal restored.
+        std::panic::set_hook(codelet_common::panic_log::wrap(previous, || {
             let _ = restore_terminal_modes();
-            previous(info);
         }));
     });
 }

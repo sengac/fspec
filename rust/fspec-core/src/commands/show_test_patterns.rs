@@ -62,7 +62,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // Read work-units.json directly — TS queryWorkUnits throws if missing.
-    let wu_path = project_root.join("spec").join("work-units.json");
+    let wu_path = crate::io::spec_paths::work_units(project_root)?;
     let raw = std::fs::read_to_string(&wu_path).map_err(|source| FspecCoreError::Io {
         command: "show-test-patterns",
         source,
@@ -140,7 +140,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// `{filePath, testLines}` field name conventions. Returns an empty
 /// vec when the directory is missing OR when no coverage files exist.
 fn read_test_refs(project_root: &Path) -> Vec<String> {
-    let features_dir = project_root.join("spec").join("features");
+    let features_dir = crate::io::spec_paths::features_dir_of(project_root);
     let Ok(entries) = std::fs::read_dir(&features_dir) else {
         return Vec::new();
     };

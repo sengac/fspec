@@ -5,13 +5,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "111-140",
+          "lines": "113-139",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_manager.rs",
               "lines": [
                 58
-              ]
+              ],
+              "firstLine": "use codelet_tools::pre_tool_hook::unregister_pre_tool_hook;",
+              "lastLine": "use codelet_tools::pre_tool_hook::unregister_pre_tool_hook;"
             }
           ]
         }
@@ -22,20 +24,43 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "146-189",
+          "lines": "145-190",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
               "lines": [
-                600,
-                601,
-                602,
-                603,
-                604,
-                846,
-                847,
-                848
-              ]
+                130,
+                131,
+                132,
+                133,
+                169,
+                170,
+                171,
+                172
+              ],
+              "firstLine": "let result = create_background_session_inner(params, provider_manager).await?;",
+              "lastLine": ".spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);"
+            },
+            {
+              "file": "rust/sessions/src/session_creation_helper.rs",
+              "lines": [
+                282
+              ],
+              "firstLine": "let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);",
+              "lastLine": "let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);"
+            },
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_5.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                144,
+                145
+              ],
+              "firstLine": "let result = create_background_session_inner(params, provider_manager).await?;",
+              "lastLine": ".spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);"
             }
           ]
         }
@@ -46,13 +71,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "195-220",
+          "lines": "195-221",
           "implMappings": [
             {
-              "file": "rust/sessions/src/session_manager.rs",
+              "file": "rust/sessions/src/session_manager/manager_impl_4.rs",
               "lines": [
-                935
-              ]
+                28
+              ],
+              "firstLine": "let sessions = self.sessions.read().expect(\"sessions lock poisoned\");",
+              "lastLine": "let sessions = self.sessions.read().expect(\"sessions lock poisoned\");"
             }
           ]
         }
@@ -63,7 +90,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "226-261",
+          "lines": "227-263",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_manager.rs",
@@ -100,7 +127,9 @@
                 108,
                 109,
                 110
-              ]
+              ],
+              "firstLine": "/// Spawn the agent loop for a newly-created session. The default",
+              "lastLine": ""
             }
           ]
         }
@@ -110,17 +139,9 @@
       "name": "codelet-napi agent_loop consumes mcp_injection_rx inside its select! loop",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "267-291",
-          "implMappings": [
-            {
-              "file": "rust/napi/src/agent_loop.rs",
-              "lines": [
-                307,
-                424
-              ]
-            }
-          ]
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "5-28",
+          "implMappings": []
         }
       ]
     },
@@ -128,14 +149,16 @@
       "name": "No MCP injection methods leak into the RPC surface across handle, service, and backend traits",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "297-343",
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "34-100",
           "implMappings": [
             {
               "file": "rust/core/src/session_manager_handle.rs",
               "lines": [
                 1
-              ]
+              ],
+              "firstLine": "//! Session manager handle abstraction (RPC-007).",
+              "lastLine": "//! Session manager handle abstraction (RPC-007)."
             }
           ]
         }
@@ -145,8 +168,8 @@
       "name": "codelet-sessions has no transitive napi dependency after the RPC-062 audit",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "349-422",
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "106-190",
           "implMappings": [
             {
               "file": "rust/sessions/Cargo.toml",
@@ -169,7 +192,9 @@
                 27,
                 28,
                 29
-              ]
+              ],
+              "firstLine": "[dependencies]",
+              "lastLine": "# forbidden arrow `sessions → napi` is enforced by"
             }
           ]
         }
@@ -181,14 +206,18 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/tests/mcp_injection_source_shape.rs"
+      "rust/sessions/tests/mcp_injection_source_shape.rs",
+      "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs"
     ],
     "implFiles": [
       "rust/sessions/src/session_manager.rs",
-      "rust/napi/src/agent_loop.rs",
+      "rust/sessions/src/session_manager/manager_impl_3.rs",
+      "rust/sessions/src/session_creation_helper.rs",
+      "rust/sessions/src/session_manager/manager_impl_5.rs",
+      "rust/sessions/src/session_manager/manager_impl_4.rs",
       "rust/core/src/session_manager_handle.rs",
       "rust/sessions/Cargo.toml"
     ],
-    "totalLinesCovered": 345
+    "totalLinesCovered": 381
   }
 }

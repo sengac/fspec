@@ -23,12 +23,13 @@
 //!     strand a stale prompt after the agent loop resumes server-side.
 //!
 //!   - `handle_pause_confirmed` / `handle_pause_triple`: clear the
-//!     pause slot and fire-and-forget the backend write. Errors are
-//!     silently logged via `tracing` — no scrollback notice.
+//!     pause slot and send the backend write in a task. BUG-395: a
+//!     failure is sent as `PausedWriteFailed` (red scrollback notice,
+//!     prompt read back); with no runtime the prompt stays and the
+//!     failure is reported at once.
 //!
-//!   - `handle_pause_resumed`: fire-and-forget `backend.pause_resume`.
-//!     RPC-406: NOT reachable from the inline pause prompt (Esc denies)
-//!     — retained for other callers only.
+//!   - `handle_pause_human_action`: send `backend.pause_human_action` from the
+//!     human-action prompt (AMGR-023; BUG-395 as above).
 //!
 //!   - `handle_pause_prompt_enter`: reads the authoritative triple
 //!     selection from the store, maps 0/1/2 →
@@ -37,11 +38,14 @@
 
 use std::sync::Arc;
 
-use codelet_rpc_types::{ApprovalChoice, HitlResponse, SessionId};
+use codelet_rpc_types::{ApprovalChoice, HitlResponse, HumanActionReply, SessionId};
+
+use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::Action;
 use crate::transport::FspecBackend;
 
+use super::dispatch_exec_stdin_recovery::send_to_app;
 use super::state::App;
 
 impl App {
@@ -50,8 +54,12 @@ impl App {
     /// `backend.get_hitl_request` and routing the first Some result
     /// back via `Action::PauseStateFetched` / `Action::HitlPromptFetched`.
     pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {
-        // Sync unit-test fallback — do not spawn a task when no runtime.
+        // BUG-408: without a runtime no probe task can run; report it.
         if tokio::runtime::Handle::try_current().is_err() {
+            tracing::error!(
+                session = &session_id.value,
+                "no tokio runtime: pause/question/exec-stdin probe not sent"
+            );
             return;
         }
         let backend: Arc<dyn FspecBackend> = self.backend.clone();
@@ -66,71 +74,55 @@ impl App {
                 backend.get_hitl_request(id.clone()),
                 backend.get_exec_stdin_request(id.clone()),
             );
-            let pause = match pause_res {
-                Ok(p) => p,
-                Err(err) => {
-                    tracing::debug!(
-                        target: "rpc053",
-                        session = &id.value,
-                        error = %err,
-                        "get_pause_state failed (silently dropped)",
-                    );
-                    None
-                }
-            };
-            let hitl = match hitl_res {
-                Ok(h) => h,
-                Err(err) => {
-                    tracing::debug!(
-                        target: "rpc053",
-                        session = &id.value,
-                        error = %err,
-                        "get_hitl_request failed (silently dropped)",
-                    );
-                    None
-                }
-            };
+            // BUG-394: a failed read is reported, never folded into None.
+            let pause = read_or_report(&action_tx, &id, "get_pause_state", pause_res);
+            let hitl = read_or_report(&action_tx, &id, "get_hitl_request", hitl_res);
             // RPC-053 rule [13]: HITL wins on tie. RPC-411: store
-            // slot instead of a modal push.
-            if let Some(request) = hitl {
-                let _ = action_tx.send(Action::HitlPromptFetched {
-                    session_id: id,
-                    request,
-                });
-                return;
-            }
-            if let Some(state) = pause {
+            // slot instead of a modal push. BUG-394: when the HITL read
+            // failed its precedence is unknown, so no pause prompt shows.
+            match (hitl, pause) {
+                (Some(Some(pending)), _) => {
+                    send_to_app(
+                        &action_tx,
+                        Action::HitlPromptFetched {
+                            session_id: id,
+                            route: pending.route,
+                            request: pending.payload,
+                        },
+                    );
+                    return;
+                }
                 // RPC-406: store slot instead of a modal push.
-                let _ = action_tx.send(Action::PauseStateFetched {
-                    session_id: id.clone(),
-                    state,
-                });
+                (Some(None), Some(Some(pending))) => send_to_app(
+                    &action_tx,
+                    Action::PauseStateFetched {
+                        session_id: id.clone(),
+                        route: pending.route,
+                        state: pending.payload,
+                    },
+                ),
+                _ => {}
             }
             // TOOL-022 P2: lowest-precedence overlay. Only surface the
             // exec-stdin request when neither HITL nor a pause occupies
             // the slot (the precedence chain is HITL > exec-stdin >
             // pause > composer). When the backend returns None the
             // probe clears the slot (exec session gone / no longer
-            // quiet). The error is a transport failure — silently
-            // dropped (logged), the overlay just doesn't appear this
-            // tick.
-            match exec_res {
-                Ok(request) => {
-                    let _ = action_tx.send(Action::ExecStdinProbeFetched {
-                        agent_session: id,
-                        generation,
-                        request,
-                    });
-                }
-                Err(err) => {
-                    tracing::debug!(
-                        target: "tool022",
-                        session = &id.value,
-                        error = %err,
-                        "get_exec_stdin_request failed (silently dropped)",
-                    );
-                }
-            }
+            // quiet). BUG-364: a failed read reaches the app as
+            // `ExecStdinProbeFailed`, which marks an open notice stale.
+            let action = match exec_res {
+                Ok(request) => Action::ExecStdinProbeFetched {
+                    agent_session: id,
+                    generation,
+                    request,
+                },
+                Err(err) => Action::ExecStdinProbeFailed {
+                    agent_session: id,
+                    generation,
+                    error: err.to_string(),
+                },
+            };
+            send_to_app(&action_tx, action);
         });
         self.pending_tasks.push(handle);
     }
@@ -144,97 +136,154 @@ impl App {
         self.should_render = true;
     }
 
-    /// RPC-053: fire-and-forget `backend.pause_confirm(session, accept)`.
-    /// RPC-406: clears the per-session pause slot so the inline prompt
-    /// unmounts on the next frame. Errors are silently logged.
+    /// RPC-053: `backend.pause_confirm(session, request, accept)`. RPC-406:
+    /// clears the per-session pause slot so the inline prompt unmounts on
+    /// the next frame. BUG-395: a failed write is reported and the prompt
+    /// read back ([`App::spawn_paused_write`]). AMGR-020: the reply names
+    /// the pending request's id.
     pub(crate) fn handle_pause_confirmed(&mut self, session_id: SessionId, accept: bool) {
+        let Some(request_id) = self.pause_request_id(&session_id, "pause_confirm") else {
+            return;
+        };
         self.agent_view_store.clear_pause_state(&session_id);
         self.should_render = true;
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let id = session_id;
-        let handle = tokio::spawn(async move {
-            if let Err(err) = backend.pause_confirm(id.clone(), accept).await {
-                tracing::debug!(
-                    target: "rpc053",
-                    session = &id.value,
-                    accept,
-                    error = %err,
-                    "pause_confirm failed (silently dropped)",
-                );
-            }
+        self.spawn_paused_write(session_id, "pause_confirm", move |backend, id| async move {
+            backend.pause_confirm(id, request_id, accept).await
         });
-        self.pending_tasks.push(handle);
     }
 
-    /// RPC-053: fire-and-forget `backend.pause_triple(session, choice)`.
-    /// RPC-406: clears the per-session pause slot (selection resets).
+    /// RPC-053: `backend.pause_triple(session, request, choice)`. RPC-406:
+    /// clears the per-session pause slot (selection resets). BUG-395 and
+    /// AMGR-020 as above.
     pub(crate) fn handle_pause_triple(&mut self, session_id: SessionId, choice: ApprovalChoice) {
+        let Some(request_id) = self.pause_request_id(&session_id, "pause_triple") else {
+            return;
+        };
         self.agent_view_store.clear_pause_state(&session_id);
         self.should_render = true;
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let id = session_id;
-        let handle = tokio::spawn(async move {
-            if let Err(err) = backend.pause_triple(id.clone(), choice).await {
-                tracing::debug!(
-                    target: "rpc053",
-                    session = &id.value,
-                    error = %err,
-                    "pause_triple failed (silently dropped)",
-                );
-            }
+        self.spawn_paused_write(session_id, "pause_triple", move |backend, id| async move {
+            backend.pause_triple(id, request_id, choice).await
         });
-        self.pending_tasks.push(handle);
     }
 
-    /// RPC-053: fire-and-forget `backend.pause_resume(session)`.
-    /// RPC-406: NOT reachable from the inline pause prompt — Esc
-    /// denies. Retained for non-prompt callers only.
-    pub(crate) fn handle_pause_resumed(&mut self, session_id: SessionId) {
-        if tokio::runtime::Handle::try_current().is_err() {
+    /// AMGR-023: `backend.pause_human_action(session, request, reply)`
+    /// from the human-action prompt (Enter Done, Esc Cancel); clears the
+    /// per-session pause slot. BUG-395 and AMGR-020 as above.
+    pub(crate) fn handle_pause_human_action(
+        &mut self,
+        session_id: SessionId,
+        reply: HumanActionReply,
+    ) {
+        let Some(request_id) = self.pause_request_id(&session_id, "pause_human_action") else {
             return;
-        }
-        let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let id = session_id;
-        let handle = tokio::spawn(async move {
-            if let Err(err) = backend.pause_resume(id.clone()).await {
-                tracing::debug!(
-                    target: "rpc053",
-                    session = &id.value,
-                    error = %err,
-                    "pause_resume failed (silently dropped)",
-                );
-            }
+        };
+        self.agent_view_store.clear_pause_state(&session_id);
+        self.should_render = true;
+        self.spawn_paused_write(session_id, "pause_human_action", move |backend, id| async move {
+            backend.pause_human_action(id, request_id, reply).await
         });
-        self.pending_tasks.push(handle);
     }
 
-    /// RPC-053/RPC-411: fire-and-forget `backend.send_hitl_response`
-    /// and clear the per-session HITL slot (submit AND cancel both
-    /// route here — the response is always sent before the slot dies).
+    /// RPC-053/RPC-411: `backend.send_hitl_response` and clear the
+    /// per-session HITL slot (submit AND cancel both route here — the
+    /// response is always sent before the slot dies). BUG-395 and AMGR-020
+    /// as above.
     pub(crate) fn handle_hitl_submitted(&mut self, session_id: SessionId, response: HitlResponse) {
+        if !self.runtime_for_paused_write(&session_id, "send_hitl_response") {
+            return;
+        }
+        let Some(request_id) = self
+            .agent_view_store
+            .hitl_prompt_for(&session_id)
+            .map(|slot| slot.route.request_id.clone())
+        else {
+            self.report_paused_write_failed(
+                &session_id,
+                "send_hitl_response",
+                "no pending question",
+            );
+            return;
+        };
         self.agent_view_store.clear_hitl_prompt(&session_id);
         self.should_render = true;
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
+        self.spawn_paused_write(
+            session_id,
+            "send_hitl_response",
+            move |backend, id| async move { backend.send_hitl_response(id, request_id, response).await },
+        );
+    }
+
+    /// AMGR-020: the id of the pending pause `write` answers; `None` (after
+    /// reporting the failure) without a runtime or a pending pause.
+    fn pause_request_id(&mut self, session_id: &SessionId, write: &str) -> Option<String> {
+        if !self.runtime_for_paused_write(session_id, write) {
+            return None;
         }
+        let request_id = self
+            .agent_view_store
+            .pause_route_for(session_id)
+            .map(|route| route.request_id.clone());
+        if request_id.is_none() {
+            self.report_paused_write_failed(session_id, write, "no pending approval");
+        }
+        request_id
+    }
+
+    /// BUG-395: `false` (after reporting the failure, prompt left in place)
+    /// when there is no tokio runtime to send `write` on.
+    fn runtime_for_paused_write(&mut self, session_id: &SessionId, write: &str) -> bool {
+        if tokio::runtime::Handle::try_current().is_ok() {
+            return true;
+        }
+        self.report_paused_write_failed(session_id, write, "no tokio runtime");
+        false
+    }
+
+    /// BUG-395: run the backend `write` in a task; a failure reaches the
+    /// app as `Action::PausedWriteFailed`, never dropped.
+    fn spawn_paused_write<F, Fut>(&mut self, session_id: SessionId, write: &'static str, send: F)
+    where
+        F: FnOnce(Arc<dyn FspecBackend>, SessionId) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = anyhow::Result<()>> + Send + 'static,
+    {
         let backend: Arc<dyn FspecBackend> = self.backend.clone();
-        let id = session_id;
+        let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
-            if let Err(err) = backend.send_hitl_response(id.clone(), response).await {
-                tracing::debug!(
-                    target: "rpc053",
-                    session = &id.value,
-                    error = %err,
-                    "send_hitl_response failed (silently dropped)",
+            if let Err(err) = send(backend, session_id.clone()).await {
+                send_to_app(
+                    &action_tx,
+                    Action::PausedWriteFailed {
+                        session_id,
+                        write: write.to_string(),
+                        error: err.to_string(),
+                    },
                 );
             }
         });
         self.pending_tasks.push(handle);
+    }
+}
+
+/// BUG-394: `Some(value)` for a successful Paused probe read; a failure
+/// is sent to the app as `PausedReadFailed` and yields `None`.
+fn read_or_report<T>(
+    action_tx: &UnboundedSender<Action>,
+    session: &SessionId,
+    read: &str,
+    result: anyhow::Result<T>,
+) -> Option<T> {
+    match result {
+        Ok(value) => Some(value),
+        Err(err) => {
+            send_to_app(
+                action_tx,
+                Action::PausedReadFailed {
+                    session_id: session.clone(),
+                    read: read.to_string(),
+                    error: err.to_string(),
+                },
+            );
+            None
+        }
     }
 }

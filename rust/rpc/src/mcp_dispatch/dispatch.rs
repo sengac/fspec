@@ -27,6 +27,7 @@ pub async fn invoke(
         "move_work_unit_down" => group_06::move_work_unit_down::call(client, args).await,
         "get_model_info" => group_06::get_model_info::call(client, args).await,
         "get_thinking_level" => group_07::get_thinking_level::call(client, args).await,
+        "get_thinking_options" => group_07::get_thinking_options::call(client, args).await,
         "get_workspace_info" => group_07::get_workspace_info::call(client, args).await,
         "search_files" => group_07::search_files::call(client, args).await,
         "persistence_add_history" => group_08::persistence_add_history::call(client, args).await,
@@ -87,7 +88,6 @@ pub async fn invoke(
         "set_debug_enabled" => group_24::set_debug_enabled::call(client, args).await,
         "toggle_debug" => group_24::toggle_debug::call(client, args).await,
         "set_debug_directory" => group_25::set_debug_directory::call(client, args).await,
-        "pause_resume" => group_25::pause_resume::call(client, args).await,
         "pause_confirm" => group_25::pause_confirm::call(client, args).await,
         "pause_triple" => group_26::pause_triple::call(client, args).await,
         "send_hitl_response" => group_26::send_hitl_response::call(client, args).await,
@@ -144,6 +144,78 @@ pub async fn invoke(
         }
         "create_session_checked" => group_40::create_session_checked::call(client, args).await,
         "session_manifest_issues" => group_40::session_manifest_issues::call(client, args).await,
+        "get_work_unit_details" => group_40::get_work_unit_details::call(client, args).await,
+        "list_workspaces" => group_41::list_workspaces::call(client, args).await,
+        "list_workspace_work_units" => {
+            group_41::list_workspace_work_units::call(client, args).await
+        }
+        "create_session_in_workspace" => {
+            group_41::create_session_in_workspace::call(client, args).await
+        }
+        "get_default_model" => group_41::get_default_model::call(client, args).await,
+        "submit_input" => group_41::submit_input::call(client, args).await,
+        "configure_session_mcp_servers" => {
+            group_42::configure_session_mcp_servers::call(client, args).await
+        }
+        "control_exec_stdin" => group_43::control_exec_stdin::call(client, args).await,
+        "create_isolated_session_in_workspace" => {
+            group_44::create_isolated_session_in_workspace::call(client, args).await
+        }
+        "read_card_attachment" => group_45::read_card_attachment::call(client, args).await,
+        "changed_files_in_workspace" => {
+            group_46::changed_files_in_workspace::call(client, args).await
+        }
+        "file_diff_in_workspace" => group_46::file_diff_in_workspace::call(client, args).await,
+        "checkpoint_counts_in_workspace" => {
+            group_47::checkpoint_counts_in_workspace::call(client, args).await
+        }
+        "list_checkpoints_in_workspace" => {
+            group_47::list_checkpoints_in_workspace::call(client, args).await
+        }
+        "checkpoint_diff_files_in_workspace" => {
+            group_47::checkpoint_diff_files_in_workspace::call(client, args).await
+        }
+        "checkpoint_file_diff_in_workspace" => {
+            group_47::checkpoint_file_diff_in_workspace::call(client, args).await
+        }
+        "restore_checkpoint_file_in_workspace" => {
+            group_47::restore_checkpoint_file_in_workspace::call(client, args).await
+        }
+        "restore_checkpoint_all_in_workspace" => {
+            group_47::restore_checkpoint_all_in_workspace::call(client, args).await
+        }
+        "delete_checkpoint_in_workspace" => {
+            group_47::delete_checkpoint_in_workspace::call(client, args).await
+        }
+        "delete_all_checkpoints_in_workspace" => {
+            group_47::delete_all_checkpoints_in_workspace::call(client, args).await
+        }
+        "get_workspace_info_in_workspace" => {
+            group_48::get_workspace_info_in_workspace::call(client, args).await
+        }
+        "git_state_in_workspace" => group_48::git_state_in_workspace::call(client, args).await,
+        "search_files_in_session" => group_49::search_files_in_session::call(client, args).await,
+        "search_files_in_workspace" => {
+            group_49::search_files_in_workspace::call(client, args).await
+        }
+        "persistence_add_history_in_workspace" => {
+            group_49::persistence_add_history_in_workspace::call(client, args).await
+        }
+        "persistence_get_history_in_workspace" => {
+            group_49::persistence_get_history_in_workspace::call(client, args).await
+        }
+        "persistence_search_history_in_workspace" => {
+            group_49::persistence_search_history_in_workspace::call(client, args).await
+        }
+        "add_workspace" => group_50::add_workspace::call(client, args).await,
+        "remove_workspace" => group_50::remove_workspace::call(client, args).await,
+        "blocklist_disabled_rules" => group_50::blocklist_disabled_rules::call(client, args).await,
+        "blocklist_set_rule_enabled" => {
+            group_50::blocklist_set_rule_enabled::call(client, args).await
+        }
+        "session_card_changes" => group_51::session_card_changes::call(client, args).await,
+        "move_session_cards_back" => group_51::move_session_cards_back::call(client, args).await,
+        "pause_human_action" => group_51::pause_human_action::call(client, args).await,
         _ => Err(InvokeError::Unknown),
     }
 }

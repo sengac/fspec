@@ -22,39 +22,29 @@ use codelet_rpc_types::ProfileDefinition;
 use serde_json::Value;
 use tracing::debug;
 
-/// Read `providers.openai.profiles` from a single config file (if present
-/// and parseable) into the supplied name -> baseUrl map. Later callers
-/// overwrite earlier entries, giving project-over-user precedence. Missing
-/// files / empty content / malformed JSON are silently ignored.
-fn merge_profiles_from_file(path: &Path, out: &mut BTreeMap<String, Option<String>>) {
-    let raw = match std::fs::read_to_string(path) {
-        Ok(s) => s,
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return,
-        Err(e) => {
-            debug!(path = %path.display(), error = %e, "profiles_config: failed to read config file");
-            return;
-        }
-    };
-    if raw.trim().is_empty() {
-        return;
-    }
-    let value: Value = match serde_json::from_str(&raw) {
-        Ok(v) => v,
-        Err(e) => {
-            debug!(path = %path.display(), error = %e, "profiles_config: malformed JSON in config file");
-            return;
-        }
-    };
+/// Read `providers.openai.profiles` from a single config file into the
+/// supplied name -> baseUrl map. Later callers overwrite earlier entries,
+/// giving project-over-user precedence. BUG-461: a missing file adds
+/// nothing; an unreadable, malformed or non-object file is an error naming it.
+fn merge_profiles_from_file(
+    path: &Path,
+    out: &mut BTreeMap<String, Option<String>>,
+) -> Result<(), String> {
+    let value = codelet_common::fspec_config::load_config_object(path)?;
     debug!(path = %path.display(), "profiles_config: read config file");
-    let profiles = value
+    let Some(profiles) = value
         .get("providers")
         .and_then(|p| p.get("openai"))
         .and_then(|o| o.get("profiles"))
-        .and_then(Value::as_object);
-    let profiles = match profiles {
-        Some(p) => p,
-        None => return,
+    else {
+        return Ok(());
     };
+    let profiles = profiles.as_object().ok_or_else(|| {
+        format!(
+            "providers.openai.profiles in {} is not an object",
+            path.display()
+        )
+    })?;
     for (name, cfg) in profiles {
         let base_url = cfg
             .get("baseUrl")
@@ -63,6 +53,7 @@ fn merge_profiles_from_file(path: &Path, out: &mut BTreeMap<String, Option<Strin
             .filter(|s| !s.trim().is_empty());
         out.insert(name.clone(), base_url);
     }
+    Ok(())
 }
 
 /// Format one profile entry as its display string.
@@ -77,36 +68,22 @@ fn display_string(name: &str, base_url: Option<&String>) -> String {
 /// and `<project_root>/spec/fspec-config.json`, merges
 /// `providers.openai.profiles` (project overrides user by name), and returns
 /// the display strings sorted by profile name.
-pub fn load_openai_profiles_from(user_config_dir: &Path, project_root: &Path) -> Vec<String> {
+pub fn load_openai_profiles_from(
+    user_config_dir: &Path,
+    project_root: &Path,
+) -> Result<Vec<String>, String> {
     // BTreeMap keeps the merge deterministic and sorted by name.
     let mut merged: BTreeMap<String, Option<String>> = BTreeMap::new();
     // User config first, then project so project entries overwrite.
-    merge_profiles_from_file(&user_config_dir.join("fspec-config.json"), &mut merged);
+    merge_profiles_from_file(&user_config_dir.join("fspec-config.json"), &mut merged)?;
     merge_profiles_from_file(
-        &project_root.join("spec").join("fspec-config.json"),
+        &codelet_common::fspec_config::project_config_path(project_root)?,
         &mut merged,
-    );
-    merged
+    )?;
+    Ok(merged
         .iter()
         .map(|(name, base_url)| display_string(name, base_url.as_ref()))
-        .collect()
-}
-
-/// Thin wrapper that resolves the real user config dir (`$HOME/.fspec` on
-/// Unix, `%USERPROFILE%\.fspec` on Windows, read-only) and the current
-/// working directory, then delegates to
-/// [`load_openai_profiles_from`]. Returns an empty list when the home
-/// directory or the current directory cannot be resolved.
-pub fn load_openai_profiles() -> Vec<String> {
-    let user_config_dir = match dirs::home_dir() {
-        Some(home) => home.join(".fspec"),
-        None => return Vec::new(),
-    };
-    let project_root = match std::env::current_dir() {
-        Ok(p) => p,
-        Err(_) => return Vec::new(),
-    };
-    load_openai_profiles_from(&user_config_dir, &project_root)
+        .collect())
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -272,25 +249,8 @@ pub fn load_openai_profile_configs_from(
 ) -> BTreeMap<String, ProfileDefinition> {
     let mut merged: BTreeMap<String, ProfileDefinition> = BTreeMap::new();
     merge_profile_configs_from_file(&user_config_dir.join("fspec-config.json"), &mut merged);
-    merge_profile_configs_from_file(
-        &project_root.join("spec").join("fspec-config.json"),
-        &mut merged,
-    );
+    if let Ok(project_config) = codelet_common::fspec_config::project_config_path(project_root) {
+        merge_profile_configs_from_file(&project_config, &mut merged);
+    }
     merged
-}
-
-/// Thin wrapper resolving the real user config dir (`$HOME/.fspec` on Unix,
-/// `%USERPROFILE%\.fspec` on Windows) and the current working directory, then
-/// delegating to [`load_openai_profile_configs_from`]. Returns an empty map
-/// when the home directory or the current directory cannot be resolved.
-pub fn load_openai_profile_configs() -> BTreeMap<String, ProfileDefinition> {
-    let user_config_dir = match dirs::home_dir() {
-        Some(home) => home.join(".fspec"),
-        None => return BTreeMap::new(),
-    };
-    let project_root = match std::env::current_dir() {
-        Ok(p) => p,
-        Err(_) => return BTreeMap::new(),
-    };
-    load_openai_profile_configs_from(&user_config_dir, &project_root)
 }

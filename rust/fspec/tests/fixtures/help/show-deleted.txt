@@ -27,6 +27,7 @@ RELATED COMMANDS
   fspec restore-example
   fspec restore-question
   fspec restore-architecture-note
+  fspec restore-assumption
   fspec compact-work-unit
   fspec show-work-unit
 

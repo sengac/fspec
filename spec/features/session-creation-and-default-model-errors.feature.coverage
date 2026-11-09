@@ -1,0 +1,85 @@
+{
+  "scenarios": [
+    {
+      "name": "A credential resolution failure fails session creation",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug411_session_creation_and_default_model_errors.rs",
+          "lines": "24-47",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_3.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ],
+              "firstLine": "// BUG-411: a resolution failure (a missing credential is not one)",
+              "lastLine": ")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A default model that cannot be persisted is reported",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug411_session_creation_and_default_model_errors.rs",
+          "lines": "49-62",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager/manager_impl_1.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ],
+              "firstLine": "/// SCHED-004: Set the default model for scheduled session spawning.",
+              "lastLine": ".map_err(|error| format!(\"cannot persist the last used model {model}: {error}\"))"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug411_session_creation_and_default_model_errors.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager/manager_impl_3.rs",
+      "rust/sessions/src/session_manager/manager_impl_1.rs"
+    ],
+    "totalLinesCovered": 70
+  }
+}

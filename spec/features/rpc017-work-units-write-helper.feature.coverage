@@ -5,11 +5,14 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "107-127",
+          "lines": "106-126",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                44,
+                45,
+                46,
                 47,
                 48,
                 49,
@@ -91,10 +94,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130
-              ]
+                128
+              ],
+              "firstLine": "/// See module docs for the full semantics.",
+              "lastLine": ""
             }
           ]
         }
@@ -105,11 +108,14 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "128-144",
+          "lines": "127-143",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                44,
+                45,
+                46,
                 47,
                 48,
                 49,
@@ -191,10 +197,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130
-              ]
+                128
+              ],
+              "firstLine": "/// See module docs for the full semantics.",
+              "lastLine": ""
             }
           ]
         }
@@ -205,11 +211,19 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "145-161",
+          "lines": "144-160",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
                 100,
                 101,
                 102,
@@ -224,24 +238,10 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                114
+              ],
+              "firstLine": "let pos = column",
+              "lastLine": "}"
             }
           ]
         }
@@ -252,11 +252,19 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "162-178",
+          "lines": "161-177",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
                 100,
                 101,
                 102,
@@ -271,24 +279,10 @@
                 111,
                 112,
                 113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                114
+              ],
+              "firstLine": "let pos = column",
+              "lastLine": "}"
             }
           ]
         }
@@ -299,11 +293,20 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "179-203",
+          "lines": "178-202",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
                 66,
                 67,
                 68,
@@ -359,17 +362,10 @@
                 118,
                 119,
                 120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                121
+              ],
+              "firstLine": "/// Inner reorder that runs while the inter-process lock is held.",
+              "lastLine": ");"
             }
           ]
         }
@@ -380,11 +376,20 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "204-223",
+          "lines": "203-222",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
                 66,
                 67,
                 68,
@@ -440,17 +445,10 @@
                 118,
                 119,
                 120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
-              ]
+                121
+              ],
+              "firstLine": "/// Inner reorder that runs while the inter-process lock is held.",
+              "lastLine": ");"
             }
           ]
         }
@@ -461,11 +459,14 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "224-245",
+          "lines": "223-244",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
               "lines": [
+                44,
+                45,
+                46,
                 47,
                 48,
                 49,
@@ -547,10 +548,10 @@
                 125,
                 126,
                 127,
-                128,
-                129,
-                130
-              ]
+                128
+              ],
+              "firstLine": "/// See module docs for the full semantics.",
+              "lastLine": ""
             }
           ]
         }
@@ -561,7 +562,7 @@
       "testMappings": [
         {
           "file": "rust/core/tests/work_units_write_test.rs",
-          "lines": "246-282",
+          "lines": "245-273",
           "implMappings": [
             {
               "file": "rust/common/src/file_lock.rs",
@@ -636,7 +637,9 @@
                 128,
                 129,
                 130
-              ]
+              ],
+              "firstLine": "pub fn with_file_lock<F, T>(lock_dir: &Path, f: F) -> Result<T, String>",
+              "lastLine": "use super::*;"
             }
           ]
         }
@@ -654,6 +657,6 @@
       "rust/core/src/work_units_write.rs",
       "rust/common/src/file_lock.rs"
     ],
-    "totalLinesCovered": 690
+    "totalLinesCovered": 669
   }
 }

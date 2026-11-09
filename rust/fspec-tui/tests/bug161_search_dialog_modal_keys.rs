@@ -19,13 +19,12 @@
 //! (j/k/h/l, f/c/d/a/.) are regression guards — those keys are already
 //! consumed by the dialog's `Char` arm.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 use codelet_fspec_tui::{
     Action, BoardStore, Component, Compositor, EventResult, WorkUnitSearchDialog,
     WORK_UNIT_SEARCH_DIALOG_ID,
 };
 use codelet_rpc_types::WorkUnitInfo;
+use codelet_test_helpers::{OrFail, TestResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use tokio::sync::mpsc::UnboundedReceiver;
 
@@ -73,7 +72,7 @@ fn board_with_selection() -> BoardStore {
 
 /// Scenario: Board navigation keys are consumed while the dialog is open
 #[test]
-fn board_navigation_keys_are_consumed_while_the_dialog_is_open() {
+fn board_navigation_keys_are_consumed_while_the_dialog_is_open() -> TestResult {
     // @step Given the work-unit search dialog is open with zero matches
     let (mut dialog, _rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
     for c in "zzz".chars() {
@@ -103,11 +102,12 @@ fn board_navigation_keys_are_consumed_while_the_dialog_is_open() {
             "the board selection must stay frozen while the dialog is open"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Board view-opening shortcuts are consumed while the dialog is open
 #[test]
-fn board_view_opening_shortcuts_are_consumed_while_the_dialog_is_open() {
+fn board_view_opening_shortcuts_are_consumed_while_the_dialog_is_open() -> TestResult {
     // @step Given the work-unit search dialog is open
     let (mut dialog, mut rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
 
@@ -127,11 +127,12 @@ fn board_view_opening_shortcuts_are_consumed_while_the_dialog_is_open() {
             "pressing '{c}' must not emit any Action on the bus"
         );
     }
+    Ok(())
 }
 
 /// Scenario: Modifier-chorded keys are consumed while the dialog is open
 #[test]
-fn modifier_chorded_keys_are_consumed_while_the_dialog_is_open() {
+fn modifier_chorded_keys_are_consumed_while_the_dialog_is_open() -> TestResult {
     // @step Given the work-unit search dialog is open
     let (mut dialog, mut rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
 
@@ -149,11 +150,12 @@ fn modifier_chorded_keys_are_consumed_while_the_dialog_is_open() {
         rx.try_recv().is_err(),
         "Shift+Right must not emit OpenAgentView on the bus"
     );
+    Ok(())
 }
 
 /// Scenario: The help key is consumed while the dialog is open
 #[test]
-fn the_help_key_is_consumed_while_the_dialog_is_open() {
+fn the_help_key_is_consumed_while_the_dialog_is_open() -> TestResult {
     // @step Given the work-unit search dialog is open
     let (mut dialog, mut rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
 
@@ -172,6 +174,7 @@ fn the_help_key_is_consumed_while_the_dialog_is_open() {
         rx.try_recv().is_err(),
         "'?' must not reach the App-level HelpDialog handler"
     );
+    Ok(())
 }
 
 /// Scenario: Unmodified arrow keys are consumed while the dialog is open
@@ -179,7 +182,7 @@ fn the_help_key_is_consumed_while_the_dialog_is_open() {
 /// are not printable chars — and must be consumed; currently they leak to
 /// the board's FocusPrev/NextColumn.)
 #[test]
-fn unmodified_arrow_keys_left_right_are_consumed_while_the_dialog_is_open() {
+fn unmodified_arrow_keys_left_right_are_consumed_while_the_dialog_is_open() -> TestResult {
     // @step Given the work-unit search dialog is open
     let (mut dialog, _rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
     let store = board_with_selection();
@@ -201,11 +204,12 @@ fn unmodified_arrow_keys_left_right_are_consumed_while_the_dialog_is_open() {
         "backlog",
         "the board must stay frozen"
     );
+    Ok(())
 }
 
 /// Scenario: Enter with zero matches is consumed and does not enter a work unit
 #[test]
-fn enter_with_zero_matches_is_consumed_and_does_not_enter_a_work_unit() {
+fn enter_with_zero_matches_is_consumed_and_does_not_enter_a_work_unit() -> TestResult {
     // @step Given the work-unit search dialog is open with zero matches
     let (mut dialog, mut rx) = dialog_with_bus(vec![wu("AUTH-001", "User login")]);
     for c in "zzz".chars() {
@@ -230,11 +234,12 @@ fn enter_with_zero_matches_is_consumed_and_does_not_enter_a_work_unit() {
         rx.try_recv().is_err(),
         "Enter with zero matches must not emit SelectWorkUnit on the bus"
     );
+    Ok(())
 }
 
 /// Scenario: The dialog's own keys still work while the board is frozen
 #[test]
-fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
+fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() -> TestResult {
     // @step Given the work-unit search dialog is open in Id mode with a match list
     let (mut dialog, mut rx) =
         dialog_with_bus(vec![wu("AUTH-001", "Auth one"), wu("AUTH-002", "Auth two")]);
@@ -280,9 +285,9 @@ fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
     // Enter with a match emits SelectWorkUnit and closes the dialog.
     let enter = dialog.handle_event(&key(KeyCode::Enter));
     let EventResult::Consumed(Some(_callback)) = enter else {
-        panic!("Enter with a match must carry the remove callback");
+        return Err("Enter with a match must carry the remove callback".into());
     };
-    let action = rx.try_recv().expect("SelectWorkUnit on the bus");
+    let action = rx.try_recv().or_fail("SelectWorkUnit on the bus")?;
     assert!(
         matches!(action, Action::SelectWorkUnit(ref id) if id == "AUTH-001"),
         "Enter must emit SelectWorkUnit(AUTH-001)"
@@ -292,7 +297,7 @@ fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
     // @step Then the work-unit search dialog is closed
     let esc = dialog.handle_event(&key(KeyCode::Esc));
     let EventResult::Consumed(Some(esc_callback)) = esc else {
-        panic!("Esc must carry the remove callback");
+        return Err("Esc must carry the remove callback".into());
     };
     let mut compositor = Compositor::new();
     compositor.push(Box::new(dialog));
@@ -302,4 +307,5 @@ fn the_dialogs_own_keys_still_work_while_the_board_is_frozen() {
         !compositor.contains(WORK_UNIT_SEARCH_DIALOG_ID),
         "the remove callback must drop the dialog layer"
     );
+    Ok(())
 }

@@ -34,6 +34,14 @@ use uuid::Uuid;
 #[tokio::test]
 #[serial]
 async fn scenario_no_vision_profile_fails_image_file_reads_with_a_clear_message() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 0
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(0));
@@ -96,6 +104,14 @@ async fn scenario_no_vision_profile_fails_image_file_reads_with_a_clear_message(
 #[tokio::test]
 #[serial]
 async fn scenario_no_vision_profile_forces_pdf_reads_to_text_mode() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 0
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(0));
@@ -133,6 +149,14 @@ async fn scenario_no_vision_profile_forces_pdf_reads_to_text_mode() {
 #[tokio::test]
 #[serial]
 async fn scenario_pdf_read_exceeding_the_image_budget_fails_with_the_limit_message() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 2
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(2));
@@ -190,6 +214,14 @@ async fn scenario_pdf_read_exceeding_the_image_budget_fails_with_the_limit_messa
 #[tokio::test]
 #[serial]
 async fn scenario_pdf_read_within_the_image_budget_succeeds() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 4
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(4));
@@ -246,6 +278,14 @@ async fn scenario_pdf_read_within_the_image_budget_succeeds() {
 #[tokio::test]
 #[serial]
 async fn scenario_pdf_images_mode_read_exceeding_the_budget_fails() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 1
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(1));
@@ -281,6 +321,14 @@ async fn scenario_pdf_images_mode_read_exceeding_the_budget_fails() {
 #[tokio::test]
 #[serial]
 async fn scenario_a_mid_session_model_switch_updates_the_image_budget() {
+    // BUG-447: this test drives tools without a session manager.
+    codelet_tools::facade::declare_unrestricted_tool_access(
+        "tests drive tools without a session manager",
+    );
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session against a profile with maxImages 8
     let session = Uuid::new_v4();
     set_session_model_max_images(session, Some(8));
@@ -325,6 +373,10 @@ async fn scenario_a_mid_session_model_switch_updates_the_image_budget() {
 #[tokio::test]
 #[serial]
 async fn scenario_a_non_profile_session_resolves_the_default_budget_of_4() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a session created with a cloud model that has no profile behind it
     // (no max-images registry entry -> default budget of 4)
     let session = Uuid::nil();
@@ -377,6 +429,10 @@ async fn scenario_a_non_profile_session_resolves_the_default_budget_of_4() {
 #[test]
 #[serial]
 fn registry_get_set_has_clear_for_max_images() {
+    assert!(
+        codelet_test_helpers::isolated_user_directory().is_ok(),
+        "BUG-347: isolate the user directory"
+    );
     // @step Given a fresh registry with no max-images entry for the session
     let session = Uuid::new_v4();
     assert!(session_model_max_images(session).is_none());

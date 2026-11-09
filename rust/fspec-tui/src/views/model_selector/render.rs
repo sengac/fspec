@@ -6,12 +6,14 @@
 //! Owns the browse-list paint path AND the RPC-344 custom-model overlay
 //! (Add / Edit / DeleteConfirm) rendering, both routed through the shared
 //! `render_full_screen_scaffold_raw_title` shell.
+//!
+//! TUI-131: the write error wraps in full above the list.
 
 use super::*;
 
 impl ModelSelectorView {
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let current = self.current_model_id.clone();
+        let current = self.current_model.clone();
         // RPC-344: when a custom-model overlay is active, paint it inside the
         // shell body instead of the browse list.
         let overlay_title = match &self.custom_model_mode {
@@ -83,6 +85,12 @@ impl ModelSelectorView {
         // (never the bold name).
         let title_name = self.title_name();
         let count_label = self.title_count_label();
+        // BUG-576 / AK-9: the footer names the keys of the current mode.
+        let footer = if self.filter_mode {
+            rows::FILTER_FOOTER
+        } else {
+            rows::FOOTER
+        };
         crate::views::full_screen_shell::render_full_screen_scaffold_with_title(
             area,
             buf,
@@ -94,7 +102,7 @@ impl ModelSelectorView {
                     &count_label,
                 );
             },
-            rows::FOOTER,
+            footer,
             |body_area, buf| {
                 // MODEL-007: carve the filter-input row off the TOP of the
                 // body BEFORE computing visible_rows, mirroring
@@ -103,6 +111,40 @@ impl ModelSelectorView {
                 // once the filter is committed; the reserved line shrinks the
                 // list area so no model row is hidden behind it.
                 let mut body_area = body_area;
+                // BUG-325: a failed custom-model write is shown in red above
+                // the list until the next write. TUI-131: wrapped in full,
+                // its rows reserved before `visible_rows` is computed.
+                // BUG-576: a failed provider list is shown the same way.
+                let errors = self.error_lines();
+                if !errors.is_empty() {
+                    use ratatui::style::{Color, Style};
+                    use ratatui::widgets::{Paragraph, Widget};
+                    let lines: Vec<_> = errors
+                        .iter()
+                        .flat_map(|error| {
+                            crate::views::agent::text_wrap::wrapped_lines(
+                                error,
+                                usize::from(body_area.width),
+                                Style::default().fg(Color::Red),
+                            )
+                        })
+                        .collect();
+                    let rows = u16::try_from(lines.len())
+                        .unwrap_or(u16::MAX)
+                        .min(body_area.height);
+                    Paragraph::new(lines).render(
+                        Rect {
+                            height: rows,
+                            ..body_area
+                        },
+                        buf,
+                    );
+                    body_area = Rect {
+                        y: body_area.y + rows,
+                        height: body_area.height - rows,
+                        ..body_area
+                    };
+                }
                 if (self.filter_mode || !self.filter.is_empty()) && body_area.height > 0 {
                     use ratatui::widgets::{Paragraph, Widget};
                     let filter_row = Rect {
@@ -134,10 +176,10 @@ impl ModelSelectorView {
                     body_area,
                     buf,
                     &self.rows,
-                    self.loaded,
-                    self.selected_index,
+                    self.placeholder().as_deref(),
+                    self.has_selection.then_some(self.selected_index),
                     self.scroll_offset,
-                    current.as_deref(),
+                    current.as_ref().map(|(p, m)| (p.as_str(), m.as_str())),
                 );
                 self.last_scrollbar_rect = sb_rect;
             },

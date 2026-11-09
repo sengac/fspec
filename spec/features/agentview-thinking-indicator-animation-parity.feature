@@ -1,12 +1,13 @@
 @done
 @RPC-093
+@TUI-118
 @tui-component
 @agent-view
 @tui
 @rust
 Feature: AgentView Thinking indicator animation parity
   """
-  TS source of truth: src/tui/components/ThinkingIndicator.tsx (80ms setInterval); src/tui/components/InputTransition.tsx phase machine ('loading'|'paused'|'hiding'|'showing'|'complete') with constants INK_FRAME_TIME_MS=17, CHARS_PER_FRAME=5, ANIMATION_PHASE_DELAY_MS=34. Rust touch points: app/events.rs (drop should_render gate while busy or animating; suppress frame.set_cursor_position when non-Idle), views/agent/input_transition.rs (add Hiding/Showing variants + paint), views/agent.rs (drive transitions in render_with_store). Out of scope: markdown in thinking blocks, HITL placeholder, Action::SpinnerTick (superseded by always-redraw-while-busy).
+  TS source of truth: src/tui/components/ThinkingIndicator.tsx (80ms setInterval); src/tui/components/InputTransition.tsx phase machine ('loading'|'paused'|'hiding'|'showing'|'complete') with constants INK_FRAME_TIME_MS=17, CHARS_PER_FRAME=5, ANIMATION_PHASE_DELAY_MS=34. Rust touch points: app/events.rs (drop should_render gate while busy or animating; suppress frame.set_cursor_position during the Hiding/Showing finish animation; TUI-118: while Running or Compacting the TUI-115 composer stays mounted, so the cursor shows on the composer row), views/agent/input_transition.rs (add Hiding/Showing variants + paint), views/agent.rs (drive transitions in render_with_store). Out of scope: markdown in thinking blocks, HITL placeholder, Action::SpinnerTick (superseded by always-redraw-while-busy).
   """
 
   Background: User Story
@@ -45,17 +46,17 @@ Feature: AgentView Thinking indicator animation parity
     Then the terminal IS drawn for that tick (terminal.draw is called once)
     And tick_should_draw(false, is_busy=false, is_animating=true) returns true
 
-  Scenario: Terminal cursor is suppressed while session is Running
+  Scenario: Terminal cursor is visible on the composer while session is Running
     Given an AgentView with session s-1 in SessionStatus::Running rendered into an 80x24 buffer
     When the App performs a render frame
-    Then AgentView::is_cursor_visible returns false
-    And frame.set_cursor_position is NOT called for that frame
+    Then AgentView::is_cursor_visible returns true
+    And frame.set_cursor_position IS called on the composer row directly under the activity row
 
-  Scenario: Terminal cursor is suppressed while session is Compacting
+  Scenario: Terminal cursor is visible on the composer while session is Compacting
     Given an AgentView with session s-1 in SessionStatus::Compacting rendered into an 80x24 buffer
     When the App performs a render frame
-    Then AgentView::is_cursor_visible returns false
-    And frame.set_cursor_position is NOT called for that frame
+    Then AgentView::is_cursor_visible returns true
+    And frame.set_cursor_position IS called on the composer row directly under the activity row
 
   Scenario: Terminal cursor is visible when session is Idle and MultiLineInput is mounted
     Given an AgentView with session s-1 in SessionStatus::Idle and the input-transition phase is Idle

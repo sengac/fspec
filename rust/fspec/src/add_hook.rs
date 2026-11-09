@@ -13,8 +13,9 @@
 //!   - Shell argv         → clap → this module → fspec_core::commands::add_hook::run
 //!   - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::add_hook::run
 //!
-//! Exit-code contract (parity with TS `add-hook.ts:82-95` action handler):
-//!   - 0 on success; stdout is exactly zero bytes (TS action prints nothing).
+//! Exit-code contract:
+//!   - 0 on success; stdout is the core's `✓ Hook added: <event>/<name>`
+//!     line, after the BUG-611 backup notice when there is one (BUG-638).
 //!   - 1 on any [`codelet_fspec_core::FspecCoreError`]; stderr starts with
 //!     `Error:` followed by the rendered message.
 //!
@@ -27,10 +28,10 @@
 //! in the core. The bridge MUST NOT embed `write_json_atomic` or
 //! `read_to_string` or any HookFile shape.
 
-use std::env;
+use crate::common::spec_project_root;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use codelet_fspec_core::commands::add_hook;
 use serde_json::{json, Map, Value};
 
@@ -49,7 +50,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `add-hook` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = spec_project_root()?;
 
     // Marshal clap args → JSON object expected by the core. `timeout`
     // is omitted entirely when `None` (parity with `JSON.stringify(undefined)`).
@@ -64,8 +65,9 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     let args_json = json!(body).to_string();
 
     match add_hook::run(&args_json, &project_root).await {
-        Ok(_data_json) => {
-            // TS Commander action prints nothing on success — silent exit 0.
+        Ok(added) => {
+            // BUG-638: what was added, after any BUG-611 backup notice.
+            println!("{added}");
             Ok(0)
         }
         Err(err) => {

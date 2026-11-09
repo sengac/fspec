@@ -1,5 +1,7 @@
 @done
 @RPC-172
+@cli
+@foundation-management
 Feature: fspec add-bounded-context CLI subcommand
   """
   CLI bridge: rust/fspec/src/add_bounded_context.rs — clap-derived struct mirroring TS Commander.js

@@ -1,3 +1,4 @@
+@BUG-582
 @event-storm
 @cli
 @event-storming
@@ -46,6 +47,7 @@ Feature: Port add-domain-event command to Rust
     then the command returns eventId 0
     And the Event Storm contains an item with id 0, type "event", color "orange", deleted false
     And the eventStorm has level "process_modeling" and nextItemId 1
+    And the item's createdAt is the ISO-8601 time the work unit's updatedAt was bumped to
 
   Scenario: Reject duplicate event with same case
     given a work unit "RPC-179" with a non-deleted event "UserRegistered" at id 0

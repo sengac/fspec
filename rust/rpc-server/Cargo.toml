@@ -15,6 +15,41 @@ path = "src/lib.rs"
 name = "codelet-rpc-server"
 path = "src/main.rs"
 
+# MCP-003: a real MCP server for integration tests only; built solely with
+# `--features mcp-fixture`, never in production builds.
+[[bin]]
+name = "fspec-mcp-fixture"
+path = "tests/support/mcp_fixture_server.rs"
+required-features = ["mcp-fixture"]
+
+[[test]]
+name = "mcp003_session_mcp_configuration"
+path = "tests/mcp003_session_mcp_configuration.rs"
+required-features = ["mcp-fixture"]
+
+[[test]]
+name = "mcp004_mcp_http_headers"
+path = "tests/mcp004_mcp_http_headers.rs"
+required-features = ["mcp-fixture"]
+
+[[test]]
+name = "mcp005_stdio_structured_arguments"
+path = "tests/mcp005_stdio_structured_arguments.rs"
+required-features = ["mcp-fixture"]
+
+[[test]]
+name = "mcp006_legacy_sse_transport"
+path = "tests/mcp006_legacy_sse_transport.rs"
+required-features = ["mcp-fixture"]
+
+[[test]]
+name = "mcp008_declarative_session_mcp_set"
+path = "tests/mcp008_declarative_session_mcp_set.rs"
+required-features = ["mcp-fixture"]
+
+[features]
+mcp-fixture = ["dep:serde_json"]
+
 [dependencies]
 codelet-rpc = { workspace = true }
 codelet-rpc-types = { workspace = true }
@@ -32,9 +67,18 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
+# RPC-456: TLS for non-loopback daemon binds.
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+# RPC-458: clients trust the public web PKI roots plus a daemon's private CA
+# (the same roots tokio-tungstenite's rustls-tls-webpki-roots uses).
+webpki-roots = "0.26"
+thiserror = { workspace = true }
+serde_json = { workspace = true, optional = true }
 
 [dev-dependencies]
 codelet-common = { workspace = true }
+rig-core = { workspace = true }
 codelet-sessions = { workspace = true }
 serial_test = { workspace = true }
 codelet-test-helpers = { workspace = true }
@@ -49,3 +93,5 @@ futures = { workspace = true }
 bincode = { workspace = true }
 serde_json = { workspace = true }
 tempfile = { workspace = true }
+codelet-tools = { workspace = true }
+uuid = { workspace = true }

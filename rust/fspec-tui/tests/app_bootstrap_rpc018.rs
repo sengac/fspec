@@ -2,10 +2,10 @@
 //!
 //! Feature: spec/features/rpc018-app-bootstrap.feature
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
 mod common;
 
+use crate::common::TaskOutcome;
+use codelet_test_helpers::{OrFail, TestResult};
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
@@ -14,6 +14,20 @@ use codelet_rpc_types::{
 };
 
 use common::MockBackend;
+
+/// BUG-657: bootstrap loads the workspace info in a tracked background
+/// task; await the bootstrap's tasks, then fold what they sent.
+async fn settle_bootstrap(app: &mut App) -> TestResult {
+    while let Some(task) = app.next_pending_task() {
+        codelet_test_helpers::deadlock_guard("a bootstrap task", task)
+            .await?
+            .completed_or_cancelled()?;
+    }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
+    Ok(())
+}
 
 fn make_app() -> (App, Arc<MockBackend>) {
     let mock = Arc::new(MockBackend::new());
@@ -24,7 +38,7 @@ fn make_app() -> (App, Arc<MockBackend>) {
 
 /// Scenario: Bootstrap fetches workspace info and stores it in AgentViewStore
 #[tokio::test]
-async fn bootstrap_fetches_workspace_info_and_stores_it_in_agent_view_store() {
+async fn bootstrap_fetches_workspace_info_and_stores_it_in_agent_view_store() -> TestResult {
     // @step Given an App constructed against a SharedFspecService bound to a temp git repo on branch "main"
     let (mut app, mock) = make_app();
     mock.set_workspace_info(WorkspaceInfo {
@@ -32,20 +46,22 @@ async fn bootstrap_fetches_workspace_info_and_stores_it_in_agent_view_store() {
         git_branch: Some("main".to_string()),
     });
     // @step When App::bootstrap is invoked
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await.or_fail("bootstrap")?;
+    settle_bootstrap(&mut app).await?;
     // @step Then App::dispatch has matched an Action::WorkspaceInfoLoaded(info)
     // @step And app.agent_view_store().workspace() returns Some(info) with cwd = <tmp_path> and git_branch = Some("main")
     let ws = app
         .agent_view_store()
         .workspace()
-        .expect("workspace populated");
+        .or_fail("workspace populated")?;
     assert_eq!(ws.cwd, "/tmp/x");
     assert_eq!(ws.git_branch.as_deref(), Some("main"));
+    Ok(())
 }
 
 /// Scenario: Action::WorkspaceInfoLoaded updates the AgentViewStore.workspace slot
 #[test]
-fn action_workspace_info_loaded_updates_workspace_slot() {
+fn action_workspace_info_loaded_updates_workspace_slot() -> TestResult {
     // @step Given an App with agent_view_store.workspace() returning None
     let (mut app, _mock) = make_app();
     assert!(app.agent_view_store().workspace().is_none());
@@ -55,14 +71,15 @@ fn action_workspace_info_loaded_updates_workspace_slot() {
         git_branch: Some("dev".to_string()),
     }));
     // @step Then app.agent_view_store().workspace() returns Some(WorkspaceInfo { cwd: "/x", git_branch: Some("dev") })
-    let ws = app.agent_view_store().workspace().expect("workspace");
+    let ws = app.agent_view_store().workspace().or_fail("workspace")?;
     assert_eq!(ws.cwd, "/x");
     assert_eq!(ws.git_branch.as_deref(), Some("dev"));
+    Ok(())
 }
 
 /// Scenario: Bootstrap is best-effort — get_workspace_info failures do not abort
 #[tokio::test]
-async fn bootstrap_is_best_effort_workspace_info_failure_does_not_abort() {
+async fn bootstrap_is_best_effort_workspace_info_failure_does_not_abort() -> TestResult {
     // @step Given an App whose backend.get_workspace_info() returns an error
     let (mut app, mock) = make_app();
     mock.set_workspace_info_error("simulated workspace fetch failure".to_string());
@@ -74,22 +91,24 @@ async fn bootstrap_is_best_effort_workspace_info_failure_does_not_abort() {
         "bootstrap should be non-fatal on workspace fetch error"
     );
     // @step And app.agent_view_store().workspace() returns None
+    settle_bootstrap(&mut app).await?;
     assert!(app.agent_view_store().workspace().is_none());
+    Ok(())
 }
 
 /// Scenario: Action::SessionCreated spawns get_model_info + get_thinking_level fetches
 #[tokio::test]
-async fn action_session_created_spawns_model_info_and_thinking_level_fetches() {
+async fn action_session_created_spawns_model_info_and_thinking_level_fetches() -> TestResult {
     // @step Given an App with no current_session yet
     let (mut app, mock) = make_app();
     mock.set_model_info(ModelInfo {
         display_name: "demo".to_string(),
         supports_reasoning: true,
         supports_vision: false,
-        context_window: 100_000,
-        compaction_threshold: 0,
+        context_window: Some(100_000),
+        compaction_threshold: None,
     });
-    mock.set_thinking_level(ThinkingLevel::Medium);
+    mock.set_thinking_level(ThinkingLevel::Effort("medium".to_string()));
     assert!(app.agent_view_store().current_session().is_none());
     // @step When App::dispatch receives Action::SessionCreated(SessionId::new("s-1"))
     let sid = SessionId::new("s-1");
@@ -99,27 +118,28 @@ async fn action_session_created_spawns_model_info_and_thinking_level_fetches() {
     // @step And two new tasks are pending — one for backend.get_model_info("s-1") and one for backend.get_thinking_level("s-1")
     // Drain the spawned tasks deterministically.
     while let Some(handle) = app.next_pending_task() {
-        let _ = handle.await;
+        handle.await.completed_or_cancelled()?;
     }
     // @step When both tasks complete and emit Action::ModelInfoLoaded("s-1", info) and Action::ThinkingLevelLoaded("s-1", level)
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
-    // @step Then agent_view_store.model_info_for(SessionId("s-1")) returns Some(info)
+    // @step Then app.agent_view_store().model_info_for(SessionId("s-1")) returns Some(info)
     assert!(
         app.agent_view_store().model_info_for(&sid).is_some(),
         "model_info should be populated"
     );
     // @step And app.agent_view_store().thinking_level_for(SessionId("s-1")) returns Some(level)
     assert_eq!(
-        app.agent_view_store().thinking_level_for(&sid).copied(),
-        Some(ThinkingLevel::Medium)
+        app.agent_view_store().thinking_level_for(&sid).cloned(),
+        Some(ThinkingLevel::Effort("medium".to_string()))
     );
+    Ok(())
 }
 
 /// Scenario: Action::ModelInfoLoaded for a session NOT current_session still updates the by-session map
 #[test]
-fn action_model_info_loaded_for_non_current_session_still_updates_map() {
+fn action_model_info_loaded_for_non_current_session_still_updates_map() -> TestResult {
     // @step Given an App with current_session = Some(SessionId::new("s-1"))
     let (mut app, _mock) = make_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
@@ -130,8 +150,8 @@ fn action_model_info_loaded_for_non_current_session_still_updates_map() {
             display_name: "Other".to_string(),
             supports_reasoning: false,
             supports_vision: false,
-            context_window: 100_000,
-            compaction_threshold: 0,
+            context_window: Some(100_000),
+            compaction_threshold: None,
         },
     ));
     // @step Then agent_view_store.model_info_for(SessionId("s-2")) returns Some(info)
@@ -146,11 +166,12 @@ fn action_model_info_loaded_for_non_current_session_still_updates_map() {
         .model_info_for(&SessionId::new("s-1"))
         .cloned();
     assert!(info_s1.is_none(), "model_info for s-1 should still be None");
+    Ok(())
 }
 
 /// Scenario: Action::ChunkReceived TokenUpdate updates token_state for the current session only
 #[test]
-fn action_chunk_received_token_update_updates_token_state() {
+fn action_chunk_received_token_update_updates_token_state() -> TestResult {
     // @step Given an App with current_session = Some(SessionId::new("s-1"))
     let (mut app, _mock) = make_app();
     let sid = SessionId::new("s-1");
@@ -175,14 +196,15 @@ fn action_chunk_received_token_update_updates_token_state() {
         .agent_view_store()
         .token_state_for(&sid)
         .copied()
-        .expect("token state");
+        .or_fail("token state")?;
     assert_eq!(ts.input_tokens, 1234);
     assert_eq!(ts.output_tokens, 567);
+    Ok(())
 }
 
 /// Scenario: Action::ChunkReceived ContextFillUpdate updates only context_fill_pct
 #[test]
-fn action_chunk_received_context_fill_update_updates_only_fill_pct() {
+fn action_chunk_received_context_fill_update_updates_only_fill_pct() -> TestResult {
     // @step Given an App with current_session = Some(SessionId::new("s-1"))
     let (mut app, _mock) = make_app();
     let sid = SessionId::new("s-1");
@@ -212,10 +234,11 @@ fn action_chunk_received_context_fill_update_updates_only_fill_pct() {
         .agent_view_store()
         .token_state_for(&sid)
         .copied()
-        .expect("token state");
+        .or_fail("token state")?;
     assert_eq!(ts.context_fill_pct, 45);
     // @step And input_tokens still equals 100
     assert_eq!(ts.input_tokens, 100);
     // @step And output_tokens still equals 50
     assert_eq!(ts.output_tokens, 50);
+    Ok(())
 }

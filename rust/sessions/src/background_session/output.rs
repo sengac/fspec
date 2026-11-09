@@ -12,8 +12,18 @@ impl BackgroundSession {
         ) {
             self.clear_provider_presentation();
         }
+        let _order = self.status_order();
         let old_status = self.status.swap(status as u8, Ordering::AcqRel);
         self.notify_status_change(old_status, status);
+    }
+
+    /// BUG-648: every status change takes this before it changes the status
+    /// and keeps it until the change is pushed and journaled. The guarded
+    /// value is `()`, so a poisoned lock carries no broken state.
+    pub(super) fn status_order(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.status_order
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub(super) fn notify_status_change(&self, old_status: u8, status: SessionStatus) {
@@ -42,7 +52,11 @@ impl BackgroundSession {
     }
 
     pub fn handle_output(&self, chunk: StreamChunk) {
-        if matches!(chunk, StreamChunk::ProviderWaiting { .. }) {
+        // BUG-648: the transcript journal is the session's event log. Every
+        // kind StreamChunk::is_journaled names is journaled in broadcast
+        // order (AMGR-020 request events and provider-waiting notices
+        // included), so a client that attaches later replays them.
+        if !chunk.is_journaled() {
             let _ = self.chunks_tx.send((
                 codelet_rpc_types::SessionId::from(self.id.to_string()),
                 chunk,
@@ -77,8 +91,12 @@ impl BackgroundSession {
                 .expect("output buffer lock poisoned");
             buffer.push(chunk.clone());
         }
-        self.relay_output.append(&chunk);
-        let _ = self.supervisor_broadcast.send(chunk.clone());
+        // A provider-waiting notice is for the session's own viewers; the
+        // bridge relay and supervisors never receive it.
+        if !matches!(chunk, StreamChunk::ProviderWaiting { .. }) {
+            self.relay_output.append(&chunk);
+            let _ = self.supervisor_broadcast.send(chunk.clone());
+        }
         let _ = self.chunks_tx.send((
             codelet_rpc_types::SessionId::from(self.id.to_string()),
             chunk.clone(),

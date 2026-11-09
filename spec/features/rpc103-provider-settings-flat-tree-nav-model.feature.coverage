@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "125-152",
+          "lines": "123-152",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -102,7 +102,9 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -113,7 +115,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "160-205",
+          "lines": "159-207",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -210,7 +212,9 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -221,7 +225,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "213-261",
+          "lines": "214-264",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -318,7 +322,9 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -329,7 +335,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "269-306",
+          "lines": "271-310",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -426,7 +432,9 @@
                 159,
                 160,
                 161
-              ]
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "}"
             }
           ]
         }
@@ -437,7 +445,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "314-352",
+          "lines": "317-357",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -456,7 +464,9 @@
                 81,
                 82,
                 83
-              ]
+              ],
+              "firstLine": "pub source: Option<String>,",
+              "lastLine": "filter: &str,"
             }
           ]
         }
@@ -467,18 +477,22 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "359-404",
+          "lines": "363-410",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
               "lines": [
-                20,
-                21,
-                22,
-                23,
-                24,
-                25
-              ]
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ],
+              "firstLine": "/// Replace the cached `display_providers` and rebuild `nav_items`.",
+              "lastLine": "}"
             }
           ]
         }
@@ -489,24 +503,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "412-460",
+          "lines": "417-467",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
                 75,
                 76,
                 77,
@@ -523,8 +524,23 @@
                 88,
                 89,
                 90,
-                91
-              ]
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ],
+              "firstLine": "// onSwitchToModels(); return; }`. No Action is emitted and no",
+              "lastLine": "}"
             }
           ]
         }
@@ -535,24 +551,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "468-502",
+          "lines": "474-514",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
                 74,
                 75,
                 76,
@@ -584,8 +587,23 @@
                 102,
                 103,
                 104,
-                105
-              ]
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ],
+              "firstLine": "// Mirrors TS listModeHandler.ts lines 56-60 `if (key.tab) {",
+              "lastLine": "// (pre-RPC-103 callers using `set_providers(...)` alone), where"
             }
           ]
         }
@@ -604,6 +622,6 @@
       "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 793
+    "totalLinesCovered": 816
   }
 }

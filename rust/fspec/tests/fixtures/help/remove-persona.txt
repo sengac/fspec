@@ -20,7 +20,7 @@ OPTIONS
   No options available
 
 TYPICAL WORKFLOW
-  List current personas: Check foundation.json or foundation.json.draft,Remove persona: fspec remove-persona "exact name",Verify removal: Check updated foundation file
+  List current personas: Check foundation.json or foundation.json.draft. Remove persona: fspec remove-persona "exact name". Verify removal: Check updated foundation file
 
 EXAMPLES
   1. Remove persona by exact name
@@ -33,19 +33,19 @@ EXAMPLES
 
 COMMON ERRORS
   ✗ foundation.json not found
-    Fix: undefined
+    Fix: Run: fspec discover-foundation to create foundation.json.draft
 
   ✗ Persona "Name" not found
-    Fix: undefined
+    Fix: Check exact name (case-sensitive) in foundation.json. Available personas are listed in the error message.
 
   ✗ No personas exist in foundation
-    Fix: undefined
+    Fix: Cannot remove personas from empty foundation. Add personas first with fspec add-persona.
 
 RELATED COMMANDS
-  fspec fspec add-persona - Add persona to foundation
-  fspec fspec discover-foundation - Foundation discovery process
-  fspec fspec remove-capability - Remove capability from foundation
-  fspec fspec update-foundation - Update foundation fields
+  fspec add-persona - Add persona to foundation
+  fspec discover-foundation - Foundation discovery process
+  fspec remove-capability - Remove capability from foundation
+  fspec update-foundation - Update foundation fields
 
 NOTES
   • Draft file (foundation.json.draft) takes precedence over foundation.json

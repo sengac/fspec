@@ -1,3 +1,4 @@
+@BUG-472
 @providers
 @provider-abstraction
 @PROV-152
@@ -7,15 +8,17 @@ Feature: Codex capability-aware request options
   advertised model defaults field by field. Unsupported optional defaults are
   omitted; explicit unsupported or malformed values return typed actionable
   errors before transport, never panic or silently downgrade.
-  Missing or stale capability data uses the established named effort levels
-  none, minimal, low, medium and high with high as the fallback default.
-  No summaries beyond auto, context, verbosity, service tiers or sequential-cutoff delivery
-  are assumed supported in that fallback. Fresh capability snapshots replace
-  the fallback on the next request; model names never imply capabilities.
+  BUG-441: missing or stale capability data invents nothing: no default is
+  applied and explicit options are sent unchanged for the Codex server to
+  accept or reject (the former conservative fallback is removed; see
+  codex-reasoning-for-every-codex-model.feature). Fresh capability snapshots
+  apply on the next request; model names never imply capabilities.
   Capabilities are Codex-owned snapshots supplied by a trusted model source,
   not arbitrary request parameters. Credentials and headers are not options.
-  The current models.dev registry does not advertise these per-option values;
-  until a trusted source supplies a snapshot, providers use the fallback.
+  MODEL-014: the trusted snapshot is the selected model's Codex /models entry
+  (advertised efforts and default effort), set by ProviderManager::get_codex.
+  A control the snapshot does not list (None) is not advertised and is sent
+  unvalidated, as without a snapshot; an empty list still supports nothing.
   Provider updates reach already-created agents through shared model state.
   Codex always preserves store:false and reasoning.encrypted_content inclusion.
   Numeric effort strings advertised by a model serialize as unsigned numbers.
@@ -44,13 +47,6 @@ Feature: Codex capability-aware request options
     Given a model advertises text verbosity
     When the user configures only verbosity
     Then the request contains text verbosity without a fabricated format
-
-  Scenario: Missing and stale capabilities use a conservative fallback
-    Given capability data is missing or stale
-    When requests use defaults or explicitly request experimental options
-    Then defaults contain only baseline effort and required Codex fields
-    And explicit auto summaries retain established Codex compatibility
-    And experimental options are rejected until fresh capabilities advertise them
 
   Scenario: Explicit configuration overrides supported model defaults
     Given model defaults include supported and unsupported optional controls

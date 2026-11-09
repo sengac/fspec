@@ -5,33 +5,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/cov056_deprecated_display.rs",
-          "lines": "54-93",
+          "lines": "58-99",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage/single.rs",
               "lines": [
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361
-              ]
+                78,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                210
+              ],
+              "firstLine": "pub(super) fn collect_warnings(coverage: &CoverageFile, project_root: &Path) -> Vec<String> {",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,34 +43,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-core/tests/cov056_deprecated_display.rs",
-          "lines": "95-131",
+          "lines": "101-139",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage/single_json.rs",
               "lines": [
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447,
-                448,
-                449,
-                450
-              ]
+                25,
+                26,
+                28,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ],
+              "firstLine": "deprecated: Option<bool>,",
+              "lastLine": "})"
             }
           ]
         }
@@ -83,17 +84,20 @@
           "lines": "134-165",
           "implMappings": [
             {
-              "file": "rust/fspec-core/src/commands/show_coverage.rs",
+              "file": "rust/fspec-core/src/commands/show_coverage/single.rs",
               "lines": [
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361
-              ]
+                196,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ],
+              "firstLine": "if deprecated.contains(&scenario.name) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,8 +112,9 @@
       "rust/fspec-core/tests/cov056_deprecated_display.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/commands/show_coverage.rs"
+      "rust/fspec-core/src/commands/show_coverage/single.rs",
+      "rust/fspec-core/src/commands/show_coverage/single_json.rs"
     ],
-    "totalLinesCovered": 160
+    "totalLinesCovered": 162
   }
 }

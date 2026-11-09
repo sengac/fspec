@@ -5,66 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_rule.rs",
-          "lines": "82-104",
-          "implMappings": [
-            {
-              "file": "rust/fspec-core/src/help/configs/add_rule.rs",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52
-              ]
-            }
-          ]
+          "lines": "90-114"
         }
       ]
     },
@@ -73,7 +14,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_rule.rs",
-          "lines": "106-137",
+          "lines": "120-151",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_rule.rs",
@@ -104,7 +45,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-rule` clap subcommand.",
+              "lastLine": "eprintln!(\"✗ Failed to add rule: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -115,7 +58,7 @@
       "testMappings": [
         {
           "file": "rust/fspec/tests/cli_add_rule.rs",
-          "lines": "170-217",
+          "lines": "191-252",
           "implMappings": [
             {
               "file": "rust/fspec/src/add_rule.rs",
@@ -146,7 +89,9 @@
                 67,
                 68,
                 69
-              ]
+              ],
+              "firstLine": "/// Entry point invoked from `main.rs` for the `add-rule` clap subcommand.",
+              "lastLine": "eprintln!(\"✗ Failed to add rule: {}\", render_core_error(&err));"
             }
           ]
         }
@@ -165,9 +110,8 @@
       "rust/fspec/tests/cli_add_rule.rs"
     ],
     "implFiles": [
-      "rust/fspec-core/src/help/configs/add_rule.rs",
       "rust/fspec/src/add_rule.rs"
     ],
-    "totalLinesCovered": 263
+    "totalLinesCovered": 171
   }
 }

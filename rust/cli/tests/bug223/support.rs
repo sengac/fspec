@@ -186,6 +186,7 @@ impl Fixture {
     pub async fn new(responses: Vec<ResponseTemplate>) -> Result<Self, Box<dyn std::error::Error>> {
         let environment = super::environment::Environment::new()?;
         let directory = codelet_test_helpers::setup_temp_directory()?;
+        codelet_test_helpers::isolated_user_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         codelet_core::persistence::reset_stores_for_tests();
         let manifest = codelet_core::persistence::create_session_with_provider(
@@ -245,8 +246,8 @@ impl Fixture {
             })
             .tool(codelet_tools::DoneTool::new(self.session_id))
             .build();
-        tokio::time::timeout(
-            std::time::Duration::from_secs(8),
+        codelet_test_helpers::deadlock_guard(
+            "run_agent_stream( RigAgent::new(agent, 8), 'finish the ta...",
             run_agent_stream(
                 RigAgent::new(agent, 8),
                 "finish the task",

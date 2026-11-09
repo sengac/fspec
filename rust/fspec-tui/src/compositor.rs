@@ -106,6 +106,17 @@ impl Compositor {
             .map(|i| self.layers[i].component.id().to_string())
     }
 
+    /// TUI-130: the copy text of the layer that gets events first (the
+    /// highest-priority active layer, newest on a tie), if it offers one.
+    pub fn topmost_copy_text(&self) -> Option<String> {
+        self.layers
+            .iter()
+            .enumerate()
+            .filter(|(_, layer)| layer.component.is_active())
+            .max_by_key(|(_, layer)| (layer.component.priority(), layer.registration))
+            .and_then(|(_, layer)| layer.component.copy_text())
+    }
+
     /// Highest-priority layer's [`Priority`], if any.
     pub fn topmost_priority(&self) -> Option<Priority> {
         self.topmost_index()

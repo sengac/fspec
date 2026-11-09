@@ -10,19 +10,30 @@
             {
               "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
-                254,
-                255,
-                256,
-                257,
-                258,
                 259,
                 260,
                 261,
                 262,
                 263,
                 264,
-                265
-              ]
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ],
+              "firstLine": "/// Add the mcp_ prefix to a tool name for OAuth mode",
+              "lastLine": "}"
             }
           ]
         }
@@ -57,7 +68,9 @@
                 292,
                 293,
                 294
-              ]
+              ],
+              "firstLine": "name.strip_prefix(TOOL_NAME_PREFIX)",
+              "lastLine": "/// mode via `AnthropicKey::is_oauth_token()` and appends `?beta=true` at the"
             }
           ]
         }
@@ -68,13 +81,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_parity_regression_test.rs",
-          "lines": "245-326",
+          "lines": "267-339",
           "implMappings": [
             {
               "file": "rust/providers/src/claude_oauth.rs",
               "lines": [
-                220,
-                221,
                 222,
                 223,
                 224,
@@ -100,8 +111,16 @@
                 244,
                 245,
                 246,
-                247
-              ]
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253
+              ],
+              "firstLine": "pub fn build_oauth_headers(",
+              "lastLine": "}"
             }
           ]
         }
@@ -117,14 +136,20 @@
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                416,
-                417,
-                418,
-                419,
-                420,
-                421,
-                422
-              ]
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465
+              ],
+              "firstLine": "/// Get the system prompt prefix for this provider",
+              "lastLine": "}"
             }
           ]
         }
@@ -140,10 +165,12 @@
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                395,
-                396,
-                397
-              ]
+                398,
+                399,
+                400
+              ],
+              "firstLine": "HeaderValue::from_str(&format!(\"Bearer {access_token}\"))",
+              "lastLine": ");"
             }
           ]
         }
@@ -184,7 +211,9 @@
                 96,
                 97,
                 98
-              ]
+              ],
+              "firstLine": ") -> Self {",
+              "lastLine": "}"
             }
           ]
         }
@@ -250,7 +279,9 @@
                 166,
                 167,
                 168
-              ]
+              ],
+              "firstLine": "// Read lock: check if expired",
+              "lastLine": "state.access_token = response.access_token.clone();"
             }
           ]
         }
@@ -261,33 +292,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_parity_regression_test.rs",
-          "lines": "612-645",
+          "lines": "628-657",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                334,
-                335,
-                336,
-                337,
-                338,
-                339,
-                340,
-                341,
-                342,
-                343,
-                344,
-                345,
-                346,
-                347,
-                348,
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
                 356,
                 357,
                 358,
@@ -324,8 +333,58 @@
                 389,
                 390,
                 391,
-                392
-              ]
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440
+              ],
+              "firstLine": "/// Create a new ClaudeProvider using OAuth tokens with token refresh support",
+              "lastLine": "}"
             }
           ]
         }
@@ -336,36 +395,11 @@
       "testMappings": [
         {
           "file": "rust/providers/tests/claude_parity_regression_test.rs",
-          "lines": "647-676",
+          "lines": "663-689",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
                 261,
                 262,
                 263,
@@ -420,8 +454,49 @@
                 312,
                 313,
                 314,
-                315
-              ]
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354
+              ],
+              "firstLine": "/// MODEL-001: Create a new ClaudeProvider with explicit API key, auth mode, and model",
+              "lastLine": "}"
             }
           ]
         }
@@ -440,6 +515,6 @@
       "rust/providers/src/claude.rs",
       "rust/providers/src/claude_refreshing_client.rs"
     ],
-    "totalLinesCovered": 800
+    "totalLinesCovered": 841
   }
 }

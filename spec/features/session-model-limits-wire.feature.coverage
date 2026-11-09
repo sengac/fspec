@@ -1,0 +1,346 @@
+{
+  "scenarios": [
+    {
+      "name": "A session without limits reports null limits",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov166_wire_model_limits.rs",
+          "lines": "110-139",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                200,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                202,
+                213,
+                214
+              ],
+              "firstLine": "fn get_session_model(&self, session_id: &SessionId) -> Result<SessionModel, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub struct SessionModel {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_4.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                177,
+                178,
+                179,
+                180,
+                182,
+                192
+              ],
+              "firstLine": "fn get_model_info(",
+              "lastLine": "// MODEL-011: the level exactly as chosen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A catalogued session reports its limits",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov166_wire_model_limits.rs",
+          "lines": "140-160",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                200,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                202,
+                213,
+                214
+              ],
+              "firstLine": "fn get_session_model(&self, session_id: &SessionId) -> Result<SessionModel, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub struct SessionModel {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reading the model of a session that does not exist fails naming it",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov166_wire_model_limits.rs",
+          "lines": "161-180",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl/handle_impl_1.rs",
+              "lines": [
+                200,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                202,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                213,
+                202,
+                213,
+                214
+              ],
+              "firstLine": "fn get_session_model(&self, session_id: &SessionId) -> Result<SessionModel, String> {",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/rpc-types/src/session_state.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "firstLine": "pub struct SessionModel {",
+              "lastLine": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A context window too large for the wire fails limit resolution",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/prov172_wire_limit_range.rs",
+          "lines": "41-81",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_resolution/wire_limits.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ],
+              "firstLine": "//! PROV-172: a session's resolved limits converted to the wire's `u32`.",
+              "lastLine": "}"
+            },
+            {
+              "file": "rust/sessions/src/model_resolution.rs",
+              "lines": [
+                239
+              ],
+              "firstLine": "resolve_current_model_limits(pm).map_err(|error| error.to_string())",
+              "lastLine": "resolve_current_model_limits(pm).map_err(|error| error.to_string())"
+            },
+            {
+              "file": "rust/sessions/src/runtime_settings.rs",
+              "lines": [
+                17,
+                18,
+                19
+              ],
+              "firstLine": "// MODEL-011: keep the cached thinking target on the turn's model.",
+              "lastLine": "codelet_providers::thinking_wire::ThinkingTarget::for_provider_manager(manager),"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/prov166_wire_model_limits.rs",
+      "rust/sessions/tests/prov172_wire_limit_range.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl/handle_impl_1.rs",
+      "rust/rpc-types/src/session_state.rs",
+      "rust/sessions/src/handle_impl/handle_impl_4.rs",
+      "rust/sessions/src/model_resolution/wire_limits.rs",
+      "rust/sessions/src/model_resolution.rs",
+      "rust/sessions/src/runtime_settings.rs"
+    ],
+    "totalLinesCovered": 322
+  }
+}

@@ -8,10 +8,8 @@
 //! a `RestoreCheckpointResult` action was folded back onto the bus.
 //! This proves the dispatch without a real git repo.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
+use codelet_test_helpers::TestResult;
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 
@@ -22,23 +20,27 @@ use common::MockBackend;
 /// deadline elapses; dispatch every action seen so spawned follow-ups
 /// run, and return Some(action) on first match.
 async fn wait_for<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Option<Action> {
-    let deadline = std::time::Instant::now() + Duration::from_millis(500);
-    while std::time::Instant::now() < deadline {
-        if let Some(action) = app.try_recv_action() {
-            let matched = pred(&action);
-            app.dispatch(action.clone());
-            if matched {
-                return Some(action);
+    // TEST-042: wait for the action itself under the deadlock guard (None
+    // only when the guard expires), dispatching every action on the way.
+    codelet_test_helpers::deadlock_guard("the awaited action", async {
+        loop {
+            while let Some(action) = app.try_recv_action() {
+                let matched = pred(&action);
+                app.dispatch(action.clone());
+                if matched {
+                    return action;
+                }
             }
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(Duration::from_millis(5)).await;
-    }
-    None
+    })
+    .await
+    .ok()
 }
 
 /// Scenario: Dispatching RestoreCheckpointFile calls the transport restore_checkpoint_file
 #[tokio::test]
-async fn dispatching_restore_checkpoint_file_calls_the_transport() {
+async fn dispatching_restore_checkpoint_file_calls_the_transport() -> TestResult {
     // @step Given an App whose backend records restore calls
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -75,11 +77,12 @@ async fn dispatching_restore_checkpoint_file_calls_the_transport() {
             "a.txt".to_string()
         ))
     );
+    Ok(())
 }
 
 /// Scenario: Dispatching RestoreCheckpointAll calls the transport restore_checkpoint_all
 #[tokio::test]
-async fn dispatching_restore_checkpoint_all_calls_the_transport() {
+async fn dispatching_restore_checkpoint_all_calls_the_transport() -> TestResult {
     // @step Given an App whose backend records restore calls
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -107,4 +110,5 @@ async fn dispatching_restore_checkpoint_all_calls_the_transport() {
         result.is_some(),
         "expected a RestoreCheckpointResult on the bus"
     );
+    Ok(())
 }

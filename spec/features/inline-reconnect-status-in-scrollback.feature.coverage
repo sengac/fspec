@@ -5,12 +5,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "95-121",
+          "lines": "94-121",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -30,8 +29,11 @@
                 48,
                 49,
                 50,
-                51
-              ]
+                51,
+                52
+              ],
+              "firstLine": "/// tracking is cleared and a FRESH reconnecting line is pushed into",
+              "lastLine": "}"
             }
           ]
         }
@@ -42,12 +44,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "128-149",
+          "lines": "128-151",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -64,12 +65,10 @@
                 53,
                 54,
                 55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
+                56
+              ],
+              "firstLine": "// RPC-416: update the inline notice in place.",
+              "lastLine": "// COMPACTED badge iff the seq still matches (seq-guard)."
             }
           ]
         }
@@ -80,24 +79,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "155-184",
+          "lines": "157-191",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
                 62,
                 63,
-                64
-              ]
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ],
+              "firstLine": "/// RPC-416: on `Action::Reconnecting(n)`, update the tracked notice",
+              "lastLine": "}"
             }
           ]
         }
@@ -108,12 +110,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "191-220",
+          "lines": "198-233",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                67,
                 68,
                 69,
                 70,
@@ -123,8 +124,11 @@
                 74,
                 75,
                 76,
-                77
-              ]
+                77,
+                78
+              ],
+              "firstLine": "seq,",
+              "lastLine": "fn show_reconnected_success(&mut self) {"
             }
           ]
         }
@@ -135,11 +139,14 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "226-255",
+          "lines": "239-271",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
+                76,
+                77,
+                78,
                 79,
                 80,
                 81,
@@ -175,8 +182,18 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "firstLine": "/// RPC-416: replace the tracked notice line in place with the",
+              "lastLine": "}"
             }
           ]
         }
@@ -187,12 +204,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "262-294",
+          "lines": "278-318",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                31,
                 32,
                 33,
                 34,
@@ -201,8 +217,11 @@
                 37,
                 38,
                 39,
-                40
-              ]
+                40,
+                41
+              ],
+              "firstLine": "/// tracking is cleared and a FRESH reconnecting line is pushed into",
+              "lastLine": "// fall through to push a fresh reconnecting line into whatever"
             }
           ]
         }
@@ -213,7 +232,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "301-344",
+          "lines": "325-372",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/store/agent_view/reconnect_notice.rs",
@@ -232,7 +251,9 @@
                 50,
                 51,
                 52
-              ]
+              ],
+              "firstLine": "pub fn replace_notice_by_seq(&mut self, seq: u64, text: impl Into<String>, color: Color) {",
+              "lastLine": "\"reconnect notice chunk (seq {seq}) must carry a ChunkSource\""
             }
           ]
         }
@@ -243,12 +264,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "364-400",
+          "lines": "379-414",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                100,
                 101,
                 102,
                 103,
@@ -262,8 +282,11 @@
                 111,
                 112,
                 113,
-                114
-              ]
+                114,
+                115
+              ],
+              "firstLine": "fn abort_reconnect_dismiss(&mut self) {",
+              "lastLine": "return;"
             }
           ]
         }
@@ -274,12 +297,11 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "388-448",
+          "lines": "468-529",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",
               "lines": [
-                34,
                 35,
                 36,
                 37,
@@ -304,8 +326,11 @@
                 56,
                 57,
                 58,
-                59
-              ]
+                59,
+                60
+              ],
+              "firstLine": "pub(crate) fn handle_disconnected(&mut self) {",
+              "lastLine": "}"
             }
           ]
         }
@@ -324,6 +349,6 @@
       "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/store/agent_view/reconnect_notice.rs"
     ],
-    "totalLinesCovered": 474
+    "totalLinesCovered": 517
   }
 }

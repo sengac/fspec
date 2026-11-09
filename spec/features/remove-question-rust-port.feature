@@ -1,7 +1,10 @@
+@BUG-582
 @done
 @RPC-278
 @rust
 @mutation
+@cli
+@example-mapping
 Feature: Port remove-question command to Rust
   """
   Files (replace stub) rust/fspec-core/src/commands/remove_question.rs; NEW rust/fspec-core/src/help/configs/remove_question.rs; NEW rust/fspec/src/remove_question.rs (bridge); NEW rust/fspec-core/tests/remove_question.rs (dispatcher); NEW rust/fspec/tests/cli_remove_question.rs; NEW rust/fspec/tests/fixtures/help/remove-question.txt
